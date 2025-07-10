@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use ts_rs::TS;
 
+/// @category Primitive
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "primitives.ts")]
@@ -10,6 +11,7 @@ pub enum ChangeUsize {
     Remove,
 }
 
+/// @category Primitive
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "primitives.ts")]
@@ -18,6 +20,7 @@ pub enum ChangeString {
     Remove,
 }
 
+/// @category Primitive
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "primitives.ts")]
@@ -26,6 +29,7 @@ pub enum ChangeBool {
     Remove,
 }
 
+/// @category Primitive
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "primitives.ts")]

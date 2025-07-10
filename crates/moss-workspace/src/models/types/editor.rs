@@ -11,6 +11,7 @@ use crate::{
     },
 };
 
+/// @category Type
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -40,6 +41,7 @@ impl From<EditorGridLeafDataEntity> for EditorGridLeafData {
     }
 }
 
+/// @category Type
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
 #[serde(tag = "type", rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -84,6 +86,7 @@ impl From<EditorGridNodeEntity> for EditorGridNode {
     }
 }
 
+/// @category Type
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -116,6 +119,7 @@ impl From<EditorGridStateEntity> for EditorGridState {
     }
 }
 
+/// @category Type
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]

@@ -3,6 +3,7 @@ use nanoid::nanoid;
 use serde::{Deserialize, Serialize};
 use std::{fmt::Display, sync::Arc};
 
+/// @category Primitive
 #[derive(Clone, Debug, PartialEq, Hash, Eq, Deref, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct VariableId(Arc<String>);
@@ -30,6 +31,7 @@ impl Display for VariableId {
     }
 }
 
+/// @category Primitive
 #[derive(Clone, Debug, PartialEq, Hash, Eq, Deref, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct EnvironmentId(Arc<String>);

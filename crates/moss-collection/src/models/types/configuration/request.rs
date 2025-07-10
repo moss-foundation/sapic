@@ -7,6 +7,7 @@ use crate::models::types::configuration::HttpRequestParts;
 // ###                      Item                         ###
 // #########################################################
 
+/// @category Type
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -14,6 +15,7 @@ pub struct ItemHttpRequestConfiguration {
     pub request_parts: HttpRequestParts,
 }
 
+/// @category Type
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -25,12 +27,14 @@ pub enum ItemRequestConfigurationModel {
 // ###                      Dir                          ###
 // #########################################################
 
+/// @category Type
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 // #[serde(rename_all = "snake_case")]
 // #[ts(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct DirHttpConfigurationModel {}
 
+/// @category Type
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]

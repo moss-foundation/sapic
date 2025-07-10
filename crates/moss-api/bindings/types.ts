@@ -6,6 +6,7 @@
  * This struct provides configurable parameters that affect the behavior of API operations,
  * particularly timeout handling for asynchronous operations. It is commonly used with
  * the `with_timeout` utility function to wrap async operations with configurable timeouts.
+ * @category Type
  */
 export type Options = {
   /**
