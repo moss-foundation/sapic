@@ -6,13 +6,21 @@ import { CollectionTree, InputPlain } from "@/components";
 import { useStreamedCollections } from "@/hooks";
 import { useCollectionsTrees } from "@/hooks/collection/derivedHooks/useCollectionsTrees";
 import { useCreateCollection } from "@/hooks/collection/useCreateCollection";
+import { useCreateCollectionEntry } from "@/hooks/collection/useCreateCollectionEntry";
+import { useDeleteCollectionEntry } from "@/hooks/collection/useDeleteCollectionEntry";
 import { Icon, Scrollbar } from "@/lib/ui";
 import { useRequestModeStore } from "@/store/requestMode";
 import { cn } from "@/utils";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { join } from "@tauri-apps/api/path";
 
 import { useHandleCollectionsDragAndDrop } from "./CollectionTree/hooks/useHandleCollectionsDragAndDrop";
-import { getAllNestedEntries, getSourceTreeNodeData, isSourceTreeNode } from "./CollectionTree/utils2";
+import {
+  convertEntryInfoToCreateInput,
+  getAllNestedEntries,
+  getSourceTreeNodeData,
+  isSourceTreeNode,
+} from "./CollectionTree/utils2";
 
 export const CollectionTreeView = () => {
   const dropTargetToggleRef = useRef<HTMLDivElement>(null);
@@ -84,6 +92,8 @@ const CollectionCreationZone = () => {
   const [canDrop, setCanDrop] = useState<boolean | null>(null);
 
   const { mutateAsync: createCollection } = useCreateCollection();
+  const { mutateAsync: createCollectionEntry } = useCreateCollectionEntry();
+  const { mutateAsync: deleteCollectionEntry } = useDeleteCollectionEntry();
   const { data: collections } = useStreamedCollections();
 
   useEffect(() => {
@@ -117,15 +127,55 @@ const CollectionCreationZone = () => {
         if (entries.length === 0) return;
 
         const rootEntry = entries[0];
+        const nestedEntries = entries.slice(1);
 
         const newCollection = await createCollection({
           name: rootEntry.name,
           order: (collections?.length ?? 0) + 1,
           repo: sourceTarget.repository ?? undefined,
         });
+
+        try {
+          for (const entry of entries) {
+            await deleteCollectionEntry({
+              collectionId: sourceTarget.collectionId,
+              input: { id: entry.id },
+            });
+          }
+        } catch (error) {
+          console.error("Error during collection creation:", error);
+        }
+
+        try {
+          for (const [index, entry] of nestedEntries.entries()) {
+            const rootEntryName = rootEntry.name;
+            let adjustedSegments = entry.path.segments;
+
+            const rootNameIndex = adjustedSegments.findIndex((segment) => segment === rootEntryName);
+            if (rootNameIndex !== -1) {
+              adjustedSegments = [
+                ...adjustedSegments.slice(0, rootNameIndex),
+                ...adjustedSegments.slice(rootNameIndex + 1),
+              ];
+            }
+
+            const parentSegments = adjustedSegments.slice(0, -1);
+            const parentPath = parentSegments.length > 0 ? await join(...parentSegments) : "";
+
+            const createInput = convertEntryInfoToCreateInput(entry, parentPath);
+            createInput[entry.kind === "Dir" ? "dir" : "item"].order = index + 1;
+
+            await createCollectionEntry({
+              collectionId: newCollection.id,
+              input: createInput,
+            });
+          }
+        } catch (error) {
+          console.error("Error during collection creation:", error);
+        }
       },
     });
-  }, [collections?.length, createCollection]);
+  }, [collections?.length, createCollection, createCollectionEntry, deleteCollectionEntry]);
 
   return (
     <div
