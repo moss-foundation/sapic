@@ -6,6 +6,7 @@ export * from "./appState/useUpdateSidebarPartState";
 
 export * from "./colorTheme/useListColorThemes";
 export * from "./colorTheme/useSetColorTheme";
+export * from "./colorTheme/useGetColorTheme";
 
 export * from "./locales/useListLocales";
 export * from "./locales/useSetLocale";

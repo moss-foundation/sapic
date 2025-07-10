@@ -1,12 +1,11 @@
-import { useDescribeAppState, useWorkspaceMapping } from "@/hooks";
+import { useWorkspaceMapping } from "@/hooks";
 import { WorkspaceInfo } from "@repo/moss-app";
 
 export const useActiveWorkspace = (): WorkspaceInfo | null => {
-  const { data: appState } = useDescribeAppState();
-  const { getWorkspaceById } = useWorkspaceMapping();
+  const { workspaces } = useWorkspaceMapping();
 
-  const activeWorkspaceId = appState?.lastWorkspace || null;
-  const activeWorkspace = activeWorkspaceId ? getWorkspaceById(activeWorkspaceId) || null : null;
+  // Find the workspace that is marked as active
+  const activeWorkspace = workspaces.find((workspace) => workspace.active) || null;
 
   return activeWorkspace;
 };

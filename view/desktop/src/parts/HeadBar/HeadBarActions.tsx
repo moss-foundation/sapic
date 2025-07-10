@@ -34,10 +34,10 @@ export const useUserMenuActions = (props: HeadBarActionProps) => {
   const { setSelectedUser } = props;
 
   return (action: string) => {
-    console.log(`User action: ${action}`);
     if (action === "sign-in" || action === "user-profile") {
       setSelectedUser?.("Selected User");
     }
+    return;
   };
 };
 
@@ -48,10 +48,10 @@ export const useGitMenuActions = (props: HeadBarActionProps) => {
   const { setSelectedBranch } = props;
 
   return (action: string) => {
-    console.log(`Git action: ${action}`);
     if (action === "main" || action === "master") {
       setSelectedBranch?.(action);
     }
+    return;
   };
 };
 
@@ -61,6 +61,7 @@ export const useGitMenuActions = (props: HeadBarActionProps) => {
 export const useWindowsMenuActions = () => {
   return (action: string) => {
     console.log(`Windows menu action: ${action}`);
+    return;
   };
 };
 
@@ -93,11 +94,10 @@ export const useCollectionActions = (props: HeadBarActionProps) => {
   };
 
   const handleCollectionActionMenuAction = (action: string) => {
-    console.log(`Collection action: ${action}`);
-
     if (action === "rename") {
       startRenameCollection();
     }
+    return;
   };
 
   return {
@@ -127,8 +127,6 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
   const activeWorkspace = useActiveWorkspace();
 
   return (action: string) => {
-    console.log(`Workspace action: ${action}`);
-
     if (action.startsWith("workspace:")) {
       const workspaceId = extractWorkspaceId(action);
       openWorkspace(workspaceId);
@@ -140,11 +138,11 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
     );
     if (workspaceAction) {
       const [, workspaceId, actionType] = workspaceAction;
-      console.log(`Workspace action for ${workspaceId}: ${actionType}`);
 
       const generalActions = ["new", "open", "kitchensink", "logs", "debug", "separator"];
       if (generalActions.includes(workspaceId)) {
         console.log(`Skipping false match - "${workspaceId}" is a general action keyword`);
+        return;
       } else {
         if (actionType === "delete") {
           const workspace = getWorkspaceById(workspaceId);
@@ -205,5 +203,6 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
     } else {
       console.log(`Unhandled workspace action: ${action}`);
     }
+    return;
   };
 };

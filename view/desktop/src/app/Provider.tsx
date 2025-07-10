@@ -3,7 +3,9 @@ import { ReactNode, useEffect } from "react";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { useDescribeAppState } from "@/hooks/appState/useDescribeAppState";
 import { applyLanguagePack } from "@/utils/applyLanguagePack";
-import { applyColorTheme } from "@/utils/applyTheme";
+import { applyColorThemeFromCache } from "@/utils/applyTheme";
+import { initializeI18n } from "@/app/i18n";
+import { useQueryClient } from "@tanstack/react-query";
 
 import LanguageProvider from "./LanguageProvider";
 import ThemeProvider from "./ThemeProvider";
@@ -22,6 +24,7 @@ const Provider = ({ children }: { children: ReactNode }) => {
 
 const useInitializeAppState = () => {
   const { data } = useDescribeAppState();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (data) {
@@ -30,10 +33,15 @@ const useInitializeAppState = () => {
 
       document.querySelector("html")?.setAttribute("data-theme", theme.mode);
 
-      applyColorTheme(theme.identifier);
-      applyLanguagePack(languagePack);
+      applyColorThemeFromCache(theme.identifier, queryClient);
+
+      initializeI18n(languagePack.code)
+        .then(() => {
+          applyLanguagePack(languagePack).catch(console.error);
+        })
+        .catch(console.error);
     }
-  }, [data]);
+  }, [data, queryClient]);
 };
 
 export default Provider;

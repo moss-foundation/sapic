@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { InputOutlined } from "@/components";
+import { VALID_NAME_PATTERN } from "@/constants/validation";
 import { DeleteCollectionModal } from "@/components/Modals/Collection/DeleteCollectionModal";
 import { useModal, useStreamedCollections, useUpdateCollection } from "@/hooks";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
@@ -82,6 +83,7 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
                   }
                 }}
                 placeholder="Enter collection name..."
+                pattern={VALID_NAME_PATTERN}
                 className="w-72 border-(--moss-input-border)"
               />
               <p className="mt-1 w-72 text-sm text-(--moss-secondary-text)">
