@@ -282,12 +282,10 @@ async fn create_collection_with_icon() {
     let collection_path = create_collection_output.abs_path;
     assert!(collection_path.exists());
 
+    let collection_service = services.get::<CollectionService>();
+
     // Verify that the icon is stored in the assets folder
-    let collection = workspace
-        .service::<CollectionService>()
-        .collection(&id)
-        .await
-        .unwrap();
+    let collection = collection_service.collection(&id).await.unwrap();
     assert!(collection.icon_path().is_some());
 
     // Verify the db entries were created

@@ -225,7 +225,7 @@ async fn update_collection_repo() {
 
 #[tokio::test]
 async fn update_collection_new_icon() {
-    let (ctx, workspace_path, mut workspace, _services, cleanup) = setup_test_workspace().await;
+    let (ctx, workspace_path, mut workspace, services, cleanup) = setup_test_workspace().await;
     let collection_name = random_collection_name();
     let id = workspace
         .create_collection(
@@ -262,11 +262,9 @@ async fn update_collection_new_icon() {
         .unwrap();
 
     // Verify the icon is generated
-    let collection = workspace
-        .service::<CollectionService>()
-        .collection(&id)
-        .await
-        .unwrap();
+    let collection_service = services.get::<CollectionService>();
+
+    let collection = collection_service.collection(&id).await.unwrap();
     assert!(collection.icon_path().is_some());
 
     cleanup().await;
@@ -274,7 +272,7 @@ async fn update_collection_new_icon() {
 
 #[tokio::test]
 async fn update_collection_remove_icon() {
-    let (ctx, workspace_path, mut workspace, _services, cleanup) = setup_test_workspace().await;
+    let (ctx, workspace_path, mut workspace, services, cleanup) = setup_test_workspace().await;
     let collection_name = random_collection_name();
 
     let icon_path = workspace_path.join("test_icon.png");
@@ -312,11 +310,9 @@ async fn update_collection_remove_icon() {
         .unwrap();
 
     // Verify the icon is removed
-    let collection = workspace
-        .service::<CollectionService>()
-        .collection(&id)
-        .await
-        .unwrap();
+    let collection_service = services.get::<CollectionService>();
+
+    let collection = collection_service.collection(&id).await.unwrap();
     assert!(collection.icon_path().is_none());
     cleanup().await;
 }
