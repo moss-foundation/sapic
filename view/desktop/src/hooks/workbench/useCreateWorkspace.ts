@@ -48,7 +48,7 @@ export const useCreateWorkspace = () => {
           if (oldData) {
             return {
               ...oldData,
-              lastWorkspace: data.id,
+              prevWorkspaceId: data.id,
             };
           }
           return oldData;
