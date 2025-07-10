@@ -54,11 +54,9 @@ export const Modal = ({
             "max-w-[436px]": size === "small",
             "max-w-[544px]": size === "medium",
           },
+          "mx-auto mt-[9%] flex max-w-[544px] min-w-64 flex-col rounded-lg shadow-[0px_8px_40px_rgba(0,0,0,0.3)] transition-[display,opacity] transition-discrete duration-100 select-none backdrop:opacity-0 starting:opacity-0",
           className
         )}
-        onMouseDown={(e) => {
-          e.stopPropagation();
-        }}
       >
         {children}
       </dialog>

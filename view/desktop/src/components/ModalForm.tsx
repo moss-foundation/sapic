@@ -6,6 +6,7 @@ interface ModalFormProps extends ModalProps {
   content?: React.ReactNode;
   footer?: React.ReactNode;
   onSubmit?: (e: React.FormEvent<HTMLFormElement>) => void;
+  onBackdropClick?: () => void;
   titleClassName?: string;
   footerClassName?: string;
   size?: "small" | "medium";

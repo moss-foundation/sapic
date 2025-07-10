@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 
 import { RadioGroup } from "@/components";
-import { VALID_NAME_PATTERN } from "@/constants/validation";
 import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
 import ButtonPrimary from "@/components/ButtonPrimary";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import InputOutlined from "@/components/InputOutlined";
 import { ModalForm } from "@/components/ModalForm";
+import { VALID_NAME_PATTERN } from "@/constants/validation";
 import { useCreateCollection } from "@/hooks/collection/useCreateCollection";
 import { useStreamedCollections } from "@/hooks/collection/useStreamedCollections";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
