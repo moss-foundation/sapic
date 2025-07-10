@@ -40,7 +40,7 @@ export const deleteWorkspaceOutputSchema = z.object({
 });
 
 export const describeWorkbenchStateOutputSchema = z.object({
-  prevWorkspaceId: z.string().nullable(),
+  prevWorkspaceId: z.string().optional(),
 });
 
 export const getColorThemeInputSchema = z.object({
@@ -65,7 +65,7 @@ export const openWorkspaceOutputSchema = z.object({
 });
 
 export const updateWorkspaceInputSchema = z.object({
-  name: z.string().nullable(),
+  name: z.string().optional(),
 });
 export const batchDeleteLogOutputSchema = z.object({
   deletedEntries: z.array(logItemSourceInfoSchema),
