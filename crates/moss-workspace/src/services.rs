@@ -116,7 +116,6 @@ pub trait AnyLayoutService: Send + Sync + ServiceMarker + 'static {
 }
 
 #[derive(Deref)]
-
 pub struct DynLayoutService(Arc<dyn AnyLayoutService>);
 
 impl DynLayoutService {

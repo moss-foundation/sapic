@@ -3,7 +3,7 @@ use crate::{
     constants::COLLECTION_ICON_FILENAME,
     dirs::ASSETS_DIR,
     manifest::ManifestModel,
-    services::set_icon::{SetIconService, constants::ICON_SIZE},
+    services::set_icon_service::{SetIconService, constants::ICON_SIZE},
 };
 use anyhow::Result;
 use moss_applib::{

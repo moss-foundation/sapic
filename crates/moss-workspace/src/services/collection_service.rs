@@ -1,3 +1,9 @@
+use crate::{
+    dirs,
+    models::primitives::CollectionId,
+    services::{AnyCollectionService, AnyStorageService, DynStorageService},
+    storage::segments::SEGKEY_COLLECTION,
+};
 use anyhow::{Context as _, Result};
 use async_trait::async_trait;
 use derive_more::{Deref, DerefMut};
@@ -8,6 +14,8 @@ use moss_collection::{
     Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
     builder::{CollectionCreateParams, CollectionLoadParams},
     services::{
+        DynStorageService as DynCollectionStorageService,
+        DynWorktreeService as DynCollectionWorktreeService, DynWorktreeService,
         StorageService as CollectionStorageService, WorktreeService as CollectionWorktreeService,
     },
 };
@@ -21,13 +29,6 @@ use std::{
 };
 use thiserror::Error;
 use tokio::sync::RwLock;
-
-use crate::{
-    dirs,
-    models::primitives::CollectionId,
-    services::{AnyCollectionService, AnyStorageService, DynStorageService},
-    storage::segments::SEGKEY_COLLECTION,
-};
 
 #[derive(Error, Debug)]
 pub enum CollectionError {
@@ -167,13 +168,24 @@ impl AnyCollectionService for CollectionService {
             .context("Failed to create the collection directory")?;
 
         let collection = {
-            let storage = Arc::new(CollectionStorageService::new(&abs_path)?);
-            let worktree =
-                CollectionWorktreeService::new(abs_path.clone(), self.fs.clone(), storage.clone());
+            let storage_service: Arc<DynCollectionStorageService> = {
+                let storage: Arc<CollectionStorageService> =
+                    CollectionStorageService::new(&abs_path)?.into();
+                DynCollectionStorageService::new(storage)
+            };
+            let worktree_service: Arc<DynCollectionWorktreeService> = {
+                let worktree: Arc<CollectionWorktreeService> = CollectionWorktreeService::new(
+                    abs_path.clone(),
+                    self.fs.clone(),
+                    storage_service.clone(),
+                )
+                .into();
+                DynCollectionWorktreeService::new(worktree)
+            };
 
             CollectionBuilder::new(self.fs.clone())
-                .with_service::<CollectionStorageService>(storage)
-                .with_service(worktree)
+                .with_service::<DynCollectionStorageService>(storage_service)
+                .with_service::<DynCollectionWorktreeService>(worktree_service)
                 .create(CollectionCreateParams {
                     name: Some(params.name.to_owned()),
                     internal_abs_path: abs_path.clone(),
@@ -405,15 +417,25 @@ async fn restore_collections(
 
         let collection = {
             let collection_abs_path: Arc<Path> = entry.path().to_owned().into();
-            let storage = Arc::new(CollectionStorageService::new(&collection_abs_path)?);
-            let worktree = CollectionWorktreeService::new(
-                collection_abs_path.clone(),
-                fs.clone(),
-                storage.clone(),
-            );
+
+            let storage_service: Arc<DynCollectionStorageService> = {
+                let storage: Arc<CollectionStorageService> =
+                    CollectionStorageService::new(&collection_abs_path)?.into();
+                DynCollectionStorageService::new(storage)
+            };
+            let worktree_service: Arc<DynCollectionWorktreeService> = {
+                let worktree: Arc<CollectionWorktreeService> = CollectionWorktreeService::new(
+                    collection_abs_path.clone(),
+                    fs.clone(),
+                    storage_service.clone(),
+                )
+                .into();
+                DynWorktreeService::new(worktree)
+            };
+
             CollectionBuilder::new(fs.clone())
-                .with_service::<CollectionStorageService>(storage)
-                .with_service(worktree)
+                .with_service::<DynCollectionStorageService>(storage_service)
+                .with_service::<DynCollectionWorktreeService>(worktree_service)
                 .load(CollectionLoadParams {
                     internal_abs_path: collection_abs_path,
                 })

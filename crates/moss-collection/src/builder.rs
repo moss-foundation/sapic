@@ -30,7 +30,8 @@ use crate::{
         },
     },
     services::{
-        set_icon::{SetIconService, constants::ICON_SIZE},
+        AnyWorktreeService, DynWorktreeService,
+        set_icon_service::{SetIconService, constants::ICON_SIZE},
         worktree_service::{EntryMetadata, WorktreeService},
     },
 };
@@ -115,7 +116,7 @@ impl CollectionBuilder {
             .into();
 
         let services: ServiceProvider = self.services.into();
-        let worktree_service = services.get::<WorktreeService>();
+        let worktree_service = services.get::<DynWorktreeService>();
 
         for (dir, order) in &WORKTREE_DIRS {
             let id = EntryId::new();
@@ -139,7 +140,7 @@ impl CollectionBuilder {
                 .create_dir_entry(
                     &id,
                     dir,
-                    COLLECTION_ROOT_PATH,
+                    Path::new(COLLECTION_ROOT_PATH),
                     configuration,
                     EntryMetadata {
                         order: *order,

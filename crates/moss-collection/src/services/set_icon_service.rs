@@ -1,5 +1,6 @@
 use anyhow::Result;
 use image::{GenericImageView, imageops::FilterType};
+use moss_applib::ServiceMarker;
 use std::path::Path;
 
 // FIXME: This either shouldn’t be public or should be moved to `lib.rs`.
@@ -10,7 +11,7 @@ pub mod constants {
 pub struct SetIconService {}
 
 impl SetIconService {
-    pub fn set_icon(img_path: &Path, output_path: &Path, icon_size: u32) -> Result<()> {
+    pub(crate) fn set_icon(img_path: &Path, output_path: &Path, icon_size: u32) -> Result<()> {
         let img = image::open(img_path)?;
         let (w, h) = img.dimensions();
 

@@ -1,4 +1,5 @@
 use anyhow::anyhow;
+use async_trait::async_trait;
 use derive_more::{Deref, DerefMut};
 use moss_applib::ServiceMarker;
 use moss_common::{api::OperationError, continue_if_err, continue_if_none};
@@ -26,7 +27,7 @@ use crate::{
         primitives::{EntryClass, EntryId, EntryKind, EntryProtocol},
         types::configuration::docschema::{RawDirConfiguration, RawItemConfiguration},
     },
-    services::storage_service::StorageService,
+    services::{AnyWorktreeService, DynStorageService, storage_service::StorageService},
     storage::segments,
 };
 
@@ -237,23 +238,14 @@ struct WorktreeState {
 pub struct WorktreeService {
     abs_path: Arc<Path>,
     fs: Arc<dyn FileSystem>,
+    storage: Arc<DynStorageService>,
     state: Arc<RwLock<WorktreeState>>,
-    storage: Arc<StorageService>, // TODO: should be a trait
 }
 
 impl ServiceMarker for WorktreeService {}
-
-impl WorktreeService {
-    pub fn new(abs_path: Arc<Path>, fs: Arc<dyn FileSystem>, storage: Arc<StorageService>) -> Self {
-        Self {
-            abs_path,
-            fs,
-            storage,
-            state: Default::default(),
-        }
-    }
-
-    pub fn absolutize(&self, path: &Path) -> WorktreeResult<PathBuf> {
+#[async_trait]
+impl AnyWorktreeService for WorktreeService {
+    fn absolutize(&self, path: &Path) -> WorktreeResult<PathBuf> {
         debug_assert!(path.is_relative());
 
         if path
@@ -273,7 +265,7 @@ impl WorktreeService {
         }
     }
 
-    pub async fn remove_entry(&self, id: &EntryId) -> WorktreeResult<()> {
+    async fn remove_entry(&self, id: &EntryId) -> WorktreeResult<()> {
         let mut state_lock = self.state.write().await;
         let entry = state_lock
             .entries
@@ -310,7 +302,7 @@ impl WorktreeService {
         Ok(())
     }
 
-    pub async fn scan(
+    async fn scan(
         &self,
         path: &Path,
         expanded_entries: Arc<HashSet<EntryId>>,
@@ -468,15 +460,14 @@ impl WorktreeService {
         Ok(())
     }
 
-    pub async fn create_item_entry(
+    async fn create_item_entry(
         &self,
         id: &EntryId,
         name: &str,
-        path: impl AsRef<Path>,
+        path: &Path,
         configuration: RawItemConfiguration,
         metadata: EntryMetadata,
     ) -> WorktreeResult<()> {
-        let path = path.as_ref();
         debug_assert!(path.is_relative());
 
         if !is_parent_a_dir_entry(self.abs_path.as_ref(), path) {
@@ -529,15 +520,14 @@ impl WorktreeService {
         Ok(())
     }
 
-    pub async fn create_dir_entry(
+    async fn create_dir_entry(
         &self,
         id: &EntryId,
         name: &str,
-        path: impl AsRef<Path>,
+        path: &Path,
         configuration: RawDirConfiguration,
         metadata: EntryMetadata,
     ) -> WorktreeResult<()> {
-        let path = path.as_ref();
         debug_assert!(path.is_relative());
 
         if !is_parent_a_dir_entry(self.abs_path.as_ref(), path) {
@@ -589,7 +579,7 @@ impl WorktreeService {
         Ok(())
     }
 
-    pub async fn update_dir_entry(
+    async fn update_dir_entry(
         &self,
         id: &EntryId,
         params: ModifyParams,
@@ -674,7 +664,7 @@ impl WorktreeService {
         Ok((path, configuration))
     }
 
-    pub async fn update_item_entry(
+    async fn update_item_entry(
         &self,
         id: &EntryId,
         params: ModifyParams,
@@ -779,7 +769,24 @@ impl WorktreeService {
 
         Ok((path, configuration))
     }
+}
 
+impl WorktreeService {
+    pub fn new(
+        abs_path: Arc<Path>,
+        fs: Arc<dyn FileSystem>,
+        storage: Arc<DynStorageService>,
+    ) -> Self {
+        Self {
+            abs_path,
+            fs,
+            storage,
+            state: Default::default(),
+        }
+    }
+}
+
+impl WorktreeService {
     async fn create_entry(
         &self,
         path: &SanitizedPath,
