@@ -8,7 +8,7 @@ use moss_workspace::{
         primitives::SidebarPosition,
         types::{PanelPartStateInfo, SidebarPartStateInfo},
     },
-    services::storage_service::test_service_repr::TestStorageService,
+    services::storage_service::impl_for_integration_test::StorageServiceForIntegrationTest,
     storage::segments::{SEGKEY_LAYOUT_PANEL, SEGKEY_LAYOUT_SIDEBAR},
 };
 
@@ -41,7 +41,7 @@ async fn update_state_sidebar_part() {
     );
 
     // Verify the database is updated with individual keys
-    let storage_service = services.get::<TestStorageService>();
+    let storage_service = services.get::<StorageServiceForIntegrationTest>();
     let item_store = storage_service.storage().item_store();
 
     // Check position
@@ -85,7 +85,7 @@ async fn update_state_panel_part() {
     assert_eq!(describe_state_output.panel.unwrap(), panel_state);
 
     // Verify the database is updated with individual keys
-    let storage_service = services.get::<TestStorageService>();
+    let storage_service = services.get::<StorageServiceForIntegrationTest>();
     let item_store = storage_service.storage().item_store();
 
     // Check size
@@ -136,7 +136,7 @@ async fn update_state_multiple_updates() {
     assert_eq!(describe_state_output.panel.unwrap(), panel_state);
 
     // Verify the database is updated with individual keys
-    let storage_service = services.get::<TestStorageService>();
+    let storage_service = services.get::<StorageServiceForIntegrationTest>();
     let item_store = storage_service.storage().item_store();
 
     // Check sidebar values
@@ -248,7 +248,7 @@ async fn update_state_overwrite_existing() {
     let _ = update_sidebar_result.unwrap();
 
     // Verify initial state in database
-    let storage_service = services.get::<TestStorageService>();
+    let storage_service = services.get::<StorageServiceForIntegrationTest>();
     let item_store = storage_service.storage().item_store();
     let initial_size: usize = GetItem::get(item_store.as_ref(), SEGKEY_LAYOUT_SIDEBAR.join("size"))
         .unwrap()

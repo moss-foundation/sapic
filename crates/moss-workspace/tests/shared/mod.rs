@@ -24,7 +24,9 @@ use moss_workspace::{
         DynStorageService,
         collection_service::CollectionService,
         layout_service::LayoutService,
-        storage_service::{StorageService, test_service_repr::TestStorageService},
+        storage_service::{
+            StorageService, impl_for_integration_test::StorageServiceForIntegrationTest,
+        },
     },
     storage::segments::SEGKEY_COLLECTION,
 };
@@ -69,8 +71,8 @@ pub async fn setup_test_workspace() -> (
 
     let activity_indicator = ActivityIndicator::new(app_handle.clone());
 
-    let storage_service: Arc<TestStorageService> =
-        TestStorageService::from(StorageService::new(&abs_path).unwrap()).into();
+    let storage_service: Arc<StorageServiceForIntegrationTest> =
+        StorageServiceForIntegrationTest::from(StorageService::new(&abs_path).unwrap()).into();
     let storage_service_dyn: Arc<DynStorageService> =
         DynStorageService::new(storage_service.clone());
 
@@ -88,7 +90,10 @@ pub async fn setup_test_workspace() -> (
 
     {
         services.insert(TypeId::of::<LayoutService>(), layout_service.clone());
-        services.insert(TypeId::of::<TestStorageService>(), storage_service.clone());
+        services.insert(
+            TypeId::of::<StorageServiceForIntegrationTest>(),
+            storage_service.clone(),
+        );
         services.insert(
             TypeId::of::<CollectionService>(),
             collection_service.clone(),

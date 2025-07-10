@@ -1,5 +1,5 @@
 #[cfg(any(test, feature = "integration-tests"))]
-pub mod test_service_repr;
+pub mod impl_for_integration_test;
 
 use anyhow::{Context as _, Result};
 use moss_applib::ServiceMarker;

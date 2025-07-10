@@ -13,11 +13,11 @@ use crate::{
     storage::entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity},
 };
 
-pub struct TestStorageService {
+pub struct StorageServiceForIntegrationTest {
     real: Arc<StorageService>,
 }
 
-impl TestStorageService {
+impl StorageServiceForIntegrationTest {
     pub fn storage(&self) -> &Arc<dyn WorkspaceStorage> {
         &self.real.storage
     }
@@ -27,9 +27,9 @@ impl TestStorageService {
     }
 }
 
-impl ServiceMarker for TestStorageService {}
+impl ServiceMarker for StorageServiceForIntegrationTest {}
 
-impl From<StorageService> for TestStorageService {
+impl From<StorageService> for StorageServiceForIntegrationTest {
     fn from(real: StorageService) -> Self {
         Self {
             real: Arc::new(real),
@@ -37,7 +37,7 @@ impl From<StorageService> for TestStorageService {
     }
 }
 
-impl AnyStorageService for TestStorageService {
+impl AnyStorageService for StorageServiceForIntegrationTest {
     fn begin_write(&self) -> anyhow::Result<Transaction> {
         self.real.begin_write()
     }
