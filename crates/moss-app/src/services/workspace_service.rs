@@ -310,16 +310,6 @@ impl<R: TauriRuntime> WorkspaceService<R> {
         })
     }
 
-    // TODO: remove this after we remove the describe_workbench_state api
-    pub(crate) async fn workspace(&self) -> Option<Arc<Workspace<R>>> {
-        let state_lock = self.state.read().await;
-        if state_lock.active_workspace.is_none() {
-            return None;
-        }
-
-        Some(state_lock.active_workspace.as_ref()?.handle.clone())
-    }
-
     pub async fn workspace_with_context(
         &self,
         app_handle: AppHandle<R>,

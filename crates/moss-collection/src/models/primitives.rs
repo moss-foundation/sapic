@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::{fmt::Display, path::PathBuf, sync::Arc};
 use ts_rs::TS;
 
+/// @category Primitive
 #[derive(Clone, Debug, PartialEq, Hash, Eq, Deref, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct EntryId(Arc<String>);
@@ -31,6 +32,7 @@ impl Display for EntryId {
     }
 }
 
+/// @category Primitive
 #[derive(Debug, Clone, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "primitives.ts")]
@@ -50,6 +52,7 @@ impl EntryPath {
     }
 }
 
+/// @category Primitive
 #[derive(Clone, Debug, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "primitives.ts")]
 pub enum EntryClass {
@@ -70,6 +73,7 @@ impl ToString for EntryClass {
     }
 }
 
+/// @category Primitive
 #[derive(Clone, Debug, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "primitives.ts")]
 pub enum EntryKind {
@@ -78,6 +82,7 @@ pub enum EntryKind {
     Case,
 }
 
+/// @category Primitive
 #[derive(Clone, Debug, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "primitives.ts")]
 pub enum EntryProtocol {
@@ -101,6 +106,7 @@ impl From<&HttpMethod> for EntryProtocol {
     }
 }
 
+/// @category Primitive
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "primitives.ts")]
 pub enum HttpMethod {

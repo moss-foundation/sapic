@@ -80,7 +80,6 @@ export const createWorkspaceInputSchema = z.object({
 export const describeAppStateOutputSchema = z.object({
   preferences: preferencesSchema,
   defaults: defaultsSchema,
-  lastWorkspace: z.string().optional(),
   prevWorkspaceId: z.string().optional(),
 });
 

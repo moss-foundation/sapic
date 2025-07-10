@@ -7,6 +7,7 @@ use ts_rs::TS;
 
 use crate::models::{primitives::HttpMethod, types::configuration::docschema::RawMetadata};
 
+/// @category Type
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -21,6 +22,7 @@ pub enum Expression {
 // ###                      Metadata                    ###
 // ########################################################
 
+/// @category Type
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "snake_case")]
 #[ts(rename_all = "camelCase")]
@@ -48,6 +50,7 @@ impl From<Block<RawMetadata>> for ConfigurationMetadata {
 // ###                      HTTP                        ###
 // ########################################################
 
+/// @category Type
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -69,6 +72,7 @@ pub struct HttpRequestParts {
 
 // Query Parameter
 
+/// @category Type
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -76,6 +80,7 @@ pub struct QueryParamOptions {
     pub propagate: bool,
 }
 
+/// @category Type
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts", optional_fields)]
@@ -90,6 +95,7 @@ pub struct QueryParamItem {
 
 // Path Parameter
 
+/// @category Type
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -97,6 +103,7 @@ pub struct PathParamOptions {
     pub propagate: bool,
 }
 
+/// @category Type
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts", optional_fields)]
@@ -110,7 +117,7 @@ pub struct PathParamItem {
 }
 
 // Header Parameter
-
+/// @category Type
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -118,6 +125,7 @@ pub struct HeaderParamOptions {
     pub propagate: bool,
 }
 
+/// @category Type
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts", optional_fields)]
@@ -131,7 +139,7 @@ pub struct HeaderParamItem {
 }
 
 // Body
-
+/// @category Type
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, TS)]
 #[serde(rename_all = "snake_case")]
 #[ts(export, export_to = "types.ts")]
@@ -142,6 +150,7 @@ pub enum RawBodyType {
     Xml(String),
 }
 
+/// @category Type
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -149,6 +158,7 @@ pub struct FormDataOptions {
     pub propagate: bool,
 }
 
+/// @category Type
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -157,6 +167,7 @@ pub enum FormDataValue {
     File(PathBuf),
 }
 
+/// @category Type
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -171,6 +182,7 @@ pub struct FormDataItem {
     pub options: FormDataOptions,
 }
 
+/// @category Type
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -178,6 +190,7 @@ pub struct UrlEncodedOptions {
     pub propagate: bool,
 }
 
+/// @category Type
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -191,6 +204,7 @@ pub struct UrlEncodedItem {
     pub options: UrlEncodedOptions,
 }
 
+/// @category Type
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]

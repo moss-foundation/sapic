@@ -84,7 +84,6 @@ export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
           api.addPanel({
             id: panelType,
             component: panelType,
-            title: "panelType",
             renderer: "onlyWhenVisible",
           });
         } catch (error) {

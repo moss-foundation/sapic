@@ -5,6 +5,7 @@ use ts_rs::TS;
 // ###                      Item                         ###
 // #########################################################
 
+/// @category Type
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 // #[serde(rename_all = "snake_case")]
 // #[serde(rename_all = "camelCase")]
@@ -15,6 +16,7 @@ pub struct ComponentItemConfigurationModel {}
 // ###                      Dir                          ###
 // #########################################################
 
+/// @category Type
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 // #[serde(rename_all = "snake_case")]
 // #[serde(rename_all = "camelCase")]

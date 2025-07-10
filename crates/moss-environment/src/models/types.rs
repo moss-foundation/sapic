@@ -5,6 +5,7 @@ use ts_rs::TS;
 pub type VariableName = String;
 pub type EnvironmentName = String;
 
+/// @category Type
 #[derive(Clone, Debug, Deserialize, Serialize, TS, PartialEq, Eq)]
 #[ts(export, export_to = "types.ts")]
 pub enum VariableKind {
@@ -14,6 +15,7 @@ pub enum VariableKind {
     Default,
 }
 
+/// @category Type
 #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq, TS)]
 #[ts(export, export_to = "types.ts")]
 #[serde(untagged)]
@@ -39,6 +41,7 @@ impl TryFrom<JsonValue> for VariableValue {
     }
 }
 
+/// @category Type
 #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts", optional_fields)]

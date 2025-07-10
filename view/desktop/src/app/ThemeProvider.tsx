@@ -1,27 +1,27 @@
-import { ReactNode, useEffect } from "react";
+import { useEffect } from "react";
 
 import { USE_DESCRIBE_APP_STATE_QUERY_KEY } from "@/hooks/appState/useDescribeAppState";
-import { applyColorTheme } from "@/utils/applyTheme";
-import { ColorThemeChangeEventPayload } from "@repo/moss-app";
+import { applyColorThemeFromCache } from "@/utils/applyTheme";
+import { ColorThemeInfo } from "@repo/moss-app";
 import { useQueryClient } from "@tanstack/react-query";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 
-const ThemeProvider = ({ children }: { children: ReactNode }) => {
+const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
     let unlisten: UnlistenFn | undefined;
 
-    const handleColorThemeChanged = (event: { payload: ColorThemeChangeEventPayload }) => {
-      applyColorTheme(event.payload.id);
+    const handleThemeChange = (event: { payload: ColorThemeInfo }) => {
+      applyColorThemeFromCache(event.payload.identifier, queryClient);
       queryClient.invalidateQueries({ queryKey: [USE_DESCRIBE_APP_STATE_QUERY_KEY] });
     };
 
     const setupListener = async () => {
       try {
-        unlisten = await listen("core://color-theme-changed", handleColorThemeChanged);
+        unlisten = await listen("core://color-theme-changed", handleThemeChange);
       } catch (error) {
-        console.error("Failed to set up theme change listener:", error);
+        console.error("Failed to set up color theme change listener:", error);
       }
     };
 

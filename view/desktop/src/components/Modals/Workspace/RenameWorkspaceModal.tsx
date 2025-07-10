@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 
 import { InputOutlined } from "@/components";
+import { VALID_NAME_PATTERN } from "@/constants/validation";
 import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
 import ButtonPrimary from "@/components/ButtonPrimary";
 import { ModalForm } from "@/components/ModalForm";
@@ -84,6 +85,7 @@ export const RenameWorkspaceModal = ({ closeModal, showModal, currentName }: Ren
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Enter workspace name..."
+              pattern={VALID_NAME_PATTERN}
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
@@ -101,6 +103,7 @@ export const RenameWorkspaceModal = ({ closeModal, showModal, currentName }: Ren
                 e.target.select();
               }}
             />
+            <p className="mt-1 text-xs text-(--moss-secondary-text)">{`Invalid filename characters (e.g. / \\ : * ? " < > |) will be escaped`}</p>
           </div>
         </div>
       }

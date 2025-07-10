@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
 import { Modal } from "@/lib/ui/Modal";
@@ -15,6 +15,7 @@ interface ConfirmationModalProps {
   cancelLabel?: string;
   onConfirm: () => void;
   variant?: "warning" | "danger" | "info";
+  loading?: boolean;
 }
 
 export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -26,20 +27,43 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   confirmLabel = "OK",
   cancelLabel = "Cancel",
   onConfirm,
+  loading = false,
 }) => {
+  const [allowBackdropClick, setAllowBackdropClick] = useState(false);
+
+  useEffect(() => {
+    if (showModal) {
+      const timer = setTimeout(() => {
+        setAllowBackdropClick(true);
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+
+    setAllowBackdropClick(false);
+    return undefined;
+  }, [showModal]);
+
   const handleConfirm = () => {
+    if (loading) return;
     onConfirm();
-    closeModal();
   };
 
   const handleCancel = () => {
+    if (loading) return;
     closeModal();
+  };
+
+  const handleBackdropClick = () => {
+    if (!loading && allowBackdropClick) {
+      handleCancel();
+    }
   };
 
   return (
     <Modal
       showModal={showModal}
-      onBackdropClick={handleCancel}
+      onBackdropClick={loading ? undefined : handleBackdropClick}
       className="background-(--moss-primary-background) h-52 w-[27rem] overflow-hidden border border-(--moss-border-color) text-(--moss-primary-text)"
     >
       <div className="flex h-full flex-col">
@@ -65,8 +89,12 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         <div className="border-t border-(--moss-border-color)"></div>
 
         <div className="flex justify-end gap-3 px-6 py-4">
-          <ButtonNeutralOutlined onClick={handleCancel}>{cancelLabel}</ButtonNeutralOutlined>
-          <ButtonDanger onClick={handleConfirm}>{confirmLabel}</ButtonDanger>
+          <ButtonNeutralOutlined onClick={handleCancel} disabled={loading}>
+            {cancelLabel}
+          </ButtonNeutralOutlined>
+          <ButtonDanger onClick={handleConfirm} disabled={loading}>
+            {confirmLabel}
+          </ButtonDanger>
         </div>
       </div>
     </Modal>
