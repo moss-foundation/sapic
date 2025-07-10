@@ -1,7 +1,6 @@
 pub mod shared;
 
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
-use moss_collection::{constants::COLLECTION_ICON_FILENAME, dirs::ASSETS_DIR};
 use moss_common::api::OperationError;
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::{
@@ -235,7 +234,7 @@ async fn update_collection_repo() {
 async fn update_collection_new_icon() {
     let (ctx, workspace_path, mut workspace, _services, cleanup) = setup_test_workspace().await;
     let collection_name = random_collection_name();
-    let create_collection_output = workspace
+    let id = workspace
         .create_collection(
             &ctx,
             &CreateCollectionInput {
@@ -247,18 +246,17 @@ async fn update_collection_new_icon() {
             },
         )
         .await
-        .unwrap();
+        .unwrap()
+        .id;
 
     let icon_path = workspace_path.join("test_icon.png");
     generate_random_icon(&icon_path);
-
-    let collection_path = create_collection_output.abs_path;
 
     let _ = workspace
         .update_collection(
             &ctx,
             UpdateCollectionInput {
-                id: create_collection_output.id,
+                id: id.clone(),
                 name: None,
                 repository: None,
                 icon_path: Some(ChangePath::Update(icon_path.clone())),
@@ -271,12 +269,12 @@ async fn update_collection_new_icon() {
         .unwrap();
 
     // Verify the icon is generated
-    assert!(
-        collection_path
-            .join(ASSETS_DIR)
-            .join(COLLECTION_ICON_FILENAME)
-            .exists()
-    );
+    let collection = workspace
+        .service::<CollectionService>()
+        .collection(&id)
+        .await
+        .unwrap();
+    assert!(collection.icon_path().is_some(),);
 
     cleanup().await;
 }
@@ -289,7 +287,7 @@ async fn update_collection_remove_icon() {
     let icon_path = workspace_path.join("test_icon.png");
     generate_random_icon(&icon_path);
 
-    let create_collection_output = workspace
+    let id = workspace
         .create_collection(
             &ctx,
             &CreateCollectionInput {
@@ -301,15 +299,14 @@ async fn update_collection_remove_icon() {
             },
         )
         .await
-        .unwrap();
-
-    let collection_path = create_collection_output.abs_path;
+        .unwrap()
+        .id;
 
     let _ = workspace
         .update_collection(
             &ctx,
             UpdateCollectionInput {
-                id: create_collection_output.id,
+                id: id.clone(),
                 name: None,
                 repository: None,
                 icon_path: Some(ChangePath::Remove),
@@ -322,11 +319,11 @@ async fn update_collection_remove_icon() {
         .unwrap();
 
     // Verify the icon is removed
-    assert!(
-        !collection_path
-            .join(ASSETS_DIR)
-            .join(COLLECTION_ICON_FILENAME)
-            .exists()
-    );
+    let collection = workspace
+        .service::<CollectionService>()
+        .collection(&id)
+        .await
+        .unwrap();
+    assert!(collection.icon_path().is_none(),);
     cleanup().await;
 }
