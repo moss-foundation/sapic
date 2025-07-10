@@ -8,7 +8,7 @@ use moss_workspace::{
         operations::{CreateCollectionInput, DeleteCollectionInput},
         primitives::CollectionId,
     },
-    services::storage_service::test_service_repr::TestStorageService,
+    services::storage_service::impl_for_integration_test::StorageServiceForIntegrationTest,
     storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
 use tauri::ipc::Channel;
@@ -46,7 +46,7 @@ async fn delete_collection_success() {
     assert_eq!(output.total_returned, 0);
 
     // Check updating database - collection metadata should be removed
-    let storage_service = services.get::<TestStorageService>();
+    let storage_service = services.get::<StorageServiceForIntegrationTest>();
     let item_store = storage_service.storage().item_store();
 
     // Check that collection-specific entries are removed

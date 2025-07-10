@@ -10,7 +10,7 @@ use moss_workspace::{
     models::{operations::CreateCollectionInput, primitives::CollectionId},
     services::{
         AnyCollectionService, collection_service::CollectionService,
-        storage_service::test_service_repr::TestStorageService,
+        storage_service::impl_for_integration_test::StorageServiceForIntegrationTest,
     },
     storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
@@ -56,7 +56,7 @@ async fn create_collection_success() {
 
     // Verify the db entries were created
     let id = create_collection_output.id;
-    let storage_service = services.get::<TestStorageService>();
+    let storage_service = services.get::<StorageServiceForIntegrationTest>();
     let item_store = storage_service.storage().item_store();
 
     // Check order was stored
@@ -130,7 +130,7 @@ async fn create_collection_special_chars() {
 
         // Verify the db entries were created
         let id = create_collection_output.id;
-        let storage_service = services.get::<TestStorageService>();
+        let storage_service = services.get::<StorageServiceForIntegrationTest>();
         let item_store = storage_service.storage().item_store();
 
         // Check order was stored
@@ -183,7 +183,7 @@ async fn create_collection_with_order() {
 
     // Verify the db entries were created
     let id = create_collection_output.id;
-    let storage_service = services.get::<TestStorageService>();
+    let storage_service = services.get::<StorageServiceForIntegrationTest>();
     let item_store = storage_service.storage().item_store();
 
     // Check order was stored
@@ -240,7 +240,7 @@ async fn create_collection_with_repo() {
     );
 
     // Verify the db entries were created
-    let storage_service = services.get::<TestStorageService>();
+    let storage_service = services.get::<StorageServiceForIntegrationTest>();
     let item_store = storage_service.storage().item_store();
 
     // Check order was stored
@@ -299,7 +299,7 @@ async fn create_collection_with_icon() {
 
     // Verify the db entries were created
     let id = create_collection_output.id;
-    let storage_service = services.get::<TestStorageService>();
+    let storage_service = services.get::<StorageServiceForIntegrationTest>();
     let item_store = storage_service.storage().item_store();
 
     // Check order was stored
@@ -354,7 +354,7 @@ async fn create_multiple_collections_expanded_items() {
         .unwrap();
 
     // Check expanded_items contains both collection ids
-    let storage_service = services.get::<TestStorageService>();
+    let storage_service = services.get::<StorageServiceForIntegrationTest>();
     let item_store = storage_service.storage().item_store();
     let expanded_items_value =
         GetItem::get(item_store.as_ref(), SEGKEY_EXPANDED_ITEMS.to_segkey_buf()).unwrap();
