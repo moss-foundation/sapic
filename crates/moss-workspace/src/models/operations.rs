@@ -13,6 +13,7 @@ use crate::models::{primitives::CollectionId, types::EditorPartStateInfo};
 
 use super::types::{ActivitybarPartStateInfo, PanelPartStateInfo, SidebarPartStateInfo};
 
+/// @category Operation
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
@@ -28,6 +29,7 @@ pub struct CreateCollectionInput {
     pub icon_path: Option<PathBuf>,
 }
 
+/// @category Operation
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
@@ -49,6 +51,7 @@ pub struct CreateCollectionOutput {
     pub external_path: Option<PathBuf>,
 }
 
+/// @category Operation
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
@@ -80,6 +83,7 @@ fn validate_change_repository(repo: &ChangeString) -> Result<(), ValidationError
     }
 }
 
+/// @category Operation
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -88,6 +92,7 @@ pub struct UpdateCollectionOutput {
     pub id: CollectionId,
 }
 
+/// @category Operation
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -96,6 +101,7 @@ pub struct DeleteCollectionInput {
     pub id: CollectionId,
 }
 
+/// @category Operation
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -108,6 +114,7 @@ pub struct DeleteCollectionOutput {
     pub abs_path: Option<Arc<Path>>,
 }
 
+/// @category Operation
 #[derive(Debug, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -116,6 +123,7 @@ pub struct DescribeEnvironmentInput {
     pub id: CollectionId,
 }
 
+/// @category Operation
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -124,6 +132,7 @@ pub struct DescribeEnvironmentOutput {
     pub variables: Vec<VariableInfo>,
 }
 
+/// @category Operation
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
@@ -135,6 +144,7 @@ pub struct DescribeStateOutput {
     pub activitybar: Option<ActivitybarPartStateInfo>,
 }
 
+/// @category Operation
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -145,6 +155,7 @@ pub enum UpdateStateInput {
     UpdateActivitybarPartState(ActivitybarPartStateInfo),
 }
 
+/// @category Operation
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]

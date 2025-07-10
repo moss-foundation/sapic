@@ -12,6 +12,7 @@ use crate::models::{
     types::configuration::{CompositeDirConfigurationModel, CompositeItemConfigurationModel},
 };
 
+/// @category Type
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
@@ -29,6 +30,7 @@ pub struct EnvironmentInfo {
     pub order: Option<usize>,
 }
 
+/// @category Type
 #[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
@@ -49,6 +51,7 @@ pub struct UpdateItemEntryParams {
     pub expanded: Option<bool>,
 }
 
+/// @category Type
 #[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
@@ -68,6 +71,7 @@ pub struct UpdateDirEntryParams {
     pub expanded: Option<bool>,
 }
 
+/// @category Type
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -79,6 +83,7 @@ pub struct AfterUpdateDirEntryDescription {
     pub configuration: CompositeDirConfigurationModel,
 }
 
+/// @category Type
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -90,6 +95,7 @@ pub struct AfterUpdateItemEntryDescription {
     pub configuration: CompositeItemConfigurationModel,
 }
 
+/// @category Type
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]

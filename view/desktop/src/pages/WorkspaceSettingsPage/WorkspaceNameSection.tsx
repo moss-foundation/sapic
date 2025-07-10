@@ -1,4 +1,5 @@
 import { InputOutlined } from "@/components";
+import { VALID_NAME_PATTERN } from "@/constants/validation";
 
 interface WorkspaceNameProps {
   name: string;
@@ -25,6 +26,7 @@ export const WorkspaceNameSection = ({ name, setName, onBlur, onSave }: Workspac
               }
             }}
             placeholder="Enter workspace name..."
+            pattern={VALID_NAME_PATTERN}
             className="w-72 border-(--moss-input-border)"
           />
           <p className="mt-1 w-72 text-sm text-(--moss-secondary-text)">

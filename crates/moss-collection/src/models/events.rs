@@ -5,10 +5,12 @@ use crate::models::types::{AfterUpdateDirEntryDescription, AfterUpdateItemEntryD
 
 use super::types::EntryInfo;
 
+/// @category Event
 #[derive(Debug, Serialize, TS)]
 #[ts(export, export_to = "events.ts")]
 pub struct StreamEntriesEvent(pub EntryInfo);
 
+/// @category Event
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "events.ts")]

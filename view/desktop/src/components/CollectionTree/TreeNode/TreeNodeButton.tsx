@@ -91,7 +91,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
       });
     };
 
-    const handleClickOnDir = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const handleClickOnDir = (e: React.MouseEvent<HTMLDivElement>) => {
       e.stopPropagation();
       if (node.kind === "Item") {
         return;
@@ -149,7 +149,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                   isLastChild={isLastChild}
                 />
               )}
-              <button
+              <div
                 onClick={handleClickOnDir}
                 className={cn(
                   "hover:background-(--moss-icon-primary-background-hover) flex cursor-pointer items-center justify-center rounded-full text-(--moss-icon-primary-text)",
@@ -160,7 +160,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                 )}
               >
                 <Icon icon="ChevronRight" />
-              </button>
+              </div>
 
               <DebugCollectionIconPlaceholder protocol={node.protocol} type={node.kind} />
 

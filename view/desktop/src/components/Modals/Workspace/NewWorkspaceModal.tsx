@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { InputOutlined, RadioGroup } from "@/components";
+import { VALID_NAME_PATTERN } from "@/constants/validation";
 import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
 import ButtonPrimary from "@/components/ButtonPrimary";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
@@ -12,12 +13,14 @@ import { WorkspaceMode } from "@repo/moss-workspace";
 import { ModalWrapperProps } from "../types";
 
 export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) => {
-  const { mutate: createWorkspace } = useCreateWorkspace();
-  const { mutate: openWorkspace } = useOpenWorkspace();
+  const { mutate: createWorkspace, isPending: isCreating } = useCreateWorkspace();
+  const { mutate: openWorkspace, isPending: isOpening } = useOpenWorkspace();
 
   const [name, setName] = useState("");
   const [mode, setMode] = useState<WorkspaceMode>("REQUEST_FIRST");
   const [openAutomatically, setOpenAutomatically] = useState(true);
+
+  const isLoading = isCreating || isOpening;
 
   const handleSubmit = async () => {
     if (name) {
@@ -29,16 +32,31 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
         },
         {
           onSuccess: (data) => {
-            if (openAutomatically) {
-              openWorkspace(data.id);
+            // If user wanted auto-open but backend didn't open it, open manually
+            if (openAutomatically && !data.active) {
+              openWorkspace(data.id, {
+                onSuccess: () => {
+                  closeModal();
+                  reset();
+                },
+                onError: () => {
+                  closeModal();
+                  reset();
+                },
+              });
+            } else {
+              closeModal();
+              reset();
             }
+          },
+          onError: () => {
+            // Keep modal open on error so user can retry
           },
         }
       );
-      closeModal();
-      reset();
     }
   };
+
   const handleCancel = () => {
     closeModal();
     reset();
@@ -69,7 +87,7 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
               value={name}
               className="max-w-72"
               onChange={(e) => setName(e.target.value)}
-              pattern="^[^/:\\*?|]+$"
+              pattern={VALID_NAME_PATTERN}
               required
             />
             <p className="col-start-2 max-w-72 text-xs text-(--moss-secondary-text)">{`Invalid filename characters (e.g. / \ : * ? " < > |) will be escaped`}</p>
@@ -117,11 +135,11 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
             }}
           />
           <div className="flex gap-3 px-0.25 py-1.25">
-            <ButtonNeutralOutlined type="button" onClick={handleCancel}>
+            <ButtonNeutralOutlined type="button" onClick={handleCancel} disabled={isLoading}>
               Close
             </ButtonNeutralOutlined>
-            <ButtonPrimary disabled={name.length === 0} type="submit">
-              Create
+            <ButtonPrimary disabled={name.length === 0 || isLoading} type="submit">
+              {isLoading ? "Creating..." : "Create"}
             </ButtonPrimary>
           </div>
         </div>

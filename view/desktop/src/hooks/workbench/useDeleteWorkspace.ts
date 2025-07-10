@@ -28,9 +28,12 @@ export const useDeleteWorkspace = () => {
   return useMutation<DeleteWorkspaceOutput, Error, DeleteWorkspaceInput>({
     mutationKey: [USE_DELETE_WORKSPACE_MUTATION_KEY],
     mutationFn: async (input: DeleteWorkspaceInput) => {
-      // If deleting the currently active workspace, close it first
       if (activeWorkspace && activeWorkspace.id === input.id) {
-        await closeWorkspace(activeWorkspace.id);
+        try {
+          await closeWorkspace(activeWorkspace.id);
+        } catch (error) {
+          throw new Error(`Failed to close workspace: ${error}`);
+        }
       }
 
       return deleteWorkspaceFn(input);
