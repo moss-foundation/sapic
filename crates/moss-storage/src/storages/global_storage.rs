@@ -16,7 +16,6 @@ use crate::{
     storage::{SegBinTable, Storage, StoreTypeId, Transactional},
 };
 
-pub mod entities;
 pub mod stores;
 
 pub const TABLE_ITEMS: BincodeTable<SegKeyBuf, AnyValue> = BincodeTable::new("items");
