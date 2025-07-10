@@ -44,7 +44,8 @@ impl TryFrom<JsonValue> for VariableValue {
 /// @category Type
 #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts", optional_fields)]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
 pub struct VariableInfo {
     pub name: VariableName,
     pub global_value: Option<VariableValue>,

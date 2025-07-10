@@ -230,7 +230,8 @@ pub struct DeleteWorkspaceOutput {
 /// @category Operation
 #[derive(Debug, Validate, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts", optional_fields)]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
 pub struct UpdateWorkspaceInput {
     /// A new name for the workspace, if provided, the workspace
     /// will be renamed to this name.
@@ -243,7 +244,8 @@ pub struct UpdateWorkspaceInput {
 /// @category Operation
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts", optional_fields)]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
 pub struct DescribeWorkbenchStateOutput {
     #[serde(skip)]
     #[ts(skip)]

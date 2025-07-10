@@ -83,7 +83,8 @@ pub struct QueryParamOptions {
 /// @category Type
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts", optional_fields)]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
 pub struct QueryParamItem {
     pub key: String,
     pub value: Option<Expression>,
@@ -106,7 +107,8 @@ pub struct PathParamOptions {
 /// @category Type
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts", optional_fields)]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
 pub struct PathParamItem {
     pub key: String,
     pub value: Option<Expression>,
@@ -128,7 +130,8 @@ pub struct HeaderParamOptions {
 /// @category Type
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts", optional_fields)]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
 pub struct HeaderParamItem {
     pub key: String,
     pub value: Option<Expression>,
@@ -170,13 +173,12 @@ pub enum FormDataValue {
 /// @category Type
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct FormDataItem {
     pub key: String,
     pub value: FormDataValue,
-    #[ts(optional)]
     pub order: Option<isize>,
-    #[ts(optional)]
     pub desc: Option<String>,
     pub disabled: bool,
     pub options: FormDataOptions,
