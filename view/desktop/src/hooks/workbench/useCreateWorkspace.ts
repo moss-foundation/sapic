@@ -34,7 +34,6 @@ export const useCreateWorkspace = () => {
     mutationKey: [USE_CREATE_WORKSPACE_MUTATION_KEY],
     mutationFn: createWorkspaceFn,
     onSuccess: (data, variables) => {
-      // Always invalidate the workspace list
       queryClient.invalidateQueries({ queryKey: [USE_LIST_WORKSPACES_QUERY_KEY] });
 
       // If workspace was opened automatically by backend, update caches accordingly
@@ -45,7 +44,6 @@ export const useCreateWorkspace = () => {
           exact: false,
         });
 
-        // Update app state to reflect the new active workspace
         queryClient.setQueryData([USE_DESCRIBE_APP_STATE_QUERY_KEY], (oldData: DescribeAppStateOutput | undefined) => {
           if (oldData) {
             return {
@@ -56,7 +54,6 @@ export const useCreateWorkspace = () => {
           return oldData;
         });
 
-        // Update workspace list to show the new workspace as active
         queryClient.setQueryData([USE_LIST_WORKSPACES_QUERY_KEY], (oldData: ListWorkspacesOutput | undefined) => {
           if (Array.isArray(oldData)) {
             return oldData.map((workspace: WorkspaceInfo) => ({
@@ -67,7 +64,6 @@ export const useCreateWorkspace = () => {
           return oldData;
         });
 
-        // Invalidate workspace-specific data for the new workspace
         queryClient.invalidateQueries({ queryKey: [USE_STREAMED_COLLECTIONS_QUERY_KEY], exact: true });
         queryClient.invalidateQueries({ queryKey: [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY], exact: true });
       }

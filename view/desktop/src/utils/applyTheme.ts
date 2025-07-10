@@ -2,7 +2,6 @@ import { invokeTauriIpc, IpcResult } from "@/lib/backend/tauri";
 import { GetColorThemeInput, GetColorThemeOutput } from "@repo/moss-app";
 import { QueryClient } from "@tanstack/react-query";
 
-// Interface for the theme store object
 interface ThemeStore {
   shouldApplyTheme(themeId: string): boolean;
   setIsApplying(isApplying: boolean): void;
@@ -16,12 +15,10 @@ export const getColorTheme = async (input: GetColorThemeInput): Promise<IpcResul
   });
 };
 
-// Cache for applied themes to prevent re-applying the same theme
 let currentAppliedThemeId: string | null = null;
 
 export const applyColorTheme = async (themeId: string): Promise<void> => {
   try {
-    // Don't re-apply the same theme
     if (currentAppliedThemeId === themeId) {
       return;
     }
@@ -44,7 +41,7 @@ export const applyColorTheme = async (themeId: string): Promise<void> => {
     }
 
     styleTag.innerHTML = cssContent;
-    currentAppliedThemeId = themeId; // Track applied theme
+    currentAppliedThemeId = themeId;
   } catch (error) {
     console.error(`Failed to apply theme "${themeId}":`, error);
   }
@@ -57,12 +54,10 @@ export const applyColorThemeFromCache = async (
   themeStore?: ThemeStore
 ): Promise<void> => {
   try {
-    // Check if we should apply this theme
     if (themeStore && !themeStore.shouldApplyTheme(themeId)) {
       return;
     }
 
-    // Don't re-apply the same theme (fallback if no store)
     if (!themeStore && currentAppliedThemeId === themeId) {
       return;
     }
@@ -72,16 +67,13 @@ export const applyColorThemeFromCache = async (
       themeStore.setIsApplying(true);
     }
 
-    // Try to get theme from cache first
     const cachedTheme = queryClient.getQueryData<GetColorThemeOutput>(["getColorTheme", themeId]);
 
     let cssContent: string;
 
     if (cachedTheme) {
-      // Use cached data - no API call needed
       cssContent = cachedTheme.cssContent;
     } else {
-      // Fallback to direct API call if not in cache
       const getColorThemeOutput = await getColorTheme({ id: themeId });
       if (getColorThemeOutput.status !== "ok") {
         console.error(`Error reading theme file for "${themeId}":`, getColorThemeOutput.error);
@@ -90,7 +82,6 @@ export const applyColorThemeFromCache = async (
       }
       cssContent = getColorThemeOutput.data.cssContent;
 
-      // Cache the result for future use
       queryClient.setQueryData(["getColorTheme", themeId], getColorThemeOutput.data);
     }
 
@@ -104,7 +95,6 @@ export const applyColorThemeFromCache = async (
 
     styleTag.innerHTML = cssContent;
 
-    // Update state tracking
     currentAppliedThemeId = themeId;
     if (themeStore) {
       themeStore.setCurrentThemeId(themeId);
