@@ -1,3 +1,5 @@
+#![cfg(feature = "integration-tests")]
+
 pub mod shared;
 
 use moss_common::api::OperationError;
@@ -5,7 +7,10 @@ use moss_storage::storage::operations::GetItem;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_collection_name};
 use moss_workspace::{
     models::{operations::CreateCollectionInput, primitives::CollectionId},
-    services::{collection_service::CollectionService, storage_service::StorageService},
+    services::{
+        AnyCollectionService, collection_service::CollectionService,
+        storage_service::impl_for_integration_test::StorageServiceForIntegrationTest,
+    },
     storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
 use tauri::ipc::Channel;
@@ -42,8 +47,8 @@ async fn create_collection_success() {
 
     // Verify the db entries were created
     let id = create_collection_output.id;
-    let storage_service = services.get::<StorageService>();
-    let item_store = storage_service.__storage().item_store();
+    let storage_service = services.get::<StorageServiceForIntegrationTest>();
+    let item_store = storage_service.storage().item_store();
 
     // Check order was stored
     let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
@@ -116,8 +121,8 @@ async fn create_collection_special_chars() {
 
         // Verify the db entries were created
         let id = create_collection_output.id;
-        let storage_service = services.get::<StorageService>();
-        let item_store = storage_service.__storage().item_store();
+        let storage_service = services.get::<StorageServiceForIntegrationTest>();
+        let item_store = storage_service.storage().item_store();
 
         // Check order was stored
         let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
@@ -169,8 +174,8 @@ async fn create_collection_with_order() {
 
     // Verify the db entries were created
     let id = create_collection_output.id;
-    let storage_service = services.get::<StorageService>();
-    let item_store = storage_service.__storage().item_store();
+    let storage_service = services.get::<StorageServiceForIntegrationTest>();
+    let item_store = storage_service.storage().item_store();
 
     // Check order was stored
     let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
@@ -226,8 +231,8 @@ async fn create_collection_with_repo() {
     );
 
     // Verify the db entries were created
-    let storage_service = services.get::<StorageService>();
-    let item_store = storage_service.__storage().item_store();
+    let storage_service = services.get::<StorageServiceForIntegrationTest>();
+    let item_store = storage_service.storage().item_store();
 
     // Check order was stored
     let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
@@ -286,8 +291,8 @@ async fn create_collection_with_icon() {
     assert!(collection.icon_path().is_some());
 
     // Verify the db entries were created
-    let storage_service = services.get::<StorageService>();
-    let item_store = storage_service.__storage().item_store();
+    let storage_service = services.get::<StorageServiceForIntegrationTest>();
+    let item_store = storage_service.storage().item_store();
 
     // Check order was stored
     let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
@@ -341,8 +346,8 @@ async fn create_multiple_collections_expanded_items() {
         .unwrap();
 
     // Check expanded_items contains both collection ids
-    let storage_service = services.get::<StorageService>();
-    let item_store = storage_service.__storage().item_store();
+    let storage_service = services.get::<StorageServiceForIntegrationTest>();
+    let item_store = storage_service.storage().item_store();
     let expanded_items_value =
         GetItem::get(item_store.as_ref(), SEGKEY_EXPANDED_ITEMS.to_segkey_buf()).unwrap();
     let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();

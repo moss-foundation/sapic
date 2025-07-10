@@ -15,3 +15,6 @@ serde_json.workspace = true
 ts-rs = { workspace = true, features = ["serde-json-impl"] }
 derive_more.workspace = true
 nanoid.workspace = true
+
+[features]
+integration-tests = []

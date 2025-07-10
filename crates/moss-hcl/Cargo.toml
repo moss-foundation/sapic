@@ -6,3 +6,6 @@ edition = "2024"
 [dependencies]
 hcl-rs.workspace = true
 serde.workspace = true
+
+[features]
+integration-tests = []

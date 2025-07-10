@@ -1,23 +1,31 @@
 use anyhow::{Context as _, Result};
+use async_trait::async_trait;
 use derive_more::{Deref, DerefMut};
 use futures::Stream;
 use moss_applib::{PublicServiceMarker, ServiceMarker};
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_collection::{
-    self as collection, Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
+    Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
+    builder::{CollectionCreateParams, CollectionLoadParams},
+    services::{
+        StorageService as CollectionStorageService, WorktreeService as CollectionWorktreeService,
+    },
 };
 use moss_common::api::OperationError;
 use moss_fs::{FileSystem, RemoveOptions};
 use std::{
     collections::{HashMap, HashSet},
     path::{Path, PathBuf},
+    pin::Pin,
     sync::Arc,
 };
 use thiserror::Error;
 use tokio::sync::RwLock;
 
 use crate::{
-    dirs, models::primitives::CollectionId, services::storage_service::StorageService,
+    dirs,
+    models::primitives::CollectionId,
+    services::{AnyCollectionService, AnyStorageService, DynStorageService},
     storage::segments::SEGKEY_COLLECTION,
 };
 
@@ -71,7 +79,7 @@ impl From<CollectionError> for OperationError {
     }
 }
 
-type CollectionResult<T> = std::result::Result<T, CollectionError>;
+pub(super) type CollectionResult<T> = std::result::Result<T, CollectionError>;
 
 pub(crate) struct CollectionItemUpdateParams {
     pub name: Option<String>,
@@ -120,44 +128,16 @@ struct ServiceState {
 pub struct CollectionService {
     abs_path: Arc<Path>,
     fs: Arc<dyn FileSystem>,
-    storage: Arc<StorageService>, // TODO: should be a trait
+    storage: Arc<DynStorageService>,
     state: Arc<RwLock<ServiceState>>,
 }
 
 impl ServiceMarker for CollectionService {}
 impl PublicServiceMarker for CollectionService {}
 
-impl CollectionService {
-    pub async fn new(
-        abs_path: Arc<Path>,
-        fs: Arc<dyn FileSystem>,
-        storage: Arc<StorageService>,
-    ) -> CollectionResult<Self> {
-        let expanded_items =
-            if let Ok(expanded_items) = storage.get_expanded_items::<CollectionId>() {
-                expanded_items.into_iter().collect::<HashSet<_>>()
-            } else {
-                HashSet::new()
-            };
-
-        let collections = restore_collections(&abs_path, &fs, &storage).await?;
-
-        Ok(Self {
-            abs_path,
-            fs,
-            storage,
-            state: Arc::new(RwLock::new(ServiceState {
-                collections,
-                expanded_items,
-            })),
-        })
-    }
-
-    fn absolutize<P: AsRef<Path>>(&self, path: P) -> PathBuf {
-        self.abs_path.join(dirs::COLLECTIONS_DIR).join(path)
-    }
-
-    pub async fn collection(&self, id: &CollectionId) -> CollectionResult<Arc<CollectionHandle>> {
+#[async_trait]
+impl AnyCollectionService for CollectionService {
+    async fn collection(&self, id: &CollectionId) -> CollectionResult<Arc<CollectionHandle>> {
         let state_lock = self.state.read().await;
         let item = state_lock
             .collections
@@ -167,7 +147,8 @@ impl CollectionService {
         Ok(item.handle.clone())
     }
 
-    pub(crate) async fn create_collection(
+    #[allow(private_interfaces)]
+    async fn create_collection(
         &self,
         id: &CollectionId,
         params: CollectionItemCreateParams,
@@ -186,16 +167,14 @@ impl CollectionService {
             .context("Failed to create the collection directory")?;
 
         let collection = {
-            let storage = Arc::new(collection::services::StorageService::new(&abs_path)?);
-            let worktree = collection::services::WorktreeService::new(
-                abs_path.clone(),
-                self.fs.clone(),
-                storage.clone(),
-            );
+            let storage = Arc::new(CollectionStorageService::new(&abs_path)?);
+            let worktree =
+                CollectionWorktreeService::new(abs_path.clone(), self.fs.clone(), storage.clone());
+
             CollectionBuilder::new(self.fs.clone())
-                .with_service::<collection::services::StorageService>(storage)
+                .with_service::<CollectionStorageService>(storage)
                 .with_service(worktree)
-                .create(collection::builder::CollectionCreateParams {
+                .create(CollectionCreateParams {
                     name: Some(params.name.to_owned()),
                     internal_abs_path: abs_path.clone(),
                     external_abs_path: params.external_path.as_deref().map(|p| p.to_owned().into()),
@@ -248,7 +227,8 @@ impl CollectionService {
         })
     }
 
-    pub(crate) async fn delete_collection(
+    #[allow(private_interfaces)]
+    async fn delete_collection(
         &self,
         id: &CollectionId,
     ) -> CollectionResult<Option<CollectionItemDescription>> {
@@ -301,7 +281,8 @@ impl CollectionService {
         }
     }
 
-    pub(crate) async fn update_collection(
+    #[allow(private_interfaces)]
+    async fn update_collection(
         &self,
         id: &CollectionId,
         params: CollectionItemUpdateParams,
@@ -340,10 +321,13 @@ impl CollectionService {
         Ok(())
     }
 
-    pub(crate) fn list_collections(&self) -> impl Stream<Item = CollectionItemDescription> + '_ {
+    #[allow(private_interfaces)]
+    fn list_collections(
+        &self,
+    ) -> Pin<Box<dyn Stream<Item = CollectionItemDescription> + Send + '_>> {
         let state = self.state.clone();
 
-        async_stream::stream! {
+        Box::pin(async_stream::stream! {
             let state_lock = state.read().await;
             for (id, item) in state_lock.collections.iter() {
                 let manifest = item.handle.manifest().await;
@@ -360,14 +344,44 @@ impl CollectionService {
                     external_path: None, // TODO: implement
                 };
             }
-        }
+        })
+    }
+}
+
+impl CollectionService {
+    pub async fn new(
+        abs_path: Arc<Path>,
+        fs: Arc<dyn FileSystem>,
+        storage: Arc<DynStorageService>,
+    ) -> CollectionResult<Self> {
+        let expanded_items = if let Ok(expanded_items) = storage.get_expanded_items() {
+            expanded_items.into_iter().collect::<HashSet<_>>()
+        } else {
+            HashSet::new()
+        };
+
+        let collections = restore_collections(&abs_path, &fs, &storage).await?;
+
+        Ok(Self {
+            abs_path,
+            fs,
+            storage,
+            state: Arc::new(RwLock::new(ServiceState {
+                collections,
+                expanded_items,
+            })),
+        })
+    }
+
+    fn absolutize<P: AsRef<Path>>(&self, path: P) -> PathBuf {
+        self.abs_path.join(dirs::COLLECTIONS_DIR).join(path)
     }
 }
 
 async fn restore_collections(
     abs_path: &Path,
     fs: &Arc<dyn FileSystem>,
-    storage: &Arc<StorageService>,
+    storage: &Arc<dyn AnyStorageService>,
 ) -> Result<HashMap<CollectionId, CollectionItem>> {
     let dir_abs_path = abs_path.join(dirs::COLLECTIONS_DIR);
     if !dir_abs_path.exists() {
@@ -391,18 +405,16 @@ async fn restore_collections(
 
         let collection = {
             let collection_abs_path: Arc<Path> = entry.path().to_owned().into();
-            let storage = Arc::new(collection::services::StorageService::new(
-                &collection_abs_path,
-            )?);
-            let worktree = collection::services::WorktreeService::new(
+            let storage = Arc::new(CollectionStorageService::new(&collection_abs_path)?);
+            let worktree = CollectionWorktreeService::new(
                 collection_abs_path.clone(),
                 fs.clone(),
                 storage.clone(),
             );
             CollectionBuilder::new(fs.clone())
-                .with_service::<collection::services::StorageService>(storage)
+                .with_service::<CollectionStorageService>(storage)
                 .with_service(worktree)
-                .load(collection::builder::CollectionLoadParams {
+                .load(CollectionLoadParams {
                     internal_abs_path: collection_abs_path,
                 })
                 .await?

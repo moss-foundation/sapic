@@ -6,3 +6,6 @@ edition = "2024"
 [dependencies]
 keyring.workspace = true
 whoami.workspace = true
+
+[features]
+integration-tests = []

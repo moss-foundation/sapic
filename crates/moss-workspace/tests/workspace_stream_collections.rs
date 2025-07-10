@@ -1,3 +1,4 @@
+#![cfg(feature = "integration-tests")]
 pub mod shared;
 
 use moss_testutils::random_name::random_collection_name;

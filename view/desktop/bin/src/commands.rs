@@ -13,7 +13,7 @@ use moss_collection::Collection;
 use moss_common::api::OperationOptionExt;
 use moss_workspace::{
     Workspace, context::WorkspaceContext, models::primitives::CollectionId,
-    services::collection_service::CollectionService,
+    services::DynCollectionService,
 };
 use std::sync::Arc;
 use tauri::{Runtime as TauriRuntime, State};
@@ -40,7 +40,7 @@ where
             .map_err_as_failed_precondition("No active workspace")?;
 
         let collection = workspace
-            .service::<CollectionService>()
+            .service::<DynCollectionService>()
             .collection(&id)
             .await
             .context("Collection not found")?;
