@@ -19,6 +19,8 @@ use crate::{
 // ###                   Create Entry                   ###
 // ########################################################
 
+// TODO: Should this be named CreateItemEntryParams?
+/// @category Operation
 #[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
 #[validate(schema(function = "validate_create_item_entry_input"))]
 #[serde(rename_all = "camelCase")]
@@ -35,6 +37,8 @@ pub struct CreateItemEntryInput {
     pub configuration: ItemConfigurationModel,
 }
 
+// TODO: Should this be named CreateDirEntryParams?
+/// @category Operation
 #[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
 #[validate(schema(function = "validate_create_dir_entry_input"))]
 #[serde(rename_all = "camelCase")]
@@ -51,6 +55,7 @@ pub struct CreateDirEntryInput {
     pub configuration: DirConfigurationModel,
 }
 
+/// @category Operation
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -59,6 +64,7 @@ pub enum CreateEntryInput {
     Dir(CreateDirEntryInput),
 }
 
+/// @category Operation
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -68,9 +74,40 @@ pub struct CreateEntryOutput {
 }
 
 // ########################################################
+// ###                Batch Create Entry                ###
+// ########################################################
+
+/// @category Operation
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "UPPERCASE")]
+#[ts(export, export_to = "operations.ts")]
+pub enum BatchCreateEntryKind {
+    Item(CreateItemEntryInput),
+    Dir(CreateDirEntryInput),
+}
+
+/// @category Operation
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchCreateEntryInput {
+    pub entries: Vec<BatchCreateEntryKind>,
+}
+
+/// @category Operation
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchCreateEntryOutput {
+    #[ts(as = "Vec<String>")]
+    pub ids: Vec<EntryId>,
+}
+
+// ########################################################
 // ###                   Delete Entry                   ###
 // ########################################################
 
+/// @category Operation
 #[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -79,6 +116,7 @@ pub struct DeleteEntryInput {
     pub id: EntryId,
 }
 
+/// @category Operation
 #[derive(Clone, Debug, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteEntryOutput {
@@ -90,6 +128,7 @@ pub struct DeleteEntryOutput {
 // ###                   Update Entry                   ###
 // ########################################################
 
+/// @category Operation
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "operations.ts")]
@@ -98,6 +137,7 @@ pub enum UpdateEntryInput {
     Dir(UpdateDirEntryParams),
 }
 
+/// @category Operation
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "operations.ts")]
@@ -110,6 +150,7 @@ pub enum UpdateEntryOutput {
 // ###                  Batch Update Entry              ###
 // ########################################################
 
+/// @category Operation
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "operations.ts")]
@@ -118,14 +159,15 @@ pub enum BatchUpdateEntryKind {
     Dir(UpdateDirEntryParams),
 }
 
+/// @category Operation
 #[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct BatchUpdateEntryInput {
     pub entries: Vec<BatchUpdateEntryKind>,
 }
 
+/// @category Operation
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "operations.ts")]
@@ -134,6 +176,7 @@ pub enum BatchUpdateEntryOutputKind {
     Dir(AfterUpdateDirEntryDescription),
 }
 
+/// @category Operation
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -143,6 +186,7 @@ pub struct BatchUpdateEntryOutput {}
 // ###                  Stream Entries                  ###
 // ########################################################
 
+/// @category Operation
 #[derive(Clone, Debug, Deserialize, TS)]
 #[ts(export, export_to = "operations.ts")]
 pub enum StreamEntriesInput {
@@ -152,6 +196,7 @@ pub enum StreamEntriesInput {
     ReloadPath(PathBuf),
 }
 
+/// @category Operation
 #[derive(Clone, Debug, Serialize, TS)]
 // #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]

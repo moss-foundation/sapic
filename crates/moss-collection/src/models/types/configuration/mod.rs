@@ -34,6 +34,7 @@ use crate::models::{
 // ###                      Dir                          ###
 // #########################################################
 
+/// @category Type
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -44,6 +45,7 @@ pub enum DirConfigurationModel {
     Schema(SchemaDirConfigurationModel),
 }
 
+/// @category Type
 #[derive(Debug, Clone, Serialize, Deserialize, Deref, DerefMut, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -157,6 +159,7 @@ impl CompositeDirConfigurationModel {
 // ###                      Item                         ###
 // #########################################################
 
+/// @category Type
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -168,6 +171,7 @@ pub enum ItemConfigurationModel {
     Schema(SchemaItemConfigurationModel),
 }
 
+/// @category Type
 #[derive(Debug, Clone, Serialize, Deserialize, Deref, DerefMut, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]

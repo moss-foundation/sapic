@@ -1,6 +1,7 @@
 use serde::Serialize;
 use ts_rs::TS;
 
+/// @category Event
 #[derive(Serialize, Clone, TS)]
 #[ts(export, export_to = "events.ts")]
 #[serde(rename_all = "camelCase")]

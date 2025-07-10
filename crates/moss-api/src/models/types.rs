@@ -6,6 +6,7 @@ use ts_rs::TS;
 /// This struct provides configurable parameters that affect the behavior of API operations,
 /// particularly timeout handling for asynchronous operations. It is commonly used with
 /// the `with_timeout` utility function to wrap async operations with configurable timeouts.
+/// @category Type
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]

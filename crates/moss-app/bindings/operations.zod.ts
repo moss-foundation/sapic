@@ -14,7 +14,9 @@ import {
   workspaceInfoSchema,
 } from "./types.zod";
 
-export const batchDeleteLogInputSchema = z.array(z.string());
+export const batchDeleteLogInputSchema = z.object({
+  ids: z.array(z.string()),
+});
 
 export const closeWorkspaceInputSchema = z.object({
   id: z.string(),
@@ -78,7 +80,6 @@ export const createWorkspaceInputSchema = z.object({
 export const describeAppStateOutputSchema = z.object({
   preferences: preferencesSchema,
   defaults: defaultsSchema,
-  lastWorkspace: z.string().optional(),
   prevWorkspaceId: z.string().optional(),
 });
 

@@ -3,6 +3,9 @@ import { VariableInfo } from "@repo/moss-environment";
 import type { ChangePath, ChangeString } from "./primitives";
 import type { ActivitybarPartStateInfo, EditorPartStateInfo, PanelPartStateInfo, SidebarPartStateInfo } from "./types";
 
+/**
+ * @category Operation
+ */
 export type CreateCollectionInput = {
   name: string;
   order: number;
@@ -11,16 +14,34 @@ export type CreateCollectionInput = {
   iconPath?: string;
 };
 
+/**
+ * @category Operation
+ */
 export type CreateCollectionOutput = { id: string; name: string; order?: number; expanded: boolean; iconPath?: string };
 
+/**
+ * @category Operation
+ */
 export type DeleteCollectionInput = { id: string };
 
+/**
+ * @category Operation
+ */
 export type DeleteCollectionOutput = { id: string };
 
+/**
+ * @category Operation
+ */
 export type DescribeEnvironmentInput = { id: string };
 
+/**
+ * @category Operation
+ */
 export type DescribeEnvironmentOutput = { variables: VariableInfo };
 
+/**
+ * @category Operation
+ */
 export type DescribeStateOutput = {
   editor?: EditorPartStateInfo;
   sidebar?: SidebarPartStateInfo;
@@ -28,8 +49,14 @@ export type DescribeStateOutput = {
   activitybar?: ActivitybarPartStateInfo;
 };
 
+/**
+ * @category Operation
+ */
 export type StreamCollectionsOutput = {};
 
+/**
+ * @category Operation
+ */
 export type UpdateCollectionInput = {
   id: string;
   name?: string;
@@ -40,8 +67,14 @@ export type UpdateCollectionInput = {
   expanded?: boolean;
 };
 
+/**
+ * @category Operation
+ */
 export type UpdateCollectionOutput = { id: string };
 
+/**
+ * @category Operation
+ */
 export type UpdateStateInput =
   | { "updateEditorPartState": EditorPartStateInfo }
   | { "updateSidebarPartState": SidebarPartStateInfo }

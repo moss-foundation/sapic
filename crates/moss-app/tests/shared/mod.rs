@@ -66,7 +66,7 @@ pub async fn set_up_test_app() -> (
         app_handle.clone(),
         &logs_abs_path,
         &session_id,
-        storage_service.__storage(),
+        storage_service.clone(),
     )
     .unwrap()
     .into();

@@ -2,7 +2,7 @@ pub mod shared;
 
 use moss_collection::{
     constants, dirs,
-    models::operations::{CreateDirEntryInput, CreateEntryInput},
+    models::operations::{CreateDirEntryInput, CreateEntryInput, CreateItemEntryInput},
     services::StorageService,
     storage::segments::SEGKEY_RESOURCE_ENTRY,
 };
@@ -13,7 +13,9 @@ use moss_text::sanitized::sanitize;
 use std::path::PathBuf;
 
 use crate::shared::{
-    create_test_collection, create_test_request_dir_configuration, random_entry_name,
+    create_test_collection, create_test_component_dir_configuration,
+    create_test_component_item_configuration, create_test_request_dir_configuration,
+    random_entry_name,
 };
 
 #[tokio::test]
@@ -161,6 +163,40 @@ async fn create_dir_entry_special_chars_in_name() {
         assert!(expected_dir.exists());
         assert!(expected_dir.is_dir());
     }
+
+    // Cleanup
+    std::fs::remove_dir_all(collection_path).unwrap();
+}
+
+#[tokio::test]
+async fn create_dir_entry_inside_item_entry() {
+    let (collection_path, collection) = create_test_collection().await;
+
+    let outer_name = random_entry_name();
+    let outer_path = PathBuf::from(dirs::COMPONENTS_DIR);
+    let outer_input = CreateEntryInput::Item(CreateItemEntryInput {
+        path: outer_path.clone(),
+        name: outer_name.clone(),
+        order: 0,
+        configuration: create_test_component_item_configuration(),
+    });
+
+    let _ = collection.create_entry(outer_input).await.unwrap();
+
+    // Try creating an entry inside an item entry
+
+    let inner_name = random_entry_name();
+    let inner_path = PathBuf::from(dirs::COMPONENTS_DIR).join(&outer_name);
+    let inner_input = CreateEntryInput::Dir(CreateDirEntryInput {
+        path: inner_path.clone(),
+        name: inner_name.clone(),
+        order: 0,
+        configuration: create_test_component_dir_configuration(),
+    });
+
+    let result = collection.create_entry(inner_input).await;
+
+    assert!(result.is_err());
 
     // Cleanup
     std::fs::remove_dir_all(collection_path).unwrap();

@@ -19,5 +19,7 @@ export const useListWorkspaces = () => {
     queryKey: [USE_LIST_WORKSPACES_QUERY_KEY],
     queryFn: listWorkspacesFn,
     placeholderData: [],
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
   });
 };

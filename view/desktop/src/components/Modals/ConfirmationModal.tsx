@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
 
 import ButtonDanger from "../ButtonDanger";
@@ -13,6 +15,7 @@ interface ConfirmationModalProps {
   cancelLabel?: string;
   onConfirm: () => void;
   variant?: "warning" | "danger" | "info";
+  loading?: boolean;
 }
 
 export const ConfirmationModal = ({
@@ -24,20 +27,43 @@ export const ConfirmationModal = ({
   confirmLabel = "OK",
   cancelLabel = "Cancel",
   onConfirm,
+  loading = false,
 }: ConfirmationModalProps) => {
+  const [allowBackdropClick, setAllowBackdropClick] = useState(false);
+
+  useEffect(() => {
+    if (showModal) {
+      const timer = setTimeout(() => {
+        setAllowBackdropClick(true);
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+
+    setAllowBackdropClick(false);
+    return undefined;
+  }, [showModal]);
+
   const handleConfirm = () => {
+    if (loading) return;
     onConfirm();
-    closeModal();
   };
 
   const handleCancel = () => {
+    if (loading) return;
     closeModal();
+  };
+
+  const handleBackdropClick = () => {
+    if (!loading && allowBackdropClick) {
+      handleCancel();
+    }
   };
 
   return (
     <ModalForm
       showModal={showModal}
-      onBackdropClick={handleCancel}
+      onBackdropClick={handleBackdropClick}
       onSubmit={handleConfirm}
       className="background-(--moss-primary-background) w-[27rem] overflow-hidden border border-(--moss-border-color) text-(--moss-primary-text)"
       title={title}

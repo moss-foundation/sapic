@@ -13,7 +13,7 @@ const LanguageProvider = ({ children }: { children: React.ReactNode }) => {
     let unlisten: UnlistenFn | undefined;
 
     const handleLanguageChange = (event: { payload: LocaleInfo }) => {
-      applyLanguagePack(event.payload);
+      applyLanguagePack(event.payload).catch(console.error);
       queryClient.invalidateQueries({ queryKey: [USE_DESCRIBE_APP_STATE_QUERY_KEY] });
     };
 

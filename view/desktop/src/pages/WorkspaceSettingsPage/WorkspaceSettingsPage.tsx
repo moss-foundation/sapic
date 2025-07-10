@@ -12,8 +12,8 @@ import { WorkspaceStartupSection } from "./WorkspaceStartupSection";
 
 export const WorkspaceSettings = () => {
   const workspace = useActiveWorkspace();
-  const { mutate: updateWorkspace, isPending } = useUpdateWorkspace();
-  const { mutate: deleteWorkspace } = useDeleteWorkspace();
+  const { mutate: updateWorkspace } = useUpdateWorkspace();
+  const { mutate: deleteWorkspace, isPending: isDeleting } = useDeleteWorkspace();
 
   const [name, setName] = useState(workspace?.name || "");
   const [reopenOnNextSession, setReopenOnNextSession] = useState(false);
@@ -51,8 +51,18 @@ export const WorkspaceSettings = () => {
 
   const handleDeleteWorkspace = () => {
     if (workspace) {
-      deleteWorkspace({ id: workspace.id });
-      setShowDeleteConfirmModal(false);
+      deleteWorkspace(
+        { id: workspace.id },
+        {
+          onSuccess: () => {
+            setShowDeleteConfirmModal(false);
+          },
+          onError: (error) => {
+            console.error("Failed to delete workspace:", error.message);
+            setShowDeleteConfirmModal(false);
+          },
+        }
+      );
     }
   };
 
@@ -80,10 +90,11 @@ export const WorkspaceSettings = () => {
           title="Delete"
           message={`Delete "${workspace?.name}"?`}
           description="This will delete the monitors, scheduled runs and integrations and deactivate the mock servers associated with collections in the workspace."
-          confirmLabel="Delete"
+          confirmLabel={isDeleting ? "Deleting..." : "Delete"}
           cancelLabel="Close"
           onConfirm={handleDeleteWorkspace}
           variant="danger"
+          loading={isDeleting}
         />
       )}
 

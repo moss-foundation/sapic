@@ -1,8 +1,4 @@
 use chrono::DateTime;
-use moss_db::primitives::AnyValue;
-use moss_storage::{
-    GlobalStorage, primitives::segkey::SegKey, storage::operations::TransactionalPutItem,
-};
 use std::{
     collections::VecDeque,
     fs::OpenOptions,
@@ -13,7 +9,10 @@ use std::{
 
 use crate::{
     models::types::LogEntryInfo,
-    services::log_service::constants::{FILE_TIMESTAMP_FORMAT, TIMESTAMP_FORMAT},
+    services::{
+        log_service::constants::{FILE_TIMESTAMP_FORMAT, TIMESTAMP_FORMAT},
+        storage_service::StorageService,
+    },
 };
 // log:{log_id}: log_entry_path
 
@@ -21,7 +20,7 @@ pub struct RollingLogWriter {
     pub log_path: PathBuf,
     pub dump_threshold: usize,
     pub log_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
-    pub storage: Arc<dyn GlobalStorage>,
+    pub storage: Arc<StorageService>,
 }
 
 impl RollingLogWriter {
@@ -29,7 +28,7 @@ impl RollingLogWriter {
         log_path: PathBuf,
         dump_threshold: usize,
         log_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
-        storage: Arc<dyn GlobalStorage>,
+        storage: Arc<StorageService>,
     ) -> Self {
         Self {
             log_path,
@@ -64,17 +63,13 @@ impl<'a> std::io::Write for RollingLogWriter {
 
                 let mut txn = self.storage.begin_write()?;
 
-                let log_store = self.storage.log_store();
-
                 while let Some(entry) = queue_lock.pop_front() {
                     serde_json::to_writer(&mut writer, &entry)?;
                     writer.write(b"\n")?;
                     writer.flush()?;
                     // Record the file to which the log entry is written
-                    let segkey = SegKey::new(&entry.id).to_segkey_buf();
-                    let value = AnyValue::serialize(&file_path)?;
-
-                    TransactionalPutItem::put(log_store.as_ref(), &mut txn, segkey, value)?;
+                    self.storage
+                        .put_log_path_txn(&mut txn, &entry.id, file_path.clone())?;
                 }
                 txn.commit()?;
             } else {

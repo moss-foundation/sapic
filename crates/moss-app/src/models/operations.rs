@@ -45,8 +45,6 @@ pub struct ListLocalesOutput(pub Vec<LocaleInfo>);
 pub struct DescribeAppStateOutput {
     pub preferences: Preferences,
     pub defaults: Defaults,
-    // FIXME: Deprecated field
-    pub last_workspace: Option<String>,
     #[ts(as = "Option<String>")]
     pub prev_workspace_id: Option<WorkspaceId>,
 }
@@ -118,7 +116,10 @@ pub struct ListLogsOutput {
 /// @category Operation
 #[derive(Debug, Clone, Serialize, Deserialize, Deref, TS)]
 #[ts(export, export_to = "operations.ts")]
-pub struct BatchDeleteLogInput(#[ts(as = "Vec<String>")] pub Vec<LogEntryId>);
+pub struct BatchDeleteLogInput {
+    #[ts(as = "Vec<String>")]
+    pub ids: Vec<LogEntryId>,
+}
 
 /// @category Operation
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]

@@ -59,7 +59,7 @@ export const HeadBar = () => {
   const [workspaceToDelete, setWorkspaceToDelete] = useState<{ id: string; name: string } | null>(null);
 
   // Delete workspace hook
-  const { mutate: deleteWorkspace } = useDeleteWorkspace();
+  const { mutate: deleteWorkspace, isPending: isDeleting } = useDeleteWorkspace();
 
   // User menu actions
   const actionProps: HeadBarActionProps = {
@@ -105,8 +105,20 @@ export const HeadBar = () => {
   // Delete workspace confirmation handler
   const handleDeleteWorkspace = () => {
     if (workspaceToDelete) {
-      deleteWorkspace({ id: workspaceToDelete.id });
-      setWorkspaceToDelete(null);
+      deleteWorkspace(
+        { id: workspaceToDelete.id },
+        {
+          onSuccess: () => {
+            setWorkspaceToDelete(null);
+            setShowDeleteConfirmModal(false);
+          },
+          onError: (error) => {
+            console.error("Failed to delete workspace:", error.message);
+            setWorkspaceToDelete(null);
+            setShowDeleteConfirmModal(false);
+          },
+        }
+      );
     }
   };
 
@@ -134,10 +146,11 @@ export const HeadBar = () => {
           title="Delete"
           message={`Delete "${workspaceToDelete?.name}"?`}
           description="This will delete the monitors, scheduled runs and integrations and deactivate the mock servers associated with collections in the workspace."
-          confirmLabel="Delete"
+          confirmLabel={isDeleting ? "Deleting..." : "Delete"}
           cancelLabel="Close"
           onConfirm={handleDeleteWorkspace}
           variant="danger"
+          loading={isDeleting}
         />
       )}
 

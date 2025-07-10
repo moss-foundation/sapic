@@ -2,7 +2,7 @@ use crate::{
     config::ConfigModel,
     constants::COLLECTION_ICON_FILENAME,
     dirs::ASSETS_DIR,
-    manifest::{ManifestModel, ManifestModelDiff},
+    manifest::ManifestModel,
     services::set_icon::{SetIconService, constants::ICON_SIZE},
 };
 use anyhow::Result;
@@ -13,7 +13,7 @@ use moss_applib::{
 };
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_environment::{environment::Environment, models::primitives::EnvironmentId};
-use moss_file::toml::TomlFileHandle;
+use moss_file::json::JsonFileHandle;
 use moss_fs::{FileSystem, RemoveOptions};
 use moss_git::url::normalize_git_url;
 use std::{
@@ -51,9 +51,9 @@ pub struct Collection {
     pub(super) services: ServiceProvider,
     #[allow(dead_code)]
     pub(super) environments: OnceCell<EnvironmentMap>,
-    pub(super) manifest: moss_file::toml::EditableInPlaceFileHandle<ManifestModel>,
+    pub(super) manifest: JsonFileHandle<ManifestModel>,
     #[allow(dead_code)]
-    pub(super) config: TomlFileHandle<ConfigModel>,
+    pub(super) config: JsonFileHandle<ConfigModel>,
 
     pub(super) on_did_change: EventEmitter<OnDidChangeEvent>,
 }
@@ -91,17 +91,33 @@ impl Collection {
 
     pub async fn modify(&self, params: CollectionModifyParams) -> Result<()> {
         if params.name.is_some() || params.repository.is_some() {
-            let normalized_repo = if let Some(ChangeString::Update(url)) = params.repository {
-                Some(ChangeString::Update(normalize_git_url(&url)?))
+            let normalized_repo = if let Some(ChangeString::Update(url)) = &params.repository {
+                Some(ChangeString::Update(normalize_git_url(url)?))
             } else {
-                None
+                params.repository
             };
 
             self.manifest
-                .edit(ManifestModelDiff {
-                    name: params.name,
-                    repository: normalized_repo,
-                })
+                .edit(
+                    |model| {
+                        model.name = params.name.unwrap_or(model.name.clone());
+                        match normalized_repo {
+                            None => {}
+                            Some(ChangeString::Remove) => {
+                                model.repository = None;
+                            }
+                            Some(ChangeString::Update(url)) => {
+                                model.repository = Some(url);
+                            }
+                        }
+                        Ok(())
+                    },
+                    |model| {
+                        serde_json::to_string(model).map_err(|err| {
+                            anyhow::anyhow!("Failed to serialize JSON file: {}", err)
+                        })
+                    },
+                )
                 .await?;
         }
 
