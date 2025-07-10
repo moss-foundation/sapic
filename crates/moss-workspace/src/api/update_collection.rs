@@ -5,7 +5,7 @@ use validator::Validate;
 
 use crate::{
     models::operations::{UpdateCollectionInput, UpdateCollectionOutput},
-    services::collection_service::{CollectionItemUpdateParams, CollectionService},
+    services::{DynCollectionService, collection_service::CollectionItemUpdateParams},
     workspace::Workspace,
 };
 
@@ -17,7 +17,7 @@ impl<R: TauriRuntime> Workspace<R> {
     ) -> OperationResult<UpdateCollectionOutput> {
         input.validate()?;
         let id = input.id.clone().into();
-        let collections = self.services.get::<CollectionService>();
+        let collections = self.services.get::<DynCollectionService>();
         collections
             .update_collection(
                 &id,

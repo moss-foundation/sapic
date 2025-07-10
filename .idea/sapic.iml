@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="EMPTY_MODULE" version="4">
+  <component name="FacetManager">
+    <facet type="Python" name="Python facet">
+      <configuration sdkName="Python 3.13 (sapic)" />
+    </facet>
+  </component>
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-activity-indicator/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-api/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-app/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-app/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-applib/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-bindingutils/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-collection/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-collection/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-common/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-db/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-db/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-environment/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-environment/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-file/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-file/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-fs/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-git-hosting-provider/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-git/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-hcl/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-keyring/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-storage/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-storage/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-testutils/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-text/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-vault/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-wasm/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-workspace/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-workspace/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/tools/xtask/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/view/desktop/bin/lib/macos/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/view/desktop/bin/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-tauri/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/libs/joinerror/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-jsdoc-macro/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-jsdoc/src" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/.venv1" />
+      <excludeFolder url="file://$MODULE_DIR$/target" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Python 3.13 (sapic) interpreter library" level="application" />
+  </component>
+</module>

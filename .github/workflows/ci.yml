@@ -218,7 +218,7 @@ jobs:
           cache-all-crates: "true"
 
       - name: Run Tests - ${{ matrix.package }}
-        run: cargo test -p ${{ matrix.package }}
+        run: cargo test -p ${{ matrix.package }} --features integration-tests
 
   # Run Rust Lint Check in each package individually.
   # Right now it includes warnings check and grit check

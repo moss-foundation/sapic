@@ -1,3 +1,4 @@
+#![cfg(feature = "integration-tests")]
 pub mod shared;
 
 use moss_storage::storage::operations::{GetItem, ListByPrefix};
@@ -7,7 +8,7 @@ use moss_workspace::{
         operations::{CreateCollectionInput, DeleteCollectionInput},
         primitives::CollectionId,
     },
-    services::storage_service::StorageService,
+    services::storage_service::impl_for_integration_test::StorageServiceForIntegrationTest,
     storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
 use tauri::ipc::Channel;
@@ -45,8 +46,8 @@ async fn delete_collection_success() {
     assert_eq!(output.total_returned, 0);
 
     // Check updating database - collection metadata should be removed
-    let storage_service = services.get::<StorageService>();
-    let item_store = storage_service.__storage().item_store();
+    let storage_service = services.get::<StorageServiceForIntegrationTest>();
+    let item_store = storage_service.storage().item_store();
 
     // Check that collection-specific entries are removed
     let collection_prefix = SEGKEY_COLLECTION.join(&id.to_string());

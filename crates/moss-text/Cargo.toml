@@ -11,3 +11,6 @@ serde = { workspace = true, features = ["derive"] }
 
 [dev-dependencies]
 moss_testutils.workspace = true
+
+[features]
+integration-tests = []

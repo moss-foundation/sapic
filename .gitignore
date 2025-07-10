@@ -30,9 +30,6 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
-# IDEs and Editors
-.idea
-.idea/**
 
 # Operating System
 .DS_Store

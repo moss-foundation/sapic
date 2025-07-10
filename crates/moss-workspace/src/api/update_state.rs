@@ -2,13 +2,12 @@ use moss_common::api::OperationResult;
 use tauri::Runtime as TauriRuntime;
 
 use crate::{
-    models::operations::UpdateStateInput, services::layout_service::LayoutService,
-    workspace::Workspace,
+    models::operations::UpdateStateInput, services::DynLayoutService, workspace::Workspace,
 };
 
 impl<R: TauriRuntime> Workspace<R> {
     pub async fn update_state(&self, input: UpdateStateInput) -> OperationResult<()> {
-        let layout = self.services.get::<LayoutService>();
+        let layout = self.services.get::<DynLayoutService>();
 
         match input {
             UpdateStateInput::UpdateEditorPartState(editor_part_state) => {
