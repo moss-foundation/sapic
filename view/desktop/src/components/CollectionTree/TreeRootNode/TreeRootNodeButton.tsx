@@ -86,6 +86,7 @@ export const TreeRootNodeButton = ({
         )}
       </span>
       <NodeLabel label={node.name} searchInput={searchInput} />
+      <div>({node.order})</div>
     </div>
   );
 };

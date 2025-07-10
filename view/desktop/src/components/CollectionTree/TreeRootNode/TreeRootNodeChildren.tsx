@@ -7,6 +7,7 @@ import { NodeAddForm } from "../NodeAddForm";
 import { TreeContext } from "../Tree";
 import TreeNode from "../TreeNode/TreeNode";
 import { TreeCollectionNode, TreeCollectionRootNode } from "../types";
+import { sortByOrder } from "../utils2";
 import { calculateRestrictedNames } from "./utils";
 
 interface TreeRootNodeChildrenProps {
@@ -30,8 +31,8 @@ export const TreeRootNodeChildren = ({
 
   const nodesToRender =
     displayMode === "REQUEST_FIRST"
-      ? node.requests.childNodes
-      : [node.endpoints, node.schemas, node.components, node.requests];
+      ? sortByOrder(node.requests.childNodes)
+      : sortByOrder([node.endpoints, node.schemas, node.components, node.requests]);
 
   const shouldRenderAddRootForm = displayMode === "REQUEST_FIRST" && (isAddingRootFileNode || isAddingRootFolderNode);
   const restrictedNames = calculateRestrictedNames(node, isAddingRootFolderNode);

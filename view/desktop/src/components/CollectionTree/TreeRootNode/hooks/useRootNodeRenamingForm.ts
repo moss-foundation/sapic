@@ -10,15 +10,13 @@ export const useRootNodeRenamingForm = (
 ) => {
   const [isRenamingRootNode, setIsRenamingRootNode] = useState(false);
 
-  const { placeholderFnForUpdateCollection } = useUpdateCollection();
+  const { mutateAsync: updateCollection } = useUpdateCollection();
 
   const handleRenamingRootNodeFormSubmit = (name: string) => {
-    // onNodeUpdate?.({ ...node, name });
-
-    placeholderFnForUpdateCollection({
+    updateCollection({
       id: node.id,
       collection: {
-        ...node,
+        id: node.id,
         name,
       },
     });

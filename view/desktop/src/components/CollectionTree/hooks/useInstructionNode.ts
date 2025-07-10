@@ -1,20 +1,23 @@
-import { RefObject, useEffect, useState } from "react";
+import { RefObject, useContext, useEffect, useState } from "react";
 
 import { attachInstruction, extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 
+import { TreeContext } from "../Tree";
 import { TreeCollectionNode } from "../types";
 import { canDropNode, getActualDropSourceTarget, getActualDropTargetWithInstruction } from "../utils";
 
 export const useInstructionNode = (
   node: TreeCollectionNode,
-  treeId: string | number,
+  collectionId: string | number,
   dropTargetListRef: RefObject<HTMLButtonElement>,
   isLastChild: boolean,
   setPreview: React.Dispatch<React.SetStateAction<HTMLElement | null>>
 ) => {
+  const { repository, id } = useContext(TreeContext);
+
   const [instruction, setInstruction] = useState<Instruction | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [canDrop, setCanDrop] = useState<boolean | null>(null);
@@ -30,7 +33,8 @@ export const useInstructionNode = (
           type: "TreeNode",
           data: {
             node,
-            treeId,
+            repository,
+            collectionId: id,
           },
         }),
         onDragStart() {
@@ -52,7 +56,7 @@ export const useInstructionNode = (
       dropTargetForElements({
         element,
         getData: ({ input, element }) => {
-          const data = { type: "TreeNode", data: { treeId, node } };
+          const data = { type: "TreeNode", data: { collectionId, node } };
 
           const isReorderBeforeAvailable = true;
           let isReorderAfterAvailable = true;
@@ -113,21 +117,21 @@ export const useInstructionNode = (
             return;
           }
 
-          if (canDropNode(sourceTarget, dropTarget, node)) {
-            window.dispatchEvent(
-              new CustomEvent("moveTreeNode", {
-                detail: {
-                  source: sourceTarget,
-                  target: dropTarget,
-                  instruction,
-                },
-              })
-            );
-          }
+          // if (canDropNode(sourceTarget, dropTarget, node)) {
+          //   window.dispatchEvent(
+          //     new CustomEvent("moveTreeNode", {
+          //       detail: {
+          //         source: sourceTarget,
+          //         target: dropTarget,
+          //         instruction,
+          //       },
+          //     })
+          //   );
+          // }
         },
       })
     );
-  }, [dropTargetListRef, isLastChild, node, setPreview, treeId]);
+  }, [dropTargetListRef, isLastChild, node, setPreview, collectionId]);
 
   return { instruction, isDragging, canDrop };
 };

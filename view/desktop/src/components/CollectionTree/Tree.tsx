@@ -38,20 +38,6 @@ export const CollectionTree = ({
   displayMode = "REQUEST_FIRST",
 
   onTreeUpdate,
-
-  onRootAdd,
-  onRootRemove,
-  onRootRename,
-  onRootUpdate,
-  onRootClick,
-  onRootDoubleClick,
-
-  onNodeAdd,
-  onNodeRemove,
-  onNodeRename,
-  onNodeUpdate,
-  onNodeClick,
-  onNodeDoubleClick,
 }: TreeProps) => {
   const [tree, setTree] = useState<TreeCollectionRootNode>(initialTree);
 
@@ -71,16 +57,6 @@ export const CollectionTree = ({
   useEffect(() => {
     setTree(initialTree);
   }, [initialTree]);
-
-  // useCreateNewCollectionFromTreeNodeEvent({
-  //   treeId,
-  //   onNodeAdd,
-  //   onNodeRemove,
-  //   onRootAdd,
-  //   onRootRemove,
-  //   onTreeUpdate,
-  //   setTree,
-  // });
 
   // useMoveTreeNodeEvent({
   //   treeId: initialTree.id,
@@ -110,20 +86,6 @@ export const CollectionTree = ({
         searchInput,
         sortBy,
         displayMode,
-
-        onRootAddCallback: onRootAdd,
-        onRootRemoveCallback: onRootRemove,
-        onRootRenameCallback: onRootRename,
-        onRootUpdateCallback: onRootUpdate,
-        onRootClickCallback: onRootClick,
-        onRootDoubleClickCallback: onRootDoubleClick,
-
-        onNodeAddCallback: onNodeAdd,
-        onNodeRemoveCallback: onNodeRemove,
-        onNodeRenameCallback: onNodeRename,
-        onNodeUpdateCallback: onNodeUpdate,
-        onNodeClickCallback: onNodeClick,
-        onNodeDoubleClickCallback: onNodeDoubleClick,
       }}
     >
       <TreeRootNode onNodeUpdate={handleNodeUpdate} onRootNodeUpdate={handleRootNodeUpdate} node={tree} />

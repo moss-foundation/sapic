@@ -6,7 +6,7 @@ import { USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY } from "./useStreamedCollecti
 
 export interface UseBatchUpdateCollectionEntryInput {
   collectionId: string;
-  entries: BatchUpdateEntryInput[];
+  entries: BatchUpdateEntryInput;
 }
 
 const batchUpdateCollectionEntry = async ({ collectionId, entries }: UseBatchUpdateCollectionEntryInput) => {

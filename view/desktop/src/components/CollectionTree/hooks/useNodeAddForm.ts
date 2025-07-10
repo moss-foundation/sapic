@@ -70,11 +70,16 @@ const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolde
     path: parentNode.path.raw,
   };
 
+  // Calculate order based on highest existing order value, not just count
+  const maxOrder =
+    parentNode.childNodes.length > 0 ? Math.max(...parentNode.childNodes.map((child) => child.order ?? 0)) : 0;
+  const nextOrder = maxOrder + 1;
+
   if (isAddingFolder) {
     return {
       dir: {
         ...baseEntry,
-        order: parentNode.childNodes.length + 1,
+        order: nextOrder,
         configuration: createDirConfiguration(parentNode.class),
       },
     };
@@ -83,7 +88,7 @@ const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolde
   return {
     item: {
       ...baseEntry,
-      order: parentNode.childNodes.length + 1,
+      order: nextOrder,
       configuration: createItemConfiguration(parentNode.class),
     },
   };

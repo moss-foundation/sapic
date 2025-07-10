@@ -16,16 +16,14 @@ export interface TreeCollectionNode extends EntryInfo {
   childNodes: TreeCollectionNode[];
 }
 
-export interface TreeNodeComponentPropsV2 {
-  node: TreeCollectionRootNode;
-  depth: number;
-  parentNode: TreeCollectionRootNode;
-  isLastChild: boolean;
-  onNodeUpdate: (node: TreeCollectionRootNode) => void;
-}
-
 export interface TreeRootNodeProps {
   onNodeUpdate: (node: TreeCollectionNode) => void;
+  node: TreeCollectionNode;
+}
+
+export interface DragNode {
+  collectionId: string;
+  repository?: string; //TODO This shouldn't be optional, I guess
   node: TreeCollectionNode;
 }
 
@@ -41,20 +39,6 @@ export interface TreeProps {
   displayMode?: WorkspaceMode;
 
   onTreeUpdate?: (tree: TreeCollectionRootNode) => void;
-
-  onRootAdd?: (node: TreeCollectionNode) => void;
-  onRootRemove?: (node: TreeCollectionNode) => void;
-  onRootRename?: (node: TreeCollectionNode) => void;
-  onRootUpdate?: (node: TreeCollectionNode) => void;
-  onRootClick?: (node: TreeCollectionNode) => void;
-  onRootDoubleClick?: (node: TreeCollectionNode) => void;
-
-  onNodeAdd?: (node: TreeCollectionNode) => void;
-  onNodeRemove?: (node: TreeCollectionNode) => void;
-  onNodeRename?: (node: TreeCollectionNode) => void;
-  onNodeUpdate?: (node: TreeCollectionNode) => void;
-  onNodeClick?: (node: TreeCollectionNode) => void;
-  onNodeDoubleClick?: (node: TreeCollectionNode) => void;
 }
 
 export interface TreeContextProps extends StreamCollectionsEvent {
@@ -67,18 +51,6 @@ export interface TreeContextProps extends StreamCollectionsEvent {
   allFoldersAreCollapsed: boolean;
   allFoldersAreExpanded: boolean;
   displayMode: WorkspaceMode;
-  onRootAddCallback?: (node: TreeCollectionNode) => void;
-  onRootRemoveCallback?: (node: TreeCollectionNode) => void;
-  onRootRenameCallback?: (node: TreeCollectionNode) => void;
-  onRootUpdateCallback?: (node: TreeCollectionNode) => void;
-  onRootClickCallback?: (node: TreeCollectionNode) => void;
-  onRootDoubleClickCallback?: (node: TreeCollectionNode) => void;
-  onNodeAddCallback?: (node: TreeCollectionNode) => void;
-  onNodeRemoveCallback?: (node: TreeCollectionNode) => void;
-  onNodeRenameCallback?: (node: TreeCollectionNode) => void;
-  onNodeUpdateCallback?: (node: TreeCollectionNode) => void;
-  onNodeClickCallback?: (node: TreeCollectionNode) => void;
-  onNodeDoubleClickCallback?: (node: TreeCollectionNode) => void;
 }
 
 export interface TreeNodeComponentProps extends NodeEvents {

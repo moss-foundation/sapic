@@ -7,6 +7,7 @@ import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import InputOutlined from "@/components/InputOutlined";
 import { ModalForm } from "@/components/ModalForm";
 import { useCreateCollection } from "@/hooks/collection/useCreateCollection";
+import { useStreamedCollections } from "@/hooks/collection/useStreamedCollections";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 import { ModalWrapperProps } from "../types";
@@ -15,6 +16,7 @@ export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { mutateAsync: createCollection, isPending: isCreateCollectionLoading } = useCreateCollection();
+  const { data: collections } = useStreamedCollections();
 
   const { addOrFocusPanel } = useTabbedPaneStore();
 
@@ -33,7 +35,7 @@ export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
     const result = await createCollection({
       name,
       repo,
-      order: 0, // FIXME: This is a temporary hardcoded
+      order: collections?.length ? collections.length + 1 : 1,
     });
 
     closeModal();

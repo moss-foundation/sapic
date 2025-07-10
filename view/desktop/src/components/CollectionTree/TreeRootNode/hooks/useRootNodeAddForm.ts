@@ -54,26 +54,10 @@ export const useRootNodeAddForm = (
     const newEntry = createEntry(name, isAddingRootNodeFolder, node.requests.childNodes.length + 1);
 
     try {
-      const result = await createCollectionEntry({
+      await createCollectionEntry({
         collectionId: id,
         input: newEntry,
       });
-
-      if (result) {
-        onRootNodeUpdate({
-          ...node,
-          requests: {
-            ...node.requests,
-            childNodes: [
-              ...node.requests.childNodes,
-              {
-                ...result,
-                childNodes: [],
-              },
-            ],
-          },
-        });
-      }
     } catch (error) {
       console.error(error);
     } finally {

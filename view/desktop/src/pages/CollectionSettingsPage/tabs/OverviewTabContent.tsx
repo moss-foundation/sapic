@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import { InputOutlined } from "@/components";
 import { DeleteCollectionModal } from "@/components/Modals/Collection/DeleteCollectionModal";
-import { useModal, useStreamedCollections, useUpdateCollection } from "@/hooks";
+import { useCollectionsTrees, useModal, useStreamedCollections, useUpdateCollection } from "@/hooks";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 
 import { CollectionDangerZoneSection } from "../CollectionDangerZoneSection";
@@ -14,9 +14,12 @@ interface OverviewTabContentProps {
 
 export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps<OverviewTabContentProps>) => {
   const { data: streamedCollections } = useStreamedCollections();
-  const { placeholderFnForUpdateCollection } = useUpdateCollection();
+  const { mutateAsync: updateCollection } = useUpdateCollection();
 
   const collection = streamedCollections?.find((collection) => collection.id === params.collectionId);
+
+  const { collectionsTrees } = useCollectionsTrees();
+  const collectionTree = collectionsTrees.find((tree) => tree.id === params.collectionId);
 
   const { showModal, closeModal, openModal } = useModal();
 
@@ -31,15 +34,16 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
     }
   }, [collection, containerApi]);
 
-  const updateCollection = () => {
+  const handleUpdateCollection = async () => {
     if (!collection || !name) return;
 
-    // updateStreamedCollection({
-    //   ...collection,
-    //   name,
-    // });
-
-    placeholderFnForUpdateCollection({ id: collection.id, collection: { ...collection, name } });
+    await updateCollection({
+      id: collection.id,
+      collection: {
+        id: collection.id,
+        name,
+      },
+    });
   };
 
   const handleBlur = () => {
@@ -48,7 +52,7 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
       return;
     }
 
-    updateCollection();
+    handleUpdateCollection();
   };
 
   if (!collection) {
@@ -77,7 +81,7 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
-                    // updateCollection();
+                    handleUpdateCollection();
                     e.currentTarget.blur();
                   }
                 }}
@@ -97,11 +101,11 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
                 size="sm"
                 value={repository}
                 onChange={(e) => setRepository(e.target.value)}
-                // onBlur={handleBlur}
+                onBlur={handleBlur}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
-                    // updateCollection();
+                    handleUpdateCollection();
                     e.currentTarget.blur();
                   }
                 }}
@@ -112,7 +116,17 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
             </div>
           </div>
         </div>
+
         <CollectionDangerZoneSection onDeleteClick={openModal} />
+
+        {/* TODO: Remove this, this is for debugging */}
+        <pre>
+          {JSON.stringify(
+            collectionTree,
+            ["id", "name", "order", "repository", "expanded", "requests", "childNodes"],
+            2
+          )}
+        </pre>
       </div>
 
       {/* Right Column - Summary positioned absolutely on the right */}

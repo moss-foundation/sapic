@@ -1,8 +1,9 @@
-import { useContext } from "react";
+import { useContext, useRef, useState } from "react";
 
 import { useDeleteCollectionEntry } from "@/hooks";
 
 import { TreeContext } from "../..";
+import { useInstructionNode } from "../hooks/useInstructionNode";
 import { useNodeAddForm } from "../hooks/useNodeAddForm";
 import { useNodeRenamingForm } from "../hooks/useNodeRenamingForm";
 import { TreeCollectionNode } from "../types";
@@ -31,7 +32,7 @@ export interface TreeNodeComponentProps extends NodeEvents {
   depth: number;
   parentNode: TreeCollectionNode;
   isLastChild: boolean;
-  isRootNode: boolean;
+  isRootNode?: boolean;
 }
 
 export interface NodeEvents {
@@ -48,7 +49,7 @@ export const TreeNode = ({
 }: TreeNodeComponentProps) => {
   const { nodeOffset, paddingRight, id } = useContext(TreeContext);
   const { mutateAsync: deleteCollectionEntry } = useDeleteCollectionEntry();
-  // const triggerRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const {
     isAddingFileNode,
@@ -78,17 +79,17 @@ export const TreeNode = ({
     onNodeUpdate
   );
 
-  const handleDeleteNode = () => {
-    deleteCollectionEntry({
+  const handleDeleteNode = async () => {
+    await deleteCollectionEntry({
       collectionId: id,
       input: {
         id: node.id,
       },
     });
-    // onNodeUpdate(node);
   };
-  // const [preview, setPreview] = useState<HTMLElement | null>(null);
-  // const { instruction, isDragging, canDrop } = useInstructionNode(node, treeId, triggerRef, isLastChild, setPreview);
+
+  const [preview, setPreview] = useState<HTMLElement | null>(null);
+  const { instruction, isDragging, canDrop } = useInstructionNode(node, id, triggerRef, isLastChild, setPreview);
 
   const shouldRenderChildNodes = node.expanded || isAddingFileNode || isAddingFolderNode;
   const shouldRenderAddingFormDivider = false; // !isAddingDividerNodeAbove && !isAddingDividerNodeBelow;
@@ -137,7 +138,7 @@ export const TreeNode = ({
           )} */}
 
           <TreeNodeButton
-            // ref={triggerRef}
+            ref={triggerRef}
             node={node}
             onNodeUpdate={onNodeUpdate}
             depth={depth}
@@ -145,10 +146,10 @@ export const TreeNode = ({
             onAddFolder={() => setIsAddingFolderNode(true)}
             onRename={() => setIsRenamingNode(true)}
             onDelete={handleDeleteNode}
-            // isDragging={isDragging}
-            // canDrop={canDrop}
-            // instruction={instruction}
-            // preview={preview}
+            isDragging={isDragging}
+            canDrop={canDrop}
+            instruction={instruction}
+            preview={preview}
             isLastChild={isLastChild}
             isRootNode={isRootNode}
           />
@@ -174,7 +175,9 @@ export const TreeNode = ({
           )} */}
         </>
       )}
+
       {shouldRenderChildNodes && <TreeNodeChildren node={node} onNodeUpdate={onNodeUpdate} depth={depth} />}
+
       {(isAddingFileNode || isAddingFolderNode) && (
         <TreeNodeAddForm
           depth={depth}
