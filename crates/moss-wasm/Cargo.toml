@@ -12,3 +12,6 @@ sha2.workspace = true
 
 # HCL experiment
 hcl-rs.workspace = true
+
+[features]
+integration-tests = []

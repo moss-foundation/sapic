@@ -1,3 +1,5 @@
+#![cfg(feature = "integration-tests")]
+
 pub mod shared;
 
 use moss_collection::{constants::COLLECTION_ICON_FILENAME, dirs::ASSETS_DIR};

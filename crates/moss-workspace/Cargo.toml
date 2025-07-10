@@ -38,4 +38,4 @@ tauri = { workspace = true, features = ["test"] }
 moss_testutils.workspace = true
 
 [features]
-test-support = []
+integration-tests = []

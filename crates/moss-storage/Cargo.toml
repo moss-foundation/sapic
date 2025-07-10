@@ -11,3 +11,6 @@ serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 smallvec.workspace = true
 redb.workspace = true
+
+[features]
+integration-tests = []

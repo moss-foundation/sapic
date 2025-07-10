@@ -1,3 +1,4 @@
+#![cfg(feature = "integration-tests")]
 pub mod shared;
 
 use moss_bindingutils::primitives::{ChangePath, ChangeString};

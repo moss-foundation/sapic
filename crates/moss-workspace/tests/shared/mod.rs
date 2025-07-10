@@ -1,3 +1,5 @@
+#![cfg(feature = "integration-tests")]
+
 use image::{ImageBuffer, Rgb};
 mod context;
 pub use context::*;

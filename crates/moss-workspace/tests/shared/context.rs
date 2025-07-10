@@ -1,3 +1,5 @@
+#![cfg(feature = "integration-tests")]
+
 use std::{any::TypeId, sync::Arc};
 
 use async_trait::async_trait;

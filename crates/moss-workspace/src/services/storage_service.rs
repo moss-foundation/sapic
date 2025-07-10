@@ -1,4 +1,4 @@
-#[cfg(any(test, feature = "test-support"))]
+#[cfg(any(test, feature = "integration-tests"))]
 pub mod test_service_repr;
 
 use anyhow::{Context as _, Result};
