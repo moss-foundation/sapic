@@ -14,14 +14,6 @@ use moss_workspace::{
 
 use crate::shared::{generate_random_icon, setup_test_workspace};
 
-// FIXME: The tests and business logic are poorly organized.
-// A collection shouldn't expose implementation details, and the workspace shouldn't be
-// testing logic that doesn't belong to it. The DTO for creating a collection should simply
-// return the icon path, and in these tests we should check if the icon exists (when expected),
-// rather than manually constructing the path where we assume it was saved. With the current
-// approach, if the image path logic changes in `moss-collection`, it'll break tests in
-// `moss-workspace`, which clearly shouldn't happen.
-
 #[tokio::test]
 async fn rename_collection_success() {
     let (ctx, _workspace_path, mut workspace, services, cleanup) = setup_test_workspace().await;
@@ -275,7 +267,7 @@ async fn update_collection_new_icon() {
         .collection(&id)
         .await
         .unwrap();
-    assert!(collection.icon_path().is_some(),);
+    assert!(collection.icon_path().is_some());
 
     cleanup().await;
 }
@@ -325,6 +317,6 @@ async fn update_collection_remove_icon() {
         .collection(&id)
         .await
         .unwrap();
-    assert!(collection.icon_path().is_none(),);
+    assert!(collection.icon_path().is_none());
     cleanup().await;
 }
