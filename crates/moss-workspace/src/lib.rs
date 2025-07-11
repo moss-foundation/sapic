@@ -1,6 +1,7 @@
 pub mod api;
 pub mod builder;
 pub mod context;
+pub mod errors;
 pub mod manifest;
 pub mod models;
 pub mod services;

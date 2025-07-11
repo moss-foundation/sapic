@@ -3913,6 +3913,7 @@ dependencies = [
  "derive_more 2.0.1",
  "futures",
  "image",
+ "joinerror",
  "moss_activity_indicator",
  "moss_applib",
  "moss_bindingutils",
