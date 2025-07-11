@@ -1,3 +1,5 @@
+pub mod handlers;
+
 use anyhow::anyhow;
 use moss_api::{self as api, TauriError, TauriResult};
 use moss_app::{

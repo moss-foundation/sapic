@@ -1,3 +1,5 @@
+mod handlers;
+
 use moss_api::{TauriError, TauriResult};
 use moss_app::app::App;
 use moss_collection::models::{events::*, operations::*};
