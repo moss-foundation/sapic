@@ -76,10 +76,6 @@ impl Collection {
         self.services.get::<T>()
     }
 
-    pub fn service_arc<T: ServiceMarker + Send + Sync>(&self) -> Arc<T> {
-        self.services.get_arc::<T>()
-    }
-
     pub async fn modify(&self, params: CollectionModifyParams) -> Result<()> {
         if params.name.is_some() || params.repository.is_some() {
             let normalized_repo = if let Some(ChangeString::Update(url)) = &params.repository {

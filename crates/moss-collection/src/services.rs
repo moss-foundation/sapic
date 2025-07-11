@@ -135,4 +135,10 @@ impl DynWorktreeService {
     }
 }
 
+impl Clone for DynWorktreeService {
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
+    }
+}
+
 impl ServiceMarker for DynWorktreeService {}

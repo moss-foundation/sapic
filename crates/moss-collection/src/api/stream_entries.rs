@@ -37,7 +37,7 @@ impl Collection {
     ) -> OperationResult<StreamEntriesOutput> {
         let (tx, mut rx) = mpsc::unbounded_channel::<EntryDescription>();
         let (done_tx, mut done_rx) = oneshot::channel::<()>();
-        let worktree_service = self.service_arc::<DynWorktreeService>();
+        let worktree_service = self.service::<DynWorktreeService>();
         let storage_service = self.service::<DynStorageService>();
 
         let mut handles = Vec::new();
