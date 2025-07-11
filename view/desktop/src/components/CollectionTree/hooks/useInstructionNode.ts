@@ -8,6 +8,7 @@ import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/el
 import { TreeContext } from "../Tree";
 import { TreeCollectionNode } from "../types";
 import { canDropNode, getActualDropSourceTarget, getActualDropTargetWithInstruction } from "../utils";
+import { doesLocationHaveTreeNode, getInstruction, getLocationTreeNodeData, getSourceTreeNodeData } from "../utils2";
 
 export const useInstructionNode = (
   node: TreeCollectionNode,
@@ -106,32 +107,27 @@ export const useInstructionNode = (
           setInstruction(null);
           setCanDrop(null);
 
-          if (location.current?.dropTargets.length === 0 || location.current.dropTargets[0].data.type !== "TreeNode") {
+          if (!doesLocationHaveTreeNode(location)) {
             return;
           }
 
-          const sourceTarget = getActualDropSourceTarget(source);
-          const { dropTarget, instruction } = getActualDropTargetWithInstruction(location, self);
+          const sourceTreeNodeData = getSourceTreeNodeData(source);
+          const locationTreeNodeData = getLocationTreeNodeData(location);
+          const instruction = getInstruction(self);
 
-          if (dropTarget?.node.id !== node.id) {
-            return;
-          }
+          // console.log({
+          //   sourceTreeNodeData,
+          //   locationTreeNodeData,
+          //   instruction,
+          // });
 
-          // if (canDropNode(sourceTarget, dropTarget, node)) {
-          //   window.dispatchEvent(
-          //     new CustomEvent("moveTreeNode", {
-          //       detail: {
-          //         source: sourceTarget,
-          //         target: dropTarget,
-          //         instruction,
-          //       },
-          //     })
-          //   );
+          // if (dropTarget?.node.id !== node.id) {
+          //   return;
           // }
         },
       })
     );
-  }, [dropTargetListRef, isLastChild, node, setPreview, collectionId]);
+  }, [dropTargetListRef, isLastChild, node, setPreview, collectionId, repository, id]);
 
   return { instruction, isDragging, canDrop };
 };

@@ -1,18 +1,18 @@
-/* eslint-disable */
-import { RefObject, useEffect } from "react";
+import { RefObject, useContext, useEffect, useState } from "react";
 
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import { TreeNodeProps } from "../types";
-import { canDropNode, getActualDropSourceTarget, getActualDropTarget } from "../utils";
+import { TreeContext } from "../Tree";
+import { TreeCollectionRootNode } from "../types";
+import { getActualDropSourceTarget, getActualDropTarget } from "../utils";
+import { canDropRootNode } from "../utils2";
 
-const classesToRemove = ["background-(--moss-success-background)", "background-(--moss-error-background)"];
+export const useDropTargetRootNode = (node: TreeCollectionRootNode, dropTargetListRef: RefObject<HTMLDivElement>) => {
+  const { id } = useContext(TreeContext);
 
-export const useDropTargetRootNode = (
-  node: TreeNodeProps,
-  treeId: string | number,
-  dropTargetListRef: RefObject<HTMLDivElement>
-) => {
+  const [isDragging, setIsDragging] = useState(false);
+  const [canDrop, setCanDrop] = useState(false);
+
   useEffect(() => {
     const element = dropTargetListRef.current;
     if (!element) return;
@@ -20,64 +20,36 @@ export const useDropTargetRootNode = (
     return dropTargetForElements({
       element,
       getData: () => {
-        return { type: "TreeRootNode", data: { treeId, node } };
+        return { type: "TreeRootNode", data: { collectionId: id, node } };
       },
       canDrop({ source }) {
-        return source.data.type === "TreeNode";
+        return source.data.type === "TreeNode" || source.data.type === "TreeRootNode";
       },
-
       onDropTargetChange({ location, source }) {
         if (
           location.current?.dropTargets.length === 0 ||
           location.current.dropTargets[0].data.type !== "TreeRootNode"
         ) {
-          element.classList.remove(...classesToRemove);
+          setCanDrop(false);
           return;
         }
 
         const sourceTarget = getActualDropSourceTarget(source);
         const dropTarget = getActualDropTarget(location);
 
-        if (!dropTarget || !sourceTarget || dropTarget?.node.uniqueId !== node.uniqueId) {
-          element.classList.remove(...classesToRemove);
+        if (!dropTarget || !sourceTarget || dropTarget?.node.id !== node.id) {
+          setCanDrop(false);
           return;
         }
-        if (canDropNode(sourceTarget, dropTarget, node)) {
-          element.classList.add("background-(--moss-success-background)");
-        } else {
-          element.classList.add("background-(--moss-error-background)");
-        }
+
+        setCanDrop(canDropRootNode(sourceTarget, dropTarget, node));
       },
-      onDrop({ location, source }) {
-        element.classList.remove(...classesToRemove);
-
-        if (
-          location.current?.dropTargets.length === 0 ||
-          location.current.dropTargets[0].data.type !== "TreeRootNode"
-        ) {
-          return;
-        }
-
-        const sourceTarget = getActualDropSourceTarget(source);
-        const dropTarget = getActualDropTarget(location);
-
-        if (dropTarget?.node.uniqueId !== node.uniqueId) {
-          return;
-        }
-
-        if (canDropNode(sourceTarget, dropTarget, node)) {
-          window.dispatchEvent(
-            new CustomEvent("moveTreeNode", {
-              detail: {
-                source: sourceTarget,
-                target: dropTarget,
-              },
-            })
-          );
-        }
-
-        element.classList.remove("background-(--moss-success-background)", "background-(--moss-error-background)");
+      onDrop() {
+        setCanDrop(false);
+        setIsDragging(false);
       },
     });
-  }, [dropTargetListRef, node, treeId]);
+  }, [dropTargetListRef, node, id]);
+
+  return { canDropRootNode: canDrop, isDraggingRootNode: isDragging };
 };

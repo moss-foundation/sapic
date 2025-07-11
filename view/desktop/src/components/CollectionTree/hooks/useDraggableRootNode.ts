@@ -1,20 +1,23 @@
-import { RefObject, useEffect, useState } from "react";
+import { RefObject, useContext, useEffect, useState } from "react";
 
 import { attachClosestEdge, extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/types";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
+import { TreeContext } from "../Tree";
 import { TreeCollectionRootNode } from "../types";
 
 export const useDraggableRootNode = (
   draggableRef: RefObject<HTMLDivElement>,
   node: TreeCollectionRootNode,
-  treeId: string | number,
   isRenamingNode: boolean
 ) => {
+  const { id } = useContext(TreeContext);
+
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [canDrop, setCanDrop] = useState<boolean>(false);
 
   useEffect(() => {
     const element = draggableRef.current;
@@ -27,7 +30,7 @@ export const useDraggableRootNode = (
           type: "TreeRootNode",
           data: {
             node,
-            treeId,
+            collectionId: id,
           },
         }),
         onDragStart() {
@@ -43,7 +46,7 @@ export const useDraggableRootNode = (
           return attachClosestEdge(
             {
               node,
-              treeId,
+              collectionId: id,
               closestEdge: closestEdge as Edge,
             },
             {
@@ -80,7 +83,7 @@ export const useDraggableRootNode = (
         },
       })
     );
-  }, [treeId, node, isRenamingNode, draggableRef, closestEdge]);
+  }, [node, isRenamingNode, draggableRef, closestEdge, id]);
 
   return {
     closestEdge,

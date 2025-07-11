@@ -70,9 +70,11 @@ export const CollectionTreeView = () => {
 
           <div className="flex grow flex-col">
             {!isLoading &&
-              collectionsTrees.map((collection) => (
-                <CollectionTree key={collection.id} tree={collection} displayMode={displayMode} />
-              ))}
+              collectionsTrees
+                .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+                .map((collection) => (
+                  <CollectionTree key={collection.id} tree={collection} displayMode={displayMode} />
+                ))}
           </div>
 
           {showCollectionCreationZone && (
