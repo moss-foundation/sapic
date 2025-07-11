@@ -8,17 +8,9 @@ use std::{
     sync::Arc,
 };
 
-use crate::{
-    dirs,
-    services::{AnySetIconService, set_icon_service::constants::COLLECTION_ICON_FILENAME},
-};
+use crate::{dirs, services::AnySetIconService};
 
-// FIXME: This either shouldn’t be public or should be moved to `lib.rs`.
-pub mod constants {
-    pub const COLLECTION_ICON_FILENAME: &str = "icon.png";
-    pub const ICON_SIZE: u32 = 128;
-}
-
+const COLLECTION_ICON_FILENAME: &str = "icon.png";
 pub struct SetIconService {
     fs: Arc<dyn FileSystem>,
     assets_abs_path: Arc<Path>,

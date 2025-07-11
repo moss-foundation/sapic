@@ -1,9 +1,3 @@
-use crate::{
-    dirs,
-    models::primitives::CollectionId,
-    services::{AnyCollectionService, AnyStorageService, DynStorageService},
-    storage::segments::SEGKEY_COLLECTION,
-};
 use anyhow::{Context as _, Result};
 use async_trait::async_trait;
 use derive_more::{Deref, DerefMut};
@@ -18,7 +12,7 @@ use moss_collection::{
         DynStorageService as DynCollectionStorageService,
         DynWorktreeService as DynCollectionWorktreeService,
         SetIconService as CollectionSetIconService, StorageService as CollectionStorageService,
-        WorktreeService as CollectionWorktreeService, set_icon_service::constants::ICON_SIZE,
+        WorktreeService as CollectionWorktreeService,
     },
 };
 use moss_common::api::OperationError;
@@ -31,6 +25,15 @@ use std::{
 };
 use thiserror::Error;
 use tokio::sync::RwLock;
+
+use crate::{
+    dirs,
+    models::primitives::CollectionId,
+    services::{AnyCollectionService, AnyStorageService, DynStorageService},
+    storage::segments::SEGKEY_COLLECTION,
+};
+
+const COLLECTION_ICON_PATH: u32 = 128;
 
 #[derive(Error, Debug)]
 pub enum CollectionError {
@@ -191,7 +194,7 @@ impl AnyCollectionService for CollectionService {
                     Arc::new(CollectionSetIconService::new(
                         abs_path.clone(),
                         self.fs.clone(),
-                        ICON_SIZE, // FIXME: Where to put this constant?
+                        COLLECTION_ICON_PATH,
                     ));
                 DynCollectionSetIconService::new(set_icon)
             };
@@ -456,7 +459,7 @@ async fn restore_collections(
                     Arc::new(CollectionSetIconService::new(
                         collection_abs_path.clone(),
                         fs.clone(),
-                        ICON_SIZE, // FIXME: Where to put this constant?
+                        COLLECTION_ICON_PATH,
                     ));
                 DynCollectionSetIconService::new(set_icon)
             };
