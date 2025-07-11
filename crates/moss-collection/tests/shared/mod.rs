@@ -1,3 +1,4 @@
+use moss_applib::providers::{ServiceMap, ServiceProvider};
 use moss_collection::{
     CollectionBuilder,
     builder::CollectionCreateParams,
@@ -12,12 +13,19 @@ use moss_collection::{
             ItemConfigurationModel, RequestDirConfigurationModel, SchemaDirConfigurationModel,
         },
     },
-    services::{storage_service::StorageService, worktree_service::WorktreeService},
+    services::{
+        DynStorageService, DynWorktreeService,
+        storage_service::{
+            StorageService, impl_for_integration_test::StorageServiceForIntegrationTest,
+        },
+        worktree_service::WorktreeService,
+    },
 };
 use moss_fs::RealFileSystem;
 use moss_testutils::random_name::{random_collection_name, random_string};
 use nanoid::nanoid;
 use std::{
+    any::TypeId,
     path::{Path, PathBuf},
     sync::Arc,
 };
@@ -38,18 +46,37 @@ fn random_collection_path() -> PathBuf {
         .join(nanoid!(10))
 }
 
-pub async fn create_test_collection() -> (Arc<Path>, Collection) {
+pub async fn create_test_collection() -> (Arc<Path>, Collection, ServiceProvider) {
     let fs = Arc::new(RealFileSystem::new());
     let internal_abs_path = random_collection_path();
 
     std::fs::create_dir_all(internal_abs_path.clone()).unwrap();
 
     let abs_path: Arc<Path> = internal_abs_path.clone().into();
-    let storage = Arc::new(StorageService::new(&abs_path).unwrap());
-    let worktree = WorktreeService::new(abs_path.clone(), fs.clone(), storage.clone());
+
+    let mut services: ServiceMap = Default::default();
+
+    let storage_service: Arc<StorageServiceForIntegrationTest> =
+        Arc::new(StorageService::new(&abs_path).unwrap().into());
+    let storage_service_dyn: Arc<DynStorageService> =
+        DynStorageService::new(storage_service.clone()).into();
+
+    let worktree_service: Arc<WorktreeService> =
+        WorktreeService::new(abs_path.clone(), fs.clone(), storage_service_dyn.clone()).into();
+    let worktree_service_dyn: Arc<DynWorktreeService> =
+        DynWorktreeService::new(worktree_service.clone()).into();
+
+    {
+        services.insert(
+            TypeId::of::<StorageServiceForIntegrationTest>(),
+            storage_service,
+        );
+        services.insert(TypeId::of::<WorktreeService>(), worktree_service);
+    }
+
     let collection = CollectionBuilder::new(fs)
-        .with_service::<StorageService>(storage)
-        .with_service(worktree)
+        .with_service::<DynStorageService>(storage_service_dyn)
+        .with_service::<DynWorktreeService>(worktree_service_dyn)
         .create(CollectionCreateParams {
             name: Some(random_collection_name()),
             external_abs_path: None,
@@ -60,7 +87,7 @@ pub async fn create_test_collection() -> (Arc<Path>, Collection) {
         .await
         .unwrap();
 
-    (abs_path, collection)
+    (abs_path, collection, services.into())
 }
 
 // Since configuration models are empty enums, we need to use unreachable! for now

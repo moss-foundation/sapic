@@ -1,9 +1,6 @@
+#![cfg(feature = "integration-tests")]
 pub mod shared;
 
-use crate::shared::{
-    create_test_collection, create_test_component_dir_entry, create_test_endpoint_dir_entry,
-    create_test_request_dir_entry, create_test_schema_dir_entry, random_entry_name,
-};
 use moss_collection::{
     dirs,
     models::{operations::DeleteEntryInput, primitives::EntryId},
@@ -11,9 +8,14 @@ use moss_collection::{
 use moss_common::api::OperationError;
 use std::path::PathBuf;
 
+use crate::shared::{
+    create_test_collection, create_test_component_dir_entry, create_test_endpoint_dir_entry,
+    create_test_request_dir_entry, create_test_schema_dir_entry, random_entry_name,
+};
+
 #[tokio::test]
 async fn delete_entry_success() {
-    let (collection_path, mut collection) = create_test_collection().await;
+    let (collection_path, mut collection, _services) = create_test_collection().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
@@ -38,7 +40,7 @@ async fn delete_entry_success() {
 
 #[tokio::test]
 async fn delete_entry_not_found() {
-    let (collection_path, collection) = create_test_collection().await;
+    let (collection_path, collection, _services) = create_test_collection().await;
 
     let delete_input = DeleteEntryInput { id: EntryId::new() };
 
@@ -60,7 +62,7 @@ async fn delete_entry_not_found() {
 
 #[tokio::test]
 async fn delete_entry_with_subdirectories() {
-    let (collection_path, mut collection) = create_test_collection().await;
+    let (collection_path, mut collection, _services) = create_test_collection().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
@@ -97,7 +99,7 @@ async fn delete_entry_with_subdirectories() {
 
 #[tokio::test]
 async fn delete_multiple_entries() {
-    let (collection_path, mut collection) = create_test_collection().await;
+    let (collection_path, mut collection, _services) = create_test_collection().await;
 
     let entry1_name = format!("{}_1", random_entry_name());
     let entry2_name = format!("{}_2", random_entry_name());
@@ -140,7 +142,7 @@ async fn delete_multiple_entries() {
 
 #[tokio::test]
 async fn delete_entry_twice() {
-    let (collection_path, mut collection) = create_test_collection().await;
+    let (collection_path, mut collection, _services) = create_test_collection().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
@@ -178,7 +180,7 @@ async fn delete_entry_twice() {
 
 #[tokio::test]
 async fn delete_entries_from_different_directories() {
-    let (collection_path, mut collection) = create_test_collection().await;
+    let (collection_path, mut collection, _services) = create_test_collection().await;
 
     let mut entries = Vec::new();
 

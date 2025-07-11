@@ -1,9 +1,10 @@
+#![cfg(feature = "integration-tests")]
 pub mod shared;
 
 use moss_collection::{
     constants, dirs,
     models::operations::{CreateDirEntryInput, CreateEntryInput, CreateItemEntryInput},
-    services::StorageService,
+    services::storage_service::impl_for_integration_test::StorageServiceForIntegrationTest,
     storage::segments::SEGKEY_RESOURCE_ENTRY,
 };
 use moss_common::api::OperationError;
@@ -20,7 +21,7 @@ use crate::shared::{
 
 #[tokio::test]
 async fn create_dir_entry_success() {
-    let (collection_path, collection) = create_test_collection().await;
+    let (collection_path, collection, _services) = create_test_collection().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
@@ -55,7 +56,7 @@ async fn create_dir_entry_success() {
 
 #[tokio::test]
 async fn create_dir_entry_with_order() {
-    let (collection_path, collection) = create_test_collection().await;
+    let (collection_path, collection, services) = create_test_collection().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
@@ -76,8 +77,8 @@ async fn create_dir_entry_with_order() {
     assert!(expected_dir.exists());
 
     // TODO: Check that order is correctly stored
-    let storage_service = collection.service_arc::<StorageService>();
-    let resource_store = storage_service.__storage().resource_store();
+    let storage_service = services.get::<StorageServiceForIntegrationTest>();
+    let resource_store = storage_service.storage().resource_store();
 
     // Check order was updated
     let order_key = SEGKEY_RESOURCE_ENTRY.join(&id.to_string()).join("order");
@@ -91,7 +92,7 @@ async fn create_dir_entry_with_order() {
 
 #[tokio::test]
 async fn create_dir_entry_already_exists() {
-    let (collection_path, collection) = create_test_collection().await;
+    let (collection_path, collection, _services) = create_test_collection().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
@@ -126,7 +127,7 @@ async fn create_dir_entry_already_exists() {
 
 #[tokio::test]
 async fn create_dir_entry_special_chars_in_name() {
-    let (collection_path, collection) = create_test_collection().await;
+    let (collection_path, collection, _services) = create_test_collection().await;
 
     let base_name = random_entry_name();
 
@@ -170,7 +171,7 @@ async fn create_dir_entry_special_chars_in_name() {
 
 #[tokio::test]
 async fn create_dir_entry_inside_item_entry() {
-    let (collection_path, collection) = create_test_collection().await;
+    let (collection_path, collection, _services) = create_test_collection().await;
 
     let outer_name = random_entry_name();
     let outer_path = PathBuf::from(dirs::COMPONENTS_DIR);

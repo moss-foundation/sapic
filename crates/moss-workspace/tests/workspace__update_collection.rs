@@ -262,9 +262,11 @@ async fn update_collection_new_icon() {
         .unwrap();
 
     // Verify the icon is generated
-    let collection_service = services.get::<CollectionService>();
-
-    let collection = collection_service.collection(&id).await.unwrap();
+    let collection = services
+        .get::<CollectionService>()
+        .collection(&id)
+        .await
+        .unwrap();
     assert!(collection.icon_path().is_some());
 
     cleanup().await;
@@ -310,9 +312,12 @@ async fn update_collection_remove_icon() {
         .unwrap();
 
     // Verify the icon is removed
-    let collection_service = services.get::<CollectionService>();
-
-    let collection = collection_service.collection(&id).await.unwrap();
+    let collection = services
+        .get::<CollectionService>()
+        .collection(&id)
+        .await
+        .unwrap();
     assert!(collection.icon_path().is_none());
+
     cleanup().await;
 }

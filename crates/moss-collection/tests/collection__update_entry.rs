@@ -1,11 +1,11 @@
-use crate::shared::{
-    create_test_collection, create_test_component_dir_entry, create_test_component_item_entry,
-    create_test_request_dir_entry, random_entry_name,
-};
+#![cfg(feature = "integration-tests")]
+
+mod shared;
+
 use moss_collection::{
     dirs,
     models::{operations::UpdateEntryInput, primitives::EntryId, types::UpdateDirEntryParams},
-    services::StorageService,
+    services::storage_service::impl_for_integration_test::StorageServiceForIntegrationTest,
     storage::segments::{SEGKEY_EXPANDED_ENTRIES, SEGKEY_RESOURCE_ENTRY},
 };
 use moss_storage::storage::operations::GetItem;
@@ -13,13 +13,15 @@ use moss_testutils::fs_specific::FILENAME_SPECIAL_CHARS;
 use moss_text::sanitized::sanitize;
 use std::path::{Path, PathBuf};
 
-mod shared;
-
+use crate::shared::{
+    create_test_collection, create_test_component_dir_entry, create_test_component_item_entry,
+    create_test_request_dir_entry, random_entry_name,
+};
 // TODO: Test updating entry order
 
 #[tokio::test]
 async fn rename_dir_entry_success() {
-    let (collection_path, mut collection) = create_test_collection().await;
+    let (collection_path, mut collection, _services) = create_test_collection().await;
 
     let old_entry_name = random_entry_name();
     let new_entry_name = random_entry_name();
@@ -50,7 +52,7 @@ async fn rename_dir_entry_success() {
 
 #[tokio::test]
 async fn rename_dir_entry_empty_name() {
-    let (collection_path, mut collection) = create_test_collection().await;
+    let (collection_path, mut collection, _services) = create_test_collection().await;
 
     let old_entry_name = random_entry_name();
     let new_entry_name = "".to_string();
@@ -75,7 +77,7 @@ async fn rename_dir_entry_empty_name() {
 
 #[tokio::test]
 async fn rename_dir_entry_already_exists() {
-    let (collection_path, mut collection) = create_test_collection().await;
+    let (collection_path, mut collection, _services) = create_test_collection().await;
     let first_entry_name = random_entry_name();
     let second_entry_name = random_entry_name();
 
@@ -102,7 +104,7 @@ async fn rename_dir_entry_already_exists() {
 
 #[tokio::test]
 async fn rename_dir_entry_special_chars_in_name() {
-    let (collection_path, mut collection) = create_test_collection().await;
+    let (collection_path, mut collection, _services) = create_test_collection().await;
     let entry_path = PathBuf::from(dirs::COMPONENTS_DIR);
 
     for special_char in FILENAME_SPECIAL_CHARS {
@@ -146,7 +148,7 @@ async fn rename_dir_entry_special_chars_in_name() {
 
 #[tokio::test]
 async fn update_dir_entry_order() {
-    let (collection_path, mut collection) = create_test_collection().await;
+    let (collection_path, mut collection, services) = create_test_collection().await;
 
     let entry_name = random_entry_name();
 
@@ -163,8 +165,8 @@ async fn update_dir_entry_order() {
         .await
         .unwrap();
 
-    let storage_service = collection.service_arc::<StorageService>();
-    let resource_store = storage_service.__storage().resource_store();
+    let storage_service = services.get::<StorageServiceForIntegrationTest>();
+    let resource_store = storage_service.storage().resource_store();
 
     // Check order was updated
     let order_key = SEGKEY_RESOURCE_ENTRY.join(&id.to_string()).join("order");
@@ -178,14 +180,14 @@ async fn update_dir_entry_order() {
 
 #[tokio::test]
 async fn expand_and_collapse_dir_entry() {
-    let (collection_path, mut collection) = create_test_collection().await;
+    let (collection_path, mut collection, services) = create_test_collection().await;
 
     let entry_name = random_entry_name();
 
     let id = create_test_component_dir_entry(&mut collection, &entry_name).await;
 
-    let storage_service = collection.service_arc::<StorageService>();
-    let resource_store = storage_service.__storage().resource_store();
+    let storage_service = services.get::<StorageServiceForIntegrationTest>();
+    let resource_store = storage_service.storage().resource_store();
 
     // Expanding the entry
     let _ = collection
@@ -235,7 +237,7 @@ async fn expand_and_collapse_dir_entry() {
 
 #[tokio::test]
 async fn move_dir_entry_success() {
-    let (collection_path, mut collection) = create_test_collection().await;
+    let (collection_path, mut collection, _services) = create_test_collection().await;
 
     let entry_name = random_entry_name();
 
@@ -271,7 +273,7 @@ async fn move_dir_entry_success() {
 
 #[tokio::test]
 async fn move_dir_entry_nonexistent_destination() {
-    let (collection_path, mut collection) = create_test_collection().await;
+    let (collection_path, mut collection, _services) = create_test_collection().await;
 
     let entry_name = random_entry_name();
 
@@ -298,7 +300,7 @@ async fn move_dir_entry_nonexistent_destination() {
 
 #[tokio::test]
 async fn move_dir_entry_different_classification_folder() {
-    let (collection_path, mut collection) = create_test_collection().await;
+    let (collection_path, mut collection, _services) = create_test_collection().await;
 
     let entry_name = random_entry_name();
 
@@ -328,7 +330,7 @@ async fn move_dir_entry_different_classification_folder() {
 
 #[tokio::test]
 async fn move_dir_entry_non_dir_destination() {
-    let (collection_path, mut collection) = create_test_collection().await;
+    let (collection_path, mut collection, _services) = create_test_collection().await;
 
     let entry_name = random_entry_name();
 
@@ -358,7 +360,7 @@ async fn move_dir_entry_non_dir_destination() {
 
 #[tokio::test]
 async fn move_dir_entry_already_exists() {
-    let (collection_path, mut collection) = create_test_collection().await;
+    let (collection_path, mut collection, _services) = create_test_collection().await;
 
     // First create a dest/entry entry
     let dest_name = "dest".to_string();

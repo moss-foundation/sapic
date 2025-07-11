@@ -33,6 +33,7 @@ hcl-rs.workspace = true
 derive_more = { workspace = true, features = ["deref", "deref_mut"] }
 indexmap.workspace = true
 nanoid.workspace = true
+async-trait.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }
