@@ -8,13 +8,13 @@ import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/el
 import { TreeContext } from "../Tree";
 import { TreeCollectionNode } from "../types";
 import { canDropNode, getActualDropSourceTarget, getActualDropTargetWithInstruction } from "../utils";
-import { doesLocationHaveTreeNode, getInstruction, getLocationTreeNodeData, getSourceTreeNodeData } from "../utils2";
 
 export const useInstructionNode = (
   node: TreeCollectionNode,
   collectionId: string | number,
   dropTargetListRef: RefObject<HTMLButtonElement>,
   isLastChild: boolean,
+  isRootNode: boolean,
   setPreview: React.Dispatch<React.SetStateAction<HTMLElement | null>>
 ) => {
   const { repository, id } = useContext(TreeContext);
@@ -59,7 +59,7 @@ export const useInstructionNode = (
         getData: ({ input, element }) => {
           const data = { type: "TreeNode", data: { collectionId, node } };
 
-          const isReorderBeforeAvailable = true;
+          let isReorderBeforeAvailable = true;
           let isReorderAfterAvailable = true;
           let isCombineAvailable = true;
 
@@ -68,6 +68,10 @@ export const useInstructionNode = (
               isReorderAfterAvailable = false;
             }
             if (node.expanded) {
+              isReorderAfterAvailable = false;
+            }
+            if (isRootNode) {
+              isReorderBeforeAvailable = false;
               isReorderAfterAvailable = false;
             }
           } else {
@@ -103,31 +107,13 @@ export const useInstructionNode = (
           setInstruction(null);
           setCanDrop(null);
         },
-        onDrop({ location, source, self }) {
+        onDrop() {
           setInstruction(null);
           setCanDrop(null);
-
-          if (!doesLocationHaveTreeNode(location)) {
-            return;
-          }
-
-          const sourceTreeNodeData = getSourceTreeNodeData(source);
-          const locationTreeNodeData = getLocationTreeNodeData(location);
-          const instruction = getInstruction(self);
-
-          // console.log({
-          //   sourceTreeNodeData,
-          //   locationTreeNodeData,
-          //   instruction,
-          // });
-
-          // if (dropTarget?.node.id !== node.id) {
-          //   return;
-          // }
         },
       })
     );
-  }, [dropTargetListRef, isLastChild, node, setPreview, collectionId, repository, id]);
+  }, [collectionId, dropTargetListRef, id, isLastChild, isRootNode, node, repository, setPreview]);
 
   return { instruction, isDragging, canDrop };
 };

@@ -1,6 +1,8 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { BatchUpdateEntryInput, BatchUpdateEntryOutput, EntryInfo } from "@repo/moss-collection";
+import { StreamCollectionsEvent } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Channel } from "@tauri-apps/api/core";
 
 import { USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY } from "./useStreamedCollectionEntries";
 
@@ -10,9 +12,18 @@ export interface UseBatchUpdateCollectionEntryInput {
 }
 
 const batchUpdateCollectionEntry = async ({ collectionId, entries }: UseBatchUpdateCollectionEntryInput) => {
+  const onCollectionEvent = new Channel<StreamCollectionsEvent>();
+
+  onCollectionEvent.onmessage = (collection) => {
+    console.log(collection);
+  };
+
   const result = await invokeTauriIpc<BatchUpdateEntryOutput[]>("batch_update_collection_entry", {
+    channel: onCollectionEvent,
     collectionId,
-    entries,
+    input: {
+      entries: entries.entries,
+    },
   });
 
   if (result.status === "error") {

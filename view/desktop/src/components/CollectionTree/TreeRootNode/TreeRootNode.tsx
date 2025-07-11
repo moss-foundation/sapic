@@ -5,7 +5,6 @@ import { useStreamedCollections } from "@/hooks";
 import { cn } from "@/utils";
 
 import { useDraggableRootNode } from "../hooks/useDraggableRootNode";
-import { useDropTargetRootNode } from "../hooks/useDropTargetRootNode";
 import { TreeContext } from "../Tree";
 import { TreeCollectionNode, TreeCollectionRootNode } from "../types";
 import { collapseAllNodes, expandAllNodes } from "../utils/TreeRootUtils";
@@ -24,7 +23,7 @@ export interface TreeRootNodeProps {
 }
 
 export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootNodeProps) => {
-  const { id, allFoldersAreCollapsed, allFoldersAreExpanded, searchInput, rootOffset } = useContext(TreeContext);
+  const { allFoldersAreCollapsed, allFoldersAreExpanded, searchInput, rootOffset } = useContext(TreeContext);
   const { data: streamedCollections } = useStreamedCollections();
 
   const draggableRootRef = useRef<HTMLDivElement>(null);
@@ -56,22 +55,7 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootN
     handleRenamingRootNodeFormCancel,
   } = useRootNodeRenamingForm(node, onRootNodeUpdate);
 
-  const { closestEdge, isDragging } = useDraggableRootNode(draggableRootRef, node, id, isRenamingRootNode);
-  useDropTargetRootNode(node, id, dropTargetRootRef);
-
-  //   useEffect(() => {
-  //     const handleNewCollectionWasCreated = (event: Event) => {
-  //       const customEvent = event as CustomEvent<{ treeId: string }>;
-  //       if (treeId === customEvent.detail.treeId) {
-  //         setIsRenamingRootNode(true);
-  //       }
-  //     };
-  //     window.addEventListener("newCollectionWasCreated", handleNewCollectionWasCreated);
-  //     return () => {
-  //       window.removeEventListener("newCollectionWasCreated", handleNewCollectionWasCreated as EventListener);
-  //     };
-  //   }, [setIsRenamingRootNode, treeId]);
-  //
+  const { closestEdge, isDragging } = useDraggableRootNode(draggableRootRef, node, isRenamingRootNode);
 
   const shouldRenderRootChildNodes = calculateShouldRenderRootChildNodes(
     node,

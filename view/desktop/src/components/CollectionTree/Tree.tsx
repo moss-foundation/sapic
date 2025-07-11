@@ -1,5 +1,6 @@
 import { createContext, useEffect, useState } from "react";
 
+import { useMonitorForNodeDragAndDrop } from "./hooks/useMonitorForNodeDragAndDrop";
 import { TreeRootNode } from "./TreeRootNode/TreeRootNode.tsx";
 import { TreeCollectionNode, TreeCollectionRootNode, TreeContextProps, TreeProps } from "./types.ts";
 import {
@@ -40,6 +41,8 @@ export const CollectionTree = ({
   onTreeUpdate,
 }: TreeProps) => {
   const [tree, setTree] = useState<TreeCollectionRootNode>(initialTree);
+
+  useMonitorForNodeDragAndDrop();
 
   const handleNodeUpdate = (updatedNode: TreeCollectionNode) => {
     setTree((prev) => {

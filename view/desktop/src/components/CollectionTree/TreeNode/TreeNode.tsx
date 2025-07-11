@@ -3,6 +3,7 @@ import { useContext, useRef, useState } from "react";
 import { useDeleteCollectionEntry } from "@/hooks";
 
 import { TreeContext } from "../..";
+import { DropIndicatorWithInstruction } from "../DropIndicatorWithInstruction";
 import { useInstructionNode } from "../hooks/useInstructionNode";
 import { useNodeAddForm } from "../hooks/useNodeAddForm";
 import { useNodeRenamingForm } from "../hooks/useNodeRenamingForm";
@@ -48,8 +49,10 @@ export const TreeNode = ({
   isRootNode = false,
 }: TreeNodeComponentProps) => {
   const { nodeOffset, paddingRight, id } = useContext(TreeContext);
-  const { mutateAsync: deleteCollectionEntry } = useDeleteCollectionEntry();
+
   const triggerRef = useRef<HTMLButtonElement>(null);
+
+  const { mutateAsync: deleteCollectionEntry } = useDeleteCollectionEntry();
 
   const {
     isAddingFileNode,
@@ -79,6 +82,17 @@ export const TreeNode = ({
     onNodeUpdate
   );
 
+  const [preview, setPreview] = useState<HTMLElement | null>(null);
+
+  const { instruction, isDragging, canDrop } = useInstructionNode(
+    node,
+    id,
+    triggerRef,
+    isLastChild,
+    isRootNode,
+    setPreview
+  );
+
   const handleDeleteNode = async () => {
     await deleteCollectionEntry({
       collectionId: id,
@@ -88,9 +102,6 @@ export const TreeNode = ({
     });
   };
 
-  const [preview, setPreview] = useState<HTMLElement | null>(null);
-  const { instruction, isDragging, canDrop } = useInstructionNode(node, id, triggerRef, isLastChild, setPreview);
-
   const shouldRenderChildNodes = node.expanded || isAddingFileNode || isAddingFolderNode;
   const shouldRenderAddingFormDivider = false; // !isAddingDividerNodeAbove && !isAddingDividerNodeBelow;
   const nodePaddingLeft = depth * nodeOffset;
@@ -98,16 +109,16 @@ export const TreeNode = ({
 
   return (
     <li className="relative">
-      {/* {node.isFolder && instruction !== null && canDrop === true && (
+      {node.kind === "Dir" && instruction !== null && canDrop === true && (
         <DropIndicatorWithInstruction
           paddingLeft={nodePaddingLeft}
           paddingRight={paddingRight}
           instruction={instruction}
-          isFolder={node.isFolder}
+          isFolder={true}
           depth={depth}
           isLastChild={isLastChild}
         />
-      )} */}
+      )}
       {isRenamingNode && !isRootNode ? (
         <TreeNodeRenameForm
           node={node}

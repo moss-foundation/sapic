@@ -274,17 +274,7 @@ export const addNodeToTreeWithInstruction = (
 };
 
 export const canDropNode = (sourceTarget: DragNode, dropTarget: DragNode, node: TreeCollectionNode) => {
-  if (sourceTarget.node.kind !== "Dir") {
-    // if (hasDirectSimilarDescendant(node, sourceTarget.node)) {
-    //   return false;
-    // }
-  }
-
   if (sourceTarget.node.kind === "Dir") {
-    // if (hasDirectSimilarDescendant(node, sourceTarget.node)) {
-    //   return false;
-    // }
-
     if (hasDirectDescendant(dropTarget.node, node)) {
       return false;
     }

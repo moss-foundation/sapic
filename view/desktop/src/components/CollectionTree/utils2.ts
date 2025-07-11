@@ -23,20 +23,17 @@ export const doesLocationHaveTreeNode = (location: DragLocationHistory): boolean
   return location.current.dropTargets[0].data.type === "TreeNode";
 };
 
-export const getSourceTreeNodeData = (source: ElementDragPayload): DragNode | null => {
-  if (source.data.type === "TreeNode") {
-    return source.data.data as DragNode;
-  }
-
-  return null;
+export const getSourceTreeNodeData = (source: ElementDragPayload): DragNode => {
+  return source.data.data as DragNode;
 };
 
-export const getLocationTreeNodeData = (location: DragLocationHistory): DragNode | null => {
-  if (location.current.dropTargets[0].data.type === "TreeNode") {
-    return location.current.dropTargets[0].data.data as DragNode;
-  }
+export const getLocationTreeNodeData = (location: DragLocationHistory): DragNode => {
+  const instruction = extractInstruction(location.current.dropTargets[0].data);
 
-  return null;
+  return {
+    ...(location.current.dropTargets[0].data.data as DragNode),
+    "instruction": instruction ?? undefined,
+  };
 };
 
 export const getAllNestedEntries = (node: TreeCollectionNode): EntryInfo[] => {

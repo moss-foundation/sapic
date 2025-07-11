@@ -62,7 +62,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
         updateCollectionEntry({
           collectionId: id,
           updatedEntry: {
-            ITEM: {
+            DIR: {
               id: node.id,
               expanded: true,
             },
@@ -132,12 +132,12 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                 />
               )}
 
-              {node.kind === "Dir" && instruction !== null && canDrop === true && (
+              {node.kind !== "Dir" && instruction !== null && canDrop === true && (
                 <DropIndicatorWithInstruction
                   paddingLeft={nodePaddingLeft}
                   paddingRight={paddingRight}
                   instruction={instruction}
-                  isFolder={node.kind === "Dir"}
+                  isFolder={false}
                   depth={depth}
                   isLastChild={isLastChild}
                 />
@@ -158,7 +158,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
               <DebugCollectionIconPlaceholder protocol={node.protocol} type={node.kind} />
 
               <span className="underline">{node.order}</span>
-              <NodeLabel label={node.name} searchInput={searchInput} className={cn({ "capitalize": isRootNode })} />
+              <NodeLabel label={node.path.raw} searchInput={searchInput} className={cn({ "capitalize": isRootNode })} />
               <span className="DragHandle h-full min-h-4 grow" />
             </span>
 
