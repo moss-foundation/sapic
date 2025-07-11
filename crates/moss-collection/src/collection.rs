@@ -1,10 +1,3 @@
-use crate::{
-    config::ConfigModel,
-    constants::COLLECTION_ICON_FILENAME,
-    dirs::ASSETS_DIR,
-    manifest::ManifestModel,
-    services::set_icon_service::{SetIconService, constants::ICON_SIZE},
-};
 use anyhow::Result;
 use moss_applib::{
     EventMarker, ServiceMarker,
@@ -14,7 +7,7 @@ use moss_applib::{
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_environment::{environment::Environment, models::primitives::EnvironmentId};
 use moss_file::json::JsonFileHandle;
-use moss_fs::{FileSystem, RemoveOptions};
+use moss_fs::FileSystem;
 use moss_git::url::normalize_git_url;
 use std::{
     collections::HashMap,
@@ -22,6 +15,8 @@ use std::{
     sync::Arc,
 };
 use tokio::sync::OnceCell;
+
+use crate::{config::ConfigModel, manifest::ManifestModel, services::DynSetIconService};
 
 pub struct EnvironmentItem {
     pub id: EnvironmentId,
@@ -73,12 +68,8 @@ impl Collection {
     }
 
     pub fn icon_path(&self) -> Option<PathBuf> {
-        let path = self
-            .abs_path
-            .join(ASSETS_DIR)
-            .join(COLLECTION_ICON_FILENAME);
-
-        path.exists().then_some(path)
+        let set_icon_service = self.services.get::<DynSetIconService>();
+        set_icon_service.icon_path()
     }
 
     pub fn service<T: ServiceMarker>(&self) -> &T {
@@ -121,31 +112,14 @@ impl Collection {
                 .await?;
         }
 
+        let set_icon_service = self.service::<DynSetIconService>();
         match params.icon_path {
             None => {}
             Some(ChangePath::Update(new_icon_path)) => {
-                SetIconService::set_icon(
-                    &new_icon_path,
-                    &self
-                        .abs_path
-                        .join(ASSETS_DIR)
-                        .join(COLLECTION_ICON_FILENAME),
-                    ICON_SIZE,
-                )?;
+                set_icon_service.set_icon(&new_icon_path)?;
             }
             Some(ChangePath::Remove) => {
-                self.fs
-                    .remove_file(
-                        &self
-                            .abs_path
-                            .join(ASSETS_DIR)
-                            .join(COLLECTION_ICON_FILENAME),
-                        RemoveOptions {
-                            recursive: false,
-                            ignore_if_not_exists: true,
-                        },
-                    )
-                    .await?;
+                set_icon_service.remove_icon().await?;
             }
         }
 

@@ -14,9 +14,11 @@ use moss_collection::{
     Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
     builder::{CollectionCreateParams, CollectionLoadParams},
     services::{
+        DynSetIconService as DynCollectionSetIconService,
         DynStorageService as DynCollectionStorageService,
-        DynWorktreeService as DynCollectionWorktreeService, DynWorktreeService,
-        StorageService as CollectionStorageService, WorktreeService as CollectionWorktreeService,
+        DynWorktreeService as DynCollectionWorktreeService,
+        SetIconService as CollectionSetIconService, StorageService as CollectionStorageService,
+        WorktreeService as CollectionWorktreeService, set_icon_service::constants::ICON_SIZE,
     },
 };
 use moss_common::api::OperationError;
@@ -95,6 +97,7 @@ pub(crate) struct CollectionItemCreateParams {
     pub order: usize,
     pub repository: Option<String>,
     pub external_path: Option<PathBuf>,
+    // FIXME: Do we need this field?
     pub icon_path: Option<PathBuf>,
 }
 
@@ -115,6 +118,7 @@ pub(crate) struct CollectionItemDescription {
     pub expanded: bool,
     #[allow(dead_code)]
     pub repository: Option<String>,
+    // FIXME: Do we need this field?
     pub icon_path: Option<PathBuf>,
     pub abs_path: Arc<Path>,
     pub external_path: Option<PathBuf>,
@@ -182,10 +186,20 @@ impl AnyCollectionService for CollectionService {
                 .into();
                 DynCollectionWorktreeService::new(worktree)
             };
+            let set_icon_service: Arc<DynCollectionSetIconService> = {
+                let set_icon: Arc<CollectionSetIconService> =
+                    Arc::new(CollectionSetIconService::new(
+                        abs_path.clone(),
+                        self.fs.clone(),
+                        ICON_SIZE, // FIXME: Where to put this constant?
+                    ));
+                DynCollectionSetIconService::new(set_icon)
+            };
 
             CollectionBuilder::new(self.fs.clone())
                 .with_service::<DynCollectionStorageService>(storage_service)
                 .with_service::<DynCollectionWorktreeService>(worktree_service)
+                .with_service::<DynCollectionSetIconService>(set_icon_service)
                 .create(CollectionCreateParams {
                     name: Some(params.name.to_owned()),
                     internal_abs_path: abs_path.clone(),
@@ -196,7 +210,9 @@ impl AnyCollectionService for CollectionService {
                 .await
                 .map_err(|e| CollectionError::Internal(e.to_string()))?
         };
-        let icon_path = collection.icon_path();
+        let icon_path = collection
+            .service::<DynCollectionSetIconService>()
+            .icon_path();
 
         // let on_did_change = collection.on_did_change().subscribe(|_event| async move {
 
@@ -277,6 +293,7 @@ impl AnyCollectionService for CollectionService {
 
         if let Some(item) = item {
             let manifest = item.handle.manifest().await;
+            let icon_path = item.service::<DynCollectionSetIconService>().icon_path();
 
             Ok(Some(CollectionItemDescription {
                 id: id.to_owned(),
@@ -284,7 +301,7 @@ impl AnyCollectionService for CollectionService {
                 order: item.order,
                 expanded: false,
                 repository: manifest.repository,
-                icon_path: item.icon_path(),
+                icon_path,
                 abs_path: item.abs_path().clone(),
                 external_path: None, // TODO: implement
             }))
@@ -344,6 +361,8 @@ impl AnyCollectionService for CollectionService {
             for (id, item) in state_lock.collections.iter() {
                 let manifest = item.handle.manifest().await;
                 let expanded = state_lock.expanded_items.contains(id);
+                let icon_path = item.service::<DynCollectionSetIconService>().icon_path();
+
 
                 yield CollectionItemDescription {
                     id: item.id.clone(),
@@ -351,7 +370,7 @@ impl AnyCollectionService for CollectionService {
                     order: item.order,
                     expanded,
                     repository: manifest.repository,
-                    icon_path: item.handle.icon_path(),
+                    icon_path,
                     abs_path: item.handle.abs_path().clone(),
                     external_path: None, // TODO: implement
                 };
@@ -430,12 +449,22 @@ async fn restore_collections(
                     storage_service.clone(),
                 )
                 .into();
-                DynWorktreeService::new(worktree)
+                DynCollectionWorktreeService::new(worktree)
+            };
+            let set_icon_service: Arc<DynCollectionSetIconService> = {
+                let set_icon: Arc<CollectionSetIconService> =
+                    Arc::new(CollectionSetIconService::new(
+                        collection_abs_path.clone(),
+                        fs.clone(),
+                        ICON_SIZE, // FIXME: Where to put this constant?
+                    ));
+                DynCollectionSetIconService::new(set_icon)
             };
 
             CollectionBuilder::new(fs.clone())
                 .with_service::<DynCollectionStorageService>(storage_service)
                 .with_service::<DynCollectionWorktreeService>(worktree_service)
+                .with_service::<DynCollectionSetIconService>(set_icon_service)
                 .load(CollectionLoadParams {
                     internal_abs_path: collection_abs_path,
                 })

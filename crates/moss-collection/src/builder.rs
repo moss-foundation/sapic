@@ -18,9 +18,8 @@ use tokio::sync::OnceCell;
 use crate::{
     Collection,
     config::{CONFIG_FILE_NAME, ConfigModel},
-    constants::{COLLECTION_ICON_FILENAME, COLLECTION_ROOT_PATH},
-    defaults,
-    dirs::{self, ASSETS_DIR},
+    constants::COLLECTION_ROOT_PATH,
+    defaults, dirs,
     manifest::{MANIFEST_FILE_NAME, ManifestModel},
     models::{
         primitives::EntryId,
@@ -29,11 +28,7 @@ use crate::{
             RawDirRequestConfiguration, RawDirSchemaConfiguration,
         },
     },
-    services::{
-        DynWorktreeService,
-        set_icon_service::{SetIconService, constants::ICON_SIZE},
-        worktree_service::EntryMetadata,
-    },
+    services::{DynSetIconService, DynWorktreeService, worktree_service::EntryMetadata},
 };
 
 const OTHER_DIRS: [&str; 2] = [dirs::ASSETS_DIR, dirs::ENVIRONMENTS_DIR];
@@ -182,12 +177,9 @@ impl CollectionBuilder {
         .await?;
 
         if let Some(icon_path) = params.icon_path {
+            let set_icon_service = services.get::<DynSetIconService>();
             // TODO: Log the error here
-            let _ = SetIconService::set_icon(
-                &icon_path,
-                &abs_path.join(ASSETS_DIR).join(COLLECTION_ICON_FILENAME),
-                ICON_SIZE,
-            );
+            set_icon_service.set_icon(&icon_path)?;
         }
 
         // TODO: Load environments

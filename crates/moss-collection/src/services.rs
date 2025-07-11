@@ -2,9 +2,11 @@ pub mod set_icon_service;
 pub mod storage_service;
 pub mod worktree_service;
 
+pub use set_icon_service::SetIconService;
 pub use storage_service::StorageService;
 pub use worktree_service::WorktreeService;
 
+use anyhow::Result;
 use async_trait::async_trait;
 use derive_more::Deref;
 use moss_applib::ServiceMarker;
@@ -24,6 +26,27 @@ use crate::{
     },
     services::worktree_service::{EntryDescription, EntryMetadata, ModifyParams, WorktreeResult},
 };
+
+// ########################################################
+// ###               Set Icon Service                   ###
+// ########################################################
+#[async_trait]
+pub trait AnySetIconService: Send + Sync + ServiceMarker + 'static {
+    fn set_icon(&self, img_path: &Path) -> Result<()>;
+    async fn remove_icon(&self) -> Result<()>;
+    fn icon_path(&self) -> Option<PathBuf>;
+}
+
+#[derive(Deref)]
+pub struct DynSetIconService(Arc<dyn AnySetIconService>);
+
+impl DynSetIconService {
+    pub fn new(service: Arc<dyn AnySetIconService>) -> Arc<Self> {
+        Arc::new(Self(service))
+    }
+}
+
+impl ServiceMarker for DynSetIconService {}
 
 // ########################################################
 // ###                Storage Service                   ###
