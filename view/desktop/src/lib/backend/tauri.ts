@@ -31,6 +31,7 @@ export type TauriIpcCommand =
   | "delete_collection"
   | "stream_collections"
   | "update_collection"
+  | "batch_update_collection"
   //
   // Collection
   //

@@ -105,3 +105,37 @@ pub async fn delete_collection<R: TauriRuntime>(
     })
     .await
 }
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(app), fields(window = window.label()))]
+pub async fn update_collection<R: TauriRuntime>(
+    app: State<'_, App<R>>,
+    window: Window<R>,
+    input: UpdateCollectionInput,
+    options: Options,
+) -> TauriResult<UpdateCollectionOutput> {
+    super::with_workspace_timeout(app, options, |ctx, workspace| async move {
+        workspace
+            .update_collection(&ctx, input)
+            .await
+            .map_err(TauriError::OperationError)
+    })
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(app), fields(window = window.label()))]
+pub async fn batch_update_collection<R: TauriRuntime>(
+    app: State<'_, App<R>>,
+    window: Window<R>,
+    input: BatchUpdateCollectionInput,
+    options: Options,
+) -> TauriResult<BatchUpdateCollectionOutput> {
+    super::with_workspace_timeout(app, options, |_ctx, workspace| async move {
+        workspace
+            .batch_update_collection(input)
+            .await
+            .map_err(TauriError::OperationError)
+    })
+    .await
+}

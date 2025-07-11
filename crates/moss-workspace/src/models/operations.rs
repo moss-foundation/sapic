@@ -93,6 +93,37 @@ pub struct UpdateCollectionOutput {
 }
 
 /// @category Operation
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchUpdateCollectionParams {
+    #[ts(type = "string")]
+    pub id: CollectionId,
+
+    pub order: Option<usize>,
+    pub expanded: Option<bool>,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchUpdateCollectionInput {
+    pub items: Vec<BatchUpdateCollectionParams>,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchUpdateCollectionOutput {
+    #[ts(as = "Vec<String>")]
+    pub ids: Vec<CollectionId>,
+}
+
+/// @category Operation
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]

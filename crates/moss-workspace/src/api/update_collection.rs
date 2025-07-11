@@ -11,7 +11,7 @@ use crate::{
 
 impl<R: TauriRuntime> Workspace<R> {
     pub async fn update_collection<C: Context<R>>(
-        &mut self,
+        &self,
         _ctx: &C,
         input: UpdateCollectionInput,
     ) -> OperationResult<UpdateCollectionOutput> {
