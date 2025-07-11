@@ -9,6 +9,16 @@ import {
   sidebarPartStateInfoSchema,
 } from "./types.zod";
 
+export const batchUpdateCollectionParamsSchema = z.object({
+  id: z.string(),
+  order: z.number().optional(),
+  expanded: z.boolean().optional(),
+});
+
+export const batchUpdateCollectionOutputSchema = z.object({
+  ids: z.array(z.string()),
+});
+
 export const createCollectionInputSchema = z.object({
   name: z.string(),
   order: z.number(),
@@ -42,6 +52,10 @@ export const streamCollectionsOutputSchema = z.object({});
 export const updateCollectionOutputSchema = z.object({
   id: z.string(),
 });
+export const batchUpdateCollectionInputSchema = z.object({
+  items: z.array(batchUpdateCollectionParamsSchema),
+});
+
 export const describeEnvironmentOutputSchema = z.object({
   variables: variableInfoSchema,
 });

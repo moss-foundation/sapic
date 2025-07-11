@@ -6,6 +6,21 @@ import type { ActivitybarPartStateInfo, EditorPartStateInfo, PanelPartStateInfo,
 /**
  * @category Operation
  */
+export type BatchUpdateCollectionInput = { items: Array<BatchUpdateCollectionParams> };
+
+/**
+ * @category Operation
+ */
+export type BatchUpdateCollectionOutput = { ids: Array<string> };
+
+/**
+ * @category Operation
+ */
+export type BatchUpdateCollectionParams = { id: string; order?: number; expanded?: boolean };
+
+/**
+ * @category Operation
+ */
 export type CreateCollectionInput = {
   name: string;
   order: number;
