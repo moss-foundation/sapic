@@ -8,7 +8,7 @@ use crate::{
         operations::{CreateCollectionInput, CreateCollectionOutput},
         primitives::CollectionId,
     },
-    services::collection_service::{CollectionItemCreateParams, CollectionService},
+    services::{DynCollectionService, collection_service::CollectionItemCreateParams},
     workspace::Workspace,
 };
 
@@ -22,7 +22,7 @@ impl<R: TauriRuntime> Workspace<R> {
 
         debug_assert!(input.external_path.is_none(), "Is not implemented");
 
-        let collection_service = self.services.get::<CollectionService>();
+        let collection_service = self.services.get::<DynCollectionService>();
         let id = CollectionId::new();
 
         let description = collection_service

@@ -16,7 +16,7 @@ use crate::{
             PanelPartStateInfo, SidebarPartStateInfo,
         },
     },
-    services::storage_service::StorageService,
+    services::{AnyLayoutService, DynStorageService},
     storage::{
         entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity},
         segments::{
@@ -133,13 +133,59 @@ pub struct EditorPartPreferences {}
 const _EDITOR_DEFAULTS: EditorPartDefaults = EditorPartDefaults {};
 
 pub struct LayoutService {
-    storage: Arc<StorageService>, // TODO: should be a trait
+    storage: Arc<DynStorageService>,
 }
 
 impl ServiceMarker for LayoutService {}
 
+impl AnyLayoutService for LayoutService {
+    fn put_sidebar_layout_state(&self, state: SidebarPartStateInfo) -> Result<()> {
+        self.put_sidebar_layout_state(state)
+    }
+
+    fn put_panel_layout_state(&self, state: PanelPartStateInfo) -> Result<()> {
+        self.put_panel_layout_state(state)
+    }
+
+    fn put_activitybar_layout_state(&self, state: ActivitybarPartStateInfo) -> Result<()> {
+        self.put_activitybar_layout_state(state)
+    }
+
+    fn put_editor_layout_state(&self, state: EditorPartStateInfo) -> Result<()> {
+        self.put_editor_layout_state(state)
+    }
+
+    fn get_sidebar_layout_state(
+        &self,
+        cache: &mut HashMap<SegKeyBuf, AnyValue>,
+    ) -> Result<SidebarPartStateInfo> {
+        self.get_sidebar_layout_state(cache)
+    }
+
+    fn get_panel_layout_state(
+        &self,
+        cache: &mut HashMap<SegKeyBuf, AnyValue>,
+    ) -> Result<PanelPartStateInfo> {
+        self.get_panel_layout_state(cache)
+    }
+
+    fn get_activitybar_layout_state(
+        &self,
+        cache: &mut HashMap<SegKeyBuf, AnyValue>,
+    ) -> Result<ActivitybarPartStateInfo> {
+        self.get_activitybar_layout_state(cache)
+    }
+
+    fn get_editor_layout_state(
+        &self,
+        cache: &mut HashMap<SegKeyBuf, AnyValue>,
+    ) -> Result<Option<EditorPartStateInfo>> {
+        self.get_editor_layout_state(cache)
+    }
+}
+
 impl LayoutService {
-    pub fn new(storage: Arc<StorageService>) -> Self {
+    pub fn new(storage: Arc<DynStorageService>) -> Self {
         Self { storage }
     }
 

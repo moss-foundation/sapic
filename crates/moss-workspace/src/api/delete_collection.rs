@@ -4,7 +4,7 @@ use tauri::Runtime as TauriRuntime;
 
 use crate::{
     models::operations::{DeleteCollectionInput, DeleteCollectionOutput},
-    services::collection_service::CollectionService,
+    services::DynCollectionService,
     workspace::Workspace,
 };
 
@@ -14,7 +14,7 @@ impl<R: TauriRuntime> Workspace<R> {
         _ctx: &C,
         input: &DeleteCollectionInput,
     ) -> OperationResult<DeleteCollectionOutput> {
-        let collection_service = self.services.get::<CollectionService>();
+        let collection_service = self.services.get::<DynCollectionService>();
         let description = collection_service.delete_collection(&input.id).await?;
 
         Ok(DeleteCollectionOutput {

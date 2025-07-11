@@ -16,7 +16,7 @@ use crate::{
         },
     },
     services::{
-        WorktreeService,
+        DynWorktreeService,
         worktree_service::{EntryMetadata, ModifyParams},
     },
 };
@@ -28,7 +28,7 @@ impl Collection {
     ) -> OperationResult<CreateEntryOutput> {
         input.validate()?;
 
-        let worktree_service = self.service::<WorktreeService>();
+        let worktree_service = self.service::<DynWorktreeService>();
 
         let id = EntryId::new();
         let model = CompositeDirConfigurationModel {
@@ -40,7 +40,7 @@ impl Collection {
             .create_dir_entry(
                 &id,
                 &input.name,
-                input.path,
+                &input.path,
                 model.into(),
                 EntryMetadata {
                     order: input.order,
@@ -58,7 +58,7 @@ impl Collection {
     ) -> OperationResult<CreateEntryOutput> {
         input.validate()?;
 
-        let worktree_service = self.service::<WorktreeService>();
+        let worktree_service = self.service::<DynWorktreeService>();
 
         let id = EntryId::new();
         let model = CompositeItemConfigurationModel {
@@ -70,7 +70,7 @@ impl Collection {
             .create_item_entry(
                 &id,
                 &input.name,
-                input.path,
+                &input.path,
                 model.into(),
                 EntryMetadata {
                     order: input.order,
@@ -87,7 +87,7 @@ impl Collection {
         input: UpdateItemEntryParams,
     ) -> OperationResult<AfterUpdateItemEntryDescription> {
         input.validate()?;
-        let worktree_service = self.service::<WorktreeService>();
+        let worktree_service = self.service::<DynWorktreeService>();
 
         let (path, configuration) = worktree_service
             .update_item_entry(
@@ -117,7 +117,7 @@ impl Collection {
         input: UpdateDirEntryParams,
     ) -> OperationResult<AfterUpdateDirEntryDescription> {
         input.validate()?;
-        let worktree_service = self.service::<WorktreeService>();
+        let worktree_service = self.service::<DynWorktreeService>();
 
         let (path, configuration) = worktree_service
             .update_dir_entry(

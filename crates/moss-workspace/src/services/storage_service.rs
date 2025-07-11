@@ -1,3 +1,6 @@
+#[cfg(any(test, feature = "integration-tests"))]
+pub mod impl_for_integration_test;
+
 use anyhow::{Context as _, Result};
 use moss_applib::ServiceMarker;
 use moss_db::{DatabaseResult, Transaction, primitives::AnyValue};
@@ -9,16 +12,15 @@ use moss_storage::{
     },
     workspace_storage::WorkspaceStorageImpl,
 };
-use serde::{Serialize, de::DeserializeOwned};
 use std::{
     collections::{HashMap, HashSet},
-    hash::Hash,
     path::Path,
     sync::Arc,
 };
 
 use crate::{
-    models::primitives::{ActivitybarPosition, SidebarPosition},
+    models::primitives::{ActivitybarPosition, CollectionId, SidebarPosition},
+    services::AnyStorageService,
     storage::{
         entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity},
         segments::{self, SEGKEY_COLLECTION},
@@ -26,33 +28,19 @@ use crate::{
 };
 
 pub struct StorageService {
-    storage: Arc<dyn WorkspaceStorage>,
+    pub(super) storage: Arc<dyn WorkspaceStorage>,
 }
 
 impl ServiceMarker for StorageService {}
 
-impl StorageService {
-    pub fn new(abs_path: &Path) -> Result<Self> {
-        let storage = WorkspaceStorageImpl::new(&abs_path)
-            .context("Failed to load the workspace state database")?;
-
-        Ok(Self {
-            storage: Arc::new(storage),
-        })
-    }
-
-    pub(crate) fn begin_write(&self) -> Result<Transaction> {
+impl AnyStorageService for StorageService {
+    fn begin_write(&self) -> Result<Transaction> {
         Ok(self.storage.begin_write()?)
     }
 
     // Items operations
 
-    pub(crate) fn put_item_order_txn(
-        &self,
-        txn: &mut Transaction,
-        id: &str,
-        order: usize,
-    ) -> Result<()> {
+    fn put_item_order_txn(&self, txn: &mut Transaction, id: &str, order: usize) -> Result<()> {
         let store = self.storage.item_store();
 
         let segkey = SEGKEY_COLLECTION.join(id.to_string()).join("order");
@@ -61,10 +49,10 @@ impl StorageService {
         Ok(())
     }
 
-    pub(crate) fn put_expanded_items_txn<T: Serialize>(
+    fn put_expanded_items_txn(
         &self,
         txn: &mut Transaction,
-        expanded_entries: &HashSet<T>,
+        expanded_entries: &HashSet<CollectionId>,
     ) -> Result<()> {
         let store = self.storage.item_store();
         TransactionalPutItem::put(
@@ -77,17 +65,14 @@ impl StorageService {
         Ok(())
     }
 
-    pub(crate) fn get_expanded_items<T: DeserializeOwned>(&self) -> Result<HashSet<T>>
-    where
-        T: Eq + Hash,
-    {
+    fn get_expanded_items(&self) -> Result<HashSet<CollectionId>> {
         let store = self.storage.item_store();
         let segkey = segments::SEGKEY_EXPANDED_ITEMS.to_segkey_buf();
         let value = GetItem::get(store.as_ref(), segkey)?;
-        Ok(AnyValue::deserialize::<HashSet<T>>(&value)?)
+        Ok(AnyValue::deserialize::<HashSet<_>>(&value)?)
     }
 
-    pub(crate) fn list_items_metadata(
+    fn list_items_metadata(
         &self,
         segkey_prefix: SegKeyBuf,
     ) -> DatabaseResult<HashMap<SegKeyBuf, AnyValue>> {
@@ -99,7 +84,7 @@ impl StorageService {
         Ok(data.into_iter().collect())
     }
 
-    pub(crate) fn remove_item_metadata_txn(
+    fn remove_item_metadata_txn(
         &self,
         txn: &mut Transaction,
         segkey_prefix: SegKeyBuf,
@@ -115,14 +100,14 @@ impl StorageService {
 
     // Layout operations
 
-    pub(crate) fn get_layout_cache(&self) -> Result<HashMap<SegKeyBuf, AnyValue>> {
+    fn get_layout_cache(&self) -> Result<HashMap<SegKeyBuf, AnyValue>> {
         let store = self.storage.item_store();
         let segkey = segments::SEGKEY_LAYOUT.to_segkey_buf();
         let value = ListByPrefix::list_by_prefix(store.as_ref(), segkey.to_string().as_str())?;
         Ok(value.into_iter().collect())
     }
 
-    pub(crate) fn put_sidebar_layout(
+    fn put_sidebar_layout(
         &self,
         position: SidebarPosition,
         size: usize,
@@ -155,7 +140,7 @@ impl StorageService {
         Ok(txn.commit()?)
     }
 
-    pub(crate) fn put_panel_layout(&self, size: usize, visible: bool) -> Result<()> {
+    fn put_panel_layout(&self, size: usize, visible: bool) -> Result<()> {
         let store = self.storage.item_store();
         let mut txn = self.begin_write()?;
 
@@ -176,7 +161,7 @@ impl StorageService {
         Ok(txn.commit()?)
     }
 
-    pub(crate) fn put_activitybar_layout(
+    fn put_activitybar_layout(
         &self,
         last_active_container_id: Option<String>,
         position: ActivitybarPosition,
@@ -203,7 +188,7 @@ impl StorageService {
         Ok(txn.commit()?)
     }
 
-    pub(crate) fn put_editor_layout(
+    fn put_editor_layout(
         &self,
         grid: EditorGridStateEntity,
         panels: HashMap<String, EditorPanelStateEntity>,
@@ -237,11 +222,15 @@ impl StorageService {
 
         Ok(txn.commit()?)
     }
+}
 
-    // HACK: This is a hack to get the storage service for testing purposes.
-    // As soon as we switch to getting services by trait instead of by type,
-    // we'll be able to move this method into the test service, TestStorageService.
-    pub fn __storage(&self) -> &Arc<dyn WorkspaceStorage> {
-        &self.storage
+impl StorageService {
+    pub fn new(abs_path: &Path) -> Result<Self> {
+        let storage = WorkspaceStorageImpl::new(&abs_path)
+            .context("Failed to load the workspace state database")?;
+
+        Ok(Self {
+            storage: Arc::new(storage),
+        })
     }
 }

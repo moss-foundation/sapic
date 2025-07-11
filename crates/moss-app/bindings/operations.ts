@@ -72,7 +72,7 @@ export type DescribeAppStateOutput = { preferences: Preferences; defaults: Defau
 /**
  * @category Operation
  */
-export type DescribeWorkbenchStateOutput = { prevWorkspaceId: string | null };
+export type DescribeWorkbenchStateOutput = { prevWorkspaceId?: string };
 
 /**
  * @category Operation
@@ -147,5 +147,5 @@ export type UpdateWorkspaceInput = {
    * A new name for the workspace, if provided, the workspace
    * will be renamed to this name.
    */
-  name: string | null;
+  name?: string;
 };

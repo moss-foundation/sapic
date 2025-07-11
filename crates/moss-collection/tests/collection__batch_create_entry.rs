@@ -1,3 +1,5 @@
+#![cfg(feature = "integration-tests")]
+
 use moss_collection::{
     constants, dirs,
     models::operations::{
@@ -15,7 +17,7 @@ pub mod shared;
 
 #[tokio::test]
 async fn batch_create_entry_success() {
-    let (collection_path, collection) = create_test_collection().await;
+    let (collection_path, collection, _services) = create_test_collection().await;
 
     let class_path = PathBuf::from(dirs::COMPONENTS_DIR);
 
@@ -65,7 +67,7 @@ async fn batch_create_entry_success() {
 
 #[tokio::test]
 async fn batch_create_entry_missing_parent() {
-    let (collection_path, collection) = create_test_collection().await;
+    let (collection_path, collection, _services) = create_test_collection().await;
 
     let class_path = PathBuf::from(dirs::COMPONENTS_DIR);
     let inner_name = random_entry_name();
@@ -90,7 +92,7 @@ async fn batch_create_entry_missing_parent() {
 
 #[tokio::test]
 async fn batch_create_entry_empty_input() {
-    let (collection_path, collection) = create_test_collection().await;
+    let (collection_path, collection, _services) = create_test_collection().await;
 
     let input = BatchCreateEntryInput { entries: vec![] };
     let output = collection.batch_create_entry(input).await.unwrap();

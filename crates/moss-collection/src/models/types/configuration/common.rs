@@ -12,7 +12,6 @@ use crate::models::{primitives::HttpMethod, types::configuration::docschema::Raw
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub enum Expression {
-    Null,
     String(String),
     Variable(String),
     Number(Number),
@@ -84,13 +83,12 @@ pub struct QueryParamOptions {
 /// @category Type
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct QueryParamItem {
     pub key: String,
-    pub value: Expression,
-    #[ts(optional)]
+    pub value: Option<Expression>,
     pub order: Option<isize>,
-    #[ts(optional)]
     pub desc: Option<String>,
     pub disabled: bool,
     pub options: QueryParamOptions,
@@ -109,13 +107,12 @@ pub struct PathParamOptions {
 /// @category Type
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct PathParamItem {
     pub key: String,
-    pub value: Expression,
-    #[ts(optional)]
+    pub value: Option<Expression>,
     pub order: Option<isize>,
-    #[ts(optional)]
     pub desc: Option<String>,
     pub disabled: bool,
     pub options: PathParamOptions,
@@ -133,13 +130,12 @@ pub struct HeaderParamOptions {
 /// @category Type
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct HeaderParamItem {
     pub key: String,
-    pub value: Expression,
-    #[ts(optional)]
+    pub value: Option<Expression>,
     pub order: Option<isize>,
-    #[ts(optional)]
     pub desc: Option<String>,
     pub disabled: bool,
     pub options: HeaderParamOptions,
@@ -177,13 +173,12 @@ pub enum FormDataValue {
 /// @category Type
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct FormDataItem {
     pub key: String,
     pub value: FormDataValue,
-    #[ts(optional)]
     pub order: Option<isize>,
-    #[ts(optional)]
     pub desc: Option<String>,
     pub disabled: bool,
     pub options: FormDataOptions,

@@ -1,5 +1,6 @@
 {
   "rust-analyzer.showUnlinkedFileNotification": false,
+  "rust-analyzer.cargo.features": ["integration-tests"],
   "todohighlight.keywords": [
     {
       "text": "NOTE:",

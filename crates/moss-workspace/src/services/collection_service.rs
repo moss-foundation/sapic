@@ -1,25 +1,39 @@
 use anyhow::{Context as _, Result};
+use async_trait::async_trait;
 use derive_more::{Deref, DerefMut};
 use futures::Stream;
 use moss_applib::{PublicServiceMarker, ServiceMarker};
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_collection::{
-    self as collection, Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
+    Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
+    builder::{CollectionCreateParams, CollectionLoadParams},
+    services::{
+        DynSetIconService as DynCollectionSetIconService,
+        DynStorageService as DynCollectionStorageService,
+        DynWorktreeService as DynCollectionWorktreeService,
+        SetIconService as CollectionSetIconService, StorageService as CollectionStorageService,
+        WorktreeService as CollectionWorktreeService,
+    },
 };
 use moss_common::api::OperationError;
 use moss_fs::{FileSystem, RemoveOptions};
 use std::{
     collections::{HashMap, HashSet},
     path::{Path, PathBuf},
+    pin::Pin,
     sync::Arc,
 };
 use thiserror::Error;
 use tokio::sync::RwLock;
 
 use crate::{
-    dirs, models::primitives::CollectionId, services::storage_service::StorageService,
+    dirs,
+    models::primitives::CollectionId,
+    services::{AnyCollectionService, AnyStorageService, DynStorageService},
     storage::segments::SEGKEY_COLLECTION,
 };
+
+const COLLECTION_ICON_PATH: u32 = 128;
 
 #[derive(Error, Debug)]
 pub enum CollectionError {
@@ -71,7 +85,7 @@ impl From<CollectionError> for OperationError {
     }
 }
 
-type CollectionResult<T> = std::result::Result<T, CollectionError>;
+pub(super) type CollectionResult<T> = std::result::Result<T, CollectionError>;
 
 pub(crate) struct CollectionItemUpdateParams {
     pub name: Option<String>,
@@ -86,6 +100,7 @@ pub(crate) struct CollectionItemCreateParams {
     pub order: usize,
     pub repository: Option<String>,
     pub external_path: Option<PathBuf>,
+    // FIXME: Do we need this field?
     pub icon_path: Option<PathBuf>,
 }
 
@@ -106,6 +121,7 @@ pub(crate) struct CollectionItemDescription {
     pub expanded: bool,
     #[allow(dead_code)]
     pub repository: Option<String>,
+    // FIXME: Do we need this field?
     pub icon_path: Option<PathBuf>,
     pub abs_path: Arc<Path>,
     pub external_path: Option<PathBuf>,
@@ -120,44 +136,16 @@ struct ServiceState {
 pub struct CollectionService {
     abs_path: Arc<Path>,
     fs: Arc<dyn FileSystem>,
-    storage: Arc<StorageService>, // TODO: should be a trait
+    storage: Arc<DynStorageService>,
     state: Arc<RwLock<ServiceState>>,
 }
 
 impl ServiceMarker for CollectionService {}
 impl PublicServiceMarker for CollectionService {}
 
-impl CollectionService {
-    pub async fn new(
-        abs_path: Arc<Path>,
-        fs: Arc<dyn FileSystem>,
-        storage: Arc<StorageService>,
-    ) -> CollectionResult<Self> {
-        let expanded_items =
-            if let Ok(expanded_items) = storage.get_expanded_items::<CollectionId>() {
-                expanded_items.into_iter().collect::<HashSet<_>>()
-            } else {
-                HashSet::new()
-            };
-
-        let collections = restore_collections(&abs_path, &fs, &storage).await?;
-
-        Ok(Self {
-            abs_path,
-            fs,
-            storage,
-            state: Arc::new(RwLock::new(ServiceState {
-                collections,
-                expanded_items,
-            })),
-        })
-    }
-
-    fn absolutize<P: AsRef<Path>>(&self, path: P) -> PathBuf {
-        self.abs_path.join(dirs::COLLECTIONS_DIR).join(path)
-    }
-
-    pub async fn collection(&self, id: &CollectionId) -> CollectionResult<Arc<CollectionHandle>> {
+#[async_trait]
+impl AnyCollectionService for CollectionService {
+    async fn collection(&self, id: &CollectionId) -> CollectionResult<Arc<CollectionHandle>> {
         let state_lock = self.state.read().await;
         let item = state_lock
             .collections
@@ -167,7 +155,8 @@ impl CollectionService {
         Ok(item.handle.clone())
     }
 
-    pub(crate) async fn create_collection(
+    #[allow(private_interfaces)]
+    async fn create_collection(
         &self,
         id: &CollectionId,
         params: CollectionItemCreateParams,
@@ -186,16 +175,35 @@ impl CollectionService {
             .context("Failed to create the collection directory")?;
 
         let collection = {
-            let storage = Arc::new(collection::services::StorageService::new(&abs_path)?);
-            let worktree = collection::services::WorktreeService::new(
-                abs_path.clone(),
-                self.fs.clone(),
-                storage.clone(),
-            );
+            let storage_service: Arc<DynCollectionStorageService> = {
+                let storage: Arc<CollectionStorageService> =
+                    CollectionStorageService::new(&abs_path)?.into();
+                DynCollectionStorageService::new(storage)
+            };
+            let worktree_service: Arc<DynCollectionWorktreeService> = {
+                let worktree: Arc<CollectionWorktreeService> = CollectionWorktreeService::new(
+                    abs_path.clone(),
+                    self.fs.clone(),
+                    storage_service.clone(),
+                )
+                .into();
+                DynCollectionWorktreeService::new(worktree)
+            };
+            let set_icon_service: Arc<DynCollectionSetIconService> = {
+                let set_icon: Arc<CollectionSetIconService> =
+                    Arc::new(CollectionSetIconService::new(
+                        abs_path.clone(),
+                        self.fs.clone(),
+                        COLLECTION_ICON_PATH,
+                    ));
+                DynCollectionSetIconService::new(set_icon)
+            };
+
             CollectionBuilder::new(self.fs.clone())
-                .with_service::<collection::services::StorageService>(storage)
-                .with_service(worktree)
-                .create(collection::builder::CollectionCreateParams {
+                .with_service::<DynCollectionStorageService>(storage_service)
+                .with_service::<DynCollectionWorktreeService>(worktree_service)
+                .with_service::<DynCollectionSetIconService>(set_icon_service)
+                .create(CollectionCreateParams {
                     name: Some(params.name.to_owned()),
                     internal_abs_path: abs_path.clone(),
                     external_abs_path: params.external_path.as_deref().map(|p| p.to_owned().into()),
@@ -205,7 +213,9 @@ impl CollectionService {
                 .await
                 .map_err(|e| CollectionError::Internal(e.to_string()))?
         };
-        let icon_path = collection.icon_path();
+        let icon_path = collection
+            .service::<DynCollectionSetIconService>()
+            .icon_path();
 
         // let on_did_change = collection.on_did_change().subscribe(|_event| async move {
 
@@ -248,7 +258,8 @@ impl CollectionService {
         })
     }
 
-    pub(crate) async fn delete_collection(
+    #[allow(private_interfaces)]
+    async fn delete_collection(
         &self,
         id: &CollectionId,
     ) -> CollectionResult<Option<CollectionItemDescription>> {
@@ -285,6 +296,7 @@ impl CollectionService {
 
         if let Some(item) = item {
             let manifest = item.handle.manifest().await;
+            let icon_path = item.service::<DynCollectionSetIconService>().icon_path();
 
             Ok(Some(CollectionItemDescription {
                 id: id.to_owned(),
@@ -292,7 +304,7 @@ impl CollectionService {
                 order: item.order,
                 expanded: false,
                 repository: manifest.repository,
-                icon_path: item.icon_path(),
+                icon_path,
                 abs_path: item.abs_path().clone(),
                 external_path: None, // TODO: implement
             }))
@@ -301,7 +313,8 @@ impl CollectionService {
         }
     }
 
-    pub(crate) async fn update_collection(
+    #[allow(private_interfaces)]
+    async fn update_collection(
         &self,
         id: &CollectionId,
         params: CollectionItemUpdateParams,
@@ -340,14 +353,19 @@ impl CollectionService {
         Ok(())
     }
 
-    pub(crate) fn list_collections(&self) -> impl Stream<Item = CollectionItemDescription> + '_ {
+    #[allow(private_interfaces)]
+    fn list_collections(
+        &self,
+    ) -> Pin<Box<dyn Stream<Item = CollectionItemDescription> + Send + '_>> {
         let state = self.state.clone();
 
-        async_stream::stream! {
+        Box::pin(async_stream::stream! {
             let state_lock = state.read().await;
             for (id, item) in state_lock.collections.iter() {
                 let manifest = item.handle.manifest().await;
                 let expanded = state_lock.expanded_items.contains(id);
+                let icon_path = item.service::<DynCollectionSetIconService>().icon_path();
+
 
                 yield CollectionItemDescription {
                     id: item.id.clone(),
@@ -355,19 +373,49 @@ impl CollectionService {
                     order: item.order,
                     expanded,
                     repository: manifest.repository,
-                    icon_path: item.handle.icon_path(),
+                    icon_path,
                     abs_path: item.handle.abs_path().clone(),
                     external_path: None, // TODO: implement
                 };
             }
-        }
+        })
+    }
+}
+
+impl CollectionService {
+    pub async fn new(
+        abs_path: Arc<Path>,
+        fs: Arc<dyn FileSystem>,
+        storage: Arc<DynStorageService>,
+    ) -> CollectionResult<Self> {
+        let expanded_items = if let Ok(expanded_items) = storage.get_expanded_items() {
+            expanded_items.into_iter().collect::<HashSet<_>>()
+        } else {
+            HashSet::new()
+        };
+
+        let collections = restore_collections(&abs_path, &fs, &storage).await?;
+
+        Ok(Self {
+            abs_path,
+            fs,
+            storage,
+            state: Arc::new(RwLock::new(ServiceState {
+                collections,
+                expanded_items,
+            })),
+        })
+    }
+
+    fn absolutize<P: AsRef<Path>>(&self, path: P) -> PathBuf {
+        self.abs_path.join(dirs::COLLECTIONS_DIR).join(path)
     }
 }
 
 async fn restore_collections(
     abs_path: &Path,
     fs: &Arc<dyn FileSystem>,
-    storage: &Arc<StorageService>,
+    storage: &Arc<dyn AnyStorageService>,
 ) -> Result<HashMap<CollectionId, CollectionItem>> {
     let dir_abs_path = abs_path.join(dirs::COLLECTIONS_DIR);
     if !dir_abs_path.exists() {
@@ -391,18 +439,36 @@ async fn restore_collections(
 
         let collection = {
             let collection_abs_path: Arc<Path> = entry.path().to_owned().into();
-            let storage = Arc::new(collection::services::StorageService::new(
-                &collection_abs_path,
-            )?);
-            let worktree = collection::services::WorktreeService::new(
-                collection_abs_path.clone(),
-                fs.clone(),
-                storage.clone(),
-            );
+
+            let storage_service: Arc<DynCollectionStorageService> = {
+                let storage: Arc<CollectionStorageService> =
+                    CollectionStorageService::new(&collection_abs_path)?.into();
+                DynCollectionStorageService::new(storage)
+            };
+            let worktree_service: Arc<DynCollectionWorktreeService> = {
+                let worktree: Arc<CollectionWorktreeService> = CollectionWorktreeService::new(
+                    collection_abs_path.clone(),
+                    fs.clone(),
+                    storage_service.clone(),
+                )
+                .into();
+                DynCollectionWorktreeService::new(worktree)
+            };
+            let set_icon_service: Arc<DynCollectionSetIconService> = {
+                let set_icon: Arc<CollectionSetIconService> =
+                    Arc::new(CollectionSetIconService::new(
+                        collection_abs_path.clone(),
+                        fs.clone(),
+                        COLLECTION_ICON_PATH,
+                    ));
+                DynCollectionSetIconService::new(set_icon)
+            };
+
             CollectionBuilder::new(fs.clone())
-                .with_service::<collection::services::StorageService>(storage)
-                .with_service(worktree)
-                .load(collection::builder::CollectionLoadParams {
+                .with_service::<DynCollectionStorageService>(storage_service)
+                .with_service::<DynCollectionWorktreeService>(worktree_service)
+                .with_service::<DynCollectionSetIconService>(set_icon_service)
+                .load(CollectionLoadParams {
                     internal_abs_path: collection_abs_path,
                 })
                 .await?

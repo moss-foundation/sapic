@@ -36,8 +36,4 @@ tauri = { workspace = true, features = ["test"] }
 moss_testutils.workspace = true
 
 [features]
-test = []
-
-# Enable test feature for tests
-[package.metadata.cargo-test]
-features = ["test"]
+integration-tests = []

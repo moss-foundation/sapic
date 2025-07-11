@@ -5,7 +5,7 @@ use tauri::{Runtime as TauriRuntime, ipc::Channel as TauriChannel};
 
 use crate::{
     models::{events::StreamCollectionsEvent, operations::StreamCollectionsOutput},
-    services::collection_service::CollectionService,
+    services::DynCollectionService,
     workspace::Workspace,
 };
 
@@ -15,7 +15,7 @@ impl<R: TauriRuntime> Workspace<R> {
         _ctx: &C,
         channel: TauriChannel<StreamCollectionsEvent>,
     ) -> OperationResult<StreamCollectionsOutput> {
-        let collections = self.services.get::<CollectionService>();
+        let collections = self.services.get::<DynCollectionService>();
         let stream = collections.list_collections();
         tokio::pin!(stream);
 

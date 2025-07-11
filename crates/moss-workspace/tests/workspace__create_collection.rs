@@ -1,24 +1,21 @@
+#![cfg(feature = "integration-tests")]
+
 pub mod shared;
 
-use moss_collection::{constants::COLLECTION_ICON_FILENAME, dirs::ASSETS_DIR};
 use moss_common::api::OperationError;
 use moss_storage::storage::operations::GetItem;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_collection_name};
 use moss_workspace::{
     models::{operations::CreateCollectionInput, primitives::CollectionId},
-    services::{collection_service::CollectionService, storage_service::StorageService},
+    services::{
+        AnyCollectionService, collection_service::CollectionService,
+        storage_service::impl_for_integration_test::StorageServiceForIntegrationTest,
+    },
     storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
 use tauri::ipc::Channel;
 
 use crate::shared::{generate_random_icon, setup_test_workspace};
-// FIXME: The tests and business logic are poorly organized.
-// A collection shouldn't expose implementation details, and the workspace shouldn't be
-// testing logic that doesn't belong to it. The DTO for creating a collection should simply
-// return the icon path, and in these tests we should check if the icon exists (when expected),
-// rather than manually constructing the path where we assume it was saved. With the current
-// approach, if the image path logic changes in `moss-collection`, it'll break tests in
-// `moss-workspace`, which clearly shouldn't happen.
 
 #[tokio::test]
 async fn create_collection_success() {
@@ -50,8 +47,8 @@ async fn create_collection_success() {
 
     // Verify the db entries were created
     let id = create_collection_output.id;
-    let storage_service = services.get::<StorageService>();
-    let item_store = storage_service.__storage().item_store();
+    let storage_service = services.get::<StorageServiceForIntegrationTest>();
+    let item_store = storage_service.storage().item_store();
 
     // Check order was stored
     let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
@@ -124,8 +121,8 @@ async fn create_collection_special_chars() {
 
         // Verify the db entries were created
         let id = create_collection_output.id;
-        let storage_service = services.get::<StorageService>();
-        let item_store = storage_service.__storage().item_store();
+        let storage_service = services.get::<StorageServiceForIntegrationTest>();
+        let item_store = storage_service.storage().item_store();
 
         // Check order was stored
         let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
@@ -177,8 +174,8 @@ async fn create_collection_with_order() {
 
     // Verify the db entries were created
     let id = create_collection_output.id;
-    let storage_service = services.get::<StorageService>();
-    let item_store = storage_service.__storage().item_store();
+    let storage_service = services.get::<StorageServiceForIntegrationTest>();
+    let item_store = storage_service.storage().item_store();
 
     // Check order was stored
     let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
@@ -234,8 +231,8 @@ async fn create_collection_with_repo() {
     );
 
     // Verify the db entries were created
-    let storage_service = services.get::<StorageService>();
-    let item_store = storage_service.__storage().item_store();
+    let storage_service = services.get::<StorageServiceForIntegrationTest>();
+    let item_store = storage_service.storage().item_store();
 
     // Check order was stored
     let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
@@ -275,28 +272,28 @@ async fn create_collection_with_icon() {
 
     let create_collection_output = create_collection_result.unwrap();
 
+    let id = create_collection_output.id;
+
     let channel = Channel::new(move |_| Ok(()));
     let output = workspace.stream_collections(&ctx, channel).await.unwrap();
     assert_eq!(output.total_returned, 1);
 
-    let collection_path = create_collection_output.abs_path;
     // Verify the directory was created
+    let collection_path = create_collection_output.abs_path;
     assert!(collection_path.exists());
 
     // Verify that the icon is stored in the assets folder
-    assert!(
-        collection_path
-            .join(ASSETS_DIR)
-            .join(COLLECTION_ICON_FILENAME)
-            .exists()
-    );
-
-    // Verify the db entries were created
-    let id = create_collection_output.id;
-    let storage_service = services.get::<StorageService>();
-    let item_store = storage_service.__storage().item_store();
+    let collection = services
+        .get::<CollectionService>()
+        .collection(&id)
+        .await
+        .unwrap();
+    assert!(collection.icon_path().is_some());
 
     // Check order was stored
+    let storage_service = services.get::<StorageServiceForIntegrationTest>();
+    let item_store = storage_service.storage().item_store();
+
     let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
     let order_value = GetItem::get(item_store.as_ref(), order_key).unwrap();
     let stored_order: usize = order_value.deserialize().unwrap();
@@ -348,8 +345,8 @@ async fn create_multiple_collections_expanded_items() {
         .unwrap();
 
     // Check expanded_items contains both collection ids
-    let storage_service = services.get::<StorageService>();
-    let item_store = storage_service.__storage().item_store();
+    let storage_service = services.get::<StorageServiceForIntegrationTest>();
+    let item_store = storage_service.storage().item_store();
     let expanded_items_value =
         GetItem::get(item_store.as_ref(), SEGKEY_EXPANDED_ITEMS.to_segkey_buf()).unwrap();
     let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();

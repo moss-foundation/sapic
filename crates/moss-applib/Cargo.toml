@@ -14,3 +14,6 @@ dashmap.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }
+
+[features]
+integration-tests = []

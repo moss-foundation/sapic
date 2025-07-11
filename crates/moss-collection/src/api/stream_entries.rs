@@ -19,10 +19,7 @@ use crate::{
         primitives::{EntryId, EntryPath},
         types::EntryInfo,
     },
-    services::{
-        storage_service::StorageService,
-        worktree_service::{EntryDescription, WorktreeService},
-    },
+    services::{DynStorageService, DynWorktreeService, worktree_service::EntryDescription},
 };
 
 const EXPANSION_DIRECTORIES: &[&str] = &[
@@ -40,8 +37,8 @@ impl Collection {
     ) -> OperationResult<StreamEntriesOutput> {
         let (tx, mut rx) = mpsc::unbounded_channel::<EntryDescription>();
         let (done_tx, mut done_rx) = oneshot::channel::<()>();
-        let worktree_service = self.service_arc::<WorktreeService>();
-        let storage_service = self.service::<StorageService>();
+        let worktree_service = self.service::<DynWorktreeService>();
+        let storage_service = self.service::<DynStorageService>();
 
         let mut handles = Vec::new();
         let expansion_dirs = match input {
@@ -52,18 +49,17 @@ impl Collection {
             StreamEntriesInput::ReloadPath(path) => vec![path],
         };
 
-        let expanded_entries: Arc<HashSet<EntryId>> =
-            match storage_service.get_expanded_entries::<EntryId>() {
-                Ok(entries) => HashSet::from_iter(entries).into(),
-                Err(error) => {
-                    println!("warn: getting expanded entries: {}", error);
-                    HashSet::default().into()
-                }
-            };
+        let expanded_entries: Arc<HashSet<EntryId>> = match storage_service.get_expanded_entries() {
+            Ok(entries) => HashSet::from_iter(entries).into(),
+            Err(error) => {
+                println!("warn: getting expanded entries: {}", error);
+                HashSet::default().into()
+            }
+        };
 
         let all_entry_keys: Arc<HashMap<SegKeyBuf, AnyValue>> =
             match storage_service.get_all_entry_keys() {
-                Ok(keys) => keys.collect::<HashMap<_, _>>().into(),
+                Ok(keys) => keys.into(),
                 Err(error) => {
                     println!("warn: getting all entry keys: {}", error);
                     HashMap::default().into()

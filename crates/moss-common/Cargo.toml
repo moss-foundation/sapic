@@ -19,3 +19,6 @@ toml.workspace = true
 hcl-rs.workspace = true
 nanoid.workspace = true
 derive_more.workspace = true
+
+[features]
+integration-tests = []

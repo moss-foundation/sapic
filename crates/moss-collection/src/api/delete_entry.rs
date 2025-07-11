@@ -1,10 +1,11 @@
+use moss_common::api::OperationResult;
+use validator::Validate;
+
 use crate::{
     collection::Collection,
     models::operations::{DeleteEntryInput, DeleteEntryOutput},
-    services::worktree_service::WorktreeService,
+    services::DynWorktreeService,
 };
-use moss_common::api::OperationResult;
-use validator::Validate;
 
 impl Collection {
     pub async fn delete_entry(
@@ -12,7 +13,7 @@ impl Collection {
         input: DeleteEntryInput,
     ) -> OperationResult<DeleteEntryOutput> {
         input.validate()?;
-        let worktree_service = self.service::<WorktreeService>();
+        let worktree_service = self.service::<DynWorktreeService>();
         worktree_service.remove_entry(&input.id).await?;
 
         Ok(DeleteEntryOutput { id: input.id })
