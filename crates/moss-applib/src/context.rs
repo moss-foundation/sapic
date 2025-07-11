@@ -4,7 +4,8 @@ use derive_more::{Deref, DerefMut};
 use std::{
     any::{Any, TypeId},
     future::Future,
-    sync::Arc,
+    sync::{Arc, atomic::AtomicBool},
+    time::Instant,
 };
 use tauri::{Runtime as TauriRuntime, State};
 use tokio::time::Duration;
