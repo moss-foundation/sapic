@@ -1,3 +1,6 @@
+pub mod handlers;
+
+pub use handlers::*;
 use moss_api::{TauriError, TauriResult};
 use moss_app::app::App;
 use moss_workspace::models::{events::*, operations::*};
@@ -73,10 +76,19 @@ pub async fn stream_collections<R: TauriRuntime>(
 }
 
 #[tauri::command(async)]
-#[instrument(level = "trace", skip(app), fields(window = window.label()))]
+#[instrument(level = "trace", skip(app))]
 pub async fn create_collection<R: TauriRuntime>(
     app: State<'_, App<R>>,
     window: Window<R>,
+    input: CreateCollectionInput,
+    options: Options,
+) -> TauriResult<CreateCollectionOutput> {
+    create_collection_impl(app, input, options).await
+}
+
+// FIXME: How do we dispatch to specific windows when using http proxy?
+pub async fn create_collection_impl<R: TauriRuntime>(
+    app: State<'_, App<R>>,
     input: CreateCollectionInput,
     options: Options,
 ) -> TauriResult<CreateCollectionOutput> {

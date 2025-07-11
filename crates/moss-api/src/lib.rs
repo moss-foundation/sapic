@@ -1,6 +1,7 @@
 pub mod models;
 mod utils;
 
+use axum::{http::StatusCode, response::IntoResponse};
 pub use utils::*;
 
 use serde::Serialize;
@@ -30,6 +31,13 @@ impl Serialize for TauriError {
         S: serde::Serializer,
     {
         serializer.serialize_str(self.to_string().as_str())
+    }
+}
+
+impl IntoResponse for TauriError {
+    fn into_response(self) -> axum::response::Response {
+        // TODO: More sophisticated error status code
+        (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()).into_response()
     }
 }
 

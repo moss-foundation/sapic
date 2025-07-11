@@ -9,6 +9,7 @@ mod window;
 #[macro_use]
 extern crate tracing;
 
+use axum::routing::post;
 use moss_activity_indicator::ActivityIndicator;
 use moss_app::{
     AppBuilder,
@@ -27,7 +28,7 @@ use tauri_plugin_os;
 
 use window::{CreateWindowInput, create_window};
 
-use crate::{constants::*, plugins::*};
+use crate::{commands::create_collection_handler, constants::*, plugins::*};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub async fn run<R: TauriRuntime>() {
@@ -37,8 +38,18 @@ pub async fn run<R: TauriRuntime>() {
         .plugin(plugin_window_state::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_os::init())
-        .plugin(tauri_plugin_single_instance::init(|_app, _args, _cwd| {}));
-
+        .plugin(tauri_plugin_single_instance::init(|_app, _args, _cwd| {}))
+        .plugin({
+            let routes = vec![(
+                "/create-collection".to_string(),
+                post(create_collection_handler),
+            )];
+            tauri_plugin_dapis::Builder::new()
+                .routes(routes)
+                .port(12345)
+                .build()
+                .expect("Unable to initialize tauri_plugin_dapis")
+        });
     #[cfg(target_os = "macos")]
     {
         builder = builder.plugin(mac_window::init());
