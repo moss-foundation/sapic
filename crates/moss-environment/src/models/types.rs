@@ -23,7 +23,6 @@ pub enum VariableValue {
     String(String),
     Number(Number),
     Boolean(bool),
-    Null,
 }
 
 impl TryFrom<JsonValue> for VariableValue {
@@ -34,7 +33,6 @@ impl TryFrom<JsonValue> for VariableValue {
             JsonValue::String(s) => Ok(VariableValue::String(s)),
             JsonValue::Number(n) => Ok(VariableValue::Number(n)),
             JsonValue::Bool(b) => Ok(VariableValue::Boolean(b)),
-            JsonValue::Null => Ok(VariableValue::Null),
             _ => Err(anyhow::anyhow!(
                 "Unsupported variable value type: {:?}",
                 value
@@ -46,11 +44,12 @@ impl TryFrom<JsonValue> for VariableValue {
 /// @category Type
 #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct VariableInfo {
     pub name: VariableName,
-    pub global_value: VariableValue,
-    pub local_value: VariableValue,
+    pub global_value: Option<VariableValue>,
+    pub local_value: Option<VariableValue>,
     pub disabled: bool,
     pub kind: VariableKind,
     pub order: Option<usize>,

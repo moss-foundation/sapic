@@ -272,16 +272,17 @@ async fn create_collection_with_icon() {
 
     let create_collection_output = create_collection_result.unwrap();
 
+    let id = create_collection_output.id;
+
     let channel = Channel::new(move |_| Ok(()));
     let output = workspace.stream_collections(&ctx, channel).await.unwrap();
     assert_eq!(output.total_returned, 1);
 
-    let collection_path = create_collection_output.abs_path;
     // Verify the directory was created
+    let collection_path = create_collection_output.abs_path;
     assert!(collection_path.exists());
 
     // Verify that the icon is stored in the assets folder
-    let id = create_collection_output.id;
     let collection = services
         .get::<CollectionService>()
         .collection(&id)

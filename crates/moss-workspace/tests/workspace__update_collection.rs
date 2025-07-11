@@ -227,7 +227,7 @@ async fn update_collection_repo() {
 async fn update_collection_new_icon() {
     let (ctx, workspace_path, mut workspace, services, cleanup) = setup_test_workspace().await;
     let collection_name = random_collection_name();
-    let create_collection_output = workspace
+    let id = workspace
         .create_collection(
             &ctx,
             &CreateCollectionInput {
@@ -239,16 +239,17 @@ async fn update_collection_new_icon() {
             },
         )
         .await
-        .unwrap();
+        .unwrap()
+        .id;
 
     let icon_path = workspace_path.join("test_icon.png");
     generate_random_icon(&icon_path);
 
-    let id = workspace
+    let _ = workspace
         .update_collection(
             &ctx,
             UpdateCollectionInput {
-                id: create_collection_output.id,
+                id: id.clone(),
                 name: None,
                 repository: None,
                 icon_path: Some(ChangePath::Update(icon_path.clone())),
@@ -258,8 +259,7 @@ async fn update_collection_new_icon() {
             },
         )
         .await
-        .unwrap()
-        .id;
+        .unwrap();
 
     // Verify the icon is generated
     let collection = services
@@ -280,7 +280,7 @@ async fn update_collection_remove_icon() {
     let icon_path = workspace_path.join("test_icon.png");
     generate_random_icon(&icon_path);
 
-    let create_collection_output = workspace
+    let id = workspace
         .create_collection(
             &ctx,
             &CreateCollectionInput {
@@ -292,13 +292,14 @@ async fn update_collection_remove_icon() {
             },
         )
         .await
-        .unwrap();
+        .unwrap()
+        .id;
 
-    let id = workspace
+    let _ = workspace
         .update_collection(
             &ctx,
             UpdateCollectionInput {
-                id: create_collection_output.id,
+                id: id.clone(),
                 name: None,
                 repository: None,
                 icon_path: Some(ChangePath::Remove),
@@ -308,8 +309,7 @@ async fn update_collection_remove_icon() {
             },
         )
         .await
-        .unwrap()
-        .id;
+        .unwrap();
 
     // Verify the icon is removed
     let collection = services

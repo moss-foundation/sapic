@@ -5,12 +5,12 @@
  */
 export type VariableInfo = {
   name: string;
-  globalValue: VariableValue;
-  localValue: VariableValue;
+  globalValue?: VariableValue;
+  localValue?: VariableValue;
   disabled: boolean;
   kind: VariableKind;
-  order: number | null;
-  desc: string | null;
+  order?: number;
+  desc?: string;
 };
 
 /**
@@ -21,4 +21,4 @@ export type VariableKind = "secret" | "default";
 /**
  * @category Type
  */
-export type VariableValue = string | number | boolean | null;
+export type VariableValue = string | number | boolean;
