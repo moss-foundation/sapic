@@ -85,29 +85,31 @@ export const useDeleteCollectionEntry = () => {
           );
         });
 
+        console.log({ peerEntries });
+
         // Update order for peer entries that come after the deleted entry
         const entriesToUpdate = peerEntries.filter((entry) => (entry.order ?? 0) > (deletedEntry.order ?? 0));
 
         if (entriesToUpdate.length > 0) {
-          const updateEntries = entriesToUpdate.map((entry) => {
-            if (entry.kind === "Item") {
-              return {
-                ITEM: {
-                  id: entry.id,
-                  path: entry.path.raw,
-                  order: Math.max(0, (entry.order ?? 0) - 1),
-                },
-              };
-            } else {
-              return {
-                DIR: {
-                  id: entry.id,
-                  path: entry.path.raw,
-                  order: Math.max(0, (entry.order ?? 0) - 1),
-                },
-              };
-            }
-          });
+          const updateEntries = await Promise.all(
+            entriesToUpdate.map(async (entry) => {
+              if (entry.kind === "Item") {
+                return {
+                  ITEM: {
+                    id: entry.id,
+                    order: Math.max(0, (entry.order ?? 0) - 1),
+                  },
+                };
+              } else {
+                return {
+                  DIR: {
+                    id: entry.id,
+                    order: Math.max(0, (entry.order ?? 0) - 1),
+                  },
+                };
+              }
+            })
+          );
 
           if (updateEntries.length > 0) {
             await batchUpdateCollectionEntry({

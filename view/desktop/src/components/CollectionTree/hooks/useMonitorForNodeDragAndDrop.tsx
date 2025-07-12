@@ -34,119 +34,74 @@ export const useMonitorForNodeDragAndDrop = () => {
 
         if (sourceTreeNodeData.node.id === locationTreeNodeData.node.id) return;
 
-        if (sourceTreeNodeData.collectionId === locationTreeNodeData.collectionId) {
-          const allEntries = getAllNestedEntries(sourceTreeNodeData.node);
+        const allEntries = getAllNestedEntries(sourceTreeNodeData.node);
+        const entriesPreparedForDrop = await prepareEntriesForDrop(allEntries);
 
+        // console.log({ entriesPreparedForDrop });
+
+        if (sourceTreeNodeData.collectionId === locationTreeNodeData.collectionId) {
           if (locationTreeNodeData.instruction?.operation === "combine") {
             const newOrder = locationTreeNodeData.node.childNodes.length + 1;
 
-            if (sourceTreeNodeData.node.kind === "Item") {
-              await updateCollectionEntry({
-                collectionId: sourceTreeNodeData.collectionId,
-                updatedEntry: {
-                  ITEM: {
-                    id: sourceTreeNodeData.node.id,
-                    path: await join(...locationTreeNodeData.node.path.segments, sourceTreeNodeData.node.name),
-                    order: newOrder,
-                  },
-                },
-              });
-            }
-          }
+            const entriesToUpdate = await Promise.all(
+              entriesPreparedForDrop.map(async (entry, index) => {
+                const newEntryPath = locationTreeNodeData.node.path.raw;
 
-          if (
-            locationTreeNodeData.instruction?.operation === "reorder-before" ||
-            locationTreeNodeData.instruction?.operation === "reorder-after"
-          ) {
-            const newOrder =
-              typeof locationTreeNodeData.node.order === "number"
-                ? locationTreeNodeData.instruction?.operation === "reorder-after"
-                  ? locationTreeNodeData.node.order + 1
-                  : locationTreeNodeData.instruction?.operation === "reorder-before"
-                    ? locationTreeNodeData.node.order - 1
-                    : 0
-                : 0;
-
-            console.log({
-              sourceTreeNodeData,
-              locationTreeNodeData,
-            });
-
-            const rootEntry = allEntries[0];
-            const nestedEntries = allEntries.slice(1);
-
-            if (rootEntry.kind === "Dir") {
-              const pathWithoutName = await getPathWithoutName(locationTreeNodeData.node);
-              const newRootEntryPath = await join(pathWithoutName.raw, rootEntry.name);
-
-              await updateCollectionEntry({
-                collectionId: sourceTreeNodeData.collectionId,
-                updatedEntry: {
-                  DIR: {
-                    id: rootEntry.id,
-                    path: newRootEntryPath,
-                    order: newOrder,
-                  },
-                },
-              });
-
-              for (const entry of nestedEntries) {
-                const newEntryPath = await getPathWithoutParentPath(entry.path, locationTreeNodeData.node.path);
-                const entryKind = entry.kind === "Dir" ? "DIR" : "ITEM";
-
-                await batchUpdateCollectionEntry({
-                  collectionId: sourceTreeNodeData.collectionId,
-                  entries: {
-                    entries: [
-                      {
-                        [entryKind]: {
-                          id: entry.id,
-                          path: await join(newRootEntryPath, ...newEntryPath.segments),
-                        },
+                if (index === 0) {
+                  if (entry.kind === "Dir") {
+                    return {
+                      DIR: {
+                        id: entry.id,
+                        path: newEntryPath,
+                        order: newOrder,
                       },
-                    ],
-                  },
-                });
-              }
-            } else {
-              const parentPathWithoutName = await getPathWithoutName(locationTreeNodeData.node);
-              const newRootEntryPath = await join(parentPathWithoutName.raw, rootEntry.name);
+                    };
+                  } else {
+                    return {
+                      ITEM: {
+                        id: entry.id,
+                        path: newEntryPath,
+                        order: newOrder,
+                      },
+                    };
+                  }
+                }
 
-              await updateCollectionEntry({
-                collectionId: sourceTreeNodeData.collectionId,
-                updatedEntry: {
-                  ITEM: {
-                    id: rootEntry.id,
-                    path: newRootEntryPath === rootEntry.path.raw ? undefined : newRootEntryPath,
-                    order: newOrder,
-                  },
-                },
-              });
-            }
+                if (entry.kind === "Dir") {
+                  return {
+                    DIR: {
+                      id: entry.id,
+                      path: newEntryPath,
+                    },
+                  };
+                } else {
+                  return {
+                    ITEM: {
+                      id: entry.id,
+                      path: newEntryPath,
+                    },
+                  };
+                }
+              })
+            );
+
+            console.log({ entriesToUpdate });
+
+            await batchUpdateCollectionEntry({
+              collectionId: sourceTreeNodeData.collectionId,
+              entries: {
+                entries: entriesToUpdate,
+              },
+            });
+            return;
           }
-
-          //   allNestedEntries.forEach(async (entry) => {
-          //     const newPath = await join(pathWithoutName.raw, entry.path.raw);
-
-          //    await  updateCollectionEntry({
-          //       collectionId: sourceTreeNodeData.collectionId,
-          //       updatedEntry: {
-          //         DIR: {
-          //           id: entry.id,
-          //           path: newPath,
-          //         },
-          //       },
-          //     });
-          //   });
-
-          return;
         }
       },
     });
   }, [batchUpdateCollectionEntry, updateCollectionEntry]);
 };
 
-const getPathWithoutName = async (node: TreeCollectionNode | EntryInfo): Promise<EntryInfo["path"]> => {
+export const getPathWithoutName = async (node: TreeCollectionNode | EntryInfo): Promise<EntryInfo["path"]> => {
   const newSegments = node.path.segments.filter((segment) => segment !== node.name);
   const newRaw = await join(...newSegments);
 
@@ -156,7 +111,7 @@ const getPathWithoutName = async (node: TreeCollectionNode | EntryInfo): Promise
   };
 };
 
-const getPathWithoutParentPath = async (
+export const getPathWithoutParentPath = async (
   path: EntryInfo["path"],
   parentPath: EntryInfo["path"]
 ): Promise<EntryInfo["path"]> => {
@@ -167,4 +122,40 @@ const getPathWithoutParentPath = async (
     segments: newSegments,
     raw: newRaw,
   };
+};
+
+export const removePathBeforeName = async (path: EntryInfo["path"], name: string) => {
+  const nameIndex = path.segments.findIndex((segment) => segment === name);
+
+  if (nameIndex === -1) {
+    return {
+      segments: path.segments,
+      raw: path.raw,
+    };
+  }
+
+  const newSegments = path.segments.slice(nameIndex);
+  const newRaw = await join(...newSegments);
+
+  return {
+    segments: newSegments,
+    raw: newRaw,
+  };
+};
+
+export const prepareEntriesForDrop = async (entries: EntryInfo[]): Promise<EntryInfo[]> => {
+  const rootEntryName = entries[0].name;
+
+  const entriesPreparedForDrop: EntryInfo[] = [];
+
+  for await (const entry of entries) {
+    const newEntryPath = await removePathBeforeName(entry.path, rootEntryName);
+
+    entriesPreparedForDrop.push({
+      ...entry,
+      path: newEntryPath,
+    });
+  }
+
+  return entriesPreparedForDrop;
 };

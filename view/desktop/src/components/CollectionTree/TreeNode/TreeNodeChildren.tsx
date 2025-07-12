@@ -1,4 +1,5 @@
 import { TreeCollectionNode } from "../types";
+import { sortByOrder } from "../utils2";
 import { TreeNode } from "./TreeNode";
 
 interface TreeNodeChildrenProps {
@@ -8,10 +9,12 @@ interface TreeNodeChildrenProps {
 }
 
 const TreeNodeChildren = ({ node, onNodeUpdate, depth }: TreeNodeChildrenProps) => {
+  const sortedChildNodes = sortByOrder(node.childNodes);
+
   return (
     <div className="contents">
       <ul className="h-full">
-        {node.childNodes.map((childNode, index) => (
+        {sortedChildNodes.map((childNode, index) => (
           <TreeNode
             parentNode={node}
             onNodeUpdate={onNodeUpdate}
