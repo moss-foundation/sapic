@@ -1,7 +1,6 @@
 pub mod shared;
 
 use moss_app::{
-    context::ctxkeys,
     models::{
         operations::{CloseWorkspaceInput, CreateWorkspaceInput, OpenWorkspaceInput},
         primitives::WorkspaceId,
@@ -9,7 +8,6 @@ use moss_app::{
     services::{storage_service::StorageService, workspace_service::WorkspaceService},
     storage::segments::SEGKEY_LAST_ACTIVE_WORKSPACE,
 };
-use moss_applib::context::Context;
 use moss_common::api::OperationError;
 use moss_storage::storage::operations::GetItem;
 use moss_testutils::random_name::random_workspace_name;
@@ -52,7 +50,7 @@ async fn close_workspace_success() {
     assert_eq!(close_output.id, create_output.id);
 
     // Check that no workspace is active
-    assert!(workspace_service.is_workspace_open().await.is_none());
+    assert!(workspace_service.workspace().await.is_none());
 
     // Check that last active workspace is removed from database
     let storage_service = services.get::<StorageService>();
@@ -150,9 +148,7 @@ async fn close_workspace_after_another_opened() {
 
     // Check that the second workspace is active
 
-    let maybe_active_id = ctx
-        .value::<ctxkeys::ActiveWorkspaceId>()
-        .map(|id| (*id).clone());
+    let maybe_active_id = workspace_service.workspace().await.map(|w| w.id());
     assert!(maybe_active_id.is_some());
     let active_id = maybe_active_id.unwrap();
 
@@ -189,7 +185,7 @@ async fn close_workspace_after_another_opened() {
     assert_eq!(close_output.id, create_output2.id);
 
     // Check that no workspace is active
-    assert!(workspace_service.is_workspace_open().await.is_none());
+    assert!(workspace_service.workspace().await.is_none());
 
     // Check that last active workspace is removed from database
     let storage_service = services.get::<StorageService>();

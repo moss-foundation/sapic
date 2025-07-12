@@ -11,6 +11,9 @@ use ts_rs::TS;
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct Options {
+    /// Optional request ID for API operations.
+    pub request_id: Option<String>,
+
     /// Optional timeout duration for API operations in seconds.
     ///
     /// When `Some(value)`, the operation will timeout after the specified number of seconds.

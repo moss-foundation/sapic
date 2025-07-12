@@ -15,7 +15,7 @@ use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn stream_collections_empty_workspace() {
-    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
+    let (_ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
 
     let received_events = Arc::new(Mutex::new(Vec::new()));
     let received_events_clone = received_events.clone();
@@ -29,7 +29,7 @@ async fn stream_collections_empty_workspace() {
         Ok(())
     });
 
-    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
+    let output = workspace.stream_collections(channel).await.unwrap();
 
     // Verify no events were received
     let events = received_events.lock().unwrap();
@@ -41,23 +41,20 @@ async fn stream_collections_empty_workspace() {
 
 #[tokio::test]
 async fn stream_collections_single_collection() {
-    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
+    let (_ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let collection_order = 42;
 
     // Create a single collection
     let create_result = workspace
-        .create_collection(
-            &ctx,
-            &CreateCollectionInput {
-                name: collection_name.clone(),
-                order: collection_order,
-                external_path: None,
-                repo: None,
-                icon_path: None,
-            },
-        )
+        .create_collection(&CreateCollectionInput {
+            name: collection_name.clone(),
+            order: collection_order,
+            external_path: None,
+            repo: None,
+            icon_path: None,
+        })
         .await
         .unwrap();
 
@@ -76,7 +73,7 @@ async fn stream_collections_single_collection() {
         Ok(())
     });
 
-    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
+    let output = workspace.stream_collections(channel).await.unwrap();
 
     // Verify one event was received
     let events = received_events.lock().unwrap();
@@ -96,7 +93,7 @@ async fn stream_collections_single_collection() {
 
 #[tokio::test]
 async fn stream_collections_multiple_collections() {
-    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
+    let (_ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
 
     let mut expected_collections = Vec::new();
 
@@ -106,16 +103,13 @@ async fn stream_collections_multiple_collections() {
         let collection_order = i * 10;
 
         let create_result = workspace
-            .create_collection(
-                &ctx,
-                &CreateCollectionInput {
-                    name: collection_name.clone(),
-                    order: collection_order,
-                    external_path: None,
-                    repo: None,
-                    icon_path: None,
-                },
-            )
+            .create_collection(&CreateCollectionInput {
+                name: collection_name.clone(),
+                order: collection_order,
+                external_path: None,
+                repo: None,
+                icon_path: None,
+            })
             .await
             .unwrap();
 
@@ -135,7 +129,7 @@ async fn stream_collections_multiple_collections() {
         Ok(())
     });
 
-    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
+    let output = workspace.stream_collections(channel).await.unwrap();
 
     // Verify correct number of events
     let events = received_events.lock().unwrap();
@@ -162,7 +156,7 @@ async fn stream_collections_multiple_collections() {
 
 #[tokio::test]
 async fn stream_collections_with_repository() {
-    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
+    let (_ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let collection_order = 100;
@@ -170,16 +164,13 @@ async fn stream_collections_with_repository() {
 
     // Create a collection with repository
     let create_result = workspace
-        .create_collection(
-            &ctx,
-            &CreateCollectionInput {
-                name: collection_name.clone(),
-                order: collection_order,
-                external_path: None,
-                repo: Some(repository_url.clone()),
-                icon_path: None,
-            },
-        )
+        .create_collection(&CreateCollectionInput {
+            name: collection_name.clone(),
+            order: collection_order,
+            external_path: None,
+            repo: Some(repository_url.clone()),
+            icon_path: None,
+        })
         .await
         .unwrap();
 
@@ -198,7 +189,7 @@ async fn stream_collections_with_repository() {
         Ok(())
     });
 
-    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
+    let output = workspace.stream_collections(channel).await.unwrap();
 
     // Verify one event was received
     let events = received_events.lock().unwrap();
@@ -220,7 +211,7 @@ async fn stream_collections_with_repository() {
 
 #[tokio::test]
 async fn stream_collections_with_icon() {
-    let (ctx, workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
+    let (_ctx, workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let collection_order = 200;
@@ -231,16 +222,13 @@ async fn stream_collections_with_icon() {
 
     // Create a collection with icon
     let create_result = workspace
-        .create_collection(
-            &ctx,
-            &CreateCollectionInput {
-                name: collection_name.clone(),
-                order: collection_order,
-                external_path: None,
-                repo: None,
-                icon_path: Some(icon_path.clone()),
-            },
-        )
+        .create_collection(&CreateCollectionInput {
+            name: collection_name.clone(),
+            order: collection_order,
+            external_path: None,
+            repo: None,
+            icon_path: Some(icon_path.clone()),
+        })
         .await
         .unwrap();
 
@@ -259,7 +247,7 @@ async fn stream_collections_with_icon() {
         Ok(())
     });
 
-    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
+    let output = workspace.stream_collections(channel).await.unwrap();
 
     // Verify one event was received
     let events = received_events.lock().unwrap();
@@ -279,7 +267,7 @@ async fn stream_collections_with_icon() {
 
 #[tokio::test]
 async fn stream_collections_mixed_configurations() {
-    let (ctx, workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
+    let (_ctx, workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
 
     // Create icon file
     let icon_path = workspace_path.join("mixed_test_icon.png");
@@ -290,16 +278,13 @@ async fn stream_collections_mixed_configurations() {
     // Collection 1: Basic
     let name1 = "Basic Collection".to_string();
     let result1 = workspace
-        .create_collection(
-            &ctx,
-            &CreateCollectionInput {
-                name: name1.clone(),
-                order: 1,
-                external_path: None,
-                repo: None,
-                icon_path: None,
-            },
-        )
+        .create_collection(&CreateCollectionInput {
+            name: name1.clone(),
+            order: 1,
+            external_path: None,
+            repo: None,
+            icon_path: None,
+        })
         .await
         .unwrap();
     expected_collections.push((result1.id, name1, 1, None::<String>, None::<String>));
@@ -308,16 +293,13 @@ async fn stream_collections_mixed_configurations() {
     let name2 = "Repo Collection".to_string();
     let repo2 = "https://github.com/example/repo2.git".to_string();
     let result2 = workspace
-        .create_collection(
-            &ctx,
-            &CreateCollectionInput {
-                name: name2.clone(),
-                order: 2,
-                external_path: None,
-                repo: Some(repo2.clone()),
-                icon_path: None,
-            },
-        )
+        .create_collection(&CreateCollectionInput {
+            name: name2.clone(),
+            order: 2,
+            external_path: None,
+            repo: Some(repo2.clone()),
+            icon_path: None,
+        })
         .await
         .unwrap();
     expected_collections.push((result2.id, name2, 2, Some(repo2), None::<String>));
@@ -325,16 +307,13 @@ async fn stream_collections_mixed_configurations() {
     // Collection 3: With icon
     let name3 = "Icon Collection".to_string();
     let result3 = workspace
-        .create_collection(
-            &ctx,
-            &CreateCollectionInput {
-                name: name3.clone(),
-                order: 3,
-                external_path: None,
-                repo: None,
-                icon_path: Some(icon_path.clone()),
-            },
-        )
+        .create_collection(&CreateCollectionInput {
+            name: name3.clone(),
+            order: 3,
+            external_path: None,
+            repo: None,
+            icon_path: Some(icon_path.clone()),
+        })
         .await
         .unwrap();
     expected_collections.push((
@@ -358,7 +337,7 @@ async fn stream_collections_mixed_configurations() {
         Ok(())
     });
 
-    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
+    let output = workspace.stream_collections(channel).await.unwrap();
 
     // Verify correct number of events
     let events = received_events.lock().unwrap();
@@ -393,7 +372,7 @@ async fn stream_collections_mixed_configurations() {
 
 #[tokio::test]
 async fn stream_collections_order_verification() {
-    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
+    let (_ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
 
     let orders = vec![10, 5, 20, 1, 15];
     let mut expected_collections = Vec::new();
@@ -402,16 +381,13 @@ async fn stream_collections_order_verification() {
     for order in orders.iter() {
         let collection_name = format!("Collection Order {}", order);
         let result = workspace
-            .create_collection(
-                &ctx,
-                &CreateCollectionInput {
-                    name: collection_name.clone(),
-                    order: *order,
-                    external_path: None,
-                    repo: None,
-                    icon_path: None,
-                },
-            )
+            .create_collection(&CreateCollectionInput {
+                name: collection_name.clone(),
+                order: *order,
+                external_path: None,
+                repo: None,
+                icon_path: None,
+            })
             .await
             .unwrap();
         expected_collections.push((result.id, collection_name, *order));
@@ -430,7 +406,7 @@ async fn stream_collections_order_verification() {
         Ok(())
     });
 
-    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
+    let output = workspace.stream_collections(channel).await.unwrap();
 
     // Verify correct number of events
     let events = received_events.lock().unwrap();

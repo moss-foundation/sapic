@@ -44,8 +44,9 @@ async fn create_workspace_success() {
     let id = create_output.id;
 
     // Check active workspace
-    assert!(workspace_service.is_workspace_open().await.is_some());
-    let active_workspace_id = workspace_service.is_workspace_open().await.unwrap();
+    let maybe_active_workspace = workspace_service.workspace().await;
+    assert!(maybe_active_workspace.is_some());
+    let active_workspace_id = maybe_active_workspace.unwrap().id();
     assert_eq!(active_workspace_id, id);
 
     // Check known_workspaces
@@ -99,7 +100,7 @@ async fn create_workspace_empty_name() {
     // Ensure no workspace was created or activated
     let list_workspaces = app.list_workspaces(&ctx).await.unwrap();
     assert!(list_workspaces.is_empty());
-    assert!(workspace_service.is_workspace_open().await.is_none());
+    assert!(workspace_service.workspace().await.is_none());
 
     // Check database
     let item_store = storage_service.__storage().item_store();
@@ -163,8 +164,9 @@ async fn create_workspace_same_name() {
     assert_ne!(first_output.id, second_output.id);
 
     // Check active workspace is the second one
-    assert!(workspace_service.is_workspace_open().await.is_some());
-    let active_workspace_id = workspace_service.is_workspace_open().await.unwrap();
+    let maybe_active_workspace = workspace_service.workspace().await;
+    assert!(maybe_active_workspace.is_some());
+    let active_workspace_id = maybe_active_workspace.unwrap().id();
     assert_eq!(active_workspace_id, second_output.id);
 
     // Check both workspaces are in list
@@ -235,8 +237,9 @@ async fn create_workspace_special_chars() {
         assert!(expected_path.exists());
 
         // Check active workspace
-        assert!(workspace_service.is_workspace_open().await.is_some());
-        let active_workspace_id = workspace_service.is_workspace_open().await.unwrap();
+        let maybe_active_workspace = workspace_service.workspace().await;
+        assert!(maybe_active_workspace.is_some());
+        let active_workspace_id = maybe_active_workspace.unwrap().id();
         assert_eq!(active_workspace_id, create_output.id);
 
         // Check workspace is in list
@@ -293,7 +296,7 @@ async fn create_workspace_not_open_on_creation() {
     assert!(expected_path.exists());
 
     // Check that no workspace is active
-    assert!(workspace_service.is_workspace_open().await.is_none());
+    assert!(workspace_service.workspace().await.is_none());
 
     // Check workspace is in list
     let list_workspaces = app.list_workspaces(&ctx).await.unwrap();

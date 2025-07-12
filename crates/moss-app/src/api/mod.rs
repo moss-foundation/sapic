@@ -13,6 +13,3 @@ pub mod open_workspace;
 pub mod set_color_theme;
 pub mod set_locale;
 pub mod update_workspace;
-
-// TODO: To be removed later
-pub mod describe_workbench_state;

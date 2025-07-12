@@ -1,7 +1,6 @@
 pub mod shared;
 
 use moss_app::{
-    context::ctxkeys,
     dirs,
     models::{
         operations::{CreateWorkspaceInput, OpenWorkspaceInput},
@@ -10,7 +9,6 @@ use moss_app::{
     services::{storage_service::StorageService, workspace_service::WorkspaceService},
     storage::segments::{SEGKEY_LAST_ACTIVE_WORKSPACE, segkey_last_opened_at},
 };
-use moss_applib::context::Context;
 use moss_common::api::OperationError;
 use moss_storage::storage::operations::GetItem;
 use moss_testutils::random_name::random_workspace_name;
@@ -23,6 +21,8 @@ use crate::shared::set_up_test_app;
 #[tokio::test]
 async fn open_workspace_success() {
     let (app, ctx, _services, cleanup, abs_path) = set_up_test_app().await;
+    let workspace_service = _services.get::<WorkspaceService<MockRuntime>>();
+    let storage_service = _services.get::<StorageService>();
 
     let workspace_name = random_workspace_name();
 
@@ -59,20 +59,14 @@ async fn open_workspace_success() {
     assert_eq!(open_output.id, create_output.id);
     assert_eq!(open_output.abs_path, expected_path);
 
-    // Check active workspace
-    let workspace_service = _services.get::<WorkspaceService<MockRuntime>>();
-    let storage_service = _services.get::<StorageService>();
-
     // Check workspace is open
-    assert!(workspace_service.is_workspace_open().await.is_some());
-    let active_workspace_id_from_service = workspace_service.is_workspace_open().await.unwrap();
+    let maybe_active_workspace = workspace_service.workspace().await;
+    assert!(maybe_active_workspace.is_some());
+    let active_workspace_id_from_service = maybe_active_workspace.unwrap().id();
     assert_eq!(active_workspace_id_from_service, create_output.id);
 
     // Check workspace ID in context
-    let active_workspace_id = ctx
-        .value::<ctxkeys::ActiveWorkspaceId>()
-        .map(|id| (*id).clone())
-        .unwrap();
+    let active_workspace_id = workspace_service.workspace().await.unwrap().id();
     assert_eq!(active_workspace_id, create_output.id);
 
     // Check entry in the database - verify last opened at timestamp is saved
@@ -97,8 +91,8 @@ async fn open_workspace_success() {
 
 #[tokio::test]
 async fn open_workspace_already_opened() {
-    let (app, ctx, _services, cleanup, _abs_path) = set_up_test_app().await;
-
+    let (app, ctx, services, cleanup, _abs_path) = set_up_test_app().await;
+    let workspace_service = services.get::<WorkspaceService<MockRuntime>>();
     let workspace_name = random_workspace_name();
 
     // Create and open workspace
@@ -115,10 +109,7 @@ async fn open_workspace_already_opened() {
     let create_output = create_result.unwrap();
 
     // Verify workspace is currently open
-    let active_workspace_id = ctx
-        .value::<ctxkeys::ActiveWorkspaceId>()
-        .map(|id| (*id).clone())
-        .unwrap();
+    let active_workspace_id = workspace_service.workspace().await.unwrap().id();
     assert_eq!(active_workspace_id, create_output.id);
 
     // Try to open the same workspace again - should fail
@@ -135,10 +126,7 @@ async fn open_workspace_already_opened() {
     assert!(open_result.is_err());
 
     // Active workspace should remain unchanged
-    let active_workspace_id = ctx
-        .value::<ctxkeys::ActiveWorkspaceId>()
-        .map(|id| (*id).clone())
-        .unwrap();
+    let active_workspace_id = workspace_service.workspace().await.unwrap().id();
     assert_eq!(active_workspace_id, create_output.id);
 
     cleanup().await;
@@ -146,7 +134,9 @@ async fn open_workspace_already_opened() {
 
 #[tokio::test]
 async fn open_workspace_switch_between_workspaces() {
-    let (app, ctx, _services, cleanup, _abs_path) = set_up_test_app().await;
+    let (app, ctx, services, cleanup, _abs_path) = set_up_test_app().await;
+    let workspace_service = services.get::<WorkspaceService<MockRuntime>>();
+    let storage_service = services.get::<StorageService>();
 
     // Create first workspace
     let workspace_name1 = random_workspace_name();
@@ -189,10 +179,7 @@ async fn open_workspace_switch_between_workspaces() {
     assert_eq!(open_result1.id, create_output1.id);
 
     // Check first workspace is active
-    let active_workspace_id = ctx
-        .value::<ctxkeys::ActiveWorkspaceId>()
-        .map(|id| (*id).clone())
-        .unwrap();
+    let active_workspace_id = workspace_service.workspace().await.unwrap().id();
     assert_eq!(active_workspace_id, create_output1.id);
 
     // Open second workspace (should replace first)
@@ -208,10 +195,7 @@ async fn open_workspace_switch_between_workspaces() {
     assert_eq!(open_result2.id, create_output2.id);
 
     // Check second workspace is now active
-    let active_workspace_id = ctx
-        .value::<ctxkeys::ActiveWorkspaceId>()
-        .map(|id| (*id).clone())
-        .unwrap();
+    let active_workspace_id = workspace_service.workspace().await.unwrap().id();
     assert_eq!(active_workspace_id, create_output2.id);
 
     // Open first workspace again
@@ -227,14 +211,10 @@ async fn open_workspace_switch_between_workspaces() {
     assert_eq!(open_result1_again.id, create_output1.id);
 
     // Check first workspace is active again
-    let active_workspace_id = ctx
-        .value::<ctxkeys::ActiveWorkspaceId>()
-        .map(|id| (*id).clone())
-        .unwrap();
+    let active_workspace_id = workspace_service.workspace().await.unwrap().id();
     assert_eq!(active_workspace_id, create_output1.id);
 
     // Check that last active workspace is set correctly in database (first workspace)
-    let storage_service = _services.get::<StorageService>();
     let item_store = storage_service.__storage().item_store();
     let last_active_workspace = GetItem::get(
         item_store.as_ref(),

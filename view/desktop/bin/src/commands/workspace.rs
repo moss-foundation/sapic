@@ -13,7 +13,7 @@ pub async fn update_workspace_state<R: TauriRuntime>(
     input: UpdateStateInput,
     options: Options,
 ) -> TauriResult<()> {
-    super::with_workspace_timeout(app, options, |_ctx, workspace| async move {
+    super::with_workspace_timeout(app, options, |workspace| async move {
         workspace
             .update_state(input)
             .await
@@ -29,7 +29,7 @@ pub async fn describe_workspace_state<R: TauriRuntime>(
     window: Window<R>,
     options: Options,
 ) -> TauriResult<DescribeStateOutput> {
-    super::with_workspace_timeout(app, options, |_ctx, workspace| async move {
+    super::with_workspace_timeout(app, options, |workspace| async move {
         workspace
             .describe_state()
             .await
@@ -46,9 +46,9 @@ pub async fn stream_workspace_environments<R: TauriRuntime>(
     channel: TauriChannel<StreamEnvironmentsEvent>,
     options: Options,
 ) -> TauriResult<()> {
-    super::with_workspace_timeout(app, options, |ctx, workspace| async move {
+    super::with_workspace_timeout(app, options, |workspace| async move {
         workspace
-            .stream_environments(&ctx, channel)
+            .stream_environments(channel)
             .await
             .map_err(TauriError::OperationError)
     })
@@ -63,9 +63,9 @@ pub async fn stream_collections<R: TauriRuntime>(
     channel: TauriChannel<StreamCollectionsEvent>,
     options: Options,
 ) -> TauriResult<StreamCollectionsOutput> {
-    super::with_workspace_timeout(app, options, |ctx, workspace| async move {
+    super::with_workspace_timeout(app, options, |workspace| async move {
         workspace
-            .stream_collections(&ctx, channel)
+            .stream_collections(channel)
             .await
             .map_err(TauriError::OperationError)
     })
@@ -80,9 +80,9 @@ pub async fn create_collection<R: TauriRuntime>(
     input: CreateCollectionInput,
     options: Options,
 ) -> TauriResult<CreateCollectionOutput> {
-    super::with_workspace_timeout(app, options, |ctx, workspace| async move {
+    super::with_workspace_timeout(app, options, |workspace| async move {
         workspace
-            .create_collection(&ctx, &input)
+            .create_collection(&input)
             .await
             .map_err(TauriError::OperationError)
     })
@@ -97,9 +97,9 @@ pub async fn delete_collection<R: TauriRuntime>(
     input: DeleteCollectionInput,
     options: Options,
 ) -> TauriResult<DeleteCollectionOutput> {
-    super::with_workspace_timeout(app, options, |ctx, workspace| async move {
+    super::with_workspace_timeout(app, options, |workspace| async move {
         workspace
-            .delete_collection(&ctx, &input)
+            .delete_collection(&input)
             .await
             .map_err(TauriError::OperationError)
     })

@@ -1,4 +1,4 @@
-use moss_applib::context::Context;
+use moss_applib::ctx::Context;
 use moss_common::api::OperationResult;
 use tauri::Runtime as TauriRuntime;
 
@@ -9,7 +9,7 @@ use crate::{
 };
 
 impl<R: TauriRuntime> App<R> {
-    pub async fn list_workspaces<C: Context<R>>(
+    pub async fn list_workspaces<C: Context>(
         &self,
         _ctx: &C,
     ) -> OperationResult<ListWorkspacesOutput> {
