@@ -86,6 +86,7 @@ export const TreeNode = ({
 
   const { instruction, isDragging, canDrop } = useInstructionNode(
     node,
+    parentNode,
     id,
     triggerRef,
     isLastChild,

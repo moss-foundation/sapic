@@ -158,7 +158,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
               <DebugCollectionIconPlaceholder protocol={node.protocol} type={node.kind} />
 
               <span className="underline">{node.order}</span>
-              <NodeLabel label={node.path.raw} searchInput={searchInput} className={cn({ "capitalize": isRootNode })} />
+              <NodeLabel label={node.name} searchInput={searchInput} className={cn({ "capitalize": isRootNode })} />
               <span className="DragHandle h-full min-h-4 grow" />
             </span>
 

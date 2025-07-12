@@ -11,6 +11,7 @@ import { canDropNode, getActualDropSourceTarget, getActualDropTargetWithInstruct
 
 export const useInstructionNode = (
   node: TreeCollectionNode,
+  parentNode: TreeCollectionNode,
   collectionId: string | number,
   dropTargetListRef: RefObject<HTMLButtonElement>,
   isLastChild: boolean,
@@ -33,9 +34,10 @@ export const useInstructionNode = (
         getInitialData: () => ({
           type: "TreeNode",
           data: {
-            node,
-            repository,
             collectionId: id,
+            repository,
+            node,
+            parentNode,
           },
         }),
         onDragStart() {

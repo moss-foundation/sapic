@@ -10,10 +10,14 @@ export const fetchCollectionEntries = async (collectionId: string): Promise<Entr
     entries.push(collectionEntry);
   };
 
-  await invokeTauriIpc("stream_collection_entries", {
+  const result = await invokeTauriIpc("stream_collection_entries", {
     collectionId,
     channel: onCollectionEntryEvent,
   });
+
+  if (result.status === "error") {
+    throw new Error(String(result.error));
+  }
 
   return entries;
 };
