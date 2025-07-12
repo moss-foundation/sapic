@@ -7,15 +7,37 @@ use std::{
         Arc,
         atomic::{AtomicBool, Ordering},
     },
-    time::{Duration, Instant as StdInstant},
+    time::{Duration, Instant},
 };
 
-pub type Context = Arc<MutableContext>;
+use tokio::time::Timeout;
+
+pub trait ContextValue: Any + Send + Sync + 'static {}
+
+impl ContextValue for u32 {}
+impl ContextValue for &'static str {}
+impl ContextValue for bool {}
+impl ContextValue for i64 {}
+impl ContextValue for f64 {}
+impl ContextValue for String {}
+
+pub trait Context {
+    /// Add or overwrite a value by key.
+    fn with_value<V: ContextValue, K: Into<Cow<'static, str>>>(&mut self, key: K, value: V);
+
+    /// Retrieve a value by key, searching parent if absent.
+    fn value<V: ContextValue>(&self, key: &str) -> Option<Arc<V>>;
+
+    /// Check if context is done: timed out or cancelled, including parent chain.
+    fn done(&self) -> Option<Reason>;
+}
+
+pub type AsyncContext = Arc<MutableContext>;
 
 #[derive(Clone)]
 pub struct MutableContext {
-    parent: Option<Context>,
-    deadline: Option<StdInstant>,
+    parent: Option<AsyncContext>,
+    deadline: Option<Instant>,
     cancelled: Arc<AtomicBool>,
     values: HashMap<Cow<'static, str>, Arc<dyn Any + Send + Sync>>,
 }
@@ -37,6 +59,49 @@ impl fmt::Debug for MutableContext {
     }
 }
 
+impl Context for MutableContext {
+    fn with_value<V: ContextValue, K: Into<Cow<'static, str>>>(&mut self, key: K, value: V) {
+        self.values.insert(key.into(), Arc::new(value));
+    }
+
+    fn value<V: ContextValue>(&self, key: &str) -> Option<Arc<V>> {
+        if let Some(v) = self.values.get(key) {
+            v.clone().downcast::<V>().ok()
+        } else if let Some(parent) = &self.parent {
+            parent.value::<V>(key)
+        } else {
+            None
+        }
+    }
+
+    fn done(&self) -> Option<Reason> {
+        if self.cancelled.load(Ordering::Relaxed) {
+            return Some(Reason::Canceled);
+        }
+        if let Some(dl) = self.deadline {
+            if Instant::now() >= dl {
+                return Some(Reason::Timedout);
+            }
+        }
+        if let Some(parent) = &self.parent {
+            parent.done()
+        } else {
+            None
+        }
+    }
+}
+
+impl From<&AsyncContext> for MutableContext {
+    fn from(parent: &AsyncContext) -> Self {
+        Self {
+            parent: Some(parent.clone()),
+            deadline: parent.deadline,
+            cancelled: Arc::new(AtomicBool::new(false)),
+            values: HashMap::new(),
+        }
+    }
+}
+
 impl MutableContext {
     /// Create a background context with no parent and no deadline.
     pub fn background() -> Self {
@@ -49,51 +114,32 @@ impl MutableContext {
     }
 
     /// Freeze into an Arc for sharing.
-    pub fn freeze(self) -> Context {
+    pub fn freeze(self) -> AsyncContext {
         Arc::new(self)
     }
 
     /// Unfreeze from Arc back to owned. Fails if multiple references exist.
-    pub fn unfreeze(ctx: Context) -> Result<Self, &'static str> {
+    pub fn unfreeze(ctx: AsyncContext) -> Result<Self, &'static str> {
         match Arc::try_unwrap(ctx) {
             Ok(inner) => Ok(inner),
             Err(_) => Err("Context has multiple references"),
         }
     }
 
-    /// Create a new child context inheriting deadline and values.
-    pub fn new(parent: &Context) -> Self {
-        MutableContext {
-            parent: Some(parent.clone()),
-            deadline: parent.deadline,
-            cancelled: Arc::new(AtomicBool::new(false)),
-            values: HashMap::new(),
-        }
-    }
-
-    /// Add or overwrite a value by key.
-    pub fn with_value<V: Send + Sync + 'static, K: Into<Cow<'static, str>>>(
-        &mut self,
-        key: K,
-        value: V,
-    ) {
-        self.values.insert(key.into(), Arc::new(value));
-    }
-
-    /// Retrieve a value by key, searching parent if absent.
-    pub fn value<V: Send + Sync + 'static>(&self, key: &str) -> Option<Arc<V>> {
-        if let Some(v) = self.values.get(key) {
-            v.clone().downcast::<V>().ok()
-        } else if let Some(parent) = &self.parent {
-            parent.value::<V>(key)
-        } else {
-            None
-        }
+    fn timeout(&self) -> Option<Duration> {
+        self.deadline.map(|deadline| {
+            let now = Instant::now();
+            if deadline > now {
+                deadline.duration_since(now)
+            } else {
+                Duration::from_secs(0)
+            }
+        })
     }
 
     /// Add a deadline as a timeout from now.
     pub fn with_timeout(&mut self, timeout: Duration) {
-        let new_deadline = StdInstant::now() + timeout;
+        let new_deadline = Instant::now() + timeout;
         match self.deadline {
             Some(current) if current <= new_deadline => {}
             _ => self.deadline = Some(new_deadline),
@@ -103,23 +149,6 @@ impl MutableContext {
     /// Return a canceller to cancel this context.
     pub fn add_cancel(&mut self) -> Canceller {
         Canceller::new(self.cancelled.clone())
-    }
-
-    /// Check if context is done: timed out or cancelled, including parent chain.
-    pub fn done(&self) -> Option<Reason> {
-        if self.cancelled.load(Ordering::Relaxed) {
-            return Some(Reason::Canceled);
-        }
-        if let Some(dl) = self.deadline {
-            if StdInstant::now() >= dl {
-                return Some(Reason::Timedout);
-            }
-        }
-        if let Some(parent) = &self.parent {
-            parent.done()
-        } else {
-            None
-        }
     }
 
     /// Capture a snapshot of cancellation state and deadline.
@@ -161,13 +190,13 @@ pub enum Reason {
 /// A snapshot of cancellation and timeout state.
 #[derive(Clone, Debug)]
 pub struct Cancellation {
-    deadline: Option<StdInstant>,
+    deadline: Option<Instant>,
     cancellations: Vec<Arc<AtomicBool>>,
 }
 
 impl Cancellation {
     /// Create a new snapshot.
-    pub fn new(deadline: Option<StdInstant>, cancellations: Vec<Arc<AtomicBool>>) -> Self {
+    pub fn new(deadline: Option<Instant>, cancellations: Vec<Arc<AtomicBool>>) -> Self {
         Cancellation {
             deadline,
             cancellations,
@@ -177,7 +206,7 @@ impl Cancellation {
     /// Check if cancelled or timed out.
     pub fn is_done(&self) -> bool {
         if let Some(dl) = self.deadline {
-            if StdInstant::now() >= dl {
+            if Instant::now() >= dl {
                 return true;
             }
         }
@@ -214,7 +243,7 @@ mod tests {
         parent.with_value("x", "parent_val");
         let parent = parent.freeze();
 
-        let child = MutableContext::new(&parent);
+        let child = MutableContext::from(&parent);
         let val: Arc<&str> = child.value("x").unwrap();
         assert_eq!(*val, "parent_val");
     }
@@ -252,7 +281,7 @@ mod tests {
         let mut parent_ctx = MutableContext::background();
         parent_ctx.with_timeout(Duration::from_millis(50));
         let parent = parent_ctx.freeze();
-        let child = MutableContext::new(&parent);
+        let child = MutableContext::from(&parent);
         thread::sleep(Duration::from_millis(60));
         assert_eq!(child.done(), Some(Reason::Timedout));
     }
@@ -262,7 +291,7 @@ mod tests {
         let mut parent_ctx = MutableContext::background();
         parent_ctx.with_timeout(Duration::from_millis(20));
         let parent = parent_ctx.freeze();
-        let mut child = MutableContext::new(&parent);
+        let mut child = MutableContext::from(&parent);
         child.with_timeout(Duration::from_millis(100));
         assert_eq!(child.deadline, parent.deadline);
     }
@@ -272,7 +301,7 @@ mod tests {
         let mut parent_ctx = MutableContext::background();
         let canc_parent = parent_ctx.add_cancel();
         let parent = parent_ctx.freeze();
-        let child = MutableContext::new(&parent);
+        let child = MutableContext::from(&parent);
         assert_eq!(child.done(), None);
         canc_parent.cancel();
         assert_eq!(child.done(), Some(Reason::Canceled));

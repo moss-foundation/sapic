@@ -15,7 +15,10 @@ use moss_app::{
         workspace_service::WorkspaceService,
     },
 };
-use moss_applib::providers::{ServiceMap, ServiceProvider};
+use moss_applib::{
+    ctx::MutableContext,
+    providers::{ServiceMap, ServiceProvider},
+};
 use moss_fs::{FileSystem, RealFileSystem};
 use moss_testutils::random_name::random_string;
 use std::{any::TypeId, future::Future, path::PathBuf, pin::Pin, sync::Arc};
@@ -32,7 +35,7 @@ pub fn random_app_dir_path() -> PathBuf {
 
 pub async fn set_up_test_app() -> (
     App<MockRuntime>,
-    MockAppContext,
+    MutableContext, // TODO: this is temporary, should be a mock
     ServiceProvider,
     CleanupFn,
     PathBuf,
@@ -99,7 +102,7 @@ pub async fn set_up_test_app() -> (
 
     // FIXME: This is a hack, should be a mock
     let activity_indicator = ActivityIndicator::new(app_handle.clone());
-    let ctx = MockAppContext::new(app_handle.clone());
+    let ctx = MutableContext::background(); // TODO: this is temporary, should be a mock
     let app_builder = AppBuilder::new(
         app_handle.clone(),
         activity_indicator,

@@ -1,10 +1,10 @@
+use moss_applib::ctx::Context;
 use moss_common::api::OperationResult;
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
 use crate::{
     app::App,
-    context::AnyAppContext,
     models::{
         operations::{CreateWorkspaceInput, CreateWorkspaceOutput},
         primitives::WorkspaceId,
@@ -13,7 +13,7 @@ use crate::{
 };
 
 impl<R: TauriRuntime> App<R> {
-    pub async fn create_workspace<C: AnyAppContext<R>>(
+    pub async fn create_workspace<C: Context>(
         &self,
         ctx: &C,
         input: &CreateWorkspaceInput,

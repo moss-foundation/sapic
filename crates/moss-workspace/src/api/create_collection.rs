@@ -3,7 +3,6 @@ use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
 use crate::{
-    context::AnyWorkspaceContext,
     models::{
         operations::{CreateCollectionInput, CreateCollectionOutput},
         primitives::CollectionId,
@@ -13,9 +12,8 @@ use crate::{
 };
 
 impl<R: TauriRuntime> Workspace<R> {
-    pub async fn create_collection<C: AnyWorkspaceContext<R>>(
+    pub async fn create_collection(
         &self,
-        _ctx: &C,
         input: &CreateCollectionInput,
     ) -> OperationResult<CreateCollectionOutput> {
         input.validate()?;

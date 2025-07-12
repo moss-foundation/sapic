@@ -1,4 +1,3 @@
-use moss_applib::context::Context;
 use moss_common::api::OperationResult;
 use tauri::Runtime as TauriRuntime;
 
@@ -9,9 +8,8 @@ use crate::{
 };
 
 impl<R: TauriRuntime> Workspace<R> {
-    pub async fn delete_collection<C: Context<R>>(
+    pub async fn delete_collection(
         &self,
-        _ctx: &C,
         input: &DeleteCollectionInput,
     ) -> OperationResult<DeleteCollectionOutput> {
         let collection_service = self.services.get::<DynCollectionService>();

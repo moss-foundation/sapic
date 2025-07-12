@@ -1,15 +1,15 @@
+use moss_applib::ctx::Context;
 use moss_common::api::OperationResult;
 use tauri::Runtime as TauriRuntime;
 
 use crate::{
     app::App,
-    context::AnyAppContext,
     models::operations::{OpenWorkspaceInput, OpenWorkspaceOutput},
     services::workspace_service::WorkspaceService,
 };
 
 impl<R: TauriRuntime> App<R> {
-    pub async fn open_workspace<C: AnyAppContext<R>>(
+    pub async fn open_workspace<C: Context>(
         &self,
         ctx: &C,
         input: &OpenWorkspaceInput,

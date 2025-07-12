@@ -3,7 +3,6 @@ use moss_api::{self as api, TauriError, TauriResult};
 use moss_app::{
     app::App,
     command::CommandContext,
-    context::AppContext,
     models::{events::*, operations::*},
 };
 use moss_text::{ReadOnlyStr, quote};

@@ -1,4 +1,3 @@
-use moss_applib::context::Context;
 use moss_common::api::OperationResult;
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
@@ -10,9 +9,8 @@ use crate::{
 };
 
 impl<R: TauriRuntime> Workspace<R> {
-    pub async fn update_collection<C: Context<R>>(
+    pub async fn update_collection(
         &mut self,
-        _ctx: &C,
         input: UpdateCollectionInput,
     ) -> OperationResult<UpdateCollectionOutput> {
         input.validate()?;
