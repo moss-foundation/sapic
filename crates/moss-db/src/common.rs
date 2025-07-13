@@ -1,3 +1,4 @@
+use moss_applib::ctx::Reason;
 use redb::{ReadTransaction as InnerReadTransaction, WriteTransaction as InnerWriteTransaction};
 use std::io::ErrorKind;
 use thiserror::Error;
@@ -19,6 +20,12 @@ pub enum DatabaseError {
 
     #[error("transaction error: {0}")]
     Transaction(String),
+
+    #[error("canceled: {0}")]
+    Canceled(Reason),
+
+    #[error("timeout: {0}")]
+    Timeout(String),
 
     #[error("unknown error: {0}")]
     Unknown(#[from] anyhow::Error),

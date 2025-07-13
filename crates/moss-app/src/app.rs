@@ -1,6 +1,6 @@
 use derive_more::Deref;
 use moss_activity_indicator::ActivityIndicator;
-use moss_applib::{PublicServiceMarker, providers::ServiceProvider};
+use moss_applib::{AppRuntime, PublicServiceMarker, providers::ServiceProvider};
 use moss_fs::FileSystem;
 use moss_text::ReadOnlyStr;
 use rustc_hash::FxHashMap;
@@ -49,21 +49,21 @@ impl<R: TauriRuntime> DerefMut for AppCommands<R> {
 }
 
 #[derive(Deref)]
-pub struct App<R: TauriRuntime> {
+pub struct App<R: AppRuntime> {
     #[deref]
-    pub(super) app_handle: AppHandle<R>,
+    pub(super) app_handle: AppHandle<R::EventLoop>,
     pub(super) fs: Arc<dyn FileSystem>,
-    pub(super) commands: AppCommands<R>,
+    pub(super) commands: AppCommands<R::EventLoop>,
     pub(super) preferences: AppPreferences,
     pub(super) defaults: AppDefaults,
     pub(super) services: ServiceProvider,
 
     // TODO: This is also might be better to be a service
-    pub(super) activity_indicator: ActivityIndicator<R>,
+    pub(super) activity_indicator: ActivityIndicator<R::EventLoop>,
 }
 
-impl<R: TauriRuntime> App<R> {
-    pub fn handle(&self) -> AppHandle<R> {
+impl<R: AppRuntime> App<R> {
+    pub fn handle(&self) -> AppHandle<R::EventLoop> {
         self.app_handle.clone()
     }
 
@@ -79,7 +79,7 @@ impl<R: TauriRuntime> App<R> {
         self.services.get::<T>()
     }
 
-    pub fn command(&self, id: &ReadOnlyStr) -> Option<CommandCallback<R>> {
+    pub fn command(&self, id: &ReadOnlyStr) -> Option<CommandCallback<R::EventLoop>> {
         self.commands.get(id).map(|cmd| Arc::clone(cmd))
     }
 }

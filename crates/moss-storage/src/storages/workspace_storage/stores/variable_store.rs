@@ -3,6 +3,8 @@ use std::sync::Arc;
 
 use crate::{storage::SegBinTable, workspace_storage::stores::WorkspaceVariableStore};
 
+use moss_applib::ctx::AnyAsyncContext;
+
 pub struct WorkspaceVariableStoreImpl {
     #[allow(unused)]
     client: ReDbClient,
@@ -16,4 +18,7 @@ impl WorkspaceVariableStoreImpl {
     }
 }
 
-impl WorkspaceVariableStore for WorkspaceVariableStoreImpl {}
+impl<Context> WorkspaceVariableStore<Context> for WorkspaceVariableStoreImpl where
+    Context: AnyAsyncContext
+{
+}

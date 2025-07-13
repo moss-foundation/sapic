@@ -1,13 +1,13 @@
 use anyhow::{Context as _, Result};
 use moss_activity_indicator::ActivityIndicator;
-use moss_applib::{ServiceMarker, providers::ServiceMap};
+use moss_applib::{AppRuntime, ServiceMarker, providers::ServiceMap};
 use moss_fs::FileSystem;
 use std::{
     any::TypeId,
     path::{Path, PathBuf},
     sync::Arc,
 };
-use tauri::{AppHandle, Runtime as TauriRuntime};
+use tauri::AppHandle;
 use tokio::sync::RwLock;
 
 use crate::{
@@ -16,21 +16,21 @@ use crate::{
     dirs,
 };
 
-pub struct AppBuilder<R: TauriRuntime> {
+pub struct AppBuilder<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
-    app_handle: AppHandle<R>,
+    app_handle: AppHandle<R::EventLoop>,
     services: ServiceMap,
     defaults: AppDefaults,
     preferences: AppPreferences,
-    commands: AppCommands<R>,
-    activity_indicator: ActivityIndicator<R>,
+    commands: AppCommands<R::EventLoop>,
+    activity_indicator: ActivityIndicator<R::EventLoop>,
     abs_path: Arc<Path>,
 }
 
-impl<R: TauriRuntime> AppBuilder<R> {
+impl<R: AppRuntime> AppBuilder<R> {
     pub fn new(
-        app_handle: AppHandle<R>,
-        activity_indicator: ActivityIndicator<R>,
+        app_handle: AppHandle<R::EventLoop>,
+        activity_indicator: ActivityIndicator<R::EventLoop>,
         defaults: AppDefaults,
         fs: Arc<dyn FileSystem>,
         abs_path: PathBuf,
@@ -58,7 +58,7 @@ impl<R: TauriRuntime> AppBuilder<R> {
         self
     }
 
-    pub fn with_command(mut self, command: CommandDecl<R>) -> Self {
+    pub fn with_command(mut self, command: CommandDecl<R::EventLoop>) -> Self {
         self.commands.insert(command.name, command.callback);
         self
     }

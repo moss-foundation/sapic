@@ -1,123 +1,175 @@
+use moss_applib::ctx::AnyAsyncContext;
 use moss_db::{DatabaseResult, Transaction};
 
-pub trait TransactionalGetItem: Send + Sync {
+use async_trait::async_trait;
+
+#[async_trait]
+pub trait TransactionalGetItem<Context: AnyAsyncContext>: Send + Sync {
     type Key;
     type Entity;
 
-    fn get(&self, txn: &Transaction, key: Self::Key) -> DatabaseResult<Self::Entity>;
+    async fn get(
+        &self,
+        ctx: &Context,
+        txn: &Transaction,
+        key: Self::Key,
+    ) -> DatabaseResult<Self::Entity>;
 }
 
-pub trait TransactionalListByPrefix: Send + Sync {
+#[async_trait]
+pub trait TransactionalListByPrefix<Context: AnyAsyncContext>: Send + Sync {
     type Key;
     type Entity;
 
-    fn list_by_prefix(
+    async fn list_by_prefix(
         &self,
+        ctx: &Context,
         txn: &Transaction,
         prefix: &str,
     ) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>>;
 }
 
-pub trait GetItem: Send + Sync {
+#[async_trait]
+pub trait GetItem<Context: AnyAsyncContext>: Send + Sync {
     type Key;
     type Entity;
 
-    fn get(&self, key: Self::Key) -> DatabaseResult<Self::Entity>;
+    async fn get(&self, ctx: &Context, key: Self::Key) -> DatabaseResult<Self::Entity>;
 }
 
-pub trait ListByPrefix: Send + Sync {
+#[async_trait]
+pub trait ListByPrefix<Context: AnyAsyncContext>: Send + Sync {
     type Key;
     type Entity;
 
-    fn list_by_prefix(&self, prefix: &str) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>>;
-}
-
-pub trait RemoveByPrefix: Send + Sync {
-    type Key;
-    type Entity;
-
-    fn remove_by_prefix(&self, prefix: &str) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>>;
-}
-
-pub trait TransactionalRemoveByPrefix: Send + Sync {
-    type Key;
-    type Entity;
-
-    fn remove_by_prefix(
+    async fn list_by_prefix(
         &self,
+        ctx: &Context,
+        prefix: &str,
+    ) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>>;
+}
+
+#[async_trait]
+pub trait RemoveByPrefix<Context: AnyAsyncContext>: Send + Sync {
+    type Key;
+    type Entity;
+
+    async fn remove_by_prefix(
+        &self,
+        ctx: &Context,
+        prefix: &str,
+    ) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>>;
+}
+
+#[async_trait]
+pub trait TransactionalRemoveByPrefix<Context: AnyAsyncContext>: Send + Sync {
+    type Key;
+    type Entity;
+
+    async fn remove_by_prefix(
+        &self,
+        ctx: &Context,
         txn: &mut Transaction,
         prefix: &str,
     ) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>>;
 }
 
-pub trait TransactionalPutItem: Send + Sync {
+#[async_trait]
+pub trait TransactionalPutItem<Context: AnyAsyncContext>: Send + Sync {
     type Key;
     type Entity;
 
-    fn put(
+    async fn put(
         &self,
+        ctx: &Context,
         txn: &mut Transaction,
         key: Self::Key,
         entity: Self::Entity,
     ) -> DatabaseResult<()>;
 }
 
-pub trait TransactionalRemoveItem: Send + Sync {
+#[async_trait]
+pub trait TransactionalRemoveItem<Context: AnyAsyncContext>: Send + Sync {
     type Key;
     type Entity;
 
-    fn remove(&self, txn: &mut Transaction, key: Self::Key) -> DatabaseResult<Self::Entity>;
-}
-
-pub trait PutItem: Send + Sync {
-    type Key;
-    type Entity;
-
-    fn put(&self, key: Self::Key, entity: Self::Entity) -> DatabaseResult<()>;
-}
-
-pub trait RemoveItem: Send + Sync {
-    type Key;
-    type Entity;
-
-    fn remove(&self, key: Self::Key) -> DatabaseResult<Self::Entity>;
-}
-
-pub trait TransactionalRekeyItem: Send + Sync {
-    type Key;
-    type Entity;
-
-    fn rekey(
+    async fn remove(
         &self,
+        ctx: &Context,
+        txn: &mut Transaction,
+        key: Self::Key,
+    ) -> DatabaseResult<Self::Entity>;
+}
+
+#[async_trait]
+pub trait PutItem<Context: AnyAsyncContext>: Send + Sync {
+    type Key;
+    type Entity;
+
+    async fn put(&self, ctx: &Context, key: Self::Key, entity: Self::Entity) -> DatabaseResult<()>;
+}
+
+#[async_trait]
+pub trait RemoveItem<Context: AnyAsyncContext>: Send + Sync {
+    type Key;
+    type Entity;
+
+    async fn remove(&self, ctx: &Context, key: Self::Key) -> DatabaseResult<Self::Entity>;
+}
+
+#[async_trait]
+pub trait TransactionalRekeyItem<Context: AnyAsyncContext>: Send + Sync {
+    type Key;
+    type Entity;
+
+    async fn rekey(
+        &self,
+        ctx: &Context,
         txn: &mut Transaction,
         old_key: Self::Key,
         new_key: Self::Key,
     ) -> DatabaseResult<()>;
 }
 
-pub trait RekeyItem: Send + Sync {
+#[async_trait]
+pub trait RekeyItem<Context: AnyAsyncContext>: Send + Sync {
     type Key;
     type Entity;
 
-    fn rekey(&self, old_key: Self::Key, new_key: Self::Key) -> DatabaseResult<()>;
+    async fn rekey(
+        &self,
+        ctx: &Context,
+        old_key: Self::Key,
+        new_key: Self::Key,
+    ) -> DatabaseResult<()>;
 }
 
-pub trait Truncate: Send + Sync {
-    fn truncate(&self) -> DatabaseResult<()>;
+#[async_trait]
+pub trait Truncate<Context: AnyAsyncContext>: Send + Sync {
+    async fn truncate(&self, ctx: &Context) -> DatabaseResult<()>;
 }
 
-pub trait TransactionalTruncate: Send + Sync {
-    fn truncate(&self, txn: &mut Transaction) -> DatabaseResult<()>;
+#[async_trait]
+pub trait TransactionalTruncate<Context: AnyAsyncContext>: Send + Sync {
+    async fn truncate(&self, ctx: &Context, txn: &mut Transaction) -> DatabaseResult<()>;
 }
 
-pub trait Scan: Send + Sync {
+#[async_trait]
+pub trait Scan<Context: AnyAsyncContext>: Send + Sync {
     type Key;
     type Entity;
-    fn scan(&self) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>>;
+
+    async fn scan(&self, ctx: &Context) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>>;
 }
 
-pub trait TransactionalScan: Send + Sync {
+#[async_trait]
+pub trait TransactionalScan<Context: AnyAsyncContext>: Send + Sync {
     type Key;
     type Entity;
-    fn scan(&self, txn: &Transaction) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>>;
+
+    async fn scan(
+        &self,
+        ctx: &Context,
+        txn: &Transaction,
+    ) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>>;
 }

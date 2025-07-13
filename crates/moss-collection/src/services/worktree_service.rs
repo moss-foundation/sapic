@@ -1,7 +1,7 @@
 use anyhow::anyhow;
 use async_trait::async_trait;
 use derive_more::{Deref, DerefMut};
-use moss_applib::ServiceMarker;
+use moss_applib::{AppRuntime, ServiceMarker};
 use moss_common::{api::OperationError, continue_if_err, continue_if_none};
 use moss_db::primitives::AnyValue;
 use moss_fs::{
@@ -235,16 +235,17 @@ struct WorktreeState {
     expanded_entries: HashSet<EntryId>,
 }
 
-pub struct WorktreeService {
+pub struct WorktreeService<R: AppRuntime> {
     abs_path: Arc<Path>,
     fs: Arc<dyn FileSystem>,
-    storage: Arc<DynStorageService>,
+    storage: Arc<DynStorageService<R>>,
     state: Arc<RwLock<WorktreeState>>,
 }
 
-impl ServiceMarker for WorktreeService {}
+impl<R: AppRuntime> ServiceMarker for WorktreeService<R> {}
+
 #[async_trait]
-impl AnyWorktreeService for WorktreeService {
+impl<R: AppRuntime> AnyWorktreeService<R> for WorktreeService<R> {
     fn absolutize(&self, path: &Path) -> WorktreeResult<PathBuf> {
         debug_assert!(path.is_relative());
 
@@ -265,7 +266,7 @@ impl AnyWorktreeService for WorktreeService {
         }
     }
 
-    async fn remove_entry(&self, id: &EntryId) -> WorktreeResult<()> {
+    async fn remove_entry(&self, ctx: &R::AsyncContext, id: &EntryId) -> WorktreeResult<()> {
         let mut state_lock = self.state.write().await;
         let entry = state_lock
             .entries
@@ -291,19 +292,23 @@ impl AnyWorktreeService for WorktreeService {
             .await?;
 
         state_lock.expanded_entries.remove(&id);
-        self.storage.put_expanded_entries(
-            state_lock
-                .expanded_entries
-                .iter()
-                .cloned()
-                .collect::<Vec<_>>(),
-        )?;
+        self.storage
+            .put_expanded_entries(
+                ctx,
+                state_lock
+                    .expanded_entries
+                    .iter()
+                    .cloned()
+                    .collect::<Vec<_>>(),
+            )
+            .await?;
 
         Ok(())
     }
 
     async fn scan(
         &self,
+        ctx: &R::AsyncContext,
         path: &Path,
         expanded_entries: Arc<HashSet<EntryId>>,
         all_entry_keys: Arc<HashMap<SegKeyBuf, AnyValue>>,
@@ -462,6 +467,7 @@ impl AnyWorktreeService for WorktreeService {
 
     async fn create_item_entry(
         &self,
+        ctx: &R::AsyncContext,
         id: &EntryId,
         name: &str,
         path: &Path,
@@ -496,22 +502,26 @@ impl AnyWorktreeService for WorktreeService {
         );
 
         {
-            let mut txn = self.storage.begin_write()?;
+            let mut txn = self.storage.begin_write(ctx).await?;
 
             self.storage
-                .put_entry_order_txn(&mut txn, id, metadata.order)?;
+                .put_entry_order_txn(ctx, &mut txn, id, metadata.order)
+                .await?;
 
             if metadata.expanded {
                 state_lock.expanded_entries.insert(id.to_owned());
 
-                self.storage.put_expanded_entries_txn(
-                    &mut txn,
-                    state_lock
-                        .expanded_entries
-                        .iter()
-                        .cloned()
-                        .collect::<Vec<_>>(),
-                )?;
+                self.storage
+                    .put_expanded_entries_txn(
+                        ctx,
+                        &mut txn,
+                        state_lock
+                            .expanded_entries
+                            .iter()
+                            .cloned()
+                            .collect::<Vec<_>>(),
+                    )
+                    .await?;
             }
 
             txn.commit()?;
@@ -522,6 +532,7 @@ impl AnyWorktreeService for WorktreeService {
 
     async fn create_dir_entry(
         &self,
+        ctx: &R::AsyncContext,
         id: &EntryId,
         name: &str,
         path: &Path,
@@ -556,21 +567,25 @@ impl AnyWorktreeService for WorktreeService {
         );
 
         {
-            let mut txn = self.storage.begin_write()?;
+            let mut txn = self.storage.begin_write(ctx).await?;
             self.storage
-                .put_entry_order_txn(&mut txn, id, metadata.order)?;
+                .put_entry_order_txn(ctx, &mut txn, id, metadata.order)
+                .await?;
 
             if metadata.expanded {
                 state_lock.expanded_entries.insert(id.to_owned());
 
-                self.storage.put_expanded_entries_txn(
-                    &mut txn,
-                    state_lock
-                        .expanded_entries
-                        .iter()
-                        .cloned()
-                        .collect::<Vec<_>>(),
-                )?;
+                self.storage
+                    .put_expanded_entries_txn(
+                        ctx,
+                        &mut txn,
+                        state_lock
+                            .expanded_entries
+                            .iter()
+                            .cloned()
+                            .collect::<Vec<_>>(),
+                    )
+                    .await?;
             }
 
             txn.commit()?;
@@ -581,6 +596,7 @@ impl AnyWorktreeService for WorktreeService {
 
     async fn update_dir_entry(
         &self,
+        ctx: &R::AsyncContext,
         id: &EntryId,
         params: ModifyParams,
     ) -> WorktreeResult<(PathBuf, RawDirConfiguration)> {
@@ -636,10 +652,12 @@ impl AnyWorktreeService for WorktreeService {
             return Ok((path, configuration));
         }
 
-        let mut txn = self.storage.begin_write()?;
+        let mut txn = self.storage.begin_write(ctx).await?;
 
         if let Some(order) = params.order {
-            self.storage.put_entry_order_txn(&mut txn, &id, order)?;
+            self.storage
+                .put_entry_order_txn(ctx, &mut txn, id, order)
+                .await?;
         }
 
         if let Some(expanded) = params.expanded {
@@ -649,14 +667,17 @@ impl AnyWorktreeService for WorktreeService {
                 state_lock.expanded_entries.remove(id);
             }
 
-            self.storage.put_expanded_entries_txn(
-                &mut txn,
-                state_lock
-                    .expanded_entries
-                    .iter()
-                    .cloned()
-                    .collect::<Vec<_>>(),
-            )?;
+            self.storage
+                .put_expanded_entries_txn(
+                    ctx,
+                    &mut txn,
+                    state_lock
+                        .expanded_entries
+                        .iter()
+                        .cloned()
+                        .collect::<Vec<_>>(),
+                )
+                .await?;
         }
 
         txn.commit()?;
@@ -666,6 +687,7 @@ impl AnyWorktreeService for WorktreeService {
 
     async fn update_item_entry(
         &self,
+        ctx: &R::AsyncContext,
         id: &EntryId,
         params: ModifyParams,
     ) -> WorktreeResult<(PathBuf, RawItemConfiguration)> {
@@ -742,10 +764,12 @@ impl AnyWorktreeService for WorktreeService {
             return Ok((path, configuration));
         }
 
-        let mut txn = self.storage.begin_write()?;
+        let mut txn = self.storage.begin_write(ctx).await?;
 
         if let Some(order) = params.order {
-            self.storage.put_entry_order_txn(&mut txn, &id, order)?;
+            self.storage
+                .put_entry_order_txn(ctx, &mut txn, id, order)
+                .await?;
         }
 
         if let Some(expanded) = params.expanded {
@@ -755,14 +779,17 @@ impl AnyWorktreeService for WorktreeService {
                 state_lock.expanded_entries.remove(id);
             }
 
-            self.storage.put_expanded_entries_txn(
-                &mut txn,
-                state_lock
-                    .expanded_entries
-                    .iter()
-                    .cloned()
-                    .collect::<Vec<_>>(),
-            )?;
+            self.storage
+                .put_expanded_entries_txn(
+                    ctx,
+                    &mut txn,
+                    state_lock
+                        .expanded_entries
+                        .iter()
+                        .cloned()
+                        .collect::<Vec<_>>(),
+                )
+                .await?;
         }
 
         txn.commit()?;
@@ -771,11 +798,11 @@ impl AnyWorktreeService for WorktreeService {
     }
 }
 
-impl WorktreeService {
+impl<R: AppRuntime> WorktreeService<R> {
     pub fn new(
         abs_path: Arc<Path>,
         fs: Arc<dyn FileSystem>,
-        storage: Arc<DynStorageService>,
+        storage: Arc<DynStorageService<R>>,
     ) -> Self {
         Self {
             abs_path,
@@ -786,7 +813,7 @@ impl WorktreeService {
     }
 }
 
-impl WorktreeService {
+impl<R: AppRuntime> WorktreeService<R> {
     async fn create_entry(
         &self,
         path: &SanitizedPath,

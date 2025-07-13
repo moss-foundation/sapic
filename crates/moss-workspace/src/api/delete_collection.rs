@@ -1,5 +1,5 @@
+use moss_applib::AppRuntime;
 use moss_common::api::OperationResult;
-use tauri::Runtime as TauriRuntime;
 
 use crate::{
     models::operations::{DeleteCollectionInput, DeleteCollectionOutput},
@@ -7,13 +7,14 @@ use crate::{
     workspace::Workspace,
 };
 
-impl<R: TauriRuntime> Workspace<R> {
+impl<R: AppRuntime> Workspace<R> {
     pub async fn delete_collection(
         &self,
+        ctx: &R::AsyncContext,
         input: &DeleteCollectionInput,
     ) -> OperationResult<DeleteCollectionOutput> {
-        let collection_service = self.services.get::<DynCollectionService>();
-        let description = collection_service.delete_collection(&input.id).await?;
+        let collection_service = self.services.get::<DynCollectionService<R>>();
+        let description = collection_service.delete_collection(ctx, &input.id).await?;
 
         Ok(DeleteCollectionOutput {
             id: input.id.to_owned(),

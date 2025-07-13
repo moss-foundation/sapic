@@ -1,6 +1,5 @@
-use moss_applib::ctx::Context;
+use moss_applib::AppRuntime;
 use moss_common::api::OperationResult;
-use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
 use crate::{
@@ -9,10 +8,10 @@ use crate::{
     services::workspace_service::{WorkspaceItemUpdateParams, WorkspaceService},
 };
 
-impl<R: TauriRuntime> App<R> {
-    pub async fn update_workspace<C: Context>(
+impl<R: AppRuntime> App<R> {
+    pub async fn update_workspace(
         &self,
-        _ctx: &C,
+        _ctx: &R::AsyncContext,
         input: &UpdateWorkspaceInput,
     ) -> OperationResult<()> {
         input.validate()?;

@@ -1,3 +1,4 @@
+use moss_applib::ctx::AnyAsyncContext;
 use moss_db::ReDbClient;
 use std::sync::Arc;
 
@@ -15,4 +16,8 @@ impl CollectionVariableStoreImpl {
         Self { client, table }
     }
 }
-impl CollectionVariableStore for CollectionVariableStoreImpl {}
+
+impl<Context> CollectionVariableStore<Context> for CollectionVariableStoreImpl where
+    Context: AnyAsyncContext
+{
+}

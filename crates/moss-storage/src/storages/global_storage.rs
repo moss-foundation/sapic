@@ -1,3 +1,5 @@
+use async_trait::async_trait;
+use moss_applib::ctx::AnyAsyncContext;
 use moss_db::{
     DatabaseClient, DatabaseResult, ReDbClient, Table, Transaction, bincode_table::BincodeTable,
     primitives::AnyValue,
@@ -44,14 +46,18 @@ impl GlobalStorageImpl {
     }
 }
 
-impl Storage for GlobalStorageImpl {
-    fn dump(&self) -> DatabaseResult<HashMap<String, JsonValue>> {
-        let read_txn = self.client.begin_read()?;
+#[async_trait]
+impl<Context> Storage<Context> for GlobalStorageImpl
+where
+    Context: AnyAsyncContext,
+{
+    async fn dump(&self, ctx: &Context) -> DatabaseResult<HashMap<String, JsonValue>> {
+        let read_txn = self.client.begin_read(ctx).await?;
         let mut result = HashMap::new();
         for table in self.tables.values() {
             let name = table.table_definition().name().to_string();
             let mut table_entries = HashMap::new();
-            for (k, v) in table.scan(&read_txn)? {
+            for (k, v) in table.scan(ctx, &read_txn).await? {
                 table_entries.insert(
                     k.to_string(),
                     serde_json::from_slice::<JsonValue>(v.as_bytes())?,
@@ -63,18 +69,26 @@ impl Storage for GlobalStorageImpl {
     }
 }
 
-impl Transactional for GlobalStorageImpl {
-    fn begin_write(&self) -> DatabaseResult<Transaction> {
-        self.client.begin_write()
+#[async_trait]
+impl<Context> Transactional<Context> for GlobalStorageImpl
+where
+    Context: AnyAsyncContext,
+{
+    async fn begin_write(&self, ctx: &Context) -> DatabaseResult<Transaction> {
+        self.client.begin_write(ctx).await
     }
 
-    fn begin_read(&self) -> DatabaseResult<Transaction> {
-        self.client.begin_read()
+    async fn begin_read(&self, ctx: &Context) -> DatabaseResult<Transaction> {
+        self.client.begin_read(ctx).await
     }
 }
 
-impl GlobalStorage for GlobalStorageImpl {
-    fn item_store(&self) -> Arc<dyn GlobalItemStore> {
+#[async_trait]
+impl<Context> GlobalStorage<Context> for GlobalStorageImpl
+where
+    Context: AnyAsyncContext,
+{
+    fn item_store(&self) -> Arc<dyn GlobalItemStore<Context>> {
         let client = self.client.clone();
         let table = self
             .tables
@@ -84,7 +98,7 @@ impl GlobalStorage for GlobalStorageImpl {
         Arc::new(GlobalItemStoreImpl::new(client, table))
     }
 
-    fn log_store(&self) -> Arc<dyn GlobalLogStore> {
+    fn log_store(&self) -> Arc<dyn GlobalLogStore<Context>> {
         let client = self.client.clone();
         let table = self
             .tables

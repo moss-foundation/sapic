@@ -1,3 +1,5 @@
+use async_trait::async_trait;
+use moss_applib::ctx::AnyAsyncContext;
 use moss_db::{DatabaseClient, DatabaseResult, ReDbClient, Transaction, primitives::AnyValue};
 use std::sync::Arc;
 
@@ -18,115 +20,178 @@ impl WorkspaceItemStoreImpl {
     }
 }
 
-impl ListByPrefix for WorkspaceItemStoreImpl {
+#[async_trait]
+impl<Context> ListByPrefix<Context> for WorkspaceItemStoreImpl
+where
+    Context: AnyAsyncContext,
+{
     type Key = SegKeyBuf;
     type Entity = AnyValue;
 
-    fn list_by_prefix(&self, prefix: &str) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>> {
-        let read_txn = self.client.begin_read()?;
-        self.table.scan_by_prefix(&read_txn, prefix)
+    async fn list_by_prefix(
+        &self,
+        ctx: &Context,
+        prefix: &str,
+    ) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>> {
+        let read_txn = self.client.begin_read(ctx).await?;
+        self.table.scan_by_prefix(ctx, &read_txn, prefix).await
     }
 }
 
-impl TransactionalListByPrefix for WorkspaceItemStoreImpl {
+#[async_trait]
+impl<Context> TransactionalListByPrefix<Context> for WorkspaceItemStoreImpl
+where
+    Context: AnyAsyncContext,
+{
     type Key = SegKeyBuf;
     type Entity = AnyValue;
 
-    fn list_by_prefix(
+    async fn list_by_prefix(
         &self,
+        ctx: &Context,
         txn: &Transaction,
         prefix: &str,
     ) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>> {
-        self.table.scan_by_prefix(txn, prefix)
+        self.table.scan_by_prefix(ctx, txn, prefix).await
     }
 }
 
-impl RemoveByPrefix for WorkspaceItemStoreImpl {
+#[async_trait]
+impl<Context> RemoveByPrefix<Context> for WorkspaceItemStoreImpl
+where
+    Context: AnyAsyncContext,
+{
     type Key = SegKeyBuf;
     type Entity = AnyValue;
 
-    fn remove_by_prefix(&self, prefix: &str) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>> {
-        let mut write_txn = self.client.begin_write()?;
-        self.table.remove_by_prefix(&mut write_txn, prefix)
-    }
-}
-
-impl TransactionalRemoveByPrefix for WorkspaceItemStoreImpl {
-    type Key = SegKeyBuf;
-    type Entity = AnyValue;
-
-    fn remove_by_prefix(
+    async fn remove_by_prefix(
         &self,
+        ctx: &Context,
+        prefix: &str,
+    ) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>> {
+        let mut write_txn = self.client.begin_write(ctx).await?;
+        self.table
+            .remove_by_prefix(ctx, &mut write_txn, prefix)
+            .await
+    }
+}
+
+#[async_trait]
+impl<Context> TransactionalRemoveByPrefix<Context> for WorkspaceItemStoreImpl
+where
+    Context: AnyAsyncContext,
+{
+    type Key = SegKeyBuf;
+    type Entity = AnyValue;
+
+    async fn remove_by_prefix(
+        &self,
+        ctx: &Context,
         txn: &mut Transaction,
         prefix: &str,
     ) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>> {
-        self.table.remove_by_prefix(txn, prefix)
+        self.table.remove_by_prefix(ctx, txn, prefix).await
     }
 }
 
-impl PutItem for WorkspaceItemStoreImpl {
+#[async_trait]
+impl<Context> PutItem<Context> for WorkspaceItemStoreImpl
+where
+    Context: AnyAsyncContext,
+{
     type Key = SegKeyBuf;
     type Entity = AnyValue;
 
-    fn put(&self, key: Self::Key, entity: Self::Entity) -> DatabaseResult<()> {
-        let mut write_txn = self.client.begin_write()?;
-        self.table.insert(&mut write_txn, key, &entity)?;
+    async fn put(&self, ctx: &Context, key: Self::Key, entity: Self::Entity) -> DatabaseResult<()> {
+        let mut write_txn = self.client.begin_write(ctx).await?;
+        self.table.insert(ctx, &mut write_txn, key, &entity).await?;
         write_txn.commit()
     }
 }
 
-impl TransactionalPutItem for WorkspaceItemStoreImpl {
+#[async_trait]
+impl<Context> TransactionalPutItem<Context> for WorkspaceItemStoreImpl
+where
+    Context: AnyAsyncContext,
+{
     type Key = SegKeyBuf;
     type Entity = AnyValue;
 
-    fn put(
+    async fn put(
         &self,
+        ctx: &Context,
         txn: &mut Transaction,
         key: Self::Key,
         entity: Self::Entity,
     ) -> DatabaseResult<()> {
-        self.table.insert(txn, key, &entity)
+        self.table.insert(ctx, txn, key, &entity).await
     }
 }
 
-impl GetItem for WorkspaceItemStoreImpl {
+#[async_trait]
+impl<Context> GetItem<Context> for WorkspaceItemStoreImpl
+where
+    Context: AnyAsyncContext,
+{
     type Key = SegKeyBuf;
     type Entity = AnyValue;
 
-    fn get(&self, key: Self::Key) -> DatabaseResult<Self::Entity> {
-        let read_txn = self.client.begin_read()?;
-        self.table.read(&read_txn, key)
+    async fn get(&self, ctx: &Context, key: Self::Key) -> DatabaseResult<Self::Entity> {
+        let read_txn = self.client.begin_read(ctx).await?;
+        self.table.read(ctx, &read_txn, key).await
     }
 }
 
-impl TransactionalGetItem for WorkspaceItemStoreImpl {
+#[async_trait]
+impl<Context> TransactionalGetItem<Context> for WorkspaceItemStoreImpl
+where
+    Context: AnyAsyncContext,
+{
     type Key = SegKeyBuf;
     type Entity = AnyValue;
 
-    fn get(&self, txn: &Transaction, key: Self::Key) -> DatabaseResult<Self::Entity> {
-        self.table.read(txn, key)
+    async fn get(
+        &self,
+        ctx: &Context,
+        txn: &Transaction,
+        key: Self::Key,
+    ) -> DatabaseResult<Self::Entity> {
+        self.table.read(ctx, txn, key).await
     }
 }
 
-impl RemoveItem for WorkspaceItemStoreImpl {
+#[async_trait]
+impl<Context> RemoveItem<Context> for WorkspaceItemStoreImpl
+where
+    Context: AnyAsyncContext,
+{
     type Key = SegKeyBuf;
     type Entity = AnyValue;
 
-    fn remove(&self, key: Self::Key) -> DatabaseResult<Self::Entity> {
-        let mut write_txn = self.client.begin_write()?;
-        let value = self.table.remove(&mut write_txn, key)?;
+    async fn remove(&self, ctx: &Context, key: Self::Key) -> DatabaseResult<Self::Entity> {
+        let mut write_txn = self.client.begin_write(ctx).await?;
+        let value = self.table.remove(ctx, &mut write_txn, key).await?;
         write_txn.commit()?;
         Ok(value)
     }
 }
 
-impl TransactionalRemoveItem for WorkspaceItemStoreImpl {
+#[async_trait]
+impl<Context> TransactionalRemoveItem<Context> for WorkspaceItemStoreImpl
+where
+    Context: AnyAsyncContext,
+{
     type Key = SegKeyBuf;
     type Entity = AnyValue;
 
-    fn remove(&self, txn: &mut Transaction, key: Self::Key) -> DatabaseResult<Self::Entity> {
-        self.table.remove(txn, key)
+    async fn remove(
+        &self,
+        ctx: &Context,
+        txn: &mut Transaction,
+        key: Self::Key,
+    ) -> DatabaseResult<Self::Entity> {
+        self.table.remove(ctx, txn, key).await
     }
 }
 
-impl WorkspaceItemStore for WorkspaceItemStoreImpl {}
+impl<Context> WorkspaceItemStore<Context> for WorkspaceItemStoreImpl where Context: AnyAsyncContext {}

@@ -1,5 +1,5 @@
+use moss_applib::AppRuntime;
 use moss_common::api::OperationResult;
-use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
 use crate::{
@@ -11,20 +11,22 @@ use crate::{
     workspace::Workspace,
 };
 
-impl<R: TauriRuntime> Workspace<R> {
+impl<R: AppRuntime> Workspace<R> {
     pub async fn create_collection(
         &self,
+        ctx: &R::AsyncContext,
         input: &CreateCollectionInput,
     ) -> OperationResult<CreateCollectionOutput> {
         input.validate()?;
 
         debug_assert!(input.external_path.is_none(), "Is not implemented");
 
-        let collection_service = self.services.get::<DynCollectionService>();
+        let collection_service = self.services.get::<DynCollectionService<R>>();
         let id = CollectionId::new();
 
         let description = collection_service
             .create_collection(
+                ctx,
                 &id,
                 CollectionItemCreateParams {
                     name: input.name.to_owned(),

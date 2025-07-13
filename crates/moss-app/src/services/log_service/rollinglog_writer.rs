@@ -1,10 +1,15 @@
 use chrono::DateTime;
+use moss_applib::{
+    AppRuntime,
+    ctx::{AnyAsyncContext, AnyContext},
+};
 use std::{
     collections::VecDeque,
     fs::OpenOptions,
     io::BufWriter,
     path::PathBuf,
     sync::{Arc, Mutex},
+    time::Duration,
 };
 
 use crate::{
@@ -16,19 +21,19 @@ use crate::{
 };
 // log:{log_id}: log_entry_path
 
-pub struct RollingLogWriter {
+pub struct RollingLogWriter<R: AppRuntime> {
     pub log_path: PathBuf,
     pub dump_threshold: usize,
     pub log_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
-    pub storage: Arc<StorageService>,
+    pub storage: Arc<StorageService<R>>,
 }
 
-impl RollingLogWriter {
+impl<R: AppRuntime> RollingLogWriter<R> {
     pub fn new(
         log_path: PathBuf,
         dump_threshold: usize,
         log_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
-        storage: Arc<StorageService>,
+        storage: Arc<StorageService<R>>,
     ) -> Self {
         Self {
             log_path,
@@ -39,7 +44,7 @@ impl RollingLogWriter {
     }
 }
 
-impl<'a> std::io::Write for RollingLogWriter {
+impl<'a, R: AppRuntime> std::io::Write for RollingLogWriter<R> {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         let log_entry: LogEntryInfo = serde_json::from_str(String::from_utf8_lossy(buf).as_ref())?;
 
@@ -61,17 +66,26 @@ impl<'a> std::io::Write for RollingLogWriter {
                     .open(&file_path)?;
                 let mut writer = BufWriter::new(file);
 
-                let mut txn = self.storage.begin_write()?;
+                let ctx =
+                    R::AsyncContext::background_with_timeout(Duration::from_secs(10)).freeze();
 
-                while let Some(entry) = queue_lock.pop_front() {
-                    serde_json::to_writer(&mut writer, &entry)?;
-                    writer.write(b"\n")?;
-                    writer.flush()?;
-                    // Record the file to which the log entry is written
-                    self.storage
-                        .put_log_path_txn(&mut txn, &entry.id, file_path.clone())?;
-                }
-                txn.commit()?;
+                futures::executor::block_on(async {
+                    let mut txn = self.storage.begin_write(&ctx).await?;
+
+                    while let Some(entry) = queue_lock.pop_front() {
+                        serde_json::to_writer(&mut writer, &entry)?;
+                        writer.write(b"\n")?;
+                        writer.flush()?;
+                        // Record the file to which the log entry is written
+                        self.storage
+                            .put_log_path_txn(&ctx, &mut txn, &entry.id, file_path.clone())
+                            .await?;
+                    }
+
+                    txn.commit()?;
+
+                    Ok::<_, std::io::Error>(())
+                })?;
             } else {
                 // Skip the first entry since its timestamp is invalid
                 queue_lock.pop_front();

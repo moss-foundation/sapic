@@ -1,6 +1,6 @@
 use anyhow::Result;
 use moss_applib::{
-    EventMarker, ServiceMarker,
+    AppRuntime, EventMarker, ServiceMarker,
     providers::ServiceProvider,
     subscription::{Event, EventEmitter},
 };
@@ -18,13 +18,13 @@ use tokio::sync::OnceCell;
 
 use crate::{config::ConfigModel, manifest::ManifestModel, services::DynSetIconService};
 
-pub struct EnvironmentItem {
+pub struct EnvironmentItem<R: AppRuntime> {
     pub id: EnvironmentId,
     pub name: String,
-    pub inner: Environment,
+    pub inner: Environment<R>,
 }
 
-type EnvironmentMap = HashMap<EnvironmentId, Arc<EnvironmentItem>>;
+type EnvironmentMap<R: AppRuntime> = HashMap<EnvironmentId, Arc<EnvironmentItem<R>>>;
 
 #[derive(Debug, Clone)]
 pub enum OnDidChangeEvent {
@@ -39,13 +39,13 @@ pub struct CollectionModifyParams {
     pub icon_path: Option<ChangePath>,
 }
 
-pub struct Collection {
+pub struct Collection<R: AppRuntime> {
     #[allow(dead_code)]
     pub(super) fs: Arc<dyn FileSystem>,
     pub(super) abs_path: Arc<Path>,
     pub(super) services: ServiceProvider,
     #[allow(dead_code)]
-    pub(super) environments: OnceCell<EnvironmentMap>,
+    pub(super) environments: OnceCell<EnvironmentMap<R>>,
     pub(super) manifest: JsonFileHandle<ManifestModel>,
     #[allow(dead_code)]
     pub(super) config: JsonFileHandle<ConfigModel>,
@@ -54,11 +54,11 @@ pub struct Collection {
 }
 
 #[rustfmt::skip]
-impl Collection {
+impl<R: AppRuntime> Collection<R> {
     pub fn on_did_change(&self) -> Event<OnDidChangeEvent> { self.on_did_change.event() }
 }
 
-impl Collection {
+impl<R: AppRuntime> Collection<R> {
     pub fn abs_path(&self) -> &Arc<Path> {
         &self.abs_path
     }
@@ -126,7 +126,7 @@ impl Collection {
         self.manifest.model().await
     }
 
-    pub async fn environments(&self) -> Result<&EnvironmentMap> {
+    pub async fn environments(&self) -> Result<&EnvironmentMap<R>> {
         let result = self
             .environments
             .get_or_try_init(|| async move {

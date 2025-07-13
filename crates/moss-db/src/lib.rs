@@ -7,14 +7,17 @@ pub mod primitives;
 pub use common::*;
 
 use anyhow::Result;
+use async_trait::async_trait;
+use moss_applib::ctx::AnyAsyncContext;
 use redb::{Builder, Database, Key, TableDefinition};
 use serde::{Serialize, de::DeserializeOwned};
 use std::{borrow::Borrow, path::Path, sync::Arc};
 use tokio::sync::Notify;
 
-pub trait DatabaseClient: Sized {
-    fn begin_write(&self) -> Result<Transaction, DatabaseError>;
-    fn begin_read(&self) -> Result<Transaction, DatabaseError>;
+#[async_trait]
+pub trait DatabaseClient<Context: AnyAsyncContext>: Sized {
+    async fn begin_write(&self, ctx: &Context) -> Result<Transaction, DatabaseError>;
+    async fn begin_read(&self, ctx: &Context) -> Result<Transaction, DatabaseError>;
 }
 
 pub enum ClientState<C> {
@@ -76,12 +79,32 @@ impl ReDbClient {
     }
 }
 
-impl DatabaseClient for ReDbClient {
-    fn begin_write(&self) -> Result<Transaction, DatabaseError> {
-        Ok(Transaction::Write(self.db.begin_write()?))
+#[async_trait]
+impl<Context> DatabaseClient<Context> for ReDbClient
+where
+    Context: AnyAsyncContext,
+{
+    async fn begin_write(&self, ctx: &Context) -> Result<Transaction, DatabaseError> {
+        if let Some(reason) = ctx.done() {
+            return Err(DatabaseError::Canceled(reason));
+        }
+
+        tokio::time::timeout(ctx.deadline(), async move {
+            Ok(Transaction::Write(self.db.begin_write()?))
+        })
+        .await
+        .map_err(|_| DatabaseError::Timeout("begin_write".to_string()))?
     }
 
-    fn begin_read(&self) -> Result<Transaction, DatabaseError> {
-        Ok(Transaction::Read(self.db.begin_read()?))
+    async fn begin_read(&self, ctx: &Context) -> Result<Transaction, DatabaseError> {
+        if let Some(reason) = ctx.done() {
+            return Err(DatabaseError::Canceled(reason));
+        }
+
+        tokio::time::timeout(ctx.deadline(), async move {
+            Ok(Transaction::Read(self.db.begin_read()?))
+        })
+        .await
+        .map_err(|_| DatabaseError::Timeout("begin_read".to_string()))?
     }
 }

@@ -1,6 +1,5 @@
-use moss_applib::ctx::Context;
+use moss_applib::AppRuntime;
 use moss_common::api::{OperationError, OperationOptionExt, OperationResult};
-use tauri::Runtime as TauriRuntime;
 
 use crate::{
     app::App,
@@ -8,10 +7,10 @@ use crate::{
     services::workspace_service::WorkspaceService,
 };
 
-impl<R: TauriRuntime> App<R> {
-    pub async fn close_workspace<C: Context>(
+impl<R: AppRuntime> App<R> {
+    pub async fn close_workspace(
         &self,
-        ctx: &C,
+        ctx: &R::AsyncContext,
         input: &CloseWorkspaceInput,
     ) -> OperationResult<CloseWorkspaceOutput> {
         let workspace_service = self.services.get::<WorkspaceService<R>>();

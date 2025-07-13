@@ -2,7 +2,7 @@ use anyhow::{Context as _, Result};
 use async_trait::async_trait;
 use derive_more::{Deref, DerefMut};
 use futures::Stream;
-use moss_applib::{PublicServiceMarker, ServiceMarker};
+use moss_applib::{AppRuntime, PublicServiceMarker, ServiceMarker};
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_collection::{
     Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
@@ -105,13 +105,13 @@ pub(crate) struct CollectionItemCreateParams {
 }
 
 #[derive(Deref, DerefMut)]
-struct CollectionItem {
+struct CollectionItem<R: AppRuntime> {
     pub id: CollectionId,
     pub order: Option<usize>,
 
     #[deref]
     #[deref_mut]
-    pub handle: Arc<CollectionHandle>,
+    pub handle: Arc<CollectionHandle<R>>,
 }
 
 pub(crate) struct CollectionItemDescription {
@@ -128,24 +128,24 @@ pub(crate) struct CollectionItemDescription {
 }
 
 #[derive(Default)]
-struct ServiceState {
-    collections: HashMap<CollectionId, CollectionItem>,
+struct ServiceState<R: AppRuntime> {
+    collections: HashMap<CollectionId, CollectionItem<R>>,
     expanded_items: HashSet<CollectionId>,
 }
 
-pub struct CollectionService {
+pub struct CollectionService<R: AppRuntime> {
     abs_path: Arc<Path>,
     fs: Arc<dyn FileSystem>,
-    storage: Arc<DynStorageService>,
-    state: Arc<RwLock<ServiceState>>,
+    storage: Arc<DynStorageService<R>>,
+    state: Arc<RwLock<ServiceState<R>>>,
 }
 
-impl ServiceMarker for CollectionService {}
-impl PublicServiceMarker for CollectionService {}
+impl<R: AppRuntime> ServiceMarker for CollectionService<R> {}
+impl<R: AppRuntime> PublicServiceMarker for CollectionService<R> {}
 
 #[async_trait]
-impl AnyCollectionService for CollectionService {
-    async fn collection(&self, id: &CollectionId) -> CollectionResult<Arc<CollectionHandle>> {
+impl<R: AppRuntime> AnyCollectionService<R> for CollectionService<R> {
+    async fn collection(&self, id: &CollectionId) -> CollectionResult<Arc<CollectionHandle<R>>> {
         let state_lock = self.state.read().await;
         let item = state_lock
             .collections
@@ -158,6 +158,7 @@ impl AnyCollectionService for CollectionService {
     #[allow(private_interfaces)]
     async fn create_collection(
         &self,
+        ctx: &R::AsyncContext,
         id: &CollectionId,
         params: CollectionItemCreateParams,
     ) -> CollectionResult<CollectionItemDescription> {
@@ -175,13 +176,13 @@ impl AnyCollectionService for CollectionService {
             .context("Failed to create the collection directory")?;
 
         let collection = {
-            let storage_service: Arc<DynCollectionStorageService> = {
-                let storage: Arc<CollectionStorageService> =
+            let storage_service: Arc<DynCollectionStorageService<R>> = {
+                let storage: Arc<CollectionStorageService<R>> =
                     CollectionStorageService::new(&abs_path)?.into();
                 DynCollectionStorageService::new(storage)
             };
-            let worktree_service: Arc<DynCollectionWorktreeService> = {
-                let worktree: Arc<CollectionWorktreeService> = CollectionWorktreeService::new(
+            let worktree_service: Arc<DynCollectionWorktreeService<R>> = {
+                let worktree: Arc<CollectionWorktreeService<R>> = CollectionWorktreeService::new(
                     abs_path.clone(),
                     self.fs.clone(),
                     storage_service.clone(),
@@ -200,16 +201,22 @@ impl AnyCollectionService for CollectionService {
             };
 
             CollectionBuilder::new(self.fs.clone())
-                .with_service::<DynCollectionStorageService>(storage_service)
-                .with_service::<DynCollectionWorktreeService>(worktree_service)
+                .with_service::<DynCollectionStorageService<R>>(storage_service)
+                .with_service::<DynCollectionWorktreeService<R>>(worktree_service)
                 .with_service::<DynCollectionSetIconService>(set_icon_service)
-                .create(CollectionCreateParams {
-                    name: Some(params.name.to_owned()),
-                    internal_abs_path: abs_path.clone(),
-                    external_abs_path: params.external_path.as_deref().map(|p| p.to_owned().into()),
-                    repository: params.repository.to_owned(),
-                    icon_path: params.icon_path.to_owned(),
-                })
+                .create(
+                    ctx,
+                    CollectionCreateParams {
+                        name: Some(params.name.to_owned()),
+                        internal_abs_path: abs_path.clone(),
+                        external_abs_path: params
+                            .external_path
+                            .as_deref()
+                            .map(|p| p.to_owned().into()),
+                        repository: params.repository.to_owned(),
+                        icon_path: params.icon_path.to_owned(),
+                    },
+                )
                 .await
                 .map_err(|e| CollectionError::Internal(e.to_string()))?
         };
@@ -236,12 +243,14 @@ impl AnyCollectionService for CollectionService {
         );
 
         {
-            let mut txn = self.storage.begin_write()?;
+            let mut txn = self.storage.begin_write(ctx).await?;
 
             self.storage
-                .put_item_order_txn(&mut txn, id, params.order)?;
+                .put_item_order_txn(ctx, &mut txn, id, params.order)
+                .await?;
             self.storage
-                .put_expanded_items_txn(&mut txn, &state_lock.expanded_items)?;
+                .put_expanded_items_txn(ctx, &mut txn, &state_lock.expanded_items)
+                .await?;
 
             txn.commit()?;
         }
@@ -261,6 +270,7 @@ impl AnyCollectionService for CollectionService {
     #[allow(private_interfaces)]
     async fn delete_collection(
         &self,
+        ctx: &R::AsyncContext,
         id: &CollectionId,
     ) -> CollectionResult<Option<CollectionItemDescription>> {
         let id_str = id.to_string();
@@ -284,12 +294,14 @@ impl AnyCollectionService for CollectionService {
         state_lock.expanded_items.remove(&id);
 
         {
-            let mut txn = self.storage.begin_write()?;
+            let mut txn = self.storage.begin_write(ctx).await?;
 
             self.storage
-                .remove_item_metadata_txn(&mut txn, SEGKEY_COLLECTION.join(&id.to_string()))?;
+                .remove_item_metadata_txn(ctx, &mut txn, SEGKEY_COLLECTION.join(&id.to_string()))
+                .await?;
             self.storage
-                .put_expanded_items_txn(&mut txn, &state_lock.expanded_items)?;
+                .put_expanded_items_txn(ctx, &mut txn, &state_lock.expanded_items)
+                .await?;
 
             txn.commit()?;
         }
@@ -316,6 +328,7 @@ impl AnyCollectionService for CollectionService {
     #[allow(private_interfaces)]
     async fn update_collection(
         &self,
+        ctx: &R::AsyncContext,
         id: &CollectionId,
         params: CollectionItemUpdateParams,
     ) -> CollectionResult<()> {
@@ -325,10 +338,12 @@ impl AnyCollectionService for CollectionService {
             .get_mut(&id)
             .ok_or(CollectionError::NotFound(id.to_string()))?;
 
-        let mut txn = self.storage.begin_write()?;
+        let mut txn = self.storage.begin_write(ctx).await?;
         if let Some(order) = params.order {
             item.order = Some(order);
-            self.storage.put_item_order_txn(&mut txn, id, order)?;
+            self.storage
+                .put_item_order_txn(ctx, &mut txn, id, order)
+                .await?;
         }
 
         item.modify(CollectionModifyParams {
@@ -347,15 +362,17 @@ impl AnyCollectionService for CollectionService {
             }
 
             self.storage
-                .put_expanded_items_txn(&mut txn, &state_lock.expanded_items)?;
+                .put_expanded_items_txn(ctx, &mut txn, &state_lock.expanded_items)
+                .await?;
         }
 
         Ok(())
     }
 
     #[allow(private_interfaces)]
-    fn list_collections(
+    async fn list_collections(
         &self,
+        _ctx: &R::AsyncContext,
     ) -> Pin<Box<dyn Stream<Item = CollectionItemDescription> + Send + '_>> {
         let state = self.state.clone();
 
@@ -382,19 +399,20 @@ impl AnyCollectionService for CollectionService {
     }
 }
 
-impl CollectionService {
+impl<R: AppRuntime> CollectionService<R> {
     pub async fn new(
+        ctx: &R::AsyncContext,
         abs_path: Arc<Path>,
         fs: Arc<dyn FileSystem>,
-        storage: Arc<DynStorageService>,
+        storage: Arc<DynStorageService<R>>,
     ) -> CollectionResult<Self> {
-        let expanded_items = if let Ok(expanded_items) = storage.get_expanded_items() {
+        let expanded_items = if let Ok(expanded_items) = storage.get_expanded_items(ctx).await {
             expanded_items.into_iter().collect::<HashSet<_>>()
         } else {
             HashSet::new()
         };
 
-        let collections = restore_collections(&abs_path, &fs, &storage).await?;
+        let collections = restore_collections(ctx, &abs_path, &fs, &storage).await?;
 
         Ok(Self {
             abs_path,
@@ -412,11 +430,12 @@ impl CollectionService {
     }
 }
 
-async fn restore_collections(
+async fn restore_collections<R: AppRuntime>(
+    ctx: &R::AsyncContext,
     abs_path: &Path,
     fs: &Arc<dyn FileSystem>,
-    storage: &Arc<dyn AnyStorageService>,
-) -> Result<HashMap<CollectionId, CollectionItem>> {
+    storage: &Arc<dyn AnyStorageService<R>>,
+) -> Result<HashMap<CollectionId, CollectionItem<R>>> {
     let dir_abs_path = abs_path.join(dirs::COLLECTIONS_DIR);
     if !dir_abs_path.exists() {
         return Ok(HashMap::new());
@@ -440,13 +459,13 @@ async fn restore_collections(
         let collection = {
             let collection_abs_path: Arc<Path> = entry.path().to_owned().into();
 
-            let storage_service: Arc<DynCollectionStorageService> = {
-                let storage: Arc<CollectionStorageService> =
+            let storage_service: Arc<DynCollectionStorageService<R>> = {
+                let storage: Arc<CollectionStorageService<R>> =
                     CollectionStorageService::new(&collection_abs_path)?.into();
                 DynCollectionStorageService::new(storage)
             };
-            let worktree_service: Arc<DynCollectionWorktreeService> = {
-                let worktree: Arc<CollectionWorktreeService> = CollectionWorktreeService::new(
+            let worktree_service: Arc<DynCollectionWorktreeService<R>> = {
+                let worktree: Arc<CollectionWorktreeService<R>> = CollectionWorktreeService::new(
                     collection_abs_path.clone(),
                     fs.clone(),
                     storage_service.clone(),
@@ -465,8 +484,8 @@ async fn restore_collections(
             };
 
             CollectionBuilder::new(fs.clone())
-                .with_service::<DynCollectionStorageService>(storage_service)
-                .with_service::<DynCollectionWorktreeService>(worktree_service)
+                .with_service::<DynCollectionStorageService<R>>(storage_service)
+                .with_service::<DynCollectionWorktreeService<R>>(worktree_service)
                 .with_service::<DynCollectionSetIconService>(set_icon_service)
                 .load(CollectionLoadParams {
                     internal_abs_path: collection_abs_path,
@@ -477,7 +496,9 @@ async fn restore_collections(
         collections.push((id, collection));
     }
 
-    let metadata = storage.list_items_metadata(SEGKEY_COLLECTION.to_segkey_buf())?;
+    let metadata = storage
+        .list_items_metadata(ctx, SEGKEY_COLLECTION.to_segkey_buf())
+        .await?;
 
     let mut result = HashMap::new();
     for (id, collection) in collections {

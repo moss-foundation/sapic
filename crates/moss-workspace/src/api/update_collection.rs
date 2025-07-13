@@ -1,5 +1,5 @@
+use moss_applib::AppRuntime;
 use moss_common::api::OperationResult;
-use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
 use crate::{
@@ -8,16 +8,18 @@ use crate::{
     workspace::Workspace,
 };
 
-impl<R: TauriRuntime> Workspace<R> {
+impl<R: AppRuntime> Workspace<R> {
     pub async fn update_collection(
         &mut self,
+        ctx: &R::AsyncContext,
         input: UpdateCollectionInput,
     ) -> OperationResult<UpdateCollectionOutput> {
         input.validate()?;
         let id = input.id.clone().into();
-        let collections = self.services.get::<DynCollectionService>();
+        let collections = self.services.get::<DynCollectionService<R>>();
         collections
             .update_collection(
+                ctx,
                 &id,
                 CollectionItemUpdateParams {
                     name: input.name,

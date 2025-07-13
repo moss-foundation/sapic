@@ -1,14 +1,16 @@
+use moss_applib::AppRuntime;
 // use futures::{StreamExt, stream};
 use moss_common::api::OperationResult;
-use tauri::{Runtime as TauriRuntime, ipc::Channel as TauriChannel};
+use tauri::ipc::Channel as TauriChannel;
 
 use crate::{Workspace, models::events::StreamEnvironmentsEvent};
 
 // const MAX_CONCURRENCY_LIMIT: usize = 10;
 
-impl<R: TauriRuntime> Workspace<R> {
+impl<R: AppRuntime> Workspace<R> {
     pub async fn stream_environments(
         &self,
+        _ctx: &R::AsyncContext,
         _channel: TauriChannel<StreamEnvironmentsEvent>,
     ) -> OperationResult<()> {
         unimplemented!()
