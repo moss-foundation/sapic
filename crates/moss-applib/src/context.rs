@@ -239,6 +239,15 @@ impl MutableContext {
         }
     }
 
+    pub fn background_with_timeout(timeout: Duration) -> Self {
+        Self {
+            parent: None,
+            deadline: Some(Instant::now() + timeout),
+            cancelled: Arc::new(AtomicBool::new(false)),
+            values: HashMap::new(),
+        }
+    }
+
     pub fn new_with_timeout(parent: AsyncContext, timeout: Duration) -> Self {
         Self {
             parent: Some(parent),

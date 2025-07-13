@@ -12,13 +12,13 @@ use serde_json::Value as JsonValue;
 use std::{collections::HashMap, time::Duration};
 use tauri::{Emitter, EventTarget, Manager, State, Window};
 
-use crate::{TauriAsyncRuntime, commands::Options};
+use crate::{TauriAppRuntime, commands::Options};
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn set_color_theme<R: tauri::Runtime>(
     ctx: State<'_, moss_applib::context::AsyncContext>,
-    app: State<'_, App<TauriAsyncRuntime<R>>>,
+    app: State<'_, App<TauriAppRuntime<R>>>,
     window: Window<R>,
     input: SetColorThemeInput,
     options: Options,
@@ -55,7 +55,7 @@ pub async fn set_color_theme<R: tauri::Runtime>(
 #[instrument(level = "trace", skip(ctx,app), fields(window = window.label()))]
 pub async fn get_color_theme<R: tauri::Runtime>(
     ctx: State<'_, moss_applib::context::AsyncContext>,
-    app: State<'_, App<TauriAsyncRuntime<R>>>,
+    app: State<'_, App<TauriAppRuntime<R>>>,
     window: Window<R>,
     input: GetColorThemeInput,
     options: Options,
@@ -79,7 +79,7 @@ pub async fn get_color_theme<R: tauri::Runtime>(
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn list_color_themes<R: tauri::Runtime>(
     ctx: State<'_, moss_applib::context::AsyncContext>,
-    app: State<'_, App<TauriAsyncRuntime<R>>>,
+    app: State<'_, App<TauriAppRuntime<R>>>,
     window: Window<R>,
     options: Options,
 ) -> TauriResult<ListColorThemesOutput> {
@@ -102,7 +102,7 @@ pub async fn list_color_themes<R: tauri::Runtime>(
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn describe_app_state<R: tauri::Runtime>(
     ctx: State<'_, moss_applib::context::AsyncContext>,
-    app: State<'_, App<TauriAsyncRuntime<R>>>,
+    app: State<'_, App<TauriAppRuntime<R>>>,
     window: Window<R>,
     options: Options,
 ) -> TauriResult<DescribeAppStateOutput> {
@@ -125,7 +125,7 @@ pub async fn describe_app_state<R: tauri::Runtime>(
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn set_locale<R: tauri::Runtime>(
     ctx: State<'_, moss_applib::context::AsyncContext>,
-    app: State<'_, App<TauriAsyncRuntime<R>>>,
+    app: State<'_, App<TauriAppRuntime<R>>>,
     window: Window<R>,
     input: SetLocaleInput,
     options: Options,
@@ -149,7 +149,7 @@ pub async fn set_locale<R: tauri::Runtime>(
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn list_locales<R: tauri::Runtime>(
     ctx: State<'_, moss_applib::context::AsyncContext>,
-    app: State<'_, App<TauriAsyncRuntime<R>>>,
+    app: State<'_, App<TauriAppRuntime<R>>>,
     window: Window<R>,
     options: Options,
 ) -> TauriResult<ListLocalesOutput> {
@@ -172,7 +172,7 @@ pub async fn list_locales<R: tauri::Runtime>(
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn get_translations<R: tauri::Runtime>(
     ctx: State<'_, moss_applib::context::AsyncContext>,
-    app: State<'_, App<TauriAsyncRuntime<R>>>,
+    app: State<'_, App<TauriAppRuntime<R>>>,
     window: Window<R>,
     input: GetTranslationsInput,
     options: Options,
@@ -196,7 +196,7 @@ pub async fn get_translations<R: tauri::Runtime>(
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn create_workspace<R: tauri::Runtime>(
     ctx: State<'_, moss_applib::context::AsyncContext>,
-    app: State<'_, App<TauriAsyncRuntime<R>>>,
+    app: State<'_, App<TauriAppRuntime<R>>>,
     window: Window<R>,
     input: CreateWorkspaceInput,
     options: Options,
@@ -220,7 +220,7 @@ pub async fn create_workspace<R: tauri::Runtime>(
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn close_workspace<R: tauri::Runtime>(
     ctx: State<'_, moss_applib::context::AsyncContext>,
-    app: State<'_, App<TauriAsyncRuntime<R>>>,
+    app: State<'_, App<TauriAppRuntime<R>>>,
     window: Window<R>,
     input: CloseWorkspaceInput,
     options: Options,
@@ -244,7 +244,7 @@ pub async fn close_workspace<R: tauri::Runtime>(
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn list_workspaces<R: tauri::Runtime>(
     ctx: State<'_, moss_applib::context::AsyncContext>,
-    app: State<'_, App<TauriAsyncRuntime<R>>>,
+    app: State<'_, App<TauriAppRuntime<R>>>,
     window: Window<R>,
     options: Options,
 ) -> TauriResult<ListWorkspacesOutput> {
@@ -267,7 +267,7 @@ pub async fn list_workspaces<R: tauri::Runtime>(
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn delete_workspace<R: tauri::Runtime>(
     ctx: State<'_, moss_applib::context::AsyncContext>,
-    app: State<'_, App<TauriAsyncRuntime<R>>>,
+    app: State<'_, App<TauriAppRuntime<R>>>,
     window: Window<R>,
     input: DeleteWorkspaceInput,
     options: Options,
@@ -291,7 +291,7 @@ pub async fn delete_workspace<R: tauri::Runtime>(
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn open_workspace<R: tauri::Runtime>(
     ctx: State<'_, moss_applib::context::AsyncContext>,
-    app: State<'_, App<TauriAsyncRuntime<R>>>,
+    app: State<'_, App<TauriAppRuntime<R>>>,
     window: Window<R>,
     input: OpenWorkspaceInput,
     options: Options,
@@ -315,7 +315,7 @@ pub async fn open_workspace<R: tauri::Runtime>(
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn update_workspace<R: tauri::Runtime>(
     ctx: State<'_, moss_applib::context::AsyncContext>,
-    app: State<'_, App<TauriAsyncRuntime<R>>>,
+    app: State<'_, App<TauriAppRuntime<R>>>,
     window: Window<R>,
     input: UpdateWorkspaceInput,
     options: Options,
@@ -339,7 +339,7 @@ pub async fn update_workspace<R: tauri::Runtime>(
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn execute_command<R: tauri::Runtime>(
     ctx: State<'_, moss_applib::context::AsyncContext>,
-    app: State<'_, App<TauriAsyncRuntime<R>>>,
+    app: State<'_, App<TauriAppRuntime<R>>>,
     window: Window<R>,
     cmd: ReadOnlyStr,
     args: HashMap<String, JsonValue>,

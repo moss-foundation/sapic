@@ -10,7 +10,7 @@ pub use markers::*;
 use tauri::Runtime as TauriRuntime;
 
 use crate::{
-    context::{AnyAsyncContext, AnyContext},
+    context::{AnyAsyncContext, AnyContext, AsyncContext, MutableContext},
     context_old::Context,
 };
 
@@ -22,4 +22,27 @@ pub trait AppRuntime: 'static {
 
 pub trait ReadGlobal<R: TauriRuntime, C: Context<R>> {
     fn global(ctx: &C) -> &Self;
+}
+
+pub struct TauriAppRuntime<R: TauriRuntime>(std::marker::PhantomData<R>);
+
+impl<R: TauriRuntime> AppRuntime for TauriAppRuntime<R> {
+    type Context = MutableContext;
+    type AsyncContext = AsyncContext;
+    type EventLoop = R;
+}
+
+#[cfg(any(test, feature = "test"))]
+pub mod mock {
+    use tauri::test::MockRuntime;
+
+    use super::*;
+
+    pub struct MockAppRuntime;
+
+    impl AppRuntime for MockAppRuntime {
+        type Context = MutableContext;
+        type AsyncContext = AsyncContext;
+        type EventLoop = MockRuntime;
+    }
 }

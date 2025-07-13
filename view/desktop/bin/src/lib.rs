@@ -20,7 +20,7 @@ use moss_app::{
     },
 };
 use moss_applib::{
-    AppRuntime,
+    TauriAppRuntime,
     context::{AnyAsyncContext, AnyContext, MutableContext},
     context_old::ContextValueSet,
 };
@@ -28,15 +28,6 @@ use moss_fs::{FileSystem, RealFileSystem};
 use std::{path::PathBuf, sync::Arc, time::Duration};
 use tauri::{AppHandle, Manager, RunEvent, Runtime as TauriRuntime, WebviewWindow, WindowEvent};
 use tauri_plugin_os;
-
-// Wrapper to make TauriRuntime implement AsyncRuntime
-pub struct TauriAsyncRuntime<R: TauriRuntime>(std::marker::PhantomData<R>);
-
-impl<R: TauriRuntime> AppRuntime for TauriAsyncRuntime<R> {
-    type Context = moss_applib::context::MutableContext;
-    type AsyncContext = moss_applib::context::AsyncContext;
-    type EventLoop = R;
-}
 
 use window::{CreateWindowInput, create_window};
 
@@ -86,8 +77,8 @@ pub async fn run<R: TauriRuntime>() {
                         MutableContext::new_with_timeout(ctx_clone, Duration::from_secs(30))
                             .freeze();
 
-                    let storage_service: Arc<StorageService<TauriAsyncRuntime<R>>> =
-                        StorageService::<TauriAsyncRuntime<R>>::new(
+                    let storage_service: Arc<StorageService<TauriAppRuntime<R>>> =
+                        StorageService::<TauriAppRuntime<R>>::new(
                             &app_dir.join(moss_app::dirs::GLOBALS_DIR),
                         )
                         .expect("Failed to create storage service")
@@ -96,7 +87,7 @@ pub async fn run<R: TauriRuntime>() {
                     let session_service = SessionService::new();
                     let session_id = session_service.session_id().clone();
 
-                    let workspace_service = WorkspaceService::<TauriAsyncRuntime<R>>::new(
+                    let workspace_service = WorkspaceService::<TauriAppRuntime<R>>::new(
                         &app_init_ctx,
                         storage_service.clone(),
                         fs.clone(),
@@ -135,14 +126,14 @@ pub async fn run<R: TauriRuntime>() {
                     <dyn FileSystem>::set_global(fs.clone(), &app_handle);
 
                     let activity_indicator = ActivityIndicator::new(app_handle.clone());
-                    let app = AppBuilder::<TauriAsyncRuntime<R>>::new(
+                    let app = AppBuilder::<TauriAppRuntime<R>>::new(
                         app_handle.clone(),
                         activity_indicator,
                         defaults,
                         fs,
                         app_dir.into(),
                     )
-                    .with_service::<StorageService<TauriAsyncRuntime<R>>>(storage_service)
+                    .with_service::<StorageService<TauriAppRuntime<R>>>(storage_service)
                     .with_service(theme_service)
                     .with_service(locale_service)
                     .with_service(session_service)
