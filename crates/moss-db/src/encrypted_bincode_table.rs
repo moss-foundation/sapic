@@ -6,6 +6,7 @@ use argon2::{
     Argon2,
     password_hash::{PasswordHasher, SaltString, rand_core::OsRng},
 };
+use moss_applib::context::AnyAsyncContext;
 use redb::{Key, TableDefinition};
 use serde::{Serialize, de::DeserializeOwned};
 use std::{
@@ -176,56 +177,74 @@ where
             .map_err(|e| DatabaseError::Internal(format!("Decryption failed: {}", e)))
     }
 
-    pub fn write(
+    pub async fn write<C: AnyAsyncContext>(
         &self,
+        ctx: &C,
         txn: &mut Transaction,
         key: K,
         value: &V,
         password: &[u8],
         aad: &[u8],
     ) -> Result<(), DatabaseError> {
-        match txn {
-            Transaction::Write(txn) => {
-                let mut table = txn.open_table(self.table)?;
-
-                let bytes = serde_json::to_vec(value)?;
-
-                let encrypted = self.encrypt(&bytes, password, aad)?;
-                table.insert(key.borrow(), encrypted)?;
-                Ok(())
-            }
-            Transaction::Read(_) => Err(DatabaseError::Transaction(
-                "Cannot insert into read transaction".to_string(),
-            )),
+        if let Some(reason) = ctx.done() {
+            return Err(DatabaseError::Canceled(reason));
         }
+
+        tokio::time::timeout(ctx.deadline(), async move {
+            match txn {
+                Transaction::Write(txn) => {
+                    let mut table = txn.open_table(self.table)?;
+
+                    let bytes = serde_json::to_vec(value)?;
+
+                    let encrypted = self.encrypt(&bytes, password, aad)?;
+                    table.insert(key.borrow(), encrypted)?;
+                    Ok(())
+                }
+                Transaction::Read(_) => Err(DatabaseError::Transaction(
+                    "Cannot insert into read transaction".to_string(),
+                )),
+            }
+        })
+        .await
+        .map_err(|_| DatabaseError::Timeout("write".to_string()))?
     }
 
-    pub fn read(
+    pub async fn read<C: AnyAsyncContext>(
         &self,
+        ctx: &C,
         txn: &Transaction,
         key: K,
         password: &[u8],
         aad: &[u8],
     ) -> Result<V, DatabaseError> {
-        match txn {
-            Transaction::Read(txn) => {
-                let table = txn.open_table(self.table)?;
-
-                let encrypted = table
-                    .get(key.borrow())?
-                    .ok_or_else(|| DatabaseError::NotFound {
-                        key: key.to_string(),
-                    })?
-                    .value();
-
-                let decrypted = self.decrypt(&encrypted, password, aad)?;
-                let result = serde_json::from_slice(&decrypted)?;
-
-                Ok(result)
-            }
-            Transaction::Write(_) => Err(DatabaseError::Transaction(
-                "Cannot read from write transaction".to_string(),
-            )),
+        if let Some(reason) = ctx.done() {
+            return Err(DatabaseError::Canceled(reason));
         }
+
+        tokio::time::timeout(ctx.deadline(), async move {
+            match txn {
+                Transaction::Read(txn) => {
+                    let table = txn.open_table(self.table)?;
+
+                    let encrypted = table
+                        .get(key.borrow())?
+                        .ok_or_else(|| DatabaseError::NotFound {
+                            key: key.to_string(),
+                        })?
+                        .value();
+
+                    let decrypted = self.decrypt(&encrypted, password, aad)?;
+                    let result = serde_json::from_slice(&decrypted)?;
+
+                    Ok(result)
+                }
+                Transaction::Write(_) => Err(DatabaseError::Transaction(
+                    "Cannot read from write transaction".to_string(),
+                )),
+            }
+        })
+        .await
+        .map_err(|_| DatabaseError::Timeout("read".to_string()))?
     }
 }

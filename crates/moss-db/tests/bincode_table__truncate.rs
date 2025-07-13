@@ -1,96 +1,114 @@
-// pub mod shared;
+pub mod shared;
 
-// use moss_db::{DatabaseClient, common::DatabaseError};
+use moss_db::{DatabaseClient, common::DatabaseError};
 
-// use crate::shared::setup_test_bincode_table;
+use crate::shared::setup_test_bincode_table;
 
-// #[test]
-// fn truncate_empty() {
-//     let (client, table, path) = setup_test_bincode_table::<i32>();
+#[tokio::test]
+async fn truncate_empty() {
+    let (client, ctx, table, path) = setup_test_bincode_table::<i32>();
 
-//     {
-//         let mut write = client.begin_write().unwrap();
-//         let result = table.truncate(&mut write);
-//         let _ = result.unwrap();
-//         write.commit().unwrap();
-//     }
+    {
+        let mut write = client.begin_write(&ctx).await.unwrap();
+        let result = table.truncate(&ctx, &mut write).await;
+        let _ = result.unwrap();
+        write.commit().unwrap();
+    }
 
-//     {
-//         let read = client.begin_read().unwrap();
-//         assert_eq!(table.scan(&read).unwrap().count(), 0);
-//     }
+    {
+        let read = client.begin_read(&ctx).await.unwrap();
+        assert_eq!(table.scan(&ctx, &read).await.unwrap().count(), 0);
+    }
 
-//     {
-//         std::fs::remove_file(path).unwrap();
-//     }
-// }
+    {
+        std::fs::remove_file(path).unwrap();
+    }
+}
 
-// #[test]
-// fn truncate_non_empty() {
-//     let (client, table, path) = setup_test_bincode_table::<i32>();
+#[tokio::test]
+async fn truncate_non_empty() {
+    let (client, ctx, table, path) = setup_test_bincode_table::<i32>();
 
-//     {
-//         let mut write = client.begin_write().unwrap();
-//         table.insert(&mut write, "1".to_string(), &1).unwrap();
-//         table.insert(&mut write, "2".to_string(), &2).unwrap();
-//         table.insert(&mut write, "3".to_string(), &3).unwrap();
-//     }
+    {
+        let mut write = client.begin_write(&ctx).await.unwrap();
+        table
+            .insert(&ctx, &mut write, "1".to_string(), &1)
+            .await
+            .unwrap();
+        table
+            .insert(&ctx, &mut write, "2".to_string(), &2)
+            .await
+            .unwrap();
+        table
+            .insert(&ctx, &mut write, "3".to_string(), &3)
+            .await
+            .unwrap();
+    }
 
-//     {
-//         let mut write = client.begin_write().unwrap();
-//         let result = table.truncate(&mut write);
-//         let _ = result.unwrap();
-//     }
+    {
+        let mut write = client.begin_write(&ctx).await.unwrap();
+        let result = table.truncate(&ctx, &mut write).await;
+        let _ = result.unwrap();
+    }
 
-//     {
-//         let read = client.begin_read().unwrap();
-//         assert_eq!(table.scan(&read).unwrap().count(), 0);
-//     }
+    {
+        let read = client.begin_read(&ctx).await.unwrap();
+        assert_eq!(table.scan(&ctx, &read).await.unwrap().count(), 0);
+    }
 
-//     {
-//         std::fs::remove_file(path).unwrap();
-//     }
-// }
+    {
+        std::fs::remove_file(path).unwrap();
+    }
+}
 
-// #[test]
-// fn truncate_in_read_transaction() {
-//     let (client, table, path) = setup_test_bincode_table::<i32>();
+#[tokio::test]
+async fn truncate_in_read_transaction() {
+    let (client, ctx, table, path) = setup_test_bincode_table::<i32>();
 
-//     {
-//         let mut read = client.begin_read().unwrap();
-//         let result = table.truncate(&mut read);
-//         assert!(matches!(result, Err(DatabaseError::Transaction(..))));
-//     }
+    {
+        let mut read = client.begin_read(&ctx).await.unwrap();
+        let result = table.truncate(&ctx, &mut read).await;
+        assert!(matches!(result, Err(DatabaseError::Transaction(..))));
+    }
 
-//     {
-//         std::fs::remove_file(path).unwrap();
-//     }
-// }
+    {
+        std::fs::remove_file(path).unwrap();
+    }
+}
 
-// #[test]
-// fn truncate_uncommitted() {
-//     let (client, table, path) = setup_test_bincode_table::<i32>();
+#[tokio::test]
+async fn truncate_uncommitted() {
+    let (client, ctx, table, path) = setup_test_bincode_table::<i32>();
 
-//     {
-//         let mut write = client.begin_write().unwrap();
-//         table.insert(&mut write, "1".to_string(), &1).unwrap();
-//         table.insert(&mut write, "2".to_string(), &2).unwrap();
-//         table.insert(&mut write, "3".to_string(), &3).unwrap();
-//         write.commit().unwrap();
-//     }
+    {
+        let mut write = client.begin_write(&ctx).await.unwrap();
+        table
+            .insert(&ctx, &mut write, "1".to_string(), &1)
+            .await
+            .unwrap();
+        table
+            .insert(&ctx, &mut write, "2".to_string(), &2)
+            .await
+            .unwrap();
+        table
+            .insert(&ctx, &mut write, "3".to_string(), &3)
+            .await
+            .unwrap();
+        write.commit().unwrap();
+    }
 
-//     {
-//         // Uncommitted
-//         let mut write = client.begin_write().unwrap();
-//         table.truncate(&mut write).unwrap();
-//     }
+    {
+        // Uncommitted
+        let mut write = client.begin_write(&ctx).await.unwrap();
+        table.truncate(&ctx, &mut write).await.unwrap();
+    }
 
-//     {
-//         let read = client.begin_read().unwrap();
-//         assert_eq!(table.scan(&read).unwrap().count(), 3);
-//     }
+    {
+        let read = client.begin_read(&ctx).await.unwrap();
+        assert_eq!(table.scan(&ctx, &read).await.unwrap().count(), 3);
+    }
 
-//     {
-//         std::fs::remove_file(path).unwrap();
-//     }
-// }
+    {
+        std::fs::remove_file(path).unwrap();
+    }
+}
