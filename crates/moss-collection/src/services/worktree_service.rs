@@ -308,7 +308,7 @@ impl<R: AppRuntime> AnyWorktreeService<R> for WorktreeService<R> {
 
     async fn scan(
         &self,
-        ctx: &R::AsyncContext,
+        _ctx: &R::AsyncContext, // TODO: use ctx ctx.done() to cancel the scan if needed
         path: &Path,
         expanded_entries: Arc<HashSet<EntryId>>,
         all_entry_keys: Arc<HashMap<SegKeyBuf, AnyValue>>,

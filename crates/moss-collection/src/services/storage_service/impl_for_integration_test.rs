@@ -1,72 +1,85 @@
-// use moss_applib::ServiceMarker;
-// use moss_db::{Transaction, primitives::AnyValue};
-// use moss_storage::{CollectionStorage, primitives::segkey::SegKeyBuf};
-// use std::{collections::HashMap, sync::Arc};
+use async_trait::async_trait;
+use moss_applib::{AppRuntime, ServiceMarker};
+use moss_db::{Transaction, primitives::AnyValue};
+use moss_storage::{CollectionStorage, primitives::segkey::SegKeyBuf};
+use std::{collections::HashMap, sync::Arc};
 
-// use crate::{
-//     models::primitives::EntryId,
-//     services::{AnyStorageService, StorageService},
-// };
+use crate::{
+    models::primitives::EntryId,
+    services::{AnyStorageService, StorageService},
+};
 
-// pub struct StorageServiceForIntegrationTest {
-//     real: Arc<StorageService>,
-// }
+pub struct StorageServiceForIntegrationTest<R: AppRuntime> {
+    real: Arc<StorageService<R>>,
+}
 
-// impl StorageServiceForIntegrationTest {
-//     pub fn storage(&self) -> &Arc<dyn CollectionStorage> {
-//         &self.real.storage
-//     }
+impl<R: AppRuntime> StorageServiceForIntegrationTest<R> {
+    pub fn storage(&self) -> &Arc<dyn CollectionStorage<R::AsyncContext>> {
+        &self.real.storage
+    }
 
-//     pub fn real(&self) -> &Arc<StorageService> {
-//         &self.real
-//     }
-// }
+    pub fn real(&self) -> &Arc<StorageService<R>> {
+        &self.real
+    }
+}
 
-// impl ServiceMarker for StorageServiceForIntegrationTest {}
+impl<R: AppRuntime> ServiceMarker for StorageServiceForIntegrationTest<R> {}
 
-// impl From<StorageService> for StorageServiceForIntegrationTest {
-//     fn from(value: StorageService) -> Self {
-//         Self {
-//             real: Arc::new(value),
-//         }
-//     }
-// }
+impl<R: AppRuntime> From<StorageService<R>> for StorageServiceForIntegrationTest<R> {
+    fn from(value: StorageService<R>) -> Self {
+        Self {
+            real: Arc::new(value),
+        }
+    }
+}
 
-// impl AnyStorageService for StorageServiceForIntegrationTest {
-//     fn begin_write(&self) -> anyhow::Result<Transaction> {
-//         self.real.begin_write()
-//     }
+#[async_trait]
+impl<R: AppRuntime> AnyStorageService<R> for StorageServiceForIntegrationTest<R> {
+    async fn begin_write(&self, ctx: &R::AsyncContext) -> anyhow::Result<Transaction> {
+        self.real.begin_write(ctx).await
+    }
 
-//     fn begin_read(&self) -> anyhow::Result<Transaction> {
-//         self.real.begin_read()
-//     }
+    async fn begin_read(&self, ctx: &R::AsyncContext) -> anyhow::Result<Transaction> {
+        self.real.begin_read(ctx).await
+    }
 
-//     fn put_entry_order_txn(
-//         &self,
-//         txn: &mut Transaction,
-//         id: &EntryId,
-//         order: isize,
-//     ) -> anyhow::Result<()> {
-//         self.real.put_entry_order_txn(txn, id, order)
-//     }
+    async fn put_entry_order_txn(
+        &self,
+        ctx: &R::AsyncContext,
+        txn: &mut Transaction,
+        id: &EntryId,
+        order: isize,
+    ) -> anyhow::Result<()> {
+        self.real.put_entry_order_txn(ctx, txn, id, order).await
+    }
 
-//     fn get_all_entry_keys(&self) -> anyhow::Result<HashMap<SegKeyBuf, AnyValue>> {
-//         self.real.get_all_entry_keys()
-//     }
+    async fn get_all_entry_keys(
+        &self,
+        ctx: &R::AsyncContext,
+    ) -> anyhow::Result<HashMap<SegKeyBuf, AnyValue>> {
+        self.real.get_all_entry_keys(ctx).await
+    }
 
-//     fn put_expanded_entries(&self, expanded_entries: Vec<EntryId>) -> anyhow::Result<()> {
-//         self.real.put_expanded_entries(expanded_entries)
-//     }
+    async fn put_expanded_entries(
+        &self,
+        ctx: &R::AsyncContext,
+        expanded_entries: Vec<EntryId>,
+    ) -> anyhow::Result<()> {
+        self.real.put_expanded_entries(ctx, expanded_entries).await
+    }
 
-//     fn put_expanded_entries_txn(
-//         &self,
-//         txn: &mut Transaction,
-//         expanded_entries: Vec<EntryId>,
-//     ) -> anyhow::Result<()> {
-//         self.real.put_expanded_entries_txn(txn, expanded_entries)
-//     }
+    async fn put_expanded_entries_txn(
+        &self,
+        ctx: &R::AsyncContext,
+        txn: &mut Transaction,
+        expanded_entries: Vec<EntryId>,
+    ) -> anyhow::Result<()> {
+        self.real
+            .put_expanded_entries_txn(ctx, txn, expanded_entries)
+            .await
+    }
 
-//     fn get_expanded_entries(&self) -> anyhow::Result<Vec<EntryId>> {
-//         self.real.get_expanded_entries()
-//     }
-// }
+    async fn get_expanded_entries(&self, ctx: &R::AsyncContext) -> anyhow::Result<Vec<EntryId>> {
+        self.real.get_expanded_entries(ctx).await
+    }
+}

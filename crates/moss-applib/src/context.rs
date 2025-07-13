@@ -1,5 +1,5 @@
 use std::{
-    any::{Any, TypeId},
+    any::Any,
     borrow::Cow,
     collections::HashMap,
     fmt::{self, Display},

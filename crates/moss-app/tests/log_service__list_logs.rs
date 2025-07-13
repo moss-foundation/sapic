@@ -5,6 +5,7 @@ use moss_app::{
     models::{operations::ListLogsInput, primitives::LogLevel},
     services::log_service::{LogPayload, LogScope, LogService},
 };
+use moss_applib::mock::MockAppRuntime;
 use std::{str::FromStr, time::Duration};
 
 use crate::shared::set_up_test_app;
@@ -20,15 +21,18 @@ use crate::shared::set_up_test_app;
 #[ignore]
 #[tokio::test]
 async fn test_list_logs_empty() {
-    let (app, _ctx, services, cleanup, _abs_path) = set_up_test_app().await;
-    let _log_service = services.get::<LogService>();
+    let (app, ctx, services, cleanup, _abs_path) = set_up_test_app().await;
+    let _log_service = services.get::<LogService<MockAppRuntime>>();
 
     let list_logs_result = app
-        .list_logs(&ListLogsInput {
-            dates: vec![],
-            levels: vec![],
-            resource: None,
-        })
+        .list_logs(
+            &ctx,
+            &ListLogsInput {
+                dates: vec![],
+                levels: vec![],
+                resource: None,
+            },
+        )
         .await;
 
     assert!(list_logs_result.is_ok());
@@ -43,8 +47,8 @@ async fn test_list_logs_empty() {
 async fn test_list_logs_from_both_files_and_queue() {
     // By default, the applong and session log queue will be flushed to files for every ten log
     // We will create 25 of each to see that the logs are successfully combined
-    let (app, _ctx, services, cleanup, _abs_path) = set_up_test_app().await;
-    let log_service = services.get::<LogService>();
+    let (app, ctx, services, cleanup, _abs_path) = set_up_test_app().await;
+    let log_service = services.get::<LogService<MockAppRuntime>>();
 
     for _ in 0..25 {
         log_service.warn(
@@ -67,11 +71,14 @@ async fn test_list_logs_from_both_files_and_queue() {
     tokio::time::sleep(Duration::from_millis(500)).await;
 
     let list_logs_output = app
-        .list_logs(&ListLogsInput {
-            dates: vec![],
-            levels: vec![],
-            resource: None,
-        })
+        .list_logs(
+            &ctx,
+            &ListLogsInput {
+                dates: vec![],
+                levels: vec![],
+                resource: None,
+            },
+        )
         .await
         .unwrap();
 
@@ -88,8 +95,8 @@ async fn test_list_logs_from_both_files_and_queue() {
 #[ignore]
 #[tokio::test]
 async fn test_list_logs_by_level() {
-    let (app, _ctx, services, cleanup, _abs_path) = set_up_test_app().await;
-    let log_service = services.get::<LogService>();
+    let (app, ctx, services, cleanup, _abs_path) = set_up_test_app().await;
+    let log_service = services.get::<LogService<MockAppRuntime>>();
 
     log_service.debug(
         LogScope::App,
@@ -114,33 +121,42 @@ async fn test_list_logs_by_level() {
     );
 
     let debug_logs = app
-        .list_logs(&ListLogsInput {
-            dates: vec![],
-            levels: vec![LogLevel::DEBUG],
-            resource: None,
-        })
+        .list_logs(
+            &ctx,
+            &ListLogsInput {
+                dates: vec![],
+                levels: vec![LogLevel::DEBUG],
+                resource: None,
+            },
+        )
         .await
         .unwrap()
         .contents;
     assert_eq!(debug_logs.len(), 1);
 
     let warn_logs = app
-        .list_logs(&ListLogsInput {
-            dates: vec![],
-            levels: vec![LogLevel::WARN],
-            resource: None,
-        })
+        .list_logs(
+            &ctx,
+            &ListLogsInput {
+                dates: vec![],
+                levels: vec![LogLevel::WARN],
+                resource: None,
+            },
+        )
         .await
         .unwrap()
         .contents;
     assert_eq!(warn_logs.len(), 1);
 
     let error_logs = app
-        .list_logs(&ListLogsInput {
-            dates: vec![],
-            levels: vec![LogLevel::ERROR],
-            resource: None,
-        })
+        .list_logs(
+            &ctx,
+            &ListLogsInput {
+                dates: vec![],
+                levels: vec![LogLevel::ERROR],
+                resource: None,
+            },
+        )
         .await
         .unwrap()
         .contents;
@@ -152,8 +168,8 @@ async fn test_list_logs_by_level() {
 #[ignore]
 #[tokio::test]
 async fn test_list_logs_by_resource() {
-    let (app, _ctx, services, cleanup, _abs_path) = set_up_test_app().await;
-    let log_service = services.get::<LogService>();
+    let (app, ctx, services, cleanup, _abs_path) = set_up_test_app().await;
+    let log_service = services.get::<LogService<MockAppRuntime>>();
 
     log_service.debug(
         LogScope::App,
@@ -178,11 +194,14 @@ async fn test_list_logs_by_resource() {
     );
 
     let resource_logs = app
-        .list_logs(&ListLogsInput {
-            dates: vec![],
-            levels: vec![],
-            resource: Some("resource".to_string()),
-        })
+        .list_logs(
+            &ctx,
+            &ListLogsInput {
+                dates: vec![],
+                levels: vec![],
+                resource: Some("resource".to_string()),
+            },
+        )
         .await
         .unwrap()
         .contents;

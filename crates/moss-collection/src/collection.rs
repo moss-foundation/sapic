@@ -24,7 +24,7 @@ pub struct EnvironmentItem<R: AppRuntime> {
     pub inner: Environment<R>,
 }
 
-type EnvironmentMap<R: AppRuntime> = HashMap<EnvironmentId, Arc<EnvironmentItem<R>>>;
+type EnvironmentMap<R> = HashMap<EnvironmentId, Arc<EnvironmentItem<R>>>;
 
 #[derive(Debug, Clone)]
 pub enum OnDidChangeEvent {

@@ -1,4 +1,8 @@
-use moss_applib::providers::{ServiceMap, ServiceProvider};
+use moss_applib::{
+    context::{AsyncContext, MutableContext},
+    mock::MockAppRuntime,
+    providers::{ServiceMap, ServiceProvider},
+};
 use moss_collection::{
     CollectionBuilder,
     builder::CollectionCreateParams,
@@ -28,6 +32,7 @@ use std::{
     any::TypeId,
     path::{Path, PathBuf},
     sync::Arc,
+    time::Duration,
 };
 
 #[allow(dead_code)]
@@ -46,7 +51,13 @@ fn random_collection_path() -> PathBuf {
         .join(nanoid!(10))
 }
 
-pub async fn create_test_collection() -> (Arc<Path>, Collection, ServiceProvider) {
+pub async fn create_test_collection() -> (
+    AsyncContext, // TODO: this is temporary, should be a mock
+    Arc<Path>,
+    Collection<MockAppRuntime>,
+    ServiceProvider,
+) {
+    let ctx = MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
     let fs = Arc::new(RealFileSystem::new());
     let internal_abs_path = random_collection_path();
 
@@ -56,38 +67,44 @@ pub async fn create_test_collection() -> (Arc<Path>, Collection, ServiceProvider
 
     let mut services: ServiceMap = Default::default();
 
-    let storage_service: Arc<StorageServiceForIntegrationTest> =
+    let storage_service: Arc<StorageServiceForIntegrationTest<MockAppRuntime>> =
         Arc::new(StorageService::new(&abs_path).unwrap().into());
-    let storage_service_dyn: Arc<DynStorageService> =
+    let storage_service_dyn: Arc<DynStorageService<MockAppRuntime>> =
         DynStorageService::new(storage_service.clone()).into();
 
-    let worktree_service: Arc<WorktreeService> =
+    let worktree_service: Arc<WorktreeService<MockAppRuntime>> =
         WorktreeService::new(abs_path.clone(), fs.clone(), storage_service_dyn.clone()).into();
-    let worktree_service_dyn: Arc<DynWorktreeService> =
+    let worktree_service_dyn: Arc<DynWorktreeService<MockAppRuntime>> =
         DynWorktreeService::new(worktree_service.clone()).into();
 
     {
         services.insert(
-            TypeId::of::<StorageServiceForIntegrationTest>(),
+            TypeId::of::<StorageServiceForIntegrationTest<MockAppRuntime>>(),
             storage_service,
         );
-        services.insert(TypeId::of::<WorktreeService>(), worktree_service);
+        services.insert(
+            TypeId::of::<WorktreeService<MockAppRuntime>>(),
+            worktree_service,
+        );
     }
 
     let collection = CollectionBuilder::new(fs)
-        .with_service::<DynStorageService>(storage_service_dyn)
-        .with_service::<DynWorktreeService>(worktree_service_dyn)
-        .create(CollectionCreateParams {
-            name: Some(random_collection_name()),
-            external_abs_path: None,
-            repository: None,
-            internal_abs_path: abs_path.clone(),
-            icon_path: None,
-        })
+        .with_service::<DynStorageService<MockAppRuntime>>(storage_service_dyn)
+        .with_service::<DynWorktreeService<MockAppRuntime>>(worktree_service_dyn)
+        .create(
+            &ctx,
+            CollectionCreateParams {
+                name: Some(random_collection_name()),
+                external_abs_path: None,
+                repository: None,
+                internal_abs_path: abs_path.clone(),
+                icon_path: None,
+            },
+        )
         .await
         .unwrap();
 
-    (abs_path, collection, services.into())
+    (ctx, abs_path, collection, services.into())
 }
 
 // Since configuration models are empty enums, we need to use unreachable! for now
@@ -129,70 +146,105 @@ pub fn create_test_schema_dir_configuration() -> DirConfigurationModel {
 }
 
 #[allow(dead_code)]
-pub async fn create_test_request_dir_entry(collection: &mut Collection, name: &str) -> EntryId {
+pub async fn create_test_request_dir_entry(
+    ctx: &AsyncContext,
+    collection: &mut Collection<MockAppRuntime>,
+    name: &str,
+) -> EntryId {
     collection
-        .create_entry(CreateEntryInput::Dir(CreateDirEntryInput {
-            path: PathBuf::from(dirs::REQUESTS_DIR),
-            name: name.to_string(),
-            order: 0,
-            configuration: create_test_request_dir_configuration(),
-        }))
+        .create_entry(
+            &ctx,
+            CreateEntryInput::Dir(CreateDirEntryInput {
+                path: PathBuf::from(dirs::REQUESTS_DIR),
+                name: name.to_string(),
+                order: 0,
+                configuration: create_test_request_dir_configuration(),
+            }),
+        )
         .await
         .unwrap()
         .id
 }
 
 #[allow(dead_code)]
-pub async fn create_test_endpoint_dir_entry(collection: &mut Collection, name: &str) -> EntryId {
+pub async fn create_test_endpoint_dir_entry(
+    ctx: &AsyncContext,
+    collection: &mut Collection<MockAppRuntime>,
+    name: &str,
+) -> EntryId {
     collection
-        .create_entry(CreateEntryInput::Dir(CreateDirEntryInput {
-            path: PathBuf::from(dirs::ENDPOINTS_DIR),
-            name: name.to_string(),
-            order: 0,
-            configuration: create_test_endpoint_dir_configuration(),
-        }))
+        .create_entry(
+            &ctx,
+            CreateEntryInput::Dir(CreateDirEntryInput {
+                path: PathBuf::from(dirs::ENDPOINTS_DIR),
+                name: name.to_string(),
+                order: 0,
+                configuration: create_test_endpoint_dir_configuration(),
+            }),
+        )
         .await
         .unwrap()
         .id
 }
 
 #[allow(dead_code)]
-pub async fn create_test_component_dir_entry(collection: &mut Collection, name: &str) -> EntryId {
+pub async fn create_test_component_dir_entry(
+    ctx: &AsyncContext,
+    collection: &mut Collection<MockAppRuntime>,
+    name: &str,
+) -> EntryId {
     collection
-        .create_entry(CreateEntryInput::Dir(CreateDirEntryInput {
-            path: PathBuf::from(dirs::COMPONENTS_DIR),
-            name: name.to_string(),
-            order: 0,
-            configuration: create_test_component_dir_configuration(),
-        }))
+        .create_entry(
+            &ctx,
+            CreateEntryInput::Dir(CreateDirEntryInput {
+                path: PathBuf::from(dirs::COMPONENTS_DIR),
+                name: name.to_string(),
+                order: 0,
+                configuration: create_test_component_dir_configuration(),
+            }),
+        )
         .await
         .unwrap()
         .id
 }
 
 #[allow(dead_code)]
-pub async fn create_test_component_item_entry(collection: &mut Collection, name: &str) -> EntryId {
+pub async fn create_test_component_item_entry(
+    ctx: &AsyncContext,
+    collection: &mut Collection<MockAppRuntime>,
+    name: &str,
+) -> EntryId {
     collection
-        .create_entry(CreateEntryInput::Item(CreateItemEntryInput {
-            path: PathBuf::from(dirs::COMPONENTS_DIR),
-            name: name.to_string(),
-            order: 0,
-            configuration: create_test_component_item_configuration(),
-        }))
+        .create_entry(
+            &ctx,
+            CreateEntryInput::Item(CreateItemEntryInput {
+                path: PathBuf::from(dirs::COMPONENTS_DIR),
+                name: name.to_string(),
+                order: 0,
+                configuration: create_test_component_item_configuration(),
+            }),
+        )
         .await
         .unwrap()
         .id
 }
 
 #[allow(dead_code)]
-pub async fn create_test_schema_dir_entry(collection: &mut Collection, name: &str) -> EntryId {
+pub async fn create_test_schema_dir_entry(
+    ctx: &AsyncContext,
+    collection: &mut Collection<MockAppRuntime>,
+    name: &str,
+) -> EntryId {
     collection
-        .create_entry(CreateEntryInput::Dir(CreateDirEntryInput {
-            path: PathBuf::from(dirs::SCHEMAS_DIR),
-            name: name.to_string(),
-            order: 0,
-            configuration: create_test_schema_dir_configuration(),
-        }))
+        .create_entry(
+            &ctx,
+            CreateEntryInput::Dir(CreateDirEntryInput {
+                path: PathBuf::from(dirs::SCHEMAS_DIR),
+                name: name.to_string(),
+                order: 0,
+                configuration: create_test_schema_dir_configuration(),
+            }),
+        )
         .await
         .unwrap()
         .id
