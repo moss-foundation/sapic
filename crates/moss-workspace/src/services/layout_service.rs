@@ -175,7 +175,7 @@ impl<R: AppRuntime> AnyLayoutService<R> for LayoutService<R> {
 
     async fn get_sidebar_layout_state(
         &self,
-        ctx: &R::AsyncContext,
+        _ctx: &R::AsyncContext,
         cache: &mut HashMap<SegKeyBuf, AnyValue>,
     ) -> Result<SidebarPartStateInfo> {
         self.get_sidebar_layout_state(cache)
@@ -183,7 +183,7 @@ impl<R: AppRuntime> AnyLayoutService<R> for LayoutService<R> {
 
     async fn get_panel_layout_state(
         &self,
-        ctx: &R::AsyncContext,
+        _ctx: &R::AsyncContext,
         cache: &mut HashMap<SegKeyBuf, AnyValue>,
     ) -> Result<PanelPartStateInfo> {
         self.get_panel_layout_state(cache)
@@ -191,7 +191,7 @@ impl<R: AppRuntime> AnyLayoutService<R> for LayoutService<R> {
 
     async fn get_activitybar_layout_state(
         &self,
-        ctx: &R::AsyncContext,
+        _ctx: &R::AsyncContext,
         cache: &mut HashMap<SegKeyBuf, AnyValue>,
     ) -> Result<ActivitybarPartStateInfo> {
         self.get_activitybar_layout_state(cache)
@@ -199,7 +199,7 @@ impl<R: AppRuntime> AnyLayoutService<R> for LayoutService<R> {
 
     async fn get_editor_layout_state(
         &self,
-        ctx: &R::AsyncContext,
+        _ctx: &R::AsyncContext,
         cache: &mut HashMap<SegKeyBuf, AnyValue>,
     ) -> Result<Option<EditorPartStateInfo>> {
         self.get_editor_layout_state(cache)
