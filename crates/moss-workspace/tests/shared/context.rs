@@ -3,7 +3,7 @@
 use std::{any::TypeId, sync::Arc};
 
 use async_trait::async_trait;
-use moss_applib::context::{Context, ContextValue, ContextValueSet};
+use moss_applib::context_old::{Context, ContextValue, ContextValueSet};
 use moss_workspace::context::{AnyWorkspaceContext, Subscribe};
 use tauri::{AppHandle, Manager, test::MockRuntime};
 

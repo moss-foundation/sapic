@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use crate::{storage::SegBinTable, workspace_storage::stores::WorkspaceVariableStore};
 
-use moss_applib::ctx::AnyAsyncContext;
+use moss_applib::context::AnyAsyncContext;
 
 pub struct WorkspaceVariableStoreImpl {
     #[allow(unused)]

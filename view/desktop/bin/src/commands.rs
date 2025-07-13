@@ -8,7 +8,7 @@ pub use workspace::*;
 
 use moss_applib::{
     AppRuntime,
-    ctx::{AnyAsyncContext, AnyContext},
+    context::{AnyAsyncContext, AnyContext},
 };
 
 use anyhow::Context as _;

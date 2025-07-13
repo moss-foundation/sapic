@@ -21,8 +21,8 @@ use moss_app::{
 };
 use moss_applib::{
     AppRuntime,
-    context::ContextValueSet,
-    ctx::{AnyAsyncContext, AnyContext, MutableContext},
+    context::{AnyAsyncContext, AnyContext, MutableContext},
+    context_old::ContextValueSet,
 };
 use moss_fs::{FileSystem, RealFileSystem};
 use std::{path::PathBuf, sync::Arc, time::Duration};
@@ -33,8 +33,8 @@ use tauri_plugin_os;
 pub struct TauriAsyncRuntime<R: TauriRuntime>(std::marker::PhantomData<R>);
 
 impl<R: TauriRuntime> AppRuntime for TauriAsyncRuntime<R> {
-    type Context = moss_applib::ctx::MutableContext;
-    type AsyncContext = moss_applib::ctx::AsyncContext;
+    type Context = moss_applib::context::MutableContext;
+    type AsyncContext = moss_applib::context::AsyncContext;
     type EventLoop = R;
 }
 

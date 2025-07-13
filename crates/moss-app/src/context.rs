@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use moss_applib::{
     GlobalMarker,
-    context::{Context, ContextValue, ContextValueSet},
+    context_old::{Context, ContextValue, ContextValueSet},
     task::Task,
 };
 use std::{
@@ -15,7 +15,7 @@ use tauri::{AppHandle, Manager, Runtime as TauriRuntime, State};
 use crate::app::App;
 
 pub mod ctxkeys {
-    use moss_applib::context::ContextValue;
+    use moss_applib::context_old::ContextValue;
 
     use crate::models::primitives::WorkspaceId;
 

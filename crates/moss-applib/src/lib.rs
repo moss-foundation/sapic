@@ -1,5 +1,5 @@
 pub mod context;
-pub mod ctx;
+pub mod context_old;
 pub mod markers;
 pub mod providers;
 pub mod subscription;
@@ -10,8 +10,8 @@ pub use markers::*;
 use tauri::Runtime as TauriRuntime;
 
 use crate::{
-    context::Context,
-    ctx::{AnyAsyncContext, AnyContext},
+    context::{AnyAsyncContext, AnyContext},
+    context_old::Context,
 };
 
 pub trait AppRuntime: 'static {

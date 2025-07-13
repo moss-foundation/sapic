@@ -9,7 +9,7 @@ use crate::{TauriAsyncRuntime, commands::Options};
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn create_collection_entry<R: tauri::Runtime>(
-    ctx: State<'_, moss_applib::ctx::AsyncContext>,
+    ctx: State<'_, moss_applib::context::AsyncContext>,
     app: State<'_, App<TauriAsyncRuntime<R>>>,
     window: Window<R>,
     collection_id: CollectionId,
@@ -34,7 +34,7 @@ pub async fn create_collection_entry<R: tauri::Runtime>(
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn delete_collection_entry<R: tauri::Runtime>(
-    ctx: State<'_, moss_applib::ctx::AsyncContext>,
+    ctx: State<'_, moss_applib::context::AsyncContext>,
     app: State<'_, App<TauriAsyncRuntime<R>>>,
     window: Window<R>,
     collection_id: CollectionId,
@@ -59,7 +59,7 @@ pub async fn delete_collection_entry<R: tauri::Runtime>(
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn update_collection_entry<R: tauri::Runtime>(
-    ctx: State<'_, moss_applib::ctx::AsyncContext>,
+    ctx: State<'_, moss_applib::context::AsyncContext>,
     app: State<'_, App<TauriAsyncRuntime<R>>>,
     window: Window<R>,
     collection_id: CollectionId,
@@ -84,7 +84,7 @@ pub async fn update_collection_entry<R: tauri::Runtime>(
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
 pub async fn batch_update_collection_entry<R: tauri::Runtime>(
-    ctx: State<'_, moss_applib::ctx::AsyncContext>,
+    ctx: State<'_, moss_applib::context::AsyncContext>,
     app: State<'_, App<TauriAsyncRuntime<R>>>,
     window: Window<R>,
     channel: TauriChannel<BatchUpdateEntryEvent>,
@@ -110,7 +110,7 @@ pub async fn batch_update_collection_entry<R: tauri::Runtime>(
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
 pub async fn stream_collection_entries<R: tauri::Runtime>(
-    ctx: State<'_, moss_applib::ctx::AsyncContext>,
+    ctx: State<'_, moss_applib::context::AsyncContext>,
     app: State<'_, App<TauriAsyncRuntime<R>>>,
     window: Window<R>,
     collection_id: CollectionId,

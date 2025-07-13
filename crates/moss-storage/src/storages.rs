@@ -4,7 +4,7 @@ pub mod workspace_storage;
 
 use std::sync::Arc;
 
-use moss_applib::ctx::AnyAsyncContext;
+use moss_applib::context::AnyAsyncContext;
 
 use crate::{
     collection_storage::stores::{CollectionResourceStore, CollectionVariableStore},

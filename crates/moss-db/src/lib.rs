@@ -8,7 +8,7 @@ pub use common::*;
 
 use anyhow::Result;
 use async_trait::async_trait;
-use moss_applib::ctx::AnyAsyncContext;
+use moss_applib::context::AnyAsyncContext;
 use redb::{Builder, Database, Key, TableDefinition};
 use serde::{Serialize, de::DeserializeOwned};
 use std::{borrow::Borrow, path::Path, sync::Arc};
