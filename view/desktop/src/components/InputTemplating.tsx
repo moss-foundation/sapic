@@ -207,9 +207,11 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
 
       // Call original onChange if provided
       if (onChange && hiddenInputRef.current) {
-        const event = new Event("input", { bubbles: true });
-        Object.defineProperty(event, "target", { value: hiddenInputRef.current });
-        onChange(event as any);
+        const syntheticEvent = {
+          target: hiddenInputRef.current,
+          currentTarget: hiddenInputRef.current,
+        } as React.ChangeEvent<HTMLInputElement>;
+        onChange(syntheticEvent);
       }
 
       // Re-apply highlighting after a short delay
@@ -288,9 +290,11 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
 
         // Call original onChange if provided
         if (onChange && hiddenInputRef.current) {
-          const event = new Event("input", { bubbles: true });
-          Object.defineProperty(event, "target", { value: hiddenInputRef.current });
-          onChange(event as any);
+          const syntheticEvent = {
+            target: hiddenInputRef.current,
+            currentTarget: hiddenInputRef.current,
+          } as React.ChangeEvent<HTMLInputElement>;
+          onChange(syntheticEvent);
         }
 
         // Update editor content and restore cursor position
