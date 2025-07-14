@@ -36,25 +36,53 @@ export interface AppResizableLayoutStore {
   };
 }
 
+let userHasChangedSidebar = false;
+let initialSidebarWidth: number | null = null;
+
 export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set, get) => ({
   sideBarPosition: SIDEBAR_POSITION.LEFT,
   setSideBarPosition: (position: SidebarPosition) =>
-    set(() => ({
-      sideBarPosition: position,
-    })),
+    set(() => {
+      userHasChangedSidebar = true;
+      return {
+        sideBarPosition: position,
+      };
+    }),
   initialize: (newState) => {
-    set((state) => ({
-      sideBar: {
-        ...state.sideBar,
-        width: newState.sideBar.width ?? state.sideBar.width,
-        visible: newState.sideBar.visible ?? state.sideBar.visible,
-      },
-      bottomPane: {
-        ...state.bottomPane,
-        height: newState.bottomPane.height ?? state.bottomPane.height,
-        visible: newState.bottomPane.visible ?? state.bottomPane.visible,
-      },
-    }));
+    set((state) => {
+      // If user has changed the sidebar and we're trying to initialize the sidebar, skip it
+      if (userHasChangedSidebar && (newState.sideBar.width !== undefined || newState.sideBar.visible !== undefined)) {
+        return {
+          sideBar: {
+            ...state.sideBar,
+            // Keep existing width and visibility, don't override with initialization
+          },
+          bottomPane: {
+            ...state.bottomPane,
+            height: newState.bottomPane.height ?? state.bottomPane.height,
+            visible: newState.bottomPane.visible ?? state.bottomPane.visible,
+          },
+        };
+      }
+
+      // Store the initial width for comparison
+      if (initialSidebarWidth === null && newState.sideBar.width !== undefined) {
+        initialSidebarWidth = newState.sideBar.width;
+      }
+
+      return {
+        sideBar: {
+          ...state.sideBar,
+          width: newState.sideBar.width ?? state.sideBar.width,
+          visible: newState.sideBar.visible ?? state.sideBar.visible,
+        },
+        bottomPane: {
+          ...state.bottomPane,
+          height: newState.bottomPane.height ?? state.bottomPane.height,
+          visible: newState.bottomPane.visible ?? state.bottomPane.visible,
+        },
+      };
+    });
   },
   sideBar: {
     minWidth: 130,
@@ -62,21 +90,31 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
     width: 255,
     visible: true,
     setWidth: (newWidth) => {
-      set((state) => ({
-        sideBar: {
-          ...state.sideBar,
-          width: newWidth <= 0 ? get().sideBar.width : newWidth,
-          visible: newWidth > 0,
-        },
-      }));
+      set((state) => {
+        // Mark that user has changed sidebar if they changed width from initial
+        if (initialSidebarWidth !== null && newWidth !== initialSidebarWidth) {
+          userHasChangedSidebar = true;
+        }
+
+        return {
+          sideBar: {
+            ...state.sideBar,
+            width: newWidth <= 0 ? get().sideBar.width : newWidth,
+            visible: newWidth > 0,
+          },
+        };
+      });
     },
     setVisible: (visible) => {
-      set((state) => ({
-        sideBar: {
-          ...state.sideBar,
-          visible,
-        },
-      }));
+      set((state) => {
+        userHasChangedSidebar = true;
+        return {
+          sideBar: {
+            ...state.sideBar,
+            visible,
+          },
+        };
+      });
     },
   },
   bottomPane: {
