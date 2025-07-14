@@ -44,10 +44,6 @@ where
 
     let mut ctx = R::AsyncContext::new_with_timeout(ctx.clone(), timeout);
 
-    if let Some(request_id) = options.and_then(|opts| opts.request_id) {
-        ctx.with_value("request_id", request_id);
-    }
-
     let workspace = app
         .service::<WorkspaceService<R>>()
         .workspace()
@@ -59,7 +55,19 @@ where
         .collection(&id)
         .await?;
 
-    f(ctx.freeze(), collection).await
+    let request_id = options.and_then(|opts| opts.request_id);
+
+    if let Some(request_id) = &request_id {
+        ctx.with_value("request_id", request_id.clone());
+        app.track_cancellation(&request_id).await;
+    }
+
+    let result = f(ctx.freeze(), collection).await;
+
+    if let Some(request_id) = &request_id {
+        app.release_cancellation(request_id).await;
+    }
+    result
 }
 
 pub(super) async fn with_workspace_timeout<R, T, F, Fut>(
@@ -73,21 +81,29 @@ where
     F: FnOnce(R::AsyncContext, Arc<ActiveWorkspace<R>>) -> Fut + Send + 'static,
     Fut: std::future::Future<Output = TauriResult<T>> + Send + 'static,
 {
-    let timeout = options
-        .as_ref()
-        .and_then(|opts| opts.timeout.map(Duration::from_secs))
-        .unwrap_or(DEFAULT_OPERATION_TIMEOUT);
-
-    let mut ctx = R::AsyncContext::new_with_timeout(ctx.clone(), timeout);
-    if let Some(request_id) = options.and_then(|opts| opts.request_id) {
-        ctx.with_value("request_id", request_id);
-    }
-
     let workspace = app
         .service::<WorkspaceService<R>>()
         .workspace()
         .await
         .map_err_as_failed_precondition("No active workspace")?;
 
-    f(ctx.freeze(), workspace).await
+    let timeout = options
+        .as_ref()
+        .and_then(|opts| opts.timeout.map(Duration::from_secs))
+        .unwrap_or(DEFAULT_OPERATION_TIMEOUT);
+
+    let request_id = options.and_then(|opts| opts.request_id);
+
+    let mut ctx = R::AsyncContext::new_with_timeout(ctx.clone(), timeout);
+    if let Some(request_id) = &request_id {
+        ctx.with_value("request_id", request_id.clone());
+        app.track_cancellation(request_id).await;
+    }
+
+    let result = f(ctx.freeze(), workspace).await;
+
+    if let Some(request_id) = &request_id {
+        app.release_cancellation(request_id).await;
+    }
+    result
 }

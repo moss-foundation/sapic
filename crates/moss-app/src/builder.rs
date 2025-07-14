@@ -83,6 +83,7 @@ impl<R: AppRuntime> AppBuilder<R> {
             preferences: self.preferences,
             defaults: self.defaults,
             services: self.services.into(),
+            tracked_cancellations: Default::default(),
             activity_indicator: self.activity_indicator,
         })
     }
