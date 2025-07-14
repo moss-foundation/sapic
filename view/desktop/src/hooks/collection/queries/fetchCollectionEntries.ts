@@ -2,7 +2,7 @@ import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { EntryInfo } from "@repo/moss-collection";
 import { Channel } from "@tauri-apps/api/core";
 
-export const fetchCollectionEntries = async (collectionId: string): Promise<EntryInfo[]> => {
+export const fetchCollectionEntries = async (collectionId: string, path?: string): Promise<EntryInfo[]> => {
   const entries: EntryInfo[] = [];
   const onCollectionEntryEvent = new Channel<EntryInfo>();
 
@@ -13,6 +13,7 @@ export const fetchCollectionEntries = async (collectionId: string): Promise<Entr
   const result = await invokeTauriIpc("stream_collection_entries", {
     collectionId,
     channel: onCollectionEntryEvent,
+    input: path ? { "RELOAD_PATH": path } : "LOAD_ROOT",
   });
 
   if (result.status === "error") {

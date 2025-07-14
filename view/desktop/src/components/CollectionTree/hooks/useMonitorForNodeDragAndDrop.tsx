@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 
+import { useFetchEntriesForPath } from "@/hooks/collection/derivedHooks/useFetchEntriesForPath";
 import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
 import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollectionEntry";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
@@ -18,7 +19,7 @@ import {
 export const useMonitorForNodeDragAndDrop = () => {
   const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry();
   const { mutateAsync: batchUpdateCollectionEntry } = useBatchUpdateCollectionEntry();
-
+  const { fetchEntriesForPath } = useFetchEntriesForPath();
   useEffect(() => {
     return monitorForElements({
       canMonitor({ source }) {
@@ -93,12 +94,16 @@ export const useMonitorForNodeDragAndDrop = () => {
                 entries: entriesToUpdate,
               },
             });
+
+            await fetchEntriesForPath(sourceTreeNodeData.collectionId, locationTreeNodeData.node.path.raw);
+            await fetchEntriesForPath(sourceTreeNodeData.collectionId, sourceTreeNodeData.node.path.raw);
+
             return;
           }
         }
       },
     });
-  }, [batchUpdateCollectionEntry, updateCollectionEntry]);
+  }, [batchUpdateCollectionEntry, fetchEntriesForPath, updateCollectionEntry]);
 };
 
 export const getPathWithoutName = async (node: TreeCollectionNode | EntryInfo): Promise<EntryInfo["path"]> => {
