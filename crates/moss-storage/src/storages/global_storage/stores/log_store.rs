@@ -1,8 +1,7 @@
 use async_trait::async_trait;
 use moss_applib::context::AnyAsyncContext;
 use moss_db::{
-    DatabaseClient, DatabaseClientWithContext, DatabaseResult, ReDbClient, Transaction,
-    primitives::AnyValue,
+    DatabaseClientWithContext, DatabaseResult, ReDbClient, Transaction, primitives::AnyValue,
 };
 use std::sync::Arc;
 
