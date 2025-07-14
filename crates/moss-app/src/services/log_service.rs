@@ -657,60 +657,61 @@ impl<R: AppRuntime> LogService<R> {
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use moss_fs::RealFileSystem;
-//     use moss_testutils::random_name::random_string;
-//     use std::{fs::create_dir_all, sync::atomic::AtomicUsize, time::Duration};
-//     use tauri::{Listener, Manager};
-//     use tokio::fs::remove_dir_all;
+#[cfg(test)]
+mod tests {
+    use moss_applib::mock::MockAppRuntime;
+    use moss_fs::RealFileSystem;
+    use moss_testutils::random_name::random_string;
+    use std::{fs::create_dir_all, sync::atomic::AtomicUsize, time::Duration};
+    use tauri::{Listener, Manager};
+    use tokio::fs::remove_dir_all;
 
-//     use crate::constants::LOGGING_SERVICE_CHANNEL;
+    use crate::constants::LOGGING_SERVICE_CHANNEL;
 
-//     use super::*;
+    use super::*;
 
-//     fn random_app_log_path() -> PathBuf {
-//         Path::new("tests").join("data").join(random_string(10))
-//     }
+    fn random_app_log_path() -> PathBuf {
+        Path::new("tests").join("data").join(random_string(10))
+    }
 
-//     #[tokio::test]
-//     async fn test_taurilog_writer() {
-//         let test_app_log_path = random_app_log_path();
-//         create_dir_all(&test_app_log_path).unwrap();
+    #[tokio::test]
+    async fn test_taurilog_writer() {
+        let test_app_log_path = random_app_log_path();
+        create_dir_all(&test_app_log_path).unwrap();
 
-//         let fs = Arc::new(RealFileSystem::new());
-//         let mock_app = tauri::test::mock_app();
-//         let session_id = SessionId::new();
-//         let storage = Arc::new(StorageService::new(&test_app_log_path).unwrap());
-//         let logging_service = LogService::new(
-//             fs,
-//             mock_app.app_handle().clone(),
-//             &test_app_log_path,
-//             &session_id,
-//             storage.clone(),
-//         )
-//         .unwrap();
+        let fs = Arc::new(RealFileSystem::new());
+        let mock_app = tauri::test::mock_app();
+        let session_id = SessionId::new();
+        let storage = Arc::new(StorageService::<MockAppRuntime>::new(&test_app_log_path).unwrap());
+        let logging_service = LogService::new(
+            fs,
+            mock_app.app_handle().clone(),
+            &test_app_log_path,
+            &session_id,
+            storage.clone(),
+        )
+        .unwrap();
 
-//         let counter = Arc::new(AtomicUsize::new(0));
+        let counter = Arc::new(AtomicUsize::new(0));
 
-//         {
-//             let counter = counter.clone();
-//             mock_app.listen(LOGGING_SERVICE_CHANNEL, move |_| {
-//                 counter.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-//             });
-//         }
+        {
+            let counter = counter.clone();
+            mock_app.listen(LOGGING_SERVICE_CHANNEL, move |_| {
+                counter.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            });
+        }
 
-//         logging_service.debug(
-//             LogScope::App,
-//             LogPayload {
-//                 resource: None,
-//                 message: "".to_string(),
-//             },
-//         );
+        logging_service.debug(
+            LogScope::App,
+            LogPayload {
+                resource: None,
+                message: "".to_string(),
+            },
+        );
 
-//         tokio::time::sleep(Duration::from_millis(100)).await;
-//         assert_eq!(counter.load(std::sync::atomic::Ordering::SeqCst), 1);
+        tokio::time::sleep(Duration::from_millis(100)).await;
+        assert_eq!(counter.load(std::sync::atomic::Ordering::SeqCst), 1);
 
-//         remove_dir_all(&test_app_log_path).await.unwrap()
-//     }
-// }
+        remove_dir_all(&test_app_log_path).await.unwrap()
+    }
+}

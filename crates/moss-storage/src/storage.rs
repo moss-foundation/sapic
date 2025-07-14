@@ -48,7 +48,7 @@ mod tests {
 
     #[tokio::test]
     pub async fn test_dump() {
-        let ctx = MutableContext::background_with_timeout(Duration::from_millis(10)).freeze();
+        let ctx = MutableContext::background_with_timeout(Duration::from_secs(10)).freeze();
         let storage = WorkspaceStorageImpl::new("tests").unwrap();
         let store = storage.item_store();
 

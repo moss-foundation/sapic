@@ -1,5 +1,3 @@
-mod context;
-
 use moss_activity_indicator::ActivityIndicator;
 use moss_app::{
     App, AppBuilder,
