@@ -1,7 +1,7 @@
 use futures::StreamExt;
-use moss_applib::context::Context;
+use moss_applib::AppRuntime;
 use moss_common::api::OperationResult;
-use tauri::{Runtime as TauriRuntime, ipc::Channel as TauriChannel};
+use tauri::ipc::Channel as TauriChannel;
 
 use crate::{
     models::{events::StreamCollectionsEvent, operations::StreamCollectionsOutput},
@@ -9,14 +9,14 @@ use crate::{
     workspace::Workspace,
 };
 
-impl<R: TauriRuntime> Workspace<R> {
-    pub async fn stream_collections<C: Context<R>>(
+impl<R: AppRuntime> Workspace<R> {
+    pub async fn stream_collections(
         &self,
-        _ctx: &C,
+        ctx: &R::AsyncContext,
         channel: TauriChannel<StreamCollectionsEvent>,
     ) -> OperationResult<StreamCollectionsOutput> {
-        let collections = self.services.get::<DynCollectionService>();
-        let stream = collections.list_collections();
+        let collections = self.services.get::<DynCollectionService<R>>();
+        let stream = collections.list_collections(ctx).await;
         tokio::pin!(stream);
 
         let mut total_returned = 0;

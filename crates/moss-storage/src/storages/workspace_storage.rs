@@ -1,6 +1,8 @@
+use async_trait::async_trait;
+use moss_applib::context::AnyAsyncContext;
 use moss_db::{
-    DatabaseClient, DatabaseResult, ReDbClient, Table, Transaction, bincode_table::BincodeTable,
-    primitives::AnyValue,
+    DatabaseClientWithContext, DatabaseResult, ReDbClient, Table, Transaction,
+    bincode_table::BincodeTable, primitives::AnyValue,
 };
 use redb::TableHandle;
 use serde_json::{Value as JsonValue, json};
@@ -9,7 +11,7 @@ use std::{any::TypeId, collections::HashMap, path::Path, sync::Arc};
 use crate::{
     WorkspaceStorage,
     primitives::segkey::SegKeyBuf,
-    storage::{SegBinTable, Storage, StoreTypeId, Transactional},
+    storage::{SegBinTable, Storage, StoreTypeId, TransactionalWithContext},
     workspace_storage::stores::{
         WorkspaceItemStore, WorkspaceVariableStore, item_store::WorkspaceItemStoreImpl,
         variable_store::WorkspaceVariableStoreImpl,
@@ -44,14 +46,18 @@ impl WorkspaceStorageImpl {
     }
 }
 
-impl Storage for WorkspaceStorageImpl {
-    fn dump(&self) -> DatabaseResult<HashMap<String, JsonValue>> {
-        let read_txn = self.client.begin_read()?;
+#[async_trait]
+impl<Context> Storage<Context> for WorkspaceStorageImpl
+where
+    Context: AnyAsyncContext,
+{
+    async fn dump(&self, ctx: &Context) -> DatabaseResult<HashMap<String, JsonValue>> {
+        let read_txn = self.client.begin_read_with_context(ctx).await?;
         let mut result = HashMap::new();
         for table in self.tables.values() {
             let name = table.table_definition().name().to_string();
             let mut table_entries = HashMap::new();
-            for (k, v) in table.scan(&read_txn)? {
+            for (k, v) in table.scan_with_context(ctx, &read_txn).await? {
                 table_entries.insert(
                     k.to_string(),
                     serde_json::from_slice::<JsonValue>(v.as_bytes())?,
@@ -64,18 +70,26 @@ impl Storage for WorkspaceStorageImpl {
     }
 }
 
-impl Transactional for WorkspaceStorageImpl {
-    fn begin_write(&self) -> DatabaseResult<Transaction> {
-        self.client.begin_write()
+#[async_trait]
+impl<Context> TransactionalWithContext<Context> for WorkspaceStorageImpl
+where
+    Context: AnyAsyncContext,
+{
+    async fn begin_write_with_context(&self, ctx: &Context) -> DatabaseResult<Transaction> {
+        self.client.begin_write_with_context(ctx).await
     }
 
-    fn begin_read(&self) -> DatabaseResult<Transaction> {
-        self.client.begin_read()
+    async fn begin_read_with_context(&self, ctx: &Context) -> DatabaseResult<Transaction> {
+        self.client.begin_read_with_context(ctx).await
     }
 }
 
-impl WorkspaceStorage for WorkspaceStorageImpl {
-    fn variable_store(&self) -> Arc<dyn WorkspaceVariableStore> {
+#[async_trait]
+impl<Context> WorkspaceStorage<Context> for WorkspaceStorageImpl
+where
+    Context: AnyAsyncContext,
+{
+    fn variable_store(&self) -> Arc<dyn WorkspaceVariableStore<Context>> {
         let client = self.client.clone();
         let table = self
             .tables
@@ -85,7 +99,7 @@ impl WorkspaceStorage for WorkspaceStorageImpl {
         Arc::new(WorkspaceVariableStoreImpl::new(client, table))
     }
 
-    fn item_store(&self) -> Arc<dyn WorkspaceItemStore> {
+    fn item_store(&self) -> Arc<dyn WorkspaceItemStore<Context>> {
         let client = self.client.clone();
         let table = self
             .tables

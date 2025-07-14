@@ -1,5 +1,6 @@
 use anyhow::Result;
-use moss_applib::ServiceMarker;
+use async_trait::async_trait;
+use moss_applib::{AppRuntime, ServiceMarker};
 use moss_db::primitives::AnyValue;
 use moss_storage::primitives::segkey::SegKeyBuf;
 use serde::de::DeserializeOwned;
@@ -132,64 +133,89 @@ pub struct EditorPartPreferences {}
 
 const _EDITOR_DEFAULTS: EditorPartDefaults = EditorPartDefaults {};
 
-pub struct LayoutService {
-    storage: Arc<DynStorageService>,
+pub struct LayoutService<R: AppRuntime> {
+    storage: Arc<DynStorageService<R>>,
 }
 
-impl ServiceMarker for LayoutService {}
+impl<R: AppRuntime> ServiceMarker for LayoutService<R> {}
 
-impl AnyLayoutService for LayoutService {
-    fn put_sidebar_layout_state(&self, state: SidebarPartStateInfo) -> Result<()> {
-        self.put_sidebar_layout_state(state)
-    }
-
-    fn put_panel_layout_state(&self, state: PanelPartStateInfo) -> Result<()> {
-        self.put_panel_layout_state(state)
-    }
-
-    fn put_activitybar_layout_state(&self, state: ActivitybarPartStateInfo) -> Result<()> {
-        self.put_activitybar_layout_state(state)
-    }
-
-    fn put_editor_layout_state(&self, state: EditorPartStateInfo) -> Result<()> {
-        self.put_editor_layout_state(state)
-    }
-
-    fn get_sidebar_layout_state(
+#[async_trait]
+impl<R: AppRuntime> AnyLayoutService<R> for LayoutService<R> {
+    async fn put_sidebar_layout_state(
         &self,
+        ctx: &R::AsyncContext,
+        state: SidebarPartStateInfo,
+    ) -> Result<()> {
+        self.put_sidebar_layout_state(ctx, state).await
+    }
+
+    async fn put_panel_layout_state(
+        &self,
+        ctx: &R::AsyncContext,
+        state: PanelPartStateInfo,
+    ) -> Result<()> {
+        self.put_panel_layout_state(ctx, state).await
+    }
+
+    async fn put_activitybar_layout_state(
+        &self,
+        ctx: &R::AsyncContext,
+        state: ActivitybarPartStateInfo,
+    ) -> Result<()> {
+        self.put_activitybar_layout_state(ctx, state).await
+    }
+
+    async fn put_editor_layout_state(
+        &self,
+        ctx: &R::AsyncContext,
+        state: EditorPartStateInfo,
+    ) -> Result<()> {
+        self.put_editor_layout_state(ctx, state).await
+    }
+
+    async fn get_sidebar_layout_state(
+        &self,
+        _ctx: &R::AsyncContext,
         cache: &mut HashMap<SegKeyBuf, AnyValue>,
     ) -> Result<SidebarPartStateInfo> {
         self.get_sidebar_layout_state(cache)
     }
 
-    fn get_panel_layout_state(
+    async fn get_panel_layout_state(
         &self,
+        _ctx: &R::AsyncContext,
         cache: &mut HashMap<SegKeyBuf, AnyValue>,
     ) -> Result<PanelPartStateInfo> {
         self.get_panel_layout_state(cache)
     }
 
-    fn get_activitybar_layout_state(
+    async fn get_activitybar_layout_state(
         &self,
+        _ctx: &R::AsyncContext,
         cache: &mut HashMap<SegKeyBuf, AnyValue>,
     ) -> Result<ActivitybarPartStateInfo> {
         self.get_activitybar_layout_state(cache)
     }
 
-    fn get_editor_layout_state(
+    async fn get_editor_layout_state(
         &self,
+        _ctx: &R::AsyncContext,
         cache: &mut HashMap<SegKeyBuf, AnyValue>,
     ) -> Result<Option<EditorPartStateInfo>> {
         self.get_editor_layout_state(cache)
     }
 }
 
-impl LayoutService {
-    pub fn new(storage: Arc<DynStorageService>) -> Self {
+impl<R: AppRuntime> LayoutService<R> {
+    pub fn new(storage: Arc<DynStorageService<R>>) -> Self {
         Self { storage }
     }
 
-    pub fn put_editor_layout_state(&self, state: EditorPartStateInfo) -> Result<()> {
+    pub async fn put_editor_layout_state(
+        &self,
+        ctx: &R::AsyncContext,
+        state: EditorPartStateInfo,
+    ) -> Result<()> {
         let editor_grid = EditorGridStateEntity::from(state.grid);
         let panels = state
             .panels
@@ -198,27 +224,44 @@ impl LayoutService {
             .collect::<HashMap<String, EditorPanelStateEntity>>();
 
         self.storage
-            .put_editor_layout(editor_grid, panels, state.active_group)?;
+            .put_editor_layout(ctx, editor_grid, panels, state.active_group)
+            .await?;
 
         Ok(())
     }
 
-    pub fn put_sidebar_layout_state(&self, state: SidebarPartStateInfo) -> Result<()> {
+    pub async fn put_sidebar_layout_state(
+        &self,
+        ctx: &R::AsyncContext,
+        state: SidebarPartStateInfo,
+    ) -> Result<()> {
         self.storage
-            .put_sidebar_layout(state.position, state.size, state.visible)?;
+            .put_sidebar_layout(ctx, state.position, state.size, state.visible)
+            .await?;
 
         Ok(())
     }
 
-    pub fn put_panel_layout_state(&self, state: PanelPartStateInfo) -> Result<()> {
-        self.storage.put_panel_layout(state.size, state.visible)?;
-
-        Ok(())
-    }
-
-    pub fn put_activitybar_layout_state(&self, state: ActivitybarPartStateInfo) -> Result<()> {
+    pub async fn put_panel_layout_state(
+        &self,
+        ctx: &R::AsyncContext,
+        state: PanelPartStateInfo,
+    ) -> Result<()> {
         self.storage
-            .put_activitybar_layout(state.last_active_container_id, state.position)?;
+            .put_panel_layout(ctx, state.size, state.visible)
+            .await?;
+
+        Ok(())
+    }
+
+    pub async fn put_activitybar_layout_state(
+        &self,
+        ctx: &R::AsyncContext,
+        state: ActivitybarPartStateInfo,
+    ) -> Result<()> {
+        self.storage
+            .put_activitybar_layout(ctx, state.last_active_container_id, state.position)
+            .await?;
 
         Ok(())
     }

@@ -1,3 +1,4 @@
+use moss_applib::context::{AsyncContext, MutableContext};
 use moss_db::{
     ReDbClient,
     bincode_table::BincodeTable,
@@ -5,7 +6,7 @@ use moss_db::{
 };
 use moss_testutils::random_name::random_string;
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
-use std::{path::PathBuf, string::ToString, sync::LazyLock};
+use std::{path::PathBuf, string::ToString, sync::LazyLock, time::Duration};
 
 pub const TEST_PASSWORD_1: &[u8] = "password_1".as_bytes();
 pub const TEST_PASSWORD_2: &[u8] = "password_2".as_bytes();
@@ -23,10 +24,16 @@ pub fn test_db_path() -> PathBuf {
         .join(random_db_name())
 }
 
-pub fn setup_test_bincode_table<T>() -> (ReDbClient, BincodeTable<'static, String, T>, PathBuf)
+pub fn setup_test_bincode_table<T>() -> (
+    ReDbClient,
+    AsyncContext,
+    BincodeTable<'static, String, T>,
+    PathBuf,
+)
 where
     T: Serialize + DeserializeOwned,
 {
+    let ctx = MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
     let test_db_path = test_db_path();
     let bincode_table = BincodeTable::new("test");
     let client = ReDbClient::new(test_db_path.clone())
@@ -34,17 +41,19 @@ where
         .with_table(&bincode_table)
         .unwrap();
 
-    (client, bincode_table, test_db_path)
+    (client, ctx, bincode_table, test_db_path)
 }
 
 pub fn setup_test_encrypted_bincode_table<T>() -> (
     ReDbClient,
+    AsyncContext,
     EncryptedBincodeTable<'static, String, T>,
     PathBuf,
 )
 where
     T: Serialize + DeserializeOwned,
 {
+    let ctx = MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
     let test_db_path = test_db_path();
     let encrypted_bincode_table = EncryptedBincodeTable::new("test", EncryptionOptions::default());
 
@@ -53,7 +62,7 @@ where
         .with_table(&encrypted_bincode_table)
         .unwrap();
 
-    (client, encrypted_bincode_table, test_db_path)
+    (client, ctx, encrypted_bincode_table, test_db_path)
 }
 
 // A basic test type modelled after `EditorGridNode` in `moss-workspace`

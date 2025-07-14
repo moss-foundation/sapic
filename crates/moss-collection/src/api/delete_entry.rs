@@ -1,3 +1,4 @@
+use moss_applib::AppRuntime;
 use moss_common::api::OperationResult;
 use validator::Validate;
 
@@ -7,14 +8,15 @@ use crate::{
     services::DynWorktreeService,
 };
 
-impl Collection {
+impl<R: AppRuntime> Collection<R> {
     pub async fn delete_entry(
         &self,
+        ctx: &R::AsyncContext,
         input: DeleteEntryInput,
     ) -> OperationResult<DeleteEntryOutput> {
         input.validate()?;
-        let worktree_service = self.service::<DynWorktreeService>();
-        worktree_service.remove_entry(&input.id).await?;
+        let worktree_service = self.service::<DynWorktreeService<R>>();
+        worktree_service.remove_entry(ctx, &input.id).await?;
 
         Ok(DeleteEntryOutput { id: input.id })
     }

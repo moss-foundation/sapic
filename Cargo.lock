@@ -3652,6 +3652,7 @@ dependencies = [
  "async-trait",
  "chrono",
  "derive_more 2.0.1",
+ "futures",
  "moss_activity_indicator",
  "moss_api",
  "moss_applib",
@@ -3685,6 +3686,7 @@ dependencies = [
  "derive_more 2.0.1",
  "futures",
  "rustc-hash",
+ "serde",
  "tauri",
  "tokio",
 ]
@@ -3760,6 +3762,8 @@ dependencies = [
  "aes-gcm",
  "anyhow",
  "argon2",
+ "async-trait",
+ "moss_applib",
  "moss_testutils",
  "redb",
  "serde",
@@ -3775,6 +3779,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "derive_more 2.0.1",
+ "moss_applib",
  "moss_common",
  "moss_file",
  "moss_fs",
@@ -3782,6 +3787,7 @@ dependencies = [
  "nanoid",
  "serde",
  "serde_json",
+ "tauri",
  "ts-rs",
 ]
 
@@ -3870,11 +3876,14 @@ name = "moss_storage"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-trait",
+ "moss_applib",
  "moss_db",
  "redb",
  "serde",
  "serde_json",
  "smallvec",
+ "tokio",
 ]
 
 [[package]]

@@ -1,3 +1,4 @@
+use moss_applib::AppRuntime;
 use moss_common::api::OperationResult;
 use moss_db::primitives::AnyValue;
 use moss_storage::primitives::segkey::SegKeyBuf;
@@ -29,16 +30,17 @@ const EXPANSION_DIRECTORIES: &[&str] = &[
     dirs::SCHEMAS_DIR,
 ];
 
-impl Collection {
+impl<R: AppRuntime> Collection<R> {
     pub async fn stream_entries(
         &self,
+        ctx: &R::AsyncContext,
         channel: TauriChannel<StreamEntriesEvent>,
         input: StreamEntriesInput,
     ) -> OperationResult<StreamEntriesOutput> {
         let (tx, mut rx) = mpsc::unbounded_channel::<EntryDescription>();
         let (done_tx, mut done_rx) = oneshot::channel::<()>();
-        let worktree_service = self.service::<DynWorktreeService>();
-        let storage_service = self.service::<DynStorageService>();
+        let worktree_service = self.service::<DynWorktreeService<R>>();
+        let storage_service = self.service::<DynStorageService<R>>();
 
         let mut handles = Vec::new();
         let expansion_dirs = match input {
@@ -49,16 +51,17 @@ impl Collection {
             StreamEntriesInput::ReloadPath(path) => vec![path],
         };
 
-        let expanded_entries: Arc<HashSet<EntryId>> = match storage_service.get_expanded_entries() {
-            Ok(entries) => HashSet::from_iter(entries).into(),
-            Err(error) => {
-                println!("warn: getting expanded entries: {}", error);
-                HashSet::default().into()
-            }
-        };
+        let expanded_entries: Arc<HashSet<EntryId>> =
+            match storage_service.get_expanded_entries(ctx).await {
+                Ok(entries) => HashSet::from_iter(entries).into(),
+                Err(error) => {
+                    println!("warn: getting expanded entries: {}", error);
+                    HashSet::default().into()
+                }
+            };
 
         let all_entry_keys: Arc<HashMap<SegKeyBuf, AnyValue>> =
-            match storage_service.get_all_entry_keys() {
+            match storage_service.get_all_entry_keys(ctx).await {
                 Ok(keys) => keys.into(),
                 Err(error) => {
                     println!("warn: getting all entry keys: {}", error);
@@ -75,10 +78,12 @@ impl Collection {
             let handle = tokio::spawn({
                 let expanded_entries_clone = expanded_entries.clone();
                 let all_entry_keys_clone = all_entry_keys.clone();
+                let ctx_clone = ctx.clone();
 
                 async move {
                     let _ = worktree_service_clone
                         .scan(
+                            &ctx_clone,
                             &dir,
                             expanded_entries_clone,
                             all_entry_keys_clone,
@@ -93,6 +98,7 @@ impl Collection {
 
         drop(tx);
 
+        // TODO: check if the context is done, if so, break the loop (cancellation)
         let processing_task = tokio::spawn(async move {
             loop {
                 tokio::select! {

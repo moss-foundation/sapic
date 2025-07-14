@@ -1,18 +1,27 @@
 pub mod operations;
 
+use async_trait::async_trait;
+use moss_applib::context::AnyAsyncContext;
 use moss_db::{DatabaseResult, Transaction, bincode_table::BincodeTable, primitives::AnyValue};
 use serde_json::Value as JsonValue;
 use std::{any::TypeId, collections::HashMap};
 
 use crate::primitives::segkey::SegKeyBuf;
 
+#[async_trait]
+pub trait TransactionalWithContext<Context: AnyAsyncContext> {
+    async fn begin_write_with_context(&self, ctx: &Context) -> DatabaseResult<Transaction>;
+    async fn begin_read_with_context(&self, ctx: &Context) -> DatabaseResult<Transaction>;
+}
+
 pub trait Transactional {
     fn begin_write(&self) -> DatabaseResult<Transaction>;
     fn begin_read(&self) -> DatabaseResult<Transaction>;
 }
 
-pub trait Storage {
-    fn dump(&self) -> DatabaseResult<HashMap<String, JsonValue>>;
+#[async_trait]
+pub trait Storage<Context: AnyAsyncContext> {
+    async fn dump(&self, ctx: &Context) -> DatabaseResult<HashMap<String, JsonValue>>;
 }
 
 pub type StoreTypeId = TypeId;
@@ -21,11 +30,15 @@ pub type SegBinTable = BincodeTable<'static, SegKeyBuf, AnyValue>;
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use moss_applib::context::MutableContext;
+    use serde::{Deserialize, Serialize};
+    use std::time::Duration;
+
     use crate::{
         WorkspaceStorage, primitives::segkey::SegKey, storage::operations::PutItem,
         workspace_storage::WorkspaceStorageImpl,
     };
-    use serde::{Deserialize, Serialize};
 
     #[derive(Serialize, Deserialize, Debug, PartialEq)]
     struct TestData {
@@ -33,8 +46,9 @@ mod tests {
         number: i32,
     }
 
-    #[test]
-    pub fn test_dump() {
+    #[tokio::test]
+    pub async fn test_dump() {
+        let ctx = MutableContext::background_with_timeout(Duration::from_secs(10)).freeze();
         let storage = WorkspaceStorageImpl::new("tests").unwrap();
         let store = storage.item_store();
 
@@ -50,11 +64,17 @@ mod tests {
         let value2 = AnyValue::serialize(&2).unwrap();
         let value3 = AnyValue::serialize(&test_data).unwrap();
 
-        PutItem::put(store.as_ref(), key1, value1.clone()).unwrap();
-        PutItem::put(store.as_ref(), key2, value2.clone()).unwrap();
-        PutItem::put(store.as_ref(), key3, value3.clone()).unwrap();
+        PutItem::put(store.as_ref(), &ctx, key1, value1.clone())
+            .await
+            .unwrap();
+        PutItem::put(store.as_ref(), &ctx, key2, value2.clone())
+            .await
+            .unwrap();
+        PutItem::put(store.as_ref(), &ctx, key3, value3.clone())
+            .await
+            .unwrap();
 
-        let dumped = storage.dump().unwrap();
+        let dumped = storage.dump(&ctx).await.unwrap();
 
         // Each store has one entry
         assert_eq!(dumped.len(), 2);

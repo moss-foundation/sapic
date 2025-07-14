@@ -19,9 +19,13 @@ use moss_app::{
         workspace_service::WorkspaceService,
     },
 };
-use moss_applib::context::ContextValueSet;
+use moss_applib::{
+    TauriAppRuntime,
+    context::{AnyAsyncContext, AnyContext, MutableContext},
+    context_old::ContextValueSet,
+};
 use moss_fs::{FileSystem, RealFileSystem};
-use std::{path::PathBuf, sync::Arc};
+use std::{path::PathBuf, sync::Arc, time::Duration};
 use tauri::{AppHandle, Manager, RunEvent, Runtime as TauriRuntime, WebviewWindow, WindowEvent};
 use tauri_plugin_os;
 
@@ -47,6 +51,8 @@ pub async fn run<R: TauriRuntime>() {
     builder
         .setup(|tao| {
             futures::executor::block_on(async {
+                let ctx = MutableContext::background().freeze();
+
                 let fs = Arc::new(RealFileSystem::new());
                 let app_handle = tao.app_handle();
 
@@ -65,63 +71,87 @@ pub async fn run<R: TauriRuntime>() {
                     .expect("Environment variable APP_LOG_DIR is not set")
                     .into();
 
-                let storage_service: Arc<StorageService> =
-                    StorageService::new(&app_dir.join(moss_app::dirs::GLOBALS_DIR))
+                let ctx_clone = ctx.clone();
+                let (app, session_id) = {
+                    let app_init_ctx =
+                        MutableContext::new_with_timeout(ctx_clone, Duration::from_secs(30))
+                            .freeze();
+
+                    let storage_service: Arc<StorageService<TauriAppRuntime<R>>> =
+                        StorageService::<TauriAppRuntime<R>>::new(
+                            &app_dir.join(moss_app::dirs::GLOBALS_DIR),
+                        )
                         .expect("Failed to create storage service")
                         .into();
-                let workspace_service =
-                    WorkspaceService::<R>::new(storage_service.clone(), fs.clone(), &app_dir)
+
+                    let session_service = SessionService::new();
+                    let session_id = session_service.session_id().clone();
+
+                    let workspace_service = WorkspaceService::<TauriAppRuntime<R>>::new(
+                        &app_init_ctx,
+                        storage_service.clone(),
+                        fs.clone(),
+                        &app_dir,
+                    )
+                    .await
+                    .expect("Failed to create workspace service");
+                    let theme_service = ThemeService::new(fs.clone(), themes_dir);
+                    let locale_service = LocaleService::new(fs.clone(), locales_dir);
+                    let log_service = LogService::new(
+                        fs.clone(),
+                        app_handle.clone(),
+                        &logs_dir,
+                        session_service.session_id(),
+                        storage_service.clone(),
+                    )
+                    .expect("Failed to create log service");
+
+                    let default_theme = theme_service
+                        .default_theme()
                         .await
-                        .expect("Failed to create workspace service");
-                let theme_service = ThemeService::new(fs.clone(), themes_dir);
-                let locale_service = LocaleService::new(fs.clone(), locales_dir);
-                let session_service = SessionService::new();
-                let log_service = LogService::new(
-                    fs.clone(),
-                    app_handle.clone(),
-                    &logs_dir,
-                    session_service.session_id(),
-                    storage_service.clone(),
-                )
-                .expect("Failed to create log service");
+                        .cloned()
+                        .expect("Failed to get default theme");
 
-                let default_theme = theme_service
-                    .default_theme()
+                    let default_locale = locale_service
+                        .default_locale()
+                        .await
+                        .cloned()
+                        .expect("Failed to get default locale");
+
+                    let defaults = AppDefaults {
+                        theme: default_theme,
+                        locale: default_locale,
+                    };
+
+                    <dyn FileSystem>::set_global(fs.clone(), &app_handle);
+
+                    let activity_indicator = ActivityIndicator::new(app_handle.clone());
+                    let app = AppBuilder::<TauriAppRuntime<R>>::new(
+                        app_handle.clone(),
+                        activity_indicator,
+                        defaults,
+                        fs,
+                        app_dir.into(),
+                    )
+                    .with_service::<StorageService<TauriAppRuntime<R>>>(storage_service)
+                    .with_service(theme_service)
+                    .with_service(locale_service)
+                    .with_service(session_service)
+                    .with_service(log_service)
+                    .with_service(workspace_service)
+                    .build()
                     .await
-                    .cloned()
-                    .expect("Failed to get default theme");
+                    .expect("Failed to build app");
 
-                let default_locale = locale_service
-                    .default_locale()
-                    .await
-                    .cloned()
-                    .expect("Failed to get default locale");
-
-                let defaults = AppDefaults {
-                    theme: default_theme,
-                    locale: default_locale,
+                    (app, session_id)
                 };
 
-                <dyn FileSystem>::set_global(fs.clone(), &app_handle);
+                app_handle.manage({
+                    let mut ctx = ctx.unfreeze().expect("Failed to unfreeze the root context");
+                    ctx.with_value("session_id", session_id.to_string()); // TODO: Use a proper type
 
-                let activity_indicator = ActivityIndicator::new(app_handle.clone());
-                let app = AppBuilder::new(
-                    app_handle.clone(),
-                    activity_indicator,
-                    defaults,
-                    fs,
-                    app_dir.into(),
-                )
-                .with_service::<StorageService>(storage_service)
-                .with_service(theme_service)
-                .with_service(locale_service)
-                .with_service(session_service)
-                .with_service(log_service)
-                .with_service(workspace_service)
-                .build()
-                .await
-                .expect("Failed to build app");
-
+                    ctx.freeze()
+                });
                 app_handle.manage(app);
                 app_handle.manage(ContextValueSet::default());
 

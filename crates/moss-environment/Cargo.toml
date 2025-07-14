@@ -8,6 +8,7 @@ moss_common.workspace = true
 moss_fs.workspace = true
 moss_file.workspace = true
 moss_storage.workspace = true
+moss_applib.workspace = true
 
 anyhow.workspace = true
 serde = { workspace = true, features = ["derive"] }
@@ -15,6 +16,7 @@ serde_json.workspace = true
 ts-rs = { workspace = true, features = ["serde-json-impl"] }
 derive_more.workspace = true
 nanoid.workspace = true
+tauri.workspace = true
 
 [features]
 integration-tests = []

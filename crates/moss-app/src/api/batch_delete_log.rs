@@ -1,5 +1,5 @@
+use moss_applib::AppRuntime;
 use moss_common::api::OperationResult;
-use tauri::Runtime as TauriRuntime;
 
 use crate::{
     app::App,
@@ -7,13 +7,14 @@ use crate::{
     services::log_service::LogService,
 };
 
-impl<R: TauriRuntime> App<R> {
+impl<R: AppRuntime> App<R> {
     pub async fn batch_delete_log(
         &self,
+        ctx: &R::AsyncContext,
         input: &BatchDeleteLogInput,
     ) -> OperationResult<BatchDeleteLogOutput> {
-        let log_service = self.services.get::<LogService>();
-        match log_service.delete_logs(input.ids.iter()).await {
+        let log_service = self.services.get::<LogService<R>>();
+        match log_service.delete_logs(ctx, input.ids.iter()).await {
             Ok(output) => Ok(BatchDeleteLogOutput {
                 deleted_entries: output,
             }),

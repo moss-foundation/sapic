@@ -1,6 +1,7 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
+use moss_applib::mock::MockAppRuntime;
 use moss_collection::{
     constants, dirs,
     models::operations::{CreateDirEntryInput, CreateEntryInput, CreateItemEntryInput},
@@ -21,7 +22,7 @@ use crate::shared::{
 
 #[tokio::test]
 async fn create_dir_entry_success() {
-    let (collection_path, collection, _services) = create_test_collection().await;
+    let (ctx, collection_path, collection, _services) = create_test_collection().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
@@ -33,7 +34,7 @@ async fn create_dir_entry_success() {
         configuration: create_test_request_dir_configuration(),
     });
 
-    let result = collection.create_entry(input).await;
+    let result = collection.create_entry(&ctx, input).await;
 
     let output = result.unwrap();
 
@@ -56,7 +57,7 @@ async fn create_dir_entry_success() {
 
 #[tokio::test]
 async fn create_dir_entry_with_order() {
-    let (collection_path, collection, services) = create_test_collection().await;
+    let (ctx, collection_path, collection, services) = create_test_collection().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
@@ -69,7 +70,7 @@ async fn create_dir_entry_with_order() {
         configuration: create_test_request_dir_configuration(),
     });
 
-    let result = collection.create_entry(input).await;
+    let result = collection.create_entry(&ctx, input).await;
     let id = result.unwrap().id;
 
     // Verify the directory was created
@@ -77,12 +78,14 @@ async fn create_dir_entry_with_order() {
     assert!(expected_dir.exists());
 
     // TODO: Check that order is correctly stored
-    let storage_service = services.get::<StorageServiceForIntegrationTest>();
+    let storage_service = services.get::<StorageServiceForIntegrationTest<MockAppRuntime>>();
     let resource_store = storage_service.storage().resource_store();
 
     // Check order was updated
     let order_key = SEGKEY_RESOURCE_ENTRY.join(&id.to_string()).join("order");
-    let order_value = GetItem::get(resource_store.as_ref(), order_key).unwrap();
+    let order_value = GetItem::get(resource_store.as_ref(), &ctx, order_key)
+        .await
+        .unwrap();
     let stored_order: isize = order_value.deserialize().unwrap();
     assert_eq!(stored_order, 42);
 
@@ -92,7 +95,7 @@ async fn create_dir_entry_with_order() {
 
 #[tokio::test]
 async fn create_dir_entry_already_exists() {
-    let (collection_path, collection, _services) = create_test_collection().await;
+    let (ctx, collection_path, collection, _services) = create_test_collection().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
@@ -105,11 +108,11 @@ async fn create_dir_entry_already_exists() {
     });
 
     // Create the entry first time - should succeed
-    let first_result = collection.create_entry(input.clone()).await;
+    let first_result = collection.create_entry(&ctx, input.clone()).await;
     let _ = first_result.unwrap();
 
     // Try to create the same entry again - should fail
-    let second_result = collection.create_entry(input).await;
+    let second_result = collection.create_entry(&ctx, input).await;
     assert!(second_result.is_err());
 
     if let Err(error) = second_result {
@@ -127,7 +130,7 @@ async fn create_dir_entry_already_exists() {
 
 #[tokio::test]
 async fn create_dir_entry_special_chars_in_name() {
-    let (collection_path, collection, _services) = create_test_collection().await;
+    let (ctx, collection_path, collection, _services) = create_test_collection().await;
 
     let base_name = random_entry_name();
 
@@ -142,7 +145,7 @@ async fn create_dir_entry_special_chars_in_name() {
             configuration: create_test_request_dir_configuration(),
         });
 
-        let result = collection.create_entry(input).await;
+        let result = collection.create_entry(&ctx, input).await;
 
         // Entry creation should succeed - the filesystem layer handles sanitization
         if result.is_err() {
@@ -171,7 +174,7 @@ async fn create_dir_entry_special_chars_in_name() {
 
 #[tokio::test]
 async fn create_dir_entry_inside_item_entry() {
-    let (collection_path, collection, _services) = create_test_collection().await;
+    let (ctx, collection_path, collection, _services) = create_test_collection().await;
 
     let outer_name = random_entry_name();
     let outer_path = PathBuf::from(dirs::COMPONENTS_DIR);
@@ -182,7 +185,7 @@ async fn create_dir_entry_inside_item_entry() {
         configuration: create_test_component_item_configuration(),
     });
 
-    let _ = collection.create_entry(outer_input).await.unwrap();
+    let _ = collection.create_entry(&ctx, outer_input).await.unwrap();
 
     // Try creating an entry inside an item entry
 
@@ -195,7 +198,7 @@ async fn create_dir_entry_inside_item_entry() {
         configuration: create_test_component_dir_configuration(),
     });
 
-    let result = collection.create_entry(inner_input).await;
+    let result = collection.create_entry(&ctx, inner_input).await;
 
     assert!(result.is_err());
 
