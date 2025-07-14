@@ -1,6 +1,6 @@
 pub mod shared;
 
-use moss_db::{DatabaseClient, common::DatabaseError};
+use moss_db::{DatabaseClientWithContext, common::DatabaseError};
 
 use crate::shared::setup_test_bincode_table;
 
@@ -9,15 +9,18 @@ async fn truncate_empty() {
     let (client, ctx, table, path) = setup_test_bincode_table::<i32>();
 
     {
-        let mut write = client.begin_write(&ctx).await.unwrap();
-        let result = table.truncate(&ctx, &mut write).await;
+        let mut write = client.begin_write_with_context(&ctx).await.unwrap();
+        let result = table.truncate_with_context(&ctx, &mut write).await;
         let _ = result.unwrap();
         write.commit().unwrap();
     }
 
     {
-        let read = client.begin_read(&ctx).await.unwrap();
-        assert_eq!(table.scan(&ctx, &read).await.unwrap().count(), 0);
+        let read = client.begin_read_with_context(&ctx).await.unwrap();
+        assert_eq!(
+            table.scan_with_context(&ctx, &read).await.unwrap().count(),
+            0
+        );
     }
 
     {
@@ -30,30 +33,33 @@ async fn truncate_non_empty() {
     let (client, ctx, table, path) = setup_test_bincode_table::<i32>();
 
     {
-        let mut write = client.begin_write(&ctx).await.unwrap();
+        let mut write = client.begin_write_with_context(&ctx).await.unwrap();
         table
-            .insert(&ctx, &mut write, "1".to_string(), &1)
+            .insert_with_context(&ctx, &mut write, "1".to_string(), &1)
             .await
             .unwrap();
         table
-            .insert(&ctx, &mut write, "2".to_string(), &2)
+            .insert_with_context(&ctx, &mut write, "2".to_string(), &2)
             .await
             .unwrap();
         table
-            .insert(&ctx, &mut write, "3".to_string(), &3)
+            .insert_with_context(&ctx, &mut write, "3".to_string(), &3)
             .await
             .unwrap();
     }
 
     {
-        let mut write = client.begin_write(&ctx).await.unwrap();
-        let result = table.truncate(&ctx, &mut write).await;
+        let mut write = client.begin_write_with_context(&ctx).await.unwrap();
+        let result = table.truncate_with_context(&ctx, &mut write).await;
         let _ = result.unwrap();
     }
 
     {
-        let read = client.begin_read(&ctx).await.unwrap();
-        assert_eq!(table.scan(&ctx, &read).await.unwrap().count(), 0);
+        let read = client.begin_read_with_context(&ctx).await.unwrap();
+        assert_eq!(
+            table.scan_with_context(&ctx, &read).await.unwrap().count(),
+            0
+        );
     }
 
     {
@@ -66,8 +72,8 @@ async fn truncate_in_read_transaction() {
     let (client, ctx, table, path) = setup_test_bincode_table::<i32>();
 
     {
-        let mut read = client.begin_read(&ctx).await.unwrap();
-        let result = table.truncate(&ctx, &mut read).await;
+        let mut read = client.begin_read_with_context(&ctx).await.unwrap();
+        let result = table.truncate_with_context(&ctx, &mut read).await;
         assert!(matches!(result, Err(DatabaseError::Transaction(..))));
     }
 
@@ -81,17 +87,17 @@ async fn truncate_uncommitted() {
     let (client, ctx, table, path) = setup_test_bincode_table::<i32>();
 
     {
-        let mut write = client.begin_write(&ctx).await.unwrap();
+        let mut write = client.begin_write_with_context(&ctx).await.unwrap();
         table
-            .insert(&ctx, &mut write, "1".to_string(), &1)
+            .insert_with_context(&ctx, &mut write, "1".to_string(), &1)
             .await
             .unwrap();
         table
-            .insert(&ctx, &mut write, "2".to_string(), &2)
+            .insert_with_context(&ctx, &mut write, "2".to_string(), &2)
             .await
             .unwrap();
         table
-            .insert(&ctx, &mut write, "3".to_string(), &3)
+            .insert_with_context(&ctx, &mut write, "3".to_string(), &3)
             .await
             .unwrap();
         write.commit().unwrap();
@@ -99,13 +105,16 @@ async fn truncate_uncommitted() {
 
     {
         // Uncommitted
-        let mut write = client.begin_write(&ctx).await.unwrap();
-        table.truncate(&ctx, &mut write).await.unwrap();
+        let mut write = client.begin_write_with_context(&ctx).await.unwrap();
+        table.truncate_with_context(&ctx, &mut write).await.unwrap();
     }
 
     {
-        let read = client.begin_read(&ctx).await.unwrap();
-        assert_eq!(table.scan(&ctx, &read).await.unwrap().count(), 3);
+        let read = client.begin_read_with_context(&ctx).await.unwrap();
+        assert_eq!(
+            table.scan_with_context(&ctx, &read).await.unwrap().count(),
+            3
+        );
     }
 
     {

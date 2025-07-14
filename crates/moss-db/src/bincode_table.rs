@@ -65,7 +65,7 @@ where
         }
     }
 
-    pub async fn insert<C: AnyAsyncContext>(
+    pub async fn insert_with_context<C: AnyAsyncContext>(
         &self,
         ctx: &C,
         txn: &mut Transaction,
@@ -95,7 +95,23 @@ where
         .map_err(|_| DatabaseError::Timeout("insert".to_string()))?
     }
 
-    pub async fn remove<C: AnyAsyncContext>(
+    pub fn insert(&self, txn: &mut Transaction, key: K, value: &V) -> Result<(), DatabaseError> {
+        match txn {
+            Transaction::Write(txn) => {
+                let mut table = txn.open_table(self.table)?;
+                let bytes = serde_json::to_vec(value)?;
+
+                table.insert(key.borrow(), bytes)?;
+
+                Ok(())
+            }
+            Transaction::Read(_txn) => Err(DatabaseError::Transaction(
+                "Cannot insert into read transaction".to_string(),
+            )),
+        }
+    }
+
+    pub async fn remove_with_context<C: AnyAsyncContext>(
         &self,
         ctx: &C,
         txn: &mut Transaction,
@@ -128,7 +144,7 @@ where
         .map_err(|_| DatabaseError::Timeout("remove".to_string()))?
     }
 
-    pub async fn read<C: AnyAsyncContext>(
+    pub async fn read_with_context<C: AnyAsyncContext>(
         &self,
         ctx: &C,
         txn: &Transaction,
@@ -162,7 +178,7 @@ where
         .map_err(|_| DatabaseError::Timeout("read".to_string()))?
     }
 
-    pub async fn scan<C: AnyAsyncContext>(
+    pub async fn scan_with_context<C: AnyAsyncContext>(
         &self,
         ctx: &C,
         txn: &Transaction,
@@ -196,7 +212,7 @@ where
         .map_err(|_| DatabaseError::Timeout("scan".to_string()))?
     }
 
-    pub async fn rekey<C: AnyAsyncContext>(
+    pub async fn rekey_with_context<C: AnyAsyncContext>(
         &self,
         ctx: &C,
         txn: &mut Transaction,
@@ -231,7 +247,7 @@ where
         .map_err(|_| DatabaseError::Timeout("rekey".to_string()))?
     }
 
-    pub async fn truncate<C: AnyAsyncContext>(
+    pub async fn truncate_with_context<C: AnyAsyncContext>(
         &self,
         ctx: &C,
         txn: &mut Transaction,
@@ -257,7 +273,7 @@ where
         .map_err(|_| DatabaseError::Timeout("truncate".to_string()))?
     }
 
-    pub async fn scan_by_prefix<C: AnyAsyncContext, P>(
+    pub async fn scan_by_prefix_with_context<C: AnyAsyncContext, P>(
         &self,
         ctx: &C,
         txn: &Transaction,
@@ -300,7 +316,7 @@ where
         .map_err(|_| DatabaseError::Timeout("scan_by_prefix".to_string()))?
     }
 
-    pub async fn remove_by_prefix<C: AnyAsyncContext, P>(
+    pub async fn remove_by_prefix_with_context<C: AnyAsyncContext, P>(
         &self,
         ctx: &C,
         txn: &mut Transaction,

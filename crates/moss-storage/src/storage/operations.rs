@@ -79,7 +79,14 @@ pub trait TransactionalPutItem<Context: AnyAsyncContext>: Send + Sync {
     type Key;
     type Entity;
 
-    async fn put(
+    fn put(
+        &self,
+        txn: &mut Transaction,
+        key: Self::Key,
+        entity: Self::Entity,
+    ) -> DatabaseResult<()>;
+
+    async fn put_with_context(
         &self,
         ctx: &Context,
         txn: &mut Transaction,

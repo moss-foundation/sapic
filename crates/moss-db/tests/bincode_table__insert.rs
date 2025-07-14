@@ -1,6 +1,6 @@
 pub mod shared;
 
-use moss_db::{DatabaseClient, common::DatabaseError};
+use moss_db::{DatabaseClientWithContext, common::DatabaseError};
 
 use crate::shared::{TEST_NODE_1, TEST_NODE_2, TEST_NODE_3, TestNode, setup_test_bincode_table};
 
@@ -9,17 +9,17 @@ async fn insert_success() {
     let (client, ctx, table, path) = setup_test_bincode_table::<i32>();
 
     {
-        let mut write = client.begin_write(&ctx).await.unwrap();
+        let mut write = client.begin_write_with_context(&ctx).await.unwrap();
         table
-            .insert(&ctx, &mut write, "1".to_string(), &1)
+            .insert_with_context(&ctx, &mut write, "1".to_string(), &1)
             .await
             .unwrap();
         table
-            .insert(&ctx, &mut write, "2".to_string(), &2)
+            .insert_with_context(&ctx, &mut write, "2".to_string(), &2)
             .await
             .unwrap();
         table
-            .insert(&ctx, &mut write, "3".to_string(), &3)
+            .insert_with_context(&ctx, &mut write, "3".to_string(), &3)
             .await
             .unwrap();
         write.commit().unwrap();
@@ -32,10 +32,14 @@ async fn insert_success() {
     ];
 
     {
-        let read = client.begin_read(&ctx).await.unwrap();
+        let read = client.begin_read_with_context(&ctx).await.unwrap();
 
         assert_eq!(
-            table.scan(&ctx, &read).await.unwrap().collect::<Vec<_>>(),
+            table
+                .scan_with_context(&ctx, &read)
+                .await
+                .unwrap()
+                .collect::<Vec<_>>(),
             expected
         )
     }
@@ -50,9 +54,9 @@ async fn insert_existing_key() {
     let (client, ctx, table, path) = setup_test_bincode_table::<i32>();
 
     {
-        let mut write = client.begin_write(&ctx).await.unwrap();
+        let mut write = client.begin_write_with_context(&ctx).await.unwrap();
         table
-            .insert(&ctx, &mut write, "1".to_string(), &1)
+            .insert_with_context(&ctx, &mut write, "1".to_string(), &1)
             .await
             .unwrap();
         write.commit().unwrap();
@@ -60,9 +64,9 @@ async fn insert_existing_key() {
 
     {
         // Overwrite existing key
-        let mut write = client.begin_write(&ctx).await.unwrap();
+        let mut write = client.begin_write_with_context(&ctx).await.unwrap();
         table
-            .insert(&ctx, &mut write, "1".to_string(), &2)
+            .insert_with_context(&ctx, &mut write, "1".to_string(), &2)
             .await
             .unwrap();
         write.commit().unwrap();
@@ -70,9 +74,13 @@ async fn insert_existing_key() {
 
     let expected = vec![("1".to_string(), 2)];
     {
-        let read = client.begin_read(&ctx).await.unwrap();
+        let read = client.begin_read_with_context(&ctx).await.unwrap();
         assert_eq!(
-            table.scan(&ctx, &read).await.unwrap().collect::<Vec<_>>(),
+            table
+                .scan_with_context(&ctx, &read)
+                .await
+                .unwrap()
+                .collect::<Vec<_>>(),
             expected
         )
     }
@@ -88,8 +96,10 @@ async fn insert_in_read_transaction() {
     let (client, ctx, table, path) = setup_test_bincode_table::<i32>();
 
     {
-        let mut read = client.begin_read(&ctx).await.unwrap();
-        let result = table.insert(&ctx, &mut read, "1".to_string(), &1).await;
+        let mut read = client.begin_read_with_context(&ctx).await.unwrap();
+        let result = table
+            .insert_with_context(&ctx, &mut read, "1".to_string(), &1)
+            .await;
         assert!(matches!(result, Err(DatabaseError::Transaction(..))));
     }
 
@@ -105,18 +115,18 @@ async fn insert_uncommitted() {
 
     {
         // Uncommitted transaction
-        let mut write = client.begin_write(&ctx).await.unwrap();
+        let mut write = client.begin_write_with_context(&ctx).await.unwrap();
         table
-            .insert(&ctx, &mut write, "1".to_string(), &1)
+            .insert_with_context(&ctx, &mut write, "1".to_string(), &1)
             .await
             .unwrap();
     }
 
     {
-        let read = client.begin_read(&ctx).await.unwrap();
+        let read = client.begin_read_with_context(&ctx).await.unwrap();
         assert!(
             table
-                .scan(&ctx, &read)
+                .scan_with_context(&ctx, &read)
                 .await
                 .unwrap()
                 .collect::<Vec<_>>()
@@ -134,17 +144,17 @@ async fn insert_complex_type() {
     let (client, ctx, table, path) = setup_test_bincode_table::<TestNode>();
 
     {
-        let mut write = client.begin_write(&ctx).await.unwrap();
+        let mut write = client.begin_write_with_context(&ctx).await.unwrap();
         table
-            .insert(&ctx, &mut write, "1".to_string(), &TEST_NODE_1)
+            .insert_with_context(&ctx, &mut write, "1".to_string(), &TEST_NODE_1)
             .await
             .unwrap();
         table
-            .insert(&ctx, &mut write, "2".to_string(), &TEST_NODE_2)
+            .insert_with_context(&ctx, &mut write, "2".to_string(), &TEST_NODE_2)
             .await
             .unwrap();
         table
-            .insert(&ctx, &mut write, "3".to_string(), &TEST_NODE_3)
+            .insert_with_context(&ctx, &mut write, "3".to_string(), &TEST_NODE_3)
             .await
             .unwrap();
         write.commit().unwrap();
@@ -157,10 +167,14 @@ async fn insert_complex_type() {
     ];
 
     {
-        let read = client.begin_read(&ctx).await.unwrap();
+        let read = client.begin_read_with_context(&ctx).await.unwrap();
 
         assert_eq!(
-            table.scan(&ctx, &read).await.unwrap().collect::<Vec<_>>(),
+            table
+                .scan_with_context(&ctx, &read)
+                .await
+                .unwrap()
+                .collect::<Vec<_>>(),
             expected
         )
     }

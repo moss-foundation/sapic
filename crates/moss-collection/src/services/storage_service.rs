@@ -24,12 +24,12 @@ impl<R: AppRuntime> ServiceMarker for StorageService<R> {}
 #[async_trait]
 impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
     async fn begin_write(&self, ctx: &R::AsyncContext) -> Result<Transaction> {
-        Ok(self.storage.begin_write(ctx).await?)
+        Ok(self.storage.begin_write_with_context(ctx).await?)
     }
 
     #[allow(dead_code)]
     async fn begin_read(&self, ctx: &R::AsyncContext) -> Result<Transaction> {
-        Ok(self.storage.begin_read(ctx).await?)
+        Ok(self.storage.begin_read_with_context(ctx).await?)
     }
 
     async fn put_entry_order_txn(
@@ -42,7 +42,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         let store = self.storage.resource_store();
 
         let segkey = segments::segkey_entry_order(&id);
-        TransactionalPutItem::put(
+        TransactionalPutItem::put_with_context(
             store.as_ref(),
             ctx,
             txn,
@@ -89,7 +89,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         expanded_entries: Vec<EntryId>,
     ) -> Result<()> {
         let store = self.storage.resource_store();
-        TransactionalPutItem::put(
+        TransactionalPutItem::put_with_context(
             store.as_ref(),
             ctx,
             txn,

@@ -1,6 +1,6 @@
 pub mod shared;
 
-use moss_db::{DatabaseClient, common::DatabaseError};
+use moss_db::{DatabaseClientWithContext, common::DatabaseError};
 
 use crate::shared::{
     TEST_AAD_1, TEST_AAD_2, TEST_PASSWORD_1, TEST_PASSWORD_2, setup_test_encrypted_bincode_table,
@@ -11,7 +11,7 @@ async fn read_success() {
     let (client, ctx, table, path) = setup_test_encrypted_bincode_table::<i32>();
 
     {
-        let mut write = client.begin_write(&ctx).await.unwrap();
+        let mut write = client.begin_write_with_context(&ctx).await.unwrap();
         table
             .write(
                 &ctx,
@@ -27,7 +27,7 @@ async fn read_success() {
     }
 
     {
-        let read = client.begin_read(&ctx).await.unwrap();
+        let read = client.begin_read_with_context(&ctx).await.unwrap();
         let result = table
             .read(&ctx, &read, "1".to_string(), TEST_PASSWORD_1, TEST_AAD_1)
             .await;
@@ -44,7 +44,7 @@ async fn read_nonexistent() {
     let (client, ctx, table, path) = setup_test_encrypted_bincode_table::<i32>();
 
     {
-        let read = client.begin_read(&ctx).await.unwrap();
+        let read = client.begin_read_with_context(&ctx).await.unwrap();
         let result = table
             .read(&ctx, &read, "1".to_string(), TEST_PASSWORD_1, TEST_AAD_1)
             .await;
@@ -62,7 +62,7 @@ async fn read_with_incorrect_password() {
     let (client, ctx, table, path) = setup_test_encrypted_bincode_table::<i32>();
 
     {
-        let mut write = client.begin_write(&ctx).await.unwrap();
+        let mut write = client.begin_write_with_context(&ctx).await.unwrap();
         table
             .write(
                 &ctx,
@@ -79,7 +79,7 @@ async fn read_with_incorrect_password() {
 
     {
         // Try reading the entry with incorrect password
-        let read = client.begin_read(&ctx).await.unwrap();
+        let read = client.begin_read_with_context(&ctx).await.unwrap();
         let result = table
             .read(&ctx, &read, "1".to_string(), TEST_PASSWORD_2, TEST_AAD_1)
             .await;
@@ -96,7 +96,7 @@ async fn read_with_incorrect_aad() {
     let (client, ctx, table, path) = setup_test_encrypted_bincode_table::<i32>();
 
     {
-        let mut write = client.begin_write(&ctx).await.unwrap();
+        let mut write = client.begin_write_with_context(&ctx).await.unwrap();
         table
             .write(
                 &ctx,
@@ -113,7 +113,7 @@ async fn read_with_incorrect_aad() {
 
     {
         // Try reading the entry with incorrect aad
-        let read = client.begin_read(&ctx).await.unwrap();
+        let read = client.begin_read_with_context(&ctx).await.unwrap();
         let result = table
             .read(&ctx, &read, "1".to_string(), TEST_PASSWORD_1, TEST_AAD_2)
             .await;
@@ -130,7 +130,7 @@ async fn read_in_write_transaction() {
     let (client, ctx, table, path) = setup_test_encrypted_bincode_table::<i32>();
 
     {
-        let mut write = client.begin_write(&ctx).await.unwrap();
+        let mut write = client.begin_write_with_context(&ctx).await.unwrap();
         table
             .write(
                 &ctx,
@@ -146,7 +146,7 @@ async fn read_in_write_transaction() {
     }
 
     {
-        let write = client.begin_write(&ctx).await.unwrap();
+        let write = client.begin_write_with_context(&ctx).await.unwrap();
         let result = table
             .read(&ctx, &write, "1".to_string(), TEST_PASSWORD_1, TEST_AAD_1)
             .await;

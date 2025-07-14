@@ -3,8 +3,8 @@ pub mod stores;
 use async_trait::async_trait;
 use moss_applib::context::AnyAsyncContext;
 use moss_db::{
-    DatabaseClient, DatabaseResult, ReDbClient, Table, Transaction, bincode_table::BincodeTable,
-    primitives::AnyValue,
+    DatabaseClientWithContext, DatabaseResult, ReDbClient, Table, Transaction,
+    bincode_table::BincodeTable, primitives::AnyValue,
 };
 use redb::TableHandle;
 use serde_json::{Value as JsonValue, json};
@@ -17,7 +17,7 @@ use crate::{
         resource_store::CollectionResourceStoreImpl, variable_store::CollectionVariableStoreImpl,
     },
     primitives::segkey::SegKeyBuf,
-    storage::{SegBinTable, Storage, StoreTypeId, Transactional},
+    storage::{SegBinTable, Storage, StoreTypeId, TransactionalWithContext},
 };
 
 const DB_NAME: &str = "state.db";
@@ -53,12 +53,12 @@ where
     Context: AnyAsyncContext,
 {
     async fn dump(&self, ctx: &Context) -> DatabaseResult<HashMap<String, JsonValue>> {
-        let read_txn = self.client.begin_read(ctx).await?;
+        let read_txn = self.client.begin_read_with_context(ctx).await?;
         let mut result = HashMap::new();
         for table in self.tables.values() {
             let name = table.table_definition().name().to_string();
             let mut table_entries = HashMap::new();
-            for (k, v) in table.scan(ctx, &read_txn).await? {
+            for (k, v) in table.scan_with_context(ctx, &read_txn).await? {
                 table_entries.insert(
                     k.to_string(),
                     serde_json::from_slice::<JsonValue>(v.as_bytes())?,
@@ -72,16 +72,16 @@ where
 }
 
 #[async_trait]
-impl<Context> Transactional<Context> for CollectionStorageImpl
+impl<Context> TransactionalWithContext<Context> for CollectionStorageImpl
 where
     Context: AnyAsyncContext,
 {
-    async fn begin_write(&self, ctx: &Context) -> DatabaseResult<Transaction> {
-        self.client.begin_write(ctx).await
+    async fn begin_write_with_context(&self, ctx: &Context) -> DatabaseResult<Transaction> {
+        self.client.begin_write_with_context(ctx).await
     }
 
-    async fn begin_read(&self, ctx: &Context) -> DatabaseResult<Transaction> {
-        self.client.begin_read(ctx).await
+    async fn begin_read_with_context(&self, ctx: &Context) -> DatabaseResult<Transaction> {
+        self.client.begin_read_with_context(ctx).await
     }
 }
 

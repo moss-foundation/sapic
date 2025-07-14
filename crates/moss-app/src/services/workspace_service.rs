@@ -394,7 +394,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
         );
 
         {
-            let mut txn = self.storage.begin_write(ctx).await?;
+            let mut txn = self.storage.begin_write_with_context(ctx).await?;
 
             self.storage
                 .put_last_active_workspace_txn(ctx, &mut txn, &id)

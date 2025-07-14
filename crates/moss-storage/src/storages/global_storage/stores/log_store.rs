@@ -1,6 +1,9 @@
 use async_trait::async_trait;
 use moss_applib::context::AnyAsyncContext;
-use moss_db::{DatabaseClient, DatabaseResult, ReDbClient, Transaction, primitives::AnyValue};
+use moss_db::{
+    DatabaseClient, DatabaseClientWithContext, DatabaseResult, ReDbClient, Transaction,
+    primitives::AnyValue,
+};
 use std::sync::Arc;
 
 use crate::{
@@ -35,8 +38,10 @@ where
     type Entity = AnyValue;
 
     async fn put(&self, ctx: &Context, key: Self::Key, entity: Self::Entity) -> DatabaseResult<()> {
-        let mut txn = self.client.begin_write(ctx).await?;
-        self.table.insert(ctx, &mut txn, key, &entity).await?;
+        let mut txn = self.client.begin_write_with_context(ctx).await?;
+        self.table
+            .insert_with_context(ctx, &mut txn, key, &entity)
+            .await?;
         txn.commit()
     }
 }
@@ -49,14 +54,23 @@ where
     type Key = SegKeyBuf;
     type Entity = AnyValue;
 
-    async fn put(
+    fn put(
+        &self,
+        txn: &mut Transaction,
+        key: Self::Key,
+        entity: Self::Entity,
+    ) -> DatabaseResult<()> {
+        self.table.insert(txn, key, &entity)
+    }
+
+    async fn put_with_context(
         &self,
         ctx: &Context,
         txn: &mut Transaction,
         key: Self::Key,
         entity: Self::Entity,
     ) -> DatabaseResult<()> {
-        self.table.insert(ctx, txn, key, &entity).await
+        self.table.insert_with_context(ctx, txn, key, &entity).await
     }
 }
 
@@ -69,8 +83,8 @@ where
     type Entity = AnyValue;
 
     async fn remove(&self, ctx: &Context, key: Self::Key) -> DatabaseResult<Self::Entity> {
-        let mut txn = self.client.begin_write(ctx).await?;
-        let value = self.table.remove(ctx, &mut txn, key).await?;
+        let mut txn = self.client.begin_write_with_context(ctx).await?;
+        let value = self.table.remove_with_context(ctx, &mut txn, key).await?;
         txn.commit()?;
         Ok(value)
     }
@@ -90,7 +104,7 @@ where
         txn: &mut Transaction,
         key: Self::Key,
     ) -> DatabaseResult<Self::Entity> {
-        self.table.remove(ctx, txn, key).await
+        self.table.remove_with_context(ctx, txn, key).await
     }
 }
 
@@ -103,8 +117,8 @@ where
     type Entity = AnyValue;
 
     async fn get(&self, ctx: &Context, key: Self::Key) -> DatabaseResult<Self::Entity> {
-        let read_txn = self.client.begin_read(ctx).await?;
-        self.table.read(ctx, &read_txn, key).await
+        let read_txn = self.client.begin_read_with_context(ctx).await?;
+        self.table.read_with_context(ctx, &read_txn, key).await
     }
 }
 
@@ -122,7 +136,7 @@ where
         txn: &Transaction,
         key: Self::Key,
     ) -> DatabaseResult<Self::Entity> {
-        self.table.read(ctx, txn, key).await
+        self.table.read_with_context(ctx, txn, key).await
     }
 }
 

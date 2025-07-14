@@ -37,7 +37,7 @@ impl<R: AppRuntime> ServiceMarker for StorageService<R> {}
 #[async_trait]
 impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
     async fn begin_write(&self, ctx: &R::AsyncContext) -> Result<Transaction> {
-        Ok(self.storage.begin_write(ctx).await?)
+        Ok(self.storage.begin_write_with_context(ctx).await?)
     }
 
     // Items operations
@@ -52,7 +52,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         let store = self.storage.item_store();
 
         let segkey = SEGKEY_COLLECTION.join(id.to_string()).join("order");
-        TransactionalPutItem::put(
+        TransactionalPutItem::put_with_context(
             store.as_ref(),
             ctx,
             txn,
@@ -71,7 +71,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         expanded_entries: &HashSet<CollectionId>,
     ) -> Result<()> {
         let store = self.storage.item_store();
-        TransactionalPutItem::put(
+        TransactionalPutItem::put_with_context(
             store.as_ref(),
             ctx,
             txn,
@@ -145,7 +145,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         let store = self.storage.item_store();
         let mut txn = self.begin_write(ctx).await?;
 
-        TransactionalPutItem::put(
+        TransactionalPutItem::put_with_context(
             store.as_ref(),
             ctx,
             &mut txn,
@@ -154,7 +154,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         )
         .await?;
 
-        TransactionalPutItem::put(
+        TransactionalPutItem::put_with_context(
             store.as_ref(),
             ctx,
             &mut txn,
@@ -163,7 +163,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         )
         .await?;
 
-        TransactionalPutItem::put(
+        TransactionalPutItem::put_with_context(
             store.as_ref(),
             ctx,
             &mut txn,
@@ -184,7 +184,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         let store = self.storage.item_store();
         let mut txn = self.begin_write(ctx).await?;
 
-        TransactionalPutItem::put(
+        TransactionalPutItem::put_with_context(
             store.as_ref(),
             ctx,
             &mut txn,
@@ -193,7 +193,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         )
         .await?;
 
-        TransactionalPutItem::put(
+        TransactionalPutItem::put_with_context(
             store.as_ref(),
             ctx,
             &mut txn,
@@ -215,7 +215,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         let mut txn = self.begin_write(ctx).await?;
 
         if let Some(last_active_container_id) = last_active_container_id {
-            TransactionalPutItem::put(
+            TransactionalPutItem::put_with_context(
                 store.as_ref(),
                 ctx,
                 &mut txn,
@@ -225,7 +225,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
             .await?;
         }
 
-        TransactionalPutItem::put(
+        TransactionalPutItem::put_with_context(
             store.as_ref(),
             ctx,
             &mut txn,
@@ -247,7 +247,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         let store = self.storage.item_store();
         let mut txn = self.begin_write(ctx).await?;
 
-        TransactionalPutItem::put(
+        TransactionalPutItem::put_with_context(
             store.as_ref(),
             ctx,
             &mut txn,
@@ -256,7 +256,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         )
         .await?;
 
-        TransactionalPutItem::put(
+        TransactionalPutItem::put_with_context(
             store.as_ref(),
             ctx,
             &mut txn,
@@ -266,7 +266,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         .await?;
 
         if let Some(active_group) = active_group {
-            TransactionalPutItem::put(
+            TransactionalPutItem::put_with_context(
                 store.as_ref(),
                 ctx,
                 &mut txn,

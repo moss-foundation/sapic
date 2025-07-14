@@ -42,8 +42,15 @@ impl<R: AppRuntime> StorageService<R> {
         Ok(Self { storage })
     }
 
-    pub(crate) async fn begin_write(&self, ctx: &R::AsyncContext) -> DatabaseResult<Transaction> {
-        Ok(self.storage.begin_write(ctx).await?)
+    pub(crate) async fn begin_write_with_context(
+        &self,
+        ctx: &R::AsyncContext,
+    ) -> DatabaseResult<Transaction> {
+        Ok(self.storage.begin_write_with_context(ctx).await?)
+    }
+
+    pub(crate) fn begin_write(&self) -> DatabaseResult<Transaction> {
+        Ok(self.storage.begin_write()?)
     }
 
     pub(crate) async fn remove_last_active_workspace(
@@ -84,7 +91,7 @@ impl<R: AppRuntime> StorageService<R> {
     ) -> DatabaseResult<()> {
         let store = self.storage.item_store();
 
-        TransactionalPutItem::put(
+        TransactionalPutItem::put_with_context(
             store.as_ref(),
             ctx,
             txn,
@@ -106,7 +113,7 @@ impl<R: AppRuntime> StorageService<R> {
         let store = self.storage.item_store();
         let segkey = segkey_last_opened_at(id);
 
-        TransactionalPutItem::put(
+        TransactionalPutItem::put_with_context(
             store.as_ref(),
             ctx,
             txn,
@@ -165,23 +172,15 @@ impl<R: AppRuntime> StorageService<R> {
         Ok(())
     }
 
-    pub(crate) async fn put_log_path_txn(
+    pub(crate) fn put_log_path_txn(
         &self,
-        ctx: &R::AsyncContext,
         txn: &mut Transaction,
         log_id: &LogEntryId,
         path: PathBuf,
     ) -> DatabaseResult<()> {
         let segkey = SegKey::new(&log_id).to_segkey_buf();
         let store = self.storage.log_store();
-        TransactionalPutItem::put(
-            store.as_ref(),
-            ctx,
-            txn,
-            segkey,
-            AnyValue::serialize(&path)?,
-        )
-        .await?;
+        TransactionalPutItem::put(store.as_ref(), txn, segkey, AnyValue::serialize(&path)?)?;
         Ok(())
     }
 }

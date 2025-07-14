@@ -476,7 +476,7 @@ impl<R: AppRuntime> LogService<R> {
         let f = self.fs.open_file(path).await?;
         let reader = BufReader::new(f);
 
-        let mut txn = self.storage.begin_write(ctx).await?;
+        let mut txn = self.storage.begin_write_with_context(ctx).await?;
 
         for line in reader.lines() {
             let line = line?;

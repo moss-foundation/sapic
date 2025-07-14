@@ -15,9 +15,14 @@ use std::{borrow::Borrow, path::Path, sync::Arc};
 use tokio::sync::Notify;
 
 #[async_trait]
-pub trait DatabaseClient<Context: AnyAsyncContext>: Sized {
-    async fn begin_write(&self, ctx: &Context) -> Result<Transaction, DatabaseError>;
-    async fn begin_read(&self, ctx: &Context) -> Result<Transaction, DatabaseError>;
+pub trait DatabaseClientWithContext<Context: AnyAsyncContext>: Sized {
+    async fn begin_write_with_context(&self, ctx: &Context) -> Result<Transaction, DatabaseError>;
+    async fn begin_read_with_context(&self, ctx: &Context) -> Result<Transaction, DatabaseError>;
+}
+
+pub trait DatabaseClient {
+    fn begin_write(&self) -> Result<Transaction, DatabaseError>;
+    fn begin_read(&self) -> Result<Transaction, DatabaseError>;
 }
 
 pub enum ClientState<C> {
@@ -79,12 +84,22 @@ impl ReDbClient {
     }
 }
 
+impl DatabaseClient for ReDbClient {
+    fn begin_write(&self) -> Result<Transaction, DatabaseError> {
+        Ok(Transaction::Write(self.db.begin_write()?))
+    }
+
+    fn begin_read(&self) -> Result<Transaction, DatabaseError> {
+        Ok(Transaction::Read(self.db.begin_read()?))
+    }
+}
+
 #[async_trait]
-impl<Context> DatabaseClient<Context> for ReDbClient
+impl<Context> DatabaseClientWithContext<Context> for ReDbClient
 where
     Context: AnyAsyncContext,
 {
-    async fn begin_write(&self, ctx: &Context) -> Result<Transaction, DatabaseError> {
+    async fn begin_write_with_context(&self, ctx: &Context) -> Result<Transaction, DatabaseError> {
         if let Some(reason) = ctx.done() {
             return Err(DatabaseError::Canceled(reason));
         }
@@ -96,7 +111,7 @@ where
         .map_err(|_| DatabaseError::Timeout("begin_write".to_string()))?
     }
 
-    async fn begin_read(&self, ctx: &Context) -> Result<Transaction, DatabaseError> {
+    async fn begin_read_with_context(&self, ctx: &Context) -> Result<Transaction, DatabaseError> {
         if let Some(reason) = ctx.done() {
             return Err(DatabaseError::Canceled(reason));
         }

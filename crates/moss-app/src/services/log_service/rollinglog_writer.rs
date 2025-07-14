@@ -1,15 +1,11 @@
 use chrono::DateTime;
-use moss_applib::{
-    AppRuntime,
-    context::{AnyAsyncContext, AnyContext},
-};
+use moss_applib::AppRuntime;
 use std::{
     collections::VecDeque,
     fs::OpenOptions,
     io::BufWriter,
     path::PathBuf,
     sync::{Arc, Mutex},
-    time::Duration,
 };
 
 use crate::{
@@ -66,26 +62,18 @@ impl<'a, R: AppRuntime> std::io::Write for RollingLogWriter<R> {
                     .open(&file_path)?;
                 let mut writer = BufWriter::new(file);
 
-                let ctx =
-                    R::AsyncContext::background_with_timeout(Duration::from_secs(10)).freeze();
+                let mut txn = self.storage.begin_write()?;
 
-                futures::executor::block_on(async {
-                    let mut txn = self.storage.begin_write(&ctx).await?;
+                while let Some(entry) = queue_lock.pop_front() {
+                    serde_json::to_writer(&mut writer, &entry)?;
+                    writer.write(b"\n")?;
+                    writer.flush()?;
+                    // Record the file to which the log entry is written
+                    self.storage
+                        .put_log_path_txn(&mut txn, &entry.id, file_path.clone())?;
+                }
 
-                    while let Some(entry) = queue_lock.pop_front() {
-                        serde_json::to_writer(&mut writer, &entry)?;
-                        writer.write(b"\n")?;
-                        writer.flush()?;
-                        // Record the file to which the log entry is written
-                        self.storage
-                            .put_log_path_txn(&ctx, &mut txn, &entry.id, file_path.clone())
-                            .await?;
-                    }
-
-                    txn.commit()?;
-
-                    Ok::<_, std::io::Error>(())
-                })?;
+                txn.commit()?;
             } else {
                 // Skip the first entry since its timestamp is invalid
                 queue_lock.pop_front();

@@ -1,6 +1,6 @@
 pub mod shared;
 
-use moss_db::{DatabaseClient, common::DatabaseError};
+use moss_db::{DatabaseClientWithContext, common::DatabaseError};
 
 use crate::shared::{
     TEST_AAD_1, TEST_AAD_2, TEST_PASSWORD_1, TEST_PASSWORD_2, setup_test_encrypted_bincode_table,
@@ -11,7 +11,7 @@ async fn write_success() {
     let (client, ctx, table, path) = setup_test_encrypted_bincode_table::<i32>();
 
     {
-        let mut write = client.begin_write(&ctx).await.unwrap();
+        let mut write = client.begin_write_with_context(&ctx).await.unwrap();
         let result = table
             .write(
                 &ctx,
@@ -27,7 +27,7 @@ async fn write_success() {
     }
 
     {
-        let read = client.begin_read(&ctx).await.unwrap();
+        let read = client.begin_read_with_context(&ctx).await.unwrap();
         let result = table
             .read(&ctx, &read, "1".to_string(), TEST_PASSWORD_1, TEST_AAD_1)
             .await
@@ -45,7 +45,7 @@ async fn write_overwrite() {
     let (client, ctx, table, path) = setup_test_encrypted_bincode_table::<i32>();
 
     {
-        let mut write = client.begin_write(&ctx).await.unwrap();
+        let mut write = client.begin_write_with_context(&ctx).await.unwrap();
         table
             .write(
                 &ctx,
@@ -62,7 +62,7 @@ async fn write_overwrite() {
 
     {
         // Overwrite existing key
-        let mut write = client.begin_write(&ctx).await.unwrap();
+        let mut write = client.begin_write_with_context(&ctx).await.unwrap();
         let result = table
             .write(
                 &ctx,
@@ -79,7 +79,7 @@ async fn write_overwrite() {
 
     {
         // Check the key is overwritten
-        let read = client.begin_read(&ctx).await.unwrap();
+        let read = client.begin_read_with_context(&ctx).await.unwrap();
         let result = table
             .read(&ctx, &read, "1".to_string(), TEST_PASSWORD_1, TEST_AAD_1)
             .await
@@ -97,7 +97,7 @@ async fn write_multiple_entries_with_different_password() {
     let (client, ctx, table, path) = setup_test_encrypted_bincode_table::<i32>();
 
     {
-        let mut write = client.begin_write(&ctx).await.unwrap();
+        let mut write = client.begin_write_with_context(&ctx).await.unwrap();
         table
             .write(
                 &ctx,
@@ -125,7 +125,7 @@ async fn write_multiple_entries_with_different_password() {
 
     {
         // Check both entries are inserted with correct password
-        let read = client.begin_read(&ctx).await.unwrap();
+        let read = client.begin_read_with_context(&ctx).await.unwrap();
         let result_1 = table
             .read(&ctx, &read, "1".to_string(), TEST_PASSWORD_1, TEST_AAD_1)
             .await
@@ -148,7 +148,7 @@ async fn write_in_read_transaction() {
     let (client, ctx, table, path) = setup_test_encrypted_bincode_table::<i32>();
 
     {
-        let mut read = client.begin_read(&ctx).await.unwrap();
+        let mut read = client.begin_read_with_context(&ctx).await.unwrap();
         let result = table
             .write(
                 &ctx,
@@ -173,7 +173,7 @@ async fn write_uncommitted() {
 
     {
         // Uncommitted write
-        let mut write = client.begin_write(&ctx).await.unwrap();
+        let mut write = client.begin_write_with_context(&ctx).await.unwrap();
         table
             .write(
                 &ctx,
@@ -188,7 +188,7 @@ async fn write_uncommitted() {
     }
 
     {
-        let read = client.begin_read(&ctx).await.unwrap();
+        let read = client.begin_read_with_context(&ctx).await.unwrap();
         let result = table
             .read(&ctx, &read, "1".to_string(), TEST_PASSWORD_1, TEST_AAD_1)
             .await;

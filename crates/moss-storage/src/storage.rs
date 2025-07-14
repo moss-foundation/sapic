@@ -9,9 +9,14 @@ use std::{any::TypeId, collections::HashMap};
 use crate::primitives::segkey::SegKeyBuf;
 
 #[async_trait]
-pub trait Transactional<Context: AnyAsyncContext> {
-    async fn begin_write(&self, ctx: &Context) -> DatabaseResult<Transaction>;
-    async fn begin_read(&self, ctx: &Context) -> DatabaseResult<Transaction>;
+pub trait TransactionalWithContext<Context: AnyAsyncContext> {
+    async fn begin_write_with_context(&self, ctx: &Context) -> DatabaseResult<Transaction>;
+    async fn begin_read_with_context(&self, ctx: &Context) -> DatabaseResult<Transaction>;
+}
+
+pub trait Transactional {
+    fn begin_write(&self) -> DatabaseResult<Transaction>;
+    fn begin_read(&self) -> DatabaseResult<Transaction>;
 }
 
 #[async_trait]

@@ -1,6 +1,6 @@
 pub mod shared;
 
-use moss_db::{DatabaseClient, common::DatabaseError};
+use moss_db::{DatabaseClientWithContext, common::DatabaseError};
 
 use crate::shared::setup_test_bincode_table;
 
@@ -9,8 +9,11 @@ async fn scan_by_prefix_empty() {
     let (client, ctx, table, path) = setup_test_bincode_table::<i32>();
 
     {
-        let read = client.begin_read(&ctx).await.unwrap();
-        let result = table.scan_by_prefix(&ctx, &read, "test_").await.unwrap();
+        let read = client.begin_read_with_context(&ctx).await.unwrap();
+        let result = table
+            .scan_by_prefix_with_context(&ctx, &read, "test_")
+            .await
+            .unwrap();
         assert_eq!(result.len(), 0);
     }
 
@@ -25,12 +28,12 @@ async fn scan_by_prefix_string_keys() {
 
     // Insert test data with different prefixes
     {
-        let mut write = client.begin_write(&ctx).await.unwrap();
+        let mut write = client.begin_write_with_context(&ctx).await.unwrap();
 
         // Keys with prefix "user_"
         for i in 0..50 {
             table
-                .insert(&ctx, &mut write, format!("user_{}", i), &i)
+                .insert_with_context(&ctx, &mut write, format!("user_{}", i), &i)
                 .await
                 .unwrap();
         }
@@ -38,7 +41,7 @@ async fn scan_by_prefix_string_keys() {
         // Keys with prefix "order_"
         for i in 50..100 {
             table
-                .insert(&ctx, &mut write, format!("order_{}", i), &i)
+                .insert_with_context(&ctx, &mut write, format!("order_{}", i), &i)
                 .await
                 .unwrap();
         }
@@ -46,7 +49,7 @@ async fn scan_by_prefix_string_keys() {
         // Keys with no specific prefix
         for i in 100..150 {
             table
-                .insert(&ctx, &mut write, i.to_string(), &i)
+                .insert_with_context(&ctx, &mut write, i.to_string(), &i)
                 .await
                 .unwrap();
         }
@@ -56,8 +59,11 @@ async fn scan_by_prefix_string_keys() {
 
     // Query using prefix "user_" - should return only user entries
     {
-        let read = client.begin_read(&ctx).await.unwrap();
-        let result = table.scan_by_prefix(&ctx, &read, "user_").await.unwrap();
+        let read = client.begin_read_with_context(&ctx).await.unwrap();
+        let result = table
+            .scan_by_prefix_with_context(&ctx, &read, "user_")
+            .await
+            .unwrap();
 
         assert_eq!(result.len(), 50);
 
@@ -74,8 +80,11 @@ async fn scan_by_prefix_string_keys() {
 
     // Query using prefix "order_" - should return only order entries
     {
-        let read = client.begin_read(&ctx).await.unwrap();
-        let result = table.scan_by_prefix(&ctx, &read, "order_").await.unwrap();
+        let read = client.begin_read_with_context(&ctx).await.unwrap();
+        let result = table
+            .scan_by_prefix_with_context(&ctx, &read, "order_")
+            .await
+            .unwrap();
 
         assert_eq!(result.len(), 50);
 
@@ -92,17 +101,20 @@ async fn scan_by_prefix_string_keys() {
 
     // Query using empty prefix - should return all entries
     {
-        let read = client.begin_read(&ctx).await.unwrap();
-        let result = table.scan_by_prefix(&ctx, &read, "").await.unwrap();
+        let read = client.begin_read_with_context(&ctx).await.unwrap();
+        let result = table
+            .scan_by_prefix_with_context(&ctx, &read, "")
+            .await
+            .unwrap();
 
         assert_eq!(result.len(), 150);
     }
 
     // Query using non-existent prefix
     {
-        let read = client.begin_read(&ctx).await.unwrap();
+        let read = client.begin_read_with_context(&ctx).await.unwrap();
         let result = table
-            .scan_by_prefix(&ctx, &read, "nonexistent_")
+            .scan_by_prefix_with_context(&ctx, &read, "nonexistent_")
             .await
             .unwrap();
 
@@ -120,19 +132,19 @@ async fn scan_by_prefix_case_sensitivity() {
     let (client, ctx, table, path) = setup_test_bincode_table::<i32>();
 
     {
-        let mut write = client.begin_write(&ctx).await.unwrap();
+        let mut write = client.begin_write_with_context(&ctx).await.unwrap();
 
         // Insert keys with mixed case
         table
-            .insert(&ctx, &mut write, "User_1".to_string(), &1)
+            .insert_with_context(&ctx, &mut write, "User_1".to_string(), &1)
             .await
             .unwrap();
         table
-            .insert(&ctx, &mut write, "user_2".to_string(), &2)
+            .insert_with_context(&ctx, &mut write, "user_2".to_string(), &2)
             .await
             .unwrap();
         table
-            .insert(&ctx, &mut write, "USER_3".to_string(), &3)
+            .insert_with_context(&ctx, &mut write, "USER_3".to_string(), &3)
             .await
             .unwrap();
 
@@ -141,18 +153,27 @@ async fn scan_by_prefix_case_sensitivity() {
 
     // Case-sensitive search should find exact matches only
     {
-        let read = client.begin_read(&ctx).await.unwrap();
+        let read = client.begin_read_with_context(&ctx).await.unwrap();
 
         // Capital "User_" should match only "User_1"
-        let result = table.scan_by_prefix(&ctx, &read, "User_").await.unwrap();
+        let result = table
+            .scan_by_prefix_with_context(&ctx, &read, "User_")
+            .await
+            .unwrap();
         assert_eq!(result.len(), 1);
 
         // Lowercase "user_" should match only "user_2"
-        let result = table.scan_by_prefix(&ctx, &read, "user_").await.unwrap();
+        let result = table
+            .scan_by_prefix_with_context(&ctx, &read, "user_")
+            .await
+            .unwrap();
         assert_eq!(result.len(), 1);
 
         // All uppercase "USER_" should match only "USER_3"
-        let result = table.scan_by_prefix(&ctx, &read, "USER_").await.unwrap();
+        let result = table
+            .scan_by_prefix_with_context(&ctx, &read, "USER_")
+            .await
+            .unwrap();
         assert_eq!(result.len(), 1);
     }
 
@@ -166,8 +187,10 @@ async fn scan_by_prefix_in_write_transaction() {
     let (client, ctx, table, path) = setup_test_bincode_table::<i32>();
 
     {
-        let write = client.begin_write(&ctx).await.unwrap();
-        let result = table.scan_by_prefix(&ctx, &write, "test_").await;
+        let write = client.begin_write_with_context(&ctx).await.unwrap();
+        let result = table
+            .scan_by_prefix_with_context(&ctx, &write, "test_")
+            .await;
         assert!(matches!(result, Err(DatabaseError::Transaction(_))));
     }
 
