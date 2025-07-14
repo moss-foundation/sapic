@@ -9,7 +9,7 @@ use derive_more::Deref;
 use futures::Stream;
 use moss_applib::{AppRuntime, PublicServiceMarker, ServiceMarker};
 use moss_collection::Collection as CollectionHandle;
-use moss_db::{DatabaseResult, common::Transaction, primitives::AnyValue};
+use moss_db::{common::Transaction, primitives::AnyValue};
 use moss_storage::primitives::segkey::SegKeyBuf;
 use std::{
     collections::{HashMap, HashSet},

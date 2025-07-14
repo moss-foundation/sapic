@@ -5,7 +5,7 @@ use std::{
 
 use async_trait::async_trait;
 use moss_applib::{AppRuntime, ServiceMarker};
-use moss_db::{DatabaseResult, Transaction, primitives::AnyValue};
+use moss_db::{Transaction, primitives::AnyValue};
 use moss_storage::{WorkspaceStorage, primitives::segkey::SegKeyBuf};
 
 use crate::{

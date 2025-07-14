@@ -9,9 +9,8 @@ pub use utils::{desanitize_path, normalize_path, sanitize_path};
 
 use futures::stream::BoxStream;
 use moss_applib::{GlobalMarker, context_old::Context};
-use std::{io, io::ErrorKind, path::Path, sync::Arc, time::Duration};
+use std::{io, path::Path, sync::Arc, time::Duration};
 use tauri::{AppHandle, Manager, Runtime as TauriRuntime};
-use thiserror::Error;
 use tokio::fs::ReadDir;
 
 // TODO: Rename to RemoveParams

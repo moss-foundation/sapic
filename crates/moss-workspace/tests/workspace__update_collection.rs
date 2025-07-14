@@ -97,7 +97,6 @@ async fn rename_collection_empty_name() {
         )
         .await;
 
-    dbg!(&rename_collection_result);
     assert!(rename_collection_result.is_err());
     cleanup().await;
 }
