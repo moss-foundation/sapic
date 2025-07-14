@@ -67,8 +67,8 @@ impl From<hcl::Error> for WorktreeError {
     }
 }
 
-impl From<moss_db::common::DatabaseError> for WorktreeError {
-    fn from(error: moss_db::common::DatabaseError) -> Self {
+impl From<moss_db::DatabaseError> for WorktreeError {
+    fn from(error: moss_db::DatabaseError) -> Self {
         WorktreeError::Internal(error.to_string())
     }
 }

@@ -7,10 +7,7 @@ use std::{
     hash::Hash,
 };
 
-use crate::{
-    Table,
-    common::{DatabaseError, Transaction},
-};
+use crate::{DatabaseError, Table, common::Transaction};
 
 #[derive(Clone)]
 pub struct BincodeTable<'a, K, V>

@@ -15,7 +15,7 @@ use std::{
 };
 use zeroize::Zeroizing;
 
-use crate::{Table, Transaction, common::DatabaseError};
+use crate::{DatabaseError, Table, Transaction};
 
 // See https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#argon2id
 // OWASP recommends m=47104 (46 MiB), t=1, p=1. Our default is stronger, and appears to have acceptable performance

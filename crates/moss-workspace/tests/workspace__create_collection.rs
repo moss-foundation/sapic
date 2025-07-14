@@ -91,10 +91,7 @@ async fn create_collection_empty_name() {
         )
         .await;
 
-    assert!(matches!(
-        create_collection_result,
-        Err(OperationError::InvalidInput(_))
-    ));
+    assert!(create_collection_result.is_err());
 
     cleanup().await;
 }

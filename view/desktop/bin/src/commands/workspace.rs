@@ -32,10 +32,7 @@ pub async fn describe_workspace_state<R: tauri::Runtime>(
     options: Options,
 ) -> TauriResult<DescribeStateOutput> {
     super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
-        workspace
-            .describe_state(&ctx)
-            .await
-            .map_err(TauriError::OperationError)
+        workspace.describe_state(&ctx).await.map_err(|e| e.into())
     })
     .await
 }
@@ -89,7 +86,7 @@ pub async fn create_collection<R: tauri::Runtime>(
         workspace
             .create_collection(&ctx, &input)
             .await
-            .map_err(TauriError::OperationError)
+            .map_err(|e| e.into())
     })
     .await
 }
@@ -107,7 +104,7 @@ pub async fn delete_collection<R: tauri::Runtime>(
         workspace
             .delete_collection(&ctx, &input)
             .await
-            .map_err(TauriError::OperationError)
+            .map_err(|e| e.into())
     })
     .await
 }

@@ -1,5 +1,4 @@
 use moss_applib::AppRuntime;
-use moss_common::api::OperationResult;
 
 use crate::{
     models::operations::{DeleteCollectionInput, DeleteCollectionOutput},
@@ -12,7 +11,7 @@ impl<R: AppRuntime> Workspace<R> {
         &self,
         ctx: &R::AsyncContext,
         input: &DeleteCollectionInput,
-    ) -> OperationResult<DeleteCollectionOutput> {
+    ) -> joinerror::Result<DeleteCollectionOutput> {
         let collection_service = self.services.get::<DynCollectionService<R>>();
         let description = collection_service.delete_collection(ctx, &input.id).await?;
 

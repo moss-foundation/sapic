@@ -1,5 +1,4 @@
 use moss_applib::AppRuntime;
-use moss_common::api::OperationResult;
 
 use crate::{
     Workspace,
@@ -11,7 +10,7 @@ impl<R: AppRuntime> Workspace<R> {
     pub async fn describe_state(
         &self,
         ctx: &R::AsyncContext,
-    ) -> OperationResult<DescribeStateOutput> {
+    ) -> joinerror::Result<DescribeStateOutput> {
         let layout = self.services.get::<DynLayoutService<R>>();
         let storage = self.services.get::<DynStorageService<R>>();
 

@@ -1,6 +1,6 @@
 pub mod shared;
 
-use moss_db::{DatabaseClientWithContext, common::DatabaseError};
+use moss_db::{DatabaseClientWithContext, DatabaseError};
 
 use crate::shared::setup_test_bincode_table;
 

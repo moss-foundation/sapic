@@ -1,5 +1,4 @@
 use moss_applib::AppRuntime;
-use moss_common::api::OperationResult;
 use validator::Validate;
 
 use crate::{
@@ -13,7 +12,7 @@ impl<R: AppRuntime> Workspace<R> {
         &mut self,
         ctx: &R::AsyncContext,
         input: UpdateCollectionInput,
-    ) -> OperationResult<UpdateCollectionOutput> {
+    ) -> joinerror::Result<UpdateCollectionOutput> {
         input.validate()?;
         let id = input.id.clone().into();
         let collections = self.services.get::<DynCollectionService<R>>();
