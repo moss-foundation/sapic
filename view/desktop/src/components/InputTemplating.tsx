@@ -231,6 +231,95 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
         return;
       }
 
+      // Handle Delete and Backspace keys to work properly with variable spans
+      if (e.key === "Delete" || e.key === "Backspace") {
+        e.preventDefault();
+
+        if (!editorRef.current) return;
+
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) return;
+
+        const range = selection.getRangeAt(0);
+        const plainText = extractPlainText(editorRef.current.innerHTML);
+
+        let newText = plainText;
+        let newCursorPosition = 0;
+
+        // Check if there's a selection (not just cursor position)
+        if (!range.collapsed) {
+          // There's a selection - delete the selected text
+          const startOffset = getTextOffset(editorRef.current, range.startContainer, range.startOffset);
+          const endOffset = getTextOffset(editorRef.current, range.endContainer, range.endOffset);
+
+          newText = plainText.slice(0, startOffset) + plainText.slice(endOffset);
+          newCursorPosition = startOffset;
+        } else {
+          // No selection - single character deletion
+          const currentOffset = getTextOffset(editorRef.current, range.startContainer, range.startOffset);
+          newCursorPosition = currentOffset;
+
+          if (e.key === "Delete") {
+            // Delete character to the right of cursor
+            if (currentOffset < plainText.length) {
+              newText = plainText.slice(0, currentOffset) + plainText.slice(currentOffset + 1);
+              // Cursor stays at same position
+            }
+          } else if (e.key === "Backspace") {
+            // Delete character to the left of cursor
+            if (currentOffset > 0) {
+              newText = plainText.slice(0, currentOffset - 1) + plainText.slice(currentOffset);
+              newCursorPosition = currentOffset - 1;
+            }
+          }
+        }
+
+        // Update the content
+        setValue(newText);
+
+        // Update hidden input for form compatibility
+        if (hiddenInputRef.current) {
+          hiddenInputRef.current.value = newText;
+        }
+
+        // Extract variables and call callback
+        const variables = extractVariables(newText);
+        onTemplateChange?.(newText, variables);
+
+        // Call original onChange if provided
+        if (onChange && hiddenInputRef.current) {
+          const event = new Event("input", { bubbles: true });
+          Object.defineProperty(event, "target", { value: hiddenInputRef.current });
+          onChange(event as any);
+        }
+
+        // Update editor content and restore cursor position
+        setTimeout(() => {
+          updateEditorContent(newText);
+          setTimeout(() => {
+            const textPosition = findTextNodeAtOffset(editorRef.current!, newCursorPosition);
+            if (textPosition) {
+              const newRange = document.createRange();
+              const newSelection = window.getSelection();
+
+              try {
+                newRange.setStart(
+                  textPosition.node,
+                  Math.min(textPosition.offset, (textPosition.node.textContent || "").length)
+                );
+                newRange.collapse(true);
+                newSelection?.removeAllRanges();
+                newSelection?.addRange(newRange);
+              } catch (e) {
+                // If cursor positioning fails, just ignore it
+              }
+            }
+          }, 0);
+        }, 0);
+
+        return;
+      }
+
       // Handle arrow key navigation to skip over span boundaries
       if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
         e.preventDefault();
