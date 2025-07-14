@@ -1,9 +1,11 @@
 pub mod bincode_table;
 pub mod common;
 pub mod encrypted_bincode_table;
+pub mod error;
 pub mod primitives;
 
 pub use common::*;
+pub use error::*;
 
 use anyhow::Result;
 use async_trait::async_trait;

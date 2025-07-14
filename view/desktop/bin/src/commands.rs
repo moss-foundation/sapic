@@ -57,8 +57,7 @@ where
     let collection = workspace
         .service::<DynCollectionService<R>>()
         .collection(&id)
-        .await
-        .context("Collection not found")?;
+        .await?;
 
     f(ctx.freeze(), collection).await
 }

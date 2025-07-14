@@ -24,6 +24,13 @@ pub enum TauriError {
     Timeout,
 }
 
+// FIXME: How do we best convert joinerror::Error to TauriError?
+impl From<joinerror::Error> for TauriError {
+    fn from(error: joinerror::Error) -> Self {
+        TauriError::Other(error.into())
+    }
+}
+
 impl Serialize for TauriError {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where

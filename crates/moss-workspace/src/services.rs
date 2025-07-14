@@ -21,7 +21,6 @@ use crate::{
     models::{primitives::*, types::*},
     services::collection_service::{
         CollectionItemCreateParams, CollectionItemDescription, CollectionItemUpdateParams,
-        CollectionResult,
     },
     storage::entities::state_store::*,
 };
@@ -35,34 +34,39 @@ use crate::{
 
 #[async_trait]
 pub trait AnyStorageService<R: AppRuntime>: Send + Sync + ServiceMarker + 'static {
-    async fn begin_write(&self, ctx: &R::AsyncContext) -> Result<Transaction>;
+    async fn begin_write(&self, ctx: &R::AsyncContext) -> joinerror::Result<Transaction>;
     async fn put_item_order_txn(
         &self,
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
         id: &str,
         order: usize,
-    ) -> Result<()>;
+    ) -> joinerror::Result<()>;
     async fn put_expanded_items_txn(
         &self,
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
         expanded_entries: &HashSet<CollectionId>,
-    ) -> Result<()>;
-    async fn get_expanded_items(&self, ctx: &R::AsyncContext) -> Result<HashSet<CollectionId>>;
+    ) -> joinerror::Result<()>;
+    async fn get_expanded_items(
+        &self,
+        ctx: &R::AsyncContext,
+    ) -> joinerror::Result<HashSet<CollectionId>>;
     async fn remove_item_metadata_txn(
         &self,
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
         segkey_prefix: SegKeyBuf,
-    ) -> DatabaseResult<()>;
+    ) -> joinerror::Result<()>;
     async fn list_items_metadata(
         &self,
         ctx: &R::AsyncContext,
         segkey_prefix: SegKeyBuf,
-    ) -> DatabaseResult<HashMap<SegKeyBuf, AnyValue>>;
-    async fn get_layout_cache(&self, ctx: &R::AsyncContext)
-    -> Result<HashMap<SegKeyBuf, AnyValue>>;
+    ) -> joinerror::Result<HashMap<SegKeyBuf, AnyValue>>;
+    async fn get_layout_cache(
+        &self,
+        ctx: &R::AsyncContext,
+    ) -> joinerror::Result<HashMap<SegKeyBuf, AnyValue>>;
 
     async fn put_sidebar_layout(
         &self,
@@ -70,21 +74,21 @@ pub trait AnyStorageService<R: AppRuntime>: Send + Sync + ServiceMarker + 'stati
         position: SidebarPosition,
         size: usize,
         visible: bool,
-    ) -> Result<()>;
+    ) -> joinerror::Result<()>;
 
     async fn put_panel_layout(
         &self,
         ctx: &R::AsyncContext,
         size: usize,
         visible: bool,
-    ) -> Result<()>;
+    ) -> joinerror::Result<()>;
 
     async fn put_activitybar_layout(
         &self,
         ctx: &R::AsyncContext,
         last_active_container_id: Option<String>,
         position: ActivitybarPosition,
-    ) -> Result<()>;
+    ) -> joinerror::Result<()>;
 
     async fn put_editor_layout(
         &self,
@@ -92,7 +96,7 @@ pub trait AnyStorageService<R: AppRuntime>: Send + Sync + ServiceMarker + 'stati
         grid: EditorGridStateEntity,
         panels: HashMap<String, EditorPanelStateEntity>,
         active_group: Option<String>,
-    ) -> Result<()>;
+    ) -> joinerror::Result<()>;
 }
 
 #[derive(Deref)]
@@ -173,7 +177,7 @@ impl<R: AppRuntime> ServiceMarker for DynLayoutService<R> {}
 
 #[async_trait]
 pub trait AnyCollectionService<R: AppRuntime>: Send + Sync + ServiceMarker + 'static {
-    async fn collection(&self, id: &CollectionId) -> CollectionResult<Arc<CollectionHandle<R>>>;
+    async fn collection(&self, id: &CollectionId) -> joinerror::Result<Arc<CollectionHandle<R>>>;
 
     #[allow(private_interfaces)]
     async fn create_collection(
@@ -181,14 +185,14 @@ pub trait AnyCollectionService<R: AppRuntime>: Send + Sync + ServiceMarker + 'st
         ctx: &R::AsyncContext,
         id: &CollectionId,
         params: CollectionItemCreateParams,
-    ) -> CollectionResult<CollectionItemDescription>;
+    ) -> joinerror::Result<CollectionItemDescription>;
 
     #[allow(private_interfaces)]
     async fn delete_collection(
         &self,
         ctx: &R::AsyncContext,
         id: &CollectionId,
-    ) -> CollectionResult<Option<CollectionItemDescription>>;
+    ) -> joinerror::Result<Option<CollectionItemDescription>>;
 
     #[allow(private_interfaces)]
     async fn update_collection(
@@ -196,7 +200,7 @@ pub trait AnyCollectionService<R: AppRuntime>: Send + Sync + ServiceMarker + 'st
         ctx: &R::AsyncContext,
         id: &CollectionId,
         params: CollectionItemUpdateParams,
-    ) -> CollectionResult<()>;
+    ) -> joinerror::Result<()>;
 
     #[allow(private_interfaces)]
     async fn list_collections(

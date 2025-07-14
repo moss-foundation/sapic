@@ -3,6 +3,7 @@ pub mod impl_for_integration_test;
 
 use anyhow::{Context as _, Result};
 use async_trait::async_trait;
+use joinerror::{ResultExt, error_codes::ErrorStorage};
 use moss_applib::{AppRuntime, ServiceMarker};
 use moss_db::{DatabaseResult, Transaction, primitives::AnyValue};
 use moss_storage::{
@@ -36,7 +37,7 @@ impl<R: AppRuntime> ServiceMarker for StorageService<R> {}
 
 #[async_trait]
 impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
-    async fn begin_write(&self, ctx: &R::AsyncContext) -> Result<Transaction> {
+    async fn begin_write(&self, ctx: &R::AsyncContext) -> joinerror::Result<Transaction> {
         Ok(self.storage.begin_write_with_context(ctx).await?)
     }
 
@@ -48,7 +49,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         txn: &mut Transaction,
         id: &str,
         order: usize,
-    ) -> Result<()> {
+    ) -> joinerror::Result<()> {
         let store = self.storage.item_store();
 
         let segkey = SEGKEY_COLLECTION.join(id.to_string()).join("order");
@@ -69,7 +70,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
         expanded_entries: &HashSet<CollectionId>,
-    ) -> Result<()> {
+    ) -> joinerror::Result<()> {
         let store = self.storage.item_store();
         TransactionalPutItem::put_with_context(
             store.as_ref(),
@@ -83,7 +84,10 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         Ok(())
     }
 
-    async fn get_expanded_items(&self, ctx: &R::AsyncContext) -> Result<HashSet<CollectionId>> {
+    async fn get_expanded_items(
+        &self,
+        ctx: &R::AsyncContext,
+    ) -> joinerror::Result<HashSet<CollectionId>> {
         let store = self.storage.item_store();
         let segkey = segments::SEGKEY_EXPANDED_ITEMS.to_segkey_buf();
         let value = GetItem::get(store.as_ref(), ctx, segkey).await?;
@@ -94,7 +98,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         &self,
         ctx: &R::AsyncContext,
         segkey_prefix: SegKeyBuf,
-    ) -> DatabaseResult<HashMap<SegKeyBuf, AnyValue>> {
+    ) -> joinerror::Result<HashMap<SegKeyBuf, AnyValue>> {
         let data = ListByPrefix::list_by_prefix(
             self.storage.item_store().as_ref(),
             ctx,
@@ -110,7 +114,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
         segkey_prefix: SegKeyBuf,
-    ) -> DatabaseResult<()> {
+    ) -> joinerror::Result<()> {
         TransactionalRemoveByPrefix::remove_by_prefix(
             self.storage.item_store().as_ref(),
             ctx,
@@ -127,7 +131,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
     async fn get_layout_cache(
         &self,
         ctx: &R::AsyncContext,
-    ) -> Result<HashMap<SegKeyBuf, AnyValue>> {
+    ) -> joinerror::Result<HashMap<SegKeyBuf, AnyValue>> {
         let store = self.storage.item_store();
         let segkey = segments::SEGKEY_LAYOUT.to_segkey_buf();
         let value =
@@ -141,7 +145,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         position: SidebarPosition,
         size: usize,
         visible: bool,
-    ) -> Result<()> {
+    ) -> joinerror::Result<()> {
         let store = self.storage.item_store();
         let mut txn = self.begin_write(ctx).await?;
 
@@ -180,7 +184,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         ctx: &R::AsyncContext,
         size: usize,
         visible: bool,
-    ) -> Result<()> {
+    ) -> joinerror::Result<()> {
         let store = self.storage.item_store();
         let mut txn = self.begin_write(ctx).await?;
 
@@ -210,7 +214,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         ctx: &R::AsyncContext,
         last_active_container_id: Option<String>,
         position: ActivitybarPosition,
-    ) -> Result<()> {
+    ) -> joinerror::Result<()> {
         let store = self.storage.item_store();
         let mut txn = self.begin_write(ctx).await?;
 
@@ -243,7 +247,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         grid: EditorGridStateEntity,
         panels: HashMap<String, EditorPanelStateEntity>,
         active_group: Option<String>,
-    ) -> Result<()> {
+    ) -> joinerror::Result<()> {
         let store = self.storage.item_store();
         let mut txn = self.begin_write(ctx).await?;
 
