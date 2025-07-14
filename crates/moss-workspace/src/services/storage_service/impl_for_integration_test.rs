@@ -40,7 +40,7 @@ impl<R: AppRuntime> From<StorageService<R>> for StorageServiceForIntegrationTest
 
 #[async_trait]
 impl<R: AppRuntime> AnyStorageService<R> for StorageServiceForIntegrationTest<R> {
-    async fn begin_write(&self, ctx: &R::AsyncContext) -> anyhow::Result<Transaction> {
+    async fn begin_write(&self, ctx: &R::AsyncContext) -> joinerror::Result<Transaction> {
         self.real.begin_write(ctx).await
     }
 
@@ -50,7 +50,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageServiceForIntegrationTest<R>
         txn: &mut Transaction,
         id: &str,
         order: usize,
-    ) -> anyhow::Result<()> {
+    ) -> joinerror::Result<()> {
         self.real.put_item_order_txn(ctx, txn, id, order).await
     }
 
@@ -59,7 +59,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageServiceForIntegrationTest<R>
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
         expanded_entries: &HashSet<CollectionId>,
-    ) -> anyhow::Result<()> {
+    ) -> joinerror::Result<()> {
         self.real
             .put_expanded_items_txn(ctx, txn, expanded_entries)
             .await
@@ -68,7 +68,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageServiceForIntegrationTest<R>
     async fn get_expanded_items(
         &self,
         ctx: &R::AsyncContext,
-    ) -> anyhow::Result<HashSet<CollectionId>> {
+    ) -> joinerror::Result<HashSet<CollectionId>> {
         self.real.get_expanded_items(ctx).await
     }
 
@@ -77,7 +77,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageServiceForIntegrationTest<R>
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
         segkey_prefix: SegKeyBuf,
-    ) -> DatabaseResult<()> {
+    ) -> joinerror::Result<()> {
         self.real
             .remove_item_metadata_txn(ctx, txn, segkey_prefix)
             .await
@@ -87,14 +87,14 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageServiceForIntegrationTest<R>
         &self,
         ctx: &R::AsyncContext,
         segkey_prefix: SegKeyBuf,
-    ) -> DatabaseResult<HashMap<SegKeyBuf, AnyValue>> {
+    ) -> joinerror::Result<HashMap<SegKeyBuf, AnyValue>> {
         self.real.list_items_metadata(ctx, segkey_prefix).await
     }
 
     async fn get_layout_cache(
         &self,
         ctx: &R::AsyncContext,
-    ) -> anyhow::Result<HashMap<SegKeyBuf, AnyValue>> {
+    ) -> joinerror::Result<HashMap<SegKeyBuf, AnyValue>> {
         self.real.get_layout_cache(ctx).await
     }
 
@@ -104,7 +104,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageServiceForIntegrationTest<R>
         position: SidebarPosition,
         size: usize,
         visible: bool,
-    ) -> anyhow::Result<()> {
+    ) -> joinerror::Result<()> {
         self.real
             .put_sidebar_layout(ctx, position, size, visible)
             .await
@@ -115,7 +115,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageServiceForIntegrationTest<R>
         ctx: &R::AsyncContext,
         size: usize,
         visible: bool,
-    ) -> anyhow::Result<()> {
+    ) -> joinerror::Result<()> {
         self.real.put_panel_layout(ctx, size, visible).await
     }
 
@@ -124,7 +124,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageServiceForIntegrationTest<R>
         ctx: &R::AsyncContext,
         last_active_container_id: Option<String>,
         position: ActivitybarPosition,
-    ) -> anyhow::Result<()> {
+    ) -> joinerror::Result<()> {
         self.real
             .put_activitybar_layout(ctx, last_active_container_id, position)
             .await
@@ -136,7 +136,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageServiceForIntegrationTest<R>
         grid: EditorGridStateEntity,
         panels: HashMap<String, EditorPanelStateEntity>,
         active_group: Option<String>,
-    ) -> anyhow::Result<()> {
+    ) -> joinerror::Result<()> {
         self.real
             .put_editor_layout(ctx, grid, panels, active_group)
             .await

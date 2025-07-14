@@ -14,7 +14,7 @@ impl<R: AppRuntime> Workspace<R> {
         ctx: &R::AsyncContext,
         input: UpdateCollectionInput,
     ) -> joinerror::Result<UpdateCollectionOutput> {
-        input.validate();
+        input.validate()?;
         let id = input.id.clone().into();
         let collections = self.services.get::<DynCollectionService<R>>();
         collections
