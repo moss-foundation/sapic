@@ -1,8 +1,10 @@
+#![cfg(feature = "integration-tests")]
+
 use crate::shared::set_up_test_app;
 use futures::future;
 use moss_app::models::operations::CancelRequestInput;
 use moss_applib::context::{
-    AnyAsyncContext, AnyContext, AsyncContext, MutableContext, Reason, WithCanceller,
+    AnyAsyncContext, AnyContext, AsyncContext, Canceller, MutableContext, Reason, WithCanceller,
 };
 use std::{sync::Arc, time::Duration};
 use tokio::{sync::Mutex, time::timeout};
@@ -16,8 +18,12 @@ async fn cancel_request_success() {
     let mut ctx = AsyncContext::background();
     let request_id = "request".to_string();
 
-    app.track_cancellation(&request_id, ctx.get_canceller())
-        .await;
+    let cancellation_map = app.cancellation_map();
+
+    cancellation_map
+        .write()
+        .await
+        .insert(request_id.clone(), ctx.get_canceller());
 
     let ctx = ctx.freeze();
     let (canceled_tx, canceled_rx) = tokio::sync::oneshot::channel();
@@ -70,28 +76,28 @@ async fn cancel_request_nonexistent() {
 async fn cancel_request_with_child() {
     let (app, _top_ctx, services, cleanup, _abs_path) = set_up_test_app().await;
 
-    let app = Arc::new(Mutex::new(app));
+    let cancellation_map = app.cancellation_map();
 
     let mut parent_ctx = AsyncContext::background();
     let parent_id = "parent".to_string();
 
-    app.lock()
+    cancellation_map
+        .write()
         .await
-        .track_cancellation(&parent_id, parent_ctx.get_canceller())
-        .await;
+        .insert(parent_id.clone(), parent_ctx.get_canceller());
 
     let (parent_canceled_tx, parent_canceled_rx) = tokio::sync::oneshot::channel();
     let (child_canceled_tx, child_canceled_rx) = tokio::sync::oneshot::channel();
     {
-        let app = app.clone();
+        let cancellation_map = cancellation_map.clone();
         let parent_ctx = parent_ctx.freeze();
         tokio::spawn(async move {
             let mut child_ctx = AnyAsyncContext::new(parent_ctx.clone());
             let child_id = "child".to_string();
-            app.lock()
+            cancellation_map
+                .write()
                 .await
-                .track_cancellation(&child_id, child_ctx.get_canceller())
-                .await;
+                .insert(child_id.clone(), child_ctx.get_canceller());
             {
                 let child_ctx = child_ctx.freeze();
 
@@ -123,9 +129,7 @@ async fn cancel_request_with_child() {
     }
 
     tokio::time::sleep(Duration::from_millis(1000)).await;
-    app.lock()
-        .await
-        .cancel_request(CancelRequestInput(parent_id))
+    app.cancel_request(CancelRequestInput(parent_id))
         .await
         .unwrap();
 

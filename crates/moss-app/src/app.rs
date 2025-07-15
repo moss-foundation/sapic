@@ -62,7 +62,7 @@ pub struct App<R: AppRuntime> {
     pub(super) services: ServiceProvider,
 
     // Store cancellers by the id of API requests
-    pub(super) tracked_cancellations: RwLock<HashMap<String, Canceller>>,
+    pub(super) tracked_cancellations: Arc<RwLock<HashMap<String, Canceller>>>,
     // TODO: This is also might be better to be a service
     pub(super) activity_indicator: ActivityIndicator<R::EventLoop>,
 }
@@ -105,8 +105,9 @@ impl<R: AppRuntime> App<R> {
 
         read.get(request_id).cloned()
     }
-}
 
-// FIXME: A Hack to make tests work
-unsafe impl<R: AppRuntime> Send for App<R> {}
-unsafe impl<R: AppRuntime> Sync for App<R> {}
+    #[cfg(feature = "integration-tests")]
+    pub fn cancellation_map(&self) -> Arc<RwLock<HashMap<String, Canceller>>> {
+        self.tracked_cancellations.clone()
+    }
+}
