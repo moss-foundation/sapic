@@ -49,7 +49,7 @@ const highlightedVariableStyles =
   "background-(--moss-templating-input-bg) text-(--moss-templating-input-text) border border-(--moss-templating-input-border) rounded-sm px-0.5 whitespace-nowrap inline-block tracking-tighter" +
   " [height:20px] [line-height:18px] [vertical-align:middle]";
 
-// Function to extract variables from template string
+// Extract variables from template string (e.g., {{variable}})
 const extractVariables = (text: string): string[] => {
   const regex = /\{\{([^}]+)\}\}/g;
   const variables: string[] = [];
@@ -65,26 +65,24 @@ const extractVariables = (text: string): string[] => {
   return variables;
 };
 
-// Function to create highlighted HTML while preserving spaces
+// Create highlighted HTML while preserving spaces
 const createHighlightedHTML = (text: string): string => {
   const regex = /(\{\{[^}]*\}\})/g;
-  // Replace spaces with non-breaking spaces to preserve them
   const textWithNbsp = text.replace(/ /g, "&nbsp;");
   return textWithNbsp.replace(regex, (match) => {
     return `<span class="${highlightedVariableStyles}">${match}</span>`;
   });
 };
 
-// Function to extract plain text from HTML while preserving spaces
+// Extract plain text from HTML while preserving spaces
 const extractPlainText = (html: string): string => {
-  // Replace non-breaking spaces back to regular spaces
   const normalizedHtml = html.replace(/&nbsp;/g, " ");
   const div = document.createElement("div");
   div.innerHTML = normalizedHtml;
   return div.textContent || div.innerText || "";
 };
 
-// Function to calculate cursor position in terms of plain text
+// Calculate cursor position in terms of plain text
 const getTextOffset = (container: Node, targetNode: Node, targetOffset: number): number => {
   const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null);
 
@@ -101,7 +99,7 @@ const getTextOffset = (container: Node, targetNode: Node, targetOffset: number):
   return offset;
 };
 
-// Function to find text node and offset from plain text position
+// Find text node and offset from plain text position
 const findTextNodeAtOffset = (container: Node, targetOffset: number): { node: Node; offset: number } | null => {
   const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null);
 
@@ -140,20 +138,16 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
       if (editorRef.current && !isUpdatingContent.current) {
         isUpdatingContent.current = true;
 
-        // Store current cursor position safely
         const selection = window.getSelection();
         let cursorOffset = 0;
         let shouldRestoreCursor = false;
 
-        // Only try to get cursor position if we have a valid selection
         if (selection && selection.rangeCount > 0 && editorRef.current.contains(selection.focusNode)) {
           try {
             const range = selection.getRangeAt(0);
-            // Calculate cursor position relative to the plain text content
             cursorOffset = getTextOffset(editorRef.current, range.startContainer, range.startOffset);
             shouldRestoreCursor = true;
           } catch (e) {
-            // Selection might not be valid, skip cursor restoration
             shouldRestoreCursor = false;
           }
         }
@@ -161,13 +155,11 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
         const highlightedHTML = createHighlightedHTML(text);
         editorRef.current.innerHTML = highlightedHTML;
 
-        // Restore cursor position only if we had a valid selection
         if (shouldRestoreCursor) {
           try {
             const newRange = document.createRange();
             const newSelection = window.getSelection();
 
-            // Find the appropriate text node to place cursor using plain text offset
             const textPosition = findTextNodeAtOffset(editorRef.current, cursorOffset);
 
             if (textPosition && newSelection) {
@@ -180,7 +172,7 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
               newSelection.addRange(newRange);
             }
           } catch (e) {
-            // If cursor restoration fails, just ignore it
+            // Cursor restoration failed, ignore
           }
         }
 
@@ -209,14 +201,12 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
         onChange(syntheticEvent);
       }
 
-      // Re-apply highlighting after a short delay
       setTimeout(() => {
         updateEditorContent(plainText);
       }, 0);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-      // Handle Enter key to prevent line breaks
       if (e.key === "Enter") {
         e.preventDefault();
         return;
@@ -227,7 +217,7 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
         return;
       }
 
-      // Handle Delete and Backspace keys to work properly with variable spans
+      // Handle Delete and Backspace to work properly with variable spans
       if (e.key === "Delete" || e.key === "Backspace") {
         e.preventDefault();
 
@@ -242,7 +232,6 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
         let newText = plainText;
         let newCursorPosition = 0;
 
-        // Check if there's a selection (not just cursor position)
         if (!range.collapsed) {
           const startOffset = getTextOffset(editorRef.current, range.startContainer, range.startOffset);
           const endOffset = getTextOffset(editorRef.current, range.endContainer, range.endOffset);
@@ -250,7 +239,6 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
           newText = plainText.slice(0, startOffset) + plainText.slice(endOffset);
           newCursorPosition = startOffset;
         } else {
-          // No selection - single character deletion
           const currentOffset = getTextOffset(editorRef.current, range.startContainer, range.startOffset);
           newCursorPosition = currentOffset;
 
@@ -283,7 +271,6 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
           onChange(syntheticEvent);
         }
 
-        // Update editor content and restore cursor position
         setTimeout(() => {
           updateEditorContent(newText);
           setTimeout(() => {
@@ -301,7 +288,7 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
                 newSelection?.removeAllRanges();
                 newSelection?.addRange(newRange);
               } catch (e) {
-                // If cursor positioning fails, just ignore it
+                // Cursor positioning failed, ignore
               }
             }
           }, 0);
@@ -345,7 +332,7 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
             newSelection?.removeAllRanges();
             newSelection?.addRange(newRange);
           } catch (e) {
-            // If cursor positioning fails, just ignore it
+            // Cursor positioning failed, ignore
           }
         }
       }
@@ -368,7 +355,6 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
       const range = selection.getRangeAt(0);
       const selectedContent = range.cloneContents();
 
-      // Create a temporary div to extract plain text from the selection
       const tempDiv = document.createElement("div");
       tempDiv.appendChild(selectedContent);
 
@@ -388,7 +374,7 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
           ref={forwardedRef || hiddenInputRef}
           type="text"
           value={value}
-          onChange={() => {}} // Controlled by the contentEditable div
+          onChange={() => {}}
           className="hidden"
           {...props}
         />
