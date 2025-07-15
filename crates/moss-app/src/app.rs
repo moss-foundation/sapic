@@ -88,13 +88,10 @@ impl<R: AppRuntime> App<R> {
         self.commands.get(id).map(|cmd| Arc::clone(cmd))
     }
 
-    pub async fn track_cancellation(&self, request_id: &str) -> () {
+    pub async fn track_cancellation(&self, request_id: &str, canceller: Canceller) -> () {
         let mut write = self.tracked_cancellations.write().await;
 
-        write.insert(
-            request_id.to_string(),
-            Canceller::new(Arc::new(AtomicBool::new(false))),
-        );
+        write.insert(request_id.to_string(), canceller);
     }
 
     pub async fn release_cancellation(&self, request_id: &str) -> () {
@@ -109,3 +106,7 @@ impl<R: AppRuntime> App<R> {
         read.get(request_id).cloned()
     }
 }
+
+// FIXME: A Hack to make tests work
+unsafe impl<R: AppRuntime> Send for App<R> {}
+unsafe impl<R: AppRuntime> Sync for App<R> {}

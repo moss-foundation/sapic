@@ -21,7 +21,7 @@ impl ContextValue for i64 {}
 impl ContextValue for f64 {}
 impl ContextValue for String {}
 
-pub trait AnyContext {
+pub trait AnyContext: WithCanceller {
     type Frozen: AnyAsyncContext;
 
     fn freeze(self) -> Self::Frozen;
@@ -52,6 +52,10 @@ pub trait AnyAsyncContext: Clone + Send + Sync + 'static {
     fn deadline(&self) -> Duration;
     fn value<V: ContextValue>(&self, key: &str) -> Option<Arc<V>>;
     fn done(&self) -> Option<Reason>;
+}
+
+pub trait WithCanceller {
+    fn get_canceller(&self) -> Canceller;
 }
 
 pub type AsyncContext = Arc<MutableContext>;
@@ -160,6 +164,12 @@ impl fmt::Debug for MutableContext {
             .field("cancelled", &self.cancelled.load(Ordering::Relaxed))
             .field("values_keys", &self.values.keys())
             .finish()
+    }
+}
+
+impl WithCanceller for MutableContext {
+    fn get_canceller(&self) -> Canceller {
+        Canceller::new(self.cancelled.clone())
     }
 }
 
@@ -277,11 +287,6 @@ impl MutableContext {
             Some(current) if current <= new_deadline => {}
             _ => self.deadline = Some(new_deadline),
         }
-    }
-
-    /// Return a canceller to cancel this context.
-    pub fn add_cancel(&mut self) -> Canceller {
-        Canceller::new(self.cancelled.clone())
     }
 
     /// Capture a snapshot of cancellation state and deadline.

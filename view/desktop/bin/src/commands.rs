@@ -17,6 +17,7 @@ use moss_app::{
     app::App,
     services::workspace_service::{ActiveWorkspace, WorkspaceService},
 };
+use moss_applib::context::WithCanceller;
 use moss_collection::Collection;
 use moss_common::api::OperationOptionExt;
 use moss_workspace::{models::primitives::CollectionId, services::DynCollectionService};
@@ -59,7 +60,8 @@ where
 
     if let Some(request_id) = &request_id {
         ctx.with_value("request_id", request_id.clone());
-        app.track_cancellation(&request_id).await;
+        app.track_cancellation(&request_id, ctx.get_canceller())
+            .await;
     }
 
     let result = f(ctx.freeze(), collection).await;
@@ -97,7 +99,8 @@ where
     let mut ctx = R::AsyncContext::new_with_timeout(ctx.clone(), timeout);
     if let Some(request_id) = &request_id {
         ctx.with_value("request_id", request_id.clone());
-        app.track_cancellation(request_id).await;
+        app.track_cancellation(request_id, ctx.get_canceller())
+            .await;
     }
 
     let result = f(ctx.freeze(), workspace).await;

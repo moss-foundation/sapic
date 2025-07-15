@@ -1,8 +1,142 @@
 use crate::shared::set_up_test_app;
+use futures::future;
+use moss_app::models::operations::CancelRequestInput;
+use moss_applib::context::{
+    AnyAsyncContext, AnyContext, AsyncContext, MutableContext, Reason, WithCanceller,
+};
+use std::{sync::Arc, time::Duration};
+use tokio::{sync::Mutex, time::timeout};
 
 mod shared;
 
 #[tokio::test]
 async fn cancel_request_success() {
-    let (app, ctx, services, cleanup, abs_path) = set_up_test_app().await;
+    let (app, _top_ctx, _services, cleanup, _abs_path) = set_up_test_app().await;
+
+    let mut ctx = AsyncContext::background();
+    let request_id = "request".to_string();
+
+    app.track_cancellation(&request_id, ctx.get_canceller())
+        .await;
+
+    let ctx = ctx.freeze();
+    let (canceled_tx, canceled_rx) = tokio::sync::oneshot::channel();
+
+    {
+        let ctx = ctx.clone();
+        tokio::spawn(async move {
+            loop {
+                if matches!(ctx.done(), Some(Reason::Canceled)) {
+                    eprintln!("Background task cancelled");
+                    canceled_tx.send(true).unwrap();
+                    return;
+                }
+                eprintln!("Background task running");
+                tokio::time::sleep(Duration::from_millis(100)).await;
+            }
+        });
+    }
+    tokio::time::sleep(Duration::from_millis(1000)).await;
+
+    app.cancel_request(CancelRequestInput(request_id))
+        .await
+        .unwrap();
+
+    if let Err(_) = timeout(Duration::from_secs(5), canceled_rx).await {
+        panic!("Cancellation failed");
+    } else {
+        println!("Cancellation succeeded");
+    }
+
+    cleanup().await;
+}
+
+#[tokio::test]
+async fn cancel_request_nonexistent() {
+    let (app, _top_ctx, _services, cleanup, _abs_path) = set_up_test_app().await;
+
+    let request_id = "nonexistent".to_string();
+
+    assert!(
+        app.cancel_request(CancelRequestInput(request_id))
+            .await
+            .is_err()
+    );
+
+    cleanup().await;
+}
+
+#[tokio::test]
+async fn cancel_request_with_child() {
+    let (app, _top_ctx, services, cleanup, _abs_path) = set_up_test_app().await;
+
+    let app = Arc::new(Mutex::new(app));
+
+    let mut parent_ctx = AsyncContext::background();
+    let parent_id = "parent".to_string();
+
+    app.lock()
+        .await
+        .track_cancellation(&parent_id, parent_ctx.get_canceller())
+        .await;
+
+    let (parent_canceled_tx, parent_canceled_rx) = tokio::sync::oneshot::channel();
+    let (child_canceled_tx, child_canceled_rx) = tokio::sync::oneshot::channel();
+    {
+        let app = app.clone();
+        let parent_ctx = parent_ctx.freeze();
+        tokio::spawn(async move {
+            let mut child_ctx = AnyAsyncContext::new(parent_ctx.clone());
+            let child_id = "child".to_string();
+            app.lock()
+                .await
+                .track_cancellation(&child_id, child_ctx.get_canceller())
+                .await;
+            {
+                let child_ctx = child_ctx.freeze();
+
+                // Child Context
+                tokio::spawn(async move {
+                    loop {
+                        if matches!(child_ctx.done(), Some(Reason::Canceled)) {
+                            eprintln!("Child task cancelled");
+                            child_canceled_tx.send(true).unwrap();
+                            return;
+                        }
+                        eprintln!("Child task running");
+                        tokio::time::sleep(Duration::from_millis(100)).await;
+                    }
+                });
+            }
+
+            // Parent Context
+            loop {
+                if matches!(parent_ctx.done(), Some(Reason::Canceled)) {
+                    eprintln!("Parent task cancelled");
+                    parent_canceled_tx.send(true).unwrap();
+                    return;
+                }
+                eprintln!("Parent task running");
+                tokio::time::sleep(Duration::from_millis(100)).await;
+            }
+        });
+    }
+
+    tokio::time::sleep(Duration::from_millis(1000)).await;
+    app.lock()
+        .await
+        .cancel_request(CancelRequestInput(parent_id))
+        .await
+        .unwrap();
+
+    // Cancelling the parent context should also cancel the child context
+    let canceled_fut = future::join(parent_canceled_rx, child_canceled_rx);
+
+    if let Err(_) = timeout(Duration::from_secs(5), canceled_fut).await {
+        panic!("Cancellation failed");
+    } else {
+        println!("Cancellation succeeded");
+    }
+
+    cleanup().await;
 }
