@@ -67,7 +67,7 @@ const extractVariables = (text: string): string[] => {
 
 // Function to create highlighted HTML while preserving spaces
 const createHighlightedHTML = (text: string): string => {
-  const regex = /(\{\{[^}]+\}\})/g;
+  const regex = /(\{\{[^}]*\}\})/g;
   // Replace spaces with non-breaking spaces to preserve them
   const textWithNbsp = text.replace(/ /g, "&nbsp;");
   return textWithNbsp.replace(regex, (match) => {
