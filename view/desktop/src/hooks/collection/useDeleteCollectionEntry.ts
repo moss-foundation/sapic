@@ -85,8 +85,6 @@ export const useDeleteCollectionEntry = () => {
           );
         });
 
-        console.log({ peerEntries });
-
         // Update order for peer entries that come after the deleted entry
         const entriesToUpdate = peerEntries.filter((entry) => (entry.order ?? 0) > (deletedEntry.order ?? 0));
 

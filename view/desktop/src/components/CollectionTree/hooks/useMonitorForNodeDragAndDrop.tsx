@@ -10,10 +10,11 @@ import { join } from "@tauri-apps/api/path";
 import { TreeCollectionNode } from "../types";
 import {
   doesLocationHaveTreeNode,
-  getAllNestedEntries,
+  getInstructionFromLocation,
   getLocationTreeNodeData,
   getSourceTreeNodeData,
   isSourceTreeNode,
+  sortByOrder,
 } from "../utils2";
 
 export const useMonitorForNodeDragAndDrop = () => {
@@ -32,71 +33,99 @@ export const useMonitorForNodeDragAndDrop = () => {
 
         const sourceTreeNodeData = getSourceTreeNodeData(source);
         const locationTreeNodeData = getLocationTreeNodeData(location);
+        const operation = getInstructionFromLocation(location)?.operation;
 
-        if (sourceTreeNodeData.node.id === locationTreeNodeData.node.id) return;
-
-        const allEntries = getAllNestedEntries(sourceTreeNodeData.node);
-        const entriesPreparedForDrop = await prepareEntriesForDrop(allEntries);
-
-        // console.log({ entriesPreparedForDrop });
+        if (sourceTreeNodeData.node.id === locationTreeNodeData.node.id || !operation) {
+          return;
+        }
 
         if (sourceTreeNodeData.collectionId === locationTreeNodeData.collectionId) {
-          if (locationTreeNodeData.instruction?.operation === "combine") {
+          if (operation === "combine") {
             const newOrder = locationTreeNodeData.node.childNodes.length + 1;
 
-            const entriesToUpdate = await Promise.all(
-              entriesPreparedForDrop.map(async (entry, index) => {
-                const newEntryPath = locationTreeNodeData.node.path.raw;
+            if (sourceTreeNodeData.node.kind === "Dir") {
+              await updateCollectionEntry({
+                collectionId: sourceTreeNodeData.collectionId,
+                updatedEntry: {
+                  DIR: {
+                    id: sourceTreeNodeData.node.id,
+                    path: locationTreeNodeData.parentNode.path.raw,
+                    order: newOrder,
+                  },
+                },
+              });
+            } else {
+              await updateCollectionEntry({
+                collectionId: sourceTreeNodeData.collectionId,
+                updatedEntry: {
+                  ITEM: {
+                    id: sourceTreeNodeData.node.id,
+                    path: locationTreeNodeData.parentNode.path.raw,
+                    order: newOrder,
+                  },
+                },
+              });
+            }
 
-                if (index === 0) {
-                  if (entry.kind === "Dir") {
-                    return {
-                      DIR: {
-                        id: entry.id,
-                        path: newEntryPath,
-                        order: newOrder,
-                      },
-                    };
-                  } else {
-                    return {
-                      ITEM: {
-                        id: entry.id,
-                        path: newEntryPath,
-                        order: newOrder,
-                      },
-                    };
-                  }
-                }
+            await fetchEntriesForPath(sourceTreeNodeData.collectionId, locationTreeNodeData.parentNode.path.raw);
 
-                if (entry.kind === "Dir") {
-                  return {
-                    DIR: {
-                      id: entry.id,
-                      path: newEntryPath,
-                    },
-                  };
-                } else {
-                  return {
-                    ITEM: {
-                      id: entry.id,
-                      path: newEntryPath,
-                    },
-                  };
-                }
-              })
+            return;
+          } else {
+            const dropOrder =
+              operation === "reorder-before"
+                ? locationTreeNodeData.node.order! - 0.5
+                : locationTreeNodeData.node.order! + 0.5;
+
+            const sortedParentNodes = sortByOrder([...locationTreeNodeData.parentNode.childNodes]).filter(
+              (entry) => entry.id !== sourceTreeNodeData.node.id
             );
 
-            console.log({ entriesToUpdate });
+            const parentNodesWithNewOrders = [
+              ...sortedParentNodes.slice(0, dropOrder),
+              sourceTreeNodeData.node,
+              ...sortedParentNodes.slice(dropOrder),
+            ].map((entry, index) => ({
+              ...entry,
+              order: index + 1,
+            }));
+
+            const updatedParentNodes = parentNodesWithNewOrders.filter((node) => {
+              const nodeInLocation = locationTreeNodeData.parentNode.childNodes.find((n) => n.id === node.id);
+              return nodeInLocation?.order !== node.order;
+            });
+
+            const parentEntriesToUpdate = updatedParentNodes.map((entry) => {
+              const isAlreadyInLocation = locationTreeNodeData.parentNode.childNodes.some((n) => n.id === entry.id);
+              const newEntryPath = isAlreadyInLocation ? undefined : locationTreeNodeData.parentNode.path.raw;
+
+              if (entry.kind === "Dir") {
+                return {
+                  DIR: {
+                    id: entry.id,
+                    order: entry.order,
+                    path: newEntryPath,
+                  },
+                };
+              } else {
+                return {
+                  ITEM: {
+                    id: entry.id,
+                    order: entry.order,
+                    path: newEntryPath,
+                  },
+                };
+              }
+            });
 
             await batchUpdateCollectionEntry({
               collectionId: sourceTreeNodeData.collectionId,
               entries: {
-                entries: entriesToUpdate,
+                entries: parentEntriesToUpdate,
               },
             });
 
-            await fetchEntriesForPath(sourceTreeNodeData.collectionId, locationTreeNodeData.node.path.raw);
-            await fetchEntriesForPath(sourceTreeNodeData.collectionId, sourceTreeNodeData.node.path.raw);
+            await fetchEntriesForPath(sourceTreeNodeData.collectionId, locationTreeNodeData.parentNode.path.raw);
+            await fetchEntriesForPath(sourceTreeNodeData.collectionId, sourceTreeNodeData.parentNode.path.raw);
 
             return;
           }

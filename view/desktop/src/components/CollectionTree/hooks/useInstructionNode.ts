@@ -59,7 +59,14 @@ export const useInstructionNode = (
       dropTargetForElements({
         element,
         getData: ({ input, element }) => {
-          const data = { type: "TreeNode", data: { collectionId, node } };
+          const data = {
+            type: "TreeNode",
+            data: {
+              collectionId,
+              node,
+              parentNode,
+            },
+          };
 
           let isReorderBeforeAvailable = true;
           let isReorderAfterAvailable = true;

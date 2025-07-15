@@ -6,7 +6,7 @@ import {
 } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 import { CreateEntryInput, DirConfigurationModel, EntryInfo, ItemConfigurationModel } from "@repo/moss-collection";
 
-import { DragNode, TreeCollectionNode, TreeCollectionRootNode } from "./types";
+import { DragNode, DropNode, TreeCollectionNode, TreeCollectionRootNode } from "./types";
 import { hasDescendant, hasDirectDescendant } from "./utils";
 
 //TODO order should always be set, it's a temporary solution until backend updates it's type
@@ -27,7 +27,7 @@ export const getSourceTreeNodeData = (source: ElementDragPayload): DragNode => {
   return source.data.data as DragNode;
 };
 
-export const getLocationTreeNodeData = (location: DragLocationHistory): DragNode => {
+export const getLocationTreeNodeData = (location: DragLocationHistory): DropNode => {
   const instruction = extractInstruction(location.current.dropTargets[0].data);
 
   return {
@@ -142,8 +142,12 @@ export const createItemConfiguration = (nodeClass: TreeCollectionNode["class"]):
   }
 };
 
-export const getInstruction = (self: DropTargetRecord): Instruction | null => {
+export const getInstructionFromSelf = (self: DropTargetRecord): Instruction | null => {
   return extractInstruction(self.data);
+};
+
+export const getInstructionFromLocation = (location: DragLocationHistory): Instruction | null => {
+  return extractInstruction(location.current.dropTargets[0].data);
 };
 
 export const canDropNode = (sourceTarget: DragNode, dropTarget: DragNode, node: TreeCollectionNode) => {

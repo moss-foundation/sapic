@@ -25,6 +25,14 @@ export interface DragNode {
   collectionId: string;
   repository?: string; //TODO This shouldn't be optional, I guess
   node: TreeCollectionNode;
+  parentNode: TreeCollectionNode;
+}
+
+export interface DropNode {
+  collectionId: string;
+  repository?: string; //TODO This shouldn't be optional, I guess
+  node: TreeCollectionNode;
+  parentNode: TreeCollectionNode;
   instruction?: Instruction;
 }
 
