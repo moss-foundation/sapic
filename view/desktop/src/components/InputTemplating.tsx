@@ -46,7 +46,7 @@ const editorStyles = cva(
 );
 
 const highlightedVariableStyles =
-  "background-(--moss-templating-input-bg) text-(--moss-templating-input-text) border border-(--moss-templating-input-border) rounded-sm px-0.5 whitespace-nowrap inline-block" +
+  "background-(--moss-templating-input-bg) text-(--moss-templating-input-text) border border-(--moss-templating-input-border) rounded-sm px-0.5 whitespace-nowrap inline-block tracking-tighter" +
   " [height:20px] [line-height:18px] [vertical-align:middle]";
 
 // Function to extract variables from template string
