@@ -129,7 +129,6 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
     const hiddenInputRef = useRef<HTMLInputElement>(null);
     const isUpdatingContent = useRef(false);
 
-    // Sync with external value changes
     useEffect(() => {
       if (props.value !== undefined) {
         setValue(props.value);
@@ -182,7 +181,6 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
             }
           } catch (e) {
             // If cursor restoration fails, just ignore it
-            // The user can click to place cursor where they want
           }
         }
 
@@ -196,16 +194,13 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
       const plainText = extractPlainText(e.currentTarget.innerHTML);
       setValue(plainText);
 
-      // Update hidden input for form compatibility
       if (hiddenInputRef.current) {
         hiddenInputRef.current.value = plainText;
       }
 
-      // Extract variables and call callback
       const variables = extractVariables(plainText);
       onTemplateChange?.(plainText, variables);
 
-      // Call original onChange if provided
       if (onChange && hiddenInputRef.current) {
         const syntheticEvent = {
           target: hiddenInputRef.current,
@@ -227,7 +222,6 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
         return;
       }
 
-      // Prevent certain formatting keys
       if (e.key === "Tab") {
         e.preventDefault();
         return;
@@ -250,7 +244,6 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
 
         // Check if there's a selection (not just cursor position)
         if (!range.collapsed) {
-          // There's a selection - delete the selected text
           const startOffset = getTextOffset(editorRef.current, range.startContainer, range.startOffset);
           const endOffset = getTextOffset(editorRef.current, range.endContainer, range.endOffset);
 
@@ -262,13 +255,10 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
           newCursorPosition = currentOffset;
 
           if (e.key === "Delete") {
-            // Delete character to the right of cursor
             if (currentOffset < plainText.length) {
               newText = plainText.slice(0, currentOffset) + plainText.slice(currentOffset + 1);
-              // Cursor stays at same position
             }
           } else if (e.key === "Backspace") {
-            // Delete character to the left of cursor
             if (currentOffset > 0) {
               newText = plainText.slice(0, currentOffset - 1) + plainText.slice(currentOffset);
               newCursorPosition = currentOffset - 1;
@@ -276,19 +266,15 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
           }
         }
 
-        // Update the content
         setValue(newText);
 
-        // Update hidden input for form compatibility
         if (hiddenInputRef.current) {
           hiddenInputRef.current.value = newText;
         }
 
-        // Extract variables and call callback
         const variables = extractVariables(newText);
         onTemplateChange?.(newText, variables);
 
-        // Call original onChange if provided
         if (onChange && hiddenInputRef.current) {
           const syntheticEvent = {
             target: hiddenInputRef.current,
@@ -345,7 +331,6 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
           newOffset = Math.min(plainText.length, currentOffset + 1);
         }
 
-        // Find the text node at the new offset and set cursor position
         const textPosition = findTextNodeAtOffset(editorRef.current, newOffset);
         if (textPosition) {
           const newRange = document.createRange();
@@ -380,7 +365,6 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
       const selection = window.getSelection();
       if (!selection || selection.rangeCount === 0) return;
 
-      // Get the selected content
       const range = selection.getRangeAt(0);
       const selectedContent = range.cloneContents();
 
@@ -388,14 +372,11 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
       const tempDiv = document.createElement("div");
       tempDiv.appendChild(selectedContent);
 
-      // Extract plain text and normalize spaces
       const plainText = extractPlainText(tempDiv.innerHTML);
 
-      // Set the plain text to clipboard
       e.clipboardData.setData("text/plain", plainText);
     };
 
-    // Initialize content
     useEffect(() => {
       updateEditorContent(String(value));
     }, [value, updateEditorContent]);
@@ -412,7 +393,6 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
           {...props}
         />
 
-        {/* ContentEditable div for highlighting */}
         <div
           ref={editorRef}
           className={editorStyles({ size })}
@@ -425,7 +405,6 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
           suppressContentEditableWarning={true}
         />
 
-        {/* Placeholder and contenteditable styling */}
         <style>
           {`
             [contenteditable][data-placeholder]:empty:before {
