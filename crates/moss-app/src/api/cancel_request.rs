@@ -5,8 +5,10 @@ use crate::{App, models::operations::CancelRequestInput};
 
 impl<R: AppRuntime> App<R> {
     pub async fn cancel_request(&self, input: CancelRequestInput) -> OperationResult<()> {
-        let request_id = input.0;
-        if let Some(canceller) = self.canceller(&request_id).await {
+        let request_id = input.request_id;
+        let cancellation_map = self.tracked_cancellations.read().await;
+
+        if let Some(canceller) = cancellation_map.get(&request_id) {
             Ok(canceller.cancel())
         } else {
             Err(OperationError::NotFound(format!(

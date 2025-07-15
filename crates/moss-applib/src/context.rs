@@ -21,7 +21,7 @@ impl ContextValue for i64 {}
 impl ContextValue for f64 {}
 impl ContextValue for String {}
 
-pub trait AnyContext: WithCanceller {
+pub trait AnyContext {
     type Frozen: AnyAsyncContext;
 
     fn freeze(self) -> Self::Frozen;
@@ -36,6 +36,8 @@ pub trait AnyContext: WithCanceller {
 
     /// Check if context is done: timed out or cancelled, including parent chain.
     fn done(&self) -> Option<Reason>;
+
+    fn get_canceller(&self) -> Canceller;
 }
 
 pub trait AnyAsyncContext: Clone + Send + Sync + 'static {
@@ -52,10 +54,6 @@ pub trait AnyAsyncContext: Clone + Send + Sync + 'static {
     fn deadline(&self) -> Duration;
     fn value<V: ContextValue>(&self, key: &str) -> Option<Arc<V>>;
     fn done(&self) -> Option<Reason>;
-}
-
-pub trait WithCanceller {
-    fn get_canceller(&self) -> Canceller;
 }
 
 pub type AsyncContext = Arc<MutableContext>;
@@ -167,12 +165,6 @@ impl fmt::Debug for MutableContext {
     }
 }
 
-impl WithCanceller for MutableContext {
-    fn get_canceller(&self) -> Canceller {
-        Canceller::new(self.cancelled.clone())
-    }
-}
-
 impl AnyContext for MutableContext {
     type Frozen = AsyncContext;
 
@@ -222,9 +214,9 @@ impl AnyContext for MutableContext {
         Arc::new(self)
     }
 
-    // fn freeze(self) -> Self::Frozen {
-    //     Arc::new(self)
-    // }
+    fn get_canceller(&self) -> Canceller {
+        Canceller::new(self.cancelled.clone())
+    }
 }
 
 impl From<&AsyncContext> for MutableContext {

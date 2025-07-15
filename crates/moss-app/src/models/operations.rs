@@ -19,7 +19,9 @@ use crate::models::{
 /// @category Operation
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "operations.ts")]
-pub struct CancelRequestInput(pub String);
+pub struct CancelRequestInput {
+    pub request_id: String,
+}
 
 // ########################################################
 // ###                      Locale                      ###

@@ -1,14 +1,12 @@
 #![cfg(feature = "integration-tests")]
 
-use crate::shared::set_up_test_app;
 use futures::future;
 use moss_app::models::operations::CancelRequestInput;
-use moss_applib::context::{
-    AnyAsyncContext, AnyContext, AsyncContext, Canceller, MutableContext, Reason, WithCanceller,
-};
-use std::{sync::Arc, time::Duration};
-use tokio::{sync::Mutex, time::timeout};
+use moss_applib::context::{AnyAsyncContext, AnyContext, AsyncContext, Reason};
+use std::time::Duration;
+use tokio::time::timeout;
 
+use crate::shared::set_up_test_app;
 mod shared;
 
 #[tokio::test]
@@ -44,7 +42,7 @@ async fn cancel_request_success() {
     }
     tokio::time::sleep(Duration::from_millis(1000)).await;
 
-    app.cancel_request(CancelRequestInput(request_id))
+    app.cancel_request(CancelRequestInput { request_id })
         .await
         .unwrap();
 
@@ -64,7 +62,7 @@ async fn cancel_request_nonexistent() {
     let request_id = "nonexistent".to_string();
 
     assert!(
-        app.cancel_request(CancelRequestInput(request_id))
+        app.cancel_request(CancelRequestInput { request_id })
             .await
             .is_err()
     );
@@ -74,7 +72,7 @@ async fn cancel_request_nonexistent() {
 
 #[tokio::test]
 async fn cancel_request_with_child() {
-    let (app, _top_ctx, services, cleanup, _abs_path) = set_up_test_app().await;
+    let (app, _top_ctx, _services, cleanup, _abs_path) = set_up_test_app().await;
 
     let cancellation_map = app.cancellation_map();
 
@@ -129,9 +127,11 @@ async fn cancel_request_with_child() {
     }
 
     tokio::time::sleep(Duration::from_millis(1000)).await;
-    app.cancel_request(CancelRequestInput(parent_id))
-        .await
-        .unwrap();
+    app.cancel_request(CancelRequestInput {
+        request_id: parent_id,
+    })
+    .await
+    .unwrap();
 
     // Cancelling the parent context should also cancel the child context
     let canceled_fut = future::join(parent_canceled_rx, child_canceled_rx);

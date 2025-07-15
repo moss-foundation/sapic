@@ -17,7 +17,6 @@ use moss_app::{
     app::App,
     services::workspace_service::{ActiveWorkspace, WorkspaceService},
 };
-use moss_applib::context::WithCanceller;
 use moss_collection::Collection;
 use moss_common::api::OperationOptionExt;
 use moss_workspace::{models::primitives::CollectionId, services::DynCollectionService};

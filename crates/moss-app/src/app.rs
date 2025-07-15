@@ -9,7 +9,7 @@ use rustc_hash::FxHashMap;
 use std::{
     collections::HashMap,
     ops::{Deref, DerefMut},
-    sync::{Arc, atomic::AtomicBool},
+    sync::Arc,
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use tokio::sync::RwLock;
@@ -98,12 +98,6 @@ impl<R: AppRuntime> App<R> {
         let mut write = self.tracked_cancellations.write().await;
 
         write.remove(request_id);
-    }
-
-    pub async fn canceller(&self, request_id: &str) -> Option<Canceller> {
-        let read = self.tracked_cancellations.read().await;
-
-        read.get(request_id).cloned()
     }
 
     #[cfg(feature = "integration-tests")]
