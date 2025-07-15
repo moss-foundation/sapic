@@ -1,15 +1,3 @@
-use moss_applib::AppRuntime;
-use moss_common::api::OperationResult;
-use moss_db::primitives::AnyValue;
-use moss_storage::primitives::segkey::SegKeyBuf;
-use std::{
-    collections::{HashMap, HashSet},
-    path::PathBuf,
-    sync::Arc,
-};
-use tauri::ipc::Channel as TauriChannel;
-use tokio::sync::{mpsc, oneshot};
-
 use crate::{
     Collection,
     collection::OnDidChangeEvent,
@@ -22,6 +10,20 @@ use crate::{
     },
     services::{DynStorageService, DynWorktreeService, worktree_service::EntryDescription},
 };
+use moss_applib::{
+    AppRuntime,
+    context::{AnyAsyncContext, Reason},
+};
+use moss_common::api::{OperationError, OperationResult};
+use moss_db::primitives::AnyValue;
+use moss_storage::primitives::segkey::SegKeyBuf;
+use std::{
+    collections::{HashMap, HashSet},
+    path::PathBuf,
+    sync::Arc,
+};
+use tauri::ipc::Channel as TauriChannel;
+use tokio::sync::{mpsc, oneshot};
 
 const EXPANSION_DIRECTORIES: &[&str] = &[
     dirs::REQUESTS_DIR,
@@ -98,9 +100,13 @@ impl<R: AppRuntime> Collection<R> {
 
         drop(tx);
 
+        let ctx_clone = ctx.clone();
         // TODO: check if the context is done, if so, break the loop (cancellation)
         let processing_task = tokio::spawn(async move {
             loop {
+                // Handle only timeout error now
+                // New error type
+                // unimplemented for cancelled now
                 tokio::select! {
                     entry_result = rx.recv() => {
                         if let Some(entry) = entry_result {
@@ -141,8 +147,22 @@ impl<R: AppRuntime> Collection<R> {
                         }
                         break;
                     }
+
+                    else => {
+                        match ctx_clone.done() {
+                            Some(Reason::Timeout) => {
+                                return Err(OperationError::Timeout("stream entries time out".into()));
+                            },
+                            Some(Reason::Canceled) => {
+                                // FIXME: Implement cancellation
+                                unimplemented!()
+                            }
+                            None => {},
+                        }
+                    }
                 }
             }
+            Ok(())
         });
 
         let completion_task = tokio::spawn(async move {
@@ -150,7 +170,7 @@ impl<R: AppRuntime> Collection<R> {
             let _ = done_tx.send(());
         });
 
-        let _ = tokio::try_join!(processing_task, completion_task);
+        let result = tokio::try_join!(processing_task, completion_task);
 
         self.on_did_change
             .fire(OnDidChangeEvent::Toggled(true))
