@@ -1,6 +1,3 @@
-#[cfg(any(test, feature = "integration-tests"))]
-pub mod impl_for_integration_test;
-
 use anyhow::{Context as _, Result};
 use async_trait::async_trait;
 use moss_applib::{AppRuntime, ServiceMarker};
@@ -291,5 +288,12 @@ impl<R: AppRuntime> StorageService<R> {
         Ok(Self {
             storage: Arc::new(storage),
         })
+    }
+}
+
+#[cfg(any(test, feature = "integration-tests"))]
+impl<R: AppRuntime> StorageService<R> {
+    pub fn storage(&self) -> &Arc<dyn WorkspaceStorage<R::AsyncContext>> {
+        &self.storage
     }
 }

@@ -18,10 +18,7 @@ use moss_collection::{
         },
     },
     services::{
-        DynStorageService, DynWorktreeService,
-        storage_service::{
-            StorageService, impl_for_integration_test::StorageServiceForIntegrationTest,
-        },
+        DynStorageService, DynWorktreeService, storage_service::StorageService,
         worktree_service::WorktreeService,
     },
 };
@@ -67,8 +64,8 @@ pub async fn create_test_collection() -> (
 
     let mut services: ServiceMap = Default::default();
 
-    let storage_service: Arc<StorageServiceForIntegrationTest<MockAppRuntime>> =
-        Arc::new(StorageService::new(&abs_path).unwrap().into());
+    let storage_service: Arc<StorageService<MockAppRuntime>> =
+        StorageService::new(&abs_path).unwrap().into();
     let storage_service_dyn: Arc<DynStorageService<MockAppRuntime>> =
         DynStorageService::new(storage_service.clone()).into();
 
@@ -79,7 +76,7 @@ pub async fn create_test_collection() -> (
 
     {
         services.insert(
-            TypeId::of::<StorageServiceForIntegrationTest<MockAppRuntime>>(),
+            TypeId::of::<StorageService<MockAppRuntime>>(),
             storage_service,
         );
         services.insert(
