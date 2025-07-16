@@ -1,5 +1,5 @@
+use moss_applib::AppRuntime;
 use moss_common::api::OperationResult;
-use tauri::Runtime as TauriRuntime;
 
 use crate::{
     app::App,
@@ -12,15 +12,19 @@ use crate::{
 
 // TODO: We must rewrite this crap later, it's a mess
 
-impl<R: TauriRuntime> App<R> {
-    pub async fn describe_app_state(&self) -> OperationResult<DescribeAppStateOutput> {
-        let storage_service = self.services.get::<StorageService>();
+impl<R: AppRuntime> App<R> {
+    pub async fn describe_app_state(
+        &self,
+        ctx: &R::AsyncContext,
+    ) -> OperationResult<DescribeAppStateOutput> {
+        let storage_service = self.services.get::<StorageService<R>>();
 
-        let last_workspace_id = if let Ok(id_str) = storage_service.get_last_active_workspace() {
-            Some(id_str)
-        } else {
-            None
-        };
+        let last_workspace_id =
+            if let Ok(id_str) = storage_service.get_last_active_workspace(ctx).await {
+                Some(id_str)
+            } else {
+                None
+            };
 
         Ok(DescribeAppStateOutput {
             preferences: Preferences {

@@ -2,10 +2,13 @@
 
 use image::{ImageBuffer, Rgb};
 mod context;
-pub use context::*;
 
 use moss_activity_indicator::ActivityIndicator;
-use moss_applib::providers::{ServiceMap, ServiceProvider};
+use moss_applib::{
+    context::{AsyncContext, MutableContext},
+    mock::MockAppRuntime,
+    providers::{ServiceMap, ServiceProvider},
+};
 use moss_fs::{FileSystem, RealFileSystem};
 use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_testutils::random_name::random_workspace_name;
@@ -39,15 +42,15 @@ use std::{
     path::{Path, PathBuf},
     pin::Pin,
     sync::Arc,
+    time::Duration,
 };
-use tauri::test::MockRuntime;
 
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
 
 pub async fn setup_test_workspace() -> (
-    MockWorkspaceContext,
+    AsyncContext, // TODO: this is temporary, should be a mock
     Arc<Path>,
-    Workspace<MockRuntime>,
+    Workspace<MockAppRuntime>,
     ServiceProvider,
     CleanupFn,
 ) {
@@ -57,7 +60,7 @@ pub async fn setup_test_workspace() -> (
 
     <dyn FileSystem>::set_global(fs.clone(), &app_handle);
 
-    let ctx = MockWorkspaceContext::new(app_handle.clone());
+    let ctx = MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
 
     let abs_path: Arc<Path> = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
@@ -71,39 +74,52 @@ pub async fn setup_test_workspace() -> (
 
     let activity_indicator = ActivityIndicator::new(app_handle.clone());
 
-    let storage_service: Arc<StorageServiceForIntegrationTest> =
-        StorageServiceForIntegrationTest::from(StorageService::new(&abs_path).unwrap()).into();
-    let storage_service_dyn: Arc<DynStorageService> =
+    let storage_service: Arc<StorageServiceForIntegrationTest<MockAppRuntime>> =
+        StorageServiceForIntegrationTest::from(
+            StorageService::<MockAppRuntime>::new(&abs_path).unwrap(),
+        )
+        .into();
+    let storage_service_dyn: Arc<DynStorageService<MockAppRuntime>> =
         DynStorageService::new(storage_service.clone());
 
-    let layout_service: Arc<LayoutService> = LayoutService::new(storage_service_dyn.clone()).into();
-    let layout_service_dyn: Arc<DynLayoutService> =
-        DynLayoutService::new(layout_service.clone() as Arc<dyn AnyLayoutService>);
+    let layout_service: Arc<LayoutService<MockAppRuntime>> =
+        LayoutService::new(storage_service_dyn.clone()).into();
+    let layout_service_dyn: Arc<DynLayoutService<MockAppRuntime>> =
+        DynLayoutService::new(layout_service.clone() as Arc<dyn AnyLayoutService<MockAppRuntime>>);
 
-    let collection_service: Arc<CollectionService> =
-        CollectionService::new(abs_path.clone(), fs.clone(), storage_service_dyn.clone())
-            .await
-            .unwrap()
-            .into();
-    let collection_service_dyn: Arc<DynCollectionService> =
-        DynCollectionService::new(collection_service.clone() as Arc<dyn AnyCollectionService>);
+    let collection_service: Arc<CollectionService<MockAppRuntime>> = CollectionService::new(
+        &ctx,
+        abs_path.clone(),
+        fs.clone(),
+        storage_service_dyn.clone(),
+    )
+    .await
+    .unwrap()
+    .into();
+    let collection_service_dyn: Arc<DynCollectionService<MockAppRuntime>> =
+        DynCollectionService::new(
+            collection_service.clone() as Arc<dyn AnyCollectionService<MockAppRuntime>>
+        );
 
     {
-        services.insert(TypeId::of::<LayoutService>(), layout_service.clone());
         services.insert(
-            TypeId::of::<StorageServiceForIntegrationTest>(),
+            TypeId::of::<LayoutService<MockAppRuntime>>(),
+            layout_service.clone(),
+        );
+        services.insert(
+            TypeId::of::<StorageServiceForIntegrationTest<MockAppRuntime>>(),
             storage_service.clone(),
         );
         services.insert(
-            TypeId::of::<CollectionService>(),
+            TypeId::of::<CollectionService<MockAppRuntime>>(),
             collection_service.clone(),
         );
     }
 
     let workspace = WorkspaceBuilder::new(fs.clone())
-        .with_service::<DynStorageService>(storage_service_dyn)
-        .with_service::<DynCollectionService>(collection_service_dyn)
-        .with_service::<DynLayoutService>(layout_service_dyn)
+        .with_service::<DynStorageService<MockAppRuntime>>(storage_service_dyn)
+        .with_service::<DynCollectionService<MockAppRuntime>>(collection_service_dyn)
+        .with_service::<DynLayoutService<MockAppRuntime>>(layout_service_dyn)
         .create(
             WorkspaceCreateParams {
                 name: random_workspace_name(),
@@ -125,13 +141,7 @@ pub async fn setup_test_workspace() -> (
         }
     });
 
-    (
-        MockWorkspaceContext::from(ctx),
-        abs_path,
-        workspace,
-        services.into(),
-        cleanup_fn,
-    )
+    (ctx, abs_path, workspace, services.into(), cleanup_fn)
 }
 
 pub fn create_simple_editor_state() -> EditorPartStateInfo {

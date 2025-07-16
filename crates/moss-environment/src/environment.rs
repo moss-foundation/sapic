@@ -1,4 +1,5 @@
 use anyhow::Result;
+use moss_applib::AppRuntime;
 use moss_file::json::JsonFileHandle;
 use moss_fs::FileSystem;
 use moss_storage::workspace_storage::stores::WorkspaceVariableStore;
@@ -51,17 +52,17 @@ pub struct VariableItem {
 
 type VariableMap = HashMap<VariableName, VariableItem>;
 
-pub struct Environment {
+pub struct Environment<R: AppRuntime> {
     #[allow(dead_code)]
     fs: Arc<dyn FileSystem>,
     abs_path: Arc<Path>,
     variables: VariableMap,
     #[allow(dead_code)]
-    store: Arc<dyn WorkspaceVariableStore>,
+    store: Arc<dyn WorkspaceVariableStore<R::AsyncContext>>,
     file: JsonFileHandle<FileModel>,
 }
 
-impl std::fmt::Debug for Environment {
+impl<R: AppRuntime> std::fmt::Debug for Environment<R> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Environment")
             .field("path", &self.abs_path)
@@ -74,11 +75,11 @@ pub struct LoadParams {
     pub create_if_not_exists: bool,
 }
 
-impl Environment {
+impl<R: AppRuntime> Environment<R> {
     pub async fn load(
         abs_path: &Path,
         fs: Arc<dyn FileSystem>,
-        store: Arc<dyn WorkspaceVariableStore>,
+        store: Arc<dyn WorkspaceVariableStore<R::AsyncContext>>,
         params: LoadParams,
     ) -> Result<Self> {
         let abs_path: Arc<Path> = abs_path.into();

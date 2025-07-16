@@ -4,6 +4,7 @@ use moss_app::{
     models::operations::{BatchDeleteLogInput, ListLogsInput},
     services::log_service::{LogPayload, LogScope, LogService},
 };
+use moss_applib::mock::MockAppRuntime;
 
 use crate::shared::set_up_test_app;
 
@@ -16,8 +17,8 @@ use crate::shared::set_up_test_app;
 #[ignore]
 #[tokio::test]
 async fn test_delete_logs_from_queue() {
-    let (app, _ctx, services, cleanup, _abs_path) = set_up_test_app().await;
-    let log_service = services.get::<LogService>();
+    let (app, ctx, services, cleanup, _abs_path) = set_up_test_app().await;
+    let log_service = services.get::<LogService<MockAppRuntime>>();
 
     // We only have one log, less than the dump threshold
     // So we should delete from the queue
@@ -30,11 +31,14 @@ async fn test_delete_logs_from_queue() {
     );
 
     let logs = app
-        .list_logs(&ListLogsInput {
-            dates: vec![],
-            levels: vec![],
-            resource: None,
-        })
+        .list_logs(
+            &ctx,
+            &ListLogsInput {
+                dates: vec![],
+                levels: vec![],
+                resource: None,
+            },
+        )
         .await
         .unwrap()
         .contents;
@@ -43,18 +47,21 @@ async fn test_delete_logs_from_queue() {
         ids: logs.into_iter().map(|log| log.id).collect(),
     };
 
-    let output = app.batch_delete_log(&input).await.unwrap();
+    let output = app.batch_delete_log(&ctx, &input).await.unwrap();
     let deleted_entries = output.deleted_entries;
     assert_eq!(deleted_entries.len(), 1);
     assert_eq!(deleted_entries[0].id, input.ids[0]);
     assert!(deleted_entries[0].file_path.is_none());
 
     let new_logs = app
-        .list_logs(&ListLogsInput {
-            dates: vec![],
-            levels: vec![],
-            resource: None,
-        })
+        .list_logs(
+            &ctx,
+            &ListLogsInput {
+                dates: vec![],
+                levels: vec![],
+                resource: None,
+            },
+        )
         .await
         .unwrap()
         .contents;
@@ -65,8 +72,8 @@ async fn test_delete_logs_from_queue() {
 #[ignore]
 #[tokio::test]
 async fn test_delete_logs_from_file() {
-    let (app, _ctx, services, cleanup, _abs_path) = set_up_test_app().await;
-    let log_service = services.get::<LogService>();
+    let (app, ctx, services, cleanup, _abs_path) = set_up_test_app().await;
+    let log_service = services.get::<LogService<MockAppRuntime>>();
 
     // By default, the dump threshold is 10, which means that the first log
     for _ in 0..15 {
@@ -80,11 +87,14 @@ async fn test_delete_logs_from_file() {
     }
 
     let logs = app
-        .list_logs(&ListLogsInput {
-            dates: vec![],
-            levels: vec![],
-            resource: None,
-        })
+        .list_logs(
+            &ctx,
+            &ListLogsInput {
+                dates: vec![],
+                levels: vec![],
+                resource: None,
+            },
+        )
         .await
         .unwrap()
         .contents;
@@ -93,7 +103,7 @@ async fn test_delete_logs_from_file() {
         ids: vec![logs[0].id.clone()],
     };
 
-    let output = app.batch_delete_log(&input).await.unwrap();
+    let output = app.batch_delete_log(&ctx, &input).await.unwrap();
     let deleted_entries = output.deleted_entries;
     assert_eq!(deleted_entries.len(), 1);
     assert_eq!(deleted_entries[0].id, input.ids[0]);
@@ -101,11 +111,14 @@ async fn test_delete_logs_from_file() {
     assert!(deleted_entries[0].file_path.is_some());
 
     let new_logs = app
-        .list_logs(&ListLogsInput {
-            dates: vec![],
-            levels: vec![],
-            resource: None,
-        })
+        .list_logs(
+            &ctx,
+            &ListLogsInput {
+                dates: vec![],
+                levels: vec![],
+                resource: None,
+            },
+        )
         .await
         .unwrap()
         .contents;
@@ -115,8 +128,8 @@ async fn test_delete_logs_from_file() {
 
 #[tokio::test]
 async fn test_delete_all_logs() {
-    let (app, _ctx, services, cleanup, _abs_path) = set_up_test_app().await;
-    let log_service = services.get::<LogService>();
+    let (app, ctx, services, cleanup, _abs_path) = set_up_test_app().await;
+    let log_service = services.get::<LogService<MockAppRuntime>>();
 
     for _ in 0..15 {
         log_service.warn(
@@ -132,11 +145,14 @@ async fn test_delete_all_logs() {
     tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
 
     let logs = app
-        .list_logs(&ListLogsInput {
-            dates: vec![],
-            levels: vec![],
-            resource: None,
-        })
+        .list_logs(
+            &ctx,
+            &ListLogsInput {
+                dates: vec![],
+                levels: vec![],
+                resource: None,
+            },
+        )
         .await
         .unwrap()
         .contents;
@@ -145,16 +161,19 @@ async fn test_delete_all_logs() {
         ids: logs.into_iter().map(|log| log.id.clone()).collect(),
     };
 
-    let output = app.batch_delete_log(&input).await.unwrap();
+    let output = app.batch_delete_log(&ctx, &input).await.unwrap();
     let deleted_entries = output.deleted_entries;
     assert_eq!(deleted_entries.len(), 15);
 
     let new_logs = app
-        .list_logs(&ListLogsInput {
-            dates: vec![],
-            levels: vec![],
-            resource: None,
-        })
+        .list_logs(
+            &ctx,
+            &ListLogsInput {
+                dates: vec![],
+                levels: vec![],
+                resource: None,
+            },
+        )
         .await
         .unwrap()
         .contents;

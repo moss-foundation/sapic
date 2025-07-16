@@ -282,6 +282,10 @@
   --moss-stepCard-text: var(--moss-blue-2);
   --moss-stepCard-bg: var(--moss-blue-11);
 
+  --moss-templating-input-text: var(--moss-blue-3);
+  --moss-templating-input-border: var(--moss-blue-10);
+  --moss-templating-input-bg: var(--moss-blue-12);
+
   /* Checkbox */
   --moss-checkbox-border: var(--moss-gray-8);
 

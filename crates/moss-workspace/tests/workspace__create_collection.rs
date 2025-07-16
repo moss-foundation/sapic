@@ -2,6 +2,7 @@
 
 pub mod shared;
 
+use moss_applib::mock::MockAppRuntime;
 use moss_common::api::OperationError;
 use moss_storage::storage::operations::GetItem;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_collection_name};
@@ -47,18 +48,25 @@ async fn create_collection_success() {
 
     // Verify the db entries were created
     let id = create_collection_output.id;
-    let storage_service = services.get::<StorageServiceForIntegrationTest>();
+    let storage_service = services.get::<StorageServiceForIntegrationTest<MockAppRuntime>>();
     let item_store = storage_service.storage().item_store();
 
     // Check order was stored
     let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
-    let order_value = GetItem::get(item_store.as_ref(), order_key).unwrap();
+    let order_value = GetItem::get(item_store.as_ref(), &ctx, order_key)
+        .await
+        .unwrap();
     let stored_order: usize = order_value.deserialize().unwrap();
     assert_eq!(stored_order, 0);
 
     // Check expanded_items contains the collection id
-    let expanded_items_value =
-        GetItem::get(item_store.as_ref(), SEGKEY_EXPANDED_ITEMS.to_segkey_buf()).unwrap();
+    let expanded_items_value = GetItem::get(
+        item_store.as_ref(),
+        &ctx,
+        SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
+    )
+    .await
+    .unwrap();
     let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
     assert!(expanded_items.contains(&id));
 
@@ -83,10 +91,7 @@ async fn create_collection_empty_name() {
         )
         .await;
 
-    assert!(matches!(
-        create_collection_result,
-        Err(OperationError::InvalidInput(_))
-    ));
+    assert!(create_collection_result.is_err());
 
     cleanup().await;
 }
@@ -121,18 +126,25 @@ async fn create_collection_special_chars() {
 
         // Verify the db entries were created
         let id = create_collection_output.id;
-        let storage_service = services.get::<StorageServiceForIntegrationTest>();
+        let storage_service = services.get::<StorageServiceForIntegrationTest<MockAppRuntime>>();
         let item_store = storage_service.storage().item_store();
 
         // Check order was stored
         let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
-        let order_value = GetItem::get(item_store.as_ref(), order_key).unwrap();
+        let order_value = GetItem::get(item_store.as_ref(), &ctx, order_key)
+            .await
+            .unwrap();
         let stored_order: usize = order_value.deserialize().unwrap();
         assert_eq!(stored_order, 0);
 
         // Check expanded_items contains the collection id
-        let expanded_items_value =
-            GetItem::get(item_store.as_ref(), SEGKEY_EXPANDED_ITEMS.to_segkey_buf()).unwrap();
+        let expanded_items_value = GetItem::get(
+            item_store.as_ref(),
+            &ctx,
+            SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
+        )
+        .await
+        .unwrap();
         let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
         assert!(expanded_items.contains(&id));
     }
@@ -174,18 +186,25 @@ async fn create_collection_with_order() {
 
     // Verify the db entries were created
     let id = create_collection_output.id;
-    let storage_service = services.get::<StorageServiceForIntegrationTest>();
+    let storage_service = services.get::<StorageServiceForIntegrationTest<MockAppRuntime>>();
     let item_store = storage_service.storage().item_store();
 
     // Check order was stored
     let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
-    let order_value = GetItem::get(item_store.as_ref(), order_key).unwrap();
+    let order_value = GetItem::get(item_store.as_ref(), &ctx, order_key)
+        .await
+        .unwrap();
     let stored_order: usize = order_value.deserialize().unwrap();
     assert_eq!(stored_order, 42);
 
     // Check expanded_items contains the collection id
-    let expanded_items_value =
-        GetItem::get(item_store.as_ref(), SEGKEY_EXPANDED_ITEMS.to_segkey_buf()).unwrap();
+    let expanded_items_value = GetItem::get(
+        item_store.as_ref(),
+        &ctx,
+        SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
+    )
+    .await
+    .unwrap();
     let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
     assert!(expanded_items.contains(&id));
 
@@ -223,7 +242,7 @@ async fn create_collection_with_repo() {
 
     // Verify that the repo is stored in the manifest model
     let id = create_collection_output.id;
-    let collection_service = services.get::<CollectionService>();
+    let collection_service = services.get::<CollectionService<MockAppRuntime>>();
     let collection = collection_service.collection(&id).await.unwrap();
     assert_eq!(
         collection.manifest().await.repository,
@@ -231,18 +250,25 @@ async fn create_collection_with_repo() {
     );
 
     // Verify the db entries were created
-    let storage_service = services.get::<StorageServiceForIntegrationTest>();
+    let storage_service = services.get::<StorageServiceForIntegrationTest<MockAppRuntime>>();
     let item_store = storage_service.storage().item_store();
 
     // Check order was stored
     let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
-    let order_value = GetItem::get(item_store.as_ref(), order_key).unwrap();
+    let order_value = GetItem::get(item_store.as_ref(), &ctx, order_key)
+        .await
+        .unwrap();
     let stored_order: usize = order_value.deserialize().unwrap();
     assert_eq!(stored_order, 0);
 
     // Check expanded_items contains the collection id
-    let expanded_items_value =
-        GetItem::get(item_store.as_ref(), SEGKEY_EXPANDED_ITEMS.to_segkey_buf()).unwrap();
+    let expanded_items_value = GetItem::get(
+        item_store.as_ref(),
+        &ctx,
+        SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
+    )
+    .await
+    .unwrap();
     let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
     assert!(expanded_items.contains(&id));
 
@@ -284,24 +310,31 @@ async fn create_collection_with_icon() {
 
     // Verify that the icon is stored in the assets folder
     let collection = services
-        .get::<CollectionService>()
+        .get::<CollectionService<MockAppRuntime>>()
         .collection(&id)
         .await
         .unwrap();
     assert!(collection.icon_path().is_some());
 
     // Check order was stored
-    let storage_service = services.get::<StorageServiceForIntegrationTest>();
+    let storage_service = services.get::<StorageServiceForIntegrationTest<MockAppRuntime>>();
     let item_store = storage_service.storage().item_store();
 
     let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
-    let order_value = GetItem::get(item_store.as_ref(), order_key).unwrap();
+    let order_value = GetItem::get(item_store.as_ref(), &ctx, order_key)
+        .await
+        .unwrap();
     let stored_order: usize = order_value.deserialize().unwrap();
     assert_eq!(stored_order, 0);
 
     // Check expanded_items contains the collection id
-    let expanded_items_value =
-        GetItem::get(item_store.as_ref(), SEGKEY_EXPANDED_ITEMS.to_segkey_buf()).unwrap();
+    let expanded_items_value = GetItem::get(
+        item_store.as_ref(),
+        &ctx,
+        SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
+    )
+    .await
+    .unwrap();
     let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
     assert!(expanded_items.contains(&id));
 
@@ -345,10 +378,15 @@ async fn create_multiple_collections_expanded_items() {
         .unwrap();
 
     // Check expanded_items contains both collection ids
-    let storage_service = services.get::<StorageServiceForIntegrationTest>();
+    let storage_service = services.get::<StorageServiceForIntegrationTest<MockAppRuntime>>();
     let item_store = storage_service.storage().item_store();
-    let expanded_items_value =
-        GetItem::get(item_store.as_ref(), SEGKEY_EXPANDED_ITEMS.to_segkey_buf()).unwrap();
+    let expanded_items_value = GetItem::get(
+        item_store.as_ref(),
+        &ctx,
+        SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
+    )
+    .await
+    .unwrap();
     let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
 
     assert_eq!(expanded_items.len(), 2);

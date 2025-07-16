@@ -14,6 +14,7 @@ moss_storage.workspace = true
 moss_db.workspace = true
 moss_activity_indicator.workspace = true
 
+futures.workspace = true
 anyhow.workspace = true
 tauri = { workspace = true, features = ["wry"] }
 thiserror.workspace = true
@@ -34,6 +35,7 @@ nanoid.workspace = true
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }
 moss_testutils.workspace = true
+moss_applib = { workspace = true, features = ["test"] }
 
 [features]
 integration-tests = []

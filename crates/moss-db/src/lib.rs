@@ -1,18 +1,27 @@
-pub mod anyvalue_enum;
 pub mod bincode_table;
 pub mod common;
 pub mod encrypted_bincode_table;
+pub mod error;
 pub mod primitives;
 
 pub use common::*;
+pub use error::*;
 
 use anyhow::Result;
+use async_trait::async_trait;
+use moss_applib::context::AnyAsyncContext;
 use redb::{Builder, Database, Key, TableDefinition};
 use serde::{Serialize, de::DeserializeOwned};
 use std::{borrow::Borrow, path::Path, sync::Arc};
 use tokio::sync::Notify;
 
-pub trait DatabaseClient: Sized {
+#[async_trait]
+pub trait DatabaseClientWithContext<Context: AnyAsyncContext>: Sized {
+    async fn begin_write_with_context(&self, ctx: &Context) -> Result<Transaction, DatabaseError>;
+    async fn begin_read_with_context(&self, ctx: &Context) -> Result<Transaction, DatabaseError>;
+}
+
+pub trait DatabaseClient {
     fn begin_write(&self) -> Result<Transaction, DatabaseError>;
     fn begin_read(&self) -> Result<Transaction, DatabaseError>;
 }
@@ -83,5 +92,35 @@ impl DatabaseClient for ReDbClient {
 
     fn begin_read(&self) -> Result<Transaction, DatabaseError> {
         Ok(Transaction::Read(self.db.begin_read()?))
+    }
+}
+
+#[async_trait]
+impl<Context> DatabaseClientWithContext<Context> for ReDbClient
+where
+    Context: AnyAsyncContext,
+{
+    async fn begin_write_with_context(&self, ctx: &Context) -> Result<Transaction, DatabaseError> {
+        if let Some(reason) = ctx.done() {
+            return Err(DatabaseError::Canceled(reason));
+        }
+
+        tokio::time::timeout(ctx.deadline(), async move {
+            Ok(Transaction::Write(self.db.begin_write()?))
+        })
+        .await
+        .map_err(|_| DatabaseError::Timeout("begin_write".to_string()))?
+    }
+
+    async fn begin_read_with_context(&self, ctx: &Context) -> Result<Transaction, DatabaseError> {
+        if let Some(reason) = ctx.done() {
+            return Err(DatabaseError::Canceled(reason));
+        }
+
+        tokio::time::timeout(ctx.deadline(), async move {
+            Ok(Transaction::Read(self.db.begin_read()?))
+        })
+        .await
+        .map_err(|_| DatabaseError::Timeout("begin_read".to_string()))?
     }
 }

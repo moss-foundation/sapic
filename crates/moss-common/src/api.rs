@@ -36,8 +36,8 @@ impl From<moss_fs::FsError> for OperationError {
     }
 }
 
-impl From<moss_db::common::DatabaseError> for OperationError {
-    fn from(error: moss_db::common::DatabaseError) -> Self {
+impl From<moss_db::DatabaseError> for OperationError {
+    fn from(error: moss_db::DatabaseError) -> Self {
         OperationError::Internal(error.to_string())
     }
 }

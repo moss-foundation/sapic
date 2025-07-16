@@ -15,6 +15,7 @@ export * from "./DropIndicator";
 export * from "./IconLabelButton";
 export * from "./InputOutlined";
 export * from "./InputPlain";
+export * from "./InputTemplating";
 export * from "./Modals/ConfirmationModal";
 
 export * from "./CollectionTree/Tree";

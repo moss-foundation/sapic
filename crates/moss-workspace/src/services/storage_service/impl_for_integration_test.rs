@@ -3,8 +3,9 @@ use std::{
     sync::Arc,
 };
 
-use moss_applib::ServiceMarker;
-use moss_db::{DatabaseResult, Transaction, primitives::AnyValue};
+use async_trait::async_trait;
+use moss_applib::{AppRuntime, ServiceMarker};
+use moss_db::{Transaction, primitives::AnyValue};
 use moss_storage::{WorkspaceStorage, primitives::segkey::SegKeyBuf};
 
 use crate::{
@@ -13,103 +14,131 @@ use crate::{
     storage::entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity},
 };
 
-pub struct StorageServiceForIntegrationTest {
-    real: Arc<StorageService>,
+pub struct StorageServiceForIntegrationTest<R: AppRuntime> {
+    real: Arc<StorageService<R>>,
 }
 
-impl StorageServiceForIntegrationTest {
-    pub fn storage(&self) -> &Arc<dyn WorkspaceStorage> {
+impl<R: AppRuntime> StorageServiceForIntegrationTest<R> {
+    pub fn storage(&self) -> &Arc<dyn WorkspaceStorage<R::AsyncContext>> {
         &self.real.storage
     }
 
-    pub fn real(&self) -> &Arc<StorageService> {
+    pub fn real(&self) -> &Arc<StorageService<R>> {
         &self.real
     }
 }
 
-impl ServiceMarker for StorageServiceForIntegrationTest {}
+impl<R: AppRuntime> ServiceMarker for StorageServiceForIntegrationTest<R> {}
 
-impl From<StorageService> for StorageServiceForIntegrationTest {
-    fn from(real: StorageService) -> Self {
+impl<R: AppRuntime> From<StorageService<R>> for StorageServiceForIntegrationTest<R> {
+    fn from(real: StorageService<R>) -> Self {
         Self {
             real: Arc::new(real),
         }
     }
 }
 
-impl AnyStorageService for StorageServiceForIntegrationTest {
-    fn begin_write(&self) -> anyhow::Result<Transaction> {
-        self.real.begin_write()
+#[async_trait]
+impl<R: AppRuntime> AnyStorageService<R> for StorageServiceForIntegrationTest<R> {
+    async fn begin_write(&self, ctx: &R::AsyncContext) -> joinerror::Result<Transaction> {
+        self.real.begin_write(ctx).await
     }
 
-    fn put_item_order_txn(
+    async fn put_item_order_txn(
         &self,
+        ctx: &R::AsyncContext,
         txn: &mut Transaction,
         id: &str,
         order: usize,
-    ) -> anyhow::Result<()> {
-        self.real.put_item_order_txn(txn, id, order)
+    ) -> joinerror::Result<()> {
+        self.real.put_item_order_txn(ctx, txn, id, order).await
     }
 
-    fn put_expanded_items_txn(
+    async fn put_expanded_items_txn(
         &self,
+        ctx: &R::AsyncContext,
         txn: &mut Transaction,
         expanded_entries: &HashSet<CollectionId>,
-    ) -> anyhow::Result<()> {
-        self.real.put_expanded_items_txn(txn, expanded_entries)
+    ) -> joinerror::Result<()> {
+        self.real
+            .put_expanded_items_txn(ctx, txn, expanded_entries)
+            .await
     }
 
-    fn get_expanded_items(&self) -> anyhow::Result<HashSet<CollectionId>> {
-        self.real.get_expanded_items()
-    }
-
-    fn remove_item_metadata_txn(
+    async fn get_expanded_items(
         &self,
+        ctx: &R::AsyncContext,
+    ) -> joinerror::Result<HashSet<CollectionId>> {
+        self.real.get_expanded_items(ctx).await
+    }
+
+    async fn remove_item_metadata_txn(
+        &self,
+        ctx: &R::AsyncContext,
         txn: &mut Transaction,
         segkey_prefix: SegKeyBuf,
-    ) -> DatabaseResult<()> {
-        self.real.remove_item_metadata_txn(txn, segkey_prefix)
+    ) -> joinerror::Result<()> {
+        self.real
+            .remove_item_metadata_txn(ctx, txn, segkey_prefix)
+            .await
     }
 
-    fn list_items_metadata(
+    async fn list_items_metadata(
         &self,
+        ctx: &R::AsyncContext,
         segkey_prefix: SegKeyBuf,
-    ) -> DatabaseResult<HashMap<SegKeyBuf, AnyValue>> {
-        self.real.list_items_metadata(segkey_prefix)
+    ) -> joinerror::Result<HashMap<SegKeyBuf, AnyValue>> {
+        self.real.list_items_metadata(ctx, segkey_prefix).await
     }
 
-    fn get_layout_cache(&self) -> anyhow::Result<HashMap<SegKeyBuf, AnyValue>> {
-        self.real.get_layout_cache()
-    }
-
-    fn put_sidebar_layout(
+    async fn get_layout_cache(
         &self,
+        ctx: &R::AsyncContext,
+    ) -> joinerror::Result<HashMap<SegKeyBuf, AnyValue>> {
+        self.real.get_layout_cache(ctx).await
+    }
+
+    async fn put_sidebar_layout(
+        &self,
+        ctx: &R::AsyncContext,
         position: SidebarPosition,
         size: usize,
         visible: bool,
-    ) -> anyhow::Result<()> {
-        self.real.put_sidebar_layout(position, size, visible)
+    ) -> joinerror::Result<()> {
+        self.real
+            .put_sidebar_layout(ctx, position, size, visible)
+            .await
     }
 
-    fn put_panel_layout(&self, size: usize, visible: bool) -> anyhow::Result<()> {
-        self.real.put_panel_layout(size, visible)
-    }
-
-    fn put_activitybar_layout(
+    async fn put_panel_layout(
         &self,
+        ctx: &R::AsyncContext,
+        size: usize,
+        visible: bool,
+    ) -> joinerror::Result<()> {
+        self.real.put_panel_layout(ctx, size, visible).await
+    }
+
+    async fn put_activitybar_layout(
+        &self,
+        ctx: &R::AsyncContext,
         last_active_container_id: Option<String>,
         position: ActivitybarPosition,
-    ) -> anyhow::Result<()> {
+    ) -> joinerror::Result<()> {
         self.real
-            .put_activitybar_layout(last_active_container_id, position)
+            .put_activitybar_layout(ctx, last_active_container_id, position)
+            .await
     }
 
-    fn put_editor_layout(
+    async fn put_editor_layout(
         &self,
+        ctx: &R::AsyncContext,
         grid: EditorGridStateEntity,
         panels: HashMap<String, EditorPanelStateEntity>,
         active_group: Option<String>,
-    ) -> anyhow::Result<()> {
-        self.real.put_editor_layout(grid, panels, active_group)
+    ) -> joinerror::Result<()> {
+        self.real
+            .put_editor_layout(ctx, grid, panels, active_group)
+            .await
     }
 }

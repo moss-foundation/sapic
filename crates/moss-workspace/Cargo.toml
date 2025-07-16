@@ -16,6 +16,7 @@ moss_text.workspace = true
 moss_file.workspace = true
 moss_git.workspace = true
 moss_bindingutils.workspace = true
+joinerror.workspace = true
 
 anyhow.workspace = true
 serde = { workspace = true, features = ["derive", "rc"] }
@@ -36,6 +37,7 @@ nanoid.workspace = true
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }
 moss_testutils.workspace = true
+moss_applib = { workspace = true, features = ["test"] }
 
 [features]
 integration-tests = []
