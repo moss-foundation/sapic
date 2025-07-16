@@ -28,6 +28,10 @@ pub enum OperationError {
     /// This error code is reserved for errors that are not covered by the other error codes.
     #[error("UNKNOWN: {0}")]
     Unknown(#[from] anyhow::Error),
+
+    /// This error code means that the operation did not finish within the specified deadline.
+    #[error("TIMEOUT: {0}")]
+    Timeout(String),
 }
 
 impl From<moss_fs::FsError> for OperationError {

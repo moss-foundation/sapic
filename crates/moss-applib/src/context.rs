@@ -100,7 +100,7 @@ impl AnyAsyncContext for AsyncContext {
         }
         if let Some(dl) = self.deadline {
             if Instant::now() >= dl {
-                return Some(Reason::Timedout);
+                return Some(Reason::Timeout);
             }
         }
         if let Some(parent) = &self.parent {
@@ -198,7 +198,7 @@ impl AnyContext for MutableContext {
         }
         if let Some(dl) = self.deadline {
             if Instant::now() >= dl {
-                return Some(Reason::Timedout);
+                return Some(Reason::Timeout);
             }
         }
         if let Some(parent) = &self.parent {
@@ -316,7 +316,7 @@ impl Canceller {
 /// Reasons why a context is done.
 #[derive(Debug, PartialEq, Eq)]
 pub enum Reason {
-    Timedout,
+    Timeout,
     Canceled,
 }
 
