@@ -1,30 +1,40 @@
-import { StreamCollectionsEvent } from "@repo/moss-workspace";
-import { useQueryClient } from "@tanstack/react-query";
+import { invokeTauriIpc } from "@/lib/backend/tauri";
+import { BatchUpdateCollectionInput, StreamCollectionsEvent, UpdateCollectionOutput } from "@repo/moss-workspace";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_STREAMED_COLLECTIONS_QUERY_KEY } from "./useStreamedCollections";
 
-export interface UseUpdateCollectionInput {
-  id: string;
-  collection: StreamCollectionsEvent;
-}
+const batchUpdateCollection = async (input: BatchUpdateCollectionInput) => {
+  const result = await invokeTauriIpc<UpdateCollectionOutput>("batch_update_collection", {
+    input,
+  });
+
+  if (result.status === "error") {
+    throw new Error(String(result.error));
+  }
+
+  return result.data;
+};
 
 export const useBatchUpdateCollection = () => {
   const queryClient = useQueryClient();
 
-  const placeholderFnForBatchUpdateCollection = ({ collections }: { collections: UseUpdateCollectionInput[] }) => {
-    queryClient.setQueryData([USE_STREAMED_COLLECTIONS_QUERY_KEY], (old: StreamCollectionsEvent[]) => {
-      return old.map((oldCollection) => {
-        const updatedCollection = collections.find((collection) => collection.id === oldCollection.id);
-        if (updatedCollection) {
-          return updatedCollection.collection;
-        }
+  return useMutation({
+    mutationFn: batchUpdateCollection,
+    onSuccess: (_, variables) => {
+      queryClient.setQueryData([USE_STREAMED_COLLECTIONS_QUERY_KEY], (old: StreamCollectionsEvent[]) => {
+        return old.map((oldCollection) => {
+          const updatedCollection = variables.items.find((collection) => collection.id === oldCollection.id);
+          if (updatedCollection) {
+            return {
+              ...oldCollection,
+              ...updatedCollection,
+            };
+          }
 
-        return oldCollection;
+          return oldCollection;
+        });
       });
-    });
-  };
-
-  return {
-    placeholderFnForBatchUpdateCollection,
-  };
+    },
+  });
 };

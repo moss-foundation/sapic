@@ -9,7 +9,7 @@ import { TreeCollectionRootNode } from "../types";
 
 export const useHandleCollectionsDragAndDrop = () => {
   const { collectionsTrees } = useCollectionsTrees();
-  const { placeholderFnForBatchUpdateCollection } = useBatchUpdateCollection();
+  const { mutateAsync: batchUpdateCollection } = useBatchUpdateCollection();
 
   const handleReorder = useCallback(
     async ({ location, source }) => {
@@ -52,20 +52,17 @@ export const useHandleCollectionsDragAndDrop = () => {
           order: index + 1,
         }));
 
-        placeholderFnForBatchUpdateCollection({
-          collections: collectionsWithUpdatedOrder.map((collection) => ({
+        await batchUpdateCollection({
+          items: collectionsWithUpdatedOrder.map((collection) => ({
             id: collection.id,
-            collection: {
-              ...collection,
-              order: collection.order,
-            },
+            order: collection.order,
           })),
         });
       } catch (error) {
         console.error("Error reordering collections:", error);
       }
     },
-    [placeholderFnForBatchUpdateCollection, collectionsTrees]
+    [collectionsTrees, batchUpdateCollection]
   );
 
   useEffect(() => {

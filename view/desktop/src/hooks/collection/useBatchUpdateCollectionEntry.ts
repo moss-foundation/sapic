@@ -3,8 +3,6 @@ import { BatchUpdateEntryInput, BatchUpdateEntryOutput, BatchUpdateEntryOutputKi
 import { useMutation } from "@tanstack/react-query";
 import { Channel } from "@tauri-apps/api/core";
 
-import { useFetchEntriesForPath } from "./derivedHooks/useFetchEntriesForPath";
-
 export interface UseBatchUpdateCollectionEntryInput {
   collectionId: string;
   entries: BatchUpdateEntryInput;
@@ -23,8 +21,6 @@ const batchUpdateCollectionEntry = async ({ collectionId, entries }: UseBatchUpd
 };
 
 export const useBatchUpdateCollectionEntry = () => {
-  const { fetchEntriesForPath } = useFetchEntriesForPath();
-
   //TODO output type is ambiguous and a little bit hardcoded
   return useMutation<void, Error, UseBatchUpdateCollectionEntryInput>({
     mutationFn: batchUpdateCollectionEntry,

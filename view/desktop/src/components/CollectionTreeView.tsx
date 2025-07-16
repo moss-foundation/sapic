@@ -137,7 +137,7 @@ const CollectionCreationZone = () => {
         const newCollection = await createCollection({
           name: rootEntry.name,
           order: (collections?.length ?? 0) + 1,
-          repo: sourceTarget.repository ?? undefined,
+          repository: sourceTarget.repository ?? undefined,
         });
 
         try {
