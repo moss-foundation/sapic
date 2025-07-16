@@ -5,7 +5,7 @@ import {
   ElementDragPayload,
 } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 
-import { DragNode, DropNodeElementWithInstruction, SortTypes, TreeCollectionNode } from "./types";
+import { DragNode, DropNode, DropNodeElementWithInstruction, SortTypes, TreeCollectionNode } from "./types";
 
 export const updateTreeNode = (node: TreeCollectionNode, updatedNode: TreeCollectionNode): TreeCollectionNode => {
   if (node.id === updatedNode.id) return updateNodeOrder(updatedNode);
@@ -273,7 +273,15 @@ export const addNodeToTreeWithInstruction = (
   return tree;
 };
 
-export const canDropNode = (sourceTarget: DragNode, dropTarget: DragNode, node: TreeCollectionNode) => {
+export const canDropNode = (sourceTarget: DragNode, dropTarget: DropNode, node: TreeCollectionNode) => {
+  if (sourceTarget.node.id === dropTarget.node.id) {
+    return false;
+  }
+
+  if (sourceTarget.node.class !== dropTarget.node.class) {
+    return false;
+  }
+
   if (sourceTarget.node.kind === "Dir") {
     if (hasDirectDescendant(dropTarget.node, node)) {
       return false;

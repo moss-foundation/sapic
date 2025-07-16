@@ -9,6 +9,7 @@ import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollection
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { join } from "@tauri-apps/api/path";
 
+import { canDropNode } from "../utils";
 import { getPathWithoutName, prepareEntriesForDrop } from "../utils/Path";
 import {
   createEntry,
@@ -46,7 +47,8 @@ export const useMonitorForNodeDragAndDrop = () => {
         const locationTreeNodeData = getLocationTreeNodeData(location);
         const operation = getInstructionFromLocation(location)?.operation;
 
-        if (sourceTreeNodeData.node.id === locationTreeNodeData.node.id || !operation) {
+        if (!canDropNode(sourceTreeNodeData, locationTreeNodeData, sourceTreeNodeData.node) || !operation) {
+          console.warn("can't drop");
           return;
         }
 
