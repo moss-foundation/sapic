@@ -1,7 +1,3 @@
-mod context;
-
-pub use context::*;
-
 use moss_activity_indicator::ActivityIndicator;
 use moss_app::{
     App, AppBuilder,
@@ -15,11 +11,14 @@ use moss_app::{
         workspace_service::WorkspaceService,
     },
 };
-use moss_applib::providers::{ServiceMap, ServiceProvider};
+use moss_applib::{
+    context::{AsyncContext, MutableContext},
+    mock::MockAppRuntime,
+    providers::{ServiceMap, ServiceProvider},
+};
 use moss_fs::{FileSystem, RealFileSystem};
 use moss_testutils::random_name::random_string;
-use std::{any::TypeId, future::Future, path::PathBuf, pin::Pin, sync::Arc};
-use tauri::test::MockRuntime;
+use std::{any::TypeId, future::Future, path::PathBuf, pin::Pin, sync::Arc, time::Duration};
 
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
 
@@ -31,12 +30,14 @@ pub fn random_app_dir_path() -> PathBuf {
 }
 
 pub async fn set_up_test_app() -> (
-    App<MockRuntime>,
-    MockAppContext,
+    App<MockAppRuntime>,
+    AsyncContext, // TODO: this is temporary, should be a mock
     ServiceProvider,
     CleanupFn,
     PathBuf,
 ) {
+    let ctx = MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
+
     let fs = Arc::new(RealFileSystem::new());
     let tauri_app = tauri::test::mock_app();
     let app_handle = tauri_app.handle().to_owned();
@@ -56,12 +57,13 @@ pub async fn set_up_test_app() -> (
         tokio::fs::create_dir(&globals_abs_path).await.unwrap();
     }
 
-    let storage_service: Arc<StorageService> = StorageService::new(&app_path).unwrap().into();
+    let storage_service: Arc<StorageService<MockAppRuntime>> =
+        StorageService::new(&app_path).unwrap().into();
 
     let session_id = SessionId::new();
     let mut services: ServiceMap = Default::default();
 
-    let log_service: Arc<LogService> = LogService::new(
+    let log_service: Arc<LogService<MockAppRuntime>> = LogService::new(
         fs.clone(),
         app_handle.clone(),
         &logs_abs_path,
@@ -71,19 +73,25 @@ pub async fn set_up_test_app() -> (
     .unwrap()
     .into();
 
-    let workspace_service: Arc<WorkspaceService<MockRuntime>> =
-        WorkspaceService::new(storage_service.clone(), fs.clone(), &app_path)
+    let workspace_service: Arc<WorkspaceService<MockAppRuntime>> =
+        WorkspaceService::new(&ctx, storage_service.clone(), fs.clone(), &app_path)
             .await
             .expect("Failed to create workspace service")
             .into();
 
     {
-        services.insert(TypeId::of::<LogService>(), log_service.clone());
         services.insert(
-            TypeId::of::<WorkspaceService<MockRuntime>>(),
+            TypeId::of::<LogService<MockAppRuntime>>(),
+            log_service.clone(),
+        );
+        services.insert(
+            TypeId::of::<WorkspaceService<MockAppRuntime>>(),
             workspace_service.clone(),
         );
-        services.insert(TypeId::of::<StorageService>(), storage_service.clone());
+        services.insert(
+            TypeId::of::<StorageService<MockAppRuntime>>(),
+            storage_service.clone(),
+        );
     }
 
     let cleanup_fn = Box::new({
@@ -99,8 +107,7 @@ pub async fn set_up_test_app() -> (
 
     // FIXME: This is a hack, should be a mock
     let activity_indicator = ActivityIndicator::new(app_handle.clone());
-    let ctx = MockAppContext::new(app_handle.clone());
-    let app_builder = AppBuilder::new(
+    let app_builder = AppBuilder::<MockAppRuntime>::new(
         app_handle.clone(),
         activity_indicator,
         AppDefaults {
@@ -123,9 +130,9 @@ pub async fn set_up_test_app() -> (
         fs.clone(),
         app_path.clone(),
     )
-    .with_service::<LogService>(log_service)
-    .with_service::<WorkspaceService<MockRuntime>>(workspace_service)
-    .with_service::<StorageService>(storage_service);
+    .with_service::<LogService<MockAppRuntime>>(log_service)
+    .with_service::<WorkspaceService<MockAppRuntime>>(workspace_service)
+    .with_service::<StorageService<MockAppRuntime>>(storage_service);
 
     (
         app_builder.build().await.unwrap(),

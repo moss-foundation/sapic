@@ -1,8 +1,11 @@
-use anyhow::{Context as _, Result};
 use async_trait::async_trait;
 use derive_more::{Deref, DerefMut};
 use futures::Stream;
-use moss_applib::{PublicServiceMarker, ServiceMarker};
+use joinerror::{
+    OptionExt, ResultExt,
+    error_codes::{ErrorInternal, ErrorIo, ErrorNotFound, ErrorStorage},
+};
+use moss_applib::{AppRuntime, PublicServiceMarker, ServiceMarker};
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_collection::{
     Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
@@ -15,15 +18,13 @@ use moss_collection::{
         WorktreeService as CollectionWorktreeService,
     },
 };
-use moss_common::api::OperationError;
-use moss_fs::{FileSystem, RemoveOptions};
+use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
 use std::{
     collections::{HashMap, HashSet},
     path::{Path, PathBuf},
     pin::Pin,
     sync::Arc,
 };
-use thiserror::Error;
 use tokio::sync::RwLock;
 
 use crate::{
@@ -33,59 +34,7 @@ use crate::{
     storage::segments::SEGKEY_COLLECTION,
 };
 
-const COLLECTION_ICON_PATH: u32 = 128;
-
-#[derive(Error, Debug)]
-pub enum CollectionError {
-    #[error("invalid input: {0}")]
-    InvalidInput(String),
-
-    #[error("invalid kind: {0}")]
-    InvalidKind(String),
-
-    #[error("collection already exists: {0}")]
-    AlreadyExists(String),
-
-    #[error("collection is not found: {0}")]
-    NotFound(String),
-
-    #[error("io error: {0}")]
-    Io(String),
-
-    #[error("internal error: {0}")]
-    Internal(String),
-
-    #[error("unknown error: {0}")]
-    Unknown(#[from] anyhow::Error),
-}
-
-impl From<moss_db::common::DatabaseError> for CollectionError {
-    fn from(error: moss_db::common::DatabaseError) -> Self {
-        CollectionError::Internal(error.to_string())
-    }
-}
-
-impl From<serde_json::Error> for CollectionError {
-    fn from(error: serde_json::Error) -> Self {
-        CollectionError::Internal(error.to_string())
-    }
-}
-
-impl From<CollectionError> for OperationError {
-    fn from(error: CollectionError) -> Self {
-        match error {
-            CollectionError::InvalidInput(err) => OperationError::InvalidInput(err),
-            CollectionError::InvalidKind(err) => OperationError::InvalidInput(err),
-            CollectionError::AlreadyExists(err) => OperationError::AlreadyExists(err),
-            CollectionError::NotFound(err) => OperationError::NotFound(err),
-            CollectionError::Unknown(err) => OperationError::Unknown(err),
-            CollectionError::Io(err) => OperationError::Internal(err.to_string()),
-            CollectionError::Internal(err) => OperationError::Internal(err.to_string()),
-        }
-    }
-}
-
-pub(super) type CollectionResult<T> = std::result::Result<T, CollectionError>;
+const COLLECTION_ICON_SIZE: u32 = 128;
 
 pub(crate) struct CollectionItemUpdateParams {
     pub name: Option<String>,
@@ -105,13 +54,13 @@ pub(crate) struct CollectionItemCreateParams {
 }
 
 #[derive(Deref, DerefMut)]
-struct CollectionItem {
+struct CollectionItem<R: AppRuntime> {
     pub id: CollectionId,
     pub order: Option<usize>,
 
     #[deref]
     #[deref_mut]
-    pub handle: Arc<CollectionHandle>,
+    pub handle: Arc<CollectionHandle<R>>,
 }
 
 pub(crate) struct CollectionItemDescription {
@@ -128,29 +77,31 @@ pub(crate) struct CollectionItemDescription {
 }
 
 #[derive(Default)]
-struct ServiceState {
-    collections: HashMap<CollectionId, CollectionItem>,
+struct ServiceState<R: AppRuntime> {
+    collections: HashMap<CollectionId, CollectionItem<R>>,
     expanded_items: HashSet<CollectionId>,
 }
 
-pub struct CollectionService {
+pub struct CollectionService<R: AppRuntime> {
     abs_path: Arc<Path>,
     fs: Arc<dyn FileSystem>,
-    storage: Arc<DynStorageService>,
-    state: Arc<RwLock<ServiceState>>,
+    storage: Arc<DynStorageService<R>>,
+    state: Arc<RwLock<ServiceState<R>>>,
 }
 
-impl ServiceMarker for CollectionService {}
-impl PublicServiceMarker for CollectionService {}
+impl<R: AppRuntime> ServiceMarker for CollectionService<R> {}
+impl<R: AppRuntime> PublicServiceMarker for CollectionService<R> {}
 
 #[async_trait]
-impl AnyCollectionService for CollectionService {
-    async fn collection(&self, id: &CollectionId) -> CollectionResult<Arc<CollectionHandle>> {
+impl<R: AppRuntime> AnyCollectionService<R> for CollectionService<R> {
+    async fn collection(&self, id: &CollectionId) -> joinerror::Result<Arc<CollectionHandle<R>>> {
         let state_lock = self.state.read().await;
         let item = state_lock
             .collections
             .get(id)
-            .ok_or(CollectionError::NotFound(id.to_string()))?;
+            .ok_or_join_err_with::<ErrorNotFound>(|| {
+                format!("collection id `{}` not found", id.to_string())
+            })?;
 
         Ok(item.handle.clone())
     }
@@ -158,30 +109,36 @@ impl AnyCollectionService for CollectionService {
     #[allow(private_interfaces)]
     async fn create_collection(
         &self,
+        ctx: &R::AsyncContext,
         id: &CollectionId,
         params: CollectionItemCreateParams,
-    ) -> CollectionResult<CollectionItemDescription> {
+    ) -> joinerror::Result<CollectionItemDescription> {
         let id_str = id.to_string();
         let abs_path: Arc<Path> = self.absolutize(id_str).into();
         if abs_path.exists() {
-            return Err(CollectionError::AlreadyExists(
-                abs_path.to_path_buf().to_string_lossy().to_string(),
-            ));
+            return Err(joinerror::Error::new::<ErrorIo>(format!(
+                "collection directory `{}` already exists",
+                abs_path.display()
+            )));
         }
 
         self.fs
             .create_dir(&abs_path)
             .await
-            .context("Failed to create the collection directory")?;
+            .join_err_with::<ErrorIo>(|| {
+                format!("failed to create directory `{}`", abs_path.display())
+            })?;
 
         let collection = {
-            let storage_service: Arc<DynCollectionStorageService> = {
-                let storage: Arc<CollectionStorageService> =
-                    CollectionStorageService::new(&abs_path)?.into();
+            let storage_service: Arc<DynCollectionStorageService<R>> = {
+                let storage: Arc<CollectionStorageService<R>> =
+                    CollectionStorageService::new(&abs_path)
+                        .join_err::<ErrorStorage>("Failed to create collection storage service")?
+                        .into();
                 DynCollectionStorageService::new(storage)
             };
-            let worktree_service: Arc<DynCollectionWorktreeService> = {
-                let worktree: Arc<CollectionWorktreeService> = CollectionWorktreeService::new(
+            let worktree_service: Arc<DynCollectionWorktreeService<R>> = {
+                let worktree: Arc<CollectionWorktreeService<R>> = CollectionWorktreeService::new(
                     abs_path.clone(),
                     self.fs.clone(),
                     storage_service.clone(),
@@ -194,24 +151,30 @@ impl AnyCollectionService for CollectionService {
                     Arc::new(CollectionSetIconService::new(
                         abs_path.clone(),
                         self.fs.clone(),
-                        COLLECTION_ICON_PATH,
+                        COLLECTION_ICON_SIZE,
                     ));
                 DynCollectionSetIconService::new(set_icon)
             };
 
             CollectionBuilder::new(self.fs.clone())
-                .with_service::<DynCollectionStorageService>(storage_service)
-                .with_service::<DynCollectionWorktreeService>(worktree_service)
+                .with_service::<DynCollectionStorageService<R>>(storage_service)
+                .with_service::<DynCollectionWorktreeService<R>>(worktree_service)
                 .with_service::<DynCollectionSetIconService>(set_icon_service)
-                .create(CollectionCreateParams {
-                    name: Some(params.name.to_owned()),
-                    internal_abs_path: abs_path.clone(),
-                    external_abs_path: params.external_path.as_deref().map(|p| p.to_owned().into()),
-                    repository: params.repository.to_owned(),
-                    icon_path: params.icon_path.to_owned(),
-                })
+                .create(
+                    ctx,
+                    CollectionCreateParams {
+                        name: Some(params.name.to_owned()),
+                        internal_abs_path: abs_path.clone(),
+                        external_abs_path: params
+                            .external_path
+                            .as_deref()
+                            .map(|p| p.to_owned().into()),
+                        repository: params.repository.to_owned(),
+                        icon_path: params.icon_path.to_owned(),
+                    },
+                )
                 .await
-                .map_err(|e| CollectionError::Internal(e.to_string()))?
+                .join_err::<ErrorInternal>("failed to build collection")?
         };
         let icon_path = collection
             .service::<DynCollectionSetIconService>()
@@ -236,12 +199,18 @@ impl AnyCollectionService for CollectionService {
         );
 
         {
-            let mut txn = self.storage.begin_write()?;
+            let mut txn = self
+                .storage
+                .begin_write(ctx)
+                .await
+                .join_err::<ErrorStorage>("failed to start transaction")?;
 
             self.storage
-                .put_item_order_txn(&mut txn, id, params.order)?;
+                .put_item_order_txn(ctx, &mut txn, id, params.order)
+                .await?;
             self.storage
-                .put_expanded_items_txn(&mut txn, &state_lock.expanded_items)?;
+                .put_expanded_items_txn(ctx, &mut txn, &state_lock.expanded_items)
+                .await?;
 
             txn.commit()?;
         }
@@ -261,8 +230,9 @@ impl AnyCollectionService for CollectionService {
     #[allow(private_interfaces)]
     async fn delete_collection(
         &self,
+        ctx: &R::AsyncContext,
         id: &CollectionId,
-    ) -> CollectionResult<Option<CollectionItemDescription>> {
+    ) -> joinerror::Result<Option<CollectionItemDescription>> {
         let id_str = id.to_string();
         let abs_path = self.absolutize(id_str);
 
@@ -276,7 +246,9 @@ impl AnyCollectionService for CollectionService {
                     },
                 )
                 .await
-                .context("Failed to delete collection from file system")?;
+                .join_err_with::<ErrorIo>(|| {
+                    format!("failed to remove directory `{}`", abs_path.display())
+                })?;
         }
 
         let mut state_lock = self.state.write().await;
@@ -284,12 +256,14 @@ impl AnyCollectionService for CollectionService {
         state_lock.expanded_items.remove(&id);
 
         {
-            let mut txn = self.storage.begin_write()?;
+            let mut txn = self.storage.begin_write(ctx).await?;
 
             self.storage
-                .remove_item_metadata_txn(&mut txn, SEGKEY_COLLECTION.join(&id.to_string()))?;
+                .remove_item_metadata_txn(ctx, &mut txn, SEGKEY_COLLECTION.join(&id.to_string()))
+                .await?;
             self.storage
-                .put_expanded_items_txn(&mut txn, &state_lock.expanded_items)?;
+                .put_expanded_items_txn(ctx, &mut txn, &state_lock.expanded_items)
+                .await?;
 
             txn.commit()?;
         }
@@ -316,19 +290,24 @@ impl AnyCollectionService for CollectionService {
     #[allow(private_interfaces)]
     async fn update_collection(
         &self,
+        ctx: &R::AsyncContext,
         id: &CollectionId,
         params: CollectionItemUpdateParams,
-    ) -> CollectionResult<()> {
+    ) -> joinerror::Result<()> {
         let mut state_lock = self.state.write().await;
         let item = state_lock
             .collections
             .get_mut(&id)
-            .ok_or(CollectionError::NotFound(id.to_string()))?;
+            .ok_or_join_err_with::<ErrorNotFound>(|| {
+                format!("failed to find collection with id `{}`", id.to_string())
+            })?;
 
-        let mut txn = self.storage.begin_write()?;
+        let mut txn = self.storage.begin_write(ctx).await?;
         if let Some(order) = params.order {
             item.order = Some(order);
-            self.storage.put_item_order_txn(&mut txn, id, order)?;
+            self.storage
+                .put_item_order_txn(ctx, &mut txn, id, order)
+                .await?;
         }
 
         item.modify(CollectionModifyParams {
@@ -337,7 +316,9 @@ impl AnyCollectionService for CollectionService {
             icon_path: params.icon_path,
         })
         .await
-        .map_err(|e| CollectionError::Internal(e.to_string()))?;
+        .join_err_with::<ErrorInternal>(|| {
+            format!("failed to modify collection with id `{}`", id.to_string())
+        })?;
 
         if let Some(expanded) = params.expanded {
             if expanded {
@@ -347,15 +328,17 @@ impl AnyCollectionService for CollectionService {
             }
 
             self.storage
-                .put_expanded_items_txn(&mut txn, &state_lock.expanded_items)?;
+                .put_expanded_items_txn(ctx, &mut txn, &state_lock.expanded_items)
+                .await?;
         }
 
         Ok(())
     }
 
     #[allow(private_interfaces)]
-    fn list_collections(
+    async fn list_collections(
         &self,
+        _ctx: &R::AsyncContext,
     ) -> Pin<Box<dyn Stream<Item = CollectionItemDescription> + Send + '_>> {
         let state = self.state.clone();
 
@@ -382,19 +365,20 @@ impl AnyCollectionService for CollectionService {
     }
 }
 
-impl CollectionService {
+impl<R: AppRuntime> CollectionService<R> {
     pub async fn new(
+        ctx: &R::AsyncContext,
         abs_path: Arc<Path>,
         fs: Arc<dyn FileSystem>,
-        storage: Arc<DynStorageService>,
-    ) -> CollectionResult<Self> {
-        let expanded_items = if let Ok(expanded_items) = storage.get_expanded_items() {
+        storage: Arc<DynStorageService<R>>,
+    ) -> joinerror::Result<Self> {
+        let expanded_items = if let Ok(expanded_items) = storage.get_expanded_items(ctx).await {
             expanded_items.into_iter().collect::<HashSet<_>>()
         } else {
             HashSet::new()
         };
 
-        let collections = restore_collections(&abs_path, &fs, &storage).await?;
+        let collections = restore_collections(ctx, &abs_path, &fs, &storage).await?;
 
         Ok(Self {
             abs_path,
@@ -412,25 +396,26 @@ impl CollectionService {
     }
 }
 
-async fn restore_collections(
+async fn restore_collections<R: AppRuntime>(
+    ctx: &R::AsyncContext,
     abs_path: &Path,
     fs: &Arc<dyn FileSystem>,
-    storage: &Arc<dyn AnyStorageService>,
-) -> Result<HashMap<CollectionId, CollectionItem>> {
+    storage: &Arc<dyn AnyStorageService<R>>,
+) -> joinerror::Result<HashMap<CollectionId, CollectionItem<R>>> {
     let dir_abs_path = abs_path.join(dirs::COLLECTIONS_DIR);
     if !dir_abs_path.exists() {
         return Ok(HashMap::new());
     }
 
     let mut collections = Vec::new();
-    let mut read_dir = fs.read_dir(&dir_abs_path).await?;
+    let mut read_dir = fs
+        .read_dir(&dir_abs_path)
+        .await
+        .join_err_with::<ErrorIo>(|| {
+            format!("failed to read directory `{}`", dir_abs_path.display())
+        })?;
     while let Some(entry) = read_dir.next_entry().await? {
-        if !entry
-            .file_type()
-            .await
-            .context("Failed to get the file type")?
-            .is_dir()
-        {
+        if !entry.file_type().await?.is_dir() {
             continue;
         }
 
@@ -440,13 +425,15 @@ async fn restore_collections(
         let collection = {
             let collection_abs_path: Arc<Path> = entry.path().to_owned().into();
 
-            let storage_service: Arc<DynCollectionStorageService> = {
-                let storage: Arc<CollectionStorageService> =
-                    CollectionStorageService::new(&collection_abs_path)?.into();
+            let storage_service: Arc<DynCollectionStorageService<R>> = {
+                let storage: Arc<CollectionStorageService<R>> =
+                    CollectionStorageService::new(&collection_abs_path)
+                        .join_err::<ErrorInternal>("failed to create collection storage service")?
+                        .into();
                 DynCollectionStorageService::new(storage)
             };
-            let worktree_service: Arc<DynCollectionWorktreeService> = {
-                let worktree: Arc<CollectionWorktreeService> = CollectionWorktreeService::new(
+            let worktree_service: Arc<DynCollectionWorktreeService<R>> = {
+                let worktree: Arc<CollectionWorktreeService<R>> = CollectionWorktreeService::new(
                     collection_abs_path.clone(),
                     fs.clone(),
                     storage_service.clone(),
@@ -459,25 +446,28 @@ async fn restore_collections(
                     Arc::new(CollectionSetIconService::new(
                         collection_abs_path.clone(),
                         fs.clone(),
-                        COLLECTION_ICON_PATH,
+                        COLLECTION_ICON_SIZE,
                     ));
                 DynCollectionSetIconService::new(set_icon)
             };
 
             CollectionBuilder::new(fs.clone())
-                .with_service::<DynCollectionStorageService>(storage_service)
-                .with_service::<DynCollectionWorktreeService>(worktree_service)
+                .with_service::<DynCollectionStorageService<R>>(storage_service)
+                .with_service::<DynCollectionWorktreeService<R>>(worktree_service)
                 .with_service::<DynCollectionSetIconService>(set_icon_service)
                 .load(CollectionLoadParams {
                     internal_abs_path: collection_abs_path,
                 })
-                .await?
+                .await
+                .join_err::<ErrorInternal>("failed to rebuild collection")?
         };
 
         collections.push((id, collection));
     }
 
-    let metadata = storage.list_items_metadata(SEGKEY_COLLECTION.to_segkey_buf())?;
+    let metadata = storage
+        .list_items_metadata(ctx, SEGKEY_COLLECTION.to_segkey_buf())
+        .await?;
 
     let mut result = HashMap::new();
     for (id, collection) in collections {

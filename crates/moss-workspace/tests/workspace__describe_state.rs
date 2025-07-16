@@ -11,9 +11,9 @@ use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn describe_layout_parts_state_empty() {
-    let (_ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
 
-    let describe_state_result = workspace.describe_state().await;
+    let describe_state_result = workspace.describe_state(&ctx).await;
 
     let describe_state_output = describe_state_result.unwrap();
 
@@ -30,7 +30,7 @@ async fn describe_layout_parts_state_empty() {
 
 #[tokio::test]
 async fn describe_layout_parts_state_sidebar_only() {
-    let (_ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
 
     // Set up only the sidebar state
     let sidebar_state = SidebarPartStateInfo {
@@ -40,12 +40,15 @@ async fn describe_layout_parts_state_sidebar_only() {
     };
 
     let update_state_result = workspace
-        .update_state(UpdateStateInput::UpdateSidebarPartState(sidebar_state))
+        .update_state(
+            &ctx,
+            UpdateStateInput::UpdateSidebarPartState(sidebar_state),
+        )
         .await;
     let _ = update_state_result.unwrap();
 
     // Check the describe_state operation
-    let describe_state_output = workspace.describe_state().await.unwrap();
+    let describe_state_output = workspace.describe_state(&ctx).await.unwrap();
 
     // Editor should be None
     assert!(describe_state_output.editor.is_none());
@@ -66,7 +69,7 @@ async fn describe_layout_parts_state_sidebar_only() {
 
 #[tokio::test]
 async fn describe_layout_parts_state_panel_only() {
-    let (_ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
 
     // Set up only the panel state
     let panel_state = PanelPartStateInfo {
@@ -75,12 +78,12 @@ async fn describe_layout_parts_state_panel_only() {
     };
 
     let update_state_result = workspace
-        .update_state(UpdateStateInput::UpdatePanelPartState(panel_state))
+        .update_state(&ctx, UpdateStateInput::UpdatePanelPartState(panel_state))
         .await;
     let _ = update_state_result.unwrap();
 
     // Check the describe_state operation
-    let describe_state_output = workspace.describe_state().await.unwrap();
+    let describe_state_output = workspace.describe_state(&ctx).await.unwrap();
 
     // Editor should be None
     assert!(describe_state_output.editor.is_none());
@@ -100,11 +103,11 @@ async fn describe_layout_parts_state_panel_only() {
 
 #[tokio::test]
 async fn describe_layout_parts_state_editor_only() {
-    let (_ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
 
     // Since EditorPartStateInfo is being removed, this test now just checks
     // that editor state is None when no editor state is set
-    let describe_state_output = workspace.describe_state().await.unwrap();
+    let describe_state_output = workspace.describe_state(&ctx).await.unwrap();
 
     // All states should be default values (not None)
     assert!(describe_state_output.sidebar.is_some());
@@ -119,7 +122,7 @@ async fn describe_layout_parts_state_editor_only() {
 
 #[tokio::test]
 async fn describe_layout_parts_state_all() {
-    let (_ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
 
     // Set up sidebar and panel states (no editor state since it's being removed)
     let sidebar_state = SidebarPartStateInfo {
@@ -134,17 +137,20 @@ async fn describe_layout_parts_state_all() {
 
     // Update sidebar and panel states
     let update_sidebar_result = workspace
-        .update_state(UpdateStateInput::UpdateSidebarPartState(sidebar_state))
+        .update_state(
+            &ctx,
+            UpdateStateInput::UpdateSidebarPartState(sidebar_state),
+        )
         .await;
     let _ = update_sidebar_result.unwrap();
 
     let update_panel_result = workspace
-        .update_state(UpdateStateInput::UpdatePanelPartState(panel_state))
+        .update_state(&ctx, UpdateStateInput::UpdatePanelPartState(panel_state))
         .await;
     let _ = update_panel_result.unwrap();
 
     // Check the describe_state operation
-    let describe_state_output = workspace.describe_state().await.unwrap();
+    let describe_state_output = workspace.describe_state(&ctx).await.unwrap();
 
     // Editor should be None since no editor state is set
     assert!(describe_state_output.editor.is_none());
@@ -169,7 +175,7 @@ async fn describe_layout_parts_state_all() {
 
 #[tokio::test]
 async fn describe_layout_parts_state_after_update() {
-    let (_ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
 
     // First set sidebar and panel states (no editor state since it's being removed)
     let initial_sidebar_state = SidebarPartStateInfo {
@@ -183,14 +189,18 @@ async fn describe_layout_parts_state_after_update() {
     };
 
     let update_sidebar_result = workspace
-        .update_state(UpdateStateInput::UpdateSidebarPartState(
-            initial_sidebar_state,
-        ))
+        .update_state(
+            &ctx,
+            UpdateStateInput::UpdateSidebarPartState(initial_sidebar_state),
+        )
         .await;
     let _ = update_sidebar_result.unwrap();
 
     let update_panel_result = workspace
-        .update_state(UpdateStateInput::UpdatePanelPartState(initial_panel_state))
+        .update_state(
+            &ctx,
+            UpdateStateInput::UpdatePanelPartState(initial_panel_state),
+        )
         .await;
     let _ = update_panel_result.unwrap();
 
@@ -201,14 +211,15 @@ async fn describe_layout_parts_state_after_update() {
         position: SidebarPosition::Left,
     };
     let update_sidebar_result = workspace
-        .update_state(UpdateStateInput::UpdateSidebarPartState(
-            updated_sidebar_state,
-        ))
+        .update_state(
+            &ctx,
+            UpdateStateInput::UpdateSidebarPartState(updated_sidebar_state),
+        )
         .await;
     let _ = update_sidebar_result.unwrap();
 
     // Check the describe_state operation after update
-    let describe_state_output = workspace.describe_state().await.unwrap();
+    let describe_state_output = workspace.describe_state(&ctx).await.unwrap();
 
     // Editor should be None since no editor state is set
     assert!(describe_state_output.editor.is_none());

@@ -2,6 +2,7 @@
 
 mod shared;
 
+use moss_applib::mock::MockAppRuntime;
 use moss_collection::{
     dirs,
     models::{operations::UpdateEntryInput, primitives::EntryId, types::UpdateDirEntryParams},
@@ -21,22 +22,25 @@ use crate::shared::{
 
 #[tokio::test]
 async fn rename_dir_entry_success() {
-    let (collection_path, mut collection, _services) = create_test_collection().await;
+    let (ctx, collection_path, mut collection, _services) = create_test_collection().await;
 
     let old_entry_name = random_entry_name();
     let new_entry_name = random_entry_name();
     let entry_path = dirs::COMPONENTS_DIR;
 
-    let id = create_test_component_dir_entry(&mut collection, &old_entry_name).await;
+    let id = create_test_component_dir_entry(&ctx, &mut collection, &old_entry_name).await;
 
     let _ = collection
-        .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
-            id,
-            path: Default::default(),
-            name: Some(new_entry_name.clone()),
-            order: None,
-            expanded: None,
-        }))
+        .update_entry(
+            &ctx,
+            UpdateEntryInput::Dir(UpdateDirEntryParams {
+                id,
+                path: Default::default(),
+                name: Some(new_entry_name.clone()),
+                order: None,
+                expanded: None,
+            }),
+        )
         .await
         .unwrap();
 
@@ -52,21 +56,24 @@ async fn rename_dir_entry_success() {
 
 #[tokio::test]
 async fn rename_dir_entry_empty_name() {
-    let (collection_path, mut collection, _services) = create_test_collection().await;
+    let (ctx, collection_path, mut collection, _services) = create_test_collection().await;
 
     let old_entry_name = random_entry_name();
     let new_entry_name = "".to_string();
 
-    let id = create_test_component_dir_entry(&mut collection, &old_entry_name).await;
+    let id = create_test_component_dir_entry(&ctx, &mut collection, &old_entry_name).await;
 
     let result = collection
-        .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
-            id,
-            path: Default::default(),
-            name: Some(new_entry_name.clone()),
-            order: None,
-            expanded: None,
-        }))
+        .update_entry(
+            &ctx,
+            UpdateEntryInput::Dir(UpdateDirEntryParams {
+                id,
+                path: Default::default(),
+                name: Some(new_entry_name.clone()),
+                order: None,
+                expanded: None,
+            }),
+        )
         .await;
 
     assert!(result.is_err());
@@ -77,23 +84,26 @@ async fn rename_dir_entry_empty_name() {
 
 #[tokio::test]
 async fn rename_dir_entry_already_exists() {
-    let (collection_path, mut collection, _services) = create_test_collection().await;
+    let (ctx, collection_path, mut collection, _services) = create_test_collection().await;
     let first_entry_name = random_entry_name();
     let second_entry_name = random_entry_name();
 
-    let first_id = create_test_component_dir_entry(&mut collection, &first_entry_name).await;
+    let first_id = create_test_component_dir_entry(&ctx, &mut collection, &first_entry_name).await;
 
-    let _ = create_test_component_dir_entry(&mut collection, &second_entry_name).await;
+    let _ = create_test_component_dir_entry(&ctx, &mut collection, &second_entry_name).await;
 
     // Try to rename first entry to the second name
     let result = collection
-        .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
-            id: first_id,
-            path: Default::default(),
-            name: Some(second_entry_name.clone()),
-            order: None,
-            expanded: None,
-        }))
+        .update_entry(
+            &ctx,
+            UpdateEntryInput::Dir(UpdateDirEntryParams {
+                id: first_id,
+                path: Default::default(),
+                name: Some(second_entry_name.clone()),
+                order: None,
+                expanded: None,
+            }),
+        )
         .await;
 
     assert!(result.is_err());
@@ -104,7 +114,7 @@ async fn rename_dir_entry_already_exists() {
 
 #[tokio::test]
 async fn rename_dir_entry_special_chars_in_name() {
-    let (collection_path, mut collection, _services) = create_test_collection().await;
+    let (ctx, collection_path, mut collection, _services) = create_test_collection().await;
     let entry_path = PathBuf::from(dirs::COMPONENTS_DIR);
 
     for special_char in FILENAME_SPECIAL_CHARS {
@@ -112,16 +122,19 @@ async fn rename_dir_entry_special_chars_in_name() {
         let new_entry_name = format!("{}{}", entry_name, special_char);
         dbg!(&new_entry_name);
 
-        let id = create_test_component_dir_entry(&mut collection, &entry_name).await;
+        let id = create_test_component_dir_entry(&ctx, &mut collection, &entry_name).await;
 
         let result = collection
-            .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
-                id,
-                path: Default::default(),
-                name: Some(new_entry_name.clone()),
-                order: None,
-                expanded: None,
-            }))
+            .update_entry(
+                &ctx,
+                UpdateEntryInput::Dir(UpdateDirEntryParams {
+                    id,
+                    path: Default::default(),
+                    name: Some(new_entry_name.clone()),
+                    order: None,
+                    expanded: None,
+                }),
+            )
             .await;
 
         if result.is_err() {
@@ -148,29 +161,34 @@ async fn rename_dir_entry_special_chars_in_name() {
 
 #[tokio::test]
 async fn update_dir_entry_order() {
-    let (collection_path, mut collection, services) = create_test_collection().await;
+    let (ctx, collection_path, mut collection, services) = create_test_collection().await;
 
     let entry_name = random_entry_name();
 
-    let id = create_test_component_dir_entry(&mut collection, &entry_name).await;
+    let id = create_test_component_dir_entry(&ctx, &mut collection, &entry_name).await;
 
     let _ = collection
-        .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
-            id: id.clone(),
-            path: Default::default(),
-            name: None,
-            order: Some(42),
-            expanded: None,
-        }))
+        .update_entry(
+            &ctx,
+            UpdateEntryInput::Dir(UpdateDirEntryParams {
+                id: id.clone(),
+                path: Default::default(),
+                name: None,
+                order: Some(42),
+                expanded: None,
+            }),
+        )
         .await
         .unwrap();
 
-    let storage_service = services.get::<StorageServiceForIntegrationTest>();
+    let storage_service = services.get::<StorageServiceForIntegrationTest<MockAppRuntime>>();
     let resource_store = storage_service.storage().resource_store();
 
     // Check order was updated
     let order_key = SEGKEY_RESOURCE_ENTRY.join(&id.to_string()).join("order");
-    let order_value = GetItem::get(resource_store.as_ref(), order_key).unwrap();
+    let order_value = GetItem::get(resource_store.as_ref(), &ctx, order_key)
+        .await
+        .unwrap();
     let stored_order: isize = order_value.deserialize().unwrap();
     assert_eq!(stored_order, 42);
 
@@ -180,53 +198,63 @@ async fn update_dir_entry_order() {
 
 #[tokio::test]
 async fn expand_and_collapse_dir_entry() {
-    let (collection_path, mut collection, services) = create_test_collection().await;
+    let (ctx, collection_path, mut collection, services) = create_test_collection().await;
 
     let entry_name = random_entry_name();
 
-    let id = create_test_component_dir_entry(&mut collection, &entry_name).await;
+    let id = create_test_component_dir_entry(&ctx, &mut collection, &entry_name).await;
 
-    let storage_service = services.get::<StorageServiceForIntegrationTest>();
+    let storage_service = services.get::<StorageServiceForIntegrationTest<MockAppRuntime>>();
     let resource_store = storage_service.storage().resource_store();
 
     // Expanding the entry
     let _ = collection
-        .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
-            id: id.clone(),
-            path: Default::default(),
-            name: None,
-            order: None,
-            expanded: Some(true),
-        }))
+        .update_entry(
+            &ctx,
+            UpdateEntryInput::Dir(UpdateDirEntryParams {
+                id: id.clone(),
+                path: Default::default(),
+                name: None,
+                order: None,
+                expanded: Some(true),
+            }),
+        )
         .await
         .unwrap();
 
     // Check expanded_items contains the entry id
     let expanded_items_value = GetItem::get(
         resource_store.as_ref(),
+        &ctx,
         SEGKEY_EXPANDED_ENTRIES.to_segkey_buf(),
     )
+    .await
     .unwrap();
     let expanded_items: Vec<EntryId> = expanded_items_value.deserialize().unwrap();
     assert!(expanded_items.contains(&id));
 
     // Collapsing the entry
     let _ = collection
-        .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
-            id: id.clone(),
-            path: Default::default(),
-            name: None,
-            order: None,
-            expanded: Some(false),
-        }))
+        .update_entry(
+            &ctx,
+            UpdateEntryInput::Dir(UpdateDirEntryParams {
+                id: id.clone(),
+                path: Default::default(),
+                name: None,
+                order: None,
+                expanded: Some(false),
+            }),
+        )
         .await
         .unwrap();
 
     // Check expanded_items contains the entry id
     let expanded_items_value = GetItem::get(
         resource_store.as_ref(),
+        &ctx,
         SEGKEY_EXPANDED_ENTRIES.to_segkey_buf(),
     )
+    .await
     .unwrap();
     let expanded_items: Vec<EntryId> = expanded_items_value.deserialize().unwrap();
     assert!(!expanded_items.contains(&id));
@@ -237,27 +265,30 @@ async fn expand_and_collapse_dir_entry() {
 
 #[tokio::test]
 async fn move_dir_entry_success() {
-    let (collection_path, mut collection, _services) = create_test_collection().await;
+    let (ctx, collection_path, mut collection, _services) = create_test_collection().await;
 
     let entry_name = random_entry_name();
 
-    let id = create_test_component_dir_entry(&mut collection, &entry_name).await;
+    let id = create_test_component_dir_entry(&ctx, &mut collection, &entry_name).await;
 
     // Create a destination_directory named dest
-    let _ = create_test_component_dir_entry(&mut collection, "dest").await;
+    let _ = create_test_component_dir_entry(&ctx, &mut collection, "dest").await;
 
     let old_dest = PathBuf::from(dirs::COMPONENTS_DIR);
     let new_dest = Path::new(dirs::COMPONENTS_DIR).join("dest");
 
     // Move entry path from `components/{entry_name}` to `components/dest/{entry_name}`
     let _output = collection
-        .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
-            id,
-            path: Some(new_dest.clone()),
-            name: None,
-            order: None,
-            expanded: None,
-        }))
+        .update_entry(
+            &ctx,
+            UpdateEntryInput::Dir(UpdateDirEntryParams {
+                id,
+                path: Some(new_dest.clone()),
+                name: None,
+                order: None,
+                expanded: None,
+            }),
+        )
         .await
         .unwrap();
 
@@ -273,23 +304,26 @@ async fn move_dir_entry_success() {
 
 #[tokio::test]
 async fn move_dir_entry_nonexistent_destination() {
-    let (collection_path, mut collection, _services) = create_test_collection().await;
+    let (ctx, collection_path, mut collection, _services) = create_test_collection().await;
 
     let entry_name = random_entry_name();
 
-    let id = create_test_component_dir_entry(&mut collection, &entry_name).await;
+    let id = create_test_component_dir_entry(&ctx, &mut collection, &entry_name).await;
 
     let new_dest = Path::new(dirs::COMPONENTS_DIR).join("dest");
 
     // Move entry path from `components/{entry_name}` to `components/dest/{entry_name}`
     let result = collection
-        .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
-            id,
-            path: Some(new_dest.clone()),
-            name: None,
-            order: None,
-            expanded: None,
-        }))
+        .update_entry(
+            &ctx,
+            UpdateEntryInput::Dir(UpdateDirEntryParams {
+                id,
+                path: Some(new_dest.clone()),
+                name: None,
+                order: None,
+                expanded: None,
+            }),
+        )
         .await;
 
     assert!(result.is_err());
@@ -300,26 +334,29 @@ async fn move_dir_entry_nonexistent_destination() {
 
 #[tokio::test]
 async fn move_dir_entry_different_classification_folder() {
-    let (collection_path, mut collection, _services) = create_test_collection().await;
+    let (ctx, collection_path, mut collection, _services) = create_test_collection().await;
 
     let entry_name = random_entry_name();
 
-    let id = create_test_component_dir_entry(&mut collection, &entry_name).await;
+    let id = create_test_component_dir_entry(&ctx, &mut collection, &entry_name).await;
 
     // Create a destination_directory named dest
-    let _ = create_test_request_dir_entry(&mut collection, "dest").await;
+    let _ = create_test_request_dir_entry(&ctx, &mut collection, "dest").await;
 
     let new_dest = Path::new(dirs::REQUESTS_DIR).join("dest");
 
     // Move entry path from `components/{entry_name}` to `requests/dest/{entry_name}`
     let result = collection
-        .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
-            id,
-            path: Some(new_dest.clone()),
-            name: None,
-            order: None,
-            expanded: None,
-        }))
+        .update_entry(
+            &ctx,
+            UpdateEntryInput::Dir(UpdateDirEntryParams {
+                id,
+                path: Some(new_dest.clone()),
+                name: None,
+                order: None,
+                expanded: None,
+            }),
+        )
         .await;
 
     assert!(result.is_err());
@@ -330,26 +367,29 @@ async fn move_dir_entry_different_classification_folder() {
 
 #[tokio::test]
 async fn move_dir_entry_non_dir_destination() {
-    let (collection_path, mut collection, _services) = create_test_collection().await;
+    let (ctx, collection_path, mut collection, _services) = create_test_collection().await;
 
     let entry_name = random_entry_name();
 
-    let id = create_test_component_dir_entry(&mut collection, &entry_name).await;
+    let id = create_test_component_dir_entry(&ctx, &mut collection, &entry_name).await;
 
     // Create a destination entry (non-directory) named dest
-    let _ = create_test_component_item_entry(&mut collection, "dest").await;
+    let _ = create_test_component_item_entry(&ctx, &mut collection, "dest").await;
 
     let new_dest = Path::new(dirs::COMPONENTS_DIR).join("dest");
 
     // Move entry path from `components/{entry_name}` to `components/dest/{entry_name}`
     let result = collection
-        .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
-            id,
-            path: Some(new_dest.clone()),
-            name: None,
-            order: None,
-            expanded: None,
-        }))
+        .update_entry(
+            &ctx,
+            UpdateEntryInput::Dir(UpdateDirEntryParams {
+                id,
+                path: Some(new_dest.clone()),
+                name: None,
+                order: None,
+                expanded: None,
+            }),
+        )
         .await;
 
     assert!(result.is_err());
@@ -360,37 +400,43 @@ async fn move_dir_entry_non_dir_destination() {
 
 #[tokio::test]
 async fn move_dir_entry_already_exists() {
-    let (collection_path, mut collection, _services) = create_test_collection().await;
+    let (ctx, collection_path, mut collection, _services) = create_test_collection().await;
 
     // First create a dest/entry entry
     let dest_name = "dest".to_string();
     let entry_name = "entry".to_string();
 
-    create_test_component_dir_entry(&mut collection, &dest_name).await;
-    let existing_id = create_test_component_dir_entry(&mut collection, &entry_name).await;
+    create_test_component_dir_entry(&ctx, &mut collection, &dest_name).await;
+    let existing_id = create_test_component_dir_entry(&ctx, &mut collection, &entry_name).await;
 
     let dest = Path::new(dirs::COMPONENTS_DIR).join(&dest_name);
     let _ = collection
-        .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
-            id: existing_id,
-            path: Some(dest.clone()),
-            name: None,
-            order: None,
-            expanded: None,
-        }))
+        .update_entry(
+            &ctx,
+            UpdateEntryInput::Dir(UpdateDirEntryParams {
+                id: existing_id,
+                path: Some(dest.clone()),
+                name: None,
+                order: None,
+                expanded: None,
+            }),
+        )
         .await
         .unwrap();
 
     // Create a new entry and try to move it into dest
-    let new_id = create_test_component_dir_entry(&mut collection, &entry_name).await;
+    let new_id = create_test_component_dir_entry(&ctx, &mut collection, &entry_name).await;
     let result = collection
-        .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
-            id: new_id,
-            path: Some(dest.clone()),
-            name: None,
-            order: None,
-            expanded: None,
-        }))
+        .update_entry(
+            &ctx,
+            UpdateEntryInput::Dir(UpdateDirEntryParams {
+                id: new_id,
+                path: Some(dest.clone()),
+                name: None,
+                order: None,
+                expanded: None,
+            }),
+        )
         .await;
 
     assert!(result.is_err());

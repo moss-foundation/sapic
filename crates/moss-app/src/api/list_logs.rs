@@ -1,6 +1,6 @@
 use chrono::NaiveDate;
+use moss_applib::AppRuntime;
 use moss_common::api::OperationResult;
-use tauri::Runtime as TauriRuntime;
 
 use crate::{
     app::App,
@@ -8,9 +8,13 @@ use crate::{
     services::log_service::{LogFilter, LogService},
 };
 
-impl<R: TauriRuntime> App<R> {
-    pub async fn list_logs(&self, input: &ListLogsInput) -> OperationResult<ListLogsOutput> {
-        let log_service = self.services.get::<LogService>();
+impl<R: AppRuntime> App<R> {
+    pub async fn list_logs(
+        &self,
+        _ctx: &R::AsyncContext,
+        input: &ListLogsInput,
+    ) -> OperationResult<ListLogsOutput> {
+        let log_service = self.services.get::<LogService<R>>();
 
         let filter = LogFilter {
             // Skip invalid dates

@@ -1,7 +1,9 @@
+// TODO: Will be removed soon, need this as an example for the future
+
 use async_trait::async_trait;
 use moss_applib::{
     GlobalMarker,
-    context::{Context, ContextValue},
+    context_old::{Context, ContextValue},
     subscription::{Subscription, SubscriptionSet},
     task::Task,
 };

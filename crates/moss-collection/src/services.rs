@@ -9,7 +9,7 @@ pub use worktree_service::WorktreeService;
 use anyhow::Result;
 use async_trait::async_trait;
 use derive_more::Deref;
-use moss_applib::ServiceMarker;
+use moss_applib::{AppRuntime, ServiceMarker};
 use moss_db::{Transaction, primitives::AnyValue};
 use moss_storage::primitives::segkey::SegKeyBuf;
 use std::{
@@ -51,49 +51,61 @@ impl ServiceMarker for DynSetIconService {}
 // ########################################################
 // ###                Storage Service                   ###
 // ########################################################
-pub trait AnyStorageService: Send + Sync + ServiceMarker + 'static {
-    fn begin_write(&self) -> anyhow::Result<Transaction>;
-    fn begin_read(&self) -> anyhow::Result<Transaction>;
-    fn put_entry_order_txn(
+
+#[async_trait]
+pub trait AnyStorageService<R: AppRuntime>: Send + Sync + ServiceMarker + 'static {
+    async fn begin_write(&self, ctx: &R::AsyncContext) -> anyhow::Result<Transaction>;
+    async fn begin_read(&self, ctx: &R::AsyncContext) -> anyhow::Result<Transaction>;
+    async fn put_entry_order_txn(
         &self,
+        ctx: &R::AsyncContext,
         txn: &mut Transaction,
         id: &EntryId,
         order: isize,
     ) -> anyhow::Result<()>;
-    fn get_all_entry_keys(&self) -> anyhow::Result<HashMap<SegKeyBuf, AnyValue>>;
-
-    fn put_expanded_entries(&self, expanded_entries: Vec<EntryId>) -> anyhow::Result<()>;
-
-    fn put_expanded_entries_txn(
+    async fn get_all_entry_keys(
         &self,
+        ctx: &R::AsyncContext,
+    ) -> anyhow::Result<HashMap<SegKeyBuf, AnyValue>>;
+
+    async fn put_expanded_entries(
+        &self,
+        ctx: &R::AsyncContext,
+        expanded_entries: Vec<EntryId>,
+    ) -> anyhow::Result<()>;
+
+    async fn put_expanded_entries_txn(
+        &self,
+        ctx: &R::AsyncContext,
         txn: &mut Transaction,
         expanded_entries: Vec<EntryId>,
     ) -> anyhow::Result<()>;
 
-    fn get_expanded_entries(&self) -> anyhow::Result<Vec<EntryId>>;
+    async fn get_expanded_entries(&self, ctx: &R::AsyncContext) -> anyhow::Result<Vec<EntryId>>;
 }
 
 #[derive(Deref)]
-pub struct DynStorageService(Arc<dyn AnyStorageService>);
+pub struct DynStorageService<R: AppRuntime>(Arc<dyn AnyStorageService<R>>);
 
-impl DynStorageService {
-    pub fn new(service: Arc<dyn AnyStorageService>) -> Arc<Self> {
+impl<R: AppRuntime> DynStorageService<R> {
+    pub fn new(service: Arc<dyn AnyStorageService<R>>) -> Arc<Self> {
         Arc::new(Self(service))
     }
 }
 
-impl ServiceMarker for DynStorageService {}
+impl<R: AppRuntime + 'static> ServiceMarker for DynStorageService<R> {}
 
 // ########################################################
 // ###               Worktree Service                   ###
 // ########################################################
 
 #[async_trait]
-pub trait AnyWorktreeService: Send + Sync + ServiceMarker + 'static {
+pub trait AnyWorktreeService<R: AppRuntime>: Send + Sync + ServiceMarker + 'static {
     fn absolutize(&self, path: &Path) -> WorktreeResult<PathBuf>;
-    async fn remove_entry(&self, id: &EntryId) -> WorktreeResult<()>;
+    async fn remove_entry(&self, ctx: &R::AsyncContext, id: &EntryId) -> WorktreeResult<()>;
     async fn scan(
         &self,
+        ctx: &R::AsyncContext,
         path: &Path,
         expanded_entries: Arc<HashSet<EntryId>>,
         all_entry_keys: Arc<HashMap<SegKeyBuf, AnyValue>>,
@@ -101,6 +113,7 @@ pub trait AnyWorktreeService: Send + Sync + ServiceMarker + 'static {
     ) -> WorktreeResult<()>;
     async fn create_item_entry(
         &self,
+        ctx: &R::AsyncContext,
         id: &EntryId,
         name: &str,
         path: &Path,
@@ -109,6 +122,7 @@ pub trait AnyWorktreeService: Send + Sync + ServiceMarker + 'static {
     ) -> WorktreeResult<()>;
     async fn create_dir_entry(
         &self,
+        ctx: &R::AsyncContext,
         id: &EntryId,
         name: &str,
         path: &Path,
@@ -117,28 +131,30 @@ pub trait AnyWorktreeService: Send + Sync + ServiceMarker + 'static {
     ) -> WorktreeResult<()>;
     async fn update_dir_entry(
         &self,
+        ctx: &R::AsyncContext,
         id: &EntryId,
         params: ModifyParams,
     ) -> WorktreeResult<(PathBuf, RawDirConfiguration)>;
     async fn update_item_entry(
         &self,
+        ctx: &R::AsyncContext,
         id: &EntryId,
         params: ModifyParams,
     ) -> WorktreeResult<(PathBuf, RawItemConfiguration)>;
 }
 
 #[derive(Deref)]
-pub struct DynWorktreeService(Arc<dyn AnyWorktreeService>);
-impl DynWorktreeService {
-    pub fn new(service: Arc<dyn AnyWorktreeService>) -> Arc<Self> {
+pub struct DynWorktreeService<R: AppRuntime>(Arc<dyn AnyWorktreeService<R>>);
+impl<R: AppRuntime> DynWorktreeService<R> {
+    pub fn new(service: Arc<dyn AnyWorktreeService<R>>) -> Arc<Self> {
         Arc::new(Self(service))
     }
 }
 
-impl Clone for DynWorktreeService {
+impl<R: AppRuntime> Clone for DynWorktreeService<R> {
     fn clone(&self) -> Self {
         Self(self.0.clone())
     }
 }
 
-impl ServiceMarker for DynWorktreeService {}
+impl<R: AppRuntime + 'static> ServiceMarker for DynWorktreeService<R> {}

@@ -1,6 +1,7 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
+use moss_applib::mock::MockAppRuntime;
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_common::api::OperationError;
 use moss_testutils::random_name::random_collection_name;
@@ -51,7 +52,7 @@ async fn rename_collection_success() {
         .unwrap();
 
     // Verify the manifest is updated
-    let collection_service = services.get::<CollectionService>();
+    let collection_service = services.get::<CollectionService<MockAppRuntime>>();
     let collection = collection_service
         .collection(&create_collection_output.id.into())
         .await
@@ -96,11 +97,7 @@ async fn rename_collection_empty_name() {
         )
         .await;
 
-    assert!(matches!(
-        rename_collection_result,
-        Err(OperationError::InvalidInput(_))
-    ));
-
+    assert!(rename_collection_result.is_err());
     cleanup().await;
 }
 
@@ -165,7 +162,7 @@ async fn rename_collection_nonexistent_id() {
         )
         .await;
 
-    assert!(matches!(result, Err(OperationError::NotFound(_))));
+    assert!(result.is_err());
 
     cleanup().await;
 }
@@ -209,7 +206,7 @@ async fn update_collection_repo() {
         .unwrap();
 
     // Verify the manifest is updated
-    let collection_service = services.get::<CollectionService>();
+    let collection_service = services.get::<CollectionService<MockAppRuntime>>();
     let collection = collection_service
         .collection(&create_collection_output.id.into())
         .await
@@ -263,7 +260,7 @@ async fn update_collection_new_icon() {
 
     // Verify the icon is generated
     let collection = services
-        .get::<CollectionService>()
+        .get::<CollectionService<MockAppRuntime>>()
         .collection(&id)
         .await
         .unwrap();
@@ -313,7 +310,7 @@ async fn update_collection_remove_icon() {
 
     // Verify the icon is removed
     let collection = services
-        .get::<CollectionService>()
+        .get::<CollectionService<MockAppRuntime>>()
         .collection(&id)
         .await
         .unwrap();

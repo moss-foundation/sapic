@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 moss_common.workspace = true
+joinerror.workspace = true
 
 tokio = { workspace = true, features = ["full"] }
 ts-rs.workspace = true

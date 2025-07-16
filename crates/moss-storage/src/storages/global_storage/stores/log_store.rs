@@ -1,4 +1,8 @@
-use moss_db::{DatabaseClient, DatabaseResult, ReDbClient, Transaction, primitives::AnyValue};
+use async_trait::async_trait;
+use moss_applib::context::AnyAsyncContext;
+use moss_db::{
+    DatabaseClientWithContext, DatabaseResult, ReDbClient, Transaction, primitives::AnyValue,
+};
 use std::sync::Arc;
 
 use crate::{
@@ -24,18 +28,28 @@ impl GlobalLogStoreImpl {
     }
 }
 
-impl PutItem for GlobalLogStoreImpl {
+#[async_trait]
+impl<Context> PutItem<Context> for GlobalLogStoreImpl
+where
+    Context: AnyAsyncContext,
+{
     type Key = SegKeyBuf;
     type Entity = AnyValue;
 
-    fn put(&self, key: Self::Key, entity: Self::Entity) -> DatabaseResult<()> {
-        let mut txn = self.client.begin_write()?;
-        self.table.insert(&mut txn, key, &entity)?;
+    async fn put(&self, ctx: &Context, key: Self::Key, entity: Self::Entity) -> DatabaseResult<()> {
+        let mut txn = self.client.begin_write_with_context(ctx).await?;
+        self.table
+            .insert_with_context(ctx, &mut txn, key, &entity)
+            .await?;
         txn.commit()
     }
 }
 
-impl TransactionalPutItem for GlobalLogStoreImpl {
+#[async_trait]
+impl<Context> TransactionalPutItem<Context> for GlobalLogStoreImpl
+where
+    Context: AnyAsyncContext,
+{
     type Key = SegKeyBuf;
     type Entity = AnyValue;
 
@@ -47,46 +61,82 @@ impl TransactionalPutItem for GlobalLogStoreImpl {
     ) -> DatabaseResult<()> {
         self.table.insert(txn, key, &entity)
     }
+
+    async fn put_with_context(
+        &self,
+        ctx: &Context,
+        txn: &mut Transaction,
+        key: Self::Key,
+        entity: Self::Entity,
+    ) -> DatabaseResult<()> {
+        self.table.insert_with_context(ctx, txn, key, &entity).await
+    }
 }
 
-impl RemoveItem for GlobalLogStoreImpl {
+#[async_trait]
+impl<Context> RemoveItem<Context> for GlobalLogStoreImpl
+where
+    Context: AnyAsyncContext,
+{
     type Key = SegKeyBuf;
     type Entity = AnyValue;
 
-    fn remove(&self, key: Self::Key) -> DatabaseResult<Self::Entity> {
-        let mut txn = self.client.begin_write()?;
-        let value = self.table.remove(&mut txn, key)?;
+    async fn remove(&self, ctx: &Context, key: Self::Key) -> DatabaseResult<Self::Entity> {
+        let mut txn = self.client.begin_write_with_context(ctx).await?;
+        let value = self.table.remove_with_context(ctx, &mut txn, key).await?;
         txn.commit()?;
         Ok(value)
     }
 }
 
-impl TransactionalRemoveItem for GlobalLogStoreImpl {
+#[async_trait]
+impl<Context> TransactionalRemoveItem<Context> for GlobalLogStoreImpl
+where
+    Context: AnyAsyncContext,
+{
     type Key = SegKeyBuf;
     type Entity = AnyValue;
 
-    fn remove(&self, txn: &mut Transaction, key: Self::Key) -> DatabaseResult<Self::Entity> {
-        self.table.remove(txn, key)
+    async fn remove(
+        &self,
+        ctx: &Context,
+        txn: &mut Transaction,
+        key: Self::Key,
+    ) -> DatabaseResult<Self::Entity> {
+        self.table.remove_with_context(ctx, txn, key).await
     }
 }
 
-impl GetItem for GlobalLogStoreImpl {
+#[async_trait]
+impl<Context> GetItem<Context> for GlobalLogStoreImpl
+where
+    Context: AnyAsyncContext,
+{
     type Key = SegKeyBuf;
     type Entity = AnyValue;
 
-    fn get(&self, key: Self::Key) -> DatabaseResult<Self::Entity> {
-        let read_txn = self.client.begin_read()?;
-        self.table.read(&read_txn, key)
+    async fn get(&self, ctx: &Context, key: Self::Key) -> DatabaseResult<Self::Entity> {
+        let read_txn = self.client.begin_read_with_context(ctx).await?;
+        self.table.read_with_context(ctx, &read_txn, key).await
     }
 }
 
-impl TransactionalGetItem for GlobalLogStoreImpl {
+#[async_trait]
+impl<Context> TransactionalGetItem<Context> for GlobalLogStoreImpl
+where
+    Context: AnyAsyncContext,
+{
     type Key = SegKeyBuf;
     type Entity = AnyValue;
 
-    fn get(&self, txn: &Transaction, key: Self::Key) -> DatabaseResult<Self::Entity> {
-        self.table.read(&txn, key)
+    async fn get(
+        &self,
+        ctx: &Context,
+        txn: &Transaction,
+        key: Self::Key,
+    ) -> DatabaseResult<Self::Entity> {
+        self.table.read_with_context(ctx, txn, key).await
     }
 }
 
-impl GlobalLogStore for GlobalLogStoreImpl {}
+impl<Context> GlobalLogStore<Context> for GlobalLogStoreImpl where Context: AnyAsyncContext {}

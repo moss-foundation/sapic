@@ -1,5 +1,4 @@
-use moss_common::api::OperationResult;
-use tauri::Runtime as TauriRuntime;
+use moss_applib::AppRuntime;
 
 use crate::{
     Workspace,
@@ -7,18 +6,21 @@ use crate::{
     services::{DynLayoutService, DynStorageService},
 };
 
-impl<R: TauriRuntime> Workspace<R> {
-    pub async fn describe_state(&self) -> OperationResult<DescribeStateOutput> {
-        let layout = self.services.get::<DynLayoutService>();
-        let storage = self.services.get::<DynStorageService>();
+impl<R: AppRuntime> Workspace<R> {
+    pub async fn describe_state(
+        &self,
+        ctx: &R::AsyncContext,
+    ) -> joinerror::Result<DescribeStateOutput> {
+        let layout = self.services.get::<DynLayoutService<R>>();
+        let storage = self.services.get::<DynStorageService<R>>();
 
         // HACK: cache here is a temporary solution
-        let mut cache = storage.get_layout_cache()?;
+        let mut cache = storage.get_layout_cache(ctx).await?;
 
-        let editor_state = layout.get_editor_layout_state(&mut cache)?;
-        let sidebar_state = layout.get_sidebar_layout_state(&mut cache)?;
-        let panel_state = layout.get_panel_layout_state(&mut cache)?;
-        let activitybar_state = layout.get_activitybar_layout_state(&mut cache)?;
+        let editor_state = layout.get_editor_layout_state(ctx, &mut cache).await?;
+        let sidebar_state = layout.get_sidebar_layout_state(ctx, &mut cache).await?;
+        let panel_state = layout.get_panel_layout_state(ctx, &mut cache).await?;
+        let activitybar_state = layout.get_activitybar_layout_state(ctx, &mut cache).await?;
 
         Ok(DescribeStateOutput {
             editor: editor_state,

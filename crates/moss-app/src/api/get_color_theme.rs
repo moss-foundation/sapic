@@ -1,5 +1,5 @@
+use moss_applib::AppRuntime;
 use moss_common::api::OperationResult;
-use tauri::Runtime as TauriRuntime;
 
 use crate::{
     app::App,
@@ -7,9 +7,10 @@ use crate::{
     services::theme_service::ThemeService,
 };
 
-impl<R: TauriRuntime> App<R> {
+impl<R: AppRuntime> App<R> {
     pub async fn get_color_theme(
         &self,
+        _ctx: &R::AsyncContext,
         input: &GetColorThemeInput,
     ) -> OperationResult<GetColorThemeOutput> {
         let theme_service = self.services.get::<ThemeService>();

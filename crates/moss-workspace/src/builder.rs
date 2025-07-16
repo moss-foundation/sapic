@@ -1,10 +1,9 @@
 use anyhow::Result;
 use moss_activity_indicator::ActivityIndicator;
-use moss_applib::{ServiceMarker, providers::ServiceMap};
+use moss_applib::{AppRuntime, ServiceMarker, providers::ServiceMap};
 use moss_file::json::JsonFileHandle;
 use moss_fs::FileSystem;
 use std::{any::TypeId, path::Path, sync::Arc};
-use tauri::Runtime as TauriRuntime;
 
 use crate::{
     Workspace, dirs,
@@ -58,10 +57,10 @@ impl WorkspaceBuilder {
         self
     }
 
-    pub async fn load<R: TauriRuntime>(
+    pub async fn load<R: AppRuntime>(
         self,
         params: WorkspaceLoadParams,
-        activity_indicator: ActivityIndicator<R>, // FIXME: will be passed as a service in the future
+        activity_indicator: ActivityIndicator<R::EventLoop>, // FIXME: will be passed as a service in the future
     ) -> Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
 
@@ -77,10 +76,10 @@ impl WorkspaceBuilder {
         })
     }
 
-    pub async fn create<R: TauriRuntime>(
+    pub async fn create<R: AppRuntime>(
         self,
         params: WorkspaceCreateParams,
-        activity_indicator: ActivityIndicator<R>, // FIXME: will be passed as a service in the future
+        activity_indicator: ActivityIndicator<R::EventLoop>, // FIXME: will be passed as a service in the future
     ) -> Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
 
