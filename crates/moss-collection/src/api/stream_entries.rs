@@ -170,7 +170,8 @@ impl<R: AppRuntime> Collection<R> {
             let _ = done_tx.send(());
         });
 
-        let result = tokio::try_join!(processing_task, completion_task);
+        // FIXME: handle potential error from cancellation/timeout
+        let _result = tokio::try_join!(processing_task, completion_task);
 
         self.on_did_change
             .fire(OnDidChangeEvent::Toggled(true))
