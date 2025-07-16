@@ -50,6 +50,7 @@ export const useUpdateCollection = () => {
 
           return {
             ...c,
+            ...variables,
             repository: updatedRepository,
             picturePath: updatedIconPath,
           };
