@@ -1,23 +1,31 @@
 pub mod shared;
 
-use moss_db::{DatabaseClient, common::DatabaseError};
+use moss_db::{DatabaseClientWithContext, DatabaseError};
 
 use crate::shared::setup_test_bincode_table;
 
-#[test]
-fn remove_success() {
-    let (client, table, path) = setup_test_bincode_table::<i32>();
+#[tokio::test]
+async fn remove_success() {
+    let (client, ctx, table, path) = setup_test_bincode_table::<i32>();
 
     {
-        let mut write = client.begin_write().unwrap();
-        table.insert(&mut write, "1".to_string(), &1).unwrap();
-        table.insert(&mut write, "2".to_string(), &2).unwrap();
+        let mut write = client.begin_write_with_context(&ctx).await.unwrap();
+        table
+            .insert_with_context(&ctx, &mut write, "1".to_string(), &1)
+            .await
+            .unwrap();
+        table
+            .insert_with_context(&ctx, &mut write, "2".to_string(), &2)
+            .await
+            .unwrap();
         write.commit().unwrap();
     }
 
     {
-        let mut write = client.begin_write().unwrap();
-        let result = table.remove(&mut write, "1".to_string());
+        let mut write = client.begin_write_with_context(&ctx).await.unwrap();
+        let result = table
+            .remove_with_context(&ctx, &mut write, "1".to_string())
+            .await;
         assert_eq!(result.ok(), Some(1));
         write.commit().unwrap();
     }
@@ -25,8 +33,15 @@ fn remove_success() {
     let expected = vec![("2".to_string(), 2)];
     {
         // Check the entry is removed from the db
-        let read = client.begin_read().unwrap();
-        assert_eq!(table.scan(&read).unwrap().collect::<Vec<_>>(), expected);
+        let read = client.begin_read_with_context(&ctx).await.unwrap();
+        assert_eq!(
+            table
+                .scan_with_context(&ctx, &read)
+                .await
+                .unwrap()
+                .collect::<Vec<_>>(),
+            expected
+        );
     }
 
     {
@@ -34,13 +49,15 @@ fn remove_success() {
     }
 }
 
-#[test]
-fn remove_nonexistent() {
-    let (client, table, path) = setup_test_bincode_table::<i32>();
+#[tokio::test]
+async fn remove_nonexistent() {
+    let (client, ctx, table, path) = setup_test_bincode_table::<i32>();
 
     {
-        let mut write = client.begin_write().unwrap();
-        let result = table.remove(&mut write, "1".to_string());
+        let mut write = client.begin_write_with_context(&ctx).await.unwrap();
+        let result = table
+            .remove_with_context(&ctx, &mut write, "1".to_string())
+            .await;
         assert!(matches!(result, Err(DatabaseError::NotFound { .. })));
         write.commit().unwrap();
     }
@@ -50,19 +67,24 @@ fn remove_nonexistent() {
     }
 }
 
-#[test]
-fn remove_in_read_transaction() {
-    let (client, table, path) = setup_test_bincode_table::<i32>();
+#[tokio::test]
+async fn remove_in_read_transaction() {
+    let (client, ctx, table, path) = setup_test_bincode_table::<i32>();
 
     {
-        let mut write = client.begin_write().unwrap();
-        table.insert(&mut write, "1".to_string(), &1).unwrap();
+        let mut write = client.begin_write_with_context(&ctx).await.unwrap();
+        table
+            .insert_with_context(&ctx, &mut write, "1".to_string(), &1)
+            .await
+            .unwrap();
         write.commit().unwrap();
     }
 
     {
-        let mut read = client.begin_read().unwrap();
-        let result = table.remove(&mut read, "1".to_string());
+        let mut read = client.begin_read_with_context(&ctx).await.unwrap();
+        let result = table
+            .remove_with_context(&ctx, &mut read, "1".to_string())
+            .await;
         assert!(matches!(result, Err(DatabaseError::Transaction(..))))
     }
 
@@ -71,26 +93,36 @@ fn remove_in_read_transaction() {
     }
 }
 
-#[test]
-fn remove_uncommitted() {
-    let (client, table, path) = setup_test_bincode_table::<i32>();
+#[tokio::test]
+async fn remove_uncommitted() {
+    let (client, ctx, table, path) = setup_test_bincode_table::<i32>();
 
     {
-        let mut write = client.begin_write().unwrap();
-        table.insert(&mut write, "1".to_string(), &1).unwrap();
+        let mut write = client.begin_write_with_context(&ctx).await.unwrap();
+        table
+            .insert_with_context(&ctx, &mut write, "1".to_string(), &1)
+            .await
+            .unwrap();
         write.commit().unwrap();
     }
 
     {
-        let mut write = client.begin_write().unwrap();
-        let _ = table.remove(&mut write, "1".to_string());
+        let mut write = client.begin_write_with_context(&ctx).await.unwrap();
+        let _ = table.remove_with_context(&ctx, &mut write, "1".to_string());
     }
 
     let expected = vec![("1".to_string(), 1)];
     {
         // Check that the change is not committed
-        let read = client.begin_read().unwrap();
-        assert_eq!(table.scan(&read).unwrap().collect::<Vec<_>>(), expected);
+        let read = client.begin_read_with_context(&ctx).await.unwrap();
+        assert_eq!(
+            table
+                .scan_with_context(&ctx, &read)
+                .await
+                .unwrap()
+                .collect::<Vec<_>>(),
+            expected
+        );
     }
 
     {

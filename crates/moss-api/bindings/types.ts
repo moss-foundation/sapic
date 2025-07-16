@@ -10,6 +10,10 @@
  */
 export type Options = {
   /**
+   * Optional request ID for API operations.
+   */
+  request_id?: string;
+  /**
    * Optional timeout duration for API operations in seconds.
    *
    * When `Some(value)`, the operation will timeout after the specified number of seconds.

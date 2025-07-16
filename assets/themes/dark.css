@@ -281,6 +281,10 @@
   --moss-input-bg-outlined: var(--moss-gray-14);
   --moss-input-border: var(--moss-gray-9);
 
+  --moss-templating-input-text: var(--moss-blue-3);
+  --moss-templating-input-border: var(--moss-blue-10);
+  --moss-templating-input-bg: var(--moss-blue-12);
+
   /* PageContainer */
   --moss-tab-active-border-color: var(--moss-blue-4);
   --moss-auth-indicator-color: var(--moss-green-4);

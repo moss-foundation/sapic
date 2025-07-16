@@ -1,3 +1,4 @@
+use moss_applib::AppRuntime;
 use moss_common::api::OperationResult;
 use tauri::ipc::Channel as TauriChannel;
 
@@ -9,20 +10,21 @@ use crate::{
     },
 };
 
-impl Collection {
+impl<R: AppRuntime> Collection<R> {
     pub async fn batch_update_entry(
         &self,
+        ctx: &R::AsyncContext,
         input: BatchUpdateEntryInput,
         channel: TauriChannel<BatchUpdateEntryEvent>,
     ) -> OperationResult<BatchUpdateEntryOutput> {
         for entry in input.entries {
             match entry {
                 BatchUpdateEntryKind::Item(input) => {
-                    let output = self.update_item_entry(input).await?;
+                    let output = self.update_item_entry(ctx, input).await?;
                     channel.send(BatchUpdateEntryEvent::Item(output))?;
                 }
                 BatchUpdateEntryKind::Dir(input) => {
-                    let output = self.update_dir_entry(input).await?;
+                    let output = self.update_dir_entry(ctx, input).await?;
                     channel.send(BatchUpdateEntryEvent::Dir(output))?;
                 }
             }

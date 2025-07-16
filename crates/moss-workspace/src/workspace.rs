@@ -1,10 +1,9 @@
 use anyhow::Result;
 use moss_activity_indicator::ActivityIndicator;
-use moss_applib::{PublicServiceMarker, providers::ServiceProvider};
+use moss_applib::{AppRuntime, PublicServiceMarker, providers::ServiceProvider};
 use moss_file::json::JsonFileHandle;
 use moss_fs::FileSystem;
 use std::{path::Path, sync::Arc};
-use tauri::Runtime as TauriRuntime;
 
 use crate::manifest::{MANIFEST_FILE_NAME, ManifestModel};
 
@@ -17,16 +16,16 @@ pub struct WorkspaceModifyParams {
     pub name: Option<String>,
 }
 
-pub struct Workspace<R: TauriRuntime> {
+pub struct Workspace<R: AppRuntime> {
     pub(super) abs_path: Arc<Path>,
     pub(super) services: ServiceProvider,
     #[allow(dead_code)]
-    pub(super) activity_indicator: ActivityIndicator<R>,
+    pub(super) activity_indicator: ActivityIndicator<R::EventLoop>,
     #[allow(dead_code)]
     pub(super) manifest: JsonFileHandle<ManifestModel>,
 }
 
-impl<R: TauriRuntime> Workspace<R> {
+impl<R: AppRuntime> Workspace<R> {
     pub fn service<S: PublicServiceMarker>(&self) -> &S {
         self.services.get::<S>()
     }

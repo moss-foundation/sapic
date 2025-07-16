@@ -1,6 +1,7 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
+use moss_applib::mock::MockAppRuntime;
 use moss_storage::storage::operations::{GetItem, ListByPrefix};
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::{
@@ -46,18 +47,25 @@ async fn delete_collection_success() {
     assert_eq!(output.total_returned, 0);
 
     // Check updating database - collection metadata should be removed
-    let storage_service = services.get::<StorageServiceForIntegrationTest>();
+    let storage_service = services.get::<StorageServiceForIntegrationTest<MockAppRuntime>>();
     let item_store = storage_service.storage().item_store();
 
     // Check that collection-specific entries are removed
     let collection_prefix = SEGKEY_COLLECTION.join(&id.to_string());
     let list_result =
-        ListByPrefix::list_by_prefix(item_store.as_ref(), &collection_prefix.to_string()).unwrap();
+        ListByPrefix::list_by_prefix(item_store.as_ref(), &ctx, &collection_prefix.to_string())
+            .await
+            .unwrap();
     assert!(list_result.is_empty());
 
     // Check that expanded_items no longer contains the deleted collection
-    let expanded_items_value =
-        GetItem::get(item_store.as_ref(), SEGKEY_EXPANDED_ITEMS.to_segkey_buf()).unwrap();
+    let expanded_items_value = GetItem::get(
+        item_store.as_ref(),
+        &ctx,
+        SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
+    )
+    .await
+    .unwrap();
     let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
     assert!(!expanded_items.contains(&id));
 

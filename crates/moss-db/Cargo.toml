@@ -4,6 +4,10 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+moss_testutils.workspace = true
+moss_applib.workspace = true
+joinerror.workspace = true
+
 anyhow.workspace = true
 redb.workspace = true
 serde = { workspace = true, features = ["derive"] }
@@ -13,7 +17,7 @@ zeroize = { workspace = true, features = ["zeroize_derive"] }
 tokio = { workspace = true, features = ["sync"] }
 thiserror.workspace = true
 serde_json.workspace = true
-moss_testutils.workspace = true
+async-trait.workspace = true
 
 [features]
 integration-tests = []
