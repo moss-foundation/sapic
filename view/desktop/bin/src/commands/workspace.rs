@@ -111,34 +111,36 @@ pub async fn delete_collection<R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app), fields(window = window.label()))]
-pub async fn update_collection<R: TauriRuntime>(
-    app: State<'_, App<R>>,
+pub async fn update_collection<R: tauri::Runtime>(
+    ctx: State<'_, moss_applib::context::AsyncContext>,
+    app: State<'_, App<TauriAppRuntime<R>>>,
     window: Window<R>,
     input: UpdateCollectionInput,
     options: Options,
 ) -> TauriResult<UpdateCollectionOutput> {
-    super::with_workspace_timeout(app, options, |ctx, workspace| async move {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
         workspace
             .update_collection(&ctx, input)
             .await
-            .map_err(TauriError::OperationError)
+            .map_err(|e| e.into())
     })
     .await
 }
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app), fields(window = window.label()))]
-pub async fn batch_update_collection<R: TauriRuntime>(
-    app: State<'_, App<R>>,
+pub async fn batch_update_collection<R: tauri::Runtime>(
+    ctx: State<'_, moss_applib::context::AsyncContext>,
+    app: State<'_, App<TauriAppRuntime<R>>>,
     window: Window<R>,
     input: BatchUpdateCollectionInput,
     options: Options,
 ) -> TauriResult<BatchUpdateCollectionOutput> {
-    super::with_workspace_timeout(app, options, |_ctx, workspace| async move {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
         workspace
-            .batch_update_collection(input)
+            .batch_update_collection(&ctx, input)
             .await
-            .map_err(TauriError::OperationError)
+            .map_err(|e| e.into())
     })
     .await
 }
