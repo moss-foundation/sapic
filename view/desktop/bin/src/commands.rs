@@ -6,16 +6,14 @@ pub use app::*;
 pub use collection::*;
 pub use workspace::*;
 
-use moss_applib::{
-    AppRuntime,
-    context::{AnyAsyncContext, AnyContext},
-};
-
-use anyhow::Context as _;
 use moss_api::{TauriResult, constants::DEFAULT_OPERATION_TIMEOUT};
 use moss_app::{
     app::App,
     services::workspace_service::{ActiveWorkspace, WorkspaceService},
+};
+use moss_applib::{
+    AppRuntime,
+    context::{AnyAsyncContext, AnyContext},
 };
 use moss_collection::Collection;
 use moss_common::api::OperationOptionExt;

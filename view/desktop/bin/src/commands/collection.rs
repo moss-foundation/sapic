@@ -82,6 +82,31 @@ pub async fn update_collection_entry<R: tauri::Runtime>(
 }
 
 #[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn batch_create_collection_entry<R: tauri::Runtime>(
+    ctx: State<'_, moss_applib::context::AsyncContext>,
+    app: State<'_, App<TauriAppRuntime<R>>>,
+    window: Window<R>,
+    collection_id: CollectionId,
+    input: BatchCreateEntryInput,
+    options: Options,
+) -> TauriResult<BatchCreateEntryOutput> {
+    super::with_collection_timeout(
+        ctx.inner(),
+        app,
+        collection_id,
+        options,
+        |ctx, collection| async move {
+            collection
+                .batch_create_entry(&ctx, input)
+                .await
+                .map_err(TauriError::OperationError)
+        },
+    )
+    .await
+}
+
+#[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
 pub async fn batch_update_collection_entry<R: tauri::Runtime>(
     ctx: State<'_, moss_applib::context::AsyncContext>,
