@@ -1,6 +1,7 @@
 import { useContext, useRef, useState } from "react";
 
 import { useDeleteCollectionEntry } from "@/hooks";
+import { cn } from "@/utils";
 
 import { TreeContext } from "../..";
 import { DropIndicatorWithInstruction } from "../DropIndicatorWithInstruction";
@@ -109,8 +110,12 @@ export const TreeNode = ({
   const restrictedNames = parentNode?.childNodes.map((childNode) => childNode.name) ?? [];
 
   return (
-    <li className="relative">
-      {node.kind === "Dir" && instruction !== null && canDrop === true && (
+    <li
+      className={cn("relative", {
+        // "background-(--moss-error-background)": instruction !== null && canDrop === false,
+      })}
+    >
+      {node.kind === "Dir" && instruction !== null && (
         <DropIndicatorWithInstruction
           paddingLeft={nodePaddingLeft}
           paddingRight={paddingRight}
@@ -118,6 +123,7 @@ export const TreeNode = ({
           isFolder={true}
           depth={depth}
           isLastChild={isLastChild}
+          canDrop={canDrop}
         />
       )}
       {isRenamingNode && !isRootNode ? (

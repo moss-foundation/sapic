@@ -273,25 +273,21 @@ export const addNodeToTreeWithInstruction = (
   return tree;
 };
 
-export const canDropNode = (sourceTarget: DragNode, dropTarget: DropNode, node: TreeCollectionNode) => {
-  if (sourceTarget.node.id === dropTarget.node.id) {
-    return false;
-  }
-
+export const canDropNode = (sourceTarget: DragNode, dropTarget: DropNode) => {
   if (sourceTarget.node.class !== dropTarget.node.class) {
     return false;
   }
 
   if (sourceTarget.node.kind === "Dir") {
-    if (hasDirectDescendant(dropTarget.node, node)) {
+    if (sourceTarget.node.id === dropTarget.node.id) {
       return false;
     }
 
-    if (hasDescendant(sourceTarget.node, node)) {
+    if (hasDirectDescendant(dropTarget.node, sourceTarget.node)) {
       return false;
     }
 
-    if (sourceTarget.node.id === node.id) {
+    if (hasDescendant(dropTarget.node, sourceTarget.node)) {
       return false;
     }
   }

@@ -47,7 +47,7 @@ export const useMonitorForNodeDragAndDrop = () => {
         const locationTreeNodeData = getLocationTreeNodeData(location);
         const operation = getInstructionFromLocation(location)?.operation;
 
-        if (!canDropNode(sourceTreeNodeData, locationTreeNodeData, sourceTreeNodeData.node) || !operation) {
+        if (!canDropNode(sourceTreeNodeData, locationTreeNodeData) || !operation) {
           console.warn("can't drop");
           return;
         }

@@ -32,6 +32,9 @@ export const useInstructionNode = (
     return combine(
       draggable({
         element,
+        canDrag() {
+          return !isRootNode;
+        },
         getInitialData: () => ({
           type: "TreeNode",
           data: {
@@ -112,7 +115,7 @@ export const useInstructionNode = (
           const instruction: Instruction | null = extractInstruction(self.data);
 
           setInstruction(instruction);
-          setCanDrop(canDropNode(sourceTarget, dropTarget, node));
+          setCanDrop(canDropNode(sourceTarget, dropTarget));
         },
         onDropTargetChange() {
           setInstruction(null);

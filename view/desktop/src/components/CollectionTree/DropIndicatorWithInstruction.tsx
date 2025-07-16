@@ -10,6 +10,7 @@ interface DropIndicatorProps extends HTMLAttributes<HTMLDivElement> {
   isFolder?: boolean;
   depth?: number;
   isLastChild?: boolean;
+  canDrop: boolean | null;
 }
 
 export const DropIndicatorWithInstruction = ({
@@ -20,6 +21,7 @@ export const DropIndicatorWithInstruction = ({
   isFolder = false,
   depth = 0,
   isLastChild = false,
+  canDrop = true,
   ...props
 }: DropIndicatorProps) => {
   if (!instruction) return null;
@@ -40,7 +42,7 @@ export const DropIndicatorWithInstruction = ({
         position: "absolute",
         height: "100%",
         width: "100%",
-        backgroundColor: "var(--moss-success-background)",
+        backgroundColor: canDrop ? "var(--moss-success-background)" : "var(--moss-error-background)",
       };
       break;
 
