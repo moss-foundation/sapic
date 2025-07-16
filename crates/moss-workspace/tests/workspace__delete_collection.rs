@@ -1,6 +1,7 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
+use crate::shared::setup_test_workspace;
 use moss_applib::mock::MockAppRuntime;
 use moss_storage::storage::operations::{GetItem, ListByPrefix};
 use moss_testutils::random_name::random_collection_name;
@@ -9,12 +10,10 @@ use moss_workspace::{
         operations::{CreateCollectionInput, DeleteCollectionInput},
         primitives::CollectionId,
     },
-    services::storage_service::impl_for_integration_test::StorageServiceForIntegrationTest,
+    services::storage_service::StorageService,
     storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
 use tauri::ipc::Channel;
-
-use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn delete_collection_success() {
@@ -47,7 +46,7 @@ async fn delete_collection_success() {
     assert_eq!(output.total_returned, 0);
 
     // Check updating database - collection metadata should be removed
-    let storage_service = services.get::<StorageServiceForIntegrationTest<MockAppRuntime>>();
+    let storage_service = services.get::<StorageService<MockAppRuntime>>();
     let item_store = storage_service.storage().item_store();
 
     // Check that collection-specific entries are removed
