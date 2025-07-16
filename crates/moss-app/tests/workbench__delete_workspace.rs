@@ -1,14 +1,14 @@
 pub mod shared;
 
 use moss_app::{
-    context::ctxkeys,
     dirs,
     models::{
         operations::{CreateWorkspaceInput, DeleteWorkspaceInput},
         primitives::WorkspaceId,
     },
+    services::workspace_service::WorkspaceService,
 };
-use moss_applib::context::Context;
+use moss_applib::mock::MockAppRuntime;
 use moss_common::api::OperationError;
 use moss_fs::{FileSystem, RealFileSystem};
 use moss_testutils::random_name::random_workspace_name;
@@ -116,7 +116,8 @@ async fn delete_workspace_filesystem_only() {
 
 #[tokio::test]
 async fn delete_workspace_opened() {
-    let (app, ctx, _services, cleanup, abs_path) = set_up_test_app().await;
+    let (app, ctx, services, cleanup, abs_path) = set_up_test_app().await;
+    let workspace_service = services.get::<WorkspaceService<MockAppRuntime>>();
 
     // Create and open a workspace
     let workspace_name = random_workspace_name();
@@ -139,10 +140,7 @@ async fn delete_workspace_opened() {
     assert!(workspace_path.exists());
 
     // Verify workspace is active
-    let active_workspace_id = ctx
-        .value::<ctxkeys::ActiveWorkspaceId>()
-        .map(|id| (*id).clone())
-        .unwrap();
+    let active_workspace_id = workspace_service.workspace().await.unwrap().id();
     assert_eq!(active_workspace_id, create_output.id);
 
     // Delete the workspace (should succeed and deactivate it)
@@ -165,7 +163,7 @@ async fn delete_workspace_opened() {
     assert!(list_workspaces.is_empty());
 
     // Verify that no workspace is active after deletion
-    assert!(ctx.value::<ctxkeys::ActiveWorkspaceId>().is_none());
+    assert!(workspace_service.workspace().await.is_none());
 
     cleanup().await;
 }

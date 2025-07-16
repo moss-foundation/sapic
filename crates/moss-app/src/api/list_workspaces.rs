@@ -1,6 +1,5 @@
-use moss_applib::context::Context;
+use moss_applib::AppRuntime;
 use moss_common::api::OperationResult;
-use tauri::Runtime as TauriRuntime;
 
 use crate::{
     app::App,
@@ -8,10 +7,10 @@ use crate::{
     services::workspace_service::WorkspaceService,
 };
 
-impl<R: TauriRuntime> App<R> {
-    pub async fn list_workspaces<C: Context<R>>(
+impl<R: AppRuntime> App<R> {
+    pub async fn list_workspaces(
         &self,
-        _ctx: &C,
+        _ctx: &R::AsyncContext,
     ) -> OperationResult<ListWorkspacesOutput> {
         let workspace_service = self.services.get::<WorkspaceService<R>>();
         let workspaces = workspace_service.list_workspaces().await?;

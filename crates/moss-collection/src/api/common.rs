@@ -1,3 +1,4 @@
+use moss_applib::AppRuntime;
 use moss_common::api::OperationResult;
 use validator::Validate;
 
@@ -21,14 +22,15 @@ use crate::{
     },
 };
 
-impl Collection {
+impl<R: AppRuntime> Collection<R> {
     pub(super) async fn create_dir_entry(
         &self,
+        ctx: &R::AsyncContext,
         input: CreateDirEntryInput,
     ) -> OperationResult<CreateEntryOutput> {
         input.validate()?;
 
-        let worktree_service = self.service::<DynWorktreeService>();
+        let worktree_service = self.service::<DynWorktreeService<R>>();
 
         let id = EntryId::new();
         let model = CompositeDirConfigurationModel {
@@ -38,6 +40,7 @@ impl Collection {
 
         worktree_service
             .create_dir_entry(
+                ctx,
                 &id,
                 &input.name,
                 &input.path,
@@ -54,11 +57,12 @@ impl Collection {
 
     pub(super) async fn create_item_entry(
         &self,
+        ctx: &R::AsyncContext,
         input: CreateItemEntryInput,
     ) -> OperationResult<CreateEntryOutput> {
         input.validate()?;
 
-        let worktree_service = self.service::<DynWorktreeService>();
+        let worktree_service = self.service::<DynWorktreeService<R>>();
 
         let id = EntryId::new();
         let model = CompositeItemConfigurationModel {
@@ -68,6 +72,7 @@ impl Collection {
 
         worktree_service
             .create_item_entry(
+                ctx,
                 &id,
                 &input.name,
                 &input.path,
@@ -84,13 +89,15 @@ impl Collection {
 
     pub(super) async fn update_item_entry(
         &self,
+        ctx: &R::AsyncContext,
         input: UpdateItemEntryParams,
     ) -> OperationResult<AfterUpdateItemEntryDescription> {
         input.validate()?;
-        let worktree_service = self.service::<DynWorktreeService>();
+        let worktree_service = self.service::<DynWorktreeService<R>>();
 
         let (path, configuration) = worktree_service
             .update_item_entry(
+                ctx,
                 &input.id,
                 ModifyParams {
                     name: input.name,
@@ -114,13 +121,15 @@ impl Collection {
 
     pub(super) async fn update_dir_entry(
         &self,
+        ctx: &R::AsyncContext,
         input: UpdateDirEntryParams,
     ) -> OperationResult<AfterUpdateDirEntryDescription> {
         input.validate()?;
-        let worktree_service = self.service::<DynWorktreeService>();
+        let worktree_service = self.service::<DynWorktreeService<R>>();
 
         let (path, configuration) = worktree_service
             .update_dir_entry(
+                ctx,
                 &input.id,
                 ModifyParams {
                     name: input.name,

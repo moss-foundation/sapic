@@ -7,9 +7,9 @@ use anyhow::Result;
 use async_trait::async_trait;
 use derive_more::Deref;
 use futures::Stream;
-use moss_applib::{PublicServiceMarker, ServiceMarker};
+use moss_applib::{AppRuntime, PublicServiceMarker, ServiceMarker};
 use moss_collection::Collection as CollectionHandle;
-use moss_db::{DatabaseResult, common::Transaction, primitives::AnyValue};
+use moss_db::{common::Transaction, primitives::AnyValue};
 use moss_storage::primitives::segkey::SegKeyBuf;
 use std::{
     collections::{HashMap, HashSet},
@@ -21,7 +21,6 @@ use crate::{
     models::{primitives::*, types::*},
     services::collection_service::{
         CollectionItemCreateParams, CollectionItemDescription, CollectionItemUpdateParams,
-        CollectionResult,
     },
     storage::entities::state_store::*,
 };
@@ -33,144 +32,194 @@ use crate::{
 // FIXME: The result types are a bit mixed right now,
 // but I think we'll fix that when we switch to using the joinerror library.
 
-pub trait AnyStorageService: Send + Sync + ServiceMarker + 'static {
-    fn begin_write(&self) -> Result<Transaction>;
-    fn put_item_order_txn(&self, txn: &mut Transaction, id: &str, order: usize) -> Result<()>;
-    fn put_expanded_items_txn(
+#[async_trait]
+pub trait AnyStorageService<R: AppRuntime>: Send + Sync + ServiceMarker + 'static {
+    async fn begin_write(&self, ctx: &R::AsyncContext) -> joinerror::Result<Transaction>;
+    async fn put_item_order_txn(
         &self,
+        ctx: &R::AsyncContext,
+        txn: &mut Transaction,
+        id: &str,
+        order: usize,
+    ) -> joinerror::Result<()>;
+    async fn put_expanded_items_txn(
+        &self,
+        ctx: &R::AsyncContext,
         txn: &mut Transaction,
         expanded_entries: &HashSet<CollectionId>,
-    ) -> Result<()>;
-    fn get_expanded_items(&self) -> Result<HashSet<CollectionId>>;
-    fn remove_item_metadata_txn(
+    ) -> joinerror::Result<()>;
+    async fn get_expanded_items(
         &self,
+        ctx: &R::AsyncContext,
+    ) -> joinerror::Result<HashSet<CollectionId>>;
+    async fn remove_item_metadata_txn(
+        &self,
+        ctx: &R::AsyncContext,
         txn: &mut Transaction,
         segkey_prefix: SegKeyBuf,
-    ) -> DatabaseResult<()>;
-    fn list_items_metadata(
+    ) -> joinerror::Result<()>;
+    async fn list_items_metadata(
         &self,
+        ctx: &R::AsyncContext,
         segkey_prefix: SegKeyBuf,
-    ) -> DatabaseResult<HashMap<SegKeyBuf, AnyValue>>;
-    fn get_layout_cache(&self) -> Result<HashMap<SegKeyBuf, AnyValue>>;
-
-    fn put_sidebar_layout(
+    ) -> joinerror::Result<HashMap<SegKeyBuf, AnyValue>>;
+    async fn get_layout_cache(
         &self,
+        ctx: &R::AsyncContext,
+    ) -> joinerror::Result<HashMap<SegKeyBuf, AnyValue>>;
+
+    async fn put_sidebar_layout(
+        &self,
+        ctx: &R::AsyncContext,
         position: SidebarPosition,
         size: usize,
         visible: bool,
-    ) -> Result<()>;
+    ) -> joinerror::Result<()>;
 
-    fn put_panel_layout(&self, size: usize, visible: bool) -> Result<()>;
-
-    fn put_activitybar_layout(
+    async fn put_panel_layout(
         &self,
+        ctx: &R::AsyncContext,
+        size: usize,
+        visible: bool,
+    ) -> joinerror::Result<()>;
+
+    async fn put_activitybar_layout(
+        &self,
+        ctx: &R::AsyncContext,
         last_active_container_id: Option<String>,
         position: ActivitybarPosition,
-    ) -> Result<()>;
+    ) -> joinerror::Result<()>;
 
-    fn put_editor_layout(
+    async fn put_editor_layout(
         &self,
+        ctx: &R::AsyncContext,
         grid: EditorGridStateEntity,
         panels: HashMap<String, EditorPanelStateEntity>,
         active_group: Option<String>,
-    ) -> Result<()>;
+    ) -> joinerror::Result<()>;
 }
 
 #[derive(Deref)]
-pub struct DynStorageService(Arc<dyn AnyStorageService>);
+pub struct DynStorageService<R: AppRuntime>(Arc<dyn AnyStorageService<R>>);
 
-impl DynStorageService {
-    pub fn new(service: Arc<dyn AnyStorageService>) -> Arc<Self> {
+impl<R: AppRuntime> DynStorageService<R> {
+    pub fn new(service: Arc<dyn AnyStorageService<R>>) -> Arc<Self> {
         Arc::new(Self(service))
     }
 }
 
-impl ServiceMarker for DynStorageService {}
+impl<R: AppRuntime> ServiceMarker for DynStorageService<R> {}
+impl<R: AppRuntime> PublicServiceMarker for DynStorageService<R> {}
 
 // ########################################################
 // ###                Layout Service                    ###
 // ########################################################
 
-pub trait AnyLayoutService: Send + Sync + ServiceMarker + 'static {
-    fn put_sidebar_layout_state(&self, state: SidebarPartStateInfo) -> Result<()>;
-    fn put_panel_layout_state(&self, state: PanelPartStateInfo) -> Result<()>;
-    fn put_activitybar_layout_state(&self, state: ActivitybarPartStateInfo) -> Result<()>;
-    fn put_editor_layout_state(&self, state: EditorPartStateInfo) -> Result<()>;
-
-    fn get_sidebar_layout_state(
+#[async_trait]
+pub trait AnyLayoutService<R: AppRuntime>: Send + Sync + ServiceMarker + 'static {
+    async fn put_sidebar_layout_state(
         &self,
+        ctx: &R::AsyncContext,
+        state: SidebarPartStateInfo,
+    ) -> Result<()>;
+    async fn put_panel_layout_state(
+        &self,
+        ctx: &R::AsyncContext,
+        state: PanelPartStateInfo,
+    ) -> Result<()>;
+    async fn put_activitybar_layout_state(
+        &self,
+        ctx: &R::AsyncContext,
+        state: ActivitybarPartStateInfo,
+    ) -> Result<()>;
+    async fn put_editor_layout_state(
+        &self,
+        ctx: &R::AsyncContext,
+        state: EditorPartStateInfo,
+    ) -> Result<()>;
+
+    async fn get_sidebar_layout_state(
+        &self,
+        ctx: &R::AsyncContext,
         cache: &mut HashMap<SegKeyBuf, AnyValue>,
     ) -> Result<SidebarPartStateInfo>;
-    fn get_panel_layout_state(
+    async fn get_panel_layout_state(
         &self,
+        ctx: &R::AsyncContext,
         cache: &mut HashMap<SegKeyBuf, AnyValue>,
     ) -> Result<PanelPartStateInfo>;
-    fn get_activitybar_layout_state(
+    async fn get_activitybar_layout_state(
         &self,
+        ctx: &R::AsyncContext,
         cache: &mut HashMap<SegKeyBuf, AnyValue>,
     ) -> Result<ActivitybarPartStateInfo>;
-    fn get_editor_layout_state(
+    async fn get_editor_layout_state(
         &self,
+        ctx: &R::AsyncContext,
         cache: &mut HashMap<SegKeyBuf, AnyValue>,
     ) -> Result<Option<EditorPartStateInfo>>;
 }
 
 #[derive(Deref)]
-pub struct DynLayoutService(Arc<dyn AnyLayoutService>);
+pub struct DynLayoutService<R: AppRuntime>(Arc<dyn AnyLayoutService<R>>);
 
-impl DynLayoutService {
-    pub fn new(service: Arc<dyn AnyLayoutService>) -> Arc<Self> {
+impl<R: AppRuntime> DynLayoutService<R> {
+    pub fn new(service: Arc<dyn AnyLayoutService<R>>) -> Arc<Self> {
         Arc::new(Self(service))
     }
 }
 
-impl ServiceMarker for DynLayoutService {}
+impl<R: AppRuntime> ServiceMarker for DynLayoutService<R> {}
 
 // ########################################################
 // ###               Collection Service                 ###
 // ########################################################
 
 #[async_trait]
-pub trait AnyCollectionService: Send + Sync + ServiceMarker + 'static {
-    async fn collection(&self, id: &CollectionId) -> CollectionResult<Arc<CollectionHandle>>;
+pub trait AnyCollectionService<R: AppRuntime>: Send + Sync + ServiceMarker + 'static {
+    async fn collection(&self, id: &CollectionId) -> joinerror::Result<Arc<CollectionHandle<R>>>;
 
     #[allow(private_interfaces)]
     async fn create_collection(
         &self,
+        ctx: &R::AsyncContext,
         id: &CollectionId,
         params: CollectionItemCreateParams,
-    ) -> CollectionResult<CollectionItemDescription>;
+    ) -> joinerror::Result<CollectionItemDescription>;
 
     #[allow(private_interfaces)]
     async fn delete_collection(
         &self,
+        ctx: &R::AsyncContext,
         id: &CollectionId,
-    ) -> CollectionResult<Option<CollectionItemDescription>>;
+    ) -> joinerror::Result<Option<CollectionItemDescription>>;
 
     #[allow(private_interfaces)]
     async fn update_collection(
         &self,
+        ctx: &R::AsyncContext,
         id: &CollectionId,
         params: CollectionItemUpdateParams,
-    ) -> CollectionResult<()>;
+    ) -> joinerror::Result<()>;
 
     #[allow(private_interfaces)]
-    fn list_collections(
+    async fn list_collections(
         &self,
+        ctx: &R::AsyncContext,
     ) -> Pin<Box<dyn Stream<Item = CollectionItemDescription> + Send + '_>>;
 }
 
 #[derive(Deref)]
-pub struct DynCollectionService(Arc<dyn AnyCollectionService>);
+pub struct DynCollectionService<R: AppRuntime>(Arc<dyn AnyCollectionService<R>>);
 
-impl DynCollectionService {
-    pub fn new(service: Arc<dyn AnyCollectionService>) -> Arc<Self> {
+impl<R: AppRuntime> DynCollectionService<R> {
+    pub fn new(service: Arc<dyn AnyCollectionService<R>>) -> Arc<Self> {
         Arc::new(Self(service))
     }
 }
 
-impl ServiceMarker for DynCollectionService {}
-impl PublicServiceMarker for DynCollectionService {}
+impl<R: AppRuntime> ServiceMarker for DynCollectionService<R> {}
+impl<R: AppRuntime> PublicServiceMarker for DynCollectionService<R> {}
 
 // ########################################################
 // ###               Environment Service                ###

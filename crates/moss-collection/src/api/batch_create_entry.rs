@@ -1,3 +1,4 @@
+use moss_applib::AppRuntime;
 use moss_common::api::OperationResult;
 
 use crate::{
@@ -5,9 +6,10 @@ use crate::{
     models::operations::{BatchCreateEntryInput, BatchCreateEntryKind, BatchCreateEntryOutput},
 };
 
-impl Collection {
+impl<R: AppRuntime> Collection<R> {
     pub async fn batch_create_entry(
         &self,
+        ctx: &R::AsyncContext,
         input: BatchCreateEntryInput,
     ) -> OperationResult<BatchCreateEntryOutput> {
         // Split directories from items and create directories first
@@ -36,12 +38,12 @@ impl Collection {
         });
 
         for dir in dirs {
-            let output = self.create_dir_entry(dir).await?;
+            let output = self.create_dir_entry(ctx, dir).await?;
             ids.push(output.id);
         }
 
         for item in items {
-            let output = self.create_item_entry(item).await?;
+            let output = self.create_item_entry(ctx, item).await?;
             ids.push(output.id);
         }
 

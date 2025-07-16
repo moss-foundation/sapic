@@ -1,5 +1,5 @@
+use moss_applib::AppRuntime;
 use moss_common::api::OperationResult;
-use tauri::Runtime as TauriRuntime;
 
 use crate::{
     app::App,
@@ -7,9 +7,10 @@ use crate::{
     services::locale_service::LocaleService,
 };
 
-impl<R: TauriRuntime> App<R> {
+impl<R: AppRuntime> App<R> {
     pub async fn get_translations(
         &self,
+        _ctx: &R::AsyncContext,
         input: &GetTranslationsInput,
     ) -> OperationResult<GetTranslationsOutput> {
         let locale_service = self.services.get::<LocaleService>();

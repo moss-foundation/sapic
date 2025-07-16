@@ -17,7 +17,7 @@ pub mod shared;
 
 #[tokio::test]
 async fn batch_create_entry_success() {
-    let (collection_path, collection, _services) = create_test_collection().await;
+    let (ctx, collection_path, collection, _services) = create_test_collection().await;
 
     let class_path = PathBuf::from(dirs::COMPONENTS_DIR);
 
@@ -43,7 +43,7 @@ async fn batch_create_entry_success() {
         entries: vec![inner_input, outer_input],
     };
 
-    let output = collection.batch_create_entry(input).await.unwrap();
+    let output = collection.batch_create_entry(&ctx, input).await.unwrap();
     assert_eq!(output.ids.len(), 2);
 
     // Verify the directories were created
@@ -67,7 +67,7 @@ async fn batch_create_entry_success() {
 
 #[tokio::test]
 async fn batch_create_entry_missing_parent() {
-    let (collection_path, collection, _services) = create_test_collection().await;
+    let (ctx, collection_path, collection, _services) = create_test_collection().await;
 
     let class_path = PathBuf::from(dirs::COMPONENTS_DIR);
     let inner_name = random_entry_name();
@@ -83,7 +83,7 @@ async fn batch_create_entry_missing_parent() {
         entries: vec![inner_input],
     };
 
-    let result = collection.batch_create_entry(input).await;
+    let result = collection.batch_create_entry(&ctx, input).await;
     assert!(result.is_err());
 
     // Cleanup
@@ -92,10 +92,10 @@ async fn batch_create_entry_missing_parent() {
 
 #[tokio::test]
 async fn batch_create_entry_empty_input() {
-    let (collection_path, collection, _services) = create_test_collection().await;
+    let (ctx, collection_path, collection, _services) = create_test_collection().await;
 
     let input = BatchCreateEntryInput { entries: vec![] };
-    let output = collection.batch_create_entry(input).await.unwrap();
+    let output = collection.batch_create_entry(&ctx, input).await.unwrap();
 
     assert_eq!(output.ids.len(), 0);
 

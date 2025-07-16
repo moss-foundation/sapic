@@ -1,12 +1,12 @@
+use moss_applib::AppRuntime;
 use moss_common::api::OperationResult;
-use tauri::Runtime as TauriRuntime;
 
 use crate::{
     app::App, models::operations::ListLocalesOutput, services::locale_service::LocaleService,
 };
 
-impl<R: TauriRuntime> App<R> {
-    pub async fn list_locales(&self) -> OperationResult<ListLocalesOutput> {
+impl<R: AppRuntime> App<R> {
+    pub async fn list_locales(&self, _ctx: &R::AsyncContext) -> OperationResult<ListLocalesOutput> {
         let locale_service = self.services.get::<LocaleService>();
         let locales = locale_service.locales().await?;
 

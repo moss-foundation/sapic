@@ -1,6 +1,6 @@
 use anyhow::Result;
 use moss_applib::{
-    ServiceMarker,
+    AppRuntime, ServiceMarker,
     providers::{ServiceMap, ServiceProvider},
     subscription::EventEmitter,
 };
@@ -73,7 +73,7 @@ impl CollectionBuilder {
         self
     }
 
-    pub async fn load(self, params: CollectionLoadParams) -> Result<Collection> {
+    pub async fn load<R: AppRuntime>(self, params: CollectionLoadParams) -> Result<Collection<R>> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
         let manifest = JsonFileHandle::load(
@@ -101,7 +101,11 @@ impl CollectionBuilder {
         })
     }
 
-    pub async fn create(self, params: CollectionCreateParams) -> Result<Collection> {
+    pub async fn create<R: AppRuntime>(
+        self,
+        ctx: &R::AsyncContext,
+        params: CollectionCreateParams,
+    ) -> Result<Collection<R>> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
         let abs_path: Arc<Path> = params
@@ -111,7 +115,7 @@ impl CollectionBuilder {
             .into();
 
         let services: ServiceProvider = self.services.into();
-        let worktree_service = services.get::<DynWorktreeService>();
+        let worktree_service = services.get::<DynWorktreeService<R>>();
 
         for (dir, order) in &WORKTREE_DIRS {
             let id = EntryId::new();
@@ -133,6 +137,7 @@ impl CollectionBuilder {
 
             worktree_service
                 .create_dir_entry(
+                    ctx,
                     &id,
                     dir,
                     Path::new(COLLECTION_ROOT_PATH),

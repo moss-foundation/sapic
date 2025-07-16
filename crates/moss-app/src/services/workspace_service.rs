@@ -2,18 +2,18 @@ use anyhow::{Context as _, Result};
 use chrono::Utc;
 use derive_more::{Deref, DerefMut};
 use moss_activity_indicator::ActivityIndicator;
-use moss_applib::{PublicServiceMarker, ServiceMarker};
+use moss_applib::{AppRuntime, PublicServiceMarker, ServiceMarker};
 use moss_common::api::OperationError;
 use moss_db::DatabaseError;
 use moss_fs::{FileSystem, RemoveOptions};
 use moss_workspace::{
     Workspace,
     builder::{WorkspaceBuilder, WorkspaceCreateParams, WorkspaceLoadParams},
-    context::{WorkspaceContext, WorkspaceContextState},
     services::{
-        DynCollectionService, DynLayoutService, DynStorageService,
-        collection_service::CollectionService, layout_service::LayoutService,
-        storage_service::StorageService as WorkspaceStorageService,
+        DynCollectionService as WorkspaceDynCollectionService,
+        DynLayoutService as WorkspaceDynLayoutService,
+        DynStorageService as WorkspaceDynStorageService, collection_service::CollectionService,
+        layout_service::LayoutService, storage_service::StorageService as WorkspaceStorageService,
     },
     workspace::WorkspaceModifyParams,
 };
@@ -22,12 +22,10 @@ use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
-use tauri::{AppHandle, Runtime as TauriRuntime};
 use thiserror::Error;
 use tokio::sync::RwLock;
 
 use crate::{
-    context::{AnyAppContext, ctxkeys},
     dirs,
     models::primitives::WorkspaceId,
     services::storage_service::StorageService,
@@ -83,13 +81,18 @@ impl From<WorkspaceServiceError> for OperationError {
 type WorkspaceServiceResult<T> = Result<T, WorkspaceServiceError>;
 
 #[derive(Deref, DerefMut)]
-pub(crate) struct ActiveWorkspace<R: TauriRuntime> {
+pub struct ActiveWorkspace<R: AppRuntime> {
     id: WorkspaceId,
 
     #[deref]
     #[deref_mut]
-    handle: Arc<Workspace<R>>,
-    context: Arc<RwLock<WorkspaceContextState>>,
+    handle: Workspace<R>,
+}
+
+impl<R: AppRuntime> ActiveWorkspace<R> {
+    pub fn id(&self) -> WorkspaceId {
+        self.id.clone()
+    }
 }
 
 pub(crate) struct WorkspaceItemCreateParams {
@@ -119,25 +122,26 @@ pub(crate) struct WorkspaceItemDescription {
 type WorkspaceMap = HashMap<WorkspaceId, WorkspaceItem>;
 
 #[derive(Default)]
-struct ServiceState<R: TauriRuntime> {
+struct ServiceState<R: AppRuntime> {
     known_workspaces: WorkspaceMap,
-    active_workspace: Option<ActiveWorkspace<R>>,
+    active_workspace: Option<Arc<ActiveWorkspace<R>>>,
 }
 
-pub struct WorkspaceService<R: TauriRuntime> {
+pub struct WorkspaceService<R: AppRuntime> {
     /// The absolute path to the workspaces directory
     abs_path: Arc<Path>,
     fs: Arc<dyn FileSystem>,
-    storage: Arc<StorageService>, // TODO: should be a trait
+    storage: Arc<StorageService<R>>, // TODO: should be a trait
     state: Arc<RwLock<ServiceState<R>>>,
 }
 
-impl<R: TauriRuntime> ServiceMarker for WorkspaceService<R> {}
-impl<R: TauriRuntime> PublicServiceMarker for WorkspaceService<R> {}
+impl<R: AppRuntime> ServiceMarker for WorkspaceService<R> {}
+impl<R: AppRuntime> PublicServiceMarker for WorkspaceService<R> {}
 
-impl<R: TauriRuntime> WorkspaceService<R> {
+impl<R: AppRuntime> WorkspaceService<R> {
     pub async fn new(
-        storage_service: Arc<StorageService>,
+        ctx: &R::AsyncContext,
+        storage_service: Arc<StorageService<R>>,
         fs: Arc<dyn FileSystem>,
         abs_path: &Path,
     ) -> WorkspaceServiceResult<Self> {
@@ -146,7 +150,7 @@ impl<R: TauriRuntime> WorkspaceService<R> {
         debug_assert!(abs_path.exists());
 
         let known_workspaces =
-            restore_known_workspaces::<R>(&abs_path, &fs, &storage_service).await?;
+            restore_known_workspaces::<R>(ctx, &abs_path, &fs, &storage_service).await?;
 
         Ok(Self {
             fs,
@@ -217,9 +221,9 @@ impl<R: TauriRuntime> WorkspaceService<R> {
         Ok(())
     }
 
-    pub(crate) async fn delete_workspace<C: AnyAppContext<R>>(
+    pub(crate) async fn delete_workspace(
         &self,
-        ctx: &C,
+        ctx: &R::AsyncContext,
         id: &WorkspaceId,
     ) -> WorkspaceServiceResult<()> {
         let (active_workspace_id, item) = {
@@ -254,7 +258,8 @@ impl<R: TauriRuntime> WorkspaceService<R> {
             // Only try to remove from database if it exists (ignore error if not found)
             let _ = self
                 .storage
-                .remove_all_by_prefix(&segkey_workspace(&id).to_string())
+                .remove_all_by_prefix(ctx, &segkey_workspace(&id).to_string())
+                .await
                 .map_err(|e| WorkspaceServiceError::Storage(e.to_string())); // TODO: log error
         }
 
@@ -311,28 +316,20 @@ impl<R: TauriRuntime> WorkspaceService<R> {
         })
     }
 
-    pub async fn workspace_with_context(
-        &self,
-        app_handle: AppHandle<R>,
-    ) -> Option<(Arc<Workspace<R>>, WorkspaceContext<R>)> {
+    pub async fn workspace(&self) -> Option<Arc<ActiveWorkspace<R>>> {
         let state_lock = self.state.read().await;
         if state_lock.active_workspace.is_none() {
             return None;
         }
 
-        let context_state = state_lock.active_workspace.as_ref()?.context.clone();
-        let context = WorkspaceContext::new(app_handle, context_state);
-        Some((
-            state_lock.active_workspace.as_ref()?.handle.clone(),
-            context,
-        ))
+        Some(state_lock.active_workspace.as_ref()?.clone())
     }
 
-    pub(crate) async fn activate_workspace<C: AnyAppContext<R>>(
+    pub(crate) async fn activate_workspace(
         &self,
-        ctx: &C,
+        ctx: &R::AsyncContext,
         id: &WorkspaceId,
-        activity_indicator: ActivityIndicator<R>,
+        activity_indicator: ActivityIndicator<R::EventLoop>,
     ) -> WorkspaceServiceResult<WorkspaceItemDescription> {
         let mut state_lock = self.state.write().await;
         let item = state_lock
@@ -344,35 +341,39 @@ impl<R: TauriRuntime> WorkspaceService<R> {
         let name = item.name.clone();
         let abs_path: Arc<Path> = self.absolutize(&id.to_string()).into();
 
-        let storage_service: Arc<DynStorageService> = {
-            let service: Arc<WorkspaceStorageService> = WorkspaceStorageService::new(&abs_path)
+        let storage_service: Arc<WorkspaceDynStorageService<R>> = {
+            let service: Arc<WorkspaceStorageService<R>> = WorkspaceStorageService::new(&abs_path)
                 .context("Failed to load the storage service")
                 .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?
                 .into();
 
-            DynStorageService::new(service)
+            WorkspaceDynStorageService::new(service)
         };
 
-        let collection_service: Arc<DynCollectionService> = {
-            let service: Arc<CollectionService> =
-                CollectionService::new(abs_path.clone(), self.fs.clone(), storage_service.clone())
-                    .await
-                    .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?
-                    .into();
+        let collection_service: Arc<WorkspaceDynCollectionService<R>> = {
+            let service: Arc<CollectionService<R>> = CollectionService::new(
+                ctx,
+                abs_path.clone(),
+                self.fs.clone(),
+                storage_service.clone(),
+            )
+            .await
+            .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?
+            .into();
 
-            DynCollectionService::new(service)
+            WorkspaceDynCollectionService::new(service)
         };
 
-        let layout_service: Arc<DynLayoutService> = {
-            let service: Arc<LayoutService> = LayoutService::new(storage_service.clone()).into();
+        let layout_service: Arc<WorkspaceDynLayoutService<R>> = {
+            let service: Arc<LayoutService<R>> = LayoutService::new(storage_service.clone()).into();
 
-            DynLayoutService::new(service)
+            WorkspaceDynLayoutService::new(service)
         };
 
         let workspace = WorkspaceBuilder::new(self.fs.clone())
-            .with_service::<DynStorageService>(storage_service.clone())
-            .with_service::<DynCollectionService>(collection_service)
-            .with_service::<DynLayoutService>(layout_service)
+            .with_service::<WorkspaceDynStorageService<R>>(storage_service.clone())
+            .with_service::<WorkspaceDynCollectionService<R>>(collection_service)
+            .with_service::<WorkspaceDynLayoutService<R>>(layout_service)
             .load(
                 WorkspaceLoadParams {
                     abs_path: abs_path.clone(),
@@ -384,24 +385,29 @@ impl<R: TauriRuntime> WorkspaceService<R> {
             .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
 
         item.last_opened_at = Some(last_opened_at);
-        state_lock.active_workspace = Some(ActiveWorkspace {
-            id: id.clone(),
-            handle: Arc::new(workspace),
-            context: Arc::new(RwLock::new(WorkspaceContextState::new())),
-        });
+        state_lock.active_workspace = Some(
+            ActiveWorkspace {
+                id: id.clone(),
+                handle: workspace,
+            }
+            .into(),
+        );
 
         {
-            let mut txn = self.storage.begin_write()?;
+            let mut txn = self.storage.begin_write_with_context(ctx).await?;
 
-            self.storage.put_last_active_workspace_txn(&mut txn, &id)?;
             self.storage
-                .put_last_opened_at_txn(&mut txn, &id, last_opened_at)?;
+                .put_last_active_workspace_txn(ctx, &mut txn, &id)
+                .await?;
+            self.storage
+                .put_last_opened_at_txn(ctx, &mut txn, &id, last_opened_at)
+                .await?;
 
             txn.commit()?;
         }
 
-        let active_workspace_id: ctxkeys::ActiveWorkspaceId = id.to_owned().into();
-        ctx.set_value(active_workspace_id);
+        // let active_workspace_id: ctxkeys::ActiveWorkspaceId = id.to_owned().into();
+        // ctx.set_value(active_workspace_id);
 
         Ok(WorkspaceItemDescription {
             id: id.to_owned(),
@@ -412,38 +418,32 @@ impl<R: TauriRuntime> WorkspaceService<R> {
         })
     }
 
-    pub(crate) async fn deactivate_workspace<C: AnyAppContext<R>>(
+    pub(crate) async fn deactivate_workspace(
         &self,
-        ctx: &C,
+        ctx: &R::AsyncContext,
     ) -> WorkspaceServiceResult<()> {
         let mut state_lock = self.state.write().await;
         state_lock.active_workspace = None;
 
-        self.storage.remove_last_active_workspace()?;
+        self.storage.remove_last_active_workspace(ctx).await?;
 
-        ctx.remove_value::<ctxkeys::ActiveWorkspaceId>();
+        // ctx.remove_value::<ctxkeys::ActiveWorkspaceId>();
 
         Ok(())
     }
 }
 
-// TODO: These methods might later be moved into a wrapper around this service for integration tests
-impl<R: TauriRuntime> WorkspaceService<R> {
-    pub async fn is_workspace_open(&self) -> Option<WorkspaceId> {
-        let state_lock = self.state.read().await;
-        state_lock.active_workspace.as_ref().map(|a| a.id.clone())
-    }
-}
-
-async fn restore_known_workspaces<R: TauriRuntime>(
+async fn restore_known_workspaces<R: AppRuntime>(
+    ctx: &R::AsyncContext,
     abs_path: &Path,
     fs: &Arc<dyn FileSystem>,
-    storage_service: &Arc<StorageService>,
+    storage_service: &Arc<StorageService<R>>,
 ) -> WorkspaceServiceResult<WorkspaceMap> {
     let mut workspaces = HashMap::new();
 
-    let restored_items =
-        storage_service.list_all_by_prefix(SEGKEY_WORKSPACE.as_str().expect("invalid utf-8"))?;
+    let restored_items = storage_service
+        .list_all_by_prefix(ctx, SEGKEY_WORKSPACE.as_str().expect("invalid utf-8"))
+        .await?;
 
     let mut read_dir = fs
         .read_dir(&abs_path)
@@ -471,13 +471,6 @@ async fn restore_known_workspaces<R: TauriRuntime>(
             .await
             .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
 
-        // let collection_restored_item = restored_items
-        //     .iter()
-        //     .filter(|(k, _)| {
-        //         k.after(&SEGKEY_WORKSPACE).map_or(false, |p| p == id_str)
-        //     })
-        //     .next();
-
         let filtered_items = restored_items
             .iter()
             .filter(|(key, _)| key.starts_with(&segkey_workspace(&id)))
@@ -490,17 +483,6 @@ async fn restore_known_workspaces<R: TauriRuntime>(
                     .map_err(|e| WorkspaceServiceError::Storage(e.to_string()))
             })
             .transpose()?;
-
-        // let restored_entity = match restored_entities.remove(&id_str).map_or(Ok(None), |v| {
-        //     v.deserialize::<WorkspaceInfoEntity>().map(Some)
-        // }) {
-        //     Ok(value) => value,
-        //     Err(_err) => {
-        //         // TODO: logging
-        //         println!("failed to get the workspace {:?} info", id_str);
-        //         continue;
-        //     }
-        // };
 
         workspaces.insert(
             id.clone(),

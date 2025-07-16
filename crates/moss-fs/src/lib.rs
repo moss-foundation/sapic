@@ -1,53 +1,17 @@
+pub mod error;
 pub mod fs_watcher;
 pub mod real;
 pub mod utils;
 
+pub use error::*;
 pub use real::*;
 pub use utils::{desanitize_path, normalize_path, sanitize_path};
 
 use futures::stream::BoxStream;
-use moss_applib::{GlobalMarker, context::Context};
-use std::{io, io::ErrorKind, path::Path, sync::Arc, time::Duration};
+use moss_applib::{GlobalMarker, context_old::Context};
+use std::{io, path::Path, sync::Arc, time::Duration};
 use tauri::{AppHandle, Manager, Runtime as TauriRuntime};
-use thiserror::Error;
 use tokio::fs::ReadDir;
-
-#[derive(Debug, Error)]
-pub enum FsError {
-    #[error("Not Found: {0}")]
-    NotFound(String),
-    #[error("Permission Denied: {0}")]
-    PermissionDenied(String),
-    #[error("Already Exists: {0}")]
-    AlreadyExists(String),
-    #[error("Other: {0}")]
-    Other(String),
-}
-impl From<io::Error> for FsError {
-    fn from(error: io::Error) -> Self {
-        match error.kind() {
-            ErrorKind::NotFound => Self::NotFound(error.to_string()),
-            ErrorKind::PermissionDenied => Self::PermissionDenied(error.to_string()),
-            ErrorKind::AlreadyExists => Self::AlreadyExists(error.to_string()),
-            _ => Self::Other(error.to_string()),
-        }
-    }
-}
-
-impl From<notify::Error> for FsError {
-    fn from(error: notify::Error) -> Self {
-        // FIXME: how to best handle watcher error?
-        FsError::Other(error.to_string())
-    }
-}
-
-impl From<anyhow::Error> for FsError {
-    fn from(error: anyhow::Error) -> Self {
-        FsError::Other(error.to_string())
-    }
-}
-
-pub type FsResult<T> = Result<T, FsError>;
 
 // TODO: Rename to RemoveParams
 #[derive(Copy, Clone, Default)]

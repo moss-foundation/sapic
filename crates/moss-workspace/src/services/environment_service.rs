@@ -1,20 +1,21 @@
 use std::sync::Arc;
 
 use derive_more::{Deref, DerefMut};
+use moss_applib::AppRuntime;
 use moss_environment::{
     environment::Environment as EnvironmentHandle, models::primitives::EnvironmentId,
 };
 // EnvironmentId: length-10
 
 #[derive(Deref, DerefMut)]
-pub struct EnvironmentItem {
+pub struct EnvironmentItem<R: AppRuntime> {
     pub id: EnvironmentId,
     pub name: String,
     pub display_name: String,
 
     #[deref]
     #[deref_mut]
-    pub inner: Arc<EnvironmentHandle>,
+    pub inner: Arc<EnvironmentHandle<R>>,
 }
 
 pub struct EnvironmentService {}
