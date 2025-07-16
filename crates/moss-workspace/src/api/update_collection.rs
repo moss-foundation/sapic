@@ -9,7 +9,7 @@ use crate::{
 
 impl<R: AppRuntime> Workspace<R> {
     pub async fn update_collection(
-        &self,
+        &mut self,
         ctx: &R::AsyncContext,
         input: UpdateCollectionInput,
     ) -> joinerror::Result<UpdateCollectionOutput> {
