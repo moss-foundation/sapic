@@ -29,6 +29,10 @@ export const useBatchUpdateCollectionEntry = () => {
   return useMutation<void, Error, UseBatchUpdateCollectionEntryInput>({
     mutationFn: batchUpdateCollectionEntry,
     onSuccess: async (data, mutationInput) => {
+      console.log({
+        data,
+        mutationInput,
+      });
       // console.log({
       //   data,
       //   mutationInput,
