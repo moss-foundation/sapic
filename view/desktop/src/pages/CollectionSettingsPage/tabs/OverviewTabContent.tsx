@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 
 import { InputOutlined } from "@/components";
-import { VALID_NAME_PATTERN } from "@/constants/validation";
 import { DeleteCollectionModal } from "@/components/Modals/Collection/DeleteCollectionModal";
+import { VALID_NAME_PATTERN } from "@/constants/validation";
 import { useCollectionsTrees, useModal, useStreamedCollections, useUpdateCollection } from "@/hooks";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 
@@ -40,10 +40,8 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
 
     await updateCollection({
       id: collection.id,
-      collection: {
-        id: collection.id,
-        name,
-      },
+      name,
+      repository: !repository ? "REMOVE" : { UPDATE: repository },
     });
   };
 

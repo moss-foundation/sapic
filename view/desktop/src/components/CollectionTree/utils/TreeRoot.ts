@@ -58,11 +58,10 @@ const updateNodeInArray = (array: TreeCollectionNode[], updatedNode: TreeCollect
 //check if all folders are expanded
 export const checkIfAllFoldersAreExpanded = (tree: TreeCollectionRootNode): boolean => {
   const checkIfAllNodesAreExpanded = (node: TreeCollectionNode): boolean => {
-    if (!node || node.childNodes.length === 0) return true;
+    if (!node || node.kind === "Item") return true;
 
-    if (node.kind === "Item") {
-      return true;
-    }
+    // For folder nodes, check if this node is expanded AND all children are expanded
+    if (!node.expanded) return false;
 
     return node.childNodes.every(checkIfAllNodesAreExpanded);
   };
@@ -72,11 +71,10 @@ export const checkIfAllFoldersAreExpanded = (tree: TreeCollectionRootNode): bool
 
 export const checkIfAllFoldersAreCollapsed = (tree: TreeCollectionRootNode): boolean => {
   const checkIfAllNodesAreCollapsed = (node: TreeCollectionNode): boolean => {
-    if (node.kind === "Item") {
-      return true;
-    }
+    if (!node || node.kind === "Item") return true;
 
-    if (!node || node.childNodes.length === 0) return true;
+    // For folder nodes, check if this node is collapsed AND all children are collapsed
+    if (node.expanded) return false;
 
     return node.childNodes.every(checkIfAllNodesAreCollapsed);
   };

@@ -15,10 +15,7 @@ export const useRootNodeRenamingForm = (
   const handleRenamingRootNodeFormSubmit = (name: string) => {
     updateCollection({
       id: node.id,
-      collection: {
-        id: node.id,
-        name,
-      },
+      name,
     });
 
     setIsRenamingRootNode(false);

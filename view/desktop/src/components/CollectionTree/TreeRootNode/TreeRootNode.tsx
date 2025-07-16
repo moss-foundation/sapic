@@ -2,12 +2,14 @@ import { useContext, useRef } from "react";
 
 import { DropIndicator } from "@/components/DropIndicator";
 import { useStreamedCollections } from "@/hooks";
+import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
 import { cn } from "@/utils";
 
 import { useDraggableRootNode } from "../hooks/useDraggableRootNode";
 import { TreeContext } from "../Tree";
 import { TreeCollectionNode, TreeCollectionRootNode } from "../types";
-import { collapseAllNodes, expandAllNodes } from "../utils/TreeRoot";
+import { expandAllNodes } from "../utils/TreeRoot";
+import { getAllNestedEntries } from "../utils2";
 import { useRootNodeAddForm } from "./hooks/useRootNodeAddForm";
 import { useRootNodeRenamingForm } from "./hooks/useRootNodeRenamingForm";
 import { TreeRootNodeActions } from "./TreeRootNodeActions";
@@ -23,8 +25,9 @@ export interface TreeRootNodeProps {
 }
 
 export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootNodeProps) => {
-  const { allFoldersAreCollapsed, allFoldersAreExpanded, searchInput, rootOffset } = useContext(TreeContext);
+  const { searchInput, rootOffset } = useContext(TreeContext);
   const { data: streamedCollections } = useStreamedCollections();
+  const { mutateAsync: batchUpdateCollectionEntry } = useBatchUpdateCollectionEntry();
 
   const draggableRootRef = useRef<HTMLDivElement>(null);
   const dropTargetRootRef = useRef<HTMLDivElement>(null);
@@ -34,9 +37,40 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootN
     onRootNodeUpdate(newNode);
   };
 
-  const handleCollapseAll = () => {
-    const newNode = collapseAllNodes(node);
-    onRootNodeUpdate(newNode);
+  const handleCollapseAll = async () => {
+    const requestsEntries = getAllNestedEntries(node.requests);
+    const endpointsEntries = getAllNestedEntries(node.endpoints);
+    const componentsEntries = getAllNestedEntries(node.components);
+    const schemasEntries = getAllNestedEntries(node.schemas);
+
+    const entriesToUpdate = [...requestsEntries, ...endpointsEntries, ...componentsEntries, ...schemasEntries].filter(
+      (entry) => entry.expanded
+    );
+
+    const inputEntries = entriesToUpdate.map((entry) => {
+      if (entry.kind === "Dir") {
+        return {
+          "DIR": {
+            "id": entry.id,
+            "expanded": false,
+          },
+        };
+      } else {
+        return {
+          "ITEM": {
+            "id": entry.id,
+            "expanded": false,
+          },
+        };
+      }
+    });
+
+    await batchUpdateCollectionEntry({
+      collectionId: node.id,
+      entries: {
+        entries: inputEntries,
+      },
+    });
   };
 
   const {
@@ -110,8 +144,6 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootN
           setIsAddingRootFileNode={setIsAddingRootNodeFile}
           setIsAddingRootFolderNode={setIsAddingRootNodeFolder}
           setIsRenamingRootNode={setIsRenamingRootNode}
-          allFoldersAreCollapsed={allFoldersAreCollapsed}
-          allFoldersAreExpanded={allFoldersAreExpanded}
           handleCollapseAll={handleCollapseAll}
           handleExpandAll={handleExpandAll}
         />
