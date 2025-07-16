@@ -5,7 +5,7 @@ import { TreeCollectionNode } from "../types";
 
 export const getPathWithoutName = async (node: TreeCollectionNode | EntryInfo): Promise<EntryInfo["path"]> => {
   const newSegments = node.path.segments.filter((segment) => segment !== node.name);
-  const newRaw = await join(...newSegments);
+  const newRaw = newSegments.length > 0 ? await join(...newSegments) : "";
 
   return {
     segments: newSegments,

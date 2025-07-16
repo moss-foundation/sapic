@@ -78,7 +78,7 @@ export const useMonitorForNodeDragAndDrop = () => {
               });
             }
 
-            await fetchEntriesForPath(sourceTreeNodeData.collectionId, locationTreeNodeData.parentNode.path.raw);
+            await fetchEntriesForPath(locationTreeNodeData.collectionId, locationTreeNodeData.parentNode.path.raw);
 
             return;
           } else {
@@ -135,7 +135,7 @@ export const useMonitorForNodeDragAndDrop = () => {
               },
             });
 
-            await fetchEntriesForPath(sourceTreeNodeData.collectionId, locationTreeNodeData.parentNode.path.raw);
+            await fetchEntriesForPath(locationTreeNodeData.collectionId, locationTreeNodeData.parentNode.path.raw);
             await fetchEntriesForPath(sourceTreeNodeData.collectionId, sourceTreeNodeData.parentNode.path.raw);
 
             return;
@@ -184,6 +184,75 @@ export const useMonitorForNodeDragAndDrop = () => {
             await fetchEntriesForPath(locationTreeNodeData.collectionId, locationTreeNodeData.node.path.raw);
             await fetchEntriesForPath(sourceTreeNodeData.collectionId, sourceTreeNodeData.parentNode.path.raw);
           } else {
+            const dropOrder =
+              operation === "reorder-before"
+                ? locationTreeNodeData.node.order! - 0.5
+                : locationTreeNodeData.node.order! + 0.5;
+
+            const sortedParentNodes = sortByOrder(locationTreeNodeData.parentNode.childNodes);
+
+            const parentNodesWithNewOrders = [
+              ...sortedParentNodes.slice(0, dropOrder),
+              sourceTreeNodeData.node,
+              ...sortedParentNodes.slice(dropOrder),
+            ].map((entry, index) => ({ ...entry, order: index + 1 }));
+            const newOrder = parentNodesWithNewOrders.findIndex((entry) => entry.id === sourceTreeNodeData.node.id) + 1;
+
+            const parentEntriesToUpdate = parentNodesWithNewOrders.slice(dropOrder + 1).map((entry) => {
+              if (entry.kind === "Dir") {
+                return {
+                  DIR: {
+                    id: entry.id,
+                    order: entry.order,
+                  },
+                };
+              } else {
+                return {
+                  ITEM: {
+                    id: entry.id,
+                    order: entry.order,
+                  },
+                };
+              }
+            });
+
+            await batchUpdateCollectionEntry({
+              collectionId: locationTreeNodeData.collectionId,
+              entries: {
+                entries: parentEntriesToUpdate,
+              },
+            });
+
+            await deleteCollectionEntry({
+              collectionId: sourceTreeNodeData.collectionId,
+              input: { id: sourceTreeNodeData.node.id },
+            });
+
+            const batchCreateEntryInput = await Promise.all(
+              entriesWithoutName.map(async (entry, index) => {
+                if (index === 0) {
+                  return createEntry(
+                    entry.name,
+                    locationTreeNodeData.parentNode.path.raw,
+                    entry.kind === "Dir",
+                    newOrder
+                  );
+                } else {
+                  const newEntryPath = await join(locationTreeNodeData.parentNode.path.raw, entry.path.raw);
+                  return createEntry(entry.name, newEntryPath, entry.kind === "Dir", entry.order!);
+                }
+              })
+            );
+
+            await batchCreateCollectionEntry({
+              collectionId: locationTreeNodeData.collectionId,
+              input: {
+                entries: batchCreateEntryInput,
+              },
+            });
+
+            await fetchEntriesForPath(locationTreeNodeData.collectionId, locationTreeNodeData.parentNode.path.raw);
+            await fetchEntriesForPath(sourceTreeNodeData.collectionId, sourceTreeNodeData.parentNode.path.raw);
           }
         }
       },
