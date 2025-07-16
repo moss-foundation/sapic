@@ -55,7 +55,7 @@ export const useMonitorForNodeDragAndDrop = () => {
                 updatedEntry: {
                   DIR: {
                     id: sourceTreeNodeData.node.id,
-                    path: locationTreeNodeData.parentNode.path.raw,
+                    path: locationTreeNodeData.node.path.raw,
                     order: newOrder,
                   },
                 },
@@ -66,7 +66,7 @@ export const useMonitorForNodeDragAndDrop = () => {
                 updatedEntry: {
                   ITEM: {
                     id: sourceTreeNodeData.node.id,
-                    path: locationTreeNodeData.parentNode.path.raw,
+                    path: locationTreeNodeData.node.path.raw,
                     order: newOrder,
                   },
                 },
