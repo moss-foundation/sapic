@@ -26,6 +26,11 @@ export type BatchDeleteLogOutput = { deletedEntries: Array<LogItemSourceInfo> };
 /**
  * @category Operation
  */
+export type CancelRequestInput = { request_id: string };
+
+/**
+ * @category Operation
+ */
 export type CloseWorkspaceInput = {
   /**
    * The workspace id is required to ensure the close function

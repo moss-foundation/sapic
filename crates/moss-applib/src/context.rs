@@ -36,6 +36,8 @@ pub trait AnyContext {
 
     /// Check if context is done: timed out or cancelled, including parent chain.
     fn done(&self) -> Option<Reason>;
+
+    fn get_canceller(&self) -> Canceller;
 }
 
 pub trait AnyAsyncContext: Clone + Send + Sync + 'static {
@@ -212,9 +214,9 @@ impl AnyContext for MutableContext {
         Arc::new(self)
     }
 
-    // fn freeze(self) -> Self::Frozen {
-    //     Arc::new(self)
-    // }
+    fn get_canceller(&self) -> Canceller {
+        Canceller::new(self.cancelled.clone())
+    }
 }
 
 impl From<&AsyncContext> for MutableContext {
@@ -277,11 +279,6 @@ impl MutableContext {
             Some(current) if current <= new_deadline => {}
             _ => self.deadline = Some(new_deadline),
         }
-    }
-
-    /// Return a canceller to cancel this context.
-    pub fn add_cancel(&mut self) -> Canceller {
-        Canceller::new(self.cancelled.clone())
     }
 
     /// Capture a snapshot of cancellation state and deadline.

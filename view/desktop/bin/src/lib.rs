@@ -176,6 +176,7 @@ pub async fn run<R: TauriRuntime>() {
             commands::list_workspaces,
             commands::delete_workspace,
             commands::close_workspace,
+            commands::cancel_request,
             //
             // Workspace
             //
