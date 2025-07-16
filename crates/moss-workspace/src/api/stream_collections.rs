@@ -24,7 +24,7 @@ impl<R: AppRuntime> Workspace<R> {
             if let Err(e) = channel.send(StreamCollectionsEvent {
                 id: collection.id,
                 name: collection.name,
-                repository: None, // TODO: get from collection manifest
+                repository: collection.repository,
                 order: collection.order,
                 picture_path: collection.icon_path,
             }) {

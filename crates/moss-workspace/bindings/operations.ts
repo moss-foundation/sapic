@@ -25,7 +25,7 @@ export type CreateCollectionInput = {
   name: string;
   order: number;
   externalPath?: string;
-  repo?: string;
+  repository?: string;
   iconPath?: string;
 };
 

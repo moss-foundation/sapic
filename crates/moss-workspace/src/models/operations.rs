@@ -25,7 +25,7 @@ pub struct CreateCollectionInput {
     pub order: usize,
     pub external_path: Option<PathBuf>,
     #[validate(regex(path = "*GIT_URL_REGEX"))]
-    pub repo: Option<String>,
+    pub repository: Option<String>,
     pub icon_path: Option<PathBuf>,
 }
 

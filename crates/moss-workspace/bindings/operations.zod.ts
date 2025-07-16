@@ -23,7 +23,7 @@ export const createCollectionInputSchema = z.object({
   name: z.string(),
   order: z.number(),
   externalPath: z.string().optional(),
-  repo: z.string().optional(),
+  repository: z.string().optional(),
   iconPath: z.string().optional(),
 });
 
