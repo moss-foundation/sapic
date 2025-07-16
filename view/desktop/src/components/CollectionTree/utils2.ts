@@ -199,3 +199,37 @@ export const canDropRootNode = (sourceTarget: DragNode, dropTarget: DragNode, no
 
   return true;
 };
+
+export const createEntry = (name: string, path: string, isAddingFolder: boolean, order: number): CreateEntryInput => {
+  if (isAddingFolder) {
+    return {
+      dir: {
+        name,
+        path,
+        order,
+        configuration: {
+          request: {
+            http: {},
+          },
+        },
+      },
+    };
+  }
+
+  return {
+    item: {
+      name,
+      path,
+      order,
+      configuration: {
+        request: {
+          http: {
+            requestParts: {
+              method: "GET",
+            },
+          },
+        },
+      },
+    },
+  };
+};

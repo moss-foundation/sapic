@@ -7,7 +7,7 @@ import { cn } from "@/utils";
 import { useDraggableRootNode } from "../hooks/useDraggableRootNode";
 import { TreeContext } from "../Tree";
 import { TreeCollectionNode, TreeCollectionRootNode } from "../types";
-import { collapseAllNodes, expandAllNodes } from "../utils/TreeRootUtils";
+import { collapseAllNodes, expandAllNodes } from "../utils/TreeRoot";
 import { useRootNodeAddForm } from "./hooks/useRootNodeAddForm";
 import { useRootNodeRenamingForm } from "./hooks/useRootNodeRenamingForm";
 import { TreeRootNodeActions } from "./TreeRootNodeActions";

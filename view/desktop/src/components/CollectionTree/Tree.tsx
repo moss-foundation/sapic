@@ -1,13 +1,8 @@
 import { createContext, useEffect, useState } from "react";
 
-import { useMonitorForNodeDragAndDrop } from "./hooks/useMonitorForNodeDragAndDrop";
 import { TreeRootNode } from "./TreeRootNode/TreeRootNode.tsx";
 import { TreeCollectionNode, TreeCollectionRootNode, TreeContextProps, TreeProps } from "./types.ts";
-import {
-  checkIfAllFoldersAreCollapsed,
-  checkIfAllFoldersAreExpanded,
-  updateNodeInTree,
-} from "./utils/TreeRootUtils.ts";
+import { checkIfAllFoldersAreCollapsed, checkIfAllFoldersAreExpanded, updateNodeInTree } from "./utils/TreeRoot.ts";
 
 export const TreeContext = createContext<TreeContextProps>({
   id: "",
@@ -42,7 +37,7 @@ export const CollectionTree = ({
 }: TreeProps) => {
   const [tree, setTree] = useState<TreeCollectionRootNode>(initialTree);
 
-  useMonitorForNodeDragAndDrop();
+  // useMonitorForNodeDragAndDrop();
 
   const handleNodeUpdate = (updatedNode: TreeCollectionNode) => {
     setTree((prev) => {

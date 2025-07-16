@@ -1,15 +1,18 @@
 import { useEffect } from "react";
 
+import { useDeleteCollectionEntry } from "@/hooks";
 import { useFetchEntriesForPath } from "@/hooks/collection/derivedHooks/useFetchEntriesForPath";
 import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
+import { useCreateCollectionEntry } from "@/hooks/collection/useCreateCollectionEntry";
 import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollectionEntry";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { EntryInfo } from "@repo/moss-collection";
 import { join } from "@tauri-apps/api/path";
 
-import { TreeCollectionNode } from "../types";
+import { getPathWithoutName, prepareEntriesForDrop } from "../utils/Path";
 import {
+  createEntry,
   doesLocationHaveTreeNode,
+  getAllNestedEntries,
   getInstructionFromLocation,
   getLocationTreeNodeData,
   getSourceTreeNodeData,
@@ -20,7 +23,10 @@ import {
 export const useMonitorForNodeDragAndDrop = () => {
   const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry();
   const { mutateAsync: batchUpdateCollectionEntry } = useBatchUpdateCollectionEntry();
+  const { mutateAsync: createCollectionEntry } = useCreateCollectionEntry();
+  const { mutateAsync: deleteCollectionEntry } = useDeleteCollectionEntry();
   const { fetchEntriesForPath } = useFetchEntriesForPath();
+
   useEffect(() => {
     return monitorForElements({
       canMonitor({ source }) {
@@ -129,67 +135,55 @@ export const useMonitorForNodeDragAndDrop = () => {
 
             return;
           }
+        } else {
+          const allEntries = getAllNestedEntries(sourceTreeNodeData.node);
+          const entriesPreparedForDrop = await prepareEntriesForDrop(allEntries);
+          const entriesWithoutName = await Promise.all(
+            entriesPreparedForDrop.map(async (entry) => {
+              const pathWithoutName = await getPathWithoutName(entry);
+
+              return {
+                ...entry,
+                path: pathWithoutName,
+              };
+            })
+          );
+
+          if (operation === "combine") {
+            const newOrder = locationTreeNodeData.node.childNodes.length + 1;
+
+            await deleteCollectionEntry({
+              collectionId: sourceTreeNodeData.collectionId,
+              input: { id: sourceTreeNodeData.node.id },
+            });
+
+            await Promise.all(
+              entriesWithoutName.map(async (entry, index) => {
+                const newEntryPath = await join(locationTreeNodeData.node.path.raw, entry.path.raw);
+
+                if (index === 0) {
+                  await createCollectionEntry({
+                    collectionId: locationTreeNodeData.collectionId,
+                    input: createEntry(entry.name, locationTreeNodeData.node.path.raw, entry.kind === "Dir", newOrder),
+                  });
+                } else {
+                  await createCollectionEntry({
+                    collectionId: locationTreeNodeData.collectionId,
+                    input: createEntry(entry.name, newEntryPath, entry.kind === "Dir", entry.order!),
+                  });
+                }
+              })
+            );
+          } else {
+          }
         }
       },
     });
-  }, [batchUpdateCollectionEntry, fetchEntriesForPath, updateCollectionEntry]);
-};
-
-export const getPathWithoutName = async (node: TreeCollectionNode | EntryInfo): Promise<EntryInfo["path"]> => {
-  const newSegments = node.path.segments.filter((segment) => segment !== node.name);
-  const newRaw = await join(...newSegments);
-
-  return {
-    segments: newSegments,
-    raw: newRaw,
-  };
-};
-
-export const getPathWithoutParentPath = async (
-  path: EntryInfo["path"],
-  parentPath: EntryInfo["path"]
-): Promise<EntryInfo["path"]> => {
-  const newSegments = path.segments.filter((segment) => !parentPath.segments.includes(segment));
-  const newRaw = await join(...newSegments);
-
-  return {
-    segments: newSegments,
-    raw: newRaw,
-  };
-};
-
-export const removePathBeforeName = async (path: EntryInfo["path"], name: string) => {
-  const nameIndex = path.segments.findIndex((segment) => segment === name);
-
-  if (nameIndex === -1) {
-    return {
-      segments: path.segments,
-      raw: path.raw,
-    };
-  }
-
-  const newSegments = path.segments.slice(nameIndex);
-  const newRaw = await join(...newSegments);
-
-  return {
-    segments: newSegments,
-    raw: newRaw,
-  };
-};
-
-export const prepareEntriesForDrop = async (entries: EntryInfo[]): Promise<EntryInfo[]> => {
-  const rootEntryName = entries[0].name;
-
-  const entriesPreparedForDrop: EntryInfo[] = [];
-
-  for await (const entry of entries) {
-    const newEntryPath = await removePathBeforeName(entry.path, rootEntryName);
-
-    entriesPreparedForDrop.push({
-      ...entry,
-      path: newEntryPath,
-    });
-  }
-
-  return entriesPreparedForDrop;
+  }, [
+    batchUpdateCollectionEntry,
+    createCollectionEntry,
+    deleteCollectionEntry,
+    fetchEntriesForPath,
+    updateCollectionEntry,
+  ]);
 };
