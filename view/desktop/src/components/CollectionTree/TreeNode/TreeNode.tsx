@@ -78,10 +78,8 @@ export const TreeNode = ({
   //   handleAddDividerFormCancel: handleAddDividerFormCancelBelow,
   // } = useAddNodeWithDivider(parentNode, onNodeUpdate, node.order + 1);
 
-  const { isRenamingNode, setIsRenamingNode, handleRenamingFormSubmit, handleRenamingFormCancel } = useNodeRenamingForm(
-    node,
-    onNodeUpdate
-  );
+  const { isRenamingNode, setIsRenamingNode, handleRenamingFormSubmit, handleRenamingFormCancel } =
+    useNodeRenamingForm(node);
 
   const [preview, setPreview] = useState<HTMLElement | null>(null);
 

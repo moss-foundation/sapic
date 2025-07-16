@@ -1,13 +1,15 @@
 import { useContext, useState } from "react";
 
+import { useFetchEntriesForPath } from "@/hooks/collection/derivedHooks/useFetchEntriesForPath";
 import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollectionEntry";
+import { join } from "@tauri-apps/api/path";
 
 import { TreeContext } from "../Tree";
 import { TreeCollectionNode } from "../types";
 
-export const useNodeRenamingForm = (node: TreeCollectionNode, onNodeUpdate: (node: TreeCollectionNode) => void) => {
+export const useNodeRenamingForm = (node: TreeCollectionNode) => {
   const { id } = useContext(TreeContext);
-
+  const { fetchEntriesForPath } = useFetchEntriesForPath();
   const [isRenamingNode, setIsRenamingNode] = useState(false);
 
   const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry();
@@ -24,6 +26,9 @@ export const useNodeRenamingForm = (node: TreeCollectionNode, onNodeUpdate: (nod
             },
           },
         });
+
+        const newPath = await join(...node.path.segments.slice(0, node.path.segments.length - 1), newName);
+        await fetchEntriesForPath(id, newPath);
       } else {
         await updateCollectionEntry({
           collectionId: id,

@@ -43,7 +43,6 @@ const TreeNodeRenameForm = ({
         <NodeRenamingForm
           onSubmit={(newName) => {
             handleRenamingFormSubmit(newName);
-            onNodeRenameCallback?.({ ...node, name: newName });
           }}
           onCancel={handleRenamingFormCancel}
           restrictedNames={restrictedNames}

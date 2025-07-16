@@ -10,10 +10,6 @@ export interface UseUpdateCollectionEntryInput {
 }
 
 const updateCollectionEntry = async ({ collectionId, updatedEntry }: UseUpdateCollectionEntryInput) => {
-  console.log({
-    ...updatedEntry,
-  });
-
   const result = await invokeTauriIpc<UpdateEntryOutput>("update_collection_entry", {
     collectionId,
     input: {
@@ -33,7 +29,7 @@ export const useUpdateCollectionEntry = () => {
 
   return useMutation<UpdateEntryOutput, Error, UseUpdateCollectionEntryInput>({
     mutationFn: updateCollectionEntry,
-    onSuccess: (data, variables) => {
+    onSuccess: async (data, variables) => {
       queryClient.setQueryData(
         [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, variables.collectionId],
         (old: EntryInfo[]) => {

@@ -14,14 +14,11 @@ export const useFetchEntriesForPath = () => {
       queryClient.setQueryData<EntryInfo[]>([USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, collectionId], (oldEntries) => {
         if (!oldEntries) return newEntries;
 
-        const normalizedPath = path.replace(/\/$/, "");
+        const newEntriesMap = new Map(newEntries.map((entry) => [entry.id, entry]));
 
-        const entriesNotInPath = oldEntries.filter((entry) => {
-          const entryPath = entry.path.raw.replace(/\/$/, "");
-          return !entryPath.startsWith(normalizedPath);
-        });
+        const oldEntriesNotUpdated = oldEntries.filter((entry) => !newEntriesMap.has(entry.id));
 
-        return [...entriesNotInPath, ...newEntries];
+        return [...oldEntriesNotUpdated, ...newEntries];
       });
 
       return newEntries;
