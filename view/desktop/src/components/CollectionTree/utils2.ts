@@ -4,7 +4,13 @@ import {
   DropTargetRecord,
   ElementDragPayload,
 } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
-import { CreateEntryInput, DirConfigurationModel, EntryInfo, ItemConfigurationModel } from "@repo/moss-collection";
+import {
+  BatchCreateEntryKind,
+  CreateEntryInput,
+  DirConfigurationModel,
+  EntryInfo,
+  ItemConfigurationModel,
+} from "@repo/moss-collection";
 
 import { DragNode, DropNode, TreeCollectionNode, TreeCollectionRootNode } from "./types";
 import { hasDescendant, hasDirectDescendant } from "./utils";
@@ -200,10 +206,15 @@ export const canDropRootNode = (sourceTarget: DragNode, dropTarget: DragNode, no
   return true;
 };
 
-export const createEntry = (name: string, path: string, isAddingFolder: boolean, order: number): CreateEntryInput => {
+export const createEntry = (
+  name: string,
+  path: string,
+  isAddingFolder: boolean,
+  order: number
+): BatchCreateEntryKind => {
   if (isAddingFolder) {
     return {
-      dir: {
+      DIR: {
         name,
         path,
         order,
@@ -217,7 +228,7 @@ export const createEntry = (name: string, path: string, isAddingFolder: boolean,
   }
 
   return {
-    item: {
+    ITEM: {
       name,
       path,
       order,

@@ -2,6 +2,7 @@ import { useEffect } from "react";
 
 import { useDeleteCollectionEntry } from "@/hooks";
 import { useFetchEntriesForPath } from "@/hooks/collection/derivedHooks/useFetchEntriesForPath";
+import { useBatchCreateCollectionEntry } from "@/hooks/collection/useBatchCreateCollectionEntry";
 import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
 import { useCreateCollectionEntry } from "@/hooks/collection/useCreateCollectionEntry";
 import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollectionEntry";
@@ -21,10 +22,14 @@ import {
 } from "../utils2";
 
 export const useMonitorForNodeDragAndDrop = () => {
+  const { mutateAsync: createCollectionEntry } = useCreateCollectionEntry();
+  const { mutateAsync: batchCreateCollectionEntry } = useBatchCreateCollectionEntry();
+
   const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry();
   const { mutateAsync: batchUpdateCollectionEntry } = useBatchUpdateCollectionEntry();
-  const { mutateAsync: createCollectionEntry } = useCreateCollectionEntry();
+
   const { mutateAsync: deleteCollectionEntry } = useDeleteCollectionEntry();
+
   const { fetchEntriesForPath } = useFetchEntriesForPath();
 
   useEffect(() => {
@@ -157,29 +162,34 @@ export const useMonitorForNodeDragAndDrop = () => {
               input: { id: sourceTreeNodeData.node.id },
             });
 
-            await Promise.all(
+            const batchCreateEntryInput = await Promise.all(
               entriesWithoutName.map(async (entry, index) => {
                 const newEntryPath = await join(locationTreeNodeData.node.path.raw, entry.path.raw);
 
                 if (index === 0) {
-                  await createCollectionEntry({
-                    collectionId: locationTreeNodeData.collectionId,
-                    input: createEntry(entry.name, locationTreeNodeData.node.path.raw, entry.kind === "Dir", newOrder),
-                  });
+                  return createEntry(entry.name, locationTreeNodeData.node.path.raw, entry.kind === "Dir", newOrder);
                 } else {
-                  await createCollectionEntry({
-                    collectionId: locationTreeNodeData.collectionId,
-                    input: createEntry(entry.name, newEntryPath, entry.kind === "Dir", entry.order!),
-                  });
+                  return createEntry(entry.name, newEntryPath, entry.kind === "Dir", entry.order!);
                 }
               })
             );
+
+            await batchCreateCollectionEntry({
+              collectionId: locationTreeNodeData.collectionId,
+              input: {
+                entries: batchCreateEntryInput,
+              },
+            });
+
+            await fetchEntriesForPath(locationTreeNodeData.collectionId, locationTreeNodeData.node.path.raw);
+            await fetchEntriesForPath(sourceTreeNodeData.collectionId, sourceTreeNodeData.parentNode.path.raw);
           } else {
           }
         }
       },
     });
   }, [
+    batchCreateCollectionEntry,
     batchUpdateCollectionEntry,
     createCollectionEntry,
     deleteCollectionEntry,

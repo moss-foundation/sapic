@@ -13,7 +13,6 @@ export const useBatchUpdateCollection = () => {
 
   const placeholderFnForBatchUpdateCollection = ({ collections }: { collections: UseUpdateCollectionInput[] }) => {
     queryClient.setQueryData([USE_STREAMED_COLLECTIONS_QUERY_KEY], (old: StreamCollectionsEvent[]) => {
-      console.log("old", old);
       return old.map((oldCollection) => {
         const updatedCollection = collections.find((collection) => collection.id === oldCollection.id);
         if (updatedCollection) {
