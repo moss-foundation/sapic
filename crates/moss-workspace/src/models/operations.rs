@@ -101,7 +101,7 @@ pub struct BatchUpdateCollectionParams {
     #[ts(type = "string")]
     pub id: CollectionId,
 
-    pub order: Option<usize>,
+    pub order: Option<isize>,
     pub expanded: Option<bool>,
 }
 
