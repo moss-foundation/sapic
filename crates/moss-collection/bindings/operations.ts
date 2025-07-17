@@ -53,7 +53,7 @@ export type CreateDirEntryInput = { path: string; name: string; order: number; c
 /**
  * @category Operation
  */
-export type CreateEntryInput = { "item": CreateItemEntryInput } | { "dir": CreateDirEntryInput };
+export type CreateEntryInput = { "ITEM": CreateItemEntryInput } | { "DIR": CreateDirEntryInput };
 
 /**
  * @category Operation
