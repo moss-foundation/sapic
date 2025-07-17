@@ -2,6 +2,7 @@
 
 pub mod shared;
 
+use crate::shared::{generate_random_icon, setup_test_workspace};
 use moss_applib::mock::MockAppRuntime;
 use moss_common::api::OperationError;
 use moss_storage::storage::operations::GetItem;
@@ -10,13 +11,11 @@ use moss_workspace::{
     models::{operations::CreateCollectionInput, primitives::CollectionId},
     services::{
         AnyCollectionService, collection_service::CollectionService,
-        storage_service::impl_for_integration_test::StorageServiceForIntegrationTest,
+        storage_service::StorageService,
     },
     storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
 use tauri::ipc::Channel;
-
-use crate::shared::{generate_random_icon, setup_test_workspace};
 
 #[tokio::test]
 async fn create_collection_success() {
@@ -48,7 +47,7 @@ async fn create_collection_success() {
 
     // Verify the db entries were created
     let id = create_collection_output.id;
-    let storage_service = services.get::<StorageServiceForIntegrationTest<MockAppRuntime>>();
+    let storage_service = services.get::<StorageService<MockAppRuntime>>();
     let item_store = storage_service.storage().item_store();
 
     // Check order was stored
@@ -126,7 +125,7 @@ async fn create_collection_special_chars() {
 
         // Verify the db entries were created
         let id = create_collection_output.id;
-        let storage_service = services.get::<StorageServiceForIntegrationTest<MockAppRuntime>>();
+        let storage_service = services.get::<StorageService<MockAppRuntime>>();
         let item_store = storage_service.storage().item_store();
 
         // Check order was stored
@@ -186,7 +185,7 @@ async fn create_collection_with_order() {
 
     // Verify the db entries were created
     let id = create_collection_output.id;
-    let storage_service = services.get::<StorageServiceForIntegrationTest<MockAppRuntime>>();
+    let storage_service = services.get::<StorageService<MockAppRuntime>>();
     let item_store = storage_service.storage().item_store();
 
     // Check order was stored
@@ -250,7 +249,7 @@ async fn create_collection_with_repo() {
     );
 
     // Verify the db entries were created
-    let storage_service = services.get::<StorageServiceForIntegrationTest<MockAppRuntime>>();
+    let storage_service = services.get::<StorageService<MockAppRuntime>>();
     let item_store = storage_service.storage().item_store();
 
     // Check order was stored
@@ -317,7 +316,7 @@ async fn create_collection_with_icon() {
     assert!(collection.icon_path().is_some());
 
     // Check order was stored
-    let storage_service = services.get::<StorageServiceForIntegrationTest<MockAppRuntime>>();
+    let storage_service = services.get::<StorageService<MockAppRuntime>>();
     let item_store = storage_service.storage().item_store();
 
     let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
@@ -378,7 +377,7 @@ async fn create_multiple_collections_expanded_items() {
         .unwrap();
 
     // Check expanded_items contains both collection ids
-    let storage_service = services.get::<StorageServiceForIntegrationTest<MockAppRuntime>>();
+    let storage_service = services.get::<StorageService<MockAppRuntime>>();
     let item_store = storage_service.storage().item_store();
     let expanded_items_value = GetItem::get(
         item_store.as_ref(),

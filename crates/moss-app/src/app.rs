@@ -1,10 +1,13 @@
 use derive_more::Deref;
 use moss_activity_indicator::ActivityIndicator;
-use moss_applib::{AppRuntime, PublicServiceMarker, providers::ServiceProvider};
+use moss_applib::{
+    AppRuntime, PublicServiceMarker, context::Canceller, providers::ServiceProvider,
+};
 use moss_fs::FileSystem;
 use moss_text::ReadOnlyStr;
 use rustc_hash::FxHashMap;
 use std::{
+    collections::HashMap,
     ops::{Deref, DerefMut},
     sync::Arc,
 };
@@ -58,6 +61,8 @@ pub struct App<R: AppRuntime> {
     pub(super) defaults: AppDefaults,
     pub(super) services: ServiceProvider,
 
+    // Store cancellers by the id of API requests
+    pub(super) tracked_cancellations: Arc<RwLock<HashMap<String, Canceller>>>,
     // TODO: This is also might be better to be a service
     pub(super) activity_indicator: ActivityIndicator<R::EventLoop>,
 }
@@ -81,5 +86,22 @@ impl<R: AppRuntime> App<R> {
 
     pub fn command(&self, id: &ReadOnlyStr) -> Option<CommandCallback<R::EventLoop>> {
         self.commands.get(id).map(|cmd| Arc::clone(cmd))
+    }
+
+    pub async fn track_cancellation(&self, request_id: &str, canceller: Canceller) -> () {
+        let mut write = self.tracked_cancellations.write().await;
+
+        write.insert(request_id.to_string(), canceller);
+    }
+
+    pub async fn release_cancellation(&self, request_id: &str) -> () {
+        let mut write = self.tracked_cancellations.write().await;
+
+        write.remove(request_id);
+    }
+
+    #[cfg(feature = "integration-tests")]
+    pub fn cancellation_map(&self) -> Arc<RwLock<HashMap<String, Canceller>>> {
+        self.tracked_cancellations.clone()
     }
 }

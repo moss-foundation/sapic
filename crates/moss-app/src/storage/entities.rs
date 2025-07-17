@@ -7,5 +7,5 @@ pub struct WorkspaceInfoEntity {
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct EnvironmentInfoEntity {
-    pub order: Option<usize>,
+    pub order: Option<isize>,
 }

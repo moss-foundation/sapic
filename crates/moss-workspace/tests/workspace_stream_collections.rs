@@ -438,7 +438,7 @@ async fn stream_collections_order_verification() {
     assert_eq!(output.total_returned, 5);
 
     // Verify all orders are present
-    let received_orders: Vec<usize> = events.iter().map(|event| event.order.unwrap()).collect();
+    let received_orders: Vec<isize> = events.iter().map(|event| event.order.unwrap()).collect();
 
     for expected_order in &orders {
         assert!(received_orders.contains(expected_order));

@@ -18,6 +18,10 @@ export const batchDeleteLogInputSchema = z.object({
   ids: z.array(z.string()),
 });
 
+export const cancelRequestInputSchema = z.object({
+  request_id: z.string(),
+});
+
 export const closeWorkspaceInputSchema = z.object({
   id: z.string(),
 });

@@ -36,6 +36,8 @@ pub trait AnyContext {
 
     /// Check if context is done: timed out or cancelled, including parent chain.
     fn done(&self) -> Option<Reason>;
+
+    fn get_canceller(&self) -> Canceller;
 }
 
 pub trait AnyAsyncContext: Clone + Send + Sync + 'static {
@@ -100,7 +102,7 @@ impl AnyAsyncContext for AsyncContext {
         }
         if let Some(dl) = self.deadline {
             if Instant::now() >= dl {
-                return Some(Reason::Timedout);
+                return Some(Reason::Timeout);
             }
         }
         if let Some(parent) = &self.parent {
@@ -198,7 +200,7 @@ impl AnyContext for MutableContext {
         }
         if let Some(dl) = self.deadline {
             if Instant::now() >= dl {
-                return Some(Reason::Timedout);
+                return Some(Reason::Timeout);
             }
         }
         if let Some(parent) = &self.parent {
@@ -212,9 +214,9 @@ impl AnyContext for MutableContext {
         Arc::new(self)
     }
 
-    // fn freeze(self) -> Self::Frozen {
-    //     Arc::new(self)
-    // }
+    fn get_canceller(&self) -> Canceller {
+        Canceller::new(self.cancelled.clone())
+    }
 }
 
 impl From<&AsyncContext> for MutableContext {
@@ -279,11 +281,6 @@ impl MutableContext {
         }
     }
 
-    /// Return a canceller to cancel this context.
-    pub fn add_cancel(&mut self) -> Canceller {
-        Canceller::new(self.cancelled.clone())
-    }
-
     /// Capture a snapshot of cancellation state and deadline.
     pub fn cancellation(&self) -> Cancellation {
         // Gather all atomic bools up the parent chain
@@ -316,7 +313,7 @@ impl Canceller {
 /// Reasons why a context is done.
 #[derive(Debug, PartialEq, Eq)]
 pub enum Reason {
-    Timedout,
+    Timeout,
     Canceled,
 }
 

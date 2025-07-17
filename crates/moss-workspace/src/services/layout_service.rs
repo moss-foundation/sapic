@@ -34,7 +34,7 @@ use crate::{
 #[derive(Debug)]
 pub struct ActivitybarPreferencesItem {
     pub id: String,
-    pub order: Option<usize>,
+    pub order: Option<isize>,
     pub visible: Option<bool>,
 }
 
@@ -47,7 +47,7 @@ pub struct ActivitybarPartPreferences {
 #[derive(Debug, Clone)]
 pub struct ActivitybarItem<'a> {
     pub id: &'a str,
-    pub order: usize,
+    pub order: isize,
     pub visible: bool,
 }
 
@@ -334,7 +334,7 @@ impl<R: AppRuntime> LayoutService<R> {
                     ActivitybarItemStateInfo {
                         id: default_item.id.to_string(),
 
-                        order: get_from_cache::<usize>(cache, container_segkey.join("order"))
+                        order: get_from_cache::<isize>(cache, container_segkey.join("order"))
                             .or(container_preferences.and_then(|p| p.order))
                             .unwrap_or(default_item.order),
 
