@@ -27,7 +27,7 @@ pub struct EnvironmentInfo {
     /// If multiple entries have the same order, they are sorted alphabetically.
     /// If not specified, the entry appears last and is sorted alphabetically
     /// among unspecified items.
-    pub order: Option<usize>,
+    pub order: Option<isize>,
 }
 
 /// @category Type

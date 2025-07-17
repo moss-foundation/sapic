@@ -40,7 +40,7 @@ pub trait AnyStorageService<R: AppRuntime>: Send + Sync + ServiceMarker + 'stati
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
         id: &str,
-        order: usize,
+        order: isize,
     ) -> joinerror::Result<()>;
     async fn put_expanded_items_txn(
         &self,

@@ -22,7 +22,7 @@ pub struct CreateCollectionInput {
     #[validate(length(min = 1))]
     pub name: String,
 
-    pub order: usize,
+    pub order: isize,
     pub external_path: Option<PathBuf>,
     #[validate(regex(path = "*GIT_URL_REGEX"))]
     pub repo: Option<String>,
@@ -38,7 +38,7 @@ pub struct CreateCollectionOutput {
     #[ts(type = "string")]
     pub id: CollectionId,
     pub name: String,
-    pub order: Option<usize>,
+    pub order: Option<isize>,
     pub expanded: bool,
     pub icon_path: Option<PathBuf>,
 
@@ -68,7 +68,7 @@ pub struct UpdateCollectionInput {
 
     // TODO: add validation
     pub icon_path: Option<ChangePath>,
-    pub order: Option<usize>,
+    pub order: Option<isize>,
     pub pinned: Option<bool>,
     pub expanded: Option<bool>,
 }

@@ -52,6 +52,6 @@ pub struct VariableInfo {
     pub local_value: Option<VariableValue>,
     pub disabled: bool,
     pub kind: VariableKind,
-    pub order: Option<usize>,
+    pub order: Option<isize>,
     pub desc: Option<String>,
 }

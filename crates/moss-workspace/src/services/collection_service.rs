@@ -38,7 +38,7 @@ const COLLECTION_ICON_SIZE: u32 = 128;
 
 pub(crate) struct CollectionItemUpdateParams {
     pub name: Option<String>,
-    pub order: Option<usize>,
+    pub order: Option<isize>,
     pub expanded: Option<bool>,
     pub repository: Option<ChangeString>,
     pub icon_path: Option<ChangePath>,
@@ -46,7 +46,7 @@ pub(crate) struct CollectionItemUpdateParams {
 
 pub(crate) struct CollectionItemCreateParams {
     pub name: String,
-    pub order: usize,
+    pub order: isize,
     pub repository: Option<String>,
     pub external_path: Option<PathBuf>,
     // FIXME: Do we need this field?
@@ -56,7 +56,7 @@ pub(crate) struct CollectionItemCreateParams {
 #[derive(Deref, DerefMut)]
 struct CollectionItem<R: AppRuntime> {
     pub id: CollectionId,
-    pub order: Option<usize>,
+    pub order: Option<isize>,
 
     #[deref]
     #[deref_mut]
@@ -66,7 +66,7 @@ struct CollectionItem<R: AppRuntime> {
 pub(crate) struct CollectionItemDescription {
     pub id: CollectionId,
     pub name: String,
-    pub order: Option<usize>,
+    pub order: Option<isize>,
     pub expanded: bool,
     #[allow(dead_code)]
     pub repository: Option<String>,
