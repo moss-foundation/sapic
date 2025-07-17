@@ -57,6 +57,13 @@ pub struct FileSystemTransaction {
     actions: Vec<Action>,
 }
 
+impl Drop for FileSystemTransaction {
+    fn drop(&mut self) {
+        // Clean up the temp_folder for the transaction
+        let _ = std::fs::remove_dir_all(&self.temp_folder);
+    }
+}
+
 // TODO: Allow only one transaction at a time?
 
 pub struct AtomicFileSystem {}
