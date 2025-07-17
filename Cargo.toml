@@ -37,7 +37,7 @@ members = [
     #
     # Tools
     #
-    "tools/xtask",
+    "tools/xtask", "crates/moss-atomic-fs",
 ]
 
 [workspace.dependencies]
@@ -69,6 +69,8 @@ moss_file = { path = "crates/moss-file" }
 moss_hcl = { path = "crates/moss-hcl" }
 moss_bindingutils = { path = "crates/moss-bindingutils" }
 moss_wasm = { path = "crates/moss-wasm" }
+moss_atomic_fs = { path = "crates/moss-atomic-fs"}
+
 #
 # External crates
 #

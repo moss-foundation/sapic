@@ -3696,6 +3696,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "moss_atomic_fs"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "nanoid",
+ "tokio",
+]
+
+[[package]]
 name = "moss_bindingutils"
 version = "0.1.0"
 dependencies = [
