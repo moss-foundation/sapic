@@ -24,6 +24,10 @@ export const isSourceTreeNode = (source: ElementDragPayload): boolean => {
   return source.data.type === "TreeNode";
 };
 
+export const isSourceTreeRootNode = (source: ElementDragPayload): boolean => {
+  return source.data.type === "TreeRootNode";
+};
+
 export const doesLocationHaveTreeNode = (location: DragLocationHistory): boolean => {
   if (location.current.dropTargets.length === 0) return false;
   return location.current.dropTargets[0].data.type === "TreeNode";

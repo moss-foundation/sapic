@@ -1,10 +1,10 @@
 import { useContext, useRef } from "react";
 
-import { DropIndicator } from "@/components/DropIndicator";
 import { useStreamedCollections } from "@/hooks";
 import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
 import { cn } from "@/utils";
 
+import { DropIndicatorWithInstruction } from "../DropIndicatorWithInstruction";
 import { useDraggableRootNode } from "../hooks/useDraggableRootNode";
 import { TreeContext } from "../Tree";
 import { TreeCollectionNode, TreeCollectionRootNode } from "../types";
@@ -50,16 +50,16 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootN
     const inputEntries = entriesToUpdate.map((entry) => {
       if (entry.kind === "Dir") {
         return {
-          "DIR": {
-            "id": entry.id,
-            "expanded": false,
+          DIR: {
+            id: entry.id,
+            expanded: false,
           },
         };
       } else {
         return {
-          "ITEM": {
-            "id": entry.id,
-            "expanded": false,
+          ITEM: {
+            id: entry.id,
+            expanded: false,
           },
         };
       }
@@ -89,7 +89,7 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootN
     handleRenamingRootNodeFormCancel,
   } = useRootNodeRenamingForm(node, onRootNodeUpdate);
 
-  const { closestEdge, isDragging } = useDraggableRootNode(draggableRootRef, node, isRenamingRootNode);
+  const { instruction, isDragging, canDrop } = useDraggableRootNode(draggableRootRef, node, isRenamingRootNode);
 
   const shouldRenderRootChildNodes = calculateShouldRenderRootChildNodes(
     node,
@@ -107,6 +107,7 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootN
         "hidden": isDragging,
       })}
     >
+      {instruction && <DropIndicatorWithInstruction instruction={instruction} gap={0} className="" canDrop={canDrop} />}
       <div
         ref={draggableRootRef}
         className="group/TreeRootHeader relative flex w-full min-w-0 items-center justify-between gap-1 py-[3px] pr-2"
@@ -148,9 +149,6 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootN
           handleExpandAll={handleExpandAll}
         />
       </div>
-
-      {closestEdge && <DropIndicator edge={closestEdge} gap={0} className="z-10" />}
-
       {shouldRenderRootChildNodes && (
         <TreeRootNodeChildren
           node={node}

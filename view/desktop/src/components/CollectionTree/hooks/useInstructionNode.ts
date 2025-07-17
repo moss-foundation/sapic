@@ -72,36 +72,13 @@ export const useInstructionNode = (
             },
           };
 
-          let isReorderBeforeAvailable = true;
-          let isReorderAfterAvailable = true;
-          let isCombineAvailable = true;
-
-          if (node.kind === "Dir") {
-            if (!isLastChild && !node.expanded) {
-              isReorderAfterAvailable = false;
-            }
-            if (node.expanded) {
-              isReorderAfterAvailable = false;
-            }
-            if (isRootNode) {
-              isReorderBeforeAvailable = false;
-              isReorderAfterAvailable = false;
-            }
-          } else {
-            isCombineAvailable = false;
-
-            if (!isLastChild) {
-              isReorderAfterAvailable = false;
-            }
-          }
-
           return attachInstruction(data, {
             input,
             element,
             operations: {
-              "reorder-before": isReorderBeforeAvailable ? "available" : "not-available",
-              "reorder-after": isReorderAfterAvailable ? "available" : "not-available",
-              combine: isCombineAvailable ? "available" : "not-available",
+              "reorder-before": isRootNode ? "not-available" : "available",
+              "reorder-after": isRootNode ? "not-available" : "available",
+              combine: isRootNode ? "available" : "not-available",
             },
           });
         },
