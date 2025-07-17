@@ -97,61 +97,6 @@ export const convertEntryInfoToCreateInput = (
   }
 };
 
-export const createDirConfiguration = (nodeClass: TreeCollectionNode["class"]): DirConfigurationModel => {
-  switch (nodeClass) {
-    case "Request":
-      return { request: { http: {} } };
-    case "Endpoint":
-      return { request: { http: {} } };
-    case "Component":
-      return { component: {} };
-    case "Schema":
-      return { schema: {} };
-    default:
-      return { request: { http: {} } };
-  }
-};
-
-//FIXME: This is a temporary solution until we have a proper configuration model
-export const createItemConfiguration = (nodeClass: TreeCollectionNode["class"]): ItemConfigurationModel => {
-  switch (nodeClass) {
-    case "Request":
-      return {
-        request: {
-          http: {
-            requestParts: {
-              method: "GET",
-            },
-          },
-        },
-      };
-    case "Endpoint":
-      return {
-        endpoint: {
-          Http: {
-            requestParts: {
-              method: "GET",
-            },
-          },
-        },
-      };
-    case "Component":
-      return { component: {} };
-    case "Schema":
-      return { schema: {} };
-    default:
-      return {
-        request: {
-          http: {
-            requestParts: {
-              method: "GET",
-            },
-          },
-        },
-      };
-  }
-};
-
 export const getInstructionFromSelf = (self: DropTargetRecord): Instruction | null => {
   return extractInstruction(self.data);
 };
@@ -210,10 +155,11 @@ export const canDropRootNode = (sourceTarget: DragNode, dropTarget: DragNode, no
   return true;
 };
 
-export const createEntry = (
+export const createEntryKind = (
   name: string,
   path: string,
   isAddingFolder: boolean,
+  entryClass: EntryInfo["class"],
   order: number
 ): BatchCreateEntryKind => {
   if (isAddingFolder) {
@@ -222,11 +168,7 @@ export const createEntry = (
         name,
         path,
         order,
-        configuration: {
-          request: {
-            http: {},
-          },
-        },
+        configuration: createDirConfiguration(entryClass),
       },
     };
   }
@@ -236,7 +178,32 @@ export const createEntry = (
       name,
       path,
       order,
-      configuration: {
+      configuration: createItemConfiguration(entryClass),
+    },
+  };
+};
+
+//FIXME: This is a temporary solution until we have a proper configuration model
+export const createDirConfiguration = (entryClass: EntryInfo["class"]): DirConfigurationModel => {
+  switch (entryClass) {
+    case "Request":
+      return { request: { http: {} } };
+    case "Endpoint":
+      return { request: { http: {} } };
+    case "Component":
+      return { component: {} };
+    case "Schema":
+      return { schema: {} };
+    default:
+      return { request: { http: {} } };
+  }
+};
+
+//FIXME: This is a temporary solution until we have a proper configuration model
+export const createItemConfiguration = (entryClass: EntryInfo["class"]): ItemConfigurationModel => {
+  switch (entryClass) {
+    case "Request":
+      return {
         request: {
           http: {
             requestParts: {
@@ -244,7 +211,36 @@ export const createEntry = (
             },
           },
         },
-      },
-    },
-  };
+      };
+    case "Endpoint":
+      return {
+        endpoint: {
+          Http: {
+            requestParts: {
+              method: "GET",
+            },
+          },
+        },
+      };
+    case "Component":
+      return { component: {} };
+    case "Schema":
+      return { schema: {} };
+    default:
+      return {
+        request: {
+          http: {
+            requestParts: {
+              method: "GET",
+            },
+          },
+        },
+      };
+  }
+};
+
+export const normalizeEntry = (entry: CreateEntryInput) => {
+  if ("ITEM" in entry) return entry.ITEM;
+  if ("DIR" in entry) return entry.DIR;
+  return entry;
 };

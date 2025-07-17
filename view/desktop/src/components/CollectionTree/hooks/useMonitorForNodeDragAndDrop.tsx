@@ -12,7 +12,7 @@ import { join } from "@tauri-apps/api/path";
 import { canDropNode } from "../utils";
 import { getPathWithoutName, prepareEntriesForDrop } from "../utils/Path";
 import {
-  createEntry,
+  createEntryKind,
   doesLocationHaveTreeNode,
   getAllNestedEntries,
   getInstructionFromLocation,
@@ -169,9 +169,15 @@ export const useMonitorForNodeDragAndDrop = () => {
                 const newEntryPath = await join(locationTreeNodeData.node.path.raw, entry.path.raw);
 
                 if (index === 0) {
-                  return createEntry(entry.name, locationTreeNodeData.node.path.raw, entry.kind === "Dir", newOrder);
+                  return createEntryKind(
+                    entry.name,
+                    locationTreeNodeData.node.path.raw,
+                    entry.kind === "Dir",
+                    entry.class,
+                    newOrder
+                  );
                 } else {
-                  return createEntry(entry.name, newEntryPath, entry.kind === "Dir", entry.order!);
+                  return createEntryKind(entry.name, newEntryPath, entry.kind === "Dir", entry.class, entry.order!);
                 }
               })
             );
@@ -233,15 +239,16 @@ export const useMonitorForNodeDragAndDrop = () => {
             const batchCreateEntryInput = await Promise.all(
               entriesWithoutName.map(async (entry, index) => {
                 if (index === 0) {
-                  return createEntry(
+                  return createEntryKind(
                     entry.name,
                     locationTreeNodeData.parentNode.path.raw,
                     entry.kind === "Dir",
+                    entry.class,
                     newOrder
                   );
                 } else {
                   const newEntryPath = await join(locationTreeNodeData.parentNode.path.raw, entry.path.raw);
-                  return createEntry(entry.name, newEntryPath, entry.kind === "Dir", entry.order!);
+                  return createEntryKind(entry.name, newEntryPath, entry.kind === "Dir", entry.class, entry.order!);
                 }
               })
             );

@@ -1,44 +1,10 @@
 import { useContext, useState } from "react";
 
 import { useCreateCollectionEntry } from "@/hooks";
-import { CreateEntryInput } from "@repo/moss-collection";
 
 import { TreeContext } from "../../Tree";
 import { TreeCollectionRootNode } from "../../types";
-
-const createEntry = (name: string, isAddingFolder: boolean, order: number): CreateEntryInput => {
-  if (isAddingFolder) {
-    return {
-      dir: {
-        name,
-        path: "requests",
-        order,
-        configuration: {
-          request: {
-            http: {},
-          },
-        },
-      },
-    };
-  }
-
-  return {
-    item: {
-      name,
-      path: "requests",
-      order,
-      configuration: {
-        request: {
-          http: {
-            requestParts: {
-              method: "GET",
-            },
-          },
-        },
-      },
-    },
-  };
-};
+import { createEntryKind } from "../../utils2";
 
 export const useRootNodeAddForm = (
   node: TreeCollectionRootNode,
@@ -51,7 +17,13 @@ export const useRootNodeAddForm = (
   const [isAddingRootNodeFolder, setIsAddingRootNodeFolder] = useState(false);
 
   const handleRootAddFormSubmit = async (name: string) => {
-    const newEntry = createEntry(name, isAddingRootNodeFolder, node.requests.childNodes.length + 1);
+    const newEntry = createEntryKind(
+      name,
+      "requests",
+      isAddingRootNodeFolder,
+      "Request",
+      node.requests.childNodes.length + 1
+    );
 
     try {
       await createCollectionEntry({

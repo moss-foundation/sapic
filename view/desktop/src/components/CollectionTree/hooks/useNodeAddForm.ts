@@ -2,99 +2,12 @@ import { useContext, useState } from "react";
 
 import { useCreateCollectionEntry } from "@/hooks";
 import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollectionEntry";
-import { CreateEntryInput, DirConfigurationModel, ItemConfigurationModel } from "@repo/moss-collection";
 
 import { TreeContext } from "../Tree";
 import { TreeCollectionNode } from "../types";
+import { createEntryKind } from "../utils2";
 
-//FIXME: This is a temporary solution until we have a proper configuration model
-const createDirConfiguration = (nodeClass: TreeCollectionNode["class"]): DirConfigurationModel => {
-  switch (nodeClass) {
-    case "Request":
-      return { request: { http: {} } };
-    case "Endpoint":
-      return { request: { http: {} } };
-    case "Component":
-      return { component: {} };
-    case "Schema":
-      return { schema: {} };
-    default:
-      return { request: { http: {} } };
-  }
-};
-
-//FIXME: This is a temporary solution until we have a proper configuration model
-const createItemConfiguration = (nodeClass: TreeCollectionNode["class"]): ItemConfigurationModel => {
-  switch (nodeClass) {
-    case "Request":
-      return {
-        request: {
-          http: {
-            requestParts: {
-              method: "GET",
-            },
-          },
-        },
-      };
-    case "Endpoint":
-      return {
-        endpoint: {
-          Http: {
-            requestParts: {
-              method: "GET",
-            },
-          },
-        },
-      };
-    case "Component":
-      return { component: {} };
-    case "Schema":
-      return { schema: {} };
-    default:
-      return {
-        request: {
-          http: {
-            requestParts: {
-              method: "GET",
-            },
-          },
-        },
-      };
-  }
-};
-
-//FIXME: This is a temporary solution until we have a proper configuration model
-const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolder: boolean): CreateEntryInput => {
-  const baseEntry = {
-    name,
-    path: parentNode.path.raw,
-  };
-
-  // Calculate order based on highest existing order value, not just count
-  const maxOrder =
-    parentNode.childNodes.length > 0 ? Math.max(...parentNode.childNodes.map((child) => child.order ?? 0)) : 0;
-  const nextOrder = maxOrder + 1;
-
-  if (isAddingFolder) {
-    return {
-      dir: {
-        ...baseEntry,
-        order: nextOrder,
-        configuration: createDirConfiguration(parentNode.class),
-      },
-    };
-  }
-
-  return {
-    item: {
-      ...baseEntry,
-      order: nextOrder,
-      configuration: createItemConfiguration(parentNode.class),
-    },
-  };
-};
-
-export const useNodeAddForm = (parentNode: TreeCollectionNode, onNodeUpdate: (node: TreeCollectionNode) => void) => {
+export const useNodeAddForm = (parentNode: TreeCollectionNode) => {
   const { id } = useContext(TreeContext);
   const { mutateAsync: createCollectionEntry } = useCreateCollectionEntry();
   const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry();
@@ -103,7 +16,13 @@ export const useNodeAddForm = (parentNode: TreeCollectionNode, onNodeUpdate: (no
   const [isAddingFolderNode, setIsAddingFolderNode] = useState(false);
 
   const handleAddFormSubmit = async (name: string) => {
-    const newEntry = createEntry(parentNode, name, isAddingFolderNode);
+    const newEntry = createEntryKind(
+      name,
+      parentNode.path.raw,
+      isAddingFolderNode,
+      parentNode.class,
+      parentNode.childNodes.length + 1
+    );
 
     try {
       await createCollectionEntry({
