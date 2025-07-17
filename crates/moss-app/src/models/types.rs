@@ -33,7 +33,7 @@ pub struct ColorThemeInfo {
     pub identifier: ThemeId,
     pub display_name: String,
     pub mode: ThemeMode,
-    pub order: Option<usize>,
+    pub order: Option<isize>,
     pub source: PathBuf,
     pub is_default: Option<bool>,
 }

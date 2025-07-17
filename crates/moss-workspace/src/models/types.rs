@@ -34,7 +34,7 @@ impl Default for WorkspaceMode {
 pub struct CollectionInfo {
     pub id: String,
     pub display_name: String,
-    pub order: Option<usize>,
+    pub order: Option<isize>,
 }
 
 /// @category Type
@@ -46,7 +46,7 @@ pub struct EnvironmentInfo {
     pub id: String,
     pub collection_id: Option<String>,
     pub name: String,
-    pub order: Option<usize>,
+    pub order: Option<isize>,
 }
 
 // ------------------------------------------------------------
@@ -59,7 +59,7 @@ pub struct EnvironmentInfo {
 #[ts(export, export_to = "types.ts")]
 pub struct ActivitybarItemStateInfo {
     pub id: String,
-    pub order: usize,
+    pub order: isize,
     pub visible: bool,
 }
 

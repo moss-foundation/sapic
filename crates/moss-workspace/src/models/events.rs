@@ -14,7 +14,7 @@ pub struct StreamCollectionsEvent {
     pub id: CollectionId,
     pub name: String,
     pub repository: Option<String>,
-    pub order: Option<usize>,
+    pub order: Option<isize>,
     pub picture_path: Option<PathBuf>,
 }
 
@@ -31,5 +31,5 @@ pub struct StreamEnvironmentsEvent {
     pub collection_id: Option<String>,
 
     pub name: String,
-    pub order: Option<usize>,
+    pub order: Option<isize>,
 }

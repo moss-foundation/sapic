@@ -44,7 +44,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
         id: &str,
-        order: usize,
+        order: isize,
     ) -> joinerror::Result<()> {
         let store = self.storage.item_store();
 
