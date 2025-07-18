@@ -56,16 +56,6 @@ export const CollectionTree = ({
     setTree(initialTree);
   }, [initialTree]);
 
-  // useMoveTreeNodeEvent({
-  //   treeId: initialTree.id,
-  //   onNodeAdd,
-  //   onNodeRemove,
-  //   onRootAdd,
-  //   onRootRemove,
-  //   onTreeUpdate,
-  //   setTree,
-  // });
-
   return (
     <TreeContext.Provider
       value={{

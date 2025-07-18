@@ -122,6 +122,7 @@ export const TreeNode = ({
           depth={depth}
           isLastChild={isLastChild}
           canDrop={canDrop}
+          gap={0}
         />
       )}
       {isRenamingNode && !isRootNode ? (

@@ -89,14 +89,11 @@ export const useMonitorForNodeDragAndDrop = () => {
                 ? locationTreeNodeData.node.order! - 0.5
                 : locationTreeNodeData.node.order! + 0.5;
 
-            const sortedParentNodes = sortByOrder([...locationTreeNodeData.parentNode.childNodes]).filter(
-              (entry) => entry.id !== sourceTreeNodeData.node.id
-            );
-
+            const sortedParentNodes = sortByOrder([...locationTreeNodeData.parentNode.childNodes]);
             const parentNodesWithNewOrders = [
-              ...sortedParentNodes.slice(0, dropOrder),
+              ...sortedParentNodes.slice(0, dropOrder).filter((entry) => entry.id !== sourceTreeNodeData.node.id),
               sourceTreeNodeData.node,
-              ...sortedParentNodes.slice(dropOrder),
+              ...sortedParentNodes.slice(dropOrder).filter((entry) => entry.id !== sourceTreeNodeData.node.id),
             ].map((entry, index) => ({
               ...entry,
               order: index + 1,
