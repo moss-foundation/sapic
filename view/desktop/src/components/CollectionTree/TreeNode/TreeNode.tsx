@@ -29,7 +29,7 @@ const shouldRenderTreeNode = (
   return false;
 };
 
-export interface TreeNodeComponentProps extends NodeEvents {
+export interface TreeNodeComponentProps {
   node: TreeCollectionNode;
   depth: number;
   parentNode: TreeCollectionNode;
@@ -37,18 +37,7 @@ export interface TreeNodeComponentProps extends NodeEvents {
   isRootNode?: boolean;
 }
 
-export interface NodeEvents {
-  onNodeUpdate: (node: TreeCollectionNode) => void;
-}
-
-export const TreeNode = ({
-  node,
-  onNodeUpdate,
-  depth,
-  parentNode,
-  isLastChild,
-  isRootNode = false,
-}: TreeNodeComponentProps) => {
+export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = false }: TreeNodeComponentProps) => {
   const { nodeOffset, paddingRight, id } = useContext(TreeContext);
 
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -62,7 +51,7 @@ export const TreeNode = ({
     setIsAddingFolderNode,
     handleAddFormSubmit,
     handleAddFormCancel,
-  } = useNodeAddForm(node, onNodeUpdate);
+  } = useNodeAddForm(node);
 
   // const {
   //   isAddingDividerNode: isAddingDividerNodeAbove,
@@ -157,7 +146,6 @@ export const TreeNode = ({
           <TreeNodeButton
             ref={triggerRef}
             node={node}
-            onNodeUpdate={onNodeUpdate}
             depth={depth}
             onAddFile={() => setIsAddingFileNode(true)}
             onAddFolder={() => setIsAddingFolderNode(true)}
@@ -193,7 +181,7 @@ export const TreeNode = ({
         </>
       )}
 
-      {shouldRenderChildNodes && <TreeNodeChildren node={node} onNodeUpdate={onNodeUpdate} depth={depth} />}
+      {shouldRenderChildNodes && <TreeNodeChildren node={node} depth={depth} />}
 
       {(isAddingFileNode || isAddingFolderNode) && (
         <TreeNodeAddForm

@@ -4,11 +4,10 @@ import { TreeNode } from "./TreeNode";
 
 interface TreeNodeChildrenProps {
   node: TreeCollectionNode;
-  onNodeUpdate: (node: TreeCollectionNode) => void;
   depth: number;
 }
 
-const TreeNodeChildren = ({ node, onNodeUpdate, depth }: TreeNodeChildrenProps) => {
+const TreeNodeChildren = ({ node, depth }: TreeNodeChildrenProps) => {
   const sortedChildNodes = sortByOrder(node.childNodes);
 
   return (
@@ -17,7 +16,6 @@ const TreeNodeChildren = ({ node, onNodeUpdate, depth }: TreeNodeChildrenProps) 
         {sortedChildNodes.map((childNode, index) => (
           <TreeNode
             parentNode={node}
-            onNodeUpdate={onNodeUpdate}
             key={childNode.id}
             node={childNode}
             depth={depth + 1}

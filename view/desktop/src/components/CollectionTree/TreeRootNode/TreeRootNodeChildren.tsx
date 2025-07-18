@@ -6,13 +6,12 @@ import { DebugCollectionIconPlaceholder } from "../DebugCollectionIconPlaceholde
 import { NodeAddForm } from "../NodeAddForm";
 import { TreeContext } from "../Tree";
 import TreeNode from "../TreeNode/TreeNode";
-import { TreeCollectionNode, TreeCollectionRootNode } from "../types";
+import { TreeCollectionRootNode } from "../types";
 import { sortByOrder } from "../utils2";
 import { calculateRestrictedNames } from "./utils";
 
 interface TreeRootNodeChildrenProps {
   node: TreeCollectionRootNode;
-  onNodeUpdate: (node: TreeCollectionNode) => void;
   isAddingRootFileNode: boolean;
   isAddingRootFolderNode: boolean;
   handleAddFormRootSubmit: (name: string) => void;
@@ -21,7 +20,6 @@ interface TreeRootNodeChildrenProps {
 
 export const TreeRootNodeChildren = ({
   node,
-  onNodeUpdate,
   isAddingRootFileNode,
   isAddingRootFolderNode,
   handleAddFormRootSubmit,
@@ -43,7 +41,6 @@ export const TreeRootNodeChildren = ({
         return (
           <TreeNode
             parentNode={displayMode === "REQUEST_FIRST" ? node.requests : childNode}
-            onNodeUpdate={onNodeUpdate}
             key={childNode.id}
             node={childNode}
             depth={1}

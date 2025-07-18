@@ -7,8 +7,7 @@ import { cn } from "@/utils";
 import { DropIndicatorWithInstruction } from "../DropIndicatorWithInstruction";
 import { useDraggableRootNode } from "../hooks/useDraggableRootNode";
 import { TreeContext } from "../Tree";
-import { TreeCollectionNode, TreeCollectionRootNode } from "../types";
-import { expandAllNodes } from "../utils/TreeRoot";
+import { TreeCollectionRootNode } from "../types";
 import { getAllNestedEntries } from "../utils2";
 import { useRootNodeAddForm } from "./hooks/useRootNodeAddForm";
 import { useRootNodeRenamingForm } from "./hooks/useRootNodeRenamingForm";
@@ -19,12 +18,10 @@ import { TreeRootNodeRenameForm } from "./TreeRootNodeRenameForm";
 import { calculateShouldRenderRootChildNodes } from "./utils";
 
 export interface TreeRootNodeProps {
-  onNodeUpdate: (node: TreeCollectionNode) => void;
-  onRootNodeUpdate: (node: TreeCollectionRootNode) => void;
   node: TreeCollectionRootNode;
 }
 
-export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootNodeProps) => {
+export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
   const { searchInput, rootOffset } = useContext(TreeContext);
   const { data: streamedCollections } = useStreamedCollections();
   const { mutateAsync: batchUpdateCollectionEntry } = useBatchUpdateCollectionEntry();
@@ -33,8 +30,7 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootN
   const dropTargetRootRef = useRef<HTMLDivElement>(null);
 
   const handleExpandAll = () => {
-    const newNode = expandAllNodes(node);
-    onRootNodeUpdate(newNode);
+    // const newNode = expandAllNodes(node);
   };
 
   const handleCollapseAll = async () => {
@@ -80,14 +76,14 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootN
     setIsAddingRootNodeFolder,
     handleRootAddFormCancel,
     handleRootAddFormSubmit,
-  } = useRootNodeAddForm(node, onRootNodeUpdate);
+  } = useRootNodeAddForm(node);
 
   const {
     isRenamingRootNode,
     setIsRenamingRootNode,
     handleRenamingRootNodeFormSubmit,
     handleRenamingRootNodeFormCancel,
-  } = useRootNodeRenamingForm(node, onRootNodeUpdate);
+  } = useRootNodeRenamingForm(node);
 
   const { instruction, isDragging, canDrop } = useDraggableRootNode(draggableRootRef, node, isRenamingRootNode);
 
@@ -97,6 +93,9 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootN
     isAddingRootNodeFile,
     isRenamingRootNode
   );
+  console.log({
+    shouldRenderRootChildNodes,
+  });
 
   const restrictedNames = streamedCollections?.map((collection) => collection.name) ?? [];
 
@@ -134,7 +133,6 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootN
             node={node}
             searchInput={searchInput}
             shouldRenderChildNodes={shouldRenderRootChildNodes}
-            onRootNodeClick={onRootNodeUpdate}
           />
         )}
 
@@ -152,7 +150,6 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootN
       {shouldRenderRootChildNodes && (
         <TreeRootNodeChildren
           node={node}
-          onNodeUpdate={onNodeUpdate}
           isAddingRootFileNode={isAddingRootNodeFile}
           isAddingRootFolderNode={isAddingRootNodeFolder}
           handleAddFormRootSubmit={handleRootAddFormSubmit}

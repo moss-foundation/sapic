@@ -18,7 +18,6 @@ import { TreeNodeIcon } from "./TreeNodeIcon";
 
 interface TreeNodeButtonProps {
   node: TreeCollectionNode;
-  onNodeUpdate: (node: TreeCollectionNode) => void;
   depth: number;
   onAddFile: () => void;
   onAddFolder: () => void;
@@ -36,7 +35,6 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
   (
     {
       node,
-      onNodeUpdate,
       depth,
       onAddFile,
       onAddFolder,
@@ -178,7 +176,6 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                     }}
                     isLastChild={false}
                     node={{ ...node, id: "DraggedNode", childNodes: [] }}
-                    onNodeUpdate={() => {}}
                     depth={0}
                   />
                   <Icon icon="ChevronRight" className={cn("opacity-0")} />

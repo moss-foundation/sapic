@@ -6,10 +6,7 @@ import { TreeContext } from "../../Tree";
 import { TreeCollectionRootNode } from "../../types";
 import { createEntryKind } from "../../utils2";
 
-export const useRootNodeAddForm = (
-  node: TreeCollectionRootNode,
-  onRootNodeUpdate: (node: TreeCollectionRootNode) => void
-) => {
+export const useRootNodeAddForm = (node: TreeCollectionRootNode) => {
   const { id } = useContext(TreeContext);
   const { mutateAsync: createCollectionEntry } = useCreateCollectionEntry();
 

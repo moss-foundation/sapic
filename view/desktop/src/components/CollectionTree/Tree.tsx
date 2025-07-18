@@ -1,8 +1,8 @@
 import { createContext, useEffect, useState } from "react";
 
 import { TreeRootNode } from "./TreeRootNode/TreeRootNode.tsx";
-import { TreeCollectionNode, TreeCollectionRootNode, TreeContextProps, TreeProps } from "./types.ts";
-import { checkIfAllFoldersAreCollapsed, checkIfAllFoldersAreExpanded, updateNodeInTree } from "./utils/TreeRoot.ts";
+import { TreeCollectionRootNode, TreeContextProps, TreeProps } from "./types.ts";
+import { checkIfAllFoldersAreCollapsed, checkIfAllFoldersAreExpanded } from "./utils/TreeRoot.ts";
 
 export const TreeContext = createContext<TreeContextProps>({
   id: "",
@@ -32,25 +32,8 @@ export const CollectionTree = ({
   searchInput,
   sortBy = "none",
   displayMode = "REQUEST_FIRST",
-
-  onTreeUpdate,
 }: TreeProps) => {
   const [tree, setTree] = useState<TreeCollectionRootNode>(initialTree);
-
-  // useMonitorForNodeDragAndDrop();
-
-  const handleNodeUpdate = (updatedNode: TreeCollectionNode) => {
-    setTree((prev) => {
-      const newTree = updateNodeInTree(prev, updatedNode);
-      onTreeUpdate?.(newTree);
-      return newTree;
-    });
-  };
-
-  const handleRootNodeUpdate = (updatedNode: TreeCollectionRootNode) => {
-    setTree(updatedNode);
-    onTreeUpdate?.(updatedNode);
-  };
 
   useEffect(() => {
     setTree(initialTree);
@@ -76,7 +59,7 @@ export const CollectionTree = ({
         displayMode,
       }}
     >
-      <TreeRootNode onNodeUpdate={handleNodeUpdate} onRootNodeUpdate={handleRootNodeUpdate} node={tree} />
+      <TreeRootNode node={tree} />
     </TreeContext.Provider>
   );
 };

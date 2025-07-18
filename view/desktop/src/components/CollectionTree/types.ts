@@ -17,7 +17,6 @@ export interface TreeCollectionNode extends EntryInfo {
 }
 
 export interface TreeRootNodeProps {
-  onNodeUpdate: (node: TreeCollectionNode) => void;
   node: TreeCollectionNode;
 }
 
@@ -60,53 +59,4 @@ export interface TreeContextProps extends StreamCollectionsEvent {
   allFoldersAreCollapsed: boolean;
   allFoldersAreExpanded: boolean;
   displayMode: WorkspaceMode;
-}
-
-export interface TreeNodeComponentProps extends NodeEvents {
-  node: TreeNodeProps;
-  depth: number;
-  parentNode: TreeNodeProps;
-  isLastChild: boolean;
-}
-
-export interface NodeEvents {
-  onNodeUpdate: (node: TreeNodeProps) => void;
-}
-
-export interface MoveNodeEventDetail {
-  source: {
-    node: TreeNodeProps;
-    treeId: string;
-  };
-  target: {
-    node: TreeNodeProps;
-    treeId: string;
-  };
-  instruction?: Instruction;
-}
-
-export interface CreateNewCollectionFromTreeNodeEvent {
-  source: {
-    node: TreeNodeProps;
-    treeId: string;
-  };
-}
-
-export interface TreeNodeDropProps {
-  type: "TreeNode";
-  data: {
-    node: TreeNodeProps;
-    treeId: string;
-  };
-}
-
-export interface DropNodeElement {
-  node: TreeNodeProps;
-  treeId: string;
-}
-
-export interface DropNodeElementWithInstruction {
-  node: TreeNodeProps;
-  treeId: string;
-  instruction: Instruction;
 }

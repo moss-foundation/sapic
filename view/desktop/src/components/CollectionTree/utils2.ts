@@ -12,7 +12,7 @@ import {
   ItemConfigurationModel,
 } from "@repo/moss-collection";
 
-import { DragNode, DropNode, TreeCollectionNode, TreeCollectionRootNode } from "./types";
+import { DragNode, DropNode, TreeCollectionNode } from "./types";
 import { hasDescendant, hasDirectDescendant } from "./utils";
 
 //TODO order should always be set, it's a temporary solution until backend updates it's type
@@ -66,7 +66,7 @@ export const convertEntryInfoToCreateInput = (
   console.log({ newCollectionPath });
   if (entry.kind === "Dir") {
     return {
-      dir: {
+      DIR: {
         name: entry.name,
         path: newCollectionPath,
         order: entry.order ?? 0,
@@ -79,7 +79,7 @@ export const convertEntryInfoToCreateInput = (
     };
   } else {
     return {
-      item: {
+      ITEM: {
         name: entry.name,
         path: newCollectionPath,
         order: entry.order ?? 0,
@@ -106,39 +106,7 @@ export const getInstructionFromLocation = (location: DragLocationHistory): Instr
 };
 
 export const canDropNode = (sourceTarget: DragNode, dropTarget: DragNode, node: TreeCollectionNode) => {
-  if (sourceTarget.node.kind !== "Dir") {
-    // if (hasDirectSimilarDescendant(node, sourceTarget.node)) {
-    //   return false;
-    // }
-  }
-
   if (sourceTarget.node.kind === "Dir") {
-    // if (hasDirectSimilarDescendant(node, sourceTarget.node)) {
-    //   return false;
-    // }
-
-    if (hasDirectDescendant(dropTarget.node, node)) {
-      return false;
-    }
-
-    if (hasDescendant(sourceTarget.node, node)) {
-      return false;
-    }
-
-    if (sourceTarget.node.id === node.id) {
-      return false;
-    }
-  }
-
-  return true;
-};
-
-export const canDropRootNode = (sourceTarget: DragNode, dropTarget: DragNode, node: TreeCollectionRootNode) => {
-  if (sourceTarget.node.kind === "Dir") {
-    // if (hasDirectSimilarDescendant(node, sourceTarget.node)) {
-    //   return false;
-    // }
-
     if (hasDirectDescendant(dropTarget.node, node)) {
       return false;
     }
