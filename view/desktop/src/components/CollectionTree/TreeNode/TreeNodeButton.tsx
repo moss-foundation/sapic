@@ -9,12 +9,12 @@ import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
-import { DebugCollectionIconPlaceholder } from "../DebugCollectionIconPlaceholder";
 import { DropIndicatorWithInstruction } from "../DropIndicatorWithInstruction";
 import NodeLabel from "../NodeLabel";
 import { TreeContext } from "../Tree";
 import { TreeCollectionNode } from "../types";
 import TreeNode from "./TreeNode";
+import { TreeNodeIcon } from "./TreeNodeIcon";
 
 interface TreeNodeButtonProps {
   node: TreeCollectionNode;
@@ -157,9 +157,8 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                 <Icon icon="ChevronRight" />
               </div>
 
-              <DebugCollectionIconPlaceholder protocol={node.protocol} type={node.kind} />
+              <TreeNodeIcon node={node} isRootNode={isRootNode} />
 
-              <span className="underline">{node.order}</span>
               <NodeLabel label={node.name} searchInput={searchInput} className={cn({ "capitalize": isRootNode })} />
               <span className="DragHandle h-full min-h-4 grow" />
             </span>

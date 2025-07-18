@@ -85,7 +85,6 @@ export const TreeRootNodeButton = ({
           </div>
         )}
       </span>
-      <span className="underline">{node.order}</span>
       <NodeLabel label={node.name} searchInput={searchInput} />
     </div>
   );
