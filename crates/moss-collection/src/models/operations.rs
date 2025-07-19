@@ -57,7 +57,7 @@ pub struct CreateDirEntryInput {
 
 /// @category Operation
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "operations.ts")]
 pub enum CreateEntryInput {
     Item(CreateItemEntryInput),

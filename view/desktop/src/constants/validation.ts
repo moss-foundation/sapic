@@ -7,7 +7,7 @@
  * Allows letters, numbers, spaces, dots, underscores, and hyphens.
  * Excludes filesystem-unsafe characters like: / \ : * ? " < > |
  */
-export const VALID_NAME_PATTERN = "[a-zA-Z0-9 \\._\\-]+";
+export const VALID_NAME_PATTERN = "[a-zA-Zа-яА-Я0-9 \\._\\-]+";
 
 /**
  * Pattern for valid identifiers (more restrictive)

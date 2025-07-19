@@ -1,3 +1,4 @@
+pub mod batch_update_collection;
 pub mod create_collection;
 pub mod delete_collection;
 pub mod describe_state;

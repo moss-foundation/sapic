@@ -9,16 +9,15 @@ import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
-import { DebugCollectionIconPlaceholder } from "../DebugCollectionIconPlaceholder";
 import { DropIndicatorWithInstruction } from "../DropIndicatorWithInstruction";
 import NodeLabel from "../NodeLabel";
 import { TreeContext } from "../Tree";
 import { TreeCollectionNode } from "../types";
 import TreeNode from "./TreeNode";
+import { TreeNodeIcon } from "./TreeNodeIcon";
 
 interface TreeNodeButtonProps {
   node: TreeCollectionNode;
-  onNodeUpdate: (node: TreeCollectionNode) => void;
   depth: number;
   onAddFile: () => void;
   onAddFolder: () => void;
@@ -36,7 +35,6 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
   (
     {
       node,
-      onNodeUpdate,
       depth,
       onAddFile,
       onAddFolder,
@@ -51,26 +49,21 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
     },
     ref
   ) => {
-    const { id, nodeOffset, searchInput, paddingRight, onNodeRenameCallback } = useContext(TreeContext);
+    const { id, nodeOffset, searchInput, paddingRight } = useContext(TreeContext);
 
     const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
-    const { placeholderFnForUpdateCollectionEntry } = useUpdateCollectionEntry();
+    const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry();
 
     const handleClick = () => {
       if (node.kind === "Dir" || node.kind === "Case") {
-        // onNodeUpdate({
-        //   ...node,
-        //   expanded: true,
-        // });
-
-        const { childNodes, ...nodeWithoutChildren } = node;
-
-        placeholderFnForUpdateCollectionEntry({
+        updateCollectionEntry({
           collectionId: id,
           updatedEntry: {
-            ...nodeWithoutChildren,
-            expanded: true,
+            DIR: {
+              id: node.id,
+              expanded: true,
+            },
           },
         });
       }
@@ -93,17 +86,15 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
 
     const handleClickOnDir = (e: React.MouseEvent<HTMLDivElement>) => {
       e.stopPropagation();
-      if (node.kind === "Item") {
-        return;
-      }
+      if (node.kind === "Item") return;
 
-      const { childNodes, ...nodeWithoutChildren } = node;
-
-      placeholderFnForUpdateCollectionEntry({
+      updateCollectionEntry({
         collectionId: id,
         updatedEntry: {
-          ...nodeWithoutChildren,
-          expanded: !nodeWithoutChildren.expanded,
+          DIR: {
+            id: node.id,
+            expanded: !node.expanded,
+          },
         },
       });
     };
@@ -139,13 +130,15 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                 />
               )}
 
-              {node.kind === "Dir" && instruction !== null && canDrop === true && (
+              {node.kind !== "Dir" && instruction !== null && canDrop === true && (
                 <DropIndicatorWithInstruction
                   paddingLeft={nodePaddingLeft}
                   paddingRight={paddingRight}
                   instruction={instruction}
-                  isFolder={node.kind === "Dir"}
+                  isFolder={false}
                   depth={depth}
+                  canDrop={canDrop}
+                  gap={-2}
                   isLastChild={isLastChild}
                 />
               )}
@@ -162,15 +155,17 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                 <Icon icon="ChevronRight" />
               </div>
 
-              <DebugCollectionIconPlaceholder protocol={node.protocol} type={node.kind} />
+              <TreeNodeIcon node={node} isRootNode={isRootNode} />
 
               <NodeLabel label={node.name} searchInput={searchInput} className={cn({ "capitalize": isRootNode })} />
               <span className="DragHandle h-full min-h-4 grow" />
             </span>
+
             {preview &&
               createPortal(
                 <ul className="background-(--moss-primary-background) flex gap-1 rounded-sm">
                   <TreeNode
+                    isRootNode={isRootNode}
                     parentNode={{
                       ...node,
                       id: "-",
@@ -181,7 +176,6 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                     }}
                     isLastChild={false}
                     node={{ ...node, id: "DraggedNode", childNodes: [] }}
-                    onNodeUpdate={() => {}}
                     depth={0}
                   />
                   <Icon icon="ChevronRight" className={cn("opacity-0")} />

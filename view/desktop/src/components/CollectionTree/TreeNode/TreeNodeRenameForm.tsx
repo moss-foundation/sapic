@@ -21,7 +21,6 @@ const TreeNodeRenameForm = ({
   node,
   depth,
   restrictedNames,
-  onNodeRenameCallback,
   handleRenamingFormSubmit,
   handleRenamingFormCancel,
 }: TreeNodeRenameFormProps) => {
@@ -43,7 +42,6 @@ const TreeNodeRenameForm = ({
         <NodeRenamingForm
           onSubmit={(newName) => {
             handleRenamingFormSubmit(newName);
-            onNodeRenameCallback?.({ ...node, name: newName });
           }}
           onCancel={handleRenamingFormCancel}
           restrictedNames={restrictedNames}

@@ -43,14 +43,14 @@ export const PageContainerTab: React.FC<PageContainerTabProps> = ({ value, child
       value={value}
       className={cn(
         "mr-2 flex items-center px-2.5 py-2 text-base transition-colors",
-        "relative border-b-2 border-transparent",
+        "relative border-b-1 border-transparent",
         "text-(--moss-secondary-text) hover:text-(--moss-primary-text)",
         "data-[state=active]:text-(--moss-primary-text)",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-(--moss-primary) focus-visible:ring-offset-2",
         "bg-transparent data-[state=active]:bg-transparent",
         "min-w-0 flex-shrink-0 whitespace-nowrap",
         // Active state - use direct border instead of pseudo-element
-        "data-[state=active]:border-b-[var(--moss-tab-active-border-color)]",
+        "data-[state=active]:border-b-(--moss-tab-active-border-color)",
         // Cursor styling
         "cursor-pointer",
 

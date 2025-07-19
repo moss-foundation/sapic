@@ -13,8 +13,6 @@ interface TreeRootNodeActionsProps {
   setIsAddingRootFileNode: (isAdding: boolean) => void;
   setIsAddingRootFolderNode: (isAdding: boolean) => void;
   setIsRenamingRootNode: (isRenaming: boolean) => void;
-  allFoldersAreCollapsed: boolean;
-  allFoldersAreExpanded: boolean;
   handleCollapseAll: () => void;
   handleExpandAll: () => void;
 }
@@ -26,12 +24,10 @@ export const TreeRootNodeActions = ({
   setIsAddingRootFileNode,
   setIsAddingRootFolderNode,
   setIsRenamingRootNode,
-  allFoldersAreCollapsed,
-  allFoldersAreExpanded,
   handleCollapseAll,
   handleExpandAll,
 }: TreeRootNodeActionsProps) => {
-  const { displayMode } = useContext(TreeContext);
+  const { displayMode, allFoldersAreCollapsed, allFoldersAreExpanded } = useContext(TreeContext);
   const [showDeleteCollectionModal, setShowDeleteCollectionModal] = useState(false);
 
   return (
@@ -64,7 +60,7 @@ export const TreeRootNodeActions = ({
             />
           </ActionMenu.Trigger>
           <ActionMenu.Portal>
-            <ActionMenu.Content className="z-30" align="center">
+            <ActionMenu.Content className="z-40" align="center">
               <ActionMenu.Item alignWithIcons onClick={() => setIsAddingRootFileNode(true)}>
                 Add File
               </ActionMenu.Item>

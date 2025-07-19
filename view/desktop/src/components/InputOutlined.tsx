@@ -1,4 +1,5 @@
 import { cva } from "class-variance-authority";
+import { forwardRef } from "react";
 
 import Input, { InputProps } from "@/lib/ui/Input";
 import { cn } from "@/utils";
@@ -38,14 +39,17 @@ const iconsStyles = cva("", {
   },
 });
 
-export const InputOutlined = ({ size = "sm", className, iconClassName, ...props }: InputPlainProps) => {
-  return (
-    <Input
-      className={cn(inputStyles({ size }), className)}
-      iconClassName={cn(iconsStyles({ size }), iconClassName)}
-      {...props}
-    />
-  );
-};
+export const InputOutlined = forwardRef<HTMLInputElement, InputPlainProps>(
+  ({ size = "sm", className, iconClassName, ...props }, ref) => {
+    return (
+      <Input
+        ref={ref}
+        className={cn(inputStyles({ size }), className)}
+        iconClassName={cn(iconsStyles({ size }), iconClassName)}
+        {...props}
+      />
+    );
+  }
+);
 
 export default InputOutlined;

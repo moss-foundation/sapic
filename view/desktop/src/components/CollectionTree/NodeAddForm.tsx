@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import { validateName } from "./utils/FormUtils";
+import { validateName } from "./utils/Form";
 
 interface NodeRenamingFormProps {
   onSubmit: (name: string) => void;

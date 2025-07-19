@@ -1,5 +1,6 @@
 import { useContext } from "react";
 
+import { useUpdateCollection } from "@/hooks";
 import { Icon } from "@/lib/ui";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
@@ -12,28 +13,23 @@ interface TreeRootNodeButtonProps {
   node: TreeCollectionRootNode;
   searchInput?: string;
   shouldRenderChildNodes: boolean;
-  onRootNodeClick: (node: TreeCollectionRootNode) => void;
 }
 
-export const TreeRootNodeButton = ({
-  node,
-  searchInput,
-  shouldRenderChildNodes,
-  onRootNodeClick,
-}: TreeRootNodeButtonProps) => {
+export const TreeRootNodeButton = ({ node, searchInput, shouldRenderChildNodes }: TreeRootNodeButtonProps) => {
   const { id, picturePath } = useContext(TreeContext);
   const { api } = useTabbedPaneStore();
+  const { mutateAsync: updateCollection } = useUpdateCollection();
 
-  const handleIconClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleIconClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
 
-    onRootNodeClick({
-      ...node,
+    await updateCollection({
+      id,
       expanded: !node.expanded,
     });
   };
 
-  const handleLabelClick = () => {
+  const handleLabelClick = async () => {
     const panel = api?.getPanel(id);
 
     if (!panel) {
@@ -46,13 +42,13 @@ export const TreeRootNodeButton = ({
         },
       });
 
-      onRootNodeClick({
-        ...node,
+      await updateCollection({
+        id,
         expanded: true,
       });
     } else {
-      onRootNodeClick({
-        ...node,
+      await updateCollection({
+        id,
         expanded: !node.expanded,
       });
     }
@@ -85,6 +81,7 @@ export const TreeRootNodeButton = ({
           </div>
         )}
       </span>
+      <span className="underline">{node.order}</span>
       <NodeLabel label={node.name} searchInput={searchInput} />
     </div>
   );
