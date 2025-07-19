@@ -7,7 +7,7 @@ import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/ad
 
 import { TreeCollectionRootNode } from "../types";
 
-export const useHandleCollectionsDragAndDrop = () => {
+export const useCollectionsDragAndDropHandler = () => {
   const { collectionsTrees } = useCollectionsTrees();
   const { mutateAsync: batchUpdateCollection } = useBatchUpdateCollection();
 
@@ -23,7 +23,7 @@ export const useHandleCollectionsDragAndDrop = () => {
       }
 
       try {
-        const sortedCollections = [...collectionsTrees].sort((a, b) => (a.order || 0) - (b.order || 0));
+        const sortedCollections = [...collectionsTrees].sort((a, b) => a.order! - b.order!);
 
         const sourceIndex = sortedCollections.findIndex((collection) => collection.id === sourceData.data.collectionId);
         const targetIndex = sortedCollections.findIndex((collection) => collection.id === targetData.data.collectionId);

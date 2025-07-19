@@ -14,7 +14,7 @@ import { cn } from "@/utils";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { join } from "@tauri-apps/api/path";
 
-import { useHandleCollectionsDragAndDrop } from "./CollectionTree/hooks/useHandleCollectionsDragAndDrop";
+import { useCollectionsDragAndDropHandler } from "./CollectionTree/hooks/useHandleCollectionsDragAndDrop";
 import { useMonitorForNodeDragAndDrop } from "./CollectionTree/hooks/useMonitorForNodeDragAndDrop";
 import {
   convertEntryInfoToCreateInput,
@@ -28,7 +28,7 @@ export const CollectionTreeView = () => {
 
   const { displayMode } = useRequestModeStore();
 
-  useHandleCollectionsDragAndDrop();
+  useCollectionsDragAndDropHandler();
 
   const [showCollectionCreationZone, setShowCollectionCreationZone] = useState<boolean>(false);
 
