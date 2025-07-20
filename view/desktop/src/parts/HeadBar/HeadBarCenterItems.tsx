@@ -75,7 +75,7 @@ export const HeadBarCenterItems = ({
           icon="Refresh"
           iconClassName="text-(--moss-headBar-icon-primary-text)"
           customHoverBackground="hover:background-(--moss-headBar-primary-background-hover)"
-          className="mx-1"
+          className="mr-1 ml-[-2px]"
           title="Reload"
         />
         <RequestPath
