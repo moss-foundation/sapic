@@ -141,10 +141,10 @@ mod tests {
         assert_eq!(*service, test_service);
     }
 
-    #[test]
     #[should_panic(
         expected = "Service moss_applib::providers::tests::TestService must be registered before it can be used"
     )]
+    #[test]
     fn test_get_unregistered_service_panics() {
         let provider = ServiceProvider::new();
         let _ = provider.get::<TestService>();

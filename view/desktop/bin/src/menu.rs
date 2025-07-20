@@ -37,6 +37,7 @@ pub fn handle_event<R: TauriRuntime>(_window: &Window<R>, event: &MenuEvent) {
 //     });
 // }
 
+#[allow(dead_code)]
 pub fn app_menu<R: TauriRuntime>(app_handle: &AppHandle<R>) -> tauri::Result<Menu<R>> {
     #[cfg(not(target_os = "macos"))]
     {
