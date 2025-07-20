@@ -8,6 +8,7 @@ import { collectionActionMenuItems } from "./HeadBarData";
 import { getGitBranchMenuItems } from "./mockHeadBarData";
 import NavigationButtons from "./NavigationButtons";
 import ZoomButtons from "./ZoomButtons";
+import RequestPath from "./RequestPath";
 
 export interface HeadBarCenterItemsProps {
   isMedium: boolean;
@@ -33,15 +34,11 @@ export interface HeadBarCenterItemsProps {
 }
 
 export const HeadBarCenterItems = ({
-  isMedium,
   isXLarge,
+  breakpoint,
   handleGitMenuAction,
   handleCollectionActionMenuAction,
   selectedBranch,
-  collectionName,
-  onRenameCollection,
-  onCollectionClick,
-  collectionButtonRef,
   os,
   onNavigateBack,
   onNavigateForward,
@@ -64,6 +61,12 @@ export const HeadBarCenterItems = ({
       <div
         className={cn(
           "background-(--moss-headBar-primary-background) flex h-[26px] items-center rounded border border-[var(--moss-headBar-border-color)] px-0.5",
+          {
+            "min-w-[400px]": breakpoint === "md",
+            "min-w-[500px]": breakpoint === "lg",
+            "min-w-[600px]": breakpoint === "xl" || breakpoint === "2xl",
+            "min-w-[300px]": breakpoint === "sm",
+          },
           isXLarge ? "" : os === "macos" ? "relative" : ""
         )}
         data-tauri-drag-region
@@ -74,20 +77,15 @@ export const HeadBarCenterItems = ({
           customHoverBackground="hover:background-(--moss-headBar-primary-background-hover)"
           title="Reload"
         />
-        <IconLabelButton
-          ref={collectionButtonRef}
-          leftIcon="UnloadedModule"
-          leftIconClassName="text-(--moss-headBar-icon-primary-text)"
-          className={
-            isMedium
-              ? "hover:background-(--moss-headBar-primary-background-hover) mr-[3px] h-[22px] w-[10vw]"
-              : "hover:background-(--moss-headBar-primary-background-hover) mr-[30px] h-[22px] w-[10vw]"
-          }
-          title={collectionName}
-          editable={true}
-          onRename={onRenameCollection}
-          onClick={onCollectionClick}
+        <RequestPath
+          className={cn("min-w-0 text-(--moss-headBar-icon-primary-text)", {
+            "max-w-[200px]": breakpoint === "sm",
+            "max-w-[250px]": breakpoint === "md",
+            "max-w-[300px]": breakpoint === "lg",
+            "max-w-[350px]": breakpoint === "xl" || breakpoint === "2xl",
+          })}
         />
+        <div className="flex-1" />
         <ActionMenu.Root>
           <ActionMenu.Trigger asChild>
             <ActionButton
