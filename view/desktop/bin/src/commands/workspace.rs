@@ -1,15 +1,14 @@
 use moss_api::{TauriError, TauriResult};
-use moss_app::app::App;
 use moss_workspace::models::{events::*, operations::*};
-use tauri::{State, Window, ipc::Channel as TauriChannel};
+use tauri::{Window, ipc::Channel as TauriChannel};
 
-use crate::{TauriAppRuntime, commands::Options};
+use crate::commands::primitives::*;
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn update_workspace_state<R: tauri::Runtime>(
-    ctx: State<'_, moss_applib::context::AsyncContext>,
-    app: State<'_, App<TauriAppRuntime<R>>>,
+pub async fn update_workspace_state<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
     window: Window<R>,
     input: UpdateStateInput,
     options: Options,
@@ -25,9 +24,9 @@ pub async fn update_workspace_state<R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn describe_workspace_state<R: tauri::Runtime>(
-    ctx: State<'_, moss_applib::context::AsyncContext>,
-    app: State<'_, App<TauriAppRuntime<R>>>,
+pub async fn describe_workspace_state<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
     window: Window<R>,
     options: Options,
 ) -> TauriResult<DescribeStateOutput> {
@@ -39,9 +38,9 @@ pub async fn describe_workspace_state<R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
-pub async fn stream_workspace_environments<R: tauri::Runtime>(
-    ctx: State<'_, moss_applib::context::AsyncContext>,
-    app: State<'_, App<TauriAppRuntime<R>>>,
+pub async fn stream_workspace_environments<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
     window: Window<R>,
     channel: TauriChannel<StreamEnvironmentsEvent>,
     options: Options,
@@ -57,9 +56,9 @@ pub async fn stream_workspace_environments<R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
-pub async fn stream_collections<R: tauri::Runtime>(
-    ctx: State<'_, moss_applib::context::AsyncContext>,
-    app: State<'_, App<TauriAppRuntime<R>>>,
+pub async fn stream_collections<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
     window: Window<R>,
     channel: TauriChannel<StreamCollectionsEvent>,
     options: Options,
@@ -75,9 +74,9 @@ pub async fn stream_collections<R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn create_collection<R: tauri::Runtime>(
-    ctx: State<'_, moss_applib::context::AsyncContext>,
-    app: State<'_, App<TauriAppRuntime<R>>>,
+pub async fn create_collection<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
     window: Window<R>,
     input: CreateCollectionInput,
     options: Options,
@@ -93,9 +92,9 @@ pub async fn create_collection<R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn delete_collection<R: tauri::Runtime>(
-    ctx: State<'_, moss_applib::context::AsyncContext>,
-    app: State<'_, App<TauriAppRuntime<R>>>,
+pub async fn delete_collection<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
     window: Window<R>,
     input: DeleteCollectionInput,
     options: Options,

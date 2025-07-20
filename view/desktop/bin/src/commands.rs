@@ -18,10 +18,17 @@ use moss_applib::{
 use moss_collection::Collection;
 use moss_common::api::OperationOptionExt;
 use moss_workspace::{models::primitives::CollectionId, services::DynCollectionService};
+use primitives::Options;
 use std::{sync::Arc, time::Duration};
 use tauri::State;
 
-pub(super) type Options = Option<moss_api::models::types::Options>;
+pub mod primitives {
+    use tauri::State;
+
+    pub(super) type Options = Option<moss_api::models::types::Options>;
+    pub(super) type AsyncContext<'a> = State<'a, moss_applib::context::AsyncContext>;
+    pub(super) type App<'a, R> = State<'a, moss_app::App<moss_applib::TauriAppRuntime<R>>>;
+}
 
 pub(super) async fn with_collection_timeout<R, T, F, Fut>(
     ctx: &R::AsyncContext,
