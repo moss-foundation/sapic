@@ -203,6 +203,10 @@ export const HeadBar = () => {
                   onRenameCollection={handleRenameCollection}
                   collectionButtonRef={collectionButtonRef}
                   os={os}
+                  onNavigateBack={() => console.log("Navigate back")}
+                  onNavigateForward={() => console.log("Navigate forward")}
+                  canGoBack={true}
+                  canGoForward={true}
                 />
               </div>
             )}
