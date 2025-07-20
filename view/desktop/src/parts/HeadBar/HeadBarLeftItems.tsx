@@ -5,7 +5,6 @@ import { cn } from "@/utils";
 import { renderActionMenuItem } from "@/utils/renderActionMenuItem";
 
 import { windowsMenuItems } from "./mockHeadBarData";
-import { ModeToggle } from "./ModeToggle";
 import { useWorkspaceMenu } from "./WorkspaceMenuProvider";
 
 export interface HeadBarLeftItemsProps {
@@ -49,10 +48,6 @@ export const HeadBarLeftItems = ({
               {windowsMenuItems.map((item) => renderActionMenuItem(item, handleWindowsMenuAction))}
             </ActionMenu.Content>
           </ActionMenu.Root>
-
-          {selectedWorkspace && (
-            <ModeToggle className="mr-0.5 border-1 border-[var(--moss-headBar-border-color)]" compact={isLarge} />
-          )}
         </>
       )}
 

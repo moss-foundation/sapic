@@ -16,7 +16,6 @@ import {
   HeadBarActionProps,
   useCollectionActions,
   useGitMenuActions,
-  useUserMenuActions,
   useWindowsMenuActions,
   useWorkspaceActions,
 } from "./HeadBarActions";
@@ -36,7 +35,7 @@ export const HeadBar = () => {
   const selectedWorkspace = workspace?.name || null;
 
   // TEST: Hardoce default user/branch for testing
-  const [selectedUser, setSelectedUser] = useState<string | null>(null);
+  const [, setSelectedUser] = useState<string | null>(null);
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
   const [collectionName, setCollectionName] = useState("Sapic Test Collection");
   const collectionButtonRef = useRef<HTMLButtonElement>(null);
@@ -76,7 +75,6 @@ export const HeadBar = () => {
     setWorkspaceToDelete,
   };
 
-  const userActionProps: HeadBarActionProps = { ...actionProps };
   const gitActionProps: HeadBarActionProps = { ...actionProps };
   const workspaceActionProps: HeadBarActionProps = { ...actionProps };
   const collectionActionProps: HeadBarActionProps = {
@@ -86,7 +84,6 @@ export const HeadBar = () => {
     setIsRenamingCollection,
   };
 
-  const handleUserMenuAction = useUserMenuActions(userActionProps);
   const handleGitMenuAction = useGitMenuActions(gitActionProps);
   const handleWindowsMenuAction = useWindowsMenuActions();
   const handleWorkspaceMenuAction = useWorkspaceActions(workspaceActionProps);
@@ -216,13 +213,11 @@ export const HeadBar = () => {
                 isMedium={isMedium}
                 isLarge={isLarge}
                 breakpoint={breakpoint}
-                handleUserMenuAction={handleUserMenuAction}
                 showDebugPanels={showDebugPanels}
                 setShowDebugPanels={setShowDebugPanels}
                 openPanel={openPanel}
                 os={os}
                 selectedWorkspace={selectedWorkspace}
-                selectedUser={selectedUser}
               />
             </div>
           </div>
