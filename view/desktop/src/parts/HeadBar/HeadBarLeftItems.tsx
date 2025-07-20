@@ -41,7 +41,7 @@ export const HeadBarLeftItems = ({
       {isWindowsOrLinux && (
         <>
           <ActionMenu.Root>
-            <ActionMenu.Trigger className="hover:background-(--moss-secondary-background-hover) rounded p-1">
+            <ActionMenu.Trigger className="rounded p-1 hover:!bg-[var(--moss-icon-secondary-background-hover)]">
               <Icon icon="WindowsMenu" className="size-4.5 cursor-pointer text-(--moss-headBar-icon-primary-text)" />
             </ActionMenu.Trigger>
             <ActionMenu.Content>
@@ -59,7 +59,7 @@ export const HeadBarLeftItems = ({
             placeholder="No workspace selected"
             showPlaceholder={!selectedWorkspace}
             labelClassName="text-md"
-            className="h-[24px]"
+            className="h-[24px] hover:!bg-[var(--moss-icon-secondary-background-hover)]"
           />
         </ActionMenu.Trigger>
         <ActionMenu.Content>
@@ -70,7 +70,7 @@ export const HeadBarLeftItems = ({
       </ActionMenu.Root>
 
       {selectedWorkspace && (
-        <button className="hover:background-(--moss-icon-primary-background-hover) flex h-[24px] cursor-pointer items-center gap-1 rounded px-1">
+        <button className="flex h-[24px] cursor-pointer items-center gap-1 rounded px-1 hover:!bg-[var(--moss-icon-secondary-background-hover)]">
           <Icon icon="Key" className="size-4.5 text-(--moss-headBar-icon-primary-text)" />
           <span className="text-md">Vault</span>
         </button>
