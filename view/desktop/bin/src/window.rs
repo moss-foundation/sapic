@@ -1,6 +1,6 @@
 use tauri::{AppHandle, Runtime as TauriRuntime, WebviewUrl, WebviewWindow};
 
-use crate::{MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH, menu};
+use crate::{MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH};
 
 #[derive(Debug)]
 pub struct CreateWindowInput<'a> {
@@ -16,13 +16,7 @@ pub fn create_window<R: TauriRuntime>(
     app_handle: &AppHandle<R>,
     input: CreateWindowInput<'_>,
 ) -> WebviewWindow<R> {
-    #[cfg(target_os = "macos")]
-    {
-        let menu = menu::app_menu(app_handle).unwrap();
-        app_handle.set_menu(menu).expect("Failed to set app menu");
-    }
-
-    let mut win_builder = tauri::WebviewWindowBuilder::new(
+    let win_builder = tauri::WebviewWindowBuilder::new(
         app_handle,
         input.label,
         WebviewUrl::App(input.url.into()),
@@ -37,21 +31,17 @@ pub fn create_window<R: TauriRuntime>(
     .min_inner_size(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT);
 
     #[cfg(target_os = "windows")]
-    {
-        win_builder = win_builder
-            .transparent(false)
-            .shadow(true)
-            .decorations(false);
-    }
+    let win_builder = win_builder
+        .transparent(false)
+        .shadow(true)
+        .decorations(false);
 
     #[cfg(target_os = "macos")]
-    {
-        win_builder = win_builder
-            .hidden_title(true)
-            .title_bar_style(tauri::TitleBarStyle::Overlay)
-            .transparent(false)
-            .decorations(true);
-    }
+    let win_builder = win_builder
+        .hidden_title(true)
+        .title_bar_style(tauri::TitleBarStyle::Overlay)
+        .transparent(false)
+        .decorations(true);
 
     let webview_window = win_builder
         .build()

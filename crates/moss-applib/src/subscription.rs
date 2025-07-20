@@ -150,8 +150,6 @@ impl<T: EventMarker> EventEmitter<T> {
             state_lock.listeners.values().cloned().collect::<Vec<_>>()
         };
 
-        dbg!(&listeners.len());
-
         for listener in listeners {
             let future = listener(value.clone());
             let wrapped_future = AssertUnwindSafe(future);

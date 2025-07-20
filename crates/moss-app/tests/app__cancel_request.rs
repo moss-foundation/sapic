@@ -2,7 +2,7 @@
 
 use futures::future;
 use moss_app::models::operations::CancelRequestInput;
-use moss_applib::context::{AnyAsyncContext, AnyContext, AsyncContext, Reason};
+use moss_applib::context::{AnyAsyncContext, AnyContext, MutableContext, Reason};
 use std::time::Duration;
 use tokio::time::timeout;
 
@@ -13,7 +13,7 @@ mod shared;
 async fn cancel_request_success() {
     let (app, _top_ctx, _services, cleanup, _abs_path) = set_up_test_app().await;
 
-    let mut ctx = AsyncContext::background();
+    let ctx = MutableContext::background();
     let request_id = "request".to_string();
 
     let cancellation_map = app.cancellation_map();
@@ -76,7 +76,7 @@ async fn cancel_request_with_child() {
 
     let cancellation_map = app.cancellation_map();
 
-    let mut parent_ctx = AsyncContext::background();
+    let parent_ctx = MutableContext::background();
     let parent_id = "parent".to_string();
 
     cancellation_map
@@ -90,7 +90,7 @@ async fn cancel_request_with_child() {
         let cancellation_map = cancellation_map.clone();
         let parent_ctx = parent_ctx.freeze();
         tokio::spawn(async move {
-            let mut child_ctx = AnyAsyncContext::new(parent_ctx.clone());
+            let child_ctx = AnyAsyncContext::new(parent_ctx.clone());
             let child_id = "child".to_string();
             cancellation_map
                 .write()

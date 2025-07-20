@@ -43,6 +43,14 @@ import sys
 import re
 import argparse
 
+# Paths to check when filtering warnings by package
+PACKAGE_PATHS = [
+    "crates/{package_dir}/",
+    "libs/{package_dir}/",
+    "tools/{package_dir}/",
+    "view/{package_dir}/bin/",
+]
+
 def main():
     parser = argparse.ArgumentParser(description="Check Rust warnings for a specific crate or entire workspace")
     parser.add_argument(
@@ -112,7 +120,8 @@ def main():
             if args.package:
                 # Convert package name from underscore to dash for directory matching
                 package_dir = args.package.replace("_", "-")
-                if file_name and f"crates/{package_dir}/" not in file_name:
+                # Check multiple possible paths for the package
+                if file_name and not any(path.format(package_dir=package_dir) in file_name for path in PACKAGE_PATHS):
                     continue  # Skip warnings not from the specified package
             
             warning_with_location = f"{msg}{location_info}"

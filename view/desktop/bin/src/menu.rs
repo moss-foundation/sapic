@@ -1,7 +1,7 @@
 use strum::{AsRefStr as StrumAsRefStr, Display as StrumDisplay, EnumString as StrumEnumString};
 use tauri::{
     AppHandle, Manager, Runtime as TauriRuntime, Window,
-    menu::{Menu, MenuEvent, PredefinedMenuItem},
+    menu::{Menu, MenuEvent},
 };
 
 // use crate::create_child_window;
@@ -37,6 +37,7 @@ pub fn handle_event<R: TauriRuntime>(_window: &Window<R>, event: &MenuEvent) {
 //     });
 // }
 
+#[allow(dead_code)]
 pub fn app_menu<R: TauriRuntime>(app_handle: &AppHandle<R>) -> tauri::Result<Menu<R>> {
     #[cfg(not(target_os = "macos"))]
     {
@@ -45,7 +46,9 @@ pub fn app_menu<R: TauriRuntime>(app_handle: &AppHandle<R>) -> tauri::Result<Men
 
     #[cfg(target_os = "macos")]
     {
-        use tauri::menu::{AboutMetadataBuilder, MenuBuilder, MenuItemBuilder, SubmenuBuilder};
+        use tauri::menu::{
+            AboutMetadataBuilder, MenuBuilder, MenuItemBuilder, PredefinedMenuItem, SubmenuBuilder,
+        };
 
         unsafe {
             macos_trampoline::set_app_name(&"Moss Studio".into());

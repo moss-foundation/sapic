@@ -1,16 +1,15 @@
 use moss_api::{TauriError, TauriResult};
-use moss_app::app::App;
 use moss_collection::models::{events::*, operations::*};
 use moss_workspace::models::primitives::CollectionId;
-use tauri::{State, Window, ipc::Channel as TauriChannel};
+use tauri::{Window, ipc::Channel as TauriChannel};
 
-use crate::{TauriAppRuntime, commands::Options};
+use crate::commands::primitives::*;
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn create_collection_entry<R: tauri::Runtime>(
-    ctx: State<'_, moss_applib::context::AsyncContext>,
-    app: State<'_, App<TauriAppRuntime<R>>>,
+pub async fn create_collection_entry<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
     window: Window<R>,
     collection_id: CollectionId,
     input: CreateEntryInput,
@@ -33,9 +32,9 @@ pub async fn create_collection_entry<R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn delete_collection_entry<R: tauri::Runtime>(
-    ctx: State<'_, moss_applib::context::AsyncContext>,
-    app: State<'_, App<TauriAppRuntime<R>>>,
+pub async fn delete_collection_entry<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
     window: Window<R>,
     collection_id: CollectionId,
     input: DeleteEntryInput,
@@ -58,9 +57,9 @@ pub async fn delete_collection_entry<R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn update_collection_entry<R: tauri::Runtime>(
-    ctx: State<'_, moss_applib::context::AsyncContext>,
-    app: State<'_, App<TauriAppRuntime<R>>>,
+pub async fn update_collection_entry<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
     window: Window<R>,
     collection_id: CollectionId,
     input: UpdateEntryInput,
@@ -83,9 +82,9 @@ pub async fn update_collection_entry<R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn batch_create_collection_entry<R: tauri::Runtime>(
-    ctx: State<'_, moss_applib::context::AsyncContext>,
-    app: State<'_, App<TauriAppRuntime<R>>>,
+pub async fn batch_create_collection_entry<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
     window: Window<R>,
     collection_id: CollectionId,
     input: BatchCreateEntryInput,
@@ -108,9 +107,9 @@ pub async fn batch_create_collection_entry<R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
-pub async fn batch_update_collection_entry<R: tauri::Runtime>(
-    ctx: State<'_, moss_applib::context::AsyncContext>,
-    app: State<'_, App<TauriAppRuntime<R>>>,
+pub async fn batch_update_collection_entry<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
     window: Window<R>,
     channel: TauriChannel<BatchUpdateEntryEvent>,
     collection_id: CollectionId,
@@ -134,9 +133,9 @@ pub async fn batch_update_collection_entry<R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
-pub async fn stream_collection_entries<R: tauri::Runtime>(
-    ctx: State<'_, moss_applib::context::AsyncContext>,
-    app: State<'_, App<TauriAppRuntime<R>>>,
+pub async fn stream_collection_entries<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
     window: Window<R>,
     collection_id: CollectionId,
     input: Option<StreamEntriesInput>, // FIXME: this needs to be optional because the frontend doesn't send it yet
