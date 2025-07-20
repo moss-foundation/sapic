@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useCollectionsTrees } from "@/hooks/collection/derivedHooks/useCollectionsTrees";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { TreeCollectionNode } from "@/components/CollectionTree/types";
+import { StreamCollectionsEvent } from "@repo/moss-workspace";
 
 export interface RequestPathProps {
   className?: string;
@@ -13,7 +14,7 @@ export const RequestPath: React.FC<RequestPathProps> = ({ className = "" }) => {
   const { collectionsTrees } = useCollectionsTrees();
   const [path, setPath] = useState<string[]>([]);
   const [activeTree, setActiveTree] = useState<TreeCollectionNode | null>(null);
-  const [activeCollection, setActiveCollection] = useState<any>(null);
+  const [activeCollection, setActiveCollection] = useState<StreamCollectionsEvent | null>(null);
 
   // Find path function (same logic as Breadcrumbs)
   const findPath = (node: TreeCollectionNode, target: string): string[] | null => {
