@@ -207,6 +207,11 @@ export const HeadBar = () => {
                   onNavigateForward={() => console.log("Navigate forward")}
                   canGoBack={true}
                   canGoForward={true}
+                  onZoomIn={() => console.log("Zoom in")}
+                  onZoomOut={() => console.log("Zoom out")}
+                  canZoomIn={true}
+                  canZoomOut={true}
+                  currentZoom={100}
                 />
               </div>
             )}

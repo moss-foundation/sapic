@@ -7,6 +7,7 @@ import { renderActionMenuItem } from "@/utils/renderActionMenuItem";
 import { collectionActionMenuItems } from "./HeadBarData";
 import { getGitBranchMenuItems } from "./mockHeadBarData";
 import NavigationButtons from "./NavigationButtons";
+import ZoomButtons from "./ZoomButtons";
 
 export interface HeadBarCenterItemsProps {
   isMedium: boolean;
@@ -24,6 +25,11 @@ export interface HeadBarCenterItemsProps {
   onNavigateForward?: () => void;
   canGoBack?: boolean;
   canGoForward?: boolean;
+  onZoomIn?: () => void;
+  onZoomOut?: () => void;
+  canZoomIn?: boolean;
+  canZoomOut?: boolean;
+  currentZoom?: number;
 }
 
 export const HeadBarCenterItems = ({
@@ -41,6 +47,11 @@ export const HeadBarCenterItems = ({
   onNavigateForward,
   canGoBack = true,
   canGoForward = true,
+  onZoomIn,
+  onZoomOut,
+  canZoomIn = true,
+  canZoomOut = true,
+  currentZoom = 100,
 }: HeadBarCenterItemsProps) => {
   return (
     <div className="flex items-center gap-2" data-tauri-drag-region>
@@ -113,6 +124,13 @@ export const HeadBarCenterItems = ({
           </ActionMenu.Portal>
         </ActionMenu.Root>
       </div>
+      <ZoomButtons
+        onZoomIn={onZoomIn}
+        onZoomOut={onZoomOut}
+        canZoomIn={canZoomIn}
+        canZoomOut={canZoomOut}
+        currentZoom={currentZoom}
+      />
     </div>
   );
 };
