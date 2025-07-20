@@ -191,13 +191,7 @@ export const HeadBar = () => {
 
             {/*HeadBar Center items*/}
             {selectedWorkspace && (
-              <div
-                className={cn("flex", {
-                  "justify-center": os === "macos",
-                  "-mr-[138px] justify-center": os === "windows" || os === "linux",
-                })}
-                data-tauri-drag-region
-              >
+              <div className="flex justify-center" data-tauri-drag-region>
                 <HeadBarCenterItems
                   isMedium={isMedium}
                   isXLarge={isXLarge}
@@ -223,7 +217,7 @@ export const HeadBar = () => {
             )}
 
             {/*HeadBar Right-side items*/}
-            <div className="flex justify-end" data-tauri-drag-region>
+            <div className="ml-2 flex justify-end" data-tauri-drag-region>
               <HeadBarRightItems
                 isMedium={isMedium}
                 isLarge={isLarge}
