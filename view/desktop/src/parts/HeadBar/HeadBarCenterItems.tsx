@@ -41,6 +41,12 @@ export const HeadBarCenterItems = ({
       )}
       data-tauri-drag-region
     >
+      <ActionButton
+        icon="Refresh"
+        iconClassName="text-(--moss-headBar-icon-primary-text)"
+        customHoverBackground="hover:background-(--moss-headBar-primary-background-hover)"
+        title="Reload"
+      />
       <IconLabelButton
         ref={collectionButtonRef}
         leftIcon="UnloadedModule"
@@ -54,12 +60,6 @@ export const HeadBarCenterItems = ({
         editable={true}
         onRename={onRenameCollection}
         onClick={onCollectionClick}
-      />
-      <ActionButton
-        icon="Refresh"
-        iconClassName="text-(--moss-headBar-icon-primary-text)"
-        customHoverBackground="hover:background-(--moss-headBar-primary-background-hover)"
-        title="Reload"
       />
       <ActionMenu.Root>
         <ActionMenu.Trigger asChild>
