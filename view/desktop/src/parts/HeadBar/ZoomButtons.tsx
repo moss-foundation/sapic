@@ -29,7 +29,7 @@ export const ZoomButtons: React.FC<ZoomButtonsProps> = ({
         disabled={!canZoomOut}
         className={!canZoomOut ? "cursor-not-allowed opacity-50" : ""}
       />
-      <span className="px-2 text-sm text-(--moss-headBar-icon-primary-text)">{currentZoom}%</span>
+      <span className="px-1 text-sm text-(--moss-primary-text)">{currentZoom}%</span>
       <ActionButton
         icon="Plus"
         iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
