@@ -20,18 +20,16 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({
   return (
     <div className={`flex items-center gap-0 ${className}`}>
       <ActionButton
-        icon="ChevronLeft"
+        icon="ArrowLeft"
         iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
-        customHoverBackground="hover:background-(--moss-headBar-primary-background-hover)"
         title="Go back"
         onClick={onBack}
         disabled={!canGoBack}
         className={!canGoBack ? "cursor-not-allowed opacity-50" : ""}
       />
       <ActionButton
-        icon="ChevronRight"
+        icon="ArrowRight"
         iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
-        customHoverBackground="hover:background-(--moss-headBar-primary-background-hover)"
         title="Go forward"
         onClick={onForward}
         disabled={!canGoForward}
