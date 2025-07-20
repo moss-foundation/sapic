@@ -368,9 +368,8 @@ pub async fn execute_command<R: tauri::Runtime>(
 }
 
 #[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+#[instrument(level = "trace", skip(app), fields(window = window.label()))]
 pub async fn cancel_request<R: tauri::Runtime>(
-    ctx: State<'_, AsyncContext>,
     app: State<'_, App<TauriAppRuntime<R>>>,
     window: Window<R>,
     input: CancelRequestInput,
