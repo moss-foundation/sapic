@@ -60,12 +60,12 @@ export const HeadBarCenterItems = ({
       />
       <div
         className={cn(
-          "background-(--moss-headBar-primary-background) flex h-[26px] items-center rounded border border-[var(--moss-headBar-border-color)] px-0.5",
+          "background-(--moss-headBar-primary-background) flex h-7 items-center rounded border border-[var(--moss-headBar-border-color)] px-2",
           {
-            "min-w-[400px]": breakpoint === "md",
-            "min-w-[500px]": breakpoint === "lg",
-            "min-w-[600px]": breakpoint === "xl" || breakpoint === "2xl",
-            "min-w-[300px]": breakpoint === "sm",
+            "min-w-80": breakpoint === "sm",
+            "min-w-96": breakpoint === "md",
+            "min-w-[28rem]": breakpoint === "lg",
+            "min-w-[32rem]": breakpoint === "xl" || breakpoint === "2xl",
           },
           isXLarge ? "" : os === "macos" ? "relative" : ""
         )}
@@ -75,14 +75,15 @@ export const HeadBarCenterItems = ({
           icon="Refresh"
           iconClassName="text-(--moss-headBar-icon-primary-text)"
           customHoverBackground="hover:background-(--moss-headBar-primary-background-hover)"
+          className="mx-1"
           title="Reload"
         />
         <RequestPath
           className={cn("min-w-0 text-(--moss-headBar-icon-primary-text)", {
-            "max-w-[200px]": breakpoint === "sm",
-            "max-w-[250px]": breakpoint === "md",
-            "max-w-[300px]": breakpoint === "lg",
-            "max-w-[350px]": breakpoint === "xl" || breakpoint === "2xl",
+            "max-w-48": breakpoint === "sm",
+            "max-w-60": breakpoint === "md",
+            "max-w-72": breakpoint === "lg",
+            "max-w-80": breakpoint === "xl" || breakpoint === "2xl",
           })}
         />
         <div className="flex-1" />
@@ -92,7 +93,7 @@ export const HeadBarCenterItems = ({
               icon="MoreHorizontal"
               iconClassName="text-(--moss-headBar-icon-primary-text)"
               customHoverBackground="hover:background-(--moss-headBar-primary-background-hover)"
-              className="mr-[-4px]"
+              className="-mr-1"
               title="Collection Actions"
             />
           </ActionMenu.Trigger>
@@ -109,7 +110,7 @@ export const HeadBarCenterItems = ({
               leftIcon="VCS"
               leftIconClassName="text-(--moss-headBar-icon-primary-text)"
               rightIcon="ChevronDown"
-              className="hover:background-(--moss-headBar-primary-background-hover) ml-[-2px] h-[22px]"
+              className="hover:background-(--moss-headBar-primary-background-hover) -ml-0.5 h-6"
               title={selectedBranch || "main"}
               placeholder="No branch selected"
               showPlaceholder={!selectedBranch}
