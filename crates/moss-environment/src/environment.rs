@@ -1,17 +1,9 @@
 use anyhow::Result;
-use moss_applib::AppRuntime;
+use moss_applib::{AppRuntime, providers::ServiceProvider};
 use moss_file::json::JsonFileHandle;
 use moss_fs::FileSystem;
-use moss_storage::workspace_storage::stores::WorkspaceVariableStore;
 use std::{collections::HashMap, path::Path, sync::Arc};
 
-use crate::{
-    file::FileModel,
-    models::{
-        primitives::{EnvironmentId, VariableId},
-        types::{VariableKind, VariableName, VariableValue},
-    },
-};
 // #[derive(Error, Debug)]
 // pub enum EnvironmentError {
 //     #[error("Failed to parse environment file as JSON: {0}")]
@@ -34,125 +26,128 @@ use crate::{
 //     Unknown(anyhow::Error),
 // }
 
-#[derive(Debug, Clone)]
-pub struct VariableItemParams {
-    pub disabled: bool,
-}
+// #[derive(Debug, Clone)]
+// pub struct VariableItemParams {
+//     pub disabled: bool,
+// }
 
 // VariableId: length-5?
 
-#[derive(Debug, Clone)]
-pub struct VariableItem {
-    pub id: VariableId,
-    pub kind: Option<VariableKind>,
-    pub global_value: Option<VariableValue>,
-    pub desc: Option<String>,
-    pub params: VariableItemParams,
-}
-
-type VariableMap = HashMap<VariableName, VariableItem>;
+// type VariableMap = HashMap<VariableName, VariableItem>;
 
 pub struct Environment<R: AppRuntime> {
-    #[allow(dead_code)]
-    fs: Arc<dyn FileSystem>,
+    // #[allow(dead_code)]
+    // fs: Arc<dyn FileSystem>,
     abs_path: Arc<Path>,
-    variables: VariableMap,
-    #[allow(dead_code)]
-    store: Arc<dyn WorkspaceVariableStore<R::AsyncContext>>,
-    file: JsonFileHandle<FileModel>,
+    services: ServiceProvider,
+    _marker: std::marker::PhantomData<R>,
+    // variables: VariableMap,
+    // #[allow(dead_code)]
+    // store: Arc<dyn WorkspaceVariableStore<R::AsyncContext>>,
+    // file: JsonFileHandle<FileModel>,
 }
 
-impl<R: AppRuntime> std::fmt::Debug for Environment<R> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Environment")
-            .field("path", &self.abs_path)
-            .field("variables", &self.variables)
-            .finish()
-    }
-}
+unsafe impl<R: AppRuntime> Send for Environment<R> {}
+unsafe impl<R: AppRuntime> Sync for Environment<R> {}
 
-pub struct LoadParams {
-    pub create_if_not_exists: bool,
-}
+// impl<R: AppRuntime> std::fmt::Debug for Environment<R> {
+//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//         f.debug_struct("Environment")
+//             .field("path", &self.abs_path)
+//             .field("variables", &self.variables)
+//             .finish()
+//     }
+// }
+
+// pub struct LoadParams {
+//     pub create_if_not_exists: bool,
+// }
 
 impl<R: AppRuntime> Environment<R> {
-    pub async fn load(
-        abs_path: &Path,
-        fs: Arc<dyn FileSystem>,
-        store: Arc<dyn WorkspaceVariableStore<R::AsyncContext>>,
-        params: LoadParams,
-    ) -> Result<Self> {
-        let abs_path: Arc<Path> = abs_path.into();
-        debug_assert!(abs_path.is_file());
-        debug_assert!(abs_path.is_absolute());
-
-        let file_handle = if abs_path.exists() {
-            JsonFileHandle::load(Arc::clone(&fs), &abs_path).await?
-        } else if !abs_path.exists() && params.create_if_not_exists {
-            JsonFileHandle::create(Arc::clone(&fs), &abs_path, FileModel::new()).await?
-        } else {
-            return Err(anyhow::anyhow!(
-                "Environment file {} is not found",
-                abs_path.display()
-            ));
-        };
-
-        if abs_path
-            .extension()
-            .map(|ext| ext != "json")
-            .unwrap_or(false)
-        {
-            return Err(anyhow::anyhow!(
-                "Environment file must have a .json extension"
-            ));
-        }
-
-        let mut variables = HashMap::new();
-        for (name, value) in file_handle.model().await.values {
-            variables.insert(
-                name,
-                VariableItem {
-                    id: VariableId::new(),
-                    kind: value.kind,
-                    global_value: value.value,
-                    desc: value.desc,
-                    params: VariableItemParams {
-                        disabled: true, // TODO: restore this value from cache
-                    },
-                },
-            );
-        }
-
-        Ok(Self {
-            fs,
+    pub(super) fn new(abs_path: Arc<Path>, services: ServiceProvider) -> Self {
+        Self {
             abs_path,
-            variables,
-            store,
-            file: file_handle,
-        })
+            services,
+            _marker: std::marker::PhantomData,
+        }
     }
+    // pub async fn load(
+    //     abs_path: &Path,
+    //     fs: Arc<dyn FileSystem>,
+    //     store: Arc<dyn WorkspaceVariableStore<R::AsyncContext>>,
+    //     params: LoadParams,
+    // ) -> Result<Self> {
+    //     let abs_path: Arc<Path> = abs_path.into();
+    //     debug_assert!(abs_path.is_file());
+    //     debug_assert!(abs_path.is_absolute());
 
-    pub async fn id(&self) -> EnvironmentId {
-        self.file.model().await.id.clone()
-    }
+    //     let file_handle = if abs_path.exists() {
+    //         JsonFileHandle::load(Arc::clone(&fs), &abs_path).await?
+    //     } else if !abs_path.exists() && params.create_if_not_exists {
+    //         JsonFileHandle::create(Arc::clone(&fs), &abs_path, FileModel::new()).await?
+    //     } else {
+    //         return Err(anyhow::anyhow!(
+    //             "Environment file {} is not found",
+    //             abs_path.display()
+    //         ));
+    //     };
 
-    pub fn variables(&self) -> &VariableMap {
-        &self.variables
-    }
+    //     if abs_path
+    //         .extension()
+    //         .map(|ext| ext != "json")
+    //         .unwrap_or(false)
+    //     {
+    //         return Err(anyhow::anyhow!(
+    //             "Environment file must have a .json extension"
+    //         ));
+    //     }
 
-    pub async fn modify(&self, f: impl FnOnce(&mut FileModel) -> Result<()>) -> Result<()> {
-        self.file
-            .edit(f, |model| {
-                serde_json::to_string(model)
-                    .map_err(|err| anyhow::anyhow!("Failed to serialize environment file: {}", err))
-            })
-            .await?;
+    //     let mut variables = HashMap::new();
+    //     for (name, value) in file_handle.model().await.values {
+    //         variables.insert(
+    //             name,
+    //             VariableItem {
+    //                 id: VariableId::new(),
+    //                 kind: value.kind,
+    //                 global_value: value.value,
+    //                 desc: value.desc,
+    //                 params: VariableItemParams {
+    //                     disabled: true, // TODO: restore this value from cache
+    //                 },
+    //             },
+    //         );
+    //     }
 
-        Ok(())
-    }
+    //     Ok(Self {
+    //         fs,
+    //         abs_path,
+    //         variables,
+    //         store,
+    //         file: file_handle,
+    //     })
+    // }
 
-    pub async fn clear(&mut self) -> Result<()> {
-        self.variables.clear();
-        Ok(())
-    }
+    // pub async fn id(&self) -> EnvironmentId {
+    //     self.file.model().await.id.clone()
+    // }
+
+    // pub fn variables(&self) -> &VariableMap {
+    //     &self.variables
+    // }
+
+    // pub async fn modify(&self, f: impl FnOnce(&mut FileModel) -> Result<()>) -> Result<()> {
+    //     self.file
+    //         .edit(f, |model| {
+    //             serde_json::to_string(model)
+    //                 .map_err(|err| anyhow::anyhow!("Failed to serialize environment file: {}", err))
+    //         })
+    //         .await?;
+
+    //     Ok(())
+    // }
+
+    // pub async fn clear(&mut self) -> Result<()> {
+    //     self.variables.clear();
+    //     Ok(())
+    // }
 }

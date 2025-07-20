@@ -3784,10 +3784,13 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "derive_more 2.0.1",
+ "indexmap 2.10.0",
+ "joinerror",
  "moss_applib",
  "moss_common",
  "moss_file",
  "moss_fs",
+ "moss_hcl",
  "moss_storage",
  "nanoid",
  "serde",

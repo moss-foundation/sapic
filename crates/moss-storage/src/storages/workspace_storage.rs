@@ -10,12 +10,10 @@ use std::{any::TypeId, collections::HashMap, path::Path, sync::Arc};
 
 use crate::{
     WorkspaceStorage,
+    common::{VariableStore, variable_store::VariableStoreImpl},
     primitives::segkey::SegKeyBuf,
     storage::{SegBinTable, Storage, StoreTypeId, TransactionalWithContext},
-    workspace_storage::stores::{
-        WorkspaceItemStore, WorkspaceVariableStore, item_store::WorkspaceItemStoreImpl,
-        variable_store::WorkspaceVariableStoreImpl,
-    },
+    workspace_storage::stores::{WorkspaceItemStore, item_store::WorkspaceItemStoreImpl},
 };
 
 pub mod stores;
@@ -35,7 +33,7 @@ impl WorkspaceStorageImpl {
 
         let mut tables = HashMap::new();
         for (type_id, table) in [
-            (TypeId::of::<WorkspaceVariableStoreImpl>(), TABLE_VARIABLES),
+            (TypeId::of::<VariableStoreImpl>(), TABLE_VARIABLES),
             (TypeId::of::<WorkspaceItemStoreImpl>(), TABLE_ITEMS),
         ] {
             client = client.with_table(&table)?;
@@ -89,14 +87,14 @@ impl<Context> WorkspaceStorage<Context> for WorkspaceStorageImpl
 where
     Context: AnyAsyncContext,
 {
-    fn variable_store(&self) -> Arc<dyn WorkspaceVariableStore<Context>> {
+    fn variable_store(&self) -> Arc<dyn VariableStore<Context>> {
         let client = self.client.clone();
         let table = self
             .tables
-            .get(&TypeId::of::<WorkspaceVariableStoreImpl>())
+            .get(&TypeId::of::<VariableStoreImpl>())
             .unwrap()
             .clone();
-        Arc::new(WorkspaceVariableStoreImpl::new(client, table))
+        Arc::new(VariableStoreImpl::new(client, table))
     }
 
     fn item_store(&self) -> Arc<dyn WorkspaceItemStore<Context>> {
