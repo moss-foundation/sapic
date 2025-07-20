@@ -64,8 +64,8 @@ export const HeadBarCenterItems = ({
           {
             "min-w-80": breakpoint === "sm",
             "min-w-96": breakpoint === "md",
-            "min-w-[28rem]": breakpoint === "lg",
-            "min-w-[32rem]": breakpoint === "xl" || breakpoint === "2xl",
+            "min-w-[35rem]": breakpoint === "lg",
+            "min-w-[42rem]": breakpoint === "xl" || breakpoint === "2xl",
           },
           isXLarge ? "" : os === "macos" ? "relative" : ""
         )}
@@ -82,8 +82,8 @@ export const HeadBarCenterItems = ({
           className={cn("min-w-0 text-(--moss-headBar-icon-primary-text)", {
             "max-w-48": breakpoint === "sm",
             "max-w-60": breakpoint === "md",
-            "max-w-72": breakpoint === "lg",
-            "max-w-80": breakpoint === "xl" || breakpoint === "2xl",
+            "max-w-96": breakpoint === "lg",
+            "max-w-[28rem]": breakpoint === "xl" || breakpoint === "2xl",
           })}
         />
         <div className="flex-1" />
