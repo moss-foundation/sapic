@@ -4,4 +4,4 @@ export * from "./SettingsPage";
 export * from "./CollectionSettingsPage";
 export * from "./WelcomePage/WelcomePage";
 export * from "./WorkspaceSettingsPage";
-export { default as RequestPage } from "./RequestPage";
+export * from "./RequestPage";
