@@ -10,7 +10,7 @@ export interface RequestPathProps {
 }
 
 export const RequestPath: React.FC<RequestPathProps> = ({ className = "" }) => {
-  const { activePanelId } = useTabbedPaneStore();
+  const { activePanelId, api } = useTabbedPaneStore();
   const { collectionsTrees } = useCollectionsTrees();
   const [path, setPath] = useState<string[]>([]);
   const [activeTree, setActiveTree] = useState<TreeCollectionNode | null>(null);
@@ -59,10 +59,12 @@ export const RequestPath: React.FC<RequestPathProps> = ({ className = "" }) => {
   }, [collectionsTrees, activePanelId]);
 
   if (!activeTree || path.length === 0) {
+    // Get current panel name when no collection/request is active
+    const currentPanel = activePanelId ? api?.getPanel(activePanelId) : null;
+    const panelTitle = currentPanel?.title || "";
+
     return (
-      <span className={`truncate text-sm text-(--moss-headBar-icon-primary-text) ${className}`}>
-        {activeCollection?.name || "Collection"} / No active request
-      </span>
+      <span className={`truncate text-sm text-(--moss-headBar-icon-primary-text) ${className}`}>{panelTitle}</span>
     );
   }
 
