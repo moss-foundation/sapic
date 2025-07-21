@@ -3,7 +3,6 @@ pub mod shared;
 
 use moss_applib::mock::MockAppRuntime;
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
-use moss_common::api::OperationError;
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::{
     models::{

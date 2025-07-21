@@ -180,6 +180,7 @@ jobs:
           - moss_text
           - moss_collection
           - moss_app
+          - moss_applib
           - moss_db
           - moss_fs
           - moss_keyring
@@ -191,6 +192,8 @@ jobs:
           - moss_storage
           - moss_activity_indicator
           - moss_file
+          - moss_bindingutils
+          - moss_hcl
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
@@ -241,6 +244,7 @@ jobs:
           - moss_text
           - moss_collection
           - moss_app
+          - moss_applib
           - moss_db
           - moss_fs
           - moss_keyring
@@ -253,6 +257,8 @@ jobs:
           - moss_activity_indicator
           - moss_file
           - desktop
+          - moss_bindingutils
+          - moss_hcl
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
