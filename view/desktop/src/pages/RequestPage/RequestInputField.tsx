@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { cn } from "@/utils";
 import { Icon } from "@/lib/ui";
+import { ActionMenu } from "@/components";
 import InputTemplating from "@/components/InputTemplating";
 
 interface RequestInputFieldProps {
@@ -20,7 +21,6 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = ({
 }) => {
   const [method, setMethod] = useState(initialMethod);
   const [url, setUrl] = useState(initialUrl);
-  const [isMethodDropdownOpen, setIsMethodDropdownOpen] = useState(false);
 
   const handleSend = () => {
     onSend?.(method, url);
@@ -34,44 +34,34 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = ({
     <div className={cn("flex w-full items-center", className)}>
       {/* Left Side - HTTP Method Dropdown */}
       <div className="relative flex-shrink-0">
-        <button
-          onClick={() => setIsMethodDropdownOpen(!isMethodDropdownOpen)}
-          className={cn(
-            "flex items-center gap-1 rounded-sm px-3 py-2 text-sm font-medium transition-colors",
-            "background-(--moss-primary-background) text-orange-600",
-            "focus:ring-2 focus:ring-orange-500 focus:ring-offset-1 focus:outline-none",
-            "border border-gray-200"
-          )}
-        >
-          <span>{method}</span>
-          <Icon icon="ChevronDown" className="h-3 w-3" />
-        </button>
-
-        {isMethodDropdownOpen && (
-          <>
-            {/* Backdrop */}
-            <div className="fixed inset-0 z-10" onClick={() => setIsMethodDropdownOpen(false)} />
-
-            {/* Dropdown Menu */}
-            <div className="background-(--moss-primary-background) absolute top-full left-0 z-20 mt-1 min-w-[120px] rounded-sm border border-gray-200 shadow-lg">
-              {HTTP_METHODS.map((httpMethod) => (
-                <button
-                  key={httpMethod}
-                  onClick={() => {
-                    setMethod(httpMethod);
-                    setIsMethodDropdownOpen(false);
-                  }}
-                  className={cn(
-                    "w-full px-3 py-2 text-left text-sm transition-colors hover:bg-gray-50",
-                    method === httpMethod && "bg-orange-50 font-medium text-orange-600"
-                  )}
-                >
-                  {httpMethod}
-                </button>
-              ))}
-            </div>
-          </>
-        )}
+        <ActionMenu.Root>
+          <ActionMenu.Trigger asChild>
+            <button
+              className={cn(
+                "flex items-center gap-1 rounded-sm px-3 py-2 text-sm font-medium transition-colors",
+                "background-(--moss-primary-background) text-orange-600",
+                "focus:ring-2 focus:ring-orange-500 focus:ring-offset-1 focus:outline-none",
+                "border border-gray-200"
+              )}
+            >
+              <span>{method}</span>
+              <Icon icon="ChevronDown" className="h-3 w-3" />
+            </button>
+          </ActionMenu.Trigger>
+          <ActionMenu.Content>
+            {HTTP_METHODS.map((httpMethod) => (
+              <ActionMenu.Item
+                key={httpMethod}
+                onClick={() => setMethod(httpMethod)}
+                className={cn(
+                  method === httpMethod && "background-(--moss-secondary-background-hover) font-medium text-orange-600"
+                )}
+              >
+                {httpMethod}
+              </ActionMenu.Item>
+            ))}
+          </ActionMenu.Content>
+        </ActionMenu.Root>
       </div>
 
       {/* Center - URL Input Field */}
