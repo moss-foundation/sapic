@@ -20,7 +20,7 @@ export const CollapsibleActionMenu = ({ isCompact }: CollapsibleActionMenuProps)
     return (
       <div className="flex items-center gap-0">
         <PanelToggleButtons className="mr-1" />
-        <ActionButton icon="Bell" iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5" />
+        <ActionButton icon="Bell" iconClassName="text-(--moss-headBar-icon-primary-text)" />
       </div>
     );
   }
@@ -31,12 +31,12 @@ export const CollapsibleActionMenu = ({ isCompact }: CollapsibleActionMenuProps)
       <ActionMenu.Trigger asChild>
         <ActionButton
           icon="MoreHorizontal"
-          iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
+          iconClassName="text-(--moss-headBar-icon-primary-text)"
           title="More actions"
         />
       </ActionMenu.Trigger>
       <ActionMenu.Content>
-        <ActionMenu.Item onClick={() => {}} icon="Bell" className="size-4.5">
+        <ActionMenu.Item onClick={() => {}} icon="Bell">
           Notifications
         </ActionMenu.Item>
         {sideBarPosition === SIDEBAR_POSITION.LEFT ? (
@@ -44,14 +44,12 @@ export const CollapsibleActionMenu = ({ isCompact }: CollapsibleActionMenuProps)
             <ActionMenu.Item
               onClick={() => sideBar.setVisible(!sideBar.visible)}
               icon={sideBar.visible ? "OpenPanelLeftFilled" : "OpenPanelLeft"}
-              className="size-4.5"
             >
               {sideBar.visible ? "Hide Left Sidebar" : "Show Left Sidebar"}
             </ActionMenu.Item>
             <ActionMenu.Item
               onClick={() => bottomPane.setVisible(!bottomPane.visible)}
               icon={bottomPane.visible ? "OpenPanelBottomFilled" : "OpenPanelBottom"}
-              className="size-4.5"
             >
               {bottomPane.visible ? "Hide Bottom Panel" : "Show Bottom Panel"}
             </ActionMenu.Item>
@@ -61,15 +59,10 @@ export const CollapsibleActionMenu = ({ isCompact }: CollapsibleActionMenuProps)
             <ActionMenu.Item
               onClick={() => bottomPane.setVisible(!bottomPane.visible)}
               icon={bottomPane.visible ? "OpenPanelBottomFilled" : "OpenPanelBottom"}
-              className="size-4.5"
             >
               {bottomPane.visible ? "Hide Bottom Panel" : "Show Bottom Panel"}
             </ActionMenu.Item>
-            <ActionMenu.Item
-              onClick={() => sideBar.setVisible(!sideBar.visible)}
-              icon={sideBar.visible ? "OpenPanelRightFilled" : "OpenPanelRight"}
-              className="size-4.5"
-            >
+            <ActionMenu.Item onClick={() => sideBar.setVisible(!sideBar.visible)}>
               {sideBar.visible ? "Hide Right Sidebar" : "Show Right Sidebar"}
             </ActionMenu.Item>
           </>
