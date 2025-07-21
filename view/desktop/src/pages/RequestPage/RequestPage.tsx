@@ -13,15 +13,14 @@ import { RequestInputField } from "./RequestInputField";
 
 const DebugContext = React.createContext<boolean>(false);
 
-interface RequestPageProps
-  extends IDockviewPanelProps<{
+const RequestPage: React.FC<
+  IDockviewPanelProps<{
     node?: TreeCollectionNode;
     treeId: string;
     iconType: EntryKind;
     someRandomString: string;
-  }> {}
-
-const RequestPage: React.FC<RequestPageProps> = (props) => {
+  }>
+> = (props) => {
   const { displayMode } = useRequestModeStore();
 
   const isDebug = React.useContext(DebugContext);
