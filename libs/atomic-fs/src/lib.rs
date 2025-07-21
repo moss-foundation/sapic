@@ -28,9 +28,6 @@ impl Default for CreateOptions {
 /// For every filesystem operation that succeeds, we push a reverse action
 /// Once an operation fails, we go back through the sequence of actions
 /// Which will reverse all the changes so far
-
-/// Also, it's not easy to find which folders are created by `create_dir_all`,
-/// So I will not implement it at first
 pub enum Undo {
     RemoveDir(PathBuf),
     RemoveFile(PathBuf),
@@ -39,6 +36,7 @@ pub enum Undo {
 
 pub enum Action {
     CreateDir(PathBuf),
+    CreateDirAll(PathBuf),
     RemoveDir(PathBuf),
     CreateFileWith {
         path: PathBuf,
@@ -119,6 +117,7 @@ pub async fn apply(rb: Rollback) -> Result<()> {
     for action in &rb.actions {
         let action_result = match action {
             Action::CreateDir(path) => create_dir_action(path).await,
+            Action::CreateDirAll(path) => create_dir_all_action(path).await,
             Action::RemoveDir(path) => remove_dir_action(path, &rb.temp).await,
             Action::CreateFileWith {
                 path,
@@ -173,6 +172,27 @@ async fn create_dir_action(path: impl AsRef<Path>) -> Result<Vec<Undo>> {
         ));
     } else {
         Ok(vec![Undo::RemoveDir(path.to_path_buf())])
+    }
+}
+
+async fn create_dir_all_action(path: impl AsRef<Path>) -> Result<Vec<Undo>> {
+    let path = path.as_ref();
+    let mut result = Vec::new();
+    let missing_paths = path
+        .ancestors()
+        .skip_while(|p| p.exists())
+        .collect::<Vec<_>>();
+
+    if let Err(e) = tokio::fs::create_dir_all(path).await {
+        return Err(anyhow!(
+            "failed to create directory up to {}: {e}",
+            path.display()
+        ));
+    } else {
+        Ok(missing_paths
+            .into_iter()
+            .map(|p| Undo::RemoveFile(p.to_path_buf()))
+            .collect())
     }
 }
 
