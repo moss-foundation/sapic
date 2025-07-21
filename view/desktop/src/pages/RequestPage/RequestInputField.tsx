@@ -31,7 +31,7 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = ({
   };
 
   return (
-    <div className={cn("flex w-full items-center gap-2", className)}>
+    <div className={cn("flex w-full items-center", className)}>
       {/* Left Side - HTTP Method Dropdown */}
       <div className="relative flex-shrink-0">
         <button
