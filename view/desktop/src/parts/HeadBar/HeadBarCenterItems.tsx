@@ -74,7 +74,7 @@ export const HeadBarCenterItems = ({
         <ActionButton
           icon="Refresh"
           iconClassName="text-(--moss-headBar-icon-primary-text)"
-          customHoverBackground="hover:!background-[var(--moss-headBar-primary-background-hover)]"
+          customHoverBackground="hover:!background-[var(--moss-icon-primary-background-hover)]"
           className="mr-1 ml-[-2px]"
           title="Reload"
         />
@@ -92,7 +92,7 @@ export const HeadBarCenterItems = ({
             <ActionButton
               icon="MoreHorizontal"
               iconClassName="text-(--moss-headBar-icon-primary-text)"
-              customHoverBackground="hover:!background-[var(--moss-headBar-primary-background-hover)]"
+              customHoverBackground="hover:!background-[var(--moss-icon-primary-background-hover)]"
               className="-mr-1"
               title="Collection Actions"
             />
