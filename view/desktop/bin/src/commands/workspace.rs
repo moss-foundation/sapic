@@ -1,6 +1,7 @@
 use moss_api::{TauriError, TauriResult};
+use moss_applib::TauriAppRuntime;
 use moss_workspace::models::{events::*, operations::*};
-use tauri::{Window, ipc::Channel as TauriChannel};
+use tauri::{State, Window, ipc::Channel as TauriChannel};
 
 use crate::commands::primitives::*;
 
@@ -110,9 +111,9 @@ pub async fn delete_collection<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app), fields(window = window.label()))]
-pub async fn update_collection<R: tauri::Runtime>(
+pub async fn update_collection<'a, R: tauri::Runtime>(
     ctx: State<'_, moss_applib::context::AsyncContext>,
-    app: State<'_, App<TauriAppRuntime<R>>>,
+    app: App<'a, R>,
     window: Window<R>,
     input: UpdateCollectionInput,
     options: Options,
@@ -128,9 +129,9 @@ pub async fn update_collection<R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app), fields(window = window.label()))]
-pub async fn batch_update_collection<R: tauri::Runtime>(
+pub async fn batch_update_collection<'a, R: tauri::Runtime>(
     ctx: State<'_, moss_applib::context::AsyncContext>,
-    app: State<'_, App<TauriAppRuntime<R>>>,
+    app: App<'a, R>,
     window: Window<R>,
     input: BatchUpdateCollectionInput,
     options: Options,
