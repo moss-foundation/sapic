@@ -31,16 +31,16 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = ({
   };
 
   return (
-    <div className={cn("relative flex w-full items-center rounded-sm border border-gray-200 bg-white", className)}>
-      {/* HTTP Method Dropdown - positioned inside the input field on the left */}
+    <div className={cn("flex w-full items-center gap-2", className)}>
+      {/* Left Side - HTTP Method Dropdown */}
       <div className="relative flex-shrink-0">
         <button
           onClick={() => setIsMethodDropdownOpen(!isMethodDropdownOpen)}
           className={cn(
-            "flex items-center gap-1 rounded-l-sm px-3 py-2 text-sm font-medium transition-colors",
+            "flex items-center gap-1 rounded-sm px-3 py-2 text-sm font-medium transition-colors",
             "bg-gray-100 text-orange-600 hover:bg-gray-200",
             "focus:ring-2 focus:ring-orange-500 focus:ring-offset-1 focus:outline-none",
-            "border-r border-gray-200"
+            "border border-gray-200"
           )}
         >
           <span>{method}</span>
@@ -74,25 +74,25 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = ({
         )}
       </div>
 
-      {/* URL Input Field - takes up the middle space */}
+      {/* Center - URL Input Field */}
       <div className="flex-1">
         <InputTemplating
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           onTemplateChange={handleTemplateChange}
-          className="rounded-none border-0 bg-transparent shadow-none"
+          className="w-full rounded-none"
           size="md"
           placeholder="Enter URL..."
         />
       </div>
 
-      {/* Send Button - positioned inside the input field on the right */}
+      {/* Right Side - Send Button */}
       <button
         onClick={handleSend}
         className={cn(
-          "flex-shrink-0 rounded-r-sm bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700",
+          "flex-shrink-0 rounded-sm bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700",
           "transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:outline-none",
-          "flex items-center gap-2 border-l border-gray-200"
+          "flex items-center gap-2"
         )}
       >
         <Icon icon="Send" className="h-4 w-4" />
