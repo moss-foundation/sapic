@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use moss_fs::FileSystem;
 use std::sync::Arc;
 
