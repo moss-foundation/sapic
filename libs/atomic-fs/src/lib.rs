@@ -52,109 +52,100 @@ pub enum Action {
         options: RenameOptions,
     },
 }
-pub struct FileSystemTransaction {
-    temp_folder: PathBuf,
+
+pub struct Rollback {
+    temp: PathBuf,
     actions: Vec<Action>,
 }
 
-impl Drop for FileSystemTransaction {
+impl Drop for Rollback {
     fn drop(&mut self) {
-        // Clean up the temp_folder for the transaction
-        let _ = std::fs::remove_dir_all(&self.temp_folder);
+        let _ = std::fs::remove_dir_all(&self.temp);
     }
 }
 
-// TODO: Allow only one transaction at a time?
-
-pub struct AtomicFileSystem {}
-
-impl AtomicFileSystem {
-    pub fn new() -> Self {
-        Self {}
-    }
-
-    pub fn create_dir_txn(&self, txn: &mut FileSystemTransaction, path: &Path) {
-        txn.actions.push(Action::CreateDir(path.to_path_buf()));
-    }
-
-    pub fn remove_dir_txn(&self, txn: &mut FileSystemTransaction, path: &Path) {
-        txn.actions.push(Action::RemoveDir(path.to_path_buf()));
-    }
-
-    pub fn create_file_with_txn(
-        &mut self,
-        txn: &mut FileSystemTransaction,
-        path: &Path,
-        content: &[u8],
-        options: CreateOptions,
-    ) {
-        txn.actions.push(Action::CreateFileWith {
-            path: path.to_path_buf(),
-            content: content.to_vec(),
-            options,
-        })
-    }
-
-    pub fn remove_file_txn(&self, txn: &mut FileSystemTransaction, path: &Path) {
-        txn.actions.push(Action::RemoveFile(path.to_path_buf()));
-    }
-
-    pub fn rename_txn(
-        &self,
-        txn: &mut FileSystemTransaction,
-        from: &Path,
-        to: &Path,
-        options: RenameOptions,
-    ) {
-        txn.actions.push(Action::Rename {
-            from: from.to_path_buf(),
-            to: to.to_path_buf(),
-            options,
-        });
-    }
-}
-
-impl AtomicFileSystem {
-    pub fn begin_transaction(&self, temp_folder: &Path) -> FileSystemTransaction {
-        FileSystemTransaction {
-            temp_folder: temp_folder.to_path_buf(),
+impl Rollback {
+    pub fn new(temp: impl AsRef<Path>) -> Self {
+        Self {
+            temp: temp.as_ref().to_path_buf(),
             actions: Vec::new(),
         }
     }
-    pub async fn finish_transaction(&self, txn: FileSystemTransaction) -> Result<()> {
-        let mut undo_stack = Vec::new();
-        for action in &txn.actions {
-            let action_result = match action {
-                Action::CreateDir(path) => create_dir_action(path).await,
-
-                Action::RemoveDir(path) => remove_dir_action(path, &txn.temp_folder).await,
-                Action::CreateFileWith {
-                    path,
-                    content,
-                    options,
-                } => create_file_with_action(path, content, *options, &txn.temp_folder).await,
-                Action::RemoveFile(path) => remove_file_action(path, &txn.temp_folder).await,
-                Action::Rename { from, to, options } => {
-                    rename_action(from, to, *options, &txn.temp_folder).await
-                }
-            };
-            // Once an action failed, we roll back all the changes so far
-            match action_result {
-                Ok(undos) => {
-                    undo_stack.extend(undos);
-                }
-                Err(e) => {
-                    rollback(&undo_stack).await;
-                    return Err(e);
-                }
-            }
-        }
-        Ok(())
-    }
 }
 
-fn temp_path(temp_dir: &Path) -> PathBuf {
-    temp_dir.join(nanoid!(10))
+pub fn create_dir(rb: &mut Rollback, path: impl AsRef<Path>) {
+    rb.actions
+        .push(Action::CreateDir(path.as_ref().to_path_buf()));
+}
+
+pub fn remove_dir(rb: &mut Rollback, path: impl AsRef<Path>) {
+    rb.actions
+        .push(Action::RemoveDir(path.as_ref().to_path_buf()));
+}
+
+pub fn create_file_with(
+    rb: &mut Rollback,
+    path: impl AsRef<Path>,
+    content: &[u8],
+    options: CreateOptions,
+) {
+    rb.actions.push(Action::CreateFileWith {
+        path: path.as_ref().to_path_buf(),
+        content: content.to_vec(),
+        options,
+    })
+}
+
+pub fn remove_file(rb: &mut Rollback, path: impl AsRef<Path>) {
+    rb.actions
+        .push(Action::RemoveFile(path.as_ref().to_path_buf()));
+}
+
+pub fn rename(
+    rb: &mut Rollback,
+    from: impl AsRef<Path>,
+    to: impl AsRef<Path>,
+    options: RenameOptions,
+) {
+    rb.actions.push(Action::Rename {
+        from: from.as_ref().to_path_buf(),
+        to: to.as_ref().to_path_buf(),
+        options,
+    })
+}
+
+pub async fn apply(rb: Rollback) -> Result<()> {
+    let mut undo_stack = Vec::new();
+    for action in &rb.actions {
+        let action_result = match action {
+            Action::CreateDir(path) => create_dir_action(path).await,
+            Action::RemoveDir(path) => remove_dir_action(path, &rb.temp).await,
+            Action::CreateFileWith {
+                path,
+                content,
+                options,
+            } => create_file_with_action(path, content, *options, &rb.temp).await,
+            Action::RemoveFile(path) => remove_file_action(path, &rb.temp).await,
+            Action::Rename { from, to, options } => {
+                rename_action(from, to, *options, &rb.temp).await
+            }
+        };
+        // Once an action failed, we roll back all the changes so far
+        match action_result {
+            Ok(undos) => {
+                undo_stack.extend(undos);
+            }
+            Err(e) => {
+                rollback(&undo_stack).await;
+                return Err(e);
+            }
+        }
+    }
+    Ok(())
+}
+
+fn temp_path(temp_dir: impl AsRef<Path>) -> PathBuf {
+    temp_dir.as_ref().join(nanoid!(10))
 }
 
 async fn rollback(undo_stack: &[Undo]) {
@@ -173,7 +164,8 @@ async fn rollback(undo_stack: &[Undo]) {
     }
 }
 
-async fn create_dir_action(path: &Path) -> Result<Vec<Undo>> {
+async fn create_dir_action(path: impl AsRef<Path>) -> Result<Vec<Undo>> {
+    let path = path.as_ref();
     if let Err(e) = tokio::fs::create_dir(path).await {
         return Err(anyhow!(
             "failed to create directory at {}: {e}",
@@ -188,17 +180,19 @@ async fn create_dir_action(path: &Path) -> Result<Vec<Undo>> {
 // Which only means that you can remove both empty and non-empty directories
 // It should be fine for our purpose,
 
-async fn remove_dir_action(path: &Path, temp_dir: &Path) -> Result<Vec<Undo>> {
+async fn remove_dir_action(path: impl AsRef<Path>, temp: impl AsRef<Path>) -> Result<Vec<Undo>> {
     // Try moving the directory to be removed to a new temporary directory
     // This should have the same failure conditions as remove_dir
 
     // The process of backing up files and directories to be deleted is actually the same
+    let path = path.as_ref();
+    let temp = temp.as_ref();
     if !path.is_dir() {
         return Err(anyhow!("not a directory: {}", path.display()));
     }
 
-    let temp_path = temp_path(temp_dir);
-    if let Err(e) = tokio::fs::rename(path, &temp_path).await {
+    let backup = temp_path(temp);
+    if let Err(e) = tokio::fs::rename(path, &backup).await {
         return Err(anyhow!(
             "failed to remove a directory at {}: {e}",
             path.display()
@@ -206,16 +200,19 @@ async fn remove_dir_action(path: &Path, temp_dir: &Path) -> Result<Vec<Undo>> {
     }
     Ok(vec![Undo::Restore {
         path: path.to_path_buf(),
-        original: temp_path,
+        original: backup,
     }])
 }
 
 async fn create_file_with_action(
-    path: &Path,
+    path: impl AsRef<Path>,
     content: &[u8],
     options: CreateOptions,
-    temp_dir: &Path,
+    temp: impl AsRef<Path>,
 ) -> Result<Vec<Undo>> {
+    let path = path.as_ref();
+    let temp = temp.as_ref();
+
     let file_exists = path.exists();
     if file_exists && options.create_new {
         return Err(anyhow!("File already exists at {}", path.display()));
@@ -225,18 +222,18 @@ async fn create_file_with_action(
         return Err(anyhow!("File does not exist at {}", path.display()));
     }
 
-    let temp_path = temp_path(temp_dir);
+    let backup = temp_path(temp);
     match (file_exists, options.overwrite) {
         (true, true) => {
             // Backup the existing file content and overwrite it
-            if let Err(e) = tokio::fs::copy(path, &temp_path).await {
+            if let Err(e) = tokio::fs::copy(path, &backup).await {
                 return Err(anyhow!(
                     "Failed to create a backup for {}: {e}",
                     path.display()
                 ));
             }
 
-            if let Err(e) = tokio::fs::write(&path, &content).await {
+            if let Err(e) = tokio::fs::write(path, &content).await {
                 return Err(anyhow!(
                     "failed to overwrite a file at {}: {e}",
                     path.display()
@@ -244,12 +241,12 @@ async fn create_file_with_action(
             }
             Ok(vec![Undo::Restore {
                 path: path.to_path_buf(),
-                original: temp_path.to_path_buf(),
+                original: backup.to_path_buf(),
             }])
         }
         (true, false) => {
             // Backup the existing file content and append to it
-            if let Err(e) = tokio::fs::copy(path, &temp_path).await {
+            if let Err(e) = tokio::fs::copy(path, &backup).await {
                 return Err(anyhow!(
                     "Failed to create a backup for {}: {e}",
                     path.display()
@@ -258,7 +255,7 @@ async fn create_file_with_action(
 
             let mut open_options = tokio::fs::OpenOptions::new();
             open_options.append(true);
-            let mut file = match open_options.open(&path).await {
+            let mut file = match open_options.open(path).await {
                 Ok(file) => file,
                 Err(e) => {
                     return Err(anyhow!(
@@ -281,7 +278,7 @@ async fn create_file_with_action(
             }
             Ok(vec![Undo::Restore {
                 path: path.to_path_buf(),
-                original: temp_path.to_path_buf(),
+                original: backup.to_path_buf(),
             }])
         }
         (false, _) => {
@@ -293,32 +290,37 @@ async fn create_file_with_action(
     }
 }
 
-async fn remove_file_action(path: &Path, temp_dir: &Path) -> Result<Vec<Undo>> {
+async fn remove_file_action(path: impl AsRef<Path>, temp: impl AsRef<Path>) -> Result<Vec<Undo>> {
+    let path = path.as_ref();
+    let temp = temp.as_ref();
     if !path.is_file() {
         return Err(anyhow!("not a file: {}", path.display()));
     }
 
-    let temp_path = temp_path(temp_dir);
-    if let Err(e) = tokio::fs::rename(path, &temp_path).await {
+    let backup = temp_path(temp);
+    if let Err(e) = tokio::fs::rename(path, &backup).await {
         return Err(anyhow!("failed to remove {}: {e}", path.display()));
     }
     Ok(vec![Undo::Restore {
         path: path.to_path_buf(),
-        original: temp_path.to_path_buf(),
+        original: backup.to_path_buf(),
     }])
 }
 
 async fn rename_action(
-    from: &Path,
-    to: &Path,
+    from: impl AsRef<Path>,
+    to: impl AsRef<Path>,
     options: RenameOptions,
-    temp_dir: &Path,
+    temp: impl AsRef<Path>,
 ) -> Result<Vec<Undo>> {
+    let from = from.as_ref();
+    let to = to.as_ref();
+    let temp = temp.as_ref();
     let mut undo_stack = Vec::new();
     match (options.overwrite, to.exists()) {
         (true, _) | (false, false) => {
             // Backup the source
-            let from_backup = temp_path(temp_dir);
+            let from_backup = temp_path(temp);
             if let Err(e) = tokio::fs::copy(from, &from_backup).await {
                 return Err(anyhow!(
                     "failed to backup the source {}: {e}",
@@ -332,7 +334,7 @@ async fn rename_action(
 
             // Back up the destination if necessary
             if to.exists() {
-                let to_backup = temp_path(temp_dir);
+                let to_backup = temp_path(temp);
                 if let Err(e) = tokio::fs::rename(to, &to_backup).await {
                     return Err(anyhow!(
                         "failed to backup the destination {}: {e}",
