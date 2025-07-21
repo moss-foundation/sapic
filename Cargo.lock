@@ -3784,6 +3784,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "derive_more 2.0.1",
+ "hcl-rs",
  "indexmap 2.10.0",
  "joinerror",
  "moss_applib",
@@ -3792,6 +3793,7 @@ dependencies = [
  "moss_fs",
  "moss_hcl",
  "moss_storage",
+ "moss_text",
  "nanoid",
  "serde",
  "serde_json",
@@ -3869,6 +3871,7 @@ name = "moss_hcl"
 version = "0.1.0"
 dependencies = [
  "hcl-rs",
+ "joinerror",
  "serde",
 ]
 
