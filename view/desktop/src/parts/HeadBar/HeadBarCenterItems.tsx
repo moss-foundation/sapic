@@ -60,7 +60,7 @@ export const HeadBarCenterItems = ({
       />
       <div
         className={cn(
-          "background-(--moss-headBar-primary-background) flex h-7 items-center rounded border border-[var(--moss-headBar-border-color)] px-2",
+          "background-(--moss-headBar-primary-background) flex h-7 items-center rounded border border-[var(--moss-headBar-border-color)]",
           {
             "min-w-80": breakpoint === "sm",
             "min-w-96": breakpoint === "md",
@@ -75,7 +75,7 @@ export const HeadBarCenterItems = ({
           icon="Refresh"
           iconClassName="text-(--moss-headBar-icon-primary-text)"
           customHoverBackground="hover:!background-[var(--moss-icon-primary-background-hover)]"
-          className="mr-1 ml-[-2px]"
+          className="mr-1"
           title="Reload"
         />
         <RequestPath
@@ -110,7 +110,7 @@ export const HeadBarCenterItems = ({
               leftIcon="VCS"
               leftIconClassName="text-(--moss-headBar-icon-primary-text)"
               rightIcon="ChevronDown"
-              className="-ml-0.5 h-6 hover:!h-5.5 hover:!rounded-[3px] hover:!p-[3px]"
+              className="mr-0.5 -ml-0.5 h-6 hover:!h-5.5 hover:!rounded-[3px] hover:!p-[3px]"
               title={selectedBranch || "main"}
               placeholder="No branch selected"
               showPlaceholder={!selectedBranch}

@@ -36,7 +36,7 @@ export const CollapsibleActionMenu = ({ isCompact }: CollapsibleActionMenuProps)
         />
       </ActionMenu.Trigger>
       <ActionMenu.Content>
-        <ActionMenu.Item onClick={() => {}} icon="Bell">
+        <ActionMenu.Item onClick={() => {}} icon="Bell" className="size-4.5">
           Notifications
         </ActionMenu.Item>
         {sideBarPosition === SIDEBAR_POSITION.LEFT ? (
@@ -44,12 +44,14 @@ export const CollapsibleActionMenu = ({ isCompact }: CollapsibleActionMenuProps)
             <ActionMenu.Item
               onClick={() => sideBar.setVisible(!sideBar.visible)}
               icon={sideBar.visible ? "OpenPanelLeftFilled" : "OpenPanelLeft"}
+              className="size-4.5"
             >
               {sideBar.visible ? "Hide Left Sidebar" : "Show Left Sidebar"}
             </ActionMenu.Item>
             <ActionMenu.Item
               onClick={() => bottomPane.setVisible(!bottomPane.visible)}
               icon={bottomPane.visible ? "OpenPanelBottomFilled" : "OpenPanelBottom"}
+              className="size-4.5"
             >
               {bottomPane.visible ? "Hide Bottom Panel" : "Show Bottom Panel"}
             </ActionMenu.Item>
@@ -59,12 +61,14 @@ export const CollapsibleActionMenu = ({ isCompact }: CollapsibleActionMenuProps)
             <ActionMenu.Item
               onClick={() => bottomPane.setVisible(!bottomPane.visible)}
               icon={bottomPane.visible ? "OpenPanelBottomFilled" : "OpenPanelBottom"}
+              className="size-4.5"
             >
               {bottomPane.visible ? "Hide Bottom Panel" : "Show Bottom Panel"}
             </ActionMenu.Item>
             <ActionMenu.Item
               onClick={() => sideBar.setVisible(!sideBar.visible)}
               icon={sideBar.visible ? "OpenPanelRightFilled" : "OpenPanelRight"}
+              className="size-4.5"
             >
               {sideBar.visible ? "Hide Right Sidebar" : "Show Right Sidebar"}
             </ActionMenu.Item>
