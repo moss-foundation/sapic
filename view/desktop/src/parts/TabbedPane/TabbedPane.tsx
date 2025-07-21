@@ -239,10 +239,6 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
       title: "CollectionSettings",
       component: CollectionSettingsPage,
     },
-    Request: {
-      title: "Request",
-      component: RequestPage,
-    },
   };
 
   const components = {
