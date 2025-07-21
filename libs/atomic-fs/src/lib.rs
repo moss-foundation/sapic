@@ -16,15 +16,6 @@ pub struct RenameOptions {
     pub ignore_if_exists: bool,
 }
 
-impl Default for CreateOptions {
-    fn default() -> Self {
-        Self {
-            overwrite: true,
-            create_new: false,
-        }
-    }
-}
-
 /// For every filesystem operation that succeeds, we push a reverse action
 /// Once an operation fails, we go back through the sequence of actions
 /// Which will reverse all the changes so far
@@ -34,31 +25,15 @@ pub enum Undo {
     Restore { path: PathBuf, original: PathBuf },
 }
 
-pub enum Action {
-    CreateDir(PathBuf),
-    CreateDirAll(PathBuf),
-    RemoveDir(PathBuf),
-    CreateFileWith {
-        path: PathBuf,
-        content: Vec<u8>,
-        options: CreateOptions,
-    },
-    RemoveFile(PathBuf),
-    Rename {
-        from: PathBuf,
-        to: PathBuf,
-        options: RenameOptions,
-    },
-}
-
 pub struct Rollback {
     temp: PathBuf,
-    actions: Vec<Action>,
+    undo_stack: Vec<Undo>,
 }
 
 impl Drop for Rollback {
     fn drop(&mut self) {
-        let _ = std::fs::remove_dir_all(&self.temp);
+        let temp = self.temp.clone();
+        tokio::spawn(async move { tokio::fs::remove_dir_all(temp).await });
     }
 }
 
@@ -66,78 +41,80 @@ impl Rollback {
     pub fn new(temp: impl AsRef<Path>) -> Self {
         Self {
             temp: temp.as_ref().to_path_buf(),
-            actions: Vec::new(),
+            undo_stack: Vec::new(),
         }
     }
 }
 
-pub fn create_dir(rb: &mut Rollback, path: impl AsRef<Path>) {
-    rb.actions
-        .push(Action::CreateDir(path.as_ref().to_path_buf()));
+pub async fn create_dir(rb: &mut Rollback, path: impl AsRef<Path>) -> Result<()> {
+    let undo_stack = create_dir_action(path).await?;
+    rb.undo_stack.extend(undo_stack);
+    Ok(())
 }
 
-pub fn remove_dir(rb: &mut Rollback, path: impl AsRef<Path>) {
-    rb.actions
-        .push(Action::RemoveDir(path.as_ref().to_path_buf()));
+pub async fn create_dir_all(rb: &mut Rollback, path: impl AsRef<Path>) -> Result<()> {
+    let undo_stack = create_dir_all_action(path).await?;
+    rb.undo_stack.extend(undo_stack);
+    Ok(())
 }
 
-pub fn create_file_with(
+pub async fn remove_dir(rb: &mut Rollback, path: impl AsRef<Path>) -> Result<()> {
+    let undo_stack = remove_dir_action(path, &rb.temp).await?;
+    rb.undo_stack.extend(undo_stack);
+    Ok(())
+}
+
+pub async fn create_file(
     rb: &mut Rollback,
     path: impl AsRef<Path>,
-    content: &[u8],
     options: CreateOptions,
-) {
-    rb.actions.push(Action::CreateFileWith {
-        path: path.as_ref().to_path_buf(),
-        content: content.to_vec(),
-        options,
-    })
+) -> Result<()> {
+    let undo_stack = create_file_action(path, options, &rb.temp).await?;
+    rb.undo_stack.extend(undo_stack);
+    Ok(())
 }
 
-pub fn remove_file(rb: &mut Rollback, path: impl AsRef<Path>) {
-    rb.actions
-        .push(Action::RemoveFile(path.as_ref().to_path_buf()));
+pub async fn create_file_with(
+    rb: &mut Rollback,
+    path: impl AsRef<Path>,
+    options: CreateOptions,
+    content: &[u8],
+) -> Result<()> {
+    let undo_stack = create_file_with_action(path, options, content, &rb.temp).await?;
+    rb.undo_stack.extend(undo_stack);
+    Ok(())
 }
 
-pub fn rename(
+pub async fn remove_file(rb: &mut Rollback, path: impl AsRef<Path>) -> Result<()> {
+    let undo_stack = remove_file_action(path, &rb.temp).await?;
+    rb.undo_stack.extend(undo_stack);
+    Ok(())
+}
+
+/// To keep the semantics consistent with std::fs::rename,
+/// We are also using `rename` for storing backups.
+/// This means that it will fail if the temporary folder
+/// Is on a different mount point than the source/destination
+pub async fn rename(
     rb: &mut Rollback,
     from: impl AsRef<Path>,
     to: impl AsRef<Path>,
     options: RenameOptions,
-) {
-    rb.actions.push(Action::Rename {
-        from: from.as_ref().to_path_buf(),
-        to: to.as_ref().to_path_buf(),
-        options,
-    })
+) -> Result<()> {
+    let undo_stack = rename_action(from, to, options, &rb.temp).await?;
+    rb.undo_stack.extend(undo_stack);
+    Ok(())
 }
 
-pub async fn apply(rb: Rollback) -> Result<()> {
-    let mut undo_stack = Vec::new();
-    for action in &rb.actions {
-        let action_result = match action {
-            Action::CreateDir(path) => create_dir_action(path).await,
-            Action::CreateDirAll(path) => create_dir_all_action(path).await,
-            Action::RemoveDir(path) => remove_dir_action(path, &rb.temp).await,
-            Action::CreateFileWith {
-                path,
-                content,
-                options,
-            } => create_file_with_action(path, content, *options, &rb.temp).await,
-            Action::RemoveFile(path) => remove_file_action(path, &rb.temp).await,
-            Action::Rename { from, to, options } => {
-                rename_action(from, to, *options, &rb.temp).await
-            }
+pub async fn rollback(rb: &mut Rollback) -> Result<()> {
+    while let Some(undo) = rb.undo_stack.pop() {
+        let result = match undo {
+            Undo::RemoveDir(path) => tokio::fs::remove_dir(&path).await,
+            Undo::RemoveFile(path) => tokio::fs::remove_file(&path).await,
+            Undo::Restore { path, original } => tokio::fs::rename(&original, &path).await,
         };
-        // Once an action failed, we roll back all the changes so far
-        match action_result {
-            Ok(undos) => {
-                undo_stack.extend(undos);
-            }
-            Err(e) => {
-                rollback(&undo_stack).await;
-                return Err(e);
-            }
+        if let Err(err) = result {
+            return Err(anyhow!("failed to rollback: {}", err));
         }
     }
     Ok(())
@@ -145,22 +122,6 @@ pub async fn apply(rb: Rollback) -> Result<()> {
 
 fn temp_path(temp_dir: impl AsRef<Path>) -> PathBuf {
     temp_dir.as_ref().join(nanoid!(10))
-}
-
-async fn rollback(undo_stack: &[Undo]) {
-    while let Some(action) = undo_stack.iter().rev().next() {
-        match action {
-            Undo::RemoveDir(path) => {
-                let _ = tokio::fs::remove_dir(&path).await;
-            }
-            Undo::RemoveFile(path) => {
-                let _ = tokio::fs::remove_file(&path).await;
-            }
-            Undo::Restore { path, original } => {
-                let _ = tokio::fs::rename(&original, &path).await;
-            }
-        }
-    }
 }
 
 async fn create_dir_action(path: impl AsRef<Path>) -> Result<Vec<Undo>> {
@@ -177,7 +138,6 @@ async fn create_dir_action(path: impl AsRef<Path>) -> Result<Vec<Undo>> {
 
 async fn create_dir_all_action(path: impl AsRef<Path>) -> Result<Vec<Undo>> {
     let path = path.as_ref();
-    let mut result = Vec::new();
     let missing_paths = path
         .ancestors()
         .skip_while(|p| p.exists())
@@ -191,14 +151,10 @@ async fn create_dir_all_action(path: impl AsRef<Path>) -> Result<Vec<Undo>> {
     } else {
         Ok(missing_paths
             .into_iter()
-            .map(|p| Undo::RemoveFile(p.to_path_buf()))
+            .map(|p| Undo::RemoveDir(p.to_path_buf()))
             .collect())
     }
 }
-
-// FIXME: It's easier to support recursive directory deletion only here
-// Which only means that you can remove both empty and non-empty directories
-// It should be fine for our purpose,
 
 async fn remove_dir_action(path: impl AsRef<Path>, temp: impl AsRef<Path>) -> Result<Vec<Undo>> {
     // Try moving the directory to be removed to a new temporary directory
@@ -223,10 +179,8 @@ async fn remove_dir_action(path: impl AsRef<Path>, temp: impl AsRef<Path>) -> Re
         original: backup,
     }])
 }
-
-async fn create_file_with_action(
+async fn create_file_action(
     path: impl AsRef<Path>,
-    content: &[u8],
     options: CreateOptions,
     temp: impl AsRef<Path>,
 ) -> Result<Vec<Undo>> {
@@ -235,11 +189,63 @@ async fn create_file_with_action(
 
     let file_exists = path.exists();
     if file_exists && options.create_new {
-        return Err(anyhow!("File already exists at {}", path.display()));
+        return Err(anyhow!("file already exists at {}", path.display()));
     }
 
-    if !file_exists && !options.create_new {
-        return Err(anyhow!("File does not exist at {}", path.display()));
+    let backup = temp_path(temp);
+    match (file_exists, options.overwrite) {
+        (true, true) => {
+            // Backup and truncate existing file
+            if let Err(e) = tokio::fs::copy(path, &backup).await {
+                return Err(anyhow!(
+                    "failed to create a backup for {}: {e}",
+                    path.display()
+                ));
+            }
+            if let Err(e) = tokio::fs::File::options()
+                .write(true)
+                .truncate(true)
+                .open(&path)
+                .await
+            {
+                return Err(anyhow!(
+                    "failed to truncate file at {}: {e}",
+                    path.display()
+                ));
+            }
+            Ok(vec![Undo::Restore {
+                path: path.to_path_buf(),
+                original: backup,
+            }])
+        }
+        (true, false) => {
+            // Skip since the file already exists
+            Ok(vec![])
+        }
+        (false, _) => {
+            if let Err(e) = tokio::fs::File::create_new(path).await {
+                return Err(anyhow!(
+                    "failed to create a file at {}: {e}",
+                    path.display()
+                ));
+            }
+            Ok(vec![Undo::RemoveFile(path.to_path_buf())])
+        }
+    }
+}
+
+async fn create_file_with_action(
+    path: impl AsRef<Path>,
+    options: CreateOptions,
+    content: &[u8],
+    temp: impl AsRef<Path>,
+) -> Result<Vec<Undo>> {
+    let path = path.as_ref();
+    let temp = temp.as_ref();
+
+    let file_exists = path.exists();
+    if file_exists && options.create_new {
+        return Err(anyhow!("File already exists at {}", path.display()));
     }
 
     let backup = temp_path(temp);
@@ -303,7 +309,10 @@ async fn create_file_with_action(
         }
         (false, _) => {
             if let Err(e) = tokio::fs::write(&path, &content).await {
-                return Err(anyhow!("failed to overwrite {}: {e}", path.display()));
+                return Err(anyhow!(
+                    "failed to create a file with content at {}: {e}",
+                    path.display()
+                ));
             }
             Ok(vec![Undo::RemoveFile(path.to_path_buf())])
         }
@@ -387,5 +396,48 @@ async fn rename_action(
                 Err(anyhow!("path {} already exists", to.display()))
             }
         }
+    }
+}
+
+#[cfg(any(test, feature = "integration-tests"))]
+mod tests {
+    use super::*;
+    use std::fs::remove_dir_all;
+    fn setup_rollback() -> (Rollback, PathBuf) {
+        let test_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("tests")
+            .join("data")
+            .join(nanoid!(10));
+        std::fs::create_dir_all(&test_path).unwrap();
+        (Rollback::new(test_path.join("temp")), test_path)
+    }
+    /// -------------------------------------------
+    ///               Basic Operations
+    /// -------------------------------------------
+    #[tokio::test]
+    pub async fn test_create_dir_success() {
+        let (mut rollback, test_path) = setup_rollback();
+
+        create_dir(&mut rollback, test_path.join("1"))
+            .await
+            .unwrap();
+
+        assert!(test_path.join("1").exists());
+        assert!(test_path.join("1").is_dir());
+        remove_dir_all(&test_path).unwrap();
+    }
+    #[tokio::test]
+    pub async fn test_create_dir_failure() {
+        let (mut rollback, test_path) = setup_rollback();
+
+        // Missing parent folder
+
+        assert!(
+            create_dir(&mut rollback, test_path.join("missing").join("1"))
+                .await
+                .is_err()
+        );
+
+        remove_dir_all(&test_path).unwrap();
     }
 }
