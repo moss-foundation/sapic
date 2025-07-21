@@ -38,10 +38,10 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = ({
           <ActionMenu.Trigger asChild>
             <button
               className={cn(
-                "flex items-center gap-1 rounded-sm px-3 py-2 text-sm font-medium transition-colors",
+                "flex items-center gap-1 rounded-md rounded-r-none px-3 py-2 text-sm font-medium transition-colors",
                 "background-(--moss-primary-background) text-orange-600",
                 "focus:ring-2 focus:ring-orange-500 focus:ring-offset-1 focus:outline-none",
-                "border border-gray-200",
+                "border border-r-0 border-gray-200",
                 "w-24"
               )}
             >
