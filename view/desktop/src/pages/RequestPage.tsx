@@ -69,33 +69,48 @@ const RequestPage: React.FC<RequestPageProps> = (props) => {
       <PageContent className={cn("relative", isDebug && "border-2 border-dashed border-orange-500")}>
         <Breadcrumbs panelId={props.api.id} />
 
-        <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col text-[42px] opacity-50">
+        <div className="flex h-full flex-col p-4">
           {props.params?.node ? (
-            <div>
-              <span className="text-[18px]">Node name: "{props.params.node.name}"</span>
-              <div className="pointer-events-auto max-h-[70vh] overflow-y-auto text-[12px]">
-                <pre>{JSON.stringify(props.params.node, null, 2)}</pre>
+            <div className="flex-1">
+              <div className="mb-4">
+                <h2 className="text-lg font-semibold text-(--moss-primary-text)">{props.params.node.name}</h2>
+                <p className="text-sm text-(--moss-secondary-text)">
+                  {props.params.node.class} • {props.params.node.kind}
+                </p>
+              </div>
+
+              <div className="rounded border border-(--moss-border-color) bg-(--moss-secondary-background) p-4">
+                <h3 className="mb-2 text-sm font-medium text-(--moss-primary-text)">Node Details</h3>
+                <div className="max-h-[60vh] overflow-y-auto">
+                  <pre className="text-xs whitespace-pre-wrap text-(--moss-secondary-text)">
+                    {JSON.stringify(props.params.node, null, 2)}
+                  </pre>
+                </div>
               </div>
             </div>
           ) : (
-            <>
-              <span>{props.api.title}</span>
-              <span>{Math.random().toFixed(2)}</span>
-              {props?.params.someRandomString && (
-                <span className="text-xs">some random string from backend: {props.params.someRandomString}</span>
-              )}
-            </>
+            <div className="flex flex-1 items-center justify-center">
+              <div className="text-center">
+                <h2 className="mb-2 text-lg font-semibold text-(--moss-primary-text)">
+                  {props.api.title || "Request Page"}
+                </h2>
+                <p className="mb-4 text-sm text-(--moss-secondary-text)">No request selected</p>
+                {props?.params.someRandomString && (
+                  <p className="text-xs text-(--moss-secondary-text)">Backend ID: {props.params.someRandomString}</p>
+                )}
+              </div>
+            </div>
           )}
-        </span>
 
-        {isDebug && (
-          <Metadata
-            onClick={() => {
-              props.api.setRenderer(props.api.renderer === "always" ? "onlyWhenVisible" : "always");
-            }}
-            api={props.api}
-          />
-        )}
+          {isDebug && (
+            <Metadata
+              onClick={() => {
+                props.api.setRenderer(props.api.renderer === "always" ? "onlyWhenVisible" : "always");
+              }}
+              api={props.api}
+            />
+          )}
+        </div>
       </PageContent>
     </PageView>
   );
