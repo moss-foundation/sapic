@@ -38,7 +38,7 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = ({
           onClick={() => setIsMethodDropdownOpen(!isMethodDropdownOpen)}
           className={cn(
             "flex items-center gap-1 rounded-sm px-3 py-2 text-sm font-medium transition-colors",
-            "bg-gray-100 text-orange-600 hover:bg-gray-200",
+            "background-(--moss-primary-background) text-orange-600",
             "focus:ring-2 focus:ring-orange-500 focus:ring-offset-1 focus:outline-none",
             "border border-gray-200"
           )}
@@ -53,7 +53,7 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = ({
             <div className="fixed inset-0 z-10" onClick={() => setIsMethodDropdownOpen(false)} />
 
             {/* Dropdown Menu */}
-            <div className="absolute top-full left-0 z-20 mt-1 min-w-[120px] rounded-sm border border-gray-200 bg-white shadow-lg">
+            <div className="background-(--moss-primary-background) absolute top-full left-0 z-20 mt-1 min-w-[120px] rounded-sm border border-gray-200 shadow-lg">
               {HTTP_METHODS.map((httpMethod) => (
                 <button
                   key={httpMethod}
@@ -80,7 +80,7 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = ({
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           onTemplateChange={handleTemplateChange}
-          className="w-full rounded-none"
+          className="w-full rounded-none border-r-0 border-l-0"
           size="md"
           placeholder="Enter URL..."
         />
