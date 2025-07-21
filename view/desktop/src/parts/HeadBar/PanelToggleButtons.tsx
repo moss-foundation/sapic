@@ -22,7 +22,7 @@ export const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
     <div className={cn("flex shrink-0 -space-x-0.5", className)}>
       {sideBarPosition === SIDEBAR_POSITION.LEFT && (
         <ActionButton
-          iconClassName="size-4.5 text-(--moss-headBar-icon-primary-text)"
+          iconClassName="!size-4.5 !text-(--moss-headBar-icon-primary-text)"
           icon={sideBar.visible ? "OpenPanelLeftFilled" : "OpenPanelLeft"}
           onClick={toggleSidebar}
           title="Toggle Left Sidebar"
@@ -30,7 +30,7 @@ export const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
       )}
 
       <ActionButton
-        iconClassName="size-4.5 text-(--moss-headBar-icon-primary-text)"
+        iconClassName="!size-4.5 !text-(--moss-headBar-icon-primary-text)"
         icon={bottomPane.visible ? "OpenPanelBottomFilled" : "OpenPanelBottom"}
         onClick={toggleBottomPane}
         title="Toggle Bottom Panel"
@@ -38,7 +38,7 @@ export const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
 
       {sideBarPosition === SIDEBAR_POSITION.RIGHT && (
         <ActionButton
-          iconClassName="size-4.5 text-(--moss-headBar-icon-primary-text)"
+          iconClassName="!size-4.5 !text-(--moss-headBar-icon-primary-text)"
           icon={sideBar.visible ? "OpenPanelRightFilled" : "OpenPanelRight"}
           onClick={toggleSidebar}
           title="Toggle Right Sidebar"

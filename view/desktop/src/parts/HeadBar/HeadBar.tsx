@@ -16,7 +16,6 @@ import {
   HeadBarActionProps,
   useCollectionActions,
   useGitMenuActions,
-  useUserMenuActions,
   useWindowsMenuActions,
   useWorkspaceActions,
 } from "./HeadBarActions";
@@ -36,13 +35,12 @@ export const HeadBar = () => {
   const selectedWorkspace = workspace?.name || null;
 
   // TEST: Hardoce default user/branch for testing
-  const [selectedUser, setSelectedUser] = useState<string | null>(null);
+  const [, setSelectedUser] = useState<string | null>(null);
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
   const [collectionName, setCollectionName] = useState("Sapic Test Collection");
   const collectionButtonRef = useRef<HTMLButtonElement>(null);
   const [, setIsRenamingCollection] = useState(false);
 
-  // Modal hooks for workspace dialogs
   const {
     showModal: showNewWorkspaceModal,
     closeModal: closeNewWorkspaceModal,
@@ -54,14 +52,11 @@ export const HeadBar = () => {
     openModal: openOpenWorkspaceModal,
   } = useModal();
 
-  // Delete confirmation modal state
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [workspaceToDelete, setWorkspaceToDelete] = useState<{ id: string; name: string } | null>(null);
 
-  // Delete workspace hook
   const { mutate: deleteWorkspace, isPending: isDeleting } = useDeleteWorkspace();
 
-  // User menu actions
   const actionProps: HeadBarActionProps = {
     openPanel,
     showDebugPanels,
@@ -76,7 +71,6 @@ export const HeadBar = () => {
     setWorkspaceToDelete,
   };
 
-  const userActionProps: HeadBarActionProps = { ...actionProps };
   const gitActionProps: HeadBarActionProps = { ...actionProps };
   const workspaceActionProps: HeadBarActionProps = { ...actionProps };
   const collectionActionProps: HeadBarActionProps = {
@@ -86,14 +80,12 @@ export const HeadBar = () => {
     setIsRenamingCollection,
   };
 
-  const handleUserMenuAction = useUserMenuActions(userActionProps);
   const handleGitMenuAction = useGitMenuActions(gitActionProps);
   const handleWindowsMenuAction = useWindowsMenuActions();
   const handleWorkspaceMenuAction = useWorkspaceActions(workspaceActionProps);
   const collectionActions = useCollectionActions(collectionActionProps);
   const handleCollectionActionMenuAction = collectionActions.handleCollectionActionMenuAction;
 
-  // Action handlers
   const handleRenameCollection = (newName: string) => {
     if (newName.trim() !== "" && newName !== collectionName) {
       setCollectionName(newName);
@@ -102,7 +94,6 @@ export const HeadBar = () => {
     return false;
   };
 
-  // Delete workspace confirmation handler
   const handleDeleteWorkspace = () => {
     if (workspaceToDelete) {
       deleteWorkspace(
@@ -122,7 +113,6 @@ export const HeadBar = () => {
     }
   };
 
-  // Close delete confirmation modal
   const closeDeleteConfirmModal = () => {
     setShowDeleteConfirmModal(false);
     setWorkspaceToDelete(null);
@@ -176,7 +166,7 @@ export const HeadBar = () => {
         >
           {/* Main content container with proper layout */}
           <div
-            className={cn("grid w-full gap-1", {
+            className={cn("relative grid w-full gap-1", {
               "grid-cols-[max-content_1fr_max-content]": selectedWorkspace,
               "grid-cols-[max-content_1fr]": !selectedWorkspace,
             })}
@@ -192,37 +182,51 @@ export const HeadBar = () => {
               selectedWorkspace={selectedWorkspace}
             />
 
-            {/*HeadBar Center items*/}
+            {/*HeadBar Center items - absolutely positioned to be truly centered */}
             {selectedWorkspace && (
-              <div className="flex justify-center" data-tauri-drag-region>
-                <HeadBarCenterItems
-                  isMedium={isMedium}
-                  isXLarge={isXLarge}
-                  breakpoint={breakpoint}
-                  handleGitMenuAction={handleGitMenuAction}
-                  handleCollectionActionMenuAction={handleCollectionActionMenuAction}
-                  selectedBranch={selectedBranch}
-                  collectionName={collectionName}
-                  onRenameCollection={handleRenameCollection}
-                  collectionButtonRef={collectionButtonRef}
-                  os={os}
-                />
+              <div
+                className={cn("absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2", {
+                  "pointer-events-none": os === "macos",
+                })}
+                data-tauri-drag-region
+              >
+                <div className="pointer-events-auto">
+                  <HeadBarCenterItems
+                    isMedium={isMedium}
+                    isXLarge={isXLarge}
+                    breakpoint={breakpoint}
+                    handleGitMenuAction={handleGitMenuAction}
+                    handleCollectionActionMenuAction={handleCollectionActionMenuAction}
+                    selectedBranch={selectedBranch}
+                    collectionName={collectionName}
+                    onRenameCollection={handleRenameCollection}
+                    collectionButtonRef={collectionButtonRef}
+                    os={os}
+                    onNavigateBack={() => console.log("Navigate back")}
+                    onNavigateForward={() => console.log("Navigate forward")}
+                    canGoBack={true}
+                    canGoForward={true}
+                    onZoomIn={() => console.log("Zoom in")}
+                    onZoomOut={() => console.log("Zoom out")}
+                    canZoomIn={true}
+                    canZoomOut={true}
+                    currentZoom={100}
+                  />
+                </div>
               </div>
             )}
 
             {/*HeadBar Right-side items*/}
-            <div className="flex justify-end" data-tauri-drag-region>
+            <div className="ml-2 flex justify-end" data-tauri-drag-region>
               <HeadBarRightItems
                 isMedium={isMedium}
                 isLarge={isLarge}
                 breakpoint={breakpoint}
-                handleUserMenuAction={handleUserMenuAction}
                 showDebugPanels={showDebugPanels}
                 setShowDebugPanels={setShowDebugPanels}
                 openPanel={openPanel}
                 os={os}
                 selectedWorkspace={selectedWorkspace}
-                selectedUser={selectedUser}
               />
             </div>
           </div>
