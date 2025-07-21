@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::models::{
     primitives::{EnvironmentId, VariableId},
-    types::VariableName,
+    types::{VariableKind, VariableName},
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -17,6 +17,7 @@ pub struct Metadata {
 pub struct VariableDefinition {
     pub name: VariableName,
     pub value: Expression,
+    pub kind: Option<VariableKind>,
     pub disabled: bool,
     pub description: String,
 }

@@ -104,7 +104,7 @@ impl EnvironmentBuilder {
             ));
         }
 
-        let file: EnvironmentFile = {
+        let _file: EnvironmentFile = {
             let mut reader = self
                 .fs
                 .open_file(&abs_path)
