@@ -3,6 +3,7 @@ use moss_storage::common::VariableStore;
 use std::sync::Arc;
 
 pub struct StorageService<R: AppRuntime> {
+    #[allow(dead_code)]
     variable_store: Arc<dyn VariableStore<R::AsyncContext>>,
 }
 

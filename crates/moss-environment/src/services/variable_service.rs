@@ -23,11 +23,14 @@ pub struct VariableItem {
     pub params: VariableItemParams,
 }
 
+#[allow(dead_code)]
+#[derive(Debug, Clone)]
 struct ServiceState {
     variables: HashMap<VariableName, VariableItem>,
 }
 
 pub struct VariableService<R: AppRuntime> {
+    #[allow(dead_code)]
     storage_service: Arc<StorageService<R>>,
 }
 
