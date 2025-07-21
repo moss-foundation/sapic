@@ -1,5 +1,5 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { getClassAndProtocolFromEntyInput } from "@/utils/getClassAndProtocolFromEntyInput";
+import { getClassAndProtocolFromEntryInput } from "@/utils/getClassAndProtocolFromEntyInput";
 import { CreateEntryInput, CreateEntryOutput, EntryInfo } from "@repo/moss-collection";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { join, sep } from "@tauri-apps/api/path";
@@ -21,33 +21,52 @@ const createCollectionEntry = async ({ collectionId, input }: UseCreateCollectio
     throw new Error(String(result.error));
   }
 
-  const { entryClass, protocol } = getClassAndProtocolFromEntyInput(input);
+  return result.data;
+};
 
+export const useCreateCollectionEntry = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<CreateEntryOutput, Error, UseCreateCollectionEntryInputProps>({
+    mutationFn: createCollectionEntry,
+    onSuccess: async (data, variables) => {
+      const newEntry = await createNewEntry(data.id, variables.input);
+
+      queryClient.setQueryData(
+        [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, variables.collectionId],
+        (old: EntryInfo[]) => {
+          return [...old, newEntry];
+        }
+      );
+    },
+  });
+};
+
+const createNewEntry = async (id: string, entry: CreateEntryInput): Promise<EntryInfo> => {
   //FIXME: This is a temporary solution until we have a proper configuration model
-  if ("dir" in input) {
-    const rawpath = await join(input.dir.path, input.dir.name);
+  const { entryClass, protocol } = getClassAndProtocolFromEntryInput(entry);
+  if ("DIR" in entry) {
+    const rawpath = await join(entry.DIR.path, entry.DIR.name);
 
-    const newEntry: EntryInfo = {
-      id: result.data.id,
-      name: input.dir.name,
-      order: input.dir.order ?? 0, // TODO:order should always be set
+    return {
+      id,
+      name: entry.DIR.name,
+      order: entry.DIR.order,
       path: {
         raw: rawpath,
         segments: rawpath.split(sep()),
       },
       class: entryClass,
-      kind: "Dir" as const,
+      kind: "Dir",
       expanded: false,
     };
+  } else {
+    const rawpath = await join(entry.ITEM.path, entry.ITEM.name);
 
-    return newEntry;
-  } else if ("item" in input) {
-    const rawpath = await join(input.item.path, input.item.name);
-
-    const newEntry: EntryInfo = {
-      id: result.data.id,
-      name: input.item.name,
-      order: input.item.order ?? undefined,
+    return {
+      id,
+      name: entry.ITEM.name,
+      order: entry.ITEM.order,
       path: {
         raw: rawpath,
         segments: rawpath.split(sep()),
@@ -57,25 +76,5 @@ const createCollectionEntry = async ({ collectionId, input }: UseCreateCollectio
       protocol,
       expanded: false,
     };
-
-    return newEntry;
   }
-
-  return null;
-};
-
-export const useCreateCollectionEntry = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation<EntryInfo | null, Error, UseCreateCollectionEntryInputProps>({
-    mutationFn: createCollectionEntry,
-    onSuccess: (data, variables) => {
-      queryClient.setQueryData(
-        [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, variables.collectionId],
-        (old: EntryInfo[]) => {
-          return [...old, data];
-        }
-      );
-    },
-  });
 };

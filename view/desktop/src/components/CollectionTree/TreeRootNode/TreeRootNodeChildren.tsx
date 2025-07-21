@@ -6,12 +6,12 @@ import { DebugCollectionIconPlaceholder } from "../DebugCollectionIconPlaceholde
 import { NodeAddForm } from "../NodeAddForm";
 import { TreeContext } from "../Tree";
 import TreeNode from "../TreeNode/TreeNode";
-import { TreeCollectionNode, TreeCollectionRootNode } from "../types";
+import { TreeCollectionRootNode } from "../types";
+import { sortByOrder } from "../utils2";
 import { calculateRestrictedNames } from "./utils";
 
 interface TreeRootNodeChildrenProps {
   node: TreeCollectionRootNode;
-  onNodeUpdate: (node: TreeCollectionNode) => void;
   isAddingRootFileNode: boolean;
   isAddingRootFolderNode: boolean;
   handleAddFormRootSubmit: (name: string) => void;
@@ -20,7 +20,6 @@ interface TreeRootNodeChildrenProps {
 
 export const TreeRootNodeChildren = ({
   node,
-  onNodeUpdate,
   isAddingRootFileNode,
   isAddingRootFolderNode,
   handleAddFormRootSubmit,
@@ -30,8 +29,8 @@ export const TreeRootNodeChildren = ({
 
   const nodesToRender =
     displayMode === "REQUEST_FIRST"
-      ? node.requests.childNodes
-      : [node.endpoints, node.schemas, node.components, node.requests]; //TODO: this should check it's root nodes orders
+      ? sortByOrder(node.requests.childNodes)
+      : sortByOrder([node.endpoints, node.schemas, node.components, node.requests]);
 
   const shouldRenderAddRootForm = displayMode === "REQUEST_FIRST" && (isAddingRootFileNode || isAddingRootFolderNode);
   const restrictedNames = calculateRestrictedNames(node, isAddingRootFolderNode);
@@ -41,11 +40,12 @@ export const TreeRootNodeChildren = ({
       {nodesToRender.map((childNode, index) => {
         return (
           <TreeNode
-            onNodeUpdate={onNodeUpdate}
+            parentNode={displayMode === "REQUEST_FIRST" ? node.requests : childNode}
             key={childNode.id}
             node={childNode}
             depth={1}
             isLastChild={index === nodesToRender.length - 1}
+            isRootNode={displayMode === "DESIGN_FIRST"}
           />
         );
       })}

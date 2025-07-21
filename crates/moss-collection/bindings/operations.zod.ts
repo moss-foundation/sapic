@@ -69,10 +69,10 @@ export const batchUpdateEntryOutputKindSchema = z.union([
 
 export const createEntryInputSchema = z.union([
   z.object({
-    "item": createItemEntryInputSchema,
+    "ITEM": createItemEntryInputSchema,
   }),
   z.object({
-    "dir": createDirEntryInputSchema,
+    "DIR": createDirEntryInputSchema,
   }),
 ]);
 

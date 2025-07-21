@@ -25,7 +25,7 @@ pub struct CreateCollectionInput {
     pub order: isize,
     pub external_path: Option<PathBuf>,
     #[validate(regex(path = "*GIT_URL_REGEX"))]
-    pub repo: Option<String>,
+    pub repository: Option<String>,
     pub icon_path: Option<PathBuf>,
 }
 
@@ -90,6 +90,37 @@ fn validate_change_repository(repo: &ChangeString) -> Result<(), ValidationError
 pub struct UpdateCollectionOutput {
     #[ts(type = "string")]
     pub id: CollectionId,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchUpdateCollectionParams {
+    #[ts(type = "string")]
+    pub id: CollectionId,
+
+    pub order: Option<isize>,
+    pub expanded: Option<bool>,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchUpdateCollectionInput {
+    pub items: Vec<BatchUpdateCollectionParams>,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchUpdateCollectionOutput {
+    #[ts(as = "Vec<String>")]
+    pub ids: Vec<CollectionId>,
 }
 
 /// @category Operation

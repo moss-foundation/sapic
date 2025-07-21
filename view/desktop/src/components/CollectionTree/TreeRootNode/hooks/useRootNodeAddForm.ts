@@ -1,49 +1,12 @@
 import { useContext, useState } from "react";
 
 import { useCreateCollectionEntry } from "@/hooks";
-import { CreateEntryInput } from "@repo/moss-collection";
 
 import { TreeContext } from "../../Tree";
 import { TreeCollectionRootNode } from "../../types";
+import { createEntryKind } from "../../utils2";
 
-const createEntry = (name: string, isAddingFolder: boolean): CreateEntryInput => {
-  if (isAddingFolder) {
-    return {
-      dir: {
-        name,
-        path: "requests",
-        order: 0, // FIXME: Temporary hardcoded, to avoid error from the backend
-        configuration: {
-          request: {
-            http: {},
-          },
-        },
-      },
-    };
-  }
-
-  return {
-    item: {
-      name,
-      path: "requests",
-      order: 0, // FIXME: Temporary hardcoded, to avoid error from the backend
-      configuration: {
-        request: {
-          http: {
-            requestParts: {
-              method: "GET",
-            },
-          },
-        },
-      },
-    },
-  };
-};
-
-export const useRootNodeAddForm = (
-  node: TreeCollectionRootNode,
-  onRootNodeUpdate: (node: TreeCollectionRootNode) => void
-) => {
+export const useRootNodeAddForm = (node: TreeCollectionRootNode) => {
   const { id } = useContext(TreeContext);
   const { mutateAsync: createCollectionEntry } = useCreateCollectionEntry();
 
@@ -51,29 +14,19 @@ export const useRootNodeAddForm = (
   const [isAddingRootNodeFolder, setIsAddingRootNodeFolder] = useState(false);
 
   const handleRootAddFormSubmit = async (name: string) => {
-    const newEntry = createEntry(name, isAddingRootNodeFolder);
+    const newEntry = createEntryKind(
+      name,
+      "requests",
+      isAddingRootNodeFolder,
+      "Request",
+      node.requests.childNodes.length + 1
+    );
 
     try {
-      const result = await createCollectionEntry({
+      await createCollectionEntry({
         collectionId: id,
         input: newEntry,
       });
-
-      if (result) {
-        onRootNodeUpdate({
-          ...node,
-          requests: {
-            ...node.requests,
-            childNodes: [
-              ...node.requests.childNodes,
-              {
-                ...result,
-                childNodes: [],
-              },
-            ],
-          },
-        });
-      }
     } catch (error) {
       console.error(error);
     } finally {

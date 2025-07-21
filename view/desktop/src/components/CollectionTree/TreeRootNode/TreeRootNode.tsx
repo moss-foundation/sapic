@@ -1,14 +1,14 @@
 import { useContext, useRef } from "react";
 
-import { DropIndicator } from "@/components/DropIndicator";
 import { useStreamedCollections } from "@/hooks";
+import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
 import { cn } from "@/utils";
 
+import { DropIndicatorWithInstruction } from "../DropIndicatorWithInstruction";
 import { useDraggableRootNode } from "../hooks/useDraggableRootNode";
-import { useDropTargetRootNode } from "../hooks/useDropTargetRootNode";
 import { TreeContext } from "../Tree";
-import { TreeCollectionNode, TreeCollectionRootNode } from "../types";
-import { collapseAllNodes, expandAllNodes } from "../utils/TreeRootUtils";
+import { TreeCollectionRootNode } from "../types";
+import { getAllNestedEntries } from "../utils2";
 import { useRootNodeAddForm } from "./hooks/useRootNodeAddForm";
 import { useRootNodeRenamingForm } from "./hooks/useRootNodeRenamingForm";
 import { TreeRootNodeActions } from "./TreeRootNodeActions";
@@ -18,26 +18,55 @@ import { TreeRootNodeRenameForm } from "./TreeRootNodeRenameForm";
 import { calculateShouldRenderRootChildNodes } from "./utils";
 
 export interface TreeRootNodeProps {
-  onNodeUpdate: (node: TreeCollectionNode) => void;
-  onRootNodeUpdate: (node: TreeCollectionRootNode) => void;
   node: TreeCollectionRootNode;
 }
 
-export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootNodeProps) => {
-  const { id, allFoldersAreCollapsed, allFoldersAreExpanded, searchInput, rootOffset } = useContext(TreeContext);
+export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
+  const { searchInput, rootOffset } = useContext(TreeContext);
   const { data: streamedCollections } = useStreamedCollections();
+  const { mutateAsync: batchUpdateCollectionEntry } = useBatchUpdateCollectionEntry();
 
   const draggableRootRef = useRef<HTMLDivElement>(null);
   const dropTargetRootRef = useRef<HTMLDivElement>(null);
 
   const handleExpandAll = () => {
-    const newNode = expandAllNodes(node);
-    onRootNodeUpdate(newNode);
+    // const newNode = expandAllNodes(node);
   };
 
-  const handleCollapseAll = () => {
-    const newNode = collapseAllNodes(node);
-    onRootNodeUpdate(newNode);
+  const handleCollapseAll = async () => {
+    const requestsEntries = getAllNestedEntries(node.requests);
+    const endpointsEntries = getAllNestedEntries(node.endpoints);
+    const componentsEntries = getAllNestedEntries(node.components);
+    const schemasEntries = getAllNestedEntries(node.schemas);
+
+    const entriesToUpdate = [...requestsEntries, ...endpointsEntries, ...componentsEntries, ...schemasEntries].filter(
+      (entry) => entry.expanded
+    );
+
+    const inputEntries = entriesToUpdate.map((entry) => {
+      if (entry.kind === "Dir") {
+        return {
+          DIR: {
+            id: entry.id,
+            expanded: false,
+          },
+        };
+      } else {
+        return {
+          ITEM: {
+            id: entry.id,
+            expanded: false,
+          },
+        };
+      }
+    });
+
+    await batchUpdateCollectionEntry({
+      collectionId: node.id,
+      entries: {
+        entries: inputEntries,
+      },
+    });
   };
 
   const {
@@ -47,31 +76,16 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootN
     setIsAddingRootNodeFolder,
     handleRootAddFormCancel,
     handleRootAddFormSubmit,
-  } = useRootNodeAddForm(node, onRootNodeUpdate);
+  } = useRootNodeAddForm(node);
 
   const {
     isRenamingRootNode,
     setIsRenamingRootNode,
     handleRenamingRootNodeFormSubmit,
     handleRenamingRootNodeFormCancel,
-  } = useRootNodeRenamingForm(node, onRootNodeUpdate);
+  } = useRootNodeRenamingForm(node);
 
-  const { closestEdge, isDragging } = useDraggableRootNode(draggableRootRef, node, id, isRenamingRootNode);
-  useDropTargetRootNode(node, id, dropTargetRootRef);
-
-  //   useEffect(() => {
-  //     const handleNewCollectionWasCreated = (event: Event) => {
-  //       const customEvent = event as CustomEvent<{ treeId: string }>;
-  //       if (treeId === customEvent.detail.treeId) {
-  //         setIsRenamingRootNode(true);
-  //       }
-  //     };
-  //     window.addEventListener("newCollectionWasCreated", handleNewCollectionWasCreated);
-  //     return () => {
-  //       window.removeEventListener("newCollectionWasCreated", handleNewCollectionWasCreated as EventListener);
-  //     };
-  //   }, [setIsRenamingRootNode, treeId]);
-  //
+  const { instruction, isDragging, canDrop } = useDraggableRootNode(draggableRootRef, node, isRenamingRootNode);
 
   const shouldRenderRootChildNodes = calculateShouldRenderRootChildNodes(
     node,
@@ -79,6 +93,9 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootN
     isAddingRootNodeFile,
     isRenamingRootNode
   );
+  console.log({
+    shouldRenderRootChildNodes,
+  });
 
   const restrictedNames = streamedCollections?.map((collection) => collection.name) ?? [];
 
@@ -89,6 +106,7 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootN
         "hidden": isDragging,
       })}
     >
+      {instruction && <DropIndicatorWithInstruction instruction={instruction} gap={0} className="" canDrop={canDrop} />}
       <div
         ref={draggableRootRef}
         className="group/TreeRootHeader relative flex w-full min-w-0 items-center justify-between gap-1 py-[3px] pr-2"
@@ -115,7 +133,6 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootN
             node={node}
             searchInput={searchInput}
             shouldRenderChildNodes={shouldRenderRootChildNodes}
-            onRootNodeClick={onRootNodeUpdate}
           />
         )}
 
@@ -126,19 +143,13 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootN
           setIsAddingRootFileNode={setIsAddingRootNodeFile}
           setIsAddingRootFolderNode={setIsAddingRootNodeFolder}
           setIsRenamingRootNode={setIsRenamingRootNode}
-          allFoldersAreCollapsed={allFoldersAreCollapsed}
-          allFoldersAreExpanded={allFoldersAreExpanded}
           handleCollapseAll={handleCollapseAll}
           handleExpandAll={handleExpandAll}
         />
       </div>
-
-      {closestEdge && <DropIndicator edge={closestEdge} gap={0} className="z-10" />}
-
       {shouldRenderRootChildNodes && (
         <TreeRootNodeChildren
           node={node}
-          onNodeUpdate={onNodeUpdate}
           isAddingRootFileNode={isAddingRootNodeFile}
           isAddingRootFolderNode={isAddingRootNodeFolder}
           handleAddFormRootSubmit={handleRootAddFormSubmit}

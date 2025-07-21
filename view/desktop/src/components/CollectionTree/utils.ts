@@ -5,7 +5,7 @@ import {
   ElementDragPayload,
 } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 
-import { DropNodeElement, DropNodeElementWithInstruction, SortTypes, TreeCollectionNode } from "./types";
+import { DragNode, DropNode, DropNodeElementWithInstruction, SortTypes, TreeCollectionNode } from "./types";
 
 export const updateTreeNode = (node: TreeCollectionNode, updatedNode: TreeCollectionNode): TreeCollectionNode => {
   if (node.id === updatedNode.id) return updateNodeOrder(updatedNode);
@@ -193,14 +193,14 @@ export const addNodeChildrenWithInstruction = (
   };
 };
 
-export const getActualDropSourceTarget = (source: ElementDragPayload): DropNodeElement => {
-  return source.data.data as DropNodeElement;
+export const getActualDropSourceTarget = (source: ElementDragPayload): DragNode => {
+  return source.data.data as DragNode;
 };
 
-export const getActualDropTarget = (location: DragLocationHistory): DropNodeElement => {
-  return (location.current.dropTargets[0].data.data as DropNodeElement).node.isFolder
-    ? (location.current.dropTargets[0].data.data as DropNodeElement)
-    : (location.current.dropTargets[1].data.data as DropNodeElement);
+export const getActualDropTarget = (location: DragLocationHistory): DragNode => {
+  return (location.current.dropTargets[0].data.data as DragNode).node.kind === "Dir"
+    ? (location.current.dropTargets[0].data.data as DragNode)
+    : (location.current.dropTargets[1].data.data as DragNode);
 };
 
 export const getActualDropTargetWithInstruction = (
@@ -273,27 +273,21 @@ export const addNodeToTreeWithInstruction = (
   return tree;
 };
 
-export const canDropNode = (sourceTarget: DropNodeElement, dropTarget: DropNodeElement, node: TreeCollectionNode) => {
-  if (sourceTarget.node.isFolder === false) {
-    // if (hasDirectSimilarDescendant(node, sourceTarget.node)) {
-    //   return false;
-    // }
+export const canDropNode = (sourceTarget: DragNode, dropTarget: DropNode) => {
+  if (sourceTarget.node.class !== dropTarget.node.class) {
+    return false;
   }
 
-  if (sourceTarget.node.isFolder) {
-    // if (hasDirectSimilarDescendant(node, sourceTarget.node)) {
-    //   return false;
-    // }
-
-    if (hasDirectDescendant(dropTarget.node, node)) {
+  if (sourceTarget.node.kind === "Dir") {
+    if (sourceTarget.node.id === dropTarget.node.id) {
       return false;
     }
 
-    if (hasDescendant(sourceTarget.node, node)) {
+    if (hasDirectDescendant(dropTarget.node, sourceTarget.node)) {
       return false;
     }
 
-    if (sourceTarget?.node.id === node.id) {
+    if (hasDescendant(dropTarget.node, sourceTarget.node)) {
       return false;
     }
   }
