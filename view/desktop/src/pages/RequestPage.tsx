@@ -65,6 +65,7 @@ const RequestPage: React.FC<RequestPageProps> = (props) => {
         icon={<Icon icon="Placeholder" className="size-[18px]" />}
         tabs={dontShowTabs ? null : tabs}
         toolbar={toolbar}
+        props={props}
       />
       <PageContent className={cn("relative", isDebug && "border-2 border-dashed border-orange-500")}>
         <Breadcrumbs panelId={props.api.id} />
@@ -73,7 +74,6 @@ const RequestPage: React.FC<RequestPageProps> = (props) => {
           {props.params?.node ? (
             <div className="flex-1">
               <div className="mb-4">
-                <h2 className="text-lg font-semibold text-(--moss-primary-text)">{props.params.node.name}</h2>
                 <p className="text-sm text-(--moss-secondary-text)">
                   {props.params.node.class} • {props.params.node.kind}
                 </p>
@@ -91,9 +91,6 @@ const RequestPage: React.FC<RequestPageProps> = (props) => {
           ) : (
             <div className="flex flex-1 items-center justify-center">
               <div className="text-center">
-                <h2 className="mb-2 text-lg font-semibold text-(--moss-primary-text)">
-                  {props.api.title || "Request Page"}
-                </h2>
                 <p className="mb-4 text-sm text-(--moss-secondary-text)">No request selected</p>
                 {props?.params.someRandomString && (
                   <p className="text-xs text-(--moss-secondary-text)">Backend ID: {props.params.someRandomString}</p>
