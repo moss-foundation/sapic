@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { cn } from "@/utils";
 import { Icon } from "@/lib/ui";
-import { ActionMenu } from "@/components";
+import { ActionMenu, Divider } from "@/components";
 import InputTemplating from "@/components/InputTemplating";
 
 interface RequestInputFieldProps {
@@ -64,7 +64,10 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = ({
           </ActionMenu.Content>
         </ActionMenu.Root>
       </div>
-
+      {/* Divider between HTTP Method and URL Input */}
+      <div className="m-[-4px] flex h-9 items-center border-t border-b border-gray-200">
+        <Divider height="medium" className="mx-0" />
+      </div>
       {/* Center - URL Input Field */}
       <div className="flex-1">
         <InputTemplating
