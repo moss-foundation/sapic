@@ -29,6 +29,7 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
 
   useEffect(() => {
     if (collection) {
+      console.log("collection", collection);
       setName(collection.name);
       const currentPanel = containerApi.getPanel(collection.id);
       currentPanel?.api.setTitle(collection.name);

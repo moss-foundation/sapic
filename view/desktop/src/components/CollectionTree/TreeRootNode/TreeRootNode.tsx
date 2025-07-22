@@ -93,9 +93,6 @@ export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
     isAddingRootNodeFile,
     isRenamingRootNode
   );
-  console.log({
-    shouldRenderRootChildNodes,
-  });
 
   const restrictedNames = streamedCollections?.map((collection) => collection.name) ?? [];
 

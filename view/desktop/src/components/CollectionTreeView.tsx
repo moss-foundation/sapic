@@ -61,6 +61,12 @@ export const CollectionTreeView = () => {
 
   const { collectionsTrees, isLoading } = useCollectionsTrees();
 
+  useEffect(() => {
+    console.log({
+      collectionsTrees,
+    });
+  }, [collectionsTrees]);
+
   return (
     <div ref={dropTargetToggleRef} className="relative h-[calc(100%-36px)] select-none">
       <Scrollbar className="h-full">
@@ -72,7 +78,7 @@ export const CollectionTreeView = () => {
           <div className="flex grow flex-col">
             {!isLoading &&
               collectionsTrees
-                .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+                .sort((a, b) => a.order! - b.order!)
                 .map((collection) => (
                   <CollectionTree key={collection.id} tree={collection} displayMode={displayMode} />
                 ))}
