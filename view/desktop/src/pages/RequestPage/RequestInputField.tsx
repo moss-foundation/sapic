@@ -84,7 +84,7 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = ({
       </div>
 
       {/* Right Side - Send Button */}
-      <div className="flex h-9 items-center rounded-md rounded-l-none border border-l-0 border-transparent p-1">
+      <div className="relative z-10 flex h-9 items-center rounded-md rounded-l-none border border-l-0 border-transparent p-1 focus-within:outline-2 focus-within:-outline-offset-1 focus-within:outline-(--moss-primary)">
         <ButtonPrimary onClick={handleSend}>Send</ButtonPrimary>
       </div>
     </div>
