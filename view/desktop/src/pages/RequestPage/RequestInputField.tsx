@@ -49,7 +49,7 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = ({
               )}
             >
               <span>{method}</span>
-              <Icon icon="ChevronDown" className="h-3 w-3" />
+              <Icon icon="ChevronDown" className="h-3 w-3 cursor-pointer" />
             </button>
           </ActionMenu.Trigger>
           <ActionMenu.Content>
