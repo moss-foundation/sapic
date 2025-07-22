@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { cn } from "@/utils";
 import { Icon } from "@/lib/ui";
-import { ActionMenu, Divider } from "@/components";
+import { ActionMenu, Divider, ButtonPrimary } from "@/components";
 import InputTemplating from "@/components/InputTemplating";
 
 interface RequestInputFieldProps {
@@ -82,17 +82,7 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = ({
       </div>
 
       {/* Right Side - Send Button */}
-      <button
-        onClick={handleSend}
-        className={cn(
-          "flex-shrink-0 rounded-sm bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700",
-          "transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:outline-none",
-          "flex items-center gap-2"
-        )}
-      >
-        <Icon icon="Send" className="h-4 w-4" />
-        Send
-      </button>
+      <ButtonPrimary onClick={handleSend}>Send</ButtonPrimary>
     </div>
   );
 };
