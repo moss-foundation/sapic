@@ -1,7 +1,5 @@
 import { useContext, useRef, useState } from "react";
 
-import { cn } from "@/utils";
-
 import { TreeContext } from "../..";
 import { useDeleteAndUpdatePeers } from "../actions/useDeleteAndUpdatePeers";
 import { DropIndicatorWithInstruction } from "../DropIndicatorWithInstruction";
@@ -92,11 +90,7 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
   const restrictedNames = parentNode?.childNodes.map((childNode) => childNode.name) ?? [];
 
   return (
-    <li
-      className={cn("relative", {
-        // "background-(--moss-error-background)": instruction !== null && canDrop === false,
-      })}
-    >
+    <li className="relative">
       {isRenamingNode && !isRootNode ? (
         <TreeNodeRenameForm
           node={node}
@@ -179,6 +173,7 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
       )}
 
       {shouldRenderChildNodes && <TreeNodeChildren node={node} depth={depth} />}
+
       {(isAddingFileNode || isAddingFolderNode) && (
         <TreeNodeAddForm
           depth={depth}

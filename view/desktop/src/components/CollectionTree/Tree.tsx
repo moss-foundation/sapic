@@ -10,6 +10,7 @@ export const TreeContext = createContext<TreeContextProps>({
   repository: undefined,
   order: undefined,
   picturePath: undefined,
+  expanded: false,
 
   paddingLeft: 0,
   paddingRight: 0,
@@ -43,6 +44,7 @@ export const CollectionTree = ({
     <TreeContext.Provider
       value={{
         id: initialTree.id,
+        expanded: initialTree.expanded,
         name: initialTree.name,
         repository: initialTree.repository,
         order: initialTree.order,

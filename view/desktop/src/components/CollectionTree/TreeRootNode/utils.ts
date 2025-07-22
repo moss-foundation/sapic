@@ -21,7 +21,7 @@ export const calculateShouldRenderRootChildNodes = (
   return true;
 };
 
-export const calculateRestrictedNames = (node: TreeCollectionRootNode, isAddingFolder: boolean) => {
+export const getRestrictedNames = (node: TreeCollectionRootNode, isAddingFolder: boolean) => {
   if (isAddingFolder) {
     return node.requests.childNodes.filter((childNode) => childNode.kind === "Dir").map((childNode) => childNode.name);
   }

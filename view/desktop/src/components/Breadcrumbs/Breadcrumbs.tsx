@@ -5,10 +5,10 @@ import { Icon } from "@/lib/ui";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 import { DebugCollectionIconPlaceholder } from "../CollectionTree/DebugCollectionIconPlaceholder";
-import { findNodeById } from "../CollectionTree/utils";
 import { BreadcrumbTree } from "./BreadcrumbTree";
 
 export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
+  return null;
   const [activeTree, setActiveTree] = useState<null>(null);
   const { addOrFocusPanel } = useTabbedPaneStore();
   const [path, setPath] = useState<string[]>([]);

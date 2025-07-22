@@ -1,20 +1,19 @@
 /* eslint-disable */
 import { useState } from "react";
 
-import { NodeProps, TreeNodeProps } from "../CollectionTree/types";
-import { collapseAllNodes, prepareCollectionForTree, updateTreeNode } from "../CollectionTree/utils";
+import { TreeCollectionNode } from "../CollectionTree/types";
 import BreadcrumbNode from "./BreadcrumbNode";
 
 interface BreadcrumbTreeProps {
-  tree: NodeProps;
-  onNodeClick: (node: NodeProps) => void;
+  tree: TreeCollectionNode;
+  onNodeClick: (node: TreeCollectionNode) => void;
 }
 
 export const BreadcrumbTree = ({ tree: initialTree, onNodeClick: onNodeClickCallback }: BreadcrumbTreeProps) => {
-  const [tree, setTree] = useState<TreeNodeProps>(collapseAllNodes(prepareCollectionForTree(initialTree, false)));
+  const [tree, setTree] = useState<TreeCollectionNode>(initialTree);
 
-  const handleNodeUpdate = (updatedNode: TreeNodeProps) => {
-    setTree(updateTreeNode(tree, updatedNode));
+  const handleNodeUpdate = (updatedNode: TreeCollectionNode) => {
+    // setTree(updateNodeInTree(tree, updatedNode));
 
     onNodeClickCallback?.(updatedNode);
   };
