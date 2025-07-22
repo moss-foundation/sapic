@@ -42,6 +42,8 @@ export const DropIndicatorWithInstruction = ({
         position: "absolute",
         height: "100%",
         width: "100%",
+        top: 0,
+        left: 0,
         backgroundColor: canDrop ? "var(--moss-success-background)" : "var(--moss-error-background)",
       };
       break;
@@ -54,6 +56,7 @@ export const DropIndicatorWithInstruction = ({
         top: depth === 1 ? 0 : gap,
         width: reorderWidth,
         left,
+        zIndex: 10,
       };
       break;
 
@@ -65,6 +68,7 @@ export const DropIndicatorWithInstruction = ({
         bottom: gap,
         width: reorderWidth,
         left,
+        zIndex: 10,
       };
       break;
 

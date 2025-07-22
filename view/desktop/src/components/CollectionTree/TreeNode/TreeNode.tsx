@@ -97,18 +97,6 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
         // "background-(--moss-error-background)": instruction !== null && canDrop === false,
       })}
     >
-      {node.kind === "Dir" && instruction !== null && (
-        <DropIndicatorWithInstruction
-          paddingLeft={nodePaddingLeft}
-          paddingRight={paddingRight}
-          instruction={instruction}
-          isFolder={true}
-          depth={depth}
-          isLastChild={isLastChild}
-          canDrop={canDrop}
-          gap={0}
-        />
-      )}
       {isRenamingNode && !isRootNode ? (
         <TreeNodeRenameForm
           node={node}
@@ -138,6 +126,19 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
             />
           )} */}
 
+          {node.kind === "Dir" && instruction !== null && (
+            <DropIndicatorWithInstruction
+              paddingLeft={nodePaddingLeft}
+              paddingRight={paddingRight}
+              instruction={instruction}
+              isFolder={true}
+              depth={depth}
+              isLastChild={isLastChild}
+              canDrop={canDrop}
+              gap={-2}
+            />
+          )}
+
           <TreeNodeButton
             ref={triggerRef}
             node={node}
@@ -153,6 +154,7 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
             isLastChild={isLastChild}
             isRootNode={isRootNode}
           />
+
           {/* 
           {isAddingDividerNodeBelow && (
             <TreeNodeAddForm
@@ -177,7 +179,6 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
       )}
 
       {shouldRenderChildNodes && <TreeNodeChildren node={node} depth={depth} />}
-
       {(isAddingFileNode || isAddingFolderNode) && (
         <TreeNodeAddForm
           depth={depth}
