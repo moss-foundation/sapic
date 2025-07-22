@@ -40,8 +40,8 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = ({
           <ActionMenu.Trigger asChild>
             <button
               className={cn(
-                "flex items-center justify-between rounded-md rounded-r-none px-3 py-2 text-sm font-medium transition-colors",
-                "background-(--moss-primary-background) text-orange-600",
+                "flex items-center justify-between rounded-md rounded-r-none px-2.5 py-2 text-base font-bold transition-colors",
+                "background-(--moss-primary-background) text-(--moss-requestpage-text)",
                 "focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-(--moss-primary)",
                 "data-[state=open]:outline-2 data-[state=open]:-outline-offset-1 data-[state=open]:outline-(--moss-primary)",
                 "border border-r-0 border-transparent",
@@ -58,7 +58,8 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = ({
                 key={httpMethod}
                 onClick={() => setMethod(httpMethod)}
                 className={cn(
-                  method === httpMethod && "background-(--moss-secondary-background-hover) font-medium text-orange-600"
+                  method === httpMethod &&
+                    "background-(--moss-secondary-background-hover) font-medium text-(--moss-requestpage-text)"
                 )}
               >
                 {httpMethod}

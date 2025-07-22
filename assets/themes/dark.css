@@ -292,4 +292,5 @@
 
   /* RequestPage */
   --moss-requestpage-border-color: var(--moss-gray-11);
+  --moss-requestpage-text: var(--moss-orange-4);
 }
