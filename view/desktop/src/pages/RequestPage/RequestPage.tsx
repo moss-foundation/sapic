@@ -1,6 +1,16 @@
 import React from "react";
 
-import { ActionButton, Breadcrumbs, PageContent, PageHeader, PageTabs, PageToolbar, PageView } from "@/components";
+import {
+  ActionButton,
+  Breadcrumbs,
+  PageContent,
+  PageContainerWithTabs,
+  PageHeader,
+  PageTabs,
+  PageToolbar,
+  PageView,
+  TabItem,
+} from "@/components";
 import { TreeCollectionNode } from "@/components/CollectionTree/types";
 import { Icon } from "@/lib/ui";
 import { useRequestModeStore } from "@/store/requestMode";
@@ -10,8 +20,22 @@ import { IDockviewPanelProps } from "@repo/moss-tabs";
 
 import Metadata from "../../parts/TabbedPane/DebugComponents/Metadata";
 import { RequestInputField } from "./RequestInputField";
+import {
+  AuthTabContent,
+  BodyTabContent,
+  HeadersTabContent,
+  ParamsTabContent,
+  PostRequestTabContent,
+  PreRequestTabContent,
+} from "./tabs";
 
 const DebugContext = React.createContext<boolean>(false);
+
+const Badge = ({ count }: { count: number }) => (
+  <span className="background-(--moss-tab-badge-color) inline-flex h-3.5 w-3.5 min-w-[14px] items-center justify-center rounded-full text-xs leading-none font-medium text-white">
+    <span className="relative top-[0.5px]">{count}</span>
+  </span>
+);
 
 const RequestPage: React.FC<
   IDockviewPanelProps<{
@@ -28,6 +52,7 @@ const RequestPage: React.FC<
   let showEndpoint = false;
   let dontShowTabs = true;
   const [activeTab, setActiveTab] = React.useState(showEndpoint ? "endpoint" : "request");
+  const [activeRequestTabId, setActiveRequestTabId] = React.useState("params");
 
   if (props.params?.node) {
     showEndpoint = displayMode === "DESIGN_FIRST" && props.params.node.class === "Endpoint";
@@ -64,6 +89,72 @@ const RequestPage: React.FC<
     // TODO: Implement actual request sending logic
   };
 
+  // Define the request configuration tabs
+  const requestTabs: TabItem[] = [
+    {
+      id: "params",
+      label: (
+        <div className="flex items-center gap-1">
+          <Icon icon="SquareBrackets" className="h-4 w-4" />
+          <span>Params</span>
+          <Badge count={6} />
+        </div>
+      ),
+      content: <ParamsTabContent {...props} />,
+    },
+    {
+      id: "auth",
+      label: (
+        <div className="flex items-center gap-1">
+          <Icon icon="Auth" className="h-4 w-4" />
+          <span>Auth</span>
+        </div>
+      ),
+      content: <AuthTabContent {...props} />,
+    },
+    {
+      id: "headers",
+      label: (
+        <div className="flex items-center gap-1">
+          <Icon icon="Headers" className="h-4 w-4" />
+          <span>Headers</span>
+          <Badge count={3} />
+        </div>
+      ),
+      content: <HeadersTabContent {...props} />,
+    },
+    {
+      id: "body",
+      label: (
+        <div className="flex items-center gap-1">
+          <Icon icon="Braces" className="h-4 w-4" />
+          <span>Body</span>
+        </div>
+      ),
+      content: <BodyTabContent {...props} />,
+    },
+    {
+      id: "pre-request",
+      label: (
+        <div className="flex items-center gap-1">
+          <Icon icon="PreRequest" className="h-4 w-4" />
+          <span>Pre Request</span>
+        </div>
+      ),
+      content: <PreRequestTabContent {...props} />,
+    },
+    {
+      id: "post-request",
+      label: (
+        <div className="flex items-center gap-1">
+          <Icon icon="PostRequest" className="h-4 w-4" />
+          <span>Post Request</span>
+        </div>
+      ),
+      content: <PostRequestTabContent {...props} />,
+    },
+  ];
+
   return (
     <PageView>
       <PageHeader
@@ -88,311 +179,13 @@ const RequestPage: React.FC<
                 />
 
                 {/* Request Configuration Tabs */}
-                <div className="flex border-b border-gray-200">
-                  <button className="border-b-2 border-blue-600 px-4 py-2 text-sm font-medium text-blue-600">
-                    Params
-                    <span className="ml-2 rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-600">6</span>
-                  </button>
-                  <button className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">Auth</button>
-                  <button className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">
-                    Headers
-                    <span className="ml-2 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">3</span>
-                  </button>
-                  <button className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">Body</button>
-                  <button className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">
-                    Pre Request
-                  </button>
-                  <button className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">
-                    Post Request
-                  </button>
-                </div>
-
-                {/* Parameters Section */}
-                <div className="mt-4">
-                  {/* Query Params */}
-                  <div className="mb-6">
-                    <h3 className="mb-3 text-sm font-medium text-gray-900">Query Params</h3>
-                    <div className="overflow-hidden rounded-sm border border-gray-200 bg-white">
-                      <table className="w-full">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-3 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                              Key
-                            </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                              Value
-                            </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                              Type
-                            </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                              Description
-                            </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                              Actions
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200">
-                          <tr>
-                            <td className="px-3 py-2">
-                              <div className="flex items-center">
-                                <input type="checkbox" className="mr-2" defaultChecked />
-                                <span className="text-sm text-gray-900">pageToken</span>
-                              </div>
-                            </td>
-                            <td className="px-3 py-2">
-                              <span className="text-sm text-gray-900">{"{{mu_func()}}"}</span>
-                            </td>
-                            <td className="px-3 py-2">
-                              <span className="text-sm text-gray-500">string</span>
-                            </td>
-                            <td className="px-3 py-2">
-                              <span className="text-sm text-gray-500">
-                                An opaque token used to fetch the next page of results.
-                              </span>
-                            </td>
-                            <td className="px-3 py-2">
-                              <div className="flex items-center gap-1">
-                                <button className="p-1 text-gray-400 hover:text-gray-600">
-                                  <Icon icon="Add" className="h-3 w-3" />
-                                </button>
-                                <button className="p-1 text-gray-400 hover:text-gray-600">
-                                  <Icon icon="Find" className="h-3 w-3" />
-                                </button>
-                                <button className="p-1 text-red-400 hover:text-red-600">
-                                  <Icon icon="Delete" className="h-3 w-3" />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="px-3 py-2">
-                              <div className="flex items-center">
-                                <input type="checkbox" className="mr-2" defaultChecked />
-                                <span className="text-sm text-gray-900">limit</span>
-                              </div>
-                            </td>
-                            <td className="px-3 py-2">
-                              <span className="text-sm text-gray-900">{"{{defaultLimit}}"}</span>
-                            </td>
-                            <td className="px-3 py-2">
-                              <span className="text-sm text-gray-500">number</span>
-                            </td>
-                            <td className="px-3 py-2">
-                              <span className="text-sm text-gray-500">
-                                Maximum number of results to return in this query.
-                              </span>
-                            </td>
-                            <td className="px-3 py-2">
-                              <div className="flex items-center gap-1">
-                                <button className="p-1 text-gray-400 hover:text-gray-600">
-                                  <Icon icon="Add" className="h-3 w-3" />
-                                </button>
-                                <button className="p-1 text-gray-400 hover:text-gray-600">
-                                  <Icon icon="Find" className="h-3 w-3" />
-                                </button>
-                                <button className="p-1 text-red-400 hover:text-red-600">
-                                  <Icon icon="Delete" className="h-3 w-3" />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="px-3 py-2">
-                              <div className="flex items-center">
-                                <input type="checkbox" className="mr-2" />
-                                <span className="text-sm text-gray-900">visibleOnly</span>
-                              </div>
-                            </td>
-                            <td className="px-3 py-2">
-                              <span className="text-sm text-gray-900">true</span>
-                            </td>
-                            <td className="px-3 py-2">
-                              <span className="text-sm text-gray-500">bool</span>
-                            </td>
-                            <td className="px-3 py-2">
-                              <span className="text-sm text-gray-500">
-                                If true, returns only visible columns for the table. This...
-                              </span>
-                            </td>
-                            <td className="px-3 py-2">
-                              <div className="flex items-center gap-1">
-                                <button className="p-1 text-gray-400 hover:text-gray-600">
-                                  <Icon icon="Add" className="h-3 w-3" />
-                                </button>
-                                <button className="p-1 text-gray-400 hover:text-gray-600">
-                                  <Icon icon="Find" className="h-3 w-3" />
-                                </button>
-                                <button className="p-1 text-red-400 hover:text-red-600">
-                                  <Icon icon="Delete" className="h-3 w-3" />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                          {/* Add new parameter row */}
-                          <tr>
-                            <td className="px-3 py-2">
-                              <input
-                                type="text"
-                                placeholder="Key"
-                                className="w-full border-none text-sm outline-none"
-                              />
-                            </td>
-                            <td className="px-3 py-2">
-                              <input
-                                type="text"
-                                placeholder="Value"
-                                className="w-full border-none text-sm outline-none"
-                              />
-                            </td>
-                            <td className="px-3 py-2">
-                              <select className="border-none bg-transparent text-sm outline-none">
-                                <option>string</option>
-                                <option>number</option>
-                                <option>bool</option>
-                              </select>
-                            </td>
-                            <td className="px-3 py-2">
-                              <input
-                                type="text"
-                                placeholder="Description"
-                                className="w-full border-none text-sm outline-none"
-                              />
-                            </td>
-                            <td className="px-3 py-2"></td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-
-                  {/* Path Params */}
-                  <div>
-                    <h3 className="mb-3 text-sm font-medium text-gray-900">Path Params</h3>
-                    <div className="overflow-hidden rounded-sm border border-gray-200 bg-white">
-                      <table className="w-full">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-3 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                              Key
-                            </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                              Value
-                            </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                              Type
-                            </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                              Description
-                            </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                              Actions
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200">
-                          <tr>
-                            <td className="px-3 py-2">
-                              <div className="flex items-center">
-                                <input type="checkbox" className="mr-2" defaultChecked />
-                                <span className="text-sm text-gray-900">docId</span>
-                              </div>
-                            </td>
-                            <td className="px-3 py-2">
-                              <span className="text-sm text-gray-900">{"{{vault::myVariable}}"}</span>
-                            </td>
-                            <td className="px-3 py-2">
-                              <span className="text-sm text-gray-500">string</span>
-                            </td>
-                            <td className="px-3 py-2">
-                              <span className="text-sm text-gray-500">
-                                An opaque token used to fetch the next page of results.
-                              </span>
-                            </td>
-                            <td className="px-3 py-2">
-                              <div className="flex items-center gap-1">
-                                <button className="p-1 text-gray-400 hover:text-gray-600">
-                                  <Icon icon="Add" className="h-3 w-3" />
-                                </button>
-                                <button className="p-1 text-gray-400 hover:text-gray-600">
-                                  <Icon icon="Find" className="h-3 w-3" />
-                                </button>
-                                <button className="p-1 text-red-400 hover:text-red-600">
-                                  <Icon icon="Delete" className="h-3 w-3" />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="px-3 py-2">
-                              <div className="flex items-center">
-                                <input type="checkbox" className="mr-2" defaultChecked />
-                                <span className="text-sm text-gray-900">tableIdOrName</span>
-                              </div>
-                            </td>
-                            <td className="px-3 py-2">
-                              <span className="text-sm text-gray-900">{"{{defaultLimit}}"}</span>
-                            </td>
-                            <td className="px-3 py-2">
-                              <span className="text-sm text-gray-500">number</span>
-                            </td>
-                            <td className="px-3 py-2">
-                              <span className="text-sm text-gray-500">
-                                Maximum number of results to return in this query.
-                              </span>
-                            </td>
-                            <td className="px-3 py-2">
-                              <div className="flex items-center gap-1">
-                                <button className="p-1 text-gray-400 hover:text-gray-600">
-                                  <Icon icon="Add" className="h-3 w-3" />
-                                </button>
-                                <button className="p-1 text-gray-400 hover:text-gray-600">
-                                  <Icon icon="Find" className="h-3 w-3" />
-                                </button>
-                                <button className="p-1 text-red-400 hover:text-red-600">
-                                  <Icon icon="Delete" className="h-3 w-3" />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                          {/* Add new parameter row */}
-                          <tr>
-                            <td className="px-3 py-2">
-                              <input
-                                type="text"
-                                placeholder="Key"
-                                className="w-full border-none text-sm outline-none"
-                              />
-                            </td>
-                            <td className="px-3 py-2">
-                              <input
-                                type="text"
-                                placeholder="Value"
-                                className="w-full border-none text-sm outline-none"
-                              />
-                            </td>
-                            <td className="px-3 py-2">
-                              <select className="border-none bg-transparent text-sm outline-none">
-                                <option>string</option>
-                                <option>number</option>
-                                <option>bool</option>
-                              </select>
-                            </td>
-                            <td className="px-3 py-2">
-                              <input
-                                type="text"
-                                placeholder="Description"
-                                className="w-full border-none text-sm outline-none"
-                              />
-                            </td>
-                            <td className="px-3 py-2"></td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
+                {activeTab === "request" && (
+                  <PageContainerWithTabs
+                    tabs={requestTabs}
+                    activeTabId={activeRequestTabId}
+                    onTabChange={setActiveRequestTabId}
+                  />
+                )}
               </div>
             </div>
           ) : (
