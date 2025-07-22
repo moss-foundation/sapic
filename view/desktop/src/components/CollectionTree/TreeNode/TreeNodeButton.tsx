@@ -49,7 +49,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
     },
     ref
   ) => {
-    const { id, nodeOffset, searchInput, paddingRight } = useContext(TreeContext);
+    const { id, nodeOffset, searchInput, paddingLeft, paddingRight, rootOffset } = useContext(TreeContext);
 
     const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
@@ -111,12 +111,16 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
             className={cn("group/treeNode relative flex h-full w-full min-w-0 cursor-pointer items-center")}
           >
             <span
-              className={cn("absolute inset-x-2 h-full w-[calc(100%-16px)] rounded-sm", {
+              style={{
+                width: `calc(100% - ${rootOffset + paddingRight}px)`,
+              }}
+              className={cn("absolute inset-x-2 h-full rounded-sm", {
                 "group-hover/treeNode:background-(--moss-secondary-background-hover)":
                   !isDragging && activePanelId !== node.id,
                 "background-(--moss-info-background-hover)": activePanelId === node.id && node.id !== "DraggedNode",
               })}
             />
+
             <span
               className={cn("relative z-10 flex h-full w-full items-center gap-1 py-0.5", {
                 "background-(--moss-error-background)": canDrop === false,
