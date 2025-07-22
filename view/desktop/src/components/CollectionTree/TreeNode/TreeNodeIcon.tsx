@@ -22,6 +22,10 @@ export const TreeNodeIcon = ({ node, isRootNode, className }: TreeNodeIconProps)
     }
   }
 
+  if (node.kind === "Dir") {
+    return <Icon icon="Folder" className={className} />;
+  }
+
   switch (node.class) {
     case "Schema":
       return <Icon icon="Schema" className={className} />;

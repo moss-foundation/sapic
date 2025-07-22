@@ -1,9 +1,9 @@
 import { useContext, useRef, useState } from "react";
 
-import { useDeleteCollectionEntry } from "@/hooks";
 import { cn } from "@/utils";
 
 import { TreeContext } from "../..";
+import { useDeleteAndUpdatePeers } from "../actions/useDeleteAndUpdatePeers";
 import { DropIndicatorWithInstruction } from "../DropIndicatorWithInstruction";
 import { useInstructionNode } from "../hooks/useInstructionNode";
 import { useNodeAddForm } from "../hooks/useNodeAddForm";
@@ -42,7 +42,7 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
 
   const triggerRef = useRef<HTMLButtonElement>(null);
 
-  const { mutateAsync: deleteCollectionEntry } = useDeleteCollectionEntry();
+  const { deleteAndUpdatePeers } = useDeleteAndUpdatePeers(id, node, parentNode);
 
   const {
     isAddingFileNode,
@@ -83,12 +83,7 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
   );
 
   const handleDeleteNode = async () => {
-    await deleteCollectionEntry({
-      collectionId: id,
-      input: {
-        id: node.id,
-      },
-    });
+    await deleteAndUpdatePeers();
   };
 
   const shouldRenderChildNodes = node.expanded || isAddingFileNode || isAddingFolderNode;
