@@ -45,7 +45,7 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = ({
                 "focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-(--moss-primary)",
                 "data-[state=open]:outline-2 data-[state=open]:-outline-offset-1 data-[state=open]:outline-(--moss-primary)",
                 "border border-r-0 border-transparent",
-                "w-24"
+                "h-10 w-24"
               )}
             >
               <span>{method}</span>
@@ -68,7 +68,7 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = ({
         </ActionMenu.Root>
       </div>
       {/* Divider between HTTP Method and URL Input */}
-      <div className="m-[-4px] flex h-9 items-center border-t border-b border-transparent">
+      <div className="m-[-4px] flex h-10 items-center border-t border-b border-transparent">
         <Divider height="medium" className="mx-0" />
       </div>
       {/* Center - URL Input Field */}
@@ -77,14 +77,14 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = ({
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           onTemplateChange={handleTemplateChange}
-          className="w-full rounded-none border-r-0 border-l-0 border-transparent"
+          className="h-10 w-full rounded-none border-r-0 border-l-0 border-transparent"
           size="md"
           placeholder="Enter URL..."
         />
       </div>
 
       {/* Right Side - Send Button */}
-      <div className="relative z-10 flex h-9 items-center rounded-md rounded-l-none border border-l-0 border-transparent p-1 focus-within:outline-2 focus-within:-outline-offset-1 focus-within:outline-(--moss-primary)">
+      <div className="relative z-10 flex h-10 items-center rounded-md rounded-l-none border border-l-0 border-transparent p-1 focus-within:outline-2 focus-within:-outline-offset-1 focus-within:outline-(--moss-primary)">
         <ButtonPrimary onClick={handleSend}>Send</ButtonPrimary>
       </div>
     </div>
