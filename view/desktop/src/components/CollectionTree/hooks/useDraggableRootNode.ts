@@ -11,7 +11,7 @@ import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-d
 
 import { TreeContext } from "../Tree";
 import { TreeCollectionRootNode } from "../types";
-import { isSourceTreeNode, isSourceTreeRootNode } from "../utils2";
+import { isSourceTreeNode, isSourceTreeRootNode } from "../utils/utils2";
 
 export const useDraggableRootNode = (
   draggableRef: RefObject<HTMLDivElement>,

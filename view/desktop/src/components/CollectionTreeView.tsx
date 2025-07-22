@@ -21,7 +21,7 @@ import {
   getAllNestedEntries,
   getSourceTreeNodeData,
   isSourceTreeNode,
-} from "./CollectionTree/utils2";
+} from "./CollectionTree/utils/utils2";
 
 export const CollectionTreeView = () => {
   const dropTargetToggleRef = useRef<HTMLDivElement>(null);

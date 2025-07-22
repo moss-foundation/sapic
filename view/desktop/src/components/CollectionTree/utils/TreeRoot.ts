@@ -1,3 +1,6 @@
+import { extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
+import { DragLocationHistory, ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
+
 import { TreeCollectionNode, TreeCollectionRootNode } from "../types";
 
 export const updateNodeInTree = (
@@ -79,4 +82,33 @@ export const checkIfAllFoldersAreCollapsed = (tree: TreeCollectionRootNode): boo
     return node.childNodes.every(checkIfAllNodesAreCollapsed);
   };
   return [tree.requests, tree.endpoints, tree.components, tree.schemas].every(checkIfAllNodesAreCollapsed);
+};
+
+export const getTreeRootNodeSourceData = (source: ElementDragPayload) => {
+  return source.data as {
+    type: "TreeRootNode";
+    data: {
+      collectionId: string;
+      node: TreeCollectionRootNode;
+    };
+  };
+};
+
+export const getTreeRootNodeTargetData = (location: DragLocationHistory) => {
+  const instruction = extractInstruction(location.current?.dropTargets[0].data);
+
+  return {
+    type: "TreeRootNode",
+    data: {
+      ...location.current?.dropTargets[0].data,
+      instruction,
+    },
+  } as {
+    type: "TreeRootNode";
+    data: {
+      instruction: Instruction;
+      collectionId: string;
+      node: TreeCollectionRootNode;
+    };
+  };
 };

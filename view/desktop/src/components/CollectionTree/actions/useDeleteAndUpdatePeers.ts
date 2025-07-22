@@ -4,7 +4,7 @@ import { BatchUpdateEntryInput, EntryInfo } from "@repo/moss-collection";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { TreeCollectionNode } from "../types";
-import { sortByOrder } from "../utils2";
+import { sortByOrder } from "../utils/utils2";
 
 export const useDeleteAndUpdatePeers = (
   collectionId: string,

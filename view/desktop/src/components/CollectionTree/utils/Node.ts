@@ -1,6 +1,6 @@
 import { DragLocationHistory, ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 
-import { DragNode, DropNode, TreeCollectionNode } from "./types";
+import { DragNode, DropNode, TreeCollectionNode } from "../types";
 
 export const hasDescendant = (tree: TreeCollectionNode, node: TreeCollectionNode): boolean => {
   if (!tree.childNodes) return false;

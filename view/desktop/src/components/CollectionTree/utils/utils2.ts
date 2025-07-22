@@ -12,8 +12,8 @@ import {
   ItemConfigurationModel,
 } from "@repo/moss-collection";
 
-import { DragNode, DropNode, TreeCollectionNode } from "./types";
-import { hasDescendant, hasDirectDescendant } from "./utils";
+import { hasDescendant, hasDirectDescendant } from ".";
+import { DragNode, DropNode, TreeCollectionNode } from "../types";
 
 //TODO order should always be set, it's a temporary solution until backend updates it's type
 export const sortByOrder = <T extends { order?: number }>(entries: T[]) => {

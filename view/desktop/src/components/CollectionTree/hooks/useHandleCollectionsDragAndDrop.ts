@@ -2,11 +2,9 @@ import { useCallback, useEffect } from "react";
 
 import { useCollectionsTrees } from "@/hooks";
 import { useBatchUpdateCollection } from "@/hooks/collection/useBatchUpdateCollection";
-import { extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
-import { DragLocationHistory, ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import { TreeCollectionRootNode } from "../types";
+import { getTreeRootNodeSourceData, getTreeRootNodeTargetData } from "../utils";
 
 export const useCollectionsDragAndDropHandler = () => {
   const { collectionsTrees } = useCollectionsTrees();
@@ -78,32 +76,4 @@ export const useCollectionsDragAndDropHandler = () => {
       onDrop: handleReorder,
     });
   }, [handleReorder]);
-
-  const getTreeRootNodeSourceData = (source: ElementDragPayload) => {
-    return source.data as {
-      type: "TreeRootNode";
-      data: {
-        collectionId: string;
-        node: TreeCollectionRootNode;
-      };
-    };
-  };
-  const getTreeRootNodeTargetData = (location: DragLocationHistory) => {
-    const instruction = extractInstruction(location.current?.dropTargets[0].data);
-
-    return {
-      type: "TreeRootNode",
-      data: {
-        ...location.current?.dropTargets[0].data,
-        instruction,
-      },
-    } as {
-      type: "TreeRootNode";
-      data: {
-        instruction: Instruction;
-        collectionId: string;
-        node: TreeCollectionRootNode;
-      };
-    };
-  };
 };

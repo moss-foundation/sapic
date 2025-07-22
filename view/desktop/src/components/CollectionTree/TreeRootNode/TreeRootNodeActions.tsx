@@ -3,6 +3,7 @@ import { useContext, useState } from "react";
 import { ActionMenu, TreeContext } from "@/components";
 import { ActionButton } from "@/components/ActionButton";
 import { DeleteCollectionModal } from "@/components/Modals/Collection/DeleteCollectionModal";
+import { useFetchEntriesForPath } from "@/hooks/collection/derivedHooks/useFetchEntriesForPath";
 
 import { useToggleAllNodes } from "../actions/useToggleAllNodes";
 import { TreeCollectionRootNode } from "../types";
@@ -24,11 +25,17 @@ export const TreeRootNodeActions = ({
   setIsAddingRootFolderNode,
   setIsRenamingRootNode,
 }: TreeRootNodeActionsProps) => {
-  const { displayMode, allFoldersAreCollapsed, allFoldersAreExpanded } = useContext(TreeContext);
+  const { displayMode, allFoldersAreCollapsed, allFoldersAreExpanded, id } = useContext(TreeContext);
 
   const [showDeleteCollectionModal, setShowDeleteCollectionModal] = useState(false);
 
   const { expandAllNodes, collapseAllNodes } = useToggleAllNodes(node);
+
+  const { fetchEntriesForPath } = useFetchEntriesForPath();
+
+  const handleRefresh = () => {
+    fetchEntriesForPath(id, "");
+  };
 
   return (
     <>
@@ -70,7 +77,9 @@ export const TreeRootNodeActions = ({
               <ActionMenu.Item alignWithIcons onClick={() => setIsRenamingRootNode(true)}>
                 Rename...
               </ActionMenu.Item>
-              <ActionMenu.Item alignWithIcons>Refresh</ActionMenu.Item>
+              <ActionMenu.Item alignWithIcons onClick={handleRefresh}>
+                Refresh
+              </ActionMenu.Item>
               <ActionMenu.Item alignWithIcons onClick={() => setShowDeleteCollectionModal(true)} icon="Trash">
                 Delete
               </ActionMenu.Item>

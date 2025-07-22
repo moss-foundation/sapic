@@ -20,7 +20,7 @@ import {
   getSourceTreeNodeData,
   isSourceTreeNode,
   sortByOrder,
-} from "../utils2";
+} from "../utils/utils2";
 
 export const useMonitorForNodeDragAndDrop = () => {
   const { mutateAsync: createCollectionEntry } = useCreateCollectionEntry();

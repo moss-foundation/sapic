@@ -1,5 +1,5 @@
 import { TreeCollectionNode } from "../types";
-import { sortByOrder } from "../utils2";
+import { sortByOrder } from "../utils/utils2";
 import { TreeNode } from "./TreeNode";
 
 interface TreeNodeChildrenProps {

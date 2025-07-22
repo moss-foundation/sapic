@@ -4,7 +4,7 @@ import { useCreateCollectionEntry } from "@/hooks";
 
 import { TreeContext } from "../../Tree";
 import { TreeCollectionRootNode } from "../../types";
-import { createEntryKind } from "../../utils2";
+import { createEntryKind } from "../../utils/utils2";
 
 export const useRootNodeAddForm = (node: TreeCollectionRootNode) => {
   const { id } = useContext(TreeContext);
