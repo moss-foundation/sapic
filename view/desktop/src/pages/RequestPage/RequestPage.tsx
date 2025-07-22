@@ -166,7 +166,7 @@ const RequestPage: React.FC<
       <PageContent className={cn("relative", isDebug && "border-2 border-dashed border-orange-500")}>
         <Breadcrumbs panelId={props.api.id} />
 
-        <div className="flex h-full flex-col p-4">
+        <div className="flex h-full flex-col p-2">
           {props.params?.node ? (
             <div className="flex-1">
               {/* Request Input Section */}
@@ -184,6 +184,8 @@ const RequestPage: React.FC<
                     tabs={requestTabs}
                     activeTabId={activeRequestTabId}
                     onTabChange={setActiveRequestTabId}
+                    className="ml-0"
+                    noPadding
                   />
                 )}
               </div>

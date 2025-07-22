@@ -1,5 +1,3 @@
-import React from "react";
-
 import { Icon } from "@/lib/ui";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
 
