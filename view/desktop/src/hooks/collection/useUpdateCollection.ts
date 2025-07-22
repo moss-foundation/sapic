@@ -20,8 +20,6 @@ export const useUpdateCollection = () => {
   return useMutation<UpdateCollectionOutput, Error, UpdateCollectionInput>({
     mutationFn: updateCollection,
     onSuccess: (data, variables) => {
-      console.log("updateCollection onSuccess", { result: data, input: variables });
-
       queryClient.setQueryData([USE_STREAMED_COLLECTIONS_QUERY_KEY], (old: StreamCollectionsEvent[]) => {
         return old.map((oldCollection) => {
           if (oldCollection.id !== data.id) return oldCollection;

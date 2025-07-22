@@ -77,8 +77,8 @@ export const useInstructionNode = (
             element,
             operations: {
               "reorder-before": isRootNode ? "not-available" : "available",
-              "reorder-after": isRootNode ? "not-available" : "available",
-              combine: isRootNode ? "available" : "not-available",
+              "reorder-after": isRootNode || (node.kind === "Dir" && node.expanded) ? "not-available" : "available",
+              combine: node.kind === "Dir" ? "available" : "not-available",
             },
           });
         },
