@@ -40,7 +40,8 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = ({
               className={cn(
                 "flex items-center justify-between rounded-md rounded-r-none px-3 py-2 text-sm font-medium transition-colors",
                 "background-(--moss-primary-background) text-orange-600",
-                "focus:ring-2 focus:ring-orange-500 focus:ring-offset-1 focus:outline-none",
+                "focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-(--moss-primary)",
+                "data-[state=open]:outline-2 data-[state=open]:-outline-offset-1 data-[state=open]:outline-(--moss-primary)",
                 "border border-r-0 border-gray-200",
                 "w-24"
               )}
