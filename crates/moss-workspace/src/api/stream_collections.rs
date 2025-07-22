@@ -24,8 +24,9 @@ impl<R: AppRuntime> Workspace<R> {
             if let Err(e) = channel.send(StreamCollectionsEvent {
                 id: collection.id,
                 name: collection.name,
-                repository: collection.repository,
                 order: collection.order,
+                expanded: collection.expanded,
+                repository: collection.repository,
                 picture_path: collection.icon_path,
             }) {
                 println!("Error sending collection event: {:?}", e); // TODO: log error

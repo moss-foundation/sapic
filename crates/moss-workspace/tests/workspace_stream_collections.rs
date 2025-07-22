@@ -54,7 +54,7 @@ async fn stream_collections_single_collection() {
                 name: collection_name.clone(),
                 order: collection_order,
                 external_path: None,
-                repo: None,
+                repository: None,
                 icon_path: None,
             },
         )
@@ -112,7 +112,7 @@ async fn stream_collections_multiple_collections() {
                     name: collection_name.clone(),
                     order: collection_order,
                     external_path: None,
-                    repo: None,
+                    repository: None,
                     icon_path: None,
                 },
             )
@@ -176,7 +176,7 @@ async fn stream_collections_with_repository() {
                 name: collection_name.clone(),
                 order: collection_order,
                 external_path: None,
-                repo: Some(repository_url.clone()),
+                repository: Some(repository_url.clone()),
                 icon_path: None,
             },
         )
@@ -237,7 +237,7 @@ async fn stream_collections_with_icon() {
                 name: collection_name.clone(),
                 order: collection_order,
                 external_path: None,
-                repo: None,
+                repository: None,
                 icon_path: Some(icon_path.clone()),
             },
         )
@@ -296,7 +296,7 @@ async fn stream_collections_mixed_configurations() {
                 name: name1.clone(),
                 order: 1,
                 external_path: None,
-                repo: None,
+                repository: None,
                 icon_path: None,
             },
         )
@@ -314,7 +314,7 @@ async fn stream_collections_mixed_configurations() {
                 name: name2.clone(),
                 order: 2,
                 external_path: None,
-                repo: Some(repo2.clone()),
+                repository: Some(repo2.clone()),
                 icon_path: None,
             },
         )
@@ -331,7 +331,7 @@ async fn stream_collections_mixed_configurations() {
                 name: name3.clone(),
                 order: 3,
                 external_path: None,
-                repo: None,
+                repository: None,
                 icon_path: Some(icon_path.clone()),
             },
         )
@@ -408,7 +408,7 @@ async fn stream_collections_order_verification() {
                     name: collection_name.clone(),
                     order: *order,
                     external_path: None,
-                    repo: None,
+                    repository: None,
                     icon_path: None,
                 },
             )
