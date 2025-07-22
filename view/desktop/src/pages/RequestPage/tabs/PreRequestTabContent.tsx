@@ -1,9 +1,11 @@
+import { TreeCollectionNode } from "@/components/CollectionTree/types";
+import { EntryKind } from "@repo/moss-collection";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
 
 export const PreRequestTabContent = ({}: IDockviewPanelProps<{
-  node?: any;
+  node?: TreeCollectionNode;
   treeId: string;
-  iconType: any;
+  iconType: EntryKind;
   someRandomString: string;
 }>) => {
   return (
