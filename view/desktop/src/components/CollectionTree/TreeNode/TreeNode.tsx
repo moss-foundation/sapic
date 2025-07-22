@@ -12,21 +12,6 @@ import TreeNodeButton from "./TreeNodeButton";
 import TreeNodeChildren from "./TreeNodeChildren";
 import TreeNodeRenameForm from "./TreeNodeRenameForm";
 
-const shouldRenderTreeNode = (
-  node: TreeCollectionNode,
-  searchInput: string | undefined,
-  isAddingFileNode: boolean,
-  isAddingFolderNode: boolean
-) => {
-  if (isAddingFileNode || isAddingFolderNode) return true;
-
-  if (searchInput) return true;
-
-  if (node.kind === "Dir" && node.expanded) return true;
-
-  return false;
-};
-
 export interface TreeNodeComponentProps {
   node: TreeCollectionNode;
   depth: number;
@@ -42,15 +27,6 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
 
   const { deleteAndUpdatePeers } = useDeleteAndUpdatePeers(id, node, parentNode);
 
-  const {
-    isAddingFileNode,
-    isAddingFolderNode,
-    setIsAddingFileNode,
-    setIsAddingFolderNode,
-    handleAddFormSubmit,
-    handleAddFormCancel,
-  } = useNodeAddForm(node);
-
   // const {
   //   isAddingDividerNode: isAddingDividerNodeAbove,
   //   setIsAddingDividerNode: setIsAddingDividerNodeAbove,
@@ -65,11 +41,23 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
   //   handleAddDividerFormCancel: handleAddDividerFormCancelBelow,
   // } = useAddNodeWithDivider(parentNode, onNodeUpdate, node.order + 1);
 
+  const {
+    isAddingFileNode,
+    isAddingFolderNode,
+    setIsAddingFileNode,
+    setIsAddingFolderNode,
+    handleAddFormSubmit,
+    handleAddFormCancel,
+  } = useNodeAddForm(node);
+
   const { isRenamingNode, setIsRenamingNode, handleRenamingFormSubmit, handleRenamingFormCancel } =
     useNodeRenamingForm(node);
 
-  const [preview, setPreview] = useState<HTMLElement | null>(null);
+  const handleDeleteNode = async () => {
+    await deleteAndUpdatePeers();
+  };
 
+  const [preview, setPreview] = useState<HTMLElement | null>(null);
   const { instruction, isDragging, canDrop } = useInstructionNode(
     node,
     parentNode,
@@ -79,10 +67,6 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
     isRootNode,
     setPreview
   );
-
-  const handleDeleteNode = async () => {
-    await deleteAndUpdatePeers();
-  };
 
   const shouldRenderChildNodes = node.expanded || isAddingFileNode || isAddingFolderNode;
   const shouldRenderAddingFormDivider = false; // !isAddingDividerNodeAbove && !isAddingDividerNodeBelow;

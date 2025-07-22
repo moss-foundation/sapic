@@ -51,6 +51,7 @@ export const useDraggableRootNode = (
         }
       }
     };
+
     return combine(
       draggable({
         element,

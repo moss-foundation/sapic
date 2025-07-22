@@ -2,6 +2,7 @@ import { useCallback, useEffect } from "react";
 
 import { useCollectionsTrees } from "@/hooks";
 import { useBatchUpdateCollection } from "@/hooks/collection/useBatchUpdateCollection";
+import { extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { DragLocationHistory, ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
@@ -9,6 +10,7 @@ import { TreeCollectionRootNode } from "../types";
 
 export const useCollectionsDragAndDropHandler = () => {
   const { collectionsTrees } = useCollectionsTrees();
+
   const { mutateAsync: batchUpdateCollection } = useBatchUpdateCollection();
 
   const handleReorder = useCallback(
@@ -23,37 +25,40 @@ export const useCollectionsDragAndDropHandler = () => {
       }
 
       try {
-        const sortedCollections = [...collectionsTrees].sort((a, b) => a.order! - b.order!);
+        const sorted = [...collectionsTrees].sort((a, b) => a.order! - b.order!);
 
-        const sourceIndex = sortedCollections.findIndex((collection) => collection.id === sourceData.data.collectionId);
-        const targetIndex = sortedCollections.findIndex((collection) => collection.id === targetData.data.collectionId);
+        const sourceIndex = sorted.findIndex((collection) => collection.id === sourceData.data.collectionId);
+        const targetIndex = sorted.findIndex((collection) => collection.id === targetData.data.collectionId);
 
         if (sourceIndex === -1 || targetIndex === -1) {
           console.error("Source or target collection not found");
           return;
         }
 
-        const insertionIndex = targetData.data.closestEdge === "top" ? targetIndex : targetIndex + 1;
+        const insertAt = targetData.data.instruction.operation === "reorder-before" ? targetIndex : targetIndex + 1;
 
-        const collectionToMove = sortedCollections[sourceIndex];
-        const newCollections = [
-          ...sortedCollections.slice(0, sourceIndex),
-          ...sortedCollections.slice(sourceIndex + 1),
-        ];
+        const collectionToMove = sorted[sourceIndex];
 
-        const finalCollections = [
-          ...newCollections.slice(0, sourceIndex < insertionIndex ? insertionIndex - 1 : insertionIndex),
+        const inserted = [
+          ...sorted.slice(0, insertAt).filter((collection) => collection.id !== collectionToMove.id),
           collectionToMove,
-          ...newCollections.slice(sourceIndex < insertionIndex ? insertionIndex - 1 : insertionIndex),
+          ...sorted.slice(insertAt).filter((collection) => collection.id !== collectionToMove.id),
         ];
 
-        const collectionsWithUpdatedOrder = finalCollections.map((collection, index) => ({
+        const reordered = inserted.map((collection, index) => ({
           ...collection,
           order: index + 1,
         }));
 
+        const collectionsToUpdate = reordered.filter((reorderedCollection) => {
+          const collectionUnderQuestion = sorted.find(
+            (sortedCollection) => sortedCollection.id === reorderedCollection.id
+          );
+          return collectionUnderQuestion!.order !== reorderedCollection.order;
+        });
+
         await batchUpdateCollection({
-          items: collectionsWithUpdatedOrder.map((collection) => ({
+          items: collectionsToUpdate.map((collection) => ({
             id: collection.id,
             order: collection.order,
           })),
@@ -84,13 +89,18 @@ export const useCollectionsDragAndDropHandler = () => {
     };
   };
   const getTreeRootNodeTargetData = (location: DragLocationHistory) => {
+    const instruction = extractInstruction(location.current?.dropTargets[0].data);
+
     return {
       type: "TreeRootNode",
-      data: location.current?.dropTargets[0].data,
+      data: {
+        ...location.current?.dropTargets[0].data,
+        instruction,
+      },
     } as {
       type: "TreeRootNode";
       data: {
-        closestEdge: "top" | "bottom";
+        instruction: Instruction;
         collectionId: string;
         node: TreeCollectionRootNode;
       };

@@ -21,6 +21,7 @@ export interface TreeRootNodeProps {
 
 export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
   const { searchInput, rootOffset } = useContext(TreeContext);
+
   const { data: streamedCollections } = useStreamedCollections();
 
   const draggableRootRef = useRef<HTMLDivElement>(null);

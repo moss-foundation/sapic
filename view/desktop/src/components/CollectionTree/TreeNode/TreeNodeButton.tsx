@@ -49,7 +49,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
     },
     ref
   ) => {
-    const { id, nodeOffset, searchInput, paddingLeft, paddingRight, rootOffset } = useContext(TreeContext);
+    const { id, nodeOffset, searchInput, paddingRight, rootOffset } = useContext(TreeContext);
 
     const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
@@ -159,7 +159,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                 <Icon icon="ChevronRight" />
               </div>
 
-              <div className="underline">{node.order}</div>
+              {/* <div className="underline">{node.order}</div> */}
               <TreeNodeIcon node={node} isRootNode={isRootNode} />
 
               <NodeLabel label={node.name} searchInput={searchInput} className={cn({ "capitalize": isRootNode })} />
