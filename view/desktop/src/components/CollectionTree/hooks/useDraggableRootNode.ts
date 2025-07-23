@@ -74,6 +74,7 @@ export const useDraggableRootNode = (
         getData({ input }) {
           return attachInstruction(
             {
+              type: "TreeRootNode",
               node,
               collectionId: id,
             },

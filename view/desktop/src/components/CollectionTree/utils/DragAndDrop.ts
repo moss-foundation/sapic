@@ -31,7 +31,7 @@ export const getLocationTreeRootNodeData = (location: DragLocationHistory): Drop
   const instruction = extractInstruction(location.current.dropTargets[0].data);
 
   return {
-    ...(location.current.dropTargets[0].data.data as DropRootNode),
+    ...(location.current.dropTargets[0].data as unknown as DropRootNode),
     "instruction": instruction ?? undefined,
   };
 };

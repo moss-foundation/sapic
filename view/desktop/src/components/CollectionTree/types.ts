@@ -36,6 +36,7 @@ export interface DropNode {
 }
 
 export interface DropRootNode {
+  type: "TreeRootNode";
   collectionId: string;
   node: TreeCollectionRootNode;
   instruction?: Instruction;

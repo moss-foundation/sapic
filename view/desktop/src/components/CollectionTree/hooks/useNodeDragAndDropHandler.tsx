@@ -9,6 +9,7 @@ import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollection
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { join } from "@tauri-apps/api/path";
 
+import { DragNode, DropRootNode } from "../types";
 import { canDropNode } from "../utils";
 import { getLocationTreeNodeData, getLocationTreeRootNodeData, getSourceTreeNodeData } from "../utils/DragAndDrop";
 import { getPathWithoutName, prepareEntriesForDrop } from "../utils/Path";
@@ -31,6 +32,58 @@ export const useNodeDragAndDropHandler = () => {
 
   const { fetchEntriesForPath } = useFetchEntriesForPath();
 
+  const moveNodeToAnotherCollectionRoot = async (
+    sourceTreeNodeData: DragNode,
+    locationTreeRootNodeData: DropRootNode
+  ) => {
+    const allEntries = getAllNestedEntries(sourceTreeNodeData.node);
+    const entriesPreparedForDrop = await prepareEntriesForDrop(allEntries);
+    const entriesWithoutName = await Promise.all(
+      entriesPreparedForDrop.map(async (entry) => {
+        const pathWithoutName = await getPathWithoutName(entry);
+
+        return {
+          ...entry,
+          path: pathWithoutName,
+        };
+      })
+    );
+    const newOrder = locationTreeRootNodeData.node.requests.childNodes.length + 1;
+
+    await deleteCollectionEntry({
+      collectionId: sourceTreeNodeData.collectionId,
+      input: { id: sourceTreeNodeData.node.id },
+    });
+
+    const batchCreateEntryInput = await Promise.all(
+      entriesWithoutName.map(async (entry, index) => {
+        const newEntryPath = await join(locationTreeRootNodeData.node.requests.path.raw, entry.path.raw);
+
+        if (index === 0) {
+          return createEntryKind(
+            entry.name,
+            locationTreeRootNodeData.node.requests.path.raw,
+            entry.kind === "Dir",
+            entry.class,
+            newOrder
+          );
+        } else {
+          return createEntryKind(entry.name, newEntryPath, entry.kind === "Dir", entry.class, entry.order!);
+        }
+      })
+    );
+
+    await batchCreateCollectionEntry({
+      collectionId: locationTreeRootNodeData.collectionId,
+      input: {
+        entries: batchCreateEntryInput,
+      },
+    });
+
+    await fetchEntriesForPath(locationTreeRootNodeData.collectionId, locationTreeRootNodeData.node.requests.path.raw);
+    await fetchEntriesForPath(sourceTreeNodeData.collectionId, sourceTreeNodeData.parentNode.path.raw);
+  };
+
   useEffect(() => {
     return monitorForElements({
       canMonitor({ source }) {
@@ -41,8 +94,6 @@ export const useNodeDragAndDropHandler = () => {
         const locationTreeNodeData = getLocationTreeNodeData(location);
         const locationTreeRootNodeData = getLocationTreeRootNodeData(location);
 
-        console.log("locationTreeRootNodeData", locationTreeRootNodeData);
-
         const operation = getInstructionFromLocation(location)?.operation;
 
         if (!sourceTreeNodeData) {
@@ -51,55 +102,8 @@ export const useNodeDragAndDropHandler = () => {
         }
 
         if (locationTreeRootNodeData && operation === "combine") {
-          const allEntries = getAllNestedEntries(sourceTreeNodeData.node);
-          const entriesPreparedForDrop = await prepareEntriesForDrop(allEntries);
-          const entriesWithoutName = await Promise.all(
-            entriesPreparedForDrop.map(async (entry) => {
-              const pathWithoutName = await getPathWithoutName(entry);
-
-              return {
-                ...entry,
-                path: pathWithoutName,
-              };
-            })
-          );
-          const newOrder = locationTreeRootNodeData.node.requests.childNodes.length + 1;
-
-          await deleteCollectionEntry({
-            collectionId: sourceTreeNodeData.collectionId,
-            input: { id: sourceTreeNodeData.node.id },
-          });
-
-          const batchCreateEntryInput = await Promise.all(
-            entriesWithoutName.map(async (entry, index) => {
-              const newEntryPath = await join(locationTreeRootNodeData.node.requests.path.raw, entry.path.raw);
-
-              if (index === 0) {
-                return createEntryKind(
-                  entry.name,
-                  locationTreeRootNodeData.node.requests.path.raw,
-                  entry.kind === "Dir",
-                  entry.class,
-                  newOrder
-                );
-              } else {
-                return createEntryKind(entry.name, newEntryPath, entry.kind === "Dir", entry.class, entry.order!);
-              }
-            })
-          );
-
-          await batchCreateCollectionEntry({
-            collectionId: locationTreeRootNodeData.collectionId,
-            input: {
-              entries: batchCreateEntryInput,
-            },
-          });
-
-          await fetchEntriesForPath(
-            locationTreeRootNodeData.collectionId,
-            locationTreeRootNodeData.node.requests.path.raw
-          );
-          await fetchEntriesForPath(sourceTreeNodeData.collectionId, sourceTreeNodeData.parentNode.path.raw);
+          await moveNodeToAnotherCollectionRoot(sourceTreeNodeData, locationTreeRootNodeData);
+          return;
         }
 
         if (!locationTreeNodeData) {
@@ -213,113 +217,76 @@ export const useNodeDragAndDropHandler = () => {
             })
           );
 
-          if (operation === "combine") {
-            const newOrder = locationTreeNodeData.node.childNodes.length + 1;
+          const dropOrder =
+            operation === "reorder-before"
+              ? locationTreeNodeData.node.order! - 0.5
+              : locationTreeNodeData.node.order! + 0.5;
 
-            await deleteCollectionEntry({
-              collectionId: sourceTreeNodeData.collectionId,
-              input: { id: sourceTreeNodeData.node.id },
-            });
+          const sortedParentNodes = sortByOrder(locationTreeNodeData.parentNode.childNodes);
 
-            const batchCreateEntryInput = await Promise.all(
-              entriesWithoutName.map(async (entry, index) => {
-                const newEntryPath = await join(locationTreeNodeData.node.path.raw, entry.path.raw);
+          const parentNodesWithNewOrders = [
+            ...sortedParentNodes.slice(0, dropOrder),
+            sourceTreeNodeData.node,
+            ...sortedParentNodes.slice(dropOrder),
+          ].map((entry, index) => ({ ...entry, order: index + 1 }));
+          const newOrder = parentNodesWithNewOrders.findIndex((entry) => entry.id === sourceTreeNodeData.node.id) + 1;
 
-                if (index === 0) {
-                  return createEntryKind(
-                    entry.name,
-                    locationTreeNodeData.node.path.raw,
-                    entry.kind === "Dir",
-                    entry.class,
-                    newOrder
-                  );
-                } else {
-                  return createEntryKind(entry.name, newEntryPath, entry.kind === "Dir", entry.class, entry.order!);
-                }
-              })
-            );
+          const parentEntriesToUpdate = parentNodesWithNewOrders.slice(dropOrder + 1).map((entry) => {
+            if (entry.kind === "Dir") {
+              return {
+                DIR: {
+                  id: entry.id,
+                  order: entry.order,
+                },
+              };
+            } else {
+              return {
+                ITEM: {
+                  id: entry.id,
+                  order: entry.order,
+                },
+              };
+            }
+          });
 
-            await batchCreateCollectionEntry({
-              collectionId: locationTreeNodeData.collectionId,
-              input: {
-                entries: batchCreateEntryInput,
-              },
-            });
+          await batchUpdateCollectionEntry({
+            collectionId: locationTreeNodeData.collectionId,
+            entries: {
+              entries: parentEntriesToUpdate,
+            },
+          });
 
-            await fetchEntriesForPath(locationTreeNodeData.collectionId, locationTreeNodeData.node.path.raw);
-            await fetchEntriesForPath(sourceTreeNodeData.collectionId, sourceTreeNodeData.parentNode.path.raw);
-          } else {
-            const dropOrder =
-              operation === "reorder-before"
-                ? locationTreeNodeData.node.order! - 0.5
-                : locationTreeNodeData.node.order! + 0.5;
+          await deleteCollectionEntry({
+            collectionId: sourceTreeNodeData.collectionId,
+            input: { id: sourceTreeNodeData.node.id },
+          });
 
-            const sortedParentNodes = sortByOrder(locationTreeNodeData.parentNode.childNodes);
-
-            const parentNodesWithNewOrders = [
-              ...sortedParentNodes.slice(0, dropOrder),
-              sourceTreeNodeData.node,
-              ...sortedParentNodes.slice(dropOrder),
-            ].map((entry, index) => ({ ...entry, order: index + 1 }));
-            const newOrder = parentNodesWithNewOrders.findIndex((entry) => entry.id === sourceTreeNodeData.node.id) + 1;
-
-            const parentEntriesToUpdate = parentNodesWithNewOrders.slice(dropOrder + 1).map((entry) => {
-              if (entry.kind === "Dir") {
-                return {
-                  DIR: {
-                    id: entry.id,
-                    order: entry.order,
-                  },
-                };
+          const batchCreateEntryInput = await Promise.all(
+            entriesWithoutName.map(async (entry, index) => {
+              if (index === 0) {
+                return createEntryKind(
+                  entry.name,
+                  locationTreeNodeData.parentNode.path.raw,
+                  entry.kind === "Dir",
+                  entry.class,
+                  newOrder
+                );
               } else {
-                return {
-                  ITEM: {
-                    id: entry.id,
-                    order: entry.order,
-                  },
-                };
+                const newEntryPath = await join(locationTreeNodeData.parentNode.path.raw, entry.path.raw);
+                return createEntryKind(entry.name, newEntryPath, entry.kind === "Dir", entry.class, entry.order!);
               }
-            });
+            })
+          );
 
-            await batchUpdateCollectionEntry({
-              collectionId: locationTreeNodeData.collectionId,
-              entries: {
-                entries: parentEntriesToUpdate,
-              },
-            });
+          await batchCreateCollectionEntry({
+            collectionId: locationTreeNodeData.collectionId,
+            input: {
+              entries: batchCreateEntryInput,
+            },
+          });
 
-            await deleteCollectionEntry({
-              collectionId: sourceTreeNodeData.collectionId,
-              input: { id: sourceTreeNodeData.node.id },
-            });
-
-            const batchCreateEntryInput = await Promise.all(
-              entriesWithoutName.map(async (entry, index) => {
-                if (index === 0) {
-                  return createEntryKind(
-                    entry.name,
-                    locationTreeNodeData.parentNode.path.raw,
-                    entry.kind === "Dir",
-                    entry.class,
-                    newOrder
-                  );
-                } else {
-                  const newEntryPath = await join(locationTreeNodeData.parentNode.path.raw, entry.path.raw);
-                  return createEntryKind(entry.name, newEntryPath, entry.kind === "Dir", entry.class, entry.order!);
-                }
-              })
-            );
-
-            await batchCreateCollectionEntry({
-              collectionId: locationTreeNodeData.collectionId,
-              input: {
-                entries: batchCreateEntryInput,
-              },
-            });
-
-            await fetchEntriesForPath(locationTreeNodeData.collectionId, locationTreeNodeData.parentNode.path.raw);
-            await fetchEntriesForPath(sourceTreeNodeData.collectionId, sourceTreeNodeData.parentNode.path.raw);
-          }
+          await fetchEntriesForPath(locationTreeNodeData.collectionId, locationTreeNodeData.parentNode.path.raw);
+          await fetchEntriesForPath(sourceTreeNodeData.collectionId, sourceTreeNodeData.parentNode.path.raw);
         }
       },
     });
