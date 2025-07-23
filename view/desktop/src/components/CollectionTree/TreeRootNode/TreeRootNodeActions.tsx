@@ -3,8 +3,8 @@ import { useContext, useState } from "react";
 import { ActionMenu, TreeContext } from "@/components";
 import { ActionButton } from "@/components/ActionButton";
 import { DeleteCollectionModal } from "@/components/Modals/Collection/DeleteCollectionModal";
-import { useFetchEntriesForPath } from "@/hooks/collection/derivedHooks/useFetchEntriesForPath";
 
+import { useRefreshCollection } from "../actions/useRefreshCollection";
 import { useToggleAllNodes } from "../actions/useToggleAllNodes";
 import { TreeCollectionRootNode } from "../types";
 
@@ -30,11 +30,10 @@ export const TreeRootNodeActions = ({
   const [showDeleteCollectionModal, setShowDeleteCollectionModal] = useState(false);
 
   const { expandAllNodes, collapseAllNodes } = useToggleAllNodes(node);
-
-  const { fetchEntriesForPath } = useFetchEntriesForPath();
+  const { refreshCollection } = useRefreshCollection(id);
 
   const handleRefresh = () => {
-    fetchEntriesForPath(id, "");
+    refreshCollection();
   };
 
   return (
