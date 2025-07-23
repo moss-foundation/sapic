@@ -22,7 +22,7 @@ import {
   sortByOrder,
 } from "../utils/utils2";
 
-export const useHandleNodeDragAndDrop = () => {
+export const useNodeDragAndDropHandler = () => {
   const { mutateAsync: createCollectionEntry } = useCreateCollectionEntry();
   const { mutateAsync: batchCreateCollectionEntry } = useBatchCreateCollectionEntry();
 
