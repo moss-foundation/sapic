@@ -35,6 +35,12 @@ export interface DropNode {
   instruction?: Instruction;
 }
 
+export interface DropRootNode {
+  collectionId: string;
+  node: TreeCollectionRootNode;
+  instruction?: Instruction;
+}
+
 export interface TreeProps {
   tree: TreeCollectionRootNode;
 

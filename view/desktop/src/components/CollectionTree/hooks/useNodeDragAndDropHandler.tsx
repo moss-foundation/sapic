@@ -10,14 +10,12 @@ import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/ad
 import { join } from "@tauri-apps/api/path";
 
 import { canDropNode } from "../utils";
+import { getLocationTreeNodeData, getLocationTreeRootNodeData, getSourceTreeNodeData } from "../utils/DragAndDrop";
 import { getPathWithoutName, prepareEntriesForDrop } from "../utils/Path";
 import {
   createEntryKind,
-  doesLocationHaveTreeNode,
   getAllNestedEntries,
   getInstructionFromLocation,
-  getLocationTreeNodeData,
-  getSourceTreeNodeData,
   isSourceTreeNode,
   sortByOrder,
 } from "../utils/utils2";
@@ -39,13 +37,75 @@ export const useNodeDragAndDropHandler = () => {
         return isSourceTreeNode(source);
       },
       onDrop: async ({ location, source }) => {
-        if (!isSourceTreeNode(source) || !doesLocationHaveTreeNode(location)) {
+        const sourceTreeNodeData = getSourceTreeNodeData(source);
+        const locationTreeNodeData = getLocationTreeNodeData(location);
+        const locationTreeRootNodeData = getLocationTreeRootNodeData(location);
+
+        console.log("locationTreeRootNodeData", locationTreeRootNodeData);
+
+        const operation = getInstructionFromLocation(location)?.operation;
+
+        if (!sourceTreeNodeData) {
+          console.warn("no source");
           return;
         }
 
-        const sourceTreeNodeData = getSourceTreeNodeData(source);
-        const locationTreeNodeData = getLocationTreeNodeData(location);
-        const operation = getInstructionFromLocation(location)?.operation;
+        if (locationTreeRootNodeData && operation === "combine") {
+          const allEntries = getAllNestedEntries(sourceTreeNodeData.node);
+          const entriesPreparedForDrop = await prepareEntriesForDrop(allEntries);
+          const entriesWithoutName = await Promise.all(
+            entriesPreparedForDrop.map(async (entry) => {
+              const pathWithoutName = await getPathWithoutName(entry);
+
+              return {
+                ...entry,
+                path: pathWithoutName,
+              };
+            })
+          );
+          const newOrder = locationTreeRootNodeData.node.requests.childNodes.length + 1;
+
+          await deleteCollectionEntry({
+            collectionId: sourceTreeNodeData.collectionId,
+            input: { id: sourceTreeNodeData.node.id },
+          });
+
+          const batchCreateEntryInput = await Promise.all(
+            entriesWithoutName.map(async (entry, index) => {
+              const newEntryPath = await join(locationTreeRootNodeData.node.requests.path.raw, entry.path.raw);
+
+              if (index === 0) {
+                return createEntryKind(
+                  entry.name,
+                  locationTreeRootNodeData.node.requests.path.raw,
+                  entry.kind === "Dir",
+                  entry.class,
+                  newOrder
+                );
+              } else {
+                return createEntryKind(entry.name, newEntryPath, entry.kind === "Dir", entry.class, entry.order!);
+              }
+            })
+          );
+
+          await batchCreateCollectionEntry({
+            collectionId: locationTreeRootNodeData.collectionId,
+            input: {
+              entries: batchCreateEntryInput,
+            },
+          });
+
+          await fetchEntriesForPath(
+            locationTreeRootNodeData.collectionId,
+            locationTreeRootNodeData.node.requests.path.raw
+          );
+          await fetchEntriesForPath(sourceTreeNodeData.collectionId, sourceTreeNodeData.parentNode.path.raw);
+        }
+
+        if (!locationTreeNodeData) {
+          console.warn("no location");
+          return;
+        }
 
         if (!canDropNode(sourceTreeNodeData, locationTreeNodeData) || !operation) {
           console.warn("can't drop");
