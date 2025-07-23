@@ -15,7 +15,7 @@ import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element
 import { join } from "@tauri-apps/api/path";
 
 import { useCollectionsDragAndDropHandler } from "./CollectionTree/hooks/useHandleCollectionsDragAndDrop";
-import { useMonitorForNodeDragAndDrop } from "./CollectionTree/hooks/useMonitorForNodeDragAndDrop";
+import { useHandleNodeDragAndDrop } from "./CollectionTree/hooks/useMonitorForNodeDragAndDrop";
 import {
   convertEntryInfoToCreateInput,
   getAllNestedEntries,
@@ -99,7 +99,7 @@ const CollectionCreationZone = () => {
   const { mutateAsync: deleteCollectionEntry } = useDeleteCollectionEntry();
   const { data: collections } = useStreamedCollections();
 
-  useMonitorForNodeDragAndDrop();
+  useHandleNodeDragAndDrop();
 
   useEffect(() => {
     const element = ref.current;
