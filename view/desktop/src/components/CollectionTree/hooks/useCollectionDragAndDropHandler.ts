@@ -6,7 +6,7 @@ import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/ad
 
 import { getTreeRootNodeSourceData, getTreeRootNodeTargetData } from "../utils";
 
-export const useCollectionsDragAndDropHandler = () => {
+export const useCollectionDragAndDropHandler = () => {
   const { collectionsTrees } = useCollectionsTrees();
 
   const { mutateAsync: batchUpdateCollection } = useBatchUpdateCollection();

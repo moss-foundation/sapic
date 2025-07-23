@@ -23,11 +23,5 @@ const batchCreateCollectionEntry = async ({ collectionId, input }: UseBatchCreat
 export const useBatchCreateCollectionEntry = () => {
   return useMutation<BatchCreateEntryOutput, Error, UseBatchCreateCollectionEntryInput>({
     mutationFn: batchCreateCollectionEntry,
-    onSuccess: (data, variables) => {
-      console.log("batchCreateCollectionEntry", {
-        data,
-        variables,
-      });
-    },
   });
 };
