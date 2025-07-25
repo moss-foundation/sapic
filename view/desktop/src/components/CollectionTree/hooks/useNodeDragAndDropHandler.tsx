@@ -317,7 +317,7 @@ export const useNodeDragAndDropHandler = () => {
         const operation = getInstructionFromLocation(location)?.operation;
 
         if (!sourceTreeNodeData) {
-          console.warn("no source");
+          console.warn("can't drop: no source");
           return;
         }
 
@@ -327,12 +327,12 @@ export const useNodeDragAndDropHandler = () => {
         }
 
         if (!locationTreeNodeData) {
-          console.warn("no location");
+          console.warn("can't drop: no location");
           return;
         }
 
         if (!canDropNode(sourceTreeNodeData, locationTreeNodeData) || !operation) {
-          console.warn("can't drop");
+          console.warn("can't drop: invalid operation");
           return;
         }
 
