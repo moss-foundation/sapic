@@ -21,7 +21,7 @@ const columnHelper = createColumnHelper<TestData>();
 // Default input cell component for parameters
 const ParamInputCell = ({ info }: { info: ExtendedCellContext<TestData, string> }) => {
   const [value, setValue] = useState(info.getValue());
-  const isSelected = info.row.getIsSelected();
+  const isDisabled = info.row.original.properties.disabled;
 
   const onBlur = () => {
     info.table.options.meta?.updateData(info.row.index, info.column.id, value);
@@ -29,8 +29,8 @@ const ParamInputCell = ({ info }: { info: ExtendedCellContext<TestData, string> 
 
   return (
     <input
-      className={`w-full truncate px-2 py-1.5 focus:outline-1 focus:outline-blue-500 disabled:text-gray-400 ${
-        !isSelected ? "opacity-60" : ""
+      className={`w-full truncate border-none bg-transparent px-2 py-1.5 placeholder-(--moss-requestpage-placeholder-color) focus:outline-1 focus:outline-blue-500 ${
+        isDisabled ? "text-(--moss-requestpage-text-disabled)" : "text-(--moss-primary-text)"
       }`}
       value={value}
       onChange={(e) => setValue(e.target.value)}
@@ -44,7 +44,7 @@ const ParamInputCell = ({ info }: { info: ExtendedCellContext<TestData, string> 
 // Template input cell component for value column with variable highlighting
 const ValueTemplateCell = ({ info }: { info: ExtendedCellContext<TestData, string> }) => {
   const [value, setValue] = useState(info.getValue());
-  //const isSelected = info.row.getIsSelected();
+  const isDisabled = info.row.original.properties.disabled;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setValue(e.target.value);
@@ -59,6 +59,9 @@ const ValueTemplateCell = ({ info }: { info: ExtendedCellContext<TestData, strin
     info.table.options.meta?.updateData(info.row.index, info.column.id, value);
   };
 
+  // Check if value contains template variables
+  const hasTemplateVariables = /\{\{[^}]+\}\}/.test(value);
+
   return (
     <div className={`w-full`}>
       <InputTemplating
@@ -68,7 +71,13 @@ const ValueTemplateCell = ({ info }: { info: ExtendedCellContext<TestData, strin
         onBlur={handleBlur}
         placeholder={info.column.id}
         size="sm"
-        className="w-full rounded-none border-none focus:outline-none"
+        className={`w-full rounded-none border-none placeholder-(--moss-requestpage-placeholder-color) focus:outline-none ${
+          isDisabled
+            ? "text-(--moss-requestpage-text-disabled)"
+            : hasTemplateVariables
+              ? "" // Let InputTemplating handle template variable colors
+              : "text-(--moss-primary-text)"
+        }`}
         autoFocus={info.focusOnMount}
       />
     </div>
@@ -178,11 +187,20 @@ const paramColumns = [
   }),
   columnHelper.accessor("key", {
     header: () => "Key",
-    cell: (info) => (
-      <div className="flex items-center">
-        <span className="text-sm text-gray-900">{info.getValue()}</span>
-      </div>
-    ),
+    cell: (info) => {
+      const isDisabled = info.row.original.properties.disabled;
+      return (
+        <div className="flex items-center">
+          <span
+            className={`px-2 py-1.5 text-sm ${
+              isDisabled ? "text-(--moss-requestpage-text-disabled)" : "text-(--moss-primary-text)"
+            }`}
+          >
+            {info.getValue()}
+          </span>
+        </div>
+      );
+    },
     minSize: 100,
   }),
   columnHelper.accessor("value", {

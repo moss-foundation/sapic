@@ -297,4 +297,6 @@
   --moss-requestpage-number-color: var(--moss-purple-3);
   --moss-requestpage-bool-color: var(--moss-teal-3);
   --moss-requestpage-icon-color: var(--moss-gray-7);
+  --moss-requestpage-text-disabled: var(--moss-gray-8);
+  --moss-requestpage-placeholder-color: var(--moss-gray-11);
 }
