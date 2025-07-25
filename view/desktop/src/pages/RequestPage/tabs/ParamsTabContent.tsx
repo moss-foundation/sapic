@@ -64,7 +64,7 @@ const ValueTemplateCell = ({ info }: { info: ExtendedCellContext<TestData, strin
   const hasTemplateVariables = /\{\{[^}]+\}\}/.test(value);
 
   return (
-    <div className={`w-full`}>
+    <div className={`w-full ${isDisabled ? "opacity-40" : ""}`}>
       <InputTemplating
         value={value}
         onChange={handleChange}
@@ -143,9 +143,11 @@ const TypeSelectCell = ({ info }: { info: ExtendedCellContext<TestData, string> 
 };
 
 // Actions cell component
-const ActionsCell = ({}: { row: Row<TestData> }) => {
+const ActionsCell = ({ row }: { row: Row<TestData> }) => {
+  const isDisabled = row.original.properties.disabled;
+
   return (
-    <div className="flex items-center gap-0.5">
+    <div className={`flex items-center gap-0.5 ${isDisabled ? "opacity-40" : ""}`}>
       <button>
         <Icon icon="AddToVcs" className="size-4" />
       </button>
