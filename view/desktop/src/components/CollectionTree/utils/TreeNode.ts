@@ -64,3 +64,8 @@ export const canDropNode = (sourceTarget: DragNode, dropTarget: DropNode) => {
 
   return true;
 };
+
+export const countNumberOfAllNestedChildNodes = (node: TreeCollectionNode): number => {
+  if (!node.childNodes) return 0;
+  return node.childNodes.reduce((acc, child) => acc + 1 + countNumberOfAllNestedChildNodes(child), 0);
+};

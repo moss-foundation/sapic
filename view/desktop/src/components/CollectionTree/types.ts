@@ -52,6 +52,7 @@ export interface TreeProps {
   searchInput?: string;
   sortBy?: SortTypes;
   displayMode?: WorkspaceMode;
+  showNodeOrders?: boolean;
 
   onTreeUpdate?: (tree: TreeCollectionRootNode) => void;
 }
@@ -66,4 +67,5 @@ export interface TreeContextProps extends StreamCollectionsEvent {
   allFoldersAreCollapsed: boolean;
   allFoldersAreExpanded: boolean;
   displayMode: WorkspaceMode;
+  showNodeOrders: boolean;
 }

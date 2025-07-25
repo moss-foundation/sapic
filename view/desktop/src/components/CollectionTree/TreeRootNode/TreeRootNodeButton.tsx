@@ -16,7 +16,7 @@ interface TreeRootNodeButtonProps {
 }
 
 export const TreeRootNodeButton = ({ node, searchInput, shouldRenderChildNodes }: TreeRootNodeButtonProps) => {
-  const { id, picturePath } = useContext(TreeContext);
+  const { id, picturePath, showNodeOrders } = useContext(TreeContext);
   const { api } = useTabbedPaneStore();
   const { mutateAsync: updateCollection } = useUpdateCollection();
 
@@ -82,6 +82,7 @@ export const TreeRootNodeButton = ({ node, searchInput, shouldRenderChildNodes }
         )}
       </span>
 
+      {showNodeOrders && <div className="underline">{node.order}</div>}
       <NodeLabel label={node.name} searchInput={searchInput} />
     </div>
   );

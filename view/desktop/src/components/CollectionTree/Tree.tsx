@@ -21,6 +21,7 @@ export const TreeContext = createContext<TreeContextProps>({
   searchInput: undefined,
   sortBy: "none",
   displayMode: "REQUEST_FIRST",
+  showNodeOrders: false,
 });
 
 export const CollectionTree = ({
@@ -33,6 +34,7 @@ export const CollectionTree = ({
   searchInput,
   sortBy = "none",
   displayMode = "REQUEST_FIRST",
+  showNodeOrders = false,
 }: TreeProps) => {
   const [tree, setTree] = useState<TreeCollectionRootNode>(initialTree);
 
@@ -59,6 +61,7 @@ export const CollectionTree = ({
         searchInput,
         sortBy,
         displayMode,
+        showNodeOrders,
       }}
     >
       <TreeRootNode node={tree} />

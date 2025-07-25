@@ -13,6 +13,7 @@ import { DropIndicatorWithInstruction } from "../DropIndicatorWithInstruction";
 import NodeLabel from "../NodeLabel";
 import { TreeContext } from "../Tree";
 import { TreeCollectionNode } from "../types";
+import { countNumberOfAllNestedChildNodes } from "../utils";
 import TreeNode from "./TreeNode";
 import { TreeNodeIcon } from "./TreeNodeIcon";
 
@@ -49,7 +50,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
     },
     ref
   ) => {
-    const { id, nodeOffset, searchInput, paddingRight, rootOffset } = useContext(TreeContext);
+    const { id, nodeOffset, searchInput, paddingRight, rootOffset, showNodeOrders } = useContext(TreeContext);
 
     const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
@@ -101,6 +102,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
 
     const nodePaddingLeft = depth * nodeOffset;
     const shouldRenderChildNodes = !!searchInput || (!searchInput && node.kind === "Dir" && node.expanded);
+    const numberOfAllNestedChildNodes = countNumberOfAllNestedChildNodes(node);
 
     return (
       <ActionMenu.Root modal={false}>
@@ -158,10 +160,13 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                 <Icon icon="ChevronRight" />
               </div>
 
-              <div className="underline">{node.order}</div>
+              {showNodeOrders && <div className="underline">{node.order}</div>}
               <TreeNodeIcon node={node} isRootNode={isRootNode} />
 
               <NodeLabel label={node.name} searchInput={searchInput} className={cn({ "capitalize": isRootNode })} />
+
+              {node.kind === "Dir" && <div className="text-xs text-gray-500">({numberOfAllNestedChildNodes})</div>}
+
               <span className="DragHandle h-full min-h-4 grow" />
             </span>
 
