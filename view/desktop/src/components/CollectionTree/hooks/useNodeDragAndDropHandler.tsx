@@ -32,58 +32,7 @@ export const useNodeDragAndDropHandler = () => {
 
   const { fetchEntriesForPath } = useFetchEntriesForPath();
 
-  const moveNodeToAnotherCollectionRoot = useCallback(
-    async (sourceTreeNodeData: DragNode, locationTreeRootNodeData: DropRootNode) => {
-      const allEntries = getAllNestedEntries(sourceTreeNodeData.node);
-      const entriesPreparedForDrop = await prepareEntriesForDrop(allEntries);
-      const entriesWithoutName = await Promise.all(
-        entriesPreparedForDrop.map(async (entry) => {
-          const pathWithoutName = await getPathWithoutName(entry);
-
-          return {
-            ...entry,
-            path: pathWithoutName,
-          };
-        })
-      );
-      const newOrder = locationTreeRootNodeData.node.requests.childNodes.length + 1;
-
-      await deleteCollectionEntry({
-        collectionId: sourceTreeNodeData.collectionId,
-        input: { id: sourceTreeNodeData.node.id },
-      });
-
-      const batchCreateEntryInput = await Promise.all(
-        entriesWithoutName.map(async (entry, index) => {
-          const newEntryPath = await join(locationTreeRootNodeData.node.requests.path.raw, entry.path.raw);
-
-          if (index === 0) {
-            return createEntryKind(
-              entry.name,
-              locationTreeRootNodeData.node.requests.path.raw,
-              entry.kind === "Dir",
-              entry.class,
-              newOrder
-            );
-          } else {
-            return createEntryKind(entry.name, newEntryPath, entry.kind === "Dir", entry.class, entry.order!);
-          }
-        })
-      );
-
-      await batchCreateCollectionEntry({
-        collectionId: locationTreeRootNodeData.collectionId,
-        input: {
-          entries: batchCreateEntryInput,
-        },
-      });
-
-      await fetchEntriesForPath(locationTreeRootNodeData.collectionId, locationTreeRootNodeData.node.requests.path.raw);
-      await fetchEntriesForPath(sourceTreeNodeData.collectionId, sourceTreeNodeData.parentNode.path.raw);
-    },
-    [deleteCollectionEntry, batchCreateCollectionEntry, fetchEntriesForPath]
-  );
-
+  //Within collection
   const handleCombineWithinCollection = useCallback(
     async (sourceTreeNodeData: DragNode, locationTreeNodeData: DropNode) => {
       const newOrder = locationTreeNodeData.node.childNodes.length + 1;
@@ -183,6 +132,59 @@ export const useNodeDragAndDropHandler = () => {
     [batchUpdateCollectionEntry, fetchEntriesForPath]
   );
 
+  //To another collection
+  const handleCombineToAnotherCollectionRoot = useCallback(
+    async (sourceTreeNodeData: DragNode, locationTreeRootNodeData: DropRootNode) => {
+      const allEntries = getAllNestedEntries(sourceTreeNodeData.node);
+      const entriesPreparedForDrop = await prepareEntriesForDrop(allEntries);
+      const entriesWithoutName = await Promise.all(
+        entriesPreparedForDrop.map(async (entry) => {
+          const pathWithoutName = await getPathWithoutName(entry);
+
+          return {
+            ...entry,
+            path: pathWithoutName,
+          };
+        })
+      );
+      const newOrder = locationTreeRootNodeData.node.requests.childNodes.length + 1;
+
+      await deleteCollectionEntry({
+        collectionId: sourceTreeNodeData.collectionId,
+        input: { id: sourceTreeNodeData.node.id },
+      });
+
+      const batchCreateEntryInput = await Promise.all(
+        entriesWithoutName.map(async (entry, index) => {
+          const newEntryPath = await join(locationTreeRootNodeData.node.requests.path.raw, entry.path.raw);
+
+          if (index === 0) {
+            return createEntryKind(
+              entry.name,
+              locationTreeRootNodeData.node.requests.path.raw,
+              entry.kind === "Dir",
+              entry.class,
+              newOrder
+            );
+          } else {
+            return createEntryKind(entry.name, newEntryPath, entry.kind === "Dir", entry.class, entry.order!);
+          }
+        })
+      );
+
+      await batchCreateCollectionEntry({
+        collectionId: locationTreeRootNodeData.collectionId,
+        input: {
+          entries: batchCreateEntryInput,
+        },
+      });
+
+      await fetchEntriesForPath(locationTreeRootNodeData.collectionId, locationTreeRootNodeData.node.requests.path.raw);
+      await fetchEntriesForPath(sourceTreeNodeData.collectionId, sourceTreeNodeData.parentNode.path.raw);
+    },
+    [deleteCollectionEntry, batchCreateCollectionEntry, fetchEntriesForPath]
+  );
+
   const handleMoveToAnotherCollection = useCallback(
     async (
       sourceTreeNodeData: DragNode,
@@ -209,14 +211,14 @@ export const useNodeDragAndDropHandler = () => {
 
       const sortedParentNodes = sortByOrder(locationTreeNodeData.parentNode.childNodes);
 
-      const parentNodesWithNewOrders = [
+      const dropParentNodesWithNewOrders = [
         ...sortedParentNodes.slice(0, dropOrder),
         sourceTreeNodeData.node,
         ...sortedParentNodes.slice(dropOrder),
       ].map((entry, index) => ({ ...entry, order: index + 1 }));
-      const newOrder = parentNodesWithNewOrders.findIndex((entry) => entry.id === sourceTreeNodeData.node.id) + 1;
+      const newOrder = dropParentNodesWithNewOrders.findIndex((entry) => entry.id === sourceTreeNodeData.node.id) + 1;
 
-      const parentEntriesToUpdate = parentNodesWithNewOrders.slice(dropOrder + 1).map((entry) => {
+      const dropParentEntriesToUpdate = dropParentNodesWithNewOrders.slice(dropOrder + 1).map((entry) => {
         if (entry.kind === "Dir") {
           return {
             DIR: {
@@ -234,10 +236,36 @@ export const useNodeDragAndDropHandler = () => {
         }
       });
 
+      const entriesAfterDeletedNodesWithUpdatedOrders = sourceTreeNodeData.parentNode.childNodes
+        .filter((entry) => entry.order! > sourceTreeNodeData.node.order!)
+        .map((entry) => {
+          if (entry.kind === "Dir") {
+            return {
+              DIR: {
+                id: entry.id,
+                order: entry.order! - 1,
+              },
+            };
+          } else {
+            return {
+              ITEM: {
+                id: entry.id,
+                order: entry.order! - 1,
+              },
+            };
+          }
+        });
+      await batchUpdateCollectionEntry({
+        collectionId: sourceTreeNodeData.collectionId,
+        entries: {
+          entries: entriesAfterDeletedNodesWithUpdatedOrders,
+        },
+      });
+
       await batchUpdateCollectionEntry({
         collectionId: locationTreeNodeData.collectionId,
         entries: {
-          entries: parentEntriesToUpdate,
+          entries: dropParentEntriesToUpdate,
         },
       });
 
@@ -294,7 +322,7 @@ export const useNodeDragAndDropHandler = () => {
         }
 
         if (locationTreeRootNodeData && operation === "combine") {
-          await moveNodeToAnotherCollectionRoot(sourceTreeNodeData, locationTreeRootNodeData);
+          await handleCombineToAnotherCollectionRoot(sourceTreeNodeData, locationTreeRootNodeData);
           return;
         }
 
@@ -311,14 +339,11 @@ export const useNodeDragAndDropHandler = () => {
         if (sourceTreeNodeData.collectionId === locationTreeNodeData.collectionId) {
           if (operation === "combine") {
             await handleCombineWithinCollection(sourceTreeNodeData, locationTreeNodeData);
-            return;
           } else {
             await handleReorderWithinCollection(sourceTreeNodeData, locationTreeNodeData, operation);
-            return;
           }
         } else {
           await handleMoveToAnotherCollection(sourceTreeNodeData, locationTreeNodeData, operation);
-          return;
         }
       },
     });
@@ -331,7 +356,7 @@ export const useNodeDragAndDropHandler = () => {
     handleCombineWithinCollection,
     handleMoveToAnotherCollection,
     handleReorderWithinCollection,
-    moveNodeToAnotherCollectionRoot,
+    handleCombineToAnotherCollectionRoot,
     updateCollectionEntry,
   ]);
 };

@@ -1,5 +1,5 @@
 export * from "./Form";
-export * from "./Node";
 export * from "./Path";
 export * from "./Tree";
+export * from "./TreeNode";
 export * from "./TreeRoot";

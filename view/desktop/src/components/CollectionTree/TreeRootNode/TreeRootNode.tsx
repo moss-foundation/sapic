@@ -7,13 +7,13 @@ import { DropIndicatorWithInstruction } from "../DropIndicatorWithInstruction";
 import { useDraggableRootNode } from "../hooks/useDraggableRootNode";
 import { TreeContext } from "../Tree";
 import { TreeCollectionRootNode } from "../types";
+import { calculateShouldRenderRootChildNodes } from "../utils";
 import { useRootNodeAddForm } from "./hooks/useRootNodeAddForm";
 import { useRootNodeRenamingForm } from "./hooks/useRootNodeRenamingForm";
 import { TreeRootNodeActions } from "./TreeRootNodeActions";
 import { TreeRootNodeButton } from "./TreeRootNodeButton";
 import { TreeRootNodeChildren } from "./TreeRootNodeChildren";
 import { TreeRootNodeRenameForm } from "./TreeRootNodeRenameForm";
-import { calculateShouldRenderRootChildNodes } from "./utils";
 
 export interface TreeRootNodeProps {
   node: TreeCollectionRootNode;

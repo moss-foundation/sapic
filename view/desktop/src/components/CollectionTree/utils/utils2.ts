@@ -24,10 +24,6 @@ export const isSourceTreeNode = (source: ElementDragPayload): boolean => {
   return source.data.type === "TreeNode";
 };
 
-export const isSourceTreeRootNode = (source: ElementDragPayload): boolean => {
-  return source.data.type === "TreeRootNode";
-};
-
 export const doesLocationHaveTreeNode = (location: DragLocationHistory): boolean => {
   if (location.current.dropTargets.length === 0) return false;
   return location.current.dropTargets[0].data.type === "TreeNode";
@@ -49,10 +45,18 @@ export const getLocationTreeNodeData = (location: DragLocationHistory): DropNode
 export const getAllNestedEntries = (node: TreeCollectionNode): EntryInfo[] => {
   const result: EntryInfo[] = [];
 
-  const { childNodes, ...entryInfo } = node;
-  result.push(entryInfo);
+  result.push({
+    id: node.id,
+    name: node.name,
+    kind: node.kind,
+    order: node.order,
+    class: node.class,
+    path: node.path,
+    protocol: node.protocol,
+    expanded: node.expanded,
+  });
 
-  for (const child of childNodes) {
+  for (const child of node.childNodes) {
     result.push(...getAllNestedEntries(child));
   }
 
