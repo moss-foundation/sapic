@@ -132,13 +132,13 @@ const ActionsCell = ({ row }: { row: any }) => {
   return (
     <div className="flex items-center gap-1">
       <button className="p-1 text-gray-400 hover:text-gray-600">
-        <Icon icon="Add" className="h-3 w-3" />
+        <Icon icon="AddToVcs" className="h-3 w-3" />
       </button>
       <button className="p-1 text-gray-400 hover:text-gray-600">
-        <Icon icon="Find" className="h-3 w-3" />
+        <Icon icon="ConfigMap" className="h-3 w-3" />
       </button>
       <button className="p-1 text-red-400 hover:text-red-600">
-        <Icon icon="Delete" className="h-3 w-3" />
+        <Icon icon="RemoveCircle" className="h-3 w-3" />
       </button>
     </div>
   );
