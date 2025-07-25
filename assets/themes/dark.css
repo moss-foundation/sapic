@@ -293,4 +293,8 @@
   /* RequestPage */
   --moss-requestpage-border-color: var(--moss-gray-11);
   --moss-requestpage-text: var(--moss-orange-4);
+  --moss-requestpage-string-color: var(--moss-green-3);
+  --moss-requestpage-number-color: var(--moss-purple-3);
+  --moss-requestpage-bool-color: var(--moss-teal-3);
+  --moss-requestpage-icon-color: var(--moss-gray-7);
 }

@@ -7,6 +7,8 @@ import { IDockviewPanelProps } from "@repo/moss-tabs";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { DataTable, TestData } from "@/components/Table";
 import { InputTemplating } from "@/components/InputTemplating";
+import { ActionMenu } from "@/components";
+import { cn } from "@/utils";
 
 // Column helper for parameter tables using TestData
 const columnHelper = createColumnHelper<TestData>();
@@ -37,7 +39,7 @@ const ParamInputCell = ({ info }: { info: any }) => {
 // Template input cell component for value column with variable highlighting
 const ValueTemplateCell = ({ info }: { info: any }) => {
   const [value, setValue] = useState(info.getValue());
-  const isSelected = info.row.getIsSelected();
+  //const isSelected = info.row.getIsSelected();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setValue(e.target.value);
@@ -71,25 +73,57 @@ const ValueTemplateCell = ({ info }: { info: any }) => {
 // Type selector cell component
 const TypeSelectCell = ({ info }: { info: any }) => {
   const [value, setValue] = useState(info.getValue());
+  const DATA_TYPES = ["string", "number", "bool"];
 
-  const onBlur = () => {
-    info.table.options.meta?.updateData(info.row.index, info.column.id, value);
+  const handleTypeChange = (newType: string) => {
+    setValue(newType);
+    info.table.options.meta?.updateData(info.row.index, info.column.id, newType);
+  };
+
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case "string":
+        return "text-(--moss-requestpage-string-color)";
+      case "number":
+        return "text-(--moss-requestpage-number-color)";
+      case "bool":
+        return "text-(--moss-requestpage-bool-color)";
+      default:
+        return "text-gray-500";
+    }
   };
 
   return (
-    <select
-      className="w-full border-none bg-transparent px-2 py-1.5 text-sm outline-none focus:outline-1 focus:outline-blue-500"
-      value={value}
-      onChange={(e) => {
-        setValue(e.target.value);
-        info.table.options.meta?.updateData(info.row.index, info.column.id, e.target.value);
-      }}
-      onBlur={onBlur}
-    >
-      <option value="string">string</option>
-      <option value="number">number</option>
-      <option value="bool">bool</option>
-    </select>
+    <ActionMenu.Root>
+      <ActionMenu.Trigger asChild>
+        <button
+          className={cn(
+            "flex w-full items-center justify-between px-2 py-1.5 text-sm transition-colors",
+            "border-none bg-transparent",
+            "focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-(--moss-primary)",
+            "data-[state=open]:outline-2 data-[state=open]:-outline-offset-1 data-[state=open]:outline-(--moss-primary)",
+            getTypeColor(value)
+          )}
+        >
+          <span>{value}</span>
+          <Icon icon="ChevronDown" className="h-3 w-3 cursor-pointer text-(--moss-requestpage-icon-color)" />
+        </button>
+      </ActionMenu.Trigger>
+      <ActionMenu.Content>
+        {DATA_TYPES.map((dataType) => (
+          <ActionMenu.Item
+            key={dataType}
+            onClick={() => handleTypeChange(dataType)}
+            className={cn(
+              getTypeColor(dataType),
+              value === dataType && "background-(--moss-secondary-background-hover) font-medium"
+            )}
+          >
+            {dataType}
+          </ActionMenu.Item>
+        ))}
+      </ActionMenu.Content>
+    </ActionMenu.Root>
   );
 };
 

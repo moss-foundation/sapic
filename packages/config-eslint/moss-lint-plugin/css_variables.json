@@ -229,5 +229,9 @@
   "--moss-auth-indicator-color",
   "--moss-tab-badge-color",
   "--moss-requestpage-border-color",
-  "--moss-requestpage-text"
+  "--moss-requestpage-text",
+  "--moss-requestpage-string-color",
+  "--moss-requestpage-number-color",
+  "--moss-requestpage-bool-color",
+  "--moss-requestpage-icon-color"
 ]
