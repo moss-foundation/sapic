@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { createColumnHelper, CellContext, Row } from "@tanstack/react-table";
+import { CheckedState } from "@radix-ui/react-checkbox";
 import { Icon } from "@/lib/ui";
 import { TreeCollectionNode } from "@/components/CollectionTree/types";
 import { EntryKind } from "@repo/moss-collection";
@@ -159,18 +160,25 @@ const ActionsCell = ({}: { row: Row<TestData> }) => {
 };
 
 // Enabled checkbox cell component
-const EnabledCheckboxCell = ({ row }: { row: Row<TestData> }) => {
-  const [enabled, setEnabled] = useState(!row.original.properties.disabled);
+const EnabledCheckboxCell = ({ row, table }: { row: Row<TestData>; table: any }) => {
+  const enabled = !row.original.properties.disabled;
+
+  const handleCheckedChange = (checked: CheckedState) => {
+    const isChecked = checked === true;
+
+    // Update the data using the table's update mechanism
+    const updatedProperties = {
+      ...row.original.properties,
+      disabled: !isChecked,
+    };
+
+    // Use the table's meta updateData function to trigger re-renders
+    table.options.meta?.updateData(row.index, "properties", updatedProperties);
+  };
+
   return (
     <div className="flex items-center">
-      <CheckboxWithLabel
-        checked={enabled}
-        onCheckedChange={(checked) => {
-          setEnabled(!!checked);
-          // Update the data
-          row.original.properties.disabled = !checked;
-        }}
-      />
+      <CheckboxWithLabel checked={enabled} onCheckedChange={handleCheckedChange} />
     </div>
   );
 };
@@ -180,7 +188,7 @@ const paramColumns = [
   columnHelper.display({
     id: "enabled",
     header: "",
-    cell: ({ row }) => <EnabledCheckboxCell row={row} />,
+    cell: ({ row, table }) => <EnabledCheckboxCell row={row} table={table} />,
     enableSorting: false,
     enableResizing: false,
     size: 40,
