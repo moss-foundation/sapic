@@ -165,7 +165,9 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
 
               <NodeLabel label={node.name} searchInput={searchInput} className={cn({ "capitalize": isRootNode })} />
 
-              {node.kind === "Dir" && <div className="text-xs text-gray-500">({numberOfAllNestedChildNodes})</div>}
+              {node.kind === "Dir" && (
+                <div className="text-(--moss-tree-entries-counter)">({numberOfAllNestedChildNodes})</div>
+              )}
 
               <span className="DragHandle h-full min-h-4 grow" />
             </span>
