@@ -135,15 +135,15 @@ const TypeSelectCell = ({ info }: { info: ExtendedCellContext<TestData, string> 
 // Actions cell component
 const ActionsCell = ({}: { row: Row<TestData> }) => {
   return (
-    <div className="flex items-center gap-1">
-      <button className="p-1 text-gray-400 hover:text-gray-600">
-        <Icon icon="AddToVcs" className="h-3 w-3" />
+    <div className="flex items-center gap-0.5">
+      <button>
+        <Icon icon="AddToVcs" className="size-4" />
       </button>
-      <button className="p-1 text-gray-400 hover:text-gray-600">
-        <Icon icon="ConfigMap" className="h-3 w-3" />
+      <button>
+        <Icon icon="ConfigMap" className="size-4" />
       </button>
-      <button className="p-1 text-red-400 hover:text-red-600">
-        <Icon icon="RemoveCircle" className="h-3 w-3" />
+      <button>
+        <Icon icon="RemoveCircle" className="size-4" />
       </button>
     </div>
   );
