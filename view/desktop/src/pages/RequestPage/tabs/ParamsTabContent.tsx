@@ -6,6 +6,7 @@ import { EntryKind } from "@repo/moss-collection";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { DataTable, TestData } from "@/components/Table";
+import { InputTemplating } from "@/components/InputTemplating";
 
 // Column helper for parameter tables using TestData
 const columnHelper = createColumnHelper<TestData>();
@@ -30,6 +31,40 @@ const ParamInputCell = ({ info }: { info: any }) => {
       onBlur={onBlur}
       placeholder={info.column.id}
     />
+  );
+};
+
+// Template input cell component for value column with variable highlighting
+const ValueTemplateCell = ({ info }: { info: any }) => {
+  const [value, setValue] = useState(info.getValue());
+  const isSelected = info.row.getIsSelected();
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setValue(e.target.value);
+  };
+
+  const handleTemplateChange = (newValue: string, variables: string[]) => {
+    setValue(newValue);
+    info.table.options.meta?.updateData(info.row.index, info.column.id, newValue);
+  };
+
+  const handleBlur = () => {
+    info.table.options.meta?.updateData(info.row.index, info.column.id, value);
+  };
+
+  return (
+    <div className={`w-full`}>
+      <InputTemplating
+        value={value}
+        onChange={handleChange}
+        onTemplateChange={handleTemplateChange}
+        onBlur={handleBlur}
+        placeholder={info.column.id}
+        size="sm"
+        className="w-full rounded-none border-none focus:outline-none"
+        autoFocus={info.focusOnMount}
+      />
+    </div>
   );
 };
 
@@ -110,7 +145,7 @@ const paramColumns = [
   }),
   columnHelper.accessor("value", {
     header: () => "Value",
-    cell: (info) => <ParamInputCell info={info} />,
+    cell: (info) => <ValueTemplateCell info={info} />,
     minSize: 150,
   }),
   columnHelper.accessor("type", {
