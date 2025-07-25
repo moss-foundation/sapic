@@ -142,7 +142,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                   isFolder={false}
                   depth={depth}
                   canDrop={canDrop}
-                  gap={-2}
+                  gap={-1}
                   isLastChild={isLastChild}
                 />
               )}

@@ -61,7 +61,7 @@ export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
         "hidden": isDragging,
       })}
     >
-      {instruction && <DropIndicatorWithInstruction instruction={instruction} gap={0} className="" canDrop={canDrop} />}
+      {instruction && <DropIndicatorWithInstruction instruction={instruction} gap={-1} canDrop={canDrop} />}
       <div
         ref={draggableRootRef}
         className="group/TreeRootHeader relative flex w-full min-w-0 items-center justify-between gap-1 py-[3px] pr-2"
