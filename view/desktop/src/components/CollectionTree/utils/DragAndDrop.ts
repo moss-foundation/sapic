@@ -24,7 +24,6 @@ export const getLocationTreeNodeData = (location: DragLocationHistory): DropNode
 };
 
 export const getLocationTreeRootNodeData = (location: DragLocationHistory): DropRootNode | null => {
-  console.log("location", location);
   if (location.current.dropTargets.length === 0) return null;
   if (location.current.dropTargets[0].data.type !== "TreeRootNode") return null;
 
