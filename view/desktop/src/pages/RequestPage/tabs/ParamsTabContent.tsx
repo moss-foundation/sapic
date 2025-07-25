@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createColumnHelper } from "@tanstack/react-table";
+import { createColumnHelper, CellContext, Row } from "@tanstack/react-table";
 import { Icon } from "@/lib/ui";
 import { TreeCollectionNode } from "@/components/CollectionTree/types";
 import { EntryKind } from "@repo/moss-collection";
@@ -10,11 +10,16 @@ import { InputTemplating } from "@/components/InputTemplating";
 import { ActionMenu } from "@/components";
 import { cn } from "@/utils";
 
+// Extended cell context interface to include custom properties
+interface ExtendedCellContext<TData, TValue> extends CellContext<TData, TValue> {
+  focusOnMount?: boolean;
+}
+
 // Column helper for parameter tables using TestData
 const columnHelper = createColumnHelper<TestData>();
 
 // Default input cell component for parameters
-const ParamInputCell = ({ info }: { info: any }) => {
+const ParamInputCell = ({ info }: { info: ExtendedCellContext<TestData, string> }) => {
   const [value, setValue] = useState(info.getValue());
   const isSelected = info.row.getIsSelected();
 
@@ -37,7 +42,7 @@ const ParamInputCell = ({ info }: { info: any }) => {
 };
 
 // Template input cell component for value column with variable highlighting
-const ValueTemplateCell = ({ info }: { info: any }) => {
+const ValueTemplateCell = ({ info }: { info: ExtendedCellContext<TestData, string> }) => {
   const [value, setValue] = useState(info.getValue());
   //const isSelected = info.row.getIsSelected();
 
@@ -45,7 +50,7 @@ const ValueTemplateCell = ({ info }: { info: any }) => {
     setValue(e.target.value);
   };
 
-  const handleTemplateChange = (newValue: string, variables: string[]) => {
+  const handleTemplateChange = (newValue: string) => {
     setValue(newValue);
     info.table.options.meta?.updateData(info.row.index, info.column.id, newValue);
   };
@@ -71,7 +76,7 @@ const ValueTemplateCell = ({ info }: { info: any }) => {
 };
 
 // Type selector cell component
-const TypeSelectCell = ({ info }: { info: any }) => {
+const TypeSelectCell = ({ info }: { info: ExtendedCellContext<TestData, string> }) => {
   const [value, setValue] = useState(info.getValue());
   const DATA_TYPES = ["string", "number", "bool"];
 
@@ -128,7 +133,7 @@ const TypeSelectCell = ({ info }: { info: any }) => {
 };
 
 // Actions cell component
-const ActionsCell = ({ row }: { row: any }) => {
+const ActionsCell = ({}: { row: Row<TestData> }) => {
   return (
     <div className="flex items-center gap-1">
       <button className="p-1 text-gray-400 hover:text-gray-600">
@@ -144,26 +149,29 @@ const ActionsCell = ({ row }: { row: any }) => {
   );
 };
 
+// Enabled checkbox cell component
+const EnabledCheckboxCell = ({ row }: { row: Row<TestData> }) => {
+  const [enabled, setEnabled] = useState(!row.original.properties.disabled);
+  return (
+    <div className="flex items-center">
+      <CheckboxWithLabel
+        checked={enabled}
+        onCheckedChange={(checked) => {
+          setEnabled(!!checked);
+          // Update the data
+          row.original.properties.disabled = !checked;
+        }}
+      />
+    </div>
+  );
+};
+
 // Column definitions for parameter tables
 const paramColumns = [
   columnHelper.display({
     id: "enabled",
     header: "",
-    cell: ({ row }) => {
-      const [enabled, setEnabled] = useState(!row.original.properties.disabled);
-      return (
-        <div className="flex items-center">
-          <CheckboxWithLabel
-            checked={enabled}
-            onCheckedChange={(checked) => {
-              setEnabled(!!checked);
-              // Update the data
-              row.original.properties.disabled = !checked;
-            }}
-          />
-        </div>
-      );
-    },
+    cell: ({ row }) => <EnabledCheckboxCell row={row} />,
     enableSorting: false,
     enableResizing: false,
     size: 40,
