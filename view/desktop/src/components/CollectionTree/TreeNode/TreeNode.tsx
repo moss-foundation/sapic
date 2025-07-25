@@ -113,7 +113,7 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
               depth={depth}
               isLastChild={isLastChild}
               canDrop={canDrop}
-              gap={22}
+              gap={-1}
             />
           )}
 

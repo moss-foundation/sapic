@@ -53,7 +53,7 @@ export const DropIndicatorWithInstruction = ({
         position: "absolute",
         height: "2px",
         backgroundColor: "var(--moss-primary)",
-        top: depth === 1 ? 0 : gap,
+        top: gap,
         width: reorderWidth,
         left,
         zIndex: 10,

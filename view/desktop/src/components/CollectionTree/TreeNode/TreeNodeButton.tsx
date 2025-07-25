@@ -111,9 +111,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
             className={cn("group/treeNode relative flex h-full w-full min-w-0 cursor-pointer items-center")}
           >
             <span
-              style={{
-                width: `calc(100% - ${rootOffset + paddingRight}px)`,
-              }}
+              style={{ width: `calc(100% - ${rootOffset + paddingRight}px)` }}
               className={cn("absolute inset-x-2 h-full rounded-sm", {
                 "group-hover/treeNode:background-(--moss-secondary-background-hover)":
                   !isDragging && activePanelId !== node.id,
@@ -146,6 +144,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                   isLastChild={isLastChild}
                 />
               )}
+
               <div
                 onClick={handleClickOnDir}
                 className={cn(
