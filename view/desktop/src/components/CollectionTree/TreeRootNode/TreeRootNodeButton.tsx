@@ -81,7 +81,7 @@ export const TreeRootNodeButton = ({ node, searchInput, shouldRenderChildNodes }
           </div>
         )}
       </span>
-      <span className="underline">{node.order}</span>
+
       <NodeLabel label={node.name} searchInput={searchInput} />
     </div>
   );
