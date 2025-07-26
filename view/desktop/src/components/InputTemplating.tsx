@@ -5,6 +5,7 @@ import { cn } from "@/utils";
 interface InputTemplatingProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size"> {
   size?: "sm" | "md";
   onTemplateChange?: (value: string, variables: string[]) => void;
+  highlightColonVariables?: boolean;
 }
 
 //prettier-ignore
@@ -49,16 +50,29 @@ const highlightedVariableStyles =
   "background-(--moss-templating-input-bg) text-(--moss-templating-input-text) border border-(--moss-templating-input-border) rounded-sm px-0.5 whitespace-nowrap inline-block tracking-tighter" +
   " [height:20px] [line-height:18px] [vertical-align:middle]";
 
-// Extract variables from template string (e.g., {{variable}})
-const extractVariables = (text: string): string[] => {
-  const regex = /\{\{([^}]+)\}\}/g;
+// Extract variables from template string (e.g., {{variable}} and :variable)
+const extractVariables = (text: string, includeColonVariables = false): string[] => {
   const variables: string[] = [];
+
+  // Extract {{variable}} patterns
+  const bracesRegex = /\{\{([^}]+)\}\}/g;
   let match;
 
-  while ((match = regex.exec(text)) !== null) {
+  while ((match = bracesRegex.exec(text)) !== null) {
     const variable = match[1].trim();
     if (variable && !variables.includes(variable)) {
       variables.push(variable);
+    }
+  }
+
+  // Extract :variable patterns if enabled
+  if (includeColonVariables) {
+    const colonRegex = /:([a-zA-Z_][a-zA-Z0-9_]*)/g;
+    while ((match = colonRegex.exec(text)) !== null) {
+      const variable = match[1];
+      if (variable && !variables.includes(variable)) {
+        variables.push(variable);
+      }
     }
   }
 
@@ -66,12 +80,22 @@ const extractVariables = (text: string): string[] => {
 };
 
 // Create highlighted HTML while preserving spaces
-const createHighlightedHTML = (text: string): string => {
-  const regex = /(\{\{[^}]*\}\})/g;
+const createHighlightedHTML = (text: string, includeColonVariables = false): string => {
   const textWithNbsp = text.replace(/ /g, "&nbsp;");
-  return textWithNbsp.replace(regex, (match) => {
-    return `<span class="${highlightedVariableStyles}">${match}</span>`;
-  });
+
+  if (includeColonVariables) {
+    // Highlight both {{variable}} and :variable patterns
+    const combinedRegex = /(\{\{[^}]*\}\}|:[a-zA-Z_][a-zA-Z0-9_]*)/g;
+    return textWithNbsp.replace(combinedRegex, (match) => {
+      return `<span class="${highlightedVariableStyles}">${match}</span>`;
+    });
+  } else {
+    // Only highlight {{variable}} patterns
+    const regex = /(\{\{[^}]*\}\})/g;
+    return textWithNbsp.replace(regex, (match) => {
+      return `<span class="${highlightedVariableStyles}">${match}</span>`;
+    });
+  }
 };
 
 // Extract plain text from HTML while preserving spaces
@@ -121,7 +145,10 @@ const findTextNodeAtOffset = (container: Node, targetOffset: number): { node: No
 };
 
 export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatingProps>(
-  ({ className, size = "sm", onTemplateChange, onChange, placeholder, ...props }, forwardedRef) => {
+  (
+    { className, size = "sm", onTemplateChange, onChange, placeholder, highlightColonVariables = false, ...props },
+    forwardedRef
+  ) => {
     const [value, setValue] = useState(props.value || "");
     const editorRef = useRef<HTMLDivElement>(null);
     const hiddenInputRef = useRef<HTMLInputElement>(null);
@@ -152,7 +179,7 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
           }
         }
 
-        const highlightedHTML = createHighlightedHTML(text);
+        const highlightedHTML = createHighlightedHTML(text, highlightColonVariables);
         editorRef.current.innerHTML = highlightedHTML;
 
         if (shouldRestoreCursor) {
@@ -190,7 +217,7 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
         hiddenInputRef.current.value = plainText;
       }
 
-      const variables = extractVariables(plainText);
+      const variables = extractVariables(plainText, highlightColonVariables);
       onTemplateChange?.(plainText, variables);
 
       if (onChange && hiddenInputRef.current) {
@@ -260,7 +287,7 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
           hiddenInputRef.current.value = newText;
         }
 
-        const variables = extractVariables(newText);
+        const variables = extractVariables(newText, highlightColonVariables);
         onTemplateChange?.(newText, variables);
 
         if (onChange && hiddenInputRef.current) {

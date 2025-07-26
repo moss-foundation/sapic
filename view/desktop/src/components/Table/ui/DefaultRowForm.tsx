@@ -3,10 +3,10 @@ import { HTMLAttributes } from "react";
 import { cn } from "@/utils";
 import { Table } from "@tanstack/react-table";
 
-import { TestData } from "../types";
+import { ParameterData } from "../types";
 
 interface DefaultRowFormProps extends Omit<HTMLAttributes<HTMLFormElement>, "onInput"> {
-  table: Table<TestData>;
+  table: Table<ParameterData>;
   onInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
@@ -20,7 +20,7 @@ export const DefaultAddNewRowForm = ({ className, table, onInput, ...props }: De
     >
       {table.getVisibleFlatColumns().map((cell) => {
         const isLastColumn = cell.getIsLastColumn();
-        const renderInput = cell.id !== "actions" && cell.id !== "checkbox";
+        const renderInput = cell.id !== "actions" && cell.id !== "checkbox" && cell.id !== "enabled";
 
         return (
           <div

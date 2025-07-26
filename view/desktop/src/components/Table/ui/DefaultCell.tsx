@@ -1,10 +1,10 @@
 import { cn } from "@/utils";
 import { Cell, flexRender } from "@tanstack/react-table";
 
-import { TestData } from "../types";
+import { ParameterData } from "../types";
 
 interface DefaultCellProps {
-  cell: Cell<TestData, unknown>;
+  cell: Cell<ParameterData, unknown>;
   focusOnMount?: boolean;
 }
 

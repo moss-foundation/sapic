@@ -11,21 +11,59 @@ import {
 
 import { useAdjustColumnsWithoutSizes } from "./hooks/useAdjustColumnsWithoutSizes";
 import { useTableDragAndDrop } from "./hooks/useTableDragAndDrop";
-import { DataTableProps, TestData } from "./types";
+import { DataTableProps, ParameterData } from "./types";
 import { DefaultCell } from "./ui/DefaultCell";
 import DefaultHeader from "./ui/DefaultHeader";
 import { DefaultRow } from "./ui/DefaultRow";
 import { DefaultAddNewRowForm } from "./ui/DefaultRowForm";
 import { NoDataRow } from "./ui/NoDataRow";
 
-export function DataTable({ columns, data: initialData, onTableApiSet }: DataTableProps<TestData>) {
+export function DataTable({ columns, data: initialData, onTableApiSet, onDataChange }: DataTableProps<ParameterData>) {
   const tableId = useId();
 
-  const [data, setData] = useState<TestData[]>(initialData);
+  const [data, setData] = useState<ParameterData[]>(initialData);
   const [rowSelection, setRowSelection] = useState({});
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [focusInputType, setFocusInputType] = useState<string | null>(null);
+
+  // Update internal data when initialData prop changes (but not during active editing)
+  const hasActiveInput = useRef(false);
+
+  useEffect(() => {
+    // Don't update if user is actively editing
+    if (hasActiveInput.current) {
+      return;
+    }
+
+    isUpdatingFromProps.current = true;
+    setData(initialData);
+  }, [initialData]);
+
+  // Call onDataChange only when data changes due to user interaction (not prop updates)
+  const isInitialLoad = useRef(true);
+  const isUpdatingFromProps = useRef(false);
+  const onDataChangeRef = useRef(onDataChange);
+
+  // Update ref when callback changes
+  useEffect(() => {
+    onDataChangeRef.current = onDataChange;
+  }, [onDataChange]);
+
+  useEffect(() => {
+    if (isInitialLoad.current) {
+      isInitialLoad.current = false;
+      return;
+    }
+
+    // Don't call onDataChange if we're updating from props
+    if (isUpdatingFromProps.current) {
+      isUpdatingFromProps.current = false;
+      return;
+    }
+
+    onDataChangeRef.current?.(data);
+  }, [data]);
 
   const table = useReactTable({
     data,
@@ -48,9 +86,17 @@ export function DataTable({ columns, data: initialData, onTableApiSet }: DataTab
       tableId,
       tableType: "ActionsTable",
       updateData: (rowIndex, columnId, value) => {
+        // Mark that user is actively editing
+        hasActiveInput.current = true;
+
+        // Clear the flag after a delay to allow prop updates again
+        setTimeout(() => {
+          hasActiveInput.current = false;
+        }, 1500);
+
         setFocusInputType(null);
-        setData((old) =>
-          old.map((row, index) => {
+        setData((old) => {
+          const newData = old.map((row, index) => {
             if (index === rowIndex) {
               return {
                 ...old[rowIndex]!,
@@ -58,8 +104,9 @@ export function DataTable({ columns, data: initialData, onTableApiSet }: DataTab
               };
             }
             return row;
-          })
-        );
+          });
+          return newData;
+        });
       },
     },
   });
@@ -97,12 +144,12 @@ export function DataTable({ columns, data: initialData, onTableApiSet }: DataTab
 
     setFocusInputType(columnId);
 
-    const newRow: TestData = {
+    const newRow: ParameterData = {
       order: data.length + 1,
       id: newId,
       key: columnId === "key" ? value : "",
       value: columnId === "value" ? value : "",
-      type: columnId === "type" ? value : "",
+      type: columnId === "type" ? value : "string",
       description: columnId === "description" ? value : "",
       global_value: columnId === "global_value" ? value : "",
       local_value: columnId === "local_value" ? Number(value) || 0 : 0,
@@ -115,12 +162,12 @@ export function DataTable({ columns, data: initialData, onTableApiSet }: DataTab
 
   const handleAddNewRowFromDivider = (index: number) => {
     setData((prev) => {
-      const newRow: TestData = {
+      const newRow: ParameterData = {
         order: index,
         id: Math.random().toString(36).substring(2, 15),
         key: "",
         value: "",
-        type: "",
+        type: "string",
         description: "",
         global_value: "",
         local_value: 0,
