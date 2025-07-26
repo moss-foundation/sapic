@@ -1,0 +1,12 @@
+[package]
+name = "moss_patch"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+jsonptr.workspace = true
+json-patch.workspace = true
+serde_json.workspace = true
+
+tree-sitter = { workspace = true }
+tree-sitter-json = { workspace = true }
