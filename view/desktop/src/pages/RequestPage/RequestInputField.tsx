@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { cn } from "@/utils";
-import { Icon } from "@/lib/ui";
+import { Icon, Scrollbar } from "@/lib/ui";
 import { ActionMenu, Divider, ButtonPrimary } from "@/components";
 import InputTemplating from "@/components/InputTemplating";
 
@@ -82,7 +82,7 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = React.memo(
     );
 
     return (
-      <div className={cn("flex w-full items-center rounded border border-(--moss-border-color)", className)}>
+      <div className={cn("flex w-full min-w-0 items-center rounded border border-(--moss-border-color)", className)}>
         {/* Left Side - HTTP Method Dropdown */}
         <div className="relative flex-shrink-0">
           <ActionMenu.Root>
@@ -118,23 +118,34 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = React.memo(
           </ActionMenu.Root>
         </div>
         {/* Divider between HTTP Method and URL Input */}
-        <div className="m-[-4px] flex h-10 items-center border-t border-b border-transparent">
+        <div className="m-[-4px] flex h-10 flex-shrink-0 items-center border-t border-b border-transparent">
           <Divider height="medium" className="mx-0" />
         </div>
         {/* Center - URL Input Field */}
-        <div className="flex-1">
-          <InputTemplating
-            value={url}
-            onTemplateChange={handleTemplateChange}
-            className="h-10 w-full rounded-none border-r-0 border-l-0 border-transparent"
-            size="md"
-            placeholder="Enter URL..."
-            highlightColonVariables={true}
-          />
+        <div className="min-w-0 flex-1">
+          <Scrollbar
+            className="h-10 overflow-x-auto overflow-y-hidden rounded-none border-r-0 border-l-0 border-transparent"
+            options={{
+              scrollbars: {
+                autoHide: "move",
+              },
+            }}
+          >
+            <div className="min-w-max">
+              <InputTemplating
+                value={url}
+                onTemplateChange={handleTemplateChange}
+                className="h-10 w-auto min-w-max rounded-none border-r-0 border-l-0 border-transparent whitespace-nowrap [&>div]:overflow-visible"
+                size="md"
+                placeholder="Enter URL..."
+                highlightColonVariables={true}
+              />
+            </div>
+          </Scrollbar>
         </div>
 
         {/* Right Side - Send Button */}
-        <div className="relative z-10 flex h-10 items-center rounded-md rounded-l-none border border-l-0 border-transparent p-1 focus-within:outline-2 focus-within:-outline-offset-1 focus-within:outline-(--moss-primary)">
+        <div className="relative z-10 flex h-10 flex-shrink-0 items-center rounded-md rounded-l-none border border-l-0 border-transparent p-1 focus-within:outline-2 focus-within:-outline-offset-1 focus-within:outline-(--moss-primary)">
           <ButtonPrimary onClick={handleSend}>Send</ButtonPrimary>
         </div>
       </div>
