@@ -173,7 +173,7 @@ const RequestPage: React.FC<
               <div className="mb-6">
                 <RequestInputField
                   initialMethod="POST"
-                  initialUrl="{{baseUrl}}/docs/:docId/tables/:tableIdOrName/columns"
+                  initialUrl="{{baseUrl}}/docs/:docId/tables/:tableIdOrName/columns?queryParam={{queryValue}}"
                   onSend={handleSendRequest}
                   className="mb-4"
                 />

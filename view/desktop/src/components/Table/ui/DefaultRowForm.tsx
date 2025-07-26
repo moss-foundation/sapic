@@ -20,7 +20,7 @@ export const DefaultAddNewRowForm = ({ className, table, onInput, ...props }: De
     >
       {table.getVisibleFlatColumns().map((cell) => {
         const isLastColumn = cell.getIsLastColumn();
-        const renderInput = cell.id !== "actions" && cell.id !== "checkbox";
+        const renderInput = cell.id !== "actions" && cell.id !== "checkbox" && cell.id !== "enabled";
 
         return (
           <div

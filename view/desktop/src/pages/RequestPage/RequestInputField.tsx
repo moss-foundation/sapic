@@ -16,7 +16,7 @@ const HTTP_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"
 export const RequestInputField: React.FC<RequestInputFieldProps> = ({
   className,
   initialMethod = "POST",
-  initialUrl = "{{baseUrl}}/docs/:docId/tables/:tableIdOrName/columns",
+  initialUrl = "{{baseUrl}}/docs/:docId/tables/:tableIdOrName/columns?queryParam={{queryValue}}",
   onSend,
 }) => {
   const [method, setMethod] = useState(initialMethod);
