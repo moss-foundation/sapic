@@ -117,6 +117,32 @@ export const convertToTableFormat = (
   }));
 };
 
+export const detectValueType = (value: string): string => {
+  if (!value || value.trim() === "") {
+    return "string";
+  }
+
+  // Skip type detection for template variables
+  if (value.includes("{{") && value.includes("}}")) {
+    return "string";
+  }
+
+  const trimmedValue = value.trim().toLowerCase();
+
+  // Check for boolean values
+  if (trimmedValue === "true" || trimmedValue === "false") {
+    return "bool";
+  }
+
+  // Check for numbers (integer or decimal)
+  if (/^-?\d+(\.\d+)?$/.test(trimmedValue)) {
+    return "number";
+  }
+
+  // Default to string
+  return "string";
+};
+
 export const getParameterSuggestions = (key: string): { type: string; description: string } => {
   const suggestions: Record<string, { type: string; description: string }> = {
     id: { type: "string", description: "Unique identifier" },

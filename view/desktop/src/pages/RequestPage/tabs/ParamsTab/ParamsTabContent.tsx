@@ -3,7 +3,7 @@ import { EntryKind } from "@repo/moss-collection";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
 import { DataTable, ParameterData } from "@/components/Table";
 import { paramColumns } from "./columns";
-import { getParameterSuggestions } from "../../utils/urlParser";
+import { getParameterSuggestions, detectValueType } from "../../utils/urlParser";
 import { useRequestPageStore } from "@/store/requestPage";
 
 interface ParamsTabContentProps
@@ -17,22 +17,32 @@ interface ParamsTabContentProps
 export const ParamsTabContent = (_props: ParamsTabContentProps) => {
   const { requestData } = useRequestPageStore();
 
-  // Convert URL parameters to table format with stable IDs for real-time updates
+  // Convert URL parameters to table format with automatic type detection
   const convertUrlParamsToTableData = (
     params: Array<{ key: string; value: string }>,
     type: "path" | "query"
   ): ParameterData[] => {
     return params.map((param, index) => {
-      const suggestions = getParameterSuggestions(param.key || "param");
       const paramKey = param.key || "";
       const paramValue = param.value || "";
+
+      // Auto-detect type based on value content, fall back to key-based suggestions
+      let detectedType = "string";
+      if (paramValue) {
+        detectedType = detectValueType(paramValue);
+      } else if (paramKey) {
+        const suggestions = getParameterSuggestions(paramKey);
+        detectedType = suggestions.type;
+      }
+
+      const suggestions = getParameterSuggestions(paramKey || "param");
 
       return {
         order: index + 1,
         id: `${type}-${index}-${Date.now()}`,
         key: paramKey,
         value: paramValue,
-        type: paramKey ? suggestions.type : "string",
+        type: detectedType,
         description: paramKey ? suggestions.description : `${type === "path" ? "Path" : "Query"} parameter`,
         global_value: "",
         local_value: 0,
