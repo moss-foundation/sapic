@@ -6,6 +6,7 @@ export interface DataTableProps<TData> {
   }[keyof TData][];
   data: TData[];
   onTableApiSet?: (table: Table<TData>) => void;
+  onDataChange?: (data: TData[]) => void;
 }
 
 declare module "@tanstack/react-table" {

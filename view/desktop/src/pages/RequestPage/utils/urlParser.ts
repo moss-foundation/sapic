@@ -120,29 +120,60 @@ export const convertToTableFormat = (
 };
 
 export const detectValueType = (value: string): string => {
-  if (!value || value.trim() === "") {
-    return "string";
-  }
+  if (!value || value.trim() === "") return "string";
 
-  // Skip type detection for template variables
-  if (value.includes("{{") && value.includes("}}")) {
-    return "string";
-  }
+  // Check for template variables (keep as string)
+  if (value.includes("{{") && value.includes("}}")) return "string";
 
-  const trimmedValue = value.trim().toLowerCase();
+  if (value.toLowerCase() === "true" || value.toLowerCase() === "false") return "bool";
 
-  // Check for boolean values
-  if (trimmedValue === "true" || trimmedValue === "false") {
-    return "bool";
-  }
+  if (!isNaN(Number(value)) && !isNaN(parseFloat(value))) return "number";
 
-  // Check for numbers (integer or decimal)
-  if (/^-?\d+(\.\d+)?$/.test(trimmedValue)) {
-    return "number";
-  }
-
-  // Default to string
   return "string";
+};
+
+export const reconstructUrl = (
+  baseUrl: string,
+  pathParams: Array<{ key: string; value: string }>,
+  queryParams: Array<{ key: string; value: string }>
+): string => {
+  try {
+    let reconstructedUrl = baseUrl;
+
+    pathParams.forEach((param) => {
+      if (param.key && param.key.trim() !== "") {
+        const pathParamPattern = new RegExp(`:${param.key}\\b`, "g");
+        reconstructedUrl = reconstructedUrl.replace(pathParamPattern, param.value || param.key);
+      }
+    });
+
+    const validQueryParams = queryParams.filter((param) => param.key && param.key.trim() !== "");
+
+    if (validQueryParams.length > 0) {
+      const [urlBase] = reconstructedUrl.split("?");
+      reconstructedUrl = urlBase;
+
+      const queryString = validQueryParams
+        .map((param) => {
+          const key = encodeURIComponent(param.key);
+          const value = param.value ? encodeURIComponent(param.value) : "";
+          return value ? `${key}=${value}` : key;
+        })
+        .join("&");
+
+      if (queryString) {
+        reconstructedUrl += `?${queryString}`;
+      }
+    } else {
+      const [urlBase] = reconstructedUrl.split("?");
+      reconstructedUrl = urlBase;
+    }
+
+    return reconstructedUrl;
+  } catch (error) {
+    console.warn("URL reconstruction failed:", error);
+    return baseUrl; // Fallback to original URL
+  }
 };
 
 export const getParameterSuggestions = (key: string): ParameterSuggestion => {

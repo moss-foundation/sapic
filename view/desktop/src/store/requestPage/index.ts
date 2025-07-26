@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { reconstructUrl } from "../../pages/RequestPage/utils/urlParser";
 
 interface UrlParameter {
   key: string;
@@ -34,6 +35,7 @@ interface RequestPageStore {
   addQueryParam: (param: UrlParameter) => void;
   removePathParam: (index: number) => void;
   removeQueryParam: (index: number) => void;
+  reconstructUrlFromParams: () => void;
 }
 
 export const useRequestPageStore = create<RequestPageStore>((set, get) => ({
@@ -175,6 +177,45 @@ export const useRequestPageStore = create<RequestPageStore>((set, get) => ({
         },
       },
     }));
+  },
+
+  reconstructUrlFromParams: () => {
+    const currentState = get();
+    const { path_params, query_params } = currentState.requestData.url;
+
+    // Simple approach: start with current URL and reconstruct it
+    let baseUrl = currentState.requestData.url.raw;
+
+    // Remove current query string to get the path part
+    const [pathPart] = baseUrl.split("?");
+
+    // For path params, we'll build the URL by replacing values or keeping template patterns
+    let reconstructedPath = pathPart;
+
+    // Replace each path param
+    path_params.forEach((param) => {
+      if (param.key && param.value) {
+        // Replace :paramKey with the actual value
+        const paramPattern = new RegExp(`:${param.key}\\b`, "g");
+        reconstructedPath = reconstructedPath.replace(paramPattern, param.value);
+      }
+    });
+
+    // Reconstruct the URL with current parameter values
+    const newUrl = reconstructUrl(reconstructedPath, [], query_params);
+
+    // Only update if the URL actually changed
+    if (newUrl !== currentState.requestData.url.raw) {
+      set((state) => ({
+        requestData: {
+          ...state.requestData,
+          url: {
+            ...state.requestData.url,
+            raw: newUrl,
+          },
+        },
+      }));
+    }
   },
 }));
 

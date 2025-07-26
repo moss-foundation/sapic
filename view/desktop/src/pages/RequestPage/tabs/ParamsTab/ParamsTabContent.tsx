@@ -1,3 +1,4 @@
+import React from "react";
 import { TreeCollectionNode } from "@/components/CollectionTree/types";
 import { EntryKind } from "@repo/moss-collection";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
@@ -15,9 +16,11 @@ interface ParamsTabContentProps
   }> {}
 
 export const ParamsTabContent = (_props: ParamsTabContentProps) => {
-  const { requestData } = useRequestPageStore();
+  const { requestData, updatePathParams, updateQueryParams, reconstructUrlFromParams } = useRequestPageStore();
 
-  // Convert URL parameters to table format with automatic type detection
+  const debouncedQueryUpdate = React.useRef<NodeJS.Timeout>();
+  const debouncedPathUpdate = React.useRef<NodeJS.Timeout>();
+
   const convertUrlParamsToTableData = (
     params: Array<{ key: string; value: string }>,
     type: "path" | "query"
@@ -26,7 +29,6 @@ export const ParamsTabContent = (_props: ParamsTabContentProps) => {
       const paramKey = param.key || "";
       const paramValue = param.value || "";
 
-      // Auto-detect type based on value content, fall back to key-based suggestions
       let detectedType = "string";
       if (paramValue) {
         detectedType = detectValueType(paramValue);
@@ -54,18 +56,82 @@ export const ParamsTabContent = (_props: ParamsTabContentProps) => {
   const queryParams = convertUrlParamsToTableData(requestData.url.query_params, "query");
   const pathParams = convertUrlParamsToTableData(requestData.url.path_params, "path");
 
+  const handleQueryParamsUpdate = React.useCallback(
+    (updatedData: ParameterData[]) => {
+      if (debouncedQueryUpdate.current) {
+        clearTimeout(debouncedQueryUpdate.current);
+      }
+
+      // Debounce to prevent focus loss during typing
+      debouncedQueryUpdate.current = setTimeout(() => {
+        const updatedParams = updatedData
+          .filter((param) => param.key.trim() !== "" || param.value.trim() !== "")
+          .map((param) => ({
+            key: param.key,
+            value: param.value,
+          }));
+
+        const currentParams = requestData.url.query_params;
+        const paramsChanged = JSON.stringify(updatedParams) !== JSON.stringify(currentParams);
+
+        if (paramsChanged) {
+          updateQueryParams(updatedParams);
+          reconstructUrlFromParams();
+        }
+      }, 300);
+    },
+    [updateQueryParams, reconstructUrlFromParams, requestData.url.query_params]
+  );
+
+  const handlePathParamsUpdate = React.useCallback(
+    (updatedData: ParameterData[]) => {
+      if (debouncedPathUpdate.current) {
+        clearTimeout(debouncedPathUpdate.current);
+      }
+
+      debouncedPathUpdate.current = setTimeout(() => {
+        const updatedParams = updatedData
+          .filter((param) => param.key.trim() !== "" || param.value.trim() !== "")
+          .map((param) => ({
+            key: param.key,
+            value: param.value,
+          }));
+
+        const currentParams = requestData.url.path_params;
+        const paramsChanged = JSON.stringify(updatedParams) !== JSON.stringify(currentParams);
+
+        if (paramsChanged) {
+          updatePathParams(updatedParams);
+          reconstructUrlFromParams();
+        }
+      }, 300);
+    },
+    [updatePathParams, reconstructUrlFromParams, requestData.url.path_params]
+  );
+
+  React.useEffect(() => {
+    return () => {
+      if (debouncedQueryUpdate.current) {
+        clearTimeout(debouncedQueryUpdate.current);
+      }
+      if (debouncedPathUpdate.current) {
+        clearTimeout(debouncedPathUpdate.current);
+      }
+    };
+  }, []);
+
   return (
     <div className="mt-4">
       {/* Query Params */}
       <div className="mb-6">
         <h3 className="mb-3 text-sm font-medium">Query Params</h3>
-        <DataTable key={`query-${requestData.url.raw}`} columns={paramColumns} data={queryParams} />
+        <DataTable columns={paramColumns} data={queryParams} onDataChange={handleQueryParamsUpdate} />
       </div>
 
       {/* Path Params */}
       <div>
         <h3 className="mb-3 text-sm font-medium">Path Params</h3>
-        <DataTable key={`path-${requestData.url.raw}`} columns={paramColumns} data={pathParams} />
+        <DataTable columns={paramColumns} data={pathParams} onDataChange={handlePathParamsUpdate} />
       </div>
     </div>
   );

@@ -18,7 +18,7 @@ import { DefaultRow } from "./ui/DefaultRow";
 import { DefaultAddNewRowForm } from "./ui/DefaultRowForm";
 import { NoDataRow } from "./ui/NoDataRow";
 
-export function DataTable({ columns, data: initialData, onTableApiSet }: DataTableProps<ParameterData>) {
+export function DataTable({ columns, data: initialData, onTableApiSet, onDataChange }: DataTableProps<ParameterData>) {
   const tableId = useId();
 
   const [data, setData] = useState<ParameterData[]>(initialData);
@@ -29,8 +29,28 @@ export function DataTable({ columns, data: initialData, onTableApiSet }: DataTab
 
   // Update internal data when initialData prop changes
   useEffect(() => {
+    isUpdatingFromProps.current = true;
     setData(initialData);
   }, [initialData]);
+
+  // Call onDataChange only when data changes due to user interaction (not prop updates)
+  const isInitialLoad = useRef(true);
+  const isUpdatingFromProps = useRef(false);
+
+  useEffect(() => {
+    if (isInitialLoad.current) {
+      isInitialLoad.current = false;
+      return;
+    }
+
+    // Don't call onDataChange if we're updating from props
+    if (isUpdatingFromProps.current) {
+      isUpdatingFromProps.current = false;
+      return;
+    }
+
+    onDataChange?.(data);
+  }, [data, onDataChange]);
 
   const table = useReactTable({
     data,
@@ -54,8 +74,8 @@ export function DataTable({ columns, data: initialData, onTableApiSet }: DataTab
       tableType: "ActionsTable",
       updateData: (rowIndex, columnId, value) => {
         setFocusInputType(null);
-        setData((old) =>
-          old.map((row, index) => {
+        setData((old) => {
+          const newData = old.map((row, index) => {
             if (index === rowIndex) {
               return {
                 ...old[rowIndex]!,
@@ -63,8 +83,9 @@ export function DataTable({ columns, data: initialData, onTableApiSet }: DataTab
               };
             }
             return row;
-          })
-        );
+          });
+          return newData;
+        });
       },
     },
   });
