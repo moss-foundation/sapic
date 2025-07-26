@@ -11,17 +11,17 @@ import {
 
 import { useAdjustColumnsWithoutSizes } from "./hooks/useAdjustColumnsWithoutSizes";
 import { useTableDragAndDrop } from "./hooks/useTableDragAndDrop";
-import { DataTableProps, TestData } from "./types";
+import { DataTableProps, ParameterData } from "./types";
 import { DefaultCell } from "./ui/DefaultCell";
 import DefaultHeader from "./ui/DefaultHeader";
 import { DefaultRow } from "./ui/DefaultRow";
 import { DefaultAddNewRowForm } from "./ui/DefaultRowForm";
 import { NoDataRow } from "./ui/NoDataRow";
 
-export function DataTable({ columns, data: initialData, onTableApiSet }: DataTableProps<TestData>) {
+export function DataTable({ columns, data: initialData, onTableApiSet }: DataTableProps<ParameterData>) {
   const tableId = useId();
 
-  const [data, setData] = useState<TestData[]>(initialData);
+  const [data, setData] = useState<ParameterData[]>(initialData);
   const [rowSelection, setRowSelection] = useState({});
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -97,7 +97,7 @@ export function DataTable({ columns, data: initialData, onTableApiSet }: DataTab
 
     setFocusInputType(columnId);
 
-    const newRow: TestData = {
+    const newRow: ParameterData = {
       order: data.length + 1,
       id: newId,
       key: columnId === "key" ? value : "",
@@ -115,7 +115,7 @@ export function DataTable({ columns, data: initialData, onTableApiSet }: DataTab
 
   const handleAddNewRowFromDivider = (index: number) => {
     setData((prev) => {
-      const newRow: TestData = {
+      const newRow: ParameterData = {
         order: index,
         id: Math.random().toString(36).substring(2, 15),
         key: "",

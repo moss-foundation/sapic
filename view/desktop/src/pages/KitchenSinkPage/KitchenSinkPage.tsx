@@ -5,7 +5,7 @@ import { ActionMenu } from "@/components";
 import { ButtonNeutralOutlined } from "@/components/ButtonNeutralOutlined";
 import { ButtonPrimary } from "@/components/ButtonPrimary";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
-import { DataTable, TestData, columns } from "@/components/Table";
+import { DataTable, ParameterData, columns } from "@/components/Table";
 import { InputTemplating } from "@/components/InputTemplating";
 import {
   editorContextItems,
@@ -239,9 +239,9 @@ const InputTemplatingDemo = () => {
 };
 
 const ExampleTable = () => {
-  const [tableApi, setTableApi] = useState<Table<TestData> | null>(null);
+  const [tableApi, setTableApi] = useState<Table<ParameterData> | null>(null);
 
-  const handleTableApiSet = (tableApi: Table<TestData>) => {
+  const handleTableApiSet = (tableApi: Table<ParameterData>) => {
     setTableApi(tableApi);
   };
 

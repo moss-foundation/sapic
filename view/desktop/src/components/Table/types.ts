@@ -20,7 +20,7 @@ declare module "@tanstack/react-table" {
   }
 }
 
-export interface TestData {
+export interface ParameterData {
   order: number;
   id: string;
   key: string;
@@ -39,7 +39,7 @@ export interface TableRowDnDData {
   data: {
     tableType: string;
     tableId: string;
-    row: TestData;
+    row: ParameterData;
     isSelected: boolean;
   };
 }

@@ -3,10 +3,10 @@ import { HTMLAttributes } from "react";
 import { cn } from "@/utils";
 import { Table } from "@tanstack/react-table";
 
-import { TestData } from "../types";
+import { ParameterData } from "../types";
 
 interface DefaultRowFormProps extends Omit<HTMLAttributes<HTMLFormElement>, "onInput"> {
-  table: Table<TestData>;
+  table: Table<ParameterData>;
   onInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 

@@ -1,12 +1,11 @@
-import React from "react";
 import { createColumnHelper } from "@tanstack/react-table";
 
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
-import { TestData } from "./types";
+import { ParameterData } from "./types";
 import { DefaultInputCell } from "./ui/DefaultCellInput";
 import { Icon } from "@/lib/ui";
 
-const columnHelper = createColumnHelper<TestData>();
+const columnHelper = createColumnHelper<ParameterData>();
 
 export const columns = [
   columnHelper.display({

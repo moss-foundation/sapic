@@ -12,13 +12,13 @@ import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { Row, Table } from "@tanstack/react-table";
 
-import { TestData } from "../types";
+import { ParameterData } from "../types";
 import { getTableRowData, isTableRow } from "../utils";
 
 interface DefaultRowProps extends HTMLAttributes<HTMLTableRowElement> {
   disableDnd?: boolean;
-  row: Row<TestData>;
-  table: Table<TestData>;
+  row: Row<ParameterData>;
+  table: Table<ParameterData>;
   onAddNewRow?: () => void;
 }
 

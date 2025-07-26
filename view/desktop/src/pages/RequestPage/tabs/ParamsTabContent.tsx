@@ -6,7 +6,7 @@ import { TreeCollectionNode } from "@/components/CollectionTree/types";
 import { EntryKind } from "@repo/moss-collection";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
-import { DataTable, TestData } from "@/components/Table";
+import { DataTable, ParameterData } from "@/components/Table";
 import { InputTemplating } from "@/components/InputTemplating";
 import { ActionMenu } from "@/components";
 import { cn } from "@/utils";
@@ -16,11 +16,10 @@ interface ExtendedCellContext<TData, TValue> extends CellContext<TData, TValue> 
   focusOnMount?: boolean;
 }
 
-// Column helper for parameter tables using TestData
-const columnHelper = createColumnHelper<TestData>();
+const columnHelper = createColumnHelper<ParameterData>();
 
 // Default input cell component for parameters
-const ParamInputCell = ({ info }: { info: ExtendedCellContext<TestData, string> }) => {
+const ParamInputCell = ({ info }: { info: ExtendedCellContext<ParameterData, string> }) => {
   const [value, setValue] = useState(info.getValue());
   const isDisabled = info.row.original.properties.disabled;
 
@@ -43,7 +42,7 @@ const ParamInputCell = ({ info }: { info: ExtendedCellContext<TestData, string> 
 };
 
 // Template input cell component for key and value columns with variable highlighting
-const TemplateInputCell = ({ info }: { info: ExtendedCellContext<TestData, string> }) => {
+const TemplateInputCell = ({ info }: { info: ExtendedCellContext<ParameterData, string> }) => {
   const [value, setValue] = useState(info.getValue());
   const isDisabled = info.row.original.properties.disabled;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -106,7 +105,7 @@ const TemplateInputCell = ({ info }: { info: ExtendedCellContext<TestData, strin
 };
 
 // Type selector cell component
-const TypeSelectCell = ({ info }: { info: ExtendedCellContext<TestData, string> }) => {
+const TypeSelectCell = ({ info }: { info: ExtendedCellContext<ParameterData, string> }) => {
   const [value, setValue] = useState(info.getValue());
   const DATA_TYPES = ["string", "number", "bool"];
 
@@ -163,7 +162,7 @@ const TypeSelectCell = ({ info }: { info: ExtendedCellContext<TestData, string> 
 };
 
 // Actions cell component
-const ActionsCell = ({ row }: { row: Row<TestData> }) => {
+const ActionsCell = ({ row }: { row: Row<ParameterData> }) => {
   const isDisabled = row.original.properties.disabled;
 
   return (
@@ -182,7 +181,7 @@ const ActionsCell = ({ row }: { row: Row<TestData> }) => {
 };
 
 // Enabled checkbox cell component
-const EnabledCheckboxCell = ({ row, table }: { row: Row<TestData>; table: any }) => {
+const EnabledCheckboxCell = ({ row, table }: { row: Row<ParameterData>; table: any }) => {
   const enabled = !row.original.properties.disabled;
 
   const handleCheckedChange = (checked: CheckedState) => {
@@ -249,7 +248,7 @@ const paramColumns = [
 ];
 
 // Sample data for Query Params
-const queryParamsData: TestData[] = [
+const queryParamsData: ParameterData[] = [
   {
     order: 1,
     id: "1",
@@ -286,7 +285,7 @@ const queryParamsData: TestData[] = [
 ];
 
 // Sample data for Path Params
-const pathParamsData: TestData[] = [
+const pathParamsData: ParameterData[] = [
   {
     order: 1,
     id: "4",

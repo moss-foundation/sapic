@@ -2,10 +2,10 @@ import { RefObject, useLayoutEffect } from "react";
 
 import { Header, Table } from "@tanstack/react-table";
 
-import { TestData } from "../types";
+import { ParameterData } from "../types";
 
 interface AdjustColumnsWithoutSizesProps {
-  table: Table<TestData>;
+  table: Table<ParameterData>;
   tableContainerRef: RefObject<HTMLDivElement>;
 }
 
