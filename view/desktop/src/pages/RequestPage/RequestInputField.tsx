@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { cn } from "@/utils";
 import { Icon } from "@/lib/ui";
 import { ActionMenu, Divider, ButtonPrimary } from "@/components";
@@ -26,27 +26,51 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = React.memo(
   }) => {
     const [method, setMethod] = useState(initialMethod);
     const [url, setUrl] = useState(initialUrl);
+    const lastExternalUrlRef = useRef(initialUrl);
+    const isUserTypingRef = useRef(false);
 
-    // Sync local state with props when they change
+    // Sync method changes
     React.useEffect(() => {
-      setMethod(initialMethod);
-    }, [initialMethod]);
+      if (initialMethod !== method) {
+        setMethod(initialMethod);
+      }
+    }, [initialMethod, method]);
 
+    // Only sync URL from external source when user is not actively typing
     React.useEffect(() => {
-      setUrl(initialUrl);
+      if (initialUrl !== lastExternalUrlRef.current && !isUserTypingRef.current) {
+        setUrl(initialUrl);
+        lastExternalUrlRef.current = initialUrl;
+      }
     }, [initialUrl]);
 
     const handleSend = () => {
       onSend?.(method, url);
     };
 
+    // Debounced URL change handler to prevent rapid updates
+    const debouncedOnUrlChange = React.useCallback(
+      (() => {
+        let timeoutId: NodeJS.Timeout;
+        return (value: string) => {
+          clearTimeout(timeoutId);
+          timeoutId = setTimeout(() => {
+            isUserTypingRef.current = false;
+            onUrlChange?.(value);
+          }, 150); // 150ms debounce
+        };
+      })(),
+      [onUrlChange]
+    );
+
     // Optimized change handlers with stable references
     const handleTemplateChange = React.useCallback(
       (value: string) => {
+        isUserTypingRef.current = true;
         setUrl(value);
-        onUrlChange?.(value);
+        debouncedOnUrlChange(value);
       },
-      [onUrlChange]
+      [debouncedOnUrlChange]
     );
 
     const handleMethodChange = React.useCallback(
