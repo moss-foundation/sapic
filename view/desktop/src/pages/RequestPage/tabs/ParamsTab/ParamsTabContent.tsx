@@ -69,10 +69,29 @@ export const ParamsTabContent = (_props: ParamsTabContentProps) => {
         clearTimeout(debouncedQueryUpdate.current);
       }
 
+      // Detect if this is a checkbox change (faster update) vs typing (slower update)
+      const previousData = queryParams;
+      const isCheckboxChange =
+        updatedData.length === previousData.length &&
+        updatedData.some(
+          (param, index) =>
+            previousData[index] &&
+            param.key === previousData[index].key &&
+            param.value === previousData[index].value &&
+            param.properties.disabled !== previousData[index].properties.disabled
+        );
+
+      // Use shorter delay for checkbox changes, longer for typing
+      const debounceDelay = isCheckboxChange ? 50 : 300;
+
       // Debounce to prevent focus loss during typing
       debouncedQueryUpdate.current = setTimeout(() => {
         const updatedParams = updatedData
-          .filter((param) => param.key.trim() !== "" || param.value.trim() !== "")
+          .filter(
+            (param) =>
+              // Include if: has content AND is enabled (not disabled)
+              (param.key.trim() !== "" || param.value.trim() !== "") && !param.properties.disabled
+          )
           .map((param) => ({
             key: param.key,
             value: param.value,
@@ -86,9 +105,9 @@ export const ParamsTabContent = (_props: ParamsTabContentProps) => {
           updateQueryParams(updatedParams);
           reconstructUrlFromParams();
         }
-      }, 1000);
+      }, debounceDelay);
     },
-    [updateQueryParams, reconstructUrlFromParams]
+    [updateQueryParams, reconstructUrlFromParams, queryParams]
   );
 
   const handlePathParamsUpdate = React.useCallback(
@@ -97,9 +116,28 @@ export const ParamsTabContent = (_props: ParamsTabContentProps) => {
         clearTimeout(debouncedPathUpdate.current);
       }
 
+      // Detect if this is a checkbox change (faster update) vs typing (slower update)
+      const previousData = pathParams;
+      const isCheckboxChange =
+        updatedData.length === previousData.length &&
+        updatedData.some(
+          (param, index) =>
+            previousData[index] &&
+            param.key === previousData[index].key &&
+            param.value === previousData[index].value &&
+            param.properties.disabled !== previousData[index].properties.disabled
+        );
+
+      // Use shorter delay for checkbox changes, longer for typing
+      const debounceDelay = isCheckboxChange ? 50 : 300;
+
       debouncedPathUpdate.current = setTimeout(() => {
         const updatedParams = updatedData
-          .filter((param) => param.key.trim() !== "" || param.value.trim() !== "")
+          .filter(
+            (param) =>
+              // Include if: has content AND is enabled (not disabled)
+              (param.key.trim() !== "" || param.value.trim() !== "") && !param.properties.disabled
+          )
           .map((param) => ({
             key: param.key,
             value: param.value,
@@ -113,9 +151,9 @@ export const ParamsTabContent = (_props: ParamsTabContentProps) => {
           updatePathParams(updatedParams);
           reconstructUrlFromParams();
         }
-      }, 1000);
+      }, debounceDelay);
     },
-    [updatePathParams, reconstructUrlFromParams]
+    [updatePathParams, reconstructUrlFromParams, pathParams]
   );
 
   React.useEffect(() => {
