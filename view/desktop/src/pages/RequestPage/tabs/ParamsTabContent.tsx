@@ -42,8 +42,8 @@ const ParamInputCell = ({ info }: { info: ExtendedCellContext<TestData, string> 
   );
 };
 
-// Template input cell component for value column with variable highlighting
-const ValueTemplateCell = ({ info }: { info: ExtendedCellContext<TestData, string> }) => {
+// Template input cell component for key and value columns with variable highlighting
+const TemplateInputCell = ({ info }: { info: ExtendedCellContext<TestData, string> }) => {
   const [value, setValue] = useState(info.getValue());
   const isDisabled = info.row.original.properties.disabled;
 
@@ -64,7 +64,7 @@ const ValueTemplateCell = ({ info }: { info: ExtendedCellContext<TestData, strin
   const hasTemplateVariables = /\{\{[^}]+\}\}/.test(value);
 
   return (
-    <div className={`w-full ${isDisabled ? "opacity-40" : ""}`}>
+    <div className="w-full">
       <InputTemplating
         value={value}
         onChange={handleChange}
@@ -197,25 +197,12 @@ const paramColumns = [
   }),
   columnHelper.accessor("key", {
     header: () => "Key",
-    cell: (info) => {
-      const isDisabled = info.row.original.properties.disabled;
-      return (
-        <div className="flex items-center">
-          <span
-            className={`px-2 py-1.5 text-sm ${
-              isDisabled ? "text-(--moss-requestpage-text-disabled)" : "text-(--moss-primary-text)"
-            }`}
-          >
-            {info.getValue()}
-          </span>
-        </div>
-      );
-    },
+    cell: (info) => <TemplateInputCell info={info} />,
     minSize: 100,
   }),
   columnHelper.accessor("value", {
     header: () => "Value",
-    cell: (info) => <ValueTemplateCell info={info} />,
+    cell: (info) => <TemplateInputCell info={info} />,
     minSize: 150,
   }),
   columnHelper.accessor("type", {
