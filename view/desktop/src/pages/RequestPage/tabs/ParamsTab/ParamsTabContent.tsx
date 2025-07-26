@@ -53,8 +53,15 @@ export const ParamsTabContent = (_props: ParamsTabContentProps) => {
     });
   };
 
-  const queryParams = convertUrlParamsToTableData(requestData.url.query_params, "query");
-  const pathParams = convertUrlParamsToTableData(requestData.url.path_params, "path");
+  // Memoize table data to prevent unnecessary re-renders during typing
+  const queryParams = React.useMemo(
+    () => convertUrlParamsToTableData(requestData.url.query_params, "query"),
+    [requestData.url.query_params]
+  );
+  const pathParams = React.useMemo(
+    () => convertUrlParamsToTableData(requestData.url.path_params, "path"),
+    [requestData.url.path_params]
+  );
 
   const handleQueryParamsUpdate = React.useCallback(
     (updatedData: ParameterData[]) => {
@@ -71,6 +78,7 @@ export const ParamsTabContent = (_props: ParamsTabContentProps) => {
             value: param.value,
           }));
 
+        // Get current params from store at execution time
         const currentParams = requestData.url.query_params;
         const paramsChanged = JSON.stringify(updatedParams) !== JSON.stringify(currentParams);
 
@@ -78,9 +86,9 @@ export const ParamsTabContent = (_props: ParamsTabContentProps) => {
           updateQueryParams(updatedParams);
           reconstructUrlFromParams();
         }
-      }, 300);
+      }, 1000);
     },
-    [updateQueryParams, reconstructUrlFromParams, requestData.url.query_params]
+    [updateQueryParams, reconstructUrlFromParams]
   );
 
   const handlePathParamsUpdate = React.useCallback(
@@ -97,6 +105,7 @@ export const ParamsTabContent = (_props: ParamsTabContentProps) => {
             value: param.value,
           }));
 
+        // Get current params from store at execution time
         const currentParams = requestData.url.path_params;
         const paramsChanged = JSON.stringify(updatedParams) !== JSON.stringify(currentParams);
 
@@ -104,9 +113,9 @@ export const ParamsTabContent = (_props: ParamsTabContentProps) => {
           updatePathParams(updatedParams);
           reconstructUrlFromParams();
         }
-      }, 300);
+      }, 1000);
     },
-    [updatePathParams, reconstructUrlFromParams, requestData.url.path_params]
+    [updatePathParams, reconstructUrlFromParams]
   );
 
   React.useEffect(() => {

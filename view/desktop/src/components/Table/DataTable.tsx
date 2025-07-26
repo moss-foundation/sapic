@@ -27,8 +27,15 @@ export function DataTable({ columns, data: initialData, onTableApiSet, onDataCha
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [focusInputType, setFocusInputType] = useState<string | null>(null);
 
-  // Update internal data when initialData prop changes
+  // Update internal data when initialData prop changes (but not during active editing)
+  const hasActiveInput = useRef(false);
+
   useEffect(() => {
+    // Don't update if user is actively editing
+    if (hasActiveInput.current) {
+      return;
+    }
+
     isUpdatingFromProps.current = true;
     setData(initialData);
   }, [initialData]);
@@ -36,6 +43,12 @@ export function DataTable({ columns, data: initialData, onTableApiSet, onDataCha
   // Call onDataChange only when data changes due to user interaction (not prop updates)
   const isInitialLoad = useRef(true);
   const isUpdatingFromProps = useRef(false);
+  const onDataChangeRef = useRef(onDataChange);
+
+  // Update ref when callback changes
+  useEffect(() => {
+    onDataChangeRef.current = onDataChange;
+  }, [onDataChange]);
 
   useEffect(() => {
     if (isInitialLoad.current) {
@@ -49,8 +62,8 @@ export function DataTable({ columns, data: initialData, onTableApiSet, onDataCha
       return;
     }
 
-    onDataChange?.(data);
-  }, [data, onDataChange]);
+    onDataChangeRef.current?.(data);
+  }, [data]);
 
   const table = useReactTable({
     data,
@@ -73,6 +86,14 @@ export function DataTable({ columns, data: initialData, onTableApiSet, onDataCha
       tableId,
       tableType: "ActionsTable",
       updateData: (rowIndex, columnId, value) => {
+        // Mark that user is actively editing
+        hasActiveInput.current = true;
+
+        // Clear the flag after a delay to allow prop updates again
+        setTimeout(() => {
+          hasActiveInput.current = false;
+        }, 1500);
+
         setFocusInputType(null);
         setData((old) => {
           const newData = old.map((row, index) => {
