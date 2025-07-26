@@ -9,6 +9,8 @@ interface RequestInputFieldProps {
   initialMethod?: string;
   initialUrl?: string;
   onSend?: (method: string, url: string) => void;
+  onUrlChange?: (url: string) => void;
+  onMethodChange?: (method: string) => void;
 }
 
 const HTTP_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"];
@@ -18,17 +20,38 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = ({
   initialMethod = "POST",
   initialUrl = "{{baseUrl}}/docs/:docId/tables/:tableIdOrName/columns?queryParam={{queryValue}}",
   onSend,
+  onUrlChange,
+  onMethodChange,
 }) => {
   const [method, setMethod] = useState(initialMethod);
   const [url, setUrl] = useState(initialUrl);
+
+  // Sync local state with props when they change (but avoid circular updates)
+  React.useEffect(() => {
+    if (initialMethod !== method) {
+      setMethod(initialMethod);
+    }
+  }, [initialMethod, method]);
+
+  React.useEffect(() => {
+    if (initialUrl !== url) {
+      setUrl(initialUrl);
+    }
+  }, [initialUrl, url]);
 
   const handleSend = () => {
     onSend?.(method, url);
   };
 
-  const handleTemplateChange = (value: string) => {
-    setUrl(value);
-  };
+  const handleTemplateChange = React.useCallback(
+    (value: string) => {
+      if (value !== url) {
+        setUrl(value);
+        onUrlChange?.(value);
+      }
+    },
+    [url, onUrlChange]
+  );
 
   return (
     <div
@@ -56,7 +79,12 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = ({
             {HTTP_METHODS.map((httpMethod) => (
               <ActionMenu.Item
                 key={httpMethod}
-                onClick={() => setMethod(httpMethod)}
+                onClick={() => {
+                  if (httpMethod !== method) {
+                    setMethod(httpMethod);
+                    onMethodChange?.(httpMethod);
+                  }
+                }}
                 className={cn(
                   method === httpMethod &&
                     "background-(--moss-secondary-background-hover) font-medium text-(--moss-requestpage-text)"
@@ -76,7 +104,13 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = ({
       <div className="flex-1">
         <InputTemplating
           value={url}
-          onChange={(e) => setUrl(e.target.value)}
+          onChange={(e) => {
+            const newValue = e.target.value;
+            if (newValue !== url) {
+              setUrl(newValue);
+              onUrlChange?.(newValue);
+            }
+          }}
           onTemplateChange={handleTemplateChange}
           className="h-10 w-full rounded-none border-r-0 border-l-0 border-transparent"
           size="md"

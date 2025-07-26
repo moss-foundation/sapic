@@ -28,6 +28,8 @@ import {
   PostRequestTabContent,
   PreRequestTabContent,
 } from "./tabs";
+import { parseUrl } from "./utils/urlParser";
+import { useRequestPageStore } from "@/store/requestPage";
 
 const DebugContext = React.createContext<boolean>(false);
 
@@ -53,6 +55,11 @@ const RequestPage: React.FC<
   let dontShowTabs = true;
   const [activeTab, setActiveTab] = React.useState(showEndpoint ? "endpoint" : "request");
   const [activeRequestTabId, setActiveRequestTabId] = React.useState("params");
+
+  // Use RequestPage store
+  const { requestData, httpMethod, setHttpMethod, updateRequestData } = useRequestPageStore();
+
+  // Parse current URL from store
 
   if (props.params?.node) {
     showEndpoint = displayMode === "DESIGN_FIRST" && props.params.node.class === "Endpoint";
@@ -88,6 +95,30 @@ const RequestPage: React.FC<
     console.log("Sending request:", { method, url });
     // TODO: Implement actual request sending logic
   };
+
+  const handleUrlChange = React.useCallback(
+    (url: string) => {
+      // Prevent unnecessary updates if URL hasn't changed
+      if (url === requestData.url.raw) {
+        return;
+      }
+
+      const parsed = parseUrl(url);
+
+      // Update store with complete data in one call to avoid multiple re-renders
+      const updatedData = {
+        url: {
+          raw: url,
+          port: parsed.url.port,
+          host: parsed.url.host,
+          path_params: parsed.url.path_params,
+          query_params: parsed.url.query_params,
+        },
+      };
+      updateRequestData(updatedData);
+    },
+    [requestData.url.raw, updateRequestData]
+  );
 
   // Define the request configuration tabs
   const requestTabs: TabItem[] = [
@@ -172,9 +203,15 @@ const RequestPage: React.FC<
               {/* Request Input Section */}
               <div className="mb-6">
                 <RequestInputField
-                  initialMethod="POST"
-                  initialUrl="{{baseUrl}}/docs/:docId/tables/:tableIdOrName/columns?queryParam={{queryValue}}"
+                  initialMethod={httpMethod}
+                  initialUrl={requestData.url.raw}
                   onSend={handleSendRequest}
+                  onUrlChange={handleUrlChange}
+                  onMethodChange={(method) => {
+                    if (method !== httpMethod) {
+                      setHttpMethod(method);
+                    }
+                  }}
                   className="mb-4"
                 />
 

@@ -27,6 +27,11 @@ export function DataTable({ columns, data: initialData, onTableApiSet }: DataTab
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [focusInputType, setFocusInputType] = useState<string | null>(null);
 
+  // Update internal data when initialData prop changes
+  useEffect(() => {
+    setData(initialData);
+  }, [initialData]);
+
   const table = useReactTable({
     data,
     columns,
