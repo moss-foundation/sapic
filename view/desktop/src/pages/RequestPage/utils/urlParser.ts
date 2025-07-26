@@ -156,7 +156,10 @@ export const reconstructUrl = (
       const queryString = validQueryParams
         .map((param) => {
           const key = encodeURIComponent(param.key);
-          const value = param.value ? encodeURIComponent(param.value) : "";
+          // Don't encode template variables or path parameters
+          const isTemplateVariable =
+            param.value && ((param.value.includes("{{") && param.value.includes("}}")) || param.value.startsWith(":"));
+          const value = param.value ? (isTemplateVariable ? param.value : encodeURIComponent(param.value)) : "";
           return value ? `${key}=${value}` : key;
         })
         .join("&");
