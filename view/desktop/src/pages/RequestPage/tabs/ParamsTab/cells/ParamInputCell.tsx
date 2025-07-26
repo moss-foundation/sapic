@@ -12,7 +12,7 @@ export const ParamInputCell = ({ info }: { info: ExtendedCellContext<ParameterDa
 
   return (
     <input
-      className={`w-full truncate border-none bg-transparent px-2 py-1.5 placeholder-(--moss-requestpage-placeholder-color) focus:outline-1 focus:outline-blue-500 ${
+      className={`w-full truncate border-none bg-transparent px-2 py-1.5 placeholder-(--moss-requestpage-placeholder-color) focus:outline-1 focus:outline-(--moss-primary) ${
         isDisabled ? "text-(--moss-requestpage-text-disabled)" : "text-(--moss-primary-text)"
       }`}
       value={value}

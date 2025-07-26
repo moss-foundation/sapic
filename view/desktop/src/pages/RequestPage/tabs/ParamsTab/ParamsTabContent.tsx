@@ -15,13 +15,13 @@ export const ParamsTabContent = ({}: IDockviewPanelProps<{
     <div className="mt-4">
       {/* Query Params */}
       <div className="mb-6">
-        <h3 className="mb-3 text-sm font-medium text-gray-900">Query Params</h3>
+        <h3 className="mb-3 text-sm font-medium">Query Params</h3>
         <DataTable columns={paramColumns} data={queryParamsData} />
       </div>
 
       {/* Path Params */}
       <div>
-        <h3 className="mb-3 text-sm font-medium text-gray-900">Path Params</h3>
+        <h3 className="mb-3 text-sm font-medium">Path Params</h3>
         <DataTable columns={paramColumns} data={pathParamsData} />
       </div>
     </div>

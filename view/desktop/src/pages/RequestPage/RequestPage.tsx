@@ -32,7 +32,7 @@ import {
 const DebugContext = React.createContext<boolean>(false);
 
 const Badge = ({ count }: { count: number }) => (
-  <span className="background-(--moss-tab-badge-color) inline-flex h-3.5 w-3.5 min-w-[14px] items-center justify-center rounded-full text-xs leading-none font-medium text-white">
+  <span className="background-(--moss-tab-badge-color) inline-flex h-3.5 w-3.5 min-w-[14px] items-center justify-center rounded-full text-xs leading-none font-medium text-(--moss-tab-badge-text)">
     <span className="relative top-[0.5px]">{count}</span>
   </span>
 );

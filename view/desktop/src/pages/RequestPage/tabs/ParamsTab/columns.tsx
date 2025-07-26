@@ -1,13 +1,20 @@
 import { createColumnHelper } from "@tanstack/react-table";
 import { ParameterData } from "@/components/Table";
-import { EnabledCheckboxCell, TemplateInputCell, TypeSelectCell, ParamInputCell, ActionsCell } from "./cells";
+import {
+  EnabledCheckboxCell,
+  TemplateInputCell,
+  TypeSelectCell,
+  ParamInputCell,
+  ActionsCell,
+  EnabledHeaderCheckbox,
+} from "./cells";
 
 const columnHelper = createColumnHelper<ParameterData>();
 
 export const paramColumns = [
   columnHelper.display({
     id: "enabled",
-    header: "",
+    header: ({ table }) => <EnabledHeaderCheckbox table={table} />,
     cell: ({ row, table }) => <EnabledCheckboxCell row={row} table={table} />,
     enableSorting: false,
     enableResizing: false,
@@ -16,7 +23,7 @@ export const paramColumns = [
   columnHelper.accessor("key", {
     header: () => "Key",
     cell: (info) => <TemplateInputCell info={info} />,
-    minSize: 100,
+    minSize: 200,
   }),
   columnHelper.accessor("value", {
     header: () => "Value",

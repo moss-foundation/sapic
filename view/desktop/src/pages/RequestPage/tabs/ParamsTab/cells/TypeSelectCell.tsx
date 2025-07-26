@@ -16,7 +16,7 @@ const getTypeColor = (type: string) => {
     case "bool":
       return "text-(--moss-requestpage-bool-color)";
     default:
-      return "text-gray-500";
+      return "text-(--moss-primary-text)";
   }
 };
 

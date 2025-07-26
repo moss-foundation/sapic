@@ -27,7 +27,7 @@ export const queryParamsData: ParameterData[] = [
   {
     order: 3,
     id: "3",
-    key: "visibleOnly",
+    key: "visibleOnly-{{value}}",
     value: "true",
     type: "bool",
     description: "If true, returns only visible columns for the table. This...",
