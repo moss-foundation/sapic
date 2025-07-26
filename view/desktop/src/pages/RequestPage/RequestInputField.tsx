@@ -81,6 +81,7 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = ({
           className="h-10 w-full rounded-none border-r-0 border-l-0 border-transparent"
           size="md"
           placeholder="Enter URL..."
+          highlightColonVariables={true}
         />
       </div>
 
