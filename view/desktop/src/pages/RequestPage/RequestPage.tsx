@@ -195,13 +195,14 @@ const RequestPage: React.FC<
         props={props}
       />
       <PageContent className={cn("relative", isDebug && "border-2 border-dashed border-orange-500")}>
-        <Breadcrumbs panelId={props.api.id} />
-
-        <div className="flex h-full flex-col p-2">
+        <div className="flex h-full flex-col">
           {props.params?.node ? (
             <div className="flex-1">
-              {/* Request Input Section */}
-              <div className="mb-6">
+              {/* Request Content Container with consistent margins */}
+              <div className="mx-3 my-4 space-y-6">
+                <Breadcrumbs panelId={props.api.id} />
+
+                {/* Request Input Section */}
                 <RequestInputField
                   initialMethod={httpMethod}
                   initialUrl={requestData.url.raw}
@@ -212,7 +213,6 @@ const RequestPage: React.FC<
                       setHttpMethod(method);
                     }
                   }}
-                  className="mb-4"
                 />
 
                 {/* Request Configuration Tabs */}

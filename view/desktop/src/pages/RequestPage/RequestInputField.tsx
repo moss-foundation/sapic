@@ -82,12 +82,7 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = React.memo(
     );
 
     return (
-      <div
-        className={cn(
-          "flex w-full items-center rounded-md border-1 border-(--moss-requestpage-border-color)",
-          className
-        )}
-      >
+      <div className={cn("flex w-full items-center rounded border border-(--moss-border-color)", className)}>
         {/* Left Side - HTTP Method Dropdown */}
         <div className="relative flex-shrink-0">
           <ActionMenu.Root>
