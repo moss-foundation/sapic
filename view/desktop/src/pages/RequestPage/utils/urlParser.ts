@@ -1,3 +1,5 @@
+import { parameterSuggestions, type ParameterSuggestion } from "./parameterSuggestions";
+
 export interface ParsedUrl {
   url: {
     raw: string;
@@ -143,20 +145,6 @@ export const detectValueType = (value: string): string => {
   return "string";
 };
 
-export const getParameterSuggestions = (key: string): { type: string; description: string } => {
-  const suggestions: Record<string, { type: string; description: string }> = {
-    id: { type: "string", description: "Unique identifier" },
-    page: { type: "number", description: "Page number for pagination" },
-    limit: { type: "number", description: "Number of items per page" },
-    offset: { type: "number", description: "Number of items to skip" },
-    sort: { type: "string", description: "Sort field name" },
-    order: { type: "string", description: "Sort order (asc/desc)" },
-    filter: { type: "string", description: "Filter criteria" },
-    search: { type: "string", description: "Search query" },
-    tab: { type: "string", description: "Tab selection" },
-    status: { type: "string", description: "Status filter" },
-    type: { type: "string", description: "Type filter" },
-  };
-
-  return suggestions[key.toLowerCase()] || { type: "string", description: `Parameter: ${key}` };
+export const getParameterSuggestions = (key: string): ParameterSuggestion => {
+  return parameterSuggestions[key.toLowerCase()] || { type: "string", description: `Parameter: ${key}` };
 };
