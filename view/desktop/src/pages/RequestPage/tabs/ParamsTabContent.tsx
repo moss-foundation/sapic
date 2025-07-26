@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { createColumnHelper, CellContext, Row } from "@tanstack/react-table";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { Icon } from "@/lib/ui";
@@ -46,6 +46,7 @@ const ParamInputCell = ({ info }: { info: ExtendedCellContext<TestData, string> 
 const TemplateInputCell = ({ info }: { info: ExtendedCellContext<TestData, string> }) => {
   const [value, setValue] = useState(info.getValue());
   const isDisabled = info.row.original.properties.disabled;
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setValue(e.target.value);
@@ -60,11 +61,31 @@ const TemplateInputCell = ({ info }: { info: ExtendedCellContext<TestData, strin
     info.table.options.meta?.updateData(info.row.index, info.column.id, value);
   };
 
+  // Handle focus when component should be focused
+  useEffect(() => {
+    if (info.focusOnMount && containerRef.current) {
+      // Find the contentEditable div inside InputTemplating and focus it
+      const editableDiv = containerRef.current.querySelector('[contenteditable="true"]') as HTMLElement;
+      if (editableDiv) {
+        editableDiv.focus();
+        // Move cursor to end of text
+        const range = document.createRange();
+        const selection = window.getSelection();
+        if (editableDiv.textContent) {
+          range.setStart(editableDiv.childNodes[0] || editableDiv, editableDiv.textContent.length);
+          range.collapse(true);
+          selection?.removeAllRanges();
+          selection?.addRange(range);
+        }
+      }
+    }
+  }, [info.focusOnMount]);
+
   // Check if value contains template variables
   const hasTemplateVariables = /\{\{[^}]+\}\}/.test(value);
 
   return (
-    <div className="w-full">
+    <div ref={containerRef} className="w-full">
       <InputTemplating
         value={value}
         onChange={handleChange}
@@ -79,7 +100,6 @@ const TemplateInputCell = ({ info }: { info: ExtendedCellContext<TestData, strin
               ? "" // Let InputTemplating handle template variable colors
               : "text-(--moss-primary-text)"
         }`}
-        autoFocus={info.focusOnMount}
       />
     </div>
   );
