@@ -199,11 +199,13 @@ const RequestPage: React.FC<
         <div className="flex h-full flex-col">
           {props.params?.node ? (
             <div className="flex-1">
-              {/* Request Content Container with consistent margins */}
-              <div className="mx-3 my-4 space-y-6">
+              {/* Breadcrumbs with margin */}
+              <div className="mx-3 mt-4">
                 <Breadcrumbs panelId={props.api.id} />
+              </div>
 
-                {/* Request Input Section */}
+              {/* Request Input Section - Full Width */}
+              <div className="mb-4">
                 <RequestInputField
                   initialMethod={httpMethod}
                   initialUrl={requestData.url.raw}
@@ -215,18 +217,19 @@ const RequestPage: React.FC<
                     }
                   }}
                 />
+              </div>
 
-                {/* Request Configuration Tabs */}
-                {activeTab === "request" && (
+              {/* Request Configuration Tabs with proper margins */}
+              {activeTab === "request" && (
+                <div className="mx-3">
                   <PageContainerWithTabs
                     tabs={requestTabs}
                     activeTabId={activeRequestTabId}
                     onTabChange={setActiveRequestTabId}
-                    className="ml-0"
                     noPadding
                   />
-                )}
-              </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex flex-1 items-center justify-center">
