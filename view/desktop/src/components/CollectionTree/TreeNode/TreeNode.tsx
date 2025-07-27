@@ -3,7 +3,7 @@ import { useContext, useRef, useState } from "react";
 import { TreeContext } from "../..";
 import { useDeleteAndUpdatePeers } from "../actions/useDeleteAndUpdatePeers";
 import { DropIndicatorWithInstruction } from "../DropIndicatorWithInstruction";
-import { useInstructionNode } from "../hooks/useInstructionNode";
+import { useDraggableNode } from "../hooks/useDraggableNode";
 import { useNodeAddForm } from "../hooks/useNodeAddForm";
 import { useNodeRenamingForm } from "../hooks/useNodeRenamingForm";
 import { TreeCollectionNode } from "../types";
@@ -58,7 +58,7 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
   };
 
   const [preview, setPreview] = useState<HTMLElement | null>(null);
-  const { instruction, isDragging, canDrop } = useInstructionNode(
+  const { instruction, isDragging, canDrop } = useDraggableNode(
     node,
     parentNode,
     id,

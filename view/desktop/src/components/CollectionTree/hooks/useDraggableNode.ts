@@ -9,7 +9,7 @@ import { TreeContext } from "../Tree";
 import { TreeCollectionNode } from "../types";
 import { canDropNode, getLocationTreeNodeData, getSourceTreeNodeData } from "../utils";
 
-export const useInstructionNode = (
+export const useDraggableNode = (
   node: TreeCollectionNode,
   parentNode: TreeCollectionNode,
   collectionId: string | number,

@@ -5,11 +5,11 @@ import { cn } from "@/utils";
 
 import { DropIndicatorWithInstruction } from "../DropIndicatorWithInstruction";
 import { useDraggableRootNode } from "../hooks/useDraggableRootNode";
+import { useRootNodeAddForm } from "../hooks/useRootNodeAddForm";
+import { useRootNodeRenamingForm } from "../hooks/useRootNodeRenamingForm";
 import { TreeContext } from "../Tree";
 import { TreeCollectionRootNode } from "../types";
 import { calculateShouldRenderRootChildNodes } from "../utils";
-import { useRootNodeAddForm } from "./hooks/useRootNodeAddForm";
-import { useRootNodeRenamingForm } from "./hooks/useRootNodeRenamingForm";
 import { TreeRootNodeActions } from "./TreeRootNodeActions";
 import { TreeRootNodeButton } from "./TreeRootNodeButton";
 import { TreeRootNodeChildren } from "./TreeRootNodeChildren";
