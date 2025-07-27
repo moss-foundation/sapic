@@ -3,6 +3,7 @@ import { TreeCollectionNode } from "@/components/CollectionTree/types";
 import { EntryKind } from "@repo/moss-collection";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
 import { DataTable, ParameterData } from "@/components/Table";
+import { ActionButton } from "@/components";
 import { paramColumns } from "./columns";
 import { getParameterSuggestions, detectValueType } from "../../utils/urlParser";
 import { useRequestPageStore } from "@/store/requestPage";
@@ -154,15 +155,19 @@ export const ParamsTabContent = (_props: ParamsTabContentProps) => {
 
   return (
     <div className="mt-4">
-      {/* Query Params */}
       <div className="mb-6">
-        <h3 className="mb-3 text-sm font-medium">Query Params</h3>
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-sm font-medium">Query Params</h3>
+          <ActionButton icon="MoreHorizontal" />
+        </div>
         <DataTable columns={paramColumns} data={queryParams} onDataChange={handleQueryParamsUpdate} />
       </div>
 
-      {/* Path Params */}
       <div>
-        <h3 className="mb-3 text-sm font-medium">Path Params</h3>
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="text-sm font-medium">Path Params</h3>
+          <ActionButton icon="MoreHorizontal" />
+        </div>
         <DataTable columns={paramColumns} data={pathParams} onDataChange={handlePathParamsUpdate} />
       </div>
     </div>
