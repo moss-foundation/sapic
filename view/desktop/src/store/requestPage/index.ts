@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { reconstructUrl } from "../../pages/RequestPage/utils/urlParser";
+import { parseUrl } from "../../pages/RequestPage/utils/urlParser";
 
 interface UrlParameter {
   key: string;
@@ -8,6 +9,7 @@ interface UrlParameter {
 
 interface RequestPageUrl {
   raw: string;
+  originalPathTemplate: string;
   port: number | null;
   host: string[];
   path_params: UrlParameter[];
@@ -39,15 +41,15 @@ interface RequestPageStore {
 }
 
 export const useRequestPageStore = create<RequestPageStore>((set, get) => ({
-  // Initial state
   requestData: {
     url: {
       raw: "{{baseUrl}}/docs/:docId/tables/:tableIdOrName/columns?sort={{sortValue}}&limit=2",
+      originalPathTemplate: "{{baseUrl}}/docs/:docId/tables/:tableIdOrName/columns",
       port: null,
       host: [],
       path_params: [
-        { key: "docId", value: "{{docId}}" },
-        { key: "tableIdOrName", value: "{{tableIdOrName}}" },
+        { key: "docId", value: "" },
+        { key: "tableIdOrName", value: "" },
       ],
       query_params: [
         { key: "sort", value: "{{sortValue}}" },
@@ -57,14 +59,17 @@ export const useRequestPageStore = create<RequestPageStore>((set, get) => ({
   },
   httpMethod: "POST",
 
-  // Actions
   setUrl: (rawUrl: string) => {
+    const parsedUrl = parseUrl(rawUrl);
     set((state) => ({
       requestData: {
         ...state.requestData,
         url: {
           ...state.requestData.url,
           raw: rawUrl,
+          originalPathTemplate: parsedUrl.url.originalPathTemplate,
+          path_params: parsedUrl.url.path_params,
+          query_params: parsedUrl.url.query_params,
         },
       },
     }));
@@ -184,30 +189,36 @@ export const useRequestPageStore = create<RequestPageStore>((set, get) => ({
 
   reconstructUrlFromParams: () => {
     const currentState = get();
-    const { path_params, query_params } = currentState.requestData.url;
+    const { path_params, query_params, originalPathTemplate } = currentState.requestData.url;
 
-    // Simple approach: start with current URL and reconstruct it
-    let baseUrl = currentState.requestData.url.raw;
+    let reconstructedPath = originalPathTemplate || currentState.requestData.url.raw.split("?")[0];
 
-    // Remove current query string to get the path part
-    const [pathPart] = baseUrl.split("?");
+    const currentParamKeys = new Set(path_params.map((param) => param.key));
 
-    // For path params, we'll build the URL by replacing values or keeping template patterns
-    let reconstructedPath = pathPart;
+    // Remove path segments containing disabled parameters
+    const pathSegments = reconstructedPath.split("/");
+    const filteredSegments = pathSegments.filter((segment) => {
+      if (segment.startsWith(":")) {
+        const paramKey = segment.substring(1);
+        return currentParamKeys.has(paramKey);
+      }
+      return true;
+    });
 
-    // Replace each path param
+    reconstructedPath = filteredSegments.join("/");
+
+    // Replace path parameters with their values
     path_params.forEach((param) => {
-      if (param.key && param.value) {
-        // Replace :paramKey with the actual value
+      if (param.key && param.key.trim() !== "") {
         const paramPattern = new RegExp(`:${param.key}\\b`, "g");
-        reconstructedPath = reconstructedPath.replace(paramPattern, param.value);
+        if (param.value && param.value.trim() !== "") {
+          reconstructedPath = reconstructedPath.replace(paramPattern, param.value);
+        }
       }
     });
 
-    // Reconstruct the URL with current parameter values
     const newUrl = reconstructUrl(reconstructedPath, [], query_params);
 
-    // Only update if the URL actually changed
     if (newUrl !== currentState.requestData.url.raw) {
       set((state) => ({
         requestData: {

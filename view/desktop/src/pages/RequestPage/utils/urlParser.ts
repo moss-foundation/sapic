@@ -3,6 +3,7 @@ import { parameterSuggestions, type ParameterSuggestion } from "./parameterSugge
 export interface ParsedUrl {
   url: {
     raw: string;
+    originalPathTemplate: string;
     port: number | null;
     host: string[];
     path_params: Array<{
@@ -27,6 +28,7 @@ export const parseUrl = (rawUrl: string): ParsedUrl => {
   const result: ParsedUrl = {
     url: {
       raw: rawUrl,
+      originalPathTemplate: "",
       port: null,
       host: [],
       path_params: [],
@@ -41,7 +43,8 @@ export const parseUrl = (rawUrl: string): ParsedUrl => {
   try {
     const [pathPart, queryPart] = rawUrl.split("?");
 
-    // Extract path parameters (including partial ones during typing)
+    result.url.originalPathTemplate = pathPart || "";
+
     if (pathPart) {
       const pathParts = pathPart.split("/");
       pathParts.forEach((part) => {
@@ -49,13 +52,12 @@ export const parseUrl = (rawUrl: string): ParsedUrl => {
           const key = part.substring(1) || "param";
           result.url.path_params.push({
             key,
-            value: key ? `{{${key}}}` : "",
+            value: "", // Path params start with empty values
           });
         }
       });
     }
 
-    // Parse query parameters (handles partial parameters during typing)
     if (queryPart !== undefined) {
       if (queryPart === "") {
         result.url.query_params.push({ key: "", value: "" });
@@ -122,7 +124,7 @@ export const convertToTableFormat = (
 export const detectValueType = (value: string): string => {
   if (!value || value.trim() === "") return "string";
 
-  // Check for template variables (keep as string)
+  // Keep template variables as string
   if (value.includes("{{") && value.includes("}}")) return "string";
 
   if (value.toLowerCase() === "true" || value.toLowerCase() === "false") return "bool";
@@ -156,7 +158,7 @@ export const reconstructUrl = (
       const queryString = validQueryParams
         .map((param) => {
           const key = encodeURIComponent(param.key);
-          // Don't encode template variables or path parameters
+          // Don't encode template variables
           const isTemplateVariable =
             param.value && ((param.value.includes("{{") && param.value.includes("}}")) || param.value.startsWith(":"));
           const value = param.value ? (isTemplateVariable ? param.value : encodeURIComponent(param.value)) : "";

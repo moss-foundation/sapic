@@ -53,7 +53,6 @@ export const ParamsTabContent = (_props: ParamsTabContentProps) => {
     });
   };
 
-  // Memoize table data to prevent unnecessary re-renders during typing
   const queryParams = React.useMemo(
     () => convertUrlParamsToTableData(requestData.url.query_params, "query"),
     [requestData.url.query_params]
@@ -69,7 +68,6 @@ export const ParamsTabContent = (_props: ParamsTabContentProps) => {
         clearTimeout(debouncedQueryUpdate.current);
       }
 
-      // Detect if this is a checkbox change (faster update) vs typing (slower update)
       const previousData = queryParams;
       const isCheckboxChange =
         updatedData.length === previousData.length &&
@@ -81,23 +79,16 @@ export const ParamsTabContent = (_props: ParamsTabContentProps) => {
             param.properties.disabled !== previousData[index].properties.disabled
         );
 
-      // Use shorter delay for checkbox changes, longer for typing
       const debounceDelay = isCheckboxChange ? 50 : 300;
 
-      // Debounce to prevent focus loss during typing
       debouncedQueryUpdate.current = setTimeout(() => {
         const updatedParams = updatedData
-          .filter(
-            (param) =>
-              // Include if: has content AND is enabled (not disabled)
-              (param.key.trim() !== "" || param.value.trim() !== "") && !param.properties.disabled
-          )
+          .filter((param) => (param.key.trim() !== "" || param.value.trim() !== "") && !param.properties.disabled)
           .map((param) => ({
             key: param.key,
             value: param.value,
           }));
 
-        // Get current params from store at execution time
         const currentParams = requestData.url.query_params;
         const paramsChanged = JSON.stringify(updatedParams) !== JSON.stringify(currentParams);
 
@@ -116,7 +107,6 @@ export const ParamsTabContent = (_props: ParamsTabContentProps) => {
         clearTimeout(debouncedPathUpdate.current);
       }
 
-      // Detect if this is a checkbox change (faster update) vs typing (slower update)
       const previousData = pathParams;
       const isCheckboxChange =
         updatedData.length === previousData.length &&
@@ -128,22 +118,17 @@ export const ParamsTabContent = (_props: ParamsTabContentProps) => {
             param.properties.disabled !== previousData[index].properties.disabled
         );
 
-      // Use shorter delay for checkbox changes, longer for typing
       const debounceDelay = isCheckboxChange ? 50 : 300;
 
       debouncedPathUpdate.current = setTimeout(() => {
+        // Path params: disabled params are completely removed from URL
         const updatedParams = updatedData
-          .filter(
-            (param) =>
-              // Include if: has content AND is enabled (not disabled)
-              (param.key.trim() !== "" || param.value.trim() !== "") && !param.properties.disabled
-          )
+          .filter((param) => param.key.trim() !== "" && !param.properties.disabled)
           .map((param) => ({
             key: param.key,
-            value: param.value,
+            value: param.value.trim() !== "" ? param.value : "",
           }));
 
-        // Get current params from store at execution time
         const currentParams = requestData.url.path_params;
         const paramsChanged = JSON.stringify(updatedParams) !== JSON.stringify(currentParams);
 
