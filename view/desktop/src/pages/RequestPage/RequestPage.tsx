@@ -109,6 +109,7 @@ const RequestPage: React.FC<
       const updatedData = {
         url: {
           raw: url,
+          originalPathTemplate: parsed.url.originalPathTemplate,
           port: parsed.url.port,
           host: parsed.url.host,
           path_params: parsed.url.path_params,
