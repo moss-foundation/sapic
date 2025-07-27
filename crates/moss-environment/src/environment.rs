@@ -6,6 +6,7 @@ pub struct Environment<R: AppRuntime> {
     abs_path: Arc<Path>,
     #[allow(dead_code)]
     services: ServiceProvider,
+
     _marker: std::marker::PhantomData<R>,
 }
 

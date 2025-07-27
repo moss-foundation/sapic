@@ -6,8 +6,9 @@ edition = "2024"
 [dependencies]
 moss_applib.workspace = true
 moss_text.workspace = true
-joinerror.workspace = true
+moss_patch.workspace = true
 
+joinerror.workspace = true
 async-trait.workspace = true
 anyhow.workspace = true
 tokio = { workspace = true, features = ["full"] }

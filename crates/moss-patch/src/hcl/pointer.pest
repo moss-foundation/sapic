@@ -1,0 +1,15 @@
+WHITESPACE = _{ " " | "\t" }
+
+pointer = { SOI ~ (slash ~ token)+ ~ EOI }
+slash   = _{ "/" }
+
+token   = { wildcard | attr | ident ~ suffix* }
+wildcard = { "*" }
+
+suffix  = { label ~ index? }
+label   = { "{" ~ quoted ~ "}" }
+index   = { "[" ~ ASCII_DIGIT+ ~ "]" }
+
+ident   = @{ (ASCII_ALPHANUMERIC | "_")+ }
+attr    = @{ ident }
+quoted  = { "\"" ~ (!"\"" ~ ANY)* ~ "\"" }

@@ -32,6 +32,7 @@ moss_fs.workspace = true
 moss_text.workspace = true
 moss_workspace.workspace = true
 moss_storage.workspace = true
+moss_environment.workspace = true
 
 tauri = { workspace = true, features = ["wry", "macos-private-api", "devtools", "objc-exception"] }
 tauri-plugin-fs = "2.3.0"
