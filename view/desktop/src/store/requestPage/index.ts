@@ -42,14 +42,17 @@ export const useRequestPageStore = create<RequestPageStore>((set, get) => ({
   // Initial state
   requestData: {
     url: {
-      raw: "{{baseUrl}}/docs/:docId/tables/:tableIdOrName/columns?queryParam={{queryValue}}",
+      raw: "{{baseUrl}}/docs/:docId/tables/:tableIdOrName/columns?sort={{sortValue}}&limit=2",
       port: null,
       host: [],
       path_params: [
         { key: "docId", value: "{{docId}}" },
         { key: "tableIdOrName", value: "{{tableIdOrName}}" },
       ],
-      query_params: [{ key: "queryParam", value: "{{queryValue}}" }],
+      query_params: [
+        { key: "sort", value: "{{sortValue}}" },
+        { key: "limit", value: "2" },
+      ],
     },
   },
   httpMethod: "POST",

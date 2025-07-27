@@ -19,7 +19,7 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = React.memo(
   ({
     className,
     initialMethod = "POST",
-    initialUrl = "{{baseUrl}}/docs/:docId/tables/:tableIdOrName/columns?queryParam={{queryValue}}",
+    initialUrl = "{{baseUrl}}/docs/:docId/tables/:tableIdOrName/columns?sort={{sortValue}}&limit=2",
     onSend,
     onUrlChange,
     onMethodChange,
