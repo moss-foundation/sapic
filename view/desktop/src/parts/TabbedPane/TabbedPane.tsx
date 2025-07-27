@@ -3,7 +3,7 @@ import "./assets/styles.css";
 import React from "react";
 
 import { ActionButton, Breadcrumbs, PageContent, PageHeader, PageTabs, PageToolbar, PageView } from "@/components";
-import { DropNodeElement, TreeCollectionNode } from "@/components/CollectionTree/types";
+import { DropNode, TreeCollectionNode } from "@/components/CollectionTree/types";
 import { useUpdateEditorPartState } from "@/hooks/appState/useUpdateEditorPartState";
 import { mapEditorPartStateToSerializedDockview } from "@/hooks/appState/utils";
 import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
@@ -106,7 +106,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
   const [groups, setGroups] = React.useState<string[]>([]);
   const [activePanel, setActivePanel] = React.useState<string | undefined>();
   const [activeGroup, setActiveGroup] = React.useState<string | undefined>();
-  const [pragmaticDropElement, setPragmaticDropElement] = React.useState<DropNodeElement | null>(null);
+  const [pragmaticDropElement, setPragmaticDropElement] = React.useState<DropNode | null>(null);
   const [watermark, setWatermark] = React.useState(false);
   const [showLogs, setShowLogs] = React.useState(false);
   const [debug, setDebug] = React.useState(false);
@@ -184,8 +184,14 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     if (!pragmaticDropElement || !api) return;
 
     addOrFocusPanel({
-      id: String(pragmaticDropElement.node.id),
+      id: pragmaticDropElement.node.id,
+      title: pragmaticDropElement.node.name,
       component: "Default",
+      params: {
+        treeId: pragmaticDropElement.node.id,
+        iconType: pragmaticDropElement.node.kind,
+        node: pragmaticDropElement.node,
+      },
       position: {
         direction: positionToDirection(event.position),
         referenceGroup: event.group || undefined,
@@ -287,7 +293,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
             toolbar={toolbar}
           />
           <PageContent className={cn("relative", isDebug && "border-2 border-dashed border-orange-500")}>
-            <Breadcrumbs panelId={props.api.id} />
+            <Breadcrumbs treeId={props.params?.treeId} nodeId={props.params?.node?.id} />
 
             <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col text-[42px] opacity-50">
               {props.params?.node ? (

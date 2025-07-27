@@ -34,7 +34,7 @@ export const useTabbedPaneDropTarget = (
 
     const clearDropTarget = () => {
       setIsDragging(false);
-      setPragmaticDropElement(null);
+      // setPragmaticDropElement(null);
       setCanDrop(true);
     };
 
