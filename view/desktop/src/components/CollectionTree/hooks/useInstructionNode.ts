@@ -7,8 +7,7 @@ import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/el
 
 import { TreeContext } from "../Tree";
 import { TreeCollectionNode } from "../types";
-import { canDropNode, getActualDropSourceTarget } from "../utils";
-import { getLocationTreeNodeData } from "../utils/utils2";
+import { canDropNode, getLocationTreeNodeData, getSourceTreeNodeData } from "../utils";
 
 export const useInstructionNode = (
   node: TreeCollectionNode,
@@ -86,8 +85,12 @@ export const useInstructionNode = (
           return source.data.type === "TreeNode";
         },
         onDrag({ location, source, self }) {
-          const sourceTarget = getActualDropSourceTarget(source);
+          const sourceTarget = getSourceTreeNodeData(source);
           const dropTarget = getLocationTreeNodeData(location);
+
+          if (!sourceTarget || !dropTarget) {
+            return;
+          }
 
           const instruction: Instruction | null = extractInstruction(self.data);
 

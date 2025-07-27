@@ -16,12 +16,8 @@ import { join } from "@tauri-apps/api/path";
 
 import { useCollectionDragAndDropHandler } from "./CollectionTree/hooks/useCollectionDragAndDropHandler";
 import { useNodeDragAndDropHandler } from "./CollectionTree/hooks/useNodeDragAndDropHandler";
-import {
-  convertEntryInfoToCreateInput,
-  getAllNestedEntries,
-  getSourceTreeNodeData,
-  isSourceTreeNode,
-} from "./CollectionTree/utils/utils2";
+import { convertEntryInfoToCreateInput } from "./CollectionTree/utils";
+import { getAllNestedEntries, getSourceTreeNodeData, isSourceTreeNode } from "./CollectionTree/utils/DragAndDrop";
 
 export const CollectionTreeView = () => {
   const dropTargetToggleRef = useRef<HTMLDivElement>(null);

@@ -7,8 +7,7 @@ import { NodeAddForm } from "../NodeAddForm";
 import { TreeContext } from "../Tree";
 import TreeNode from "../TreeNode/TreeNode";
 import { TreeCollectionRootNode } from "../types";
-import { getRestrictedNames } from "../utils/TreeRoot";
-import { sortByOrder } from "../utils/utils2";
+import { getRestrictedNames, sortByOrder } from "../utils";
 
 interface TreeRootNodeChildrenProps {
   node: TreeCollectionRootNode;

@@ -5,7 +5,7 @@ import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollection
 
 import { TreeContext } from "../Tree";
 import { TreeCollectionNode } from "../types";
-import { createEntryKind } from "../utils/utils2";
+import { createEntryKind } from "../utils";
 
 export const useNodeAddForm = (parentNode: TreeCollectionNode) => {
   const { id } = useContext(TreeContext);

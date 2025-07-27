@@ -10,16 +10,19 @@ import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/ad
 import { join } from "@tauri-apps/api/path";
 
 import { DragNode, DropNode, DropRootNode } from "../types";
-import { canDropNode } from "../utils";
-import { getLocationTreeNodeData, getLocationTreeRootNodeData, getSourceTreeNodeData } from "../utils/DragAndDrop";
-import { getPathWithoutName, prepareEntriesForDrop } from "../utils/Path";
 import {
+  canDropNode,
   createEntryKind,
   getAllNestedEntries,
   getInstructionFromLocation,
+  getLocationTreeNodeData,
+  getLocationTreeRootNodeData,
+  getPathWithoutName,
+  getSourceTreeNodeData,
   isSourceTreeNode,
+  prepareEntriesForDrop,
   sortByOrder,
-} from "../utils/utils2";
+} from "../utils";
 
 export const useNodeDragAndDropHandler = () => {
   const { mutateAsync: createCollectionEntry } = useCreateCollectionEntry();

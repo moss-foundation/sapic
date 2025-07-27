@@ -2,8 +2,7 @@
 import { useContext, useState } from "react";
 
 import { TreeContext } from "../Tree";
-import { NodeProps, TreeCollectionNode } from "../types";
-import { prepareCollectionForTree, updateNodeOrder } from "../utils";
+import { TreeCollectionNode } from "../types";
 
 export const useAddNodeWithDivider = (
   node: TreeCollectionNode,
@@ -19,11 +18,7 @@ export const useAddNodeWithDivider = (
       updateNodeOrder({
         ...node,
         expanded: true,
-        childNodes: [
-          ...node.childNodes.slice(0, order),
-          prepareCollectionForTree(newNode, sortBy),
-          ...node.childNodes.slice(order),
-        ],
+        childNodes: [...node.childNodes.slice(0, order), newNode, ...node.childNodes.slice(order)],
       })
     );
 

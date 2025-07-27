@@ -22,14 +22,14 @@ export interface TreeRootNodeProps {
 
 export interface DragNode {
   collectionId: string;
-  repository?: string; //TODO This shouldn't be optional, I guess
+  repository: string;
   node: TreeCollectionNode;
   parentNode: TreeCollectionNode;
 }
 
 export interface DropNode {
   collectionId: string;
-  repository?: string; //TODO This shouldn't be optional, I guess
+  repository: string;
   node: TreeCollectionNode;
   parentNode: TreeCollectionNode;
   instruction?: Instruction;
