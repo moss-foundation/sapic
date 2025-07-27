@@ -79,7 +79,7 @@ export const ParamsTabContent = (_props: ParamsTabContentProps) => {
             param.properties.disabled !== previousData[index].properties.disabled
         );
 
-      const debounceDelay = isCheckboxChange ? 50 : 300;
+      const debounceDelay = isCheckboxChange ? 30 : 100;
 
       debouncedQueryUpdate.current = setTimeout(() => {
         const updatedParams = updatedData
@@ -118,7 +118,7 @@ export const ParamsTabContent = (_props: ParamsTabContentProps) => {
             param.properties.disabled !== previousData[index].properties.disabled
         );
 
-      const debounceDelay = isCheckboxChange ? 50 : 300;
+      const debounceDelay = isCheckboxChange ? 30 : 100;
 
       debouncedPathUpdate.current = setTimeout(() => {
         // Path params: disabled params are completely removed from URL
