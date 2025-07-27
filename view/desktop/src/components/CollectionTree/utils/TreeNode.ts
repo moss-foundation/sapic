@@ -7,12 +7,12 @@ export const hasDescendant = (tree: TreeCollectionNode, node: TreeCollectionNode
 
 export const hasDirectDescendant = (tree: TreeCollectionNode, node: TreeCollectionNode): boolean => {
   if (!tree.childNodes) return false;
-  return tree.childNodes.some((child) => child.id === node.id && child.id === node.id);
+  return tree.childNodes.some((child) => child.id === node.id);
 };
 
 export const hasDirectSimilarDescendant = (tree: TreeCollectionNode, node: TreeCollectionNode): boolean => {
   if (!tree.childNodes) return false;
-  return tree.childNodes.some((child) => child.id === node.id || child.id === node.id);
+  return tree.childNodes.some((child) => child.id === node.id);
 };
 
 const doesStringIncludePartialString = (str: string, partialStr: string) => {
