@@ -1,6 +1,10 @@
+pub mod expression;
 pub mod object;
 
-pub use crate::object::Object;
+pub use crate::{
+    expression::{deserialize_expression, serialize_expression},
+    object::Object,
+};
 
 pub use hcl::ser::{Block, LabeledBlock};
 use joinerror::error::ErrorMarker;

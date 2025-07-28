@@ -1,6 +1,6 @@
-use hcl::Expression;
+use hcl::Expression as HclExpression;
 use indexmap::IndexMap;
-use moss_hcl::{Block, LabeledBlock};
+use moss_hcl::{Block, LabeledBlock, deserialize_expression, serialize_expression};
 use serde::{Deserialize, Serialize};
 
 use crate::models::{
@@ -19,7 +19,11 @@ pub struct Metadata {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct VariableDefinition {
     pub name: VariableName,
-    pub value: Expression,
+    #[serde(
+        serialize_with = "serialize_expression",
+        deserialize_with = "deserialize_expression"
+    )]
+    pub value: HclExpression,
     pub kind: Option<VariableKind>,
     pub description: Option<String>,
     pub options: VariableOptions,

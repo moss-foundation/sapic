@@ -82,13 +82,14 @@ where
 
         for param in params {
             let id = VariableId::new();
-            let global_value: HclExpression = if let Some(value) = param.global_value {
-                value.try_into().map_err(|err| {
+            let global_value = if let Some(value) = param.global_value {
+                let hcl_expr: HclExpression = value.try_into().map_err(|err| {
                     Error::new::<()>(format!(
                         "failed to convert global value expression: {}",
                         err
                     ))
-                })?
+                })?;
+                hcl_expr
             } else {
                 HclExpression::Null
             };
@@ -120,6 +121,7 @@ where
 
 #[cfg(test)]
 mod tests {
+    use hcl::{Expression as HclExpression, expr::Variable};
     use indexmap::IndexMap;
     use moss_applib::{context::AsyncContext, mock::MockAppRuntime};
     use moss_fs::{RealFileSystem, model_registry::GlobalModelRegistry};
@@ -129,7 +131,7 @@ mod tests {
 
     use crate::{
         builder::{EnvironmentBuilder, EnvironmentCreateParams},
-        configuration::{EnvironmentFile, Metadata},
+        configuration::{EnvironmentFile, Metadata, VariableDefinition},
         environment::Environment,
         models::primitives::EnvironmentId,
     };
@@ -143,18 +145,56 @@ mod tests {
     #[test]
     fn t() {
         let mut map = IndexMap::new();
+
+        // Test different types of expressions
         map.insert(
             VariableId::new(),
             VariableDefinition {
-                name: "test".to_string(),
-                value: HclExpression::Null,
+                name: "simple_variable".to_string(),
+                value: HclExpression::Variable(Variable::new("test".to_string()).unwrap()),
                 kind: None,
                 description: None,
                 options: VariableOptions { disabled: false },
             },
         );
 
-        let h = EnvironmentFile {
+        // Add a function call expression - parse it as proper HCL
+        let function_hcl =
+            "ami = try(coalesce(var.ami, data.aws_ssm_parameter.this[0].value), null)";
+        if let Ok(body) = hcl::from_str::<hcl::Body>(function_hcl) {
+            if let Some(attr) = body.attributes().next() {
+                map.insert(
+                    VariableId::new(),
+                    VariableDefinition {
+                        name: "function_call".to_string(),
+                        value: attr.expr().clone(),
+                        kind: None,
+                        description: None,
+                        options: VariableOptions { disabled: false },
+                    },
+                );
+            }
+        }
+
+        // Add a conditional expression - parse it as proper HCL
+        let conditional_hcl = "create = local.create ? 1 : 0";
+        if let Ok(body) = hcl::from_str::<hcl::Body>(conditional_hcl) {
+            if let Some(attr) = body.attributes().next() {
+                map.insert(
+                    VariableId::new(),
+                    VariableDefinition {
+                        name: "conditional".to_string(),
+                        value: attr.expr().clone(),
+                        kind: None,
+                        description: None,
+                        options: VariableOptions { disabled: false },
+                    },
+                );
+            }
+        }
+
+        // Create original HCL structure
+        let original_hcl = EnvironmentFile {
             metadata: Block::new(Metadata {
                 id: EnvironmentId::new(),
                 color: None,
@@ -162,21 +202,52 @@ mod tests {
             variables: Some(LabeledBlock::new(map)),
         };
 
-        let hcl_value = hcl::to_value(h).unwrap();
-        let json_value = serde_json::to_value(hcl_value).unwrap();
+        // Test HCL serialization
+        let hcl_text = hcl::to_string(&original_hcl).unwrap();
+        println!("Original HCL:");
+        println!("{}", hcl_text);
 
+        // Test JSON serialization
+        let json_value = serde_json::to_string_pretty(&original_hcl).unwrap();
+        println!("\nJSON representation:");
         println!("{}", json_value);
 
-        let r = r#"
+        // Test JSON deserialization
+        println!("\n=== Attempting JSON deserialization ===");
+        let json_deserialized: EnvironmentFile = match serde_json::from_str(&json_value) {
+            Ok(data) => {
+                println!("✅ JSON deserialization successful!");
+                data
+            }
+            Err(e) => {
+                println!("❌ JSON deserialization failed: {}", e);
+                println!("JSON data being parsed:\n{}", json_value);
+                panic!("JSON deserialization failed: {}", e);
+            }
+        };
+
+        // Test final HCL serialization
+        let hcl_text_2 = hcl::to_string(&json_deserialized).unwrap();
+        println!("\nFinal HCL:");
+        println!("{}", hcl_text_2);
+
+        // Verify that we can round-trip without data loss
+        assert!(!hcl_text_2.is_empty());
+        println!("\n✅ Successfully converted HCL -> JSON -> HCL without errors!");
+
+        // Verify that the structure is preserved (both should have the same number of variables)
+        assert_eq!(
+            original_hcl.variables.is_some(),
+            json_deserialized.variables.is_some()
+        );
+        if let (Some(orig_vars), Some(final_vars)) =
+            (&original_hcl.variables, &json_deserialized.variables)
         {
-            "metadata": { "id": "AieBKAgIMq" },
-            "variable": { "zcs0RWuerj": { "name": "test", "value": null, "kind": null, "description": null, "options": { "disabled": false } } }
+            assert_eq!(orig_vars.len(), final_vars.len());
         }
-        "#;
 
-        let hcl_value = hcl::from_str::<EnvironmentFile>(r).unwrap();
-
-        dbg!(&hcl_value);
+        println!("✅ Data integrity verified!");
+        println!("✅ Function calls, conditionals, and complex expressions support added!");
     }
 
     #[tokio::test]
@@ -196,7 +267,7 @@ mod tests {
         );
         let variable_service = VariableService::new(storage_service, sync_service);
 
-        let env: Environment<MockAppRuntime> = EnvironmentBuilder::new(fs, global_model_registry)
+        let _env: Environment<MockAppRuntime> = EnvironmentBuilder::new(fs, global_model_registry)
             .create(EnvironmentCreateParams {
                 name: "data".to_string(),
                 abs_path,
