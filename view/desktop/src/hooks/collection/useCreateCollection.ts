@@ -26,7 +26,6 @@ export const useCreateCollection = () => {
           {
             ...data,
             ...variables,
-            repository: variables.repo, //FIXME: Right now we send 'repo' but get 'repository' attribute, this should be changed when backend is updated
           },
         ];
       });

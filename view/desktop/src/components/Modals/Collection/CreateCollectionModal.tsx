@@ -22,7 +22,7 @@ export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
   const { addOrFocusPanel } = useTabbedPaneStore();
 
   const [name, setName] = useState("New Collection");
-  const [repo, setRepo] = useState("github.com/moss-foundation/sapic");
+  const [repository, setRepository] = useState("github.com/moss-foundation/sapic");
   const [mode, setMode] = useState<"Default" | "Custom">("Default");
   const [openAutomatically, setOpenAutomatically] = useState(true);
 
@@ -35,7 +35,7 @@ export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
   const handleSubmit = async () => {
     const result = await createCollection({
       name,
-      repo,
+      repository,
       order: collections?.length ? collections.length + 1 : 1,
     });
 
@@ -93,7 +93,8 @@ export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
 
             <div className="col-span-2 grid grid-cols-subgrid items-center">
               <div>Repository:</div>
-              <InputOutlined value={repo} className="max-w-72" onChange={(e) => setRepo(e.target.value)} />
+              {/* FIXME: backend gives validation error if you but random strings. This should be validated and error should be shown ideally */}
+              <InputOutlined value={repository} className="max-w-72" onChange={(e) => setRepository(e.target.value)} />
             </div>
           </div>
 
