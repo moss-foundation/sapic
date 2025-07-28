@@ -2,10 +2,10 @@ import { useContext } from "react";
 
 import { cn } from "@/utils";
 
-import { DebugCollectionIconPlaceholder } from "../DebugCollectionIconPlaceholder";
 import { NodeAddForm } from "../NodeAddForm";
 import { TreeContext } from "../Tree";
 import TreeNode from "../TreeNode/TreeNode";
+import { TreeNodeIcon } from "../TreeNode/TreeNodeIcon";
 import { TreeCollectionRootNode } from "../types";
 import { getRestrictedNames, sortByOrder } from "../utils";
 
@@ -48,13 +48,25 @@ export const TreeRootNodeChildren = ({
           />
         );
       })}
+
       {shouldRenderAddRootForm && (
         <div className="flex w-full min-w-0 items-center gap-1 py-0.5" style={{ paddingLeft: nodeOffset * 1 }}>
-          <DebugCollectionIconPlaceholder type={"Dir"} protocol={undefined} className="opacity-0" />
-          <DebugCollectionIconPlaceholder
-            type={"Dir"}
-            protocol={undefined}
-            className={cn({ "opacity-0": isAddingRootFileNode })}
+          <TreeNodeIcon
+            node={{
+              id: "Placeholder_AddingNodeId",
+              name: "Placeholder_AddingNodeName",
+              kind: "Dir",
+              protocol: undefined,
+              expanded: true,
+              childNodes: [],
+              path: {
+                raw: "",
+                segments: [],
+              },
+              class: "Request",
+            }}
+            isRootNode={false}
+            className="opacity-0"
           />
           <NodeAddForm
             onSubmit={handleAddFormRootSubmit}

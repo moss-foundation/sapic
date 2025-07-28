@@ -118,15 +118,6 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
         </div>
 
         <CollectionDangerZoneSection onDeleteClick={openModal} />
-
-        {/* TODO: Remove this, this is for debugging */}
-        <pre>
-          {JSON.stringify(
-            collectionTree,
-            ["id", "name", "order", "repository", "expanded", "requests", "childNodes"],
-            2
-          )}
-        </pre>
       </div>
 
       {/* Right Column - Summary positioned absolutely on the right */}

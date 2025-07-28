@@ -3,10 +3,10 @@ import { useContext } from "react";
 import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
 
-import { DebugCollectionIconPlaceholder } from "../DebugCollectionIconPlaceholder";
 import { NodeAddForm } from "../NodeAddForm";
 import { TreeContext } from "../Tree";
 import { TreeCollectionNode } from "../types";
+import { TreeNodeIcon } from "./TreeNodeIcon";
 
 interface TreeNodeAddFormProps {
   depth: number;
@@ -30,9 +30,22 @@ const TreeNodeAddForm = ({
   return (
     <div style={{ paddingLeft: nodePaddingLeftForAddForm }} className="flex w-full min-w-0 items-center gap-1">
       <Icon icon="ChevronRight" className={cn("opacity-0")} />
-      <DebugCollectionIconPlaceholder
-        type={isAddingFolderNode ? "Dir" : "Item"}
-        protocol={undefined}
+      <TreeNodeIcon
+        node={{
+          id: "Placeholder_AddingNodeId",
+          name: "Placeholder_AddingNodeName",
+          kind: isAddingFolderNode ? "Dir" : "Item",
+          protocol: undefined,
+          expanded: true,
+          order: Infinity,
+          class: "Request",
+          childNodes: [],
+          path: {
+            raw: "",
+            segments: [],
+          },
+        }}
+        isRootNode={false}
         className={cn("ml-auto", {
           "opacity-0": !isAddingFolderNode,
         })}
