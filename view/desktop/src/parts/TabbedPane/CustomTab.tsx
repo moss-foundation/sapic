@@ -65,7 +65,7 @@ export const CustomTab = ({
   return (
     <div {...rest} onClick={handleClick} data-testid="dockview-custom-tab" className="dv-default-tab">
       <span className="dv-default-tab-content flex max-w-40 items-center gap-1">
-        {params?.node && <TreeNodeIcon node={params?.node} isRootNode={false} />}
+        {params?.node && <TreeNodeIcon node={params?.node} />}
         <span className="truncate">{title}</span>
       </span>
 

@@ -161,7 +161,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
               </div>
 
               {showNodeOrders && <div className="underline">{node.order}</div>}
-              <TreeNodeIcon node={node} isRootNode={isRootNode} />
+              <TreeNodeIcon node={node} />
 
               <NodeLabel label={node.name} searchInput={searchInput} className={cn({ "capitalize": isRootNode })} />
 

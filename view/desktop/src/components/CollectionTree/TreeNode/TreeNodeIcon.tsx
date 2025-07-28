@@ -4,12 +4,13 @@ import { TreeCollectionNode } from "../types";
 
 interface TreeNodeIconProps {
   node: TreeCollectionNode;
-  isRootNode: boolean;
   className?: string;
 }
 
-export const TreeNodeIcon = ({ node, isRootNode, className }: TreeNodeIconProps) => {
-  if (isRootNode) {
+export const TreeNodeIcon = ({ node, className }: TreeNodeIconProps) => {
+  const calculateIsRoot = node.path.segments.length === 1;
+
+  if (calculateIsRoot) {
     switch (node.class) {
       case "Schema":
         return <Icon icon="SchemasFolder" className={className} />;

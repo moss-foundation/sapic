@@ -10,25 +10,33 @@ export const Breadcrumbs = ({ collectionId, nodeId }: { collectionId: string; no
   const { collectionsTrees } = useCollectionsTrees();
 
   const activeTree = collectionsTrees?.find((tree) => tree.id === collectionId);
-  if (!activeTree) return null;
+  if (!activeTree) {
+    console.warn("Breadcrumbs: No active tree found");
+    return null;
+  }
 
   const activeNode = findNodeByIdInTree(activeTree, nodeId);
-  if (!activeNode) return null;
+  if (!activeNode) {
+    console.warn("Breadcrumbs: No active node found");
+    return null;
+  }
 
   const nodesSequence = findNodesSequence(activeTree, activeNode);
-  if (!nodesSequence) return null;
+  if (!nodesSequence) {
+    console.warn("Breadcrumbs: No nodes sequence found");
+    return null;
+  }
 
   return (
     <div className="flex items-center justify-between px-2">
       <div className="flex w-max items-center gap-1 overflow-hidden text-[#6F6F6F] select-none">
         {nodesSequence.map((node, index) => {
           const lastItem = index === activeNode?.path.segments.length - 1;
-          const isRootNode = index === 0;
 
           if (lastItem) {
             return (
               <div key={node.id} className="contents">
-                <TreeNodeIcon node={node} isRootNode={isRootNode} />
+                <TreeNodeIcon node={node} />
                 <span className="min-w-max">{node.name}</span>
               </div>
             );
@@ -39,7 +47,7 @@ export const Breadcrumbs = ({ collectionId, nodeId }: { collectionId: string; no
               <ActionMenu.Root>
                 <ActionMenu.Trigger className="min-w-max cursor-pointer hover:underline">
                   <div className="flex items-center gap-1">
-                    <TreeNodeIcon node={node} isRootNode={isRootNode} />
+                    <TreeNodeIcon node={node} />
                     {node.name}
                   </div>
                 </ActionMenu.Trigger>

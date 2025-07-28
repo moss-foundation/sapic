@@ -38,7 +38,7 @@ const TreeNodeRenameForm = ({
             "opacity-0": node.kind !== "Dir",
           })}
         />
-        <TreeNodeIcon node={node} isRootNode={false} />
+        <TreeNodeIcon node={node} />
         <NodeRenamingForm
           onSubmit={(newName) => {
             handleRenamingFormSubmit(newName);

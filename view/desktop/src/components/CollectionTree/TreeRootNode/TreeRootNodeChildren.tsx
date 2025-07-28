@@ -65,7 +65,6 @@ export const TreeRootNodeChildren = ({
               },
               class: "Request",
             }}
-            isRootNode={false}
             className="opacity-0"
           />
           <NodeAddForm

@@ -45,7 +45,6 @@ const TreeNodeAddForm = ({
             segments: [],
           },
         }}
-        isRootNode={false}
         className={cn("ml-auto", {
           "opacity-0": !isAddingFolderNode,
         })}
