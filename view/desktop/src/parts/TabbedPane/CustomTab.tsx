@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 
-import { DebugCollectionIconPlaceholder } from "@/components/CollectionTree/DebugCollectionIconPlaceholder";
+import { TreeNodeIcon } from "@/components/CollectionTree/TreeNode/TreeNodeIcon";
 import { Icon } from "@/lib/ui/Icon";
 import { IDockviewPanelHeaderProps } from "@repo/moss-tabs";
 
@@ -71,10 +71,7 @@ export const CustomTab: React.FC<CustomTabProps> = ({
   return (
     <div data-testid="dockview-custom-tab" {...rest} onClick={onClick} className="dv-default-tab">
       <span className="dv-default-tab-content flex max-w-40 items-center gap-1">
-        {iconType && (
-          //@ts-expect-error iconType gives an error, because it's a placeholder
-          <DebugCollectionIconPlaceholder type={iconType} protocol={undefined} />
-        )}
+        {iconType && <TreeNodeIcon node={params?.node} isRootNode={false} />}
         <span className="truncate">{title}</span>
       </span>
       {!hideClose && (

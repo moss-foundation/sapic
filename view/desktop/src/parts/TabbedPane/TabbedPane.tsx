@@ -188,7 +188,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
       title: pragmaticDropElement.node.name,
       component: "Default",
       params: {
-        treeId: pragmaticDropElement.node.id,
+        treeId: pragmaticDropElement.collectionId,
         iconType: pragmaticDropElement.node.kind,
         node: pragmaticDropElement.node,
       },
@@ -293,7 +293,9 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
             toolbar={toolbar}
           />
           <PageContent className={cn("relative", isDebug && "border-2 border-dashed border-orange-500")}>
-            <Breadcrumbs treeId={props.params?.treeId} nodeId={props.params?.node?.id} />
+            {props.params?.treeId && props.params?.node?.id && (
+              <Breadcrumbs collectionId={props.params.treeId} nodeId={props.params.node.id} />
+            )}
 
             <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col text-[42px] opacity-50">
               {props.params?.node ? (

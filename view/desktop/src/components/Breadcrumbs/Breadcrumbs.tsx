@@ -1,76 +1,50 @@
-import { useState } from "react";
-
-import { ActionMenu } from "@/components";
+import { useCollectionsTrees } from "@/hooks/collection";
 import { Icon } from "@/lib/ui";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
 
-import { DebugCollectionIconPlaceholder } from "../CollectionTree/DebugCollectionIconPlaceholder";
-import { BreadcrumbTree } from "./BreadcrumbTree";
+import { ActionMenu } from "..";
+import { TreeNodeIcon } from "../CollectionTree/TreeNode/TreeNodeIcon";
+import BreadcrumbTree from "./BreadcrumbTree";
+import { findNodeByIdInTree, findNodesSequence } from "./utils";
 
-export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
-  return null;
-  const [activeTree, setActiveTree] = useState<null>(null);
-  const { addOrFocusPanel } = useTabbedPaneStore();
-  const [path, setPath] = useState<string[]>([]);
+export const Breadcrumbs = ({ collectionId, nodeId }: { collectionId: string; nodeId: string }) => {
+  const { collectionsTrees } = useCollectionsTrees();
 
-  // useEffect(() => {
-  //   if (!panelId) {
-  //     setActiveTree(null);
-  //     setPath([]);
-  //     return;
-  //   }
-
-  //   const target = String(panelId);
-  //   for (const collection of collections) {
-  //     const newPath = findPath(collection.tree, target);
-  //     if (newPath) {
-  //       setActiveTree(collection.tree);
-  //       setPath(newPath);
-  //       return;
-  //     }
-  //   }
-
-  //   setActiveTree(null);
-  //   setPath([]);
-  // }, [collections, panelId]);
-
+  const activeTree = collectionsTrees?.find((tree) => tree.id === collectionId);
   if (!activeTree) return null;
+
+  const activeNode = findNodeByIdInTree(activeTree, nodeId);
+  if (!activeNode) return null;
+
+  const nodesSequence = findNodesSequence(activeTree, activeNode);
+  if (!nodesSequence) return null;
 
   return (
     <div className="flex items-center justify-between px-2">
       <div className="flex w-max items-center gap-1 overflow-hidden text-[#6F6F6F] select-none">
-        {path.map((pathNode, index) => {
-          const node = findNodeById(activeTree, pathNode)!;
-          const lastItem = index === path.length - 1;
+        {nodesSequence.map((node, index) => {
+          const lastItem = index === activeNode?.path.segments.length - 1;
+          const isRootNode = index === 0;
 
           if (lastItem) {
             return (
-              <div key={pathNode} className="contents">
-                <DebugCollectionIconPlaceholder type={node.kind} protocol={undefined} />
-                <span className="min-w-max">{pathNode}</span>
+              <div key={node.id} className="contents">
+                <TreeNodeIcon node={node} isRootNode={isRootNode} />
+                <span className="min-w-max">{node.name}</span>
               </div>
             );
           }
 
           return (
-            <div key={pathNode} className="contents">
+            <div key={node.id} className="contents">
               <ActionMenu.Root>
-                <ActionMenu.Trigger className="min-w-max cursor-pointer hover:underline">{pathNode}</ActionMenu.Trigger>
+                <ActionMenu.Trigger className="min-w-max cursor-pointer hover:underline">
+                  <div className="flex items-center gap-1">
+                    <TreeNodeIcon node={node} isRootNode={isRootNode} />
+                    {node.name}
+                  </div>
+                </ActionMenu.Trigger>
                 <ActionMenu.Content align="start">
-                  <BreadcrumbTree
-                    tree={node}
-                    onNodeClick={(node) => {
-                      if (!node.isFolder)
-                        addOrFocusPanel({
-                          id: `${node.id}`,
-                          params: {
-                            iconType: node.type,
-                            workspace: true,
-                          },
-                          component: "Default",
-                        });
-                    }}
-                  />
+                  <BreadcrumbTree tree={node} collectionId={collectionId} />
                 </ActionMenu.Content>
               </ActionMenu.Root>
               {!lastItem && (
@@ -86,19 +60,6 @@ export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
     </div>
   );
 };
-
-// const findPath = (node: NodeProps, target: string): string[] | null => {
-//   if (node.id === target) return [node.id];
-
-//   if (node.childNodes && node.childNodes.length > 0) {
-//     for (const child of node.childNodes) {
-//       const path = findPath(child, target);
-//       if (path) return [node.id.toString(), ...path];
-//     }
-//   }
-
-//   return null;
-// };
 
 export default Breadcrumbs;
 
