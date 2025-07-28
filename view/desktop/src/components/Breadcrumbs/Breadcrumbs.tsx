@@ -6,7 +6,12 @@ import { TreeNodeIcon } from "../CollectionTree/TreeNode/TreeNodeIcon";
 import BreadcrumbTree from "./BreadcrumbTree";
 import { findNodeByIdInTree, findNodesSequence } from "./utils";
 
-export const Breadcrumbs = ({ collectionId, nodeId }: { collectionId: string; nodeId: string }) => {
+interface BreadcrumbsProps {
+  collectionId: string;
+  nodeId: string;
+}
+
+export const Breadcrumbs = ({ collectionId, nodeId }: BreadcrumbsProps) => {
   const { collectionsTrees } = useCollectionsTrees();
 
   const activeTree = collectionsTrees?.find((tree) => tree.id === collectionId);
