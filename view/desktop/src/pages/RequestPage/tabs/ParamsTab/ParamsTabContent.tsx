@@ -23,7 +23,7 @@ export const ParamsTabContent = (_props: ParamsTabContentProps) => {
   const debouncedPathUpdate = React.useRef<NodeJS.Timeout>();
 
   const convertUrlParamsToTableData = (
-    params: Array<{ key: string; value: string }>,
+    params: Array<{ key: string; value: string; disabled?: boolean }>,
     type: "path" | "query"
   ): ParameterData[] => {
     return params.map((param, index) => {
@@ -49,7 +49,7 @@ export const ParamsTabContent = (_props: ParamsTabContentProps) => {
         description: paramKey ? suggestions.description : `${type === "path" ? "Path" : "Query"} parameter`,
         global_value: "",
         local_value: 0,
-        properties: { disabled: false },
+        properties: { disabled: param.disabled || false },
       };
     });
   };
@@ -84,10 +84,11 @@ export const ParamsTabContent = (_props: ParamsTabContentProps) => {
 
       debouncedQueryUpdate.current = setTimeout(() => {
         const updatedParams = updatedData
-          .filter((param) => (param.key.trim() !== "" || param.value.trim() !== "") && !param.properties.disabled)
+          .filter((param) => param.key.trim() !== "" || param.value.trim() !== "")
           .map((param) => ({
             key: param.key,
             value: param.value,
+            disabled: param.properties.disabled,
           }));
 
         const currentParams = requestData.url.query_params;
@@ -122,12 +123,12 @@ export const ParamsTabContent = (_props: ParamsTabContentProps) => {
       const debounceDelay = isCheckboxChange ? 30 : 100;
 
       debouncedPathUpdate.current = setTimeout(() => {
-        // Path params: disabled params are completely removed from URL
         const updatedParams = updatedData
-          .filter((param) => param.key.trim() !== "" && !param.properties.disabled)
+          .filter((param) => param.key.trim() !== "")
           .map((param) => ({
             key: param.key,
             value: param.value.trim() !== "" ? param.value : "",
+            disabled: param.properties.disabled,
           }));
 
         const currentParams = requestData.url.path_params;

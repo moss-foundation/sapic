@@ -9,10 +9,12 @@ export interface ParsedUrl {
     path_params: Array<{
       key: string;
       value: string;
+      disabled?: boolean;
     }>;
     query_params: Array<{
       key: string;
       value: string;
+      disabled?: boolean;
     }>;
   };
 }
@@ -22,6 +24,7 @@ export interface UrlParameter {
   value: string;
   type: string;
   description: string;
+  disabled?: boolean;
 }
 
 export const parseUrl = (rawUrl: string): ParsedUrl => {
@@ -52,7 +55,8 @@ export const parseUrl = (rawUrl: string): ParsedUrl => {
           const key = part.substring(1) || "param";
           result.url.path_params.push({
             key,
-            value: "", // Path params start with empty values
+            value: "",
+            disabled: false,
           });
         }
       });
@@ -60,13 +64,13 @@ export const parseUrl = (rawUrl: string): ParsedUrl => {
 
     if (queryPart !== undefined) {
       if (queryPart === "") {
-        result.url.query_params.push({ key: "", value: "" });
+        result.url.query_params.push({ key: "", value: "", disabled: false });
       } else {
         const paramPairs = queryPart.split("&");
 
         paramPairs.forEach((pair) => {
           if (pair === "") {
-            result.url.query_params.push({ key: "", value: "" });
+            result.url.query_params.push({ key: "", value: "", disabled: false });
           } else if (pair.includes("=")) {
             const equalIndex = pair.indexOf("=");
             const key = pair.substring(0, equalIndex);
@@ -74,11 +78,13 @@ export const parseUrl = (rawUrl: string): ParsedUrl => {
             result.url.query_params.push({
               key: key || "",
               value: value || "",
+              disabled: false,
             });
           } else {
             result.url.query_params.push({
               key: pair,
               value: "",
+              disabled: false,
             });
           }
         });

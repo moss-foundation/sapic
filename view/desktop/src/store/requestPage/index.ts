@@ -1,13 +1,13 @@
 import { create } from "zustand";
-import { reconstructUrl } from "../../pages/RequestPage/utils/urlParser";
-import { parseUrl } from "../../pages/RequestPage/utils/urlParser";
+import { parseUrl, reconstructUrl } from "@/pages/RequestPage/utils/urlParser";
 
-interface UrlParameter {
+export interface UrlParameter {
   key: string;
   value: string;
+  disabled?: boolean;
 }
 
-interface RequestPageUrl {
+export interface RequestPageUrl {
   raw: string;
   originalPathTemplate: string;
   port: number | null;
@@ -16,7 +16,7 @@ interface RequestPageUrl {
   query_params: UrlParameter[];
 }
 
-interface RequestPageData {
+export interface RequestPageData {
   url: RequestPageUrl;
 }
 
@@ -193,9 +193,9 @@ export const useRequestPageStore = create<RequestPageStore>((set, get) => ({
 
     let reconstructedPath = originalPathTemplate || currentState.requestData.url.raw.split("?")[0];
 
-    const currentParamKeys = new Set(path_params.map((param) => param.key));
+    const enabledPathParams = path_params.filter((param) => !param.disabled);
+    const currentParamKeys = new Set(enabledPathParams.map((param) => param.key));
 
-    // Remove path segments containing disabled parameters
     const pathSegments = reconstructedPath.split("/");
     const filteredSegments = pathSegments.filter((segment) => {
       if (segment.startsWith(":")) {
@@ -207,8 +207,7 @@ export const useRequestPageStore = create<RequestPageStore>((set, get) => ({
 
     reconstructedPath = filteredSegments.join("/");
 
-    // Replace path parameters with their values
-    path_params.forEach((param) => {
+    enabledPathParams.forEach((param) => {
       if (param.key && param.key.trim() !== "") {
         const paramPattern = new RegExp(`:${param.key}\\b`, "g");
         if (param.value && param.value.trim() !== "") {
@@ -217,7 +216,9 @@ export const useRequestPageStore = create<RequestPageStore>((set, get) => ({
       }
     });
 
-    const newUrl = reconstructUrl(reconstructedPath, [], query_params);
+    const enabledQueryParams = query_params.filter((param) => !param.disabled);
+
+    const newUrl = reconstructUrl(reconstructedPath, [], enabledQueryParams);
 
     if (newUrl !== currentState.requestData.url.raw) {
       set((state) => ({
@@ -232,5 +233,3 @@ export const useRequestPageStore = create<RequestPageStore>((set, get) => ({
     }
   },
 }));
-
-export type { RequestPageData, RequestPageUrl, UrlParameter };
