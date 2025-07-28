@@ -28,7 +28,7 @@ import {
   PostRequestTabContent,
   PreRequestTabContent,
 } from "./tabs";
-import { parseUrl } from "./utils/urlParser";
+import { parseUrl, areUrlsEquivalent } from "./utils/urlParser";
 import { useRequestPageStore } from "@/store/requestPage";
 
 const DebugContext = React.createContext<boolean>(false);
@@ -56,10 +56,7 @@ const RequestPage: React.FC<
   const [activeTab, setActiveTab] = React.useState(showEndpoint ? "endpoint" : "request");
   const [activeRequestTabId, setActiveRequestTabId] = React.useState("params");
 
-  // Use RequestPage store
   const { requestData, httpMethod, setHttpMethod, updateRequestData } = useRequestPageStore();
-
-  // Parse current URL from store
 
   if (props.params?.node) {
     showEndpoint = displayMode === "DESIGN_FIRST" && props.params.node.class === "Endpoint";
@@ -98,14 +95,13 @@ const RequestPage: React.FC<
 
   const handleUrlChange = React.useCallback(
     (url: string) => {
-      // Prevent unnecessary updates if URL hasn't changed
-      if (url === requestData.url.raw) {
+      // Prevent unnecessary updates if URLs are functionally equivalent
+      if (areUrlsEquivalent(url, requestData.url.raw)) {
         return;
       }
 
       const parsed = parseUrl(url);
 
-      // Update store with complete data in one call to avoid multiple re-renders
       const updatedData = {
         url: {
           raw: url,
@@ -121,7 +117,6 @@ const RequestPage: React.FC<
     [requestData.url.raw, updateRequestData]
   );
 
-  // Define the request configuration tabs
   const requestTabs: TabItem[] = [
     {
       id: "params",
@@ -199,12 +194,10 @@ const RequestPage: React.FC<
         <div className="flex h-full flex-col">
           {props.params?.node ? (
             <div className="flex-1">
-              {/* Breadcrumbs with margin */}
               <div className="mx-3 mt-4">
                 <Breadcrumbs panelId={props.api.id} />
               </div>
 
-              {/* Request Input Section - Full Width */}
               <div className="mb-4">
                 <RequestInputField
                   initialMethod={httpMethod}
@@ -219,7 +212,6 @@ const RequestPage: React.FC<
                 />
               </div>
 
-              {/* Request Configuration Tabs with proper margins */}
               {activeTab === "request" && (
                 <div className="mx-3">
                   <PageContainerWithTabs

@@ -5,7 +5,7 @@ import { IDockviewPanelProps } from "@repo/moss-tabs";
 import { DataTable, ParameterData } from "@/components/Table";
 import { ActionButton } from "@/components";
 import { paramColumns } from "./columns";
-import { getParameterSuggestions, detectValueType } from "../../utils/urlParser";
+import { getParameterSuggestions, detectValueType, areUrlsEquivalent } from "../../utils/urlParser";
 import { useRequestPageStore } from "@/store/requestPage";
 
 interface ParamsTabContentProps
@@ -100,7 +100,7 @@ export const ParamsTabContent = (_props: ParamsTabContentProps) => {
         }
       }, debounceDelay);
     },
-    [updateQueryParams, reconstructUrlFromParams, queryParams]
+    [updateQueryParams, reconstructUrlFromParams, requestData.url.query_params]
   );
 
   const handlePathParamsUpdate = React.useCallback(
@@ -140,7 +140,7 @@ export const ParamsTabContent = (_props: ParamsTabContentProps) => {
         }
       }, debounceDelay);
     },
-    [updatePathParams, reconstructUrlFromParams, pathParams]
+    [updatePathParams, reconstructUrlFromParams, requestData.url.path_params]
   );
 
   React.useEffect(() => {

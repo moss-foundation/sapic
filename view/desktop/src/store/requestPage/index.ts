@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { parseUrl, reconstructUrl } from "@/pages/RequestPage/utils/urlParser";
+import { parseUrl, reconstructUrl, areUrlsEquivalent } from "@/pages/RequestPage/utils/urlParser";
 
 export interface UrlParameter {
   key: string;
@@ -21,11 +21,9 @@ export interface RequestPageData {
 }
 
 interface RequestPageStore {
-  // State
   requestData: RequestPageData;
   httpMethod: string;
 
-  // Actions
   setUrl: (rawUrl: string) => void;
   setHttpMethod: (method: string) => void;
   updateRequestData: (data: RequestPageData) => void;
@@ -220,7 +218,8 @@ export const useRequestPageStore = create<RequestPageStore>((set, get) => ({
 
     const newUrl = reconstructUrl(reconstructedPath, [], enabledQueryParams);
 
-    if (newUrl !== currentState.requestData.url.raw) {
+    // Use normalized comparison to prevent unnecessary updates
+    if (!areUrlsEquivalent(newUrl, currentState.requestData.url.raw)) {
       set((state) => ({
         requestData: {
           ...state.requestData,

@@ -3,6 +3,7 @@ import { cn } from "@/utils";
 import { Icon, Scrollbar } from "@/lib/ui";
 import { ActionMenu, Divider, ButtonPrimary } from "@/components";
 import InputTemplating from "@/components/InputTemplating";
+import { areUrlsEquivalent } from "./utils/urlParser";
 
 interface RequestInputFieldProps {
   className?: string;
@@ -28,6 +29,7 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = React.memo(
     const [url, setUrl] = useState(initialUrl);
     const lastExternalUrlRef = useRef(initialUrl);
     const isUserTypingRef = useRef(false);
+    const lastSentUrlRef = useRef("");
 
     // Sync method changes
     React.useEffect(() => {
@@ -38,7 +40,12 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = React.memo(
 
     // Only sync URL from external source when user is not actively typing
     React.useEffect(() => {
-      if (initialUrl !== lastExternalUrlRef.current && !isUserTypingRef.current) {
+      // Use normalized comparison to prevent unnecessary updates
+      if (
+        !areUrlsEquivalent(initialUrl, lastExternalUrlRef.current) &&
+        !isUserTypingRef.current &&
+        !areUrlsEquivalent(initialUrl, lastSentUrlRef.current)
+      ) {
         setUrl(initialUrl);
         lastExternalUrlRef.current = initialUrl;
       }
@@ -48,15 +55,19 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = React.memo(
       onSend?.(method, url);
     };
 
-    // Debounced URL change handler to prevent rapid updates
+    // Debounced URL change handler with normalized comparison
     const debouncedOnUrlChange = React.useCallback(
       (() => {
         let timeoutId: NodeJS.Timeout;
         return (value: string) => {
           clearTimeout(timeoutId);
           timeoutId = setTimeout(() => {
+            // Only call onUrlChange if the URL has actually changed (normalized comparison)
+            if (!areUrlsEquivalent(value, lastSentUrlRef.current)) {
+              lastSentUrlRef.current = value;
+              onUrlChange?.(value);
+            }
             isUserTypingRef.current = false;
-            onUrlChange?.(value);
           }, 150); // 150ms debounce
         };
       })(),

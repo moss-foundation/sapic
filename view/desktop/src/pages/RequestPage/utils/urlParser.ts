@@ -1,5 +1,26 @@
 import { parameterSuggestions, type ParameterSuggestion } from "./parameterSuggestions";
 
+// URL normalization for reliable comparison
+export const normalizeUrl = (url: string): string => {
+  if (!url || typeof url !== "string") return "";
+
+  return url
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/\/+$/, "")
+    .replace(/\/+/g, "/")
+    .replace(/\?&/g, "?")
+    .replace(/&+/g, "&")
+    .replace(/&$/, "")
+    .replace(/\?$/, "");
+};
+
+export const areUrlsEquivalent = (url1: string, url2: string): boolean => {
+  const normalized1 = normalizeUrl(url1);
+  const normalized2 = normalizeUrl(url2);
+  return normalized1 === normalized2;
+};
+
 export interface ParsedUrl {
   url: {
     raw: string;
@@ -106,7 +127,7 @@ export const parseUrl = (rawUrl: string): ParsedUrl => {
         result.url.port = parseInt(url.port, 10);
       }
     } catch (hostError) {
-      // Ignore host parsing errors
+      // Silently ignore host parsing errors
     }
   } catch (error) {
     console.warn("URL parsing failed:", error);
@@ -183,7 +204,7 @@ export const reconstructUrl = (
     return reconstructedUrl;
   } catch (error) {
     console.warn("URL reconstruction failed:", error);
-    return baseUrl; // Fallback to original URL
+    return baseUrl;
   }
 };
 
