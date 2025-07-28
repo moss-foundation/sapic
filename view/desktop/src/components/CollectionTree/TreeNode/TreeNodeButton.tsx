@@ -70,10 +70,10 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
       }
 
       addOrFocusPanel({
-        id: `${node.id}`,
+        id: node.id,
         title: node.name,
         params: {
-          treeId: id,
+          collectionId: id,
           iconType: node.kind,
           node: {
             ...node,
