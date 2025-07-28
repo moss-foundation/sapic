@@ -27,11 +27,3 @@ export const useBatchUpdateCollectionEntry = () => {
     mutationFn: batchUpdateCollectionEntry,
   });
 };
-
-const getNormalizedEntries = (entries: BatchUpdateEntryOutputKind[]) => {
-  return entries.map((entry) => {
-    if ("ITEM" in entry) return entry.ITEM;
-    if ("DIR" in entry) return entry.DIR;
-    return entry;
-  });
-};
