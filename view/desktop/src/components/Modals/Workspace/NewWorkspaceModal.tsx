@@ -34,7 +34,7 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
     if (name) {
       createWorkspace(
         {
-          name,
+          name: name.trim(),
           mode,
           openOnCreation: openAutomatically,
         },

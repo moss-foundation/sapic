@@ -17,7 +17,7 @@ export const useNodeAddForm = (parentNode: TreeCollectionNode) => {
 
   const handleAddFormSubmit = async (name: string) => {
     const newEntry = createEntryKind(
-      name,
+      name.trim(),
       parentNode.path.raw,
       isAddingFolderNode,
       parentNode.class,

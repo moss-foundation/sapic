@@ -34,8 +34,8 @@ export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
 
   const handleSubmit = async () => {
     const result = await createCollection({
-      name,
-      repository,
+      name: name.trim(),
+      repository: repository.trim(),
       order: collections?.length ? collections.length + 1 : 1,
     });
 
@@ -44,7 +44,7 @@ export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
     if (openAutomatically) {
       addOrFocusPanel({
         id: result.id,
-        title: name,
+        title: name.trim(),
         component: "CollectionSettings",
         params: {
           collectionId: result.id,
