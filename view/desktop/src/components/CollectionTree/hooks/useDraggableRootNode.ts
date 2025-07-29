@@ -1,24 +1,56 @@
-import { RefObject, useEffect, useState } from "react";
+import { RefObject, useContext, useEffect, useState } from "react";
 
-import { attachClosestEdge, extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
-import { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/types";
+import { attachInstruction, extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
+import {
+  BaseEventPayload,
+  DropTargetLocalizedData,
+  ElementDragType,
+} from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
+import { TreeContext } from "../Tree";
 import { TreeCollectionRootNode } from "../types";
+import { isSourceTreeNode, isSourceTreeRootNode } from "../utils";
 
 export const useDraggableRootNode = (
   draggableRef: RefObject<HTMLDivElement>,
   node: TreeCollectionRootNode,
-  treeId: string | number,
   isRenamingNode: boolean
 ) => {
-  const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
+  const { id, displayMode } = useContext(TreeContext);
+
   const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [canDrop, setCanDrop] = useState<boolean | null>(false);
+  const [instruction, setInstruction] = useState<Instruction | null>(null);
 
   useEffect(() => {
     const element = draggableRef.current;
     if (!element || isRenamingNode) return;
+
+    const evaluateInstruction = ({ self, source }: BaseEventPayload<ElementDragType> & DropTargetLocalizedData) => {
+      const instruction: Instruction | null = extractInstruction(self.data);
+
+      if (isSourceTreeRootNode(source)) {
+        if (instruction?.operation === "combine") {
+          setCanDrop(null);
+          setInstruction(null);
+        } else {
+          setCanDrop(true);
+          setInstruction(instruction);
+        }
+      }
+
+      if (isSourceTreeNode(source)) {
+        if (instruction?.operation === "combine") {
+          setCanDrop(true);
+          setInstruction(instruction);
+        } else {
+          setCanDrop(null);
+          setInstruction(null);
+        }
+      }
+    };
 
     return combine(
       draggable({
@@ -27,7 +59,7 @@ export const useDraggableRootNode = (
           type: "TreeRootNode",
           data: {
             node,
-            treeId,
+            collectionId: id,
           },
         }),
         onDragStart() {
@@ -40,51 +72,46 @@ export const useDraggableRootNode = (
       dropTargetForElements({
         element,
         getData({ input }) {
-          return attachClosestEdge(
+          return attachInstruction(
             {
+              type: "TreeRootNode",
               node,
-              treeId,
-              closestEdge: closestEdge as Edge,
+              collectionId: id,
             },
             {
               element,
               input,
-              allowedEdges: ["top", "bottom"],
+              operations: {
+                "reorder-before": "available",
+                "reorder-after": "available",
+                combine: displayMode === "REQUEST_FIRST" ? "available" : "not-available",
+              },
             }
           );
         },
         canDrop({ source }) {
-          return source.data.type === "TreeRootNode";
+          return source.data.type === "TreeRootNode" || source.data.type === "TreeNode";
         },
         getIsSticky() {
           return true;
         },
-        onDragEnter({ self }) {
-          const closestEdge = extractClosestEdge(self.data);
-          setClosestEdge(closestEdge);
-        },
-        onDrag({ self }) {
-          const closestEdge = extractClosestEdge(self.data);
-
-          setClosestEdge((current) => {
-            if (current === closestEdge) return current;
-
-            return closestEdge;
-          });
-        },
+        onDragStart: evaluateInstruction,
+        onDragEnter: evaluateInstruction,
+        onDrag: evaluateInstruction,
         onDragLeave() {
-          setClosestEdge(null);
+          setInstruction(null);
         },
         onDrop() {
-          setClosestEdge(null);
+          setInstruction(null);
         },
       })
     );
-  }, [treeId, node, isRenamingNode, draggableRef, closestEdge]);
+  }, [node, isRenamingNode, draggableRef, id, displayMode]);
 
   return {
-    closestEdge,
-    setClosestEdge,
+    canDrop,
+    instruction,
+    setInstruction,
     isDragging,
   };
 };

@@ -1,34 +1,45 @@
 import { useContext, useState } from "react";
 
+import { useFetchEntriesForPath } from "@/hooks/collection/derivedHooks/useFetchEntriesForPath";
 import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollectionEntry";
-import { join, sep } from "@tauri-apps/api/path";
+import { join } from "@tauri-apps/api/path";
 
 import { TreeContext } from "../Tree";
 import { TreeCollectionNode } from "../types";
 
-export const useNodeRenamingForm = (node: TreeCollectionNode, onNodeUpdate: (node: TreeCollectionNode) => void) => {
+export const useNodeRenamingForm = (node: TreeCollectionNode) => {
   const { id } = useContext(TreeContext);
+  const { fetchEntriesForPath } = useFetchEntriesForPath();
   const [isRenamingNode, setIsRenamingNode] = useState(false);
 
-  const { placeholderFnForUpdateCollectionEntry } = useUpdateCollectionEntry();
+  const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry();
 
   const handleRenamingFormSubmit = async (newName: string) => {
-    const rawpath = await join(...node.path.segments.slice(0, -1), newName);
-
     try {
-      placeholderFnForUpdateCollectionEntry({
-        collectionId: id,
-        updatedEntry: {
-          ...node,
-          name: newName,
-          path: {
-            raw: rawpath,
-            segments: rawpath.split(sep()),
+      if (node.kind === "Dir") {
+        await updateCollectionEntry({
+          collectionId: id,
+          updatedEntry: {
+            DIR: {
+              id: node.id,
+              name: newName,
+            },
           },
-        },
-      });
+        });
 
-      onNodeUpdate({ ...node, name: newName });
+        const newPath = await join(...node.path.segments.slice(0, node.path.segments.length - 1), newName);
+        await fetchEntriesForPath(id, newPath);
+      } else {
+        await updateCollectionEntry({
+          collectionId: id,
+          updatedEntry: {
+            ITEM: {
+              id: node.id,
+              name: newName,
+            },
+          },
+        });
+      }
     } catch (error) {
       console.error(error);
     } finally {

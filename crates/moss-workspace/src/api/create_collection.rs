@@ -30,7 +30,7 @@ impl<R: AppRuntime> Workspace<R> {
                 CollectionItemCreateParams {
                     name: input.name.to_owned(),
                     order: input.order.to_owned(),
-                    repository: input.repo.to_owned(),
+                    repository: input.repository.to_owned(),
                     external_path: input.external_path.to_owned(),
                     icon_path: input.icon_path.to_owned(),
                 },

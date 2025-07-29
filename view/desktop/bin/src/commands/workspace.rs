@@ -1,6 +1,6 @@
 use moss_api::{TauriError, TauriResult};
 use moss_workspace::models::{events::*, operations::*};
-use tauri::{Window, ipc::Channel as TauriChannel};
+use tauri::{State, Window, ipc::Channel as TauriChannel};
 
 use crate::commands::primitives::*;
 
@@ -102,6 +102,42 @@ pub async fn delete_collection<'a, R: tauri::Runtime>(
     super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
         workspace
             .delete_collection(&ctx, &input)
+            .await
+            .map_err(|e| e.into())
+    })
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(app), fields(window = window.label()))]
+pub async fn update_collection<'a, R: tauri::Runtime>(
+    ctx: State<'_, moss_applib::context::AsyncContext>,
+    app: App<'a, R>,
+    window: Window<R>,
+    input: UpdateCollectionInput,
+    options: Options,
+) -> TauriResult<UpdateCollectionOutput> {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
+        workspace
+            .update_collection(&ctx, input)
+            .await
+            .map_err(|e| e.into())
+    })
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(app), fields(window = window.label()))]
+pub async fn batch_update_collection<'a, R: tauri::Runtime>(
+    ctx: State<'_, moss_applib::context::AsyncContext>,
+    app: App<'a, R>,
+    window: Window<R>,
+    input: BatchUpdateCollectionInput,
+    options: Options,
+) -> TauriResult<BatchUpdateCollectionOutput> {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
+        workspace
+            .batch_update_collection(&ctx, input)
             .await
             .map_err(|e| e.into())
     })

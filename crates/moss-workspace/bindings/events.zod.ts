@@ -4,8 +4,9 @@ import { z } from "zod";
 export const streamCollectionsEventSchema = z.object({
   id: z.string(),
   name: z.string(),
-  repository: z.string().optional(),
   order: z.number().optional(),
+  expanded: z.boolean(),
+  repository: z.string().optional(),
   picturePath: z.string().optional(),
 });
 
