@@ -8,16 +8,12 @@ import { useDraggableRootNode } from "../hooks/useDraggableRootNode";
 import { useRootNodeAddForm } from "../hooks/useRootNodeAddForm";
 import { useRootNodeRenamingForm } from "../hooks/useRootNodeRenamingForm";
 import { TreeContext } from "../Tree";
-import { TreeCollectionRootNode } from "../types";
+import { TreeRootNodeProps } from "../types";
 import { calculateShouldRenderRootChildNodes } from "../utils";
 import { TreeRootNodeActions } from "./TreeRootNodeActions";
 import { TreeRootNodeButton } from "./TreeRootNodeButton";
 import { TreeRootNodeChildren } from "./TreeRootNodeChildren";
 import { TreeRootNodeRenameForm } from "./TreeRootNodeRenameForm";
-
-export interface TreeRootNodeProps {
-  node: TreeCollectionRootNode;
-}
 
 export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
   const { searchInput, rootOffset } = useContext(TreeContext);

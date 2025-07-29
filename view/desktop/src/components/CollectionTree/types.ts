@@ -17,7 +17,7 @@ export interface TreeCollectionNode extends EntryInfo {
 }
 
 export interface TreeRootNodeProps {
-  node: TreeCollectionNode;
+  node: TreeCollectionRootNode;
 }
 
 export interface DragNode {
