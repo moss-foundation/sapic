@@ -210,9 +210,10 @@ async fn stream_collections_with_repository() {
     assert_eq!(event.id, collection_id);
     assert_eq!(event.name, collection_name);
     assert_eq!(event.order, Some(collection_order));
-    // Note: The API currently returns None for repository, but we expect it to be fixed
-    // TODO: Update this when the API is fixed to return the actual repository
-    assert_eq!(event.repository, None);
+    assert_eq!(
+        event.repository,
+        Some("github.com/example/repo".to_string())
+    );
     assert_eq!(event.picture_path, None);
 
     cleanup().await;
@@ -320,7 +321,13 @@ async fn stream_collections_mixed_configurations() {
         )
         .await
         .unwrap();
-    expected_collections.push((result2.id, name2, 2, Some(repo2), None::<String>));
+    expected_collections.push((
+        result2.id,
+        name2,
+        2,
+        Some("github.com/example/repo2".to_string()),
+        None::<String>,
+    ));
 
     // Collection 3: With icon
     let name3 = "Icon Collection".to_string();
@@ -372,14 +379,13 @@ async fn stream_collections_mixed_configurations() {
         .collect();
 
     // Verify each expected collection
-    for (expected_id, expected_name, expected_order, _expected_repo, expected_icon) in
+    for (expected_id, expected_name, expected_order, expected_repo, expected_icon) in
         expected_collections
     {
         let event = events_map.get(&expected_id).unwrap();
         assert_eq!(event.name, *expected_name);
         assert_eq!(event.order, Some(expected_order));
-        // Note: Repository is currently not returned by the API
-        assert_eq!(event.repository, None);
+        assert_eq!(event.repository, expected_repo.clone());
 
         // Check icon path presence
         match expected_icon {
