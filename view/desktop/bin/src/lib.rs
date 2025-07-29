@@ -24,7 +24,7 @@ use moss_applib::{
     context::{AnyAsyncContext, AnyContext, MutableContext},
     context_old::ContextValueSet,
 };
-use moss_fs::{FileSystem, GlobalFileSystem, RealFileSystem, model_registry::GlobalModelRegistry};
+use moss_fs::{RealFileSystem, model_registry::GlobalModelRegistry};
 use std::{path::PathBuf, sync::Arc, time::Duration};
 use tauri::{AppHandle, Manager, RunEvent, Runtime as TauriRuntime, WebviewWindow, WindowEvent};
 use tauri_plugin_os;

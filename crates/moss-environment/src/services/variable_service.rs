@@ -1,25 +1,26 @@
 use hcl::Expression as HclExpression;
 use joinerror::Error;
-use json_patch::{AddOperation, PatchOperation, jsonptr::PointerBuf};
-use moss_applib::{AppRuntime, ServiceMarker};
+use json_patch::{AddOperation, PatchOperation, RemoveOperation, jsonptr::PointerBuf};
+use moss_applib::{AppRuntime, AppService, ServiceMarker};
+use moss_hcl::json_to_hcl;
 use serde_json::{Value as JsonValue, json, map::Map as JsonMap};
 use std::{collections::HashMap, marker::PhantomData};
 use tokio::sync::RwLock;
 
 use crate::{
-    configuration::VariableDefinition,
+    configuration::VariableSpec,
     models::{
         primitives::VariableId,
         types::{AddVariableParams, VariableOptions},
     },
-    services::{AnyStorageService, AnySyncService},
+    services::{AnyStorageService, AnySyncService, AnyVariableService},
 };
 
 #[derive(Debug, Clone)]
 pub struct VariableItem {
     pub id: VariableId,
-    pub local_value: Option<HclExpression>,
-    pub global_value: Option<HclExpression>,
+    pub local_value: HclExpression,
+    pub global_value: HclExpression,
     pub desc: Option<String>,
     pub options: VariableOptions,
 }
@@ -48,6 +49,15 @@ impl<R, StorageService, SyncService> ServiceMarker
     for VariableService<R, StorageService, SyncService>
 where
     R: AppRuntime,
+    StorageService: AnyStorageService<R> + 'static,
+    SyncService: AnySyncService<R> + 'static,
+{
+}
+
+impl<R, StorageService, SyncService> AnyVariableService<R>
+    for VariableService<R, StorageService, SyncService>
+where
+    R: AppRuntime,
     StorageService: AnyStorageService<R>,
     SyncService: AnySyncService<R>,
 {
@@ -60,50 +70,92 @@ where
     StorageService: AnyStorageService<R>,
     SyncService: AnySyncService<R>,
 {
-    pub fn new(storage_service: StorageService, sync_service: SyncService) -> Self {
-        Self {
-            state: RwLock::new(ServiceState {
-                variables: HashMap::new(),
-            }),
+    pub fn new(
+        source: Option<&JsonMap<String, JsonValue>>,
+        storage_service: StorageService,
+        sync_service: SyncService,
+    ) -> joinerror::Result<Self> {
+        let variables = if let Some(source) = source {
+            collect_variables(source)?
+        } else {
+            HashMap::new()
+        };
+
+        Ok(Self {
+            state: RwLock::new(ServiceState { variables }),
             storage_service,
             sync_service,
             _marker: PhantomData,
-        }
+        })
     }
 
     pub async fn batch_remove(&self, ids: Vec<VariableId>) -> joinerror::Result<()> {
         // let mut patches = Vec::with_capacity(params.len());
 
+        let state = self.state.write().await;
+        if state.variables.is_empty() {
+            return Ok(());
+        }
+
+        let mut patches = Vec::with_capacity(ids.len());
+        for id in ids {
+            patches.push(PatchOperation::Remove(RemoveOperation {
+                path: PointerBuf::parse(format!("/variable/{}", id)).unwrap(),
+            }));
+        }
+
+        let json_value = self.sync_service.apply(&patches).await?;
+
+        // INFO: This isn't the most optimized approach.
+        // In the future, when file changes are handled in the background, we can create a separate watch channel
+        // to monitor changes to the JsonValue file. We'll send the updated value to that channel, and in this service,
+        // we'll run a background task that listens to the channel and automatically updates the state when it receives any changes.
+        {
+            let mut state = self.state.write().await;
+            let map = json_value.get("variable").unwrap().as_object().unwrap();
+            let variables = collect_variables(map)?;
+
+            state.variables.extend(variables);
+        }
+
         Ok(())
     }
 
     pub async fn batch_add(&self, params: Vec<AddVariableParams>) -> joinerror::Result<()> {
+        let mut new_variables = HashMap::with_capacity(params.len());
         let mut patches = Vec::with_capacity(params.len());
 
-        patches.push(PatchOperation::Add(AddOperation {
-            path: PointerBuf::parse("/variable").unwrap(),
-            value: json!({}),
-        }));
+        {
+            let state = self.state.read().await;
+            if state.variables.is_empty() {
+                patches.push(PatchOperation::Add(AddOperation {
+                    path: PointerBuf::parse("/variable").unwrap(),
+                    value: json!({}),
+                }));
+            }
+        }
 
         for param in params {
             let id = VariableId::new();
-            let global_value = if let Some(value) = param.global_value {
-                let hcl_expr: HclExpression = value.try_into().map_err(|err| {
-                    Error::new::<()>(format!(
-                        "failed to convert global value expression: {}",
-                        err
-                    ))
-                })?;
-                hcl_expr
-            } else {
-                HclExpression::Null
+            let global_value = json_to_hcl(&param.global_value).map_err(|err| {
+                Error::new::<()>(format!(
+                    "failed to convert global value expression: {}",
+                    err
+                ))
+            })?;
+
+            let value = VariableSpec {
+                name: param.name,
+                value: global_value.clone(),
+                description: param.desc.clone(),
+                options: param.options.clone(),
             };
 
-            let value = VariableDefinition {
-                name: param.name,
-                value: global_value,
-                kind: param.kind,
-                description: param.desc,
+            let item = VariableItem {
+                id: id.clone(),
+                local_value: HclExpression::Null,
+                global_value,
+                desc: param.desc,
                 options: param.options,
             };
 
@@ -116,26 +168,35 @@ where
                     ))
                 })?,
             }));
+
+            new_variables.insert(id, item);
         }
 
-        self.sync_service.apply(&patches).await?;
+        let json_value = self.sync_service.apply(&patches).await?;
+
+        // INFO: This isn't the most optimized approach.
+        // In the future, when file changes are handled in the background, we can create a separate watch channel
+        // to monitor changes to the JsonValue file. We'll send the updated value to that channel, and in this service,
+        // we'll run a background task that listens to the channel and automatically updates the state when it receives any changes.
+        {
+            let mut state = self.state.write().await;
+            let map = json_value.get("variable").unwrap().as_object().unwrap();
+            let variables = collect_variables(map)?;
+
+            state.variables.extend(variables);
+        }
 
         Ok(())
     }
 }
 
-async fn collect_variables<R, StorageService>(
+fn collect_variables(
     map: &JsonMap<String, JsonValue>,
-    storage: &StorageService,
-) -> joinerror::Result<HashMap<VariableId, VariableItem>>
-where
-    R: AppRuntime,
-    StorageService: AnyStorageService<R>,
-{
+) -> joinerror::Result<HashMap<VariableId, VariableItem>> {
     let mut variables = HashMap::new();
     for (id_str, value) in map {
-        let definition = if let Ok(d) = serde_json::from_value::<VariableDefinition>(value.clone())
-            .map_err(|err| {
+        let var = if let Ok(d) =
+            serde_json::from_value::<VariableSpec>(value.clone()).map_err(|err| {
                 Error::new::<()>(format!(
                     "failed to convert variable definition from json: {}",
                     err
@@ -152,10 +213,10 @@ where
             id.clone(),
             VariableItem {
                 id,
-                local_value: None,
-                global_value: Some(definition.value),
-                desc: definition.description,
-                options: definition.options,
+                local_value: HclExpression::Null, // TODO: restore from the database
+                global_value: var.value,
+                desc: var.description,
+                options: var.options,
             },
         );
     }
@@ -175,8 +236,8 @@ mod tests {
 
     use crate::{
         builder::{EnvironmentBuilder, EnvironmentCreateParams},
-        configuration::{EnvironmentFile, Metadata, VariableDefinition},
-        environment::Environment,
+        configuration::{EnvironmentFile, MetadataDecl, VariableSpec},
+        environment::AnyEnvironment,
         models::primitives::EnvironmentId,
         services::{storage_service::StorageService, sync_service::SyncService},
     };
@@ -194,10 +255,10 @@ mod tests {
         // Test different types of expressions
         map.insert(
             VariableId::new(),
-            VariableDefinition {
+            VariableSpec {
                 name: "simple_variable".to_string(),
                 value: HclExpression::Variable(Variable::new("test".to_string()).unwrap()),
-                kind: None,
+
                 description: None,
                 options: VariableOptions { disabled: false },
             },
@@ -209,10 +270,10 @@ mod tests {
             if let Some(attr) = body.attributes().next() {
                 map.insert(
                     VariableId::new(),
-                    VariableDefinition {
+                    VariableSpec {
                         name: "function_call".to_string(),
-                        value: HclExpression::new(attr.expr().clone()),
-                        kind: None,
+                        value: attr.expr().clone(),
+
                         description: None,
                         options: VariableOptions { disabled: false },
                     },
@@ -226,10 +287,10 @@ mod tests {
             if let Some(attr) = body.attributes().next() {
                 map.insert(
                     VariableId::new(),
-                    VariableDefinition {
+                    VariableSpec {
                         name: "conditional".to_string(),
-                        value: HclExpression::new(attr.expr().clone()),
-                        kind: None,
+                        value: attr.expr().clone(),
+
                         description: None,
                         options: VariableOptions { disabled: false },
                     },
@@ -239,7 +300,7 @@ mod tests {
 
         // Create original HCL structure
         let original_hcl = EnvironmentFile {
-            metadata: Block::new(Metadata {
+            metadata: Block::new(MetadataDecl {
                 id: EnvironmentId::new(),
                 color: None,
             }),
@@ -315,10 +376,14 @@ mod tests {
             global_model_registry.clone(),
             fs.clone(),
         );
-        let variable_service = VariableService::new(storage_service, sync_service);
+        let variable_service = VariableService::new(None, storage_service, sync_service).unwrap();
 
-        let _env: Environment<MockAppRuntime> = EnvironmentBuilder::new(fs, global_model_registry)
-            .create(EnvironmentCreateParams {
+        struct MyEnvStore<Environment: AnyEnvironment<MockAppRuntime>> {
+            map: HashMap<String, Environment>,
+        }
+
+        let _env = EnvironmentBuilder::new(fs, global_model_registry)
+            .create::<MockAppRuntime>(EnvironmentCreateParams {
                 name: "data".to_string(),
                 abs_path,
                 color: None,
@@ -326,13 +391,17 @@ mod tests {
             .await
             .unwrap();
 
+        let mut env_store = MyEnvStore {
+            map: HashMap::new(),
+        };
+        env_store.map.insert("data".to_string(), _env);
+
         variable_service
             .batch_add(vec![AddVariableParams {
                 name: "test".to_string(),
-                global_value: None,
-                kind: None,
+                global_value: json!("test_value"),
                 desc: None,
-                local_value: None,
+                local_value: JsonValue::Null,
                 order: 0,
                 options: VariableOptions { disabled: false },
             }])

@@ -3815,6 +3815,7 @@ dependencies = [
  "joinerror",
  "json-patch 4.0.0",
  "moss_applib",
+ "moss_bindingutils",
  "moss_common",
  "moss_file",
  "moss_fs",

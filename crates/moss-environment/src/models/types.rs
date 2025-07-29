@@ -17,9 +17,9 @@ pub struct VariableOptions {
 #[serde(rename_all = "camelCase")]
 pub struct AddVariableParams {
     pub name: VariableName,
-    pub global_value: Option<JsonValue>,
-    pub local_value: Option<JsonValue>,
-    pub kind: Option<VariableKind>,
+    pub global_value: JsonValue,
+    pub local_value: JsonValue,
+    // pub kind: Option<VariableKind>,
     pub order: isize,
     pub desc: Option<String>,
     pub options: VariableOptions,

@@ -26,6 +26,11 @@ impl GlobalModelRegistry {
         }
     }
 
+    pub async fn get(&self, uri: &str) -> Option<Model> {
+        let state = self.state.read().await;
+        state.models.get(uri).cloned()
+    }
+
     pub async fn add(&self, uri: String, model: Model) {
         let mut state = self.state.write().await;
         state.models.insert(uri, model);

@@ -11,6 +11,13 @@ use hcl::{
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::Value as JsonValue;
 
+pub fn is_null(expr: &HclExpression) -> bool {
+    match expr {
+        HclExpression::Null => true,
+        _ => false,
+    }
+}
+
 /// Serialize an HCL expression using the standard HCL serialization.
 ///
 /// This function delegates to the standard `hcl::Expression::serialize` method,
@@ -21,6 +28,20 @@ where
     S: Serializer,
 {
     expr.serialize(serializer)
+}
+
+/// Serialize an optional HCL expression.
+pub fn serialize_optional_expression<S>(
+    expr: &Option<HclExpression>,
+    serializer: S,
+) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    match expr {
+        Some(expr) => expr.serialize(serializer),
+        None => serializer.serialize_none(),
+    }
 }
 
 /// Deserialize a JSON value into an HCL expression, handling template strings and various patterns.
@@ -75,6 +96,25 @@ where
             parse_template_expr(s).map_err(serde::de::Error::custom)
         }
         other => deserialize_hcl_value(other),
+    }
+}
+
+/// Deserialize a JSON value into an optional HCL expression.
+pub fn deserialize_optional_expression<'de, D>(
+    deserializer: D,
+) -> Result<Option<HclExpression>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let value: Option<JsonValue> = Option::deserialize(deserializer)?;
+    match value {
+        Some(v) => match v {
+            JsonValue::String(s) if looks_like_template(&s) => Ok(Some(
+                parse_template_expr(s).map_err(serde::de::Error::custom)?,
+            )),
+            other => Ok(Some(deserialize_hcl_value(other)?)),
+        },
+        None => Ok(None),
     }
 }
 

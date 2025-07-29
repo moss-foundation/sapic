@@ -12,6 +12,7 @@ moss_storage.workspace = true
 moss_applib.workspace = true
 moss_hcl.workspace = true
 moss_text.workspace = true
+moss_bindingutils.workspace = true
 
 anyhow.workspace = true
 serde = { workspace = true, features = ["derive"] }

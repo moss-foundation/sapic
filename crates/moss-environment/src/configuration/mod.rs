@@ -1,14 +1,15 @@
+use hcl::Expression as HclExpression;
 use indexmap::IndexMap;
-use moss_hcl::{Block, HclExpression, LabeledBlock, deserialize_expression, serialize_expression};
+use moss_hcl::{Block, LabeledBlock, deserialize_expression, expression, serialize_expression};
 use serde::{Deserialize, Serialize};
 
 use crate::models::{
     primitives::{EnvironmentId, VariableId},
-    types::{VariableKind, VariableName, VariableOptions},
+    types::{VariableName, VariableOptions},
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Metadata {
+pub struct MetadataDecl {
     pub id: EnvironmentId,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -16,23 +17,24 @@ pub struct Metadata {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct VariableDefinition {
+pub struct VariableSpec {
     pub name: VariableName,
     #[serde(
         serialize_with = "serialize_expression",
-        deserialize_with = "deserialize_expression"
+        deserialize_with = "deserialize_expression",
+        skip_serializing_if = "expression::is_null"
     )]
     pub value: HclExpression,
-    pub kind: Option<VariableKind>,
+    // pub kind: Option<VariableKind>,
     pub description: Option<String>,
     pub options: VariableOptions,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EnvironmentFile {
-    pub metadata: Block<Metadata>,
+    pub metadata: Block<MetadataDecl>,
 
     #[serde(rename = "variable")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub variables: Option<LabeledBlock<IndexMap<VariableId, VariableDefinition>>>,
+    pub variables: Option<LabeledBlock<IndexMap<VariableId, VariableSpec>>>,
 }

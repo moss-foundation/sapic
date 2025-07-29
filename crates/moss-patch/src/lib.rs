@@ -2,6 +2,7 @@ pub mod hcl;
 pub mod json;
 
 #[non_exhaustive]
+#[derive(Debug, Clone)]
 pub enum Model {
     Json(json::JsonModel),
 }

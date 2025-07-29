@@ -34,12 +34,7 @@ use moss_fs::RealFileSystem;
 //     environment_file_path
 // }
 
-pub async fn create_test_environment() -> (
-    AsyncContext,
-    Arc<Path>,
-    Environment<MockAppRuntime>,
-    ServiceProvider,
-) {
+pub async fn create_test_environment() -> (AsyncContext, Arc<Path>, Environment, ServiceProvider) {
     let ctx = MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
     let fs = Arc::new(RealFileSystem::new());
 

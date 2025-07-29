@@ -1,11 +1,16 @@
 use anyhow::Result;
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::{AppRuntime, PublicServiceMarker, providers::ServiceProvider};
+use moss_collection::Collection;
+use moss_environment::environment::{AnyEnvironment, Environment};
 use moss_file::json::JsonFileHandle;
 use moss_fs::FileSystem;
 use std::{path::Path, sync::Arc};
 
-use crate::manifest::{MANIFEST_FILE_NAME, ManifestModel};
+use crate::{
+    manifest::{MANIFEST_FILE_NAME, ManifestModel},
+    services::{AnyCollectionService, AnyEnvironmentService},
+};
 
 pub struct WorkspaceSummary {
     pub manifest: ManifestModel,
@@ -16,6 +21,14 @@ pub struct WorkspaceModifyParams {
     pub name: Option<String>,
 }
 
+pub trait AnyWorkspace<R: AppRuntime> {
+    type Collection;
+    type Environment: AnyEnvironment<R>;
+
+    // type CollectionService: AnyCollectionService<R>;
+    // type EnvironmentService: AnyEnvironmentService;
+}
+
 pub struct Workspace<R: AppRuntime> {
     pub(super) abs_path: Arc<Path>,
     pub(super) services: ServiceProvider,
@@ -23,6 +36,14 @@ pub struct Workspace<R: AppRuntime> {
     pub(super) activity_indicator: ActivityIndicator<R::EventLoop>,
     #[allow(dead_code)]
     pub(super) manifest: JsonFileHandle<ManifestModel>,
+}
+
+impl<R: AppRuntime> AnyWorkspace<R> for Workspace<R> {
+    type Collection = Collection<R>;
+    type Environment = Environment<R>;
+
+    // type CollectionService = CollectionService;
+    // type EnvironmentService = EnvironmentService;
 }
 
 impl<R: AppRuntime> Workspace<R> {

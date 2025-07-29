@@ -7,9 +7,9 @@ use moss_text::sanitized::sanitize;
 use std::{any::TypeId, path::PathBuf, sync::Arc};
 
 use crate::{
-    configuration::{EnvironmentFile, Metadata},
+    configuration::{EnvironmentFile, MetadataDecl},
     constants,
-    environment::Environment,
+    environment::{AnyEnvironment, Environment},
     errors::{
         ErrorEnvironmentAlreadyExists, ErrorEnvironmentNotFound, ErrorFailedToDecode,
         ErrorFailedToEncode, ErrorIo,
@@ -69,7 +69,7 @@ impl EnvironmentBuilder {
         }
 
         let file = EnvironmentFile {
-            metadata: Block::new(Metadata {
+            metadata: Block::new(MetadataDecl {
                 id: EnvironmentId::new(),
                 color: params.color,
             }),

@@ -4,14 +4,18 @@ pub mod sync_service;
 pub mod variable_service;
 
 use json_patch::PatchOperation;
-use moss_applib::{AppRuntime, AppService};
+use moss_applib::AppRuntime;
+use serde_json::Value as JsonValue;
 
-pub(super) trait AnyStorageService<R: AppRuntime>: AppService {}
+pub(super) trait AnyStorageService<R: AppRuntime> {}
 
-pub(super) trait AnySyncService<R: AppRuntime>: AppService {
-    async fn apply(&self, patches: &[PatchOperation]) -> joinerror::Result<()>;
+pub(super) trait AnySyncService<R: AppRuntime> {
+    async fn apply(&self, patches: &[PatchOperation]) -> joinerror::Result<JsonValue>;
+    async fn save(&self) -> joinerror::Result<()>;
 }
 
-pub(super) trait AnyMetadataService<R: AppRuntime>: AppService {
+pub(super) trait AnyMetadataService<R: AppRuntime> {
     async fn apply(&self) -> joinerror::Result<()>;
 }
+
+pub(super) trait AnyVariableService<R: AppRuntime> {}

@@ -22,9 +22,54 @@ impl AppService for SyncService {}
 impl ServiceMarker for SyncService {}
 
 impl<R: AppRuntime> AnySyncService<R> for SyncService {
-    async fn apply(&self, patches: &[PatchOperation]) -> joinerror::Result<()> {
+    async fn save(&self) -> joinerror::Result<()> {
+        let uri = self.state.read().await.uri.clone();
+        let model = self
+            .models
+            .get(&uri)
+            .await
+            .ok_or_else(|| Error::new::<()>("model not found"))?;
+
+        let json_value = model
+            .as_json()
+            .ok_or_else(|| Error::new::<()>("model is not a json model"))?
+            .value()
+            .clone();
+
+        let hcl_value =
+            serde_json::from_value::<EnvironmentFile>(json_value.clone()).map_err(|err| {
+                Error::new::<()>(format!(
+                    "failed to convert json value to structure: {}",
+                    err
+                ))
+            })?;
+
+        let content = hcl::to_string(&hcl_value).map_err(|err| {
+            Error::new::<()>(format!(
+                "failed to convert structure to hcl string: {}",
+                err
+            ))
+        })?;
+
         let state = self.state.read().await;
-        let value = self
+        self.fs
+            .create_file_with(
+                &Path::new(&state.uri),
+                content.as_bytes(),
+                CreateOptions {
+                    overwrite: true,
+                    ignore_if_exists: false,
+                },
+            )
+            .await
+            .map_err(|err| Error::new::<()>(format!("failed to write file: {}", err)))?;
+
+        Ok(())
+    }
+
+    async fn apply(&self, patches: &[PatchOperation]) -> joinerror::Result<JsonValue> {
+        let state = self.state.read().await;
+        let json_value = self
             .models
             .with_model_mut(&state.uri, |model| {
                 let model = model.as_json_mut().expect("model is not a json model");
@@ -37,42 +82,43 @@ impl<R: AppRuntime> AnySyncService<R> for SyncService {
             .await
             .ok_or_else(|| Error::new::<()>("model not found"))??;
 
-        // TODO: we'll handle file system synchronization in the background a bit later,
-        // so we can respond to the frontend faster.
-        {
-            // HACK: Right now, we have to convert HCL to JSON and then back to HCL,
-            // because at the moment we can't apply patches directly to HCL.
-            // Once we implement that mechanism, we'll be able to patch HCL directly
-            // and get rid of the intermediate conversions to JSON.
+        // // TODO: we'll handle file system synchronization in the background a bit later,
+        // // so we can respond to the frontend faster.
+        // {
+        //     // HACK: Right now, we have to convert HCL to JSON and then back to HCL,
+        //     // because at the moment we can't apply patches directly to HCL.
+        //     // Once we implement that mechanism, we'll be able to patch HCL directly
+        //     // and get rid of the intermediate conversions to JSON.
 
-            let hcl_value = serde_json::from_value::<EnvironmentFile>(value).map_err(|err| {
-                Error::new::<()>(format!(
-                    "failed to convert json value to structure: {}",
-                    err
-                ))
-            })?;
+        //     let hcl_value =
+        //         serde_json::from_value::<EnvironmentFile>(json_value.clone()).map_err(|err| {
+        //             Error::new::<()>(format!(
+        //                 "failed to convert json value to structure: {}",
+        //                 err
+        //             ))
+        //         })?;
 
-            let hcl_value_str = hcl::to_string(&hcl_value).map_err(|err| {
-                Error::new::<()>(format!(
-                    "failed to convert structure to hcl string: {}",
-                    err
-                ))
-            })?;
+        //     let hcl_value_str = hcl::to_string(&hcl_value).map_err(|err| {
+        //         Error::new::<()>(format!(
+        //             "failed to convert structure to hcl string: {}",
+        //             err
+        //         ))
+        //     })?;
 
-            self.fs
-                .create_file_with(
-                    &Path::new(&state.uri),
-                    hcl_value_str.as_bytes(),
-                    CreateOptions {
-                        overwrite: true,
-                        ignore_if_exists: false,
-                    },
-                )
-                .await
-                .map_err(|err| Error::new::<()>(format!("failed to write file: {}", err)))?;
-        }
+        //     self.fs
+        //         .create_file_with(
+        //             &Path::new(&state.uri),
+        //             hcl_value_str.as_bytes(),
+        //             CreateOptions {
+        //                 overwrite: true,
+        //                 ignore_if_exists: false,
+        //             },
+        //         )
+        //         .await
+        //         .map_err(|err| Error::new::<()>(format!("failed to write file: {}", err)))?;
+        // }
 
-        Ok(())
+        Ok(json_value)
     }
 }
 

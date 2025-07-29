@@ -2,7 +2,7 @@ use json_patch::{AddOperation, PatchOperation, RemoveOperation, ReplaceOperation
 use jsonptr::PointerBuf;
 use serde_json::Value;
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone)]
 pub enum Action {
     Add {
         path: PointerBuf,
@@ -19,6 +19,7 @@ pub enum Action {
     },
 }
 
+#[derive(Debug, Clone)]
 pub struct JsonModel {
     value: Value,
     applied: Vec<Action>,
