@@ -1,20 +1,25 @@
-import { RefObject, useEffect, useState } from "react";
+import { RefObject, useContext, useEffect, useState } from "react";
 
 import { attachInstruction, extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 
+import { TreeContext } from "../Tree";
 import { TreeCollectionNode } from "../types";
-import { canDropNode, getActualDropSourceTarget, getActualDropTargetWithInstruction } from "../utils";
+import { canDropNode, getLocationTreeNodeData, getSourceTreeNodeData } from "../utils";
 
-export const useInstructionNode = (
+export const useDraggableNode = (
   node: TreeCollectionNode,
-  treeId: string | number,
+  parentNode: TreeCollectionNode,
+  collectionId: string | number,
   dropTargetListRef: RefObject<HTMLButtonElement>,
   isLastChild: boolean,
+  isRootNode: boolean,
   setPreview: React.Dispatch<React.SetStateAction<HTMLElement | null>>
 ) => {
+  const { repository, id } = useContext(TreeContext);
+
   const [instruction, setInstruction] = useState<Instruction | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [canDrop, setCanDrop] = useState<boolean | null>(null);
@@ -26,11 +31,16 @@ export const useInstructionNode = (
     return combine(
       draggable({
         element,
+        canDrag() {
+          return !isRootNode;
+        },
         getInitialData: () => ({
           type: "TreeNode",
           data: {
+            collectionId: id,
+            repository,
             node,
-            treeId,
+            parentNode,
           },
         }),
         onDragStart() {
@@ -52,34 +62,22 @@ export const useInstructionNode = (
       dropTargetForElements({
         element,
         getData: ({ input, element }) => {
-          const data = { type: "TreeNode", data: { treeId, node } };
-
-          const isReorderBeforeAvailable = true;
-          let isReorderAfterAvailable = true;
-          let isCombineAvailable = true;
-
-          if (node.kind === "Dir") {
-            if (!isLastChild && !node.expanded) {
-              isReorderAfterAvailable = false;
-            }
-            if (node.expanded) {
-              isReorderAfterAvailable = false;
-            }
-          } else {
-            isCombineAvailable = false;
-
-            if (!isLastChild) {
-              isReorderAfterAvailable = false;
-            }
-          }
+          const data = {
+            type: "TreeNode",
+            data: {
+              collectionId,
+              node,
+              parentNode,
+            },
+          };
 
           return attachInstruction(data, {
             input,
             element,
             operations: {
-              "reorder-before": isReorderBeforeAvailable ? "available" : "not-available",
-              "reorder-after": isReorderAfterAvailable ? "available" : "not-available",
-              combine: isCombineAvailable ? "available" : "not-available",
+              "reorder-before": isRootNode ? "not-available" : "available",
+              "reorder-after": isRootNode || (node.kind === "Dir" && node.expanded) ? "not-available" : "available",
+              combine: node.kind === "Dir" ? "available" : "not-available",
             },
           });
         },
@@ -87,47 +85,29 @@ export const useInstructionNode = (
           return source.data.type === "TreeNode";
         },
         onDrag({ location, source, self }) {
-          const sourceTarget = getActualDropSourceTarget(source);
-          const { dropTarget } = getActualDropTargetWithInstruction(location, self);
+          const sourceTarget = getSourceTreeNodeData(source);
+          const dropTarget = getLocationTreeNodeData(location);
+
+          if (!sourceTarget || !dropTarget) {
+            return;
+          }
 
           const instruction: Instruction | null = extractInstruction(self.data);
+
           setInstruction(instruction);
-          setCanDrop(canDropNode(sourceTarget, dropTarget, node));
+          setCanDrop(canDropNode(sourceTarget, dropTarget));
         },
         onDropTargetChange() {
           setInstruction(null);
           setCanDrop(null);
         },
-        onDrop({ location, source, self }) {
+        onDrop() {
           setInstruction(null);
           setCanDrop(null);
-
-          if (location.current?.dropTargets.length === 0 || location.current.dropTargets[0].data.type !== "TreeNode") {
-            return;
-          }
-
-          const sourceTarget = getActualDropSourceTarget(source);
-          const { dropTarget, instruction } = getActualDropTargetWithInstruction(location, self);
-
-          if (dropTarget?.node.id !== node.id) {
-            return;
-          }
-
-          if (canDropNode(sourceTarget, dropTarget, node)) {
-            window.dispatchEvent(
-              new CustomEvent("moveTreeNode", {
-                detail: {
-                  source: sourceTarget,
-                  target: dropTarget,
-                  instruction,
-                },
-              })
-            );
-          }
         },
       })
     );
-  }, [dropTargetListRef, isLastChild, node, setPreview, treeId]);
+  }, [collectionId, dropTargetListRef, id, isLastChild, isRootNode, node, parentNode, repository, setPreview]);
 
   return { instruction, isDragging, canDrop };
 };

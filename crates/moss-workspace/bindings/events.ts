@@ -6,8 +6,9 @@
 export type StreamCollectionsEvent = {
   id: string;
   name: string;
-  repository?: string;
   order?: number;
+  expanded: boolean;
+  repository?: string;
   picturePath?: string;
 };
 

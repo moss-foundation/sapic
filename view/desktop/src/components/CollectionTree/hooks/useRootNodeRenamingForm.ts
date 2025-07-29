@@ -2,25 +2,17 @@ import { useState } from "react";
 
 import { useUpdateCollection } from "@/hooks";
 
-import { TreeCollectionRootNode } from "../../types";
+import { TreeCollectionRootNode } from "../types";
 
-export const useRootNodeRenamingForm = (
-  node: TreeCollectionRootNode,
-  onNodeUpdate: (node: TreeCollectionRootNode) => void
-) => {
+export const useRootNodeRenamingForm = (node: TreeCollectionRootNode) => {
   const [isRenamingRootNode, setIsRenamingRootNode] = useState(false);
 
-  const { placeholderFnForUpdateCollection } = useUpdateCollection();
+  const { mutateAsync: updateCollection } = useUpdateCollection();
 
   const handleRenamingRootNodeFormSubmit = (name: string) => {
-    // onNodeUpdate?.({ ...node, name });
-
-    placeholderFnForUpdateCollection({
+    updateCollection({
       id: node.id,
-      collection: {
-        ...node,
-        name,
-      },
+      name,
     });
 
     setIsRenamingRootNode(false);

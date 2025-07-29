@@ -1,11 +1,24 @@
 import { ActionButton, ActionMenu } from "@/components";
 import { CreateCollectionModal } from "@/components/Modals/Collection/CreateCollectionModal";
-import { useClearAllCollectionEntries, useModal, useStreamedCollections, useWorkspaceSidebarState } from "@/hooks";
+import {
+  USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY,
+  useClearAllCollectionEntries,
+  useModal,
+  useStreamedCollections,
+  useStreamedCollectionsWithEntries,
+  useWorkspaceSidebarState,
+} from "@/hooks";
+import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
+import { EntryInfo } from "@repo/moss-collection";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const SidebarHeader = ({ title }: { title: string }) => {
-  // const { collapseAll } = useCollectionsStore();
+  const queryClient = useQueryClient();
+
   const { isLoading: isCollectionsLoading, clearCollectionsCacheAndRefetch } = useStreamedCollections();
   const { clearAllCollectionEntriesCache } = useClearAllCollectionEntries();
+  const { data: collectionsWithEntries } = useStreamedCollectionsWithEntries();
+  const { mutateAsync: batchUpdateCollectionEntry } = useBatchUpdateCollectionEntry();
   const { hasWorkspace } = useWorkspaceSidebarState();
 
   const {
@@ -19,6 +32,63 @@ export const SidebarHeader = ({ title }: { title: string }) => {
     clearAllCollectionEntriesCache();
   };
 
+  const areAllNodesCollapsed = collectionsWithEntries.every((collection) => {
+    return collection.entries.filter((entry) => entry.kind === "Dir").every((entry) => !entry.expanded);
+  });
+
+  const handleCollapseAll = async () => {
+    if (areAllNodesCollapsed) {
+      return;
+    }
+
+    const collectionWithEntriesToCollapse = collectionsWithEntries.map((collection) => {
+      const entriesToCollapse = collection.entries.filter((entry) => {
+        return entry.kind === "Dir" && entry.expanded;
+      });
+
+      return {
+        collectionId: collection.id,
+        entries: entriesToCollapse,
+      };
+    });
+
+    const promises = collectionWithEntriesToCollapse.map(async (collection) => {
+      const preparedEntries = collection.entries.map((entry) => {
+        return {
+          DIR: {
+            id: entry.id,
+            expanded: false,
+          },
+        };
+      });
+
+      if (preparedEntries.length > 0) {
+        const res = await batchUpdateCollectionEntry({
+          collectionId: collection.collectionId,
+          entries: {
+            entries: preparedEntries,
+          },
+        });
+
+        if (res.status === "ok") {
+          queryClient.setQueryData(
+            [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, collection.collectionId],
+            (old: EntryInfo[]) => {
+              return old.map((entry) => {
+                if (preparedEntries.some((preparedEntry) => preparedEntry.DIR.id === entry.id)) {
+                  return { ...entry, expanded: false };
+                }
+                return entry;
+              });
+            }
+          );
+        }
+      }
+    });
+
+    await Promise.all(promises);
+  };
+
   return (
     <div className="background-(--moss-secondary-background) relative flex items-center justify-between px-2 py-[5px] text-(--moss-primary-text) uppercase">
       <div className="w-max items-center overflow-hidden text-xs text-ellipsis whitespace-nowrap text-(--moss-secondary-text)">
@@ -27,7 +97,7 @@ export const SidebarHeader = ({ title }: { title: string }) => {
 
       <div className="flex grow justify-end">
         <ActionButton disabled={!hasWorkspace} icon="Add" onClick={openCreateCollectionModal} />
-        <ActionButton disabled={!hasWorkspace} icon="CollapseAll" onClick={undefined} />
+        <ActionButton disabled={!hasWorkspace || areAllNodesCollapsed} icon="CollapseAll" onClick={handleCollapseAll} />
         <ActionButton disabled={!hasWorkspace} icon="Import" />
         <ActionButton
           icon="Refresh"

@@ -65,6 +65,12 @@
   "CollapseAll": {
     "identical": true
   },
+  "Component": {
+    "identical": true
+  },
+  "ComponentsFolder": {
+    "identical": true
+  },
   "ConfigMap": {
     "identical": true
   },
@@ -87,6 +93,12 @@
     "identical": true
   },
   "Edit": {
+    "identical": true
+  },
+  "Endpoint": {
+    "identical": true
+  },
+  "EndpointsFolder": {
     "identical": true
   },
   "Env": {
@@ -227,7 +239,19 @@
   "RemoveCircle": {
     "identical": true
   },
+  "Request": {
+    "identical": true
+  },
   "Requests": {
+    "identical": true
+  },
+  "RequestsFolder": {
+    "identical": true
+  },
+  "Schema": {
+    "identical": true
+  },
+  "SchemasFolder": {
     "identical": true
   },
   "Send": {

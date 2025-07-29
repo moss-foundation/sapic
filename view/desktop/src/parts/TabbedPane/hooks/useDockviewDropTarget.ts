@@ -1,12 +1,12 @@
 import React from "react";
 
-import { DropNodeElement } from "@/components/CollectionTree/types";
-import { getActualDropSourceTarget } from "@/components/CollectionTree/utils";
+import { DragNode } from "@/components/CollectionTree/types";
+import { getSourceTreeNodeData, isSourceTreeNode } from "@/components/CollectionTree/utils";
 import { dropTargetForElements, ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 export const useTabbedPaneDropTarget = (
   dockviewRef: React.RefObject<HTMLDivElement>,
-  setPragmaticDropElement: React.Dispatch<React.SetStateAction<DropNodeElement | null>>
+  setPragmaticDropElement: React.Dispatch<React.SetStateAction<DragNode | null>>
 ) => {
   const [canDrop, setCanDrop] = React.useState(true);
   const [isDragging, setIsDragging] = React.useState(false);
@@ -17,25 +17,24 @@ export const useTabbedPaneDropTarget = (
     const evaluateDropTarget = ({ source }: { source: ElementDragPayload }) => {
       setIsDragging(true);
 
-      const sourceTarget = getActualDropSourceTarget(source);
-
-      if (sourceTarget?.node?.type === "TreeNode") {
+      if (isSourceTreeNode(source)) {
         setCanDrop(true);
-      } else {
-        setCanDrop(false);
-        return;
-      }
 
-      if (source) setPragmaticDropElement(sourceTarget);
-      else {
-        setPragmaticDropElement(null);
+        const sourceTarget = getSourceTreeNodeData(source);
+        if (sourceTarget) {
+          setPragmaticDropElement(sourceTarget);
+        } else {
+          setPragmaticDropElement(null);
+          setCanDrop(false);
+        }
+      } else {
         setCanDrop(false);
       }
     };
 
     const clearDropTarget = () => {
       setIsDragging(false);
-      setPragmaticDropElement(null);
+      // setPragmaticDropElement(null);
       setCanDrop(true);
     };
 

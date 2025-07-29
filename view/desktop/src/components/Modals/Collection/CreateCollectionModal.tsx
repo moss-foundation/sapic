@@ -1,32 +1,42 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { RadioGroup } from "@/components";
-import { VALID_NAME_PATTERN } from "@/constants/validation";
 import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
 import ButtonPrimary from "@/components/ButtonPrimary";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import InputOutlined from "@/components/InputOutlined";
 import { ModalForm } from "@/components/ModalForm";
+import { VALID_NAME_PATTERN } from "@/constants/validation";
 import { useCreateCollection } from "@/hooks/collection/useCreateCollection";
+import { useStreamedCollections } from "@/hooks/collection/useStreamedCollections";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 import { ModalWrapperProps } from "../types";
 
 export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperProps) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const { mutateAsync: createCollection, isPending: isCreateCollectionLoading } = useCreateCollection();
+  const { data: collections } = useStreamedCollections();
 
   const { addOrFocusPanel } = useTabbedPaneStore();
 
   const [name, setName] = useState("New Collection");
-  const [repo, setRepo] = useState("github.com/moss-foundation/sapic");
+  const [repository, setRepository] = useState("github.com/moss-foundation/sapic");
   const [mode, setMode] = useState<"Default" | "Custom">("Default");
   const [openAutomatically, setOpenAutomatically] = useState(true);
 
+  useEffect(() => {
+    if (!inputRef.current) return;
+    inputRef.current.focus();
+    inputRef.current.select();
+  }, []);
+
   const handleSubmit = async () => {
     const result = await createCollection({
-      name,
-      repo,
-      order: 0, // FIXME: This is a temporary hardcoded
+      name: name.trim(),
+      repository: repository.trim(),
+      order: collections?.length ? collections.length + 1 : 1,
     });
 
     closeModal();
@@ -34,7 +44,7 @@ export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
     if (openAutomatically) {
       addOrFocusPanel({
         id: result.id,
-        title: name,
+        title: name.trim(),
         component: "CollectionSettings",
         params: {
           collectionId: result.id,
@@ -71,6 +81,7 @@ export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
             <div className="col-span-2 grid grid-cols-subgrid items-center gap-y-3">
               <div>Name:</div>
               <InputOutlined
+                ref={inputRef}
                 value={name}
                 className="max-w-72"
                 onChange={(e) => setName(e.target.value)}
@@ -82,7 +93,8 @@ export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
 
             <div className="col-span-2 grid grid-cols-subgrid items-center">
               <div>Repository:</div>
-              <InputOutlined value={repo} className="max-w-72" onChange={(e) => setRepo(e.target.value)} />
+              {/* FIXME: backend gives validation error if you but random strings. This should be validated and error should be shown ideally */}
+              <InputOutlined value={repository} className="max-w-72" onChange={(e) => setRepository(e.target.value)} />
             </div>
           </div>
 

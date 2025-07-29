@@ -38,7 +38,6 @@ export const useStreamedCollections = () => {
   const clearCollectionsCacheAndRefetch = () => {
     queryClient.invalidateQueries({ queryKey: [USE_STREAMED_COLLECTIONS_QUERY_KEY] });
     queryClient.removeQueries({ queryKey: [USE_STREAMED_COLLECTIONS_QUERY_KEY] });
-    return query.refetch();
   };
 
   return {

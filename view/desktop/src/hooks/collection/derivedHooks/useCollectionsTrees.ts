@@ -113,7 +113,6 @@ export const useCollectionsTrees = (): UseCollectionsTreesProps => {
 
       return {
         ...rest,
-        expanded: true,
         endpoints,
         schemas,
         components,

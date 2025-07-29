@@ -1,20 +1,16 @@
 import { createContext, useEffect, useState } from "react";
 
-import { useMoveTreeNodeEvent } from "./hooks/useMoveTreeNodeEvent.ts";
 import { TreeRootNode } from "./TreeRootNode/TreeRootNode.tsx";
-import { TreeCollectionNode, TreeCollectionRootNode, TreeContextProps, TreeProps } from "./types.ts";
-import {
-  checkIfAllFoldersAreCollapsed,
-  checkIfAllFoldersAreExpanded,
-  updateNodeInTree,
-} from "./utils/TreeRootUtils.ts";
+import { TreeCollectionRootNode, TreeContextProps, TreeProps } from "./types.ts";
+import { checkIfAllFoldersAreCollapsed, checkIfAllFoldersAreExpanded } from "./utils/TreeRoot.ts";
 
 export const TreeContext = createContext<TreeContextProps>({
   id: "",
   name: "",
-  repository: null,
-  order: null,
-  picturePath: null,
+  repository: undefined,
+  order: undefined,
+  picturePath: undefined,
+  expanded: false,
 
   paddingLeft: 0,
   paddingRight: 0,
@@ -25,6 +21,7 @@ export const TreeContext = createContext<TreeContextProps>({
   searchInput: undefined,
   sortBy: "none",
   displayMode: "REQUEST_FIRST",
+  showNodeOrders: false,
 });
 
 export const CollectionTree = ({
@@ -37,66 +34,19 @@ export const CollectionTree = ({
   searchInput,
   sortBy = "none",
   displayMode = "REQUEST_FIRST",
-
-  onTreeUpdate,
-
-  onRootAdd,
-  onRootRemove,
-  onRootRename,
-  onRootUpdate,
-  onRootClick,
-  onRootDoubleClick,
-
-  onNodeAdd,
-  onNodeRemove,
-  onNodeRename,
-  onNodeUpdate,
-  onNodeClick,
-  onNodeDoubleClick,
+  showNodeOrders = false,
 }: TreeProps) => {
   const [tree, setTree] = useState<TreeCollectionRootNode>(initialTree);
-
-  const handleNodeUpdate = (updatedNode: TreeCollectionNode) => {
-    setTree((prev) => {
-      const newTree = updateNodeInTree(prev, updatedNode);
-      onTreeUpdate?.(newTree);
-      return newTree;
-    });
-  };
-
-  const handleRootNodeUpdate = (updatedNode: TreeCollectionRootNode) => {
-    setTree(updatedNode);
-    onTreeUpdate?.(updatedNode);
-  };
 
   useEffect(() => {
     setTree(initialTree);
   }, [initialTree]);
 
-  // useCreateNewCollectionFromTreeNodeEvent({
-  //   treeId,
-  //   onNodeAdd,
-  //   onNodeRemove,
-  //   onRootAdd,
-  //   onRootRemove,
-  //   onTreeUpdate,
-  //   setTree,
-  // });
-
-  useMoveTreeNodeEvent({
-    treeId: initialTree.id,
-    onNodeAdd,
-    onNodeRemove,
-    onRootAdd,
-    onRootRemove,
-    onTreeUpdate,
-    setTree,
-  });
-
   return (
     <TreeContext.Provider
       value={{
         id: initialTree.id,
+        expanded: initialTree.expanded,
         name: initialTree.name,
         repository: initialTree.repository,
         order: initialTree.order,
@@ -111,23 +61,10 @@ export const CollectionTree = ({
         searchInput,
         sortBy,
         displayMode,
-
-        onRootAddCallback: onRootAdd,
-        onRootRemoveCallback: onRootRemove,
-        onRootRenameCallback: onRootRename,
-        onRootUpdateCallback: onRootUpdate,
-        onRootClickCallback: onRootClick,
-        onRootDoubleClickCallback: onRootDoubleClick,
-
-        onNodeAddCallback: onNodeAdd,
-        onNodeRemoveCallback: onNodeRemove,
-        onNodeRenameCallback: onNodeRename,
-        onNodeUpdateCallback: onNodeUpdate,
-        onNodeClickCallback: onNodeClick,
-        onNodeDoubleClickCallback: onNodeDoubleClick,
+        showNodeOrders,
       }}
     >
-      <TreeRootNode onNodeUpdate={handleNodeUpdate} onRootNodeUpdate={handleRootNodeUpdate} node={tree} />
+      <TreeRootNode node={tree} />
     </TreeContext.Provider>
   );
 };

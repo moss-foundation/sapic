@@ -4,6 +4,8 @@ import { ActionMenu, TreeContext } from "@/components";
 import { ActionButton } from "@/components/ActionButton";
 import { DeleteCollectionModal } from "@/components/Modals/Collection/DeleteCollectionModal";
 
+import { useRefreshCollection } from "../actions/useRefreshCollection";
+import { useToggleAllNodes } from "../actions/useToggleAllNodes";
 import { TreeCollectionRootNode } from "../types";
 
 interface TreeRootNodeActionsProps {
@@ -13,10 +15,6 @@ interface TreeRootNodeActionsProps {
   setIsAddingRootFileNode: (isAdding: boolean) => void;
   setIsAddingRootFolderNode: (isAdding: boolean) => void;
   setIsRenamingRootNode: (isRenaming: boolean) => void;
-  allFoldersAreCollapsed: boolean;
-  allFoldersAreExpanded: boolean;
-  handleCollapseAll: () => void;
-  handleExpandAll: () => void;
 }
 
 export const TreeRootNodeActions = ({
@@ -26,13 +24,17 @@ export const TreeRootNodeActions = ({
   setIsAddingRootFileNode,
   setIsAddingRootFolderNode,
   setIsRenamingRootNode,
-  allFoldersAreCollapsed,
-  allFoldersAreExpanded,
-  handleCollapseAll,
-  handleExpandAll,
 }: TreeRootNodeActionsProps) => {
-  const { displayMode } = useContext(TreeContext);
+  const { displayMode, allFoldersAreCollapsed, allFoldersAreExpanded, id } = useContext(TreeContext);
+
   const [showDeleteCollectionModal, setShowDeleteCollectionModal] = useState(false);
+
+  const { expandAllNodes, collapseAllNodes } = useToggleAllNodes(node);
+  const { refreshCollection } = useRefreshCollection(id);
+
+  const handleRefresh = () => {
+    refreshCollection();
+  };
 
   return (
     <>
@@ -52,7 +54,7 @@ export const TreeRootNodeActions = ({
               customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
               icon="CollapseAll"
               disabled={allFoldersAreCollapsed}
-              onClick={handleCollapseAll}
+              onClick={collapseAllNodes}
             />
           </div>
         )}
@@ -64,7 +66,7 @@ export const TreeRootNodeActions = ({
             />
           </ActionMenu.Trigger>
           <ActionMenu.Portal>
-            <ActionMenu.Content className="z-30" align="center">
+            <ActionMenu.Content className="z-40" align="center">
               <ActionMenu.Item alignWithIcons onClick={() => setIsAddingRootFileNode(true)}>
                 Add File
               </ActionMenu.Item>
@@ -74,14 +76,16 @@ export const TreeRootNodeActions = ({
               <ActionMenu.Item alignWithIcons onClick={() => setIsRenamingRootNode(true)}>
                 Rename...
               </ActionMenu.Item>
-              <ActionMenu.Item alignWithIcons>Refresh</ActionMenu.Item>
+              <ActionMenu.Item alignWithIcons onClick={handleRefresh}>
+                Refresh
+              </ActionMenu.Item>
               <ActionMenu.Item alignWithIcons onClick={() => setShowDeleteCollectionModal(true)} icon="Trash">
                 Delete
               </ActionMenu.Item>
               <ActionMenu.Item
                 alignWithIcons
                 disabled={allFoldersAreExpanded}
-                onClick={handleExpandAll}
+                onClick={expandAllNodes}
                 icon="ExpandAll"
               >
                 ExpandAll
