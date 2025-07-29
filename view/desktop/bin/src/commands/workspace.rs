@@ -1,5 +1,4 @@
 use moss_api::{TauriError, TauriResult};
-use moss_applib::TauriAppRuntime;
 use moss_workspace::models::{events::*, operations::*};
 use tauri::{State, Window, ipc::Channel as TauriChannel};
 
