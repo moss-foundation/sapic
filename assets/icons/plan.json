@@ -11,6 +11,12 @@
   "AddToVcs": {
     "identical": true
   },
+  "ArrowLeft": {
+    "identical": false
+  },
+  "ArrowRight": {
+    "identical": false
+  },
   "Auth": {
     "identical": true
   },
@@ -161,6 +167,9 @@
   "MenuRadioIndicator": {
     "identical": true
   },
+  "Minus": {
+    "identical": true
+  },
   "MoreHorizontal": {
     "identical": true
   },
@@ -210,6 +219,9 @@
     "identical": true
   },
   "Placeholder": {
+    "identical": true
+  },
+  "Plus": {
     "identical": true
   },
   "PostRequest": {

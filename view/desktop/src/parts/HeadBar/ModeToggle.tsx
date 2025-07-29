@@ -66,7 +66,7 @@ export const ModeToggle: React.FC<ModeToggleProps> = ({ className, compact = fal
           ref={(el) => (itemsRef.current["REQUEST_FIRST"] = el)}
           onClick={() => setDisplayMode("REQUEST_FIRST")}
         >
-          Request-first mode
+          Request mode
         </ToggleGroupItem>
         <ToggleGroupItem
           value="DESIGN_FIRST"
@@ -75,7 +75,7 @@ export const ModeToggle: React.FC<ModeToggleProps> = ({ className, compact = fal
           ref={(el) => (itemsRef.current["DESIGN_FIRST"] = el)}
           onClick={() => setDisplayMode("DESIGN_FIRST")}
         >
-          Design-first mode
+          Design mode
         </ToggleGroupItem>
       </div>
     </ToggleGroupRoot>

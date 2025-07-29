@@ -1,5 +1,9 @@
 use crate::ErrorMarker;
 
+// FIXME: This clearly shouldn't be here.
+// Application error codes or anything else related to the app
+// should NEVER be in the library.
+
 pub struct ErrorInvalidInput;
 impl ErrorMarker for ErrorInvalidInput {
     const MESSAGE: &'static str = "invalid_input";

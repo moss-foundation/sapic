@@ -6,6 +6,9 @@ import { renderActionMenuItem } from "@/utils/renderActionMenuItem";
 
 import { collectionActionMenuItems } from "./HeadBarData";
 import { getGitBranchMenuItems } from "./mockHeadBarData";
+import NavigationButtons from "./NavigationButtons";
+import ZoomButtons from "./ZoomButtons";
+import RequestPath from "./RequestPath";
 
 export interface HeadBarCenterItemsProps {
   isMedium: boolean;
@@ -19,83 +22,114 @@ export interface HeadBarCenterItemsProps {
   onCollectionClick?: () => void;
   collectionButtonRef: React.RefObject<HTMLButtonElement>;
   os: string | null;
+  onNavigateBack?: () => void;
+  onNavigateForward?: () => void;
+  canGoBack?: boolean;
+  canGoForward?: boolean;
+  onZoomIn?: () => void;
+  onZoomOut?: () => void;
+  canZoomIn?: boolean;
+  canZoomOut?: boolean;
+  currentZoom?: number;
 }
 
 export const HeadBarCenterItems = ({
-  isMedium,
   isXLarge,
+  breakpoint,
   handleGitMenuAction,
   handleCollectionActionMenuAction,
   selectedBranch,
-  collectionName,
-  onRenameCollection,
-  onCollectionClick,
-  collectionButtonRef,
   os,
+  onNavigateBack,
+  onNavigateForward,
+  canGoBack = true,
+  canGoForward = true,
+  onZoomIn,
+  onZoomOut,
+  canZoomIn = true,
+  canZoomOut = true,
+  currentZoom = 100,
 }: HeadBarCenterItemsProps) => {
   return (
-    <div
-      className={cn(
-        "background-(--moss-headBar-primary-background) flex h-[26px] items-center rounded border border-[var(--moss-headBar-border-color)] px-0.5",
-        isXLarge ? "" : os === "macos" ? "relative" : ""
-      )}
-      data-tauri-drag-region
-    >
-      <IconLabelButton
-        ref={collectionButtonRef}
-        leftIcon="UnloadedModule"
-        leftIconClassName="text-(--moss-headBar-icon-primary-text)"
-        className={
-          isMedium
-            ? "hover:background-(--moss-headBar-primary-background-hover) mr-[3px] h-[22px] w-[10vw]"
-            : "hover:background-(--moss-headBar-primary-background-hover) mr-[30px] h-[22px] w-[10vw]"
-        }
-        title={collectionName}
-        editable={true}
-        onRename={onRenameCollection}
-        onClick={onCollectionClick}
+    <div className="flex items-center gap-2" data-tauri-drag-region>
+      <NavigationButtons
+        onBack={onNavigateBack}
+        onForward={onNavigateForward}
+        canGoBack={canGoBack}
+        canGoForward={canGoForward}
       />
-      <ActionButton
-        icon="Refresh"
-        iconClassName="text-(--moss-headBar-icon-primary-text)"
-        customHoverBackground="hover:background-(--moss-headBar-primary-background-hover)"
-        title="Reload"
+      <div
+        className={cn(
+          "background-(--moss-headBar-primary-background) flex h-7 items-center rounded border border-[var(--moss-headBar-border-color)]",
+          {
+            "min-w-80": breakpoint === "sm",
+            "min-w-96": breakpoint === "md",
+            "min-w-[35rem]": breakpoint === "lg",
+            "min-w-[42rem]": breakpoint === "xl" || breakpoint === "2xl",
+          },
+          isXLarge ? "" : os === "macos" ? "relative" : ""
+        )}
+        data-tauri-drag-region
+      >
+        <ActionButton
+          icon="Refresh"
+          iconClassName="text-(--moss-headBar-icon-primary-text)"
+          customHoverBackground="hover:!background-[var(--moss-icon-primary-background-hover)]"
+          className="mr-1"
+          title="Reload"
+        />
+        <RequestPath
+          className={cn("min-w-0 text-(--moss-headBar-icon-primary-text)", {
+            "max-w-48": breakpoint === "sm",
+            "max-w-60": breakpoint === "md",
+            "max-w-96": breakpoint === "lg",
+            "max-w-[28rem]": breakpoint === "xl" || breakpoint === "2xl",
+          })}
+        />
+        <div className="flex-1" />
+        <ActionMenu.Root>
+          <ActionMenu.Trigger asChild>
+            <ActionButton
+              icon="MoreHorizontal"
+              iconClassName="text-(--moss-headBar-icon-primary-text)"
+              customHoverBackground="hover:!background-[var(--moss-icon-primary-background-hover)]"
+              className="-mr-1"
+              title="Collection Actions"
+            />
+          </ActionMenu.Trigger>
+          <ActionMenu.Portal>
+            <ActionMenu.Content>
+              {collectionActionMenuItems.map((item) => renderActionMenuItem(item, handleCollectionActionMenuAction))}
+            </ActionMenu.Content>
+          </ActionMenu.Portal>
+        </ActionMenu.Root>
+        <Divider />
+        <ActionMenu.Root>
+          <ActionMenu.Trigger asChild>
+            <IconLabelButton
+              leftIcon="VCS"
+              leftIconClassName="text-(--moss-headBar-icon-primary-text)"
+              rightIcon="ChevronDown"
+              className="mr-0.5 -ml-0.5 h-6 hover:!h-5.5 hover:!rounded-[3px] hover:!p-[3px]"
+              title={selectedBranch || "main"}
+              placeholder="No branch selected"
+              showPlaceholder={!selectedBranch}
+            />
+          </ActionMenu.Trigger>
+          <ActionMenu.Portal>
+            <ActionMenu.Content>
+              {getGitBranchMenuItems(selectedBranch).map((item) => renderActionMenuItem(item, handleGitMenuAction))}
+            </ActionMenu.Content>
+          </ActionMenu.Portal>
+        </ActionMenu.Root>
+      </div>
+      <ZoomButtons
+        onZoomIn={onZoomIn}
+        onZoomOut={onZoomOut}
+        canZoomIn={canZoomIn}
+        canZoomOut={canZoomOut}
+        currentZoom={currentZoom}
       />
-      <ActionMenu.Root>
-        <ActionMenu.Trigger asChild>
-          <ActionButton
-            icon="MoreHorizontal"
-            iconClassName="text-(--moss-headBar-icon-primary-text)"
-            customHoverBackground="hover:background-(--moss-headBar-primary-background-hover)"
-            className="mr-[-4px]"
-            title="Collection Actions"
-          />
-        </ActionMenu.Trigger>
-        <ActionMenu.Portal>
-          <ActionMenu.Content>
-            {collectionActionMenuItems.map((item) => renderActionMenuItem(item, handleCollectionActionMenuAction))}
-          </ActionMenu.Content>
-        </ActionMenu.Portal>
-      </ActionMenu.Root>
-      <Divider />
-      <ActionMenu.Root>
-        <ActionMenu.Trigger asChild>
-          <IconLabelButton
-            leftIcon="VCS"
-            leftIconClassName="text-(--moss-headBar-icon-primary-text)"
-            rightIcon="ChevronDown"
-            className="hover:background-(--moss-headBar-primary-background-hover) ml-[-2px] h-[22px]"
-            title={selectedBranch || "main"}
-            placeholder="No branch selected"
-            showPlaceholder={!selectedBranch}
-          />
-        </ActionMenu.Trigger>
-        <ActionMenu.Portal>
-          <ActionMenu.Content>
-            {getGitBranchMenuItems(selectedBranch).map((item) => renderActionMenuItem(item, handleGitMenuAction))}
-          </ActionMenu.Content>
-        </ActionMenu.Portal>
-      </ActionMenu.Root>
     </div>
   );
 };

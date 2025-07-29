@@ -4,9 +4,6 @@ use moss_db::primitives::AnyValue;
 use crate::{primitives::segkey::SegKeyBuf, storage::operations::*};
 
 pub mod resource_store;
-pub mod variable_store;
-
-pub trait CollectionVariableStore<Context: AnyAsyncContext>: Send + Sync {}
 
 pub trait CollectionResourceStore<Context: AnyAsyncContext>:
     ListByPrefix<Context, Key = SegKeyBuf, Entity = AnyValue>
