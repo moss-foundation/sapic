@@ -3901,10 +3901,12 @@ dependencies = [
 name = "moss_hcl"
 version = "0.1.0"
 dependencies = [
+ "derive_more 2.0.1",
  "hcl-rs",
  "joinerror",
  "serde",
  "serde_json",
+ "ts-rs",
 ]
 
 [[package]]

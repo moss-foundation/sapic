@@ -1,9 +1,11 @@
 pub mod expression;
 pub mod object;
+pub mod util;
 
 pub use crate::{
     expression::{deserialize_expression, serialize_expression},
     object::Object,
+    util::{hcl_to_json, json_to_hcl},
 };
 
 pub use hcl::ser::{Block, LabeledBlock};

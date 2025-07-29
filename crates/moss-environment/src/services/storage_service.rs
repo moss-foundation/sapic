@@ -1,4 +1,4 @@
-use moss_applib::{AppRuntime, ServiceMarker};
+use moss_applib::{AppRuntime, AppService, ServiceMarker};
 use moss_storage::common::VariableStore;
 use std::sync::Arc;
 
@@ -9,6 +9,7 @@ pub struct StorageService<R: AppRuntime> {
     variable_store: Arc<dyn VariableStore<R::AsyncContext>>,
 }
 
+impl<R: AppRuntime> AppService for StorageService<R> {}
 impl<R: AppRuntime> ServiceMarker for StorageService<R> {}
 
 impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {}

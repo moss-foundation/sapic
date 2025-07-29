@@ -65,18 +65,6 @@ where
 /// // JSON representation
 /// "value": "${condition ? value1 : value2}"
 /// ```
-/// - **Standard deserialize**: Treats as plain string
-/// - **Expected result**: HCL conditional expression `condition ? value1 : value2`
-/// - **Our solution**: Parse via temporary HCL attribute wrapper
-///
-/// ## Strategy
-///
-/// 1. **Template Detection**: Check if JSON string starts with `"${` and ends with `}"`
-/// 2. **Simple Variable**: If content is alphanumeric/underscore only → `HclExpression::Variable`
-/// 3. **Full HCL Parse**: Try parsing inner content as complete HCL expression
-/// 4. **Traversal Pattern**: Handle `root.attribute` patterns manually  
-/// 5. **Fallback**: Preserve original string if parsing fails
-/// 6. **Non-templates**: Handle regular JSON values (strings, numbers, booleans, null)
 pub fn deserialize_expression<'de, D>(deserializer: D) -> Result<HclExpression, D::Error>
 where
     D: Deserializer<'de>,
@@ -90,7 +78,6 @@ where
     }
 }
 
-/// Check if a string looks like an HCL template: starts with `${` and ends with `}`.
 fn looks_like_template(s: &str) -> bool {
     s.starts_with("${") && s.ends_with('}')
 }
@@ -105,24 +92,20 @@ fn looks_like_template(s: &str) -> bool {
 fn parse_template_expr(s: String) -> Result<HclExpression, String> {
     let inner = &s[2..s.len() - 1];
 
-    // Try simple variable
     if is_simple_var(inner) {
         if let Ok(var) = Variable::new(inner) {
             return Ok(HclExpression::Variable(var));
         }
     }
 
-    // Try full HCL parse
     if let Ok(expr) = parse_full_hcl(inner) {
         return Ok(expr);
     }
 
-    // Try traversal pattern
     if let Some(expr) = parse_traversal(inner) {
         return Ok(expr);
     }
 
-    // Fallback: preserve as string
     Ok(HclExpression::String(s))
 }
 
@@ -141,7 +124,7 @@ fn is_simple_var(s: &str) -> bool {
 /// leverage the full HCL parser for complex expressions like function calls,
 /// conditionals, and arithmetic operations.
 fn parse_full_hcl(inner: &str) -> Result<HclExpression, String> {
-    let wrapped = format!("test = {}", inner);
+    let wrapped = format!("_ = {}", inner);
     hcl::from_str::<Body>(&wrapped)
         .map_err(|e| e.to_string())?
         .attributes()
@@ -170,25 +153,16 @@ fn parse_traversal(inner: &str) -> Option<HclExpression> {
 }
 
 /// Deserialize non-template JSON values into HCL expressions.
-///
-/// This function handles regular JSON values that don't require special template parsing:
-/// - Strings: Convert to `HclExpression::String`
-/// - Booleans: Convert to `HclExpression::Bool`
-/// - Numbers: Convert to `HclExpression::Number` (handling both integers and floats)
-/// - Null: Convert to `HclExpression::Null`
-///
 /// It first attempts to use the standard HCL deserialization, falling back to
 /// manual conversion if that fails.
 fn deserialize_hcl_value<E>(value: JsonValue) -> Result<HclExpression, E>
 where
     E: serde::de::Error,
 {
-    // Try automatic HCL deserialization
     if let Ok(expr) = HclExpression::deserialize(value.clone()) {
         return Ok(expr);
     }
 
-    // Fallback by matching JSON types
     match value {
         JsonValue::String(s) => Ok(HclExpression::String(s)),
         JsonValue::Bool(b) => Ok(HclExpression::Bool(b)),
@@ -198,10 +172,6 @@ where
     }
 }
 
-/// Convert a JSON number into an HCL number expression.
-///
-/// Handles both integer and floating-point numbers, using the appropriate
-/// HCL number representation for each.
 fn parse_number(n: serde_json::Number) -> Result<HclExpression, String> {
     if let Some(i) = n.as_i64() {
         Ok(HclExpression::Number(i.into()))

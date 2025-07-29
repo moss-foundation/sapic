@@ -2,27 +2,24 @@ use hcl::Expression as HclExpression;
 use joinerror::Error;
 use json_patch::{AddOperation, PatchOperation, jsonptr::PointerBuf};
 use moss_applib::{AppRuntime, ServiceMarker};
-use serde_json::json;
-use std::{collections::HashMap, marker::PhantomData, sync::Arc};
+use serde_json::{Value as JsonValue, json, map::Map as JsonMap};
+use std::{collections::HashMap, marker::PhantomData};
 use tokio::sync::RwLock;
 
 use crate::{
     configuration::VariableDefinition,
     models::{
         primitives::VariableId,
-        types::{AddVariableParams, Expression, VariableKind, VariableName, VariableOptions},
+        types::{AddVariableParams, VariableOptions},
     },
-    services::{
-        AnyStorageService, AnySyncService, storage_service::StorageService,
-        sync_service::SyncService,
-    },
+    services::{AnyStorageService, AnySyncService},
 };
 
 #[derive(Debug, Clone)]
 pub struct VariableItem {
     pub id: VariableId,
-    pub kind: Option<VariableKind>,
-    pub global_value: Option<Expression>,
+    pub local_value: Option<HclExpression>,
+    pub global_value: Option<HclExpression>,
     pub desc: Option<String>,
     pub options: VariableOptions,
 }
@@ -30,7 +27,7 @@ pub struct VariableItem {
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
 struct ServiceState {
-    variables: HashMap<VariableName, VariableItem>,
+    variables: HashMap<VariableId, VariableItem>,
 }
 
 #[allow(private_bounds)]
@@ -40,11 +37,10 @@ where
     StorageService: AnyStorageService<R>,
     SyncService: AnySyncService<R>,
 {
+    state: RwLock<ServiceState>,
     #[allow(dead_code)]
     storage_service: StorageService,
-
     sync_service: SyncService,
-    // state: Arc<RwLock<ServiceState>>,
     _marker: PhantomData<R>,
 }
 
@@ -66,10 +62,19 @@ where
 {
     pub fn new(storage_service: StorageService, sync_service: SyncService) -> Self {
         Self {
+            state: RwLock::new(ServiceState {
+                variables: HashMap::new(),
+            }),
             storage_service,
             sync_service,
             _marker: PhantomData,
         }
+    }
+
+    pub async fn batch_remove(&self, ids: Vec<VariableId>) -> joinerror::Result<()> {
+        // let mut patches = Vec::with_capacity(params.len());
+
+        Ok(())
     }
 
     pub async fn batch_add(&self, params: Vec<AddVariableParams>) -> joinerror::Result<()> {
@@ -119,6 +124,45 @@ where
     }
 }
 
+async fn collect_variables<R, StorageService>(
+    map: &JsonMap<String, JsonValue>,
+    storage: &StorageService,
+) -> joinerror::Result<HashMap<VariableId, VariableItem>>
+where
+    R: AppRuntime,
+    StorageService: AnyStorageService<R>,
+{
+    let mut variables = HashMap::new();
+    for (id_str, value) in map {
+        let definition = if let Ok(d) = serde_json::from_value::<VariableDefinition>(value.clone())
+            .map_err(|err| {
+                Error::new::<()>(format!(
+                    "failed to convert variable definition from json: {}",
+                    err
+                ))
+            }) {
+            d
+        } else {
+            println!("failed to convert variable definition from json: {}", value); // TODO: log error
+            continue;
+        };
+
+        let id = VariableId::from(id_str.clone());
+        variables.insert(
+            id.clone(),
+            VariableItem {
+                id,
+                local_value: None,
+                global_value: Some(definition.value),
+                desc: definition.description,
+                options: definition.options,
+            },
+        );
+    }
+
+    Ok(variables)
+}
+
 #[cfg(test)]
 mod tests {
     use hcl::{Expression as HclExpression, expr::Variable};
@@ -127,13 +171,14 @@ mod tests {
     use moss_fs::{RealFileSystem, model_registry::GlobalModelRegistry};
     use moss_hcl::{Block, LabeledBlock};
     use moss_storage::common::VariableStore;
-    use std::path::{Path, PathBuf};
+    use std::{path::PathBuf, sync::Arc};
 
     use crate::{
         builder::{EnvironmentBuilder, EnvironmentCreateParams},
         configuration::{EnvironmentFile, Metadata, VariableDefinition},
         environment::Environment,
         models::primitives::EnvironmentId,
+        services::{storage_service::StorageService, sync_service::SyncService},
     };
 
     use super::*;
@@ -159,15 +204,14 @@ mod tests {
         );
 
         // Add a function call expression - parse it as proper HCL
-        let function_hcl =
-            "ami = try(coalesce(var.ami, data.aws_ssm_parameter.this[0].value), null)";
+        let function_hcl = "_ = try(coalesce(var.ami, data.aws_ssm_parameter.this[0].value), null)";
         if let Ok(body) = hcl::from_str::<hcl::Body>(function_hcl) {
             if let Some(attr) = body.attributes().next() {
                 map.insert(
                     VariableId::new(),
                     VariableDefinition {
                         name: "function_call".to_string(),
-                        value: attr.expr().clone(),
+                        value: HclExpression::new(attr.expr().clone()),
                         kind: None,
                         description: None,
                         options: VariableOptions { disabled: false },
@@ -177,14 +221,14 @@ mod tests {
         }
 
         // Add a conditional expression - parse it as proper HCL
-        let conditional_hcl = "create = local.create ? 1 : 0";
+        let conditional_hcl = "_ = local.create ? 1 : 0";
         if let Ok(body) = hcl::from_str::<hcl::Body>(conditional_hcl) {
             if let Some(attr) = body.attributes().next() {
                 map.insert(
                     VariableId::new(),
                     VariableDefinition {
                         name: "conditional".to_string(),
-                        value: attr.expr().clone(),
+                        value: HclExpression::new(attr.expr().clone()),
                         kind: None,
                         description: None,
                         options: VariableOptions { disabled: false },
@@ -208,7 +252,7 @@ mod tests {
         println!("{}", hcl_text);
 
         // Test JSON serialization
-        let json_value = serde_json::to_string_pretty(&original_hcl).unwrap();
+        let json_value = serde_json::to_string(&original_hcl).unwrap();
         println!("\nJSON representation:");
         println!("{}", json_value);
 
@@ -255,6 +299,12 @@ mod tests {
         let abs_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
             .join("tests")
             .join("data");
+
+        // Clean up any existing test file to avoid "already_exists" error
+        let test_file_path = abs_path.join("data.env.sap");
+        if test_file_path.exists() {
+            std::fs::remove_file(&test_file_path).ok(); // Ignore errors if file doesn't exist
+        }
 
         let fs = Arc::new(RealFileSystem::new());
         let global_model_registry = GlobalModelRegistry::new();

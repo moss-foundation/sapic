@@ -1,6 +1,6 @@
 use joinerror::Error;
 use json_patch::PatchOperation;
-use moss_applib::{AppRuntime, ServiceMarker};
+use moss_applib::{AppRuntime, AppService, ServiceMarker};
 use moss_fs::{CreateOptions, FileSystem, model_registry::GlobalModelRegistry};
 use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};
@@ -18,6 +18,7 @@ pub struct SyncService {
     state: Arc<RwLock<ServiceState>>,
 }
 
+impl AppService for SyncService {}
 impl ServiceMarker for SyncService {}
 
 impl<R: AppRuntime> AnySyncService<R> for SyncService {
@@ -40,22 +41,22 @@ impl<R: AppRuntime> AnySyncService<R> for SyncService {
         // so we can respond to the frontend faster.
         {
             // HACK: Right now, we have to convert HCL to JSON and then back to HCL,
-            // because at the moment we can’t apply patches directly to HCL.
+            // because at the moment we can't apply patches directly to HCL.
             // Once we implement that mechanism, we'll be able to patch HCL directly
             // and get rid of the intermediate conversions to JSON.
 
-            let value_str = serde_json::to_string(&value).map_err(|err| {
-                Error::new::<()>(format!("failed to convert json to string: {}", err))
-            })?;
-
-            dbg!(&value_str);
-
-            let hcl_value = hcl::from_str::<EnvironmentFile>(&value_str).map_err(|err| {
-                Error::new::<()>(format!("failed to convert json to hcl: {}", err))
+            let hcl_value = serde_json::from_value::<EnvironmentFile>(value).map_err(|err| {
+                Error::new::<()>(format!(
+                    "failed to convert json value to structure: {}",
+                    err
+                ))
             })?;
 
             let hcl_value_str = hcl::to_string(&hcl_value).map_err(|err| {
-                Error::new::<()>(format!("failed to convert hcl to string: {}", err))
+                Error::new::<()>(format!(
+                    "failed to convert structure to hcl string: {}",
+                    err
+                ))
             })?;
 
             self.fs

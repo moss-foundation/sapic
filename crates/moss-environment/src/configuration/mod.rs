@@ -1,6 +1,5 @@
-use hcl::Expression as HclExpression;
 use indexmap::IndexMap;
-use moss_hcl::{Block, LabeledBlock, deserialize_expression, serialize_expression};
+use moss_hcl::{Block, HclExpression, LabeledBlock, deserialize_expression, serialize_expression};
 use serde::{Deserialize, Serialize};
 
 use crate::models::{
