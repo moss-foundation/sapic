@@ -17,16 +17,18 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(
     const buttonContent = (
       <div
         className={cn(
-          `background-(--moss-icon-secondary-background) ${customHoverBackground || "hover:background-(--moss-icon-secondary-background-hover)"} active:background-(--moss-icon-secondary-background-active) flex cursor-pointer items-center justify-center rounded-[3px] text-(--moss-icon-secondary-text)`,
+          `background-(--moss-icon-secondary-background) active:background-(--moss-icon-secondary-background-active) flex cursor-pointer items-center justify-center rounded-[3px] text-(--moss-icon-secondary-text)`,
           {
+            "hover:background-(--moss-icon-secondary-background-hover)": !customHoverBackground,
             "p-[1px]": size === "small",
             "p-[3px]": size === "medium",
+            "hover:background-transparent hover:dark:background-transparent cursor-default opacity-50 hover:text-(--moss-icon-secondary-text)":
+              props.disabled,
           },
-          props.disabled &&
-            "hover:background-transparent hover:dark:background-transparent cursor-default opacity-50 hover:text-(--moss-icon-secondary-text)"
+          customHoverBackground
         )}
       >
-        <Icon icon={icon} className={iconClassName} />
+        <Icon icon={icon} className={cn(iconClassName)} />
       </div>
     );
 
@@ -34,7 +36,7 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(
       <button
         ref={ref}
         className={cn(
-          "flex items-center justify-center",
+          "grid place-items-center",
           {
             "size-[18px]": size === "small",
             "size-[26px]": size === "medium",
