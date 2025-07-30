@@ -6,3 +6,18 @@ pub mod stream_collections;
 pub mod stream_environments;
 pub mod update_collection;
 pub mod update_state;
+
+use moss_applib::AppRuntime;
+
+use crate::{AnyWorkspace, models::operations::*};
+
+#[allow(async_fn_in_trait)]
+pub trait BatchUpdateCollectionOp<R: AppRuntime> {
+    async fn batch_update_collection(
+        &self,
+        ctx: &R::AsyncContext,
+        input: BatchUpdateCollectionInput,
+    ) -> joinerror::Result<BatchUpdateCollectionOutput>;
+}
+
+pub trait AnyWorkspaceApi<R: AppRuntime>: AnyWorkspace<R> + BatchUpdateCollectionOp<R> {}

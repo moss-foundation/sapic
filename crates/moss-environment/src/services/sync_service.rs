@@ -6,7 +6,7 @@ use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};
 use tokio::sync::RwLock;
 
-use crate::{configuration::EnvironmentFile, services::AnySyncService};
+use crate::{configuration::SourceFile, services::AnySyncService};
 
 struct ServiceState {
     uri: String,
@@ -37,7 +37,7 @@ impl<R: AppRuntime> AnySyncService<R> for SyncService {
             .clone();
 
         let hcl_value =
-            serde_json::from_value::<EnvironmentFile>(json_value.clone()).map_err(|err| {
+            serde_json::from_value::<SourceFile>(json_value.clone()).map_err(|err| {
                 Error::new::<()>(format!(
                     "failed to convert json value to structure: {}",
                     err

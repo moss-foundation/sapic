@@ -1,7 +1,7 @@
 use hcl::Expression as HclExpression;
 use joinerror::Error;
 use json_patch::{AddOperation, PatchOperation, RemoveOperation, jsonptr::PointerBuf};
-use moss_applib::{AppRuntime, AppService, ServiceMarker};
+use moss_applib::{AppRuntime, ServiceMarker};
 use moss_hcl::json_to_hcl;
 use serde_json::{Value as JsonValue, json, map::Map as JsonMap};
 use std::{collections::HashMap, marker::PhantomData};
@@ -90,8 +90,6 @@ where
     }
 
     pub async fn batch_remove(&self, ids: Vec<VariableId>) -> joinerror::Result<()> {
-        // let mut patches = Vec::with_capacity(params.len());
-
         let state = self.state.write().await;
         if state.variables.is_empty() {
             return Ok(());
@@ -235,9 +233,9 @@ mod tests {
     use std::{path::PathBuf, sync::Arc};
 
     use crate::{
+        AnyEnvironment,
         builder::{EnvironmentBuilder, EnvironmentCreateParams},
-        configuration::{EnvironmentFile, MetadataDecl, VariableSpec},
-        environment::AnyEnvironment,
+        configuration::{MetadataDecl, SourceFile, VariableSpec},
         models::primitives::EnvironmentId,
         services::{storage_service::StorageService, sync_service::SyncService},
     };
@@ -299,7 +297,7 @@ mod tests {
         }
 
         // Create original HCL structure
-        let original_hcl = EnvironmentFile {
+        let original_hcl = SourceFile {
             metadata: Block::new(MetadataDecl {
                 id: EnvironmentId::new(),
                 color: None,
@@ -319,7 +317,7 @@ mod tests {
 
         // Test JSON deserialization
         println!("\n=== Attempting JSON deserialization ===");
-        let json_deserialized: EnvironmentFile = match serde_json::from_str(&json_value) {
+        let json_deserialized: SourceFile = match serde_json::from_str(&json_value) {
             Ok(data) => {
                 println!("✅ JSON deserialization successful!");
                 data

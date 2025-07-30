@@ -1,18 +1,16 @@
-use std::{
-    path::{Path, PathBuf},
-    sync::Arc,
-    time::Duration,
-};
+// use std::{
+//     path::{Path, PathBuf},
+//     sync::Arc,
+//     time::Duration,
+// };
 
-use moss_applib::{
-    AppRuntime, ServiceMarker,
-    context::{AsyncContext, MutableContext},
-    mock::MockAppRuntime,
-    providers::{ServiceMap, ServiceProvider},
-    subscription::EventEmitter,
-};
-use moss_environment::{environment::Environment, services::storage_service::StorageService};
-use moss_fs::RealFileSystem;
+// use moss_applib::{
+//     context::{AsyncContext, MutableContext},
+//     mock::MockAppRuntime,
+//     providers::{ServiceMap, ServiceProvider},
+// };
+// use moss_environment::Environment;
+// use moss_fs::RealFileSystem;
 
 // pub fn random_string(length: usize) -> String {
 //     use rand::{Rng, distr::Alphanumeric};
@@ -34,11 +32,16 @@ use moss_fs::RealFileSystem;
 //     environment_file_path
 // }
 
-pub async fn create_test_environment() -> (AsyncContext, Arc<Path>, Environment, ServiceProvider) {
-    let ctx = MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
-    let fs = Arc::new(RealFileSystem::new());
+// pub async fn create_test_environment() -> (
+//     AsyncContext,
+//     Arc<Path>,
+//     Environment<MockAppRuntime>,
+//     ServiceProvider,
+// ) {
+//     let ctx = MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
+//     let fs = Arc::new(RealFileSystem::new());
 
-    let mut services: ServiceMap = Default::default();
+//     let mut services: ServiceMap = Default::default();
 
-    todo!()
-}
+//     todo!()
+// }

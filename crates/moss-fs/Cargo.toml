@@ -6,7 +6,7 @@ edition = "2024"
 [dependencies]
 moss_applib.workspace = true
 moss_text.workspace = true
-moss_patch.workspace = true
+moss_contentmodel.workspace = true
 
 joinerror.workspace = true
 async-trait.workspace = true

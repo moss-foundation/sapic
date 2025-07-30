@@ -2,7 +2,7 @@ use std::{collections::HashMap, marker::PhantomData, sync::Arc};
 
 use derive_more::{Deref, DerefMut};
 use moss_applib::AppRuntime;
-use moss_environment::{environment::AnyEnvironment, models::primitives::EnvironmentId};
+use moss_environment::{AnyEnvironment, models::primitives::EnvironmentId};
 
 #[derive(Deref, DerefMut)]
 pub struct EnvironmentItem<R: AppRuntime, T: AnyEnvironment<R>> {

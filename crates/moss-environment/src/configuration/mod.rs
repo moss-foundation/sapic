@@ -31,7 +31,7 @@ pub struct VariableSpec {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EnvironmentFile {
+pub struct SourceFile {
     pub metadata: Block<MetadataDecl>,
 
     #[serde(rename = "variable")]

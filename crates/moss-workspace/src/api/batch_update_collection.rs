@@ -2,13 +2,14 @@ use moss_applib::AppRuntime;
 use validator::Validate;
 
 use crate::{
+    api::BatchUpdateCollectionOp,
     models::operations::{BatchUpdateCollectionInput, BatchUpdateCollectionOutput},
     services::{DynCollectionService, collection_service::CollectionItemUpdateParams},
     workspace::Workspace,
 };
 
-impl<R: AppRuntime> Workspace<R> {
-    pub async fn batch_update_collection(
+impl<R: AppRuntime> BatchUpdateCollectionOp<R> for Workspace<R> {
+    async fn batch_update_collection(
         &self,
         ctx: &R::AsyncContext,
         input: BatchUpdateCollectionInput,

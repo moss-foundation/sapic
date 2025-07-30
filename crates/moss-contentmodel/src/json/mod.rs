@@ -158,42 +158,12 @@ mod tests {
             })])
             .unwrap();
 
-        dbg!(&model.value());
-
         assert_eq!(model.value()["name"], json!("Jane"));
 
         model.undo().unwrap();
         assert!(model.value().get("name").is_none());
-        dbg!(&model.value());
 
         model.redo().unwrap();
         assert_eq!(model.value()["name"], json!("Jane"));
-        dbg!(&model.value());
     }
-
-    // #[test]
-    // fn hcl_to_json() {
-    //     let hcl_text = r#"
-    //     request {
-    //         metadata {
-    //             id = "1ZA4ri6TUa"
-    //         }
-
-    //         get {
-    //             raw = ""
-    //         }
-    //     }
-    // "#;
-
-    //     let value: moss_collection::models::types::configuration::docschema::RawItemConfiguration =
-    //         hcl::from_str(hcl_text).unwrap();
-    //     let json = serde_json::to_string_pretty(&value).unwrap();
-    //     println!("{}", json);
-
-    //     let hcl_value: moss_collection::models::types::configuration::docschema::RawItemConfiguration =
-    //         serde_json::from_str(&json).unwrap();
-
-    //     let hcl_text_2 = hcl::to_string(&hcl_value).unwrap();
-    //     println!("{}", hcl_text_2);
-    // }
 }

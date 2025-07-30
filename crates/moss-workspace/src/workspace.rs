@@ -2,15 +2,12 @@ use anyhow::Result;
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::{AppRuntime, PublicServiceMarker, providers::ServiceProvider};
 use moss_collection::Collection;
-use moss_environment::environment::{AnyEnvironment, Environment};
+use moss_environment::{AnyEnvironment, Environment};
 use moss_file::json::JsonFileHandle;
 use moss_fs::FileSystem;
 use std::{path::Path, sync::Arc};
 
-use crate::{
-    manifest::{MANIFEST_FILE_NAME, ManifestModel},
-    services::{AnyCollectionService, AnyEnvironmentService},
-};
+use crate::manifest::{MANIFEST_FILE_NAME, ManifestModel};
 
 pub struct WorkspaceSummary {
     pub manifest: ManifestModel,

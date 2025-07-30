@@ -1,33 +1,14 @@
 use moss_applib::{AppRuntime, providers::ServiceProvider};
-use moss_bindingutils::primitives::ChangeString;
+
 use std::{marker::PhantomData, path::Path, sync::Arc};
 
 use crate::{
-    models::{
-        primitives::VariableId,
-        types::{AddVariableParams, UpdateVariableParams},
-    },
+    AnyEnvironment, ModifyEnvironmentParams,
     services::{
         metadata_service::MetadataService, storage_service::StorageService,
         sync_service::SyncService, variable_service::VariableService, *,
     },
 };
-
-pub struct ModifyEnvironmentParams {
-    pub color: Option<ChangeString>,
-    pub vars_to_add: Vec<AddVariableParams>,
-    pub vars_to_update: Vec<UpdateVariableParams>,
-    pub vars_to_delete: Vec<VariableId>,
-}
-
-pub trait AnyEnvironment<R: AppRuntime> {
-    type StorageService: AnyStorageService<R>;
-    type VariableService: AnyVariableService<R>;
-    type SyncService: AnySyncService<R>;
-    type MetadataService: AnyMetadataService<R>;
-
-    async fn modify(&self, params: ModifyEnvironmentParams) -> joinerror::Result<()>;
-}
 
 pub struct Environment<R: AppRuntime> {
     #[allow(dead_code)]
@@ -58,7 +39,13 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
     type VariableService = VariableService<R, Self::StorageService, Self::SyncService>;
 
     async fn modify(&self, params: ModifyEnvironmentParams) -> joinerror::Result<()> {
+        let sync_service = self.services.get::<Self::SyncService>();
         let variable_service = self.services.get::<Self::VariableService>();
+
+        variable_service.batch_add(params.vars_to_add).await?;
+        variable_service.batch_remove(params.vars_to_delete).await?;
+
+        <Self::SyncService as AnySyncService<R>>::save(sync_service).await?;
 
         Ok(())
     }

@@ -1,7 +1,5 @@
 mod shared;
 
-use moss_environment::builder::EnvironmentBuilder;
-
 // use moss_environment::{
 //     environment::{Environment, EnvironmentError},
 //     models::{

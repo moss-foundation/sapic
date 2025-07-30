@@ -1,15 +1,15 @@
 use joinerror::{Error, ResultExt};
 use moss_applib::{AppRuntime, ServiceMarker, providers::ServiceMap};
+use moss_contentmodel::{ContentModel, json::JsonModel};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt, model_registry::GlobalModelRegistry};
 use moss_hcl::{Block, HclResultExt};
-use moss_patch::{Model, json::JsonModel};
 use moss_text::sanitized::sanitize;
 use std::{any::TypeId, path::PathBuf, sync::Arc};
 
 use crate::{
-    configuration::{EnvironmentFile, MetadataDecl},
+    configuration::{MetadataDecl, SourceFile},
     constants,
-    environment::{AnyEnvironment, Environment},
+    environment::Environment,
     errors::{
         ErrorEnvironmentAlreadyExists, ErrorEnvironmentNotFound, ErrorFailedToDecode,
         ErrorFailedToEncode, ErrorIo,
@@ -68,7 +68,7 @@ impl EnvironmentBuilder {
             ));
         }
 
-        let file = EnvironmentFile {
+        let file = SourceFile {
             metadata: Block::new(MetadataDecl {
                 id: EnvironmentId::new(),
                 color: params.color,
@@ -98,7 +98,7 @@ impl EnvironmentBuilder {
         self.models
             .add(
                 abs_path.to_string_lossy().to_string(),
-                Model::Json(JsonModel::new(json_value)),
+                ContentModel::Json(JsonModel::new(json_value)),
             )
             .await;
 
@@ -118,7 +118,7 @@ impl EnvironmentBuilder {
             ));
         }
 
-        let _file: EnvironmentFile = {
+        let _file: SourceFile = {
             let mut reader = self
                 .fs
                 .open_file(&abs_path)

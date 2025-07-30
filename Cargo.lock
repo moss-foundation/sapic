@@ -3786,6 +3786,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "moss_contentmodel"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "hcl-rs",
+ "json-patch 4.0.0",
+ "jsonptr 0.7.1",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
 name = "moss_db"
 version = "0.1.0"
 dependencies = [
@@ -3817,10 +3829,10 @@ dependencies = [
  "moss_applib",
  "moss_bindingutils",
  "moss_common",
+ "moss_contentmodel",
  "moss_file",
  "moss_fs",
  "moss_hcl",
- "moss_patch",
  "moss_storage",
  "moss_testutils",
  "moss_text",
@@ -3858,7 +3870,7 @@ dependencies = [
  "futures",
  "joinerror",
  "moss_applib",
- "moss_patch",
+ "moss_contentmodel",
  "moss_text",
  "notify",
  "tauri",
@@ -3919,22 +3931,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "moss_patch"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "hcl-rs",
- "json-patch 4.0.0",
- "jsonptr 0.7.1",
- "pest",
- "pest_derive",
- "serde_json",
- "tokio",
- "tree-sitter",
- "tree-sitter-json",
-]
-
-[[package]]
 name = "moss_storage"
 version = "0.1.0"
 dependencies = [
@@ -3991,12 +3987,12 @@ dependencies = [
  "moss_bindingutils",
  "moss_collection",
  "moss_common",
+ "moss_contentmodel",
  "moss_db",
  "moss_environment",
  "moss_file",
  "moss_fs",
  "moss_git",
- "moss_patch",
  "moss_storage",
  "moss_testutils",
  "moss_text",
@@ -4736,50 +4732,6 @@ name = "percent-encoding"
 version = "2.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e3148f5046208a5d56bcfc03053e3ca6334e51da8dfb19b6cdc8b306fae3283e"
-
-[[package]]
-name = "pest"
-version = "2.8.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1db05f56d34358a8b1066f67cbb203ee3e7ed2ba674a6263a1d5ec6db2204323"
-dependencies = [
- "memchr",
- "thiserror 2.0.12",
- "ucd-trie",
-]
-
-[[package]]
-name = "pest_derive"
-version = "2.8.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb056d9e8ea77922845ec74a1c4e8fb17e7c218cc4fc11a15c5d25e189aa40bc"
-dependencies = [
- "pest",
- "pest_generator",
-]
-
-[[package]]
-name = "pest_generator"
-version = "2.8.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "87e404e638f781eb3202dc82db6760c8ae8a1eeef7fb3fa8264b2ef280504966"
-dependencies = [
- "pest",
- "pest_meta",
- "proc-macro2",
- "quote",
- "syn 2.0.104",
-]
-
-[[package]]
-name = "pest_meta"
-version = "2.8.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "edd1101f170f5903fde0914f899bb503d9ff5271d7ba76bbb70bea63690cc0d5"
-dependencies = [
- "pest",
- "sha2",
-]
 
 [[package]]
 name = "phf"
@@ -7399,12 +7351,6 @@ name = "typenum"
 version = "1.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1dccffe3ce07af9386bfd29e80c0ab1a8205a2fc34e4bcd40364df902cfa8f3f"
-
-[[package]]
-name = "ucd-trie"
-version = "0.1.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2896d95c02a80c6d6a5d6e953d479f5ddf2dfdb6a244441010e373ac0fb88971"
 
 [[package]]
 name = "uds_windows"

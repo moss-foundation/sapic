@@ -1,5 +1,5 @@
 [package]
-name = "moss_patch"
+name = "moss_contentmodel"
 version = "0.1.0"
 edition = "2024"
 
@@ -10,9 +10,3 @@ json-patch.workspace = true
 serde_json.workspace = true
 hcl-rs.workspace = true
 async-trait.workspace = true
-
-pest = "2.8.1"
-pest_derive = "2.8.1"
-
-tree-sitter = { workspace = true }
-tree-sitter-json = { workspace = true }
