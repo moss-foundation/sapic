@@ -44,7 +44,7 @@ export const TreeNodeActions = ({
         size="small"
         customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
         icon="Plus"
-        onClick={() => setIsAddingFolderNode(true)}
+        onClick={() => setIsAddingFileNode(true)}
       />
 
       <div className="z-10 flex items-center">
