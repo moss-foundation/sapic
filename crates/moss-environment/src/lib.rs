@@ -1,7 +1,6 @@
 pub mod builder;
 pub mod configuration;
 pub mod environment;
-pub mod file;
 pub mod models;
 pub mod services;
 

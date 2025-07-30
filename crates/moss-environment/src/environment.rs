@@ -45,6 +45,9 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
         variable_service.batch_add(params.vars_to_add).await?;
         variable_service.batch_remove(params.vars_to_delete).await?;
 
+        // TODO: we'll handle file system synchronization in the background a bit later,
+        // so we can respond to the frontend faster.
+
         <Self::SyncService as AnySyncService<R>>::save(sync_service).await?;
 
         Ok(())

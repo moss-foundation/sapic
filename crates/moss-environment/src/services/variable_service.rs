@@ -319,11 +319,11 @@ mod tests {
         println!("\n=== Attempting JSON deserialization ===");
         let json_deserialized: SourceFile = match serde_json::from_str(&json_value) {
             Ok(data) => {
-                println!("✅ JSON deserialization successful!");
+                println!("JSON deserialization successful!");
                 data
             }
             Err(e) => {
-                println!("❌ JSON deserialization failed: {}", e);
+                println!("JSON deserialization failed: {}", e);
                 println!("JSON data being parsed:\n{}", json_value);
                 panic!("JSON deserialization failed: {}", e);
             }
@@ -336,7 +336,7 @@ mod tests {
 
         // Verify that we can round-trip without data loss
         assert!(!hcl_text_2.is_empty());
-        println!("\n✅ Successfully converted HCL -> JSON -> HCL without errors!");
+        println!("\nSuccessfully converted HCL -> JSON -> HCL without errors!");
 
         // Verify that the structure is preserved (both should have the same number of variables)
         assert_eq!(
@@ -349,8 +349,8 @@ mod tests {
             assert_eq!(orig_vars.len(), final_vars.len());
         }
 
-        println!("✅ Data integrity verified!");
-        println!("✅ Function calls, conditionals, and complex expressions support added!");
+        println!("Data integrity verified!");
+        println!("Function calls, conditionals, and complex expressions support added!");
     }
 
     #[tokio::test]
