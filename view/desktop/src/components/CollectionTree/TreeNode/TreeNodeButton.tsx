@@ -15,10 +15,12 @@ import { TreeContext } from "../Tree";
 import { TreeCollectionNode } from "../types";
 import { countNumberOfAllNestedChildNodes } from "../utils";
 import TreeNode from "./TreeNode";
+import { TreeNodeActions } from "./TreeNodeActions";
 import { TreeNodeIcon } from "./TreeNodeIcon";
 
 interface TreeNodeButtonProps {
   node: TreeCollectionNode;
+  parentNode: TreeCollectionNode;
   depth: number;
   onAddFile: () => void;
   onAddFolder: () => void;
@@ -36,6 +38,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
   (
     {
       node,
+      parentNode,
       depth,
       onAddFile,
       onAddFolder,
@@ -125,7 +128,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
               className={cn("relative z-10 flex h-full w-full items-center gap-1 py-0.5", {
                 "background-(--moss-error-background)": canDrop === false,
               })}
-              style={{ paddingLeft: nodePaddingLeft }}
+              style={{ paddingLeft: nodePaddingLeft, paddingRight: rootOffset + paddingRight }}
             >
               {!isRootNode && (
                 <DragHandleButton
@@ -170,6 +173,16 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
               )}
 
               <span className="DragHandle h-full min-h-4 grow" />
+
+              {node.kind === "Dir" && (
+                <TreeNodeActions
+                  node={node}
+                  parentNode={parentNode}
+                  setIsAddingFileNode={onAddFile}
+                  setIsAddingFolderNode={onAddFolder}
+                  setIsRenamingNode={onRename}
+                />
+              )}
             </span>
 
             {preview &&

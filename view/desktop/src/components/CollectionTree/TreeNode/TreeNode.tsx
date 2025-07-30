@@ -84,7 +84,7 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
           handleRenamingFormCancel={handleRenamingFormCancel}
         />
       ) : (
-        <>
+        <div className="flex items-center justify-between">
           {/* {shouldRenderAddingFormDivider && (
             <AddingDividerTrigger
               paddingLeft={nodePaddingLeft}
@@ -120,6 +120,7 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
           <TreeNodeButton
             ref={triggerRef}
             node={node}
+            parentNode={parentNode}
             depth={depth}
             onAddFile={() => setIsAddingFileNode(true)}
             onAddFolder={() => setIsAddingFolderNode(true)}
@@ -153,7 +154,7 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
               onClick={() => setIsAddingDividerNodeBelow(true)}
             />
           )} */}
-        </>
+        </div>
       )}
 
       {shouldRenderChildNodes && <TreeNodeChildren node={node} depth={depth} />}

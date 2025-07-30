@@ -28,7 +28,7 @@ const TreeNodeAddForm = ({
   const nodePaddingLeftForAddForm = (depth + 1) * nodeOffset;
 
   return (
-    <div style={{ paddingLeft: nodePaddingLeftForAddForm }} className="flex w-full min-w-0 items-center gap-1">
+    <div style={{ paddingLeft: nodePaddingLeftForAddForm }} className="flex w-full min-w-0 items-center gap-1 py-0.5">
       <Icon icon="ChevronRight" className={cn("opacity-0")} />
       <TreeNodeIcon
         node={{
