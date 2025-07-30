@@ -17,7 +17,9 @@ pub struct VariableOptions {
 #[serde(rename_all = "camelCase")]
 pub struct AddVariableParams {
     pub name: VariableName,
+    #[ts(type = "JsonValue")]
     pub global_value: JsonValue,
+    #[ts(type = "JsonValue")]
     pub local_value: JsonValue,
     // pub kind: Option<VariableKind>,
     pub order: isize,
@@ -44,10 +46,12 @@ pub enum VariableKind {
 #[ts(export, export_to = "types.ts")]
 pub struct VariableInfo {
     pub name: VariableName,
-    pub global_value: Option<JsonValue>,
-    pub local_value: Option<JsonValue>,
+    #[ts(type = "JsonValue")]
+    pub global_value: JsonValue,
+    #[ts(type = "JsonValue")]
+    pub local_value: JsonValue,
     pub disabled: bool,
-    pub kind: VariableKind,
+    // pub kind: VariableKind,
     pub order: Option<isize>,
     pub desc: Option<String>,
 }

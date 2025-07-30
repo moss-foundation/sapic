@@ -15,6 +15,7 @@ pub(super) trait AnySyncService<R: AppRuntime> {
 }
 
 pub(super) trait AnyMetadataService<R: AppRuntime> {
+    #[allow(dead_code)]
     async fn apply(&self) -> joinerror::Result<()>;
 }
 
