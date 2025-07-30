@@ -7,6 +7,7 @@ use moss_fs::FileSystem;
 use moss_text::ReadOnlyStr;
 use rustc_hash::FxHashMap;
 use std::{
+    any::{Any, TypeId},
     collections::HashMap,
     ops::{Deref, DerefMut},
     sync::Arc,
@@ -51,11 +52,14 @@ impl<R: TauriRuntime> DerefMut for AppCommands<R> {
     }
 }
 
+pub(super) type GlobalsMap = FxHashMap<TypeId, Box<dyn Any + Send + Sync>>;
+
 #[derive(Deref)]
 pub struct App<R: AppRuntime> {
     #[deref]
     pub(super) app_handle: AppHandle<R::EventLoop>,
     pub(super) fs: Arc<dyn FileSystem>,
+    pub(super) globals: GlobalsMap,
     pub(super) commands: AppCommands<R::EventLoop>,
     pub(super) preferences: AppPreferences,
     pub(super) defaults: AppDefaults,
@@ -68,6 +72,14 @@ pub struct App<R: AppRuntime> {
 }
 
 impl<R: AppRuntime> App<R> {
+    #[track_caller]
+    pub fn global<T: Send + Sync + 'static>(&self) -> &T {
+        self.globals
+            .get(&TypeId::of::<T>())
+            .map(|any_state| any_state.downcast_ref::<T>().unwrap())
+            .unwrap_or_else(|| panic!("no state of type {} exists", std::any::type_name::<T>()))
+    }
+
     pub fn handle(&self) -> AppHandle<R::EventLoop> {
         self.app_handle.clone()
     }

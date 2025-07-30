@@ -11,7 +11,7 @@ use tauri::AppHandle;
 use tokio::sync::RwLock;
 
 use crate::{
-    app::{App, AppCommands, AppDefaults, AppPreferences},
+    app::{App, AppCommands, AppDefaults, AppPreferences, GlobalsMap},
     command::CommandDecl,
     dirs,
 };
@@ -19,6 +19,7 @@ use crate::{
 pub struct AppBuilder<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     app_handle: AppHandle<R::EventLoop>,
+    globals: GlobalsMap,
     services: ServiceMap,
     defaults: AppDefaults,
     preferences: AppPreferences,
@@ -44,10 +45,16 @@ impl<R: AppRuntime> AppBuilder<R> {
                 locale: RwLock::new(None),
             },
             commands: Default::default(),
+            globals: Default::default(),
             services: Default::default(),
             activity_indicator,
             abs_path: abs_path.into(),
         }
+    }
+
+    pub fn with_global<T: Send + Sync + 'static>(mut self, global: impl Into<Box<T>>) -> Self {
+        self.globals.insert(TypeId::of::<T>(), global.into());
+        self
     }
 
     pub fn with_service<T: ServiceMarker + Send + Sync>(
@@ -79,6 +86,7 @@ impl<R: AppRuntime> AppBuilder<R> {
         Ok(App {
             fs: self.fs,
             app_handle: self.app_handle,
+            globals: self.globals,
             commands: self.commands,
             preferences: self.preferences,
             defaults: self.defaults,

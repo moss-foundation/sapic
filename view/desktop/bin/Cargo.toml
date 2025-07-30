@@ -32,6 +32,7 @@ moss_fs.workspace = true
 moss_text.workspace = true
 moss_workspace.workspace = true
 moss_storage.workspace = true
+moss_environment.workspace = true
 
 tauri = { workspace = true, features = ["wry", "macos-private-api", "devtools", "objc-exception"] }
 tauri-plugin-fs = "2.3.0"
@@ -47,10 +48,6 @@ strum = { workspace = true, features = ["derive"] }
 tokio = { workspace = true, features = ["full"] }
 tracing.workspace = true
 futures.workspace = true
-
-ropey.workspace = true
-tree-sitter.workspace = true
-tree-sitter-json.workspace = true
 
 [target.'cfg(any(target_os = "linux", target_os = "macos"))'.dependencies]
 mimalloc = { version = "0.1.39", default-features = false }

@@ -1,5 +1,8 @@
 use moss_api::{TauriError, TauriResult};
-use moss_workspace::models::{events::*, operations::*};
+use moss_workspace::{
+    api::BatchUpdateCollectionOp,
+    models::{events::*, operations::*},
+};
 use tauri::{State, Window, ipc::Channel as TauriChannel};
 
 use crate::commands::primitives::*;
