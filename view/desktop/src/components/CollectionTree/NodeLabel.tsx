@@ -30,7 +30,7 @@ export const NodeLabel = ({
   };
 
   return (
-    <span className={cn("w-max overflow-hidden text-ellipsis whitespace-nowrap", className)} onClick={onClick}>
+    <span className={cn("w-max truncate", className)} onClick={onClick}>
       {searchInput ? renderHighlightedLabel() : label}
     </span>
   );

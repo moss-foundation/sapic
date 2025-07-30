@@ -16,7 +16,7 @@ import { TreeRootNodeChildren } from "./TreeRootNodeChildren";
 import { TreeRootNodeRenameForm } from "./TreeRootNodeRenameForm";
 
 export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
-  const { searchInput, rootOffset } = useContext(TreeContext);
+  const { searchInput, treePaddingLeft, treePaddingRight } = useContext(TreeContext);
 
   const { data: streamedCollections } = useStreamedCollections();
 
@@ -60,12 +60,19 @@ export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
       {instruction && <DropIndicatorWithInstruction instruction={instruction} gap={-1} canDrop={canDrop} />}
       <div
         ref={draggableRootRef}
-        className="group/TreeRootHeader relative flex w-full min-w-0 items-center justify-between gap-1 py-[3px] pr-2"
-        style={{ paddingLeft: rootOffset, paddingRight: rootOffset }}
+        className="group/TreeRootHeader relative flex w-full min-w-0 items-center justify-between py-0.5"
+        style={{
+          paddingLeft: treePaddingLeft,
+          paddingRight: treePaddingRight,
+        }}
       >
         <span
+          style={{
+            width: `calc(100% - ${treePaddingLeft}px - ${treePaddingRight}px)`,
+            inset: `0 ${treePaddingLeft}px 0 ${treePaddingRight}px`,
+          }}
           className={cn(
-            "group-hover/TreeRootHeader:background-(--moss-secondary-background-hover) absolute inset-x-1 h-[calc(100%-5px)] w-[calc(100%-8px)] rounded-sm",
+            "group-hover/TreeRootHeader:background-(--moss-secondary-background-hover) absolute h-full rounded-sm",
             {
               "group-hover/TreeRootHeader:background-transparent": isRenamingRootNode,
             }

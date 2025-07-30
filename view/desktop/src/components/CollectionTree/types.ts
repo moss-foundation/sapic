@@ -45,9 +45,8 @@ export interface DropRootNode {
 export interface TreeProps {
   tree: TreeCollectionRootNode;
 
-  paddingLeft?: number;
-  paddingRight?: number;
-  rootOffset?: number;
+  treePaddingLeft?: number;
+  treePaddingRight?: number;
   nodeOffset?: number;
   searchInput?: string;
   sortBy?: SortTypes;
@@ -58,9 +57,8 @@ export interface TreeProps {
 }
 
 export interface TreeContextProps extends StreamCollectionsEvent {
-  paddingLeft: number;
-  paddingRight: number;
-  rootOffset: number;
+  treePaddingLeft: number;
+  treePaddingRight: number;
   nodeOffset: number;
   searchInput?: string;
   sortBy?: SortTypes;

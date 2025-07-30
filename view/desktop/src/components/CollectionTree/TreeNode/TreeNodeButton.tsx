@@ -53,7 +53,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
     },
     ref
   ) => {
-    const { id, nodeOffset, searchInput, paddingRight, rootOffset, showNodeOrders } = useContext(TreeContext);
+    const { id, nodeOffset, searchInput, treePaddingRight, treePaddingLeft, showNodeOrders } = useContext(TreeContext);
 
     const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
@@ -113,11 +113,16 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
           <button
             ref={ref}
             onClick={handleClick}
-            className={cn("group/treeNode relative flex h-full w-full min-w-0 cursor-pointer items-center")}
+            className={cn(
+              "group/treeNode relative flex h-full w-full min-w-0 cursor-pointer items-center py-[5.5px] leading-[19px]"
+            )}
           >
             <span
-              style={{ width: `calc(100% - ${rootOffset + paddingRight}px)` }}
-              className={cn("absolute inset-x-2 h-full rounded-sm", {
+              style={{
+                width: `calc(100% - ${treePaddingLeft}px - ${treePaddingRight}px)`,
+                inset: `0 ${treePaddingLeft}px 0 ${treePaddingRight}px`,
+              }}
+              className={cn("absolute h-full rounded-sm", {
                 "group-hover/treeNode:background-(--moss-secondary-background-hover)":
                   !isDragging && activePanelId !== node.id,
                 "background-(--moss-info-background-hover)": activePanelId === node.id && node.id !== "DraggedNode",
@@ -125,10 +130,10 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
             />
 
             <span
-              className={cn("relative z-10 flex h-full w-full items-center gap-1 py-[3px]", {
+              className={cn("relative z-10 flex h-full w-full items-center gap-1", {
                 "background-(--moss-error-background)": canDrop === false,
               })}
-              style={{ paddingLeft: nodePaddingLeft, paddingRight: rootOffset + paddingRight }}
+              style={{ paddingLeft: nodePaddingLeft, paddingRight: treePaddingRight }}
             >
               {!isRootNode && (
                 <DragHandleButton
@@ -140,7 +145,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
               {node.kind !== "Dir" && instruction !== null && canDrop === true && (
                 <DropIndicatorWithInstruction
                   paddingLeft={nodePaddingLeft}
-                  paddingRight={paddingRight}
+                  paddingRight={treePaddingRight}
                   instruction={instruction}
                   isFolder={false}
                   depth={depth}
@@ -164,6 +169,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
               </div>
 
               {showNodeOrders && <div className="underline">{node.order}</div>}
+
               <TreeNodeIcon node={node} />
 
               <NodeLabel label={node.name} searchInput={searchInput} className={cn({ "capitalize": isRootNode })} />
@@ -181,6 +187,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                   setIsAddingFileNode={onAddFile}
                   setIsAddingFolderNode={onAddFolder}
                   setIsRenamingNode={onRename}
+                  className="pr-1"
                 />
               )}
             </span>

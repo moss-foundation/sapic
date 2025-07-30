@@ -22,7 +22,7 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(
             "hover:background-(--moss-icon-secondary-background-hover)": !customHoverBackground,
             "p-[1px]": size === "small",
             "p-[3px]": size === "medium",
-            "hover:background-transparent hover:dark:background-transparent cursor-default opacity-50 hover:text-(--moss-icon-secondary-text)":
+            "hover:background-transparent cursor-default opacity-50 hover:text-(--moss-icon-secondary-text)":
               props.disabled,
           },
           customHoverBackground

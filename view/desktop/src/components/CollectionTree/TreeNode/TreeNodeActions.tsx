@@ -13,6 +13,7 @@ interface TreeNodeActionsProps {
   setIsAddingFileNode: (isAdding: boolean) => void;
   setIsAddingFolderNode: (isAdding: boolean) => void;
   setIsRenamingNode: (isRenaming: boolean) => void;
+  className?: string;
 }
 
 export const TreeNodeActions = ({
@@ -21,6 +22,7 @@ export const TreeNodeActions = ({
   setIsAddingFileNode,
   setIsAddingFolderNode,
   setIsRenamingNode,
+  className,
 }: TreeNodeActionsProps) => {
   const { id } = useContext(TreeContext);
   const { deleteAndUpdatePeers } = useDeleteAndUpdatePeers(id, node, parentNode);
@@ -37,13 +39,14 @@ export const TreeNodeActions = ({
         "hidden items-center gap-0.5 opacity-0 transition-[display,opacity] transition-discrete duration-100 group-hover/treeNode:flex group-hover/treeNode:opacity-100",
         {
           "flex opacity-100": showDropdown,
-        }
+        },
+        className
       )}
     >
       <ActionButton
         size="small"
         customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
-        icon="Plus"
+        icon="Add"
         onClick={() => setIsAddingFileNode(true)}
       />
 

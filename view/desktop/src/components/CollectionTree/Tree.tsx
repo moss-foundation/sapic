@@ -12,9 +12,8 @@ export const TreeContext = createContext<TreeContextProps>({
   picturePath: undefined,
   expanded: false,
 
-  paddingLeft: 0,
-  paddingRight: 0,
-  rootOffset: 0,
+  treePaddingLeft: 0,
+  treePaddingRight: 0,
   nodeOffset: 0,
   allFoldersAreExpanded: false,
   allFoldersAreCollapsed: true,
@@ -27,9 +26,8 @@ export const TreeContext = createContext<TreeContextProps>({
 export const CollectionTree = ({
   tree: initialTree,
 
-  paddingLeft = 8,
-  paddingRight = 8,
-  rootOffset = 8,
+  treePaddingLeft = 8,
+  treePaddingRight = 8,
   nodeOffset = 16,
   searchInput,
   sortBy = "none",
@@ -52,9 +50,8 @@ export const CollectionTree = ({
         order: initialTree.order,
         picturePath: initialTree.picturePath,
 
-        paddingLeft,
-        paddingRight,
-        rootOffset,
+        treePaddingLeft,
+        treePaddingRight,
         nodeOffset,
         allFoldersAreExpanded: checkIfAllFoldersAreExpanded(tree),
         allFoldersAreCollapsed: checkIfAllFoldersAreCollapsed(tree),
