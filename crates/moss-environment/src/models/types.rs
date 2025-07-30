@@ -14,6 +14,7 @@ pub struct VariableOptions {
 
 #[derive(Clone, Debug, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "types.ts")]
+#[ts(optional_fields)]
 #[serde(rename_all = "camelCase")]
 pub struct AddVariableParams {
     pub name: VariableName,
