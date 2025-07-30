@@ -125,7 +125,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
             />
 
             <span
-              className={cn("relative z-10 flex h-full w-full items-center gap-1 py-0.5", {
+              className={cn("relative z-10 flex h-full w-full items-center gap-1 py-[3px]", {
                 "background-(--moss-error-background)": canDrop === false,
               })}
               style={{ paddingLeft: nodePaddingLeft, paddingRight: rootOffset + paddingRight }}
