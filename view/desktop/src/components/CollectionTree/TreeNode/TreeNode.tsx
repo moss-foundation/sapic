@@ -32,14 +32,14 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
   //   setIsAddingDividerNode: setIsAddingDividerNodeAbove,
   //   handleAddDividerFormSubmit: handleAddDividerFormSubmitAbove,
   //   handleAddDividerFormCancel: handleAddDividerFormCancelAbove,
-  // } = useAddNodeWithDivider(parentNode, onNodeUpdate, node.order - 1);
+  // } = useAddNodeWithDivider({ node, parentNode, position: "above" });
 
   // const {
   //   isAddingDividerNode: isAddingDividerNodeBelow,
   //   setIsAddingDividerNode: setIsAddingDividerNodeBelow,
   //   handleAddDividerFormSubmit: handleAddDividerFormSubmitBelow,
   //   handleAddDividerFormCancel: handleAddDividerFormCancelBelow,
-  // } = useAddNodeWithDivider(parentNode, onNodeUpdate, node.order + 1);
+  // } = useAddNodeWithDivider({ node, parentNode, position: "below" });
 
   const {
     isAddingFileNode,
@@ -89,7 +89,7 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
             <AddingDividerTrigger
               paddingLeft={nodePaddingLeft}
               paddingRight={paddingRight}
-              position="top"
+              position="above"
               onClick={() => setIsAddingDividerNodeAbove(true)}
             />
           )} */}
@@ -150,7 +150,7 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
             <AddingDividerTrigger
               paddingLeft={nodePaddingLeft}
               paddingRight={paddingRight}
-              position="bottom"
+              position="below"
               onClick={() => setIsAddingDividerNodeBelow(true)}
             />
           )} */}
