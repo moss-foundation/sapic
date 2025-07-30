@@ -1,4 +1,5 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { DeleteEntryInput, DeleteEntryOutput, EntryInfo } from "@repo/moss-collection";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -21,6 +22,7 @@ const deleteCollectionEntry = async ({ collectionId, input }: UseDeleteCollectio
 
 export const useDeleteCollectionEntry = () => {
   const queryClient = useQueryClient();
+  const { api } = useTabbedPaneStore();
 
   return useMutation<DeleteEntryOutput, Error, UseDeleteCollectionEntryInput>({
     mutationFn: deleteCollectionEntry,
@@ -29,12 +31,18 @@ export const useDeleteCollectionEntry = () => {
         [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, variables.collectionId],
         (old: EntryInfo[]) => {
           const deletedEntry = old.find((entry) => entry.id === data.id);
+
           if (!deletedEntry) {
-            return old.filter((entry) => entry.id !== data.id);
+            return old;
           }
 
           return old.filter((entry) => {
+            const panel = api?.getPanel(entry.id);
+
             if (entry.id === data.id) {
+              if (panel) {
+                api?.removePanel(panel);
+              }
               return false;
             }
 
@@ -44,6 +52,10 @@ export const useDeleteCollectionEntry = () => {
               );
 
               if (isNested) {
+                if (panel) {
+                  api?.removePanel(panel);
+                }
+
                 return false;
               }
             }
