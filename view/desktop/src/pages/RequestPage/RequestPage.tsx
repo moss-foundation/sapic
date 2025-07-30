@@ -195,7 +195,7 @@ const RequestPage: React.FC<
           {props.params?.node ? (
             <div className="flex-1">
               <div className="mx-3 mt-4">
-                <Breadcrumbs panelId={props.api.id} />
+                <Breadcrumbs collectionId={props.params?.treeId} nodeId={props.params?.node?.id} />
               </div>
 
               <div className="mb-4">

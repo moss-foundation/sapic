@@ -22,13 +22,34 @@ const deleteCollectionEntry = async ({ collectionId, input }: UseDeleteCollectio
 export const useDeleteCollectionEntry = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useMutation<DeleteEntryOutput, Error, UseDeleteCollectionEntryInput>({
     mutationFn: deleteCollectionEntry,
-    onSuccess: (data, variables) => {
+    onSuccess: async (data, variables) => {
       queryClient.setQueryData(
         [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, variables.collectionId],
         (old: EntryInfo[]) => {
-          return old.filter((entry) => entry.id !== data.id);
+          const deletedEntry = old.find((entry) => entry.id === data.id);
+          if (!deletedEntry) {
+            return old.filter((entry) => entry.id !== data.id);
+          }
+
+          return old.filter((entry) => {
+            if (entry.id === data.id) {
+              return false;
+            }
+
+            if (entry.path.segments.length > deletedEntry.path.segments.length) {
+              const isNested = deletedEntry.path.segments.every(
+                (segment, index) => entry.path.segments[index] === segment
+              );
+
+              if (isNested) {
+                return false;
+              }
+            }
+
+            return true;
+          });
         }
       );
     },

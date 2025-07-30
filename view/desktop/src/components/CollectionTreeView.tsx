@@ -3,66 +3,58 @@ import "@repo/moss-tabs/assets/styles.css";
 import { useEffect, useRef, useState } from "react";
 
 import { CollectionTree, InputPlain } from "@/components";
+import { useStreamedCollections } from "@/hooks";
 import { useCollectionsTrees } from "@/hooks/collection/derivedHooks/useCollectionsTrees";
+import { useCreateCollection } from "@/hooks/collection/useCreateCollection";
+import { useCreateCollectionEntry } from "@/hooks/collection/useCreateCollectionEntry";
+import { useDeleteCollectionEntry } from "@/hooks/collection/useDeleteCollectionEntry";
 import { Icon, Scrollbar } from "@/lib/ui";
 import { useRequestModeStore } from "@/store/requestMode";
 import { cn } from "@/utils";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { join } from "@tauri-apps/api/path";
 
-import { useHandleCollectionsDragAndDrop } from "./CollectionTree/hooks/useHandleCollectionsDragAndDrop";
-import { getActualDropSourceTarget } from "./CollectionTree/utils";
+import { useCollectionDragAndDropHandler } from "./CollectionTree/hooks/useCollectionDragAndDropHandler";
+import { useNodeDragAndDropHandler } from "./CollectionTree/hooks/useNodeDragAndDropHandler";
+import { convertEntryInfoToCreateInput } from "./CollectionTree/utils";
+import { getAllNestedEntries, getSourceTreeNodeData, isSourceTreeNode } from "./CollectionTree/utils/DragAndDrop";
 
 export const CollectionTreeView = () => {
   const dropTargetToggleRef = useRef<HTMLDivElement>(null);
 
   const { displayMode } = useRequestModeStore();
 
-  useHandleCollectionsDragAndDrop();
+  useCollectionDragAndDropHandler();
+  useNodeDragAndDropHandler();
 
   const [showCollectionCreationZone, setShowCollectionCreationZone] = useState<boolean>(false);
 
-  // useEffect(() => {
-  //   const handleCreateNewCollectionFromTreeNode = (event: CustomEvent<CreateNewCollectionFromTreeNodeEvent>) => {
-  //     const { source } = event.detail;
-  //     const newTreeId = `collectionId${collections.length + 1}`;
+  useEffect(() => {
+    if (!dropTargetToggleRef.current) return;
+    const element = dropTargetToggleRef.current;
 
-  //     setCollections([
-  //       ...collections,
-  //       {
-  //         id: newTreeId,
-  //         type: "collection",
-  //         order: collections.length + 1,
-  //         name: "New Collection",
-  //         tree: {
-  //           "id": "New Collection",
-  //           "order": collections.length + 1,
-  //           "type": "folder",
-  //           "isFolder": true,
-  //           "isExpanded": true,
-  //           "childNodes": [source.node],
-  //         },
-  //       },
-  //     ]);
-  //     setTimeout(() => {
-  //       window.dispatchEvent(
-  //         new CustomEvent("newCollectionWasCreated", {
-  //           detail: {
-  //             treeId: newTreeId,
-  //           },
-  //         })
-  //       );
-  //     }, 50);
-  //   };
-
-  //   window.addEventListener("createNewCollectionFromTreeNode", handleCreateNewCollectionFromTreeNode as EventListener);
-
-  //   return () => {
-  //     window.removeEventListener(
-  //       "createNewCollectionFromTreeNode",
-  //       handleCreateNewCollectionFromTreeNode as EventListener
-  //     );
-  //   };
-  // }, [collections, setCollections]);
+    return dropTargetForElements({
+      element,
+      getData: () => ({
+        type: "CollectionCreationZone",
+      }),
+      canDrop({ source }) {
+        return source.data.type === "TreeNode";
+      },
+      onDrop() {
+        setShowCollectionCreationZone(false);
+      },
+      onDragLeave() {
+        setShowCollectionCreationZone(false);
+      },
+      onDragStart() {
+        setShowCollectionCreationZone(true);
+      },
+      onDragEnter() {
+        setShowCollectionCreationZone(true);
+      },
+    });
+  }, []);
 
   const { collectionsTrees, isLoading } = useCollectionsTrees();
 
@@ -76,9 +68,11 @@ export const CollectionTreeView = () => {
 
           <div className="flex grow flex-col">
             {!isLoading &&
-              collectionsTrees.map((collection) => (
-                <CollectionTree key={collection.id} tree={collection} displayMode={displayMode} />
-              ))}
+              collectionsTrees
+                .sort((a, b) => a.order! - b.order!)
+                .map((collection) => (
+                  <CollectionTree key={collection.id} tree={collection} displayMode={displayMode} />
+                ))}
           </div>
 
           {showCollectionCreationZone && (
@@ -93,9 +87,14 @@ export const CollectionTreeView = () => {
 };
 
 const CollectionCreationZone = () => {
+  const ref = useRef<HTMLDivElement>(null);
+
   const [canDrop, setCanDrop] = useState<boolean | null>(null);
 
-  const ref = useRef<HTMLDivElement>(null);
+  const { mutateAsync: createCollection } = useCreateCollection();
+  const { mutateAsync: createCollectionEntry } = useCreateCollectionEntry();
+  const { mutateAsync: deleteCollectionEntry } = useDeleteCollectionEntry();
+  const { data: collections } = useStreamedCollections();
 
   useEffect(() => {
     const element = ref.current;
@@ -108,7 +107,7 @@ const CollectionCreationZone = () => {
         data: {},
       }),
       canDrop({ source }) {
-        return source.data.type === "TreeNode";
+        return isSourceTreeNode(source);
       },
       onDragEnter() {
         setCanDrop(true);
@@ -116,21 +115,67 @@ const CollectionCreationZone = () => {
       onDragLeave() {
         setCanDrop(null);
       },
-      onDrop({ source }) {
-        const sourceTarget = getActualDropSourceTarget(source);
-
-        window.dispatchEvent(
-          new CustomEvent("createNewCollectionFromTreeNode", {
-            detail: {
-              source: sourceTarget,
-            },
-          })
-        );
-
+      onDrop: async ({ source }) => {
         setCanDrop(null);
+
+        const sourceTarget = getSourceTreeNodeData(source);
+
+        if (!sourceTarget) return;
+
+        const entries = getAllNestedEntries(sourceTarget.node);
+
+        if (entries.length === 0) return;
+
+        const rootEntry = entries[0];
+        const nestedEntries = entries.slice(1);
+
+        const newCollection = await createCollection({
+          name: rootEntry.name,
+          order: (collections?.length ?? 0) + 1,
+          repository: sourceTarget.repository ?? undefined,
+        });
+
+        try {
+          for (const entry of entries) {
+            await deleteCollectionEntry({
+              collectionId: sourceTarget.collectionId,
+              input: { id: entry.id },
+            });
+          }
+        } catch (error) {
+          console.error("Error during collection creation:", error);
+        }
+
+        try {
+          for (const [index, entry] of nestedEntries.entries()) {
+            const rootEntryName = rootEntry.name;
+            let adjustedSegments = entry.path.segments;
+
+            const rootNameIndex = adjustedSegments.findIndex((segment) => segment === rootEntryName);
+            if (rootNameIndex !== -1) {
+              adjustedSegments = [
+                ...adjustedSegments.slice(0, rootNameIndex),
+                ...adjustedSegments.slice(rootNameIndex + 1),
+              ];
+            }
+
+            const parentSegments = adjustedSegments.slice(0, -1);
+            const parentPath = parentSegments.length > 0 ? await join(...parentSegments) : "";
+
+            const createInput = convertEntryInfoToCreateInput(entry, parentPath);
+            createInput[entry.kind === "Dir" ? "dir" : "item"].order = index + 1;
+
+            await createCollectionEntry({
+              collectionId: newCollection.id,
+              input: createInput,
+            });
+          }
+        } catch (error) {
+          console.error("Error during collection creation:", error);
+        }
       },
     });
-  }, []);
+  }, [collections?.length, createCollection, createCollectionEntry, deleteCollectionEntry]);
 
   return (
     <div

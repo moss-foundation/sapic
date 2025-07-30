@@ -332,6 +332,8 @@ impl<R: AppRuntime> AnyCollectionService<R> for CollectionService<R> {
                 .await?;
         }
 
+        txn.commit()?;
+
         Ok(())
     }
 

@@ -16,7 +16,9 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(
     const buttonContent = (
       <div
         className={cn(
-          `background-(--moss-icon-secondary-background) ${customHoverBackground || "hover:background-(--moss-icon-secondary-background-hover)"} active:background-(--moss-icon-secondary-background-active) disabled:hover:background-transparent disabled:hover:dark:background-transparent flex cursor-pointer items-center justify-center rounded-[3px] p-[3px] text-(--moss-icon-secondary-text) disabled:cursor-default disabled:opacity-50 disabled:hover:text-(--moss-icon-secondary-text)`
+          `background-(--moss-icon-secondary-background) ${customHoverBackground || "hover:background-(--moss-icon-secondary-background-hover)"} active:background-(--moss-icon-secondary-background-active) flex cursor-pointer items-center justify-center rounded-[3px] p-[3px] text-(--moss-icon-secondary-text)`,
+          props.disabled &&
+            "hover:background-transparent hover:dark:background-transparent cursor-default opacity-50 hover:text-(--moss-icon-secondary-text)"
         )}
       >
         <Icon icon={icon} className={iconClassName} />

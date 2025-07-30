@@ -1,4 +1,11 @@
+import { extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
+import { DragLocationHistory, ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
+
 import { TreeCollectionNode, TreeCollectionRootNode } from "../types";
+
+export const isSourceTreeRootNode = (source: ElementDragPayload): boolean => {
+  return source.data.type === "TreeRootNode";
+};
 
 export const updateNodeInTree = (
   tree: TreeCollectionRootNode,
@@ -58,11 +65,10 @@ const updateNodeInArray = (array: TreeCollectionNode[], updatedNode: TreeCollect
 //check if all folders are expanded
 export const checkIfAllFoldersAreExpanded = (tree: TreeCollectionRootNode): boolean => {
   const checkIfAllNodesAreExpanded = (node: TreeCollectionNode): boolean => {
-    if (!node || node.childNodes.length === 0) return true;
+    if (!node || node.kind === "Item") return true;
 
-    if (node.kind === "Item") {
-      return true;
-    }
+    // For folder nodes, check if this node is expanded AND all children are expanded
+    if (!node.expanded) return false;
 
     return node.childNodes.every(checkIfAllNodesAreExpanded);
   };
@@ -72,59 +78,70 @@ export const checkIfAllFoldersAreExpanded = (tree: TreeCollectionRootNode): bool
 
 export const checkIfAllFoldersAreCollapsed = (tree: TreeCollectionRootNode): boolean => {
   const checkIfAllNodesAreCollapsed = (node: TreeCollectionNode): boolean => {
-    if (node.kind === "Item") {
-      return true;
-    }
+    if (!node || node.kind === "Item") return true;
 
-    if (!node || node.childNodes.length === 0) return true;
+    // For folder nodes, check if this node is collapsed AND all children are collapsed
+    if (node.expanded) return false;
 
     return node.childNodes.every(checkIfAllNodesAreCollapsed);
   };
   return [tree.requests, tree.endpoints, tree.components, tree.schemas].every(checkIfAllNodesAreCollapsed);
 };
 
-//expand all nodes
-export const expandAllNodes = (tree: TreeCollectionRootNode): TreeCollectionRootNode => {
-  const expandNodes = (node: TreeCollectionNode): TreeCollectionNode => {
-    if (node.kind === "Item") {
-      return node;
-    }
-
-    return {
-      ...node,
-      expanded: true,
-      childNodes: node.childNodes.map(expandNodes),
+export const getTreeRootNodeSourceData = (source: ElementDragPayload) => {
+  return source.data as {
+    type: "TreeRootNode";
+    data: {
+      collectionId: string;
+      node: TreeCollectionRootNode;
     };
-  };
-
-  return {
-    ...tree,
-    requests: expandNodes(tree.requests),
-    endpoints: expandNodes(tree.endpoints),
-    components: expandNodes(tree.components),
-    schemas: expandNodes(tree.schemas),
   };
 };
 
-//collapse all nodes
-export const collapseAllNodes = (tree: TreeCollectionRootNode): TreeCollectionRootNode => {
-  const collapseNodes = (node: TreeCollectionNode): TreeCollectionNode => {
-    if (node.kind === "Item") {
-      return node;
-    }
-
-    return {
-      ...node,
-      expanded: false,
-      childNodes: node.childNodes.map(collapseNodes),
-    };
-  };
+export const getTreeRootNodeTargetData = (location: DragLocationHistory) => {
+  const instruction = extractInstruction(location.current?.dropTargets[0].data);
 
   return {
-    ...tree,
-    requests: collapseNodes(tree.requests),
-    endpoints: collapseNodes(tree.endpoints),
-    components: collapseNodes(tree.components),
-    schemas: collapseNodes(tree.schemas),
+    type: "TreeRootNode",
+    data: {
+      ...location.current?.dropTargets[0].data,
+      instruction,
+    },
+  } as {
+    type: "TreeRootNode";
+    data: {
+      instruction: Instruction;
+      collectionId: string;
+      node: TreeCollectionRootNode;
+    };
   };
+};
+
+export const calculateShouldRenderRootChildNodes = (
+  node: TreeCollectionRootNode,
+  isDragging: boolean,
+  isAddingRootNodeFile: boolean,
+  isRenamingRootNode: boolean
+) => {
+  if (!node.expanded) {
+    return false;
+  }
+
+  if (isDragging) {
+    return false;
+  }
+
+  if (isAddingRootNodeFile || isRenamingRootNode) {
+    return true;
+  }
+
+  return true;
+};
+
+export const getRestrictedNames = (node: TreeCollectionRootNode, isAddingFolder: boolean) => {
+  if (isAddingFolder) {
+    return node.requests.childNodes.filter((childNode) => childNode.kind === "Dir").map((childNode) => childNode.name);
+  }
+
+  return node.requests.childNodes.filter((childNode) => childNode.kind === "Item").map((childNode) => childNode.name);
 };

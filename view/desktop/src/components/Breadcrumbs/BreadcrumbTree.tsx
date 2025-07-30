@@ -1,34 +1,29 @@
-/* eslint-disable */
 import { useState } from "react";
 
-import { NodeProps, TreeNodeProps } from "../CollectionTree/types";
-import { collapseAllNodes, prepareCollectionForTree, updateTreeNode } from "../CollectionTree/utils";
+import { TreeCollectionNode } from "../CollectionTree/types";
 import BreadcrumbNode from "./BreadcrumbNode";
+import { closeAllNodesInTree, updateTreeNode } from "./utils";
 
 interface BreadcrumbTreeProps {
-  tree: NodeProps;
-  onNodeClick: (node: NodeProps) => void;
+  tree: TreeCollectionNode;
+  collectionId: string;
 }
 
-export const BreadcrumbTree = ({ tree: initialTree, onNodeClick: onNodeClickCallback }: BreadcrumbTreeProps) => {
-  const [tree, setTree] = useState<TreeNodeProps>(collapseAllNodes(prepareCollectionForTree(initialTree, false)));
+export const BreadcrumbTree = ({ tree: initialTree, collectionId }: BreadcrumbTreeProps) => {
+  const [tree, setTree] = useState<TreeCollectionNode>(closeAllNodesInTree(initialTree));
 
-  const handleNodeUpdate = (updatedNode: TreeNodeProps) => {
+  const handleNodeUpdate = (updatedNode: TreeCollectionNode) => {
     setTree(updateTreeNode(tree, updatedNode));
-
-    onNodeClickCallback?.(updatedNode);
   };
-
-  if (!tree.childNodes || tree.childNodes.length === 0) return null;
 
   return (
     <ul>
       {tree.childNodes.map((childNode) => (
         <BreadcrumbNode
           key={childNode.id}
+          collectionId={collectionId}
           node={childNode}
           onNodeUpdate={handleNodeUpdate}
-          onNodeClickCallback={onNodeClickCallback}
         />
       ))}
     </ul>

@@ -16,7 +16,7 @@ use crate::shared::{generate_random_icon, setup_test_workspace};
 
 #[tokio::test]
 async fn rename_collection_success() {
-    let (ctx, _workspace_path, mut workspace, services, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
 
     let old_collection_name = random_collection_name();
     let create_collection_output = workspace
@@ -26,7 +26,7 @@ async fn rename_collection_success() {
                 name: old_collection_name.clone(),
                 order: 0,
                 external_path: None,
-                repo: None,
+                repository: None,
                 icon_path: None,
             },
         )
@@ -63,7 +63,7 @@ async fn rename_collection_success() {
 
 #[tokio::test]
 async fn rename_collection_empty_name() {
-    let (ctx, _workspace_path, mut workspace, _services, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
 
     let old_collection_name = random_collection_name();
     let create_collection_output = workspace
@@ -73,7 +73,7 @@ async fn rename_collection_empty_name() {
                 name: old_collection_name.clone(),
                 order: 0,
                 external_path: None,
-                repo: None,
+                repository: None,
                 icon_path: None,
             },
         )
@@ -102,7 +102,7 @@ async fn rename_collection_empty_name() {
 
 #[tokio::test]
 async fn rename_collection_unchanged() {
-    let (ctx, _workspace_path, mut workspace, _services, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
 
     let old_collection_name = random_collection_name();
     let create_collection_output = workspace
@@ -112,7 +112,7 @@ async fn rename_collection_unchanged() {
                 name: old_collection_name.clone(),
                 order: 0,
                 external_path: None,
-                repo: None,
+                repository: None,
                 icon_path: None,
             },
         )
@@ -141,7 +141,7 @@ async fn rename_collection_unchanged() {
 
 #[tokio::test]
 async fn rename_collection_nonexistent_id() {
-    let (ctx, _workspace_path, mut workspace, _services, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
 
     // Use a random ID that doesn't exist
     let nonexistent_id = CollectionId::new();
@@ -168,7 +168,7 @@ async fn rename_collection_nonexistent_id() {
 
 #[tokio::test]
 async fn update_collection_repo() {
-    let (ctx, _workspace_path, mut workspace, services, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let old_repo = "https://github.com/xxx/1.git".to_string();
@@ -181,7 +181,7 @@ async fn update_collection_repo() {
                 name: collection_name,
                 order: 0,
                 external_path: None,
-                repo: Some(old_repo),
+                repository: Some(old_repo),
                 icon_path: None,
             },
         )
@@ -221,7 +221,7 @@ async fn update_collection_repo() {
 
 #[tokio::test]
 async fn update_collection_new_icon() {
-    let (ctx, workspace_path, mut workspace, services, cleanup) = setup_test_workspace().await;
+    let (ctx, workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
     let collection_name = random_collection_name();
     let id = workspace
         .create_collection(
@@ -230,7 +230,7 @@ async fn update_collection_new_icon() {
                 name: collection_name.to_string(),
                 order: 0,
                 external_path: None,
-                repo: None,
+                repository: None,
                 icon_path: None,
             },
         )
@@ -270,7 +270,7 @@ async fn update_collection_new_icon() {
 
 #[tokio::test]
 async fn update_collection_remove_icon() {
-    let (ctx, workspace_path, mut workspace, services, cleanup) = setup_test_workspace().await;
+    let (ctx, workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
     let collection_name = random_collection_name();
 
     let icon_path = workspace_path.join("test_icon.png");
@@ -283,7 +283,7 @@ async fn update_collection_remove_icon() {
                 name: collection_name.clone(),
                 order: 0,
                 external_path: None,
-                repo: None,
+                repository: None,
                 icon_path: Some(icon_path.clone()),
             },
         )

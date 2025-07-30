@@ -9,16 +9,16 @@ import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
-import { DebugCollectionIconPlaceholder } from "../DebugCollectionIconPlaceholder";
 import { DropIndicatorWithInstruction } from "../DropIndicatorWithInstruction";
 import NodeLabel from "../NodeLabel";
 import { TreeContext } from "../Tree";
 import { TreeCollectionNode } from "../types";
+import { countNumberOfAllNestedChildNodes } from "../utils";
 import TreeNode from "./TreeNode";
+import { TreeNodeIcon } from "./TreeNodeIcon";
 
 interface TreeNodeButtonProps {
   node: TreeCollectionNode;
-  onNodeUpdate: (node: TreeCollectionNode) => void;
   depth: number;
   onAddFile: () => void;
   onAddFolder: () => void;
@@ -36,7 +36,6 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
   (
     {
       node,
-      onNodeUpdate,
       depth,
       onAddFile,
       onAddFolder,
@@ -51,35 +50,30 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
     },
     ref
   ) => {
-    const { id, nodeOffset, searchInput, paddingRight, onNodeRenameCallback } = useContext(TreeContext);
+    const { id, nodeOffset, searchInput, paddingRight, rootOffset, showNodeOrders } = useContext(TreeContext);
 
     const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
-    const { placeholderFnForUpdateCollectionEntry } = useUpdateCollectionEntry();
+    const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry();
 
     const handleClick = () => {
       if (node.kind === "Dir" || node.kind === "Case") {
-        // onNodeUpdate({
-        //   ...node,
-        //   expanded: true,
-        // });
-
-        const { childNodes, ...nodeWithoutChildren } = node;
-
-        placeholderFnForUpdateCollectionEntry({
+        updateCollectionEntry({
           collectionId: id,
           updatedEntry: {
-            ...nodeWithoutChildren,
-            expanded: true,
+            DIR: {
+              id: node.id,
+              expanded: true,
+            },
           },
         });
       }
 
       addOrFocusPanel({
-        id: `${node.id}`,
+        id: node.id,
         title: node.name,
         params: {
-          treeId: id,
+          collectionId: id,
           iconType: node.kind,
           node: {
             ...node,
@@ -93,23 +87,22 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
 
     const handleClickOnDir = (e: React.MouseEvent<HTMLDivElement>) => {
       e.stopPropagation();
-      if (node.kind === "Item") {
-        return;
-      }
+      if (node.kind === "Item") return;
 
-      const { childNodes, ...nodeWithoutChildren } = node;
-
-      placeholderFnForUpdateCollectionEntry({
+      updateCollectionEntry({
         collectionId: id,
         updatedEntry: {
-          ...nodeWithoutChildren,
-          expanded: !nodeWithoutChildren.expanded,
+          DIR: {
+            id: node.id,
+            expanded: !node.expanded,
+          },
         },
       });
     };
 
     const nodePaddingLeft = depth * nodeOffset;
     const shouldRenderChildNodes = !!searchInput || (!searchInput && node.kind === "Dir" && node.expanded);
+    const numberOfAllNestedChildNodes = countNumberOfAllNestedChildNodes(node);
 
     return (
       <ActionMenu.Root modal={false}>
@@ -120,12 +113,14 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
             className={cn("group/treeNode relative flex h-full w-full min-w-0 cursor-pointer items-center")}
           >
             <span
-              className={cn("absolute inset-x-2 h-full w-[calc(100%-16px)] rounded-sm", {
+              style={{ width: `calc(100% - ${rootOffset + paddingRight}px)` }}
+              className={cn("absolute inset-x-2 h-full rounded-sm", {
                 "group-hover/treeNode:background-(--moss-secondary-background-hover)":
                   !isDragging && activePanelId !== node.id,
                 "background-(--moss-info-background-hover)": activePanelId === node.id && node.id !== "DraggedNode",
               })}
             />
+
             <span
               className={cn("relative z-10 flex h-full w-full items-center gap-1 py-0.5", {
                 "background-(--moss-error-background)": canDrop === false,
@@ -139,20 +134,23 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                 />
               )}
 
-              {node.kind === "Dir" && instruction !== null && canDrop === true && (
+              {node.kind !== "Dir" && instruction !== null && canDrop === true && (
                 <DropIndicatorWithInstruction
                   paddingLeft={nodePaddingLeft}
                   paddingRight={paddingRight}
                   instruction={instruction}
-                  isFolder={node.kind === "Dir"}
+                  isFolder={false}
                   depth={depth}
+                  canDrop={canDrop}
+                  gap={-1}
                   isLastChild={isLastChild}
                 />
               )}
+
               <div
                 onClick={handleClickOnDir}
                 className={cn(
-                  "hover:background-(--moss-icon-primary-background-hover) flex cursor-pointer items-center justify-center rounded-full text-(--moss-icon-primary-text)",
+                  "hover:background-(--moss-icon-primary-background-hover) flex items-center justify-center rounded-full text-(--moss-icon-primary-text)",
                   {
                     "rotate-90": shouldRenderChildNodes,
                     "opacity-0": node.kind !== "Dir",
@@ -162,15 +160,23 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                 <Icon icon="ChevronRight" />
               </div>
 
-              <DebugCollectionIconPlaceholder protocol={node.protocol} type={node.kind} />
+              {showNodeOrders && <div className="underline">{node.order}</div>}
+              <TreeNodeIcon node={node} />
 
               <NodeLabel label={node.name} searchInput={searchInput} className={cn({ "capitalize": isRootNode })} />
+
+              {node.kind === "Dir" && (
+                <div className="text-(--moss-tree-entries-counter)">({numberOfAllNestedChildNodes})</div>
+              )}
+
               <span className="DragHandle h-full min-h-4 grow" />
             </span>
+
             {preview &&
               createPortal(
                 <ul className="background-(--moss-primary-background) flex gap-1 rounded-sm">
                   <TreeNode
+                    isRootNode={isRootNode}
                     parentNode={{
                       ...node,
                       id: "-",
@@ -181,7 +187,6 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                     }}
                     isLastChild={false}
                     node={{ ...node, id: "DraggedNode", childNodes: [] }}
-                    onNodeUpdate={() => {}}
                     depth={0}
                   />
                   <Icon icon="ChevronRight" className={cn("opacity-0")} />
