@@ -125,8 +125,3 @@ wasmtime-wasi-http = "34.0.1"
 sha2 = "0.10.9"
 jsonptr = "0.7.1"
 json-patch = "4.0.0"
-
-ropey = "1.6.1"
-tree-sitter = "0.25.8"
-tree-sitter-json = "0.24.8"
-

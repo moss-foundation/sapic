@@ -3,7 +3,6 @@ mod constants;
 mod mem;
 mod menu;
 mod plugins;
-mod services;
 mod window;
 
 #[macro_use]
