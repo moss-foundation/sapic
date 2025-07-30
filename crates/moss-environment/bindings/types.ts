@@ -7,7 +7,7 @@ export type AddVariableParams = {
   globalValue: JsonValue;
   localValue: JsonValue;
   order: number;
-  desc: string | null;
+  desc?: string;
   options: VariableOptions;
 };
 

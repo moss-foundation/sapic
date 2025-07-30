@@ -12,7 +12,7 @@ export const addVariableParamsSchema = z.object({
   globalValue: jsonValueSchema,
   localValue: jsonValueSchema,
   order: z.number(),
-  desc: z.string().nullable(),
+  desc: z.string().optional(),
   options: variableOptionsSchema,
 });
 
