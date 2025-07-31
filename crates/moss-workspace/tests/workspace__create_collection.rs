@@ -4,7 +4,6 @@ pub mod shared;
 
 use crate::shared::{generate_random_icon, setup_test_workspace};
 use moss_applib::mock::MockAppRuntime;
-use moss_common::api::OperationError;
 use moss_storage::storage::operations::GetItem;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_collection_name};
 use moss_workspace::{
@@ -29,7 +28,7 @@ async fn create_collection_success() {
                 name: collection_name.clone(),
                 order: 0,
                 external_path: None,
-                repo: None,
+                repository: None,
                 icon_path: None,
             },
         )
@@ -84,7 +83,7 @@ async fn create_collection_empty_name() {
                 name: collection_name.clone(),
                 order: 0,
                 external_path: None,
-                repo: None,
+                repository: None,
                 icon_path: None,
             },
         )
@@ -112,7 +111,7 @@ async fn create_collection_special_chars() {
                     name: collection_name.clone(),
                     order: 0,
                     external_path: None,
-                    repo: None,
+                    repository: None,
                     icon_path: None,
                 },
             )
@@ -168,7 +167,7 @@ async fn create_collection_with_order() {
                 name: collection_name.clone(),
                 order: 42,
                 external_path: None,
-                repo: None,
+                repository: None,
                 icon_path: None,
             },
         )
@@ -224,7 +223,7 @@ async fn create_collection_with_repo() {
                 name: collection_name.clone(),
                 order: 0,
                 external_path: None,
-                repo: Some(repo),
+                repository: Some(repo),
                 icon_path: None,
             },
         )
@@ -289,7 +288,7 @@ async fn create_collection_with_icon() {
                 name: collection_name.clone(),
                 order: 0,
                 external_path: None,
-                repo: None,
+                repository: None,
                 icon_path: Some(input_icon_path.clone()),
             },
         )
@@ -353,7 +352,7 @@ async fn create_multiple_collections_expanded_items() {
                 name: collection_name1.clone(),
                 order: 0,
                 external_path: None,
-                repo: None,
+                repository: None,
                 icon_path: None,
             },
         )
@@ -369,7 +368,7 @@ async fn create_multiple_collections_expanded_items() {
                 name: collection_name2.clone(),
                 order: 1,
                 external_path: None,
-                repo: None,
+                repository: None,
                 icon_path: None,
             },
         )

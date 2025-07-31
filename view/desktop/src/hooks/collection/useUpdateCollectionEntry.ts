@@ -1,73 +1,53 @@
-import { EntryInfo } from "@repo/moss-collection";
-import { useQueryClient } from "@tanstack/react-query";
-import { join } from "@tauri-apps/api/path";
+import { invokeTauriIpc } from "@/lib/backend/tauri";
+import { EntryInfo, UpdateEntryInput, UpdateEntryOutput } from "@repo/moss-collection";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY } from "./useStreamedCollectionEntries";
 
 export interface UseUpdateCollectionEntryInput {
   collectionId: string;
-  updatedEntry: EntryInfo;
+  updatedEntry: UpdateEntryInput;
 }
+
+const updateCollectionEntry = async ({ collectionId, updatedEntry }: UseUpdateCollectionEntryInput) => {
+  const result = await invokeTauriIpc<UpdateEntryOutput>("update_collection_entry", {
+    collectionId,
+    input: updatedEntry,
+  });
+
+  if (result.status === "error") {
+    throw new Error(String(result.error));
+  }
+
+  return result.data;
+};
 
 export const useUpdateCollectionEntry = () => {
   const queryClient = useQueryClient();
 
-  const placeholderFnForUpdateCollectionEntry = async ({
-    collectionId,
-    updatedEntry,
-  }: UseUpdateCollectionEntryInput) => {
-    const currentData = queryClient.getQueryData([USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, collectionId]) as
-      | EntryInfo[]
-      | undefined;
+  return useMutation<UpdateEntryOutput, Error, UseUpdateCollectionEntryInput>({
+    mutationFn: updateCollectionEntry,
+    onSuccess: async (data, variables) => {
+      queryClient.setQueryData(
+        [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, variables.collectionId],
+        (old: EntryInfo[]) => {
+          return old.map((oldEntry) => {
+            const entryDataFromBackend = "ITEM" in data ? data.ITEM : data.DIR;
+            const payloadEntryData =
+              "ITEM" in variables.updatedEntry ? variables.updatedEntry.ITEM : variables.updatedEntry.DIR;
 
-    if (!currentData) {
-      return;
-    }
+            if (oldEntry.id === entryDataFromBackend.id) {
+              return {
+                ...oldEntry,
+                ...payloadEntryData,
+                ...entryDataFromBackend,
+              };
+            }
 
-    const entryBeforeUpdate = currentData.find((e) => e.id === updatedEntry.id);
-
-    if (!entryBeforeUpdate) {
-      return;
-    }
-
-    const newEntries = await Promise.all(
-      currentData.map(async (oldEntry) => {
-        if (oldEntry.id === updatedEntry.id) {
-          return updatedEntry;
+            return oldEntry;
+          });
         }
-
-        if (updatedEntry.kind === "Dir") {
-          if (checkIfEntryIsInUpdatedEntry(oldEntry, entryBeforeUpdate)) {
-            const newSegments = oldEntry.path.segments.map((segment) =>
-              segment === entryBeforeUpdate.name ? updatedEntry.name : segment
-            );
-
-            const newPath = await join(...newSegments);
-
-            return {
-              ...oldEntry,
-              path: {
-                segments: newSegments,
-                raw: newPath,
-              },
-            };
-          }
-        }
-
-        return oldEntry;
-      })
-    );
-
-    queryClient.setQueryData([USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, collectionId], newEntries);
-  };
-
-  return {
-    placeholderFnForUpdateCollectionEntry,
-  };
-};
-
-const checkIfEntryIsInUpdatedEntry = (oldEntry: EntryInfo, updatedEntry: EntryInfo) => {
-  return updatedEntry.path.segments.every((p) => {
-    return oldEntry.path.segments.includes(p);
+      );
+    },
   });
 };

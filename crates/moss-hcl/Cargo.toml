@@ -6,6 +6,10 @@ edition = "2024"
 [dependencies]
 hcl-rs.workspace = true
 serde.workspace = true
+serde_json.workspace = true
+joinerror.workspace = true
+ts-rs.workspace = true
+derive_more = { workspace = true, features = ["deref", "deref_mut"] }
 
 [features]
 integration-tests = []

@@ -13,9 +13,9 @@ use std::{any::TypeId, collections::HashMap, path::Path, sync::Arc};
 use crate::{
     CollectionStorage,
     collection_storage::stores::{
-        CollectionResourceStore, CollectionVariableStore,
-        resource_store::CollectionResourceStoreImpl, variable_store::CollectionVariableStoreImpl,
+        CollectionResourceStore, resource_store::CollectionResourceStoreImpl,
     },
+    common::{VariableStore, variable_store::VariableStoreImpl},
     primitives::segkey::SegKeyBuf,
     storage::{SegBinTable, Storage, StoreTypeId, TransactionalWithContext},
 };
@@ -36,7 +36,7 @@ impl CollectionStorageImpl {
 
         let mut tables = HashMap::new();
         for (type_id, table) in [
-            (TypeId::of::<CollectionVariableStoreImpl>(), TABLE_VARIABLES),
+            (TypeId::of::<VariableStoreImpl>(), TABLE_VARIABLES),
             (TypeId::of::<CollectionResourceStoreImpl>(), TABLE_RESOURCES),
         ] {
             client = client.with_table(&table)?;
@@ -89,14 +89,14 @@ impl<Context> CollectionStorage<Context> for CollectionStorageImpl
 where
     Context: AnyAsyncContext,
 {
-    fn variable_store(&self) -> Arc<dyn CollectionVariableStore<Context>> {
+    fn variable_store(&self) -> Arc<dyn VariableStore<Context>> {
         let client = self.client.clone();
         let table = self
             .tables
-            .get(&TypeId::of::<CollectionVariableStoreImpl>())
+            .get(&TypeId::of::<VariableStoreImpl>())
             .unwrap()
             .clone();
-        Arc::new(CollectionVariableStoreImpl::new(client, table))
+        Arc::new(VariableStoreImpl::new(client, table))
     }
 
     fn resource_store(&self) -> Arc<dyn CollectionResourceStore<Context>> {

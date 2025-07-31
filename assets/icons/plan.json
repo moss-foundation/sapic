@@ -11,6 +11,12 @@
   "AddToVcs": {
     "identical": true
   },
+  "ArrowLeft": {
+    "identical": false
+  },
+  "ArrowRight": {
+    "identical": false
+  },
   "Auth": {
     "identical": true
   },
@@ -59,6 +65,12 @@
   "CollapseAll": {
     "identical": true
   },
+  "Component": {
+    "identical": true
+  },
+  "ComponentsFolder": {
+    "identical": true
+  },
   "ConfigMap": {
     "identical": true
   },
@@ -81,6 +93,12 @@
     "identical": true
   },
   "Edit": {
+    "identical": true
+  },
+  "Endpoint": {
+    "identical": true
+  },
+  "EndpointsFolder": {
     "identical": true
   },
   "Env": {
@@ -149,6 +167,9 @@
   "MenuRadioIndicator": {
     "identical": true
   },
+  "Minus": {
+    "identical": true
+  },
   "MoreHorizontal": {
     "identical": true
   },
@@ -200,6 +221,9 @@
   "Placeholder": {
     "identical": true
   },
+  "Plus": {
+    "identical": true
+  },
   "PostRequest": {
     "identical": false
   },
@@ -215,7 +239,19 @@
   "RemoveCircle": {
     "identical": true
   },
+  "Request": {
+    "identical": true
+  },
   "Requests": {
+    "identical": true
+  },
+  "RequestsFolder": {
+    "identical": true
+  },
+  "Schema": {
+    "identical": true
+  },
+  "SchemasFolder": {
     "identical": true
   },
   "Send": {

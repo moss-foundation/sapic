@@ -1,20 +1,21 @@
 import { TreeCollectionNode } from "../types";
+import { sortByOrder } from "../utils";
 import { TreeNode } from "./TreeNode";
 
 interface TreeNodeChildrenProps {
   node: TreeCollectionNode;
-  onNodeUpdate: (node: TreeCollectionNode) => void;
   depth: number;
 }
 
-const TreeNodeChildren = ({ node, onNodeUpdate, depth }: TreeNodeChildrenProps) => {
+const TreeNodeChildren = ({ node, depth }: TreeNodeChildrenProps) => {
+  const sortedChildNodes = sortByOrder(node.childNodes);
+
   return (
     <div className="contents">
       <ul className="h-full">
-        {node.childNodes.map((childNode, index) => (
+        {sortedChildNodes.map((childNode, index) => (
           <TreeNode
             parentNode={node}
-            onNodeUpdate={onNodeUpdate}
             key={childNode.id}
             node={childNode}
             depth={depth + 1}

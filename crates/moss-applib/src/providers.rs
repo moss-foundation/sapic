@@ -26,7 +26,7 @@ impl ServiceProvider {
         }
     }
 
-    pub fn get<T: ServiceMarker>(&self) -> &T {
+    pub fn get<T: ServiceMarker + 'static>(&self) -> &T {
         let type_id = TypeId::of::<T>();
         let service = self.services.get(&type_id).expect(&format!(
             "Service {} must be registered before it can be used",
@@ -141,10 +141,10 @@ mod tests {
         assert_eq!(*service, test_service);
     }
 
-    #[test]
     #[should_panic(
         expected = "Service moss_applib::providers::tests::TestService must be registered before it can be used"
     )]
+    #[test]
     fn test_get_unregistered_service_panics() {
         let provider = ServiceProvider::new();
         let _ = provider.get::<TestService>();

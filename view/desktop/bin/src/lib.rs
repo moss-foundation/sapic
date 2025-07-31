@@ -3,7 +3,6 @@ mod constants;
 mod mem;
 mod menu;
 mod plugins;
-mod services;
 mod window;
 
 #[macro_use]
@@ -24,7 +23,7 @@ use moss_applib::{
     context::{AnyAsyncContext, AnyContext, MutableContext},
     context_old::ContextValueSet,
 };
-use moss_fs::{FileSystem, RealFileSystem};
+use moss_fs::{RealFileSystem, model_registry::GlobalModelRegistry};
 use std::{path::PathBuf, sync::Arc, time::Duration};
 use tauri::{AppHandle, Manager, RunEvent, Runtime as TauriRuntime, WebviewWindow, WindowEvent};
 use tauri_plugin_os;
@@ -123,8 +122,6 @@ pub async fn run<R: TauriRuntime>() {
                         locale: default_locale,
                     };
 
-                    <dyn FileSystem>::set_global(fs.clone(), &app_handle);
-
                     let activity_indicator = ActivityIndicator::new(app_handle.clone());
                     let app = AppBuilder::<TauriAppRuntime<R>>::new(
                         app_handle.clone(),
@@ -133,6 +130,7 @@ pub async fn run<R: TauriRuntime>() {
                         fs,
                         app_dir.into(),
                     )
+                    .with_global(GlobalModelRegistry::new())
                     .with_service::<StorageService<TauriAppRuntime<R>>>(storage_service)
                     .with_service(theme_service)
                     .with_service(locale_service)
@@ -141,7 +139,7 @@ pub async fn run<R: TauriRuntime>() {
                     .with_service(workspace_service)
                     .build()
                     .await
-                    .expect("Failed to build app");
+                    .expect("Failed to build the app");
 
                     (app, session_id)
                 };
@@ -186,6 +184,8 @@ pub async fn run<R: TauriRuntime>() {
             commands::stream_collections,
             commands::create_collection,
             commands::delete_collection,
+            commands::update_collection,
+            commands::batch_update_collection,
             //
             // Collection
             //

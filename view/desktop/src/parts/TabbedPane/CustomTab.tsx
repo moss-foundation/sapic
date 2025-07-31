@@ -1,29 +1,29 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { HTMLAttributes, MouseEvent, useCallback, useEffect, useState } from "react";
 
-import { DebugCollectionIconPlaceholder } from "@/components/CollectionTree/DebugCollectionIconPlaceholder";
+import { TreeNodeIcon } from "@/components/CollectionTree/TreeNode/TreeNodeIcon";
 import { Icon } from "@/lib/ui/Icon";
 import { IDockviewPanelHeaderProps } from "@repo/moss-tabs";
 
 export type CustomTabProps = IDockviewPanelHeaderProps &
-  React.HTMLAttributes<HTMLDivElement> & {
+  HTMLAttributes<HTMLDivElement> & {
     hideClose?: boolean;
     closeActionOverride?: () => void;
   };
 
-export const CustomTab: React.FC<CustomTabProps> = ({
+export const CustomTab = ({
   api,
   containerApi: _containerApi,
   params,
   hideClose,
   closeActionOverride,
+  onClick,
   ...rest
-}) => {
-  // Get title from the API and subscribe to changes
+}: CustomTabProps) => {
   const [title, setTitle] = useState(api.title || "");
-  const iconType = params?.iconType as string;
   const [isCloseHovered, setIsCloseHovered] = useState(false);
 
   // Subscribe to title changes
+  // TODO: In theory, in the future, tab's title should be handled by panel itself
   useEffect(() => {
     setTitle(api.title || "");
 
@@ -36,8 +36,8 @@ export const CustomTab: React.FC<CustomTabProps> = ({
     };
   }, [api]);
 
-  const onClose = useCallback(
-    (event: React.MouseEvent<HTMLSpanElement>) => {
+  const handleClose = useCallback(
+    (event: MouseEvent<HTMLSpanElement>) => {
       event.preventDefault();
 
       if (closeActionOverride) {
@@ -49,43 +49,35 @@ export const CustomTab: React.FC<CustomTabProps> = ({
     [api, closeActionOverride]
   );
 
-  const onPointerDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-  }, []);
-
-  const onClick = useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
+  const handleClick = useCallback(
+    (event: MouseEvent<HTMLDivElement>) => {
       if (event.defaultPrevented) {
         return;
       }
 
       api.setActive();
 
-      if (rest.onClick) {
-        rest.onClick(event);
-      }
+      onClick?.(event);
     },
-    [api, rest.onClick]
+    [api, onClick]
   );
 
   return (
-    <div data-testid="dockview-custom-tab" {...rest} onClick={onClick} className="dv-default-tab">
+    <div {...rest} onClick={handleClick} data-testid="dockview-custom-tab" className="dv-default-tab">
       <span className="dv-default-tab-content flex max-w-40 items-center gap-1">
-        {iconType && (
-          //@ts-expect-error iconType gives an error, because it's a placeholder
-          <DebugCollectionIconPlaceholder type={iconType} protocol={undefined} />
-        )}
+        {params?.node && <TreeNodeIcon node={params?.node} />}
         <span className="truncate">{title}</span>
       </span>
+
       {!hideClose && (
-        <div className="dv-default-tab-action" onPointerDown={onPointerDown} onClick={onClose}>
+        <button className="dv-default-tab-action cursor-pointer" onClick={handleClose}>
           <div onMouseEnter={() => setIsCloseHovered(true)} onMouseLeave={() => setIsCloseHovered(false)}>
             <Icon
               icon={isCloseHovered ? "CloseSmallHovered" : "CloseSmall"}
-              className="text-[var(--moss-icon-primary-text)]"
+              className="text-(--moss-icon-primary-text)"
             />
           </div>
-        </div>
+        </button>
       )}
     </div>
   );

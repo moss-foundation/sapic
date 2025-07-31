@@ -1,0 +1,101 @@
+import { extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
+import {
+  DragLocationHistory,
+  DropTargetRecord,
+  ElementDragPayload,
+} from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
+import { EntryInfo } from "@repo/moss-collection";
+
+import { DragNode, DropNode, DropRootNode, TreeCollectionNode } from "../types";
+import { hasDescendant, hasDirectDescendant } from "./TreeNode";
+
+export const getSourceTreeNodeData = (source: ElementDragPayload): DragNode | null => {
+  if (source.data.type !== "TreeNode") {
+    return null;
+  }
+
+  return source.data.data as DragNode;
+};
+
+export const getLocationTreeNodeData = (location: DragLocationHistory): DropNode | null => {
+  if (location.current.dropTargets.length === 0) return null;
+  if (location.current.dropTargets[0].data.type !== "TreeNode") return null;
+
+  const instruction = extractInstruction(location.current.dropTargets[0].data);
+
+  return {
+    ...(location.current.dropTargets[0].data.data as DragNode),
+    "instruction": instruction ?? undefined,
+  };
+};
+
+export const getLocationTreeRootNodeData = (location: DragLocationHistory): DropRootNode | null => {
+  if (location.current.dropTargets.length === 0) return null;
+  if (location.current.dropTargets[0].data.type !== "TreeRootNode") return null;
+
+  const instruction = extractInstruction(location.current.dropTargets[0].data);
+
+  return {
+    ...(location.current.dropTargets[0].data as unknown as DropRootNode),
+    "instruction": instruction ?? undefined,
+  };
+};
+export const isSourceTreeNode = (source: ElementDragPayload): boolean => {
+  return source.data.type === "TreeNode";
+};
+
+export const doesLocationHaveTreeNode = (location: DragLocationHistory): boolean => {
+  if (location.current.dropTargets.length === 0) return false;
+  return location.current.dropTargets[0].data.type === "TreeNode";
+};
+
+export const getAllNestedEntries = (node: TreeCollectionNode): EntryInfo[] => {
+  const result: EntryInfo[] = [];
+
+  result.push({
+    id: node.id,
+    name: node.name,
+    kind: node.kind,
+    order: node.order,
+    class: node.class,
+    path: node.path,
+    protocol: node.protocol,
+    expanded: node.expanded,
+  });
+
+  for (const child of node.childNodes) {
+    result.push(...getAllNestedEntries(child));
+  }
+
+  return result;
+};
+
+export const getInstructionFromSelf = (self: DropTargetRecord): Instruction | null => {
+  return extractInstruction(self.data);
+};
+
+export const getInstructionFromLocation = (location: DragLocationHistory): Instruction | null => {
+  return extractInstruction(location.current.dropTargets[0].data);
+};
+
+export const canDropNode = (sourceTarget: DragNode, dropTarget: DropNode) => {
+  if (sourceTarget.node.class !== dropTarget.node.class) {
+    return false;
+  }
+
+  if (sourceTarget.node.kind === "Dir") {
+    if (sourceTarget.node.id === dropTarget.node.id) {
+      return false;
+    }
+
+    if (hasDirectDescendant(dropTarget.node, sourceTarget.node)) {
+      return false;
+    }
+
+    if (hasDescendant(dropTarget.node, sourceTarget.node)) {
+      return false;
+    }
+  }
+
+  return true;
+};

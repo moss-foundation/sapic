@@ -106,6 +106,7 @@
   "--moss-divider-color",
   "--moss-not-selected-item-color",
   "--moss-shortcut-text",
+  "--moss-tree-entries-counter",
   "--focus-border",
   "--separator-border",
   "--moss-icon-primary-background",

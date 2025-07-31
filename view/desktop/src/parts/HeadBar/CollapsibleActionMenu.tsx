@@ -12,7 +12,7 @@ export interface CollapsibleActionMenuProps {
 }
 
 // Collapsible Menu component that shows action buttons or collapses them into a dropdown
-export const CollapsibleActionMenu = ({ isCompact, openPanel }: CollapsibleActionMenuProps) => {
+export const CollapsibleActionMenu = ({ isCompact }: CollapsibleActionMenuProps) => {
   const { sideBarPosition, bottomPane, sideBar } = useAppResizableLayoutStore();
 
   // When not in compact mode, show all buttons
@@ -20,13 +20,7 @@ export const CollapsibleActionMenu = ({ isCompact, openPanel }: CollapsibleActio
     return (
       <div className="flex items-center gap-0">
         <PanelToggleButtons className="mr-1" />
-        <ActionButton icon="Bell" iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5" />
-        <ActionButton
-          icon="Settings"
-          iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
-          onClick={() => openPanel("Settings")}
-          title="Settings"
-        />
+        <ActionButton icon="Bell" iconClassName="text-(--moss-headBar-icon-primary-text)" />
       </div>
     );
   }
@@ -37,7 +31,7 @@ export const CollapsibleActionMenu = ({ isCompact, openPanel }: CollapsibleActio
       <ActionMenu.Trigger asChild>
         <ActionButton
           icon="MoreHorizontal"
-          iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
+          iconClassName="text-(--moss-headBar-icon-primary-text)"
           title="More actions"
         />
       </ActionMenu.Trigger>
@@ -68,17 +62,11 @@ export const CollapsibleActionMenu = ({ isCompact, openPanel }: CollapsibleActio
             >
               {bottomPane.visible ? "Hide Bottom Panel" : "Show Bottom Panel"}
             </ActionMenu.Item>
-            <ActionMenu.Item
-              onClick={() => sideBar.setVisible(!sideBar.visible)}
-              icon={sideBar.visible ? "OpenPanelRightFilled" : "OpenPanelRight"}
-            >
+            <ActionMenu.Item onClick={() => sideBar.setVisible(!sideBar.visible)}>
               {sideBar.visible ? "Hide Right Sidebar" : "Show Right Sidebar"}
             </ActionMenu.Item>
           </>
         )}
-        <ActionMenu.Item onClick={() => openPanel("Settings")} icon="Settings">
-          Settings
-        </ActionMenu.Item>
       </ActionMenu.Content>
     </ActionMenu.Root>
   );

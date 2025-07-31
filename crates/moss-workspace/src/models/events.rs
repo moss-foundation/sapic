@@ -13,8 +13,9 @@ pub struct StreamCollectionsEvent {
     #[ts(type = "string")]
     pub id: CollectionId,
     pub name: String,
-    pub repository: Option<String>,
     pub order: Option<isize>,
+    pub expanded: bool,
+    pub repository: Option<String>,
     pub picture_path: Option<PathBuf>,
 }
 
