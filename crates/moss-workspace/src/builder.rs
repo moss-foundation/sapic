@@ -1,14 +1,33 @@
 use anyhow::Result;
 use moss_activity_indicator::ActivityIndicator;
-use moss_applib::{AppRuntime, ServiceMarker, providers::ServiceMap};
+use moss_applib::{
+    AppRuntime, ServiceMarker,
+    providers::{ServiceMap, ServiceProvider},
+};
+use moss_environment::Environment;
 use moss_file::json::JsonFileHandle;
 use moss_fs::FileSystem;
-use std::{any::TypeId, path::Path, sync::Arc};
+use std::{any::TypeId, cell::LazyCell, path::Path, sync::Arc};
 
 use crate::{
     Workspace, dirs,
     manifest::{MANIFEST_FILE_NAME, ManifestModel},
+    services::environment_service::{CreateEnvironmentParams, EnvironmentService},
 };
+
+struct PredefinedEnvironment {
+    name: String,
+    order: isize,
+    color: Option<String>,
+}
+
+const PREDEFINED_ENVIRONMENTS: LazyCell<Vec<PredefinedEnvironment>> = LazyCell::new(|| {
+    vec![PredefinedEnvironment {
+        name: "Globals".to_string(),
+        order: 0,
+        color: None,
+    }]
+});
 
 pub struct WorkspaceLoadParams {
     pub abs_path: Arc<Path>,
@@ -87,6 +106,7 @@ impl WorkspaceBuilder {
             self.fs.create_dir(&params.abs_path.join(dir)).await?;
         }
 
+        let services: ServiceProvider = self.services.into();
         let manifest = JsonFileHandle::create(
             self.fs.clone(),
             &params.abs_path.join(MANIFEST_FILE_NAME),
@@ -94,11 +114,22 @@ impl WorkspaceBuilder {
         )
         .await?;
 
+        let environment_service = services.get::<EnvironmentService<R, Environment<R>>>();
+        for env in PREDEFINED_ENVIRONMENTS.iter() {
+            environment_service
+                .create_environment(CreateEnvironmentParams {
+                    name: env.name.clone(),
+                    order: env.order,
+                    color: env.color.clone(),
+                })
+                .await?;
+        }
+
         Ok(Workspace {
             abs_path: params.abs_path,
             activity_indicator,
             manifest,
-            services: self.services.into(),
+            services,
         })
     }
 }

@@ -1,6 +1,7 @@
 mod editor;
 pub use editor::*;
 
+use moss_environment::models::types::VariableInfo;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use ts_rs::TS;
@@ -46,7 +47,10 @@ pub struct EnvironmentInfo {
     pub id: String,
     pub collection_id: Option<String>,
     pub name: String,
-    pub order: Option<isize>,
+    pub display_name: String,
+    pub order: isize,
+    pub color: Option<String>,
+    pub variables: Vec<VariableInfo>,
 }
 
 // ------------------------------------------------------------

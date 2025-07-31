@@ -1,8 +1,16 @@
 use std::{collections::HashMap, marker::PhantomData, sync::Arc};
 
 use derive_more::{Deref, DerefMut};
-use moss_applib::AppRuntime;
-use moss_environment::{AnyEnvironment, models::primitives::EnvironmentId};
+use moss_applib::{AppRuntime, ServiceMarker};
+use moss_environment::{
+    AnyEnvironment, models::primitives::EnvironmentId, registry::GlobalEnvironmentRegistry,
+};
+
+pub struct CreateEnvironmentParams {
+    pub name: String,
+    pub order: isize,
+    pub color: Option<String>,
+}
 
 #[derive(Deref, DerefMut)]
 pub struct EnvironmentItem<R: AppRuntime, T: AnyEnvironment<R>> {
@@ -12,7 +20,7 @@ pub struct EnvironmentItem<R: AppRuntime, T: AnyEnvironment<R>> {
 
     #[deref]
     #[deref_mut]
-    pub inner: Arc<T>,
+    pub handle: Arc<T>,
 
     _marker: PhantomData<R>,
 }
@@ -22,8 +30,37 @@ where
     R: AppRuntime,
     Environment: AnyEnvironment<R>,
 {
+    registry: GlobalEnvironmentRegistry<R, Environment>,
     _environments: HashMap<EnvironmentId, EnvironmentItem<R, Environment>>,
     _marker: PhantomData<R>,
+}
+
+impl<R, Environment> ServiceMarker for EnvironmentService<R, Environment>
+where
+    R: AppRuntime,
+    Environment: AnyEnvironment<R> + 'static,
+{
+}
+
+impl<R, Environment> EnvironmentService<R, Environment>
+where
+    R: AppRuntime,
+    Environment: AnyEnvironment<R>,
+{
+    pub fn new(registry: GlobalEnvironmentRegistry<R, Environment>) -> Self {
+        Self {
+            registry,
+            _environments: HashMap::new(),
+            _marker: PhantomData,
+        }
+    }
+
+    pub async fn create_environment(
+        &self,
+        params: CreateEnvironmentParams,
+    ) -> joinerror::Result<()> {
+        unimplemented!()
+    }
 }
 
 // pub async fn environments<C: Context<R>>(&self, ctx: &C) -> Result<&EnvironmentMap> {

@@ -5,6 +5,7 @@ pub mod providers;
 pub mod subscription;
 pub mod task;
 
+use derive_more::Deref;
 pub use markers::*;
 
 use tauri::Runtime as TauriRuntime;
