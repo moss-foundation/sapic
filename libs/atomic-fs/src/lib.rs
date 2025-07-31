@@ -171,8 +171,6 @@ async fn create_dir_all_action(path: impl AsRef<Path>) -> Result<Vec<Undo>> {
         missing_paths.push(p.to_path_buf());
     }
 
-    dbg!(&missing_paths);
-
     if let Err(e) = tokio::fs::create_dir_all(path).await {
         return Err(anyhow!(
             "failed to create directory up to {}: {e}",
