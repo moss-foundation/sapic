@@ -2,3 +2,8 @@
 #![cfg(feature = "integration-tests")]
 
 // Trigger a CI workflow
+
+#[tokio::test]
+async fn test_warnings() {
+    let x = 42;
+}

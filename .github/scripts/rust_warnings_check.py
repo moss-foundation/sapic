@@ -65,7 +65,7 @@ def main():
     args = parser.parse_args()
 
     # Build cargo check command
-    cmd = ["cargo", "check", "--all-features", "--all-targets", "--message-format=json"]
+    cmd = ["cargo", "check", "--message-format=json"]
     
     if args.package:
         cmd.extend(["-p", args.package])
@@ -77,7 +77,8 @@ def main():
             for exclude_pkg in args.exclude:
                 cmd.extend(["--exclude", exclude_pkg])
             print(f"Excluding packages: {', '.join(args.exclude)}")
-    
+
+    cmd.append("--all-features")
     cmd.append("--all-targets")
 
     # Run cargo check in JSON mode
