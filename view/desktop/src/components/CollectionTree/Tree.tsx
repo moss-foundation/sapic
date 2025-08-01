@@ -28,7 +28,7 @@ export const CollectionTree = ({
 
   treePaddingLeft = 8,
   treePaddingRight = 8,
-  nodeOffset = 16,
+  nodeOffset = 8,
   searchInput,
   sortBy = "none",
   displayMode = "REQUEST_FIRST",
