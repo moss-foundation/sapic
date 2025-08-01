@@ -8,7 +8,7 @@ use moss_db::DatabaseError;
 use moss_fs::{FileSystem, RemoveOptions};
 use moss_workspace::{
     Workspace,
-    builder::{WorkspaceBuilder, WorkspaceCreateParams, WorkspaceLoadParams},
+    builder::{CreateWorkspaceParams, LoadWorkspaceParams, WorkspaceBuilder},
     services::{
         DynCollectionService as WorkspaceDynCollectionService,
         DynLayoutService as WorkspaceDynLayoutService,
@@ -288,7 +288,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
 
         WorkspaceBuilder::initialize(
             self.fs.clone(),
-            WorkspaceCreateParams {
+            CreateWorkspaceParams {
                 name: params.name.clone(),
                 abs_path: abs_path.clone(),
             },
@@ -375,7 +375,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
             .with_service::<WorkspaceDynCollectionService<R>>(collection_service)
             .with_service::<WorkspaceDynLayoutService<R>>(layout_service)
             .load(
-                WorkspaceLoadParams {
+                LoadWorkspaceParams {
                     abs_path: abs_path.clone(),
                 },
                 activity_indicator,

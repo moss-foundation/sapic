@@ -1,65 +1,160 @@
-use std::{collections::HashMap, marker::PhantomData, sync::Arc};
-
-use derive_more::{Deref, DerefMut};
+use futures::Stream;
 use moss_applib::{AppRuntime, ServiceMarker};
 use moss_environment::{
-    AnyEnvironment, models::primitives::EnvironmentId, registry::GlobalEnvironmentRegistry,
+    AnyEnvironment, Environment, ModifyEnvironmentParams,
+    builder::EnvironmentBuilder,
+    models::primitives::EnvironmentId,
+    registry::{EnvironmentModel, GlobalEnvironmentRegistry},
+};
+use moss_fs::{FileSystem, model_registry::GlobalModelRegistry};
+use moss_text::sanitized::sanitize;
+use std::{collections::HashMap, marker::PhantomData, pin::Pin, sync::Arc};
+use tokio::sync::RwLock;
+
+use crate::{
+    errors::ErrorNotFound,
+    models::types::{CreateEnvironmentItemParams, UpdateEnvironmentItemParams},
 };
 
-pub struct CreateEnvironmentParams {
-    pub name: String,
-    pub order: isize,
-    pub color: Option<String>,
-}
-
-#[derive(Deref, DerefMut)]
-pub struct EnvironmentItem<R: AppRuntime, T: AnyEnvironment<R>> {
+pub struct EnvironmentItem {
     pub id: EnvironmentId,
-    pub name: String,
     pub display_name: String,
+    pub order: isize,
+    pub expanded: bool,
+}
 
-    #[deref]
-    #[deref_mut]
-    pub handle: Arc<T>,
+struct ServiceState {
+    environments: HashMap<EnvironmentId, EnvironmentItem>,
+}
 
+pub struct EnvironmentService<R>
+where
+    R: AppRuntime,
+{
+    fs: Arc<dyn FileSystem>,
+    environment_registry: GlobalEnvironmentRegistry<R, Environment<R>>,
+    model_registry: GlobalModelRegistry,
+    state: Arc<RwLock<ServiceState>>,
     _marker: PhantomData<R>,
 }
 
-pub struct EnvironmentService<R, Environment>
-where
-    R: AppRuntime,
-    Environment: AnyEnvironment<R>,
-{
-    registry: GlobalEnvironmentRegistry<R, Environment>,
-    _environments: HashMap<EnvironmentId, EnvironmentItem<R, Environment>>,
-    _marker: PhantomData<R>,
-}
+impl<R> ServiceMarker for EnvironmentService<R> where R: AppRuntime {}
 
-impl<R, Environment> ServiceMarker for EnvironmentService<R, Environment>
+impl<R> EnvironmentService<R>
 where
     R: AppRuntime,
-    Environment: AnyEnvironment<R> + 'static,
 {
-}
-
-impl<R, Environment> EnvironmentService<R, Environment>
-where
-    R: AppRuntime,
-    Environment: AnyEnvironment<R>,
-{
-    pub fn new(registry: GlobalEnvironmentRegistry<R, Environment>) -> Self {
+    pub fn new(
+        fs: Arc<dyn FileSystem>,
+        environment_registry: GlobalEnvironmentRegistry<R, Environment<R>>,
+        model_registry: GlobalModelRegistry,
+    ) -> Self {
         Self {
-            registry,
-            _environments: HashMap::new(),
+            fs,
+            environment_registry,
+            model_registry,
+            state: Arc::new(RwLock::new(ServiceState {
+                environments: HashMap::new(),
+            })),
             _marker: PhantomData,
         }
     }
 
+    pub async fn list_environments(
+        &self,
+    ) -> Pin<Box<dyn Stream<Item = EnvironmentItem> + Send + '_>> {
+        let state = self.state.clone();
+
+        // Box::pin(async_stream::stream! {
+        //     let state_lock = state.read().await;
+        //     for (id, item) in state_lock.environments.iter() {
+
+        //         yield item.clone();
+        //     }
+        // });
+
+        todo!()
+    }
+
+    pub async fn update_environment(
+        &self,
+        params: UpdateEnvironmentItemParams,
+    ) -> joinerror::Result<()> {
+        let environment_model =
+            self.environment_registry
+                .get(&params.id)
+                .await
+                .ok_or_else(|| {
+                    joinerror::Error::new::<ErrorNotFound>(format!(
+                        "environment model not found: {}",
+                        params.id
+                    ))
+                })?;
+
+        let mut state = self.state.write().await;
+        let environment_item = state.environments.get_mut(&params.id).ok_or_else(|| {
+            joinerror::Error::new::<ErrorNotFound>(format!(
+                "environment item not found: {}",
+                params.id
+            ))
+        })?;
+
+        environment_model
+            .modify(ModifyEnvironmentParams {
+                name: params.name.clone(),
+                color: params.color,
+                vars_to_add: params.vars_to_add,
+                vars_to_update: params.vars_to_update,
+                vars_to_delete: params.vars_to_delete,
+            })
+            .await?;
+
+        if let Some(name) = params.name {
+            environment_item.display_name = name;
+        }
+        if let Some(order) = params.order {
+            environment_item.order = order;
+        }
+
+        Ok(())
+    }
+
     pub async fn create_environment(
         &self,
-        params: CreateEnvironmentParams,
+        params: CreateEnvironmentItemParams,
     ) -> joinerror::Result<()> {
-        unimplemented!()
+        let sanitized_name = sanitize(&params.name);
+        let environment = EnvironmentBuilder::new(self.fs.clone(), self.model_registry.clone())
+            .create(moss_environment::builder::CreateEnvironmentParams {
+                name: sanitized_name.clone(),
+                abs_path: params.abs_path,
+                color: params.color,
+            })
+            .await?;
+
+        let id = EnvironmentId::new();
+        self.environment_registry
+            .insert(EnvironmentModel {
+                id: id.clone(),
+                handle: Arc::new(environment),
+                _runtime: PhantomData,
+            })
+            .await;
+
+        let mut state = self.state.write().await;
+        state.environments.insert(
+            id.clone(),
+            EnvironmentItem {
+                id,
+                display_name: params.name,
+                order: params.order,
+                expanded: false, // TODO: hardcoded for now
+            },
+        );
+
+        // TODO: put environment order to the database
+
+        Ok(())
     }
 }
 

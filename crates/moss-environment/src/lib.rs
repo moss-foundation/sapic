@@ -16,7 +16,7 @@ use crate::{
         primitives::VariableId,
         types::{AddVariableParams, UpdateVariableParams},
     },
-    services::{AnyMetadataService, AnyStorageService, AnySyncService, AnyVariableService},
+    services::AnySyncService,
 };
 
 pub mod constants {
@@ -53,6 +53,7 @@ pub mod errors {
 }
 
 pub struct ModifyEnvironmentParams {
+    pub name: Option<String>,
     pub color: Option<ChangeString>,
     pub vars_to_add: Vec<AddVariableParams>,
     pub vars_to_update: Vec<UpdateVariableParams>,
@@ -61,10 +62,6 @@ pub struct ModifyEnvironmentParams {
 
 #[allow(private_bounds, async_fn_in_trait)]
 pub trait AnyEnvironment<R: AppRuntime> {
-    type StorageService: AnyStorageService<R>;
-    type VariableService: AnyVariableService<R>;
-    type SyncService: AnySyncService<R>;
-    type MetadataService: AnyMetadataService<R>;
-
+    async fn name(&self) -> String;
     async fn modify(&self, params: ModifyEnvironmentParams) -> joinerror::Result<()>;
 }

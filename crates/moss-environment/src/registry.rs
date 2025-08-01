@@ -1,23 +1,25 @@
 use std::{collections::HashMap, marker::PhantomData, sync::Arc};
 
+use derive_more::Deref;
 use moss_applib::AppRuntime;
 use tokio::sync::{RwLock, watch};
 
 use crate::{AnyEnvironment, models::primitives::EnvironmentId};
 
-pub struct EnvironmentItem<R, Environment>
+#[derive(Deref)]
+pub struct EnvironmentModel<R, Environment>
 where
     R: AppRuntime,
     Environment: AnyEnvironment<R>,
 {
-    id: EnvironmentId,
-    name: String,
-    display_name: String,
-    handle: Arc<Environment>,
-    _runtime: PhantomData<R>,
+    pub id: EnvironmentId,
+
+    #[deref]
+    pub handle: Arc<Environment>,
+    pub _runtime: PhantomData<R>,
 }
 
-impl<R, Environment> Clone for EnvironmentItem<R, Environment>
+impl<R, Environment> Clone for EnvironmentModel<R, Environment>
 where
     R: AppRuntime,
     Environment: AnyEnvironment<R>,
@@ -25,29 +27,27 @@ where
     fn clone(&self) -> Self {
         Self {
             id: self.id.clone(),
-            name: self.name.clone(),
-            display_name: self.display_name.clone(),
             handle: self.handle.clone(),
             _runtime: PhantomData,
         }
     }
 }
 
-unsafe impl<R, Environment> Send for EnvironmentItem<R, Environment>
+unsafe impl<R, Environment> Send for EnvironmentModel<R, Environment>
 where
     R: AppRuntime,
     Environment: AnyEnvironment<R>,
 {
 }
 
-unsafe impl<R, Environment> Sync for EnvironmentItem<R, Environment>
+unsafe impl<R, Environment> Sync for EnvironmentModel<R, Environment>
 where
     R: AppRuntime,
     Environment: AnyEnvironment<R>,
 {
 }
 
-type EnvironmentMap<R, Environment> = HashMap<EnvironmentId, EnvironmentItem<R, Environment>>;
+type EnvironmentMap<R, Environment> = HashMap<EnvironmentId, EnvironmentModel<R, Environment>>;
 
 pub struct GlobalEnvironmentRegistry<R, Environment>
 where
@@ -71,14 +71,14 @@ where
         }
     }
 
-    pub async fn get(&self, id: EnvironmentId) -> Option<EnvironmentItem<R, Environment>> {
+    pub async fn get(&self, id: &EnvironmentId) -> Option<EnvironmentModel<R, Environment>> {
         let state = self.state.read().await;
-        state.get(&id).cloned()
+        state.get(id).cloned()
     }
 
-    pub async fn add(&self, id: EnvironmentId, item: EnvironmentItem<R, Environment>) {
+    pub async fn insert(&self, item: EnvironmentModel<R, Environment>) {
         let mut state = self.state.write().await;
-        state.insert(id, item);
+        state.insert(item.id.clone(), item);
 
         let _ = self.tx.send(state.clone());
     }

@@ -14,7 +14,7 @@ use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_testutils::random_name::random_workspace_name;
 use moss_workspace::{
     Workspace,
-    builder::{WorkspaceBuilder, WorkspaceCreateParams},
+    builder::{CreateWorkspaceParams, WorkspaceBuilder},
     models::{
         primitives::{CollectionId, EditorGridOrientation, PanelRenderer},
         types::{
@@ -114,7 +114,7 @@ pub async fn setup_test_workspace() -> (
         .with_service::<DynCollectionService<MockAppRuntime>>(collection_service_dyn)
         .with_service::<DynLayoutService<MockAppRuntime>>(layout_service_dyn)
         .create(
-            WorkspaceCreateParams {
+            CreateWorkspaceParams {
                 name: random_workspace_name(),
                 abs_path: abs_path.clone(),
             },

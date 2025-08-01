@@ -4,7 +4,7 @@ use json_patch::{AddOperation, PatchOperation, RemoveOperation, jsonptr::Pointer
 use moss_applib::{AppRuntime, ServiceMarker};
 use moss_hcl::json_to_hcl;
 use serde_json::{Value as JsonValue, json, map::Map as JsonMap};
-use std::{collections::HashMap, marker::PhantomData};
+use std::{collections::HashMap, marker::PhantomData, path::Path};
 use tokio::sync::RwLock;
 
 use crate::{
@@ -13,7 +13,10 @@ use crate::{
         primitives::VariableId,
         types::{AddVariableParams, VariableOptions},
     },
-    services::{AnyStorageService, AnySyncService, AnyVariableService},
+    services::{
+        AnySyncService, AnyVariableService, storage_service::StorageService,
+        sync_service::SyncService,
+    },
 };
 
 #[derive(Debug, Clone)]
@@ -32,47 +35,29 @@ struct ServiceState {
 }
 
 #[allow(private_bounds)]
-pub struct VariableService<R, StorageService, SyncService>
+pub struct VariableService<R>
 where
     R: AppRuntime,
-    StorageService: AnyStorageService<R>,
-    SyncService: AnySyncService<R>,
 {
     state: RwLock<ServiceState>,
     #[allow(dead_code)]
-    storage_service: StorageService,
+    storage_service: StorageService<R>,
     sync_service: SyncService,
     _marker: PhantomData<R>,
 }
 
-impl<R, StorageService, SyncService> ServiceMarker
-    for VariableService<R, StorageService, SyncService>
-where
-    R: AppRuntime,
-    StorageService: AnyStorageService<R> + 'static,
-    SyncService: AnySyncService<R> + 'static,
-{
-}
+impl<R> ServiceMarker for VariableService<R> where R: AppRuntime {}
 
-impl<R, StorageService, SyncService> AnyVariableService<R>
-    for VariableService<R, StorageService, SyncService>
-where
-    R: AppRuntime,
-    StorageService: AnyStorageService<R>,
-    SyncService: AnySyncService<R>,
-{
-}
+impl<R> AnyVariableService<R> for VariableService<R> where R: AppRuntime {}
 
 #[allow(private_bounds)]
-impl<R, StorageService, SyncService> VariableService<R, StorageService, SyncService>
+impl<R> VariableService<R>
 where
     R: AppRuntime,
-    StorageService: AnyStorageService<R>,
-    SyncService: AnySyncService<R>,
 {
     pub fn new(
         source: Option<&JsonMap<String, JsonValue>>,
-        storage_service: StorageService,
+        storage_service: StorageService<R>,
         sync_service: SyncService,
     ) -> joinerror::Result<Self> {
         let variables = if let Some(source) = source {
@@ -89,7 +74,7 @@ where
         })
     }
 
-    pub async fn batch_remove(&self, ids: Vec<VariableId>) -> joinerror::Result<()> {
+    pub async fn batch_remove(&self, path: &Path, ids: Vec<VariableId>) -> joinerror::Result<()> {
         let state = self.state.write().await;
         if state.variables.is_empty() {
             return Ok(());
@@ -102,7 +87,7 @@ where
             }));
         }
 
-        let json_value = self.sync_service.apply(&patches).await?;
+        let json_value = self.sync_service.apply(path, &patches).await?;
 
         // INFO: This isn't the most optimized approach.
         // In the future, when file changes are handled in the background, we can create a separate watch channel
@@ -119,7 +104,11 @@ where
         Ok(())
     }
 
-    pub async fn batch_add(&self, params: Vec<AddVariableParams>) -> joinerror::Result<()> {
+    pub async fn batch_add(
+        &self,
+        path: &Path,
+        params: Vec<AddVariableParams>,
+    ) -> joinerror::Result<()> {
         let mut new_variables = HashMap::with_capacity(params.len());
         let mut patches = Vec::with_capacity(params.len());
 
@@ -170,7 +159,7 @@ where
             new_variables.insert(id, item);
         }
 
-        let json_value = self.sync_service.apply(&patches).await?;
+        let json_value = self.sync_service.apply(path, &patches).await?;
 
         // INFO: This isn't the most optimized approach.
         // In the future, when file changes are handled in the background, we can create a separate watch channel
@@ -234,7 +223,7 @@ mod tests {
 
     use crate::{
         AnyEnvironment,
-        builder::{EnvironmentBuilder, EnvironmentCreateParams},
+        builder::{CreateEnvironmentParams, EnvironmentBuilder},
         configuration::{MetadataDecl, SourceFile, VariableSpec},
         models::primitives::EnvironmentId,
         services::{storage_service::StorageService, sync_service::SyncService},
@@ -369,11 +358,7 @@ mod tests {
         let global_model_registry = GlobalModelRegistry::new();
         let storage_service: StorageService<MockAppRuntime> =
             StorageService::new(Arc::new(TestVariableStore {}));
-        let sync_service = SyncService::new(
-            abs_path.join("data.env.sap").to_string_lossy().to_string(),
-            global_model_registry.clone(),
-            fs.clone(),
-        );
+        let sync_service = SyncService::new(global_model_registry.clone(), fs.clone());
         let variable_service = VariableService::new(None, storage_service, sync_service).unwrap();
 
         struct MyEnvStore<Environment: AnyEnvironment<MockAppRuntime>> {
@@ -381,9 +366,9 @@ mod tests {
         }
 
         let _env = EnvironmentBuilder::new(fs, global_model_registry)
-            .create::<MockAppRuntime>(EnvironmentCreateParams {
+            .create::<MockAppRuntime>(CreateEnvironmentParams {
                 name: "data".to_string(),
-                abs_path,
+                abs_path: abs_path.clone(),
                 color: None,
             })
             .await
@@ -395,14 +380,17 @@ mod tests {
         env_store.map.insert("data".to_string(), _env);
 
         variable_service
-            .batch_add(vec![AddVariableParams {
-                name: "test".to_string(),
-                global_value: json!("test_value"),
-                desc: None,
-                local_value: JsonValue::Null,
-                order: 0,
-                options: VariableOptions { disabled: false },
-            }])
+            .batch_add(
+                &abs_path,
+                vec![AddVariableParams {
+                    name: "test".to_string(),
+                    global_value: json!("test_value"),
+                    desc: None,
+                    local_value: JsonValue::Null,
+                    order: 0,
+                    options: VariableOptions { disabled: false },
+                }],
+            )
             .await
             .unwrap();
     }

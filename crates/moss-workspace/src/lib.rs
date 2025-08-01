@@ -37,3 +37,12 @@ pub trait AnyWorkspace<R: AppRuntime> {
     type Collection;
     type Environment: AnyEnvironment<R>;
 }
+
+pub mod errors {
+    use joinerror::error::ErrorMarker;
+
+    pub struct ErrorNotFound;
+    impl ErrorMarker for ErrorNotFound {
+        const MESSAGE: &'static str = "not_found";
+    }
+}

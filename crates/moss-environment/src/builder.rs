@@ -4,7 +4,11 @@ use moss_contentmodel::{ContentModel, json::JsonModel};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt, model_registry::GlobalModelRegistry};
 use moss_hcl::{Block, HclResultExt};
 use moss_text::sanitized::sanitize;
-use std::{any::TypeId, path::PathBuf, sync::Arc};
+use std::{
+    any::TypeId,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
 use crate::{
     configuration::{MetadataDecl, SourceFile},
@@ -17,7 +21,7 @@ use crate::{
     models::primitives::EnvironmentId,
 };
 
-pub struct EnvironmentCreateParams {
+pub struct CreateEnvironmentParams {
     pub name: String,
     pub abs_path: PathBuf,
     pub color: Option<String>,
@@ -52,7 +56,7 @@ impl EnvironmentBuilder {
 
     pub async fn create<R: AppRuntime>(
         self,
-        params: EnvironmentCreateParams,
+        params: CreateEnvironmentParams,
     ) -> joinerror::Result<Environment<R>> {
         debug_assert!(params.abs_path.is_absolute());
 
@@ -93,23 +97,29 @@ impl EnvironmentBuilder {
                 format!("failed to create environment file {}", abs_path.display())
             })?;
 
-        let hcl_value = hcl::to_value(file).unwrap();
-        let json_value = serde_json::to_value(hcl_value).unwrap();
+        let hcl_value = hcl::to_value(file).unwrap(); // TODO: handle errors
+        let json_value = serde_json::to_value(hcl_value).unwrap(); // TODO: handle errors
+        let abs_path: Arc<Path> = abs_path.into();
         self.models
-            .add(
-                abs_path.to_string_lossy().to_string(),
+            .insert(
+                abs_path.clone(),
                 ContentModel::Json(JsonModel::new(json_value)),
             )
             .await;
 
-        Ok(Environment::new(abs_path.into(), self.services.into()))
+        Ok(Environment::new(
+            abs_path,
+            self.fs.clone(),
+            self.models.clone(),
+            self.services.into(),
+        )?)
     }
 
     pub async fn load<R: AppRuntime>(
         self,
         params: EnvironmentLoadParams,
     ) -> joinerror::Result<Environment<R>> {
-        let abs_path = params.abs_path;
+        let abs_path: Arc<Path> = params.abs_path.into();
         debug_assert!(abs_path.is_absolute());
 
         if !abs_path.exists() {
@@ -118,7 +128,7 @@ impl EnvironmentBuilder {
             ));
         }
 
-        let _file: SourceFile = {
+        let file: SourceFile = {
             let mut reader = self
                 .fs
                 .open_file(&abs_path)
@@ -138,6 +148,21 @@ impl EnvironmentBuilder {
             })?
         };
 
-        Ok(Environment::new(abs_path.into(), self.services.into()))
+        let hcl_value = hcl::to_value(file).unwrap(); // TODO: handle errors
+        let json_value = serde_json::to_value(hcl_value).unwrap(); // TODO: handle errors
+
+        self.models
+            .insert(
+                abs_path.clone(),
+                ContentModel::Json(JsonModel::new(json_value)),
+            )
+            .await;
+
+        Ok(Environment::new(
+            abs_path,
+            self.fs.clone(),
+            self.models.clone(),
+            self.services.into(),
+        )?)
     }
 }
