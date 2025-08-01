@@ -112,8 +112,8 @@ importers:
         specifier: ^5.7.2
         version: 5.8.3
       zod:
-        specifier: ^3.24.4
-        version: 3.25.76
+        specifier: ^4.0.14
+        version: 4.0.14
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -125,8 +125,8 @@ importers:
         specifier: ^5.7.2
         version: 5.8.3
       zod:
-        specifier: ^3.24.4
-        version: 3.25.76
+        specifier: ^4.0.14
+        version: 4.0.14
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -138,8 +138,8 @@ importers:
         specifier: ^5.7.2
         version: 5.8.3
       zod:
-        specifier: ^3.24.4
-        version: 3.25.76
+        specifier: ^4.0.14
+        version: 4.0.14
     devDependencies:
       '@repo/bindings-utils':
         specifier: workspace:*
@@ -157,8 +157,8 @@ importers:
         specifier: ^5.8.2
         version: 5.8.3
       zod:
-        specifier: ^3.24.4
-        version: 3.25.76
+        specifier: ^4.0.14
+        version: 4.0.14
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -170,8 +170,8 @@ importers:
         specifier: ^5.8.2
         version: 5.8.3
       zod:
-        specifier: ^3.24.4
-        version: 3.25.76
+        specifier: ^4.0.14
+        version: 4.0.14
     devDependencies:
       '@repo/bindings-utils':
         specifier: workspace:*
@@ -186,8 +186,8 @@ importers:
         specifier: ^5.7.2
         version: 5.8.3
       zod:
-        specifier: ^3.24.4
-        version: 3.25.76
+        specifier: ^4.0.14
+        version: 4.0.14
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -199,8 +199,8 @@ importers:
         specifier: ^5.7.2
         version: 5.8.3
       zod:
-        specifier: ^3.24.4
-        version: 3.25.76
+        specifier: ^4.0.14
+        version: 4.0.14
     devDependencies:
       '@repo/bindings-utils':
         specifier: workspace:*
@@ -215,8 +215,8 @@ importers:
         specifier: ^5.8.2
         version: 5.8.3
       zod:
-        specifier: ^3.24.4
-        version: 3.25.76
+        specifier: ^4.0.14
+        version: 4.0.14
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -228,8 +228,8 @@ importers:
         specifier: ^5.7.2
         version: 5.8.3
       zod:
-        specifier: ^3.24.4
-        version: 3.25.76
+        specifier: ^4.0.14
+        version: 4.0.14
     devDependencies:
       '@repo/bindings-utils':
         specifier: workspace:*
@@ -247,8 +247,8 @@ importers:
         specifier: ^5.7.2
         version: 5.8.3
       zod:
-        specifier: ^3.24.4
-        version: 3.25.76
+        specifier: ^4.0.14
+        version: 4.0.14
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -306,8 +306,8 @@ importers:
         specifier: ^3.15.0
         version: 3.15.0
       zod:
-        specifier: ^3.24.4
-        version: 3.25.76
+        specifier: ^4.0.14
+        version: 4.0.14
     devDependencies:
       '@types/node':
         specifier: ^22.0.0
@@ -326,7 +326,7 @@ importers:
         version: 0.3.66
       '@langchain/langgraph':
         specifier: ^0.3.0
-        version: 0.3.10(@langchain/core@0.3.66)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod-to-json-schema@3.24.6(zod@3.25.76))
+        version: 0.3.10(@langchain/core@0.3.66)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod-to-json-schema@3.24.6(zod@4.0.14))
       '@langchain/ollama':
         specifier: ^0.2.0
         version: 0.2.3(@langchain/core@0.3.66)
@@ -436,8 +436,8 @@ importers:
         specifier: ^15.4.1
         version: 15.6.0(i18next@25.3.2(typescript@5.8.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.8.3)
       zod:
-        specifier: ^3.24.4
-        version: 3.25.76
+        specifier: ^4.0.14
+        version: 4.0.14
       zustand:
         specifier: ^5.0.3
         version: 5.0.6(@types/react@18.3.23)(react@18.3.1)
@@ -4105,6 +4105,9 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
+  zod@4.0.14:
+    resolution: {integrity: sha512-nGFJTnJN6cM2v9kXL+SOBq3AtjQby3Mv5ySGFof5UGRHrRioSJ5iG680cYNjE/yWk671nROcpPj4hAS8nyLhSw==}
+
   zustand@5.0.6:
     resolution: {integrity: sha512-ihAqNeUVhe0MAD+X8M5UzqyZ9k3FFZLBTtqo6JLPwV53cbRB/mJwBI0PxcIgqhBBHlEs8G45OTDTMq3gNcLq3A==}
     engines: {node: '>=12.20.0'}
@@ -4626,7 +4629,7 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  '@langchain/langgraph@0.3.10(@langchain/core@0.3.66)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod-to-json-schema@3.24.6(zod@3.25.76))':
+  '@langchain/langgraph@0.3.10(@langchain/core@0.3.66)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod-to-json-schema@3.24.6(zod@4.0.14))':
     dependencies:
       '@langchain/core': 0.3.66
       '@langchain/langgraph-checkpoint': 0.0.18(@langchain/core@0.3.66)
@@ -4634,7 +4637,7 @@ snapshots:
       uuid: 10.0.0
       zod: 3.25.76
     optionalDependencies:
-      zod-to-json-schema: 3.24.6(zod@3.25.76)
+      zod-to-json-schema: 3.24.6(zod@4.0.14)
     transitivePeerDependencies:
       - react
       - react-dom
@@ -7578,7 +7581,14 @@ snapshots:
     dependencies:
       zod: 3.25.76
 
+  zod-to-json-schema@3.24.6(zod@4.0.14):
+    dependencies:
+      zod: 4.0.14
+    optional: true
+
   zod@3.25.76: {}
+
+  zod@4.0.14: {}
 
   zustand@5.0.6(@types/react@18.3.23)(react@18.3.1):
     optionalDependencies:
