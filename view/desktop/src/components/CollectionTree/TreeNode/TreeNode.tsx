@@ -1,5 +1,8 @@
 import { useContext, useRef, useState } from "react";
 
+import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { cn } from "@/utils/cn";
+
 import { TreeContext } from "../..";
 import { useDeleteAndUpdatePeers } from "../actions/useDeleteAndUpdatePeers";
 import { DropIndicatorWithInstruction } from "../DropIndicatorWithInstruction";
@@ -26,6 +29,8 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   const { deleteAndUpdatePeers } = useDeleteAndUpdatePeers(id, node, parentNode);
+
+  const { activePanelId } = useTabbedPaneStore();
 
   // const {
   //   isAddingDividerNode: isAddingDividerNodeAbove,
@@ -84,7 +89,17 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
           handleRenamingFormCancel={handleRenamingFormCancel}
         />
       ) : (
-        <div className="flex items-center justify-between">
+        <div
+          className={cn(
+            "hover:background-(--moss-secondary-background-hover) relative flex items-center justify-between",
+            {
+              "background-(--moss-secondary-background-hover)": activePanelId === node.id,
+            }
+          )}
+        >
+          {activePanelId === node.id && (
+            <div className={cn("background-(--moss-primary) absolute top-0 left-0 h-full w-[1px]")} />
+          )}
           {/* {shouldRenderAddingFormDivider && (
             <AddingDividerTrigger
               paddingLeft={nodePaddingLeft}

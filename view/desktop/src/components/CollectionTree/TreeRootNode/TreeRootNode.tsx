@@ -60,13 +60,15 @@ export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
       {instruction && <DropIndicatorWithInstruction instruction={instruction} gap={-1} canDrop={canDrop} />}
       <div
         ref={draggableRootRef}
-        className="group/TreeRootHeader relative flex w-full min-w-0 items-center justify-between py-0.75"
+        className={cn(
+          "group/TreeRootHeader hover:background-(--moss-secondary-background-hover) relative flex w-full min-w-0 items-center justify-between py-0.75"
+        )}
         style={{
           paddingLeft: treePaddingLeft,
           paddingRight: treePaddingRight,
         }}
       >
-        <span
+        {/* <span
           style={{
             width: `calc(100% - ${treePaddingLeft}px - ${treePaddingRight}px)`,
             inset: `0 ${treePaddingLeft}px 0 ${treePaddingRight}px`,
@@ -77,7 +79,7 @@ export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
               "group-hover/TreeRootHeader:background-transparent": isRenamingRootNode,
             }
           )}
-        />
+        /> */}
 
         {isRenamingRootNode ? (
           <TreeRootNodeRenameForm

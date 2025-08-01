@@ -53,9 +53,9 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
     },
     ref
   ) => {
-    const { id, nodeOffset, searchInput, treePaddingRight, treePaddingLeft, showNodeOrders } = useContext(TreeContext);
+    const { id, nodeOffset, searchInput, treePaddingRight, showNodeOrders } = useContext(TreeContext);
 
-    const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
+    const { addOrFocusPanel } = useTabbedPaneStore();
 
     const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry();
 
@@ -114,21 +114,9 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
             ref={ref}
             onClick={handleClick}
             className={cn(
-              "group/treeNode relative flex h-full w-full min-w-0 cursor-pointer items-center py-0.75 leading-[19px]"
+              "group/treeNode relative z-10 flex h-full w-full min-w-0 cursor-pointer items-center py-0.75 leading-[19px]"
             )}
           >
-            <span
-              style={{
-                width: `calc(100% - ${treePaddingLeft}px - ${treePaddingRight}px)`,
-                inset: `0 ${treePaddingLeft}px 0 ${treePaddingRight}px`,
-              }}
-              className={cn("absolute h-full rounded-sm", {
-                "group-hover/treeNode:background-(--moss-secondary-background-hover)":
-                  !isDragging && activePanelId !== node.id,
-                "background-(--moss-info-background-hover)": activePanelId === node.id && node.id !== "DraggedNode",
-              })}
-            />
-
             <span
               className={cn("relative z-10 flex h-full min-h-[22px] w-full items-center gap-1", {
                 "background-(--moss-error-background)": canDrop === false,
@@ -139,6 +127,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                 <DragHandleButton
                   className="absolute top-1/2 left-[1px] -translate-y-1/2 opacity-0 transition-all duration-0 group-hover/treeNode:opacity-100 group-hover/treeNode:delay-400 group-hover/treeNode:duration-150"
                   slim
+                  ghost
                 />
               )}
 
@@ -158,7 +147,12 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
               <span className="flex size-5 shrink-0 items-center justify-center">
                 <button
                   onClick={handleClickOnDir}
-                  className="hover:background-(--moss-icon-primary-background-hover) flex cursor-pointer items-center justify-center rounded-full text-(--moss-icon-primary-text)"
+                  className={cn(
+                    "hover:background-(--moss-icon-primary-background-hover) flex cursor-pointer items-center justify-center rounded-full text-(--moss-icon-primary-text)",
+                    {
+                      "opacity-0": node.kind !== "Dir",
+                    }
+                  )}
                 >
                   <Icon
                     icon="ChevronRight"
