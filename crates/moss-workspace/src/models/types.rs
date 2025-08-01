@@ -24,6 +24,7 @@ pub struct CreateEnvironmentItemParams {
 pub struct UpdateEnvironmentItemParams {
     pub id: EnvironmentId,
     pub name: Option<String>,
+    pub expanded: Option<bool>,
     pub order: Option<isize>,
     pub color: Option<ChangeString>,
     pub vars_to_add: Vec<AddVariableParams>,

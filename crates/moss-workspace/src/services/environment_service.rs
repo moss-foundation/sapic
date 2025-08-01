@@ -16,6 +16,7 @@ use crate::{
     models::types::{CreateEnvironmentItemParams, UpdateEnvironmentItemParams},
 };
 
+#[derive(Clone)]
 pub struct EnvironmentItem {
     pub id: EnvironmentId,
     pub display_name: String,
@@ -65,15 +66,12 @@ where
     ) -> Pin<Box<dyn Stream<Item = EnvironmentItem> + Send + '_>> {
         let state = self.state.clone();
 
-        // Box::pin(async_stream::stream! {
-        //     let state_lock = state.read().await;
-        //     for (id, item) in state_lock.environments.iter() {
-
-        //         yield item.clone();
-        //     }
-        // });
-
-        todo!()
+        Box::pin(async_stream::stream! {
+            let state_lock = state.read().await;
+            for (_, item) in state_lock.environments.iter() {
+                yield (*item).clone();
+            }
+        })
     }
 
     pub async fn update_environment(
@@ -114,6 +112,9 @@ where
         }
         if let Some(order) = params.order {
             environment_item.order = order;
+        }
+        if let Some(expanded) = params.expanded {
+            environment_item.expanded = expanded;
         }
 
         Ok(())
