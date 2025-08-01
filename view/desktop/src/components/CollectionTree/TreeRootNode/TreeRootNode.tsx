@@ -80,6 +80,7 @@ export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
         {isRenamingRootNode ? (
           <TreeRootNodeRenameForm
             node={node}
+            shouldRenderChildNodes={shouldRenderRootChildNodes}
             restrictedNames={restrictedNames}
             handleRenamingFormSubmit={handleRenamingRootNodeFormSubmit}
             handleRenamingFormCancel={handleRenamingRootNodeFormCancel}

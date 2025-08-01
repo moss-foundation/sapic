@@ -24,16 +24,16 @@ const TreeNodeRenameForm = ({
   handleRenamingFormSubmit,
   handleRenamingFormCancel,
 }: TreeNodeRenameFormProps) => {
-  const { nodeOffset } = useContext(TreeContext);
-  const nodePaddingLeft = depth * nodeOffset;
+  const { nodeOffset, treePaddingLeft } = useContext(TreeContext);
+  const nodePaddingLeft = depth * nodeOffset + treePaddingLeft;
   const shouldRenderChildNodes = node.kind === "Dir" && node.expanded;
 
   return (
     <div className="w-full min-w-0">
-      <span className="flex w-full items-center gap-1 py-1.25" style={{ paddingLeft: nodePaddingLeft }}>
+      <span className="flex w-full items-center gap-1 py-1" style={{ paddingLeft: nodePaddingLeft }}>
         <Icon
           icon="ChevronRight"
-          className={cn("text-(--moss-icon-primary-text)", {
+          className={cn("size-5 text-(--moss-icon-primary-text)", {
             "rotate-90": shouldRenderChildNodes,
             "opacity-0": node.kind !== "Dir",
           })}

@@ -12,9 +12,9 @@ interface EntryIconProps {
 const defaultProtocolClassName = "text-xs min-w-[30px] text-left uppercase" as const;
 
 export const EntryIcon = ({ entry, className }: EntryIconProps) => {
-  const calculateIsRoot = entry.path.segments.length === 1;
+  const isRoot = entry.path.segments.length === 1;
 
-  if (calculateIsRoot) {
+  if (isRoot) {
     switch (entry.class) {
       case "Schema":
         return <Icon icon="SchemasFolder" className={className} />;
