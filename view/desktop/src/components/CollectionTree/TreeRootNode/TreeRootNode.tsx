@@ -1,8 +1,10 @@
 import { useContext, useRef } from "react";
 
 import { useStreamedCollections } from "@/hooks";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 
+import { ActiveNodeIndicator } from "../ActiveNodeIndicator";
 import { DropIndicatorWithInstruction } from "../DropIndicatorWithInstruction";
 import { useDraggableRootNode } from "../hooks/useDraggableRootNode";
 import { useRootNodeAddForm } from "../hooks/useRootNodeAddForm";
@@ -19,6 +21,8 @@ export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
   const { searchInput, treePaddingLeft, treePaddingRight } = useContext(TreeContext);
 
   const { data: streamedCollections } = useStreamedCollections();
+
+  const { activePanelId } = useTabbedPaneStore();
 
   const draggableRootRef = useRef<HTMLDivElement>(null);
   const dropTargetRootRef = useRef<HTMLDivElement>(null);
@@ -61,13 +65,17 @@ export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
       <div
         ref={draggableRootRef}
         className={cn(
-          "group/TreeRootHeader hover:background-(--moss-secondary-background-hover) relative flex w-full min-w-0 items-center justify-between py-0.75"
+          "group/TreeRootHeader hover:background-(--moss-secondary-background-hover) relative flex w-full min-w-0 items-center justify-between py-0.75",
+          {
+            "background-(--moss-secondary-background-hover)": activePanelId === node.id,
+          }
         )}
         style={{
           paddingLeft: treePaddingLeft,
           paddingRight: treePaddingRight,
         }}
       >
+        {activePanelId === node.id && <ActiveNodeIndicator />}
         {/* <span
           style={{
             width: `calc(100% - ${treePaddingLeft}px - ${treePaddingRight}px)`,

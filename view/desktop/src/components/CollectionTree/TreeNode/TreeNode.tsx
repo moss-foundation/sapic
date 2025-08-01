@@ -5,6 +5,7 @@ import { cn } from "@/utils/cn";
 
 import { TreeContext } from "../..";
 import { useDeleteAndUpdatePeers } from "../actions/useDeleteAndUpdatePeers";
+import { ActiveNodeIndicator } from "../ActiveNodeIndicator";
 import { DropIndicatorWithInstruction } from "../DropIndicatorWithInstruction";
 import { useDraggableNode } from "../hooks/useDraggableNode";
 import { useNodeAddForm } from "../hooks/useNodeAddForm";
@@ -97,9 +98,7 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
             }
           )}
         >
-          {activePanelId === node.id && (
-            <div className={cn("background-(--moss-primary) absolute top-0 left-0 h-full w-[1px]")} />
-          )}
+          {activePanelId === node.id && <ActiveNodeIndicator />}
           {/* {shouldRenderAddingFormDivider && (
             <AddingDividerTrigger
               paddingLeft={nodePaddingLeft}
