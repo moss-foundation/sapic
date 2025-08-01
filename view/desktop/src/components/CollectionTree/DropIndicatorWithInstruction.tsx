@@ -15,7 +15,7 @@ interface DropIndicatorProps extends HTMLAttributes<HTMLDivElement> {
 
 export const DropIndicatorWithInstruction = ({
   instruction,
-  gap = -1,
+  gap = 0,
   paddingLeft = 0,
   paddingRight = 0,
   isFolder = false,
