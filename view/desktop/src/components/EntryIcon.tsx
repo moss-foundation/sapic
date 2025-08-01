@@ -31,23 +31,17 @@ export const EntryIcon = ({ entry, className }: EntryIconProps) => {
     return <Icon icon="Folder" className={className} />;
   }
 
-  const rnd = randomIntFromInterval(1, 4);
-
-  switch (rnd) {
-    case 1:
+  switch (entry.protocol) {
+    case "Get":
       return <span className={cn(defaultProtocolClassName, "text-(--moss-green-4)", className)}>Get</span>;
-    case 2:
+    case "Post":
       return <span className={cn(defaultProtocolClassName, "text-(--moss-orange-4)", className)}>Post</span>;
-    case 3:
+    case "Put":
       return <span className={cn(defaultProtocolClassName, "text-(--moss-blue-4)", className)}>Put</span>;
-    case 4:
+    case "Delete":
       return <span className={cn(defaultProtocolClassName, "text-(--moss-red-4)", className)}>Del</span>;
 
     default:
       return <span className={cn(defaultProtocolClassName, "text-(--moss-gray-4)", className)}>{entry.protocol}</span>;
   }
 };
-
-function randomIntFromInterval(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min + 1) + min);
-}
