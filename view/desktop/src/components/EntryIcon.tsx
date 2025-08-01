@@ -9,7 +9,7 @@ interface EntryIconProps {
   className?: string;
 }
 
-const defaultProtocolClassName = "text-xs  min-w-[30px] text-right uppercase" as const;
+const defaultProtocolClassName = "text-xs min-w-[30px] text-right uppercase" as const;
 
 export const EntryIcon = ({ entry, className }: EntryIconProps) => {
   const calculateIsRoot = entry.path.segments.length === 1;

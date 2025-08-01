@@ -30,5 +30,6 @@ svg:not(.animate-spin) * {
 }
 
 .NodeLabel {
-  text-box-edge: cap;
+  /* TODO: replace this with tailwind property when it becomes available */
+  text-box-trim: trim-start;
 }
