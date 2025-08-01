@@ -28,8 +28,3 @@ svg:not(.animate-spin) * {
   /* transform: translateZ(0); */
   image-rendering: optimizeSpeed;
 }
-
-.NodeLabel {
-  /* TODO: replace this with tailwind property when it becomes available */
-  text-box-trim: trim-start;
-}

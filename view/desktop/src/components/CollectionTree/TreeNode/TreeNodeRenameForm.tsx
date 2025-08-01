@@ -30,7 +30,7 @@ const TreeNodeRenameForm = ({
 
   return (
     <div className="w-full min-w-0">
-      <span className="flex w-full items-center gap-1 py-0.5" style={{ paddingLeft: nodePaddingLeft }}>
+      <span className="flex w-full items-center gap-1 py-1.25" style={{ paddingLeft: nodePaddingLeft }}>
         <Icon
           icon="ChevronRight"
           className={cn("text-(--moss-icon-primary-text)", {
@@ -38,11 +38,11 @@ const TreeNodeRenameForm = ({
             "opacity-0": node.kind !== "Dir",
           })}
         />
+
         <EntryIcon entry={node} />
+
         <NodeRenamingForm
-          onSubmit={(newName) => {
-            handleRenamingFormSubmit(newName);
-          }}
+          onSubmit={handleRenamingFormSubmit}
           onCancel={handleRenamingFormCancel}
           restrictedNames={restrictedNames}
           currentName={node.name}

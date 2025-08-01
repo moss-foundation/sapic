@@ -25,7 +25,7 @@ export interface TreeNodeComponentProps {
 }
 
 export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = false }: TreeNodeComponentProps) => {
-  const { nodeOffset, treePaddingRight, id } = useContext(TreeContext);
+  const { nodeOffset, treePaddingRight, treePaddingLeft, id } = useContext(TreeContext);
 
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -76,7 +76,7 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
 
   const shouldRenderChildNodes = node.expanded || isAddingFileNode || isAddingFolderNode;
   const shouldRenderAddingFormDivider = false; // !isAddingDividerNodeAbove && !isAddingDividerNodeBelow;
-  const nodePaddingLeft = depth * nodeOffset;
+  const nodePaddingLeft = depth * nodeOffset + treePaddingLeft;
   const restrictedNames = parentNode?.childNodes.map((childNode) => childNode.name) ?? [];
 
   return (

@@ -53,7 +53,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
     },
     ref
   ) => {
-    const { id, nodeOffset, searchInput, treePaddingRight, showNodeOrders } = useContext(TreeContext);
+    const { id, nodeOffset, searchInput, treePaddingRight, treePaddingLeft, showNodeOrders } = useContext(TreeContext);
 
     const { addOrFocusPanel } = useTabbedPaneStore();
 
@@ -103,7 +103,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
       });
     };
 
-    const nodePaddingLeft = depth * nodeOffset;
+    const nodePaddingLeft = depth * nodeOffset + treePaddingLeft;
     const shouldRenderChildNodes = !!searchInput || (!searchInput && node.kind === "Dir" && node.expanded);
     const numberOfAllNestedChildNodes = countNumberOfAllNestedChildNodes(node);
 
@@ -114,7 +114,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
             ref={ref}
             onClick={handleClick}
             className={cn(
-              "group/treeNode relative z-10 flex h-full w-full min-w-0 cursor-pointer items-center py-0.75 leading-[19px]"
+              "group/treeNode relative z-10 flex h-full w-full min-w-0 cursor-pointer items-center py-0.75"
             )}
           >
             <span

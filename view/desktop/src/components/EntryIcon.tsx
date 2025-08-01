@@ -9,7 +9,7 @@ interface EntryIconProps {
   className?: string;
 }
 
-const defaultProtocolClassName = "text-xs min-w-[30px] text-right uppercase" as const;
+const defaultProtocolClassName = "text-xs min-w-[30px] text-left uppercase" as const;
 
 export const EntryIcon = ({ entry, className }: EntryIconProps) => {
   const calculateIsRoot = entry.path.segments.length === 1;
@@ -31,17 +31,23 @@ export const EntryIcon = ({ entry, className }: EntryIconProps) => {
     return <Icon icon="Folder" className={className} />;
   }
 
-  switch (entry.protocol) {
-    case "Get":
+  const rnd = randomIntFromInterval(1, 4);
+
+  switch (rnd) {
+    case 1:
       return <span className={cn(defaultProtocolClassName, "text-(--moss-green-4)", className)}>Get</span>;
-    case "Post":
+    case 2:
       return <span className={cn(defaultProtocolClassName, "text-(--moss-orange-4)", className)}>Post</span>;
-    case "Put":
+    case 3:
       return <span className={cn(defaultProtocolClassName, "text-(--moss-blue-4)", className)}>Put</span>;
-    case "Delete":
-      return <span className={cn(defaultProtocolClassName, "text-(--moss-red-4)", className)}>Delete</span>;
+    case 4:
+      return <span className={cn(defaultProtocolClassName, "text-(--moss-red-4)", className)}>Del</span>;
 
     default:
       return <span className={cn(defaultProtocolClassName, "text-(--moss-gray-4)", className)}>{entry.protocol}</span>;
   }
 };
+
+function randomIntFromInterval(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1) + min);
+}

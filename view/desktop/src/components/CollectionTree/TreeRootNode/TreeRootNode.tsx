@@ -61,7 +61,7 @@ export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
         "hidden": isDragging,
       })}
     >
-      {instruction && <DropIndicatorWithInstruction instruction={instruction} gap={-1} canDrop={canDrop} />}
+      {instruction && <DropIndicatorWithInstruction instruction={instruction} canDrop={canDrop} />}
       <div
         ref={draggableRootRef}
         className={cn(
@@ -76,18 +76,6 @@ export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
         }}
       >
         {activePanelId === node.id && <ActiveNodeIndicator />}
-        {/* <span
-          style={{
-            width: `calc(100% - ${treePaddingLeft}px - ${treePaddingRight}px)`,
-            inset: `0 ${treePaddingLeft}px 0 ${treePaddingRight}px`,
-          }}
-          className={cn(
-            "group-hover/TreeRootHeader:background-(--moss-secondary-background-hover) absolute h-full rounded-sm",
-            {
-              "group-hover/TreeRootHeader:background-transparent": isRenamingRootNode,
-            }
-          )}
-        /> */}
 
         {isRenamingRootNode ? (
           <TreeRootNodeRenameForm
