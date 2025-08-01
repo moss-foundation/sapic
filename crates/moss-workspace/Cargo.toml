@@ -17,8 +17,8 @@ moss_text.workspace = true
 moss_file.workspace = true
 moss_git.workspace = true
 moss_bindingutils.workspace = true
-joinerror.workspace = true
 
+joinerror.workspace = true
 anyhow.workspace = true
 serde = { workspace = true, features = ["derive", "rc"] }
 ts-rs = { workspace = true, features = ["url-impl"] }

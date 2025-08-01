@@ -195,3 +195,13 @@ pub struct StreamCollectionsOutput {
     #[ts(skip)]
     pub total_returned: usize,
 }
+
+/// @category Operation
+#[derive(Debug, Deserialize, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct StreamEnvironmentsOutput {
+    #[serde(skip)]
+    #[ts(skip)]
+    pub total_returned: usize,
+}

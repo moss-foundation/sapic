@@ -6,7 +6,10 @@ use tauri::ipc::Channel as TauriChannel;
 
 use crate::{
     Workspace,
-    models::{events::StreamEnvironmentsEvent, primitives::CollectionId},
+    models::{
+        events::StreamEnvironmentsEvent, operations::StreamEnvironmentsOutput,
+        primitives::CollectionId,
+    },
     services::environment_service::EnvironmentService,
 };
 
@@ -17,7 +20,7 @@ impl<R: AppRuntime> Workspace<R> {
         &self,
         _ctx: &R::AsyncContext,
         channel: TauriChannel<StreamEnvironmentsEvent>,
-    ) -> OperationResult<()> {
+    ) -> OperationResult<StreamEnvironmentsOutput> {
         let environments = self.services.get::<EnvironmentService<R>>();
         let stream = environments.list_environments().await;
         tokio::pin!(stream);
@@ -27,7 +30,7 @@ impl<R: AppRuntime> Workspace<R> {
             if let Err(e) = channel.send(StreamEnvironmentsEvent {
                 id: environment.id,
                 collection_id: environment.collection_id.map(|id| CollectionId::from(id)),
-                name: environment.name,
+                name: environment.display_name,
                 order: environment.order,
             }) {
                 println!("Error sending environment event: {:?}", e); // TODO: log error

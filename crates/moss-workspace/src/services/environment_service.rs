@@ -47,7 +47,6 @@ where
     environment_registry: GlobalEnvironmentRegistry<R, Environment<R>>,
     model_registry: GlobalModelRegistry,
     state: Arc<RwLock<ServiceState>>,
-    _marker: PhantomData<R>,
 }
 
 impl<R> ServiceMarker for EnvironmentService<R> where R: AppRuntime {}
@@ -68,7 +67,6 @@ where
             state: Arc::new(RwLock::new(ServiceState {
                 environments: HashMap::new(),
             })),
-            _marker: PhantomData,
         }
     }
 
@@ -77,12 +75,19 @@ where
     ) -> Pin<Box<dyn Stream<Item = EnvironmentItemDescription> + Send + '_>> {
         let state = self.state.clone();
 
-        // Box::pin(async_stream::stream! {
-        //     let state_lock = state.read().await;
-        //     for (_, item) in state_lock.environments.iter() {
-        //         yield (*item).clone();
-        //     }
-        // })
+        Box::pin(async_stream::stream! {
+            let state_lock = state.read().await;
+            for (_, item) in state_lock.environments.iter() {
+                let environment_model = self.environment_registry.get(&item.id).await.unwrap();
+                yield EnvironmentItemDescription {
+                    id: item.id.clone(),
+                    collection_id: environment_model.collection_id.map(|s| s.into()),
+                    display_name: item.display_name.clone(),
+                    order: item.order,
+                    expanded: item.expanded,
+                };
+            }
+        })
     }
 
     pub async fn update_environment(

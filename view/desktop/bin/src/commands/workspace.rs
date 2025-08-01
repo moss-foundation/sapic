@@ -47,7 +47,7 @@ pub async fn stream_workspace_environments<'a, R: tauri::Runtime>(
     window: Window<R>,
     channel: TauriChannel<StreamEnvironmentsEvent>,
     options: Options,
-) -> TauriResult<()> {
+) -> TauriResult<StreamEnvironmentsOutput> {
     super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
         workspace
             .stream_environments(&ctx, channel)

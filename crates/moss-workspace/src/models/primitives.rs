@@ -24,6 +24,12 @@ impl From<String> for CollectionId {
     }
 }
 
+impl From<Arc<String>> for CollectionId {
+    fn from(s: Arc<String>) -> Self {
+        Self(s)
+    }
+}
+
 impl AsRef<str> for CollectionId {
     fn as_ref(&self) -> &str {
         self.0.as_ref()
