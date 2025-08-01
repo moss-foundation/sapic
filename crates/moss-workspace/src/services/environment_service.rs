@@ -1,24 +1,30 @@
-use std::sync::Arc;
+use std::{collections::HashMap, marker::PhantomData, sync::Arc};
 
 use derive_more::{Deref, DerefMut};
 use moss_applib::AppRuntime;
-use moss_environment::{
-    environment::Environment as EnvironmentHandle, models::primitives::EnvironmentId,
-};
-// EnvironmentId: length-10
+use moss_environment::{AnyEnvironment, models::primitives::EnvironmentId};
 
 #[derive(Deref, DerefMut)]
-pub struct EnvironmentItem<R: AppRuntime> {
+pub struct EnvironmentItem<R: AppRuntime, T: AnyEnvironment<R>> {
     pub id: EnvironmentId,
     pub name: String,
     pub display_name: String,
 
     #[deref]
     #[deref_mut]
-    pub inner: Arc<EnvironmentHandle<R>>,
+    pub inner: Arc<T>,
+
+    _marker: PhantomData<R>,
 }
 
-pub struct EnvironmentService {}
+pub struct EnvironmentService<R, Environment>
+where
+    R: AppRuntime,
+    Environment: AnyEnvironment<R>,
+{
+    _environments: HashMap<EnvironmentId, EnvironmentItem<R, Environment>>,
+    _marker: PhantomData<R>,
+}
 
 // pub async fn environments<C: Context<R>>(&self, ctx: &C) -> Result<&EnvironmentMap> {
 //     let fs = <dyn FileSystem>::global::<R, C>(ctx);

@@ -4,7 +4,8 @@ members = [
     #
     # Library crates
     #
-    "libs/joinerror", 
+    "libs/joinerror",
+    "libs/atomic-fs",
     #
     # Workspace crates
     #
@@ -30,6 +31,7 @@ members = [
     "crates/moss-hcl", 
     "crates/moss-bindingutils", 
     "crates/moss-wasm",
+    "crates/moss-contentmodel",
     #
     # Apps
     #
@@ -69,6 +71,9 @@ moss_file = { path = "crates/moss-file" }
 moss_hcl = { path = "crates/moss-hcl" }
 moss_bindingutils = { path = "crates/moss-bindingutils" }
 moss_wasm = { path = "crates/moss-wasm" }
+moss_contentmodel = { path = "crates/moss-contentmodel" }
+atomic_fs = { path = "libs/atomic-fs" }
+
 #
 # External crates
 #
@@ -121,8 +126,5 @@ wasmtime = "34.0.0"
 wasmtime-wasi = "34.0.0"
 wasmtime-wasi-http = "34.0.1"
 sha2 = "0.10.9"
-ropey = "1.6.1"
-
-tree-sitter = "0.25.8"
-tree-sitter-json = "0.24.8"
-
+jsonptr = "0.7.1"
+json-patch = "4.0.0"

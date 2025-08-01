@@ -26,7 +26,7 @@ impl ServiceProvider {
         }
     }
 
-    pub fn get<T: ServiceMarker>(&self) -> &T {
+    pub fn get<T: ServiceMarker + 'static>(&self) -> &T {
         let type_id = TypeId::of::<T>();
         let service = self.services.get(&type_id).expect(&format!(
             "Service {} must be registered before it can be used",

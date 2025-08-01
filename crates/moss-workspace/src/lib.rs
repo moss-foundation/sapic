@@ -7,6 +7,8 @@ pub mod services;
 pub mod storage;
 pub mod workspace;
 
+use moss_applib::AppRuntime;
+use moss_environment::AnyEnvironment;
 pub use workspace::Workspace;
 
 pub mod constants {
@@ -29,4 +31,9 @@ pub mod constants {
 pub mod dirs {
     pub const COLLECTIONS_DIR: &str = "collections";
     pub const ENVIRONMENTS_DIR: &str = "environments";
+}
+
+pub trait AnyWorkspace<R: AppRuntime> {
+    type Collection;
+    type Environment: AnyEnvironment<R>;
 }
