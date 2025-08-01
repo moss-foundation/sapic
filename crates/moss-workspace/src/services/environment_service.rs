@@ -13,12 +13,23 @@ use tokio::sync::RwLock;
 
 use crate::{
     errors::ErrorNotFound,
-    models::types::{CreateEnvironmentItemParams, UpdateEnvironmentItemParams},
+    models::{
+        primitives::CollectionId,
+        types::{CreateEnvironmentItemParams, UpdateEnvironmentItemParams},
+    },
 };
 
 #[derive(Clone)]
 pub struct EnvironmentItem {
     pub id: EnvironmentId,
+    pub display_name: String,
+    pub order: isize,
+    pub expanded: bool,
+}
+
+pub struct EnvironmentItemDescription {
+    pub id: EnvironmentId,
+    pub collection_id: Option<CollectionId>,
     pub display_name: String,
     pub order: isize,
     pub expanded: bool,
@@ -63,15 +74,15 @@ where
 
     pub async fn list_environments(
         &self,
-    ) -> Pin<Box<dyn Stream<Item = EnvironmentItem> + Send + '_>> {
+    ) -> Pin<Box<dyn Stream<Item = EnvironmentItemDescription> + Send + '_>> {
         let state = self.state.clone();
 
-        Box::pin(async_stream::stream! {
-            let state_lock = state.read().await;
-            for (_, item) in state_lock.environments.iter() {
-                yield (*item).clone();
-            }
-        })
+        // Box::pin(async_stream::stream! {
+        //     let state_lock = state.read().await;
+        //     for (_, item) in state_lock.environments.iter() {
+        //         yield (*item).clone();
+        //     }
+        // })
     }
 
     pub async fn update_environment(
@@ -137,6 +148,7 @@ where
         self.environment_registry
             .insert(EnvironmentModel {
                 id: id.clone(),
+                collection_id: params.collection_id.map(|id| id.inner()),
                 handle: Arc::new(environment),
                 _runtime: PhantomData,
             })

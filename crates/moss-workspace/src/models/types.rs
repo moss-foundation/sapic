@@ -10,11 +10,14 @@ use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, path::PathBuf};
 use ts_rs::TS;
 
+use crate::models::primitives::CollectionId;
+
 use super::primitives::{ActivitybarPosition, SidebarPosition};
 
 pub type EnvironmentName = String;
 
 pub struct CreateEnvironmentItemParams {
+    pub collection_id: Option<CollectionId>,
     pub abs_path: PathBuf,
     pub name: String,
     pub order: isize,

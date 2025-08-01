@@ -13,6 +13,7 @@ where
     Environment: AnyEnvironment<R>,
 {
     pub id: EnvironmentId,
+    pub collection_id: Option<Arc<String>>,
 
     #[deref]
     pub handle: Arc<Environment>,
@@ -27,6 +28,7 @@ where
     fn clone(&self) -> Self {
         Self {
             id: self.id.clone(),
+            collection_id: self.collection_id.clone(),
             handle: self.handle.clone(),
             _runtime: PhantomData,
         }

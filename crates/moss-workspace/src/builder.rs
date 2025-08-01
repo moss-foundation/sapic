@@ -118,6 +118,7 @@ impl WorkspaceBuilder {
         for env in PREDEFINED_ENVIRONMENTS.iter() {
             environment_service
                 .create_environment(CreateEnvironmentItemParams {
+                    collection_id: None,
                     abs_path: params.abs_path.join(dirs::ENVIRONMENTS_DIR),
                     name: env.name.clone(),
                     order: env.order,

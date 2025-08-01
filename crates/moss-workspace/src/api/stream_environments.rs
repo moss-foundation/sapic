@@ -1,9 +1,14 @@
+use futures::StreamExt;
 use moss_applib::AppRuntime;
 // use futures::{StreamExt, stream};
 use moss_common::api::OperationResult;
 use tauri::ipc::Channel as TauriChannel;
 
-use crate::{Workspace, models::events::StreamEnvironmentsEvent};
+use crate::{
+    Workspace,
+    models::{events::StreamEnvironmentsEvent, primitives::CollectionId},
+    services::environment_service::EnvironmentService,
+};
 
 // const MAX_CONCURRENCY_LIMIT: usize = 10;
 
@@ -11,9 +16,27 @@ impl<R: AppRuntime> Workspace<R> {
     pub async fn stream_environments(
         &self,
         _ctx: &R::AsyncContext,
-        _channel: TauriChannel<StreamEnvironmentsEvent>,
+        channel: TauriChannel<StreamEnvironmentsEvent>,
     ) -> OperationResult<()> {
-        unimplemented!()
+        let environments = self.services.get::<EnvironmentService<R>>();
+        let stream = environments.list_environments().await;
+        tokio::pin!(stream);
+
+        let mut total_returned = 0;
+        while let Some(environment) = stream.next().await {
+            if let Err(e) = channel.send(StreamEnvironmentsEvent {
+                id: environment.id,
+                collection_id: environment.collection_id.map(|id| CollectionId::from(id)),
+                name: environment.name,
+                order: environment.order,
+            }) {
+                println!("Error sending environment event: {:?}", e); // TODO: log error
+            } else {
+                total_returned += 1;
+            }
+        }
+
+        Ok(StreamEnvironmentsOutput { total_returned })
 
         // let collections = self.collections(ctx).await?;
         // let environments = self.environments(ctx).await?;

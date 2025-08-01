@@ -12,6 +12,10 @@ impl CollectionId {
     pub fn new() -> Self {
         Self(Arc::new(nanoid!(10)))
     }
+
+    pub fn inner(self) -> Arc<String> {
+        self.0
+    }
 }
 
 impl From<String> for CollectionId {
