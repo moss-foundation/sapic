@@ -3,8 +3,8 @@ import { cn } from "@/utils";
 
 import Icon from "../../lib/ui/Icon";
 import NodeLabel from "../CollectionTree/NodeLabel";
-import { TreeNodeIcon } from "../CollectionTree/TreeNode/TreeNodeIcon";
 import { TreeCollectionNode } from "../CollectionTree/types";
+import { EntryIcon } from "../EntryIcon";
 
 interface BreadcrumbNodeProps {
   node: TreeCollectionNode;
@@ -58,7 +58,7 @@ export const BreadcrumbNode = ({
         }}
         className="hover:background-(--moss-secondary-background-hover) relative flex w-full cursor-pointer items-center gap-1 rounded-sm py-0.5 dark:hover:text-black"
       >
-        <TreeNodeIcon node={node} />
+        <EntryIcon entry={node} />
         <NodeLabel label={node.name} />
         <span className="DragHandle h-full min-h-4 grow" />
         <Icon

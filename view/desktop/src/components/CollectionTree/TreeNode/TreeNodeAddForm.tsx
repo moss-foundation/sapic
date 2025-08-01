@@ -3,10 +3,10 @@ import { useContext } from "react";
 import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
 
+import { EntryIcon } from "../../EntryIcon";
 import { NodeAddForm } from "../NodeAddForm";
 import { TreeContext } from "../Tree";
 import { TreeCollectionNode } from "../types";
-import { TreeNodeIcon } from "./TreeNodeIcon";
 
 interface TreeNodeAddFormProps {
   depth: number;
@@ -30,8 +30,8 @@ const TreeNodeAddForm = ({
   return (
     <div style={{ paddingLeft: nodePaddingLeftForAddForm }} className="flex w-full min-w-0 items-center gap-1 py-0.5">
       <Icon icon="ChevronRight" className={cn("opacity-0")} />
-      <TreeNodeIcon
-        node={{
+      <EntryIcon
+        entry={{
           id: "Placeholder_AddingNodeId",
           name: "Placeholder_AddingNodeName",
           kind: isAddingFolderNode ? "Dir" : "Item",

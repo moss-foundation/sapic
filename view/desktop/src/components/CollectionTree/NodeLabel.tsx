@@ -30,7 +30,7 @@ export const NodeLabel = ({
   };
 
   return (
-    <span className={cn("w-max truncate", className)} onClick={onClick}>
+    <span className={cn("NodeLabel w-max truncate", className)} onClick={onClick}>
       {searchInput ? renderHighlightedLabel() : label}
     </span>
   );

@@ -1,6 +1,6 @@
 import { HTMLAttributes, MouseEvent, useCallback, useEffect, useState } from "react";
 
-import { TreeNodeIcon } from "@/components/CollectionTree/TreeNode/TreeNodeIcon";
+import { EntryIcon } from "@/components/EntryIcon";
 import { Icon } from "@/lib/ui/Icon";
 import { IDockviewPanelHeaderProps } from "@repo/moss-tabs";
 
@@ -65,7 +65,7 @@ export const CustomTab = ({
   return (
     <div {...rest} onClick={handleClick} data-testid="dockview-custom-tab" className="dv-default-tab">
       <span className="dv-default-tab-content flex max-w-40 items-center gap-1">
-        {params?.node && <TreeNodeIcon node={params?.node} />}
+        {params?.node && <EntryIcon entry={params?.node} />}
         <span className="truncate">{title}</span>
       </span>
 
