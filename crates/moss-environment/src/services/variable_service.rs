@@ -4,7 +4,7 @@ use json_patch::{AddOperation, PatchOperation, RemoveOperation, jsonptr::Pointer
 use moss_applib::{AppRuntime, ServiceMarker};
 use moss_hcl::json_to_hcl;
 use serde_json::{Value as JsonValue, json, map::Map as JsonMap};
-use std::{collections::HashMap, marker::PhantomData, path::Path};
+use std::{collections::HashMap, marker::PhantomData, path::Path, sync::Arc};
 use tokio::sync::RwLock;
 
 use crate::{
@@ -41,8 +41,8 @@ where
 {
     state: RwLock<ServiceState>,
     #[allow(dead_code)]
-    storage_service: StorageService<R>,
-    sync_service: SyncService,
+    storage_service: Arc<StorageService<R>>,
+    sync_service: Arc<SyncService>,
     _marker: PhantomData<R>,
 }
 
@@ -57,8 +57,8 @@ where
 {
     pub fn new(
         source: Option<&JsonMap<String, JsonValue>>,
-        storage_service: StorageService<R>,
-        sync_service: SyncService,
+        storage_service: Arc<StorageService<R>>,
+        sync_service: Arc<SyncService>,
     ) -> joinerror::Result<Self> {
         let variables = if let Some(source) = source {
             collect_variables(source)?
@@ -75,7 +75,7 @@ where
     }
 
     pub async fn batch_remove(&self, path: &Path, ids: Vec<VariableId>) -> joinerror::Result<()> {
-        let state = self.state.write().await;
+        let mut state = self.state.write().await;
         if state.variables.is_empty() {
             return Ok(());
         }
@@ -94,7 +94,6 @@ where
         // to monitor changes to the JsonValue file. We'll send the updated value to that channel, and in this service,
         // we'll run a background task that listens to the channel and automatically updates the state when it receives any changes.
         {
-            let mut state = self.state.write().await;
             let map = json_value.get("variable").unwrap().as_object().unwrap();
             let variables = collect_variables(map)?;
 
@@ -222,7 +221,7 @@ mod tests {
     use std::{path::PathBuf, sync::Arc};
 
     use crate::{
-        AnyEnvironment,
+        AnyEnvironment, ModifyEnvironmentParams,
         builder::{CreateEnvironmentParams, EnvironmentBuilder},
         configuration::{MetadataDecl, SourceFile, VariableSpec},
         models::primitives::EnvironmentId,
@@ -356,16 +355,20 @@ mod tests {
 
         let fs = Arc::new(RealFileSystem::new());
         let global_model_registry = GlobalModelRegistry::new();
-        let storage_service: StorageService<MockAppRuntime> =
-            StorageService::new(Arc::new(TestVariableStore {}));
-        let sync_service = SyncService::new(global_model_registry.clone(), fs.clone());
-        let variable_service = VariableService::new(None, storage_service, sync_service).unwrap();
+        let storage_service: Arc<StorageService<MockAppRuntime>> =
+            Arc::new(StorageService::new(Arc::new(TestVariableStore {})));
+        let sync_service = Arc::new(SyncService::new(global_model_registry.clone(), fs.clone()));
+        let variable_service =
+            VariableService::new(None, storage_service.clone(), sync_service.clone()).unwrap();
 
         struct MyEnvStore<Environment: AnyEnvironment<MockAppRuntime>> {
             map: HashMap<String, Environment>,
         }
 
-        let _env = EnvironmentBuilder::new(fs, global_model_registry)
+        let env = EnvironmentBuilder::new(fs, global_model_registry)
+            .with_service(variable_service)
+            .with_service::<StorageService<MockAppRuntime>>(storage_service)
+            .with_service::<SyncService>(sync_service)
             .create::<MockAppRuntime>(CreateEnvironmentParams {
                 name: "data".to_string(),
                 abs_path: abs_path.clone(),
@@ -374,24 +377,26 @@ mod tests {
             .await
             .unwrap();
 
-        let mut env_store = MyEnvStore {
-            map: HashMap::new(),
-        };
-        env_store.map.insert("data".to_string(), _env);
+        // let mut env_store = MyEnvStore {
+        //     map: HashMap::new(),
+        // };
+        // env_store.map.insert("data".to_string(), env);
 
-        variable_service
-            .batch_add(
-                &abs_path,
-                vec![AddVariableParams {
-                    name: "test".to_string(),
-                    global_value: json!("test_value"),
-                    desc: None,
-                    local_value: JsonValue::Null,
-                    order: 0,
-                    options: VariableOptions { disabled: false },
-                }],
-            )
-            .await
-            .unwrap();
+        env.modify(ModifyEnvironmentParams {
+            name: None,
+            color: None,
+            vars_to_update: vec![],
+            vars_to_add: vec![AddVariableParams {
+                name: "test".to_string(),
+                global_value: json!("test_value"),
+                desc: None,
+                local_value: JsonValue::Null,
+                order: 0,
+                options: VariableOptions { disabled: false },
+            }],
+            vars_to_delete: vec![],
+        })
+        .await
+        .unwrap();
     }
 }

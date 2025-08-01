@@ -100,6 +100,7 @@ impl EnvironmentBuilder {
         let hcl_value = hcl::to_value(file).unwrap(); // TODO: handle errors
         let json_value = serde_json::to_value(hcl_value).unwrap(); // TODO: handle errors
         let abs_path: Arc<Path> = abs_path.into();
+        dbg!(&abs_path);
         self.models
             .insert(
                 abs_path.clone(),

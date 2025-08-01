@@ -26,6 +26,8 @@ impl EnvironmentPath {
     pub fn new(abs_path: Arc<Path>) -> joinerror::Result<Self> {
         debug_assert!(abs_path.is_absolute());
 
+        dbg!(&abs_path);
+
         let parent = abs_path
             .parent()
             .ok_or_else(|| joinerror::Error::new::<()>("environment path must have a parent"))?;

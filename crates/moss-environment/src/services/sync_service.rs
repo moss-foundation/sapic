@@ -17,6 +17,8 @@ impl ServiceMarker for SyncService {}
 
 impl AnySyncService for SyncService {
     async fn save(&self, abs_path: &Path) -> joinerror::Result<()> {
+        dbg!(&abs_path);
+
         let model = self
             .models
             .get(abs_path)
@@ -60,6 +62,8 @@ impl AnySyncService for SyncService {
     }
 
     async fn apply(&self, path: &Path, patches: &[PatchOperation]) -> joinerror::Result<JsonValue> {
+        dbg!(&path);
+
         let json_value = self
             .models
             .with_model_mut(path, |model| {
