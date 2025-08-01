@@ -44,7 +44,6 @@ export const TreeNodeActions = ({
       )}
     >
       <ActionButton
-        size="small"
         customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
         icon="Add"
         onClick={() => setIsAddingFileNode(true)}
@@ -54,7 +53,6 @@ export const TreeNodeActions = ({
         <ActionMenu.Root onOpenChange={setShowDropdown} modal={showDropdown}>
           <ActionMenu.Trigger asChild className="">
             <ActionButton
-              size="small"
               customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
               icon="MoreHorizontal"
             />

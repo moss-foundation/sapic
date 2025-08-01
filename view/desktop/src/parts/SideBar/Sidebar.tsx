@@ -31,7 +31,6 @@ export const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
         className
       )}
     >
-      <div className="absolute right-[8px] z-50 h-full w-px bg-red-500" />
       {children}
     </div>
   );

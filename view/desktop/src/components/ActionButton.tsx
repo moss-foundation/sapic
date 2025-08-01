@@ -5,7 +5,6 @@ import { cn } from "@/utils";
 
 interface ActionButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   icon: Icons;
-  size?: "small" | "medium";
   className?: string;
   iconClassName?: string;
   customHoverBackground?: string;
@@ -13,15 +12,13 @@ interface ActionButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(
-  ({ icon, className, iconClassName, customHoverBackground, size = "medium", ...props }, ref) => {
+  ({ icon, className, iconClassName, customHoverBackground, ...props }, ref) => {
     const buttonContent = (
       <div
         className={cn(
-          `background-(--moss-icon-secondary-background) active:background-(--moss-icon-secondary-background-active) flex cursor-pointer items-center justify-center rounded-[3px] text-(--moss-icon-secondary-text)`,
+          `background-(--moss-icon-secondary-background) active:background-(--moss-icon-secondary-background-active) flex cursor-pointer items-center justify-center rounded-[3px] p-[3px] text-(--moss-icon-secondary-text)`,
           {
             "hover:background-(--moss-icon-secondary-background-hover)": !customHoverBackground,
-            "p-[1px]": size === "small",
-            "p-[3px]": size === "medium",
             "hover:background-transparent cursor-default opacity-50 hover:text-(--moss-icon-secondary-text)":
               props.disabled,
           },
@@ -33,18 +30,7 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(
     );
 
     return (
-      <button
-        ref={ref}
-        className={cn(
-          "grid place-items-center",
-          {
-            "size-[18px]": size === "small",
-            "size-[26px]": size === "medium",
-          },
-          className
-        )}
-        {...props}
-      >
+      <button ref={ref} className={cn("grid place-items-center", className)} {...props}>
         {buttonContent}
       </button>
     );

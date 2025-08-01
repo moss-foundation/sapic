@@ -60,7 +60,7 @@ export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
       {instruction && <DropIndicatorWithInstruction instruction={instruction} gap={-1} canDrop={canDrop} />}
       <div
         ref={draggableRootRef}
-        className="group/TreeRootHeader relative flex w-full min-w-0 items-center justify-between py-0.5"
+        className="group/TreeRootHeader relative flex w-full min-w-0 items-center justify-between py-0.75"
         style={{
           paddingLeft: treePaddingLeft,
           paddingRight: treePaddingRight,
