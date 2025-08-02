@@ -2,8 +2,6 @@ import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item"
 import { EntryInfo } from "@repo/moss-collection";
 import { StreamCollectionsEvent, WorkspaceMode } from "@repo/moss-workspace";
 
-export type SortTypes = "none" | "order" | "alphabetically";
-
 export interface TreeCollectionRootNode extends StreamCollectionsEvent {
   expanded: boolean;
   endpoints: TreeCollectionNode;
@@ -49,7 +47,6 @@ export interface TreeProps {
   treePaddingRight?: number;
   nodeOffset?: number;
   searchInput?: string;
-  sortBy?: SortTypes;
   displayMode?: WorkspaceMode;
   showNodeOrders?: boolean;
 
@@ -61,7 +58,6 @@ export interface TreeContextProps extends StreamCollectionsEvent {
   treePaddingRight: number;
   nodeOffset: number;
   searchInput?: string;
-  sortBy?: SortTypes;
   allFoldersAreCollapsed: boolean;
   allFoldersAreExpanded: boolean;
   displayMode: WorkspaceMode;

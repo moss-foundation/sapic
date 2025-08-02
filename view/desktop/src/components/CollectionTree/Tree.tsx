@@ -18,7 +18,6 @@ export const TreeContext = createContext<TreeContextProps>({
   allFoldersAreExpanded: false,
   allFoldersAreCollapsed: true,
   searchInput: undefined,
-  sortBy: "none",
   displayMode: "REQUEST_FIRST",
   showNodeOrders: false,
 });
@@ -30,7 +29,6 @@ export const CollectionTree = ({
   treePaddingRight = 8,
   nodeOffset = 12,
   searchInput,
-  sortBy = "none",
   displayMode = "REQUEST_FIRST",
   showNodeOrders = false,
 }: TreeProps) => {
@@ -56,7 +54,6 @@ export const CollectionTree = ({
         allFoldersAreExpanded: checkIfAllFoldersAreExpanded(tree),
         allFoldersAreCollapsed: checkIfAllFoldersAreCollapsed(tree),
         searchInput,
-        sortBy,
         displayMode,
         showNodeOrders,
       }}
