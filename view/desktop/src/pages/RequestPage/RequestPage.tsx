@@ -117,6 +117,16 @@ const RequestPage: React.FC<
     [requestData.url.raw, updateRequestData]
   );
 
+  const paramsCount = React.useMemo(() => {
+    const queryParamsCount = requestData.url.query_params.filter(
+      (param) => (param.key.trim() !== "" || param.value.trim() !== "") && !param.disabled
+    ).length;
+    const pathParamsCount = requestData.url.path_params.filter(
+      (param) => param.key.trim() !== "" && !param.disabled
+    ).length;
+    return queryParamsCount + pathParamsCount;
+  }, [requestData.url.query_params, requestData.url.path_params]);
+
   const requestTabs: TabItem[] = [
     {
       id: "params",
@@ -124,7 +134,7 @@ const RequestPage: React.FC<
         <div className="flex items-center gap-1">
           <Icon icon="SquareBrackets" className="h-4 w-4" />
           <span>Params</span>
-          <Badge count={6} />
+          <Badge count={paramsCount} />
         </div>
       ),
       content: <ParamsTabContent {...props} />,
