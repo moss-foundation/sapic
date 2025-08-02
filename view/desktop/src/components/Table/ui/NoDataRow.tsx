@@ -5,12 +5,12 @@ import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { dropTargetForElements, monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { Table } from "@tanstack/react-table";
 
-import { TableRowDnDData, TestData } from "../types";
+import { TableRowDnDData, ParameterData } from "../types";
 
 interface NoDataRowProps {
-  setData: (data: TestData[]) => void;
+  setData: (data: ParameterData[]) => void;
   tableId: string;
-  table: Table<TestData>;
+  table: Table<ParameterData>;
 }
 
 export const NoDataRow = ({ setData, tableId, table }: NoDataRowProps) => {

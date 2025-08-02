@@ -66,12 +66,18 @@ interface PageContainerTabContentProps {
   value: string;
   children: React.ReactNode;
   className?: string;
+  noPadding?: boolean;
 }
 
-export const PageContainerTabContent: React.FC<PageContainerTabContentProps> = ({ value, children, className }) => {
+export const PageContainerTabContent: React.FC<PageContainerTabContentProps> = ({
+  value,
+  children,
+  className,
+  noPadding,
+}) => {
   return (
     <TabsContent value={value} className={cn("flex-1", className)}>
-      <div className="h-full min-w-fit p-3">{children}</div>
+      <div className={cn("h-full min-w-fit", noPadding ? "" : "p-3")}>{children}</div>
     </TabsContent>
   );
 };

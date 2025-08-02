@@ -81,7 +81,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
           },
           someRandomString: "someRandomString",
         },
-        component: "Default",
+        component: node.class === "Request" ? "Request" : "Default",
       });
     };
 

@@ -3,10 +3,10 @@ import { useState } from "react";
 import { cn } from "@/utils";
 import { CellContext } from "@tanstack/react-table";
 
-import { TestData } from "../types";
+import { ParameterData } from "../types";
 
 interface DefaultCellInputProps {
-  info: CellContext<TestData, number | string> & { focusOnMount?: boolean };
+  info: CellContext<ParameterData, number | string> & { focusOnMount?: boolean };
 }
 
 export const DefaultInputCell = ({ info }: DefaultCellInputProps) => {

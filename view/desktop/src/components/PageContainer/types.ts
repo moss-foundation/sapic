@@ -27,4 +27,5 @@ export interface PageContainerWithTabsProps {
   activeTabId: string;
   onTabChange: (tabId: string) => void;
   className?: string;
+  noPadding?: boolean;
 }
