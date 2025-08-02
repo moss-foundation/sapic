@@ -205,7 +205,7 @@ const RequestPage: React.FC<
           {props.params?.node ? (
             <div className="flex-1">
               {props.params?.collectionId && props.params?.node?.id && (
-                <div className="mx-3 mt-4">
+                <div className="mb-3 -ml-2">
                   <Breadcrumbs collectionId={props.params.collectionId} nodeId={props.params.node.id} />
                 </div>
               )}
