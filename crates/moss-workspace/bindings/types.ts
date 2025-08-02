@@ -71,7 +71,15 @@ export type EditorPartStateInfo = {
 /**
  * @category Type
  */
-export type EnvironmentInfo = { id: string; collectionId?: string; name: string; order?: number };
+export type EnvironmentInfo = {
+  id: string;
+  collectionId?: string;
+  name: string;
+  displayName: string;
+  order: number;
+  color?: string;
+  variables: Array<VariableInfo>;
+};
 
 /**
  * @category Type
@@ -82,6 +90,18 @@ export type PanelPartStateInfo = { size: number; visible: boolean };
  * @category Type
  */
 export type SidebarPartStateInfo = { position: SidebarPosition; size: number; visible: boolean };
+
+/**
+ * @category Type
+ */
+export type VariableInfo = {
+  name: string;
+  globalValue: JsonValue;
+  localValue: JsonValue;
+  disabled: boolean;
+  order?: number;
+  desc?: string;
+};
 
 /**
  * @category Type

@@ -5,6 +5,8 @@ pub mod models;
 pub mod registry;
 pub mod services;
 
+use std::{path::Path, sync::Arc};
+
 pub use environment::Environment;
 pub use registry::GlobalEnvironmentRegistry;
 
@@ -62,6 +64,8 @@ pub struct ModifyEnvironmentParams {
 
 #[allow(private_bounds, async_fn_in_trait)]
 pub trait AnyEnvironment<R: AppRuntime> {
+    async fn abs_path(&self) -> Arc<Path>;
+    async fn color(&self) -> Option<String>;
     async fn name(&self) -> String;
     async fn modify(&self, params: ModifyEnvironmentParams) -> joinerror::Result<()>;
 }

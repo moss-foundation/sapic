@@ -21,7 +21,7 @@ async fn create_collection_success() {
     let (ctx, _workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
-    let create_collection_result = workspace
+    let create_collection_output = workspace
         .create_collection(
             &ctx,
             &CreateCollectionInput {
@@ -32,9 +32,8 @@ async fn create_collection_success() {
                 icon_path: None,
             },
         )
-        .await;
-
-    let create_collection_output = create_collection_result.unwrap();
+        .await
+        .unwrap();
 
     // Verify through stream_collections
     let channel = Channel::new(move |_| Ok(()));

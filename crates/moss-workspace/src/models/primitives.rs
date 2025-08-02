@@ -4,6 +4,14 @@ use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use ts_rs::TS;
 
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "UPPERCASE")]
+#[ts(export, export_to = "primitives.ts")]
+pub enum ChangeCollectionId {
+    Update(CollectionId),
+    Remove,
+}
+
 /// @category Primitive
 #[derive(Clone, Debug, PartialEq, Hash, Eq, Deref, Serialize, Deserialize)]
 #[serde(transparent)]
@@ -34,6 +42,19 @@ impl AsRef<str> for CollectionId {
     fn as_ref(&self) -> &str {
         self.0.as_ref()
     }
+}
+
+#[rustfmt::skip]
+impl TS for CollectionId {
+    type WithoutGenerics = Self;
+    type OptionInnerType = Self;
+
+    fn name() -> String { "string".to_string() }
+    fn inline() -> String { "string".to_string() }
+    fn inline_flattened() -> String { "string".to_string() }
+    fn decl() -> String { unreachable!() }
+    fn decl_concrete() -> String { unreachable!() }
+    fn dependencies() -> Vec<ts_rs::Dependency> { vec![] }
 }
 
 /// @category Primitive

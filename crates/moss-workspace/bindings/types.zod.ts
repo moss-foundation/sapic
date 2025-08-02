@@ -43,13 +43,6 @@ export const editorGridNodeSchema: z.ZodSchema<EditorGridNode> = z.lazy(() =>
   ])
 );
 
-export const environmentInfoSchema = z.object({
-  id: z.string(),
-  collectionId: z.string().optional(),
-  name: z.string(),
-  order: z.number().optional(),
-});
-
 export const panelPartStateInfoSchema = z.object({
   size: z.number(),
   visible: z.boolean(),
@@ -88,8 +81,27 @@ export const editorPartStateInfoSchema = z.object({
   activeGroup: z.string().optional(),
 });
 
+export const variableInfoSchema = z.object({
+  name: z.string(),
+  globalValue: jsonValueSchema,
+  localValue: jsonValueSchema,
+  disabled: z.boolean(),
+  order: z.number().optional(),
+  desc: z.string().optional(),
+});
+
 export const sidebarPartStateInfoSchema = z.object({
   position: sidebarPositionSchema,
   size: z.number(),
   visible: z.boolean(),
+});
+
+export const environmentInfoSchema = z.object({
+  id: z.string(),
+  collectionId: z.string().optional(),
+  name: z.string(),
+  displayName: z.string(),
+  order: z.number(),
+  color: z.string().optional(),
+  variables: z.array(variableInfoSchema),
 });

@@ -371,7 +371,7 @@ mod tests {
             .with_service::<SyncService>(sync_service)
             .create::<MockAppRuntime>(CreateEnvironmentParams {
                 name: "data".to_string(),
-                abs_path: abs_path.clone(),
+                abs_path: &abs_path,
                 color: None,
             })
             .await

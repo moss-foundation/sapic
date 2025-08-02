@@ -1,3 +1,4 @@
+use moss_bindingutils::primitives::{ChangeJsonValue, ChangeString};
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use ts_rs::TS;
@@ -28,7 +29,17 @@ pub struct AddVariableParams {
     pub options: VariableOptions,
 }
 
-pub struct UpdateVariableParams {}
+#[derive(Clone, Debug, Deserialize, Serialize, TS)]
+#[ts(export, export_to = "types.ts")]
+#[ts(optional_fields)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateVariableParams {
+    pub name: Option<VariableName>,
+    pub global_value: Option<ChangeJsonValue>,
+    pub local_value: Option<ChangeJsonValue>,
+    pub order: Option<isize>,
+    pub desc: Option<ChangeString>,
+}
 
 /// @category Type
 #[derive(Clone, Debug, Deserialize, Serialize, TS, PartialEq, Eq)]

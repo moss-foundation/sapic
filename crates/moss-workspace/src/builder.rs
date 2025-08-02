@@ -4,6 +4,7 @@ use moss_applib::{
     AppRuntime, ServiceMarker,
     providers::{ServiceMap, ServiceProvider},
 };
+use moss_environment::models::primitives::EnvironmentId;
 use moss_file::json::JsonFileHandle;
 use moss_fs::FileSystem;
 use std::{any::TypeId, cell::LazyCell, path::Path, sync::Arc};
@@ -11,8 +12,7 @@ use std::{any::TypeId, cell::LazyCell, path::Path, sync::Arc};
 use crate::{
     Workspace, dirs,
     manifest::{MANIFEST_FILE_NAME, ManifestModel},
-    models::types::CreateEnvironmentItemParams,
-    services::environment_service::EnvironmentService,
+    services::environment_service::{CreateEnvironmentItemParams, EnvironmentService},
 };
 
 struct PredefinedEnvironment {
@@ -97,6 +97,7 @@ impl WorkspaceBuilder {
 
     pub async fn create<R: AppRuntime>(
         self,
+        ctx: &R::AsyncContext,
         params: CreateWorkspaceParams,
         activity_indicator: ActivityIndicator<R::EventLoop>, // FIXME: will be passed as a service in the future
     ) -> Result<Workspace<R>> {
@@ -117,13 +118,15 @@ impl WorkspaceBuilder {
         let environment_service = services.get::<EnvironmentService<R>>();
         for env in PREDEFINED_ENVIRONMENTS.iter() {
             environment_service
-                .create_environment(CreateEnvironmentItemParams {
-                    collection_id: None,
-                    abs_path: params.abs_path.join(dirs::ENVIRONMENTS_DIR),
-                    name: env.name.clone(),
-                    order: env.order,
-                    color: env.color.clone(),
-                })
+                .create_environment(
+                    ctx,
+                    CreateEnvironmentItemParams {
+                        collection_id: None,
+                        name: env.name.clone(),
+                        order: env.order,
+                        color: env.color.clone(),
+                    },
+                )
                 .await?;
         }
 

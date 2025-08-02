@@ -14,5 +14,6 @@ export const streamEnvironmentsEventSchema = z.object({
   id: z.string(),
   collectionId: z.string().optional(),
   name: z.string(),
-  order: z.number().optional(),
+  order: z.number(),
+  expanded: z.boolean(),
 });

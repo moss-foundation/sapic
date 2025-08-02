@@ -21,9 +21,9 @@ use crate::{
     models::primitives::EnvironmentId,
 };
 
-pub struct CreateEnvironmentParams {
+pub struct CreateEnvironmentParams<'a> {
     pub name: String,
-    pub abs_path: PathBuf,
+    pub abs_path: &'a Path,
     pub color: Option<String>,
 }
 
@@ -54,9 +54,9 @@ impl EnvironmentBuilder {
         self
     }
 
-    pub async fn create<R: AppRuntime>(
+    pub async fn create<'a, R: AppRuntime>(
         self,
-        params: CreateEnvironmentParams,
+        params: CreateEnvironmentParams<'a>,
     ) -> joinerror::Result<Environment<R>> {
         debug_assert!(params.abs_path.is_absolute());
 
@@ -100,7 +100,6 @@ impl EnvironmentBuilder {
         let hcl_value = hcl::to_value(file).unwrap(); // TODO: handle errors
         let json_value = serde_json::to_value(hcl_value).unwrap(); // TODO: handle errors
         let abs_path: Arc<Path> = abs_path.into();
-        dbg!(&abs_path);
         self.models
             .insert(
                 abs_path.clone(),

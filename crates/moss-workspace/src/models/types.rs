@@ -1,39 +1,14 @@
 mod editor;
 pub use editor::*;
 
-use moss_bindingutils::primitives::ChangeString;
-use moss_environment::models::{
-    primitives::{EnvironmentId, VariableId},
-    types::{AddVariableParams, UpdateVariableParams, VariableInfo},
-};
+use moss_environment::models::types::VariableInfo;
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, path::PathBuf};
+use std::collections::HashMap;
 use ts_rs::TS;
-
-use crate::models::primitives::CollectionId;
 
 use super::primitives::{ActivitybarPosition, SidebarPosition};
 
 pub type EnvironmentName = String;
-
-pub struct CreateEnvironmentItemParams {
-    pub collection_id: Option<CollectionId>,
-    pub abs_path: PathBuf,
-    pub name: String,
-    pub order: isize,
-    pub color: Option<String>,
-}
-
-pub struct UpdateEnvironmentItemParams {
-    pub id: EnvironmentId,
-    pub name: Option<String>,
-    pub expanded: Option<bool>,
-    pub order: Option<isize>,
-    pub color: Option<ChangeString>,
-    pub vars_to_add: Vec<AddVariableParams>,
-    pub vars_to_update: Vec<UpdateVariableParams>,
-    pub vars_to_delete: Vec<VariableId>,
-}
 
 /// @category Type
 #[derive(Debug, PartialEq, Serialize, Deserialize, TS, Clone)]

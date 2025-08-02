@@ -9,7 +9,8 @@ use moss_applib::{
     mock::MockAppRuntime,
     providers::{ServiceMap, ServiceProvider},
 };
-use moss_fs::{FileSystem, RealFileSystem};
+use moss_environment::GlobalEnvironmentRegistry;
+use moss_fs::{FileSystem, RealFileSystem, model_registry::GlobalModelRegistry};
 use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_testutils::random_name::random_workspace_name;
 use moss_workspace::{
@@ -24,7 +25,8 @@ use moss_workspace::{
     },
     services::{
         AnyCollectionService, AnyLayoutService, DynCollectionService, DynLayoutService,
-        DynStorageService, collection_service::CollectionService, layout_service::LayoutService,
+        DynStorageService, collection_service::CollectionService,
+        environment_service::EnvironmentService, layout_service::LayoutService,
         storage_service::StorageService,
     },
     storage::segments::SEGKEY_COLLECTION,
@@ -94,6 +96,17 @@ pub async fn setup_test_workspace() -> (
             collection_service.clone() as Arc<dyn AnyCollectionService<MockAppRuntime>>
         );
 
+    let global_env_registry = GlobalEnvironmentRegistry::new();
+    let global_model_registry = GlobalModelRegistry::new();
+
+    let environment_service: Arc<EnvironmentService<MockAppRuntime>> = EnvironmentService::new(
+        &abs_path,
+        fs.clone(),
+        global_env_registry,
+        global_model_registry,
+    )
+    .into();
+
     {
         services.insert(
             TypeId::of::<LayoutService<MockAppRuntime>>(),
@@ -107,13 +120,19 @@ pub async fn setup_test_workspace() -> (
             TypeId::of::<CollectionService<MockAppRuntime>>(),
             collection_service.clone(),
         );
+        services.insert(
+            TypeId::of::<EnvironmentService<MockAppRuntime>>(),
+            environment_service.clone(),
+        );
     }
 
     let workspace = WorkspaceBuilder::new(fs.clone())
         .with_service::<DynStorageService<MockAppRuntime>>(storage_service_dyn)
         .with_service::<DynCollectionService<MockAppRuntime>>(collection_service_dyn)
         .with_service::<DynLayoutService<MockAppRuntime>>(layout_service_dyn)
+        .with_service::<EnvironmentService<MockAppRuntime>>(environment_service.clone())
         .create(
+            &ctx,
             CreateWorkspaceParams {
                 name: random_workspace_name(),
                 abs_path: abs_path.clone(),

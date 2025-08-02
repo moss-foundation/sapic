@@ -11,7 +11,6 @@ use ts_rs::TS;
 #[ts(optional_fields)]
 #[ts(export, export_to = "events.ts")]
 pub struct StreamCollectionsEvent {
-    #[ts(type = "string")]
     pub id: CollectionId,
     pub name: String,
     pub order: Option<isize>,
@@ -26,14 +25,13 @@ pub struct StreamCollectionsEvent {
 #[ts(optional_fields)]
 #[ts(export, export_to = "events.ts")]
 pub struct StreamEnvironmentsEvent {
-    #[ts(type = "string")]
     pub id: EnvironmentId,
 
     /// The id of the collection that the environment belongs to.
     /// If the environment is global, this will be `None`.
-    #[ts(type = "string")]
     pub collection_id: Option<CollectionId>,
 
     pub name: String,
     pub order: isize,
+    pub expanded: bool,
 }

@@ -26,8 +26,6 @@ impl EnvironmentPath {
     pub fn new(abs_path: Arc<Path>) -> joinerror::Result<Self> {
         debug_assert!(abs_path.is_absolute());
 
-        dbg!(&abs_path);
-
         let parent = abs_path
             .parent()
             .ok_or_else(|| joinerror::Error::new::<()>("environment path must have a parent"))?;
@@ -80,8 +78,16 @@ impl<R: AppRuntime> Environment<R> {
 }
 
 impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
+    async fn abs_path(&self) -> Arc<Path> {
+        self.state.read().await.abs_path.path.clone()
+    }
+
     async fn name(&self) -> String {
         self.state.read().await.abs_path.name.clone()
+    }
+
+    async fn color(&self) -> Option<String> {
+        None // TODO: hardcoded for now
     }
 
     async fn modify(&self, params: ModifyEnvironmentParams) -> joinerror::Result<()> {

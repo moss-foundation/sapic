@@ -1,23 +1,44 @@
 use futures::Stream;
 use moss_applib::{AppRuntime, ServiceMarker};
+use moss_bindingutils::primitives::ChangeString;
 use moss_environment::{
     AnyEnvironment, Environment, ModifyEnvironmentParams,
     builder::EnvironmentBuilder,
-    models::primitives::EnvironmentId,
+    models::{
+        primitives::{EnvironmentId, VariableId},
+        types::{AddVariableParams, UpdateVariableParams},
+    },
     registry::{EnvironmentModel, GlobalEnvironmentRegistry},
 };
 use moss_fs::{FileSystem, model_registry::GlobalModelRegistry};
 use moss_text::sanitized::sanitize;
-use std::{collections::HashMap, marker::PhantomData, pin::Pin, sync::Arc};
+use std::{
+    collections::HashMap,
+    marker::PhantomData,
+    path::{Path, PathBuf},
+    pin::Pin,
+    sync::Arc,
+};
 use tokio::sync::RwLock;
 
-use crate::{
-    errors::ErrorNotFound,
-    models::{
-        primitives::CollectionId,
-        types::{CreateEnvironmentItemParams, UpdateEnvironmentItemParams},
-    },
-};
+use crate::{dirs, errors::ErrorNotFound, models::primitives::CollectionId};
+
+pub struct CreateEnvironmentItemParams {
+    pub collection_id: Option<CollectionId>,
+    pub name: String,
+    pub order: isize,
+    pub color: Option<String>,
+}
+
+pub struct UpdateEnvironmentItemParams {
+    pub name: Option<String>,
+    pub expanded: Option<bool>,
+    pub order: Option<isize>,
+    pub color: Option<ChangeString>,
+    pub vars_to_add: Vec<AddVariableParams>,
+    pub vars_to_update: Vec<UpdateVariableParams>,
+    pub vars_to_delete: Vec<VariableId>,
+}
 
 #[derive(Clone)]
 pub struct EnvironmentItem {
@@ -33,6 +54,8 @@ pub struct EnvironmentItemDescription {
     pub display_name: String,
     pub order: isize,
     pub expanded: bool,
+    pub color: Option<String>,
+    pub abs_path: Arc<Path>,
 }
 
 struct ServiceState {
@@ -43,6 +66,7 @@ pub struct EnvironmentService<R>
 where
     R: AppRuntime,
 {
+    abs_path: PathBuf,
     fs: Arc<dyn FileSystem>,
     environment_registry: GlobalEnvironmentRegistry<R, Environment<R>>,
     model_registry: GlobalModelRegistry,
@@ -55,13 +79,16 @@ impl<R> EnvironmentService<R>
 where
     R: AppRuntime,
 {
+    /// `abs_path` is the absolute path to the workspace directory
     pub fn new(
+        abs_path: &Path,
         fs: Arc<dyn FileSystem>,
         environment_registry: GlobalEnvironmentRegistry<R, Environment<R>>,
         model_registry: GlobalModelRegistry,
     ) -> Self {
         Self {
             fs,
+            abs_path: abs_path.join(dirs::ENVIRONMENTS_DIR),
             environment_registry,
             model_registry,
             state: Arc::new(RwLock::new(ServiceState {
@@ -72,45 +99,46 @@ where
 
     pub async fn list_environments(
         &self,
+        _ctx: &R::AsyncContext,
     ) -> Pin<Box<dyn Stream<Item = EnvironmentItemDescription> + Send + '_>> {
         let state = self.state.clone();
 
         Box::pin(async_stream::stream! {
             let state_lock = state.read().await;
             for (_, item) in state_lock.environments.iter() {
-                let environment_model = self.environment_registry.get(&item.id).await.unwrap();
-                yield EnvironmentItemDescription {
-                    id: item.id.clone(),
-                    collection_id: environment_model.collection_id.map(|s| s.into()),
-                    display_name: item.display_name.clone(),
-                    order: item.order,
-                    expanded: item.expanded,
-                };
+                if let Some(model) = self.environment_registry.get(&item.id).await {
+                    let abs_path = model.abs_path().await;
+
+                    yield EnvironmentItemDescription {
+                        id: item.id.clone(),
+                        collection_id: model.collection_id.map(Into::into),
+                        display_name: item.display_name.clone(),
+                        order: item.order,
+                        expanded: item.expanded,
+                        color: None, // TODO: hardcoded for now
+                        abs_path,
+                    };
+                } else {
+                    // TODO: log error
+                    println!("environment model not found: {}", item.id);
+                }
             }
         })
     }
 
     pub async fn update_environment(
         &self,
+        _ctx: &R::AsyncContext,
+        id: &EnvironmentId,
         params: UpdateEnvironmentItemParams,
     ) -> joinerror::Result<()> {
-        let environment_model =
-            self.environment_registry
-                .get(&params.id)
-                .await
-                .ok_or_else(|| {
-                    joinerror::Error::new::<ErrorNotFound>(format!(
-                        "environment model not found: {}",
-                        params.id
-                    ))
-                })?;
+        let environment_model = self.environment_registry.get(id).await.ok_or_else(|| {
+            joinerror::Error::new::<ErrorNotFound>(format!("environment model not found: {}", id))
+        })?;
 
         let mut state = self.state.write().await;
-        let environment_item = state.environments.get_mut(&params.id).ok_or_else(|| {
-            joinerror::Error::new::<ErrorNotFound>(format!(
-                "environment item not found: {}",
-                params.id
-            ))
+        let environment_item = state.environments.get_mut(id).ok_or_else(|| {
+            joinerror::Error::new::<ErrorNotFound>(format!("environment item not found: {}", id))
         })?;
 
         environment_model
@@ -138,22 +166,26 @@ where
 
     pub async fn create_environment(
         &self,
+        _ctx: &R::AsyncContext,
         params: CreateEnvironmentItemParams,
-    ) -> joinerror::Result<()> {
+    ) -> joinerror::Result<EnvironmentItemDescription> {
+        let id = EnvironmentId::new();
         let sanitized_name = sanitize(&params.name);
         let environment = EnvironmentBuilder::new(self.fs.clone(), self.model_registry.clone())
             .create(moss_environment::builder::CreateEnvironmentParams {
                 name: sanitized_name.clone(),
-                abs_path: params.abs_path,
+                abs_path: &self.abs_path,
                 color: params.color,
             })
             .await?;
 
-        let id = EnvironmentId::new();
+        let abs_path = environment.abs_path().await;
+        let color = environment.color().await;
+
         self.environment_registry
             .insert(EnvironmentModel {
                 id: id.clone(),
-                collection_id: params.collection_id.map(|id| id.inner()),
+                collection_id: params.collection_id.clone().map(|id| id.inner()),
                 handle: Arc::new(environment),
                 _runtime: PhantomData,
             })
@@ -163,16 +195,24 @@ where
         state.environments.insert(
             id.clone(),
             EnvironmentItem {
-                id,
-                display_name: params.name,
+                id: id.clone(),
+                display_name: params.name.clone(),
                 order: params.order,
-                expanded: false, // TODO: hardcoded for now
+                expanded: true,
             },
         );
 
         // TODO: put environment order to the database
 
-        Ok(())
+        Ok(EnvironmentItemDescription {
+            id,
+            collection_id: params.collection_id,
+            display_name: params.name.clone(),
+            order: params.order,
+            expanded: true,
+            color,
+            abs_path,
+        })
     }
 }
 
