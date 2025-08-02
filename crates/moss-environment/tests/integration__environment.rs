@@ -1,4 +1,4 @@
-// mod shared;
+mod shared;
 
 // use moss_environment::{
 //     environment::{Environment, EnvironmentError},

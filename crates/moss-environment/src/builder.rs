@@ -1,12 +1,13 @@
 use joinerror::{Error, ResultExt};
 use moss_applib::{AppRuntime, ServiceMarker, providers::ServiceMap};
-use moss_fs::{CreateOptions, FileSystem, FsResultExt};
+use moss_contentmodel::{ContentModel, json::JsonModel};
+use moss_fs::{CreateOptions, FileSystem, FsResultExt, model_registry::GlobalModelRegistry};
 use moss_hcl::{Block, HclResultExt};
 use moss_text::sanitized::sanitize;
 use std::{any::TypeId, path::PathBuf, sync::Arc};
 
 use crate::{
-    configuration::{EnvironmentFile, Metadata},
+    configuration::{MetadataDecl, SourceFile},
     constants,
     environment::Environment,
     errors::{
@@ -19,6 +20,7 @@ use crate::{
 pub struct EnvironmentCreateParams {
     pub name: String,
     pub abs_path: PathBuf,
+    pub color: Option<String>,
 }
 
 pub struct EnvironmentLoadParams {
@@ -27,13 +29,15 @@ pub struct EnvironmentLoadParams {
 
 pub struct EnvironmentBuilder {
     fs: Arc<dyn FileSystem>,
+    models: GlobalModelRegistry,
     services: ServiceMap,
 }
 
 impl EnvironmentBuilder {
-    pub fn new(fs: Arc<dyn FileSystem>) -> Self {
+    pub fn new(fs: Arc<dyn FileSystem>, models: GlobalModelRegistry) -> Self {
         Self {
             fs,
+            models,
             services: Default::default(),
         }
     }
@@ -64,9 +68,10 @@ impl EnvironmentBuilder {
             ));
         }
 
-        let file = EnvironmentFile {
-            metadata: Block::new(Metadata {
+        let file = SourceFile {
+            metadata: Block::new(MetadataDecl {
                 id: EnvironmentId::new(),
+                color: params.color,
             }),
             variables: None,
         };
@@ -88,6 +93,15 @@ impl EnvironmentBuilder {
                 format!("failed to create environment file {}", abs_path.display())
             })?;
 
+        let hcl_value = hcl::to_value(file).unwrap();
+        let json_value = serde_json::to_value(hcl_value).unwrap();
+        self.models
+            .add(
+                abs_path.to_string_lossy().to_string(),
+                ContentModel::Json(JsonModel::new(json_value)),
+            )
+            .await;
+
         Ok(Environment::new(abs_path.into(), self.services.into()))
     }
 
@@ -104,7 +118,7 @@ impl EnvironmentBuilder {
             ));
         }
 
-        let _file: EnvironmentFile = {
+        let _file: SourceFile = {
             let mut reader = self
                 .fs
                 .open_file(&abs_path)

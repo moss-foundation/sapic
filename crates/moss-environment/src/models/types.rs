@@ -1,9 +1,34 @@
 use serde::{Deserialize, Serialize};
-use serde_json::{Number, Value as JsonValue};
+use serde_json::Value as JsonValue;
 use ts_rs::TS;
 
 pub type VariableName = String;
 pub type EnvironmentName = String;
+
+#[derive(Clone, Debug, Deserialize, Serialize, TS)]
+#[ts(export, export_to = "types.ts")]
+#[serde(rename_all = "camelCase")]
+pub struct VariableOptions {
+    pub disabled: bool,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, TS)]
+#[ts(export, export_to = "types.ts")]
+#[ts(optional_fields)]
+#[serde(rename_all = "camelCase")]
+pub struct AddVariableParams {
+    pub name: VariableName,
+    #[ts(type = "JsonValue")]
+    pub global_value: JsonValue,
+    #[ts(type = "JsonValue")]
+    pub local_value: JsonValue,
+    // pub kind: Option<VariableKind>,
+    pub order: isize,
+    pub desc: Option<String>,
+    pub options: VariableOptions,
+}
+
+pub struct UpdateVariableParams {}
 
 /// @category Type
 #[derive(Clone, Debug, Deserialize, Serialize, TS, PartialEq, Eq)]
@@ -17,41 +42,17 @@ pub enum VariableKind {
 
 /// @category Type
 #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq, TS)]
-#[ts(export, export_to = "types.ts")]
-#[serde(untagged)]
-pub enum VariableValue {
-    String(String),
-    Number(Number),
-    Boolean(bool),
-}
-
-impl TryFrom<JsonValue> for VariableValue {
-    type Error = anyhow::Error;
-
-    fn try_from(value: JsonValue) -> Result<Self, Self::Error> {
-        match value {
-            JsonValue::String(s) => Ok(VariableValue::String(s)),
-            JsonValue::Number(n) => Ok(VariableValue::Number(n)),
-            JsonValue::Bool(b) => Ok(VariableValue::Boolean(b)),
-            _ => Err(anyhow::anyhow!(
-                "Unsupported variable value type: {:?}",
-                value
-            )),
-        }
-    }
-}
-
-/// @category Type
-#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct VariableInfo {
     pub name: VariableName,
-    pub global_value: Option<VariableValue>,
-    pub local_value: Option<VariableValue>,
+    #[ts(type = "JsonValue")]
+    pub global_value: JsonValue,
+    #[ts(type = "JsonValue")]
+    pub local_value: JsonValue,
     pub disabled: bool,
-    pub kind: VariableKind,
+    // pub kind: VariableKind,
     pub order: Option<isize>,
     pub desc: Option<String>,
 }
