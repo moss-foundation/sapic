@@ -7,16 +7,24 @@ import BreadcrumbTree from "./BreadcrumbTree";
 import { findNodeByIdInTree, findNodesSequence } from "./utils";
 
 interface BreadcrumbsProps {
-  collectionId: string;
-  nodeId: string;
+  collectionId?: string;
+  nodeId?: string;
 }
 
 export const Breadcrumbs = ({ collectionId, nodeId }: BreadcrumbsProps) => {
-  const { collectionsTrees } = useCollectionsTrees();
+  const { collectionsTrees, isLoading } = useCollectionsTrees();
+
+  if (isLoading) {
+    return null;
+  }
+
+  if (!collectionId || !nodeId) {
+    return null;
+  }
 
   const activeTree = collectionsTrees?.find((tree) => tree.id === collectionId);
   if (!activeTree) {
-    console.warn("Breadcrumbs: No active tree found");
+    console.warn("Breadcrumbs: No active tree found for collection ID:", collectionId);
     return null;
   }
 

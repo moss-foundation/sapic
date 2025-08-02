@@ -11,7 +11,7 @@ import { useRequestPageStore } from "@/store/requestPage";
 interface ParamsTabContentProps
   extends IDockviewPanelProps<{
     node?: TreeCollectionNode;
-    treeId: string;
+    collectionId: string;
     iconType: EntryKind;
     someRandomString: string;
   }> {}

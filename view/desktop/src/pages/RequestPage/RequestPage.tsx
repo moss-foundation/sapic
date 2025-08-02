@@ -42,7 +42,7 @@ const Badge = ({ count }: { count: number }) => (
 const RequestPage: React.FC<
   IDockviewPanelProps<{
     node?: TreeCollectionNode;
-    treeId: string;
+    collectionId: string;
     iconType: EntryKind;
     someRandomString: string;
   }>
@@ -194,9 +194,11 @@ const RequestPage: React.FC<
         <div className="flex h-full flex-col">
           {props.params?.node ? (
             <div className="flex-1">
-              <div className="mx-3 mt-4">
-                <Breadcrumbs collectionId={props.params?.treeId} nodeId={props.params?.node?.id} />
-              </div>
+              {props.params?.collectionId && props.params?.node?.id && (
+                <div className="mx-3 mt-4">
+                  <Breadcrumbs collectionId={props.params.collectionId} nodeId={props.params.node.id} />
+                </div>
+              )}
 
               <div className="mb-4">
                 <RequestInputField

@@ -4,7 +4,7 @@ import { IDockviewPanelProps } from "@repo/moss-tabs";
 
 export const BodyTabContent = ({}: IDockviewPanelProps<{
   node?: TreeCollectionNode;
-  treeId: string;
+  collectionId: string;
   iconType: EntryKind;
   someRandomString: string;
 }>) => {
