@@ -5,7 +5,7 @@ import { IDockviewPanelProps } from "@repo/moss-tabs";
 import { DataTable, ParameterData } from "@/components/Table";
 import { ActionButton } from "@/components";
 import { paramColumns } from "./columns";
-import { getParameterSuggestions, detectValueType, areUrlsEquivalent } from "../../utils/urlParser";
+import { getParameterSuggestions, detectValueType } from "../../utils/urlParser";
 import { useRequestPageStore } from "@/store/requestPage";
 
 interface ParamsTabContentProps
