@@ -19,6 +19,7 @@ import {
   getLocationTreeRootNodeData,
   getPathWithoutName,
   getSourceTreeNodeData,
+  hasDirectSimilarDescendant,
   isSourceTreeNode,
   prepareEntriesForDrop,
   sortByOrder,
@@ -35,7 +36,6 @@ export const useNodeDragAndDropHandler = () => {
 
   const { fetchEntriesForPath } = useFetchEntriesForPath();
 
-  //Within collection
   const handleCombineWithinCollection = useCallback(
     async (sourceTreeNodeData: DragNode, locationTreeNodeData: DropNode) => {
       const newOrder = locationTreeNodeData.node.childNodes.length + 1;
@@ -135,7 +135,6 @@ export const useNodeDragAndDropHandler = () => {
     [batchUpdateCollectionEntry, fetchEntriesForPath]
   );
 
-  //To another collection
   const handleCombineToAnotherCollectionRoot = useCallback(
     async (sourceTreeNodeData: DragNode, locationTreeRootNodeData: DropRootNode) => {
       const allEntries = getAllNestedEntries(sourceTreeNodeData.node);
@@ -325,6 +324,11 @@ export const useNodeDragAndDropHandler = () => {
         }
 
         if (locationTreeRootNodeData && operation === "combine") {
+          if (hasDirectSimilarDescendant(locationTreeRootNodeData.node.requests, sourceTreeNodeData.node)) {
+            console.warn("can't drop: has direct similar descendant");
+            return;
+          }
+
           await handleCombineToAnotherCollectionRoot(sourceTreeNodeData, locationTreeRootNodeData);
           return;
         }

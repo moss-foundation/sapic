@@ -1,8 +1,10 @@
 import { useContext, useRef } from "react";
 
 import { useStreamedCollections } from "@/hooks";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 
+import { ActiveNodeIndicator } from "../ActiveNodeIndicator";
 import { DropIndicatorWithInstruction } from "../DropIndicatorWithInstruction";
 import { useDraggableRootNode } from "../hooks/useDraggableRootNode";
 import { useRootNodeAddForm } from "../hooks/useRootNodeAddForm";
@@ -16,9 +18,11 @@ import { TreeRootNodeChildren } from "./TreeRootNodeChildren";
 import { TreeRootNodeRenameForm } from "./TreeRootNodeRenameForm";
 
 export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
-  const { searchInput, rootOffset } = useContext(TreeContext);
+  const { searchInput, treePaddingLeft, treePaddingRight } = useContext(TreeContext);
 
   const { data: streamedCollections } = useStreamedCollections();
+
+  const { activePanelId } = useTabbedPaneStore();
 
   const draggableRootRef = useRef<HTMLDivElement>(null);
   const dropTargetRootRef = useRef<HTMLDivElement>(null);
@@ -57,24 +61,26 @@ export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
         "hidden": isDragging,
       })}
     >
-      {instruction && <DropIndicatorWithInstruction instruction={instruction} gap={-1} canDrop={canDrop} />}
+      {instruction && <DropIndicatorWithInstruction instruction={instruction} canDrop={canDrop} />}
       <div
         ref={draggableRootRef}
-        className="group/TreeRootHeader relative flex w-full min-w-0 items-center justify-between gap-1 py-[3px] pr-2"
-        style={{ paddingLeft: rootOffset, paddingRight: rootOffset }}
+        className={cn(
+          "group/TreeRootHeader hover:background-(--moss-secondary-background-hover) relative flex w-full min-w-0 items-center justify-between py-0.75",
+          {
+            "background-(--moss-secondary-background-hover)": activePanelId === node.id,
+          }
+        )}
+        style={{
+          paddingLeft: treePaddingLeft,
+          paddingRight: treePaddingRight,
+        }}
       >
-        <span
-          className={cn(
-            "group-hover/TreeRootHeader:background-(--moss-secondary-background-hover) absolute inset-x-1 h-[calc(100%-5px)] w-[calc(100%-8px)] rounded-sm",
-            {
-              "group-hover/TreeRootHeader:background-transparent": isRenamingRootNode,
-            }
-          )}
-        />
+        <ActiveNodeIndicator isActive={activePanelId === node.id} />
 
         {isRenamingRootNode ? (
           <TreeRootNodeRenameForm
             node={node}
+            shouldRenderChildNodes={shouldRenderRootChildNodes}
             restrictedNames={restrictedNames}
             handleRenamingFormSubmit={handleRenamingRootNodeFormSubmit}
             handleRenamingFormCancel={handleRenamingRootNodeFormCancel}

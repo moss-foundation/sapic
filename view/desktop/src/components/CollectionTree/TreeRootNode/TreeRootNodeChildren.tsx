@@ -2,10 +2,10 @@ import { useContext } from "react";
 
 import { cn } from "@/utils";
 
+import { EntryIcon } from "../../EntryIcon";
 import { NodeAddForm } from "../NodeAddForm";
 import { TreeContext } from "../Tree";
 import TreeNode from "../TreeNode/TreeNode";
-import { TreeNodeIcon } from "../TreeNode/TreeNodeIcon";
 import { TreeCollectionRootNode } from "../types";
 import { getRestrictedNames, sortByOrder } from "../utils";
 
@@ -51,8 +51,8 @@ export const TreeRootNodeChildren = ({
 
       {shouldRenderAddRootForm && (
         <div className="flex w-full min-w-0 items-center gap-1 py-0.5" style={{ paddingLeft: nodeOffset * 1 }}>
-          <TreeNodeIcon
-            node={{
+          <EntryIcon
+            entry={{
               id: "Placeholder_AddingNodeId",
               name: "Placeholder_AddingNodeName",
               kind: "Dir",

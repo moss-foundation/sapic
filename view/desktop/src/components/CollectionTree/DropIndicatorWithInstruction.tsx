@@ -15,7 +15,7 @@ interface DropIndicatorProps extends HTMLAttributes<HTMLDivElement> {
 
 export const DropIndicatorWithInstruction = ({
   instruction,
-  gap = -1,
+  gap = 0,
   paddingLeft = 0,
   paddingRight = 0,
   isFolder = false,
@@ -36,44 +36,28 @@ export const DropIndicatorWithInstruction = ({
 
   let styles;
 
-  switch (instruction.operation) {
-    case "combine":
-      styles = {
-        position: "absolute",
-        height: "100%",
-        width: "100%",
-        top: 0,
-        left: 0,
-        backgroundColor: canDrop ? "var(--moss-success-background)" : "var(--moss-error-background)",
-      };
-      break;
-
-    case "reorder-before":
-      styles = {
-        position: "absolute",
-        height: "2px",
-        backgroundColor: "var(--moss-primary)",
-        top: gap,
-        width: reorderWidth,
-        left,
-        zIndex: 10,
-      };
-      break;
-
-    case "reorder-after":
-      styles = {
-        position: "absolute",
-        height: "2px",
-        backgroundColor: "var(--moss-primary)",
-        bottom: gap,
-        width: reorderWidth,
-        left,
-        zIndex: 10,
-      };
-      break;
-
-    default:
-      return null;
+  if (instruction.operation === "combine" || !canDrop) {
+    styles = {
+      position: "absolute",
+      height: "100%",
+      width: "100%",
+      top: 0,
+      left: 0,
+      zIndex: 7,
+      backgroundColor: canDrop ? "var(--moss-success-background)" : "var(--moss-error-background)",
+    };
+  } else if (instruction.operation === "reorder-before" || instruction.operation === "reorder-after") {
+    styles = {
+      position: "absolute",
+      height: "2px",
+      backgroundColor: "var(--moss-primary)",
+      [instruction.operation === "reorder-before" ? "top" : "bottom"]: gap,
+      width: reorderWidth,
+      left,
+      zIndex: 7,
+    };
+  } else {
+    return null;
   }
 
   return <div style={styles} {...props} />;

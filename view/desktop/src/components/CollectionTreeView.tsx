@@ -62,7 +62,7 @@ export const CollectionTreeView = () => {
     <div ref={dropTargetToggleRef} className="relative h-[calc(100%-36px)] select-none">
       <Scrollbar className="h-full">
         <div className="flex h-full flex-col">
-          <div className="flex shrink items-center gap-[7px] py-1 pr-2.5 pl-2">
+          <div className="flex shrink items-center gap-[7px] px-2 py-1">
             <InputPlain placeholder="Search" size="sm" />
           </div>
 

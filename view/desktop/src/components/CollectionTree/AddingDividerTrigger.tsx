@@ -5,14 +5,14 @@ import { cn } from "@/utils/cn";
 interface AddingFormDividerProps {
   paddingLeft: number;
   paddingRight: number;
-  position: "top" | "bottom";
+  position: "above" | "below";
   onClick: () => void;
 }
 
 export const AddingDividerTrigger = ({
   paddingLeft,
   paddingRight,
-  position = "top",
+  position = "above",
   onClick,
 }: AddingFormDividerProps) => {
   const [visible, setVisible] = useState(false);
@@ -53,8 +53,8 @@ export const AddingDividerTrigger = ({
          `,
         {
           "opacity-0": !visible,
-          "-top-[1px] z-20": position === "top",
-          "-bottom-[1px] z-30": position === "bottom",
+          "-top-[1px] z-20": position === "above",
+          "-bottom-[1px] z-30": position === "below",
         }
       )}
       style={{

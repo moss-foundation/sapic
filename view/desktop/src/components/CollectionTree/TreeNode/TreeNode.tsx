@@ -1,7 +1,11 @@
 import { useContext, useRef, useState } from "react";
 
+import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { cn } from "@/utils/cn";
+
 import { TreeContext } from "../..";
 import { useDeleteAndUpdatePeers } from "../actions/useDeleteAndUpdatePeers";
+import { ActiveNodeIndicator } from "../ActiveNodeIndicator";
 import { DropIndicatorWithInstruction } from "../DropIndicatorWithInstruction";
 import { useDraggableNode } from "../hooks/useDraggableNode";
 import { useNodeAddForm } from "../hooks/useNodeAddForm";
@@ -21,25 +25,27 @@ export interface TreeNodeComponentProps {
 }
 
 export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = false }: TreeNodeComponentProps) => {
-  const { nodeOffset, paddingRight, id } = useContext(TreeContext);
+  const { nodeOffset, treePaddingRight, treePaddingLeft, id } = useContext(TreeContext);
 
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   const { deleteAndUpdatePeers } = useDeleteAndUpdatePeers(id, node, parentNode);
+
+  const { activePanelId } = useTabbedPaneStore();
 
   // const {
   //   isAddingDividerNode: isAddingDividerNodeAbove,
   //   setIsAddingDividerNode: setIsAddingDividerNodeAbove,
   //   handleAddDividerFormSubmit: handleAddDividerFormSubmitAbove,
   //   handleAddDividerFormCancel: handleAddDividerFormCancelAbove,
-  // } = useAddNodeWithDivider(parentNode, onNodeUpdate, node.order - 1);
+  // } = useAddNodeWithDivider({ node, parentNode, position: "above" });
 
   // const {
   //   isAddingDividerNode: isAddingDividerNodeBelow,
   //   setIsAddingDividerNode: setIsAddingDividerNodeBelow,
   //   handleAddDividerFormSubmit: handleAddDividerFormSubmitBelow,
   //   handleAddDividerFormCancel: handleAddDividerFormCancelBelow,
-  // } = useAddNodeWithDivider(parentNode, onNodeUpdate, node.order + 1);
+  // } = useAddNodeWithDivider({ node, parentNode, position: "below" });
 
   const {
     isAddingFileNode,
@@ -70,7 +76,7 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
 
   const shouldRenderChildNodes = node.expanded || isAddingFileNode || isAddingFolderNode;
   const shouldRenderAddingFormDivider = false; // !isAddingDividerNodeAbove && !isAddingDividerNodeBelow;
-  const nodePaddingLeft = depth * nodeOffset;
+  const nodePaddingLeft = depth * nodeOffset + treePaddingLeft;
   const restrictedNames = parentNode?.childNodes.map((childNode) => childNode.name) ?? [];
 
   return (
@@ -84,12 +90,21 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
           handleRenamingFormCancel={handleRenamingFormCancel}
         />
       ) : (
-        <>
+        <div
+          className={cn(
+            "hover:background-(--moss-secondary-background-hover) relative flex items-center justify-between",
+            {
+              "background-(--moss-secondary-background-hover)": activePanelId === node.id,
+            }
+          )}
+        >
+          <ActiveNodeIndicator isActive={activePanelId === node.id} />
+
           {/* {shouldRenderAddingFormDivider && (
             <AddingDividerTrigger
               paddingLeft={nodePaddingLeft}
               paddingRight={paddingRight}
-              position="top"
+              position="above"
               onClick={() => setIsAddingDividerNodeAbove(true)}
             />
           )} */}
@@ -104,22 +119,10 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
             />
           )} */}
 
-          {node.kind === "Dir" && instruction !== null && (
-            <DropIndicatorWithInstruction
-              paddingLeft={nodePaddingLeft}
-              paddingRight={paddingRight}
-              instruction={instruction}
-              isFolder={true}
-              depth={depth}
-              isLastChild={isLastChild}
-              canDrop={canDrop}
-              gap={-1}
-            />
-          )}
-
           <TreeNodeButton
             ref={triggerRef}
             node={node}
+            parentNode={parentNode}
             depth={depth}
             onAddFile={() => setIsAddingFileNode(true)}
             onAddFolder={() => setIsAddingFolderNode(true)}
@@ -149,11 +152,24 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
             <AddingDividerTrigger
               paddingLeft={nodePaddingLeft}
               paddingRight={paddingRight}
-              position="bottom"
+              position="below"
               onClick={() => setIsAddingDividerNodeBelow(true)}
             />
           )} */}
-        </>
+        </div>
+      )}
+
+      {node.kind === "Dir" && instruction !== null && (
+        <DropIndicatorWithInstruction
+          paddingLeft={nodePaddingLeft}
+          paddingRight={treePaddingRight}
+          instruction={instruction}
+          isFolder={true}
+          depth={depth}
+          isLastChild={isLastChild}
+          canDrop={canDrop}
+          gap={-1}
+        />
       )}
 
       {shouldRenderChildNodes && <TreeNodeChildren node={node} depth={depth} />}
