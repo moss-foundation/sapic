@@ -1,9 +1,9 @@
-import { Row } from "@tanstack/react-table";
+import { Row, Table } from "@tanstack/react-table";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { ParameterData } from "@/components/Table";
 
-export const EnabledCheckboxCell = ({ row, table }: { row: Row<ParameterData>; table: any }) => {
+export const EnabledCheckboxCell = ({ row, table }: { row: Row<ParameterData>; table: Table<ParameterData> }) => {
   const enabled = !row.original.properties.disabled;
 
   const handleCheckedChange = (checked: CheckedState) => {

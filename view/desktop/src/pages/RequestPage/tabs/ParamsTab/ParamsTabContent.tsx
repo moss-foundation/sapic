@@ -8,15 +8,14 @@ import { paramColumns } from "./columns";
 import { getParameterSuggestions, detectValueType } from "../../utils/urlParser";
 import { useRequestPageStore } from "@/store/requestPage";
 
-interface ParamsTabContentProps
-  extends IDockviewPanelProps<{
+export const ParamsTabContent = (
+  _props: IDockviewPanelProps<{
     node?: TreeCollectionNode;
     collectionId: string;
     iconType: EntryKind;
     someRandomString: string;
-  }> {}
-
-export const ParamsTabContent = (_props: ParamsTabContentProps) => {
+  }>
+) => {
   const { requestData, updatePathParams, updateQueryParams, reconstructUrlFromParams } = useRequestPageStore();
 
   const debouncedQueryUpdate = React.useRef<NodeJS.Timeout>();
