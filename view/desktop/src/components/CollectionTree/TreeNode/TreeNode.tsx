@@ -159,7 +159,7 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
         </div>
       )}
 
-      {instruction !== null && (
+      {node.kind === "Dir" && instruction !== null && (
         <DropIndicatorWithInstruction
           paddingLeft={nodePaddingLeft}
           paddingRight={treePaddingRight}
