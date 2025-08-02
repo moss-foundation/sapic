@@ -75,7 +75,7 @@ export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
           paddingRight: treePaddingRight,
         }}
       >
-        {activePanelId === node.id && <ActiveNodeIndicator />}
+        <ActiveNodeIndicator isActive={activePanelId === node.id} />
 
         {isRenamingRootNode ? (
           <TreeRootNodeRenameForm

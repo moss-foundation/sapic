@@ -98,7 +98,8 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
             }
           )}
         >
-          {activePanelId === node.id && <ActiveNodeIndicator />}
+          <ActiveNodeIndicator isActive={activePanelId === node.id} />
+
           {/* {shouldRenderAddingFormDivider && (
             <AddingDividerTrigger
               paddingLeft={nodePaddingLeft}
@@ -117,19 +118,6 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
               handleAddFormCancel={handleAddDividerFormCancelAbove}
             />
           )} */}
-
-          {node.kind === "Dir" && instruction !== null && (
-            <DropIndicatorWithInstruction
-              paddingLeft={nodePaddingLeft}
-              paddingRight={treePaddingRight}
-              instruction={instruction}
-              isFolder={true}
-              depth={depth}
-              isLastChild={isLastChild}
-              canDrop={canDrop}
-              gap={-1}
-            />
-          )}
 
           <TreeNodeButton
             ref={triggerRef}
@@ -169,6 +157,19 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
             />
           )} */}
         </div>
+      )}
+
+      {instruction !== null && (
+        <DropIndicatorWithInstruction
+          paddingLeft={nodePaddingLeft}
+          paddingRight={treePaddingRight}
+          instruction={instruction}
+          isFolder={true}
+          depth={depth}
+          isLastChild={isLastChild}
+          canDrop={canDrop}
+          gap={-1}
+        />
       )}
 
       {shouldRenderChildNodes && <TreeNodeChildren node={node} depth={depth} />}

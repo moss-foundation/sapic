@@ -10,7 +10,6 @@ import { cn } from "@/utils";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
 import { EntryIcon } from "../../EntryIcon";
-import { DropIndicatorWithInstruction } from "../DropIndicatorWithInstruction";
 import NodeLabel from "../NodeLabel";
 import { TreeContext } from "../Tree";
 import { TreeCollectionNode } from "../types";
@@ -118,9 +117,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
             )}
           >
             <span
-              className={cn("relative z-10 flex h-full min-h-[22px] w-full items-center gap-1", {
-                "background-(--moss-error-background)": canDrop === false,
-              })}
+              className={cn("relative flex h-full min-h-[22px] w-full items-center gap-1")}
               style={{ paddingLeft: nodePaddingLeft, paddingRight: treePaddingRight }}
             >
               {!isRootNode && (
@@ -128,19 +125,6 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                   className="absolute top-1/2 left-[1px] -translate-y-1/2 opacity-0 transition-all duration-0 group-hover/treeNode:opacity-100 group-hover/treeNode:delay-400 group-hover/treeNode:duration-150"
                   slim
                   ghost
-                />
-              )}
-
-              {node.kind !== "Dir" && instruction !== null && canDrop === true && (
-                <DropIndicatorWithInstruction
-                  paddingLeft={nodePaddingLeft}
-                  paddingRight={treePaddingRight}
-                  instruction={instruction}
-                  isFolder={false}
-                  depth={depth}
-                  canDrop={canDrop}
-                  gap={-1}
-                  isLastChild={isLastChild}
                 />
               )}
 

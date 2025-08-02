@@ -11,7 +11,7 @@ import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-d
 
 import { TreeContext } from "../Tree";
 import { TreeCollectionRootNode } from "../types";
-import { isSourceTreeNode, isSourceTreeRootNode } from "../utils";
+import { getSourceTreeNodeData, hasDirectSimilarDescendant, isSourceTreeNode, isSourceTreeRootNode } from "../utils";
 
 export const useDraggableRootNode = (
   draggableRef: RefObject<HTMLDivElement>,
@@ -43,7 +43,20 @@ export const useDraggableRootNode = (
 
       if (isSourceTreeNode(source)) {
         if (instruction?.operation === "combine") {
-          setCanDrop(true);
+          const sourceNode = getSourceTreeNodeData(source);
+
+          if (!sourceNode) {
+            setCanDrop(null);
+            setInstruction(null);
+            return;
+          }
+
+          if (hasDirectSimilarDescendant(node.requests, sourceNode.node)) {
+            setCanDrop(false);
+          } else {
+            setCanDrop(true);
+          }
+
           setInstruction(instruction);
         } else {
           setCanDrop(null);

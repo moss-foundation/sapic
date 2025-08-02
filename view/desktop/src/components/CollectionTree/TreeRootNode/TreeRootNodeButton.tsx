@@ -56,7 +56,7 @@ export const TreeRootNodeButton = ({ node, searchInput, shouldRenderChildNodes }
 
   return (
     <div
-      className="group/treeRootNodeTrigger relative flex grow cursor-pointer items-center gap-1.5 overflow-hidden font-medium"
+      className="group/treeRootNodeTrigger relative z-10 flex grow cursor-pointer items-center gap-1.5 overflow-hidden font-medium"
       onClick={handleLabelClick}
       role="button"
       tabIndex={0}

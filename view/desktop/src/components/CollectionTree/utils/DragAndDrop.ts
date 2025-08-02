@@ -7,7 +7,7 @@ import {
 import { EntryInfo } from "@repo/moss-collection";
 
 import { DragNode, DropNode, DropRootNode, TreeCollectionNode } from "../types";
-import { hasDescendant, hasDirectDescendant } from "./TreeNode";
+import { hasDirectSimilarDescendant } from "./TreeNode";
 
 export const getSourceTreeNodeData = (source: ElementDragPayload): DragNode | null => {
   if (source.data.type !== "TreeNode") {
@@ -80,19 +80,18 @@ export const getInstructionFromLocation = (location: DragLocationHistory): Instr
 
 export const canDropNode = (sourceTarget: DragNode, dropTarget: DropNode) => {
   if (sourceTarget.node.class !== dropTarget.node.class) {
+    console.log("can't drop: class mismatch");
     return false;
   }
 
-  if (sourceTarget.node.kind === "Dir") {
-    if (sourceTarget.node.id === dropTarget.node.id) {
-      return false;
-    }
+  if (sourceTarget.node.id === dropTarget.node.id) {
+    console.log("can't drop: id mismatch");
+    return false;
+  }
 
-    if (hasDirectDescendant(dropTarget.node, sourceTarget.node)) {
-      return false;
-    }
-
-    if (hasDescendant(dropTarget.node, sourceTarget.node)) {
+  if (dropTarget.node.kind === "Dir") {
+    if (hasDirectSimilarDescendant(dropTarget.node, sourceTarget.node)) {
+      console.log("can't drop: has direct similar descendant");
       return false;
     }
   }

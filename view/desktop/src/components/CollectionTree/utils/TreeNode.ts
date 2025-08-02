@@ -1,32 +1,34 @@
 import { TreeCollectionNode } from "../types";
 
-export const hasDescendant = (tree: TreeCollectionNode, node: TreeCollectionNode): boolean => {
-  if (!tree.childNodes) return false;
-  return tree.childNodes.some((child) => child.id === node.id || hasDescendant(child, node));
+export const hasDescendant = (parentNode: TreeCollectionNode, dropNode: TreeCollectionNode): boolean => {
+  if (!parentNode.childNodes) return false;
+  return parentNode.childNodes.some((child) => child.id === dropNode.id || hasDescendant(child, dropNode));
 };
 
-export const hasDirectDescendant = (tree: TreeCollectionNode, node: TreeCollectionNode): boolean => {
-  if (!tree.childNodes) return false;
-  return tree.childNodes.some((child) => child.id === node.id);
+export const hasDirectDescendant = (parentNode: TreeCollectionNode, dropNode: TreeCollectionNode): boolean => {
+  if (!parentNode.childNodes) return false;
+  return parentNode.childNodes.some((child) => child.id === dropNode.id);
 };
 
-export const hasDirectSimilarDescendant = (tree: TreeCollectionNode, node: TreeCollectionNode): boolean => {
-  if (!tree.childNodes) return false;
-  return tree.childNodes.some((child) => child.id === node.id);
+export const hasDirectSimilarDescendant = (parentNode: TreeCollectionNode, dropNode: TreeCollectionNode): boolean => {
+  if (!parentNode.childNodes) return false;
+  return parentNode.childNodes.some(
+    (child) => child.id === dropNode.id || child.name.toLowerCase() === dropNode.name.toLowerCase()
+  );
 };
 
 const doesStringIncludePartialString = (str: string, partialStr: string) => {
   return str.toLowerCase().includes(partialStr.toLowerCase());
 };
 
-export const hasDescendantWithSearchInput = (tree: TreeCollectionNode, input: string): boolean => {
-  if (!tree.childNodes) return false;
+export const hasDescendantWithSearchInput = (parentNode: TreeCollectionNode, input: string): boolean => {
+  if (!parentNode.childNodes) return false;
 
-  const collectionId = String(tree.id);
+  const collectionId = String(parentNode.id);
 
   if (doesStringIncludePartialString(collectionId, input)) return true;
 
-  return tree.childNodes.some(
+  return parentNode.childNodes.some(
     (child) => doesStringIncludePartialString(collectionId, input) || hasDescendantWithSearchInput(child, input)
   );
 };
