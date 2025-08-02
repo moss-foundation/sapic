@@ -10,6 +10,7 @@ import { cn } from "@/utils";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
 import { EntryIcon } from "../../EntryIcon";
+import { DropIndicatorWithInstruction } from "../DropIndicatorWithInstruction";
 import NodeLabel from "../NodeLabel";
 import { TreeContext } from "../Tree";
 import { TreeCollectionNode } from "../types";
@@ -34,7 +35,23 @@ interface TreeNodeButtonProps {
 }
 
 const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
-  ({ node, parentNode, depth, onAddFile, onAddFolder, onRename, onDelete, preview, isRootNode }, ref) => {
+  (
+    {
+      node,
+      parentNode,
+      depth,
+      onAddFile,
+      onAddFolder,
+      onRename,
+      onDelete,
+      preview,
+      isRootNode,
+      instruction,
+      canDrop,
+      isLastChild,
+    },
+    ref
+  ) => {
     const { id, nodeOffset, searchInput, treePaddingRight, treePaddingLeft, showNodeOrders } = useContext(TreeContext);
 
     const { addOrFocusPanel } = useTabbedPaneStore();
@@ -95,12 +112,23 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
           <button
             ref={ref}
             onClick={handleLabelClick}
-            className={cn(
-              "group/treeNode relative z-10 flex h-full w-full min-w-0 cursor-pointer items-center py-0.75"
-            )}
+            className={cn("group/treeNode relative flex h-full w-full min-w-0 cursor-pointer items-center py-0.75")}
           >
+            {" "}
+            {node.kind === "Item" && instruction !== null && (
+              <DropIndicatorWithInstruction
+                paddingLeft={nodePaddingLeft}
+                paddingRight={treePaddingRight}
+                instruction={instruction}
+                isFolder={false}
+                depth={depth}
+                isLastChild={isLastChild}
+                canDrop={canDrop}
+                gap={-1}
+              />
+            )}
             <span
-              className={cn("relative flex h-full min-h-[22px] w-full items-center gap-1")}
+              className={cn("relative z-10 flex h-full min-h-[22px] w-full items-center gap-1")}
               style={{ paddingLeft: nodePaddingLeft, paddingRight: treePaddingRight }}
             >
               {!isRootNode && (
@@ -153,7 +181,6 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                 />
               )}
             </span>
-
             {preview &&
               createPortal(
                 <ul className="background-(--moss-primary-background) flex gap-1 rounded-sm">

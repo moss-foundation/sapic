@@ -32,7 +32,7 @@ export const CollectionTree = ({
   searchInput,
   sortBy = "none",
   displayMode = "REQUEST_FIRST",
-  showNodeOrders = true,
+  showNodeOrders = false,
 }: TreeProps) => {
   const [tree, setTree] = useState<TreeCollectionRootNode>(initialTree);
 
