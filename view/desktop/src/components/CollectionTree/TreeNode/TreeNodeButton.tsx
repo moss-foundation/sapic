@@ -34,31 +34,14 @@ interface TreeNodeButtonProps {
 }
 
 const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
-  (
-    {
-      node,
-      parentNode,
-      depth,
-      onAddFile,
-      onAddFolder,
-      onRename,
-      onDelete,
-      isDragging,
-      canDrop,
-      instruction,
-      preview,
-      isLastChild,
-      isRootNode,
-    },
-    ref
-  ) => {
+  ({ node, parentNode, depth, onAddFile, onAddFolder, onRename, onDelete, preview, isRootNode }, ref) => {
     const { id, nodeOffset, searchInput, treePaddingRight, treePaddingLeft, showNodeOrders } = useContext(TreeContext);
 
     const { addOrFocusPanel } = useTabbedPaneStore();
 
     const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry();
 
-    const handleClick = () => {
+    const handleLabelClick = () => {
       if (node.kind === "Dir" || node.kind === "Case") {
         updateCollectionEntry({
           collectionId: id,
@@ -111,7 +94,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
         <ActionMenu.Trigger asChild openOnRightClick>
           <button
             ref={ref}
-            onClick={handleClick}
+            onClick={handleLabelClick}
             className={cn(
               "group/treeNode relative z-10 flex h-full w-full min-w-0 cursor-pointer items-center py-0.75"
             )}

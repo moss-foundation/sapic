@@ -17,8 +17,8 @@ interface TreeRootNodeButtonProps {
 
 export const TreeRootNodeButton = ({ node, searchInput, shouldRenderChildNodes }: TreeRootNodeButtonProps) => {
   const { id, picturePath, showNodeOrders } = useContext(TreeContext);
-  const { api } = useTabbedPaneStore();
   const { mutateAsync: updateCollection } = useUpdateCollection();
+  const { addOrFocusPanel } = useTabbedPaneStore();
 
   const handleIconClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
@@ -30,28 +30,21 @@ export const TreeRootNodeButton = ({ node, searchInput, shouldRenderChildNodes }
   };
 
   const handleLabelClick = async () => {
-    const panel = api?.getPanel(id);
-
-    if (!panel) {
-      api?.addPanel({
-        id,
-        title: node.name,
-        component: "CollectionSettings",
-        params: {
-          collectionId: id,
-        },
-      });
-
+    if (!node.expanded) {
       await updateCollection({
         id,
         expanded: true,
       });
-    } else {
-      await updateCollection({
-        id,
-        expanded: !node.expanded,
-      });
     }
+
+    addOrFocusPanel({
+      id,
+      title: node.name,
+      component: "CollectionSettings",
+      params: {
+        collectionId: id,
+      },
+    });
   };
 
   return (
