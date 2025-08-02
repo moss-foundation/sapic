@@ -3685,6 +3685,7 @@ dependencies = [
  "moss_applib",
  "moss_common",
  "moss_db",
+ "moss_environment",
  "moss_fs",
  "moss_storage",
  "moss_testutils",

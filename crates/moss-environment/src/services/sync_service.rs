@@ -8,7 +8,7 @@ use std::{path::Path, sync::Arc};
 use crate::{configuration::SourceFile, services::AnySyncService};
 
 pub struct SyncService {
-    models: GlobalModelRegistry,
+    models: Arc<GlobalModelRegistry>,
     fs: Arc<dyn FileSystem>,
 }
 
@@ -82,7 +82,7 @@ impl AnySyncService for SyncService {
 }
 
 impl SyncService {
-    pub fn new(models: GlobalModelRegistry, fs: Arc<dyn FileSystem>) -> Self {
+    pub fn new(models: Arc<GlobalModelRegistry>, fs: Arc<dyn FileSystem>) -> Self {
         Self { models, fs }
     }
 }

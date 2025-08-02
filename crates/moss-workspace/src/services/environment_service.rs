@@ -68,8 +68,8 @@ where
 {
     abs_path: PathBuf,
     fs: Arc<dyn FileSystem>,
-    environment_registry: GlobalEnvironmentRegistry<R, Environment<R>>,
-    model_registry: GlobalModelRegistry,
+    environment_registry: Arc<GlobalEnvironmentRegistry<R, Environment<R>>>,
+    model_registry: Arc<GlobalModelRegistry>,
     state: Arc<RwLock<ServiceState>>,
 }
 
@@ -83,8 +83,8 @@ where
     pub fn new(
         abs_path: &Path,
         fs: Arc<dyn FileSystem>,
-        environment_registry: GlobalEnvironmentRegistry<R, Environment<R>>,
-        model_registry: GlobalModelRegistry,
+        environment_registry: Arc<GlobalEnvironmentRegistry<R, Environment<R>>>,
+        model_registry: Arc<GlobalModelRegistry>,
     ) -> Self {
         Self {
             fs,
@@ -170,13 +170,16 @@ where
         params: CreateEnvironmentItemParams,
     ) -> joinerror::Result<EnvironmentItemDescription> {
         let id = EnvironmentId::new();
-        let sanitized_name = sanitize(&params.name);
-        let environment = EnvironmentBuilder::new(self.fs.clone(), self.model_registry.clone())
-            .create(moss_environment::builder::CreateEnvironmentParams {
-                name: sanitized_name.clone(),
-                abs_path: &self.abs_path,
-                color: params.color,
-            })
+        let environment = EnvironmentBuilder::new(self.fs.clone())
+            .create::<R>(
+                self.model_registry.clone(),
+                moss_environment::builder::CreateEnvironmentParams {
+                    id: id.clone(),
+                    name: params.name.clone(),
+                    abs_path: &self.abs_path,
+                    color: params.color,
+                },
+            )
             .await?;
 
         let abs_path = environment.abs_path().await;

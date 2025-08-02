@@ -48,7 +48,7 @@ struct EnvironmentState {
 
 pub struct Environment<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
-    model_registry: GlobalModelRegistry,
+    model_registry: Arc<GlobalModelRegistry>,
     state: RwLock<EnvironmentState>,
     services: ServiceProvider,
 
@@ -62,7 +62,7 @@ impl<R: AppRuntime> Environment<R> {
     pub(super) fn new(
         abs_path: Arc<Path>,
         fs: Arc<dyn FileSystem>,
-        model_registry: GlobalModelRegistry,
+        model_registry: Arc<GlobalModelRegistry>,
         services: ServiceProvider,
     ) -> joinerror::Result<Self> {
         let abs_path = EnvironmentPath::new(abs_path)?;

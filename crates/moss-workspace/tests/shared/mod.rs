@@ -102,8 +102,8 @@ pub async fn setup_test_workspace() -> (
     let environment_service: Arc<EnvironmentService<MockAppRuntime>> = EnvironmentService::new(
         &abs_path,
         fs.clone(),
-        global_env_registry,
-        global_model_registry,
+        Arc::new(global_env_registry),
+        Arc::new(global_model_registry),
     )
     .into();
 
@@ -133,11 +133,11 @@ pub async fn setup_test_workspace() -> (
         .with_service::<EnvironmentService<MockAppRuntime>>(environment_service.clone())
         .create(
             &ctx,
+            activity_indicator,
             CreateWorkspaceParams {
                 name: random_workspace_name(),
                 abs_path: abs_path.clone(),
             },
-            activity_indicator,
         )
         .await
         .unwrap();

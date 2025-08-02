@@ -354,7 +354,7 @@ mod tests {
         }
 
         let fs = Arc::new(RealFileSystem::new());
-        let global_model_registry = GlobalModelRegistry::new();
+        let global_model_registry = Arc::new(GlobalModelRegistry::new());
         let storage_service: Arc<StorageService<MockAppRuntime>> =
             Arc::new(StorageService::new(Arc::new(TestVariableStore {})));
         let sync_service = Arc::new(SyncService::new(global_model_registry.clone(), fs.clone()));
@@ -365,15 +365,19 @@ mod tests {
             map: HashMap<String, Environment>,
         }
 
-        let env = EnvironmentBuilder::new(fs, global_model_registry)
+        let env = EnvironmentBuilder::new(fs)
             .with_service(variable_service)
             .with_service::<StorageService<MockAppRuntime>>(storage_service)
             .with_service::<SyncService>(sync_service)
-            .create::<MockAppRuntime>(CreateEnvironmentParams {
-                name: "data".to_string(),
-                abs_path: &abs_path,
-                color: None,
-            })
+            .create::<MockAppRuntime>(
+                global_model_registry,
+                CreateEnvironmentParams {
+                    id: EnvironmentId::new(),
+                    name: "data".to_string(),
+                    abs_path: &abs_path,
+                    color: None,
+                },
+            )
             .await
             .unwrap();
 

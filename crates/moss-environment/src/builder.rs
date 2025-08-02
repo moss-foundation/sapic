@@ -22,6 +22,7 @@ use crate::{
 };
 
 pub struct CreateEnvironmentParams<'a> {
+    pub id: EnvironmentId,
     pub name: String,
     pub abs_path: &'a Path,
     pub color: Option<String>,
@@ -33,15 +34,13 @@ pub struct EnvironmentLoadParams {
 
 pub struct EnvironmentBuilder {
     fs: Arc<dyn FileSystem>,
-    models: GlobalModelRegistry,
     services: ServiceMap,
 }
 
 impl EnvironmentBuilder {
-    pub fn new(fs: Arc<dyn FileSystem>, models: GlobalModelRegistry) -> Self {
+    pub fn new(fs: Arc<dyn FileSystem>) -> Self {
         Self {
             fs,
-            models,
             services: Default::default(),
         }
     }
@@ -54,8 +53,55 @@ impl EnvironmentBuilder {
         self
     }
 
+    pub async fn initialize<'a>(
+        self,
+        params: CreateEnvironmentParams<'a>,
+    ) -> joinerror::Result<()> {
+        debug_assert!(params.abs_path.is_absolute());
+
+        let file_name = format!(
+            "{}.{}",
+            sanitize(&params.name),
+            constants::ENVIRONMENT_FILE_EXTENSION
+        );
+        let abs_path = params.abs_path.join(&file_name);
+        if abs_path.exists() {
+            return Err(Error::new::<ErrorEnvironmentAlreadyExists>(
+                abs_path.display().to_string(),
+            ));
+        }
+
+        let file = SourceFile {
+            metadata: Block::new(MetadataDecl {
+                id: params.id,
+                color: params.color,
+            }),
+            variables: None,
+        };
+        let content = hcl::to_string(&file).join_err_with::<ErrorFailedToEncode>(|| {
+            format!("failed to encode environment file {}", abs_path.display())
+        })?;
+
+        self.fs
+            .create_file_with(
+                &abs_path,
+                content.as_bytes(),
+                CreateOptions {
+                    overwrite: false,
+                    ignore_if_exists: false,
+                },
+            )
+            .await
+            .join_err_with::<ErrorIo>(|| {
+                format!("failed to create environment file {}", abs_path.display())
+            })?;
+
+        Ok(())
+    }
+
     pub async fn create<'a, R: AppRuntime>(
         self,
+        model_registry: Arc<GlobalModelRegistry>,
         params: CreateEnvironmentParams<'a>,
     ) -> joinerror::Result<Environment<R>> {
         debug_assert!(params.abs_path.is_absolute());
@@ -74,7 +120,7 @@ impl EnvironmentBuilder {
 
         let file = SourceFile {
             metadata: Block::new(MetadataDecl {
-                id: EnvironmentId::new(),
+                id: params.id,
                 color: params.color,
             }),
             variables: None,
@@ -100,7 +146,7 @@ impl EnvironmentBuilder {
         let hcl_value = hcl::to_value(file).unwrap(); // TODO: handle errors
         let json_value = serde_json::to_value(hcl_value).unwrap(); // TODO: handle errors
         let abs_path: Arc<Path> = abs_path.into();
-        self.models
+        model_registry
             .insert(
                 abs_path.clone(),
                 ContentModel::Json(JsonModel::new(json_value)),
@@ -110,13 +156,14 @@ impl EnvironmentBuilder {
         Ok(Environment::new(
             abs_path,
             self.fs.clone(),
-            self.models.clone(),
+            model_registry,
             self.services.into(),
         )?)
     }
 
     pub async fn load<R: AppRuntime>(
         self,
+        model_registry: Arc<GlobalModelRegistry>,
         params: EnvironmentLoadParams,
     ) -> joinerror::Result<Environment<R>> {
         let abs_path: Arc<Path> = params.abs_path.into();
@@ -151,7 +198,7 @@ impl EnvironmentBuilder {
         let hcl_value = hcl::to_value(file).unwrap(); // TODO: handle errors
         let json_value = serde_json::to_value(hcl_value).unwrap(); // TODO: handle errors
 
-        self.models
+        model_registry
             .insert(
                 abs_path.clone(),
                 ContentModel::Json(JsonModel::new(json_value)),
@@ -161,7 +208,7 @@ impl EnvironmentBuilder {
         Ok(Environment::new(
             abs_path,
             self.fs.clone(),
-            self.models.clone(),
+            model_registry,
             self.services.into(),
         )?)
     }

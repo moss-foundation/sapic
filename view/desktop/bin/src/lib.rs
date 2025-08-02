@@ -91,11 +91,16 @@ pub async fn run<R: TauriRuntime>() {
                     let session_service = SessionService::new();
                     let session_id = session_service.session_id().clone();
 
+                    let environment_registry = GlobalEnvironmentRegistry::<R>::new();
+                    let model_registry = GlobalModelRegistry::new();
+
                     let workspace_service = WorkspaceService::<TauriAppRuntime<R>>::new(
                         &app_init_ctx,
                         storage_service.clone(),
                         fs.clone(),
                         &app_dir,
+                        Arc::new(environment_registry),
+                        Arc::new(model_registry),
                     )
                     .await
                     .expect("Failed to create workspace service");
