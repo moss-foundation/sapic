@@ -36,6 +36,7 @@ interface RequestPageStore {
   removePathParam: (index: number) => void;
   removeQueryParam: (index: number) => void;
   reconstructUrlFromParams: () => void;
+  getRequestUrlWithPathValues: () => string;
 }
 
 export const useRequestPageStore = create<RequestPageStore>((set, get) => ({
@@ -205,14 +206,7 @@ export const useRequestPageStore = create<RequestPageStore>((set, get) => ({
 
     reconstructedPath = filteredSegments.join("/");
 
-    enabledPathParams.forEach((param) => {
-      if (param.key && param.key.trim() !== "") {
-        const paramPattern = new RegExp(`:${param.key}\\b`, "g");
-        if (param.value && param.value.trim() !== "") {
-          reconstructedPath = reconstructedPath.replace(paramPattern, param.value);
-        }
-      }
-    });
+    // Path parameters kept as template variables in URL display
 
     const enabledQueryParams = query_params.filter((param) => !param.disabled);
 
@@ -230,5 +224,28 @@ export const useRequestPageStore = create<RequestPageStore>((set, get) => ({
         },
       }));
     }
+  },
+
+  getRequestUrlWithPathValues: () => {
+    const currentState = get();
+    const { path_params, query_params, originalPathTemplate } = currentState.requestData.url;
+
+    let requestPath = originalPathTemplate || currentState.requestData.url.raw.split("?")[0];
+
+    // Replace path parameters with actual values for HTTP requests
+    const enabledPathParams = path_params.filter((param) => !param.disabled);
+
+    enabledPathParams.forEach((param) => {
+      if (param.key && param.key.trim() !== "") {
+        const paramPattern = new RegExp(`:${param.key}\\b`, "g");
+        if (param.value && param.value.trim() !== "") {
+          requestPath = requestPath.replace(paramPattern, param.value);
+        }
+      }
+    });
+
+    const enabledQueryParams = query_params.filter((param) => !param.disabled);
+
+    return reconstructUrl(requestPath, [], enabledQueryParams);
   },
 }));

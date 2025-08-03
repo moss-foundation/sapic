@@ -91,6 +91,7 @@ const RequestPage: React.FC<
   const handleSendRequest = (method: string, url: string) => {
     console.log("Sending request:", { method, url });
     // TODO: Implement actual request sending logic
+    // Use getRequestUrlWithPathValues() for backend requests with actual path values
   };
 
   const handleUrlChange = React.useCallback(
