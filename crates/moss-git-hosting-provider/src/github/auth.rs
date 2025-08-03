@@ -179,6 +179,7 @@ mod tests {
     };
 
     #[test]
+    #[ignore]
     fn manual_cloning_with_oauth() -> Result<()> {
         dotenv::dotenv().ok();
         let repo_url = &dotenv::var("GITHUB_TEST_REPO_HTTPS").unwrap();
