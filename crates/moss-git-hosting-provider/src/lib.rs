@@ -22,4 +22,5 @@ pub trait GitHostingProvider {
 
 pub(crate) mod constants {
     pub const GITHUB_API_URL: &'static str = "https://api.github.com";
+    pub const GITLAB_API_URL: &'static str = "https://gitlab.com/api/v4";
 }

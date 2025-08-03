@@ -54,7 +54,7 @@ impl GitHostingProvider for GitHubClient {
 
         let contributors_response: serde_json::Value = client
             .get(format!("{GITHUB_API_URL}/repos/{repo_url}/contributors"))
-            .headers(headers.clone())
+            .headers(headers)
             .send()
             .await?
             .json()
@@ -180,6 +180,17 @@ mod tests {
                 contributor.name, contributor.avatar_url
             );
         }
+    }
+
+    #[tokio::test]
+    async fn github_client_repository_info() {
+        let client_auth_agent = DummyGitHubAuthAgent;
+        let ssh_auth_agent: Option<DummySSHAuthAgent> = None;
+        let client = GitHubClient::new(client_auth_agent, ssh_auth_agent);
+        let repo_info = client.repository_info(REPO_URL).await.unwrap();
+        println!("Repository created at {}", repo_info.created_at);
+        println!("Repository updated at {}", repo_info.updated_at);
+        println!("Repository owner {}", repo_info.owner);
     }
 
     #[ignore]
