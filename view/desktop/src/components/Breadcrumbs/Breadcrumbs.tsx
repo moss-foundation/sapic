@@ -22,9 +22,17 @@ export const Breadcrumbs = ({ collectionId, nodeId }: BreadcrumbsProps) => {
     return null;
   }
 
+  if (!collectionsTrees || collectionsTrees.length === 0) {
+    return null;
+  }
+
   const activeTree = collectionsTrees?.find((tree) => tree.id === collectionId);
   if (!activeTree) {
     console.warn("Breadcrumbs: No active tree found for collection ID:", collectionId);
+    console.warn(
+      "Available collection IDs:",
+      collectionsTrees.map((tree) => tree.id)
+    );
     return null;
   }
 
