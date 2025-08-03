@@ -135,7 +135,7 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = React.memo(
         {/* Center - URL Input Field */}
         <div className="min-w-0 flex-1">
           <Scrollbar
-            className="h-10 overflow-x-auto overflow-y-hidden rounded-none border-r-0 border-l-0 border-transparent"
+            className="h-10 overflow-x-auto overflow-y-hidden rounded-none border-r-0 border-l-0 border-transparent focus-within:outline-2 focus-within:-outline-offset-1 focus-within:outline-(--moss-primary)"
             options={{
               scrollbars: {
                 autoHide: "move",
