@@ -3,6 +3,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use ts_rs::TS;
 
+use crate::models::primitives::VariableId;
+
 pub type VariableName = String;
 pub type EnvironmentName = String;
 
@@ -57,6 +59,7 @@ pub enum VariableKind {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct VariableInfo {
+    pub id: VariableId,
     pub name: VariableName,
     #[ts(type = "JsonValue")]
     pub global_value: JsonValue,
@@ -64,6 +67,6 @@ pub struct VariableInfo {
     pub local_value: JsonValue,
     pub disabled: bool,
     // pub kind: VariableKind,
-    pub order: Option<isize>,
+    pub order: isize,
     pub desc: Option<String>,
 }

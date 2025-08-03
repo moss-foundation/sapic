@@ -82,7 +82,10 @@ impl AnySyncService for SyncService {
 }
 
 impl SyncService {
-    pub fn new(models: Arc<GlobalModelRegistry>, fs: Arc<dyn FileSystem>) -> Self {
-        Self { models, fs }
+    pub fn new(model_registry: Arc<GlobalModelRegistry>, fs: Arc<dyn FileSystem>) -> Self {
+        Self {
+            models: model_registry,
+            fs,
+        }
     }
 }

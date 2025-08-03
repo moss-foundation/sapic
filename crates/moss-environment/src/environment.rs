@@ -2,6 +2,7 @@ use derive_more::Deref;
 use joinerror::{Error, ResultExt};
 use moss_applib::{AppRuntime, providers::ServiceProvider};
 use moss_fs::{FileSystem, RenameOptions, model_registry::GlobalModelRegistry};
+use moss_hcl::hcl_to_json;
 use std::{
     marker::PhantomData,
     path::{Path, PathBuf},
@@ -10,8 +11,10 @@ use std::{
 use tokio::sync::RwLock;
 
 use crate::{
-    AnyEnvironment, AnySyncService, ModifyEnvironmentParams,
+    AnyEnvironment, AnySyncService, DescribeEnvironmentParams, ModifyEnvironmentParams,
+    models::types::VariableInfo,
     services::{sync_service::SyncService, variable_service::VariableService},
+    utils,
 };
 #[derive(Debug, Deref)]
 pub(super) struct EnvironmentPath {
@@ -82,12 +85,51 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
         self.state.read().await.abs_path.path.clone()
     }
 
-    async fn name(&self) -> String {
-        self.state.read().await.abs_path.name.clone()
+    async fn name(&self) -> joinerror::Result<String> {
+        let filename = self.state.read().await.abs_path.name.clone();
+        utils::parse_file_name(&filename).map_err(|err| {
+            Error::new::<()>(format!("failed to parse environment file name: {}", err))
+        })
     }
 
     async fn color(&self) -> Option<String> {
         None // TODO: hardcoded for now
+    }
+
+    async fn describe(&self) -> joinerror::Result<DescribeEnvironmentParams> {
+        let var_items = self.services.get::<VariableService<R>>().list().await;
+        let mut variables = Vec::with_capacity(var_items.len());
+        for (id, variable) in var_items {
+            let global_value = match hcl_to_json(&variable.global_value) {
+                Ok(value) => value,
+                Err(err) => {
+                    println!("failed to convert global value expression: {}", err);
+                    continue;
+                }
+            };
+            let local_value = match hcl_to_json(&variable.local_value) {
+                Ok(value) => value,
+                Err(err) => {
+                    println!("failed to convert local value expression: {}", err);
+                    continue;
+                }
+            };
+
+            variables.push(VariableInfo {
+                id,
+                name: variable.name,
+                global_value,
+                local_value,
+                disabled: variable.options.disabled,
+                order: variable.order,
+                desc: variable.desc,
+            });
+        }
+
+        Ok(DescribeEnvironmentParams {
+            name: self.name().await?,
+            variables,
+        })
     }
 
     async fn modify(&self, params: ModifyEnvironmentParams) -> joinerror::Result<()> {
@@ -120,9 +162,10 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
 
 impl<R: AppRuntime> Environment<R> {
     async fn rename(&self, new_name: String) -> joinerror::Result<()> {
+        let new_file_name = utils::format_file_name(&new_name);
         let mut state = self.state.write().await;
         let current_abs_path = state.abs_path.path.clone();
-        let new_abs_path: Arc<Path> = state.abs_path.parent.join(new_name).into();
+        let new_abs_path: Arc<Path> = state.abs_path.parent.join(new_file_name).into();
         let environment_path =
             EnvironmentPath::new(new_abs_path.clone()).join_err_with::<()>(|| {
                 format!(

@@ -19,6 +19,7 @@ use crate::{
         ErrorFailedToEncode, ErrorIo,
     },
     models::primitives::EnvironmentId,
+    utils,
 };
 
 pub struct CreateEnvironmentParams<'a> {
@@ -59,11 +60,7 @@ impl EnvironmentBuilder {
     ) -> joinerror::Result<()> {
         debug_assert!(params.abs_path.is_absolute());
 
-        let file_name = format!(
-            "{}.{}",
-            sanitize(&params.name),
-            constants::ENVIRONMENT_FILE_EXTENSION
-        );
+        let file_name = utils::format_file_name(&params.name);
         let abs_path = params.abs_path.join(&file_name);
         if abs_path.exists() {
             return Err(Error::new::<ErrorEnvironmentAlreadyExists>(

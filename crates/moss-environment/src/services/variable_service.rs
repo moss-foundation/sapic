@@ -13,18 +13,17 @@ use crate::{
         primitives::VariableId,
         types::{AddVariableParams, VariableOptions},
     },
-    services::{
-        AnySyncService, AnyVariableService, storage_service::StorageService,
-        sync_service::SyncService,
-    },
+    services::{AnySyncService, AnyVariableService, sync_service::SyncService},
 };
 
 #[derive(Debug, Clone)]
 pub struct VariableItem {
     pub id: VariableId,
+    pub name: String,
     pub local_value: HclExpression,
     pub global_value: HclExpression,
     pub desc: Option<String>,
+    pub order: isize,
     pub options: VariableOptions,
 }
 
@@ -40,11 +39,14 @@ where
     R: AppRuntime,
 {
     state: RwLock<ServiceState>,
-    #[allow(dead_code)]
-    storage_service: Arc<StorageService<R>>,
+    // #[allow(dead_code)]
+    // storage_service: Arc<StorageService<R>>,
     sync_service: Arc<SyncService>,
     _marker: PhantomData<R>,
 }
+
+unsafe impl<R> Send for VariableService<R> where R: AppRuntime {}
+unsafe impl<R> Sync for VariableService<R> where R: AppRuntime {}
 
 impl<R> ServiceMarker for VariableService<R> where R: AppRuntime {}
 
@@ -57,7 +59,7 @@ where
 {
     pub fn new(
         source: Option<&JsonMap<String, JsonValue>>,
-        storage_service: Arc<StorageService<R>>,
+        // storage_service: Arc<StorageService<R>>,
         sync_service: Arc<SyncService>,
     ) -> joinerror::Result<Self> {
         let variables = if let Some(source) = source {
@@ -68,10 +70,14 @@ where
 
         Ok(Self {
             state: RwLock::new(ServiceState { variables }),
-            storage_service,
+            // storage_service,
             sync_service,
             _marker: PhantomData,
         })
+    }
+
+    pub async fn list(&self) -> HashMap<VariableId, VariableItem> {
+        self.state.read().await.variables.clone()
     }
 
     pub async fn batch_remove(&self, path: &Path, ids: Vec<VariableId>) -> joinerror::Result<()> {
@@ -131,7 +137,7 @@ where
             })?;
 
             let value = VariableSpec {
-                name: param.name,
+                name: param.name.clone(),
                 value: global_value.clone(),
                 description: param.desc.clone(),
                 options: param.options.clone(),
@@ -139,9 +145,11 @@ where
 
             let item = VariableItem {
                 id: id.clone(),
+                name: param.name,
                 local_value: HclExpression::Null,
                 global_value,
                 desc: param.desc,
+                order: param.order,
                 options: param.options,
             };
 
@@ -199,9 +207,11 @@ fn collect_variables(
             id.clone(),
             VariableItem {
                 id,
-                local_value: HclExpression::Null, // TODO: restore from the database
+                name: var.name,
+                local_value: HclExpression::Null, // TODO: restore from the store
                 global_value: var.value,
                 desc: var.description,
+                order: 0, // TODO: restore from the store
                 options: var.options,
             },
         );
@@ -359,11 +369,11 @@ mod tests {
             Arc::new(StorageService::new(Arc::new(TestVariableStore {})));
         let sync_service = Arc::new(SyncService::new(global_model_registry.clone(), fs.clone()));
         let variable_service =
-            VariableService::new(None, storage_service.clone(), sync_service.clone()).unwrap();
+            VariableService::<MockAppRuntime>::new(None, sync_service.clone()).unwrap();
 
-        struct MyEnvStore<Environment: AnyEnvironment<MockAppRuntime>> {
-            map: HashMap<String, Environment>,
-        }
+        // struct MyEnvStore<Environment: AnyEnvironment<MockAppRuntime>> {
+        //     map: HashMap<String, Environment>,
+        // }
 
         let env = EnvironmentBuilder::new(fs)
             .with_service(variable_service)

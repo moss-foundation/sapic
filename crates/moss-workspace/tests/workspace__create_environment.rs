@@ -8,7 +8,7 @@ pub mod shared;
 
 #[tokio::test]
 async fn create_environment_success() {
-    let (ctx, _workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, _, cleanup) = setup_test_workspace().await;
 
     let environment_name = random_environment_name();
     let create_environment_output = workspace

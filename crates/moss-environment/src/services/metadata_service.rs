@@ -4,6 +4,12 @@ use crate::services::AnyMetadataService;
 
 pub struct MetadataService {}
 
+impl MetadataService {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
 impl AppService for MetadataService {}
 impl ServiceMarker for MetadataService {}
 

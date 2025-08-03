@@ -1,7 +1,6 @@
 #![cfg(feature = "integration-tests")]
 
 use image::{ImageBuffer, Rgb};
-mod context;
 
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::{

@@ -4,6 +4,7 @@ pub mod environment;
 pub mod models;
 pub mod registry;
 pub mod services;
+pub mod utils;
 
 use std::{path::Path, sync::Arc};
 
@@ -16,7 +17,7 @@ use moss_bindingutils::primitives::ChangeString;
 use crate::{
     models::{
         primitives::VariableId,
-        types::{AddVariableParams, UpdateVariableParams},
+        types::{AddVariableParams, UpdateVariableParams, VariableInfo},
     },
     services::AnySyncService,
 };
@@ -62,10 +63,18 @@ pub struct ModifyEnvironmentParams {
     pub vars_to_delete: Vec<VariableId>,
 }
 
+pub struct DescribeEnvironmentParams {
+    pub name: String,
+    // TODO:  add color
+    pub variables: Vec<VariableInfo>,
+    // TODO: git info
+}
+
 #[allow(private_bounds, async_fn_in_trait)]
 pub trait AnyEnvironment<R: AppRuntime> {
     async fn abs_path(&self) -> Arc<Path>;
     async fn color(&self) -> Option<String>;
-    async fn name(&self) -> String;
+    async fn name(&self) -> joinerror::Result<String>;
+    async fn describe(&self) -> joinerror::Result<DescribeEnvironmentParams>;
     async fn modify(&self, params: ModifyEnvironmentParams) -> joinerror::Result<()>;
 }

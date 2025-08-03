@@ -9,9 +9,12 @@ use moss_environment::{
         types::{AddVariableParams, UpdateVariableParams},
     },
     registry::{EnvironmentModel, GlobalEnvironmentRegistry},
+    services::{
+        metadata_service::MetadataService, sync_service::SyncService,
+        variable_service::VariableService,
+    },
 };
 use moss_fs::{FileSystem, model_registry::GlobalModelRegistry};
-use moss_text::sanitized::sanitize;
 use std::{
     collections::HashMap,
     marker::PhantomData,
@@ -97,6 +100,13 @@ where
         }
     }
 
+    pub async fn environment(&self, id: &EnvironmentId) -> Option<Arc<Environment<R>>> {
+        self.environment_registry
+            .get(id)
+            .await
+            .map(|model| model.handle.clone())
+    }
+
     pub async fn list_environments(
         &self,
         _ctx: &R::AsyncContext,
@@ -170,7 +180,21 @@ where
         params: CreateEnvironmentItemParams,
     ) -> joinerror::Result<EnvironmentItemDescription> {
         let id = EnvironmentId::new();
+        let metadata_service = MetadataService::new();
+        let sync_service = Arc::new(SyncService::new(
+            self.model_registry.clone(),
+            self.fs.clone(),
+        ));
+        // TODO: env storage service
+        let variable_service = VariableService::<R>::new(
+            None, // FIXME: hardcoded for now
+            sync_service.clone(),
+        )?;
+
         let environment = EnvironmentBuilder::new(self.fs.clone())
+            .with_service(metadata_service)
+            .with_service::<SyncService>(sync_service)
+            .with_service::<VariableService<R>>(variable_service)
             .create::<R>(
                 self.model_registry.clone(),
                 moss_environment::builder::CreateEnvironmentParams {
