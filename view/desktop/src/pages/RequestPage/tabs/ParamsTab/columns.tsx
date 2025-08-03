@@ -21,22 +21,22 @@ export const paramColumns = [
     size: 40,
   }),
   columnHelper.accessor("key", {
-    header: () => "Key",
+    header: () => <span className="font-medium">Key</span>,
     cell: (info) => <TemplateInputCell info={info} />,
     minSize: 200,
   }),
   columnHelper.accessor("value", {
-    header: () => "Value",
+    header: () => <span className="font-medium">Value</span>,
     cell: (info) => <TemplateInputCell info={info} />,
     minSize: 150,
   }),
   columnHelper.accessor("type", {
-    header: () => "Type",
+    header: () => <span className="font-medium">Type</span>,
     cell: (info) => <TypeSelectCell info={info} />,
     minSize: 100,
   }),
   columnHelper.accessor("description", {
-    header: () => "Description",
+    header: () => <span className="font-medium">Description</span>,
     cell: (info) => <ParamInputCell info={info} />,
     meta: {
       isGrow: true,
@@ -45,7 +45,7 @@ export const paramColumns = [
   }),
   columnHelper.display({
     id: "actions",
-    header: () => "Actions",
+    header: () => <span className="font-medium">Actions</span>,
     cell: ({ row }) => <ActionsCell row={row} />,
     enableSorting: false,
     enableResizing: false,
