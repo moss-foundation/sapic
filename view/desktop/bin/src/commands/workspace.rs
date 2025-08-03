@@ -41,7 +41,7 @@ pub async fn describe_workspace_state<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
-pub async fn stream_workspace_environments<'a, R: tauri::Runtime>(
+pub async fn stream_environments<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
@@ -141,6 +141,42 @@ pub async fn batch_update_collection<'a, R: tauri::Runtime>(
     super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
         workspace
             .batch_update_collection(&ctx, input)
+            .await
+            .map_err(|e| e.into())
+    })
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn create_environment<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: Window<R>,
+    input: CreateEnvironmentInput,
+    options: Options,
+) -> TauriResult<CreateEnvironmentOutput> {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
+        workspace
+            .create_environment(&ctx, input)
+            .await
+            .map_err(|e| e.into())
+    })
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(app), fields(window = window.label()))]
+pub async fn update_environment<'a, R: tauri::Runtime>(
+    ctx: State<'_, moss_applib::context::AsyncContext>,
+    app: App<'a, R>,
+    window: Window<R>,
+    input: UpdateEnvironmentInput,
+    options: Options,
+) -> TauriResult<UpdateEnvironmentOutput> {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
+        workspace
+            .update_environment(&ctx, input)
             .await
             .map_err(|e| e.into())
     })

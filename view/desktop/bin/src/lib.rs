@@ -189,7 +189,7 @@ pub async fn run<R: TauriRuntime>() {
             //
             // Workspace
             //
-            commands::stream_workspace_environments,
+            commands::stream_environments,
             commands::update_workspace_state,
             commands::describe_workspace_state,
             commands::stream_collections,
@@ -197,6 +197,9 @@ pub async fn run<R: TauriRuntime>() {
             commands::delete_collection,
             commands::update_collection,
             commands::batch_update_collection,
+            commands::create_environment,
+            commands::update_environment,
+            commands::stream_environments,
             //
             // Collection
             //
