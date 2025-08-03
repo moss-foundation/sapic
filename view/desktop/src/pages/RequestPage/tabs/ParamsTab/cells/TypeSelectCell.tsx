@@ -35,8 +35,8 @@ export const TypeSelectCell = ({ info }: { info: ExtendedCellContext<ParameterDa
           className={cn(
             "flex w-full items-center justify-between px-2 py-1.5 text-base transition-colors",
             "border-none bg-transparent",
-            "focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-(--moss-primary)",
-            "data-[state=open]:outline-2 data-[state=open]:-outline-offset-1 data-[state=open]:outline-(--moss-primary)",
+            "focus-visible:outline-1 focus-visible:outline-(--moss-primary)",
+            "data-[state=open]:outline-1 data-[state=open]:outline-(--moss-primary)",
             getTypeColor(value)
           )}
         >
