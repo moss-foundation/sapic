@@ -157,7 +157,7 @@ export const ParamsTabContent = (
     <div className="mt-4">
       <div className="mb-6">
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-sm font-medium">Query Params</h3>
+          <h3 className="text-base font-medium">Query Params</h3>
           <ActionButton icon="MoreHorizontal" />
         </div>
         <DataTable columns={paramColumns} data={queryParams} onDataChange={handleQueryParamsUpdate} />
@@ -165,7 +165,7 @@ export const ParamsTabContent = (
 
       <div>
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-sm font-medium">Path Params</h3>
+          <h3 className="text-base font-medium">Path Params</h3>
           <ActionButton icon="MoreHorizontal" />
         </div>
         <DataTable columns={paramColumns} data={pathParams} onDataChange={handlePathParamsUpdate} />

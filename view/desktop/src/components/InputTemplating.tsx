@@ -35,12 +35,12 @@ const containerStyles = cva(`
 });
 
 const editorStyles = cva(
-  `white-space-nowrap word-break-keep-all flex h-full w-full resize-none flex-nowrap items-center overflow-x-auto overflow-y-hidden border-none bg-transparent font-mono text-sm outline-none`,
+  `white-space-nowrap word-break-keep-all flex h-full w-full resize-none flex-nowrap items-center overflow-x-auto overflow-y-hidden border-none bg-transparent outline-none`,
   {
     variants: {
       size: {
-        sm: "max-h-7 min-h-7 text-sm leading-7",
-        md: "text-md max-h-9 min-h-9 leading-8",
+        sm: "max-h-7 min-h-7 leading-7",
+        md: "max-h-9 min-h-9 leading-8",
       },
     },
   }
@@ -434,6 +434,8 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
             [contenteditable] {
               word-break: keep-all;
               overflow-wrap: normal;
+              font-family: Inter;
+              font-size: 13px;
             }
             
             [contenteditable] * {
