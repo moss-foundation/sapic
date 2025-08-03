@@ -4,6 +4,8 @@ import { z } from "zod";
 import { jsonValueSchema } from "@repo/bindings-utils";
 import {
   activitybarPositionSchema,
+  changeJsonValueSchema,
+  changeStringSchema,
   editorGridOrientationSchema,
   panelRendererSchema,
   sidebarPositionSchema,
@@ -14,6 +16,10 @@ export const activitybarItemStateInfoSchema = z.object({
   id: z.string(),
   order: z.number(),
   visible: z.boolean(),
+});
+
+export const variableOptionsSchema = z.object({
+  disabled: z.boolean(),
 });
 
 export const collectionInfoSchema = z.object({
@@ -55,6 +61,15 @@ export const activitybarPartStateInfoSchema = z.object({
   items: z.array(activitybarItemStateInfoSchema),
 });
 
+export const addVariableParamsSchema = z.object({
+  name: z.string(),
+  globalValue: jsonValueSchema,
+  localValue: jsonValueSchema,
+  order: z.number(),
+  desc: z.string().optional(),
+  options: variableOptionsSchema,
+});
+
 export const editorGridStateSchema = z.object({
   root: editorGridNodeSchema,
   width: z.number(),
@@ -82,11 +97,12 @@ export const editorPartStateInfoSchema = z.object({
 });
 
 export const variableInfoSchema = z.object({
+  id: z.string(),
   name: z.string(),
   globalValue: jsonValueSchema,
   localValue: jsonValueSchema,
   disabled: z.boolean(),
-  order: z.number().optional(),
+  order: z.number(),
   desc: z.string().optional(),
 });
 
@@ -94,6 +110,14 @@ export const sidebarPartStateInfoSchema = z.object({
   position: sidebarPositionSchema,
   size: z.number(),
   visible: z.boolean(),
+});
+
+export const updateVariableParamsSchema = z.object({
+  name: z.string().optional(),
+  globalValue: changeJsonValueSchema.optional(),
+  localValue: changeJsonValueSchema.optional(),
+  order: z.number().optional(),
+  desc: changeStringSchema.optional(),
 });
 
 export const environmentInfoSchema = z.object({

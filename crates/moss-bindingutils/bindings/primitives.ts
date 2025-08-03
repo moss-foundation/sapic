@@ -5,6 +5,8 @@
  */
 export type ChangeBool = { "UPDATE": boolean } | "REMOVE";
 
+export type ChangeJsonValue = { "UPDATE": JsonValue } | "REMOVE";
+
 /**
  * @category Primitive
  */
