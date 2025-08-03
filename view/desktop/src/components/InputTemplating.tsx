@@ -422,7 +422,7 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
           {`
             [contenteditable][data-placeholder]:empty:before {
               content: attr(data-placeholder);
-              color: var(--moss-controls-placeholder);
+              color: var(--moss-requestpage-placeholder-color) !important;
               pointer-events: none;
               white-space: nowrap;
               display: flex;
