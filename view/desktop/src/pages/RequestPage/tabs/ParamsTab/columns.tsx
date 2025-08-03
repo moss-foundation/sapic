@@ -1,13 +1,7 @@
 import { createColumnHelper } from "@tanstack/react-table";
 import { ParameterData } from "@/components/Table";
-import {
-  EnabledCheckboxCell,
-  TemplateInputCell,
-  TypeSelectCell,
-  ParamInputCell,
-  ActionsCell,
-  EnabledHeaderCheckbox,
-} from "./cells";
+import { DefaultInputCell } from "@/components/Table/ui/DefaultCellInput";
+import { EnabledCheckboxCell, TypeSelectCell, ActionsCell, EnabledHeaderCheckbox } from "./cells";
 
 const columnHelper = createColumnHelper<ParameterData>();
 
@@ -22,12 +16,12 @@ export const paramColumns = [
   }),
   columnHelper.accessor("key", {
     header: () => <span className="font-medium">Key</span>,
-    cell: (info) => <TemplateInputCell info={info} />,
+    cell: (info) => <DefaultInputCell info={info} enableTemplating={true} />,
     minSize: 200,
   }),
   columnHelper.accessor("value", {
     header: () => <span className="font-medium">Value</span>,
-    cell: (info) => <TemplateInputCell info={info} />,
+    cell: (info) => <DefaultInputCell info={info} enableTemplating={true} />,
     minSize: 150,
   }),
   columnHelper.accessor("type", {
@@ -37,7 +31,7 @@ export const paramColumns = [
   }),
   columnHelper.accessor("description", {
     header: () => <span className="font-medium">Description</span>,
-    cell: (info) => <ParamInputCell info={info} />,
+    cell: (info) => <DefaultInputCell info={info} enableTemplating={false} />,
     meta: {
       isGrow: true,
     },

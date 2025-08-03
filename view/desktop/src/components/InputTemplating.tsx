@@ -1,6 +1,14 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { cva } from "class-variance-authority";
 import { cn } from "@/utils";
+import {
+  extractVariables,
+  createHighlightedHTML,
+  extractPlainText,
+  getTextOffset,
+  setCursorPosition,
+  getCurrentCursorOffset,
+} from "@/utils/templating";
 
 interface InputTemplatingProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size"> {
   size?: "sm" | "md";
@@ -50,100 +58,6 @@ const highlightedVariableStyles =
   "background-(--moss-templating-input-bg) text-(--moss-templating-input-text) border border-(--moss-templating-input-border) rounded-sm px-0.5 whitespace-nowrap inline-block tracking-tighter" +
   " [height:20px] [line-height:18px] [vertical-align:middle]";
 
-// Extract variables from template string (e.g., {{variable}} and :variable)
-const extractVariables = (text: string, includeColonVariables = false): string[] => {
-  const variables: string[] = [];
-
-  // Extract {{variable}} patterns
-  const bracesRegex = /\{\{([^}]+)\}\}/g;
-  let match;
-
-  while ((match = bracesRegex.exec(text)) !== null) {
-    const variable = match[1].trim();
-    if (variable && !variables.includes(variable)) {
-      variables.push(variable);
-    }
-  }
-
-  // Extract :variable patterns if enabled
-  if (includeColonVariables) {
-    const colonRegex = /:([a-zA-Z_][a-zA-Z0-9_]*)/g;
-    while ((match = colonRegex.exec(text)) !== null) {
-      const variable = match[1];
-      if (variable && !variables.includes(variable)) {
-        variables.push(variable);
-      }
-    }
-  }
-
-  return variables;
-};
-
-// Create highlighted HTML while preserving spaces
-const createHighlightedHTML = (text: string, includeColonVariables = false): string => {
-  const textWithNbsp = text.replace(/ /g, "&nbsp;");
-
-  if (includeColonVariables) {
-    // Highlight both {{variable}} and :variable patterns
-    const combinedRegex = /(\{\{[^}]*\}\}|:[a-zA-Z_][a-zA-Z0-9_]*)/g;
-    return textWithNbsp.replace(combinedRegex, (match) => {
-      return `<span class="${highlightedVariableStyles}">${match}</span>`;
-    });
-  } else {
-    // Only highlight {{variable}} patterns
-    const regex = /(\{\{[^}]*\}\})/g;
-    return textWithNbsp.replace(regex, (match) => {
-      return `<span class="${highlightedVariableStyles}">${match}</span>`;
-    });
-  }
-};
-
-// Extract plain text from HTML while preserving spaces
-const extractPlainText = (html: string): string => {
-  const normalizedHtml = html.replace(/&nbsp;/g, " ");
-  const div = document.createElement("div");
-  div.innerHTML = normalizedHtml;
-  return div.textContent || div.innerText || "";
-};
-
-// Calculate cursor position in terms of plain text
-const getTextOffset = (container: Node, targetNode: Node, targetOffset: number): number => {
-  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null);
-
-  let offset = 0;
-  let node: Node | null;
-
-  while ((node = walker.nextNode())) {
-    if (node === targetNode) {
-      return offset + targetOffset;
-    }
-    offset += (node.textContent || "").length;
-  }
-
-  return offset;
-};
-
-// Find text node and offset from plain text position
-const findTextNodeAtOffset = (container: Node, targetOffset: number): { node: Node; offset: number } | null => {
-  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null);
-
-  let currentOffset = 0;
-  let node: Node | null;
-
-  while ((node = walker.nextNode())) {
-    const nodeText = node.textContent || "";
-    if (currentOffset + nodeText.length >= targetOffset) {
-      return {
-        node,
-        offset: targetOffset - currentOffset,
-      };
-    }
-    currentOffset += nodeText.length;
-  }
-
-  return null;
-};
-
 export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatingProps>(
   (
     { className, size = "sm", onTemplateChange, onChange, placeholder, highlightColonVariables = false, ...props },
@@ -161,51 +75,36 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
       }
     }, [props.value]);
 
-    const updateEditorContent = useCallback((text: string) => {
-      if (editorRef.current && !isUpdatingContent.current) {
-        isUpdatingContent.current = true;
+    const updateEditorContent = useCallback(
+      (text: string) => {
+        if (editorRef.current && !isUpdatingContent.current) {
+          isUpdatingContent.current = true;
 
-        const selection = window.getSelection();
-        let cursorOffset = 0;
-        let shouldRestoreCursor = false;
+          const selection = window.getSelection();
+          let cursorOffset = 0;
+          let shouldRestoreCursor = false;
 
-        if (selection && selection.rangeCount > 0 && editorRef.current.contains(selection.focusNode)) {
-          try {
-            const range = selection.getRangeAt(0);
-            cursorOffset = getTextOffset(editorRef.current, range.startContainer, range.startOffset);
-            shouldRestoreCursor = true;
-          } catch (e) {
-            shouldRestoreCursor = false;
-          }
-        }
-
-        const highlightedHTML = createHighlightedHTML(text, highlightColonVariables);
-        editorRef.current.innerHTML = highlightedHTML;
-
-        if (shouldRestoreCursor) {
-          try {
-            const newRange = document.createRange();
-            const newSelection = window.getSelection();
-
-            const textPosition = findTextNodeAtOffset(editorRef.current, cursorOffset);
-
-            if (textPosition && newSelection) {
-              newRange.setStart(
-                textPosition.node,
-                Math.min(textPosition.offset, (textPosition.node.textContent || "").length)
-              );
-              newRange.collapse(true);
-              newSelection.removeAllRanges();
-              newSelection.addRange(newRange);
+          if (selection && selection.rangeCount > 0 && editorRef.current.contains(selection.focusNode)) {
+            try {
+              cursorOffset = getCurrentCursorOffset(editorRef.current);
+              shouldRestoreCursor = true;
+            } catch (e) {
+              shouldRestoreCursor = false;
             }
-          } catch (e) {
-            // Cursor restoration failed, ignore
           }
-        }
 
-        isUpdatingContent.current = false;
-      }
-    }, []);
+          const highlightedHTML = createHighlightedHTML(text, highlightColonVariables, highlightedVariableStyles);
+          editorRef.current.innerHTML = highlightedHTML;
+
+          if (shouldRestoreCursor) {
+            setCursorPosition(editorRef.current, cursorOffset);
+          }
+
+          isUpdatingContent.current = false;
+        }
+      },
+      [highlightColonVariables]
+    );
 
     const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
       if (isUpdatingContent.current) return;
@@ -244,7 +143,6 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
         return;
       }
 
-      // Handle Delete and Backspace to work properly with variable spans
       if (e.key === "Delete" || e.key === "Backspace") {
         e.preventDefault();
 
@@ -301,30 +199,13 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
         setTimeout(() => {
           updateEditorContent(newText);
           setTimeout(() => {
-            const textPosition = findTextNodeAtOffset(editorRef.current!, newCursorPosition);
-            if (textPosition) {
-              const newRange = document.createRange();
-              const newSelection = window.getSelection();
-
-              try {
-                newRange.setStart(
-                  textPosition.node,
-                  Math.min(textPosition.offset, (textPosition.node.textContent || "").length)
-                );
-                newRange.collapse(true);
-                newSelection?.removeAllRanges();
-                newSelection?.addRange(newRange);
-              } catch (e) {
-                // Cursor positioning failed, ignore
-              }
-            }
+            setCursorPosition(editorRef.current!, newCursorPosition);
           }, 0);
         }, 0);
 
         return;
       }
 
-      // Handle arrow key navigation to skip over span boundaries
       if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
         e.preventDefault();
 
@@ -345,23 +226,7 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
           newOffset = Math.min(plainText.length, currentOffset + 1);
         }
 
-        const textPosition = findTextNodeAtOffset(editorRef.current, newOffset);
-        if (textPosition) {
-          const newRange = document.createRange();
-          const newSelection = window.getSelection();
-
-          try {
-            newRange.setStart(
-              textPosition.node,
-              Math.min(textPosition.offset, (textPosition.node.textContent || "").length)
-            );
-            newRange.collapse(true);
-            newSelection?.removeAllRanges();
-            newSelection?.addRange(newRange);
-          } catch (e) {
-            // Cursor positioning failed, ignore
-          }
-        }
+        setCursorPosition(editorRef.current, newOffset);
       }
     };
 
@@ -408,7 +273,12 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
 
         <div
           ref={editorRef}
-          className={editorStyles({ size })}
+          className={cn(
+            editorStyles({ size }),
+            "word-break-keep-all overflow-wrap-normal font-[Inter] text-[13px]",
+            "empty:before:pointer-events-none empty:before:flex empty:before:h-full empty:before:items-center empty:before:leading-[inherit] empty:before:whitespace-nowrap empty:before:text-(--moss-requestpage-placeholder-color) empty:before:content-[attr(data-placeholder)]",
+            "[&_*]:inline [&_*]:whitespace-nowrap"
+          )}
           contentEditable
           onInput={handleInput}
           onKeyDown={handleKeyDown}
@@ -417,33 +287,6 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
           data-placeholder={placeholder}
           suppressContentEditableWarning={true}
         />
-
-        <style>
-          {`
-            [contenteditable][data-placeholder]:empty:before {
-              content: attr(data-placeholder);
-              color: var(--moss-requestpage-placeholder-color) !important;
-              pointer-events: none;
-              white-space: nowrap;
-              display: flex;
-              align-items: center;
-              height: 100%;
-              line-height: inherit;
-            }
-            
-            [contenteditable] {
-              word-break: keep-all;
-              overflow-wrap: normal;
-              font-family: Inter;
-              font-size: 13px;
-            }
-            
-            [contenteditable] * {
-              display: inline !important;
-              white-space: nowrap !important;
-            }
-          `}
-        </style>
       </div>
     );
   }
