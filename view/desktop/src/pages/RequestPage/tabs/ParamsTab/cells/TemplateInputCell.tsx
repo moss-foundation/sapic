@@ -53,7 +53,7 @@ export const TemplateInputCell = ({ info }: { info: ExtendedCellContext<Paramete
         onBlur={handleBlur}
         placeholder={info.column.id}
         size="sm"
-        className={`w-full rounded-none border-none focus:outline-none ${
+        className={`w-full rounded-none border-none focus-within:!outline-1 focus-within:!outline-offset-0 focus-within:!outline-(--moss-primary) ${
           isDisabled
             ? "text-(--moss-requestpage-text-disabled)"
             : hasTemplateVariables
