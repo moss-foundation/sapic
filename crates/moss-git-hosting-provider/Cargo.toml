@@ -11,11 +11,14 @@ git2.workspace = true
 url.workspace = true
 dotenv.workspace = true
 serde_json.workspace = true
-oauth2 = { workspace = true, features = ["reqwest-blocking"] } # Using blocking for easy testing here
-reqwest = { workspace = true, features = ["blocking"] }
+oauth2 = { workspace = true, features = ["reqwest-blocking"] }         # Using blocking for easy testing here
+reqwest = { workspace = true, features = ["blocking", "json"] }
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
 serde = { workspace = true, features = ["derive"] }
 webbrowser.workspace = true
 keyring.workspace = true
+async-trait.workspace = true
+ts-rs.workspace = true
 
 # Making SSH work on Windows
 [target.'cfg(windows)'.dependencies]

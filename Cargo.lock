@@ -3893,6 +3893,7 @@ name = "moss_git_hosting_provider"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "dotenv",
  "git2",
  "keyring",
@@ -3903,6 +3904,8 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
+ "tokio",
+ "ts-rs",
  "url",
  "webbrowser",
 ]

@@ -1,8 +1,13 @@
+use async_trait::async_trait;
 use moss_git::GitAuthAgent;
 use std::sync::Arc;
 use url::Url;
 
-use crate::{GitHostingProvider, common::SSHAuthAgent};
+use crate::{
+    GitHostingProvider,
+    common::SSHAuthAgent,
+    models::types::{Contributor, RepositoryInfo},
+};
 
 pub trait GitLabAuthAgent: GitAuthAgent {}
 
@@ -25,12 +30,24 @@ impl GitLabClient {
     }
 }
 
+unsafe impl Send for GitLabClient {}
+unsafe impl Sync for GitLabClient {}
+
+#[async_trait]
 impl GitHostingProvider for GitLabClient {
     fn name(&self) -> String {
         "GitLab".to_string()
     }
     fn base_url(&self) -> Url {
         Url::parse("https://gitlab.com").unwrap()
+    }
+
+    async fn contributors(&self, repo_url: &str) -> anyhow::Result<Vec<Contributor>> {
+        todo!()
+    }
+
+    async fn repository_info(&self, repo_url: &str) -> anyhow::Result<RepositoryInfo> {
+        todo!()
     }
 }
 

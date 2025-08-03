@@ -42,8 +42,12 @@
       <sourceFolder url="file://$MODULE_DIR$/libs/joinerror/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-jsdoc-macro/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-jsdoc/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-contentmodel/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-git-hosting-provider/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/misc/wasm_plugins/rust_demo/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/.venv1" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
+      <excludeFolder url="file://$MODULE_DIR$/misc/wasm_plugins/rust_demo/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

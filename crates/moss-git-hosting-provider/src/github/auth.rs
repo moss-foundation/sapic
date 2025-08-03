@@ -173,14 +173,19 @@ mod tests {
 
     use moss_git::repo::RepoHandle;
     use moss_keyring::KeyringClientImpl;
-    use std::{path::Path, sync::Arc};
+    use std::{
+        path::{Path, PathBuf},
+        sync::Arc,
+    };
 
-    #[ignore]
     #[test]
     fn manual_cloning_with_oauth() -> Result<()> {
         dotenv::dotenv().ok();
         let repo_url = &dotenv::var("GITHUB_TEST_REPO_HTTPS").unwrap();
-        let repo_path = Path::new("test-repo");
+        let repo_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("tests")
+            .join("data")
+            .join("test-repo");
 
         let client_id = dotenv::var("GITHUB_CLIENT_ID").unwrap();
         let client_secret = dotenv::var("GITHUB_CLIENT_SECRET").unwrap();
@@ -192,7 +197,7 @@ mod tests {
             client_secret,
         ));
 
-        let _repo = RepoHandle::clone(repo_url, repo_path, auth_agent)?;
+        let _repo = RepoHandle::clone(repo_url, &repo_path, auth_agent)?;
         Ok(())
     }
 }
