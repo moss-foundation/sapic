@@ -2,14 +2,12 @@ pub mod builder;
 pub mod configuration;
 pub mod environment;
 pub mod models;
-pub mod registry;
 pub mod services;
 pub mod utils;
 
 use std::{path::Path, sync::Arc};
 
 pub use environment::Environment;
-pub use registry::GlobalEnvironmentRegistry;
 
 use moss_applib::AppRuntime;
 use moss_bindingutils::primitives::ChangeString;

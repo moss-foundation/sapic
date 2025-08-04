@@ -5,7 +5,6 @@ use moss_activity_indicator::ActivityIndicator;
 use moss_applib::{AppRuntime, PublicServiceMarker, ServiceMarker};
 use moss_common::api::OperationError;
 use moss_db::DatabaseError;
-use moss_environment::{Environment, GlobalEnvironmentRegistry};
 use moss_fs::{FileSystem, RemoveOptions, model_registry::GlobalModelRegistry};
 use moss_workspace::{
     Workspace,
@@ -134,7 +133,6 @@ pub struct WorkspaceService<R: AppRuntime> {
     abs_path: Arc<Path>,
     fs: Arc<dyn FileSystem>,
     storage: Arc<StorageService<R>>,
-    environment_registry: Arc<GlobalEnvironmentRegistry<R, Environment<R>>>,
     model_registry: Arc<GlobalModelRegistry>,
     state: Arc<RwLock<ServiceState<R>>>,
 }
@@ -148,7 +146,6 @@ impl<R: AppRuntime> WorkspaceService<R> {
         storage_service: Arc<StorageService<R>>,
         fs: Arc<dyn FileSystem>,
         abs_path: &Path,
-        environment_registry: Arc<GlobalEnvironmentRegistry<R, Environment<R>>>,
         model_registry: Arc<GlobalModelRegistry>,
     ) -> WorkspaceServiceResult<Self> {
         debug_assert!(abs_path.is_absolute());
@@ -162,7 +159,6 @@ impl<R: AppRuntime> WorkspaceService<R> {
             fs,
             storage: storage_service,
             abs_path,
-            environment_registry,
             model_registry,
             state: Arc::new(RwLock::new(ServiceState {
                 known_workspaces,
@@ -378,15 +374,11 @@ impl<R: AppRuntime> WorkspaceService<R> {
             WorkspaceDynLayoutService::new(service)
         };
 
-        let environment_service: Arc<EnvironmentService<R>> = EnvironmentService::new(
-            &abs_path,
-            self.fs.clone(),
-            self.environment_registry.clone(),
-            self.model_registry.clone(),
-        )
-        .await
-        .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?
-        .into();
+        let environment_service: Arc<EnvironmentService<R>> =
+            EnvironmentService::new(&abs_path, self.fs.clone(), self.model_registry.clone())
+                .await
+                .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?
+                .into();
 
         let workspace = WorkspaceBuilder::new(self.fs.clone())
             .with_service::<WorkspaceDynStorageService<R>>(storage_service.clone())

@@ -8,13 +8,13 @@ use moss_environment::{
         primitives::{EnvironmentId, VariableId},
         types::{AddVariableParams, UpdateVariableParams},
     },
-    registry::{EnvironmentModel, GlobalEnvironmentRegistry},
     services::{
         metadata_service::MetadataService, sync_service::SyncService,
         variable_service::VariableService,
     },
 };
 use moss_fs::{FileSystem, model_registry::GlobalModelRegistry};
+use moss_workspacelib::{GlobalEnvironmentRegistry, environment_registry::EnvironmentModel};
 use std::{
     collections::HashMap,
     marker::PhantomData,
@@ -86,14 +86,14 @@ where
     pub async fn new(
         abs_path: &Path,
         fs: Arc<dyn FileSystem>,
-        environment_registry: Arc<GlobalEnvironmentRegistry<R, Environment<R>>>,
         model_registry: Arc<GlobalModelRegistry>,
     ) -> joinerror::Result<Self> {
         let abs_path = abs_path.join(dirs::ENVIRONMENTS_DIR);
+        let environment_registry = GlobalEnvironmentRegistry::new();
         let environments = collect_environments(
             &fs,
             model_registry.clone(),
-            environment_registry.clone(),
+            &environment_registry,
             &abs_path,
         )
         .await?;
@@ -101,7 +101,7 @@ where
         Ok(Self {
             fs,
             abs_path,
-            environment_registry,
+            environment_registry: Arc::new(environment_registry),
             model_registry,
             state: Arc::new(RwLock::new(ServiceState { environments })),
         })
@@ -255,7 +255,7 @@ where
 async fn collect_environments<R: AppRuntime>(
     fs: &Arc<dyn FileSystem>,
     model_registry: Arc<GlobalModelRegistry>,
-    environment_registry: Arc<GlobalEnvironmentRegistry<R, Environment<R>>>,
+    environment_registry: &GlobalEnvironmentRegistry<R, Environment<R>>,
     abs_path: &Path,
 ) -> joinerror::Result<HashMap<EnvironmentId, EnvironmentItem>> {
     let mut environments = HashMap::new();
@@ -303,59 +303,3 @@ async fn collect_environments<R: AppRuntime>(
 
     Ok(environments)
 }
-
-// pub async fn environments<C: Context<R>>(&self, ctx: &C) -> Result<&EnvironmentMap> {
-//     let fs = <dyn FileSystem>::global::<R, C>(ctx);
-//     let result = self
-//         .environments
-//         .get_or_try_init(|| async move {
-//             let mut environments = HashMap::new();
-
-//             let abs_path = self.abs_path.join(dirs::ENVIRONMENTS_DIR);
-//             if !abs_path.exists() {
-//                 return Ok(environments);
-//             }
-
-//             // TODO: restore environments cache from the database
-//             let mut read_dir = fs.read_dir(&abs_path).await?;
-//             while let Some(entry) = read_dir.next_entry().await? {
-//                 if entry.file_type().await?.is_dir() {
-//                     continue;
-//                 }
-
-//                 let entry_abs_path = entry.path();
-//                 let name = entry_abs_path
-//                     .file_name()
-//                     .unwrap()
-//                     .to_string_lossy()
-//                     .to_string();
-//                 let decoded_name = desanitize(&name);
-
-//                 let environment = Environment::load(
-//                     &entry_abs_path,
-//                     fs.clone(),
-//                     self.storage.variable_store().clone(),
-//                     self.next_variable_id.clone(),
-//                     environment::LoadParams {
-//                         create_if_not_exists: false,
-//                     },
-//                 )
-//                 .await?;
-
-//                 let id = environment.id().await;
-//                 let entry = EnvironmentItem {
-//                     id,
-//                     name,
-//                     display_name: decoded_name,
-//                     inner: environment,
-//                 };
-
-//                 environments.insert(id, Arc::new(entry));
-//             }
-
-//             Ok::<_, anyhow::Error>(environments)
-//         })
-//         .await?;
-
-//     Ok(result)
-// }

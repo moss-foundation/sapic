@@ -4,7 +4,7 @@ use derive_more::Deref;
 use moss_applib::AppRuntime;
 use tokio::sync::{RwLock, watch};
 
-use crate::{AnyEnvironment, models::primitives::EnvironmentId};
+use moss_environment::{AnyEnvironment, models::primitives::EnvironmentId};
 
 #[derive(Deref)]
 pub struct EnvironmentModel<R, Environment>

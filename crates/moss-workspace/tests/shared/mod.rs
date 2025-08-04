@@ -8,7 +8,6 @@ use moss_applib::{
     mock::MockAppRuntime,
     providers::{ServiceMap, ServiceProvider},
 };
-use moss_environment::GlobalEnvironmentRegistry;
 use moss_fs::{FileSystem, RealFileSystem, model_registry::GlobalModelRegistry};
 use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_testutils::random_name::random_workspace_name;
@@ -95,18 +94,13 @@ pub async fn setup_test_workspace() -> (
             collection_service.clone() as Arc<dyn AnyCollectionService<MockAppRuntime>>
         );
 
-    let global_env_registry = GlobalEnvironmentRegistry::new();
     let global_model_registry = GlobalModelRegistry::new();
 
-    let environment_service: Arc<EnvironmentService<MockAppRuntime>> = EnvironmentService::new(
-        &abs_path,
-        fs.clone(),
-        Arc::new(global_env_registry),
-        Arc::new(global_model_registry),
-    )
-    .await
-    .unwrap()
-    .into();
+    let environment_service: Arc<EnvironmentService<MockAppRuntime>> =
+        EnvironmentService::new(&abs_path, fs.clone(), Arc::new(global_model_registry))
+            .await
+            .unwrap()
+            .into();
 
     {
         services.insert(

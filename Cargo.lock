@@ -3691,6 +3691,7 @@ dependencies = [
  "moss_testutils",
  "moss_text",
  "moss_workspace",
+ "moss_workspacelib",
  "nanoid",
  "rustc-hash",
  "serde",
@@ -3995,6 +3996,7 @@ dependencies = [
  "moss_storage",
  "moss_testutils",
  "moss_text",
+ "moss_workspacelib",
  "nanoid",
  "rand 0.9.1",
  "serde",
@@ -4004,6 +4006,16 @@ dependencies = [
  "tokio",
  "ts-rs",
  "validator",
+]
+
+[[package]]
+name = "moss_workspacelib"
+version = "0.1.0"
+dependencies = [
+ "derive_more 2.0.1",
+ "moss_applib",
+ "moss_environment",
+ "tokio",
 ]
 
 [[package]]
