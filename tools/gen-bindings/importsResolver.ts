@@ -46,7 +46,6 @@ class TypeScriptImportsResolver {
     // Known packages that might contain type definitions
     this.knownPackages = [
       "moss-app",
-      "bindings-utils",
       "moss-common",
       "moss-environment",
       "moss-workspace",
