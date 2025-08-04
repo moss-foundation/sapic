@@ -14,6 +14,7 @@ use crate::{
     app::{App, AppCommands, AppDefaults, AppPreferences, GlobalsMap},
     command::CommandDecl,
     dirs,
+    services::storage_service::StorageService,
 };
 
 pub struct AppBuilder<R: AppRuntime> {
@@ -52,25 +53,25 @@ impl<R: AppRuntime> AppBuilder<R> {
         }
     }
 
-    pub fn with_global<T: Send + Sync + 'static>(mut self, global: impl Into<Box<T>>) -> Self {
-        self.globals.insert(TypeId::of::<T>(), global.into());
-        self
-    }
+    // pub fn with_global<T: Send + Sync + 'static>(mut self, global: impl Into<Box<T>>) -> Self {
+    //     self.globals.insert(TypeId::of::<T>(), global.into());
+    //     self
+    // }
 
-    pub fn with_service<T: ServiceMarker + Send + Sync>(
-        mut self,
-        service: impl Into<Arc<T>>,
-    ) -> Self {
-        self.services.insert(TypeId::of::<T>(), service.into());
-        self
-    }
+    // pub fn with_service<T: ServiceMarker + Send + Sync>(
+    //     mut self,
+    //     service: impl Into<Arc<T>>,
+    // ) -> Self {
+    //     self.services.insert(TypeId::of::<T>(), service.into());
+    //     self
+    // }
 
     pub fn with_command(mut self, command: CommandDecl<R::EventLoop>) -> Self {
         self.commands.insert(command.name, command.callback);
         self
     }
 
-    pub async fn build(self) -> Result<App<R>> {
+    pub async fn build(self) -> joinerror::Result<App<R>> {
         for dir in &[dirs::WORKSPACES_DIR, dirs::GLOBALS_DIR] {
             let dir_path = self.abs_path.join(dir);
             if dir_path.exists() {
@@ -82,6 +83,11 @@ impl<R: AppRuntime> AppBuilder<R> {
                 .await
                 .context("Failed to create app directories")?;
         }
+
+        let storage_service: Arc<StorageService<R>> =
+            StorageService::<R>::new(&self.abs_path.join(dirs::GLOBALS_DIR))
+                .map_err(|err| joinerror::Error::new::<()>(err.to_string()))?
+                .into();
 
         Ok(App {
             fs: self.fs,

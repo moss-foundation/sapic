@@ -35,7 +35,7 @@ impl<R: AppRuntime> StorageService<R> {
 }
 
 impl<R: AppRuntime> StorageService<R> {
-    pub fn new(abs_path: &Path) -> Result<Self> {
+    pub fn new(abs_path: &Path) -> joinerror::Result<Self> {
         let storage =
             Arc::new(GlobalStorageImpl::new(abs_path).expect("Failed to create global storage"));
 

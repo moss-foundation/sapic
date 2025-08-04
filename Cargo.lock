@@ -3689,6 +3689,7 @@ dependencies = [
  "chrono",
  "derive_more 2.0.1",
  "futures",
+ "joinerror",
  "moss_activity_indicator",
  "moss_api",
  "moss_applib",
