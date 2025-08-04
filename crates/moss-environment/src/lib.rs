@@ -12,12 +12,9 @@ pub use environment::Environment;
 use moss_applib::AppRuntime;
 use moss_bindingutils::primitives::ChangeString;
 
-use crate::{
-    models::{
-        primitives::{EnvironmentId, VariableId},
-        types::{AddVariableParams, UpdateVariableParams, VariableInfo},
-    },
-    services::AnySyncService,
+use crate::models::{
+    primitives::{EnvironmentId, VariableId},
+    types::{AddVariableParams, UpdateVariableParams, VariableInfo},
 };
 
 pub mod constants {

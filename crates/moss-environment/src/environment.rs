@@ -10,10 +10,10 @@ use std::{
 use tokio::sync::RwLock;
 
 use crate::{
-    AnyEnvironment, AnySyncService, DescribeEnvironment, ModifyEnvironmentParams,
+    AnyEnvironment, DescribeEnvironment, ModifyEnvironmentParams,
     models::types::VariableInfo,
     services::{
-        AnyMetadataService, metadata_service::MetadataService, sync_service::SyncService,
+        metadata_service::MetadataService, sync_service::SyncService,
         variable_service::VariableService,
     },
     utils,

@@ -4,7 +4,7 @@ use joinerror::Error;
 use moss_applib::{AppService, ServiceMarker};
 use moss_fs::model_registry::GlobalModelRegistry;
 
-use crate::{configuration::MetadataDecl, services::AnyMetadataService};
+use crate::configuration::MetadataDecl;
 
 pub struct MetadataService {
     model_registry: Arc<GlobalModelRegistry>,
@@ -19,8 +19,8 @@ impl MetadataService {
 impl AppService for MetadataService {}
 impl ServiceMarker for MetadataService {}
 
-impl AnyMetadataService for MetadataService {
-    async fn describe(&self, abs_path: &Path) -> joinerror::Result<MetadataDecl> {
+impl MetadataService {
+    pub async fn describe(&self, abs_path: &Path) -> joinerror::Result<MetadataDecl> {
         let model = self
             .model_registry
             .get(abs_path)

@@ -13,7 +13,7 @@ use crate::{
         primitives::VariableId,
         types::{AddVariableParams, VariableOptions},
     },
-    services::{AnySyncService, AnyVariableService, sync_service::SyncService},
+    services::sync_service::SyncService,
 };
 
 #[derive(Debug, Clone)]
@@ -48,8 +48,6 @@ unsafe impl<R> Send for VariableService<R> where R: AppRuntime {}
 unsafe impl<R> Sync for VariableService<R> where R: AppRuntime {}
 
 impl<R> ServiceMarker for VariableService<R> where R: AppRuntime {}
-
-impl<R> AnyVariableService<R> for VariableService<R> where R: AppRuntime {}
 
 #[allow(private_bounds)]
 impl<R> VariableService<R>
