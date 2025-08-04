@@ -3,6 +3,9 @@ pub mod configuration;
 pub mod environment;
 pub mod models;
 pub mod services;
+pub mod utils;
+
+use std::{path::Path, sync::Arc};
 
 pub use environment::Environment;
 
@@ -11,10 +14,10 @@ use moss_bindingutils::primitives::ChangeString;
 
 use crate::{
     models::{
-        primitives::VariableId,
-        types::{AddVariableParams, UpdateVariableParams},
+        primitives::{EnvironmentId, VariableId},
+        types::{AddVariableParams, UpdateVariableParams, VariableInfo},
     },
-    services::{AnyMetadataService, AnyStorageService, AnySyncService, AnyVariableService},
+    services::AnySyncService,
 };
 
 pub mod constants {
@@ -51,18 +54,26 @@ pub mod errors {
 }
 
 pub struct ModifyEnvironmentParams {
+    pub name: Option<String>,
     pub color: Option<ChangeString>,
     pub vars_to_add: Vec<AddVariableParams>,
     pub vars_to_update: Vec<UpdateVariableParams>,
     pub vars_to_delete: Vec<VariableId>,
 }
 
+pub struct DescribeEnvironment {
+    pub id: EnvironmentId,
+    pub name: String,
+    pub color: Option<String>,
+    pub variables: Vec<VariableInfo>,
+    // TODO: git info
+}
+
 #[allow(private_bounds, async_fn_in_trait)]
 pub trait AnyEnvironment<R: AppRuntime> {
-    type StorageService: AnyStorageService<R>;
-    type VariableService: AnyVariableService<R>;
-    type SyncService: AnySyncService<R>;
-    type MetadataService: AnyMetadataService<R>;
-
+    async fn abs_path(&self) -> Arc<Path>;
+    async fn color(&self) -> Option<String>;
+    async fn name(&self) -> joinerror::Result<String>;
+    async fn describe(&self) -> joinerror::Result<DescribeEnvironment>;
     async fn modify(&self, params: ModifyEnvironmentParams) -> joinerror::Result<()>;
 }

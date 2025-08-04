@@ -3,25 +3,20 @@
 pub mod shared;
 
 use crate::shared::{generate_random_icon, setup_test_workspace};
-use moss_applib::mock::MockAppRuntime;
 use moss_storage::storage::operations::GetItem;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_collection_name};
 use moss_workspace::{
     models::{operations::CreateCollectionInput, primitives::CollectionId},
-    services::{
-        AnyCollectionService, collection_service::CollectionService,
-        storage_service::StorageService,
-    },
     storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
 use tauri::ipc::Channel;
 
 #[tokio::test]
 async fn create_collection_success() {
-    let (ctx, _workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
-    let create_collection_result = workspace
+    let create_collection_output = workspace
         .create_collection(
             &ctx,
             &CreateCollectionInput {
@@ -32,9 +27,8 @@ async fn create_collection_success() {
                 icon_path: None,
             },
         )
-        .await;
-
-    let create_collection_output = create_collection_result.unwrap();
+        .await
+        .unwrap();
 
     // Verify through stream_collections
     let channel = Channel::new(move |_| Ok(()));
@@ -46,8 +40,7 @@ async fn create_collection_success() {
 
     // Verify the db entries were created
     let id = create_collection_output.id;
-    let storage_service = services.get::<StorageService<MockAppRuntime>>();
-    let item_store = storage_service.storage().item_store();
+    let item_store = workspace.db().item_store();
 
     // Check order was stored
     let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
@@ -73,7 +66,7 @@ async fn create_collection_success() {
 
 #[tokio::test]
 async fn create_collection_empty_name() {
-    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = "".to_string();
     let create_collection_result = workspace
@@ -96,7 +89,7 @@ async fn create_collection_empty_name() {
 
 #[tokio::test]
 async fn create_collection_special_chars() {
-    let (ctx, _workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name_list = FILENAME_SPECIAL_CHARS
         .into_iter()
@@ -124,8 +117,7 @@ async fn create_collection_special_chars() {
 
         // Verify the db entries were created
         let id = create_collection_output.id;
-        let storage_service = services.get::<StorageService<MockAppRuntime>>();
-        let item_store = storage_service.storage().item_store();
+        let item_store = workspace.db().item_store();
 
         // Check order was stored
         let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
@@ -157,7 +149,7 @@ async fn create_collection_special_chars() {
 
 #[tokio::test]
 async fn create_collection_with_order() {
-    let (ctx, _workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let create_collection_result = workspace
@@ -184,8 +176,7 @@ async fn create_collection_with_order() {
 
     // Verify the db entries were created
     let id = create_collection_output.id;
-    let storage_service = services.get::<StorageService<MockAppRuntime>>();
-    let item_store = storage_service.storage().item_store();
+    let item_store = workspace.db().item_store();
 
     // Check order was stored
     let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
@@ -211,7 +202,7 @@ async fn create_collection_with_order() {
 
 #[tokio::test]
 async fn create_collection_with_repo() {
-    let (ctx, _workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let repo = "https://github.com/moss-foundation/sapic.git".to_string();
@@ -240,16 +231,14 @@ async fn create_collection_with_repo() {
 
     // Verify that the repo is stored in the manifest model
     let id = create_collection_output.id;
-    let collection_service = services.get::<CollectionService<MockAppRuntime>>();
-    let collection = collection_service.collection(&id).await.unwrap();
+    let collection = workspace.collection(&id).await.unwrap();
     assert_eq!(
         collection.manifest().await.repository,
         Some(normalized_repo.to_string())
     );
 
     // Verify the db entries were created
-    let storage_service = services.get::<StorageService<MockAppRuntime>>();
-    let item_store = storage_service.storage().item_store();
+    let item_store = workspace.db().item_store();
 
     // Check order was stored
     let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
@@ -275,10 +264,10 @@ async fn create_collection_with_repo() {
 
 #[tokio::test]
 async fn create_collection_with_icon() {
-    let (ctx, workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
-    let input_icon_path = workspace_path.join("test_icon.png");
+    let input_icon_path = workspace.abs_path().join("test_icon.png");
     generate_random_icon(&input_icon_path);
 
     let create_collection_result = workspace
@@ -307,16 +296,11 @@ async fn create_collection_with_icon() {
     assert!(collection_path.exists());
 
     // Verify that the icon is stored in the assets folder
-    let collection = services
-        .get::<CollectionService<MockAppRuntime>>()
-        .collection(&id)
-        .await
-        .unwrap();
+    let collection = workspace.collection(&id).await.unwrap();
     assert!(collection.icon_path().is_some());
 
     // Check order was stored
-    let storage_service = services.get::<StorageService<MockAppRuntime>>();
-    let item_store = storage_service.storage().item_store();
+    let item_store = workspace.db().item_store();
 
     let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
     let order_value = GetItem::get(item_store.as_ref(), &ctx, order_key)
@@ -341,7 +325,7 @@ async fn create_collection_with_icon() {
 
 #[tokio::test]
 async fn create_multiple_collections_expanded_items() {
-    let (ctx, _workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
 
     // Create first collection
     let collection_name1 = random_collection_name();
@@ -376,8 +360,7 @@ async fn create_multiple_collections_expanded_items() {
         .unwrap();
 
     // Check expanded_items contains both collection ids
-    let storage_service = services.get::<StorageService<MockAppRuntime>>();
-    let item_store = storage_service.storage().item_store();
+    let item_store = workspace.db().item_store();
     let expanded_items_value = GetItem::get(
         item_store.as_ref(),
         &ctx,

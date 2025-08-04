@@ -76,7 +76,7 @@ impl<R: AppRuntime> App<R> {
     pub fn global<T: Send + Sync + 'static>(&self) -> &T {
         self.globals
             .get(&TypeId::of::<T>())
-            .map(|any_state| any_state.downcast_ref::<T>().unwrap())
+            .map(|any_global| any_global.downcast_ref::<T>().unwrap())
             .unwrap_or_else(|| panic!("no state of type {} exists", std::any::type_name::<T>()))
     }
 

@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value as JsonValue;
 use std::path::PathBuf;
 use ts_rs::TS;
 
@@ -35,5 +36,14 @@ pub enum ChangeBool {
 #[ts(export, export_to = "primitives.ts")]
 pub enum ChangePath {
     Update(PathBuf),
+    Remove,
+}
+
+/// @category Primitive
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "UPPERCASE")]
+#[ts(export, export_to = "primitives.ts")]
+pub enum ChangeJsonValue {
+    Update(#[ts(type = "JsonValue")] JsonValue),
     Remove,
 }

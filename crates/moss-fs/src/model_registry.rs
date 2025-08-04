@@ -1,59 +1,58 @@
 use moss_contentmodel::ContentModel;
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap, path::Path, sync::Arc};
 use tokio::sync::RwLock;
 
-#[derive(Default)]
-struct RegistryState {
-    models: HashMap<String, ContentModel>,
-}
-
 pub struct GlobalModelRegistry {
-    state: Arc<RwLock<RegistryState>>,
-}
-
-impl Clone for GlobalModelRegistry {
-    fn clone(&self) -> Self {
-        Self {
-            state: self.state.clone(),
-        }
-    }
+    state: RwLock<HashMap<Arc<Path>, ContentModel>>,
 }
 
 impl GlobalModelRegistry {
     pub fn new() -> Self {
         Self {
-            state: Arc::new(RwLock::new(RegistryState::default())),
+            state: RwLock::new(HashMap::new()),
         }
     }
 
-    pub async fn get(&self, uri: &str) -> Option<ContentModel> {
+    pub async fn get(&self, path: &Path) -> Option<ContentModel> {
         let state = self.state.read().await;
-        state.models.get(uri).cloned()
+        state.get(path).cloned()
     }
 
-    pub async fn add(&self, uri: String, model: ContentModel) {
+    pub async fn insert(&self, path: Arc<Path>, model: ContentModel) {
         let mut state = self.state.write().await;
-        state.models.insert(uri, model);
+        state.insert(path.clone(), model);
     }
 
-    pub async fn with_model<T>(&self, uri: &str, f: impl FnOnce(&ContentModel) -> T) -> Option<T> {
+    pub async fn rekey(&self, old_path: &Path, new_path: Arc<Path>) -> Option<()> {
+        let mut state = self.state.write().await;
+        let model = state.remove(old_path)?;
+        state.insert(new_path, model);
+
+        Some(())
+    }
+
+    pub async fn with_model<T>(
+        &self,
+        path: &Path,
+        f: impl FnOnce(&ContentModel) -> T,
+    ) -> Option<T> {
         let state = self.state.read().await;
-        let model = state.models.get(uri)?;
+        let model = state.get(path)?;
         Some(f(model))
     }
 
     pub async fn with_model_mut<T>(
         &self,
-        uri: &str,
+        path: &Path,
         f: impl FnOnce(&mut ContentModel) -> T,
     ) -> Option<T> {
         let mut state = self.state.write().await;
-        let model = state.models.get_mut(uri)?;
+        let model = state.get_mut(path)?;
         Some(f(model))
     }
 
-    pub async fn remove(&self, uri: &str) {
+    pub async fn remove(&self, path: &Path) {
         let mut state = self.state.write().await;
-        state.models.remove(uri);
+        state.remove(path);
     }
 }

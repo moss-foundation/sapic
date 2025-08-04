@@ -3,7 +3,7 @@ use validator::Validate;
 
 use crate::{
     models::operations::{UpdateCollectionInput, UpdateCollectionOutput},
-    services::{DynCollectionService, collection_service::CollectionItemUpdateParams},
+    services::{AnyCollectionService, collection_service::CollectionItemUpdateParams},
     workspace::Workspace,
 };
 
@@ -15,8 +15,7 @@ impl<R: AppRuntime> Workspace<R> {
     ) -> joinerror::Result<UpdateCollectionOutput> {
         input.validate()?;
         let id = input.id.clone().into();
-        let collections = self.services.get::<DynCollectionService<R>>();
-        collections
+        self.collection_service
             .update_collection(
                 ctx,
                 &id,

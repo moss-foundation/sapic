@@ -5,16 +5,10 @@ use moss_activity_indicator::ActivityIndicator;
 use moss_applib::{AppRuntime, PublicServiceMarker, ServiceMarker};
 use moss_common::api::OperationError;
 use moss_db::DatabaseError;
-use moss_fs::{FileSystem, RemoveOptions};
+use moss_fs::{FileSystem, RemoveOptions, model_registry::GlobalModelRegistry};
 use moss_workspace::{
     Workspace,
-    builder::{WorkspaceBuilder, WorkspaceCreateParams, WorkspaceLoadParams},
-    services::{
-        DynCollectionService as WorkspaceDynCollectionService,
-        DynLayoutService as WorkspaceDynLayoutService,
-        DynStorageService as WorkspaceDynStorageService, collection_service::CollectionService,
-        layout_service::LayoutService, storage_service::StorageService as WorkspaceStorageService,
-    },
+    builder::{CreateWorkspaceParams, LoadWorkspaceParams, WorkspaceBuilder},
     workspace::WorkspaceModifyParams,
 };
 use std::{
@@ -131,7 +125,8 @@ pub struct WorkspaceService<R: AppRuntime> {
     /// The absolute path to the workspaces directory
     abs_path: Arc<Path>,
     fs: Arc<dyn FileSystem>,
-    storage: Arc<StorageService<R>>, // TODO: should be a trait
+    storage: Arc<StorageService<R>>,
+    model_registry: Arc<GlobalModelRegistry>,
     state: Arc<RwLock<ServiceState<R>>>,
 }
 
@@ -144,6 +139,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
         storage_service: Arc<StorageService<R>>,
         fs: Arc<dyn FileSystem>,
         abs_path: &Path,
+        model_registry: Arc<GlobalModelRegistry>,
     ) -> WorkspaceServiceResult<Self> {
         debug_assert!(abs_path.is_absolute());
         let abs_path: Arc<Path> = abs_path.join(dirs::WORKSPACES_DIR).into();
@@ -156,6 +152,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
             fs,
             storage: storage_service,
             abs_path,
+            model_registry,
             state: Arc::new(RwLock::new(ServiceState {
                 known_workspaces,
                 active_workspace: None,
@@ -288,7 +285,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
 
         WorkspaceBuilder::initialize(
             self.fs.clone(),
-            WorkspaceCreateParams {
+            CreateWorkspaceParams {
                 name: params.name.clone(),
                 abs_path: abs_path.clone(),
             },
@@ -340,45 +337,14 @@ impl<R: AppRuntime> WorkspaceService<R> {
         let last_opened_at = Utc::now().timestamp();
         let name = item.name.clone();
         let abs_path: Arc<Path> = self.absolutize(&id.to_string()).into();
-
-        let storage_service: Arc<WorkspaceDynStorageService<R>> = {
-            let service: Arc<WorkspaceStorageService<R>> = WorkspaceStorageService::new(&abs_path)
-                .context("Failed to load the storage service")
-                .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?
-                .into();
-
-            WorkspaceDynStorageService::new(service)
-        };
-
-        let collection_service: Arc<WorkspaceDynCollectionService<R>> = {
-            let service: Arc<CollectionService<R>> = CollectionService::new(
-                ctx,
-                abs_path.clone(),
-                self.fs.clone(),
-                storage_service.clone(),
-            )
-            .await
-            .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?
-            .into();
-
-            WorkspaceDynCollectionService::new(service)
-        };
-
-        let layout_service: Arc<WorkspaceDynLayoutService<R>> = {
-            let service: Arc<LayoutService<R>> = LayoutService::new(storage_service.clone()).into();
-
-            WorkspaceDynLayoutService::new(service)
-        };
-
         let workspace = WorkspaceBuilder::new(self.fs.clone())
-            .with_service::<WorkspaceDynStorageService<R>>(storage_service.clone())
-            .with_service::<WorkspaceDynCollectionService<R>>(collection_service)
-            .with_service::<WorkspaceDynLayoutService<R>>(layout_service)
             .load(
-                WorkspaceLoadParams {
+                ctx,
+                self.model_registry.clone(),
+                activity_indicator,
+                LoadWorkspaceParams {
                     abs_path: abs_path.clone(),
                 },
-                activity_indicator,
             )
             .await
             .context("Failed to create the workspace")

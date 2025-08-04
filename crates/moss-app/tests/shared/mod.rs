@@ -16,7 +16,7 @@ use moss_applib::{
     mock::MockAppRuntime,
     providers::{ServiceMap, ServiceProvider},
 };
-use moss_fs::{FileSystem, RealFileSystem};
+use moss_fs::{FileSystem, RealFileSystem, model_registry::GlobalModelRegistry};
 use moss_testutils::random_name::random_string;
 use std::{any::TypeId, future::Future, path::PathBuf, pin::Pin, sync::Arc, time::Duration};
 
@@ -73,11 +73,18 @@ pub async fn set_up_test_app() -> (
     .unwrap()
     .into();
 
-    let workspace_service: Arc<WorkspaceService<MockAppRuntime>> =
-        WorkspaceService::new(&ctx, storage_service.clone(), fs.clone(), &app_path)
-            .await
-            .expect("Failed to create workspace service")
-            .into();
+    let global_model_registry = Arc::new(GlobalModelRegistry::new());
+
+    let workspace_service: Arc<WorkspaceService<MockAppRuntime>> = WorkspaceService::new(
+        &ctx,
+        storage_service.clone(),
+        fs.clone(),
+        &app_path,
+        global_model_registry,
+    )
+    .await
+    .expect("Failed to create workspace service")
+    .into();
 
     {
         services.insert(

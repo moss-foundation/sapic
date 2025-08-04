@@ -27,7 +27,6 @@ use moss_fs::{RealFileSystem, model_registry::GlobalModelRegistry};
 use std::{path::PathBuf, sync::Arc, time::Duration};
 use tauri::{AppHandle, Manager, RunEvent, Runtime as TauriRuntime, WebviewWindow, WindowEvent};
 use tauri_plugin_os;
-
 use window::{CreateWindowInput, create_window};
 
 use crate::{constants::*, plugins::*};
@@ -86,11 +85,14 @@ pub async fn run<R: TauriRuntime>() {
                     let session_service = SessionService::new();
                     let session_id = session_service.session_id().clone();
 
+                    let model_registry = GlobalModelRegistry::new();
+
                     let workspace_service = WorkspaceService::<TauriAppRuntime<R>>::new(
                         &app_init_ctx,
                         storage_service.clone(),
                         fs.clone(),
                         &app_dir,
+                        Arc::new(model_registry),
                     )
                     .await
                     .expect("Failed to create workspace service");
@@ -178,7 +180,7 @@ pub async fn run<R: TauriRuntime>() {
             //
             // Workspace
             //
-            commands::stream_workspace_environments,
+            commands::stream_environments,
             commands::update_workspace_state,
             commands::describe_workspace_state,
             commands::stream_collections,
@@ -186,6 +188,9 @@ pub async fn run<R: TauriRuntime>() {
             commands::delete_collection,
             commands::update_collection,
             commands::batch_update_collection,
+            commands::create_environment,
+            commands::update_environment,
+            commands::stream_environments,
             //
             // Collection
             //
