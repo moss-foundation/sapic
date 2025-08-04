@@ -9,7 +9,6 @@
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
-    "@repo/bindings-utils": "workspace:*",
     "@repo/moss-bindingutils": "workspace:*"
   },
   "dependencies": {
