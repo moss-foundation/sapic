@@ -7,6 +7,7 @@ import { cn } from "@/utils";
 import { ActiveNodeIndicator } from "../ActiveNodeIndicator";
 import { DropIndicatorWithInstruction } from "../DropIndicatorWithInstruction";
 import { useDraggableRootNode } from "../hooks/useDraggableRootNode";
+import { useDropTargetRootDirNode } from "../hooks/useDropTargetRootDirNode";
 import { useRootNodeAddForm } from "../hooks/useRootNodeAddForm";
 import { useRootNodeRenamingForm } from "../hooks/useRootNodeRenamingForm";
 import { TreeContext } from "../Tree";
@@ -20,12 +21,11 @@ import { TreeRootNodeRenameForm } from "./TreeRootNodeRenameForm";
 export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
   const { searchInput, treePaddingLeft, treePaddingRight } = useContext(TreeContext);
 
-  const { data: streamedCollections } = useStreamedCollections();
-
-  const { activePanelId } = useTabbedPaneStore();
-
   const draggableRootRef = useRef<HTMLDivElement>(null);
   const dropTargetRootRef = useRef<HTMLDivElement>(null);
+
+  const { data: streamedCollections } = useStreamedCollections();
+  const { activePanelId } = useTabbedPaneStore();
 
   const {
     isAddingRootNodeFile,
@@ -44,6 +44,10 @@ export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
   } = useRootNodeRenamingForm(node);
 
   const { instruction, isDragging, canDrop } = useDraggableRootNode(draggableRootRef, node, isRenamingRootNode);
+  const { isChildDropBlocked } = useDropTargetRootDirNode({
+    node: node.requests,
+    dropTargetRootRef,
+  });
 
   const shouldRenderRootChildNodes = calculateShouldRenderRootChildNodes(
     node,
@@ -62,6 +66,9 @@ export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
       })}
     >
       {instruction && <DropIndicatorWithInstruction instruction={instruction} canDrop={canDrop} />}
+
+      {isChildDropBlocked === null && <ActiveNodeIndicator isActive={activePanelId === node.id} />}
+
       <div
         ref={draggableRootRef}
         className={cn(
@@ -102,6 +109,7 @@ export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
           setIsRenamingRootNode={setIsRenamingRootNode}
         />
       </div>
+
       {shouldRenderRootChildNodes && (
         <TreeRootNodeChildren
           node={node}

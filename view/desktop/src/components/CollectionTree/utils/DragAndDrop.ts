@@ -80,18 +80,25 @@ export const getInstructionFromLocation = (location: DragLocationHistory): Instr
 
 export const canDropNode = (sourceTarget: DragNode, dropTarget: DropNode) => {
   if (sourceTarget.node.class !== dropTarget.node.class) {
-    // console.warn("can't drop: class mismatch");
+    // console.log("can't drop: class mismatch");
     return false;
   }
 
   if (sourceTarget.node.id === dropTarget.node.id) {
-    // console.warn("can't drop: id mismatch");
+    // console.log("can't drop: id mismatch");
     return false;
   }
 
   if (dropTarget.node.kind === "Dir") {
     if (hasDirectSimilarDescendant(dropTarget.node, sourceTarget.node)) {
-      // console.warn("can't drop: has direct similar descendant");
+      // console.log("can't drop: has direct similar descendant");
+      return false;
+    }
+  }
+
+  if (dropTarget.node.kind === "Item") {
+    if (hasDirectSimilarDescendant(dropTarget.parentNode, sourceTarget.node)) {
+      // console.log("can't drop: has direct similar descendant");
       return false;
     }
   }

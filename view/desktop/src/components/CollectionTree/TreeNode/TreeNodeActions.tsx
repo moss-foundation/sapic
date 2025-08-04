@@ -36,7 +36,7 @@ export const TreeNodeActions = ({
   return (
     <div
       className={cn(
-        "hidden items-center gap-0.5 opacity-0 transition-[display,opacity] transition-discrete duration-100 group-hover/treeNode:flex group-hover/treeNode:opacity-100",
+        "hidden items-center gap-0.5 opacity-0 transition-[display,opacity] transition-discrete duration-100 group-hover/TreeNode:flex group-hover/TreeNode:opacity-100",
         {
           "flex opacity-100": showDropdown,
         },

@@ -3,6 +3,7 @@ import { HTMLAttributes } from "react";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
 interface DropIndicatorProps extends HTMLAttributes<HTMLDivElement> {
+  isChildDropBlocked?: boolean | null;
   instruction: Instruction | null;
   gap?: number;
   paddingLeft?: number;
@@ -10,10 +11,10 @@ interface DropIndicatorProps extends HTMLAttributes<HTMLDivElement> {
   isFolder?: boolean;
   depth?: number;
   isLastChild?: boolean;
-  canDrop: boolean | null;
 }
 
 export const DropIndicatorWithInstruction = ({
+  isChildDropBlocked,
   instruction,
   gap = 0,
   paddingLeft = 0,
@@ -21,9 +22,24 @@ export const DropIndicatorWithInstruction = ({
   isFolder = false,
   depth = 0,
   isLastChild = false,
-  canDrop = true,
   ...props
 }: DropIndicatorProps) => {
+  if (isChildDropBlocked) {
+    return (
+      <div
+        {...props}
+        style={{
+          position: "absolute",
+          height: "100%",
+          width: "100%",
+          top: 0,
+          left: 0,
+          backgroundColor: "var(--moss-error-background)",
+        }}
+      />
+    );
+  }
+
   if (!instruction) return null;
 
   const baseWidth = `calc(100% - ${paddingRight}px - ${paddingLeft}px)`;
@@ -36,15 +52,34 @@ export const DropIndicatorWithInstruction = ({
 
   let styles;
 
-  if (instruction.operation === "combine" || !canDrop) {
+  if (instruction.blocked) {
+    if (instruction.operation === "combine") {
+      return (
+        <div
+          style={{
+            position: "absolute",
+            height: "100%",
+            width: "100%",
+            top: 0,
+            left: 0,
+            backgroundColor: "var(--moss-error-background)",
+          }}
+          {...props}
+        />
+      );
+    } else {
+      return null;
+    }
+  }
+
+  if (instruction.operation === "combine") {
     styles = {
       position: "absolute",
       height: "100%",
       width: "100%",
       top: 0,
       left: 0,
-      zIndex: 7,
-      backgroundColor: canDrop ? "var(--moss-success-background)" : "var(--moss-error-background)",
+      backgroundColor: !instruction.blocked ? "var(--moss-success-background)" : "var(--moss-error-background)",
     };
   } else if (instruction.operation === "reorder-before" || instruction.operation === "reorder-after") {
     styles = {
@@ -54,7 +89,6 @@ export const DropIndicatorWithInstruction = ({
       [instruction.operation === "reorder-before" ? "top" : "bottom"]: gap,
       width: reorderWidth,
       left,
-      zIndex: 7,
     };
   } else {
     return null;

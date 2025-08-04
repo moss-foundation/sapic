@@ -10,6 +10,7 @@ import { cn } from "@/utils";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
 import { EntryIcon } from "../../EntryIcon";
+import { ActiveNodeIndicator } from "../ActiveNodeIndicator";
 import { DropIndicatorWithInstruction } from "../DropIndicatorWithInstruction";
 import NodeLabel from "../NodeLabel";
 import { TreeContext } from "../Tree";
@@ -27,11 +28,11 @@ interface TreeNodeButtonProps {
   onRename: () => void;
   onDelete: () => void;
   isDragging: boolean;
-  canDrop: boolean | null;
   instruction: Instruction | null;
   preview: HTMLElement | null;
   isLastChild: boolean;
   isRootNode: boolean;
+  isChildDropBlocked: boolean | null;
 }
 
 const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
@@ -47,14 +48,14 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
       preview,
       isRootNode,
       instruction,
-      canDrop,
       isLastChild,
+      isChildDropBlocked,
     },
     ref
   ) => {
     const { id, nodeOffset, searchInput, treePaddingRight, treePaddingLeft, showNodeOrders } = useContext(TreeContext);
 
-    const { addOrFocusPanel } = useTabbedPaneStore();
+    const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
     const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry();
 
@@ -112,9 +113,10 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
           <button
             ref={ref}
             onClick={handleLabelClick}
-            className={cn("group/treeNode relative flex h-full w-full min-w-0 cursor-pointer items-center py-0.75")}
+            className={cn("group/TreeNode relative flex min-h-[28px] w-full min-w-0 cursor-pointer items-center")}
           >
-            {" "}
+            <ActiveNodeIndicator isActive={activePanelId === node.id} />
+
             {node.kind === "Item" && instruction !== null && (
               <DropIndicatorWithInstruction
                 paddingLeft={nodePaddingLeft}
@@ -123,17 +125,17 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                 isFolder={false}
                 depth={depth}
                 isLastChild={isLastChild}
-                canDrop={canDrop}
                 gap={-1}
               />
             )}
+
             <span
-              className={cn("relative z-10 flex h-full min-h-[22px] w-full items-center gap-1")}
+              className={cn("relative z-10 flex h-full w-full items-center gap-1")}
               style={{ paddingLeft: nodePaddingLeft, paddingRight: treePaddingRight }}
             >
               {!isRootNode && (
                 <DragHandleButton
-                  className="absolute top-1/2 left-[1px] -translate-y-1/2 opacity-0 transition-all duration-0 group-hover/treeNode:opacity-100 group-hover/treeNode:delay-400 group-hover/treeNode:duration-150"
+                  className="absolute top-1/2 left-[1px] -translate-y-1/2 opacity-0 transition-all duration-0 group-hover/TreeNode:opacity-100 group-hover/TreeNode:delay-400 group-hover/TreeNode:duration-150"
                   slim
                   ghost
                 />
@@ -171,6 +173,12 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
 
               <span className="DragHandle h-full min-h-4 grow" />
 
+              {instruction && (
+                <div className="text-xs">
+                  {instruction.operation} | {instruction.blocked ? "blocked" : "available"}
+                </div>
+              )}
+
               {node.kind === "Dir" && (
                 <TreeNodeActions
                   node={node}
@@ -181,6 +189,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                 />
               )}
             </span>
+
             {preview &&
               createPortal(
                 <ul className="background-(--moss-primary-background) flex gap-1 rounded-sm">

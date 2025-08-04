@@ -20,14 +20,14 @@ export interface TreeRootNodeProps {
 
 export interface DragNode {
   collectionId: string;
-  repository: string;
+  repository?: string;
   node: TreeCollectionNode;
   parentNode: TreeCollectionNode;
 }
 
 export interface DropNode {
   collectionId: string;
-  repository: string;
+  repository?: string;
   node: TreeCollectionNode;
   parentNode: TreeCollectionNode;
   instruction?: Instruction;
@@ -36,6 +36,7 @@ export interface DropNode {
 export interface DropRootNode {
   type: "TreeRootNode";
   collectionId: string;
+  repository?: string;
   node: TreeCollectionRootNode;
   instruction?: Instruction;
 }
