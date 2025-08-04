@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+moss_workspacelib.workspace = true
 moss_contentmodel.workspace = true
 moss_applib.workspace = true
 moss_db.workspace = true
@@ -17,8 +18,8 @@ moss_text.workspace = true
 moss_file.workspace = true
 moss_git.workspace = true
 moss_bindingutils.workspace = true
-joinerror.workspace = true
 
+joinerror.workspace = true
 anyhow.workspace = true
 serde = { workspace = true, features = ["derive", "rc"] }
 ts-rs = { workspace = true, features = ["url-impl"] }

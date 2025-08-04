@@ -6,10 +6,8 @@ use moss_app::{
         operations::{CreateWorkspaceInput, OpenWorkspaceInput},
         primitives::WorkspaceId,
     },
-    services::{storage_service::StorageService, workspace_service::WorkspaceService},
     storage::segments::{SEGKEY_LAST_ACTIVE_WORKSPACE, segkey_last_opened_at},
 };
-use moss_applib::mock::MockAppRuntime;
 use moss_common::api::OperationError;
 use moss_storage::storage::operations::GetItem;
 use moss_testutils::random_name::random_workspace_name;
@@ -20,9 +18,7 @@ use crate::shared::set_up_test_app;
 
 #[tokio::test]
 async fn open_workspace_success() {
-    let (app, ctx, _services, cleanup, abs_path) = set_up_test_app().await;
-    let workspace_service = _services.get::<WorkspaceService<MockAppRuntime>>();
-    let storage_service = _services.get::<StorageService<MockAppRuntime>>();
+    let (app, ctx, cleanup) = set_up_test_app().await;
 
     let workspace_name = random_workspace_name();
 
@@ -39,7 +35,8 @@ async fn open_workspace_success() {
         .await;
     let create_output = create_result.unwrap();
 
-    let expected_path: Arc<Path> = abs_path
+    let expected_path: Arc<Path> = app
+        .app_dir()
         .join(dirs::WORKSPACES_DIR)
         .join(&create_output.id.to_string())
         .into();
@@ -60,17 +57,17 @@ async fn open_workspace_success() {
     assert_eq!(open_output.abs_path, expected_path);
 
     // Check workspace is open
-    let maybe_active_workspace = workspace_service.workspace().await;
+    let maybe_active_workspace = app.workspace().await;
     assert!(maybe_active_workspace.is_some());
     let active_workspace_id_from_service = maybe_active_workspace.unwrap().id();
     assert_eq!(active_workspace_id_from_service, create_output.id);
 
     // Check workspace ID in context
-    let active_workspace_id = workspace_service.workspace().await.unwrap().id();
+    let active_workspace_id = app.workspace().await.unwrap().id();
     assert_eq!(active_workspace_id, create_output.id);
 
     // Check entry in the database - verify last opened at timestamp is saved
-    let item_store = storage_service.__storage().item_store();
+    let item_store = app.db().item_store();
     let _ = GetItem::get(
         item_store.as_ref(),
         &ctx,
@@ -95,8 +92,7 @@ async fn open_workspace_success() {
 
 #[tokio::test]
 async fn open_workspace_already_opened() {
-    let (app, ctx, services, cleanup, _abs_path) = set_up_test_app().await;
-    let workspace_service = services.get::<WorkspaceService<MockAppRuntime>>();
+    let (app, ctx, cleanup) = set_up_test_app().await;
     let workspace_name = random_workspace_name();
 
     // Create and open workspace
@@ -113,7 +109,7 @@ async fn open_workspace_already_opened() {
     let create_output = create_result.unwrap();
 
     // Verify workspace is currently open
-    let active_workspace_id = workspace_service.workspace().await.unwrap().id();
+    let active_workspace_id = app.workspace().await.unwrap().id();
     assert_eq!(active_workspace_id, create_output.id);
 
     // Try to open the same workspace again - should fail
@@ -130,7 +126,7 @@ async fn open_workspace_already_opened() {
     assert!(open_result.is_err());
 
     // Active workspace should remain unchanged
-    let active_workspace_id = workspace_service.workspace().await.unwrap().id();
+    let active_workspace_id = app.workspace().await.unwrap().id();
     assert_eq!(active_workspace_id, create_output.id);
 
     cleanup().await;
@@ -138,9 +134,7 @@ async fn open_workspace_already_opened() {
 
 #[tokio::test]
 async fn open_workspace_switch_between_workspaces() {
-    let (app, ctx, services, cleanup, _abs_path) = set_up_test_app().await;
-    let workspace_service = services.get::<WorkspaceService<MockAppRuntime>>();
-    let storage_service = services.get::<StorageService<MockAppRuntime>>();
+    let (app, ctx, cleanup) = set_up_test_app().await;
 
     // Create first workspace
     let workspace_name1 = random_workspace_name();
@@ -183,7 +177,7 @@ async fn open_workspace_switch_between_workspaces() {
     assert_eq!(open_result1.id, create_output1.id);
 
     // Check first workspace is active
-    let active_workspace_id = workspace_service.workspace().await.unwrap().id();
+    let active_workspace_id = app.workspace().await.unwrap().id();
     assert_eq!(active_workspace_id, create_output1.id);
 
     // Open second workspace (should replace first)
@@ -199,7 +193,7 @@ async fn open_workspace_switch_between_workspaces() {
     assert_eq!(open_result2.id, create_output2.id);
 
     // Check second workspace is now active
-    let active_workspace_id = workspace_service.workspace().await.unwrap().id();
+    let active_workspace_id = app.workspace().await.unwrap().id();
     assert_eq!(active_workspace_id, create_output2.id);
 
     // Open first workspace again
@@ -215,11 +209,11 @@ async fn open_workspace_switch_between_workspaces() {
     assert_eq!(open_result1_again.id, create_output1.id);
 
     // Check first workspace is active again
-    let active_workspace_id = workspace_service.workspace().await.unwrap().id();
+    let active_workspace_id = app.workspace().await.unwrap().id();
     assert_eq!(active_workspace_id, create_output1.id);
 
     // Check that last active workspace is set correctly in database (first workspace)
-    let item_store = storage_service.__storage().item_store();
+    let item_store = app.db().item_store();
     let last_active_workspace = GetItem::get(
         item_store.as_ref(),
         &ctx,
@@ -235,7 +229,7 @@ async fn open_workspace_switch_between_workspaces() {
 
 #[tokio::test]
 async fn open_workspace_nonexistent() {
-    let (app, ctx, _services, cleanup, _abs_path) = set_up_test_app().await;
+    let (app, ctx, cleanup) = set_up_test_app().await;
 
     let nonexistent_id = WorkspaceId::new();
 
@@ -251,7 +245,7 @@ async fn open_workspace_nonexistent() {
 
 #[tokio::test]
 async fn open_workspace_filesystem_does_not_exist() {
-    let (app, ctx, _services, cleanup, abs_path) = set_up_test_app().await;
+    let (app, ctx, cleanup) = set_up_test_app().await;
 
     let workspace_name = random_workspace_name();
 
@@ -269,7 +263,8 @@ async fn open_workspace_filesystem_does_not_exist() {
         .unwrap();
 
     // Manually delete the filesystem directory
-    let workspace_path: Arc<Path> = abs_path
+    let workspace_path: Arc<Path> = app
+        .app_dir()
         .join(dirs::WORKSPACES_DIR)
         .join(&create_output.id.to_string())
         .into();

@@ -3,10 +3,9 @@ pub mod shared;
 use moss_app::{
     dirs,
     models::{operations::CreateWorkspaceInput, primitives::WorkspaceId},
-    services::{storage_service::StorageService, workspace_service::WorkspaceService},
     storage::segments::{SEGKEY_LAST_ACTIVE_WORKSPACE, segkey_last_opened_at},
 };
-use moss_applib::mock::MockAppRuntime;
+
 use moss_common::api::OperationError;
 use moss_storage::storage::operations::{GetItem, ListByPrefix};
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_workspace_name};
@@ -17,9 +16,7 @@ use crate::shared::set_up_test_app;
 
 #[tokio::test]
 async fn create_workspace_success() {
-    let (app, ctx, services, cleanup, abs_path) = set_up_test_app().await;
-    let workspace_service = services.get::<WorkspaceService<MockAppRuntime>>();
-    let storage_service = services.get::<StorageService<MockAppRuntime>>();
+    let (app, ctx, cleanup) = set_up_test_app().await;
 
     let workspace_name = random_workspace_name();
     let create_result = app
@@ -34,7 +31,8 @@ async fn create_workspace_success() {
         .await;
 
     let create_output = create_result.unwrap();
-    let expected_path: Arc<Path> = abs_path
+    let expected_path: Arc<Path> = app
+        .app_dir()
         .join(dirs::WORKSPACES_DIR)
         .join(&create_output.id.to_string())
         .into();
@@ -44,7 +42,7 @@ async fn create_workspace_success() {
     let id = create_output.id;
 
     // Check active workspace
-    let maybe_active_workspace = workspace_service.workspace().await;
+    let maybe_active_workspace = app.workspace().await;
     assert!(maybe_active_workspace.is_some());
     let active_workspace_id = maybe_active_workspace.unwrap().id();
     assert_eq!(active_workspace_id, id);
@@ -56,7 +54,7 @@ async fn create_workspace_success() {
     assert_eq!(list_workspaces[0].name, workspace_name);
 
     // Check database - verify last opened at timestamp is saved
-    let item_store = storage_service.__storage().item_store();
+    let item_store = app.db().item_store();
     let _ = GetItem::get(
         item_store.as_ref(),
         &ctx,
@@ -81,9 +79,7 @@ async fn create_workspace_success() {
 
 #[tokio::test]
 async fn create_workspace_empty_name() {
-    let (app, ctx, services, cleanup, _abs_path) = set_up_test_app().await;
-    let workspace_service = services.get::<WorkspaceService<MockAppRuntime>>();
-    let storage_service = services.get::<StorageService<MockAppRuntime>>();
+    let (app, ctx, cleanup) = set_up_test_app().await;
 
     let create_result = app
         .create_workspace(
@@ -104,10 +100,10 @@ async fn create_workspace_empty_name() {
     // Ensure no workspace was created or activated
     let list_workspaces = app.list_workspaces(&ctx).await.unwrap();
     assert!(list_workspaces.is_empty());
-    assert!(workspace_service.workspace().await.is_none());
+    assert!(app.workspace().await.is_none());
 
     // Check database
-    let item_store = storage_service.__storage().item_store();
+    let item_store = app.db().item_store();
     let list_result = ListByPrefix::list_by_prefix(item_store.as_ref(), &ctx, "workspace")
         .await
         .unwrap();
@@ -118,9 +114,7 @@ async fn create_workspace_empty_name() {
 
 #[tokio::test]
 async fn create_workspace_same_name() {
-    let (app, ctx, services, cleanup, abs_path) = set_up_test_app().await;
-    let workspace_service = services.get::<WorkspaceService<MockAppRuntime>>();
-    let storage_service = services.get::<StorageService<MockAppRuntime>>();
+    let (app, ctx, cleanup) = set_up_test_app().await;
 
     let workspace_name = random_workspace_name();
 
@@ -137,7 +131,8 @@ async fn create_workspace_same_name() {
         .await;
     let first_output = first_result.unwrap();
 
-    let first_path: Arc<Path> = abs_path
+    let first_path: Arc<Path> = app
+        .app_dir()
         .join(dirs::WORKSPACES_DIR)
         .join(&first_output.id.to_string())
         .into();
@@ -162,7 +157,8 @@ async fn create_workspace_same_name() {
         .await;
     let second_output = second_result.unwrap();
 
-    let second_path: Arc<Path> = abs_path
+    let second_path: Arc<Path> = app
+        .app_dir()
         .join(dirs::WORKSPACES_DIR)
         .join(&second_output.id.to_string())
         .into();
@@ -170,7 +166,7 @@ async fn create_workspace_same_name() {
     assert_ne!(first_output.id, second_output.id);
 
     // Check active workspace is the second one
-    let maybe_active_workspace = workspace_service.workspace().await;
+    let maybe_active_workspace = app.workspace().await;
     assert!(maybe_active_workspace.is_some());
     let active_workspace_id = maybe_active_workspace.unwrap().id();
     assert_eq!(active_workspace_id, second_output.id);
@@ -193,7 +189,7 @@ async fn create_workspace_same_name() {
 
     // Check only second workspace has entry in the database since it's been opened
 
-    let item_store = storage_service.__storage().item_store();
+    let item_store = app.db().item_store();
     let first_id: WorkspaceId = first_output.id;
     let second_id: WorkspaceId = second_output.id;
     let _ = GetItem::get(
@@ -230,9 +226,7 @@ async fn create_workspace_same_name() {
 
 #[tokio::test]
 async fn create_workspace_special_chars() {
-    let (app, ctx, services, cleanup, abs_path) = set_up_test_app().await;
-    let workspace_service = services.get::<WorkspaceService<MockAppRuntime>>();
-    let storage_service = services.get::<StorageService<MockAppRuntime>>();
+    let (app, ctx, cleanup) = set_up_test_app().await;
 
     let base_name = random_workspace_name();
     let mut created_count = 0;
@@ -253,14 +247,15 @@ async fn create_workspace_special_chars() {
         let create_output = create_result.unwrap();
         created_count += 1;
 
-        let expected_path: Arc<Path> = abs_path
+        let expected_path: Arc<Path> = app
+            .app_dir()
             .join(dirs::WORKSPACES_DIR)
             .join(&create_output.id.to_string())
             .into();
         assert!(expected_path.exists());
 
         // Check active workspace
-        let maybe_active_workspace = workspace_service.workspace().await;
+        let maybe_active_workspace = app.workspace().await;
         assert!(maybe_active_workspace.is_some());
         let active_workspace_id = maybe_active_workspace.unwrap().id();
         assert_eq!(active_workspace_id, create_output.id);
@@ -277,7 +272,7 @@ async fn create_workspace_special_chars() {
 
         let id: WorkspaceId = create_output.id;
         // Check database - verify last opened at timestamp is saved
-        let item_store = storage_service.__storage().item_store();
+        let item_store = app.db().item_store();
         let _ = GetItem::get(
             item_store.as_ref(),
             &ctx,
@@ -303,9 +298,7 @@ async fn create_workspace_special_chars() {
 
 #[tokio::test]
 async fn create_workspace_not_open_on_creation() {
-    let (app, ctx, services, cleanup, abs_path) = set_up_test_app().await;
-    let workspace_service = services.get::<WorkspaceService<MockAppRuntime>>();
-    let storage_service = services.get::<StorageService<MockAppRuntime>>();
+    let (app, ctx, cleanup) = set_up_test_app().await;
 
     let workspace_name = random_workspace_name();
     let create_result = app
@@ -320,14 +313,15 @@ async fn create_workspace_not_open_on_creation() {
         .await;
     let create_output = create_result.unwrap();
 
-    let expected_path: Arc<Path> = abs_path
+    let expected_path: Arc<Path> = app
+        .app_dir()
         .join(dirs::WORKSPACES_DIR)
         .join(&create_output.id.to_string())
         .into();
     assert!(expected_path.exists());
 
     // Check that no workspace is active
-    assert!(workspace_service.workspace().await.is_none());
+    assert!(app.workspace().await.is_none());
 
     // Check workspace is in list
     let list_workspaces = app.list_workspaces(&ctx).await.unwrap();
@@ -336,7 +330,7 @@ async fn create_workspace_not_open_on_creation() {
     assert_eq!(list_workspaces[0].name, workspace_name);
 
     // Check that a database entry is not created for unopened workspace
-    let item_store = storage_service.__storage().item_store();
+    let item_store = app.db().item_store();
     let id: WorkspaceId = create_output.id;
     assert!(
         GetItem::get(

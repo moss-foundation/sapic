@@ -1,15 +1,13 @@
 use derive_more::Deref;
 use moss_activity_indicator::ActivityIndicator;
-use moss_applib::{
-    AppRuntime, PublicServiceMarker, context::Canceller, providers::ServiceProvider,
-};
-use moss_fs::FileSystem;
+use moss_applib::{AppRuntime, context::Canceller};
+use moss_fs::{FileSystem, model_registry::GlobalModelRegistry};
 use moss_text::ReadOnlyStr;
 use rustc_hash::FxHashMap;
 use std::{
-    any::{Any, TypeId},
     collections::HashMap,
     ops::{Deref, DerefMut},
+    path::{Path, PathBuf},
     sync::Arc,
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
@@ -18,6 +16,7 @@ use tokio::sync::RwLock;
 use crate::{
     command::CommandCallback,
     models::types::{ColorThemeInfo, LocaleInfo},
+    services::{session_service::SessionId, workspace_service::ActiveWorkspace, *},
 };
 
 pub struct AppPreferences {
@@ -52,18 +51,24 @@ impl<R: TauriRuntime> DerefMut for AppCommands<R> {
     }
 }
 
-pub(super) type GlobalsMap = FxHashMap<TypeId, Box<dyn Any + Send + Sync>>;
-
 #[derive(Deref)]
 pub struct App<R: AppRuntime> {
     #[deref]
     pub(super) app_handle: AppHandle<R::EventLoop>,
+    pub(super) app_dir: PathBuf,
     pub(super) fs: Arc<dyn FileSystem>,
-    pub(super) globals: GlobalsMap,
+    pub(super) models: Arc<GlobalModelRegistry>,
     pub(super) commands: AppCommands<R::EventLoop>,
     pub(super) preferences: AppPreferences,
     pub(super) defaults: AppDefaults,
-    pub(super) services: ServiceProvider,
+
+    #[allow(unused)]
+    pub(super) session_service: SessionService,
+    pub(super) log_service: LogService<R>,
+    pub(super) storage_service: Arc<StorageService<R>>,
+    pub(super) workspace_service: WorkspaceService<R>,
+    pub(super) locale_service: LocaleService,
+    pub(super) theme_service: ThemeService,
 
     // Store cancellers by the id of API requests
     pub(super) tracked_cancellations: Arc<RwLock<HashMap<String, Canceller>>>,
@@ -72,12 +77,12 @@ pub struct App<R: AppRuntime> {
 }
 
 impl<R: AppRuntime> App<R> {
-    #[track_caller]
-    pub fn global<T: Send + Sync + 'static>(&self) -> &T {
-        self.globals
-            .get(&TypeId::of::<T>())
-            .map(|any_state| any_state.downcast_ref::<T>().unwrap())
-            .unwrap_or_else(|| panic!("no state of type {} exists", std::any::type_name::<T>()))
+    pub fn app_dir(&self) -> &Path {
+        &self.app_dir
+    }
+
+    pub fn session_id(&self) -> &SessionId {
+        self.session_service.session_id()
     }
 
     pub fn handle(&self) -> AppHandle<R::EventLoop> {
@@ -92,8 +97,8 @@ impl<R: AppRuntime> App<R> {
         &self.defaults
     }
 
-    pub fn service<T: PublicServiceMarker>(&self) -> &T {
-        self.services.get::<T>()
+    pub async fn workspace(&self) -> Option<Arc<ActiveWorkspace<R>>> {
+        self.workspace_service.workspace().await
     }
 
     pub fn command(&self, id: &ReadOnlyStr) -> Option<CommandCallback<R::EventLoop>> {
@@ -111,8 +116,14 @@ impl<R: AppRuntime> App<R> {
 
         write.remove(request_id);
     }
+}
 
-    #[cfg(feature = "integration-tests")]
+#[cfg(feature = "integration-tests")]
+impl<R: AppRuntime> App<R> {
+    pub fn db(&self) -> Arc<dyn moss_storage::GlobalStorage<R::AsyncContext>> {
+        self.storage_service.storage()
+    }
+
     pub fn cancellation_map(&self) -> Arc<RwLock<HashMap<String, Canceller>>> {
         self.tracked_cancellations.clone()
     }

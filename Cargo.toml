@@ -22,6 +22,7 @@ members = [
     "crates/moss-keyring",
     "crates/moss-vault",
     "crates/moss-workspace",
+    "crates/moss-workspacelib",
     "crates/moss-environment",
     "crates/moss-testutils",
     "crates/moss-common",
@@ -39,7 +40,7 @@ members = [
     #
     # Tools
     #
-    "tools/xtask",
+    "tools/xtask", 
 ]
 
 [workspace.dependencies]
@@ -62,6 +63,7 @@ moss_fs = { path = "crates/moss-fs" }
 moss_keyring = { path = "crates/moss-keyring" }
 moss_vault = { path = "crates/moss-vault" }
 moss_workspace = { path = "crates/moss-workspace" }
+moss_workspacelib = { path = "crates/moss-workspacelib" }
 moss_environment = { path = "crates/moss-environment" }
 moss_common = { path = "crates/moss-common" }
 moss_testutils = { path = "crates/moss-testutils" }
@@ -92,7 +94,7 @@ oauth2 = "5.0.0"
 reqwest = "0.12.12"
 serde_json = "1.0"
 strum = "0.27.0"
-tokio = "1.45.1"
+tokio = "1.47.1"
 tokio-stream = "0.1.17"
 tracing = "0.1"
 tracing-appender = "0.2.3"
@@ -114,7 +116,7 @@ validator = "0.20.0"
 futures = "0.3.31"
 regex = { version = "1.11.1", default-features = false, features = [] }
 smallvec = "1.15.0"
-toml = "0.8"
+toml = "0.9"
 toml_edit = "0.22"
 nanoid = "0.4.0"
 rustc-hash = "2.1.1"
@@ -122,9 +124,9 @@ derive_more = "2.0.1"
 image = "0.25.6"
 hcl-rs = "0.18.5"
 indexmap = "2.9.0"
-wasmtime = "34.0.0"
+wasmtime = "34.0.2"
 wasmtime-wasi = "34.0.0"
-wasmtime-wasi-http = "34.0.1"
+wasmtime-wasi-http = "34.0.2"
 sha2 = "0.10.9"
 jsonptr = "0.7.1"
 json-patch = "4.0.0"

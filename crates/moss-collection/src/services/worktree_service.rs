@@ -851,6 +851,10 @@ impl<R: AppRuntime> WorktreeService<R> {
     }
 
     async fn rename_entry(&self, from: &Path, to: &Path) -> WorktreeResult<()> {
+        // On Windows and macOS, file/directory names are case-preserving but insensitive
+        // If the from and to path differs only with different casing of the filename
+        // The rename should still succeed
+
         let abs_from = self.absolutize(&from)?;
         let abs_to = self.absolutize(&to)?;
 
@@ -858,7 +862,18 @@ impl<R: AppRuntime> WorktreeService<R> {
             return Err(WorktreeError::NotFound(from.display().to_string()));
         }
 
-        if abs_to.exists() {
+        let old_name_lower = from
+            .file_name()
+            .map(|name| name.to_string_lossy().to_lowercase())
+            .ok_or(WorktreeError::Io("invalid file name".to_string()))?;
+        let new_name_lower = to
+            .file_name()
+            .map(|name| name.to_string_lossy().to_lowercase())
+            .ok_or(WorktreeError::Io("invalid file name".to_string()))?;
+        let recasing_only =
+            old_name_lower == new_name_lower && abs_from.parent() == abs_to.parent();
+
+        if abs_to.exists() && !recasing_only {
             return Err(WorktreeError::AlreadyExists(to.display().to_string()));
         }
 
@@ -867,7 +882,7 @@ impl<R: AppRuntime> WorktreeService<R> {
                 &abs_from,
                 &abs_to,
                 moss_fs::RenameOptions {
-                    overwrite: false,
+                    overwrite: true,
                     ignore_if_exists: false,
                 },
             )

@@ -2,7 +2,6 @@
 pub mod shared;
 
 use crate::shared::setup_test_workspace;
-use moss_applib::mock::MockAppRuntime;
 use moss_storage::storage::operations::GetItem;
 use moss_workspace::{
     models::{
@@ -10,13 +9,12 @@ use moss_workspace::{
         primitives::SidebarPosition,
         types::{PanelPartStateInfo, SidebarPartStateInfo},
     },
-    services::storage_service::StorageService,
     storage::segments::{SEGKEY_LAYOUT_PANEL, SEGKEY_LAYOUT_SIDEBAR},
 };
 
 #[tokio::test]
 async fn update_state_sidebar_part() {
-    let (ctx, _workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
 
     let sidebar_state = SidebarPartStateInfo {
         size: 250,
@@ -42,8 +40,7 @@ async fn update_state_sidebar_part() {
     );
 
     // Verify the database is updated with individual keys
-    let storage_service = services.get::<StorageService<MockAppRuntime>>();
-    let item_store = storage_service.storage().item_store();
+    let item_store = workspace.db().item_store();
 
     // Check position
     let position_value = GetItem::get(
@@ -83,7 +80,7 @@ async fn update_state_sidebar_part() {
 
 #[tokio::test]
 async fn update_state_panel_part() {
-    let (ctx, _workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
 
     let panel_state = PanelPartStateInfo {
         size: 200,
@@ -105,8 +102,7 @@ async fn update_state_panel_part() {
     assert_eq!(describe_state_output.panel.unwrap(), panel_state);
 
     // Verify the database is updated with individual keys
-    let storage_service = services.get::<StorageService<MockAppRuntime>>();
-    let item_store = storage_service.storage().item_store();
+    let item_store = workspace.db().item_store();
 
     // Check size
     let size_value = GetItem::get(item_store.as_ref(), &ctx, SEGKEY_LAYOUT_PANEL.join("size"))
@@ -131,7 +127,7 @@ async fn update_state_panel_part() {
 
 #[tokio::test]
 async fn update_state_multiple_updates() {
-    let (ctx, _workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
 
     // Initial states
     let sidebar_state = SidebarPartStateInfo {
@@ -167,8 +163,7 @@ async fn update_state_multiple_updates() {
     assert_eq!(describe_state_output.panel.unwrap(), panel_state);
 
     // Verify the database is updated with individual keys
-    let storage_service = services.get::<StorageService<MockAppRuntime>>();
-    let item_store = storage_service.storage().item_store();
+    let item_store = workspace.db().item_store();
 
     // Check sidebar values
     let sidebar_position: SidebarPosition = GetItem::get(
@@ -295,7 +290,7 @@ async fn update_state_multiple_updates() {
 
 #[tokio::test]
 async fn update_state_overwrite_existing() {
-    let (ctx, _workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
 
     // Set initial state
     let initial_sidebar_state = SidebarPartStateInfo {
@@ -313,8 +308,7 @@ async fn update_state_overwrite_existing() {
     let _ = update_sidebar_result.unwrap();
 
     // Verify initial state in database
-    let storage_service = services.get::<StorageService<MockAppRuntime>>();
-    let item_store = storage_service.storage().item_store();
+    let item_store = workspace.db().item_store();
     let initial_size: usize = GetItem::get(
         item_store.as_ref(),
         &ctx,

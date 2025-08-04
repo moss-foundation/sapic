@@ -2,7 +2,6 @@
 pub mod shared;
 
 use crate::shared::setup_test_workspace;
-use moss_applib::mock::MockAppRuntime;
 use moss_storage::storage::operations::{GetItem, ListByPrefix};
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::{
@@ -10,14 +9,13 @@ use moss_workspace::{
         operations::{CreateCollectionInput, DeleteCollectionInput},
         primitives::CollectionId,
     },
-    services::storage_service::StorageService,
     storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
 use tauri::ipc::Channel;
 
 #[tokio::test]
 async fn delete_collection_success() {
-    let (ctx, _workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let create_collection_output = workspace
@@ -46,8 +44,7 @@ async fn delete_collection_success() {
     assert_eq!(output.total_returned, 0);
 
     // Check updating database - collection metadata should be removed
-    let storage_service = services.get::<StorageService<MockAppRuntime>>();
-    let item_store = storage_service.storage().item_store();
+    let item_store = workspace.db().item_store();
 
     // Check that collection-specific entries are removed
     let collection_prefix = SEGKEY_COLLECTION.join(&id.to_string());
@@ -73,7 +70,7 @@ async fn delete_collection_success() {
 
 #[tokio::test]
 async fn delete_collection_nonexistent_id() {
-    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let id = workspace
@@ -110,7 +107,7 @@ async fn delete_collection_nonexistent_id() {
 
 #[tokio::test]
 async fn delete_collection_fs_already_deleted() {
-    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let create_collection_output = workspace
