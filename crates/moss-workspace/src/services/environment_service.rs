@@ -8,10 +8,6 @@ use moss_environment::{
         primitives::{EnvironmentId, VariableId},
         types::{AddVariableParams, UpdateVariableParams},
     },
-    services::{
-        metadata_service::MetadataService, sync_service::SyncService,
-        variable_service::VariableService,
-    },
 };
 use moss_fs::{FileSystem, model_registry::GlobalModelRegistry};
 use moss_workspacelib::{EnvironmentRegistry, environment_registry::EnvironmentModel};
@@ -187,23 +183,7 @@ where
         params: CreateEnvironmentItemParams,
     ) -> joinerror::Result<EnvironmentItemDescription> {
         let id = EnvironmentId::new();
-        let metadata_service = MetadataService::new(self.model_registry.clone());
-        let sync_service = Arc::new(SyncService::new(
-            self.model_registry.clone(),
-            self.fs.clone(),
-        ));
-
-        // TODO: env storage service
-
-        let variable_service = VariableService::<R>::new(
-            None, // FIXME: hardcoded for now
-            sync_service.clone(),
-        )?;
-
         let environment = EnvironmentBuilder::new(self.fs.clone())
-            .with_service(metadata_service)
-            .with_service::<SyncService>(sync_service)
-            .with_service::<VariableService<R>>(variable_service)
             .create::<R>(
                 self.model_registry.clone(),
                 moss_environment::builder::CreateEnvironmentParams {

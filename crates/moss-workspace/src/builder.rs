@@ -61,7 +61,7 @@ impl WorkspaceBuilder {
                 .initialize(moss_environment::builder::CreateEnvironmentParams {
                     id,
                     name: env.name.clone(),
-                    abs_path: &params.abs_path,
+                    abs_path: &params.abs_path.join(dirs::ENVIRONMENTS_DIR),
                     color: env.color.clone(),
                     order: env.order,
                 })

@@ -33,12 +33,18 @@ impl AnyMetadataService for MetadataService {
             .value()
             .clone();
 
-        let metadata_decl = serde_json::from_value::<MetadataDecl>(json_value).map_err(|err| {
-            Error::new::<()>(format!(
-                "failed to convert json value to metadata declaration: {}",
-                err
-            ))
-        })?;
+        let metadata_value = json_value
+            .get("metadata")
+            .ok_or_else(|| Error::new::<()>("metadata field not found in json value"))?
+            .clone();
+
+        let metadata_decl =
+            serde_json::from_value::<MetadataDecl>(metadata_value).map_err(|err| {
+                Error::new::<()>(format!(
+                    "failed to convert json value to metadata declaration: {}",
+                    err
+                ))
+            })?;
 
         Ok(metadata_decl)
     }

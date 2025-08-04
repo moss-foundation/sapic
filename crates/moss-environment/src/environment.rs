@@ -1,10 +1,9 @@
 use derive_more::Deref;
 use joinerror::{Error, ResultExt};
-use moss_applib::{AppRuntime, providers::ServiceProvider};
+use moss_applib::AppRuntime;
 use moss_fs::{FileSystem, RenameOptions, model_registry::GlobalModelRegistry};
 use moss_hcl::hcl_to_json;
 use std::{
-    marker::PhantomData,
     path::{Path, PathBuf},
     sync::Arc,
 };
@@ -48,39 +47,38 @@ impl EnvironmentPath {
     }
 }
 
-struct EnvironmentState {
-    abs_path: EnvironmentPath,
+pub(super) struct EnvironmentState {
+    pub abs_path: EnvironmentPath,
 }
 
 pub struct Environment<R: AppRuntime> {
-    fs: Arc<dyn FileSystem>,
-    model_registry: Arc<GlobalModelRegistry>,
-    state: RwLock<EnvironmentState>,
-    services: ServiceProvider,
-
-    _marker: PhantomData<R>,
+    pub(super) fs: Arc<dyn FileSystem>,
+    pub(super) model_registry: Arc<GlobalModelRegistry>,
+    pub(super) state: RwLock<EnvironmentState>,
+    pub(super) metadata_service: MetadataService,
+    pub(super) sync_service: Arc<SyncService>,
+    pub(super) variable_service: VariableService<R>,
 }
 
 unsafe impl<R: AppRuntime> Send for Environment<R> {}
 unsafe impl<R: AppRuntime> Sync for Environment<R> {}
 
 impl<R: AppRuntime> Environment<R> {
-    pub(super) fn new(
-        abs_path: Arc<Path>,
-        fs: Arc<dyn FileSystem>,
-        model_registry: Arc<GlobalModelRegistry>,
-        services: ServiceProvider,
-    ) -> joinerror::Result<Self> {
-        let abs_path = EnvironmentPath::new(abs_path)?;
+    // pub(super) fn new(
+    //     abs_path: Arc<Path>,
+    //     fs: Arc<dyn FileSystem>,
+    //     model_registry: Arc<GlobalModelRegistry>,
+    //     services: ServiceProvider,
+    // ) -> joinerror::Result<Self> {
+    //     let abs_path = EnvironmentPath::new(abs_path)?;
 
-        Ok(Self {
-            fs,
-            model_registry,
-            state: RwLock::new(EnvironmentState { abs_path }),
-            services,
-            _marker: PhantomData,
-        })
-    }
+    //     Ok(Self {
+    //         fs,
+    //         model_registry,
+    //         state: RwLock::new(EnvironmentState { abs_path }),
+    //         _marker: PhantomData,
+    //     })
+    // }
 }
 
 impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
@@ -100,10 +98,12 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
     }
 
     async fn describe(&self) -> joinerror::Result<DescribeEnvironment> {
-        let metadata_service = self.services.get::<MetadataService>();
-        let metadata = metadata_service.describe(&self.abs_path().await).await?;
+        let metadata = self
+            .metadata_service
+            .describe(&self.abs_path().await)
+            .await?;
 
-        let var_items = self.services.get::<VariableService<R>>().list().await;
+        let var_items = self.variable_service.list().await;
         let mut variables = Vec::with_capacity(var_items.len());
         for (id, variable) in var_items {
             let global_value = match hcl_to_json(&variable.global_value) {
@@ -141,19 +141,16 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
     }
 
     async fn modify(&self, params: ModifyEnvironmentParams) -> joinerror::Result<()> {
-        let sync_service = self.services.get::<SyncService>();
-        let variable_service = self.services.get::<VariableService<R>>();
-
         if let Some(new_name) = params.name {
             self.rename(new_name).await?;
         }
 
         let abs_path = self.state.read().await.abs_path.path.clone();
 
-        variable_service
+        self.variable_service
             .batch_add(&abs_path, params.vars_to_add)
             .await?;
-        variable_service
+        self.variable_service
             .batch_remove(&abs_path, params.vars_to_delete)
             .await?;
 
@@ -162,7 +159,7 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
         // TODO: we'll handle file system synchronization in the background a bit later,
         // so we can respond to the frontend faster.
 
-        sync_service.save(&abs_path).await?;
+        self.sync_service.save(&abs_path).await?;
 
         Ok(())
     }

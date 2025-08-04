@@ -1,3 +1,5 @@
+#![cfg(feature = "integration-tests")]
+
 use moss_testutils::random_name::random_environment_name;
 use moss_workspace::models::operations::CreateEnvironmentInput;
 use tauri::ipc::Channel;

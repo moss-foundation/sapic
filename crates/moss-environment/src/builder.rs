@@ -1,24 +1,28 @@
 use joinerror::{Error, ResultExt};
-use moss_applib::{AppRuntime, ServiceMarker, providers::ServiceMap};
+use moss_applib::AppRuntime;
 use moss_contentmodel::{ContentModel, json::JsonModel};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt, model_registry::GlobalModelRegistry};
 use moss_hcl::{Block, HclResultExt};
 use moss_text::sanitized::sanitize;
 use std::{
-    any::TypeId,
     path::{Path, PathBuf},
     sync::Arc,
 };
+use tokio::sync::RwLock;
 
 use crate::{
     configuration::{MetadataDecl, SourceFile},
     constants,
-    environment::Environment,
+    environment::{Environment, EnvironmentPath, EnvironmentState},
     errors::{
         ErrorEnvironmentAlreadyExists, ErrorEnvironmentNotFound, ErrorFailedToDecode,
         ErrorFailedToEncode, ErrorIo,
     },
     models::primitives::EnvironmentId,
+    services::{
+        metadata_service::MetadataService, sync_service::SyncService,
+        variable_service::VariableService,
+    },
     utils,
 };
 
@@ -36,24 +40,24 @@ pub struct EnvironmentLoadParams {
 
 pub struct EnvironmentBuilder {
     fs: Arc<dyn FileSystem>,
-    services: ServiceMap,
+    // services: ServiceMap,
 }
 
 impl EnvironmentBuilder {
     pub fn new(fs: Arc<dyn FileSystem>) -> Self {
         Self {
             fs,
-            services: Default::default(),
+            // services: Default::default(),
         }
     }
 
-    pub fn with_service<T: ServiceMarker + Send + Sync>(
-        mut self,
-        service: impl Into<Arc<T>>,
-    ) -> Self {
-        self.services.insert(TypeId::of::<T>(), service.into());
-        self
-    }
+    // pub fn with_service<T: ServiceMarker + Send + Sync>(
+    //     mut self,
+    //     service: impl Into<Arc<T>>,
+    // ) -> Self {
+    //     self.services.insert(TypeId::of::<T>(), service.into());
+    //     self
+    // }
 
     pub async fn initialize<'a>(
         self,
@@ -151,12 +155,20 @@ impl EnvironmentBuilder {
             )
             .await;
 
-        Ok(Environment::new(
-            abs_path,
-            self.fs.clone(),
+        let metadata_service = MetadataService::new(model_registry.clone());
+        let sync_service = Arc::new(SyncService::new(model_registry.clone(), self.fs.clone()));
+        let variable_service = VariableService::new(None, sync_service.clone())?;
+
+        Ok(Environment {
+            fs: self.fs.clone(),
             model_registry,
-            self.services.into(),
-        )?)
+            metadata_service,
+            sync_service,
+            variable_service,
+            state: RwLock::new(EnvironmentState {
+                abs_path: EnvironmentPath::new(abs_path)?,
+            }),
+        })
     }
 
     pub async fn load<R: AppRuntime>(
@@ -203,11 +215,19 @@ impl EnvironmentBuilder {
             )
             .await;
 
-        Ok(Environment::new(
-            abs_path,
-            self.fs.clone(),
+        let metadata_service = MetadataService::new(model_registry.clone());
+        let sync_service = Arc::new(SyncService::new(model_registry.clone(), self.fs.clone()));
+        let variable_service = VariableService::new(None, sync_service.clone())?;
+
+        Ok(Environment {
+            fs: self.fs.clone(),
             model_registry,
-            self.services.into(),
-        )?)
+            metadata_service,
+            sync_service,
+            variable_service,
+            state: RwLock::new(EnvironmentState {
+                abs_path: EnvironmentPath::new(abs_path)?,
+            }),
+        })
     }
 }

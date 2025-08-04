@@ -39,7 +39,6 @@ where
     R: AppRuntime,
 {
     state: RwLock<ServiceState>,
-    // #[allow(dead_code)]
     // storage_service: Arc<StorageService<R>>,
     sync_service: Arc<SyncService>,
     _marker: PhantomData<R>,
@@ -224,10 +223,9 @@ fn collect_variables(
 mod tests {
     use hcl::{Expression as HclExpression, expr::Variable};
     use indexmap::IndexMap;
-    use moss_applib::{context::AsyncContext, mock::MockAppRuntime};
+    use moss_applib::mock::MockAppRuntime;
     use moss_fs::{RealFileSystem, model_registry::GlobalModelRegistry};
     use moss_hcl::{Block, LabeledBlock};
-    use moss_storage::common::VariableStore;
     use std::{path::PathBuf, sync::Arc};
 
     use crate::{
@@ -235,14 +233,9 @@ mod tests {
         builder::{CreateEnvironmentParams, EnvironmentBuilder},
         configuration::{MetadataDecl, SourceFile, VariableSpec},
         models::primitives::EnvironmentId,
-        services::{storage_service::StorageService, sync_service::SyncService},
     };
 
     use super::*;
-
-    struct TestVariableStore {}
-
-    impl VariableStore<AsyncContext> for TestVariableStore {}
 
     #[test]
     fn t() {
@@ -365,20 +358,12 @@ mod tests {
 
         let fs = Arc::new(RealFileSystem::new());
         let global_model_registry = Arc::new(GlobalModelRegistry::new());
-        let storage_service: Arc<StorageService<MockAppRuntime>> =
-            Arc::new(StorageService::new(Arc::new(TestVariableStore {})));
-        let sync_service = Arc::new(SyncService::new(global_model_registry.clone(), fs.clone()));
-        let variable_service =
-            VariableService::<MockAppRuntime>::new(None, sync_service.clone()).unwrap();
 
         // struct MyEnvStore<Environment: AnyEnvironment<MockAppRuntime>> {
         //     map: HashMap<String, Environment>,
         // }
 
         let env = EnvironmentBuilder::new(fs)
-            .with_service(variable_service)
-            .with_service::<StorageService<MockAppRuntime>>(storage_service)
-            .with_service::<SyncService>(sync_service)
             .create::<MockAppRuntime>(
                 global_model_registry,
                 CreateEnvironmentParams {
