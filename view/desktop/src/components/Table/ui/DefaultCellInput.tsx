@@ -26,19 +26,42 @@ export const DefaultInputCell = ({
   const [value, setValue] = useState(String(info.getValue() || ""));
   const isDisabled = info.row.original.properties?.disabled || false;
 
-  useEffect(() => {
-    const currentValue = String(info.getValue() || "");
-    setValue(currentValue);
-  }, [info.getValue()]);
-
   const editorRef = useRef<HTMLDivElement>(null);
   const hiddenInputRef = useRef<HTMLInputElement>(null);
   const isUpdatingContent = useRef(false);
+  const isActivelyEditing = useRef(false);
+  const automationTimeoutRef = useRef<NodeJS.Timeout>();
+
+  useEffect(() => {
+    if (!isActivelyEditing.current) {
+      const currentValue = String(info.getValue() || "");
+      setValue(currentValue);
+    }
+  }, [info.getValue()]);
 
   const highlightedVariableStyles =
     "background-(--moss-templating-input-bg) text-(--moss-templating-input-text) border border-(--moss-templating-input-border) rounded-sm px-0.5 whitespace-nowrap inline-block tracking-tighter [height:20px] [line-height:18px] [vertical-align:middle]";
 
+  const triggerAutomation = useCallback(
+    (newValue: string) => {
+      if (info.column.id === "key" || info.column.id === "value") {
+        if (automationTimeoutRef.current) {
+          clearTimeout(automationTimeoutRef.current);
+        }
+
+        automationTimeoutRef.current = setTimeout(() => {
+          info.table.options.meta?.updateData(info.row.index, info.column.id, newValue);
+        }, 150);
+      }
+    },
+    [info.row.index, info.column.id, info.table.options.meta]
+  );
+
   const onBlur = () => {
+    isActivelyEditing.current = false;
+    if (automationTimeoutRef.current) {
+      clearTimeout(automationTimeoutRef.current);
+    }
     info.table.options.meta?.updateData(info.row.index, info.column.id, value);
   };
 
@@ -76,6 +99,7 @@ export const DefaultInputCell = ({
   const handleTemplatingInput = (e: React.FormEvent<HTMLDivElement>) => {
     if (isUpdatingContent.current) return;
 
+    isActivelyEditing.current = true;
     const plainText = extractPlainText(e.currentTarget.innerHTML);
     setValue(plainText);
 
@@ -83,11 +107,7 @@ export const DefaultInputCell = ({
       hiddenInputRef.current.value = plainText;
     }
 
-    if (info.column.id === "key" || info.column.id === "value") {
-      setTimeout(() => {
-        info.table.options.meta?.updateData(info.row.index, info.column.id, plainText);
-      }, 0);
-    }
+    triggerAutomation(plainText);
 
     setTimeout(() => {
       updateEditorContent(plainText);
@@ -150,6 +170,14 @@ export const DefaultInputCell = ({
     }
   }, [value, updateEditorContent, enableTemplating]);
 
+  useEffect(() => {
+    return () => {
+      if (automationTimeoutRef.current) {
+        clearTimeout(automationTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const hasVariables = enableTemplating && hasTemplateVariables(value, highlightColonVariables);
 
   if (!enableTemplating) {
@@ -163,13 +191,12 @@ export const DefaultInputCell = ({
         )}
         value={value}
         onChange={(e) => {
+          isActivelyEditing.current = true;
           setValue(e.target.value);
-
-          if (info.column.id === "key" || info.column.id === "value") {
-            setTimeout(() => {
-              info.table.options.meta?.updateData(info.row.index, info.column.id, e.target.value);
-            }, 0);
-          }
+          triggerAutomation(e.target.value);
+        }}
+        onFocus={() => {
+          isActivelyEditing.current = true;
         }}
         autoFocus={info.focusOnMount}
         onBlur={onBlur}
@@ -200,6 +227,9 @@ export const DefaultInputCell = ({
         onKeyDown={handleKeyDown}
         onPaste={handlePaste}
         onCopy={handleCopy}
+        onFocus={() => {
+          isActivelyEditing.current = true;
+        }}
         onBlur={onBlur}
         data-placeholder={info.column.id}
         suppressContentEditableWarning={true}
