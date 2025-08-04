@@ -34,7 +34,7 @@ import { useRequestPageStore } from "@/store/requestPage";
 const DebugContext = React.createContext<boolean>(false);
 
 const Badge = ({ count }: { count: number }) => (
-  <span className="background-(--moss-tab-badge-color) inline-flex h-3.5 w-3.5 min-w-[14px] items-center justify-center rounded-full text-xs leading-none font-medium text-(--moss-tab-badge-text)">
+  <span className="background-(--moss-tab-badge-color) inline-flex h-3.5 w-3.5 min-w-[14px] items-center justify-center rounded-full text-xs leading-none text-(--moss-tab-badge-text)">
     <span className="relative top-[0.5px]">{count}</span>
   </span>
 );
@@ -206,12 +206,12 @@ const RequestPage: React.FC<
           {props.params?.node ? (
             <div className="flex-1">
               {props.params?.collectionId && props.params?.node?.id && (
-                <div className="mb-3 -ml-2">
+                <div className="mb-2 -ml-2">
                   <Breadcrumbs collectionId={props.params.collectionId} nodeId={props.params.node.id} />
                 </div>
               )}
 
-              <div className="mb-4">
+              <div className="mb-4.5">
                 <RequestInputField
                   initialMethod={httpMethod}
                   initialUrl={requestData.url.raw}
