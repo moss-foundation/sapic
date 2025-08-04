@@ -6,9 +6,7 @@ use moss_app::{
         operations::{CreateWorkspaceInput, DeleteWorkspaceInput},
         primitives::WorkspaceId,
     },
-    services::workspace_service::WorkspaceService,
 };
-use moss_applib::mock::MockAppRuntime;
 use moss_common::api::OperationError;
 use moss_fs::{FileSystem, RealFileSystem};
 use moss_testutils::random_name::random_workspace_name;
@@ -19,7 +17,7 @@ use crate::shared::set_up_test_app;
 
 #[tokio::test]
 async fn delete_workspace_success() {
-    let (app, ctx, _services, cleanup, abs_path) = set_up_test_app().await;
+    let (app, ctx, cleanup) = set_up_test_app().await;
 
     // Create a workspace
     let workspace_name = random_workspace_name();
@@ -35,7 +33,8 @@ async fn delete_workspace_success() {
         .await
         .unwrap();
 
-    let workspace_path: Arc<Path> = abs_path
+    let workspace_path: Arc<Path> = app
+        .app_dir()
         .join(dirs::WORKSPACES_DIR)
         .join(&create_output.id.to_string())
         .into();
@@ -70,7 +69,7 @@ async fn delete_workspace_success() {
 
 #[tokio::test]
 async fn delete_workspace_filesystem_only() {
-    let (app, ctx, _services, cleanup, abs_path) = set_up_test_app().await;
+    let (app, ctx, cleanup) = set_up_test_app().await;
 
     // Create a workspace
     let workspace_name = random_workspace_name();
@@ -86,7 +85,8 @@ async fn delete_workspace_filesystem_only() {
         .await
         .unwrap();
 
-    let workspace_path: Arc<Path> = abs_path
+    let workspace_path: Arc<Path> = app
+        .app_dir()
         .join(dirs::WORKSPACES_DIR)
         .join(&create_output.id.to_string())
         .into();
@@ -116,8 +116,7 @@ async fn delete_workspace_filesystem_only() {
 
 #[tokio::test]
 async fn delete_workspace_opened() {
-    let (app, ctx, services, cleanup, abs_path) = set_up_test_app().await;
-    let workspace_service = services.get::<WorkspaceService<MockAppRuntime>>();
+    let (app, ctx, cleanup) = set_up_test_app().await;
 
     // Create and open a workspace
     let workspace_name = random_workspace_name();
@@ -133,14 +132,15 @@ async fn delete_workspace_opened() {
         .await
         .unwrap();
 
-    let workspace_path: Arc<Path> = abs_path
+    let workspace_path: Arc<Path> = app
+        .app_dir()
         .join(dirs::WORKSPACES_DIR)
         .join(&create_output.id.to_string())
         .into();
     assert!(workspace_path.exists());
 
     // Verify workspace is active
-    let active_workspace_id = workspace_service.workspace().await.unwrap().id();
+    let active_workspace_id = app.workspace().await.unwrap().id();
     assert_eq!(active_workspace_id, create_output.id);
 
     // Delete the workspace (should succeed and deactivate it)
@@ -163,14 +163,14 @@ async fn delete_workspace_opened() {
     assert!(list_workspaces.is_empty());
 
     // Verify that no workspace is active after deletion
-    assert!(workspace_service.workspace().await.is_none());
+    assert!(app.workspace().await.is_none());
 
     cleanup().await;
 }
 
 #[tokio::test]
 async fn delete_workspace_nonexistent() {
-    let (app, ctx, _services, cleanup, _abs_path) = set_up_test_app().await;
+    let (app, ctx, cleanup) = set_up_test_app().await;
 
     let nonexistent_id = WorkspaceId::new();
 
@@ -186,7 +186,7 @@ async fn delete_workspace_nonexistent() {
 
 #[tokio::test]
 async fn delete_workspace_filesystem_does_not_exist() {
-    let (app, ctx, _services, cleanup, abs_path) = set_up_test_app().await;
+    let (app, ctx, cleanup) = set_up_test_app().await;
 
     // Create a workspace
     let workspace_name = random_workspace_name();
@@ -203,7 +203,8 @@ async fn delete_workspace_filesystem_does_not_exist() {
         .unwrap();
 
     // Manually delete the filesystem directory
-    let workspace_path: Arc<Path> = abs_path
+    let workspace_path: Arc<Path> = app
+        .app_dir()
         .join(dirs::WORKSPACES_DIR)
         .join(&create_output.id.to_string())
         .into();

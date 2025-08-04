@@ -4,7 +4,6 @@ use moss_common::api::OperationResult;
 use crate::{
     app::App,
     models::{operations::ListWorkspacesOutput, types::WorkspaceInfo},
-    services::workspace_service::WorkspaceService,
 };
 
 impl<R: AppRuntime> App<R> {
@@ -12,8 +11,7 @@ impl<R: AppRuntime> App<R> {
         &self,
         _ctx: &R::AsyncContext,
     ) -> OperationResult<ListWorkspacesOutput> {
-        let workspace_service = self.services.get::<WorkspaceService<R>>();
-        let workspaces = workspace_service.list_workspaces().await?;
+        let workspaces = self.workspace_service.list_workspaces().await?;
         let workspaces = workspaces
             .into_iter()
             .map(|item| WorkspaceInfo {

@@ -99,6 +99,11 @@ where
         // to monitor changes to the JsonValue file. We'll send the updated value to that channel, and in this service,
         // we'll run a background task that listens to the channel and automatically updates the state when it receives any changes.
         {
+            // FIXME: The variables map in the service state is not cleared at this point.
+            // So is extending it with current collected variables the correct after a batch remove.
+            // For example, if we removed variable ID 1 in this operation, it should still be inside the map,
+            // but will not be collected. At the end when we extend the hashmap, the old entry will not get deleted.
+
             let map = json_value.get("variable").unwrap().as_object().unwrap();
             let variables = collect_variables(map)?;
 

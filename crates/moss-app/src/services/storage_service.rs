@@ -2,7 +2,6 @@ use crate::{
     models::primitives::{LogEntryId, WorkspaceId},
     storage::segments::{SEGKEY_LAST_ACTIVE_WORKSPACE, segkey_last_opened_at},
 };
-use anyhow::Result;
 use moss_applib::{AppRuntime, ServiceMarker};
 use moss_db::{DatabaseResult, Transaction, primitives::AnyValue};
 use moss_storage::{
@@ -26,10 +25,9 @@ pub struct StorageService<R: AppRuntime> {
 
 impl<R: AppRuntime> ServiceMarker for StorageService<R> {}
 
+#[cfg(feature = "integration-tests")]
 impl<R: AppRuntime> StorageService<R> {
-    // HACK: This is a temporary hack to allow access to the storage to be used in the log service.
-    // This should be removed once the log service is refactored to use the storage service.
-    pub fn __storage(&self) -> Arc<dyn GlobalStorage<R::AsyncContext>> {
+    pub fn storage(&self) -> Arc<dyn GlobalStorage<R::AsyncContext>> {
         self.storage.clone()
     }
 }
