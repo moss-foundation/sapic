@@ -199,12 +199,10 @@ export const DefaultInputCell = ({
   if (!enableTemplating) {
     return (
       <input
-        className={cn(
-          "w-full truncate px-2 py-1.5 focus:outline-1 focus:outline-(--moss-primary) disabled:text-(--moss-gray-1)/50",
-          {
-            "opacity-60": isDisabled,
-          }
-        )}
+        className={cn("w-full truncate px-2 py-1.5 focus:outline-1 focus:outline-(--moss-primary)", {
+          "text-(--moss-requestpage-text-disabled)": isDisabled,
+        })}
+        disabled={isDisabled}
         value={value}
         onChange={(e) => {
           setValue(e.target.value);
@@ -230,12 +228,11 @@ export const DefaultInputCell = ({
           "empty:before:pointer-events-none empty:before:flex empty:before:h-full empty:before:items-center empty:before:leading-[inherit] empty:before:whitespace-nowrap empty:before:text-(--moss-requestpage-placeholder-color) empty:before:content-[attr(data-placeholder)]",
           "[&_*]:inline [&_*]:whitespace-nowrap",
           {
-            "opacity-60": isDisabled,
             "text-(--moss-requestpage-text-disabled)": isDisabled,
             "text-(--moss-primary-text)": !isDisabled && !hasVariables,
           }
         )}
-        contentEditable
+        contentEditable={!isDisabled}
         onInput={handleTemplatingInput}
         onKeyDown={handleKeyDown}
         onPaste={handlePaste}
