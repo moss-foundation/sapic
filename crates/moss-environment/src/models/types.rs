@@ -8,6 +8,7 @@ use crate::models::primitives::VariableId;
 pub type VariableName = String;
 pub type EnvironmentName = String;
 
+/// @category Type
 #[derive(Clone, Debug, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "types.ts")]
 #[serde(rename_all = "camelCase")]
@@ -15,6 +16,7 @@ pub struct VariableOptions {
     pub disabled: bool,
 }
 
+/// @category Type
 #[derive(Clone, Debug, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "types.ts")]
 #[ts(optional_fields)]
@@ -31,6 +33,7 @@ pub struct AddVariableParams {
     pub options: VariableOptions,
 }
 
+/// @category Type
 #[derive(Clone, Debug, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "types.ts")]
 #[ts(optional_fields)]

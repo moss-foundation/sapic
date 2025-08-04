@@ -39,6 +39,7 @@ pub enum ChangePath {
     Remove,
 }
 
+/// @category Primitive
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "primitives.ts")]
