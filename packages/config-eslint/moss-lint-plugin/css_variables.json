@@ -237,5 +237,6 @@
   "--moss-requestpage-bool-color",
   "--moss-requestpage-icon-color",
   "--moss-requestpage-text-disabled",
-  "--moss-requestpage-placeholder-color"
+  "--moss-requestpage-placeholder-color",
+  "--moss-requestpage-header-color"
 ]

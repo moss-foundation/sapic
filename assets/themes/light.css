@@ -325,4 +325,5 @@
   --moss-requestpage-icon-color: var(--moss-gray-7);
   --moss-requestpage-text-disabled: var(--moss-gray-8);
   --moss-requestpage-placeholder-color: var(--moss-gray-9);
+  --moss-requestpage-header-color: var(--moss-gray-3);
 }

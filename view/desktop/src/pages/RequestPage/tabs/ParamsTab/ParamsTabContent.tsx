@@ -172,7 +172,7 @@ export const ParamsTabContent = (
     <div className="mt-4">
       <div className="mb-6">
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-base font-medium">Query Params</h3>
+          <h3 className="text-base font-medium text-(--moss-requestpage-header-color)">Query Params</h3>
           <ActionButton icon="MoreHorizontal" />
         </div>
         <DataTable
@@ -185,7 +185,7 @@ export const ParamsTabContent = (
 
       <div>
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-base font-medium">Path Params</h3>
+          <h3 className="text-base font-medium text-(--moss-requestpage-header-color)">Path Params</h3>
           <ActionButton icon="MoreHorizontal" />
         </div>
         <DataTable
