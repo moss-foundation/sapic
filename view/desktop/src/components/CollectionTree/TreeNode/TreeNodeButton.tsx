@@ -115,7 +115,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
             onClick={handleLabelClick}
             className={cn("group/TreeNode relative flex min-h-[28px] w-full min-w-0 cursor-pointer items-center")}
           >
-            <ActiveNodeIndicator isActive={activePanelId === node.id} />
+            {isChildDropBlocked === null && <ActiveNodeIndicator isActive={activePanelId === node.id} />}
 
             {node.kind === "Item" && instruction !== null && (
               <DropIndicatorWithInstruction
@@ -126,6 +126,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                 depth={depth}
                 isLastChild={isLastChild}
                 gap={-1}
+                className="z-6"
               />
             )}
 
@@ -173,11 +174,9 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
 
               <span className="DragHandle h-full min-h-4 grow" />
 
-              {instruction && (
-                <div className="text-xs">
-                  {instruction.operation} | {instruction.blocked ? "blocked" : "available"}
-                </div>
-              )}
+              <div className="text-xs">
+                {instruction?.operation} | {instruction?.blocked ? "blocked" : "available"}
+              </div>
 
               {node.kind === "Dir" && (
                 <TreeNodeActions

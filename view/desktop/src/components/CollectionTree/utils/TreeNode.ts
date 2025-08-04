@@ -1,8 +1,13 @@
 import { TreeCollectionNode } from "../types";
 
 export const hasDescendant = (parentNode: TreeCollectionNode, dropNode: TreeCollectionNode): boolean => {
-  if (!parentNode.childNodes) return false;
-  return parentNode.childNodes.some((child) => child.id === dropNode.id || hasDescendant(child, dropNode));
+  if (parentNode.id === dropNode.id) return true;
+  if (parentNode.childNodes.length === 0) return false;
+
+  return parentNode.childNodes.some((child) => {
+    if (child.id === dropNode.id) return true;
+    return hasDescendant(child, dropNode);
+  });
 };
 
 export const hasDirectDescendant = (parentNode: TreeCollectionNode, dropNode: TreeCollectionNode): boolean => {
