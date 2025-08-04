@@ -20,7 +20,13 @@ import { DefaultRow } from "./ui/DefaultRow";
 import { DefaultAddNewRowForm } from "./ui/DefaultRowForm";
 import { NoDataRow } from "./ui/NoDataRow";
 
-export function DataTable({ columns, data: initialData, onTableApiSet, onDataChange }: DataTableProps<ParameterData>) {
+export function DataTable({
+  columns,
+  data: initialData,
+  onTableApiSet,
+  onDataChange,
+  tableType = "ActionsTable",
+}: DataTableProps<ParameterData>) {
   const tableId = useId();
 
   const [data, setData] = useState<ParameterData[]>(initialData);
@@ -81,7 +87,7 @@ export function DataTable({ columns, data: initialData, onTableApiSet, onDataCha
     },
     meta: {
       tableId,
-      tableType: "ActionsTable",
+      tableType,
       updateData: (rowIndex, columnId, value) => {
         // Mark that user is actively editing
         hasActiveInput.current = true;

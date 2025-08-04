@@ -7,12 +7,13 @@ export interface DataTableProps<TData> {
   data: TData[];
   onTableApiSet?: (table: Table<TData>) => void;
   onDataChange?: (data: TData[]) => void;
+  tableType?: string;
 }
 
 declare module "@tanstack/react-table" {
   interface TableMeta<TData extends RowData> {
     tableId: string;
-    tableType: "ActionsTable";
+    tableType: string;
     updateData: (rowIndex: number, columnId: string, value: unknown) => void;
   }
   interface ColumnMeta<TData extends RowData, TValue> {
