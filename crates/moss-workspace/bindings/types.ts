@@ -17,6 +17,9 @@ export type ActivitybarPartStateInfo = {
   items: Array<ActivitybarItemStateInfo>;
 };
 
+/**
+ * @category Type
+ */
 export type AddVariableParams = {
   name: string;
   globalValue: JsonValue;
@@ -101,6 +104,9 @@ export type PanelPartStateInfo = { size: number; visible: boolean };
  */
 export type SidebarPartStateInfo = { position: SidebarPosition; size: number; visible: boolean };
 
+/**
+ * @category Type
+ */
 export type UpdateVariableParams = {
   name?: string;
   globalValue?: ChangeJsonValue;
@@ -122,6 +128,9 @@ export type VariableInfo = {
   desc?: string;
 };
 
+/**
+ * @category Type
+ */
 export type VariableOptions = { disabled: boolean };
 
 /**

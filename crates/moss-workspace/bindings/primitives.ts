@@ -5,6 +5,9 @@
  */
 export type ActivitybarPosition = "DEFAULT" | "TOP" | "BOTTOM" | "HIDDEN";
 
+/**
+ * @category Primitive
+ */
 export type ChangeCollectionId = { "UPDATE": string } | "REMOVE";
 
 /**

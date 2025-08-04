@@ -3,6 +3,9 @@
 import { JsonValue } from "@repo/bindings-utils";
 import { ChangeJsonValue, ChangeString } from "@repo/moss-bindingutils";
 
+/**
+ * @category Type
+ */
 export type AddVariableParams = {
   name: string;
   globalValue: JsonValue;
@@ -12,6 +15,9 @@ export type AddVariableParams = {
   options: VariableOptions;
 };
 
+/**
+ * @category Type
+ */
 export type UpdateVariableParams = {
   name?: string;
   globalValue?: ChangeJsonValue;
@@ -38,4 +44,7 @@ export type VariableInfo = {
  */
 export type VariableKind = "secret" | "default";
 
+/**
+ * @category Type
+ */
 export type VariableOptions = { disabled: boolean };

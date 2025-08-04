@@ -7,6 +7,9 @@ import { JsonValue } from "@repo/bindings-utils";
  */
 export type ChangeBool = { "UPDATE": boolean } | "REMOVE";
 
+/**
+ * @category Primitive
+ */
 export type ChangeJsonValue = { "UPDATE": JsonValue } | "REMOVE";
 
 /**
