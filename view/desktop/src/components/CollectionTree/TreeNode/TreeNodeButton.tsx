@@ -52,25 +52,50 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
   ) => {
     const { id, nodeOffset, searchInput, paddingRight, rootOffset, showNodeOrders } = useContext(TreeContext);
 
-    const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
+    const { addOrFocusPanel, activePanelId, api } = useTabbedPaneStore();
 
     const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry();
 
     const handleClick = () => {
       if (node.kind === "Dir" || node.kind === "Case") {
-        addOrFocusPanel({
-          id: `folder-${node.id}`,
-          title: `${node.name} Settings`,
-          params: {
-            collectionId: id,
-            iconType: node.kind,
-            node: {
-              ...node,
-              expanded: true,
+        const panelId = `folder-${node.id}`;
+        const panel = api?.getPanel(panelId);
+
+        if (!panel) {
+          addOrFocusPanel({
+            id: panelId,
+            title: `${node.name} Settings`,
+            params: {
+              collectionId: id,
+              iconType: node.kind,
+              node: {
+                ...node,
+                expanded: true,
+              },
             },
-          },
-          component: "FolderSettings",
-        });
+            component: "FolderSettings",
+          });
+
+          updateCollectionEntry({
+            collectionId: id,
+            updatedEntry: {
+              DIR: {
+                id: node.id,
+                expanded: true,
+              },
+            },
+          });
+        } else {
+          updateCollectionEntry({
+            collectionId: id,
+            updatedEntry: {
+              DIR: {
+                id: node.id,
+                expanded: !node.expanded,
+              },
+            },
+          });
+        }
         return;
       }
 
