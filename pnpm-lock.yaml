@@ -160,9 +160,6 @@ importers:
         specifier: ^3.24.4
         version: 3.25.76
     devDependencies:
-      '@repo/moss-bindingutils':
-        specifier: workspace:*
-        version: 'link:'
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/config-typescript
