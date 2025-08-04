@@ -6,12 +6,14 @@ export interface DataTableProps<TData> {
   }[keyof TData][];
   data: TData[];
   onTableApiSet?: (table: Table<TData>) => void;
+  onDataChange?: (data: TData[]) => void;
+  tableType?: string;
 }
 
 declare module "@tanstack/react-table" {
   interface TableMeta<TData extends RowData> {
     tableId: string;
-    tableType: "ActionsTable";
+    tableType: string;
     updateData: (rowIndex: number, columnId: string, value: unknown) => void;
   }
   interface ColumnMeta<TData extends RowData, TValue> {
@@ -20,7 +22,7 @@ declare module "@tanstack/react-table" {
   }
 }
 
-export interface TestData {
+export interface ParameterData {
   order: number;
   id: string;
   key: string;
@@ -39,7 +41,7 @@ export interface TableRowDnDData {
   data: {
     tableType: string;
     tableId: string;
-    row: TestData;
+    row: ParameterData;
     isSelected: boolean;
   };
 }

@@ -19,7 +19,7 @@ export const useCollectionsTrees = (): UseCollectionsTreesProps => {
   const isLoading = isEntriesLoading || isCollectionsLoading;
 
   const validCollections = useMemo(() => {
-    return collectionsWithEntries.filter((collection) => collection.entries.length >= 4);
+    return collectionsWithEntries.filter((collection) => collection.entries.length > 0);
   }, [collectionsWithEntries]);
 
   const collectionsTrees = useMemo(() => {
