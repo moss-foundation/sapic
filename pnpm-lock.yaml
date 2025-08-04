@@ -163,6 +163,9 @@ importers:
       '@repo/bindings-utils':
         specifier: workspace:*
         version: link:../../packages/bindings-utils
+      '@repo/moss-bindingutils':
+        specifier: workspace:*
+        version: 'link:'
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/config-typescript
@@ -208,6 +211,9 @@ importers:
       '@repo/bindings-utils':
         specifier: workspace:*
         version: link:../../packages/bindings-utils
+      '@repo/moss-bindingutils':
+        specifier: workspace:*
+        version: link:../moss-bindingutils
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/config-typescript
@@ -237,6 +243,9 @@ importers:
       '@repo/bindings-utils':
         specifier: workspace:*
         version: link:../../packages/bindings-utils
+      '@repo/moss-bindingutils':
+        specifier: workspace:*
+        version: link:../moss-bindingutils
       '@repo/moss-environment':
         specifier: workspace:*
         version: link:../moss-environment

@@ -66,16 +66,17 @@ pub struct CreateCollectionOutput {
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateCollectionInput {
-    #[ts(type = "string")]
     pub id: CollectionId,
 
     #[validate(length(min = 1))]
     pub name: Option<String>,
 
     #[validate(custom(function = "validate_change_repository"))]
+    #[ts(optional, type = "ChangeString")]
     pub repository: Option<ChangeString>,
 
     // TODO: add validation
+    #[ts(optional, type = "ChangePath")]
     pub icon_path: Option<ChangePath>,
     pub order: Option<isize>,
     pub pinned: Option<bool>,
@@ -257,6 +258,7 @@ pub struct UpdateEnvironmentInput {
     pub collection_id: Option<ChangeCollectionId>,
     pub name: Option<String>,
     pub order: Option<isize>,
+    #[ts(optional, type = "ChangeString")]
     pub color: Option<ChangeString>,
     pub expanded: Option<bool>,
     pub vars_to_add: Vec<AddVariableParams>,

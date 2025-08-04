@@ -11,6 +11,7 @@ use serde_json::Value as JsonValue;
 
 use crate::configuration::MetadataDecl;
 
+#[allow(unused)]
 pub(super) trait AnyStorageService<R: AppRuntime> {}
 
 pub(super) trait AnySyncService {
@@ -26,4 +27,5 @@ pub(super) trait AnyMetadataService {
     async fn apply(&self) -> joinerror::Result<()>;
 }
 
+#[allow(unused)]
 pub(super) trait AnyVariableService<R: AppRuntime> {}

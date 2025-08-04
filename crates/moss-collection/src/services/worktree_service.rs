@@ -730,7 +730,7 @@ impl<R: AppRuntime> AnyWorktreeService<R> for WorktreeService<R> {
 
         if let Some(name) = params.name {
             let old_path = entry.path.clone();
-            let new_path = rename_path(entry.path.as_ref(), &name); // TODO: sanitize name
+            let new_path = rename_path(entry.path.as_ref(), &name);
             path = new_path.clone();
 
             self.rename_entry(&old_path, &new_path).await?;

@@ -37,9 +37,12 @@ pub struct AddVariableParams {
 #[serde(rename_all = "camelCase")]
 pub struct UpdateVariableParams {
     pub name: Option<VariableName>,
+    #[ts(optional, type = "ChangeJsonValue")]
     pub global_value: Option<ChangeJsonValue>,
+    #[ts(optional, type = "ChangeJsonValue")]
     pub local_value: Option<ChangeJsonValue>,
     pub order: Option<isize>,
+    #[ts(optional, type = "ChangeString")]
     pub desc: Option<ChangeString>,
 }
 

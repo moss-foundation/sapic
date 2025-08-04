@@ -2,10 +2,9 @@
 import { z } from "zod";
 
 import { jsonValueSchema } from "@repo/bindings-utils";
+import { changeJsonValueSchema, changeStringSchema } from "@repo/moss-bindingutils";
 import {
   activitybarPositionSchema,
-  changeJsonValueSchema,
-  changeStringSchema,
   editorGridOrientationSchema,
   panelRendererSchema,
   sidebarPositionSchema,
