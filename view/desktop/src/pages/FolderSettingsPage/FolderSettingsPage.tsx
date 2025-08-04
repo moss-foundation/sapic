@@ -55,7 +55,7 @@ export const FolderSettings = ({ ...props }: IDockviewPanelProps<FolderSettingsP
           <div className="rounded-lg border border-(--moss-border-color) p-4">
             <h3 className="mb-3 text-lg font-semibold text-(--moss-primary-text)">Folder Permissions</h3>
             <p className="text-(--moss-secondary-text)">Folder permissions configuration will be implemented here.</p>
-            <div className="mt-4 rounded bg-(--moss-secondary-background) p-3">
+            <div className="background-(--moss-secondary-background) mt-4 rounded p-3">
               <p className="text-sm text-(--moss-secondary-text)">
                 This is a placeholder for folder-specific permissions and access control settings.
               </p>
@@ -78,13 +78,13 @@ export const FolderSettings = ({ ...props }: IDockviewPanelProps<FolderSettingsP
             <h3 className="mb-3 text-lg font-semibold text-(--moss-primary-text)">Folder Settings</h3>
             <p className="text-(--moss-secondary-text)">Advanced folder settings will be implemented here.</p>
             <div className="mt-4 space-y-4">
-              <div className="rounded bg-(--moss-secondary-background) p-3">
+              <div className="background-(--moss-secondary-background) rounded p-3">
                 <h4 className="mb-2 font-medium text-(--moss-primary-text)">Display Options</h4>
                 <p className="text-sm text-(--moss-secondary-text)">
                   Settings for how this folder and its contents are displayed in the tree.
                 </p>
               </div>
-              <div className="rounded bg-(--moss-secondary-background) p-3">
+              <div className="background-(--moss-secondary-background) rounded p-3">
                 <h4 className="mb-2 font-medium text-(--moss-primary-text)">Organization</h4>
                 <p className="text-sm text-(--moss-secondary-text)">
                   Settings for organizing and sorting items within this folder.
