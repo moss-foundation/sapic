@@ -3,7 +3,7 @@ use moss_applib::{AppRuntime, ServiceMarker};
 use moss_bindingutils::primitives::ChangeString;
 use moss_environment::{
     AnyEnvironment, Environment, ModifyEnvironmentParams,
-    builder::EnvironmentBuilder,
+    builder::{EnvironmentBuilder, EnvironmentLoadParams},
     models::{
         primitives::{EnvironmentId, VariableId},
         types::{AddVariableParams, UpdateVariableParams},
@@ -83,21 +83,28 @@ where
     R: AppRuntime,
 {
     /// `abs_path` is the absolute path to the workspace directory
-    pub fn new(
+    pub async fn new(
         abs_path: &Path,
         fs: Arc<dyn FileSystem>,
         environment_registry: Arc<GlobalEnvironmentRegistry<R, Environment<R>>>,
         model_registry: Arc<GlobalModelRegistry>,
-    ) -> Self {
-        Self {
+    ) -> joinerror::Result<Self> {
+        let abs_path = abs_path.join(dirs::ENVIRONMENTS_DIR);
+        let environments = collect_environments(
+            &fs,
+            model_registry.clone(),
+            environment_registry.clone(),
+            &abs_path,
+        )
+        .await?;
+
+        Ok(Self {
             fs,
-            abs_path: abs_path.join(dirs::ENVIRONMENTS_DIR),
+            abs_path,
             environment_registry,
             model_registry,
-            state: Arc::new(RwLock::new(ServiceState {
-                environments: HashMap::new(),
-            })),
-        }
+            state: Arc::new(RwLock::new(ServiceState { environments })),
+        })
     }
 
     pub async fn environment(&self, id: &EnvironmentId) -> Option<Arc<Environment<R>>> {
@@ -180,12 +187,14 @@ where
         params: CreateEnvironmentItemParams,
     ) -> joinerror::Result<EnvironmentItemDescription> {
         let id = EnvironmentId::new();
-        let metadata_service = MetadataService::new();
+        let metadata_service = MetadataService::new(self.model_registry.clone());
         let sync_service = Arc::new(SyncService::new(
             self.model_registry.clone(),
             self.fs.clone(),
         ));
+
         // TODO: env storage service
+
         let variable_service = VariableService::<R>::new(
             None, // FIXME: hardcoded for now
             sync_service.clone(),
@@ -241,6 +250,58 @@ where
             abs_path,
         })
     }
+}
+
+async fn collect_environments<R: AppRuntime>(
+    fs: &Arc<dyn FileSystem>,
+    model_registry: Arc<GlobalModelRegistry>,
+    environment_registry: Arc<GlobalEnvironmentRegistry<R, Environment<R>>>,
+    abs_path: &Path,
+) -> joinerror::Result<HashMap<EnvironmentId, EnvironmentItem>> {
+    let mut environments = HashMap::new();
+
+    let mut read_dir = fs
+        .read_dir(abs_path)
+        .await
+        .map_err(|err| joinerror::Error::new::<()>(format!("failed to read directory: {}", err)))?; // TODO: specify a proper error type
+
+    while let Some(entry) = read_dir.next_entry().await? {
+        if entry.file_type().await?.is_dir() {
+            continue;
+        }
+
+        let environment = EnvironmentBuilder::new(fs.clone())
+            .load::<R>(
+                model_registry.clone(),
+                EnvironmentLoadParams {
+                    abs_path: entry.path(),
+                },
+            )
+            .await?;
+
+        let desc = environment.describe().await?;
+
+        environment_registry
+            .insert(EnvironmentModel {
+                id: desc.id.clone(),
+                collection_id: None,
+                handle: Arc::new(environment),
+                _runtime: PhantomData,
+            })
+            .await;
+
+        environments.insert(
+            desc.id.clone(),
+            EnvironmentItem {
+                id: desc.id,
+                display_name: desc.name,
+                order: 0,       // TODO: restore from the database
+                expanded: true, // TODO: restore from the database
+            },
+        );
+    }
+
+    Ok(environments)
 }
 
 // pub async fn environments<C: Context<R>>(&self, ctx: &C) -> Result<&EnvironmentMap> {

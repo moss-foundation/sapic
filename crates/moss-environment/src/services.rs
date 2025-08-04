@@ -9,6 +9,8 @@ use json_patch::PatchOperation;
 use moss_applib::AppRuntime;
 use serde_json::Value as JsonValue;
 
+use crate::configuration::MetadataDecl;
+
 pub(super) trait AnyStorageService<R: AppRuntime> {}
 
 pub(super) trait AnySyncService {
@@ -16,7 +18,10 @@ pub(super) trait AnySyncService {
     async fn save(&self, path: &Path) -> joinerror::Result<()>;
 }
 
-pub(super) trait AnyMetadataService<R: AppRuntime> {
+pub(super) trait AnyMetadataService {
+    // INFO: maybe we should use a different type to separate metadata type from the configuration types
+    async fn describe(&self, abs_path: &Path) -> joinerror::Result<MetadataDecl>;
+
     #[allow(dead_code)]
     async fn apply(&self) -> joinerror::Result<()>;
 }

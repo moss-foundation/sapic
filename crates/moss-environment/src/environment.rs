@@ -11,9 +11,12 @@ use std::{
 use tokio::sync::RwLock;
 
 use crate::{
-    AnyEnvironment, AnySyncService, DescribeEnvironmentParams, ModifyEnvironmentParams,
+    AnyEnvironment, AnySyncService, DescribeEnvironment, ModifyEnvironmentParams,
     models::types::VariableInfo,
-    services::{sync_service::SyncService, variable_service::VariableService},
+    services::{
+        AnyMetadataService, metadata_service::MetadataService, sync_service::SyncService,
+        variable_service::VariableService,
+    },
     utils,
 };
 #[derive(Debug, Deref)]
@@ -96,7 +99,10 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
         None // TODO: hardcoded for now
     }
 
-    async fn describe(&self) -> joinerror::Result<DescribeEnvironmentParams> {
+    async fn describe(&self) -> joinerror::Result<DescribeEnvironment> {
+        let metadata_service = self.services.get::<MetadataService>();
+        let metadata = metadata_service.describe(&self.abs_path().await).await?;
+
         let var_items = self.services.get::<VariableService<R>>().list().await;
         let mut variables = Vec::with_capacity(var_items.len());
         for (id, variable) in var_items {
@@ -126,7 +132,9 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
             });
         }
 
-        Ok(DescribeEnvironmentParams {
+        Ok(DescribeEnvironment {
+            id: metadata.id,
+            color: metadata.color,
             name: self.name().await?,
             variables,
         })

@@ -384,6 +384,8 @@ impl<R: AppRuntime> WorkspaceService<R> {
             self.environment_registry.clone(),
             self.model_registry.clone(),
         )
+        .await
+        .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?
         .into();
 
         let workspace = WorkspaceBuilder::new(self.fs.clone())

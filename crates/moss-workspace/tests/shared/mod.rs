@@ -104,6 +104,8 @@ pub async fn setup_test_workspace() -> (
         Arc::new(global_env_registry),
         Arc::new(global_model_registry),
     )
+    .await
+    .unwrap()
     .into();
 
     {

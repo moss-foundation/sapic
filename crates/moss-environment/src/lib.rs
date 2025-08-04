@@ -16,7 +16,7 @@ use moss_bindingutils::primitives::ChangeString;
 
 use crate::{
     models::{
-        primitives::VariableId,
+        primitives::{EnvironmentId, VariableId},
         types::{AddVariableParams, UpdateVariableParams, VariableInfo},
     },
     services::AnySyncService,
@@ -63,9 +63,10 @@ pub struct ModifyEnvironmentParams {
     pub vars_to_delete: Vec<VariableId>,
 }
 
-pub struct DescribeEnvironmentParams {
+pub struct DescribeEnvironment {
+    pub id: EnvironmentId,
     pub name: String,
-    // TODO:  add color
+    pub color: Option<String>,
     pub variables: Vec<VariableInfo>,
     // TODO: git info
 }
@@ -75,6 +76,6 @@ pub trait AnyEnvironment<R: AppRuntime> {
     async fn abs_path(&self) -> Arc<Path>;
     async fn color(&self) -> Option<String>;
     async fn name(&self) -> joinerror::Result<String>;
-    async fn describe(&self) -> joinerror::Result<DescribeEnvironmentParams>;
+    async fn describe(&self) -> joinerror::Result<DescribeEnvironment>;
     async fn modify(&self, params: ModifyEnvironmentParams) -> joinerror::Result<()>;
 }

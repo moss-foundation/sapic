@@ -8,7 +8,7 @@ use std::{path::Path, sync::Arc};
 use crate::{configuration::SourceFile, services::AnySyncService};
 
 pub struct SyncService {
-    models: Arc<GlobalModelRegistry>,
+    model_registry: Arc<GlobalModelRegistry>,
     fs: Arc<dyn FileSystem>,
 }
 
@@ -17,10 +17,8 @@ impl ServiceMarker for SyncService {}
 
 impl AnySyncService for SyncService {
     async fn save(&self, abs_path: &Path) -> joinerror::Result<()> {
-        dbg!(&abs_path);
-
         let model = self
-            .models
+            .model_registry
             .get(abs_path)
             .await
             .ok_or_else(|| Error::new::<()>("model not found"))?;
@@ -62,10 +60,8 @@ impl AnySyncService for SyncService {
     }
 
     async fn apply(&self, path: &Path, patches: &[PatchOperation]) -> joinerror::Result<JsonValue> {
-        dbg!(&path);
-
         let json_value = self
-            .models
+            .model_registry
             .with_model_mut(path, |model| {
                 let model = model.as_json_mut().expect("model is not a json model");
                 model
@@ -83,9 +79,6 @@ impl AnySyncService for SyncService {
 
 impl SyncService {
     pub fn new(model_registry: Arc<GlobalModelRegistry>, fs: Arc<dyn FileSystem>) -> Self {
-        Self {
-            models: model_registry,
-            fs,
-        }
+        Self { model_registry, fs }
     }
 }
