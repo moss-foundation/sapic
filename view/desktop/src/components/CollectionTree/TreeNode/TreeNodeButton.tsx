@@ -58,20 +58,22 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
 
     const handleClick = () => {
       if (node.kind === "Dir" || node.kind === "Case") {
-        // For folders, only expand/collapse them, don't open a panel
-        updateCollectionEntry({
-          collectionId: id,
-          updatedEntry: {
-            DIR: {
-              id: node.id,
-              expanded: !node.expanded,
+        addOrFocusPanel({
+          id: `folder-${node.id}`,
+          title: `${node.name} Settings`,
+          params: {
+            collectionId: id,
+            iconType: node.kind,
+            node: {
+              ...node,
+              expanded: true,
             },
           },
+          component: "FolderSettings",
         });
         return;
       }
 
-      // For non-folder items (requests, etc.), open the appropriate panel
       addOrFocusPanel({
         id: node.id,
         title: node.name,

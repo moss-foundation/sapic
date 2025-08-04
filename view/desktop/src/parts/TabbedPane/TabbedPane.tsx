@@ -2,7 +2,7 @@ import "./assets/styles.css";
 
 import React from "react";
 
-import { ActionButton, Breadcrumbs, PageContent, PageHeader, PageTabs, PageToolbar, PageView } from "@/components";
+import { Breadcrumbs, PageContent, PageHeader, PageView } from "@/components";
 import { DropNode, TreeCollectionNode } from "@/components/CollectionTree/types";
 import { useUpdateEditorPartState } from "@/hooks/appState/useUpdateEditorPartState";
 import { mapEditorPartStateToSerializedDockview } from "@/hooks/appState/utils";
@@ -12,6 +12,7 @@ import { Icon, type Icons } from "@/lib/ui";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
 import {
   CollectionSettingsPage,
+  FolderSettings,
   KitchenSink,
   Logs,
   RequestPage,
@@ -245,6 +246,10 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
       title: "CollectionSettings",
       component: CollectionSettingsPage,
     },
+    FolderSettings: {
+      title: "FolderSettings",
+      component: FolderSettings,
+    },
   };
 
   const components = {
@@ -318,7 +323,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     Request: (
       props: IDockviewPanelProps<{
         node?: TreeCollectionNode;
-        treeId: string;
+        collectionId: string;
         iconType: EntryKind;
         someRandomString: string;
       }>
