@@ -386,6 +386,7 @@ mod tests {
                     name: "data".to_string(),
                     abs_path: &abs_path,
                     color: None,
+                    order: 0,
                 },
             )
             .await

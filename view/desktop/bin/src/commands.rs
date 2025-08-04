@@ -17,7 +17,7 @@ use moss_applib::{
 };
 use moss_collection::Collection;
 use moss_common::api::OperationOptionExt;
-use moss_workspace::{models::primitives::CollectionId, services::DynCollectionService};
+use moss_workspace::models::primitives::CollectionId;
 use primitives::Options;
 use std::{sync::Arc, time::Duration};
 use tauri::State;
@@ -55,11 +55,7 @@ where
         .await
         .map_err_as_failed_precondition("No active workspace")?;
 
-    let collection = workspace
-        .service::<DynCollectionService<R>>()
-        .collection(&id)
-        .await?;
-
+    let collection = workspace.collection(&id).await?;
     let request_id = options.and_then(|opts| opts.request_id);
 
     if let Some(request_id) = &request_id {

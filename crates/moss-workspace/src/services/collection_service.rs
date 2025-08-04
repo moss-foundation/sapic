@@ -30,7 +30,7 @@ use tokio::sync::RwLock;
 use crate::{
     dirs,
     models::primitives::CollectionId,
-    services::{AnyCollectionService, AnyStorageService, DynStorageService},
+    services::{AnyCollectionService, AnyStorageService, storage_service::StorageService},
     storage::segments::SEGKEY_COLLECTION,
 };
 
@@ -83,9 +83,9 @@ struct ServiceState<R: AppRuntime> {
 }
 
 pub struct CollectionService<R: AppRuntime> {
-    abs_path: Arc<Path>,
+    abs_path: PathBuf,
     fs: Arc<dyn FileSystem>,
-    storage: Arc<DynStorageService<R>>,
+    storage: Arc<StorageService<R>>,
     state: Arc<RwLock<ServiceState<R>>>,
 }
 
@@ -114,7 +114,7 @@ impl<R: AppRuntime> AnyCollectionService<R> for CollectionService<R> {
         params: CollectionItemCreateParams,
     ) -> joinerror::Result<CollectionItemDescription> {
         let id_str = id.to_string();
-        let abs_path: Arc<Path> = self.absolutize(id_str).into();
+        let abs_path: Arc<Path> = self.abs_path.join(id_str).into();
         if abs_path.exists() {
             return Err(joinerror::Error::new::<ErrorIo>(format!(
                 "collection directory `{}` already exists",
@@ -234,7 +234,7 @@ impl<R: AppRuntime> AnyCollectionService<R> for CollectionService<R> {
         id: &CollectionId,
     ) -> joinerror::Result<Option<CollectionItemDescription>> {
         let id_str = id.to_string();
-        let abs_path = self.absolutize(id_str);
+        let abs_path = self.abs_path.join(id_str);
 
         if abs_path.exists() {
             self.fs
@@ -370,10 +370,11 @@ impl<R: AppRuntime> AnyCollectionService<R> for CollectionService<R> {
 impl<R: AppRuntime> CollectionService<R> {
     pub async fn new(
         ctx: &R::AsyncContext,
-        abs_path: Arc<Path>,
+        abs_path: &Path,
         fs: Arc<dyn FileSystem>,
-        storage: Arc<DynStorageService<R>>,
+        storage: Arc<StorageService<R>>,
     ) -> joinerror::Result<Self> {
+        let abs_path = abs_path.join(dirs::COLLECTIONS_DIR);
         let expanded_items = if let Ok(expanded_items) = storage.get_expanded_items(ctx).await {
             expanded_items.into_iter().collect::<HashSet<_>>()
         } else {
@@ -392,30 +393,22 @@ impl<R: AppRuntime> CollectionService<R> {
             })),
         })
     }
-
-    fn absolutize<P: AsRef<Path>>(&self, path: P) -> PathBuf {
-        self.abs_path.join(dirs::COLLECTIONS_DIR).join(path)
-    }
 }
 
 async fn restore_collections<R: AppRuntime>(
     ctx: &R::AsyncContext,
     abs_path: &Path,
     fs: &Arc<dyn FileSystem>,
-    storage: &Arc<dyn AnyStorageService<R>>,
+    storage: &Arc<StorageService<R>>,
 ) -> joinerror::Result<HashMap<CollectionId, CollectionItem<R>>> {
-    let dir_abs_path = abs_path.join(dirs::COLLECTIONS_DIR);
-    if !dir_abs_path.exists() {
+    if !abs_path.exists() {
         return Ok(HashMap::new());
     }
 
     let mut collections = Vec::new();
-    let mut read_dir = fs
-        .read_dir(&dir_abs_path)
-        .await
-        .join_err_with::<ErrorIo>(|| {
-            format!("failed to read directory `{}`", dir_abs_path.display())
-        })?;
+    let mut read_dir = fs.read_dir(&abs_path).await.join_err_with::<ErrorIo>(|| {
+        format!("failed to read directory `{}`", abs_path.display())
+    })?;
     while let Some(entry) = read_dir.next_entry().await? {
         if !entry.file_type().await?.is_dir() {
             continue;

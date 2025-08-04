@@ -1,23 +1,19 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
-use moss_applib::mock::MockAppRuntime;
 use moss_environment::{
     AnyEnvironment,
     models::types::{AddVariableParams, VariableOptions},
 };
 use moss_testutils::random_name::random_environment_name;
-use moss_workspace::{
-    models::operations::{CreateEnvironmentInput, UpdateEnvironmentInput},
-    services::environment_service::EnvironmentService,
-};
+use moss_workspace::models::operations::{CreateEnvironmentInput, UpdateEnvironmentInput};
 use serde_json::Value as JsonValue;
 
 use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn update_environment_success() {
-    let (ctx, _workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
 
     let old_environment_name = random_environment_name();
     let create_environment_output = workspace
@@ -59,8 +55,7 @@ async fn update_environment_success() {
         .await
         .unwrap();
 
-    let environment_service = services.get::<EnvironmentService<MockAppRuntime>>();
-    let environment = environment_service
+    let environment = workspace
         .environment(&create_environment_output.id)
         .await
         .unwrap();

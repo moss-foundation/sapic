@@ -3,7 +3,7 @@ use validator::Validate;
 
 use crate::{
     models::operations::{CreateEnvironmentInput, CreateEnvironmentOutput},
-    services::environment_service::{CreateEnvironmentItemParams, EnvironmentService},
+    services::environment_service::CreateEnvironmentItemParams,
     workspace::Workspace,
 };
 
@@ -15,8 +15,8 @@ impl<R: AppRuntime> Workspace<R> {
     ) -> joinerror::Result<CreateEnvironmentOutput> {
         input.validate()?;
 
-        let environments = self.services.get::<EnvironmentService<R>>();
-        let result = environments
+        let result = self
+            .environment_service
             .create_environment(
                 ctx,
                 CreateEnvironmentItemParams {

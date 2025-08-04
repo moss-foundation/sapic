@@ -14,7 +14,7 @@ use moss_environment::{
     },
 };
 use moss_fs::{FileSystem, model_registry::GlobalModelRegistry};
-use moss_workspacelib::{GlobalEnvironmentRegistry, environment_registry::EnvironmentModel};
+use moss_workspacelib::{EnvironmentRegistry, environment_registry::EnvironmentModel};
 use std::{
     collections::HashMap,
     marker::PhantomData,
@@ -71,7 +71,7 @@ where
 {
     abs_path: PathBuf,
     fs: Arc<dyn FileSystem>,
-    environment_registry: Arc<GlobalEnvironmentRegistry<R, Environment<R>>>,
+    environment_registry: Arc<EnvironmentRegistry<R, Environment<R>>>,
     model_registry: Arc<GlobalModelRegistry>,
     state: Arc<RwLock<ServiceState>>,
 }
@@ -89,7 +89,7 @@ where
         model_registry: Arc<GlobalModelRegistry>,
     ) -> joinerror::Result<Self> {
         let abs_path = abs_path.join(dirs::ENVIRONMENTS_DIR);
-        let environment_registry = GlobalEnvironmentRegistry::new();
+        let environment_registry = EnvironmentRegistry::new();
         let environments = collect_environments(
             &fs,
             model_registry.clone(),
@@ -211,6 +211,7 @@ where
                     name: params.name.clone(),
                     abs_path: &self.abs_path,
                     color: params.color,
+                    order: params.order,
                 },
             )
             .await?;
@@ -255,7 +256,7 @@ where
 async fn collect_environments<R: AppRuntime>(
     fs: &Arc<dyn FileSystem>,
     model_registry: Arc<GlobalModelRegistry>,
-    environment_registry: &GlobalEnvironmentRegistry<R, Environment<R>>,
+    environment_registry: &EnvironmentRegistry<R, Environment<R>>,
     abs_path: &Path,
 ) -> joinerror::Result<HashMap<EnvironmentId, EnvironmentItem>> {
     let mut environments = HashMap::new();

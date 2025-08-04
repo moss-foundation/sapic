@@ -51,7 +51,7 @@ where
 
 type EnvironmentMap<R, Environment> = HashMap<EnvironmentId, EnvironmentModel<R, Environment>>;
 
-pub struct GlobalEnvironmentRegistry<R, Environment>
+pub struct EnvironmentRegistry<R, Environment>
 where
     R: AppRuntime,
     Environment: AnyEnvironment<R>,
@@ -60,7 +60,7 @@ where
     tx: watch::Sender<EnvironmentMap<R, Environment>>,
 }
 
-impl<R, Environment> GlobalEnvironmentRegistry<R, Environment>
+impl<R, Environment> EnvironmentRegistry<R, Environment>
 where
     R: AppRuntime,
     Environment: AnyEnvironment<R>,

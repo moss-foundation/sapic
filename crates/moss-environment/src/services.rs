@@ -22,9 +22,6 @@ pub(super) trait AnySyncService {
 pub(super) trait AnyMetadataService {
     // INFO: maybe we should use a different type to separate metadata type from the configuration types
     async fn describe(&self, abs_path: &Path) -> joinerror::Result<MetadataDecl>;
-
-    #[allow(dead_code)]
-    async fn apply(&self) -> joinerror::Result<()>;
 }
 
 #[allow(unused)]

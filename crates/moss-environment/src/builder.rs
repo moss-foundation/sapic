@@ -27,6 +27,7 @@ pub struct CreateEnvironmentParams<'a> {
     pub name: String,
     pub abs_path: &'a Path,
     pub color: Option<String>,
+    pub order: isize,
 }
 
 pub struct EnvironmentLoadParams {

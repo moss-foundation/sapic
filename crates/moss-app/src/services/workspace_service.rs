@@ -9,13 +9,6 @@ use moss_fs::{FileSystem, RemoveOptions, model_registry::GlobalModelRegistry};
 use moss_workspace::{
     Workspace,
     builder::{CreateWorkspaceParams, LoadWorkspaceParams, WorkspaceBuilder},
-    services::{
-        DynCollectionService as WorkspaceDynCollectionService,
-        DynLayoutService as WorkspaceDynLayoutService,
-        DynStorageService as WorkspaceDynStorageService, collection_service::CollectionService,
-        environment_service::EnvironmentService, layout_service::LayoutService,
-        storage_service::StorageService as WorkspaceStorageService,
-    },
     workspace::WorkspaceModifyParams,
 };
 use std::{
@@ -344,48 +337,10 @@ impl<R: AppRuntime> WorkspaceService<R> {
         let last_opened_at = Utc::now().timestamp();
         let name = item.name.clone();
         let abs_path: Arc<Path> = self.absolutize(&id.to_string()).into();
-
-        let storage_service: Arc<WorkspaceDynStorageService<R>> = {
-            let service: Arc<WorkspaceStorageService<R>> = WorkspaceStorageService::new(&abs_path)
-                .context("Failed to load the storage service")
-                .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?
-                .into();
-
-            WorkspaceDynStorageService::new(service)
-        };
-
-        let collection_service: Arc<WorkspaceDynCollectionService<R>> = {
-            let service: Arc<CollectionService<R>> = CollectionService::new(
-                ctx,
-                abs_path.clone(),
-                self.fs.clone(),
-                storage_service.clone(),
-            )
-            .await
-            .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?
-            .into();
-
-            WorkspaceDynCollectionService::new(service)
-        };
-
-        let layout_service: Arc<WorkspaceDynLayoutService<R>> = {
-            let service: Arc<LayoutService<R>> = LayoutService::new(storage_service.clone()).into();
-
-            WorkspaceDynLayoutService::new(service)
-        };
-
-        let environment_service: Arc<EnvironmentService<R>> =
-            EnvironmentService::new(&abs_path, self.fs.clone(), self.model_registry.clone())
-                .await
-                .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?
-                .into();
-
         let workspace = WorkspaceBuilder::new(self.fs.clone())
-            .with_service::<WorkspaceDynStorageService<R>>(storage_service.clone())
-            .with_service::<WorkspaceDynCollectionService<R>>(collection_service)
-            .with_service::<WorkspaceDynLayoutService<R>>(layout_service)
-            .with_service::<EnvironmentService<R>>(environment_service)
             .load(
+                ctx,
+                self.model_registry.clone(),
                 activity_indicator,
                 LoadWorkspaceParams {
                     abs_path: abs_path.clone(),

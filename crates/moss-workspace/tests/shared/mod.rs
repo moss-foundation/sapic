@@ -1,12 +1,10 @@
 #![cfg(feature = "integration-tests")]
 
 use image::{ImageBuffer, Rgb};
-
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::{
     context::{AsyncContext, MutableContext},
     mock::MockAppRuntime,
-    providers::{ServiceMap, ServiceProvider},
 };
 use moss_fs::{FileSystem, RealFileSystem, model_registry::GlobalModelRegistry};
 use moss_storage::primitives::segkey::SegKeyBuf;
@@ -21,17 +19,10 @@ use moss_workspace::{
             EditorPartStateInfo,
         },
     },
-    services::{
-        AnyCollectionService, AnyLayoutService, DynCollectionService, DynLayoutService,
-        DynStorageService, collection_service::CollectionService,
-        environment_service::EnvironmentService, layout_service::LayoutService,
-        storage_service::StorageService,
-    },
     storage::segments::SEGKEY_COLLECTION,
 };
 use rand::Rng;
 use std::{
-    any::TypeId,
     collections::HashMap,
     fs,
     future::Future,
@@ -43,13 +34,7 @@ use std::{
 
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
 
-pub async fn setup_test_workspace() -> (
-    AsyncContext, // TODO: this is temporary, should be a mock
-    Arc<Path>,
-    Workspace<MockAppRuntime>,
-    ServiceProvider,
-    CleanupFn,
-) {
+pub async fn setup_test_workspace() -> (AsyncContext, Workspace<MockAppRuntime>, CleanupFn) {
     let fs = Arc::new(RealFileSystem::new());
     let mock_app = tauri::test::mock_app();
     let app_handle = mock_app.handle().clone();
@@ -66,68 +51,13 @@ pub async fn setup_test_workspace() -> (
         .into();
     fs::create_dir_all(&abs_path).unwrap();
 
-    let mut services: ServiceMap = Default::default();
-
     let activity_indicator = ActivityIndicator::new(app_handle.clone());
-
-    let storage_service: Arc<StorageService<MockAppRuntime>> =
-        StorageService::new(&abs_path).unwrap().into();
-    let storage_service_dyn: Arc<DynStorageService<MockAppRuntime>> =
-        DynStorageService::new(storage_service.clone());
-
-    let layout_service: Arc<LayoutService<MockAppRuntime>> =
-        LayoutService::new(storage_service_dyn.clone()).into();
-    let layout_service_dyn: Arc<DynLayoutService<MockAppRuntime>> =
-        DynLayoutService::new(layout_service.clone() as Arc<dyn AnyLayoutService<MockAppRuntime>>);
-
-    let collection_service: Arc<CollectionService<MockAppRuntime>> = CollectionService::new(
-        &ctx,
-        abs_path.clone(),
-        fs.clone(),
-        storage_service_dyn.clone(),
-    )
-    .await
-    .unwrap()
-    .into();
-    let collection_service_dyn: Arc<DynCollectionService<MockAppRuntime>> =
-        DynCollectionService::new(
-            collection_service.clone() as Arc<dyn AnyCollectionService<MockAppRuntime>>
-        );
-
     let global_model_registry = GlobalModelRegistry::new();
 
-    let environment_service: Arc<EnvironmentService<MockAppRuntime>> =
-        EnvironmentService::new(&abs_path, fs.clone(), Arc::new(global_model_registry))
-            .await
-            .unwrap()
-            .into();
-
-    {
-        services.insert(
-            TypeId::of::<LayoutService<MockAppRuntime>>(),
-            layout_service.clone(),
-        );
-        services.insert(
-            TypeId::of::<StorageService<MockAppRuntime>>(),
-            storage_service.clone(),
-        );
-        services.insert(
-            TypeId::of::<CollectionService<MockAppRuntime>>(),
-            collection_service.clone(),
-        );
-        services.insert(
-            TypeId::of::<EnvironmentService<MockAppRuntime>>(),
-            environment_service.clone(),
-        );
-    }
-
-    let workspace = WorkspaceBuilder::new(fs.clone())
-        .with_service::<DynStorageService<MockAppRuntime>>(storage_service_dyn)
-        .with_service::<DynCollectionService<MockAppRuntime>>(collection_service_dyn)
-        .with_service::<DynLayoutService<MockAppRuntime>>(layout_service_dyn)
-        .with_service::<EnvironmentService<MockAppRuntime>>(environment_service.clone())
+    let workspace: Workspace<MockAppRuntime> = WorkspaceBuilder::new(fs.clone())
         .create(
             &ctx,
+            Arc::new(global_model_registry),
             activity_indicator,
             CreateWorkspaceParams {
                 name: random_workspace_name(),
@@ -148,7 +78,7 @@ pub async fn setup_test_workspace() -> (
         }
     });
 
-    (ctx, abs_path, workspace, services.into(), cleanup_fn)
+    (ctx, workspace, cleanup_fn)
 }
 
 pub fn create_simple_editor_state() -> EditorPartStateInfo {

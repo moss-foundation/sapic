@@ -17,7 +17,7 @@ use crate::{
             PanelPartStateInfo, SidebarPartStateInfo,
         },
     },
-    services::{AnyLayoutService, DynStorageService},
+    services::{AnyLayoutService, AnyStorageService, storage_service::StorageService},
     storage::{
         entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity},
         segments::{
@@ -134,7 +134,7 @@ pub struct EditorPartPreferences {}
 const _EDITOR_DEFAULTS: EditorPartDefaults = EditorPartDefaults {};
 
 pub struct LayoutService<R: AppRuntime> {
-    storage: Arc<DynStorageService<R>>,
+    storage: Arc<StorageService<R>>,
 }
 
 impl<R: AppRuntime> ServiceMarker for LayoutService<R> {}
@@ -207,7 +207,7 @@ impl<R: AppRuntime> AnyLayoutService<R> for LayoutService<R> {
 }
 
 impl<R: AppRuntime> LayoutService<R> {
-    pub fn new(storage: Arc<DynStorageService<R>>) -> Self {
+    pub fn new(storage: Arc<StorageService<R>>) -> Self {
         Self { storage }
     }
 

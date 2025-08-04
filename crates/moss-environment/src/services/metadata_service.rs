@@ -42,8 +42,4 @@ impl AnyMetadataService for MetadataService {
 
         Ok(metadata_decl)
     }
-
-    async fn apply(&self) -> joinerror::Result<()> {
-        todo!()
-    }
 }

@@ -9,7 +9,6 @@ use crate::{
         events::StreamEnvironmentsEvent, operations::StreamEnvironmentsOutput,
         primitives::CollectionId,
     },
-    services::environment_service::EnvironmentService,
 };
 
 impl<R: AppRuntime> Workspace<R> {
@@ -18,8 +17,7 @@ impl<R: AppRuntime> Workspace<R> {
         ctx: &R::AsyncContext,
         channel: TauriChannel<StreamEnvironmentsEvent>,
     ) -> OperationResult<StreamEnvironmentsOutput> {
-        let environments = self.services.get::<EnvironmentService<R>>();
-        let stream = environments.list_environments(ctx).await;
+        let stream = self.environment_service.list_environments(ctx).await;
         tokio::pin!(stream);
 
         let mut total_returned = 0;

@@ -1,18 +1,18 @@
 use anyhow::Result;
 use moss_activity_indicator::ActivityIndicator;
-use moss_applib::{
-    AppRuntime, ServiceMarker,
-    providers::{ServiceMap, ServiceProvider},
-};
+use moss_applib::AppRuntime;
 use moss_environment::{builder::EnvironmentBuilder, models::primitives::EnvironmentId};
 use moss_file::json::JsonFileHandle;
-use moss_fs::FileSystem;
-use std::{any::TypeId, cell::LazyCell, path::Path, sync::Arc};
+use moss_fs::{CreateOptions, FileSystem, model_registry::GlobalModelRegistry};
+use std::{cell::LazyCell, path::Path, sync::Arc};
 
 use crate::{
     Workspace, dirs,
     manifest::{MANIFEST_FILE_NAME, ManifestModel},
-    services::environment_service::{CreateEnvironmentItemParams, EnvironmentService},
+    services::{
+        collection_service::CollectionService, environment_service::EnvironmentService,
+        layout_service::LayoutService, storage_service::StorageService,
+    },
 };
 
 struct PredefinedEnvironment {
@@ -33,6 +33,7 @@ pub struct LoadWorkspaceParams {
     pub abs_path: Arc<Path>,
 }
 
+#[derive(Clone)]
 pub struct CreateWorkspaceParams {
     pub name: String,
     pub abs_path: Arc<Path>,
@@ -40,23 +41,11 @@ pub struct CreateWorkspaceParams {
 
 pub struct WorkspaceBuilder {
     fs: Arc<dyn FileSystem>,
-    services: ServiceMap,
 }
 
 impl WorkspaceBuilder {
     pub fn new(fs: Arc<dyn FileSystem>) -> Self {
-        Self {
-            fs,
-            services: Default::default(),
-        }
-    }
-
-    pub fn with_service<T: ServiceMarker + Send + Sync>(
-        mut self,
-        service: impl Into<Arc<T>>,
-    ) -> Self {
-        self.services.insert(TypeId::of::<T>(), service.into());
-        self
+        Self { fs }
     }
 
     pub async fn initialize(fs: Arc<dyn FileSystem>, params: CreateWorkspaceParams) -> Result<()> {
@@ -74,14 +63,15 @@ impl WorkspaceBuilder {
                     name: env.name.clone(),
                     abs_path: &params.abs_path,
                     color: env.color.clone(),
+                    order: env.order,
                 })
                 .await?;
         }
 
-        JsonFileHandle::create(
-            fs.clone(),
+        fs.create_file_with(
             &params.abs_path.join(MANIFEST_FILE_NAME),
-            ManifestModel { name: params.name },
+            serde_json::to_string(&ManifestModel { name: params.name })?.as_bytes(),
+            CreateOptions::default(),
         )
         .await?;
 
@@ -90,10 +80,24 @@ impl WorkspaceBuilder {
 
     pub async fn load<R: AppRuntime>(
         self,
+        ctx: &R::AsyncContext,
+        models: Arc<GlobalModelRegistry>,
         activity_indicator: ActivityIndicator<R::EventLoop>, // FIXME: will be passed as a service in the future
         params: LoadWorkspaceParams,
     ) -> Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
+
+        let storage_service: Arc<StorageService<R>> = StorageService::new(&params.abs_path)?.into();
+        let layout_service = LayoutService::new(storage_service.clone());
+        let collection_service = CollectionService::new(
+            ctx,
+            &params.abs_path,
+            self.fs.clone(),
+            storage_service.clone(),
+        )
+        .await?;
+        let environment_service =
+            EnvironmentService::new(&params.abs_path, self.fs.clone(), models.clone()).await?;
 
         let manifest =
             JsonFileHandle::load(self.fs.clone(), &params.abs_path.join(MANIFEST_FILE_NAME))
@@ -103,51 +107,48 @@ impl WorkspaceBuilder {
             abs_path: params.abs_path,
             activity_indicator,
             manifest,
-            services: self.services.into(),
+            layout_service,
+            collection_service,
+            environment_service,
+            storage_service,
         })
     }
 
     pub async fn create<R: AppRuntime>(
         self,
         ctx: &R::AsyncContext,
+        models: Arc<GlobalModelRegistry>,
         activity_indicator: ActivityIndicator<R::EventLoop>, // FIXME: will be passed as a service in the future
         params: CreateWorkspaceParams,
     ) -> Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
 
-        let services: ServiceProvider = self.services.into();
+        WorkspaceBuilder::initialize(self.fs.clone(), params.clone()).await?;
 
-        for dir in &[dirs::COLLECTIONS_DIR, dirs::ENVIRONMENTS_DIR] {
-            self.fs.create_dir(&params.abs_path.join(dir)).await?;
-        }
-
-        let manifest = JsonFileHandle::create(
+        let storage_service: Arc<StorageService<R>> = StorageService::new(&params.abs_path)?.into();
+        let layout_service = LayoutService::new(storage_service.clone());
+        let collection_service = CollectionService::new(
+            ctx,
+            &params.abs_path,
             self.fs.clone(),
-            &params.abs_path.join(MANIFEST_FILE_NAME),
-            ManifestModel { name: params.name },
+            storage_service.clone(),
         )
         .await?;
+        let environment_service =
+            EnvironmentService::new(&params.abs_path, self.fs.clone(), models.clone()).await?;
 
-        let environment_service = services.get::<EnvironmentService<R>>();
-        for env in PREDEFINED_ENVIRONMENTS.iter() {
-            environment_service
-                .create_environment(
-                    ctx,
-                    CreateEnvironmentItemParams {
-                        collection_id: None,
-                        name: env.name.clone(),
-                        order: env.order,
-                        color: env.color.clone(),
-                    },
-                )
+        let manifest =
+            JsonFileHandle::load(self.fs.clone(), &params.abs_path.join(MANIFEST_FILE_NAME))
                 .await?;
-        }
 
         Ok(Workspace {
             abs_path: params.abs_path,
             activity_indicator,
             manifest,
-            services,
+            layout_service,
+            collection_service,
+            environment_service,
+            storage_service,
         })
     }
 }
