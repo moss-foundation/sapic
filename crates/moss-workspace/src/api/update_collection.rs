@@ -3,7 +3,7 @@ use validator::Validate;
 
 use crate::{
     models::operations::{UpdateCollectionInput, UpdateCollectionOutput},
-    services::{AnyCollectionService, collection_service::CollectionItemUpdateParams},
+    services::collection_service::CollectionItemUpdateParams,
     workspace::Workspace,
 };
 

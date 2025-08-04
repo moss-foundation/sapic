@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use derive_more::{Deref, DerefMut};
 use futures::Stream;
 use joinerror::{
@@ -28,9 +27,7 @@ use std::{
 use tokio::sync::RwLock;
 
 use crate::{
-    dirs,
-    models::primitives::CollectionId,
-    services::{AnyCollectionService, AnyStorageService, storage_service::StorageService},
+    dirs, models::primitives::CollectionId, services::storage_service::StorageService,
     storage::segments::SEGKEY_COLLECTION,
 };
 
@@ -92,9 +89,37 @@ pub struct CollectionService<R: AppRuntime> {
 impl<R: AppRuntime> ServiceMarker for CollectionService<R> {}
 impl<R: AppRuntime> PublicServiceMarker for CollectionService<R> {}
 
-#[async_trait]
-impl<R: AppRuntime> AnyCollectionService<R> for CollectionService<R> {
-    async fn collection(&self, id: &CollectionId) -> joinerror::Result<Arc<CollectionHandle<R>>> {
+impl<R: AppRuntime> CollectionService<R> {
+    pub(crate) async fn new(
+        ctx: &R::AsyncContext,
+        abs_path: &Path,
+        fs: Arc<dyn FileSystem>,
+        storage: Arc<StorageService<R>>,
+    ) -> joinerror::Result<Self> {
+        let abs_path = abs_path.join(dirs::COLLECTIONS_DIR);
+        let expanded_items = if let Ok(expanded_items) = storage.get_expanded_items(ctx).await {
+            expanded_items.into_iter().collect::<HashSet<_>>()
+        } else {
+            HashSet::new()
+        };
+
+        let collections = restore_collections(ctx, &abs_path, &fs, &storage).await?;
+
+        Ok(Self {
+            abs_path,
+            fs,
+            storage,
+            state: Arc::new(RwLock::new(ServiceState {
+                collections,
+                expanded_items,
+            })),
+        })
+    }
+
+    pub async fn collection(
+        &self,
+        id: &CollectionId,
+    ) -> joinerror::Result<Arc<CollectionHandle<R>>> {
         let state_lock = self.state.read().await;
         let item = state_lock
             .collections
@@ -106,8 +131,7 @@ impl<R: AppRuntime> AnyCollectionService<R> for CollectionService<R> {
         Ok(item.handle.clone())
     }
 
-    #[allow(private_interfaces)]
-    async fn create_collection(
+    pub(crate) async fn create_collection(
         &self,
         ctx: &R::AsyncContext,
         id: &CollectionId,
@@ -227,8 +251,7 @@ impl<R: AppRuntime> AnyCollectionService<R> for CollectionService<R> {
         })
     }
 
-    #[allow(private_interfaces)]
-    async fn delete_collection(
+    pub(crate) async fn delete_collection(
         &self,
         ctx: &R::AsyncContext,
         id: &CollectionId,
@@ -287,8 +310,7 @@ impl<R: AppRuntime> AnyCollectionService<R> for CollectionService<R> {
         }
     }
 
-    #[allow(private_interfaces)]
-    async fn update_collection(
+    pub(crate) async fn update_collection(
         &self,
         ctx: &R::AsyncContext,
         id: &CollectionId,
@@ -337,8 +359,7 @@ impl<R: AppRuntime> AnyCollectionService<R> for CollectionService<R> {
         Ok(())
     }
 
-    #[allow(private_interfaces)]
-    async fn list_collections(
+    pub(crate) async fn list_collections(
         &self,
         _ctx: &R::AsyncContext,
     ) -> Pin<Box<dyn Stream<Item = CollectionItemDescription> + Send + '_>> {
@@ -363,34 +384,6 @@ impl<R: AppRuntime> AnyCollectionService<R> for CollectionService<R> {
                     external_path: None, // TODO: implement
                 };
             }
-        })
-    }
-}
-
-impl<R: AppRuntime> CollectionService<R> {
-    pub async fn new(
-        ctx: &R::AsyncContext,
-        abs_path: &Path,
-        fs: Arc<dyn FileSystem>,
-        storage: Arc<StorageService<R>>,
-    ) -> joinerror::Result<Self> {
-        let abs_path = abs_path.join(dirs::COLLECTIONS_DIR);
-        let expanded_items = if let Ok(expanded_items) = storage.get_expanded_items(ctx).await {
-            expanded_items.into_iter().collect::<HashSet<_>>()
-        } else {
-            HashSet::new()
-        };
-
-        let collections = restore_collections(ctx, &abs_path, &fs, &storage).await?;
-
-        Ok(Self {
-            abs_path,
-            fs,
-            storage,
-            state: Arc::new(RwLock::new(ServiceState {
-                collections,
-                expanded_items,
-            })),
         })
     }
 }

@@ -5,7 +5,6 @@ use tauri::ipc::Channel as TauriChannel;
 
 use crate::{
     models::{events::StreamCollectionsEvent, operations::StreamCollectionsOutput},
-    services::AnyCollectionService,
     workspace::Workspace,
 };
 

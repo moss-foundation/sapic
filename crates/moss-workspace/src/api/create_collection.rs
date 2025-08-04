@@ -6,7 +6,7 @@ use crate::{
         operations::{CreateCollectionInput, CreateCollectionOutput},
         primitives::CollectionId,
     },
-    services::{AnyCollectionService, collection_service::CollectionItemCreateParams},
+    services::collection_service::CollectionItemCreateParams,
     workspace::Workspace,
 };
 

@@ -11,9 +11,8 @@ use crate::{
     manifest::{MANIFEST_FILE_NAME, ManifestModel},
     models::primitives::CollectionId,
     services::{
-        AnyCollectionService, collection_service::CollectionService,
-        environment_service::EnvironmentService, layout_service::LayoutService,
-        storage_service::StorageService,
+        collection_service::CollectionService, environment_service::EnvironmentService,
+        layout_service::LayoutService, storage_service::StorageService,
     },
 };
 
