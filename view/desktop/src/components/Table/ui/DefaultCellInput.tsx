@@ -26,6 +26,11 @@ export const DefaultInputCell = ({
   const [value, setValue] = useState(String(info.getValue() || ""));
   const isDisabled = info.row.original.properties?.disabled || false;
 
+  useEffect(() => {
+    const currentValue = String(info.getValue() || "");
+    setValue(currentValue);
+  }, [info.getValue()]);
+
   const editorRef = useRef<HTMLDivElement>(null);
   const hiddenInputRef = useRef<HTMLInputElement>(null);
   const isUpdatingContent = useRef(false);
@@ -76,6 +81,12 @@ export const DefaultInputCell = ({
 
     if (hiddenInputRef.current) {
       hiddenInputRef.current.value = plainText;
+    }
+
+    if (info.column.id === "key" || info.column.id === "value") {
+      setTimeout(() => {
+        info.table.options.meta?.updateData(info.row.index, info.column.id, plainText);
+      }, 0);
     }
 
     setTimeout(() => {
@@ -151,7 +162,15 @@ export const DefaultInputCell = ({
           }
         )}
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => {
+          setValue(e.target.value);
+
+          if (info.column.id === "key" || info.column.id === "value") {
+            setTimeout(() => {
+              info.table.options.meta?.updateData(info.row.index, info.column.id, e.target.value);
+            }, 0);
+          }
+        }}
         autoFocus={info.focusOnMount}
         onBlur={onBlur}
         placeholder={info.column.id}
@@ -161,7 +180,6 @@ export const DefaultInputCell = ({
 
   return (
     <div className="relative w-full">
-      {/* Hidden input for form compatibility */}
       <input ref={hiddenInputRef} type="text" value={value} onChange={() => {}} className="hidden" />
 
       <div

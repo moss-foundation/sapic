@@ -1,6 +1,5 @@
 import { parameterSuggestions, type ParameterSuggestion } from "./parameterSuggestions";
 
-// URL normalization for reliable comparison
 export const normalizeUrl = (url: string): string => {
   if (!url || typeof url !== "string") return "";
 
@@ -149,14 +148,21 @@ export const convertToTableFormat = (
 };
 
 export const detectValueType = (value: string): string => {
-  if (!value || value.trim() === "") return "string";
+  if (!value || value.trim() === "") {
+    return "string";
+  }
 
-  // Keep template variables as string
-  if (value.includes("{{") && value.includes("}}")) return "string";
+  if (value.includes("{{") && value.includes("}}")) {
+    return "string";
+  }
 
-  if (value.toLowerCase() === "true" || value.toLowerCase() === "false") return "bool";
+  if (value.toLowerCase() === "true" || value.toLowerCase() === "false") {
+    return "bool";
+  }
 
-  if (!isNaN(Number(value)) && !isNaN(parseFloat(value))) return "number";
+  if (!isNaN(Number(value)) && !isNaN(parseFloat(value))) {
+    return "number";
+  }
 
   return "string";
 };
@@ -209,5 +215,12 @@ export const reconstructUrl = (
 };
 
 export const getParameterSuggestions = (key: string): ParameterSuggestion => {
-  return parameterSuggestions[key.toLowerCase()] || { type: "string", description: `Parameter: ${key}` };
+  const lowerKey = key.toLowerCase();
+  const suggestion = parameterSuggestions[lowerKey];
+
+  if (suggestion) {
+    return suggestion;
+  } else {
+    return { type: "string", description: `Parameter: ${key}` };
+  }
 };

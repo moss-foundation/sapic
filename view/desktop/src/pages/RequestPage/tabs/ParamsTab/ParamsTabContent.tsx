@@ -22,34 +22,45 @@ export const ParamsTabContent = (
   const debouncedPathUpdate = React.useRef<NodeJS.Timeout>();
 
   const convertUrlParamsToTableData = (
-    params: Array<{ key: string; value: string; disabled?: boolean }>,
+    params: Array<{ key: string; value: string; type?: string; description?: string; disabled?: boolean }>,
     type: "path" | "query"
   ): ParameterData[] => {
     return params.map((param, index) => {
       const paramKey = param.key || "";
       const paramValue = param.value || "";
 
-      let detectedType = "string";
-      if (paramValue) {
-        detectedType = detectValueType(paramValue);
-      } else if (paramKey) {
-        const suggestions = getParameterSuggestions(paramKey);
-        detectedType = suggestions.type;
+      let finalType = param.type;
+      let finalDescription = param.description;
+
+      if (!finalType) {
+        if (paramValue) {
+          finalType = detectValueType(paramValue);
+        } else if (paramKey) {
+          const suggestions = getParameterSuggestions(paramKey);
+          finalType = suggestions.type;
+        } else {
+          finalType = "string";
+        }
       }
 
-      const suggestions = getParameterSuggestions(paramKey || "param");
+      if (!finalDescription) {
+        const suggestions = getParameterSuggestions(paramKey || "param");
+        finalDescription = paramKey ? suggestions.description : `${type === "path" ? "Path" : "Query"} parameter`;
+      }
 
-      return {
+      const result = {
         order: index + 1,
         id: `${type}-${index}-${Date.now()}`,
         key: paramKey,
         value: paramValue,
-        type: detectedType,
-        description: paramKey ? suggestions.description : `${type === "path" ? "Path" : "Query"} parameter`,
+        type: finalType,
+        description: finalDescription,
         global_value: "",
         local_value: 0,
         properties: { disabled: param.disabled || false },
       };
+
+      return result;
     });
   };
 
@@ -87,6 +98,8 @@ export const ParamsTabContent = (
           .map((param) => ({
             key: param.key,
             value: param.value,
+            type: param.type,
+            description: param.description,
             disabled: param.properties.disabled,
           }));
 
@@ -127,6 +140,8 @@ export const ParamsTabContent = (
           .map((param) => ({
             key: param.key,
             value: param.value.trim() !== "" ? param.value : "",
+            type: param.type,
+            description: param.description,
             disabled: param.properties.disabled,
           }));
 

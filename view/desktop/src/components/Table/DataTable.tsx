@@ -9,6 +9,8 @@ import {
   VisibilityState,
 } from "@tanstack/react-table";
 
+import { detectValueType, getParameterSuggestions } from "@/pages/RequestPage/utils/urlParser";
+
 import { useAdjustColumnsWithoutSizes } from "./hooks/useAdjustColumnsWithoutSizes";
 import { useTableDragAndDrop } from "./hooks/useTableDragAndDrop";
 import { DataTableProps, ParameterData } from "./types";
@@ -27,11 +29,9 @@ export function DataTable({ columns, data: initialData, onTableApiSet, onDataCha
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [focusInputType, setFocusInputType] = useState<string | null>(null);
 
-  // Update internal data when initialData prop changes (but not during active editing)
   const hasActiveInput = useRef(false);
 
   useEffect(() => {
-    // Don't update if user is actively editing
     if (hasActiveInput.current) {
       return;
     }
@@ -40,12 +40,10 @@ export function DataTable({ columns, data: initialData, onTableApiSet, onDataCha
     setData(initialData);
   }, [initialData]);
 
-  // Call onDataChange only when data changes due to user interaction (not prop updates)
   const isInitialLoad = useRef(true);
   const isUpdatingFromProps = useRef(false);
   const onDataChangeRef = useRef(onDataChange);
 
-  // Update ref when callback changes
   useEffect(() => {
     onDataChangeRef.current = onDataChange;
   }, [onDataChange]);
@@ -56,7 +54,6 @@ export function DataTable({ columns, data: initialData, onTableApiSet, onDataCha
       return;
     }
 
-    // Don't call onDataChange if we're updating from props
     if (isUpdatingFromProps.current) {
       isUpdatingFromProps.current = false;
       return;
@@ -89,7 +86,6 @@ export function DataTable({ columns, data: initialData, onTableApiSet, onDataCha
         // Mark that user is actively editing
         hasActiveInput.current = true;
 
-        // Clear the flag after a delay to allow prop updates again
         setTimeout(() => {
           hasActiveInput.current = false;
         }, 1500);
@@ -98,13 +94,40 @@ export function DataTable({ columns, data: initialData, onTableApiSet, onDataCha
         setData((old) => {
           const newData = old.map((row, index) => {
             if (index === rowIndex) {
-              return {
-                ...old[rowIndex]!,
+              const currentRow = old[rowIndex]!;
+              let updatedRow = {
+                ...currentRow,
                 [columnId]: value,
               };
+
+              const shouldApplyAutomation = columnId === "key" || columnId === "value";
+
+              if (shouldApplyAutomation) {
+                if (columnId === "key") {
+                  const keyValue = value as string;
+                  if (keyValue && keyValue.trim() !== "") {
+                    const suggestions = getParameterSuggestions(keyValue);
+                    updatedRow = {
+                      ...updatedRow,
+                      type: suggestions.type,
+                      description: suggestions.description,
+                    };
+                  }
+                } else if (columnId === "value") {
+                  const valueStr = value as string;
+                  const detectedType = detectValueType(valueStr);
+                  updatedRow = {
+                    ...updatedRow,
+                    type: detectedType,
+                  };
+                }
+              }
+
+              return updatedRow;
             }
             return row;
           });
+
           return newData;
         });
       },

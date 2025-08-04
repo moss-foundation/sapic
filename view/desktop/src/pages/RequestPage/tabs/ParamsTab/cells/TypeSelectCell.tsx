@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ParameterData } from "@/components/Table";
 import { ActionMenu } from "@/components";
 import { Icon } from "@/lib/ui";
@@ -22,6 +22,11 @@ const getTypeColor = (type: string) => {
 
 export const TypeSelectCell = ({ info }: { info: ExtendedCellContext<ParameterData, string> }) => {
   const [value, setValue] = useState(info.getValue());
+
+  useEffect(() => {
+    const currentValue = info.getValue();
+    setValue(currentValue);
+  }, [info.getValue()]);
 
   const handleTypeChange = (newType: string) => {
     setValue(newType);
