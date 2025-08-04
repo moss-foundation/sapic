@@ -24,14 +24,8 @@ export type NullableType = {
   name?: string;
 };
 
-// ✅ Correct - JsonValue в списке исключений, может содержать null
-export type JsonValue = number | string | boolean | Array<JsonValue> | { [key in string]?: JsonValue } | null;
-
-// ❌ Incorrect nullable field (не в списке исключений)
-export type SomeType = {
+// ❌ Incorrect nullable field
+export type NullableType = {
   name: string | null;
 };
-
-// ❌ Incorrect union type with null (не в списке исключений)
-export type MyUnion = string | number | null;
 ```
