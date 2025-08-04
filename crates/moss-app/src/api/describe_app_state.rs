@@ -7,7 +7,6 @@ use crate::{
         operations::DescribeAppStateOutput,
         types::{Defaults, Preferences},
     },
-    services::storage_service::StorageService,
 };
 
 // TODO: We must rewrite this crap later, it's a mess
@@ -17,10 +16,8 @@ impl<R: AppRuntime> App<R> {
         &self,
         ctx: &R::AsyncContext,
     ) -> OperationResult<DescribeAppStateOutput> {
-        let storage_service = self.services.get::<StorageService<R>>();
-
         let last_workspace_id =
-            if let Ok(id_str) = storage_service.get_last_active_workspace(ctx).await {
+            if let Ok(id_str) = self.storage_service.get_last_active_workspace(ctx).await {
                 Some(id_str)
             } else {
                 None

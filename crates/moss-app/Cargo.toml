@@ -16,6 +16,7 @@ moss_db.workspace = true
 moss_activity_indicator.workspace = true
 moss_environment.workspace = true
 
+joinerror.workspace = true
 futures.workspace = true
 anyhow.workspace = true
 tauri = { workspace = true, features = ["wry"] }

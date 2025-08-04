@@ -4,7 +4,6 @@ use moss_common::api::OperationResult;
 use crate::{
     app::App,
     models::operations::{OpenWorkspaceInput, OpenWorkspaceOutput},
-    services::workspace_service::WorkspaceService,
 };
 
 impl<R: AppRuntime> App<R> {
@@ -13,9 +12,14 @@ impl<R: AppRuntime> App<R> {
         ctx: &R::AsyncContext,
         input: &OpenWorkspaceInput,
     ) -> OperationResult<OpenWorkspaceOutput> {
-        let workspace_service = self.services.get::<WorkspaceService<R>>();
-        let desc = workspace_service
-            .activate_workspace(ctx, &input.id, self.activity_indicator.clone())
+        let desc = self
+            .workspace_service
+            .activate_workspace(
+                ctx,
+                &input.id,
+                self.models.clone(),
+                self.activity_indicator.clone(),
+            )
             .await?;
 
         Ok(OpenWorkspaceOutput {

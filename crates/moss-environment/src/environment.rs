@@ -10,10 +10,10 @@ use std::{
 use tokio::sync::RwLock;
 
 use crate::{
-    AnyEnvironment, AnySyncService, DescribeEnvironment, ModifyEnvironmentParams,
+    AnyEnvironment, DescribeEnvironment, ModifyEnvironmentParams,
     models::types::VariableInfo,
     services::{
-        AnyMetadataService, metadata_service::MetadataService, sync_service::SyncService,
+        metadata_service::MetadataService, sync_service::SyncService,
         variable_service::VariableService,
     },
     utils,
@@ -62,24 +62,6 @@ pub struct Environment<R: AppRuntime> {
 
 unsafe impl<R: AppRuntime> Send for Environment<R> {}
 unsafe impl<R: AppRuntime> Sync for Environment<R> {}
-
-impl<R: AppRuntime> Environment<R> {
-    // pub(super) fn new(
-    //     abs_path: Arc<Path>,
-    //     fs: Arc<dyn FileSystem>,
-    //     model_registry: Arc<GlobalModelRegistry>,
-    //     services: ServiceProvider,
-    // ) -> joinerror::Result<Self> {
-    //     let abs_path = EnvironmentPath::new(abs_path)?;
-
-    //     Ok(Self {
-    //         fs,
-    //         model_registry,
-    //         state: RwLock::new(EnvironmentState { abs_path }),
-    //         _marker: PhantomData,
-    //     })
-    // }
-}
 
 impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
     async fn abs_path(&self) -> Arc<Path> {

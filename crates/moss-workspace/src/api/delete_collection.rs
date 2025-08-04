@@ -2,7 +2,6 @@ use moss_applib::AppRuntime;
 
 use crate::{
     models::operations::{DeleteCollectionInput, DeleteCollectionOutput},
-    services::AnyCollectionService,
     workspace::Workspace,
 };
 

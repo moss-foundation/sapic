@@ -1,6 +1,6 @@
 use moss_applib::AppRuntime;
 
-use crate::{Workspace, models::operations::DescribeStateOutput, services::AnyStorageService};
+use crate::{Workspace, models::operations::DescribeStateOutput};
 
 impl<R: AppRuntime> Workspace<R> {
     pub async fn describe_state(

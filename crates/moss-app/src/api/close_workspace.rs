@@ -4,7 +4,6 @@ use moss_common::api::{OperationError, OperationOptionExt, OperationResult};
 use crate::{
     app::App,
     models::operations::{CloseWorkspaceInput, CloseWorkspaceOutput},
-    services::workspace_service::WorkspaceService,
 };
 
 impl<R: AppRuntime> App<R> {
@@ -13,8 +12,7 @@ impl<R: AppRuntime> App<R> {
         ctx: &R::AsyncContext,
         input: &CloseWorkspaceInput,
     ) -> OperationResult<CloseWorkspaceOutput> {
-        let workspace_service = self.services.get::<WorkspaceService<R>>();
-        let workspace_id = workspace_service
+        let workspace_id = self
             .workspace()
             .await
             .map(|w| w.id())
@@ -27,7 +25,7 @@ impl<R: AppRuntime> App<R> {
             )));
         }
 
-        let _ = workspace_service.deactivate_workspace(ctx).await;
+        let _ = self.workspace_service.deactivate_workspace(ctx).await;
 
         Ok(CloseWorkspaceOutput { id: workspace_id })
     }

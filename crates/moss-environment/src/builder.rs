@@ -40,24 +40,12 @@ pub struct EnvironmentLoadParams {
 
 pub struct EnvironmentBuilder {
     fs: Arc<dyn FileSystem>,
-    // services: ServiceMap,
 }
 
 impl EnvironmentBuilder {
     pub fn new(fs: Arc<dyn FileSystem>) -> Self {
-        Self {
-            fs,
-            // services: Default::default(),
-        }
+        Self { fs }
     }
-
-    // pub fn with_service<T: ServiceMarker + Send + Sync>(
-    //     mut self,
-    //     service: impl Into<Arc<T>>,
-    // ) -> Self {
-    //     self.services.insert(TypeId::of::<T>(), service.into());
-    //     self
-    // }
 
     pub async fn initialize<'a>(
         self,

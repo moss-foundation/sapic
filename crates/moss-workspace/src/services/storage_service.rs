@@ -1,5 +1,4 @@
 use anyhow::{Context as _, Result};
-use async_trait::async_trait;
 use moss_applib::{AppRuntime, ServiceMarker};
 use moss_db::{Transaction, primitives::AnyValue};
 use moss_storage::{
@@ -18,7 +17,6 @@ use std::{
 
 use crate::{
     models::primitives::{ActivitybarPosition, CollectionId, SidebarPosition},
-    services::AnyStorageService,
     storage::{
         entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity},
         segments::{self, SEGKEY_COLLECTION},
@@ -31,15 +29,23 @@ pub struct StorageService<R: AppRuntime> {
 
 impl<R: AppRuntime> ServiceMarker for StorageService<R> {}
 
-#[async_trait]
-impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
-    async fn begin_write(&self, ctx: &R::AsyncContext) -> joinerror::Result<Transaction> {
+impl<R: AppRuntime> StorageService<R> {
+    pub(crate) fn new(abs_path: &Path) -> Result<Self> {
+        let storage = WorkspaceStorageImpl::new(&abs_path)
+            .context("Failed to load the workspace state database")?;
+
+        Ok(Self {
+            storage: Arc::new(storage),
+        })
+    }
+
+    pub async fn begin_write(&self, ctx: &R::AsyncContext) -> joinerror::Result<Transaction> {
         Ok(self.storage.begin_write_with_context(ctx).await?)
     }
 
     // Items operations
 
-    async fn put_item_order_txn(
+    pub(super) async fn put_item_order_txn(
         &self,
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
@@ -61,7 +67,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         Ok(())
     }
 
-    async fn put_expanded_items_txn(
+    pub(super) async fn put_expanded_items_txn(
         &self,
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
@@ -80,7 +86,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         Ok(())
     }
 
-    async fn get_expanded_items(
+    pub(super) async fn get_expanded_items(
         &self,
         ctx: &R::AsyncContext,
     ) -> joinerror::Result<HashSet<CollectionId>> {
@@ -90,7 +96,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         Ok(AnyValue::deserialize::<HashSet<_>>(&value)?)
     }
 
-    async fn list_items_metadata(
+    pub(super) async fn list_items_metadata(
         &self,
         ctx: &R::AsyncContext,
         segkey_prefix: SegKeyBuf,
@@ -105,7 +111,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         Ok(data.into_iter().collect())
     }
 
-    async fn remove_item_metadata_txn(
+    pub(super) async fn remove_item_metadata_txn(
         &self,
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
@@ -124,7 +130,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
 
     // Layout operations
 
-    async fn get_layout_cache(
+    pub(crate) async fn get_layout_cache(
         &self,
         ctx: &R::AsyncContext,
     ) -> joinerror::Result<HashMap<SegKeyBuf, AnyValue>> {
@@ -135,7 +141,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         Ok(value.into_iter().collect())
     }
 
-    async fn put_sidebar_layout(
+    pub(super) async fn put_sidebar_layout(
         &self,
         ctx: &R::AsyncContext,
         position: SidebarPosition,
@@ -175,7 +181,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         Ok(txn.commit()?)
     }
 
-    async fn put_panel_layout(
+    pub(super) async fn put_panel_layout(
         &self,
         ctx: &R::AsyncContext,
         size: usize,
@@ -205,7 +211,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         Ok(txn.commit()?)
     }
 
-    async fn put_activitybar_layout(
+    pub(super) async fn put_activitybar_layout(
         &self,
         ctx: &R::AsyncContext,
         last_active_container_id: Option<String>,
@@ -237,7 +243,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         Ok(txn.commit()?)
     }
 
-    async fn put_editor_layout(
+    pub(super) async fn put_editor_layout(
         &self,
         ctx: &R::AsyncContext,
         grid: EditorGridStateEntity,
@@ -277,17 +283,6 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         }
 
         Ok(txn.commit()?)
-    }
-}
-
-impl<R: AppRuntime> StorageService<R> {
-    pub fn new(abs_path: &Path) -> Result<Self> {
-        let storage = WorkspaceStorageImpl::new(&abs_path)
-            .context("Failed to load the workspace state database")?;
-
-        Ok(Self {
-            storage: Arc::new(storage),
-        })
     }
 }
 

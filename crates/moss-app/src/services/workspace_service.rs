@@ -126,7 +126,6 @@ pub struct WorkspaceService<R: AppRuntime> {
     abs_path: Arc<Path>,
     fs: Arc<dyn FileSystem>,
     storage: Arc<StorageService<R>>,
-    model_registry: Arc<GlobalModelRegistry>,
     state: Arc<RwLock<ServiceState<R>>>,
 }
 
@@ -139,7 +138,6 @@ impl<R: AppRuntime> WorkspaceService<R> {
         storage_service: Arc<StorageService<R>>,
         fs: Arc<dyn FileSystem>,
         abs_path: &Path,
-        model_registry: Arc<GlobalModelRegistry>,
     ) -> WorkspaceServiceResult<Self> {
         debug_assert!(abs_path.is_absolute());
         let abs_path: Arc<Path> = abs_path.join(dirs::WORKSPACES_DIR).into();
@@ -152,7 +150,6 @@ impl<R: AppRuntime> WorkspaceService<R> {
             fs,
             storage: storage_service,
             abs_path,
-            model_registry,
             state: Arc::new(RwLock::new(ServiceState {
                 known_workspaces,
                 active_workspace: None,
@@ -313,7 +310,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
         })
     }
 
-    pub async fn workspace(&self) -> Option<Arc<ActiveWorkspace<R>>> {
+    pub(crate) async fn workspace(&self) -> Option<Arc<ActiveWorkspace<R>>> {
         let state_lock = self.state.read().await;
         if state_lock.active_workspace.is_none() {
             return None;
@@ -326,6 +323,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
         &self,
         ctx: &R::AsyncContext,
         id: &WorkspaceId,
+        models: Arc<GlobalModelRegistry>,
         activity_indicator: ActivityIndicator<R::EventLoop>,
     ) -> WorkspaceServiceResult<WorkspaceItemDescription> {
         let mut state_lock = self.state.write().await;
@@ -340,7 +338,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
         let workspace = WorkspaceBuilder::new(self.fs.clone())
             .load(
                 ctx,
-                self.model_registry.clone(),
+                models,
                 activity_indicator,
                 LoadWorkspaceParams {
                     abs_path: abs_path.clone(),

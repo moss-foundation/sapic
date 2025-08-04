@@ -4,7 +4,7 @@ use validator::Validate;
 use crate::{
     api::BatchUpdateCollectionOp,
     models::operations::{BatchUpdateCollectionInput, BatchUpdateCollectionOutput},
-    services::{AnyCollectionService, collection_service::CollectionItemUpdateParams},
+    services::collection_service::CollectionItemUpdateParams,
     workspace::Workspace,
 };
 

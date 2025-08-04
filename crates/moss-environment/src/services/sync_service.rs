@@ -5,7 +5,7 @@ use moss_fs::{CreateOptions, FileSystem, model_registry::GlobalModelRegistry};
 use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};
 
-use crate::{configuration::SourceFile, services::AnySyncService};
+use crate::configuration::SourceFile;
 
 pub struct SyncService {
     model_registry: Arc<GlobalModelRegistry>,
@@ -15,8 +15,8 @@ pub struct SyncService {
 impl AppService for SyncService {}
 impl ServiceMarker for SyncService {}
 
-impl AnySyncService for SyncService {
-    async fn save(&self, abs_path: &Path) -> joinerror::Result<()> {
+impl SyncService {
+    pub async fn save(&self, abs_path: &Path) -> joinerror::Result<()> {
         let model = self
             .model_registry
             .get(abs_path)
@@ -59,7 +59,11 @@ impl AnySyncService for SyncService {
         Ok(())
     }
 
-    async fn apply(&self, path: &Path, patches: &[PatchOperation]) -> joinerror::Result<JsonValue> {
+    pub async fn apply(
+        &self,
+        path: &Path,
+        patches: &[PatchOperation],
+    ) -> joinerror::Result<JsonValue> {
         let json_value = self
             .model_registry
             .with_model_mut(path, |model| {

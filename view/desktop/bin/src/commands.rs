@@ -7,10 +7,7 @@ pub use collection::*;
 pub use workspace::*;
 
 use moss_api::{TauriResult, constants::DEFAULT_OPERATION_TIMEOUT};
-use moss_app::{
-    app::App,
-    services::workspace_service::{ActiveWorkspace, WorkspaceService},
-};
+use moss_app::{app::App, services::workspace_service::ActiveWorkspace};
 use moss_applib::{
     AppRuntime,
     context::{AnyAsyncContext, AnyContext},
@@ -50,7 +47,6 @@ where
     let mut ctx = R::AsyncContext::new_with_timeout(ctx.clone(), timeout);
 
     let workspace = app
-        .service::<WorkspaceService<R>>()
         .workspace()
         .await
         .map_err_as_failed_precondition("No active workspace")?;
@@ -84,7 +80,6 @@ where
     Fut: std::future::Future<Output = TauriResult<T>> + Send + 'static,
 {
     let workspace = app
-        .service::<WorkspaceService<R>>()
         .workspace()
         .await
         .map_err_as_failed_precondition("No active workspace")?;

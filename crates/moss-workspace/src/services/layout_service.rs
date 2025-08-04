@@ -1,5 +1,4 @@
 use anyhow::Result;
-use async_trait::async_trait;
 use moss_applib::{AppRuntime, ServiceMarker};
 use moss_db::primitives::AnyValue;
 use moss_storage::primitives::segkey::SegKeyBuf;
@@ -17,7 +16,7 @@ use crate::{
             PanelPartStateInfo, SidebarPartStateInfo,
         },
     },
-    services::{AnyLayoutService, AnyStorageService, storage_service::StorageService},
+    services::storage_service::StorageService,
     storage::{
         entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity},
         segments::{
@@ -139,79 +138,12 @@ pub struct LayoutService<R: AppRuntime> {
 
 impl<R: AppRuntime> ServiceMarker for LayoutService<R> {}
 
-#[async_trait]
-impl<R: AppRuntime> AnyLayoutService<R> for LayoutService<R> {
-    async fn put_sidebar_layout_state(
-        &self,
-        ctx: &R::AsyncContext,
-        state: SidebarPartStateInfo,
-    ) -> Result<()> {
-        self.put_sidebar_layout_state(ctx, state).await
-    }
-
-    async fn put_panel_layout_state(
-        &self,
-        ctx: &R::AsyncContext,
-        state: PanelPartStateInfo,
-    ) -> Result<()> {
-        self.put_panel_layout_state(ctx, state).await
-    }
-
-    async fn put_activitybar_layout_state(
-        &self,
-        ctx: &R::AsyncContext,
-        state: ActivitybarPartStateInfo,
-    ) -> Result<()> {
-        self.put_activitybar_layout_state(ctx, state).await
-    }
-
-    async fn put_editor_layout_state(
-        &self,
-        ctx: &R::AsyncContext,
-        state: EditorPartStateInfo,
-    ) -> Result<()> {
-        self.put_editor_layout_state(ctx, state).await
-    }
-
-    async fn get_sidebar_layout_state(
-        &self,
-        _ctx: &R::AsyncContext,
-        cache: &mut HashMap<SegKeyBuf, AnyValue>,
-    ) -> Result<SidebarPartStateInfo> {
-        self.get_sidebar_layout_state(cache)
-    }
-
-    async fn get_panel_layout_state(
-        &self,
-        _ctx: &R::AsyncContext,
-        cache: &mut HashMap<SegKeyBuf, AnyValue>,
-    ) -> Result<PanelPartStateInfo> {
-        self.get_panel_layout_state(cache)
-    }
-
-    async fn get_activitybar_layout_state(
-        &self,
-        _ctx: &R::AsyncContext,
-        cache: &mut HashMap<SegKeyBuf, AnyValue>,
-    ) -> Result<ActivitybarPartStateInfo> {
-        self.get_activitybar_layout_state(cache)
-    }
-
-    async fn get_editor_layout_state(
-        &self,
-        _ctx: &R::AsyncContext,
-        cache: &mut HashMap<SegKeyBuf, AnyValue>,
-    ) -> Result<Option<EditorPartStateInfo>> {
-        self.get_editor_layout_state(cache)
-    }
-}
-
 impl<R: AppRuntime> LayoutService<R> {
-    pub fn new(storage: Arc<StorageService<R>>) -> Self {
+    pub(crate) fn new(storage: Arc<StorageService<R>>) -> Self {
         Self { storage }
     }
 
-    pub async fn put_editor_layout_state(
+    pub(crate) async fn put_editor_layout_state(
         &self,
         ctx: &R::AsyncContext,
         state: EditorPartStateInfo,
@@ -230,7 +162,7 @@ impl<R: AppRuntime> LayoutService<R> {
         Ok(())
     }
 
-    pub async fn put_sidebar_layout_state(
+    pub(crate) async fn put_sidebar_layout_state(
         &self,
         ctx: &R::AsyncContext,
         state: SidebarPartStateInfo,
@@ -242,7 +174,7 @@ impl<R: AppRuntime> LayoutService<R> {
         Ok(())
     }
 
-    pub async fn put_panel_layout_state(
+    pub(crate) async fn put_panel_layout_state(
         &self,
         ctx: &R::AsyncContext,
         state: PanelPartStateInfo,
@@ -254,7 +186,7 @@ impl<R: AppRuntime> LayoutService<R> {
         Ok(())
     }
 
-    pub async fn put_activitybar_layout_state(
+    pub(crate) async fn put_activitybar_layout_state(
         &self,
         ctx: &R::AsyncContext,
         state: ActivitybarPartStateInfo,
@@ -267,7 +199,7 @@ impl<R: AppRuntime> LayoutService<R> {
     }
 
     // HACK: cache as a parameter here is a temporary solution
-    pub fn get_sidebar_layout_state(
+    pub(crate) fn get_sidebar_layout_state(
         &self,
         cache: &mut HashMap<SegKeyBuf, AnyValue>,
     ) -> Result<SidebarPartStateInfo> {
@@ -295,7 +227,7 @@ impl<R: AppRuntime> LayoutService<R> {
     }
 
     // HACK: cache as a parameter here is a temporary solution
-    pub fn get_activitybar_layout_state(
+    pub(crate) fn get_activitybar_layout_state(
         &self,
         cache: &mut HashMap<SegKeyBuf, AnyValue>,
     ) -> Result<ActivitybarPartStateInfo> {
@@ -347,7 +279,7 @@ impl<R: AppRuntime> LayoutService<R> {
         })
     }
 
-    pub fn get_panel_layout_state(
+    pub(crate) fn get_panel_layout_state(
         &self,
         cache: &mut HashMap<SegKeyBuf, AnyValue>,
     ) -> Result<PanelPartStateInfo> {
@@ -365,7 +297,7 @@ impl<R: AppRuntime> LayoutService<R> {
     }
 
     // FIXME: should not be `Option`. Its a temporary solution since we cannot have defaults for editor part now.
-    pub fn get_editor_layout_state(
+    pub(crate) fn get_editor_layout_state(
         &self,
         cache: &mut HashMap<SegKeyBuf, AnyValue>,
     ) -> Result<Option<EditorPartStateInfo>> {
