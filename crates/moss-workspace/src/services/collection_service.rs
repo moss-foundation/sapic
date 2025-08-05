@@ -116,19 +116,12 @@ impl<R: AppRuntime> CollectionService<R> {
         })
     }
 
-    pub async fn collection(
-        &self,
-        id: &CollectionId,
-    ) -> joinerror::Result<Arc<CollectionHandle<R>>> {
+    pub async fn collection(&self, id: &CollectionId) -> Option<Arc<CollectionHandle<R>>> {
         let state_lock = self.state.read().await;
-        let item = state_lock
+        state_lock
             .collections
             .get(id)
-            .ok_or_join_err_with::<ErrorNotFound>(|| {
-                format!("collection id `{}` not found", id.to_string())
-            })?;
-
-        Ok(item.handle.clone())
+            .map(|item| item.handle.clone())
     }
 
     pub(crate) async fn create_collection(

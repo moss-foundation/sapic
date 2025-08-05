@@ -60,9 +60,6 @@ pub struct Workspace<R: AppRuntime> {
     #[allow(dead_code)]
     pub(super) activity_indicator: ActivityIndicator<R::EventLoop>,
     pub(super) edit: WorkspaceEdit,
-
-    // #[allow(dead_code)]
-    // pub(super) manifest: JsonFileHandle<ManifestFile>,
     pub(super) layout_service: LayoutService<R>,
     pub(super) collection_service: CollectionService<R>,
     pub(super) environment_service: EnvironmentService<R>,
@@ -79,8 +76,7 @@ impl<R: AppRuntime> Workspace<R> {
         &self.abs_path
     }
 
-    // TODO: return Option<Arc<Collection<R>>>
-    pub async fn collection(&self, id: &CollectionId) -> joinerror::Result<Arc<Collection<R>>> {
+    pub async fn collection(&self, id: &CollectionId) -> Option<Arc<Collection<R>>> {
         self.collection_service.collection(id).await
     }
 
