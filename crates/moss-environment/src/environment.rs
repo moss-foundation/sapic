@@ -6,8 +6,14 @@ use json_patch::{
 use moss_applib::AppRuntime;
 use moss_bindingutils::primitives::{ChangeJsonValue, ChangeString};
 use moss_common::continue_if_err;
+use moss_db::primitives::AnyValue;
 use moss_fs::{FileSystem, FsResultExt};
 use moss_hcl::{HclResultExt, hcl_to_json, json_to_hcl};
+use moss_storage::{
+    common::{VariableEntity, VariableStore},
+    primitives::segkey::SegKeyBuf,
+    storage::operations::{GetItem, PutItem, RemoveItem},
+};
 use serde_json::Value as JsonValue;
 use std::{marker::PhantomData, path::PathBuf, sync::Arc};
 use tokio::sync::watch;
@@ -52,7 +58,7 @@ pub struct Environment<R: AppRuntime> {
     pub(super) fs: Arc<dyn FileSystem>,
     pub(super) abs_path_rx: watch::Receiver<EnvironmentPath>,
     pub(super) edit: EnvironmentEditing,
-    pub(super) _marker: PhantomData<R>, // FIXME: can be removed after the store field that requires a generic is added
+    pub(super) variable_store: Arc<dyn VariableStore<R::AsyncContext>>,
 }
 
 unsafe impl<R: AppRuntime> Send for Environment<R> {}
@@ -68,7 +74,7 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
             .join_err::<()>("failed to parse environment file name")
     }
 
-    async fn describe(&self) -> joinerror::Result<DescribeEnvironment> {
+    async fn describe(&self, ctx: &R::AsyncContext) -> joinerror::Result<DescribeEnvironment> {
         let abs_path = self.abs_path().await;
         let rdr = self
             .fs
@@ -80,21 +86,38 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
 
         let mut variables = Vec::with_capacity(parsed.variables.as_ref().map_or(0, |v| v.len()));
 
-        // TODO: Get the cache for all variables.
-
         if let Some(vars) = parsed.variables.as_ref() {
             for (id, var) in vars.iter() {
                 let global_value = continue_if_err!(hcl_to_json(&var.value), |err| {
                     println!("failed to convert global value expression: {}", err); // TODO: log error
                 });
 
+                let (local_value, order) = {
+                    let segkey = SegKeyBuf::from(id.as_ref());
+                    // TODO: log error when failed to get variable entity from the database
+                    let entity = GetItem::get(self.variable_store.as_ref(), ctx, segkey)
+                        .await
+                        .ok()
+                        .and_then(|v| v.deserialize::<VariableEntity>().ok());
+
+                    if let Some(entity) = entity {
+                        // TODO: log error when failed to convert local value expression
+                        let local_value =
+                            entity.local_value.and_then(|expr| hcl_to_json(&expr).ok());
+                        let order = entity.order;
+                        (local_value, order)
+                    } else {
+                        (None, 0)
+                    }
+                };
+
                 variables.push(VariableInfo {
                     id: id.clone(),
                     name: var.name.clone(),
-                    global_value: Some(global_value), // FIXME: hardcoded for now (get from the db cache)
-                    local_value: None,                //
+                    global_value: Some(global_value),
+                    local_value,
                     disabled: var.options.disabled,
-                    order: 0, // FIXME: hardcoded for now (get from the db cache)
+                    order,
                     desc: var.description.clone(),
                 });
             }
@@ -108,7 +131,11 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
         })
     }
 
-    async fn modify(&self, params: ModifyEnvironmentParams) -> joinerror::Result<()> {
+    async fn modify(
+        &self,
+        ctx: &R::AsyncContext,
+        params: ModifyEnvironmentParams,
+    ) -> joinerror::Result<()> {
         if let Some(new_name) = params.name {
             self.edit.rename(&new_name).await?;
         }
@@ -153,6 +180,24 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                 path: unsafe { PointerBuf::new_unchecked(format!("/variable/{}", id_str)) },
                 value,
             }));
+
+            let local_value = continue_if_err!(json_to_hcl(&var_to_add.local_value), |err| {
+                println!("failed to convert global value expression: {}", err); // TODO: log error
+            });
+            let order = var_to_add.order;
+            let entity = VariableEntity {
+                local_value: Some(local_value),
+                order,
+            };
+
+            let segkey = SegKeyBuf::from(id.as_str());
+            PutItem::put(
+                self.variable_store.as_ref(),
+                ctx,
+                segkey,
+                AnyValue::serialize(&entity)?,
+            )
+            .await?;
         }
 
         for var_to_update in params.vars_to_update {
@@ -190,6 +235,45 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                 _ => {}
             }
 
+            let needs_update_db =
+                var_to_update.local_value.is_some() || var_to_update.order.is_some();
+
+            if needs_update_db {
+                let segkey = SegKeyBuf::from(var_to_update.id.as_str());
+                let mut new_entity: VariableEntity =
+                    GetItem::get(self.variable_store.as_ref(), ctx, segkey.clone())
+                        .await?
+                        .deserialize()?;
+
+                match var_to_update.local_value {
+                    Some(ChangeJsonValue::Update(value)) => {
+                        let new_local_value = continue_if_err!(json_to_hcl(&value), |err| {
+                            println!("failed to convert global value expression: {}", err); // TODO: log error
+                        });
+                        new_entity.local_value = Some(new_local_value);
+                    }
+                    Some(ChangeJsonValue::Remove) => {
+                        new_entity.local_value = None;
+                    }
+                    _ => {}
+                }
+
+                match var_to_update.order {
+                    Some(new_order) => {
+                        new_entity.order = new_order;
+                    }
+                    None => {}
+                }
+
+                PutItem::put(
+                    self.variable_store.as_ref(),
+                    ctx,
+                    segkey,
+                    AnyValue::serialize(&new_entity)?,
+                )
+                .await?;
+            }
+
             match var_to_update.desc {
                 Some(ChangeString::Update(value)) => {
                     patches.push(PatchOperation::Replace(ReplaceOperation {
@@ -220,14 +304,16 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
             patches.push(PatchOperation::Remove(RemoveOperation {
                 path: unsafe { PointerBuf::new_unchecked(format!("/variable/{}", id)) },
             }));
+
+            let segkey = SegKeyBuf::from(id.as_str());
+
+            RemoveItem::remove(self.variable_store.as_ref(), ctx, segkey).await?;
         }
 
         self.edit
             .edit(&patches)
             .await
             .join_err::<()>("failed to edit environment")?;
-
-        // TODO: Put/Delete the data collected for local storage to the database.
 
         Ok(())
     }

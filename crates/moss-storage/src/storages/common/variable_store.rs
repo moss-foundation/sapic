@@ -9,6 +9,7 @@ use crate::{
         },
     },
 };
+use async_trait::async_trait;
 use moss_applib::context::AnyAsyncContext;
 use moss_db::{
     DatabaseClientWithContext, DatabaseResult, ReDbClient, Transaction, primitives::AnyValue,
@@ -28,6 +29,7 @@ impl VariableStoreImpl {
     }
 }
 
+#[async_trait]
 impl<Context> PutItem<Context> for VariableStoreImpl
 where
     Context: AnyAsyncContext,
@@ -44,6 +46,7 @@ where
     }
 }
 
+#[async_trait]
 impl<Context> TransactionalPutItem<Context> for VariableStoreImpl
 where
     Context: AnyAsyncContext,
@@ -71,6 +74,7 @@ where
     }
 }
 
+#[async_trait]
 impl<Context> GetItem<Context> for VariableStoreImpl
 where
     Context: AnyAsyncContext,
@@ -84,6 +88,7 @@ where
     }
 }
 
+#[async_trait]
 impl<Context> TransactionalGetItem<Context> for VariableStoreImpl
 where
     Context: AnyAsyncContext,
@@ -101,6 +106,7 @@ where
     }
 }
 
+#[async_trait]
 impl<Context> RemoveItem<Context> for VariableStoreImpl
 where
     Context: AnyAsyncContext,
@@ -119,6 +125,7 @@ where
     }
 }
 
+#[async_trait]
 impl<Context> TransactionalRemoveItem<Context> for VariableStoreImpl
 where
     Context: AnyAsyncContext,

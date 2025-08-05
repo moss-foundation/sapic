@@ -1,3 +1,4 @@
+use crate::{dirs, errors::ErrorNotFound, models::primitives::CollectionId};
 use derive_more::Deref;
 use futures::Stream;
 use joinerror::{OptionExt, ResultExt};
@@ -12,6 +13,7 @@ use moss_environment::{
     },
 };
 use moss_fs::FileSystem;
+use moss_storage::common::VariableStore;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
@@ -19,8 +21,6 @@ use std::{
     sync::Arc,
 };
 use tokio::sync::RwLock;
-
-use crate::{dirs, errors::ErrorNotFound, models::primitives::CollectionId};
 
 pub struct CreateEnvironmentItemParams {
     pub collection_id: Option<CollectionId>,
@@ -89,9 +89,14 @@ where
     R: AppRuntime,
 {
     /// `abs_path` is the absolute path to the workspace directory
-    pub async fn new(abs_path: &Path, fs: Arc<dyn FileSystem>) -> joinerror::Result<Self> {
+    pub async fn new(
+        ctx: &R::AsyncContext,
+        abs_path: &Path,
+        fs: Arc<dyn FileSystem>,
+        variable_store: Arc<dyn VariableStore<R::AsyncContext>>,
+    ) -> joinerror::Result<Self> {
         let abs_path = abs_path.join(dirs::ENVIRONMENTS_DIR);
-        let environments = collect_environments(&fs, &abs_path).await?;
+        let environments = collect_environments(ctx, &fs, &abs_path, variable_store).await?;
 
         Ok(Self {
             fs,
@@ -129,7 +134,7 @@ where
 
     pub async fn update_environment(
         &self,
-        _ctx: &R::AsyncContext,
+        ctx: &R::AsyncContext,
         id: &EnvironmentId,
         params: UpdateEnvironmentItemParams,
     ) -> joinerror::Result<()> {
@@ -142,13 +147,16 @@ where
             })?;
 
         environment_item
-            .modify(ModifyEnvironmentParams {
-                name: params.name.clone(),
-                color: params.color,
-                vars_to_add: params.vars_to_add,
-                vars_to_update: params.vars_to_update,
-                vars_to_delete: params.vars_to_delete,
-            })
+            .modify(
+                ctx,
+                ModifyEnvironmentParams {
+                    name: params.name.clone(),
+                    color: params.color,
+                    vars_to_add: params.vars_to_add,
+                    vars_to_update: params.vars_to_update,
+                    vars_to_delete: params.vars_to_delete,
+                },
+            )
             .await?;
 
         if let Some(name) = params.name {
@@ -166,20 +174,24 @@ where
 
     pub async fn create_environment(
         &self,
-        _ctx: &R::AsyncContext,
+        ctx: &R::AsyncContext,
         params: CreateEnvironmentItemParams,
+        variable_store: Arc<dyn VariableStore<R::AsyncContext>>,
     ) -> joinerror::Result<EnvironmentItemDescription> {
         let environment = EnvironmentBuilder::new(self.fs.clone())
-            .create::<R>(moss_environment::builder::CreateEnvironmentParams {
-                name: params.name.clone(),
-                abs_path: &self.abs_path,
-                color: params.color,
-                order: params.order,
-            })
+            .create::<R>(
+                moss_environment::builder::CreateEnvironmentParams {
+                    name: params.name.clone(),
+                    abs_path: &self.abs_path,
+                    color: params.color,
+                    order: params.order,
+                },
+                variable_store,
+            )
             .await?;
 
         let abs_path = environment.abs_path().await;
-        let desc = environment.describe().await?;
+        let desc = environment.describe(ctx).await?;
 
         let mut state = self.state.write().await;
         state.environments.insert(
@@ -209,8 +221,10 @@ where
 }
 
 async fn collect_environments<R: AppRuntime>(
+    ctx: &R::AsyncContext,
     fs: &Arc<dyn FileSystem>,
     abs_path: &Path,
+    variable_store: Arc<dyn VariableStore<R::AsyncContext>>,
 ) -> joinerror::Result<EnvironmentMap<R>> {
     let mut environments = EnvironmentMap::new();
 
@@ -225,15 +239,18 @@ async fn collect_environments<R: AppRuntime>(
         }
 
         let environment = EnvironmentBuilder::new(fs.clone())
-            .load::<R>(EnvironmentLoadParams {
-                abs_path: entry.path(),
-            })
+            .load::<R>(
+                EnvironmentLoadParams {
+                    abs_path: entry.path(),
+                },
+                variable_store.clone(),
+            )
             .await
             .join_err_with::<()>(|| {
                 format!("failed to load environment: {}", entry.path().display())
             })?;
 
-        let desc = environment.describe().await?;
+        let desc = environment.describe(ctx).await?;
 
         environments.insert(
             desc.id.clone(),

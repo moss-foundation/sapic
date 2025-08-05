@@ -1,10 +1,3 @@
-use joinerror::ResultExt;
-use moss_activity_indicator::ActivityIndicator;
-use moss_applib::AppRuntime;
-use moss_environment::builder::EnvironmentBuilder;
-use moss_fs::{CreateOptions, FileSystem, FsResultExt};
-use std::{cell::LazyCell, path::Path, sync::Arc};
-
 use crate::{
     Workspace, dirs,
     edit::WorkspaceEdit,
@@ -14,6 +7,13 @@ use crate::{
         layout_service::LayoutService, storage_service::StorageService,
     },
 };
+use joinerror::ResultExt;
+use moss_activity_indicator::ActivityIndicator;
+use moss_applib::AppRuntime;
+use moss_environment::builder::EnvironmentBuilder;
+use moss_fs::{CreateOptions, FileSystem, FsResultExt};
+use moss_storage::common::VariableStore;
+use std::{cell::LazyCell, path::Path, sync::Arc};
 
 struct PredefinedEnvironment {
     name: String,
@@ -98,8 +98,14 @@ impl WorkspaceBuilder {
             storage_service.clone(),
         )
         .await?;
-        let environment_service =
-            EnvironmentService::new(&params.abs_path, self.fs.clone()).await?;
+
+        let environment_service = EnvironmentService::new(
+            ctx,
+            &params.abs_path,
+            self.fs.clone(),
+            storage_service.variable_store(),
+        )
+        .await?;
 
         let edit = WorkspaceEdit::new(self.fs.clone(), params.abs_path.join(MANIFEST_FILE_NAME));
 
@@ -135,8 +141,13 @@ impl WorkspaceBuilder {
             storage_service.clone(),
         )
         .await?;
-        let environment_service =
-            EnvironmentService::new(&params.abs_path, self.fs.clone()).await?;
+        let environment_service = EnvironmentService::new(
+            ctx,
+            &params.abs_path,
+            self.fs.clone(),
+            storage_service.variable_store(),
+        )
+        .await?;
 
         let edit = WorkspaceEdit::new(self.fs.clone(), params.abs_path.join(MANIFEST_FILE_NAME));
 

@@ -1,8 +1,16 @@
+use crate::{
+    models::primitives::{ActivitybarPosition, CollectionId, SidebarPosition},
+    storage::{
+        entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity},
+        segments::{self, SEGKEY_COLLECTION},
+    },
+};
 use anyhow::{Context as _, Result};
 use moss_applib::{AppRuntime, ServiceMarker};
 use moss_db::{Transaction, primitives::AnyValue};
 use moss_storage::{
     WorkspaceStorage,
+    common::VariableStore,
     primitives::segkey::SegKeyBuf,
     storage::operations::{
         GetItem, ListByPrefix, TransactionalPutItem, TransactionalRemoveByPrefix,
@@ -13,14 +21,6 @@ use std::{
     collections::{HashMap, HashSet},
     path::Path,
     sync::Arc,
-};
-
-use crate::{
-    models::primitives::{ActivitybarPosition, CollectionId, SidebarPosition},
-    storage::{
-        entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity},
-        segments::{self, SEGKEY_COLLECTION},
-    },
 };
 
 pub struct StorageService<R: AppRuntime> {
@@ -37,6 +37,10 @@ impl<R: AppRuntime> StorageService<R> {
         Ok(Self {
             storage: Arc::new(storage),
         })
+    }
+
+    pub fn variable_store(&self) -> Arc<dyn VariableStore<R::AsyncContext>> {
+        self.storage.variable_store()
     }
 
     pub async fn begin_write(&self, ctx: &R::AsyncContext) -> joinerror::Result<Transaction> {
