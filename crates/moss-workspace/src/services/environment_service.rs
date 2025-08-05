@@ -103,7 +103,7 @@ where
     ) -> joinerror::Result<Self> {
         let abs_path = abs_path.join(dirs::ENVIRONMENTS_DIR);
         let environments =
-            collect_environments(ctx, &fs, &abs_path, storage_service.variable_store()).await?;
+            collect_environments(ctx, &fs, &abs_path, storage_service.clone()).await?;
 
         Ok(Self {
             fs,
@@ -190,7 +190,6 @@ where
                 .put_environment_cache(ctx, id, &new_entity)
                 .await?;
         }
-
         Ok(())
     }
 

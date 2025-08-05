@@ -103,7 +103,7 @@ impl WorkspaceBuilder {
             ctx,
             &params.abs_path,
             self.fs.clone(),
-            storage_service.variable_store(),
+            storage_service.clone(),
         )
         .await?;
 
@@ -145,7 +145,7 @@ impl WorkspaceBuilder {
             ctx,
             &params.abs_path,
             self.fs.clone(),
-            storage_service.variable_store(),
+            storage_service.clone(),
         )
         .await?;
 

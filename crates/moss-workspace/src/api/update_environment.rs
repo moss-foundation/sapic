@@ -28,6 +28,7 @@ impl<R: AppRuntime> Workspace<R> {
                     vars_to_update: input.vars_to_update,
                     vars_to_delete: input.vars_to_delete,
                 },
+                self.storage_service.clone(),
             )
             .await?;
 
