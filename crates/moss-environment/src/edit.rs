@@ -71,7 +71,6 @@ impl EnvironmentEditing {
             })?;
 
         let mut value: JsonValue = hcl::from_reader(rdr).join_err::<()>("failed to parse json")?;
-        dbg!(&value);
 
         state_lock
             .edit
