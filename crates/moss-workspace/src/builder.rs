@@ -2,13 +2,13 @@ use joinerror::ResultExt;
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::AppRuntime;
 use moss_environment::builder::EnvironmentBuilder;
-use moss_file::json::JsonFileHandle;
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use std::{cell::LazyCell, path::Path, sync::Arc};
 
 use crate::{
     Workspace, dirs,
-    manifest::{MANIFEST_FILE_NAME, ManifestModel},
+    edit::WorkspaceEdit,
+    manifest::{MANIFEST_FILE_NAME, ManifestFile},
     services::{
         collection_service::CollectionService, environment_service::EnvironmentService,
         layout_service::LayoutService, storage_service::StorageService,
@@ -72,7 +72,7 @@ impl WorkspaceBuilder {
 
         fs.create_file_with(
             &params.abs_path.join(MANIFEST_FILE_NAME),
-            serde_json::to_string(&ManifestModel { name: params.name })?.as_bytes(),
+            serde_json::to_string(&ManifestFile { name: params.name })?.as_bytes(),
             CreateOptions::default(),
         )
         .await
@@ -101,14 +101,12 @@ impl WorkspaceBuilder {
         let environment_service =
             EnvironmentService::new(&params.abs_path, self.fs.clone()).await?;
 
-        let manifest =
-            JsonFileHandle::load(self.fs.clone(), &params.abs_path.join(MANIFEST_FILE_NAME))
-                .await?;
+        let edit = WorkspaceEdit::new(self.fs.clone(), params.abs_path.join(MANIFEST_FILE_NAME));
 
         Ok(Workspace {
             abs_path: params.abs_path,
             activity_indicator,
-            manifest,
+            edit,
             layout_service,
             collection_service,
             environment_service,
@@ -140,14 +138,12 @@ impl WorkspaceBuilder {
         let environment_service =
             EnvironmentService::new(&params.abs_path, self.fs.clone()).await?;
 
-        let manifest =
-            JsonFileHandle::load(self.fs.clone(), &params.abs_path.join(MANIFEST_FILE_NAME))
-                .await?;
+        let edit = WorkspaceEdit::new(self.fs.clone(), params.abs_path.join(MANIFEST_FILE_NAME));
 
         Ok(Workspace {
             abs_path: params.abs_path,
             activity_indicator,
-            manifest,
+            edit,
             layout_service,
             collection_service,
             environment_service,

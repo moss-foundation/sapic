@@ -16,6 +16,7 @@ moss_text.workspace = true
 moss_file.workspace = true
 moss_git.workspace = true
 moss_bindingutils.workspace = true
+moss_edit.workspace = true
 
 joinerror.workspace = true
 anyhow.workspace = true
@@ -33,6 +34,8 @@ async-trait.workspace = true
 thiserror.workspace = true
 async-stream.workspace = true
 nanoid.workspace = true
+json-patch.workspace = true
+jsonptr.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }

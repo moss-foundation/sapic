@@ -1,14 +1,19 @@
 use anyhow::Result;
+use joinerror::ResultExt;
+use json_patch::{PatchOperation, ReplaceOperation};
+use jsonptr::PointerBuf;
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::AppRuntime;
 use moss_collection::Collection;
 use moss_environment::{AnyEnvironment, Environment, models::primitives::EnvironmentId};
 use moss_file::json::JsonFileHandle;
 use moss_fs::FileSystem;
+use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};
 
 use crate::{
-    manifest::{MANIFEST_FILE_NAME, ManifestModel},
+    edit::WorkspaceEdit,
+    manifest::{MANIFEST_FILE_NAME, ManifestFile},
     models::primitives::CollectionId,
     services::{
         collection_service::CollectionService, environment_service::EnvironmentService,
@@ -17,7 +22,7 @@ use crate::{
 };
 
 pub struct WorkspaceSummary {
-    pub manifest: ManifestModel,
+    pub manifest: ManifestFile,
 }
 
 #[derive(Clone)]
@@ -35,9 +40,10 @@ pub struct Workspace<R: AppRuntime> {
 
     #[allow(dead_code)]
     pub(super) activity_indicator: ActivityIndicator<R::EventLoop>,
-    #[allow(dead_code)]
-    pub(super) manifest: JsonFileHandle<ManifestModel>,
+    pub(super) edit: WorkspaceEdit,
 
+    // #[allow(dead_code)]
+    // pub(super) manifest: JsonFileHandle<ManifestFile>,
     pub(super) layout_service: LayoutService<R>,
     pub(super) collection_service: CollectionService<R>,
     pub(super) environment_service: EnvironmentService<R>,
@@ -63,23 +69,20 @@ impl<R: AppRuntime> Workspace<R> {
         self.environment_service.environment(id).await
     }
 
-    // INFO: This will probably be moved to EditService in the future.
     pub async fn modify(&self, params: WorkspaceModifyParams) -> Result<()> {
-        if params.name.is_some() {
-            self.manifest
-                .edit(
-                    |model| {
-                        model.name = params.name.unwrap();
-                        Ok(())
-                    },
-                    |model| {
-                        serde_json::to_string(model).map_err(|err| {
-                            anyhow::anyhow!("Failed to serialize JSON file: {}", err)
-                        })
-                    },
-                )
-                .await?;
+        let mut patches = Vec::new();
+
+        if let Some(new_name) = params.name {
+            patches.push(PatchOperation::Replace(ReplaceOperation {
+                path: unsafe { PointerBuf::new_unchecked("/name") },
+                value: JsonValue::String(new_name),
+            }));
         }
+
+        self.edit
+            .edit(&patches)
+            .await
+            .join_err::<()>("failed to edit workspace")?;
         Ok(())
     }
 
@@ -89,10 +92,6 @@ impl<R: AppRuntime> Workspace<R> {
         Ok(WorkspaceSummary {
             manifest: manifest.model().await,
         })
-    }
-
-    pub async fn manifest(&self) -> ManifestModel {
-        self.manifest.model().await
     }
 }
 

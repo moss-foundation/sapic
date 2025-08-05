@@ -9,14 +9,14 @@ use tokio::sync::{RwLock, watch};
 
 use crate::{configuration::SourceFile, environment::EnvironmentPath};
 
-struct EditingState {
+struct EnvironmentEditingState {
     abs_path: PathBuf,
     edit: JsonEdit,
 }
 
 pub(super) struct EnvironmentEditing {
     fs: Arc<dyn FileSystem>,
-    state: RwLock<EditingState>,
+    state: RwLock<EnvironmentEditingState>,
     abs_path_tx: watch::Sender<EnvironmentPath>,
 }
 
@@ -27,7 +27,7 @@ impl EnvironmentEditing {
         Self {
             fs,
             abs_path_tx,
-            state: RwLock::new(EditingState {
+            state: RwLock::new(EnvironmentEditingState {
                 abs_path,
                 edit: JsonEdit::new(),
             }),
@@ -90,7 +90,7 @@ impl EnvironmentEditing {
             )
             .await
             .join_err_with::<()>(|| {
-                format!("failed to create file: {}", state_lock.abs_path.display())
+                format!("failed to write file: {}", state_lock.abs_path.display())
             })?;
 
         Ok(())
