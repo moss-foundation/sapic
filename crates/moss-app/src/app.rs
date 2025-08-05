@@ -78,6 +78,8 @@ pub struct App<R: AppRuntime> {
     // TODO: Refine the management of git provider clients
     pub(super) github_client: Arc<GitHubClient>,
     pub(super) gitlab_client: Arc<GitLabClient>,
+
+    pub(super) reqwest_client: reqwest::Client,
 }
 
 impl<R: AppRuntime> App<R> {

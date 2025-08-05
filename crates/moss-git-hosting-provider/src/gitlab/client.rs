@@ -1,7 +1,10 @@
 use anyhow::anyhow;
 use async_trait::async_trait;
 use moss_git::GitAuthAgent;
-use reqwest::header::{ACCEPT, HeaderMap};
+use reqwest::{
+    Client,
+    header::{ACCEPT, HeaderMap},
+};
 use std::sync::Arc;
 use url::Url;
 
@@ -17,6 +20,7 @@ pub trait GitLabAuthAgent: GitAuthAgent {}
 
 // FIXME: Support self-hosted GitLab domains
 pub struct GitLabClient {
+    client: Client,
     #[allow(dead_code)]
     client_auth_agent: Arc<dyn GitAuthAgent>,
     #[allow(dead_code)]
@@ -25,10 +29,12 @@ pub struct GitLabClient {
 
 impl GitLabClient {
     pub fn new(
+        client: Client,
         client_auth_agent: impl GitLabAuthAgent + 'static,
         ssh_auth_agent: Option<impl SSHAuthAgent + 'static>,
     ) -> Self {
         Self {
+            client,
             client_auth_agent: Arc::new(client_auth_agent),
             ssh_auth_agent: ssh_auth_agent.map(|agent| Arc::new(agent) as Arc<dyn SSHAuthAgent>),
         }
@@ -49,13 +55,13 @@ impl GitHostingProvider for GitLabClient {
 
     async fn contributors(&self, repo_url: &str) -> anyhow::Result<Vec<Contributor>> {
         // TODO: Support token auth for private repos
-        let client = reqwest::ClientBuilder::new().user_agent("SAPIC").build()?;
         let encoded_url = urlencoding::encode(repo_url);
 
         let mut headers = HeaderMap::new();
         headers.insert(ACCEPT, "application/json".parse()?);
 
-        let contributors_response: ContributorsResponse = client
+        let contributors_response: ContributorsResponse = self
+            .client
             .get(format!(
                 "{GITLAB_API_URL}/projects/{encoded_url}/repository/contributors"
             ))
@@ -77,7 +83,8 @@ impl GitHostingProvider for GitLabClient {
 
             let email = item.email;
 
-            let avatar_response: AvatarResponse = client
+            let avatar_response: AvatarResponse = self
+                .client
                 .get(format!("{GITLAB_API_URL}/avatar"))
                 .query(&[("email", &email)])
                 .send()
@@ -129,7 +136,11 @@ mod tests {
     fn gitlab_client_name() {
         let client_auth_agent = DummyGitLabAuthAgent;
         let ssh_auth_agent: Option<DummySSHAuthAgent> = None;
-        let client = GitLabClient::new(client_auth_agent, ssh_auth_agent);
+        let reqwest_client = reqwest::ClientBuilder::new()
+            .user_agent("SAPIC")
+            .build()
+            .unwrap();
+        let client = GitLabClient::new(reqwest_client, client_auth_agent, ssh_auth_agent);
 
         assert_eq!(client.name(), "GitLab");
     }
@@ -138,7 +149,12 @@ mod tests {
     fn gitlab_client_base_url() {
         let client_auth_agent = DummyGitLabAuthAgent;
         let ssh_auth_agent: Option<DummySSHAuthAgent> = None;
-        let client = GitLabClient::new(client_auth_agent, ssh_auth_agent);
+        let reqwest_client = reqwest::ClientBuilder::new()
+            .user_agent("SAPIC")
+            .build()
+            .unwrap();
+
+        let client = GitLabClient::new(reqwest_client, client_auth_agent, ssh_auth_agent);
         let expected_url = Url::parse("https://gitlab.com").unwrap();
 
         assert_eq!(client.base_url(), expected_url);
@@ -148,7 +164,11 @@ mod tests {
     async fn gitlab_client_contributors() {
         let client_auth_agent = DummyGitLabAuthAgent;
         let ssh_auth_agent: Option<DummySSHAuthAgent> = None;
-        let client = GitLabClient::new(client_auth_agent, ssh_auth_agent);
+        let reqwest_client = reqwest::ClientBuilder::new()
+            .user_agent("SAPIC")
+            .build()
+            .unwrap();
+        let client = GitLabClient::new(reqwest_client, client_auth_agent, ssh_auth_agent);
         let contributors = client.contributors(REPO_URL).await.unwrap();
         for contributor in contributors {
             println!(
@@ -163,7 +183,11 @@ mod tests {
     fn manual_gitlab_client_with_ssh_auth_agent() {
         let client_auth_agent = DummyGitLabAuthAgent;
         let ssh_agent = DummySSHAuthAgent;
-        let client = GitLabClient::new(client_auth_agent, Some(ssh_agent));
+        let reqwest_client = reqwest::ClientBuilder::new()
+            .user_agent("SAPIC")
+            .build()
+            .unwrap();
+        let client = GitLabClient::new(reqwest_client, client_auth_agent, Some(ssh_agent));
 
         assert_eq!(client.name(), "GitLab");
         let expected_url = Url::parse("https://gitlab.com").unwrap();

@@ -102,10 +102,16 @@ impl<R: AppRuntime> AppBuilder<R> {
 
         // FIXME: Use actual OAuth App id and secret
         let keyring_client = Arc::new(KeyringClientImpl::new());
+        let reqwest_client = reqwest::ClientBuilder::new()
+            .user_agent("SAPIC")
+            .build()
+            .expect("failed to build reqwest client");
+
         let github_client = {
             let github_auth_agent =
                 GitHubAuthAgentImpl::new(keyring_client.clone(), "".to_string(), "".to_string());
             Arc::new(GitHubClient::new(
+                reqwest_client.clone(),
                 github_auth_agent,
                 None as Option<SSHAuthAgentImpl>,
             ))
@@ -114,6 +120,7 @@ impl<R: AppRuntime> AppBuilder<R> {
             let gitlab_auth_agent =
                 GitLabAuthAgentImpl::new(keyring_client.clone(), "".to_string(), "".to_string());
             Arc::new(GitLabClient::new(
+                reqwest_client.clone(),
                 gitlab_auth_agent,
                 None as Option<SSHAuthAgentImpl>,
             ))
@@ -144,6 +151,7 @@ impl<R: AppRuntime> AppBuilder<R> {
 
             github_client,
             gitlab_client,
+            reqwest_client,
         }
     }
 }

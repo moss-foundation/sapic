@@ -36,6 +36,7 @@ derive_more = { workspace = true, features = ["deref", "deref_mut", "from"] }
 validator.workspace = true
 async-trait.workspace = true
 nanoid.workspace = true
+reqwest = { workspace = true, features = ["json"] }
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }

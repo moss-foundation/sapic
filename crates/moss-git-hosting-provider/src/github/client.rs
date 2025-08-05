@@ -2,6 +2,7 @@ use anyhow::anyhow;
 use async_trait::async_trait;
 use moss_git::GitAuthAgent;
 use oauth2::http::{HeaderMap, header::ACCEPT};
+use reqwest::Client;
 use std::sync::Arc;
 use url::Url;
 
@@ -16,6 +17,7 @@ use crate::{
 pub trait GitHubAuthAgent: GitAuthAgent {}
 
 pub struct GitHubClient {
+    client: Client,
     #[allow(dead_code)]
     client_auth_agent: Arc<dyn GitHubAuthAgent>,
     #[allow(dead_code)]
@@ -24,10 +26,12 @@ pub struct GitHubClient {
 
 impl GitHubClient {
     pub fn new(
+        client: Client,
         client_auth_agent: impl GitHubAuthAgent + 'static,
         ssh_auth_agent: Option<impl SSHAuthAgent + 'static>,
     ) -> Self {
         Self {
+            client,
             client_auth_agent: Arc::new(client_auth_agent),
             ssh_auth_agent: ssh_auth_agent.map(|agent| Arc::new(agent) as Arc<dyn SSHAuthAgent>),
         }
@@ -48,12 +52,11 @@ impl GitHostingProvider for GitHubClient {
 
     async fn contributors(&self, repo_url: &str) -> anyhow::Result<Vec<Contributor>> {
         // TODO: Support token auth for private repos
-        let client = reqwest::ClientBuilder::new().user_agent("SAPIC").build()?;
-
         let mut headers = HeaderMap::new();
         headers.insert(ACCEPT, "application/vnd.github+json".parse()?);
 
-        let contributors_response: ContributorsResponse = client
+        let contributors_response: ContributorsResponse = self
+            .client
             .get(format!("{GITHUB_API_URL}/repos/{repo_url}/contributors"))
             .headers(headers)
             .send()
@@ -72,13 +75,12 @@ impl GitHostingProvider for GitHubClient {
     }
 
     async fn repository_info(&self, repo_url: &str) -> anyhow::Result<RepositoryInfo> {
-        // TODO: Support token auth for private repos
-        let client = reqwest::ClientBuilder::new().user_agent("SAPIC").build()?;
-
+        // TODO: Support token auth for private repo
         let mut headers = HeaderMap::new();
         headers.insert(ACCEPT, "application/vnd.github+json".parse()?);
 
-        let repo_response: RepositoryResponse = client
+        let repo_response: RepositoryResponse = self
+            .client
             .get(format!("{GITHUB_API_URL}/repos/{repo_url}"))
             .headers(headers.clone())
             .send()
@@ -125,7 +127,12 @@ mod tests {
     fn github_client_name() {
         let client_auth_agent = DummyGitHubAuthAgent;
         let ssh_auth_agent: Option<DummySSHAuthAgent> = None;
-        let client = GitHubClient::new(client_auth_agent, ssh_auth_agent);
+        let reqwest_client = reqwest::ClientBuilder::new()
+            .user_agent("SAPIC")
+            .build()
+            .unwrap();
+
+        let client = GitHubClient::new(reqwest_client, client_auth_agent, ssh_auth_agent);
 
         assert_eq!(client.name(), "GitHub");
     }
@@ -134,7 +141,12 @@ mod tests {
     fn github_client_base_url() {
         let client_auth_agent = DummyGitHubAuthAgent;
         let ssh_auth_agent: Option<DummySSHAuthAgent> = None;
-        let client = GitHubClient::new(client_auth_agent, ssh_auth_agent);
+        let reqwest_client = reqwest::ClientBuilder::new()
+            .user_agent("SAPIC")
+            .build()
+            .unwrap();
+
+        let client = GitHubClient::new(reqwest_client, client_auth_agent, ssh_auth_agent);
         let expected_url = Url::parse("https://github.com").unwrap();
 
         assert_eq!(client.base_url(), expected_url);
@@ -144,7 +156,11 @@ mod tests {
     async fn github_client_contributors() {
         let client_auth_agent = DummyGitHubAuthAgent;
         let ssh_auth_agent: Option<DummySSHAuthAgent> = None;
-        let client = GitHubClient::new(client_auth_agent, ssh_auth_agent);
+        let reqwest_client = reqwest::ClientBuilder::new()
+            .user_agent("SAPIC")
+            .build()
+            .unwrap();
+        let client = GitHubClient::new(reqwest_client, client_auth_agent, ssh_auth_agent);
         let contributors = client.contributors(REPO_URL).await.unwrap();
         for contributor in contributors {
             println!(
@@ -158,7 +174,11 @@ mod tests {
     async fn github_client_repository_info() {
         let client_auth_agent = DummyGitHubAuthAgent;
         let ssh_auth_agent: Option<DummySSHAuthAgent> = None;
-        let client = GitHubClient::new(client_auth_agent, ssh_auth_agent);
+        let reqwest_client = reqwest::ClientBuilder::new()
+            .user_agent("SAPIC")
+            .build()
+            .unwrap();
+        let client = GitHubClient::new(reqwest_client, client_auth_agent, ssh_auth_agent);
         let repo_info = client.repository_info(REPO_URL).await.unwrap();
         println!("Repository created at {}", repo_info.created_at);
         println!("Repository updated at {}", repo_info.updated_at);
@@ -170,7 +190,11 @@ mod tests {
     fn manual_github_client_with_ssh_auth_agent() {
         let client_auth_agent = DummyGitHubAuthAgent;
         let ssh_agent = DummySSHAuthAgent;
-        let client = GitHubClient::new(client_auth_agent, Some(ssh_agent));
+        let reqwest_client = reqwest::ClientBuilder::new()
+            .user_agent("SAPIC")
+            .build()
+            .unwrap();
+        let client = GitHubClient::new(reqwest_client, client_auth_agent, Some(ssh_agent));
 
         assert_eq!(client.name(), "GitHub");
         let expected_url = Url::parse("https://github.com").unwrap();

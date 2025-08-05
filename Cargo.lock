@@ -3705,6 +3705,7 @@ dependencies = [
  "moss_workspace",
  "moss_workspacelib",
  "nanoid",
+ "reqwest",
  "rustc-hash",
  "serde",
  "serde_json",
