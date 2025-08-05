@@ -37,6 +37,12 @@ impl From<anyhow::Error> for FsError {
     }
 }
 
+impl From<FsError> for joinerror::Error {
+    fn from(error: FsError) -> Self {
+        joinerror::Error::new::<()>(error.to_string())
+    }
+}
+
 pub type FsResult<T> = Result<T, FsError>;
 
 pub trait FsResultExt<T> {

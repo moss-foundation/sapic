@@ -18,17 +18,17 @@ use crate::{
     },
     utils,
 };
-#[derive(Debug, Deref)]
+#[derive(Debug, Deref, Clone)]
 pub(super) struct EnvironmentPath {
     parent: PathBuf,
-    name: String,
+    filename: String,
 
     #[deref]
-    path: Arc<Path>,
+    full_path: PathBuf,
 }
 
 impl EnvironmentPath {
-    pub fn new(abs_path: Arc<Path>) -> joinerror::Result<Self> {
+    pub fn new(abs_path: PathBuf) -> joinerror::Result<Self> {
         debug_assert!(abs_path.is_absolute());
 
         let parent = abs_path
@@ -41,9 +41,13 @@ impl EnvironmentPath {
 
         Ok(Self {
             parent: parent.to_path_buf(),
-            name: name.to_string_lossy().to_string(),
-            path: abs_path,
+            filename: name.to_string_lossy().to_string(),
+            full_path: abs_path,
         })
+    }
+
+    pub fn full_path(&self) -> &Path {
+        &self.full_path
     }
 }
 
@@ -65,11 +69,11 @@ unsafe impl<R: AppRuntime> Sync for Environment<R> {}
 
 impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
     async fn abs_path(&self) -> Arc<Path> {
-        self.state.read().await.abs_path.path.clone()
+        self.state.read().await.abs_path.full_path.clone()
     }
 
     async fn name(&self) -> joinerror::Result<String> {
-        let filename = self.state.read().await.abs_path.name.clone();
+        let filename = self.state.read().await.abs_path.filename.clone();
         utils::parse_file_name(&filename).map_err(|err| {
             Error::new::<()>(format!("failed to parse environment file name: {}", err))
         })
@@ -127,7 +131,7 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
             self.rename(new_name).await?;
         }
 
-        let abs_path = self.state.read().await.abs_path.path.clone();
+        let abs_path = self.state.read().await.abs_path.full_path.clone();
 
         self.variable_service
             .batch_add(&abs_path, params.vars_to_add)
@@ -151,7 +155,7 @@ impl<R: AppRuntime> Environment<R> {
     async fn rename(&self, new_name: String) -> joinerror::Result<()> {
         let new_file_name = utils::format_file_name(&new_name);
         let mut state = self.state.write().await;
-        let current_abs_path = state.abs_path.path.clone();
+        let current_abs_path = state.abs_path.full_path.clone();
         let new_abs_path: Arc<Path> = state.abs_path.parent.join(new_file_name).into();
         let environment_path =
             EnvironmentPath::new(new_abs_path.clone()).join_err_with::<()>(|| {
