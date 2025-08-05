@@ -1,4 +1,10 @@
-use crate::{dirs, errors::ErrorNotFound, models::primitives::CollectionId};
+use crate::{
+    dirs,
+    errors::ErrorNotFound,
+    models::primitives::CollectionId,
+    services::storage_service::StorageService,
+    storage::{entities::state_store::EnvironmentEntity, segments::SEGKEY_ENVIRONMENT},
+};
 use derive_more::Deref;
 use futures::Stream;
 use joinerror::{OptionExt, ResultExt};
@@ -93,10 +99,11 @@ where
         ctx: &R::AsyncContext,
         abs_path: &Path,
         fs: Arc<dyn FileSystem>,
-        variable_store: Arc<dyn VariableStore<R::AsyncContext>>,
+        storage_service: Arc<StorageService<R>>,
     ) -> joinerror::Result<Self> {
         let abs_path = abs_path.join(dirs::ENVIRONMENTS_DIR);
-        let environments = collect_environments(ctx, &fs, &abs_path, variable_store).await?;
+        let environments =
+            collect_environments(ctx, &fs, &abs_path, storage_service.variable_store()).await?;
 
         Ok(Self {
             fs,
@@ -137,6 +144,7 @@ where
         ctx: &R::AsyncContext,
         id: &EnvironmentId,
         params: UpdateEnvironmentItemParams,
+        storage_service: Arc<StorageService<R>>,
     ) -> joinerror::Result<()> {
         let mut state = self.state.write().await;
         let environment_item = state
@@ -162,11 +170,25 @@ where
         if let Some(name) = params.name {
             environment_item.display_name = name;
         }
-        if let Some(order) = params.order {
-            environment_item.order = order;
-        }
-        if let Some(expanded) = params.expanded {
-            environment_item.expanded = expanded;
+
+        let needs_db_update = params.order.is_some() || params.expanded.is_some();
+
+        if needs_db_update {
+            let mut new_entity = storage_service.get_environment_cache(ctx, id).await?;
+
+            if let Some(order) = params.order {
+                environment_item.order = order;
+                new_entity.order = order;
+            }
+
+            if let Some(expanded) = params.expanded {
+                environment_item.expanded = expanded;
+                new_entity.expanded = expanded;
+            }
+
+            storage_service
+                .put_environment_cache(ctx, id, &new_entity)
+                .await?;
         }
 
         Ok(())
@@ -176,7 +198,7 @@ where
         &self,
         ctx: &R::AsyncContext,
         params: CreateEnvironmentItemParams,
-        variable_store: Arc<dyn VariableStore<R::AsyncContext>>,
+        storage_service: Arc<StorageService<R>>,
     ) -> joinerror::Result<EnvironmentItemDescription> {
         let environment = EnvironmentBuilder::new(self.fs.clone())
             .create::<R>(
@@ -186,7 +208,7 @@ where
                     color: params.color,
                     order: params.order,
                 },
-                variable_store,
+                storage_service.variable_store(),
             )
             .await?;
 
@@ -208,6 +230,15 @@ where
 
         // TODO: put environment order to the database
 
+        let entity = EnvironmentEntity {
+            order: params.order,
+            expanded: true,
+        };
+
+        storage_service
+            .put_environment_cache(ctx, &desc.id.clone(), &entity)
+            .await?;
+
         Ok(EnvironmentItemDescription {
             id: desc.id.clone(),
             collection_id: params.collection_id,
@@ -224,7 +255,7 @@ async fn collect_environments<R: AppRuntime>(
     ctx: &R::AsyncContext,
     fs: &Arc<dyn FileSystem>,
     abs_path: &Path,
-    variable_store: Arc<dyn VariableStore<R::AsyncContext>>,
+    storage_service: Arc<StorageService<R>>,
 ) -> joinerror::Result<EnvironmentMap<R>> {
     let mut environments = EnvironmentMap::new();
 
@@ -243,7 +274,7 @@ async fn collect_environments<R: AppRuntime>(
                 EnvironmentLoadParams {
                     abs_path: entry.path(),
                 },
-                variable_store.clone(),
+                storage_service.variable_store(),
             )
             .await
             .join_err_with::<()>(|| {
@@ -251,6 +282,8 @@ async fn collect_environments<R: AppRuntime>(
             })?;
 
         let desc = environment.describe(ctx).await?;
+
+        let environment_entity = storage_service.get_environment_cache(ctx, &desc.id).await?;
 
         environments.insert(
             desc.id.clone(),
@@ -260,10 +293,9 @@ async fn collect_environments<R: AppRuntime>(
                 // This is for restoring environments within the workspace scope,
                 // these workspaces don't have this parameter.
                 collection_id: None,
-
                 display_name: desc.name,
-                order: 0,       // TODO: restore from the database
-                expanded: true, // TODO: restore from the database
+                order: environment_entity.order,
+                expanded: environment_entity.expanded,
                 handle: Arc::new(environment),
             },
         );
