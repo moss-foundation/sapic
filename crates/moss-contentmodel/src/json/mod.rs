@@ -1,7 +1,24 @@
 use joinerror::Error;
 use json_patch::{AddOperation, PatchOperation, RemoveOperation, ReplaceOperation, patch};
 use jsonptr::PointerBuf;
-use serde_json::Value;
+use serde_json::{Value, json};
+
+#[derive(Debug, Clone)]
+pub enum Action {
+    Add {
+        path: PointerBuf,
+        new_value: Value,
+    },
+    Remove {
+        path: PointerBuf,
+        old_value: Value,
+    },
+    Replace {
+        path: PointerBuf,
+        old_value: Value,
+        new_value: Value,
+    },
+}
 
 struct ResolveError;
 impl ResolveError {
@@ -29,6 +46,8 @@ impl JsonEdit {
         for op in patches {
             match op {
                 PatchOperation::Add(AddOperation { path, value }) => {
+                    ensure_path_exists(root, path)?;
+
                     actions.push(Action::Add {
                         path: path.clone(),
                         new_value: value.clone(),
@@ -42,6 +61,8 @@ impl JsonEdit {
                     });
                 }
                 PatchOperation::Replace(ReplaceOperation { path, value }) => {
+                    ensure_path_exists(root, path)?;
+
                     let old = path.resolve(root).map_err(ResolveError::from)?.clone();
                     actions.push(Action::Replace {
                         path: path.clone(),
@@ -120,21 +141,36 @@ impl JsonEdit {
     }
 }
 
-#[derive(Debug, Clone)]
-pub enum Action {
-    Add {
-        path: PointerBuf,
-        new_value: Value,
-    },
-    Remove {
-        path: PointerBuf,
-        old_value: Value,
-    },
-    Replace {
-        path: PointerBuf,
-        old_value: Value,
-        new_value: Value,
-    },
+fn ensure_path_exists(root: &mut Value, path: &PointerBuf) -> joinerror::Result<()> {
+    let segments = path
+        .tokens()
+        .map(|t| t.decoded().to_string())
+        .collect::<Vec<_>>();
+
+    if segments.is_empty() {
+        return Ok(()); // Root path, nothing to ensure
+    }
+
+    let mut current = root;
+
+    for segment in &segments[..segments.len() - 1] {
+        if current.is_object() {
+            let obj = current.as_object_mut().unwrap();
+
+            if !obj.contains_key(segment) {
+                obj.insert(segment.clone(), json!({}));
+            }
+
+            current = obj.get_mut(segment).unwrap();
+        } else {
+            return Err(joinerror::Error::new::<()>(format!(
+                "segment '{}' expected to be an object",
+                segment
+            )));
+        }
+    }
+
+    Ok(())
 }
 
 #[derive(Debug, Clone)]

@@ -1,4 +1,5 @@
 use futures::Stream;
+use joinerror::ResultExt;
 use moss_applib::{AppRuntime, ServiceMarker};
 use moss_bindingutils::primitives::ChangeString;
 use moss_environment::{
@@ -9,7 +10,7 @@ use moss_environment::{
         types::{AddVariableParams, UpdateVariableParams},
     },
 };
-use moss_fs::{FileSystem, model_registry::GlobalModelRegistry};
+use moss_fs::FileSystem;
 use moss_workspacelib::{EnvironmentRegistry, environment_registry::EnvironmentModel};
 use std::{
     collections::HashMap,
@@ -54,7 +55,7 @@ pub struct EnvironmentItemDescription {
     pub order: isize,
     pub expanded: bool,
     pub color: Option<String>,
-    pub abs_path: Arc<Path>,
+    pub abs_path: PathBuf,
 }
 
 struct ServiceState {
@@ -68,7 +69,6 @@ where
     abs_path: PathBuf,
     fs: Arc<dyn FileSystem>,
     environment_registry: Arc<EnvironmentRegistry<R, Environment<R>>>,
-    model_registry: Arc<GlobalModelRegistry>,
     state: Arc<RwLock<ServiceState>>,
 }
 
@@ -79,26 +79,15 @@ where
     R: AppRuntime,
 {
     /// `abs_path` is the absolute path to the workspace directory
-    pub async fn new(
-        abs_path: &Path,
-        fs: Arc<dyn FileSystem>,
-        model_registry: Arc<GlobalModelRegistry>,
-    ) -> joinerror::Result<Self> {
+    pub async fn new(abs_path: &Path, fs: Arc<dyn FileSystem>) -> joinerror::Result<Self> {
         let abs_path = abs_path.join(dirs::ENVIRONMENTS_DIR);
         let environment_registry = EnvironmentRegistry::new();
-        let environments = collect_environments(
-            &fs,
-            model_registry.clone(),
-            &environment_registry,
-            &abs_path,
-        )
-        .await?;
+        let environments = collect_environments(&fs, &environment_registry, &abs_path).await?;
 
         Ok(Self {
             fs,
             abs_path,
             environment_registry: Arc::new(environment_registry),
-            model_registry,
             state: Arc::new(RwLock::new(ServiceState { environments })),
         })
     }
@@ -182,26 +171,21 @@ where
         _ctx: &R::AsyncContext,
         params: CreateEnvironmentItemParams,
     ) -> joinerror::Result<EnvironmentItemDescription> {
-        let id = EnvironmentId::new();
         let environment = EnvironmentBuilder::new(self.fs.clone())
-            .create::<R>(
-                self.model_registry.clone(),
-                moss_environment::builder::CreateEnvironmentParams {
-                    id: id.clone(),
-                    name: params.name.clone(),
-                    abs_path: &self.abs_path,
-                    color: params.color,
-                    order: params.order,
-                },
-            )
+            .create::<R>(moss_environment::builder::CreateEnvironmentParams {
+                name: params.name.clone(),
+                abs_path: &self.abs_path,
+                color: params.color,
+                order: params.order,
+            })
             .await?;
 
         let abs_path = environment.abs_path().await;
-        let color = environment.color().await;
+        let desc = environment.describe().await?;
 
         self.environment_registry
             .insert(EnvironmentModel {
-                id: id.clone(),
+                id: desc.id.clone(),
                 collection_id: params.collection_id.clone().map(|id| id.inner()),
                 handle: Arc::new(environment),
                 _runtime: PhantomData,
@@ -210,9 +194,9 @@ where
 
         let mut state = self.state.write().await;
         state.environments.insert(
-            id.clone(),
+            desc.id.clone(),
             EnvironmentItem {
-                id: id.clone(),
+                id: desc.id.clone(),
                 display_name: params.name.clone(),
                 order: params.order,
                 expanded: true,
@@ -222,12 +206,12 @@ where
         // TODO: put environment order to the database
 
         Ok(EnvironmentItemDescription {
-            id,
+            id: desc.id.clone(),
             collection_id: params.collection_id,
             display_name: params.name.clone(),
             order: params.order,
             expanded: true,
-            color,
+            color: desc.color,
             abs_path,
         })
     }
@@ -235,7 +219,7 @@ where
 
 async fn collect_environments<R: AppRuntime>(
     fs: &Arc<dyn FileSystem>,
-    model_registry: Arc<GlobalModelRegistry>,
+
     environment_registry: &EnvironmentRegistry<R, Environment<R>>,
     abs_path: &Path,
 ) -> joinerror::Result<HashMap<EnvironmentId, EnvironmentItem>> {
@@ -252,13 +236,13 @@ async fn collect_environments<R: AppRuntime>(
         }
 
         let environment = EnvironmentBuilder::new(fs.clone())
-            .load::<R>(
-                model_registry.clone(),
-                EnvironmentLoadParams {
-                    abs_path: entry.path(),
-                },
-            )
-            .await?;
+            .load::<R>(EnvironmentLoadParams {
+                abs_path: entry.path(),
+            })
+            .await
+            .join_err_with::<()>(|| {
+                format!("failed to load environment: {}", entry.path().display())
+            })?;
 
         let desc = environment.describe().await?;
 

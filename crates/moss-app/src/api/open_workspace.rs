@@ -14,12 +14,7 @@ impl<R: AppRuntime> App<R> {
     ) -> OperationResult<OpenWorkspaceOutput> {
         let desc = self
             .workspace_service
-            .activate_workspace(
-                ctx,
-                &input.id,
-                self.models.clone(),
-                self.activity_indicator.clone(),
-            )
+            .activate_workspace(ctx, &input.id, self.activity_indicator.clone())
             .await?;
 
         Ok(OpenWorkspaceOutput {

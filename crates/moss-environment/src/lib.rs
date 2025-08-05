@@ -1,16 +1,15 @@
 pub mod builder;
 pub mod configuration;
+pub mod edit;
 pub mod environment;
 pub mod models;
-pub mod services;
 pub mod utils;
-
-use std::{path::Path, sync::Arc};
 
 pub use environment::Environment;
 
 use moss_applib::AppRuntime;
 use moss_bindingutils::primitives::ChangeString;
+use std::path::PathBuf;
 
 use crate::models::{
     primitives::{EnvironmentId, VariableId},
@@ -68,8 +67,7 @@ pub struct DescribeEnvironment {
 
 #[allow(private_bounds, async_fn_in_trait)]
 pub trait AnyEnvironment<R: AppRuntime> {
-    async fn abs_path(&self) -> Arc<Path>;
-    async fn color(&self) -> Option<String>;
+    async fn abs_path(&self) -> PathBuf;
     async fn name(&self) -> joinerror::Result<String>;
     async fn describe(&self) -> joinerror::Result<DescribeEnvironment>;
     async fn modify(&self, params: ModifyEnvironmentParams) -> joinerror::Result<()>;

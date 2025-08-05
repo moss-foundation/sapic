@@ -1,9 +1,9 @@
-use anyhow::Result;
+use joinerror::ResultExt;
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::AppRuntime;
-use moss_environment::{builder::EnvironmentBuilder, models::primitives::EnvironmentId};
+use moss_environment::builder::EnvironmentBuilder;
 use moss_file::json::JsonFileHandle;
-use moss_fs::{CreateOptions, FileSystem, model_registry::GlobalModelRegistry};
+use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use std::{cell::LazyCell, path::Path, sync::Arc};
 
 use crate::{
@@ -48,7 +48,10 @@ impl WorkspaceBuilder {
         Self { fs }
     }
 
-    pub async fn initialize(fs: Arc<dyn FileSystem>, params: CreateWorkspaceParams) -> Result<()> {
+    pub async fn initialize(
+        fs: Arc<dyn FileSystem>,
+        params: CreateWorkspaceParams,
+    ) -> joinerror::Result<()> {
         debug_assert!(params.abs_path.is_absolute());
 
         for dir in &[dirs::COLLECTIONS_DIR, dirs::ENVIRONMENTS_DIR] {
@@ -56,16 +59,15 @@ impl WorkspaceBuilder {
         }
 
         for env in PREDEFINED_ENVIRONMENTS.iter() {
-            let id = EnvironmentId::new();
             EnvironmentBuilder::new(fs.clone())
                 .initialize(moss_environment::builder::CreateEnvironmentParams {
-                    id,
                     name: env.name.clone(),
                     abs_path: &params.abs_path.join(dirs::ENVIRONMENTS_DIR),
                     color: env.color.clone(),
                     order: env.order,
                 })
-                .await?;
+                .await
+                .join_err_with::<()>(|| format!("failed to initialize environment {}", env.name))?;
         }
 
         fs.create_file_with(
@@ -73,7 +75,8 @@ impl WorkspaceBuilder {
             serde_json::to_string(&ManifestModel { name: params.name })?.as_bytes(),
             CreateOptions::default(),
         )
-        .await?;
+        .await
+        .join_err::<()>(format!("failed to create manifest file"))?;
 
         Ok(())
     }
@@ -81,10 +84,9 @@ impl WorkspaceBuilder {
     pub async fn load<R: AppRuntime>(
         self,
         ctx: &R::AsyncContext,
-        models: Arc<GlobalModelRegistry>,
         activity_indicator: ActivityIndicator<R::EventLoop>, // FIXME: will be passed as a service in the future
         params: LoadWorkspaceParams,
-    ) -> Result<Workspace<R>> {
+    ) -> joinerror::Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
 
         let storage_service: Arc<StorageService<R>> = StorageService::new(&params.abs_path)?.into();
@@ -97,7 +99,7 @@ impl WorkspaceBuilder {
         )
         .await?;
         let environment_service =
-            EnvironmentService::new(&params.abs_path, self.fs.clone(), models.clone()).await?;
+            EnvironmentService::new(&params.abs_path, self.fs.clone()).await?;
 
         let manifest =
             JsonFileHandle::load(self.fs.clone(), &params.abs_path.join(MANIFEST_FILE_NAME))
@@ -117,13 +119,14 @@ impl WorkspaceBuilder {
     pub async fn create<R: AppRuntime>(
         self,
         ctx: &R::AsyncContext,
-        models: Arc<GlobalModelRegistry>,
         activity_indicator: ActivityIndicator<R::EventLoop>, // FIXME: will be passed as a service in the future
         params: CreateWorkspaceParams,
-    ) -> Result<Workspace<R>> {
+    ) -> joinerror::Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
 
-        WorkspaceBuilder::initialize(self.fs.clone(), params.clone()).await?;
+        WorkspaceBuilder::initialize(self.fs.clone(), params.clone())
+            .await
+            .join_err::<()>("failed to initialize workspace")?;
 
         let storage_service: Arc<StorageService<R>> = StorageService::new(&params.abs_path)?.into();
         let layout_service = LayoutService::new(storage_service.clone());
@@ -135,7 +138,7 @@ impl WorkspaceBuilder {
         )
         .await?;
         let environment_service =
-            EnvironmentService::new(&params.abs_path, self.fs.clone(), models.clone()).await?;
+            EnvironmentService::new(&params.abs_path, self.fs.clone()).await?;
 
         let manifest =
             JsonFileHandle::load(self.fs.clone(), &params.abs_path.join(MANIFEST_FILE_NAME))

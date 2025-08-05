@@ -1,30 +1,31 @@
 use derive_more::Deref;
-use joinerror::{Error, ResultExt};
-use moss_applib::AppRuntime;
-use moss_fs::{FileSystem, RenameOptions, model_registry::GlobalModelRegistry};
-use moss_hcl::hcl_to_json;
-use std::{
-    path::{Path, PathBuf},
-    sync::Arc,
+use joinerror::{OptionExt, ResultExt};
+use json_patch::{
+    AddOperation, PatchOperation, RemoveOperation, ReplaceOperation, jsonptr::PointerBuf,
 };
-use tokio::sync::RwLock;
+use moss_applib::AppRuntime;
+use moss_bindingutils::primitives::{ChangeJsonValue, ChangeString};
+use moss_common::continue_if_err;
+use moss_fs::{FileSystem, FsResultExt};
+use moss_hcl::{HclResultExt, hcl_to_json, json_to_hcl};
+use serde_json::Value as JsonValue;
+use std::{marker::PhantomData, path::PathBuf, sync::Arc};
+use tokio::sync::watch;
 
 use crate::{
     AnyEnvironment, DescribeEnvironment, ModifyEnvironmentParams,
-    models::types::VariableInfo,
-    services::{
-        metadata_service::MetadataService, sync_service::SyncService,
-        variable_service::VariableService,
-    },
+    configuration::{SourceFile, VariableDecl},
+    edit::EnvironmentEditing,
+    models::{primitives::VariableId, types::VariableInfo},
     utils,
 };
 #[derive(Debug, Deref, Clone)]
 pub(super) struct EnvironmentPath {
-    parent: PathBuf,
     filename: String,
+    pub parent: PathBuf,
 
     #[deref]
-    full_path: PathBuf,
+    pub full_path: PathBuf,
 }
 
 impl EnvironmentPath {
@@ -33,11 +34,11 @@ impl EnvironmentPath {
 
         let parent = abs_path
             .parent()
-            .ok_or_else(|| joinerror::Error::new::<()>("environment path must have a parent"))?;
+            .ok_or_join_err::<()>("environment path must have a parent")?;
 
         let name = abs_path
             .file_name()
-            .ok_or_else(|| joinerror::Error::new::<()>("environment path must have a name"))?;
+            .ok_or_join_err::<()>("environment path must have a name")?;
 
         Ok(Self {
             parent: parent.to_path_buf(),
@@ -45,82 +46,63 @@ impl EnvironmentPath {
             full_path: abs_path,
         })
     }
-
-    pub fn full_path(&self) -> &Path {
-        &self.full_path
-    }
-}
-
-pub(super) struct EnvironmentState {
-    pub abs_path: EnvironmentPath,
 }
 
 pub struct Environment<R: AppRuntime> {
     pub(super) fs: Arc<dyn FileSystem>,
-    pub(super) model_registry: Arc<GlobalModelRegistry>,
-    pub(super) state: RwLock<EnvironmentState>,
-    pub(super) metadata_service: MetadataService,
-    pub(super) sync_service: Arc<SyncService>,
-    pub(super) variable_service: VariableService<R>,
+    pub(super) abs_path_rx: watch::Receiver<EnvironmentPath>,
+    pub(super) edit: EnvironmentEditing,
+    pub(super) _marker: PhantomData<R>, // FIXME: can be removed after the store field that requires a generic is added
 }
 
 unsafe impl<R: AppRuntime> Send for Environment<R> {}
 unsafe impl<R: AppRuntime> Sync for Environment<R> {}
 
 impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
-    async fn abs_path(&self) -> Arc<Path> {
-        self.state.read().await.abs_path.full_path.clone()
+    async fn abs_path(&self) -> PathBuf {
+        self.abs_path_rx.borrow().full_path.clone()
     }
 
     async fn name(&self) -> joinerror::Result<String> {
-        let filename = self.state.read().await.abs_path.filename.clone();
-        utils::parse_file_name(&filename).map_err(|err| {
-            Error::new::<()>(format!("failed to parse environment file name: {}", err))
-        })
-    }
-
-    async fn color(&self) -> Option<String> {
-        None // TODO: hardcoded for now
+        utils::parse_file_name(&self.abs_path_rx.borrow().filename)
+            .join_err::<()>("failed to parse environment file name")
     }
 
     async fn describe(&self) -> joinerror::Result<DescribeEnvironment> {
-        let metadata = self
-            .metadata_service
-            .describe(&self.abs_path().await)
-            .await?;
+        let abs_path = self.abs_path().await;
+        let rdr = self
+            .fs
+            .open_file(&abs_path)
+            .await
+            .join_err_with::<()>(|| format!("failed to open file: {}", abs_path.display()))?;
 
-        let var_items = self.variable_service.list().await;
-        let mut variables = Vec::with_capacity(var_items.len());
-        for (id, variable) in var_items {
-            let global_value = match hcl_to_json(&variable.global_value) {
-                Ok(value) => value,
-                Err(err) => {
-                    println!("failed to convert global value expression: {}", err);
-                    continue;
-                }
-            };
-            let local_value = match hcl_to_json(&variable.local_value) {
-                Ok(value) => value,
-                Err(err) => {
-                    println!("failed to convert local value expression: {}", err);
-                    continue;
-                }
-            };
+        let parsed: SourceFile = hcl::from_reader(rdr).join_err::<()>("failed to parse hcl")?;
 
-            variables.push(VariableInfo {
-                id,
-                name: variable.name,
-                global_value,
-                local_value,
-                disabled: variable.options.disabled,
-                order: variable.order,
-                desc: variable.desc,
-            });
+        let mut variables = Vec::with_capacity(parsed.variables.as_ref().map_or(0, |v| v.len()));
+
+        // TODO: Get the cache for all variables.
+
+        if let Some(vars) = parsed.variables.as_ref() {
+            for (id, var) in vars.iter() {
+                let global_value = continue_if_err!(hcl_to_json(&var.value), |err| {
+                    println!("failed to convert global value expression: {}", err); // TODO: log error
+                });
+
+                variables.push(VariableInfo {
+                    id: id.clone(),
+                    name: var.name.clone(),
+                    global_value: Some(global_value), // FIXME: hardcoded for now (get from the db cache)
+                    local_value: None,                //
+                    disabled: var.options.disabled,
+                    order: 0, // FIXME: hardcoded for now (get from the db cache)
+                    desc: var.description.clone(),
+                });
+            }
         }
 
         Ok(DescribeEnvironment {
-            id: metadata.id,
-            color: metadata.color,
+            id: parsed.metadata.id.clone(),
+            color: parsed.metadata.color.clone(),
             name: self.name().await?,
             variables,
         })
@@ -128,60 +110,124 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
 
     async fn modify(&self, params: ModifyEnvironmentParams) -> joinerror::Result<()> {
         if let Some(new_name) = params.name {
-            self.rename(new_name).await?;
+            self.edit.rename(&new_name).await?;
         }
 
-        let abs_path = self.state.read().await.abs_path.full_path.clone();
+        let mut patches = Vec::new();
 
-        self.variable_service
-            .batch_add(&abs_path, params.vars_to_add)
-            .await?;
-        self.variable_service
-            .batch_remove(&abs_path, params.vars_to_delete)
-            .await?;
+        match params.color {
+            Some(ChangeString::Update(color)) => {
+                patches.push(PatchOperation::Add(AddOperation {
+                    path: unsafe { PointerBuf::new_unchecked("/metadata/color") },
+                    value: JsonValue::String(color),
+                }));
+            }
+            Some(ChangeString::Remove) => {
+                patches.push(PatchOperation::Remove(RemoveOperation {
+                    path: unsafe { PointerBuf::new_unchecked("/metadata/color") },
+                }));
+            }
+            _ => {}
+        };
 
-        // TODO: update metadata(color)
+        for var_to_add in params.vars_to_add {
+            let id = VariableId::new();
+            let id_str = id.to_string();
 
-        // TODO: we'll handle file system synchronization in the background a bit later,
-        // so we can respond to the frontend faster.
+            let global_value = continue_if_err!(json_to_hcl(&var_to_add.global_value), |err| {
+                println!("failed to convert global value expression: {}", err); // TODO: log error
+            });
 
-        self.sync_service.save(&abs_path).await?;
+            let decl = VariableDecl {
+                name: var_to_add.name.clone(),
+                value: global_value,
+                description: var_to_add.desc.clone(),
+                options: var_to_add.options.clone(),
+            };
 
-        Ok(())
-    }
-}
+            let value = continue_if_err!(serde_json::to_value(decl), |err| {
+                println!("failed to convert variable declaration to json: {}", err); // TODO: log error
+            });
 
-impl<R: AppRuntime> Environment<R> {
-    async fn rename(&self, new_name: String) -> joinerror::Result<()> {
-        let new_file_name = utils::format_file_name(&new_name);
-        let mut state = self.state.write().await;
-        let current_abs_path = state.abs_path.full_path.clone();
-        let new_abs_path: Arc<Path> = state.abs_path.parent.join(new_file_name).into();
-        let environment_path =
-            EnvironmentPath::new(new_abs_path.clone()).join_err_with::<()>(|| {
-                format!(
-                    "failed to create environment path {}",
-                    new_abs_path.display()
-                )
-            })?;
+            patches.push(PatchOperation::Add(AddOperation {
+                path: unsafe { PointerBuf::new_unchecked(format!("/variable/{}", id_str)) },
+                value,
+            }));
+        }
 
-        self.fs
-            .rename(
-                &current_abs_path,
-                &new_abs_path,
-                RenameOptions {
-                    overwrite: true,
-                    ignore_if_exists: false,
-                },
-            )
+        for var_to_update in params.vars_to_update {
+            if let Some(new_name) = var_to_update.name {
+                patches.push(PatchOperation::Replace(ReplaceOperation {
+                    path: unsafe {
+                        PointerBuf::new_unchecked(format!("/variable/{}/name", var_to_update.id))
+                    },
+                    value: JsonValue::String(new_name),
+                }));
+            }
+
+            match var_to_update.global_value {
+                Some(ChangeJsonValue::Update(value)) => {
+                    patches.push(PatchOperation::Replace(ReplaceOperation {
+                        path: unsafe {
+                            PointerBuf::new_unchecked(format!(
+                                "/variable/{}/value",
+                                var_to_update.id
+                            ))
+                        },
+                        value,
+                    }));
+                }
+                Some(ChangeJsonValue::Remove) => {
+                    patches.push(PatchOperation::Remove(RemoveOperation {
+                        path: unsafe {
+                            PointerBuf::new_unchecked(format!(
+                                "/variable/{}/value",
+                                var_to_update.id
+                            ))
+                        },
+                    }));
+                }
+                _ => {}
+            }
+
+            match var_to_update.desc {
+                Some(ChangeString::Update(value)) => {
+                    patches.push(PatchOperation::Replace(ReplaceOperation {
+                        path: unsafe {
+                            PointerBuf::new_unchecked(format!(
+                                "/variable/{}/description",
+                                var_to_update.id
+                            ))
+                        },
+                        value: JsonValue::String(value),
+                    }));
+                }
+                Some(ChangeString::Remove) => {
+                    patches.push(PatchOperation::Remove(RemoveOperation {
+                        path: unsafe {
+                            PointerBuf::new_unchecked(format!(
+                                "/variable/{}/description",
+                                var_to_update.id
+                            ))
+                        },
+                    }));
+                }
+                _ => {}
+            }
+        }
+
+        for id in params.vars_to_delete {
+            patches.push(PatchOperation::Remove(RemoveOperation {
+                path: unsafe { PointerBuf::new_unchecked(format!("/variable/{}", id)) },
+            }));
+        }
+
+        self.edit
+            .edit(&patches)
             .await
-            .map_err(|err| Error::new::<()>(format!("failed to rename file: {}", err)))?;
+            .join_err::<()>("failed to edit environment")?;
 
-        self.model_registry
-            .rekey(&current_abs_path, new_abs_path.clone())
-            .await;
-
-        state.abs_path = environment_path;
+        // TODO: Put/Delete the data collected for local storage to the database.
 
         Ok(())
     }

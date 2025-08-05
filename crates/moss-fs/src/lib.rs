@@ -1,6 +1,5 @@
 pub mod error;
 pub mod fs_watcher;
-pub mod model_registry;
 pub mod real;
 pub mod utils;
 
