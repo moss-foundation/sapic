@@ -9,6 +9,7 @@ use crate::{
     GitHostingProvider,
     common::SSHAuthAgent,
     constants::GITLAB_API_URL,
+    gitlab::response::{AvatarResponse, ContributorsResponse},
     models::types::{Contributor, RepositoryInfo},
 };
 
@@ -54,7 +55,7 @@ impl GitHostingProvider for GitLabClient {
         let mut headers = HeaderMap::new();
         headers.insert(ACCEPT, "application/json".parse()?);
 
-        let contributors_response: serde_json::Value = client
+        let contributors_response: ContributorsResponse = client
             .get(format!(
                 "{GITLAB_API_URL}/projects/{encoded_url}/repository/contributors"
             ))
@@ -71,23 +72,12 @@ impl GitHostingProvider for GitLabClient {
         // We will need to fetch their avatar separately
 
         let mut list = Vec::new();
-        for contributor in contributors_response
-            .as_array()
-            .ok_or(anyhow!("failed to get contributor array"))?
-        {
-            let name = contributor
-                .get("name")
-                .and_then(|name| name.as_str())
-                .ok_or(anyhow!("failed to get contributor name"))?
-                .to_string();
+        for item in contributors_response.items {
+            let name = item.name;
 
-            let email = contributor
-                .get("email")
-                .and_then(|name| name.as_str())
-                .ok_or(anyhow!("failed to get contributor email"))?
-                .to_string();
+            let email = item.email;
 
-            let avatar_response: serde_json::Value = client
+            let avatar_response: AvatarResponse = client
                 .get(format!("{GITLAB_API_URL}/avatar"))
                 .query(&[("email", &email)])
                 .send()
@@ -95,11 +85,7 @@ impl GitHostingProvider for GitLabClient {
                 .json()
                 .await?;
 
-            let avatar_url = avatar_response
-                .get("avatar_url")
-                .and_then(|avatar_url| avatar_url.as_str())
-                .ok_or(anyhow!("failed to get avatar url"))?
-                .to_string();
+            let avatar_url = avatar_response.avatar_url;
 
             list.push(Contributor { name, avatar_url });
         }

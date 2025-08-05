@@ -9,6 +9,7 @@ use crate::{
     GitHostingProvider,
     common::SSHAuthAgent,
     constants::GITHUB_API_URL,
+    github::response::{ContributorItem, ContributorsResponse, RepositoryResponse},
     models::types::{Contributor, RepositoryInfo},
 };
 
@@ -52,7 +53,7 @@ impl GitHostingProvider for GitHubClient {
         let mut headers = HeaderMap::new();
         headers.insert(ACCEPT, "application/vnd.github+json".parse()?);
 
-        let contributors_response: serde_json::Value = client
+        let contributors_response: ContributorsResponse = client
             .get(format!("{GITHUB_API_URL}/repos/{repo_url}/contributors"))
             .headers(headers)
             .send()
@@ -60,26 +61,14 @@ impl GitHostingProvider for GitHubClient {
             .json()
             .await?;
 
-        let mut list = Vec::new();
-
-        for contributor in contributors_response
-            .as_array()
-            .ok_or(anyhow!("failed to get contributor array"))?
-        {
-            let name = contributor
-                .get("login")
-                .and_then(|name| name.as_str())
-                .ok_or(anyhow!("failed to get contributor name"))?
-                .to_string();
-            let avatar_url = contributor
-                .get("avatar_url")
-                .and_then(|url| url.as_str())
-                .ok_or(anyhow!("failed to get contributor avatar url"))?
-                .to_string();
-
-            list.push(Contributor { name, avatar_url });
-        }
-        Ok(list)
+        Ok(contributors_response
+            .items
+            .into_iter()
+            .map(|item| Contributor {
+                name: item.login,
+                avatar_url: item.avatar_url,
+            })
+            .collect())
     }
 
     async fn repository_info(&self, repo_url: &str) -> anyhow::Result<RepositoryInfo> {
@@ -89,7 +78,7 @@ impl GitHostingProvider for GitHubClient {
         let mut headers = HeaderMap::new();
         headers.insert(ACCEPT, "application/vnd.github+json".parse()?);
 
-        let repo_response: serde_json::Value = client
+        let repo_response: RepositoryResponse = client
             .get(format!("{GITHUB_API_URL}/repos/{repo_url}"))
             .headers(headers.clone())
             .send()
@@ -97,27 +86,10 @@ impl GitHostingProvider for GitHubClient {
             .json()
             .await?;
 
-        let created_at = repo_response
-            .get("created_at")
-            .and_then(|time| time.as_str())
-            .ok_or(anyhow!("failed to get repository created_at timestamp"))?
-            .to_string();
-        let updated_at = repo_response
-            .get("updated_at")
-            .and_then(|time| time.as_str())
-            .ok_or(anyhow!("failed to get repository updated_at timestamp"))?
-            .to_string();
-        let owner = repo_response
-            .get("owner")
-            .and_then(|owner| owner.get("login"))
-            .and_then(|name| name.as_str())
-            .ok_or(anyhow!("failed to get repository owner name"))?
-            .to_string();
-
         Ok(RepositoryInfo {
-            created_at,
-            updated_at,
-            owner,
+            created_at: repo_response.created_at,
+            updated_at: repo_response.updated_at,
+            owner: repo_response.owner.login,
         })
     }
 }
