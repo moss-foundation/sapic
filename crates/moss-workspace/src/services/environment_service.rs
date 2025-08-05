@@ -1,4 +1,6 @@
+use derive_more::Deref;
 use futures::Stream;
+use joinerror::{OptionExt, ResultExt};
 use moss_applib::{AppRuntime, ServiceMarker};
 use moss_bindingutils::primitives::ChangeString;
 use moss_environment::{
@@ -9,11 +11,9 @@ use moss_environment::{
         types::{AddVariableParams, UpdateVariableParams},
     },
 };
-use moss_fs::{FileSystem, model_registry::GlobalModelRegistry};
-use moss_workspacelib::{EnvironmentRegistry, environment_registry::EnvironmentModel};
+use moss_fs::FileSystem;
 use std::{
     collections::HashMap,
-    marker::PhantomData,
     path::{Path, PathBuf},
     pin::Pin,
     sync::Arc,
@@ -39,12 +39,19 @@ pub struct UpdateEnvironmentItemParams {
     pub vars_to_delete: Vec<VariableId>,
 }
 
-#[derive(Clone)]
-pub struct EnvironmentItem {
+#[derive(Clone, Deref)]
+struct EnvironmentItem<R>
+where
+    R: AppRuntime,
+{
     pub id: EnvironmentId,
+    pub collection_id: Option<CollectionId>,
     pub display_name: String,
     pub order: isize,
     pub expanded: bool,
+
+    #[deref]
+    pub handle: Arc<Environment<R>>,
 }
 
 pub struct EnvironmentItemDescription {
@@ -54,11 +61,16 @@ pub struct EnvironmentItemDescription {
     pub order: isize,
     pub expanded: bool,
     pub color: Option<String>,
-    pub abs_path: Arc<Path>,
+    pub abs_path: PathBuf,
 }
 
-struct ServiceState {
-    environments: HashMap<EnvironmentId, EnvironmentItem>,
+type EnvironmentMap<R> = HashMap<EnvironmentId, EnvironmentItem<R>>;
+
+struct ServiceState<R>
+where
+    R: AppRuntime,
+{
+    environments: EnvironmentMap<R>,
 }
 
 pub struct EnvironmentService<R>
@@ -67,9 +79,7 @@ where
 {
     abs_path: PathBuf,
     fs: Arc<dyn FileSystem>,
-    environment_registry: Arc<EnvironmentRegistry<R, Environment<R>>>,
-    model_registry: Arc<GlobalModelRegistry>,
-    state: Arc<RwLock<ServiceState>>,
+    state: Arc<RwLock<ServiceState<R>>>,
 }
 
 impl<R> ServiceMarker for EnvironmentService<R> where R: AppRuntime {}
@@ -79,35 +89,20 @@ where
     R: AppRuntime,
 {
     /// `abs_path` is the absolute path to the workspace directory
-    pub async fn new(
-        abs_path: &Path,
-        fs: Arc<dyn FileSystem>,
-        model_registry: Arc<GlobalModelRegistry>,
-    ) -> joinerror::Result<Self> {
+    pub async fn new(abs_path: &Path, fs: Arc<dyn FileSystem>) -> joinerror::Result<Self> {
         let abs_path = abs_path.join(dirs::ENVIRONMENTS_DIR);
-        let environment_registry = EnvironmentRegistry::new();
-        let environments = collect_environments(
-            &fs,
-            model_registry.clone(),
-            &environment_registry,
-            &abs_path,
-        )
-        .await?;
+        let environments = collect_environments(&fs, &abs_path).await?;
 
         Ok(Self {
             fs,
             abs_path,
-            environment_registry: Arc::new(environment_registry),
-            model_registry,
             state: Arc::new(RwLock::new(ServiceState { environments })),
         })
     }
 
     pub async fn environment(&self, id: &EnvironmentId) -> Option<Arc<Environment<R>>> {
-        self.environment_registry
-            .get(id)
-            .await
-            .map(|model| model.handle.clone())
+        let state = self.state.read().await;
+        state.environments.get(id).map(|item| item.handle.clone())
     }
 
     pub async fn list_environments(
@@ -119,22 +114,15 @@ where
         Box::pin(async_stream::stream! {
             let state_lock = state.read().await;
             for (_, item) in state_lock.environments.iter() {
-                if let Some(model) = self.environment_registry.get(&item.id).await {
-                    let abs_path = model.abs_path().await;
-
-                    yield EnvironmentItemDescription {
-                        id: item.id.clone(),
-                        collection_id: model.collection_id.map(Into::into),
-                        display_name: item.display_name.clone(),
-                        order: item.order,
-                        expanded: item.expanded,
-                        color: None, // TODO: hardcoded for now
-                        abs_path,
-                    };
-                } else {
-                    // TODO: log error
-                    println!("environment model not found: {}", item.id);
-                }
+                yield EnvironmentItemDescription {
+                    id: item.id.clone(),
+                    collection_id: item.collection_id.clone(),
+                    display_name: item.display_name.clone(),
+                    order: item.order,
+                    expanded: item.expanded,
+                    color: None, // TODO: hardcoded for now
+                    abs_path: item.abs_path().await,
+                };
             }
         })
     }
@@ -145,16 +133,15 @@ where
         id: &EnvironmentId,
         params: UpdateEnvironmentItemParams,
     ) -> joinerror::Result<()> {
-        let environment_model = self.environment_registry.get(id).await.ok_or_else(|| {
-            joinerror::Error::new::<ErrorNotFound>(format!("environment model not found: {}", id))
-        })?;
-
         let mut state = self.state.write().await;
-        let environment_item = state.environments.get_mut(id).ok_or_else(|| {
-            joinerror::Error::new::<ErrorNotFound>(format!("environment item not found: {}", id))
-        })?;
+        let environment_item = state
+            .environments
+            .get_mut(id)
+            .ok_or_join_err_with::<ErrorNotFound>(|| {
+                format!("environment item not found: {}", id)
+            })?;
 
-        environment_model
+        environment_item
             .modify(ModifyEnvironmentParams {
                 name: params.name.clone(),
                 color: params.color,
@@ -182,52 +169,40 @@ where
         _ctx: &R::AsyncContext,
         params: CreateEnvironmentItemParams,
     ) -> joinerror::Result<EnvironmentItemDescription> {
-        let id = EnvironmentId::new();
         let environment = EnvironmentBuilder::new(self.fs.clone())
-            .create::<R>(
-                self.model_registry.clone(),
-                moss_environment::builder::CreateEnvironmentParams {
-                    id: id.clone(),
-                    name: params.name.clone(),
-                    abs_path: &self.abs_path,
-                    color: params.color,
-                    order: params.order,
-                },
-            )
+            .create::<R>(moss_environment::builder::CreateEnvironmentParams {
+                name: params.name.clone(),
+                abs_path: &self.abs_path,
+                color: params.color,
+                order: params.order,
+            })
             .await?;
 
         let abs_path = environment.abs_path().await;
-        let color = environment.color().await;
-
-        self.environment_registry
-            .insert(EnvironmentModel {
-                id: id.clone(),
-                collection_id: params.collection_id.clone().map(|id| id.inner()),
-                handle: Arc::new(environment),
-                _runtime: PhantomData,
-            })
-            .await;
+        let desc = environment.describe().await?;
 
         let mut state = self.state.write().await;
         state.environments.insert(
-            id.clone(),
+            desc.id.clone(),
             EnvironmentItem {
-                id: id.clone(),
+                id: desc.id.clone(),
+                collection_id: params.collection_id.clone(),
                 display_name: params.name.clone(),
                 order: params.order,
                 expanded: true,
+                handle: Arc::new(environment),
             },
         );
 
         // TODO: put environment order to the database
 
         Ok(EnvironmentItemDescription {
-            id,
+            id: desc.id.clone(),
             collection_id: params.collection_id,
             display_name: params.name.clone(),
             order: params.order,
             expanded: true,
-            color,
+            color: desc.color,
             abs_path,
         })
     }
@@ -235,11 +210,9 @@ where
 
 async fn collect_environments<R: AppRuntime>(
     fs: &Arc<dyn FileSystem>,
-    model_registry: Arc<GlobalModelRegistry>,
-    environment_registry: &EnvironmentRegistry<R, Environment<R>>,
     abs_path: &Path,
-) -> joinerror::Result<HashMap<EnvironmentId, EnvironmentItem>> {
-    let mut environments = HashMap::new();
+) -> joinerror::Result<EnvironmentMap<R>> {
+    let mut environments = EnvironmentMap::new();
 
     let mut read_dir = fs
         .read_dir(abs_path)
@@ -252,32 +225,29 @@ async fn collect_environments<R: AppRuntime>(
         }
 
         let environment = EnvironmentBuilder::new(fs.clone())
-            .load::<R>(
-                model_registry.clone(),
-                EnvironmentLoadParams {
-                    abs_path: entry.path(),
-                },
-            )
-            .await?;
+            .load::<R>(EnvironmentLoadParams {
+                abs_path: entry.path(),
+            })
+            .await
+            .join_err_with::<()>(|| {
+                format!("failed to load environment: {}", entry.path().display())
+            })?;
 
         let desc = environment.describe().await?;
-
-        environment_registry
-            .insert(EnvironmentModel {
-                id: desc.id.clone(),
-                collection_id: None,
-                handle: Arc::new(environment),
-                _runtime: PhantomData,
-            })
-            .await;
 
         environments.insert(
             desc.id.clone(),
             EnvironmentItem {
                 id: desc.id,
+
+                // This is for restoring environments within the workspace scope,
+                // these workspaces don't have this parameter.
+                collection_id: None,
+
                 display_name: desc.name,
                 order: 0,       // TODO: restore from the database
                 expanded: true, // TODO: restore from the database
+                handle: Arc::new(environment),
             },
         );
     }

@@ -5,7 +5,6 @@ edition = "2024"
 
 [dependencies]
 moss_common.workspace = true
-moss_workspacelib.workspace = true
 moss_fs.workspace = true
 moss_applib.workspace = true
 moss_api.workspace = true

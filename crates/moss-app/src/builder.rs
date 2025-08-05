@@ -1,6 +1,6 @@
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::AppRuntime;
-use moss_fs::{FileSystem, model_registry::GlobalModelRegistry};
+use moss_fs::FileSystem;
 use std::{path::PathBuf, sync::Arc};
 use tauri::AppHandle;
 use tokio::sync::RwLock;
@@ -52,8 +52,6 @@ impl<R: AppRuntime> AppBuilder<R> {
                 .expect("Failed to create app directories");
         }
 
-        let model_registry: Arc<GlobalModelRegistry> = GlobalModelRegistry::new().into();
-
         let theme_service = ThemeService::new(self.fs.clone(), params.themes_dir);
         let locale_service = LocaleService::new(self.fs.clone(), params.locales_dir);
         let session_service = SessionService::new();
@@ -100,7 +98,6 @@ impl<R: AppRuntime> AppBuilder<R> {
             fs: self.fs,
             app_handle: self.app_handle.clone(),
             commands: self.commands,
-            models: model_registry,
 
             // FIXME: hardcoded for now
             preferences: AppPreferences {

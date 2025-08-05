@@ -240,7 +240,7 @@ pub struct CreateEnvironmentOutput {
 
     #[serde(skip)]
     #[ts(skip)]
-    pub abs_path: Arc<Path>,
+    pub abs_path: PathBuf,
 }
 
 // Update Environment

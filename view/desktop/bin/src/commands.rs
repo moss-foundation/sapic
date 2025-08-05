@@ -51,7 +51,11 @@ where
         .await
         .map_err_as_failed_precondition("No active workspace")?;
 
-    let collection = workspace.collection(&id).await?;
+    let collection = workspace
+        .collection(&id)
+        .await
+        .map_err_as_not_found("Collection is not found")?;
+
     let request_id = options.and_then(|opts| opts.request_id);
 
     if let Some(request_id) = &request_id {
