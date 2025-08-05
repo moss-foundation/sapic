@@ -1,13 +1,20 @@
 use anyhow::Result;
 use moss_activity_indicator::ActivityIndicator;
-use moss_applib::{AppRuntime, PublicServiceMarker, providers::ServiceProvider};
+use moss_applib::AppRuntime;
 use moss_collection::Collection;
-use moss_environment::{AnyEnvironment, Environment};
+use moss_environment::{AnyEnvironment, Environment, models::primitives::EnvironmentId};
 use moss_file::json::JsonFileHandle;
 use moss_fs::FileSystem;
 use std::{path::Path, sync::Arc};
 
-use crate::manifest::{MANIFEST_FILE_NAME, ManifestModel};
+use crate::{
+    manifest::{MANIFEST_FILE_NAME, ManifestModel},
+    models::primitives::CollectionId,
+    services::{
+        collection_service::CollectionService, environment_service::EnvironmentService,
+        layout_service::LayoutService, storage_service::StorageService,
+    },
+};
 
 pub struct WorkspaceSummary {
     pub manifest: ManifestModel,
@@ -21,31 +28,39 @@ pub struct WorkspaceModifyParams {
 pub trait AnyWorkspace<R: AppRuntime> {
     type Collection;
     type Environment: AnyEnvironment<R>;
-
-    // type CollectionService: AnyCollectionService<R>;
-    // type EnvironmentService: AnyEnvironmentService;
 }
 
 pub struct Workspace<R: AppRuntime> {
     pub(super) abs_path: Arc<Path>,
-    pub(super) services: ServiceProvider,
+
     #[allow(dead_code)]
     pub(super) activity_indicator: ActivityIndicator<R::EventLoop>,
     #[allow(dead_code)]
     pub(super) manifest: JsonFileHandle<ManifestModel>,
+
+    pub(super) layout_service: LayoutService<R>,
+    pub(super) collection_service: CollectionService<R>,
+    pub(super) environment_service: EnvironmentService<R>,
+    pub(super) storage_service: Arc<StorageService<R>>,
 }
 
 impl<R: AppRuntime> AnyWorkspace<R> for Workspace<R> {
     type Collection = Collection<R>;
     type Environment = Environment<R>;
-
-    // type CollectionService = CollectionService;
-    // type EnvironmentService = EnvironmentService;
 }
 
 impl<R: AppRuntime> Workspace<R> {
-    pub fn service<S: PublicServiceMarker>(&self) -> &S {
-        self.services.get::<S>()
+    pub fn abs_path(&self) -> &Path {
+        &self.abs_path
+    }
+
+    // TODO: return Option<Arc<Collection<R>>>
+    pub async fn collection(&self, id: &CollectionId) -> joinerror::Result<Arc<Collection<R>>> {
+        self.collection_service.collection(id).await
+    }
+
+    pub async fn environment(&self, id: &EnvironmentId) -> Option<Arc<Environment<R>>> {
+        self.environment_service.environment(id).await
     }
 
     // INFO: This will probably be moved to EditService in the future.
@@ -79,13 +94,11 @@ impl<R: AppRuntime> Workspace<R> {
     pub async fn manifest(&self) -> ManifestModel {
         self.manifest.model().await
     }
+}
 
-    pub fn abs_path(&self) -> &Arc<Path> {
-        &self.abs_path
+#[cfg(any(test, feature = "integration-tests"))]
+impl<R: AppRuntime> Workspace<R> {
+    pub fn db(&self) -> &Arc<dyn moss_storage::WorkspaceStorage<R::AsyncContext>> {
+        self.storage_service.storage()
     }
-
-    // // Test only utility, not feature-flagged for easier CI setup
-    // pub fn __storage(&self) -> Arc<dyn WorkspaceStorage> {
-    //     self.storage.clone()
-    // }
 }

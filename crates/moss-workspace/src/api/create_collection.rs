@@ -6,7 +6,7 @@ use crate::{
         operations::{CreateCollectionInput, CreateCollectionOutput},
         primitives::CollectionId,
     },
-    services::{DynCollectionService, collection_service::CollectionItemCreateParams},
+    services::collection_service::CollectionItemCreateParams,
     workspace::Workspace,
 };
 
@@ -20,10 +20,10 @@ impl<R: AppRuntime> Workspace<R> {
 
         debug_assert!(input.external_path.is_none(), "Is not implemented");
 
-        let collection_service = self.services.get::<DynCollectionService<R>>();
         let id = CollectionId::new();
 
-        let description = collection_service
+        let description = self
+            .collection_service
             .create_collection(
                 ctx,
                 &id,

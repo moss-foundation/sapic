@@ -4,7 +4,6 @@ use moss_common::api::OperationResult;
 use crate::{
     app::App,
     models::operations::{BatchDeleteLogInput, BatchDeleteLogOutput},
-    services::log_service::LogService,
 };
 
 impl<R: AppRuntime> App<R> {
@@ -13,8 +12,7 @@ impl<R: AppRuntime> App<R> {
         ctx: &R::AsyncContext,
         input: &BatchDeleteLogInput,
     ) -> OperationResult<BatchDeleteLogOutput> {
-        let log_service = self.services.get::<LogService<R>>();
-        match log_service.delete_logs(ctx, input.ids.iter()).await {
+        match self.log_service.delete_logs(ctx, input.ids.iter()).await {
             Ok(output) => Ok(BatchDeleteLogOutput {
                 deleted_entries: output,
             }),

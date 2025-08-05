@@ -5,7 +5,6 @@ use tauri::ipc::Channel as TauriChannel;
 
 use crate::{
     models::{events::StreamCollectionsEvent, operations::StreamCollectionsOutput},
-    services::DynCollectionService,
     workspace::Workspace,
 };
 
@@ -15,8 +14,7 @@ impl<R: AppRuntime> Workspace<R> {
         ctx: &R::AsyncContext,
         channel: TauriChannel<StreamCollectionsEvent>,
     ) -> OperationResult<StreamCollectionsOutput> {
-        let collections = self.services.get::<DynCollectionService<R>>();
-        let stream = collections.list_collections(ctx).await;
+        let stream = self.collection_service.list_collections(ctx).await;
         tokio::pin!(stream);
 
         let mut total_returned = 0;

@@ -1,32 +1,25 @@
 use joinerror::Error;
 use json_patch::PatchOperation;
-use moss_applib::{AppRuntime, AppService, ServiceMarker};
+use moss_applib::{AppService, ServiceMarker};
 use moss_fs::{CreateOptions, FileSystem, model_registry::GlobalModelRegistry};
 use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};
-use tokio::sync::RwLock;
 
-use crate::{configuration::SourceFile, services::AnySyncService};
-
-struct ServiceState {
-    uri: String,
-}
+use crate::configuration::SourceFile;
 
 pub struct SyncService {
-    models: GlobalModelRegistry,
+    model_registry: Arc<GlobalModelRegistry>,
     fs: Arc<dyn FileSystem>,
-    state: Arc<RwLock<ServiceState>>,
 }
 
 impl AppService for SyncService {}
 impl ServiceMarker for SyncService {}
 
-impl<R: AppRuntime> AnySyncService<R> for SyncService {
-    async fn save(&self) -> joinerror::Result<()> {
-        let uri = self.state.read().await.uri.clone();
+impl SyncService {
+    pub async fn save(&self, abs_path: &Path) -> joinerror::Result<()> {
         let model = self
-            .models
-            .get(&uri)
+            .model_registry
+            .get(abs_path)
             .await
             .ok_or_else(|| Error::new::<()>("model not found"))?;
 
@@ -51,10 +44,9 @@ impl<R: AppRuntime> AnySyncService<R> for SyncService {
             ))
         })?;
 
-        let state = self.state.read().await;
         self.fs
             .create_file_with(
-                &Path::new(&state.uri),
+                &abs_path,
                 content.as_bytes(),
                 CreateOptions {
                     overwrite: true,
@@ -67,11 +59,14 @@ impl<R: AppRuntime> AnySyncService<R> for SyncService {
         Ok(())
     }
 
-    async fn apply(&self, patches: &[PatchOperation]) -> joinerror::Result<JsonValue> {
-        let state = self.state.read().await;
+    pub async fn apply(
+        &self,
+        path: &Path,
+        patches: &[PatchOperation],
+    ) -> joinerror::Result<JsonValue> {
         let json_value = self
-            .models
-            .with_model_mut(&state.uri, |model| {
+            .model_registry
+            .with_model_mut(path, |model| {
                 let model = model.as_json_mut().expect("model is not a json model");
                 model
                     .apply(patches)
@@ -87,11 +82,7 @@ impl<R: AppRuntime> AnySyncService<R> for SyncService {
 }
 
 impl SyncService {
-    pub fn new(uri: String, models: GlobalModelRegistry, fs: Arc<dyn FileSystem>) -> Self {
-        Self {
-            models,
-            fs,
-            state: Arc::new(RwLock::new(ServiceState { uri })),
-        }
+    pub fn new(model_registry: Arc<GlobalModelRegistry>, fs: Arc<dyn FileSystem>) -> Self {
+        Self { model_registry, fs }
     }
 }

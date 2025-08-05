@@ -4,7 +4,7 @@ use json_patch::{AddOperation, PatchOperation, RemoveOperation, jsonptr::Pointer
 use moss_applib::{AppRuntime, ServiceMarker};
 use moss_hcl::json_to_hcl;
 use serde_json::{Value as JsonValue, json, map::Map as JsonMap};
-use std::{collections::HashMap, marker::PhantomData};
+use std::{collections::HashMap, marker::PhantomData, path::Path, sync::Arc};
 use tokio::sync::RwLock;
 
 use crate::{
@@ -13,15 +13,17 @@ use crate::{
         primitives::VariableId,
         types::{AddVariableParams, VariableOptions},
     },
-    services::{AnyStorageService, AnySyncService, AnyVariableService},
+    services::sync_service::SyncService,
 };
 
 #[derive(Debug, Clone)]
 pub struct VariableItem {
     pub id: VariableId,
+    pub name: String,
     pub local_value: HclExpression,
     pub global_value: HclExpression,
     pub desc: Option<String>,
+    pub order: isize,
     pub options: VariableOptions,
 }
 
@@ -32,48 +34,30 @@ struct ServiceState {
 }
 
 #[allow(private_bounds)]
-pub struct VariableService<R, StorageService, SyncService>
+pub struct VariableService<R>
 where
     R: AppRuntime,
-    StorageService: AnyStorageService<R>,
-    SyncService: AnySyncService<R>,
 {
     state: RwLock<ServiceState>,
-    #[allow(dead_code)]
-    storage_service: StorageService,
-    sync_service: SyncService,
+    // storage_service: Arc<StorageService<R>>,
+    sync_service: Arc<SyncService>,
     _marker: PhantomData<R>,
 }
 
-impl<R, StorageService, SyncService> ServiceMarker
-    for VariableService<R, StorageService, SyncService>
-where
-    R: AppRuntime,
-    StorageService: AnyStorageService<R> + 'static,
-    SyncService: AnySyncService<R> + 'static,
-{
-}
+unsafe impl<R> Send for VariableService<R> where R: AppRuntime {}
+unsafe impl<R> Sync for VariableService<R> where R: AppRuntime {}
 
-impl<R, StorageService, SyncService> AnyVariableService<R>
-    for VariableService<R, StorageService, SyncService>
-where
-    R: AppRuntime,
-    StorageService: AnyStorageService<R>,
-    SyncService: AnySyncService<R>,
-{
-}
+impl<R> ServiceMarker for VariableService<R> where R: AppRuntime {}
 
 #[allow(private_bounds)]
-impl<R, StorageService, SyncService> VariableService<R, StorageService, SyncService>
+impl<R> VariableService<R>
 where
     R: AppRuntime,
-    StorageService: AnyStorageService<R>,
-    SyncService: AnySyncService<R>,
 {
     pub fn new(
         source: Option<&JsonMap<String, JsonValue>>,
-        storage_service: StorageService,
-        sync_service: SyncService,
+        // storage_service: Arc<StorageService<R>>,
+        sync_service: Arc<SyncService>,
     ) -> joinerror::Result<Self> {
         let variables = if let Some(source) = source {
             collect_variables(source)?
@@ -83,14 +67,18 @@ where
 
         Ok(Self {
             state: RwLock::new(ServiceState { variables }),
-            storage_service,
+            // storage_service,
             sync_service,
             _marker: PhantomData,
         })
     }
 
-    pub async fn batch_remove(&self, ids: Vec<VariableId>) -> joinerror::Result<()> {
-        let state = self.state.write().await;
+    pub async fn list(&self) -> HashMap<VariableId, VariableItem> {
+        self.state.read().await.variables.clone()
+    }
+
+    pub async fn batch_remove(&self, path: &Path, ids: Vec<VariableId>) -> joinerror::Result<()> {
+        let mut state = self.state.write().await;
         if state.variables.is_empty() {
             return Ok(());
         }
@@ -102,14 +90,18 @@ where
             }));
         }
 
-        let json_value = self.sync_service.apply(&patches).await?;
+        let json_value = self.sync_service.apply(path, &patches).await?;
 
         // INFO: This isn't the most optimized approach.
         // In the future, when file changes are handled in the background, we can create a separate watch channel
         // to monitor changes to the JsonValue file. We'll send the updated value to that channel, and in this service,
         // we'll run a background task that listens to the channel and automatically updates the state when it receives any changes.
         {
-            let mut state = self.state.write().await;
+            // FIXME: The variables map in the service state is not cleared at this point.
+            // So is extending it with current collected variables the correct after a batch remove.
+            // For example, if we removed variable ID 1 in this operation, it should still be inside the map,
+            // but will not be collected. At the end when we extend the hashmap, the old entry will not get deleted.
+
             let map = json_value.get("variable").unwrap().as_object().unwrap();
             let variables = collect_variables(map)?;
 
@@ -119,7 +111,11 @@ where
         Ok(())
     }
 
-    pub async fn batch_add(&self, params: Vec<AddVariableParams>) -> joinerror::Result<()> {
+    pub async fn batch_add(
+        &self,
+        path: &Path,
+        params: Vec<AddVariableParams>,
+    ) -> joinerror::Result<()> {
         let mut new_variables = HashMap::with_capacity(params.len());
         let mut patches = Vec::with_capacity(params.len());
 
@@ -143,7 +139,7 @@ where
             })?;
 
             let value = VariableSpec {
-                name: param.name,
+                name: param.name.clone(),
                 value: global_value.clone(),
                 description: param.desc.clone(),
                 options: param.options.clone(),
@@ -151,9 +147,11 @@ where
 
             let item = VariableItem {
                 id: id.clone(),
+                name: param.name,
                 local_value: HclExpression::Null,
                 global_value,
                 desc: param.desc,
+                order: param.order,
                 options: param.options,
             };
 
@@ -170,7 +168,7 @@ where
             new_variables.insert(id, item);
         }
 
-        let json_value = self.sync_service.apply(&patches).await?;
+        let json_value = self.sync_service.apply(path, &patches).await?;
 
         // INFO: This isn't the most optimized approach.
         // In the future, when file changes are handled in the background, we can create a separate watch channel
@@ -211,9 +209,11 @@ fn collect_variables(
             id.clone(),
             VariableItem {
                 id,
-                local_value: HclExpression::Null, // TODO: restore from the database
+                name: var.name,
+                local_value: HclExpression::Null, // TODO: restore from the store
                 global_value: var.value,
                 desc: var.description,
+                order: 0, // TODO: restore from the store
                 options: var.options,
             },
         );
@@ -226,25 +226,19 @@ fn collect_variables(
 mod tests {
     use hcl::{Expression as HclExpression, expr::Variable};
     use indexmap::IndexMap;
-    use moss_applib::{context::AsyncContext, mock::MockAppRuntime};
+    use moss_applib::mock::MockAppRuntime;
     use moss_fs::{RealFileSystem, model_registry::GlobalModelRegistry};
     use moss_hcl::{Block, LabeledBlock};
-    use moss_storage::common::VariableStore;
     use std::{path::PathBuf, sync::Arc};
 
     use crate::{
-        AnyEnvironment,
-        builder::{EnvironmentBuilder, EnvironmentCreateParams},
+        AnyEnvironment, ModifyEnvironmentParams,
+        builder::{CreateEnvironmentParams, EnvironmentBuilder},
         configuration::{MetadataDecl, SourceFile, VariableSpec},
         models::primitives::EnvironmentId,
-        services::{storage_service::StorageService, sync_service::SyncService},
     };
 
     use super::*;
-
-    struct TestVariableStore {}
-
-    impl VariableStore<AsyncContext> for TestVariableStore {}
 
     #[test]
     fn t() {
@@ -366,44 +360,46 @@ mod tests {
         }
 
         let fs = Arc::new(RealFileSystem::new());
-        let global_model_registry = GlobalModelRegistry::new();
-        let storage_service: StorageService<MockAppRuntime> =
-            StorageService::new(Arc::new(TestVariableStore {}));
-        let sync_service = SyncService::new(
-            abs_path.join("data.env.sap").to_string_lossy().to_string(),
-            global_model_registry.clone(),
-            fs.clone(),
-        );
-        let variable_service = VariableService::new(None, storage_service, sync_service).unwrap();
+        let global_model_registry = Arc::new(GlobalModelRegistry::new());
 
-        struct MyEnvStore<Environment: AnyEnvironment<MockAppRuntime>> {
-            map: HashMap<String, Environment>,
-        }
+        // struct MyEnvStore<Environment: AnyEnvironment<MockAppRuntime>> {
+        //     map: HashMap<String, Environment>,
+        // }
 
-        let _env = EnvironmentBuilder::new(fs, global_model_registry)
-            .create::<MockAppRuntime>(EnvironmentCreateParams {
-                name: "data".to_string(),
-                abs_path,
-                color: None,
-            })
+        let env = EnvironmentBuilder::new(fs)
+            .create::<MockAppRuntime>(
+                global_model_registry,
+                CreateEnvironmentParams {
+                    id: EnvironmentId::new(),
+                    name: "data".to_string(),
+                    abs_path: &abs_path,
+                    color: None,
+                    order: 0,
+                },
+            )
             .await
             .unwrap();
 
-        let mut env_store = MyEnvStore {
-            map: HashMap::new(),
-        };
-        env_store.map.insert("data".to_string(), _env);
+        // let mut env_store = MyEnvStore {
+        //     map: HashMap::new(),
+        // };
+        // env_store.map.insert("data".to_string(), env);
 
-        variable_service
-            .batch_add(vec![AddVariableParams {
+        env.modify(ModifyEnvironmentParams {
+            name: None,
+            color: None,
+            vars_to_update: vec![],
+            vars_to_add: vec![AddVariableParams {
                 name: "test".to_string(),
                 global_value: json!("test_value"),
                 desc: None,
                 local_value: JsonValue::Null,
                 order: 0,
                 options: VariableOptions { disabled: false },
-            }])
-            .await
-            .unwrap();
+            }],
+            vars_to_delete: vec![],
+        })
+        .await
+        .unwrap();
     }
 }

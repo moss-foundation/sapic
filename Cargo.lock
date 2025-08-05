@@ -3689,16 +3689,19 @@ dependencies = [
  "chrono",
  "derive_more 2.0.1",
  "futures",
+ "joinerror",
  "moss_activity_indicator",
  "moss_api",
  "moss_applib",
  "moss_common",
  "moss_db",
+ "moss_environment",
  "moss_fs",
  "moss_storage",
  "moss_testutils",
  "moss_text",
  "moss_workspace",
+ "moss_workspacelib",
  "nanoid",
  "rustc-hash",
  "serde",
@@ -3732,6 +3735,7 @@ name = "moss_bindingutils"
 version = "0.1.0"
 dependencies = [
  "serde",
+ "serde_json",
  "ts-rs",
 ]
 
@@ -4006,6 +4010,7 @@ dependencies = [
  "moss_storage",
  "moss_testutils",
  "moss_text",
+ "moss_workspacelib",
  "nanoid",
  "rand 0.9.1",
  "serde",
@@ -4015,6 +4020,16 @@ dependencies = [
  "tokio",
  "ts-rs",
  "validator",
+]
+
+[[package]]
+name = "moss_workspacelib"
+version = "0.1.0"
+dependencies = [
+ "derive_more 2.0.1",
+ "moss_applib",
+ "moss_environment",
+ "tokio",
 ]
 
 [[package]]

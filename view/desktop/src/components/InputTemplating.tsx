@@ -1,10 +1,19 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { cva } from "class-variance-authority";
 import { cn } from "@/utils";
+import {
+  extractVariables,
+  createHighlightedHTML,
+  extractPlainText,
+  getTextOffset,
+  setCursorPosition,
+  getCurrentCursorOffset,
+} from "@/utils/templating";
 
 interface InputTemplatingProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size"> {
   size?: "sm" | "md";
   onTemplateChange?: (value: string, variables: string[]) => void;
+  highlightColonVariables?: boolean;
 }
 
 //prettier-ignore
@@ -34,12 +43,12 @@ const containerStyles = cva(`
 });
 
 const editorStyles = cva(
-  `white-space-nowrap word-break-keep-all flex h-full w-full resize-none flex-nowrap items-center overflow-x-auto overflow-y-hidden border-none bg-transparent font-mono text-sm outline-none`,
+  `white-space-nowrap word-break-keep-all flex h-full w-full resize-none flex-nowrap items-center overflow-x-auto overflow-y-hidden border-none bg-transparent outline-none`,
   {
     variants: {
       size: {
-        sm: "max-h-7 min-h-7 text-sm leading-7",
-        md: "text-md max-h-9 min-h-9 leading-8",
+        sm: "max-h-7 min-h-7 leading-7",
+        md: "max-h-9 min-h-9 leading-8",
       },
     },
   }
@@ -49,79 +58,11 @@ const highlightedVariableStyles =
   "background-(--moss-templating-input-bg) text-(--moss-templating-input-text) border border-(--moss-templating-input-border) rounded-sm px-0.5 whitespace-nowrap inline-block tracking-tighter" +
   " [height:20px] [line-height:18px] [vertical-align:middle]";
 
-// Extract variables from template string (e.g., {{variable}})
-const extractVariables = (text: string): string[] => {
-  const regex = /\{\{([^}]+)\}\}/g;
-  const variables: string[] = [];
-  let match;
-
-  while ((match = regex.exec(text)) !== null) {
-    const variable = match[1].trim();
-    if (variable && !variables.includes(variable)) {
-      variables.push(variable);
-    }
-  }
-
-  return variables;
-};
-
-// Create highlighted HTML while preserving spaces
-const createHighlightedHTML = (text: string): string => {
-  const regex = /(\{\{[^}]*\}\})/g;
-  const textWithNbsp = text.replace(/ /g, "&nbsp;");
-  return textWithNbsp.replace(regex, (match) => {
-    return `<span class="${highlightedVariableStyles}">${match}</span>`;
-  });
-};
-
-// Extract plain text from HTML while preserving spaces
-const extractPlainText = (html: string): string => {
-  const normalizedHtml = html.replace(/&nbsp;/g, " ");
-  const div = document.createElement("div");
-  div.innerHTML = normalizedHtml;
-  return div.textContent || div.innerText || "";
-};
-
-// Calculate cursor position in terms of plain text
-const getTextOffset = (container: Node, targetNode: Node, targetOffset: number): number => {
-  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null);
-
-  let offset = 0;
-  let node: Node | null;
-
-  while ((node = walker.nextNode())) {
-    if (node === targetNode) {
-      return offset + targetOffset;
-    }
-    offset += (node.textContent || "").length;
-  }
-
-  return offset;
-};
-
-// Find text node and offset from plain text position
-const findTextNodeAtOffset = (container: Node, targetOffset: number): { node: Node; offset: number } | null => {
-  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null);
-
-  let currentOffset = 0;
-  let node: Node | null;
-
-  while ((node = walker.nextNode())) {
-    const nodeText = node.textContent || "";
-    if (currentOffset + nodeText.length >= targetOffset) {
-      return {
-        node,
-        offset: targetOffset - currentOffset,
-      };
-    }
-    currentOffset += nodeText.length;
-  }
-
-  return null;
-};
-
 export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatingProps>(
-  ({ className, size = "sm", onTemplateChange, onChange, placeholder, ...props }, forwardedRef) => {
+  (
+    { className, size = "sm", onTemplateChange, onChange, placeholder, highlightColonVariables = false, ...props },
+    forwardedRef
+  ) => {
     const [value, setValue] = useState(props.value || "");
     const editorRef = useRef<HTMLDivElement>(null);
     const hiddenInputRef = useRef<HTMLInputElement>(null);
@@ -134,51 +75,36 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
       }
     }, [props.value]);
 
-    const updateEditorContent = useCallback((text: string) => {
-      if (editorRef.current && !isUpdatingContent.current) {
-        isUpdatingContent.current = true;
+    const updateEditorContent = useCallback(
+      (text: string) => {
+        if (editorRef.current && !isUpdatingContent.current) {
+          isUpdatingContent.current = true;
 
-        const selection = window.getSelection();
-        let cursorOffset = 0;
-        let shouldRestoreCursor = false;
+          const selection = window.getSelection();
+          let cursorOffset = 0;
+          let shouldRestoreCursor = false;
 
-        if (selection && selection.rangeCount > 0 && editorRef.current.contains(selection.focusNode)) {
-          try {
-            const range = selection.getRangeAt(0);
-            cursorOffset = getTextOffset(editorRef.current, range.startContainer, range.startOffset);
-            shouldRestoreCursor = true;
-          } catch (e) {
-            shouldRestoreCursor = false;
-          }
-        }
-
-        const highlightedHTML = createHighlightedHTML(text);
-        editorRef.current.innerHTML = highlightedHTML;
-
-        if (shouldRestoreCursor) {
-          try {
-            const newRange = document.createRange();
-            const newSelection = window.getSelection();
-
-            const textPosition = findTextNodeAtOffset(editorRef.current, cursorOffset);
-
-            if (textPosition && newSelection) {
-              newRange.setStart(
-                textPosition.node,
-                Math.min(textPosition.offset, (textPosition.node.textContent || "").length)
-              );
-              newRange.collapse(true);
-              newSelection.removeAllRanges();
-              newSelection.addRange(newRange);
+          if (selection && selection.rangeCount > 0 && editorRef.current.contains(selection.focusNode)) {
+            try {
+              cursorOffset = getCurrentCursorOffset(editorRef.current);
+              shouldRestoreCursor = true;
+            } catch (e) {
+              shouldRestoreCursor = false;
             }
-          } catch (e) {
-            // Cursor restoration failed, ignore
           }
-        }
 
-        isUpdatingContent.current = false;
-      }
-    }, []);
+          const highlightedHTML = createHighlightedHTML(text, highlightColonVariables, highlightedVariableStyles);
+          editorRef.current.innerHTML = highlightedHTML;
+
+          if (shouldRestoreCursor) {
+            setCursorPosition(editorRef.current, cursorOffset);
+          }
+
+          isUpdatingContent.current = false;
+        }
+      },
+      [highlightColonVariables]
+    );
 
     const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
       if (isUpdatingContent.current) return;
@@ -190,7 +116,7 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
         hiddenInputRef.current.value = plainText;
       }
 
-      const variables = extractVariables(plainText);
+      const variables = extractVariables(plainText, highlightColonVariables);
       onTemplateChange?.(plainText, variables);
 
       if (onChange && hiddenInputRef.current) {
@@ -217,7 +143,6 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
         return;
       }
 
-      // Handle Delete and Backspace to work properly with variable spans
       if (e.key === "Delete" || e.key === "Backspace") {
         e.preventDefault();
 
@@ -260,7 +185,7 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
           hiddenInputRef.current.value = newText;
         }
 
-        const variables = extractVariables(newText);
+        const variables = extractVariables(newText, highlightColonVariables);
         onTemplateChange?.(newText, variables);
 
         if (onChange && hiddenInputRef.current) {
@@ -274,30 +199,13 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
         setTimeout(() => {
           updateEditorContent(newText);
           setTimeout(() => {
-            const textPosition = findTextNodeAtOffset(editorRef.current!, newCursorPosition);
-            if (textPosition) {
-              const newRange = document.createRange();
-              const newSelection = window.getSelection();
-
-              try {
-                newRange.setStart(
-                  textPosition.node,
-                  Math.min(textPosition.offset, (textPosition.node.textContent || "").length)
-                );
-                newRange.collapse(true);
-                newSelection?.removeAllRanges();
-                newSelection?.addRange(newRange);
-              } catch (e) {
-                // Cursor positioning failed, ignore
-              }
-            }
+            setCursorPosition(editorRef.current!, newCursorPosition);
           }, 0);
         }, 0);
 
         return;
       }
 
-      // Handle arrow key navigation to skip over span boundaries
       if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
         e.preventDefault();
 
@@ -318,23 +226,7 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
           newOffset = Math.min(plainText.length, currentOffset + 1);
         }
 
-        const textPosition = findTextNodeAtOffset(editorRef.current, newOffset);
-        if (textPosition) {
-          const newRange = document.createRange();
-          const newSelection = window.getSelection();
-
-          try {
-            newRange.setStart(
-              textPosition.node,
-              Math.min(textPosition.offset, (textPosition.node.textContent || "").length)
-            );
-            newRange.collapse(true);
-            newSelection?.removeAllRanges();
-            newSelection?.addRange(newRange);
-          } catch (e) {
-            // Cursor positioning failed, ignore
-          }
-        }
+        setCursorPosition(editorRef.current, newOffset);
       }
     };
 
@@ -381,7 +273,12 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
 
         <div
           ref={editorRef}
-          className={editorStyles({ size })}
+          className={cn(
+            editorStyles({ size }),
+            "word-break-keep-all overflow-wrap-normal font-[Inter] text-[13px]",
+            "empty:before:pointer-events-none empty:before:flex empty:before:h-full empty:before:items-center empty:before:leading-[inherit] empty:before:whitespace-nowrap empty:before:text-(--moss-requestpage-placeholder-color) empty:before:content-[attr(data-placeholder)]",
+            "[&_*]:inline [&_*]:whitespace-nowrap"
+          )}
           contentEditable
           onInput={handleInput}
           onKeyDown={handleKeyDown}
@@ -390,31 +287,6 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
           data-placeholder={placeholder}
           suppressContentEditableWarning={true}
         />
-
-        <style>
-          {`
-            [contenteditable][data-placeholder]:empty:before {
-              content: attr(data-placeholder);
-              color: var(--moss-controls-placeholder);
-              pointer-events: none;
-              white-space: nowrap;
-              display: flex;
-              align-items: center;
-              height: 100%;
-              line-height: inherit;
-            }
-            
-            [contenteditable] {
-              word-break: keep-all;
-              overflow-wrap: normal;
-            }
-            
-            [contenteditable] * {
-              display: inline !important;
-              white-space: nowrap !important;
-            }
-          `}
-        </style>
       </div>
     );
   }

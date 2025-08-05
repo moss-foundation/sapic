@@ -1,5 +1,8 @@
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
-use moss_environment::models::types::VariableInfo;
+use moss_environment::models::{
+    primitives::{EnvironmentId, VariableId},
+    types::{AddVariableParams, UpdateVariableParams, VariableInfo},
+};
 use moss_git::url::GIT_URL_REGEX;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -9,9 +12,16 @@ use std::{
 use ts_rs::TS;
 use validator::{Validate, ValidationError};
 
-use crate::models::{primitives::CollectionId, types::EditorPartStateInfo};
+use crate::models::{
+    primitives::{ChangeCollectionId, CollectionId},
+    types::EditorPartStateInfo,
+};
 
 use super::types::{ActivitybarPartStateInfo, PanelPartStateInfo, SidebarPartStateInfo};
+
+// ------------------------------ //
+// Collection
+// ------------------------------ //
 
 /// @category Operation
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
@@ -35,7 +45,6 @@ pub struct CreateCollectionInput {
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateCollectionOutput {
-    #[ts(type = "string")]
     pub id: CollectionId,
     pub name: String,
     pub order: Option<isize>,
@@ -57,16 +66,17 @@ pub struct CreateCollectionOutput {
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateCollectionInput {
-    #[ts(type = "string")]
     pub id: CollectionId,
 
     #[validate(length(min = 1))]
     pub name: Option<String>,
 
     #[validate(custom(function = "validate_change_repository"))]
+    #[ts(optional, type = "ChangeString")]
     pub repository: Option<ChangeString>,
 
     // TODO: add validation
+    #[ts(optional, type = "ChangePath")]
     pub icon_path: Option<ChangePath>,
     pub order: Option<isize>,
     pub pinned: Option<bool>,
@@ -191,6 +201,87 @@ pub enum UpdateStateInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct StreamCollectionsOutput {
+    #[serde(skip)]
+    #[ts(skip)]
+    pub total_returned: usize,
+}
+
+// ------------------------------ //
+// Environment
+// ------------------------------ //
+
+// Create Environment
+
+/// @category Operation
+#[derive(Debug, Deserialize, Serialize, Validate, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct CreateEnvironmentInput {
+    pub collection_id: Option<CollectionId>,
+    #[validate(length(min = 1))]
+    pub name: String,
+    pub order: isize,
+    pub color: Option<String>,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct CreateEnvironmentOutput {
+    pub id: EnvironmentId,
+    pub collection_id: Option<CollectionId>,
+    pub name: String,
+    pub order: isize,
+    pub color: Option<String>,
+    pub expanded: bool,
+
+    #[serde(skip)]
+    #[ts(skip)]
+    pub abs_path: Arc<Path>,
+}
+
+// Update Environment
+
+/// @category Operation
+#[derive(Debug, Deserialize, Validate, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct UpdateEnvironmentInput {
+    pub id: EnvironmentId,
+
+    /// When updating an environment, we can move it to another collection
+    /// or remove its link to a specific collection to make it global.
+    pub collection_id: Option<ChangeCollectionId>,
+    pub name: Option<String>,
+    pub order: Option<isize>,
+    #[ts(optional, type = "ChangeString")]
+    pub color: Option<ChangeString>,
+    pub expanded: Option<bool>,
+    pub vars_to_add: Vec<AddVariableParams>,
+    pub vars_to_update: Vec<UpdateVariableParams>,
+    pub vars_to_delete: Vec<VariableId>,
+}
+
+/// @category Operation
+#[derive(Debug, Deserialize, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct UpdateEnvironmentOutput {
+    pub id: EnvironmentId,
+}
+
+// Stream Environments
+
+/// @category Operation
+#[derive(Debug, Deserialize, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct StreamEnvironmentsOutput {
     #[serde(skip)]
     #[ts(skip)]
     pub total_returned: usize,

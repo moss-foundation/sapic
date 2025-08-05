@@ -2,9 +2,6 @@
   "files": [],
   "references": [
     {
-      "path": "packages/bindings-utils"
-    },
-    {
       "path": "crates/moss-app"
     },
     {

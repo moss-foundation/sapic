@@ -5,7 +5,7 @@ use moss_common::api::OperationResult;
 use crate::{
     app::App,
     models::operations::{ListLogsInput, ListLogsOutput},
-    services::log_service::{LogFilter, LogService},
+    services::log_service::LogFilter,
 };
 
 impl<R: AppRuntime> App<R> {
@@ -14,8 +14,6 @@ impl<R: AppRuntime> App<R> {
         _ctx: &R::AsyncContext,
         input: &ListLogsInput,
     ) -> OperationResult<ListLogsOutput> {
-        let log_service = self.services.get::<LogService<R>>();
-
         let filter = LogFilter {
             // Skip invalid dates
             dates: input
@@ -27,7 +25,7 @@ impl<R: AppRuntime> App<R> {
             resource: input.resource.clone(),
         };
 
-        match log_service.list_logs_with_filter(&filter).await {
+        match self.log_service.list_logs_with_filter(&filter).await {
             Ok(contents) => Ok(ListLogsOutput { contents }),
             Err(e) => Err(e.into()),
         }

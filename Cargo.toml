@@ -22,6 +22,7 @@ members = [
     "crates/moss-keyring",
     "crates/moss-vault",
     "crates/moss-workspace",
+    "crates/moss-workspacelib",
     "crates/moss-environment",
     "crates/moss-testutils",
     "crates/moss-common",
@@ -39,7 +40,7 @@ members = [
     #
     # Tools
     #
-    "tools/xtask",
+    "tools/xtask", 
 ]
 
 [workspace.dependencies]
@@ -62,6 +63,7 @@ moss_fs = { path = "crates/moss-fs" }
 moss_keyring = { path = "crates/moss-keyring" }
 moss_vault = { path = "crates/moss-vault" }
 moss_workspace = { path = "crates/moss-workspace" }
+moss_workspacelib = { path = "crates/moss-workspacelib" }
 moss_environment = { path = "crates/moss-environment" }
 moss_common = { path = "crates/moss-common" }
 moss_testutils = { path = "crates/moss-testutils" }

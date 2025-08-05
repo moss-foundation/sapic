@@ -8,12 +8,7 @@ export type ActivitybarPosition = "DEFAULT" | "TOP" | "BOTTOM" | "HIDDEN";
 /**
  * @category Primitive
  */
-export type ChangePath = { "UPDATE": string } | "REMOVE";
-
-/**
- * @category Primitive
- */
-export type ChangeString = { "UPDATE": string } | "REMOVE";
+export type ChangeCollectionId = { "UPDATE": string } | "REMOVE";
 
 /**
  * @category Primitive

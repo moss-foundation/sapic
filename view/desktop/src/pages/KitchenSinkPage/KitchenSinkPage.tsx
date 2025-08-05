@@ -5,9 +5,7 @@ import { ActionMenu } from "@/components";
 import { ButtonNeutralOutlined } from "@/components/ButtonNeutralOutlined";
 import { ButtonPrimary } from "@/components/ButtonPrimary";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
-import { DataTable } from "@/components/Table/DataTable";
-import { TestData } from "@/components/Table/types";
-import { DefaultInputCell } from "@/components/Table/ui/DefaultCellInput";
+import { DataTable, ParameterData, columns } from "@/components/Table";
 import { InputTemplating } from "@/components/InputTemplating";
 import {
   editorContextItems,
@@ -19,7 +17,7 @@ import {
 import { invokeMossCommand } from "@/lib/backend/platfrom.ts";
 import { Icon, Icons } from "@/lib/ui";
 import { renderActionMenuItem } from "@/utils/renderActionMenuItem";
-import { createColumnHelper, Table } from "@tanstack/react-table";
+import { Table } from "@tanstack/react-table";
 
 import * as iconsNames from "../../assets/icons";
 import testData from "../../components/Table/testData.json";
@@ -240,87 +238,10 @@ const InputTemplatingDemo = () => {
   );
 };
 
-const columnHelper = createColumnHelper<TestData>();
-const columns = [
-  columnHelper.display({
-    id: "checkbox",
-    header: ({ table }) => (
-      <CheckboxWithLabel
-        checked={table.getIsAllPageRowsSelected()}
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-      />
-    ),
-    cell: ({ row }) => (
-      <CheckboxWithLabel
-        disabled={!row.getCanSelect()}
-        checked={row.getIsSelected()}
-        onCheckedChange={row.getToggleSelectedHandler()}
-      />
-    ),
-    enableSorting: false,
-    enableResizing: false,
-    size: 40,
-  }),
-  columnHelper.accessor("key", {
-    header: () => "key",
-    cell: (info) => <DefaultInputCell info={info} />,
-    minSize: 60,
-  }),
-  columnHelper.accessor("value", {
-    header: () => "value",
-    cell: (info) => <DefaultInputCell info={info} />,
-    minSize: 100,
-  }),
-  columnHelper.accessor("type", {
-    header: () => "type",
-    cell: (info) => <DefaultInputCell info={info} />,
-    minSize: 100,
-  }),
-  columnHelper.accessor("description", {
-    header: () => "description",
-    cell: (info) => <DefaultInputCell info={info} />,
-    meta: {
-      isGrow: true,
-    },
-    minSize: 100,
-  }),
-  columnHelper.accessor("global_value", {
-    header: () => "Global value",
-    cell: (info) => <DefaultInputCell info={info} />,
-    minSize: 100,
-  }),
-  columnHelper.accessor("local_value", {
-    header: () => "Local value",
-    cell: (info) => <DefaultInputCell info={info} />,
-    minSize: 100,
-  }),
-  columnHelper.display({
-    id: "actions",
-    header: () => "Actions",
-    cell: () => (
-      <div className="flex items-center justify-center gap-1">
-        <button className="flex size-5.5 cursor-pointer items-center justify-center rounded hover:bg-[#E0E0E0]">
-          <Icon icon="AddToVcs" />
-        </button>
-
-        <button className="flex size-5.5 cursor-pointer items-center justify-center rounded hover:bg-[#E0E0E0]">
-          <Icon icon="RemoveCircle" />
-        </button>
-        <button className="flex size-5.5 cursor-pointer items-center justify-center rounded hover:bg-[#E0E0E0]">
-          <Icon icon="ConfigMap" />
-        </button>
-      </div>
-    ),
-    enableSorting: false,
-    enableResizing: false,
-    size: 90,
-  }),
-];
-
 const ExampleTable = () => {
-  const [tableApi, setTableApi] = useState<Table<TestData> | null>(null);
+  const [tableApi, setTableApi] = useState<Table<ParameterData> | null>(null);
 
-  const handleTableApiSet = (tableApi: Table<TestData>) => {
+  const handleTableApiSet = (tableApi: Table<ParameterData>) => {
     setTableApi(tableApi);
   };
 

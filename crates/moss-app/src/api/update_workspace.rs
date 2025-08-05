@@ -3,9 +3,8 @@ use moss_common::api::OperationResult;
 use validator::Validate;
 
 use crate::{
-    app::App,
-    models::operations::UpdateWorkspaceInput,
-    services::workspace_service::{WorkspaceItemUpdateParams, WorkspaceService},
+    app::App, models::operations::UpdateWorkspaceInput,
+    services::workspace_service::WorkspaceItemUpdateParams,
 };
 
 impl<R: AppRuntime> App<R> {
@@ -16,8 +15,7 @@ impl<R: AppRuntime> App<R> {
     ) -> OperationResult<()> {
         input.validate()?;
 
-        let workspace_service = self.services.get::<WorkspaceService<R>>();
-        workspace_service
+        self.workspace_service
             .update_workspace(WorkspaceItemUpdateParams {
                 name: input.name.to_owned(),
             })

@@ -8,26 +8,16 @@ mod window;
 #[macro_use]
 extern crate tracing;
 
-use moss_activity_indicator::ActivityIndicator;
-use moss_app::{
-    AppBuilder,
-    app::AppDefaults,
-    services::{
-        locale_service::LocaleService, log_service::LogService, session_service::SessionService,
-        storage_service::StorageService, theme_service::ThemeService,
-        workspace_service::WorkspaceService,
-    },
-};
+use moss_app::{AppBuilder, builder::BuildAppParams};
 use moss_applib::{
     TauriAppRuntime,
     context::{AnyAsyncContext, AnyContext, MutableContext},
     context_old::ContextValueSet,
 };
-use moss_fs::{RealFileSystem, model_registry::GlobalModelRegistry};
+use moss_fs::RealFileSystem;
 use std::{path::PathBuf, sync::Arc, time::Duration};
 use tauri::{AppHandle, Manager, RunEvent, Runtime as TauriRuntime, WebviewWindow, WindowEvent};
 use tauri_plugin_os;
-
 use window::{CreateWindowInput, create_window};
 
 use crate::{constants::*, plugins::*};
@@ -76,70 +66,18 @@ pub async fn run<R: TauriRuntime>() {
                         MutableContext::new_with_timeout(ctx_clone, Duration::from_secs(30))
                             .freeze();
 
-                    let storage_service: Arc<StorageService<TauriAppRuntime<R>>> =
-                        StorageService::<TauriAppRuntime<R>>::new(
-                            &app_dir.join(moss_app::dirs::GLOBALS_DIR),
+                    let app = AppBuilder::<TauriAppRuntime<R>>::new(app_handle.clone(), fs)
+                        .build(
+                            &app_init_ctx,
+                            BuildAppParams {
+                                app_dir,
+                                themes_dir,
+                                locales_dir,
+                                logs_dir,
+                            },
                         )
-                        .expect("Failed to create storage service")
-                        .into();
-
-                    let session_service = SessionService::new();
-                    let session_id = session_service.session_id().clone();
-
-                    let workspace_service = WorkspaceService::<TauriAppRuntime<R>>::new(
-                        &app_init_ctx,
-                        storage_service.clone(),
-                        fs.clone(),
-                        &app_dir,
-                    )
-                    .await
-                    .expect("Failed to create workspace service");
-                    let theme_service = ThemeService::new(fs.clone(), themes_dir);
-                    let locale_service = LocaleService::new(fs.clone(), locales_dir);
-                    let log_service = LogService::new(
-                        fs.clone(),
-                        app_handle.clone(),
-                        &logs_dir,
-                        session_service.session_id(),
-                        storage_service.clone(),
-                    )
-                    .expect("Failed to create log service");
-
-                    let default_theme = theme_service
-                        .default_theme()
-                        .await
-                        .cloned()
-                        .expect("Failed to get default theme");
-
-                    let default_locale = locale_service
-                        .default_locale()
-                        .await
-                        .cloned()
-                        .expect("Failed to get default locale");
-
-                    let defaults = AppDefaults {
-                        theme: default_theme,
-                        locale: default_locale,
-                    };
-
-                    let activity_indicator = ActivityIndicator::new(app_handle.clone());
-                    let app = AppBuilder::<TauriAppRuntime<R>>::new(
-                        app_handle.clone(),
-                        activity_indicator,
-                        defaults,
-                        fs,
-                        app_dir.into(),
-                    )
-                    .with_global(GlobalModelRegistry::new())
-                    .with_service::<StorageService<TauriAppRuntime<R>>>(storage_service)
-                    .with_service(theme_service)
-                    .with_service(locale_service)
-                    .with_service(session_service)
-                    .with_service(log_service)
-                    .with_service(workspace_service)
-                    .build()
-                    .await
-                    .expect("Failed to build the app");
+                        .await;
+                    let session_id = app.session_id().clone();
 
                     (app, session_id)
                 };
@@ -178,7 +116,7 @@ pub async fn run<R: TauriRuntime>() {
             //
             // Workspace
             //
-            commands::stream_workspace_environments,
+            commands::stream_environments,
             commands::update_workspace_state,
             commands::describe_workspace_state,
             commands::stream_collections,
@@ -186,6 +124,9 @@ pub async fn run<R: TauriRuntime>() {
             commands::delete_collection,
             commands::update_collection,
             commands::batch_update_collection,
+            commands::create_environment,
+            commands::update_environment,
+            commands::stream_environments,
             //
             // Collection
             //
