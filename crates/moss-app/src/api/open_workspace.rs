@@ -19,6 +19,8 @@ impl<R: AppRuntime> App<R> {
                 &input.id,
                 self.models.clone(),
                 self.activity_indicator.clone(),
+                self.github_client.clone(),
+                self.gitlab_client.clone(),
             )
             .await?;
 

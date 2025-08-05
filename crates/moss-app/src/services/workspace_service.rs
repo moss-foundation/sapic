@@ -1,3 +1,9 @@
+use crate::{
+    dirs,
+    models::primitives::WorkspaceId,
+    services::storage_service::StorageService,
+    storage::segments::{SEGKEY_WORKSPACE, segkey_last_opened_at, segkey_workspace},
+};
 use anyhow::{Context as _, Result};
 use chrono::Utc;
 use derive_more::{Deref, DerefMut};
@@ -6,6 +12,7 @@ use moss_applib::{AppRuntime, PublicServiceMarker, ServiceMarker};
 use moss_common::api::OperationError;
 use moss_db::DatabaseError;
 use moss_fs::{FileSystem, RemoveOptions, model_registry::GlobalModelRegistry};
+use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
 use moss_workspace::{
     Workspace,
     builder::{CreateWorkspaceParams, LoadWorkspaceParams, WorkspaceBuilder},
@@ -18,13 +25,6 @@ use std::{
 };
 use thiserror::Error;
 use tokio::sync::RwLock;
-
-use crate::{
-    dirs,
-    models::primitives::WorkspaceId,
-    services::storage_service::StorageService,
-    storage::segments::{SEGKEY_WORKSPACE, segkey_last_opened_at, segkey_workspace},
-};
 
 #[derive(Debug, Error)]
 pub enum WorkspaceServiceError {
@@ -325,6 +325,8 @@ impl<R: AppRuntime> WorkspaceService<R> {
         id: &WorkspaceId,
         models: Arc<GlobalModelRegistry>,
         activity_indicator: ActivityIndicator<R::EventLoop>,
+        github_client: Arc<GitHubClient>,
+        gitlab_client: Arc<GitLabClient>,
     ) -> WorkspaceServiceResult<WorkspaceItemDescription> {
         let mut state_lock = self.state.write().await;
         let item = state_lock
@@ -343,6 +345,8 @@ impl<R: AppRuntime> WorkspaceService<R> {
                 LoadWorkspaceParams {
                     abs_path: abs_path.clone(),
                 },
+                github_client,
+                gitlab_client,
             )
             .await
             .context("Failed to create the workspace")

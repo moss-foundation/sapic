@@ -14,7 +14,10 @@ impl<R: AppRuntime> Workspace<R> {
         ctx: &R::AsyncContext,
         channel: TauriChannel<StreamCollectionsEvent>,
     ) -> OperationResult<StreamCollectionsOutput> {
-        let stream = self.collection_service.list_collections(ctx).await;
+        let stream = self
+            .collection_service
+            .list_collections(ctx, self.github_client.clone(), self.gitlab_client.clone())
+            .await;
         tokio::pin!(stream);
 
         let mut total_returned = 0;
@@ -25,6 +28,8 @@ impl<R: AppRuntime> Workspace<R> {
                 order: collection.order,
                 expanded: collection.expanded,
                 repository: collection.repository,
+                repository_info: collection.repository_info,
+                contributors: collection.contributors,
                 picture_path: collection.icon_path,
             }) {
                 println!("Error sending collection event: {:?}", e); // TODO: log error

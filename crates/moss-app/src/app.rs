@@ -1,7 +1,13 @@
+use crate::{
+    command::CommandCallback,
+    models::types::{ColorThemeInfo, LocaleInfo},
+    services::{session_service::SessionId, workspace_service::ActiveWorkspace, *},
+};
 use derive_more::Deref;
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::{AppRuntime, context::Canceller};
 use moss_fs::{FileSystem, model_registry::GlobalModelRegistry};
+use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
 use moss_text::ReadOnlyStr;
 use rustc_hash::FxHashMap;
 use std::{
@@ -12,12 +18,6 @@ use std::{
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use tokio::sync::RwLock;
-
-use crate::{
-    command::CommandCallback,
-    models::types::{ColorThemeInfo, LocaleInfo},
-    services::{session_service::SessionId, workspace_service::ActiveWorkspace, *},
-};
 
 pub struct AppPreferences {
     pub theme: RwLock<Option<ColorThemeInfo>>,
@@ -74,6 +74,10 @@ pub struct App<R: AppRuntime> {
     pub(super) tracked_cancellations: Arc<RwLock<HashMap<String, Canceller>>>,
     // TODO: This is also might be better to be a service
     pub(super) activity_indicator: ActivityIndicator<R::EventLoop>,
+
+    // TODO: Refine the management of git provider clients
+    pub(super) github_client: Arc<GitHubClient>,
+    pub(super) gitlab_client: Arc<GitLabClient>,
 }
 
 impl<R: AppRuntime> App<R> {

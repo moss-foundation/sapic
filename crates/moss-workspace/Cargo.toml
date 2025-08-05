@@ -18,6 +18,7 @@ moss_text.workspace = true
 moss_file.workspace = true
 moss_git.workspace = true
 moss_bindingutils.workspace = true
+moss_git_hosting_provider.workspace = true
 
 joinerror.workspace = true
 anyhow.workspace = true

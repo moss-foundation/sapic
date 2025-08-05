@@ -1,14 +1,14 @@
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-#[derive(Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "types.ts")]
 pub struct Contributor {
     pub name: String,
     pub avatar_url: String,
 }
 
-#[derive(Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct RepositoryInfo {

@@ -1,4 +1,4 @@
-use crate::common::utils;
+use crate::{common::utils, gitlab::client::GitLabAuthAgent};
 use anyhow::Result;
 use git2::{Cred, RemoteCallbacks};
 use moss_git::GitAuthAgent;
@@ -53,6 +53,8 @@ pub struct GitLabAuthAgentImpl {
     keyring: Arc<dyn KeyringClient>,
     cred: RwLock<Option<GitLabCred>>,
 }
+
+impl GitLabAuthAgent for GitLabAuthAgentImpl {}
 
 impl GitLabAuthAgentImpl {
     pub fn new(keyring: Arc<dyn KeyringClient>, client_id: String, client_secret: String) -> Self {

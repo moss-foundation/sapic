@@ -1,11 +1,3 @@
-use anyhow::Result;
-use moss_activity_indicator::ActivityIndicator;
-use moss_applib::AppRuntime;
-use moss_environment::{builder::EnvironmentBuilder, models::primitives::EnvironmentId};
-use moss_file::json::JsonFileHandle;
-use moss_fs::{CreateOptions, FileSystem, model_registry::GlobalModelRegistry};
-use std::{cell::LazyCell, path::Path, sync::Arc};
-
 use crate::{
     Workspace, dirs,
     manifest::{MANIFEST_FILE_NAME, ManifestModel},
@@ -14,6 +6,14 @@ use crate::{
         layout_service::LayoutService, storage_service::StorageService,
     },
 };
+use anyhow::Result;
+use moss_activity_indicator::ActivityIndicator;
+use moss_applib::AppRuntime;
+use moss_environment::{builder::EnvironmentBuilder, models::primitives::EnvironmentId};
+use moss_file::json::JsonFileHandle;
+use moss_fs::{CreateOptions, FileSystem, model_registry::GlobalModelRegistry};
+use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
+use std::{cell::LazyCell, path::Path, sync::Arc};
 
 struct PredefinedEnvironment {
     name: String,
@@ -84,6 +84,8 @@ impl WorkspaceBuilder {
         models: Arc<GlobalModelRegistry>,
         activity_indicator: ActivityIndicator<R::EventLoop>, // FIXME: will be passed as a service in the future
         params: LoadWorkspaceParams,
+        github_client: Arc<GitHubClient>,
+        gitlab_client: Arc<GitLabClient>,
     ) -> Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
 
@@ -111,6 +113,8 @@ impl WorkspaceBuilder {
             collection_service,
             environment_service,
             storage_service,
+            github_client,
+            gitlab_client,
         })
     }
 
@@ -120,6 +124,8 @@ impl WorkspaceBuilder {
         models: Arc<GlobalModelRegistry>,
         activity_indicator: ActivityIndicator<R::EventLoop>, // FIXME: will be passed as a service in the future
         params: CreateWorkspaceParams,
+        github_client: Arc<GitHubClient>,
+        gitlab_client: Arc<GitLabClient>,
     ) -> Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
 
@@ -149,6 +155,8 @@ impl WorkspaceBuilder {
             collection_service,
             environment_service,
             storage_service,
+            github_client,
+            gitlab_client,
         })
     }
 }

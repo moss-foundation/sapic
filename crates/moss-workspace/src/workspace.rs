@@ -1,12 +1,3 @@
-use anyhow::Result;
-use moss_activity_indicator::ActivityIndicator;
-use moss_applib::AppRuntime;
-use moss_collection::Collection;
-use moss_environment::{AnyEnvironment, Environment, models::primitives::EnvironmentId};
-use moss_file::json::JsonFileHandle;
-use moss_fs::FileSystem;
-use std::{path::Path, sync::Arc};
-
 use crate::{
     manifest::{MANIFEST_FILE_NAME, ManifestModel},
     models::primitives::CollectionId,
@@ -15,6 +6,16 @@ use crate::{
         layout_service::LayoutService, storage_service::StorageService,
     },
 };
+use anyhow::Result;
+use moss_activity_indicator::ActivityIndicator;
+use moss_applib::AppRuntime;
+use moss_collection::Collection;
+use moss_environment::{AnyEnvironment, Environment, models::primitives::EnvironmentId};
+use moss_file::json::JsonFileHandle;
+use moss_fs::FileSystem;
+use moss_git::GitAuthAgent;
+use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
+use std::{path::Path, sync::Arc};
 
 pub struct WorkspaceSummary {
     pub manifest: ManifestModel,
@@ -42,6 +43,10 @@ pub struct Workspace<R: AppRuntime> {
     pub(super) collection_service: CollectionService<R>,
     pub(super) environment_service: EnvironmentService<R>,
     pub(super) storage_service: Arc<StorageService<R>>,
+
+    // TODO: Refine the management of git provider clients
+    pub(super) github_client: Arc<GitHubClient>,
+    pub(super) gitlab_client: Arc<GitLabClient>,
 }
 
 impl<R: AppRuntime> AnyWorkspace<R> for Workspace<R> {

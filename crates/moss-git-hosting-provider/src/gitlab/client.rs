@@ -14,6 +14,7 @@ use crate::{
 
 pub trait GitLabAuthAgent: GitAuthAgent {}
 
+// FIXME: Support self-hosted GitLab domains
 pub struct GitLabClient {
     #[allow(dead_code)]
     client_auth_agent: Arc<dyn GitAuthAgent>,
@@ -105,9 +106,9 @@ impl GitHostingProvider for GitLabClient {
         Ok(list)
     }
 
-    async fn repository_info(&self, repo_url: &str) -> anyhow::Result<RepositoryInfo> {
+    async fn repository_info(&self, _repo_url: &str) -> anyhow::Result<RepositoryInfo> {
         // TODO: Looks like we can't get `updated_at` without authenticating the API call first
-        unimplemented!()
+        Err(anyhow::anyhow!("not implemented"))
     }
 }
 
