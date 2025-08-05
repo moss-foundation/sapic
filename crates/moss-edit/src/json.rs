@@ -4,7 +4,7 @@ use jsonptr::PointerBuf;
 use serde_json::{Value, json};
 
 #[derive(Debug, Clone)]
-pub enum Action {
+pub enum JsonEditAction {
     Add {
         path: PointerBuf,
         new_value: Value,
@@ -28,8 +28,8 @@ impl ResolveError {
 }
 
 pub struct JsonEdit {
-    applied: Vec<Action>,
-    undone: Vec<Action>,
+    applied: Vec<JsonEditAction>,
+    undone: Vec<JsonEditAction>,
 }
 
 impl JsonEdit {
@@ -48,14 +48,14 @@ impl JsonEdit {
                 PatchOperation::Add(AddOperation { path, value }) => {
                     ensure_path_exists(root, path)?;
 
-                    actions.push(Action::Add {
+                    actions.push(JsonEditAction::Add {
                         path: path.clone(),
                         new_value: value.clone(),
                     });
                 }
                 PatchOperation::Remove(RemoveOperation { path }) => {
                     let old = path.resolve(root).map_err(ResolveError::from)?.clone();
-                    actions.push(Action::Remove {
+                    actions.push(JsonEditAction::Remove {
                         path: path.clone(),
                         old_value: old,
                     });
@@ -64,7 +64,7 @@ impl JsonEdit {
                     ensure_path_exists(root, path)?;
 
                     let old = path.resolve(root).map_err(ResolveError::from)?.clone();
-                    actions.push(Action::Replace {
+                    actions.push(JsonEditAction::Replace {
                         path: path.clone(),
                         old_value: old,
                         new_value: value.clone(),
@@ -83,17 +83,17 @@ impl JsonEdit {
     pub fn undo(&mut self, root: &mut Value) -> joinerror::Result<()> {
         if let Some(action) = self.applied.pop() {
             let inverse_patch = match &action {
-                Action::Add { path, .. } => {
+                JsonEditAction::Add { path, .. } => {
                     PatchOperation::Remove(RemoveOperation { path: path.clone() })
                 }
-                Action::Remove {
+                JsonEditAction::Remove {
                     path,
                     old_value: old,
                 } => PatchOperation::Add(AddOperation {
                     path: path.clone(),
                     value: old.clone(),
                 }),
-                Action::Replace {
+                JsonEditAction::Replace {
                     path,
                     old_value: old,
                     ..
@@ -113,17 +113,17 @@ impl JsonEdit {
     pub fn redo(&mut self, root: &mut Value) -> joinerror::Result<()> {
         if let Some(action) = self.undone.pop() {
             let redo_patch = match &action {
-                Action::Add {
+                JsonEditAction::Add {
                     path,
                     new_value: value,
                 } => PatchOperation::Add(AddOperation {
                     path: path.clone(),
                     value: value.clone(),
                 }),
-                Action::Remove { path, .. } => {
+                JsonEditAction::Remove { path, .. } => {
                     PatchOperation::Remove(RemoveOperation { path: path.clone() })
                 }
-                Action::Replace {
+                JsonEditAction::Replace {
                     path,
                     new_value: new,
                     ..
