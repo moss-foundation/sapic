@@ -1,6 +1,6 @@
 use joinerror::ResultExt;
 use json_patch::PatchOperation;
-use moss_contentmodel::json::JsonEdit;
+use moss_edit::json::JsonEdit;
 use moss_fs::{CreateOptions, FileSystem, RenameOptions, error::FsResultExt};
 use moss_hcl::HclResultExt;
 use serde_json::Value as JsonValue;

@@ -3796,19 +3796,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "moss_contentmodel"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "hcl-rs",
- "joinerror",
- "json-patch 4.0.0",
- "jsonptr 0.7.1",
- "serde_json",
- "tokio",
-]
-
-[[package]]
 name = "moss_db"
 version = "0.1.0"
 dependencies = [
@@ -3828,6 +3815,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "moss_edit"
+version = "0.1.0"
+dependencies = [
+ "joinerror",
+ "json-patch 4.0.0",
+ "jsonptr 0.7.1",
+ "serde_json",
+]
+
+[[package]]
 name = "moss_environment"
 version = "0.1.0"
 dependencies = [
@@ -3840,7 +3837,7 @@ dependencies = [
  "moss_applib",
  "moss_bindingutils",
  "moss_common",
- "moss_contentmodel",
+ "moss_edit",
  "moss_file",
  "moss_fs",
  "moss_hcl",
@@ -3881,7 +3878,6 @@ dependencies = [
  "futures",
  "joinerror",
  "moss_applib",
- "moss_contentmodel",
  "moss_text",
  "notify",
  "tauri",
@@ -3998,7 +3994,6 @@ dependencies = [
  "moss_bindingutils",
  "moss_collection",
  "moss_common",
- "moss_contentmodel",
  "moss_db",
  "moss_environment",
  "moss_file",
