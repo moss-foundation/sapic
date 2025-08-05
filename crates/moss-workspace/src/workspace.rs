@@ -6,8 +6,7 @@ use moss_activity_indicator::ActivityIndicator;
 use moss_applib::AppRuntime;
 use moss_collection::Collection;
 use moss_environment::{AnyEnvironment, Environment, models::primitives::EnvironmentId};
-use moss_file::json::JsonFileHandle;
-use moss_fs::FileSystem;
+use moss_fs::{FileSystem, FsResultExt};
 use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};
 
@@ -22,7 +21,27 @@ use crate::{
 };
 
 pub struct WorkspaceSummary {
-    pub manifest: ManifestFile,
+    pub name: String,
+}
+
+impl WorkspaceSummary {
+    pub async fn new(fs: &Arc<dyn FileSystem>, abs_path: &Path) -> joinerror::Result<Self> {
+        debug_assert!(abs_path.is_absolute());
+
+        let manifest_path = abs_path.join(MANIFEST_FILE_NAME);
+
+        let rdr = fs.open_file(&manifest_path).await.join_err_with::<()>(|| {
+            format!("failed to open manifest file: {}", manifest_path.display())
+        })?;
+
+        let manifest: ManifestFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
+            format!("failed to parse manifest file: {}", manifest_path.display())
+        })?;
+
+        Ok(WorkspaceSummary {
+            name: manifest.name,
+        })
+    }
 }
 
 #[derive(Clone)]
@@ -84,14 +103,6 @@ impl<R: AppRuntime> Workspace<R> {
             .await
             .join_err::<()>("failed to edit workspace")?;
         Ok(())
-    }
-
-    // TODO: Move out of the Workspace struct
-    pub async fn summary(fs: Arc<dyn FileSystem>, abs_path: &Path) -> Result<WorkspaceSummary> {
-        let manifest = JsonFileHandle::load(fs, &abs_path.join(MANIFEST_FILE_NAME)).await?;
-        Ok(WorkspaceSummary {
-            manifest: manifest.model().await,
-        })
     }
 }
 

@@ -10,7 +10,7 @@ use moss_fs::{FileSystem, RemoveOptions};
 use moss_workspace::{
     Workspace,
     builder::{CreateWorkspaceParams, LoadWorkspaceParams, WorkspaceBuilder},
-    workspace::WorkspaceModifyParams,
+    workspace::{WorkspaceModifyParams, WorkspaceSummary},
 };
 use std::{
     collections::HashMap,
@@ -430,7 +430,7 @@ async fn restore_known_workspaces<R: AppRuntime>(
         let id_str = entry.file_name().to_string_lossy().to_string();
         let id: WorkspaceId = id_str.into();
 
-        let summary = Workspace::<R>::summary(fs.clone(), &entry.path())
+        let summary = WorkspaceSummary::new(fs, &entry.path())
             .await
             .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
 
@@ -451,7 +451,7 @@ async fn restore_known_workspaces<R: AppRuntime>(
             id.clone(),
             WorkspaceItem {
                 id,
-                name: summary.manifest.name,
+                name: summary.name,
                 abs_path: entry.path().into(),
                 last_opened_at,
             }
