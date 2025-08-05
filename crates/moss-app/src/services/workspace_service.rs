@@ -1,22 +1,17 @@
-use crate::{
-    dirs,
-    models::primitives::WorkspaceId,
-    services::storage_service::StorageService,
-    storage::segments::{SEGKEY_WORKSPACE, segkey_last_opened_at, segkey_workspace},
-};
 use anyhow::{Context as _, Result};
 use chrono::Utc;
 use derive_more::{Deref, DerefMut};
+use joinerror::ResultExt;
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::{AppRuntime, PublicServiceMarker, ServiceMarker};
 use moss_common::api::OperationError;
 use moss_db::DatabaseError;
-use moss_fs::{FileSystem, RemoveOptions, model_registry::GlobalModelRegistry};
+use moss_fs::{FileSystem, RemoveOptions};
 use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
 use moss_workspace::{
     Workspace,
     builder::{CreateWorkspaceParams, LoadWorkspaceParams, WorkspaceBuilder},
-    workspace::WorkspaceModifyParams,
+    workspace::{WorkspaceModifyParams, WorkspaceSummary},
 };
 use std::{
     collections::HashMap,
@@ -25,6 +20,13 @@ use std::{
 };
 use thiserror::Error;
 use tokio::sync::RwLock;
+
+use crate::{
+    dirs,
+    models::primitives::WorkspaceId,
+    services::storage_service::StorageService,
+    storage::segments::{SEGKEY_WORKSPACE, segkey_last_opened_at, segkey_workspace},
+};
 
 #[derive(Debug, Error)]
 pub enum WorkspaceServiceError {
@@ -288,7 +290,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
             },
         )
         .await
-        .context("Failed to initialize the workspace")
+        .join_err::<()>("failed to initialize the workspace")
         .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
 
         state_lock.known_workspaces.insert(
@@ -323,7 +325,6 @@ impl<R: AppRuntime> WorkspaceService<R> {
         &self,
         ctx: &R::AsyncContext,
         id: &WorkspaceId,
-        models: Arc<GlobalModelRegistry>,
         activity_indicator: ActivityIndicator<R::EventLoop>,
         github_client: Arc<GitHubClient>,
         gitlab_client: Arc<GitLabClient>,
@@ -340,7 +341,6 @@ impl<R: AppRuntime> WorkspaceService<R> {
         let workspace = WorkspaceBuilder::new(self.fs.clone())
             .load(
                 ctx,
-                models,
                 activity_indicator,
                 LoadWorkspaceParams {
                     abs_path: abs_path.clone(),
@@ -349,7 +349,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
                 gitlab_client,
             )
             .await
-            .context("Failed to create the workspace")
+            .join_err::<()>("failed to load the workspace")
             .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
 
         item.last_opened_at = Some(last_opened_at);
@@ -435,7 +435,7 @@ async fn restore_known_workspaces<R: AppRuntime>(
         let id_str = entry.file_name().to_string_lossy().to_string();
         let id: WorkspaceId = id_str.into();
 
-        let summary = Workspace::<R>::summary(fs.clone(), &entry.path())
+        let summary = WorkspaceSummary::new(fs, &entry.path())
             .await
             .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
 
@@ -456,7 +456,7 @@ async fn restore_known_workspaces<R: AppRuntime>(
             id.clone(),
             WorkspaceItem {
                 id,
-                name: summary.manifest.name,
+                name: summary.name,
                 abs_path: entry.path().into(),
                 last_opened_at,
             }

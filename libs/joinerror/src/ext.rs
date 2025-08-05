@@ -20,6 +20,16 @@ impl<T> ResultExt<T> for anyhow::Result<T> {
     }
 }
 
+impl<T> ResultExt<T> for Result<T, serde_json::Error> {
+    fn join_err<E: ErrorMarker>(self, details: impl Into<String>) -> Result<T, Error> {
+        self.map_err(|e| Error::new::<()>(e.to_string()).join::<E>(details))
+    }
+
+    fn join_err_with<E: ErrorMarker>(self, details: impl FnOnce() -> String) -> Result<T, Error> {
+        self.map_err(|e| Error::new::<()>(e.to_string()).join::<E>(details()))
+    }
+}
+
 // FIXME: Not sure if this is the best place to implement this trait
 // Maybe it would be better to be feature-gated
 impl<T> ResultExt<T> for tokio::io::Result<T> {

@@ -6,7 +6,7 @@ use moss_applib::{
     context::{AsyncContext, MutableContext},
     mock::MockAppRuntime,
 };
-use moss_fs::{FileSystem, RealFileSystem, model_registry::GlobalModelRegistry};
+use moss_fs::{FileSystem, RealFileSystem};
 use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_testutils::random_name::random_workspace_name;
 use moss_workspace::{
@@ -52,12 +52,10 @@ pub async fn setup_test_workspace() -> (AsyncContext, Workspace<MockAppRuntime>,
     fs::create_dir_all(&abs_path).unwrap();
 
     let activity_indicator = ActivityIndicator::new(app_handle.clone());
-    let global_model_registry = GlobalModelRegistry::new();
 
     let workspace: Workspace<MockAppRuntime> = WorkspaceBuilder::new(fs.clone())
         .create(
             &ctx,
-            Arc::new(global_model_registry),
             activity_indicator,
             CreateWorkspaceParams {
                 name: random_workspace_name(),

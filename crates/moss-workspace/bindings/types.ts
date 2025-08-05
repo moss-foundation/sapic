@@ -107,6 +107,7 @@ export type SidebarPartStateInfo = { position: SidebarPosition; size: number; vi
  * @category Type
  */
 export type UpdateVariableParams = {
+  id: string;
   name?: string;
   globalValue?: ChangeJsonValue;
   localValue?: ChangeJsonValue;
@@ -120,8 +121,8 @@ export type UpdateVariableParams = {
 export type VariableInfo = {
   id: string;
   name: string;
-  globalValue: JsonValue;
-  localValue: JsonValue;
+  globalValue?: JsonValue;
+  localValue?: JsonValue;
   disabled: boolean;
   order: number;
   desc?: string;

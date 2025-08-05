@@ -103,7 +103,6 @@ impl From<std::io::Error> for Error {
 }
 
 impl From<serde_json::Error> for Error {
-    // FIXME: Should this be ErrorIo?
     fn from(value: serde_json::Error) -> Self {
         Error::new::<ErrorIo>(format!("{}", value))
     }

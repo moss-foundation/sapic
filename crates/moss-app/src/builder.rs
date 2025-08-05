@@ -1,12 +1,6 @@
-use crate::{
-    app::{App, AppCommands, AppDefaults, AppPreferences},
-    command::CommandDecl,
-    dirs,
-    services::*,
-};
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::AppRuntime;
-use moss_fs::{FileSystem, model_registry::GlobalModelRegistry};
+use moss_fs::FileSystem;
 use moss_git_hosting_provider::{
     common::ssh_auth_agent::SSHAuthAgentImpl,
     github::{auth::GitHubAuthAgentImpl, client::GitHubClient},
@@ -16,6 +10,13 @@ use moss_keyring::KeyringClientImpl;
 use std::{path::PathBuf, sync::Arc};
 use tauri::AppHandle;
 use tokio::sync::RwLock;
+
+use crate::{
+    app::{App, AppCommands, AppDefaults, AppPreferences},
+    command::CommandDecl,
+    dirs,
+    services::*,
+};
 
 pub struct BuildAppParams {
     pub app_dir: PathBuf,
@@ -56,8 +57,6 @@ impl<R: AppRuntime> AppBuilder<R> {
                 .await
                 .expect("Failed to create app directories");
         }
-
-        let model_registry: Arc<GlobalModelRegistry> = GlobalModelRegistry::new().into();
 
         let theme_service = ThemeService::new(self.fs.clone(), params.themes_dir);
         let locale_service = LocaleService::new(self.fs.clone(), params.locales_dir);
@@ -131,7 +130,6 @@ impl<R: AppRuntime> AppBuilder<R> {
             fs: self.fs,
             app_handle: self.app_handle.clone(),
             commands: self.commands,
-            models: model_registry,
 
             // FIXME: hardcoded for now
             preferences: AppPreferences {

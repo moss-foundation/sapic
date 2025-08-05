@@ -1,9 +1,10 @@
+use joinerror::Error;
 use json_patch::{AddOperation, PatchOperation, RemoveOperation, ReplaceOperation, patch};
 use jsonptr::PointerBuf;
-use serde_json::Value;
+use serde_json::{Value, json};
 
 #[derive(Debug, Clone)]
-pub enum Action {
+pub enum JsonEditAction {
     Add {
         path: PointerBuf,
         new_value: Value,
@@ -19,49 +20,51 @@ pub enum Action {
     },
 }
 
-#[derive(Debug, Clone)]
-pub struct JsonModel {
-    value: Value,
-    applied: Vec<Action>,
-    undone: Vec<Action>,
+struct ResolveError;
+impl ResolveError {
+    fn from(e: jsonptr::resolve::Error) -> Error {
+        Error::new::<()>(format!("resolve error: {}", e))
+    }
 }
 
-impl JsonModel {
-    pub fn new(initial: Value) -> Self {
+pub struct JsonEdit {
+    applied: Vec<JsonEditAction>,
+    undone: Vec<JsonEditAction>,
+}
+
+impl JsonEdit {
+    pub fn new() -> Self {
         Self {
-            value: initial,
             applied: vec![],
             undone: vec![],
         }
     }
 
-    pub fn apply(&mut self, patches: &[PatchOperation]) -> Result<(), String> {
+    pub fn apply(&mut self, root: &mut Value, patches: &[PatchOperation]) -> joinerror::Result<()> {
         let mut actions = Vec::with_capacity(patches.len());
 
         for op in patches {
             match op {
                 PatchOperation::Add(AddOperation { path, value }) => {
-                    actions.push(Action::Add {
+                    ensure_path_exists(root, path)?;
+
+                    actions.push(JsonEditAction::Add {
                         path: path.clone(),
                         new_value: value.clone(),
                     });
                 }
                 PatchOperation::Remove(RemoveOperation { path }) => {
-                    let old = path
-                        .resolve(&self.value)
-                        .map_err(|e| format!("resolve error: {}", e))?
-                        .clone();
-                    actions.push(Action::Remove {
+                    let old = path.resolve(root).map_err(ResolveError::from)?.clone();
+                    actions.push(JsonEditAction::Remove {
                         path: path.clone(),
                         old_value: old,
                     });
                 }
                 PatchOperation::Replace(ReplaceOperation { path, value }) => {
-                    let old = path
-                        .resolve(&self.value)
-                        .map_err(|e| format!("resolve error: {}", e))?
-                        .clone();
-                    actions.push(Action::Replace {
+                    ensure_path_exists(root, path)?;
+
+                    let old = path.resolve(root).map_err(ResolveError::from)?.clone();
+                    actions.push(JsonEditAction::Replace {
                         path: path.clone(),
                         old_value: old,
                         new_value: value.clone(),
@@ -71,26 +74,26 @@ impl JsonModel {
             }
         }
 
-        patch(&mut self.value, patches).map_err(|e| format!("apply error: {}", e))?;
+        patch(root, patches).map_err(|e| Error::new::<()>(format!("apply error: {}", e)))?;
         self.applied.extend(actions);
         self.undone.clear();
         Ok(())
     }
 
-    pub fn undo(&mut self) -> Result<(), String> {
+    pub fn undo(&mut self, root: &mut Value) -> joinerror::Result<()> {
         if let Some(action) = self.applied.pop() {
             let inverse_patch = match &action {
-                Action::Add { path, .. } => {
+                JsonEditAction::Add { path, .. } => {
                     PatchOperation::Remove(RemoveOperation { path: path.clone() })
                 }
-                Action::Remove {
+                JsonEditAction::Remove {
                     path,
                     old_value: old,
                 } => PatchOperation::Add(AddOperation {
                     path: path.clone(),
                     value: old.clone(),
                 }),
-                Action::Replace {
+                JsonEditAction::Replace {
                     path,
                     old_value: old,
                     ..
@@ -100,26 +103,27 @@ impl JsonModel {
                 }),
             };
 
-            patch(&mut self.value, &[inverse_patch]).map_err(|e| format!("undo error: {}", e))?;
+            patch(root, &[inverse_patch])
+                .map_err(|e| Error::new::<()>(format!("undo error: {}", e)))?;
             self.undone.push(action);
         }
         Ok(())
     }
 
-    pub fn redo(&mut self) -> Result<(), String> {
+    pub fn redo(&mut self, root: &mut Value) -> joinerror::Result<()> {
         if let Some(action) = self.undone.pop() {
             let redo_patch = match &action {
-                Action::Add {
+                JsonEditAction::Add {
                     path,
                     new_value: value,
                 } => PatchOperation::Add(AddOperation {
                     path: path.clone(),
                     value: value.clone(),
                 }),
-                Action::Remove { path, .. } => {
+                JsonEditAction::Remove { path, .. } => {
                     PatchOperation::Remove(RemoveOperation { path: path.clone() })
                 }
-                Action::Replace {
+                JsonEditAction::Replace {
                     path,
                     new_value: new,
                     ..
@@ -129,41 +133,42 @@ impl JsonModel {
                 }),
             };
 
-            patch(&mut self.value, &[redo_patch]).map_err(|e| format!("redo error: {}", e))?;
+            patch(root, &[redo_patch])
+                .map_err(|e| Error::new::<()>(format!("redo error: {}", e)))?;
             self.applied.push(action);
         }
         Ok(())
     }
-
-    pub fn value(&self) -> &Value {
-        &self.value
-    }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use serde_json::json;
+fn ensure_path_exists(root: &mut Value, path: &PointerBuf) -> joinerror::Result<()> {
+    let segments = path
+        .tokens()
+        .map(|t| t.decoded().to_string())
+        .collect::<Vec<_>>();
 
-    #[test]
-    fn json_model_undo_redo() {
-        let initial = json!({"age": 30, "city": "New York"});
-
-        let mut model = JsonModel::new(initial);
-
-        model
-            .apply(&[PatchOperation::Add(AddOperation {
-                path: PointerBuf::parse("/name").unwrap(),
-                value: json!("Jane"),
-            })])
-            .unwrap();
-
-        assert_eq!(model.value()["name"], json!("Jane"));
-
-        model.undo().unwrap();
-        assert!(model.value().get("name").is_none());
-
-        model.redo().unwrap();
-        assert_eq!(model.value()["name"], json!("Jane"));
+    if segments.is_empty() {
+        return Ok(()); // Root path, nothing to ensure
     }
+
+    let mut current = root;
+
+    for segment in &segments[..segments.len() - 1] {
+        if current.is_object() {
+            let obj = current.as_object_mut().unwrap();
+
+            if !obj.contains_key(segment) {
+                obj.insert(segment.clone(), json!({}));
+            }
+
+            current = obj.get_mut(segment).unwrap();
+        } else {
+            return Err(joinerror::Error::new::<()>(format!(
+                "segment '{}' expected to be an object",
+                segment
+            )));
+        }
+    }
+
+    Ok(())
 }

@@ -1,12 +1,7 @@
-use crate::{
-    command::CommandCallback,
-    models::types::{ColorThemeInfo, LocaleInfo},
-    services::{session_service::SessionId, workspace_service::ActiveWorkspace, *},
-};
 use derive_more::Deref;
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::{AppRuntime, context::Canceller};
-use moss_fs::{FileSystem, model_registry::GlobalModelRegistry};
+use moss_fs::FileSystem;
 use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
 use moss_text::ReadOnlyStr;
 use rustc_hash::FxHashMap;
@@ -18,6 +13,12 @@ use std::{
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use tokio::sync::RwLock;
+
+use crate::{
+    command::CommandCallback,
+    models::types::{ColorThemeInfo, LocaleInfo},
+    services::{session_service::SessionId, workspace_service::ActiveWorkspace, *},
+};
 
 pub struct AppPreferences {
     pub theme: RwLock<Option<ColorThemeInfo>>,
@@ -57,7 +58,6 @@ pub struct App<R: AppRuntime> {
     pub(super) app_handle: AppHandle<R::EventLoop>,
     pub(super) app_dir: PathBuf,
     pub(super) fs: Arc<dyn FileSystem>,
-    pub(super) models: Arc<GlobalModelRegistry>,
     pub(super) commands: AppCommands<R::EventLoop>,
     pub(super) preferences: AppPreferences,
     pub(super) defaults: AppDefaults,

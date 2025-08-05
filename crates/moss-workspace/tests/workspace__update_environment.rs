@@ -1,6 +1,7 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
+use moss_bindingutils::primitives::ChangeString;
 use moss_environment::{
     AnyEnvironment,
     models::types::{AddVariableParams, VariableOptions},
@@ -23,7 +24,7 @@ async fn update_environment_success() {
                 name: old_environment_name.clone(),
                 collection_id: None,
                 order: 0,
-                color: None,
+                color: Some("#ffffff".to_string()),
             },
         )
         .await
@@ -38,7 +39,7 @@ async fn update_environment_success() {
                 name: Some(new_environment_name.clone()),
                 collection_id: None,
                 order: None,
-                color: None,
+                color: Some(ChangeString::Update("#000000".to_string())),
                 expanded: None,
                 vars_to_add: vec![AddVariableParams {
                     name: "TEST_VAR".to_string(),
