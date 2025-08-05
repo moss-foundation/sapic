@@ -17,6 +17,7 @@ export const addVariableParamsSchema = z.object({
 });
 
 export const updateVariableParamsSchema = z.object({
+  id: z.string(),
   name: z.string().optional(),
   globalValue: changeJsonValueSchema.optional(),
   localValue: changeJsonValueSchema.optional(),
@@ -27,8 +28,8 @@ export const updateVariableParamsSchema = z.object({
 export const variableInfoSchema = z.object({
   id: z.string(),
   name: z.string(),
-  globalValue: jsonValueSchema,
-  localValue: jsonValueSchema,
+  globalValue: jsonValueSchema.optional(),
+  localValue: jsonValueSchema.optional(),
   disabled: z.boolean(),
   order: z.number(),
   desc: z.string().optional(),
