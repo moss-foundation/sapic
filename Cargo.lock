@@ -3912,6 +3912,7 @@ dependencies = [
  "async-trait",
  "dotenv",
  "git2",
+ "joinerror",
  "keyring",
  "libssh2-sys",
  "moss_git",
