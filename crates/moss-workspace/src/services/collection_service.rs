@@ -73,8 +73,7 @@ pub(crate) struct CollectionItemDescription {
     pub expanded: bool,
     #[allow(dead_code)]
     pub repository: Option<String>,
-    pub repository_info: Option<RepositoryInfo>,
-    pub contributors: Vec<Contributor>,
+
     // FIXME: Do we need this field?
     pub icon_path: Option<PathBuf>,
     pub abs_path: Arc<Path>,
@@ -249,24 +248,12 @@ impl<R: AppRuntime> CollectionService<R> {
             txn.commit()?;
         }
 
-        // FIXME: Not sure if we should put the logic for fetching git provider API here
-
-        let (repository_info, contributors) = if let Some(Ok(repo_ref)) =
-            params.repository.as_ref().map(|x| GitUrl::parse(&x))
-        {
-            fetch_remote_repo_info(&repo_ref, github_client.clone(), gitlab_client.clone()).await
-        } else {
-            (None, Vec::new())
-        };
-
         Ok(CollectionItemDescription {
             id: id.to_owned(),
             name: params.name,
             order: Some(params.order),
             expanded: true,
             repository: params.repository,
-            repository_info,
-            contributors,
             icon_path,
             abs_path,
             external_path: params.external_path,
@@ -323,9 +310,6 @@ impl<R: AppRuntime> CollectionService<R> {
                 order: item.order,
                 expanded: false,
                 repository: manifest.repository,
-                // No need to fetch remote info again when deleting
-                repository_info: None,
-                contributors: vec![],
                 icon_path,
                 abs_path: item.abs_path().clone(),
                 external_path: None, // TODO: implement
@@ -399,23 +383,12 @@ impl<R: AppRuntime> CollectionService<R> {
                 let expanded = state_lock.expanded_items.contains(id);
                 let icon_path = item.service::<DynCollectionSetIconService>().icon_path();
 
-                // FIXME: Not sure if we should put the logic for fetching git provider API here
-
-                let (repository_info, contributors) = if let Some(Ok(repo_ref)) = manifest.repository.as_ref().map(|x| GitUrl::parse(&x) ) {
-                    fetch_remote_repo_info(&repo_ref, github_client.clone(), gitlab_client.clone()).await
-                } else {
-                    (None, Vec::new())
-                };
-
-                dbg!(&repository_info, &contributors);
                 yield CollectionItemDescription {
                     id: item.id.clone(),
                     name: manifest.name,
                     order: item.order,
                     expanded,
                     repository: manifest.repository,
-                    repository_info,
-                    contributors,
                     icon_path,
                     abs_path: item.handle.abs_path().clone(),
                     external_path: None, // TODO: implement
@@ -514,30 +487,4 @@ async fn restore_collections<R: AppRuntime>(
     }
 
     Ok(result)
-}
-
-async fn fetch_remote_repo_info(
-    repo_ref: &GitUrl,
-    github_client: Arc<GitHubClient>,
-    gitlab_client: Arc<GitLabClient>,
-) -> (Option<RepositoryInfo>, Vec<Contributor>) {
-    let repo_url = format!("{}/{}", &repo_ref.owner, &repo_ref.name);
-    match repo_ref.domain.as_str() {
-        // FIXME: Handle custom GitLab domains
-        "github.com" => (
-            github_client.repository_info(&repo_url).await.ok(),
-            github_client
-                .contributors(&repo_url)
-                .await
-                .unwrap_or_default(),
-        ),
-        "gitlab.com" => (
-            gitlab_client.repository_info(&repo_url).await.ok(),
-            gitlab_client
-                .contributors(&repo_url)
-                .await
-                .unwrap_or_default(),
-        ),
-        _ => (None, Vec::new()),
-    }
 }

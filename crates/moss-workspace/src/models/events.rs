@@ -17,8 +17,15 @@ pub struct StreamCollectionsEvent {
     pub order: Option<isize>,
     pub expanded: bool,
     pub repository: Option<String>,
+
+    #[serde(skip)]
+    #[ts(skip)]
     pub repository_info: Option<RepositoryInfo>,
+
+    #[serde(skip)]
+    #[ts(skip)]
     pub contributors: Vec<Contributor>,
+
     pub picture_path: Option<PathBuf>,
 }
 
