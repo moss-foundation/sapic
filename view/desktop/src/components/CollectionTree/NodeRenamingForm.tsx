@@ -8,7 +8,7 @@ import { validateName } from "./utils/Form";
 interface NodeRenamingFormProps {
   onSubmit: (newName: string) => void;
   onCancel: () => void;
-  restrictedNames?: (string | number)[];
+  restrictedNames: string[];
   currentName: string | number;
 }
 

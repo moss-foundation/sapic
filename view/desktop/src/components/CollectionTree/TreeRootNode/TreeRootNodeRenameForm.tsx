@@ -10,7 +10,7 @@ import { TreeCollectionRootNode } from "../types";
 interface TreeRootNodeRenameFormProps {
   node: TreeCollectionRootNode;
   shouldRenderChildNodes: boolean;
-  restrictedNames?: (string | number)[];
+  restrictedNames: string[];
   handleRenamingFormSubmit: (newName: string) => void;
   handleRenamingFormCancel: () => void;
 }
@@ -39,9 +39,7 @@ export const TreeRootNodeRenameForm = ({
       </div>
 
       <NodeRenamingForm
-        onSubmit={(name) => {
-          handleRenamingFormSubmit(name);
-        }}
+        onSubmit={handleRenamingFormSubmit}
         onCancel={handleRenamingFormCancel}
         currentName={node.name}
         restrictedNames={restrictedNames}
