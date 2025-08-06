@@ -6,6 +6,7 @@ import { TreeContext } from "../..";
 import { useDeleteAndUpdatePeers } from "../actions/useDeleteAndUpdatePeers";
 import { DropIndicatorForDir } from "../DropIndicatorForDir";
 import { TreeCollectionNode } from "../types";
+import { getChildrenNames } from "../utils";
 import { useDraggableNode } from "./hooks/useDraggableNode";
 import { useNodeAddForm } from "./hooks/useNodeAddForm";
 import { useNodeRenamingForm } from "./hooks/useNodeRenamingForm";
@@ -58,7 +59,7 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
   });
 
   const shouldRenderChildNodes = node.expanded || isAddingFileNode || isAddingFolderNode;
-  const restrictedNames = parentNode?.childNodes.map((childNode) => childNode.name) ?? [];
+  const restrictedNames = getChildrenNames(parentNode);
 
   return (
     <li ref={dropTargetListRef} className={cn("relative")}>

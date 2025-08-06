@@ -7,12 +7,10 @@ export const isSourceTreeRootNode = (source: ElementDragPayload): boolean => {
   return source.data.type === "TreeRootNode";
 };
 
-//check if all folders are expanded
 export const checkIfAllFoldersAreExpanded = (tree: TreeCollectionRootNode): boolean => {
   const checkIfAllNodesAreExpanded = (node: TreeCollectionNode): boolean => {
     if (!node || node.kind === "Item") return true;
 
-    // For folder nodes, check if this node is expanded AND all children are expanded
     if (!node.expanded) return false;
 
     return node.childNodes.every(checkIfAllNodesAreExpanded);
@@ -25,7 +23,6 @@ export const checkIfAllFoldersAreCollapsed = (tree: TreeCollectionRootNode): boo
   const checkIfAllNodesAreCollapsed = (node: TreeCollectionNode): boolean => {
     if (!node || node.kind === "Item") return true;
 
-    // For folder nodes, check if this node is collapsed AND all children are collapsed
     if (node.expanded) return false;
 
     return node.childNodes.every(checkIfAllNodesAreCollapsed);
@@ -83,10 +80,6 @@ export const calculateShouldRenderRootChildNodes = (
   return true;
 };
 
-export const getRestrictedNames = (node: TreeCollectionRootNode, isAddingFolder: boolean) => {
-  if (isAddingFolder) {
-    return node.requests.childNodes.filter((childNode) => childNode.kind === "Dir").map((childNode) => childNode.name);
-  }
-
-  return node.requests.childNodes.filter((childNode) => childNode.kind === "Item").map((childNode) => childNode.name);
+export const getChildrenNames = (node: TreeCollectionNode) => {
+  return node.childNodes.map((childNode) => childNode.name);
 };
