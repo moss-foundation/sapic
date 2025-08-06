@@ -10,8 +10,7 @@ use moss_db::primitives::AnyValue;
 use moss_fs::{FileSystem, FsResultExt};
 use moss_hcl::{HclResultExt, hcl_to_json, json_to_hcl};
 use moss_storage::{
-    common::{VariableEntity, VariableStore},
-    primitives::segkey::SegKeyBuf,
+    common::VariableStore,
     storage::operations::{GetItem, PutItem, RemoveItem},
 };
 use serde_json::Value as JsonValue;
@@ -25,6 +24,9 @@ use crate::{
     models::{primitives::VariableId, types::VariableInfo},
     utils,
 };
+
+use crate::segments::{SEGKEY_VARIABLE_LOCALVALUE, SEGKEY_VARIABLE_ORDER};
+
 #[derive(Debug, Deref, Clone)]
 pub(super) struct EnvironmentPath {
     filename: String,
@@ -92,19 +94,22 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                     println!("failed to convert global value expression: {}", err); // TODO: log error
                 });
 
-                let (local_value, order) = {
-                    let segkey = SegKeyBuf::from(id.as_ref());
-                    // TODO: log error when failed to get variable entity from the database
-                    let entity = GetItem::get(self.variable_store.as_ref(), ctx, segkey)
+                // TODO: log error when failed to fetch from the database
+                let local_value: Option<JsonValue> = {
+                    let segkey = SEGKEY_VARIABLE_LOCALVALUE.join(id.as_str());
+                    GetItem::get(self.variable_store.as_ref(), ctx, segkey)
                         .await
                         .ok()
-                        .and_then(|v| v.deserialize::<VariableEntity>().ok());
+                        .and_then(|v| v.deserialize().ok())
+                };
 
-                    if let Some(entity) = entity {
-                        (entity.local_value, entity.order)
-                    } else {
-                        (None, 0)
-                    }
+                let order: isize = {
+                    let segkey = SEGKEY_VARIABLE_ORDER.join(id.as_str());
+                    GetItem::get(self.variable_store.as_ref(), ctx, segkey)
+                        .await
+                        .ok()
+                        .and_then(|v| v.deserialize().ok())
+                        .unwrap_or(0)
                 };
 
                 variables.push(VariableInfo {
@@ -178,19 +183,32 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
             }));
 
             let order = var_to_add.order;
-            let entity = VariableEntity {
-                local_value: Some(var_to_add.local_value.clone()),
-                order,
-            };
 
-            let segkey = SegKeyBuf::from(id.as_str());
-            PutItem::put(
+            let segkey_localvalue = SEGKEY_VARIABLE_LOCALVALUE.join(id.as_str());
+            if let Err(e) = PutItem::put(
                 self.variable_store.as_ref(),
                 ctx,
-                segkey,
-                AnyValue::serialize(&entity)?,
+                segkey_localvalue,
+                AnyValue::serialize(&var_to_add.local_value)?,
             )
-            .await?;
+            .await
+            {
+                // TODO: log error
+                println!("failed to put local_value in the db: {}", e);
+            }
+
+            let segkey_order = SEGKEY_VARIABLE_ORDER.join(id.as_str());
+            if let Err(e) = PutItem::put(
+                self.variable_store.as_ref(),
+                ctx,
+                segkey_order,
+                AnyValue::serialize(&order)?,
+            )
+            .await
+            {
+                // TODO: log error
+                println!("failed to put order in the db: {}", e);
+            }
         }
 
         for var_to_update in params.vars_to_update {
@@ -228,40 +246,49 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                 _ => {}
             }
 
-            let needs_update_db =
-                var_to_update.local_value.is_some() || var_to_update.order.is_some();
-
-            if needs_update_db {
-                let segkey = SegKeyBuf::from(var_to_update.id.as_str());
-                let mut new_entity: VariableEntity =
-                    GetItem::get(self.variable_store.as_ref(), ctx, segkey.clone())
-                        .await?
-                        .deserialize()?;
-
-                match var_to_update.local_value {
-                    Some(ChangeJsonValue::Update(value)) => {
-                        new_entity.local_value = Some(value);
+            let segkey_localvalue = SEGKEY_VARIABLE_LOCALVALUE.join(var_to_update.id.as_str());
+            match var_to_update.local_value {
+                Some(ChangeJsonValue::Update(value)) => {
+                    if let Err(e) = PutItem::put(
+                        self.variable_store.as_ref(),
+                        ctx,
+                        segkey_localvalue,
+                        AnyValue::serialize(&value)?,
+                    )
+                    .await
+                    {
+                        // TODO: log error
+                        println!("failed to put local_value in the db: {}", e);
                     }
-                    Some(ChangeJsonValue::Remove) => {
-                        new_entity.local_value = None;
-                    }
-                    _ => {}
                 }
-
-                match var_to_update.order {
-                    Some(new_order) => {
-                        new_entity.order = new_order;
+                Some(ChangeJsonValue::Remove) => {
+                    if let Err(e) =
+                        RemoveItem::remove(self.variable_store.as_ref(), ctx, segkey_localvalue)
+                            .await
+                    {
+                        // TODO: log error
+                        println!("failed to remove local_value from the db: {}", e);
                     }
-                    None => {}
                 }
+                _ => {}
+            }
 
-                PutItem::put(
-                    self.variable_store.as_ref(),
-                    ctx,
-                    segkey,
-                    AnyValue::serialize(&new_entity)?,
-                )
-                .await?;
+            let segkey_order = SEGKEY_VARIABLE_ORDER.join(var_to_update.id.as_str());
+            match var_to_update.order {
+                Some(order) => {
+                    if let Err(e) = PutItem::put(
+                        self.variable_store.as_ref(),
+                        ctx,
+                        segkey_order,
+                        AnyValue::serialize(&order)?,
+                    )
+                    .await
+                    {
+                        // TODO: log error
+                        println!("failed to put local_value in the db: {}", e);
+                    }
+                }
+                None => {}
             }
 
             match var_to_update.desc {
@@ -295,9 +322,21 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                 path: unsafe { PointerBuf::new_unchecked(format!("/variable/{}", id)) },
             }));
 
-            let segkey = SegKeyBuf::from(id.as_str());
+            let segkey_localvalue = SEGKEY_VARIABLE_LOCALVALUE.join(id.as_str());
+            if let Err(e) =
+                RemoveItem::remove(self.variable_store.as_ref(), ctx, segkey_localvalue).await
+            {
+                // TODO: log error
+                println!("failed to remove local_value from the db: {}", e);
+            }
 
-            RemoveItem::remove(self.variable_store.as_ref(), ctx, segkey).await?;
+            let segkey_order = SEGKEY_VARIABLE_ORDER.join(id.as_str());
+            if let Err(e) =
+                RemoveItem::remove(self.variable_store.as_ref(), ctx, segkey_order).await
+            {
+                // TODO: log error
+                println!("failed to remove order from the db: {}", e);
+            }
         }
 
         self.edit

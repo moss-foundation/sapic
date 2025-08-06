@@ -3,6 +3,7 @@ pub mod configuration;
 pub mod edit;
 pub mod environment;
 pub mod models;
+mod segments;
 pub mod utils;
 
 pub use environment::Environment;
