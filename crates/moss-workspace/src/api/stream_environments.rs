@@ -1,6 +1,5 @@
 use futures::StreamExt;
 use moss_applib::AppRuntime;
-use moss_common::api::OperationResult;
 use tauri::ipc::Channel as TauriChannel;
 
 use crate::{
@@ -16,7 +15,7 @@ impl<R: AppRuntime> Workspace<R> {
         &self,
         ctx: &R::AsyncContext,
         channel: TauriChannel<StreamEnvironmentsEvent>,
-    ) -> OperationResult<StreamEnvironmentsOutput> {
+    ) -> joinerror::Result<StreamEnvironmentsOutput> {
         let stream = self.environment_service.list_environments(ctx).await;
         tokio::pin!(stream);
 

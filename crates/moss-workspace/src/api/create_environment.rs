@@ -1,3 +1,4 @@
+use moss_api::ext::ValidationResultExt;
 use moss_applib::AppRuntime;
 use validator::Validate;
 
@@ -13,7 +14,7 @@ impl<R: AppRuntime> Workspace<R> {
         ctx: &R::AsyncContext,
         input: CreateEnvironmentInput,
     ) -> joinerror::Result<CreateEnvironmentOutput> {
-        input.validate()?;
+        input.validate().join_err_bare()?;
 
         let result = self
             .environment_service

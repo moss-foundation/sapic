@@ -4,9 +4,10 @@ mod workspace;
 
 pub use app::*;
 pub use collection::*;
+use joinerror::OptionExt;
 pub use workspace::*;
 
-use moss_api::{TauriResult, constants::DEFAULT_OPERATION_TIMEOUT};
+use moss_api::{TauriResult, constants::DEFAULT_OPERATION_TIMEOUT, errors::PreconditionFailed};
 use moss_app::{app::App, services::workspace_service::ActiveWorkspace};
 use moss_applib::{
     AppRuntime,
@@ -37,7 +38,7 @@ pub(super) async fn with_collection_timeout<R, T, F, Fut>(
 where
     R: AppRuntime,
     F: FnOnce(R::AsyncContext, Arc<Collection<R>>) -> Fut + Send + 'static,
-    Fut: std::future::Future<Output = TauriResult<T>> + Send + 'static,
+    Fut: std::future::Future<Output = TauriResult<T>> + Send + 'static, // TODO: use joinerror::Result instead when will the collection operations switch to using `joinerror::Result`
 {
     let timeout = options
         .as_ref()
@@ -81,12 +82,12 @@ pub(super) async fn with_workspace_timeout<R, T, F, Fut>(
 where
     R: AppRuntime,
     F: FnOnce(R::AsyncContext, Arc<ActiveWorkspace<R>>) -> Fut + Send + 'static,
-    Fut: std::future::Future<Output = TauriResult<T>> + Send + 'static,
+    Fut: std::future::Future<Output = joinerror::Result<T>> + Send + 'static,
 {
     let workspace = app
         .workspace()
         .await
-        .map_err_as_failed_precondition("No active workspace")?;
+        .ok_or_join_err::<PreconditionFailed>("no active workspace")?;
 
     let timeout = options
         .as_ref()
@@ -107,5 +108,6 @@ where
     if let Some(request_id) = &request_id {
         app.release_cancellation(request_id).await;
     }
-    result
+
+    result.map_err(|e| e.into())
 }

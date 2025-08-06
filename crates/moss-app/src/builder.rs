@@ -1,6 +1,12 @@
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::AppRuntime;
 use moss_fs::FileSystem;
+use moss_git_hosting_provider::{
+    common::ssh_auth_agent::SSHAuthAgentImpl,
+    github::{auth::GitHubAuthAgentImpl, client::GitHubClient},
+    gitlab::{auth::GitLabAuthAgentImpl, client::GitLabClient},
+};
+use moss_keyring::KeyringClientImpl;
 use std::{path::PathBuf, sync::Arc};
 use tauri::AppHandle;
 use tokio::sync::RwLock;
@@ -93,6 +99,32 @@ impl<R: AppRuntime> AppBuilder<R> {
             locale: default_locale,
         };
 
+        // FIXME: Use actual OAuth App id and secret
+        let keyring_client = Arc::new(KeyringClientImpl::new());
+        let reqwest_client = reqwest::ClientBuilder::new()
+            .user_agent("SAPIC")
+            .build()
+            .expect("failed to build reqwest client");
+
+        let github_client = {
+            let github_auth_agent =
+                GitHubAuthAgentImpl::new(keyring_client.clone(), "".to_string(), "".to_string());
+            Arc::new(GitHubClient::new(
+                reqwest_client.clone(),
+                github_auth_agent,
+                None as Option<SSHAuthAgentImpl>,
+            ))
+        };
+        let gitlab_client = {
+            let gitlab_auth_agent =
+                GitLabAuthAgentImpl::new(keyring_client.clone(), "".to_string(), "".to_string());
+            Arc::new(GitLabClient::new(
+                reqwest_client.clone(),
+                gitlab_auth_agent,
+                None as Option<SSHAuthAgentImpl>,
+            ))
+        };
+
         App {
             app_dir: params.app_dir,
             fs: self.fs,
@@ -105,7 +137,7 @@ impl<R: AppRuntime> AppBuilder<R> {
                 locale: RwLock::new(None),
             },
 
-            defaults: defaults,
+            defaults,
             session_service,
             log_service,
             storage_service,
@@ -114,6 +146,10 @@ impl<R: AppRuntime> AppBuilder<R> {
             theme_service,
             tracked_cancellations: Default::default(),
             activity_indicator: ActivityIndicator::new(self.app_handle),
+
+            github_client,
+            gitlab_client,
+            _reqwest_client: reqwest_client,
         }
     }
 }
