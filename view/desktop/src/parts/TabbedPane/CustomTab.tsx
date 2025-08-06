@@ -70,7 +70,11 @@ export const CustomTab = ({
       </span>
 
       {!hideClose && (
-        <button className="dv-default-tab-action cursor-pointer" onClick={handleClose}>
+        <button
+          className="dv-default-tab-action cursor-pointer"
+          onPointerDown={(e) => e.preventDefault()}
+          onClick={handleClose}
+        >
           <div onMouseEnter={() => setIsCloseHovered(true)} onMouseLeave={() => setIsCloseHovered(false)}>
             <Icon
               icon={isCloseHovered ? "CloseSmallHovered" : "CloseSmall"}
