@@ -60,12 +60,7 @@ export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
   const restrictedNames = streamedCollections?.map((collection) => collection.name) ?? [];
 
   return (
-    <div
-      ref={dropTargetRootRef}
-      className={cn("group relative w-full", {
-        "hidden": isDragging,
-      })}
-    >
+    <div ref={dropTargetRootRef} className={cn("group relative w-full", {})}>
       <DropIndicatorForDir isChildDropBlocked={isChildDropBlocked} instruction={instruction} />
       <DropIndicatorForTrigger instruction={instruction} />
 
