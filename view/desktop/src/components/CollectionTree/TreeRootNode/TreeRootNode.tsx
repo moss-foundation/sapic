@@ -71,12 +71,7 @@ export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
 
       <div
         ref={draggableRootRef}
-        className={cn(
-          "group/TreeRootHeader hover:background-(--moss-secondary-background-hover) relative flex w-full min-w-0 items-center justify-between py-0.75",
-          {
-            "background-(--moss-secondary-background-hover)": activePanelId === node.id,
-          }
-        )}
+        className={cn("group/TreeNode relative flex w-full min-w-0 items-center justify-between py-0.75")}
         style={{
           paddingLeft: treePaddingLeft,
           paddingRight: treePaddingRight,

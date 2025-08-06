@@ -30,7 +30,7 @@ export const DropIndicatorForTrigger = ({
   const leftOffset =
     paddingLeft + (depth === 1 ? 0 : instruction.operation === "reorder-before" ? 16 : isLastChild ? 0 : 16);
 
-  const gapOffset = gap + height / 2;
+  const gapOffset = -(gap + height / 2);
 
   return (
     <div
@@ -38,9 +38,10 @@ export const DropIndicatorForTrigger = ({
         position: "absolute",
         height: "1px",
         backgroundColor: "var(--moss-primary)",
-        [instruction.operation === "reorder-before" ? "top" : "bottom"]: -gapOffset,
+        [instruction.operation === "reorder-before" ? "top" : "bottom"]: gapOffset,
         width: reorderWidth,
         left: leftOffset,
+        zIndex: 5,
       }}
       {...props}
     />
