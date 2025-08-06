@@ -1,3 +1,10 @@
+use async_trait::async_trait;
+use moss_git::GitAuthAgent;
+use oauth2::http::{HeaderMap, header::ACCEPT};
+use reqwest::{Client, header::HeaderValue};
+use std::{cell::LazyCell, sync::Arc};
+use url::Url;
+
 use crate::{
     GitHostingProvider,
     common::SSHAuthAgent,
@@ -5,12 +12,6 @@ use crate::{
     github::response::{ContributorsResponse, RepositoryResponse},
     models::types::{Contributor, RepositoryInfo},
 };
-use async_trait::async_trait;
-use moss_git::GitAuthAgent;
-use oauth2::http::{HeaderMap, header::ACCEPT};
-use reqwest::{Client, header::HeaderValue};
-use std::{cell::LazyCell, sync::Arc};
-use url::Url;
 
 const CONTENT_TYPE: LazyCell<HeaderValue> =
     LazyCell::new(|| HeaderValue::from_static("application/vnd.github+json"));
@@ -51,7 +52,7 @@ impl GitHostingProvider for GitHubClient {
         Url::parse("https://github.com").unwrap()
     }
 
-    async fn contributors(&self, repo_url: &str) -> anyhow::Result<Vec<Contributor>> {
+    async fn contributors(&self, repo_url: &str) -> joinerror::Result<Vec<Contributor>> {
         // TODO: Support token auth for private repos
         let mut headers = HeaderMap::new();
         headers.insert(ACCEPT, (*CONTENT_TYPE).clone());
@@ -75,7 +76,7 @@ impl GitHostingProvider for GitHubClient {
             .collect())
     }
 
-    async fn repository_info(&self, repo_url: &str) -> anyhow::Result<RepositoryInfo> {
+    async fn repository_info(&self, repo_url: &str) -> joinerror::Result<RepositoryInfo> {
         // TODO: Support token auth for private repo
         let mut headers = HeaderMap::new();
         headers.insert(ACCEPT, (*CONTENT_TYPE).clone());

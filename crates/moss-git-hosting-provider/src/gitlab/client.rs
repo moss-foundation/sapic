@@ -55,7 +55,7 @@ impl GitHostingProvider for GitLabClient {
         Url::parse("https://gitlab.com").unwrap()
     }
 
-    async fn contributors(&self, repo_url: &str) -> anyhow::Result<Vec<Contributor>> {
+    async fn contributors(&self, repo_url: &str) -> joinerror::Result<Vec<Contributor>> {
         // TODO: Support token auth for private repos
         let encoded_url = urlencoding::encode(repo_url);
 
@@ -99,9 +99,9 @@ impl GitHostingProvider for GitLabClient {
         Ok(list)
     }
 
-    async fn repository_info(&self, _repo_url: &str) -> anyhow::Result<RepositoryInfo> {
+    async fn repository_info(&self, _repo_url: &str) -> joinerror::Result<RepositoryInfo> {
         // TODO: Looks like we can't get `updated_at` without authenticating the API call first
-        Err(anyhow::anyhow!("not implemented"))
+        Err(joinerror::Error::new::<()>("not implemented yet"))
     }
 }
 

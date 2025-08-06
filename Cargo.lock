@@ -3201,6 +3201,7 @@ name = "joinerror"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "reqwest",
  "serde_json",
  "tokio",
  "validator",

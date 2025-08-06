@@ -3,7 +3,6 @@ pub mod github;
 pub mod gitlab;
 pub mod models;
 
-use anyhow::Result;
 use async_trait::async_trait;
 use url::Url;
 
@@ -15,9 +14,9 @@ pub trait GitHostingProvider {
     fn base_url(&self) -> Url;
 
     // FIXME: Where's the best place to put Provider REST APIs?
-    async fn contributors(&self, repo_url: &str) -> Result<Vec<Contributor>>;
+    async fn contributors(&self, repo_url: &str) -> joinerror::Result<Vec<Contributor>>;
 
-    async fn repository_info(&self, repo_url: &str) -> Result<RepositoryInfo>;
+    async fn repository_info(&self, repo_url: &str) -> joinerror::Result<RepositoryInfo>;
 }
 
 pub(crate) mod constants {
