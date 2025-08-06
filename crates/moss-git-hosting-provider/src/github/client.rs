@@ -1,4 +1,3 @@
-use anyhow::anyhow;
 use async_trait::async_trait;
 use moss_git::GitAuthAgent;
 use oauth2::http::{HeaderMap, header::ACCEPT};
@@ -10,7 +9,7 @@ use crate::{
     GitHostingProvider,
     common::SSHAuthAgent,
     constants::GITHUB_API_URL,
-    github::response::{ContributorItem, ContributorsResponse, RepositoryResponse},
+    github::response::{ContributorsResponse, RepositoryResponse},
     models::types::{Contributor, RepositoryInfo},
 };
 

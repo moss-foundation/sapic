@@ -48,6 +48,7 @@
       <sourceFolder url="file://$MODULE_DIR$/libs/atomic-fs/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-contentmodel/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-contentmodel/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-edit/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-workspacelib/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/.venv1" />
       <excludeFolder url="file://$MODULE_DIR$/target" />

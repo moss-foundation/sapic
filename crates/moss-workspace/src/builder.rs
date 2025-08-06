@@ -1,8 +1,7 @@
 use joinerror::ResultExt;
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::AppRuntime;
-use moss_environment::{builder::EnvironmentBuilder, models::primitives::EnvironmentId};
-use moss_file::json::JsonFileHandle;
+use moss_environment::builder::EnvironmentBuilder;
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
 use std::{cell::LazyCell, path::Path, sync::Arc};

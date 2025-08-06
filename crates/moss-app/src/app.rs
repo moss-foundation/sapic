@@ -79,7 +79,7 @@ pub struct App<R: AppRuntime> {
     pub(super) github_client: Arc<GitHubClient>,
     pub(super) gitlab_client: Arc<GitLabClient>,
 
-    pub(super) reqwest_client: reqwest::Client,
+    pub(super) _reqwest_client: reqwest::Client,
 }
 
 impl<R: AppRuntime> App<R> {

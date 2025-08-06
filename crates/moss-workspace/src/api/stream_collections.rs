@@ -21,10 +21,7 @@ impl<R: AppRuntime> Workspace<R> {
         ctx: &R::AsyncContext,
         channel: TauriChannel<StreamCollectionsEvent>,
     ) -> OperationResult<StreamCollectionsOutput> {
-        let stream = self
-            .collection_service
-            .list_collections(ctx, self.github_client.clone(), self.gitlab_client.clone())
-            .await;
+        let stream = self.collection_service.list_collections(ctx).await;
         tokio::pin!(stream);
 
         let mut total_returned = 0;

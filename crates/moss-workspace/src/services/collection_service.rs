@@ -22,13 +22,7 @@ use moss_collection::{
     },
 };
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
-use moss_git_hosting_provider::{
-    GitHostingProvider,
-    common::GitUrl,
-    github::client::GitHubClient,
-    gitlab::client::GitLabClient,
-    models::types::{Contributor, RepositoryInfo},
-};
+
 use std::{
     collections::{HashMap, HashSet},
     path::{Path, PathBuf},
@@ -136,8 +130,6 @@ impl<R: AppRuntime> CollectionService<R> {
         ctx: &R::AsyncContext,
         id: &CollectionId,
         params: CollectionItemCreateParams,
-        github_client: Arc<GitHubClient>,
-        gitlab_client: Arc<GitLabClient>,
     ) -> joinerror::Result<CollectionItemDescription> {
         let id_str = id.to_string();
         let abs_path: Arc<Path> = self.abs_path.join(id_str).into();
@@ -364,8 +356,6 @@ impl<R: AppRuntime> CollectionService<R> {
     pub(crate) async fn list_collections(
         &self,
         _ctx: &R::AsyncContext,
-        github_client: Arc<GitHubClient>,
-        gitlab_client: Arc<GitLabClient>,
     ) -> Pin<Box<dyn Stream<Item = CollectionItemDescription> + Send + '_>> {
         let state = self.state.clone();
 

@@ -149,7 +149,7 @@ impl<R: AppRuntime> AppBuilder<R> {
 
             github_client,
             gitlab_client,
-            reqwest_client,
+            _reqwest_client: reqwest_client,
         }
     }
 }

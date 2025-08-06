@@ -34,8 +34,6 @@ impl<R: AppRuntime> Workspace<R> {
                     external_path: input.external_path.to_owned(),
                     icon_path: input.icon_path.to_owned(),
                 },
-                self.github_client.clone(),
-                self.gitlab_client.clone(),
             )
             .await?;
 
