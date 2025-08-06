@@ -90,16 +90,12 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
           });
         },
         onDragEnter: ({ self }) => {
-          console.log("onDragEnter", self.data);
-          console.log("source", getInstructionFromSelf(self));
           setInstruction(getInstructionFromSelf(self));
         },
         onDragLeave: () => {
-          console.log("onDragLeave");
           setInstruction(null);
         },
         onDrop: () => {
-          console.log("onDrop");
           setInstruction(null);
         },
       }),
