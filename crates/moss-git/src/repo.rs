@@ -1,6 +1,6 @@
 use anyhow::Result;
 use git2::{
-    IndexAddOption, IntoCString, PushOptions, RemoteCallbacks, Repository, Signature,
+    BranchType, IndexAddOption, IntoCString, PushOptions, RemoteCallbacks, Repository, Signature,
     build::RepoBuilder,
 };
 use std::{
@@ -61,7 +61,9 @@ impl RepoHandle {
             repo,
         })
     }
+}
 
+impl RepoHandle {
     pub fn add(
         &self,
         paths: impl IntoIterator<Item = impl IntoCString>,
@@ -157,6 +159,20 @@ impl RepoHandle {
         self.merge_helper(fetch_commit)?;
 
         Ok(())
+    }
+
+    /// Compare a local branch and its remote-tracking branch
+    /// Returns (ahead_commits, behind_commits)
+    pub fn compare_with_remote_branch(&self, branch_name: &str) -> Result<(usize, usize)> {
+        let local = self.repo.find_branch(branch_name, BranchType::Local)?;
+        let upstream = local.upstream()?;
+
+        let local_commit = upstream.get().peel_to_commit()?;
+        let upstream_commit = upstream.get().peel_to_commit()?;
+        let (ahead, behind) = self
+            .repo
+            .graph_ahead_behind(local_commit.id(), upstream_commit.id())?;
+        Ok((ahead, behind))
     }
 }
 impl RepoHandle {

@@ -1,5 +1,4 @@
 use moss_applib::AppRuntime;
-use moss_common::api::OperationResult;
 
 use crate::{models::operations::UpdateStateInput, workspace::Workspace};
 
@@ -8,7 +7,7 @@ impl<R: AppRuntime> Workspace<R> {
         &self,
         ctx: &R::AsyncContext,
         input: UpdateStateInput,
-    ) -> OperationResult<()> {
+    ) -> joinerror::Result<()> {
         match input {
             UpdateStateInput::UpdateEditorPartState(editor_part_state) => {
                 self.layout_service

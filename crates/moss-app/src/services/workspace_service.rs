@@ -7,6 +7,7 @@ use moss_applib::{AppRuntime, PublicServiceMarker, ServiceMarker};
 use moss_common::api::OperationError;
 use moss_db::DatabaseError;
 use moss_fs::{FileSystem, RemoveOptions};
+use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
 use moss_workspace::{
     Workspace,
     builder::{CreateWorkspaceParams, LoadWorkspaceParams, WorkspaceBuilder},
@@ -325,6 +326,8 @@ impl<R: AppRuntime> WorkspaceService<R> {
         ctx: &R::AsyncContext,
         id: &WorkspaceId,
         activity_indicator: ActivityIndicator<R::EventLoop>,
+        github_client: Arc<GitHubClient>,
+        gitlab_client: Arc<GitLabClient>,
     ) -> WorkspaceServiceResult<WorkspaceItemDescription> {
         let mut state_lock = self.state.write().await;
         let item = state_lock
@@ -342,6 +345,8 @@ impl<R: AppRuntime> WorkspaceService<R> {
                 LoadWorkspaceParams {
                     abs_path: abs_path.clone(),
                 },
+                github_client,
+                gitlab_client,
             )
             .await
             .join_err::<()>("failed to load the workspace")

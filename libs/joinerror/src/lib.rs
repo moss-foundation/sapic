@@ -1,6 +1,5 @@
 pub mod defaults;
 pub mod error;
-pub mod error_codes;
 pub mod ext;
 
 pub use error::Error;

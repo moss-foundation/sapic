@@ -14,7 +14,8 @@ CRATES_WITH_BINDINGS = {
     "workspace",
     "activity-indicator",
     "bindingutils",
-    "api"
+    "api",
+    "git-hosting-provider"
 }
 
 if __name__ == "__main__":
