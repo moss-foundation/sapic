@@ -3,6 +3,7 @@ use moss_activity_indicator::ActivityIndicator;
 use moss_applib::AppRuntime;
 use moss_environment::builder::EnvironmentBuilder;
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
+use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
 use std::{cell::LazyCell, path::Path, sync::Arc};
 
 use crate::{
@@ -86,6 +87,8 @@ impl WorkspaceBuilder {
         ctx: &R::AsyncContext,
         activity_indicator: ActivityIndicator<R::EventLoop>, // FIXME: will be passed as a service in the future
         params: LoadWorkspaceParams,
+        github_client: Arc<GitHubClient>,
+        gitlab_client: Arc<GitLabClient>,
     ) -> joinerror::Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
 
@@ -111,6 +114,8 @@ impl WorkspaceBuilder {
             collection_service,
             environment_service,
             storage_service,
+            github_client,
+            gitlab_client,
         })
     }
 
@@ -119,6 +124,8 @@ impl WorkspaceBuilder {
         ctx: &R::AsyncContext,
         activity_indicator: ActivityIndicator<R::EventLoop>, // FIXME: will be passed as a service in the future
         params: CreateWorkspaceParams,
+        github_client: Arc<GitHubClient>,
+        gitlab_client: Arc<GitLabClient>,
     ) -> joinerror::Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
 
@@ -148,6 +155,8 @@ impl WorkspaceBuilder {
             collection_service,
             environment_service,
             storage_service,
+            github_client,
+            gitlab_client,
         })
     }
 }

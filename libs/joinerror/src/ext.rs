@@ -13,6 +13,12 @@ impl From<std::io::Error> for Error {
     }
 }
 
+impl From<reqwest::Error> for Error {
+    fn from(err: reqwest::Error) -> Self {
+        Error::new::<()>(err.to_string())
+    }
+}
+
 impl From<anyhow::Error> for Error {
     fn from(err: anyhow::Error) -> Self {
         Error::new::<()>(err.to_string())

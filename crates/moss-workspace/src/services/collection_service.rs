@@ -1,3 +1,7 @@
+use crate::{
+    dirs, models::primitives::CollectionId, services::storage_service::StorageService,
+    storage::segments::SEGKEY_COLLECTION,
+};
 use derive_more::{Deref, DerefMut};
 use futures::Stream;
 use joinerror::{OptionExt, ResultExt};
@@ -15,6 +19,7 @@ use moss_collection::{
     },
 };
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
+
 use std::{
     collections::{HashMap, HashSet},
     path::{Path, PathBuf},
@@ -22,11 +27,6 @@ use std::{
     sync::Arc,
 };
 use tokio::sync::RwLock;
-
-use crate::{
-    dirs, models::primitives::CollectionId, services::storage_service::StorageService,
-    storage::segments::SEGKEY_COLLECTION,
-};
 
 const COLLECTION_ICON_SIZE: u32 = 128;
 
@@ -64,6 +64,7 @@ pub(crate) struct CollectionItemDescription {
     pub expanded: bool,
     #[allow(dead_code)]
     pub repository: Option<String>,
+
     // FIXME: Do we need this field?
     pub icon_path: Option<PathBuf>,
     pub abs_path: Arc<Path>,
@@ -362,7 +363,6 @@ impl<R: AppRuntime> CollectionService<R> {
                 let expanded = state_lock.expanded_items.contains(id);
                 let icon_path = item.service::<DynCollectionSetIconService>().icon_path();
 
-
                 yield CollectionItemDescription {
                     id: item.id.clone(),
                     name: manifest.name,
@@ -372,6 +372,7 @@ impl<R: AppRuntime> CollectionService<R> {
                     icon_path,
                     abs_path: item.handle.abs_path().clone(),
                     external_path: None, // TODO: implement
+
                 };
             }
         })

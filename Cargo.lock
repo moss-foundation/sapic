@@ -3201,6 +3201,7 @@ name = "joinerror"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "reqwest",
  "serde_json",
  "tokio",
  "validator",
@@ -3699,11 +3700,14 @@ dependencies = [
  "moss_db",
  "moss_environment",
  "moss_fs",
+ "moss_git_hosting_provider",
+ "moss_keyring",
  "moss_storage",
  "moss_testutils",
  "moss_text",
  "moss_workspace",
  "nanoid",
+ "reqwest",
  "rustc-hash",
  "serde",
  "serde_json",
@@ -3904,8 +3908,10 @@ name = "moss_git_hosting_provider"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "dotenv",
  "git2",
+ "joinerror",
  "keyring",
  "libssh2-sys",
  "moss_git",
@@ -3914,7 +3920,10 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
+ "tokio",
+ "ts-rs",
  "url",
+ "urlencoding",
  "webbrowser",
 ]
 
@@ -4004,11 +4013,14 @@ dependencies = [
  "moss_file",
  "moss_fs",
  "moss_git",
+ "moss_git_hosting_provider",
+ "moss_keyring",
  "moss_storage",
  "moss_testutils",
  "moss_text",
  "nanoid",
  "rand 0.9.1",
+ "reqwest",
  "serde",
  "serde_json",
  "tauri",
@@ -7471,6 +7483,12 @@ dependencies = [
  "percent-encoding",
  "serde",
 ]
+
+[[package]]
+name = "urlencoding"
+version = "2.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "daf8dba3b7eb870caf1ddeed7bc9d2a049f3cfdfae7cb521b087cc33ae4c49da"
 
 [[package]]
 name = "urlpattern"
