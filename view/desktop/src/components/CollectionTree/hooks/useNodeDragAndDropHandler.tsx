@@ -19,7 +19,7 @@ import {
   getLocationTreeRootNodeData,
   getPathWithoutName,
   getSourceTreeNodeData,
-  hasDirectSimilarDescendant,
+  hasAnotherDirectDescendantWithSimilarName,
   isSourceTreeNode,
   prepareEntriesForDrop,
   sortByOrder,
@@ -324,7 +324,9 @@ export const useNodeDragAndDropHandler = () => {
         }
 
         if (locationTreeRootNodeData && operation === "combine") {
-          if (hasDirectSimilarDescendant(locationTreeRootNodeData.node.requests, sourceTreeNodeData.node)) {
+          if (
+            hasAnotherDirectDescendantWithSimilarName(locationTreeRootNodeData.node.requests, sourceTreeNodeData.node)
+          ) {
             console.warn("can't drop: has direct similar descendant");
             return;
           }

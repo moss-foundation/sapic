@@ -12,7 +12,12 @@ import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/el
 
 import { TreeContext } from "../../Tree";
 import { DragNode, DropNode, TreeCollectionNode } from "../../types";
-import { getLocationTreeNodeData, getSourceTreeNodeData, hasDescendant, hasDirectSimilarDescendant } from "../../utils";
+import {
+  getLocationTreeNodeData,
+  getSourceTreeNodeData,
+  hasAnotherDirectDescendantWithSimilarName,
+  hasDescendant,
+} from "../../utils";
 
 interface UseDraggableNodeProps {
   node: TreeCollectionNode;
@@ -166,7 +171,7 @@ export const useDraggableNode = ({
           }
 
           if (dropTarget.parentNode.id === node.id && dropTarget.instruction?.operation !== "combine") {
-            setIsChildDropBlocked(hasDirectSimilarDescendant(node, sourceTarget.node));
+            setIsChildDropBlocked(hasAnotherDirectDescendantWithSimilarName(node, sourceTarget.node));
             return;
           }
 
@@ -201,7 +206,7 @@ const isReorderAvailable = (sourceTarget: DragNode, dropTarget: DropNode): Avail
     return "blocked";
   }
 
-  if (hasDirectSimilarDescendant(dropTarget.parentNode, sourceTarget.node)) {
+  if (hasAnotherDirectDescendantWithSimilarName(dropTarget.parentNode, sourceTarget.node)) {
     // console.log("can't drop: has direct similar descendant");
     return "blocked";
   }
@@ -219,7 +224,7 @@ const isCombineAvailable = (sourceTarget: DragNode, dropTarget: DropNode): Avail
     return "blocked";
   }
 
-  if (hasDirectSimilarDescendant(dropTarget.node, sourceTarget.node)) {
+  if (hasAnotherDirectDescendantWithSimilarName(dropTarget.node, sourceTarget.node)) {
     // console.log("can't drop: has direct similar descendant");
     return "blocked";
   }

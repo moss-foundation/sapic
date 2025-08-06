@@ -21,6 +21,15 @@ export const hasDirectSimilarDescendant = (parentNode: TreeCollectionNode, dropN
     (child) => child.id === dropNode.id || child.name.toLowerCase() === dropNode.name.toLowerCase()
   );
 };
+export const hasAnotherDirectDescendantWithSimilarName = (
+  parentNode: TreeCollectionNode,
+  dropNode: TreeCollectionNode
+): boolean => {
+  if (!parentNode.childNodes) return false;
+  return parentNode.childNodes.some(
+    (child) => child.id !== dropNode.id && child.name.toLowerCase() === dropNode.name.toLowerCase()
+  );
+};
 
 const doesStringIncludePartialString = (str: string, partialStr: string) => {
   return str.toLowerCase().includes(partialStr.toLowerCase());

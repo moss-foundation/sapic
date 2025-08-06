@@ -21,7 +21,7 @@ import {
   getLocationTreeCollectionData,
   getLocationTreeNodeData,
   getSourceTreeNodeData,
-  hasDirectSimilarDescendant,
+  hasAnotherDirectDescendantWithSimilarName,
   isSourceTreeNode,
   isSourceTreeRootNode,
 } from "../../utils";
@@ -160,9 +160,11 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
           }
 
           if (dropTarget?.parentNode.id === node.requests.id && dropTarget.instruction?.operation !== "combine") {
-            setIsChildDropBlocked(hasDirectSimilarDescendant(node.requests, sourceTarget.node));
+            setIsChildDropBlocked(hasAnotherDirectDescendantWithSimilarName(node.requests, sourceTarget.node));
             return;
           }
+
+          setIsChildDropBlocked(null);
         },
         onDrop: () => {
           setIsChildDropBlocked(null);
@@ -183,11 +185,11 @@ export const evaluateTreeNodeOperations = (
 ): {
   [TKey in Operation]?: Availability;
 } => {
-  const hasSimilarDescendant = hasDirectSimilarDescendant(dropTarget, sourceNode.node);
+  const hasSimilarDescendantName = hasAnotherDirectDescendantWithSimilarName(dropTarget, sourceNode.node);
 
   return {
     "reorder-before": "not-available",
     "reorder-after": "not-available",
-    combine: hasSimilarDescendant ? "blocked" : "available",
+    combine: hasSimilarDescendantName ? "blocked" : "available",
   };
 };

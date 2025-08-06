@@ -7,7 +7,7 @@ import {
 import { EntryInfo } from "@repo/moss-collection";
 
 import { DragNode, DropNode, DropRootNode, TreeCollectionNode } from "../types";
-import { hasDescendant, hasDirectSimilarDescendant } from "./TreeNode";
+import { hasAnotherDirectDescendantWithSimilarName, hasDescendant } from "./TreeNode";
 
 //source
 export const getSourceTreeNodeData = (source: ElementDragPayload): DragNode | null => {
@@ -111,14 +111,14 @@ export const canDropNode = (sourceTarget: DragNode, dropTarget: DropNode) => {
       return false;
     }
 
-    if (hasDirectSimilarDescendant(dropTarget.node, sourceTarget.node)) {
+    if (hasAnotherDirectDescendantWithSimilarName(dropTarget.node, sourceTarget.node)) {
       // console.log("can't drop: has direct similar descendant");
       return false;
     }
   }
 
   if (dropTarget.node.kind === "Item") {
-    if (hasDirectSimilarDescendant(dropTarget.parentNode, sourceTarget.node)) {
+    if (hasAnotherDirectDescendantWithSimilarName(dropTarget.parentNode, sourceTarget.node)) {
       // console.log("can't drop: has direct similar descendant");
       return false;
     }
