@@ -48,6 +48,7 @@ where
     R: AppRuntime,
 {
     pub id: EnvironmentId,
+    pub color: Option<String>,
     pub collection_id: Option<CollectionId>,
     pub display_name: String,
     pub order: isize,
@@ -129,7 +130,7 @@ where
                     display_name: item.display_name.clone(),
                     order: item.order,
                     expanded: item.expanded,
-                    color: None, // TODO: hardcoded for now
+                    color: item.color.clone(),
                     abs_path: item.abs_path().await,
                 };
             }
@@ -156,7 +157,7 @@ where
                 ctx,
                 ModifyEnvironmentParams {
                     name: params.name.clone(),
-                    color: params.color,
+                    color: params.color.clone(),
                     vars_to_add: params.vars_to_add,
                     vars_to_update: params.vars_to_update,
                     vars_to_delete: params.vars_to_delete,
@@ -166,6 +167,16 @@ where
 
         if let Some(name) = params.name {
             environment_item.display_name = name;
+        }
+
+        match params.color {
+            Some(ChangeString::Update(color)) => {
+                environment_item.color = Some(color);
+            }
+            Some(ChangeString::Remove) => {
+                environment_item.color = None;
+            }
+            None => {}
         }
 
         let needs_db_update = params.order.is_some() || params.expanded.is_some();
@@ -216,6 +227,7 @@ where
             desc.id.clone(),
             EnvironmentItem {
                 id: desc.id.clone(),
+                color: desc.color.clone(),
                 collection_id: params.collection_id.clone(),
                 display_name: params.name.clone(),
                 order: params.order,
@@ -285,7 +297,7 @@ async fn collect_environments<R: AppRuntime>(
             desc.id.clone(),
             EnvironmentItem {
                 id: desc.id,
-
+                color: desc.color,
                 // This is for restoring environments within the workspace scope,
                 // these workspaces don't have this parameter.
                 collection_id: None,
