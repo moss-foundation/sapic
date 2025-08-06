@@ -70,8 +70,6 @@ impl GitHostingProvider for GitLabClient {
             .json()
             .await?;
 
-        dbg!(&contributors_response);
-
         // FIXME: Is there a better strategy?
         // Gitlab contributor endpoint only provides the contributor email
         // We will need to fetch their avatar separately
