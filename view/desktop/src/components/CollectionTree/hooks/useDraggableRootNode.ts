@@ -8,13 +8,18 @@ import {
   Operation,
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
-import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import {
+  draggable,
+  dropTargetForElements,
+  monitorForElements,
+} from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import { TreeContext } from "../Tree";
 import { DragNode, TreeCollectionNode, TreeCollectionRootNode } from "../types";
 import {
   getInstructionFromSelf,
   getLocationTreeCollectionData,
+  getLocationTreeNodeData,
   getSourceTreeHeaderData,
   getSourceTreeNodeData,
   hasDirectSimilarDescendant,
@@ -60,9 +65,6 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
         canDrop({ source }) {
           return isSourceTreeNode(source) && displayMode === "REQUEST_FIRST";
         },
-        getIsSticky() {
-          return true;
-        },
         getData({ input, source }) {
           const dropTarget = {
             type: "TreeHeader",
@@ -91,6 +93,9 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
         },
         onDragEnter: ({ self }) => {
           setInstruction(getInstructionFromSelf(self));
+        },
+        onDropTargetChange: () => {
+          setIsChildDropBlocked(null);
         },
         onDragLeave: () => {
           setInstruction(null);
@@ -142,16 +147,6 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
           }
 
           setInstruction(instruction);
-
-          //this should in monitor for elements
-          // if (isSourceTreeNode(source)) {
-          //   if (dropTarget.parentNode.id === node.requests.id && dropTarget.instruction?.operation !== "combine") {
-          //     setIsChildDropBlocked(hasDirectSimilarDescendant(node.requests, sourceTarget.node));
-          //     return;
-          //   }
-          //   setInstruction(null);
-          //   return;
-          // }
         },
         onDragLeave: () => {
           setIsChildDropBlocked(null);
@@ -160,6 +155,29 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
         onDrop: () => {
           setIsChildDropBlocked(null);
           setInstruction(null);
+        },
+      }),
+      monitorForElements({
+        canMonitor: ({ source }) => isSourceTreeNode(source) && displayMode === "REQUEST_FIRST",
+        onDrag: ({ source, location }) => {
+          const dropTarget = getLocationTreeNodeData(location);
+          const sourceTarget = getSourceTreeNodeData(source);
+
+          if (!dropTarget || !sourceTarget) {
+            setIsChildDropBlocked(null);
+            return;
+          }
+
+          if (dropTarget?.parentNode.id === node.requests.id && dropTarget.instruction?.operation !== "combine") {
+            setIsChildDropBlocked(hasDirectSimilarDescendant(node.requests, sourceTarget.node));
+            return;
+          }
+        },
+        onDrop: () => {
+          setIsChildDropBlocked(null);
+        },
+        onDropTargetChange: () => {
+          setIsChildDropBlocked(null);
         },
       })
     );
