@@ -1,9 +1,6 @@
 use crate::{
-    dirs,
-    errors::ErrorNotFound,
-    models::primitives::CollectionId,
-    services::storage_service::StorageService,
-    storage::{entities::state_store::EnvironmentEntity, segments::SEGKEY_ENVIRONMENT},
+    dirs, errors::ErrorNotFound, models::primitives::CollectionId,
+    services::storage_service::StorageService, storage::entities::state_store::EnvironmentEntity,
 };
 use derive_more::Deref;
 use futures::Stream;
@@ -19,7 +16,6 @@ use moss_environment::{
     },
 };
 use moss_fs::FileSystem;
-use moss_storage::common::VariableStore;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
@@ -248,6 +244,8 @@ where
             abs_path,
         })
     }
+
+    // TODO: delete_environment?
 }
 
 async fn collect_environments<R: AppRuntime>(

@@ -61,7 +61,7 @@ async fn update_environment_success() {
         .await
         .unwrap();
 
-    let env_description = environment.describe().await.unwrap();
+    let env_description = environment.describe(&ctx).await.unwrap();
 
     assert_eq!(env_description.name, new_environment_name);
     assert_eq!(env_description.variables.len(), 1);

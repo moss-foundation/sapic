@@ -1,12 +1,4 @@
-use crate::{
-    models::primitives::{ActivitybarPosition, CollectionId, SidebarPosition},
-    storage::{
-        entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity, EnvironmentEntity},
-        segments::{self, SEGKEY_COLLECTION, SEGKEY_ENVIRONMENT},
-    },
-};
 use anyhow::{Context as _, Result};
-use futures::TryFutureExt;
 use moss_applib::{AppRuntime, ServiceMarker};
 use moss_db::{Transaction, primitives::AnyValue};
 use moss_environment::models::primitives::EnvironmentId;
@@ -24,6 +16,14 @@ use std::{
     collections::{HashMap, HashSet},
     path::Path,
     sync::Arc,
+};
+
+use crate::{
+    models::primitives::{ActivitybarPosition, CollectionId, SidebarPosition},
+    storage::{
+        entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity, EnvironmentEntity},
+        segments::{self, SEGKEY_COLLECTION, SEGKEY_ENVIRONMENT},
+    },
 };
 
 pub struct StorageService<R: AppRuntime> {
