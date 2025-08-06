@@ -1,10 +1,7 @@
-use crate::error_codes::{ErrorInvalidInput, ErrorIo, ErrorUnknown};
-use anyhow::anyhow;
 use std::{
     any::TypeId,
     fmt::{self, Display},
 };
-use validator::ValidationError;
 
 pub trait ErrorMarker: 'static {
     const MESSAGE: &'static str;
@@ -94,45 +91,6 @@ impl Display for Error {
             current = &source.source;
         }
         Ok(())
-    }
-}
-impl From<std::io::Error> for Error {
-    fn from(value: std::io::Error) -> Self {
-        Error::new::<ErrorIo>(format!("{}", value))
-    }
-}
-
-impl From<serde_json::Error> for Error {
-    fn from(value: serde_json::Error) -> Self {
-        Error::new::<ErrorIo>(format!("{}", value))
-    }
-}
-
-impl From<validator::ValidationError> for Error {
-    fn from(value: ValidationError) -> Self {
-        Error::new::<ErrorInvalidInput>(format!("{}", value))
-    }
-}
-
-impl From<validator::ValidationErrors> for Error {
-    fn from(value: validator::ValidationErrors) -> Self {
-        Error::new::<ErrorInvalidInput>(format!("{}", value))
-    }
-}
-
-impl From<anyhow::Error> for Error {
-    fn from(value: anyhow::Error) -> Self {
-        Error::new::<ErrorUnknown>(format!("{}", value))
-    }
-}
-
-// FIXME: This is a hack so that we don't need to change too much of our existing code,
-// which still uses anyhow::Error heavily
-// We will gradually switch to joinerror::Error
-
-impl From<Error> for anyhow::Error {
-    fn from(value: Error) -> Self {
-        anyhow!("{}", value)
     }
 }
 

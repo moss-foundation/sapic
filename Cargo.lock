@@ -1579,6 +1579,7 @@ dependencies = [
  "anyhow",
  "cocoa",
  "futures",
+ "joinerror",
  "log",
  "macos-trampoline",
  "mimalloc",
@@ -3678,6 +3679,7 @@ dependencies = [
  "thiserror 2.0.12",
  "tokio",
  "ts-rs",
+ "validator",
 ]
 
 [[package]]
@@ -3991,6 +3993,7 @@ dependencies = [
  "json-patch 4.0.0",
  "jsonptr 0.7.1",
  "moss_activity_indicator",
+ "moss_api",
  "moss_applib",
  "moss_bindingutils",
  "moss_collection",

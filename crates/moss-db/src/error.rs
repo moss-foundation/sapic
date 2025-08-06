@@ -1,4 +1,4 @@
-use joinerror::{error::ErrorMarker, error_codes::ErrorStorage};
+use joinerror::error::ErrorMarker;
 use moss_applib::context::Reason;
 use std::io::ErrorKind;
 use thiserror::Error;
@@ -75,7 +75,7 @@ impl From<DatabaseError> for std::io::Error {
 
 impl From<DatabaseError> for joinerror::Error {
     fn from(error: DatabaseError) -> Self {
-        joinerror::Error::new::<ErrorStorage>(error.to_string())
+        joinerror::Error::new::<()>(error.to_string())
     }
 }
 

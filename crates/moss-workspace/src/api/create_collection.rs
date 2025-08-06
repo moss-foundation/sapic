@@ -1,3 +1,4 @@
+use moss_api::ext::ValidationResultExt;
 use moss_applib::AppRuntime;
 use validator::Validate;
 
@@ -16,7 +17,7 @@ impl<R: AppRuntime> Workspace<R> {
         ctx: &R::AsyncContext,
         input: &CreateCollectionInput,
     ) -> joinerror::Result<CreateCollectionOutput> {
-        input.validate()?;
+        input.validate().join_err_bare()?;
 
         debug_assert!(input.external_path.is_none(), "Is not implemented");
 
