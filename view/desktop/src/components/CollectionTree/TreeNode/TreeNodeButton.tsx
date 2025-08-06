@@ -55,66 +55,38 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
   ) => {
     const { id, nodeOffset, searchInput, treePaddingRight, treePaddingLeft, showNodeOrders } = useContext(TreeContext);
 
-    const { addOrFocusPanel, activePanelId, api } = useTabbedPaneStore();
+    const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
     const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry();
 
     const handleLabelClick = () => {
-      if (node.kind === "Dir" || node.kind === "Case") {
-        const panel = api?.getPanel(node.id);
-
-        if (!panel) {
-          addOrFocusPanel({
-            id: node.id,
-            title: `${node.name} Settings`,
-            params: {
-              collectionId: id,
-              iconType: node.kind,
-              node: {
-                ...node,
-                expanded: true,
-              },
+      if (node.kind === "Dir") {
+        addOrFocusPanel({
+          id: node.id,
+          title: `${node.name} Settings`,
+          params: {
+            collectionId: id,
+            iconType: node.kind,
+            node: {
+              ...node,
+              expanded: true,
             },
-            component: "FolderSettings",
-          });
+          },
+          component: "FolderSettings",
+        });
 
+        if (!node.expanded) {
           updateCollectionEntry({
             collectionId: id,
             updatedEntry: {
               DIR: {
                 id: node.id,
                 expanded: true,
-              },
-            },
-          });
-        } else {
-          updateCollectionEntry({
-            collectionId: id,
-            updatedEntry: {
-              DIR: {
-                id: node.id,
-                expanded: !node.expanded,
               },
             },
           });
         }
-        return;
       }
-
-      addOrFocusPanel({
-        id: node.id,
-        title: node.name,
-        params: {
-          collectionId: id,
-          iconType: node.kind,
-          node: {
-            ...node,
-            expanded: true,
-          },
-          someRandomString: "someRandomString",
-        },
-        component: node.class === "Request" ? "Request" : "Default",
-      });
     };
 
     const handleClickOnDir = (e: React.MouseEvent<HTMLButtonElement>) => {
