@@ -1,7 +1,3 @@
-use crate::{
-    dirs, errors::ErrorNotFound, models::primitives::CollectionId,
-    services::storage_service::StorageService, storage::entities::state_store::EnvironmentEntity,
-};
 use derive_more::Deref;
 use futures::Stream;
 use joinerror::{OptionExt, ResultExt};
@@ -23,6 +19,11 @@ use std::{
     sync::Arc,
 };
 use tokio::sync::RwLock;
+
+use crate::{
+    dirs, errors::ErrorNotFound, models::primitives::CollectionId,
+    services::storage_service::StorageService, storage::entities::state_store::EnvironmentEntity,
+};
 
 pub struct CreateEnvironmentItemParams {
     pub collection_id: Option<CollectionId>,
@@ -222,8 +223,6 @@ where
                 handle: Arc::new(environment),
             },
         );
-
-        // TODO: put environment order to the database
 
         let entity = EnvironmentEntity {
             order: params.order,

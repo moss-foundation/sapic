@@ -1,9 +1,9 @@
 pub mod variable_store;
 
-use hcl::Expression as HclExpression;
 use moss_applib::context::AnyAsyncContext;
 use moss_db::primitives::AnyValue;
 use serde::{Deserialize, Serialize};
+use serde_json::Value as JsonValue;
 
 use crate::{
     primitives::segkey::SegKeyBuf,
@@ -28,6 +28,7 @@ pub trait VariableStore<Context: AnyAsyncContext>:
 // FIXME: Where to put this?
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct VariableEntity {
-    pub local_value: Option<HclExpression>,
+    // Using HclExpression here will fail for some reason
+    pub local_value: Option<JsonValue>,
     pub order: isize,
 }

@@ -101,11 +101,7 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                         .and_then(|v| v.deserialize::<VariableEntity>().ok());
 
                     if let Some(entity) = entity {
-                        // TODO: log error when failed to convert local value expression
-                        let local_value =
-                            entity.local_value.and_then(|expr| hcl_to_json(&expr).ok());
-                        let order = entity.order;
-                        (local_value, order)
+                        (entity.local_value, entity.order)
                     } else {
                         (None, 0)
                     }
@@ -181,12 +177,9 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                 value,
             }));
 
-            let local_value = continue_if_err!(json_to_hcl(&var_to_add.local_value), |err| {
-                println!("failed to convert global value expression: {}", err); // TODO: log error
-            });
             let order = var_to_add.order;
             let entity = VariableEntity {
-                local_value: Some(local_value),
+                local_value: Some(var_to_add.local_value.clone()),
                 order,
             };
 
@@ -247,10 +240,7 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
 
                 match var_to_update.local_value {
                     Some(ChangeJsonValue::Update(value)) => {
-                        let new_local_value = continue_if_err!(json_to_hcl(&value), |err| {
-                            println!("failed to convert global value expression: {}", err); // TODO: log error
-                        });
-                        new_entity.local_value = Some(new_local_value);
+                        new_entity.local_value = Some(value);
                     }
                     Some(ChangeJsonValue::Remove) => {
                         new_entity.local_value = None;

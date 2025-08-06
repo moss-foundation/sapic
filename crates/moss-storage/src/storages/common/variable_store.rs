@@ -42,7 +42,9 @@ where
         self.table
             .insert_with_context(ctx, &mut write_txn, key, &entity)
             .await?;
-        write_txn.commit()
+        write_txn.commit()?;
+
+        Ok(())
     }
 }
 
