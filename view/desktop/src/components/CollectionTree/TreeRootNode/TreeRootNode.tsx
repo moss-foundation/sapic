@@ -93,11 +93,16 @@ export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
             handleRenamingFormCancel={handleRenamingRootNodeFormCancel}
           />
         ) : (
-          <TreeRootNodeButton
-            node={node}
-            searchInput={searchInput}
-            shouldRenderChildNodes={shouldRenderRootChildNodes}
-          />
+          <>
+            <TreeRootNodeButton
+              node={node}
+              searchInput={searchInput}
+              shouldRenderChildNodes={shouldRenderRootChildNodes}
+            />
+            <div className="text-xs">
+              {instruction?.operation} | {instruction?.blocked ? "blocked" : "available"}
+            </div>
+          </>
         )}
 
         <TreeRootNodeActions

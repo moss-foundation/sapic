@@ -20,8 +20,6 @@ export const DropIndicatorForTrigger = ({
   isLastChild = false,
   ...props
 }: DropIndicatorProps) => {
-  console.log(instruction);
-
   if (!instruction || instruction.blocked || instruction.operation === "combine") return null;
 
   const baseWidth = `calc(100% - ${paddingRight}px - ${paddingLeft}px)`;

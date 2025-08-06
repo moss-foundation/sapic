@@ -13,6 +13,7 @@ import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-d
 import { TreeContext } from "../Tree";
 import { DragNode, TreeCollectionNode, TreeCollectionRootNode } from "../types";
 import {
+  getInstructionFromSelf,
   getLocationTreeCollectionData,
   getSourceTreeHeaderData,
   getSourceTreeNodeData,
@@ -57,7 +58,7 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
       dropTargetForElements({
         element: triggerElement,
         canDrop({ source }) {
-          return isSourceTreeNode(source);
+          return isSourceTreeNode(source) && displayMode === "REQUEST_FIRST";
         },
         getIsSticky() {
           return true;
@@ -69,28 +70,13 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
             collectionId: id,
           };
 
-          if (displayMode === "DESIGN_FIRST") {
+          const sourceTarget = getSourceTreeNodeData(source);
+          if (sourceTarget) {
             return attachInstruction(dropTarget, {
               element: triggerElement,
               input,
-              operations: {
-                "reorder-before": "not-available",
-                "reorder-after": "not-available",
-                combine: "not-available",
-              },
+              operations: evaluateTreeNodeOperations(node.requests, sourceTarget),
             });
-          }
-
-          if (isSourceTreeNode(source)) {
-            const sourceTarget = getSourceTreeNodeData(source);
-
-            if (sourceTarget) {
-              return attachInstruction(dropTarget, {
-                element: triggerElement,
-                input,
-                operations: evaluateTreeNodeOperations(node.requests, sourceTarget),
-              });
-            }
           }
 
           return attachInstruction(dropTarget, {
@@ -103,19 +89,17 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
             },
           });
         },
-        onDragStart: ({ source }) => {
-          setInstruction(extractInstruction(source));
-        },
-        onDragEnter: ({ source }) => {
-          setInstruction(extractInstruction(source));
-        },
-        onDrag: ({ source }) => {
-          setInstruction(extractInstruction(source));
+        onDragEnter: ({ self }) => {
+          console.log("onDragEnter", self.data);
+          console.log("source", getInstructionFromSelf(self));
+          setInstruction(getInstructionFromSelf(self));
         },
         onDragLeave: () => {
+          console.log("onDragLeave");
           setInstruction(null);
         },
         onDrop: () => {
+          console.log("onDrop");
           setInstruction(null);
         },
       }),
@@ -161,11 +145,9 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
             return;
           }
 
-          if (isSourceTreeHeader(source)) {
-            setInstruction(instruction);
-            return;
-          }
+          setInstruction(instruction);
 
+          //this should in monitor for elements
           // if (isSourceTreeNode(source)) {
           //   if (dropTarget.parentNode.id === node.requests.id && dropTarget.instruction?.operation !== "combine") {
           //     setIsChildDropBlocked(hasDirectSimilarDescendant(node.requests, sourceTarget.node));
