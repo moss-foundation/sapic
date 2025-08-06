@@ -22,7 +22,7 @@ use tokio::sync::RwLock;
 
 use crate::{
     dirs, errors::ErrorNotFound, models::primitives::CollectionId,
-    services::storage_service::StorageService, storage::entities::state_store::EnvironmentEntity,
+    services::storage_service::StorageService,
 };
 
 pub struct CreateEnvironmentItemParams {
@@ -179,25 +179,25 @@ where
             None => {}
         }
 
-        let needs_db_update = params.order.is_some() || params.expanded.is_some();
-
-        if needs_db_update {
-            let mut new_entity = storage_service.get_environment_cache(ctx, id).await?;
-
-            if let Some(order) = params.order {
-                environment_item.order = order;
-                new_entity.order = order;
+        if let Some(order) = params.order {
+            environment_item.order = order;
+            if let Err(e) = storage_service.put_environment_order(ctx, id, order).await {
+                // TODO: log error
+                println!("failed to put environment order in the db: {}", e);
             }
-
-            if let Some(expanded) = params.expanded {
-                environment_item.expanded = expanded;
-                new_entity.expanded = expanded;
-            }
-
-            storage_service
-                .put_environment_cache(ctx, id, &new_entity)
-                .await?;
         }
+
+        if let Some(expanded) = params.expanded {
+            environment_item.expanded = expanded;
+            if let Err(e) = storage_service
+                .put_environment_expanded(ctx, id, expanded)
+                .await
+            {
+                // TODO: log error
+                println!("failed to put environment expanded in the db: {}", e);
+            }
+        }
+
         Ok(())
     }
 
@@ -236,14 +236,21 @@ where
             },
         );
 
-        let entity = EnvironmentEntity {
-            order: params.order,
-            expanded: true,
-        };
+        if let Err(e) = storage_service
+            .put_environment_order(ctx, &desc.id, params.order)
+            .await
+        {
+            // TODO: log error
+            println!("failed to put environment order in the db: {}", e);
+        }
 
-        storage_service
-            .put_environment_cache(ctx, &desc.id.clone(), &entity)
-            .await?;
+        if let Err(e) = storage_service
+            .put_environment_expanded(ctx, &desc.id, true)
+            .await
+        {
+            // TODO: log error
+            println!("failed to put environment expanded in the db: {}", e);
+        }
 
         Ok(EnvironmentItemDescription {
             id: desc.id.clone(),
@@ -291,7 +298,14 @@ async fn collect_environments<R: AppRuntime>(
 
         let desc = environment.describe(ctx).await?;
 
-        let environment_entity = storage_service.get_environment_cache(ctx, &desc.id).await?;
+        // TODO: log error
+        let order = storage_service
+            .get_environment_order(ctx, &desc.id)
+            .await
+            .unwrap_or_default();
+        let expanded = storage_service
+            .get_environment_expanded(ctx, &desc.id)
+            .await?;
 
         environments.insert(
             desc.id.clone(),
@@ -302,8 +316,8 @@ async fn collect_environments<R: AppRuntime>(
                 // these workspaces don't have this parameter.
                 collection_id: None,
                 display_name: desc.name,
-                order: environment_entity.order,
-                expanded: environment_entity.expanded,
+                order,
+                expanded,
                 handle: Arc::new(environment),
             },
         );

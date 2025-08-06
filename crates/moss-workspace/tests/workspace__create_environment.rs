@@ -1,12 +1,10 @@
 #![cfg(feature = "integration-tests")]
 
-use moss_storage::storage::operations::ListByPrefix;
+use moss_storage::storage::operations::GetItem;
 use moss_testutils::random_name::random_environment_name;
 use moss_workspace::{
-    models::operations::CreateEnvironmentInput,
-    storage::{entities::state_store::EnvironmentEntity, segments::SEGKEY_ENVIRONMENT},
+    models::operations::CreateEnvironmentInput, storage::segments::SEGKEY_ENVIRONMENT,
 };
-use std::collections::HashMap;
 use tauri::ipc::Channel;
 
 use crate::shared::setup_test_workspace;
@@ -42,22 +40,27 @@ async fn create_environment_success() {
     // Check the newly created environment is stored in the db
     let item_store = workspace.db().item_store();
 
-    let stored_envs = ListByPrefix::list_by_prefix(item_store.as_ref(), &ctx, "environment")
-        .await
-        .unwrap()
-        .into_iter()
-        .map(|(k, v)| (k, v.deserialize::<EnvironmentEntity>().unwrap()))
-        .collect::<HashMap<_, _>>();
+    let stored_env_order: isize = GetItem::get(
+        item_store.as_ref(),
+        &ctx,
+        SEGKEY_ENVIRONMENT.join(id.as_str()).join("order"),
+    )
+    .await
+    .unwrap()
+    .deserialize()
+    .unwrap();
+    assert_eq!(stored_env_order, 42);
 
-    assert_eq!(stored_envs.len(), 2);
-    assert_eq!(
-        stored_envs[&SEGKEY_ENVIRONMENT.join(id.as_str())],
-        EnvironmentEntity {
-            order: 42,
-            // Newly created environments are expanded by default
-            expanded: true,
-        }
-    );
+    let stored_env_expanded: bool = GetItem::get(
+        item_store.as_ref(),
+        &ctx,
+        SEGKEY_ENVIRONMENT.join(id.as_str()).join("expanded"),
+    )
+    .await
+    .unwrap()
+    .deserialize()
+    .unwrap();
+    assert_eq!(stored_env_expanded, true);
 
     cleanup().await;
 }

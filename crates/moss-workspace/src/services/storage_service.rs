@@ -21,7 +21,7 @@ use std::{
 use crate::{
     models::primitives::{ActivitybarPosition, CollectionId, SidebarPosition},
     storage::{
-        entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity, EnvironmentEntity},
+        entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity},
         segments::{self, SEGKEY_COLLECTION, SEGKEY_ENVIRONMENT},
     },
 };
@@ -292,40 +292,80 @@ impl<R: AppRuntime> StorageService<R> {
         Ok(txn.commit()?)
     }
 
-    pub(super) async fn put_environment_cache(
+    pub(super) async fn put_environment_order(
         &self,
         ctx: &R::AsyncContext,
         id: &EnvironmentId,
-        entity: &EnvironmentEntity,
+        order: isize,
     ) -> joinerror::Result<()> {
         let store = self.storage.item_store();
-        let segkey = SEGKEY_ENVIRONMENT.join(id.as_str());
+        let segkey = SEGKEY_ENVIRONMENT.join(id.as_str()).join("order");
 
-        PutItem::put(store.as_ref(), ctx, segkey, AnyValue::serialize(&entity)?).await?;
+        PutItem::put(store.as_ref(), ctx, segkey, AnyValue::serialize(&order)?).await?;
 
         Ok(())
     }
 
-    pub(super) async fn get_environment_cache(
+    pub(super) async fn get_environment_order(
         &self,
         ctx: &R::AsyncContext,
         id: &EnvironmentId,
-    ) -> joinerror::Result<EnvironmentEntity> {
+    ) -> joinerror::Result<isize> {
         let store = self.storage.item_store();
-        let segkey = SEGKEY_ENVIRONMENT.join(id.as_str());
+        let segkey = SEGKEY_ENVIRONMENT.join(id.as_str()).join("order");
 
         let entity = GetItem::get(store.as_ref(), ctx, segkey).await?;
 
         Ok(entity.deserialize()?)
     }
 
-    pub(super) async fn _remove_environment_cache(
+    pub(super) async fn _remove_environment_order(
         &self,
         ctx: &R::AsyncContext,
         id: &EnvironmentId,
     ) -> joinerror::Result<()> {
         let store = self.storage.item_store();
-        let segkey = SEGKEY_ENVIRONMENT.join(id.as_str());
+        let segkey = SEGKEY_ENVIRONMENT.join(id.as_str()).join("order");
+
+        RemoveItem::remove(store.as_ref(), ctx, segkey).await?;
+
+        Ok(())
+    }
+
+    pub(super) async fn put_environment_expanded(
+        &self,
+        ctx: &R::AsyncContext,
+        id: &EnvironmentId,
+        expanded: bool,
+    ) -> joinerror::Result<()> {
+        let store = self.storage.item_store();
+        let segkey = SEGKEY_ENVIRONMENT.join(id.as_str()).join("expanded");
+
+        PutItem::put(store.as_ref(), ctx, segkey, AnyValue::serialize(&expanded)?).await?;
+
+        Ok(())
+    }
+
+    pub(super) async fn get_environment_expanded(
+        &self,
+        ctx: &R::AsyncContext,
+        id: &EnvironmentId,
+    ) -> joinerror::Result<bool> {
+        let store = self.storage.item_store();
+        let segkey = SEGKEY_ENVIRONMENT.join(id.as_str()).join("expanded");
+
+        let entity = GetItem::get(store.as_ref(), ctx, segkey).await?;
+
+        Ok(entity.deserialize()?)
+    }
+
+    pub(super) async fn _remove_environment_expanded(
+        &self,
+        ctx: &R::AsyncContext,
+        id: &EnvironmentId,
+    ) -> joinerror::Result<()> {
+        let store = self.storage.item_store();
+        let segkey = SEGKEY_ENVIRONMENT.join(id.as_str()).join("expanded");
 
         RemoveItem::remove(store.as_ref(), ctx, segkey).await?;
 

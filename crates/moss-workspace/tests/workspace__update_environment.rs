@@ -10,7 +10,7 @@ use moss_storage::storage::operations::GetItem;
 use moss_testutils::random_name::random_environment_name;
 use moss_workspace::{
     models::operations::{CreateEnvironmentInput, UpdateEnvironmentInput},
-    storage::{entities::state_store::EnvironmentEntity, segments::SEGKEY_ENVIRONMENT},
+    storage::segments::SEGKEY_ENVIRONMENT,
 };
 use serde_json::Value as JsonValue;
 
@@ -74,23 +74,27 @@ async fn update_environment_success() {
     let item_store = workspace.db().item_store();
 
     let id = create_environment_output.id.clone();
-    let stored_env: EnvironmentEntity = GetItem::get(
+    let stored_env_order: isize = GetItem::get(
         item_store.as_ref(),
         &ctx,
-        SEGKEY_ENVIRONMENT.join(id.as_str()),
+        SEGKEY_ENVIRONMENT.join(id.as_str()).join("order"),
     )
     .await
     .unwrap()
     .deserialize()
     .unwrap();
+    assert_eq!(stored_env_order, 42);
 
-    assert_eq!(
-        stored_env,
-        EnvironmentEntity {
-            order: 42,
-            expanded: false,
-        }
-    );
+    let stored_env_expanded: bool = GetItem::get(
+        item_store.as_ref(),
+        &ctx,
+        SEGKEY_ENVIRONMENT.join(id.as_str()).join("expanded"),
+    )
+    .await
+    .unwrap()
+    .deserialize()
+    .unwrap();
+    assert_eq!(stored_env_expanded, false);
 
     // Check variables are updated
     let env_desc = workspace

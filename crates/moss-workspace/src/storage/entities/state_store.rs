@@ -45,9 +45,3 @@ pub struct EditorPanelStateEntity {
     pub maximum_width: Option<f64>,
     pub maximum_height: Option<f64>,
 }
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-pub struct EnvironmentEntity {
-    pub order: isize,
-    pub expanded: bool,
-}
