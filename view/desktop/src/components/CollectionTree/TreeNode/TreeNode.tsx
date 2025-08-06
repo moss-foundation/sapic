@@ -5,10 +5,10 @@ import { cn } from "@/utils/cn";
 import { TreeContext } from "../..";
 import { useDeleteAndUpdatePeers } from "../actions/useDeleteAndUpdatePeers";
 import { DropIndicatorForDir } from "../DropIndicatorForDir";
-import { useDraggableNode } from "../hooks/useDraggableNode";
-import { useNodeAddForm } from "../hooks/useNodeAddForm";
-import { useNodeRenamingForm } from "../hooks/useNodeRenamingForm";
 import { TreeCollectionNode } from "../types";
+import { useDraggableNode } from "./hooks/useDraggableNode";
+import { useNodeAddForm } from "./hooks/useNodeAddForm";
+import { useNodeRenamingForm } from "./hooks/useNodeRenamingForm";
 import TreeNodeAddForm from "./TreeNodeAddForm";
 import TreeNodeButton from "./TreeNodeButton";
 import TreeNodeChildren from "./TreeNodeChildren";
@@ -23,7 +23,7 @@ export interface TreeNodeComponentProps {
 }
 
 export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = false }: TreeNodeComponentProps) => {
-  const { nodeOffset, treePaddingRight, treePaddingLeft, id } = useContext(TreeContext);
+  const { id } = useContext(TreeContext);
 
   const triggerRef = useRef<HTMLButtonElement>(null);
   const dropTargetListRef = useRef<HTMLLIElement>(null);

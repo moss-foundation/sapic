@@ -10,9 +10,9 @@ import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 
-import { TreeContext } from "../Tree";
-import { DragNode, DropNode, TreeCollectionNode } from "../types";
-import { getLocationTreeNodeData, getSourceTreeNodeData, hasDescendant, hasDirectSimilarDescendant } from "../utils";
+import { TreeContext } from "../../Tree";
+import { DragNode, DropNode, TreeCollectionNode } from "../../types";
+import { getLocationTreeNodeData, getSourceTreeNodeData, hasDescendant, hasDirectSimilarDescendant } from "../../utils";
 
 interface UseDraggableNodeProps {
   node: TreeCollectionNode;

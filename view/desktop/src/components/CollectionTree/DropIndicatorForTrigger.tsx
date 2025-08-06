@@ -9,6 +9,7 @@ interface DropIndicatorProps extends HTMLAttributes<HTMLDivElement> {
   paddingRight?: number;
   depth?: number;
   isLastChild?: boolean;
+  height?: number;
 }
 
 export const DropIndicatorForTrigger = ({
@@ -18,16 +19,18 @@ export const DropIndicatorForTrigger = ({
   paddingRight = 0,
   depth = 0,
   isLastChild = false,
+  height = 1,
   ...props
 }: DropIndicatorProps) => {
   if (!instruction || instruction.blocked || instruction.operation === "combine") return null;
 
   const baseWidth = `calc(100% - ${paddingRight}px - ${paddingLeft}px)`;
-
   const reorderWidth = depth === 1 ? baseWidth : `calc(${baseWidth} - 16px)`;
 
-  const leftOffset = depth === 1 ? 0 : instruction.operation === "reorder-before" ? 16 : isLastChild ? 0 : 16;
-  const left = paddingLeft + leftOffset;
+  const leftOffset =
+    paddingLeft + (depth === 1 ? 0 : instruction.operation === "reorder-before" ? 16 : isLastChild ? 0 : 16);
+
+  const gapOffset = gap + height / 2;
 
   return (
     <div
@@ -35,9 +38,9 @@ export const DropIndicatorForTrigger = ({
         position: "absolute",
         height: "1px",
         backgroundColor: "var(--moss-primary)",
-        [instruction.operation === "reorder-before" ? "top" : "bottom"]: gap,
+        [instruction.operation === "reorder-before" ? "top" : "bottom"]: -gapOffset,
         width: reorderWidth,
-        left,
+        left: leftOffset,
       }}
       {...props}
     />

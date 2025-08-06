@@ -14,8 +14,8 @@ import {
   monitorForElements,
 } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import { TreeContext } from "../Tree";
-import { DragNode, TreeCollectionNode, TreeCollectionRootNode } from "../types";
+import { TreeContext } from "../../Tree";
+import { DragNode, TreeCollectionNode, TreeCollectionRootNode } from "../../types";
 import {
   getInstructionFromSelf,
   getLocationTreeCollectionData,
@@ -24,8 +24,8 @@ import {
   hasDirectSimilarDescendant,
   isSourceTreeNode,
   isSourceTreeRootNode,
-} from "../utils";
-import { getTreeRootNodeSourceData } from "./../utils/TreeRoot";
+} from "../../utils";
+import { getTreeRootNodeSourceData } from "../../utils/TreeRoot";
 
 interface UseDraggableRootNodeProps {
   dirRef: RefObject<HTMLDivElement>;
