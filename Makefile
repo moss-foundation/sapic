@@ -4,6 +4,7 @@
 
 # ---- Environment Settings ----
 export LOG_LEVEL = trace
+export SERVER_PORT = 8080
 
 # ---- Asset Directories ----
 export THEMES_DIR = ${CURDIR}/assets/themes
@@ -47,6 +48,7 @@ export SESSION_LOG_DIR = ${CURDIR}/logs/session
 GEN_BINDINGS_DIR := tools/gen-bindings
 
 # Application directories
+SERVER_DIR := server
 DESKTOP_DIR := view/desktop
 XTASK_DIR := tools/xtask
 MISC_DIR := misc
@@ -71,6 +73,11 @@ UV := uv
 # ======================================================
 # Run Commands
 # ======================================================
+
+## Run the server application
+.PHONY: run-server
+run-server:
+	@cd $(SERVER_DIR) && go run cmd/main.go
 
 ## Run the desktop application in development mode
 .PHONY: run-desktop
