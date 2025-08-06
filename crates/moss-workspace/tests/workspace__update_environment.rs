@@ -103,6 +103,7 @@ async fn update_environment_success() {
     let variables = env_desc.variables;
 
     assert_eq!(variables.len(), 1);
+
     // Check local_value and order are correctly restored from the database
     assert_eq!(
         variables[0].local_value,
