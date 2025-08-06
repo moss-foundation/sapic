@@ -108,7 +108,7 @@ export const SidebarHeader = ({ title }: { title: string }) => {
         {title}
       </div>
 
-      <div className="flex grow justify-end">
+      <div className="flex grow justify-end gap-1">
         <ActionButton disabled={!hasWorkspace} icon="Add" onClick={openCreateCollectionModal} />
         <ActionButton
           disabled={!hasWorkspace || (areAllDirNodesCollapsed && areAllCollectionsCollapsed)}
