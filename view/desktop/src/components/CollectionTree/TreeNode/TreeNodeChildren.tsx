@@ -1,3 +1,4 @@
+import { DirDepthIndicator } from "../DirDepthIndicator";
 import { TreeCollectionNode } from "../types";
 import { sortByOrder } from "../utils";
 import { TreeNode } from "./TreeNode";
@@ -11,7 +12,9 @@ const TreeNodeChildren = ({ node, depth }: TreeNodeChildrenProps) => {
   const sortedChildNodes = sortByOrder(node.childNodes);
 
   return (
-    <ul className="h-full">
+    <ul className="relative h-full">
+      {node.kind === "Dir" && node.expanded && <DirDepthIndicator depth={depth} />}
+
       {sortedChildNodes.map((childNode, index) => (
         <TreeNode
           parentNode={node}

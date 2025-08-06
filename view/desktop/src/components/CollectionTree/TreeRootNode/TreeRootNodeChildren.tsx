@@ -3,6 +3,7 @@ import { useContext } from "react";
 import { cn } from "@/utils";
 
 import { EntryIcon } from "../../EntryIcon";
+import { DirDepthIndicator } from "../DirDepthIndicator";
 import { NodeAddForm } from "../NodeAddForm";
 import { TreeContext } from "../Tree";
 import TreeNode from "../TreeNode/TreeNode";
@@ -35,7 +36,9 @@ export const TreeRootNodeChildren = ({
   const restrictedNames = getChildrenNames(node.requests);
 
   return (
-    <ul className={cn("h-full w-full")}>
+    <ul className={cn("relative w-full")}>
+      {node.expanded && <DirDepthIndicator depth={0} />}
+
       {nodesToRender.map((childNode, index) => {
         return (
           <TreeNode
