@@ -27,7 +27,7 @@ impl From<anyhow::Error> for Error {
 
 impl From<Error> for anyhow::Error {
     fn from(err: Error) -> Self {
-        anyhow!(err)
+        anyhow!(err.to_string())
     }
 }
 

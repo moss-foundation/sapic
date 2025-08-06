@@ -29,20 +29,9 @@ export const useCloseWorkspace = () => {
     mutationKey: [USE_CLOSE_WORKSPACE_QUERY_KEY],
     mutationFn: closeWorkspaceFn,
     onSuccess: () => {
-      // Remove ALL cached workspace state queries since no workspace is active
-      queryClient.removeQueries({
-        queryKey: [USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY],
-        exact: false,
-      });
-      queryClient.removeQueries({ queryKey: [USE_STREAMED_COLLECTIONS_QUERY_KEY], exact: true });
-      queryClient.removeQueries({ queryKey: [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY], exact: true });
-
       // Invalidate other related queries
       queryClient.invalidateQueries({ queryKey: [USE_LIST_WORKSPACES_QUERY_KEY] });
       queryClient.invalidateQueries({ queryKey: [USE_DESCRIBE_APP_STATE_QUERY_KEY] });
-
-      queryClient.invalidateQueries({ queryKey: [USE_STREAMED_COLLECTIONS_QUERY_KEY], exact: true });
-      queryClient.invalidateQueries({ queryKey: [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY], exact: true });
     },
   });
 };
