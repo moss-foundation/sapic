@@ -61,12 +61,11 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
 
     const handleLabelClick = () => {
       if (node.kind === "Dir" || node.kind === "Case") {
-        const panelId = `folder-${node.id}`;
-        const panel = api?.getPanel(panelId);
+        const panel = api?.getPanel(node.id);
 
         if (!panel) {
           addOrFocusPanel({
-            id: panelId,
+            id: node.id,
             title: `${node.name} Settings`,
             params: {
               collectionId: id,
