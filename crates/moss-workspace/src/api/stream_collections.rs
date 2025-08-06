@@ -1,6 +1,5 @@
 use futures::StreamExt;
 use moss_applib::AppRuntime;
-use moss_common::api::OperationResult;
 use moss_git_hosting_provider::{
     GitHostingProvider,
     common::GitUrl,

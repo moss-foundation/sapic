@@ -2,9 +2,9 @@ use async_trait::async_trait;
 use moss_git::GitAuthAgent;
 use reqwest::{
     Client,
-    header::{ACCEPT, HeaderMap},
+    header::{ACCEPT, HeaderMap, HeaderValue},
 };
-use std::sync::Arc;
+use std::{cell::LazyCell, sync::Arc};
 use url::Url;
 
 use crate::{
@@ -14,6 +14,9 @@ use crate::{
     gitlab::response::{AvatarResponse, ContributorsResponse},
     models::types::{Contributor, RepositoryInfo},
 };
+
+const CONTENT_TYPE: LazyCell<HeaderValue> =
+    LazyCell::new(|| HeaderValue::from_static("application/json"));
 
 pub trait GitLabAuthAgent: GitAuthAgent {}
 
@@ -57,7 +60,7 @@ impl GitHostingProvider for GitLabClient {
         let encoded_url = urlencoding::encode(repo_url);
 
         let mut headers = HeaderMap::new();
-        headers.insert(ACCEPT, "application/json".parse()?);
+        headers.insert(ACCEPT, (*CONTENT_TYPE).clone());
 
         let contributors_response: ContributorsResponse = self
             .client
