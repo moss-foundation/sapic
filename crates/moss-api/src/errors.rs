@@ -12,3 +12,9 @@ impl InvalidInput {
         joinerror::Error::new::<Self>(errors.to_string())
     }
 }
+
+pub struct PreconditionFailed;
+
+impl ErrorMarker for PreconditionFailed {
+    const MESSAGE: &'static str = "precondition_failed";
+}

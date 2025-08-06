@@ -1,4 +1,4 @@
-use moss_api::{TauriError, TauriResult};
+use moss_api::TauriResult;
 use moss_workspace::{
     api::BatchUpdateCollectionOp,
     models::{events::*, operations::*},
@@ -17,10 +17,7 @@ pub async fn update_workspace_state<'a, R: tauri::Runtime>(
     options: Options,
 ) -> TauriResult<()> {
     super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
-        workspace
-            .update_state(&ctx, input)
-            .await
-            .map_err(TauriError::OperationError)
+        workspace.update_state(&ctx, input).await
     })
     .await
 }
@@ -34,7 +31,7 @@ pub async fn describe_workspace_state<'a, R: tauri::Runtime>(
     options: Options,
 ) -> TauriResult<DescribeStateOutput> {
     super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
-        workspace.describe_state(&ctx).await.map_err(|e| e.into())
+        workspace.describe_state(&ctx).await
     })
     .await
 }
@@ -49,10 +46,7 @@ pub async fn stream_environments<'a, R: tauri::Runtime>(
     options: Options,
 ) -> TauriResult<StreamEnvironmentsOutput> {
     super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
-        workspace
-            .stream_environments(&ctx, channel)
-            .await
-            .map_err(TauriError::OperationError)
+        workspace.stream_environments(&ctx, channel).await
     })
     .await
 }
@@ -67,10 +61,7 @@ pub async fn stream_collections<'a, R: tauri::Runtime>(
     options: Options,
 ) -> TauriResult<StreamCollectionsOutput> {
     super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
-        workspace
-            .stream_collections(&ctx, channel)
-            .await
-            .map_err(TauriError::OperationError)
+        workspace.stream_collections(&ctx, channel).await
     })
     .await
 }
@@ -85,10 +76,7 @@ pub async fn create_collection<'a, R: tauri::Runtime>(
     options: Options,
 ) -> TauriResult<CreateCollectionOutput> {
     super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
-        workspace
-            .create_collection(&ctx, &input)
-            .await
-            .map_err(|e| e.into())
+        workspace.create_collection(&ctx, &input).await
     })
     .await
 }
@@ -103,10 +91,7 @@ pub async fn delete_collection<'a, R: tauri::Runtime>(
     options: Options,
 ) -> TauriResult<DeleteCollectionOutput> {
     super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
-        workspace
-            .delete_collection(&ctx, &input)
-            .await
-            .map_err(|e| e.into())
+        workspace.delete_collection(&ctx, &input).await
     })
     .await
 }
@@ -121,10 +106,7 @@ pub async fn update_collection<'a, R: tauri::Runtime>(
     options: Options,
 ) -> TauriResult<UpdateCollectionOutput> {
     super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
-        workspace
-            .update_collection(&ctx, input)
-            .await
-            .map_err(|e| e.into())
+        workspace.update_collection(&ctx, input).await
     })
     .await
 }
@@ -139,10 +121,7 @@ pub async fn batch_update_collection<'a, R: tauri::Runtime>(
     options: Options,
 ) -> TauriResult<BatchUpdateCollectionOutput> {
     super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
-        workspace
-            .batch_update_collection(&ctx, input)
-            .await
-            .map_err(|e| e.into())
+        workspace.batch_update_collection(&ctx, input).await
     })
     .await
 }
@@ -157,10 +136,7 @@ pub async fn create_environment<'a, R: tauri::Runtime>(
     options: Options,
 ) -> TauriResult<CreateEnvironmentOutput> {
     super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
-        workspace
-            .create_environment(&ctx, input)
-            .await
-            .map_err(|e| e.into())
+        workspace.create_environment(&ctx, input).await
     })
     .await
 }
@@ -175,10 +151,7 @@ pub async fn update_environment<'a, R: tauri::Runtime>(
     options: Options,
 ) -> TauriResult<UpdateEnvironmentOutput> {
     super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
-        workspace
-            .update_environment(&ctx, input)
-            .await
-            .map_err(|e| e.into())
+        workspace.update_environment(&ctx, input).await
     })
     .await
 }
