@@ -319,7 +319,7 @@ impl<R: AppRuntime> StorageService<R> {
         Ok(entity.deserialize()?)
     }
 
-    pub(super) async fn remove_environment_cache(
+    pub(super) async fn _remove_environment_cache(
         &self,
         ctx: &R::AsyncContext,
         id: &EnvironmentId,

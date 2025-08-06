@@ -15,7 +15,7 @@ use moss_storage::{
     storage::operations::{GetItem, PutItem, RemoveItem},
 };
 use serde_json::Value as JsonValue;
-use std::{marker::PhantomData, path::PathBuf, sync::Arc};
+use std::{path::PathBuf, sync::Arc};
 use tokio::sync::watch;
 
 use crate::{
