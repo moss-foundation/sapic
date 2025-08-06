@@ -125,6 +125,7 @@ export const useDraggableNode = ({
           const instruction: Instruction | null = extractInstruction(self.data);
 
           if (!sourceTarget || !dropTarget || !instruction) {
+            setIsChildDropBlocked(null);
             return;
           }
 

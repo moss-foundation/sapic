@@ -9,6 +9,7 @@ import { EntryInfo } from "@repo/moss-collection";
 import { DragNode, DropNode, DropRootNode, TreeCollectionNode } from "../types";
 import { hasDescendant, hasDirectSimilarDescendant } from "./TreeNode";
 
+//source
 export const getSourceTreeNodeData = (source: ElementDragPayload): DragNode | null => {
   if (source.data.type !== "TreeNode") {
     return null;
@@ -17,9 +18,38 @@ export const getSourceTreeNodeData = (source: ElementDragPayload): DragNode | nu
   return source.data.data as DragNode;
 };
 
+export const getSourceTreeHeaderData = (source: ElementDragPayload): DragNode | null => {
+  if (source.data.type !== "TreeHeader") {
+    return null;
+  }
+
+  return source.data.data as DragNode;
+};
+
+export const isSourceTreeHeader = (source: ElementDragPayload): boolean => {
+  return source.data.type === "TreeHeader";
+};
+
+export const isSourceTreeNode = (source: ElementDragPayload): boolean => {
+  return source.data.type === "TreeNode";
+};
+
+//location
 export const getLocationTreeNodeData = (location: DragLocationHistory): DropNode | null => {
   if (location.current.dropTargets.length === 0) return null;
   if (location.current.dropTargets[0].data.type !== "TreeNode") return null;
+
+  const instruction = extractInstruction(location.current.dropTargets[0].data);
+
+  return {
+    ...(location.current.dropTargets[0].data.data as DragNode),
+    "instruction": instruction ?? undefined,
+  };
+};
+
+export const getLocationTreeCollectionData = (location: DragLocationHistory): DropNode | null => {
+  if (location.current.dropTargets.length === 0) return null;
+  if (location.current.dropTargets[0].data.type !== "TreeCollection") return null;
 
   const instruction = extractInstruction(location.current.dropTargets[0].data);
 
@@ -40,10 +70,12 @@ export const getLocationTreeRootNodeData = (location: DragLocationHistory): Drop
     "instruction": instruction ?? undefined,
   };
 };
-export const isSourceTreeNode = (source: ElementDragPayload): boolean => {
-  return source.data.type === "TreeNode";
+
+export const getInstructionFromLocation = (location: DragLocationHistory): Instruction | null => {
+  return extractInstruction(location.current.dropTargets[0].data);
 };
 
+//other checks
 export const doesLocationHaveTreeNode = (location: DragLocationHistory): boolean => {
   if (location.current.dropTargets.length === 0) return false;
   return location.current.dropTargets[0].data.type === "TreeNode";
@@ -72,10 +104,6 @@ export const getAllNestedEntries = (node: TreeCollectionNode): EntryInfo[] => {
 
 export const getInstructionFromSelf = (self: DropTargetRecord): Instruction | null => {
   return extractInstruction(self.data);
-};
-
-export const getInstructionFromLocation = (location: DragLocationHistory): Instruction | null => {
-  return extractInstruction(location.current.dropTargets[0].data);
 };
 
 export const canDropNode = (sourceTarget: DragNode, dropTarget: DropNode) => {

@@ -7,6 +7,7 @@ export const isSourceTreeRootNode = (source: ElementDragPayload): boolean => {
   return source.data.type === "TreeRootNode";
 };
 
+//TODO is this needed?
 export const updateNodeInTree = (
   tree: TreeCollectionRootNode,
   updatedNode: TreeCollectionNode
@@ -36,6 +37,7 @@ export const updateNodeInTree = (
       return tree;
   }
 };
+//TODO is this needed?
 
 const updateNode = (node: TreeCollectionNode, updatedNode: TreeCollectionNode): TreeCollectionNode => {
   if (node.id === updatedNode.id) return updatedNode;
@@ -49,6 +51,7 @@ const updateNode = (node: TreeCollectionNode, updatedNode: TreeCollectionNode): 
 
   return node;
 };
+//TODO is this needed?
 
 const updateNodeInArray = (array: TreeCollectionNode[], updatedNode: TreeCollectionNode): TreeCollectionNode[] => {
   return array.map((node) => {

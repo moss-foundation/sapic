@@ -5,9 +5,9 @@ import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 
 import { ActiveNodeIndicator } from "../ActiveNodeIndicator";
-import { DropIndicatorWithInstruction } from "../DropIndicatorWithInstruction";
+import { DropIndicatorForDir } from "../DropIndicatorForDir";
+import { DropIndicatorForTrigger } from "../DropIndicatorForTrigger";
 import { useDraggableRootNode } from "../hooks/useDraggableRootNode";
-import { useDropTargetRootDirNode } from "../hooks/useDropTargetRootDirNode";
 import { useRootNodeAddForm } from "../hooks/useRootNodeAddForm";
 import { useRootNodeRenamingForm } from "../hooks/useRootNodeRenamingForm";
 import { TreeContext } from "../Tree";
@@ -43,10 +43,11 @@ export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
     handleRenamingRootNodeFormCancel,
   } = useRootNodeRenamingForm(node);
 
-  const { instruction, isDragging, canDrop } = useDraggableRootNode(draggableRootRef, node, isRenamingRootNode);
-  const { isChildDropBlocked } = useDropTargetRootDirNode({
-    node: node.requests,
-    dropTargetRootRef,
+  const { isDragging, isChildDropBlocked, instruction } = useDraggableRootNode({
+    dirRef: dropTargetRootRef,
+    triggerRef: draggableRootRef,
+    node,
+    isRenamingNode: isRenamingRootNode,
   });
 
   const shouldRenderRootChildNodes = calculateShouldRenderRootChildNodes(
@@ -65,9 +66,8 @@ export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
         "hidden": isDragging,
       })}
     >
-      {instruction && <DropIndicatorWithInstruction instruction={instruction} canDrop={canDrop} />}
-
-      {isChildDropBlocked === null && <ActiveNodeIndicator isActive={activePanelId === node.id} />}
+      <DropIndicatorForDir isChildDropBlocked={isChildDropBlocked} instruction={instruction} />
+      <DropIndicatorForTrigger gap={-1} instruction={instruction} />
 
       <div
         ref={draggableRootRef}

@@ -1,130 +1,206 @@
 import { RefObject, useContext, useEffect, useState } from "react";
 
-import { attachInstruction, extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
-import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import {
-  BaseEventPayload,
-  DropTargetLocalizedData,
-  ElementDragType,
-} from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
+  attachInstruction,
+  Availability,
+  extractInstruction,
+  Instruction,
+  Operation,
+} from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
+import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import { TreeContext } from "../Tree";
-import { TreeCollectionRootNode } from "../types";
-import { getSourceTreeNodeData, hasDirectSimilarDescendant, isSourceTreeNode, isSourceTreeRootNode } from "../utils";
+import { DragNode, TreeCollectionNode, TreeCollectionRootNode } from "../types";
+import {
+  getLocationTreeCollectionData,
+  getSourceTreeHeaderData,
+  getSourceTreeNodeData,
+  hasDirectSimilarDescendant,
+  isSourceTreeHeader,
+  isSourceTreeNode,
+} from "../utils";
 
-export const useDraggableRootNode = (
-  draggableRef: RefObject<HTMLDivElement>,
-  node: TreeCollectionRootNode,
-  isRenamingNode: boolean
-) => {
+interface UseDraggableRootNodeProps {
+  dirRef: RefObject<HTMLDivElement>;
+  triggerRef: RefObject<HTMLDivElement>;
+  node: TreeCollectionRootNode;
+  isRenamingNode: boolean;
+}
+
+export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode }: UseDraggableRootNodeProps) => {
   const { id, displayMode } = useContext(TreeContext);
 
   const [isDragging, setIsDragging] = useState<boolean>(false);
-  const [canDrop, setCanDrop] = useState<boolean | null>(false);
   const [instruction, setInstruction] = useState<Instruction | null>(null);
+  const [isChildDropBlocked, setIsChildDropBlocked] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const element = draggableRef.current;
-    if (!element || isRenamingNode) return;
+    const triggerElement = triggerRef.current;
+    const dirElement = dirRef.current;
 
-    const evaluateInstruction = ({ self, source }: BaseEventPayload<ElementDragType> & DropTargetLocalizedData) => {
-      const instruction: Instruction | null = extractInstruction(self.data);
-
-      if (isSourceTreeRootNode(source)) {
-        if (instruction?.operation === "combine") {
-          setCanDrop(null);
-          setInstruction(null);
-        } else {
-          setCanDrop(true);
-          setInstruction(instruction);
-        }
-      }
-
-      if (isSourceTreeNode(source)) {
-        if (instruction?.operation === "combine") {
-          const sourceNode = getSourceTreeNodeData(source);
-
-          if (!sourceNode) {
-            setCanDrop(null);
-            setInstruction(null);
-            return;
-          }
-
-          if (hasDirectSimilarDescendant(node.requests, sourceNode.node)) {
-            setCanDrop(false);
-          } else {
-            setCanDrop(true);
-          }
-
-          setInstruction(instruction);
-        } else {
-          setCanDrop(null);
-          setInstruction(null);
-        }
-      }
-    };
+    if (!triggerElement || !dirElement || isRenamingNode) return;
 
     return combine(
       draggable({
-        element,
+        element: triggerElement,
         getInitialData: () => ({
-          type: "TreeRootNode",
+          type: "TreeHeader",
           data: {
             node,
             collectionId: id,
           },
         }),
-        onDragStart() {
-          setIsDragging(true);
-        },
-        onDrop() {
-          setIsDragging(false);
-        },
+        onDragStart: () => setIsDragging(true),
+        onDrop: () => setIsDragging(false),
       }),
       dropTargetForElements({
-        element,
-        getData({ input }) {
-          return attachInstruction(
-            {
-              type: "TreeRootNode",
-              node,
-              collectionId: id,
-            },
-            {
-              element,
-              input,
-              operations: {
-                "reorder-before": "available",
-                "reorder-after": "available",
-                combine: displayMode === "REQUEST_FIRST" ? "available" : "not-available",
-              },
-            }
-          );
-        },
+        element: triggerElement,
         canDrop({ source }) {
-          return source.data.type === "TreeRootNode" || source.data.type === "TreeNode";
+          return isSourceTreeNode(source);
         },
         getIsSticky() {
           return true;
         },
-        onDragStart: evaluateInstruction,
-        onDragEnter: evaluateInstruction,
-        onDrag: evaluateInstruction,
-        onDragLeave() {
+        getData({ input, source }) {
+          const dropTarget = {
+            type: "TreeHeader",
+            node,
+            collectionId: id,
+          };
+
+          if (displayMode === "DESIGN_FIRST") {
+            return attachInstruction(dropTarget, {
+              element: triggerElement,
+              input,
+              operations: {
+                "reorder-before": "not-available",
+                "reorder-after": "not-available",
+                combine: "not-available",
+              },
+            });
+          }
+
+          if (isSourceTreeNode(source)) {
+            const sourceTarget = getSourceTreeNodeData(source);
+
+            if (sourceTarget) {
+              return attachInstruction(dropTarget, {
+                element: triggerElement,
+                input,
+                operations: evaluateTreeNodeOperations(node.requests, sourceTarget),
+              });
+            }
+          }
+
+          return attachInstruction(dropTarget, {
+            element: triggerElement,
+            input,
+            operations: {
+              "reorder-before": "not-available",
+              "reorder-after": "not-available",
+              combine: "not-available",
+            },
+          });
+        },
+        onDragStart: ({ source }) => {
+          setInstruction(extractInstruction(source));
+        },
+        onDragEnter: ({ source }) => {
+          setInstruction(extractInstruction(source));
+        },
+        onDrag: ({ source }) => {
+          setInstruction(extractInstruction(source));
+        },
+        onDragLeave: () => {
           setInstruction(null);
         },
-        onDrop() {
+        onDrop: () => {
+          setInstruction(null);
+        },
+      }),
+      dropTargetForElements({
+        element: dirElement,
+        canDrop: ({ source }) => isSourceTreeHeader(source),
+        getData: ({ input, source }) => {
+          const dropTarget = {
+            type: "TreeCollection",
+            node,
+            collectionId: id,
+          };
+
+          if (isSourceTreeHeader(source)) {
+            return attachInstruction(dropTarget, {
+              element: dirElement,
+              input,
+              operations: {
+                "reorder-before": "available",
+                "reorder-after": "available",
+                combine: "not-available",
+              },
+            });
+          }
+
+          return attachInstruction(dropTarget, {
+            element: dirElement,
+            input,
+            operations: {
+              "reorder-before": "not-available",
+              "reorder-after": "not-available",
+              combine: "not-available",
+            },
+          });
+        },
+        onDrag: ({ source, location, self }) => {
+          const sourceTarget = getSourceTreeHeaderData(source);
+          const dropTarget = getLocationTreeCollectionData(location);
+          const instruction = extractInstruction(self.data);
+
+          if (!sourceTarget || !dropTarget) {
+            setInstruction(null);
+            return;
+          }
+
+          if (isSourceTreeHeader(source)) {
+            setInstruction(instruction);
+            return;
+          }
+
+          // if (isSourceTreeNode(source)) {
+          //   if (dropTarget.parentNode.id === node.requests.id && dropTarget.instruction?.operation !== "combine") {
+          //     setIsChildDropBlocked(hasDirectSimilarDescendant(node.requests, sourceTarget.node));
+          //     return;
+          //   }
+          //   setInstruction(null);
+          //   return;
+          // }
+        },
+        onDragLeave: () => {
+          setIsChildDropBlocked(null);
+          setInstruction(null);
+        },
+        onDrop: () => {
+          setIsChildDropBlocked(null);
           setInstruction(null);
         },
       })
     );
-  }, [node, isRenamingNode, draggableRef, id, displayMode]);
+  }, [dirRef, displayMode, id, isRenamingNode, node, triggerRef]);
+
+  return { isDragging, isChildDropBlocked, instruction };
+};
+
+export const evaluateTreeNodeOperations = (
+  dropTarget: TreeCollectionNode,
+  sourceNode: DragNode
+): {
+  [TKey in Operation]?: Availability;
+} => {
+  const hasSimilarDescendant = hasDirectSimilarDescendant(dropTarget, sourceNode.node);
 
   return {
-    canDrop,
-    instruction,
-    setInstruction,
-    isDragging,
+    "reorder-before": "not-available",
+    "reorder-after": "not-available",
+    combine: hasSimilarDescendant ? "blocked" : "available",
   };
 };
