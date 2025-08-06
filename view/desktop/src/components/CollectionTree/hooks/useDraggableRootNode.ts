@@ -20,12 +20,12 @@ import {
   getInstructionFromSelf,
   getLocationTreeCollectionData,
   getLocationTreeNodeData,
-  getSourceTreeHeaderData,
   getSourceTreeNodeData,
   hasDirectSimilarDescendant,
-  isSourceTreeHeader,
   isSourceTreeNode,
+  isSourceTreeRootNode,
 } from "../utils";
+import { getTreeRootNodeSourceData } from "./../utils/TreeRoot";
 
 interface UseDraggableRootNodeProps {
   dirRef: RefObject<HTMLDivElement>;
@@ -51,7 +51,7 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
       draggable({
         element: triggerElement,
         getInitialData: () => ({
-          type: "TreeHeader",
+          type: "TreeRootNode",
           data: {
             node,
             collectionId: id,
@@ -60,6 +60,7 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
         onDragStart: () => setIsDragging(true),
         onDrop: () => setIsDragging(false),
       }),
+      //for regular nodes
       dropTargetForElements({
         element: triggerElement,
         canDrop({ source }) {
@@ -67,7 +68,7 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
         },
         getData({ input, source }) {
           const dropTarget = {
-            type: "TreeHeader",
+            type: "TreeRootNode",
             node,
             collectionId: id,
           };
@@ -104,40 +105,29 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
           setInstruction(null);
         },
       }),
+      //for collections
       dropTargetForElements({
         element: dirElement,
-        canDrop: ({ source }) => isSourceTreeHeader(source),
-        getData: ({ input, source }) => {
+        canDrop: ({ source }) => isSourceTreeRootNode(source),
+        getData: ({ input }) => {
           const dropTarget = {
             type: "TreeCollection",
             node,
             collectionId: id,
           };
 
-          if (isSourceTreeHeader(source)) {
-            return attachInstruction(dropTarget, {
-              element: dirElement,
-              input,
-              operations: {
-                "reorder-before": "available",
-                "reorder-after": "available",
-                combine: "not-available",
-              },
-            });
-          }
-
           return attachInstruction(dropTarget, {
             element: dirElement,
             input,
             operations: {
-              "reorder-before": "not-available",
-              "reorder-after": "not-available",
+              "reorder-before": "available",
+              "reorder-after": "available",
               combine: "not-available",
             },
           });
         },
         onDrag: ({ source, location, self }) => {
-          const sourceTarget = getSourceTreeHeaderData(source);
+          const sourceTarget = getTreeRootNodeSourceData(source);
           const dropTarget = getLocationTreeCollectionData(location);
           const instruction = extractInstruction(self.data);
 
@@ -157,6 +147,7 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
           setInstruction(null);
         },
       }),
+      //for checking if child drop is blocked
       monitorForElements({
         canMonitor: ({ source }) => isSourceTreeNode(source) && displayMode === "REQUEST_FIRST",
         onDrag: ({ source, location }) => {

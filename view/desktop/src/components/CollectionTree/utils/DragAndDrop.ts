@@ -18,18 +18,6 @@ export const getSourceTreeNodeData = (source: ElementDragPayload): DragNode | nu
   return source.data.data as DragNode;
 };
 
-export const getSourceTreeHeaderData = (source: ElementDragPayload): DragNode | null => {
-  if (source.data.type !== "TreeHeader") {
-    return null;
-  }
-
-  return source.data.data as DragNode;
-};
-
-export const isSourceTreeHeader = (source: ElementDragPayload): boolean => {
-  return source.data.type === "TreeHeader";
-};
-
 export const isSourceTreeNode = (source: ElementDragPayload): boolean => {
   return source.data.type === "TreeNode";
 };

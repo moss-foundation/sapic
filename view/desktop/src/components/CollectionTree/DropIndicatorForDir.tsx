@@ -8,7 +8,6 @@ interface DropIndicatorForDirProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export const DropIndicatorForDir = ({ isChildDropBlocked, instruction, ...props }: DropIndicatorForDirProps) => {
-  console.log(instruction);
   if (isChildDropBlocked) {
     return (
       <div
