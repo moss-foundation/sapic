@@ -89,6 +89,9 @@
   "Copy": {
     "identical": true
   },
+  "Del": {
+    "identical": true
+  },
   "Delete": {
     "identical": true
   },
@@ -130,6 +133,9 @@
   },
   "FolderActive": {
     "identical": false
+  },
+  "Get": {
+    "identical": true
   },
   "GreenCheckmark": {
     "identical": true
@@ -221,11 +227,17 @@
   "Placeholder": {
     "identical": true
   },
+  "Post": {
+    "identical": true
+  },
   "PostRequest": {
     "identical": false
   },
   "PreRequest": {
     "identical": false
+  },
+  "Put": {
+    "identical": true
   },
   "RadioIndicator": {
     "identical": true
