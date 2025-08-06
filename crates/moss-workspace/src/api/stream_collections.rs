@@ -1,7 +1,3 @@
-use crate::{
-    models::{events::StreamCollectionsEvent, operations::StreamCollectionsOutput},
-    workspace::Workspace,
-};
 use futures::StreamExt;
 use moss_applib::AppRuntime;
 use moss_common::api::OperationResult;
@@ -15,12 +11,17 @@ use moss_git_hosting_provider::{
 use std::sync::Arc;
 use tauri::ipc::Channel as TauriChannel;
 
+use crate::{
+    models::{events::StreamCollectionsEvent, operations::StreamCollectionsOutput},
+    workspace::Workspace,
+};
+
 impl<R: AppRuntime> Workspace<R> {
     pub async fn stream_collections(
         &self,
         ctx: &R::AsyncContext,
         channel: TauriChannel<StreamCollectionsEvent>,
-    ) -> OperationResult<StreamCollectionsOutput> {
+    ) -> joinerror::Result<StreamCollectionsOutput> {
         let stream = self.collection_service.list_collections(ctx).await;
         tokio::pin!(stream);
 
