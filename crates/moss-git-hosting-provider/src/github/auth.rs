@@ -173,10 +173,7 @@ mod tests {
 
     use moss_git::repo::RepoHandle;
     use moss_keyring::KeyringClientImpl;
-    use std::{
-        path::{Path, PathBuf},
-        sync::Arc,
-    };
+    use std::{path::PathBuf, sync::Arc};
 
     #[test]
     #[ignore]

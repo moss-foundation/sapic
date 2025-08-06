@@ -41,8 +41,6 @@ impl<R: AppRuntime> Workspace<R> {
                 (None, Vec::new())
             };
 
-            dbg!(&repository_info, &contributors);
-
             if let Err(e) = channel.send(StreamCollectionsEvent {
                 id: collection.id,
                 name: collection.name,
