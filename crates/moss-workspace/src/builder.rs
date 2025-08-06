@@ -1,19 +1,20 @@
+use joinerror::ResultExt;
+use moss_activity_indicator::ActivityIndicator;
+use moss_applib::AppRuntime;
+use moss_fs::{CreateOptions, FileSystem, FsResultExt};
+use std::{cell::LazyCell, path::Path, sync::Arc};
+
 use crate::{
     Workspace, dirs,
     edit::WorkspaceEdit,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
     services::{
-        collection_service::CollectionService, environment_service::EnvironmentService,
-        layout_service::LayoutService, storage_service::StorageService,
+        collection_service::CollectionService,
+        environment_service::{CreateEnvironmentItemParams, EnvironmentService},
+        layout_service::LayoutService,
+        storage_service::StorageService,
     },
 };
-use joinerror::ResultExt;
-use moss_activity_indicator::ActivityIndicator;
-use moss_applib::AppRuntime;
-use moss_environment::builder::EnvironmentBuilder;
-use moss_fs::{CreateOptions, FileSystem, FsResultExt};
-use moss_storage::common::VariableStore;
-use std::{cell::LazyCell, path::Path, sync::Arc};
 
 struct PredefinedEnvironment {
     name: String,
@@ -56,18 +57,6 @@ impl WorkspaceBuilder {
 
         for dir in &[dirs::COLLECTIONS_DIR, dirs::ENVIRONMENTS_DIR] {
             fs.create_dir(&params.abs_path.join(dir)).await?;
-        }
-
-        for env in PREDEFINED_ENVIRONMENTS.iter() {
-            EnvironmentBuilder::new(fs.clone())
-                .initialize(moss_environment::builder::CreateEnvironmentParams {
-                    name: env.name.clone(),
-                    abs_path: &params.abs_path.join(dirs::ENVIRONMENTS_DIR),
-                    color: env.color.clone(),
-                    order: env.order,
-                })
-                .await
-                .join_err_with::<()>(|| format!("failed to initialize environment {}", env.name))?;
         }
 
         fs.create_file_with(
@@ -148,6 +137,22 @@ impl WorkspaceBuilder {
             storage_service.clone(),
         )
         .await?;
+
+        for env in PREDEFINED_ENVIRONMENTS.iter() {
+            environment_service
+                .create_environment(
+                    ctx,
+                    CreateEnvironmentItemParams {
+                        collection_id: None,
+                        name: env.name.clone(),
+                        order: env.order,
+                        color: env.color.clone(),
+                    },
+                    storage_service.clone(),
+                )
+                .await
+                .join_err_with::<()>(|| format!("failed to initialize environment {}", env.name))?;
+        }
 
         let edit = WorkspaceEdit::new(self.fs.clone(), params.abs_path.join(MANIFEST_FILE_NAME));
 
