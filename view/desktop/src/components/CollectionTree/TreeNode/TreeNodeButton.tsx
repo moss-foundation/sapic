@@ -11,7 +11,7 @@ import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types
 
 import { EntryIcon } from "../../EntryIcon";
 import { ActiveNodeIndicator } from "../ActiveNodeIndicator";
-import { DropIndicatorWithInstruction } from "../DropIndicatorWithInstruction";
+import { DropIndicatorForTrigger } from "../DropIndicatorForTrigger";
 import NodeLabel from "../NodeLabel";
 import { TreeContext } from "../Tree";
 import { TreeCollectionNode } from "../types";
@@ -117,18 +117,13 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
           >
             {isChildDropBlocked === null && <ActiveNodeIndicator isActive={activePanelId === node.id} />}
 
-            {node.kind === "Item" && instruction !== null && (
-              <DropIndicatorWithInstruction
-                paddingLeft={nodePaddingLeft}
-                paddingRight={treePaddingRight}
-                instruction={instruction}
-                isFolder={false}
-                depth={depth}
-                isLastChild={isLastChild}
-                gap={-1}
-                className="z-6"
-              />
-            )}
+            <DropIndicatorForTrigger
+              paddingLeft={nodePaddingLeft}
+              paddingRight={treePaddingRight}
+              instruction={instruction}
+              depth={depth}
+              isLastChild={isLastChild}
+            />
 
             <span
               className={cn("relative z-10 flex h-full w-full items-center gap-1")}
@@ -173,10 +168,6 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
               )}
 
               <span className="DragHandle h-full min-h-4 grow" />
-
-              <div className="text-xs">
-                {instruction?.operation} | {instruction?.blocked ? "blocked" : "available"}
-              </div>
 
               {node.kind === "Dir" && (
                 <TreeNodeActions

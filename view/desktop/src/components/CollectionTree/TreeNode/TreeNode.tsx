@@ -4,7 +4,7 @@ import { cn } from "@/utils/cn";
 
 import { TreeContext } from "../..";
 import { useDeleteAndUpdatePeers } from "../actions/useDeleteAndUpdatePeers";
-import { DropIndicatorWithInstruction } from "../DropIndicatorWithInstruction";
+import { DropIndicatorForDir } from "../DropIndicatorForDir";
 import { useDraggableNode } from "../hooks/useDraggableNode";
 import { useNodeAddForm } from "../hooks/useNodeAddForm";
 import { useNodeRenamingForm } from "../hooks/useNodeRenamingForm";
@@ -58,22 +58,11 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
   });
 
   const shouldRenderChildNodes = node.expanded || isAddingFileNode || isAddingFolderNode;
-  const shouldRenderAddingFormDivider = false; // !isAddingDividerNodeAbove && !isAddingDividerNodeBelow;
-  const nodePaddingLeft = depth * nodeOffset + treePaddingLeft;
   const restrictedNames = parentNode?.childNodes.map((childNode) => childNode.name) ?? [];
 
   return (
     <li ref={dropTargetListRef} className={cn("relative")}>
-      <DropIndicatorWithInstruction
-        isChildDropBlocked={isChildDropBlocked}
-        paddingLeft={nodePaddingLeft}
-        paddingRight={treePaddingRight}
-        instruction={instruction}
-        isFolder={node.kind === "Dir"}
-        depth={depth}
-        isLastChild={isLastChild}
-        gap={-1}
-      />
+      <DropIndicatorForDir isChildDropBlocked={isChildDropBlocked} instruction={instruction} />
 
       {isRenamingNode && !isRootNode ? (
         <TreeNodeRenameForm
