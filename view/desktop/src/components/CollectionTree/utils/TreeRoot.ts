@@ -7,64 +7,6 @@ export const isSourceTreeRootNode = (source: ElementDragPayload): boolean => {
   return source.data.type === "TreeRootNode";
 };
 
-//TODO is this needed?
-export const updateNodeInTree = (
-  tree: TreeCollectionRootNode,
-  updatedNode: TreeCollectionNode
-): TreeCollectionRootNode => {
-  switch (updatedNode.class) {
-    case "Request":
-      return {
-        ...tree,
-        requests: updateNode(tree.requests, updatedNode),
-      };
-    case "Endpoint":
-      return {
-        ...tree,
-        endpoints: updateNode(tree.endpoints, updatedNode),
-      };
-    case "Component":
-      return {
-        ...tree,
-        components: updateNode(tree.components, updatedNode),
-      };
-    case "Schema":
-      return {
-        ...tree,
-        schemas: updateNode(tree.schemas, updatedNode),
-      };
-    default:
-      return tree;
-  }
-};
-//TODO is this needed?
-
-const updateNode = (node: TreeCollectionNode, updatedNode: TreeCollectionNode): TreeCollectionNode => {
-  if (node.id === updatedNode.id) return updatedNode;
-
-  if (node.childNodes.length > 0) {
-    return {
-      ...node,
-      childNodes: updateNodeInArray(node.childNodes, updatedNode),
-    };
-  }
-
-  return node;
-};
-//TODO is this needed?
-
-const updateNodeInArray = (array: TreeCollectionNode[], updatedNode: TreeCollectionNode): TreeCollectionNode[] => {
-  return array.map((node) => {
-    if (node.id === updatedNode.id) return updatedNode;
-
-    if (node.childNodes.length > 0) {
-      node.childNodes = updateNodeInArray(node.childNodes, updatedNode);
-    }
-
-    return node;
-  });
-};
-
 //check if all folders are expanded
 export const checkIfAllFoldersAreExpanded = (tree: TreeCollectionRootNode): boolean => {
   const checkIfAllNodesAreExpanded = (node: TreeCollectionNode): boolean => {
