@@ -1,3 +1,4 @@
+use moss_api::ext::ValidationResultExt;
 use moss_applib::AppRuntime;
 use validator::Validate;
 
@@ -13,7 +14,8 @@ impl<R: AppRuntime> Workspace<R> {
         ctx: &R::AsyncContext,
         input: UpdateCollectionInput,
     ) -> joinerror::Result<UpdateCollectionOutput> {
-        input.validate()?;
+        input.validate().join_err_bare()?;
+
         let id = input.id.clone().into();
         self.collection_service
             .update_collection(

@@ -8,7 +8,7 @@ impl<R: AppRuntime> Workspace<R> {
         &self,
         ctx: &R::AsyncContext,
         input: UpdateStateInput,
-    ) -> OperationResult<()> {
+    ) -> joinerror::Result<()> {
         match input {
             UpdateStateInput::UpdateEditorPartState(editor_part_state) => {
                 self.layout_service

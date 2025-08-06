@@ -1,3 +1,4 @@
+use moss_api::ext::ValidationResultExt;
 use moss_applib::AppRuntime;
 use validator::Validate;
 
@@ -14,7 +15,7 @@ impl<R: AppRuntime> BatchUpdateCollectionOp<R> for Workspace<R> {
         ctx: &R::AsyncContext,
         input: BatchUpdateCollectionInput,
     ) -> joinerror::Result<BatchUpdateCollectionOutput> {
-        input.validate()?;
+        input.validate().join_err_bare()?;
 
         let mut ids = Vec::new();
         for item in input.items {

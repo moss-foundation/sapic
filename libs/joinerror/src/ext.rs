@@ -1,4 +1,29 @@
 use crate::{Error, ErrorMarker, OptionExt, ResultExt};
+use anyhow::anyhow;
+
+impl From<serde_json::Error> for Error {
+    fn from(err: serde_json::Error) -> Self {
+        Error::new::<()>(err.to_string())
+    }
+}
+
+impl From<std::io::Error> for Error {
+    fn from(err: std::io::Error) -> Self {
+        Error::new::<()>(err.to_string())
+    }
+}
+
+impl From<anyhow::Error> for Error {
+    fn from(err: anyhow::Error) -> Self {
+        Error::new::<()>(err.to_string())
+    }
+}
+
+impl From<Error> for anyhow::Error {
+    fn from(err: Error) -> Self {
+        anyhow!(err)
+    }
+}
 
 impl<T> ResultExt<T> for Result<T, Error> {
     fn join_err<E: ErrorMarker>(self, details: impl Into<String>) -> Result<T, Error> {

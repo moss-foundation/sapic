@@ -17,6 +17,7 @@ moss_file.workspace = true
 moss_git.workspace = true
 moss_bindingutils.workspace = true
 moss_edit.workspace = true
+moss_api.workspace = true
 
 joinerror.workspace = true
 anyhow.workspace = true

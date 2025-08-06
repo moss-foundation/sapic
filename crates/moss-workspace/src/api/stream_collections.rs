@@ -1,6 +1,5 @@
 use futures::StreamExt;
 use moss_applib::AppRuntime;
-use moss_common::api::OperationResult;
 use tauri::ipc::Channel as TauriChannel;
 
 use crate::{
@@ -13,7 +12,7 @@ impl<R: AppRuntime> Workspace<R> {
         &self,
         ctx: &R::AsyncContext,
         channel: TauriChannel<StreamCollectionsEvent>,
-    ) -> OperationResult<StreamCollectionsOutput> {
+    ) -> joinerror::Result<StreamCollectionsOutput> {
         let stream = self.collection_service.list_collections(ctx).await;
         tokio::pin!(stream);
 
