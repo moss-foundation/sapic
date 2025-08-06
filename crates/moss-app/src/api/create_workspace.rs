@@ -8,7 +8,7 @@ use crate::{
         operations::{CreateWorkspaceInput, CreateWorkspaceOutput},
         primitives::WorkspaceId,
     },
-    services::workspace_service::{WorkspaceItemCreateParams, WorkspaceService},
+    services::workspace_service::WorkspaceItemCreateParams,
 };
 
 impl<R: AppRuntime> App<R> {
@@ -19,10 +19,9 @@ impl<R: AppRuntime> App<R> {
     ) -> OperationResult<CreateWorkspaceOutput> {
         input.validate()?;
 
-        let workspace_service = self.services.get::<WorkspaceService<R>>();
-
         let id = WorkspaceId::new();
-        let item = workspace_service
+        let item = self
+            .workspace_service
             .create_workspace(
                 &id,
                 WorkspaceItemCreateParams {
@@ -32,8 +31,14 @@ impl<R: AppRuntime> App<R> {
             .await?;
 
         if input.open_on_creation {
-            workspace_service
-                .activate_workspace(ctx, &id, self.activity_indicator.clone())
+            self.workspace_service
+                .activate_workspace(
+                    ctx,
+                    &id,
+                    self.activity_indicator.clone(),
+                    self.github_client.clone(),
+                    self.gitlab_client.clone(),
+                )
                 .await?;
         }
 

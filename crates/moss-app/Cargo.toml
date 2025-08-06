@@ -13,7 +13,11 @@ moss_workspace.workspace = true
 moss_storage.workspace = true
 moss_db.workspace = true
 moss_activity_indicator.workspace = true
+moss_environment.workspace = true
+moss_git_hosting_provider.workspace = true
+moss_keyring.workspace = true
 
+joinerror.workspace = true
 futures.workspace = true
 anyhow.workspace = true
 tauri = { workspace = true, features = ["wry"] }
@@ -31,6 +35,7 @@ derive_more = { workspace = true, features = ["deref", "deref_mut", "from"] }
 validator.workspace = true
 async-trait.workspace = true
 nanoid.workspace = true
+reqwest = { workspace = true, features = ["json"] }
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }

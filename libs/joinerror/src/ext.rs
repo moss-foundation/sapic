@@ -1,4 +1,35 @@
 use crate::{Error, ErrorMarker, OptionExt, ResultExt};
+use anyhow::anyhow;
+
+impl From<serde_json::Error> for Error {
+    fn from(err: serde_json::Error) -> Self {
+        Error::new::<()>(err.to_string())
+    }
+}
+
+impl From<std::io::Error> for Error {
+    fn from(err: std::io::Error) -> Self {
+        Error::new::<()>(err.to_string())
+    }
+}
+
+impl From<reqwest::Error> for Error {
+    fn from(err: reqwest::Error) -> Self {
+        Error::new::<()>(err.to_string())
+    }
+}
+
+impl From<anyhow::Error> for Error {
+    fn from(err: anyhow::Error) -> Self {
+        Error::new::<()>(err.to_string())
+    }
+}
+
+impl From<Error> for anyhow::Error {
+    fn from(err: Error) -> Self {
+        anyhow!(err)
+    }
+}
 
 impl<T> ResultExt<T> for Result<T, Error> {
     fn join_err<E: ErrorMarker>(self, details: impl Into<String>) -> Result<T, Error> {
@@ -11,6 +42,16 @@ impl<T> ResultExt<T> for Result<T, Error> {
 }
 
 impl<T> ResultExt<T> for anyhow::Result<T> {
+    fn join_err<E: ErrorMarker>(self, details: impl Into<String>) -> Result<T, Error> {
+        self.map_err(|e| Error::new::<()>(e.to_string()).join::<E>(details))
+    }
+
+    fn join_err_with<E: ErrorMarker>(self, details: impl FnOnce() -> String) -> Result<T, Error> {
+        self.map_err(|e| Error::new::<()>(e.to_string()).join::<E>(details()))
+    }
+}
+
+impl<T> ResultExt<T> for Result<T, serde_json::Error> {
     fn join_err<E: ErrorMarker>(self, details: impl Into<String>) -> Result<T, Error> {
         self.map_err(|e| Error::new::<()>(e.to_string()).join::<E>(details))
     }

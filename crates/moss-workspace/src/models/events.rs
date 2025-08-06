@@ -1,6 +1,8 @@
 use std::path::PathBuf;
 
 use crate::models::primitives::CollectionId;
+use moss_environment::models::primitives::EnvironmentId;
+use moss_git_hosting_provider::models::types::{Contributor, RepositoryInfo};
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
@@ -10,12 +12,20 @@ use ts_rs::TS;
 #[ts(optional_fields)]
 #[ts(export, export_to = "events.ts")]
 pub struct StreamCollectionsEvent {
-    #[ts(type = "string")]
     pub id: CollectionId,
     pub name: String,
     pub order: Option<isize>,
     pub expanded: bool,
     pub repository: Option<String>,
+
+    #[serde(skip)]
+    #[ts(skip)]
+    pub repository_info: Option<RepositoryInfo>,
+
+    #[serde(skip)]
+    #[ts(skip)]
+    pub contributors: Vec<Contributor>,
+
     pub picture_path: Option<PathBuf>,
 }
 
@@ -25,12 +35,13 @@ pub struct StreamCollectionsEvent {
 #[ts(optional_fields)]
 #[ts(export, export_to = "events.ts")]
 pub struct StreamEnvironmentsEvent {
-    pub id: String,
+    pub id: EnvironmentId,
 
     /// The id of the collection that the environment belongs to.
     /// If the environment is global, this will be `None`.
-    pub collection_id: Option<String>,
+    pub collection_id: Option<CollectionId>,
 
     pub name: String,
-    pub order: Option<isize>,
+    pub order: isize,
+    pub expanded: bool,
 }

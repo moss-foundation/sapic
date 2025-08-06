@@ -141,9 +141,9 @@ importers:
         specifier: ^3.24.4
         version: 3.25.76
     devDependencies:
-      '@repo/bindings-utils':
+      '@repo/moss-bindingutils':
         specifier: workspace:*
-        version: link:../../packages/bindings-utils
+        version: link:../moss-bindingutils
       '@repo/moss-workspace':
         specifier: workspace:*
         version: link:../moss-workspace
@@ -173,9 +173,9 @@ importers:
         specifier: ^3.24.4
         version: 3.25.76
     devDependencies:
-      '@repo/bindings-utils':
+      '@repo/moss-bindingutils':
         specifier: workspace:*
-        version: link:../../packages/bindings-utils
+        version: link:../moss-bindingutils
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/config-typescript
@@ -202,9 +202,25 @@ importers:
         specifier: ^3.24.4
         version: 3.25.76
     devDependencies:
-      '@repo/bindings-utils':
+      '@repo/moss-bindingutils':
         specifier: workspace:*
-        version: link:../../packages/bindings-utils
+        version: link:../moss-bindingutils
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/config-typescript
+
+  crates/moss-git-hosting-provider:
+    dependencies:
+      typescript:
+        specifier: ^5.7.2
+        version: 5.8.3
+      zod:
+        specifier: ^3.24.4
+        version: 3.25.76
+    devDependencies:
+      '@repo/moss-bindingutils':
+        specifier: workspace:*
+        version: link:../moss-bindingutils
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/config-typescript
@@ -231,28 +247,15 @@ importers:
         specifier: ^3.24.4
         version: 3.25.76
     devDependencies:
-      '@repo/bindings-utils':
+      '@repo/moss-bindingutils':
         specifier: workspace:*
-        version: link:../../packages/bindings-utils
+        version: link:../moss-bindingutils
       '@repo/moss-environment':
         specifier: workspace:*
         version: link:../moss-environment
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/config-typescript
-
-  packages/bindings-utils:
-    dependencies:
-      typescript:
-        specifier: ^5.7.2
-        version: 5.8.3
-      zod:
-        specifier: ^3.24.4
-        version: 3.25.76
-    devDependencies:
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../config-typescript
 
   packages/config-eslint:
     devDependencies:

@@ -6,8 +6,12 @@ level: error
 ```grit
 language js(typescript)
 
-r`null` where {
-    $filename <: r".*[\/\\]bindings[\/\\](?:.*\.ts|.*[\/\\]\.ts)"
+r`null` as $null where {
+    $filename <: r".*[\/\\]bindings[\/\\](?:.*\.ts|.*[\/\\]\.ts)",
+    // List of exception types that are allowed to have | in their type definition.
+    $null <: not within or {
+        `export type JsonValue = $_`,
+    }
 }
 
 ```

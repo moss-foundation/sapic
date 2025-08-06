@@ -1,20 +1,23 @@
 #![cfg(feature = "integration-tests")]
 
 use image::{ImageBuffer, Rgb};
-mod context;
-
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::{
     context::{AsyncContext, MutableContext},
     mock::MockAppRuntime,
-    providers::{ServiceMap, ServiceProvider},
 };
 use moss_fs::{FileSystem, RealFileSystem};
+use moss_git_hosting_provider::{
+    common::ssh_auth_agent::SSHAuthAgentImpl,
+    github::{auth::GitHubAuthAgentImpl, client::GitHubClient},
+    gitlab::{auth::GitLabAuthAgentImpl, client::GitLabClient},
+};
+use moss_keyring::KeyringClientImpl;
 use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_testutils::random_name::random_workspace_name;
 use moss_workspace::{
     Workspace,
-    builder::{WorkspaceBuilder, WorkspaceCreateParams},
+    builder::{CreateWorkspaceParams, WorkspaceBuilder},
     models::{
         primitives::{CollectionId, EditorGridOrientation, PanelRenderer},
         types::{
@@ -22,16 +25,10 @@ use moss_workspace::{
             EditorPartStateInfo,
         },
     },
-    services::{
-        AnyCollectionService, AnyLayoutService, DynCollectionService, DynLayoutService,
-        DynStorageService, collection_service::CollectionService, layout_service::LayoutService,
-        storage_service::StorageService,
-    },
     storage::segments::SEGKEY_COLLECTION,
 };
 use rand::Rng;
 use std::{
-    any::TypeId,
     collections::HashMap,
     fs,
     future::Future,
@@ -43,13 +40,7 @@ use std::{
 
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
 
-pub async fn setup_test_workspace() -> (
-    AsyncContext, // TODO: this is temporary, should be a mock
-    Arc<Path>,
-    Workspace<MockAppRuntime>,
-    ServiceProvider,
-    CleanupFn,
-) {
+pub async fn setup_test_workspace() -> (AsyncContext, Workspace<MockAppRuntime>, CleanupFn) {
     let fs = Arc::new(RealFileSystem::new());
     let mock_app = tauri::test::mock_app();
     let app_handle = mock_app.handle().clone();
@@ -66,59 +57,43 @@ pub async fn setup_test_workspace() -> (
         .into();
     fs::create_dir_all(&abs_path).unwrap();
 
-    let mut services: ServiceMap = Default::default();
-
     let activity_indicator = ActivityIndicator::new(app_handle.clone());
 
-    let storage_service: Arc<StorageService<MockAppRuntime>> =
-        StorageService::new(&abs_path).unwrap().into();
-    let storage_service_dyn: Arc<DynStorageService<MockAppRuntime>> =
-        DynStorageService::new(storage_service.clone());
+    let keyring_client = Arc::new(KeyringClientImpl::new());
+    let reqwest_client = reqwest::ClientBuilder::new()
+        .user_agent("SAPIC")
+        .build()
+        .expect("failed to build reqwest client");
 
-    let layout_service: Arc<LayoutService<MockAppRuntime>> =
-        LayoutService::new(storage_service_dyn.clone()).into();
-    let layout_service_dyn: Arc<DynLayoutService<MockAppRuntime>> =
-        DynLayoutService::new(layout_service.clone() as Arc<dyn AnyLayoutService<MockAppRuntime>>);
+    let github_client = {
+        let github_auth_agent =
+            GitHubAuthAgentImpl::new(keyring_client.clone(), "".to_string(), "".to_string());
+        Arc::new(GitHubClient::new(
+            reqwest_client.clone(),
+            github_auth_agent,
+            None as Option<SSHAuthAgentImpl>,
+        ))
+    };
+    let gitlab_client = {
+        let gitlab_auth_agent =
+            GitLabAuthAgentImpl::new(keyring_client.clone(), "".to_string(), "".to_string());
+        Arc::new(GitLabClient::new(
+            reqwest_client.clone(),
+            gitlab_auth_agent,
+            None as Option<SSHAuthAgentImpl>,
+        ))
+    };
 
-    let collection_service: Arc<CollectionService<MockAppRuntime>> = CollectionService::new(
-        &ctx,
-        abs_path.clone(),
-        fs.clone(),
-        storage_service_dyn.clone(),
-    )
-    .await
-    .unwrap()
-    .into();
-    let collection_service_dyn: Arc<DynCollectionService<MockAppRuntime>> =
-        DynCollectionService::new(
-            collection_service.clone() as Arc<dyn AnyCollectionService<MockAppRuntime>>
-        );
-
-    {
-        services.insert(
-            TypeId::of::<LayoutService<MockAppRuntime>>(),
-            layout_service.clone(),
-        );
-        services.insert(
-            TypeId::of::<StorageService<MockAppRuntime>>(),
-            storage_service.clone(),
-        );
-        services.insert(
-            TypeId::of::<CollectionService<MockAppRuntime>>(),
-            collection_service.clone(),
-        );
-    }
-
-    let workspace = WorkspaceBuilder::new(fs.clone())
-        .with_service::<DynStorageService<MockAppRuntime>>(storage_service_dyn)
-        .with_service::<DynCollectionService<MockAppRuntime>>(collection_service_dyn)
-        .with_service::<DynLayoutService<MockAppRuntime>>(layout_service_dyn)
+    let workspace: Workspace<MockAppRuntime> = WorkspaceBuilder::new(fs.clone())
         .create(
-            WorkspaceCreateParams {
+            &ctx,
+            activity_indicator,
+            CreateWorkspaceParams {
                 name: random_workspace_name(),
                 abs_path: abs_path.clone(),
             },
-            activity_indicator,
+            github_client,
+            gitlab_client,
         )
         .await
         .unwrap();
@@ -134,7 +109,7 @@ pub async fn setup_test_workspace() -> (
         }
     });
 
-    (ctx, abs_path, workspace, services.into(), cleanup_fn)
+    (ctx, workspace, cleanup_fn)
 }
 
 pub fn create_simple_editor_state() -> EditorPartStateInfo {

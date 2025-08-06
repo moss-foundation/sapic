@@ -1,0 +1,10 @@
+[package]
+name = "moss_edit"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+json-patch = { workspace = true }
+jsonptr = { workspace = true }
+joinerror = { workspace = true }
+serde_json = { workspace = true }

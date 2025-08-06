@@ -1,26 +1,30 @@
 use joinerror::{Error, ResultExt};
-use moss_applib::{AppRuntime, ServiceMarker, providers::ServiceMap};
-use moss_contentmodel::{ContentModel, json::JsonModel};
-use moss_fs::{CreateOptions, FileSystem, FsResultExt, model_registry::GlobalModelRegistry};
+use moss_applib::AppRuntime;
+use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_hcl::{Block, HclResultExt};
-use moss_text::sanitized::sanitize;
-use std::{any::TypeId, path::PathBuf, sync::Arc};
+use std::{
+    marker::PhantomData,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
+use tokio::sync::watch;
 
 use crate::{
     configuration::{MetadataDecl, SourceFile},
-    constants,
-    environment::Environment,
+    edit::EnvironmentEditing,
+    environment::{Environment, EnvironmentPath},
     errors::{
-        ErrorEnvironmentAlreadyExists, ErrorEnvironmentNotFound, ErrorFailedToDecode,
-        ErrorFailedToEncode, ErrorIo,
+        ErrorEnvironmentAlreadyExists, ErrorEnvironmentNotFound, ErrorFailedToEncode, ErrorIo,
     },
     models::primitives::EnvironmentId,
+    utils,
 };
 
-pub struct EnvironmentCreateParams {
+pub struct CreateEnvironmentParams<'a> {
     pub name: String,
-    pub abs_path: PathBuf,
+    pub abs_path: &'a Path,
     pub color: Option<String>,
+    pub order: isize,
 }
 
 pub struct EnvironmentLoadParams {
@@ -29,38 +33,21 @@ pub struct EnvironmentLoadParams {
 
 pub struct EnvironmentBuilder {
     fs: Arc<dyn FileSystem>,
-    models: GlobalModelRegistry,
-    services: ServiceMap,
 }
 
 impl EnvironmentBuilder {
-    pub fn new(fs: Arc<dyn FileSystem>, models: GlobalModelRegistry) -> Self {
-        Self {
-            fs,
-            models,
-            services: Default::default(),
-        }
+    pub fn new(fs: Arc<dyn FileSystem>) -> Self {
+        Self { fs }
     }
 
-    pub fn with_service<T: ServiceMarker + Send + Sync>(
-        mut self,
-        service: impl Into<Arc<T>>,
-    ) -> Self {
-        self.services.insert(TypeId::of::<T>(), service.into());
-        self
-    }
-
-    pub async fn create<R: AppRuntime>(
-        self,
-        params: EnvironmentCreateParams,
-    ) -> joinerror::Result<Environment<R>> {
+    pub async fn initialize<'a>(
+        &self,
+        params: CreateEnvironmentParams<'a>,
+    ) -> joinerror::Result<PathBuf> {
         debug_assert!(params.abs_path.is_absolute());
 
-        let file_name = format!(
-            "{}.{}",
-            sanitize(&params.name),
-            constants::ENVIRONMENT_FILE_EXTENSION
-        );
+        let id = EnvironmentId::new();
+        let file_name = utils::format_file_name(&params.name);
         let abs_path = params.abs_path.join(&file_name);
         if abs_path.exists() {
             return Err(Error::new::<ErrorEnvironmentAlreadyExists>(
@@ -68,14 +55,14 @@ impl EnvironmentBuilder {
             ));
         }
 
-        let file = SourceFile {
+        let content = hcl::to_string(&SourceFile {
             metadata: Block::new(MetadataDecl {
-                id: EnvironmentId::new(),
+                id: id.clone(),
                 color: params.color,
             }),
             variables: None,
-        };
-        let content = hcl::to_string(&file).join_err_with::<ErrorFailedToEncode>(|| {
+        })
+        .join_err_with::<ErrorFailedToEncode>(|| {
             format!("failed to encode environment file {}", abs_path.display())
         })?;
 
@@ -93,51 +80,49 @@ impl EnvironmentBuilder {
                 format!("failed to create environment file {}", abs_path.display())
             })?;
 
-        let hcl_value = hcl::to_value(file).unwrap();
-        let json_value = serde_json::to_value(hcl_value).unwrap();
-        self.models
-            .add(
-                abs_path.to_string_lossy().to_string(),
-                ContentModel::Json(JsonModel::new(json_value)),
-            )
-            .await;
+        Ok(abs_path)
+    }
 
-        Ok(Environment::new(abs_path.into(), self.services.into()))
+    pub async fn create<'a, R: AppRuntime>(
+        self,
+        params: CreateEnvironmentParams<'a>,
+    ) -> joinerror::Result<Environment<R>> {
+        debug_assert!(params.abs_path.is_absolute());
+
+        let abs_path = self
+            .initialize(params)
+            .await
+            .join_err::<()>("failed to initialize environment")?;
+
+        let (abs_path_tx, abs_path_rx) = watch::channel(EnvironmentPath::new(abs_path)?);
+
+        Ok(Environment {
+            fs: self.fs.clone(),
+            abs_path_rx,
+            edit: EnvironmentEditing::new(self.fs.clone(), abs_path_tx),
+            _marker: PhantomData,
+        })
     }
 
     pub async fn load<R: AppRuntime>(
         self,
         params: EnvironmentLoadParams,
     ) -> joinerror::Result<Environment<R>> {
-        let abs_path = params.abs_path;
-        debug_assert!(abs_path.is_absolute());
+        debug_assert!(params.abs_path.is_absolute());
 
-        if !abs_path.exists() {
+        if !params.abs_path.exists() {
             return Err(Error::new::<ErrorEnvironmentNotFound>(
-                abs_path.display().to_string(),
+                params.abs_path.display().to_string(),
             ));
         }
 
-        let _file: SourceFile = {
-            let mut reader = self
-                .fs
-                .open_file(&abs_path)
-                .await
-                .join_err_with::<ErrorIo>(|| {
-                    format!("failed to open environment file {}", abs_path.display())
-                })?;
+        let (abs_path_tx, abs_path_rx) = watch::channel(EnvironmentPath::new(params.abs_path)?);
 
-            let mut buf = String::new();
-            reader
-                .read_to_string(&mut buf)
-                .join_err_with::<ErrorIo>(|| {
-                    format!("failed to read environment file {}", abs_path.display())
-                })?;
-            hcl::from_str(&buf).join_err_with::<ErrorFailedToDecode>(|| {
-                format!("failed to decode environment file {}", abs_path.display())
-            })?
-        };
-
-        Ok(Environment::new(abs_path.into(), self.services.into()))
+        Ok(Environment {
+            fs: self.fs.clone(),
+            abs_path_rx,
+            edit: EnvironmentEditing::new(self.fs.clone(), abs_path_tx),
+            _marker: PhantomData,
+        })
     }
 }

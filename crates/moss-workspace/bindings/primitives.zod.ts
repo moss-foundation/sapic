@@ -8,14 +8,7 @@ export const activitybarPositionSchema = z.union([
   z.literal("HIDDEN"),
 ]);
 
-export const changePathSchema = z.union([
-  z.object({
-    "UPDATE": z.string(),
-  }),
-  z.literal("REMOVE"),
-]);
-
-export const changeStringSchema = z.union([
+export const changeCollectionIdSchema = z.union([
   z.object({
     "UPDATE": z.string(),
   }),

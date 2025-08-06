@@ -38,7 +38,7 @@ tauri = { workspace = true, features = ["wry", "macos-private-api", "devtools", 
 tauri-plugin-fs = "2.3.0"
 tauri-plugin-os = "2.2.0"
 tauri-plugin-log = { version = "2.2.1", features = ["colored"] }
-tauri-plugin-window-state = "2.2.1"
+tauri-plugin-window-state = "2.4.0"
 tauri-plugin-single-instance = "2.2.2"
 anyhow.workspace = true
 log.workspace = true
@@ -48,6 +48,7 @@ strum = { workspace = true, features = ["derive"] }
 tokio = { workspace = true, features = ["full"] }
 tracing.workspace = true
 futures.workspace = true
+joinerror.workspace = true
 
 [target.'cfg(any(target_os = "linux", target_os = "macos"))'.dependencies]
 mimalloc = { version = "0.1.39", default-features = false }

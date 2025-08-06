@@ -4,7 +4,6 @@ use moss_common::api::OperationResult;
 use crate::{
     app::App,
     models::operations::{GetColorThemeInput, GetColorThemeOutput},
-    services::theme_service::ThemeService,
 };
 
 impl<R: AppRuntime> App<R> {
@@ -13,14 +12,18 @@ impl<R: AppRuntime> App<R> {
         _ctx: &R::AsyncContext,
         input: &GetColorThemeInput,
     ) -> OperationResult<GetColorThemeOutput> {
-        let theme_service = self.services.get::<ThemeService>();
-        let themes = theme_service.themes().await?;
+        let themes = self.theme_service.themes().await?;
 
         if let Some(descriptor) = themes.get(&input.id) {
             let css_content = {
                 let mut reader = self
                     .fs
-                    .open_file(&theme_service.themes_dir.join(descriptor.source.clone()))
+                    .open_file(
+                        &self
+                            .theme_service
+                            .themes_dir
+                            .join(descriptor.source.clone()),
+                    )
                     .await?;
 
                 let mut content = String::new();

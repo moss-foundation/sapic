@@ -1,10 +1,11 @@
+use moss_api::ext::ValidationResultExt;
 use moss_applib::AppRuntime;
 use validator::Validate;
 
 use crate::{
     api::BatchUpdateCollectionOp,
     models::operations::{BatchUpdateCollectionInput, BatchUpdateCollectionOutput},
-    services::{DynCollectionService, collection_service::CollectionItemUpdateParams},
+    services::collection_service::CollectionItemUpdateParams,
     workspace::Workspace,
 };
 
@@ -14,12 +15,11 @@ impl<R: AppRuntime> BatchUpdateCollectionOp<R> for Workspace<R> {
         ctx: &R::AsyncContext,
         input: BatchUpdateCollectionInput,
     ) -> joinerror::Result<BatchUpdateCollectionOutput> {
-        input.validate()?;
-        let collections = self.services.get::<DynCollectionService<R>>();
+        input.validate().join_err_bare()?;
 
         let mut ids = Vec::new();
         for item in input.items {
-            collections
+            self.collection_service
                 .update_collection(
                     ctx,
                     &item.id,

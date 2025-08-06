@@ -60,6 +60,7 @@ ENVIRONMENT_MODELS_DIR := crates/moss-environment
 WORKSPACE_MODELS_DIR := crates/moss-workspace
 ACTIVITY_INDICATOR_MODELS_DIR := crates/moss-activity-indicator
 API_MODELS_DIR := crates/moss-api
+GIT_HOSTING_PROVIDER_MODELS_DIR := crates/moss-git-hosting-provider
 
 # ---- Command Executables ----
 PNPM := pnpm
@@ -140,6 +141,7 @@ $(eval $(call gen_bindings,workspace,WORKSPACE_MODELS_DIR))
 $(eval $(call gen_bindings,activity-indicator,ACTIVITY_INDICATOR_MODELS_DIR))
 $(eval $(call gen_bindings,bindingutils,BINDINGUTILS_DIR))
 $(eval $(call gen_bindings,api,API_MODELS_DIR))
+$(eval $(call gen_bindings,git-hosting-provider,GIT_HOSTING_PROVIDER_MODELS_DIR))
 
 gen-app-bindings:
 gen-collection-bindings:
@@ -148,6 +150,7 @@ gen-workspace-bindings:
 gen-activity-indicator-bindings:
 gen-bindingutils-bindings:
 gen-api-bindings:
+gen-git-hosting-provider-bindings:
 
 ## Generate all TypeScript bindings
 .PHONY: gen-bindings
@@ -158,7 +161,8 @@ gen-bindings: \
 	gen-workspace-bindings \
 	gen-activity-indicator-bindings \
 	gen-bindingutils-bindings \
-	gen-api-bindings
+	gen-api-bindings \
+	gen-git-hosting-provider-bindings
 
 
 
