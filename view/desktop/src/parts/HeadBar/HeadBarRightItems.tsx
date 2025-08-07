@@ -1,6 +1,8 @@
 import { useActiveWorkspace } from "@/hooks";
+import { OsType } from "@tauri-apps/plugin-os";
 
 import CollapsibleActionMenu from "./CollapsibleActionMenu";
+import { Controls } from "./Controls";
 import { ModeToggle } from "./ModeToggle";
 
 export interface HeadBarRightItemsProps {
@@ -10,7 +12,7 @@ export interface HeadBarRightItemsProps {
   showDebugPanels: boolean;
   setShowDebugPanels: (show: boolean) => void;
   openPanel: (panel: string) => void;
-  os: string | null;
+  os: OsType;
   selectedWorkspace?: string | null;
 }
 
@@ -20,23 +22,30 @@ export const HeadBarRightItems = ({
   showDebugPanels,
   setShowDebugPanels,
   openPanel,
+  os,
   selectedWorkspace: propSelectedWorkspace,
 }: HeadBarRightItemsProps) => {
   const workspace = useActiveWorkspace();
   const selectedWorkspace = propSelectedWorkspace || workspace?.name || null;
 
-  return (
-    <div className="flex items-center place-self-end">
-      {selectedWorkspace && (
-        <ModeToggle className="mr-2 border-1 border-[var(--moss-headBar-border-color)]" compact={isLarge} />
-      )}
+  const isWindowsOrLinux = os === "windows" || os === "linux";
 
-      <CollapsibleActionMenu
-        isCompact={isMedium}
-        showDebugPanels={showDebugPanels}
-        setShowDebugPanels={setShowDebugPanels}
-        openPanel={openPanel}
-      />
+  return (
+    <div className="flex h-full items-center justify-end">
+      <div className="flex items-center">
+        {selectedWorkspace && (
+          <ModeToggle className="mr-2 border-1 border-[var(--moss-headBar-border-color)]" compact={isLarge} />
+        )}
+
+        <CollapsibleActionMenu
+          isCompact={isMedium}
+          showDebugPanels={showDebugPanels}
+          setShowDebugPanels={setShowDebugPanels}
+          openPanel={openPanel}
+        />
+      </div>
+
+      {isWindowsOrLinux && <Controls os={os} />}
     </div>
   );
 };

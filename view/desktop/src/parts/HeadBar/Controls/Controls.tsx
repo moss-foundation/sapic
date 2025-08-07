@@ -9,7 +9,6 @@ import { WindowsControls } from "./WindowsControls";
 
 interface ControlsProps extends HTMLProps<HTMLDivElement> {
   os?: OsType;
-  className?: string;
 }
 
 export const Controls = ({ os, className, ...props }: ControlsProps) => {
@@ -39,3 +38,5 @@ export const Controls = ({ os, className, ...props }: ControlsProps) => {
     </TauriAppWindowProvider>
   );
 };
+
+export default Controls;

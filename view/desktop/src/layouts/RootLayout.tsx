@@ -7,14 +7,14 @@ import StatusBar from "../parts/StatusBar/StatusBar";
 
 export const RootLayout = ({ children, className, ...props }: ComponentProps<"main">) => {
   return (
-    <div className="grid h-full grid-rows-[minmax(0px,33px)_1fr_auto] select-none">
+    <div className="grid h-full grid-rows-[33px_1fr_29px] select-none">
       <HeadBar />
 
       <main className={cn(className)} {...props}>
         {children}
       </main>
 
-      <StatusBar className="h-[29px] w-full" />
+      <StatusBar className="w-full" />
     </div>
   );
 };
