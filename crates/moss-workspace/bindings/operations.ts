@@ -56,7 +56,7 @@ export type CreateEnvironmentOutput = {
   name: string;
   order?: number;
   color?: string;
-  expanded?: boolean;
+  expanded: boolean;
 };
 
 /**
