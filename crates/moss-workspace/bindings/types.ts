@@ -113,6 +113,7 @@ export type UpdateVariableParams = {
   localValue?: ChangeJsonValue;
   order?: number;
   desc?: ChangeString;
+  options?: VariableOptions;
 };
 
 /**

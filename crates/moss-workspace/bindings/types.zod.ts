@@ -117,6 +117,7 @@ export const updateVariableParamsSchema = z.object({
   localValue: changeJsonValueSchema.optional(),
   order: z.number().optional(),
   desc: changeStringSchema.optional(),
+  options: variableOptionsSchema.optional(),
 });
 
 export const environmentInfoSchema = z.object({
