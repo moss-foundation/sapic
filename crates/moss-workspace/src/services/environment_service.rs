@@ -1,3 +1,7 @@
+use crate::{
+    dirs, errors::ErrorNotFound, models::primitives::CollectionId,
+    services::storage_service::StorageService,
+};
 use derive_more::Deref;
 use futures::Stream;
 use joinerror::{OptionExt, ResultExt};
@@ -14,7 +18,7 @@ use moss_environment::{
     segments::{SEGKEY_VARIABLE_LOCALVALUE, SEGKEY_VARIABLE_ORDER},
 };
 use moss_fs::{FileSystem, FsResultExt, RemoveOptions};
-use moss_storage::storage::operations::RemoveItem;
+use moss_storage::{primitives::segkey::SegKeyBuf, storage::operations::RemoveItem};
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
@@ -22,11 +26,6 @@ use std::{
     sync::Arc,
 };
 use tokio::sync::RwLock;
-
-use crate::{
-    dirs, errors::ErrorNotFound, models::primitives::CollectionId,
-    services::storage_service::StorageService,
-};
 
 pub struct CreateEnvironmentItemParams {
     pub collection_id: Option<CollectionId>,
@@ -331,14 +330,16 @@ where
             // Remove all variables belonging to the deleted environment
             let store = storage_service.variable_store();
             for id in desc.variables.keys() {
-                let segkey_localvalue = SEGKEY_VARIABLE_LOCALVALUE.join(id.as_str());
+                let segkey_localvalue =
+                    SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE.as_str());
 
                 if let Err(e) = RemoveItem::remove(store.as_ref(), ctx, segkey_localvalue).await {
                     // TODO: log error
                     println!("failed to remove variable local value in the db: {}", e);
                 }
 
-                let segkey_order = SEGKEY_VARIABLE_ORDER.join(id.as_str());
+                let segkey_order =
+                    SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_ORDER.as_str());
                 if let Err(e) = RemoveItem::remove(store.as_ref(), ctx, segkey_order).await {
                     // TODO: log error
                     println!("failed to remove variable order in the db: {}", e);

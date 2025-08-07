@@ -1,5 +1,6 @@
 #![cfg(feature = "integration-tests")]
 
+use crate::shared::setup_test_workspace;
 use moss_environment::{
     AnyEnvironment,
     models::{
@@ -8,7 +9,7 @@ use moss_environment::{
     },
     segments::{SEGKEY_VARIABLE_LOCALVALUE, SEGKEY_VARIABLE_ORDER},
 };
-use moss_storage::storage::operations::GetItem;
+use moss_storage::{primitives::segkey::SegKeyBuf, storage::operations::GetItem};
 use moss_testutils::random_name::random_environment_name;
 use moss_workspace::{
     models::operations::{CreateEnvironmentInput, DeleteEnvironmentInput, UpdateEnvironmentInput},
@@ -17,8 +18,6 @@ use moss_workspace::{
 use serde_json::Value as JsonValue;
 use std::collections::HashSet;
 use tauri::ipc::Channel;
-
-use crate::shared::setup_test_workspace;
 
 mod shared;
 #[tokio::test]
@@ -130,7 +129,8 @@ async fn delete_environment_success() {
     // Check variables associated with the environment are removed from the database
     let variable_store = workspace.db().variable_store();
 
-    let segkey_localvalue = SEGKEY_VARIABLE_LOCALVALUE.join(variable_id.as_str());
+    let segkey_localvalue =
+        SegKeyBuf::from(variable_id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE.as_str());
 
     assert!(
         GetItem::get(variable_store.as_ref(), &ctx, segkey_localvalue,)
@@ -138,7 +138,7 @@ async fn delete_environment_success() {
             .is_err()
     );
 
-    let segkey_order = SEGKEY_VARIABLE_ORDER.join(variable_id.as_str());
+    let segkey_order = SegKeyBuf::from(variable_id.as_str()).join(SEGKEY_VARIABLE_ORDER.as_str());
 
     assert!(
         GetItem::get(variable_store.as_ref(), &ctx, segkey_order,)
