@@ -7,10 +7,10 @@ import {
 import { EntryInfo } from "@repo/moss-collection";
 
 import { DragNode, DropNode, DropRootNode, TreeCollectionNode } from "../types";
-import { hasAnotherDirectDescendantWithSimilarName, hasDescendant } from "./TreeNode";
+import { hasAnotherDirectDescendantWithSimilarName, hasDescendant } from "./TreeCollectionNode";
 
 //source
-export const getSourceTreeNodeData = (source: ElementDragPayload): DragNode | null => {
+export const getSourceTreeCollectionNodeData = (source: ElementDragPayload): DragNode | null => {
   if (source.data.type !== "TreeCollectionNode") {
     return null;
   }
@@ -18,12 +18,12 @@ export const getSourceTreeNodeData = (source: ElementDragPayload): DragNode | nu
   return source.data.data as DragNode;
 };
 
-export const isSourceTreeNode = (source: ElementDragPayload): boolean => {
+export const isSourceTreeCollectionNode = (source: ElementDragPayload): boolean => {
   return source.data.type === "TreeCollectionNode";
 };
 
 //location
-export const getLocationTreeNodeData = (location: DragLocationHistory): DropNode | null => {
+export const getLocationTreeCollectionNodeData = (location: DragLocationHistory): DropNode | null => {
   if (location.current.dropTargets.length === 0) return null;
   if (location.current.dropTargets[0].data.type !== "TreeCollectionNode") return null;
 
@@ -64,7 +64,7 @@ export const getInstructionFromLocation = (location: DragLocationHistory): Instr
 };
 
 //other checks
-export const doesLocationHaveTreeNode = (location: DragLocationHistory): boolean => {
+export const doesLocationHaveTreeCollectionNode = (location: DragLocationHistory): boolean => {
   if (location.current.dropTargets.length === 0) return false;
   return location.current.dropTargets[0].data.type === "TreeCollectionNode";
 };

@@ -15,12 +15,12 @@ import {
   createEntryKind,
   getAllNestedEntries,
   getInstructionFromLocation,
-  getLocationTreeNodeData,
+  getLocationTreeCollectionNodeData,
   getLocationTreeRootNodeData,
   getPathWithoutName,
-  getSourceTreeNodeData,
+  getSourceTreeCollectionNodeData,
   hasAnotherDirectDescendantWithSimilarName,
-  isSourceTreeNode,
+  isSourceTreeCollectionNode,
   prepareEntriesForDrop,
   sortByOrder,
 } from "../utils";
@@ -309,11 +309,11 @@ export const useNodeDragAndDropHandler = () => {
   useEffect(() => {
     return monitorForElements({
       canMonitor({ source }) {
-        return isSourceTreeNode(source);
+        return isSourceTreeCollectionNode(source);
       },
       onDrop: async ({ location, source }) => {
-        const sourceTreeNodeData = getSourceTreeNodeData(source);
-        const locationTreeNodeData = getLocationTreeNodeData(location);
+        const sourceTreeNodeData = getSourceTreeCollectionNodeData(source);
+        const locationTreeNodeData = getLocationTreeCollectionNodeData(location);
         const locationTreeRootNodeData = getLocationTreeRootNodeData(location);
 
         const instruction = getInstructionFromLocation(location);

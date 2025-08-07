@@ -19,11 +19,11 @@ import { DragNode, TreeCollectionNode, TreeCollectionRootNode } from "../../type
 import {
   getInstructionFromSelf,
   getLocationTreeCollectionData,
-  getLocationTreeNodeData,
-  getSourceTreeNodeData,
+  getLocationTreeCollectionNodeData,
+  getSourceTreeCollectionNodeData,
   hasAnotherDirectDescendantWithSimilarName,
   hasDirectSimilarDescendant,
-  isSourceTreeNode,
+  isSourceTreeCollectionNode,
   isSourceTreeRootNode,
 } from "../../utils";
 import { getTreeRootNodeSourceData } from "../../utils/TreeRoot";
@@ -65,7 +65,7 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
       dropTargetForElements({
         element: triggerElement,
         canDrop({ source }) {
-          return isSourceTreeNode(source) && displayMode === "REQUEST_FIRST";
+          return isSourceTreeCollectionNode(source) && displayMode === "REQUEST_FIRST";
         },
         getData({ input, source }) {
           const dropTarget = {
@@ -74,7 +74,7 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
             collectionId: id,
           };
 
-          const sourceTarget = getSourceTreeNodeData(source);
+          const sourceTarget = getSourceTreeCollectionNodeData(source);
           if (sourceTarget) {
             return attachInstruction(dropTarget, {
               element: triggerElement,
@@ -150,10 +150,10 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
       }),
       //for checking if child drop is blocked
       monitorForElements({
-        canMonitor: ({ source }) => isSourceTreeNode(source) && displayMode === "REQUEST_FIRST",
+        canMonitor: ({ source }) => isSourceTreeCollectionNode(source) && displayMode === "REQUEST_FIRST",
         onDrag: ({ source, location }) => {
-          const dropTarget = getLocationTreeNodeData(location);
-          const sourceTarget = getSourceTreeNodeData(source);
+          const dropTarget = getLocationTreeCollectionNodeData(location);
+          const sourceTarget = getSourceTreeCollectionNodeData(source);
 
           if (!dropTarget || !sourceTarget) {
             setIsChildDropBlocked(null);

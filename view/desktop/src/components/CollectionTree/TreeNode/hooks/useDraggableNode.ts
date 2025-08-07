@@ -13,11 +13,11 @@ import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/el
 import { TreeContext } from "../../Tree";
 import { DragNode, DropNode, TreeCollectionNode } from "../../types";
 import {
-  getLocationTreeNodeData,
-  getSourceTreeNodeData,
+  getLocationTreeCollectionNodeData,
+  getSourceTreeCollectionNodeData,
   hasAnotherDirectDescendantWithSimilarName,
   hasDescendant,
-  isSourceTreeNode,
+  isSourceTreeCollectionNode,
 } from "../../utils";
 
 interface UseDraggableNodeProps {
@@ -95,7 +95,7 @@ export const useDraggableNode = ({
             },
           };
 
-          const sourceTarget = getSourceTreeNodeData(source);
+          const sourceTarget = getSourceTreeCollectionNodeData(source);
 
           if (!sourceTarget) {
             return attachInstruction(data, {
@@ -123,11 +123,11 @@ export const useDraggableNode = ({
           });
         },
         canDrop({ source }) {
-          return isSourceTreeNode(source);
+          return isSourceTreeCollectionNode(source);
         },
         onDrag({ location, source, self }) {
-          const sourceTarget = getSourceTreeNodeData(source);
-          const dropTarget = getLocationTreeNodeData(location);
+          const sourceTarget = getSourceTreeCollectionNodeData(source);
+          const dropTarget = getLocationTreeCollectionNodeData(location);
           const instruction: Instruction | null = extractInstruction(self.data);
 
           if (!sourceTarget || !dropTarget || !instruction) {
@@ -157,8 +157,8 @@ export const useDraggableNode = ({
           },
         }),
         onDrag: ({ source, location }) => {
-          const sourceTarget = getSourceTreeNodeData(source);
-          const dropTarget = getLocationTreeNodeData(location);
+          const sourceTarget = getSourceTreeCollectionNodeData(source);
+          const dropTarget = getLocationTreeCollectionNodeData(location);
 
           if (!sourceTarget || !dropTarget) {
             return;

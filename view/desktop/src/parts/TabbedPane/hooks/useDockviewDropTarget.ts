@@ -1,7 +1,7 @@
 import React from "react";
 
 import { DragNode } from "@/components/CollectionTree/types";
-import { getSourceTreeNodeData, isSourceTreeNode } from "@/components/CollectionTree/utils";
+import { getSourceTreeCollectionNodeData, isSourceTreeCollectionNode } from "@/components/CollectionTree/utils";
 import { dropTargetForElements, ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 export const useTabbedPaneDropTarget = (
@@ -17,10 +17,10 @@ export const useTabbedPaneDropTarget = (
     const evaluateDropTarget = ({ source }: { source: ElementDragPayload }) => {
       setIsDragging(true);
 
-      if (isSourceTreeNode(source)) {
+      if (isSourceTreeCollectionNode(source)) {
         setCanDrop(true);
 
-        const sourceTarget = getSourceTreeNodeData(source);
+        const sourceTarget = getSourceTreeCollectionNodeData(source);
         if (sourceTarget) {
           setPragmaticDropElement(sourceTarget);
         } else {
