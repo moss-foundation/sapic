@@ -149,8 +149,8 @@ export const HeadBar = () => {
         className={cn(
           "header background-(--moss-secondary-background) grid h-full w-screen items-center border-b border-(--moss-border-color)",
           {
-            "grid-cols-[max-content_minmax(0px,_1fr)]": os === "macos",
-            "grid-cols-[minmax(0px,_1fr)_max-content]": os !== "macos",
+            "grid-cols-[max-content_1fr]": os === "macos",
+            "grid-cols-[1fr]": os !== "macos",
           }
         )}
       >

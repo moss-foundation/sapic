@@ -26,7 +26,7 @@ export const Controls = ({ os, className, ...props }: ControlsProps) => {
           <div className={cn("flex h-full", className)} style={{ width: "72px" }} data-tauri-drag-region {...props} />
         );
       case "linux":
-        return <LinuxControls className={cn(className, "py-2.5")} {...props} />;
+        return <LinuxControls className={cn(className, "")} {...props} />;
       default:
         return <WindowsControls className={cn(className)} {...props} />;
     }
