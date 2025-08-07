@@ -1,18 +1,23 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
-use moss_bindingutils::primitives::ChangeString;
+use image::codecs::png::FilterType::Up;
+use moss_bindingutils::primitives::{ChangeJsonValue, ChangeString};
 use moss_environment::{
     AnyEnvironment,
-    models::types::{AddVariableParams, VariableOptions},
+    models::{
+        primitives::{EnvironmentId, VariableId},
+        types::{AddVariableParams, UpdateVariableParams, VariableOptions},
+    },
 };
 use moss_storage::storage::operations::GetItem;
 use moss_testutils::random_name::random_environment_name;
 use moss_workspace::{
     models::operations::{CreateEnvironmentInput, UpdateEnvironmentInput},
-    storage::segments::SEGKEY_ENVIRONMENT,
+    storage::segments::{SEGKEY_ENVIRONMENT, SEGKEY_EXPANDED_ENVIRONMENTS},
 };
 use serde_json::Value as JsonValue;
+use std::collections::HashSet;
 
 use crate::shared::setup_test_workspace;
 
@@ -35,6 +40,7 @@ async fn update_environment_success() {
         .unwrap();
 
     let new_environment_name = random_environment_name();
+
     let _ = workspace
         .update_environment(
             &ctx,
@@ -45,14 +51,7 @@ async fn update_environment_success() {
                 order: Some(42),
                 color: Some(ChangeString::Update("#000000".to_string())),
                 expanded: Some(false),
-                vars_to_add: vec![AddVariableParams {
-                    name: "TEST_VAR".to_string(),
-                    global_value: JsonValue::String("test".to_string()),
-                    local_value: JsonValue::String("test".to_string()),
-                    order: 42,
-                    desc: None,
-                    options: VariableOptions { disabled: false },
-                }],
+                vars_to_add: vec![],
                 vars_to_update: vec![],
                 vars_to_delete: vec![],
             },
@@ -68,9 +67,7 @@ async fn update_environment_success() {
     let env_description = environment.describe(&ctx).await.unwrap();
 
     assert_eq!(env_description.name, new_environment_name);
-    assert_eq!(env_description.variables.len(), 1);
-
-    // Check environment cache is updated with new order and expanded value
+    // Check environment cache is updated with new order and expanded
     let item_store = workspace.db().item_store();
 
     let id = create_environment_output.id.clone();
@@ -85,35 +82,407 @@ async fn update_environment_success() {
     .unwrap();
     assert_eq!(stored_env_order, 42);
 
-    let stored_env_expanded: bool = GetItem::get(
+    // We updated the environment to un-expanded
+    let expanded_environments: HashSet<EnvironmentId> = GetItem::get(
         item_store.as_ref(),
         &ctx,
-        SEGKEY_ENVIRONMENT.join(id.as_str()).join("expanded"),
+        SEGKEY_EXPANDED_ENVIRONMENTS.to_segkey_buf(),
     )
     .await
     .unwrap()
     .deserialize()
     .unwrap();
-    assert_eq!(stored_env_expanded, false);
+    assert!(!expanded_environments.contains(&create_environment_output.id));
 
-    // Check variables are updated
-    let env_desc = workspace
-        .environment(&create_environment_output.id)
+    let color = env_description.color;
+    assert_eq!(color, Some("#000000".to_string()));
+
+    cleanup().await;
+}
+
+#[tokio::test]
+async fn update_environment_add_variables() {
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let environment_name = random_environment_name();
+    let create_environment_output = workspace
+        .create_environment(
+            &ctx,
+            CreateEnvironmentInput {
+                name: environment_name.clone(),
+                collection_id: None,
+                order: 0,
+                color: Some("#ffffff".to_string()),
+            },
+        )
+        .await
+        .unwrap();
+
+    let id = create_environment_output.id.clone();
+
+    let var1 = AddVariableParams {
+        name: "1".to_string(),
+        global_value: JsonValue::String("variable 1".to_string()),
+        local_value: JsonValue::String("variable 1".to_string()),
+        order: 1,
+        desc: Some("First variable".to_string()),
+        options: VariableOptions { disabled: true },
+    };
+
+    let var2 = AddVariableParams {
+        name: "2".to_string(),
+        global_value: JsonValue::String("${var1}".to_string()),
+        local_value: JsonValue::String("${var1}".to_string()),
+        order: 2,
+        desc: Some("Second variable".to_string()),
+        options: VariableOptions { disabled: false },
+    };
+
+    let _ = workspace
+        .update_environment(
+            &ctx,
+            UpdateEnvironmentInput {
+                id: id.clone(),
+                name: None,
+                collection_id: None,
+                order: None,
+                color: None,
+                expanded: None,
+                vars_to_add: vec![var1.clone(), var2.clone()],
+                vars_to_delete: vec![],
+                vars_to_update: vec![],
+            },
+        )
+        .await
+        .unwrap();
+
+    let environment = workspace.environment(&id).await.unwrap();
+
+    // Check that the variables are correctly added
+    let env_description = environment.describe(&ctx).await.unwrap();
+
+    let variables = env_description.variables;
+
+    assert_eq!(variables.len(), 2);
+
+    assert!(variables.clone().into_iter().any(|(_, var)| {
+        var.name == var1.name
+            && var.global_value == Some(var1.global_value.clone())
+            && var.local_value == Some(var1.local_value.clone())
+            && var.order == Some(var1.order)
+            && var.desc == var1.desc
+            && var.disabled == var1.options.disabled
+    }));
+
+    assert!(variables.clone().into_iter().any(|(_, var)| {
+        var.name == var2.name
+            && var.global_value == Some(var2.global_value.clone())
+            && var.local_value == Some(var2.local_value.clone())
+            && var.order == Some(var2.order.clone())
+            && var.desc == var2.desc
+            && var.disabled == var2.options.disabled
+    }));
+
+    cleanup().await;
+}
+
+#[tokio::test]
+async fn update_environment_update_variables() {
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let environment_name = random_environment_name();
+    let create_environment_output = workspace
+        .create_environment(
+            &ctx,
+            CreateEnvironmentInput {
+                name: environment_name.clone(),
+                collection_id: None,
+                order: 0,
+                color: Some("#ffffff".to_string()),
+            },
+        )
+        .await
+        .unwrap();
+
+    let environment_id = create_environment_output.id.clone();
+
+    let old = AddVariableParams {
+        name: "1".to_string(),
+        global_value: JsonValue::String("variable 1".to_string()),
+        local_value: JsonValue::String("variable 1".to_string()),
+        order: 1,
+        desc: Some("First variable".to_string()),
+        options: VariableOptions { disabled: true },
+    };
+
+    // Add a variable to be updated
+    let _ = workspace
+        .update_environment(
+            &ctx,
+            UpdateEnvironmentInput {
+                id: environment_id.clone(),
+                name: None,
+                collection_id: None,
+                order: None,
+                color: None,
+                expanded: None,
+                vars_to_add: vec![old],
+                vars_to_delete: vec![],
+                vars_to_update: vec![],
+            },
+        )
+        .await
+        .unwrap();
+
+    let env_description = workspace
+        .environment(&environment_id)
         .await
         .unwrap()
         .describe(&ctx)
         .await
         .unwrap();
-    let variables = env_desc.variables;
 
-    assert_eq!(variables.len(), 1);
+    let variables = env_description.variables;
 
-    // Check local_value and order are correctly restored from the database
-    assert_eq!(
-        variables[0].local_value,
-        Some(JsonValue::String("test".to_string()))
-    );
-    assert_eq!(variables[0].order, 42);
+    let variable_id = variables.iter().next().unwrap().0.clone();
+
+    let new_name = "New Name".to_string();
+    let new_global_value = JsonValue::String("New Global Value".to_string());
+    let new_order = 42;
+    let new_desc = "New description".to_string();
+
+    let new = UpdateVariableParams {
+        id: variable_id,
+        name: Some(new_name.clone()),
+        global_value: Some(ChangeJsonValue::Update(new_global_value.clone())),
+        local_value: Some(ChangeJsonValue::Remove),
+        order: Some(new_order),
+        desc: Some(ChangeString::Update(new_desc.clone())),
+        options: Some(VariableOptions { disabled: true }),
+    };
+
+    // Update an existing variable
+    let _ = workspace
+        .update_environment(
+            &ctx,
+            UpdateEnvironmentInput {
+                id: environment_id.clone(),
+                collection_id: None,
+                name: None,
+                order: None,
+                color: None,
+                expanded: None,
+                vars_to_add: vec![],
+                vars_to_update: vec![new.clone()],
+                vars_to_delete: vec![],
+            },
+        )
+        .await
+        .unwrap();
+
+    // Check that the variable is correctly updated
+    let env_description = workspace
+        .environment(&environment_id)
+        .await
+        .unwrap()
+        .describe(&ctx)
+        .await
+        .unwrap();
+
+    let variables = env_description.variables;
+
+    assert!(variables.into_iter().any(|(_, var)| {
+        var.name == new_name
+        && var.global_value == Some(new_global_value.clone())
+        && var.local_value == None // We removed the local_value
+        && var.order == Some(new_order.clone())
+        && var.desc == Some(new_desc.clone())
+        && var.disabled == true
+    }));
+
+    cleanup().await;
+}
+
+#[tokio::test]
+async fn update_environment_update_variables_nonexistent() {
+    // Trying to update a nonexistent variable should raise an error
+
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let environment_name = random_environment_name();
+    let create_environment_output = workspace
+        .create_environment(
+            &ctx,
+            CreateEnvironmentInput {
+                name: environment_name.clone(),
+                collection_id: None,
+                order: 0,
+                color: Some("#ffffff".to_string()),
+            },
+        )
+        .await
+        .unwrap();
+
+    let environment_id = create_environment_output.id.clone();
+
+    let update_params = UpdateVariableParams {
+        id: VariableId::new(),
+        name: Some("New Name".to_string()),
+        global_value: None,
+        local_value: None,
+        order: None,
+        desc: None,
+        options: None,
+    };
+    let result = workspace
+        .update_environment(
+            &ctx,
+            UpdateEnvironmentInput {
+                id: environment_id.clone(),
+                collection_id: None,
+                name: None,
+                order: None,
+                color: None,
+                expanded: None,
+                vars_to_add: vec![],
+                vars_to_update: vec![update_params.clone()],
+                vars_to_delete: vec![],
+            },
+        )
+        .await;
+
+    assert!(result.is_err());
+
+    cleanup().await;
+}
+
+#[tokio::test]
+async fn update_environment_delete_variables() {
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let environment_name = random_environment_name();
+    let create_environment_output = workspace
+        .create_environment(
+            &ctx,
+            CreateEnvironmentInput {
+                name: environment_name.clone(),
+                collection_id: None,
+                order: 0,
+                color: Some("#ffffff".to_string()),
+            },
+        )
+        .await
+        .unwrap();
+
+    let environment_id = create_environment_output.id.clone();
+
+    let var1 = AddVariableParams {
+        name: "1".to_string(),
+        global_value: JsonValue::String("variable 1".to_string()),
+        local_value: JsonValue::String("variable 1".to_string()),
+        order: 1,
+        desc: Some("First variable".to_string()),
+        options: VariableOptions { disabled: true },
+    };
+
+    // Add a variable to be deleted
+    let _ = workspace
+        .update_environment(
+            &ctx,
+            UpdateEnvironmentInput {
+                id: environment_id.clone(),
+                name: None,
+                collection_id: None,
+                order: None,
+                color: None,
+                expanded: None,
+                vars_to_add: vec![var1.clone()],
+                vars_to_delete: vec![],
+                vars_to_update: vec![],
+            },
+        )
+        .await
+        .unwrap();
+
+    let env_description = workspace
+        .environment(&environment_id)
+        .await
+        .unwrap()
+        .describe(&ctx)
+        .await
+        .unwrap();
+
+    let variables = env_description.variables;
+
+    let variable_id = variables.iter().next().unwrap().0.clone();
+
+    // Delete the variable
+    let _ = workspace
+        .update_environment(
+            &ctx,
+            UpdateEnvironmentInput {
+                id: environment_id.clone(),
+                collection_id: None,
+                name: None,
+                order: None,
+                color: None,
+                expanded: None,
+                vars_to_add: vec![],
+                vars_to_update: vec![],
+                vars_to_delete: vec![variable_id],
+            },
+        )
+        .await
+        .unwrap();
+
+    let env_description = workspace
+        .environment(&environment_id)
+        .await
+        .unwrap()
+        .describe(&ctx)
+        .await
+        .unwrap();
+    let variables = env_description.variables;
+
+    assert!(variables.is_empty());
+
+    cleanup().await;
+}
+
+#[tokio::test]
+async fn update_environment_delete_variables_nonexistent() {
+    // Delete a nonexistent variable should be a no-op
+
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let environment_name = random_environment_name();
+    let create_environment_output = workspace
+        .create_environment(
+            &ctx,
+            CreateEnvironmentInput {
+                name: environment_name.clone(),
+                collection_id: None,
+                order: 0,
+                color: Some("#ffffff".to_string()),
+            },
+        )
+        .await
+        .unwrap();
+
+    let environment_id = create_environment_output.id.clone();
+
+    let _ = workspace
+        .update_environment(
+            &ctx,
+            UpdateEnvironmentInput {
+                id: environment_id.clone(),
+                collection_id: None,
+                name: None,
+                order: None,
+                color: None,
+                expanded: None,
+                vars_to_add: vec![],
+                vars_to_update: vec![],
+                vars_to_delete: vec![VariableId::new()],
+            },
+        )
+        .await
+        .unwrap();
 
     cleanup().await;
 }

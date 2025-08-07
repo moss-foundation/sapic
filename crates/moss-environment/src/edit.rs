@@ -1,6 +1,6 @@
 use joinerror::ResultExt;
 use json_patch::PatchOperation;
-use moss_edit::json::JsonEdit;
+use moss_edit::json::{EditOptions, JsonEdit};
 use moss_fs::{CreateOptions, FileSystem, RenameOptions, error::FsResultExt};
 use moss_hcl::HclResultExt;
 use serde_json::Value as JsonValue;
@@ -59,7 +59,7 @@ impl EnvironmentEditing {
         Ok(())
     }
 
-    pub async fn edit(&self, params: &[PatchOperation]) -> joinerror::Result<()> {
+    pub async fn edit(&self, params: &[(PatchOperation, EditOptions)]) -> joinerror::Result<()> {
         let mut state_lock = self.state.write().await;
 
         let rdr = self

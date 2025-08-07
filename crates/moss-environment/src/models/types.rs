@@ -48,6 +48,7 @@ pub struct UpdateVariableParams {
     pub order: Option<isize>,
     #[ts(optional, type = "ChangeString")]
     pub desc: Option<ChangeString>,
+    pub options: Option<VariableOptions>,
 }
 
 /// @category Type

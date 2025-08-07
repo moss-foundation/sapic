@@ -308,6 +308,7 @@ where
                     )
                 })?;
 
+            // Remove environment from the database
             let mut expanded_environments = storage_service
                 .get_expanded_environments(ctx)
                 .await
@@ -329,8 +330,8 @@ where
 
             // Remove all variables belonging to the deleted environment
             let store = storage_service.variable_store();
-            for var in desc.variables {
-                let segkey_localvalue = SEGKEY_VARIABLE_LOCALVALUE.join(var.id.as_str());
+            for id in desc.variables.keys() {
+                let segkey_localvalue = SEGKEY_VARIABLE_LOCALVALUE.join(id.as_str());
 
                 if let Err(e) = RemoveItem::remove(store.as_ref(), ctx, segkey_localvalue).await {
                     // TODO: log error
@@ -347,7 +348,10 @@ where
             Ok(())
         } else {
             // FIXME: Should deleting a non-existent environment be an error?
-            Ok(())
+            Err(joinerror::Error::new::<ErrorNotFound>(format!(
+                "environment {} not found",
+                id
+            )))
         }
     }
 }

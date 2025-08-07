@@ -2,7 +2,7 @@ use std::{path::PathBuf, sync::Arc};
 
 use joinerror::ResultExt;
 use json_patch::PatchOperation;
-use moss_edit::json::JsonEdit;
+use moss_edit::json::{EditOptions, JsonEdit};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use serde_json::Value as JsonValue;
 use tokio::sync::RwLock;
@@ -28,7 +28,7 @@ impl WorkspaceEdit {
         }
     }
 
-    pub async fn edit(&self, params: &[PatchOperation]) -> joinerror::Result<()> {
+    pub async fn edit(&self, params: &[(PatchOperation, EditOptions)]) -> joinerror::Result<()> {
         let rdr = self
             .fs
             .open_file(&self.abs_path)

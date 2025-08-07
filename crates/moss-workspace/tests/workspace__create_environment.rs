@@ -1,10 +1,13 @@
 #![cfg(feature = "integration-tests")]
 
+use moss_environment::models::primitives::EnvironmentId;
 use moss_storage::storage::operations::GetItem;
 use moss_testutils::random_name::random_environment_name;
 use moss_workspace::{
-    models::operations::CreateEnvironmentInput, storage::segments::SEGKEY_ENVIRONMENT,
+    models::operations::CreateEnvironmentInput,
+    storage::segments::{SEGKEY_ENVIRONMENT, SEGKEY_EXPANDED_ENVIRONMENTS},
 };
+use std::collections::HashSet;
 use tauri::ipc::Channel;
 
 use crate::shared::setup_test_workspace;
@@ -51,16 +54,52 @@ async fn create_environment_success() {
     .unwrap();
     assert_eq!(stored_env_order, 42);
 
-    let stored_env_expanded: bool = GetItem::get(
+    let stored_expanded_environments: HashSet<EnvironmentId> = GetItem::get(
         item_store.as_ref(),
         &ctx,
-        SEGKEY_ENVIRONMENT.join(id.as_str()).join("expanded"),
+        SEGKEY_EXPANDED_ENVIRONMENTS.to_segkey_buf(),
     )
     .await
     .unwrap()
     .deserialize()
     .unwrap();
-    assert_eq!(stored_env_expanded, true);
+
+    assert!(stored_expanded_environments.contains(&id));
+
+    cleanup().await;
+}
+
+#[tokio::test]
+async fn create_environment_already_exists() {
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+
+    let environment_name = random_environment_name();
+    let _ = workspace
+        .create_environment(
+            &ctx,
+            CreateEnvironmentInput {
+                name: environment_name.clone(),
+                collection_id: None,
+                order: 42,
+                color: Some("#3574F0".to_string()),
+            },
+        )
+        .await
+        .unwrap();
+
+    let result = workspace
+        .create_environment(
+            &ctx,
+            CreateEnvironmentInput {
+                name: environment_name.clone(),
+                collection_id: None,
+                order: 42,
+                color: Some("#3574F0".to_string()),
+            },
+        )
+        .await;
+
+    assert!(result.is_err());
 
     cleanup().await;
 }

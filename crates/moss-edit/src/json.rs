@@ -20,6 +20,16 @@ pub enum JsonEditAction {
     },
 }
 
+#[derive(Debug, Clone)]
+pub struct EditOptions {
+    /// If true, `Remove` and `Replace` operations will be skipped if the path does not exist
+    pub ignore_if_not_exists: bool,
+
+    /// If true, `Replace` operation will automatically create missing segments
+    /// Otherwise it will raise an error
+    pub create_missing_segments: bool,
+}
+
 struct ResolveError;
 impl ResolveError {
     fn from(e: jsonptr::resolve::Error) -> Error {
@@ -40,41 +50,74 @@ impl JsonEdit {
         }
     }
 
-    pub fn apply(&mut self, root: &mut Value, patches: &[PatchOperation]) -> joinerror::Result<()> {
+    pub fn apply(
+        &mut self,
+        root: &mut Value,
+        patches: &[(PatchOperation, EditOptions)],
+    ) -> joinerror::Result<()> {
         let mut actions = Vec::with_capacity(patches.len());
+        let mut applied_patches = Vec::with_capacity(patches.len());
 
-        for op in patches {
+        for (op, options) in patches {
             match op {
                 PatchOperation::Add(AddOperation { path, value }) => {
-                    ensure_path_exists(root, path)?;
+                    if options.create_missing_segments {
+                        ensure_path_exists(root, path)?;
+                    }
 
                     actions.push(JsonEditAction::Add {
                         path: path.clone(),
                         new_value: value.clone(),
                     });
+                    applied_patches.push(op.clone());
                 }
                 PatchOperation::Remove(RemoveOperation { path }) => {
-                    let old = path.resolve(root).map_err(ResolveError::from)?.clone();
-                    actions.push(JsonEditAction::Remove {
-                        path: path.clone(),
-                        old_value: old,
-                    });
+                    match path.resolve(root).map_err(ResolveError::from) {
+                        Ok(old) => {
+                            actions.push(JsonEditAction::Remove {
+                                path: path.clone(),
+                                old_value: old.clone(),
+                            });
+                            applied_patches.push(op.clone());
+                        }
+                        Err(e) => {
+                            if options.ignore_if_not_exists {
+                                continue;
+                            } else {
+                                return Err(e);
+                            }
+                        }
+                    }
                 }
                 PatchOperation::Replace(ReplaceOperation { path, value }) => {
-                    ensure_path_exists(root, path)?;
+                    if options.create_missing_segments {
+                        ensure_path_exists(root, path)?;
+                    }
 
-                    let old = path.resolve(root).map_err(ResolveError::from)?.clone();
-                    actions.push(JsonEditAction::Replace {
-                        path: path.clone(),
-                        old_value: old,
-                        new_value: value.clone(),
-                    });
+                    match path.resolve(root).map_err(ResolveError::from) {
+                        Ok(old) => {
+                            actions.push(JsonEditAction::Replace {
+                                path: path.clone(),
+                                old_value: old.clone(),
+                                new_value: value.clone(),
+                            });
+                            applied_patches.push(op.clone());
+                        }
+                        Err(e) => {
+                            if options.ignore_if_not_exists {
+                                continue;
+                            } else {
+                                return Err(e);
+                            }
+                        }
+                    }
                 }
                 _ => unimplemented!(),
             }
         }
 
-        patch(root, patches).map_err(|e| Error::new::<()>(format!("apply error: {}", e)))?;
+        patch(root, &applied_patches)
+            .map_err(|e| Error::new::<()>(format!("apply error: {}", e)))?;
         self.applied.extend(actions);
         self.undone.clear();
         Ok(())

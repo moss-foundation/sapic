@@ -7,6 +7,7 @@ pub mod segments;
 pub mod utils;
 
 pub use environment::Environment;
+use std::collections::HashMap;
 
 use moss_applib::AppRuntime;
 use moss_bindingutils::primitives::ChangeString;
@@ -62,7 +63,7 @@ pub struct DescribeEnvironment {
     pub id: EnvironmentId,
     pub name: String,
     pub color: Option<String>,
-    pub variables: Vec<VariableInfo>,
+    pub variables: HashMap<VariableId, VariableInfo>,
     // TODO: git info
 }
 

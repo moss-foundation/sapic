@@ -7,6 +7,7 @@ use moss_applib::AppRuntime;
 use moss_bindingutils::primitives::{ChangeJsonValue, ChangeString};
 use moss_common::continue_if_err;
 use moss_db::primitives::AnyValue;
+use moss_edit::json::EditOptions;
 use moss_fs::{FileSystem, FsResultExt};
 use moss_hcl::{HclResultExt, hcl_to_json, json_to_hcl};
 use moss_storage::{
@@ -14,7 +15,7 @@ use moss_storage::{
     storage::operations::{GetItem, PutItem, RemoveItem},
 };
 use serde_json::Value as JsonValue;
-use std::{path::PathBuf, sync::Arc};
+use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tokio::sync::watch;
 
 use crate::{
@@ -86,7 +87,8 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
 
         let parsed: SourceFile = hcl::from_reader(rdr).join_err::<()>("failed to parse hcl")?;
 
-        let mut variables = Vec::with_capacity(parsed.variables.as_ref().map_or(0, |v| v.len()));
+        let mut variables =
+            HashMap::with_capacity(parsed.variables.as_ref().map_or(0, |v| v.len()));
 
         if let Some(vars) = parsed.variables.as_ref() {
             for (id, var) in vars.iter() {
@@ -111,15 +113,18 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                         .and_then(|v| v.deserialize().ok())
                 };
 
-                variables.push(VariableInfo {
-                    id: id.clone(),
-                    name: var.name.clone(),
-                    global_value: Some(global_value),
-                    local_value,
-                    disabled: var.options.disabled,
-                    order,
-                    desc: var.description.clone(),
-                });
+                variables.insert(
+                    id.clone(),
+                    VariableInfo {
+                        id: id.clone(),
+                        name: var.name.clone(),
+                        global_value: Some(global_value),
+                        local_value,
+                        disabled: var.options.disabled,
+                        order,
+                        desc: var.description.clone(),
+                    },
+                );
             }
         }
 
@@ -144,15 +149,27 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
 
         match params.color {
             Some(ChangeString::Update(color)) => {
-                patches.push(PatchOperation::Add(AddOperation {
-                    path: unsafe { PointerBuf::new_unchecked("/metadata/color") },
-                    value: JsonValue::String(color),
-                }));
+                patches.push((
+                    PatchOperation::Add(AddOperation {
+                        path: unsafe { PointerBuf::new_unchecked("/metadata/color") },
+                        value: JsonValue::String(color),
+                    }),
+                    EditOptions {
+                        create_missing_segments: true,
+                        ignore_if_not_exists: false,
+                    },
+                ));
             }
             Some(ChangeString::Remove) => {
-                patches.push(PatchOperation::Remove(RemoveOperation {
-                    path: unsafe { PointerBuf::new_unchecked("/metadata/color") },
-                }));
+                patches.push((
+                    PatchOperation::Remove(RemoveOperation {
+                        path: unsafe { PointerBuf::new_unchecked("/metadata/color") },
+                    }),
+                    EditOptions {
+                        create_missing_segments: false,
+                        ignore_if_not_exists: false,
+                    },
+                ));
             }
             _ => {}
         };
@@ -176,10 +193,16 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                 println!("failed to convert variable declaration to json: {}", err); // TODO: log error
             });
 
-            patches.push(PatchOperation::Add(AddOperation {
-                path: unsafe { PointerBuf::new_unchecked(format!("/variable/{}", id_str)) },
-                value,
-            }));
+            patches.push((
+                PatchOperation::Add(AddOperation {
+                    path: unsafe { PointerBuf::new_unchecked(format!("/variable/{}", id_str)) },
+                    value,
+                }),
+                EditOptions {
+                    create_missing_segments: true,
+                    ignore_if_not_exists: false,
+                },
+            ));
 
             let order = var_to_add.order;
 
@@ -210,37 +233,63 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
             }
         }
 
+        // TODO: Check
+
         for var_to_update in params.vars_to_update {
             if let Some(new_name) = var_to_update.name {
-                patches.push(PatchOperation::Replace(ReplaceOperation {
-                    path: unsafe {
-                        PointerBuf::new_unchecked(format!("/variable/{}/name", var_to_update.id))
+                patches.push((
+                    PatchOperation::Replace(ReplaceOperation {
+                        path: unsafe {
+                            PointerBuf::new_unchecked(format!(
+                                "/variable/{}/name",
+                                var_to_update.id
+                            ))
+                        },
+                        value: JsonValue::String(new_name),
+                    }),
+                    EditOptions {
+                        // Raise an error if the variable does not exist
+                        create_missing_segments: false,
+                        ignore_if_not_exists: false,
                     },
-                    value: JsonValue::String(new_name),
-                }));
+                ));
             }
 
             match var_to_update.global_value {
                 Some(ChangeJsonValue::Update(value)) => {
-                    patches.push(PatchOperation::Replace(ReplaceOperation {
-                        path: unsafe {
-                            PointerBuf::new_unchecked(format!(
-                                "/variable/{}/value",
-                                var_to_update.id
-                            ))
+                    patches.push((
+                        PatchOperation::Replace(ReplaceOperation {
+                            path: unsafe {
+                                PointerBuf::new_unchecked(format!(
+                                    "/variable/{}/value",
+                                    var_to_update.id
+                                ))
+                            },
+                            value,
+                        }),
+                        EditOptions {
+                            // Raise an error if the variable does not exist
+                            create_missing_segments: false,
+                            ignore_if_not_exists: false,
                         },
-                        value,
-                    }));
+                    ));
                 }
                 Some(ChangeJsonValue::Remove) => {
-                    patches.push(PatchOperation::Remove(RemoveOperation {
-                        path: unsafe {
-                            PointerBuf::new_unchecked(format!(
-                                "/variable/{}/value",
-                                var_to_update.id
-                            ))
+                    patches.push((
+                        PatchOperation::Remove(RemoveOperation {
+                            path: unsafe {
+                                PointerBuf::new_unchecked(format!(
+                                    "/variable/{}/value",
+                                    var_to_update.id
+                                ))
+                            },
+                        }),
+                        EditOptions {
+                            // Raise an error if the variable does not exist
+                            create_missing_segments: false,
+                            ignore_if_not_exists: false,
                         },
-                    }));
+                    ));
                 }
                 _ => {}
             }
@@ -292,34 +341,79 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
 
             match var_to_update.desc {
                 Some(ChangeString::Update(value)) => {
-                    patches.push(PatchOperation::Replace(ReplaceOperation {
-                        path: unsafe {
-                            PointerBuf::new_unchecked(format!(
-                                "/variable/{}/description",
-                                var_to_update.id
-                            ))
+                    patches.push((
+                        PatchOperation::Replace(ReplaceOperation {
+                            path: unsafe {
+                                PointerBuf::new_unchecked(format!(
+                                    "/variable/{}/description",
+                                    var_to_update.id
+                                ))
+                            },
+                            value: JsonValue::String(value),
+                        }),
+                        EditOptions {
+                            // Raise an error if the variable does not exist
+                            create_missing_segments: false,
+                            ignore_if_not_exists: false,
                         },
-                        value: JsonValue::String(value),
-                    }));
+                    ));
                 }
                 Some(ChangeString::Remove) => {
-                    patches.push(PatchOperation::Remove(RemoveOperation {
+                    patches.push((
+                        PatchOperation::Remove(RemoveOperation {
+                            path: unsafe {
+                                PointerBuf::new_unchecked(format!(
+                                    "/variable/{}/description",
+                                    var_to_update.id
+                                ))
+                            },
+                        }),
+                        EditOptions {
+                            // Raise an error if the variable does not exist
+                            create_missing_segments: false,
+                            ignore_if_not_exists: false,
+                        },
+                    ));
+                }
+                _ => {}
+            }
+
+            if let Some(options) = var_to_update.options {
+                let options_value = continue_if_err!(serde_json::to_value(options), |err| {
+                    println!("failed to convert variable options to json: {}", err); // TODO: log error
+                });
+
+                patches.push((
+                    PatchOperation::Replace(ReplaceOperation {
                         path: unsafe {
                             PointerBuf::new_unchecked(format!(
-                                "/variable/{}/description",
+                                "/variable/{}/options",
                                 var_to_update.id
                             ))
                         },
-                    }));
-                }
-                _ => {}
+                        value: options_value,
+                    }),
+                    EditOptions {
+                        // Raise an error if the variable does not exist
+                        create_missing_segments: false,
+                        ignore_if_not_exists: false,
+                    },
+                ));
             }
         }
 
         for id in params.vars_to_delete {
-            patches.push(PatchOperation::Remove(RemoveOperation {
-                path: unsafe { PointerBuf::new_unchecked(format!("/variable/{}", id)) },
-            }));
+            patches.push((
+                PatchOperation::Remove(RemoveOperation {
+                    path: unsafe { PointerBuf::new_unchecked(format!("/variable/{}", id)) },
+                }),
+                EditOptions {
+                    create_missing_segments: false,
+                    // Skip the operation if the variable does not exist
+                    // FIXME: How should we write logs when that happens?
+                    ignore_if_not_exists: true,
+                },
+            ));
 
             let segkey_localvalue = SEGKEY_VARIABLE_LOCALVALUE.join(id.as_str());
             if let Err(e) =
