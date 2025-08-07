@@ -89,7 +89,7 @@ const FirstColumn = () => {
             })}
             onClick={workspaces?.length && workspaces?.length > 0 ? openOpenWorkspaceModal : undefined}
           >
-            <Icon icon="OpenWorkspace" className="size-4 text-(--moss-primary)" />
+            <Icon icon="Workspace" className="size-4 text-(--moss-primary)" />
             <span>Open workspace</span>
           </button>
         </div>

@@ -1,4 +1,3 @@
-import { type Icons } from "@/lib/ui/Icon";
 import { MenuItemProps } from "@/utils/renderActionMenuItem";
 import { ListWorkspacesOutput } from "@repo/moss-app";
 
@@ -10,21 +9,21 @@ const createStandardMenuItems = (prefix = ""): MenuItemProps[] => {
       id: `${idPrefix}rename`,
       type: "action",
       label: "Edit",
-      icon: "Edit" as Icons,
+      icon: "Edit",
       shortcut: "⌘⏎",
     },
     {
       id: `${idPrefix}duplicate`,
       type: "action",
       label: "Duplicate",
-      icon: "ToolWindowDuplicates" as Icons,
+      icon: "ToolWindowDuplicates",
       shortcut: "⌘V",
     },
     {
       id: `${idPrefix}delete`,
       type: "action",
       label: "Delete",
-      icon: "Delete" as Icons,
+      icon: "Delete",
       shortcut: "⌥⇧⏎",
     },
     {
@@ -35,7 +34,7 @@ const createStandardMenuItems = (prefix = ""): MenuItemProps[] => {
       id: `${idPrefix}new`,
       type: "submenu",
       label: "New...",
-      icon: "Add" as Icons,
+      icon: "Add",
       items: [
         {
           id: `${idPrefix}new-request`,
@@ -93,7 +92,7 @@ export const createAllWorkspacesMenuSection = (workspaces: ListWorkspacesOutput 
       id: `workspace:${workspace.id}`,
       type: "submenu",
       label: workspace.name,
-      icon: "OpenWorkspaceActive" as Icons,
+      icon: "WorkspaceActive",
       items: createStandardMenuItems(workspace.id),
     })),
   };
@@ -105,13 +104,13 @@ export const baseWorkspaceMenuItems: MenuItemProps[] = [
     id: "new-workspace",
     type: "action",
     label: "New Workspace",
-    icon: "NewWorkspace" as Icons,
+    icon: "NewWorkspace",
   },
   {
     id: "open-workspace",
     type: "action",
     label: "Open Workspace",
-    icon: "OpenWorkspace" as Icons,
+    icon: "Workspace",
   },
   {
     id: "separator-1",
@@ -125,20 +124,20 @@ export const baseSelectedWorkspaceMenuItems: MenuItemProps[] = [
     id: "new-workspace",
     type: "action",
     label: "New Workspace",
-    icon: "NewFolder" as Icons,
+    icon: "NewWorkspace",
   },
   ...createStandardMenuItems().slice(0, 4), // Include only the first 4 items (rename, duplicate, delete, separator)
   {
     id: "new-collection",
     type: "action",
     label: "New Collection",
-    icon: "Add" as Icons,
+    icon: "Add",
   },
   {
     id: "import-collection",
     type: "action",
     label: "Import Collection",
-    icon: "Import" as Icons,
+    icon: "Import",
   },
   {
     id: "separator-2",

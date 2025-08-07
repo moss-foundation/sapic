@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { ActionMenu } from "@/components";
+import { ActionMenu, InputOutlined } from "@/components";
 import { ButtonNeutralOutlined } from "@/components/ButtonNeutralOutlined";
 import { ButtonPrimary } from "@/components/ButtonPrimary";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
-import { DataTable, ParameterData, columns } from "@/components/Table";
 import { InputTemplating } from "@/components/InputTemplating";
+import { columns, DataTable, ParameterData } from "@/components/Table";
 import {
   editorContextItems,
   generateItems,
@@ -39,6 +39,8 @@ const ComponentGallery = () => {
 
     fetchData();
   }, []);
+
+  const [iconsSearchInput, setIconsSearchInput] = useState("");
 
   return (
     <div className="mx-auto max-w-6xl space-y-10">
@@ -171,15 +173,27 @@ const ComponentGallery = () => {
 
       {/* Icons */}
       <KitchenSinkSection header="Icons" description="Various icons available in the application.">
+        <div>
+          <InputOutlined
+            value={iconsSearchInput}
+            onChange={(e) => setIconsSearchInput(e.target.value)}
+            placeholder="Search icons"
+          />
+        </div>
         <div className="grid grid-cols-6 gap-y-2">
-          {Object.keys(iconsNames).map((value) => (
-            <div key={value} className="flex flex-col items-center gap-2">
-              <Icon icon={value as Icons} />
-              <span className="cursor-text rounded px-1 select-text hover:bg-gray-100 dark:hover:bg-gray-700">
-                {value}
-              </span>
-            </div>
-          ))}
+          {Object.keys(iconsNames)
+            .filter((value) => {
+              if (iconsSearchInput === "") return true;
+              return value.toLowerCase().includes(iconsSearchInput.toLowerCase());
+            })
+            .map((value) => (
+              <div key={value} className="flex flex-col items-center gap-2">
+                <Icon icon={value as Icons} />
+                <span className="cursor-text rounded px-1 select-text hover:bg-gray-100 dark:hover:bg-gray-700">
+                  {value}
+                </span>
+              </div>
+            ))}
         </div>
       </KitchenSinkSection>
     </div>
