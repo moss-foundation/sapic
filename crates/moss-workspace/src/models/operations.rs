@@ -275,6 +275,25 @@ pub struct UpdateEnvironmentOutput {
     pub id: EnvironmentId,
 }
 
+// Delete Environment
+/// @category Operation
+#[derive(Debug, Deserialize, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct DeleteEnvironmentInput {
+    pub id: EnvironmentId,
+}
+
+/// @category Operation
+#[derive(Debug, Deserialize, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct DeleteEnvironmentOutput {
+    pub id: EnvironmentId,
+}
+
 // Stream Environments
 
 /// @category Operation

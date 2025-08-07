@@ -62,6 +62,14 @@ export const deleteCollectionOutputSchema = z.object({
   id: z.string(),
 });
 
+export const deleteEnvironmentInputSchema = z.object({
+  id: z.string(),
+});
+
+export const deleteEnvironmentOutputSchema = z.object({
+  id: z.string(),
+});
+
 export const describeEnvironmentInputSchema = z.object({
   id: z.string(),
 });

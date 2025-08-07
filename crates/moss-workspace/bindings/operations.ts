@@ -72,6 +72,16 @@ export type DeleteCollectionOutput = { id: string };
 /**
  * @category Operation
  */
+export type DeleteEnvironmentInput = { id: string };
+
+/**
+ * @category Operation
+ */
+export type DeleteEnvironmentOutput = { id: string };
+
+/**
+ * @category Operation
+ */
 export type DescribeEnvironmentInput = { id: string };
 
 /**

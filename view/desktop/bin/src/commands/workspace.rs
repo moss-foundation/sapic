@@ -155,3 +155,18 @@ pub async fn update_environment<'a, R: tauri::Runtime>(
     })
     .await
 }
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn delete_environment<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: Window<R>,
+    input: DeleteEnvironmentInput,
+    options: Options,
+) -> TauriResult<DeleteEnvironmentOutput> {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
+        workspace.delete_environment(&ctx, input).await
+    })
+    .await
+}
