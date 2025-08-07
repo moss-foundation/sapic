@@ -11,7 +11,6 @@ export const TreeContext = createContext<TreeContextProps>({
   order: undefined,
   picturePath: undefined,
   expanded: false,
-
   treePaddingLeft: 0,
   treePaddingRight: 0,
   nodeOffset: 0,
@@ -24,7 +23,6 @@ export const TreeContext = createContext<TreeContextProps>({
 
 export const CollectionTree = ({
   tree: initialTree,
-
   treePaddingLeft = 8,
   treePaddingRight = 8,
   nodeOffset = 12,
@@ -47,7 +45,6 @@ export const CollectionTree = ({
         repository: initialTree.repository,
         order: initialTree.order,
         picturePath: initialTree.picturePath,
-
         treePaddingLeft,
         treePaddingRight,
         nodeOffset,
