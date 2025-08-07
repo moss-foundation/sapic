@@ -234,9 +234,9 @@ pub struct CreateEnvironmentOutput {
     pub id: EnvironmentId,
     pub collection_id: Option<CollectionId>,
     pub name: String,
-    pub order: isize,
+    pub order: Option<isize>,
     pub color: Option<String>,
-    pub expanded: bool,
+    pub expanded: Option<bool>,
 
     #[serde(skip)]
     #[ts(skip)]

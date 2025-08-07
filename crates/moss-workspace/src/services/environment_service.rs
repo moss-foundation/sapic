@@ -51,8 +51,8 @@ where
     pub color: Option<String>,
     pub collection_id: Option<CollectionId>,
     pub display_name: String,
-    pub order: isize,
-    pub expanded: bool,
+    pub order: Option<isize>,
+    pub expanded: Option<bool>,
 
     #[deref]
     pub handle: Arc<Environment<R>>,
@@ -62,8 +62,8 @@ pub struct EnvironmentItemDescription {
     pub id: EnvironmentId,
     pub collection_id: Option<CollectionId>,
     pub display_name: String,
-    pub order: isize,
-    pub expanded: bool,
+    pub order: Option<isize>,
+    pub expanded: Option<bool>,
     pub color: Option<String>,
     pub abs_path: PathBuf,
 }
@@ -180,7 +180,7 @@ where
         }
 
         if let Some(order) = params.order {
-            environment_item.order = order;
+            environment_item.order = Some(order);
             if let Err(e) = storage_service.put_environment_order(ctx, id, order).await {
                 // TODO: log error
                 println!("failed to put environment order in the db: {}", e);
@@ -188,7 +188,7 @@ where
         }
 
         if let Some(expanded) = params.expanded {
-            environment_item.expanded = expanded;
+            environment_item.expanded = Some(expanded);
             if let Err(e) = storage_service
                 .put_environment_expanded(ctx, id, expanded)
                 .await
@@ -230,8 +230,8 @@ where
                 color: desc.color.clone(),
                 collection_id: params.collection_id.clone(),
                 display_name: params.name.clone(),
-                order: params.order,
-                expanded: true,
+                order: Some(params.order),
+                expanded: Some(true),
                 handle: Arc::new(environment),
             },
         );
@@ -256,8 +256,8 @@ where
             id: desc.id.clone(),
             collection_id: params.collection_id,
             display_name: params.name.clone(),
-            order: params.order,
-            expanded: true,
+            order: Some(params.order),
+            expanded: Some(true),
             color: desc.color,
             abs_path,
         })
@@ -302,10 +302,11 @@ async fn collect_environments<R: AppRuntime>(
         let order = storage_service
             .get_environment_order(ctx, &desc.id)
             .await
-            .unwrap_or_default();
+            .ok();
         let expanded = storage_service
             .get_environment_expanded(ctx, &desc.id)
-            .await?;
+            .await
+            .ok();
 
         environments.insert(
             desc.id.clone(),

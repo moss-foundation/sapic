@@ -49,9 +49,9 @@ export const createEnvironmentOutputSchema = z.object({
   id: z.string(),
   collectionId: z.string().optional(),
   name: z.string(),
-  order: z.number(),
+  order: z.number().optional(),
   color: z.string().optional(),
-  expanded: z.boolean(),
+  expanded: z.boolean().optional(),
 });
 
 export const deleteCollectionInputSchema = z.object({

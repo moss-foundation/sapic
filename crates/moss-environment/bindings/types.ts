@@ -35,7 +35,7 @@ export type VariableInfo = {
   globalValue?: JsonValue;
   localValue?: JsonValue;
   disabled: boolean;
-  order: number;
+  order?: number;
   desc?: string;
 };
 

@@ -103,13 +103,12 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                         .and_then(|v| v.deserialize().ok())
                 };
 
-                let order: isize = {
+                let order: Option<isize> = {
                     let segkey = SEGKEY_VARIABLE_ORDER.join(id.as_str());
                     GetItem::get(self.variable_store.as_ref(), ctx, segkey)
                         .await
                         .ok()
                         .and_then(|v| v.deserialize().ok())
-                        .unwrap_or(0)
                 };
 
                 variables.push(VariableInfo {

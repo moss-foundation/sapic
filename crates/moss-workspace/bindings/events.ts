@@ -23,6 +23,6 @@ export type StreamEnvironmentsEvent = {
    */
   collectionId?: string;
   name: string;
-  order: number;
-  expanded: boolean;
+  order?: number;
+  expanded?: boolean;
 };

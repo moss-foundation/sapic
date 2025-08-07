@@ -54,9 +54,9 @@ export type CreateEnvironmentOutput = {
   id: string;
   collectionId?: string;
   name: string;
-  order: number;
+  order?: number;
   color?: string;
-  expanded: boolean;
+  expanded?: boolean;
 };
 
 /**
