@@ -171,7 +171,8 @@ export const useDraggableNode = ({
           }
 
           if (dropTarget.parentNode.id === node.id && dropTarget.instruction?.operation !== "combine") {
-            setIsChildDropBlocked(hasAnotherDirectDescendantWithSimilarName(node, sourceTarget.node));
+            const isChildDropBlocked = evaluateIsChildDropBlocked(node, sourceTarget.node);
+            setIsChildDropBlocked(isChildDropBlocked);
             return;
           }
 
@@ -192,22 +193,18 @@ export const useDraggableNode = ({
 
 const isReorderAvailable = (sourceTarget: DragNode, dropTarget: DropNode): Availability => {
   if (sourceTarget.node.class !== dropTarget.node.class) {
-    // console.log("can't drop: class mismatch");
-    return "not-available";
+    return "blocked";
   }
 
   if (sourceTarget.node.id === dropTarget.node.id) {
-    // console.log("can't drop: id mismatch");
     return "not-available";
   }
 
   if (hasDescendant(sourceTarget.node, dropTarget.node)) {
-    // console.log("can't drop: has direct descendant");
     return "blocked";
   }
 
   if (hasAnotherDirectDescendantWithSimilarName(dropTarget.parentNode, sourceTarget.node)) {
-    // console.log("can't drop: has direct similar descendant");
     return "blocked";
   }
 
@@ -219,15 +216,29 @@ const isCombineAvailable = (sourceTarget: DragNode, dropTarget: DropNode): Avail
     return "not-available";
   }
 
+  if (sourceTarget.node.class !== dropTarget.node.class) {
+    return "blocked";
+  }
+
   if (hasDescendant(sourceTarget.node, dropTarget.node)) {
-    // console.log("can't drop: has direct descendant");
     return "blocked";
   }
 
   if (hasAnotherDirectDescendantWithSimilarName(dropTarget.node, sourceTarget.node)) {
-    // console.log("can't drop: has direct similar descendant");
     return "blocked";
   }
 
   return "available";
+};
+
+const evaluateIsChildDropBlocked = (parentNode: TreeCollectionNode, dropNode: TreeCollectionNode): boolean => {
+  if (parentNode.class !== dropNode.class) {
+    return true;
+  }
+
+  if (hasAnotherDirectDescendantWithSimilarName(parentNode, dropNode)) {
+    return true;
+  }
+
+  return false;
 };

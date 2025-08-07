@@ -159,9 +159,11 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
             return;
           }
 
-          if (dropTarget?.parentNode.id === node.requests.id && dropTarget.instruction?.operation !== "combine") {
-            setIsChildDropBlocked(hasAnotherDirectDescendantWithSimilarName(node.requests, sourceTarget.node));
-            return;
+          if (displayMode === "REQUEST_FIRST") {
+            if (dropTarget?.parentNode.id === node.requests.id && dropTarget.instruction?.operation !== "combine") {
+              setIsChildDropBlocked(hasAnotherDirectDescendantWithSimilarName(node.requests, sourceTarget.node));
+              return;
+            }
           }
 
           setIsChildDropBlocked(null);
