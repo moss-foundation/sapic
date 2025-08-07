@@ -15,7 +15,7 @@ use moss_storage::{
     primitives::segkey::SegKeyBuf,
     storage::operations::{GetItem, PutItem, RemoveItem},
 };
-use serde_json::Value as JsonValue;
+use serde_json::{Error, Value as JsonValue};
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tokio::sync::watch;
 
@@ -226,33 +226,42 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
             let order = var_to_add.order;
 
             let segkey_localvalue = SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE);
-            if let Err(e) = PutItem::put(
-                self.variable_store.as_ref(),
-                ctx,
-                segkey_localvalue,
-                AnyValue::serialize(&var_to_add.local_value)?,
-            )
-            .await
-            {
-                // TODO: log error
-                println!("failed to put local_value in the db: {}", e);
+
+            match AnyValue::serialize(&var_to_add.local_value) {
+                Ok(local_value) => {
+                    if let Err(e) = PutItem::put(
+                        self.variable_store.as_ref(),
+                        ctx,
+                        segkey_localvalue,
+                        local_value,
+                    )
+                    .await
+                    {
+                        // TODO: log error
+                        println!("failed to put local_value in the db: {}", e);
+                    }
+                }
+                Err(e) => {
+                    println!("failed to serialize local_value: {}", e);
+                }
             }
 
             let segkey_order = SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_ORDER);
-            if let Err(e) = PutItem::put(
-                self.variable_store.as_ref(),
-                ctx,
-                segkey_order,
-                AnyValue::serialize(&order)?,
-            )
-            .await
-            {
-                // TODO: log error
-                println!("failed to put order in the db: {}", e);
+
+            match AnyValue::serialize(&var_to_add.order) {
+                Ok(order) => {
+                    if let Err(e) =
+                        PutItem::put(self.variable_store.as_ref(), ctx, segkey_order, order).await
+                    {
+                        // TODO: log error
+                        println!("failed to put order in the db: {}", e);
+                    }
+                }
+                Err(e) => {
+                    println!("failed to serialize order: {}", e);
+                }
             }
         }
-
-        // TODO: Check
 
         for var_to_update in params.vars_to_update {
             if let Some(new_name) = var_to_update.name {
@@ -317,16 +326,23 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                 SegKeyBuf::from(var_to_update.id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE);
             match var_to_update.local_value {
                 Some(ChangeJsonValue::Update(value)) => {
-                    if let Err(e) = PutItem::put(
-                        self.variable_store.as_ref(),
-                        ctx,
-                        segkey_localvalue,
-                        AnyValue::serialize(&value)?,
-                    )
-                    .await
-                    {
-                        // TODO: log error
-                        println!("failed to put local_value in the db: {}", e);
+                    match AnyValue::serialize(&value) {
+                        Ok(value) => {
+                            if let Err(e) = PutItem::put(
+                                self.variable_store.as_ref(),
+                                ctx,
+                                segkey_localvalue,
+                                value,
+                            )
+                            .await
+                            {
+                                // TODO: log error
+                                println!("failed to put local_value in the db: {}", e);
+                            }
+                        }
+                        Err(e) => {
+                            println!("failed to serialize local_value: {}", e);
+                        }
                     }
                 }
                 Some(ChangeJsonValue::Remove) => {
@@ -345,16 +361,19 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                 SegKeyBuf::from(var_to_update.id.as_str()).join(SEGKEY_VARIABLE_ORDER);
             match var_to_update.order {
                 Some(order) => {
-                    if let Err(e) = PutItem::put(
-                        self.variable_store.as_ref(),
-                        ctx,
-                        segkey_order,
-                        AnyValue::serialize(&order)?,
-                    )
-                    .await
-                    {
-                        // TODO: log error
-                        println!("failed to put order in the db: {}", e);
+                    match AnyValue::serialize(&order) {
+                        Ok(order) => {
+                            if let Err(e) =
+                                PutItem::put(self.variable_store.as_ref(), ctx, segkey_order, order)
+                                    .await
+                            {
+                                // TODO: log error
+                                println!("failed to put order in the db: {}", e);
+                            }
+                        }
+                        Err(e) => {
+                            println!("failed to serialize order: {}", e);
+                        }
                     }
                 }
                 None => {}
