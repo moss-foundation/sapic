@@ -54,7 +54,7 @@ export type CreateEnvironmentOutput = {
   id: string;
   collectionId?: string;
   name: string;
-  order: number;
+  order?: number;
   color?: string;
   expanded: boolean;
 };
@@ -68,6 +68,16 @@ export type DeleteCollectionInput = { id: string };
  * @category Operation
  */
 export type DeleteCollectionOutput = { id: string };
+
+/**
+ * @category Operation
+ */
+export type DeleteEnvironmentInput = { id: string };
+
+/**
+ * @category Operation
+ */
+export type DeleteEnvironmentOutput = { id: string };
 
 /**
  * @category Operation

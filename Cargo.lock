@@ -3842,6 +3842,7 @@ dependencies = [
  "moss_applib",
  "moss_bindingutils",
  "moss_common",
+ "moss_db",
  "moss_edit",
  "moss_file",
  "moss_fs",
@@ -3953,6 +3954,8 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "hcl-rs",
+ "joinerror",
  "moss_applib",
  "moss_db",
  "redb",

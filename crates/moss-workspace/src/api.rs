@@ -2,6 +2,7 @@ pub mod batch_update_collection;
 pub mod create_collection;
 pub mod create_environment;
 pub mod delete_collection;
+mod delete_environment;
 pub mod describe_state;
 pub mod stream_collections;
 pub mod stream_environments;

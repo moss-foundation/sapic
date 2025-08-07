@@ -3,9 +3,11 @@ pub mod configuration;
 pub mod edit;
 pub mod environment;
 pub mod models;
+pub mod segments;
 pub mod utils;
 
 pub use environment::Environment;
+use std::collections::HashMap;
 
 use moss_applib::AppRuntime;
 use moss_bindingutils::primitives::ChangeString;
@@ -61,7 +63,7 @@ pub struct DescribeEnvironment {
     pub id: EnvironmentId,
     pub name: String,
     pub color: Option<String>,
-    pub variables: Vec<VariableInfo>,
+    pub variables: HashMap<VariableId, VariableInfo>,
     // TODO: git info
 }
 
@@ -69,6 +71,10 @@ pub struct DescribeEnvironment {
 pub trait AnyEnvironment<R: AppRuntime> {
     async fn abs_path(&self) -> PathBuf;
     async fn name(&self) -> joinerror::Result<String>;
-    async fn describe(&self) -> joinerror::Result<DescribeEnvironment>;
-    async fn modify(&self, params: ModifyEnvironmentParams) -> joinerror::Result<()>;
+    async fn describe(&self, ctx: &R::AsyncContext) -> joinerror::Result<DescribeEnvironment>;
+    async fn modify(
+        &self,
+        ctx: &R::AsyncContext,
+        params: ModifyEnvironmentParams,
+    ) -> joinerror::Result<()>;
 }

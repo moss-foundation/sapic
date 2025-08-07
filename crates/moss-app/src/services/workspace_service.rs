@@ -282,7 +282,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
             .context("Failed to create workspace directory")
             .map_err(|e| WorkspaceServiceError::Io(e.to_string()))?;
 
-        WorkspaceBuilder::initialize(
+        WorkspaceBuilder::initialize::<R>(
             self.fs.clone(),
             CreateWorkspaceParams {
                 name: params.name.clone(),

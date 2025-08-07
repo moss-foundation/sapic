@@ -234,7 +234,7 @@ pub struct CreateEnvironmentOutput {
     pub id: EnvironmentId,
     pub collection_id: Option<CollectionId>,
     pub name: String,
-    pub order: isize,
+    pub order: Option<isize>,
     pub color: Option<String>,
     pub expanded: bool,
 
@@ -272,6 +272,25 @@ pub struct UpdateEnvironmentInput {
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateEnvironmentOutput {
+    pub id: EnvironmentId,
+}
+
+// Delete Environment
+/// @category Operation
+#[derive(Debug, Deserialize, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct DeleteEnvironmentInput {
+    pub id: EnvironmentId,
+}
+
+/// @category Operation
+#[derive(Debug, Deserialize, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct DeleteEnvironmentOutput {
     pub id: EnvironmentId,
 }
 

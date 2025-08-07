@@ -1,11 +1,14 @@
 use anyhow::{Context as _, Result};
 use moss_applib::{AppRuntime, ServiceMarker};
 use moss_db::{Transaction, primitives::AnyValue};
+use moss_environment::models::primitives::EnvironmentId;
 use moss_storage::{
     WorkspaceStorage,
+    common::VariableStore,
     primitives::segkey::SegKeyBuf,
     storage::operations::{
-        GetItem, ListByPrefix, TransactionalPutItem, TransactionalRemoveByPrefix,
+        GetItem, ListByPrefix, PutItem, RemoveItem, TransactionalPutItem,
+        TransactionalRemoveByPrefix,
     },
     workspace_storage::WorkspaceStorageImpl,
 };
@@ -19,7 +22,7 @@ use crate::{
     models::primitives::{ActivitybarPosition, CollectionId, SidebarPosition},
     storage::{
         entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity},
-        segments::{self, SEGKEY_COLLECTION},
+        segments::{self, SEGKEY_COLLECTION, SEGKEY_ENVIRONMENT},
     },
 };
 
@@ -37,6 +40,10 @@ impl<R: AppRuntime> StorageService<R> {
         Ok(Self {
             storage: Arc::new(storage),
         })
+    }
+
+    pub fn variable_store(&self) -> Arc<dyn VariableStore<R::AsyncContext>> {
+        self.storage.variable_store()
     }
 
     pub async fn begin_write(&self, ctx: &R::AsyncContext) -> joinerror::Result<Transaction> {
@@ -283,6 +290,74 @@ impl<R: AppRuntime> StorageService<R> {
         }
 
         Ok(txn.commit()?)
+    }
+
+    pub(super) async fn put_environment_order(
+        &self,
+        ctx: &R::AsyncContext,
+        id: &EnvironmentId,
+        order: isize,
+    ) -> joinerror::Result<()> {
+        let store = self.storage.item_store();
+        let segkey = SEGKEY_ENVIRONMENT.join(id.as_str()).join("order");
+
+        PutItem::put(store.as_ref(), ctx, segkey, AnyValue::serialize(&order)?).await?;
+
+        Ok(())
+    }
+
+    pub(super) async fn get_environment_order(
+        &self,
+        ctx: &R::AsyncContext,
+        id: &EnvironmentId,
+    ) -> joinerror::Result<isize> {
+        let store = self.storage.item_store();
+        let segkey = SEGKEY_ENVIRONMENT.join(id.as_str()).join("order");
+
+        let entity = GetItem::get(store.as_ref(), ctx, segkey).await?;
+
+        Ok(entity.deserialize()?)
+    }
+
+    pub(super) async fn remove_environment_order(
+        &self,
+        ctx: &R::AsyncContext,
+        id: &EnvironmentId,
+    ) -> joinerror::Result<()> {
+        let store = self.storage.item_store();
+        let segkey = SEGKEY_ENVIRONMENT.join(id.as_str()).join("order");
+
+        RemoveItem::remove(store.as_ref(), ctx, segkey).await?;
+
+        Ok(())
+    }
+
+    pub(super) async fn put_expanded_environments(
+        &self,
+        ctx: &R::AsyncContext,
+        expanded_environments: &HashSet<EnvironmentId>,
+    ) -> joinerror::Result<()> {
+        let store = self.storage.item_store();
+
+        PutItem::put(
+            store.as_ref(),
+            ctx,
+            segments::SEGKEY_EXPANDED_ENVIRONMENTS.to_segkey_buf(),
+            AnyValue::serialize(&expanded_environments)?,
+        )
+        .await?;
+
+        Ok(())
+    }
+
+    pub(super) async fn get_expanded_environments(
+        &self,
+        ctx: &R::AsyncContext,
+    ) -> joinerror::Result<HashSet<EnvironmentId>> {
+        let store = self.storage.item_store();
+        let segkey = segments::SEGKEY_EXPANDED_ENVIRONMENTS.to_segkey_buf();
+        let value = GetItem::get(store.as_ref(), ctx, segkey).await?;
+        Ok(AnyValue::deserialize(&value)?)
     }
 }
 

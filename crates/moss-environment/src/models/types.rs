@@ -48,6 +48,7 @@ pub struct UpdateVariableParams {
     pub order: Option<isize>,
     #[ts(optional, type = "ChangeString")]
     pub desc: Option<ChangeString>,
+    pub options: Option<VariableOptions>,
 }
 
 /// @category Type
@@ -74,6 +75,6 @@ pub struct VariableInfo {
     pub local_value: Option<JsonValue>,
     pub disabled: bool,
     // pub kind: VariableKind,
-    pub order: isize,
+    pub order: Option<isize>,
     pub desc: Option<String>,
 }

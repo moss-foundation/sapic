@@ -24,6 +24,7 @@ export type UpdateVariableParams = {
   localValue?: ChangeJsonValue;
   order?: number;
   desc?: ChangeString;
+  options?: VariableOptions;
 };
 
 /**
@@ -35,7 +36,7 @@ export type VariableInfo = {
   globalValue?: JsonValue;
   localValue?: JsonValue;
   disabled: boolean;
-  order: number;
+  order?: number;
   desc?: string;
 };
 

@@ -49,7 +49,7 @@ export const createEnvironmentOutputSchema = z.object({
   id: z.string(),
   collectionId: z.string().optional(),
   name: z.string(),
-  order: z.number(),
+  order: z.number().optional(),
   color: z.string().optional(),
   expanded: z.boolean(),
 });
@@ -59,6 +59,14 @@ export const deleteCollectionInputSchema = z.object({
 });
 
 export const deleteCollectionOutputSchema = z.object({
+  id: z.string(),
+});
+
+export const deleteEnvironmentInputSchema = z.object({
+  id: z.string(),
+});
+
+export const deleteEnvironmentOutputSchema = z.object({
   id: z.string(),
 });
 

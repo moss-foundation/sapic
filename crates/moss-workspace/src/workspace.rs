@@ -5,6 +5,7 @@ use jsonptr::PointerBuf;
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::AppRuntime;
 use moss_collection::Collection;
+use moss_edit::json::EditOptions;
 use moss_environment::{AnyEnvironment, Environment, models::primitives::EnvironmentId};
 use moss_fs::{FileSystem, FsResultExt};
 use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
@@ -93,10 +94,16 @@ impl<R: AppRuntime> Workspace<R> {
         let mut patches = Vec::new();
 
         if let Some(new_name) = params.name {
-            patches.push(PatchOperation::Replace(ReplaceOperation {
-                path: unsafe { PointerBuf::new_unchecked("/name") },
-                value: JsonValue::String(new_name),
-            }));
+            patches.push((
+                PatchOperation::Replace(ReplaceOperation {
+                    path: unsafe { PointerBuf::new_unchecked("/name") },
+                    value: JsonValue::String(new_name),
+                }),
+                EditOptions {
+                    ignore_if_not_exists: false,
+                    create_missing_segments: false,
+                },
+            ));
         }
 
         self.edit

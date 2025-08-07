@@ -49,7 +49,7 @@ impl WorkspaceBuilder {
         Self { fs }
     }
 
-    pub async fn initialize(
+    pub async fn initialize<R: AppRuntime>(
         fs: Arc<dyn FileSystem>,
         params: CreateWorkspaceParams,
     ) -> joinerror::Result<()> {
@@ -58,6 +58,14 @@ impl WorkspaceBuilder {
         for dir in &[dirs::COLLECTIONS_DIR, dirs::ENVIRONMENTS_DIR] {
             fs.create_dir(&params.abs_path.join(dir)).await?;
         }
+
+        fs.create_file_with(
+            &params.abs_path.join(MANIFEST_FILE_NAME),
+            serde_json::to_string(&ManifestFile { name: params.name })?.as_bytes(),
+            CreateOptions::default(),
+        )
+        .await
+        .join_err::<()>(format!("failed to create manifest file"))?;
 
         for env in PREDEFINED_ENVIRONMENTS.iter() {
             EnvironmentBuilder::new(fs.clone())
@@ -70,14 +78,6 @@ impl WorkspaceBuilder {
                 .await
                 .join_err_with::<()>(|| format!("failed to initialize environment {}", env.name))?;
         }
-
-        fs.create_file_with(
-            &params.abs_path.join(MANIFEST_FILE_NAME),
-            serde_json::to_string(&ManifestFile { name: params.name })?.as_bytes(),
-            CreateOptions::default(),
-        )
-        .await
-        .join_err::<()>(format!("failed to create manifest file"))?;
 
         Ok(())
     }
@@ -101,8 +101,14 @@ impl WorkspaceBuilder {
             storage_service.clone(),
         )
         .await?;
-        let environment_service =
-            EnvironmentService::new(&params.abs_path, self.fs.clone()).await?;
+
+        let environment_service = EnvironmentService::new(
+            ctx,
+            &params.abs_path,
+            self.fs.clone(),
+            storage_service.clone(),
+        )
+        .await?;
 
         let edit = WorkspaceEdit::new(self.fs.clone(), params.abs_path.join(MANIFEST_FILE_NAME));
 
@@ -129,7 +135,7 @@ impl WorkspaceBuilder {
     ) -> joinerror::Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
 
-        WorkspaceBuilder::initialize(self.fs.clone(), params.clone())
+        WorkspaceBuilder::initialize::<R>(self.fs.clone(), params.clone())
             .await
             .join_err::<()>("failed to initialize workspace")?;
 
@@ -142,8 +148,13 @@ impl WorkspaceBuilder {
             storage_service.clone(),
         )
         .await?;
-        let environment_service =
-            EnvironmentService::new(&params.abs_path, self.fs.clone()).await?;
+        let environment_service = EnvironmentService::new(
+            ctx,
+            &params.abs_path,
+            self.fs.clone(),
+            storage_service.clone(),
+        )
+        .await?;
 
         let edit = WorkspaceEdit::new(self.fs.clone(), params.abs_path.join(MANIFEST_FILE_NAME));
 

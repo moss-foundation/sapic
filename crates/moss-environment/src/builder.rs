@@ -2,8 +2,8 @@ use joinerror::{Error, ResultExt};
 use moss_applib::AppRuntime;
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_hcl::{Block, HclResultExt};
+use moss_storage::common::VariableStore;
 use std::{
-    marker::PhantomData,
     path::{Path, PathBuf},
     sync::Arc,
 };
@@ -86,6 +86,7 @@ impl EnvironmentBuilder {
     pub async fn create<'a, R: AppRuntime>(
         self,
         params: CreateEnvironmentParams<'a>,
+        variable_store: Arc<dyn VariableStore<R::AsyncContext>>,
     ) -> joinerror::Result<Environment<R>> {
         debug_assert!(params.abs_path.is_absolute());
 
@@ -100,13 +101,14 @@ impl EnvironmentBuilder {
             fs: self.fs.clone(),
             abs_path_rx,
             edit: EnvironmentEditing::new(self.fs.clone(), abs_path_tx),
-            _marker: PhantomData,
+            variable_store,
         })
     }
 
     pub async fn load<R: AppRuntime>(
         self,
         params: EnvironmentLoadParams,
+        variable_store: Arc<dyn VariableStore<R::AsyncContext>>,
     ) -> joinerror::Result<Environment<R>> {
         debug_assert!(params.abs_path.is_absolute());
 
@@ -122,7 +124,7 @@ impl EnvironmentBuilder {
             fs: self.fs.clone(),
             abs_path_rx,
             edit: EnvironmentEditing::new(self.fs.clone(), abs_path_tx),
-            _marker: PhantomData,
+            variable_store,
         })
     }
 }

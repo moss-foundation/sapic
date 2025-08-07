@@ -1,7 +1,13 @@
 #![cfg(feature = "integration-tests")]
 
+use moss_environment::models::primitives::EnvironmentId;
+use moss_storage::storage::operations::GetItem;
 use moss_testutils::random_name::random_environment_name;
-use moss_workspace::models::operations::CreateEnvironmentInput;
+use moss_workspace::{
+    models::operations::CreateEnvironmentInput,
+    storage::segments::{SEGKEY_ENVIRONMENT, SEGKEY_EXPANDED_ENVIRONMENTS},
+};
+use std::collections::HashSet;
 use tauri::ipc::Channel;
 
 use crate::shared::setup_test_workspace;
@@ -19,12 +25,14 @@ async fn create_environment_success() {
             CreateEnvironmentInput {
                 name: environment_name.clone(),
                 collection_id: None,
-                order: 0,
+                order: 42,
                 color: Some("#3574F0".to_string()),
             },
         )
         .await
         .unwrap();
+
+    let id = create_environment_output.id;
 
     let channel = Channel::new(move |_| Ok(()));
     let output = workspace.stream_environments(&ctx, channel).await.unwrap();
@@ -32,7 +40,66 @@ async fn create_environment_success() {
 
     assert!(create_environment_output.abs_path.exists());
 
-    // TODO: check the database when it's implemented
+    // Check the newly created environment is stored in the db
+    let item_store = workspace.db().item_store();
+
+    let stored_env_order: isize = GetItem::get(
+        item_store.as_ref(),
+        &ctx,
+        SEGKEY_ENVIRONMENT.join(id.as_str()).join("order"),
+    )
+    .await
+    .unwrap()
+    .deserialize()
+    .unwrap();
+    assert_eq!(stored_env_order, 42);
+
+    let stored_expanded_environments: HashSet<EnvironmentId> = GetItem::get(
+        item_store.as_ref(),
+        &ctx,
+        SEGKEY_EXPANDED_ENVIRONMENTS.to_segkey_buf(),
+    )
+    .await
+    .unwrap()
+    .deserialize()
+    .unwrap();
+
+    assert!(stored_expanded_environments.contains(&id));
+
+    cleanup().await;
+}
+
+#[tokio::test]
+async fn create_environment_already_exists() {
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+
+    let environment_name = random_environment_name();
+    let _ = workspace
+        .create_environment(
+            &ctx,
+            CreateEnvironmentInput {
+                name: environment_name.clone(),
+                collection_id: None,
+                order: 42,
+                color: Some("#3574F0".to_string()),
+            },
+        )
+        .await
+        .unwrap();
+
+    let result = workspace
+        .create_environment(
+            &ctx,
+            CreateEnvironmentInput {
+                name: environment_name.clone(),
+                collection_id: None,
+                order: 42,
+                color: Some("#3574F0".to_string()),
+            },
+        )
+        .await;
+
+    assert!(result.is_err());
 
     cleanup().await;
 }

@@ -23,6 +23,7 @@ export const updateVariableParamsSchema = z.object({
   localValue: changeJsonValueSchema.optional(),
   order: z.number().optional(),
   desc: changeStringSchema.optional(),
+  options: variableOptionsSchema.optional(),
 });
 
 export const variableInfoSchema = z.object({
@@ -31,6 +32,6 @@ export const variableInfoSchema = z.object({
   globalValue: jsonValueSchema.optional(),
   localValue: jsonValueSchema.optional(),
   disabled: z.boolean(),
-  order: z.number(),
+  order: z.number().optional(),
   desc: z.string().optional(),
 });

@@ -42,6 +42,6 @@ pub struct StreamEnvironmentsEvent {
     pub collection_id: Option<CollectionId>,
 
     pub name: String,
-    pub order: isize,
+    pub order: Option<isize>,
     pub expanded: bool,
 }
