@@ -22,7 +22,7 @@ import {
 interface UseDraggableNodeProps {
   node: TreeCollectionNode;
   parentNode: TreeCollectionNode;
-  triggerRef: RefObject<HTMLButtonElement>;
+  triggerRef: RefObject<HTMLDivElement>;
   dropTargetListRef: RefObject<HTMLLIElement>;
   isLastChild: boolean;
   isRootNode: boolean;

@@ -35,7 +35,7 @@ interface TreeNodeButtonProps {
   isChildDropBlocked: boolean | null;
 }
 
-const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
+const TreeNodeButton = forwardRef<HTMLDivElement, TreeNodeButtonProps>(
   (
     {
       node,
@@ -111,10 +111,12 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
     return (
       <ActionMenu.Root modal={false}>
         <ActionMenu.Trigger asChild openOnRightClick>
-          <button
+          <div
             ref={ref}
             onClick={handleLabelClick}
             className={cn("group/TreeNode relative flex min-h-[28px] w-full min-w-0 cursor-pointer items-center")}
+            role="button"
+            tabIndex={0}
           >
             {isChildDropBlocked === null && <ActiveNodeIndicator isActive={activePanelId === node.id} />}
 
@@ -202,7 +204,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                 </ul>,
                 preview
               )}
-          </button>
+          </div>
         </ActionMenu.Trigger>
         <ActionMenu.Portal>
           <ActionMenu.Content>

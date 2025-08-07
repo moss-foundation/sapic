@@ -26,7 +26,7 @@ export interface TreeNodeComponentProps {
 export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = false }: TreeNodeComponentProps) => {
   const { id } = useContext(TreeContext);
 
-  const triggerRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
   const dropTargetListRef = useRef<HTMLLIElement>(null);
 
   const { deleteAndUpdatePeers } = useDeleteAndUpdatePeers(id, node, parentNode);
