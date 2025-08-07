@@ -124,6 +124,7 @@ where
         &self,
         _ctx: &R::AsyncContext,
     ) -> Pin<Box<dyn Stream<Item = EnvironmentItemDescription> + Send + '_>> {
+        // FIXME: Reconsider this mechanism. We might need to rescan it here.
         let state = self.state.clone();
 
         Box::pin(async_stream::stream! {

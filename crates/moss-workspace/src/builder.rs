@@ -1,6 +1,7 @@
 use joinerror::ResultExt;
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::AppRuntime;
+use moss_environment::builder::EnvironmentBuilder;
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
 use std::{cell::LazyCell, path::Path, sync::Arc};
@@ -10,10 +11,8 @@ use crate::{
     edit::WorkspaceEdit,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
     services::{
-        collection_service::CollectionService,
-        environment_service::{CreateEnvironmentItemParams, EnvironmentService},
-        layout_service::LayoutService,
-        storage_service::StorageService,
+        collection_service::CollectionService, environment_service::EnvironmentService,
+        layout_service::LayoutService, storage_service::StorageService,
     },
 };
 
@@ -50,7 +49,7 @@ impl WorkspaceBuilder {
         Self { fs }
     }
 
-    pub async fn initialize(
+    pub async fn initialize<R: AppRuntime>(
         fs: Arc<dyn FileSystem>,
         params: CreateWorkspaceParams,
     ) -> joinerror::Result<()> {
@@ -67,6 +66,18 @@ impl WorkspaceBuilder {
         )
         .await
         .join_err::<()>(format!("failed to create manifest file"))?;
+
+        for env in PREDEFINED_ENVIRONMENTS.iter() {
+            EnvironmentBuilder::new(fs.clone())
+                .initialize(moss_environment::builder::CreateEnvironmentParams {
+                    name: env.name.clone(),
+                    abs_path: &params.abs_path.join(dirs::ENVIRONMENTS_DIR),
+                    color: env.color.clone(),
+                    order: env.order,
+                })
+                .await
+                .join_err_with::<()>(|| format!("failed to initialize environment {}", env.name))?;
+        }
 
         Ok(())
     }
@@ -124,7 +135,7 @@ impl WorkspaceBuilder {
     ) -> joinerror::Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
 
-        WorkspaceBuilder::initialize(self.fs.clone(), params.clone())
+        WorkspaceBuilder::initialize::<R>(self.fs.clone(), params.clone())
             .await
             .join_err::<()>("failed to initialize workspace")?;
 
@@ -144,21 +155,6 @@ impl WorkspaceBuilder {
             storage_service.clone(),
         )
         .await?;
-
-        for env in PREDEFINED_ENVIRONMENTS.iter() {
-            environment_service
-                .create_environment(
-                    ctx,
-                    CreateEnvironmentItemParams {
-                        collection_id: None,
-                        name: env.name.clone(),
-                        order: env.order,
-                        color: env.color.clone(),
-                    },
-                )
-                .await
-                .join_err_with::<()>(|| format!("failed to initialize environment {}", env.name))?;
-        }
 
         let edit = WorkspaceEdit::new(self.fs.clone(), params.abs_path.join(MANIFEST_FILE_NAME));
 
