@@ -134,9 +134,6 @@
   "Folder": {
     "identical": true
   },
-  "FolderActive": {
-    "identical": false
-  },
   "Get": {
     "identical": true
   },
@@ -185,9 +182,6 @@
   "MoreVertical": {
     "identical": true
   },
-  "NewFolder": {
-    "identical": true
-  },
   "NewWorkspace": {
     "identical": true
   },
@@ -210,12 +204,6 @@
     "identical": true
   },
   "OpenPanelRightFilled": {
-    "identical": true
-  },
-  "OpenWorkspace": {
-    "identical": true
-  },
-  "OpenWorkspaceActive": {
     "identical": true
   },
   "PersistenceRelationship": {
