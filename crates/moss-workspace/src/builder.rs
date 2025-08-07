@@ -155,7 +155,6 @@ impl WorkspaceBuilder {
                         order: env.order,
                         color: env.color.clone(),
                     },
-                    storage_service.clone(),
                 )
                 .await
                 .join_err_with::<()>(|| format!("failed to initialize environment {}", env.name))?;

@@ -11,7 +11,7 @@ impl<R: AppRuntime> Workspace<R> {
         input: DeleteEnvironmentInput,
     ) -> joinerror::Result<DeleteEnvironmentOutput> {
         self.environment_service
-            .delete_environment(ctx, &input.id, self.storage_service.clone())
+            .delete_environment(ctx, &input.id)
             .await?;
 
         Ok(DeleteEnvironmentOutput { id: input.id })

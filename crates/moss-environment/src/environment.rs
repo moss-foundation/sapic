@@ -13,9 +13,9 @@ use moss_hcl::{HclResultExt, hcl_to_json, json_to_hcl};
 use moss_storage::{
     common::VariableStore,
     primitives::segkey::SegKeyBuf,
-    storage::operations::{GetItem, PutItem, RemoveItem},
+    storage::operations::{GetItem, TransactionalPutItem, TransactionalRemoveItem},
 };
-use serde_json::{Error, Value as JsonValue};
+use serde_json::Value as JsonValue;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tokio::sync::watch;
 
@@ -223,44 +223,52 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                 },
             ));
 
-            let order = var_to_add.order;
+            // We don't want database failure to stop the function
+            let mut transaction =
+                continue_if_err!(self.variable_store.begin_write(&ctx).await, |err| {
+                    println!("failed to start a write transaction: {}", err);
+                });
 
-            let segkey_localvalue = SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE);
+            let local_value =
+                continue_if_err!(AnyValue::serialize(&var_to_add.local_value), |err| {
+                    println!("failed to serialize localvalue: {}", err);
+                });
 
-            match AnyValue::serialize(&var_to_add.local_value) {
-                Ok(local_value) => {
-                    if let Err(e) = PutItem::put(
-                        self.variable_store.as_ref(),
-                        ctx,
-                        segkey_localvalue,
-                        local_value,
-                    )
-                    .await
-                    {
-                        // TODO: log error
-                        println!("failed to put local_value in the db: {}", e);
-                    }
+            continue_if_err!(
+                TransactionalPutItem::put_with_context(
+                    self.variable_store.as_ref(),
+                    ctx,
+                    &mut transaction,
+                    SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE),
+                    local_value,
+                )
+                .await,
+                |err| {
+                    println!("failed to put local_value in the database: {}", err);
                 }
-                Err(e) => {
-                    println!("failed to serialize local_value: {}", e);
-                }
-            }
+            );
 
-            let segkey_order = SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_ORDER);
+            let order = continue_if_err!(AnyValue::serialize(&var_to_add.order), |err| {
+                println!("failed to serialize order: {}", err);
+            });
 
-            match AnyValue::serialize(&var_to_add.order) {
-                Ok(order) => {
-                    if let Err(e) =
-                        PutItem::put(self.variable_store.as_ref(), ctx, segkey_order, order).await
-                    {
-                        // TODO: log error
-                        println!("failed to put order in the db: {}", e);
-                    }
+            continue_if_err!(
+                TransactionalPutItem::put_with_context(
+                    self.variable_store.as_ref(),
+                    ctx,
+                    &mut transaction,
+                    SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_ORDER),
+                    order,
+                )
+                .await,
+                |err| {
+                    println!("failed to put local_value in the database: {}", err);
                 }
-                Err(e) => {
-                    println!("failed to serialize order: {}", e);
-                }
-            }
+            );
+
+            continue_if_err!(transaction.commit(), |err| {
+                println!("failed to commit transaction: {}", err);
+            });
         }
 
         for var_to_update in params.vars_to_update {
@@ -320,63 +328,6 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                     ));
                 }
                 _ => {}
-            }
-
-            let segkey_localvalue =
-                SegKeyBuf::from(var_to_update.id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE);
-            match var_to_update.local_value {
-                Some(ChangeJsonValue::Update(value)) => {
-                    match AnyValue::serialize(&value) {
-                        Ok(value) => {
-                            if let Err(e) = PutItem::put(
-                                self.variable_store.as_ref(),
-                                ctx,
-                                segkey_localvalue,
-                                value,
-                            )
-                            .await
-                            {
-                                // TODO: log error
-                                println!("failed to put local_value in the db: {}", e);
-                            }
-                        }
-                        Err(e) => {
-                            println!("failed to serialize local_value: {}", e);
-                        }
-                    }
-                }
-                Some(ChangeJsonValue::Remove) => {
-                    if let Err(e) =
-                        RemoveItem::remove(self.variable_store.as_ref(), ctx, segkey_localvalue)
-                            .await
-                    {
-                        // TODO: log error
-                        println!("failed to remove local_value from the db: {}", e);
-                    }
-                }
-                _ => {}
-            }
-
-            let segkey_order =
-                SegKeyBuf::from(var_to_update.id.as_str()).join(SEGKEY_VARIABLE_ORDER);
-            match var_to_update.order {
-                Some(order) => {
-                    match AnyValue::serialize(&order) {
-                        Ok(order) => {
-                            if let Err(e) =
-                                PutItem::put(self.variable_store.as_ref(), ctx, segkey_order, order)
-                                    .await
-                            {
-                                // TODO: log error
-                                println!("failed to put order in the db: {}", e);
-                            }
-                        }
-                        Err(e) => {
-                            println!("failed to serialize order: {}", e);
-                        }
-                    }
-                }
-                None => {}
             }
 
             match var_to_update.desc {
@@ -440,6 +391,77 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                     },
                 ));
             }
+
+            let mut transaction =
+                continue_if_err!(self.variable_store.begin_write(&ctx).await, |err| {
+                    println!("failed to start a write transaction: {}", err);
+                });
+
+            match var_to_update.local_value {
+                Some(ChangeJsonValue::Update(value)) => {
+                    let local_value = continue_if_err!(AnyValue::serialize(&value), |err| {
+                        println!("failed to serialize local_value: {}", err);
+                    });
+
+                    continue_if_err!(
+                        TransactionalPutItem::put_with_context(
+                            self.variable_store.as_ref(),
+                            ctx,
+                            &mut transaction,
+                            SegKeyBuf::from(var_to_update.id.as_str())
+                                .join(SEGKEY_VARIABLE_LOCALVALUE),
+                            local_value,
+                        )
+                        .await,
+                        |err| {
+                            println!("failed to put local_value in the database: {}", err);
+                        }
+                    );
+                }
+                Some(ChangeJsonValue::Remove) => {
+                    continue_if_err!(
+                        TransactionalRemoveItem::remove(
+                            self.variable_store.as_ref(),
+                            ctx,
+                            &mut transaction,
+                            SegKeyBuf::from(var_to_update.id.as_str())
+                                .join(SEGKEY_VARIABLE_LOCALVALUE),
+                        )
+                        .await,
+                        |err| {
+                            println!("failed to remove local_value in the database: {}", err);
+                        }
+                    );
+                }
+                _ => {}
+            }
+
+            match var_to_update.order {
+                Some(order) => {
+                    let order = continue_if_err!(AnyValue::serialize(&order), |err| {
+                        println!("failed to serialize order: {}", err);
+                    });
+
+                    continue_if_err!(
+                        TransactionalPutItem::put_with_context(
+                            self.variable_store.as_ref(),
+                            ctx,
+                            &mut transaction,
+                            SegKeyBuf::from(var_to_update.id.as_str()).join(SEGKEY_VARIABLE_ORDER),
+                            order,
+                        )
+                        .await,
+                        |err| {
+                            println!("failed to put order in the database: {}", err);
+                        }
+                    )
+                }
+                None => {}
+            }
+
+            continue_if_err!(transaction.commit(), |err| {
+                println!("failed to commit transaction: {}", err);
+            });
         }
 
         for id in params.vars_to_delete {
@@ -455,21 +477,40 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                 },
             ));
 
-            let segkey_localvalue = SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE);
-            if let Err(e) =
-                RemoveItem::remove(self.variable_store.as_ref(), ctx, segkey_localvalue).await
-            {
-                // TODO: log error
-                println!("failed to remove local_value from the db: {}", e);
-            }
+            let mut transaction =
+                continue_if_err!(self.variable_store.begin_write(&ctx).await, |err| {
+                    println!("failed to start a write transaction: {}", err);
+                });
 
-            let segkey_order = SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_ORDER);
-            if let Err(e) =
-                RemoveItem::remove(self.variable_store.as_ref(), ctx, segkey_order).await
-            {
-                // TODO: log error
-                println!("failed to remove order from the db: {}", e);
-            }
+            continue_if_err!(
+                TransactionalRemoveItem::remove(
+                    self.variable_store.as_ref(),
+                    ctx,
+                    &mut transaction,
+                    SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE)
+                )
+                .await,
+                |err| {
+                    println!("failed to remove local_value in the database: {}", err);
+                }
+            );
+
+            continue_if_err!(
+                TransactionalRemoveItem::remove(
+                    self.variable_store.as_ref(),
+                    ctx,
+                    &mut transaction,
+                    SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_ORDER)
+                )
+                .await,
+                |err| {
+                    println!("failed to remove order in the database: {}", err);
+                }
+            );
+
+            continue_if_err!(transaction.commit(), |err| {
+                println!("failed to commit transaction: {}", err);
+            })
         }
 
         self.edit

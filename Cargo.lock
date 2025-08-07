@@ -3955,6 +3955,7 @@ dependencies = [
  "anyhow",
  "async-trait",
  "hcl-rs",
+ "joinerror",
  "moss_applib",
  "moss_db",
  "redb",

@@ -145,4 +145,12 @@ where
     }
 }
 
-impl<Context> VariableStore<Context> for VariableStoreImpl where Context: AnyAsyncContext {}
+#[async_trait]
+impl<Context> VariableStore<Context> for VariableStoreImpl
+where
+    Context: AnyAsyncContext,
+{
+    async fn begin_write(&self, ctx: &Context) -> joinerror::Result<Transaction> {
+        Ok(self.client.begin_write_with_context(ctx).await?)
+    }
+}

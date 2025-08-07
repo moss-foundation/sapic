@@ -1,8 +1,5 @@
 pub mod variable_store;
 
-use moss_applib::context::AnyAsyncContext;
-use moss_db::primitives::AnyValue;
-
 use crate::{
     primitives::segkey::SegKeyBuf,
     storage::operations::{
@@ -10,7 +7,10 @@ use crate::{
         TransactionalRemoveItem,
     },
 };
+use moss_applib::context::AnyAsyncContext;
+use moss_db::{Transaction, primitives::AnyValue};
 
+#[async_trait::async_trait]
 pub trait VariableStore<Context: AnyAsyncContext>:
     PutItem<Context, Key = SegKeyBuf, Entity = AnyValue>
     + TransactionalPutItem<Context, Key = SegKeyBuf, Entity = AnyValue>
@@ -21,4 +21,5 @@ pub trait VariableStore<Context: AnyAsyncContext>:
     + Send
     + Sync
 {
+    async fn begin_write(&self, ctx: &Context) -> joinerror::Result<Transaction>;
 }

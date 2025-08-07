@@ -87,6 +87,7 @@ where
     abs_path: PathBuf,
     fs: Arc<dyn FileSystem>,
     state: Arc<RwLock<ServiceState<R>>>,
+    storage_service: Arc<StorageService<R>>,
 }
 
 impl<R> ServiceMarker for EnvironmentService<R> where R: AppRuntime {}
@@ -110,6 +111,7 @@ where
             fs,
             abs_path,
             state: Arc::new(RwLock::new(ServiceState { environments })),
+            storage_service,
         })
     }
 
@@ -145,7 +147,6 @@ where
         ctx: &R::AsyncContext,
         id: &EnvironmentId,
         params: UpdateEnvironmentItemParams,
-        storage_service: Arc<StorageService<R>>,
     ) -> joinerror::Result<()> {
         let mut state = self.state.write().await;
         let environment_item = state
@@ -184,7 +185,11 @@ where
 
         if let Some(order) = params.order {
             environment_item.order = Some(order);
-            if let Err(e) = storage_service.put_environment_order(ctx, id, order).await {
+            if let Err(e) = self
+                .storage_service
+                .put_environment_order(ctx, id, order)
+                .await
+            {
                 // TODO: log error
                 println!("failed to put environment order in the db: {}", e);
             }
@@ -192,7 +197,8 @@ where
 
         if let Some(expanded) = params.expanded {
             environment_item.expanded = expanded;
-            let mut expanded_environments = storage_service
+            let mut expanded_environments = self
+                .storage_service
                 .get_expanded_environments(ctx)
                 .await
                 .unwrap_or_default();
@@ -203,7 +209,8 @@ where
                 expanded_environments.remove(&id);
             }
 
-            if let Err(e) = storage_service
+            if let Err(e) = self
+                .storage_service
                 .put_expanded_environments(ctx, &expanded_environments)
                 .await
             {
@@ -219,7 +226,6 @@ where
         &self,
         ctx: &R::AsyncContext,
         params: CreateEnvironmentItemParams,
-        storage_service: Arc<StorageService<R>>,
     ) -> joinerror::Result<EnvironmentItemDescription> {
         let environment = EnvironmentBuilder::new(self.fs.clone())
             .create::<R>(
@@ -229,7 +235,7 @@ where
                     color: params.color,
                     order: params.order,
                 },
-                storage_service.variable_store(),
+                self.storage_service.variable_store(),
             )
             .await?;
 
@@ -250,7 +256,8 @@ where
             },
         );
 
-        if let Err(e) = storage_service
+        if let Err(e) = self
+            .storage_service
             .put_environment_order(ctx, &desc.id, params.order)
             .await
         {
@@ -258,14 +265,16 @@ where
             println!("failed to put environment order in the db: {}", e);
         }
 
-        let mut expanded_environments = storage_service
+        let mut expanded_environments = self
+            .storage_service
             .get_expanded_environments(ctx)
             .await
             .unwrap_or_default();
 
         expanded_environments.insert(desc.id.clone());
 
-        if let Err(e) = storage_service
+        if let Err(e) = self
+            .storage_service
             .put_expanded_environments(ctx, &expanded_environments)
             .await
         {
@@ -286,7 +295,6 @@ where
         &self,
         ctx: &R::AsyncContext,
         id: &EnvironmentId,
-        storage_service: Arc<StorageService<R>>,
     ) -> joinerror::Result<()> {
         let mut state = self.state.write().await;
         if let Some(environment) = state.environments.remove(id) {
@@ -309,27 +317,29 @@ where
                 })?;
 
             // Remove environment from the database
-            let mut expanded_environments = storage_service
+            let mut expanded_environments = self
+                .storage_service
                 .get_expanded_environments(ctx)
                 .await
                 .unwrap_or_default();
 
             expanded_environments.remove(&id);
 
-            if let Err(e) = storage_service
+            if let Err(e) = self
+                .storage_service
                 .put_expanded_environments(ctx, &expanded_environments)
                 .await
             {
                 println!("failed to put expandedEnvironments in the db: {}", e);
             }
 
-            if let Err(e) = storage_service.remove_environment_order(ctx, id).await {
+            if let Err(e) = self.storage_service.remove_environment_order(ctx, id).await {
                 // TODO: log error
                 println!("failed to remove environment order in the db: {}", e);
             }
 
             // Remove all variables belonging to the deleted environment
-            let store = storage_service.variable_store();
+            let store = self.storage_service.variable_store();
             for id in desc.variables.keys() {
                 let segkey_localvalue =
                     SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE);

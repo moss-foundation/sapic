@@ -26,7 +26,6 @@ impl<R: AppRuntime> Workspace<R> {
                     order: input.order,
                     color: input.color.clone(),
                 },
-                self.storage_service.clone(),
             )
             .await?;
 

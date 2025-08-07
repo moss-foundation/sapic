@@ -130,8 +130,7 @@ async fn delete_environment_success() {
     // Check variables associated with the environment are removed from the database
     let variable_store = workspace.db().variable_store();
 
-    let segkey_localvalue =
-        SegKeyBuf::from(variable_id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE.as_str());
+    let segkey_localvalue = SegKeyBuf::from(variable_id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE);
 
     assert!(
         GetItem::get(variable_store.as_ref(), &ctx, segkey_localvalue,)
@@ -139,7 +138,7 @@ async fn delete_environment_success() {
             .is_err()
     );
 
-    let segkey_order = SegKeyBuf::from(variable_id.as_str()).join(SEGKEY_VARIABLE_ORDER.as_str());
+    let segkey_order = SegKeyBuf::from(variable_id.as_str()).join(SEGKEY_VARIABLE_ORDER);
 
     assert!(
         GetItem::get(variable_store.as_ref(), &ctx, segkey_order,)
