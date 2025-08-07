@@ -319,7 +319,7 @@ impl<R: AppRuntime> StorageService<R> {
         Ok(entity.deserialize()?)
     }
 
-    pub(super) async fn _remove_environment_order(
+    pub(super) async fn remove_environment_order(
         &self,
         ctx: &R::AsyncContext,
         id: &EnvironmentId,
@@ -359,7 +359,7 @@ impl<R: AppRuntime> StorageService<R> {
         Ok(entity.deserialize()?)
     }
 
-    pub(super) async fn _remove_environment_expanded(
+    pub(super) async fn remove_environment_expanded(
         &self,
         ctx: &R::AsyncContext,
         id: &EnvironmentId,

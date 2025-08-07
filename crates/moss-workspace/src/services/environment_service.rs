@@ -6,12 +6,15 @@ use moss_bindingutils::primitives::ChangeString;
 use moss_environment::{
     AnyEnvironment, Environment, ModifyEnvironmentParams,
     builder::{EnvironmentBuilder, EnvironmentLoadParams},
+    errors::ErrorIo,
     models::{
         primitives::{EnvironmentId, VariableId},
         types::{AddVariableParams, UpdateVariableParams},
     },
+    segments::{SEGKEY_VARIABLE_LOCALVALUE, SEGKEY_VARIABLE_ORDER},
 };
-use moss_fs::FileSystem;
+use moss_fs::{FileSystem, FsResultExt, RemoveOptions};
+use moss_storage::storage::operations::RemoveItem;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
@@ -263,7 +266,65 @@ where
         })
     }
 
-    // TODO: delete_environment?
+    pub async fn delete_environment(
+        &self,
+        ctx: &R::AsyncContext,
+        id: &EnvironmentId,
+        storage_service: Arc<StorageService<R>>,
+    ) -> joinerror::Result<()> {
+        let mut state = self.state.write().await;
+        if let Some(environment) = state.environments.remove(id) {
+            let abs_path = environment.abs_path().await;
+            let desc = environment.describe(ctx).await?;
+            self.fs
+                .remove_file(
+                    &abs_path,
+                    RemoveOptions {
+                        recursive: false,
+                        ignore_if_not_exists: true,
+                    },
+                )
+                .await
+                .join_err_with::<ErrorIo>(|| {
+                    format!(
+                        "failed to remove environment file at {}",
+                        abs_path.display()
+                    )
+                })?;
+
+            if let Err(e) = storage_service.remove_environment_expanded(ctx, id).await {
+                // TODO: log error
+                println!("failed to remove environment expanded in the db: {}", e);
+            }
+
+            if let Err(e) = storage_service.remove_environment_order(ctx, id).await {
+                // TODO: log error
+                println!("failed to remove environment order in the db: {}", e);
+            }
+
+            // Remove all variables belonging to the deleted environment
+            let store = storage_service.variable_store();
+            for var in desc.variables {
+                let segkey_localvalue = SEGKEY_VARIABLE_LOCALVALUE.join(var.id.as_str());
+
+                if let Err(e) = RemoveItem::remove(store.as_ref(), ctx, segkey_localvalue).await {
+                    // TODO: log error
+                    println!("failed to remove variable local value in the db: {}", e);
+                }
+
+                let segkey_order = SEGKEY_VARIABLE_ORDER.join(id.as_str());
+                if let Err(e) = RemoveItem::remove(store.as_ref(), ctx, segkey_order).await {
+                    // TODO: log error
+                    println!("failed to remove variable order in the db: {}", e);
+                }
+            }
+
+            Ok(())
+        } else {
+            // FIXME: Should deleting a non-existent environment be an error?
+            Ok(())
+        }
+    }
 }
 
 async fn collect_environments<R: AppRuntime>(
