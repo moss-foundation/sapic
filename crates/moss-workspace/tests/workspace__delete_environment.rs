@@ -1,6 +1,5 @@
 #![cfg(feature = "integration-tests")]
 
-use crate::shared::setup_test_workspace;
 use moss_environment::{
     AnyEnvironment,
     models::{
@@ -18,6 +17,8 @@ use moss_workspace::{
 use serde_json::Value as JsonValue;
 use std::collections::HashSet;
 use tauri::ipc::Channel;
+
+use crate::shared::setup_test_workspace;
 
 mod shared;
 #[tokio::test]

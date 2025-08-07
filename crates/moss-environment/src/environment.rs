@@ -1,10 +1,3 @@
-use crate::{
-    AnyEnvironment, DescribeEnvironment, ModifyEnvironmentParams,
-    configuration::{SourceFile, VariableDecl},
-    edit::EnvironmentEditing,
-    models::{primitives::VariableId, types::VariableInfo},
-    utils,
-};
 use derive_more::Deref;
 use joinerror::{OptionExt, ResultExt};
 use json_patch::{
@@ -13,20 +6,27 @@ use json_patch::{
 use moss_applib::AppRuntime;
 use moss_bindingutils::primitives::{ChangeJsonValue, ChangeString};
 use moss_common::continue_if_err;
-use moss_db::primitives::AnyValue;
+use moss_db::{DatabaseError, primitives::AnyValue};
 use moss_edit::json::EditOptions;
 use moss_fs::{FileSystem, FsResultExt};
 use moss_hcl::{HclResultExt, hcl_to_json, json_to_hcl};
 use moss_storage::{
     common::VariableStore,
-    primitives::segkey::{SegKey, SegKeyBuf},
+    primitives::segkey::SegKeyBuf,
     storage::operations::{GetItem, PutItem, RemoveItem},
 };
 use serde_json::Value as JsonValue;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tokio::sync::watch;
 
-use crate::segments::{SEGKEY_VARIABLE_LOCALVALUE, SEGKEY_VARIABLE_ORDER};
+use crate::{
+    AnyEnvironment, DescribeEnvironment, ModifyEnvironmentParams,
+    configuration::{SourceFile, VariableDecl},
+    edit::EnvironmentEditing,
+    models::{primitives::VariableId, types::VariableInfo},
+    segments::{SEGKEY_VARIABLE_LOCALVALUE, SEGKEY_VARIABLE_ORDER},
+    utils,
+};
 
 #[derive(Debug, Deref, Clone)]
 pub(super) struct EnvironmentPath {
@@ -98,20 +98,38 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
 
                 // TODO: log error when failed to fetch from the database
                 let local_value: Option<JsonValue> = {
-                    let segkey =
-                        SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE.as_str());
-                    GetItem::get(self.variable_store.as_ref(), ctx, segkey)
+                    let segkey = SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE);
+
+                    match GetItem::get(self.variable_store.as_ref(), ctx, segkey)
                         .await
-                        .ok()
-                        .and_then(|v| v.deserialize().ok())
+                        .and_then(|v| {
+                            v.deserialize::<JsonValue>()
+                                .map_err(|e| DatabaseError::Serialization(e.to_string()))
+                        }) {
+                        Ok(value) => Some(value),
+                        Err(e) => {
+                            // TODO: log error
+                            println!("failed to fetch local_value from the database: {}", e);
+                            None
+                        }
+                    }
                 };
 
                 let order: Option<isize> = {
-                    let segkey = SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_ORDER.as_str());
-                    GetItem::get(self.variable_store.as_ref(), ctx, segkey)
+                    let segkey = SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_ORDER);
+                    match GetItem::get(self.variable_store.as_ref(), ctx, segkey)
                         .await
-                        .ok()
-                        .and_then(|v| v.deserialize().ok())
+                        .and_then(|v| {
+                            v.deserialize::<isize>()
+                                .map_err(|e| DatabaseError::Serialization(e.to_string()))
+                        }) {
+                        Ok(order) => Some(order),
+                        Err(e) => {
+                            // TODO: log error
+                            println!("failed to fetch order from the database: {}", e);
+                            None
+                        }
+                    }
                 };
 
                 variables.insert(
@@ -207,8 +225,7 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
 
             let order = var_to_add.order;
 
-            let segkey_localvalue =
-                SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE.as_str());
+            let segkey_localvalue = SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE);
             if let Err(e) = PutItem::put(
                 self.variable_store.as_ref(),
                 ctx,
@@ -221,7 +238,7 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                 println!("failed to put local_value in the db: {}", e);
             }
 
-            let segkey_order = SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_ORDER.as_str());
+            let segkey_order = SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_ORDER);
             if let Err(e) = PutItem::put(
                 self.variable_store.as_ref(),
                 ctx,
@@ -296,8 +313,8 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                 _ => {}
             }
 
-            let segkey_localvalue = SegKeyBuf::from(var_to_update.id.as_str())
-                .join(SEGKEY_VARIABLE_LOCALVALUE.as_str());
+            let segkey_localvalue =
+                SegKeyBuf::from(var_to_update.id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE);
             match var_to_update.local_value {
                 Some(ChangeJsonValue::Update(value)) => {
                     if let Err(e) = PutItem::put(
@@ -325,7 +342,7 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
             }
 
             let segkey_order =
-                SegKeyBuf::from(var_to_update.id.as_str()).join(SEGKEY_VARIABLE_ORDER.as_str());
+                SegKeyBuf::from(var_to_update.id.as_str()).join(SEGKEY_VARIABLE_ORDER);
             match var_to_update.order {
                 Some(order) => {
                     if let Err(e) = PutItem::put(
@@ -419,8 +436,7 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                 },
             ));
 
-            let segkey_localvalue =
-                SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE.as_str());
+            let segkey_localvalue = SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE);
             if let Err(e) =
                 RemoveItem::remove(self.variable_store.as_ref(), ctx, segkey_localvalue).await
             {
@@ -428,7 +444,7 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                 println!("failed to remove local_value from the db: {}", e);
             }
 
-            let segkey_order = SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_ORDER.as_str());
+            let segkey_order = SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_ORDER);
             if let Err(e) =
                 RemoveItem::remove(self.variable_store.as_ref(), ctx, segkey_order).await
             {

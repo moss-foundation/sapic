@@ -1,7 +1,3 @@
-use crate::{
-    dirs, errors::ErrorNotFound, models::primitives::CollectionId,
-    services::storage_service::StorageService,
-};
 use derive_more::Deref;
 use futures::Stream;
 use joinerror::{OptionExt, ResultExt};
@@ -26,6 +22,11 @@ use std::{
     sync::Arc,
 };
 use tokio::sync::RwLock;
+
+use crate::{
+    dirs, errors::ErrorNotFound, models::primitives::CollectionId,
+    services::storage_service::StorageService,
+};
 
 pub struct CreateEnvironmentItemParams {
     pub collection_id: Option<CollectionId>,
@@ -331,15 +332,14 @@ where
             let store = storage_service.variable_store();
             for id in desc.variables.keys() {
                 let segkey_localvalue =
-                    SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE.as_str());
+                    SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE);
 
                 if let Err(e) = RemoveItem::remove(store.as_ref(), ctx, segkey_localvalue).await {
                     // TODO: log error
                     println!("failed to remove variable local value in the db: {}", e);
                 }
 
-                let segkey_order =
-                    SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_ORDER.as_str());
+                let segkey_order = SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_ORDER);
                 if let Err(e) = RemoveItem::remove(store.as_ref(), ctx, segkey_order).await {
                     // TODO: log error
                     println!("failed to remove variable order in the db: {}", e);
