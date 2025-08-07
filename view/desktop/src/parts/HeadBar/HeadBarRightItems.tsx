@@ -31,7 +31,7 @@ export const HeadBarRightItems = ({
   const isWindowsOrLinux = os === "windows" || os === "linux";
 
   return (
-    <div className="flex h-full items-center justify-end">
+    <div className="flex h-full items-center justify-end" data-tauri-drag-region>
       <div className="flex items-center">
         {selectedWorkspace && (
           <ModeToggle className="mr-2 border-1 border-[var(--moss-headBar-border-color)]" compact={isLarge} />
