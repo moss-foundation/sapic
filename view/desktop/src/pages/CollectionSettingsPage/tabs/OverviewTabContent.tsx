@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { InputOutlined } from "@/components";
 import { DeleteCollectionModal } from "@/components/Modals/Collection/DeleteCollectionModal";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
-import { useCollectionsTrees, useModal, useStreamedCollections, useUpdateCollection } from "@/hooks";
+import { useModal, useStreamedCollections, useUpdateCollection } from "@/hooks";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 
 import { CollectionDangerZoneSection } from "../CollectionDangerZoneSection";
@@ -18,9 +18,6 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
   const { mutateAsync: updateCollection } = useUpdateCollection();
 
   const collection = streamedCollections?.find((collection) => collection.id === params.collectionId);
-
-  const { collectionsTrees } = useCollectionsTrees();
-  const collectionTree = collectionsTrees.find((tree) => tree.id === params.collectionId);
 
   const { showModal, closeModal, openModal } = useModal();
 

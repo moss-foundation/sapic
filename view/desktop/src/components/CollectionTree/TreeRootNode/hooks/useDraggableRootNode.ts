@@ -22,6 +22,7 @@ import {
   getLocationTreeNodeData,
   getSourceTreeNodeData,
   hasAnotherDirectDescendantWithSimilarName,
+  hasDirectSimilarDescendant,
   isSourceTreeNode,
   isSourceTreeRootNode,
 } from "../../utils";
@@ -187,11 +188,11 @@ export const evaluateTreeNodeOperations = (
 ): {
   [TKey in Operation]?: Availability;
 } => {
-  const hasSimilarDescendantName = hasAnotherDirectDescendantWithSimilarName(dropTarget, sourceNode.node);
+  const hasSimilarDescendant = hasDirectSimilarDescendant(dropTarget, sourceNode.node);
 
   return {
     "reorder-before": "not-available",
     "reorder-after": "not-available",
-    combine: hasSimilarDescendantName ? "blocked" : "available",
+    combine: hasSimilarDescendant ? "blocked" : "available",
   };
 };

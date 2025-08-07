@@ -21,6 +21,7 @@ export const hasDirectSimilarDescendant = (parentNode: TreeCollectionNode, dropN
     (child) => child.id === dropNode.id || child.name.toLowerCase() === dropNode.name.toLowerCase()
   );
 };
+
 export const hasAnotherDirectDescendantWithSimilarName = (
   parentNode: TreeCollectionNode,
   dropNode: TreeCollectionNode

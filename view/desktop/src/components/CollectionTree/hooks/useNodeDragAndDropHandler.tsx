@@ -316,10 +316,16 @@ export const useNodeDragAndDropHandler = () => {
         const locationTreeNodeData = getLocationTreeNodeData(location);
         const locationTreeRootNodeData = getLocationTreeRootNodeData(location);
 
-        const operation = getInstructionFromLocation(location)?.operation;
+        const instruction = getInstructionFromLocation(location);
+        const operation = instruction?.operation;
 
         if (!sourceTreeNodeData) {
           console.warn("can't drop: no source");
+          return;
+        }
+
+        if (instruction?.blocked) {
+          console.warn("can't drop: blocked");
           return;
         }
 
