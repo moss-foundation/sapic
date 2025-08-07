@@ -17,6 +17,7 @@ import {
   getSourceTreeNodeData,
   hasAnotherDirectDescendantWithSimilarName,
   hasDescendant,
+  isSourceTreeNode,
 } from "../../utils";
 
 interface UseDraggableNodeProps {
@@ -57,7 +58,7 @@ export const useDraggableNode = ({
           return !isRootNode;
         },
         getInitialData: () => ({
-          type: "TreeNode",
+          type: "TreeCollectionNode",
           data: {
             collectionId: id,
             repository,
@@ -85,7 +86,7 @@ export const useDraggableNode = ({
         element,
         getData: ({ input, element, source }) => {
           const data = {
-            type: "TreeNode",
+            type: "TreeCollectionNode",
             data: {
               collectionId: id,
               repository,
@@ -122,7 +123,7 @@ export const useDraggableNode = ({
           });
         },
         canDrop({ source }) {
-          return source.data.type === "TreeNode";
+          return isSourceTreeNode(source);
         },
         onDrag({ location, source, self }) {
           const sourceTarget = getSourceTreeNodeData(source);
@@ -147,7 +148,7 @@ export const useDraggableNode = ({
       dropTargetForElements({
         element: dropTargetListElement,
         getData: () => ({
-          type: "TreeNode",
+          type: "TreeCollectionNode",
           data: {
             collectionId: id,
             repository,
@@ -192,12 +193,12 @@ export const useDraggableNode = ({
 };
 
 const isReorderAvailable = (sourceTarget: DragNode, dropTarget: DropNode): Availability => {
-  if (sourceTarget.node.class !== dropTarget.node.class) {
-    return "blocked";
-  }
-
   if (sourceTarget.node.id === dropTarget.node.id) {
     return "not-available";
+  }
+
+  if (sourceTarget.node.class !== dropTarget.node.class) {
+    return "blocked";
   }
 
   if (hasDescendant(sourceTarget.node, dropTarget.node)) {

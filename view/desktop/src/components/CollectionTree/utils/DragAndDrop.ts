@@ -11,7 +11,7 @@ import { hasAnotherDirectDescendantWithSimilarName, hasDescendant } from "./Tree
 
 //source
 export const getSourceTreeNodeData = (source: ElementDragPayload): DragNode | null => {
-  if (source.data.type !== "TreeNode") {
+  if (source.data.type !== "TreeCollectionNode") {
     return null;
   }
 
@@ -19,13 +19,13 @@ export const getSourceTreeNodeData = (source: ElementDragPayload): DragNode | nu
 };
 
 export const isSourceTreeNode = (source: ElementDragPayload): boolean => {
-  return source.data.type === "TreeNode";
+  return source.data.type === "TreeCollectionNode";
 };
 
 //location
 export const getLocationTreeNodeData = (location: DragLocationHistory): DropNode | null => {
   if (location.current.dropTargets.length === 0) return null;
-  if (location.current.dropTargets[0].data.type !== "TreeNode") return null;
+  if (location.current.dropTargets[0].data.type !== "TreeCollectionNode") return null;
 
   const instruction = extractInstruction(location.current.dropTargets[0].data);
 
@@ -66,7 +66,7 @@ export const getInstructionFromLocation = (location: DragLocationHistory): Instr
 //other checks
 export const doesLocationHaveTreeNode = (location: DragLocationHistory): boolean => {
   if (location.current.dropTargets.length === 0) return false;
-  return location.current.dropTargets[0].data.type === "TreeNode";
+  return location.current.dropTargets[0].data.type === "TreeCollectionNode";
 };
 
 export const getAllNestedEntries = (node: TreeCollectionNode): EntryInfo[] => {

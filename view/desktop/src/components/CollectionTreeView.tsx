@@ -39,7 +39,7 @@ export const CollectionTreeView = () => {
         type: "CollectionCreationZone",
       }),
       canDrop({ source }) {
-        return source.data.type === "TreeNode";
+        return isSourceTreeNode(source);
       },
       onDrop() {
         setShowCollectionCreationZone(false);
