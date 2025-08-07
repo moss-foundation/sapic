@@ -55,7 +55,7 @@ where
     pub collection_id: Option<CollectionId>,
     pub display_name: String,
     pub order: Option<isize>,
-    pub expanded: Option<bool>,
+    pub expanded: bool,
 
     #[deref]
     pub handle: Arc<Environment<R>>,
@@ -66,7 +66,7 @@ pub struct EnvironmentItemDescription {
     pub collection_id: Option<CollectionId>,
     pub display_name: String,
     pub order: Option<isize>,
-    pub expanded: Option<bool>,
+    pub expanded: bool,
     pub color: Option<String>,
     pub abs_path: PathBuf,
 }
@@ -191,13 +191,24 @@ where
         }
 
         if let Some(expanded) = params.expanded {
-            environment_item.expanded = Some(expanded);
+            environment_item.expanded = expanded;
+            let mut expanded_environments = storage_service
+                .get_expanded_environments(ctx)
+                .await
+                .unwrap_or_default();
+
+            if expanded {
+                expanded_environments.insert(id.clone());
+            } else {
+                expanded_environments.remove(&id);
+            }
+
             if let Err(e) = storage_service
-                .put_environment_expanded(ctx, id, expanded)
+                .put_expanded_environments(ctx, &expanded_environments)
                 .await
             {
                 // TODO: log error
-                println!("failed to put environment expanded in the db: {}", e);
+                println!("failed to put expandedEnvironments in the db: {}", e);
             }
         }
 
@@ -234,7 +245,7 @@ where
                 collection_id: params.collection_id.clone(),
                 display_name: params.name.clone(),
                 order: Some(params.order),
-                expanded: Some(true),
+                expanded: true,
                 handle: Arc::new(environment),
             },
         );
@@ -247,20 +258,25 @@ where
             println!("failed to put environment order in the db: {}", e);
         }
 
+        let mut expanded_environments = storage_service
+            .get_expanded_environments(ctx)
+            .await
+            .unwrap_or_default();
+
+        expanded_environments.insert(desc.id.clone());
+
         if let Err(e) = storage_service
-            .put_environment_expanded(ctx, &desc.id, true)
+            .put_expanded_environments(ctx, &expanded_environments)
             .await
         {
-            // TODO: log error
-            println!("failed to put environment expanded in the db: {}", e);
+            println!("failed to put expandedEnvironments in the db: {}", e);
         }
-
         Ok(EnvironmentItemDescription {
             id: desc.id.clone(),
             collection_id: params.collection_id,
             display_name: params.name.clone(),
             order: Some(params.order),
-            expanded: Some(true),
+            expanded: true,
             color: desc.color,
             abs_path,
         })
@@ -292,9 +308,18 @@ where
                     )
                 })?;
 
-            if let Err(e) = storage_service.remove_environment_expanded(ctx, id).await {
-                // TODO: log error
-                println!("failed to remove environment expanded in the db: {}", e);
+            let mut expanded_environments = storage_service
+                .get_expanded_environments(ctx)
+                .await
+                .unwrap_or_default();
+
+            expanded_environments.remove(&id);
+
+            if let Err(e) = storage_service
+                .put_expanded_environments(ctx, &expanded_environments)
+                .await
+            {
+                println!("failed to put expandedEnvironments in the db: {}", e);
             }
 
             if let Err(e) = storage_service.remove_environment_order(ctx, id).await {
@@ -340,6 +365,11 @@ async fn collect_environments<R: AppRuntime>(
         .await
         .map_err(|err| joinerror::Error::new::<()>(format!("failed to read directory: {}", err)))?; // TODO: specify a proper error type
 
+    let expanded_environments = storage_service
+        .get_expanded_environments(ctx)
+        .await
+        .unwrap_or_default();
+
     while let Some(entry) = read_dir.next_entry().await? {
         if entry.file_type().await?.is_dir() {
             continue;
@@ -364,10 +394,7 @@ async fn collect_environments<R: AppRuntime>(
             .get_environment_order(ctx, &desc.id)
             .await
             .ok();
-        let expanded = storage_service
-            .get_environment_expanded(ctx, &desc.id)
-            .await
-            .ok();
+        let expanded = expanded_environments.contains(&desc.id);
 
         environments.insert(
             desc.id.clone(),

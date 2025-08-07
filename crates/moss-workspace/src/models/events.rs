@@ -43,5 +43,5 @@ pub struct StreamEnvironmentsEvent {
 
     pub name: String,
     pub order: Option<isize>,
-    pub expanded: Option<bool>,
+    pub expanded: bool,
 }

@@ -332,44 +332,32 @@ impl<R: AppRuntime> StorageService<R> {
         Ok(())
     }
 
-    pub(super) async fn put_environment_expanded(
+    pub(super) async fn put_expanded_environments(
         &self,
         ctx: &R::AsyncContext,
-        id: &EnvironmentId,
-        expanded: bool,
+        expanded_environments: &HashSet<EnvironmentId>,
     ) -> joinerror::Result<()> {
         let store = self.storage.item_store();
-        let segkey = SEGKEY_ENVIRONMENT.join(id.as_str()).join("expanded");
 
-        PutItem::put(store.as_ref(), ctx, segkey, AnyValue::serialize(&expanded)?).await?;
+        PutItem::put(
+            store.as_ref(),
+            ctx,
+            segments::SEGKEY_EXPANDED_ENVIRONMENTS.to_segkey_buf(),
+            AnyValue::serialize(&expanded_environments)?,
+        )
+        .await?;
 
         Ok(())
     }
 
-    pub(super) async fn get_environment_expanded(
+    pub(super) async fn get_expanded_environments(
         &self,
         ctx: &R::AsyncContext,
-        id: &EnvironmentId,
-    ) -> joinerror::Result<bool> {
+    ) -> joinerror::Result<HashSet<EnvironmentId>> {
         let store = self.storage.item_store();
-        let segkey = SEGKEY_ENVIRONMENT.join(id.as_str()).join("expanded");
-
-        let entity = GetItem::get(store.as_ref(), ctx, segkey).await?;
-
-        Ok(entity.deserialize()?)
-    }
-
-    pub(super) async fn remove_environment_expanded(
-        &self,
-        ctx: &R::AsyncContext,
-        id: &EnvironmentId,
-    ) -> joinerror::Result<()> {
-        let store = self.storage.item_store();
-        let segkey = SEGKEY_ENVIRONMENT.join(id.as_str()).join("expanded");
-
-        RemoveItem::remove(store.as_ref(), ctx, segkey).await?;
-
-        Ok(())
+        let segkey = segments::SEGKEY_EXPANDED_ENVIRONMENTS.to_segkey_buf();
+        let value = GetItem::get(store.as_ref(), ctx, segkey).await?;
+        Ok(AnyValue::deserialize(&value)?)
     }
 }
 
