@@ -1,7 +1,6 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
-use image::codecs::png::FilterType::Up;
 use moss_bindingutils::primitives::{ChangeJsonValue, ChangeString};
 use moss_environment::{
     AnyEnvironment,

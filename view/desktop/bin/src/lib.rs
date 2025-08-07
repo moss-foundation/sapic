@@ -127,6 +127,7 @@ pub async fn run<R: TauriRuntime>() {
             commands::create_environment,
             commands::update_environment,
             commands::stream_environments,
+            commands::delete_environment,
             //
             // Collection
             //

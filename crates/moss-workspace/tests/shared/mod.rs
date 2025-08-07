@@ -112,7 +112,7 @@ pub async fn setup_test_workspace() -> (AsyncContext, Workspace<MockAppRuntime>,
     (ctx, workspace, cleanup_fn)
 }
 
-pub fn create_simple_editor_state() -> EditorPartStateInfo {
+pub fn _create_simple_editor_state() -> EditorPartStateInfo {
     // Create a simple grid with one leaf
     let leaf_data = EditorGridLeafData {
         views: vec!["panel1".to_string()],
@@ -175,10 +175,7 @@ pub fn create_simple_editor_state() -> EditorPartStateInfo {
     }
 }
 
-pub fn collection_key(id: &CollectionId) -> SegKeyBuf {
-    SEGKEY_COLLECTION.join(id)
-}
-
+#[allow(unused)]
 pub fn generate_random_icon(output_path: &Path) {
     // Create an empty RGB image buffer
     let mut img = ImageBuffer::new(128, 128);
