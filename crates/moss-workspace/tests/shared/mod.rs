@@ -13,19 +13,17 @@ use moss_git_hosting_provider::{
     gitlab::{auth::GitLabAuthAgentImpl, client::GitLabClient},
 };
 use moss_keyring::KeyringClientImpl;
-use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_testutils::random_name::random_workspace_name;
 use moss_workspace::{
     Workspace,
     builder::{CreateWorkspaceParams, WorkspaceBuilder},
     models::{
-        primitives::{CollectionId, EditorGridOrientation, PanelRenderer},
+        primitives::{EditorGridOrientation, PanelRenderer},
         types::{
             EditorGridLeafData, EditorGridNode, EditorGridState, EditorPanelState,
             EditorPartStateInfo,
         },
     },
-    storage::segments::SEGKEY_COLLECTION,
 };
 use rand::Rng;
 use std::{
