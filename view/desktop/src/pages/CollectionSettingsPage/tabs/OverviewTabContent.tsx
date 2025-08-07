@@ -24,7 +24,7 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
 
   const { showModal, closeModal, openModal } = useModal();
 
-  const [name, setName] = useState(collection?.name);
+  const [name, setName] = useState(collection?.name || "");
   const [repository, setRepository] = useState(collection?.repository || "github.com/moss-foundation/sapic");
 
   useEffect(() => {
@@ -47,7 +47,7 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
 
   const handleBlur = () => {
     if (!collection || !name) {
-      setName(collection?.name);
+      setName(collection?.name ?? "");
       return;
     }
 
