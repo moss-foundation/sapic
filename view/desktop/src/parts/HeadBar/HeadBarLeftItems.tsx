@@ -57,7 +57,7 @@ export const HeadBarLeftItems = ({
             placeholder="No workspace selected"
             showPlaceholder={!selectedWorkspace}
             labelClassName="text-md"
-            className="hover:!background-(--moss-icon-secondary-background-hover) h-[24px] min-w-[100px]"
+            className="hover:!background-(--moss-icon-secondary-background-hover) h-[24px] min-w-[46px]"
           />
         </ActionMenu.Trigger>
         <ActionMenu.Content>

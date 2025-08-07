@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+
 import Provider from "./Provider";
 
 interface AppProps {
@@ -6,7 +7,13 @@ interface AppProps {
 }
 
 const App = ({ children }: AppProps) => {
-  return <Provider>{children}</Provider>;
+  return (
+    <Provider>
+      {/* <div className="absolute top-0 left-1/3 z-50 h-full w-px bg-[royalblue]" />
+      <div className="absolute top-0 left-2/3 z-50 h-full w-px bg-[royalblue]" /> */}
+      {children}
+    </Provider>
+  );
 };
 
 export default App;

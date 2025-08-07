@@ -26,7 +26,7 @@ import { WorkspaceMenuProvider } from "./WorkspaceMenuProvider";
 
 export const HeadBar = () => {
   //FIXME: Hardoce OS type for testing
-  const os = type(); //"macos"; //
+  const os = type();
   const { showDebugPanels, setShowDebugPanels } = useTabbedPaneStore();
   const openPanel = useTabbedPaneStore((state) => state.openPanel);
   const { isMedium, isLarge, isXLarge, breakpoint } = useResponsive();
@@ -168,7 +168,7 @@ export const HeadBar = () => {
           <div
             className={cn("relative grid h-full w-full items-center justify-between gap-1", {
               "grid-cols-[1fr_max-content_1fr]": selectedWorkspace,
-              "grid-cols-[max-content_1fr]": !selectedWorkspace,
+              "grid-cols-[max-content_max-content]": !selectedWorkspace,
             })}
             data-tauri-drag-region
           >

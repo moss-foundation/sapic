@@ -65,6 +65,9 @@
   "CollapseAll": {
     "identical": true
   },
+  "Collection": {
+    "identical": false
+  },
   "Component": {
     "identical": true
   },

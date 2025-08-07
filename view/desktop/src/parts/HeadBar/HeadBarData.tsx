@@ -93,7 +93,7 @@ export const createAllWorkspacesMenuSection = (workspaces: ListWorkspacesOutput 
       id: `workspace:${workspace.id}`,
       type: "submenu",
       label: workspace.name,
-      icon: "WorkspaceActive" as Icons,
+      icon: "OpenWorkspaceActive" as Icons,
       items: createStandardMenuItems(workspace.id),
     })),
   };
@@ -105,13 +105,13 @@ export const baseWorkspaceMenuItems: MenuItemProps[] = [
     id: "new-workspace",
     type: "action",
     label: "New Workspace",
-    icon: "NewFolder" as Icons,
+    icon: "NewWorkspace" as Icons,
   },
   {
     id: "open-workspace",
     type: "action",
     label: "Open Workspace",
-    icon: "Folder" as Icons,
+    icon: "OpenWorkspace" as Icons,
   },
   {
     id: "separator-1",

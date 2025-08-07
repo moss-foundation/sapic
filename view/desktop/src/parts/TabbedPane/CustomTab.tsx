@@ -65,7 +65,11 @@ export const CustomTab = ({
   return (
     <div {...rest} onClick={handleClick} data-testid="dockview-custom-tab" className="dv-default-tab">
       <span className="dv-default-tab-content flex max-w-40 items-center gap-1">
-        {params?.node && <EntryIcon entry={params?.node} />}
+        {params?.iconType ? (
+          <Icon icon={params?.iconType} className="size-4" />
+        ) : params?.node ? (
+          <EntryIcon entry={params?.node} />
+        ) : null}
         <span className="truncate">{title}</span>
       </span>
 

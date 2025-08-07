@@ -43,6 +43,7 @@ export const TreeRootNodeButton = ({ node, searchInput, shouldRenderChildNodes }
       component: "CollectionSettings",
       params: {
         collectionId: id,
+        iconType: "Collection",
       },
     });
   };
