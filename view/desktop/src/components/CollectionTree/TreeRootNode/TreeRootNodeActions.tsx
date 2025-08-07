@@ -41,7 +41,7 @@ export const TreeRootNodeActions = ({
       <div className="z-10 flex items-center">
         {node.expanded && !searchInput && !isRenamingRootNode && (
           <div
-            className={`hidden items-center opacity-0 transition-[display,opacity] transition-discrete duration-100 group-hover:flex group-hover:opacity-100`}
+            className={`hidden items-center opacity-0 transition-[display,opacity] transition-discrete duration-100 group-hover/Tree:flex group-hover/Tree:opacity-100`}
           >
             {displayMode === "REQUEST_FIRST" && (
               <ActionButton
