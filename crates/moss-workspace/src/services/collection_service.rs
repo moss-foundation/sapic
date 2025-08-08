@@ -1,3 +1,7 @@
+use crate::{
+    dirs, models::primitives::CollectionId, services::storage_service::StorageService,
+    storage::segments::SEGKEY_COLLECTION,
+};
 use derive_more::{Deref, DerefMut};
 use futures::Stream;
 use joinerror::{OptionExt, ResultExt};
@@ -6,6 +10,7 @@ use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_collection::{
     Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
     builder::{CollectionCreateParams, CollectionLoadParams},
+    collection::CollectionSummary,
 };
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
 use std::{
@@ -15,11 +20,6 @@ use std::{
     sync::Arc,
 };
 use tokio::sync::RwLock;
-
-use crate::{
-    dirs, models::primitives::CollectionId, services::storage_service::StorageService,
-    storage::segments::SEGKEY_COLLECTION,
-};
 
 pub(crate) struct CollectionItemUpdateParams {
     pub name: Option<String>,
@@ -206,7 +206,7 @@ impl<R: AppRuntime> CollectionService<R> {
         &self,
         ctx: &R::AsyncContext,
         id: &CollectionId,
-    ) -> joinerror::Result<Option<CollectionItemDescription>> {
+    ) -> joinerror::Result<Option<PathBuf>> {
         let id_str = id.to_string();
         let abs_path = self.abs_path.join(id_str);
 
@@ -242,20 +242,8 @@ impl<R: AppRuntime> CollectionService<R> {
             txn.commit()?;
         }
 
-        if let Some(item) = item {
-            let manifest = item.handle.manifest().await;
-            let icon_path = item.icon_path();
-
-            Ok(Some(CollectionItemDescription {
-                id: id.to_owned(),
-                name: manifest.name,
-                order: item.order,
-                expanded: false,
-                repository: manifest.repository,
-                icon_path,
-                abs_path: item.abs_path().clone(),
-                external_path: None, // TODO: implement
-            }))
+        if let Some(_item) = item {
+            Ok(Some(abs_path))
         } else {
             Ok(None)
         }
@@ -319,20 +307,26 @@ impl<R: AppRuntime> CollectionService<R> {
         Box::pin(async_stream::stream! {
             let state_lock = state.read().await;
             for (id, item) in state_lock.collections.iter() {
-                let manifest = item.handle.manifest().await;
+                let summary = CollectionSummary::new(self.fs.clone(), item.abs_path().as_ref()).await;
+                if summary.is_err() {
+                    // TODO: log error
+                    println!("failed to parse collection {} manifest file", id.to_string());
+                    continue;
+                }
+                let summary = summary.unwrap();
+
                 let expanded = state_lock.expanded_items.contains(id);
                 let icon_path = item.icon_path();
 
                 yield CollectionItemDescription {
                     id: item.id.clone(),
-                    name: manifest.name,
+                    name: summary.name,
                     order: item.order,
                     expanded,
-                    repository: manifest.repository,
+                    repository: summary.repository,
                     icon_path,
                     abs_path: item.handle.abs_path().clone(),
                     external_path: None, // TODO: implement
-
                 };
             }
         })

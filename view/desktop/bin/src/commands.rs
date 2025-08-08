@@ -38,7 +38,7 @@ pub(super) async fn with_collection_timeout<R, T, F, Fut>(
 where
     R: AppRuntime,
     F: FnOnce(R::AsyncContext, Arc<Collection<R>>) -> Fut + Send + 'static,
-    Fut: std::future::Future<Output = joinerror::Result<T>> + Send + 'static, // TODO: use joinerror::Result instead when will the collection operations switch to using `joinerror::Result`
+    Fut: std::future::Future<Output = joinerror::Result<T>> + Send + 'static,
 {
     let timeout = options
         .as_ref()

@@ -1,13 +1,18 @@
 use anyhow::Result;
+use joinerror::ResultExt;
+use json_patch::{
+    AddOperation, PatchOperation, RemoveOperation, ReplaceOperation, jsonptr::PointerBuf,
+};
 use moss_applib::{
     AppRuntime, EventMarker,
     subscription::{Event, EventEmitter},
 };
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
+use moss_edit::json::EditOptions;
 use moss_environment::{environment::Environment, models::primitives::EnvironmentId};
-use moss_file::json::JsonFileHandle;
-use moss_fs::FileSystem;
+use moss_fs::{FileSystem, FsResultExt};
 use moss_git::url::normalize_git_url;
+use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
@@ -16,13 +21,42 @@ use std::{
 use tokio::sync::OnceCell;
 
 use crate::{
-    config::ConfigModel,
-    manifest::ManifestModel,
+    edit::CollectionEdit,
+    manifest::{MANIFEST_FILE_NAME, ManifestFile},
     services::{
         set_icon_service::SetIconService, storage_service::StorageService,
         worktree_service::WorktreeService,
     },
 };
+
+pub struct CollectionSummary {
+    pub name: String,
+    pub repository: Option<String>,
+}
+
+impl CollectionSummary {
+    pub async fn new(
+        fs: Arc<dyn FileSystem>,
+        abs_path: &Path,
+    ) -> joinerror::Result<CollectionSummary> {
+        debug_assert!(abs_path.is_absolute());
+
+        let manifest_path = abs_path.join(MANIFEST_FILE_NAME);
+
+        let rdr = fs.open_file(&manifest_path).await.join_err_with::<()>(|| {
+            format!("failed to open manifest file: {}", manifest_path.display())
+        })?;
+
+        let manifest: ManifestFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
+            format!("failed to parse manifest file: {}", manifest_path.display())
+        })?;
+
+        Ok(CollectionSummary {
+            name: manifest.name,
+            repository: manifest.repository,
+        })
+    }
+}
 
 pub struct EnvironmentItem<R: AppRuntime> {
     pub id: EnvironmentId,
@@ -49,16 +83,13 @@ pub struct Collection<R: AppRuntime> {
     #[allow(dead_code)]
     pub(super) fs: Arc<dyn FileSystem>,
     pub(super) abs_path: Arc<Path>,
-
+    pub(super) edit: CollectionEdit,
     pub(super) set_icon_service: SetIconService,
     pub(super) storage_service: Arc<StorageService<R>>,
     pub(super) worktree_service: Arc<WorktreeService<R>>,
 
     #[allow(dead_code)]
     pub(super) environments: OnceCell<EnvironmentMap<R>>,
-    pub(super) manifest: JsonFileHandle<ManifestModel>,
-    #[allow(dead_code)]
-    pub(super) config: JsonFileHandle<ConfigModel>,
 
     pub(super) on_did_change: EventEmitter<OnDidChangeEvent>,
 }
@@ -81,36 +112,48 @@ impl<R: AppRuntime> Collection<R> {
         self.set_icon_service.icon_path()
     }
 
-    pub async fn modify(&self, params: CollectionModifyParams) -> Result<()> {
-        if params.name.is_some() || params.repository.is_some() {
-            let normalized_repo = if let Some(ChangeString::Update(url)) = &params.repository {
-                Some(ChangeString::Update(normalize_git_url(url)?))
-            } else {
-                params.repository
-            };
+    pub async fn modify(&self, params: CollectionModifyParams) -> joinerror::Result<()> {
+        let mut patches = Vec::new();
 
-            self.manifest
-                .edit(
-                    |model| {
-                        model.name = params.name.unwrap_or(model.name.clone());
-                        match normalized_repo {
-                            None => {}
-                            Some(ChangeString::Remove) => {
-                                model.repository = None;
-                            }
-                            Some(ChangeString::Update(url)) => {
-                                model.repository = Some(url);
-                            }
-                        }
-                        Ok(())
+        if let Some(new_name) = params.name {
+            patches.push((
+                PatchOperation::Replace(ReplaceOperation {
+                    path: unsafe { PointerBuf::new_unchecked("/name") },
+                    value: JsonValue::String(new_name),
+                }),
+                EditOptions {
+                    create_missing_segments: false,
+                    ignore_if_not_exists: false,
+                },
+            ));
+        }
+
+        match params.repository {
+            Some(ChangeString::Update(url)) => {
+                let normalized_url = normalize_git_url(&url)?;
+                patches.push((
+                    PatchOperation::Add(AddOperation {
+                        path: unsafe { PointerBuf::new_unchecked("/repository") },
+                        value: JsonValue::String(normalized_url),
+                    }),
+                    EditOptions {
+                        create_missing_segments: false,
+                        ignore_if_not_exists: false,
                     },
-                    |model| {
-                        serde_json::to_string(model).map_err(|err| {
-                            anyhow::anyhow!("Failed to serialize JSON file: {}", err)
-                        })
+                ));
+            }
+            Some(ChangeString::Remove) => {
+                patches.push((
+                    PatchOperation::Remove(RemoveOperation {
+                        path: unsafe { PointerBuf::new_unchecked("/repository") },
+                    }),
+                    EditOptions {
+                        create_missing_segments: false,
+                        ignore_if_not_exists: true,
                     },
-                )
-                .await?;
+                ));
+            }
+            None => {}
         }
 
         match params.icon_path {
@@ -122,14 +165,13 @@ impl<R: AppRuntime> Collection<R> {
                 self.set_icon_service.remove_icon().await?;
             }
         }
+        self.edit
+            .edit(&patches)
+            .await
+            .join_err::<()>("failed to edit collection")?;
 
         Ok(())
     }
-
-    pub async fn manifest(&self) -> ManifestModel {
-        self.manifest.model().await
-    }
-
     pub async fn environments(&self) -> Result<&EnvironmentMap<R>> {
         let result = self
             .environments

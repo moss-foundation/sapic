@@ -2,11 +2,9 @@ use anyhow::anyhow;
 use derive_more::{Deref, DerefMut};
 use joinerror::OptionExt;
 use moss_applib::{AppRuntime, ServiceMarker};
-use moss_common::{api::OperationError, continue_if_err, continue_if_none};
+use moss_common::{continue_if_err, continue_if_none};
 use moss_db::primitives::AnyValue;
-use moss_fs::{
-    CreateOptions, FileSystem, FsError, RemoveOptions, desanitize_path, utils::SanitizedPath,
-};
+use moss_fs::{CreateOptions, FileSystem, RemoveOptions, desanitize_path, utils::SanitizedPath};
 use moss_hcl::HclResultExt;
 use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_text::sanitized::{desanitize, sanitize};
@@ -15,7 +13,6 @@ use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
-use thiserror::Error;
 use tokio::{
     fs,
     sync::{RwLock, mpsc},
@@ -35,70 +32,6 @@ use crate::{
     errors::{ErrorAlreadyExists, ErrorInvalidInput, ErrorInvalidKind, ErrorIo, ErrorNotFound},
     services::storage_service::StorageService,
 };
-
-#[derive(Error, Debug)]
-pub enum WorktreeError {
-    #[error("invalid input: {0}")]
-    InvalidInput(String),
-
-    #[error("invalid kind: {0}")]
-    InvalidKind(String),
-
-    #[error("worktree entry already exists: {0}")]
-    AlreadyExists(String),
-
-    #[error("worktree entry is not found: {0}")]
-    NotFound(String),
-
-    #[error("io error: {0}")]
-    Io(String),
-
-    #[error("internal error: {0}")]
-    Internal(String),
-
-    #[error("unknown error: {0}")]
-    Unknown(#[from] anyhow::Error),
-}
-
-impl From<moss_fs::FsError> for WorktreeError {
-    fn from(error: FsError) -> Self {
-        WorktreeError::Io(error.to_string())
-    }
-}
-
-impl From<hcl::Error> for WorktreeError {
-    fn from(error: hcl::Error) -> Self {
-        WorktreeError::Io(error.to_string())
-    }
-}
-
-impl From<moss_db::DatabaseError> for WorktreeError {
-    fn from(error: moss_db::DatabaseError) -> Self {
-        WorktreeError::Internal(error.to_string())
-    }
-}
-
-impl From<serde_json::Error> for WorktreeError {
-    fn from(error: serde_json::Error) -> Self {
-        WorktreeError::Internal(error.to_string())
-    }
-}
-
-impl From<WorktreeError> for OperationError {
-    fn from(error: WorktreeError) -> Self {
-        match error {
-            WorktreeError::InvalidInput(err) => OperationError::InvalidInput(err),
-            WorktreeError::InvalidKind(err) => OperationError::InvalidInput(err),
-            WorktreeError::AlreadyExists(err) => OperationError::AlreadyExists(err),
-            WorktreeError::NotFound(err) => OperationError::NotFound(err),
-            WorktreeError::Unknown(err) => OperationError::Unknown(err),
-            WorktreeError::Io(err) => OperationError::Internal(err.to_string()),
-            WorktreeError::Internal(err) => OperationError::Internal(err.to_string()),
-        }
-    }
-}
-
-// pub type WorktreeResult<T> = Result<T, WorktreeError>;
 
 #[derive(Debug)]
 struct ScanJob {
