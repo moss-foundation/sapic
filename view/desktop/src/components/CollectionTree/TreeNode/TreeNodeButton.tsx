@@ -63,7 +63,7 @@ const TreeNodeButton = forwardRef<HTMLDivElement, TreeNodeButtonProps>(
       if (node.kind === "Dir") {
         addOrFocusPanel({
           id: node.id,
-          title: `${node.name} Settings`,
+          title: node.name,
           params: {
             collectionId: id,
             node: {
@@ -88,7 +88,7 @@ const TreeNodeButton = forwardRef<HTMLDivElement, TreeNodeButtonProps>(
       } else {
         addOrFocusPanel({
           id: node.id,
-          title: `${node.name} Settings`,
+          title: node.name,
           params: {
             collectionId: id,
             node,
