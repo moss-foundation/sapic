@@ -66,7 +66,6 @@ const TreeNodeButton = forwardRef<HTMLDivElement, TreeNodeButtonProps>(
           title: `${node.name} Settings`,
           params: {
             collectionId: id,
-            iconType: node.kind,
             node: {
               ...node,
               expanded: true,
