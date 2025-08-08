@@ -94,7 +94,7 @@ const TreeNodeButton = forwardRef<HTMLDivElement, TreeNodeButtonProps>(
             collectionId: id,
             node,
           },
-          component: "Default",
+          component: node.class === "Request" ? "Request" : "Default",
         });
       }
     };
