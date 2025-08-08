@@ -51,7 +51,10 @@ async fn rename_collection_success() {
         .collection(&create_collection_output.id.into())
         .await
         .unwrap();
-    assert_eq!(collection.manifest().await.name, new_collection_name);
+    assert_eq!(
+        collection.summary().await.unwrap().name,
+        new_collection_name
+    );
 
     cleanup().await;
 }
@@ -206,7 +209,7 @@ async fn update_collection_repo() {
         .unwrap();
 
     assert_eq!(
-        collection.manifest().await.repository,
+        collection.summary().await.unwrap().repository,
         Some(new_normalized_repo.to_owned())
     );
 

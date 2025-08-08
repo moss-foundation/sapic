@@ -233,7 +233,7 @@ async fn create_collection_with_repo() {
     let id = create_collection_output.id;
     let collection = workspace.collection(&id).await.unwrap();
     assert_eq!(
-        collection.manifest().await.repository,
+        collection.summary().await.unwrap().repository,
         Some(normalized_repo.to_string())
     );
 

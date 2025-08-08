@@ -112,6 +112,9 @@ impl<R: AppRuntime> Collection<R> {
         self.set_icon_service.icon_path()
     }
 
+    pub async fn summary(&self) -> joinerror::Result<CollectionSummary> {
+        CollectionSummary::new(self.fs.clone(), self.abs_path().as_ref()).await
+    }
     pub async fn modify(&self, params: CollectionModifyParams) -> joinerror::Result<()> {
         let mut patches = Vec::new();
 
