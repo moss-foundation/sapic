@@ -3,6 +3,7 @@ use tauri::ipc::Channel as TauriChannel;
 
 use crate::{
     collection::Collection,
+    errors::ErrorInternal,
     models::{
         events::BatchUpdateEntryEvent,
         operations::{BatchUpdateEntryInput, BatchUpdateEntryKind, BatchUpdateEntryOutput},
@@ -20,17 +21,25 @@ impl<R: AppRuntime> Collection<R> {
             match entry {
                 BatchUpdateEntryKind::Item(input) => {
                     let output = self.update_item_entry(ctx, input).await?;
-                    if let Err(e) = channel.send(BatchUpdateEntryEvent::Item(output)) {
-                        // TODO: log error
-                        println!("error sending batch update event: {}", e);
-                    };
+                    channel
+                        .send(BatchUpdateEntryEvent::Item(output))
+                        .map_err(|e| {
+                            joinerror::Error::new::<ErrorInternal>(format!(
+                                "failed to send to the tauri channel: {}",
+                                e.to_string()
+                            ))
+                        })?;
                 }
                 BatchUpdateEntryKind::Dir(input) => {
                     let output = self.update_dir_entry(ctx, input).await?;
-                    if let Err(e) = channel.send(BatchUpdateEntryEvent::Dir(output)) {
-                        // TODO: log error
-                        println!("error sending batch update event: {}", e);
-                    };
+                    channel
+                        .send(BatchUpdateEntryEvent::Dir(output))
+                        .map_err(|e| {
+                            joinerror::Error::new::<ErrorInternal>(format!(
+                                "failed to send to the tauri channel: {}",
+                                e.to_string()
+                            ))
+                        })?;
                 }
             }
         }

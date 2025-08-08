@@ -12,6 +12,11 @@ pub mod storage;
 pub use builder::CollectionBuilder;
 pub use collection::{Collection, CollectionModifyParams};
 
+pub struct DescribeCollection {
+    pub name: String,
+    pub repository: Option<String>,
+}
+
 pub mod constants {
     pub const COLLECTION_ROOT_PATH: &str = "";
 

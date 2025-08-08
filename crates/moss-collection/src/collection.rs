@@ -20,7 +20,11 @@ use std::{
 };
 use tokio::sync::OnceCell;
 
+#[cfg(any(test, feature = "integration-tests"))]
+use moss_storage::CollectionStorage;
+
 use crate::{
+    DescribeCollection,
     edit::CollectionEdit,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
     services::{
@@ -28,35 +32,6 @@ use crate::{
         worktree_service::WorktreeService,
     },
 };
-
-pub struct CollectionSummary {
-    pub name: String,
-    pub repository: Option<String>,
-}
-
-impl CollectionSummary {
-    pub async fn new(
-        fs: Arc<dyn FileSystem>,
-        abs_path: &Path,
-    ) -> joinerror::Result<CollectionSummary> {
-        debug_assert!(abs_path.is_absolute());
-
-        let manifest_path = abs_path.join(MANIFEST_FILE_NAME);
-
-        let rdr = fs.open_file(&manifest_path).await.join_err_with::<()>(|| {
-            format!("failed to open manifest file: {}", manifest_path.display())
-        })?;
-
-        let manifest: ManifestFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
-            format!("failed to parse manifest file: {}", manifest_path.display())
-        })?;
-
-        Ok(CollectionSummary {
-            name: manifest.name,
-            repository: manifest.repository,
-        })
-    }
-}
 
 pub struct EnvironmentItem<R: AppRuntime> {
     pub id: EnvironmentId,
@@ -111,10 +86,27 @@ impl<R: AppRuntime> Collection<R> {
     pub fn icon_path(&self) -> Option<PathBuf> {
         self.set_icon_service.icon_path()
     }
+    pub async fn describe(&self) -> joinerror::Result<DescribeCollection> {
+        let manifest_path = self.abs_path.join(MANIFEST_FILE_NAME);
 
-    pub async fn summary(&self) -> joinerror::Result<CollectionSummary> {
-        CollectionSummary::new(self.fs.clone(), self.abs_path().as_ref()).await
+        let rdr = self
+            .fs
+            .open_file(&manifest_path)
+            .await
+            .join_err_with::<()>(|| {
+                format!("failed to open manifest file: {}", manifest_path.display())
+            })?;
+
+        let manifest: ManifestFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
+            format!("failed to parse manifest file: {}", manifest_path.display())
+        })?;
+
+        Ok(DescribeCollection {
+            name: manifest.name,
+            repository: manifest.repository,
+        })
     }
+
     pub async fn modify(&self, params: CollectionModifyParams) -> joinerror::Result<()> {
         let mut patches = Vec::new();
 
@@ -190,15 +182,7 @@ impl<R: AppRuntime> Collection<R> {
 
 #[cfg(any(test, feature = "integration-tests"))]
 impl<R: AppRuntime> Collection<R> {
-    pub fn set_icon_service(&self) -> &SetIconService {
-        &self.set_icon_service
-    }
-
-    pub fn storage_service(&self) -> Arc<StorageService<R>> {
-        self.storage_service.clone()
-    }
-
-    pub fn worktree_service(&self) -> Arc<WorktreeService<R>> {
-        self.worktree_service.clone()
+    pub fn db(&self) -> &Arc<dyn CollectionStorage<R::AsyncContext>> {
+        self.storage_service.storage()
     }
 }

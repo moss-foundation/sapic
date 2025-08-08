@@ -10,7 +10,6 @@ use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_collection::{
     Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
     builder::{CollectionCreateParams, CollectionLoadParams},
-    collection::CollectionSummary,
 };
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
 use std::{
@@ -307,13 +306,13 @@ impl<R: AppRuntime> CollectionService<R> {
         Box::pin(async_stream::stream! {
             let state_lock = state.read().await;
             for (id, item) in state_lock.collections.iter() {
-                let summary = CollectionSummary::new(self.fs.clone(), item.abs_path().as_ref()).await;
-                if summary.is_err() {
+                let desc = item.describe().await;
+                if desc.is_err() {
                     // TODO: log error
                     println!("failed to parse collection {} manifest file", id.to_string());
                     continue;
                 }
-                let summary = summary.unwrap();
+                let summary = desc.unwrap();
 
                 let expanded = state_lock.expanded_items.contains(id);
                 let icon_path = item.icon_path();

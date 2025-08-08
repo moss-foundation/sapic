@@ -4,9 +4,15 @@ pub mod shared;
 use futures;
 use moss_applib::{context::AsyncContext, mock::MockAppRuntime};
 use moss_collection::{
-    dirs, models::primitives::EntryKind, services::worktree_service::EntryDescription,
+    dirs,
+    models::{events::StreamEntriesEvent, operations::StreamEntriesInput, primitives::EntryKind},
+    services::worktree_service::EntryDescription,
 };
-use tokio::sync::mpsc;
+use std::{
+    path::PathBuf,
+    sync::{Arc, Mutex},
+};
+use tauri::ipc::{Channel as TauriChannel, InvokeResponseBody};
 
 use crate::shared::{
     create_test_collection, create_test_component_dir_entry, create_test_endpoint_dir_entry,
@@ -14,40 +20,45 @@ use crate::shared::{
 };
 
 // Helper function to scan entries using worktree directly
-// This bypasses the Tauri Channel requirement for testing
 async fn scan_entries_for_test(
     ctx: &AsyncContext,
     collection: &moss_collection::Collection<MockAppRuntime>,
     dir_name: &str,
 ) -> Vec<EntryDescription> {
-    let (tx, mut rx) = mpsc::unbounded_channel::<EntryDescription>();
+    let entries = Arc::new(Mutex::new(Vec::new()));
+    let entries_clone = entries.clone();
 
-    let dir_path = std::path::Path::new(dir_name);
+    collection
+        .stream_entries(
+            &ctx,
+            TauriChannel::new(move |body: InvokeResponseBody| {
+                if let InvokeResponseBody::Json(json_str) = body {
+                    if let Ok(event) = serde_json::from_str::<StreamEntriesEvent>(&json_str) {
+                        entries_clone.lock().unwrap().push(event);
+                    }
+                }
+                Ok(())
+            }),
+            StreamEntriesInput::ReloadPath(PathBuf::from(dir_name)),
+        )
+        .await
+        .unwrap();
 
-    let worktree_service = collection.worktree_service();
-
-    // Check if directory exists before scanning
-    let abs_dir = worktree_service.absolutize(dir_path);
-    if abs_dir.is_err() || !abs_dir.as_ref().unwrap().exists() {
-        return Vec::new(); // Return empty vec if directory doesn't exist
-    }
-
-    // Create empty sets for scanning
-    let expanded_entries = std::sync::Arc::new(std::collections::HashSet::new());
-    let all_entry_keys = std::sync::Arc::new(std::collections::HashMap::new());
-
-    let _result = worktree_service
-        .scan(&ctx, dir_path, expanded_entries, all_entry_keys, tx)
-        .await;
-
-    let mut entries = Vec::new();
-    while let Ok(entry) = rx.try_recv() {
-        entries.push(entry);
-    }
-
-    entries
+    (*entries.lock().unwrap())
+        .clone()
+        .into_iter()
+        .map(|event| EntryDescription {
+            id: event.0.id,
+            name: event.0.name,
+            path: event.0.path.raw.into(),
+            class: event.0.class,
+            kind: event.0.kind,
+            protocol: event.0.protocol,
+            order: event.0.order,
+            expanded: event.0.expanded,
+        })
+        .collect()
 }
-
 #[tokio::test]
 async fn stream_entries_empty_collection() {
     let (ctx, collection_path, collection) = create_test_collection().await;
@@ -61,6 +72,7 @@ async fn stream_entries_empty_collection() {
         dirs::SCHEMAS_DIR,
     ] {
         let entries = scan_entries_for_test(&ctx, &collection, dir).await;
+
         assert_eq!(
             entries.len(),
             1,

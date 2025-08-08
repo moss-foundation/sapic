@@ -179,8 +179,7 @@ async fn update_dir_entry_order() {
         .await
         .unwrap();
 
-    let storage_service = collection.storage_service();
-    let resource_store = storage_service.storage().resource_store();
+    let resource_store = collection.db().resource_store();
 
     // Check order was updated
     let order_key = SEGKEY_RESOURCE_ENTRY.join(&id.to_string()).join("order");
@@ -202,8 +201,7 @@ async fn expand_and_collapse_dir_entry() {
 
     let id = create_test_component_dir_entry(&ctx, &mut collection, &entry_name).await;
 
-    let storage_service = collection.storage_service();
-    let resource_store = storage_service.storage().resource_store();
+    let resource_store = collection.db().resource_store();
 
     // Expanding the entry
     let _ = collection

@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 use crate::models::types::{AfterUpdateDirEntryDescription, AfterUpdateItemEntryDescription};
@@ -6,7 +6,7 @@ use crate::models::types::{AfterUpdateDirEntryDescription, AfterUpdateItemEntryD
 use super::types::EntryInfo;
 
 /// @category Event
-#[derive(Debug, Serialize, TS)]
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "events.ts")]
 pub struct StreamEntriesEvent(pub EntryInfo);
 

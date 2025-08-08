@@ -75,9 +75,7 @@ async fn create_dir_entry_with_order() {
     let expected_dir = collection_path.join(&entry_path).join(&entry_name);
     assert!(expected_dir.exists());
 
-    // TODO: Check that order is correctly stored
-    let storage_service = collection.storage_service();
-    let resource_store = storage_service.storage().resource_store();
+    let resource_store = collection.db().resource_store();
 
     // Check order was updated
     let order_key = SEGKEY_RESOURCE_ENTRY.join(&id.to_string()).join("order");

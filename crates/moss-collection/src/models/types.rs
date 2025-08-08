@@ -96,7 +96,7 @@ pub struct AfterUpdateItemEntryDescription {
 }
 
 /// @category Type
-#[derive(Debug, Serialize, TS)]
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
