@@ -32,13 +32,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
   const { bottomPane, sideBar, sideBarPosition } = useAppResizableLayoutStore();
 
   // Fetch workspace state to know when initialization is complete
-  const {
-    data: workspaceState,
-    isFetched,
-    isSuccess,
-  } = useDescribeWorkspaceState({
-    enabled: !!workspace,
-  });
+  const { data: workspaceState, isFetched, isSuccess } = useDescribeWorkspaceState();
 
   // Reset update permission when workspace changes
   useEffect(() => {

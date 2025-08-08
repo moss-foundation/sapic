@@ -63,10 +63,9 @@ const TreeNodeButton = forwardRef<HTMLDivElement, TreeNodeButtonProps>(
       if (node.kind === "Dir") {
         addOrFocusPanel({
           id: node.id,
-          title: `${node.name} Settings`,
+          title: node.name,
           params: {
             collectionId: id,
-            iconType: node.kind,
             node: {
               ...node,
               expanded: true,
@@ -86,6 +85,16 @@ const TreeNodeButton = forwardRef<HTMLDivElement, TreeNodeButtonProps>(
             },
           });
         }
+      } else {
+        addOrFocusPanel({
+          id: node.id,
+          title: node.name,
+          params: {
+            collectionId: id,
+            node,
+          },
+          component: node.class === "Request" ? "Request" : "Default",
+        });
       }
     };
 

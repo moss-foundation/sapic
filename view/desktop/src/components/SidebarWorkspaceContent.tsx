@@ -1,10 +1,11 @@
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
-import CollectionTreeView from "./CollectionTreeView";
 import {
   TREE_VIEW_GROUP_COLLECTIONS,
   TREE_VIEW_GROUP_ENVIRONMENTS,
   TREE_VIEW_GROUP_MOCK_SERVERS,
 } from "@repo/moss-workspace";
+
+import CollectionTreeView from "./CollectionTreeView";
 
 interface SidebarWorkspaceContentProps {
   workspaceName?: string | null;
@@ -13,7 +14,7 @@ interface SidebarWorkspaceContentProps {
 }
 
 export const SidebarWorkspaceContent = ({ workspaceName, groupId = "default" }: SidebarWorkspaceContentProps) => {
-  const { data: workspaceState, isLoading: isLoadingWorkspace, error: workspaceError } = useDescribeWorkspaceState({});
+  const { data: workspaceState, isLoading: isLoadingWorkspace, error: workspaceError } = useDescribeWorkspaceState();
 
   // Show loading state while workspace data is loading
   if (isLoadingWorkspace) {
