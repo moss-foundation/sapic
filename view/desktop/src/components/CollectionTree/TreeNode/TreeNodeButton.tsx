@@ -86,6 +86,16 @@ const TreeNodeButton = forwardRef<HTMLDivElement, TreeNodeButtonProps>(
             },
           });
         }
+      } else {
+        addOrFocusPanel({
+          id: node.id,
+          title: `${node.name} Settings`,
+          params: {
+            collectionId: id,
+            node,
+          },
+          component: "Default",
+        });
       }
     };
 
