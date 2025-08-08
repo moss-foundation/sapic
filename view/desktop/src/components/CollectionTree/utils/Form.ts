@@ -8,7 +8,7 @@ import {
 
 export const validateName = (
   name: string,
-  restrictedNames: (string | number)[]
+  restrictedNames: string[]
 ): {
   isValid: boolean;
   message: string;
@@ -20,7 +20,10 @@ export const validateName = (
     };
   }
 
-  if (restrictedNames.includes(name)) {
+  const lowerCaseName = name.toLowerCase();
+  const lowerCaseRestrictedNames = restrictedNames.map((name) => name.toLowerCase());
+
+  if (lowerCaseRestrictedNames.includes(lowerCaseName)) {
     return {
       isValid: false,
       message: `The "${name}" is already exists here`,

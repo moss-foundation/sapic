@@ -5,17 +5,20 @@ import { cn } from "@/utils";
 interface DragHandleButtonProps {
   className?: string;
   slim?: boolean;
+  ghost?: boolean;
 }
 
-const DragHandleButton = forwardRef<HTMLDivElement, DragHandleButtonProps>(({ className, slim }, ref) => {
+const DragHandleButton = forwardRef<HTMLDivElement, DragHandleButtonProps>(({ className, slim, ghost }, ref) => {
   return (
     <div
       ref={ref}
       className={cn(
-        "background-(--moss-drag-handle-bg) flex cursor-grab items-center justify-center rounded shadow",
+        "flex cursor-grab items-center justify-center rounded",
         {
           "px-1 py-0.5": slim,
           "size-4": !slim,
+          "": ghost,
+          "background-(--moss-drag-handle-bg) shadow": !ghost,
         },
         className
       )}

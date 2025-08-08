@@ -34,7 +34,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       <div className={cn(inputStyles({ disabled }), className)}>
         {iconLeft && <Icon icon={iconLeft} className={iconClassName} />}
 
-        <input ref={forwardedRef} disabled={disabled} {...props} className="h-full w-full outline-none" />
+        <input ref={forwardedRef} disabled={disabled} className="h-full w-full outline-none" {...props} />
 
         {iconRight && <Icon icon={iconRight} className={iconClassName} />}
       </div>

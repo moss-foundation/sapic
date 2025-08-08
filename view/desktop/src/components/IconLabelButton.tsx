@@ -177,12 +177,12 @@ export const IconLabelButton = forwardRef<HTMLButtonElement, IconLabelButtonProp
       <button
         ref={ref}
         className={cn(buttonStyles, className)}
-        {...props}
         onClick={(e) => {
           if (!isEditing && props.onClick) {
             props.onClick(e);
           }
         }}
+        {...props}
       >
         <div
           ref={labelContainerRef}

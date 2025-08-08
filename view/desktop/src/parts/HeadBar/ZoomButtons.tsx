@@ -31,7 +31,7 @@ export const ZoomButtons: React.FC<ZoomButtonsProps> = ({
       />
       <span className="px-1 text-sm text-(--moss-primary-text)">{currentZoom}%</span>
       <ActionButton
-        icon="Plus"
+        icon="Add"
         iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
         title="Zoom in"
         onClick={onZoomIn}

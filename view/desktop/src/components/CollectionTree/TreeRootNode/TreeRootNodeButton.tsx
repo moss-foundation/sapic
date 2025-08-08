@@ -17,8 +17,8 @@ interface TreeRootNodeButtonProps {
 
 export const TreeRootNodeButton = ({ node, searchInput, shouldRenderChildNodes }: TreeRootNodeButtonProps) => {
   const { id, picturePath, showNodeOrders } = useContext(TreeContext);
-  const { api } = useTabbedPaneStore();
   const { mutateAsync: updateCollection } = useUpdateCollection();
+  const { addOrFocusPanel } = useTabbedPaneStore();
 
   const handleIconClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
@@ -30,33 +30,27 @@ export const TreeRootNodeButton = ({ node, searchInput, shouldRenderChildNodes }
   };
 
   const handleLabelClick = async () => {
-    const panel = api?.getPanel(id);
-
-    if (!panel) {
-      api?.addPanel({
-        id,
-        title: node.name,
-        component: "CollectionSettings",
-        params: {
-          collectionId: id,
-        },
-      });
-
+    if (!node.expanded) {
       await updateCollection({
         id,
         expanded: true,
       });
-    } else {
-      await updateCollection({
-        id,
-        expanded: !node.expanded,
-      });
     }
+
+    addOrFocusPanel({
+      id,
+      title: node.name,
+      component: "CollectionSettings",
+      params: {
+        collectionId: id,
+        iconType: "Collection",
+      },
+    });
   };
 
   return (
     <div
-      className="group/treeRootNodeTrigger relative flex grow cursor-pointer items-center gap-1.5 overflow-hidden font-medium"
+      className="group/treeRootNodeTrigger relative z-10 flex grow cursor-pointer items-center gap-1.5 overflow-hidden font-medium"
       onClick={handleLabelClick}
       role="button"
       tabIndex={0}
@@ -83,6 +77,7 @@ export const TreeRootNodeButton = ({ node, searchInput, shouldRenderChildNodes }
       </span>
 
       {showNodeOrders && <div className="underline">{node.order}</div>}
+
       <NodeLabel label={node.name} searchInput={searchInput} />
     </div>
   );

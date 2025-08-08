@@ -4,8 +4,8 @@ import { useFetchEntriesForPath } from "@/hooks/collection/derivedHooks/useFetch
 import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollectionEntry";
 import { join } from "@tauri-apps/api/path";
 
-import { TreeContext } from "../Tree";
-import { TreeCollectionNode } from "../types";
+import { TreeContext } from "../../Tree";
+import { TreeCollectionNode } from "../../types";
 
 export const useNodeRenamingForm = (node: TreeCollectionNode) => {
   const { id } = useContext(TreeContext);

@@ -15,11 +15,12 @@ import {
   createEntryKind,
   getAllNestedEntries,
   getInstructionFromLocation,
-  getLocationTreeNodeData,
+  getLocationTreeCollectionNodeData,
   getLocationTreeRootNodeData,
   getPathWithoutName,
-  getSourceTreeNodeData,
-  isSourceTreeNode,
+  getSourceTreeCollectionNodeData,
+  hasAnotherDirectDescendantWithSimilarName,
+  isSourceTreeCollectionNode,
   prepareEntriesForDrop,
   sortByOrder,
 } from "../utils";
@@ -35,7 +36,6 @@ export const useNodeDragAndDropHandler = () => {
 
   const { fetchEntriesForPath } = useFetchEntriesForPath();
 
-  //Within collection
   const handleCombineWithinCollection = useCallback(
     async (sourceTreeNodeData: DragNode, locationTreeNodeData: DropNode) => {
       const newOrder = locationTreeNodeData.node.childNodes.length + 1;
@@ -135,7 +135,6 @@ export const useNodeDragAndDropHandler = () => {
     [batchUpdateCollectionEntry, fetchEntriesForPath]
   );
 
-  //To another collection
   const handleCombineToAnotherCollectionRoot = useCallback(
     async (sourceTreeNodeData: DragNode, locationTreeRootNodeData: DropRootNode) => {
       const allEntries = getAllNestedEntries(sourceTreeNodeData.node);
@@ -310,21 +309,34 @@ export const useNodeDragAndDropHandler = () => {
   useEffect(() => {
     return monitorForElements({
       canMonitor({ source }) {
-        return isSourceTreeNode(source);
+        return isSourceTreeCollectionNode(source);
       },
       onDrop: async ({ location, source }) => {
-        const sourceTreeNodeData = getSourceTreeNodeData(source);
-        const locationTreeNodeData = getLocationTreeNodeData(location);
+        const sourceTreeNodeData = getSourceTreeCollectionNodeData(source);
+        const locationTreeNodeData = getLocationTreeCollectionNodeData(location);
         const locationTreeRootNodeData = getLocationTreeRootNodeData(location);
 
-        const operation = getInstructionFromLocation(location)?.operation;
+        const instruction = getInstructionFromLocation(location);
+        const operation = instruction?.operation;
 
         if (!sourceTreeNodeData) {
           console.warn("can't drop: no source");
           return;
         }
 
+        if (instruction?.blocked) {
+          console.warn("can't drop: blocked");
+          return;
+        }
+
         if (locationTreeRootNodeData && operation === "combine") {
+          if (
+            hasAnotherDirectDescendantWithSimilarName(locationTreeRootNodeData.node.requests, sourceTreeNodeData.node)
+          ) {
+            console.warn("can't drop: has direct similar descendant");
+            return;
+          }
+
           await handleCombineToAnotherCollectionRoot(sourceTreeNodeData, locationTreeRootNodeData);
           return;
         }
