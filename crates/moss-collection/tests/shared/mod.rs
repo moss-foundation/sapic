@@ -1,7 +1,6 @@
 use moss_applib::{
     context::{AsyncContext, MutableContext},
     mock::MockAppRuntime,
-    providers::{ServiceMap, ServiceProvider},
 };
 use moss_collection::{
     CollectionBuilder,
@@ -17,16 +16,11 @@ use moss_collection::{
             ItemConfigurationModel, RequestDirConfigurationModel, SchemaDirConfigurationModel,
         },
     },
-    services::{
-        DynStorageService, DynWorktreeService, storage_service::StorageService,
-        worktree_service::WorktreeService,
-    },
 };
 use moss_fs::RealFileSystem;
 use moss_testutils::random_name::{random_collection_name, random_string};
 use nanoid::nanoid;
 use std::{
-    any::TypeId,
     path::{Path, PathBuf},
     sync::Arc,
     time::Duration,
@@ -52,7 +46,6 @@ pub async fn create_test_collection() -> (
     AsyncContext, // TODO: this is temporary, should be a mock
     Arc<Path>,
     Collection<MockAppRuntime>,
-    ServiceProvider,
 ) {
     let ctx = MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
     let fs = Arc::new(RealFileSystem::new());
@@ -62,32 +55,7 @@ pub async fn create_test_collection() -> (
 
     let abs_path: Arc<Path> = internal_abs_path.clone().into();
 
-    let mut services: ServiceMap = Default::default();
-
-    let storage_service: Arc<StorageService<MockAppRuntime>> =
-        StorageService::new(&abs_path).unwrap().into();
-    let storage_service_dyn: Arc<DynStorageService<MockAppRuntime>> =
-        DynStorageService::new(storage_service.clone()).into();
-
-    let worktree_service: Arc<WorktreeService<MockAppRuntime>> =
-        WorktreeService::new(abs_path.clone(), fs.clone(), storage_service_dyn.clone()).into();
-    let worktree_service_dyn: Arc<DynWorktreeService<MockAppRuntime>> =
-        DynWorktreeService::new(worktree_service.clone()).into();
-
-    {
-        services.insert(
-            TypeId::of::<StorageService<MockAppRuntime>>(),
-            storage_service,
-        );
-        services.insert(
-            TypeId::of::<WorktreeService<MockAppRuntime>>(),
-            worktree_service,
-        );
-    }
-
     let collection = CollectionBuilder::new(fs)
-        .with_service::<DynStorageService<MockAppRuntime>>(storage_service_dyn)
-        .with_service::<DynWorktreeService<MockAppRuntime>>(worktree_service_dyn)
         .create(
             &ctx,
             CollectionCreateParams {
@@ -101,7 +69,7 @@ pub async fn create_test_collection() -> (
         .await
         .unwrap();
 
-    (ctx, abs_path, collection, services.into())
+    (ctx, abs_path, collection)
 }
 
 // Since configuration models are empty enums, we need to use unreachable! for now

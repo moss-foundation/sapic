@@ -1,7 +1,6 @@
 use anyhow::Result;
 use moss_applib::{
-    AppRuntime, EventMarker, ServiceMarker,
-    providers::ServiceProvider,
+    AppRuntime, EventMarker,
     subscription::{Event, EventEmitter},
 };
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
@@ -16,7 +15,14 @@ use std::{
 };
 use tokio::sync::OnceCell;
 
-use crate::{config::ConfigModel, manifest::ManifestModel, services::DynSetIconService};
+use crate::{
+    config::ConfigModel,
+    manifest::ManifestModel,
+    services::{
+        set_icon_service::SetIconService, storage_service::StorageService,
+        worktree_service::WorktreeService,
+    },
+};
 
 pub struct EnvironmentItem<R: AppRuntime> {
     pub id: EnvironmentId,
@@ -43,7 +49,11 @@ pub struct Collection<R: AppRuntime> {
     #[allow(dead_code)]
     pub(super) fs: Arc<dyn FileSystem>,
     pub(super) abs_path: Arc<Path>,
-    pub(super) services: ServiceProvider,
+
+    pub(super) set_icon_service: SetIconService,
+    pub(super) storage_service: Arc<StorageService<R>>,
+    pub(super) worktree_service: Arc<WorktreeService<R>>,
+
     #[allow(dead_code)]
     pub(super) environments: OnceCell<EnvironmentMap<R>>,
     pub(super) manifest: JsonFileHandle<ManifestModel>,
@@ -68,12 +78,7 @@ impl<R: AppRuntime> Collection<R> {
     }
 
     pub fn icon_path(&self) -> Option<PathBuf> {
-        let set_icon_service = self.services.get::<DynSetIconService>();
-        set_icon_service.icon_path()
-    }
-
-    pub fn service<T: ServiceMarker>(&self) -> &T {
-        self.services.get::<T>()
+        self.set_icon_service.icon_path()
     }
 
     pub async fn modify(&self, params: CollectionModifyParams) -> Result<()> {
@@ -108,14 +113,13 @@ impl<R: AppRuntime> Collection<R> {
                 .await?;
         }
 
-        let set_icon_service = self.service::<DynSetIconService>();
         match params.icon_path {
             None => {}
             Some(ChangePath::Update(new_icon_path)) => {
-                set_icon_service.set_icon(&new_icon_path)?;
+                self.set_icon_service.set_icon(&new_icon_path)?;
             }
             Some(ChangePath::Remove) => {
-                set_icon_service.remove_icon().await?;
+                self.set_icon_service.remove_icon().await?;
             }
         }
 
@@ -136,5 +140,20 @@ impl<R: AppRuntime> Collection<R> {
             .await?;
 
         Ok(result)
+    }
+}
+
+#[cfg(any(test, feature = "integration-tests"))]
+impl<R: AppRuntime> Collection<R> {
+    pub fn set_icon_service(&self) -> &SetIconService {
+        &self.set_icon_service
+    }
+
+    pub fn storage_service(&self) -> Arc<StorageService<R>> {
+        self.storage_service.clone()
+    }
+
+    pub fn worktree_service(&self) -> Arc<WorktreeService<R>> {
+        self.worktree_service.clone()
     }
 }

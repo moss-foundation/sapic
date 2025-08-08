@@ -4,9 +4,7 @@ pub mod shared;
 use futures;
 use moss_applib::{context::AsyncContext, mock::MockAppRuntime};
 use moss_collection::{
-    dirs,
-    models::primitives::EntryKind,
-    services::{DynWorktreeService, worktree_service::EntryDescription},
+    dirs, models::primitives::EntryKind, services::worktree_service::EntryDescription,
 };
 use tokio::sync::mpsc;
 
@@ -24,10 +22,9 @@ async fn scan_entries_for_test(
 ) -> Vec<EntryDescription> {
     let (tx, mut rx) = mpsc::unbounded_channel::<EntryDescription>();
 
-    // Access the worktree service through the Collection's service system
-    let worktree_service = collection.service::<DynWorktreeService<MockAppRuntime>>();
-
     let dir_path = std::path::Path::new(dir_name);
+
+    let worktree_service = collection.worktree_service();
 
     // Check if directory exists before scanning
     let abs_dir = worktree_service.absolutize(dir_path);
@@ -53,7 +50,7 @@ async fn scan_entries_for_test(
 
 #[tokio::test]
 async fn stream_entries_empty_collection() {
-    let (ctx, collection_path, collection, _services) = create_test_collection().await;
+    let (ctx, collection_path, collection) = create_test_collection().await;
 
     // Each directory should return exactly one entry (the directory itself)
     // since the base directories are created with config files
@@ -83,7 +80,7 @@ async fn stream_entries_empty_collection() {
 
 #[tokio::test]
 async fn stream_entries_single_entry() {
-    let (ctx, collection_path, mut collection, _services) = create_test_collection().await;
+    let (ctx, collection_path, mut collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
     create_test_request_dir_entry(&ctx, &mut collection, &entry_name).await;
@@ -123,7 +120,7 @@ async fn stream_entries_single_entry() {
 
 #[tokio::test]
 async fn stream_entries_multiple_entries_same_directory() {
-    let (ctx, collection_path, mut collection, _services) = create_test_collection().await;
+    let (ctx, collection_path, mut collection) = create_test_collection().await;
 
     let entry1_name = format!("{}_1", random_entry_name());
     let entry2_name = format!("{}_2", random_entry_name());
@@ -171,7 +168,7 @@ async fn stream_entries_multiple_entries_same_directory() {
 
 #[tokio::test]
 async fn stream_entries_multiple_directories() {
-    let (ctx, collection_path, mut collection, _services) = create_test_collection().await;
+    let (ctx, collection_path, mut collection) = create_test_collection().await;
 
     let expected_name = "entry".to_string();
 
@@ -221,7 +218,7 @@ async fn stream_entries_multiple_directories() {
 
 #[tokio::test]
 async fn stream_entries_scan_operation_stability() {
-    let (ctx, collection_path, mut collection, _services) = create_test_collection().await;
+    let (ctx, collection_path, mut collection) = create_test_collection().await;
 
     // Create some entries to test scan stability
     let entry1_name = format!("{}_1", random_entry_name());
@@ -276,7 +273,7 @@ async fn stream_entries_scan_operation_stability() {
 
 #[tokio::test]
 async fn stream_entries_mixed_content() {
-    let (ctx, collection_path, mut collection, _services) = create_test_collection().await;
+    let (ctx, collection_path, mut collection) = create_test_collection().await;
 
     // Create entries in multiple directories
     let requests_entry = format!("{}_requests", random_entry_name());
@@ -336,7 +333,7 @@ async fn stream_entries_mixed_content() {
 
 #[tokio::test]
 async fn stream_entries_verify_entry_properties() {
-    let (ctx, collection_path, mut collection, _services) = create_test_collection().await;
+    let (ctx, collection_path, mut collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
     create_test_request_dir_entry(&ctx, &mut collection, &entry_name).await;

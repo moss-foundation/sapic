@@ -1,11 +1,10 @@
+use moss_api::ext::ValidationResultExt;
 use moss_applib::AppRuntime;
-use moss_common::api::OperationResult;
 use validator::Validate;
 
 use crate::{
     collection::Collection,
     models::operations::{DeleteEntryInput, DeleteEntryOutput},
-    services::DynWorktreeService,
 };
 
 impl<R: AppRuntime> Collection<R> {
@@ -13,10 +12,9 @@ impl<R: AppRuntime> Collection<R> {
         &self,
         ctx: &R::AsyncContext,
         input: DeleteEntryInput,
-    ) -> OperationResult<DeleteEntryOutput> {
-        input.validate()?;
-        let worktree_service = self.service::<DynWorktreeService<R>>();
-        worktree_service.remove_entry(ctx, &input.id).await?;
+    ) -> joinerror::Result<DeleteEntryOutput> {
+        input.validate().join_err_bare()?;
+        self.worktree_service.remove_entry(ctx, &input.id).await?;
 
         Ok(DeleteEntryOutput { id: input.id })
     }

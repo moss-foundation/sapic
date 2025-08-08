@@ -38,7 +38,7 @@ pub(super) async fn with_collection_timeout<R, T, F, Fut>(
 where
     R: AppRuntime,
     F: FnOnce(R::AsyncContext, Arc<Collection<R>>) -> Fut + Send + 'static,
-    Fut: std::future::Future<Output = TauriResult<T>> + Send + 'static, // TODO: use joinerror::Result instead when will the collection operations switch to using `joinerror::Result`
+    Fut: std::future::Future<Output = joinerror::Result<T>> + Send + 'static, // TODO: use joinerror::Result instead when will the collection operations switch to using `joinerror::Result`
 {
     let timeout = options
         .as_ref()
@@ -70,7 +70,7 @@ where
     if let Some(request_id) = &request_id {
         app.release_cancellation(request_id).await;
     }
-    result
+    result.map_err(|e| e.into())
 }
 
 pub(super) async fn with_workspace_timeout<R, T, F, Fut>(

@@ -1,4 +1,4 @@
-use moss_api::{TauriError, TauriResult};
+use moss_api::TauriResult;
 use moss_collection::models::{events::*, operations::*};
 use moss_workspace::models::primitives::CollectionId;
 use tauri::{Window, ipc::Channel as TauriChannel};
@@ -20,12 +20,7 @@ pub async fn create_collection_entry<'a, R: tauri::Runtime>(
         app,
         collection_id,
         options,
-        |ctx, collection| async move {
-            collection
-                .create_entry(&ctx, input)
-                .await
-                .map_err(TauriError::OperationError)
-        },
+        |ctx, collection| async move { collection.create_entry(&ctx, input).await },
     )
     .await
 }
@@ -45,12 +40,7 @@ pub async fn delete_collection_entry<'a, R: tauri::Runtime>(
         app,
         collection_id,
         options,
-        |ctx, collection| async move {
-            collection
-                .delete_entry(&ctx, input)
-                .await
-                .map_err(TauriError::OperationError)
-        },
+        |ctx, collection| async move { collection.delete_entry(&ctx, input).await },
     )
     .await
 }
@@ -70,12 +60,7 @@ pub async fn update_collection_entry<'a, R: tauri::Runtime>(
         app,
         collection_id,
         options,
-        |ctx, collection| async move {
-            collection
-                .update_entry(&ctx, input)
-                .await
-                .map_err(TauriError::OperationError)
-        },
+        |ctx, collection| async move { collection.update_entry(&ctx, input).await },
     )
     .await
 }
@@ -95,12 +80,7 @@ pub async fn batch_create_collection_entry<'a, R: tauri::Runtime>(
         app,
         collection_id,
         options,
-        |ctx, collection| async move {
-            collection
-                .batch_create_entry(&ctx, input)
-                .await
-                .map_err(TauriError::OperationError)
-        },
+        |ctx, collection| async move { collection.batch_create_entry(&ctx, input).await },
     )
     .await
 }
@@ -121,12 +101,7 @@ pub async fn batch_update_collection_entry<'a, R: tauri::Runtime>(
         app,
         collection_id,
         options,
-        |ctx, collection| async move {
-            collection
-                .batch_update_entry(&ctx, input, channel)
-                .await
-                .map_err(TauriError::OperationError)
-        },
+        |ctx, collection| async move { collection.batch_update_entry(&ctx, input, channel).await },
     )
     .await
 }
@@ -155,10 +130,7 @@ pub async fn stream_collection_entries<'a, R: tauri::Runtime>(
                 StreamEntriesInput::LoadRoot
             };
 
-            collection
-                .stream_entries(&ctx, channel, input)
-                .await
-                .map_err(TauriError::OperationError)
+            collection.stream_entries(&ctx, channel, input).await
         },
     )
     .await

@@ -1,15 +1,10 @@
-use anyhow::Result;
-use moss_applib::{
-    AppRuntime, ServiceMarker,
-    providers::{ServiceMap, ServiceProvider},
-    subscription::EventEmitter,
-};
+use joinerror::ResultExt;
+use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_file::json::JsonFileHandle;
 use moss_fs::FileSystem;
 use moss_git::url::normalize_git_url;
 use moss_hcl::Block;
 use std::{
-    any::TypeId,
     path::{Path, PathBuf},
     sync::Arc,
 };
@@ -28,9 +23,14 @@ use crate::{
             RawDirRequestConfiguration, RawDirSchemaConfiguration,
         },
     },
-    services::{DynSetIconService, DynWorktreeService, worktree_service::EntryMetadata},
+    services::{
+        set_icon_service::SetIconService,
+        storage_service::StorageService,
+        worktree_service::{EntryMetadata, WorktreeService},
+    },
 };
 
+const COLLECTION_ICON_SIZE: u32 = 128;
 const OTHER_DIRS: [&str; 2] = [dirs::ASSETS_DIR, dirs::ENVIRONMENTS_DIR];
 
 const WORKTREE_DIRS: [(&str, isize); 4] = [
@@ -54,26 +54,17 @@ pub struct CollectionLoadParams {
 
 pub struct CollectionBuilder {
     fs: Arc<dyn FileSystem>,
-    services: ServiceMap,
 }
 
 impl CollectionBuilder {
     pub fn new(fs: Arc<dyn FileSystem>) -> Self {
-        Self {
-            fs,
-            services: Default::default(),
-        }
+        Self { fs }
     }
 
-    pub fn with_service<T: ServiceMarker + Send + Sync>(
-        mut self,
-        service: impl Into<Arc<T>>,
-    ) -> Self {
-        self.services.insert(TypeId::of::<T>(), service.into());
-        self
-    }
-
-    pub async fn load<R: AppRuntime>(self, params: CollectionLoadParams) -> Result<Collection<R>> {
+    pub async fn load<R: AppRuntime>(
+        self,
+        params: CollectionLoadParams,
+    ) -> joinerror::Result<Collection<R>> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
         let manifest = JsonFileHandle::load(
@@ -88,12 +79,32 @@ impl CollectionBuilder {
         )
         .await?;
 
+        let storage_service: Arc<StorageService<R>> =
+            StorageService::new(params.internal_abs_path.as_ref())
+                .join_err::<()>("failed to create collection storage service")?
+                .into();
+
+        let worktree_service: Arc<WorktreeService<R>> = WorktreeService::new(
+            params.internal_abs_path.clone(),
+            self.fs.clone(),
+            storage_service.clone(),
+        )
+        .into();
+
+        let set_icon_service = SetIconService::new(
+            params.internal_abs_path.clone(),
+            self.fs.clone(),
+            COLLECTION_ICON_SIZE,
+        );
+
         // TODO: Load environments
 
         Ok(Collection {
             fs: self.fs.clone(),
-            services: self.services.into(),
             abs_path: params.internal_abs_path,
+            set_icon_service,
+            storage_service,
+            worktree_service,
             environments: OnceCell::new(),
             manifest,
             config,
@@ -105,7 +116,7 @@ impl CollectionBuilder {
         self,
         ctx: &R::AsyncContext,
         params: CollectionCreateParams,
-    ) -> Result<Collection<R>> {
+    ) -> joinerror::Result<Collection<R>> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
         let abs_path: Arc<Path> = params
@@ -114,8 +125,15 @@ impl CollectionBuilder {
             .unwrap_or(params.internal_abs_path.clone())
             .into();
 
-        let services: ServiceProvider = self.services.into();
-        let worktree_service = services.get::<DynWorktreeService<R>>();
+        let storage_service: Arc<StorageService<R>> = StorageService::new(abs_path.as_ref())
+            .join_err::<()>("failed to create collection storage service")?
+            .into();
+
+        let worktree_service: Arc<WorktreeService<R>> =
+            WorktreeService::new(abs_path.clone(), self.fs.clone(), storage_service.clone()).into();
+
+        let set_icon_service =
+            SetIconService::new(abs_path.clone(), self.fs.clone(), COLLECTION_ICON_SIZE);
 
         for (dir, order) in &WORKTREE_DIRS {
             let id = EntryId::new();
@@ -182,7 +200,6 @@ impl CollectionBuilder {
         .await?;
 
         if let Some(icon_path) = params.icon_path {
-            let set_icon_service = services.get::<DynSetIconService>();
             // TODO: Log the error here
             set_icon_service.set_icon(&icon_path)?;
         }
@@ -191,8 +208,10 @@ impl CollectionBuilder {
 
         Ok(Collection {
             fs: self.fs.clone(),
-            services,
             abs_path: params.internal_abs_path.to_owned().into(),
+            set_icon_service,
+            storage_service,
+            worktree_service,
             environments: OnceCell::new(),
             manifest,
             config,

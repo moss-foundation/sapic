@@ -1,3 +1,18 @@
+use moss_applib::{
+    AppRuntime,
+    context::{AnyAsyncContext, Reason},
+};
+use moss_common::api::OperationError;
+use moss_db::primitives::AnyValue;
+use moss_storage::primitives::segkey::SegKeyBuf;
+use std::{
+    collections::{HashMap, HashSet},
+    path::PathBuf,
+    sync::Arc,
+};
+use tauri::ipc::Channel as TauriChannel;
+use tokio::sync::{mpsc, oneshot};
+
 use crate::{
     Collection,
     collection::OnDidChangeEvent,
@@ -8,22 +23,8 @@ use crate::{
         primitives::{EntryId, EntryPath},
         types::EntryInfo,
     },
-    services::{DynStorageService, DynWorktreeService, worktree_service::EntryDescription},
+    services::worktree_service::EntryDescription,
 };
-use moss_applib::{
-    AppRuntime,
-    context::{AnyAsyncContext, Reason},
-};
-use moss_common::api::{OperationError, OperationResult};
-use moss_db::primitives::AnyValue;
-use moss_storage::primitives::segkey::SegKeyBuf;
-use std::{
-    collections::{HashMap, HashSet},
-    path::PathBuf,
-    sync::Arc,
-};
-use tauri::ipc::Channel as TauriChannel;
-use tokio::sync::{mpsc, oneshot};
 
 const EXPANSION_DIRECTORIES: &[&str] = &[
     dirs::REQUESTS_DIR,
@@ -38,11 +39,9 @@ impl<R: AppRuntime> Collection<R> {
         ctx: &R::AsyncContext,
         channel: TauriChannel<StreamEntriesEvent>,
         input: StreamEntriesInput,
-    ) -> OperationResult<StreamEntriesOutput> {
+    ) -> joinerror::Result<StreamEntriesOutput> {
         let (tx, mut rx) = mpsc::unbounded_channel::<EntryDescription>();
         let (done_tx, mut done_rx) = oneshot::channel::<()>();
-        let worktree_service = self.service::<DynWorktreeService<R>>();
-        let storage_service = self.service::<DynStorageService<R>>();
 
         let mut handles = Vec::new();
         let expansion_dirs = match input {
@@ -54,7 +53,7 @@ impl<R: AppRuntime> Collection<R> {
         };
 
         let expanded_entries: Arc<HashSet<EntryId>> =
-            match storage_service.get_expanded_entries(ctx).await {
+            match self.storage_service.get_expanded_entries(ctx).await {
                 Ok(entries) => HashSet::from_iter(entries).into(),
                 Err(error) => {
                     println!("warn: getting expanded entries: {}", error);
@@ -63,7 +62,7 @@ impl<R: AppRuntime> Collection<R> {
             };
 
         let all_entry_keys: Arc<HashMap<SegKeyBuf, AnyValue>> =
-            match storage_service.get_all_entry_keys(ctx).await {
+            match self.storage_service.get_all_entry_keys(ctx).await {
                 Ok(keys) => keys.into(),
                 Err(error) => {
                     println!("warn: getting all entry keys: {}", error);
@@ -73,8 +72,7 @@ impl<R: AppRuntime> Collection<R> {
 
         for dir in expansion_dirs {
             let entries_tx_clone = tx.clone();
-            let worktree_service_clone = worktree_service.clone();
-
+            let worktree_service_clone = self.worktree_service.clone();
             // We need to fetch this data from the database here, otherwise we'll be requesting it every time the scan method is called.
 
             let handle = tokio::spawn({

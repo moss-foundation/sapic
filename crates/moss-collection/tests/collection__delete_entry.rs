@@ -1,21 +1,21 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
+use crate::shared::{
+    create_test_collection, create_test_component_dir_entry, create_test_endpoint_dir_entry,
+    create_test_request_dir_entry, create_test_schema_dir_entry, random_entry_name,
+};
 use moss_collection::{
     dirs,
+    errors::ErrorNotFound,
     models::{operations::DeleteEntryInput, primitives::EntryId},
 };
 use moss_common::api::OperationError;
 use std::path::PathBuf;
 
-use crate::shared::{
-    create_test_collection, create_test_component_dir_entry, create_test_endpoint_dir_entry,
-    create_test_request_dir_entry, create_test_schema_dir_entry, random_entry_name,
-};
-
 #[tokio::test]
 async fn delete_entry_success() {
-    let (ctx, collection_path, mut collection, _services) = create_test_collection().await;
+    let (ctx, collection_path, mut collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
@@ -40,7 +40,7 @@ async fn delete_entry_success() {
 
 #[tokio::test]
 async fn delete_entry_not_found() {
-    let (ctx, collection_path, collection, _services) = create_test_collection().await;
+    let (ctx, collection_path, collection) = create_test_collection().await;
 
     let delete_input = DeleteEntryInput { id: EntryId::new() };
 
@@ -48,12 +48,7 @@ async fn delete_entry_not_found() {
     assert!(result.is_err());
 
     if let Err(error) = result {
-        match error {
-            OperationError::NotFound(_) => {
-                // This is expected
-            }
-            _ => panic!("Expected NotFound error, got {:?}", error),
-        }
+        assert!(error.is::<ErrorNotFound>());
     }
 
     // Cleanup
@@ -62,7 +57,7 @@ async fn delete_entry_not_found() {
 
 #[tokio::test]
 async fn delete_entry_with_subdirectories() {
-    let (ctx, collection_path, mut collection, _services) = create_test_collection().await;
+    let (ctx, collection_path, mut collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
@@ -99,7 +94,7 @@ async fn delete_entry_with_subdirectories() {
 
 #[tokio::test]
 async fn delete_multiple_entries() {
-    let (ctx, collection_path, mut collection, _services) = create_test_collection().await;
+    let (ctx, collection_path, mut collection) = create_test_collection().await;
 
     let entry1_name = format!("{}_1", random_entry_name());
     let entry2_name = format!("{}_2", random_entry_name());
@@ -142,7 +137,7 @@ async fn delete_multiple_entries() {
 
 #[tokio::test]
 async fn delete_entry_twice() {
-    let (ctx, collection_path, mut collection, _services) = create_test_collection().await;
+    let (ctx, collection_path, mut collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
@@ -166,12 +161,7 @@ async fn delete_entry_twice() {
     assert!(result2.is_err());
 
     if let Err(error) = result2 {
-        match error {
-            OperationError::NotFound(_) => {
-                // This is expected
-            }
-            _ => panic!("Expected NotFound error, got {:?}", error),
-        }
+        assert!(error.is::<ErrorNotFound>());
     }
 
     // Cleanup
@@ -180,7 +170,7 @@ async fn delete_entry_twice() {
 
 #[tokio::test]
 async fn delete_entries_from_different_directories() {
-    let (ctx, collection_path, mut collection, _services) = create_test_collection().await;
+    let (ctx, collection_path, mut collection) = create_test_collection().await;
 
     let mut entries = Vec::new();
 

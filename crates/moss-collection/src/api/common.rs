@@ -1,5 +1,5 @@
+use moss_api::ext::ValidationResultExt;
 use moss_applib::AppRuntime;
-use moss_common::api::OperationResult;
 use validator::Validate;
 
 use crate::{
@@ -16,10 +16,7 @@ use crate::{
             },
         },
     },
-    services::{
-        DynWorktreeService,
-        worktree_service::{EntryMetadata, ModifyParams},
-    },
+    services::worktree_service::{EntryMetadata, ModifyParams},
 };
 
 impl<R: AppRuntime> Collection<R> {
@@ -27,10 +24,8 @@ impl<R: AppRuntime> Collection<R> {
         &self,
         ctx: &R::AsyncContext,
         input: CreateDirEntryInput,
-    ) -> OperationResult<CreateEntryOutput> {
-        input.validate()?;
-
-        let worktree_service = self.service::<DynWorktreeService<R>>();
+    ) -> joinerror::Result<CreateEntryOutput> {
+        input.validate().join_err_bare()?;
 
         let id = EntryId::new();
         let model = CompositeDirConfigurationModel {
@@ -38,7 +33,7 @@ impl<R: AppRuntime> Collection<R> {
             inner: input.configuration,
         };
 
-        worktree_service
+        self.worktree_service
             .create_dir_entry(
                 ctx,
                 &id,
@@ -59,10 +54,8 @@ impl<R: AppRuntime> Collection<R> {
         &self,
         ctx: &R::AsyncContext,
         input: CreateItemEntryInput,
-    ) -> OperationResult<CreateEntryOutput> {
-        input.validate()?;
-
-        let worktree_service = self.service::<DynWorktreeService<R>>();
+    ) -> joinerror::Result<CreateEntryOutput> {
+        input.validate().join_err_bare()?;
 
         let id = EntryId::new();
         let model = CompositeItemConfigurationModel {
@@ -70,7 +63,7 @@ impl<R: AppRuntime> Collection<R> {
             inner: input.configuration,
         };
 
-        worktree_service
+        self.worktree_service
             .create_item_entry(
                 ctx,
                 &id,
@@ -91,11 +84,11 @@ impl<R: AppRuntime> Collection<R> {
         &self,
         ctx: &R::AsyncContext,
         input: UpdateItemEntryParams,
-    ) -> OperationResult<AfterUpdateItemEntryDescription> {
-        input.validate()?;
-        let worktree_service = self.service::<DynWorktreeService<R>>();
+    ) -> joinerror::Result<AfterUpdateItemEntryDescription> {
+        input.validate().join_err_bare()?;
 
-        let (path, configuration) = worktree_service
+        let (path, configuration) = self
+            .worktree_service
             .update_item_entry(
                 ctx,
                 &input.id,
@@ -123,11 +116,11 @@ impl<R: AppRuntime> Collection<R> {
         &self,
         ctx: &R::AsyncContext,
         input: UpdateDirEntryParams,
-    ) -> OperationResult<AfterUpdateDirEntryDescription> {
-        input.validate()?;
-        let worktree_service = self.service::<DynWorktreeService<R>>();
+    ) -> joinerror::Result<AfterUpdateDirEntryDescription> {
+        input.validate().join_err_bare()?;
 
-        let (path, configuration) = worktree_service
+        let (path, configuration) = self
+            .worktree_service
             .update_dir_entry(
                 ctx,
                 &input.id,

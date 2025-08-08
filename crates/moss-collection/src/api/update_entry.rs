@@ -1,5 +1,4 @@
 use moss_applib::AppRuntime;
-use moss_common::api::OperationResult;
 
 use crate::{
     collection::Collection,
@@ -11,7 +10,7 @@ impl<R: AppRuntime> Collection<R> {
         &self,
         ctx: &R::AsyncContext,
         input: UpdateEntryInput,
-    ) -> OperationResult<UpdateEntryOutput> {
+    ) -> joinerror::Result<UpdateEntryOutput> {
         match input {
             UpdateEntryInput::Item(input) => {
                 let output = self.update_item_entry(ctx, input).await?;
