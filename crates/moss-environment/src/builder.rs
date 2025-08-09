@@ -89,6 +89,8 @@ impl EnvironmentBuilder {
                 },
             );
 
+            // We don't save data to the store here because we don't want to pass the store as a parameter to this function.
+            // When the environment is simply being initialized, we might not yet have access to the store where variable data could be saved.
             self.vars_to_store.insert(id, (v.local_value, v.order));
         }
 
