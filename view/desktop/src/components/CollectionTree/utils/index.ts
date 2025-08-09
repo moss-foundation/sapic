@@ -1,5 +1,5 @@
 export * from "./DragAndDrop";
 export * from "./Form";
 export * from "./Path";
-export * from "./TreeNode";
+export * from "./TreeCollectionNode";
 export * from "./TreeRoot";

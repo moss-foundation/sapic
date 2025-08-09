@@ -33,7 +33,7 @@ impl Display for EntryId {
 }
 
 /// @category Primitive
-#[derive(Debug, Clone, Serialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "primitives.ts")]
 pub struct EntryPath {

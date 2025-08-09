@@ -2,21 +2,37 @@ import { useCollectionsTrees } from "@/hooks/collection";
 import { Icon } from "@/lib/ui";
 
 import { ActionMenu } from "..";
-import { TreeNodeIcon } from "../CollectionTree/TreeNode/TreeNodeIcon";
+import { EntryIcon } from "../EntryIcon";
 import BreadcrumbTree from "./BreadcrumbTree";
 import { findNodeByIdInTree, findNodesSequence } from "./utils";
 
 interface BreadcrumbsProps {
-  collectionId: string;
-  nodeId: string;
+  collectionId?: string;
+  nodeId?: string;
 }
 
 export const Breadcrumbs = ({ collectionId, nodeId }: BreadcrumbsProps) => {
-  const { collectionsTrees } = useCollectionsTrees();
+  const { collectionsTrees, isLoading } = useCollectionsTrees();
+
+  if (isLoading) {
+    return null;
+  }
+
+  if (!collectionId || !nodeId) {
+    return null;
+  }
+
+  if (!collectionsTrees || collectionsTrees.length === 0) {
+    return null;
+  }
 
   const activeTree = collectionsTrees?.find((tree) => tree.id === collectionId);
   if (!activeTree) {
-    console.warn("Breadcrumbs: No active tree found");
+    console.warn("Breadcrumbs: No active tree found for collection ID:", collectionId);
+    console.warn(
+      "Available collection IDs:",
+      collectionsTrees.map((tree) => tree.id)
+    );
     return null;
   }
 
@@ -41,7 +57,7 @@ export const Breadcrumbs = ({ collectionId, nodeId }: BreadcrumbsProps) => {
           if (lastItem) {
             return (
               <div key={node.id} className="contents">
-                <TreeNodeIcon node={node} />
+                <EntryIcon entry={node} />
                 <span className="min-w-max">{node.name}</span>
               </div>
             );
@@ -52,7 +68,7 @@ export const Breadcrumbs = ({ collectionId, nodeId }: BreadcrumbsProps) => {
               <ActionMenu.Root>
                 <ActionMenu.Trigger className="min-w-max cursor-pointer hover:underline">
                   <div className="flex items-center gap-1">
-                    <TreeNodeIcon node={node} />
+                    <EntryIcon entry={node} />
                     {node.name}
                   </div>
                 </ActionMenu.Trigger>

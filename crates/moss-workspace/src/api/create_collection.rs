@@ -1,3 +1,4 @@
+use moss_api::ext::ValidationResultExt;
 use moss_applib::AppRuntime;
 use validator::Validate;
 
@@ -6,7 +7,7 @@ use crate::{
         operations::{CreateCollectionInput, CreateCollectionOutput},
         primitives::CollectionId,
     },
-    services::{DynCollectionService, collection_service::CollectionItemCreateParams},
+    services::collection_service::CollectionItemCreateParams,
     workspace::Workspace,
 };
 
@@ -16,14 +17,14 @@ impl<R: AppRuntime> Workspace<R> {
         ctx: &R::AsyncContext,
         input: &CreateCollectionInput,
     ) -> joinerror::Result<CreateCollectionOutput> {
-        input.validate()?;
+        input.validate().join_err_bare()?;
 
         debug_assert!(input.external_path.is_none(), "Is not implemented");
 
-        let collection_service = self.services.get::<DynCollectionService<R>>();
         let id = CollectionId::new();
 
-        let description = collection_service
+        let description = self
+            .collection_service
             .create_collection(
                 ctx,
                 &id,

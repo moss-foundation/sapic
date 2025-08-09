@@ -8,12 +8,12 @@
     "format": "prettier --plugin=prettier-plugin-tailwindcss --write \"**/*.{ts,tsx,md}\""
   },
   "devDependencies": {
-    "@repo/bindings-utils": "workspace:*",
+    "@repo/moss-bindingutils": "workspace:*",
     "@repo/moss-environment": "workspace:*",
     "@repo/typescript-config": "workspace:*"
   },
   "dependencies": {
-    "typescript": "^5.7.2",
+    "typescript": "^5.9.2",
     "zod": "^3.24.4"
   }
 }

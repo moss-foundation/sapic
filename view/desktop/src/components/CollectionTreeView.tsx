@@ -17,7 +17,11 @@ import { join } from "@tauri-apps/api/path";
 import { useCollectionDragAndDropHandler } from "./CollectionTree/hooks/useCollectionDragAndDropHandler";
 import { useNodeDragAndDropHandler } from "./CollectionTree/hooks/useNodeDragAndDropHandler";
 import { convertEntryInfoToCreateInput } from "./CollectionTree/utils";
-import { getAllNestedEntries, getSourceTreeNodeData, isSourceTreeNode } from "./CollectionTree/utils/DragAndDrop";
+import {
+  getAllNestedEntries,
+  getSourceTreeCollectionNodeData,
+  isSourceTreeCollectionNode,
+} from "./CollectionTree/utils/DragAndDrop";
 
 export const CollectionTreeView = () => {
   const dropTargetToggleRef = useRef<HTMLDivElement>(null);
@@ -39,7 +43,7 @@ export const CollectionTreeView = () => {
         type: "CollectionCreationZone",
       }),
       canDrop({ source }) {
-        return source.data.type === "TreeNode";
+        return isSourceTreeCollectionNode(source);
       },
       onDrop() {
         setShowCollectionCreationZone(false);
@@ -62,7 +66,7 @@ export const CollectionTreeView = () => {
     <div ref={dropTargetToggleRef} className="relative h-[calc(100%-36px)] select-none">
       <Scrollbar className="h-full">
         <div className="flex h-full flex-col">
-          <div className="flex shrink items-center gap-[7px] py-1 pr-2.5 pl-2">
+          <div className="flex shrink items-center gap-[7px] px-2 py-1">
             <InputPlain placeholder="Search" size="sm" />
           </div>
 
@@ -107,7 +111,7 @@ const CollectionCreationZone = () => {
         data: {},
       }),
       canDrop({ source }) {
-        return isSourceTreeNode(source);
+        return isSourceTreeCollectionNode(source);
       },
       onDragEnter() {
         setCanDrop(true);
@@ -118,7 +122,7 @@ const CollectionCreationZone = () => {
       onDrop: async ({ source }) => {
         setCanDrop(null);
 
-        const sourceTarget = getSourceTreeNodeData(source);
+        const sourceTarget = getSourceTreeCollectionNodeData(source);
 
         if (!sourceTarget) return;
 

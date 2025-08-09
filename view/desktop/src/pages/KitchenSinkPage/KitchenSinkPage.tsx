@@ -1,14 +1,12 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { ActionMenu } from "@/components";
+import { ActionMenu, InputOutlined } from "@/components";
 import { ButtonNeutralOutlined } from "@/components/ButtonNeutralOutlined";
 import { ButtonPrimary } from "@/components/ButtonPrimary";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
-import { DataTable } from "@/components/Table/DataTable";
-import { TestData } from "@/components/Table/types";
-import { DefaultInputCell } from "@/components/Table/ui/DefaultCellInput";
 import { InputTemplating } from "@/components/InputTemplating";
+import { columns, DataTable, ParameterData } from "@/components/Table";
 import {
   editorContextItems,
   generateItems,
@@ -19,7 +17,7 @@ import {
 import { invokeMossCommand } from "@/lib/backend/platfrom.ts";
 import { Icon, Icons } from "@/lib/ui";
 import { renderActionMenuItem } from "@/utils/renderActionMenuItem";
-import { createColumnHelper, Table } from "@tanstack/react-table";
+import { Table } from "@tanstack/react-table";
 
 import * as iconsNames from "../../assets/icons";
 import testData from "../../components/Table/testData.json";
@@ -41,6 +39,8 @@ const ComponentGallery = () => {
 
     fetchData();
   }, []);
+
+  const [iconsSearchInput, setIconsSearchInput] = useState("");
 
   return (
     <div className="mx-auto max-w-6xl space-y-10">
@@ -173,15 +173,27 @@ const ComponentGallery = () => {
 
       {/* Icons */}
       <KitchenSinkSection header="Icons" description="Various icons available in the application.">
+        <div>
+          <InputOutlined
+            value={iconsSearchInput}
+            onChange={(e) => setIconsSearchInput(e.target.value)}
+            placeholder="Search icons"
+          />
+        </div>
         <div className="grid grid-cols-6 gap-y-2">
-          {Object.keys(iconsNames).map((value) => (
-            <div key={value} className="flex flex-col items-center gap-2">
-              <Icon icon={value as Icons} />
-              <span className="cursor-text rounded px-1 select-text hover:bg-gray-100 dark:hover:bg-gray-700">
-                {value}
-              </span>
-            </div>
-          ))}
+          {Object.keys(iconsNames)
+            .filter((value) => {
+              if (iconsSearchInput === "") return true;
+              return value.toLowerCase().includes(iconsSearchInput.toLowerCase());
+            })
+            .map((value) => (
+              <div key={value} className="flex flex-col items-center gap-2">
+                <Icon icon={value as Icons} />
+                <span className="cursor-text rounded px-1 select-text hover:bg-gray-100 dark:hover:bg-gray-700">
+                  {value}
+                </span>
+              </div>
+            ))}
         </div>
       </KitchenSinkSection>
     </div>
@@ -240,87 +252,10 @@ const InputTemplatingDemo = () => {
   );
 };
 
-const columnHelper = createColumnHelper<TestData>();
-const columns = [
-  columnHelper.display({
-    id: "checkbox",
-    header: ({ table }) => (
-      <CheckboxWithLabel
-        checked={table.getIsAllPageRowsSelected()}
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-      />
-    ),
-    cell: ({ row }) => (
-      <CheckboxWithLabel
-        disabled={!row.getCanSelect()}
-        checked={row.getIsSelected()}
-        onCheckedChange={row.getToggleSelectedHandler()}
-      />
-    ),
-    enableSorting: false,
-    enableResizing: false,
-    size: 40,
-  }),
-  columnHelper.accessor("key", {
-    header: () => "key",
-    cell: (info) => <DefaultInputCell info={info} />,
-    minSize: 60,
-  }),
-  columnHelper.accessor("value", {
-    header: () => "value",
-    cell: (info) => <DefaultInputCell info={info} />,
-    minSize: 100,
-  }),
-  columnHelper.accessor("type", {
-    header: () => "type",
-    cell: (info) => <DefaultInputCell info={info} />,
-    minSize: 100,
-  }),
-  columnHelper.accessor("description", {
-    header: () => "description",
-    cell: (info) => <DefaultInputCell info={info} />,
-    meta: {
-      isGrow: true,
-    },
-    minSize: 100,
-  }),
-  columnHelper.accessor("global_value", {
-    header: () => "Global value",
-    cell: (info) => <DefaultInputCell info={info} />,
-    minSize: 100,
-  }),
-  columnHelper.accessor("local_value", {
-    header: () => "Local value",
-    cell: (info) => <DefaultInputCell info={info} />,
-    minSize: 100,
-  }),
-  columnHelper.display({
-    id: "actions",
-    header: () => "Actions",
-    cell: () => (
-      <div className="flex items-center justify-center gap-1">
-        <button className="flex size-5.5 cursor-pointer items-center justify-center rounded hover:bg-[#E0E0E0]">
-          <Icon icon="AddToVcs" />
-        </button>
-
-        <button className="flex size-5.5 cursor-pointer items-center justify-center rounded hover:bg-[#E0E0E0]">
-          <Icon icon="RemoveCircle" />
-        </button>
-        <button className="flex size-5.5 cursor-pointer items-center justify-center rounded hover:bg-[#E0E0E0]">
-          <Icon icon="ConfigMap" />
-        </button>
-      </div>
-    ),
-    enableSorting: false,
-    enableResizing: false,
-    size: 90,
-  }),
-];
-
 const ExampleTable = () => {
-  const [tableApi, setTableApi] = useState<Table<TestData> | null>(null);
+  const [tableApi, setTableApi] = useState<Table<ParameterData> | null>(null);
 
-  const handleTableApiSet = (tableApi: Table<TestData>) => {
+  const handleTableApiSet = (tableApi: Table<ParameterData>) => {
     setTableApi(tableApi);
   };
 

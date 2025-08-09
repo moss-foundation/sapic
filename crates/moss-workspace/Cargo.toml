@@ -4,21 +4,21 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-moss_contentmodel.workspace = true
 moss_applib.workspace = true
 moss_db.workspace = true
 moss_fs.workspace = true
 moss_collection.workspace = true
 moss_environment.workspace = true
-moss_common.workspace = true
 moss_storage.workspace = true
 moss_activity_indicator.workspace = true
-moss_text.workspace = true
-moss_file.workspace = true
 moss_git.workspace = true
 moss_bindingutils.workspace = true
-joinerror.workspace = true
+moss_edit.workspace = true
+moss_git_hosting_provider.workspace = true
+moss_keyring.workspace = true
+moss_api.workspace = true
 
+joinerror.workspace = true
 anyhow.workspace = true
 serde = { workspace = true, features = ["derive", "rc"] }
 ts-rs = { workspace = true, features = ["url-impl"] }
@@ -31,9 +31,11 @@ derive_more = { workspace = true, features = ["deref", "deref_mut"] }
 image.workspace = true
 rand.workspace = true
 async-trait.workspace = true
-thiserror.workspace = true
 async-stream.workspace = true
 nanoid.workspace = true
+json-patch.workspace = true
+jsonptr.workspace = true
+reqwest = { workspace = true, features = ["json"] }
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }

@@ -2,7 +2,7 @@ import "./assets/styles.css";
 
 import React from "react";
 
-import { ActionButton, Breadcrumbs, PageContent, PageHeader, PageTabs, PageToolbar, PageView } from "@/components";
+import { Breadcrumbs, PageContent, PageHeader, PageView } from "@/components";
 import { DropNode, TreeCollectionNode } from "@/components/CollectionTree/types";
 import { useUpdateEditorPartState } from "@/hooks/appState/useUpdateEditorPartState";
 import { mapEditorPartStateToSerializedDockview } from "@/hooks/appState/utils";
@@ -10,8 +10,16 @@ import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { Icon, type Icons } from "@/lib/ui";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
-import { CollectionSettingsPage, KitchenSink, Logs, Settings, WelcomePage, WorkspaceSettings } from "@/pages";
-import { useRequestModeStore } from "@/store/requestMode";
+import {
+  CollectionSettingsPage,
+  FolderSettings,
+  KitchenSink,
+  Logs,
+  RequestPage,
+  Settings,
+  WelcomePage,
+  WorkspaceSettings,
+} from "@/pages";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import { EntryKind } from "@repo/moss-collection";
@@ -237,6 +245,10 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
       title: "CollectionSettings",
       component: CollectionSettingsPage,
     },
+    FolderSettings: {
+      title: "FolderSettings",
+      component: FolderSettings,
+    },
   };
 
   const components = {
@@ -248,72 +260,19 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
         someRandomString: string;
       }>
     ) => {
-      const { displayMode } = useRequestModeStore();
-
       const isDebug = React.useContext(DebugContext);
-
-      let showEndpoint = false;
-      let dontShowTabs = true;
-      const [activeTab, setActiveTab] = React.useState(showEndpoint ? "endpoint" : "request");
-      if (props.params?.node) {
-        showEndpoint = displayMode === "DESIGN_FIRST" && props.params.node.class === "Endpoint";
-        dontShowTabs =
-          props.params.node.kind === "Dir" ||
-          props.params.node.class === "Endpoint" ||
-          props.params.node.class === "Schema";
-      }
-
-      const tabs = (
-        <PageTabs>
-          {showEndpoint && (
-            <button data-active={activeTab === "endpoint"} onClick={() => setActiveTab("endpoint")}>
-              Endpoint
-            </button>
-          )}
-          <button data-active={activeTab === "request"} onClick={() => setActiveTab("request")}>
-            Request
-          </button>
-          <button data-active={activeTab === "mock"} onClick={() => setActiveTab("mock")}>
-            Mock
-          </button>
-        </PageTabs>
-      );
-
-      const toolbar = (
-        <PageToolbar>
-          <ActionButton icon="MoreHorizontal" />
-        </PageToolbar>
-      );
 
       return (
         <PageView>
-          <PageHeader
-            icon={<Icon icon="Placeholder" className="size-[18px]" />}
-            tabs={dontShowTabs ? null : tabs}
-            toolbar={toolbar}
-          />
+          <PageHeader icon={<Icon icon="Placeholder" className="size-[18px]" />} props={props} />
           <PageContent className={cn("relative", isDebug && "border-2 border-dashed border-orange-500")}>
             {props.params?.collectionId && props.params?.node?.id && (
               <Breadcrumbs collectionId={props.params.collectionId} nodeId={props.params.node.id} />
             )}
 
             <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col text-[42px] opacity-50">
-              {props.params?.node ? (
-                <div>
-                  <span className="text-[18px]">Node name: "{props.params.node.name}"</span>
-                  <div className="pointer-events-auto max-h-[70vh] overflow-y-auto text-[12px]">
-                    <pre>{JSON.stringify(props.params.node, null, 2)}</pre>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <span>{props.api.title}</span>
-                  <span>{Math.random().toFixed(2)}</span>
-                  {props?.params.someRandomString && (
-                    <span className="text-xs">some random string from backend: {props.params.someRandomString}</span>
-                  )}
-                </>
-              )}
+              <span>Default Page</span>
+              <span className="text-sm">This is a placeholder default page</span>
             </span>
 
             {isDebug && (
@@ -360,6 +319,14 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
         />
       );
     },
+    Request: (
+      props: IDockviewPanelProps<{
+        node?: TreeCollectionNode;
+        collectionId: string;
+        iconType: EntryKind;
+        someRandomString: string;
+      }>
+    ) => <RequestPage {...props} />,
     ...Object.entries(pageConfigs).reduce(
       (acc, [key, config]) => {
         acc[key] = (props: IDockviewPanelProps) => <DynamicPageWrapper pageKey={key} config={config} props={props} />;

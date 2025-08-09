@@ -1,26 +1,38 @@
-use moss_activity_indicator::ActivityIndicator;
-use moss_app::{
-    App, AppBuilder,
-    app::AppDefaults,
-    models::{
-        primitives::ThemeMode,
-        types::{ColorThemeInfo, LocaleInfo},
-    },
-    services::{
-        log_service::LogService, session_service::SessionId, storage_service::StorageService,
-        workspace_service::WorkspaceService,
-    },
-};
+use moss_app::{App, AppBuilder, builder::BuildAppParams};
 use moss_applib::{
     context::{AsyncContext, MutableContext},
     mock::MockAppRuntime,
-    providers::{ServiceMap, ServiceProvider},
 };
 use moss_fs::{FileSystem, RealFileSystem};
 use moss_testutils::random_name::random_string;
-use std::{any::TypeId, future::Future, path::PathBuf, pin::Pin, sync::Arc, time::Duration};
+use std::{future::Future, path::PathBuf, pin::Pin, sync::Arc, time::Duration};
 
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
+
+const THEMES: &str = r#"
+[
+    {
+        "identifier": "moss.sapic-theme.lightDefault",
+        "displayName": "Light Default",
+        "mode": "light",
+        "order": 1,
+        "source": "light.css",
+        "isDefault": true
+    }
+]
+"#;
+
+const LOCALES: &str = r#"
+[
+    {
+    "identifier": "moss.sapic-locale.en",
+    "displayName": "English",
+    "code": "en",
+    "direction": "ltr",
+    "isDefault": true
+    }
+]
+"#;
 
 pub fn random_app_dir_path() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -29,13 +41,7 @@ pub fn random_app_dir_path() -> PathBuf {
         .join(random_string(10))
 }
 
-pub async fn set_up_test_app() -> (
-    App<MockAppRuntime>,
-    AsyncContext, // TODO: this is temporary, should be a mock
-    ServiceProvider,
-    CleanupFn,
-    PathBuf,
-) {
+pub async fn set_up_test_app() -> (App<MockAppRuntime>, AsyncContext, CleanupFn) {
     let ctx = MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
 
     let fs = Arc::new(RealFileSystem::new());
@@ -49,49 +55,23 @@ pub async fn set_up_test_app() -> (
     let logs_abs_path = app_path.join("logs");
     let workspaces_abs_path = app_path.join("workspaces");
     let globals_abs_path = app_path.join("globals");
+    let themes_abs_path = app_path.join("themes");
+    let locales_abs_path = app_path.join("locales");
 
     {
         tokio::fs::create_dir_all(&app_path).await.unwrap();
         tokio::fs::create_dir(&logs_abs_path).await.unwrap();
         tokio::fs::create_dir(&workspaces_abs_path).await.unwrap();
         tokio::fs::create_dir(&globals_abs_path).await.unwrap();
-    }
+        tokio::fs::create_dir(&themes_abs_path).await.unwrap();
+        tokio::fs::create_dir(&locales_abs_path).await.unwrap();
 
-    let storage_service: Arc<StorageService<MockAppRuntime>> =
-        StorageService::new(&app_path).unwrap().into();
-
-    let session_id = SessionId::new();
-    let mut services: ServiceMap = Default::default();
-
-    let log_service: Arc<LogService<MockAppRuntime>> = LogService::new(
-        fs.clone(),
-        app_handle.clone(),
-        &logs_abs_path,
-        &session_id,
-        storage_service.clone(),
-    )
-    .unwrap()
-    .into();
-
-    let workspace_service: Arc<WorkspaceService<MockAppRuntime>> =
-        WorkspaceService::new(&ctx, storage_service.clone(), fs.clone(), &app_path)
+        tokio::fs::write(&themes_abs_path.join("themes.json"), THEMES)
             .await
-            .expect("Failed to create workspace service")
-            .into();
-
-    {
-        services.insert(
-            TypeId::of::<LogService<MockAppRuntime>>(),
-            log_service.clone(),
-        );
-        services.insert(
-            TypeId::of::<WorkspaceService<MockAppRuntime>>(),
-            workspace_service.clone(),
-        );
-        services.insert(
-            TypeId::of::<StorageService<MockAppRuntime>>(),
-            storage_service.clone(),
-        );
+            .unwrap();
+        tokio::fs::write(&locales_abs_path.join("locales.json"), LOCALES)
+            .await
+            .unwrap();
     }
 
     let cleanup_fn = Box::new({
@@ -105,40 +85,19 @@ pub async fn set_up_test_app() -> (
         }
     });
 
-    // FIXME: This is a hack, should be a mock
-    let activity_indicator = ActivityIndicator::new(app_handle.clone());
-    let app_builder = AppBuilder::<MockAppRuntime>::new(
-        app_handle.clone(),
-        activity_indicator,
-        AppDefaults {
-            theme: ColorThemeInfo {
-                identifier: "".to_string(),
-                display_name: "".to_string(),
-                mode: ThemeMode::Light,
-                order: None,
-                source: Default::default(),
-                is_default: None,
-            },
-            locale: LocaleInfo {
-                identifier: "".to_string(),
-                display_name: "".to_string(),
-                code: "".to_string(),
-                direction: None,
-                is_default: None,
-            },
-        },
-        fs.clone(),
-        app_path.clone(),
-    )
-    .with_service::<LogService<MockAppRuntime>>(log_service)
-    .with_service::<WorkspaceService<MockAppRuntime>>(workspace_service)
-    .with_service::<StorageService<MockAppRuntime>>(storage_service);
-
     (
-        app_builder.build().await.unwrap(),
+        AppBuilder::<MockAppRuntime>::new(app_handle.clone(), fs.clone())
+            .build(
+                &ctx,
+                BuildAppParams {
+                    app_dir: app_path.clone(),
+                    themes_dir: themes_abs_path,
+                    locales_dir: locales_abs_path,
+                    logs_dir: logs_abs_path,
+                },
+            )
+            .await,
         ctx,
-        services.into(),
         cleanup_fn,
-        app_path,
     )
 }

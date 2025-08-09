@@ -1,6 +1,7 @@
 pub mod api;
 pub mod builder;
 pub mod context;
+pub mod edit;
 pub mod manifest;
 pub mod models;
 pub mod services;
@@ -36,4 +37,13 @@ pub mod dirs {
 pub trait AnyWorkspace<R: AppRuntime> {
     type Collection;
     type Environment: AnyEnvironment<R>;
+}
+
+pub mod errors {
+    use joinerror::error::ErrorMarker;
+
+    pub struct ErrorNotFound;
+    impl ErrorMarker for ErrorNotFound {
+        const MESSAGE: &'static str = "not_found";
+    }
 }

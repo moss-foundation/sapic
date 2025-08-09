@@ -1,6 +1,7 @@
 import { EntryInfo } from "@repo/moss-collection";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { useWorkspaceSidebarState } from "../workspace/useWorkspaceSidebarState";
 import { fetchCollectionEntries } from "./queries/fetchCollectionEntries";
 
 export const USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY = "streamCollectionEntries";
@@ -8,10 +9,13 @@ export const USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY = "streamCollectionEntrie
 export const useStreamedCollectionEntries = (collectionId: string) => {
   const queryClient = useQueryClient();
 
+  const { hasWorkspace } = useWorkspaceSidebarState();
+
   const query = useQuery<EntryInfo[], Error>({
     queryKey: [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, collectionId],
     queryFn: () => fetchCollectionEntries(collectionId),
     placeholderData: [],
+    enabled: hasWorkspace,
   });
 
   const clearEntriesCacheAndRefetch = () => {

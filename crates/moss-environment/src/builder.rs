@@ -1,26 +1,42 @@
+use indexmap::IndexMap;
 use joinerror::{Error, ResultExt};
-use moss_applib::{AppRuntime, ServiceMarker, providers::ServiceMap};
-use moss_contentmodel::{ContentModel, json::JsonModel};
-use moss_fs::{CreateOptions, FileSystem, FsResultExt, model_registry::GlobalModelRegistry};
-use moss_hcl::{Block, HclResultExt};
-use moss_text::sanitized::sanitize;
-use std::{any::TypeId, path::PathBuf, sync::Arc};
+use moss_applib::AppRuntime;
+use moss_common::continue_if_err;
+use moss_db::{DbResultExt, primitives::AnyValue};
+use moss_fs::{CreateOptions, FileSystem, FsResultExt};
+use moss_hcl::{Block, HclResultExt, LabeledBlock, json_to_hcl};
+use moss_storage::{
+    common::VariableStore, primitives::segkey::SegKeyBuf, storage::operations::TransactionalPutItem,
+};
+use serde_json::Value as JsonValue;
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
+use tokio::sync::watch;
 
 use crate::{
-    configuration::{MetadataDecl, SourceFile},
-    constants,
-    environment::Environment,
+    configuration::{MetadataDecl, SourceFile, VariableDecl},
+    edit::EnvironmentEditing,
+    environment::{Environment, EnvironmentPath},
     errors::{
-        ErrorEnvironmentAlreadyExists, ErrorEnvironmentNotFound, ErrorFailedToDecode,
-        ErrorFailedToEncode, ErrorIo,
+        ErrorEnvironmentAlreadyExists, ErrorEnvironmentNotFound, ErrorFailedToEncode, ErrorIo,
     },
-    models::primitives::EnvironmentId,
+    models::{
+        primitives::{EnvironmentId, VariableId},
+        types::AddVariableParams,
+    },
+    segments::{SEGKEY_VARIABLE_LOCALVALUE, SEGKEY_VARIABLE_ORDER},
+    utils,
 };
 
-pub struct EnvironmentCreateParams {
+pub struct CreateEnvironmentParams<'a> {
     pub name: String,
-    pub abs_path: PathBuf,
+    pub abs_path: &'a Path,
     pub color: Option<String>,
+    pub order: isize,
+    pub variables: Vec<AddVariableParams>,
 }
 
 pub struct EnvironmentLoadParams {
@@ -29,38 +45,25 @@ pub struct EnvironmentLoadParams {
 
 pub struct EnvironmentBuilder {
     fs: Arc<dyn FileSystem>,
-    models: GlobalModelRegistry,
-    services: ServiceMap,
+    vars_to_store: HashMap<VariableId, (JsonValue, isize)>,
 }
 
 impl EnvironmentBuilder {
-    pub fn new(fs: Arc<dyn FileSystem>, models: GlobalModelRegistry) -> Self {
+    pub fn new(fs: Arc<dyn FileSystem>) -> Self {
         Self {
             fs,
-            models,
-            services: Default::default(),
+            vars_to_store: HashMap::new(),
         }
     }
 
-    pub fn with_service<T: ServiceMarker + Send + Sync>(
-        mut self,
-        service: impl Into<Arc<T>>,
-    ) -> Self {
-        self.services.insert(TypeId::of::<T>(), service.into());
-        self
-    }
-
-    pub async fn create<R: AppRuntime>(
-        self,
-        params: EnvironmentCreateParams,
-    ) -> joinerror::Result<Environment<R>> {
+    pub async fn initialize<'a>(
+        &mut self,
+        params: CreateEnvironmentParams<'a>,
+    ) -> joinerror::Result<PathBuf> {
         debug_assert!(params.abs_path.is_absolute());
 
-        let file_name = format!(
-            "{}.{}",
-            sanitize(&params.name),
-            constants::ENVIRONMENT_FILE_EXTENSION
-        );
+        let id = EnvironmentId::new();
+        let file_name = utils::format_file_name(&params.name);
         let abs_path = params.abs_path.join(&file_name);
         if abs_path.exists() {
             return Err(Error::new::<ErrorEnvironmentAlreadyExists>(
@@ -68,14 +71,37 @@ impl EnvironmentBuilder {
             ));
         }
 
-        let file = SourceFile {
+        let mut variables = IndexMap::with_capacity(params.variables.len());
+        for v in params.variables {
+            let global_value = continue_if_err!(json_to_hcl(&v.global_value), |err| {
+                println!("failed to convert global value expression: {}", err); // TODO: log error
+            });
+
+            let id = VariableId::new();
+
+            variables.insert(
+                id.clone(),
+                VariableDecl {
+                    name: v.name,
+                    value: global_value,
+                    description: v.desc,
+                    options: v.options,
+                },
+            );
+
+            // We don't save data to the store here because we don't want to pass the store as a parameter to this function.
+            // When the environment is simply being initialized, we might not yet have access to the store where variable data could be saved.
+            self.vars_to_store.insert(id, (v.local_value, v.order));
+        }
+
+        let content = hcl::to_string(&SourceFile {
             metadata: Block::new(MetadataDecl {
-                id: EnvironmentId::new(),
+                id: id.clone(),
                 color: params.color,
             }),
-            variables: None,
-        };
-        let content = hcl::to_string(&file).join_err_with::<ErrorFailedToEncode>(|| {
+            variables: Some(LabeledBlock::new(variables)),
+        })
+        .join_err_with::<ErrorFailedToEncode>(|| {
             format!("failed to encode environment file {}", abs_path.display())
         })?;
 
@@ -93,51 +119,98 @@ impl EnvironmentBuilder {
                 format!("failed to create environment file {}", abs_path.display())
             })?;
 
-        let hcl_value = hcl::to_value(file).unwrap();
-        let json_value = serde_json::to_value(hcl_value).unwrap();
-        self.models
-            .add(
-                abs_path.to_string_lossy().to_string(),
-                ContentModel::Json(JsonModel::new(json_value)),
-            )
-            .await;
+        Ok(abs_path)
+    }
 
-        Ok(Environment::new(abs_path.into(), self.services.into()))
+    pub async fn create<'a, R: AppRuntime>(
+        mut self,
+        ctx: &R::AsyncContext,
+        variable_store: Arc<dyn VariableStore<R::AsyncContext>>,
+        params: CreateEnvironmentParams<'a>,
+    ) -> joinerror::Result<Environment<R>> {
+        debug_assert!(params.abs_path.is_absolute());
+
+        let abs_path = self
+            .initialize(params)
+            .await
+            .join_err::<()>("failed to initialize environment")?;
+
+        for (id, (local_value, order)) in self.vars_to_store.drain() {
+            let local_value = continue_if_err!(AnyValue::serialize(&local_value), |err| {
+                println!("failed to serialize localvalue: {}", err);
+            });
+
+            let order = continue_if_err!(AnyValue::serialize(&order), |err| {
+                println!("failed to serialize order: {}", err);
+            });
+
+            let mut txn = continue_if_err!(variable_store.begin_write(&ctx).await, |err| {
+                println!("failed to start a write transaction: {}", err);
+            });
+
+            continue_if_err!(
+                async {
+                    TransactionalPutItem::put_with_context(
+                        variable_store.as_ref(),
+                        ctx,
+                        &mut txn,
+                        SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE),
+                        local_value,
+                    )
+                    .await
+                    .join_err::<()>("failed to put local_value in the database")?;
+
+                    TransactionalPutItem::put_with_context(
+                        variable_store.as_ref(),
+                        ctx,
+                        &mut txn,
+                        SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_ORDER),
+                        order,
+                    )
+                    .await
+                    .join_err::<()>("failed to put order in the database")?;
+
+                    txn.commit()
+                        .join_err::<()>("failed to commit transaction")?;
+
+                    Ok::<(), Error>(())
+                },
+                |err: Error| {
+                    println!("{}", err);
+                }
+            );
+        }
+
+        let (abs_path_tx, abs_path_rx) = watch::channel(EnvironmentPath::new(abs_path)?);
+
+        Ok(Environment {
+            fs: self.fs.clone(),
+            abs_path_rx,
+            edit: EnvironmentEditing::new(self.fs.clone(), abs_path_tx),
+            variable_store,
+        })
     }
 
     pub async fn load<R: AppRuntime>(
         self,
+        variable_store: Arc<dyn VariableStore<R::AsyncContext>>,
         params: EnvironmentLoadParams,
     ) -> joinerror::Result<Environment<R>> {
-        let abs_path = params.abs_path;
-        debug_assert!(abs_path.is_absolute());
+        debug_assert!(params.abs_path.is_absolute());
 
-        if !abs_path.exists() {
+        if !params.abs_path.exists() {
             return Err(Error::new::<ErrorEnvironmentNotFound>(
-                abs_path.display().to_string(),
+                params.abs_path.display().to_string(),
             ));
         }
 
-        let _file: SourceFile = {
-            let mut reader = self
-                .fs
-                .open_file(&abs_path)
-                .await
-                .join_err_with::<ErrorIo>(|| {
-                    format!("failed to open environment file {}", abs_path.display())
-                })?;
+        let (abs_path_tx, abs_path_rx) = watch::channel(EnvironmentPath::new(params.abs_path)?);
 
-            let mut buf = String::new();
-            reader
-                .read_to_string(&mut buf)
-                .join_err_with::<ErrorIo>(|| {
-                    format!("failed to read environment file {}", abs_path.display())
-                })?;
-            hcl::from_str(&buf).join_err_with::<ErrorFailedToDecode>(|| {
-                format!("failed to decode environment file {}", abs_path.display())
-            })?
-        };
-
-        Ok(Environment::new(abs_path.into(), self.services.into()))
+        Ok(Environment {
+            fs: self.fs.clone(),
+            abs_path_rx,
+            edit: EnvironmentEditing::new(self.fs.clone(), abs_path_tx),
+            variable_store,
+        })
     }
 }

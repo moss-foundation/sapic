@@ -17,7 +17,7 @@ pub struct MetadataDecl {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct VariableSpec {
+pub struct VariableDecl {
     pub name: VariableName,
     #[serde(
         serialize_with = "serialize_expression",
@@ -36,5 +36,5 @@ pub struct SourceFile {
 
     #[serde(rename = "variable")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub variables: Option<LabeledBlock<IndexMap<VariableId, VariableSpec>>>,
+    pub variables: Option<LabeledBlock<IndexMap<VariableId, VariableDecl>>>,
 }

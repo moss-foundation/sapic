@@ -25,7 +25,7 @@ import { HeadBarRightItems } from "./HeadBarRightItems";
 import { WorkspaceMenuProvider } from "./WorkspaceMenuProvider";
 
 export const HeadBar = () => {
-  // TEST: Hardoce OS type for testing
+  //FIXME: Hardoce OS type for testing
   const os = type();
   const { showDebugPanels, setShowDebugPanels } = useTabbedPaneStore();
   const openPanel = useTabbedPaneStore((state) => state.openPanel);
@@ -34,7 +34,7 @@ export const HeadBar = () => {
   const workspace = useActiveWorkspace();
   const selectedWorkspace = workspace?.name || null;
 
-  // TEST: Hardoce default user/branch for testing
+  //FIXME: Hardoce default user/branch for testing
   const [, setSelectedUser] = useState<string | null>(null);
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
   const [collectionName, setCollectionName] = useState("Sapic Test Collection");
@@ -147,32 +147,31 @@ export const HeadBar = () => {
       <header
         data-tauri-drag-region
         className={cn(
-          "header background-(--moss-secondary-background) grid h-full w-screen items-center shadow-[inset_0_-1px_0_0_var(--moss-border-color)]",
+          "header background-(--moss-secondary-background) grid h-full w-screen items-center border-b border-(--moss-border-color)",
           {
-            "grid-cols-[max-content_minmax(0px,_1fr)]": os === "macos",
-            "grid-cols-[minmax(0px,_1fr)_max-content]": os !== "macos",
+            "grid-cols-[max-content_1fr]": os === "macos",
+            "grid-cols-[1fr]": os !== "macos",
           }
         )}
       >
         {os === "macos" && <Controls os={os} />}
 
         <div
-          className={cn("relative mb-0.5 flex w-full items-center overflow-clip", {
+          className={cn("relative flex h-full w-full items-center overflow-clip", {
             "mr-2 pr-[8px]": os === "macos",
-            "ml-2 pr-[8px]": os === "windows" || os === "linux",
+            "ml-[7px] pr-[8px]": os === "windows" || os === "linux",
           })}
           style={{ overflowClipMargin: 4 }}
           data-tauri-drag-region
         >
           {/* Main content container with proper layout */}
           <div
-            className={cn("relative grid w-full gap-1", {
-              "grid-cols-[max-content_1fr_max-content]": selectedWorkspace,
-              "grid-cols-[max-content_1fr]": !selectedWorkspace,
+            className={cn("relative grid h-full w-full items-center justify-between gap-1", {
+              "grid-cols-[1fr_max-content_1fr]": selectedWorkspace,
+              "grid-cols-[max-content_max-content]": !selectedWorkspace,
             })}
             data-tauri-drag-region
           >
-            {/*HeadBar Left-side items*/}
             <HeadBarLeftItems
               isLarge={isLarge}
               breakpoint={breakpoint}
@@ -185,7 +184,7 @@ export const HeadBar = () => {
             {/*HeadBar Center items - absolutely positioned to be truly centered */}
             {selectedWorkspace && (
               <div
-                className={cn("absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2", {
+                className={cn("w-full", {
                   "pointer-events-none": os === "macos",
                 })}
                 data-tauri-drag-region
@@ -216,24 +215,18 @@ export const HeadBar = () => {
               </div>
             )}
 
-            {/*HeadBar Right-side items*/}
-            <div className="ml-2 flex justify-end" data-tauri-drag-region>
-              <HeadBarRightItems
-                isMedium={isMedium}
-                isLarge={isLarge}
-                breakpoint={breakpoint}
-                showDebugPanels={showDebugPanels}
-                setShowDebugPanels={setShowDebugPanels}
-                openPanel={openPanel}
-                os={os}
-                selectedWorkspace={selectedWorkspace}
-              />
-            </div>
+            <HeadBarRightItems
+              isMedium={isMedium}
+              isLarge={isLarge}
+              breakpoint={breakpoint}
+              showDebugPanels={showDebugPanels}
+              setShowDebugPanels={setShowDebugPanels}
+              openPanel={openPanel}
+              os={os}
+              selectedWorkspace={selectedWorkspace}
+            />
           </div>
         </div>
-
-        {os !== undefined && os !== "macos" && (os === "windows" || os === "linux") && <Controls os={os} />}
-        {os !== undefined && os !== "macos" && os !== "windows" && os !== "linux" && <Controls os={os} />}
       </header>
     </WorkspaceMenuProvider>
   );

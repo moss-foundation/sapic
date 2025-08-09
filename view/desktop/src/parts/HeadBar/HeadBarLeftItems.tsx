@@ -32,23 +32,21 @@ export const HeadBarLeftItems = ({
 
   return (
     <div
-      className={cn("flex items-center", {
+      className={cn("flex items-center justify-start overflow-hidden", {
         "gap-0.5": breakpoint === "md",
         "gap-1.5": ["lg", "xl", "2xl"].includes(breakpoint),
       })}
       data-tauri-drag-region
     >
       {isWindowsOrLinux && (
-        <>
-          <ActionMenu.Root>
-            <ActionMenu.Trigger className="hover:!background-[var(--moss-icon-secondary-background-hover)] rounded p-1">
-              <Icon icon="WindowsMenu" className="size-4.5 cursor-pointer text-(--moss-headBar-icon-primary-text)" />
-            </ActionMenu.Trigger>
-            <ActionMenu.Content>
-              {windowsMenuItems.map((item) => renderActionMenuItem(item, handleWindowsMenuAction))}
-            </ActionMenu.Content>
-          </ActionMenu.Root>
-        </>
+        <ActionMenu.Root>
+          <ActionMenu.Trigger className="hover:!background-(--moss-icon-secondary-background-hover) rounded p-1">
+            <Icon icon="WindowsMenu" className="size-4.5 cursor-pointer text-(--moss-headBar-icon-primary-text)" />
+          </ActionMenu.Trigger>
+          <ActionMenu.Content>
+            {windowsMenuItems.map((item) => renderActionMenuItem(item, handleWindowsMenuAction))}
+          </ActionMenu.Content>
+        </ActionMenu.Root>
       )}
 
       <ActionMenu.Root>
@@ -59,7 +57,7 @@ export const HeadBarLeftItems = ({
             placeholder="No workspace selected"
             showPlaceholder={!selectedWorkspace}
             labelClassName="text-md"
-            className="hover:!background-[var(--moss-icon-secondary-background-hover)] h-[24px]"
+            className="hover:!background-(--moss-icon-secondary-background-hover) h-[24px] min-w-[46px]"
           />
         </ActionMenu.Trigger>
         <ActionMenu.Content>

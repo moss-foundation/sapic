@@ -1,5 +1,4 @@
 use moss_applib::AppRuntime;
-use moss_common::api::OperationResult;
 
 use crate::{
     Collection,
@@ -11,7 +10,7 @@ impl<R: AppRuntime> Collection<R> {
         &self,
         ctx: &R::AsyncContext,
         input: BatchCreateEntryInput,
-    ) -> OperationResult<BatchCreateEntryOutput> {
+    ) -> joinerror::Result<BatchCreateEntryOutput> {
         // Split directories from items and create directories first
         let mut items = Vec::new();
         let mut dirs = Vec::new();

@@ -2,6 +2,7 @@ use derive_more::Deref;
 use nanoid::nanoid;
 use serde::{Deserialize, Serialize};
 use std::{fmt::Display, sync::Arc};
+use ts_rs::TS;
 
 /// @category Primitive
 #[derive(Clone, Debug, PartialEq, Hash, Eq, Deref, Serialize, Deserialize)]
@@ -31,6 +32,19 @@ impl Display for VariableId {
     }
 }
 
+#[rustfmt::skip]
+impl TS for VariableId {
+    type WithoutGenerics = Self;
+    type OptionInnerType = Self;
+
+    fn name() -> String { "string".to_string() }
+    fn inline() -> String { "string".to_string() }
+    fn inline_flattened() -> String { "string".to_string() }
+    fn decl() -> String { unreachable!() }
+    fn decl_concrete() -> String { unreachable!() }
+    fn dependencies() -> Vec<ts_rs::Dependency> { vec![] }
+}
+
 /// @category Primitive
 #[derive(Clone, Debug, PartialEq, Hash, Eq, Deref, Serialize, Deserialize)]
 #[serde(transparent)]
@@ -57,4 +71,17 @@ impl Display for EnvironmentId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
     }
+}
+
+#[rustfmt::skip]
+impl TS for EnvironmentId {
+    type WithoutGenerics = Self;
+    type OptionInnerType = Self;
+
+    fn name() -> String { "string".to_string() }
+    fn inline() -> String { "string".to_string() }
+    fn inline_flattened() -> String { "string".to_string() }
+    fn decl() -> String { unreachable!() }
+    fn decl_concrete() -> String { unreachable!() }
+    fn dependencies() -> Vec<ts_rs::Dependency> { vec![] }
 }

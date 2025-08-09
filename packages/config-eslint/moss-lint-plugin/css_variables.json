@@ -228,5 +228,15 @@
   "--moss-drag-handle-bg",
   "--moss-tab-active-border-color",
   "--moss-auth-indicator-color",
-  "--moss-tab-badge-color"
+  "--moss-tab-badge-color",
+  "--moss-tab-badge-text",
+  "--moss-requestpage-border-color",
+  "--moss-requestpage-text",
+  "--moss-requestpage-string-color",
+  "--moss-requestpage-number-color",
+  "--moss-requestpage-bool-color",
+  "--moss-requestpage-icon-color",
+  "--moss-requestpage-text-disabled",
+  "--moss-requestpage-placeholder-color",
+  "--moss-requestpage-header-color"
 ]

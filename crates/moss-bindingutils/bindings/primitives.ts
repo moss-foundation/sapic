@@ -8,6 +8,11 @@ export type ChangeBool = { "UPDATE": boolean } | "REMOVE";
 /**
  * @category Primitive
  */
+export type ChangeJsonValue = { "UPDATE": JsonValue } | "REMOVE";
+
+/**
+ * @category Primitive
+ */
 export type ChangePath = { "UPDATE": string } | "REMOVE";
 
 /**
@@ -19,3 +24,5 @@ export type ChangeString = { "UPDATE": string } | "REMOVE";
  * @category Primitive
  */
 export type ChangeUsize = { "UPDATE": number } | "REMOVE";
+
+export type JsonValue = number | string | boolean | Array<JsonValue> | { [key in string]?: JsonValue } | null;

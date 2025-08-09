@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 moss_db.workspace = true
 moss_applib.workspace = true
+joinerror.workspace = true
 
 anyhow.workspace = true
 serde = { workspace = true, features = ["derive"] }
@@ -14,6 +15,7 @@ smallvec.workspace = true
 redb.workspace = true
 tokio.workspace = true
 async-trait.workspace = true
+hcl-rs.workspace = true
 
 [features]
 integration-tests = []

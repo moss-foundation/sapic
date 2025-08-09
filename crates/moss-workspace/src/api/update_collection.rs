@@ -1,9 +1,10 @@
+use moss_api::ext::ValidationResultExt;
 use moss_applib::AppRuntime;
 use validator::Validate;
 
 use crate::{
     models::operations::{UpdateCollectionInput, UpdateCollectionOutput},
-    services::{DynCollectionService, collection_service::CollectionItemUpdateParams},
+    services::collection_service::CollectionItemUpdateParams,
     workspace::Workspace,
 };
 
@@ -13,10 +14,10 @@ impl<R: AppRuntime> Workspace<R> {
         ctx: &R::AsyncContext,
         input: UpdateCollectionInput,
     ) -> joinerror::Result<UpdateCollectionOutput> {
-        input.validate()?;
+        input.validate().join_err_bare()?;
+
         let id = input.id.clone().into();
-        let collections = self.services.get::<DynCollectionService<R>>();
-        collections
+        self.collection_service
             .update_collection(
                 ctx,
                 &id,

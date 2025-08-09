@@ -1,21 +1,17 @@
 use anyhow::{Context as _, Result};
 use chrono::Utc;
 use derive_more::{Deref, DerefMut};
+use joinerror::ResultExt;
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::{AppRuntime, PublicServiceMarker, ServiceMarker};
 use moss_common::api::OperationError;
 use moss_db::DatabaseError;
 use moss_fs::{FileSystem, RemoveOptions};
+use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
 use moss_workspace::{
     Workspace,
-    builder::{WorkspaceBuilder, WorkspaceCreateParams, WorkspaceLoadParams},
-    services::{
-        DynCollectionService as WorkspaceDynCollectionService,
-        DynLayoutService as WorkspaceDynLayoutService,
-        DynStorageService as WorkspaceDynStorageService, collection_service::CollectionService,
-        layout_service::LayoutService, storage_service::StorageService as WorkspaceStorageService,
-    },
-    workspace::WorkspaceModifyParams,
+    builder::{CreateWorkspaceParams, LoadWorkspaceParams, WorkspaceBuilder},
+    workspace::{WorkspaceModifyParams, WorkspaceSummary},
 };
 use std::{
     collections::HashMap,
@@ -131,7 +127,7 @@ pub struct WorkspaceService<R: AppRuntime> {
     /// The absolute path to the workspaces directory
     abs_path: Arc<Path>,
     fs: Arc<dyn FileSystem>,
-    storage: Arc<StorageService<R>>, // TODO: should be a trait
+    storage: Arc<StorageService<R>>,
     state: Arc<RwLock<ServiceState<R>>>,
 }
 
@@ -288,13 +284,13 @@ impl<R: AppRuntime> WorkspaceService<R> {
 
         WorkspaceBuilder::initialize(
             self.fs.clone(),
-            WorkspaceCreateParams {
+            CreateWorkspaceParams {
                 name: params.name.clone(),
                 abs_path: abs_path.clone(),
             },
         )
         .await
-        .context("Failed to initialize the workspace")
+        .join_err::<()>("failed to initialize the workspace")
         .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
 
         state_lock.known_workspaces.insert(
@@ -316,7 +312,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
         })
     }
 
-    pub async fn workspace(&self) -> Option<Arc<ActiveWorkspace<R>>> {
+    pub(crate) async fn workspace(&self) -> Option<Arc<ActiveWorkspace<R>>> {
         let state_lock = self.state.read().await;
         if state_lock.active_workspace.is_none() {
             return None;
@@ -330,6 +326,8 @@ impl<R: AppRuntime> WorkspaceService<R> {
         ctx: &R::AsyncContext,
         id: &WorkspaceId,
         activity_indicator: ActivityIndicator<R::EventLoop>,
+        github_client: Arc<GitHubClient>,
+        gitlab_client: Arc<GitLabClient>,
     ) -> WorkspaceServiceResult<WorkspaceItemDescription> {
         let mut state_lock = self.state.write().await;
         let item = state_lock
@@ -340,48 +338,18 @@ impl<R: AppRuntime> WorkspaceService<R> {
         let last_opened_at = Utc::now().timestamp();
         let name = item.name.clone();
         let abs_path: Arc<Path> = self.absolutize(&id.to_string()).into();
-
-        let storage_service: Arc<WorkspaceDynStorageService<R>> = {
-            let service: Arc<WorkspaceStorageService<R>> = WorkspaceStorageService::new(&abs_path)
-                .context("Failed to load the storage service")
-                .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?
-                .into();
-
-            WorkspaceDynStorageService::new(service)
-        };
-
-        let collection_service: Arc<WorkspaceDynCollectionService<R>> = {
-            let service: Arc<CollectionService<R>> = CollectionService::new(
-                ctx,
-                abs_path.clone(),
-                self.fs.clone(),
-                storage_service.clone(),
-            )
-            .await
-            .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?
-            .into();
-
-            WorkspaceDynCollectionService::new(service)
-        };
-
-        let layout_service: Arc<WorkspaceDynLayoutService<R>> = {
-            let service: Arc<LayoutService<R>> = LayoutService::new(storage_service.clone()).into();
-
-            WorkspaceDynLayoutService::new(service)
-        };
-
         let workspace = WorkspaceBuilder::new(self.fs.clone())
-            .with_service::<WorkspaceDynStorageService<R>>(storage_service.clone())
-            .with_service::<WorkspaceDynCollectionService<R>>(collection_service)
-            .with_service::<WorkspaceDynLayoutService<R>>(layout_service)
             .load(
-                WorkspaceLoadParams {
+                ctx,
+                activity_indicator,
+                LoadWorkspaceParams {
                     abs_path: abs_path.clone(),
                 },
-                activity_indicator,
+                github_client,
+                gitlab_client,
             )
             .await
-            .context("Failed to create the workspace")
+            .join_err::<()>("failed to load the workspace")
             .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
 
         item.last_opened_at = Some(last_opened_at);
@@ -467,7 +435,7 @@ async fn restore_known_workspaces<R: AppRuntime>(
         let id_str = entry.file_name().to_string_lossy().to_string();
         let id: WorkspaceId = id_str.into();
 
-        let summary = Workspace::<R>::summary(fs.clone(), &entry.path())
+        let summary = WorkspaceSummary::new(fs, &entry.path())
             .await
             .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
 
@@ -488,7 +456,7 @@ async fn restore_known_workspaces<R: AppRuntime>(
             id.clone(),
             WorkspaceItem {
                 id,
-                name: summary.manifest.name,
+                name: summary.name,
                 abs_path: entry.path().into(),
                 last_opened_at,
             }

@@ -8,6 +8,7 @@ import {
   useStreamedCollectionsWithEntries,
   useWorkspaceSidebarState,
 } from "@/hooks";
+import { useBatchUpdateCollection } from "@/hooks/collection/useBatchUpdateCollection";
 import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
 import { EntryInfo } from "@repo/moss-collection";
 import { useQueryClient } from "@tanstack/react-query";
@@ -18,6 +19,7 @@ export const SidebarHeader = ({ title }: { title: string }) => {
   const { isLoading: isCollectionsLoading, clearCollectionsCacheAndRefetch } = useStreamedCollections();
   const { clearAllCollectionEntriesCache } = useClearAllCollectionEntries();
   const { data: collectionsWithEntries } = useStreamedCollectionsWithEntries();
+  const { mutateAsync: batchUpdateCollection } = useBatchUpdateCollection();
   const { mutateAsync: batchUpdateCollectionEntry } = useBatchUpdateCollectionEntry();
   const { hasWorkspace } = useWorkspaceSidebarState();
 
@@ -32,61 +34,72 @@ export const SidebarHeader = ({ title }: { title: string }) => {
     clearAllCollectionEntriesCache();
   };
 
-  const areAllNodesCollapsed = collectionsWithEntries.every((collection) => {
+  const areAllCollectionsCollapsed = collectionsWithEntries.every((collection) => !collection.expanded);
+  const areAllDirNodesCollapsed = collectionsWithEntries.every((collection) => {
     return collection.entries.filter((entry) => entry.kind === "Dir").every((entry) => !entry.expanded);
   });
 
   const handleCollapseAll = async () => {
-    if (areAllNodesCollapsed) {
-      return;
-    }
+    await collapseExpandedCollections();
+    await collapseExpandedDirEntries();
+  };
 
-    const collectionWithEntriesToCollapse = collectionsWithEntries.map((collection) => {
-      const entriesToCollapse = collection.entries.filter((entry) => {
-        return entry.kind === "Dir" && entry.expanded;
-      });
+  const collapseExpandedCollections = async () => {
+    const openedCollections = collectionsWithEntries.filter((collection) => collection.expanded);
 
-      return {
-        collectionId: collection.id,
-        entries: entriesToCollapse,
-      };
+    if (openedCollections.length === 0) return;
+
+    await batchUpdateCollection({
+      items: openedCollections.map((collection) => ({
+        id: collection.id,
+        expanded: false,
+      })),
     });
+  };
 
-    const promises = collectionWithEntriesToCollapse.map(async (collection) => {
-      const preparedEntries = collection.entries.map((entry) => {
-        return {
-          DIR: {
-            id: entry.id,
-            expanded: false,
-          },
-        };
+  const collapseExpandedDirEntries = async () => {
+    const collectionsWithExpandedDirs = collectionsWithEntries
+      .map((collection) => ({
+        collectionId: collection.id,
+        entries: collection.entries.filter((entry) => entry.kind === "Dir" && entry.expanded),
+      }))
+      .filter((collection) => collection.entries.length > 0);
+
+    if (collectionsWithExpandedDirs.length === 0) return;
+
+    const promises = collectionsWithExpandedDirs.map(async (collection) => {
+      const preparedEntries = collection.entries.map((entry) => ({
+        DIR: {
+          id: entry.id,
+          expanded: false,
+        },
+      }));
+
+      const res = await batchUpdateCollectionEntry({
+        collectionId: collection.collectionId,
+        entries: {
+          entries: preparedEntries,
+        },
       });
 
-      if (preparedEntries.length > 0) {
-        const res = await batchUpdateCollectionEntry({
-          collectionId: collection.collectionId,
-          entries: {
-            entries: preparedEntries,
-          },
-        });
-
-        if (res.status === "ok") {
-          queryClient.setQueryData(
-            [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, collection.collectionId],
-            (old: EntryInfo[]) => {
-              return old.map((entry) => {
-                if (preparedEntries.some((preparedEntry) => preparedEntry.DIR.id === entry.id)) {
-                  return { ...entry, expanded: false };
-                }
-                return entry;
-              });
-            }
-          );
-        }
+      if (res.status === "ok") {
+        updateQueryCache(collection.collectionId, preparedEntries);
       }
     });
 
     await Promise.all(promises);
+  };
+
+  const updateQueryCache = (
+    collectionId: string,
+    preparedEntries: Array<{ DIR: { id: string; expanded: boolean } }>
+  ) => {
+    queryClient.setQueryData([USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, collectionId], (old: EntryInfo[]) => {
+      return old.map((entry) => {
+        const shouldCollapse = preparedEntries.some((preparedEntry) => preparedEntry.DIR.id === entry.id);
+        return shouldCollapse ? { ...entry, expanded: false } : entry;
+      });
+    });
   };
 
   return (
@@ -95,9 +108,13 @@ export const SidebarHeader = ({ title }: { title: string }) => {
         {title}
       </div>
 
-      <div className="flex grow justify-end">
+      <div className="flex grow justify-end gap-1">
         <ActionButton disabled={!hasWorkspace} icon="Add" onClick={openCreateCollectionModal} />
-        <ActionButton disabled={!hasWorkspace || areAllNodesCollapsed} icon="CollapseAll" onClick={handleCollapseAll} />
+        <ActionButton
+          disabled={!hasWorkspace || (areAllDirNodesCollapsed && areAllCollectionsCollapsed)}
+          icon="CollapseAll"
+          onClick={handleCollapseAll}
+        />
         <ActionButton disabled={!hasWorkspace} icon="Import" />
         <ActionButton
           icon="Refresh"

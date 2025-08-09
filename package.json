@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "@getgrit/cli": "0.1.0-alpha.1743007075",
-    "@ianvs/prettier-plugin-sort-imports": "^4.4.0",
+    "@ianvs/prettier-plugin-sort-imports": "^4.6.0",
     "@playwright/test": "^1.53.2",
     "@tailwindcss/vite": "^4.1.0",
     "@testing-library/dom": "^10.4.0",
@@ -32,7 +32,7 @@
     "@types/node": "^22.10.1",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "@typespec/prettier-plugin-typespec": "1.1.0",
+    "@typespec/prettier-plugin-typespec": "1.2.1",
     "@vitejs/plugin-react": "^4.3.4",
     "@vitest/browser": "^3.2.3",
     "clsx": "^2.1.1",
@@ -46,11 +46,11 @@
     "ts-node": "^10.9.2",
     "turbo": "^2.4.2",
     "typedoc": "^0.28.5",
-    "typescript": "^5.8.2",
+    "typescript": "^5.9.2",
     "vite": "^7.0.4",
     "vitest": "^3.2.3"
   },
-  "packageManager": "pnpm@10.13.1",
+  "packageManager": "pnpm@10.14.0",
   "engines": {
     "node": ">=18"
   },

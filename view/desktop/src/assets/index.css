@@ -22,6 +22,10 @@
   -webkit-font-smoothing: antialiased;
 }
 
+*:focus-visible {
+  outline: none;
+}
+
 svg:not(.animate-spin),
 svg:not(.animate-spin) * {
   /* TODO: This breaks some icons, so i turned it off for now */

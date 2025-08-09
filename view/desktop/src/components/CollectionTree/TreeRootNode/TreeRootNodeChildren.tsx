@@ -2,12 +2,13 @@ import { useContext } from "react";
 
 import { cn } from "@/utils";
 
+import { EntryIcon } from "../../EntryIcon";
+import { DirDepthIndicator } from "../DirDepthIndicator";
 import { NodeAddForm } from "../NodeAddForm";
 import { TreeContext } from "../Tree";
 import TreeNode from "../TreeNode/TreeNode";
-import { TreeNodeIcon } from "../TreeNode/TreeNodeIcon";
 import { TreeCollectionRootNode } from "../types";
-import { getRestrictedNames, sortByOrder } from "../utils";
+import { getChildrenNames, sortByOrder } from "../utils";
 
 interface TreeRootNodeChildrenProps {
   node: TreeCollectionRootNode;
@@ -32,10 +33,12 @@ export const TreeRootNodeChildren = ({
       : sortByOrder([node.endpoints, node.schemas, node.components, node.requests]);
 
   const shouldRenderAddRootForm = displayMode === "REQUEST_FIRST" && (isAddingRootFileNode || isAddingRootFolderNode);
-  const restrictedNames = getRestrictedNames(node, isAddingRootFolderNode);
+  const restrictedNames = getChildrenNames(node.requests);
 
   return (
-    <ul className={cn("h-full w-full")}>
+    <ul className={cn("relative w-full")}>
+      {node.expanded && <DirDepthIndicator depth={0} />}
+
       {nodesToRender.map((childNode, index) => {
         return (
           <TreeNode
@@ -51,8 +54,8 @@ export const TreeRootNodeChildren = ({
 
       {shouldRenderAddRootForm && (
         <div className="flex w-full min-w-0 items-center gap-1 py-0.5" style={{ paddingLeft: nodeOffset * 1 }}>
-          <TreeNodeIcon
-            node={{
+          <EntryIcon
+            entry={{
               id: "Placeholder_AddingNodeId",
               name: "Placeholder_AddingNodeName",
               kind: "Dir",

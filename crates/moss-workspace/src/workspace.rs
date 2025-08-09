@@ -1,16 +1,49 @@
 use anyhow::Result;
+use joinerror::ResultExt;
+use json_patch::{PatchOperation, ReplaceOperation};
+use jsonptr::PointerBuf;
 use moss_activity_indicator::ActivityIndicator;
-use moss_applib::{AppRuntime, PublicServiceMarker, providers::ServiceProvider};
+use moss_applib::AppRuntime;
 use moss_collection::Collection;
-use moss_environment::{AnyEnvironment, Environment};
-use moss_file::json::JsonFileHandle;
-use moss_fs::FileSystem;
+use moss_edit::json::EditOptions;
+use moss_environment::{AnyEnvironment, Environment, models::primitives::EnvironmentId};
+use moss_fs::{FileSystem, FsResultExt};
+use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
+use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};
 
-use crate::manifest::{MANIFEST_FILE_NAME, ManifestModel};
+use crate::{
+    edit::WorkspaceEdit,
+    manifest::{MANIFEST_FILE_NAME, ManifestFile},
+    models::primitives::CollectionId,
+    services::{
+        collection_service::CollectionService, environment_service::EnvironmentService,
+        layout_service::LayoutService, storage_service::StorageService,
+    },
+};
 
 pub struct WorkspaceSummary {
-    pub manifest: ManifestModel,
+    pub name: String,
+}
+
+impl WorkspaceSummary {
+    pub async fn new(fs: &Arc<dyn FileSystem>, abs_path: &Path) -> joinerror::Result<Self> {
+        debug_assert!(abs_path.is_absolute());
+
+        let manifest_path = abs_path.join(MANIFEST_FILE_NAME);
+
+        let rdr = fs.open_file(&manifest_path).await.join_err_with::<()>(|| {
+            format!("failed to open manifest file: {}", manifest_path.display())
+        })?;
+
+        let manifest: ManifestFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
+            format!("failed to parse manifest file: {}", manifest_path.display())
+        })?;
+
+        Ok(WorkspaceSummary {
+            name: manifest.name,
+        })
+    }
 }
 
 #[derive(Clone)]
@@ -21,71 +54,69 @@ pub struct WorkspaceModifyParams {
 pub trait AnyWorkspace<R: AppRuntime> {
     type Collection;
     type Environment: AnyEnvironment<R>;
-
-    // type CollectionService: AnyCollectionService<R>;
-    // type EnvironmentService: AnyEnvironmentService;
 }
 
 pub struct Workspace<R: AppRuntime> {
     pub(super) abs_path: Arc<Path>,
-    pub(super) services: ServiceProvider,
+
     #[allow(dead_code)]
     pub(super) activity_indicator: ActivityIndicator<R::EventLoop>,
-    #[allow(dead_code)]
-    pub(super) manifest: JsonFileHandle<ManifestModel>,
+    pub(super) edit: WorkspaceEdit,
+    pub(super) layout_service: LayoutService<R>,
+    pub(super) collection_service: CollectionService<R>,
+    pub(super) environment_service: EnvironmentService<R>,
+    pub(super) storage_service: Arc<StorageService<R>>,
+
+    // TODO: Refine the management of git provider clients
+    pub(super) github_client: Arc<GitHubClient>,
+    pub(super) gitlab_client: Arc<GitLabClient>,
 }
 
 impl<R: AppRuntime> AnyWorkspace<R> for Workspace<R> {
     type Collection = Collection<R>;
     type Environment = Environment<R>;
-
-    // type CollectionService = CollectionService;
-    // type EnvironmentService = EnvironmentService;
 }
 
 impl<R: AppRuntime> Workspace<R> {
-    pub fn service<S: PublicServiceMarker>(&self) -> &S {
-        self.services.get::<S>()
-    }
-
-    // INFO: This will probably be moved to EditService in the future.
-    pub async fn modify(&self, params: WorkspaceModifyParams) -> Result<()> {
-        if params.name.is_some() {
-            self.manifest
-                .edit(
-                    |model| {
-                        model.name = params.name.unwrap();
-                        Ok(())
-                    },
-                    |model| {
-                        serde_json::to_string(model).map_err(|err| {
-                            anyhow::anyhow!("Failed to serialize JSON file: {}", err)
-                        })
-                    },
-                )
-                .await?;
-        }
-        Ok(())
-    }
-
-    // TODO: Move out of the Workspace struct
-    pub async fn summary(fs: Arc<dyn FileSystem>, abs_path: &Path) -> Result<WorkspaceSummary> {
-        let manifest = JsonFileHandle::load(fs, &abs_path.join(MANIFEST_FILE_NAME)).await?;
-        Ok(WorkspaceSummary {
-            manifest: manifest.model().await,
-        })
-    }
-
-    pub async fn manifest(&self) -> ManifestModel {
-        self.manifest.model().await
-    }
-
-    pub fn abs_path(&self) -> &Arc<Path> {
+    pub fn abs_path(&self) -> &Path {
         &self.abs_path
     }
 
-    // // Test only utility, not feature-flagged for easier CI setup
-    // pub fn __storage(&self) -> Arc<dyn WorkspaceStorage> {
-    //     self.storage.clone()
-    // }
+    pub async fn collection(&self, id: &CollectionId) -> Option<Arc<Collection<R>>> {
+        self.collection_service.collection(id).await
+    }
+
+    pub async fn environment(&self, id: &EnvironmentId) -> Option<Arc<Environment<R>>> {
+        self.environment_service.environment(id).await
+    }
+
+    pub async fn modify(&self, params: WorkspaceModifyParams) -> Result<()> {
+        let mut patches = Vec::new();
+
+        if let Some(new_name) = params.name {
+            patches.push((
+                PatchOperation::Replace(ReplaceOperation {
+                    path: unsafe { PointerBuf::new_unchecked("/name") },
+                    value: JsonValue::String(new_name),
+                }),
+                EditOptions {
+                    ignore_if_not_exists: false,
+                    create_missing_segments: false,
+                },
+            ));
+        }
+
+        self.edit
+            .edit(&patches)
+            .await
+            .join_err::<()>("failed to edit workspace")?;
+        Ok(())
+    }
+}
+
+#[cfg(any(test, feature = "integration-tests"))]
+impl<R: AppRuntime> Workspace<R> {
+    pub fn db(&self) -> &Arc<dyn moss_storage::WorkspaceStorage<R::AsyncContext>> {
+        self.storage_service.storage()
+    }
 }

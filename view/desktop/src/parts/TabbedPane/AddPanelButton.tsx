@@ -13,7 +13,6 @@ export const AddPanelButton = (props: IDockviewHeaderActionsProps) => {
       id: tabId,
       component: "Default",
       params: {
-        iconType: "file",
         workspace: true,
       },
       position: {

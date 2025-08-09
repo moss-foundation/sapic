@@ -1,12 +1,28 @@
+use async_trait::async_trait;
 use moss_git::GitAuthAgent;
-use std::sync::Arc;
+use reqwest::{
+    Client,
+    header::{ACCEPT, HeaderMap, HeaderValue},
+};
+use std::{cell::LazyCell, sync::Arc};
 use url::Url;
 
-use crate::{GitHostingProvider, common::SSHAuthAgent};
+use crate::{
+    GitHostingProvider,
+    common::SSHAuthAgent,
+    constants::GITLAB_API_URL,
+    gitlab::response::{AvatarResponse, ContributorsResponse},
+    models::types::{Contributor, RepositoryInfo},
+};
+
+const CONTENT_TYPE: LazyCell<HeaderValue> =
+    LazyCell::new(|| HeaderValue::from_static("application/json"));
 
 pub trait GitLabAuthAgent: GitAuthAgent {}
 
+// FIXME: Support self-hosted GitLab domains
 pub struct GitLabClient {
+    client: Client,
     #[allow(dead_code)]
     client_auth_agent: Arc<dyn GitAuthAgent>,
     #[allow(dead_code)]
@@ -15,22 +31,77 @@ pub struct GitLabClient {
 
 impl GitLabClient {
     pub fn new(
+        client: Client,
         client_auth_agent: impl GitLabAuthAgent + 'static,
         ssh_auth_agent: Option<impl SSHAuthAgent + 'static>,
     ) -> Self {
         Self {
+            client,
             client_auth_agent: Arc::new(client_auth_agent),
             ssh_auth_agent: ssh_auth_agent.map(|agent| Arc::new(agent) as Arc<dyn SSHAuthAgent>),
         }
     }
 }
 
+unsafe impl Send for GitLabClient {}
+unsafe impl Sync for GitLabClient {}
+
+#[async_trait]
 impl GitHostingProvider for GitLabClient {
     fn name(&self) -> String {
         "GitLab".to_string()
     }
     fn base_url(&self) -> Url {
         Url::parse("https://gitlab.com").unwrap()
+    }
+
+    async fn contributors(&self, repo_url: &str) -> joinerror::Result<Vec<Contributor>> {
+        // TODO: Support token auth for private repos
+        let encoded_url = urlencoding::encode(repo_url);
+
+        let mut headers = HeaderMap::new();
+        headers.insert(ACCEPT, (*CONTENT_TYPE).clone());
+
+        let contributors_response: ContributorsResponse = self
+            .client
+            .get(format!(
+                "{GITLAB_API_URL}/projects/{encoded_url}/repository/contributors"
+            ))
+            .headers(headers.clone())
+            .send()
+            .await?
+            .json()
+            .await?;
+
+        // FIXME: Is there a better strategy?
+        // Gitlab contributor endpoint only provides the contributor email
+        // We will need to fetch their avatar separately
+
+        let mut list = Vec::new();
+        for item in contributors_response.items {
+            let name = item.name;
+
+            let email = item.email;
+
+            let avatar_response: AvatarResponse = self
+                .client
+                .get(format!("{GITLAB_API_URL}/avatar"))
+                .query(&[("email", &email)])
+                .send()
+                .await?
+                .json()
+                .await?;
+
+            let avatar_url = avatar_response.avatar_url;
+
+            list.push(Contributor { name, avatar_url });
+        }
+        Ok(list)
+    }
+
+    async fn repository_info(&self, _repo_url: &str) -> joinerror::Result<RepositoryInfo> {
+        // TODO: Looks like we can't get `updated_at` without authenticating the API call first
+        Err(joinerror::Error::new::<()>("not implemented yet"))
     }
 }
 
@@ -40,6 +111,8 @@ mod tests {
     use git2::RemoteCallbacks;
 
     use super::*;
+
+    const REPO_URL: &'static str = "brutusyhy/test-public-repo";
 
     struct DummyGitLabAuthAgent;
 
@@ -63,7 +136,11 @@ mod tests {
     fn gitlab_client_name() {
         let client_auth_agent = DummyGitLabAuthAgent;
         let ssh_auth_agent: Option<DummySSHAuthAgent> = None;
-        let client = GitLabClient::new(client_auth_agent, ssh_auth_agent);
+        let reqwest_client = reqwest::ClientBuilder::new()
+            .user_agent("SAPIC")
+            .build()
+            .unwrap();
+        let client = GitLabClient::new(reqwest_client, client_auth_agent, ssh_auth_agent);
 
         assert_eq!(client.name(), "GitLab");
     }
@@ -72,10 +149,33 @@ mod tests {
     fn gitlab_client_base_url() {
         let client_auth_agent = DummyGitLabAuthAgent;
         let ssh_auth_agent: Option<DummySSHAuthAgent> = None;
-        let client = GitLabClient::new(client_auth_agent, ssh_auth_agent);
+        let reqwest_client = reqwest::ClientBuilder::new()
+            .user_agent("SAPIC")
+            .build()
+            .unwrap();
+
+        let client = GitLabClient::new(reqwest_client, client_auth_agent, ssh_auth_agent);
         let expected_url = Url::parse("https://gitlab.com").unwrap();
 
         assert_eq!(client.base_url(), expected_url);
+    }
+
+    #[tokio::test]
+    async fn gitlab_client_contributors() {
+        let client_auth_agent = DummyGitLabAuthAgent;
+        let ssh_auth_agent: Option<DummySSHAuthAgent> = None;
+        let reqwest_client = reqwest::ClientBuilder::new()
+            .user_agent("SAPIC")
+            .build()
+            .unwrap();
+        let client = GitLabClient::new(reqwest_client, client_auth_agent, ssh_auth_agent);
+        let contributors = client.contributors(REPO_URL).await.unwrap();
+        for contributor in contributors {
+            println!(
+                "Contributor {}, avatar_url: {}",
+                contributor.name, contributor.avatar_url
+            );
+        }
     }
 
     #[ignore]
@@ -83,7 +183,11 @@ mod tests {
     fn manual_gitlab_client_with_ssh_auth_agent() {
         let client_auth_agent = DummyGitLabAuthAgent;
         let ssh_agent = DummySSHAuthAgent;
-        let client = GitLabClient::new(client_auth_agent, Some(ssh_agent));
+        let reqwest_client = reqwest::ClientBuilder::new()
+            .user_agent("SAPIC")
+            .build()
+            .unwrap();
+        let client = GitLabClient::new(reqwest_client, client_auth_agent, Some(ssh_agent));
 
         assert_eq!(client.name(), "GitLab");
         let expected_url = Url::parse("https://gitlab.com").unwrap();

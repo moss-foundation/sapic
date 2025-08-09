@@ -1,104 +1,174 @@
-use anyhow::Result;
+use joinerror::ResultExt;
 use moss_activity_indicator::ActivityIndicator;
-use moss_applib::{AppRuntime, ServiceMarker, providers::ServiceMap};
-use moss_file::json::JsonFileHandle;
-use moss_fs::FileSystem;
-use std::{any::TypeId, path::Path, sync::Arc};
+use moss_applib::AppRuntime;
+use moss_environment::builder::{CreateEnvironmentParams, EnvironmentBuilder};
+use moss_fs::{CreateOptions, FileSystem, FsResultExt};
+use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
+use std::{cell::LazyCell, path::Path, sync::Arc};
 
 use crate::{
     Workspace, dirs,
-    manifest::{MANIFEST_FILE_NAME, ManifestModel},
+    edit::WorkspaceEdit,
+    manifest::{MANIFEST_FILE_NAME, ManifestFile},
+    services::{
+        collection_service::CollectionService, environment_service::EnvironmentService,
+        layout_service::LayoutService, storage_service::StorageService,
+    },
 };
 
-pub struct WorkspaceLoadParams {
+struct PredefinedEnvironment {
+    name: String,
+    order: isize,
+    color: Option<String>,
+}
+
+const PREDEFINED_ENVIRONMENTS: LazyCell<Vec<PredefinedEnvironment>> = LazyCell::new(|| {
+    vec![PredefinedEnvironment {
+        name: "Globals".to_string(),
+        order: 0,
+        color: Some("#3574F0".to_string()),
+    }]
+});
+
+pub struct LoadWorkspaceParams {
     pub abs_path: Arc<Path>,
 }
 
-pub struct WorkspaceCreateParams {
+#[derive(Clone)]
+pub struct CreateWorkspaceParams {
     pub name: String,
     pub abs_path: Arc<Path>,
 }
 
 pub struct WorkspaceBuilder {
     fs: Arc<dyn FileSystem>,
-    services: ServiceMap,
 }
 
 impl WorkspaceBuilder {
     pub fn new(fs: Arc<dyn FileSystem>) -> Self {
-        Self {
-            fs,
-            services: Default::default(),
-        }
+        Self { fs }
     }
 
-    pub async fn initialize(fs: Arc<dyn FileSystem>, params: WorkspaceCreateParams) -> Result<()> {
+    pub async fn initialize(
+        fs: Arc<dyn FileSystem>,
+        params: CreateWorkspaceParams,
+    ) -> joinerror::Result<()> {
         debug_assert!(params.abs_path.is_absolute());
 
         for dir in &[dirs::COLLECTIONS_DIR, dirs::ENVIRONMENTS_DIR] {
             fs.create_dir(&params.abs_path.join(dir)).await?;
         }
 
-        JsonFileHandle::create(
-            fs.clone(),
+        fs.create_file_with(
             &params.abs_path.join(MANIFEST_FILE_NAME),
-            ManifestModel { name: params.name },
+            serde_json::to_string(&ManifestFile { name: params.name })?.as_bytes(),
+            CreateOptions::default(),
         )
-        .await?;
+        .await
+        .join_err::<()>(format!("failed to create manifest file"))?;
+
+        for env in PREDEFINED_ENVIRONMENTS.iter() {
+            EnvironmentBuilder::new(fs.clone())
+                .initialize(CreateEnvironmentParams {
+                    name: env.name.clone(),
+                    abs_path: &params.abs_path.join(dirs::ENVIRONMENTS_DIR),
+                    color: env.color.clone(),
+                    order: env.order,
+                    variables: vec![],
+                })
+                .await
+                .join_err_with::<()>(|| format!("failed to initialize environment {}", env.name))?;
+        }
 
         Ok(())
     }
 
-    pub fn with_service<T: ServiceMarker + Send + Sync>(
-        mut self,
-        service: impl Into<Arc<T>>,
-    ) -> Self {
-        self.services.insert(TypeId::of::<T>(), service.into());
-        self
-    }
-
     pub async fn load<R: AppRuntime>(
         self,
-        params: WorkspaceLoadParams,
+        ctx: &R::AsyncContext,
         activity_indicator: ActivityIndicator<R::EventLoop>, // FIXME: will be passed as a service in the future
-    ) -> Result<Workspace<R>> {
+        params: LoadWorkspaceParams,
+        github_client: Arc<GitHubClient>,
+        gitlab_client: Arc<GitLabClient>,
+    ) -> joinerror::Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
 
-        let manifest =
-            JsonFileHandle::load(self.fs.clone(), &params.abs_path.join(MANIFEST_FILE_NAME))
-                .await?;
+        let storage_service: Arc<StorageService<R>> = StorageService::new(&params.abs_path)?.into();
+        let layout_service = LayoutService::new(storage_service.clone());
+        let collection_service = CollectionService::new(
+            ctx,
+            &params.abs_path,
+            self.fs.clone(),
+            storage_service.clone(),
+        )
+        .await?;
+
+        let environment_service = EnvironmentService::new(
+            ctx,
+            &params.abs_path,
+            self.fs.clone(),
+            storage_service.clone(),
+        )
+        .await?;
+
+        let edit = WorkspaceEdit::new(self.fs.clone(), params.abs_path.join(MANIFEST_FILE_NAME));
 
         Ok(Workspace {
             abs_path: params.abs_path,
             activity_indicator,
-            manifest,
-            services: self.services.into(),
+            edit,
+            layout_service,
+            collection_service,
+            environment_service,
+            storage_service,
+            github_client,
+            gitlab_client,
         })
     }
 
     pub async fn create<R: AppRuntime>(
         self,
-        params: WorkspaceCreateParams,
+        ctx: &R::AsyncContext,
         activity_indicator: ActivityIndicator<R::EventLoop>, // FIXME: will be passed as a service in the future
-    ) -> Result<Workspace<R>> {
+        params: CreateWorkspaceParams,
+        github_client: Arc<GitHubClient>,
+        gitlab_client: Arc<GitLabClient>,
+    ) -> joinerror::Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
 
-        for dir in &[dirs::COLLECTIONS_DIR, dirs::ENVIRONMENTS_DIR] {
-            self.fs.create_dir(&params.abs_path.join(dir)).await?;
-        }
+        WorkspaceBuilder::initialize(self.fs.clone(), params.clone())
+            .await
+            .join_err::<()>("failed to initialize workspace")?;
 
-        let manifest = JsonFileHandle::create(
+        let storage_service: Arc<StorageService<R>> = StorageService::new(&params.abs_path)?.into();
+        let layout_service = LayoutService::new(storage_service.clone());
+        let collection_service = CollectionService::new(
+            ctx,
+            &params.abs_path,
             self.fs.clone(),
-            &params.abs_path.join(MANIFEST_FILE_NAME),
-            ManifestModel { name: params.name },
+            storage_service.clone(),
         )
         .await?;
+        let environment_service = EnvironmentService::new(
+            ctx,
+            &params.abs_path,
+            self.fs.clone(),
+            storage_service.clone(),
+        )
+        .await?;
+
+        let edit = WorkspaceEdit::new(self.fs.clone(), params.abs_path.join(MANIFEST_FILE_NAME));
 
         Ok(Workspace {
             abs_path: params.abs_path,
             activity_indicator,
-            manifest,
-            services: self.services.into(),
+            edit,
+            layout_service,
+            collection_service,
+            environment_service,
+            storage_service,
+            github_client,
+            gitlab_client,
         })
     }
 }

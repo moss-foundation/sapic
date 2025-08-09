@@ -1,6 +1,7 @@
 use moss_storage::primitives::segkey::SegKey;
 
 pub static SEGKEY_EXPANDED_ITEMS: SegKey = SegKey::new("expandedItems");
+pub static SEGKEY_EXPANDED_ENVIRONMENTS: SegKey = SegKey::new("expandedEnvironments");
 pub static SEGKEY_COLLECTION: SegKey = SegKey::new("collection");
 pub static SEGKEY_ENVIRONMENT: SegKey = SegKey::new("environment");
 pub static SEGKEY_LAYOUT: SegKey = SegKey::new("layout");

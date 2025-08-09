@@ -56,6 +56,7 @@ export const mapSerializedDockviewToEditorPartState = (dockview: SerializedDockv
     grid: { root, height, width, orientation },
   } = dockview;
 
+  //FIXME: type error here
   return {
     panels,
     activeGroup,

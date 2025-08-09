@@ -1,10 +1,9 @@
 use moss_applib::AppRuntime;
-use moss_common::api::OperationResult;
 
 use crate::{Collection, models::types::EnvironmentInfo};
 
 impl<R: AppRuntime> Collection<R> {
-    pub async fn list_environments(&self) -> OperationResult<Vec<EnvironmentInfo>> {
+    pub async fn list_environments(&self) -> joinerror::Result<Vec<EnvironmentInfo>> {
         let environments = self.environments().await?;
 
         // TODO: restore order from cache

@@ -1,22 +1,18 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
-use moss_applib::mock::MockAppRuntime;
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_testutils::random_name::random_collection_name;
-use moss_workspace::{
-    models::{
-        operations::{CreateCollectionInput, UpdateCollectionInput},
-        primitives::CollectionId,
-    },
-    services::{AnyCollectionService, collection_service::CollectionService},
+use moss_workspace::models::{
+    operations::{CreateCollectionInput, UpdateCollectionInput},
+    primitives::CollectionId,
 };
 
 use crate::shared::{generate_random_icon, setup_test_workspace};
 
 #[tokio::test]
 async fn rename_collection_success() {
-    let (ctx, _workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
 
     let old_collection_name = random_collection_name();
     let create_collection_output = workspace
@@ -51,19 +47,21 @@ async fn rename_collection_success() {
         .unwrap();
 
     // Verify the manifest is updated
-    let collection_service = services.get::<CollectionService<MockAppRuntime>>();
-    let collection = collection_service
+    let collection = workspace
         .collection(&create_collection_output.id.into())
         .await
         .unwrap();
-    assert_eq!(collection.manifest().await.name, new_collection_name);
+    assert_eq!(
+        collection.describe().await.unwrap().name,
+        new_collection_name
+    );
 
     cleanup().await;
 }
 
 #[tokio::test]
 async fn rename_collection_empty_name() {
-    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
 
     let old_collection_name = random_collection_name();
     let create_collection_output = workspace
@@ -102,7 +100,7 @@ async fn rename_collection_empty_name() {
 
 #[tokio::test]
 async fn rename_collection_unchanged() {
-    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
 
     let old_collection_name = random_collection_name();
     let create_collection_output = workspace
@@ -141,7 +139,7 @@ async fn rename_collection_unchanged() {
 
 #[tokio::test]
 async fn rename_collection_nonexistent_id() {
-    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
 
     // Use a random ID that doesn't exist
     let nonexistent_id = CollectionId::new();
@@ -168,7 +166,7 @@ async fn rename_collection_nonexistent_id() {
 
 #[tokio::test]
 async fn update_collection_repo() {
-    let (ctx, _workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let old_repo = "https://github.com/xxx/1.git".to_string();
@@ -205,14 +203,13 @@ async fn update_collection_repo() {
         .unwrap();
 
     // Verify the manifest is updated
-    let collection_service = services.get::<CollectionService<MockAppRuntime>>();
-    let collection = collection_service
+    let collection = workspace
         .collection(&create_collection_output.id.into())
         .await
         .unwrap();
 
     assert_eq!(
-        collection.manifest().await.repository,
+        collection.describe().await.unwrap().repository,
         Some(new_normalized_repo.to_owned())
     );
 
@@ -221,7 +218,7 @@ async fn update_collection_repo() {
 
 #[tokio::test]
 async fn update_collection_new_icon() {
-    let (ctx, workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
     let collection_name = random_collection_name();
     let id = workspace
         .create_collection(
@@ -238,7 +235,7 @@ async fn update_collection_new_icon() {
         .unwrap()
         .id;
 
-    let icon_path = workspace_path.join("test_icon.png");
+    let icon_path = workspace.abs_path().join("test_icon.png");
     generate_random_icon(&icon_path);
 
     let _ = workspace
@@ -258,11 +255,7 @@ async fn update_collection_new_icon() {
         .unwrap();
 
     // Verify the icon is generated
-    let collection = services
-        .get::<CollectionService<MockAppRuntime>>()
-        .collection(&id)
-        .await
-        .unwrap();
+    let collection = workspace.collection(&id).await.unwrap();
     assert!(collection.icon_path().is_some());
 
     cleanup().await;
@@ -270,10 +263,10 @@ async fn update_collection_new_icon() {
 
 #[tokio::test]
 async fn update_collection_remove_icon() {
-    let (ctx, workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
     let collection_name = random_collection_name();
 
-    let icon_path = workspace_path.join("test_icon.png");
+    let icon_path = workspace.abs_path().join("test_icon.png");
     generate_random_icon(&icon_path);
 
     let id = workspace
@@ -308,11 +301,7 @@ async fn update_collection_remove_icon() {
         .unwrap();
 
     // Verify the icon is removed
-    let collection = services
-        .get::<CollectionService<MockAppRuntime>>()
-        .collection(&id)
-        .await
-        .unwrap();
+    let collection = workspace.collection(&id).await.unwrap();
     assert!(collection.icon_path().is_none());
 
     cleanup().await;

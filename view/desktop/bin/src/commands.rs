@@ -4,20 +4,18 @@ mod workspace;
 
 pub use app::*;
 pub use collection::*;
+use joinerror::OptionExt;
 pub use workspace::*;
 
-use moss_api::{TauriResult, constants::DEFAULT_OPERATION_TIMEOUT};
-use moss_app::{
-    app::App,
-    services::workspace_service::{ActiveWorkspace, WorkspaceService},
-};
+use moss_api::{TauriResult, constants::DEFAULT_OPERATION_TIMEOUT, errors::PreconditionFailed};
+use moss_app::{app::App, services::workspace_service::ActiveWorkspace};
 use moss_applib::{
     AppRuntime,
     context::{AnyAsyncContext, AnyContext},
 };
 use moss_collection::Collection;
 use moss_common::api::OperationOptionExt;
-use moss_workspace::{models::primitives::CollectionId, services::DynCollectionService};
+use moss_workspace::models::primitives::CollectionId;
 use primitives::Options;
 use std::{sync::Arc, time::Duration};
 use tauri::State;
@@ -40,7 +38,7 @@ pub(super) async fn with_collection_timeout<R, T, F, Fut>(
 where
     R: AppRuntime,
     F: FnOnce(R::AsyncContext, Arc<Collection<R>>) -> Fut + Send + 'static,
-    Fut: std::future::Future<Output = TauriResult<T>> + Send + 'static,
+    Fut: std::future::Future<Output = joinerror::Result<T>> + Send + 'static,
 {
     let timeout = options
         .as_ref()
@@ -50,15 +48,14 @@ where
     let mut ctx = R::AsyncContext::new_with_timeout(ctx.clone(), timeout);
 
     let workspace = app
-        .service::<WorkspaceService<R>>()
         .workspace()
         .await
         .map_err_as_failed_precondition("No active workspace")?;
 
     let collection = workspace
-        .service::<DynCollectionService<R>>()
         .collection(&id)
-        .await?;
+        .await
+        .map_err_as_not_found("Collection is not found")?;
 
     let request_id = options.and_then(|opts| opts.request_id);
 
@@ -73,7 +70,7 @@ where
     if let Some(request_id) = &request_id {
         app.release_cancellation(request_id).await;
     }
-    result
+    result.map_err(|e| e.into())
 }
 
 pub(super) async fn with_workspace_timeout<R, T, F, Fut>(
@@ -85,13 +82,12 @@ pub(super) async fn with_workspace_timeout<R, T, F, Fut>(
 where
     R: AppRuntime,
     F: FnOnce(R::AsyncContext, Arc<ActiveWorkspace<R>>) -> Fut + Send + 'static,
-    Fut: std::future::Future<Output = TauriResult<T>> + Send + 'static,
+    Fut: std::future::Future<Output = joinerror::Result<T>> + Send + 'static,
 {
     let workspace = app
-        .service::<WorkspaceService<R>>()
         .workspace()
         .await
-        .map_err_as_failed_precondition("No active workspace")?;
+        .ok_or_join_err::<PreconditionFailed>("no active workspace")?;
 
     let timeout = options
         .as_ref()
@@ -112,5 +108,6 @@ where
     if let Some(request_id) = &request_id {
         app.release_cancellation(request_id).await;
     }
-    result
+
+    result.map_err(|e| e.into())
 }

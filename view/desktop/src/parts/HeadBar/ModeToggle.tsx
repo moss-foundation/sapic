@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import { Item as ToggleGroupItem, Root as ToggleGroupRoot } from "@/components/ToggleGroup";
+import { useStreamedCollectionsWithEntries } from "@/hooks";
 import { useRequestModeStore } from "@/store/requestMode";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
-
-type ToggleValue = "request" | "design";
 
 interface ModeToggleProps {
   className?: string;
@@ -12,12 +12,16 @@ interface ModeToggleProps {
 }
 
 export const ModeToggle: React.FC<ModeToggleProps> = ({ className, compact = false }) => {
-  const { displayMode, toggleDisplayMode, setDisplayMode } = useRequestModeStore();
-  const [sliderStyle, setSliderStyle] = useState({ width: 0, left: 0 });
   const itemsRef = useRef<{ [key: string]: HTMLButtonElement | null }>({});
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const updateSliderPosition = () => {
+  const { api } = useTabbedPaneStore();
+  const { displayMode, setDisplayMode } = useRequestModeStore();
+  const { data: collectionsWithEntries } = useStreamedCollectionsWithEntries();
+
+  const [sliderStyle, setSliderStyle] = useState({ width: 0, left: 0 });
+
+  const updateSliderPosition = useCallback(() => {
     const activeItem = itemsRef.current[displayMode];
     if (activeItem) {
       const { width, left } = activeItem.getBoundingClientRect();
@@ -27,7 +31,7 @@ export const ModeToggle: React.FC<ModeToggleProps> = ({ className, compact = fal
         left: left - parentLeft,
       });
     }
-  };
+  }, [displayMode]);
 
   useEffect(() => {
     updateSliderPosition();
@@ -43,8 +47,26 @@ export const ModeToggle: React.FC<ModeToggleProps> = ({ className, compact = fal
     return () => {
       resizeObserver.disconnect();
     };
-  }, [displayMode]);
+  }, [displayMode, updateSliderPosition]);
 
+  const handleSetRequestFirstMode = () => {
+    setDisplayMode("REQUEST_FIRST");
+    const allEntries = collectionsWithEntries?.map((collection) => collection.entries).flat();
+
+    allEntries?.forEach((entry) => {
+      console.log("entry", entry);
+      if (entry.class !== "Request" || entry.path.segments.length === 1) {
+        const panel = api?.getPanel(entry.id);
+        if (panel) {
+          api?.removePanel(panel);
+        }
+      }
+    });
+  };
+
+  const handleSetDesignFirstMode = () => {
+    setDisplayMode("DESIGN_FIRST");
+  };
   return (
     <ToggleGroupRoot
       type="single"
@@ -64,7 +86,7 @@ export const ModeToggle: React.FC<ModeToggleProps> = ({ className, compact = fal
           className="relative z-10 whitespace-nowrap transition-colors duration-300"
           compact={compact}
           ref={(el) => (itemsRef.current["REQUEST_FIRST"] = el)}
-          onClick={() => setDisplayMode("REQUEST_FIRST")}
+          onClick={handleSetRequestFirstMode}
         >
           Request mode
         </ToggleGroupItem>
@@ -73,7 +95,7 @@ export const ModeToggle: React.FC<ModeToggleProps> = ({ className, compact = fal
           className="relative z-10 whitespace-nowrap transition-colors duration-300"
           compact={compact}
           ref={(el) => (itemsRef.current["DESIGN_FIRST"] = el)}
-          onClick={() => setDisplayMode("DESIGN_FIRST")}
+          onClick={handleSetDesignFirstMode}
         >
           Design mode
         </ToggleGroupItem>

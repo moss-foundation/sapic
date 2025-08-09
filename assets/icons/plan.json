@@ -65,6 +65,9 @@
   "CollapseAll": {
     "identical": true
   },
+  "Collection": {
+    "identical": false
+  },
   "Component": {
     "identical": true
   },
@@ -87,6 +90,9 @@
     "identical": true
   },
   "Copy": {
+    "identical": true
+  },
+  "Del": {
     "identical": true
   },
   "Delete": {
@@ -128,8 +134,8 @@
   "Folder": {
     "identical": true
   },
-  "FolderActive": {
-    "identical": false
+  "Get": {
+    "identical": true
   },
   "GreenCheckmark": {
     "identical": true
@@ -176,9 +182,6 @@
   "MoreVertical": {
     "identical": true
   },
-  "NewFolder": {
-    "identical": true
-  },
   "NewWorkspace": {
     "identical": true
   },
@@ -203,12 +206,6 @@
   "OpenPanelRightFilled": {
     "identical": true
   },
-  "OpenWorkspace": {
-    "identical": true
-  },
-  "OpenWorkspaceActive": {
-    "identical": true
-  },
   "PersistenceRelationship": {
     "identical": true
   },
@@ -221,7 +218,7 @@
   "Placeholder": {
     "identical": true
   },
-  "Plus": {
+  "Post": {
     "identical": true
   },
   "PostRequest": {
@@ -229,6 +226,9 @@
   },
   "PreRequest": {
     "identical": false
+  },
+  "Put": {
+    "identical": true
   },
   "RadioIndicator": {
     "identical": true

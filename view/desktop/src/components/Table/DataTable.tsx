@@ -9,23 +9,64 @@ import {
   VisibilityState,
 } from "@tanstack/react-table";
 
+import { detectValueType, getParameterSuggestions } from "@/pages/RequestPage/utils/urlParser";
+
 import { useAdjustColumnsWithoutSizes } from "./hooks/useAdjustColumnsWithoutSizes";
 import { useTableDragAndDrop } from "./hooks/useTableDragAndDrop";
-import { DataTableProps, TestData } from "./types";
+import { DataTableProps, ParameterData } from "./types";
 import { DefaultCell } from "./ui/DefaultCell";
 import DefaultHeader from "./ui/DefaultHeader";
 import { DefaultRow } from "./ui/DefaultRow";
 import { DefaultAddNewRowForm } from "./ui/DefaultRowForm";
 import { NoDataRow } from "./ui/NoDataRow";
 
-export function DataTable({ columns, data: initialData, onTableApiSet }: DataTableProps<TestData>) {
+export function DataTable({
+  columns,
+  data: initialData,
+  onTableApiSet,
+  onDataChange,
+  tableType = "ActionsTable",
+}: DataTableProps<ParameterData>) {
   const tableId = useId();
 
-  const [data, setData] = useState<TestData[]>(initialData);
+  const [data, setData] = useState<ParameterData[]>(initialData);
   const [rowSelection, setRowSelection] = useState({});
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [focusInputType, setFocusInputType] = useState<string | null>(null);
+
+  const hasActiveInput = useRef(false);
+
+  useEffect(() => {
+    if (hasActiveInput.current) {
+      return;
+    }
+
+    isUpdatingFromProps.current = true;
+    setData(initialData);
+  }, [initialData]);
+
+  const isInitialLoad = useRef(true);
+  const isUpdatingFromProps = useRef(false);
+  const onDataChangeRef = useRef(onDataChange);
+
+  useEffect(() => {
+    onDataChangeRef.current = onDataChange;
+  }, [onDataChange]);
+
+  useEffect(() => {
+    if (isInitialLoad.current) {
+      isInitialLoad.current = false;
+      return;
+    }
+
+    if (isUpdatingFromProps.current) {
+      isUpdatingFromProps.current = false;
+      return;
+    }
+
+    onDataChangeRef.current?.(data);
+  }, [data]);
 
   const table = useReactTable({
     data,
@@ -46,20 +87,55 @@ export function DataTable({ columns, data: initialData, onTableApiSet }: DataTab
     },
     meta: {
       tableId,
-      tableType: "ActionsTable",
+      tableType,
       updateData: (rowIndex, columnId, value) => {
+        // Mark that user is actively editing
+        hasActiveInput.current = true;
+
+        setTimeout(() => {
+          hasActiveInput.current = false;
+        }, 1500);
+
         setFocusInputType(null);
-        setData((old) =>
-          old.map((row, index) => {
+        setData((old) => {
+          const newData = old.map((row, index) => {
             if (index === rowIndex) {
-              return {
-                ...old[rowIndex]!,
+              const currentRow = old[rowIndex]!;
+              let updatedRow = {
+                ...currentRow,
                 [columnId]: value,
               };
+
+              const shouldApplyAutomation = columnId === "key" || columnId === "value";
+
+              if (shouldApplyAutomation) {
+                if (columnId === "key") {
+                  const keyValue = value as string;
+                  if (keyValue && keyValue.trim() !== "") {
+                    const suggestions = getParameterSuggestions(keyValue);
+                    updatedRow = {
+                      ...updatedRow,
+                      type: suggestions.type,
+                      description: suggestions.description,
+                    };
+                  }
+                } else if (columnId === "value") {
+                  const valueStr = value as string;
+                  const detectedType = detectValueType(valueStr);
+                  updatedRow = {
+                    ...updatedRow,
+                    type: detectedType,
+                  };
+                }
+              }
+
+              return updatedRow;
             }
             return row;
-          })
-        );
+          });
+
+          return newData;
+        });
       },
     },
   });
@@ -97,12 +173,12 @@ export function DataTable({ columns, data: initialData, onTableApiSet }: DataTab
 
     setFocusInputType(columnId);
 
-    const newRow: TestData = {
+    const newRow: ParameterData = {
       order: data.length + 1,
       id: newId,
       key: columnId === "key" ? value : "",
       value: columnId === "value" ? value : "",
-      type: columnId === "type" ? value : "",
+      type: columnId === "type" ? value : "string",
       description: columnId === "description" ? value : "",
       global_value: columnId === "global_value" ? value : "",
       local_value: columnId === "local_value" ? Number(value) || 0 : 0,
@@ -115,12 +191,12 @@ export function DataTable({ columns, data: initialData, onTableApiSet }: DataTab
 
   const handleAddNewRowFromDivider = (index: number) => {
     setData((prev) => {
-      const newRow: TestData = {
+      const newRow: ParameterData = {
         order: index,
         id: Math.random().toString(36).substring(2, 15),
         key: "",
         value: "",
-        type: "",
+        type: "string",
         description: "",
         global_value: "",
         local_value: 0,

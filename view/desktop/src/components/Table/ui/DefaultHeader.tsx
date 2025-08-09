@@ -5,10 +5,10 @@ import Icon from "@/lib/ui/Icon";
 import { cn } from "@/utils";
 import { flexRender, Header } from "@tanstack/react-table";
 
-import { TestData } from "../types";
+import { ParameterData } from "../types";
 
 interface DefaultHeaderProps extends HTMLAttributes<HTMLTableCellElement> {
-  header: Header<TestData, unknown>;
+  header: Header<ParameterData, unknown>;
   tableHeight?: number;
 }
 
