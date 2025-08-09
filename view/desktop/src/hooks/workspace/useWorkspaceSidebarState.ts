@@ -1,8 +1,10 @@
 import { useEffect, useRef } from "react";
-import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
-import { useDescribeWorkspaceState } from "./useDescribeWorkspaceState";
+
 import { useUpdateSidebarPartState } from "@/hooks/appState/useUpdateSidebarPartState";
+import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
+
 import { useActiveWorkspace } from "./useActiveWorkspace";
+import { useDescribeWorkspaceState } from "./useDescribeWorkspaceState";
 
 export const useWorkspaceSidebarState = () => {
   const workspace = useActiveWorkspace();
@@ -16,13 +18,7 @@ export const useWorkspaceSidebarState = () => {
   const isTransitioning = useRef(false);
 
   // Fetch workspace state only when we have an active workspace
-  const {
-    data: workspaceState,
-    isFetched,
-    isSuccess,
-  } = useDescribeWorkspaceState({
-    enabled: !!workspaceId,
-  });
+  const { data: workspaceState, isFetched, isSuccess } = useDescribeWorkspaceState();
 
   // Reset state tracking when workspace changes
   useEffect(() => {
