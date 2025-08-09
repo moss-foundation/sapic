@@ -1,10 +1,8 @@
 mod rollinglog_writer;
 mod taurilog_writer;
 
-use anyhow::{Result, anyhow};
 use chrono::{DateTime, NaiveDate, NaiveDateTime};
 use moss_applib::{AppRuntime, ServiceMarker};
-use moss_common::api::OperationError;
 use moss_fs::{CreateOptions, FileSystem};
 use moss_logging::models::primitives::LogEntryId;
 use std::{
@@ -16,7 +14,6 @@ use std::{
     sync::{Arc, Mutex},
 };
 use tauri::AppHandle;
-use thiserror::Error;
 use tracing::Level;
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{
@@ -50,30 +47,6 @@ pub mod constants {
 
 const DUMP_THRESHOLD: usize = 10;
 
-#[derive(Error, Debug)]
-pub enum LogServiceError {
-    #[error("invalid input: {0}")]
-    InvalidInput(String),
-
-    #[error("log entry with id {id} is not found")]
-    NotFound { id: String },
-
-    #[error("unknown error: {0}")]
-    Unknown(#[from] anyhow::Error),
-}
-
-impl Into<OperationError> for LogServiceError {
-    fn into(self) -> OperationError {
-        match self {
-            LogServiceError::InvalidInput(_) => OperationError::InvalidInput(self.to_string()),
-            LogServiceError::NotFound { .. } => OperationError::NotFound(self.to_string()),
-            LogServiceError::Unknown(e) => OperationError::Unknown(e),
-        }
-    }
-}
-
-pub type LogServiceResult<T> = std::result::Result<T, LogServiceError>;
-
 // Empty field means that no filter will be applied
 #[derive(Default)]
 pub struct LogFilter {
@@ -83,8 +56,15 @@ pub struct LogFilter {
 }
 
 impl LogFilter {
-    fn check_entry(&self, log_entry: &LogEntryInfo) -> Result<bool> {
-        let date = NaiveDate::parse_from_str(&log_entry.timestamp, TIMESTAMP_FORMAT)?;
+    fn check_entry(&self, log_entry: &LogEntryInfo) -> joinerror::Result<bool> {
+        let date =
+            NaiveDate::parse_from_str(&log_entry.timestamp, TIMESTAMP_FORMAT).map_err(|e| {
+                joinerror::Error::new::<()>(format!(
+                    "invalid log entry timestamp {}: {}",
+                    log_entry.timestamp,
+                    e.to_string()
+                ))
+            })?;
         if !self.dates.is_empty() && !self.dates.contains(&date) {
             return Ok(false);
         }
@@ -133,7 +113,7 @@ impl<R: AppRuntime> LogService<R> {
         applog_path: &Path,
         session_id: &SessionId,
         storage: Arc<StorageService<R>>,
-    ) -> Result<LogService<R>> {
+    ) -> joinerror::Result<LogService<R>> {
         // Rolling log file format
         let standard_log_format = tracing_subscriber::fmt::format()
             .with_file(false)
@@ -237,7 +217,7 @@ impl<R: AppRuntime> LogService<R> {
     pub(crate) async fn list_logs_with_filter(
         &self,
         filter: &LogFilter,
-    ) -> LogServiceResult<Vec<LogEntryInfo>> {
+    ) -> joinerror::Result<Vec<LogEntryInfo>> {
         // Combining app and session logs from both the queue and the files
         let app_logs = self
             .combine_logs(&self.applog_path, filter, self.applog_queue.clone())
@@ -257,7 +237,7 @@ impl<R: AppRuntime> LogService<R> {
         &self,
         ctx: &R::AsyncContext,
         input: impl Iterator<Item = &LogEntryId>,
-    ) -> LogServiceResult<Vec<LogItemSourceInfo>> {
+    ) -> joinerror::Result<Vec<LogItemSourceInfo>> {
         let mut file_entries = Vec::new();
         let mut result = Vec::new();
         for entry_id in input {
@@ -265,7 +245,7 @@ impl<R: AppRuntime> LogService<R> {
             let mut applog_queue_lock = self
                 .applog_queue
                 .lock()
-                .map_err(|_| anyhow!("Mutex poisoned"))?;
+                .map_err(|_| joinerror::Error::new::<()>("mutex poisoned"))?;
             let idx = applog_queue_lock.iter().position(|x| &x.id == entry_id);
             if let Some(idx) = idx {
                 applog_queue_lock.remove(idx);
@@ -281,7 +261,7 @@ impl<R: AppRuntime> LogService<R> {
             let mut sessionlog_queue_lock = self
                 .sessionlog_queue
                 .lock()
-                .map_err(|_| anyhow!("Mutex poisoned"))?;
+                .map_err(|_| joinerror::Error::new::<()>("mutex poisoned"))?;
             let idx = sessionlog_queue_lock.iter().position(|x| &x.id == entry_id);
             if let Some(idx) = idx {
                 sessionlog_queue_lock.remove(idx);
@@ -313,7 +293,7 @@ impl<R: AppRuntime> LogService<R> {
         &self,
         ctx: &R::AsyncContext,
         entries: &[&LogEntryId],
-    ) -> Result<HashSet<PathBuf>> {
+    ) -> joinerror::Result<HashSet<PathBuf>> {
         let mut files = HashSet::new();
         for entry_id in entries {
             let path = self.storage.get_log_path(ctx, *entry_id).await?;
@@ -327,7 +307,7 @@ impl<R: AppRuntime> LogService<R> {
         &self,
         ctx: &R::AsyncContext,
         entries: &[&LogEntryId],
-    ) -> LogServiceResult<Vec<LogItemSourceInfo>> {
+    ) -> joinerror::Result<Vec<LogItemSourceInfo>> {
         let mut deleted_entries = Vec::new();
         let mut ids_to_delete = entries.iter().cloned().cloned().collect::<HashSet<_>>();
 
@@ -344,7 +324,7 @@ impl<R: AppRuntime> LogService<R> {
         ctx: &R::AsyncContext,
         path: &Path,
         ids: &mut HashSet<LogEntryId>,
-    ) -> Result<Vec<LogItemSourceInfo>> {
+    ) -> joinerror::Result<Vec<LogItemSourceInfo>> {
         let mut new_content = String::new();
         let mut removed_entries = Vec::new();
 
@@ -397,7 +377,7 @@ impl<R: AppRuntime> LogService<R> {
         &self,
         path: &Path,
         dates_filter: &HashSet<NaiveDate>,
-    ) -> Result<Vec<PathBuf>> {
+    ) -> joinerror::Result<Vec<PathBuf>> {
         // Find log files with the given dates
         let mut file_list = Vec::new();
         let mut read_dir = self.fs.read_dir(path).await?;
@@ -417,7 +397,7 @@ impl<R: AppRuntime> LogService<R> {
                 // Ignore files with invalid timestamp name
                 continue;
             }
-            let dt = parse_result?;
+            let dt = parse_result.unwrap();
             let naive_date = dt.date_naive();
             // Either we have no dates filter, or the filter contains the file date
             if dates_filter.is_empty() || dates_filter.contains(&naive_date) {
@@ -435,7 +415,7 @@ impl<R: AppRuntime> LogService<R> {
         records: &mut Vec<(NaiveDateTime, LogEntryInfo)>,
         file_path: &Path,
         filter: &LogFilter,
-    ) -> Result<()> {
+    ) -> joinerror::Result<()> {
         // In the log files, each line is a LogEntry JSON object
         // Entries in each log files are already sorted chronologically
         let file = self.fs.open_file(file_path).await?;
@@ -447,7 +427,15 @@ impl<R: AppRuntime> LogService<R> {
             if filter.check_entry(&log_entry)? {
                 // FIXME: Should we simply skip the line if the timestamp is invalid?
                 let timestamp =
-                    NaiveDateTime::parse_from_str(&log_entry.timestamp, TIMESTAMP_FORMAT)?;
+                    NaiveDateTime::parse_from_str(&log_entry.timestamp, TIMESTAMP_FORMAT).map_err(
+                        |e| {
+                            joinerror::Error::new::<()>(format!(
+                                "invalid log entry timestamp {}: {}",
+                                log_entry.timestamp,
+                                e.to_string()
+                            ))
+                        },
+                    )?;
                 records.push((timestamp, log_entry));
             }
         }
@@ -459,7 +447,7 @@ impl<R: AppRuntime> LogService<R> {
         path: &Path,
         filter: &LogFilter,
         queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
-    ) -> Result<Vec<(NaiveDateTime, LogEntryInfo)>> {
+    ) -> joinerror::Result<Vec<(NaiveDateTime, LogEntryInfo)>> {
         // Combine all log entries in a log folder according to a certain filter
         // And append the current log queue at the end if they pass the filter
         let mut result = Vec::new();
@@ -477,7 +465,9 @@ impl<R: AppRuntime> LogService<R> {
         // The logs in the queue must be more recent than the logs in files
         // So we append them to the end
         result.extend({
-            let lock = queue.lock().map_err(|_| anyhow!("Mutex poisoned"))?;
+            let lock = queue
+                .lock()
+                .map_err(|_| joinerror::Error::new::<()>("mutex poisoned"))?;
 
             lock.clone()
                 .into_iter()
