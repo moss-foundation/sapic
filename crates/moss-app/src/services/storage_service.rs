@@ -1,9 +1,6 @@
-use crate::{
-    models::primitives::{LogEntryId, WorkspaceId},
-    storage::segments::{SEGKEY_LAST_ACTIVE_WORKSPACE, segkey_last_opened_at},
-};
 use moss_applib::{AppRuntime, ServiceMarker};
 use moss_db::{DatabaseResult, Transaction, primitives::AnyValue};
+use moss_logging::models::primitives::LogEntryId;
 use moss_storage::{
     GlobalStorage,
     global_storage::GlobalStorageImpl,
@@ -17,6 +14,11 @@ use std::{
     collections::HashMap,
     path::{Path, PathBuf},
     sync::Arc,
+};
+
+use crate::{
+    models::primitives::WorkspaceId,
+    storage::segments::{SEGKEY_LAST_ACTIVE_WORKSPACE, segkey_last_opened_at},
 };
 
 pub struct StorageService<R: AppRuntime> {

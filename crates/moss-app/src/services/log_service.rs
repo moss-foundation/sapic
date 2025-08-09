@@ -6,6 +6,7 @@ use chrono::{DateTime, NaiveDate, NaiveDateTime};
 use moss_applib::{AppRuntime, ServiceMarker};
 use moss_common::api::OperationError;
 use moss_fs::{CreateOptions, FileSystem};
+use moss_logging::models::primitives::LogEntryId;
 use std::{
     collections::{HashSet, VecDeque},
     ffi::OsStr,
@@ -16,7 +17,7 @@ use std::{
 };
 use tauri::AppHandle;
 use thiserror::Error;
-use tracing::{Level, debug, error, info, trace, warn};
+use tracing::Level;
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{
     filter::filter_fn,
@@ -28,10 +29,7 @@ use tracing_subscriber::{
 };
 
 use crate::{
-    models::{
-        primitives::LogEntryId,
-        types::{LogEntryInfo, LogItemSourceInfo},
-    },
+    models::types::{LogEntryInfo, LogItemSourceInfo},
     services::{
         log_service::{
             constants::*, rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter,
@@ -76,16 +74,6 @@ impl Into<OperationError> for LogServiceError {
 
 pub type LogServiceResult<T> = std::result::Result<T, LogServiceError>;
 
-pub struct LogPayload {
-    pub resource: Option<String>,
-    pub message: String,
-}
-
-pub enum LogScope {
-    App,
-    Session,
-}
-
 // Empty field means that no filter will be applied
 #[derive(Default)]
 pub struct LogFilter {
@@ -95,7 +83,7 @@ pub struct LogFilter {
 }
 
 impl LogFilter {
-    pub fn check_entry(&self, log_entry: &LogEntryInfo) -> Result<bool> {
+    fn check_entry(&self, log_entry: &LogEntryInfo) -> Result<bool> {
         let date = NaiveDate::parse_from_str(&log_entry.timestamp, TIMESTAMP_FORMAT)?;
         if !self.dates.is_empty() && !self.dates.contains(&date) {
             return Ok(false);
@@ -316,119 +304,6 @@ impl<R: AppRuntime> LogService<R> {
         result.extend(self.delete_logs_from_files(ctx, &file_entries).await?);
         // TODO: Reporting entries that were not found during deletion?
         Ok(result)
-    }
-}
-impl<R: AppRuntime> LogService<R> {
-    // Tracing disallows non-constant value for `target`
-    // So we have to manually match it
-    pub fn trace(&self, scope: LogScope, payload: LogPayload) {
-        let id = LogEntryId::new().to_string();
-        match scope {
-            LogScope::App => {
-                trace!(
-                    target: APP_SCOPE,
-                    id = id,
-                    resource = payload.resource,
-                    message = payload.message
-                )
-            }
-            LogScope::Session => {
-                trace!(
-                    target: SESSION_SCOPE,
-                    id = id,
-                    resource = payload.resource,
-                    message = payload.message
-                )
-            }
-        }
-    }
-
-    pub fn debug(&self, scope: LogScope, payload: LogPayload) {
-        let id = LogEntryId::new().to_string();
-        match scope {
-            LogScope::App => {
-                debug!(
-                    target: APP_SCOPE,
-                    id = id,
-                    resource = payload.resource,
-                    message = payload.message
-                )
-            }
-            LogScope::Session => {
-                debug!(
-                    target: SESSION_SCOPE,
-                    id = id,
-                    resource = payload.resource,
-                    message = payload.message
-                )
-            }
-        }
-    }
-
-    pub fn info(&self, scope: LogScope, payload: LogPayload) {
-        let id = LogEntryId::new().to_string();
-        match scope {
-            LogScope::App => {
-                info!(
-                    target: APP_SCOPE,
-                    id = id,
-                    resource = payload.resource,
-                    message = payload.message
-                )
-            }
-            LogScope::Session => {
-                info!(
-                    target: SESSION_SCOPE,
-                    id = id,
-                    resource = payload.resource,
-                    message = payload.message
-                )
-            }
-        }
-    }
-
-    pub fn warn(&self, scope: LogScope, payload: LogPayload) {
-        let id = LogEntryId::new().to_string();
-        match scope {
-            LogScope::App => {
-                warn!(
-                    target: APP_SCOPE,
-                    id = id,
-                    resource = payload.resource,
-                    message = payload.message
-                )
-            }
-            LogScope::Session => {
-                warn!(
-                    target: SESSION_SCOPE,
-                    id = id,
-                    resource = payload.resource,
-                    message = payload.message
-                )
-            }
-        }
-    }
-
-    pub fn error(&self, scope: LogScope, payload: LogPayload) {
-        let id = LogEntryId::new().to_string();
-        match scope {
-            LogScope::App => {
-                error!(
-                    target: APP_SCOPE,
-                    id = id,
-                    resource = payload.resource,
-                    message = payload.message
-                )
-            }
-            LogScope::Session => {
-                error!(
-                    target: SESSION_SCOPE,
-                    id = id,
-                    resource = payload.resource,
-                    message = payload.message
-                )
-            }
-        }
     }
 }
 
@@ -659,14 +534,14 @@ impl<R: AppRuntime> LogService<R> {
 
 #[cfg(test)]
 mod tests {
+    use crate::constants::LOGGING_SERVICE_CHANNEL;
     use moss_applib::mock::MockAppRuntime;
     use moss_fs::RealFileSystem;
+    use moss_logging::{LogPayload, LogScope, debug};
     use moss_testutils::random_name::random_string;
     use std::{fs::create_dir_all, sync::atomic::AtomicUsize, time::Duration};
     use tauri::{Listener, Manager};
     use tokio::fs::remove_dir_all;
-
-    use crate::constants::LOGGING_SERVICE_CHANNEL;
 
     use super::*;
 
@@ -683,7 +558,7 @@ mod tests {
         let mock_app = tauri::test::mock_app();
         let session_id = SessionId::new();
         let storage = Arc::new(StorageService::<MockAppRuntime>::new(&test_app_log_path).unwrap());
-        let logging_service = LogService::new(
+        let _logging_service = LogService::new(
             fs,
             mock_app.app_handle().clone(),
             &test_app_log_path,
@@ -701,7 +576,7 @@ mod tests {
             });
         }
 
-        logging_service.debug(
+        debug(
             LogScope::App,
             LogPayload {
                 resource: None,
