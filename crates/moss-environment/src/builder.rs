@@ -2,7 +2,7 @@ use indexmap::IndexMap;
 use joinerror::{Error, ResultExt};
 use moss_applib::AppRuntime;
 use moss_common::continue_if_err;
-use moss_db::primitives::AnyValue;
+use moss_db::{DbResultExt, primitives::AnyValue};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_hcl::{Block, HclResultExt, LabeledBlock, json_to_hcl};
 use moss_storage::{
@@ -149,34 +149,36 @@ impl EnvironmentBuilder {
             });
 
             continue_if_err!(
-                TransactionalPutItem::put_with_context(
-                    variable_store.as_ref(),
-                    ctx,
-                    &mut txn,
-                    SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE),
-                    local_value,
-                )
-                .await,
-                |err| {
-                    println!("failed to put local_value in the database: {}", err);
+                async {
+                    TransactionalPutItem::put_with_context(
+                        variable_store.as_ref(),
+                        ctx,
+                        &mut txn,
+                        SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE),
+                        local_value,
+                    )
+                    .await
+                    .join_err::<()>("failed to put local_value in the database")?;
+
+                    TransactionalPutItem::put_with_context(
+                        variable_store.as_ref(),
+                        ctx,
+                        &mut txn,
+                        SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_ORDER),
+                        order,
+                    )
+                    .await
+                    .join_err::<()>("failed to put order in the database")?;
+
+                    txn.commit()
+                        .join_err::<()>("failed to commit transaction")?;
+
+                    Ok::<(), Error>(())
+                },
+                |err: Error| {
+                    println!("{}", err);
                 }
             );
-            continue_if_err!(
-                TransactionalPutItem::put_with_context(
-                    variable_store.as_ref(),
-                    ctx,
-                    &mut txn,
-                    SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_ORDER),
-                    order,
-                )
-                .await,
-                |err| {
-                    println!("failed to put local_value in the database: {}", err);
-                }
-            );
-            continue_if_err!(txn.commit(), |err| {
-                println!("failed to commit transaction: {}", err);
-            });
         }
 
         let (abs_path_tx, abs_path_rx) = watch::channel(EnvironmentPath::new(abs_path)?);
