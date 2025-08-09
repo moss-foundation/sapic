@@ -45,7 +45,13 @@ export type CreateCollectionOutput = { id: string; name: string; order?: number;
 /**
  * @category Operation
  */
-export type CreateEnvironmentInput = { collectionId?: string; name: string; order: number; color?: string };
+export type CreateEnvironmentInput = {
+  collectionId?: string;
+  name: string;
+  order: number;
+  color?: string;
+  variables: Array<AddVariableParams>;
+};
 
 /**
  * @category Operation

@@ -223,6 +223,7 @@ pub struct CreateEnvironmentInput {
     pub name: String,
     pub order: isize,
     pub color: Option<String>,
+    pub variables: Vec<AddVariableParams>,
 }
 
 /// @category Operation

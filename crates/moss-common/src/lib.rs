@@ -33,6 +33,94 @@ pub trait Merge<T> {
 /// ```
 #[macro_export]
 macro_rules! continue_if_err {
+    // Convenience: closure returning async block → delegate to async block variants
+    (|| async { $($body:tt)* }, $on_err:expr) => {
+        $crate::continue_if_err!(async { $($body)* }, $on_err)
+    };
+
+    (|| async { $($body:tt)* }) => {
+        $crate::continue_if_err!(async { $($body)* })
+    };
+
+    ($label:lifetime: || async { $($body:tt)* }, $on_err:expr) => {
+        $crate::continue_if_err!($label: async { $($body)* }, $on_err)
+    };
+
+    ($label:lifetime: || async { $($body:tt)* }) => {
+        $crate::continue_if_err!($label: async { $($body)* })
+    };
+    // Async block variants (unlabeled)
+    (async { $($body:tt)* }, $on_err:expr) => {
+        match (async { $($body)* }).await {
+            Ok(val) => val,
+            Err(e) => {
+                $on_err(e);
+                continue;
+            }
+        }
+    };
+
+    (async { $($body:tt)* }) => {
+        match (async { $($body)* }).await {
+            Ok(val) => val,
+            Err(_) => continue,
+        }
+    };
+
+    // Synchronous block variants (unlabeled)
+    ({ $($body:tt)* }, $on_err:expr) => {
+        match (|| { $($body)* })() {
+            Ok(val) => val,
+            Err(e) => {
+                $on_err(e);
+                continue;
+            }
+        }
+    };
+
+    ({ $($body:tt)* }) => {
+        match (|| { $($body)* })() {
+            Ok(val) => val,
+            Err(_) => continue,
+        }
+    };
+
+    // Async block variants (labeled)
+    ($label:lifetime: async { $($body:tt)* }, $on_err:expr) => {
+        match (async { $($body)* }).await {
+            Ok(val) => val,
+            Err(e) => {
+                $on_err(e);
+                continue $label;
+            }
+        }
+    };
+
+    ($label:lifetime: async { $($body:tt)* }) => {
+        match (async { $($body)* }).await {
+            Ok(val) => val,
+            Err(_) => continue $label,
+        }
+    };
+
+    // Synchronous block variants (labeled)
+    ($label:lifetime: { $($body:tt)* }, $on_err:expr) => {
+        match (|| { $($body)* })() {
+            Ok(val) => val,
+            Err(e) => {
+                $on_err(e);
+                continue $label;
+            }
+        }
+    };
+
+    ($label:lifetime: { $($body:tt)* }) => {
+        match (|| { $($body)* })() {
+            Ok(val) => val,
+            Err(_) => continue $label,
+        }
+    };
+
     ($label:lifetime: $expr:expr, $on_err:expr) => {
         match $expr {
             Ok(val) => val,
@@ -311,6 +399,115 @@ mod tests {
         }
 
         assert_eq!(results, vec![(0, 0), (0, 2), (1, 0), (2, 0), (2, 2)]);
+    }
+
+    #[test]
+    fn test_continue_if_err_sync_block_grouped() {
+        let mut results = Vec::new();
+
+        for i in 0..5 {
+            let value = continue_if_err!(
+                {
+                    if i == 1 { Err("err1") } else { Ok(i) }?;
+                    if i == 3 { Err("err2") } else { Ok(i * 10) }
+                },
+                |_| {
+                    // ignore errors
+                }
+            );
+
+            results.push(value);
+        }
+
+        assert_eq!(results, vec![0, 20, 40]);
+    }
+
+    #[tokio::test]
+    async fn test_continue_if_err_async_block_grouped_with_handler() {
+        let mut results = Vec::new();
+
+        for i in 0..5 {
+            let value = continue_if_err!(
+                async {
+                    let _a = if i == 1 {
+                        return Err("err1");
+                    } else {
+                        i
+                    };
+                    let b = if i == 3 {
+                        return Err("err2");
+                    } else {
+                        _a * 2
+                    };
+                    Ok::<_, &str>(b)
+                },
+                |_| {
+                    // ignore errors
+                }
+            );
+
+            results.push(value);
+        }
+
+        assert_eq!(results, vec![0, 4, 8]);
+    }
+
+    #[test]
+    fn test_continue_if_err_sync_block_with_label() {
+        let mut results = Vec::new();
+        let mut outer_iterations = 0;
+
+        'outer: for i in 0..3 {
+            outer_iterations += 1;
+            for j in 0..3 {
+                let val =
+                    continue_if_err!('outer: { if j == 1 { Err("skip") } else { Ok((i, j)) } });
+                results.push(val);
+            }
+        }
+
+        assert_eq!(outer_iterations, 3);
+        assert_eq!(results, vec![(0, 0), (1, 0), (2, 0)]);
+    }
+
+    #[tokio::test]
+    async fn test_continue_if_err_async_block_with_label() {
+        let mut results = Vec::new();
+        let mut outer_iterations = 0;
+
+        'outer: for i in 0..3 {
+            outer_iterations += 1;
+            for j in 0..3 {
+                let val = continue_if_err!('outer: async {
+                    if j == 1 { return Err("skip"); }
+                    Ok::<_, &str>((i, j))
+                });
+                results.push(val);
+            }
+        }
+
+        assert_eq!(outer_iterations, 3);
+        assert_eq!(results, vec![(0, 0), (1, 0), (2, 0)]);
+    }
+
+    #[tokio::test]
+    async fn test_continue_if_err_closure_async_proxy() {
+        let mut results = Vec::new();
+
+        for i in 0..4 {
+            let val = continue_if_err!(
+                || async {
+                    if i % 2 == 1 {
+                        return Err("odd");
+                    }
+                    Ok::<_, &str>(i + 10)
+                },
+                |_| {}
+            );
+            results.push(val);
+        }
+
+        assert_eq!(results, vec![10, 12]);
     }
 
     #[test]

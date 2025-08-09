@@ -1,12 +1,19 @@
 #![cfg(feature = "integration-tests")]
 
-use moss_environment::models::primitives::EnvironmentId;
+use moss_environment::{
+    AnyEnvironment,
+    models::{
+        primitives::EnvironmentId,
+        types::{AddVariableParams, VariableOptions},
+    },
+};
 use moss_storage::storage::operations::GetItem;
 use moss_testutils::random_name::random_environment_name;
 use moss_workspace::{
     models::operations::CreateEnvironmentInput,
     storage::segments::{SEGKEY_ENVIRONMENT, SEGKEY_EXPANDED_ENVIRONMENTS},
 };
+use serde_json::Value as JsonValue;
 use std::collections::HashSet;
 use tauri::ipc::Channel;
 
@@ -27,6 +34,14 @@ async fn create_environment_success() {
                 collection_id: None,
                 order: 42,
                 color: Some("#3574F0".to_string()),
+                variables: vec![AddVariableParams {
+                    name: "TEST_VAR".to_string(),
+                    global_value: JsonValue::String("test".to_string()),
+                    local_value: JsonValue::String("test".to_string()),
+                    order: 42,
+                    desc: Some("test".to_string()),
+                    options: VariableOptions { disabled: false },
+                }],
             },
         )
         .await
@@ -66,6 +81,11 @@ async fn create_environment_success() {
 
     assert!(stored_expanded_environments.contains(&id));
 
+    let env = workspace.environment(&id).await.unwrap();
+    let variables = env.describe(&ctx).await.unwrap().variables;
+
+    assert_eq!(variables.len(), 1);
+
     cleanup().await;
 }
 
@@ -82,6 +102,7 @@ async fn create_environment_already_exists() {
                 collection_id: None,
                 order: 42,
                 color: Some("#3574F0".to_string()),
+                variables: vec![],
             },
         )
         .await
@@ -95,6 +116,7 @@ async fn create_environment_already_exists() {
                 collection_id: None,
                 order: 42,
                 color: Some("#3574F0".to_string()),
+                variables: vec![],
             },
         )
         .await;

@@ -224,10 +224,9 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
             ));
 
             // We don't want database failure to stop the function
-            let mut transaction =
-                continue_if_err!(self.variable_store.begin_write(&ctx).await, |err| {
-                    println!("failed to start a write transaction: {}", err);
-                });
+            let mut txn = continue_if_err!(self.variable_store.begin_write(&ctx).await, |err| {
+                println!("failed to start a write transaction: {}", err);
+            });
 
             let local_value =
                 continue_if_err!(AnyValue::serialize(&var_to_add.local_value), |err| {
@@ -238,7 +237,7 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                 TransactionalPutItem::put_with_context(
                     self.variable_store.as_ref(),
                     ctx,
-                    &mut transaction,
+                    &mut txn,
                     SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE),
                     local_value,
                 )
@@ -256,7 +255,7 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                 TransactionalPutItem::put_with_context(
                     self.variable_store.as_ref(),
                     ctx,
-                    &mut transaction,
+                    &mut txn,
                     SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_ORDER),
                     order,
                 )
@@ -266,7 +265,7 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                 }
             );
 
-            continue_if_err!(transaction.commit(), |err| {
+            continue_if_err!(txn.commit(), |err| {
                 println!("failed to commit transaction: {}", err);
             });
         }

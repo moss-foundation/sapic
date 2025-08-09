@@ -1,22 +1,33 @@
+use indexmap::IndexMap;
 use joinerror::{Error, ResultExt};
 use moss_applib::AppRuntime;
+use moss_common::continue_if_err;
+use moss_db::{DbResultExt, primitives::AnyValue};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
-use moss_hcl::{Block, HclResultExt};
-use moss_storage::common::VariableStore;
+use moss_hcl::{Block, HclResultExt, LabeledBlock, json_to_hcl};
+use moss_storage::{
+    common::VariableStore, primitives::segkey::SegKeyBuf, storage::operations::TransactionalPutItem,
+};
+use serde_json::Value as JsonValue;
 use std::{
+    collections::HashMap,
     path::{Path, PathBuf},
     sync::Arc,
 };
 use tokio::sync::watch;
 
 use crate::{
-    configuration::{MetadataDecl, SourceFile},
+    configuration::{MetadataDecl, SourceFile, VariableDecl},
     edit::EnvironmentEditing,
     environment::{Environment, EnvironmentPath},
     errors::{
         ErrorEnvironmentAlreadyExists, ErrorEnvironmentNotFound, ErrorFailedToEncode, ErrorIo,
     },
-    models::primitives::EnvironmentId,
+    models::{
+        primitives::{EnvironmentId, VariableId},
+        types::AddVariableParams,
+    },
+    segments::{SEGKEY_VARIABLE_LOCALVALUE, SEGKEY_VARIABLE_ORDER},
     utils,
 };
 
@@ -25,6 +36,7 @@ pub struct CreateEnvironmentParams<'a> {
     pub abs_path: &'a Path,
     pub color: Option<String>,
     pub order: isize,
+    pub variables: Vec<AddVariableParams>,
 }
 
 pub struct EnvironmentLoadParams {
@@ -33,15 +45,19 @@ pub struct EnvironmentLoadParams {
 
 pub struct EnvironmentBuilder {
     fs: Arc<dyn FileSystem>,
+    vars_to_store: HashMap<VariableId, (JsonValue, isize)>,
 }
 
 impl EnvironmentBuilder {
     pub fn new(fs: Arc<dyn FileSystem>) -> Self {
-        Self { fs }
+        Self {
+            fs,
+            vars_to_store: HashMap::new(),
+        }
     }
 
     pub async fn initialize<'a>(
-        &self,
+        &mut self,
         params: CreateEnvironmentParams<'a>,
     ) -> joinerror::Result<PathBuf> {
         debug_assert!(params.abs_path.is_absolute());
@@ -55,12 +71,35 @@ impl EnvironmentBuilder {
             ));
         }
 
+        let mut variables = IndexMap::with_capacity(params.variables.len());
+        for v in params.variables {
+            let global_value = continue_if_err!(json_to_hcl(&v.global_value), |err| {
+                println!("failed to convert global value expression: {}", err); // TODO: log error
+            });
+
+            let id = VariableId::new();
+
+            variables.insert(
+                id.clone(),
+                VariableDecl {
+                    name: v.name,
+                    value: global_value,
+                    description: v.desc,
+                    options: v.options,
+                },
+            );
+
+            // We don't save data to the store here because we don't want to pass the store as a parameter to this function.
+            // When the environment is simply being initialized, we might not yet have access to the store where variable data could be saved.
+            self.vars_to_store.insert(id, (v.local_value, v.order));
+        }
+
         let content = hcl::to_string(&SourceFile {
             metadata: Block::new(MetadataDecl {
                 id: id.clone(),
                 color: params.color,
             }),
-            variables: None,
+            variables: Some(LabeledBlock::new(variables)),
         })
         .join_err_with::<ErrorFailedToEncode>(|| {
             format!("failed to encode environment file {}", abs_path.display())
@@ -84,9 +123,10 @@ impl EnvironmentBuilder {
     }
 
     pub async fn create<'a, R: AppRuntime>(
-        self,
-        params: CreateEnvironmentParams<'a>,
+        mut self,
+        ctx: &R::AsyncContext,
         variable_store: Arc<dyn VariableStore<R::AsyncContext>>,
+        params: CreateEnvironmentParams<'a>,
     ) -> joinerror::Result<Environment<R>> {
         debug_assert!(params.abs_path.is_absolute());
 
@@ -94,6 +134,52 @@ impl EnvironmentBuilder {
             .initialize(params)
             .await
             .join_err::<()>("failed to initialize environment")?;
+
+        for (id, (local_value, order)) in self.vars_to_store.drain() {
+            let local_value = continue_if_err!(AnyValue::serialize(&local_value), |err| {
+                println!("failed to serialize localvalue: {}", err);
+            });
+
+            let order = continue_if_err!(AnyValue::serialize(&order), |err| {
+                println!("failed to serialize order: {}", err);
+            });
+
+            let mut txn = continue_if_err!(variable_store.begin_write(&ctx).await, |err| {
+                println!("failed to start a write transaction: {}", err);
+            });
+
+            continue_if_err!(
+                async {
+                    TransactionalPutItem::put_with_context(
+                        variable_store.as_ref(),
+                        ctx,
+                        &mut txn,
+                        SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE),
+                        local_value,
+                    )
+                    .await
+                    .join_err::<()>("failed to put local_value in the database")?;
+
+                    TransactionalPutItem::put_with_context(
+                        variable_store.as_ref(),
+                        ctx,
+                        &mut txn,
+                        SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_ORDER),
+                        order,
+                    )
+                    .await
+                    .join_err::<()>("failed to put order in the database")?;
+
+                    txn.commit()
+                        .join_err::<()>("failed to commit transaction")?;
+
+                    Ok::<(), Error>(())
+                },
+                |err: Error| {
+                    println!("{}", err);
+                }
+            );
+        }
 
         let (abs_path_tx, abs_path_rx) = watch::channel(EnvironmentPath::new(abs_path)?);
 
@@ -107,8 +193,8 @@ impl EnvironmentBuilder {
 
     pub async fn load<R: AppRuntime>(
         self,
-        params: EnvironmentLoadParams,
         variable_store: Arc<dyn VariableStore<R::AsyncContext>>,
+        params: EnvironmentLoadParams,
     ) -> joinerror::Result<Environment<R>> {
         debug_assert!(params.abs_path.is_absolute());
 

@@ -33,6 +33,7 @@ pub struct CreateEnvironmentItemParams {
     pub name: String,
     pub order: isize,
     pub color: Option<String>,
+    pub variables: Vec<AddVariableParams>,
 }
 
 pub struct UpdateEnvironmentItemParams {
@@ -230,13 +231,15 @@ where
     ) -> joinerror::Result<EnvironmentItemDescription> {
         let environment = EnvironmentBuilder::new(self.fs.clone())
             .create::<R>(
+                ctx,
+                self.storage_service.variable_store(),
                 moss_environment::builder::CreateEnvironmentParams {
                     name: params.name.clone(),
                     abs_path: &self.abs_path,
                     color: params.color,
                     order: params.order,
+                    variables: params.variables,
                 },
-                self.storage_service.variable_store(),
             )
             .await?;
 
@@ -393,10 +396,10 @@ async fn collect_environments<R: AppRuntime>(
 
         let environment = EnvironmentBuilder::new(fs.clone())
             .load::<R>(
+                storage_service.variable_store(),
                 EnvironmentLoadParams {
                     abs_path: entry.path(),
                 },
-                storage_service.variable_store(),
             )
             .await
             .join_err_with::<()>(|| {
