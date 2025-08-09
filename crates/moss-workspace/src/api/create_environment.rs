@@ -25,6 +25,7 @@ impl<R: AppRuntime> Workspace<R> {
                     name: input.name.clone(),
                     order: input.order,
                     color: input.color.clone(),
+                    variables: input.variables,
                 },
             )
             .await?;

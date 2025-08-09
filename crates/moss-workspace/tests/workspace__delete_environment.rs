@@ -35,6 +35,7 @@ async fn delete_environment_success() {
                 collection_id: None,
                 order: 42,
                 color: Some("#3574F0".to_string()),
+                variables: vec![],
             },
         )
         .await

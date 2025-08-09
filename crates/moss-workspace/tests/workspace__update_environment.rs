@@ -33,6 +33,7 @@ async fn update_environment_success() {
                 collection_id: None,
                 order: 0,
                 color: Some("#ffffff".to_string()),
+                variables: vec![],
             },
         )
         .await
@@ -50,7 +51,14 @@ async fn update_environment_success() {
                 order: Some(42),
                 color: Some(ChangeString::Update("#000000".to_string())),
                 expanded: Some(false),
-                vars_to_add: vec![],
+                vars_to_add: vec![AddVariableParams {
+                    name: "1".to_string(),
+                    global_value: JsonValue::String("variable 1".to_string()),
+                    local_value: JsonValue::String("variable 1".to_string()),
+                    order: 1,
+                    desc: Some("First variable".to_string()),
+                    options: VariableOptions { disabled: true },
+                }],
                 vars_to_update: vec![],
                 vars_to_delete: vec![],
             },
@@ -111,6 +119,7 @@ async fn update_environment_add_variables() {
                 collection_id: None,
                 order: 0,
                 color: Some("#ffffff".to_string()),
+                variables: vec![],
             },
         )
         .await
@@ -196,6 +205,7 @@ async fn update_environment_update_variables() {
                 collection_id: None,
                 order: 0,
                 color: Some("#ffffff".to_string()),
+                variables: vec![],
             },
         )
         .await
@@ -314,6 +324,7 @@ async fn update_environment_update_variables_nonexistent() {
                 collection_id: None,
                 order: 0,
                 color: Some("#ffffff".to_string()),
+                variables: vec![],
             },
         )
         .await
@@ -364,6 +375,7 @@ async fn update_environment_delete_variables() {
                 collection_id: None,
                 order: 0,
                 color: Some("#ffffff".to_string()),
+                variables: vec![],
             },
         )
         .await
@@ -458,6 +470,7 @@ async fn update_environment_delete_variables_nonexistent() {
                 collection_id: None,
                 order: 0,
                 color: Some("#ffffff".to_string()),
+                variables: vec![],
             },
         )
         .await
