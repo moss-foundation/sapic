@@ -38,13 +38,6 @@ export const createCollectionOutputSchema = z.object({
   iconPath: z.string().optional(),
 });
 
-export const createEnvironmentInputSchema = z.object({
-  collectionId: z.string().optional(),
-  name: z.string(),
-  order: z.number(),
-  color: z.string().optional(),
-});
-
 export const createEnvironmentOutputSchema = z.object({
   id: z.string(),
   collectionId: z.string().optional(),
@@ -87,6 +80,14 @@ export const updateEnvironmentOutputSchema = z.object({
 });
 export const batchUpdateCollectionInputSchema = z.object({
   items: z.array(batchUpdateCollectionParamsSchema),
+});
+
+export const createEnvironmentInputSchema = z.object({
+  collectionId: z.string().optional(),
+  name: z.string(),
+  order: z.number(),
+  color: z.string().optional(),
+  variables: z.array(addVariableParamsSchema),
 });
 
 export const describeEnvironmentOutputSchema = z.object({
