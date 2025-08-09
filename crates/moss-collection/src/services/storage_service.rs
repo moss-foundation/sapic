@@ -1,5 +1,4 @@
 use anyhow::{Context as _, Result};
-use async_trait::async_trait;
 use moss_applib::{AppRuntime, ServiceMarker};
 use moss_db::{Transaction, primitives::AnyValue};
 use moss_storage::{
@@ -10,7 +9,7 @@ use moss_storage::{
 };
 use std::{collections::HashMap, path::Path, sync::Arc};
 
-use crate::{models::primitives::EntryId, services::AnyStorageService, storage::segments};
+use crate::{models::primitives::EntryId, storage::segments};
 
 pub struct StorageService<R: AppRuntime> {
     storage: Arc<dyn CollectionStorage<R::AsyncContext>>,
@@ -18,18 +17,17 @@ pub struct StorageService<R: AppRuntime> {
 
 impl<R: AppRuntime> ServiceMarker for StorageService<R> {}
 
-#[async_trait]
-impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
-    async fn begin_write(&self, ctx: &R::AsyncContext) -> Result<Transaction> {
+impl<R: AppRuntime> StorageService<R> {
+    pub async fn begin_write(&self, ctx: &R::AsyncContext) -> Result<Transaction> {
         Ok(self.storage.begin_write_with_context(ctx).await?)
     }
 
     #[allow(dead_code)]
-    async fn begin_read(&self, ctx: &R::AsyncContext) -> Result<Transaction> {
+    pub async fn begin_read(&self, ctx: &R::AsyncContext) -> Result<Transaction> {
         Ok(self.storage.begin_read_with_context(ctx).await?)
     }
 
-    async fn put_entry_order_txn(
+    pub async fn put_entry_order_txn(
         &self,
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
@@ -51,7 +49,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         Ok(())
     }
 
-    async fn get_all_entry_keys(
+    pub async fn get_all_entry_keys(
         &self,
         ctx: &R::AsyncContext,
     ) -> Result<HashMap<SegKeyBuf, AnyValue>> {
@@ -66,7 +64,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         Ok(value.into_iter().collect())
     }
 
-    async fn put_expanded_entries(
+    pub async fn put_expanded_entries(
         &self,
         ctx: &R::AsyncContext,
         expanded_entries: Vec<EntryId>,
@@ -79,7 +77,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         Ok(())
     }
 
-    async fn put_expanded_entries_txn(
+    pub async fn put_expanded_entries_txn(
         &self,
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
@@ -98,7 +96,7 @@ impl<R: AppRuntime> AnyStorageService<R> for StorageService<R> {
         Ok(())
     }
 
-    async fn get_expanded_entries(&self, ctx: &R::AsyncContext) -> Result<Vec<EntryId>> {
+    pub async fn get_expanded_entries(&self, ctx: &R::AsyncContext) -> Result<Vec<EntryId>> {
         let store = self.storage.resource_store();
         let segkey = segments::SEGKEY_EXPANDED_ENTRIES.to_segkey_buf();
         let value = GetItem::get(store.as_ref(), ctx, segkey).await?;

@@ -1,5 +1,4 @@
 use moss_applib::AppRuntime;
-use moss_common::api::OperationResult;
 
 use crate::{
     collection::Collection,
@@ -11,7 +10,7 @@ impl<R: AppRuntime> Collection<R> {
         &self,
         ctx: &R::AsyncContext,
         input: CreateEntryInput,
-    ) -> OperationResult<CreateEntryOutput> {
+    ) -> joinerror::Result<CreateEntryOutput> {
         match input {
             CreateEntryInput::Item(input) => self.create_item_entry(ctx, input).await,
             CreateEntryInput::Dir(input) => self.create_dir_entry(ctx, input).await,

@@ -1,5 +1,4 @@
 use anyhow::Result;
-use async_trait::async_trait;
 use image::{GenericImageView, imageops::FilterType};
 use moss_applib::ServiceMarker;
 use moss_fs::{FileSystem, RemoveOptions};
@@ -8,7 +7,7 @@ use std::{
     sync::Arc,
 };
 
-use crate::{dirs, services::AnySetIconService};
+use crate::dirs;
 
 const COLLECTION_ICON_FILENAME: &str = "icon.png";
 pub struct SetIconService {
@@ -19,9 +18,8 @@ pub struct SetIconService {
 
 impl ServiceMarker for SetIconService {}
 
-#[async_trait]
-impl AnySetIconService for SetIconService {
-    fn set_icon(&self, img_path: &Path) -> Result<()> {
+impl SetIconService {
+    pub fn set_icon(&self, img_path: &Path) -> Result<()> {
         let img = image::open(img_path)?;
         let (w, h) = img.dimensions();
 
@@ -41,7 +39,7 @@ impl AnySetIconService for SetIconService {
         Ok(())
     }
 
-    async fn remove_icon(&self) -> Result<()> {
+    pub async fn remove_icon(&self) -> Result<()> {
         self.fs
             .remove_file(
                 &self.assets_abs_path.join(COLLECTION_ICON_FILENAME),
@@ -54,7 +52,7 @@ impl AnySetIconService for SetIconService {
         Ok(())
     }
 
-    fn icon_path(&self) -> Option<PathBuf> {
+    pub fn icon_path(&self) -> Option<PathBuf> {
         let path = self.assets_abs_path.join(COLLECTION_ICON_FILENAME);
         path.exists().then_some(path)
     }

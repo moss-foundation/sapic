@@ -1,15 +1,9 @@
-use anyhow::Result;
-use moss_applib::{
-    AppRuntime, ServiceMarker,
-    providers::{ServiceMap, ServiceProvider},
-    subscription::EventEmitter,
-};
-use moss_file::json::JsonFileHandle;
-use moss_fs::FileSystem;
+use joinerror::ResultExt;
+use moss_applib::{AppRuntime, subscription::EventEmitter};
+use moss_fs::{CreateOptions, FileSystem};
 use moss_git::url::normalize_git_url;
 use moss_hcl::Block;
 use std::{
-    any::TypeId,
     path::{Path, PathBuf},
     sync::Arc,
 };
@@ -17,10 +11,11 @@ use tokio::sync::OnceCell;
 
 use crate::{
     Collection,
-    config::{CONFIG_FILE_NAME, ConfigModel},
+    config::{CONFIG_FILE_NAME, ConfigFile},
     constants::COLLECTION_ROOT_PATH,
     defaults, dirs,
-    manifest::{MANIFEST_FILE_NAME, ManifestModel},
+    edit::CollectionEdit,
+    manifest::{MANIFEST_FILE_NAME, ManifestFile},
     models::{
         primitives::EntryId,
         types::configuration::docschema::{
@@ -28,9 +23,14 @@ use crate::{
             RawDirRequestConfiguration, RawDirSchemaConfiguration,
         },
     },
-    services::{DynSetIconService, DynWorktreeService, worktree_service::EntryMetadata},
+    services::{
+        set_icon_service::SetIconService,
+        storage_service::StorageService,
+        worktree_service::{EntryMetadata, WorktreeService},
+    },
 };
 
+const COLLECTION_ICON_SIZE: u32 = 128;
 const OTHER_DIRS: [&str; 2] = [dirs::ASSETS_DIR, dirs::ENVIRONMENTS_DIR];
 
 const WORKTREE_DIRS: [(&str, isize); 4] = [
@@ -54,49 +54,51 @@ pub struct CollectionLoadParams {
 
 pub struct CollectionBuilder {
     fs: Arc<dyn FileSystem>,
-    services: ServiceMap,
 }
 
 impl CollectionBuilder {
     pub fn new(fs: Arc<dyn FileSystem>) -> Self {
-        Self {
-            fs,
-            services: Default::default(),
-        }
+        Self { fs }
     }
 
-    pub fn with_service<T: ServiceMarker + Send + Sync>(
-        mut self,
-        service: impl Into<Arc<T>>,
-    ) -> Self {
-        self.services.insert(TypeId::of::<T>(), service.into());
-        self
-    }
-
-    pub async fn load<R: AppRuntime>(self, params: CollectionLoadParams) -> Result<Collection<R>> {
+    pub async fn load<R: AppRuntime>(
+        self,
+        params: CollectionLoadParams,
+    ) -> joinerror::Result<Collection<R>> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
-        let manifest = JsonFileHandle::load(
-            self.fs.clone(),
-            &params.internal_abs_path.join(MANIFEST_FILE_NAME),
-        )
-        .await?;
+        let storage_service: Arc<StorageService<R>> =
+            StorageService::new(params.internal_abs_path.as_ref())
+                .join_err::<()>("failed to create collection storage service")?
+                .into();
 
-        let config = JsonFileHandle::load(
+        let worktree_service: Arc<WorktreeService<R>> = WorktreeService::new(
+            params.internal_abs_path.clone(),
             self.fs.clone(),
-            &params.internal_abs_path.join(CONFIG_FILE_NAME),
+            storage_service.clone(),
         )
-        .await?;
+        .into();
 
+        let set_icon_service = SetIconService::new(
+            params.internal_abs_path.clone(),
+            self.fs.clone(),
+            COLLECTION_ICON_SIZE,
+        );
+
+        let edit = CollectionEdit::new(
+            self.fs.clone(),
+            params.internal_abs_path.join(MANIFEST_FILE_NAME),
+        );
         // TODO: Load environments
 
         Ok(Collection {
             fs: self.fs.clone(),
-            services: self.services.into(),
             abs_path: params.internal_abs_path,
+            edit,
+            set_icon_service,
+            storage_service,
+            worktree_service,
             environments: OnceCell::new(),
-            manifest,
-            config,
             on_did_change: EventEmitter::new(),
         })
     }
@@ -105,7 +107,7 @@ impl CollectionBuilder {
         self,
         ctx: &R::AsyncContext,
         params: CollectionCreateParams,
-    ) -> Result<Collection<R>> {
+    ) -> joinerror::Result<Collection<R>> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
         let abs_path: Arc<Path> = params
@@ -114,8 +116,15 @@ impl CollectionBuilder {
             .unwrap_or(params.internal_abs_path.clone())
             .into();
 
-        let services: ServiceProvider = self.services.into();
-        let worktree_service = services.get::<DynWorktreeService<R>>();
+        let storage_service: Arc<StorageService<R>> = StorageService::new(abs_path.as_ref())
+            .join_err::<()>("failed to create collection storage service")?
+            .into();
+
+        let worktree_service: Arc<WorktreeService<R>> =
+            WorktreeService::new(abs_path.clone(), self.fs.clone(), storage_service.clone()).into();
+
+        let set_icon_service =
+            SetIconService::new(abs_path.clone(), self.fs.clone(), COLLECTION_ICON_SIZE);
 
         for (dir, order) in &WORKTREE_DIRS {
             let id = EntryId::new();
@@ -160,42 +169,55 @@ impl CollectionBuilder {
             None
         };
 
-        let manifest = JsonFileHandle::create(
-            self.fs.clone(),
-            &abs_path.join(MANIFEST_FILE_NAME),
-            ManifestModel {
-                name: params
-                    .name
-                    .unwrap_or(defaults::DEFAULT_COLLECTION_NAME.to_string()),
-                repository: normalized_repo,
-            },
-        )
-        .await?;
-
-        let config = JsonFileHandle::create(
-            self.fs.clone(),
-            &params.internal_abs_path.join(CONFIG_FILE_NAME),
-            ConfigModel {
-                external_path: params.external_abs_path.map(|p| p.to_owned().into()),
-            },
-        )
-        .await?;
-
         if let Some(icon_path) = params.icon_path {
-            let set_icon_service = services.get::<DynSetIconService>();
             // TODO: Log the error here
             set_icon_service.set_icon(&icon_path)?;
         }
+
+        self.fs
+            .create_file_with(
+                &abs_path.join(MANIFEST_FILE_NAME),
+                serde_json::to_string(&ManifestFile {
+                    name: params
+                        .name
+                        .unwrap_or(defaults::DEFAULT_COLLECTION_NAME.to_string()),
+                    repository: normalized_repo,
+                })?
+                .as_bytes(),
+                CreateOptions {
+                    overwrite: false,
+                    ignore_if_exists: false,
+                },
+            )
+            .await?;
+
+        // TODO: Add config file and others to .gitignore
+        self.fs
+            .create_file_with(
+                &params.internal_abs_path.join(CONFIG_FILE_NAME),
+                serde_json::to_string(&ConfigFile {
+                    external_path: params.external_abs_path.map(|p| p.to_path_buf()),
+                })?
+                .as_bytes(),
+                CreateOptions {
+                    overwrite: false,
+                    ignore_if_exists: false,
+                },
+            )
+            .await?;
+
+        let edit = CollectionEdit::new(self.fs.clone(), abs_path.join(MANIFEST_FILE_NAME));
 
         // TODO: Load environments
 
         Ok(Collection {
             fs: self.fs.clone(),
-            services,
             abs_path: params.internal_abs_path.to_owned().into(),
+            edit,
+            set_icon_service,
+            storage_service,
+            worktree_service,
             environments: OnceCell::new(),
-            manifest,
-            config,
             on_did_change: EventEmitter::new(),
         })
     }

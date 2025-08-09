@@ -1,12 +1,11 @@
 use anyhow::anyhow;
-use async_trait::async_trait;
 use derive_more::{Deref, DerefMut};
+use joinerror::OptionExt;
 use moss_applib::{AppRuntime, ServiceMarker};
-use moss_common::{api::OperationError, continue_if_err, continue_if_none};
+use moss_common::{continue_if_err, continue_if_none};
 use moss_db::primitives::AnyValue;
-use moss_fs::{
-    CreateOptions, FileSystem, FsError, RemoveOptions, desanitize_path, utils::SanitizedPath,
-};
+use moss_fs::{CreateOptions, FileSystem, RemoveOptions, desanitize_path, utils::SanitizedPath};
+use moss_hcl::HclResultExt;
 use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_text::sanitized::{desanitize, sanitize};
 use std::{
@@ -14,7 +13,6 @@ use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
-use thiserror::Error;
 use tokio::{
     fs,
     sync::{RwLock, mpsc},
@@ -27,73 +25,13 @@ use crate::{
         primitives::{EntryClass, EntryId, EntryKind, EntryProtocol},
         types::configuration::docschema::{RawDirConfiguration, RawItemConfiguration},
     },
-    services::{AnyWorktreeService, DynStorageService},
     storage::segments,
 };
 
-#[derive(Error, Debug)]
-pub enum WorktreeError {
-    #[error("invalid input: {0}")]
-    InvalidInput(String),
-
-    #[error("invalid kind: {0}")]
-    InvalidKind(String),
-
-    #[error("worktree entry already exists: {0}")]
-    AlreadyExists(String),
-
-    #[error("worktree entry is not found: {0}")]
-    NotFound(String),
-
-    #[error("io error: {0}")]
-    Io(String),
-
-    #[error("internal error: {0}")]
-    Internal(String),
-
-    #[error("unknown error: {0}")]
-    Unknown(#[from] anyhow::Error),
-}
-
-impl From<moss_fs::FsError> for WorktreeError {
-    fn from(error: FsError) -> Self {
-        WorktreeError::Io(error.to_string())
-    }
-}
-
-impl From<hcl::Error> for WorktreeError {
-    fn from(error: hcl::Error) -> Self {
-        WorktreeError::Io(error.to_string())
-    }
-}
-
-impl From<moss_db::DatabaseError> for WorktreeError {
-    fn from(error: moss_db::DatabaseError) -> Self {
-        WorktreeError::Internal(error.to_string())
-    }
-}
-
-impl From<serde_json::Error> for WorktreeError {
-    fn from(error: serde_json::Error) -> Self {
-        WorktreeError::Internal(error.to_string())
-    }
-}
-
-impl From<WorktreeError> for OperationError {
-    fn from(error: WorktreeError) -> Self {
-        match error {
-            WorktreeError::InvalidInput(err) => OperationError::InvalidInput(err),
-            WorktreeError::InvalidKind(err) => OperationError::InvalidInput(err),
-            WorktreeError::AlreadyExists(err) => OperationError::AlreadyExists(err),
-            WorktreeError::NotFound(err) => OperationError::NotFound(err),
-            WorktreeError::Unknown(err) => OperationError::Unknown(err),
-            WorktreeError::Io(err) => OperationError::Internal(err.to_string()),
-            WorktreeError::Internal(err) => OperationError::Internal(err.to_string()),
-        }
-    }
-}
-
-pub type WorktreeResult<T> = Result<T, WorktreeError>;
+use crate::{
+    errors::{ErrorAlreadyExists, ErrorInvalidInput, ErrorInvalidKind, ErrorIo, ErrorNotFound},
+    services::storage_service::StorageService,
+};
 
 #[derive(Debug)]
 struct ScanJob {
@@ -238,22 +176,23 @@ struct WorktreeState {
 pub struct WorktreeService<R: AppRuntime> {
     abs_path: Arc<Path>,
     fs: Arc<dyn FileSystem>,
-    storage: Arc<DynStorageService<R>>,
+    storage: Arc<StorageService<R>>,
     state: Arc<RwLock<WorktreeState>>,
 }
 
 impl<R: AppRuntime> ServiceMarker for WorktreeService<R> {}
 
-#[async_trait]
-impl<R: AppRuntime> AnyWorktreeService<R> for WorktreeService<R> {
-    fn absolutize(&self, path: &Path) -> WorktreeResult<PathBuf> {
+// FIXME: Should we attach error markers?
+
+impl<R: AppRuntime> WorktreeService<R> {
+    pub fn absolutize(&self, path: &Path) -> joinerror::Result<PathBuf> {
         debug_assert!(path.is_relative());
 
         if path
             .components()
             .any(|c| c == std::path::Component::ParentDir)
         {
-            return Err(WorktreeError::InvalidInput(format!(
+            return Err(joinerror::Error::new::<ErrorInvalidInput>(format!(
                 "Path cannot contain '..' components: {}",
                 path.display()
             )));
@@ -266,16 +205,16 @@ impl<R: AppRuntime> AnyWorktreeService<R> for WorktreeService<R> {
         }
     }
 
-    async fn remove_entry(&self, ctx: &R::AsyncContext, id: &EntryId) -> WorktreeResult<()> {
+    pub async fn remove_entry(&self, ctx: &R::AsyncContext, id: &EntryId) -> joinerror::Result<()> {
         let mut state_lock = self.state.write().await;
         let entry = state_lock
             .entries
             .remove(&id)
-            .ok_or(WorktreeError::NotFound(id.to_string()))?;
+            .ok_or_join_err_with::<ErrorNotFound>(|| format!("entry {} not found", id))?;
 
         let abs_path = self.absolutize(&entry.path)?;
         if !abs_path.exists() {
-            return Err(WorktreeError::NotFound(format!(
+            return Err(joinerror::Error::new::<ErrorNotFound>(format!(
                 "Entry not found: {}",
                 abs_path.display()
             )));
@@ -306,14 +245,14 @@ impl<R: AppRuntime> AnyWorktreeService<R> for WorktreeService<R> {
         Ok(())
     }
 
-    async fn scan(
+    pub async fn scan(
         &self,
         _ctx: &R::AsyncContext, // TODO: use ctx ctx.done() to cancel the scan if needed
         path: &Path,
         expanded_entries: Arc<HashSet<EntryId>>,
         all_entry_keys: Arc<HashMap<SegKeyBuf, AnyValue>>,
         sender: mpsc::UnboundedSender<EntryDescription>,
-    ) -> WorktreeResult<()> {
+    ) -> joinerror::Result<()> {
         debug_assert!(path.is_relative());
 
         let path: Arc<Path> = path.into();
@@ -465,7 +404,7 @@ impl<R: AppRuntime> AnyWorktreeService<R> for WorktreeService<R> {
         Ok(())
     }
 
-    async fn create_item_entry(
+    pub async fn create_item_entry(
         &self,
         ctx: &R::AsyncContext,
         id: &EntryId,
@@ -473,11 +412,11 @@ impl<R: AppRuntime> AnyWorktreeService<R> for WorktreeService<R> {
         path: &Path,
         configuration: RawItemConfiguration,
         metadata: EntryMetadata,
-    ) -> WorktreeResult<()> {
+    ) -> joinerror::Result<()> {
         debug_assert!(path.is_relative());
 
         if !is_parent_a_dir_entry(self.abs_path.as_ref(), path) {
-            return Err(WorktreeError::InvalidInput(format!(
+            return Err(joinerror::Error::new::<ErrorInvalidInput>(format!(
                 "Cannot create entry inside Item entry {}",
                 path.to_string_lossy().to_string()
             )));
@@ -487,7 +426,8 @@ impl<R: AppRuntime> AnyWorktreeService<R> for WorktreeService<R> {
             .join(sanitize(name))
             .into();
 
-        let content = hcl::to_string(&configuration)?;
+        let content = hcl::to_string(&configuration)
+            .join_err::<()>("failed to serialize configuration into hcl string")?;
         self.create_entry(&sanitized_path, false, &content.as_bytes())
             .await?;
 
@@ -530,7 +470,7 @@ impl<R: AppRuntime> AnyWorktreeService<R> for WorktreeService<R> {
         Ok(())
     }
 
-    async fn create_dir_entry(
+    pub async fn create_dir_entry(
         &self,
         ctx: &R::AsyncContext,
         id: &EntryId,
@@ -538,11 +478,11 @@ impl<R: AppRuntime> AnyWorktreeService<R> for WorktreeService<R> {
         path: &Path,
         configuration: RawDirConfiguration,
         metadata: EntryMetadata,
-    ) -> WorktreeResult<()> {
+    ) -> joinerror::Result<()> {
         debug_assert!(path.is_relative());
 
         if !is_parent_a_dir_entry(self.abs_path.as_ref(), path) {
-            return Err(WorktreeError::InvalidInput(format!(
+            return Err(joinerror::Error::new::<ErrorInvalidInput>(format!(
                 "Cannot create entry inside Item entry {}",
                 path.to_string_lossy().to_string()
             )));
@@ -552,7 +492,8 @@ impl<R: AppRuntime> AnyWorktreeService<R> for WorktreeService<R> {
             .join(sanitize(name))
             .into();
 
-        let content = hcl::to_string(&configuration)?;
+        let content = hcl::to_string(&configuration)
+            .join_err::<()>("failed to serialize configuration into hcl string")?;
         self.create_entry(&sanitized_path, true, &content.as_bytes())
             .await?;
 
@@ -594,29 +535,29 @@ impl<R: AppRuntime> AnyWorktreeService<R> for WorktreeService<R> {
         Ok(())
     }
 
-    async fn update_dir_entry(
+    pub async fn update_dir_entry(
         &self,
         ctx: &R::AsyncContext,
         id: &EntryId,
         params: ModifyParams,
-    ) -> WorktreeResult<(PathBuf, RawDirConfiguration)> {
+    ) -> joinerror::Result<(PathBuf, RawDirConfiguration)> {
         let mut state_lock = self.state.write().await;
         let entry = state_lock
             .entries
             .get_mut(&id)
-            .ok_or(WorktreeError::NotFound(id.to_string()))?
+            .ok_or_join_err_with::<ErrorNotFound>(|| format!("entry {} not found", id))?
             .as_dir_mut()
-            .ok_or(WorktreeError::InvalidKind(
-                "expected to be a dir".to_string(),
-            ))?;
+            .ok_or_join_err_with::<ErrorInvalidKind>(|| {
+                format!("entry {} is not a directory", id)
+            })?;
 
         let mut path = entry.path.clone().to_path_buf();
 
         if let Some(new_parent) = params.path {
             let classification_folder = entry.configuration.classification_folder();
             if !new_parent.starts_with(classification_folder) {
-                return Err(WorktreeError::InvalidInput(
-                    "Cannot move entry to a different classification folder".to_string(),
+                return Err(joinerror::Error::new::<ErrorInvalidInput>(
+                    "cannot move entry to a different classification folder",
                 ));
             }
 
@@ -624,8 +565,8 @@ impl<R: AppRuntime> AnyWorktreeService<R> for WorktreeService<R> {
             // Check if the destination path has dir config file
             let dest_entry_config = self.abs_path.join(&new_parent).join(DIR_CONFIG_FILENAME);
             if !dest_entry_config.exists() {
-                return Err(WorktreeError::InvalidInput(
-                    "Cannot move entries into a non-directory entry".to_string(),
+                return Err(joinerror::Error::new::<ErrorInvalidInput>(
+                    "cannot move entries into a non-directory entry",
                 ));
             }
 
@@ -685,29 +626,27 @@ impl<R: AppRuntime> AnyWorktreeService<R> for WorktreeService<R> {
         Ok((path, configuration))
     }
 
-    async fn update_item_entry(
+    pub async fn update_item_entry(
         &self,
         ctx: &R::AsyncContext,
         id: &EntryId,
         params: ModifyParams,
-    ) -> WorktreeResult<(PathBuf, RawItemConfiguration)> {
+    ) -> joinerror::Result<(PathBuf, RawItemConfiguration)> {
         let mut state_lock = self.state.write().await;
         let entry = state_lock
             .entries
             .get_mut(&id)
-            .ok_or(WorktreeError::NotFound(id.to_string()))?
+            .ok_or_join_err_with::<ErrorNotFound>(|| format!("entry {} not found", id))?
             .as_item_mut()
-            .ok_or(WorktreeError::InvalidKind(
-                "expected to be an item".to_string(),
-            ))?;
+            .ok_or_join_err_with::<ErrorInvalidKind>(|| format!("entry {} is not a item", id))?;
 
         let mut path = entry.path.clone().to_path_buf();
 
         if let Some(new_parent) = params.path {
             let classification_folder = entry.configuration.classification_folder();
             if !new_parent.starts_with(classification_folder) {
-                return Err(WorktreeError::InvalidInput(
-                    "Cannot move entry to a different classification folder".to_string(),
+                return Err(joinerror::Error::new::<ErrorInvalidInput>(
+                    "cannot move entry to a different classification folder",
                 ));
             }
 
@@ -715,8 +654,8 @@ impl<R: AppRuntime> AnyWorktreeService<R> for WorktreeService<R> {
             // Check if the destination path has dir config file
             let dest_entry_config = self.abs_path.join(&new_parent).join(DIR_CONFIG_FILENAME);
             if !dest_entry_config.exists() {
-                return Err(WorktreeError::InvalidInput(
-                    "Cannot move entries into a non-directory entry".to_string(),
+                return Err(joinerror::Error::new::<ErrorInvalidInput>(
+                    "cannot move entries into a non-directory entry",
                 ));
             }
 
@@ -749,11 +688,13 @@ impl<R: AppRuntime> AnyWorktreeService<R> for WorktreeService<R> {
 
                     Ok(())
                 }
-                RawItemConfiguration::Component(_) => Err(WorktreeError::InvalidInput(
-                    "Cannot set protocol for component item".to_string(),
-                )),
-                RawItemConfiguration::Schema(_) => Err(WorktreeError::InvalidInput(
-                    "Cannot set protocol for schema item".to_string(),
+                RawItemConfiguration::Component(_) => {
+                    Err(joinerror::Error::new::<ErrorInvalidInput>(
+                        "cannot set protocol for component item",
+                    ))
+                }
+                RawItemConfiguration::Schema(_) => Err(joinerror::Error::new::<ErrorInvalidInput>(
+                    "cannot set protocol for schema item",
                 )),
             }?;
         }
@@ -802,7 +743,7 @@ impl<R: AppRuntime> WorktreeService<R> {
     pub fn new(
         abs_path: Arc<Path>,
         fs: Arc<dyn FileSystem>,
-        storage: Arc<DynStorageService<R>>,
+        storage: Arc<StorageService<R>>,
     ) -> Self {
         Self {
             abs_path,
@@ -819,11 +760,11 @@ impl<R: AppRuntime> WorktreeService<R> {
         path: &SanitizedPath,
         is_dir: bool,
         content: &[u8],
-    ) -> WorktreeResult<()> {
+    ) -> joinerror::Result<()> {
         let abs_path = self.absolutize(&path)?;
         if abs_path.exists() {
-            return Err(WorktreeError::AlreadyExists(format!(
-                "Entry already exists: {}",
+            return Err(joinerror::Error::new::<ErrorAlreadyExists>(format!(
+                "entry already exists: {}",
                 abs_path.display()
             )));
         }
@@ -850,7 +791,7 @@ impl<R: AppRuntime> WorktreeService<R> {
         Ok(())
     }
 
-    async fn rename_entry(&self, from: &Path, to: &Path) -> WorktreeResult<()> {
+    async fn rename_entry(&self, from: &Path, to: &Path) -> joinerror::Result<()> {
         // On Windows and macOS, file/directory names are case-preserving but insensitive
         // If the from and to path differs only with different casing of the filename
         // The rename should still succeed
@@ -859,22 +800,28 @@ impl<R: AppRuntime> WorktreeService<R> {
         let abs_to = self.absolutize(&to)?;
 
         if !abs_from.exists() {
-            return Err(WorktreeError::NotFound(from.display().to_string()));
+            return Err(joinerror::Error::new::<ErrorNotFound>(format!(
+                "entry not found: {}",
+                abs_from.display()
+            )));
         }
 
         let old_name_lower = from
             .file_name()
             .map(|name| name.to_string_lossy().to_lowercase())
-            .ok_or(WorktreeError::Io("invalid file name".to_string()))?;
+            .ok_or_join_err::<ErrorIo>("invalid file name")?;
         let new_name_lower = to
             .file_name()
             .map(|name| name.to_string_lossy().to_lowercase())
-            .ok_or(WorktreeError::Io("invalid file name".to_string()))?;
+            .ok_or_join_err::<ErrorIo>("invalid file name")?;
         let recasing_only =
             old_name_lower == new_name_lower && abs_from.parent() == abs_to.parent();
 
         if abs_to.exists() && !recasing_only {
-            return Err(WorktreeError::AlreadyExists(to.display().to_string()));
+            return Err(joinerror::Error::new::<ErrorAlreadyExists>(format!(
+                "entry already exists: {}",
+                to.display()
+            )));
         }
 
         self.fs
@@ -930,7 +877,7 @@ async fn process_dir_entry(
     path: &Arc<Path>,
     fs: &Arc<dyn FileSystem>,
     abs_path: &Path,
-) -> WorktreeResult<Option<Entry>> {
+) -> joinerror::Result<Option<Entry>> {
     let dir_config_path = abs_path.join(constants::DIR_CONFIG_FILENAME);
     let item_config_path = abs_path.join(constants::ITEM_CONFIG_FILENAME);
 
@@ -962,12 +909,12 @@ async fn process_file_entry(
     _path: &Arc<Path>,
     _fs: &Arc<dyn FileSystem>,
     _abs_path: &Path,
-) -> WorktreeResult<Option<Entry>> {
+) -> joinerror::Result<Option<Entry>> {
     // TODO: implement
     Ok(None)
 }
 
-async fn parse_configuration<T>(fs: &Arc<dyn FileSystem>, path: &Path) -> WorktreeResult<T>
+async fn parse_configuration<T>(fs: &Arc<dyn FileSystem>, path: &Path) -> joinerror::Result<T>
 where
     T: for<'de> serde::Deserialize<'de>,
 {
@@ -975,7 +922,7 @@ where
     let mut buf = String::new();
     reader
         .read_to_string(&mut buf)
-        .map_err(|e| WorktreeError::Io(e.to_string()))?;
+        .map_err(|e| joinerror::Error::new::<ErrorIo>(e.to_string()))?;
 
     Ok(hcl::from_str(&buf).map_err(anyhow::Error::from)?)
 }
