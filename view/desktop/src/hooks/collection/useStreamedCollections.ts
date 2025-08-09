@@ -24,9 +24,9 @@ const startStreamingCollections = async (): Promise<StreamCollectionsEvent[]> =>
 };
 
 export const useStreamedCollections = () => {
-  const { hasWorkspace } = useWorkspaceSidebarState();
-
   const queryClient = useQueryClient();
+
+  const { hasWorkspace } = useWorkspaceSidebarState();
 
   const query = useQuery<StreamCollectionsEvent[], Error>({
     queryKey: [USE_STREAMED_COLLECTIONS_QUERY_KEY],

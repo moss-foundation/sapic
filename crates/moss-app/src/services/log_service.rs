@@ -195,7 +195,7 @@ impl<R: AppRuntime> LogService<R> {
                 // Showing all logs (including span events) to the console
                 tracing_subscriber::fmt::layer()
                     .event_format(instrument_log_format)
-                    .with_span_events(FmtSpan::CLOSE)
+                    .with_span_events(FmtSpan::NEW | FmtSpan::CLOSE)
                     .with_ansi(true)
                     .with_writer(io::stdout),
             )
