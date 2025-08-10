@@ -30,7 +30,7 @@ serde = { workspace = true, features = ["derive", "rc"] }
 ts-rs.workspace = true
 chrono.workspace = true
 tracing.workspace = true
-tracing-subscriber = { workspace = true, features = ["fmt", "json", "chrono", "ansi"] }
+tracing-subscriber = { workspace = true, features = ["fmt", "json", "chrono", "ansi", "env-filter"] }
 tracing-appender.workspace = true
 derive_more = { workspace = true, features = ["deref", "deref_mut", "from"] }
 validator.workspace = true

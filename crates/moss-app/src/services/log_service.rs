@@ -14,9 +14,10 @@ use std::{
     sync::{Arc, Mutex},
 };
 use tauri::AppHandle;
-use tracing::Level;
+use tracing::{Level, level_filters::LevelFilter};
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{
+    filter,
     filter::filter_fn,
     fmt::{
         format::{FmtSpan, JsonFields},
@@ -158,7 +159,13 @@ impl<R: AppRuntime> LogService<R> {
         let (taurilog_writer, _taurilog_writerguard) =
             tracing_appender::non_blocking(TauriLogWriter::new(app_handle.clone()));
 
+        // Prevent `hyper_util` and `mio` from spamming logs
+        let filter = filter::Targets::new()
+            .with_default(LevelFilter::TRACE)
+            .with_target("hyper_util", LevelFilter::OFF);
+
         let subscriber = tracing_subscriber::registry()
+            .with(filter)
             .with(
                 // Showing all logs (including span events) to the console
                 tracing_subscriber::fmt::layer()

@@ -8,6 +8,10 @@ pub mod plugin_log {
     use super::*;
 
     pub fn init<R: Runtime>() -> TauriPlugin<R> {
+        // FIXME: Very weird that we can disable `reqwest` logs here but not at tracing subscribers
+        // Apparently `reqwest` does not generate `tracing` logs
+        // And the dispatching of `log` logs to `tracing` does not work correctly
+
         tauri_plugin_log::Builder::default()
             .targets([
                 Target::new(TargetKind::Stdout),
@@ -17,6 +21,8 @@ pub mod plugin_log {
             .level_for("tao", log::LevelFilter::Info)
             .level_for("plugin_runtime", log::LevelFilter::Info)
             .level_for("tracing", log::LevelFilter::Warn)
+            .level_for("mio", log::LevelFilter::Off)
+            .level_for("reqwest", log::LevelFilter::Off)
             .with_colors(ColoredLevelConfig::default())
             .level(if is_dev() {
                 log::LevelFilter::Trace
