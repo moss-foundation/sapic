@@ -37,6 +37,12 @@ impl From<anyhow::Error> for Error {
     }
 }
 
+impl From<tokio::task::JoinError> for Error {
+    fn from(err: tokio::task::JoinError) -> Self {
+        Error::new::<()>(err.to_string())
+    }
+}
+
 impl From<Error> for anyhow::Error {
     fn from(err: Error) -> Self {
         anyhow!(err.to_string())

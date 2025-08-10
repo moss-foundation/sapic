@@ -1,5 +1,4 @@
 use anyhow::Result;
-use arc_swap::ArcSwapOption;
 use joinerror::ResultExt;
 use json_patch::{
     AddOperation, PatchOperation, RemoveOperation, ReplaceOperation, jsonptr::PointerBuf,
@@ -13,8 +12,10 @@ use moss_edit::json::EditOptions;
 use moss_environment::{environment::Environment, models::primitives::EnvironmentId};
 use moss_fs::{FileSystem, FsResultExt};
 use moss_git::{repo::RepoHandle, url::normalize_git_url};
+
 #[cfg(any(test, feature = "integration-tests"))]
 use moss_storage::CollectionStorage;
+
 use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,

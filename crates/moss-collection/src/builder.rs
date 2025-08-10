@@ -1,4 +1,3 @@
-use arc_swap::ArcSwapOption;
 use joinerror::ResultExt;
 use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_fs::{CreateOptions, FileSystem};
@@ -9,7 +8,7 @@ use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
-use tokio::sync::{Mutex, OnceCell};
+use tokio::sync::{Mutex, OnceCell, oneshot};
 use url::Url;
 
 use crate::{
@@ -239,13 +238,24 @@ impl CollectionBuilder {
 
         let repo_url = Url::parse(&params.repository)?;
         let abs_path = params.internal_abs_path.clone();
-        // Different git providers require different auth agent
 
-        let repo_handle = RepoHandle::clone(
-            &repo_url,
-            abs_path.as_ref(),
-            generate_auth_agent(&repo_url)?,
-        )?;
+        let abs_path_clone = abs_path.clone();
+        // Since git2rs is fundamentally synchronous, I suppose this is the best approach
+        let join = tokio::task::spawn_blocking(move || {
+            Ok(RepoHandle::clone(
+                &repo_url,
+                abs_path_clone.as_ref(),
+                // Different git providers require different auth agent
+                generate_auth_agent(&repo_url)?,
+            )?)
+        })
+        .await;
+
+        let repo_handle = match join {
+            Ok(Ok(repo_handle)) => repo_handle,
+            Ok(Err(err)) => return Err(err),
+            Err(err) => return Err(err.into()),
+        };
 
         let storage_service: Arc<StorageService<R>> = StorageService::new(abs_path.as_ref())
             .join_err::<()>("failed to create collection storage service")?
@@ -256,9 +266,6 @@ impl CollectionBuilder {
 
         let set_icon_service =
             SetIconService::new(abs_path.clone(), self.fs.clone(), COLLECTION_ICON_SIZE);
-
-        // FIXME: I still think we need a better approach to store and reconstruct repo url
-        let normalized_repo = normalize_git_url(&params.repository)?;
 
         self.fs
             .create_file_with(
