@@ -13,6 +13,12 @@ impl From<std::io::Error> for Error {
     }
 }
 
+impl<T> From<std::sync::PoisonError<T>> for Error {
+    fn from(err: std::sync::PoisonError<T>) -> Self {
+        Error::new::<()>("mutex poisoned").join(err.to_string())
+    }
+}
+
 impl From<reqwest::Error> for Error {
     fn from(err: reqwest::Error) -> Self {
         Error::new::<()>(err.to_string())

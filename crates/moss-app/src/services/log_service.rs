@@ -249,10 +249,7 @@ impl<R: AppRuntime> LogService<R> {
         let mut result = Vec::new();
         for entry_id in input {
             // Try deleting from applog queue
-            let mut applog_queue_lock = self
-                .applog_queue
-                .lock()
-                .map_err(|_| joinerror::Error::new::<()>("mutex poisoned"))?;
+            let mut applog_queue_lock = self.applog_queue.lock()?;
             let idx = applog_queue_lock.iter().position(|x| &x.id == entry_id);
             if let Some(idx) = idx {
                 applog_queue_lock.remove(idx);
@@ -265,10 +262,7 @@ impl<R: AppRuntime> LogService<R> {
             drop(applog_queue_lock);
 
             // Try deleting from sessionlog queue
-            let mut sessionlog_queue_lock = self
-                .sessionlog_queue
-                .lock()
-                .map_err(|_| joinerror::Error::new::<()>("mutex poisoned"))?;
+            let mut sessionlog_queue_lock = self.sessionlog_queue.lock()?;
             let idx = sessionlog_queue_lock.iter().position(|x| &x.id == entry_id);
             if let Some(idx) = idx {
                 sessionlog_queue_lock.remove(idx);
@@ -472,9 +466,7 @@ impl<R: AppRuntime> LogService<R> {
         // The logs in the queue must be more recent than the logs in files
         // So we append them to the end
         result.extend({
-            let lock = queue
-                .lock()
-                .map_err(|_| joinerror::Error::new::<()>("mutex poisoned"))?;
+            let lock = queue.lock()?;
 
             lock.clone()
                 .into_iter()
