@@ -15,7 +15,7 @@ impl From<std::io::Error> for Error {
 
 impl<T> From<std::sync::PoisonError<T>> for Error {
     fn from(err: std::sync::PoisonError<T>) -> Self {
-        Error::new::<()>("mutex poisoned").join(err.to_string())
+        Error::new::<()>("mutex poisoned").join::<()>(err.to_string())
     }
 }
 
