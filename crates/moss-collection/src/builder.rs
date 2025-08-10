@@ -23,11 +23,8 @@ use crate::{
             RawDirRequestConfiguration, RawDirSchemaConfiguration,
         },
     },
-    services::{
-        set_icon_service::SetIconService,
-        storage_service::StorageService,
-        worktree_service::{EntryMetadata, WorktreeService},
-    },
+    services::{set_icon_service::SetIconService, storage_service::StorageService},
+    worktree::{EntryMetadata, Worktree},
 };
 
 const COLLECTION_ICON_SIZE: u32 = 128;
@@ -72,7 +69,7 @@ impl CollectionBuilder {
                 .join_err::<()>("failed to create collection storage service")?
                 .into();
 
-        let worktree_service: Arc<WorktreeService<R>> = WorktreeService::new(
+        let worktree_service: Arc<Worktree<R>> = Worktree::new(
             params.internal_abs_path.clone(),
             self.fs.clone(),
             storage_service.clone(),
@@ -97,7 +94,7 @@ impl CollectionBuilder {
             edit,
             set_icon_service,
             storage_service,
-            worktree_service,
+            worktree: worktree_service,
             environments: OnceCell::new(),
             on_did_change: EventEmitter::new(),
         })
@@ -120,8 +117,8 @@ impl CollectionBuilder {
             .join_err::<()>("failed to create collection storage service")?
             .into();
 
-        let worktree_service: Arc<WorktreeService<R>> =
-            WorktreeService::new(abs_path.clone(), self.fs.clone(), storage_service.clone()).into();
+        let worktree_service: Arc<Worktree<R>> =
+            Worktree::new(abs_path.clone(), self.fs.clone(), storage_service.clone()).into();
 
         let set_icon_service =
             SetIconService::new(abs_path.clone(), self.fs.clone(), COLLECTION_ICON_SIZE);
@@ -216,7 +213,7 @@ impl CollectionBuilder {
             edit,
             set_icon_service,
             storage_service,
-            worktree_service,
+            worktree: worktree_service,
             environments: OnceCell::new(),
             on_did_change: EventEmitter::new(),
         })

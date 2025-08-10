@@ -23,7 +23,7 @@ use crate::{
         primitives::{EntryId, EntryPath},
         types::EntryInfo,
     },
-    services::worktree_service::EntryDescription,
+    worktree::EntryDescription,
 };
 
 const EXPANSION_DIRECTORIES: &[&str] = &[
@@ -72,7 +72,7 @@ impl<R: AppRuntime> Collection<R> {
 
         for dir in expansion_dirs {
             let entries_tx_clone = tx.clone();
-            let worktree_service_clone = self.worktree_service.clone();
+            let worktree_service_clone = self.worktree.clone();
             // We need to fetch this data from the database here, otherwise we'll be requesting it every time the scan method is called.
 
             let handle = tokio::spawn({

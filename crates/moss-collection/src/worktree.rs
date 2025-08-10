@@ -173,18 +173,14 @@ struct WorktreeState {
     expanded_entries: HashSet<EntryId>,
 }
 
-pub struct WorktreeService<R: AppRuntime> {
+pub struct Worktree<R: AppRuntime> {
     abs_path: Arc<Path>,
     fs: Arc<dyn FileSystem>,
     storage: Arc<StorageService<R>>,
     state: Arc<RwLock<WorktreeState>>,
 }
 
-impl<R: AppRuntime> ServiceMarker for WorktreeService<R> {}
-
-// FIXME: Should we attach error markers?
-
-impl<R: AppRuntime> WorktreeService<R> {
+impl<R: AppRuntime> Worktree<R> {
     pub fn absolutize(&self, path: &Path) -> joinerror::Result<PathBuf> {
         debug_assert!(path.is_relative());
 
@@ -737,9 +733,11 @@ impl<R: AppRuntime> WorktreeService<R> {
 
         Ok((path, configuration))
     }
+
+    async fn modify_item_entry() {}
 }
 
-impl<R: AppRuntime> WorktreeService<R> {
+impl<R: AppRuntime> Worktree<R> {
     pub fn new(
         abs_path: Arc<Path>,
         fs: Arc<dyn FileSystem>,
@@ -754,7 +752,7 @@ impl<R: AppRuntime> WorktreeService<R> {
     }
 }
 
-impl<R: AppRuntime> WorktreeService<R> {
+impl<R: AppRuntime> Worktree<R> {
     async fn create_entry(
         &self,
         path: &SanitizedPath,

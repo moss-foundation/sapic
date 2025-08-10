@@ -6,7 +6,7 @@ use moss_applib::{context::AsyncContext, mock::MockAppRuntime};
 use moss_collection::{
     dirs,
     models::{events::StreamEntriesEvent, operations::StreamEntriesInput, primitives::EntryKind},
-    services::worktree_service::EntryDescription,
+    worktree::EntryDescription,
 };
 use std::{
     path::PathBuf,

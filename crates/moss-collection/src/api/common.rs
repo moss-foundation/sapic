@@ -16,7 +16,7 @@ use crate::{
             },
         },
     },
-    services::worktree_service::{EntryMetadata, ModifyParams},
+    worktree::{EntryMetadata, ModifyParams},
 };
 
 impl<R: AppRuntime> Collection<R> {
@@ -33,7 +33,7 @@ impl<R: AppRuntime> Collection<R> {
             inner: input.configuration,
         };
 
-        self.worktree_service
+        self.worktree
             .create_dir_entry(
                 ctx,
                 &id,
@@ -63,7 +63,7 @@ impl<R: AppRuntime> Collection<R> {
             inner: input.configuration,
         };
 
-        self.worktree_service
+        self.worktree
             .create_item_entry(
                 ctx,
                 &id,
@@ -88,7 +88,7 @@ impl<R: AppRuntime> Collection<R> {
         input.validate().join_err_bare()?;
 
         let (path, configuration) = self
-            .worktree_service
+            .worktree
             .update_item_entry(
                 ctx,
                 &input.id,
@@ -120,7 +120,7 @@ impl<R: AppRuntime> Collection<R> {
         input.validate().join_err_bare()?;
 
         let (path, configuration) = self
-            .worktree_service
+            .worktree
             .update_dir_entry(
                 ctx,
                 &input.id,
