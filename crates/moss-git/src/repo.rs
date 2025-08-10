@@ -7,8 +7,14 @@ use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
+use url::Url;
 
 use crate::GitAuthAgent;
+
+// https://github.com/rust-lang/git2-rs/issues/194
+
+unsafe impl Send for RepoHandle {}
+unsafe impl Sync for RepoHandle {}
 
 pub struct RepoHandle {
     // FIXME: Is it necessary to store the url of the repo?
@@ -26,7 +32,7 @@ pub struct RepoHandle {
 
 // TODO: Use callback to return/display progress
 impl RepoHandle {
-    pub fn clone(url: &str, path: &Path, auth_agent: Arc<dyn GitAuthAgent>) -> Result<RepoHandle> {
+    pub fn clone(url: &Url, path: &Path, auth_agent: Arc<dyn GitAuthAgent>) -> Result<RepoHandle> {
         let mut callbacks = RemoteCallbacks::new();
         auth_agent.generate_callback(&mut callbacks)?;
 
@@ -35,7 +41,7 @@ impl RepoHandle {
         let mut builder = RepoBuilder::new();
         builder.fetch_options(fetch_opts);
 
-        let repo = builder.clone(url, &path)?;
+        let repo = builder.clone(url.as_str(), &path)?;
 
         Ok(RepoHandle {
             url: Some(url.to_string()),
@@ -297,6 +303,7 @@ mod tests {
     use crate::{GitAuthAgent, repo::RepoHandle};
     use git2::{Cred, IndexAddOption, RemoteCallbacks, Signature};
     use std::{path::Path, sync::Arc, time::SystemTime};
+    use url::Url;
 
     // This is so that we don't have circular dependency on git-hosting-provider when testing repo
     struct TestAuthAgent {}
@@ -331,7 +338,8 @@ mod tests {
 
         let auth_agent = Arc::new(TestAuthAgent {});
 
-        let repo = RepoHandle::clone(&repo_url, &repo_path, auth_agent).unwrap();
+        let repo =
+            RepoHandle::clone(&Url::parse(&repo_url).unwrap(), &repo_path, auth_agent).unwrap();
 
         let time = SystemTime::now()
             .duration_since(SystemTime::UNIX_EPOCH)

@@ -228,10 +228,10 @@ fn compute_time_to_refresh(expires_in: Duration) -> Instant {
 
 #[cfg(test)]
 mod tests {
-    use std::{path::Path, sync::Arc};
-
     use moss_git::repo::RepoHandle;
     use moss_keyring::KeyringClientImpl;
+    use std::{path::Path, sync::Arc};
+    use url::Url;
 
     use crate::gitlab::auth::GitLabAuthAgentImpl;
 
@@ -252,6 +252,7 @@ mod tests {
             client_secret,
         ));
 
-        let _repo = RepoHandle::clone(repo_url, repo_path, auth_agent).unwrap();
+        let _repo =
+            RepoHandle::clone(&Url::parse(&repo_url).unwrap(), repo_path, auth_agent).unwrap();
     }
 }

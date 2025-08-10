@@ -174,6 +174,7 @@ mod tests {
     use moss_git::repo::RepoHandle;
     use moss_keyring::KeyringClientImpl;
     use std::{path::PathBuf, sync::Arc};
+    use url::Url;
 
     #[ignore]
     #[test]
@@ -195,7 +196,7 @@ mod tests {
             client_secret,
         ));
 
-        let _repo = RepoHandle::clone(repo_url, &repo_path, auth_agent)?;
+        let _repo = RepoHandle::clone(&Url::parse(&repo_url).unwrap(), &repo_path, auth_agent)?;
         Ok(())
     }
 }

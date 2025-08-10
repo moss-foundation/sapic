@@ -25,6 +25,12 @@ impl From<reqwest::Error> for Error {
     }
 }
 
+impl From<url::ParseError> for Error {
+    fn from(err: url::ParseError) -> Self {
+        Error::new::<()>(err.to_string())
+    }
+}
+
 impl From<anyhow::Error> for Error {
     fn from(err: anyhow::Error) -> Self {
         Error::new::<()>(err.to_string())

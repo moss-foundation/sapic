@@ -3,41 +3,37 @@ use moss_applib::AppRuntime;
 use validator::Validate;
 
 use crate::{
+    Workspace,
     models::{
-        operations::{CreateCollectionInput, CreateCollectionOutput},
+        operations::{CloneCollectionInput, CloneCollectionOutput},
         primitives::CollectionId,
     },
-    services::collection_service::CollectionItemCreateParams,
-    workspace::Workspace,
+    services::collection_service::CollectionItemCloneParams,
 };
 
 impl<R: AppRuntime> Workspace<R> {
-    pub async fn create_collection(
+    pub async fn clone_collection(
         &self,
         ctx: &R::AsyncContext,
-        input: &CreateCollectionInput,
-    ) -> joinerror::Result<CreateCollectionOutput> {
+        input: &CloneCollectionInput,
+    ) -> joinerror::Result<CloneCollectionOutput> {
         input.validate().join_err_bare()?;
-
-        debug_assert!(input.external_path.is_none(), "Is not implemented");
 
         let id = CollectionId::new();
 
         let description = self
             .collection_service
-            .create_collection(
+            .clone_collection(
                 ctx,
                 &id,
-                CollectionItemCreateParams {
-                    name: input.name.to_owned(),
-                    order: input.order.to_owned(),
-                    external_path: input.external_path.to_owned(),
-                    icon_path: input.icon_path.to_owned(),
+                CollectionItemCloneParams {
+                    order: input.order,
+                    repository: input.repository.clone(),
                 },
             )
             .await?;
 
-        Ok(CreateCollectionOutput {
+        Ok(CloneCollectionOutput {
             id,
             name: description.name,
             order: description.order,

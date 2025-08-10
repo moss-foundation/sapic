@@ -61,7 +61,6 @@ pub async fn create_test_collection() -> (
             CollectionCreateParams {
                 name: Some(random_collection_name()),
                 external_abs_path: None,
-                repository: None,
                 internal_abs_path: abs_path.clone(),
                 icon_path: None,
             },

@@ -50,6 +50,8 @@ mod tests {
         path::{Path, PathBuf},
         sync::Arc,
     };
+    use url::Url;
+
     #[ignore]
     #[test]
     fn manual_github_cloning_with_ssh() {
@@ -66,7 +68,8 @@ mod tests {
             private,
             Some(password.into()),
         ));
-        let _repo = RepoHandle::clone(repo_url, repo_path, auth_agent).unwrap();
+        let _repo =
+            RepoHandle::clone(&Url::parse(&repo_url).unwrap(), repo_path, auth_agent).unwrap();
     }
 
     #[ignore]
@@ -85,6 +88,7 @@ mod tests {
             private,
             Some(password.into()),
         ));
-        let _repo = RepoHandle::clone(repo_url, repo_path, auth_agent).unwrap();
+        let _repo =
+            RepoHandle::clone(&Url::parse(&repo_url).unwrap(), repo_path, auth_agent).unwrap();
     }
 }

@@ -14,6 +14,7 @@ moss_storage.workspace = true
 moss_text.workspace = true
 moss_environment.workspace = true
 moss_git.workspace = true
+moss_git_hosting_provider.workspace = true
 moss_hcl.workspace = true
 moss_bindingutils.workspace = true
 moss_applib.workspace = true
@@ -33,6 +34,7 @@ derive_more = { workspace = true, features = ["deref", "deref_mut"] }
 indexmap.workspace = true
 nanoid.workspace = true
 json-patch.workspace = true
+url.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }

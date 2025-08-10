@@ -34,6 +34,9 @@ pub struct CreateCollectionInput {
 
     pub order: isize,
     pub external_path: Option<PathBuf>,
+
+    // TODO: Remove repository field
+    // We have a new endpoint for cloning a collection repo
     #[validate(regex(path = "*GIT_URL_REGEX"))]
     pub repository: Option<String>,
     pub icon_path: Option<PathBuf>,
@@ -45,6 +48,36 @@ pub struct CreateCollectionInput {
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateCollectionOutput {
+    pub id: CollectionId,
+    pub name: String,
+    pub order: Option<isize>,
+    pub expanded: bool,
+    pub icon_path: Option<PathBuf>,
+
+    #[serde(skip)]
+    #[ts(skip)]
+    pub abs_path: Arc<Path>,
+
+    #[serde(skip)]
+    #[ts(skip)]
+    pub external_path: Option<PathBuf>,
+}
+
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct CloneCollectionInput {
+    pub order: isize,
+    #[validate(regex(path = "*GIT_URL_REGEX"))]
+    pub repository: String,
+}
+
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct CloneCollectionOutput {
     pub id: CollectionId,
     pub name: String,
     pub order: Option<isize>,

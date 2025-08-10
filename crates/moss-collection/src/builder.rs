@@ -1,13 +1,16 @@
+use arc_swap::ArcSwapOption;
 use joinerror::ResultExt;
 use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_fs::{CreateOptions, FileSystem};
-use moss_git::url::normalize_git_url;
+use moss_git::{repo::RepoHandle, url::normalize_git_url};
+use moss_git_hosting_provider::auth::generate_auth_agent;
 use moss_hcl::Block;
 use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
-use tokio::sync::OnceCell;
+use tokio::sync::{Mutex, OnceCell};
+use url::Url;
 
 use crate::{
     Collection,
@@ -44,12 +47,16 @@ pub struct CollectionCreateParams {
     pub name: Option<String>,
     pub internal_abs_path: Arc<Path>,
     pub external_abs_path: Option<Arc<Path>>,
-    pub repository: Option<String>,
     pub icon_path: Option<PathBuf>,
 }
 
 pub struct CollectionLoadParams {
     pub internal_abs_path: Arc<Path>,
+}
+
+pub struct CollectionCloneParams {
+    pub internal_abs_path: Arc<Path>,
+    pub repository: String,
 }
 
 pub struct CollectionBuilder {
@@ -91,6 +98,7 @@ impl CollectionBuilder {
         );
         // TODO: Load environments
 
+        // TODO: Load Git repo
         Ok(Collection {
             fs: self.fs.clone(),
             abs_path: params.internal_abs_path,
@@ -100,8 +108,13 @@ impl CollectionBuilder {
             worktree_service,
             environments: OnceCell::new(),
             on_did_change: EventEmitter::new(),
+            repo_handle: Arc::new(Mutex::new(None)),
         })
     }
+
+    // TODO: A nicer functionality to have might be to help the user create a remote Git repository
+    // Using Git provider API, and help them make the initial commit
+    // I'll come to this question later.
 
     pub async fn create<R: AppRuntime>(
         self,
@@ -163,12 +176,6 @@ impl CollectionBuilder {
             self.fs.create_dir(&abs_path.join(dir)).await?;
         }
 
-        let normalized_repo = if let Some(url) = params.repository {
-            Some(normalize_git_url(&url)?)
-        } else {
-            None
-        };
-
         if let Some(icon_path) = params.icon_path {
             // TODO: Log the error here
             set_icon_service.set_icon(&icon_path)?;
@@ -181,7 +188,7 @@ impl CollectionBuilder {
                     name: params
                         .name
                         .unwrap_or(defaults::DEFAULT_COLLECTION_NAME.to_string()),
-                    repository: normalized_repo,
+                    repository: None,
                 })?
                 .as_bytes(),
                 CreateOptions {
@@ -219,6 +226,68 @@ impl CollectionBuilder {
             worktree_service,
             environments: OnceCell::new(),
             on_did_change: EventEmitter::new(),
+            repo_handle: Arc::new(Mutex::new(None)),
+        })
+    }
+
+    pub async fn clone<R: AppRuntime>(
+        self,
+        _ctx: &R::AsyncContext,
+        params: CollectionCloneParams,
+    ) -> joinerror::Result<Collection<R>> {
+        debug_assert!(params.internal_abs_path.is_absolute());
+
+        let repo_url = Url::parse(&params.repository)?;
+        let abs_path = params.internal_abs_path.clone();
+        // Different git providers require different auth agent
+
+        let repo_handle = RepoHandle::clone(
+            &repo_url,
+            abs_path.as_ref(),
+            generate_auth_agent(&repo_url)?,
+        )?;
+
+        let storage_service: Arc<StorageService<R>> = StorageService::new(abs_path.as_ref())
+            .join_err::<()>("failed to create collection storage service")?
+            .into();
+
+        let worktree_service: Arc<WorktreeService<R>> =
+            WorktreeService::new(abs_path.clone(), self.fs.clone(), storage_service.clone()).into();
+
+        let set_icon_service =
+            SetIconService::new(abs_path.clone(), self.fs.clone(), COLLECTION_ICON_SIZE);
+
+        // FIXME: I still think we need a better approach to store and reconstruct repo url
+        let normalized_repo = normalize_git_url(&params.repository)?;
+
+        self.fs
+            .create_file_with(
+                &abs_path.join(CONFIG_FILE_NAME),
+                serde_json::to_string(&ConfigFile {
+                    external_path: None,
+                })?
+                .as_bytes(),
+                CreateOptions {
+                    overwrite: false,
+                    ignore_if_exists: false,
+                },
+            )
+            .await?;
+
+        let edit = CollectionEdit::new(self.fs.clone(), abs_path.join(MANIFEST_FILE_NAME));
+
+        // TODO: Load environments
+
+        Ok(Collection {
+            fs: self.fs.clone(),
+            abs_path,
+            edit,
+            set_icon_service,
+            storage_service,
+            worktree_service,
+            environments: OnceCell::new(),
+            on_did_change: EventEmitter::new(),
+            repo_handle: Arc::new(Mutex::new(Some(repo_handle))),
         })
     }
 }

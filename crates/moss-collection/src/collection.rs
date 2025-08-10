@@ -1,4 +1,5 @@
 use anyhow::Result;
+use arc_swap::ArcSwapOption;
 use joinerror::ResultExt;
 use json_patch::{
     AddOperation, PatchOperation, RemoveOperation, ReplaceOperation, jsonptr::PointerBuf,
@@ -11,17 +12,16 @@ use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_edit::json::EditOptions;
 use moss_environment::{environment::Environment, models::primitives::EnvironmentId};
 use moss_fs::{FileSystem, FsResultExt};
-use moss_git::url::normalize_git_url;
+use moss_git::{repo::RepoHandle, url::normalize_git_url};
+#[cfg(any(test, feature = "integration-tests"))]
+use moss_storage::CollectionStorage;
 use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
     sync::Arc,
 };
-use tokio::sync::OnceCell;
-
-#[cfg(any(test, feature = "integration-tests"))]
-use moss_storage::CollectionStorage;
+use tokio::sync::{Mutex, OnceCell};
 
 use crate::{
     DescribeCollection,
@@ -67,6 +67,8 @@ pub struct Collection<R: AppRuntime> {
     pub(super) environments: OnceCell<EnvironmentMap<R>>,
 
     pub(super) on_did_change: EventEmitter<OnDidChangeEvent>,
+    #[allow(dead_code)]
+    pub(super) repo_handle: Arc<Mutex<Option<RepoHandle>>>,
 }
 
 #[rustfmt::skip]

@@ -9,7 +9,7 @@ use moss_applib::{AppRuntime, PublicServiceMarker, ServiceMarker};
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_collection::{
     Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
-    builder::{CollectionCreateParams, CollectionLoadParams},
+    builder::{CollectionCloneParams, CollectionCreateParams, CollectionLoadParams},
 };
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
 use std::{
@@ -31,10 +31,14 @@ pub(crate) struct CollectionItemUpdateParams {
 pub(crate) struct CollectionItemCreateParams {
     pub name: String,
     pub order: isize,
-    pub repository: Option<String>,
     pub external_path: Option<PathBuf>,
     // FIXME: Do we need this field?
     pub icon_path: Option<PathBuf>,
+}
+
+pub(crate) struct CollectionItemCloneParams {
+    pub order: isize,
+    pub repository: String,
 }
 
 #[derive(Deref, DerefMut)]
@@ -118,6 +122,8 @@ impl<R: AppRuntime> CollectionService<R> {
         id: &CollectionId,
         params: CollectionItemCreateParams,
     ) -> joinerror::Result<CollectionItemDescription> {
+        // FIXME: Does it make sense to return an error when the path exists?
+        // Maybe we should simply retry with a new CollectionId
         let id_str = id.to_string();
         let abs_path: Arc<Path> = self.abs_path.join(id_str).into();
         if abs_path.exists() {
@@ -134,24 +140,18 @@ impl<R: AppRuntime> CollectionService<R> {
                 format!("failed to create directory `{}`", abs_path.display())
             })?;
 
-        let collection = {
-            CollectionBuilder::new(self.fs.clone())
-                .create(
-                    ctx,
-                    CollectionCreateParams {
-                        name: Some(params.name.to_owned()),
-                        internal_abs_path: abs_path.clone(),
-                        external_abs_path: params
-                            .external_path
-                            .as_deref()
-                            .map(|p| p.to_owned().into()),
-                        repository: params.repository.to_owned(),
-                        icon_path: params.icon_path.to_owned(),
-                    },
-                )
-                .await
-                .join_err::<()>("failed to build collection")?
-        };
+        let collection = CollectionBuilder::new(self.fs.clone())
+            .create(
+                ctx,
+                CollectionCreateParams {
+                    name: Some(params.name.to_owned()),
+                    internal_abs_path: abs_path.clone(),
+                    external_abs_path: params.external_path.as_deref().map(|p| p.to_owned().into()),
+                    icon_path: params.icon_path.to_owned(),
+                },
+            )
+            .await
+            .join_err::<()>("failed to build collection")?;
         let icon_path = collection.icon_path();
 
         // let on_did_change = collection.on_did_change().subscribe(|_event| async move {
@@ -194,10 +194,88 @@ impl<R: AppRuntime> CollectionService<R> {
             name: params.name,
             order: Some(params.order),
             expanded: true,
-            repository: params.repository,
+            repository: None,
             icon_path,
             abs_path,
             external_path: params.external_path,
+        })
+    }
+
+    pub(crate) async fn clone_collection(
+        &self,
+        ctx: &R::AsyncContext,
+        id: &CollectionId,
+        params: CollectionItemCloneParams,
+    ) -> joinerror::Result<CollectionItemDescription> {
+        // FIXME: Does it make sense to return an error when the path exists?
+        // Maybe we should simply retry with a new CollectionId
+        let id_str = id.to_string();
+        let abs_path: Arc<Path> = self.abs_path.join(id_str).into();
+        if abs_path.exists() {
+            return Err(joinerror::Error::new::<()>(format!(
+                "collection directory `{}` already exists",
+                abs_path.display()
+            )));
+        }
+
+        self.fs
+            .create_dir(&abs_path)
+            .await
+            .join_err_with::<()>(|| {
+                format!("failed to create directory `{}`", abs_path.display())
+            })?;
+
+        let collection = CollectionBuilder::new(self.fs.clone())
+            .clone(
+                ctx,
+                CollectionCloneParams {
+                    internal_abs_path: abs_path.clone(),
+                    repository: params.repository.to_owned(),
+                },
+            )
+            .await
+            .join_err::<()>("failed to clone collection")?;
+
+        let desc = collection.describe().await?;
+
+        let icon_path = collection.icon_path();
+
+        let mut state_lock = self.state.write().await;
+        state_lock.expanded_items.insert(id.to_owned());
+        state_lock.collections.insert(
+            id.to_owned(),
+            CollectionItem {
+                id: id.to_owned(),
+                order: Some(params.order),
+                handle: Arc::new(collection),
+            },
+        );
+
+        let mut txn = self
+            .storage
+            .begin_write(ctx)
+            .await
+            .join_err::<()>("failed to start transaction")?;
+
+        self.storage
+            .put_item_order_txn(ctx, &mut txn, id, params.order)
+            .await?;
+        self.storage
+            .put_expanded_items_txn(ctx, &mut txn, &state_lock.expanded_items)
+            .await?;
+
+        txn.commit()?;
+
+        Ok(CollectionItemDescription {
+            id: id.to_owned(),
+            name: desc.name,
+            order: Some(params.order),
+            expanded: true,
+            // FIXME: Rethink Manifest file and repository storage
+            repository: desc.repository,
+            icon_path,
+            abs_path,
+            external_path: None,
         })
     }
 
