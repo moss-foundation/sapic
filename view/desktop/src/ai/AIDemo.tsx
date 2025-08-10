@@ -110,18 +110,13 @@ const AIDemo = () => {
       .then((response) => console.log(response));
   }
 
-  function handleJsonGenerationButton() {
-    const input = jsonSchema;
-    jsonGenerationAgent
-      ?.invoke({
-        input: input,
-      })
-      .then((response) => {
-        console.log(response);
-        // FIXME: Different providers seem to return different formats in their responses
-        // We need to take care of that in the future
-        setJsonOutput(response.content as string);
-      });
+  async function handleJsonGenerationButton() {
+    const stream = await jsonGenerationAgent?.stream({ input: jsonSchema });
+    let currentOutput = "";
+    for await (const chunk of stream!) {
+      currentOutput += chunk.content;
+      setJsonOutput(currentOutput);
+    }
   }
 
   return (
