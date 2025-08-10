@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import LangchainAgent from "@/ai/LangchainAgent";
+import AIDemo from "@/ai/AIDemo.tsx";
 import { ActivityEventSimulator } from "@/components/ActivityEventSimulator";
 import { useActivityEvents } from "@/context/ActivityEventsContext";
 import { LogEntryInfo, LOGGING_SERVICE_CHANNEL } from "@repo/moss-app";
@@ -37,7 +37,7 @@ export const Logs = () => {
       <section className="mb-6">
         <h2 className="mb-2 text-xl">AI Assistant</h2>
         <div className="rounded bg-gray-50 p-4">
-          <LangchainAgent />
+          <AIDemo />
         </div>
       </section>
 
