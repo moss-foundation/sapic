@@ -1,3 +1,4 @@
+use moss_logging::models::primitives::LogEntryId;
 use serde::{Deserialize, Serialize};
 use std::{
     path::{Path, PathBuf},
@@ -5,7 +6,7 @@ use std::{
 };
 use ts_rs::TS;
 
-use crate::models::primitives::{LocaleId, LogEntryId, LogLevel, ThemeId, ThemeMode, WorkspaceId};
+use crate::models::primitives::{LocaleId, LogLevel, ThemeId, ThemeMode, WorkspaceId};
 
 // ########################################################
 // ###                      Locale                      ###

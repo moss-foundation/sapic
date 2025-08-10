@@ -16,6 +16,7 @@ moss_activity_indicator.workspace = true
 moss_environment.workspace = true
 moss_git_hosting_provider.workspace = true
 moss_keyring.workspace = true
+moss_logging.workspace = true
 
 joinerror.workspace = true
 futures.workspace = true
@@ -29,7 +30,7 @@ serde = { workspace = true, features = ["derive", "rc"] }
 ts-rs.workspace = true
 chrono.workspace = true
 tracing.workspace = true
-tracing-subscriber = { workspace = true, features = ["fmt", "json", "chrono", "ansi"] }
+tracing-subscriber = { workspace = true, features = ["fmt", "json", "chrono", "ansi", "env-filter"] }
 tracing-appender.workspace = true
 derive_more = { workspace = true, features = ["deref", "deref_mut", "from"] }
 validator.workspace = true

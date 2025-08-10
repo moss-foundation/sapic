@@ -1,6 +1,5 @@
 use chrono::NaiveDate;
 use moss_applib::AppRuntime;
-use moss_common::api::OperationResult;
 
 use crate::{
     app::App,
@@ -13,7 +12,7 @@ impl<R: AppRuntime> App<R> {
         &self,
         _ctx: &R::AsyncContext,
         input: &ListLogsInput,
-    ) -> OperationResult<ListLogsOutput> {
+    ) -> joinerror::Result<ListLogsOutput> {
         let filter = LogFilter {
             // Skip invalid dates
             dates: input
@@ -25,9 +24,7 @@ impl<R: AppRuntime> App<R> {
             resource: input.resource.clone(),
         };
 
-        match self.log_service.list_logs_with_filter(&filter).await {
-            Ok(contents) => Ok(ListLogsOutput { contents }),
-            Err(e) => Err(e.into()),
-        }
+        let contents = self.log_service.list_logs_with_filter(&filter).await?;
+        Ok(ListLogsOutput { contents })
     }
 }

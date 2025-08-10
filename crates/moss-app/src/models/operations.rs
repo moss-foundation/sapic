@@ -1,17 +1,17 @@
 use std::{path::Path, sync::Arc};
 
+use super::types::{ColorThemeInfo, Defaults, LocaleInfo, Preferences};
+use crate::models::{
+    primitives::{LogLevel, ThemeId, WorkspaceId},
+    types::{LogDate, LogEntryInfo, LogItemSourceInfo, WorkspaceInfo},
+};
 use derive_more::Deref;
+use moss_logging::models::primitives::LogEntryId;
 use moss_workspace::models::types::WorkspaceMode;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use ts_rs::TS;
 use validator::Validate;
-
-use super::types::{ColorThemeInfo, Defaults, LocaleInfo, Preferences};
-use crate::models::{
-    primitives::{LogEntryId, LogLevel, ThemeId, WorkspaceId},
-    types::{LogDate, LogEntryInfo, LogItemSourceInfo, WorkspaceInfo},
-};
 // ########################################################
 // ###                   Cancellation                   ###
 // ########################################################
