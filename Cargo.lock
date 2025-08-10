@@ -3853,7 +3853,6 @@ dependencies = [
  "moss_common",
  "moss_db",
  "moss_edit",
- "moss_file",
  "moss_fs",
  "moss_hcl",
  "moss_storage",
@@ -3865,21 +3864,6 @@ dependencies = [
  "tauri",
  "tokio",
  "ts-rs",
-]
-
-[[package]]
-name = "moss_file"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "moss_common",
- "moss_fs",
- "nanoid",
- "serde",
- "serde_json",
- "tokio",
- "toml 0.9.4",
- "toml_edit 0.22.27",
 ]
 
 [[package]]
