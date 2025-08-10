@@ -526,7 +526,7 @@ mod tests {
     use crate::constants::LOGGING_SERVICE_CHANNEL;
     use moss_applib::mock::MockAppRuntime;
     use moss_fs::RealFileSystem;
-    use moss_logging::{LogPayload, LogScope, debug};
+    use moss_logging::{LogEvent, LogScope, debug};
     use moss_testutils::random_name::random_string;
     use std::{fs::create_dir_all, sync::atomic::AtomicUsize, time::Duration};
     use tauri::{Listener, Manager};
@@ -567,7 +567,7 @@ mod tests {
 
         debug(
             LogScope::App,
-            LogPayload {
+            LogEvent {
                 resource: None,
                 message: "".to_string(),
             },

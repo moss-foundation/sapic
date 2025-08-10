@@ -11,7 +11,9 @@ pub mod constants {
     pub const SESSION_SCOPE: &'static str = "session";
 }
 
-pub struct LogPayload {
+pub struct LogEvent {
+    // FIXME: We might want to support a set of identifiers
+    // Including CollectionID, EntryID and EnvironmentID
     pub resource: Option<String>,
     pub message: String,
 }
@@ -23,7 +25,7 @@ pub enum LogScope {
 
 // Tracing disallows non-constant value for `target`
 // So we have to manually match it
-pub fn trace(scope: LogScope, payload: LogPayload) {
+pub fn trace(scope: LogScope, payload: LogEvent) {
     let id = LogEntryId::new().to_string();
     match scope {
         LogScope::App => {
@@ -45,7 +47,7 @@ pub fn trace(scope: LogScope, payload: LogPayload) {
     }
 }
 
-pub fn debug(scope: LogScope, payload: LogPayload) {
+pub fn debug(scope: LogScope, payload: LogEvent) {
     let id = LogEntryId::new().to_string();
     match scope {
         LogScope::App => {
@@ -67,7 +69,7 @@ pub fn debug(scope: LogScope, payload: LogPayload) {
     }
 }
 
-pub fn info(scope: LogScope, payload: LogPayload) {
+pub fn info(scope: LogScope, payload: LogEvent) {
     let id = LogEntryId::new().to_string();
     match scope {
         LogScope::App => {
@@ -89,7 +91,7 @@ pub fn info(scope: LogScope, payload: LogPayload) {
     }
 }
 
-pub fn warn(scope: LogScope, payload: LogPayload) {
+pub fn warn(scope: LogScope, payload: LogEvent) {
     let id = LogEntryId::new().to_string();
     match scope {
         LogScope::App => {
@@ -111,7 +113,7 @@ pub fn warn(scope: LogScope, payload: LogPayload) {
     }
 }
 
-pub fn error(scope: LogScope, payload: LogPayload) {
+pub fn error(scope: LogScope, payload: LogEvent) {
     let id = LogEntryId::new().to_string();
     match scope {
         LogScope::App => {

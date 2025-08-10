@@ -1,7 +1,7 @@
 pub mod shared;
 
 use moss_app::models::operations::{BatchDeleteLogInput, ListLogsInput};
-use moss_logging::{LogPayload, LogScope, warn};
+use moss_logging::{LogEvent, LogScope, warn};
 
 use crate::shared::set_up_test_app;
 
@@ -20,7 +20,7 @@ async fn test_delete_logs_from_queue() {
     // So we should delete from the queue
     warn(
         LogScope::App,
-        LogPayload {
+        LogEvent {
             resource: None,
             message: "".to_string(),
         },
@@ -74,7 +74,7 @@ async fn test_delete_logs_from_file() {
     for _ in 0..15 {
         warn(
             LogScope::App,
-            LogPayload {
+            LogEvent {
                 resource: None,
                 message: "".to_string(),
             },
@@ -128,7 +128,7 @@ async fn test_delete_all_logs() {
     for _ in 0..15 {
         warn(
             LogScope::App,
-            LogPayload {
+            LogEvent {
                 resource: None,
                 message: "".to_string(),
             },
