@@ -16,7 +16,7 @@
     "@atlaskit/pragmatic-drag-and-drop-hitbox": "^1.1.0",
     "@langchain/core": "^0.3.53",
     "@langchain/langgraph": "^0.4.3",
-    "@langchain/ollama": "^0.2.0",
+    "@langchain/mistralai": "^0.2.1",
     "@radix-ui/primitive": "^1.1.1",
     "@radix-ui/react-checkbox": "^1.2.2",
     "@radix-ui/react-compose-refs": "^1.1.1",
