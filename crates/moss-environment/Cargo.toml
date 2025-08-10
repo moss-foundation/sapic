@@ -7,7 +7,6 @@ edition = "2024"
 moss_edit.workspace = true
 moss_common.workspace = true
 moss_fs.workspace = true
-moss_file.workspace = true
 moss_storage.workspace = true
 moss_applib.workspace = true
 moss_hcl.workspace = true
