@@ -16,7 +16,8 @@ export const CreateEnvironmentModal = ({ closeModal, showModal }: ModalWrapperPr
   const { data: collections } = useStreamedCollections();
 
   const [name, setName] = useState("");
-  const [mode, setMode] = useState("Default");
+  const [collectionId, setCollectionId] = useState<string | null>(null);
+  const [mode, setMode] = useState<"Workspace" | "Collection">("Workspace");
   const [openAutomatically, setOpenAutomatically] = useState(true);
 
   const handleSubmit = async () => {
@@ -24,8 +25,7 @@ export const CreateEnvironmentModal = ({ closeModal, showModal }: ModalWrapperPr
       name,
       order: 0,
       variables: [],
-      color: "#000000",
-      collectionId: "",
+      collectionId: collectionId ?? undefined,
     });
 
     if (newEnvironment) {
@@ -35,10 +35,14 @@ export const CreateEnvironmentModal = ({ closeModal, showModal }: ModalWrapperPr
   const handleCancel = () => {
     closeModal();
   };
+  const handleSelectCollection = (value: string) => {
+    setCollectionId(value);
+    setMode("Collection");
+  };
 
   return (
     <ModalForm
-      title="New Collection"
+      title="New Environment"
       onBackdropClick={handleCancel}
       showModal={showModal}
       onSubmit={handleSubmit}
@@ -64,7 +68,7 @@ export const CreateEnvironmentModal = ({ closeModal, showModal }: ModalWrapperPr
 
           <div>
             <div className="flex gap-2">
-              <span>Mode</span>
+              <span>Scope</span>
               <div className="background-(--moss-border-color) my-auto h-px w-full" />
             </div>
             <p className="text-xs leading-5 text-(--moss-secondary-text)">
@@ -73,20 +77,27 @@ export const CreateEnvironmentModal = ({ closeModal, showModal }: ModalWrapperPr
             <div className="pl-5">
               <RadioGroup.Root>
                 <RadioGroup.ItemWithLabel
-                  label="Default"
+                  label="Workspace"
                   description="This mode is suitable when your collection is stored in a separate repository or doesn’t have a repository at all."
-                  value="Default"
-                  checked={mode === "Default"}
-                  onClick={() => setMode("Default")}
+                  value="Workspace"
+                  checked={mode === "Workspace"}
+                  onClick={() => setMode("Workspace")}
                 />
 
-                <RadioGroup.ItemWithLabel
-                  label="Custom"
+                <RadioGroup.ItemWithSelect
+                  placeholder="MyCollection"
+                  label="Collection"
                   description="This mode is suitable if you want to store the collection in your project’s repository or in any other folder you specify."
-                  value="Custom"
-                  checked={mode === "Custom"}
-                  onClick={() => setMode("Custom")}
-                  disabled
+                  value="Collection"
+                  checked={mode === "Collection"}
+                  onClick={() => setMode("Collection")}
+                  disabled={!collections}
+                  options={collections?.map((collection) => ({
+                    label: collection.name,
+                    value: collection.id,
+                  }))}
+                  selectValue={collectionId ?? undefined}
+                  onChange={handleSelectCollection}
                 />
               </RadioGroup.Root>
             </div>
