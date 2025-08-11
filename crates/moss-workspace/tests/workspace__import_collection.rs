@@ -3,15 +3,17 @@
 // These tests should be done manually
 // Since it requires authentication and env variables
 
+use crate::shared::setup_test_workspace;
 use moss_storage::storage::operations::GetItem;
 use moss_workspace::{
-    models::{operations::CloneCollectionInput, primitives::CollectionId},
+    models::{
+        operations::{GitHubImportParams, ImportCollectionInput},
+        primitives::CollectionId,
+    },
     storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
 use std::env;
 use tauri::ipc::Channel;
-
-use crate::shared::setup_test_workspace;
 
 pub mod shared;
 
@@ -22,12 +24,12 @@ async fn clone_collection_success() {
     dotenv::dotenv().ok();
 
     let clone_collection_output = workspace
-        .clone_collection(
+        .import_collection(
             &ctx,
-            &CloneCollectionInput {
+            &ImportCollectionInput::GitHub(GitHubImportParams {
                 order: 0,
                 repository: env::var("GITHUB_COLLECTION_REPO_HTTPS").unwrap(),
-            },
+            }),
         )
         .await
         .unwrap();

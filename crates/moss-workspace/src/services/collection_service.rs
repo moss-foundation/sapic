@@ -12,6 +12,7 @@ use moss_collection::{
     builder::{CollectionCloneParams, CollectionCreateParams, CollectionLoadParams},
 };
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
+use moss_git_hosting_provider::common::GitProviderType;
 use std::{
     collections::{HashMap, HashSet},
     path::{Path, PathBuf},
@@ -37,6 +38,7 @@ pub(crate) struct CollectionItemCreateParams {
 }
 
 pub(crate) struct CollectionItemCloneParams {
+    pub git_provider_type: GitProviderType,
     pub order: isize,
     pub repository: String,
 }
@@ -229,6 +231,7 @@ impl<R: AppRuntime> CollectionService<R> {
             .clone(
                 ctx,
                 CollectionCloneParams {
+                    git_provider_type: params.git_provider_type,
                     internal_abs_path: abs_path.clone(),
                     repository: params.repository.to_owned(),
                 },

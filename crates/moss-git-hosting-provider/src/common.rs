@@ -29,3 +29,9 @@ impl GitUrl {
         })
     }
 }
+
+pub enum GitProviderType {
+    GitHub,
+    // TODO: Support self-hosted gitlab
+    GitLab,
+}

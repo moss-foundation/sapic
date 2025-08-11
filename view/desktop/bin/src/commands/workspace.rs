@@ -83,15 +83,15 @@ pub async fn create_collection<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn clone_collection<'a, R: tauri::Runtime>(
+pub async fn import_collection<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
-    input: CloneCollectionInput,
+    input: ImportCollectionInput,
     options: Options,
-) -> TauriResult<CloneCollectionOutput> {
+) -> TauriResult<ImportCollectionOutput> {
     super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
-        workspace.clone_collection(&ctx, &input).await
+        workspace.import_collection(&ctx, &input).await
     })
     .await
 }

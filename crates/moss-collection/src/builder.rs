@@ -1,14 +1,17 @@
 use joinerror::ResultExt;
 use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_fs::{CreateOptions, FileSystem};
-use moss_git::{repo::RepoHandle, url::normalize_git_url};
-use moss_git_hosting_provider::auth::generate_auth_agent;
+use moss_git::repo::RepoHandle;
+use moss_git_hosting_provider::{
+    auth::{AuthAgentType, generate_auth_agent},
+    common::GitProviderType,
+};
 use moss_hcl::Block;
 use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
-use tokio::sync::{Mutex, OnceCell, oneshot};
+use tokio::sync::{Mutex, OnceCell};
 use url::Url;
 
 use crate::{
@@ -54,6 +57,7 @@ pub struct CollectionLoadParams {
 }
 
 pub struct CollectionCloneParams {
+    pub git_provider_type: GitProviderType,
     pub internal_abs_path: Arc<Path>,
     pub repository: String,
 }
@@ -246,7 +250,7 @@ impl CollectionBuilder {
                 &repo_url,
                 abs_path_clone.as_ref(),
                 // Different git providers require different auth agent
-                generate_auth_agent(&repo_url)?,
+                generate_auth_agent(params.git_provider_type.into())?,
             )?)
         })
         .await;

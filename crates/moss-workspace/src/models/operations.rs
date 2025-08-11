@@ -63,21 +63,44 @@ pub struct CreateCollectionOutput {
     pub external_path: Option<PathBuf>,
 }
 
+/// @category Operation
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub enum ImportCollectionInput {
+    GitHub(GitHubImportParams),
+    GitLab(GitLabImportParams),
+}
+
+// FIXME: Validation for provider specific url?
+/// @category Operation
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
-pub struct CloneCollectionInput {
+pub struct GitHubImportParams {
     pub order: isize,
     #[validate(regex(path = "*GIT_URL_REGEX"))]
     pub repository: String,
 }
 
+/// @category Operation
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct GitLabImportParams {
+    pub order: isize,
+    #[validate(regex(path = "*GIT_URL_REGEX"))]
+    pub repository: String,
+}
+
+/// @category Operation
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
-pub struct CloneCollectionOutput {
+pub struct ImportCollectionOutput {
     pub id: CollectionId,
     pub name: String,
     pub order: Option<isize>,

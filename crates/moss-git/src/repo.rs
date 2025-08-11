@@ -16,6 +16,8 @@ use crate::GitAuthAgent;
 unsafe impl Send for RepoHandle {}
 unsafe impl Sync for RepoHandle {}
 
+/// Since all the git operations are synchronous, and authentication requires blocking `reqwest`
+/// We must wrap all RepoHandle operations with `tokio::task::spawn_blocking`
 pub struct RepoHandle {
     // FIXME: Is it necessary to store the url of the repo?
     #[allow(dead_code)]
