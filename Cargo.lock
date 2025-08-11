@@ -3781,6 +3781,7 @@ dependencies = [
  "moss_testutils",
  "moss_text",
  "nanoid",
+ "rustc-hash",
  "serde",
  "serde_json",
  "tauri",

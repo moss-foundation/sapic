@@ -53,7 +53,7 @@ impl EntryPath {
 }
 
 /// @category Primitive
-#[derive(Clone, Debug, Deserialize, Serialize, TS)]
+#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq, Hash, TS)]
 #[ts(export, export_to = "primitives.ts")]
 pub enum EntryClass {
     Request,

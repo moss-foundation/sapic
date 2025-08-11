@@ -10,8 +10,11 @@ use moss_fs::{CreateOptions, FileSystem, RemoveOptions, desanitize_path, utils::
 use moss_hcl::HclResultExt;
 use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_text::sanitized::{desanitize, sanitize};
+use rustc_hash::FxHashMap;
 use std::{
+    cell::LazyCell,
     collections::{HashMap, HashSet},
+    hash::Hash,
     path::{Path, PathBuf},
     sync::Arc,
 };
@@ -34,6 +37,17 @@ use crate::{
     errors::{ErrorAlreadyExists, ErrorInvalidInput, ErrorInvalidKind, ErrorIo, ErrorNotFound},
     services::storage_service::StorageService,
 };
+
+const CLASS_TO_DIR_NAME: LazyCell<FxHashMap<EntryClass, &str>> = LazyCell::new(|| {
+    [
+        (EntryClass::Request, "requests"),
+        (EntryClass::Endpoint, "endpoints"),
+        (EntryClass::Component, "components"),
+        (EntryClass::Schema, "schemas"),
+    ]
+    .into_iter()
+    .collect::<FxHashMap<_, _>>()
+});
 
 #[derive(Debug)]
 struct ScanJob {
@@ -107,34 +121,37 @@ pub struct ModifyParams {
     pub path: Option<PathBuf>,
 }
 
+// #[derive(Deref, DerefMut)]
+// pub struct EntryItemMut<'a> {
+//     path: &'a mut Arc<Path>,
+
+//     #[deref]
+//     #[deref_mut]
+//     configuration: &'a mut RawItemConfiguration,
+// }
+
+// #[derive(Deref, DerefMut)]
+// pub struct EntryDirMut<'a> {
+//     path: &'a mut Arc<Path>,
+
+//     #[deref]
+//     #[deref_mut]
+//     configuration: &'a mut RawDirConfiguration,
+// }
+
 #[derive(Deref, DerefMut)]
-pub struct EntryItemMut<'a> {
-    path: &'a mut Arc<Path>,
-
-    #[deref]
-    #[deref_mut]
-    configuration: &'a mut RawItemConfiguration,
-}
-
-#[derive(Deref, DerefMut)]
-pub struct EntryDirMut<'a> {
-    path: &'a mut Arc<Path>,
-
-    #[deref]
-    #[deref_mut]
-    configuration: &'a mut RawDirConfiguration,
-}
-
-#[derive(Deref, DerefMut)]
-pub(crate) struct Entry {
+struct Entry {
     id: EntryId,
     path_rx: watch::Receiver<Arc<Path>>,
 
     #[deref]
     #[deref_mut]
     edit: EntryEditing,
+    class: EntryClass,
     // configuration: EntryConfiguration,
 }
+
+impl Entry {}
 
 // impl Entry {
 //     pub fn as_item_mut(&mut self) -> Option<EntryItemMut<'_>> {
@@ -279,14 +296,14 @@ impl<R: AppRuntime> Worktree<R> {
             let handle = tokio::spawn(async move {
                 let mut new_jobs = Vec::new();
 
-                let dir_name = job
-                    .path
-                    .file_name()
-                    .map(|n| n.to_string_lossy().to_string())
-                    .unwrap_or_else(|| job.path.to_string_lossy().to_string());
+                // // let dir_name = job
+                // //     .path
+                // //     .file_name()
+                // //     .map(|n| n.to_string_lossy().to_string())
+                // //     .unwrap_or_else(|| job.path.to_string_lossy().to_string());
 
                 match process_entry(
-                    job.path,
+                    job.path.clone(),
                     &all_entry_keys,
                     &expanded_entries,
                     &fs,
@@ -309,7 +326,6 @@ impl<R: AppRuntime> Worktree<R> {
                         //         .and_then(|o| o.deserialize().ok()),
                         // };
 
-                        let _ = sender.send(desc);
                         if desc.expanded {
                             state
                                 .write()
@@ -317,6 +333,8 @@ impl<R: AppRuntime> Worktree<R> {
                                 .expanded_entries
                                 .insert(entry.id.clone());
                         }
+
+                        let _ = sender.send(desc);
                         state.write().await.entries.insert(entry.id.clone(), entry);
                     }
                     Ok(None) => {
@@ -351,7 +369,7 @@ impl<R: AppRuntime> Worktree<R> {
                     let maybe_entry = if child_file_type.is_dir() {
                         continue_if_err!(
                             process_entry(
-                                child_path,
+                                child_path.clone(),
                                 &all_entry_keys,
                                 &expanded_entries,
                                 &fs,
@@ -365,7 +383,7 @@ impl<R: AppRuntime> Worktree<R> {
                         )
                     };
 
-                    let entry = continue_if_none!(maybe_entry, || {
+                    let (entry, desc) = continue_if_none!(maybe_entry, || {
                         // TODO: Probably should log here since we should not be able to get here
                     });
 
@@ -377,18 +395,18 @@ impl<R: AppRuntime> Worktree<R> {
                             scan_queue: job.scan_queue.clone(),
                         });
                     } else {
-                        let desc = EntryDescription {
-                            id: entry.id.clone(),
-                            name: desanitize(&child_name),
-                            path: entry.path.clone(),
-                            class: entry.classification(),
-                            kind: entry.kind(),
-                            protocol: entry.configuration.protocol(),
-                            expanded: expanded_entries.contains(&entry.id),
-                            order: all_entry_keys
-                                .get(&segments::segkey_entry_order(&entry.id))
-                                .and_then(|o| o.deserialize().ok()),
-                        };
+                        // let desc = EntryDescription {
+                        //     id: entry.id.clone(),
+                        //     name: desanitize(&child_name),
+                        //     path: entry.path.clone(),
+                        //     class: entry.classification(),
+                        //     kind: entry.kind(),
+                        //     protocol: entry.configuration.protocol(),
+                        //     expanded: expanded_entries.contains(&entry.id),
+                        //     order: all_entry_keys
+                        //         .get(&segments::segkey_entry_order(&entry.id))
+                        //         .and_then(|o| o.deserialize().ok()),
+                        // };
 
                         continue_if_err!(sender.send(desc), |_err| {
                             eprintln!("Error sending entry: {}", _err);
@@ -430,7 +448,7 @@ impl<R: AppRuntime> Worktree<R> {
     ) -> joinerror::Result<()> {
         debug_assert!(path.is_relative());
 
-        if !is_parent_a_dir_entry(self.abs_path.as_ref(), path) {
+        if !is_parent_dir_entry(self.abs_path.as_ref(), path) {
             return Err(joinerror::Error::new::<ErrorInvalidInput>(format!(
                 "Cannot create entry inside Item entry {}",
                 path.to_string_lossy().to_string()
@@ -456,6 +474,7 @@ impl<R: AppRuntime> Worktree<R> {
                 // configuration: EntryConfiguration::Item(configuration),
                 path_rx,
                 edit: EntryEditing::new(self.fs.clone(), path_tx),
+                class: configuration.classification(),
             },
         );
 
@@ -499,7 +518,7 @@ impl<R: AppRuntime> Worktree<R> {
     ) -> joinerror::Result<()> {
         debug_assert!(path.is_relative());
 
-        if !is_parent_a_dir_entry(self.abs_path.as_ref(), path) {
+        if !is_parent_dir_entry(self.abs_path.as_ref(), path) {
             return Err(joinerror::Error::new::<ErrorInvalidInput>(format!(
                 "Cannot create entry inside Item entry {}",
                 path.to_string_lossy().to_string()
@@ -525,6 +544,7 @@ impl<R: AppRuntime> Worktree<R> {
                 // configuration: EntryConfiguration::Dir(configuration),
                 path_rx,
                 edit: EntryEditing::new(self.fs.clone(), path_tx),
+                class: configuration.classification(),
             },
         );
 
@@ -561,7 +581,7 @@ impl<R: AppRuntime> Worktree<R> {
         ctx: &R::AsyncContext,
         id: &EntryId,
         params: ModifyParams,
-    ) -> joinerror::Result<(PathBuf, RawDirConfiguration)> {
+    ) -> joinerror::Result<Arc<Path>> {
         let mut state_lock = self.state.write().await;
         let entry = state_lock
             .entries
@@ -573,8 +593,7 @@ impl<R: AppRuntime> Worktree<R> {
         // })?;
 
         if let Some(new_parent) = params.path {
-            let classification_folder = entry.configuration.classification_folder();
-            if !new_parent.starts_with(classification_folder) {
+            if !new_parent.starts_with(CLASS_TO_DIR_NAME.get(&entry.class).unwrap()) {
                 return Err(joinerror::Error::new::<ErrorInvalidInput>(
                     "cannot move entry to a different classification folder",
                 ));
@@ -589,27 +608,46 @@ impl<R: AppRuntime> Worktree<R> {
                 ));
             }
 
-            let old_path = entry.path.clone();
-            let new_path = update_path_parent(entry.path.as_ref(), &new_parent)?;
-            path = new_path.clone();
+            // let old_path = entry.path.clone();
+            // let new_path = update_path_parent(entry.path.as_ref(), &new_parent)?;
+            // path = new_path.clone();
 
-            self.rename_entry(&old_path, &new_path).await?;
-            *entry.path = new_path.into();
+            // self.rename_entry(&old_path, &new_path).await?;
+            // *entry.path = new_path.into();
+
+            let old_path = entry.path_rx.borrow().clone();
+            let new_path = update_path_parent(&old_path, &new_parent)?;
+
+            entry
+                .edit
+                .rename(&self.abs_path, &old_path, &new_path)
+                .await?;
         }
 
         if let Some(name) = params.name {
-            let old_path = entry.path.clone();
-            let new_path = rename_path(entry.path.as_ref(), &name);
-            path = new_path.clone();
+            // let old_path = entry.path.clone();
+            // let new_path = rename_path(entry.path.as_ref(), &name);
+            // path = new_path.clone();
 
-            self.rename_entry(&old_path, &new_path).await?;
-            *entry.path = new_path.into();
+            // self.rename_entry(&old_path, &new_path).await?;
+            // *entry.path = new_path.into();
+
+            let old_path = entry.path_rx.borrow().clone();
+            let new_path = rename_path(&old_path, &name);
+
+            entry
+                .edit
+                .rename(&self.abs_path, &old_path, &new_path)
+                .await?;
         }
 
-        let configuration = entry.configuration.clone();
+        let path = entry.path_rx.borrow().clone();
+        drop(state_lock);
+
+        // let configuration = entry.configuration.clone();
         let is_db_update_needed = params.order.is_some() || params.expanded.is_some();
         if !is_db_update_needed {
-            return Ok((path, configuration));
+            return Ok(path);
         }
 
         let mut txn = self.storage.begin_write(ctx).await?;
@@ -620,6 +658,7 @@ impl<R: AppRuntime> Worktree<R> {
                 .await?;
         }
 
+        let mut state_lock = self.state.write().await;
         if let Some(expanded) = params.expanded {
             if expanded {
                 state_lock.expanded_entries.insert(id.to_owned());
@@ -642,7 +681,7 @@ impl<R: AppRuntime> Worktree<R> {
 
         txn.commit()?;
 
-        Ok((path, configuration))
+        Ok(path)
     }
 
     pub async fn update_item_entry(
@@ -650,20 +689,19 @@ impl<R: AppRuntime> Worktree<R> {
         ctx: &R::AsyncContext,
         id: &EntryId,
         params: ModifyParams,
-    ) -> joinerror::Result<(PathBuf, RawItemConfiguration)> {
+    ) -> joinerror::Result<Arc<Path>> {
         let mut state_lock = self.state.write().await;
         let entry = state_lock
             .entries
             .get_mut(&id)
-            .ok_or_join_err_with::<ErrorNotFound>(|| format!("entry {} not found", id))?
-            .as_item_mut()
-            .ok_or_join_err_with::<ErrorInvalidKind>(|| format!("entry {} is not a item", id))?;
+            .ok_or_join_err_with::<ErrorNotFound>(|| format!("entry {} not found", id))?;
+        // .as_item_mut()
+        // .ok_or_join_err_with::<ErrorInvalidKind>(|| format!("entry {} is not a item", id))?;
 
-        let mut path = entry.path.clone().to_path_buf();
+        // let mut path = entry.path.clone().to_path_buf();
 
         if let Some(new_parent) = params.path {
-            let classification_folder = entry.configuration.classification_folder();
-            if !new_parent.starts_with(classification_folder) {
+            if !new_parent.starts_with(CLASS_TO_DIR_NAME.get(&entry.class).unwrap()) {
                 return Err(joinerror::Error::new::<ErrorInvalidInput>(
                     "cannot move entry to a different classification folder",
                 ));
@@ -678,50 +716,69 @@ impl<R: AppRuntime> Worktree<R> {
                 ));
             }
 
-            let old_path = entry.path.clone();
-            let new_path = update_path_parent(entry.path.as_ref(), &new_parent)?;
-            path = new_path.clone();
+            // let old_path = entry.path.clone();
+            // let new_path = update_path_parent(entry.path.as_ref(), &new_parent)?;
+            // path = new_path.clone();
 
-            self.rename_entry(&old_path, &new_path).await?;
-            *entry.path = new_path.into();
+            // self.rename_entry(&old_path, &new_path).await?;
+            // *entry.path = new_path.into();
+
+            let old_path = entry.path_rx.borrow().clone();
+            let new_path = update_path_parent(&old_path, &new_parent)?;
+
+            entry
+                .edit
+                .rename(&self.abs_path, &old_path, &new_path)
+                .await?;
         }
 
         if let Some(name) = params.name {
-            let old_path = entry.path.clone();
-            let new_path = rename_path(entry.path.as_ref(), &name);
-            path = new_path.clone();
+            // let old_path = entry.path.clone();
+            // let new_path = rename_path(entry.path.as_ref(), &name);
+            // path = new_path.clone();
 
-            self.rename_entry(&old_path, &new_path).await?;
-            *entry.path = new_path.into();
+            // self.rename_entry(&old_path, &new_path).await?;
+            // *entry.path = new_path.into();
+
+            let old_path = entry.path_rx.borrow().clone();
+            let new_path = rename_path(&old_path, &name);
+
+            entry
+                .edit
+                .rename(&self.abs_path, &old_path, &new_path)
+                .await?;
         }
 
-        if let Some(protocol) = params.protocol {
-            match entry.configuration {
-                RawItemConfiguration::Request(request) => {
-                    request.change_protocol(protocol);
+        let path = entry.path_rx.borrow().clone();
+        drop(state_lock);
 
-                    Ok(())
-                }
-                RawItemConfiguration::Endpoint(endpoint) => {
-                    endpoint.change_protocol(protocol);
+        // if let Some(protocol) = params.protocol {
+        //     match entry.configuration {
+        //         RawItemConfiguration::Request(request) => {
+        //             request.change_protocol(protocol);
 
-                    Ok(())
-                }
-                RawItemConfiguration::Component(_) => {
-                    Err(joinerror::Error::new::<ErrorInvalidInput>(
-                        "cannot set protocol for component item",
-                    ))
-                }
-                RawItemConfiguration::Schema(_) => Err(joinerror::Error::new::<ErrorInvalidInput>(
-                    "cannot set protocol for schema item",
-                )),
-            }?;
-        }
+        //             Ok(())
+        //         }
+        //         RawItemConfiguration::Endpoint(endpoint) => {
+        //             endpoint.change_protocol(protocol);
 
-        let configuration = entry.configuration.clone();
+        //             Ok(())
+        //         }
+        //         RawItemConfiguration::Component(_) => {
+        //             Err(joinerror::Error::new::<ErrorInvalidInput>(
+        //                 "cannot set protocol for component item",
+        //             ))
+        //         }
+        //         RawItemConfiguration::Schema(_) => Err(joinerror::Error::new::<ErrorInvalidInput>(
+        //             "cannot set protocol for schema item",
+        //         )),
+        //     }?;
+        // }
+
+        // let configuration = entry.configuration.clone();
         let is_db_update_needed = params.order.is_some() || params.expanded.is_some();
         if !is_db_update_needed {
-            return Ok((path, configuration));
+            return Ok(path);
         }
 
         let mut txn = self.storage.begin_write(ctx).await?;
@@ -732,6 +789,7 @@ impl<R: AppRuntime> Worktree<R> {
                 .await?;
         }
 
+        let mut state_lock = self.state.write().await;
         if let Some(expanded) = params.expanded {
             if expanded {
                 state_lock.expanded_entries.insert(id.to_owned());
@@ -754,7 +812,7 @@ impl<R: AppRuntime> Worktree<R> {
 
         txn.commit()?;
 
-        Ok((path, configuration))
+        Ok(path)
     }
 
     async fn modify_item_entry() {}
@@ -812,52 +870,52 @@ impl<R: AppRuntime> Worktree<R> {
         Ok(())
     }
 
-    async fn rename_entry(&self, from: &Path, to: &Path) -> joinerror::Result<()> {
-        // On Windows and macOS, file/directory names are case-preserving but insensitive
-        // If the from and to path differs only with different casing of the filename
-        // The rename should still succeed
+    // async fn rename_entry(&self, from: &Path, to: &Path) -> joinerror::Result<()> {
+    //     // On Windows and macOS, file/directory names are case-preserving but insensitive
+    //     // If the from and to path differs only with different casing of the filename
+    //     // The rename should still succeed
 
-        let abs_from = self.absolutize(&from)?;
-        let abs_to = self.absolutize(&to)?;
+    //     let abs_from = self.absolutize(&from)?;
+    //     let abs_to = self.absolutize(&to)?;
 
-        if !abs_from.exists() {
-            return Err(joinerror::Error::new::<ErrorNotFound>(format!(
-                "entry not found: {}",
-                abs_from.display()
-            )));
-        }
+    //     if !abs_from.exists() {
+    //         return Err(joinerror::Error::new::<ErrorNotFound>(format!(
+    //             "entry not found: {}",
+    //             abs_from.display()
+    //         )));
+    //     }
 
-        let old_name_lower = from
-            .file_name()
-            .map(|name| name.to_string_lossy().to_lowercase())
-            .ok_or_join_err::<ErrorIo>("invalid file name")?;
-        let new_name_lower = to
-            .file_name()
-            .map(|name| name.to_string_lossy().to_lowercase())
-            .ok_or_join_err::<ErrorIo>("invalid file name")?;
-        let recasing_only =
-            old_name_lower == new_name_lower && abs_from.parent() == abs_to.parent();
+    //     let old_name_lower = from
+    //         .file_name()
+    //         .map(|name| name.to_string_lossy().to_lowercase())
+    //         .ok_or_join_err::<ErrorIo>("invalid file name")?;
+    //     let new_name_lower = to
+    //         .file_name()
+    //         .map(|name| name.to_string_lossy().to_lowercase())
+    //         .ok_or_join_err::<ErrorIo>("invalid file name")?;
+    //     let recasing_only =
+    //         old_name_lower == new_name_lower && abs_from.parent() == abs_to.parent();
 
-        if abs_to.exists() && !recasing_only {
-            return Err(joinerror::Error::new::<ErrorAlreadyExists>(format!(
-                "entry already exists: {}",
-                to.display()
-            )));
-        }
+    //     if abs_to.exists() && !recasing_only {
+    //         return Err(joinerror::Error::new::<ErrorAlreadyExists>(format!(
+    //             "entry already exists: {}",
+    //             to.display()
+    //         )));
+    //     }
 
-        self.fs
-            .rename(
-                &abs_from,
-                &abs_to,
-                moss_fs::RenameOptions {
-                    overwrite: true,
-                    ignore_if_exists: false,
-                },
-            )
-            .await?;
+    //     self.fs
+    //         .rename(
+    //             &abs_from,
+    //             &abs_to,
+    //             moss_fs::RenameOptions {
+    //                 overwrite: true,
+    //                 ignore_if_exists: false,
+    //             },
+    //         )
+    //         .await?;
 
-        Ok(())
-    }
+    //     Ok(())
+    // }
 }
 
 /// Update the filename of a path to the encoded input name
@@ -883,7 +941,7 @@ fn update_path_parent(path: &Path, new_parent: &Path) -> anyhow::Result<PathBuf>
 }
 
 // We don't allow creating subentries inside an item
-fn is_parent_a_dir_entry(abs_path: &Path, parent_path: &Path) -> bool {
+fn is_parent_dir_entry(abs_path: &Path, parent_path: &Path) -> bool {
     if parent_path == Path::new(COLLECTION_ROOT_PATH) {
         // Ignore the root level since it's not an entry
         return true;
@@ -924,7 +982,7 @@ async fn process_entry(
                 .and_then(|o| o.deserialize().ok()),
             expanded: expanded_entries.contains(&id),
         };
-        let (path_tx, path_rx) = watch::channel(path.into());
+        let (path_tx, path_rx) = watch::channel(desanitize_path(&path, None)?.into());
 
         return Ok(Some((
             Entry {
@@ -932,6 +990,7 @@ async fn process_entry(
                 // path: desanitize_path(path, None)?.into(),
                 path_rx,
                 edit: EntryEditing::new(fs.clone(), path_tx),
+                class: config.classification(),
                 // configuration: EntryConfiguration::Dir(config),
             },
             desc,
@@ -954,7 +1013,7 @@ async fn process_entry(
             expanded: expanded_entries.contains(&id),
         };
 
-        let (path_tx, path_rx) = watch::channel(path.into());
+        let (path_tx, path_rx) = watch::channel(desanitize_path(&path, None)?.into());
 
         return Ok(Some((
             Entry {
@@ -963,6 +1022,7 @@ async fn process_entry(
                 // configuration: EntryConfiguration::Item(config),
                 path_rx,
                 edit: EntryEditing::new(fs.clone(), path_tx),
+                class: config.classification(),
             },
             desc,
         )));
@@ -976,7 +1036,7 @@ async fn process_file(
     _path: &Arc<Path>,
     _fs: &Arc<dyn FileSystem>,
     _abs_path: &Path,
-) -> joinerror::Result<Option<Entry>> {
+) -> joinerror::Result<Option<(Entry, EntryDescription)>> {
     // TODO: implement
     Ok(None)
 }

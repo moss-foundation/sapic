@@ -87,7 +87,7 @@ impl<R: AppRuntime> Collection<R> {
     ) -> joinerror::Result<AfterUpdateItemEntryDescription> {
         input.validate().join_err_bare()?;
 
-        let (path, configuration) = self
+        let path = self
             .worktree
             .update_item_entry(
                 ctx,
@@ -103,12 +103,12 @@ impl<R: AppRuntime> Collection<R> {
             .await?;
 
         let path = EntryPath::new(path.to_path_buf());
-        let model = CompositeItemConfigurationModel::from(configuration);
+        // let model = CompositeItemConfigurationModel::from(configuration);
 
         Ok(AfterUpdateItemEntryDescription {
             id: input.id,
             path,
-            configuration: model,
+            // configuration: model,
         })
     }
 
@@ -119,7 +119,7 @@ impl<R: AppRuntime> Collection<R> {
     ) -> joinerror::Result<AfterUpdateDirEntryDescription> {
         input.validate().join_err_bare()?;
 
-        let (path, configuration) = self
+        let path = self
             .worktree
             .update_dir_entry(
                 ctx,
@@ -135,12 +135,12 @@ impl<R: AppRuntime> Collection<R> {
             .await?;
 
         let path = EntryPath::new(path.to_path_buf());
-        let model = CompositeDirConfigurationModel::from(configuration);
+        // let model = CompositeDirConfigurationModel::from(configuration);
 
         Ok(AfterUpdateDirEntryDescription {
             id: input.id,
             path,
-            configuration: model,
+            // configuration: model,
         })
     }
 }

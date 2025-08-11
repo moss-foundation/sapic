@@ -80,7 +80,7 @@ pub struct AfterUpdateDirEntryDescription {
     pub id: EntryId,
 
     pub path: EntryPath,
-    pub configuration: CompositeDirConfigurationModel,
+    // pub configuration: CompositeDirConfigurationModel,
 }
 
 /// @category Type
@@ -92,7 +92,7 @@ pub struct AfterUpdateItemEntryDescription {
     pub id: EntryId,
 
     pub path: EntryPath,
-    pub configuration: CompositeItemConfigurationModel,
+    // pub configuration: CompositeItemConfigurationModel,
 }
 
 /// @category Type

@@ -33,6 +33,7 @@ derive_more = { workspace = true, features = ["deref", "deref_mut"] }
 indexmap.workspace = true
 nanoid.workspace = true
 json-patch.workspace = true
+rustc-hash.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }
