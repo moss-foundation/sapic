@@ -107,7 +107,7 @@ export const CreateEnvironmentModal = ({ closeModal, showModal }: ModalWrapperPr
       footer={
         <div className="flex items-center justify-between py-0.75">
           <CheckboxWithLabel
-            label="Open automatically after creation"
+            label="Activate after creation"
             checked={openAutomatically}
             onCheckedChange={(check) => {
               if (check !== "indeterminate") setOpenAutomatically(check);

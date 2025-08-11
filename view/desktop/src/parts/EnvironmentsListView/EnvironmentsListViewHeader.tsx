@@ -1,6 +1,7 @@
 import { ActionButton, SidebarHeader } from "@/components";
 import { CreateEnvironmentModal } from "@/components/Modals/Environment/CreateEnvironmentModal";
 import { useModal } from "@/hooks";
+import { useStreamEnvironments } from "@/hooks/environment";
 
 export const EnvironmentsListViewHeader = () => {
   const {
@@ -8,6 +9,8 @@ export const EnvironmentsListViewHeader = () => {
     closeModal: closeCreateEnvironmentModal,
     openModal: openCreateEnvironmentModal,
   } = useModal();
+
+  const { clearEnvironmentsCacheAndRefetch } = useStreamEnvironments();
 
   return (
     <>
@@ -17,7 +20,7 @@ export const EnvironmentsListViewHeader = () => {
           <>
             <ActionButton icon="Add" onClick={openCreateEnvironmentModal} />
             <ActionButton icon="Import" />
-            <ActionButton icon="Refresh" />
+            <ActionButton icon="Refresh" onClick={clearEnvironmentsCacheAndRefetch} />
           </>
         }
       />
