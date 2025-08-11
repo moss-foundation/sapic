@@ -32,9 +32,11 @@ export const CreateEnvironmentModal = ({ closeModal, showModal }: ModalWrapperPr
       closeModal();
     }
   };
+
   const handleCancel = () => {
     closeModal();
   };
+
   const handleSelectCollection = (value: string) => {
     setCollectionId(value);
     setMode("Collection");

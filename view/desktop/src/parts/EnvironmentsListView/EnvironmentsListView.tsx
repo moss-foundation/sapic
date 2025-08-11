@@ -21,7 +21,7 @@ export const EnvironmentsListView = () => {
   }, [] as string[]);
 
   return (
-    <div className="flex h-full flex-col gap-4">
+    <div className="flex h-full flex-col">
       <EnvironmentsListViewHeader />
 
       <div className="h-full">

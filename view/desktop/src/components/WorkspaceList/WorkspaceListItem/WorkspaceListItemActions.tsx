@@ -4,7 +4,6 @@ import { ActionMenu, ConfirmationModal } from "@/components";
 import ActionButton from "@/components/ActionButton";
 import { useModal } from "@/hooks";
 import { useDeleteEnvironment } from "@/hooks/environment";
-import { Icon } from "@/lib/ui";
 import { useWorkspaceListStore } from "@/store/workspaceList";
 import { cn } from "@/utils";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
@@ -23,15 +22,20 @@ export const WorkspaceListItemActions = ({ environment, setIsEditing }: Workspac
   const { showModal: showDeleteModal, setShowModal: setShowDeleteModal, closeModal: setHideDeleteModal } = useModal();
 
   return (
-    <div className="z-10 flex items-center gap-2">
-      <button className="cursor-pointer" onClick={() => setActiveEnvironment(environment)}>
-        <Icon icon={activeEnvironment?.id === environment.id ? "EnvironmentSelectionActive" : "EnvironmentSelection"} />
-      </button>
+    <div className="z-10 flex items-center gap-1">
+      <ActionButton
+        onClick={() => setActiveEnvironment(environment)}
+        icon={activeEnvironment?.id === environment.id ? "EnvironmentSelectionActive" : "EnvironmentSelection"}
+        className={cn("cursor-pointer group-hover/WorkspaceListItem:opacity-100", {
+          "opacity-0": activeEnvironment?.id !== environment.id,
+        })}
+        customHoverBackground="hover:background-(--moss-gray-10)"
+      />
 
       <ActionMenu.Root onOpenChange={setShowActionMenu} modal={showActionMenu}>
         <ActionMenu.Trigger
           asChild
-          className={cn("sr-only group-hover/WorkspaceListItem:not-sr-only", { "not-sr-only": showActionMenu })}
+          className={cn("opacity-0 group-hover/WorkspaceListItem:opacity-100", { "opacity-0": showActionMenu })}
         >
           <ActionButton
             icon="MoreHorizontal"

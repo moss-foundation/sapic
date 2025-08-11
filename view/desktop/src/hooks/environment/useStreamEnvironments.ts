@@ -20,37 +20,6 @@ const startStreamingEnvironments = async (): Promise<StreamEnvironmentsEvent[]> 
     channel: onEnvironmentEvent,
   });
 
-  if (environments.length === 0) {
-    return [
-      {
-        id: "31JQFM9hPz_qqq",
-        collectionId: "31JQFM9hPz",
-        name: "Env 1",
-        order: 1,
-        expanded: true,
-      },
-      {
-        id: "u_WMAATtDg_qqq",
-        name: "Env 2",
-        order: 2,
-        expanded: true,
-      },
-      {
-        id: "v2dqXauAIY_qqq",
-        collectionId: "v2dqXauAIY",
-        name: "Env 3",
-        order: 3,
-        expanded: true,
-      },
-      {
-        id: "rnr5ynry",
-        name: "Env 4",
-        order: 4,
-        expanded: true,
-      },
-    ];
-  }
-
   return environments;
 };
 

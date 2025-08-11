@@ -15,7 +15,6 @@ export const useWorkspaceListItemRenamingForm = ({ environment }: UseWorkspaceLi
     await updateEnvironment({
       id: environment.id,
       name,
-      //FIXME: add varsToAdd, varsToUpdate, varsToDelete are required
       varsToAdd: [],
       varsToUpdate: [],
       varsToDelete: [],
