@@ -80,7 +80,7 @@ pub struct App<R: AppRuntime> {
     pub(super) gitlab_client: Arc<GitLabClient>,
 
     pub(super) _reqwest_client: reqwest::Client,
-    pub(super) keyring_client: Arc<dyn KeyringClient + Send + Sync>,
+    pub(super) _keyring_client: Arc<dyn KeyringClient + Send + Sync>,
 }
 
 impl<R: AppRuntime> App<R> {

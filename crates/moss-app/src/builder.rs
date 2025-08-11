@@ -152,7 +152,7 @@ impl<R: AppRuntime> AppBuilder<R> {
             github_client,
             gitlab_client,
             _reqwest_client: reqwest_client,
-            keyring_client,
+            _keyring_client: keyring_client,
         }
     }
 }

@@ -17,8 +17,7 @@ unsafe impl Sync for RepoHandle {}
 /// We must wrap all RepoHandle operations with `tokio::task::spawn_blocking`
 pub struct RepoHandle {
     auth_agent: Arc<dyn GitAuthAgent>,
-    // public for easier testing
-    pub repo: Repository,
+    repo: Repository,
 }
 
 // https://stackoverflow.com/questions/27672722/libgit2-commit-example
