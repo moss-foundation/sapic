@@ -19,7 +19,7 @@ export const useCreateEnvironment = () => {
 
   return useMutation({
     mutationFn: createEnvironment,
-    onSuccess: (data, variables) => {
+    onSuccess: (data) => {
       queryClient.setQueryData([USE_STREAMED_ENVIRONMENTS_QUERY_KEY], (old: StreamEnvironmentsEvent[]) => {
         return [
           ...old,
@@ -32,6 +32,8 @@ export const useCreateEnvironment = () => {
           },
         ];
       });
+
+      return data;
     },
   });
 };

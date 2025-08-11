@@ -68,6 +68,9 @@
   "Collection": {
     "identical": false
   },
+  "CollectionEnvironment": {
+    "identical": false
+  },
   "Component": {
     "identical": true
   },
@@ -110,8 +113,14 @@
   "Env": {
     "identical": true
   },
-  "EnvActive": {
+  "Environment": {
+    "identical": false
+  },
+  "EnvironmentSelection": {
     "identical": true
+  },
+  "EnvironmentSelectionActive": {
+    "identical": false
   },
   "Error": {
     "identical": true
@@ -284,9 +293,6 @@
   "SquareBrackets": {
     "identical": true
   },
-  "Success": {
-    "identical": true
-  },
   "ToolBarVariables": {
     "identical": true
   },
@@ -307,6 +313,9 @@
   },
   "VCS": {
     "identical": true
+  },
+  "Vault": {
+    "identical": false
   },
   "Warning": {
     "identical": true

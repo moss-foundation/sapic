@@ -1,5 +1,5 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { UpdateEnvironmentInput, UpdateEnvironmentOutput } from "@repo/moss-workspace";
+import { StreamEnvironmentsEvent, UpdateEnvironmentInput, UpdateEnvironmentOutput } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_STREAMED_ENVIRONMENTS_QUERY_KEY } from "./useStreamEnvironments";
@@ -19,8 +19,19 @@ export const useUpdateEnvironment = () => {
 
   return useMutation({
     mutationFn: updateEnvironment,
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: [USE_STREAMED_ENVIRONMENTS_QUERY_KEY] });
+      queryClient.setQueryData([USE_STREAMED_ENVIRONMENTS_QUERY_KEY], (old: StreamEnvironmentsEvent[]) => {
+        return old.map((environment) =>
+          environment.id === variables.id
+            ? {
+                ...environment,
+                ...data,
+                ...variables,
+              }
+            : environment
+        );
+      });
     },
   });
 };
