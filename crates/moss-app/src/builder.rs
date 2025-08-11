@@ -57,6 +57,7 @@ impl<R: AppRuntime> AppBuilder<R> {
                 .await
                 .expect("Failed to create app directories");
         }
+        let keyring_client = Arc::new(KeyringClientImpl::new());
 
         let theme_service = ThemeService::new(self.fs.clone(), params.themes_dir);
         let locale_service = LocaleService::new(self.fs.clone(), params.locales_dir);
@@ -78,6 +79,7 @@ impl<R: AppRuntime> AppBuilder<R> {
             storage_service.clone(),
             self.fs.clone(),
             &params.app_dir,
+            keyring_client.clone(),
         )
         .await
         .expect("Failed to create workspace service");
@@ -150,6 +152,7 @@ impl<R: AppRuntime> AppBuilder<R> {
             github_client,
             gitlab_client,
             _reqwest_client: reqwest_client,
+            keyring_client,
         }
     }
 }

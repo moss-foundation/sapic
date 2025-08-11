@@ -13,6 +13,7 @@ use moss_collection::{
 };
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
 use moss_git_hosting_provider::common::GitProviderType;
+use moss_keyring::KeyringClient;
 use std::{
     collections::{HashMap, HashSet},
     path::{Path, PathBuf},
@@ -78,6 +79,7 @@ pub struct CollectionService<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     storage: Arc<StorageService<R>>,
     state: Arc<RwLock<ServiceState<R>>>,
+    keyring_client: Arc<dyn KeyringClient + Send + Sync>,
 }
 
 impl<R: AppRuntime> ServiceMarker for CollectionService<R> {}
@@ -89,6 +91,7 @@ impl<R: AppRuntime> CollectionService<R> {
         abs_path: &Path,
         fs: Arc<dyn FileSystem>,
         storage: Arc<StorageService<R>>,
+        keyring_client: Arc<dyn KeyringClient + Send + Sync>,
     ) -> joinerror::Result<Self> {
         let abs_path = abs_path.join(dirs::COLLECTIONS_DIR);
         let expanded_items = if let Ok(expanded_items) = storage.get_expanded_items(ctx).await {
@@ -107,6 +110,7 @@ impl<R: AppRuntime> CollectionService<R> {
                 collections,
                 expanded_items,
             })),
+            keyring_client,
         })
     }
 
@@ -235,6 +239,7 @@ impl<R: AppRuntime> CollectionService<R> {
                     internal_abs_path: abs_path.clone(),
                     repository: params.repository.to_owned(),
                 },
+                self.keyring_client.clone(),
             )
             .await
             .join_err::<()>("failed to clone collection")?;

@@ -4,6 +4,7 @@ use moss_applib::AppRuntime;
 use moss_environment::builder::{CreateEnvironmentParams, EnvironmentBuilder};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
+use moss_keyring::KeyringClient;
 use std::{cell::LazyCell, path::Path, sync::Arc};
 
 use crate::{
@@ -90,6 +91,7 @@ impl WorkspaceBuilder {
         params: LoadWorkspaceParams,
         github_client: Arc<GitHubClient>,
         gitlab_client: Arc<GitLabClient>,
+        keyring_client: Arc<dyn KeyringClient + Send + Sync>,
     ) -> joinerror::Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
 
@@ -100,6 +102,7 @@ impl WorkspaceBuilder {
             &params.abs_path,
             self.fs.clone(),
             storage_service.clone(),
+            keyring_client,
         )
         .await?;
 
@@ -133,6 +136,7 @@ impl WorkspaceBuilder {
         params: CreateWorkspaceParams,
         github_client: Arc<GitHubClient>,
         gitlab_client: Arc<GitLabClient>,
+        keyring_client: Arc<dyn KeyringClient + Send + Sync>,
     ) -> joinerror::Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
 
@@ -147,6 +151,7 @@ impl WorkspaceBuilder {
             &params.abs_path,
             self.fs.clone(),
             storage_service.clone(),
+            keyring_client,
         )
         .await?;
         let environment_service = EnvironmentService::new(

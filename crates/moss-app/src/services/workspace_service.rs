@@ -1,3 +1,9 @@
+use crate::{
+    dirs,
+    models::primitives::WorkspaceId,
+    services::storage_service::StorageService,
+    storage::segments::{SEGKEY_WORKSPACE, segkey_last_opened_at, segkey_workspace},
+};
 use anyhow::{Context as _, Result};
 use chrono::Utc;
 use derive_more::{Deref, DerefMut};
@@ -8,6 +14,7 @@ use moss_common::api::OperationError;
 use moss_db::DatabaseError;
 use moss_fs::{FileSystem, RemoveOptions};
 use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
+use moss_keyring::KeyringClient;
 use moss_workspace::{
     Workspace,
     builder::{CreateWorkspaceParams, LoadWorkspaceParams, WorkspaceBuilder},
@@ -20,13 +27,6 @@ use std::{
 };
 use thiserror::Error;
 use tokio::sync::RwLock;
-
-use crate::{
-    dirs,
-    models::primitives::WorkspaceId,
-    services::storage_service::StorageService,
-    storage::segments::{SEGKEY_WORKSPACE, segkey_last_opened_at, segkey_workspace},
-};
 
 #[derive(Debug, Error)]
 pub enum WorkspaceServiceError {
@@ -129,6 +129,7 @@ pub struct WorkspaceService<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     storage: Arc<StorageService<R>>,
     state: Arc<RwLock<ServiceState<R>>>,
+    keyring_client: Arc<dyn KeyringClient + Send + Sync>,
 }
 
 impl<R: AppRuntime> ServiceMarker for WorkspaceService<R> {}
@@ -140,6 +141,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
         storage_service: Arc<StorageService<R>>,
         fs: Arc<dyn FileSystem>,
         abs_path: &Path,
+        keyring_client: Arc<dyn KeyringClient + Send + Sync>,
     ) -> WorkspaceServiceResult<Self> {
         debug_assert!(abs_path.is_absolute());
         let abs_path: Arc<Path> = abs_path.join(dirs::WORKSPACES_DIR).into();
@@ -156,6 +158,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
                 known_workspaces,
                 active_workspace: None,
             })),
+            keyring_client,
         })
     }
 
@@ -347,6 +350,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
                 },
                 github_client,
                 gitlab_client,
+                self.keyring_client.clone(),
             )
             .await
             .join_err::<()>("failed to load the workspace")

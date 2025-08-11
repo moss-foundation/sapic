@@ -1,5 +1,5 @@
 use moss_git::GitAuthAgent;
-use moss_keyring::KeyringClientImpl;
+use moss_keyring::KeyringClient;
 use std::sync::Arc;
 
 use crate::{
@@ -27,12 +27,10 @@ impl From<GitProviderType> for AuthAgentType {
 /// A utility function to generate a Git Auth Agent for a particular provider
 /// Since different git providers require different auth agents
 pub fn generate_auth_agent(
+    keyring_client: Arc<dyn KeyringClient>,
     auth_agent_type: AuthAgentType,
 ) -> joinerror::Result<Arc<dyn GitAuthAgent>> {
     // TODO: Fetch client_id and client_secret from the server
-
-    // FIXME: Not a big deal but maybe we can share the keyring_client
-    let keyring_client = Arc::new(KeyringClientImpl::new());
 
     match auth_agent_type {
         AuthAgentType::GitHub => {

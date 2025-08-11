@@ -1,16 +1,3 @@
-use joinerror::ResultExt;
-use moss_applib::{AppRuntime, subscription::EventEmitter};
-use moss_fs::{CreateOptions, FileSystem};
-use moss_git::repo::RepoHandle;
-use moss_git_hosting_provider::{auth::generate_auth_agent, common::GitProviderType};
-use moss_hcl::Block;
-use std::{
-    path::{Path, PathBuf},
-    sync::Arc,
-};
-use tokio::sync::{Mutex, OnceCell};
-use url::Url;
-
 use crate::{
     Collection,
     config::{CONFIG_FILE_NAME, ConfigFile},
@@ -31,6 +18,19 @@ use crate::{
         worktree_service::{EntryMetadata, WorktreeService},
     },
 };
+use joinerror::ResultExt;
+use moss_applib::{AppRuntime, subscription::EventEmitter};
+use moss_fs::{CreateOptions, FileSystem};
+use moss_git::repo::RepoHandle;
+use moss_git_hosting_provider::{auth::generate_auth_agent, common::GitProviderType};
+use moss_hcl::Block;
+use moss_keyring::KeyringClient;
+use std::{
+    path::{Path, PathBuf},
+    sync::Arc,
+};
+use tokio::sync::{Mutex, OnceCell};
+use url::Url;
 
 const COLLECTION_ICON_SIZE: u32 = 128;
 const OTHER_DIRS: [&str; 2] = [dirs::ASSETS_DIR, dirs::ENVIRONMENTS_DIR];
@@ -234,6 +234,7 @@ impl CollectionBuilder {
         self,
         _ctx: &R::AsyncContext,
         params: CollectionCloneParams,
+        keyring_client: Arc<dyn KeyringClient + Send + Sync>,
     ) -> joinerror::Result<Collection<R>> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
@@ -247,7 +248,7 @@ impl CollectionBuilder {
                 &repo_url,
                 abs_path_clone.as_ref(),
                 // Different git providers require different auth agent
-                generate_auth_agent(params.git_provider_type.into())?,
+                generate_auth_agent(keyring_client, params.git_provider_type.into())?,
             )?)
         })
         .await;

@@ -3779,6 +3779,7 @@ dependencies = [
  "moss_git",
  "moss_git_hosting_provider",
  "moss_hcl",
+ "moss_keyring",
  "moss_storage",
  "moss_testutils",
  "moss_text",

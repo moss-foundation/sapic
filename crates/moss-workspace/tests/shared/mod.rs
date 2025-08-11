@@ -92,6 +92,7 @@ pub async fn setup_test_workspace() -> (AsyncContext, Workspace<MockAppRuntime>,
             },
             github_client,
             gitlab_client,
+            keyring_client,
         )
         .await
         .unwrap();
