@@ -43,7 +43,14 @@ export type TauriIpcCommand =
   | "update_collection_entry"
   | "stream_collection_entries"
   | "batch_update_collection_entry"
-  | "batch_create_collection_entry";
+  | "batch_create_collection_entry"
+  //
+  // Environment
+  //
+  | "stream_environments"
+  | "create_environment"
+  | "update_environment"
+  | "delete_environment";
 
 export type IpcResult<T, E> = { status: "ok"; data: T } | { status: "error"; error: E };
 

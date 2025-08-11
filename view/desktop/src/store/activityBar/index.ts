@@ -22,7 +22,7 @@ export interface ActivityBarItem {
 export interface ActivityBarStore {
   items: ActivityBarItem[];
   position: ActivitybarPosition;
-  lastActiveContainerId: string | null;
+  lastActiveContainerId: string | undefined;
   setPosition: (position: ActivitybarPosition) => void;
   setItems: (items: ActivityBarItem[]) => void;
   getActiveItem: () => ActivityBarItem | undefined;

@@ -3,7 +3,7 @@ import { StreamCollectionsEvent } from "@repo/moss-workspace";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Channel } from "@tauri-apps/api/core";
 
-import { useWorkspaceSidebarState } from "../workspace/useWorkspaceSidebarState";
+import { useActiveWorkspace } from "../workspace";
 
 export const USE_STREAMED_COLLECTIONS_QUERY_KEY = "streamedCollections";
 
@@ -26,13 +26,13 @@ const startStreamingCollections = async (): Promise<StreamCollectionsEvent[]> =>
 export const useStreamedCollections = () => {
   const queryClient = useQueryClient();
 
-  const { hasWorkspace } = useWorkspaceSidebarState();
+  const { hasActiveWorkspace } = useActiveWorkspace();
 
   const query = useQuery<StreamCollectionsEvent[], Error>({
     queryKey: [USE_STREAMED_COLLECTIONS_QUERY_KEY],
     queryFn: startStreamingCollections,
     placeholderData: [],
-    enabled: hasWorkspace,
+    enabled: hasActiveWorkspace,
   });
 
   const clearCollectionsCacheAndRefetch = () => {

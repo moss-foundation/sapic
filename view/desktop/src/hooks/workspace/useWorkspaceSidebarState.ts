@@ -7,8 +7,7 @@ import { useActiveWorkspace } from "./useActiveWorkspace";
 import { useDescribeWorkspaceState } from "./useDescribeWorkspaceState";
 
 export const useWorkspaceSidebarState = () => {
-  const workspace = useActiveWorkspace();
-  const workspaceId = workspace?.id || null;
+  const { activeWorkspaceId, hasActiveWorkspace } = useActiveWorkspace();
 
   const { sideBar, sideBarPosition, initialize, setSideBarPosition } = useAppResizableLayoutStore();
   const { mutate: updateSidebarPartState } = useUpdateSidebarPartState();
@@ -22,22 +21,22 @@ export const useWorkspaceSidebarState = () => {
 
   // Reset state tracking when workspace changes
   useEffect(() => {
-    if (lastInitializedWorkspaceId.current !== workspaceId) {
+    if (lastInitializedWorkspaceId.current !== activeWorkspaceId) {
       lastInitializedWorkspaceId.current = null;
       canUpdatePartState.current = false;
       isTransitioning.current = true;
     }
-  }, [workspaceId]);
+  }, [activeWorkspaceId]);
 
   // Initialize sidebar state from workspace data
   useEffect(() => {
-    if (!workspaceId || !isFetched || !isSuccess) {
+    if (!activeWorkspaceId || !isFetched || !isSuccess) {
       canUpdatePartState.current = false;
       isTransitioning.current = true;
       return;
     }
 
-    if (lastInitializedWorkspaceId.current === workspaceId) return;
+    if (lastInitializedWorkspaceId.current === activeWorkspaceId) return;
 
     if (workspaceState?.sidebar) {
       initialize({
@@ -52,27 +51,27 @@ export const useWorkspaceSidebarState = () => {
       setSideBarPosition(workspaceState.sidebar.position);
     }
 
-    lastInitializedWorkspaceId.current = workspaceId;
+    lastInitializedWorkspaceId.current = activeWorkspaceId;
 
     setTimeout(() => {
       canUpdatePartState.current = true;
       isTransitioning.current = false;
     }, 150);
-  }, [workspaceId, workspaceState?.sidebar, isFetched, isSuccess, initialize, setSideBarPosition]);
+  }, [activeWorkspaceId, workspaceState?.sidebar, isFetched, isSuccess, initialize, setSideBarPosition]);
 
   // Save sidebar state changes to backend (only when workspace is active and initialization is complete)
   useEffect(() => {
-    if (!workspaceId || !canUpdatePartState.current || isTransitioning.current) return;
+    if (!activeWorkspaceId || !canUpdatePartState.current || isTransitioning.current) return;
 
     updateSidebarPartState({
       size: sideBar.width,
       visible: sideBar.visible,
       position: sideBarPosition,
     });
-  }, [workspaceId, sideBar.width, sideBar.visible, sideBarPosition, updateSidebarPartState]);
+  }, [activeWorkspaceId, sideBar.width, sideBar.visible, sideBarPosition, updateSidebarPartState]);
 
   return {
-    hasWorkspace: !!workspaceId,
-    isInitialized: lastInitializedWorkspaceId.current === workspaceId && !isTransitioning.current,
+    hasActiveWorkspace,
+    isInitialized: lastInitializedWorkspaceId.current === activeWorkspaceId && !isTransitioning.current,
   };
 };

@@ -2,16 +2,14 @@ import { ReactNode, useEffect, useRef } from "react";
 
 import { ActivityBar } from "@/components";
 import { EmptyWorkspace } from "@/components/EmptyWorkspace";
-import { SidebarWorkspaceContent } from "@/components/SidebarWorkspaceContent";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
 import { useActiveWorkspace } from "@/hooks";
 import { useGetProjectSessionState } from "@/hooks/useProjectSession";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
+import { SidebarWorkspaceContent } from "@/parts/SideBar/SidebarWorkspaceContent";
 import { useActivityBarStore } from "@/store/activityBar";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn } from "@/utils";
-
-import SidebarHeader from "./SidebarHeader";
 
 export interface BaseSidebarProps {
   className?: string;
@@ -38,9 +36,7 @@ export const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
 
 export const Sidebar = () => {
   const { data: projectSessionState } = useGetProjectSessionState();
-  const workspace = useActiveWorkspace();
-  const hasWorkspace = !!workspace;
-  const workspaceId = workspace?.id || null;
+  const { activeWorkspaceId, hasActiveWorkspace, activeWorkspace } = useActiveWorkspace();
 
   const { data: workspaceState, isFetched, isSuccess } = useDescribeWorkspaceState();
   const { updateFromWorkspaceState, resetToDefaults } = useActivityBarStore();
@@ -56,47 +52,46 @@ export const Sidebar = () => {
 
   // Reset activity bar state when workspace changes (before restoration)
   useEffect(() => {
-    if (lastRestoredWorkspaceId.current !== workspaceId) {
+    if (lastRestoredWorkspaceId.current !== activeWorkspaceId) {
       // Reset to default state before loading new workspace state
-      if (workspaceId) {
+      if (activeWorkspaceId) {
         // Will be restored from workspace state
         resetToDefaults();
         lastRestoredWorkspaceId.current = null;
       } else {
         // Reset to default when no workspace
         resetToDefaults();
-        lastRestoredWorkspaceId.current = workspaceId;
+        lastRestoredWorkspaceId.current = activeWorkspaceId;
       }
     }
-  }, [workspaceId, resetToDefaults]);
+  }, [activeWorkspaceId, resetToDefaults]);
 
   // Restore activity bar state from workspace state
   useEffect(() => {
-    if (!workspaceId || !isFetched || !isSuccess || !workspaceState?.activitybar) return;
+    if (!activeWorkspaceId || !isFetched || !isSuccess || !workspaceState?.activitybar) return;
 
-    if (lastRestoredWorkspaceId.current === workspaceId) return;
+    if (lastRestoredWorkspaceId.current === activeWorkspaceId) return;
 
     // Only restore if we have fresh workspace state for this workspace
     // Add a small delay to ensure workspace switching is complete
     const timeoutId = setTimeout(() => {
       updateFromWorkspaceState(workspaceState.activitybar!);
-      lastRestoredWorkspaceId.current = workspaceId;
+      lastRestoredWorkspaceId.current = activeWorkspaceId;
     }, 100);
 
     return () => clearTimeout(timeoutId);
-  }, [workspaceId, workspaceState?.activitybar, isFetched, isSuccess, updateFromWorkspaceState]);
+  }, [activeWorkspaceId, workspaceState?.activitybar, isFetched, isSuccess, updateFromWorkspaceState]);
 
   const { position } = useActivityBarStore();
 
   const activeItem = useActivityBarStore((state) => state.getActiveItem());
 
-  const activeGroupTitle = activeItem?.title || "Launchpad";
   const activeGroupId = activeItem?.id || "default";
 
   // Content based on workspace status
   // Pass the workspace name and groupId to the SidebarWorkspaceContent component
-  const sidebarContent = hasWorkspace ? (
-    <SidebarWorkspaceContent workspaceName={workspace!.name} groupId={activeGroupId} />
+  const sidebarContent = hasActiveWorkspace ? (
+    <SidebarWorkspaceContent workspaceName={activeWorkspace!.name} groupId={activeGroupId} />
   ) : (
     <EmptyWorkspace inSidebar={true} />
   );
@@ -105,7 +100,6 @@ export const Sidebar = () => {
     return (
       <BaseSidebar>
         <ActivityBar />
-        <SidebarHeader title={activeGroupTitle} />
         {sidebarContent}
       </BaseSidebar>
     );
@@ -114,19 +108,13 @@ export const Sidebar = () => {
   if (position === ACTIVITYBAR_POSITION.BOTTOM) {
     return (
       <BaseSidebar className="relative">
-        <SidebarHeader title={activeGroupTitle} />
         <div className="flex-1 overflow-auto">{sidebarContent}</div>
         <ActivityBar />
       </BaseSidebar>
     );
   }
 
-  return (
-    <BaseSidebar>
-      <SidebarHeader title={activeGroupTitle} />
-      {sidebarContent}
-    </BaseSidebar>
-  );
+  return <BaseSidebar>{sidebarContent}</BaseSidebar>;
 };
 
 export default Sidebar;
