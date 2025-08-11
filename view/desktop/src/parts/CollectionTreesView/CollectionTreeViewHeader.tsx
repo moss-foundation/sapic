@@ -83,23 +83,19 @@ export const CollectionTreeViewHeader = () => {
       });
 
       if (res.status === "ok") {
-        updateQueryCache(collection.collectionId, preparedEntries);
+        queryClient.setQueryData(
+          [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, collection.collectionId],
+          (old: EntryInfo[]) => {
+            return old.map((entry) => {
+              const shouldCollapse = preparedEntries.some((preparedEntry) => preparedEntry.DIR.id === entry.id);
+              return shouldCollapse ? { ...entry, expanded: false } : entry;
+            });
+          }
+        );
       }
     });
 
     await Promise.all(promises);
-  };
-
-  const updateQueryCache = (
-    collectionId: string,
-    preparedEntries: Array<{ DIR: { id: string; expanded: boolean } }>
-  ) => {
-    queryClient.setQueryData([USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, collectionId], (old: EntryInfo[]) => {
-      return old.map((entry) => {
-        const shouldCollapse = preparedEntries.some((preparedEntry) => preparedEntry.DIR.id === entry.id);
-        return shouldCollapse ? { ...entry, expanded: false } : entry;
-      });
-    });
   };
 
   return (
