@@ -90,6 +90,24 @@ impl RawItemConfiguration {
         }
     }
 
+    pub fn classification(&self) -> EntryClass {
+        match self {
+            RawItemConfiguration::Request(_) => EntryClass::Request,
+            RawItemConfiguration::Endpoint(_) => EntryClass::Endpoint,
+            RawItemConfiguration::Component(_) => EntryClass::Component,
+            RawItemConfiguration::Schema(_) => EntryClass::Schema,
+        }
+    }
+
+    pub fn protocol(&self) -> Option<EntryProtocol> {
+        match self {
+            RawItemConfiguration::Request(block) => block.url.protocol(),
+            RawItemConfiguration::Endpoint(block) => block.url.protocol(),
+            RawItemConfiguration::Component(_) => None,
+            RawItemConfiguration::Schema(_) => None,
+        }
+    }
+
     pub fn classification_folder(&self) -> &str {
         match self {
             RawItemConfiguration::Request(_) => dirs::REQUESTS_DIR,

@@ -1,7 +1,9 @@
+pub mod entry;
+
 use anyhow::anyhow;
 use derive_more::{Deref, DerefMut};
 use joinerror::OptionExt;
-use moss_applib::{AppRuntime, ServiceMarker};
+use moss_applib::AppRuntime;
 use moss_common::{continue_if_err, continue_if_none};
 use moss_db::primitives::AnyValue;
 use moss_fs::{CreateOptions, FileSystem, RemoveOptions, desanitize_path, utils::SanitizedPath};
@@ -15,17 +17,17 @@ use std::{
 };
 use tokio::{
     fs,
-    sync::{RwLock, mpsc},
+    sync::{RwLock, mpsc, watch},
 };
 
 use crate::{
-    constants,
-    constants::{COLLECTION_ROOT_PATH, DIR_CONFIG_FILENAME},
+    constants::{self, COLLECTION_ROOT_PATH, DIR_CONFIG_FILENAME},
     models::{
         primitives::{EntryClass, EntryId, EntryKind, EntryProtocol},
         types::configuration::docschema::{RawDirConfiguration, RawItemConfiguration},
     },
     storage::segments,
+    worktree::entry::EntryEditing,
 };
 
 use crate::{
@@ -126,34 +128,35 @@ pub struct EntryDirMut<'a> {
 #[derive(Deref, DerefMut)]
 pub(crate) struct Entry {
     id: EntryId,
-    path: Arc<Path>,
+    path_rx: watch::Receiver<Arc<Path>>,
 
     #[deref]
     #[deref_mut]
-    configuration: EntryConfiguration,
+    edit: EntryEditing,
+    // configuration: EntryConfiguration,
 }
 
-impl Entry {
-    pub fn as_item_mut(&mut self) -> Option<EntryItemMut<'_>> {
-        match &mut self.configuration {
-            EntryConfiguration::Item(configuration) => Some(EntryItemMut {
-                path: &mut self.path,
-                configuration,
-            }),
-            _ => None,
-        }
-    }
+// impl Entry {
+//     pub fn as_item_mut(&mut self) -> Option<EntryItemMut<'_>> {
+//         match &mut self.configuration {
+//             EntryConfiguration::Item(configuration) => Some(EntryItemMut {
+//                 path: &mut self.path,
+//                 configuration,
+//             }),
+//             _ => None,
+//         }
+//     }
 
-    pub fn as_dir_mut(&mut self) -> Option<EntryDirMut<'_>> {
-        match &mut self.configuration {
-            EntryConfiguration::Dir(configuration) => Some(EntryDirMut {
-                path: &mut self.path,
-                configuration,
-            }),
-            _ => None,
-        }
-    }
-}
+//     pub fn as_dir_mut(&mut self) -> Option<EntryDirMut<'_>> {
+//         match &mut self.configuration {
+//             EntryConfiguration::Dir(configuration) => Some(EntryDirMut {
+//                 path: &mut self.path,
+//                 configuration,
+//             }),
+//             _ => None,
+//         }
+//     }
+// }
 
 #[derive(Debug)]
 pub struct EntryDescription {
@@ -208,7 +211,7 @@ impl<R: AppRuntime> Worktree<R> {
             .remove(&id)
             .ok_or_join_err_with::<ErrorNotFound>(|| format!("entry {} not found", id))?;
 
-        let abs_path = self.absolutize(&entry.path)?;
+        let abs_path = self.absolutize(&entry.path_rx.borrow())?;
         if !abs_path.exists() {
             return Err(joinerror::Error::new::<ErrorNotFound>(format!(
                 "Entry not found: {}",
@@ -282,24 +285,32 @@ impl<R: AppRuntime> Worktree<R> {
                     .map(|n| n.to_string_lossy().to_string())
                     .unwrap_or_else(|| job.path.to_string_lossy().to_string());
 
-                match process_dir_entry(&job.path, &fs, &job.abs_path).await {
-                    Ok(Some(entry)) => {
-                        let expanded = expanded_entries.contains(&entry.id);
-                        let desc = EntryDescription {
-                            id: entry.id.clone(),
-                            name: desanitize(&dir_name),
-                            path: entry.path.clone(),
-                            class: entry.classification(),
-                            kind: entry.kind(),
-                            protocol: entry.configuration.protocol(),
-                            expanded,
-                            order: all_entry_keys
-                                .get(&segments::segkey_entry_order(&entry.id))
-                                .and_then(|o| o.deserialize().ok()),
-                        };
+                match process_entry(
+                    job.path,
+                    &all_entry_keys,
+                    &expanded_entries,
+                    &fs,
+                    &job.abs_path,
+                )
+                .await
+                {
+                    Ok(Some((entry, desc))) => {
+                        // let expanded = expanded_entries.contains(&entry.id);
+                        // let desc = EntryDescription {
+                        //     id: entry.id.clone(),
+                        //     name: desanitize(&dir_name),
+                        //     path: entry.path.clone(),
+                        //     class: entry.classification(),
+                        //     kind: entry.kind(),
+                        //     protocol: entry.configuration.protocol(),
+                        //     expanded,
+                        //     order: all_entry_keys
+                        //         .get(&segments::segkey_entry_order(&entry.id))
+                        //         .and_then(|o| o.deserialize().ok()),
+                        // };
 
                         let _ = sender.send(desc);
-                        if expanded {
+                        if desc.expanded {
                             state
                                 .write()
                                 .await
@@ -338,11 +349,19 @@ impl<R: AppRuntime> Worktree<R> {
                     let child_path: Arc<Path> = job.path.join(&child_name).into();
 
                     let maybe_entry = if child_file_type.is_dir() {
-                        continue_if_err!(process_dir_entry(&child_path, &fs, &child_abs_path).await)
+                        continue_if_err!(
+                            process_entry(
+                                child_path,
+                                &all_entry_keys,
+                                &expanded_entries,
+                                &fs,
+                                &child_abs_path
+                            )
+                            .await
+                        )
                     } else {
                         continue_if_err!(
-                            process_file_entry(&child_name, &child_path, &fs, &child_abs_path)
-                                .await
+                            process_file(&child_name, &child_path, &fs, &child_abs_path).await
                         )
                     };
 
@@ -428,12 +447,15 @@ impl<R: AppRuntime> Worktree<R> {
             .await?;
 
         let mut state_lock = self.state.write().await;
+        let (path_tx, path_rx) = watch::channel(sanitized_path.to_path_buf().into());
         state_lock.entries.insert(
             id.to_owned(),
             Entry {
                 id: id.to_owned(),
-                path: sanitized_path.to_path_buf().into(),
-                configuration: EntryConfiguration::Item(configuration),
+                // path: sanitized_path.to_path_buf().into(),
+                // configuration: EntryConfiguration::Item(configuration),
+                path_rx,
+                edit: EntryEditing::new(self.fs.clone(), path_tx),
             },
         );
 
@@ -494,12 +516,15 @@ impl<R: AppRuntime> Worktree<R> {
             .await?;
 
         let mut state_lock = self.state.write().await;
+        let (path_tx, path_rx) = watch::channel(sanitized_path.to_path_buf().into());
         state_lock.entries.insert(
             id.to_owned(),
             Entry {
                 id: id.to_owned(),
-                path: sanitized_path.to_path_buf().into(),
-                configuration: EntryConfiguration::Dir(configuration),
+                // path: sanitized_path.to_path_buf().into(),
+                // configuration: EntryConfiguration::Dir(configuration),
+                path_rx,
+                edit: EntryEditing::new(self.fs.clone(), path_tx),
             },
         );
 
@@ -541,13 +566,11 @@ impl<R: AppRuntime> Worktree<R> {
         let entry = state_lock
             .entries
             .get_mut(&id)
-            .ok_or_join_err_with::<ErrorNotFound>(|| format!("entry {} not found", id))?
-            .as_dir_mut()
-            .ok_or_join_err_with::<ErrorInvalidKind>(|| {
-                format!("entry {} is not a directory", id)
-            })?;
-
-        let mut path = entry.path.clone().to_path_buf();
+            .ok_or_join_err_with::<ErrorNotFound>(|| format!("entry {} not found", id))?;
+        // .as_dir_mut()
+        // .ok_or_join_err_with::<ErrorInvalidKind>(|| {
+        //     format!("entry {} is not a directory", id)
+        // })?;
 
         if let Some(new_parent) = params.path {
             let classification_folder = entry.configuration.classification_folder();
@@ -871,38 +894,84 @@ fn is_parent_a_dir_entry(abs_path: &Path, parent_path: &Path) -> bool {
         .exists()
 }
 
-async fn process_dir_entry(
-    path: &Arc<Path>,
+async fn process_entry(
+    path: Arc<Path>,
+    all_entry_keys: &HashMap<SegKeyBuf, AnyValue>,
+    expanded_entries: &HashSet<EntryId>,
     fs: &Arc<dyn FileSystem>,
     abs_path: &Path,
-) -> joinerror::Result<Option<Entry>> {
+) -> joinerror::Result<Option<(Entry, EntryDescription)>> {
     let dir_config_path = abs_path.join(constants::DIR_CONFIG_FILENAME);
     let item_config_path = abs_path.join(constants::ITEM_CONFIG_FILENAME);
 
+    let name = path
+        .file_name()
+        .map(|n| n.to_string_lossy().to_string())
+        .unwrap_or_else(|| path.to_string_lossy().to_string());
+
     if dir_config_path.exists() {
         let config = parse_configuration::<RawDirConfiguration>(&fs, &dir_config_path).await?;
+        let id = config.id().clone();
+        let desc = EntryDescription {
+            id: id.clone(),
+            name: desanitize(&name),
+            path: path.clone(),
+            class: config.classification(),
+            kind: EntryKind::Dir,
+            protocol: None,
+            order: all_entry_keys
+                .get(&segments::segkey_entry_order(&id))
+                .and_then(|o| o.deserialize().ok()),
+            expanded: expanded_entries.contains(&id),
+        };
+        let (path_tx, path_rx) = watch::channel(path.into());
 
-        return Ok(Some(Entry {
-            id: config.id().clone(),
-            path: desanitize_path(path, None)?.into(),
-            configuration: EntryConfiguration::Dir(config),
-        }));
+        return Ok(Some((
+            Entry {
+                id,
+                // path: desanitize_path(path, None)?.into(),
+                path_rx,
+                edit: EntryEditing::new(fs.clone(), path_tx),
+                // configuration: EntryConfiguration::Dir(config),
+            },
+            desc,
+        )));
     }
 
     if item_config_path.exists() {
         let config = parse_configuration::<RawItemConfiguration>(&fs, &item_config_path).await?;
+        let id = config.id().clone();
+        let desc = EntryDescription {
+            id: id.clone(),
+            name: desanitize(&name),
+            path: path.clone(),
+            class: config.classification(),
+            kind: EntryKind::Item,
+            protocol: config.protocol(),
+            order: all_entry_keys
+                .get(&segments::segkey_entry_order(&id))
+                .and_then(|o| o.deserialize().ok()),
+            expanded: expanded_entries.contains(&id),
+        };
 
-        return Ok(Some(Entry {
-            id: config.id().clone(),
-            path: desanitize_path(path, None)?.into(),
-            configuration: EntryConfiguration::Item(config),
-        }));
+        let (path_tx, path_rx) = watch::channel(path.into());
+
+        return Ok(Some((
+            Entry {
+                id,
+                // path: desanitize_path(path, None)?.into(),
+                // configuration: EntryConfiguration::Item(config),
+                path_rx,
+                edit: EntryEditing::new(fs.clone(), path_tx),
+            },
+            desc,
+        )));
     }
 
     Ok(None)
 }
 
-async fn process_file_entry(
+async fn process_file(
     _name: &str,
     _path: &Arc<Path>,
     _fs: &Arc<dyn FileSystem>,
@@ -916,11 +985,11 @@ async fn parse_configuration<T>(fs: &Arc<dyn FileSystem>, path: &Path) -> joiner
 where
     T: for<'de> serde::Deserialize<'de>,
 {
-    let mut reader = fs.open_file(path).await?;
-    let mut buf = String::new();
-    reader
-        .read_to_string(&mut buf)
-        .map_err(|e| joinerror::Error::new::<ErrorIo>(e.to_string()))?;
+    let mut rdr = fs.open_file(path).await?;
+    // let mut buf = String::new();
+    // reader
+    //     .read_to_string(&mut buf)
+    //     .map_err(|e| joinerror::Error::new::<ErrorIo>(e.to_string()))?;
 
-    Ok(hcl::from_str(&buf).map_err(anyhow::Error::from)?)
+    Ok(hcl::from_reader(&mut rdr).map_err(anyhow::Error::from)?)
 }
