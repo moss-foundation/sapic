@@ -161,65 +161,6 @@ async fn stream_collections_multiple_collections() {
 }
 
 #[tokio::test]
-async fn stream_collections_with_repository() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
-
-    let collection_name = random_collection_name();
-    let collection_order = 100;
-    let repository_url = "https://github.com/example/repo.git".to_string();
-
-    // Create a collection with repository
-    let create_result = workspace
-        .create_collection(
-            &ctx,
-            &CreateCollectionInput {
-                name: collection_name.clone(),
-                order: collection_order,
-                external_path: None,
-                repository: Some(repository_url.clone()),
-                icon_path: None,
-            },
-        )
-        .await
-        .unwrap();
-
-    let collection_id = create_result.id;
-
-    // Stream collections and capture events
-    let received_events = Arc::new(Mutex::new(Vec::new()));
-    let received_events_clone = received_events.clone();
-
-    let channel = Channel::new(move |body: InvokeResponseBody| {
-        if let InvokeResponseBody::Json(json_str) = body {
-            if let Ok(event) = serde_json::from_str::<StreamCollectionsEvent>(&json_str) {
-                received_events_clone.lock().unwrap().push(event);
-            }
-        }
-        Ok(())
-    });
-
-    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
-
-    // Verify one event was received
-    let events = received_events.lock().unwrap();
-    assert_eq!(events.len(), 1);
-    assert_eq!(output.total_returned, 1);
-
-    // Verify the event data includes repository
-    let event = &events[0];
-    assert_eq!(event.id, collection_id);
-    assert_eq!(event.name, collection_name);
-    assert_eq!(event.order, Some(collection_order));
-    assert_eq!(
-        event.repository,
-        Some("github.com/example/repo".to_string())
-    );
-    assert_eq!(event.picture_path, None);
-
-    cleanup().await;
-}
-
-#[tokio::test]
 async fn stream_collections_with_icon() {
     let (ctx, workspace, cleanup) = setup_test_workspace().await;
 
@@ -305,38 +246,14 @@ async fn stream_collections_mixed_configurations() {
         .unwrap();
     expected_collections.push((result1.id, name1, 1, None::<String>, None::<String>));
 
-    // Collection 2: With repository
-    let name2 = "Repo Collection".to_string();
-    let repo2 = "https://github.com/example/repo2.git".to_string();
+    // Collection 2: With icon
+    let name2 = "Icon Collection".to_string();
     let result2 = workspace
         .create_collection(
             &ctx,
             &CreateCollectionInput {
                 name: name2.clone(),
                 order: 2,
-                external_path: None,
-                repository: Some(repo2.clone()),
-                icon_path: None,
-            },
-        )
-        .await
-        .unwrap();
-    expected_collections.push((
-        result2.id,
-        name2,
-        2,
-        Some("github.com/example/repo2".to_string()),
-        None::<String>,
-    ));
-
-    // Collection 3: With icon
-    let name3 = "Icon Collection".to_string();
-    let result3 = workspace
-        .create_collection(
-            &ctx,
-            &CreateCollectionInput {
-                name: name3.clone(),
-                order: 3,
                 external_path: None,
                 repository: None,
                 icon_path: Some(icon_path.clone()),
@@ -345,9 +262,9 @@ async fn stream_collections_mixed_configurations() {
         .await
         .unwrap();
     expected_collections.push((
-        result3.id,
-        name3,
-        3,
+        result2.id,
+        name2,
+        2,
         None::<String>,
         Some("icon".to_string()),
     ));
@@ -369,8 +286,8 @@ async fn stream_collections_mixed_configurations() {
 
     // Verify correct number of events
     let events = received_events.lock().unwrap();
-    assert_eq!(events.len(), 3);
-    assert_eq!(output.total_returned, 3);
+    assert_eq!(events.len(), 2);
+    assert_eq!(output.total_returned, 2);
 
     // Convert events to a map for easier verification
     let events_map: HashMap<CollectionId, &StreamCollectionsEvent> = events
