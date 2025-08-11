@@ -3,10 +3,7 @@ use git2::{
     BranchType, IndexAddOption, IntoCString, PushOptions, RemoteCallbacks, Repository, Signature,
     build::RepoBuilder,
 };
-use std::{
-    path::{Path, PathBuf},
-    sync::Arc,
-};
+use std::{path::Path, sync::Arc};
 use url::Url;
 
 use crate::GitAuthAgent;
@@ -19,11 +16,6 @@ unsafe impl Sync for RepoHandle {}
 /// Since all the git operations are synchronous, and authentication requires blocking `reqwest`
 /// We must wrap all RepoHandle operations with `tokio::task::spawn_blocking`
 pub struct RepoHandle {
-    // FIXME: Is it necessary to store the url of the repo?
-    #[allow(dead_code)]
-    url: Option<String>,
-    #[allow(dead_code)]
-    path: PathBuf,
     auth_agent: Arc<dyn GitAuthAgent>,
     // public for easier testing
     pub repo: Repository,
@@ -46,8 +38,6 @@ impl RepoHandle {
         let repo = builder.clone(url.as_str(), &path)?;
 
         Ok(RepoHandle {
-            url: Some(url.to_string()),
-            path: path.to_owned(),
             auth_agent: auth_agent.clone(),
             repo,
         })
@@ -55,16 +45,8 @@ impl RepoHandle {
 
     pub fn open(path: &Path, auth_agent: Arc<dyn GitAuthAgent>) -> Result<RepoHandle> {
         let repo = Repository::open(path)?;
-        // FIXME: This assumes that the remote's name is `origin`
-        // Is there a better way to get the url of a local repo?
-        let remote = repo.find_remote("origin");
 
-        let url = remote
-            .map(|r| r.pushurl().map(|s| s.to_string()))
-            .unwrap_or(None);
         Ok(RepoHandle {
-            url,
-            path: path.to_owned(),
             auth_agent: auth_agent.clone(),
             repo,
         })
