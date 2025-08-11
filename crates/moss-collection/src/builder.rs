@@ -2,10 +2,7 @@ use joinerror::ResultExt;
 use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_fs::{CreateOptions, FileSystem};
 use moss_git::repo::RepoHandle;
-use moss_git_hosting_provider::{
-    auth::{AuthAgentType, generate_auth_agent},
-    common::GitProviderType,
-};
+use moss_git_hosting_provider::{auth::generate_auth_agent, common::GitProviderType};
 use moss_hcl::Block;
 use std::{
     path::{Path, PathBuf},

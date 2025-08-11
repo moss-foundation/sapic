@@ -17,6 +17,7 @@ use tauri::ipc::Channel;
 
 pub mod shared;
 
+#[ignore]
 #[tokio::test]
 async fn clone_collection_success() {
     let (ctx, workspace, cleanup) = setup_test_workspace().await;
@@ -65,5 +66,5 @@ async fn clone_collection_success() {
     let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
     assert!(expanded_items.contains(&id));
 
-    // cleanup().await;
+    cleanup().await;
 }

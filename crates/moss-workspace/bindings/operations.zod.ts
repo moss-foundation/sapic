@@ -67,6 +67,33 @@ export const describeEnvironmentInputSchema = z.object({
   id: z.string(),
 });
 
+export const gitHubImportParamsSchema = z.object({
+  order: z.number(),
+  repository: z.string(),
+});
+
+export const gitLabImportParamsSchema = z.object({
+  order: z.number(),
+  repository: z.string(),
+});
+
+export const importCollectionInputSchema = z.union([
+  z.object({
+    "gitHub": gitHubImportParamsSchema,
+  }),
+  z.object({
+    "gitLab": gitLabImportParamsSchema,
+  }),
+]);
+
+export const importCollectionOutputSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  order: z.number().optional(),
+  expanded: z.boolean(),
+  iconPath: z.string().optional(),
+});
+
 export const streamCollectionsOutputSchema = z.object({});
 
 export const streamEnvironmentsOutputSchema = z.object({});

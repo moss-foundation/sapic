@@ -108,6 +108,26 @@ export type DescribeStateOutput = {
 /**
  * @category Operation
  */
+export type GitHubImportParams = { order: number; repository: string };
+
+/**
+ * @category Operation
+ */
+export type GitLabImportParams = { order: number; repository: string };
+
+/**
+ * @category Operation
+ */
+export type ImportCollectionInput = { "gitHub": GitHubImportParams } | { "gitLab": GitLabImportParams };
+
+/**
+ * @category Operation
+ */
+export type ImportCollectionOutput = { id: string; name: string; order?: number; expanded: boolean; iconPath?: string };
+
+/**
+ * @category Operation
+ */
 export type StreamCollectionsOutput = {};
 
 /**
