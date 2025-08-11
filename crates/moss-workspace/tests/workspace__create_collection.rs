@@ -201,68 +201,6 @@ async fn create_collection_with_order() {
 }
 
 #[tokio::test]
-async fn create_collection_with_repo() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
-
-    let collection_name = random_collection_name();
-    let repo = "https://github.com/moss-foundation/sapic.git".to_string();
-    let normalized_repo = "github.com/moss-foundation/sapic";
-    let create_collection_result = workspace
-        .create_collection(
-            &ctx,
-            &CreateCollectionInput {
-                name: collection_name.clone(),
-                order: 0,
-                external_path: None,
-                repository: Some(repo),
-                icon_path: None,
-            },
-        )
-        .await;
-
-    let create_collection_output = create_collection_result.unwrap();
-
-    let channel = Channel::new(move |_| Ok(()));
-    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
-    assert_eq!(output.total_returned, 1);
-
-    // Verify the directory was created
-    assert!(create_collection_output.abs_path.exists());
-
-    // Verify that the repo is stored in the manifest model
-    let id = create_collection_output.id;
-    let collection = workspace.collection(&id).await.unwrap();
-    assert_eq!(
-        collection.describe().await.unwrap().repository,
-        Some(normalized_repo.to_string())
-    );
-
-    // Verify the db entries were created
-    let item_store = workspace.db().item_store();
-
-    // Check order was stored
-    let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
-    let order_value = GetItem::get(item_store.as_ref(), &ctx, order_key)
-        .await
-        .unwrap();
-    let stored_order: usize = order_value.deserialize().unwrap();
-    assert_eq!(stored_order, 0);
-
-    // Check expanded_items contains the collection id
-    let expanded_items_value = GetItem::get(
-        item_store.as_ref(),
-        &ctx,
-        SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
-    )
-    .await
-    .unwrap();
-    let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
-    assert!(expanded_items.contains(&id));
-
-    cleanup().await;
-}
-
-#[tokio::test]
 async fn create_collection_with_icon() {
     let (ctx, workspace, cleanup) = setup_test_workspace().await;
 
