@@ -1,4 +1,4 @@
-import { BatchCreateEntryKind, CreateEntryInput, EntryInfo } from "@repo/moss-collection";
+import { BatchCreateEntryKind, CreateEntryInput, EntryInfo, EntryProtocol } from "@repo/moss-collection";
 
 export const validateName = (
   name: string,
@@ -34,7 +34,8 @@ export const createEntryKind = (
   name: string,
   path: string,
   isAddingFolder: boolean,
-  order: number
+  order: number,
+  protocol?: EntryProtocol
 ): BatchCreateEntryKind => {
   if (isAddingFolder) {
     return {
@@ -55,6 +56,7 @@ export const createEntryKind = (
       headers: [],
       queryParams: [],
       pathParams: [],
+      protocol,
     },
   };
 };

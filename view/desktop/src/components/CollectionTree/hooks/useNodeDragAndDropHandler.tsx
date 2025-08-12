@@ -184,10 +184,11 @@ export const useNodeDragAndDropHandler = () => {
               entry.name,
               locationTreeRootNodeData.node.requests.path.raw,
               entry.kind === "Dir",
-              newOrder
+              newOrder,
+              "Get"
             );
           } else {
-            return createEntryKind(entry.name, newEntryPath, entry.kind === "Dir", entry.order!);
+            return createEntryKind(entry.name, newEntryPath, entry.kind === "Dir", entry.order!, "Get");
           }
         })
       );
@@ -325,6 +326,7 @@ export const useNodeDragAndDropHandler = () => {
             );
           } else {
             const newEntryPath = await join(locationTreeNodeData.parentNode.path.raw, entry.path.raw);
+            console.log("newEntryPath", newEntryPath);
             return createEntryKind(entry.name, newEntryPath, entry.kind === "Dir", entry.order!);
           }
         })
