@@ -3,7 +3,7 @@ import { useState } from "react";
 import { ActionMenu, ConfirmationModal } from "@/components";
 import ActionButton from "@/components/ActionButton";
 import { useModal } from "@/hooks";
-import { useDeleteEnvironment } from "@/hooks/environment";
+import { useDeleteEnvironment, useStreamEnvironments, useUpdateEnvironment } from "@/hooks/environment";
 import { useWorkspaceListStore } from "@/store/workspaceList";
 import { cn } from "@/utils";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
@@ -15,11 +15,28 @@ interface WorkspacesListItemActionsProps {
 
 export const WorkspacesListItemActions = ({ environment, setIsEditing }: WorkspacesListItemActionsProps) => {
   const { setActiveEnvironment, activeEnvironment } = useWorkspaceListStore();
+
+  const { data: environments } = useStreamEnvironments();
   const { mutate: deleteEnvironment } = useDeleteEnvironment();
+  const { mutate: updateEnvironment } = useUpdateEnvironment();
 
   const [showActionMenu, setShowActionMenu] = useState(false);
 
   const { showModal: showDeleteModal, setShowModal: setShowDeleteModal, closeModal: setHideDeleteModal } = useModal();
+
+  const handleDeleteEnvironment = () => {
+    deleteEnvironment({ id: environment.id });
+
+    const environmentsAfterDeleted = environments?.filter(
+      (env) => env?.order !== undefined && environment?.order !== undefined && env.order > environment.order
+    );
+
+    environmentsAfterDeleted?.forEach((env) => {
+      if (env && typeof env.order === "number") {
+        updateEnvironment({ id: env.id, order: env.order - 1, varsToAdd: [], varsToUpdate: [], varsToDelete: [] });
+      }
+    });
+  };
 
   return (
     <div className="z-10 flex items-center gap-1">
@@ -58,9 +75,7 @@ export const WorkspacesListItemActions = ({ environment, setIsEditing }: Workspa
           closeModal={setHideDeleteModal}
           title="Delete Environment"
           message={`Are you sure you want to delete ${environment.name} environment?`}
-          onConfirm={() => {
-            deleteEnvironment({ id: environment.id });
-          }}
+          onConfirm={handleDeleteEnvironment}
         />
       )}
     </div>

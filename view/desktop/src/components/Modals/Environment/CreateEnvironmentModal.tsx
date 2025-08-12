@@ -5,12 +5,13 @@ import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { ModalForm } from "@/components/ModalForm";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
 import { useStreamedCollections } from "@/hooks";
-import { useCreateEnvironment } from "@/hooks/environment";
+import { useCreateEnvironment, useStreamEnvironments } from "@/hooks/environment";
 
 import { ModalWrapperProps } from "../types";
 
 export const CreateEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const { data: environments } = useStreamEnvironments();
 
   const { mutateAsync: createEnvironment } = useCreateEnvironment();
   const { data: collections } = useStreamedCollections();
@@ -23,7 +24,7 @@ export const CreateEnvironmentModal = ({ closeModal, showModal }: ModalWrapperPr
   const handleSubmit = async () => {
     const newEnvironment = await createEnvironment({
       name,
-      order: 0,
+      order: environments?.length ? environments.length + 1 : 1,
       variables: [],
       collectionId: collectionId ?? undefined,
     });

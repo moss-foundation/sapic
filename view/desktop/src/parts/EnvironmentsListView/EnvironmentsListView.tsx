@@ -1,5 +1,6 @@
 import { CollectionsList } from "@/components/CollectionsList/CollectionsList";
 import { WorkspacesList } from "@/components/WorkspacesList/WorkspacesList";
+import { useStreamEnvironments } from "@/hooks/environment";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 import { EnvironmentsListItem } from "./EnvironmentsListItem";
@@ -8,6 +9,7 @@ import { EnvironmentsListViewHeader } from "./EnvironmentsListViewHeader";
 
 export const EnvironmentsListView = () => {
   const { addOrFocusPanel } = useTabbedPaneStore();
+  const { data: environments } = useStreamEnvironments();
 
   return (
     <div className="flex h-full flex-col">
@@ -27,11 +29,11 @@ export const EnvironmentsListView = () => {
           }}
         />
 
-        <EnvironmentsListViewDivider />
+        {environments && environments.length > 0 && <EnvironmentsListViewDivider />}
 
         <WorkspacesList />
 
-        <EnvironmentsListViewDivider />
+        {environments && environments.length > 0 && <EnvironmentsListViewDivider />}
 
         <CollectionsList />
       </div>

@@ -15,7 +15,7 @@ interface WorkspacesListItemProps {
 }
 
 export const WorkspacesListItem = ({ environment }: WorkspacesListItemProps) => {
-  const { data: workspaceState } = useStreamEnvironments();
+  const { data: environments } = useStreamEnvironments();
   const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
   const { isEditing, setIsEditing, handleRename, handleCancel } = useWorkspacesListItemRenamingForm({ environment });
@@ -34,9 +34,9 @@ export const WorkspacesListItem = ({ environment }: WorkspacesListItemProps) => 
   const isActive = activePanelId === environment.id;
 
   const restrictedNames = useMemo(() => {
-    if (!workspaceState) return [];
-    return workspaceState.map((environment) => environment.name) ?? [];
-  }, [workspaceState]);
+    if (!environments) return [];
+    return environments.map((environment) => environment.name) ?? [];
+  }, [environments]);
 
   return (
     <div
