@@ -866,6 +866,10 @@ impl<R: AppRuntime> Worktree<R> {
 
         // TODO: handle other stuff
 
+        if patches.is_empty() {
+            return Ok(());
+        }
+
         entry.edit.edit(&self.abs_path, &patches).await?;
 
         for mut callback in on_edit_success {
