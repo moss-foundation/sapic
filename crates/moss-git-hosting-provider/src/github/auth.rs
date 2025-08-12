@@ -99,6 +99,21 @@ impl GitHubAuthAgent {
             return Ok(cred);
         }
 
+        // In tests and CI, fetch GITHUB_ACCESS_TOKEN from the environment
+        #[cfg(any(test, feature = "integration-tests"))]
+        {
+            dotenv::dotenv().ok();
+            let cred = GitHubCred {
+                access_token: dotenv::var("GITHUB_ACCESS_TOKEN")?,
+            };
+            let _ = self.cred.set(cred);
+            return self.cred.get().ok_or_else(|| {
+                anyhow!(
+                    "Failed to set GitHubAuthAgent credentials because they have already been set"
+                )
+            });
+        }
+
         let cred = match self.keyring.get_secret(KEYRING_SECRET_KEY) {
             Ok(data) => {
                 let stored_entry: KeyringCredEntry = serde_json::from_slice(&data)?;
@@ -171,6 +186,7 @@ impl GitHubAuthAgent {
 impl GitAuthAgent for GitHubAuthAgent {
     fn generate_callback<'a>(&'a self, cb: &mut RemoteCallbacks<'a>) -> Result<()> {
         let cred = self.credentials()?;
+        dbg!(&cred);
 
         cb.credentials(move |_url, _username_from_url, _allowed_types| {
             Cred::userpass_plaintext("oauth2", &cred.access_token)

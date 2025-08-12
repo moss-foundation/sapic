@@ -24,7 +24,7 @@ const GITLAB_SCOPES: [&'static str; 6] = [
     "write_repository",
     "read_user",
 ];
-const KEYRING_SECRET_KEY: &str = "gitlab_auth_agent";
+const KEYRING_SECRET_KEY: &'static str = "gitlab_auth_agent";
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct KeyringCredEntry {
@@ -91,6 +91,22 @@ impl GitLabAuthAgent {
             if Instant::now() <= cached.time_to_refresh {
                 return Ok(cached);
             }
+        }
+
+        // In tests and CI, fetch GITLAB_REFRESH_TOKEN and get new access_token
+        #[cfg(any(test, feature = "integration-tests"))]
+        {
+            dotenv::dotenv().ok();
+            let refresh_token = dotenv::var("GITLAB_REFRESH_TOKEN")?;
+            let updated_cred = match self.refresh_token_flow(refresh_token) {
+                Ok(cred) => cred,
+                Err(err) => {
+                    return Err(err);
+                }
+            };
+
+            *self.cred.write().expect("RwLock poisoned") = Some(updated_cred.clone());
+            return Ok(updated_cred);
         }
 
         let gen_initial_cred_fn: Box<dyn Fn() -> Result<GitLabCred>> = Box::new(|| {
@@ -225,6 +241,7 @@ impl GitLabAuthAgent {
 impl GitAuthAgent for GitLabAuthAgent {
     fn generate_callback<'a>(&'a self, cb: &mut RemoteCallbacks<'a>) -> Result<()> {
         let cred = self.credentials()?;
+        dbg!(&cred);
 
         cb.credentials(move |_url, _username_from_url, _allowed_types| {
             Cred::userpass_plaintext("oauth2", &cred.access_token)
