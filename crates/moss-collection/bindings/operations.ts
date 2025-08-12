@@ -2,8 +2,8 @@
 import type {
   AfterUpdateDirEntryDescription,
   AfterUpdateItemEntryDescription,
-  DirConfigurationModel,
-  ItemConfigurationModel,
+  CreateDirEntryParams,
+  CreateItemEntryParams,
   UpdateDirEntryParams,
   UpdateItemEntryParams,
 } from "./types";
@@ -16,7 +16,7 @@ export type BatchCreateEntryInput = { entries: Array<BatchCreateEntryKind> };
 /**
  * @category Operation
  */
-export type BatchCreateEntryKind = { "ITEM": CreateItemEntryInput } | { "DIR": CreateDirEntryInput };
+export type BatchCreateEntryKind = { "ITEM": CreateItemEntryParams } | { "DIR": CreateDirEntryParams };
 
 /**
  * @category Operation
@@ -47,23 +47,14 @@ export type BatchUpdateEntryOutputKind =
 
 /**
  * @category Operation
- */
-export type CreateDirEntryInput = { path: string; name: string; order: number; configuration: DirConfigurationModel };
-
-/**
  * @category Operation
  */
-export type CreateEntryInput = { "ITEM": CreateItemEntryInput } | { "DIR": CreateDirEntryInput };
+export type CreateEntryInput = { "ITEM": CreateItemEntryParams } | { "DIR": CreateDirEntryParams };
 
 /**
  * @category Operation
  */
 export type CreateEntryOutput = { id: string };
-
-/**
- * @category Operation
- */
-export type CreateItemEntryInput = { path: string; name: string; order: number; configuration: ItemConfigurationModel };
 
 /**
  * @category Operation

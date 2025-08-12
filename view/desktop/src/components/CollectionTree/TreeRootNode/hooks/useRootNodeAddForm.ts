@@ -18,7 +18,6 @@ export const useRootNodeAddForm = (node: TreeCollectionRootNode) => {
       name.trim(),
       "requests",
       isAddingRootNodeFolder,
-      "Request",
       node.requests.childNodes.length + 1
     );
 

@@ -20,7 +20,6 @@ export const useNodeAddForm = (parentNode: TreeCollectionNode) => {
       name.trim(),
       parentNode.path.raw,
       isAddingFolderNode,
-      parentNode.class,
       parentNode.childNodes.length + 1
     );
 
