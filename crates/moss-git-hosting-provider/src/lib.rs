@@ -6,7 +6,7 @@ pub mod models;
 use async_trait::async_trait;
 use url::Url;
 
-use crate::models::types::{Contributor, RepositoryInfo};
+use crate::models::types::{Contributor, RepositoryInfo, UserInfo};
 
 #[async_trait]
 pub trait GitHostingProvider {
@@ -14,6 +14,8 @@ pub trait GitHostingProvider {
     fn base_url(&self) -> Url;
 
     // FIXME: Where's the best place to put Provider REST APIs?
+    async fn current_user(&self) -> joinerror::Result<UserInfo>;
+
     async fn contributors(&self, repo_url: &str) -> joinerror::Result<Vec<Contributor>>;
 
     async fn repository_info(&self, repo_url: &str) -> joinerror::Result<RepositoryInfo>;

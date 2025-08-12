@@ -3,8 +3,8 @@ use moss_applib::AppRuntime;
 use moss_fs::FileSystem;
 use moss_git_hosting_provider::{
     common::ssh_auth_agent::SSHAuthAgentImpl,
-    github::{auth::GitHubAuthAgentImpl, client::GitHubClient},
-    gitlab::{auth::GitLabAuthAgentImpl, client::GitLabClient},
+    github::{auth::GitHubAuthAgent, client::GitHubClient},
+    gitlab::{auth::GitLabAuthAgent, client::GitLabClient},
 };
 use moss_keyring::KeyringClientImpl;
 use std::{path::PathBuf, sync::Arc};
@@ -65,6 +65,8 @@ impl<R: AppRuntime> AppBuilder<R> {
             .expect("failed to build reqwest client");
 
         // TODO: Fetch OAuth APP secrets from our server in production build
+        // FIXME: Right now we have to write these keys in /view/desktop/.env
+
         dotenv::dotenv().ok();
         let github_client_id = dotenv::var("GITHUB_CLIENT_ID").unwrap_or_default();
         let github_client_secret = dotenv::var("GITHUB_CLIENT_SECRET").unwrap_or_default();
@@ -72,11 +74,11 @@ impl<R: AppRuntime> AppBuilder<R> {
         let gitlab_client_secret = dotenv::var("GITLAB_CLIENT_SECRET").unwrap_or_default();
 
         let github_client = {
-            let github_auth_agent = GitHubAuthAgentImpl::new(
+            let github_auth_agent = Arc::new(GitHubAuthAgent::new(
                 keyring_client.clone(),
                 github_client_id,
                 github_client_secret,
-            );
+            ));
             Arc::new(GitHubClient::new(
                 reqwest_client.clone(),
                 github_auth_agent,
@@ -84,11 +86,11 @@ impl<R: AppRuntime> AppBuilder<R> {
             ))
         };
         let gitlab_client = {
-            let gitlab_auth_agent = GitLabAuthAgentImpl::new(
+            let gitlab_auth_agent = Arc::new(GitLabAuthAgent::new(
                 keyring_client.clone(),
                 gitlab_client_id,
                 gitlab_client_secret,
-            );
+            ));
             Arc::new(GitLabClient::new(
                 reqwest_client.clone(),
                 gitlab_auth_agent,

@@ -9,8 +9,8 @@ use moss_applib::{
 use moss_fs::{FileSystem, RealFileSystem};
 use moss_git_hosting_provider::{
     common::ssh_auth_agent::SSHAuthAgentImpl,
-    github::{auth::GitHubAuthAgentImpl, client::GitHubClient},
-    gitlab::{auth::GitLabAuthAgentImpl, client::GitLabClient},
+    github::{auth::GitHubAuthAgent, client::GitHubClient},
+    gitlab::{auth::GitLabAuthAgent, client::GitLabClient},
 };
 use moss_keyring::KeyringClientImpl;
 use moss_testutils::random_name::random_workspace_name;
@@ -65,7 +65,7 @@ pub async fn setup_test_workspace() -> (AsyncContext, Workspace<MockAppRuntime>,
 
     let github_client = {
         let github_auth_agent =
-            GitHubAuthAgentImpl::new(keyring_client.clone(), "".to_string(), "".to_string());
+            GitHubAuthAgent::new(keyring_client.clone(), "".to_string(), "".to_string());
         Arc::new(GitHubClient::new(
             reqwest_client.clone(),
             github_auth_agent,
@@ -74,7 +74,7 @@ pub async fn setup_test_workspace() -> (AsyncContext, Workspace<MockAppRuntime>,
     };
     let gitlab_client = {
         let gitlab_auth_agent =
-            GitLabAuthAgentImpl::new(keyring_client.clone(), "".to_string(), "".to_string());
+            GitLabAuthAgent::new(keyring_client.clone(), "".to_string(), "".to_string());
         Arc::new(GitLabClient::new(
             reqwest_client.clone(),
             gitlab_auth_agent,

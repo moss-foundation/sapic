@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 use git2::{
     IndexMatchedPath, IntoCString, PushOptions, RemoteCallbacks, Repository, build::RepoBuilder,
 };
@@ -105,6 +105,19 @@ impl RepoHandle {
         let mut remote = self.repo.find_remote(remote_name)?;
         let mut callbacks = RemoteCallbacks::new();
         self.auth_agent.generate_callback(&mut callbacks)?;
+
+        // register push_update_reference to catch server rejection messages
+        callbacks.push_update_reference(|refname, message| {
+            if let Some(status_msg) = message {
+                eprintln!("push update for {} failed: {}", refname, status_msg);
+                return Err(git2::Error::from_str(&format!(
+                    "push update for {} failed: {}",
+                    refname, status_msg
+                )));
+            }
+            Ok(())
+        });
+
         remote.push(
             &[&format!(
                 "refs/heads/{}:refs/heads/{}",
@@ -112,6 +125,7 @@ impl RepoHandle {
             )],
             Some(&mut PushOptions::new().remote_callbacks(callbacks)),
         )?;
+
         if set_upstream {
             let mut branch = self
                 .repo

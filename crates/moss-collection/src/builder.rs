@@ -6,7 +6,8 @@ use moss_git::{
     url::normalize_git_url,
 };
 use moss_git_hosting_provider::{
-    common::GitProviderType, github::client::GitHubClient, gitlab::client::GitLabClient,
+    GitHostingProvider, common::GitProviderType, github::client::GitHubClient,
+    gitlab::client::GitLabClient,
 };
 use moss_hcl::Block;
 use std::{
@@ -260,7 +261,12 @@ impl CollectionBuilder {
             let repo_handle_clone = repo_handle.clone();
 
             let github_client_clone = self.github_client.clone();
-            let _gitlab_client_clone = self.gitlab_client.clone();
+            let gitlab_client_clone = self.gitlab_client.clone();
+
+            // FIXME: Use the actual git provider and auth agent based on user input
+            // Hardcoded using GitHub auth agent for now
+            let client = gitlab_client_clone;
+            let user_info = client.current_user().await?;
 
             let result = tokio::task::spawn_blocking(move || {
                 // TODO: Allow the user to set the default branch name
@@ -270,9 +276,7 @@ impl CollectionBuilder {
                 // Note: This will not create a default branch
                 let repo_handle = Arc::new(RepoHandle::init(
                     abs_path_clone.as_ref(),
-                    // FIXME: Use the actual git provider based on user input
-                    // Hardcoded using GitHub auth agent for now
-                    github_client_clone.auth_agent(),
+                    client.git_auth_agent(),
                 )?);
 
                 // git remote add origin {repository_url}
@@ -298,8 +302,8 @@ impl CollectionBuilder {
 
                 // git commit
                 // This will create a default branch
-                // TODO: Get the user's username and email using provider API
-                let author = Signature::now("SAPIC", "sapic@moss.com").map_err(|e| {
+
+                let author = Signature::now(&user_info.name, &user_info.email).map_err(|e| {
                     joinerror::Error::new::<()>(format!(
                         "failed to generate commit signature: {}",
                         e.to_string()
@@ -406,8 +410,8 @@ impl CollectionBuilder {
         let gitlab_client_clone = self.gitlab_client.clone();
         let join = tokio::task::spawn_blocking(move || {
             let auth_agent = match params.git_provider_type {
-                GitProviderType::GitHub => github_client_clone.auth_agent(),
-                GitProviderType::GitLab => gitlab_client_clone.auth_agent(),
+                GitProviderType::GitHub => github_client_clone.git_auth_agent(),
+                GitProviderType::GitLab => gitlab_client_clone.git_auth_agent(),
             };
             Ok(RepoHandle::clone(
                 &params.repository,
