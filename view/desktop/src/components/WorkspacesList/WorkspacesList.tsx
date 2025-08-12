@@ -3,21 +3,24 @@ import { useEffect } from "react";
 import { useStreamEnvironments } from "@/hooks/environment";
 import { useWorkspaceListStore } from "@/store/workspaceList";
 
+import { useMonitorWorkspacesList } from "./hooks/useMonitorWorkspacesList";
 import { WorkspacesListItem } from "./WorkspacesListItem/WorkspacesListItem";
 
 export const WorkspacesList = () => {
-  const { data: environments } = useStreamEnvironments();
+  const { environmentsSortedByOrder } = useStreamEnvironments();
   const { setActiveEnvironment } = useWorkspaceListStore();
 
   useEffect(() => {
-    if (environments) {
-      setActiveEnvironment(environments[0]);
+    if (environmentsSortedByOrder) {
+      setActiveEnvironment(environmentsSortedByOrder[0]);
     }
-  }, [environments, setActiveEnvironment]);
+  }, [environmentsSortedByOrder, setActiveEnvironment]);
+
+  useMonitorWorkspacesList();
 
   return (
     <div className="flex flex-col">
-      {environments?.map((environment) => (
+      {environmentsSortedByOrder?.map((environment) => (
         <WorkspacesListItem key={environment.id} environment={environment} />
       ))}
     </div>

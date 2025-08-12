@@ -1,3 +1,6 @@
+import { useMemo } from "react";
+
+import { sortByOrder } from "@/components/CollectionTree/utils";
 import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -40,8 +43,13 @@ export const useStreamEnvironments = () => {
     queryClient.removeQueries({ queryKey: [USE_STREAMED_ENVIRONMENTS_QUERY_KEY] });
   };
 
+  const environmentsSortedByOrder = useMemo(() => {
+    return sortByOrder(query.data ?? []);
+  }, [query.data]);
+
   return {
     ...query,
     clearEnvironmentsCacheAndRefetch,
+    environmentsSortedByOrder,
   };
 };
