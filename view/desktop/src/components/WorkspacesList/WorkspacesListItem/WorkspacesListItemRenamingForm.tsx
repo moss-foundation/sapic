@@ -5,13 +5,17 @@ import { platform } from "@tauri-apps/plugin-os";
 
 import { useClickOutside } from "../../../hooks/useClickOutside";
 
-interface NodeRenamingFormProps {
+interface WorkspacesListItemRenamingFormProps {
   onSubmit: (newName: string) => void;
   onCancel: () => void;
   currentName: string | number;
 }
 
-export const WorkspaceListItemRenamingForm = ({ onSubmit, onCancel, currentName }: NodeRenamingFormProps) => {
+export const WorkspacesListItemRenamingForm = ({
+  onSubmit,
+  onCancel,
+  currentName,
+}: WorkspacesListItemRenamingFormProps) => {
   const isMac = platform() === "macos";
   const isLinux = platform() === "linux";
   // HACK: Adding leading-[19px] class for Linux and macOS to prevent slight shifting of list items during edit mode.

@@ -3,9 +3,9 @@ import { useEffect } from "react";
 import { useStreamEnvironments } from "@/hooks/environment";
 import { useWorkspaceListStore } from "@/store/workspaceList";
 
-import { WorkspaceListItem } from "./WorkspaceListItem/WorkspaceListItem";
+import { WorkspacesListItem } from "./WorkspacesListItem/WorkspacesListItem";
 
-export const WorkspaceList = () => {
+export const WorkspacesList = () => {
   const { data: environments } = useStreamEnvironments();
   const { setActiveEnvironment } = useWorkspaceListStore();
 
@@ -18,7 +18,7 @@ export const WorkspaceList = () => {
   return (
     <div className="flex flex-col">
       {environments?.map((environment) => (
-        <WorkspaceListItem key={environment.id} environment={environment} />
+        <WorkspacesListItem key={environment.id} environment={environment} />
       ))}
     </div>
   );

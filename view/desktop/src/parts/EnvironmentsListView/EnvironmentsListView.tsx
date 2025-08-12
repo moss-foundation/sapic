@@ -1,8 +1,7 @@
 import { HTMLAttributes } from "react";
 
-import { CollectionList } from "@/components/CollectionList/CollectionList";
-import { WorkspaceList } from "@/components/WorkspaceList/WorkspaceList";
-import { useStreamEnvironments } from "@/hooks/environment";
+import { CollectionsList } from "@/components/CollectionsList/CollectionsList";
+import { WorkspacesList } from "@/components/WorkspacesList/WorkspacesList";
 import Icon, { Icons } from "@/lib/ui/Icon";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
@@ -10,15 +9,7 @@ import { EnvironmentsListViewDivider } from "./EnvironmentsListViewDivider";
 import { EnvironmentsListViewHeader } from "./EnvironmentsListViewHeader";
 
 export const EnvironmentsListView = () => {
-  const { data: environments } = useStreamEnvironments();
   const { addOrFocusPanel } = useTabbedPaneStore();
-
-  const availableCollections = environments?.reduce((acc, env) => {
-    if (env.collectionId) {
-      acc.push(env.collectionId);
-    }
-    return acc;
-  }, [] as string[]);
 
   return (
     <div className="flex h-full flex-col">
@@ -28,6 +19,8 @@ export const EnvironmentsListView = () => {
         <EnvironmentsListItem
           icon="Vault"
           label="Vault"
+          title="Vaults coming soon..."
+          disabled={true}
           onClick={() => {
             addOrFocusPanel({
               id: "Vault",
@@ -38,15 +31,11 @@ export const EnvironmentsListView = () => {
 
         <EnvironmentsListViewDivider />
 
-        <WorkspaceList />
+        <WorkspacesList />
 
         <EnvironmentsListViewDivider />
 
-        {availableCollections?.map((collectionId) => (
-          <CollectionList key={collectionId} id={collectionId} />
-        ))}
-
-        <pre>{JSON.stringify(environments, null, 2)}</pre>
+        <CollectionsList />
       </div>
     </div>
   );
@@ -57,11 +46,21 @@ export default EnvironmentsListView;
 const EnvironmentsListItem = ({
   icon,
   label,
+  disabled,
   ...props
-}: { icon: Icons; label: string } & HTMLAttributes<HTMLButtonElement>) => {
+}: { icon: Icons; label: string; disabled?: boolean } & HTMLAttributes<HTMLButtonElement>) => {
   return (
     <button
-      className="hover:background-(--moss-gray-12) flex w-full cursor-pointer items-center gap-2 px-2 py-1"
+      className="hover:background-(--moss-gray-12) flex w-full cursor-pointer items-center gap-2 px-2 py-1 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent"
+      disabled={disabled}
+      onClick={(e) => {
+        if (disabled) {
+          e.preventDefault();
+          return;
+        }
+
+        props.onClick?.(e);
+      }}
       {...props}
     >
       <Icon icon={icon} />

@@ -8,12 +8,12 @@ import { useWorkspaceListStore } from "@/store/workspaceList";
 import { cn } from "@/utils";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
-interface WorkspaceListItemActionsProps {
+interface WorkspacesListItemActionsProps {
   environment: StreamEnvironmentsEvent;
   setIsEditing: (isEditing: boolean) => void;
 }
 
-export const WorkspaceListItemActions = ({ environment, setIsEditing }: WorkspaceListItemActionsProps) => {
+export const WorkspacesListItemActions = ({ environment, setIsEditing }: WorkspacesListItemActionsProps) => {
   const { setActiveEnvironment, activeEnvironment } = useWorkspaceListStore();
   const { mutate: deleteEnvironment } = useDeleteEnvironment();
 

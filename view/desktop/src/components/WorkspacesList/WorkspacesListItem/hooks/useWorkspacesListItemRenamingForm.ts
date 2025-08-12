@@ -3,11 +3,11 @@ import { useState } from "react";
 import { useUpdateEnvironment } from "@/hooks/environment";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
-interface UseWorkspaceListItemRenamingFormProps {
+interface UseWorkspacesListItemRenamingFormProps {
   environment: StreamEnvironmentsEvent;
 }
 
-export const useWorkspaceListItemRenamingForm = ({ environment }: UseWorkspaceListItemRenamingFormProps) => {
+export const useWorkspacesListItemRenamingForm = ({ environment }: UseWorkspacesListItemRenamingFormProps) => {
   const { mutateAsync: updateEnvironment } = useUpdateEnvironment();
   const [isEditing, setIsEditing] = useState(false);
 
