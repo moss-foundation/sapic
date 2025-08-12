@@ -2,9 +2,9 @@ use async_trait::async_trait;
 use moss_git::GitAuthAgent;
 use reqwest::{
     Client,
-    header::{ACCEPT, AUTHORIZATION, HeaderMap, HeaderValue},
+    header::{ACCEPT, AUTHORIZATION},
 };
-use std::{cell::LazyCell, sync::Arc};
+use std::sync::Arc;
 use url::Url;
 
 use crate::{

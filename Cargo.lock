@@ -3785,6 +3785,7 @@ dependencies = [
  "moss_testutils",
  "moss_text",
  "nanoid",
+ "reqwest",
  "serde",
  "serde_json",
  "tauri",

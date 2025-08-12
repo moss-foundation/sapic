@@ -29,8 +29,9 @@ impl KeyringClient for KeyringClientImpl {
 
 #[cfg(test)]
 mod tests {
-    use crate::{KeyringClient, KeyringClientImpl};
     use keyring::Entry;
+
+    use crate::KeyringClient;
 
     #[ignore]
     #[test]

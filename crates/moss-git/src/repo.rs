@@ -1,7 +1,5 @@
-use anyhow::{Result, anyhow};
-use git2::{
-    IndexMatchedPath, IntoCString, PushOptions, RemoteCallbacks, Repository, build::RepoBuilder,
-};
+use anyhow::Result;
+use git2::{IntoCString, PushOptions, RemoteCallbacks, Repository, build::RepoBuilder};
 use std::{path::Path, sync::Arc};
 
 pub use git2::{BranchType, IndexAddOption, Signature};
@@ -90,7 +88,6 @@ impl RepoHandle {
         Ok(())
     }
 
-    //
     pub fn push(
         &self,
         remote_name: Option<&str>,
@@ -363,10 +360,10 @@ impl RepoHandle {
 
 #[cfg(test)]
 mod tests {
-    use crate::{GitAuthAgent, repo::RepoHandle};
     use git2::{Cred, IndexAddOption, RemoteCallbacks, Signature};
     use std::{path::Path, sync::Arc, time::SystemTime};
-    use url::Url;
+
+    use crate::{GitAuthAgent, repo::RepoHandle};
 
     // This is so that we don't have circular dependency on git-hosting-provider when testing repo
     struct TestAuthAgent {}

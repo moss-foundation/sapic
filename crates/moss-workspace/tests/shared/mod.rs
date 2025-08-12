@@ -64,8 +64,11 @@ pub async fn setup_test_workspace() -> (AsyncContext, Workspace<MockAppRuntime>,
         .expect("failed to build reqwest client");
 
     let github_client = {
-        let github_auth_agent =
-            GitHubAuthAgent::new(keyring_client.clone(), "".to_string(), "".to_string());
+        let github_auth_agent = Arc::new(GitHubAuthAgent::new(
+            keyring_client.clone(),
+            "".to_string(),
+            "".to_string(),
+        ));
         Arc::new(GitHubClient::new(
             reqwest_client.clone(),
             github_auth_agent,
@@ -73,8 +76,11 @@ pub async fn setup_test_workspace() -> (AsyncContext, Workspace<MockAppRuntime>,
         ))
     };
     let gitlab_client = {
-        let gitlab_auth_agent =
-            GitLabAuthAgent::new(keyring_client.clone(), "".to_string(), "".to_string());
+        let gitlab_auth_agent = Arc::new(GitLabAuthAgent::new(
+            keyring_client.clone(),
+            "".to_string(),
+            "".to_string(),
+        ));
         Arc::new(GitLabClient::new(
             reqwest_client.clone(),
             gitlab_auth_agent,
@@ -82,20 +88,18 @@ pub async fn setup_test_workspace() -> (AsyncContext, Workspace<MockAppRuntime>,
         ))
     };
 
-    let workspace: Workspace<MockAppRuntime> = WorkspaceBuilder::new(fs.clone())
-        .create(
-            &ctx,
-            activity_indicator,
-            CreateWorkspaceParams {
-                name: random_workspace_name(),
-                abs_path: abs_path.clone(),
-            },
-            github_client,
-            gitlab_client,
-            keyring_client,
-        )
-        .await
-        .unwrap();
+    let workspace: Workspace<MockAppRuntime> =
+        WorkspaceBuilder::new(fs.clone(), github_client, gitlab_client)
+            .create(
+                &ctx,
+                activity_indicator,
+                CreateWorkspaceParams {
+                    name: random_workspace_name(),
+                    abs_path: abs_path.clone(),
+                },
+            )
+            .await
+            .unwrap();
 
     let cleanup_fn = Box::new({
         let abs_path_clone = abs_path.clone();

@@ -251,7 +251,6 @@ mod tests {
     use moss_git::repo::RepoHandle;
     use moss_keyring::KeyringClientImpl;
     use std::{path::Path, sync::Arc};
-    use url::Url;
 
     use crate::gitlab::auth::GitLabAuthAgent;
 

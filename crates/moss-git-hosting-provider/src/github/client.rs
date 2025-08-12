@@ -1,11 +1,8 @@
 use async_trait::async_trait;
 use moss_git::GitAuthAgent;
-use oauth2::http::{HeaderMap, header::ACCEPT};
-use reqwest::{
-    Client,
-    header::{AUTHORIZATION, HeaderValue},
-};
-use std::{cell::LazyCell, sync::Arc};
+use oauth2::http::header::ACCEPT;
+use reqwest::{Client, header::AUTHORIZATION};
+use std::sync::Arc;
 use url::Url;
 
 use crate::{
@@ -74,7 +71,7 @@ impl GitHostingProvider for GitHubClient {
             .json()
             .await?;
 
-        // If the user's email is private, we will user their noreply email
+        // If the user's email is private, we will use their noreply email
         let email = user_response.email.unwrap_or(format!(
             "{}+{}@users.noreply.github.com",
             user_response.id, user_response.login

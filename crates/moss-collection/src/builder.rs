@@ -260,7 +260,7 @@ impl CollectionBuilder {
             let abs_path_clone = abs_path.clone();
             let repo_handle_clone = repo_handle.clone();
 
-            let github_client_clone = self.github_client.clone();
+            let _github_client_clone = self.github_client.clone();
             let gitlab_client_clone = self.gitlab_client.clone();
 
             // FIXME: Use the actual git provider and auth agent based on user input
