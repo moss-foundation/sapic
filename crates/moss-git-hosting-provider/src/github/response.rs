@@ -26,7 +26,7 @@ pub(crate) struct ContributorItem {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub(crate) struct UserResponse {
-    pub id: String,
+    pub id: u64,
     pub login: String,
     // If the user email is private, we will construct their noreply email
     pub email: Option<String>,

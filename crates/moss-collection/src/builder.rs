@@ -324,9 +324,16 @@ impl CollectionBuilder {
             // FIXME: Use the actual git provider and auth agent based on user input
             // Hardcoded using GitHub auth agent for now
             let client = github_client_clone;
-            let user_info = client.current_user().await?;
+            let user_info = client.current_user().await;
 
             let result = tokio::task::spawn_blocking(move || {
+                let user_info = match user_info {
+                    Ok(user_info) => user_info,
+                    Err(e) => {
+                        return Err(e.join::<()>("failed to get user info from the provider"));
+                    }
+                };
+
                 // TODO: Allow the user to set the default branch name
                 let new_default_branch_name = "main";
 
@@ -383,13 +390,13 @@ impl CollectionBuilder {
 
                 // Don't push during integration tests
                 // git push
-                #[cfg(not(any(test, feature = "integration-tests")))]
-                repo_handle.push(
-                    None,
-                    Some(&new_default_branch_name),
-                    Some(&new_default_branch_name),
-                    true,
-                )?;
+                // #[cfg(not(any(test, feature = "integration-tests")))]
+                // repo_handle.push(
+                //     None,
+                //     Some(&new_default_branch_name),
+                //     Some(&new_default_branch_name),
+                //     true,
+                // )?;
 
                 *(repo_handle_clone.lock()?) = Some(repo_handle);
                 Ok::<(), Error>(())
