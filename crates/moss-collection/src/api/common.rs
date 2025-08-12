@@ -2,6 +2,7 @@ use std::path::Path;
 
 use moss_api::ext::ValidationResultExt;
 use moss_applib::AppRuntime;
+use moss_hcl::Block;
 use validator::Validate;
 
 use crate::{
@@ -14,7 +15,10 @@ use crate::{
             CreateItemEntryParams, UpdateDirEntryParams, UpdateItemEntryParams,
         },
     },
-    worktree::{ModifyParams, entry::model::EntryModel},
+    worktree::{
+        ModifyParams,
+        entry::model::{EntryMetadataSpec, EntryModel, UrlDetails},
+    },
 };
 
 impl<R: AppRuntime> Collection<R> {
@@ -61,7 +65,55 @@ impl<R: AppRuntime> Collection<R> {
         //     inner: input.configuration,
         // };
 
-        let model = EntryModel::from((id.clone(), class_from_path(&input.path)));
+        // let model = EntryModel::from((id.clone(), class_from_path(&input.path)));
+
+        let class = class_from_path(&input.path);
+        let model = match class {
+            EntryClass::Request => EntryModel {
+                metadata: Block::new(EntryMetadataSpec {
+                    id: id.clone(),
+                    class: class_from_path(&input.path),
+                }),
+                url: Some(Block::new(UrlDetails {
+                    protocol: input.protocol.unwrap(),
+                    raw: "Hardcoded Value".to_string(),
+                })),
+                headers: None, // Hardcoded for now
+            },
+            EntryClass::Endpoint => {
+                EntryModel {
+                    metadata: Block::new(EntryMetadataSpec {
+                        id: id.clone(),
+                        class: class_from_path(&input.path),
+                    }),
+                    url: Some(Block::new(UrlDetails {
+                        protocol: input.protocol.unwrap(),
+                        raw: "Hardcoded Value".to_string(),
+                    })),
+                    headers: None, // Hardcoded for now
+                }
+            }
+            EntryClass::Component => {
+                EntryModel {
+                    metadata: Block::new(EntryMetadataSpec {
+                        id: id.clone(),
+                        class: class_from_path(&input.path),
+                    }),
+                    url: None,
+                    headers: None, // Hardcoded for now
+                }
+            }
+            EntryClass::Schema => {
+                EntryModel {
+                    metadata: Block::new(EntryMetadataSpec {
+                        id: id.clone(),
+                        class: class_from_path(&input.path),
+                    }),
+                    url: None,
+                    headers: None, // Hardcoded for now
+                }
+            }
+        };
 
         self.worktree
             .create_item_entry(ctx, &input.name, &input.path, model, input.order, false)
