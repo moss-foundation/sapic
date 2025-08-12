@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 
+import { validateName } from "@/utils";
 import { platform } from "@tauri-apps/plugin-os";
 
 import { useClickOutside } from "../../hooks/useClickOutside";
-import { validateName } from "./utils/Form";
 
 interface NodeRenamingFormProps {
   onSubmit: (newName: string) => void;

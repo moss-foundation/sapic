@@ -1,3 +1,6 @@
+import { useMemo } from "react";
+
+import { useStreamEnvironments } from "@/hooks/environment";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
@@ -12,6 +15,7 @@ interface WorkspacesListItemProps {
 }
 
 export const WorkspacesListItem = ({ environment }: WorkspacesListItemProps) => {
+  const { data: workspaceState } = useStreamEnvironments();
   const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
   const { isEditing, setIsEditing, handleRename, handleCancel } = useWorkspacesListItemRenamingForm({ environment });
@@ -29,6 +33,11 @@ export const WorkspacesListItem = ({ environment }: WorkspacesListItemProps) => 
 
   const isActive = activePanelId === environment.id;
 
+  const restrictedNames = useMemo(() => {
+    if (!workspaceState) return [];
+    return workspaceState.map((environment) => environment.name) ?? [];
+  }, [workspaceState]);
+
   return (
     <div
       className="group/WorkspaceListItem relative flex min-h-[30px] w-full cursor-pointer items-center justify-between py-1 pr-2 pl-2.5"
@@ -43,6 +52,7 @@ export const WorkspacesListItem = ({ environment }: WorkspacesListItemProps) => 
           onSubmit={handleRename}
           onCancel={handleCancel}
           currentName={environment.name}
+          restrictedNames={restrictedNames}
         />
       ) : (
         <WorkspacesListItemButton environment={environment} />

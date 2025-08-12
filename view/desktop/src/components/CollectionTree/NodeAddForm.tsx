@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 
-import { validateName } from "./utils/Form";
+import { validateName } from "@/utils";
 
 interface NodeRenamingFormProps {
   onSubmit: (name: string) => void;
   onCancel: () => void;
-  restrictedNames?: (string | number)[];
+  restrictedNames?: string[];
 }
 
 export const NodeAddForm = ({ onSubmit, onCancel, restrictedNames }: NodeRenamingFormProps) => {

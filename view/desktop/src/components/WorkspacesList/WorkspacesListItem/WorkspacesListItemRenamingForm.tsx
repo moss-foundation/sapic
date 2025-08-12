@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { Icon } from "@/lib/ui";
+import { validateName } from "@/utils";
 import { platform } from "@tauri-apps/plugin-os";
 
 import { useClickOutside } from "../../../hooks/useClickOutside";
@@ -9,12 +10,14 @@ interface WorkspacesListItemRenamingFormProps {
   onSubmit: (newName: string) => void;
   onCancel: () => void;
   currentName: string | number;
+  restrictedNames: string[];
 }
 
 export const WorkspacesListItemRenamingForm = ({
   onSubmit,
   onCancel,
   currentName,
+  restrictedNames,
 }: WorkspacesListItemRenamingFormProps) => {
   const isMac = platform() === "macos";
   const isLinux = platform() === "linux";
@@ -26,8 +29,17 @@ export const WorkspacesListItemRenamingForm = ({
   const isInitialized = useRef(false);
   const [value, setValue] = useState(String(currentName));
 
+  const { isValid, message } = validateName(value, restrictedNames ?? []);
+
+  useEffect(() => {
+    if (!inputRef.current || !isInitialized.current) return;
+
+    inputRef.current.setCustomValidity(message);
+    inputRef.current.reportValidity();
+  }, [message]);
+
   const finishEditing = () => {
-    if (!value || value === currentName) {
+    if (!isValid) {
       onCancel();
       return;
     }
