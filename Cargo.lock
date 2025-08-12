@@ -3701,6 +3701,7 @@ dependencies = [
  "async-trait",
  "chrono",
  "derive_more 2.0.1",
+ "dotenv",
  "futures",
  "joinerror",
  "moss_activity_indicator",

@@ -11,20 +11,21 @@ use crate::{
     GitHostingProvider,
     common::SSHAuthAgent,
     constants::GITLAB_API_URL,
-    gitlab::response::{AvatarResponse, ContributorsResponse},
+    gitlab::{
+        auth::GitLabAuthAgent,
+        response::{AvatarResponse, ContributorsResponse},
+    },
     models::types::{Contributor, RepositoryInfo},
 };
 
 const CONTENT_TYPE: LazyCell<HeaderValue> =
     LazyCell::new(|| HeaderValue::from_static("application/json"));
 
-pub trait GitLabAuthAgent: GitAuthAgent {}
-
 // FIXME: Support self-hosted GitLab domains
 pub struct GitLabClient {
     client: Client,
     #[allow(dead_code)]
-    client_auth_agent: Arc<dyn GitAuthAgent>,
+    client_auth_agent: Arc<dyn GitLabAuthAgent>,
     #[allow(dead_code)]
     ssh_auth_agent: Option<Arc<dyn SSHAuthAgent>>,
 }
@@ -40,6 +41,10 @@ impl GitLabClient {
             client_auth_agent: Arc::new(client_auth_agent),
             ssh_auth_agent: ssh_auth_agent.map(|agent| Arc::new(agent) as Arc<dyn SSHAuthAgent>),
         }
+    }
+
+    pub fn auth_agent(&self) -> Arc<dyn GitAuthAgent> {
+        self.client_auth_agent.clone()
     }
 }
 

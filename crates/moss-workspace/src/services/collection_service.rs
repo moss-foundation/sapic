@@ -12,8 +12,9 @@ use moss_collection::{
     builder::{CollectionCloneParams, CollectionCreateParams, CollectionLoadParams},
 };
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
-use moss_git_hosting_provider::common::GitProviderType;
-use moss_keyring::KeyringClient;
+use moss_git_hosting_provider::{
+    common::GitProviderType, github::client::GitHubClient, gitlab::client::GitLabClient,
+};
 use std::{
     collections::{HashMap, HashSet},
     path::{Path, PathBuf},
@@ -36,6 +37,7 @@ pub(crate) struct CollectionItemCreateParams {
     pub external_path: Option<PathBuf>,
     // FIXME: Do we need this field?
     pub icon_path: Option<PathBuf>,
+    pub repository: Option<String>,
 }
 
 pub(crate) struct CollectionItemCloneParams {
@@ -79,7 +81,8 @@ pub struct CollectionService<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     storage: Arc<StorageService<R>>,
     state: Arc<RwLock<ServiceState<R>>>,
-    keyring_client: Arc<dyn KeyringClient + Send + Sync>,
+    github_client: Arc<GitHubClient>,
+    gitlab_client: Arc<GitLabClient>,
 }
 
 impl<R: AppRuntime> ServiceMarker for CollectionService<R> {}
@@ -91,7 +94,8 @@ impl<R: AppRuntime> CollectionService<R> {
         abs_path: &Path,
         fs: Arc<dyn FileSystem>,
         storage: Arc<StorageService<R>>,
-        keyring_client: Arc<dyn KeyringClient + Send + Sync>,
+        github_client: Arc<GitHubClient>,
+        gitlab_client: Arc<GitLabClient>,
     ) -> joinerror::Result<Self> {
         let abs_path = abs_path.join(dirs::COLLECTIONS_DIR);
         let expanded_items = if let Ok(expanded_items) = storage.get_expanded_items(ctx).await {
@@ -100,7 +104,15 @@ impl<R: AppRuntime> CollectionService<R> {
             HashSet::new()
         };
 
-        let collections = restore_collections(ctx, &abs_path, &fs, &storage).await?;
+        let collections = restore_collections(
+            ctx,
+            &abs_path,
+            &fs,
+            &storage,
+            github_client.clone(),
+            gitlab_client.clone(),
+        )
+        .await?;
 
         Ok(Self {
             abs_path,
@@ -110,7 +122,8 @@ impl<R: AppRuntime> CollectionService<R> {
                 collections,
                 expanded_items,
             })),
-            keyring_client,
+            github_client,
+            gitlab_client,
         })
     }
 
@@ -146,18 +159,23 @@ impl<R: AppRuntime> CollectionService<R> {
                 format!("failed to create directory `{}`", abs_path.display())
             })?;
 
-        let collection = CollectionBuilder::new(self.fs.clone())
-            .create(
-                ctx,
-                CollectionCreateParams {
-                    name: Some(params.name.to_owned()),
-                    internal_abs_path: abs_path.clone(),
-                    external_abs_path: params.external_path.as_deref().map(|p| p.to_owned().into()),
-                    icon_path: params.icon_path.to_owned(),
-                },
-            )
-            .await
-            .join_err::<()>("failed to build collection")?;
+        let collection = CollectionBuilder::new(
+            self.fs.clone(),
+            self.github_client.clone(),
+            self.gitlab_client.clone(),
+        )
+        .create(
+            ctx,
+            CollectionCreateParams {
+                name: Some(params.name.to_owned()),
+                internal_abs_path: abs_path.clone(),
+                external_abs_path: params.external_path.as_deref().map(|p| p.to_owned().into()),
+                icon_path: params.icon_path.to_owned(),
+                repository: params.repository.to_owned(),
+            },
+        )
+        .await
+        .join_err::<()>("failed to build collection")?;
         let icon_path = collection.icon_path();
 
         // let on_did_change = collection.on_did_change().subscribe(|_event| async move {
@@ -231,18 +249,21 @@ impl<R: AppRuntime> CollectionService<R> {
                 format!("failed to create directory `{}`", abs_path.display())
             })?;
 
-        let collection = CollectionBuilder::new(self.fs.clone())
-            .clone(
-                ctx,
-                CollectionCloneParams {
-                    git_provider_type: params.git_provider_type,
-                    internal_abs_path: abs_path.clone(),
-                    repository: params.repository.to_owned(),
-                },
-                self.keyring_client.clone(),
-            )
-            .await
-            .join_err::<()>("failed to clone collection")?;
+        let collection = CollectionBuilder::new(
+            self.fs.clone(),
+            self.github_client.clone(),
+            self.gitlab_client.clone(),
+        )
+        .clone(
+            ctx,
+            CollectionCloneParams {
+                git_provider_type: params.git_provider_type,
+                internal_abs_path: abs_path.clone(),
+                repository: params.repository.to_owned(),
+            },
+        )
+        .await
+        .join_err::<()>("failed to clone collection")?;
 
         let desc = collection.describe().await?;
 
@@ -423,6 +444,8 @@ async fn restore_collections<R: AppRuntime>(
     abs_path: &Path,
     fs: &Arc<dyn FileSystem>,
     storage: &Arc<StorageService<R>>,
+    github_client: Arc<GitHubClient>,
+    gitlab_client: Arc<GitLabClient>,
 ) -> joinerror::Result<HashMap<CollectionId, CollectionItem<R>>> {
     if !abs_path.exists() {
         return Ok(HashMap::new());
@@ -444,7 +467,7 @@ async fn restore_collections<R: AppRuntime>(
         let collection = {
             let collection_abs_path: Arc<Path> = entry.path().to_owned().into();
 
-            CollectionBuilder::new(fs.clone())
+            CollectionBuilder::new(fs.clone(), github_client.clone(), gitlab_client.clone())
                 .load(CollectionLoadParams {
                     internal_abs_path: collection_abs_path,
                 })

@@ -13,9 +13,6 @@ use moss_environment::{environment::Environment, models::primitives::Environment
 use moss_fs::{FileSystem, FsResultExt};
 use moss_git::{repo::RepoHandle, url::normalize_git_url};
 
-#[cfg(any(test, feature = "integration-tests"))]
-use moss_storage::CollectionStorage;
-
 use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
@@ -185,7 +182,7 @@ impl<R: AppRuntime> Collection<R> {
 
 #[cfg(any(test, feature = "integration-tests"))]
 impl<R: AppRuntime> Collection<R> {
-    pub fn db(&self) -> &Arc<dyn CollectionStorage<R::AsyncContext>> {
+    pub fn db(&self) -> &Arc<dyn moss_storage::CollectionStorage<R::AsyncContext>> {
         self.storage_service.storage()
     }
 }

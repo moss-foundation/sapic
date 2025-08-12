@@ -9,18 +9,20 @@ use crate::{
     GitHostingProvider,
     common::SSHAuthAgent,
     constants::GITHUB_API_URL,
-    github::response::{ContributorsResponse, RepositoryResponse},
+    github::{
+        auth::GitHubAuthAgent,
+        response::{ContributorsResponse, RepositoryResponse},
+    },
     models::types::{Contributor, RepositoryInfo},
 };
 
 const CONTENT_TYPE: LazyCell<HeaderValue> =
     LazyCell::new(|| HeaderValue::from_static("application/vnd.github+json"));
 
-pub trait GitHubAuthAgent: GitAuthAgent {}
-
 pub struct GitHubClient {
     client: Client,
     #[allow(dead_code)]
+    // TODO: Support multiple accounts?
     client_auth_agent: Arc<dyn GitHubAuthAgent>,
     #[allow(dead_code)]
     ssh_auth_agent: Option<Arc<dyn SSHAuthAgent>>,
@@ -37,6 +39,10 @@ impl GitHubClient {
             client_auth_agent: Arc::new(client_auth_agent),
             ssh_auth_agent: ssh_auth_agent.map(|agent| Arc::new(agent) as Arc<dyn SSHAuthAgent>),
         }
+    }
+
+    pub fn auth_agent(&self) -> Arc<dyn GitAuthAgent> {
+        self.client_auth_agent.clone()
     }
 }
 

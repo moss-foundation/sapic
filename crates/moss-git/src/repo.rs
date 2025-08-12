@@ -1,10 +1,10 @@
 use anyhow::Result;
 use git2::{
-    BranchType, IndexAddOption, IntoCString, PushOptions, RemoteCallbacks, Repository, Signature,
-    build::RepoBuilder,
+    IndexMatchedPath, IntoCString, PushOptions, RemoteCallbacks, Repository, build::RepoBuilder,
 };
 use std::{path::Path, sync::Arc};
-use url::Url;
+
+pub use git2::{BranchType, IndexAddOption, Signature};
 
 use crate::GitAuthAgent;
 
@@ -25,7 +25,7 @@ pub struct RepoHandle {
 
 // TODO: Use callback to return/display progress
 impl RepoHandle {
-    pub fn clone(url: &Url, path: &Path, auth_agent: Arc<dyn GitAuthAgent>) -> Result<RepoHandle> {
+    pub fn clone(url: &str, path: &Path, auth_agent: Arc<dyn GitAuthAgent>) -> Result<RepoHandle> {
         let mut callbacks = RemoteCallbacks::new();
         auth_agent.generate_callback(&mut callbacks)?;
 
@@ -34,7 +34,7 @@ impl RepoHandle {
         let mut builder = RepoBuilder::new();
         builder.fetch_options(fetch_opts);
 
-        let repo = builder.clone(url.as_str(), &path)?;
+        let repo = builder.clone(url, &path)?;
 
         Ok(RepoHandle {
             auth_agent: auth_agent.clone(),
@@ -45,10 +45,13 @@ impl RepoHandle {
     pub fn open(path: &Path, auth_agent: Arc<dyn GitAuthAgent>) -> Result<RepoHandle> {
         let repo = Repository::open(path)?;
 
-        Ok(RepoHandle {
-            auth_agent: auth_agent.clone(),
-            repo,
-        })
+        Ok(RepoHandle { auth_agent, repo })
+    }
+
+    pub fn init(path: &Path, auth_agent: Arc<dyn GitAuthAgent>) -> Result<RepoHandle> {
+        let repo = Repository::init(path)?;
+
+        Ok(RepoHandle { auth_agent, repo })
     }
 }
 
@@ -74,25 +77,29 @@ impl RepoHandle {
     pub fn commit(&self, message: &str, sig: Signature) -> Result<()> {
         let mut index = self.repo.index()?;
         let tree = self.repo.find_tree(index.write_tree()?)?;
-        let last_commit = self.repo.head()?.peel_to_commit();
 
+        let last_commit = self.repo.head().and_then(|r| r.peel_to_commit());
         if let Ok(parent) = last_commit {
             self.repo
                 .commit(Some("HEAD"), &sig, &sig, &message, &tree, &[&parent])?;
         } else {
+            // Empty repo, make the initial commit
             self.repo
                 .commit(Some("HEAD"), &sig, &sig, &message, &tree, &[])?;
         }
         Ok(())
     }
 
+    //
     pub fn push(
         &self,
         remote_name: Option<&str>,
         local_branch_name: Option<&str>,
         remote_branch_name: Option<&str>,
+        set_upstream: bool,
     ) -> Result<()> {
         let remote_name = remote_name.unwrap_or("origin");
+        // FIXME: does it make sense to default to main branch?
         let local_branch_name = local_branch_name.unwrap_or("main");
         let remote_branch_name = remote_branch_name.unwrap_or("main");
         let mut remote = self.repo.find_remote(remote_name)?;
@@ -105,10 +112,16 @@ impl RepoHandle {
             )],
             Some(&mut PushOptions::new().remote_callbacks(callbacks)),
         )?;
+        if set_upstream {
+            let mut branch = self
+                .repo
+                .find_branch(local_branch_name, BranchType::Local)?;
+            branch.set_upstream(Some(remote_branch_name))?;
+        }
         Ok(())
     }
 
-    pub fn fetch(&self, remote_name: Option<&str>) -> Result<git2::AnnotatedCommit> {
+    pub fn fetch(&self, remote_name: Option<&str>) -> Result<()> {
         let remote_name = remote_name.unwrap_or("origin");
         let mut remote = self.repo.find_remote(remote_name)?;
         let refspec = format!("+refs/heads/*:refs/remotes/{}/*", remote_name);
@@ -121,8 +134,7 @@ impl RepoHandle {
 
         remote.fetch(&[&refspec], Some(&mut fetch_opts), None)?;
 
-        let fetch_head = self.repo.find_reference("FETCH_HEAD")?;
-        Ok(self.repo.reference_to_annotated_commit(&fetch_head)?)
+        Ok(())
     }
 
     pub fn merge(&self, branch_name: &str) -> Result<()> {
@@ -144,8 +156,62 @@ impl RepoHandle {
         let mut callbacks = RemoteCallbacks::new();
         self.auth_agent.generate_callback(&mut callbacks)?;
 
-        let fetch_commit = self.fetch(remote.name())?;
+        self.fetch(remote.name())?;
+        let fetch_head = self.repo.find_reference("FETCH_HEAD")?;
+        let fetch_commit = self.repo.reference_to_annotated_commit(&fetch_head)?;
+
         self.merge_helper(fetch_commit)?;
+
+        Ok(())
+    }
+
+    pub fn add_remote(&self, remote_name: Option<&str>, remote_url: &str) -> Result<()> {
+        self.repo
+            .remote(remote_name.unwrap_or("origin"), remote_url)?;
+
+        Ok(())
+    }
+
+    pub fn list_branches(&self, branch_type: Option<BranchType>) -> Result<Vec<String>> {
+        let branches = self.repo.branches(branch_type)?;
+
+        let names = branches
+            .into_iter()
+            .filter_map(|b| {
+                if let Ok((branch, _)) = b {
+                    branch.name().ok().flatten().map(|name| name.to_string())
+                } else {
+                    None
+                }
+            })
+            .collect::<Vec<_>>();
+        Ok(names)
+    }
+
+    /// Only supports renaming local branch at the moment
+    pub fn rename_branch(&self, old_name: &str, new_name: &str, force: bool) -> Result<()> {
+        let mut branch = self.repo.find_branch(old_name, BranchType::Local)?;
+        branch.rename(new_name, force)?;
+        Ok(())
+    }
+
+    /// If base_branch is None, the new branch will be based on the current HEAD
+    pub fn create_branch(
+        &self,
+        branch_name: &str,
+        base_branch: Option<&str>,
+        force: bool,
+    ) -> Result<()> {
+        let target = if let Some(base_branch) = base_branch {
+            self.repo
+                .find_branch(base_branch, BranchType::Local)?
+                .get()
+                .peel_to_commit()?
+        } else {
+            self.repo.head()?.peel_to_commit()?
+        };
+
+        self.repo.branch(branch_name, &target, force)?;
 
         Ok(())
     }
@@ -321,8 +387,7 @@ mod tests {
 
         let auth_agent = Arc::new(TestAuthAgent {});
 
-        let repo =
-            RepoHandle::clone(&Url::parse(&repo_url).unwrap(), &repo_path, auth_agent).unwrap();
+        let repo = RepoHandle::clone(&repo_url, &repo_path, auth_agent).unwrap();
 
         let time = SystemTime::now()
             .duration_since(SystemTime::UNIX_EPOCH)
@@ -340,7 +405,7 @@ mod tests {
             .expect("Failed to commit");
 
         // Git Push
-        repo.push(Some("origin"), Some("main"), Some("main"))
+        repo.push(Some("origin"), Some("main"), Some("main"), true)
             .expect("Failed to push");
     }
 

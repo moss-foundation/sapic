@@ -4,7 +4,6 @@ use moss_applib::AppRuntime;
 use moss_environment::builder::{CreateEnvironmentParams, EnvironmentBuilder};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
-use moss_keyring::KeyringClient;
 use std::{cell::LazyCell, path::Path, sync::Arc};
 
 use crate::{
@@ -43,11 +42,21 @@ pub struct CreateWorkspaceParams {
 
 pub struct WorkspaceBuilder {
     fs: Arc<dyn FileSystem>,
+    github_client: Arc<GitHubClient>,
+    gitlab_client: Arc<GitLabClient>,
 }
 
 impl WorkspaceBuilder {
-    pub fn new(fs: Arc<dyn FileSystem>) -> Self {
-        Self { fs }
+    pub fn new(
+        fs: Arc<dyn FileSystem>,
+        github_client: Arc<GitHubClient>,
+        gitlab_client: Arc<GitLabClient>,
+    ) -> Self {
+        Self {
+            fs,
+            github_client,
+            gitlab_client,
+        }
     }
 
     pub async fn initialize(
@@ -89,9 +98,6 @@ impl WorkspaceBuilder {
         ctx: &R::AsyncContext,
         activity_indicator: ActivityIndicator<R::EventLoop>, // FIXME: will be passed as a service in the future
         params: LoadWorkspaceParams,
-        github_client: Arc<GitHubClient>,
-        gitlab_client: Arc<GitLabClient>,
-        keyring_client: Arc<dyn KeyringClient + Send + Sync>,
     ) -> joinerror::Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
 
@@ -102,7 +108,8 @@ impl WorkspaceBuilder {
             &params.abs_path,
             self.fs.clone(),
             storage_service.clone(),
-            keyring_client,
+            self.github_client.clone(),
+            self.gitlab_client.clone(),
         )
         .await?;
 
@@ -124,8 +131,8 @@ impl WorkspaceBuilder {
             collection_service,
             environment_service,
             storage_service,
-            github_client,
-            gitlab_client,
+            github_client: self.github_client,
+            gitlab_client: self.gitlab_client,
         })
     }
 
@@ -134,9 +141,6 @@ impl WorkspaceBuilder {
         ctx: &R::AsyncContext,
         activity_indicator: ActivityIndicator<R::EventLoop>, // FIXME: will be passed as a service in the future
         params: CreateWorkspaceParams,
-        github_client: Arc<GitHubClient>,
-        gitlab_client: Arc<GitLabClient>,
-        keyring_client: Arc<dyn KeyringClient + Send + Sync>,
     ) -> joinerror::Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
 
@@ -151,7 +155,8 @@ impl WorkspaceBuilder {
             &params.abs_path,
             self.fs.clone(),
             storage_service.clone(),
-            keyring_client,
+            self.github_client.clone(),
+            self.gitlab_client.clone(),
         )
         .await?;
         let environment_service = EnvironmentService::new(
@@ -172,8 +177,8 @@ impl WorkspaceBuilder {
             collection_service,
             environment_service,
             storage_service,
-            github_client,
-            gitlab_client,
+            github_client: self.github_client,
+            gitlab_client: self.gitlab_client,
         })
     }
 }

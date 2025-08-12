@@ -35,10 +35,10 @@ pub struct CreateCollectionInput {
     pub order: isize,
     pub external_path: Option<PathBuf>,
 
-    // TODO: Remove repository field
-    // We have a new endpoint for cloning a collection repo
+    // FIXME: Pass also the git provider information
     #[validate(regex(path = "*GIT_URL_REGEX"))]
     pub repository: Option<String>,
+    // TODO: repo branch
     pub icon_path: Option<PathBuf>,
 }
 
@@ -82,6 +82,7 @@ pub struct GitHubImportParams {
     pub order: isize,
     #[validate(regex(path = "*GIT_URL_REGEX"))]
     pub repository: String,
+    // TODO: repo branch
 }
 
 /// @category Operation
@@ -93,6 +94,7 @@ pub struct GitLabImportParams {
     pub order: isize,
     #[validate(regex(path = "*GIT_URL_REGEX"))]
     pub repository: String,
+    // TODO: repo branch
 }
 
 /// @category Operation

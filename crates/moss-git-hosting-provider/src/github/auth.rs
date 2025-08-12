@@ -11,7 +11,10 @@ use std::{cell::OnceCell, string::ToString, sync::Arc};
 
 use crate::common::utils;
 
-use super::client::GitHubAuthAgent;
+const GITHUB_AUTH_URL: &'static str = "https://github.com/login/oauth/authorize";
+const GITHUB_TOKEN_URL: &'static str = "https://github.com/login/oauth/access_token";
+const GITHUB_SCOPES: [&'static str; 3] = ["repo", "read:user", "user:email"];
+const KEYRING_SECRET_KEY: &str = "github_auth_agent";
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct KeyringCredEntry {
@@ -55,10 +58,7 @@ impl From<KeyringCredEntry> for GitHubCred {
     }
 }
 
-const GITHUB_AUTH_URL: &'static str = "https://github.com/login/oauth/authorize";
-const GITHUB_TOKEN_URL: &'static str = "https://github.com/login/oauth/access_token";
-const GITHUB_SCOPES: [&'static str; 3] = ["repo", "read:user", "user:email"];
-const KEYRING_SECRET_KEY: &str = "github_auth_agent";
+pub trait GitHubAuthAgent: GitAuthAgent {}
 
 pub struct GitHubAuthAgentImpl {
     client_id: ClientId,
@@ -196,7 +196,7 @@ mod tests {
             client_secret,
         ));
 
-        let _repo = RepoHandle::clone(&Url::parse(&repo_url).unwrap(), &repo_path, auth_agent)?;
+        let _repo = RepoHandle::clone(&repo_url, &repo_path, auth_agent)?;
         Ok(())
     }
 }

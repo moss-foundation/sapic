@@ -1,4 +1,4 @@
-use crate::{common::utils, gitlab::client::GitLabAuthAgent};
+use crate::common::utils;
 use anyhow::Result;
 use git2::{Cred, RemoteCallbacks};
 use moss_git::GitAuthAgent;
@@ -13,6 +13,11 @@ use std::{
     sync::{Arc, RwLock},
     time::{Duration, Instant},
 };
+
+const GITLAB_AUTH_URL: &'static str = "https://gitlab.com/oauth/authorize";
+const GITLAB_TOKEN_URL: &'static str = "https://gitlab.com/oauth/token";
+const GITLAB_SCOPES: [&'static str; 2] = ["write_repository", "read_user"];
+const KEYRING_SECRET_KEY: &str = "gitlab_auth_agent";
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct KeyringCredEntry {
@@ -42,10 +47,7 @@ pub struct GitLabCred {
     refresh_token: String,
 }
 
-const GITLAB_AUTH_URL: &'static str = "https://gitlab.com/oauth/authorize";
-const GITLAB_TOKEN_URL: &'static str = "https://gitlab.com/oauth/token";
-const GITLAB_SCOPES: [&'static str; 2] = ["write_repository", "read_user"];
-const KEYRING_SECRET_KEY: &str = "gitlab_auth_agent";
+pub trait GitLabAuthAgent: GitAuthAgent {}
 
 pub struct GitLabAuthAgentImpl {
     client_id: ClientId,
@@ -53,8 +55,6 @@ pub struct GitLabAuthAgentImpl {
     keyring: Arc<dyn KeyringClient>,
     cred: RwLock<Option<GitLabCred>>,
 }
-
-impl GitLabAuthAgent for GitLabAuthAgentImpl {}
 
 impl GitLabAuthAgentImpl {
     pub fn new(keyring: Arc<dyn KeyringClient>, client_id: String, client_secret: String) -> Self {
@@ -68,7 +68,7 @@ impl GitLabAuthAgentImpl {
 }
 
 impl GitLabAuthAgentImpl {
-    fn credentials(&self) -> Result<GitLabCred> {
+    pub fn credentials(&self) -> Result<GitLabCred> {
         if let Some(cached) = self.cred.read().expect("RwLock poisoned").clone() {
             if Instant::now() <= cached.time_to_refresh {
                 return Ok(cached);
@@ -216,6 +216,8 @@ impl GitAuthAgent for GitLabAuthAgentImpl {
     }
 }
 
+impl GitLabAuthAgent for GitLabAuthAgentImpl {}
+
 fn compute_time_to_refresh(expires_in: Duration) -> Instant {
     // Force refreshing the access token half an hour before the actual expiry
     // To avoid any timing issue
@@ -252,7 +254,6 @@ mod tests {
             client_secret,
         ));
 
-        let _repo =
-            RepoHandle::clone(&Url::parse(&repo_url).unwrap(), repo_path, auth_agent).unwrap();
+        let _repo = RepoHandle::clone(&repo_url, repo_path, auth_agent).unwrap();
     }
 }

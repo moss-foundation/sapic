@@ -37,6 +37,7 @@ validator.workspace = true
 async-trait.workspace = true
 nanoid.workspace = true
 reqwest = { workspace = true, features = ["json"] }
+dotenv.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }
