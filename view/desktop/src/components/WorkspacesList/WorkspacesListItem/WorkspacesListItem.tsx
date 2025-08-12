@@ -31,7 +31,7 @@ export const WorkspacesListItem = ({ environment }: WorkspacesListItemProps) => 
 
   return (
     <div
-      className="group/WorkspaceListItem relative flex min-h-[30px] w-full cursor-pointer items-center justify-between px-4 py-1"
+      className="group/WorkspaceListItem relative flex min-h-[30px] w-full cursor-pointer items-center justify-between py-1 pr-2 pl-2.5"
       onClick={onClick}
       role="button"
       tabIndex={0}
