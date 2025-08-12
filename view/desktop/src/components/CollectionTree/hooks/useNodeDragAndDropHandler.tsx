@@ -326,7 +326,6 @@ export const useNodeDragAndDropHandler = () => {
             );
           } else {
             const newEntryPath = await join(locationTreeNodeData.parentNode.path.raw, entry.path.raw);
-            console.log("newEntryPath", newEntryPath);
             return createEntryKind(entry.name, newEntryPath, entry.kind === "Dir", entry.order!);
           }
         })

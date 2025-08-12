@@ -35,7 +35,7 @@ export const createEntryKind = (
   path: string,
   isAddingFolder: boolean,
   order: number,
-  protocol?: EntryProtocol
+  protocol: EntryProtocol = "Get"
 ): BatchCreateEntryKind => {
   if (isAddingFolder) {
     return {
