@@ -9,12 +9,13 @@ export const CollectionsListRootActions = () => {
           onClick={(e) => {
             e.stopPropagation();
           }}
+          customHoverBackground="hover:background-(--moss-gray-10)"
         />
       </div>
 
       <ActionMenu.Root>
         <ActionMenu.Trigger asChild>
-          <ActionButton icon="MoreHorizontal" />
+          <ActionButton icon="MoreHorizontal" customHoverBackground="hover:background-(--moss-gray-10)" />
         </ActionMenu.Trigger>
         <ActionMenu.Portal>
           <ActionMenu.Content>

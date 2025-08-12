@@ -1,10 +1,8 @@
-import { HTMLAttributes } from "react";
-
 import { CollectionsList } from "@/components/CollectionsList/CollectionsList";
 import { WorkspacesList } from "@/components/WorkspacesList/WorkspacesList";
-import Icon, { Icons } from "@/lib/ui/Icon";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
+import { EnvironmentsListItem } from "./EnvironmentsListItem";
 import { EnvironmentsListViewDivider } from "./EnvironmentsListViewDivider";
 import { EnvironmentsListViewHeader } from "./EnvironmentsListViewHeader";
 
@@ -42,29 +40,3 @@ export const EnvironmentsListView = () => {
 };
 
 export default EnvironmentsListView;
-
-const EnvironmentsListItem = ({
-  icon,
-  label,
-  disabled,
-  ...props
-}: { icon: Icons; label: string; disabled?: boolean } & HTMLAttributes<HTMLButtonElement>) => {
-  return (
-    <button
-      className="hover:background-(--moss-gray-12) flex w-full cursor-pointer items-center gap-2 px-2 py-1 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent"
-      disabled={disabled}
-      onClick={(e) => {
-        if (disabled) {
-          e.preventDefault();
-          return;
-        }
-
-        props.onClick?.(e);
-      }}
-      {...props}
-    >
-      <Icon icon={icon} />
-      <span>{label}</span>
-    </button>
-  );
-};

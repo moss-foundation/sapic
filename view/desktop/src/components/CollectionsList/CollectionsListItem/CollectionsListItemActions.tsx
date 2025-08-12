@@ -17,7 +17,7 @@ export const CollectionsListItemActions = ({ showActionMenu, setShowActionMenu }
       <Icon icon="EnvironmentSelection" />
       <ActionMenu.Root onOpenChange={setShowActionMenu} modal={showActionMenu}>
         <ActionMenu.Trigger asChild>
-          <ActionButton icon="MoreHorizontal" />
+          <ActionButton icon="MoreHorizontal" customHoverBackground="hover:background-(--moss-gray-10)" />
         </ActionMenu.Trigger>
         <ActionMenu.Portal>
           <ActionMenu.Content>

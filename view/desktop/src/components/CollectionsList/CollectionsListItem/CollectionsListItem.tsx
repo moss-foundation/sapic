@@ -17,7 +17,7 @@ export const CollectionsListItem = ({ environment }: CollectionsListItemProps) =
 
   const onClick = () => {
     addOrFocusPanel({
-      id: environment.id,
+      id: `CollectionsListItem-${environment.id}`,
       component: "Default",
       title: environment.name,
       params: {
@@ -25,11 +25,12 @@ export const CollectionsListItem = ({ environment }: CollectionsListItemProps) =
       },
     });
   };
-  const isActive = activePanelId === environment.id;
+
+  const isActive = activePanelId === `CollectionsListItem-${environment.id}`;
 
   return (
     <div
-      className="group/CollectionsListItem relative flex h-[26px] cursor-pointer items-center justify-between gap-1 pr-2 pl-4"
+      className="group/CollectionsListItem relative flex h-[26px] cursor-pointer items-center justify-between gap-1 pr-2 pl-5.5"
       onClick={onClick}
       role="button"
       tabIndex={0}

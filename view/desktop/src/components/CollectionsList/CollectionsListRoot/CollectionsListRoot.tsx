@@ -32,7 +32,7 @@ export const CollectionsListRoot = ({ collection }: CollectionsListRootProps) =>
   return (
     <div className="group/CollectionsListRoot flex flex-col">
       <div
-        className="group/CollectionsListRootHeader relative flex h-[30px] cursor-pointer items-center justify-between p-2"
+        className="group/CollectionsListRootHeader relative flex h-[30px] cursor-pointer items-center justify-between py-2 pr-2 pl-[10px]"
         onClick={onClick}
         role="button"
         tabIndex={0}

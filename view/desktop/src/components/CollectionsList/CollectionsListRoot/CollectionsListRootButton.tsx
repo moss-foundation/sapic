@@ -17,8 +17,11 @@ export const CollectionsListRootButton = ({
   return (
     <div className="z-10 flex items-center gap-2 overflow-hidden">
       <button
-        onClick={() => setShowChildren(!showChildren)}
-        className="hover:background-(--moss-icon-primary-background-hover) flex h-4 w-4 cursor-pointer items-center justify-center rounded-full"
+        onClick={(e) => {
+          e.stopPropagation();
+          setShowChildren(!showChildren);
+        }}
+        className="hover:background-(--moss-icon-primary-background-hover) flex size-4 cursor-pointer items-center justify-center rounded-full"
       >
         <Icon icon="ChevronRight" className={cn(showChildren && "rotate-90")} />
       </button>
