@@ -226,8 +226,6 @@ impl GitAuthAgent for GitLabAuthAgent {
     fn generate_callback<'a>(&'a self, cb: &mut RemoteCallbacks<'a>) -> Result<()> {
         let cred = self.credentials()?;
 
-        dbg!(&cred);
-
         cb.credentials(move |_url, _username_from_url, _allowed_types| {
             Cred::userpass_plaintext("oauth2", &cred.access_token)
         });
