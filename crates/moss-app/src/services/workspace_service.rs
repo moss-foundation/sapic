@@ -1,9 +1,3 @@
-use crate::{
-    dirs,
-    models::primitives::WorkspaceId,
-    services::storage_service::StorageService,
-    storage::segments::{SEGKEY_WORKSPACE, segkey_last_opened_at, segkey_workspace},
-};
 use anyhow::{Context as _, Result};
 use chrono::Utc;
 use derive_more::{Deref, DerefMut};
@@ -26,6 +20,13 @@ use std::{
 };
 use thiserror::Error;
 use tokio::sync::RwLock;
+
+use crate::{
+    dirs,
+    models::primitives::WorkspaceId,
+    services::storage_service::StorageService,
+    storage::segments::{SEGKEY_WORKSPACE, segkey_last_opened_at, segkey_workspace},
+};
 
 #[derive(Debug, Error)]
 pub enum WorkspaceServiceError {

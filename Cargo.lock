@@ -3201,6 +3201,7 @@ name = "joinerror"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "git2",
  "reqwest",
  "serde_json",
  "tokio",
@@ -3914,6 +3915,7 @@ dependencies = [
  "anyhow",
  "dotenv",
  "git2",
+ "joinerror",
  "libssh2-sys",
  "regex",
  "url",

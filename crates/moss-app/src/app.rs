@@ -1,8 +1,3 @@
-use crate::{
-    command::CommandCallback,
-    models::types::{ColorThemeInfo, LocaleInfo},
-    services::{session_service::SessionId, workspace_service::ActiveWorkspace, *},
-};
 use derive_more::Deref;
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::{AppRuntime, context::Canceller};
@@ -19,6 +14,12 @@ use std::{
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use tokio::sync::RwLock;
+
+use crate::{
+    command::CommandCallback,
+    models::types::{ColorThemeInfo, LocaleInfo},
+    services::{session_service::SessionId, workspace_service::ActiveWorkspace, *},
+};
 
 pub struct AppPreferences {
     pub theme: RwLock<Option<ColorThemeInfo>>,

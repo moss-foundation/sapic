@@ -43,6 +43,12 @@ impl From<tokio::task::JoinError> for Error {
     }
 }
 
+impl From<git2::Error> for Error {
+    fn from(err: git2::Error) -> Self {
+        Error::new::<()>(err.to_string())
+    }
+}
+
 impl From<Error> for anyhow::Error {
     fn from(err: Error) -> Self {
         anyhow!(err.to_string())

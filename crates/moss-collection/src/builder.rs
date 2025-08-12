@@ -1,6 +1,6 @@
 use joinerror::{Error, OptionExt, ResultExt};
 use moss_applib::{AppRuntime, subscription::EventEmitter};
-use moss_fs::{CreateOptions, FileSystem, RemoveOptions};
+use moss_fs::{CreateOptions, FileSystem, FsResultExt, RemoveOptions};
 use moss_git::{
     repo::{BranchType, IndexAddOption, RepoHandle, Signature},
     url::normalize_git_url,
@@ -67,7 +67,6 @@ pub struct CollectionCloneParams {
 
 pub struct CollectionBuilder {
     fs: Arc<dyn FileSystem>,
-    //
     github_client: Arc<GitHubClient>,
     gitlab_client: Arc<GitLabClient>,
 }
@@ -115,7 +114,64 @@ impl CollectionBuilder {
         );
         // TODO: Load environments
 
-        // TODO: Load Git repo
+        // FIXME: This logic needs to be updated when we implement support for external collections
+        // Since the repo should be at the external_abs_path
+        let manifest_path = params.internal_abs_path.join(MANIFEST_FILE_NAME);
+
+        let rdr = self
+            .fs
+            .open_file(&manifest_path)
+            .await
+            .join_err_with::<()>(|| {
+                format!("failed to open manifest file: {}", manifest_path.display())
+            })?;
+
+        let manifest: ManifestFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
+            format!("failed to parse manifest file: {}", manifest_path.display())
+        })?;
+
+        let repo_handle = if params.internal_abs_path.join(".git").exists() {
+            match manifest.git_provider_type {
+                None => {
+                    // TODO: log the error
+                    println!("no git provider found for the local repo");
+                    None
+                }
+                Some(GitProviderType::GitHub) => {
+                    let result = RepoHandle::open(
+                        params.internal_abs_path.as_ref(),
+                        self.github_client.git_auth_agent(),
+                    );
+
+                    match result {
+                        Ok(repo_handle) => Some(repo_handle),
+                        Err(e) => {
+                            // TODO: log the error
+                            println!("failed to open local repo: {}", e.to_string());
+                            None
+                        }
+                    }
+                }
+                Some(GitProviderType::GitLab) => {
+                    let result = RepoHandle::open(
+                        params.internal_abs_path.as_ref(),
+                        self.gitlab_client.git_auth_agent(),
+                    );
+
+                    match result {
+                        Ok(repo_handle) => Some(repo_handle),
+                        Err(e) => {
+                            // TODO: log the error
+                            println!("failed to open local repo: {}", e.to_string());
+                            None
+                        }
+                    }
+                }
+            }
+        } else {
+            None
+        };
+
         Ok(Collection {
             fs: self.fs.clone(),
             abs_path: params.internal_abs_path,
@@ -125,13 +181,12 @@ impl CollectionBuilder {
             worktree_service,
             environments: OnceCell::new(),
             on_did_change: EventEmitter::new(),
-            repo_handle: Arc::new(Mutex::new(None)),
+            repo_handle: Arc::new(Mutex::new(repo_handle)),
         })
     }
 
-    // TODO: A nicer functionality to have might be to help the user create a remote Git repository
-    // Using Git provider API, and help them make the initial commit
-    // I'll come to this question later.
+    // TODO: Maybe support a simplified mode, where we will use the provider API to create the repo
+    // on behalf of the user
 
     pub async fn create<R: AppRuntime>(
         self,
@@ -210,6 +265,9 @@ impl CollectionBuilder {
                         .repository
                         .as_ref()
                         .and_then(|repo| normalize_git_url(repo).ok()),
+                    // FIXME: Use the actual git provider and auth agent based on user input
+                    // Hardcoded using GitHub agent for now
+                    git_provider_type: Some(GitProviderType::GitHub),
                 })?
                 .as_bytes(),
                 CreateOptions {
@@ -260,12 +318,12 @@ impl CollectionBuilder {
             let abs_path_clone = abs_path.clone();
             let repo_handle_clone = repo_handle.clone();
 
-            let _github_client_clone = self.github_client.clone();
-            let gitlab_client_clone = self.gitlab_client.clone();
+            let github_client_clone = self.github_client.clone();
+            let _gitlab_client_clone = self.gitlab_client.clone();
 
             // FIXME: Use the actual git provider and auth agent based on user input
             // Hardcoded using GitHub auth agent for now
-            let client = gitlab_client_clone;
+            let client = github_client_clone;
             let user_info = client.current_user().await?;
 
             let result = tokio::task::spawn_blocking(move || {

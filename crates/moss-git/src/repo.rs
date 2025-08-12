@@ -1,4 +1,3 @@
-use anyhow::Result;
 use git2::{IntoCString, PushOptions, RemoteCallbacks, Repository, build::RepoBuilder};
 use std::{path::Path, sync::Arc};
 
@@ -23,7 +22,11 @@ pub struct RepoHandle {
 
 // TODO: Use callback to return/display progress
 impl RepoHandle {
-    pub fn clone(url: &str, path: &Path, auth_agent: Arc<dyn GitAuthAgent>) -> Result<RepoHandle> {
+    pub fn clone(
+        url: &str,
+        path: &Path,
+        auth_agent: Arc<dyn GitAuthAgent>,
+    ) -> joinerror::Result<RepoHandle> {
         let mut callbacks = RemoteCallbacks::new();
         auth_agent.generate_callback(&mut callbacks)?;
 
@@ -40,13 +43,13 @@ impl RepoHandle {
         })
     }
 
-    pub fn open(path: &Path, auth_agent: Arc<dyn GitAuthAgent>) -> Result<RepoHandle> {
+    pub fn open(path: &Path, auth_agent: Arc<dyn GitAuthAgent>) -> joinerror::Result<RepoHandle> {
         let repo = Repository::open(path)?;
 
         Ok(RepoHandle { auth_agent, repo })
     }
 
-    pub fn init(path: &Path, auth_agent: Arc<dyn GitAuthAgent>) -> Result<RepoHandle> {
+    pub fn init(path: &Path, auth_agent: Arc<dyn GitAuthAgent>) -> joinerror::Result<RepoHandle> {
         let repo = Repository::init(path)?;
 
         Ok(RepoHandle { auth_agent, repo })
@@ -58,21 +61,24 @@ impl RepoHandle {
         &self,
         paths: impl IntoIterator<Item = impl IntoCString>,
         opts: IndexAddOption,
-    ) -> Result<()> {
+    ) -> joinerror::Result<()> {
         let mut index = self.repo.index()?;
         index.add_all(paths, opts, None)?;
         index.write()?;
         Ok(())
     }
 
-    pub fn remove(&self, paths: impl IntoIterator<Item = impl IntoCString>) -> Result<()> {
+    pub fn remove(
+        &self,
+        paths: impl IntoIterator<Item = impl IntoCString>,
+    ) -> joinerror::Result<()> {
         let mut index = self.repo.index()?;
         index.remove_all(paths, None)?;
         index.write()?;
         Ok(())
     }
 
-    pub fn commit(&self, message: &str, sig: Signature) -> Result<()> {
+    pub fn commit(&self, message: &str, sig: Signature) -> joinerror::Result<()> {
         let mut index = self.repo.index()?;
         let tree = self.repo.find_tree(index.write_tree()?)?;
 
@@ -94,7 +100,7 @@ impl RepoHandle {
         local_branch_name: Option<&str>,
         remote_branch_name: Option<&str>,
         set_upstream: bool,
-    ) -> Result<()> {
+    ) -> joinerror::Result<()> {
         let remote_name = remote_name.unwrap_or("origin");
         // FIXME: does it make sense to default to main branch?
         let local_branch_name = local_branch_name.unwrap_or("main");
@@ -132,7 +138,7 @@ impl RepoHandle {
         Ok(())
     }
 
-    pub fn fetch(&self, remote_name: Option<&str>) -> Result<()> {
+    pub fn fetch(&self, remote_name: Option<&str>) -> joinerror::Result<()> {
         let remote_name = remote_name.unwrap_or("origin");
         let mut remote = self.repo.find_remote(remote_name)?;
         let refspec = format!("+refs/heads/*:refs/remotes/{}/*", remote_name);
@@ -148,7 +154,7 @@ impl RepoHandle {
         Ok(())
     }
 
-    pub fn merge(&self, branch_name: &str) -> Result<()> {
+    pub fn merge(&self, branch_name: &str) -> joinerror::Result<()> {
         let incoming_reference = self
             .repo
             .find_branch(branch_name, git2::BranchType::Local)?
@@ -161,7 +167,7 @@ impl RepoHandle {
         Ok(())
     }
 
-    pub fn pull(&self, remote_name: Option<&str>) -> Result<()> {
+    pub fn pull(&self, remote_name: Option<&str>) -> joinerror::Result<()> {
         // Pull = Fetch + Merge FETCH_HEAD
         let remote = self.repo.find_remote(remote_name.unwrap_or("origin"))?;
         let mut callbacks = RemoteCallbacks::new();
@@ -176,14 +182,14 @@ impl RepoHandle {
         Ok(())
     }
 
-    pub fn add_remote(&self, remote_name: Option<&str>, remote_url: &str) -> Result<()> {
+    pub fn add_remote(&self, remote_name: Option<&str>, remote_url: &str) -> joinerror::Result<()> {
         self.repo
             .remote(remote_name.unwrap_or("origin"), remote_url)?;
 
         Ok(())
     }
 
-    pub fn list_branches(&self, branch_type: Option<BranchType>) -> Result<Vec<String>> {
+    pub fn list_branches(&self, branch_type: Option<BranchType>) -> joinerror::Result<Vec<String>> {
         let branches = self.repo.branches(branch_type)?;
 
         let names = branches
@@ -200,7 +206,12 @@ impl RepoHandle {
     }
 
     /// Only supports renaming local branch at the moment
-    pub fn rename_branch(&self, old_name: &str, new_name: &str, force: bool) -> Result<()> {
+    pub fn rename_branch(
+        &self,
+        old_name: &str,
+        new_name: &str,
+        force: bool,
+    ) -> joinerror::Result<()> {
         let mut branch = self.repo.find_branch(old_name, BranchType::Local)?;
         branch.rename(new_name, force)?;
         Ok(())
@@ -212,7 +223,7 @@ impl RepoHandle {
         branch_name: &str,
         base_branch: Option<&str>,
         force: bool,
-    ) -> Result<()> {
+    ) -> joinerror::Result<()> {
         let target = if let Some(base_branch) = base_branch {
             self.repo
                 .find_branch(base_branch, BranchType::Local)?
@@ -229,7 +240,10 @@ impl RepoHandle {
 
     /// Compare a local branch and its remote-tracking branch
     /// Returns (ahead_commits, behind_commits)
-    pub fn compare_with_remote_branch(&self, branch_name: &str) -> Result<(usize, usize)> {
+    pub fn compare_with_remote_branch(
+        &self,
+        branch_name: &str,
+    ) -> joinerror::Result<(usize, usize)> {
         let local = self.repo.find_branch(branch_name, BranchType::Local)?;
         let upstream = local.upstream()?;
 
@@ -246,7 +260,7 @@ impl RepoHandle {
         &self,
         our_reference: &mut git2::Reference,
         incoming_commit: &git2::AnnotatedCommit,
-    ) -> Result<(), git2::Error> {
+    ) -> joinerror::Result<()> {
         let name = match our_reference.name() {
             Some(s) => s.to_string(),
             None => String::from_utf8_lossy(our_reference.name_bytes()).to_string(),
@@ -271,7 +285,7 @@ impl RepoHandle {
         &self,
         our_commit: &git2::AnnotatedCommit,
         incoming_commit: &git2::AnnotatedCommit,
-    ) -> Result<(), git2::Error> {
+    ) -> joinerror::Result<()> {
         let our_tree = self.repo.find_commit(our_commit.id())?.tree()?;
         let incoming_tree = self.repo.find_commit(incoming_commit.id())?.tree()?;
         let ancestor = self
@@ -310,7 +324,7 @@ impl RepoHandle {
         Ok(())
     }
 
-    fn merge_helper(&self, incoming_commit: git2::AnnotatedCommit) -> Result<(), git2::Error> {
+    fn merge_helper(&self, incoming_commit: git2::AnnotatedCommit) -> joinerror::Result<()> {
         let head = self.repo.head()?;
         let our_branch = head.name().unwrap_or("main");
 

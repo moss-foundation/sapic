@@ -1,3 +1,4 @@
+use moss_git_hosting_provider::common::GitProviderType;
 use serde::{Deserialize, Serialize};
 
 pub(crate) const MANIFEST_FILE_NAME: &str = "Sapic.json";
@@ -6,4 +7,5 @@ pub(crate) const MANIFEST_FILE_NAME: &str = "Sapic.json";
 pub struct ManifestFile {
     pub name: String,
     pub repository: Option<String>,
+    pub git_provider_type: Option<GitProviderType>,
 }
