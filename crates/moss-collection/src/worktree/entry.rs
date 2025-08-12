@@ -9,7 +9,10 @@ use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};
 use tokio::sync::{RwLock, watch};
 
-use crate::errors::{ErrorAlreadyExists, ErrorInternal};
+use crate::{
+    errors::{ErrorAlreadyExists, ErrorInternal},
+    spec::EntryModel,
+};
 
 struct EntryEditingState {
     path: Arc<Path>,
@@ -101,7 +104,7 @@ impl EntryEditing {
             )
             .await?;
 
-        let new_path: Arc<Path> = to.clone().into();
+        let new_path: Arc<Path> = to.into();
 
         state_lock.path = new_path.clone();
         drop(state_lock);
@@ -111,14 +114,11 @@ impl EntryEditing {
         Ok(())
     }
 
-    pub async fn edit<T>(
+    pub async fn edit(
         &self,
         abs_path: &Path,
         params: &[(PatchOperation, EditOptions)],
-    ) -> joinerror::Result<()>
-    where
-        T: for<'de> Deserialize<'de> + Serialize,
-    {
+    ) -> joinerror::Result<()> {
         let mut state_lock = self.state.write().await;
 
         let abs_path = abs_path.join(&state_lock.path);
@@ -135,7 +135,7 @@ impl EntryEditing {
             .apply(&mut value, params)
             .join_err::<()>("failed to apply patches")?;
 
-        let parsed: T = serde_json::from_value(value)?;
+        let parsed: EntryModel = serde_json::from_value(value)?;
         let content = hcl::to_string(&parsed).join_err::<()>("failed to serialize json")?;
         self.fs
             .create_file_with(

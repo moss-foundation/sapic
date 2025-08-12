@@ -3,18 +3,20 @@ pub mod entry;
 use anyhow::anyhow;
 use derive_more::{Deref, DerefMut};
 use joinerror::OptionExt;
+use json_patch::{PatchOperation, ReplaceOperation, jsonptr::PointerBuf};
 use moss_applib::AppRuntime;
 use moss_common::{continue_if_err, continue_if_none};
 use moss_db::primitives::AnyValue;
+use moss_edit::json::EditOptions;
 use moss_fs::{CreateOptions, FileSystem, RemoveOptions, desanitize_path, utils::SanitizedPath};
 use moss_hcl::HclResultExt;
 use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_text::sanitized::{desanitize, sanitize};
 use rustc_hash::FxHashMap;
+use serde_json::Value as JsonValue;
 use std::{
     cell::LazyCell,
     collections::{HashMap, HashSet},
-    hash::Hash,
     path::{Path, PathBuf},
     sync::Arc,
 };
@@ -26,9 +28,15 @@ use tokio::{
 use crate::{
     constants::{self, COLLECTION_ROOT_PATH, DIR_CONFIG_FILENAME},
     models::{
-        primitives::{EntryClass, EntryId, EntryKind, EntryProtocol},
-        types::configuration::docschema::{RawDirConfiguration, RawItemConfiguration},
+        primitives::{
+            EntryClass, EntryId, EntryKind, EntryProtocol, HeaderId, PathParamId, QueryParamId,
+        },
+        types::http::{
+            AddHeaderParams, AddPathParamParams, AddQueryParamParams, UpdateHeaderParams,
+            UpdatePathParamParams, UpdateQueryParamParams,
+        },
     },
+    spec::EntryModel,
     storage::segments,
     worktree::entry::EntryEditing,
 };
@@ -56,69 +64,77 @@ struct ScanJob {
     scan_queue: mpsc::UnboundedSender<ScanJob>,
 }
 
-pub struct EntryMetadata {
-    pub order: isize,
-    pub expanded: bool,
-}
+// pub enum EntryConfiguration {
+//     Item(RawItemConfiguration),
+//     Dir(RawDirConfiguration),
+// }
 
-pub enum EntryConfiguration {
-    Item(RawItemConfiguration),
-    Dir(RawDirConfiguration),
-}
+// impl EntryConfiguration {
+//     pub fn as_item(&self) -> Option<&RawItemConfiguration> {
+//         match self {
+//             EntryConfiguration::Item(conf) => Some(conf),
+//             EntryConfiguration::Dir(_) => None,
+//         }
+//     }
 
-impl EntryConfiguration {
-    pub fn as_item(&self) -> Option<&RawItemConfiguration> {
-        match self {
-            EntryConfiguration::Item(conf) => Some(conf),
-            EntryConfiguration::Dir(_) => None,
-        }
-    }
+//     pub fn as_dir(&self) -> Option<&RawDirConfiguration> {
+//         match self {
+//             EntryConfiguration::Item(_) => None,
+//             EntryConfiguration::Dir(conf) => Some(conf),
+//         }
+//     }
 
-    pub fn as_dir(&self) -> Option<&RawDirConfiguration> {
-        match self {
-            EntryConfiguration::Item(_) => None,
-            EntryConfiguration::Dir(conf) => Some(conf),
-        }
-    }
+//     pub fn classification(&self) -> EntryClass {
+//         match self {
+//             EntryConfiguration::Item(conf) => match conf {
+//                 RawItemConfiguration::Request(_) => EntryClass::Request,
+//                 RawItemConfiguration::Endpoint(_) => EntryClass::Endpoint,
+//                 RawItemConfiguration::Component(_) => EntryClass::Component,
+//                 RawItemConfiguration::Schema(_) => EntryClass::Schema,
+//             },
+//             EntryConfiguration::Dir(conf) => conf.classification(),
+//         }
+//     }
 
-    pub fn classification(&self) -> EntryClass {
-        match self {
-            EntryConfiguration::Item(conf) => match conf {
-                RawItemConfiguration::Request(_) => EntryClass::Request,
-                RawItemConfiguration::Endpoint(_) => EntryClass::Endpoint,
-                RawItemConfiguration::Component(_) => EntryClass::Component,
-                RawItemConfiguration::Schema(_) => EntryClass::Schema,
-            },
-            EntryConfiguration::Dir(conf) => conf.classification(),
-        }
-    }
+//     pub fn protocol(&self) -> Option<EntryProtocol> {
+//         match self {
+//             EntryConfiguration::Item(conf) => match conf {
+//                 RawItemConfiguration::Request(conf) => conf.url.protocol(),
+//                 RawItemConfiguration::Endpoint(conf) => conf.url.protocol(),
+//                 RawItemConfiguration::Component(_) => None,
+//                 RawItemConfiguration::Schema(_) => None,
+//             },
+//             EntryConfiguration::Dir(_) => None,
+//         }
+//     }
 
-    pub fn protocol(&self) -> Option<EntryProtocol> {
-        match self {
-            EntryConfiguration::Item(conf) => match conf {
-                RawItemConfiguration::Request(conf) => conf.url.protocol(),
-                RawItemConfiguration::Endpoint(conf) => conf.url.protocol(),
-                RawItemConfiguration::Component(_) => None,
-                RawItemConfiguration::Schema(_) => None,
-            },
-            EntryConfiguration::Dir(_) => None,
-        }
-    }
+//     pub fn kind(&self) -> EntryKind {
+//         match self {
+//             EntryConfiguration::Item(_) => EntryKind::Item,
+//             EntryConfiguration::Dir(_) => EntryKind::Dir,
+//         }
+//     }
+// }
 
-    pub fn kind(&self) -> EntryKind {
-        match self {
-            EntryConfiguration::Item(_) => EntryKind::Item,
-            EntryConfiguration::Dir(_) => EntryKind::Dir,
-        }
-    }
-}
-
-pub struct ModifyParams {
+pub(crate) struct ModifyParams {
     pub name: Option<String>,
     pub protocol: Option<EntryProtocol>,
     pub expanded: Option<bool>,
     pub order: Option<isize>,
     pub path: Option<PathBuf>,
+
+    pub query_params_to_add: Vec<AddQueryParamParams>,
+    pub query_params_to_update: Vec<UpdateQueryParamParams>,
+    pub query_params_to_remove: Vec<QueryParamId>,
+    //
+    //TODO: Add
+    // pub path_params_to_add: Vec<AddPathParamParams>,
+    // pub path_params_to_update: Vec<UpdatePathParamParams>,
+    // pub path_params_to_remove: Vec<PathParamId>,
+
+    // pub headers_to_add: Vec<AddHeaderParams>,
+    // pub headers_to_update: Vec<UpdateHeaderParams>,
+    // pub headers_to_remove: Vec<HeaderParamId>,
 }
 
 // #[derive(Deref, DerefMut)]
@@ -148,6 +164,7 @@ struct Entry {
     #[deref_mut]
     edit: EntryEditing,
     class: EntryClass,
+    protocol: Option<EntryProtocol>,
     // configuration: EntryConfiguration,
 }
 
@@ -193,7 +210,7 @@ struct WorktreeState {
     expanded_entries: HashSet<EntryId>,
 }
 
-pub struct Worktree<R: AppRuntime> {
+pub(crate) struct Worktree<R: AppRuntime> {
     abs_path: Arc<Path>,
     fs: Arc<dyn FileSystem>,
     storage: Arc<StorageService<R>>,
@@ -440,11 +457,11 @@ impl<R: AppRuntime> Worktree<R> {
     pub async fn create_item_entry(
         &self,
         ctx: &R::AsyncContext,
-        id: &EntryId,
         name: &str,
         path: &Path,
-        configuration: RawItemConfiguration,
-        metadata: EntryMetadata,
+        model: EntryModel,
+        order: isize,
+        expanded: bool,
     ) -> joinerror::Result<()> {
         debug_assert!(path.is_relative());
 
@@ -459,22 +476,26 @@ impl<R: AppRuntime> Worktree<R> {
             .join(sanitize(name))
             .into();
 
-        let content = hcl::to_string(&configuration)
+        let content = hcl::to_string(&model)
             .join_err::<()>("failed to serialize configuration into hcl string")?;
         self.create_entry(&sanitized_path, false, &content.as_bytes())
             .await?;
 
         let mut state_lock = self.state.write().await;
+
+        let id = model.id().clone();
         let (path_tx, path_rx) = watch::channel(sanitized_path.to_path_buf().into());
+
         state_lock.entries.insert(
-            id.to_owned(),
+            id.clone(),
             Entry {
-                id: id.to_owned(),
+                id: id.clone(),
                 // path: sanitized_path.to_path_buf().into(),
                 // configuration: EntryConfiguration::Item(configuration),
                 path_rx,
                 edit: EntryEditing::new(self.fs.clone(), path_tx),
-                class: configuration.classification(),
+                class: model.metadata.class.clone(),
+                protocol: model.protocol(),
             },
         );
 
@@ -482,11 +503,11 @@ impl<R: AppRuntime> Worktree<R> {
             let mut txn = self.storage.begin_write(ctx).await?;
 
             self.storage
-                .put_entry_order_txn(ctx, &mut txn, id, metadata.order)
+                .put_entry_order_txn(ctx, &mut txn, &id, order)
                 .await?;
 
-            if metadata.expanded {
-                state_lock.expanded_entries.insert(id.to_owned());
+            if expanded {
+                state_lock.expanded_entries.insert(id);
 
                 self.storage
                     .put_expanded_entries_txn(
@@ -510,11 +531,11 @@ impl<R: AppRuntime> Worktree<R> {
     pub async fn create_dir_entry(
         &self,
         ctx: &R::AsyncContext,
-        id: &EntryId,
         name: &str,
         path: &Path,
-        configuration: RawDirConfiguration,
-        metadata: EntryMetadata,
+        model: EntryModel,
+        order: isize,
+        expanded: bool,
     ) -> joinerror::Result<()> {
         debug_assert!(path.is_relative());
 
@@ -529,33 +550,36 @@ impl<R: AppRuntime> Worktree<R> {
             .join(sanitize(name))
             .into();
 
-        let content = hcl::to_string(&configuration)
+        let content = hcl::to_string(&model)
             .join_err::<()>("failed to serialize configuration into hcl string")?;
         self.create_entry(&sanitized_path, true, &content.as_bytes())
             .await?;
 
         let mut state_lock = self.state.write().await;
+
+        let id = model.id().clone();
         let (path_tx, path_rx) = watch::channel(sanitized_path.to_path_buf().into());
         state_lock.entries.insert(
-            id.to_owned(),
+            id.clone(),
             Entry {
-                id: id.to_owned(),
+                id: id.clone(),
                 // path: sanitized_path.to_path_buf().into(),
                 // configuration: EntryConfiguration::Dir(configuration),
                 path_rx,
                 edit: EntryEditing::new(self.fs.clone(), path_tx),
-                class: configuration.classification(),
+                class: model.metadata.class.clone(),
+                protocol: None,
             },
         );
 
         {
             let mut txn = self.storage.begin_write(ctx).await?;
             self.storage
-                .put_entry_order_txn(ctx, &mut txn, id, metadata.order)
+                .put_entry_order_txn(ctx, &mut txn, &id, order)
                 .await?;
 
-            if metadata.expanded {
-                state_lock.expanded_entries.insert(id.to_owned());
+            if expanded {
+                state_lock.expanded_entries.insert(id);
 
                 self.storage
                     .put_expanded_entries_txn(
@@ -749,6 +773,8 @@ impl<R: AppRuntime> Worktree<R> {
                 .await?;
         }
 
+        // self.patch_item_entry(entry, params).await?;
+
         let path = entry.path_rx.borrow().clone();
         drop(state_lock);
 
@@ -815,7 +841,32 @@ impl<R: AppRuntime> Worktree<R> {
         Ok(path)
     }
 
-    async fn modify_item_entry() {}
+    async fn patch_item_entry(
+        &self,
+        entry: &mut Entry,
+        params: ModifyParams,
+    ) -> joinerror::Result<()> {
+        let mut patches = Vec::new();
+
+        if let Some(protocol) = params.protocol {
+            patches.push((
+                PatchOperation::Replace(ReplaceOperation {
+                    path: unsafe { PointerBuf::new_unchecked("/url/protocol") },
+                    value: JsonValue::String(protocol.to_string()),
+                }),
+                EditOptions {
+                    create_missing_segments: false,
+                    ignore_if_not_exists: false,
+                },
+            ));
+        }
+
+        // TODO: handle other stuff
+
+        entry.edit.edit(&self.abs_path, &patches).await?;
+
+        Ok(())
+    }
 }
 
 impl<R: AppRuntime> Worktree<R> {
@@ -968,13 +1019,16 @@ async fn process_entry(
         .unwrap_or_else(|| path.to_string_lossy().to_string());
 
     if dir_config_path.exists() {
-        let config = parse_configuration::<RawDirConfiguration>(&fs, &dir_config_path).await?;
-        let id = config.id().clone();
+        let mut rdr = fs.open_file(&dir_config_path).await?;
+        let model: EntryModel =
+            hcl::from_reader(&mut rdr).join_err::<()>("failed to parse dir configuration")?;
+
+        let id = model.id().clone();
         let desc = EntryDescription {
             id: id.clone(),
             name: desanitize(&name),
             path: path.clone(),
-            class: config.classification(),
+            class: model.class(),
             kind: EntryKind::Dir,
             protocol: None,
             order: all_entry_keys
@@ -990,7 +1044,8 @@ async fn process_entry(
                 // path: desanitize_path(path, None)?.into(),
                 path_rx,
                 edit: EntryEditing::new(fs.clone(), path_tx),
-                class: config.classification(),
+                class: model.class(),
+                protocol: None,
                 // configuration: EntryConfiguration::Dir(config),
             },
             desc,
@@ -998,15 +1053,18 @@ async fn process_entry(
     }
 
     if item_config_path.exists() {
-        let config = parse_configuration::<RawItemConfiguration>(&fs, &item_config_path).await?;
-        let id = config.id().clone();
+        let mut rdr = fs.open_file(&item_config_path).await?;
+        let model: EntryModel =
+            hcl::from_reader(&mut rdr).join_err::<()>("failed to parse item configuration")?;
+
+        let id = model.id().clone();
         let desc = EntryDescription {
             id: id.clone(),
             name: desanitize(&name),
             path: path.clone(),
-            class: config.classification(),
+            class: model.class(),
             kind: EntryKind::Item,
-            protocol: config.protocol(),
+            protocol: model.protocol(),
             order: all_entry_keys
                 .get(&segments::segkey_entry_order(&id))
                 .and_then(|o| o.deserialize().ok()),
@@ -1022,7 +1080,8 @@ async fn process_entry(
                 // configuration: EntryConfiguration::Item(config),
                 path_rx,
                 edit: EntryEditing::new(fs.clone(), path_tx),
-                class: config.classification(),
+                class: model.class(),
+                protocol: model.protocol(),
             },
             desc,
         )));
@@ -1041,15 +1100,51 @@ async fn process_file(
     Ok(None)
 }
 
-async fn parse_configuration<T>(fs: &Arc<dyn FileSystem>, path: &Path) -> joinerror::Result<T>
-where
-    T: for<'de> serde::Deserialize<'de>,
-{
-    let mut rdr = fs.open_file(path).await?;
-    // let mut buf = String::new();
-    // reader
-    //     .read_to_string(&mut buf)
-    //     .map_err(|e| joinerror::Error::new::<ErrorIo>(e.to_string()))?;
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use json_patch::{
+        MoveOperation, PatchOperation, RemoveOperation, ReplaceOperation, jsonptr::PointerBuf,
+    };
+    use moss_edit::json::{EditOptions, JsonEdit};
+    use serde_json::{Value as JsonValue, json};
 
-    Ok(hcl::from_reader(&mut rdr).map_err(anyhow::Error::from)?)
+    #[test]
+    fn patch_test() {
+        let content = r#"
+            request {
+                metadata {
+                    id = "en81rfzU5M"
+                }
+
+                get {
+                    raw = "test"
+                }
+            }
+        "#;
+
+        let mut edits = JsonEdit::new();
+        let mut value: JsonValue = hcl::from_str(content).unwrap();
+
+        // let p = unsafe { PointerBuf::new_unchecked("/request/get") };
+        // let v = value.pointer(&p).unwrap();
+
+        edits
+            .apply(
+                &mut value,
+                &[(
+                    PatchOperation::Move(MoveOperation {
+                        from: unsafe { PointerBuf::new_unchecked("/request/get") },
+                        path: unsafe { PointerBuf::new_unchecked("/request/post") },
+                    }),
+                    EditOptions {
+                        ignore_if_not_exists: false,
+                        create_missing_segments: false,
+                    },
+                )],
+            )
+            .unwrap();
+
+        dbg!(&value);
+    }
 }

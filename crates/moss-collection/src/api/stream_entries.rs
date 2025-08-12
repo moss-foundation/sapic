@@ -20,7 +20,7 @@ use crate::{
     models::{
         events::StreamEntriesEvent,
         operations::{StreamEntriesInput, StreamEntriesOutput},
-        primitives::{EntryId, EntryPath},
+        primitives::{EntryId, FrontendEntryPath},
         types::EntryInfo,
     },
     worktree::EntryDescription,
@@ -111,7 +111,7 @@ impl<R: AppRuntime> Collection<R> {
                             let entry_info = EntryInfo {
                                 id: entry.id,
                                 name: entry.name,
-                                path: EntryPath::new(entry.path.to_path_buf()),
+                                path: FrontendEntryPath::new(entry.path.to_path_buf()),
                                 class: entry.class,
                                 kind: entry.kind,
                                 protocol: entry.protocol,
@@ -129,7 +129,7 @@ impl<R: AppRuntime> Collection<R> {
                             let entry_info = EntryInfo {
                                 id: entry.id,
                                 name: entry.name,
-                                path: EntryPath {
+                                path: FrontendEntryPath {
                                     raw: entry.path.to_path_buf(),
                                     segments: entry.path.to_path_buf().iter().map(|s| s.to_string_lossy().to_string()).collect(),
                                 },

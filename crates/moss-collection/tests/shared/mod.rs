@@ -10,7 +10,7 @@ use moss_collection::{
     models::{
         operations::{CreateDirEntryInput, CreateEntryInput, CreateItemEntryInput},
         primitives::EntryId,
-        types::configuration::{
+        types::specification::{
             ComponentDirConfigurationModel, ComponentItemConfigurationModel, DirConfigurationModel,
             DirHttpConfigurationModel, EndpointDirConfigurationModel, HttpEndpointDirConfiguration,
             ItemConfigurationModel, RequestDirConfigurationModel, SchemaDirConfigurationModel,

@@ -1,5 +1,7 @@
 use joinerror::Error;
-use json_patch::{AddOperation, PatchOperation, RemoveOperation, ReplaceOperation, patch};
+use json_patch::{
+    AddOperation, MoveOperation, PatchOperation, RemoveOperation, ReplaceOperation, patch,
+};
 use jsonptr::PointerBuf;
 use serde_json::{Value as JsonValue, json};
 
@@ -17,6 +19,10 @@ pub enum JsonEditAction {
         path: PointerBuf,
         old_value: JsonValue,
         new_value: JsonValue,
+    },
+    Move {
+        from: PointerBuf,
+        path: PointerBuf,
     },
 }
 
@@ -122,6 +128,13 @@ impl JsonEdit {
                         }
                     }
                 }
+                PatchOperation::Move(MoveOperation { from, path }) => {
+                    actions.push(JsonEditAction::Move {
+                        from: from.clone(),
+                        path: path.clone(),
+                    });
+                    applied_patches.push(op.clone());
+                }
                 _ => unimplemented!(),
             }
         }
@@ -154,6 +167,10 @@ impl JsonEdit {
                     path: path.clone(),
                     value: old.clone(),
                 }),
+                JsonEditAction::Move { from, path } => PatchOperation::Move(MoveOperation {
+                    from: from.clone(),
+                    path: path.clone(),
+                }),
             };
 
             patch(root, &[inverse_patch])
@@ -183,6 +200,10 @@ impl JsonEdit {
                 } => PatchOperation::Replace(ReplaceOperation {
                     path: path.clone(),
                     value: new.clone(),
+                }),
+                JsonEditAction::Move { from, path } => PatchOperation::Move(MoveOperation {
+                    from: from.clone(),
+                    path: path.clone(),
                 }),
             };
 

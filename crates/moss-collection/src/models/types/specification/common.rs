@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-use crate::models::{primitives::HttpMethod, types::configuration::docschema::RawMetadata};
+use crate::{models::primitives::HttpMethod, spec::EntryMetadataSpec};
 
 /// @category Type
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
@@ -31,14 +31,14 @@ pub struct ConfigurationMetadata {
     pub id: String,
 }
 
-impl Into<Block<RawMetadata>> for ConfigurationMetadata {
-    fn into(self) -> Block<RawMetadata> {
-        Block::new(RawMetadata { id: self.id.into() })
+impl Into<Block<EntryMetadataSpec>> for ConfigurationMetadata {
+    fn into(self) -> Block<EntryMetadataSpec> {
+        Block::new(EntryMetadataSpec { id: self.id.into() })
     }
 }
 
-impl From<Block<RawMetadata>> for ConfigurationMetadata {
-    fn from(block: Block<RawMetadata>) -> Self {
+impl From<Block<EntryMetadataSpec>> for ConfigurationMetadata {
+    fn from(block: Block<EntryMetadataSpec>) -> Self {
         let inner = block.into_inner();
         Self {
             id: inner.id.to_string(),

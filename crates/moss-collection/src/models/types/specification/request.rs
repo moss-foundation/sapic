@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-use crate::models::types::configuration::HttpRequestParts;
+use crate::models::types::specification::HttpRequestParts;
 
 // #########################################################
 // ###                      Item                         ###
@@ -11,17 +11,16 @@ use crate::models::types::configuration::HttpRequestParts;
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
-pub struct HttpEndpointItemConfiguration {
+pub struct ItemHttpRequestConfiguration {
     pub request_parts: HttpRequestParts,
 }
 
 /// @category Type
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-// #[serde(rename_all = "snake_case")]
-// #[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
-pub enum EndpointItemConfigurationModel {
-    Http(HttpEndpointItemConfiguration),
+pub enum ItemRequestConfigurationModel {
+    Http(ItemHttpRequestConfiguration),
 }
 
 // #########################################################
@@ -30,15 +29,15 @@ pub enum EndpointItemConfigurationModel {
 
 /// @category Type
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-// #[serde(rename_all = "camelCase")]
+// #[serde(rename_all = "snake_case")]
+// #[ts(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
-pub struct HttpEndpointDirConfiguration {}
+pub struct DirHttpConfigurationModel {}
 
 /// @category Type
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-// #[serde(rename_all = "snake_case")]
-// #[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
-pub enum EndpointDirConfigurationModel {
-    Http(HttpEndpointDirConfiguration),
+pub enum RequestDirConfigurationModel {
+    Http(DirHttpConfigurationModel),
 }

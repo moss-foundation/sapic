@@ -16,15 +16,10 @@ use crate::{
     defaults, dirs,
     edit::CollectionEdit,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
-    models::{
-        primitives::EntryId,
-        types::configuration::docschema::{
-            RawDirComponentConfiguration, RawDirConfiguration, RawDirEndpointConfiguration,
-            RawDirRequestConfiguration, RawDirSchemaConfiguration,
-        },
-    },
+    models::primitives::{EntryClass, EntryId},
     services::{set_icon_service::SetIconService, storage_service::StorageService},
-    worktree::{EntryMetadata, Worktree},
+    spec::EntryModel,
+    worktree::Worktree,
 };
 
 const COLLECTION_ICON_SIZE: u32 = 128;
@@ -125,33 +120,22 @@ impl CollectionBuilder {
 
         for (dir, order) in &WORKTREE_DIRS {
             let id = EntryId::new();
-            let configuration = match *dir {
-                dirs::REQUESTS_DIR => {
-                    RawDirConfiguration::Request(Block::new(RawDirRequestConfiguration::new(&id)))
-                }
-                dirs::ENDPOINTS_DIR => {
-                    RawDirConfiguration::Endpoint(Block::new(RawDirEndpointConfiguration::new(&id)))
-                }
-                dirs::COMPONENTS_DIR => RawDirConfiguration::Component(Block::new(
-                    RawDirComponentConfiguration::new(&id),
-                )),
-                dirs::SCHEMAS_DIR => {
-                    RawDirConfiguration::Schema(Block::new(RawDirSchemaConfiguration::new(&id)))
-                }
+            let model = match *dir {
+                dirs::REQUESTS_DIR => EntryModel::from((id, EntryClass::Request)),
+                dirs::ENDPOINTS_DIR => EntryModel::from((id, EntryClass::Endpoint)),
+                dirs::COMPONENTS_DIR => EntryModel::from((id, EntryClass::Component)),
+                dirs::SCHEMAS_DIR => EntryModel::from((id, EntryClass::Schema)),
                 _ => unreachable!(),
             };
 
             worktree_service
                 .create_dir_entry(
                     ctx,
-                    &id,
                     dir,
                     Path::new(COLLECTION_ROOT_PATH),
-                    configuration,
-                    EntryMetadata {
-                        order: *order,
-                        expanded: false,
-                    },
+                    model,
+                    *order,
+                    false,
                 )
                 .await?;
         }
