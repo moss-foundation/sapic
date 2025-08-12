@@ -138,18 +138,14 @@ impl<R: AppRuntime> CollectionService<R> {
     pub(crate) async fn create_collection(
         &self,
         ctx: &R::AsyncContext,
-        id: &CollectionId,
         params: CollectionItemCreateParams,
     ) -> joinerror::Result<CollectionItemDescription> {
-        // FIXME: Does it make sense to return an error when the path exists?
-        // Maybe we should simply retry with a new CollectionId
-        let id_str = id.to_string();
-        let abs_path: Arc<Path> = self.abs_path.join(id_str).into();
-        if abs_path.exists() {
-            return Err(joinerror::Error::new::<()>(format!(
-                "collection directory `{}` already exists",
-                abs_path.display()
-            )));
+        // Try a new CollectionId if one is already in use
+        let mut id = CollectionId::new();
+        let mut abs_path = self.abs_path.join(id.as_str());
+        while abs_path.exists() {
+            id = CollectionId::new();
+            abs_path = self.abs_path.join(id.as_str());
         }
 
         self.fs
@@ -168,7 +164,7 @@ impl<R: AppRuntime> CollectionService<R> {
             ctx,
             CollectionCreateParams {
                 name: Some(params.name.to_owned()),
-                internal_abs_path: abs_path.clone(),
+                internal_abs_path: abs_path.clone().into(),
                 external_abs_path: params.external_path.as_deref().map(|p| p.to_owned().into()),
                 icon_path: params.icon_path.to_owned(),
                 repository: params.repository.to_owned(),
@@ -204,7 +200,7 @@ impl<R: AppRuntime> CollectionService<R> {
                 .join_err::<()>("failed to start transaction")?;
 
             self.storage
-                .put_item_order_txn(ctx, &mut txn, id, params.order)
+                .put_item_order_txn(ctx, &mut txn, id.as_str(), params.order)
                 .await?;
             self.storage
                 .put_expanded_items_txn(ctx, &mut txn, &state_lock.expanded_items)
@@ -220,7 +216,7 @@ impl<R: AppRuntime> CollectionService<R> {
             expanded: true,
             repository: None,
             icon_path,
-            abs_path,
+            abs_path: abs_path.into(),
             external_path: params.external_path,
         })
     }

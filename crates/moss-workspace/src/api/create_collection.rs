@@ -3,10 +3,7 @@ use moss_applib::AppRuntime;
 use validator::Validate;
 
 use crate::{
-    models::{
-        operations::{CreateCollectionInput, CreateCollectionOutput},
-        primitives::CollectionId,
-    },
+    models::operations::{CreateCollectionInput, CreateCollectionOutput},
     services::collection_service::CollectionItemCreateParams,
     workspace::Workspace,
 };
@@ -21,13 +18,10 @@ impl<R: AppRuntime> Workspace<R> {
 
         debug_assert!(input.external_path.is_none(), "Is not implemented");
 
-        let id = CollectionId::new();
-
         let description = self
             .collection_service
             .create_collection(
                 ctx,
-                &id,
                 CollectionItemCreateParams {
                     name: input.name.to_owned(),
                     order: input.order.to_owned(),
@@ -39,7 +33,7 @@ impl<R: AppRuntime> Workspace<R> {
             .await?;
 
         Ok(CreateCollectionOutput {
-            id,
+            id: description.id,
             name: description.name,
             order: description.order,
             expanded: description.expanded,
