@@ -1,5 +1,7 @@
 #![cfg(feature = "integration-tests")]
 
+// TODO: Make this test work in CI
+
 // These tests should be done manually
 // Since it requires authentication and env variables
 

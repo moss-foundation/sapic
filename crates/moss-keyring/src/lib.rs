@@ -31,8 +31,6 @@ impl KeyringClient for KeyringClientImpl {
 mod tests {
     use keyring::Entry;
 
-    use crate::KeyringClient;
-
     #[ignore]
     #[test]
     fn manual_set() {

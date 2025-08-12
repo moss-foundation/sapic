@@ -259,7 +259,7 @@ impl<R: AppRuntime> CollectionService<R> {
             CollectionCloneParams {
                 git_provider_type: params.git_provider_type,
                 internal_abs_path: abs_path.clone(),
-                repository: params.repository.to_owned(),
+                repository: params.repository.clone(),
             },
         )
         .await
@@ -270,11 +270,11 @@ impl<R: AppRuntime> CollectionService<R> {
         let icon_path = collection.icon_path();
 
         let mut state_lock = self.state.write().await;
-        state_lock.expanded_items.insert(id.to_owned());
+        state_lock.expanded_items.insert(id.clone());
         state_lock.collections.insert(
-            id.to_owned(),
+            id.clone(),
             CollectionItem {
-                id: id.to_owned(),
+                id: id.clone(),
                 order: Some(params.order),
                 handle: Arc::new(collection),
             },
@@ -296,7 +296,7 @@ impl<R: AppRuntime> CollectionService<R> {
         txn.commit()?;
 
         Ok(CollectionItemDescription {
-            id: id.to_owned(),
+            id: id.clone(),
             name: desc.name,
             order: Some(params.order),
             expanded: true,

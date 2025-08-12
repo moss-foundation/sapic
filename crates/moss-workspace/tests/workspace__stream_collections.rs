@@ -369,3 +369,64 @@ async fn stream_collections_order_verification() {
 
     cleanup().await;
 }
+
+// FIXME: Reenable this test once we can do remote repo operations in CI
+
+// #[tokio::test]
+// async fn stream_collections_with_repository() {
+//     let (ctx, workspace, cleanup) = setup_test_workspace().await;
+//
+//     let collection_name = random_collection_name();
+//     let collection_order = 100;
+//     let repository_url = "https://github.com/example/repo.git".to_string();
+//
+//     // Create a collection with repository
+//     let create_result = workspace
+//         .create_collection(
+//             &ctx,
+//             &CreateCollectionInput {
+//                 name: collection_name.clone(),
+//                 order: collection_order,
+//                 external_path: None,
+//                 repository: Some(repository_url.clone()),
+//                 icon_path: None,
+//             },
+//         )
+//         .await
+//         .unwrap();
+//
+//     let collection_id = create_result.id;
+//
+//     // Stream collections and capture events
+//     let received_events = Arc::new(Mutex::new(Vec::new()));
+//     let received_events_clone = received_events.clone();
+//
+//     let channel = Channel::new(move |body: InvokeResponseBody| {
+//         if let InvokeResponseBody::Json(json_str) = body {
+//             if let Ok(event) = serde_json::from_str::<StreamCollectionsEvent>(&json_str) {
+//                 received_events_clone.lock().unwrap().push(event);
+//             }
+//         }
+//         Ok(())
+//     });
+//
+//     let output = workspace.stream_collections(&ctx, channel).await.unwrap();
+//
+//     // Verify one event was received
+//     let events = received_events.lock().unwrap();
+//     assert_eq!(events.len(), 1);
+//     assert_eq!(output.total_returned, 1);
+//
+//     // Verify the event data includes repository
+//     let event = &events[0];
+//     assert_eq!(event.id, collection_id);
+//     assert_eq!(event.name, collection_name);
+//     assert_eq!(event.order, Some(collection_order));
+//     assert_eq!(
+//         event.repository,
+//         Some("github.com/example/repo".to_string())
+//     );
+//     assert_eq!(event.picture_path, None);
+//
+//     cleanup().await;
+// }

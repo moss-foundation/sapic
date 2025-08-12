@@ -1,7 +1,7 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
-use moss_bindingutils::primitives::{ChangePath, ChangeString};
+use moss_bindingutils::primitives::ChangePath;
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::models::{
     operations::{CreateCollectionInput, UpdateCollectionInput},

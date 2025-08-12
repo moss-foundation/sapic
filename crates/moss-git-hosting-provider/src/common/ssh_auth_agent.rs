@@ -44,13 +44,13 @@ impl GitAuthAgent for SSHAuthAgentImpl {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use moss_git::repo::RepoHandle;
     use std::{
         path::{Path, PathBuf},
         sync::Arc,
     };
-    use url::Url;
+
+    use super::*;
 
     #[ignore]
     #[test]
