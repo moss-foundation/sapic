@@ -22,18 +22,13 @@ export const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
   return (
     <div
       className={cn(
-        "background-(--moss-secondary-background) relative flex h-full flex-col",
+        "background-(--moss-secondary-background) flex h-full flex-col",
         {
           "border-l border-(--moss-border-color)": sideBarPosition === SIDEBAR_POSITION.LEFT,
         },
         className
       )}
     >
-      {/* <div className="absolute top-0 left-[34px] z-100 h-full w-px bg-red-500" />
-      <div className="absolute top-0 left-[10px] z-100 h-full w-px bg-blue-500" />
-      <div className="absolute top-0 left-[26px] z-100 h-full w-px bg-blue-500" />
-
-      <div className="absolute top-0 right-2 z-100 h-full w-px bg-red-500" /> */}
       {children}
     </div>
   );
