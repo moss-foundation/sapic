@@ -36,9 +36,8 @@ use crate::{
             UpdatePathParamParams, UpdateQueryParamParams,
         },
     },
-    spec::EntryModel,
     storage::segments,
-    worktree::entry::EntryEditing,
+    worktree::entry::{edit::EntryEditing, model::EntryModel},
 };
 
 use crate::{
@@ -724,7 +723,7 @@ impl<R: AppRuntime> Worktree<R> {
 
         // let mut path = entry.path.clone().to_path_buf();
 
-        if let Some(new_parent) = params.path {
+        if let Some(new_parent) = &params.path {
             if !new_parent.starts_with(CLASS_TO_DIR_NAME.get(&entry.class).unwrap()) {
                 return Err(joinerror::Error::new::<ErrorInvalidInput>(
                     "cannot move entry to a different classification folder",
@@ -756,7 +755,7 @@ impl<R: AppRuntime> Worktree<R> {
                 .await?;
         }
 
-        if let Some(name) = params.name {
+        if let Some(name) = &params.name {
             // let old_path = entry.path.clone();
             // let new_path = rename_path(entry.path.as_ref(), &name);
             // path = new_path.clone();
@@ -765,7 +764,7 @@ impl<R: AppRuntime> Worktree<R> {
             // *entry.path = new_path.into();
 
             let old_path = entry.path_rx.borrow().clone();
-            let new_path = rename_path(&old_path, &name);
+            let new_path = rename_path(&old_path, name);
 
             entry
                 .edit
@@ -773,7 +772,7 @@ impl<R: AppRuntime> Worktree<R> {
                 .await?;
         }
 
-        // self.patch_item_entry(entry, params).await?;
+        self.patch_item_entry(entry, &params).await?;
 
         let path = entry.path_rx.borrow().clone();
         drop(state_lock);
@@ -844,11 +843,12 @@ impl<R: AppRuntime> Worktree<R> {
     async fn patch_item_entry(
         &self,
         entry: &mut Entry,
-        params: ModifyParams,
+        params: &ModifyParams,
     ) -> joinerror::Result<()> {
+        let mut on_edit_success = Vec::new();
         let mut patches = Vec::new();
 
-        if let Some(protocol) = params.protocol {
+        if let Some(protocol) = &params.protocol {
             patches.push((
                 PatchOperation::Replace(ReplaceOperation {
                     path: unsafe { PointerBuf::new_unchecked("/url/protocol") },
@@ -859,11 +859,18 @@ impl<R: AppRuntime> Worktree<R> {
                     ignore_if_not_exists: false,
                 },
             ));
+            on_edit_success.push(|| {
+                entry.protocol = Some(protocol.clone());
+            });
         }
 
         // TODO: handle other stuff
 
         entry.edit.edit(&self.abs_path, &patches).await?;
+
+        for mut callback in on_edit_success {
+            callback();
+        }
 
         Ok(())
     }

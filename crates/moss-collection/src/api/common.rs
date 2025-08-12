@@ -1,4 +1,4 @@
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use moss_api::ext::ValidationResultExt;
 use moss_applib::AppRuntime;
@@ -14,8 +14,7 @@ use crate::{
             CreateItemEntryParams, UpdateDirEntryParams, UpdateItemEntryParams,
         },
     },
-    spec::EntryModel,
-    worktree::ModifyParams,
+    worktree::{ModifyParams, entry::model::EntryModel},
 };
 
 impl<R: AppRuntime> Collection<R> {
@@ -161,7 +160,8 @@ impl<R: AppRuntime> Collection<R> {
 }
 
 fn class_from_path(path: &Path) -> EntryClass {
-    match path.extension().and_then(|s| s.to_str()) {
+    dbg!(path);
+    match path.iter().next().and_then(|s| s.to_str()) {
         Some(dirs::REQUESTS_DIR) => EntryClass::Request,
         Some(dirs::ENDPOINTS_DIR) => EntryClass::Endpoint,
         Some(dirs::COMPONENTS_DIR) => EntryClass::Component,

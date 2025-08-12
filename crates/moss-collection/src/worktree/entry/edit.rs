@@ -11,7 +11,7 @@ use tokio::sync::{RwLock, watch};
 
 use crate::{
     errors::{ErrorAlreadyExists, ErrorInternal},
-    spec::EntryModel,
+    worktree::entry::model::EntryModel,
 };
 
 struct EntryEditingState {
@@ -19,7 +19,7 @@ struct EntryEditingState {
     edit: JsonEdit,
 }
 
-pub(super) struct EntryEditing {
+pub(crate) struct EntryEditing {
     fs: Arc<dyn FileSystem>,
     state: RwLock<EntryEditingState>,
     path_tx: watch::Sender<Arc<Path>>,

@@ -8,14 +8,11 @@ use moss_collection::{
     collection::Collection,
     dirs,
     models::{
-        operations::{CreateDirEntryInput, CreateEntryInput, CreateItemEntryInput},
+        operations::CreateEntryInput,
         primitives::EntryId,
-        types::specification::{
-            ComponentDirConfigurationModel, ComponentItemConfigurationModel, DirConfigurationModel,
-            DirHttpConfigurationModel, EndpointDirConfigurationModel, HttpEndpointDirConfiguration,
-            ItemConfigurationModel, RequestDirConfigurationModel, SchemaDirConfigurationModel,
-        },
+        types::{CreateDirEntryParams, CreateItemEntryParams},
     },
+    worktree::entry::model::EntryModel,
 };
 use moss_fs::RealFileSystem;
 use moss_testutils::random_name::{random_collection_name, random_string};
@@ -74,41 +71,41 @@ pub async fn create_test_collection() -> (
 
 // Since configuration models are empty enums, we need to use unreachable! for now
 // This is a limitation of the current implementation
-#[allow(dead_code)]
-pub fn create_test_item_configuration() -> ItemConfigurationModel {
-    // For now, we cannot create any variant since all configuration models are empty enums
-    // This is a known issue in the codebase
-    unreachable!("Configuration models are empty enums - cannot be instantiated")
-}
+// #[allow(dead_code)]
+// pub fn create_test_item_configuration() -> EntryModel {
+//     // For now, we cannot create any variant since all configuration models are empty enums
+//     // This is a known issue in the codebase
+//     unreachable!("Configuration models are empty enums - cannot be instantiated")
+// }
 
-#[allow(dead_code)]
-pub fn create_test_request_dir_configuration() -> DirConfigurationModel {
-    DirConfigurationModel::Request(RequestDirConfigurationModel::Http(
-        DirHttpConfigurationModel {},
-    ))
-}
+// #[allow(dead_code)]
+// pub fn create_test_request_dir_configuration() -> DirConfigurationModel {
+//     DirConfigurationModel::Request(RequestDirConfigurationModel::Http(
+//         DirHttpConfigurationModel {},
+//     ))
+// }
 
-#[allow(dead_code)]
-pub fn create_test_endpoint_dir_configuration() -> DirConfigurationModel {
-    DirConfigurationModel::Endpoint(EndpointDirConfigurationModel::Http(
-        HttpEndpointDirConfiguration {},
-    ))
-}
+// #[allow(dead_code)]
+// pub fn create_test_endpoint_dir_configuration() -> DirConfigurationModel {
+//     DirConfigurationModel::Endpoint(EndpointDirConfigurationModel::Http(
+//         HttpEndpointDirConfiguration {},
+//     ))
+// }
 
-#[allow(dead_code)]
-pub fn create_test_component_dir_configuration() -> DirConfigurationModel {
-    DirConfigurationModel::Component(ComponentDirConfigurationModel {})
-}
+// #[allow(dead_code)]
+// pub fn create_test_component_dir_configuration() -> DirConfigurationModel {
+//     DirConfigurationModel::Component(ComponentDirConfigurationModel {})
+// }
 
-#[allow(dead_code)]
-pub fn create_test_component_item_configuration() -> ItemConfigurationModel {
-    ItemConfigurationModel::Component(ComponentItemConfigurationModel {})
-}
+// #[allow(dead_code)]
+// pub fn create_test_component_item_configuration() -> ItemConfigurationModel {
+//     ItemConfigurationModel::Component(ComponentItemConfigurationModel {})
+// }
 
-#[allow(dead_code)]
-pub fn create_test_schema_dir_configuration() -> DirConfigurationModel {
-    DirConfigurationModel::Schema(SchemaDirConfigurationModel {})
-}
+// #[allow(dead_code)]
+// pub fn create_test_schema_dir_configuration() -> DirConfigurationModel {
+//     DirConfigurationModel::Schema(SchemaDirConfigurationModel {})
+// }
 
 #[allow(dead_code)]
 pub async fn create_test_request_dir_entry(
@@ -119,11 +116,11 @@ pub async fn create_test_request_dir_entry(
     collection
         .create_entry(
             &ctx,
-            CreateEntryInput::Dir(CreateDirEntryInput {
+            CreateEntryInput::Dir(CreateDirEntryParams {
                 path: PathBuf::from(dirs::REQUESTS_DIR),
                 name: name.to_string(),
                 order: 0,
-                configuration: create_test_request_dir_configuration(),
+                headers: vec![],
             }),
         )
         .await
@@ -140,11 +137,11 @@ pub async fn create_test_endpoint_dir_entry(
     collection
         .create_entry(
             &ctx,
-            CreateEntryInput::Dir(CreateDirEntryInput {
+            CreateEntryInput::Dir(CreateDirEntryParams {
                 path: PathBuf::from(dirs::ENDPOINTS_DIR),
                 name: name.to_string(),
                 order: 0,
-                configuration: create_test_endpoint_dir_configuration(),
+                headers: vec![],
             }),
         )
         .await
@@ -161,11 +158,11 @@ pub async fn create_test_component_dir_entry(
     collection
         .create_entry(
             &ctx,
-            CreateEntryInput::Dir(CreateDirEntryInput {
+            CreateEntryInput::Dir(CreateDirEntryParams {
                 path: PathBuf::from(dirs::COMPONENTS_DIR),
                 name: name.to_string(),
                 order: 0,
-                configuration: create_test_component_dir_configuration(),
+                headers: vec![],
             }),
         )
         .await
@@ -182,11 +179,14 @@ pub async fn create_test_component_item_entry(
     collection
         .create_entry(
             &ctx,
-            CreateEntryInput::Item(CreateItemEntryInput {
+            CreateEntryInput::Item(CreateItemEntryParams {
                 path: PathBuf::from(dirs::COMPONENTS_DIR),
                 name: name.to_string(),
                 order: 0,
-                configuration: create_test_component_item_configuration(),
+                protocol: None,
+                query_params: vec![],
+                path_params: vec![],
+                headers: vec![],
             }),
         )
         .await
@@ -203,11 +203,11 @@ pub async fn create_test_schema_dir_entry(
     collection
         .create_entry(
             &ctx,
-            CreateEntryInput::Dir(CreateDirEntryInput {
+            CreateEntryInput::Dir(CreateDirEntryParams {
                 path: PathBuf::from(dirs::SCHEMAS_DIR),
                 name: name.to_string(),
                 order: 0,
-                configuration: create_test_schema_dir_configuration(),
+                headers: vec![],
             }),
         )
         .await

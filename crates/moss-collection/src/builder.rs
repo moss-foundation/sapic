@@ -2,7 +2,6 @@ use joinerror::ResultExt;
 use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_fs::{CreateOptions, FileSystem};
 use moss_git::url::normalize_git_url;
-use moss_hcl::Block;
 use std::{
     path::{Path, PathBuf},
     sync::Arc,
@@ -18,8 +17,7 @@ use crate::{
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
     models::primitives::{EntryClass, EntryId},
     services::{set_icon_service::SetIconService, storage_service::StorageService},
-    spec::EntryModel,
-    worktree::Worktree,
+    worktree::{Worktree, entry::model::EntryModel},
 };
 
 const COLLECTION_ICON_SIZE: u32 = 128;
