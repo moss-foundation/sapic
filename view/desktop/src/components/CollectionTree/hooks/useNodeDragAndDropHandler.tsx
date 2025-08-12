@@ -7,6 +7,7 @@ import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdate
 import { useCreateCollectionEntry } from "@/hooks/collection/useCreateCollectionEntry";
 import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollectionEntry";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { BatchUpdateEntryKind } from "@repo/moss-collection";
 import { join } from "@tauri-apps/api/path";
 
 import { DragNode, DropNode, DropRootNode } from "../types";
@@ -59,6 +60,15 @@ export const useNodeDragAndDropHandler = () => {
               id: sourceTreeNodeData.node.id,
               path: locationTreeNodeData.node.path.raw,
               order: newOrder,
+              queryParamsToAdd: [],
+              queryParamsToUpdate: [],
+              queryParamsToRemove: [],
+              pathParamsToAdd: [],
+              pathParamsToUpdate: [],
+              pathParamsToRemove: [],
+              headersToAdd: [],
+              headersToUpdate: [],
+              headersToRemove: [],
             },
           },
         });
@@ -97,7 +107,7 @@ export const useNodeDragAndDropHandler = () => {
         return nodeInLocation?.order !== node.order;
       });
 
-      const parentEntriesToUpdate = updatedParentNodes.map((entry) => {
+      const parentEntriesToUpdate = updatedParentNodes.map((entry): BatchUpdateEntryKind => {
         const isAlreadyInLocation = locationTreeNodeData.parentNode.childNodes.some((n) => n.id === entry.id);
         const newEntryPath = isAlreadyInLocation ? undefined : locationTreeNodeData.parentNode.path.raw;
 
@@ -115,6 +125,15 @@ export const useNodeDragAndDropHandler = () => {
               id: entry.id,
               order: entry.order,
               path: newEntryPath,
+              queryParamsToAdd: [],
+              queryParamsToUpdate: [],
+              queryParamsToRemove: [],
+              pathParamsToAdd: [],
+              pathParamsToUpdate: [],
+              pathParamsToRemove: [],
+              headersToAdd: [],
+              headersToUpdate: [],
+              headersToRemove: [],
             },
           };
         }
@@ -165,11 +184,10 @@ export const useNodeDragAndDropHandler = () => {
               entry.name,
               locationTreeRootNodeData.node.requests.path.raw,
               entry.kind === "Dir",
-              entry.class,
               newOrder
             );
           } else {
-            return createEntryKind(entry.name, newEntryPath, entry.kind === "Dir", entry.class, entry.order!);
+            return createEntryKind(entry.name, newEntryPath, entry.kind === "Dir", entry.order!);
           }
         })
       );
@@ -220,27 +238,38 @@ export const useNodeDragAndDropHandler = () => {
       ].map((entry, index) => ({ ...entry, order: index + 1 }));
       const newOrder = dropParentNodesWithNewOrders.findIndex((entry) => entry.id === sourceTreeNodeData.node.id) + 1;
 
-      const dropParentEntriesToUpdate = dropParentNodesWithNewOrders.slice(dropOrder + 1).map((entry) => {
-        if (entry.kind === "Dir") {
-          return {
-            DIR: {
-              id: entry.id,
-              order: entry.order,
-            },
-          };
-        } else {
-          return {
-            ITEM: {
-              id: entry.id,
-              order: entry.order,
-            },
-          };
-        }
-      });
+      const dropParentEntriesToUpdate = dropParentNodesWithNewOrders
+        .slice(dropOrder + 1)
+        .map((entry): BatchUpdateEntryKind => {
+          if (entry.kind === "Dir") {
+            return {
+              DIR: {
+                id: entry.id,
+                order: entry.order,
+              },
+            };
+          } else {
+            return {
+              ITEM: {
+                id: entry.id,
+                order: entry.order,
+                queryParamsToAdd: [],
+                queryParamsToUpdate: [],
+                queryParamsToRemove: [],
+                pathParamsToAdd: [],
+                pathParamsToUpdate: [],
+                pathParamsToRemove: [],
+                headersToAdd: [],
+                headersToUpdate: [],
+                headersToRemove: [],
+              },
+            };
+          }
+        });
 
       const entriesAfterDeletedNodesWithUpdatedOrders = sourceTreeNodeData.parentNode.childNodes
         .filter((entry) => entry.order! > sourceTreeNodeData.node.order!)
-        .map((entry) => {
+        .map((entry): BatchUpdateEntryKind => {
           if (entry.kind === "Dir") {
             return {
               DIR: {
@@ -253,6 +282,15 @@ export const useNodeDragAndDropHandler = () => {
               ITEM: {
                 id: entry.id,
                 order: entry.order! - 1,
+                queryParamsToAdd: [],
+                queryParamsToUpdate: [],
+                queryParamsToRemove: [],
+                pathParamsToAdd: [],
+                pathParamsToUpdate: [],
+                pathParamsToRemove: [],
+                headersToAdd: [],
+                headersToUpdate: [],
+                headersToRemove: [],
               },
             };
           }
@@ -283,12 +321,11 @@ export const useNodeDragAndDropHandler = () => {
               entry.name,
               locationTreeNodeData.parentNode.path.raw,
               entry.kind === "Dir",
-              entry.class,
               newOrder
             );
           } else {
             const newEntryPath = await join(locationTreeNodeData.parentNode.path.raw, entry.path.raw);
-            return createEntryKind(entry.name, newEntryPath, entry.kind === "Dir", entry.class, entry.order!);
+            return createEntryKind(entry.name, newEntryPath, entry.kind === "Dir", entry.order!);
           }
         })
       );
