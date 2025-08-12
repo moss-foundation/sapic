@@ -180,15 +180,21 @@ export const useNodeDragAndDropHandler = () => {
           const newEntryPath = await join(locationTreeRootNodeData.node.requests.path.raw, entry.path.raw);
 
           if (index === 0) {
-            return createEntryKind(
-              entry.name,
-              locationTreeRootNodeData.node.requests.path.raw,
-              entry.kind === "Dir",
-              newOrder,
-              "Get"
-            );
+            return createEntryKind({
+              name: entry.name,
+              path: locationTreeRootNodeData.node.requests.path.raw,
+              isAddingFolder: entry.kind === "Dir",
+              order: newOrder,
+              protocol: entry.protocol,
+            });
           } else {
-            return createEntryKind(entry.name, newEntryPath, entry.kind === "Dir", entry.order!, "Get");
+            return createEntryKind({
+              name: entry.name,
+              path: newEntryPath,
+              isAddingFolder: entry.kind === "Dir",
+              order: entry.order!,
+              protocol: entry.protocol,
+            });
           }
         })
       );
@@ -318,15 +324,22 @@ export const useNodeDragAndDropHandler = () => {
       const batchCreateEntryInput = await Promise.all(
         entriesWithoutName.map(async (entry, index) => {
           if (index === 0) {
-            return createEntryKind(
-              entry.name,
-              locationTreeNodeData.parentNode.path.raw,
-              entry.kind === "Dir",
-              newOrder
-            );
+            return createEntryKind({
+              name: entry.name,
+              path: locationTreeNodeData.parentNode.path.raw,
+              isAddingFolder: entry.kind === "Dir",
+              order: newOrder,
+              protocol: entry.protocol,
+            });
           } else {
             const newEntryPath = await join(locationTreeNodeData.parentNode.path.raw, entry.path.raw);
-            return createEntryKind(entry.name, newEntryPath, entry.kind === "Dir", entry.order!);
+            return createEntryKind({
+              name: entry.name,
+              path: newEntryPath,
+              isAddingFolder: entry.kind === "Dir",
+              order: entry.order!,
+              protocol: entry.protocol,
+            });
           }
         })
       );

@@ -30,13 +30,21 @@ export const validateName = (
   };
 };
 
-export const createEntryKind = (
-  name: string,
-  path: string,
-  isAddingFolder: boolean,
-  order: number,
-  protocol: EntryProtocol = "Get"
-): BatchCreateEntryKind => {
+interface CreateEntryKindProps {
+  name: string;
+  path: string;
+  isAddingFolder: boolean;
+  order: number;
+  protocol?: EntryProtocol;
+}
+
+export const createEntryKind = ({
+  name,
+  path,
+  isAddingFolder,
+  order,
+  protocol,
+}: CreateEntryKindProps): BatchCreateEntryKind => {
   if (isAddingFolder) {
     return {
       DIR: {

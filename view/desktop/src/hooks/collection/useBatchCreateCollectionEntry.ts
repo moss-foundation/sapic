@@ -8,7 +8,6 @@ interface UseBatchCreateCollectionEntryInput {
 }
 
 const batchCreateCollectionEntry = async ({ collectionId, input }: UseBatchCreateCollectionEntryInput) => {
-  console.log("batchCreateCollectionEntry", input);
   const result = await invokeTauriIpc<BatchCreateEntryOutput>("batch_create_collection_entry", {
     collectionId,
     input,
