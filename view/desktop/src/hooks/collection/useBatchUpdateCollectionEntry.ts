@@ -9,6 +9,7 @@ export interface UseBatchUpdateCollectionEntryInput {
 }
 
 const batchUpdateCollectionEntry = async ({ collectionId, entries }: UseBatchUpdateCollectionEntryInput) => {
+  console.log("batchUpdateCollectionEntry", entries);
   const onCollectionEvent = new Channel<BatchUpdateEntryOutputKind>();
 
   const result = await invokeTauriIpc<BatchUpdateEntryOutput>("batch_update_collection_entry", {

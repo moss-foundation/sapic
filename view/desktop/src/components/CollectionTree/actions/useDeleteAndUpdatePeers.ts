@@ -1,6 +1,6 @@
 import { USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, useDeleteCollectionEntry } from "@/hooks";
 import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
-import { BatchUpdateEntryInput, EntryInfo } from "@repo/moss-collection";
+import { BatchUpdateEntryInput, BatchUpdateEntryKind, EntryInfo } from "@repo/moss-collection";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { TreeCollectionNode } from "../types";
@@ -32,7 +32,7 @@ export const useDeleteAndUpdatePeers = (
     }));
 
     const input: BatchUpdateEntryInput = {
-      entries: updatedParentNodeChildren.map((e) => {
+      entries: updatedParentNodeChildren.map((e): BatchUpdateEntryKind => {
         if (e.kind === "Dir") {
           return {
             DIR: {
@@ -46,6 +46,15 @@ export const useDeleteAndUpdatePeers = (
           ITEM: {
             id: e.id,
             order: e.order,
+            queryParamsToAdd: [],
+            queryParamsToUpdate: [],
+            queryParamsToRemove: [],
+            pathParamsToAdd: [],
+            pathParamsToUpdate: [],
+            pathParamsToRemove: [],
+            headersToAdd: [],
+            headersToUpdate: [],
+            headersToRemove: [],
           },
         };
       }),
