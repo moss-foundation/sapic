@@ -37,12 +37,14 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
   const handleSubmit = async () => {
     if (!isValid) return;
 
-    await createEnvironment({
-      name,
-      order: environments?.length ? environments.length + 1 : 1,
-      variables: [],
-      collectionId: collectionId ?? undefined,
-    });
+    if (mode === "Collection" && collectionId) {
+      await createEnvironment({
+        name,
+        order: environments?.length ? environments.length + 1 : 1,
+        variables: [],
+        collectionId,
+      });
+    }
 
     closeModal();
   };
@@ -101,7 +103,7 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
                 />
 
                 <RadioGroup.ItemWithSelect
-                  placeholder="MyCollection"
+                  placeholder="Choose collection"
                   label="Collection"
                   description="This mode is suitable if you want to store the collection in your project’s repository or in any other folder you specify."
                   value="Collection"

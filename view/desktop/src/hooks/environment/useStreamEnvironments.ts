@@ -39,17 +39,39 @@ export const useStreamEnvironments = () => {
   });
 
   const clearEnvironmentsCacheAndRefetch = () => {
-    queryClient.invalidateQueries({ queryKey: [USE_STREAMED_ENVIRONMENTS_QUERY_KEY] });
-    queryClient.removeQueries({ queryKey: [USE_STREAMED_ENVIRONMENTS_QUERY_KEY] });
+    queryClient.resetQueries({ queryKey: [USE_STREAMED_ENVIRONMENTS_QUERY_KEY] });
   };
 
+  //TODO: remove this
   const environmentsSortedByOrder = useMemo(() => {
     return sortByOrder(query.data ?? []);
+  }, [query.data]);
+
+  const globalEnvironments = useMemo(() => {
+    if (!query.data) return [];
+
+    const globalEnvironments = query.data.filter((environment) => !environment.collectionId);
+
+    if (globalEnvironments.length === 0) return [];
+
+    return sortByOrder(globalEnvironments);
+  }, [query.data]);
+
+  const collectionsEnvironments = useMemo(() => {
+    if (!query.data) return [];
+
+    const collectionsEnvironments = query.data.filter((environment) => environment.collectionId);
+
+    if (collectionsEnvironments.length === 0) return [];
+
+    return sortByOrder(collectionsEnvironments);
   }, [query.data]);
 
   return {
     ...query,
     clearEnvironmentsCacheAndRefetch,
     environmentsSortedByOrder,
+    globalEnvironments,
+    collectionsEnvironments,
   };
 };

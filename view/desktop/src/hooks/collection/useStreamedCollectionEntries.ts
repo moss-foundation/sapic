@@ -19,9 +19,7 @@ export const useStreamedCollectionEntries = (collectionId: string) => {
   });
 
   const clearEntriesCacheAndRefetch = () => {
-    queryClient.invalidateQueries({ queryKey: [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY] });
-    queryClient.removeQueries({ queryKey: [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY] });
-    return query.refetch();
+    queryClient.resetQueries({ queryKey: [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY] });
   };
 
   return {

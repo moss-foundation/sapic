@@ -31,3 +31,5 @@ export * from "../parts/EnvironmentsListView/EnvironmentsListView";
 export * from "./EmptyWorkspace";
 export * from "./Workbench";
 export * from "./Workspace";
+
+export * from "./GlobalEnvironmentsList/GlobalEnvironmentsList";
