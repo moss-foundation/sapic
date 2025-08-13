@@ -165,11 +165,6 @@ export const useDraggableNode = ({
             return;
           }
 
-          if (sourceTarget.node.id === dropTarget.node.id) {
-            setIsChildDropBlocked(null);
-            return;
-          }
-
           if (sourceTarget.node.id === node.id) {
             if (hasDescendant(sourceTarget.node, dropTarget.node)) {
               setIsChildDropBlocked(true);
