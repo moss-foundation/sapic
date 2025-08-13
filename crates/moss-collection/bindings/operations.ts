@@ -47,7 +47,6 @@ export type BatchUpdateEntryOutputKind =
 
 /**
  * @category Operation
- * @category Operation
  */
 export type CreateEntryInput = { "ITEM": CreateItemEntryParams } | { "DIR": CreateDirEntryParams };
 
