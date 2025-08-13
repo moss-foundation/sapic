@@ -1,12 +1,14 @@
 mod app;
 mod collection;
+mod env;
 mod workspace;
 
 pub use app::*;
 pub use collection::*;
-use joinerror::OptionExt;
+pub use env::*;
 pub use workspace::*;
 
+use joinerror::OptionExt;
 use moss_api::{TauriResult, constants::DEFAULT_OPERATION_TIMEOUT, errors::PreconditionFailed};
 use moss_app::{app::App, services::workspace_service::ActiveWorkspace};
 use moss_applib::{
