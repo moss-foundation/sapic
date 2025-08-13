@@ -26,7 +26,7 @@ export const CollectionEnvironmentsListRootButton = ({
         <Icon icon="ChevronRight" className={cn(showChildren && "rotate-90")} />
       </button>
 
-      <div className="truncate">{collectionsWithEnvironments.name}</div>
+      <div className="truncate font-medium">{collectionsWithEnvironments.name}</div>
     </div>
   );
 };
