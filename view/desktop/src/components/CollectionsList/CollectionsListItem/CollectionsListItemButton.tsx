@@ -9,11 +9,7 @@ export const CollectionsListItemButton = ({ label }: CollectionsListItemButtonPr
     <button className="z-10 flex cursor-pointer items-center gap-2 overflow-hidden">
       <Icon icon="CollectionEnvironment" />
       <div className="truncate">{label}</div>
-      <div className="text-(--moss-secondary-text)">({getRandomInt(1, 25)})</div>
+      <div className="text-(--moss-secondary-text)">(15)</div>
     </button>
   );
-};
-
-const getRandomInt = (min: number, max: number) => {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
 };
