@@ -100,18 +100,8 @@ impl GitHubAuthAgent {
         }
 
         // In tests and CI, fetch GITHUB_ACCESS_TOKEN from the environment
-        #[cfg(any(test, feature = "integration-tests"))]
-        {
-            dotenv::dotenv().ok();
-            let cred = GitHubCred {
-                access_token: dotenv::var(crate::envvar_keys::GITHUB_ACCESS_TOKEN)?,
-            };
-            let _ = self.cred.set(cred);
-            return self.cred.get().ok_or_else(|| {
-                anyhow!(
-                    "Failed to set GitHubAuthAgent credentials because they have already been set"
-                )
-            });
+        if let Some(fetched_cred) = self.try_fetch_from_env()? {
+            return Ok(fetched_cred);
         }
 
         let cred = match self.keyring.get_secret(KEYRING_SECRET_KEY) {
@@ -134,6 +124,25 @@ impl GitHubAuthAgent {
         self.cred.get().ok_or_else(|| {
             anyhow!("Failed to set GitHubAuthAgent credentials because they have already been set")
         })
+    }
+
+    // A helper method to avoid false positive about unreachable code
+    // It will fetch the access token from the environment
+    #[cfg(any(test, feature = "integration-tests"))]
+    fn try_fetch_from_env(&self) -> Result<Option<&GitHubCred>> {
+        dotenv::dotenv().ok();
+        let cred = GitHubCred {
+            access_token: dotenv::var(crate::envvar_keys::GITHUB_ACCESS_TOKEN)?,
+        };
+        let _ = self.cred.set(cred);
+
+        let fetched_cred = self.cred.get();
+        Ok(fetched_cred)
+    }
+
+    #[cfg(not(any(test, feature = "integration-tests")))]
+    fn try_fetch_from_env(&self) -> Result<Option<&GitHubCred>> {
+        Ok(None)
     }
 
     fn gen_initial_credentials(&self) -> Result<GitHubCred> {
@@ -186,7 +195,6 @@ impl GitHubAuthAgent {
 impl GitAuthAgent for GitHubAuthAgent {
     fn generate_callback<'a>(&'a self, cb: &mut RemoteCallbacks<'a>) -> Result<()> {
         let cred = self.credentials()?;
-        dbg!(&cred);
 
         cb.credentials(move |_url, _username_from_url, _allowed_types| {
             Cred::userpass_plaintext("oauth2", &cred.access_token)

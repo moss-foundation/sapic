@@ -94,18 +94,7 @@ impl GitLabAuthAgent {
         }
 
         // In tests and CI, fetch GITLAB_REFRESH_TOKEN and get new access_token
-        #[cfg(any(test, feature = "integration-tests"))]
-        {
-            dotenv::dotenv().ok();
-            let refresh_token = dotenv::var(crate::envvar_keys::GITLAB_REFRESH_TOKEN)?;
-            let updated_cred = match self.refresh_token_flow(refresh_token) {
-                Ok(cred) => cred,
-                Err(err) => {
-                    return Err(err);
-                }
-            };
-
-            *self.cred.write().expect("RwLock poisoned") = Some(updated_cred.clone());
+        if let Some(updated_cred) = self.try_refresh_from_env()? {
             return Ok(updated_cred);
         }
 
@@ -143,6 +132,28 @@ impl GitLabAuthAgent {
 
         *self.cred.write().expect("RwLock poisoned") = Some(updated_cred.clone());
         Ok(updated_cred)
+    }
+
+    // A helper method to avoid false positive about unreachable code
+    // It will fetch the refresh token from the environment and generate a new access token
+    #[cfg(any(test, feature = "integration-tests"))]
+    fn try_refresh_from_env(&self) -> Result<Option<GitLabCred>> {
+        dotenv::dotenv().ok();
+        let refresh_token = dotenv::var(crate::envvar_keys::GITLAB_REFRESH_TOKEN)?;
+        let updated_cred = match self.refresh_token_flow(refresh_token) {
+            Ok(cred) => cred,
+            Err(err) => {
+                return Err(err);
+            }
+        };
+
+        *self.cred.write().expect("RwLock poisoned") = Some(updated_cred.clone());
+        Ok(Some(updated_cred))
+    }
+
+    #[cfg(not(any(test, feature = "integration-tests")))]
+    fn try_refresh_from_env(&self) -> Result<Option<GitLabCred>> {
+        Ok(None)
     }
 
     fn gen_initial_credentials(&self) -> Result<GitLabCred> {
