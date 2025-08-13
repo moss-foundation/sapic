@@ -205,7 +205,125 @@ async fn create_collection_with_order() {
     cleanup().await;
 }
 
-// FIXME: We need to solve the issue of token invalidation before incorporating these tests into CI pipeline
+#[tokio::test]
+async fn create_collection_with_icon() {
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+
+    let collection_name = random_collection_name();
+    let input_icon_path = workspace.abs_path().join("test_icon.png");
+    generate_random_icon(&input_icon_path);
+
+    let create_collection_result = workspace
+        .create_collection(
+            &ctx,
+            &CreateCollectionInput {
+                name: collection_name.clone(),
+                order: 0,
+                external_path: None,
+                repository: None,
+                git_provider_type: None,
+                icon_path: Some(input_icon_path.clone()),
+            },
+        )
+        .await;
+
+    let create_collection_output = create_collection_result.unwrap();
+
+    let id = create_collection_output.id;
+
+    let channel = Channel::new(move |_| Ok(()));
+    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
+    assert_eq!(output.total_returned, 1);
+
+    // Verify the directory was created
+    let collection_path = create_collection_output.abs_path;
+    assert!(collection_path.exists());
+
+    // Verify that the icon is stored in the assets folder
+    let collection = workspace.collection(&id).await.unwrap();
+    assert!(collection.icon_path().is_some());
+
+    // Check order was stored
+    let item_store = workspace.db().item_store();
+
+    let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
+    let order_value = GetItem::get(item_store.as_ref(), &ctx, order_key)
+        .await
+        .unwrap();
+    let stored_order: usize = order_value.deserialize().unwrap();
+    assert_eq!(stored_order, 0);
+
+    // Check expanded_items contains the collection id
+    let expanded_items_value = GetItem::get(
+        item_store.as_ref(),
+        &ctx,
+        SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
+    )
+    .await
+    .unwrap();
+    let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
+    assert!(expanded_items.contains(&id));
+
+    cleanup().await;
+}
+
+#[tokio::test]
+async fn create_multiple_collections_expanded_items() {
+    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+
+    // Create first collection
+    let collection_name1 = random_collection_name();
+    let create_result1 = workspace
+        .create_collection(
+            &ctx,
+            &CreateCollectionInput {
+                name: collection_name1.clone(),
+                order: 0,
+                external_path: None,
+                repository: None,
+                git_provider_type: None,
+                icon_path: None,
+            },
+        )
+        .await
+        .unwrap();
+
+    // Create second collection
+    let collection_name2 = random_collection_name();
+    let create_result2 = workspace
+        .create_collection(
+            &ctx,
+            &CreateCollectionInput {
+                name: collection_name2.clone(),
+                order: 1,
+                external_path: None,
+                repository: None,
+                git_provider_type: None,
+                icon_path: None,
+            },
+        )
+        .await
+        .unwrap();
+
+    // Check expanded_items contains both collection ids
+    let item_store = workspace.db().item_store();
+    let expanded_items_value = GetItem::get(
+        item_store.as_ref(),
+        &ctx,
+        SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
+    )
+    .await
+    .unwrap();
+    let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
+
+    assert_eq!(expanded_items.len(), 2);
+    assert!(expanded_items.contains(&create_result1.id));
+    assert!(expanded_items.contains(&create_result2.id));
+
+    cleanup().await;
+}
+
+// FIXME: figure out how to incorporate repo-operations into CI pipeline
 
 // #[tokio::test]
 // async fn create_collection_with_github_public_repo() {
@@ -543,121 +661,3 @@ async fn create_collection_with_order() {
 //
 //     cleanup().await;
 // }
-
-#[tokio::test]
-async fn create_collection_with_icon() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
-
-    let collection_name = random_collection_name();
-    let input_icon_path = workspace.abs_path().join("test_icon.png");
-    generate_random_icon(&input_icon_path);
-
-    let create_collection_result = workspace
-        .create_collection(
-            &ctx,
-            &CreateCollectionInput {
-                name: collection_name.clone(),
-                order: 0,
-                external_path: None,
-                repository: None,
-                git_provider_type: None,
-                icon_path: Some(input_icon_path.clone()),
-            },
-        )
-        .await;
-
-    let create_collection_output = create_collection_result.unwrap();
-
-    let id = create_collection_output.id;
-
-    let channel = Channel::new(move |_| Ok(()));
-    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
-    assert_eq!(output.total_returned, 1);
-
-    // Verify the directory was created
-    let collection_path = create_collection_output.abs_path;
-    assert!(collection_path.exists());
-
-    // Verify that the icon is stored in the assets folder
-    let collection = workspace.collection(&id).await.unwrap();
-    assert!(collection.icon_path().is_some());
-
-    // Check order was stored
-    let item_store = workspace.db().item_store();
-
-    let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
-    let order_value = GetItem::get(item_store.as_ref(), &ctx, order_key)
-        .await
-        .unwrap();
-    let stored_order: usize = order_value.deserialize().unwrap();
-    assert_eq!(stored_order, 0);
-
-    // Check expanded_items contains the collection id
-    let expanded_items_value = GetItem::get(
-        item_store.as_ref(),
-        &ctx,
-        SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
-    )
-    .await
-    .unwrap();
-    let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
-    assert!(expanded_items.contains(&id));
-
-    cleanup().await;
-}
-
-#[tokio::test]
-async fn create_multiple_collections_expanded_items() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
-
-    // Create first collection
-    let collection_name1 = random_collection_name();
-    let create_result1 = workspace
-        .create_collection(
-            &ctx,
-            &CreateCollectionInput {
-                name: collection_name1.clone(),
-                order: 0,
-                external_path: None,
-                repository: None,
-                git_provider_type: None,
-                icon_path: None,
-            },
-        )
-        .await
-        .unwrap();
-
-    // Create second collection
-    let collection_name2 = random_collection_name();
-    let create_result2 = workspace
-        .create_collection(
-            &ctx,
-            &CreateCollectionInput {
-                name: collection_name2.clone(),
-                order: 1,
-                external_path: None,
-                repository: None,
-                git_provider_type: None,
-                icon_path: None,
-            },
-        )
-        .await
-        .unwrap();
-
-    // Check expanded_items contains both collection ids
-    let item_store = workspace.db().item_store();
-    let expanded_items_value = GetItem::get(
-        item_store.as_ref(),
-        &ctx,
-        SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
-    )
-    .await
-    .unwrap();
-    let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
-
-    assert_eq!(expanded_items.len(), 2);
-    assert!(expanded_items.contains(&create_result1.id));
-    assert!(expanded_items.contains(&create_result2.id));
-
-    cleanup().await;
-}
