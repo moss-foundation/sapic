@@ -25,10 +25,8 @@ use crate::{
     DescribeCollection,
     edit::CollectionEdit,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
-    services::{
-        set_icon_service::SetIconService, storage_service::StorageService,
-        worktree_service::WorktreeService,
-    },
+    services::{set_icon_service::SetIconService, storage_service::StorageService},
+    worktree::Worktree,
 };
 
 pub struct EnvironmentItem<R: AppRuntime> {
@@ -57,9 +55,9 @@ pub struct Collection<R: AppRuntime> {
     pub(super) fs: Arc<dyn FileSystem>,
     pub(super) abs_path: Arc<Path>,
     pub(super) edit: CollectionEdit,
+    pub(super) worktree: Arc<Worktree<R>>,
     pub(super) set_icon_service: SetIconService,
     pub(super) storage_service: Arc<StorageService<R>>,
-    pub(super) worktree_service: Arc<WorktreeService<R>>,
 
     #[allow(dead_code)]
     pub(super) environments: OnceCell<EnvironmentMap<R>>,

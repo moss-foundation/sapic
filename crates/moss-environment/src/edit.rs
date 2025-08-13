@@ -23,6 +23,7 @@ pub(super) struct EnvironmentEditing {
 impl EnvironmentEditing {
     pub fn new(fs: Arc<dyn FileSystem>, abs_path_tx: watch::Sender<EnvironmentPath>) -> Self {
         let abs_path = abs_path_tx.borrow().to_path_buf();
+        debug_assert!(abs_path.is_absolute());
 
         Self {
             fs,

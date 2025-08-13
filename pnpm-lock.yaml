@@ -330,9 +330,9 @@ importers:
       '@langchain/langgraph':
         specifier: ^0.4.3
         version: 0.4.3(@langchain/core@0.3.66)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod-to-json-schema@3.24.6(zod@3.25.76))
-      '@langchain/ollama':
-        specifier: ^0.2.0
-        version: 0.2.3(@langchain/core@0.3.66)
+      '@langchain/mistralai':
+        specifier: ^0.2.1
+        version: 0.2.1(@langchain/core@0.3.66)(zod@3.25.76)
       '@radix-ui/primitive':
         specifier: ^1.1.1
         version: 1.1.2
@@ -1002,11 +1002,16 @@ packages:
       zod-to-json-schema:
         optional: true
 
-  '@langchain/ollama@0.2.3':
-    resolution: {integrity: sha512-1Obe45jgQspqLMBVlayQbGdywFmri8DgmGRdzNu0li56cG5RReYlRCFVDZBRMMvF9JhsP5eXRyfyivtKfITHWQ==}
+  '@langchain/mistralai@0.2.1':
+    resolution: {integrity: sha512-s91BlNcuxaaZGnVukyl81nwGrWpeE0EYiAdEFoBmZwlT4yLpx+QpPhRsGKrTg/Vm7Nscy6Wd8Xy2PJ93wftMdw==}
     engines: {node: '>=18'}
     peerDependencies:
       '@langchain/core': '>=0.3.58 <0.4.0'
+
+  '@mistralai/mistralai@1.7.5':
+    resolution: {integrity: sha512-5YfNVSYm8r/zbYAVYfAEILGOvyFYMSgmgr5q8SYFhlxBWwvmxV/p/FNH5PihVZPbE4fNpa8aFo7JNX6jbWhWcg==}
+    peerDependencies:
+      zod: '>= 3'
 
   '@napi-rs/wasm-runtime@0.2.12':
     resolution: {integrity: sha512-ZVWUcfwY4E/yPitQJl481FjFo3K22D6qF0DuFH6Y/nbnE11GY5uguDxZMGXPQ8WQ0128MXQD7TnfHyK4oWoIJQ==}
@@ -3232,9 +3237,6 @@ packages:
   observable-fns@0.6.1:
     resolution: {integrity: sha512-9gRK4+sRWzeN6AOewNBTLXir7Zl/i3GB6Yl26gK4flxz8BXVpD3kt8amREmWNb0mxYOGDotvE5a4N+PtGGKdkg==}
 
-  ollama@0.5.16:
-    resolution: {integrity: sha512-OEbxxOIUZtdZgOaTPAULo051F5y+Z1vosxEYOoABPnQKeW7i4O8tJNlxCB+xioyoorVqgjkdj+TA1f1Hy2ug/w==}
-
   onetime@5.1.2:
     resolution: {integrity: sha512-kbpaSSGJTWdAY5KPVeMOKXSrPtr8C8C7wodJbcsd51jRnmD+GZu8Y0VoU6Dm5Z4vWr0Ig/1NKuWRKf7j5aaYSg==}
     engines: {node: '>=6'}
@@ -4040,9 +4042,6 @@ packages:
     resolution: {integrity: sha512-6qN4hJdMwfYBtE3YBTTHhoeuUrDBPZmbQaxWAqSALV/MeEnR5z1xd8UKud2RAkFoPkmB+hli1TZSnyi84xz1vQ==}
     engines: {node: '>=18'}
 
-  whatwg-fetch@3.6.20:
-    resolution: {integrity: sha512-EqhiFU6daOA8kpjOWTL0olhVOF3i7OrFzSYiGsEMB8GcXS+RrzauAERX65xMeNWVqxA6HXH2m69Z9LaKKdisfg==}
-
   whatwg-mimetype@4.0.0:
     resolution: {integrity: sha512-QaKxh0eNIi2mE9p2vEdzfagOKHCcj1pJ56EEHGQOVxp8r9/iszLUUV7v89x9O1p/T+NlTM5W7jW6+cz4Fq1YVg==}
     engines: {node: '>=18'}
@@ -4671,11 +4670,18 @@ snapshots:
       - react
       - react-dom
 
-  '@langchain/ollama@0.2.3(@langchain/core@0.3.66)':
+  '@langchain/mistralai@0.2.1(@langchain/core@0.3.66)(zod@3.25.76)':
     dependencies:
       '@langchain/core': 0.3.66
-      ollama: 0.5.16
+      '@mistralai/mistralai': 1.7.5(zod@3.25.76)
       uuid: 10.0.0
+    transitivePeerDependencies:
+      - zod
+
+  '@mistralai/mistralai@1.7.5(zod@3.25.76)':
+    dependencies:
+      zod: 3.25.76
+      zod-to-json-schema: 3.24.6(zod@3.25.76)
 
   '@napi-rs/wasm-runtime@0.2.12':
     dependencies:
@@ -6817,10 +6823,6 @@ snapshots:
 
   observable-fns@0.6.1: {}
 
-  ollama@0.5.16:
-    dependencies:
-      whatwg-fetch: 3.6.20
-
   onetime@5.1.2:
     dependencies:
       mimic-fn: 2.1.0
@@ -7558,8 +7560,6 @@ snapshots:
   whatwg-encoding@3.1.1:
     dependencies:
       iconv-lite: 0.6.3
-
-  whatwg-fetch@3.6.20: {}
 
   whatwg-mimetype@4.0.0: {}
 

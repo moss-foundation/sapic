@@ -36,6 +36,7 @@ indexmap.workspace = true
 nanoid.workspace = true
 json-patch.workspace = true
 reqwest = { workspace = true, optional = true }
+rustc-hash.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }

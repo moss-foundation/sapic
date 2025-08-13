@@ -3,8 +3,8 @@ import { z } from "zod";
 import {
   afterUpdateDirEntryDescriptionSchema,
   afterUpdateItemEntryDescriptionSchema,
-  dirConfigurationModelSchema,
-  itemConfigurationModelSchema,
+  createDirEntryParamsSchema,
+  createItemEntryParamsSchema,
   updateDirEntryParamsSchema,
   updateItemEntryParamsSchema,
 } from "./types.zod";
@@ -35,19 +35,14 @@ export const streamEntriesInputSchema = z.union([
 ]);
 
 export const streamEntriesOutputSchema = z.record(z.never());
-export const createItemEntryInputSchema = z.object({
-  path: z.string(),
-  name: z.string(),
-  order: z.number(),
-  configuration: itemConfigurationModelSchema,
-});
-
-export const createDirEntryInputSchema = z.object({
-  path: z.string(),
-  name: z.string(),
-  order: z.number(),
-  configuration: dirConfigurationModelSchema,
-});
+export const batchCreateEntryKindSchema = z.union([
+  z.object({
+    "ITEM": createItemEntryParamsSchema,
+  }),
+  z.object({
+    "DIR": createDirEntryParamsSchema,
+  }),
+]);
 
 export const batchUpdateEntryKindSchema = z.union([
   z.object({
@@ -69,10 +64,10 @@ export const batchUpdateEntryOutputKindSchema = z.union([
 
 export const createEntryInputSchema = z.union([
   z.object({
-    "ITEM": createItemEntryInputSchema,
+    "ITEM": createItemEntryParamsSchema,
   }),
   z.object({
-    "DIR": createDirEntryInputSchema,
+    "DIR": createDirEntryParamsSchema,
   }),
 ]);
 
@@ -94,19 +89,10 @@ export const updateEntryOutputSchema = z.union([
   }),
 ]);
 
-export const batchCreateEntryKindSchema = z.union([
-  z.object({
-    "ITEM": createItemEntryInputSchema,
-  }),
-  z.object({
-    "DIR": createDirEntryInputSchema,
-  }),
-]);
+export const batchCreateEntryInputSchema = z.object({
+  entries: z.array(batchCreateEntryKindSchema),
+});
 
 export const batchUpdateEntryInputSchema = z.object({
   entries: z.array(batchUpdateEntryKindSchema),
-});
-
-export const batchCreateEntryInputSchema = z.object({
-  entries: z.array(batchCreateEntryKindSchema),
 });

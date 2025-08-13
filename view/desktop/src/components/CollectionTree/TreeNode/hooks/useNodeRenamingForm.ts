@@ -36,6 +36,15 @@ export const useNodeRenamingForm = (node: TreeCollectionNode) => {
             ITEM: {
               id: node.id,
               name: newName,
+              queryParamsToAdd: [],
+              queryParamsToUpdate: [],
+              queryParamsToRemove: [],
+              pathParamsToAdd: [],
+              pathParamsToUpdate: [],
+              pathParamsToRemove: [],
+              headersToAdd: [],
+              headersToUpdate: [],
+              headersToRemove: [],
             },
           },
         });
