@@ -23,7 +23,7 @@ use crate::{
         primitives::{EntryId, FrontendEntryPath},
         types::EntryInfo,
     },
-    worktree::EntryDescription,
+    worktree::entry::EntryDescription,
 };
 
 const EXPANSION_DIRECTORIES: &[&str] = &[

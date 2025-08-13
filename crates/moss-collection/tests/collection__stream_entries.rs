@@ -6,7 +6,7 @@ use moss_applib::{context::AsyncContext, mock::MockAppRuntime};
 use moss_collection::{
     dirs,
     models::{events::StreamEntriesEvent, operations::StreamEntriesInput, primitives::EntryKind},
-    worktree::EntryDescription,
+    worktree::entry::EntryDescription,
 };
 use std::{
     path::PathBuf,
@@ -59,6 +59,7 @@ async fn scan_entries_for_test(
         })
         .collect()
 }
+
 #[tokio::test]
 async fn stream_entries_empty_collection() {
     let (ctx, collection_path, collection) = create_test_collection().await;

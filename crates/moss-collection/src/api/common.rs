@@ -30,12 +30,6 @@ impl<R: AppRuntime> Collection<R> {
         input.validate().join_err_bare()?;
 
         let id = EntryId::new();
-
-        // let model = CompositeDirConfigurationModel {
-        //     metadata: ConfigurationMetadata { id: id.to_string() },
-        //     inner: input.configuration,
-        // };
-
         let model = EntryModel::from((id.clone(), class_from_path(&input.path)));
 
         self.worktree
@@ -60,13 +54,6 @@ impl<R: AppRuntime> Collection<R> {
         input.validate().join_err_bare()?;
 
         let id = EntryId::new();
-        // let model = CompositeItemConfigurationModel {
-        //     metadata: ConfigurationMetadata { id: id.to_string() },
-        //     inner: input.configuration,
-        // };
-
-        // let model = EntryModel::from((id.clone(), class_from_path(&input.path)));
-
         let class = class_from_path(&input.path);
         let model = match class {
             EntryClass::Request => EntryModel {
@@ -140,10 +127,10 @@ impl<R: AppRuntime> Collection<R> {
                     expanded: input.expanded,
                     order: input.order,
                     path: input.path,
-
-                    query_params_to_add: input.query_params_to_add,
-                    query_params_to_update: input.query_params_to_update,
-                    query_params_to_remove: input.query_params_to_remove,
+                    //
+                    // query_params_to_add: input.query_params_to_add,
+                    // query_params_to_update: input.query_params_to_update,
+                    // query_params_to_remove: input.query_params_to_remove,
                     //
                     // path_params_to_add: input.path_params_to_add,
                     // path_params_to_update: input.path_params_to_update,
@@ -157,13 +144,8 @@ impl<R: AppRuntime> Collection<R> {
             .await?;
 
         let path = FrontendEntryPath::new(path.to_path_buf());
-        // let model = CompositeItemConfigurationModel::from(configuration);
 
-        Ok(AfterUpdateItemEntryDescription {
-            id: input.id,
-            path,
-            // configuration: model,
-        })
+        Ok(AfterUpdateItemEntryDescription { id: input.id, path })
     }
 
     pub(super) async fn update_dir_entry(
@@ -184,11 +166,11 @@ impl<R: AppRuntime> Collection<R> {
                     expanded: input.expanded,
                     protocol: None,
                     path: input.path,
-
-                    query_params_to_add: vec![],
-                    query_params_to_update: vec![],
-                    query_params_to_remove: vec![],
                     //
+                    // query_params_to_add: vec![],
+                    // query_params_to_update: vec![],
+                    // query_params_to_remove: vec![],
+
                     // path_params_to_add: vec![],
                     // path_params_to_update: vec![],
                     // path_params_to_remove: vec![],
@@ -201,13 +183,8 @@ impl<R: AppRuntime> Collection<R> {
             .await?;
 
         let path = FrontendEntryPath::new(path.to_path_buf());
-        // let model = CompositeDirConfigurationModel::from(configuration);
 
-        Ok(AfterUpdateDirEntryDescription {
-            id: input.id,
-            path,
-            // configuration: model,
-        })
+        Ok(AfterUpdateDirEntryDescription { id: input.id, path })
     }
 }
 

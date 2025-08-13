@@ -1,10 +1,8 @@
 use joinerror::{Error, OptionExt, ResultExt};
 use json_patch::PatchOperation;
-use moss_api::errors::InvalidInput;
 use moss_edit::json::{EditOptions, JsonEdit};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt, RenameOptions};
 use moss_hcl::HclResultExt;
-use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};
 use tokio::sync::{RwLock, watch};
@@ -43,28 +41,6 @@ impl EntryEditing {
         debug_assert!(abs_path.is_absolute());
         debug_assert!(from.is_relative());
         debug_assert!(to.is_relative());
-
-        // let path = self.path_tx.borrow();
-        // let parent = path.parent().ok_or_join_err_with::<()>(|| {
-        //     format!(
-        //         "failed to get parent path of {}",
-        //         abs_path.join(path.as_ref()).display()
-        //     )
-        // })?;
-
-        // let new_path: Arc<Path> = parent.join(new_name).into();
-
-        // let mut state_lock = self.state.write().await;
-        // self.fs
-        //     .rename(
-        //         &abs_path.join(&state_lock.path),
-        //         &abs_path.join(&new_path),
-        //         RenameOptions {
-        //             overwrite: true,
-        //             ignore_if_exists: false,
-        //         },
-        //     )
-        //     .await?;
 
         // On Windows and macOS, file/directory names are case-preserving but insensitive
         // If the from and to path differs only with different casing of the filename

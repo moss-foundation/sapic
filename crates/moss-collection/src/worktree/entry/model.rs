@@ -1,6 +1,6 @@
 use hcl::Expression;
 use indexmap::IndexMap;
-use moss_hcl::{Block, LabeledBlock, Object};
+use moss_hcl::{Block, LabeledBlock};
 use serde::{Deserialize, Serialize};
 
 use crate::models::primitives::{EntryClass, EntryId, EntryProtocol, HeaderId};
@@ -75,23 +75,6 @@ mod tests {
 
     use super::*;
 
-    // #[test]
-    // fn test_dir() {
-    //     let config = DirRequestSpec {
-    //         metadata: Block::new(EntryMetadataSpec { id: EntryId::new() }),
-    //         headers: None,
-    //     };
-
-    //     let item = DirSpec::Request(Block::new(config));
-
-    //     let str = hcl::to_string(&item).unwrap();
-    //     println!("{}", str);
-
-    //     let new = hcl::from_str::<DirSpec>(&str).unwrap();
-
-    //     println!("{:?}", new);
-    // }
-
     #[test]
     fn test_item() {
         let model = EntryModel {
@@ -120,8 +103,6 @@ mod tests {
                 }
             })),
         };
-
-        // let item = ItemSpec::Request(Block::new(config));
 
         let str = hcl::to_string(&model).unwrap();
         println!("{}", str);

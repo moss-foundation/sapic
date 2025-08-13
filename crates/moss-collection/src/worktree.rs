@@ -1,7 +1,6 @@
 pub mod entry;
 
 use anyhow::anyhow;
-use derive_more::{Deref, DerefMut};
 use joinerror::OptionExt;
 use json_patch::{PatchOperation, ReplaceOperation, jsonptr::PointerBuf};
 use moss_applib::AppRuntime;
@@ -27,22 +26,11 @@ use tokio::{
 
 use crate::{
     constants::{self, COLLECTION_ROOT_PATH, DIR_CONFIG_FILENAME},
-    models::{
-        primitives::{
-            EntryClass, EntryId, EntryKind, EntryProtocol, HeaderId, PathParamId, QueryParamId,
-        },
-        types::http::{
-            AddHeaderParams, AddPathParamParams, AddQueryParamParams, UpdateHeaderParams,
-            UpdatePathParamParams, UpdateQueryParamParams,
-        },
-    },
-    storage::segments,
-    worktree::entry::{edit::EntryEditing, model::EntryModel},
-};
-
-use crate::{
-    errors::{ErrorAlreadyExists, ErrorInvalidInput, ErrorInvalidKind, ErrorIo, ErrorNotFound},
+    errors::{ErrorAlreadyExists, ErrorInvalidInput, ErrorNotFound},
+    models::primitives::{EntryClass, EntryId, EntryKind, EntryProtocol},
     services::storage_service::StorageService,
+    storage::segments,
+    worktree::entry::{Entry, EntryDescription, edit::EntryEditing, model::EntryModel},
 };
 
 const CLASS_TO_DIR_NAME: LazyCell<FxHashMap<EntryClass, &str>> = LazyCell::new(|| {
@@ -63,70 +51,19 @@ struct ScanJob {
     scan_queue: mpsc::UnboundedSender<ScanJob>,
 }
 
-// pub enum EntryConfiguration {
-//     Item(RawItemConfiguration),
-//     Dir(RawDirConfiguration),
-// }
-
-// impl EntryConfiguration {
-//     pub fn as_item(&self) -> Option<&RawItemConfiguration> {
-//         match self {
-//             EntryConfiguration::Item(conf) => Some(conf),
-//             EntryConfiguration::Dir(_) => None,
-//         }
-//     }
-
-//     pub fn as_dir(&self) -> Option<&RawDirConfiguration> {
-//         match self {
-//             EntryConfiguration::Item(_) => None,
-//             EntryConfiguration::Dir(conf) => Some(conf),
-//         }
-//     }
-
-//     pub fn classification(&self) -> EntryClass {
-//         match self {
-//             EntryConfiguration::Item(conf) => match conf {
-//                 RawItemConfiguration::Request(_) => EntryClass::Request,
-//                 RawItemConfiguration::Endpoint(_) => EntryClass::Endpoint,
-//                 RawItemConfiguration::Component(_) => EntryClass::Component,
-//                 RawItemConfiguration::Schema(_) => EntryClass::Schema,
-//             },
-//             EntryConfiguration::Dir(conf) => conf.classification(),
-//         }
-//     }
-
-//     pub fn protocol(&self) -> Option<EntryProtocol> {
-//         match self {
-//             EntryConfiguration::Item(conf) => match conf {
-//                 RawItemConfiguration::Request(conf) => conf.url.protocol(),
-//                 RawItemConfiguration::Endpoint(conf) => conf.url.protocol(),
-//                 RawItemConfiguration::Component(_) => None,
-//                 RawItemConfiguration::Schema(_) => None,
-//             },
-//             EntryConfiguration::Dir(_) => None,
-//         }
-//     }
-
-//     pub fn kind(&self) -> EntryKind {
-//         match self {
-//             EntryConfiguration::Item(_) => EntryKind::Item,
-//             EntryConfiguration::Dir(_) => EntryKind::Dir,
-//         }
-//     }
-// }
-
 pub(crate) struct ModifyParams {
     pub name: Option<String>,
     pub protocol: Option<EntryProtocol>,
     pub expanded: Option<bool>,
     pub order: Option<isize>,
     pub path: Option<PathBuf>,
-
-    pub query_params_to_add: Vec<AddQueryParamParams>,
-    pub query_params_to_update: Vec<UpdateQueryParamParams>,
-    pub query_params_to_remove: Vec<QueryParamId>,
     //
     //TODO: Add
+    //
+    // pub query_params_to_add: Vec<AddQueryParamParams>,
+    // pub query_params_to_update: Vec<UpdateQueryParamParams>,
+    // pub query_params_to_remove: Vec<QueryParamId>,
+
     // pub path_params_to_add: Vec<AddPathParamParams>,
     // pub path_params_to_update: Vec<UpdatePathParamParams>,
     // pub path_params_to_remove: Vec<PathParamId>,
@@ -134,73 +71,6 @@ pub(crate) struct ModifyParams {
     // pub headers_to_add: Vec<AddHeaderParams>,
     // pub headers_to_update: Vec<UpdateHeaderParams>,
     // pub headers_to_remove: Vec<HeaderParamId>,
-}
-
-// #[derive(Deref, DerefMut)]
-// pub struct EntryItemMut<'a> {
-//     path: &'a mut Arc<Path>,
-
-//     #[deref]
-//     #[deref_mut]
-//     configuration: &'a mut RawItemConfiguration,
-// }
-
-// #[derive(Deref, DerefMut)]
-// pub struct EntryDirMut<'a> {
-//     path: &'a mut Arc<Path>,
-
-//     #[deref]
-//     #[deref_mut]
-//     configuration: &'a mut RawDirConfiguration,
-// }
-
-#[derive(Deref, DerefMut)]
-struct Entry {
-    id: EntryId,
-    path_rx: watch::Receiver<Arc<Path>>,
-
-    #[deref]
-    #[deref_mut]
-    edit: EntryEditing,
-    class: EntryClass,
-    protocol: Option<EntryProtocol>,
-    // configuration: EntryConfiguration,
-}
-
-impl Entry {}
-
-// impl Entry {
-//     pub fn as_item_mut(&mut self) -> Option<EntryItemMut<'_>> {
-//         match &mut self.configuration {
-//             EntryConfiguration::Item(configuration) => Some(EntryItemMut {
-//                 path: &mut self.path,
-//                 configuration,
-//             }),
-//             _ => None,
-//         }
-//     }
-
-//     pub fn as_dir_mut(&mut self) -> Option<EntryDirMut<'_>> {
-//         match &mut self.configuration {
-//             EntryConfiguration::Dir(configuration) => Some(EntryDirMut {
-//                 path: &mut self.path,
-//                 configuration,
-//             }),
-//             _ => None,
-//         }
-//     }
-// }
-
-#[derive(Debug)]
-pub struct EntryDescription {
-    pub id: EntryId,
-    pub name: String,
-    pub path: Arc<Path>,
-    pub class: EntryClass,
-    pub kind: EntryKind,
-    pub protocol: Option<EntryProtocol>,
-    pub order: Option<isize>,
-    pub expanded: bool,
 }
 
 #[derive(Default)]
@@ -312,12 +182,6 @@ impl<R: AppRuntime> Worktree<R> {
             let handle = tokio::spawn(async move {
                 let mut new_jobs = Vec::new();
 
-                // // let dir_name = job
-                // //     .path
-                // //     .file_name()
-                // //     .map(|n| n.to_string_lossy().to_string())
-                // //     .unwrap_or_else(|| job.path.to_string_lossy().to_string());
-
                 match process_entry(
                     job.path.clone(),
                     &all_entry_keys,
@@ -328,20 +192,6 @@ impl<R: AppRuntime> Worktree<R> {
                 .await
                 {
                     Ok(Some((entry, desc))) => {
-                        // let expanded = expanded_entries.contains(&entry.id);
-                        // let desc = EntryDescription {
-                        //     id: entry.id.clone(),
-                        //     name: desanitize(&dir_name),
-                        //     path: entry.path.clone(),
-                        //     class: entry.classification(),
-                        //     kind: entry.kind(),
-                        //     protocol: entry.configuration.protocol(),
-                        //     expanded,
-                        //     order: all_entry_keys
-                        //         .get(&segments::segkey_entry_order(&entry.id))
-                        //         .and_then(|o| o.deserialize().ok()),
-                        // };
-
                         if desc.expanded {
                             state
                                 .write()
@@ -411,19 +261,6 @@ impl<R: AppRuntime> Worktree<R> {
                             scan_queue: job.scan_queue.clone(),
                         });
                     } else {
-                        // let desc = EntryDescription {
-                        //     id: entry.id.clone(),
-                        //     name: desanitize(&child_name),
-                        //     path: entry.path.clone(),
-                        //     class: entry.classification(),
-                        //     kind: entry.kind(),
-                        //     protocol: entry.configuration.protocol(),
-                        //     expanded: expanded_entries.contains(&entry.id),
-                        //     order: all_entry_keys
-                        //         .get(&segments::segkey_entry_order(&entry.id))
-                        //         .and_then(|o| o.deserialize().ok()),
-                        // };
-
                         continue_if_err!(sender.send(desc), |_err| {
                             eprintln!("Error sending entry: {}", _err);
                             // TODO: log error
@@ -477,7 +314,7 @@ impl<R: AppRuntime> Worktree<R> {
 
         let content = hcl::to_string(&model)
             .join_err::<()>("failed to serialize configuration into hcl string")?;
-        self.create_entry(&sanitized_path, false, &content.as_bytes())
+        self.create_entry_internal(&sanitized_path, false, &content.as_bytes())
             .await?;
 
         let mut state_lock = self.state.write().await;
@@ -489,8 +326,6 @@ impl<R: AppRuntime> Worktree<R> {
             id.clone(),
             Entry {
                 id: id.clone(),
-                // path: sanitized_path.to_path_buf().into(),
-                // configuration: EntryConfiguration::Item(configuration),
                 path_rx,
                 edit: EntryEditing::new(self.fs.clone(), path_tx),
                 class: model.metadata.class.clone(),
@@ -551,7 +386,7 @@ impl<R: AppRuntime> Worktree<R> {
 
         let content = hcl::to_string(&model)
             .join_err::<()>("failed to serialize configuration into hcl string")?;
-        self.create_entry(&sanitized_path, true, &content.as_bytes())
+        self.create_entry_internal(&sanitized_path, true, &content.as_bytes())
             .await?;
 
         let mut state_lock = self.state.write().await;
@@ -562,8 +397,6 @@ impl<R: AppRuntime> Worktree<R> {
             id.clone(),
             Entry {
                 id: id.clone(),
-                // path: sanitized_path.to_path_buf().into(),
-                // configuration: EntryConfiguration::Dir(configuration),
                 path_rx,
                 edit: EntryEditing::new(self.fs.clone(), path_tx),
                 class: model.metadata.class.clone(),
@@ -610,10 +443,6 @@ impl<R: AppRuntime> Worktree<R> {
             .entries
             .get_mut(&id)
             .ok_or_join_err_with::<ErrorNotFound>(|| format!("entry {} not found", id))?;
-        // .as_dir_mut()
-        // .ok_or_join_err_with::<ErrorInvalidKind>(|| {
-        //     format!("entry {} is not a directory", id)
-        // })?;
 
         if let Some(new_parent) = params.path {
             if !new_parent.starts_with(CLASS_TO_DIR_NAME.get(&entry.class).unwrap()) {
@@ -631,13 +460,6 @@ impl<R: AppRuntime> Worktree<R> {
                 ));
             }
 
-            // let old_path = entry.path.clone();
-            // let new_path = update_path_parent(entry.path.as_ref(), &new_parent)?;
-            // path = new_path.clone();
-
-            // self.rename_entry(&old_path, &new_path).await?;
-            // *entry.path = new_path.into();
-
             let old_path = entry.path_rx.borrow().clone();
             let new_path = update_path_parent(&old_path, &new_parent)?;
 
@@ -648,13 +470,6 @@ impl<R: AppRuntime> Worktree<R> {
         }
 
         if let Some(name) = params.name {
-            // let old_path = entry.path.clone();
-            // let new_path = rename_path(entry.path.as_ref(), &name);
-            // path = new_path.clone();
-
-            // self.rename_entry(&old_path, &new_path).await?;
-            // *entry.path = new_path.into();
-
             let old_path = entry.path_rx.borrow().clone();
             let new_path = rename_path(&old_path, &name);
 
@@ -664,10 +479,11 @@ impl<R: AppRuntime> Worktree<R> {
                 .await?;
         }
 
+        // TODO: patch the dir entry
+
         let path = entry.path_rx.borrow().clone();
         drop(state_lock);
 
-        // let configuration = entry.configuration.clone();
         let is_db_update_needed = params.order.is_some() || params.expanded.is_some();
         if !is_db_update_needed {
             return Ok(path);
@@ -718,10 +534,6 @@ impl<R: AppRuntime> Worktree<R> {
             .entries
             .get_mut(&id)
             .ok_or_join_err_with::<ErrorNotFound>(|| format!("entry {} not found", id))?;
-        // .as_item_mut()
-        // .ok_or_join_err_with::<ErrorInvalidKind>(|| format!("entry {} is not a item", id))?;
-
-        // let mut path = entry.path.clone().to_path_buf();
 
         if let Some(new_parent) = &params.path {
             if !new_parent.starts_with(CLASS_TO_DIR_NAME.get(&entry.class).unwrap()) {
@@ -739,13 +551,6 @@ impl<R: AppRuntime> Worktree<R> {
                 ));
             }
 
-            // let old_path = entry.path.clone();
-            // let new_path = update_path_parent(entry.path.as_ref(), &new_parent)?;
-            // path = new_path.clone();
-
-            // self.rename_entry(&old_path, &new_path).await?;
-            // *entry.path = new_path.into();
-
             let old_path = entry.path_rx.borrow().clone();
             let new_path = update_path_parent(&old_path, &new_parent)?;
 
@@ -756,13 +561,6 @@ impl<R: AppRuntime> Worktree<R> {
         }
 
         if let Some(name) = &params.name {
-            // let old_path = entry.path.clone();
-            // let new_path = rename_path(entry.path.as_ref(), &name);
-            // path = new_path.clone();
-
-            // self.rename_entry(&old_path, &new_path).await?;
-            // *entry.path = new_path.into();
-
             let old_path = entry.path_rx.borrow().clone();
             let new_path = rename_path(&old_path, name);
 
@@ -777,30 +575,6 @@ impl<R: AppRuntime> Worktree<R> {
         let path = entry.path_rx.borrow().clone();
         drop(state_lock);
 
-        // if let Some(protocol) = params.protocol {
-        //     match entry.configuration {
-        //         RawItemConfiguration::Request(request) => {
-        //             request.change_protocol(protocol);
-
-        //             Ok(())
-        //         }
-        //         RawItemConfiguration::Endpoint(endpoint) => {
-        //             endpoint.change_protocol(protocol);
-
-        //             Ok(())
-        //         }
-        //         RawItemConfiguration::Component(_) => {
-        //             Err(joinerror::Error::new::<ErrorInvalidInput>(
-        //                 "cannot set protocol for component item",
-        //             ))
-        //         }
-        //         RawItemConfiguration::Schema(_) => Err(joinerror::Error::new::<ErrorInvalidInput>(
-        //             "cannot set protocol for schema item",
-        //         )),
-        //     }?;
-        // }
-
-        // let configuration = entry.configuration.clone();
         let is_db_update_needed = params.order.is_some() || params.expanded.is_some();
         if !is_db_update_needed {
             return Ok(path);
@@ -896,7 +670,7 @@ impl<R: AppRuntime> Worktree<R> {
 }
 
 impl<R: AppRuntime> Worktree<R> {
-    async fn create_entry(
+    async fn create_entry_internal(
         &self,
         path: &SanitizedPath,
         is_dir: bool,
@@ -931,53 +705,6 @@ impl<R: AppRuntime> Worktree<R> {
 
         Ok(())
     }
-
-    // async fn rename_entry(&self, from: &Path, to: &Path) -> joinerror::Result<()> {
-    //     // On Windows and macOS, file/directory names are case-preserving but insensitive
-    //     // If the from and to path differs only with different casing of the filename
-    //     // The rename should still succeed
-
-    //     let abs_from = self.absolutize(&from)?;
-    //     let abs_to = self.absolutize(&to)?;
-
-    //     if !abs_from.exists() {
-    //         return Err(joinerror::Error::new::<ErrorNotFound>(format!(
-    //             "entry not found: {}",
-    //             abs_from.display()
-    //         )));
-    //     }
-
-    //     let old_name_lower = from
-    //         .file_name()
-    //         .map(|name| name.to_string_lossy().to_lowercase())
-    //         .ok_or_join_err::<ErrorIo>("invalid file name")?;
-    //     let new_name_lower = to
-    //         .file_name()
-    //         .map(|name| name.to_string_lossy().to_lowercase())
-    //         .ok_or_join_err::<ErrorIo>("invalid file name")?;
-    //     let recasing_only =
-    //         old_name_lower == new_name_lower && abs_from.parent() == abs_to.parent();
-
-    //     if abs_to.exists() && !recasing_only {
-    //         return Err(joinerror::Error::new::<ErrorAlreadyExists>(format!(
-    //             "entry already exists: {}",
-    //             to.display()
-    //         )));
-    //     }
-
-    //     self.fs
-    //         .rename(
-    //             &abs_from,
-    //             &abs_to,
-    //             moss_fs::RenameOptions {
-    //                 overwrite: true,
-    //                 ignore_if_exists: false,
-    //             },
-    //         )
-    //         .await?;
-
-    //     Ok(())
-    // }
 }
 
 /// Update the filename of a path to the encoded input name
@@ -1052,12 +779,10 @@ async fn process_entry(
         return Ok(Some((
             Entry {
                 id,
-                // path: desanitize_path(path, None)?.into(),
                 path_rx,
                 edit: EntryEditing::new(fs.clone(), path_tx),
                 class: model.class(),
                 protocol: None,
-                // configuration: EntryConfiguration::Dir(config),
             },
             desc,
         )));
@@ -1087,8 +812,6 @@ async fn process_entry(
         return Ok(Some((
             Entry {
                 id,
-                // path: desanitize_path(path, None)?.into(),
-                // configuration: EntryConfiguration::Item(config),
                 path_rx,
                 edit: EntryEditing::new(fs.clone(), path_tx),
                 class: model.class(),
@@ -1109,53 +832,4 @@ async fn process_file(
 ) -> joinerror::Result<Option<(Entry, EntryDescription)>> {
     // TODO: implement
     Ok(None)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use json_patch::{
-        MoveOperation, PatchOperation, RemoveOperation, ReplaceOperation, jsonptr::PointerBuf,
-    };
-    use moss_edit::json::{EditOptions, JsonEdit};
-    use serde_json::{Value as JsonValue, json};
-
-    #[test]
-    fn patch_test() {
-        let content = r#"
-            request {
-                metadata {
-                    id = "en81rfzU5M"
-                }
-
-                get {
-                    raw = "test"
-                }
-            }
-        "#;
-
-        let mut edits = JsonEdit::new();
-        let mut value: JsonValue = hcl::from_str(content).unwrap();
-
-        // let p = unsafe { PointerBuf::new_unchecked("/request/get") };
-        // let v = value.pointer(&p).unwrap();
-
-        edits
-            .apply(
-                &mut value,
-                &[(
-                    PatchOperation::Move(MoveOperation {
-                        from: unsafe { PointerBuf::new_unchecked("/request/get") },
-                        path: unsafe { PointerBuf::new_unchecked("/request/post") },
-                    }),
-                    EditOptions {
-                        ignore_if_not_exists: false,
-                        create_missing_segments: false,
-                    },
-                )],
-            )
-            .unwrap();
-
-        dbg!(&value);
-    }
 }

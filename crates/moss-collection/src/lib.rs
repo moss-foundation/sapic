@@ -7,7 +7,6 @@ mod edit;
 pub mod manifest;
 pub mod models;
 pub mod services;
-mod spec;
 pub mod storage;
 pub mod worktree;
 

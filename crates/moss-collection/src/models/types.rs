@@ -1,5 +1,4 @@
 pub mod http;
-pub mod specification;
 
 use http::*;
 use serde::{Deserialize, Serialize};
@@ -132,7 +131,6 @@ pub struct AfterUpdateDirEntryDescription {
     pub id: EntryId,
 
     pub path: FrontendEntryPath,
-    // pub configuration: CompositeDirConfigurationModel,
 }
 
 /// @category Type
@@ -144,7 +142,6 @@ pub struct AfterUpdateItemEntryDescription {
     pub id: EntryId,
 
     pub path: FrontendEntryPath,
-    // pub configuration: CompositeItemConfigurationModel,
 }
 
 /// @category Type

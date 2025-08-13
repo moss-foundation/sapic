@@ -12,7 +12,6 @@ use moss_collection::{
         primitives::EntryId,
         types::{CreateDirEntryParams, CreateItemEntryParams},
     },
-    worktree::entry::model::EntryModel,
 };
 use moss_fs::RealFileSystem;
 use moss_testutils::random_name::{random_collection_name, random_string};
@@ -68,44 +67,6 @@ pub async fn create_test_collection() -> (
 
     (ctx, abs_path, collection)
 }
-
-// Since configuration models are empty enums, we need to use unreachable! for now
-// This is a limitation of the current implementation
-// #[allow(dead_code)]
-// pub fn create_test_item_configuration() -> EntryModel {
-//     // For now, we cannot create any variant since all configuration models are empty enums
-//     // This is a known issue in the codebase
-//     unreachable!("Configuration models are empty enums - cannot be instantiated")
-// }
-
-// #[allow(dead_code)]
-// pub fn create_test_request_dir_configuration() -> DirConfigurationModel {
-//     DirConfigurationModel::Request(RequestDirConfigurationModel::Http(
-//         DirHttpConfigurationModel {},
-//     ))
-// }
-
-// #[allow(dead_code)]
-// pub fn create_test_endpoint_dir_configuration() -> DirConfigurationModel {
-//     DirConfigurationModel::Endpoint(EndpointDirConfigurationModel::Http(
-//         HttpEndpointDirConfiguration {},
-//     ))
-// }
-
-// #[allow(dead_code)]
-// pub fn create_test_component_dir_configuration() -> DirConfigurationModel {
-//     DirConfigurationModel::Component(ComponentDirConfigurationModel {})
-// }
-
-// #[allow(dead_code)]
-// pub fn create_test_component_item_configuration() -> ItemConfigurationModel {
-//     ItemConfigurationModel::Component(ComponentItemConfigurationModel {})
-// }
-
-// #[allow(dead_code)]
-// pub fn create_test_schema_dir_configuration() -> DirConfigurationModel {
-//     DirConfigurationModel::Schema(SchemaDirConfigurationModel {})
-// }
 
 #[allow(dead_code)]
 pub async fn create_test_request_dir_entry(

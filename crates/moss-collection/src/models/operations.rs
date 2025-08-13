@@ -1,59 +1,19 @@
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use ts_rs::TS;
-use validator::{Validate, ValidationError};
+use validator::Validate;
 
-use crate::{
-    dirs,
-    models::{
-        primitives::EntryId,
-        types::{
-            AfterUpdateDirEntryDescription, AfterUpdateItemEntryDescription, CreateDirEntryParams,
-            CreateItemEntryParams, UpdateDirEntryParams, UpdateItemEntryParams,
-            validate_create_entry_input_path,
-        },
+use crate::models::{
+    primitives::EntryId,
+    types::{
+        AfterUpdateDirEntryDescription, AfterUpdateItemEntryDescription, CreateDirEntryParams,
+        CreateItemEntryParams, UpdateDirEntryParams, UpdateItemEntryParams,
     },
 };
 
 // ########################################################
 // ###                   Create Entry                   ###
 // ########################################################
-
-// TODO: Should this be named CreateItemEntryParams?
-// /// @category Operation
-// #[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
-// #[validate(schema(function = "validate_create_item_entry_input"))]
-// #[serde(rename_all = "camelCase")]
-// #[ts(optional_fields)]
-// #[ts(export, export_to = "operations.ts")]
-// pub struct CreateItemEntryInput {
-//     #[validate(custom(function = "validate_create_entry_input_path"))]
-//     pub path: PathBuf,
-
-//     #[validate(length(min = 1))]
-//     pub name: String,
-
-//     pub order: isize,
-//     pub configuration: ItemConfigurationModel,
-// }
-
-// TODO: Should this be named CreateDirEntryParams?
-/// @category Operation
-// #[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
-// #[validate(schema(function = "validate_create_dir_entry_input"))]
-// #[serde(rename_all = "camelCase")]
-// #[ts(optional_fields)]
-// #[ts(export, export_to = "operations.ts")]
-// pub struct CreateDirEntryInput {
-//     #[validate(custom(function = "validate_create_entry_input_path"))]
-//     pub path: PathBuf,
-
-//     #[validate(length(min = 1))]
-//     pub name: String,
-
-//     pub order: isize,
-//     pub configuration: DirConfigurationModel,
-// }
 
 /// @category Operation
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
@@ -69,7 +29,6 @@ pub enum CreateEntryInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateEntryOutput {
-    #[ts(as = "String")]
     pub id: EntryId,
 }
 
@@ -200,212 +159,6 @@ pub enum StreamEntriesInput {
 #[derive(Clone, Debug, Serialize, TS)]
 // #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct StreamEntriesOutput {}
-
-// fn validate_create_item_entry_input(input: &CreateItemEntryParams) -> Result<(), ValidationError> {
-//     let folder = match input.configuration {
-//         ItemConfigurationModel::Request(_) => dirs::REQUESTS_DIR,
-//         ItemConfigurationModel::Endpoint(_) => dirs::ENDPOINTS_DIR,
-//         ItemConfigurationModel::Component(_) => dirs::COMPONENTS_DIR,
-//         ItemConfigurationModel::Schema(_) => dirs::SCHEMAS_DIR,
-//     };
-
-//     if !input.path.starts_with(folder) {
-//         Err(ValidationError::new(
-//             "The input path does not match with the config model",
-//         ))
-//     } else {
-//         Ok(())
-//     }
-// }
-
-// fn validate_create_dir_entry_input(input: &CreateDirEntryInput) -> Result<(), ValidationError> {
-//     let folder = match input.configuration {
-//         DirConfigurationModel::Request(_) => dirs::REQUESTS_DIR,
-//         DirConfigurationModel::Endpoint(_) => dirs::ENDPOINTS_DIR,
-//         DirConfigurationModel::Component(_) => dirs::COMPONENTS_DIR,
-//         DirConfigurationModel::Schema(_) => dirs::SCHEMAS_DIR,
-//     };
-
-//     if !input.path.starts_with(folder) {
-//         Err(ValidationError::new(
-//             "The input path does not match with the config model",
-//         ))
-//     } else {
-//         Ok(())
-//     }
-// }
-
-// #[cfg(test)]
-// mod tests {
-//     use std::path::PathBuf;
-//     use validator::Validate;
-
-//     use crate::{
-//         dirs,
-//         models::{
-//             operations::{
-//                 CreateDirEntryInput, CreateItemEntryInput, validate_create_entry_input_path,
-//             },
-//             primitives::HttpMethod,
-//             types::specification::{
-//                 ComponentDirConfigurationModel, ComponentItemConfigurationModel,
-//                 DirConfigurationModel, DirHttpConfigurationModel, EndpointDirConfigurationModel,
-//                 EndpointItemConfigurationModel, HttpEndpointDirConfiguration,
-//                 HttpEndpointItemConfiguration, HttpRequestParts, ItemConfigurationModel,
-//                 ItemHttpRequestConfiguration, ItemRequestConfigurationModel,
-//                 RequestDirConfigurationModel, SchemaDirConfigurationModel,
-//                 SchemaItemConfigurationModel,
-//             },
-//         },
-//     };
-
-//     #[test]
-//     fn test_validate_create_entry_input_path_valid() {
-//         for path in [
-//             dirs::REQUESTS_DIR,
-//             dirs::ENDPOINTS_DIR,
-//             dirs::COMPONENTS_DIR,
-//             dirs::SCHEMAS_DIR,
-//         ] {
-//             let entry_path = PathBuf::from(&path).join("entry");
-//             let result = validate_create_entry_input_path(&entry_path);
-//             assert!(result.is_ok());
-//         }
-//     }
-
-//     #[test]
-//     fn test_validate_create_entry_input_path_invalid() {
-//         let entry_path = PathBuf::from("Incorrect").join("entry");
-//         let result = validate_create_entry_input_path(&entry_path);
-//         assert!(result.is_err());
-//     }
-
-//     #[test]
-//     fn test_validate_create_item_entry_input_matching() {
-//         let path = PathBuf::from(dirs::REQUESTS_DIR);
-//         let input = CreateItemEntryInput {
-//             path,
-//             name: "entry".to_string(),
-//             order: 0,
-//             configuration: ItemConfigurationModel::Request(ItemRequestConfigurationModel::Http(
-//                 ItemHttpRequestConfiguration {
-//                     request_parts: HttpRequestParts {
-//                         method: HttpMethod::Get,
-//                     },
-//                 },
-//             )),
-//         };
-//         let result = input.validate();
-//         assert!(result.is_ok());
-
-//         let path = PathBuf::from(dirs::ENDPOINTS_DIR);
-//         let input = CreateItemEntryInput {
-//             path,
-//             name: "entry".to_string(),
-//             order: 0,
-//             configuration: ItemConfigurationModel::Endpoint(EndpointItemConfigurationModel::Http(
-//                 HttpEndpointItemConfiguration {
-//                     request_parts: HttpRequestParts {
-//                         method: HttpMethod::Get,
-//                     },
-//                 },
-//             )),
-//         };
-//         let result = input.validate();
-//         assert!(result.is_ok());
-
-//         let path = PathBuf::from(dirs::COMPONENTS_DIR);
-//         let input = CreateItemEntryInput {
-//             path,
-//             name: "entry".to_string(),
-//             order: 0,
-//             configuration: ItemConfigurationModel::Component(ComponentItemConfigurationModel {}),
-//         };
-//         let result = input.validate();
-//         assert!(result.is_ok());
-
-//         let path = PathBuf::from(dirs::SCHEMAS_DIR);
-//         let input = CreateItemEntryInput {
-//             path,
-//             name: "entry".to_string(),
-//             order: 0,
-//             configuration: ItemConfigurationModel::Schema(SchemaItemConfigurationModel {}),
-//         };
-//         let result = input.validate();
-//         assert!(result.is_ok());
-//     }
-
-//     #[test]
-//     fn test_validate_create_item_entry_input_not_matching() {
-//         let path = PathBuf::from(dirs::COMPONENTS_DIR);
-//         let input = CreateItemEntryInput {
-//             path,
-//             name: "entry".to_string(),
-//             order: 0,
-//             configuration: ItemConfigurationModel::Schema(SchemaItemConfigurationModel {}),
-//         };
-//         let result = input.validate();
-//         assert!(result.is_err());
-//     }
-
-//     #[test]
-//     fn test_validate_create_dir_entry_input_matching() {
-//         let path = PathBuf::from(dirs::REQUESTS_DIR);
-//         let input = CreateDirEntryInput {
-//             path,
-//             name: "dir".to_string(),
-//             order: 0,
-//             configuration: DirConfigurationModel::Request(RequestDirConfigurationModel::Http(
-//                 DirHttpConfigurationModel {},
-//             )),
-//         };
-//         let result = input.validate();
-//         assert!(result.is_ok());
-
-//         let path = PathBuf::from(dirs::ENDPOINTS_DIR);
-//         let input = CreateDirEntryInput {
-//             path,
-//             name: "dir".to_string(),
-//             order: 0,
-//             configuration: DirConfigurationModel::Endpoint(EndpointDirConfigurationModel::Http(
-//                 HttpEndpointDirConfiguration {},
-//             )),
-//         };
-//         let result = input.validate();
-//         assert!(result.is_ok());
-
-//         let path = PathBuf::from(dirs::COMPONENTS_DIR);
-//         let input = CreateDirEntryInput {
-//             path,
-//             name: "dir".to_string(),
-//             order: 0,
-//             configuration: DirConfigurationModel::Component(ComponentDirConfigurationModel {}),
-//         };
-//         let result = input.validate();
-//         assert!(result.is_ok());
-
-//         let path = PathBuf::from(dirs::SCHEMAS_DIR);
-//         let input = CreateDirEntryInput {
-//             path,
-//             name: "dir".to_string(),
-//             order: 0,
-//             configuration: DirConfigurationModel::Schema(SchemaDirConfigurationModel {}),
-//         };
-//         let result = input.validate();
-//         assert!(result.is_ok());
-//     }
-
-//     #[test]
-//     fn test_validate_create_dir_entry_input_not_matching() {
-//         let path = PathBuf::from(dirs::REQUESTS_DIR);
-//         let input = CreateDirEntryInput {
-//             path,
-//             name: "dir".to_string(),
-//             order: 0,
-//             configuration: DirConfigurationModel::Schema(SchemaDirConfigurationModel {}),
-//         };
-//         let result = input.validate();
-//         assert!(result.is_err());
-//     }
-// }
+pub struct StreamEntriesOutput {
+    // TODO: count total?
+}

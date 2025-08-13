@@ -32,6 +32,19 @@ impl Display for EntryId {
     }
 }
 
+#[rustfmt::skip]
+impl TS for EntryId {
+    type WithoutGenerics = Self;
+    type OptionInnerType = Self;
+
+    fn name() -> String { "string".to_string() }
+    fn inline() -> String { "string".to_string() }
+    fn inline_flattened() -> String { "string".to_string() }
+    fn decl() -> String { unreachable!() }
+    fn decl_concrete() -> String { unreachable!() }
+    fn dependencies() -> Vec<ts_rs::Dependency> { vec![] }
+}
+
 /// @category Primitive
 #[derive(Clone, Debug, PartialEq, Hash, Eq, Deref, Serialize, Deserialize)]
 #[serde(transparent)]
