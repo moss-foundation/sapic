@@ -128,7 +128,7 @@ const TreeNodeButton = forwardRef<HTMLDivElement, TreeNodeButtonProps>(
             role="button"
             tabIndex={0}
           >
-            {isChildDropBlocked === null && <ActiveNodeIndicator isActive={activePanelId === node.id} />}
+            {isChildDropBlocked !== true && <ActiveNodeIndicator isActive={activePanelId === node.id} />}
 
             <DropIndicatorForTrigger
               paddingLeft={nodePaddingLeft}

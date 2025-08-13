@@ -164,6 +164,11 @@ export const useDraggableNode = ({
             return;
           }
 
+          if (sourceTarget.node.id === dropTarget.node.id) {
+            setIsChildDropBlocked(null);
+            return;
+          }
+
           if (sourceTarget.node.id === node.id) {
             if (hasDescendant(sourceTarget.node, dropTarget.node)) {
               setIsChildDropBlocked(true);
@@ -214,6 +219,10 @@ const isReorderAvailable = (sourceTarget: DragNode, dropTarget: DropNode): Avail
 
 const isCombineAvailable = (sourceTarget: DragNode, dropTarget: DropNode): Availability => {
   if (dropTarget.node.kind !== "Dir") {
+    return "not-available";
+  }
+
+  if (sourceTarget.node.id === dropTarget.node.id) {
     return "not-available";
   }
 
