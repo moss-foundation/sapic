@@ -10,7 +10,6 @@ use moss_git_hosting_provider::{
     GitAuthProvider, GitHostingProvider, common::GitProviderType, github::client::GitHubClient,
     gitlab::client::GitLabClient,
 };
-use moss_hcl::Block;
 use std::{
     cell::LazyCell,
     path::{Path, PathBuf},
@@ -59,8 +58,6 @@ pub struct CollectionCreateParams {
     pub external_abs_path: Option<Arc<Path>>,
     // FIXME: Maybe repository should be a enum by git provider type
     pub repository: Option<String>,
-
-    #[cfg(any(test, feature = "integration-tests"))]
     pub git_provider_type: Option<GitProviderType>,
 
     pub icon_path: Option<PathBuf>,
@@ -337,8 +334,8 @@ impl CollectionBuilder {
             .join_err::<()>("failed to create collection storage service")?
             .into();
 
-        let worktree_service: Arc<WorktreeService<R>> =
-            WorktreeService::new(abs_path.clone(), self.fs.clone(), storage_service.clone()).into();
+        let worktree: Arc<Worktree<R>> =
+            Worktree::new(abs_path.clone(), self.fs.clone(), storage_service.clone()).into();
 
         let set_icon_service =
             SetIconService::new(abs_path.clone(), self.fs.clone(), COLLECTION_ICON_SIZE);
@@ -367,7 +364,7 @@ impl CollectionBuilder {
             edit,
             set_icon_service,
             storage_service,
-            worktree_service,
+            worktree,
             environments: OnceCell::new(),
             on_did_change: EventEmitter::new(),
             repo_handle: Arc::new(Mutex::new(Some(repo_handle))),

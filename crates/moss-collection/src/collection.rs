@@ -63,6 +63,10 @@ pub struct Collection<R: AppRuntime> {
     pub(super) environments: OnceCell<EnvironmentMap<R>>,
 
     pub(super) on_did_change: EventEmitter<OnDidChangeEvent>,
+
+    // Right now we are not updating the repo_handle once it's created
+    // So we still want to suppress this warning
+    #[allow(dead_code)]
     /// Since operations over RepoHandle must be done in a synchronous closure wrapped by a
     /// `tokio::task::spawn_blocking`
     /// This mutex must be a synchronous one and should not be acquired in an async block

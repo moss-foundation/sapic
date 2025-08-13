@@ -110,7 +110,6 @@ impl GitHostingProvider for GitHubClient {
 
     async fn repository_info(&self, repo_url: &str) -> joinerror::Result<RepositoryInfo> {
         let access_token = self.client_auth_agent.clone().access_token().await?;
-        dbg!(&access_token);
 
         let repo_response: RepositoryResponse = self
             .client

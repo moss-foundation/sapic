@@ -3,6 +3,7 @@
 pub mod shared;
 
 use crate::shared::{generate_random_icon, setup_test_workspace};
+use moss_git_hosting_provider::common::GitProviderType;
 use moss_storage::storage::operations::GetItem;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_collection_name};
 use moss_workspace::{
@@ -204,7 +205,7 @@ async fn create_collection_with_order() {
     cleanup().await;
 }
 
-// TODO: Reenable the tests once we start passing the git provider type during `create_collection`
+// FIXME: We need to solve the issue of token invalidation before incorporating these tests into CI pipeline
 
 // #[tokio::test]
 // async fn create_collection_with_github_public_repo() {
@@ -221,6 +222,7 @@ async fn create_collection_with_order() {
 //                 order: 0,
 //                 external_path: None,
 //                 repository: Some(repo.clone()),
+//                 git_provider_type: Some(GitProviderType::GitHub),
 //                 icon_path: None,
 //             },
 //         )
@@ -290,6 +292,91 @@ async fn create_collection_with_order() {
 // }
 //
 // #[tokio::test]
+// async fn create_collection_with_github_private_repo() {
+//     let (ctx, workspace, cleanup) = setup_test_workspace().await;
+//
+//     let collection_name = random_collection_name();
+//     let repo = "https://github.com/moss-foundation/sapic-test-collection-private.git".to_string();
+//     let normalized_repo = "github.com/moss-foundation/sapic-test-collection-private";
+//     let create_collection_result = workspace
+//         .create_collection(
+//             &ctx,
+//             &CreateCollectionInput {
+//                 name: collection_name.clone(),
+//                 order: 0,
+//                 external_path: None,
+//                 repository: Some(repo.clone()),
+//                 git_provider_type: Some(GitProviderType::GitHub),
+//                 icon_path: None,
+//             },
+//         )
+//         .await;
+//
+//     let create_collection_output = create_collection_result.unwrap();
+//
+//     let channel = Channel::new(move |_| Ok(()));
+//     let output = workspace.stream_collections(&ctx, channel).await.unwrap();
+//     assert_eq!(output.total_returned, 1);
+//
+//     // Verify the directory was created
+//     assert!(create_collection_output.abs_path.exists());
+//
+//     // Verify that the repo is stored in the manifest model
+//     let id = create_collection_output.id;
+//     let collection = workspace.collection(&id).await.unwrap();
+//     assert_eq!(
+//         collection.describe().await.unwrap().repository,
+//         Some(normalized_repo.to_string())
+//     );
+//
+//     // Verify the db entries were created
+//     let item_store = workspace.db().item_store();
+//
+//     // Check order was stored
+//     let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
+//     let order_value = GetItem::get(item_store.as_ref(), &ctx, order_key)
+//         .await
+//         .unwrap();
+//     let stored_order: usize = order_value.deserialize().unwrap();
+//     assert_eq!(stored_order, 0);
+//
+//     // Check expanded_items contains the collection id
+//     let expanded_items_value = GetItem::get(
+//         item_store.as_ref(),
+//         &ctx,
+//         SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
+//     )
+//         .await
+//         .unwrap();
+//     let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
+//     assert!(expanded_items.contains(&id));
+//
+//
+//     tokio::task::spawn_blocking(move || {
+//         // Check the local git repo is correctly created
+//         assert!(create_collection_output.abs_path.join(".git").exists());
+//
+//         let repo_handle = collection.repo_handle();
+//         let repo_handle_lock = repo_handle.lock().unwrap();
+//         let repo_handle_ref = repo_handle_lock.as_ref().unwrap();
+//
+//         // Check the default branch is created locally (which implies the initial commit is successful)
+//         // TODO: Check the default branch is renamed based on user input
+//         let branches = repo_handle_ref.list_branches(None).unwrap();
+//         assert_eq!(branches.len(), 1);
+//
+//         // Check the remote is correctly set
+//         let remotes = repo_handle_ref.list_remotes().unwrap();
+//         assert_eq!(remotes.len(), 1);
+//         assert_eq!(remotes["origin"], repo);
+//
+//     }).await.unwrap();
+//
+//     cleanup().await;
+// }
+//
+//
+// #[tokio::test]
 // async fn create_collection_with_gitlab_public_repo() {
 //     let (ctx, workspace, cleanup) = setup_test_workspace().await;
 //
@@ -304,6 +391,91 @@ async fn create_collection_with_order() {
 //                 order: 0,
 //                 external_path: None,
 //                 repository: Some(repo.clone()),
+//                 git_provider_type: Some(GitProviderType::GitLab),
+//                 icon_path: None,
+//             },
+//         )
+//         .await;
+//
+//     let create_collection_output = create_collection_result.unwrap();
+//
+//     let channel = Channel::new(move |_| Ok(()));
+//     let output = workspace.stream_collections(&ctx, channel).await.unwrap();
+//     assert_eq!(output.total_returned, 1);
+//
+//     // Verify the directory was created
+//     assert!(create_collection_output.abs_path.exists());
+//
+//     // Verify that the repo is stored in the manifest model
+//     let id = create_collection_output.id;
+//     let collection = workspace.collection(&id).await.unwrap();
+//     assert_eq!(
+//         collection.describe().await.unwrap().repository,
+//         Some(normalized_repo.to_string())
+//     );
+//
+//     // Verify the db entries were created
+//     let item_store = workspace.db().item_store();
+//
+//     // Check order was stored
+//     let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
+//     let order_value = GetItem::get(item_store.as_ref(), &ctx, order_key)
+//         .await
+//         .unwrap();
+//     let stored_order: usize = order_value.deserialize().unwrap();
+//     assert_eq!(stored_order, 0);
+//
+//     // Check expanded_items contains the collection id
+//     let expanded_items_value = GetItem::get(
+//         item_store.as_ref(),
+//         &ctx,
+//         SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
+//     )
+//         .await
+//         .unwrap();
+//     let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
+//     assert!(expanded_items.contains(&id));
+//
+//
+//     tokio::task::spawn_blocking(move || {
+//         // Check the local git repo is correctly created
+//         assert!(create_collection_output.abs_path.join(".git").exists());
+//
+//         let repo_handle = collection.repo_handle();
+//         let repo_handle_lock = repo_handle.lock().unwrap();
+//         let repo_handle_ref = repo_handle_lock.as_ref().unwrap();
+//
+//         // Check the default branch is created locally (which implies the initial commit is successful)
+//         // TODO: Check the default branch is renamed based on user input
+//         let branches = repo_handle_ref.list_branches(None).unwrap();
+//         assert_eq!(branches.len(), 1);
+//
+//         // Check the remote is correctly set
+//         let remotes = repo_handle_ref.list_remotes().unwrap();
+//         assert_eq!(remotes.len(), 1);
+//         assert_eq!(remotes["origin"], repo);
+//
+//     }).await.unwrap();
+//
+//     cleanup().await;
+// }
+//
+// #[tokio::test]
+// async fn create_collection_with_gitlab_private_repo() {
+//     let (ctx, workspace, cleanup) = setup_test_workspace().await;
+//
+//     let collection_name = random_collection_name();
+//     let repo = "https://gitlab.com/moss-foundation/sapic-collection-private.git".to_string();
+//     let normalized_repo = "gitlab.com/moss-foundation/sapic-collection-private";
+//     let create_collection_result = workspace
+//         .create_collection(
+//             &ctx,
+//             &CreateCollectionInput {
+//                 name: collection_name.clone(),
+//                 order: 0,
+//                 external_path: None,
+//                 repository: Some(repo.clone()),
+//                 git_provider_type: Some(GitProviderType::GitLab),
 //                 icon_path: None,
 //             },
 //         )
