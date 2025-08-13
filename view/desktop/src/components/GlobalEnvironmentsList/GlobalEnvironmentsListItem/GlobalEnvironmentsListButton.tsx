@@ -10,7 +10,7 @@ export const GlobalEnvironmentsListButton = ({ environment }: GlobalEnvironments
     <button className="z-10 flex cursor-pointer items-center gap-2 overflow-hidden">
       <Icon icon="Environment" />
       <span className="truncate">{environment.name}</span>
-      <span className="text-xs text-(--moss-secondary-text)">(15)</span>
+      <span className="text-(--moss-secondary-text)">(15)</span>
     </button>
   );
 };
