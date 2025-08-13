@@ -61,3 +61,31 @@ export const prepareEntriesForDrop = async (entries: EntryInfo[]): Promise<Entry
 
   return entriesPreparedForDrop;
 };
+
+export const prepareEntriesForCreation = async (entries: EntryInfo[]): Promise<EntryInfo[]> => {
+  const rootEntryName = entries[0].name;
+
+  const entriesPreparedForDrop: EntryInfo[] = [];
+
+  for await (const entry of entries) {
+    const newEntryPath = await removePathBeforeName(entry.path, rootEntryName);
+
+    entriesPreparedForDrop.push({
+      ...entry,
+      path: newEntryPath,
+    });
+  }
+
+  const entriesWithoutName = await Promise.all(
+    entriesPreparedForDrop.map(async (entry) => {
+      const pathWithoutName = await getPathWithoutName(entry);
+
+      return {
+        ...entry,
+        path: pathWithoutName,
+      };
+    })
+  );
+
+  return entriesWithoutName;
+};
