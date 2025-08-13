@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
-import { validateName } from "@/utils";
+import { useFocusInputOnMount, useValidateInput } from "@/hooks";
 
 interface NodeRenamingFormProps {
   onSubmit: (name: string) => void;
@@ -10,18 +10,20 @@ interface NodeRenamingFormProps {
 
 export const NodeAddForm = ({ onSubmit, onCancel, restrictedNames }: NodeRenamingFormProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
-  const isInitialized = useRef(false);
 
   const [value, setValue] = useState("");
 
-  const { isValid, message } = validateName(value, restrictedNames ?? []);
+  const { isInitialized } = useFocusInputOnMount({
+    inputRef,
+    initialValue: value,
+  });
 
-  useEffect(() => {
-    if (!inputRef.current || !isInitialized.current) return;
-
-    inputRef.current.setCustomValidity(message);
-    inputRef.current.reportValidity();
-  }, [message]);
+  const { isValid } = useValidateInput({
+    value,
+    restrictedValues: restrictedNames,
+    inputRef,
+    isInitialized,
+  });
 
   const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Escape") onCancel();
@@ -45,23 +47,6 @@ export const NodeAddForm = ({ onSubmit, onCancel, restrictedNames }: NodeRenamin
 
     onSubmit(value);
   };
-
-  useEffect(() => {
-    if (!inputRef.current) return;
-
-    // Timer is set because of MacOS focus bug
-    const timer = setTimeout(() => {
-      if (inputRef.current) {
-        inputRef.current.focus();
-        inputRef.current.value = value;
-        const dotIndex = inputRef.current.value.indexOf(".");
-        inputRef.current.setSelectionRange(0, dotIndex >= 0 ? dotIndex : value.length);
-        isInitialized.current = true;
-      }
-    }, 100);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <form onSubmit={handleSubmit} className="w-full grow">

@@ -4,4 +4,4 @@ export * from "./swapListByIndex";
 
 export * from "./swapListById";
 export * from "./swapObjectsById";
-export * from "./validateName";
+export * from "./validateValue";

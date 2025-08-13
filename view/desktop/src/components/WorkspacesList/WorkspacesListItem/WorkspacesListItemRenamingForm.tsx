@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
+import { useFocusInputOnMount, useValidateInput } from "@/hooks";
 import { Icon } from "@/lib/ui";
-import { validateName } from "@/utils";
 import { platform } from "@tauri-apps/plugin-os";
 
 import { useClickOutside } from "../../../hooks/useClickOutside";
@@ -26,17 +26,19 @@ export const WorkspacesListItemRenamingForm = ({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const isInitialized = useRef(false);
   const [value, setValue] = useState(String(currentName));
 
-  const { isValid, message } = validateName(value, restrictedNames ?? []);
+  const { isInitialized } = useFocusInputOnMount({
+    inputRef,
+    initialValue: value,
+  });
 
-  useEffect(() => {
-    if (!inputRef.current || !isInitialized.current) return;
-
-    inputRef.current.setCustomValidity(message);
-    inputRef.current.reportValidity();
-  }, [message]);
+  const { isValid } = useValidateInput({
+    value,
+    restrictedValues: restrictedNames,
+    inputRef,
+    isInitialized,
+  });
 
   const finishEditing = () => {
     if (!isValid) {

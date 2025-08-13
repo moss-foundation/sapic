@@ -137,7 +137,6 @@ export const useNodeDragAndDropHandler = () => {
 
   const handleCombineToAnotherCollectionRoot = useCallback(
     async (sourceTreeNodeData: DragNode, locationTreeRootNodeData: DropRootNode) => {
-      console.log("handleCombineToAnotherCollectionRoot");
       const allEntries = getAllNestedEntries(sourceTreeNodeData.node);
       const entriesPreparedForDrop = await prepareEntriesForDrop(allEntries);
       const entriesWithoutName = await Promise.all(
@@ -309,8 +308,6 @@ export const useNodeDragAndDropHandler = () => {
 
   const handleCombineToAnotherCollection = useCallback(
     async (sourceTreeNodeData: DragNode, locationTreeNodeData: DropNode) => {
-      console.log("handleCombineToAnotherCollection");
-
       const allEntries = getAllNestedEntries(sourceTreeNodeData.node);
       const entriesPreparedForCreation = await prepareEntriesForCreation(allEntries);
 

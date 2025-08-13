@@ -1,18 +1,16 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 import { ButtonNeutralOutlined, ButtonPrimary, InputOutlined, RadioGroup } from "@/components";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { ModalForm } from "@/components/ModalForm";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
-import { useStreamedCollections } from "@/hooks";
+import { useFocusInputOnMount, useStreamedCollections, useValidateInput } from "@/hooks";
 import { useCreateEnvironment, useStreamEnvironments } from "@/hooks/environment";
-import { validateName } from "@/utils";
 
 import { ModalWrapperProps } from "../types";
 
 export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
-  const isInitialized = useRef(false);
 
   const { data: environments } = useStreamEnvironments();
   const { mutateAsync: createEnvironment } = useCreateEnvironment();
@@ -23,32 +21,18 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
   const [mode, setMode] = useState<"Workspace" | "Collection">("Workspace");
   const [openAutomatically, setOpenAutomatically] = useState(true);
 
+  const { isInitialized } = useFocusInputOnMount({
+    inputRef,
+    initialValue: name,
+  });
+
   const restrictedNames = environments?.map((environment) => environment.name);
-  const { isValid, message } = validateName(name, restrictedNames ?? []);
-
-  useEffect(() => {
-    if (!inputRef.current || !isInitialized.current) return;
-
-    inputRef.current.setCustomValidity(message);
-    inputRef.current.reportValidity();
-  }, [message]);
-
-  useEffect(() => {
-    if (!inputRef.current) return;
-
-    // Timer is set because of MacOS focus bug
-    const timer = setTimeout(() => {
-      if (inputRef.current) {
-        inputRef.current.focus();
-        inputRef.current.value = name;
-        const dotIndex = inputRef.current.value.indexOf(".");
-        inputRef.current.setSelectionRange(0, dotIndex >= 0 ? dotIndex : name.length);
-        isInitialized.current = true;
-      }
-    }, 100);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { isValid } = useValidateInput({
+    value: name,
+    restrictedValues: restrictedNames,
+    inputRef,
+    isInitialized,
+  });
 
   const handleSubmit = async () => {
     if (!isValid) return;

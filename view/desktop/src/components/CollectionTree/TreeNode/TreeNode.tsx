@@ -59,7 +59,7 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
   });
 
   const shouldRenderChildNodes = node.expanded || isAddingFileNode || isAddingFolderNode;
-  const restrictedNames = getChildrenNames(parentNode);
+  const restrictedNames = getChildrenNames(node);
 
   return (
     <li ref={dropTargetListRef} className={cn("relative")}>
