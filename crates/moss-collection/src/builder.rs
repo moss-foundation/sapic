@@ -11,6 +11,7 @@ use moss_git_hosting_provider::{
 };
 use moss_hcl::Block;
 use std::{
+    cell::LazyCell,
     path::{Path, PathBuf},
     sync::{Arc, Mutex},
 };
@@ -46,6 +47,18 @@ const WORKTREE_DIRS: [(&str, isize); 4] = [
     (dirs::COMPONENTS_DIR, 2),
     (dirs::SCHEMAS_DIR, 3),
 ];
+
+struct PredefinedFile {
+    path: PathBuf,
+    content: Vec<u8>,
+}
+
+const PREDEFINED_FILES: LazyCell<Vec<PredefinedFile>> = LazyCell::new(|| {
+    vec![PredefinedFile {
+        path: PathBuf::from(".gitignore"),
+        content: "config.json\n**/state.db".as_bytes().to_vec(),
+    }]
+});
 
 pub struct CollectionCreateParams {
     pub name: Option<String>,
@@ -291,6 +304,19 @@ impl CollectionBuilder {
             )
             .await?;
 
+        for file in PREDEFINED_FILES.iter() {
+            self.fs
+                .create_file_with(
+                    &abs_path.join(&file.path),
+                    file.content.as_slice(),
+                    CreateOptions {
+                        overwrite: false,
+                        ignore_if_exists: false,
+                    },
+                )
+                .await?;
+        }
+
         let edit = CollectionEdit::new(self.fs.clone(), abs_path.join(MANIFEST_FILE_NAME));
 
         let repo_handle = Arc::new(std::sync::Mutex::new(None));
@@ -301,19 +327,6 @@ impl CollectionBuilder {
             // We will try to initiate a local repo, make initial commit, and push it to the remote
             // If any of the steps failed, we consider repo creation to have failed
             // We will then delete the .git folder, allowing for clean creation in the future
-
-            self.fs
-                .create_file_with(
-                    &abs_path.join(".gitignore"),
-                    "config.json
-**/state.db"
-                        .as_bytes(),
-                    CreateOptions {
-                        overwrite: false,
-                        ignore_if_exists: false,
-                    },
-                )
-                .await?;
 
             let abs_path_clone = abs_path.clone();
             let repo_handle_clone = repo_handle.clone();
