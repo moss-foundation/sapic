@@ -93,7 +93,7 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
               You can switch modes in the workspace at any time and as often as needed.
             </p>
             <div className="pl-5">
-              <RadioGroup.Root>
+              <RadioGroup.Root required>
                 <RadioGroup.ItemWithLabel
                   label="Workspace"
                   description="This mode is suitable when your collection is stored in a separate repository or doesn’t have a repository at all."
@@ -116,6 +116,7 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
                   }))}
                   selectValue={collectionId ?? undefined}
                   onChange={handleSelectCollection}
+                  required={mode === "Collection"}
                 />
               </RadioGroup.Root>
             </div>

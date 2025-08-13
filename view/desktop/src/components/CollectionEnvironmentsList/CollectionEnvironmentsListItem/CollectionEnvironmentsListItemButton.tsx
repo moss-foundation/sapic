@@ -1,10 +1,10 @@
 import { Icon } from "@/lib/ui";
 
-interface CollectionsListItemButtonProps {
+interface CollectionEnvironmentsListItemButtonProps {
   label: string;
 }
 
-export const CollectionsListItemButton = ({ label }: CollectionsListItemButtonProps) => {
+export const CollectionEnvironmentsListItemButton = ({ label }: CollectionEnvironmentsListItemButtonProps) => {
   return (
     <button className="z-10 flex cursor-pointer items-center gap-2 overflow-hidden">
       <Icon icon="CollectionEnvironment" />

@@ -3,17 +3,17 @@ import { cn } from "@/utils";
 
 import { CollectionWithEnvironment } from "../types";
 
-interface CollectionsListRootButtonProps {
+interface CollectionEnvironmentsListRootButtonProps {
   showChildren: boolean;
   setShowChildren: (showChildren: boolean) => void;
-  collection: CollectionWithEnvironment;
+  collectionsWithEnvironments: CollectionWithEnvironment;
 }
 
-export const CollectionsListRootButton = ({
+export const CollectionEnvironmentsListRootButton = ({
   showChildren,
   setShowChildren,
-  collection,
-}: CollectionsListRootButtonProps) => {
+  collectionsWithEnvironments,
+}: CollectionEnvironmentsListRootButtonProps) => {
   return (
     <div className="z-10 flex items-center gap-2 overflow-hidden">
       <button
@@ -26,7 +26,7 @@ export const CollectionsListRootButton = ({
         <Icon icon="ChevronRight" className={cn(showChildren && "rotate-90")} />
       </button>
 
-      <div className="truncate">{collection.name}</div>
+      <div className="truncate">{collectionsWithEnvironments.name}</div>
     </div>
   );
 };

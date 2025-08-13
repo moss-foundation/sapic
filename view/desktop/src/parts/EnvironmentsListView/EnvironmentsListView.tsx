@@ -1,4 +1,4 @@
-import { CollectionsList } from "@/components/CollectionsList/CollectionsList";
+import { CollectionEnvironmentsList } from "@/components/CollectionEnvironmentsList/CollectionEnvironmentsList";
 import { GlobalEnvironmentsList } from "@/components/GlobalEnvironmentsList/GlobalEnvironmentsList";
 import { useStreamEnvironments } from "@/hooks/environment";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
@@ -35,7 +35,7 @@ export const EnvironmentsListView = () => {
 
         {environments && environments.length > 0 && <EnvironmentsListViewDivider />}
 
-        <CollectionsList />
+        <CollectionEnvironmentsList />
       </div>
     </div>
   );

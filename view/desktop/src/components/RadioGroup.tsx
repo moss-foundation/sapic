@@ -93,6 +93,7 @@ export interface ItemWithSelectProps {
   onChange: (value: string) => void;
   placeholder?: string;
   selectValue?: string;
+  required?: boolean;
 }
 const ItemWithSelect = ({
   label,
@@ -106,6 +107,7 @@ const ItemWithSelect = ({
   onChange,
   placeholder,
   selectValue,
+  required = false,
 }: ItemWithSelectProps) => {
   const id = useId();
 
@@ -127,6 +129,7 @@ const ItemWithSelect = ({
         onClick={onClick}
         className={cn(radioGroupItemStyles)}
         disabled={disabled}
+        required={required}
       >
         <RadioGroupPrimitive.Indicator>
           <Icon icon="RadioIndicator" />
@@ -134,28 +137,29 @@ const ItemWithSelect = ({
       </RadioGroupPrimitive.Item>
 
       <div className="flex items-center gap-2">
-        {label && (
-          <label
-            htmlFor={id}
-            className={cn("cursor-pointer py-2", {
-              "cursor-not-allowed": disabled,
-            })}
-          >
-            {label}
-          </label>
-        )}
+        <label
+          htmlFor={id}
+          className={cn("cursor-pointer py-2", {
+            "cursor-not-allowed": disabled,
+          })}
+        >
+          {label}
+        </label>
 
-        <SelectOutlined.Root disabled={disabled} value={selectValue} onValueChange={onChange}>
-          <SelectOutlined.Trigger size="sm" placeholder={placeholder} disabled={disabled} />
+        {/* This wrapper is needed to align the validation message from default select if required attribute is used */}
+        <div className="flex items-end justify-center">
+          <SelectOutlined.Root disabled={disabled} value={selectValue} onValueChange={onChange} required={required}>
+            <SelectOutlined.Trigger size="sm" placeholder={placeholder} disabled={disabled} />
 
-          <SelectOutlined.Content>
-            {options?.map((option) => (
-              <SelectOutlined.Item key={option.value} value={option.value} disabled={disabled}>
-                {option.label}
-              </SelectOutlined.Item>
-            ))}
-          </SelectOutlined.Content>
-        </SelectOutlined.Root>
+            <SelectOutlined.Content align="end">
+              {options?.map((option) => (
+                <SelectOutlined.Item key={option.value} value={option.value} disabled={disabled}>
+                  {option.label}
+                </SelectOutlined.Item>
+              ))}
+            </SelectOutlined.Content>
+          </SelectOutlined.Root>
+        </div>
       </div>
 
       {description && (

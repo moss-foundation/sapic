@@ -7,14 +7,16 @@ import { CollectionWithEnvironment } from "../types";
 
 export const useCollectionsWithEnvironments = () => {
   const { data: collections } = useStreamedCollections();
-  const { data: environments } = useStreamEnvironments();
+  const { collectionsEnvironments } = useStreamEnvironments();
 
   const collectionsWithEnvironments: CollectionWithEnvironment[] = useMemo(() => {
-    if (!collections || !environments) return [];
+    if (!collections || !collectionsEnvironments) return [];
 
     return collections
       .map((collection) => {
-        const collectionEnvironments = environments.filter((environment) => environment.collectionId === collection.id);
+        const collectionEnvironments = collectionsEnvironments.filter(
+          (environment) => environment.collectionId === collection.id
+        );
 
         return {
           ...collection,
@@ -22,7 +24,7 @@ export const useCollectionsWithEnvironments = () => {
         };
       })
       .filter((collection) => collection.environments.length > 0);
-  }, [collections, environments]);
+  }, [collections, collectionsEnvironments]);
 
   return { collectionsWithEnvironments };
 };

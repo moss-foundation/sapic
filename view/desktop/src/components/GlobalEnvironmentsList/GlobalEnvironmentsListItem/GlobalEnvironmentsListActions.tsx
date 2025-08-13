@@ -41,7 +41,10 @@ export const GlobalEnvironmentsListActions = ({ environment, setIsEditing }: Glo
   return (
     <div className="z-10 flex items-center gap-1">
       <ActionButton
-        onClick={() => setActiveEnvironment(environment)}
+        onClick={(e) => {
+          e.stopPropagation();
+          setActiveEnvironment(environment);
+        }}
         icon={activeEnvironment?.id === environment.id ? "EnvironmentSelectionActive" : "EnvironmentSelection"}
         className={cn("cursor-pointer group-hover/GlobalEnvironmentsList:opacity-100", {
           "opacity-0": activeEnvironment?.id !== environment.id,
