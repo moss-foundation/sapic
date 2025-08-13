@@ -17,6 +17,7 @@ import {
   getSourceTreeCollectionNodeData,
   hasAnotherDirectDescendantWithSimilarName,
   hasDescendant,
+  hasDirectSimilarDescendant,
   isSourceTreeCollectionNode,
 } from "../../utils";
 
@@ -223,7 +224,7 @@ const isCombineAvailable = (sourceTarget: DragNode, dropTarget: DropNode): Avail
   }
 
   if (sourceTarget.node.id === dropTarget.node.id) {
-    return "not-available";
+    return "blocked";
   }
 
   if (sourceTarget.node.class !== dropTarget.node.class) {
@@ -234,7 +235,7 @@ const isCombineAvailable = (sourceTarget: DragNode, dropTarget: DropNode): Avail
     return "blocked";
   }
 
-  if (hasAnotherDirectDescendantWithSimilarName(dropTarget.node, sourceTarget.node)) {
+  if (hasDirectSimilarDescendant(dropTarget.node, sourceTarget.node)) {
     return "blocked";
   }
 
