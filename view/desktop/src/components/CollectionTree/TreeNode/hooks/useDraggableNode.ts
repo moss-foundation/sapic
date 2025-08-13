@@ -1,23 +1,19 @@
 import { RefObject, useContext, useEffect, useState } from "react";
 
-import {
-  attachInstruction,
-  Availability,
-  extractInstruction,
-  Instruction,
-} from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
+import { attachInstruction, extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 
 import { CollectionTreeContext } from "../../CollectionTreeContext";
-import { DragNode, DropNode, TreeCollectionNode } from "../../types";
+import { TreeCollectionNode } from "../../types";
 import {
+  evaluateIsChildDropBlocked,
   getLocationTreeCollectionNodeData,
   getSourceTreeCollectionNodeData,
-  hasAnotherDirectDescendantWithSimilarName,
   hasDescendant,
-  hasDirectSimilarDescendant,
+  isCombineAvailable,
+  isReorderAvailable,
   isSourceTreeCollectionNode,
 } from "../../utils";
 
@@ -180,7 +176,7 @@ export const useDraggableNode = ({
 
           setIsChildDropBlocked(null);
         },
-        onDragLeave: () => {
+        onDropTargetChange: () => {
           setIsChildDropBlocked(null);
         },
         onDrop: () => {
@@ -191,60 +187,4 @@ export const useDraggableNode = ({
   }, [dropTargetListRef, id, instruction, isRootNode, node, parentNode, repository, setPreview, triggerRef]);
 
   return { instruction, isDragging, isChildDropBlocked };
-};
-
-const isReorderAvailable = (sourceTarget: DragNode, dropTarget: DropNode): Availability => {
-  if (sourceTarget.node.id === dropTarget.node.id) {
-    return "not-available";
-  }
-
-  if (sourceTarget.node.class !== dropTarget.node.class) {
-    return "blocked";
-  }
-
-  if (hasDescendant(sourceTarget.node, dropTarget.node)) {
-    return "blocked";
-  }
-
-  if (hasAnotherDirectDescendantWithSimilarName(dropTarget.parentNode, sourceTarget.node)) {
-    return "blocked";
-  }
-
-  return "available";
-};
-
-const isCombineAvailable = (sourceTarget: DragNode, dropTarget: DropNode): Availability => {
-  if (dropTarget.node.kind !== "Dir") {
-    return "not-available";
-  }
-
-  if (sourceTarget.node.id === dropTarget.node.id) {
-    return "blocked";
-  }
-
-  if (sourceTarget.node.class !== dropTarget.node.class) {
-    return "blocked";
-  }
-
-  if (hasDescendant(sourceTarget.node, dropTarget.node)) {
-    return "blocked";
-  }
-
-  if (hasDirectSimilarDescendant(dropTarget.node, sourceTarget.node)) {
-    return "blocked";
-  }
-
-  return "available";
-};
-
-const evaluateIsChildDropBlocked = (parentNode: TreeCollectionNode, dropNode: TreeCollectionNode): boolean => {
-  if (parentNode.class !== dropNode.class) {
-    return true;
-  }
-
-  if (hasAnotherDirectDescendantWithSimilarName(parentNode, dropNode)) {
-    return true;
-  }
-
-  return false;
 };
