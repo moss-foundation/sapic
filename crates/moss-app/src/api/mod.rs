@@ -10,6 +10,8 @@ pub mod list_color_themes;
 pub mod list_locales;
 pub mod list_logs;
 pub mod list_workspaces;
+mod log_in_with_github;
+mod log_in_with_gitlab;
 pub mod open_workspace;
 pub mod set_color_theme;
 pub mod set_locale;

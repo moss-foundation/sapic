@@ -1591,6 +1591,7 @@ dependencies = [
  "moss_db",
  "moss_environment",
  "moss_fs",
+ "moss_git_hosting_provider",
  "moss_storage",
  "moss_text",
  "moss_workspace",

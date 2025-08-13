@@ -1,12 +1,3 @@
-use async_trait::async_trait;
-use moss_git::GitAuthAgent;
-use reqwest::{
-    Client,
-    header::{ACCEPT, AUTHORIZATION},
-};
-use std::sync::Arc;
-use url::Url;
-
 use crate::{
     GitAuthProvider, GitHostingProvider,
     common::SSHAuthAgent,
@@ -14,6 +5,15 @@ use crate::{
     gitlab::response::{AvatarResponse, ContributorsResponse},
     models::types::{Contributor, RepositoryInfo},
 };
+use async_trait::async_trait;
+use joinerror::OptionExt;
+use moss_git::GitAuthAgent;
+use reqwest::{
+    Client,
+    header::{ACCEPT, AUTHORIZATION},
+};
+use std::sync::Arc;
+use url::Url;
 
 use crate::{
     gitlab::{
@@ -46,6 +46,18 @@ impl GitLabClient {
             ssh_auth_agent: ssh_auth_agent.map(|agent| Arc::new(agent) as Arc<dyn SSHAuthAgent>),
         }
     }
+
+    pub fn is_logged_in(&self) -> joinerror::Result<bool> {
+        self.client_auth_agent.is_logged_in()
+    }
+
+    // Try to fetch/generate credentials and return currently logged-in user info
+    // This will trigger an initial OAuth authorization
+    // Or will fetch the stored access_token
+    pub async fn login(&self) -> joinerror::Result<UserInfo> {
+        let _ = self.client_auth_agent.clone().credentials_async().await?;
+        self.current_user().await
+    }
 }
 
 unsafe impl Send for GitLabClient {}
@@ -57,6 +69,7 @@ impl GitAuthProvider for GitLabClient {
     }
 }
 
+// TODO: Handle authentication expiration and reauthentication
 #[async_trait]
 impl GitHostingProvider for GitLabClient {
     fn name(&self) -> String {
@@ -67,8 +80,11 @@ impl GitHostingProvider for GitLabClient {
     }
 
     async fn current_user(&self) -> joinerror::Result<UserInfo> {
-        let access_token = self.client_auth_agent.clone().access_token().await?;
-
+        let access_token = self
+            .client_auth_agent
+            .clone()
+            .access_token()
+            .ok_or_join_err::<()>("gitlab is not logged in yet")?;
         let user_response: UserResponse = self
             .client
             .get(format!("{GITLAB_API_URL}/user"))
@@ -86,8 +102,11 @@ impl GitHostingProvider for GitLabClient {
     }
 
     async fn contributors(&self, repo_url: &str) -> joinerror::Result<Vec<Contributor>> {
-        let access_token = self.client_auth_agent.clone().access_token().await?;
-
+        let access_token = self
+            .client_auth_agent
+            .clone()
+            .access_token()
+            .ok_or_join_err::<()>("gitlab is not logged in yet")?;
         let encoded_url = urlencoding::encode(repo_url);
 
         let contributors_response: ContributorsResponse = self
@@ -129,7 +148,11 @@ impl GitHostingProvider for GitLabClient {
     }
 
     async fn repository_info(&self, repo_url: &str) -> joinerror::Result<RepositoryInfo> {
-        let access_token = self.client_auth_agent.clone().access_token().await?;
+        let access_token = self
+            .client_auth_agent
+            .clone()
+            .access_token()
+            .ok_or_join_err::<()>("gitlab is not logged in yet")?;
 
         let encoded_url = urlencoding::encode(repo_url);
 

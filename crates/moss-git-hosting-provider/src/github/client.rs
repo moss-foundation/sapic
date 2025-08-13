@@ -1,10 +1,3 @@
-use async_trait::async_trait;
-use moss_git::GitAuthAgent;
-use oauth2::http::header::ACCEPT;
-use reqwest::{Client, header::AUTHORIZATION};
-use std::sync::Arc;
-use url::Url;
-
 use crate::{
     GitAuthProvider, GitHostingProvider,
     common::SSHAuthAgent,
@@ -15,6 +8,13 @@ use crate::{
     },
     models::types::{Contributor, RepositoryInfo, UserInfo},
 };
+use async_trait::async_trait;
+use joinerror::OptionExt;
+use moss_git::GitAuthAgent;
+use oauth2::http::header::ACCEPT;
+use reqwest::{Client, header::AUTHORIZATION};
+use std::sync::Arc;
+use url::Url;
 
 const CONTENT_TYPE: &'static str = "application/vnd.github+json";
 
@@ -39,6 +39,18 @@ impl GitHubClient {
             ssh_auth_agent: ssh_auth_agent.map(|agent| Arc::new(agent) as Arc<dyn SSHAuthAgent>),
         }
     }
+
+    pub fn is_logged_in(&self) -> joinerror::Result<bool> {
+        self.client_auth_agent.is_logged_in()
+    }
+
+    // Try to fetch/generate credentials and return currently logged-in user info
+    // This will trigger an initial OAuth authorization
+    // Or will fetch the stored access_token
+    pub async fn login(&self) -> joinerror::Result<UserInfo> {
+        let _ = self.client_auth_agent.clone().credentials_async().await?;
+        self.current_user().await
+    }
 }
 
 unsafe impl Send for GitHubClient {}
@@ -50,6 +62,7 @@ impl GitAuthProvider for GitHubClient {
     }
 }
 
+// TODO: Handle authentication expiration and reauthentication
 #[async_trait]
 impl GitHostingProvider for GitHubClient {
     fn name(&self) -> String {
@@ -61,7 +74,11 @@ impl GitHostingProvider for GitHubClient {
     }
 
     async fn current_user(&self) -> joinerror::Result<UserInfo> {
-        let access_token = self.client_auth_agent.clone().access_token().await?;
+        let access_token = self
+            .client_auth_agent
+            .clone()
+            .access_token()
+            .ok_or_join_err::<()>("github is not logged in yet")?;
 
         let user_response: UserResponse = self
             .client
@@ -86,7 +103,11 @@ impl GitHostingProvider for GitHubClient {
     }
 
     async fn contributors(&self, repo_url: &str) -> joinerror::Result<Vec<Contributor>> {
-        let access_token = self.client_auth_agent.clone().access_token().await?;
+        let access_token = self
+            .client_auth_agent
+            .clone()
+            .access_token()
+            .ok_or_join_err::<()>("github is not logged in yet")?;
 
         let contributors_response: ContributorsResponse = self
             .client
@@ -109,7 +130,11 @@ impl GitHostingProvider for GitHubClient {
     }
 
     async fn repository_info(&self, repo_url: &str) -> joinerror::Result<RepositoryInfo> {
-        let access_token = self.client_auth_agent.clone().access_token().await?;
+        let access_token = self
+            .client_auth_agent
+            .clone()
+            .access_token()
+            .ok_or_join_err::<()>("github is not logged in yet")?;
 
         let repo_response: RepositoryResponse = self
             .client

@@ -113,6 +113,8 @@ pub async fn run<R: TauriRuntime>() {
             commands::delete_workspace,
             commands::close_workspace,
             commands::cancel_request,
+            commands::log_in_with_github,
+            commands::log_in_with_gitlab,
             //
             // Workspace
             //

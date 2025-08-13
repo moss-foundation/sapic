@@ -12,7 +12,7 @@ use std::{
     sync::{Arc, OnceLock},
 };
 
-use crate::common::utils;
+use crate::{common::utils, gitlab::auth::GitLabCred};
 
 const GITHUB_AUTH_URL: &'static str = "https://github.com/login/oauth/authorize";
 const GITHUB_TOKEN_URL: &'static str = "https://github.com/login/oauth/access_token";
@@ -40,7 +40,7 @@ impl TryInto<String> for KeyringCredEntry {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct GitHubCred {
     access_token: String,
 }
@@ -82,19 +82,23 @@ impl GitHubAuthAgent {
         }
     }
 
-    // FIXME: Find a better solution
-    // We need a way to provide access_token to git provider client
-    // Since the underlying authentication relies on a synchronous `reqwest` client
-    // We will need to wrap it inside a tokio::spawn_blocking to avoid panic when called from an async environment
-    pub(crate) async fn access_token(self: Arc<Self>) -> joinerror::Result<String> {
-        tokio::task::spawn_blocking(move || Ok(self.credentials()?.access_token.clone())).await?
+    pub(crate) fn access_token(self: Arc<Self>) -> Option<String> {
+        self.cred.get().map(|cred| cred.access_token.clone())
+    }
+
+    pub fn is_logged_in(&self) -> joinerror::Result<bool> {
+        // We consider the user to be logged in if we have the credentials
+        Ok(self.cred.get().is_some())
     }
 }
 
 // TODO: Add timeout mechanism to handle OAuth failure
 
 impl GitHubAuthAgent {
-    fn credentials(&self) -> Result<&GitHubCred> {
+    // FIXME: Maybe we really need to figure out how to use a non-blocking `reqwest` for auth_agent
+    /// Do not call the sync version from an async environment
+    /// Call `credentials_async` instead
+    pub(crate) fn credentials(&self) -> Result<&GitHubCred> {
         if let Some(cred) = self.cred.get() {
             return Ok(cred);
         }
@@ -124,6 +128,12 @@ impl GitHubAuthAgent {
         self.cred.get().ok_or_else(|| {
             anyhow!("Failed to set GitHubAuthAgent credentials because they have already been set")
         })
+    }
+
+    pub(crate) async fn credentials_async(self: Arc<Self>) -> Result<GitHubCred> {
+        let self_clone = self.clone();
+        tokio::task::spawn_blocking(move || self_clone.credentials().map(|cred| cred.to_owned()))
+            .await?
     }
 
     // A helper method to avoid false positive about unreachable code
