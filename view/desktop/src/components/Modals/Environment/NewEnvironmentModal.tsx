@@ -16,7 +16,7 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
   const { mutateAsync: createEnvironment } = useCreateEnvironment();
   const { data: collections } = useStreamedCollections();
 
-  const [name, setName] = useState("");
+  const [name, setName] = useState("New Environment");
   const [collectionId, setCollectionId] = useState<string | null>(null);
   const [mode, setMode] = useState<"Workspace" | "Collection">("Workspace");
   const [openAutomatically, setOpenAutomatically] = useState(true);
@@ -115,7 +115,7 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
                   value="Collection"
                   checked={mode === "Collection"}
                   onClick={() => setMode("Collection")}
-                  disabled={!collections}
+                  disabled={!collections || collections.length === 0}
                   options={collections?.map((collection) => ({
                     label: collection.name,
                     value: collection.id,
