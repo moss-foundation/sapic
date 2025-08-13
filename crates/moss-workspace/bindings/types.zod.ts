@@ -26,6 +26,11 @@ export const collectionInfoSchema = z.object({
   order: z.number().optional(),
 });
 
+export const contributorSchema = z.object({
+  name: z.string(),
+  avatar_url: z.string(),
+});
+
 export const editorGridLeafDataSchema = z.object({
   views: z.array(z.string()),
   activeView: z.string(),
@@ -50,6 +55,12 @@ export const editorGridNodeSchema: z.ZodSchema<EditorGridNode> = z.lazy(() =>
 export const panelPartStateInfoSchema = z.object({
   size: z.number(),
   visible: z.boolean(),
+});
+
+export const repositoryInfoSchema = z.object({
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  owner: z.string(),
 });
 
 export const workspaceModeSchema = z.union([z.literal("DESIGN_FIRST"), z.literal("REQUEST_FIRST")]);

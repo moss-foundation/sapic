@@ -9,6 +9,7 @@ use moss_applib::{
 use moss_fs::{FileSystem, RealFileSystem};
 use moss_git_hosting_provider::{
     common::ssh_auth_agent::SSHAuthAgentImpl,
+    envvar_keys::{GITLAB_CLIENT_ID, GITLAB_CLIENT_SECRET},
     github::{auth::GitHubAuthAgent, client::GitHubClient},
     gitlab::{auth::GitLabAuthAgent, client::GitLabClient},
 };
@@ -39,6 +40,7 @@ use std::{
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
 
 pub async fn setup_test_workspace() -> (AsyncContext, Workspace<MockAppRuntime>, CleanupFn) {
+    dotenv::dotenv().ok();
     let fs = Arc::new(RealFileSystem::new());
     let mock_app = tauri::test::mock_app();
     let app_handle = mock_app.handle().clone();
@@ -66,8 +68,8 @@ pub async fn setup_test_workspace() -> (AsyncContext, Workspace<MockAppRuntime>,
     let github_client = {
         let github_auth_agent = Arc::new(GitHubAuthAgent::new(
             keyring_client.clone(),
-            "".to_string(),
-            "".to_string(),
+            dotenv::var(GITLAB_CLIENT_ID).unwrap(),
+            dotenv::var(GITLAB_CLIENT_SECRET).unwrap(),
         ));
         Arc::new(GitHubClient::new(
             reqwest_client.clone(),
@@ -78,8 +80,8 @@ pub async fn setup_test_workspace() -> (AsyncContext, Workspace<MockAppRuntime>,
     let gitlab_client = {
         let gitlab_auth_agent = Arc::new(GitLabAuthAgent::new(
             keyring_client.clone(),
-            "".to_string(),
-            "".to_string(),
+            dotenv::var(GITLAB_CLIENT_ID).unwrap(),
+            dotenv::var(GITLAB_CLIENT_SECRET).unwrap(),
         ));
         Arc::new(GitLabClient::new(
             reqwest_client.clone(),

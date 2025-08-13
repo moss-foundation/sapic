@@ -36,6 +36,11 @@ export type CollectionInfo = { id: string; displayName: string; order?: number }
 /**
  * @category Type
  */
+export type Contributor = { name: string; avatar_url: string };
+
+/**
+ * @category Type
+ */
 export type EditorGridLeafData = { views: Array<string>; activeView: string; id: string };
 
 /**
@@ -97,6 +102,18 @@ export type EnvironmentInfo = {
  * @category Type
  */
 export type PanelPartStateInfo = { size: number; visible: boolean };
+
+/**
+ * @category Type
+ */
+export type RepositoryInfo = {
+  /**
+   * A timestamp like 2024-10-05T12:19:15Z
+   */
+  createdAt: string;
+  updatedAt: string;
+  owner: string;
+};
 
 /**
  * @category Type

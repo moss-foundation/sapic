@@ -22,9 +22,11 @@ use moss_collection::{
 use moss_fs::RealFileSystem;
 use moss_git_hosting_provider::{
     common::ssh_auth_agent::SSHAuthAgentImpl,
+    envvar_keys::{GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, GITLAB_CLIENT_ID, GITLAB_CLIENT_SECRET},
     github::{auth::GitHubAuthAgent, client::GitHubClient},
     gitlab::{auth::GitLabAuthAgent, client::GitLabClient},
 };
+use moss_keyring::KeyringClientImpl;
 use moss_testutils::random_name::{random_collection_name, random_string};
 use nanoid::nanoid;
 use std::{
@@ -32,8 +34,6 @@ use std::{
     sync::Arc,
     time::Duration,
 };
-
-use moss_keyring::KeyringClientImpl;
 
 #[allow(dead_code)]
 pub fn random_dir_name() -> String {
@@ -56,6 +56,7 @@ pub async fn create_test_collection() -> (
     Arc<Path>,
     Collection<MockAppRuntime>,
 ) {
+    dotenv::dotenv().ok();
     let ctx = MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
     let fs = Arc::new(RealFileSystem::new());
     let internal_abs_path = random_collection_path();
@@ -69,8 +70,8 @@ pub async fn create_test_collection() -> (
     // TODO: Make integration tests able to test remote repo operations
     let github_auth_agent = Arc::new(GitHubAuthAgent::new(
         keyring_client.clone(),
-        "".to_string(),
-        "".to_string(),
+        dotenv::var(GITHUB_CLIENT_ID).unwrap(),
+        dotenv::var(GITHUB_CLIENT_SECRET).unwrap(),
     ));
 
     let github_client = Arc::new(GitHubClient::new(
@@ -81,8 +82,8 @@ pub async fn create_test_collection() -> (
 
     let gitlab_auth_agent = Arc::new(GitLabAuthAgent::new(
         keyring_client.clone(),
-        "".to_string(),
-        "".to_string(),
+        dotenv::var(GITLAB_CLIENT_ID).unwrap(),
+        dotenv::var(GITLAB_CLIENT_SECRET).unwrap(),
     ));
 
     let gitlab_client = Arc::new(GitLabClient::new(

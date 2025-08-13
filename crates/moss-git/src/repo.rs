@@ -1,7 +1,6 @@
-use git2::{IntoCString, PushOptions, RemoteCallbacks, Repository, build::RepoBuilder};
-use std::{path::Path, sync::Arc};
-
 pub use git2::{BranchType, IndexAddOption, Signature};
+use git2::{IntoCString, PushOptions, RemoteCallbacks, Repository, build::RepoBuilder};
+use std::{collections::HashMap, path::Path, sync::Arc};
 
 use crate::GitAuthAgent;
 
@@ -189,6 +188,27 @@ impl RepoHandle {
         Ok(())
     }
 
+    /// Return a list of remote names and their urls
+    // TODO: Support remote with special push_url?
+    pub fn list_remotes(&self) -> joinerror::Result<HashMap<String, String>> {
+        let remote_names = self.repo.remotes()?;
+        let mut result = HashMap::new();
+
+        for remote_name in remote_names.iter() {
+            if remote_name.is_none() {
+                continue;
+            }
+            let remote_name = remote_name.unwrap();
+            let remote = self.repo.find_remote(remote_name)?;
+            let url = remote.url();
+            if url.is_none() {
+                continue;
+            }
+            result.insert(remote_name.to_string(), url.unwrap().to_string());
+        }
+        Ok(result)
+    }
+
     pub fn list_branches(&self, branch_type: Option<BranchType>) -> joinerror::Result<Vec<String>> {
         let branches = self.repo.branches(branch_type)?;
 
@@ -204,19 +224,6 @@ impl RepoHandle {
             .collect::<Vec<_>>();
         Ok(names)
     }
-
-    /// Only supports renaming local branch at the moment
-    pub fn rename_branch(
-        &self,
-        old_name: &str,
-        new_name: &str,
-        force: bool,
-    ) -> joinerror::Result<()> {
-        let mut branch = self.repo.find_branch(old_name, BranchType::Local)?;
-        branch.rename(new_name, force)?;
-        Ok(())
-    }
-
     /// If base_branch is None, the new branch will be based on the current HEAD
     pub fn create_branch(
         &self,
@@ -235,6 +242,18 @@ impl RepoHandle {
 
         self.repo.branch(branch_name, &target, force)?;
 
+        Ok(())
+    }
+
+    /// Only supports renaming local branch at the moment
+    pub fn rename_branch(
+        &self,
+        old_name: &str,
+        new_name: &str,
+        force: bool,
+    ) -> joinerror::Result<()> {
+        let mut branch = self.repo.find_branch(old_name, BranchType::Local)?;
+        branch.rename(new_name, force)?;
         Ok(())
     }
 

@@ -104,7 +104,7 @@ impl GitHubAuthAgent {
         {
             dotenv::dotenv().ok();
             let cred = GitHubCred {
-                access_token: dotenv::var("GITHUB_ACCESS_TOKEN")?,
+                access_token: dotenv::var(crate::envvar_keys::GITHUB_ACCESS_TOKEN)?,
             };
             let _ = self.cred.set(cred);
             return self.cred.get().ok_or_else(|| {
@@ -204,6 +204,8 @@ mod tests {
     use moss_keyring::KeyringClientImpl;
     use std::{path::PathBuf, sync::Arc};
 
+    use crate::envvar_keys::{GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET};
+
     #[ignore]
     #[test]
     fn manual_cloning_with_oauth() -> Result<()> {
@@ -214,8 +216,8 @@ mod tests {
             .join("data")
             .join("test-repo");
 
-        let client_id = dotenv::var("GITHUB_CLIENT_ID").unwrap();
-        let client_secret = dotenv::var("GITHUB_CLIENT_SECRET").unwrap();
+        let client_id = dotenv::var(GITHUB_CLIENT_ID).unwrap();
+        let client_secret = dotenv::var(GITHUB_CLIENT_SECRET).unwrap();
 
         let keyring_client = Arc::new(KeyringClientImpl::new());
         let auth_agent = Arc::new(GitHubAuthAgent::new(

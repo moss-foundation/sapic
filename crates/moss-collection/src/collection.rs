@@ -17,9 +17,9 @@ use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
-    sync::Arc,
+    sync::{Arc, Mutex},
 };
-use tokio::sync::{Mutex, OnceCell};
+use tokio::sync::OnceCell;
 
 use crate::{
     DescribeCollection,
@@ -66,6 +66,10 @@ pub struct Collection<R: AppRuntime> {
 
     pub(super) on_did_change: EventEmitter<OnDidChangeEvent>,
     #[allow(dead_code)]
+    /// Since operations over RepoHandle must be done in a synchronous closure wrapped by a
+    /// `tokio::task::spawn_blocking`
+    /// This mutex must be a synchronous one and should not be acquired in an async block
+    /// It should always be required in a `spawn_blocking` block to avoid deadlock
     pub(super) repo_handle: Arc<Mutex<Option<RepoHandle>>>,
 }
 
@@ -184,5 +188,9 @@ impl<R: AppRuntime> Collection<R> {
 impl<R: AppRuntime> Collection<R> {
     pub fn db(&self) -> &Arc<dyn moss_storage::CollectionStorage<R::AsyncContext>> {
         self.storage_service.storage()
+    }
+
+    pub fn repo_handle(&self) -> Arc<Mutex<Option<RepoHandle>>> {
+        self.repo_handle.clone()
     }
 }

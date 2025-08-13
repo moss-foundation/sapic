@@ -97,7 +97,7 @@ impl GitLabAuthAgent {
         #[cfg(any(test, feature = "integration-tests"))]
         {
             dotenv::dotenv().ok();
-            let refresh_token = dotenv::var("GITLAB_REFRESH_TOKEN")?;
+            let refresh_token = dotenv::var(crate::envvar_keys::GITLAB_REFRESH_TOKEN)?;
             let updated_cred = match self.refresh_token_flow(refresh_token) {
                 Ok(cred) => cred,
                 Err(err) => {
@@ -263,11 +263,13 @@ fn compute_time_to_refresh(expires_in: Duration) -> Instant {
 
 #[cfg(test)]
 mod tests {
+    use crate::{
+        envvar_keys::{GITLAB_CLIENT_ID, GITLAB_CLIENT_SECRET},
+        gitlab::auth::GitLabAuthAgent,
+    };
     use moss_git::repo::RepoHandle;
     use moss_keyring::KeyringClientImpl;
     use std::{path::Path, sync::Arc};
-
-    use crate::gitlab::auth::GitLabAuthAgent;
 
     #[ignore]
     #[test]
@@ -276,8 +278,8 @@ mod tests {
         let repo_url = &dotenv::var("GITLAB_TEST_REPO_HTTPS").unwrap();
         let repo_path = Path::new("test-repo-lab");
 
-        let client_id = dotenv::var("GITLAB_CLIENT_ID").unwrap();
-        let client_secret = dotenv::var("GITLAB_CLIENT_SECRET").unwrap();
+        let client_id = dotenv::var(GITLAB_CLIENT_ID).unwrap();
+        let client_secret = dotenv::var(GITLAB_CLIENT_SECRET).unwrap();
 
         let keyring_client = Arc::new(KeyringClientImpl::new());
         let auth_agent = Arc::new(GitLabAuthAgent::new(

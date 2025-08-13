@@ -2,7 +2,6 @@ use async_trait::async_trait;
 use moss_git::GitAuthAgent;
 use oauth2::http::header::ACCEPT;
 use reqwest::{Client, header::AUTHORIZATION};
-use serde_json::Value;
 use std::sync::Arc;
 use url::Url;
 
@@ -109,6 +108,7 @@ impl GitHostingProvider for GitHubClient {
 
     async fn repository_info(&self, repo_url: &str) -> joinerror::Result<RepositoryInfo> {
         let access_token = self.client_auth_agent.clone().access_token().await?;
+        dbg!(&access_token);
 
         let repo_response: RepositoryResponse = self
             .client

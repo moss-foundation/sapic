@@ -12,9 +12,9 @@ use moss_git_hosting_provider::{
 use moss_hcl::Block;
 use std::{
     path::{Path, PathBuf},
-    sync::Arc,
+    sync::{Arc, Mutex},
 };
-use tokio::sync::{Mutex, OnceCell};
+use tokio::sync::OnceCell;
 
 use crate::{
     Collection,
@@ -318,12 +318,9 @@ impl CollectionBuilder {
             let abs_path_clone = abs_path.clone();
             let repo_handle_clone = repo_handle.clone();
 
-            let github_client_clone = self.github_client.clone();
-            let _gitlab_client_clone = self.gitlab_client.clone();
-
             // FIXME: Use the actual git provider and auth agent based on user input
             // Hardcoded using GitHub auth agent for now
-            let client = github_client_clone;
+            let client = self.gitlab_client.clone();
             let user_info = client.current_user().await;
 
             let result = tokio::task::spawn_blocking(move || {

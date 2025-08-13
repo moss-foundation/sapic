@@ -28,6 +28,7 @@ pub(crate) struct CollectionItemUpdateParams {
     pub order: Option<isize>,
     pub expanded: Option<bool>,
     pub repository: Option<ChangeString>,
+    // TODO: Updating git provider type?
     pub icon_path: Option<ChangePath>,
 }
 
@@ -372,6 +373,17 @@ impl<R: AppRuntime> CollectionService<R> {
                 .put_item_order_txn(ctx, &mut txn, id, order)
                 .await?;
         }
+
+        // // Handle updating remote repository url
+        // // We need to make sure that the new repo url represents a valid remote for the local repo
+        // // This means that the histories of the two repos should be related
+        // let repo_change = match params.repository {
+        //     None => {None}
+        //     Some(ChangeString::Remove) => {
+        //         // When the user unlinks the repo from a remote, we will
+        //
+        //     }
+        // };
 
         item.modify(CollectionModifyParams {
             name: params.name,
