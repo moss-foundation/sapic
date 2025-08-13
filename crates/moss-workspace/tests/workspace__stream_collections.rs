@@ -1,6 +1,7 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
+use moss_git_hosting_provider::common::GitProviderType;
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::models::{
     events::StreamCollectionsEvent, operations::CreateCollectionInput, primitives::CollectionId,
@@ -55,6 +56,7 @@ async fn stream_collections_single_collection() {
                 order: collection_order,
                 external_path: None,
                 repository: None,
+                git_provider_type: None,
                 icon_path: None,
             },
         )
@@ -113,6 +115,7 @@ async fn stream_collections_multiple_collections() {
                     order: collection_order,
                     external_path: None,
                     repository: None,
+                    git_provider_type: None,
                     icon_path: None,
                 },
             )
@@ -180,6 +183,7 @@ async fn stream_collections_with_icon() {
                 order: collection_order,
                 external_path: None,
                 repository: None,
+                git_provider_type: None,
                 icon_path: Some(icon_path.clone()),
             },
         )
@@ -239,6 +243,7 @@ async fn stream_collections_mixed_configurations() {
                 order: 1,
                 external_path: None,
                 repository: None,
+                git_provider_type: None,
                 icon_path: None,
             },
         )
@@ -256,6 +261,7 @@ async fn stream_collections_mixed_configurations() {
                 order: 2,
                 external_path: None,
                 repository: None,
+                git_provider_type: None,
                 icon_path: Some(icon_path.clone()),
             },
         )
@@ -332,6 +338,7 @@ async fn stream_collections_order_verification() {
                     order: *order,
                     external_path: None,
                     repository: None,
+                    git_provider_type: None,
                     icon_path: None,
                 },
             )
@@ -388,6 +395,7 @@ async fn stream_collections_with_repository() {
                 order: collection_order,
                 external_path: None,
                 repository: Some(repository_url.clone()),
+                git_provider_type: Some(GitProviderType::GitHub),
                 icon_path: None,
             },
         )

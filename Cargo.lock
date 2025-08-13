@@ -3763,7 +3763,6 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "derive_more 2.0.1",
- "dotenv",
  "futures",
  "hcl-rs",
  "image",
@@ -3793,7 +3792,6 @@ dependencies = [
  "tauri",
  "tokio",
  "ts-rs",
- "url",
  "validator",
 ]
 

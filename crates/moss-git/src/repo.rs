@@ -10,7 +10,7 @@ unsafe impl Send for RepoHandle {}
 unsafe impl Sync for RepoHandle {}
 
 /// Since all the git operations are synchronous, and authentication requires blocking `reqwest`
-/// We must wrap all RepoHandle operations with `tokio::task::spawn_blocking`
+/// We must wrap all RepoHandle operations involving remote with `tokio::task::spawn_blocking`
 pub struct RepoHandle {
     auth_agent: Arc<dyn GitAuthAgent>,
     repo: Repository,
@@ -21,6 +21,7 @@ pub struct RepoHandle {
 
 // TODO: Use callback to return/display progress
 impl RepoHandle {
+    // Must
     pub fn clone(
         url: &str,
         path: &Path,

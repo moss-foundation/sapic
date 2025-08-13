@@ -28,6 +28,7 @@ impl<R: AppRuntime> Workspace<R> {
                     external_path: input.external_path.to_owned(),
                     icon_path: input.icon_path.to_owned(),
                     repository: input.repository.to_owned(),
+                    git_provider_type: input.git_provider_type.to_owned(),
                 },
             )
             .await?;

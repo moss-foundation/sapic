@@ -28,7 +28,6 @@ pub(crate) struct CollectionItemUpdateParams {
     pub order: Option<isize>,
     pub expanded: Option<bool>,
     pub repository: Option<ChangeString>,
-    // TODO: Updating git provider type?
     pub icon_path: Option<ChangePath>,
 }
 
@@ -39,6 +38,7 @@ pub(crate) struct CollectionItemCreateParams {
     // FIXME: Do we need this field?
     pub icon_path: Option<PathBuf>,
     pub repository: Option<String>,
+    pub git_provider_type: Option<GitProviderType>,
 }
 
 pub(crate) struct CollectionItemCloneParams {
@@ -169,6 +169,7 @@ impl<R: AppRuntime> CollectionService<R> {
                 external_abs_path: params.external_path.as_deref().map(|p| p.to_owned().into()),
                 icon_path: params.icon_path.to_owned(),
                 repository: params.repository.to_owned(),
+                git_provider_type: params.git_provider_type.to_owned(),
             },
         )
         .await
@@ -374,16 +375,7 @@ impl<R: AppRuntime> CollectionService<R> {
                 .await?;
         }
 
-        // // Handle updating remote repository url
-        // // We need to make sure that the new repo url represents a valid remote for the local repo
-        // // This means that the histories of the two repos should be related
-        // let repo_change = match params.repository {
-        //     None => {None}
-        //     Some(ChangeString::Remove) => {
-        //         // When the user unlinks the repo from a remote, we will
-        //
-        //     }
-        // };
+        // TODO: Implement relinking and unlinking remote repo when the user update it
 
         item.modify(CollectionModifyParams {
             name: params.name,

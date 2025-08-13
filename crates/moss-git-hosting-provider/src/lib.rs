@@ -3,13 +3,14 @@ pub mod github;
 pub mod gitlab;
 pub mod models;
 
+use crate::models::types::{Contributor, RepositoryInfo, UserInfo};
 use async_trait::async_trait;
+use moss_git::GitAuthAgent;
+use std::sync::Arc;
 use url::Url;
 
-use crate::models::types::{Contributor, RepositoryInfo, UserInfo};
-
 #[async_trait]
-pub trait GitHostingProvider {
+pub trait GitHostingProvider: GitAuthProvider {
     fn name(&self) -> String;
     fn base_url(&self) -> Url;
 
@@ -19,6 +20,10 @@ pub trait GitHostingProvider {
     async fn contributors(&self, repo_url: &str) -> joinerror::Result<Vec<Contributor>>;
 
     async fn repository_info(&self, repo_url: &str) -> joinerror::Result<RepositoryInfo>;
+}
+
+pub trait GitAuthProvider {
+    fn git_auth_agent(&self) -> Arc<dyn GitAuthAgent>;
 }
 
 pub(crate) mod constants {

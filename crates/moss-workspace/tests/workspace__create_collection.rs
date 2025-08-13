@@ -24,6 +24,7 @@ async fn create_collection_success() {
                 order: 0,
                 external_path: None,
                 repository: None,
+                git_provider_type: None,
                 icon_path: None,
             },
         )
@@ -77,6 +78,7 @@ async fn create_collection_empty_name() {
                 order: 0,
                 external_path: None,
                 repository: None,
+                git_provider_type: None,
                 icon_path: None,
             },
         )
@@ -105,6 +107,7 @@ async fn create_collection_special_chars() {
                     order: 0,
                     external_path: None,
                     repository: None,
+                    git_provider_type: None,
                     icon_path: None,
                 },
             )
@@ -160,6 +163,7 @@ async fn create_collection_with_order() {
                 order: 42,
                 external_path: None,
                 repository: None,
+                git_provider_type: None,
                 icon_path: None,
             },
         )
@@ -384,6 +388,7 @@ async fn create_collection_with_icon() {
                 order: 0,
                 external_path: None,
                 repository: None,
+                git_provider_type: None,
                 icon_path: Some(input_icon_path.clone()),
             },
         )
@@ -443,6 +448,7 @@ async fn create_multiple_collections_expanded_items() {
                 order: 0,
                 external_path: None,
                 repository: None,
+                git_provider_type: None,
                 icon_path: None,
             },
         )
@@ -459,6 +465,7 @@ async fn create_multiple_collections_expanded_items() {
                 order: 1,
                 external_path: None,
                 repository: None,
+                git_provider_type: None,
                 icon_path: None,
             },
         )

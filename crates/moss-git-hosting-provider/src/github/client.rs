@@ -6,7 +6,7 @@ use std::sync::Arc;
 use url::Url;
 
 use crate::{
-    GitHostingProvider,
+    GitAuthProvider, GitHostingProvider,
     common::SSHAuthAgent,
     constants::GITHUB_API_URL,
     github::{
@@ -39,14 +39,17 @@ impl GitHubClient {
             ssh_auth_agent: ssh_auth_agent.map(|agent| Arc::new(agent) as Arc<dyn SSHAuthAgent>),
         }
     }
-
-    pub fn git_auth_agent(&self) -> Arc<dyn GitAuthAgent> {
-        self.client_auth_agent.clone()
-    }
 }
 
 unsafe impl Send for GitHubClient {}
 unsafe impl Sync for GitHubClient {}
+
+impl GitAuthProvider for GitHubClient {
+    fn git_auth_agent(&self) -> Arc<dyn GitAuthAgent> {
+        self.client_auth_agent.clone()
+    }
+}
+
 #[async_trait]
 impl GitHostingProvider for GitHubClient {
     fn name(&self) -> String {
@@ -57,7 +60,6 @@ impl GitHostingProvider for GitHubClient {
         Url::parse("https://github.com").unwrap()
     }
 
-    // TODO: Since it's rare for the user_info to change, maybe we can cache it?
     async fn current_user(&self) -> joinerror::Result<UserInfo> {
         let access_token = self.client_auth_agent.clone().access_token().await?;
 
@@ -126,110 +128,4 @@ impl GitHostingProvider for GitHubClient {
             owner: repo_response.owner.login,
         })
     }
-}
-
-#[cfg(test)]
-mod tests {
-    // FIXME: Rewrite the tests
-    // use anyhow::Result;
-    // use git2::RemoteCallbacks;
-    //
-    // use super::*;
-    //
-    // struct DummyGitHubAuthAgent;
-    //
-    // const REPO_URL: &'static str = "moss-foundation/sapic";
-    //
-    // impl GitAuthAgent for DummyGitHubAuthAgent {
-    //     fn generate_callback<'a>(&'a self, _cb: &mut RemoteCallbacks<'a>) -> Result<()> {
-    //         Ok(())
-    //     }
-    // }
-    //
-    // struct DummySSHAuthAgent;
-    //
-    // impl GitAuthAgent for DummySSHAuthAgent {
-    //     fn generate_callback<'a>(&'a self, _cb: &mut RemoteCallbacks<'a>) -> Result<()> {
-    //         Ok(())
-    //     }
-    // }
-    // impl SSHAuthAgent for DummySSHAuthAgent {}
-    //
-    // #[test]
-    // fn github_client_name() {
-    //     let client_auth_agent = Arc::new(DummyGitHubAuthAgent);
-    //     let ssh_auth_agent: Option<DummySSHAuthAgent> = None;
-    //     let reqwest_client = reqwest::ClientBuilder::new()
-    //         .user_agent("SAPIC")
-    //         .build()
-    //         .unwrap();
-    //
-    //     let client = GitHubClient::new(reqwest_client, client_auth_agent, ssh_auth_agent);
-    //
-    //     assert_eq!(client.name(), "GitHub");
-    // }
-    //
-    // #[test]
-    // fn github_client_base_url() {
-    //     let client_auth_agent = DummyGitHubAuthAgent;
-    //     let ssh_auth_agent: Option<DummySSHAuthAgent> = None;
-    //     let reqwest_client = reqwest::ClientBuilder::new()
-    //         .user_agent("SAPIC")
-    //         .build()
-    //         .unwrap();
-    //
-    //     let client = GitHubClient::new(reqwest_client, client_auth_agent, ssh_auth_agent);
-    //     let expected_url = Url::parse("https://github.com").unwrap();
-    //
-    //     assert_eq!(client.base_url(), expected_url);
-    // }
-    //
-    // #[tokio::test]
-    // async fn github_client_contributors() {
-    //     let client_auth_agent = DummyGitHubAuthAgent;
-    //     let ssh_auth_agent: Option<DummySSHAuthAgent> = None;
-    //     let reqwest_client = reqwest::ClientBuilder::new()
-    //         .user_agent("SAPIC")
-    //         .build()
-    //         .unwrap();
-    //     let client = GitHubClient::new(reqwest_client, client_auth_agent, ssh_auth_agent);
-    //     let contributors = client.contributors(REPO_URL).await.unwrap();
-    //     for contributor in contributors {
-    //         println!(
-    //             "Contributor {}, avatar_url: {}",
-    //             contributor.name, contributor.avatar_url
-    //         );
-    //     }
-    // }
-    //
-    // #[tokio::test]
-    // async fn github_client_repository_info() {
-    //     let client_auth_agent = DummyGitHubAuthAgent;
-    //     let ssh_auth_agent: Option<DummySSHAuthAgent> = None;
-    //     let reqwest_client = reqwest::ClientBuilder::new()
-    //         .user_agent("SAPIC")
-    //         .build()
-    //         .unwrap();
-    //     let client = GitHubClient::new(reqwest_client, client_auth_agent, ssh_auth_agent);
-    //     let repo_info = client.repository_info(REPO_URL).await.unwrap();
-    //     println!("Repository created at {}", repo_info.created_at);
-    //     println!("Repository updated at {}", repo_info.updated_at);
-    //     println!("Repository owner {}", repo_info.owner);
-    // }
-    //
-    // #[ignore]
-    // #[test]
-    // fn manual_github_client_with_ssh_auth_agent() {
-    //     let client_auth_agent = DummyGitHubAuthAgent;
-    //     let ssh_agent = DummySSHAuthAgent;
-    //     let reqwest_client = reqwest::ClientBuilder::new()
-    //         .user_agent("SAPIC")
-    //         .build()
-    //         .unwrap();
-    //     let client = GitHubClient::new(reqwest_client, client_auth_agent, Some(ssh_agent));
-    //
-    //     assert_eq!(client.name(), "GitHub");
-    //     let expected_url = Url::parse("https://github.com").unwrap();
-    //     assert_eq!(client.base_url(), expected_url);
-    // }
 }

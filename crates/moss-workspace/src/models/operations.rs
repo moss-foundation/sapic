@@ -1,9 +1,14 @@
+use crate::models::{
+    primitives::{ChangeCollectionId, CollectionId},
+    types::EditorPartStateInfo,
+};
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_environment::models::{
     primitives::{EnvironmentId, VariableId},
     types::{AddVariableParams, UpdateVariableParams, VariableInfo},
 };
 use moss_git::url::GIT_URL_REGEX;
+use moss_git_hosting_provider::common::GitProviderType;
 use serde::{Deserialize, Serialize};
 use std::{
     path::{Path, PathBuf},
@@ -11,11 +16,6 @@ use std::{
 };
 use ts_rs::TS;
 use validator::{Validate, ValidationError};
-
-use crate::models::{
-    primitives::{ChangeCollectionId, CollectionId},
-    types::EditorPartStateInfo,
-};
 
 use super::types::{ActivitybarPartStateInfo, PanelPartStateInfo, SidebarPartStateInfo};
 
@@ -38,6 +38,12 @@ pub struct CreateCollectionInput {
     // FIXME: Pass also the git provider information
     #[validate(regex(path = "*GIT_URL_REGEX"))]
     pub repository: Option<String>,
+
+    // FIXME: Replace the repo input type with an enum
+    #[serde(skip)]
+    #[ts(skip)]
+    pub git_provider_type: Option<GitProviderType>,
+
     // TODO: repo branch
     pub icon_path: Option<PathBuf>,
 }

@@ -23,6 +23,7 @@ async fn rename_collection_success() {
                 order: 0,
                 external_path: None,
                 repository: None,
+                git_provider_type: None,
                 icon_path: None,
             },
         )
@@ -72,6 +73,7 @@ async fn rename_collection_empty_name() {
                 order: 0,
                 external_path: None,
                 repository: None,
+                git_provider_type: None,
                 icon_path: None,
             },
         )
@@ -111,6 +113,7 @@ async fn rename_collection_unchanged() {
                 order: 0,
                 external_path: None,
                 repository: None,
+                git_provider_type: None,
                 icon_path: None,
             },
         )
@@ -176,6 +179,7 @@ async fn update_collection_new_icon() {
                 order: 0,
                 external_path: None,
                 repository: None,
+                git_provider_type: None,
                 icon_path: None,
             },
         )
@@ -225,6 +229,7 @@ async fn update_collection_remove_icon() {
                 order: 0,
                 external_path: None,
                 repository: None,
+                git_provider_type: None,
                 icon_path: Some(icon_path.clone()),
             },
         )

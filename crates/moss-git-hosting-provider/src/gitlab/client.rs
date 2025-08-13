@@ -8,7 +8,7 @@ use std::sync::Arc;
 use url::Url;
 
 use crate::{
-    GitHostingProvider,
+    GitAuthProvider, GitHostingProvider,
     common::SSHAuthAgent,
     constants::GITLAB_API_URL,
     gitlab::response::{AvatarResponse, ContributorsResponse},
@@ -46,14 +46,16 @@ impl GitLabClient {
             ssh_auth_agent: ssh_auth_agent.map(|agent| Arc::new(agent) as Arc<dyn SSHAuthAgent>),
         }
     }
-
-    pub fn git_auth_agent(&self) -> Arc<dyn GitAuthAgent> {
-        self.client_auth_agent.clone()
-    }
 }
 
 unsafe impl Send for GitLabClient {}
 unsafe impl Sync for GitLabClient {}
+
+impl GitAuthProvider for GitLabClient {
+    fn git_auth_agent(&self) -> Arc<dyn GitAuthAgent> {
+        self.client_auth_agent.clone()
+    }
+}
 
 #[async_trait]
 impl GitHostingProvider for GitLabClient {

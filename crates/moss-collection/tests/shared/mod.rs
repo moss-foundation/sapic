@@ -22,7 +22,6 @@ use moss_collection::{
 use moss_fs::RealFileSystem;
 use moss_git_hosting_provider::{
     common::ssh_auth_agent::SSHAuthAgentImpl,
-    envvar_keys::{GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, GITLAB_CLIENT_ID, GITLAB_CLIENT_SECRET},
     github::{auth::GitHubAuthAgent, client::GitHubClient},
     gitlab::{auth::GitLabAuthAgent, client::GitLabClient},
 };
@@ -56,7 +55,6 @@ pub async fn create_test_collection() -> (
     Arc<Path>,
     Collection<MockAppRuntime>,
 ) {
-    dotenv::dotenv().ok();
     let ctx = MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
     let fs = Arc::new(RealFileSystem::new());
     let internal_abs_path = random_collection_path();
@@ -67,11 +65,11 @@ pub async fn create_test_collection() -> (
     let reqwest_client = reqwest::Client::new();
     let keyring_client = Arc::new(KeyringClientImpl::new());
 
-    // TODO: Make integration tests able to test remote repo operations
+    // Collection operations shouldn't need any git operations
     let github_auth_agent = Arc::new(GitHubAuthAgent::new(
         keyring_client.clone(),
-        dotenv::var(GITHUB_CLIENT_ID).unwrap(),
-        dotenv::var(GITHUB_CLIENT_SECRET).unwrap(),
+        "".to_string(),
+        "".to_string(),
     ));
 
     let github_client = Arc::new(GitHubClient::new(
@@ -82,8 +80,8 @@ pub async fn create_test_collection() -> (
 
     let gitlab_auth_agent = Arc::new(GitLabAuthAgent::new(
         keyring_client.clone(),
-        dotenv::var(GITLAB_CLIENT_ID).unwrap(),
-        dotenv::var(GITLAB_CLIENT_SECRET).unwrap(),
+        "".to_string(),
+        "".to_string(),
     ));
 
     let gitlab_client = Arc::new(GitLabClient::new(
@@ -100,6 +98,7 @@ pub async fn create_test_collection() -> (
                 external_abs_path: None,
                 internal_abs_path: abs_path.clone(),
                 repository: None,
+                git_provider_type: None,
                 icon_path: None,
             },
         )

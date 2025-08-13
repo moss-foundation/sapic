@@ -2,11 +2,12 @@ use joinerror::{Error, OptionExt, ResultExt};
 use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt, RemoveOptions};
 use moss_git::{
+    constants::DEFAULT_REMOTE_NAME,
     repo::{BranchType, IndexAddOption, RepoHandle, Signature},
     url::normalize_git_url,
 };
 use moss_git_hosting_provider::{
-    GitHostingProvider, common::GitProviderType, github::client::GitHubClient,
+    GitAuthProvider, GitHostingProvider, common::GitProviderType, github::client::GitHubClient,
     gitlab::client::GitLabClient,
 };
 use moss_hcl::Block;
@@ -53,6 +54,7 @@ struct PredefinedFile {
     content: Vec<u8>,
 }
 
+// TODO: Automatically generate a README
 const PREDEFINED_FILES: LazyCell<Vec<PredefinedFile>> = LazyCell::new(|| {
     vec![PredefinedFile {
         path: PathBuf::from(".gitignore"),
@@ -64,7 +66,12 @@ pub struct CollectionCreateParams {
     pub name: Option<String>,
     pub internal_abs_path: Arc<Path>,
     pub external_abs_path: Option<Arc<Path>>,
+    // FIXME: Maybe repository should be a enum by git provider type
     pub repository: Option<String>,
+
+    #[cfg(any(test, feature = "integration-tests"))]
+    pub git_provider_type: Option<GitProviderType>,
+
     pub icon_path: Option<PathBuf>,
 }
 
@@ -144,43 +151,11 @@ impl CollectionBuilder {
         })?;
 
         let repo_handle = if params.internal_abs_path.join(".git").exists() {
-            match manifest.git_provider_type {
-                None => {
-                    // TODO: log the error
-                    println!("no git provider found for the local repo");
-                    None
-                }
-                Some(GitProviderType::GitHub) => {
-                    let result = RepoHandle::open(
-                        params.internal_abs_path.as_ref(),
-                        self.github_client.git_auth_agent(),
-                    );
-
-                    match result {
-                        Ok(repo_handle) => Some(repo_handle),
-                        Err(e) => {
-                            // TODO: log the error
-                            println!("failed to open local repo: {}", e.to_string());
-                            None
-                        }
-                    }
-                }
-                Some(GitProviderType::GitLab) => {
-                    let result = RepoHandle::open(
-                        params.internal_abs_path.as_ref(),
-                        self.gitlab_client.git_auth_agent(),
-                    );
-
-                    match result {
-                        Ok(repo_handle) => Some(repo_handle),
-                        Err(e) => {
-                            // TODO: log the error
-                            println!("failed to open local repo: {}", e.to_string());
-                            None
-                        }
-                    }
-                }
-            }
+            self.load_repo_handle(
+                manifest.git_provider_type.clone(),
+                params.internal_abs_path.clone(),
+            )
+            .await
         } else {
             None
         };
@@ -319,138 +294,29 @@ impl CollectionBuilder {
 
         let edit = CollectionEdit::new(self.fs.clone(), abs_path.join(MANIFEST_FILE_NAME));
 
-        let repo_handle = Arc::new(std::sync::Mutex::new(None));
+        let repo_handle = if let Some(repository) = params.repository {
+            #[cfg(any(test, feature = "integration-tests"))]
+            let git_provider_type = params.git_provider_type.clone();
+            // FIXME: Use what the frontend passes
+            #[cfg(not(any(test, feature = "integration-tests")))]
+            let git_provider_type = Some(GitProviderType::GitHub);
 
-        if let Some(repository) = params.repository {
-            // TODO: Automatically generate a README
-
-            // We will try to initiate a local repo, make initial commit, and push it to the remote
-            // If any of the steps failed, we consider repo creation to have failed
-            // We will then delete the .git folder, allowing for clean creation in the future
-
-            let abs_path_clone = abs_path.clone();
-            let repo_handle_clone = repo_handle.clone();
-
-            // FIXME: Use the actual git provider and auth agent based on user input
-            // Hardcoded using GitHub auth agent for now
-            let client = self.gitlab_client.clone();
-            let user_info = client.current_user().await;
-
-            let result = tokio::task::spawn_blocking(move || {
-                let user_info = match user_info {
-                    Ok(user_info) => user_info,
-                    Err(e) => {
-                        return Err(e.join::<()>("failed to get user info from the provider"));
+            if let Some(git_provider_type) = git_provider_type {
+                let result = self
+                    .create_repo_handle(git_provider_type, abs_path.clone(), repository)
+                    .await;
+                match result {
+                    Ok(repo_handle) => Some(repo_handle),
+                    Err(err) => {
+                        // TODO: send the error to the frontend
+                        println!("failed to create repo: {}", err.to_string());
+                        None
                     }
-                };
-
-                // TODO: Allow the user to set the default branch name
-                let new_default_branch_name = "main";
-
-                // git init
-                // Note: This will not create a default branch
-                let repo_handle = Arc::new(RepoHandle::init(
-                    abs_path_clone.as_ref(),
-                    client.git_auth_agent(),
-                )?);
-
-                // git remote add origin {repository_url}
-                repo_handle.add_remote(Some("origin"), &repository)?;
-
-                // git fetch
-                repo_handle.fetch(Some("origin"))?;
-
-                // Check remote branches
-                // git branch -r
-                let remote_branches = repo_handle.list_branches(Some(BranchType::Remote))?;
-
-                // We will push a default branch to the remote, if no remote branches exist
-                // TODO: Support connecting with a remote repo that already has branches?
-                if !remote_branches.is_empty() {
-                    return Err(Error::new::<()>(
-                        "connecting with a non-empty repo is unimplemented",
-                    ));
                 }
-
-                // git add .
-                repo_handle.add(["."].iter(), IndexAddOption::DEFAULT)?;
-
-                // git commit
-                // This will create a default branch
-
-                let author = Signature::now(&user_info.name, &user_info.email).map_err(|e| {
-                    joinerror::Error::new::<()>(format!(
-                        "failed to generate commit signature: {}",
-                        e.to_string()
-                    ))
-                })?;
-                repo_handle.commit("Initial Commit", author)?;
-
-                // git branch -m {old_default_branch_name} {default_branch_name}
-                let old_default_branch_name = repo_handle
-                    .list_branches(Some(BranchType::Local))?
-                    .first()
-                    .cloned()
-                    .ok_or_join_err::<()>("no local branch exists")?;
-                repo_handle.rename_branch(
-                    &old_default_branch_name,
-                    new_default_branch_name,
-                    false,
-                )?;
-
-                // Don't push during integration tests
-                // git push
-                // #[cfg(not(any(test, feature = "integration-tests")))]
-                // repo_handle.push(
-                //     None,
-                //     Some(&new_default_branch_name),
-                //     Some(&new_default_branch_name),
-                //     true,
-                // )?;
-
-                *(repo_handle_clone.lock()?) = Some(repo_handle);
-                Ok::<(), Error>(())
-            })
-            .await;
-
-            // If the repo operations fail, we want to clean up the .git folder
-            // So that the next time we can re-start git operations in a clean state
-            match result {
-                Ok(Ok(())) => {}
-                Ok(Err(e)) => {
-                    // TODO: tell the frontend that git operations failed
-                    println!("failed to complete git operations: {}", e.to_string());
-                    self.fs
-                        .remove_dir(
-                            &abs_path.join(".git"),
-                            RemoveOptions {
-                                recursive: true,
-                                ignore_if_not_exists: true,
-                            },
-                        )
-                        .await?;
-                }
-                Err(e) => {
-                    println!("failed to complete git operations: {}", e.to_string());
-                    self.fs
-                        .remove_dir(
-                            &abs_path.join(".git"),
-                            RemoveOptions {
-                                recursive: true,
-                                ignore_if_not_exists: true,
-                            },
-                        )
-                        .await?;
-                }
+            } else {
+                // This should not happen after we redesign the input type
+                None
             }
-        }
-
-        let repo_handle = repo_handle.lock()?.take();
-
-        let repo_handle = if let Some(repo_handle) = repo_handle {
-            // This should always succeed, since the other reference should be dropped
-            // Once the spawned thread ends
-            Arc::try_unwrap(repo_handle).ok()
         } else {
             None
         };
@@ -479,29 +345,13 @@ impl CollectionBuilder {
 
         let abs_path = params.internal_abs_path.clone();
 
-        let abs_path_clone = abs_path.clone();
-
-        let github_client_clone = self.github_client.clone();
-        let gitlab_client_clone = self.gitlab_client.clone();
-        let join = tokio::task::spawn_blocking(move || {
-            let auth_agent = match params.git_provider_type {
-                GitProviderType::GitHub => github_client_clone.git_auth_agent(),
-                GitProviderType::GitLab => gitlab_client_clone.git_auth_agent(),
-            };
-            Ok(RepoHandle::clone(
-                &params.repository,
-                abs_path_clone.as_ref(),
-                // Different git providers require different auth agent
-                auth_agent,
-            )?)
-        })
-        .await;
-
-        let repo_handle = match join {
-            Ok(Ok(repo_handle)) => repo_handle,
-            Ok(Err(err)) => return Err(err),
-            Err(err) => return Err(err.into()),
-        };
+        let repo_handle = self
+            .clone_repo_handle(
+                params.git_provider_type,
+                abs_path.clone(),
+                params.repository,
+            )
+            .await?;
 
         let storage_service: Arc<StorageService<R>> = StorageService::new(abs_path.as_ref())
             .join_err::<()>("failed to create collection storage service")?
@@ -542,5 +392,187 @@ impl CollectionBuilder {
             on_did_change: EventEmitter::new(),
             repo_handle: Arc::new(Mutex::new(Some(repo_handle))),
         })
+    }
+}
+
+impl CollectionBuilder {
+    async fn load_repo_handle(
+        &self,
+        git_provider_type: Option<GitProviderType>,
+        abs_path: Arc<Path>,
+    ) -> Option<RepoHandle> {
+        let github_client_clone = self.github_client.clone();
+        let gitlab_client_clone = self.gitlab_client.clone();
+
+        let join = tokio::task::spawn_blocking(move || {
+            let auth_agent = match git_provider_type {
+                None => {
+                    return Err(joinerror::Error::new::<()>(
+                        "no git provider type provided for reloading a repo",
+                    ));
+                }
+                Some(GitProviderType::GitHub) => github_client_clone.git_auth_agent(),
+                Some(GitProviderType::GitLab) => gitlab_client_clone.git_auth_agent(),
+            };
+            Ok(RepoHandle::open(abs_path.as_ref(), auth_agent)?)
+        })
+        .await;
+
+        match join {
+            Ok(Ok(repo_handle)) => Some(repo_handle),
+            Ok(Err(err)) => {
+                // TODO: log the error
+                println!("failed to open local repo: {}", err.to_string());
+                None
+            }
+            Err(err) => {
+                // TODO: log the error
+                println!("failed to open local repo: {}", err.to_string());
+                None
+            }
+        }
+    }
+
+    async fn create_repo_handle(
+        &self,
+        git_provider_type: GitProviderType,
+        abs_path: Arc<Path>,
+        repo_url: String,
+    ) -> joinerror::Result<RepoHandle> {
+        let github_client_clone = self.github_client.clone();
+        let gitlab_client_clone = self.gitlab_client.clone();
+        let abs_path_clone = abs_path.clone();
+
+        let user_info = match git_provider_type {
+            GitProviderType::GitHub => github_client_clone.current_user().await?,
+            GitProviderType::GitLab => gitlab_client_clone.current_user().await?,
+        };
+
+        let result = tokio::task::spawn_blocking(move || {
+            let auth_agent = match git_provider_type {
+                GitProviderType::GitHub => github_client_clone.git_auth_agent(),
+                GitProviderType::GitLab => gitlab_client_clone.git_auth_agent(),
+            };
+
+            // TODO: Allow the user to set the default branch name
+            let new_default_branch_name = "main";
+
+            // git init
+            // Note: This will not create a default branch
+            let repo_handle = RepoHandle::init(abs_path_clone.as_ref(), auth_agent)?;
+
+            // git remote add origin {repository_url}
+            repo_handle.add_remote(Some(DEFAULT_REMOTE_NAME), &repo_url)?;
+
+            // git fetch
+            repo_handle.fetch(Some(DEFAULT_REMOTE_NAME))?;
+
+            // Check remote branches
+            // git branch -r
+            let remote_branches = repo_handle.list_branches(Some(BranchType::Remote))?;
+
+            // We will push a default branch to the remote, if no remote branches exist
+            // TODO: Support connecting with a remote repo that already has branches?
+            if !remote_branches.is_empty() {
+                return Err(Error::new::<()>(
+                    "connecting with a non-empty repo is unimplemented",
+                ));
+            }
+
+            // git add .
+            repo_handle.add(["."].iter(), IndexAddOption::DEFAULT)?;
+
+            // git commit
+            // This will create a default branch
+            let author = Signature::now(&user_info.name, &user_info.email).map_err(|e| {
+                joinerror::Error::new::<()>(format!(
+                    "failed to generate commit signature: {}",
+                    e.to_string()
+                ))
+            })?;
+            repo_handle.commit("Initial Commit", author)?;
+
+            // git branch -m {old_default_branch_name} {default_branch_name}
+            let old_default_branch_name = repo_handle
+                .list_branches(Some(BranchType::Local))?
+                .first()
+                .cloned()
+                .ok_or_join_err::<()>("no local branch exists")?;
+            repo_handle.rename_branch(&old_default_branch_name, new_default_branch_name, false)?;
+
+            // Don't push during integration tests
+            // git push
+            #[cfg(not(any(test, feature = "integration-tests")))]
+            repo_handle.push(
+                None,
+                Some(&new_default_branch_name),
+                Some(&new_default_branch_name),
+                true,
+            )?;
+
+            Ok(repo_handle)
+        })
+        .await;
+
+        // If the repo operations fail, we want to clean up the .git folder
+        // So that the next time we can re-start git operations in a clean state
+        match result {
+            Ok(Ok(repo_handle)) => Ok(repo_handle),
+            Ok(Err(err)) => {
+                self.fs
+                    .remove_dir(
+                        &abs_path.join(".git"),
+                        RemoveOptions {
+                            recursive: true,
+                            ignore_if_not_exists: true,
+                        },
+                    )
+                    .await?;
+                Err(err.join::<()>("failed to complete git operations"))
+            }
+            Err(err) => {
+                self.fs
+                    .remove_dir(
+                        &abs_path.join(".git"),
+                        RemoveOptions {
+                            recursive: true,
+                            ignore_if_not_exists: true,
+                        },
+                    )
+                    .await?;
+                Err(Error::from(err).join::<()>("failed to complete git operations"))
+            }
+        }
+    }
+
+    async fn clone_repo_handle(
+        &self,
+        git_provider_type: GitProviderType,
+        abs_path: Arc<Path>,
+        repo_url: String,
+    ) -> joinerror::Result<RepoHandle> {
+        let github_client_clone = self.github_client.clone();
+        let gitlab_client_clone = self.gitlab_client.clone();
+
+        let join = tokio::task::spawn_blocking(move || {
+            let auth_agent = match git_provider_type {
+                GitProviderType::GitHub => github_client_clone.git_auth_agent(),
+                GitProviderType::GitLab => gitlab_client_clone.git_auth_agent(),
+            };
+
+            RepoHandle::clone(
+                &repo_url,
+                abs_path.as_ref(),
+                // Different git providers require different auth agent
+                auth_agent,
+            )
+        })
+        .await;
+
+        match join {
+            Ok(Ok(repo_handle)) => Ok(repo_handle),
+            Ok(Err(err)) => Err(err),
+            Err(err) => Err(err.into()),
+        }
     }
 }
