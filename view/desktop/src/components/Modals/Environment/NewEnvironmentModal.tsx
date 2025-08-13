@@ -12,7 +12,7 @@ import { ModalWrapperProps } from "../types";
 export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { data: environments } = useStreamEnvironments();
+  const { globalEnvironments, collectionsEnvironments } = useStreamEnvironments();
   const { mutateAsync: createEnvironment } = useCreateEnvironment();
   const { data: collections } = useStreamedCollections();
 
@@ -26,7 +26,10 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
     initialValue: name,
   });
 
-  const restrictedNames = environments?.map((environment) => environment.name);
+  const restrictedNames =
+    mode === "Workspace"
+      ? globalEnvironments?.map((environment) => environment.name)
+      : collectionsEnvironments?.map((environment) => environment.name);
   const { isValid } = useValidateInput({
     value: name,
     restrictedValues: restrictedNames,
@@ -37,16 +40,25 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
   const handleSubmit = async () => {
     if (!isValid) return;
 
+    const newOrder =
+      mode === "Workspace"
+        ? globalEnvironments?.length
+          ? globalEnvironments.length + 1
+          : 1
+        : collectionsEnvironments?.length
+          ? collectionsEnvironments.length + 1
+          : 1;
+
     if (mode === "Workspace") {
       await createEnvironment({
         name,
-        order: environments?.length ? environments.length + 1 : 1,
+        order: newOrder,
         variables: [],
       });
     } else if (mode === "Collection" && collectionId) {
       await createEnvironment({
         name,
-        order: environments?.length ? environments.length + 1 : 1,
+        order: newOrder,
         variables: [],
         collectionId,
       });
