@@ -2,8 +2,6 @@
 
 pub mod shared;
 
-use crate::shared::{generate_random_icon, setup_test_workspace};
-use moss_git_hosting_provider::common::GitProviderType;
 use moss_storage::storage::operations::GetItem;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_collection_name};
 use moss_workspace::{
@@ -11,6 +9,8 @@ use moss_workspace::{
     storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
 use tauri::ipc::Channel;
+
+use crate::shared::{generate_random_icon, setup_test_workspace};
 
 #[tokio::test]
 async fn create_collection_success() {
