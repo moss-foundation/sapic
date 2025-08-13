@@ -16,9 +16,6 @@
     "*.{js,jsx,ts,tsx,css,md,json,toml}": "prettier --plugin=prettier-plugin-tailwindcss --plugin=prettier-plugin-toml --write"
   },
   "dependencies": {
-    "@atlaskit/pragmatic-drag-and-drop": "^1.7.2",
-    "@atlaskit/pragmatic-drag-and-drop-hitbox": "^1.0.3",
-    "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator": "^3.0.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

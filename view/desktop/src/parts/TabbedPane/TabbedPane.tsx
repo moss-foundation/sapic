@@ -194,7 +194,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     addOrFocusPanel({
       id: pragmaticDropElement.node.id,
       title: pragmaticDropElement.node.name,
-      component: "Default",
+      component: "Request",
       params: {
         collectionId: pragmaticDropElement.collectionId,
         node: pragmaticDropElement.node,
