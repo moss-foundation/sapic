@@ -358,6 +358,7 @@ export const useNodeDragAndDropHandler = () => {
             await handleReorderWithinCollection(sourceTreeNodeData, locationTreeNodeData, operation);
           }
         } else {
+          //TODO handle combine to another collection
           await handleMoveToAnotherCollection(sourceTreeNodeData, locationTreeNodeData, operation);
         }
       },

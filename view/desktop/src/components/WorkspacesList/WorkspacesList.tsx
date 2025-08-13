@@ -19,10 +19,12 @@ export const WorkspacesList = () => {
   useMonitorWorkspacesList();
 
   return (
-    <div className="flex flex-col">
-      {environmentsSortedByOrder?.map((environment) => (
-        <WorkspacesListItem key={environment.id} environment={environment} />
-      ))}
+    <div>
+      <div className="flex flex-col">
+        {environmentsSortedByOrder?.map((environment) => (
+          <WorkspacesListItem key={environment.id} environment={environment} />
+        ))}
+      </div>
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import { ActionButton, SidebarHeader } from "@/components";
-import { CreateEnvironmentModal } from "@/components/Modals/Environment/CreateEnvironmentModal";
+import { NewEnvironmentModal } from "@/components/Modals/Environment/NewEnvironmentModal";
 import { useActiveWorkspace, useModal } from "@/hooks";
 import { useStreamEnvironments } from "@/hooks/environment";
 
@@ -26,7 +26,7 @@ export const EnvironmentsListViewHeader = () => {
         }
       />
       {showCreateEnvironmentModal && (
-        <CreateEnvironmentModal showModal={showCreateEnvironmentModal} closeModal={closeCreateEnvironmentModal} />
+        <NewEnvironmentModal showModal={showCreateEnvironmentModal} closeModal={closeCreateEnvironmentModal} />
       )}
     </>
   );
