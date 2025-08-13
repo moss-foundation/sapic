@@ -1,25 +1,27 @@
-import {
-  BatchCreateEntryKind,
-  CreateEntryInput,
-  DirConfigurationModel,
-  EntryInfo,
-  ItemConfigurationModel,
-} from "@repo/moss-collection";
+import { BatchCreateEntryKind, CreateEntryInput, EntryInfo, EntryProtocol } from "@repo/moss-collection";
 
-export const createEntryKind = (
-  name: string,
-  path: string,
-  isAddingFolder: boolean,
-  entryClass: EntryInfo["class"],
-  order: number
-): BatchCreateEntryKind => {
+interface CreateEntryKindProps {
+  name: string;
+  path: string;
+  isAddingFolder: boolean;
+  order: number;
+  protocol?: EntryProtocol;
+}
+
+export const createEntryKind = ({
+  name,
+  path,
+  isAddingFolder,
+  order,
+  protocol,
+}: CreateEntryKindProps): BatchCreateEntryKind => {
   if (isAddingFolder) {
     return {
       DIR: {
         name,
         path,
         order,
-        configuration: createDirConfiguration(entryClass),
+        headers: [],
       },
     };
   }
@@ -29,65 +31,12 @@ export const createEntryKind = (
       name,
       path,
       order,
-      configuration: createItemConfiguration(entryClass),
+      headers: [],
+      queryParams: [],
+      pathParams: [],
+      protocol,
     },
   };
-};
-
-//FIXME: This is a temporary solution until we have a proper configuration model
-export const createDirConfiguration = (entryClass: EntryInfo["class"]): DirConfigurationModel => {
-  switch (entryClass) {
-    case "Request":
-      return { request: { http: {} } };
-    case "Endpoint":
-      return { request: { http: {} } };
-    case "Component":
-      return { component: {} };
-    case "Schema":
-      return { schema: {} };
-    default:
-      return { request: { http: {} } };
-  }
-};
-
-//FIXME: This is a temporary solution until we have a proper configuration model
-export const createItemConfiguration = (entryClass: EntryInfo["class"]): ItemConfigurationModel => {
-  switch (entryClass) {
-    case "Request":
-      return {
-        request: {
-          http: {
-            requestParts: {
-              method: "GET",
-            },
-          },
-        },
-      };
-    case "Endpoint":
-      return {
-        endpoint: {
-          Http: {
-            requestParts: {
-              method: "GET",
-            },
-          },
-        },
-      };
-    case "Component":
-      return { component: {} };
-    case "Schema":
-      return { schema: {} };
-    default:
-      return {
-        request: {
-          http: {
-            requestParts: {
-              method: "GET",
-            },
-          },
-        },
-      };
-  }
 };
 
 export const convertEntryInfoToCreateInput = (
@@ -100,11 +49,7 @@ export const convertEntryInfoToCreateInput = (
         name: entry.name,
         path: newCollectionPath,
         order: entry.order ?? 0,
-        configuration: {
-          request: {
-            http: {},
-          },
-        },
+        headers: [],
       },
     };
   } else {
@@ -113,15 +58,9 @@ export const convertEntryInfoToCreateInput = (
         name: entry.name,
         path: newCollectionPath,
         order: entry.order ?? 0,
-        configuration: {
-          request: {
-            http: {
-              requestParts: {
-                method: "GET",
-              },
-            },
-          },
-        },
+        headers: [],
+        queryParams: [],
+        pathParams: [],
       },
     };
   }

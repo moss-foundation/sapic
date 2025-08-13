@@ -2,7 +2,7 @@ import { useContext } from "react";
 
 import { USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, useStreamedCollectionEntries } from "@/hooks";
 import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
-import { EntryInfo } from "@repo/moss-collection";
+import { BatchUpdateEntryKind, EntryInfo } from "@repo/moss-collection";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { CollectionTreeContext } from "../CollectionTreeContext";
@@ -21,7 +21,7 @@ export const useToggleAllNodes = (node: TreeCollectionRootNode) => {
 
     const entriesToUpdate = streamedEntries.filter((entry) => !entry.expanded && entry.kind === "Dir");
 
-    const inputEntries = entriesToUpdate.map((entry) => {
+    const inputEntries = entriesToUpdate.map((entry): BatchUpdateEntryKind => {
       if (entry.kind === "Dir") {
         return {
           DIR: {
@@ -34,6 +34,15 @@ export const useToggleAllNodes = (node: TreeCollectionRootNode) => {
           ITEM: {
             id: entry.id,
             expanded: true,
+            queryParamsToAdd: [],
+            queryParamsToUpdate: [],
+            queryParamsToRemove: [],
+            pathParamsToAdd: [],
+            pathParamsToUpdate: [],
+            pathParamsToRemove: [],
+            headersToAdd: [],
+            headersToUpdate: [],
+            headersToRemove: [],
           },
         };
       }
@@ -61,7 +70,7 @@ export const useToggleAllNodes = (node: TreeCollectionRootNode) => {
 
     const entriesToUpdate = streamedEntries.filter((entry) => entry.expanded && entry.kind === "Dir");
 
-    const inputEntries = entriesToUpdate.map((entry) => {
+    const inputEntries = entriesToUpdate.map((entry): BatchUpdateEntryKind => {
       if (entry.kind === "Dir") {
         return {
           DIR: {
@@ -74,6 +83,15 @@ export const useToggleAllNodes = (node: TreeCollectionRootNode) => {
           ITEM: {
             id: entry.id,
             expanded: false,
+            queryParamsToAdd: [],
+            queryParamsToUpdate: [],
+            queryParamsToRemove: [],
+            pathParamsToAdd: [],
+            pathParamsToUpdate: [],
+            pathParamsToRemove: [],
+            headersToAdd: [],
+            headersToUpdate: [],
+            headersToRemove: [],
           },
         };
       }

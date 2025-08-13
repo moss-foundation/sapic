@@ -32,16 +32,152 @@ impl Display for EntryId {
     }
 }
 
+#[rustfmt::skip]
+impl TS for EntryId {
+    type WithoutGenerics = Self;
+    type OptionInnerType = Self;
+
+    fn name() -> String { "string".to_string() }
+    fn inline() -> String { "string".to_string() }
+    fn inline_flattened() -> String { "string".to_string() }
+    fn decl() -> String { unreachable!() }
+    fn decl_concrete() -> String { unreachable!() }
+    fn dependencies() -> Vec<ts_rs::Dependency> { vec![] }
+}
+
+/// @category Primitive
+#[derive(Clone, Debug, PartialEq, Hash, Eq, Deref, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct QueryParamId(Arc<String>);
+impl QueryParamId {
+    pub fn new() -> Self {
+        Self(Arc::new(nanoid!(10)))
+    }
+}
+
+impl From<String> for QueryParamId {
+    fn from(s: String) -> Self {
+        Self(Arc::new(s))
+    }
+}
+
+impl AsRef<str> for QueryParamId {
+    fn as_ref(&self) -> &str {
+        self.0.as_ref()
+    }
+}
+
+impl Display for QueryParamId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[rustfmt::skip]
+impl TS for QueryParamId {
+    type WithoutGenerics = Self;
+    type OptionInnerType = Self;
+
+    fn name() -> String { "string".to_string() }
+    fn inline() -> String { "string".to_string() }
+    fn inline_flattened() -> String { "string".to_string() }
+    fn decl() -> String { unreachable!() }
+    fn decl_concrete() -> String { unreachable!() }
+    fn dependencies() -> Vec<ts_rs::Dependency> { vec![] }
+}
+
+/// @category Primitive
+#[derive(Clone, Debug, PartialEq, Hash, Eq, Deref, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct PathParamId(Arc<String>);
+impl PathParamId {
+    pub fn new() -> Self {
+        Self(Arc::new(nanoid!(10)))
+    }
+}
+
+impl From<String> for PathParamId {
+    fn from(s: String) -> Self {
+        Self(Arc::new(s))
+    }
+}
+
+impl AsRef<str> for PathParamId {
+    fn as_ref(&self) -> &str {
+        self.0.as_ref()
+    }
+}
+
+impl Display for PathParamId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[rustfmt::skip]
+impl TS for PathParamId {
+    type WithoutGenerics = Self;
+    type OptionInnerType = Self;
+
+    fn name() -> String { "string".to_string() }
+    fn inline() -> String { "string".to_string() }
+    fn inline_flattened() -> String { "string".to_string() }
+    fn decl() -> String { unreachable!() }
+    fn decl_concrete() -> String { unreachable!() }
+    fn dependencies() -> Vec<ts_rs::Dependency> { vec![] }
+}
+
+/// @category Primitive
+#[derive(Clone, Debug, PartialEq, Hash, Eq, Deref, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct HeaderId(Arc<String>);
+impl HeaderId {
+    pub fn new() -> Self {
+        Self(Arc::new(nanoid!(10)))
+    }
+}
+
+impl From<String> for HeaderId {
+    fn from(s: String) -> Self {
+        Self(Arc::new(s))
+    }
+}
+
+impl AsRef<str> for HeaderId {
+    fn as_ref(&self) -> &str {
+        self.0.as_ref()
+    }
+}
+
+impl Display for HeaderId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+#[rustfmt::skip]
+impl TS for HeaderId {
+    type WithoutGenerics = Self;
+    type OptionInnerType = Self;
+
+    fn name() -> String { "string".to_string() }
+    fn inline() -> String { "string".to_string() }
+    fn inline_flattened() -> String { "string".to_string() }
+    fn decl() -> String { unreachable!() }
+    fn decl_concrete() -> String { unreachable!() }
+    fn dependencies() -> Vec<ts_rs::Dependency> { vec![] }
+}
+
 /// @category Primitive
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename = "EntryPath", rename_all = "camelCase")]
 #[ts(export, export_to = "primitives.ts")]
-pub struct EntryPath {
+pub struct FrontendEntryPath {
     pub raw: PathBuf,
     pub segments: Vec<String>,
 }
 
-impl EntryPath {
+impl FrontendEntryPath {
     pub fn new(raw: PathBuf) -> Self {
         let segments = raw
             .iter()
@@ -53,7 +189,7 @@ impl EntryPath {
 }
 
 /// @category Primitive
-#[derive(Clone, Debug, Deserialize, Serialize, TS)]
+#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq, Hash, TS)]
 #[ts(export, export_to = "primitives.ts")]
 pub enum EntryClass {
     Request,
@@ -93,6 +229,20 @@ pub enum EntryProtocol {
     WebSocket,
     Graphql,
     Grpc,
+}
+
+impl ToString for EntryProtocol {
+    fn to_string(&self) -> String {
+        match self {
+            EntryProtocol::Get => "Get".to_string(),
+            EntryProtocol::Post => "Post".to_string(),
+            EntryProtocol::Put => "Put".to_string(),
+            EntryProtocol::Delete => "Delete".to_string(),
+            EntryProtocol::WebSocket => "WebSocket".to_string(),
+            EntryProtocol::Graphql => "Graphql".to_string(),
+            EntryProtocol::Grpc => "Grpc".to_string(),
+        }
+    }
 }
 
 impl From<&HttpMethod> for EntryProtocol {
