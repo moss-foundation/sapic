@@ -315,9 +315,6 @@ importers:
       '@atlaskit/pragmatic-drag-and-drop-hitbox':
         specifier: ^1.0.3
         version: 1.1.0
-      '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator':
-        specifier: ^3.0.2
-        version: 3.2.1(@types/react@18.3.23)(react@18.3.1)
       '@langchain/core':
         specifier: ^0.3.53
         version: 0.3.66
@@ -501,37 +498,11 @@ packages:
   '@asamuzakjp/css-color@3.2.0':
     resolution: {integrity: sha512-K1A6z8tS3XsmCMM86xoWdn7Fkdn9m6RSVtocUrJYIwZnFVkng/PvkEoWtOWmP+Scc6saYWHWZYbndEEXxl24jw==}
 
-  '@atlaskit/atlassian-context@0.3.1':
-    resolution: {integrity: sha512-AoLIByncgmygR69AjtOeMFOuw5DYSqFD4qxO6jcYjYkp31H8JzfSTXrfSemvSbuek7XzAhrsbx6DA5bGmxIMbA==}
-    peerDependencies:
-      react: ^18.2.0
-
-  '@atlaskit/ds-lib@4.1.0':
-    resolution: {integrity: sha512-QbIhEvVAMhazcEgjuFWmPaYBLlUSLqxMZuSHvRG+36IBmxMhqz3xc14UmUb5ipoNCFBWWPUxX2XM1pd6p3SKWg==}
-    peerDependencies:
-      react: ^18.2.0
-
-  '@atlaskit/feature-gate-js-client@5.5.1':
-    resolution: {integrity: sha512-vvkSIYbYi5CiNI8KYVgJ0jIKyZVP3+UB0rwInqfj6moPuLRCzD+Wl9NJGbexSehsg7eXU0Wb+DZ1N/eafx9mrA==}
-
-  '@atlaskit/platform-feature-flags@1.1.1':
-    resolution: {integrity: sha512-YKuy3RsqCEoNALiMHVma0GGHkzZMSIBsEgZlV/2TPw65QRzOWJvKA3ZIKucmXzr3m7AUqg1XHwXvVlUuNZhUgg==}
-
   '@atlaskit/pragmatic-drag-and-drop-hitbox@1.1.0':
     resolution: {integrity: sha512-JWt6eVp6Br2FPHRM8s0dUIHQk/jFInGP1f3ti5CdtM1Ji5/pt8Akm44wDC063Gv2i5RGseixtbW0z/t6RYtbdg==}
 
-  '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator@3.2.1':
-    resolution: {integrity: sha512-OzsYWfQPLF3xEE8WCyQh/dSqUB8zpGim/LUbP+3/7to9pNyHYICVJs9OByW2G2SuYshkQHUyYixn4w+VOJ4jxA==}
-    peerDependencies:
-      react: ^18.2.0 || ^19.0.0
-
   '@atlaskit/pragmatic-drag-and-drop@1.7.4':
     resolution: {integrity: sha512-lZHnO9BJdHPKnwB0uvVUCyDnIhL+WAHzXQ2EXX0qacogOsnvIUiCgY0BLKhBqTCWln3/f/Ox5jU54MKO6ayh9A==}
-
-  '@atlaskit/tokens@5.5.0':
-    resolution: {integrity: sha512-F3UX3id7Vi8GBsqo4fMQbxlfIkgo9yKzE+ydf/tHdMeEjYWd4t8x/KX2cgwdPBpUciDliMLdJbiU0zvmB9QKcg==}
-    peerDependencies:
-      react: ^18.2.0
 
   '@babel/code-frame@7.27.1':
     resolution: {integrity: sha512-cjQ7ZlQ0Mv3b47hABuTevyTuYN4i+loJKGeV9flcCgIK37cCXRh+L1bd3iBHlynerhQ7BhCkn2BPbQUL+rGqFg==}
@@ -622,11 +593,6 @@ packages:
 
   '@cfworker/json-schema@4.1.1':
     resolution: {integrity: sha512-gAmrUZSGtKc3AiBL71iNWxDsyUC5uMaKKGdvzYsBoTW/xi42JQHl7eKV2OYzCUqvc+D2RCcf7EXY2iCyFIk6og==}
-
-  '@compiled/react@0.18.6':
-    resolution: {integrity: sha512-Mt6sJOwykeoToEBFbOUNR4xABi2gOr/+X5QSGqGEYiCBMh+XPDAclG2UX94zveiYJXO4AUJIQBCVwa4/lwPMBA==}
-    peerDependencies:
-      react: '>= 16.12.0'
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -1524,12 +1490,6 @@ packages:
 
   '@shikijs/vscode-textmate@10.0.2':
     resolution: {integrity: sha512-83yeghZ2xxin3Nj8z1NMd/NCuca+gsYXswywDy5bHvwlWL8tpTQmzGeUuHd9FC3E/SBEMvzJRwWEOz5gGes9Qg==}
-
-  '@statsig/client-core@3.19.0':
-    resolution: {integrity: sha512-i4XyzV2klOBFK8lmpEj1gJLOjKJE43Rh1c9XICEA0z62q4/gZ2Czr39y7+GykI/mH7jLaR/1mPtMSxqpLkEQDw==}
-
-  '@statsig/js-client@3.19.0':
-    resolution: {integrity: sha512-NyN3qQol4aKHzqF3MtTpW1WepcsSu+PRLUvYIHEAoHmgaSzHlDHLQ5ATkuWkR/IC4rmKjxzOsD2Z85ChYmxNtw==}
 
   '@tailwindcss/node@4.1.11':
     resolution: {integrity: sha512-yzhzuGRmv5QyU9qLNg4GTlYI6STedBWRE7NjxP45CsFYYq9taI0zJXZBMqIC/c8fViNLhmrbpSFS57EoxUmD6Q==}
@@ -3505,16 +3465,6 @@ packages:
       '@types/react':
         optional: true
 
-  react-uid@2.4.0:
-    resolution: {integrity: sha512-+MVs/25NrcZuGrmlVRWPOSsbS8y72GJOBsR7d68j3/wqOrRBF52U29XAw4+XSelw0Vm6s5VmGH5mCbTCPGVCVg==}
-    engines: {node: '>=10'}
-    peerDependencies:
-      '@types/react': ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-    peerDependenciesMeta:
-      '@types/react':
-        optional: true
-
   react@18.3.1:
     resolution: {integrity: sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ==}
     engines: {node: '>=0.10.0'}
@@ -3717,9 +3667,6 @@ packages:
 
   through@2.3.8:
     resolution: {integrity: sha512-w89qg7PI8wAdvX60bMDP+bFoD5Dvhm9oLheFp5O4a2QF0cSBGsBX4qZmadPMvVqlLJBBci+WqGGOAPvcDeNSVg==}
-
-  tiny-invariant@1.3.3:
-    resolution: {integrity: sha512-+FbBPE1o9QAYvviau/qC5SE3caw21q3xkvWKBtja5vgqOWIHHJ3ioaq1VPfn/Szqctz2bU/oYeKd9/z5BL+PVg==}
 
   tiny-worker@2.3.0:
     resolution: {integrity: sha512-pJ70wq5EAqTAEl9IkGzA+fN0836rycEuz2Cn6yeZ6FRzlVS5IDOkFHpIoEsksPRQV34GDqXm65+OlnZqUSyK2g==}
@@ -4161,74 +4108,16 @@ snapshots:
       '@csstools/css-tokenizer': 3.0.4
       lru-cache: 10.4.3
 
-  '@atlaskit/atlassian-context@0.3.1(react@18.3.1)':
-    dependencies:
-      '@babel/runtime': 7.27.6
-      react: 18.3.1
-
-  '@atlaskit/ds-lib@4.1.0(@types/react@18.3.23)(react@18.3.1)':
-    dependencies:
-      '@atlaskit/platform-feature-flags': 1.1.1(react@18.3.1)
-      '@babel/runtime': 7.27.6
-      bind-event-listener: 3.0.0
-      react: 18.3.1
-      react-uid: 2.4.0(@types/react@18.3.23)(react@18.3.1)
-      tiny-invariant: 1.3.3
-    transitivePeerDependencies:
-      - '@types/react'
-
-  '@atlaskit/feature-gate-js-client@5.5.1(react@18.3.1)':
-    dependencies:
-      '@atlaskit/atlassian-context': 0.3.1(react@18.3.1)
-      '@babel/runtime': 7.27.6
-      '@statsig/client-core': 3.19.0
-      '@statsig/js-client': 3.19.0
-      eventemitter3: 4.0.7
-    transitivePeerDependencies:
-      - react
-
-  '@atlaskit/platform-feature-flags@1.1.1(react@18.3.1)':
-    dependencies:
-      '@atlaskit/feature-gate-js-client': 5.5.1(react@18.3.1)
-      '@babel/runtime': 7.27.6
-    transitivePeerDependencies:
-      - react
-
   '@atlaskit/pragmatic-drag-and-drop-hitbox@1.1.0':
     dependencies:
       '@atlaskit/pragmatic-drag-and-drop': 1.7.4
       '@babel/runtime': 7.27.6
-
-  '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator@3.2.1(@types/react@18.3.23)(react@18.3.1)':
-    dependencies:
-      '@atlaskit/pragmatic-drag-and-drop': 1.7.4
-      '@atlaskit/pragmatic-drag-and-drop-hitbox': 1.1.0
-      '@atlaskit/tokens': 5.5.0(@types/react@18.3.23)(react@18.3.1)
-      '@babel/runtime': 7.27.6
-      '@compiled/react': 0.18.6(react@18.3.1)
-      react: 18.3.1
-    transitivePeerDependencies:
-      - '@types/react'
-      - supports-color
 
   '@atlaskit/pragmatic-drag-and-drop@1.7.4':
     dependencies:
       '@babel/runtime': 7.27.6
       bind-event-listener: 3.0.0
       raf-schd: 4.0.3
-
-  '@atlaskit/tokens@5.5.0(@types/react@18.3.23)(react@18.3.1)':
-    dependencies:
-      '@atlaskit/ds-lib': 4.1.0(@types/react@18.3.23)(react@18.3.1)
-      '@atlaskit/platform-feature-flags': 1.1.1(react@18.3.1)
-      '@babel/runtime': 7.27.6
-      '@babel/traverse': 7.28.0
-      '@babel/types': 7.28.2
-      bind-event-listener: 3.0.0
-      react: 18.3.1
-    transitivePeerDependencies:
-      - '@types/react'
-      - supports-color
 
   '@babel/code-frame@7.27.1':
     dependencies:
@@ -4345,11 +4234,6 @@ snapshots:
       '@babel/helper-validator-identifier': 7.27.1
 
   '@cfworker/json-schema@4.1.1': {}
-
-  '@compiled/react@0.18.6(react@18.3.1)':
-    dependencies:
-      csstype: 3.1.3
-      react: 18.3.1
 
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
@@ -5169,12 +5053,6 @@ snapshots:
       '@types/hast': 3.0.4
 
   '@shikijs/vscode-textmate@10.0.2': {}
-
-  '@statsig/client-core@3.19.0': {}
-
-  '@statsig/js-client@3.19.0':
-    dependencies:
-      '@statsig/client-core': 3.19.0
 
   '@tailwindcss/node@4.1.11':
     dependencies:
@@ -7008,13 +6886,6 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.3.23
 
-  react-uid@2.4.0(@types/react@18.3.23)(react@18.3.1):
-    dependencies:
-      react: 18.3.1
-      tslib: 2.8.1
-    optionalDependencies:
-      '@types/react': 18.3.23
-
   react@18.3.1:
     dependencies:
       loose-envify: 1.4.0
@@ -7226,8 +7097,6 @@ snapshots:
       - supports-color
 
   through@2.3.8: {}
-
-  tiny-invariant@1.3.3: {}
 
   tiny-worker@2.3.0:
     dependencies:
