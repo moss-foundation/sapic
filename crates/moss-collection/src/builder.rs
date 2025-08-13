@@ -2,7 +2,6 @@ use joinerror::ResultExt;
 use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_fs::{CreateOptions, FileSystem};
 use moss_git::url::normalize_git_url;
-use moss_hcl::Block;
 use std::{
     path::{Path, PathBuf},
     sync::Arc,
@@ -16,18 +15,9 @@ use crate::{
     defaults, dirs,
     edit::CollectionEdit,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
-    models::{
-        primitives::EntryId,
-        types::configuration::docschema::{
-            RawDirComponentConfiguration, RawDirConfiguration, RawDirEndpointConfiguration,
-            RawDirRequestConfiguration, RawDirSchemaConfiguration,
-        },
-    },
-    services::{
-        set_icon_service::SetIconService,
-        storage_service::StorageService,
-        worktree_service::{EntryMetadata, WorktreeService},
-    },
+    models::primitives::{EntryClass, EntryId},
+    services::{set_icon_service::SetIconService, storage_service::StorageService},
+    worktree::{Worktree, entry::model::EntryModel},
 };
 
 const COLLECTION_ICON_SIZE: u32 = 128;
@@ -72,7 +62,7 @@ impl CollectionBuilder {
                 .join_err::<()>("failed to create collection storage service")?
                 .into();
 
-        let worktree_service: Arc<WorktreeService<R>> = WorktreeService::new(
+        let worktree_service: Arc<Worktree<R>> = Worktree::new(
             params.internal_abs_path.clone(),
             self.fs.clone(),
             storage_service.clone(),
@@ -97,7 +87,7 @@ impl CollectionBuilder {
             edit,
             set_icon_service,
             storage_service,
-            worktree_service,
+            worktree: worktree_service,
             environments: OnceCell::new(),
             on_did_change: EventEmitter::new(),
         })
@@ -120,41 +110,30 @@ impl CollectionBuilder {
             .join_err::<()>("failed to create collection storage service")?
             .into();
 
-        let worktree_service: Arc<WorktreeService<R>> =
-            WorktreeService::new(abs_path.clone(), self.fs.clone(), storage_service.clone()).into();
+        let worktree_service: Arc<Worktree<R>> =
+            Worktree::new(abs_path.clone(), self.fs.clone(), storage_service.clone()).into();
 
         let set_icon_service =
             SetIconService::new(abs_path.clone(), self.fs.clone(), COLLECTION_ICON_SIZE);
 
         for (dir, order) in &WORKTREE_DIRS {
             let id = EntryId::new();
-            let configuration = match *dir {
-                dirs::REQUESTS_DIR => {
-                    RawDirConfiguration::Request(Block::new(RawDirRequestConfiguration::new(&id)))
-                }
-                dirs::ENDPOINTS_DIR => {
-                    RawDirConfiguration::Endpoint(Block::new(RawDirEndpointConfiguration::new(&id)))
-                }
-                dirs::COMPONENTS_DIR => RawDirConfiguration::Component(Block::new(
-                    RawDirComponentConfiguration::new(&id),
-                )),
-                dirs::SCHEMAS_DIR => {
-                    RawDirConfiguration::Schema(Block::new(RawDirSchemaConfiguration::new(&id)))
-                }
+            let model = match *dir {
+                dirs::REQUESTS_DIR => EntryModel::from((id, EntryClass::Request)),
+                dirs::ENDPOINTS_DIR => EntryModel::from((id, EntryClass::Endpoint)),
+                dirs::COMPONENTS_DIR => EntryModel::from((id, EntryClass::Component)),
+                dirs::SCHEMAS_DIR => EntryModel::from((id, EntryClass::Schema)),
                 _ => unreachable!(),
             };
 
             worktree_service
                 .create_dir_entry(
                     ctx,
-                    &id,
                     dir,
                     Path::new(COLLECTION_ROOT_PATH),
-                    configuration,
-                    EntryMetadata {
-                        order: *order,
-                        expanded: false,
-                    },
+                    model,
+                    *order,
+                    false,
                 )
                 .await?;
         }
@@ -216,7 +195,7 @@ impl CollectionBuilder {
             edit,
             set_icon_service,
             storage_service,
-            worktree_service,
+            worktree: worktree_service,
             environments: OnceCell::new(),
             on_did_change: EventEmitter::new(),
         })

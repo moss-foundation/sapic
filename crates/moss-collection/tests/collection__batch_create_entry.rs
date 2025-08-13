@@ -2,16 +2,14 @@
 
 use moss_collection::{
     constants, dirs,
-    models::operations::{
-        BatchCreateEntryInput, BatchCreateEntryKind, CreateDirEntryInput, CreateItemEntryInput,
+    models::{
+        operations::{BatchCreateEntryInput, BatchCreateEntryKind},
+        types::{CreateDirEntryParams, CreateItemEntryParams},
     },
 };
 use std::path::PathBuf;
 
-use crate::shared::{
-    create_test_collection, create_test_component_dir_configuration,
-    create_test_component_item_configuration, random_entry_name,
-};
+use crate::shared::{create_test_collection, random_entry_name};
 
 pub mod shared;
 
@@ -26,17 +24,20 @@ async fn batch_create_entry_success() {
 
     let outer_name = random_entry_name();
     let inner_name = random_entry_name();
-    let outer_input = BatchCreateEntryKind::Dir(CreateDirEntryInput {
+    let outer_input = BatchCreateEntryKind::Dir(CreateDirEntryParams {
         path: class_path.clone(),
         name: outer_name.clone(),
         order: 0,
-        configuration: create_test_component_dir_configuration(),
+        headers: vec![],
     });
-    let inner_input = BatchCreateEntryKind::Item(CreateItemEntryInput {
+    let inner_input = BatchCreateEntryKind::Item(CreateItemEntryParams {
         path: class_path.join(&outer_name),
         name: inner_name.clone(),
         order: 0,
-        configuration: create_test_component_item_configuration(),
+        protocol: None,
+        query_params: vec![],
+        path_params: vec![],
+        headers: vec![],
     });
     let input = BatchCreateEntryInput {
         // Make sure that the order is correctly sorted
@@ -73,11 +74,14 @@ async fn batch_create_entry_missing_parent() {
     let inner_name = random_entry_name();
 
     // Try creating components/parent/{inner_name}
-    let inner_input = BatchCreateEntryKind::Item(CreateItemEntryInput {
+    let inner_input = BatchCreateEntryKind::Item(CreateItemEntryParams {
         path: class_path.join("parent"),
         name: inner_name.clone(),
         order: 0,
-        configuration: create_test_component_item_configuration(),
+        protocol: None,
+        query_params: vec![],
+        path_params: vec![],
+        headers: vec![],
     });
     let input = BatchCreateEntryInput {
         entries: vec![inner_input],

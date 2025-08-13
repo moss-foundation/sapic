@@ -1,10 +1,9 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { getClassAndProtocolFromEntryInput } from "@/utils/getClassAndProtocolFromEntyInput";
 import { CreateEntryInput, CreateEntryOutput, EntryInfo } from "@repo/moss-collection";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { join, sep } from "@tauri-apps/api/path";
 
 import { USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY } from "./useStreamedCollectionEntries";
+import { createCollectionEntryForCache } from "./utils";
 
 export interface UseCreateCollectionEntryInputProps {
   collectionId: string;
@@ -30,7 +29,7 @@ export const useCreateCollectionEntry = () => {
   return useMutation<CreateEntryOutput, Error, UseCreateCollectionEntryInputProps>({
     mutationFn: createCollectionEntry,
     onSuccess: async (data, variables) => {
-      const newEntry = await createNewEntry(data.id, variables.input);
+      const newEntry = await createCollectionEntryForCache(data.id, variables.input);
 
       queryClient.setQueryData(
         [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, variables.collectionId],
@@ -40,41 +39,4 @@ export const useCreateCollectionEntry = () => {
       );
     },
   });
-};
-
-const createNewEntry = async (id: string, entry: CreateEntryInput): Promise<EntryInfo> => {
-  //FIXME: This is a temporary solution until we have a proper configuration model
-  const { entryClass, protocol } = getClassAndProtocolFromEntryInput(entry);
-  if ("DIR" in entry) {
-    const rawpath = await join(entry.DIR.path, entry.DIR.name);
-
-    return {
-      id,
-      name: entry.DIR.name,
-      order: entry.DIR.order,
-      path: {
-        raw: rawpath,
-        segments: rawpath.split(sep()),
-      },
-      class: entryClass,
-      kind: "Dir",
-      expanded: false,
-    };
-  } else {
-    const rawpath = await join(entry.ITEM.path, entry.ITEM.name);
-
-    return {
-      id,
-      name: entry.ITEM.name,
-      order: entry.ITEM.order,
-      path: {
-        raw: rawpath,
-        segments: rawpath.split(sep()),
-      },
-      class: entryClass,
-      kind: "Item" as const,
-      protocol,
-      expanded: false,
-    };
-  }
 };

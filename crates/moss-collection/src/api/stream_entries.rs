@@ -20,10 +20,10 @@ use crate::{
     models::{
         events::StreamEntriesEvent,
         operations::{StreamEntriesInput, StreamEntriesOutput},
-        primitives::{EntryId, EntryPath},
+        primitives::{EntryId, FrontendEntryPath},
         types::EntryInfo,
     },
-    services::worktree_service::EntryDescription,
+    worktree::entry::EntryDescription,
 };
 
 const EXPANSION_DIRECTORIES: &[&str] = &[
@@ -72,7 +72,7 @@ impl<R: AppRuntime> Collection<R> {
 
         for dir in expansion_dirs {
             let entries_tx_clone = tx.clone();
-            let worktree_service_clone = self.worktree_service.clone();
+            let worktree_service_clone = self.worktree.clone();
             // We need to fetch this data from the database here, otherwise we'll be requesting it every time the scan method is called.
 
             let handle = tokio::spawn({
@@ -111,7 +111,7 @@ impl<R: AppRuntime> Collection<R> {
                             let entry_info = EntryInfo {
                                 id: entry.id,
                                 name: entry.name,
-                                path: EntryPath::new(entry.path.to_path_buf()),
+                                path: FrontendEntryPath::new(entry.path.to_path_buf()),
                                 class: entry.class,
                                 kind: entry.kind,
                                 protocol: entry.protocol,
@@ -129,7 +129,7 @@ impl<R: AppRuntime> Collection<R> {
                             let entry_info = EntryInfo {
                                 id: entry.id,
                                 name: entry.name,
-                                path: EntryPath {
+                                path: FrontendEntryPath {
                                     raw: entry.path.to_path_buf(),
                                     segments: entry.path.to_path_buf().iter().map(|s| s.to_string_lossy().to_string()).collect(),
                                 },
