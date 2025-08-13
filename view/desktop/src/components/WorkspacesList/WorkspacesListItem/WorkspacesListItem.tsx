@@ -53,7 +53,7 @@ export const WorkspacesListItem = ({ environment }: WorkspacesListItemProps) => 
       tabIndex={0}
     >
       <WorkspacesListItemIndicator isActive={isActive} />
-      {closestEdge && <DropIndicator edge={closestEdge} />}
+      {closestEdge && <DropIndicator noTerminal edge={closestEdge} />}
 
       {isEditing ? (
         <WorkspacesListItemRenamingForm
