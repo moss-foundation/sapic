@@ -1,6 +1,7 @@
 import { CollectionEnvironmentsList } from "@/components/CollectionEnvironmentsList/CollectionEnvironmentsList";
 import { GlobalEnvironmentsList } from "@/components/GlobalEnvironmentsList/GlobalEnvironmentsList";
 import { useStreamEnvironments } from "@/hooks/environment";
+import { Scrollbar } from "@/lib/ui";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 import { EnvironmentsListItem } from "./EnvironmentsListItem";
@@ -15,7 +16,7 @@ export const EnvironmentsListView = () => {
     <div className="flex h-full flex-col">
       <EnvironmentsListViewHeader />
 
-      <div className="h-full">
+      <Scrollbar className="h-full">
         <EnvironmentsListItem
           icon="Vault"
           label="Vault"
@@ -36,7 +37,7 @@ export const EnvironmentsListView = () => {
         {environments && environments.length > 0 && <EnvironmentsListViewDivider />}
 
         <CollectionEnvironmentsList />
-      </div>
+      </Scrollbar>
     </div>
   );
 };

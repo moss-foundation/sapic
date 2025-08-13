@@ -30,6 +30,7 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
     mode === "Workspace"
       ? globalEnvironments?.map((environment) => environment.name)
       : collectionsEnvironments?.map((environment) => environment.name);
+
   const { isValid } = useValidateInput({
     value: name,
     restrictedValues: restrictedNames,
