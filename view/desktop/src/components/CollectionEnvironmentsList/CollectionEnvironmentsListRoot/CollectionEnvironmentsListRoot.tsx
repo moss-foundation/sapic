@@ -15,9 +15,18 @@ export const CollectionEnvironmentsListRoot = ({
 }: CollectionEnvironmentsListRootProps) => {
   const [showChildren, setShowChildren] = useState(true);
 
+  const onClick = () => {
+    setShowChildren(!showChildren);
+  };
+
   return (
     <div className="group/CollectionEnvironmentsListRoot flex flex-col">
-      <div className="group/CollectionEnvironmentsListRootHeader relative flex h-[30px] cursor-pointer items-center justify-between py-2 pr-2 pl-[10px]">
+      <div
+        className="group/CollectionEnvironmentsListRootHeader relative flex h-[30px] cursor-pointer items-center justify-between py-2 pr-2 pl-[10px]"
+        onClick={onClick}
+        role="button"
+        tabIndex={0}
+      >
         <CollectionEnvironmentsListRootButton
           showChildren={showChildren}
           setShowChildren={setShowChildren}
