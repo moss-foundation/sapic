@@ -4,14 +4,14 @@ import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
 
 import { EntryIcon } from "../../EntryIcon";
+import { CollectionTreeContext } from "../CollectionTreeContext";
 import { NodeAddForm } from "../NodeAddForm";
-import { TreeContext } from "../Tree";
 import { TreeCollectionNode } from "../types";
 
 interface TreeNodeAddFormProps {
   depth: number;
   isAddingFolderNode: boolean;
-  restrictedNames?: (string | number)[];
+  restrictedNames?: string[];
   onNodeAddCallback?: (node: TreeCollectionNode) => void;
   handleAddFormSubmit: (name: string) => void;
   handleAddFormCancel: () => void;
@@ -24,7 +24,8 @@ const TreeNodeAddForm = ({
   handleAddFormSubmit,
   handleAddFormCancel,
 }: TreeNodeAddFormProps) => {
-  const { nodeOffset } = useContext(TreeContext);
+  const { nodeOffset } = useContext(CollectionTreeContext);
+
   const nodePaddingLeftForAddForm = (depth + 1) * nodeOffset;
 
   return (

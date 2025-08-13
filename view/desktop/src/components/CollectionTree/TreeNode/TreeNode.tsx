@@ -2,8 +2,8 @@ import { useContext, useRef, useState } from "react";
 
 import { cn } from "@/utils/cn";
 
-import { TreeContext } from "../..";
 import { useDeleteAndUpdatePeers } from "../actions/useDeleteAndUpdatePeers";
+import { CollectionTreeContext } from "../CollectionTreeContext";
 import { DropIndicatorForDir } from "../DropIndicatorForDir";
 import { TreeCollectionNode } from "../types";
 import { getChildrenNames } from "../utils";
@@ -24,7 +24,7 @@ export interface TreeNodeComponentProps {
 }
 
 export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = false }: TreeNodeComponentProps) => {
-  const { id } = useContext(TreeContext);
+  const { id } = useContext(CollectionTreeContext);
 
   const triggerRef = useRef<HTMLDivElement>(null);
   const dropTargetListRef = useRef<HTMLLIElement>(null);

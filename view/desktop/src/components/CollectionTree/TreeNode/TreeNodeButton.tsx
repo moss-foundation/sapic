@@ -11,9 +11,9 @@ import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types
 
 import { EntryIcon } from "../../EntryIcon";
 import { ActiveNodeIndicator } from "../ActiveNodeIndicator";
+import { CollectionTreeContext } from "../CollectionTreeContext";
 import { DropIndicatorForTrigger } from "../DropIndicatorForTrigger";
 import NodeLabel from "../NodeLabel";
-import { TreeContext } from "../Tree";
 import { TreeCollectionNode } from "../types";
 import { countNumberOfAllNestedChildNodes } from "../utils";
 import TreeNode from "./TreeNode";
@@ -53,7 +53,8 @@ const TreeNodeButton = forwardRef<HTMLDivElement, TreeNodeButtonProps>(
     },
     ref
   ) => {
-    const { id, nodeOffset, searchInput, treePaddingRight, treePaddingLeft, showNodeOrders } = useContext(TreeContext);
+    const { id, nodeOffset, searchInput, treePaddingRight, treePaddingLeft, showNodeOrders } =
+      useContext(CollectionTreeContext);
 
     const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 

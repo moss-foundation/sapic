@@ -5,11 +5,11 @@ import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdate
 import { EntryInfo } from "@repo/moss-collection";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { TreeContext } from "../Tree";
+import { CollectionTreeContext } from "../CollectionTreeContext";
 import { TreeCollectionRootNode } from "../types";
 
 export const useToggleAllNodes = (node: TreeCollectionRootNode) => {
-  const { id } = useContext(TreeContext);
+  const { id } = useContext(CollectionTreeContext);
 
   const queryClient = useQueryClient();
 

@@ -3,8 +3,8 @@ import { useContext } from "react";
 import { Icon } from "@/lib/ui/Icon";
 import { cn } from "@/utils";
 
+import { CollectionTreeContext } from "../CollectionTreeContext";
 import { NodeRenamingForm } from "../NodeRenamingForm";
-import { TreeContext } from "../Tree";
 import { TreeCollectionRootNode } from "../types";
 
 interface TreeRootNodeRenameFormProps {
@@ -22,7 +22,7 @@ export const TreeRootNodeRenameForm = ({
   handleRenamingFormSubmit,
   handleRenamingFormCancel,
 }: TreeRootNodeRenameFormProps) => {
-  const { picturePath } = useContext(TreeContext);
+  const { picturePath } = useContext(CollectionTreeContext);
 
   return (
     <div className="flex grow cursor-pointer items-center gap-1.5">

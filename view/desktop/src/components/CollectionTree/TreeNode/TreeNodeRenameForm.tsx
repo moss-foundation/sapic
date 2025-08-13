@@ -4,8 +4,8 @@ import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
 
 import { EntryIcon } from "../../EntryIcon";
+import { CollectionTreeContext } from "../CollectionTreeContext";
 import { NodeRenamingForm } from "../NodeRenamingForm";
-import { TreeContext } from "../Tree";
 import { TreeCollectionNode } from "../types";
 
 interface TreeNodeRenameFormProps {
@@ -24,7 +24,7 @@ const TreeNodeRenameForm = ({
   handleRenamingFormSubmit,
   handleRenamingFormCancel,
 }: TreeNodeRenameFormProps) => {
-  const { nodeOffset, treePaddingLeft } = useContext(TreeContext);
+  const { nodeOffset, treePaddingLeft } = useContext(CollectionTreeContext);
   const nodePaddingLeft = depth * nodeOffset + treePaddingLeft;
   const shouldRenderChildNodes = node.kind === "Dir" && node.expanded;
 

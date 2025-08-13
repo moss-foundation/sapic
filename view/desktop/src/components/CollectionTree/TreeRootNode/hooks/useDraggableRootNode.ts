@@ -14,7 +14,7 @@ import {
   monitorForElements,
 } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import { TreeContext } from "../../Tree";
+import { CollectionTreeContext } from "../../CollectionTreeContext";
 import { DragNode, TreeCollectionNode, TreeCollectionRootNode } from "../../types";
 import {
   getInstructionFromSelf,
@@ -36,7 +36,7 @@ interface UseDraggableRootNodeProps {
 }
 
 export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode }: UseDraggableRootNodeProps) => {
-  const { id, displayMode } = useContext(TreeContext);
+  const { id, displayMode } = useContext(CollectionTreeContext);
 
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [instruction, setInstruction] = useState<Instruction | null>(null);

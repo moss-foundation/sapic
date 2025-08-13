@@ -10,7 +10,7 @@ import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 
-import { TreeContext } from "../../Tree";
+import { CollectionTreeContext } from "../../CollectionTreeContext";
 import { DragNode, DropNode, TreeCollectionNode } from "../../types";
 import {
   getLocationTreeCollectionNodeData,
@@ -39,7 +39,7 @@ export const useDraggableNode = ({
   isRootNode,
   setPreview,
 }: UseDraggableNodeProps) => {
-  const { repository, id } = useContext(TreeContext);
+  const { repository, id } = useContext(CollectionTreeContext);
 
   const [instruction, setInstruction] = useState<Instruction | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
