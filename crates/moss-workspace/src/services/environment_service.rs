@@ -7,10 +7,7 @@ use moss_environment::{
     AnyEnvironment, Environment, ModifyEnvironmentParams,
     builder::{EnvironmentBuilder, EnvironmentLoadParams},
     errors::ErrorIo,
-    models::{
-        primitives::{EnvironmentId, VariableId},
-        types::{AddVariableParams, UpdateVariableParams},
-    },
+    models::{primitives::EnvironmentId, types::AddVariableParams},
     segments::{SEGKEY_VARIABLE_LOCALVALUE, SEGKEY_VARIABLE_ORDER},
 };
 use moss_fs::{FileSystem, FsResultExt, RemoveOptions};
@@ -24,7 +21,9 @@ use std::{
 use tokio::sync::RwLock;
 
 use crate::{
-    dirs, errors::ErrorNotFound, models::primitives::CollectionId,
+    dirs,
+    errors::ErrorNotFound,
+    models::{primitives::CollectionId, types::UpdateEnvironmentParams},
     services::storage_service::StorageService,
 };
 
@@ -34,16 +33,6 @@ pub struct CreateEnvironmentItemParams {
     pub order: isize,
     pub color: Option<String>,
     pub variables: Vec<AddVariableParams>,
-}
-
-pub struct UpdateEnvironmentItemParams {
-    pub name: Option<String>,
-    pub expanded: Option<bool>,
-    pub order: Option<isize>,
-    pub color: Option<ChangeString>,
-    pub vars_to_add: Vec<AddVariableParams>,
-    pub vars_to_update: Vec<UpdateVariableParams>,
-    pub vars_to_delete: Vec<VariableId>,
 }
 
 #[derive(Clone, Deref)]
@@ -147,15 +136,14 @@ where
     pub async fn update_environment(
         &self,
         ctx: &R::AsyncContext,
-        id: &EnvironmentId,
-        params: UpdateEnvironmentItemParams,
+        params: UpdateEnvironmentParams,
     ) -> joinerror::Result<()> {
         let mut state = self.state.write().await;
         let environment_item = state
             .environments
-            .get_mut(id)
+            .get_mut(&params.id)
             .ok_or_join_err_with::<ErrorNotFound>(|| {
-                format!("environment item not found: {}", id)
+                format!("environment item not found: {}", params.id)
             })?;
 
         environment_item
@@ -189,7 +177,7 @@ where
             environment_item.order = Some(order);
             if let Err(e) = self
                 .storage_service
-                .put_environment_order(ctx, id, order)
+                .put_environment_order(ctx, &params.id, order)
                 .await
             {
                 // TODO: log error
@@ -206,9 +194,9 @@ where
                 .unwrap_or_default();
 
             if expanded {
-                expanded_environments.insert(id.clone());
+                expanded_environments.insert(params.id.clone());
             } else {
-                expanded_environments.remove(&id);
+                expanded_environments.remove(&params.id);
             }
 
             if let Err(e) = self

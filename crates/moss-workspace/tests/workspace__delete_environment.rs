@@ -11,7 +11,10 @@ use moss_environment::{
 use moss_storage::{primitives::segkey::SegKeyBuf, storage::operations::GetItem};
 use moss_testutils::random_name::random_environment_name;
 use moss_workspace::{
-    models::operations::{CreateEnvironmentInput, DeleteEnvironmentInput, UpdateEnvironmentInput},
+    models::{
+        operations::{CreateEnvironmentInput, DeleteEnvironmentInput, UpdateEnvironmentInput},
+        types::UpdateEnvironmentParams,
+    },
     storage::segments::{SEGKEY_ENVIRONMENT, SEGKEY_EXPANDED_ENVIRONMENTS},
 };
 use serde_json::Value as JsonValue;
@@ -57,15 +60,17 @@ async fn delete_environment_success() {
         .update_environment(
             &ctx,
             UpdateEnvironmentInput {
-                id: environment_id.clone(),
-                name: None,
-                collection_id: None,
-                order: None,
-                color: None,
-                expanded: None,
-                vars_to_add: vec![var],
-                vars_to_delete: vec![],
-                vars_to_update: vec![],
+                inner: UpdateEnvironmentParams {
+                    id: environment_id.clone(),
+                    name: None,
+                    collection_id: None,
+                    order: None,
+                    color: None,
+                    expanded: None,
+                    vars_to_add: vec![var],
+                    vars_to_delete: vec![],
+                    vars_to_update: vec![],
+                },
             },
         )
         .await

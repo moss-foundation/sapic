@@ -12,7 +12,10 @@ use moss_environment::{
 use moss_storage::storage::operations::GetItem;
 use moss_testutils::random_name::random_environment_name;
 use moss_workspace::{
-    models::operations::{CreateEnvironmentInput, UpdateEnvironmentInput},
+    models::{
+        operations::{CreateEnvironmentInput, UpdateEnvironmentInput},
+        types::UpdateEnvironmentParams,
+    },
     storage::segments::{SEGKEY_ENVIRONMENT, SEGKEY_EXPANDED_ENVIRONMENTS},
 };
 use serde_json::Value as JsonValue;
@@ -45,22 +48,24 @@ async fn update_environment_success() {
         .update_environment(
             &ctx,
             UpdateEnvironmentInput {
-                id: create_environment_output.id.clone(),
-                name: Some(new_environment_name.clone()),
-                collection_id: None,
-                order: Some(42),
-                color: Some(ChangeString::Update("#000000".to_string())),
-                expanded: Some(false),
-                vars_to_add: vec![AddVariableParams {
-                    name: "1".to_string(),
-                    global_value: JsonValue::String("variable 1".to_string()),
-                    local_value: JsonValue::String("variable 1".to_string()),
-                    order: 1,
-                    desc: Some("First variable".to_string()),
-                    options: VariableOptions { disabled: true },
-                }],
-                vars_to_update: vec![],
-                vars_to_delete: vec![],
+                inner: UpdateEnvironmentParams {
+                    id: create_environment_output.id.clone(),
+                    name: Some(new_environment_name.clone()),
+                    collection_id: None,
+                    order: Some(42),
+                    color: Some(ChangeString::Update("#000000".to_string())),
+                    expanded: Some(false),
+                    vars_to_add: vec![AddVariableParams {
+                        name: "1".to_string(),
+                        global_value: JsonValue::String("variable 1".to_string()),
+                        local_value: JsonValue::String("variable 1".to_string()),
+                        order: 1,
+                        desc: Some("First variable".to_string()),
+                        options: VariableOptions { disabled: true },
+                    }],
+                    vars_to_update: vec![],
+                    vars_to_delete: vec![],
+                },
             },
         )
         .await
@@ -149,15 +154,17 @@ async fn update_environment_add_variables() {
         .update_environment(
             &ctx,
             UpdateEnvironmentInput {
-                id: id.clone(),
-                name: None,
-                collection_id: None,
-                order: None,
-                color: None,
-                expanded: None,
-                vars_to_add: vec![var1.clone(), var2.clone()],
-                vars_to_delete: vec![],
-                vars_to_update: vec![],
+                inner: UpdateEnvironmentParams {
+                    id: id.clone(),
+                    name: None,
+                    collection_id: None,
+                    order: None,
+                    color: None,
+                    expanded: None,
+                    vars_to_add: vec![var1.clone(), var2.clone()],
+                    vars_to_delete: vec![],
+                    vars_to_update: vec![],
+                },
             },
         )
         .await
@@ -227,15 +234,17 @@ async fn update_environment_update_variables() {
         .update_environment(
             &ctx,
             UpdateEnvironmentInput {
-                id: environment_id.clone(),
-                name: None,
-                collection_id: None,
-                order: None,
-                color: None,
-                expanded: None,
-                vars_to_add: vec![old],
-                vars_to_delete: vec![],
-                vars_to_update: vec![],
+                inner: UpdateEnvironmentParams {
+                    id: environment_id.clone(),
+                    name: None,
+                    collection_id: None,
+                    order: None,
+                    color: None,
+                    expanded: None,
+                    vars_to_add: vec![old],
+                    vars_to_delete: vec![],
+                    vars_to_update: vec![],
+                },
             },
         )
         .await
@@ -273,15 +282,17 @@ async fn update_environment_update_variables() {
         .update_environment(
             &ctx,
             UpdateEnvironmentInput {
-                id: environment_id.clone(),
-                collection_id: None,
-                name: None,
-                order: None,
-                color: None,
-                expanded: None,
-                vars_to_add: vec![],
-                vars_to_update: vec![new.clone()],
-                vars_to_delete: vec![],
+                inner: UpdateEnvironmentParams {
+                    id: environment_id.clone(),
+                    name: None,
+                    collection_id: None,
+                    order: None,
+                    color: None,
+                    expanded: None,
+                    vars_to_add: vec![],
+                    vars_to_update: vec![new.clone()],
+                    vars_to_delete: vec![],
+                },
             },
         )
         .await
@@ -345,15 +356,17 @@ async fn update_environment_update_variables_nonexistent() {
         .update_environment(
             &ctx,
             UpdateEnvironmentInput {
-                id: environment_id.clone(),
-                collection_id: None,
-                name: None,
-                order: None,
-                color: None,
-                expanded: None,
-                vars_to_add: vec![],
-                vars_to_update: vec![update_params.clone()],
-                vars_to_delete: vec![],
+                inner: UpdateEnvironmentParams {
+                    id: environment_id.clone(),
+                    name: None,
+                    collection_id: None,
+                    order: None,
+                    color: None,
+                    expanded: None,
+                    vars_to_add: vec![],
+                    vars_to_update: vec![update_params.clone()],
+                    vars_to_delete: vec![],
+                },
             },
         )
         .await;
@@ -397,15 +410,17 @@ async fn update_environment_delete_variables() {
         .update_environment(
             &ctx,
             UpdateEnvironmentInput {
-                id: environment_id.clone(),
-                name: None,
-                collection_id: None,
-                order: None,
-                color: None,
-                expanded: None,
-                vars_to_add: vec![var1.clone()],
-                vars_to_delete: vec![],
-                vars_to_update: vec![],
+                inner: UpdateEnvironmentParams {
+                    id: environment_id.clone(),
+                    name: None,
+                    collection_id: None,
+                    order: None,
+                    color: None,
+                    expanded: None,
+                    vars_to_add: vec![var1.clone()],
+                    vars_to_delete: vec![],
+                    vars_to_update: vec![],
+                },
             },
         )
         .await
@@ -428,15 +443,17 @@ async fn update_environment_delete_variables() {
         .update_environment(
             &ctx,
             UpdateEnvironmentInput {
-                id: environment_id.clone(),
-                collection_id: None,
-                name: None,
-                order: None,
-                color: None,
-                expanded: None,
-                vars_to_add: vec![],
-                vars_to_update: vec![],
-                vars_to_delete: vec![variable_id],
+                inner: UpdateEnvironmentParams {
+                    id: environment_id.clone(),
+                    name: None,
+                    collection_id: None,
+                    order: None,
+                    color: None,
+                    expanded: None,
+                    vars_to_add: vec![],
+                    vars_to_update: vec![],
+                    vars_to_delete: vec![variable_id],
+                },
             },
         )
         .await
@@ -482,15 +499,17 @@ async fn update_environment_delete_variables_nonexistent() {
         .update_environment(
             &ctx,
             UpdateEnvironmentInput {
-                id: environment_id.clone(),
-                collection_id: None,
-                name: None,
-                order: None,
-                color: None,
-                expanded: None,
-                vars_to_add: vec![],
-                vars_to_update: vec![],
-                vars_to_delete: vec![VariableId::new()],
+                inner: UpdateEnvironmentParams {
+                    id: environment_id.clone(),
+                    name: None,
+                    collection_id: None,
+                    order: None,
+                    color: None,
+                    expanded: None,
+                    vars_to_add: vec![],
+                    vars_to_update: vec![],
+                    vars_to_delete: vec![VariableId::new()],
+                },
             },
         )
         .await

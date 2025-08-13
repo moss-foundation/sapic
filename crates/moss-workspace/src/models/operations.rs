@@ -1,7 +1,6 @@
-use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_environment::models::{
-    primitives::{EnvironmentId, VariableId},
-    types::{AddVariableParams, UpdateVariableParams, VariableInfo},
+    primitives::EnvironmentId,
+    types::{AddVariableParams, VariableInfo},
 };
 use moss_git::url::GIT_URL_REGEX;
 use serde::{Deserialize, Serialize};
@@ -10,11 +9,11 @@ use std::{
     sync::Arc,
 };
 use ts_rs::TS;
-use validator::{Validate, ValidationError};
+use validator::Validate;
 
 use crate::models::{
-    primitives::{ChangeCollectionId, CollectionId},
-    types::EditorPartStateInfo,
+    primitives::CollectionId,
+    types::{EditorPartStateInfo, UpdateCollectionParams, UpdateEnvironmentParams},
 };
 
 use super::types::{ActivitybarPartStateInfo, PanelPartStateInfo, SidebarPartStateInfo};
@@ -66,31 +65,8 @@ pub struct CreateCollectionOutput {
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateCollectionInput {
-    pub id: CollectionId,
-
-    #[validate(length(min = 1))]
-    pub name: Option<String>,
-
-    #[validate(custom(function = "validate_change_repository"))]
-    #[ts(optional, type = "ChangeString")]
-    pub repository: Option<ChangeString>,
-
-    // TODO: add validation
-    #[ts(optional, type = "ChangePath")]
-    pub icon_path: Option<ChangePath>,
-    pub order: Option<isize>,
-    pub pinned: Option<bool>,
-    pub expanded: Option<bool>,
-}
-
-fn validate_change_repository(repo: &ChangeString) -> Result<(), ValidationError> {
-    match repo {
-        ChangeString::Update(repo) => GIT_URL_REGEX
-            .is_match(repo)
-            .then_some(())
-            .ok_or(ValidationError::new("Invalid Git URL format")),
-        ChangeString::Remove => Ok(()),
-    }
+    #[serde(flatten)]
+    pub inner: UpdateCollectionParams,
 }
 
 /// @category Operation
@@ -107,21 +83,8 @@ pub struct UpdateCollectionOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
-pub struct BatchUpdateCollectionParams {
-    #[ts(type = "string")]
-    pub id: CollectionId,
-
-    pub order: Option<isize>,
-    pub expanded: Option<bool>,
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
 pub struct BatchUpdateCollectionInput {
-    pub items: Vec<BatchUpdateCollectionParams>,
+    pub items: Vec<UpdateCollectionParams>,
 }
 
 /// @category Operation
@@ -247,24 +210,29 @@ pub struct CreateEnvironmentOutput {
 // Update Environment
 
 /// @category Operation
-#[derive(Debug, Deserialize, Validate, TS)]
+#[derive(Debug, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
-pub struct UpdateEnvironmentInput {
-    pub id: EnvironmentId,
+pub struct BatchUpdateEnvironmentInput {
+    pub items: Vec<UpdateEnvironmentParams>,
+}
 
-    /// When updating an environment, we can move it to another collection
-    /// or remove its link to a specific collection to make it global.
-    pub collection_id: Option<ChangeCollectionId>,
-    pub name: Option<String>,
-    pub order: Option<isize>,
-    #[ts(optional, type = "ChangeString")]
-    pub color: Option<ChangeString>,
-    pub expanded: Option<bool>,
-    pub vars_to_add: Vec<AddVariableParams>,
-    pub vars_to_update: Vec<UpdateVariableParams>,
-    pub vars_to_delete: Vec<VariableId>,
+/// @category Operation
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchUpdateEnvironmentOutput {
+    pub ids: Vec<EnvironmentId>,
+}
+
+/// @category Operation
+#[derive(Debug, Deserialize, Validate, TS)]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct UpdateEnvironmentInput {
+    #[serde(flatten)]
+    pub inner: UpdateEnvironmentParams,
 }
 
 /// @category Operation

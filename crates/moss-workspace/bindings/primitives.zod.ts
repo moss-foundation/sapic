@@ -20,3 +20,5 @@ export const editorGridOrientationSchema = z.union([z.literal("HORIZONTAL"), z.l
 export const panelRendererSchema = z.union([z.literal("onlyWhenVisible"), z.literal("always")]);
 
 export const sidebarPositionSchema = z.union([z.literal("LEFT"), z.literal("RIGHT")]);
+
+export const workspaceModeSchema = z.union([z.literal("DESIGN_FIRST"), z.literal("REQUEST_FIRST")]);

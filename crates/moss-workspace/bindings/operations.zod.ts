@@ -8,17 +8,17 @@ import {
   editorPartStateInfoSchema,
   panelPartStateInfoSchema,
   sidebarPartStateInfoSchema,
+  updateCollectionParamsSchema,
+  updateEnvironmentParamsSchema,
   updateVariableParamsSchema,
   variableInfoSchema,
 } from "./types.zod";
 
-export const batchUpdateCollectionParamsSchema = z.object({
-  id: z.string(),
-  order: z.number().optional(),
-  expanded: z.boolean().optional(),
+export const batchUpdateCollectionOutputSchema = z.object({
+  ids: z.array(z.string()),
 });
 
-export const batchUpdateCollectionOutputSchema = z.object({
+export const batchUpdateEnvironmentOutputSchema = z.object({
   ids: z.array(z.string()),
 });
 
@@ -79,7 +79,11 @@ export const updateEnvironmentOutputSchema = z.object({
   id: z.string(),
 });
 export const batchUpdateCollectionInputSchema = z.object({
-  items: z.array(batchUpdateCollectionParamsSchema),
+  items: z.array(updateCollectionParamsSchema),
+});
+
+export const batchUpdateEnvironmentInputSchema = z.object({
+  items: z.array(updateEnvironmentParamsSchema),
 });
 
 export const createEnvironmentInputSchema = z.object({

@@ -7,6 +7,8 @@ import type {
   EditorPartStateInfo,
   PanelPartStateInfo,
   SidebarPartStateInfo,
+  UpdateCollectionParams,
+  UpdateEnvironmentParams,
   UpdateVariableParams,
   VariableInfo,
 } from "./types";
@@ -14,7 +16,7 @@ import type {
 /**
  * @category Operation
  */
-export type BatchUpdateCollectionInput = { items: Array<BatchUpdateCollectionParams> };
+export type BatchUpdateCollectionInput = { items: Array<UpdateCollectionParams> };
 
 /**
  * @category Operation
@@ -24,7 +26,12 @@ export type BatchUpdateCollectionOutput = { ids: Array<string> };
 /**
  * @category Operation
  */
-export type BatchUpdateCollectionParams = { id: string; order?: number; expanded?: boolean };
+export type BatchUpdateEnvironmentInput = { items: Array<UpdateEnvironmentParams> };
+
+/**
+ * @category Operation
+ */
+export type BatchUpdateEnvironmentOutput = { ids: Array<string> };
 
 /**
  * @category Operation
