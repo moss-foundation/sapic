@@ -188,8 +188,9 @@ impl<R: AppRuntime> Collection<R> {
     }
 }
 
+/// A function for automatically determining the class
+/// based on the path passed from the frontend.
 fn class_from_path(path: &Path) -> EntryClass {
-    dbg!(path);
     match path.iter().next().and_then(|s| s.to_str()) {
         Some(dirs::REQUESTS_DIR) => EntryClass::Request,
         Some(dirs::ENDPOINTS_DIR) => EntryClass::Endpoint,
