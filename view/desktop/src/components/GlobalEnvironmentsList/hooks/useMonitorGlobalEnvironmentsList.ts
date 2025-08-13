@@ -10,7 +10,7 @@ import {
 } from "../GlobalEnvironmentsListItem/utils";
 
 export const useMonitorGlobalEnvironmentsList = () => {
-  const { environmentsSortedByOrder } = useStreamEnvironments();
+  const { globalEnvironments } = useStreamEnvironments();
   const { mutate: updateEnvironment } = useUpdateEnvironment();
 
   useEffect(() => {
@@ -22,7 +22,7 @@ export const useMonitorGlobalEnvironmentsList = () => {
         const sourceData = getSourceGlobalEnvironmentsListItem(source);
         const locationData = getLocationGlobalEnvironmentsListItem(location);
 
-        if (!sourceData || !locationData || !environmentsSortedByOrder) return;
+        if (!sourceData || !locationData || !globalEnvironments) return;
 
         if (sourceData.data.environment.id === locationData.data.environment.id) return;
 
@@ -32,13 +32,13 @@ export const useMonitorGlobalEnvironmentsList = () => {
             : locationData.data.environment.order! + 0.5;
 
         const dropTargetEnvironmentsWithNewOrders = [
-          ...environmentsSortedByOrder.slice(0, dropOrder).filter((env) => env.id !== sourceData.data.environment.id),
+          ...globalEnvironments.slice(0, dropOrder).filter((env) => env.id !== sourceData.data.environment.id),
           sourceData.data.environment,
-          ...environmentsSortedByOrder.slice(dropOrder).filter((env) => env.id !== sourceData.data.environment.id),
+          ...globalEnvironments.slice(dropOrder).filter((env) => env.id !== sourceData.data.environment.id),
         ].map((entry, index) => ({ ...entry, order: index + 1 }));
 
         const environmentsToUpdate = dropTargetEnvironmentsWithNewOrders.filter((env) => {
-          const oldEnv = environmentsSortedByOrder.find((e) => e.id === env.id);
+          const oldEnv = globalEnvironments.find((e) => e.id === env.id);
 
           return oldEnv?.order !== env.order;
         });
@@ -57,5 +57,5 @@ export const useMonitorGlobalEnvironmentsList = () => {
         await Promise.all(dropTargetEnvironmentsToUpdate);
       },
     });
-  }, [environmentsSortedByOrder, updateEnvironment]);
+  }, [globalEnvironments, updateEnvironment]);
 };

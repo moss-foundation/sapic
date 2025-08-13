@@ -42,11 +42,6 @@ export const useStreamEnvironments = () => {
     queryClient.resetQueries({ queryKey: [USE_STREAMED_ENVIRONMENTS_QUERY_KEY] });
   };
 
-  //TODO: remove this
-  const environmentsSortedByOrder = useMemo(() => {
-    return sortByOrder(query.data ?? []);
-  }, [query.data]);
-
   const globalEnvironments = useMemo(() => {
     if (!query.data) return [];
 
@@ -70,7 +65,6 @@ export const useStreamEnvironments = () => {
   return {
     ...query,
     clearEnvironmentsCacheAndRefetch,
-    environmentsSortedByOrder,
     globalEnvironments,
     collectionsEnvironments,
   };

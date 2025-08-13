@@ -37,7 +37,13 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
   const handleSubmit = async () => {
     if (!isValid) return;
 
-    if (mode === "Collection" && collectionId) {
+    if (mode === "Workspace") {
+      await createEnvironment({
+        name,
+        order: environments?.length ? environments.length + 1 : 1,
+        variables: [],
+      });
+    } else if (mode === "Collection" && collectionId) {
       await createEnvironment({
         name,
         order: environments?.length ? environments.length + 1 : 1,
