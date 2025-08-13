@@ -16,7 +16,7 @@ use moss_workspace::{
         operations::{CreateEnvironmentInput, UpdateEnvironmentInput},
         types::UpdateEnvironmentParams,
     },
-    storage::segments::{SEGKEY_ENVIRONMENT, SEGKEY_EXPANDED_ENVIRONMENTS},
+    storage::segments::{SEGKEY_ENVIRONMENT, SEGKEY_EXPANDED_ENVIRONMENT_GROUPS},
 };
 use serde_json::Value as JsonValue;
 use std::collections::HashSet;
@@ -98,7 +98,7 @@ async fn update_environment_success() {
     let expanded_environments: HashSet<EnvironmentId> = GetItem::get(
         item_store.as_ref(),
         &ctx,
-        SEGKEY_EXPANDED_ENVIRONMENTS.to_segkey_buf(),
+        SEGKEY_EXPANDED_ENVIRONMENT_GROUPS.to_segkey_buf(),
     )
     .await
     .unwrap()

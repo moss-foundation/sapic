@@ -332,33 +332,33 @@ impl<R: AppRuntime> StorageService<R> {
         Ok(())
     }
 
-    pub(super) async fn put_expanded_environments(
-        &self,
-        ctx: &R::AsyncContext,
-        expanded_environments: &HashSet<EnvironmentId>,
-    ) -> joinerror::Result<()> {
-        let store = self.storage.item_store();
+    // pub(super) async fn put_expanded_environments(
+    //     &self,
+    //     ctx: &R::AsyncContext,
+    //     expanded_environments: &HashSet<EnvironmentId>,
+    // ) -> joinerror::Result<()> {
+    //     let store = self.storage.item_store();
 
-        PutItem::put(
-            store.as_ref(),
-            ctx,
-            segments::SEGKEY_EXPANDED_ENVIRONMENTS.to_segkey_buf(),
-            AnyValue::serialize(&expanded_environments)?,
-        )
-        .await?;
+    //     PutItem::put(
+    //         store.as_ref(),
+    //         ctx,
+    //         segments::SEGKEY_EXPANDED_ENVIRONMENT_GROUPS.to_segkey_buf(),
+    //         AnyValue::serialize(&expanded_environments)?,
+    //     )
+    //     .await?;
 
-        Ok(())
-    }
+    //     Ok(())
+    // }
 
-    pub(super) async fn get_expanded_environments(
-        &self,
-        ctx: &R::AsyncContext,
-    ) -> joinerror::Result<HashSet<EnvironmentId>> {
-        let store = self.storage.item_store();
-        let segkey = segments::SEGKEY_EXPANDED_ENVIRONMENTS.to_segkey_buf();
-        let value = GetItem::get(store.as_ref(), ctx, segkey).await?;
-        Ok(AnyValue::deserialize(&value)?)
-    }
+    // pub(super) async fn get_expanded_environments(
+    //     &self,
+    //     ctx: &R::AsyncContext,
+    // ) -> joinerror::Result<HashSet<EnvironmentId>> {
+    //     let store = self.storage.item_store();
+    //     let segkey = segments::SEGKEY_EXPANDED_ENVIRONMENT_GROUPS.to_segkey_buf();
+    //     let value = GetItem::get(store.as_ref(), ctx, segkey).await?;
+    //     Ok(AnyValue::deserialize(&value)?)
+    // }
 }
 
 #[cfg(any(test, feature = "integration-tests"))]

@@ -26,7 +26,6 @@ impl<R: AppRuntime> Workspace<R> {
                 collection_id: item.collection_id.map(|id| CollectionId::from(id)),
                 name: item.display_name,
                 order: item.order,
-                expanded: item.expanded,
             }) {
                 println!("Error sending environment event: {:?}", e); // TODO: log error
             } else {

@@ -9,6 +9,7 @@ pub mod stream_collections;
 pub mod stream_environments;
 pub mod update_collection;
 pub mod update_environment;
+pub mod update_environment_group;
 pub mod update_state;
 
 use moss_applib::AppRuntime;

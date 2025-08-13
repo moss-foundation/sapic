@@ -13,7 +13,7 @@ use moss_environment::{
 use moss_fs::{FileSystem, FsResultExt, RemoveOptions};
 use moss_storage::{primitives::segkey::SegKeyBuf, storage::operations::RemoveItem};
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     path::{Path, PathBuf},
     pin::Pin,
     sync::Arc,
@@ -45,7 +45,6 @@ where
     pub collection_id: Option<CollectionId>,
     pub display_name: String,
     pub order: Option<isize>,
-    pub expanded: bool,
 
     #[deref]
     pub handle: Arc<Environment<R>>,
@@ -56,7 +55,6 @@ pub struct EnvironmentItemDescription {
     pub collection_id: Option<CollectionId>,
     pub display_name: String,
     pub order: Option<isize>,
-    pub expanded: bool,
     pub color: Option<String>,
     pub abs_path: PathBuf,
 }
@@ -68,6 +66,7 @@ where
     R: AppRuntime,
 {
     environments: EnvironmentMap<R>,
+    expanded_groups: HashSet<CollectionId>,
 }
 
 pub struct EnvironmentService<R>
@@ -125,7 +124,6 @@ where
                     collection_id: item.collection_id.clone(),
                     display_name: item.display_name.clone(),
                     order: item.order,
-                    expanded: item.expanded,
                     color: item.color.clone(),
                     abs_path: item.abs_path().await,
                 };
@@ -243,7 +241,6 @@ where
                 collection_id: params.collection_id.clone(),
                 display_name: params.name.clone(),
                 order: Some(params.order),
-                expanded: true,
                 handle: Arc::new(environment),
             },
         );
@@ -277,7 +274,6 @@ where
             collection_id: params.collection_id,
             display_name: params.name.clone(),
             order: Some(params.order),
-            expanded: true,
             color: desc.color,
             abs_path,
         })
@@ -413,7 +409,6 @@ async fn collect_environments<R: AppRuntime>(
                 collection_id: None,
                 display_name: desc.name,
                 order,
-                expanded,
                 handle: Arc::new(environment),
             },
         );

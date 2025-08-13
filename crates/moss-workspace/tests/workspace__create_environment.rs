@@ -11,7 +11,7 @@ use moss_storage::storage::operations::GetItem;
 use moss_testutils::random_name::random_environment_name;
 use moss_workspace::{
     models::operations::CreateEnvironmentInput,
-    storage::segments::{SEGKEY_ENVIRONMENT, SEGKEY_EXPANDED_ENVIRONMENTS},
+    storage::segments::{SEGKEY_ENVIRONMENT, SEGKEY_EXPANDED_ENVIRONMENT_GROUPS},
 };
 use serde_json::Value as JsonValue;
 use std::collections::HashSet;
@@ -72,7 +72,7 @@ async fn create_environment_success() {
     let stored_expanded_environments: HashSet<EnvironmentId> = GetItem::get(
         item_store.as_ref(),
         &ctx,
-        SEGKEY_EXPANDED_ENVIRONMENTS.to_segkey_buf(),
+        SEGKEY_EXPANDED_ENVIRONMENT_GROUPS.to_segkey_buf(),
     )
     .await
     .unwrap()
