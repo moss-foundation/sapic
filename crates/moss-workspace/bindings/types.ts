@@ -99,6 +99,16 @@ export type EnvironmentInfo = {
 };
 
 /**
+ * @category Operation
+ */
+export type GitHubImportParams = { order: number; repository: string };
+
+/**
+ * @category Operation
+ */
+export type GitLabImportParams = { order: number; repository: string };
+
+/**
  * @category Type
  */
 export type PanelPartStateInfo = { size: number; visible: boolean };

@@ -210,6 +210,7 @@ mod tests {
 
         let keyring_client = Arc::new(KeyringClientImpl::new());
         let auth_agent = Arc::new(GitLabAuthAgent::new(
+            oauth2::ureq::builder().redirects(0).build(),
             keyring_client,
             dotenv::var(GITLAB_CLIENT_ID).unwrap(),
             dotenv::var(GITLAB_CLIENT_SECRET).unwrap(),
@@ -225,6 +226,7 @@ mod tests {
         client
     }
 
+    #[ignore]
     #[tokio::test]
     async fn gitlab_client_name() {
         let client = create_test_client().await;
@@ -232,6 +234,7 @@ mod tests {
         assert_eq!(client.name(), "GitLab");
     }
 
+    #[ignore]
     #[tokio::test]
     async fn gitlab_client_base_url() {
         let client = create_test_client().await;

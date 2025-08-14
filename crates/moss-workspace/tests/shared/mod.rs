@@ -65,11 +65,14 @@ pub async fn setup_test_workspace() -> (AsyncContext, Workspace<MockAppRuntime>,
         .build()
         .expect("failed to build reqwest client");
 
+    let sync_http_client = oauth2::ureq::builder().redirects(0).build();
+
     let github_client = {
         let github_auth_agent = Arc::new(GitHubAuthAgent::new(
+            sync_http_client.clone(),
             keyring_client.clone(),
-            dotenv::var(GITLAB_CLIENT_ID).unwrap(),
-            dotenv::var(GITLAB_CLIENT_SECRET).unwrap(),
+            dotenv::var(GITLAB_CLIENT_ID).unwrap_or_default(),
+            dotenv::var(GITLAB_CLIENT_SECRET).unwrap_or_default(),
         ));
         Arc::new(GitHubClient::new(
             reqwest_client.clone(),
@@ -79,9 +82,10 @@ pub async fn setup_test_workspace() -> (AsyncContext, Workspace<MockAppRuntime>,
     };
     let gitlab_client = {
         let gitlab_auth_agent = Arc::new(GitLabAuthAgent::new(
+            sync_http_client.clone(),
             keyring_client.clone(),
-            dotenv::var(GITLAB_CLIENT_ID).unwrap(),
-            dotenv::var(GITLAB_CLIENT_SECRET).unwrap(),
+            dotenv::var(GITLAB_CLIENT_ID).unwrap_or_default(),
+            dotenv::var(GITLAB_CLIENT_SECRET).unwrap_or_default(),
         ));
         Arc::new(GitLabClient::new(
             reqwest_client.clone(),

@@ -38,6 +38,7 @@ async-trait.workspace = true
 nanoid.workspace = true
 reqwest = { workspace = true, features = ["json"] }
 dotenv.workspace = true
+oauth2 = { workspace = true, features = ["ureq"] }
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }

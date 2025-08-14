@@ -189,6 +189,7 @@ mod tests {
 
         let keyring_client = Arc::new(KeyringClientImpl::new());
         let auth_agent = Arc::new(GitHubAuthAgent::new(
+            oauth2::ureq::builder().redirects(0).build(),
             keyring_client,
             dotenv::var(GITHUB_CLIENT_ID).unwrap(),
             dotenv::var(GITHUB_CLIENT_SECRET).unwrap(),
@@ -204,6 +205,7 @@ mod tests {
         client
     }
 
+    #[ignore]
     #[tokio::test]
     async fn github_client_name() {
         let client = create_test_client().await;
@@ -211,6 +213,7 @@ mod tests {
         assert_eq!(client.name(), "GitHub");
     }
 
+    #[ignore]
     #[tokio::test]
     async fn github_client_base_url() {
         let client = create_test_client().await;

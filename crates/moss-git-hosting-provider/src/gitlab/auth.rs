@@ -53,7 +53,10 @@ pub struct GitLabCred {
     time_to_refresh: Instant,
     refresh_token: String,
 }
+
 pub struct GitLabAuthAgent {
+    // We use ureq instead of blocking reqwest to avoid panicking when called from async environment
+    sync_http_client: oauth2::ureq::Agent,
     client_id: ClientId,
     client_secret: ClientSecret,
     keyring: Arc<dyn KeyringClient + Send + Sync>,
@@ -62,11 +65,13 @@ pub struct GitLabAuthAgent {
 
 impl GitLabAuthAgent {
     pub fn new(
+        sync_http_client: oauth2::ureq::Agent,
         keyring: Arc<dyn KeyringClient + Send + Sync>,
         client_id: String,
         client_secret: String,
     ) -> Self {
         Self {
+            sync_http_client,
             client_id: ClientId::new(client_id),
             client_secret: ClientSecret::new(client_secret),
             keyring,
@@ -92,10 +97,6 @@ impl GitLabAuthAgent {
 // TODO: Add timeout mechanism to handle OAuth failure
 
 impl GitLabAuthAgent {
-    // FIXME: Maybe we really need to figure out how to use a non-blocking `reqwest` for auth_agent
-    /// Do not call the sync version from an async environment
-    /// Call `credentials_async` instead
-
     pub(crate) fn credentials(&self) -> Result<GitLabCred> {
         if let Some(cached) = self.cred.read().expect("RwLock poisoned").clone() {
             if Instant::now() <= cached.time_to_refresh {
@@ -199,15 +200,11 @@ impl GitLabAuthAgent {
 
         let (code, _state) = utils::receive_auth_code(&listener)?;
 
-        let http_client = reqwest::blocking::ClientBuilder::new()
-            .redirect(reqwest::redirect::Policy::none())
-            .build()?;
-
         // Exchange the code + PKCE verifier with access & refresh token.
         let token_res = client
             .exchange_code(code)
             .set_pkce_verifier(pkce_verifier)
-            .request(&http_client)?;
+            .request(&self.sync_http_client)?;
         let expires_in = token_res.expires_in().ok_or_else(|| {
             anyhow::anyhow!(
                 "Failed to perform initial GitLab credentials setup: expires_in value not received"
@@ -238,13 +235,9 @@ impl GitLabAuthAgent {
                 callback_port.to_string()
             ))?);
 
-        let http_client = reqwest::blocking::ClientBuilder::new()
-            .redirect(reqwest::redirect::Policy::none())
-            .build()?;
-
         let token_res = client
             .exchange_refresh_token(&RefreshToken::new(refresh_token))
-            .request(&http_client)?;
+            .request(&self.sync_http_client)?;
 
         let expires_in = token_res.expires_in().ok_or_else(|| {
             anyhow::anyhow!(
@@ -308,6 +301,7 @@ mod tests {
 
         let keyring_client = Arc::new(KeyringClientImpl::new());
         let auth_agent = Arc::new(GitLabAuthAgent::new(
+            oauth2::ureq::builder().redirects(0).build(),
             keyring_client,
             client_id,
             client_secret,

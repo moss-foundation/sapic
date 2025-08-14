@@ -73,8 +73,12 @@ impl<R: AppRuntime> AppBuilder<R> {
         let gitlab_client_id = dotenv::var("GITLAB_CLIENT_ID").unwrap_or_default();
         let gitlab_client_secret = dotenv::var("GITLAB_CLIENT_SECRET").unwrap_or_default();
 
+        // Git auth agents require a synchronous http client
+        let sync_http_client = oauth2::ureq::builder().redirects(0).build();
+
         let github_client = {
             let github_auth_agent = Arc::new(GitHubAuthAgent::new(
+                sync_http_client.clone(),
                 keyring_client.clone(),
                 github_client_id,
                 github_client_secret,
@@ -87,6 +91,7 @@ impl<R: AppRuntime> AppBuilder<R> {
         };
         let gitlab_client = {
             let gitlab_auth_agent = Arc::new(GitLabAuthAgent::new(
+                sync_http_client.clone(),
                 keyring_client.clone(),
                 gitlab_client_id,
                 gitlab_client_secret,

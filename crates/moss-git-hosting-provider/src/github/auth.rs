@@ -62,6 +62,8 @@ impl From<KeyringCredEntry> for GitHubCred {
 }
 
 pub struct GitHubAuthAgent {
+    // We use ureq instead of blocking reqwest to avoid panicking when called from async environment
+    sync_http_client: oauth2::ureq::Agent,
     client_id: ClientId,
     client_secret: ClientSecret,
     keyring: Arc<dyn KeyringClient + Send + Sync>,
@@ -70,11 +72,13 @@ pub struct GitHubAuthAgent {
 
 impl GitHubAuthAgent {
     pub fn new(
+        sync_http_client: oauth2::ureq::Agent,
         keyring: Arc<dyn KeyringClient + Send + Sync>,
         client_id: String,
         client_secret: String,
     ) -> Self {
         Self {
+            sync_http_client,
             client_id: ClientId::new(client_id),
             client_secret: ClientSecret::new(client_secret),
             keyring,
@@ -186,15 +190,11 @@ impl GitHubAuthAgent {
 
         let (code, _state) = utils::receive_auth_code(&listener)?;
 
-        let http_client = reqwest::blocking::ClientBuilder::new()
-            .redirect(reqwest::redirect::Policy::none())
-            .build()?;
-
         // Exchange the code + PKCE verifier with access & refresh token.
         let token_res = client
             .exchange_code(code)
             .set_pkce_verifier(pkce_verifier)
-            .request(&http_client)?;
+            .request(&self.sync_http_client)?;
 
         let access_token = token_res.access_token().secret().as_str();
 
@@ -239,6 +239,7 @@ mod tests {
 
         let keyring_client = Arc::new(KeyringClientImpl::new());
         let auth_agent = Arc::new(GitHubAuthAgent::new(
+            oauth2::ureq::builder().redirects(0).build(),
             keyring_client,
             client_id,
             client_secret,

@@ -6,6 +6,8 @@ import {
   activitybarPartStateInfoSchema,
   addVariableParamsSchema,
   editorPartStateInfoSchema,
+  gitHubImportParamsSchema,
+  gitLabImportParamsSchema,
   panelPartStateInfoSchema,
   sidebarPartStateInfoSchema,
   updateVariableParamsSchema,
@@ -67,25 +69,6 @@ export const describeEnvironmentInputSchema = z.object({
   id: z.string(),
 });
 
-export const gitHubImportParamsSchema = z.object({
-  order: z.number(),
-  repository: z.string(),
-});
-
-export const gitLabImportParamsSchema = z.object({
-  order: z.number(),
-  repository: z.string(),
-});
-
-export const importCollectionInputSchema = z.union([
-  z.object({
-    "gitHub": gitHubImportParamsSchema,
-  }),
-  z.object({
-    "gitLab": gitLabImportParamsSchema,
-  }),
-]);
-
 export const importCollectionOutputSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -127,6 +110,15 @@ export const describeStateOutputSchema = z.object({
   panel: panelPartStateInfoSchema.optional(),
   activitybar: activitybarPartStateInfoSchema.optional(),
 });
+
+export const importCollectionInputSchema = z.union([
+  z.object({
+    "gitHub": gitHubImportParamsSchema,
+  }),
+  z.object({
+    "gitLab": gitLabImportParamsSchema,
+  }),
+]);
 
 export const updateCollectionInputSchema = z.object({
   id: z.string(),

@@ -128,7 +128,7 @@ pub struct EditorPartStateInfo {
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
+#[ts(export, export_to = "types.ts")]
 pub struct GitHubImportParams {
     pub order: isize,
     #[validate(regex(path = "*GIT_URL_REGEX"))]
@@ -140,7 +140,7 @@ pub struct GitHubImportParams {
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
+#[ts(export, export_to = "types.ts")]
 pub struct GitLabImportParams {
     pub order: isize,
     #[validate(regex(path = "*GIT_URL_REGEX"))]
