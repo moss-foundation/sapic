@@ -1,4 +1,4 @@
-use moss_git_hosting_provider::common::GitProviderType;
+use moss_git_hosting_provider::models::primitives::GitProviderType;
 use serde::{Deserialize, Serialize};
 
 pub(crate) const MANIFEST_FILE_NAME: &str = "Sapic.json";

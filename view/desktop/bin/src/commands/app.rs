@@ -4,14 +4,13 @@ use moss_app::{
     command::CommandContext,
     models::{events::*, operations::*},
 };
-
-use crate::commands::primitives::*;
 use moss_applib::context::{AnyContext, MutableContext};
-use moss_git_hosting_provider::models::types::UserInfo;
 use moss_text::{ReadOnlyStr, quote};
 use serde_json::Value as JsonValue;
 use std::{collections::HashMap, time::Duration};
 use tauri::{Emitter, EventTarget, Manager, Window};
+
+use crate::commands::primitives::*;
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
@@ -381,22 +380,12 @@ pub async fn cancel_request<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn log_in_with_github<'a, R: tauri::Runtime>(
+pub async fn add_account<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
-) -> TauriResult<UserInfo> {
-    let user_info = app.log_in_with_github(&ctx).await?;
-    Ok(user_info)
-}
-
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn log_in_with_gitlab<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: Window<R>,
-) -> TauriResult<UserInfo> {
-    let user_info = app.log_in_with_gitlab(&ctx).await?;
-    Ok(user_info)
+    input: AddAccountInput,
+) -> TauriResult<AddAccountOutput> {
+    let output = app.add_account(&ctx, input).await?;
+    Ok(output)
 }

@@ -7,8 +7,8 @@ use moss_git::{
     url::normalize_git_url,
 };
 use moss_git_hosting_provider::{
-    GitAuthProvider, GitHostingProvider, common::GitProviderType, github::client::GitHubClient,
-    gitlab::client::GitLabClient,
+    GitAuthProvider, GitHostingProvider, github::client::GitHubClient,
+    gitlab::client::GitLabClient, models::primitives::GitProviderType,
 };
 use std::{
     cell::LazyCell,

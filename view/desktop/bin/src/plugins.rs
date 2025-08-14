@@ -23,6 +23,7 @@ pub mod plugin_log {
             .level_for("tracing", log::LevelFilter::Warn)
             .level_for("mio", log::LevelFilter::Off)
             .level_for("reqwest", log::LevelFilter::Off)
+            .level_for("keyring", log::LevelFilter::Off)
             .with_colors(ColoredLevelConfig::default())
             .level(if is_dev() {
                 log::LevelFilter::Trace

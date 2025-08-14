@@ -3,7 +3,6 @@ pub mod utils;
 
 use joinerror::Error;
 use moss_git::GitAuthAgent;
-use serde::{Deserialize, Serialize};
 
 pub trait SSHAuthAgent: GitAuthAgent {}
 
@@ -29,11 +28,4 @@ impl GitUrl {
             name: parts[2].to_string(),
         })
     }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum GitProviderType {
-    GitHub,
-    // TODO: Support self-hosted gitlab
-    GitLab,
 }

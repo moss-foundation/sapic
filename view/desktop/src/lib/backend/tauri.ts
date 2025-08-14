@@ -21,8 +21,7 @@ export type TauriIpcCommand =
   | "delete_workspace"
   | "update_workspace"
   | "close_workspace"
-  | "log_in_with_github"
-  | "log_in_with_gitlab"
+  | "add_account"
   //
   // Workspace
   //

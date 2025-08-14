@@ -13,7 +13,7 @@ use moss_collection::{
 };
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
 use moss_git_hosting_provider::{
-    common::GitProviderType, github::client::GitHubClient, gitlab::client::GitLabClient,
+    github::client::GitHubClient, gitlab::client::GitLabClient, models::primitives::GitProviderType,
 };
 use std::{
     collections::{HashMap, HashSet},

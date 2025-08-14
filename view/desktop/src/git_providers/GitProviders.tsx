@@ -1,24 +1,37 @@
 import { useState } from "react";
 import { invokeTauriIpc } from "@/lib/backend/tauri.ts";
 import { UserInfo } from "@repo/moss-git-hosting-provider";
+import { AddAccountOutput, AddAccountInput } from "@repo/moss-app";
 
 export const GitProviders = () => {
   const [currentGitHubAccount, setCurrentGitHubAccount] = useState<UserInfo>();
   const [currentGitLabAccount, setCurrentGitLabAccount] = useState<UserInfo>();
   async function handleGitHubLogin() {
-    const result = await invokeTauriIpc<UserInfo>("log_in_with_github");
+    const input: AddAccountInput = {
+      gitProviderType: "GitHub",
+    };
+
+    const result = await invokeTauriIpc<AddAccountOutput>("add_account", {
+      input: input,
+    });
     if (result.status === "error") {
       alert(`failed to log in with GitHub ${result.error}`);
     } else {
-      setCurrentGitHubAccount(result.data);
+      setCurrentGitHubAccount(result.data.userInfo);
     }
   }
   async function handleGitLabLogin() {
-    const result = await invokeTauriIpc<UserInfo>("log_in_with_gitlab");
+    const input: AddAccountInput = {
+      gitProviderType: "GitLab",
+    };
+
+    const result = await invokeTauriIpc<AddAccountOutput>("add_account", {
+      input: input,
+    });
     if (result.status === "error") {
       alert(`failed to log in with GitLab ${result.error}`);
     } else {
-      setCurrentGitLabAccount(result.data);
+      setCurrentGitLabAccount(result.data.userInfo);
     }
   }
 

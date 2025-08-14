@@ -1,3 +1,4 @@
+use super::types::{ActivitybarPartStateInfo, PanelPartStateInfo, SidebarPartStateInfo};
 use crate::models::{
     primitives::{ChangeCollectionId, CollectionId},
     types::EditorPartStateInfo,
@@ -8,7 +9,7 @@ use moss_environment::models::{
     types::{AddVariableParams, UpdateVariableParams, VariableInfo},
 };
 use moss_git::url::GIT_URL_REGEX;
-use moss_git_hosting_provider::common::GitProviderType;
+use moss_git_hosting_provider::models::primitives::GitProviderType;
 use serde::{Deserialize, Serialize};
 use std::{
     path::{Path, PathBuf},
@@ -16,8 +17,6 @@ use std::{
 };
 use ts_rs::TS;
 use validator::{Validate, ValidationError};
-
-use super::types::{ActivitybarPartStateInfo, PanelPartStateInfo, SidebarPartStateInfo};
 
 // ------------------------------ //
 // Collection

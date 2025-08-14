@@ -1,8 +1,3 @@
-use moss_api::ext::ValidationResultExt;
-use moss_applib::AppRuntime;
-use moss_git_hosting_provider::common::GitProviderType;
-use validator::Validate;
-
 use crate::{
     Workspace,
     models::{
@@ -11,6 +6,10 @@ use crate::{
     },
     services::collection_service::CollectionItemCloneParams,
 };
+use moss_api::ext::ValidationResultExt;
+use moss_applib::AppRuntime;
+use moss_git_hosting_provider::models::primitives::GitProviderType;
+use validator::Validate;
 
 impl<R: AppRuntime> Workspace<R> {
     pub async fn import_collection(
