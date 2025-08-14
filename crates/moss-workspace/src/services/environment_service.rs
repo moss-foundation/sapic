@@ -66,7 +66,7 @@ where
     R: AppRuntime,
 {
     environments: EnvironmentMap<R>,
-    expanded_groups: HashSet<CollectionId>,
+    // expanded_groups: HashSet<CollectionId>,
 }
 
 pub struct EnvironmentService<R>
@@ -183,29 +183,29 @@ where
             }
         }
 
-        if let Some(expanded) = params.expanded {
-            environment_item.expanded = expanded;
-            let mut expanded_environments = self
-                .storage_service
-                .get_expanded_environments(ctx)
-                .await
-                .unwrap_or_default();
+        // if let Some(expanded) = params.expanded {
+        //     environment_item.expanded = expanded;
+        //     let mut expanded_environments = self
+        //         .storage_service
+        //         .get_expanded_environments(ctx)
+        //         .await
+        //         .unwrap_or_default();
 
-            if expanded {
-                expanded_environments.insert(params.id.clone());
-            } else {
-                expanded_environments.remove(&params.id);
-            }
+        //     if expanded {
+        //         expanded_environments.insert(params.id.clone());
+        //     } else {
+        //         expanded_environments.remove(&params.id);
+        //     }
 
-            if let Err(e) = self
-                .storage_service
-                .put_expanded_environments(ctx, &expanded_environments)
-                .await
-            {
-                // TODO: log error
-                println!("failed to put expandedEnvironments in the db: {}", e);
-            }
-        }
+        //     if let Err(e) = self
+        //         .storage_service
+        //         .put_expanded_environments(ctx, &expanded_environments)
+        //         .await
+        //     {
+        //         // TODO: log error
+        //         println!("failed to put expandedEnvironments in the db: {}", e);
+        //     }
+        // }
 
         Ok(())
     }
@@ -254,21 +254,22 @@ where
             println!("failed to put environment order in the db: {}", e);
         }
 
-        let mut expanded_environments = self
-            .storage_service
-            .get_expanded_environments(ctx)
-            .await
-            .unwrap_or_default();
+        // let mut expanded_environments = self
+        //     .storage_service
+        //     .get_expanded_environments(ctx)
+        //     .await
+        //     .unwrap_or_default();
 
-        expanded_environments.insert(desc.id.clone());
+        // expanded_environments.insert(desc.id.clone());
 
-        if let Err(e) = self
-            .storage_service
-            .put_expanded_environments(ctx, &expanded_environments)
-            .await
-        {
-            println!("failed to put expandedEnvironments in the db: {}", e);
-        }
+        // if let Err(e) = self
+        //     .storage_service
+        //     .put_expanded_environments(ctx, &expanded_environments)
+        //     .await
+        // {
+        //     println!("failed to put expandedEnvironments in the db: {}", e);
+        // }
+
         Ok(EnvironmentItemDescription {
             id: desc.id.clone(),
             collection_id: params.collection_id,
@@ -305,21 +306,21 @@ where
                 })?;
 
             // Remove environment from the database
-            let mut expanded_environments = self
-                .storage_service
-                .get_expanded_environments(ctx)
-                .await
-                .unwrap_or_default();
+            // let mut expanded_environments = self
+            //     .storage_service
+            //     .get_expanded_environments(ctx)
+            //     .await
+            //     .unwrap_or_default();
 
-            expanded_environments.remove(&id);
+            // expanded_environments.remove(&id);
 
-            if let Err(e) = self
-                .storage_service
-                .put_expanded_environments(ctx, &expanded_environments)
-                .await
-            {
-                println!("failed to put expandedEnvironments in the db: {}", e);
-            }
+            // if let Err(e) = self
+            //     .storage_service
+            //     .put_expanded_environments(ctx, &expanded_environments)
+            //     .await
+            // {
+            //     println!("failed to put expandedEnvironments in the db: {}", e);
+            // }
 
             if let Err(e) = self.storage_service.remove_environment_order(ctx, id).await {
                 // TODO: log error
@@ -368,10 +369,10 @@ async fn collect_environments<R: AppRuntime>(
         .await
         .map_err(|err| joinerror::Error::new::<()>(format!("failed to read directory: {}", err)))?; // TODO: specify a proper error type
 
-    let expanded_environments = storage_service
-        .get_expanded_environments(ctx)
-        .await
-        .unwrap_or_default();
+    // let expanded_environments = storage_service
+    //     .get_expanded_environments(ctx)
+    //     .await
+    //     .unwrap_or_default();
 
     while let Some(entry) = read_dir.next_entry().await? {
         if entry.file_type().await?.is_dir() {
@@ -397,7 +398,8 @@ async fn collect_environments<R: AppRuntime>(
             .get_environment_order(ctx, &desc.id)
             .await
             .ok();
-        let expanded = expanded_environments.contains(&desc.id);
+
+        // let expanded = expanded_environments.contains(&desc.id);
 
         environments.insert(
             desc.id.clone(),

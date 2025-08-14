@@ -145,7 +145,6 @@ export type UpdateCollectionParams = {
   repository?: ChangeString;
   iconPath?: ChangePath;
   order?: number;
-  pinned?: boolean;
   expanded?: boolean;
 };
 

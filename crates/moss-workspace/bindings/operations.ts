@@ -71,7 +71,6 @@ export type CreateEnvironmentOutput = {
   name: string;
   order?: number;
   color?: string;
-  expanded: boolean;
 };
 
 /**
@@ -143,7 +142,6 @@ export type UpdateCollectionInput = {
   repository?: ChangeString;
   iconPath?: ChangePath;
   order?: number;
-  pinned?: boolean;
   expanded?: boolean;
 };
 

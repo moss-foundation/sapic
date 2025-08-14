@@ -46,7 +46,6 @@ export const createEnvironmentOutputSchema = z.object({
   name: z.string(),
   order: z.number().optional(),
   color: z.string().optional(),
-  expanded: z.boolean(),
 });
 
 export const deleteCollectionInputSchema = z.object({
@@ -130,7 +129,6 @@ export const updateCollectionInputSchema = z.object({
   repository: changeStringSchema.optional(),
   iconPath: changePathSchema.optional(),
   order: z.number().optional(),
-  pinned: z.boolean().optional(),
   expanded: z.boolean().optional(),
 });
 
