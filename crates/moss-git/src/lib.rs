@@ -27,7 +27,7 @@ pub mod tests {
     impl GitAuthAgent for TestGitAuthAgent {
         fn generate_callback<'a>(
             &'a self,
-            cb: &mut RemoteCallbacks<'a>,
+            _cb: &mut RemoteCallbacks<'a>,
         ) -> Result<(), anyhow::Error> {
             Ok(())
         }
