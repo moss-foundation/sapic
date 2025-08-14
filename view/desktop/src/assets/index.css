@@ -16,12 +16,13 @@
     height: 100vh;
     overflow: hidden;
   }
-  *:focus {
+  *:focus:not(.focus-visible) {
     outline: none;
-    @apply focus-visible:ring-2 focus-visible:ring-(--moss-primary) focus-visible:ring-offset-2;
   }
 }
-
+*:focus-visible {
+  @apply outline-2 outline-offset-1 outline-(--moss-primary);
+}
 .linux {
   -webkit-font-smoothing: antialiased;
 }

@@ -13,7 +13,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const buttonRootStyles = cva(
-  "relative flex min-w-18 cursor-pointer items-center justify-center rounded-sm transition duration-150 ease-in-out focus-visible:outline-2 focus-visible:outline-offset-2",
+  "relative flex min-w-18 cursor-pointer items-center justify-center rounded-sm transition duration-150 ease-in-out",
   {
     variants: {
       isDisabled: {

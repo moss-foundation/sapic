@@ -1,8 +1,10 @@
-import React, { useState, useRef } from "react";
-import { cn } from "@/utils";
-import { Icon, Scrollbar } from "@/lib/ui";
-import { ActionMenu, Divider, ButtonPrimary } from "@/components";
+import React, { useRef, useState } from "react";
+
+import { ActionMenu, ButtonPrimary, Divider } from "@/components";
 import InputTemplating from "@/components/InputTemplating";
+import { Icon, Scrollbar } from "@/lib/ui";
+import { cn } from "@/utils";
+
 import { areUrlsEquivalent } from "./utils/urlParser";
 
 interface RequestInputFieldProps {
@@ -102,7 +104,6 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = React.memo(
                 className={cn(
                   "flex items-center justify-between rounded-md rounded-r-none px-2.5 py-2 text-base font-bold transition-colors",
                   "background-(--moss-primary-background) text-(--moss-requestpage-text)",
-                  "focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-(--moss-primary)",
                   "data-[state=open]:outline-2 data-[state=open]:-outline-offset-1 data-[state=open]:outline-(--moss-primary)",
                   "border border-r-0 border-transparent",
                   "h-10 w-24"
@@ -135,7 +136,7 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = React.memo(
         {/* Center - URL Input Field */}
         <div className="min-w-0 flex-1">
           <Scrollbar
-            className="h-10 overflow-x-auto overflow-y-hidden rounded-none border-r-0 border-l-0 border-transparent focus-within:outline-2 focus-within:-outline-offset-1 focus-within:outline-(--moss-primary)"
+            className="h-10 overflow-x-auto overflow-y-hidden rounded-none border-r-0 border-l-0 border-transparent"
             options={{
               scrollbars: {
                 autoHide: "move",
@@ -156,7 +157,7 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = React.memo(
         </div>
 
         {/* Right Side - Send Button */}
-        <div className="relative z-10 flex h-10 flex-shrink-0 items-center rounded-md rounded-l-none border border-l-0 border-transparent p-1 focus-within:outline-2 focus-within:-outline-offset-1 focus-within:outline-(--moss-primary)">
+        <div className="relative z-10 flex h-10 flex-shrink-0 items-center rounded-md rounded-l-none border border-l-0 border-transparent p-1">
           <ButtonPrimary onClick={handleSend}>Send</ButtonPrimary>
         </div>
       </div>
