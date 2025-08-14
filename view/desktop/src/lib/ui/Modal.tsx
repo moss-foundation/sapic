@@ -30,6 +30,13 @@ export const Modal = ({
     }
   }, [showModal]);
 
+  const handleDialogClick = (event: React.MouseEvent<HTMLDialogElement>) => {
+    if (event.target === dialogRef.current) {
+      console.log("backdrop clicked"); // For debugging; replace with your log if needed
+      onBackdropClick?.();
+    }
+  };
+
   return createPortal(
     <div
       className={cn(
@@ -44,19 +51,19 @@ export const Modal = ({
       style={{
         "WebkitBackdropFilter": "blur(8px)", // BackdropFilter doesn't work on Linux without this
       }}
-      onMouseDown={onBackdropClick}
     >
       <dialog
         ref={dialogRef}
         className={cn(
-          "mx-auto mt-[9%] flex min-w-64 flex-col rounded-lg shadow-[0px_8px_40px_rgba(0,0,0,0.3)] transition-[display,opacity] transition-discrete duration-100 select-none backdrop:opacity-0 starting:opacity-0",
+          "mx-auto mt-[9%] flex flex-col rounded-lg shadow-[0px_8px_40px_rgba(0,0,0,0.3)] transition-[display,opacity] transition-discrete duration-100 select-none backdrop:opacity-0 starting:opacity-0",
           {
             "max-w-[436px]": size === "small",
             "max-w-[544px]": size === "medium",
           },
-          "mx-auto mt-[9%] flex max-w-[544px] min-w-64 flex-col rounded-lg shadow-[0px_8px_40px_rgba(0,0,0,0.3)] transition-[display,opacity] transition-discrete duration-100 select-none backdrop:opacity-0 starting:opacity-0",
+          "mx-auto mt-[9%] flex max-w-[544px] flex-col rounded-lg shadow-[0px_8px_40px_rgba(0,0,0,0.3)] transition-[display,opacity] transition-discrete duration-100 select-none backdrop:opacity-0 starting:opacity-0",
           className
         )}
+        onClick={handleDialogClick}
       >
         {children}
       </dialog>
