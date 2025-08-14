@@ -4,6 +4,7 @@ import { cn } from "@/utils";
 
 import { PageTabsProps } from "./types";
 
+//FIXME: replace this with tabs component
 export const PageTabs: React.FC<PageTabsProps> = ({ children, className }) => {
   // Apply tab button styling to all button children
   const styledChildren = React.Children.map(children, (child) => {
