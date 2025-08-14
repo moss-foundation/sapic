@@ -16,6 +16,7 @@ use std::sync::Arc;
 use url::Url;
 
 use crate::{
+    common::GitUrl,
     gitlab::{
         auth::GitLabAuthAgent,
         response::{RepositoryResponse, UserResponse},
@@ -101,13 +102,15 @@ impl GitHostingProvider for GitLabClient {
         })
     }
 
-    async fn contributors(&self, repo_url: &str) -> joinerror::Result<Vec<Contributor>> {
+    async fn contributors(&self, repo_ref: &GitUrl) -> joinerror::Result<Vec<Contributor>> {
+        let repo_url = format!("{}/{}", &repo_ref.owner, &repo_ref.name);
+        let encoded_url = urlencoding::encode(&repo_url);
+
         let access_token = self
             .client_auth_agent
             .clone()
             .access_token()
             .ok_or_join_err::<()>("gitlab is not logged in yet")?;
-        let encoded_url = urlencoding::encode(repo_url);
 
         let contributors_response: ContributorsResponse = self
             .client
@@ -147,14 +150,15 @@ impl GitHostingProvider for GitLabClient {
         Ok(list)
     }
 
-    async fn repository_info(&self, repo_url: &str) -> joinerror::Result<RepositoryInfo> {
+    async fn repository_info(&self, repo_ref: &GitUrl) -> joinerror::Result<RepositoryInfo> {
+        let repo_url = format!("{}/{}", &repo_ref.owner, &repo_ref.name);
+        let encoded_url = urlencoding::encode(&repo_url);
+
         let access_token = self
             .client_auth_agent
             .clone()
             .access_token()
             .ok_or_join_err::<()>("gitlab is not logged in yet")?;
-
-        let encoded_url = urlencoding::encode(repo_url);
 
         let repository_response: RepositoryResponse = self
             .client
@@ -174,97 +178,94 @@ impl GitHostingProvider for GitLabClient {
     }
 }
 
+// API related tests are skipped during CI, since it requires setting up refresh token in envvar
+// Set `GITLAB_REFRESH_TOKEN = {}` in /.env
+
 #[cfg(test)]
 mod tests {
+    use std::{ops::Deref, sync::LazyLock};
     // FIXME: Rewrite the tests
-    // use anyhow::Result;
-    // use git2::RemoteCallbacks;
-    //
-    // use super::*;
-    //
-    // const REPO_URL: &'static str = "brutusyhy/test-public-repo";
-    //
-    // struct DummyGitLabAuthAgent;
-    //
-    // impl GitAuthAgent for DummyGitLabAuthAgent {
-    //     fn generate_callback<'a>(&'a self, _cb: &mut RemoteCallbacks<'a>) -> Result<()> {
-    //         Ok(())
-    //     }
-    // }
-    // impl GitLabAuthAgent for DummyGitLabAuthAgent {
-    //     async fn access_token(&self) -> joinerror::Result<String> {
-    //         Ok("".to_string())
-    //     }
-    // }
-    //
-    // struct DummySSHAuthAgent;
-    //
-    // impl GitAuthAgent for DummySSHAuthAgent {
-    //     fn generate_callback<'a>(&'a self, _cb: &mut RemoteCallbacks<'a>) -> Result<()> {
-    //         Ok(())
-    //     }
-    // }
-    // impl SSHAuthAgent for DummySSHAuthAgent {}
-    //
-    // #[test]
-    // fn gitlab_client_name() {
-    //     let client_auth_agent = DummyGitLabAuthAgent;
-    //     let ssh_auth_agent: Option<DummySSHAuthAgent> = None;
-    //     let reqwest_client = reqwest::ClientBuilder::new()
-    //         .user_agent("SAPIC")
-    //         .build()
-    //         .unwrap();
-    //     let client = GitLabClient::new(reqwest_client, client_auth_agent, ssh_auth_agent);
-    //
-    //     assert_eq!(client.name(), "GitLab");
-    // }
-    //
-    // #[test]
-    // fn gitlab_client_base_url() {
-    //     let client_auth_agent = DummyGitLabAuthAgent;
-    //     let ssh_auth_agent: Option<DummySSHAuthAgent> = None;
-    //     let reqwest_client = reqwest::ClientBuilder::new()
-    //         .user_agent("SAPIC")
-    //         .build()
-    //         .unwrap();
-    //
-    //     let client = GitLabClient::new(reqwest_client, client_auth_agent, ssh_auth_agent);
-    //     let expected_url = Url::parse("https://gitlab.com").unwrap();
-    //
-    //     assert_eq!(client.base_url(), expected_url);
-    // }
-    //
-    // #[tokio::test]
-    // async fn gitlab_client_contributors() {
-    //     let client_auth_agent = DummyGitLabAuthAgent;
-    //     let ssh_auth_agent: Option<DummySSHAuthAgent> = None;
-    //     let reqwest_client = reqwest::ClientBuilder::new()
-    //         .user_agent("SAPIC")
-    //         .build()
-    //         .unwrap();
-    //     let client = GitLabClient::new(reqwest_client, client_auth_agent, ssh_auth_agent);
-    //     let contributors = client.contributors(REPO_URL).await.unwrap();
-    //     for contributor in contributors {
-    //         println!(
-    //             "Contributor {}, avatar_url: {}",
-    //             contributor.name, contributor.avatar_url
-    //         );
-    //     }
-    // }
-    //
-    // #[ignore]
-    // #[test]
-    // fn manual_gitlab_client_with_ssh_auth_agent() {
-    //     let client_auth_agent = DummyGitLabAuthAgent;
-    //     let ssh_agent = DummySSHAuthAgent;
-    //     let reqwest_client = reqwest::ClientBuilder::new()
-    //         .user_agent("SAPIC")
-    //         .build()
-    //         .unwrap();
-    //     let client = GitLabClient::new(reqwest_client, client_auth_agent, Some(ssh_agent));
-    //
-    //     assert_eq!(client.name(), "GitLab");
-    //     let expected_url = Url::parse("https://gitlab.com").unwrap();
-    //     assert_eq!(client.base_url(), expected_url);
-    // }
+    use moss_keyring::KeyringClientImpl;
+
+    use crate::{
+        common::ssh_auth_agent::SSHAuthAgentImpl,
+        envvar_keys::{GITLAB_CLIENT_ID, GITLAB_CLIENT_SECRET},
+    };
+
+    use super::*;
+
+    static REPO_REF: LazyLock<GitUrl> = LazyLock::new(|| GitUrl {
+        domain: "gitlab.com".to_string(),
+        owner: "brutusyhy".to_string(),
+        name: "test-public-repo".to_string(),
+    });
+
+    async fn create_test_client() -> Arc<GitLabClient> {
+        dotenv::dotenv().ok();
+
+        let reqwest_client = reqwest::ClientBuilder::new()
+            .user_agent("SAPIC")
+            .build()
+            .unwrap();
+
+        let keyring_client = Arc::new(KeyringClientImpl::new());
+        let auth_agent = Arc::new(GitLabAuthAgent::new(
+            keyring_client,
+            dotenv::var(GITLAB_CLIENT_ID).unwrap(),
+            dotenv::var(GITLAB_CLIENT_SECRET).unwrap(),
+        ));
+
+        let client = Arc::new(GitLabClient::new(
+            reqwest_client,
+            auth_agent,
+            None as Option<SSHAuthAgentImpl>,
+        ));
+
+        client.login().await.unwrap();
+        client
+    }
+
+    #[tokio::test]
+    async fn gitlab_client_name() {
+        let client = create_test_client().await;
+
+        assert_eq!(client.name(), "GitLab");
+    }
+
+    #[tokio::test]
+    async fn gitlab_client_base_url() {
+        let client = create_test_client().await;
+
+        let expected_url = Url::parse("https://gitlab.com").unwrap();
+
+        assert_eq!(client.base_url(), expected_url);
+    }
+
+    #[ignore]
+    #[tokio::test]
+    async fn gitlab_client_current_user() {
+        let client = create_test_client().await;
+        let user_info = client.current_user().await.unwrap();
+        println!("{:?}", user_info);
+    }
+    #[ignore]
+    #[tokio::test]
+    async fn gitlab_client_repo_info() {
+        let client = create_test_client().await;
+        let repo_info = client.repository_info(REPO_REF.deref()).await.unwrap();
+        println!("{:?}", repo_info);
+    }
+
+    #[ignore]
+    #[tokio::test]
+    async fn gitlab_client_contributors() {
+        let client = create_test_client().await;
+        let contributors = client.contributors(REPO_REF.deref()).await.unwrap();
+        for contributor in contributors {
+            println!(
+                "Contributor {}, avatar_url: {}",
+                contributor.name, contributor.avatar_url
+            );
+        }
+    }
 }

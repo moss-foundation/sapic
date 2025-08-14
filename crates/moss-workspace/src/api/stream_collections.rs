@@ -66,20 +66,19 @@ async fn fetch_remote_repo_info(
     github_client: Arc<GitHubClient>,
     gitlab_client: Arc<GitLabClient>,
 ) -> (Option<RepositoryInfo>, Vec<Contributor>) {
-    let repo_url = format!("{}/{}", &repo_ref.owner, &repo_ref.name);
     match repo_ref.domain.as_str() {
         // FIXME: Handle custom GitLab domains
         "github.com" => (
-            github_client.repository_info(&repo_url).await.ok(),
+            github_client.repository_info(repo_ref).await.ok(),
             github_client
-                .contributors(&repo_url)
+                .contributors(repo_ref)
                 .await
                 .unwrap_or_default(),
         ),
         "gitlab.com" => (
-            gitlab_client.repository_info(&repo_url).await.ok(),
+            gitlab_client.repository_info(repo_ref).await.ok(),
             gitlab_client
-                .contributors(&repo_url)
+                .contributors(repo_ref)
                 .await
                 .unwrap_or_default(),
         ),

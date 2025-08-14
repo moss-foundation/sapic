@@ -5,17 +5,17 @@
 // These tests should be done manually
 // Since it requires authentication and env variables
 
-use crate::shared::setup_test_workspace;
 use moss_storage::storage::operations::GetItem;
 use moss_workspace::{
     models::{
-        operations::{GitHubImportParams, ImportCollectionInput},
-        primitives::CollectionId,
+        operations::ImportCollectionInput, primitives::CollectionId, types::GitHubImportParams,
     },
     storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
 use std::env;
 use tauri::ipc::Channel;
+
+use crate::shared::setup_test_workspace;
 
 pub mod shared;
 

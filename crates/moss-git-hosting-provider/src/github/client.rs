@@ -1,13 +1,3 @@
-use crate::{
-    GitAuthProvider, GitHostingProvider,
-    common::SSHAuthAgent,
-    constants::GITHUB_API_URL,
-    github::{
-        auth::GitHubAuthAgent,
-        response::{ContributorsResponse, RepositoryResponse, UserResponse},
-    },
-    models::types::{Contributor, RepositoryInfo, UserInfo},
-};
 use async_trait::async_trait;
 use joinerror::OptionExt;
 use moss_git::GitAuthAgent;
@@ -15,6 +5,17 @@ use oauth2::http::header::ACCEPT;
 use reqwest::{Client, header::AUTHORIZATION};
 use std::sync::Arc;
 use url::Url;
+
+use crate::{
+    GitAuthProvider, GitHostingProvider,
+    common::{GitUrl, SSHAuthAgent},
+    constants::GITHUB_API_URL,
+    github::{
+        auth::GitHubAuthAgent,
+        response::{ContributorsResponse, RepositoryResponse, UserResponse},
+    },
+    models::types::{Contributor, RepositoryInfo, UserInfo},
+};
 
 const CONTENT_TYPE: &'static str = "application/vnd.github+json";
 
@@ -102,7 +103,8 @@ impl GitHostingProvider for GitHubClient {
         })
     }
 
-    async fn contributors(&self, repo_url: &str) -> joinerror::Result<Vec<Contributor>> {
+    async fn contributors(&self, repo_ref: &GitUrl) -> joinerror::Result<Vec<Contributor>> {
+        let repo_url = format!("{}/{}", &repo_ref.owner, &repo_ref.name);
         let access_token = self
             .client_auth_agent
             .clone()
@@ -129,7 +131,8 @@ impl GitHostingProvider for GitHubClient {
             .collect())
     }
 
-    async fn repository_info(&self, repo_url: &str) -> joinerror::Result<RepositoryInfo> {
+    async fn repository_info(&self, repo_ref: &GitUrl) -> joinerror::Result<RepositoryInfo> {
+        let repo_url = format!("{}/{}", &repo_ref.owner, &repo_ref.name);
         let access_token = self
             .client_auth_agent
             .clone()
@@ -151,5 +154,97 @@ impl GitHostingProvider for GitHubClient {
             updated_at: repo_response.updated_at,
             owner: repo_response.owner.login,
         })
+    }
+}
+
+// API related tests are skipped during CI, since it requires setting up refresh token in envvar
+// Set `GITHUB_ACCESS_TOKEN = {}` in /.env
+
+#[cfg(test)]
+mod tests {
+    use std::{ops::Deref, sync::LazyLock};
+    // FIXME: Rewrite the tests
+    use moss_keyring::KeyringClientImpl;
+
+    use crate::{
+        common::ssh_auth_agent::SSHAuthAgentImpl,
+        envvar_keys::{GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET},
+    };
+
+    use super::*;
+
+    static REPO_REF: LazyLock<GitUrl> = LazyLock::new(|| GitUrl {
+        domain: "github.com".to_string(),
+        owner: "brutusyhy".to_string(),
+        name: "test-public-repo".to_string(),
+    });
+
+    async fn create_test_client() -> Arc<GitHubClient> {
+        dotenv::dotenv().ok();
+
+        let reqwest_client = reqwest::ClientBuilder::new()
+            .user_agent("SAPIC")
+            .build()
+            .unwrap();
+
+        let keyring_client = Arc::new(KeyringClientImpl::new());
+        let auth_agent = Arc::new(GitHubAuthAgent::new(
+            keyring_client,
+            dotenv::var(GITHUB_CLIENT_ID).unwrap(),
+            dotenv::var(GITHUB_CLIENT_SECRET).unwrap(),
+        ));
+
+        let client = Arc::new(GitHubClient::new(
+            reqwest_client,
+            auth_agent,
+            None as Option<SSHAuthAgentImpl>,
+        ));
+
+        client.login().await.unwrap();
+        client
+    }
+
+    #[tokio::test]
+    async fn github_client_name() {
+        let client = create_test_client().await;
+
+        assert_eq!(client.name(), "GitHub");
+    }
+
+    #[tokio::test]
+    async fn github_client_base_url() {
+        let client = create_test_client().await;
+
+        let expected_url = Url::parse("https://github.com").unwrap();
+
+        assert_eq!(client.base_url(), expected_url);
+    }
+
+    #[ignore]
+    #[tokio::test]
+    async fn github_client_current_user() {
+        let client = create_test_client().await;
+        let user_info = client.current_user().await.unwrap();
+        println!("{:?}", user_info);
+    }
+    #[ignore]
+    #[tokio::test]
+    async fn github_client_repo_info() {
+        let client = create_test_client().await;
+        let repo_info = client.repository_info(REPO_REF.deref()).await.unwrap();
+        println!("{:?}", repo_info);
+    }
+
+    #[ignore]
+    #[tokio::test]
+    async fn github_client_contributors() {
+        let client = create_test_client().await;
+        let contributors = client.contributors(REPO_REF.deref()).await.unwrap();
+        for contributor in contributors {
+            println!(
+                "Contributor {}, avatar_url: {}",
+                contributor.name, contributor.avatar_url
+            );
+        }
     }
 }

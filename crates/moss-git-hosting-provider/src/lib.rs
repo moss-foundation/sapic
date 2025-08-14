@@ -3,7 +3,10 @@ pub mod github;
 pub mod gitlab;
 pub mod models;
 
-use crate::models::types::{Contributor, RepositoryInfo, UserInfo};
+use crate::{
+    common::GitUrl,
+    models::types::{Contributor, RepositoryInfo, UserInfo},
+};
 use async_trait::async_trait;
 use moss_git::GitAuthAgent;
 use std::sync::Arc;
@@ -17,9 +20,9 @@ pub trait GitHostingProvider: GitAuthProvider {
     // FIXME: Where's the best place to put Provider REST APIs?
     async fn current_user(&self) -> joinerror::Result<UserInfo>;
 
-    async fn contributors(&self, repo_url: &str) -> joinerror::Result<Vec<Contributor>>;
+    async fn contributors(&self, repo_ref: &GitUrl) -> joinerror::Result<Vec<Contributor>>;
 
-    async fn repository_info(&self, repo_url: &str) -> joinerror::Result<RepositoryInfo>;
+    async fn repository_info(&self, repo_ref: &GitUrl) -> joinerror::Result<RepositoryInfo>;
 }
 
 pub trait GitAuthProvider {

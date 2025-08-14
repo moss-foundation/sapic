@@ -194,13 +194,6 @@ jobs:
           - moss_bindingutils
           - moss_hcl
           - moss_logging
-    env:
-      GITHUB_ACCESS_TOKEN: ${{secrets.TEST_GITHUB_ACCESS_TOKEN}}
-      GITHUB_CLIENT_ID: ${{secrets.TEST_GITHUB_CLIENT_ID}}
-      GITHUB_CLIENT_SECRET: ${{secrets.TEST_GITHUB_CLIENT_SECRET}}
-      GITLAB_CLIENT_ID: ${{secrets.TEST_GITLAB_CLIENT_ID}}
-      GITLAB_CLIENT_SECRET: ${{secrets.TEST_GITLAB_CLIENT_SECRET}}
-      GITLAB_REFRESH_TOKEN: ${{secrets.TEST_GITLAB_REFRESH_TOKEN}}
 
     steps:
       - name: Harden the runner (Audit all outbound calls)

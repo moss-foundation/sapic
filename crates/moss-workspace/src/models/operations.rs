@@ -1,8 +1,3 @@
-use super::types::{ActivitybarPartStateInfo, PanelPartStateInfo, SidebarPartStateInfo};
-use crate::models::{
-    primitives::{ChangeCollectionId, CollectionId},
-    types::EditorPartStateInfo,
-};
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_environment::models::{
     primitives::{EnvironmentId, VariableId},
@@ -17,6 +12,16 @@ use std::{
 };
 use ts_rs::TS;
 use validator::{Validate, ValidationError};
+
+use crate::models::{
+    primitives::{ChangeCollectionId, CollectionId},
+    types::EditorPartStateInfo,
+};
+
+use super::types::{
+    ActivitybarPartStateInfo, GitHubImportParams, GitLabImportParams, PanelPartStateInfo,
+    SidebarPartStateInfo,
+};
 
 // ------------------------------ //
 // Collection
@@ -75,31 +80,6 @@ pub struct CreateCollectionOutput {
 pub enum ImportCollectionInput {
     GitHub(GitHubImportParams),
     GitLab(GitLabImportParams),
-}
-
-// FIXME: Validation for provider specific url?
-/// @category Operation
-#[derive(Debug, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct GitHubImportParams {
-    pub order: isize,
-    #[validate(regex(path = "*GIT_URL_REGEX"))]
-    pub repository: String,
-    // TODO: repo branch
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct GitLabImportParams {
-    pub order: isize,
-    #[validate(regex(path = "*GIT_URL_REGEX"))]
-    pub repository: String,
-    // TODO: repo branch
 }
 
 /// @category Operation
