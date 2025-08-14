@@ -64,6 +64,7 @@ impl GitAuthProvider for GitHubClient {
 }
 
 // TODO: Handle authentication expiration and reauthentication
+// TODO: Better error message when failing
 #[async_trait]
 impl GitHostingProvider for GitHubClient {
     fn name(&self) -> String {

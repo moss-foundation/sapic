@@ -36,11 +36,6 @@ export type BranchInfo = { name: string; ahead: number; behind: number };
 /**
  * @category Type
  */
-export type CollectionInfo = { id: string; displayName: string; order?: number };
-
-/**
- * @category Type
- */
 export type Contributor = { name: string; avatar_url: string };
 
 /**

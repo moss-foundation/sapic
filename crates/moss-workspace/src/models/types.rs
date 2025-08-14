@@ -30,17 +30,6 @@ impl Default for WorkspaceMode {
 }
 
 /// @category Type
-#[derive(Debug, PartialEq, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct CollectionInfo {
-    pub id: String,
-    pub display_name: String,
-    pub order: Option<isize>,
-}
-
-/// @category Type
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]

@@ -26,12 +26,6 @@ export const branchInfoSchema = z.object({
   behind: z.number(),
 });
 
-export const collectionInfoSchema = z.object({
-  id: z.string(),
-  displayName: z.string(),
-  order: z.number().optional(),
-});
-
 export const contributorSchema = z.object({
   name: z.string(),
   avatar_url: z.string(),

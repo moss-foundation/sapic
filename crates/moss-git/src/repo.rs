@@ -1,5 +1,6 @@
 pub use git2::{BranchType, IndexAddOption, Signature};
 use git2::{IntoCString, PushOptions, RemoteCallbacks, Repository, build::RepoBuilder};
+use joinerror::OptionExt;
 use std::{collections::HashMap, path::Path, sync::Arc};
 
 use crate::GitAuthAgent;
@@ -232,7 +233,9 @@ impl RepoHandle {
 
         // If HEAD points to a branch, get the branch name.
         if head.is_branch() {
-            let branch_name = head.shorthand().unwrap_or("unknown branch");
+            let branch_name = head
+                .shorthand()
+                .ok_or_join_err::<()>("invalid branch name")?;
             Ok(branch_name.to_string())
         } else {
             Err(joinerror::Error::new::<()>("HEAD is detached"))

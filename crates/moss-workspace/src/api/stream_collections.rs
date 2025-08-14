@@ -7,13 +7,7 @@ use crate::{
 use futures::StreamExt;
 use moss_applib::AppRuntime;
 use moss_git::repo::RepoHandle;
-use moss_git_hosting_provider::{
-    GitHostingProvider,
-    common::GitUrl,
-    github::client::GitHubClient,
-    gitlab::client::GitLabClient,
-    models::types::{Contributor, RepositoryInfo},
-};
+
 use std::sync::{Arc, Mutex};
 use tauri::ipc::Channel as TauriChannel;
 
@@ -28,12 +22,9 @@ impl<R: AppRuntime> Workspace<R> {
 
         let mut total_returned = 0;
         while let Some(collection) = stream.next().await {
-            let (repository_info, contributors) = fetch_remote_repo_info(
-                collection.repository.clone(),
-                self.github_client.clone(),
-                self.gitlab_client.clone(),
-            )
-            .await;
+            // TODO: It might be better to separate the sending of information fetched from HTTP
+            // from the main streaming, which will make the application more responsive
+            // Right now the latency from HTTP requests slows down this operation quite a lot
 
             let repo_handle = self
                 .collection(&collection.id)
@@ -57,9 +48,7 @@ impl<R: AppRuntime> Workspace<R> {
                 order: collection.order,
                 expanded: collection.expanded,
                 repository: collection.repository,
-                repository_info,
-                contributors,
-                branch_info,
+                branch: branch_info,
                 picture_path: collection.icon_path,
             };
 
@@ -74,34 +63,34 @@ impl<R: AppRuntime> Workspace<R> {
     }
 }
 
-async fn fetch_remote_repo_info(
-    repository: Option<String>,
-    github_client: Arc<GitHubClient>,
-    gitlab_client: Arc<GitLabClient>,
-) -> (Option<RepositoryInfo>, Vec<Contributor>) {
-    if let Some(Ok(repo_ref)) = repository.as_ref().map(|x| GitUrl::parse(&x)) {
-        match repo_ref.domain.as_str() {
-            // FIXME: Handle custom GitLab domains
-            "github.com" => (
-                github_client.repository_info(&repo_ref).await.ok(),
-                github_client
-                    .contributors(&repo_ref)
-                    .await
-                    .unwrap_or_default(),
-            ),
-            "gitlab.com" => (
-                gitlab_client.repository_info(&repo_ref).await.ok(),
-                gitlab_client
-                    .contributors(&repo_ref)
-                    .await
-                    .unwrap_or_default(),
-            ),
-            _ => (None, Vec::new()),
-        }
-    } else {
-        (None, Vec::new())
-    }
-}
+// async fn fetch_remote_repo_info(
+//     repository: Option<String>,
+//     github_client: Arc<GitHubClient>,
+//     gitlab_client: Arc<GitLabClient>,
+// ) -> (Option<RepositoryInfo>, Vec<Contributor>) {
+//     if let Some(Ok(repo_ref)) = repository.as_ref().map(|x| GitUrl::parse(&x)) {
+//         match repo_ref.domain.as_str() {
+//             // FIXME: Handle custom GitLab domains
+//             "github.com" => (
+//                 github_client.repository_info(&repo_ref).await.ok(),
+//                 github_client
+//                     .contributors(&repo_ref)
+//                     .await
+//                     .unwrap_or_default(),
+//             ),
+//             "gitlab.com" => (
+//                 gitlab_client.repository_info(&repo_ref).await.ok(),
+//                 gitlab_client
+//                     .contributors(&repo_ref)
+//                     .await
+//                     .unwrap_or_default(),
+//             ),
+//             _ => (None, Vec::new()),
+//         }
+//     } else {
+//         (None, Vec::new())
+//     }
+// }
 
 async fn fetch_current_branch_info(
     repo_handle: Arc<Mutex<Option<RepoHandle>>>,

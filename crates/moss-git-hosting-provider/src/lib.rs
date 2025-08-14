@@ -13,7 +13,7 @@ use std::sync::Arc;
 use url::Url;
 
 #[async_trait]
-pub trait GitHostingProvider: GitAuthProvider {
+pub trait GitHostingProvider: GitAuthProvider + Send + Sync {
     fn name(&self) -> String;
     fn base_url(&self) -> Url;
 
