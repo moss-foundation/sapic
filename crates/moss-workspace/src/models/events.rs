@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use crate::models::primitives::CollectionId;
+use crate::models::{primitives::CollectionId, types::BranchInfo};
 use moss_environment::models::primitives::EnvironmentId;
 use moss_git_hosting_provider::models::types::{Contributor, RepositoryInfo};
 use serde::{Deserialize, Serialize};
@@ -20,6 +20,7 @@ pub struct StreamCollectionsEvent {
 
     pub repository_info: Option<RepositoryInfo>,
     pub contributors: Vec<Contributor>,
+    pub branch_info: Option<BranchInfo>,
 
     pub picture_path: Option<PathBuf>,
 }

@@ -31,6 +31,11 @@ export type AddVariableParams = {
 /**
  * @category Type
  */
+export type BranchInfo = { name: string; ahead: number; behind: number };
+
+/**
+ * @category Type
+ */
 export type CollectionInfo = { id: string; displayName: string; order?: number };
 
 /**
@@ -99,12 +104,12 @@ export type EnvironmentInfo = {
 };
 
 /**
- * @category Operation
+ * @category Type
  */
 export type GitHubImportParams = { order: number; repository: string };
 
 /**
- * @category Operation
+ * @category Type
  */
 export type GitLabImportParams = { order: number; repository: string };
 

@@ -134,7 +134,7 @@ impl RepoHandle {
             let mut branch = self
                 .repo
                 .find_branch(local_branch_name, BranchType::Local)?;
-            branch.set_upstream(Some(remote_branch_name))?;
+            branch.set_upstream(Some(&format!("{}/{}", remote_name, remote_branch_name)))?;
         }
         Ok(())
     }
@@ -226,6 +226,19 @@ impl RepoHandle {
             .collect::<Vec<_>>();
         Ok(names)
     }
+
+    pub fn current_branch(&self) -> joinerror::Result<String> {
+        let head = self.repo.head()?;
+
+        // If HEAD points to a branch, get the branch name.
+        if head.is_branch() {
+            let branch_name = head.shorthand().unwrap_or("unknown branch");
+            Ok(branch_name.to_string())
+        } else {
+            Err(joinerror::Error::new::<()>("HEAD is detached"))
+        }
+    }
+
     /// If base_branch is None, the new branch will be based on the current HEAD
     pub fn create_branch(
         &self,
@@ -268,7 +281,7 @@ impl RepoHandle {
         let local = self.repo.find_branch(branch_name, BranchType::Local)?;
         let upstream = local.upstream()?;
 
-        let local_commit = upstream.get().peel_to_commit()?;
+        let local_commit = local.get().peel_to_commit()?;
         let upstream_commit = upstream.get().peel_to_commit()?;
         let (ahead, behind) = self
             .repo

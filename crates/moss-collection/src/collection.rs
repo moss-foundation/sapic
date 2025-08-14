@@ -183,15 +183,15 @@ impl<R: AppRuntime> Collection<R> {
 
         Ok(result)
     }
+
+    pub fn repo_handle(&self) -> Arc<Mutex<Option<RepoHandle>>> {
+        self.repo_handle.clone()
+    }
 }
 
 #[cfg(any(test, feature = "integration-tests"))]
 impl<R: AppRuntime> Collection<R> {
     pub fn db(&self) -> &Arc<dyn moss_storage::CollectionStorage<R::AsyncContext>> {
         self.storage_service.storage()
-    }
-
-    pub fn repo_handle(&self) -> Arc<Mutex<Option<RepoHandle>>> {
-        self.repo_handle.clone()
     }
 }

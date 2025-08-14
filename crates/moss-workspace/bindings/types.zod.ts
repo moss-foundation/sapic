@@ -20,6 +20,12 @@ export const variableOptionsSchema = z.object({
   disabled: z.boolean(),
 });
 
+export const branchInfoSchema = z.object({
+  name: z.string(),
+  ahead: z.number(),
+  behind: z.number(),
+});
+
 export const collectionInfoSchema = z.object({
   id: z.string(),
   displayName: z.string(),

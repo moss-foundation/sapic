@@ -16,7 +16,7 @@ pub mod constants {
 
 #[cfg(test)]
 pub mod tests {
-    use git2::{Status, Statuses};
+    use git2::Status;
     use nanoid::nanoid;
     use std::path::PathBuf;
 

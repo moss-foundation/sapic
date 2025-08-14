@@ -124,7 +124,7 @@ pub struct EditorPartStateInfo {
 }
 
 // FIXME: Validation for provider specific url?
-/// @category Operation
+/// @category Type
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
@@ -136,7 +136,7 @@ pub struct GitHubImportParams {
     // TODO: repo branch
 }
 
-/// @category Operation
+/// @category Type
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
@@ -146,4 +146,14 @@ pub struct GitLabImportParams {
     #[validate(regex(path = "*GIT_URL_REGEX"))]
     pub repository: String,
     // TODO: repo branch
+}
+
+/// @category Type
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct BranchInfo {
+    pub name: String,
+    pub ahead: usize,
+    pub behind: usize,
 }
