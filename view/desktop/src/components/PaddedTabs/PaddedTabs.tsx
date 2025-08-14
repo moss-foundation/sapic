@@ -1,83 +1,107 @@
-import React from "react";
+import { ReactNode } from "react";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/lib/ui";
 import { cn } from "@/utils";
 
-interface PageContainerTabsProps {
+interface PaddedTabsProps {
   value: string;
   onValueChange: (value: string) => void;
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
 }
 
-export const PageContainerTabs: React.FC<PageContainerTabsProps> = ({ value, onValueChange, children, className }) => {
+const Root = ({ value, onValueChange, children, className }: PaddedTabsProps) => {
   return (
-    <Tabs value={value} onValueChange={onValueChange} className={cn("flex h-full flex-col", className)}>
-      <div className="flex h-full min-h-fit min-w-fit flex-col">{children}</div>
+    <Tabs
+      value={value}
+      onValueChange={onValueChange}
+      className={cn("flex h-full min-h-fit min-w-fit flex-col", className)}
+    >
+      {children}
     </Tabs>
   );
 };
 
-interface PageContainerTabsListProps {
-  children: React.ReactNode;
+interface PaddedTabsListProps {
+  children: ReactNode;
   className?: string;
 }
 
-export const PageContainerTabsList: React.FC<PageContainerTabsListProps> = ({ children, className }) => {
+const List = ({ children, className }: PaddedTabsListProps) => {
   return (
-    <div className={cn("flex h-full w-full min-w-0", className)} data-tabs-list-container>
-      <TabsList className="flex h-full w-max items-center bg-transparent p-0">{children}</TabsList>
-    </div>
+    <TabsList className={cn("flex h-full w-max items-center", className)} data-tabs-list-container>
+      {children}
+    </TabsList>
   );
 };
 
-interface PageContainerTabProps {
+interface PaddedTabProps {
   value: string;
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
 }
 
-export const PageContainerTab: React.FC<PageContainerTabProps> = ({ value, children, className }) => {
+const Trigger = ({ value, children, className }: PaddedTabProps) => {
   return (
     <TabsTrigger
       value={value}
-      className={cn(
-        "mr-2 flex items-center px-2.5 py-2 text-base transition-colors",
-        "relative border-b-1 border-transparent",
-        "text-(--moss-secondary-text) hover:text-(--moss-primary-text)",
-        "data-[state=active]:text-(--moss-primary-text)",
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-(--moss-primary) focus-visible:ring-offset-2",
-        "bg-transparent data-[state=active]:bg-transparent",
-        "min-w-0 flex-shrink-0 whitespace-nowrap",
-        // Active state - use direct border instead of pseudo-element
-        "data-[state=active]:border-b-(--moss-tab-active-border-color)",
-        // Cursor styling
-        "cursor-pointer",
+      //prettier-ignore
+      className={cn(`
+         group
+         relative 
+         flex items-center 
 
+         min-w-0 flex-shrink-0
+         p-3 leading-4 border-0
+         cursor-pointer truncate
+
+         transition-colors
+
+         text-(--moss-secondary-text) hover:text-(--moss-primary-text)
+         
+         data-[state=active]:text-(--moss-primary-text)
+      `,
         className
       )}
     >
       {children}
+
+      <div
+        //prettier-ignore
+        className={`
+          absolute right-0 bottom-0 left-0 
+          h-[3px] w-full rounded-full 
+          transition-opacity
+          
+          background-(--moss-tab-active-border-color)
+          opacity-0 
+          group-data-[state=active]:opacity-100 
+          group-hover:opacity-50
+        `}
+      />
     </TabsTrigger>
   );
 };
 
-interface PageContainerTabContentProps {
+interface PaddedTabContentProps {
   value: string;
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
-  noPadding?: boolean;
 }
 
-export const PageContainerTabContent: React.FC<PageContainerTabContentProps> = ({
-  value,
-  children,
-  className,
-  noPadding,
-}) => {
+const Content = ({ value, children, className }: PaddedTabContentProps) => {
   return (
-    <TabsContent value={value} className={cn("flex-1", className)}>
-      <div className={cn("h-full min-w-fit", noPadding ? "" : "p-3")}>{children}</div>
+    <TabsContent value={value} className={cn(className)}>
+      {children}
     </TabsContent>
   );
 };
+
+const PaddedTabs = {
+  Root,
+  List,
+  Trigger,
+  Content,
+};
+
+export default PaddedTabs;
