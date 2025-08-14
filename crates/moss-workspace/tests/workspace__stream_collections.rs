@@ -1,7 +1,6 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
-use moss_git_hosting_provider::common::GitProviderType;
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::models::{
     events::StreamCollectionsEvent, operations::CreateCollectionInput, primitives::CollectionId,

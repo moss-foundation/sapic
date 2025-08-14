@@ -8,7 +8,7 @@ use crate::commands::primitives::App;
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app), fields(window = window.label()))]
 pub async fn get_mistral_api_key<'a, R: tauri::Runtime>(
-    app: App<'a, R>,
+    _app: App<'a, R>,
     window: Window<R>,
 ) -> TauriResult<String> {
     let api_key = dotenv::var("MISTRAL_API_KEY")
