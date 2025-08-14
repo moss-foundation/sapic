@@ -9,8 +9,9 @@ use crate::GitAuthAgent;
 unsafe impl Send for RepoHandle {}
 unsafe impl Sync for RepoHandle {}
 
-/// Since all the git operations are synchronous, and authentication requires blocking `reqwest`
-/// We must wrap all RepoHandle operations involving remote with `tokio::task::spawn_blocking`
+/// Since all the git operations are synchronous, we should wrap all RepoHandle operations
+/// with `tokio::task::spawn_blocking`.
+/// This will prevent git operations from blocking the main thread
 pub struct RepoHandle {
     auth_agent: Arc<dyn GitAuthAgent>,
     repo: Repository,
