@@ -409,6 +409,13 @@ impl RepoHandle {
     }
 }
 
+#[cfg(any(test, feature = "integration-tests"))]
+impl RepoHandle {
+    pub fn repo(&self) -> &git2::Repository {
+        &self.repo
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use git2::{Cred, IndexAddOption, RemoteCallbacks, Signature};

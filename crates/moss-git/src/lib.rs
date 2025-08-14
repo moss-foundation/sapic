@@ -16,17 +16,33 @@ pub mod constants {
 
 #[cfg(test)]
 pub mod tests {
-    use git2::Status;
+    use crate::{GitAuthAgent, repo::RepoHandle};
+    use git2::{IndexAddOption, RemoteCallbacks, Signature, Status};
     use nanoid::nanoid;
-    use std::path::PathBuf;
+    use std::{path::PathBuf, sync::Arc};
 
-    fn create_test_repo() -> (git2::Repository, PathBuf) {
+    // All the tests here will be local operations, no need for authentication
+    struct TestGitAuthAgent;
+
+    impl GitAuthAgent for TestGitAuthAgent {
+        fn generate_callback<'a>(
+            &'a self,
+            cb: &mut RemoteCallbacks<'a>,
+        ) -> Result<(), anyhow::Error> {
+            Ok(())
+        }
+    }
+
+    fn create_test_repo() -> (RepoHandle, PathBuf) {
         let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
             .join("tests")
             .join("data")
             .join(nanoid!(10));
         std::fs::create_dir_all(&path).unwrap();
-        (git2::Repository::init(&path).unwrap(), path)
+
+        let auth_agent = Arc::new(TestGitAuthAgent {});
+
+        (RepoHandle::init(&path, auth_agent).unwrap(), path)
     }
 
     fn status_label(status: Status) -> Vec<&'static str> {
@@ -81,10 +97,16 @@ pub mod tests {
         }
         v
     }
-    fn print_statuses(repo: &git2::Repository) {
+
+    // Only print the difference between Index and Workdir
+    fn print_statuses(handle: &RepoHandle) {
         let mut status_options = git2::StatusOptions::new();
-        status_options.include_untracked(true);
-        let statuses = repo.statuses(Some(&mut status_options)).unwrap();
+        status_options
+            .include_untracked(true)
+            .recurse_untracked_dirs(true)
+            .rename_threshold(50)
+            .renames_index_to_workdir(true);
+        let statuses = handle.repo().statuses(Some(&mut status_options)).unwrap();
         for status in statuses.iter() {
             println!(
                 "{}: {:?}",
@@ -101,6 +123,35 @@ pub mod tests {
         print_statuses(&repo);
 
         std::fs::write(path.join("test.txt"), "ContentNew".as_bytes()).unwrap();
+        print_statuses(&repo);
+    }
+
+    #[test]
+    pub fn test_delete_committed() {
+        let (repo, path) = create_test_repo();
+        let file_path = path.join("test.txt");
+        std::fs::write(&file_path, "Content".as_bytes()).unwrap();
+        print_statuses(&repo);
+
+        repo.add(&["test.txt"], IndexAddOption::DEFAULT).unwrap();
+        print_statuses(&repo);
+        let sig = Signature::now("test", "test@test.com").unwrap();
+        repo.commit("Test", sig).unwrap();
+
+        std::fs::remove_file(&file_path).unwrap();
+        print_statuses(&repo);
+    }
+
+    #[test]
+    pub fn test_rename() {
+        let (repo, path) = create_test_repo();
+        let file_path = path.join("test.txt");
+        std::fs::write(&file_path, "Content".as_bytes()).unwrap();
+        repo.add(&["test.txt"], IndexAddOption::DEFAULT).unwrap();
+        let sig = Signature::now("test", "test@test.com").unwrap();
+        repo.commit("Test", sig).unwrap();
+
+        std::fs::rename(&file_path, path.join("new_text.txt")).unwrap();
         print_statuses(&repo);
     }
 }
