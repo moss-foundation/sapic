@@ -28,23 +28,16 @@ export const Breadcrumbs = ({ collectionId, nodeId }: BreadcrumbsProps) => {
 
   const activeTree = collectionsTrees?.find((tree) => tree.id === collectionId);
   if (!activeTree) {
-    console.warn("Breadcrumbs: No active tree found for collection ID:", collectionId);
-    console.warn(
-      "Available collection IDs:",
-      collectionsTrees.map((tree) => tree.id)
-    );
     return null;
   }
 
   const activeNode = findNodeByIdInTree(activeTree, nodeId);
   if (!activeNode) {
-    console.warn("Breadcrumbs: No active node found");
     return null;
   }
 
   const nodesSequence = findNodesSequence(activeTree, activeNode);
   if (!nodesSequence) {
-    console.warn("Breadcrumbs: No nodes sequence found");
     return null;
   }
 

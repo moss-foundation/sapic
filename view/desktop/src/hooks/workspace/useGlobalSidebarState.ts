@@ -1,8 +1,10 @@
 import { useEffect, useRef } from "react";
-import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
-import { useActiveWorkspace } from "./useActiveWorkspace";
-import { SidebarPosition } from "@repo/moss-workspace";
+
 import { SIDEBAR_POSITION } from "@/constants/layoutPositions";
+import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
+import { SidebarPosition } from "@repo/moss-workspace";
+
+import { useActiveWorkspace } from "./useActiveWorkspace";
 
 const GLOBAL_SIDEBAR_DEFAULTS = {
   width: 255,
@@ -11,15 +13,14 @@ const GLOBAL_SIDEBAR_DEFAULTS = {
 };
 
 export const useGlobalSidebarState = () => {
-  const workspace = useActiveWorkspace();
-  const hasWorkspace = !!workspace;
+  const { hasActiveWorkspace } = useActiveWorkspace();
 
   const { initialize, setSideBarPosition } = useAppResizableLayoutStore();
   const hasInitializedGlobalState = useRef(false);
 
   // Initialize global sidebar state when no workspace is active
   useEffect(() => {
-    if (hasWorkspace) {
+    if (hasActiveWorkspace) {
       // Reset flag when workspace becomes active
       hasInitializedGlobalState.current = false;
       return;
@@ -37,10 +38,10 @@ export const useGlobalSidebarState = () => {
 
     setSideBarPosition(GLOBAL_SIDEBAR_DEFAULTS.position);
     hasInitializedGlobalState.current = true;
-  }, [hasWorkspace, initialize, setSideBarPosition]);
+  }, [hasActiveWorkspace, initialize, setSideBarPosition]);
 
   return {
-    hasWorkspace,
-    isGlobalState: !hasWorkspace && hasInitializedGlobalState.current,
+    hasActiveWorkspace,
+    isGlobalState: !hasActiveWorkspace && hasInitializedGlobalState.current,
   };
 };

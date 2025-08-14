@@ -1,11 +1,13 @@
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
+import { CollectionTreesView } from "@/parts/CollectionTreesView/CollectionTreesView";
+import { SidebarHeader } from "@/parts/SideBar/SidebarHeader";
 import {
   TREE_VIEW_GROUP_COLLECTIONS,
   TREE_VIEW_GROUP_ENVIRONMENTS,
   TREE_VIEW_GROUP_MOCK_SERVERS,
 } from "@repo/moss-workspace";
 
-import CollectionTreeView from "./CollectionTreeView";
+import { EnvironmentsListView } from "../EnvironmentsListView/EnvironmentsListView";
 
 interface SidebarWorkspaceContentProps {
   workspaceName?: string | null;
@@ -52,27 +54,29 @@ export const SidebarWorkspaceContent = ({ workspaceName, groupId = "default" }: 
   // Handle different sidebar views based on groupId
   switch (groupId) {
     case TREE_VIEW_GROUP_COLLECTIONS:
-      return <CollectionTreeView />;
+      return <CollectionTreesView />;
 
     case TREE_VIEW_GROUP_ENVIRONMENTS:
-      return (
-        <div className="p-4">
-          <h3 className="text-lg font-semibold">Environments</h3>
-          <p className="mt-2 text-sm text-gray-500">Environment management</p>
-        </div>
-      );
+      return <EnvironmentsListView />;
 
     case TREE_VIEW_GROUP_MOCK_SERVERS:
       return (
-        <div className="p-4">
-          <h3 className="text-lg font-semibold">Mock Servers</h3>
-          <p className="mt-2 text-sm text-gray-500">Mock server configuration</p>
+        <div className="flex h-full flex-col">
+          <SidebarHeader title="Mock Servers" />
+          <div className="p-4">
+            <h3 className="text-lg font-semibold">Mock Servers</h3>
+            <p className="mt-2 text-sm text-gray-500">Mock server configuration</p>
+          </div>
         </div>
       );
 
     default:
-      // For default groupId, show collections tree view as the default sidebar content
-      return <CollectionTreeView />;
+      return (
+        <div className="p-4">
+          <h3 className="text-lg font-semibold">No content</h3>
+          <p className="mt-2 text-sm text-gray-500">No content for this group, showing default view</p>
+        </div>
+      );
   }
 };
 

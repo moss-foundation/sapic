@@ -50,7 +50,6 @@ export const BreadcrumbNode = ({
               title: node.name,
               params: {
                 collectionId,
-                iconType: node.kind,
                 node,
               },
               component: "Default",

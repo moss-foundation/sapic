@@ -1,10 +1,11 @@
 import { useContext, useState } from "react";
 
-import { ActionMenu, TreeContext } from "@/components";
+import { ActionMenu } from "@/components";
 import ActionButton from "@/components/ActionButton";
 import { cn } from "@/utils";
 
 import { useDeleteAndUpdatePeers } from "../actions/useDeleteAndUpdatePeers";
+import { CollectionTreeContext } from "../CollectionTreeContext";
 import { TreeCollectionNode } from "../types";
 
 interface TreeNodeActionsProps {
@@ -24,7 +25,8 @@ export const TreeNodeActions = ({
   setIsRenamingNode,
   className,
 }: TreeNodeActionsProps) => {
-  const { id } = useContext(TreeContext);
+  const { id } = useContext(CollectionTreeContext);
+
   const { deleteAndUpdatePeers } = useDeleteAndUpdatePeers(id, node, parentNode);
 
   const handleDeleteNode = async () => {

@@ -5,8 +5,8 @@ import { Icon } from "@/lib/ui";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 
+import { CollectionTreeContext } from "../CollectionTreeContext";
 import { NodeLabel } from "../NodeLabel";
-import { TreeContext } from "../Tree";
 import { TreeCollectionRootNode } from "../types";
 
 interface TreeRootNodeButtonProps {
@@ -16,7 +16,7 @@ interface TreeRootNodeButtonProps {
 }
 
 export const TreeRootNodeButton = ({ node, searchInput, shouldRenderChildNodes }: TreeRootNodeButtonProps) => {
-  const { id, picturePath, showNodeOrders } = useContext(TreeContext);
+  const { id, picturePath, showNodeOrders } = useContext(CollectionTreeContext);
   const { mutateAsync: updateCollection } = useUpdateCollection();
   const { addOrFocusPanel } = useTabbedPaneStore();
 

@@ -5,9 +5,9 @@ import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 
 import { ActiveNodeIndicator } from "../ActiveNodeIndicator";
+import { CollectionTreeContext } from "../CollectionTreeContext";
 import { DropIndicatorForDir } from "../DropIndicatorForDir";
 import { DropIndicatorForTrigger } from "../DropIndicatorForTrigger";
-import { TreeContext } from "../Tree";
 import { TreeRootNodeProps } from "../types";
 import { calculateShouldRenderRootChildNodes } from "../utils";
 import { useDraggableRootNode } from "./hooks/useDraggableRootNode";
@@ -19,7 +19,7 @@ import { TreeRootNodeChildren } from "./TreeRootNodeChildren";
 import { TreeRootNodeRenameForm } from "./TreeRootNodeRenameForm";
 
 export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
-  const { searchInput, treePaddingLeft, treePaddingRight } = useContext(TreeContext);
+  const { searchInput, treePaddingLeft, treePaddingRight } = useContext(CollectionTreeContext);
 
   const draggableRootRef = useRef<HTMLDivElement>(null);
   const dropTargetRootRef = useRef<HTMLDivElement>(null);

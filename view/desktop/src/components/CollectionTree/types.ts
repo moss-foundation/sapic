@@ -41,7 +41,7 @@ export interface DropRootNode {
   instruction?: Instruction;
 }
 
-export interface TreeProps {
+export interface CollectionTreeProps {
   tree: TreeCollectionRootNode;
 
   treePaddingLeft?: number;
@@ -54,7 +54,7 @@ export interface TreeProps {
   onTreeUpdate?: (tree: TreeCollectionRootNode) => void;
 }
 
-export interface TreeContextProps extends StreamCollectionsEvent {
+export interface CollectionTreeContextProps extends StreamCollectionsEvent {
   treePaddingLeft: number;
   treePaddingRight: number;
   nodeOffset: number;

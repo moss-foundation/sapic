@@ -110,8 +110,14 @@
   "Env": {
     "identical": true
   },
-  "EnvActive": {
+  "Environment": {
+    "identical": false
+  },
+  "EnvironmentSelection": {
     "identical": true
+  },
+  "EnvironmentSelectionActive": {
+    "identical": false
   },
   "Error": {
     "identical": true
@@ -139,6 +145,9 @@
   },
   "GreenCheckmark": {
     "identical": true
+  },
+  "GroupedEnvironment": {
+    "identical": false
   },
   "Headers": {
     "identical": false
@@ -307,6 +316,9 @@
   },
   "VCS": {
     "identical": true
+  },
+  "Vault": {
+    "identical": false
   },
   "Warning": {
     "identical": true

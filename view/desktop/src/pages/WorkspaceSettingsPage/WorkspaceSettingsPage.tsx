@@ -11,23 +11,23 @@ import { WorkspaceNameSection } from "./WorkspaceNameSection";
 import { WorkspaceStartupSection } from "./WorkspaceStartupSection";
 
 export const WorkspaceSettings = () => {
-  const workspace = useActiveWorkspace();
+  const { hasActiveWorkspace, activeWorkspace } = useActiveWorkspace();
   const { mutate: updateWorkspace } = useUpdateWorkspace();
   const { mutate: deleteWorkspace, isPending: isDeleting } = useDeleteWorkspace();
 
-  const [name, setName] = useState(workspace?.name || "");
+  const [name, setName] = useState(activeWorkspace?.name || "");
   const [reopenOnNextSession, setReopenOnNextSession] = useState(false);
   const [openPreviousWindows, setOpenPreviousWindows] = useState(false);
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
 
   useEffect(() => {
-    if (workspace) {
-      setName(workspace.name);
+    if (activeWorkspace) {
+      setName(activeWorkspace.name);
     }
-  }, [workspace]);
+  }, [activeWorkspace]);
 
   const handleSave = () => {
-    if (name.trim() && name.trim() !== workspace?.name) {
+    if (name.trim() && name.trim() !== activeWorkspace?.name) {
       updateWorkspace(
         { name: name.trim() },
         {
@@ -50,9 +50,9 @@ export const WorkspaceSettings = () => {
   };
 
   const handleDeleteWorkspace = () => {
-    if (workspace) {
+    if (activeWorkspace) {
       deleteWorkspace(
-        { id: workspace.id },
+        { id: activeWorkspace.id },
         {
           onSuccess: () => {
             setShowDeleteConfirmModal(false);
@@ -70,7 +70,7 @@ export const WorkspaceSettings = () => {
     setShowDeleteConfirmModal(false);
   };
 
-  if (!workspace) {
+  if (!hasActiveWorkspace) {
     return (
       <div className="flex h-full items-center justify-center text-(--moss-primary-text)">
         <div className="text-center">
@@ -88,7 +88,7 @@ export const WorkspaceSettings = () => {
           showModal={showDeleteConfirmModal}
           closeModal={closeDeleteConfirmModal}
           title="Delete"
-          message={`Delete "${workspace?.name}"?`}
+          message={`Delete "${activeWorkspace?.name}"?`}
           description="This will delete the monitors, scheduled runs and integrations and deactivate the mock servers associated with collections in the workspace."
           confirmLabel={isDeleting ? "Deleting..." : "Delete"}
           cancelLabel="Close"

@@ -1,25 +1,9 @@
-import { createContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
+import { CollectionTreeContext } from "./CollectionTreeContext.tsx";
 import { TreeRootNode } from "./TreeRootNode/TreeRootNode.tsx";
-import { TreeCollectionRootNode, TreeContextProps, TreeProps } from "./types.ts";
+import { CollectionTreeProps, TreeCollectionRootNode } from "./types.ts";
 import { checkIfAllFoldersAreCollapsed, checkIfAllFoldersAreExpanded } from "./utils/TreeRoot.ts";
-
-export const TreeContext = createContext<TreeContextProps>({
-  id: "",
-  name: "",
-  repository: undefined,
-  order: undefined,
-  picturePath: undefined,
-  expanded: false,
-  treePaddingLeft: 0,
-  treePaddingRight: 0,
-  nodeOffset: 0,
-  allFoldersAreExpanded: false,
-  allFoldersAreCollapsed: true,
-  searchInput: undefined,
-  displayMode: "REQUEST_FIRST",
-  showNodeOrders: false,
-});
 
 export const CollectionTree = ({
   tree: initialTree,
@@ -29,7 +13,7 @@ export const CollectionTree = ({
   searchInput,
   displayMode = "REQUEST_FIRST",
   showNodeOrders = false,
-}: TreeProps) => {
+}: CollectionTreeProps) => {
   const [tree, setTree] = useState<TreeCollectionRootNode>(initialTree);
 
   useEffect(() => {
@@ -37,7 +21,7 @@ export const CollectionTree = ({
   }, [initialTree]);
 
   return (
-    <TreeContext.Provider
+    <CollectionTreeContext.Provider
       value={{
         id: initialTree.id,
         expanded: initialTree.expanded,
@@ -56,7 +40,7 @@ export const CollectionTree = ({
       }}
     >
       <TreeRootNode node={tree} />
-    </TreeContext.Provider>
+    </CollectionTreeContext.Provider>
   );
 };
 

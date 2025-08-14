@@ -1,8 +1,19 @@
 import { create } from "zustand";
 
+import { TreeCollectionNode } from "@/components/CollectionTree/types";
+import { Icons } from "@/lib/ui";
 import { AddPanelOptions, DockviewApi, SerializedDockview } from "@repo/moss-tabs";
 
-interface AddPanelOptionsWithoutMandatoryComponent extends Omit<AddPanelOptions, "component"> {
+interface AddPanelOptionsWithoutMandatoryComponent
+  extends Omit<
+    AddPanelOptions<{
+      iconType?: Icons;
+      collectionId?: string;
+      node?: TreeCollectionNode;
+      workspace?: boolean;
+    }>,
+    "component"
+  > {
   component?: string;
 }
 
@@ -46,6 +57,7 @@ export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
   activePanelId: undefined,
   setActivePanelId: (id: string | undefined) => set({ activePanelId: id }),
   addOrFocusPanel: async (options) => {
+    //TODO Do we need this anymore?
     const someRandomString = await new Promise<string>((resolve) => {
       setTimeout(() => {
         resolve(Math.random().toString(36).substring(7));

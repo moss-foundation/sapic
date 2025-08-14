@@ -22,18 +22,18 @@ import {
   getSourceTreeCollectionNodeData,
   hasAnotherDirectDescendantWithSimilarName,
   isSourceTreeCollectionNode,
+  prepareEntriesForCreation,
   prepareEntriesForDrop,
   sortByOrder,
 } from "../utils";
 
 export const useNodeDragAndDropHandler = () => {
   const { mutateAsync: createCollectionEntry } = useCreateCollectionEntry();
-  const { mutateAsync: batchCreateCollectionEntry } = useBatchCreateCollectionEntry();
-
   const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry();
-  const { mutateAsync: batchUpdateCollectionEntry } = useBatchUpdateCollectionEntry();
-
   const { mutateAsync: deleteCollectionEntry } = useDeleteCollectionEntry();
+
+  const { mutateAsync: batchCreateCollectionEntry } = useBatchCreateCollectionEntry();
+  const { mutateAsync: batchUpdateCollectionEntry } = useBatchUpdateCollectionEntry();
 
   const { fetchEntriesForPath } = useFetchEntriesForPath();
 
@@ -357,6 +357,48 @@ export const useNodeDragAndDropHandler = () => {
     [batchUpdateCollectionEntry, deleteCollectionEntry, batchCreateCollectionEntry, fetchEntriesForPath]
   );
 
+  const handleCombineToAnotherCollection = useCallback(
+    async (sourceTreeNodeData: DragNode, locationTreeNodeData: DropNode) => {
+      const allEntries = getAllNestedEntries(sourceTreeNodeData.node);
+      const entriesPreparedForCreation = await prepareEntriesForCreation(allEntries);
+
+      const newOrder = locationTreeNodeData.node.childNodes.length + 1;
+
+      await deleteCollectionEntry({
+        collectionId: sourceTreeNodeData.collectionId,
+        input: { id: sourceTreeNodeData.node.id },
+      });
+
+      const batchCreateEntryInput = await Promise.all(
+        entriesPreparedForCreation.map(async (entry, index) => {
+          if (index === 0) {
+            return createEntryKind(
+              entry.name,
+              locationTreeNodeData.node.path.raw,
+              entry.kind === "Dir",
+              entry.class,
+              newOrder
+            );
+          } else {
+            const newEntryPath = await join(locationTreeNodeData.node.path.raw, entry.path.raw);
+            return createEntryKind(entry.name, newEntryPath, entry.kind === "Dir", entry.class, entry.order!);
+          }
+        })
+      );
+
+      await batchCreateCollectionEntry({
+        collectionId: locationTreeNodeData.collectionId,
+        input: { entries: batchCreateEntryInput },
+      });
+
+      await fetchEntriesForPath(locationTreeNodeData.collectionId, locationTreeNodeData.parentNode.path.raw);
+      await fetchEntriesForPath(sourceTreeNodeData.collectionId, sourceTreeNodeData.parentNode.path.raw);
+
+      return;
+    },
+    [batchCreateCollectionEntry, deleteCollectionEntry, fetchEntriesForPath]
+  );
+
   useEffect(() => {
     return monitorForElements({
       canMonitor({ source }) {
@@ -402,14 +444,20 @@ export const useNodeDragAndDropHandler = () => {
           return;
         }
 
-        if (sourceTreeNodeData.collectionId === locationTreeNodeData.collectionId) {
+        const isSameCollection = sourceTreeNodeData.collectionId === locationTreeNodeData.collectionId;
+
+        if (isSameCollection) {
           if (operation === "combine") {
             await handleCombineWithinCollection(sourceTreeNodeData, locationTreeNodeData);
           } else {
             await handleReorderWithinCollection(sourceTreeNodeData, locationTreeNodeData, operation);
           }
         } else {
-          await handleMoveToAnotherCollection(sourceTreeNodeData, locationTreeNodeData, operation);
+          if (operation === "combine") {
+            await handleCombineToAnotherCollection(sourceTreeNodeData, locationTreeNodeData);
+          } else {
+            await handleMoveToAnotherCollection(sourceTreeNodeData, locationTreeNodeData, operation);
+          }
         }
       },
     });
@@ -424,5 +472,6 @@ export const useNodeDragAndDropHandler = () => {
     handleReorderWithinCollection,
     handleCombineToAnotherCollectionRoot,
     updateCollectionEntry,
+    handleCombineToAnotherCollection,
   ]);
 };

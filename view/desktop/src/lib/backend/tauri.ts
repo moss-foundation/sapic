@@ -35,6 +35,7 @@ export type TauriIpcCommand =
   | "stream_environments"
   | "create_environment"
   | "update_environment"
+  | "delete_environment"
   //
   // Collection
   //

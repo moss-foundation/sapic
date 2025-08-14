@@ -64,14 +64,14 @@ const DynamicPageWrapper = ({
   const PageComponent = config.component;
 
   // Get fresh workspace data for dynamic title - must be called before any returns
-  const currentWorkspace = useActiveWorkspace();
+  const { activeWorkspace } = useActiveWorkspace();
 
   // Update panel title dynamically for WorkspaceSettings - must be called before any returns
   React.useEffect(() => {
-    if (pageKey === "WorkspaceSettings" && props.api && currentWorkspace?.name) {
-      props.api.setTitle(currentWorkspace.name);
+    if (pageKey === "WorkspaceSettings" && props.api && activeWorkspace?.name) {
+      props.api.setTitle(activeWorkspace.name);
     }
-  }, [currentWorkspace?.name, props.api, pageKey]);
+  }, [activeWorkspace?.name, props.api, pageKey]);
 
   // Special case for full-page components (no title)
   if (!config.title) {
@@ -108,7 +108,7 @@ const PanelToolbar = (props: IDockviewHeaderActionsProps) => {
 const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | "welcome" | "empty" }) => {
   const { showDebugPanels } = useTabbedPaneStore();
   const { api, addOrFocusPanel, setApi } = useTabbedPaneStore();
-  const activeWorkspace = useActiveWorkspace();
+  const { hasActiveWorkspace } = useActiveWorkspace();
 
   const [panels, setPanels] = React.useState<string[]>([]);
   const [groups, setGroups] = React.useState<string[]>([]);
@@ -194,10 +194,9 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     addOrFocusPanel({
       id: pragmaticDropElement.node.id,
       title: pragmaticDropElement.node.name,
-      component: "Default",
+      component: "Request",
       params: {
         collectionId: pragmaticDropElement.collectionId,
-        iconType: pragmaticDropElement.node.kind,
         node: pragmaticDropElement.node,
       },
       position: {
@@ -213,13 +212,13 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
 
     const event = api.onDidLayoutChange(() => {
       // Only update workspace state if there's an active workspace
-      if (activeWorkspace && !isRestoringLayout.current) {
+      if (hasActiveWorkspace && !isRestoringLayout.current) {
         updateEditorPartState(api.toJSON());
       }
     });
 
     return () => event.dispose();
-  }, [api, updateEditorPartState, activeWorkspace]);
+  }, [api, updateEditorPartState, hasActiveWorkspace]);
 
   const pageConfigs: Record<string, PageConfig> = {
     KitchenSink: {

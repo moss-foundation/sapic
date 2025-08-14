@@ -22,15 +22,15 @@ const deleteWorkspaceFn = async (input: DeleteWorkspaceInput): Promise<DeleteWor
 
 export const useDeleteWorkspace = () => {
   const queryClient = useQueryClient();
-  const activeWorkspace = useActiveWorkspace();
+  const { activeWorkspaceId, hasActiveWorkspace } = useActiveWorkspace();
   const { mutateAsync: closeWorkspace } = useCloseWorkspace();
 
   return useMutation<DeleteWorkspaceOutput, Error, DeleteWorkspaceInput>({
     mutationKey: [USE_DELETE_WORKSPACE_MUTATION_KEY],
     mutationFn: async (input: DeleteWorkspaceInput) => {
-      if (activeWorkspace && activeWorkspace.id === input.id) {
+      if (hasActiveWorkspace && activeWorkspaceId === input.id) {
         try {
-          await closeWorkspace(activeWorkspace.id);
+          await closeWorkspace(activeWorkspaceId);
         } catch (error) {
           throw new Error(`Failed to close workspace: ${error}`);
         }

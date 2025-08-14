@@ -1,4 +1,4 @@
-import { extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
+import { Availability, extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import {
   DragLocationHistory,
   DropTargetRecord,
@@ -7,7 +7,11 @@ import {
 import { EntryInfo } from "@repo/moss-collection";
 
 import { DragNode, DropNode, DropRootNode, TreeCollectionNode } from "../types";
-import { hasAnotherDirectDescendantWithSimilarName, hasDescendant } from "./TreeCollectionNode";
+import {
+  hasAnotherDirectDescendantWithSimilarName,
+  hasDescendant,
+  hasDirectSimilarDescendant,
+} from "./TreeCollectionNode";
 
 //source
 export const getSourceTreeCollectionNodeData = (source: ElementDragPayload): DragNode | null => {
@@ -120,4 +124,62 @@ export const canDropNode = (sourceTarget: DragNode, dropTarget: DropNode) => {
   }
 
   return true;
+};
+
+//operations rules
+
+export const isReorderAvailable = (sourceTarget: DragNode, dropTarget: DropNode): Availability => {
+  if (sourceTarget.node.id === dropTarget.node.id) {
+    return "not-available";
+  }
+
+  if (sourceTarget.node.class !== dropTarget.node.class) {
+    return "blocked";
+  }
+
+  if (hasDescendant(sourceTarget.node, dropTarget.node)) {
+    return "blocked";
+  }
+
+  if (hasAnotherDirectDescendantWithSimilarName(dropTarget.parentNode, sourceTarget.node)) {
+    return "blocked";
+  }
+
+  return "available";
+};
+
+export const isCombineAvailable = (sourceTarget: DragNode, dropTarget: DropNode): Availability => {
+  if (dropTarget.node.kind !== "Dir") {
+    return "not-available";
+  }
+
+  if (sourceTarget.node.id === dropTarget.node.id) {
+    return "blocked";
+  }
+
+  if (sourceTarget.node.class !== dropTarget.node.class) {
+    return "blocked";
+  }
+
+  if (hasDescendant(sourceTarget.node, dropTarget.node)) {
+    return "blocked";
+  }
+
+  if (hasDirectSimilarDescendant(dropTarget.node, sourceTarget.node)) {
+    return "blocked";
+  }
+
+  return "available";
+};
+
+export const evaluateIsChildDropBlocked = (parentNode: TreeCollectionNode, dropNode: TreeCollectionNode): boolean => {
+  if (parentNode.class !== dropNode.class) {
+    return true;
+  }
+
+  if (hasAnotherDirectDescendantWithSimilarName(parentNode, dropNode)) {
+    return true;
+  }
+
+  return false;
 };
