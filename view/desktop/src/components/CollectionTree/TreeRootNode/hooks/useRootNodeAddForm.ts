@@ -2,12 +2,13 @@ import { useContext, useState } from "react";
 
 import { useCreateCollectionEntry } from "@/hooks";
 
-import { TreeContext } from "../../Tree";
+import { CollectionTreeContext } from "../../CollectionTreeContext";
 import { TreeCollectionRootNode } from "../../types";
 import { createEntryKind } from "../../utils";
 
 export const useRootNodeAddForm = (node: TreeCollectionRootNode) => {
-  const { id } = useContext(TreeContext);
+  const { id } = useContext(CollectionTreeContext);
+
   const { mutateAsync: createCollectionEntry } = useCreateCollectionEntry();
 
   const [isAddingRootNodeFile, setIsAddingRootNodeFile] = useState(false);

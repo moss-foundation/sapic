@@ -1,9 +1,9 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
 import {
-  OpenWorkspaceInput,
-  OpenWorkspaceOutput,
   DescribeAppStateOutput,
   ListWorkspacesOutput,
+  OpenWorkspaceInput,
+  OpenWorkspaceOutput,
   WorkspaceInfo,
 } from "@repo/moss-app";
 import { DescribeStateOutput } from "@repo/moss-workspace";
@@ -12,6 +12,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { USE_DESCRIBE_APP_STATE_QUERY_KEY } from "../appState/useDescribeAppState";
 import { USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY } from "../collection";
 import { USE_STREAMED_COLLECTIONS_QUERY_KEY } from "../collection/useStreamedCollections";
+import { USE_STREAMED_ENVIRONMENTS_QUERY_KEY } from "../environment";
 import { USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY } from "../workspace/useDescribeWorkspaceState";
 import { USE_LIST_WORKSPACES_QUERY_KEY } from "./useListWorkspaces";
 
@@ -77,8 +78,9 @@ export const useOpenWorkspace = () => {
       });
 
       // Only invalidate workspace-specific data
-      queryClient.invalidateQueries({ queryKey: [USE_STREAMED_COLLECTIONS_QUERY_KEY], exact: true });
-      queryClient.invalidateQueries({ queryKey: [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY], exact: true });
+      queryClient.removeQueries({ queryKey: [USE_STREAMED_COLLECTIONS_QUERY_KEY] });
+      queryClient.removeQueries({ queryKey: [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY] });
+      queryClient.removeQueries({ queryKey: [USE_STREAMED_ENVIRONMENTS_QUERY_KEY] });
     },
   });
 };

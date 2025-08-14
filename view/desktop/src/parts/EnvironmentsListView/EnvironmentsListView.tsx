@@ -1,0 +1,45 @@
+import { GlobalEnvironmentsList } from "@/components/GlobalEnvironmentsList/GlobalEnvironmentsList";
+import { GroupedEnvironmentsList } from "@/components/GroupedEnvironmentsList";
+import { useStreamEnvironments } from "@/hooks/environment";
+import { Scrollbar } from "@/lib/ui";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
+
+import { EnvironmentsListItem } from "./EnvironmentsListItem";
+import { EnvironmentsListViewDivider } from "./EnvironmentsListViewDivider";
+import { EnvironmentsListViewHeader } from "./EnvironmentsListViewHeader";
+
+export const EnvironmentsListView = () => {
+  const { addOrFocusPanel } = useTabbedPaneStore();
+  const { data: environments } = useStreamEnvironments();
+
+  return (
+    <div className="flex h-full flex-col">
+      <EnvironmentsListViewHeader />
+
+      <Scrollbar className="h-full">
+        <EnvironmentsListItem
+          icon="Vault"
+          label="Vault"
+          title="Vaults coming soon..."
+          disabled={true}
+          onClick={() => {
+            addOrFocusPanel({
+              id: "Vault",
+              component: "Default",
+            });
+          }}
+        />
+
+        {environments && environments.length > 0 && <EnvironmentsListViewDivider />}
+
+        <GlobalEnvironmentsList />
+
+        {environments && environments.length > 0 && <EnvironmentsListViewDivider />}
+
+        <GroupedEnvironmentsList />
+      </Scrollbar>
+    </div>
+  );
+};
+
+export default EnvironmentsListView;

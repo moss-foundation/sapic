@@ -31,8 +31,7 @@ export const HeadBar = () => {
   const openPanel = useTabbedPaneStore((state) => state.openPanel);
   const { isMedium, isLarge, isXLarge, breakpoint } = useResponsive();
 
-  const workspace = useActiveWorkspace();
-  const selectedWorkspace = workspace?.name || null;
+  const { hasActiveWorkspace } = useActiveWorkspace();
 
   //FIXME: Hardoce default user/branch for testing
   const [, setSelectedUser] = useState<string | null>(null);
@@ -167,8 +166,8 @@ export const HeadBar = () => {
           {/* Main content container with proper layout */}
           <div
             className={cn("relative grid h-full w-full items-center justify-between gap-1", {
-              "grid-cols-[1fr_max-content_1fr]": selectedWorkspace,
-              "grid-cols-[max-content_max-content]": !selectedWorkspace,
+              "grid-cols-[1fr_max-content_1fr]": hasActiveWorkspace,
+              "grid-cols-[max-content_max-content]": !hasActiveWorkspace,
             })}
             data-tauri-drag-region
           >
@@ -178,11 +177,10 @@ export const HeadBar = () => {
               handleWindowsMenuAction={handleWindowsMenuAction}
               handleWorkspaceMenuAction={handleWorkspaceMenuAction}
               os={os}
-              selectedWorkspace={selectedWorkspace}
             />
 
             {/*HeadBar Center items - absolutely positioned to be truly centered */}
-            {selectedWorkspace && (
+            {hasActiveWorkspace && (
               <div
                 className={cn("w-full", {
                   "pointer-events-none": os === "macos",
@@ -223,7 +221,6 @@ export const HeadBar = () => {
               setShowDebugPanels={setShowDebugPanels}
               openPanel={openPanel}
               os={os}
-              selectedWorkspace={selectedWorkspace}
             />
           </div>
         </div>

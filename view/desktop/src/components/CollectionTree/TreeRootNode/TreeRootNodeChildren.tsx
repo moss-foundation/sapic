@@ -3,9 +3,9 @@ import { useContext } from "react";
 import { cn } from "@/utils";
 
 import { EntryIcon } from "../../EntryIcon";
+import { CollectionTreeContext } from "../CollectionTreeContext";
 import { DirDepthIndicator } from "../DirDepthIndicator";
 import { NodeAddForm } from "../NodeAddForm";
-import { TreeContext } from "../Tree";
 import TreeNode from "../TreeNode/TreeNode";
 import { TreeCollectionRootNode } from "../types";
 import { getChildrenNames, sortByOrder } from "../utils";
@@ -25,7 +25,7 @@ export const TreeRootNodeChildren = ({
   handleAddFormRootSubmit,
   handleAddFormRootCancel,
 }: TreeRootNodeChildrenProps) => {
-  const { nodeOffset, displayMode } = useContext(TreeContext);
+  const { nodeOffset, displayMode } = useContext(CollectionTreeContext);
 
   const nodesToRender =
     displayMode === "REQUEST_FIRST"

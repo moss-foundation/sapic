@@ -1,96 +1,23 @@
-import "@repo/moss-tabs/assets/styles.css";
-
 import { useEffect, useRef, useState } from "react";
 
-import { CollectionTree, InputPlain } from "@/components";
-import { useStreamedCollections } from "@/hooks";
-import { useCollectionsTrees } from "@/hooks/collection/derivedHooks/useCollectionsTrees";
-import { useCreateCollection } from "@/hooks/collection/useCreateCollection";
-import { useCreateCollectionEntry } from "@/hooks/collection/useCreateCollectionEntry";
-import { useDeleteCollectionEntry } from "@/hooks/collection/useDeleteCollectionEntry";
-import { Icon, Scrollbar } from "@/lib/ui";
-import { useRequestModeStore } from "@/store/requestMode";
+import {
+  convertEntryInfoToCreateInput,
+  getAllNestedEntries,
+  getSourceTreeCollectionNodeData,
+  isSourceTreeCollectionNode,
+} from "@/components/CollectionTree/utils";
+import {
+  useCreateCollection,
+  useCreateCollectionEntry,
+  useDeleteCollectionEntry,
+  useStreamedCollections,
+} from "@/hooks";
+import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { join } from "@tauri-apps/api/path";
 
-import { useCollectionDragAndDropHandler } from "./CollectionTree/hooks/useCollectionDragAndDropHandler";
-import { useNodeDragAndDropHandler } from "./CollectionTree/hooks/useNodeDragAndDropHandler";
-import { convertEntryInfoToCreateInput } from "./CollectionTree/utils";
-import {
-  getAllNestedEntries,
-  getSourceTreeCollectionNodeData,
-  isSourceTreeCollectionNode,
-} from "./CollectionTree/utils/DragAndDrop";
-
-export const CollectionTreeView = () => {
-  const dropTargetToggleRef = useRef<HTMLDivElement>(null);
-
-  const { displayMode } = useRequestModeStore();
-
-  useCollectionDragAndDropHandler();
-  useNodeDragAndDropHandler();
-
-  const [showCollectionCreationZone, setShowCollectionCreationZone] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (!dropTargetToggleRef.current) return;
-    const element = dropTargetToggleRef.current;
-
-    return dropTargetForElements({
-      element,
-      getData: () => ({
-        type: "CollectionCreationZone",
-      }),
-      canDrop({ source }) {
-        return isSourceTreeCollectionNode(source);
-      },
-      onDrop() {
-        setShowCollectionCreationZone(false);
-      },
-      onDragLeave() {
-        setShowCollectionCreationZone(false);
-      },
-      onDragStart() {
-        setShowCollectionCreationZone(true);
-      },
-      onDragEnter() {
-        setShowCollectionCreationZone(true);
-      },
-    });
-  }, []);
-
-  const { collectionsTrees, isLoading } = useCollectionsTrees();
-
-  return (
-    <div ref={dropTargetToggleRef} className="relative h-[calc(100%-36px)] select-none">
-      <Scrollbar className="h-full">
-        <div className="flex h-full flex-col">
-          <div className="flex shrink items-center gap-[7px] px-2 py-1">
-            <InputPlain placeholder="Search" size="sm" />
-          </div>
-
-          <div className="flex grow flex-col">
-            {!isLoading &&
-              collectionsTrees
-                .sort((a, b) => a.order! - b.order!)
-                .map((collection) => (
-                  <CollectionTree key={collection.id} tree={collection} displayMode={displayMode} />
-                ))}
-          </div>
-
-          {showCollectionCreationZone && (
-            <div className="flex justify-end p-2">
-              <CollectionCreationZone />
-            </div>
-          )}
-        </div>
-      </Scrollbar>
-    </div>
-  );
-};
-
-const CollectionCreationZone = () => {
+export const CollectionCreationZone = () => {
   const ref = useRef<HTMLDivElement>(null);
 
   const [canDrop, setCanDrop] = useState<boolean | null>(null);
@@ -198,5 +125,3 @@ const CollectionCreationZone = () => {
     </div>
   );
 };
-
-export default CollectionTreeView;

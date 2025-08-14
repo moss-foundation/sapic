@@ -26,6 +26,7 @@ async fn delete_collection_success() {
                 order: 0,
                 external_path: None,
                 repository: None,
+                git_provider_type: None,
                 icon_path: None,
             },
         )
@@ -81,6 +82,7 @@ async fn delete_collection_nonexistent_id() {
                 order: 0,
                 external_path: None,
                 repository: None,
+                git_provider_type: None,
                 icon_path: None,
             },
         )
@@ -118,6 +120,7 @@ async fn delete_collection_fs_already_deleted() {
                 order: 0,
                 external_path: None,
                 repository: None,
+                git_provider_type: None,
                 icon_path: None,
             },
         )

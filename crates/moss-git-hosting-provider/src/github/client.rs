@@ -1,27 +1,29 @@
 use async_trait::async_trait;
+use joinerror::OptionExt;
 use moss_git::GitAuthAgent;
-use oauth2::http::{HeaderMap, header::ACCEPT};
-use reqwest::{Client, header::HeaderValue};
-use std::{cell::LazyCell, sync::Arc};
+use oauth2::http::header::ACCEPT;
+use reqwest::{Client, header::AUTHORIZATION};
+use std::sync::Arc;
 use url::Url;
 
 use crate::{
-    GitHostingProvider,
-    common::SSHAuthAgent,
+    GitAuthProvider, GitHostingProvider,
+    common::{GitUrl, SSHAuthAgent},
     constants::GITHUB_API_URL,
-    github::response::{ContributorsResponse, RepositoryResponse},
-    models::types::{Contributor, RepositoryInfo},
+    github::{
+        auth::GitHubAuthAgent,
+        response::{ContributorsResponse, RepositoryResponse, UserResponse},
+    },
+    models::types::{Contributor, RepositoryInfo, UserInfo},
 };
 
-const CONTENT_TYPE: LazyCell<HeaderValue> =
-    LazyCell::new(|| HeaderValue::from_static("application/vnd.github+json"));
-
-pub trait GitHubAuthAgent: GitAuthAgent {}
+const CONTENT_TYPE: &'static str = "application/vnd.github+json";
 
 pub struct GitHubClient {
     client: Client,
     #[allow(dead_code)]
-    client_auth_agent: Arc<dyn GitHubAuthAgent>,
+    // TODO: Support multiple accounts?
+    client_auth_agent: Arc<GitHubAuthAgent>,
     #[allow(dead_code)]
     ssh_auth_agent: Option<Arc<dyn SSHAuthAgent>>,
 }
@@ -29,19 +31,39 @@ pub struct GitHubClient {
 impl GitHubClient {
     pub fn new(
         client: Client,
-        client_auth_agent: impl GitHubAuthAgent + 'static,
+        client_auth_agent: Arc<GitHubAuthAgent>,
         ssh_auth_agent: Option<impl SSHAuthAgent + 'static>,
     ) -> Self {
         Self {
             client,
-            client_auth_agent: Arc::new(client_auth_agent),
+            client_auth_agent,
             ssh_auth_agent: ssh_auth_agent.map(|agent| Arc::new(agent) as Arc<dyn SSHAuthAgent>),
         }
+    }
+
+    pub fn is_logged_in(&self) -> joinerror::Result<bool> {
+        self.client_auth_agent.is_logged_in()
+    }
+
+    // Try to fetch/generate credentials and return currently logged-in user info
+    // This will trigger an initial OAuth authorization
+    // Or will fetch the stored access_token
+    pub async fn login(&self) -> joinerror::Result<UserInfo> {
+        let _ = self.client_auth_agent.clone().credentials_async().await?;
+        self.current_user().await
     }
 }
 
 unsafe impl Send for GitHubClient {}
 unsafe impl Sync for GitHubClient {}
+
+impl GitAuthProvider for GitHubClient {
+    fn git_auth_agent(&self) -> Arc<dyn GitAuthAgent> {
+        self.client_auth_agent.clone()
+    }
+}
+
+// TODO: Handle authentication expiration and reauthentication
 #[async_trait]
 impl GitHostingProvider for GitHubClient {
     fn name(&self) -> String {
@@ -52,15 +74,48 @@ impl GitHostingProvider for GitHubClient {
         Url::parse("https://github.com").unwrap()
     }
 
-    async fn contributors(&self, repo_url: &str) -> joinerror::Result<Vec<Contributor>> {
-        // TODO: Support token auth for private repos
-        let mut headers = HeaderMap::new();
-        headers.insert(ACCEPT, (*CONTENT_TYPE).clone());
+    async fn current_user(&self) -> joinerror::Result<UserInfo> {
+        let access_token = self
+            .client_auth_agent
+            .clone()
+            .access_token()
+            .ok_or_join_err::<()>("github is not logged in yet")?;
+
+        let user_response: UserResponse = self
+            .client
+            .get(format!("{GITHUB_API_URL}/user"))
+            .header(ACCEPT, CONTENT_TYPE)
+            .header(AUTHORIZATION, format!("Bearer {}", access_token))
+            .send()
+            .await?
+            .json()
+            .await?;
+
+        // If the user's email is private, we will use their noreply email
+        let email = user_response.email.unwrap_or(format!(
+            "{}+{}@users.noreply.github.com",
+            user_response.id, user_response.login
+        ));
+
+        Ok(UserInfo {
+            name: user_response.login,
+            email,
+        })
+    }
+
+    async fn contributors(&self, repo_ref: &GitUrl) -> joinerror::Result<Vec<Contributor>> {
+        let repo_url = format!("{}/{}", &repo_ref.owner, &repo_ref.name);
+        let access_token = self
+            .client_auth_agent
+            .clone()
+            .access_token()
+            .ok_or_join_err::<()>("github is not logged in yet")?;
 
         let contributors_response: ContributorsResponse = self
             .client
             .get(format!("{GITHUB_API_URL}/repos/{repo_url}/contributors"))
-            .headers(headers)
+            .header(ACCEPT, CONTENT_TYPE)
+            .header(AUTHORIZATION, format!("Bearer {}", access_token))
             .send()
             .await?
             .json()
@@ -76,15 +131,19 @@ impl GitHostingProvider for GitHubClient {
             .collect())
     }
 
-    async fn repository_info(&self, repo_url: &str) -> joinerror::Result<RepositoryInfo> {
-        // TODO: Support token auth for private repo
-        let mut headers = HeaderMap::new();
-        headers.insert(ACCEPT, (*CONTENT_TYPE).clone());
+    async fn repository_info(&self, repo_ref: &GitUrl) -> joinerror::Result<RepositoryInfo> {
+        let repo_url = format!("{}/{}", &repo_ref.owner, &repo_ref.name);
+        let access_token = self
+            .client_auth_agent
+            .clone()
+            .access_token()
+            .ok_or_join_err::<()>("github is not logged in yet")?;
 
         let repo_response: RepositoryResponse = self
             .client
             .get(format!("{GITHUB_API_URL}/repos/{repo_url}"))
-            .headers(headers.clone())
+            .header(ACCEPT, CONTENT_TYPE)
+            .header(AUTHORIZATION, format!("Bearer {}", access_token))
             .send()
             .await?
             .json()
@@ -98,108 +157,97 @@ impl GitHostingProvider for GitHubClient {
     }
 }
 
+// API related tests are skipped during CI, since it requires setting up refresh token in envvar
+// Set `GITHUB_ACCESS_TOKEN = {}` in /.env
+
 #[cfg(test)]
 mod tests {
-    use anyhow::Result;
-    use git2::RemoteCallbacks;
+    use std::{ops::Deref, sync::LazyLock};
+    // FIXME: Rewrite the tests
+    use moss_keyring::KeyringClientImpl;
+
+    use crate::{
+        common::ssh_auth_agent::SSHAuthAgentImpl,
+        envvar_keys::{GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET},
+    };
 
     use super::*;
 
-    struct DummyGitHubAuthAgent;
+    static REPO_REF: LazyLock<GitUrl> = LazyLock::new(|| GitUrl {
+        domain: "github.com".to_string(),
+        owner: "brutusyhy".to_string(),
+        name: "test-public-repo".to_string(),
+    });
 
-    const REPO_URL: &'static str = "moss-foundation/sapic";
+    async fn create_test_client() -> Arc<GitHubClient> {
+        dotenv::dotenv().ok();
 
-    impl GitAuthAgent for DummyGitHubAuthAgent {
-        fn generate_callback<'a>(&'a self, _cb: &mut RemoteCallbacks<'a>) -> Result<()> {
-            Ok(())
-        }
-    }
-    impl GitHubAuthAgent for DummyGitHubAuthAgent {}
-
-    struct DummySSHAuthAgent;
-
-    impl GitAuthAgent for DummySSHAuthAgent {
-        fn generate_callback<'a>(&'a self, _cb: &mut RemoteCallbacks<'a>) -> Result<()> {
-            Ok(())
-        }
-    }
-    impl SSHAuthAgent for DummySSHAuthAgent {}
-
-    #[test]
-    fn github_client_name() {
-        let client_auth_agent = DummyGitHubAuthAgent;
-        let ssh_auth_agent: Option<DummySSHAuthAgent> = None;
         let reqwest_client = reqwest::ClientBuilder::new()
             .user_agent("SAPIC")
             .build()
             .unwrap();
 
-        let client = GitHubClient::new(reqwest_client, client_auth_agent, ssh_auth_agent);
+        let keyring_client = Arc::new(KeyringClientImpl::new());
+        let auth_agent = Arc::new(GitHubAuthAgent::new(
+            oauth2::ureq::builder().redirects(0).build(),
+            keyring_client,
+            dotenv::var(GITHUB_CLIENT_ID).unwrap(),
+            dotenv::var(GITHUB_CLIENT_SECRET).unwrap(),
+        ));
+
+        let client = Arc::new(GitHubClient::new(
+            reqwest_client,
+            auth_agent,
+            None as Option<SSHAuthAgentImpl>,
+        ));
+
+        client.login().await.unwrap();
+        client
+    }
+
+    #[ignore]
+    #[tokio::test]
+    async fn github_client_name() {
+        let client = create_test_client().await;
 
         assert_eq!(client.name(), "GitHub");
     }
 
-    #[test]
-    fn github_client_base_url() {
-        let client_auth_agent = DummyGitHubAuthAgent;
-        let ssh_auth_agent: Option<DummySSHAuthAgent> = None;
-        let reqwest_client = reqwest::ClientBuilder::new()
-            .user_agent("SAPIC")
-            .build()
-            .unwrap();
+    #[ignore]
+    #[tokio::test]
+    async fn github_client_base_url() {
+        let client = create_test_client().await;
 
-        let client = GitHubClient::new(reqwest_client, client_auth_agent, ssh_auth_agent);
         let expected_url = Url::parse("https://github.com").unwrap();
 
         assert_eq!(client.base_url(), expected_url);
     }
 
+    #[ignore]
+    #[tokio::test]
+    async fn github_client_current_user() {
+        let client = create_test_client().await;
+        let user_info = client.current_user().await.unwrap();
+        println!("{:?}", user_info);
+    }
+    #[ignore]
+    #[tokio::test]
+    async fn github_client_repo_info() {
+        let client = create_test_client().await;
+        let repo_info = client.repository_info(REPO_REF.deref()).await.unwrap();
+        println!("{:?}", repo_info);
+    }
+
+    #[ignore]
     #[tokio::test]
     async fn github_client_contributors() {
-        let client_auth_agent = DummyGitHubAuthAgent;
-        let ssh_auth_agent: Option<DummySSHAuthAgent> = None;
-        let reqwest_client = reqwest::ClientBuilder::new()
-            .user_agent("SAPIC")
-            .build()
-            .unwrap();
-        let client = GitHubClient::new(reqwest_client, client_auth_agent, ssh_auth_agent);
-        let contributors = client.contributors(REPO_URL).await.unwrap();
+        let client = create_test_client().await;
+        let contributors = client.contributors(REPO_REF.deref()).await.unwrap();
         for contributor in contributors {
             println!(
                 "Contributor {}, avatar_url: {}",
                 contributor.name, contributor.avatar_url
             );
         }
-    }
-
-    #[tokio::test]
-    async fn github_client_repository_info() {
-        let client_auth_agent = DummyGitHubAuthAgent;
-        let ssh_auth_agent: Option<DummySSHAuthAgent> = None;
-        let reqwest_client = reqwest::ClientBuilder::new()
-            .user_agent("SAPIC")
-            .build()
-            .unwrap();
-        let client = GitHubClient::new(reqwest_client, client_auth_agent, ssh_auth_agent);
-        let repo_info = client.repository_info(REPO_URL).await.unwrap();
-        println!("Repository created at {}", repo_info.created_at);
-        println!("Repository updated at {}", repo_info.updated_at);
-        println!("Repository owner {}", repo_info.owner);
-    }
-
-    #[ignore]
-    #[test]
-    fn manual_github_client_with_ssh_auth_agent() {
-        let client_auth_agent = DummyGitHubAuthAgent;
-        let ssh_agent = DummySSHAuthAgent;
-        let reqwest_client = reqwest::ClientBuilder::new()
-            .user_agent("SAPIC")
-            .build()
-            .unwrap();
-        let client = GitHubClient::new(reqwest_client, client_auth_agent, Some(ssh_agent));
-
-        assert_eq!(client.name(), "GitHub");
-        let expected_url = Url::parse("https://github.com").unwrap();
-        assert_eq!(client.base_url(), expected_url);
     }
 }

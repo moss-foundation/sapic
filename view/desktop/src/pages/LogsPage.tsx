@@ -7,6 +7,7 @@ import { useActivityEvents } from "@/context/ActivityEventsContext";
 import { LogEntryInfo, LOGGING_SERVICE_CHANNEL } from "@repo/moss-app";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { GitProviders } from "@/git_providers/GitProviders.tsx";
 
 export const Logs = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
@@ -38,6 +39,13 @@ export const Logs = () => {
         <h2 className="mb-2 text-xl">AI Assistant</h2>
         <div className="rounded bg-gray-50 p-4">
           <AIDemo />
+        </div>
+      </section>
+
+      <section className="mb-6">
+        <h2 className="mb-2 text-xl">Git Providers</h2>
+        <div className="rounded bg-gray-50 p-4">
+          <GitProviders />
         </div>
       </section>
 

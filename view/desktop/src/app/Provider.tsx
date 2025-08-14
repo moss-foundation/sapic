@@ -1,12 +1,12 @@
 import { ReactNode, useEffect, useRef } from "react";
 
+import { initializeI18n } from "@/app/i18n";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { useDescribeAppState } from "@/hooks/appState/useDescribeAppState";
 import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
 import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
 import { applyLanguagePack } from "@/utils/applyLanguagePack";
 import { applyColorThemeFromCache } from "@/utils/applyTheme";
-import { initializeI18n } from "@/app/i18n";
 import { useQueryClient } from "@tanstack/react-query";
 
 import LanguageProvider from "./LanguageProvider";
@@ -28,7 +28,7 @@ const useInitializeAppState = () => {
   const { data } = useDescribeAppState();
   const queryClient = useQueryClient();
   const { mutate: openWorkspace } = useOpenWorkspace();
-  const activeWorkspace = useActiveWorkspace();
+  const { activeWorkspace } = useActiveWorkspace();
   const hasTriedRestoration = useRef(false);
 
   // Initialize app theme and language

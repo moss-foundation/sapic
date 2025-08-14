@@ -4,7 +4,6 @@ use moss_app::{
     command::CommandContext,
     models::{events::*, operations::*},
 };
-
 use moss_applib::context::{AnyContext, MutableContext};
 use moss_text::{ReadOnlyStr, quote};
 use serde_json::Value as JsonValue;
@@ -377,4 +376,16 @@ pub async fn cancel_request<'a, R: tauri::Runtime>(
     app.cancel_request(input)
         .await
         .map_err(TauriError::OperationError)
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn add_account<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: Window<R>,
+    input: AddAccountInput,
+) -> TauriResult<AddAccountOutput> {
+    let output = app.add_account(&ctx, input).await?;
+    Ok(output)
 }

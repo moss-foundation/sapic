@@ -18,8 +18,7 @@ export const Settings = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
 
   const { data: appState } = useDescribeAppState();
-  const workspace = useActiveWorkspace();
-  const hasWorkspace = !!workspace;
+  const { hasActiveWorkspace } = useActiveWorkspace();
   const { bottomPane, sideBar } = useAppResizableLayoutStore();
 
   const { data: themes } = useListColorThemes();
@@ -215,7 +214,7 @@ export const Settings = () => {
 
       <div className="mt-6">
         <h2 className="mb-4 text-lg font-semibold">Workspace Layout</h2>
-        {!hasWorkspace && (
+        {!hasActiveWorkspace && (
           <div className="mb-4 rounded-md bg-yellow-50 p-3 text-sm text-yellow-800">
             <p>
               Sidebar and panel settings are only available when a workspace is active. These settings are saved per
@@ -230,7 +229,7 @@ export const Settings = () => {
             <SelectOutlined.Root
               value={sideBarPosition || SIDEBAR_POSITION.LEFT}
               onValueChange={handleSidebarTypeChange}
-              disabled={!hasWorkspace}
+              disabled={!hasActiveWorkspace}
             >
               <SelectOutlined.Trigger />
               <SelectOutlined.Content>
@@ -255,7 +254,7 @@ export const Settings = () => {
             <SelectOutlined.Root
               value={sideBar.visible ? "visible" : "hidden"}
               onValueChange={handleSidebarVisibilityChange}
-              disabled={!hasWorkspace}
+              disabled={!hasActiveWorkspace}
             >
               <SelectOutlined.Trigger />
               <SelectOutlined.Content>
@@ -281,7 +280,7 @@ export const Settings = () => {
             <SelectOutlined.Root
               value={bottomPane.visible ? "visible" : "hidden"}
               onValueChange={handleBottomPaneVisibilityChange}
-              disabled={!hasWorkspace}
+              disabled={!hasActiveWorkspace}
             >
               <SelectOutlined.Trigger />
               <SelectOutlined.Content>

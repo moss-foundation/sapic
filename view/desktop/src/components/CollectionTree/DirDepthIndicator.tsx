@@ -1,9 +1,9 @@
 import { useContext } from "react";
 
-import { TreeContext } from "./Tree";
+import { CollectionTreeContext } from "./CollectionTreeContext";
 
 export const DirDepthIndicator = ({ depth }: { depth: number }) => {
-  const { nodeOffset } = useContext(TreeContext);
+  const { nodeOffset } = useContext(CollectionTreeContext);
 
   const iconSize = 16;
   const left = depth * nodeOffset + iconSize + 1;

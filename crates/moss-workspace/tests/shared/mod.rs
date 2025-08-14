@@ -9,8 +9,9 @@ use moss_applib::{
 use moss_fs::{FileSystem, RealFileSystem};
 use moss_git_hosting_provider::{
     common::ssh_auth_agent::SSHAuthAgentImpl,
-    github::{auth::GitHubAuthAgentImpl, client::GitHubClient},
-    gitlab::{auth::GitLabAuthAgentImpl, client::GitLabClient},
+    envvar_keys::{GITLAB_CLIENT_ID, GITLAB_CLIENT_SECRET},
+    github::{auth::GitHubAuthAgent, client::GitHubClient},
+    gitlab::{auth::GitLabAuthAgent, client::GitLabClient},
 };
 use moss_keyring::KeyringClientImpl;
 use moss_testutils::random_name::random_workspace_name;
@@ -39,6 +40,7 @@ use std::{
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
 
 pub async fn setup_test_workspace() -> (AsyncContext, Workspace<MockAppRuntime>, CleanupFn) {
+    dotenv::dotenv().ok();
     let fs = Arc::new(RealFileSystem::new());
     let mock_app = tauri::test::mock_app();
     let app_handle = mock_app.handle().clone();
@@ -63,9 +65,15 @@ pub async fn setup_test_workspace() -> (AsyncContext, Workspace<MockAppRuntime>,
         .build()
         .expect("failed to build reqwest client");
 
+    let sync_http_client = oauth2::ureq::builder().redirects(0).build();
+
     let github_client = {
-        let github_auth_agent =
-            GitHubAuthAgentImpl::new(keyring_client.clone(), "".to_string(), "".to_string());
+        let github_auth_agent = Arc::new(GitHubAuthAgent::new(
+            sync_http_client.clone(),
+            keyring_client.clone(),
+            dotenv::var(GITLAB_CLIENT_ID).unwrap_or_default(),
+            dotenv::var(GITLAB_CLIENT_SECRET).unwrap_or_default(),
+        ));
         Arc::new(GitHubClient::new(
             reqwest_client.clone(),
             github_auth_agent,
@@ -73,8 +81,12 @@ pub async fn setup_test_workspace() -> (AsyncContext, Workspace<MockAppRuntime>,
         ))
     };
     let gitlab_client = {
-        let gitlab_auth_agent =
-            GitLabAuthAgentImpl::new(keyring_client.clone(), "".to_string(), "".to_string());
+        let gitlab_auth_agent = Arc::new(GitLabAuthAgent::new(
+            sync_http_client.clone(),
+            keyring_client.clone(),
+            dotenv::var(GITLAB_CLIENT_ID).unwrap_or_default(),
+            dotenv::var(GITLAB_CLIENT_SECRET).unwrap_or_default(),
+        ));
         Arc::new(GitLabClient::new(
             reqwest_client.clone(),
             gitlab_auth_agent,
@@ -82,19 +94,18 @@ pub async fn setup_test_workspace() -> (AsyncContext, Workspace<MockAppRuntime>,
         ))
     };
 
-    let workspace: Workspace<MockAppRuntime> = WorkspaceBuilder::new(fs.clone())
-        .create(
-            &ctx,
-            activity_indicator,
-            CreateWorkspaceParams {
-                name: random_workspace_name(),
-                abs_path: abs_path.clone(),
-            },
-            github_client,
-            gitlab_client,
-        )
-        .await
-        .unwrap();
+    let workspace: Workspace<MockAppRuntime> =
+        WorkspaceBuilder::new(fs.clone(), github_client, gitlab_client)
+            .create(
+                &ctx,
+                activity_indicator,
+                CreateWorkspaceParams {
+                    name: random_workspace_name(),
+                    abs_path: abs_path.clone(),
+                },
+            )
+            .await
+            .unwrap();
 
     let cleanup_fn = Box::new({
         let abs_path_clone = abs_path.clone();

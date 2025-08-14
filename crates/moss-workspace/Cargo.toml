@@ -36,6 +36,8 @@ nanoid.workspace = true
 json-patch.workspace = true
 jsonptr.workspace = true
 reqwest = { workspace = true, features = ["json"] }
+dotenv = { workspace = true, optional = true }
+oauth2 = { workspace = true, features = ["ureq"], optional = true }
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }
@@ -43,4 +45,9 @@ moss_testutils.workspace = true
 moss_applib = { workspace = true, features = ["test"] }
 
 [features]
-integration-tests = []
+integration-tests = [
+  "dotenv",
+  "moss_collection/integration-tests",
+  "moss_git_hosting_provider/integration-tests",
+  "oauth2",
+]

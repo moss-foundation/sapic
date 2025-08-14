@@ -16,14 +16,13 @@
     height: 100vh;
     overflow: hidden;
   }
+  *:focus {
+    outline: none;
+  }
 }
 
 .linux {
   -webkit-font-smoothing: antialiased;
-}
-
-*:focus-visible {
-  outline: none;
 }
 
 svg:not(.animate-spin),

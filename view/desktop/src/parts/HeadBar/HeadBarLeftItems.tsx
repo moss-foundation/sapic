@@ -13,7 +13,6 @@ export interface HeadBarLeftItemsProps {
   handleWindowsMenuAction: (action: string) => void;
   handleWorkspaceMenuAction: (action: string) => void;
   os: string | null;
-  selectedWorkspace?: string | null;
 }
 
 export const HeadBarLeftItems = ({
@@ -22,13 +21,12 @@ export const HeadBarLeftItems = ({
   handleWindowsMenuAction,
   handleWorkspaceMenuAction,
   os,
-  selectedWorkspace: propSelectedWorkspace,
 }: HeadBarLeftItemsProps) => {
   const isWindowsOrLinux = os === "windows" || os === "linux";
   const { workspaceMenuItems, selectedWorkspaceMenuItems } = useWorkspaceMenu();
 
-  const workspace = useActiveWorkspace();
-  const selectedWorkspace = propSelectedWorkspace || workspace?.name || null;
+  const { hasActiveWorkspace, activeWorkspace } = useActiveWorkspace();
+  const selectedWorkspace = activeWorkspace?.name || null;
 
   return (
     <div
@@ -55,7 +53,7 @@ export const HeadBarLeftItems = ({
             rightIcon="ChevronDown"
             title={selectedWorkspace || "My Workspace"}
             placeholder="No workspace selected"
-            showPlaceholder={!selectedWorkspace}
+            showPlaceholder={!hasActiveWorkspace}
             labelClassName="text-md"
             className="hover:!background-(--moss-icon-secondary-background-hover) h-[24px] min-w-[46px]"
           />

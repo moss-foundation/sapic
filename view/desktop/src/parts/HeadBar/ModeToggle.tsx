@@ -54,7 +54,6 @@ export const ModeToggle: React.FC<ModeToggleProps> = ({ className, compact = fal
     const allEntries = collectionsWithEntries?.map((collection) => collection.entries).flat();
 
     allEntries?.forEach((entry) => {
-      console.log("entry", entry);
       if (entry.class !== "Request" || entry.path.segments.length === 1) {
         const panel = api?.getPanel(entry.id);
         if (panel) {

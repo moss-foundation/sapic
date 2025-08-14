@@ -14,7 +14,6 @@ export interface HeadBarRightItemsProps {
   setShowDebugPanels: (show: boolean) => void;
   openPanel: (panel: string) => void;
   os: OsType;
-  selectedWorkspace?: string | null;
 }
 
 export const HeadBarRightItems = ({
@@ -24,10 +23,8 @@ export const HeadBarRightItems = ({
   setShowDebugPanels,
   openPanel,
   os,
-  selectedWorkspace: propSelectedWorkspace,
 }: HeadBarRightItemsProps) => {
-  const workspace = useActiveWorkspace();
-  const selectedWorkspace = propSelectedWorkspace || workspace?.name || null;
+  const { hasActiveWorkspace } = useActiveWorkspace();
 
   const isWindowsOrLinux = os === "windows" || os === "linux";
 
@@ -39,7 +36,7 @@ export const HeadBarRightItems = ({
       data-tauri-drag-region
     >
       <div className="flex items-center">
-        {selectedWorkspace && (
+        {hasActiveWorkspace && (
           <ModeToggle className="mr-2 border-1 border-[var(--moss-headBar-border-color)]" compact={isLarge} />
         )}
 

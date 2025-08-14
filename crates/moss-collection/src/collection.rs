@@ -11,17 +11,15 @@ use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_edit::json::EditOptions;
 use moss_environment::{environment::Environment, models::primitives::EnvironmentId};
 use moss_fs::{FileSystem, FsResultExt};
-use moss_git::url::normalize_git_url;
+use moss_git::{repo::RepoHandle, url::normalize_git_url};
+
 use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
-    sync::Arc,
+    sync::{Arc, Mutex},
 };
 use tokio::sync::OnceCell;
-
-#[cfg(any(test, feature = "integration-tests"))]
-use moss_storage::CollectionStorage;
 
 use crate::{
     DescribeCollection,
@@ -65,6 +63,15 @@ pub struct Collection<R: AppRuntime> {
     pub(super) environments: OnceCell<EnvironmentMap<R>>,
 
     pub(super) on_did_change: EventEmitter<OnDidChangeEvent>,
+
+    // Right now we are not updating the repo_handle once it's created
+    // So we still want to suppress this warning
+    #[allow(dead_code)]
+    /// Since operations over RepoHandle must be done in a synchronous closure wrapped by a
+    /// `tokio::task::spawn_blocking`
+    /// This mutex must be a synchronous one and should not be acquired in an async block
+    /// It should always be required in a `spawn_blocking` block to avoid deadlock
+    pub(super) repo_handle: Arc<Mutex<Option<RepoHandle>>>,
 }
 
 #[rustfmt::skip]
@@ -180,7 +187,11 @@ impl<R: AppRuntime> Collection<R> {
 
 #[cfg(any(test, feature = "integration-tests"))]
 impl<R: AppRuntime> Collection<R> {
-    pub fn db(&self) -> &Arc<dyn CollectionStorage<R::AsyncContext>> {
+    pub fn db(&self) -> &Arc<dyn moss_storage::CollectionStorage<R::AsyncContext>> {
         self.storage_service.storage()
+    }
+
+    pub fn repo_handle(&self) -> Arc<Mutex<Option<RepoHandle>>> {
+        self.repo_handle.clone()
     }
 }

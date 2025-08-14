@@ -1,0 +1,24 @@
+import { MutableRefObject, RefObject, useEffect } from "react";
+
+import { validateValue } from "@/utils/validateValue";
+
+interface UseValidateInputProps {
+  value: string;
+  restrictedValues?: string[];
+  inputRef?: RefObject<HTMLInputElement>;
+  isInitialized?: MutableRefObject<boolean> | null;
+}
+
+export function useValidateInput({ value, restrictedValues, inputRef, isInitialized }: UseValidateInputProps) {
+  const { isValid, message } = validateValue(value, restrictedValues ?? []);
+
+  useEffect(() => {
+    if (!inputRef?.current) return;
+    if (isInitialized && !isInitialized.current) return;
+
+    inputRef.current.setCustomValidity(message);
+    inputRef.current.reportValidity();
+  }, [message, inputRef, isInitialized]);
+
+  return { isValid, message };
+}

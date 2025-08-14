@@ -7,11 +7,17 @@ use oauth2::{
     TokenResponse, TokenUrl, basic::BasicClient,
 };
 use serde::{Deserialize, Serialize};
-use std::{cell::OnceCell, string::ToString, sync::Arc};
+use std::{
+    string::ToString,
+    sync::{Arc, OnceLock},
+};
 
 use crate::common::utils;
 
-use super::client::GitHubAuthAgent;
+const GITHUB_AUTH_URL: &'static str = "https://github.com/login/oauth/authorize";
+const GITHUB_TOKEN_URL: &'static str = "https://github.com/login/oauth/access_token";
+const GITHUB_SCOPES: [&'static str; 3] = ["repo", "user:email", "read:user"];
+const KEYRING_SECRET_KEY: &str = "github_auth_agent";
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct KeyringCredEntry {
@@ -34,7 +40,7 @@ impl TryInto<String> for KeyringCredEntry {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct GitHubCred {
     access_token: String,
 }
@@ -55,35 +61,55 @@ impl From<KeyringCredEntry> for GitHubCred {
     }
 }
 
-const GITHUB_AUTH_URL: &'static str = "https://github.com/login/oauth/authorize";
-const GITHUB_TOKEN_URL: &'static str = "https://github.com/login/oauth/access_token";
-const GITHUB_SCOPES: [&'static str; 3] = ["repo", "read:user", "user:email"];
-const KEYRING_SECRET_KEY: &str = "github_auth_agent";
-
-pub struct GitHubAuthAgentImpl {
+pub struct GitHubAuthAgent {
+    // We use ureq instead of blocking reqwest to avoid panicking when called from async environment
+    sync_http_client: oauth2::ureq::Agent,
     client_id: ClientId,
     client_secret: ClientSecret,
-    keyring: Arc<dyn KeyringClient>,
-    cred: OnceCell<GitHubCred>,
+    keyring: Arc<dyn KeyringClient + Send + Sync>,
+    cred: OnceLock<GitHubCred>,
 }
 
-impl GitHubAuthAgent for GitHubAuthAgentImpl {}
-
-impl GitHubAuthAgentImpl {
-    pub fn new(keyring: Arc<dyn KeyringClient>, client_id: String, client_secret: String) -> Self {
+impl GitHubAuthAgent {
+    pub fn new(
+        sync_http_client: oauth2::ureq::Agent,
+        keyring: Arc<dyn KeyringClient + Send + Sync>,
+        client_id: String,
+        client_secret: String,
+    ) -> Self {
         Self {
+            sync_http_client,
             client_id: ClientId::new(client_id),
             client_secret: ClientSecret::new(client_secret),
             keyring,
-            cred: OnceCell::new(),
+            cred: OnceLock::new(),
         }
+    }
+
+    pub(crate) fn access_token(self: Arc<Self>) -> Option<String> {
+        self.cred.get().map(|cred| cred.access_token.clone())
+    }
+
+    pub fn is_logged_in(&self) -> joinerror::Result<bool> {
+        // We consider the user to be logged in if we have the credentials
+        Ok(self.cred.get().is_some())
     }
 }
 
-impl GitHubAuthAgentImpl {
-    fn credentials(&self) -> Result<&GitHubCred> {
+// TODO: Add timeout mechanism to handle OAuth failure
+
+impl GitHubAuthAgent {
+    // FIXME: Maybe we really need to figure out how to use a non-blocking `reqwest` for auth_agent
+    /// Do not call the sync version from an async environment
+    /// Call `credentials_async` instead
+    pub(crate) fn credentials(&self) -> Result<&GitHubCred> {
         if let Some(cred) = self.cred.get() {
             return Ok(cred);
+        }
+
+        // In tests and CI, fetch GITHUB_ACCESS_TOKEN from the environment
+        if let Some(fetched_cred) = self.try_fetch_from_env()? {
+            return Ok(fetched_cred);
         }
 
         let cred = match self.keyring.get_secret(KEYRING_SECRET_KEY) {
@@ -106,6 +132,31 @@ impl GitHubAuthAgentImpl {
         self.cred.get().ok_or_else(|| {
             anyhow!("Failed to set GitHubAuthAgent credentials because they have already been set")
         })
+    }
+
+    pub(crate) async fn credentials_async(self: Arc<Self>) -> Result<GitHubCred> {
+        let self_clone = self.clone();
+        tokio::task::spawn_blocking(move || self_clone.credentials().map(|cred| cred.to_owned()))
+            .await?
+    }
+
+    // A helper method to avoid false positive about unreachable code
+    // It will fetch the access token from the environment
+    #[cfg(any(test, feature = "integration-tests"))]
+    fn try_fetch_from_env(&self) -> Result<Option<&GitHubCred>> {
+        dotenv::dotenv().ok();
+        let cred = GitHubCred {
+            access_token: dotenv::var(crate::envvar_keys::GITHUB_ACCESS_TOKEN)?,
+        };
+        let _ = self.cred.set(cred);
+
+        let fetched_cred = self.cred.get();
+        Ok(fetched_cred)
+    }
+
+    #[cfg(not(any(test, feature = "integration-tests")))]
+    fn try_fetch_from_env(&self) -> Result<Option<&GitHubCred>> {
+        Ok(None)
     }
 
     fn gen_initial_credentials(&self) -> Result<GitHubCred> {
@@ -139,15 +190,11 @@ impl GitHubAuthAgentImpl {
 
         let (code, _state) = utils::receive_auth_code(&listener)?;
 
-        let http_client = reqwest::blocking::ClientBuilder::new()
-            .redirect(reqwest::redirect::Policy::none())
-            .build()?;
-
         // Exchange the code + PKCE verifier with access & refresh token.
         let token_res = client
             .exchange_code(code)
             .set_pkce_verifier(pkce_verifier)
-            .request(&http_client)?;
+            .request(&self.sync_http_client)?;
 
         let access_token = token_res.access_token().secret().as_str();
 
@@ -155,7 +202,7 @@ impl GitHubAuthAgentImpl {
     }
 }
 
-impl GitAuthAgent for GitHubAuthAgentImpl {
+impl GitAuthAgent for GitHubAuthAgent {
     fn generate_callback<'a>(&'a self, cb: &mut RemoteCallbacks<'a>) -> Result<()> {
         let cred = self.credentials()?;
 
@@ -175,6 +222,8 @@ mod tests {
     use moss_keyring::KeyringClientImpl;
     use std::{path::PathBuf, sync::Arc};
 
+    use crate::envvar_keys::{GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET};
+
     #[ignore]
     #[test]
     fn manual_cloning_with_oauth() -> Result<()> {
@@ -185,17 +234,18 @@ mod tests {
             .join("data")
             .join("test-repo");
 
-        let client_id = dotenv::var("GITHUB_CLIENT_ID").unwrap();
-        let client_secret = dotenv::var("GITHUB_CLIENT_SECRET").unwrap();
+        let client_id = dotenv::var(GITHUB_CLIENT_ID).unwrap();
+        let client_secret = dotenv::var(GITHUB_CLIENT_SECRET).unwrap();
 
         let keyring_client = Arc::new(KeyringClientImpl::new());
-        let auth_agent = Arc::new(GitHubAuthAgentImpl::new(
+        let auth_agent = Arc::new(GitHubAuthAgent::new(
+            oauth2::ureq::builder().redirects(0).build(),
             keyring_client,
             client_id,
             client_secret,
         ));
 
-        let _repo = RepoHandle::clone(repo_url, &repo_path, auth_agent)?;
+        let _repo = RepoHandle::clone(&repo_url, &repo_path, auth_agent)?;
         Ok(())
     }
 }

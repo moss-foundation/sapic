@@ -113,6 +113,7 @@ pub async fn run<R: TauriRuntime>() {
             commands::delete_workspace,
             commands::close_workspace,
             commands::cancel_request,
+            commands::add_account,
             //
             // Workspace
             //
@@ -137,6 +138,10 @@ pub async fn run<R: TauriRuntime>() {
             commands::update_collection_entry,
             commands::batch_update_collection_entry,
             commands::batch_create_collection_entry,
+            //
+            // Env
+            //
+            commands::get_mistral_api_key,
         ])
         .on_window_event(|_window, event| match event {
             // #[cfg(target_os = "macos")]

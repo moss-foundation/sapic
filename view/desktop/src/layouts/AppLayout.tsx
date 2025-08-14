@@ -22,8 +22,7 @@ interface AppLayoutProps {
 }
 
 export const AppLayout = ({ children }: AppLayoutProps) => {
-  const workspace = useActiveWorkspace();
-  const workspaceId = workspace?.id || null;
+  const { activeWorkspaceId, hasActiveWorkspace } = useActiveWorkspace();
   const canUpdatePartState = useRef(false);
   const lastProcessedWorkspaceId = useRef<string | null>(null);
   const isTransitioning = useRef(false);
@@ -36,16 +35,16 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
 
   // Reset update permission when workspace changes
   useEffect(() => {
-    if (lastProcessedWorkspaceId.current !== workspaceId) {
+    if (lastProcessedWorkspaceId.current !== activeWorkspaceId) {
       canUpdatePartState.current = false;
       isTransitioning.current = true;
-      lastProcessedWorkspaceId.current = workspaceId;
+      lastProcessedWorkspaceId.current = activeWorkspaceId;
     }
-  }, [workspaceId]);
+  }, [activeWorkspaceId]);
 
   // Initialize bottom pane state from workspace data (panels are still managed here)
   useEffect(() => {
-    if (workspace && (!isFetched || !isSuccess)) {
+    if (hasActiveWorkspace && (!isFetched || !isSuccess)) {
       // Still waiting for workspace state
       canUpdatePartState.current = false;
       isTransitioning.current = true;
@@ -72,7 +71,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
       canUpdatePartState.current = true;
       isTransitioning.current = false;
     }, 200);
-  }, [workspace, workspaceState, isFetched, isSuccess]);
+  }, [hasActiveWorkspace, workspaceState, isFetched, isSuccess]);
 
   const handleSidebarEdgeHandlerClick = () => {
     if (!sideBar.visible) sideBar.setVisible(true);
@@ -92,23 +91,23 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
 
   const { mutate: updatePanelPartState } = useUpdatePanelPartState();
   useEffect(() => {
-    if (!canUpdatePartState.current || !workspaceId || isTransitioning.current) return;
+    if (!canUpdatePartState.current || !activeWorkspaceId || isTransitioning.current) return;
 
     updatePanelPartState({
       size: bottomPane.height,
       visible: bottomPane.visible,
     });
-  }, [workspaceId, bottomPane, updatePanelPartState]);
+  }, [activeWorkspaceId, bottomPane, updatePanelPartState]);
 
   // ActivityBar state persistence - only save when workspace is stable and initialization is complete
   const { mutate: updateActivitybarPartState } = useUpdateActivitybarPartState();
   const activityBarState = useActivityBarStore();
   useEffect(() => {
-    if (!canUpdatePartState.current || !workspaceId || isTransitioning.current) return;
+    if (!canUpdatePartState.current || !activeWorkspaceId || isTransitioning.current) return;
 
     updateActivitybarPartState(toWorkspaceState());
   }, [
-    workspaceId,
+    activeWorkspaceId,
     activityBarState.position,
     activityBarState.items,
     activityBarState.lastActiveContainerId,

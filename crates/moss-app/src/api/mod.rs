@@ -1,3 +1,4 @@
+pub mod add_account;
 pub mod batch_delete_log;
 pub mod cancel_request;
 pub mod close_workspace;

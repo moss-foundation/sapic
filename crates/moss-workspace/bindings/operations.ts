@@ -5,6 +5,8 @@ import type {
   ActivitybarPartStateInfo,
   AddVariableParams,
   EditorPartStateInfo,
+  GitHubImportParams,
+  GitLabImportParams,
   PanelPartStateInfo,
   SidebarPartStateInfo,
   UpdateCollectionParams,
@@ -111,6 +113,16 @@ export type DescribeStateOutput = {
   panel?: PanelPartStateInfo;
   activitybar?: ActivitybarPartStateInfo;
 };
+
+/**
+ * @category Operation
+ */
+export type ImportCollectionInput = { "gitHub": GitHubImportParams } | { "gitLab": GitLabImportParams };
+
+/**
+ * @category Operation
+ */
+export type ImportCollectionOutput = { id: string; name: string; order?: number; expanded: boolean; iconPath?: string };
 
 /**
  * @category Operation

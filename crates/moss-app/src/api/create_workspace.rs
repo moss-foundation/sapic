@@ -32,13 +32,7 @@ impl<R: AppRuntime> App<R> {
 
         if input.open_on_creation {
             self.workspace_service
-                .activate_workspace(
-                    ctx,
-                    &id,
-                    self.activity_indicator.clone(),
-                    self.github_client.clone(),
-                    self.gitlab_client.clone(),
-                )
+                .activate_workspace(ctx, &id, self.activity_indicator.clone())
                 .await?;
         }
 

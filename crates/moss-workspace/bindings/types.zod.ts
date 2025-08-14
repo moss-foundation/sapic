@@ -27,6 +27,11 @@ export const collectionInfoSchema = z.object({
   order: z.number().optional(),
 });
 
+export const contributorSchema = z.object({
+  name: z.string(),
+  avatar_url: z.string(),
+});
+
 export const editorGridLeafDataSchema = z.object({
   views: z.array(z.string()),
   activeView: z.string(),
@@ -48,9 +53,25 @@ export const editorGridNodeSchema: z.ZodSchema<EditorGridNode> = z.lazy(() =>
   ])
 );
 
+export const gitHubImportParamsSchema = z.object({
+  order: z.number(),
+  repository: z.string(),
+});
+
+export const gitLabImportParamsSchema = z.object({
+  order: z.number(),
+  repository: z.string(),
+});
+
 export const panelPartStateInfoSchema = z.object({
   size: z.number(),
   visible: z.boolean(),
+});
+
+export const repositoryInfoSchema = z.object({
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  owner: z.string(),
 });
 export const activitybarPartStateInfoSchema = z.object({
   lastActiveContainerId: z.string().optional(),
@@ -115,7 +136,6 @@ export const updateCollectionParamsSchema = z.object({
   repository: changeStringSchema.optional(),
   iconPath: changePathSchema.optional(),
   order: z.number().optional(),
-  pinned: z.boolean().optional(),
   expanded: z.boolean().optional(),
 });
 

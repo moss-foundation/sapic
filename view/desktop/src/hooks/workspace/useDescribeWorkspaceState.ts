@@ -21,12 +21,11 @@ interface UseDescribeWorkspaceStateOptions {
 }
 
 export const useDescribeWorkspaceState = ({ enabled = true }: UseDescribeWorkspaceStateOptions = {}) => {
-  const workspace = useActiveWorkspace();
-  const workspaceId = workspace?.id || null;
+  const { activeWorkspaceId, hasActiveWorkspace } = useActiveWorkspace();
 
   return useQuery<DescribeStateOutput, Error>({
-    queryKey: [USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY, workspaceId],
+    queryKey: [USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY, activeWorkspaceId],
     queryFn: describeWorkspaceStateFn,
-    enabled: enabled && !!workspaceId,
+    enabled: enabled && hasActiveWorkspace,
   });
 };

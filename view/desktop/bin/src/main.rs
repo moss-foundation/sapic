@@ -6,6 +6,7 @@ const RUNTIME_STACK_SIZE: usize = 20 * 1024 * 1024;
 
 fn main() {
     // Read Mistral AI key in file into the envvars
+    dotenv::dotenv().ok();
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .max_blocking_threads(RUNTIME_MAX_BLOCKING_THREADS)

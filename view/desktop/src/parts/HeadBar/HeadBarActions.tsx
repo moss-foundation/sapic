@@ -124,7 +124,7 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
   const { mutate: openWorkspace } = useOpenWorkspace();
   const { mutate: closeWorkspace } = useCloseWorkspace();
   const { getWorkspaceById } = useWorkspaceMapping();
-  const activeWorkspace = useActiveWorkspace();
+  const { activeWorkspace } = useActiveWorkspace();
 
   return (action: string) => {
     if (action.startsWith("workspace:")) {
