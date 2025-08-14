@@ -61,8 +61,11 @@ pub async fn create_test_collection() -> (
     let reqwest_client = reqwest::Client::new();
     let keyring_client = Arc::new(KeyringClientImpl::new());
 
+    let sync_http_client = oauth2::ureq::builder().redirects(0).build();
+
     // Collection operations shouldn't need any git operations
     let github_auth_agent = Arc::new(GitHubAuthAgent::new(
+        sync_http_client.clone(),
         keyring_client.clone(),
         "".to_string(),
         "".to_string(),
@@ -75,6 +78,7 @@ pub async fn create_test_collection() -> (
     ));
 
     let gitlab_auth_agent = Arc::new(GitLabAuthAgent::new(
+        sync_http_client.clone(),
         keyring_client.clone(),
         "".to_string(),
         "".to_string(),

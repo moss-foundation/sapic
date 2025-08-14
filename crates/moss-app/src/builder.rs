@@ -65,7 +65,6 @@ impl<R: AppRuntime> AppBuilder<R> {
             .expect("failed to build reqwest client");
 
         // TODO: Fetch OAuth APP secrets from our server in production build
-        // FIXME: Right now we have to write these keys in /view/desktop/.env
 
         dotenv::dotenv().ok();
         let github_client_id = dotenv::var("GITHUB_CLIENT_ID").unwrap_or_default();
