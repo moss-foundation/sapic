@@ -1,19 +1,19 @@
 import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
 
-import { CollectionWithEnvironment } from "../types";
+import { GroupedWithEnvironment } from "../types";
 
-interface CollectionEnvironmentsListRootButtonProps {
+interface GroupedEnvironmentsListRootButtonProps {
   showChildren: boolean;
   setShowChildren: (showChildren: boolean) => void;
-  collectionsWithEnvironments: CollectionWithEnvironment;
+  groupedWithEnvironments: GroupedWithEnvironment;
 }
 
-export const CollectionEnvironmentsListRootButton = ({
+export const GroupedEnvironmentsListRootButton = ({
   showChildren,
   setShowChildren,
-  collectionsWithEnvironments,
-}: CollectionEnvironmentsListRootButtonProps) => {
+  groupedWithEnvironments,
+}: GroupedEnvironmentsListRootButtonProps) => {
   return (
     <div className="z-10 flex items-center gap-2 overflow-hidden">
       <button
@@ -26,7 +26,7 @@ export const CollectionEnvironmentsListRootButton = ({
         <Icon icon="ChevronRight" className={cn(showChildren && "rotate-90")} />
       </button>
 
-      <div className="truncate font-medium">{collectionsWithEnvironments.name}</div>
+      <div className="truncate font-medium">{groupedWithEnvironments.name}</div>
     </div>
   );
 };

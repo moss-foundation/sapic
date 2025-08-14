@@ -52,20 +52,20 @@ export const useStreamEnvironments = () => {
     return sortByOrder(globalEnvironments);
   }, [query.data]);
 
-  const collectionsEnvironments = useMemo(() => {
+  const groupedEnvironments = useMemo(() => {
     if (!query.data) return [];
 
-    const collectionsEnvironments = query.data.filter((environment) => environment.collectionId);
+    const groupedEnvironments = query.data.filter((environment) => environment.collectionId);
 
-    if (collectionsEnvironments.length === 0) return [];
+    if (groupedEnvironments.length === 0) return [];
 
-    return sortByOrder(collectionsEnvironments);
+    return sortByOrder(groupedEnvironments);
   }, [query.data]);
 
   return {
     ...query,
     clearEnvironmentsCacheAndRefetch,
     globalEnvironments,
-    collectionsEnvironments,
+    groupedEnvironments,
   };
 };

@@ -1,9 +1,9 @@
 import { ActionButton, ActionMenu } from "@/components";
 
-export const CollectionEnvironmentsListRootActions = () => {
+export const GroupedEnvironmentsListRootActions = () => {
   return (
     <div className="z-10 flex items-center gap-2">
-      <div className="hidden items-center opacity-0 transition-[display,opacity] transition-discrete duration-100 group-hover/CollectionEnvironmentsListRoot:flex group-hover/CollectionEnvironmentsListRoot:opacity-100">
+      <div className="hidden items-center opacity-0 transition-[display,opacity] transition-discrete duration-100 group-hover/GroupedEnvironmentsListRoot:flex group-hover/GroupedEnvironmentsListRoot:opacity-100">
         <ActionButton
           icon="Add"
           onClick={(e) => {

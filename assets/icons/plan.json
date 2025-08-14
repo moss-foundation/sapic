@@ -68,9 +68,6 @@
   "Collection": {
     "identical": false
   },
-  "CollectionEnvironment": {
-    "identical": false
-  },
   "Component": {
     "identical": true
   },
@@ -148,6 +145,9 @@
   },
   "GreenCheckmark": {
     "identical": true
+  },
+  "GroupedEnvironment": {
+    "identical": false
   },
   "Headers": {
     "identical": false

@@ -2,18 +2,18 @@ import { ActionButton, ActionMenu } from "@/components";
 import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
 
-interface CollectionEnvironmentsListItemActionsProps {
+interface GroupedEnvironmentsListItemActionsProps {
   showActionMenu: boolean;
   setShowActionMenu: (showActionMenu: boolean) => void;
 }
 
-export const CollectionEnvironmentsListItemActions = ({
+export const GroupedEnvironmentsListItemActions = ({
   showActionMenu,
   setShowActionMenu,
-}: CollectionEnvironmentsListItemActionsProps) => {
+}: GroupedEnvironmentsListItemActionsProps) => {
   return (
     <div
-      className={cn("sr-only z-10 flex items-center gap-2 group-hover/CollectionEnvironmentsListItem:not-sr-only", {
+      className={cn("sr-only z-10 flex items-center gap-2 group-hover/GroupedEnvironmentsListItem:not-sr-only", {
         "not-sr-only": showActionMenu,
       })}
     >

@@ -1,5 +1,5 @@
-import { CollectionEnvironmentsList } from "@/components/CollectionEnvironmentsList/CollectionEnvironmentsList";
 import { GlobalEnvironmentsList } from "@/components/GlobalEnvironmentsList/GlobalEnvironmentsList";
+import { GroupedEnvironmentsList } from "@/components/GroupedEnvironmentsList";
 import { useStreamEnvironments } from "@/hooks/environment";
 import { Scrollbar } from "@/lib/ui";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
@@ -36,7 +36,7 @@ export const EnvironmentsListView = () => {
 
         {environments && environments.length > 0 && <EnvironmentsListViewDivider />}
 
-        <CollectionEnvironmentsList />
+        <GroupedEnvironmentsList />
       </Scrollbar>
     </div>
   );

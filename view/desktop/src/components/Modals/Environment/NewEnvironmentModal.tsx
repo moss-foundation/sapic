@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { ButtonNeutralOutlined, ButtonPrimary, InputOutlined, RadioGroup } from "@/components";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
@@ -12,7 +12,7 @@ import { ModalWrapperProps } from "../types";
 export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { globalEnvironments, collectionsEnvironments } = useStreamEnvironments();
+  const { globalEnvironments, groupedEnvironments } = useStreamEnvironments();
   const { mutateAsync: createEnvironment } = useCreateEnvironment();
   const { data: collections } = useStreamedCollections();
 
@@ -26,10 +26,10 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
     initialValue: name,
   });
 
-  const restrictedNames =
-    mode === "Workspace"
-      ? globalEnvironments?.map((environment) => environment.name)
-      : collectionsEnvironments?.map((environment) => environment.name);
+  const restrictedNames = useMemo(() => {
+    const list = mode === "Workspace" ? globalEnvironments : groupedEnvironments;
+    return list?.map((env) => env.name) ?? [];
+  }, [mode, globalEnvironments, groupedEnvironments]);
 
   const { isValid } = useValidateInput({
     value: name,
@@ -38,17 +38,11 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
     isInitialized,
   });
 
+  const getNextOrder = (list?: { length?: number } | null) => (list?.length ?? 0) + 1;
   const handleSubmit = async () => {
     if (!isValid) return;
 
-    const newOrder =
-      mode === "Workspace"
-        ? globalEnvironments?.length
-          ? globalEnvironments.length + 1
-          : 1
-        : collectionsEnvironments?.length
-          ? collectionsEnvironments.length + 1
-          : 1;
+    const newOrder = mode === "Workspace" ? getNextOrder(globalEnvironments) : getNextOrder(groupedEnvironments);
 
     if (mode === "Workspace") {
       await createEnvironment({

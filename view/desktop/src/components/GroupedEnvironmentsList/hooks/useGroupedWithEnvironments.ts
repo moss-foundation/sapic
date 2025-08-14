@@ -3,18 +3,18 @@ import { useMemo } from "react";
 import { useStreamedCollections } from "@/hooks/collection";
 import { useStreamEnvironments } from "@/hooks/environment";
 
-import { CollectionWithEnvironment } from "../types";
+import { GroupedWithEnvironment } from "../types";
 
-export const useCollectionsWithEnvironments = () => {
+export const useGroupedWithEnvironments = () => {
   const { data: collections } = useStreamedCollections();
-  const { collectionsEnvironments } = useStreamEnvironments();
+  const { groupedEnvironments } = useStreamEnvironments();
 
-  const collectionsWithEnvironments: CollectionWithEnvironment[] = useMemo(() => {
-    if (!collections || !collectionsEnvironments) return [];
+  const groupedWithEnvironments: GroupedWithEnvironment[] = useMemo(() => {
+    if (!collections || !groupedEnvironments) return [];
 
     return collections
       .map((collection) => {
-        const collectionEnvironments = collectionsEnvironments.filter(
+        const collectionEnvironments = groupedEnvironments.filter(
           (environment) => environment.collectionId === collection.id
         );
 
@@ -24,7 +24,7 @@ export const useCollectionsWithEnvironments = () => {
         };
       })
       .filter((collection) => collection.environments.length > 0);
-  }, [collections, collectionsEnvironments]);
+  }, [collections, groupedEnvironments]);
 
-  return { collectionsWithEnvironments };
+  return { groupedWithEnvironments };
 };

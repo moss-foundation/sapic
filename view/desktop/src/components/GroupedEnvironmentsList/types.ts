@@ -1,5 +1,5 @@
 import { StreamCollectionsEvent, StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
-export interface CollectionWithEnvironment extends StreamCollectionsEvent {
+export interface GroupedWithEnvironment extends StreamCollectionsEvent {
   environments: StreamEnvironmentsEvent[];
 }
