@@ -1,5 +1,5 @@
 import { ActionButton, ActionMenu, SidebarHeader } from "@/components";
-import { CreateCollectionModal } from "@/components/Modals/Collection/CreateCollectionModal";
+import { NewCollectionModal } from "@/components/Modals/Collection/NewCollectionModal/NewCollectionModal";
 import {
   USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY,
   useActiveWorkspace,
@@ -129,7 +129,7 @@ export const CollectionTreeViewHeader = () => {
         }
       />
       {showCreateCollectionModal && (
-        <CreateCollectionModal showModal={showCreateCollectionModal} closeModal={closeCreateCollectionModal} />
+        <NewCollectionModal showModal={showCreateCollectionModal} closeModal={closeCreateCollectionModal} />
       )}
     </>
   );
