@@ -19,3 +19,12 @@ pub struct RepositoryInfo {
     pub updated_at: String,
     pub owner: String,
 }
+
+/// @category Type
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct UserInfo {
+    pub name: String,
+    pub email: String,
+}

@@ -375,6 +375,9 @@ importers:
       '@repo/moss-collection':
         specifier: workspace:*
         version: link:../../crates/moss-collection
+      '@repo/moss-git-hosting-provider':
+        specifier: workspace:*
+        version: link:../../crates/moss-git-hosting-provider
       '@repo/moss-tabs':
         specifier: workspace:*
         version: link:src/lib/moss-tabs

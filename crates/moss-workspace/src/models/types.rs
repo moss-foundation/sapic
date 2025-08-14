@@ -2,9 +2,11 @@ mod editor;
 pub use editor::*;
 
 use moss_environment::models::types::VariableInfo;
+use moss_git::url::GIT_URL_REGEX;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use ts_rs::TS;
+use validator::Validate;
 
 use super::primitives::{ActivitybarPosition, SidebarPosition};
 
@@ -119,4 +121,29 @@ pub struct EditorPartStateInfo {
     #[ts(type = "Record<string, EditorPanelState>")]
     pub panels: HashMap<String, EditorPanelState>,
     pub active_group: Option<String>,
+}
+
+// FIXME: Validation for provider specific url?
+/// @category Operation
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct GitHubImportParams {
+    pub order: isize,
+    #[validate(regex(path = "*GIT_URL_REGEX"))]
+    pub repository: String,
+    // TODO: repo branch
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct GitLabImportParams {
+    pub order: isize,
+    #[validate(regex(path = "*GIT_URL_REGEX"))]
+    pub repository: String,
+    // TODO: repo branch
 }

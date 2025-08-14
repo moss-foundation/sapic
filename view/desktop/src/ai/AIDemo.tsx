@@ -7,11 +7,14 @@ import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { ChatMistralAI } from "@langchain/mistralai";
 import { CreateWorkspaceInput, createWorkspaceInputSchema, CreateWorkspaceOutput } from "@repo/moss-app";
 
-const apiKey: string = import.meta.env.VITE_MISTRAL_AI_API_KEY;
+async function setupModel() {
+  const result = await invokeTauriIpc<string>("get_mistral_api_key");
+  if (result.status == "error") {
+    throw new Error("Mistral API key not found");
+  }
 
-function setupModel() {
   return new ChatMistralAI({
-    apiKey: apiKey,
+    apiKey: result.data,
     model: "magistral-medium-latest",
     temperature: 0.5,
   });
@@ -19,7 +22,7 @@ function setupModel() {
 
 async function setupToolAgent() {
   // Running a test MistralAI model
-  const model = setupModel();
+  const model = await setupModel();
 
   const alertSchema = z.object({
     message: z.string().describe("Message to be shown in the alert popup"),
@@ -69,7 +72,7 @@ function useToolAgent() {
 
 async function setupJsonGenerationAgent() {
   // Running a test MistralAI model
-  const model = setupModel();
+  const model = await setupModel();
 
   const promptTemplate = ChatPromptTemplate.fromMessages([
     SystemMessagePromptTemplate.fromTemplate(
@@ -125,7 +128,7 @@ const AIDemo = () => {
         In order to test AI functionalities, you have to get a Mistral AI API Key at
         https://console.mistral.ai/api-keys.
       </p>
-      <p>Then, create a ".env" file under /view/desktop/, and type "VITE_MISTRAL_AI_API_KEY = YOUR_API_KEY" in it.</p>
+      <p>Then, create a ".env" file at the root, and type "MISTRAL_AI_API_KEY = YOUR_API_KEY" in it.</p>
       <button
         className="cursor-pointer rounded bg-green-500 p-2 text-white hover:bg-green-600"
         onClick={handleToolTestButton}

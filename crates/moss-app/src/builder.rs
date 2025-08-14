@@ -3,8 +3,8 @@ use moss_applib::AppRuntime;
 use moss_fs::FileSystem;
 use moss_git_hosting_provider::{
     common::ssh_auth_agent::SSHAuthAgentImpl,
-    github::{auth::GitHubAuthAgentImpl, client::GitHubClient},
-    gitlab::{auth::GitLabAuthAgentImpl, client::GitLabClient},
+    github::{auth::GitHubAuthAgent, client::GitHubClient},
+    gitlab::{auth::GitLabAuthAgent, client::GitLabClient},
 };
 use moss_keyring::KeyringClientImpl;
 use std::{path::PathBuf, sync::Arc};
@@ -58,6 +58,50 @@ impl<R: AppRuntime> AppBuilder<R> {
                 .expect("Failed to create app directories");
         }
 
+        let keyring_client = Arc::new(KeyringClientImpl::new());
+        let reqwest_client = reqwest::ClientBuilder::new()
+            .user_agent("SAPIC")
+            .build()
+            .expect("failed to build reqwest client");
+
+        // TODO: Fetch OAuth APP secrets from our server in production build
+
+        dotenv::dotenv().ok();
+        let github_client_id = dotenv::var("GITHUB_CLIENT_ID").unwrap_or_default();
+        let github_client_secret = dotenv::var("GITHUB_CLIENT_SECRET").unwrap_or_default();
+        let gitlab_client_id = dotenv::var("GITLAB_CLIENT_ID").unwrap_or_default();
+        let gitlab_client_secret = dotenv::var("GITLAB_CLIENT_SECRET").unwrap_or_default();
+
+        // Git auth agents require a synchronous http client
+        let sync_http_client = oauth2::ureq::builder().redirects(0).build();
+
+        let github_client = {
+            let github_auth_agent = Arc::new(GitHubAuthAgent::new(
+                sync_http_client.clone(),
+                keyring_client.clone(),
+                github_client_id,
+                github_client_secret,
+            ));
+            Arc::new(GitHubClient::new(
+                reqwest_client.clone(),
+                github_auth_agent,
+                None as Option<SSHAuthAgentImpl>,
+            ))
+        };
+        let gitlab_client = {
+            let gitlab_auth_agent = Arc::new(GitLabAuthAgent::new(
+                sync_http_client.clone(),
+                keyring_client.clone(),
+                gitlab_client_id,
+                gitlab_client_secret,
+            ));
+            Arc::new(GitLabClient::new(
+                reqwest_client.clone(),
+                gitlab_auth_agent,
+                None as Option<SSHAuthAgentImpl>,
+            ))
+        };
+
         let theme_service = ThemeService::new(self.fs.clone(), params.themes_dir);
         let locale_service = LocaleService::new(self.fs.clone(), params.locales_dir);
         let session_service = SessionService::new();
@@ -78,6 +122,8 @@ impl<R: AppRuntime> AppBuilder<R> {
             storage_service.clone(),
             self.fs.clone(),
             &params.app_dir,
+            github_client.clone(),
+            gitlab_client.clone(),
         )
         .await
         .expect("Failed to create workspace service");
@@ -97,32 +143,6 @@ impl<R: AppRuntime> AppBuilder<R> {
         let defaults = AppDefaults {
             theme: default_theme,
             locale: default_locale,
-        };
-
-        // FIXME: Use actual OAuth App id and secret
-        let keyring_client = Arc::new(KeyringClientImpl::new());
-        let reqwest_client = reqwest::ClientBuilder::new()
-            .user_agent("SAPIC")
-            .build()
-            .expect("failed to build reqwest client");
-
-        let github_client = {
-            let github_auth_agent =
-                GitHubAuthAgentImpl::new(keyring_client.clone(), "".to_string(), "".to_string());
-            Arc::new(GitHubClient::new(
-                reqwest_client.clone(),
-                github_auth_agent,
-                None as Option<SSHAuthAgentImpl>,
-            ))
-        };
-        let gitlab_client = {
-            let gitlab_auth_agent =
-                GitLabAuthAgentImpl::new(keyring_client.clone(), "".to_string(), "".to_string());
-            Arc::new(GitLabClient::new(
-                reqwest_client.clone(),
-                gitlab_auth_agent,
-                None as Option<SSHAuthAgentImpl>,
-            ))
         };
 
         App {
@@ -147,9 +167,10 @@ impl<R: AppRuntime> AppBuilder<R> {
             tracked_cancellations: Default::default(),
             activity_indicator: ActivityIndicator::new(self.app_handle),
 
-            github_client,
-            gitlab_client,
+            _github_client: github_client,
+            _gitlab_client: gitlab_client,
             _reqwest_client: reqwest_client,
+            _keyring_client: keyring_client,
         }
     }
 }

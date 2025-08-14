@@ -11,3 +11,8 @@ export const repositoryInfoSchema = z.object({
   updatedAt: z.string(),
   owner: z.string(),
 });
+
+export const userInfoSchema = z.object({
+  name: z.string(),
+  email: z.string(),
+});
