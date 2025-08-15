@@ -134,7 +134,7 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = React.memo(
           </ActionMenu.Root>
         </div>
         {/* Divider between HTTP Method and URL Input */}
-        <div className="m-[-4px] flex min-h-8 flex-shrink-0 items-center border-t border-b border-transparent">
+        <div className="m-[-4px] flex min-h-12 flex-shrink-0 items-center border-t border-b border-transparent">
           <Divider height="medium" className="mx-0" />
         </div>
         {/* Center - URL Input Field */}
