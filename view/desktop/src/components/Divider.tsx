@@ -7,9 +7,9 @@ interface DividerProps {
 
 export const Divider: React.FC<DividerProps> = ({ height = "medium", className = "" }) => {
   const heightClasses = {
-    small: "h-[16px]",
-    medium: "h-[18px]",
-    large: "h-[20px]",
+    small: "h-4",
+    medium: "h-4.5",
+    large: "h-5",
   };
 
   return (
