@@ -1,16 +1,23 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import InputOutlined from "@/components/InputOutlined";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
+import { useGitProviderStore } from "@/store/gitProvider";
 
 import { Provider, Providers, ProvidersRadioGroup } from "../ProvidersRadioGroup/ProvidersRadioGroup";
 
-export const ImportSection = () => {
+interface ImportSectionProps {
+  onValuesUpdate: (values: { name: string; repository: string; branch: string; provider: Provider | null }) => void;
+}
+
+export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const [name, setName] = useState("");
-  const [repository, setRepository] = useState("");
-  const [branch, setBranch] = useState("");
+  const { gitProvider } = useGitProviderStore();
+
+  const [name, setName] = useState("New Collection");
+  const [repository, setRepository] = useState("github.com/moss-foundation/sapic");
+  const [branch, setBranch] = useState("main");
   const [provider, setProvider] = useState<Provider | null>("github");
 
   const providers: Providers = [
@@ -19,6 +26,15 @@ export const ImportSection = () => {
     { value: "postman", label: "Postman", icon: "postman" },
     { value: "insomnia", label: "Insomnia", icon: "insomnia" },
   ];
+
+  useEffect(() => {
+    onValuesUpdate({
+      name,
+      repository,
+      branch,
+      provider,
+    });
+  }, [name, onValuesUpdate, repository, branch, provider]);
 
   return (
     <div className="flex flex-col gap-2">
@@ -41,9 +57,11 @@ export const ImportSection = () => {
       <div className="flex justify-between gap-2">
         <span>Git</span>
         <div className="background-(--moss-border-color) my-auto h-px w-full" />
-        <a className="cursor-pointer whitespace-nowrap text-(--moss-primary) hover:underline" href="">
-          Login In via GitHub
-        </a>
+        {gitProvider === null && (
+          <a className="cursor-pointer whitespace-nowrap text-(--moss-primary) hover:underline" href="">
+            Login In via GitHub
+          </a>
+        )}
       </div>
 
       <span className="text-xs text-(--moss-secondary-text)">

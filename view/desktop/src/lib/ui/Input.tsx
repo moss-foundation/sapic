@@ -24,7 +24,7 @@ const inputStyles = cva(`
     variants: {
       disabled: {
         false: null,
-        true: "cursor-not-allowed opacity-50 active:pointer-events-none",
+        true: "cursor-not-allowed opacity-50 active:pointer-events-none pointer-events-none",
       },
     },
   }

@@ -1,5 +1,7 @@
 import { useId } from "react";
 
+import { cn } from "@/utils/cn";
+
 import { ProviderIcon } from "./ProviderIcon";
 
 const radioButtonStyles = `
@@ -28,16 +30,18 @@ interface ProvidersRadioGroupProps {
   selected: Provider | null;
   setSelected: (selected: Provider | null) => void;
   providers: Providers;
+  disabled?: boolean;
 }
 
-export const ProvidersRadioGroup = ({ selected, setSelected, providers }: ProvidersRadioGroupProps) => {
+export const ProvidersRadioGroup = ({ selected, setSelected, providers, disabled }: ProvidersRadioGroupProps) => {
   const uniqueId = useId();
 
   return (
-    <div className="flex gap-2">
+    <div className={cn("flex gap-2", disabled && "opacity-50")}>
       {providers.map((provider) => (
-        <div key={provider.value} className={radioButtonStyles}>
+        <div key={provider.value} className={cn(radioButtonStyles, disabled && "pointer-events-none")}>
           <input
+            disabled={disabled}
             className="sr-only"
             type="radio"
             id={provider.value}
@@ -46,6 +50,7 @@ export const ProvidersRadioGroup = ({ selected, setSelected, providers }: Provid
             checked={selected === provider.value}
             onChange={(e) => setSelected(e.target.value as Provider)}
           />
+
           <label className="flex cursor-pointer items-center gap-[5px] py-2 pr-3 pl-2" htmlFor={provider.value}>
             <ProviderIcon icon={provider.icon} />
             <span>{provider.label}</span>
