@@ -13,7 +13,14 @@ use moss_collection::{
 };
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
 use moss_git_hosting_provider::{
-    github::client::GitHubClient, gitlab::client::GitLabClient, models::primitives::GitProviderType,
+    GitHostingProvider,
+    common::GitUrl,
+    github::client::GitHubClient,
+    gitlab::client::GitLabClient,
+    models::{
+        primitives::GitProviderType,
+        types::{Contributor, RepositoryInfo},
+    },
 };
 use std::{
     collections::{HashMap, HashSet},
@@ -22,6 +29,8 @@ use std::{
     sync::Arc,
 };
 use tokio::sync::RwLock;
+
+use crate::errors::ErrorNotFound;
 
 pub(crate) struct CollectionItemUpdateParams {
     pub name: Option<String>,
@@ -69,6 +78,15 @@ pub(crate) struct CollectionItemDescription {
     pub icon_path: Option<PathBuf>,
     pub abs_path: Arc<Path>,
     pub external_path: Option<PathBuf>,
+}
+
+// FIXME: Not sure how to name this type
+pub(crate) struct CollectionDescription {
+    pub name: String,
+    pub repository: Option<String>,
+    pub repository_info: Option<RepositoryInfo>,
+    pub contributors: Vec<Contributor>,
+    pub current_branch: Option<String>,
 }
 
 #[derive(Default)]
@@ -437,8 +455,70 @@ impl<R: AppRuntime> CollectionService<R> {
             }
         })
     }
-}
 
+    pub(crate) async fn describe_collection(
+        &self,
+        _ctx: &R::AsyncContext,
+        id: &CollectionId,
+    ) -> joinerror::Result<CollectionDescription> {
+        let state = self.state.clone();
+
+        let state_lock = state.read().await;
+        if !state_lock.collections.contains_key(id) {
+            return Err(joinerror::Error::new::<ErrorNotFound>(format!(
+                "collection with id `{}` not found",
+                id.as_str()
+            )));
+        }
+        let collection = state_lock.collections.get(id).unwrap();
+
+        let manifest_desc = collection.describe().await?;
+
+        let (repository_info, contributors) = if let Some(Ok(repo_ref)) = manifest_desc
+            .repository
+            .as_ref()
+            .map(|url| GitUrl::parse(url))
+        {
+            match fetch_remote_repo_info(
+                &repo_ref,
+                self.github_client.clone(),
+                self.gitlab_client.clone(),
+            )
+            .await
+            {
+                Ok((info, contributors)) => (info, contributors),
+                Err(err) => {
+                    // TODO: Tell the frontend we failed to fetch the information from the providers
+                    println!(
+                        "failed to fetch remote repo information: {}",
+                        err.to_string()
+                    );
+                    (None, vec![])
+                }
+            }
+        } else {
+            (None, vec![])
+        };
+
+        let current_branch = collection
+            .git_service()
+            .get_current_branch()
+            .await
+            .unwrap_or_else(|err| {
+                // TODO: Tell the frontend we failed to get the current branch
+                println!("failed to get current branch: {}", err.to_string());
+                None
+            });
+
+        Ok(CollectionDescription {
+            name: manifest_desc.name,
+            repository: manifest_desc.repository,
+            repository_info,
+            contributors,
+            current_branch,
+        })
+    }
+}
 async fn restore_collections<R: AppRuntime>(
     ctx: &R::AsyncContext,
     abs_path: &Path,
@@ -501,4 +581,26 @@ async fn restore_collections<R: AppRuntime>(
     }
 
     Ok(result)
+}
+
+async fn fetch_remote_repo_info(
+    repo_ref: &GitUrl,
+    github_client: Arc<GitHubClient>,
+    gitlab_client: Arc<GitLabClient>,
+) -> joinerror::Result<(Option<RepositoryInfo>, Vec<Contributor>)> {
+    let client: Arc<dyn GitHostingProvider> = match repo_ref.domain.as_str() {
+        "github.com" => github_client,
+        "gitlab.com" => gitlab_client,
+        other => {
+            return Err(joinerror::Error::new::<()>(format!(
+                "unsupported git provider domain: {}",
+                other
+            )));
+        }
+    };
+
+    let repo_info = client.repository_info(&repo_ref).await?;
+    let contributors = client.contributors(&repo_ref).await?;
+
+    Ok((Some(repo_info), contributors))
 }

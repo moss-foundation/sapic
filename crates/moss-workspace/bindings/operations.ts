@@ -4,10 +4,12 @@ import type { ChangeCollectionId } from "./primitives";
 import type {
   ActivitybarPartStateInfo,
   AddVariableParams,
+  Contributor,
   EditorPartStateInfo,
   GitHubImportParams,
   GitLabImportParams,
   PanelPartStateInfo,
+  RepositoryInfo,
   SidebarPartStateInfo,
   UpdateVariableParams,
   VariableInfo,
@@ -86,6 +88,22 @@ export type DeleteEnvironmentInput = { id: string };
  * @category Operation
  */
 export type DeleteEnvironmentOutput = { id: string };
+
+/**
+ * @category Operation
+ */
+export type DescribeCollectionInput = { id: string };
+
+/**
+ * @category Operation
+ */
+export type DescribeCollectionOutput = {
+  name: string;
+  repository?: string;
+  repositoryInfo?: RepositoryInfo;
+  contributors: Array<Contributor>;
+  currentBranch?: string;
+};
 
 /**
  * @category Operation

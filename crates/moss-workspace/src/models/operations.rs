@@ -1,10 +1,17 @@
+use crate::models::{
+    primitives::{ChangeCollectionId, CollectionId},
+    types::EditorPartStateInfo,
+};
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_environment::models::{
     primitives::{EnvironmentId, VariableId},
     types::{AddVariableParams, UpdateVariableParams, VariableInfo},
 };
 use moss_git::url::GIT_URL_REGEX;
-use moss_git_hosting_provider::models::primitives::GitProviderType;
+use moss_git_hosting_provider::models::{
+    primitives::GitProviderType,
+    types::{Contributor, RepositoryInfo},
+};
 use serde::{Deserialize, Serialize};
 use std::{
     path::{Path, PathBuf},
@@ -12,11 +19,6 @@ use std::{
 };
 use ts_rs::TS;
 use validator::{Validate, ValidationError};
-
-use crate::models::{
-    primitives::{ChangeCollectionId, CollectionId},
-    types::EditorPartStateInfo,
-};
 
 use super::types::{
     ActivitybarPartStateInfo, GitHubImportParams, GitLabImportParams, PanelPartStateInfo,
@@ -348,4 +350,26 @@ pub struct StreamEnvironmentsOutput {
     #[serde(skip)]
     #[ts(skip)]
     pub total_returned: usize,
+}
+
+// Describe Collection
+/// @category Operation
+#[derive(Debug, Deserialize, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct DescribeCollectionInput {
+    pub id: CollectionId,
+}
+
+/// @category Operation
+#[derive(Debug, Deserialize, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct DescribeCollectionOutput {
+    pub name: String,
+    pub repository: Option<String>,
+    pub repository_info: Option<RepositoryInfo>,
+    pub contributors: Vec<Contributor>,
+    pub current_branch: Option<String>,
 }

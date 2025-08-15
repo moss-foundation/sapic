@@ -13,7 +13,7 @@ use moss_git_hosting_provider::{
 use std::{
     cell::LazyCell,
     path::{Path, PathBuf},
-    sync::{Arc, Mutex},
+    sync::Arc,
 };
 use tokio::sync::OnceCell;
 
@@ -25,7 +25,9 @@ use crate::{
     edit::CollectionEdit,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
     models::primitives::{EntryClass, EntryId},
-    services::{set_icon_service::SetIconService, storage_service::StorageService},
+    services::{
+        git_service::GitService, set_icon_service::SetIconService, storage_service::StorageService,
+    },
     worktree::{Worktree, entry::model::EntryModel},
 };
 
@@ -148,16 +150,18 @@ impl CollectionBuilder {
             None
         };
 
+        let git_service = Arc::new(GitService::new(repo_handle));
+
         Ok(Collection {
             fs: self.fs.clone(),
             abs_path: params.internal_abs_path,
             edit,
             set_icon_service,
             storage_service,
+            git_service,
             worktree: worktree_service,
             environments: OnceCell::new(),
             on_did_change: EventEmitter::new(),
-            repo_handle: Arc::new(Mutex::new(repo_handle)),
         })
     }
 
@@ -298,6 +302,7 @@ impl CollectionBuilder {
             None
         };
 
+        let git_service = Arc::new(GitService::new(repo_handle));
         // TODO: Load environments
 
         Ok(Collection {
@@ -306,10 +311,10 @@ impl CollectionBuilder {
             edit,
             set_icon_service,
             storage_service,
+            git_service,
             worktree: worktree_service,
             environments: OnceCell::new(),
             on_did_change: EventEmitter::new(),
-            repo_handle: Arc::new(Mutex::new(repo_handle)),
         })
     }
 
@@ -329,6 +334,8 @@ impl CollectionBuilder {
                 params.repository,
             )
             .await?;
+
+        let git_service = Arc::new(GitService::new(Some(repo_handle)));
 
         let storage_service: Arc<StorageService<R>> = StorageService::new(abs_path.as_ref())
             .join_err::<()>("failed to create collection storage service")?
@@ -364,10 +371,10 @@ impl CollectionBuilder {
             edit,
             set_icon_service,
             storage_service,
+            git_service,
             worktree,
             environments: OnceCell::new(),
             on_did_change: EventEmitter::new(),
-            repo_handle: Arc::new(Mutex::new(Some(repo_handle))),
         })
     }
 }

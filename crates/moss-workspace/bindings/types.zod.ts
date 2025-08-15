@@ -20,10 +20,10 @@ export const variableOptionsSchema = z.object({
   disabled: z.boolean(),
 });
 
-export const collectionInfoSchema = z.object({
-  id: z.string(),
-  displayName: z.string(),
-  order: z.number().optional(),
+export const branchInfoSchema = z.object({
+  name: z.string(),
+  ahead: z.number(),
+  behind: z.number(),
 });
 
 export const contributorSchema = z.object({

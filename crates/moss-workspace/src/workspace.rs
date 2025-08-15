@@ -68,8 +68,8 @@ pub struct Workspace<R: AppRuntime> {
     pub(super) storage_service: Arc<StorageService<R>>,
 
     // TODO: Refine the management of git provider clients
-    pub(super) github_client: Arc<GitHubClient>,
-    pub(super) gitlab_client: Arc<GitLabClient>,
+    pub(super) _github_client: Arc<GitHubClient>,
+    pub(super) _gitlab_client: Arc<GitLabClient>,
 }
 
 impl<R: AppRuntime> AnyWorkspace<R> for Workspace<R> {

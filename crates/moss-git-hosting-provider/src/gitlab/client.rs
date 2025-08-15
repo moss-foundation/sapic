@@ -71,6 +71,7 @@ impl GitAuthProvider for GitLabClient {
 }
 
 // TODO: Handle authentication expiration and reauthentication
+// TODO: Better error message when failing
 #[async_trait]
 impl GitHostingProvider for GitLabClient {
     fn name(&self) -> String {

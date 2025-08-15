@@ -1,16 +1,30 @@
-pub use git2::{BranchType, IndexAddOption, Signature};
-use git2::{IntoCString, PushOptions, RemoteCallbacks, Repository, build::RepoBuilder};
-use std::{collections::HashMap, path::Path, sync::Arc};
-
 use crate::GitAuthAgent;
+pub use git2::{BranchType, IndexAddOption, Signature};
+use git2::{
+    IntoCString, PushOptions, RemoteCallbacks, Repository, Status, StatusOptions,
+    build::RepoBuilder,
+};
+use joinerror::OptionExt;
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
 // https://github.com/rust-lang/git2-rs/issues/194
 
 unsafe impl Send for RepoHandle {}
 unsafe impl Sync for RepoHandle {}
 
-/// Since all the git operations are synchronous, and authentication requires blocking `reqwest`
-/// We must wrap all RepoHandle operations involving remote with `tokio::task::spawn_blocking`
+pub enum FileStatus {
+    Added,
+    Modified,
+    Deleted,
+}
+
+/// Since all the git operations are synchronous, we should wrap all RepoHandle operations
+/// with `tokio::task::spawn_blocking`.
+/// This will prevent git operations from blocking the main thread
 pub struct RepoHandle {
     auth_agent: Arc<dyn GitAuthAgent>,
     repo: Repository,
@@ -133,7 +147,7 @@ impl RepoHandle {
             let mut branch = self
                 .repo
                 .find_branch(local_branch_name, BranchType::Local)?;
-            branch.set_upstream(Some(remote_branch_name))?;
+            branch.set_upstream(Some(&format!("{}/{}", remote_name, remote_branch_name)))?;
         }
         Ok(())
     }
@@ -225,6 +239,21 @@ impl RepoHandle {
             .collect::<Vec<_>>();
         Ok(names)
     }
+
+    pub fn current_branch(&self) -> joinerror::Result<String> {
+        let head = self.repo.head()?;
+
+        // If HEAD points to a branch, get the branch name.
+        if head.is_branch() {
+            let branch_name = head
+                .shorthand()
+                .ok_or_join_err::<()>("invalid branch name")?;
+            Ok(branch_name.to_string())
+        } else {
+            Err(joinerror::Error::new::<()>("HEAD is detached"))
+        }
+    }
+
     /// If base_branch is None, the new branch will be based on the current HEAD
     pub fn create_branch(
         &self,
@@ -267,12 +296,56 @@ impl RepoHandle {
         let local = self.repo.find_branch(branch_name, BranchType::Local)?;
         let upstream = local.upstream()?;
 
-        let local_commit = upstream.get().peel_to_commit()?;
+        let local_commit = local.get().peel_to_commit()?;
         let upstream_commit = upstream.get().peel_to_commit()?;
         let (ahead, behind) = self
             .repo
             .graph_ahead_behind(local_commit.id(), upstream_commit.id())?;
         Ok((ahead, behind))
+    }
+
+    pub fn get_file_statuses(&self) -> joinerror::Result<HashMap<PathBuf, FileStatus>> {
+        let mut status_opts = StatusOptions::new();
+        status_opts
+            .include_untracked(true)
+            .recurse_untracked_dirs(true);
+
+        let statuses = self.repo.statuses(Some(&mut status_opts))?;
+        let mut out = HashMap::new();
+
+        for entry in statuses.iter() {
+            let path = entry.path();
+            if path.is_none() {
+                // Ignore non-UTF8 paths
+                continue;
+            }
+            let path = PathBuf::from(path.unwrap());
+
+            // FIXME: Technically if the status begins with INDEX_, it means they are already staged
+            // This should never happen if the user interacts with git only through our application
+            // Since we will only stage files immediately before making a commit
+            // Not sure if we should support unstaging such changes in our app
+            // For now those changes will not be displayed
+            if entry.status().intersects(Status::WT_NEW) {
+                out.insert(path, FileStatus::Added);
+                continue;
+            }
+
+            if entry.status().intersects(Status::WT_MODIFIED) {
+                out.insert(path, FileStatus::Modified);
+                continue;
+            }
+
+            if entry.status().intersects(Status::WT_DELETED) {
+                out.insert(path, FileStatus::Deleted);
+                continue;
+            }
+
+            // TODO: Implement rename detection if it can be done robustly
+            // TODO: Support for conflicted files?
+        }
+
+        Ok(out)
     }
 }
 impl RepoHandle {
@@ -389,6 +462,13 @@ impl RepoHandle {
             println!("Nothing to do...");
         }
         Ok(())
+    }
+}
+
+#[cfg(any(test, feature = "integration-tests"))]
+impl RepoHandle {
+    pub fn repo(&self) -> &git2::Repository {
+        &self.repo
     }
 }
 

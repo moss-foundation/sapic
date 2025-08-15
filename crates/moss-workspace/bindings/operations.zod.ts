@@ -5,10 +5,12 @@ import { changeCollectionIdSchema } from "./primitives.zod";
 import {
   activitybarPartStateInfoSchema,
   addVariableParamsSchema,
+  contributorSchema,
   editorPartStateInfoSchema,
   gitHubImportParamsSchema,
   gitLabImportParamsSchema,
   panelPartStateInfoSchema,
+  repositoryInfoSchema,
   sidebarPartStateInfoSchema,
   updateVariableParamsSchema,
   variableInfoSchema,
@@ -65,6 +67,10 @@ export const deleteEnvironmentOutputSchema = z.object({
   id: z.string(),
 });
 
+export const describeCollectionInputSchema = z.object({
+  id: z.string(),
+});
+
 export const describeEnvironmentInputSchema = z.object({
   id: z.string(),
 });
@@ -98,6 +104,14 @@ export const createEnvironmentInputSchema = z.object({
   order: z.number(),
   color: z.string().optional(),
   variables: z.array(addVariableParamsSchema),
+});
+
+export const describeCollectionOutputSchema = z.object({
+  name: z.string(),
+  repository: z.string().optional(),
+  repositoryInfo: repositoryInfoSchema.optional(),
+  contributors: z.array(contributorSchema),
+  currentBranch: z.string().optional(),
 });
 
 export const describeEnvironmentOutputSchema = z.object({

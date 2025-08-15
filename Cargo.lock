@@ -3905,7 +3905,10 @@ dependencies = [
  "git2",
  "joinerror",
  "libssh2-sys",
+ "nanoid",
  "regex",
+ "serde",
+ "ts-rs",
  "url",
 ]
 

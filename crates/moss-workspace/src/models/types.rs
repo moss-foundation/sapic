@@ -30,17 +30,6 @@ impl Default for WorkspaceMode {
 }
 
 /// @category Type
-#[derive(Debug, PartialEq, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct CollectionInfo {
-    pub id: String,
-    pub display_name: String,
-    pub order: Option<isize>,
-}
-
-/// @category Type
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
@@ -124,7 +113,7 @@ pub struct EditorPartStateInfo {
 }
 
 // FIXME: Validation for provider specific url?
-/// @category Operation
+/// @category Type
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
@@ -136,7 +125,7 @@ pub struct GitHubImportParams {
     // TODO: repo branch
 }
 
-/// @category Operation
+/// @category Type
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
