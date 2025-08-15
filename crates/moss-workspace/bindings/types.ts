@@ -101,12 +101,24 @@ export type EnvironmentInfo = {
 /**
  * @category Operation
  */
-export type GitHubImportParams = { order: number; repository: string };
+export type GitHubImportParams = {
+  repository: string;
+  /**
+   * If provided, this branch will be checked out instead of the default branch
+   */
+  branch?: string;
+};
 
 /**
  * @category Operation
  */
-export type GitLabImportParams = { order: number; repository: string };
+export type GitLabImportParams = {
+  repository: string;
+  /**
+   * If provided, this branch will be checked out instead of the default branch
+   */
+  branch?: string;
+};
 
 /**
  * @category Type

@@ -8,7 +8,9 @@
 use moss_storage::storage::operations::GetItem;
 use moss_workspace::{
     models::{
-        operations::ImportCollectionInput, primitives::CollectionId, types::GitHubImportParams,
+        operations::ImportCollectionInput,
+        primitives::CollectionId,
+        types::{GitHubImportParams, ImportCollectionParams},
     },
     storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
@@ -29,10 +31,16 @@ async fn clone_collection_success() {
     let clone_collection_output = workspace
         .import_collection(
             &ctx,
-            &ImportCollectionInput::GitHub(GitHubImportParams {
+            &ImportCollectionInput {
+                name: "New Collection".to_string(),
                 order: 0,
-                repository: env::var("GITHUB_COLLECTION_REPO_HTTPS").unwrap(),
-            }),
+                external_path: None,
+                icon_path: None,
+                params: ImportCollectionParams::GitHub(GitHubImportParams {
+                    repository: env::var("GITHUB_COLLECTION_REPO_HTTPS").unwrap(),
+                    branch: None,
+                }),
+            },
         )
         .await
         .unwrap();

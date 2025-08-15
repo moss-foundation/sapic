@@ -1,15 +1,16 @@
-use crate::{
-    Workspace,
-    models::{
-        operations::{ImportCollectionInput, ImportCollectionOutput},
-        primitives::CollectionId,
-    },
-    services::collection_service::CollectionItemCloneParams,
-};
 use moss_api::ext::ValidationResultExt;
 use moss_applib::AppRuntime;
 use moss_git_hosting_provider::models::primitives::GitProviderType;
 use validator::Validate;
+
+use crate::{
+    Workspace,
+    models::{
+        operations::{ImportCollectionInput, ImportCollectionOutput},
+        types::ImportCollectionParams,
+    },
+    services::collection_service::{CollectionItemCloneParams, CollectionItemGitCloneParams},
+};
 
 impl<R: AppRuntime> Workspace<R> {
     pub async fn import_collection(
@@ -17,41 +18,45 @@ impl<R: AppRuntime> Workspace<R> {
         ctx: &R::AsyncContext,
         input: &ImportCollectionInput,
     ) -> joinerror::Result<ImportCollectionOutput> {
-        let id = CollectionId::new();
-
-        let description = match input {
-            ImportCollectionInput::GitHub(params) => {
+        input.validate().join_err_bare()?;
+        let (repository, git_provider_type, branch) = match &input.params {
+            ImportCollectionParams::GitHub(params) => {
                 params.validate().join_err_bare()?;
-                self.collection_service
-                    .clone_collection(
-                        ctx,
-                        &id,
-                        CollectionItemCloneParams {
-                            git_provider_type: GitProviderType::GitHub,
-                            order: params.order,
-                            repository: params.repository.clone(),
-                        },
-                    )
-                    .await?
+                (
+                    params.repository.clone(),
+                    GitProviderType::GitHub,
+                    params.branch.clone(),
+                )
             }
-            ImportCollectionInput::GitLab(params) => {
+            ImportCollectionParams::GitLab(params) => {
                 params.validate().join_err_bare()?;
-                self.collection_service
-                    .clone_collection(
-                        ctx,
-                        &id,
-                        CollectionItemCloneParams {
-                            git_provider_type: GitProviderType::GitLab,
-                            order: params.order,
-                            repository: params.repository.clone(),
-                        },
-                    )
-                    .await?
+                (
+                    params.repository.clone(),
+                    GitProviderType::GitLab,
+                    params.branch.clone(),
+                )
             }
         };
 
+        let description = self
+            .collection_service
+            .clone_collection(
+                ctx,
+                CollectionItemCloneParams {
+                    name: input.name.clone(),
+                    order: input.order,
+                    icon_path: input.icon_path.clone(),
+                    git_params: CollectionItemGitCloneParams {
+                        repository,
+                        git_provider_type,
+                        branch,
+                    },
+                },
+            )
+            .await?;
+
         Ok(ImportCollectionOutput {
-            id,
+            id: description.id,
             name: description.name,
             order: description.order,
             expanded: description.expanded,

@@ -123,6 +123,14 @@ pub struct EditorPartStateInfo {
     pub active_group: Option<String>,
 }
 
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub enum ImportCollectionParams {
+    GitHub(GitHubImportParams),
+    GitLab(GitLabImportParams),
+}
+
 // FIXME: Validation for provider specific url?
 /// @category Operation
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
@@ -130,10 +138,10 @@ pub struct EditorPartStateInfo {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct GitHubImportParams {
-    pub order: isize,
     #[validate(regex(path = "*GIT_URL_REGEX"))]
     pub repository: String,
-    // TODO: repo branch
+    /// If provided, this branch will be checked out instead of the default branch
+    pub branch: Option<String>,
 }
 
 /// @category Operation
@@ -142,8 +150,36 @@ pub struct GitHubImportParams {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct GitLabImportParams {
-    pub order: isize,
     #[validate(regex(path = "*GIT_URL_REGEX"))]
     pub repository: String,
-    // TODO: repo branch
+    /// If provided, this branch will be checked out instead of the default branch
+    pub branch: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub enum CreateCollectionGitParams {
+    GitHub(GitHubCreateParams),
+    GitLab(GitLabCreateParams),
+}
+
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct GitHubCreateParams {
+    #[validate(regex(path = "*GIT_URL_REGEX"))]
+    pub repository: String,
+    /// The name of the default branch
+    pub branch: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct GitLabCreateParams {
+    #[validate(regex(path = "*GIT_URL_REGEX"))]
+    pub repository: String,
+    /// The name of the default branch
+    pub branch: String,
 }

@@ -1,11 +1,7 @@
 use joinerror::{Error, OptionExt, ResultExt};
 use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt, RemoveOptions};
-use moss_git::{
-    constants::DEFAULT_REMOTE_NAME,
-    repo::{BranchType, IndexAddOption, RepoHandle, Signature},
-    url::normalize_git_url,
-};
+use moss_git::repo::{BranchType, IndexAddOption, RepoHandle, Signature};
 use moss_git_hosting_provider::{
     GitAuthProvider, GitHostingProvider, github::client::GitHubClient,
     gitlab::client::GitLabClient, models::primitives::GitProviderType,
@@ -56,21 +52,28 @@ pub struct CollectionCreateParams {
     pub name: Option<String>,
     pub internal_abs_path: Arc<Path>,
     pub external_abs_path: Option<Arc<Path>>,
-    // FIXME: Maybe repository should be a enum by git provider type
-    pub repository: Option<String>,
-    pub git_provider_type: Option<GitProviderType>,
-
+    pub git_params: Option<CollectionCreateGitParams>,
     pub icon_path: Option<PathBuf>,
+}
+
+pub struct CollectionCreateGitParams {
+    pub git_provider_type: GitProviderType,
+    pub repository: String,
+    pub branch: String,
 }
 
 pub struct CollectionLoadParams {
     pub internal_abs_path: Arc<Path>,
 }
 
-pub struct CollectionCloneParams {
+pub struct CollectionCloneGitParams {
     pub git_provider_type: GitProviderType,
-    pub internal_abs_path: Arc<Path>,
     pub repository: String,
+    pub branch: Option<String>,
+}
+pub struct CollectionCloneParams {
+    pub internal_abs_path: Arc<Path>,
+    pub git_params: CollectionCloneGitParams,
 }
 
 pub struct CollectionBuilder {
@@ -218,6 +221,11 @@ impl CollectionBuilder {
             set_icon_service.set_icon(&icon_path)?;
         }
 
+        let git_params = params.git_params;
+
+        let repository = git_params.as_ref().map(|p| p.repository.clone());
+        let git_provider_type = git_params.as_ref().map(|p| p.git_provider_type.clone());
+
         self.fs
             .create_file_with(
                 &abs_path.join(MANIFEST_FILE_NAME),
@@ -226,13 +234,8 @@ impl CollectionBuilder {
                         .name
                         .unwrap_or(defaults::DEFAULT_COLLECTION_NAME.to_string()),
                     // FIXME: We might consider removing this field from the manifest file
-                    repository: params
-                        .repository
-                        .as_ref()
-                        .and_then(|repo| normalize_git_url(repo).ok()),
-                    // FIXME: Use the actual git provider and auth agent based on user input
-                    // Hardcoded using GitHub agent for now
-                    git_provider_type: Some(GitProviderType::GitHub),
+                    repository,
+                    git_provider_type,
                 })?
                 .as_bytes(),
                 CreateOptions {
@@ -271,28 +274,22 @@ impl CollectionBuilder {
 
         let edit = CollectionEdit::new(self.fs.clone(), abs_path.join(MANIFEST_FILE_NAME));
 
-        let repo_handle = if let Some(repository) = params.repository {
-            #[cfg(any(test, feature = "integration-tests"))]
-            let git_provider_type = params.git_provider_type.clone();
-            // FIXME: Use what the frontend passes
-            #[cfg(not(any(test, feature = "integration-tests")))]
-            let git_provider_type = Some(GitProviderType::GitHub);
+        let repo_handle = if let Some(git_params) = git_params {
+            let git_provider_type = git_params.git_provider_type;
+            let repository = git_params.repository;
+            let branch = git_params.branch;
 
-            if let Some(git_provider_type) = git_provider_type {
-                let result = self
-                    .create_repo_handle(git_provider_type, abs_path.clone(), repository)
-                    .await;
-                match result {
-                    Ok(repo_handle) => Some(repo_handle),
-                    Err(err) => {
-                        // TODO: send the error to the frontend
-                        println!("failed to create repo: {}", err.to_string());
-                        None
-                    }
+            let result = self
+                .create_repo_handle(git_provider_type, abs_path.clone(), repository, branch)
+                .await;
+
+            match result {
+                Ok(repo_handle) => Some(repo_handle),
+                Err(err) => {
+                    // TODO: send the error to the frontend
+                    println!("failed to create repo: {}", err.to_string());
+                    None
                 }
-            } else {
-                // This should not happen after we redesign the input type
-                None
             }
         } else {
             None
@@ -322,11 +319,14 @@ impl CollectionBuilder {
 
         let abs_path = params.internal_abs_path.clone();
 
+        let git_params = params.git_params;
+
         let repo_handle = self
             .clone_repo_handle(
-                params.git_provider_type,
+                git_params.git_provider_type,
                 abs_path.clone(),
-                params.repository,
+                git_params.repository,
+                git_params.branch,
             )
             .await?;
 
@@ -415,6 +415,7 @@ impl CollectionBuilder {
         git_provider_type: GitProviderType,
         abs_path: Arc<Path>,
         repo_url: String,
+        default_branch: String,
     ) -> joinerror::Result<RepoHandle> {
         let github_client_clone = self.github_client.clone();
         let gitlab_client_clone = self.gitlab_client.clone();
@@ -431,18 +432,15 @@ impl CollectionBuilder {
                 GitProviderType::GitLab => gitlab_client_clone.git_auth_agent(),
             };
 
-            // TODO: Allow the user to set the default branch name
-            let new_default_branch_name = "main";
-
             // git init
             // Note: This will not create a default branch
             let repo_handle = RepoHandle::init(abs_path_clone.as_ref(), auth_agent)?;
 
             // git remote add origin {repository_url}
-            repo_handle.add_remote(Some(DEFAULT_REMOTE_NAME), &repo_url)?;
+            repo_handle.add_remote(None, &repo_url)?;
 
             // git fetch
-            repo_handle.fetch(Some(DEFAULT_REMOTE_NAME))?;
+            repo_handle.fetch(None)?;
 
             // Check remote branches
             // git branch -r
@@ -475,17 +473,12 @@ impl CollectionBuilder {
                 .first()
                 .cloned()
                 .ok_or_join_err::<()>("no local branch exists")?;
-            repo_handle.rename_branch(&old_default_branch_name, new_default_branch_name, false)?;
+            repo_handle.rename_branch(&old_default_branch_name, &default_branch, false)?;
 
             // Don't push during integration tests
             // git push
             #[cfg(not(any(test, feature = "integration-tests")))]
-            repo_handle.push(
-                None,
-                Some(&new_default_branch_name),
-                Some(&new_default_branch_name),
-                true,
-            )?;
+            repo_handle.push(None, Some(&default_branch), Some(&default_branch), true)?;
 
             Ok(repo_handle)
         })
@@ -527,6 +520,7 @@ impl CollectionBuilder {
         git_provider_type: GitProviderType,
         abs_path: Arc<Path>,
         repo_url: String,
+        branch: Option<String>,
     ) -> joinerror::Result<RepoHandle> {
         let github_client_clone = self.github_client.clone();
         let gitlab_client_clone = self.gitlab_client.clone();
@@ -537,12 +531,20 @@ impl CollectionBuilder {
                 GitProviderType::GitLab => gitlab_client_clone.git_auth_agent(),
             };
 
-            RepoHandle::clone(
+            let repo = RepoHandle::clone(
                 &repo_url,
                 abs_path.as_ref(),
                 // Different git providers require different auth agent
                 auth_agent,
-            )
+            )?;
+
+            if let Some(branch) = branch {
+                // Try to check out to the user-selected branch
+                // if it fails, we consider the repo creation to also fail
+                repo.checkout_branch(None, &branch, true)?;
+            }
+
+            Ok(repo)
         })
         .await;
 

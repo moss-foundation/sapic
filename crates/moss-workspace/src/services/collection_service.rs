@@ -9,7 +9,10 @@ use moss_applib::{AppRuntime, PublicServiceMarker, ServiceMarker};
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_collection::{
     Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
-    builder::{CollectionCloneParams, CollectionCreateParams, CollectionLoadParams},
+    builder::{
+        CollectionCloneGitParams, CollectionCloneParams, CollectionCreateGitParams,
+        CollectionCreateParams, CollectionLoadParams,
+    },
 };
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
 use moss_git_hosting_provider::{
@@ -37,14 +40,26 @@ pub(crate) struct CollectionItemCreateParams {
     pub external_path: Option<PathBuf>,
     // FIXME: Do we need this field?
     pub icon_path: Option<PathBuf>,
-    pub repository: Option<String>,
-    pub git_provider_type: Option<GitProviderType>,
+    pub git_params: Option<CollectionItemGitCreateParams>,
+}
+
+pub(crate) struct CollectionItemGitCreateParams {
+    pub repository: String,
+    pub git_provider_type: GitProviderType,
+    pub branch: String,
 }
 
 pub(crate) struct CollectionItemCloneParams {
-    pub git_provider_type: GitProviderType,
+    pub name: String,
     pub order: isize,
+    pub icon_path: Option<PathBuf>,
+    pub git_params: CollectionItemGitCloneParams,
+}
+
+pub(crate) struct CollectionItemGitCloneParams {
     pub repository: String,
+    pub git_provider_type: GitProviderType,
+    pub branch: Option<String>,
 }
 
 #[derive(Deref, DerefMut)]
@@ -167,9 +182,12 @@ impl<R: AppRuntime> CollectionService<R> {
                 name: Some(params.name.to_owned()),
                 internal_abs_path: abs_path.clone().into(),
                 external_abs_path: params.external_path.as_deref().map(|p| p.to_owned().into()),
+                git_params: params.git_params.map(|p| CollectionCreateGitParams {
+                    git_provider_type: p.git_provider_type,
+                    repository: p.repository,
+                    branch: p.branch,
+                }),
                 icon_path: params.icon_path.to_owned(),
-                repository: params.repository.to_owned(),
-                git_provider_type: params.git_provider_type.to_owned(),
             },
         )
         .await
@@ -223,22 +241,22 @@ impl<R: AppRuntime> CollectionService<R> {
         })
     }
 
+    // FIXME: Setting the cloned collection's name and icon is not yet implemented
+    // Since they are currently committed to the repository
+    // Updating them here would be a committable change
     pub(crate) async fn clone_collection(
         &self,
         ctx: &R::AsyncContext,
-        id: &CollectionId,
         params: CollectionItemCloneParams,
     ) -> joinerror::Result<CollectionItemDescription> {
-        // FIXME: Does it make sense to return an error when the path exists?
-        // Maybe we should simply retry with a new CollectionId
-        let id_str = id.to_string();
-        let abs_path: Arc<Path> = self.abs_path.join(id_str).into();
-        if abs_path.exists() {
-            return Err(joinerror::Error::new::<()>(format!(
-                "collection directory `{}` already exists",
-                abs_path.display()
-            )));
+        // Try a new CollectionId if one is already in use
+        let mut id = CollectionId::new();
+        let mut abs_path = self.abs_path.join(id.as_str());
+        while abs_path.exists() {
+            id = CollectionId::new();
+            abs_path = self.abs_path.join(id.as_str());
         }
+        let abs_path: Arc<Path> = abs_path.into();
 
         self.fs
             .create_dir(&abs_path)
@@ -247,6 +265,7 @@ impl<R: AppRuntime> CollectionService<R> {
                 format!("failed to create directory `{}`", abs_path.display())
             })?;
 
+        let git_params = params.git_params;
         let collection = CollectionBuilder::new(
             self.fs.clone(),
             self.github_client.clone(),
@@ -255,9 +274,12 @@ impl<R: AppRuntime> CollectionService<R> {
         .clone(
             ctx,
             CollectionCloneParams {
-                git_provider_type: params.git_provider_type,
                 internal_abs_path: abs_path.clone(),
-                repository: params.repository.clone(),
+                git_params: CollectionCloneGitParams {
+                    git_provider_type: git_params.git_provider_type,
+                    repository: git_params.repository,
+                    branch: git_params.branch,
+                },
             },
         )
         .await
@@ -265,6 +287,7 @@ impl<R: AppRuntime> CollectionService<R> {
 
         let desc = collection.describe().await?;
 
+        // FIXME: Should we allow user to set local icon when cloning a collection?
         let icon_path = collection.icon_path();
 
         let mut state_lock = self.state.write().await;
@@ -285,7 +308,7 @@ impl<R: AppRuntime> CollectionService<R> {
             .join_err::<()>("failed to start transaction")?;
 
         self.storage
-            .put_item_order_txn(ctx, &mut txn, id, params.order)
+            .put_item_order_txn(ctx, &mut txn, &id, params.order)
             .await?;
         self.storage
             .put_expanded_items_txn(ctx, &mut txn, &state_lock.expanded_items)

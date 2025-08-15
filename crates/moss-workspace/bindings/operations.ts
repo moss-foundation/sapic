@@ -28,6 +28,8 @@ export type BatchUpdateCollectionOutput = { ids: Array<string> };
  */
 export type BatchUpdateCollectionParams = { id: string; order?: number; expanded?: boolean };
 
+export type CreateCollectionGitParams = { "gitHub": GitHubCreateParams } | { "gitLab": GitLabCreateParams };
+
 /**
  * @category Operation
  */
@@ -35,7 +37,7 @@ export type CreateCollectionInput = {
   name: string;
   order: number;
   externalPath?: string;
-  repository?: string;
+  gitParams?: CreateCollectionGitParams;
   iconPath?: string;
 };
 
@@ -107,15 +109,36 @@ export type DescribeStateOutput = {
   activitybar?: ActivitybarPartStateInfo;
 };
 
-/**
- * @category Operation
- */
-export type ImportCollectionInput = { "gitHub": GitHubImportParams } | { "gitLab": GitLabImportParams };
+export type GitHubCreateParams = {
+  repository: string;
+  /**
+   * The name of the default branch
+   */
+  branch: string;
+};
+
+export type GitLabCreateParams = {
+  repository: string;
+  /**
+   * The name of the default branch
+   */
+  branch: string;
+};
+
+export type ImportCollectionInput = {
+  name: string;
+  order: number;
+  externalPath: string | null;
+  params: ImportCollectionParams;
+  iconPath: string | null;
+};
 
 /**
  * @category Operation
  */
 export type ImportCollectionOutput = { id: string; name: string; order?: number; expanded: boolean; iconPath?: string };
+
+export type ImportCollectionParams = { "gitHub": GitHubImportParams } | { "gitLab": GitLabImportParams };
 
 /**
  * @category Operation

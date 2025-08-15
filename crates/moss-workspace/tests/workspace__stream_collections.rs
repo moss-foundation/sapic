@@ -54,8 +54,7 @@ async fn stream_collections_single_collection() {
                 name: collection_name.clone(),
                 order: collection_order,
                 external_path: None,
-                repository: None,
-                git_provider_type: None,
+                git_params: None,
                 icon_path: None,
             },
         )
@@ -113,8 +112,7 @@ async fn stream_collections_multiple_collections() {
                     name: collection_name.clone(),
                     order: collection_order,
                     external_path: None,
-                    repository: None,
-                    git_provider_type: None,
+                    git_params: None,
                     icon_path: None,
                 },
             )
@@ -181,8 +179,7 @@ async fn stream_collections_with_icon() {
                 name: collection_name.clone(),
                 order: collection_order,
                 external_path: None,
-                repository: None,
-                git_provider_type: None,
+                git_params: None,
                 icon_path: Some(icon_path.clone()),
             },
         )
@@ -241,8 +238,7 @@ async fn stream_collections_mixed_configurations() {
                 name: name1.clone(),
                 order: 1,
                 external_path: None,
-                repository: None,
-                git_provider_type: None,
+                git_params: None,
                 icon_path: None,
             },
         )
@@ -259,8 +255,7 @@ async fn stream_collections_mixed_configurations() {
                 name: name2.clone(),
                 order: 2,
                 external_path: None,
-                repository: None,
-                git_provider_type: None,
+                git_params: None,
                 icon_path: Some(icon_path.clone()),
             },
         )
@@ -336,8 +331,7 @@ async fn stream_collections_order_verification() {
                     name: collection_name.clone(),
                     order: *order,
                     external_path: None,
-                    repository: None,
-                    git_provider_type: None,
+                    git_params: None,
                     icon_path: None,
                 },
             )

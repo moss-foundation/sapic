@@ -24,13 +24,24 @@ export const batchUpdateCollectionOutputSchema = z.object({
   ids: z.array(z.string()),
 });
 
-export const createCollectionInputSchema = z.object({
-  name: z.string(),
-  order: z.number(),
-  externalPath: z.string().optional(),
-  repository: z.string().optional(),
-  iconPath: z.string().optional(),
+export const gitHubCreateParamsSchema = z.object({
+  repository: z.string(),
+  branch: z.string(),
 });
+
+export const gitLabCreateParamsSchema = z.object({
+  repository: z.string(),
+  branch: z.string(),
+});
+
+export const createCollectionGitParamsSchema = z.union([
+  z.object({
+    "gitHub": gitHubCreateParamsSchema,
+  }),
+  z.object({
+    "gitLab": gitLabCreateParamsSchema,
+  }),
+]);
 
 export const createCollectionOutputSchema = z.object({
   id: z.string(),
@@ -92,6 +103,14 @@ export const batchUpdateCollectionInputSchema = z.object({
   items: z.array(batchUpdateCollectionParamsSchema),
 });
 
+export const createCollectionInputSchema = z.object({
+  name: z.string(),
+  order: z.number(),
+  externalPath: z.string().optional(),
+  gitParams: createCollectionGitParamsSchema.optional(),
+  iconPath: z.string().optional(),
+});
+
 export const createEnvironmentInputSchema = z.object({
   collectionId: z.string().optional(),
   name: z.string(),
@@ -111,7 +130,7 @@ export const describeStateOutputSchema = z.object({
   activitybar: activitybarPartStateInfoSchema.optional(),
 });
 
-export const importCollectionInputSchema = z.union([
+export const importCollectionParamsSchema = z.union([
   z.object({
     "gitHub": gitHubImportParamsSchema,
   }),
@@ -156,3 +175,11 @@ export const updateStateInputSchema = z.union([
     "updateActivitybarPartState": activitybarPartStateInfoSchema,
   }),
 ]);
+
+export const importCollectionInputSchema = z.object({
+  name: z.string(),
+  order: z.number(),
+  externalPath: z.string().nullable(),
+  params: importCollectionParamsSchema,
+  iconPath: z.string().nullable(),
+});

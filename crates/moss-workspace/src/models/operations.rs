@@ -4,7 +4,6 @@ use moss_environment::models::{
     types::{AddVariableParams, UpdateVariableParams, VariableInfo},
 };
 use moss_git::url::GIT_URL_REGEX;
-use moss_git_hosting_provider::models::primitives::GitProviderType;
 use serde::{Deserialize, Serialize};
 use std::{
     path::{Path, PathBuf},
@@ -19,8 +18,8 @@ use crate::models::{
 };
 
 use super::types::{
-    ActivitybarPartStateInfo, GitHubImportParams, GitLabImportParams, PanelPartStateInfo,
-    SidebarPartStateInfo,
+    ActivitybarPartStateInfo, CreateCollectionGitParams, ImportCollectionParams,
+    PanelPartStateInfo, SidebarPartStateInfo,
 };
 
 // ------------------------------ //
@@ -39,14 +38,7 @@ pub struct CreateCollectionInput {
     pub order: isize,
     pub external_path: Option<PathBuf>,
 
-    // FIXME: Pass also the git provider information
-    #[validate(regex(path = "*GIT_URL_REGEX"))]
-    pub repository: Option<String>,
-
-    // FIXME: Replace the repo input type with an enum
-    #[serde(skip)]
-    #[ts(skip)]
-    pub git_provider_type: Option<GitProviderType>,
+    pub git_params: Option<CreateCollectionGitParams>,
 
     // TODO: repo branch
     pub icon_path: Option<PathBuf>,
@@ -73,13 +65,16 @@ pub struct CreateCollectionOutput {
     pub external_path: Option<PathBuf>,
 }
 
-/// @category Operation
-#[derive(Debug, Serialize, Deserialize, TS)]
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub enum ImportCollectionInput {
-    GitHub(GitHubImportParams),
-    GitLab(GitLabImportParams),
+pub struct ImportCollectionInput {
+    #[validate(length(min = 1))]
+    pub name: String,
+    pub order: isize,
+    pub external_path: Option<PathBuf>,
+    pub params: ImportCollectionParams,
+    pub icon_path: Option<PathBuf>,
 }
 
 /// @category Operation

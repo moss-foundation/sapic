@@ -53,13 +53,13 @@ export const editorGridNodeSchema: z.ZodSchema<EditorGridNode> = z.lazy(() =>
 );
 
 export const gitHubImportParamsSchema = z.object({
-  order: z.number(),
   repository: z.string(),
+  branch: z.string().optional(),
 });
 
 export const gitLabImportParamsSchema = z.object({
-  order: z.number(),
   repository: z.string(),
+  branch: z.string().optional(),
 });
 
 export const panelPartStateInfoSchema = z.object({

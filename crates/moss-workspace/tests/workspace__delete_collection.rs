@@ -25,8 +25,7 @@ async fn delete_collection_success() {
                 name: collection_name.clone(),
                 order: 0,
                 external_path: None,
-                repository: None,
-                git_provider_type: None,
+                git_params: None,
                 icon_path: None,
             },
         )
@@ -81,8 +80,7 @@ async fn delete_collection_nonexistent_id() {
                 name: collection_name.clone(),
                 order: 0,
                 external_path: None,
-                repository: None,
-                git_provider_type: None,
+                git_params: None,
                 icon_path: None,
             },
         )
@@ -119,8 +117,7 @@ async fn delete_collection_fs_already_deleted() {
                 name: collection_name.clone(),
                 order: 0,
                 external_path: None,
-                repository: None,
-                git_provider_type: None,
+                git_params: None,
                 icon_path: None,
             },
         )

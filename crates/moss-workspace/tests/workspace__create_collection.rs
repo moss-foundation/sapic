@@ -24,8 +24,7 @@ async fn create_collection_success() {
                 name: collection_name.clone(),
                 order: 0,
                 external_path: None,
-                repository: None,
-                git_provider_type: None,
+                git_params: None,
                 icon_path: None,
             },
         )
@@ -78,8 +77,7 @@ async fn create_collection_empty_name() {
                 name: collection_name.clone(),
                 order: 0,
                 external_path: None,
-                repository: None,
-                git_provider_type: None,
+                git_params: None,
                 icon_path: None,
             },
         )
@@ -107,8 +105,7 @@ async fn create_collection_special_chars() {
                     name: collection_name.clone(),
                     order: 0,
                     external_path: None,
-                    repository: None,
-                    git_provider_type: None,
+                    git_params: None,
                     icon_path: None,
                 },
             )
@@ -163,8 +160,7 @@ async fn create_collection_with_order() {
                 name: collection_name.clone(),
                 order: 42,
                 external_path: None,
-                repository: None,
-                git_provider_type: None,
+                git_params: None,
                 icon_path: None,
             },
         )
@@ -220,8 +216,7 @@ async fn create_collection_with_icon() {
                 name: collection_name.clone(),
                 order: 0,
                 external_path: None,
-                repository: None,
-                git_provider_type: None,
+                git_params: None,
                 icon_path: Some(input_icon_path.clone()),
             },
         )
@@ -280,8 +275,7 @@ async fn create_multiple_collections_expanded_items() {
                 name: collection_name1.clone(),
                 order: 0,
                 external_path: None,
-                repository: None,
-                git_provider_type: None,
+                git_params: None,
                 icon_path: None,
             },
         )
@@ -297,8 +291,7 @@ async fn create_multiple_collections_expanded_items() {
                 name: collection_name2.clone(),
                 order: 1,
                 external_path: None,
-                repository: None,
-                git_provider_type: None,
+                git_params: None,
                 icon_path: None,
             },
         )
