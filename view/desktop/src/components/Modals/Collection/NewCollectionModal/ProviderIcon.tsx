@@ -1,5 +1,7 @@
+export type ProviderIcon = "github" | "gitlab" | "postman" | "insomnia";
+
 interface IconProps {
-  icon: "github" | "gitlab" | "postman" | "insomnia";
+  icon: ProviderIcon;
 }
 
 export const ProviderIcon = ({ icon }: IconProps) => {

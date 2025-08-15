@@ -2,7 +2,7 @@ import { useId } from "react";
 
 import { cn } from "@/utils/cn";
 
-import { ProviderIcon } from "./ProviderIcon";
+import { ProviderIcon } from "../ProviderIcon";
 
 const radioButtonStyles = `
     has-[:focus-visible]:outline-3 
