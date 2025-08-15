@@ -18,7 +18,7 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
   const [name, setName] = useState("New Collection");
   const [repository, setRepository] = useState("github.com/moss-foundation/sapic");
   const [branch, setBranch] = useState("main");
-  const [provider, setProvider] = useState<Provider | null>(null);
+  const [provider, setProvider] = useState<Provider | null>("github");
 
   const providers: Providers = [
     { value: "github", label: "GitHub", icon: "github" },
@@ -40,16 +40,18 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
         <div>From:</div>
         <ProvidersRadioGroup selected={provider} setSelected={setProvider} providers={providers} />
 
-        <div>Name:</div>
-        <InputOutlined
-          ref={inputRef}
-          value={name}
-          className="max-w-72"
-          onChange={(e) => setName(e.target.value)}
-          pattern={VALID_NAME_PATTERN}
-          required
-        />
-        <p className="col-start-2 max-w-72 text-xs text-(--moss-secondary-text)">{`Invalid filename characters (e.g. / \ : * ? " < > |) will be escaped`}</p>
+        <div className="col-span-2 grid grid-cols-subgrid items-center gap-y-1.5">
+          <div>Name:</div>
+          <InputOutlined
+            ref={inputRef}
+            value={name}
+            className="max-w-72"
+            onChange={(e) => setName(e.target.value)}
+            pattern={VALID_NAME_PATTERN}
+            required
+          />
+          <p className="col-start-2 max-w-72 text-xs text-(--moss-secondary-text)">{`Invalid filename characters (e.g. / \ : * ? " < > |) will be escaped`}</p>
+        </div>
       </div>
 
       <div className="flex justify-between gap-2">

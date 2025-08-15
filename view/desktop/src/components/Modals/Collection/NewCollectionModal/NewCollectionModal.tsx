@@ -73,6 +73,8 @@ export const NewCollectionModal = ({ closeModal, showModal, initialTab = "Create
     setRepository(values.repository);
   };
 
+  const isSubmitDisabled = !name;
+
   return (
     <Modal onBackdropClick={handleCancel} showModal={showModal}>
       <Header />
@@ -102,8 +104,7 @@ export const NewCollectionModal = ({ closeModal, showModal, initialTab = "Create
           openAutomatically={openAutomatically}
           setOpenAutomatically={setOpenAutomatically}
           handleCancel={handleCancel}
-          //TODO: Add proper validation for isSubmitDisabled
-          isSubmitDisabled={false}
+          isSubmitDisabled={isSubmitDisabled}
           tab={tab}
         />
       </form>

@@ -4,7 +4,6 @@ import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import InputOutlined from "@/components/InputOutlined";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
 import { useFocusInputOnMount } from "@/hooks";
-import { useGitProviderStore } from "@/store/gitProvider";
 import { cn } from "@/utils";
 import { CheckedState } from "@radix-ui/react-checkbox";
 
@@ -24,10 +23,8 @@ interface CreateSectionProps {
 export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { gitProvider } = useGitProviderStore();
-
   const [name, setName] = useState("New Collection");
-  const [provider, setProvider] = useState<Provider | null>(null);
+  const [provider, setProvider] = useState<Provider | null>("github");
   const [repository, setRepository] = useState("github.com/moss-foundation/sapic");
   const [branch, setBranch] = useState("main");
   const [vcs, setVCS] = useState(true);
@@ -46,17 +43,12 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
 
   const handleSetVCS = (checked: CheckedState) => {
     if (checked === "indeterminate") return;
-
-    if (checked === false) {
-      setProvider(null);
-    }
-
     setVCS(checked);
   };
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="grid grid-cols-[min-content_1fr] items-center gap-2">
+      <div className="grid grid-cols-[min-content_1fr] items-center gap-x-2 gap-y-1.5">
         <div>Name:</div>
         <InputOutlined
           ref={inputRef}
