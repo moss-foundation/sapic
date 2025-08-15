@@ -12,7 +12,6 @@ use moss_collection::{
     builder::{CollectionCloneParams, CollectionCreateParams, CollectionLoadParams},
 };
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
-use moss_git::repo::RepoHandle;
 use moss_git_hosting_provider::{
     GitHostingProvider,
     common::GitUrl,
@@ -27,7 +26,7 @@ use std::{
     collections::{HashMap, HashSet},
     path::{Path, PathBuf},
     pin::Pin,
-    sync::{Arc, Mutex},
+    sync::Arc,
 };
 use tokio::sync::RwLock;
 
@@ -501,7 +500,9 @@ impl<R: AppRuntime> CollectionService<R> {
             (None, vec![])
         };
 
-        let current_branch = get_current_branch(collection.repo_handle())
+        let current_branch = collection
+            .git_service()
+            .get_current_branch()
             .await
             .unwrap_or_else(|err| {
                 // TODO: Tell the frontend we failed to get the current branch
@@ -602,29 +603,4 @@ async fn fetch_remote_repo_info(
     let contributors = client.contributors(&repo_ref).await?;
 
     Ok((Some(repo_info), contributors))
-}
-
-async fn get_current_branch(
-    repo_handle: Arc<Mutex<Option<RepoHandle>>>,
-) -> joinerror::Result<Option<String>> {
-    let result = tokio::task::spawn_blocking(move || {
-        let repo_handle_lock = repo_handle.lock()?;
-        let repo_handle_ref = repo_handle_lock.as_ref();
-        if repo_handle_ref.is_none() {
-            return Ok(None);
-        }
-        let repo_handle_ref = repo_handle_ref.unwrap();
-        // TODO: Support custom origin name? We assume it's `origin` now, which we use when we create a repo
-
-        let current_branch = repo_handle_ref.current_branch()?;
-
-        Ok(Some(current_branch))
-    })
-    .await?;
-
-    match result {
-        Ok(Some(current_branch)) => Ok(Some(current_branch)),
-        Ok(None) => Ok(None),
-        Err(e) => Err(e),
-    }
 }

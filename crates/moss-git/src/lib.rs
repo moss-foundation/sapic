@@ -3,6 +3,7 @@
 use anyhow::Result;
 use git2::RemoteCallbacks;
 
+pub mod models;
 pub mod repo;
 pub mod url;
 
@@ -16,10 +17,11 @@ pub mod constants {
 
 #[cfg(test)]
 pub mod tests {
-    use crate::{GitAuthAgent, repo::RepoHandle};
     use git2::{IndexAddOption, RemoteCallbacks, Signature, Status};
     use nanoid::nanoid;
     use std::{path::PathBuf, sync::Arc};
+
+    use crate::{GitAuthAgent, repo::RepoHandle};
 
     // All the tests here will be local operations, no need for authentication
     struct TestGitAuthAgent;

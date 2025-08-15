@@ -3907,6 +3907,8 @@ dependencies = [
  "libssh2-sys",
  "nanoid",
  "regex",
+ "serde",
+ "ts-rs",
  "url",
 ]
 

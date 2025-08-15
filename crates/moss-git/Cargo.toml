@@ -10,6 +10,8 @@ dotenv.workspace = true
 url.workspace = true
 regex.workspace = true
 joinerror.workspace = true
+serde.workspace = true
+ts-rs.workspace = true
 
 [dev-dependencies]
 nanoid.workspace = true

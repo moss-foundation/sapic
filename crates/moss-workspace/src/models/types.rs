@@ -136,13 +136,3 @@ pub struct GitLabImportParams {
     pub repository: String,
     // TODO: repo branch
 }
-
-/// @category Type
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
-pub struct BranchInfo {
-    pub name: String,
-    pub ahead: usize,
-    pub behind: usize,
-}
