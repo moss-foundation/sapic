@@ -18,14 +18,13 @@ export function useFocusInputOnMount({ inputRef, initialValue }: UseFocusOnMount
     // timer because of MacOS focus bug
     const timer = setTimeout(() => {
       const el = inputRef.current!;
-      el.focus();
 
-      if (typeof initialValue === "string") {
+      if (initialValue) {
         el.value = initialValue;
-        const dotIndex = el.value.indexOf(".");
-        el.setSelectionRange(0, dotIndex >= 0 ? dotIndex : initialValue.length);
       }
 
+      el.focus();
+      el.select();
       isInitialized.current = true;
     }, 100);
 
