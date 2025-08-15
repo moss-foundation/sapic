@@ -299,8 +299,8 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
             minHeight: size === "sm" ? "28px" : "32px",
             maxHeight: "none",
             overflow: "visible",
-            paddingTop: size === "sm" ? "4px" : "6px",
-            paddingBottom: size === "sm" ? "4px" : "6px",
+            paddingTop: size === "sm" ? "6px" : "8px",
+            paddingBottom: size === "sm" ? "6px" : "8px",
           }}
         />
       </div>
