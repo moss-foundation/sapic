@@ -150,7 +150,7 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = React.memo(
         </div>
 
         {/* Right Side - Send Button */}
-        <div className="relative z-10 flex min-h-8 flex-shrink-0 items-center rounded-md rounded-l-none border border-l-0 border-transparent p-1 focus-within:outline-2 focus-within:-outline-offset-1 focus-within:outline-(--moss-primary)">
+        <div className="relative z-30 flex min-h-8 flex-shrink-0 items-center rounded-md rounded-l-none border border-l-0 border-transparent p-1 focus-within:outline-2 focus-within:-outline-offset-1 focus-within:outline-(--moss-primary)">
           <ButtonPrimary onClick={handleSend}>Send</ButtonPrimary>
         </div>
       </div>
