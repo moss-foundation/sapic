@@ -33,6 +33,12 @@ impl<R: AppRuntime> Workspace<R> {
             }
         }
 
-        Ok(StreamEnvironmentsOutput { total_returned })
+        Ok(StreamEnvironmentsOutput {
+            total_returned,
+            groups: self
+                .environment_service
+                .list_environment_groups(ctx)
+                .await?,
+        })
     }
 }

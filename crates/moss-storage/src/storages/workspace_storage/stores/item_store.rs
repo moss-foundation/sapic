@@ -1,13 +1,14 @@
 use async_trait::async_trait;
 use moss_applib::context::AnyAsyncContext;
 use moss_db::{
-    DatabaseClientWithContext, DatabaseResult, ReDbClient, Transaction, primitives::AnyValue,
+    DatabaseClient, DatabaseClientWithContext, DatabaseResult, ReDbClient, Transaction,
+    primitives::AnyValue,
 };
 use std::sync::Arc;
 
 use crate::{
     primitives::segkey::SegKeyBuf,
-    storage::{SegBinTable, operations::*},
+    storage::{SegBinTable, TransactionalWithContext, operations::*},
     workspace_storage::stores::WorkspaceItemStore,
 };
 
@@ -19,6 +20,20 @@ pub struct WorkspaceItemStoreImpl {
 impl WorkspaceItemStoreImpl {
     pub fn new(client: ReDbClient, table: Arc<SegBinTable>) -> Self {
         Self { client, table }
+    }
+}
+
+#[async_trait]
+impl<Context> TransactionalWithContext<Context> for WorkspaceItemStoreImpl
+where
+    Context: AnyAsyncContext,
+{
+    async fn begin_write_with_context(&self, ctx: &Context) -> DatabaseResult<Transaction> {
+        self.client.begin_write_with_context(ctx).await
+    }
+
+    async fn begin_read_with_context(&self, ctx: &Context) -> DatabaseResult<Transaction> {
+        self.client.begin_read_with_context(ctx).await
     }
 }
 

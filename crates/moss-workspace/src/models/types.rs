@@ -23,6 +23,28 @@ pub type EnvironmentName = String;
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
+pub struct EnvironmentGroup {
+    pub collection_id: CollectionId,
+    pub expanded: bool,
+    pub order: Option<isize>,
+}
+
+/// @category Type
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct UpdateEnvironmentGroupParams {
+    pub collection_id: CollectionId,
+    pub expanded: Option<bool>,
+    pub order: Option<isize>,
+}
+
+/// @category Type
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
 pub struct UpdateCollectionParams {
     pub id: CollectionId,
 

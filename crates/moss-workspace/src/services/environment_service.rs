@@ -1,8 +1,10 @@
 use derive_more::Deref;
 use futures::Stream;
 use joinerror::{OptionExt, ResultExt};
-use moss_applib::{AppRuntime, ServiceMarker};
+use moss_applib::AppRuntime;
 use moss_bindingutils::primitives::ChangeString;
+use moss_common::continue_if_err;
+use moss_db::primitives::AnyValue;
 use moss_environment::{
     AnyEnvironment, Environment, ModifyEnvironmentParams,
     builder::{EnvironmentBuilder, EnvironmentLoadParams},
@@ -11,20 +13,29 @@ use moss_environment::{
     segments::{SEGKEY_VARIABLE_LOCALVALUE, SEGKEY_VARIABLE_ORDER},
 };
 use moss_fs::{FileSystem, FsResultExt, RemoveOptions};
-use moss_storage::{primitives::segkey::SegKeyBuf, storage::operations::RemoveItem};
+use moss_storage::{
+    WorkspaceStorage,
+    primitives::segkey::SegKeyBuf,
+    storage::operations::{ListByPrefix, RemoveByPrefix, RemoveItem},
+};
+use rustc_hash::{FxHashMap, FxHashSet};
 use std::{
     collections::{HashMap, HashSet},
     path::{Path, PathBuf},
     pin::Pin,
     sync::Arc,
 };
-use tokio::sync::RwLock;
+use tokio::sync::{RwLock, mpsc};
 
 use crate::{
     dirs,
     errors::ErrorNotFound,
-    models::{primitives::CollectionId, types::UpdateEnvironmentParams},
+    models::{
+        primitives::CollectionId,
+        types::{EnvironmentGroup, UpdateEnvironmentGroupParams, UpdateEnvironmentParams},
+    },
     services::storage_service::StorageService,
+    storage::segments,
 };
 
 pub struct CreateEnvironmentItemParams {
@@ -66,7 +77,8 @@ where
     R: AppRuntime,
 {
     environments: EnvironmentMap<R>,
-    // expanded_groups: HashSet<CollectionId>,
+    groups: FxHashSet<CollectionId>,
+    expanded_groups: HashSet<CollectionId>,
 }
 
 pub struct EnvironmentService<R>
@@ -76,10 +88,8 @@ where
     abs_path: PathBuf,
     fs: Arc<dyn FileSystem>,
     state: Arc<RwLock<ServiceState<R>>>,
-    storage_service: Arc<StorageService<R>>,
+    storage: Arc<StorageService<R>>,
 }
-
-impl<R> ServiceMarker for EnvironmentService<R> where R: AppRuntime {}
 
 impl<R> EnvironmentService<R>
 where
@@ -87,21 +97,50 @@ where
 {
     /// `abs_path` is the absolute path to the workspace directory
     pub async fn new(
-        ctx: &R::AsyncContext,
         abs_path: &Path,
         fs: Arc<dyn FileSystem>,
-        storage_service: Arc<StorageService<R>>,
+        storage: Arc<StorageService<R>>,
     ) -> joinerror::Result<Self> {
         let abs_path = abs_path.join(dirs::ENVIRONMENTS_DIR);
-        let environments =
-            collect_environments(ctx, &fs, &abs_path, storage_service.clone()).await?;
-
         Ok(Self {
             fs,
             abs_path,
-            state: Arc::new(RwLock::new(ServiceState { environments })),
-            storage_service,
+            state: Arc::new(RwLock::new(ServiceState {
+                environments: HashMap::new(),
+                groups: FxHashSet::default(),
+                expanded_groups: HashSet::new(),
+            })),
+            storage,
         })
+    }
+
+    pub async fn update_environment_group(
+        &self,
+        ctx: &R::AsyncContext,
+        params: UpdateEnvironmentGroupParams,
+    ) -> joinerror::Result<()> {
+        let mut state = self.state.write().await;
+        let mut txn = self.storage.storage.begin_write_with_context(ctx).await?;
+
+        if let Some(expanded) = params.expanded {
+            if expanded {
+                state.expanded_groups.insert(params.collection_id.clone());
+            } else {
+                state.expanded_groups.remove(&params.collection_id);
+            }
+
+            self.storage
+                .put_expanded_groups_txn(ctx, &mut txn, &state.expanded_groups)
+                .await?;
+        }
+        if let Some(order) = params.order {
+            self.storage
+                .put_environment_group_order_txn(ctx, &mut txn, &params.collection_id, order)
+                .await?;
+        }
+
+        txn.commit()?;
+        Ok(())
     }
 
     pub async fn environment(&self, id: &EnvironmentId) -> Option<Arc<Environment<R>>> {
@@ -109,25 +148,101 @@ where
         state.environments.get(id).map(|item| item.handle.clone())
     }
 
+    pub async fn list_environment_groups(
+        &self,
+        ctx: &R::AsyncContext,
+    ) -> joinerror::Result<Vec<EnvironmentGroup>> {
+        let expanded_groups =
+            if let Ok(expanded_groups) = self.storage.get_expanded_groups(ctx).await {
+                expanded_groups
+            } else {
+                println!("failed to get expanded groups from the db"); // TODO: log error
+                HashSet::new()
+            };
+
+        let mut state = self.state.write().await;
+        state.expanded_groups = expanded_groups;
+
+        let data: FxHashMap<String, AnyValue> = self
+            .storage
+            .list_environment_groups_metadata(ctx)
+            .await?
+            .into_iter()
+            .map(|(k, v)| (k.to_string(), v))
+            .collect();
+
+        let mut groups = Vec::with_capacity(state.groups.len());
+        let base_key = segments::SEGKEY_ENVIRONMENT_GROUP
+            .to_segkey_buf()
+            .to_string();
+
+        for group_id in state.groups.iter() {
+            let group_id_str = group_id.as_str();
+            let order = continue_if_err!(
+                data.get(format!("{base_key}:{}:order", group_id_str).as_str())
+                    .map(|v| v.deserialize::<isize>())
+                    .transpose(),
+                |err| {
+                    println!(
+                        "failed to deserialize order for environment group {}: {}",
+                        group_id_str, err
+                    );
+                }
+            );
+
+            groups.push(EnvironmentGroup {
+                collection_id: group_id.clone(),
+                expanded: state.expanded_groups.contains(group_id),
+                order,
+            });
+        }
+
+        Ok(groups)
+    }
+
     pub async fn list_environments(
         &self,
-        _ctx: &R::AsyncContext,
+        ctx: &R::AsyncContext,
     ) -> Pin<Box<dyn Stream<Item = EnvironmentItemDescription> + Send + '_>> {
-        // FIXME: Reconsider this mechanism. We might need to rescan it here.
+        let ctx = ctx.clone();
         let state = self.state.clone();
+        let abs_path = self.abs_path.clone();
+        let fs = self.fs.clone();
+        let storage = self.storage.clone();
 
         Box::pin(async_stream::stream! {
-            let state_lock = state.read().await;
-            for (_, item) in state_lock.environments.iter() {
-                yield EnvironmentItemDescription {
-                    id: item.id.clone(),
+            let (tx, mut rx) = mpsc::unbounded_channel::<EnvironmentItem<R>>();
+            let scan_task = {
+                tokio::spawn(async move {
+                    if let Err(e) = scan::<R>(&ctx, &abs_path, &fs, storage.storage.as_ref(), tx).await {
+                        println!("Environment scan failed: {}", e);
+                    }
+                })
+            };
+
+            let mut state_lock = state.write().await;
+            while let Some(item) = rx.recv().await {
+                let id = item.id.clone();
+                let group_id = item.collection_id.clone();
+                let desc = EnvironmentItemDescription {
+                    id: id.clone(),
                     collection_id: item.collection_id.clone(),
                     display_name: item.display_name.clone(),
-                    order: item.order,
+                    order: item.order.clone(),
                     color: item.color.clone(),
                     abs_path: item.abs_path().await,
                 };
+
+                state_lock.environments.insert(id, item);
+
+                if let Some(group_id) = group_id {
+                    state_lock.groups.insert(group_id);
+                }
+
+                yield desc;
             }
+
+            let _ = scan_task.await;
         })
     }
 
@@ -174,7 +289,7 @@ where
         if let Some(order) = params.order {
             environment_item.order = Some(order);
             if let Err(e) = self
-                .storage_service
+                .storage
                 .put_environment_order(ctx, &params.id, order)
                 .await
             {
@@ -218,7 +333,7 @@ where
         let environment = EnvironmentBuilder::new(self.fs.clone())
             .create::<R>(
                 ctx,
-                self.storage_service.variable_store(),
+                self.storage.variable_store(),
                 moss_environment::builder::CreateEnvironmentParams {
                     name: params.name.clone(),
                     abs_path: &self.abs_path,
@@ -246,7 +361,7 @@ where
         );
 
         if let Err(e) = self
-            .storage_service
+            .storage
             .put_environment_order(ctx, &desc.id, params.order)
             .await
         {
@@ -286,49 +401,62 @@ where
         id: &EnvironmentId,
     ) -> joinerror::Result<()> {
         let mut state = self.state.write().await;
-        if let Some(environment) = state.environments.remove(id) {
-            let abs_path = environment.abs_path().await;
-            let desc = environment.describe(ctx).await?;
-            self.fs
-                .remove_file(
-                    &abs_path,
-                    RemoveOptions {
-                        recursive: false,
-                        ignore_if_not_exists: true,
-                    },
+        let environment = state
+            .environments
+            .remove(id)
+            .ok_or_join_err_with::<ErrorNotFound>(|| format!("environment {} not found", id))?;
+
+        let abs_path = environment.abs_path().await;
+        let desc = environment.describe(ctx).await?;
+        self.fs
+            .remove_file(
+                &abs_path,
+                RemoveOptions {
+                    recursive: false,
+                    ignore_if_not_exists: true,
+                },
+            )
+            .await
+            .join_err_with::<ErrorIo>(|| {
+                format!(
+                    "failed to remove environment file at {}",
+                    abs_path.display()
                 )
-                .await
-                .join_err_with::<ErrorIo>(|| {
-                    format!(
-                        "failed to remove environment file at {}",
-                        abs_path.display()
-                    )
-                })?;
+            })?;
 
-            // Remove environment from the database
-            // let mut expanded_environments = self
-            //     .storage_service
-            //     .get_expanded_environments(ctx)
-            //     .await
-            //     .unwrap_or_default();
+        // Remove environment from the database
+        // let mut expanded_environments = self
+        //     .storage_service
+        //     .get_expanded_environments(ctx)
+        //     .await
+        //     .unwrap_or_default();
 
-            // expanded_environments.remove(&id);
+        // expanded_environments.remove(&id);
 
-            // if let Err(e) = self
-            //     .storage_service
-            //     .put_expanded_environments(ctx, &expanded_environments)
-            //     .await
-            // {
-            //     println!("failed to put expandedEnvironments in the db: {}", e);
-            // }
+        // if let Err(e) = self
+        //     .storage_service
+        //     .put_expanded_environments(ctx, &expanded_environments)
+        //     .await
+        // {
+        //     println!("failed to put expandedEnvironments in the db: {}", e);
+        // }
 
-            if let Err(e) = self.storage_service.remove_environment_order(ctx, id).await {
-                // TODO: log error
-                println!("failed to remove environment order in the db: {}", e);
-            }
+        // if let Err(e) = self.storage.remove_environment_order(ctx, id).await {
+        //     // TODO: log error
+        //     println!("failed to remove environment order in the db: {}", e);
+        // }
+
+        // Clean all the data related to the deleted environment
+        {
+            RemoveByPrefix::remove_by_prefix(
+                self.storage.storage.item_store().as_ref(),
+                ctx,
+                format!("environment:{}", id).as_str(),
+            )
+            .await?;
 
             // Remove all variables belonging to the deleted environment
-            let store = self.storage_service.variable_store();
+            let store = self.storage.variable_store();
             for id in desc.variables.keys() {
                 let segkey_localvalue =
                     SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE);
@@ -344,35 +472,31 @@ where
                     println!("failed to remove variable order in the db: {}", e);
                 }
             }
-
-            Ok(())
-        } else {
-            // FIXME: Should deleting a non-existent environment be an error?
-            Err(joinerror::Error::new::<ErrorNotFound>(format!(
-                "environment {} not found",
-                id
-            )))
         }
+
+        Ok(())
     }
 }
 
-async fn collect_environments<R: AppRuntime>(
+async fn scan<R: AppRuntime>(
     ctx: &R::AsyncContext,
-    fs: &Arc<dyn FileSystem>,
     abs_path: &Path,
-    storage_service: Arc<StorageService<R>>,
-) -> joinerror::Result<EnvironmentMap<R>> {
-    let mut environments = EnvironmentMap::new();
+    fs: &Arc<dyn FileSystem>,
+    storage: &dyn WorkspaceStorage<R::AsyncContext>,
+    tx: mpsc::UnboundedSender<EnvironmentItem<R>>,
+) -> joinerror::Result<()> {
+    // let mut environments = EnvironmentMap::new();
 
     let mut read_dir = fs
         .read_dir(abs_path)
         .await
         .map_err(|err| joinerror::Error::new::<()>(format!("failed to read directory: {}", err)))?; // TODO: specify a proper error type
 
-    // let expanded_environments = storage_service
-    //     .get_expanded_environments(ctx)
-    //     .await
-    //     .unwrap_or_default();
+    let data = ListByPrefix::list_by_prefix(storage.item_store().as_ref(), ctx, "environment")
+        .await?
+        .into_iter()
+        .map(|(k, v)| (k.to_string(), v))
+        .collect::<FxHashMap<_, _>>();
 
     while let Some(entry) = read_dir.next_entry().await? {
         if entry.file_type().await?.is_dir() {
@@ -381,7 +505,7 @@ async fn collect_environments<R: AppRuntime>(
 
         let environment = EnvironmentBuilder::new(fs.clone())
             .load::<R>(
-                storage_service.variable_store(),
+                storage.variable_store(),
                 EnvironmentLoadParams {
                     abs_path: entry.path(),
                 },
@@ -393,28 +517,27 @@ async fn collect_environments<R: AppRuntime>(
 
         let desc = environment.describe(ctx).await?;
 
-        // TODO: log error
-        let order = storage_service
-            .get_environment_order(ctx, &desc.id)
-            .await
-            .ok();
+        let order = if let Ok(order) = data
+            .get(format!("environment:{}:order", desc.id).as_str())
+            .map(|v| v.deserialize::<isize>())
+            .transpose()
+        {
+            order
+        } else {
+            println!("no order found for environment: {}", desc.id); // TODO: log error
+            None
+        };
 
-        // let expanded = expanded_environments.contains(&desc.id);
-
-        environments.insert(
-            desc.id.clone(),
-            EnvironmentItem {
-                id: desc.id,
-                color: desc.color,
-                // This is for restoring environments within the workspace scope,
-                // these workspaces don't have this parameter.
-                collection_id: None,
-                display_name: desc.name,
-                order,
-                handle: Arc::new(environment),
-            },
-        );
+        tx.send(EnvironmentItem {
+            id: desc.id,
+            color: desc.color,
+            collection_id: None, // Workspace-scoped environments don't have collection_id
+            display_name: desc.name,
+            order,
+            handle: Arc::new(environment),
+        })
+        .ok();
     }
 
-    Ok(environments)
+    Ok(())
 }

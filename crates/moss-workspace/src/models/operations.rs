@@ -14,7 +14,10 @@ use validator::Validate;
 
 use crate::models::{
     primitives::CollectionId,
-    types::{EditorPartStateInfo, UpdateCollectionParams, UpdateEnvironmentParams},
+    types::{
+        EditorPartStateInfo, EnvironmentGroup, UpdateCollectionParams,
+        UpdateEnvironmentGroupParams, UpdateEnvironmentParams,
+    },
 };
 
 use super::types::{
@@ -312,7 +315,30 @@ pub struct DeleteEnvironmentOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct StreamEnvironmentsOutput {
+    pub groups: Vec<EnvironmentGroup>,
+
     #[serde(skip)]
     #[ts(skip)]
     pub total_returned: usize,
+}
+
+// ------------------------------ //
+// Environment Group
+// ------------------------------ //
+
+/// @category Operation
+#[derive(Debug, Deserialize, Serialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct UpdateEnvironmentGroupInput {
+    #[serde(flatten)]
+    pub inner: UpdateEnvironmentGroupParams,
+}
+
+/// @category Operation
+#[derive(Debug, Deserialize, Serialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchUpdateEnvironmentGroupInput {
+    pub items: Vec<UpdateEnvironmentGroupParams>,
 }

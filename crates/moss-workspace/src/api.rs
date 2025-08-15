@@ -1,5 +1,6 @@
 pub mod batch_update_collection;
 pub mod batch_update_environment;
+pub mod batch_update_environment_group;
 pub mod create_collection;
 pub mod create_environment;
 pub mod delete_collection;

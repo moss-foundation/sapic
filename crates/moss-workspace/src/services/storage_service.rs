@@ -7,10 +7,9 @@ use moss_storage::{
     common::VariableStore,
     primitives::segkey::SegKeyBuf,
     storage::operations::{
-        GetItem, ListByPrefix, PutItem, RemoveItem, TransactionalPutItem,
-        TransactionalRemoveByPrefix,
+        GetItem, ListByPrefix, PutItem, TransactionalPutItem, TransactionalRemoveByPrefix,
     },
-    workspace_storage::WorkspaceStorageImpl,
+    workspace_storage::{WorkspaceStorageImpl, stores::WorkspaceItemStore},
 };
 use std::{
     collections::{HashMap, HashSet},
@@ -22,7 +21,9 @@ use crate::{
     models::primitives::{ActivitybarPosition, CollectionId, SidebarPosition},
     storage::{
         entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity},
-        segments::{self, SEGKEY_COLLECTION, SEGKEY_ENVIRONMENT},
+        segments::{
+            self, SEGKEY_COLLECTION, SEGKEY_ENVIRONMENT, SEGKEY_EXPANDED_ENVIRONMENT_GROUPS,
+        },
     },
 };
 
@@ -44,6 +45,10 @@ impl<R: AppRuntime> StorageService<R> {
 
     pub fn variable_store(&self) -> Arc<dyn VariableStore<R::AsyncContext>> {
         self.storage.variable_store()
+    }
+
+    pub fn item_store(&self) -> Arc<dyn WorkspaceItemStore<R::AsyncContext>> {
+        self.storage.item_store()
     }
 
     pub async fn begin_write(&self, ctx: &R::AsyncContext) -> joinerror::Result<Transaction> {
@@ -87,6 +92,49 @@ impl<R: AppRuntime> StorageService<R> {
             txn,
             segments::SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
             AnyValue::serialize(&expanded_entries)?,
+        )
+        .await?;
+
+        Ok(())
+    }
+
+    pub(super) async fn put_expanded_groups_txn(
+        &self,
+        ctx: &R::AsyncContext,
+        txn: &mut Transaction,
+        expanded_entries: &HashSet<CollectionId>,
+    ) -> joinerror::Result<()> {
+        let store = self.storage.item_store();
+        TransactionalPutItem::put_with_context(
+            store.as_ref(),
+            ctx,
+            txn,
+            segments::SEGKEY_EXPANDED_ENVIRONMENT_GROUPS.to_segkey_buf(),
+            AnyValue::serialize(&expanded_entries)?,
+        )
+        .await?;
+
+        Ok(())
+    }
+
+    pub(super) async fn put_environment_group_order_txn(
+        &self,
+        ctx: &R::AsyncContext,
+        txn: &mut Transaction,
+        collection_id: &CollectionId,
+        order: isize,
+    ) -> joinerror::Result<()> {
+        let store = self.storage.item_store();
+        let segkey = segments::SEGKEY_ENVIRONMENT_GROUP
+            .join(collection_id.as_str())
+            .join("order");
+
+        TransactionalPutItem::put_with_context(
+            store.as_ref(),
+            ctx,
+            txn,
+            segkey,
+            AnyValue::serialize(&order)?,
         )
         .await?;
 
@@ -306,59 +354,36 @@ impl<R: AppRuntime> StorageService<R> {
         Ok(())
     }
 
-    pub(super) async fn get_environment_order(
+    pub(super) async fn get_expanded_groups(
         &self,
         ctx: &R::AsyncContext,
-        id: &EnvironmentId,
-    ) -> joinerror::Result<isize> {
-        let store = self.storage.item_store();
-        let segkey = SEGKEY_ENVIRONMENT.join(id.as_str()).join("order");
+    ) -> joinerror::Result<HashSet<CollectionId>> {
+        let value = GetItem::get(
+            self.storage.item_store().as_ref(),
+            ctx,
+            SEGKEY_EXPANDED_ENVIRONMENT_GROUPS.to_segkey_buf(),
+        )
+        .await?;
 
-        let entity = GetItem::get(store.as_ref(), ctx, segkey).await?;
-
-        Ok(entity.deserialize()?)
+        Ok(AnyValue::deserialize::<HashSet<CollectionId>>(&value)?)
     }
 
-    pub(super) async fn remove_environment_order(
+    pub(super) async fn list_environment_groups_metadata(
         &self,
         ctx: &R::AsyncContext,
-        id: &EnvironmentId,
-    ) -> joinerror::Result<()> {
-        let store = self.storage.item_store();
-        let segkey = SEGKEY_ENVIRONMENT.join(id.as_str()).join("order");
+    ) -> joinerror::Result<HashMap<SegKeyBuf, AnyValue>> {
+        let data = ListByPrefix::list_by_prefix(
+            self.storage.item_store().as_ref(),
+            ctx,
+            segments::SEGKEY_ENVIRONMENT_GROUP
+                .to_segkey_buf()
+                .to_string()
+                .as_str(),
+        )
+        .await?;
 
-        RemoveItem::remove(store.as_ref(), ctx, segkey).await?;
-
-        Ok(())
+        Ok(data.into_iter().collect())
     }
-
-    // pub(super) async fn put_expanded_environments(
-    //     &self,
-    //     ctx: &R::AsyncContext,
-    //     expanded_environments: &HashSet<EnvironmentId>,
-    // ) -> joinerror::Result<()> {
-    //     let store = self.storage.item_store();
-
-    //     PutItem::put(
-    //         store.as_ref(),
-    //         ctx,
-    //         segments::SEGKEY_EXPANDED_ENVIRONMENT_GROUPS.to_segkey_buf(),
-    //         AnyValue::serialize(&expanded_environments)?,
-    //     )
-    //     .await?;
-
-    //     Ok(())
-    // }
-
-    // pub(super) async fn get_expanded_environments(
-    //     &self,
-    //     ctx: &R::AsyncContext,
-    // ) -> joinerror::Result<HashSet<EnvironmentId>> {
-    //     let store = self.storage.item_store();
-    //     let segkey = segments::SEGKEY_EXPANDED_ENVIRONMENT_GROUPS.to_segkey_buf();
-    //     let value = GetItem::get(store.as_ref(), ctx, segkey).await?;
-    //     Ok(AnyValue::deserialize(&value)?)
-    // }
 }
 
 #[cfg(any(test, feature = "integration-tests"))]
