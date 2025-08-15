@@ -112,6 +112,7 @@ pub struct ImportCollectionOutput {
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateCollectionInput {
     #[serde(flatten)]
+    #[validate(nested)]
     pub inner: UpdateCollectionParams,
 }
 
@@ -130,6 +131,7 @@ pub struct UpdateCollectionOutput {
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct BatchUpdateCollectionInput {
+    #[validate(nested)]
     pub items: Vec<UpdateCollectionParams>,
 }
 
@@ -260,6 +262,7 @@ pub struct CreateEnvironmentOutput {
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct BatchUpdateEnvironmentInput {
+    #[validate(nested)]
     pub items: Vec<UpdateEnvironmentParams>,
 }
 
@@ -340,5 +343,6 @@ pub struct UpdateEnvironmentGroupInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct BatchUpdateEnvironmentGroupInput {
+    #[validate(nested)]
     pub items: Vec<UpdateEnvironmentGroupParams>,
 }
