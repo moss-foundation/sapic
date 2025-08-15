@@ -6,6 +6,7 @@ use moss_testutils::random_name::random_collection_name;
 use moss_workspace::models::{
     operations::{CreateCollectionInput, UpdateCollectionInput},
     primitives::CollectionId,
+    types::UpdateCollectionParams,
 };
 
 use crate::shared::{generate_random_icon, setup_test_workspace};
@@ -35,13 +36,14 @@ async fn rename_collection_success() {
         .update_collection(
             &ctx,
             UpdateCollectionInput {
-                id: create_collection_output.id.clone(),
-                name: Some(new_collection_name.clone()),
-                repository: None,
-                icon_path: None,
-                order: None,
-                pinned: None,
-                expanded: None,
+                inner: UpdateCollectionParams {
+                    id: create_collection_output.id.clone(),
+                    name: Some(new_collection_name.clone()),
+                    repository: None,
+                    icon_path: None,
+                    order: None,
+                    expanded: None,
+                },
             },
         )
         .await
@@ -85,13 +87,14 @@ async fn rename_collection_empty_name() {
         .update_collection(
             &ctx,
             UpdateCollectionInput {
-                id: create_collection_output.id,
-                name: Some(new_collection_name.clone()),
-                repository: None,
-                icon_path: None,
-                order: None,
-                pinned: None,
-                expanded: None,
+                inner: UpdateCollectionParams {
+                    id: create_collection_output.id,
+                    name: Some(new_collection_name.clone()),
+                    repository: None,
+                    icon_path: None,
+                    order: None,
+                    expanded: None,
+                },
             },
         )
         .await;
@@ -125,13 +128,14 @@ async fn rename_collection_unchanged() {
         .update_collection(
             &ctx,
             UpdateCollectionInput {
-                id: create_collection_output.id,
-                name: Some(new_collection_name),
-                repository: None,
-                icon_path: None,
-                order: None,
-                pinned: None,
-                expanded: None,
+                inner: UpdateCollectionParams {
+                    id: create_collection_output.id,
+                    name: Some(new_collection_name),
+                    repository: None,
+                    icon_path: None,
+                    order: None,
+                    expanded: None,
+                },
             },
         )
         .await
@@ -151,13 +155,14 @@ async fn rename_collection_nonexistent_id() {
         .update_collection(
             &ctx,
             UpdateCollectionInput {
-                id: nonexistent_id,
-                name: Some(random_collection_name()),
-                repository: None,
-                icon_path: None,
-                order: None,
-                pinned: None,
-                expanded: None,
+                inner: UpdateCollectionParams {
+                    id: nonexistent_id,
+                    name: Some(random_collection_name()),
+                    repository: None,
+                    icon_path: None,
+                    order: None,
+                    expanded: None,
+                },
             },
         )
         .await;
@@ -194,13 +199,14 @@ async fn update_collection_new_icon() {
         .update_collection(
             &ctx,
             UpdateCollectionInput {
-                id: id.clone(),
-                name: None,
-                repository: None,
-                icon_path: Some(ChangePath::Update(icon_path.clone())),
-                order: None,
-                pinned: None,
-                expanded: None,
+                inner: UpdateCollectionParams {
+                    id: id.clone(),
+                    name: None,
+                    repository: None,
+                    icon_path: Some(ChangePath::Update(icon_path.clone())),
+                    order: None,
+                    expanded: None,
+                },
             },
         )
         .await
@@ -241,13 +247,14 @@ async fn update_collection_remove_icon() {
         .update_collection(
             &ctx,
             UpdateCollectionInput {
-                id: id.clone(),
-                name: None,
-                repository: None,
-                icon_path: Some(ChangePath::Remove),
-                order: None,
-                pinned: None,
-                expanded: None,
+                inner: UpdateCollectionParams {
+                    id: id.clone(),
+                    name: None,
+                    repository: None,
+                    icon_path: Some(ChangePath::Remove),
+                    order: None,
+                    expanded: None,
+                },
             },
         )
         .await

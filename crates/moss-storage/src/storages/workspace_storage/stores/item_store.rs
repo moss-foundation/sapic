@@ -7,7 +7,7 @@ use std::sync::Arc;
 
 use crate::{
     primitives::segkey::SegKeyBuf,
-    storage::{SegBinTable, operations::*},
+    storage::{SegBinTable, TransactionalWithContext, operations::*},
     workspace_storage::stores::WorkspaceItemStore,
 };
 
@@ -19,6 +19,20 @@ pub struct WorkspaceItemStoreImpl {
 impl WorkspaceItemStoreImpl {
     pub fn new(client: ReDbClient, table: Arc<SegBinTable>) -> Self {
         Self { client, table }
+    }
+}
+
+#[async_trait]
+impl<Context> TransactionalWithContext<Context> for WorkspaceItemStoreImpl
+where
+    Context: AnyAsyncContext,
+{
+    async fn begin_write_with_context(&self, ctx: &Context) -> DatabaseResult<Transaction> {
+        self.client.begin_write_with_context(ctx).await
+    }
+
+    async fn begin_read_with_context(&self, ctx: &Context) -> DatabaseResult<Transaction> {
+        self.client.begin_read_with_context(ctx).await
     }
 }
 
@@ -76,9 +90,12 @@ where
         prefix: &str,
     ) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>> {
         let mut write_txn = self.client.begin_write_with_context(ctx).await?;
-        self.table
+        let result = self
+            .table
             .remove_by_prefix_with_context(ctx, &mut write_txn, prefix)
-            .await
+            .await?;
+        write_txn.commit()?;
+        Ok(result)
     }
 }
 

@@ -37,6 +37,8 @@ export type TauriIpcCommand =
   | "create_environment"
   | "update_environment"
   | "delete_environment"
+  | "update_environment_group"
+  | "batch_update_environment_group"
   //
   // Collection
   //

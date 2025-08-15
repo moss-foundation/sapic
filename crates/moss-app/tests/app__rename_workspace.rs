@@ -4,7 +4,7 @@ pub mod shared;
 use moss_app::models::operations::{CreateWorkspaceInput, UpdateWorkspaceInput};
 use moss_common::api::OperationError;
 use moss_testutils::random_name::random_workspace_name;
-use moss_workspace::models::types::WorkspaceMode;
+use moss_workspace::models::primitives::WorkspaceMode;
 
 use crate::shared::set_up_test_app;
 

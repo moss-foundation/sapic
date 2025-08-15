@@ -36,7 +36,6 @@ impl<R: AppRuntime> Workspace<R> {
             name: result.display_name,
             order: result.order,
             color: result.color,
-            expanded: result.expanded,
             abs_path: result.abs_path,
         })
     }

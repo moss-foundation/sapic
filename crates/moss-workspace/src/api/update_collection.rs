@@ -16,21 +16,21 @@ impl<R: AppRuntime> Workspace<R> {
     ) -> joinerror::Result<UpdateCollectionOutput> {
         input.validate().join_err_bare()?;
 
-        let id = input.id.clone().into();
+        let id = input.inner.id.clone().into();
         self.collection_service
             .update_collection(
                 ctx,
                 &id,
                 CollectionItemUpdateParams {
-                    name: input.name,
-                    order: input.order,
-                    expanded: input.expanded,
-                    repository: input.repository,
-                    icon_path: input.icon_path,
+                    name: input.inner.name,
+                    order: input.inner.order,
+                    expanded: input.inner.expanded,
+                    repository: input.inner.repository,
+                    icon_path: input.inner.icon_path,
                 },
             )
             .await?;
 
-        Ok(UpdateCollectionOutput { id: input.id })
+        Ok(UpdateCollectionOutput { id: input.inner.id })
     }
 }
