@@ -271,7 +271,6 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
           zIndex: isFocused ? 50 : "auto",
           width: isFocused ? "100%" : "auto",
           backgroundColor: isFocused ? "var(--moss-controls-outlined-bg)" : "transparent",
-          boxShadow: isFocused ? "0 4px 12px rgba(0, 0, 0, 0.15)" : "none",
         }}
       >
         {/* Hidden input for form compatibility */}
