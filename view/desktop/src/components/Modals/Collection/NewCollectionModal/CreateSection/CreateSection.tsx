@@ -4,13 +4,21 @@ import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import InputOutlined from "@/components/InputOutlined";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
 
+import { Provider, Providers, ProvidersRadioGroup } from "../ProvidersRadioGroup/ProvidersRadioGroup";
+
 export const CreateSection = () => {
   const inputRef = useRef<HTMLInputElement>(null);
+
   const [name, setName] = useState("");
-  const [provider, setProvider] = useState("");
+  const [provider, setProvider] = useState<Provider | null>("github");
   const [repository, setRepository] = useState("");
   const [branch, setBranch] = useState("");
   const [vcs, setVcs] = useState(true);
+
+  const providers: Providers = [
+    { value: "github", label: "GitHub", icon: "github" },
+    { value: "gitlab", label: "GitLab", icon: "gitlab" },
+  ];
 
   return (
     <div className="flex flex-col gap-2">
@@ -38,16 +46,11 @@ export const CreateSection = () => {
         <div className="grid grid-cols-[min-content_1fr] items-center gap-3 py-3 pl-5">
           <div className="col-span-2 grid grid-cols-subgrid items-center">
             <div>Provider:</div>
-            <InputOutlined
-              ref={inputRef}
-              value={provider}
-              className="max-w-72"
-              onChange={(e) => setProvider(e.target.value)}
-              pattern={VALID_NAME_PATTERN}
-              required
-            />
+            <div>
+              <ProvidersRadioGroup selected={provider} setSelected={setProvider} providers={providers} />
+            </div>
           </div>
-          <div className="col-span-2 grid grid-cols-subgrid">
+          <div className="col-span-2 grid grid-cols-subgrid items-center">
             <div>Repository:</div>
             <InputOutlined
               ref={inputRef}
@@ -58,7 +61,7 @@ export const CreateSection = () => {
               required
             />
           </div>
-          <div className="col-span-2 grid grid-cols-subgrid">
+          <div className="col-span-2 grid grid-cols-subgrid items-center">
             <div>Branch:</div>
             <InputOutlined
               ref={inputRef}

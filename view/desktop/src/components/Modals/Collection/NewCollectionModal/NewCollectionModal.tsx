@@ -84,21 +84,17 @@ export const NewCollectionModal = ({ closeModal, showModal }: ModalWrapperProps)
             <PaddedTabs.Trigger value="Import">Import</PaddedTabs.Trigger>
           </PaddedTabs.List>
 
-          <div className="px-6 pt-3">
-            <PaddedTabs.Content value="Create">
-              <CreateSection />
-            </PaddedTabs.Content>
-            <PaddedTabs.Content value="Import">
-              <ImportSection />
-            </PaddedTabs.Content>{" "}
-          </div>
+          <PaddedTabs.Content value="Create" className="px-6 pt-3">
+            <CreateSection />
+          </PaddedTabs.Content>
+          <PaddedTabs.Content value="Import" className="px-6 pt-3">
+            <ImportSection />
+          </PaddedTabs.Content>
         </PaddedTabs.Root>
 
         <div className="px-6 pb-3">
           <ModeRadioGroup mode={mode} setMode={setMode} />
         </div>
-
-        <Divider />
 
         <FooterActions
           openAutomatically={openAutomatically}

@@ -15,7 +15,7 @@ export const FooterActions = ({
   isSubmitDisabled,
 }: FooterActionsProps) => {
   return (
-    <div className="flex items-center justify-between px-6 py-2.5">
+    <div className="flex items-center justify-between border-t border-(--moss-border-color) px-6 py-2.5">
       <CheckboxWithLabel
         label="Open automatically after creation"
         checked={openAutomatically}
