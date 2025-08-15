@@ -16,3 +16,8 @@ export type RepositoryInfo = {
   updatedAt: string;
   owner: string;
 };
+
+/**
+ * @category Type
+ */
+export type UserInfo = { name: string; email: string };

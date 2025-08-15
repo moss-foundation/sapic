@@ -25,8 +25,26 @@ impl From<reqwest::Error> for Error {
     }
 }
 
+impl From<url::ParseError> for Error {
+    fn from(err: url::ParseError) -> Self {
+        Error::new::<()>(err.to_string())
+    }
+}
+
 impl From<anyhow::Error> for Error {
     fn from(err: anyhow::Error) -> Self {
+        Error::new::<()>(err.to_string())
+    }
+}
+
+impl From<tokio::task::JoinError> for Error {
+    fn from(err: tokio::task::JoinError) -> Self {
+        Error::new::<()>(err.to_string())
+    }
+}
+
+impl From<git2::Error> for Error {
+    fn from(err: git2::Error) -> Self {
         Error::new::<()>(err.to_string())
     }
 }

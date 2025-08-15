@@ -1,3 +1,5 @@
+#![cfg(feature = "integration-tests")]
+
 use moss_applib::{
     context::{AsyncContext, MutableContext},
     mock::MockAppRuntime,
@@ -14,6 +16,12 @@ use moss_collection::{
     },
 };
 use moss_fs::RealFileSystem;
+use moss_git_hosting_provider::{
+    common::ssh_auth_agent::SSHAuthAgentImpl,
+    github::{auth::GitHubAuthAgent, client::GitHubClient},
+    gitlab::{auth::GitLabAuthAgent, client::GitLabClient},
+};
+use moss_keyring::KeyringClientImpl;
 use moss_testutils::random_name::{random_collection_name, random_string};
 use nanoid::nanoid;
 use std::{
@@ -50,15 +58,47 @@ pub async fn create_test_collection() -> (
     std::fs::create_dir_all(internal_abs_path.clone()).unwrap();
 
     let abs_path: Arc<Path> = internal_abs_path.clone().into();
+    let reqwest_client = reqwest::Client::new();
+    let keyring_client = Arc::new(KeyringClientImpl::new());
 
-    let collection = CollectionBuilder::new(fs)
+    let sync_http_client = oauth2::ureq::builder().redirects(0).build();
+
+    // Collection operations shouldn't need any git operations
+    let github_auth_agent = Arc::new(GitHubAuthAgent::new(
+        sync_http_client.clone(),
+        keyring_client.clone(),
+        "".to_string(),
+        "".to_string(),
+    ));
+
+    let github_client = Arc::new(GitHubClient::new(
+        reqwest_client.clone(),
+        github_auth_agent,
+        None as Option<SSHAuthAgentImpl>,
+    ));
+
+    let gitlab_auth_agent = Arc::new(GitLabAuthAgent::new(
+        sync_http_client.clone(),
+        keyring_client.clone(),
+        "".to_string(),
+        "".to_string(),
+    ));
+
+    let gitlab_client = Arc::new(GitLabClient::new(
+        reqwest_client.clone(),
+        gitlab_auth_agent,
+        None as Option<SSHAuthAgentImpl>,
+    ));
+
+    let collection = CollectionBuilder::new(fs, github_client, gitlab_client)
         .create(
             &ctx,
             CollectionCreateParams {
                 name: Some(random_collection_name()),
                 external_abs_path: None,
-                repository: None,
                 internal_abs_path: abs_path.clone(),
+                repository: None,
+                git_provider_type: None,
                 icon_path: None,
             },
         )

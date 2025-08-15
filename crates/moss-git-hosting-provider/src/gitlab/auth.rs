@@ -1,4 +1,4 @@
-use crate::{common::utils, gitlab::client::GitLabAuthAgent};
+use crate::common::utils;
 use anyhow::Result;
 use git2::{Cred, RemoteCallbacks};
 use moss_git::GitAuthAgent;
@@ -13,6 +13,18 @@ use std::{
     sync::{Arc, RwLock},
     time::{Duration, Instant},
 };
+
+const GITLAB_AUTH_URL: &'static str = "https://gitlab.com/oauth/authorize";
+const GITLAB_TOKEN_URL: &'static str = "https://gitlab.com/oauth/token";
+const GITLAB_SCOPES: [&'static str; 6] = [
+    "ai_features",
+    "api",
+    "read_api",
+    "read_repository",
+    "write_repository",
+    "read_user",
+];
+const KEYRING_SECRET_KEY: &'static str = "gitlab_auth_agent";
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct KeyringCredEntry {
@@ -42,37 +54,59 @@ pub struct GitLabCred {
     refresh_token: String,
 }
 
-const GITLAB_AUTH_URL: &'static str = "https://gitlab.com/oauth/authorize";
-const GITLAB_TOKEN_URL: &'static str = "https://gitlab.com/oauth/token";
-const GITLAB_SCOPES: [&'static str; 2] = ["write_repository", "read_user"];
-const KEYRING_SECRET_KEY: &str = "gitlab_auth_agent";
-
-pub struct GitLabAuthAgentImpl {
+pub struct GitLabAuthAgent {
+    // We use ureq instead of blocking reqwest to avoid panicking when called from async environment
+    sync_http_client: oauth2::ureq::Agent,
     client_id: ClientId,
     client_secret: ClientSecret,
-    keyring: Arc<dyn KeyringClient>,
+    keyring: Arc<dyn KeyringClient + Send + Sync>,
     cred: RwLock<Option<GitLabCred>>,
 }
 
-impl GitLabAuthAgent for GitLabAuthAgentImpl {}
-
-impl GitLabAuthAgentImpl {
-    pub fn new(keyring: Arc<dyn KeyringClient>, client_id: String, client_secret: String) -> Self {
+impl GitLabAuthAgent {
+    pub fn new(
+        sync_http_client: oauth2::ureq::Agent,
+        keyring: Arc<dyn KeyringClient + Send + Sync>,
+        client_id: String,
+        client_secret: String,
+    ) -> Self {
         Self {
+            sync_http_client,
             client_id: ClientId::new(client_id),
             client_secret: ClientSecret::new(client_secret),
             keyring,
             cred: RwLock::new(None),
         }
     }
+
+    // FIXME: Find a better solution
+    // We need a way to provide access_token to git provider client
+    // Since the underlying authentication relies on a synchronous `reqwest` client
+    // We will need to wrap it inside a tokio::spawn_blocking to avoid panic when called from an async environment
+    pub(crate) fn access_token(self: Arc<Self>) -> Option<String> {
+        let read = self.cred.read().ok()?;
+        let cred = (*read).clone();
+        cred.map(|cred| cred.access_token.clone())
+    }
+
+    pub fn is_logged_in(&self) -> joinerror::Result<bool> {
+        Ok(self.cred.read()?.is_some())
+    }
 }
 
-impl GitLabAuthAgentImpl {
-    fn credentials(&self) -> Result<GitLabCred> {
+// TODO: Add timeout mechanism to handle OAuth failure
+
+impl GitLabAuthAgent {
+    pub(crate) fn credentials(&self) -> Result<GitLabCred> {
         if let Some(cached) = self.cred.read().expect("RwLock poisoned").clone() {
             if Instant::now() <= cached.time_to_refresh {
                 return Ok(cached);
             }
+        }
+
+        // In tests and CI, fetch GITLAB_REFRESH_TOKEN and get new access_token
+        if let Some(updated_cred) = self.try_refresh_from_env()? {
+            return Ok(updated_cred);
         }
 
         let gen_initial_cred_fn: Box<dyn Fn() -> Result<GitLabCred>> = Box::new(|| {
@@ -111,6 +145,33 @@ impl GitLabAuthAgentImpl {
         Ok(updated_cred)
     }
 
+    pub(crate) async fn credentials_async(self: Arc<Self>) -> Result<GitLabCred> {
+        let self_clone = self.clone();
+        tokio::task::spawn_blocking(move || self_clone.credentials()).await?
+    }
+
+    // A helper method to avoid false positive about unreachable code
+    // It will fetch the refresh token from the environment and generate a new access token
+    #[cfg(any(test, feature = "integration-tests"))]
+    fn try_refresh_from_env(&self) -> Result<Option<GitLabCred>> {
+        dotenv::dotenv().ok();
+        let refresh_token = dotenv::var(crate::envvar_keys::GITLAB_REFRESH_TOKEN)?;
+        let updated_cred = match self.refresh_token_flow(refresh_token) {
+            Ok(cred) => cred,
+            Err(err) => {
+                return Err(err);
+            }
+        };
+
+        *self.cred.write().expect("RwLock poisoned") = Some(updated_cred.clone());
+        Ok(Some(updated_cred))
+    }
+
+    #[cfg(not(any(test, feature = "integration-tests")))]
+    fn try_refresh_from_env(&self) -> Result<Option<GitLabCred>> {
+        Ok(None)
+    }
+
     fn gen_initial_credentials(&self) -> Result<GitLabCred> {
         let (listener, callback_port) = utils::create_auth_tcp_listener()?;
 
@@ -139,15 +200,11 @@ impl GitLabAuthAgentImpl {
 
         let (code, _state) = utils::receive_auth_code(&listener)?;
 
-        let http_client = reqwest::blocking::ClientBuilder::new()
-            .redirect(reqwest::redirect::Policy::none())
-            .build()?;
-
         // Exchange the code + PKCE verifier with access & refresh token.
         let token_res = client
             .exchange_code(code)
             .set_pkce_verifier(pkce_verifier)
-            .request(&http_client)?;
+            .request(&self.sync_http_client)?;
         let expires_in = token_res.expires_in().ok_or_else(|| {
             anyhow::anyhow!(
                 "Failed to perform initial GitLab credentials setup: expires_in value not received"
@@ -178,13 +235,9 @@ impl GitLabAuthAgentImpl {
                 callback_port.to_string()
             ))?);
 
-        let http_client = reqwest::blocking::ClientBuilder::new()
-            .redirect(reqwest::redirect::Policy::none())
-            .build()?;
-
         let token_res = client
             .exchange_refresh_token(&RefreshToken::new(refresh_token))
-            .request(&http_client)?;
+            .request(&self.sync_http_client)?;
 
         let expires_in = token_res.expires_in().ok_or_else(|| {
             anyhow::anyhow!(
@@ -204,7 +257,7 @@ impl GitLabAuthAgentImpl {
     }
 }
 
-impl GitAuthAgent for GitLabAuthAgentImpl {
+impl GitAuthAgent for GitLabAuthAgent {
     fn generate_callback<'a>(&'a self, cb: &mut RemoteCallbacks<'a>) -> Result<()> {
         let cred = self.credentials()?;
 
@@ -228,12 +281,13 @@ fn compute_time_to_refresh(expires_in: Duration) -> Instant {
 
 #[cfg(test)]
 mod tests {
-    use std::{path::Path, sync::Arc};
-
+    use crate::{
+        envvar_keys::{GITLAB_CLIENT_ID, GITLAB_CLIENT_SECRET},
+        gitlab::auth::GitLabAuthAgent,
+    };
     use moss_git::repo::RepoHandle;
     use moss_keyring::KeyringClientImpl;
-
-    use crate::gitlab::auth::GitLabAuthAgentImpl;
+    use std::{path::Path, sync::Arc};
 
     #[ignore]
     #[test]
@@ -242,16 +296,17 @@ mod tests {
         let repo_url = &dotenv::var("GITLAB_TEST_REPO_HTTPS").unwrap();
         let repo_path = Path::new("test-repo-lab");
 
-        let client_id = dotenv::var("GITLAB_CLIENT_ID").unwrap();
-        let client_secret = dotenv::var("GITLAB_CLIENT_SECRET").unwrap();
+        let client_id = dotenv::var(GITLAB_CLIENT_ID).unwrap();
+        let client_secret = dotenv::var(GITLAB_CLIENT_SECRET).unwrap();
 
         let keyring_client = Arc::new(KeyringClientImpl::new());
-        let auth_agent = Arc::new(GitLabAuthAgentImpl::new(
+        let auth_agent = Arc::new(GitLabAuthAgent::new(
+            oauth2::ureq::builder().redirects(0).build(),
             keyring_client,
             client_id,
             client_secret,
         ));
 
-        let _repo = RepoHandle::clone(repo_url, repo_path, auth_agent).unwrap();
+        let _repo = RepoHandle::clone(&repo_url, repo_path, auth_agent).unwrap();
     }
 }

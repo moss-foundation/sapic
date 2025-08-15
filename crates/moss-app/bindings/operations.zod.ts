@@ -2,7 +2,7 @@
 import { jsonValueSchema } from "@repo/moss-bindingutils";
 import { workspaceModeSchema } from "@repo/moss-workspace";
 import { z } from "zod";
-import { logLevelSchema } from "./primitives.zod";
+import { gitProviderTypeSchema, logLevelSchema } from "./primitives.zod";
 import {
   colorThemeInfoSchema,
   defaultsSchema,
@@ -11,6 +11,7 @@ import {
   logEntryInfoSchema,
   logItemSourceInfoSchema,
   preferencesSchema,
+  userInfoSchema,
   workspaceInfoSchema,
 } from "./types.zod";
 
@@ -71,6 +72,14 @@ export const openWorkspaceOutputSchema = z.object({
 export const updateWorkspaceInputSchema = z.object({
   name: z.string().optional(),
 });
+export const addAccountInputSchema = z.object({
+  gitProviderType: gitProviderTypeSchema,
+});
+
+export const addAccountOutputSchema = z.object({
+  userInfo: userInfoSchema,
+});
+
 export const batchDeleteLogOutputSchema = z.object({
   deletedEntries: z.array(logItemSourceInfoSchema),
 });

@@ -6,6 +6,7 @@ use crate::models::{
     types::{LogDate, LogEntryInfo, LogItemSourceInfo, WorkspaceInfo},
 };
 use derive_more::Deref;
+use moss_git_hosting_provider::models::{primitives::GitProviderType, types::UserInfo};
 use moss_logging::models::primitives::LogEntryId;
 use moss_workspace::models::types::WorkspaceMode;
 use serde::{Deserialize, Serialize};
@@ -287,4 +288,20 @@ pub struct CloseWorkspaceOutput {
     /// The id of the workspace that was closed.
     #[ts(as = "String")]
     pub id: WorkspaceId,
+}
+
+/// @category Operation
+#[derive(Debug, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct AddAccountInput {
+    pub git_provider_type: GitProviderType,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct AddAccountOutput {
+    pub user_info: UserInfo,
 }

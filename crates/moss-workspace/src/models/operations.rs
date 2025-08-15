@@ -4,6 +4,7 @@ use moss_environment::models::{
     types::{AddVariableParams, UpdateVariableParams, VariableInfo},
 };
 use moss_git::url::GIT_URL_REGEX;
+use moss_git_hosting_provider::models::primitives::GitProviderType;
 use serde::{Deserialize, Serialize};
 use std::{
     path::{Path, PathBuf},
@@ -17,7 +18,10 @@ use crate::models::{
     types::EditorPartStateInfo,
 };
 
-use super::types::{ActivitybarPartStateInfo, PanelPartStateInfo, SidebarPartStateInfo};
+use super::types::{
+    ActivitybarPartStateInfo, GitHubImportParams, GitLabImportParams, PanelPartStateInfo,
+    SidebarPartStateInfo,
+};
 
 // ------------------------------ //
 // Collection
@@ -34,8 +38,17 @@ pub struct CreateCollectionInput {
 
     pub order: isize,
     pub external_path: Option<PathBuf>,
+
+    // FIXME: Pass also the git provider information
     #[validate(regex(path = "*GIT_URL_REGEX"))]
     pub repository: Option<String>,
+
+    // FIXME: Replace the repo input type with an enum
+    #[serde(skip)]
+    #[ts(skip)]
+    pub git_provider_type: Option<GitProviderType>,
+
+    // TODO: repo branch
     pub icon_path: Option<PathBuf>,
 }
 
@@ -45,6 +58,36 @@ pub struct CreateCollectionInput {
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateCollectionOutput {
+    pub id: CollectionId,
+    pub name: String,
+    pub order: Option<isize>,
+    pub expanded: bool,
+    pub icon_path: Option<PathBuf>,
+
+    #[serde(skip)]
+    #[ts(skip)]
+    pub abs_path: Arc<Path>,
+
+    #[serde(skip)]
+    #[ts(skip)]
+    pub external_path: Option<PathBuf>,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub enum ImportCollectionInput {
+    GitHub(GitHubImportParams),
+    GitLab(GitLabImportParams),
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct ImportCollectionOutput {
     pub id: CollectionId,
     pub name: String,
     pub order: Option<isize>,

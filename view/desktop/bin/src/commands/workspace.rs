@@ -81,6 +81,22 @@ pub async fn create_collection<'a, R: tauri::Runtime>(
     .await
 }
 
+#[allow(dead_code)]
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn import_collection<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: Window<R>,
+    input: ImportCollectionInput,
+    options: Options,
+) -> TauriResult<ImportCollectionOutput> {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
+        workspace.import_collection(&ctx, &input).await
+    })
+    .await
+}
+
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn delete_collection<'a, R: tauri::Runtime>(

@@ -21,6 +21,7 @@ export type TauriIpcCommand =
   | "delete_workspace"
   | "update_workspace"
   | "close_workspace"
+  | "add_account"
   //
   // Workspace
   //
@@ -44,7 +45,11 @@ export type TauriIpcCommand =
   | "update_collection_entry"
   | "stream_collection_entries"
   | "batch_update_collection_entry"
-  | "batch_create_collection_entry";
+  | "batch_create_collection_entry"
+  //
+  // Env
+  //
+  | "get_mistral_api_key";
 
 export type IpcResult<T, E> = { status: "ok"; data: T } | { status: "error"; error: E };
 

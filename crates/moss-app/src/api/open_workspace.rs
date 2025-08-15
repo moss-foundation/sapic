@@ -14,13 +14,7 @@ impl<R: AppRuntime> App<R> {
     ) -> OperationResult<OpenWorkspaceOutput> {
         let desc = self
             .workspace_service
-            .activate_workspace(
-                ctx,
-                &input.id,
-                self.activity_indicator.clone(),
-                self.github_client.clone(),
-                self.gitlab_client.clone(),
-            )
+            .activate_workspace(ctx, &input.id, self.activity_indicator.clone())
             .await?;
 
         Ok(OpenWorkspaceOutput {
