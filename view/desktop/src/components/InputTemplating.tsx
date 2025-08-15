@@ -31,7 +31,6 @@ const containerStyles = cva(`
     focus-within:outline-2
     focus-within:-outline-offset-1
     font-normal
-    overflow-visible
     z-10
   `, 
 {
@@ -268,6 +267,11 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
           height: isFocused ? "auto" : size === "sm" ? "28px" : "32px",
           minHeight: size === "sm" ? "28px" : "32px",
           overflow: "visible",
+          position: isFocused ? "absolute" : "relative",
+          zIndex: isFocused ? 50 : "auto",
+          width: isFocused ? "100%" : "auto",
+          backgroundColor: isFocused ? "var(--moss-controls-outlined-bg)" : "transparent",
+          boxShadow: isFocused ? "0 4px 12px rgba(0, 0, 0, 0.15)" : "none",
         }}
       >
         {/* Hidden input for form compatibility */}
@@ -303,8 +307,7 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
             overflowWrap: isFocused ? "break-word" : "normal",
             lineHeight: "1.4",
             height: isFocused ? "auto" : size === "sm" ? "28px" : "32px",
-            minHeight: size === "sm" ? "28px" : "32px",
-            maxHeight: isFocused ? "none" : size === "sm" ? "28px" : "32px",
+            minHeight: isFocused ? "auto" : size === "sm" ? "28px" : "32px",
             overflow: isFocused ? "visible" : "hidden",
             textOverflow: isFocused ? "clip" : "ellipsis",
             width: "100%",
