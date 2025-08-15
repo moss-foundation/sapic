@@ -32,7 +32,6 @@ export const Modal = ({
 
   const handleDialogClick = (event: React.MouseEvent<HTMLDialogElement>) => {
     if (event.target === dialogRef.current) {
-      console.log("backdrop clicked"); // For debugging; replace with your log if needed
       onBackdropClick?.();
     }
   };
