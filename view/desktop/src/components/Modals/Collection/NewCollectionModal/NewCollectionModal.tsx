@@ -15,7 +15,11 @@ import { ImportSection } from "./ImportSection/ImportSection";
 import { ModeRadioGroup } from "./ModeRadioGroup";
 import { Provider } from "./ProvidersRadioGroup/ProvidersRadioGroup";
 
-export const NewCollectionModal = ({ closeModal, showModal }: ModalWrapperProps) => {
+interface NewCollectionModalProps extends ModalWrapperProps {
+  initialTab?: "Create" | "Import";
+}
+
+export const NewCollectionModal = ({ closeModal, showModal, initialTab = "Create" }: NewCollectionModalProps) => {
   const { mutateAsync: createCollection } = useCreateCollection();
   const { data: collections } = useStreamedCollections();
 
@@ -25,7 +29,8 @@ export const NewCollectionModal = ({ closeModal, showModal }: ModalWrapperProps)
   const [repository, setRepository] = useState("github.com/moss-foundation/sapic");
   const [mode, setMode] = useState<"Default" | "Custom">("Default");
   const [openAutomatically, setOpenAutomatically] = useState(true);
-  const [tab, setTab] = useState<"Create" | "Import">("Create");
+
+  const [tab, setTab] = useState<"Create" | "Import">(initialTab);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

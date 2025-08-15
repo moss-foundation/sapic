@@ -6,7 +6,7 @@ import { cn } from "@/utils";
 import { ProviderIcon } from "../ProviderIcon";
 
 interface ProviderTabsProps {
-  value: string;
+  value?: string | null;
   onValueChange: (value: string) => void;
   children: ReactNode;
   className?: string;
@@ -15,7 +15,7 @@ interface ProviderTabsProps {
 const Root = ({ value, onValueChange, children, className }: ProviderTabsProps) => {
   return (
     <Tabs
-      value={value}
+      value={value ?? undefined}
       onValueChange={onValueChange}
       className={cn("flex h-full min-h-fit min-w-fit flex-col", className)}
     >
@@ -42,14 +42,17 @@ interface PaddedTabProps {
   className?: string;
   icon: ProviderIcon;
   label: string;
+  disabled?: boolean;
 }
 
-const Trigger = ({ value, className, icon, label }: PaddedTabProps) => {
+const Trigger = ({ value, className, icon, label, disabled }: PaddedTabProps) => {
   return (
     <TabsTrigger
       value={value}
       //prettier-ignore
       className={cn(`
+        cursor-pointer
+
         has-[:focus-visible]:outline-3 
         has-[:focus-visible]:outline-offset-1 
         has-[:focus-visible]:outline-(--moss-primary) 
@@ -57,7 +60,7 @@ const Trigger = ({ value, className, icon, label }: PaddedTabProps) => {
         rounded-full 
         border border-(--moss-border-color)
 
-        hover:not-data-[state=active]:hover:border-black 
+        hover:not-data-[state=active]:hover:border-(--moss-secondary-background-hover) 
 
         data-[state=active]:ring-2 
         data-[state=active]:ring-offset-0
@@ -65,6 +68,7 @@ const Trigger = ({ value, className, icon, label }: PaddedTabProps) => {
       `,
         className
       )}
+      disabled={disabled}
     >
       <div className="flex items-center gap-2">
         <ProviderIcon icon={icon} />

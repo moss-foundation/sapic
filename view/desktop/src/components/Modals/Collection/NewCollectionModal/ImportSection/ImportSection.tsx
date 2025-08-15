@@ -18,13 +18,11 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
   const [name, setName] = useState("New Collection");
   const [repository, setRepository] = useState("github.com/moss-foundation/sapic");
   const [branch, setBranch] = useState("main");
-  const [provider, setProvider] = useState<Provider | null>("github");
+  const [provider, setProvider] = useState<Provider | null>(null);
 
   const providers: Providers = [
     { value: "github", label: "GitHub", icon: "github" },
     { value: "gitlab", label: "GitLab", icon: "gitlab" },
-    { value: "postman", label: "Postman", icon: "postman" },
-    { value: "insomnia", label: "Insomnia", icon: "insomnia" },
   ];
 
   useEffect(() => {
@@ -38,7 +36,7 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="grid grid-cols-[min-content_1fr] items-center gap-3">
+      <div className="grid grid-cols-[min-content_1fr] items-center gap-x-3 gap-y-6">
         <div>From:</div>
         <ProvidersRadioGroup selected={provider} setSelected={setProvider} providers={providers} />
 

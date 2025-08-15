@@ -29,7 +29,7 @@ interface PaddedTabsListProps {
 
 const List = ({ children, className }: PaddedTabsListProps) => {
   return (
-    <TabsList className={cn("flex h-full w-full items-center", className)} data-tabs-list-container>
+    <TabsList className={cn("flex h-full w-full items-center gap-1", className)} data-tabs-list-container>
       {children}
     </TabsList>
   );
@@ -47,12 +47,11 @@ const Trigger = ({ value, children, className }: PaddedTabProps) => {
       value={value}
       //prettier-ignore
       className={cn(`
-         group
-         relative 
-         flex items-center 
+         group relative 
+         flex items-center min-w-0
 
-         min-w-0 flex-shrink-0
-         p-3 leading-4 border-0
+         text-base leading-4
+         p-3 border-0 
          cursor-pointer truncate
 
          transition-colors
@@ -70,13 +69,15 @@ const Trigger = ({ value, children, className }: PaddedTabProps) => {
         //prettier-ignore
         className={`
           absolute right-0 bottom-0 left-0 
-          h-[3px] w-full rounded-full 
-          transition-opacity
-          
-          background-(--moss-tab-active-border-color)
+          h-[2px] w-full rounded-full 
+          transition-[opacity,background-color]
+
           opacity-0 
+
+          group-hover:background-(--moss-secondary-background-hover)
+          group-hover:opacity-100
           group-data-[state=active]:opacity-100 
-          group-hover:opacity-50
+          group-data-[state=active]:background-(--moss-tab-active-border-color) 
         `}
       />
     </TabsTrigger>

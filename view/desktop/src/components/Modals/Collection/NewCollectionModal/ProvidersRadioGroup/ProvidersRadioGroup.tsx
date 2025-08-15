@@ -12,7 +12,10 @@ const radioButtonStyles = `
     rounded-full 
     border border-(--moss-border-color)
 
-    hover:not-has-checked:hover:border-black 
+    
+    not-has-checked:text-(--moss-secondary-text) 
+    hover:not-has-checked:text-(--moss-primary-text)
+    hover:not-has-checked:hover:border-(--moss-secondary-background-hover) 
 
     has-checked:ring-2 
     has-checked:ring-offset-0

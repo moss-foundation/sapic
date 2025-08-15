@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import { ActionButton, ActionMenu, SidebarHeader } from "@/components";
 import { NewCollectionModal } from "@/components/Modals/Collection/NewCollectionModal/NewCollectionModal";
 import {
@@ -22,6 +24,8 @@ export const CollectionTreeViewHeader = () => {
   const { mutateAsync: batchUpdateCollection } = useBatchUpdateCollection();
   const { mutateAsync: batchUpdateCollectionEntry } = useBatchUpdateCollectionEntry();
   const { hasActiveWorkspace } = useActiveWorkspace();
+
+  const [initialTab, setInitialTab] = useState<"Create" | "Import">("Create");
 
   const {
     showModal: showCreateCollectionModal,
@@ -108,7 +112,10 @@ export const CollectionTreeViewHeader = () => {
               title="Add collection"
               disabled={!hasActiveWorkspace}
               icon="Add"
-              onClick={openCreateCollectionModal}
+              onClick={() => {
+                setInitialTab("Create");
+                openCreateCollectionModal();
+              }}
             />
             <ActionButton
               title="Collapse all collections"
@@ -116,7 +123,15 @@ export const CollectionTreeViewHeader = () => {
               icon="CollapseAll"
               onClick={handleCollapseAll}
             />
-            <ActionButton title="Import collection" disabled={!hasActiveWorkspace} icon="Import" />
+            <ActionButton
+              title="Import collection"
+              disabled={!hasActiveWorkspace}
+              icon="Import"
+              onClick={() => {
+                setInitialTab("Import");
+                openCreateCollectionModal();
+              }}
+            />
             <ActionButton
               icon="Refresh"
               onClick={handleRefreshCollections}
@@ -129,7 +144,11 @@ export const CollectionTreeViewHeader = () => {
         }
       />
       {showCreateCollectionModal && (
-        <NewCollectionModal showModal={showCreateCollectionModal} closeModal={closeCreateCollectionModal} />
+        <NewCollectionModal
+          initialTab={initialTab}
+          showModal={showCreateCollectionModal}
+          closeModal={closeCreateCollectionModal}
+        />
       )}
     </>
   );

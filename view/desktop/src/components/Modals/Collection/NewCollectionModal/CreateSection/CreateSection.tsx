@@ -6,6 +6,7 @@ import { VALID_NAME_PATTERN } from "@/constants/validation";
 import { useFocusInputOnMount } from "@/hooks";
 import { useGitProviderStore } from "@/store/gitProvider";
 import { cn } from "@/utils";
+import { CheckedState } from "@radix-ui/react-checkbox";
 
 import { Provider } from "../ProvidersRadioGroup/ProvidersRadioGroup";
 import ProviderTabs from "../ProviderTabs/ProviderTabs";
@@ -26,7 +27,7 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
   const { gitProvider } = useGitProviderStore();
 
   const [name, setName] = useState("New Collection");
-  const [provider, setProvider] = useState<Provider>("github");
+  const [provider, setProvider] = useState<Provider | null>(null);
   const [repository, setRepository] = useState("github.com/moss-foundation/sapic");
   const [branch, setBranch] = useState("main");
   const [vcs, setVCS] = useState(true);
@@ -43,9 +44,19 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
     });
   }, [name, onValuesUpdate, repository, branch, vcs, provider]);
 
+  const handleSetVCS = (checked: CheckedState) => {
+    if (checked === "indeterminate") return;
+
+    if (checked === false) {
+      setProvider(null);
+    }
+
+    setVCS(checked);
+  };
+
   return (
     <div className="flex flex-col gap-2">
-      <div className="grid grid-cols-[min-content_1fr] items-center gap-3">
+      <div className="grid grid-cols-[min-content_1fr] items-center gap-2">
         <div>Name:</div>
         <InputOutlined
           ref={inputRef}
@@ -60,23 +71,23 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
 
       <div>
         <div className="flex flex-col gap-2">
-          <CheckboxWithLabel checked={vcs} onCheckedChange={() => setVCS(!vcs)} label="VCS" />
+          <CheckboxWithLabel checked={vcs} onCheckedChange={handleSetVCS} label="VCS" />
           <span className="text-xs text-(--moss-secondary-text)">
             You can switch modes in the workspace at any time and as often as needed.
           </span>
         </div>
 
-        <div className="grid grid-cols-[min-content_1fr] items-center gap-3 py-3 pl-5">
+        <div className="grid grid-cols-[min-content_1fr] items-center gap-2 py-3 pl-5">
           <ProviderTabs.Root
             value={provider}
             onValueChange={(value) => setProvider(value as Provider)}
             className="contents"
           >
             <ProviderTabs.List className="col-span-2 grid h-min grid-cols-subgrid grid-rows-subgrid">
-              <div>Provider:</div>
+              <div className={cn(!vcs && "opacity-50")}>Provider:</div>
               <div className="flex gap-2">
-                <ProviderTabs.Trigger value="github" label="GitHub" icon="github" />
-                <ProviderTabs.Trigger value="gitlab" label="GitLab" icon="gitlab" />
+                <ProviderTabs.Trigger value="github" label="GitHub" icon="github" disabled={!vcs} />
+                <ProviderTabs.Trigger value="gitlab" label="GitLab" icon="gitlab" disabled={!vcs} />
               </div>
             </ProviderTabs.List>
 
