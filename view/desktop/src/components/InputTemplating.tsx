@@ -65,6 +65,7 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
     forwardedRef
   ) => {
     const [value, setValue] = useState(props.value || "");
+    const [isFocused, setIsFocused] = useState(false);
     const editorRef = useRef<HTMLDivElement>(null);
     const hiddenInputRef = useRef<HTMLInputElement>(null);
     const isUpdatingContent = useRef(false);
@@ -263,7 +264,11 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
     return (
       <div
         className={cn(containerStyles({ size }), className)}
-        style={{ height: "auto", minHeight: size === "sm" ? "28px" : "32px" }}
+        style={{
+          height: isFocused ? "auto" : size === "sm" ? "28px" : "32px",
+          minHeight: size === "sm" ? "28px" : "32px",
+          overflow: "visible",
+        }}
       >
         {/* Hidden input for form compatibility */}
         <input
@@ -288,17 +293,21 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
           onCopy={handleCopy}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           data-placeholder={placeholder}
           suppressContentEditableWarning={true}
           style={{
-            whiteSpace: "pre-wrap",
-            wordWrap: "break-word",
-            overflowWrap: "break-word",
+            whiteSpace: isFocused ? "pre-wrap" : "nowrap",
+            wordWrap: isFocused ? "break-word" : "normal",
+            overflowWrap: isFocused ? "break-word" : "normal",
             lineHeight: "1.4",
-            height: "auto",
+            height: isFocused ? "auto" : size === "sm" ? "28px" : "32px",
             minHeight: size === "sm" ? "28px" : "32px",
-            maxHeight: "none",
-            overflow: "visible",
+            maxHeight: isFocused ? "none" : size === "sm" ? "28px" : "32px",
+            overflow: isFocused ? "visible" : "hidden",
+            textOverflow: isFocused ? "clip" : "ellipsis",
+            width: "100%",
             paddingTop: size === "sm" ? "6px" : "8px",
             paddingBottom: size === "sm" ? "6px" : "8px",
           }}
