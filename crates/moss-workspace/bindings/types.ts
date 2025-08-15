@@ -94,6 +94,11 @@ export type EditorPartStateInfo = {
 /**
  * @category Type
  */
+export type EnvironmentGroup = { collectionId: string; expanded: boolean; order?: number };
+
+/**
+ * @category Type
+ */
 export type EnvironmentInfo = {
   id: string;
   collectionId?: string;
@@ -147,6 +152,11 @@ export type UpdateCollectionParams = {
   order?: number;
   expanded?: boolean;
 };
+
+/**
+ * @category Type
+ */
+export type UpdateEnvironmentGroupParams = { collectionId: string; expanded?: boolean; order?: number };
 
 /**
  * @category Type

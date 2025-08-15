@@ -27,4 +27,5 @@ export type StreamEnvironmentsEvent = {
   collectionId?: string;
   name: string;
   order?: number;
+  totalVariables: number;
 };

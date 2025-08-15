@@ -5,11 +5,13 @@ import type {
   ActivitybarPartStateInfo,
   AddVariableParams,
   EditorPartStateInfo,
+  EnvironmentGroup,
   GitHubImportParams,
   GitLabImportParams,
   PanelPartStateInfo,
   SidebarPartStateInfo,
   UpdateCollectionParams,
+  UpdateEnvironmentGroupParams,
   UpdateEnvironmentParams,
   UpdateVariableParams,
   VariableInfo,
@@ -24,6 +26,11 @@ export type BatchUpdateCollectionInput = { items: Array<UpdateCollectionParams> 
  * @category Operation
  */
 export type BatchUpdateCollectionOutput = { ids: Array<string> };
+
+/**
+ * @category Operation
+ */
+export type BatchUpdateEnvironmentGroupInput = { items: Array<UpdateEnvironmentGroupParams> };
 
 /**
  * @category Operation
@@ -131,7 +138,7 @@ export type StreamCollectionsOutput = {};
 /**
  * @category Operation
  */
-export type StreamEnvironmentsOutput = {};
+export type StreamEnvironmentsOutput = { groups: Array<EnvironmentGroup> };
 
 /**
  * @category Operation
@@ -149,6 +156,11 @@ export type UpdateCollectionInput = {
  * @category Operation
  */
 export type UpdateCollectionOutput = { id: string };
+
+/**
+ * @category Operation
+ */
+export type UpdateEnvironmentGroupInput = { collectionId: string; expanded?: boolean; order?: number };
 
 /**
  * @category Operation

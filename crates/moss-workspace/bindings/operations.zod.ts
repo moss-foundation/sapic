@@ -6,11 +6,13 @@ import {
   activitybarPartStateInfoSchema,
   addVariableParamsSchema,
   editorPartStateInfoSchema,
+  environmentGroupSchema,
   gitHubImportParamsSchema,
   gitLabImportParamsSchema,
   panelPartStateInfoSchema,
   sidebarPartStateInfoSchema,
   updateCollectionParamsSchema,
+  updateEnvironmentGroupParamsSchema,
   updateEnvironmentParamsSchema,
   updateVariableParamsSchema,
   variableInfoSchema,
@@ -78,10 +80,14 @@ export const importCollectionOutputSchema = z.object({
 
 export const streamCollectionsOutputSchema = z.object({});
 
-export const streamEnvironmentsOutputSchema = z.object({});
-
 export const updateCollectionOutputSchema = z.object({
   id: z.string(),
+});
+
+export const updateEnvironmentGroupInputSchema = z.object({
+  collectionId: z.string(),
+  expanded: z.boolean().optional(),
+  order: z.number().optional(),
 });
 
 export const updateEnvironmentOutputSchema = z.object({
@@ -89,6 +95,10 @@ export const updateEnvironmentOutputSchema = z.object({
 });
 export const batchUpdateCollectionInputSchema = z.object({
   items: z.array(updateCollectionParamsSchema),
+});
+
+export const batchUpdateEnvironmentGroupInputSchema = z.object({
+  items: z.array(updateEnvironmentGroupParamsSchema),
 });
 
 export const batchUpdateEnvironmentInputSchema = z.object({
@@ -122,6 +132,10 @@ export const importCollectionInputSchema = z.union([
     "gitLab": gitLabImportParamsSchema,
   }),
 ]);
+
+export const streamEnvironmentsOutputSchema = z.object({
+  groups: z.array(environmentGroupSchema),
+});
 
 export const updateCollectionInputSchema = z.object({
   id: z.string(),

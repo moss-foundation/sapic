@@ -53,6 +53,12 @@ export const editorGridNodeSchema: z.ZodSchema<EditorGridNode> = z.lazy(() =>
   ])
 );
 
+export const environmentGroupSchema = z.object({
+  collectionId: z.string(),
+  expanded: z.boolean(),
+  order: z.number().optional(),
+});
+
 export const gitHubImportParamsSchema = z.object({
   order: z.number(),
   repository: z.string(),
@@ -72,6 +78,12 @@ export const repositoryInfoSchema = z.object({
   createdAt: z.string(),
   updatedAt: z.string(),
   owner: z.string(),
+});
+
+export const updateEnvironmentGroupParamsSchema = z.object({
+  collectionId: z.string(),
+  expanded: z.boolean().optional(),
+  order: z.number().optional(),
 });
 export const activitybarPartStateInfoSchema = z.object({
   lastActiveContainerId: z.string().optional(),
