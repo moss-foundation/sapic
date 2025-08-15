@@ -15,10 +15,9 @@ use moss_workspace::{
         operations::{CreateEnvironmentInput, DeleteEnvironmentInput, UpdateEnvironmentInput},
         types::UpdateEnvironmentParams,
     },
-    storage::segments::{SEGKEY_ENVIRONMENT, SEGKEY_EXPANDED_ENVIRONMENT_GROUPS},
+    storage::segments::SEGKEY_ENVIRONMENT,
 };
 use serde_json::Value as JsonValue;
-use std::collections::HashSet;
 use tauri::ipc::Channel;
 
 use crate::shared::setup_test_workspace;
@@ -120,18 +119,6 @@ async fn delete_environment_success() {
         .await
         .is_err()
     );
-
-    let stored_expanded_environments: HashSet<EnvironmentId> = GetItem::get(
-        item_store.as_ref(),
-        &ctx,
-        SEGKEY_EXPANDED_ENVIRONMENT_GROUPS.to_segkey_buf(),
-    )
-    .await
-    .unwrap()
-    .deserialize()
-    .unwrap();
-
-    assert!(!stored_expanded_environments.contains(&environment_id));
 
     // Check variables associated with the environment are removed from the database
     let variable_store = workspace.db().variable_store();

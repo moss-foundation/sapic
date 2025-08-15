@@ -91,9 +91,12 @@ where
         prefix: &str,
     ) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>> {
         let mut write_txn = self.client.begin_write_with_context(ctx).await?;
-        self.table
+        let result = self
+            .table
             .remove_by_prefix_with_context(ctx, &mut write_txn, prefix)
-            .await
+            .await?;
+        write_txn.commit()?;
+        Ok(result)
     }
 }
 

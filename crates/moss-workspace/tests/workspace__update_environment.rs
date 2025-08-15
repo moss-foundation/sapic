@@ -5,7 +5,7 @@ use moss_bindingutils::primitives::{ChangeJsonValue, ChangeString};
 use moss_environment::{
     AnyEnvironment,
     models::{
-        primitives::{EnvironmentId, VariableId},
+        primitives::VariableId,
         types::{AddVariableParams, UpdateVariableParams, VariableOptions},
     },
 };
@@ -16,10 +16,9 @@ use moss_workspace::{
         operations::{CreateEnvironmentInput, UpdateEnvironmentInput},
         types::UpdateEnvironmentParams,
     },
-    storage::segments::{SEGKEY_ENVIRONMENT, SEGKEY_EXPANDED_ENVIRONMENT_GROUPS},
+    storage::segments::SEGKEY_ENVIRONMENT,
 };
 use serde_json::Value as JsonValue;
-use std::collections::HashSet;
 
 use crate::shared::setup_test_workspace;
 
@@ -93,18 +92,6 @@ async fn update_environment_success() {
     .deserialize()
     .unwrap();
     assert_eq!(stored_env_order, 42);
-
-    // We updated the environment to un-expanded
-    let expanded_environments: HashSet<EnvironmentId> = GetItem::get(
-        item_store.as_ref(),
-        &ctx,
-        SEGKEY_EXPANDED_ENVIRONMENT_GROUPS.to_segkey_buf(),
-    )
-    .await
-    .unwrap()
-    .deserialize()
-    .unwrap();
-    assert!(!expanded_environments.contains(&create_environment_output.id));
 
     let color = env_description.color;
     assert_eq!(color, Some("#000000".to_string()));

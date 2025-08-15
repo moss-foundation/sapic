@@ -2,11 +2,10 @@ use derive_more::Deref;
 use futures::Stream;
 use joinerror::{OptionExt, ResultExt};
 use moss_applib::AppRuntime;
-use moss_bindingutils::primitives::ChangeString;
 use moss_common::continue_if_err;
 use moss_db::primitives::AnyValue;
 use moss_environment::{
-    AnyEnvironment, Environment, ModifyEnvironmentParams,
+    AnyEnvironment, DescribeEnvironment, Environment, ModifyEnvironmentParams,
     builder::{EnvironmentBuilder, EnvironmentLoadParams},
     errors::ErrorIo,
     models::{primitives::EnvironmentId, types::AddVariableParams},
@@ -52,9 +51,7 @@ where
     R: AppRuntime,
 {
     pub id: EnvironmentId,
-    pub color: Option<String>,
     pub collection_id: Option<CollectionId>,
-    pub display_name: String,
     pub order: Option<isize>,
 
     #[deref]
@@ -68,6 +65,7 @@ pub struct EnvironmentItemDescription {
     pub order: Option<isize>,
     pub color: Option<String>,
     pub abs_path: PathBuf,
+    pub total_variables: usize,
 }
 
 type EnvironmentMap<R> = HashMap<EnvironmentId, EnvironmentItem<R>>;
@@ -211,7 +209,7 @@ where
         let storage = self.storage.clone();
 
         Box::pin(async_stream::stream! {
-            let (tx, mut rx) = mpsc::unbounded_channel::<EnvironmentItem<R>>();
+            let (tx, mut rx) = mpsc::unbounded_channel::<(EnvironmentItem<R>, DescribeEnvironment)>();
             let scan_task = {
                 tokio::spawn(async move {
                     if let Err(e) = scan::<R>(&ctx, &abs_path, &fs, storage.storage.as_ref(), tx).await {
@@ -221,16 +219,17 @@ where
             };
 
             let mut state_lock = state.write().await;
-            while let Some(item) = rx.recv().await {
+            while let Some((item, desc)) = rx.recv().await {
                 let id = item.id.clone();
                 let group_id = item.collection_id.clone();
                 let desc = EnvironmentItemDescription {
                     id: id.clone(),
                     collection_id: item.collection_id.clone(),
-                    display_name: item.display_name.clone(),
+                    display_name: desc.name,
                     order: item.order.clone(),
-                    color: item.color.clone(),
+                    color: desc.color,
                     abs_path: item.abs_path().await,
+                    total_variables: desc.variables.len(),
                 };
 
                 state_lock.environments.insert(id, item);
@@ -272,20 +271,6 @@ where
             )
             .await?;
 
-        if let Some(name) = params.name {
-            environment_item.display_name = name;
-        }
-
-        match params.color {
-            Some(ChangeString::Update(color)) => {
-                environment_item.color = Some(color);
-            }
-            Some(ChangeString::Remove) => {
-                environment_item.color = None;
-            }
-            None => {}
-        }
-
         if let Some(order) = params.order {
             environment_item.order = Some(order);
             if let Err(e) = self
@@ -297,30 +282,6 @@ where
                 println!("failed to put environment order in the db: {}", e);
             }
         }
-
-        // if let Some(expanded) = params.expanded {
-        //     environment_item.expanded = expanded;
-        //     let mut expanded_environments = self
-        //         .storage_service
-        //         .get_expanded_environments(ctx)
-        //         .await
-        //         .unwrap_or_default();
-
-        //     if expanded {
-        //         expanded_environments.insert(params.id.clone());
-        //     } else {
-        //         expanded_environments.remove(&params.id);
-        //     }
-
-        //     if let Err(e) = self
-        //         .storage_service
-        //         .put_expanded_environments(ctx, &expanded_environments)
-        //         .await
-        //     {
-        //         // TODO: log error
-        //         println!("failed to put expandedEnvironments in the db: {}", e);
-        //     }
-        // }
 
         Ok(())
     }
@@ -352,9 +313,7 @@ where
             desc.id.clone(),
             EnvironmentItem {
                 id: desc.id.clone(),
-                color: desc.color.clone(),
                 collection_id: params.collection_id.clone(),
-                display_name: params.name.clone(),
                 order: Some(params.order),
                 handle: Arc::new(environment),
             },
@@ -369,22 +328,6 @@ where
             println!("failed to put environment order in the db: {}", e);
         }
 
-        // let mut expanded_environments = self
-        //     .storage_service
-        //     .get_expanded_environments(ctx)
-        //     .await
-        //     .unwrap_or_default();
-
-        // expanded_environments.insert(desc.id.clone());
-
-        // if let Err(e) = self
-        //     .storage_service
-        //     .put_expanded_environments(ctx, &expanded_environments)
-        //     .await
-        // {
-        //     println!("failed to put expandedEnvironments in the db: {}", e);
-        // }
-
         Ok(EnvironmentItemDescription {
             id: desc.id.clone(),
             collection_id: params.collection_id,
@@ -392,6 +335,7 @@ where
             order: Some(params.order),
             color: desc.color,
             abs_path,
+            total_variables: desc.variables.len(),
         })
     }
 
@@ -423,28 +367,6 @@ where
                     abs_path.display()
                 )
             })?;
-
-        // Remove environment from the database
-        // let mut expanded_environments = self
-        //     .storage_service
-        //     .get_expanded_environments(ctx)
-        //     .await
-        //     .unwrap_or_default();
-
-        // expanded_environments.remove(&id);
-
-        // if let Err(e) = self
-        //     .storage_service
-        //     .put_expanded_environments(ctx, &expanded_environments)
-        //     .await
-        // {
-        //     println!("failed to put expandedEnvironments in the db: {}", e);
-        // }
-
-        // if let Err(e) = self.storage.remove_environment_order(ctx, id).await {
-        //     // TODO: log error
-        //     println!("failed to remove environment order in the db: {}", e);
-        // }
 
         // Clean all the data related to the deleted environment
         {
@@ -483,7 +405,7 @@ async fn scan<R: AppRuntime>(
     abs_path: &Path,
     fs: &Arc<dyn FileSystem>,
     storage: &dyn WorkspaceStorage<R::AsyncContext>,
-    tx: mpsc::UnboundedSender<EnvironmentItem<R>>,
+    tx: mpsc::UnboundedSender<(EnvironmentItem<R>, DescribeEnvironment)>,
 ) -> joinerror::Result<()> {
     // let mut environments = EnvironmentMap::new();
 
@@ -528,14 +450,15 @@ async fn scan<R: AppRuntime>(
             None
         };
 
-        tx.send(EnvironmentItem {
-            id: desc.id,
-            color: desc.color,
-            collection_id: None, // Workspace-scoped environments don't have collection_id
-            display_name: desc.name,
-            order,
-            handle: Arc::new(environment),
-        })
+        tx.send((
+            EnvironmentItem {
+                id: desc.id.clone(),
+                collection_id: None, // Workspace-scoped environments don't have collection_id
+                order,
+                handle: Arc::new(environment),
+            },
+            desc,
+        ))
         .ok();
     }
 

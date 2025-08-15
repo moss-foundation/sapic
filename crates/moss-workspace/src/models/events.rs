@@ -38,4 +38,5 @@ pub struct StreamEnvironmentsEvent {
 
     pub name: String,
     pub order: Option<isize>,
+    pub total_variables: usize,
 }
