@@ -1,4 +1,4 @@
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useState } from "react";
 
 import PaddedTabs from "@/components/PaddedTabs/PaddedTabs";
 import { useCreateCollection } from "@/hooks/collection/useCreateCollection";
@@ -23,8 +23,8 @@ interface NewCollectionModalProps extends ModalWrapperProps {
 }
 
 export const NewCollectionModal = ({ closeModal, showModal, initialTab = "Create" }: NewCollectionModalProps) => {
-  const { mutateAsync: createCollection } = useCreateCollection();
   const { data: collections } = useStreamedCollections();
+  const { mutateAsync: createCollection } = useCreateCollection();
   const { mutateAsync: importCollection } = useImportCollection();
 
   const { addOrFocusPanel } = useTabbedPaneStore();
@@ -109,10 +109,6 @@ export const NewCollectionModal = ({ closeModal, showModal, initialTab = "Create
   );
 
   const isSubmitDisabled = calculateIsSubmitDisabled({ name, tab, createParams, importParams, gitProvider });
-
-  useEffect(() => {
-    console.log("createParams", createParams);
-  }, [createParams]);
 
   return (
     <Modal onBackdropClick={handleCancel} showModal={showModal}>

@@ -20,15 +20,28 @@ export const useCreateCollection = () => {
   return useMutation({
     mutationFn: createCollection,
     onSuccess: (data, variables) => {
+      console.log({ data, variables });
       queryClient.setQueryData([USE_STREAMED_COLLECTIONS_QUERY_KEY], (old: StreamCollectionsEvent[]) => {
         return [
           ...old,
           {
-            ...data,
             ...variables,
+            ...data,
           },
         ];
       });
     },
   });
+};
+
+const InputToEvent = (input: CreateCollectionInput): StreamCollectionsEvent => {
+  const {
+    name,
+    order,
+    gitParams: { gitHub, gitLab },
+  } = input;
+  const repository = gitHub.repository || gitLab.repository;
+  const branch = gitHub.branch || gitLab.branch;
+
+  return { name, order, repository, branch };
 };

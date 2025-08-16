@@ -52,6 +52,10 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
     handleUpdateCollection();
   };
 
+  useEffect(() => {
+    console.log("repository", repository);
+  }, [repository]);
+
   if (!collection) {
     return (
       <div className="flex h-full items-center justify-center text-(--moss-primary-text)">
