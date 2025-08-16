@@ -2,7 +2,6 @@ use moss_environment::models::{
     primitives::EnvironmentId,
     types::{AddVariableParams, VariableInfo},
 };
-use moss_git::url::GIT_URL_REGEX;
 use serde::{Deserialize, Serialize};
 use std::{
     path::{Path, PathBuf},
@@ -20,8 +19,8 @@ use crate::models::{
 };
 
 use super::types::{
-    ActivitybarPartStateInfo, CreateCollectionGitParams, ImportCollectionParams,
-    PanelPartStateInfo, SidebarPartStateInfo,
+    ActivitybarPartStateInfo, CreateCollectionParams, ImportCollectionParams, PanelPartStateInfo,
+    SidebarPartStateInfo,
 };
 
 // ------------------------------ //
@@ -31,19 +30,11 @@ use super::types::{
 /// @category Operation
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateCollectionInput {
-    #[validate(length(min = 1))]
-    pub name: String,
-
-    pub order: isize,
-    pub external_path: Option<PathBuf>,
-
-    pub git_params: Option<CreateCollectionGitParams>,
-
-    // TODO: repo branch
-    pub icon_path: Option<PathBuf>,
+    #[serde(flatten)]
+    #[validate(nested)]
+    pub inner: CreateCollectionParams,
 }
 
 /// @category Operation
@@ -71,12 +62,9 @@ pub struct CreateCollectionOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct ImportCollectionInput {
-    #[validate(length(min = 1))]
-    pub name: String,
-    pub order: isize,
-    pub external_path: Option<PathBuf>,
-    pub params: ImportCollectionParams,
-    pub icon_path: Option<PathBuf>,
+    #[serde(flatten)]
+    #[validate(nested)]
+    pub inner: ImportCollectionParams,
 }
 
 /// @category Operation
@@ -217,6 +205,8 @@ pub struct StreamCollectionsOutput {
 // ------------------------------ //
 
 // Create Environment
+
+// FIXME: Should this be refactored to use an inner params?
 
 /// @category Operation
 #[derive(Debug, Deserialize, Serialize, Validate, TS)]

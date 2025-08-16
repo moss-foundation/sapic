@@ -8,7 +8,7 @@ use moss_environment::models::{
 };
 use moss_git::url::GIT_URL_REGEX;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::{collections::HashMap, path::PathBuf};
 use ts_rs::TS;
 use validator::{Validate, ValidationError};
 
@@ -17,6 +17,41 @@ use crate::models::primitives::{
 };
 
 pub type EnvironmentName = String;
+
+// ------------------------------ //
+// Collection
+// ------------------------------ //
+
+/// @category Type
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct CreateCollectionParams {
+    #[validate(length(min = 1))]
+    pub name: String,
+
+    pub order: isize,
+    pub external_path: Option<PathBuf>,
+
+    pub git_params: Option<CreateCollectionGitParams>,
+
+    // TODO: repo branch
+    pub icon_path: Option<PathBuf>,
+}
+
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct ImportCollectionParams {
+    #[validate(length(min = 1))]
+    pub name: String,
+    pub order: isize,
+    pub external_path: Option<PathBuf>,
+    pub source: ImportCollectionSource,
+    pub icon_path: Option<PathBuf>,
+}
 
 /// @category Type
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
@@ -190,7 +225,7 @@ pub struct EditorPartStateInfo {
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub enum ImportCollectionParams {
+pub enum ImportCollectionSource {
     GitHub(GitHubImportParams),
     GitLab(GitLabImportParams),
 }

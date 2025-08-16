@@ -66,14 +66,15 @@ pub struct CollectionLoadParams {
     pub internal_abs_path: Arc<Path>,
 }
 
+pub struct CollectionCloneParams {
+    pub internal_abs_path: Arc<Path>,
+    pub git_params: CollectionCloneGitParams,
+}
+
 pub struct CollectionCloneGitParams {
     pub git_provider_type: GitProviderType,
     pub repository: String,
     pub branch: Option<String>,
-}
-pub struct CollectionCloneParams {
-    pub internal_abs_path: Arc<Path>,
-    pub git_params: CollectionCloneGitParams,
 }
 
 pub struct CollectionBuilder {

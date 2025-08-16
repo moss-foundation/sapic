@@ -53,6 +53,14 @@ export const createCollectionOutputSchema = z.object({
   iconPath: z.string().optional(),
 });
 
+export const createCollectionParamsSchema = z.object({
+  name: z.string(),
+  order: z.number(),
+  externalPath: z.string().optional(),
+  gitParams: createCollectionGitParamsSchema.optional(),
+  iconPath: z.string().optional(),
+});
+
 export const createEnvironmentOutputSchema = z.object({
   id: z.string(),
   collectionId: z.string().optional(),
@@ -143,7 +151,7 @@ export const describeStateOutputSchema = z.object({
   activitybar: activitybarPartStateInfoSchema.optional(),
 });
 
-export const importCollectionParamsSchema = z.union([
+export const importCollectionSourceSchema = z.union([
   z.object({
     "gitHub": gitHubImportParamsSchema,
   }),
@@ -151,6 +159,14 @@ export const importCollectionParamsSchema = z.union([
     "gitLab": gitLabImportParamsSchema,
   }),
 ]);
+
+export const importCollectionParamsSchema = z.object({
+  name: z.string(),
+  order: z.number(),
+  externalPath: z.string().optional(),
+  source: importCollectionSourceSchema,
+  iconPath: z.string().optional(),
+});
 
 export const streamEnvironmentsOutputSchema = z.object({
   groups: z.array(environmentGroupSchema),
@@ -195,7 +211,7 @@ export const updateStateInputSchema = z.union([
 export const importCollectionInputSchema = z.object({
   name: z.string(),
   order: z.number(),
-  externalPath: z.string().nullable(),
-  params: importCollectionParamsSchema,
-  iconPath: z.string().nullable(),
+  externalPath: z.string().optional(),
+  source: importCollectionSourceSchema,
+  iconPath: z.string().optional(),
 });

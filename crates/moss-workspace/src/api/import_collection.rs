@@ -7,7 +7,7 @@ use crate::{
     Workspace,
     models::{
         operations::{ImportCollectionInput, ImportCollectionOutput},
-        types::ImportCollectionParams,
+        types::ImportCollectionSource,
     },
     services::collection_service::{CollectionItemCloneParams, CollectionItemGitCloneParams},
 };
@@ -19,41 +19,36 @@ impl<R: AppRuntime> Workspace<R> {
         input: &ImportCollectionInput,
     ) -> joinerror::Result<ImportCollectionOutput> {
         input.validate().join_err_bare()?;
-        let (repository, git_provider_type, branch) = match &input.params {
-            ImportCollectionParams::GitHub(params) => {
-                params.validate().join_err_bare()?;
-                (
-                    params.repository.clone(),
-                    GitProviderType::GitHub,
-                    params.branch.clone(),
-                )
-            }
-            ImportCollectionParams::GitLab(params) => {
-                params.validate().join_err_bare()?;
-                (
-                    params.repository.clone(),
-                    GitProviderType::GitLab,
-                    params.branch.clone(),
-                )
-            }
-        };
-
-        let description = self
-            .collection_service
-            .clone_collection(
+        let params = &input.inner;
+        let description = match &params.source {
+            ImportCollectionSource::GitHub(git_params) => self.collection_service.clone_collection(
                 ctx,
                 CollectionItemCloneParams {
-                    name: input.name.clone(),
-                    order: input.order,
-                    icon_path: input.icon_path.clone(),
+                    _name: params.name.clone(),
+                    order: params.order,
+                    _icon_path: params.icon_path.clone(),
                     git_params: CollectionItemGitCloneParams {
-                        repository,
-                        git_provider_type,
-                        branch,
+                        repository: git_params.repository.clone(),
+                        git_provider_type: GitProviderType::GitHub,
+                        branch: git_params.branch.clone(),
                     },
                 },
-            )
-            .await?;
+            ),
+            ImportCollectionSource::GitLab(git_params) => self.collection_service.clone_collection(
+                ctx,
+                CollectionItemCloneParams {
+                    _name: params.name.clone(),
+                    order: params.order,
+                    _icon_path: params.icon_path.clone(),
+                    git_params: CollectionItemGitCloneParams {
+                        repository: git_params.repository.clone(),
+                        git_provider_type: GitProviderType::GitLab,
+                        branch: git_params.branch.clone(),
+                    },
+                },
+            ), // TODO: Support importing from other apps
+        }
+        .await?;
 
         Ok(ImportCollectionOutput {
             id: description.id,

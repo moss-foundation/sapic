@@ -61,6 +61,17 @@ export type CreateCollectionInput = {
 export type CreateCollectionOutput = { id: string; name: string; order?: number; expanded: boolean; iconPath?: string };
 
 /**
+ * @category Type
+ */
+export type CreateCollectionParams = {
+  name: string;
+  order: number;
+  externalPath?: string;
+  gitParams?: CreateCollectionGitParams;
+  iconPath?: string;
+};
+
+/**
  * @category Operation
  */
 export type CreateEnvironmentInput = {
@@ -141,9 +152,9 @@ export type GitLabCreateParams = {
 export type ImportCollectionInput = {
   name: string;
   order: number;
-  externalPath: string | null;
-  params: ImportCollectionParams;
-  iconPath: string | null;
+  externalPath?: string;
+  source: ImportCollectionSource;
+  iconPath?: string;
 };
 
 /**
@@ -151,7 +162,15 @@ export type ImportCollectionInput = {
  */
 export type ImportCollectionOutput = { id: string; name: string; order?: number; expanded: boolean; iconPath?: string };
 
-export type ImportCollectionParams = { "gitHub": GitHubImportParams } | { "gitLab": GitLabImportParams };
+export type ImportCollectionParams = {
+  name: string;
+  order: number;
+  externalPath?: string;
+  source: ImportCollectionSource;
+  iconPath?: string;
+};
+
+export type ImportCollectionSource = { "gitHub": GitHubImportParams } | { "gitLab": GitLabImportParams };
 
 /**
  * @category Operation
