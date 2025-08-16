@@ -4,6 +4,7 @@ import { EntryKind } from "@repo/moss-collection";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
 import { DataTable, ParameterData } from "@/components/Table";
 import { ActionButton } from "@/components";
+import isEqual from "fast-deep-equal";
 import { paramColumns } from "./columns";
 import { getParameterSuggestions, detectValueType } from "../../utils/urlParser";
 import { useRequestPageStore } from "@/store/requestPage";
@@ -104,7 +105,7 @@ export const ParamsTabContent = (
           }));
 
         const currentParams = requestData.url.query_params;
-        const paramsChanged = JSON.stringify(updatedParams) !== JSON.stringify(currentParams);
+        const paramsChanged = !isEqual(updatedParams, currentParams);
 
         if (paramsChanged) {
           updateQueryParams(updatedParams);
@@ -146,7 +147,7 @@ export const ParamsTabContent = (
           }));
 
         const currentParams = requestData.url.path_params;
-        const paramsChanged = JSON.stringify(updatedParams) !== JSON.stringify(currentParams);
+        const paramsChanged = !isEqual(updatedParams, currentParams);
 
         if (paramsChanged) {
           updatePathParams(updatedParams);
