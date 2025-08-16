@@ -86,7 +86,7 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
                 pattern={VALID_NAME_PATTERN}
                 required
               />
-              <p className="col-start-2 max-w-72 text-sm text-(--moss-secondary-text)">{`Invalid filename characters (e.g. / \ : * ? " < > |) will be escaped`}</p>
+              <p className="col-start-2 max-w-72 text-sm whitespace-pre text-(--moss-secondary-text)">{`Invalid filename characters (e.g. / \ : * ? " < > |)\nwill be escaped`}</p>
             </div>
           </ProviderTabs.Content>
         </ProviderTabs.Root>
