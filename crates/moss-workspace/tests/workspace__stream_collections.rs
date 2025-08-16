@@ -91,7 +91,7 @@ async fn stream_collections_single_collection() {
     assert_eq!(event.name, collection_name);
     assert_eq!(event.order, Some(collection_order));
     assert_eq!(event.repository, None);
-    assert_eq!(event.picture_path, None);
+    assert_eq!(event.icon_path, None);
 
     cleanup().await;
 }
@@ -158,7 +158,7 @@ async fn stream_collections_multiple_collections() {
         assert_eq!(event.name, expected_name);
         assert_eq!(event.order, Some(expected_order));
         assert_eq!(event.repository, None);
-        assert_eq!(event.picture_path, None);
+        assert_eq!(event.icon_path, None);
     }
 
     cleanup().await;
@@ -220,7 +220,7 @@ async fn stream_collections_with_icon() {
     assert_eq!(event.name, collection_name);
     assert_eq!(event.order, Some(collection_order));
     assert_eq!(event.repository, None);
-    assert!(event.picture_path.is_some());
+    assert!(event.icon_path.is_some());
 
     cleanup().await;
 }
@@ -316,8 +316,8 @@ async fn stream_collections_mixed_configurations() {
 
         // Check icon path presence
         match expected_icon {
-            Some(_) => assert!(event.picture_path.is_some()),
-            None => assert!(event.picture_path.is_none()),
+            Some(_) => assert!(event.icon_path.is_some()),
+            None => assert!(event.icon_path.is_none()),
         }
     }
 
@@ -443,7 +443,7 @@ async fn stream_collections_order_verification() {
 //     // Verify the API call succeeded
 //     assert!(event.repository_info.is_some());
 //
-//     assert_eq!(event.picture_path, None);
+//     assert_eq!(event.icon_path, None);
 //
 //     cleanup().await;
 // }
