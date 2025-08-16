@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { nanoid } from "nanoid";
 
 import { TreeCollectionNode } from "@/components/CollectionTree/types";
 import { Icons } from "@/lib/ui";
@@ -56,13 +57,8 @@ export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
   setApi: (api: DockviewApi) => set({ api }),
   activePanelId: undefined,
   setActivePanelId: (id: string | undefined) => set({ activePanelId: id }),
-  addOrFocusPanel: async (options) => {
-    //TODO Do we need this anymore?
-    const someRandomString = await new Promise<string>((resolve) => {
-      setTimeout(() => {
-        resolve(Math.random().toString(36).substring(7));
-      }, 50);
-    });
+  addOrFocusPanel: (options) => {
+    const someRandomString = nanoid();
 
     const activePanel = get().api?.getPanel(options.id);
 

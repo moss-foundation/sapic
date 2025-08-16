@@ -1,4 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { nanoid } from "nanoid";
 
 import { Scrollbar } from "@/lib/ui";
 import {
@@ -169,7 +170,7 @@ export function DataTable({
     if (!value) return;
 
     const columnId = e.target.placeholder;
-    const newId = Math.random().toString(36).substring(2, 15);
+    const newId = nanoid();
 
     setFocusInputType(columnId);
 
@@ -193,7 +194,7 @@ export function DataTable({
     setData((prev) => {
       const newRow: ParameterData = {
         order: index,
-        id: Math.random().toString(36).substring(2, 15),
+        id: nanoid(),
         key: "",
         value: "",
         type: "string",
