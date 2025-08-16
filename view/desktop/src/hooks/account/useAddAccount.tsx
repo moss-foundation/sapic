@@ -3,9 +3,9 @@ import { useGitProviderStore } from "@/store/gitProvider";
 import { AddAccountInput, AddAccountOutput } from "@repo/moss-app";
 import { useMutation } from "@tanstack/react-query";
 
-export const ADD_PROVIDER_QUERY_KEY = "addProvider";
+export const ADD_ACCOUNT_QUERY_KEY = "addAccount";
 
-const addProvider = async (input: AddAccountInput) => {
+const addAccount = async (input: AddAccountInput) => {
   const result = await invokeTauriIpc<AddAccountOutput>("add_account", {
     input,
   });
@@ -17,12 +17,12 @@ const addProvider = async (input: AddAccountInput) => {
   return result.data;
 };
 
-export const useAddProvider = () => {
+export const useAddAccount = () => {
   const { setGitProvider } = useGitProviderStore();
 
   return useMutation({
-    mutationKey: [ADD_PROVIDER_QUERY_KEY],
-    mutationFn: addProvider,
+    mutationKey: [ADD_ACCOUNT_QUERY_KEY],
+    mutationFn: addAccount,
     onSuccess: (data) => {
       setGitProvider(data);
     },

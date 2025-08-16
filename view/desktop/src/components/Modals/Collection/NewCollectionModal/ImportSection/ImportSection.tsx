@@ -2,19 +2,21 @@ import { useEffect, useRef, useState } from "react";
 
 import InputOutlined from "@/components/InputOutlined";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
+import { useAddAccount } from "@/hooks/account/useAddAccount";
 import { useGitProviderStore } from "@/store/gitProvider";
-import { CreateCollectionGitParams } from "@repo/moss-workspace";
+import { ImportCollectionParams } from "@repo/moss-workspace";
 
 import ProviderTabs from "../ProviderTabs/ProviderTabs";
 import { Subheader } from "../Subheader";
 
 interface ImportSectionProps {
-  onValuesUpdate: (values: { name: string; gitParams: CreateCollectionGitParams | undefined }) => void;
+  onValuesUpdate: (values: { name: string; importParams: ImportCollectionParams | undefined }) => void;
 }
 
 export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const { mutateAsync: addAccount } = useAddAccount();
   const { gitProvider } = useGitProviderStore();
 
   const [name, setName] = useState("New Collection");
@@ -41,9 +43,15 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
 
     onValuesUpdate({
       name,
-      gitParams: deriveGitParams(),
+      importParams: deriveGitParams(),
     });
   }, [name, onValuesUpdate, repository, branch, provider]);
+
+  const handleAddAccount = () => {
+    if (provider === "gitlab") return;
+
+    addAccount({ gitProviderType: "GitHub" });
+  };
 
   return (
     <div className="flex flex-col gap-2">
@@ -97,9 +105,12 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
           <span>Git</span>
           <div className="background-(--moss-border-color) my-auto h-px w-full" />
           {gitProvider === null && (
-            <a className="cursor-pointer whitespace-nowrap text-(--moss-primary) hover:underline" href="">
+            <button
+              className="cursor-pointer whitespace-nowrap text-(--moss-primary) hover:underline"
+              onClick={handleAddAccount}
+            >
               Log In via GitHub
-            </a>
+            </button>
           )}
         </Subheader>
 

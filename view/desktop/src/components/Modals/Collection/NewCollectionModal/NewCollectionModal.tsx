@@ -2,10 +2,12 @@ import { FormEvent, useState } from "react";
 
 import PaddedTabs from "@/components/PaddedTabs/PaddedTabs";
 import { useCreateCollection } from "@/hooks/collection/useCreateCollection";
+import { useImportCollection } from "@/hooks/collection/useImportCollection";
 import { useStreamedCollections } from "@/hooks/collection/useStreamedCollections";
 import { Modal } from "@/lib/ui";
+import { useGitProviderStore } from "@/store/gitProvider";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
-import { CreateCollectionGitParams } from "@repo/moss-workspace";
+import { CreateCollectionGitParams, ImportCollectionParams } from "@repo/moss-workspace";
 
 import { ModalWrapperProps } from "../../types";
 import { CreateSection } from "./CreateSection/CreateSection";
@@ -14,6 +16,7 @@ import { FooterActions } from "./FooterActions";
 import { Header } from "./Header";
 import { ImportSection } from "./ImportSection/ImportSection";
 import { ModeRadioGroup } from "./ModeRadioGroup";
+import { calculateIsSubmitDisabled } from "./utils";
 
 interface NewCollectionModalProps extends ModalWrapperProps {
   initialTab?: "Create" | "Import";
@@ -22,34 +25,66 @@ interface NewCollectionModalProps extends ModalWrapperProps {
 export const NewCollectionModal = ({ closeModal, showModal, initialTab = "Create" }: NewCollectionModalProps) => {
   const { mutateAsync: createCollection } = useCreateCollection();
   const { data: collections } = useStreamedCollections();
+  const { mutateAsync: importCollection } = useImportCollection();
 
   const { addOrFocusPanel } = useTabbedPaneStore();
+
+  const { gitProvider } = useGitProviderStore();
 
   const [name, setName] = useState("New Collection");
   const [mode, setMode] = useState<"Default" | "Custom">("Default");
   const [openAutomatically, setOpenAutomatically] = useState(true);
-  const [gitParams, setGitParams] = useState<CreateCollectionGitParams | undefined>(undefined);
+  const [createParams, setCreateParams] = useState<CreateCollectionGitParams | undefined>(undefined);
+  const [importParams, setImportParams] = useState<ImportCollectionParams | undefined>(undefined);
   const [tab, setTab] = useState<"Create" | "Import">(initialTab);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const result = await createCollection({
-      name,
-      gitParams,
-      order: collections?.length ? collections.length + 1 : 1,
-    });
-
-    closeModal();
-
-    if (openAutomatically) {
-      addOrFocusPanel({
-        id: result.id,
-        component: "CollectionSettings",
-        params: {
-          collectionId: result.id,
-        },
+    if (tab === "Create") {
+      const result = await createCollection({
+        name,
+        gitParams: createParams,
+        order: collections?.length ? collections.length + 1 : 1,
       });
+
+      closeModal();
+
+      if (openAutomatically) {
+        addOrFocusPanel({
+          id: result.id,
+          component: "CollectionSettings",
+          params: {
+            collectionId: result.id,
+          },
+        });
+      }
+    } else {
+      if (!importParams) {
+        // throw new Error("Import params are required");
+        return;
+      }
+
+      const result = await importCollection({
+        name,
+        order: collections?.length ? collections.length + 1 : 1,
+        params: importParams,
+        //TODO this is hardcoded, but we don't have and interface for this yet
+        externalPath: "",
+        iconPath: "",
+      });
+
+      closeModal();
+
+      if (openAutomatically) {
+        addOrFocusPanel({
+          id: result.id,
+          component: "CollectionSettings",
+          params: {
+            collectionId: result.id,
+          },
+        });
+      }
     }
   };
 
@@ -62,18 +97,18 @@ export const NewCollectionModal = ({ closeModal, showModal, initialTab = "Create
     gitParams: CreateCollectionGitParams | undefined;
   }) => {
     setName(values.name);
-    setGitParams(values.gitParams);
+    setCreateParams(values.gitParams);
   };
 
   const handleImportSectionValuesUpdate = (values: {
     name: string;
-    gitParams: CreateCollectionGitParams | undefined;
+    importParams: ImportCollectionParams | undefined;
   }) => {
     setName(values.name);
-    setGitParams(values.gitParams);
+    setImportParams(values.importParams);
   };
 
-  const isSubmitDisabled = !name;
+  const isSubmitDisabled = calculateIsSubmitDisabled({ name, tab, createParams, importParams, gitProvider });
 
   return (
     <Modal onBackdropClick={handleCancel} showModal={showModal}>

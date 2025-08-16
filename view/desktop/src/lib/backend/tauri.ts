@@ -48,6 +48,7 @@ export type TauriIpcCommand =
   | "stream_collection_entries"
   | "batch_update_collection_entry"
   | "batch_create_collection_entry"
+  | "import_collection"
   //
   // Env
   //
