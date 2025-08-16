@@ -26,6 +26,7 @@ use std::{
 };
 use tokio::sync::RwLock;
 
+// FIXME: Probable will be replaced by UpdateCollectionParams from types.rs, same way in the env service
 pub(crate) struct CollectionItemUpdateParams {
     pub name: Option<String>,
     pub order: Option<isize>,
@@ -33,6 +34,7 @@ pub(crate) struct CollectionItemUpdateParams {
     pub repository: Option<ChangeString>,
     pub icon_path: Option<ChangePath>,
 }
+// FIXME: Probable will be replaced by UpdateCollectionParams from types.rs, same way in the env service
 
 pub(crate) struct CollectionItemCreateParams {
     pub name: String,
@@ -49,6 +51,7 @@ pub(crate) struct CollectionItemGitCreateParams {
     pub branch: String,
 }
 
+// FIXME: Probable will be replaced by UpdateCollectionParams from types.rs, same way in the env service
 pub(crate) struct CollectionItemCloneParams {
     pub name: String,
     pub order: isize,

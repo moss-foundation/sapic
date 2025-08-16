@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 
 import { ActionMenu, ButtonPrimary, Divider } from "@/components";
 import InputTemplating from "@/components/InputTemplating";
-import { Icon, Scrollbar } from "@/lib/ui";
+import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
 
 import { areUrlsEquivalent } from "./utils/urlParser";
@@ -95,7 +95,12 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = React.memo(
     );
 
     return (
-      <div className={cn("flex w-full min-w-0 items-center rounded border border-(--moss-border-color)", className)}>
+      <div
+        className={cn(
+          "relative flex w-full min-w-0 items-start rounded border border-(--moss-border-color)",
+          className
+        )}
+      >
         {/* Left Side - HTTP Method Dropdown */}
         <div className="relative flex-shrink-0">
           <ActionMenu.Root>
@@ -106,7 +111,7 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = React.memo(
                   "background-(--moss-primary-background) text-(--moss-requestpage-text)",
                   "data-[state=open]:outline-2 data-[state=open]:-outline-offset-1 data-[state=open]:outline-(--moss-primary)",
                   "border border-r-0 border-transparent",
-                  "h-10 w-24"
+                  "min-h-8 w-24"
                 )}
               >
                 <span>{method}</span>
@@ -130,34 +135,23 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = React.memo(
           </ActionMenu.Root>
         </div>
         {/* Divider between HTTP Method and URL Input */}
-        <div className="m-[-4px] flex h-10 flex-shrink-0 items-center border-t border-b border-transparent">
+        <div className="flex h-8 flex-shrink-0 items-center justify-center">
           <Divider height="medium" className="mx-0" />
         </div>
         {/* Center - URL Input Field */}
-        <div className="min-w-0 flex-1">
-          <Scrollbar
-            className="h-10 overflow-x-auto overflow-y-hidden rounded-none border-r-0 border-l-0 border-transparent"
-            options={{
-              scrollbars: {
-                autoHide: "move",
-              },
-            }}
-          >
-            <div className="min-w-max">
-              <InputTemplating
-                value={url}
-                onTemplateChange={handleTemplateChange}
-                className="h-10 w-auto min-w-max rounded-none border-r-0 border-l-0 border-transparent whitespace-nowrap [&>div]:overflow-visible"
-                size="md"
-                placeholder="Enter URL..."
-                highlightColonVariables={true}
-              />
-            </div>
-          </Scrollbar>
+        <div className="relative z-20 min-w-0 flex-1">
+          <InputTemplating
+            value={url}
+            onTemplateChange={handleTemplateChange}
+            className="w-full rounded-none border-r-0 border-l-0 border-transparent"
+            size="md"
+            placeholder="Enter URL..."
+            highlightColonVariables={true}
+          />
         </div>
 
         {/* Right Side - Send Button */}
-        <div className="relative z-10 flex h-10 flex-shrink-0 items-center rounded-md rounded-l-none border border-l-0 border-transparent p-1">
+        <div className="relative z-30 flex min-h-8 flex-shrink-0 items-center rounded-md rounded-l-none border border-l-0 border-transparent p-1 focus-within:outline-2 focus-within:-outline-offset-1 focus-within:outline-(--moss-primary)">
           <ButtonPrimary onClick={handleSend}>Send</ButtonPrimary>
         </div>
       </div>

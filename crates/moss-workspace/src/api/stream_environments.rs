@@ -26,7 +26,7 @@ impl<R: AppRuntime> Workspace<R> {
                 collection_id: item.collection_id.map(|id| CollectionId::from(id)),
                 name: item.display_name,
                 order: item.order,
-                expanded: item.expanded,
+                total_variables: item.total_variables,
             }) {
                 println!("Error sending environment event: {:?}", e); // TODO: log error
             } else {
@@ -34,6 +34,12 @@ impl<R: AppRuntime> Workspace<R> {
             }
         }
 
-        Ok(StreamEnvironmentsOutput { total_returned })
+        Ok(StreamEnvironmentsOutput {
+            total_returned,
+            groups: self
+                .environment_service
+                .list_environment_groups(ctx)
+                .await?,
+        })
     }
 }

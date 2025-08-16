@@ -6,21 +6,23 @@ import {
   activitybarPartStateInfoSchema,
   addVariableParamsSchema,
   editorPartStateInfoSchema,
+  environmentGroupSchema,
   gitHubImportParamsSchema,
   gitLabImportParamsSchema,
   panelPartStateInfoSchema,
   sidebarPartStateInfoSchema,
+  updateCollectionParamsSchema,
+  updateEnvironmentGroupParamsSchema,
+  updateEnvironmentParamsSchema,
   updateVariableParamsSchema,
   variableInfoSchema,
 } from "./types.zod";
 
-export const batchUpdateCollectionParamsSchema = z.object({
-  id: z.string(),
-  order: z.number().optional(),
-  expanded: z.boolean().optional(),
+export const batchUpdateCollectionOutputSchema = z.object({
+  ids: z.array(z.string()),
 });
 
-export const batchUpdateCollectionOutputSchema = z.object({
+export const batchUpdateEnvironmentOutputSchema = z.object({
   ids: z.array(z.string()),
 });
 
@@ -57,7 +59,6 @@ export const createEnvironmentOutputSchema = z.object({
   name: z.string(),
   order: z.number().optional(),
   color: z.string().optional(),
-  expanded: z.boolean(),
 });
 
 export const deleteCollectionInputSchema = z.object({
@@ -90,17 +91,29 @@ export const importCollectionOutputSchema = z.object({
 
 export const streamCollectionsOutputSchema = z.object({});
 
-export const streamEnvironmentsOutputSchema = z.object({});
-
 export const updateCollectionOutputSchema = z.object({
   id: z.string(),
+});
+
+export const updateEnvironmentGroupInputSchema = z.object({
+  collectionId: z.string(),
+  expanded: z.boolean().optional(),
+  order: z.number().optional(),
 });
 
 export const updateEnvironmentOutputSchema = z.object({
   id: z.string(),
 });
 export const batchUpdateCollectionInputSchema = z.object({
-  items: z.array(batchUpdateCollectionParamsSchema),
+  items: z.array(updateCollectionParamsSchema),
+});
+
+export const batchUpdateEnvironmentGroupInputSchema = z.object({
+  items: z.array(updateEnvironmentGroupParamsSchema),
+});
+
+export const batchUpdateEnvironmentInputSchema = z.object({
+  items: z.array(updateEnvironmentParamsSchema),
 });
 
 export const createCollectionInputSchema = z.object({
@@ -139,13 +152,16 @@ export const importCollectionParamsSchema = z.union([
   }),
 ]);
 
+export const streamEnvironmentsOutputSchema = z.object({
+  groups: z.array(environmentGroupSchema),
+});
+
 export const updateCollectionInputSchema = z.object({
   id: z.string(),
   name: z.string().optional(),
   repository: changeStringSchema.optional(),
   iconPath: changePathSchema.optional(),
   order: z.number().optional(),
-  pinned: z.boolean().optional(),
   expanded: z.boolean().optional(),
 });
 

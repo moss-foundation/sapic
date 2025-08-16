@@ -4,7 +4,6 @@ use validator::Validate;
 
 use crate::{
     models::operations::{UpdateEnvironmentInput, UpdateEnvironmentOutput},
-    services::environment_service::UpdateEnvironmentItemParams,
     workspace::Workspace,
 };
 
@@ -16,22 +15,11 @@ impl<R: AppRuntime> Workspace<R> {
     ) -> joinerror::Result<UpdateEnvironmentOutput> {
         input.validate().join_err_bare()?;
 
+        let id = input.inner.id.clone();
         self.environment_service
-            .update_environment(
-                ctx,
-                &input.id,
-                UpdateEnvironmentItemParams {
-                    name: input.name,
-                    expanded: input.expanded,
-                    order: input.order,
-                    color: input.color,
-                    vars_to_add: input.vars_to_add,
-                    vars_to_update: input.vars_to_update,
-                    vars_to_delete: input.vars_to_delete,
-                },
-            )
+            .update_environment(ctx, input.inner)
             .await?;
 
-        Ok(UpdateEnvironmentOutput { id: input.id })
+        Ok(UpdateEnvironmentOutput { id })
     }
 }

@@ -24,3 +24,8 @@ export type PanelRenderer = "onlyWhenVisible" | "always";
  * @category Primitive
  */
 export type SidebarPosition = "LEFT" | "RIGHT";
+
+/**
+ * @category Type
+ */
+export type WorkspaceMode = "DESIGN_FIRST" | "REQUEST_FIRST";

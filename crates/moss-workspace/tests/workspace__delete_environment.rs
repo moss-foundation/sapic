@@ -11,11 +11,13 @@ use moss_environment::{
 use moss_storage::{primitives::segkey::SegKeyBuf, storage::operations::GetItem};
 use moss_testutils::random_name::random_environment_name;
 use moss_workspace::{
-    models::operations::{CreateEnvironmentInput, DeleteEnvironmentInput, UpdateEnvironmentInput},
-    storage::segments::{SEGKEY_ENVIRONMENT, SEGKEY_EXPANDED_ENVIRONMENTS},
+    models::{
+        operations::{CreateEnvironmentInput, DeleteEnvironmentInput, UpdateEnvironmentInput},
+        types::UpdateEnvironmentParams,
+    },
+    storage::segments::SEGKEY_ENVIRONMENT,
 };
 use serde_json::Value as JsonValue;
-use std::collections::HashSet;
 use tauri::ipc::Channel;
 
 use crate::shared::setup_test_workspace;
@@ -57,15 +59,17 @@ async fn delete_environment_success() {
         .update_environment(
             &ctx,
             UpdateEnvironmentInput {
-                id: environment_id.clone(),
-                name: None,
-                collection_id: None,
-                order: None,
-                color: None,
-                expanded: None,
-                vars_to_add: vec![var],
-                vars_to_delete: vec![],
-                vars_to_update: vec![],
+                inner: UpdateEnvironmentParams {
+                    id: environment_id.clone(),
+                    name: None,
+                    collection_id: None,
+                    order: None,
+                    color: None,
+                    expanded: None,
+                    vars_to_add: vec![var],
+                    vars_to_delete: vec![],
+                    vars_to_update: vec![],
+                },
             },
         )
         .await
@@ -115,18 +119,6 @@ async fn delete_environment_success() {
         .await
         .is_err()
     );
-
-    let stored_expanded_environments: HashSet<EnvironmentId> = GetItem::get(
-        item_store.as_ref(),
-        &ctx,
-        SEGKEY_EXPANDED_ENVIRONMENTS.to_segkey_buf(),
-    )
-    .await
-    .unwrap()
-    .deserialize()
-    .unwrap();
-
-    assert!(!stored_expanded_environments.contains(&environment_id));
 
     // Check variables associated with the environment are removed from the database
     let variable_store = workspace.db().variable_store();

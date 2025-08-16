@@ -4,6 +4,23 @@ use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use ts_rs::TS;
 
+/// @category Type
+#[derive(Debug, PartialEq, Serialize, Deserialize, TS, Clone)]
+#[ts(export, export_to = "primitives.ts")]
+pub enum WorkspaceMode {
+    #[serde(rename = "DESIGN_FIRST")]
+    DesignFirst,
+
+    #[serde(rename = "REQUEST_FIRST")]
+    RequestFirst,
+}
+
+impl Default for WorkspaceMode {
+    fn default() -> Self {
+        Self::RequestFirst
+    }
+}
+
 /// @category Primitive
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "UPPERCASE")]

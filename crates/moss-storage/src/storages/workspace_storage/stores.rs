@@ -1,12 +1,16 @@
 use moss_applib::context::AnyAsyncContext;
 use moss_db::primitives::AnyValue;
 
-use crate::{primitives::segkey::SegKeyBuf, storage::operations::*};
+use crate::{
+    primitives::segkey::SegKeyBuf,
+    storage::{TransactionalWithContext, operations::*},
+};
 
 pub mod item_store;
 
 pub trait WorkspaceItemStore<Context: AnyAsyncContext>:
-    ListByPrefix<Context, Key = SegKeyBuf, Entity = AnyValue>
+    TransactionalWithContext<Context>
+    + ListByPrefix<Context, Key = SegKeyBuf, Entity = AnyValue>
     + TransactionalListByPrefix<Context, Key = SegKeyBuf, Entity = AnyValue>
     + PutItem<Context, Key = SegKeyBuf, Entity = AnyValue>
     + TransactionalPutItem<Context, Key = SegKeyBuf, Entity = AnyValue>
