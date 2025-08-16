@@ -20,7 +20,8 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
   const { gitProvider } = useGitProviderStore();
 
   const [name, setName] = useState("New Collection");
-  const [repository, setRepository] = useState("github.com/moss-foundation/sapic");
+  //TODO repository expects input like this: https://github.com/brutusyhy/test-empty-collection.git. This should
+  const [repository, setRepository] = useState("https://github.com/brutusyhy/test-empty-collection.git");
   const [branch, setBranch] = useState("main");
   const [provider, setProvider] = useState<"github" | "gitlab">("github");
 
