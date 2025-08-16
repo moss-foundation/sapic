@@ -17,6 +17,23 @@ export const getColorTheme = async (input: GetColorThemeInput): Promise<IpcResul
 
 let currentAppliedThemeId: string | null = null;
 
+const setThemeStyle = (css: string): void => {
+  let styleTag = document.getElementById("theme-style") as HTMLStyleElement | null;
+
+  if (!styleTag) {
+    styleTag = document.createElement("style");
+    styleTag.id = "theme-style";
+    document.head.appendChild(styleTag);
+  }
+
+  styleTag.innerHTML = css;
+};
+
+const handleThemeError = (themeId: string, error: unknown, themeStore?: ThemeStore): void => {
+  console.error(`Failed to apply theme "${themeId}":`, error);
+  if (themeStore) themeStore.setIsApplying(false);
+};
+
 export const applyColorTheme = async (themeId: string): Promise<void> => {
   try {
     if (currentAppliedThemeId === themeId) {
@@ -27,23 +44,15 @@ export const applyColorTheme = async (themeId: string): Promise<void> => {
       id: themeId,
     });
     if (getColorThemeOutput.status !== "ok") {
-      console.error(`Error reading theme file for "${themeId}":`, getColorThemeOutput.error);
+      handleThemeError(themeId, getColorThemeOutput.error);
       return;
     }
 
     const cssContent = getColorThemeOutput.data.cssContent;
-    let styleTag = document.getElementById("theme-style") as HTMLStyleElement | null;
-
-    if (!styleTag) {
-      styleTag = document.createElement("style");
-      styleTag.id = "theme-style";
-      document.head.appendChild(styleTag);
-    }
-
-    styleTag.innerHTML = cssContent;
+    setThemeStyle(cssContent);
     currentAppliedThemeId = themeId;
   } catch (error) {
-    console.error(`Failed to apply theme "${themeId}":`, error);
+    handleThemeError(themeId, error);
   }
 };
 
@@ -76,8 +85,7 @@ export const applyColorThemeFromCache = async (
     } else {
       const getColorThemeOutput = await getColorTheme({ id: themeId });
       if (getColorThemeOutput.status !== "ok") {
-        console.error(`Error reading theme file for "${themeId}":`, getColorThemeOutput.error);
-        if (themeStore) themeStore.setIsApplying(false);
+        handleThemeError(themeId, getColorThemeOutput.error, themeStore);
         return;
       }
       cssContent = getColorThemeOutput.data.cssContent;
@@ -85,15 +93,7 @@ export const applyColorThemeFromCache = async (
       queryClient.setQueryData(["getColorTheme", themeId], getColorThemeOutput.data);
     }
 
-    let styleTag = document.getElementById("theme-style") as HTMLStyleElement | null;
-
-    if (!styleTag) {
-      styleTag = document.createElement("style");
-      styleTag.id = "theme-style";
-      document.head.appendChild(styleTag);
-    }
-
-    styleTag.innerHTML = cssContent;
+    setThemeStyle(cssContent);
 
     currentAppliedThemeId = themeId;
     if (themeStore) {
@@ -101,7 +101,6 @@ export const applyColorThemeFromCache = async (
       themeStore.setIsApplying(false);
     }
   } catch (error) {
-    console.error(`Failed to apply theme "${themeId}":`, error);
-    if (themeStore) themeStore.setIsApplying(false);
+    handleThemeError(themeId, error, themeStore);
   }
 };
