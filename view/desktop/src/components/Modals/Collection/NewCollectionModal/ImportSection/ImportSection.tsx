@@ -128,6 +128,7 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
               value={repository}
               className="max-w-72"
               onChange={(e) => setRepository(e.target.value)}
+              placeholder="github.com/user/example.git"
               required
             />
           </div>

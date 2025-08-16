@@ -25,7 +25,7 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
 
   const [name, setName] = useState("New Collection");
   const [provider, setProvider] = useState<"github" | "gitlab">("github");
-  const [repository, setRepository] = useState("github.com/moss-foundation/sapic");
+  const [repository, setRepository] = useState("");
   const [branch, setBranch] = useState("main");
   const [vcs, setVCS] = useState(true);
 
