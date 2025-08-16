@@ -19,7 +19,7 @@ interface InputTemplatingProps extends Omit<React.InputHTMLAttributes<HTMLInputE
 //prettier-ignore
 const containerStyles = cva(`
     relative
-    flex items-center w-full
+    flex w-full
     rounded-sm border transition-[outline]
     placeholder-(--moss-controls-placeholder)
     background-(--moss-controls-outlined-bg) 
@@ -31,24 +31,24 @@ const containerStyles = cva(`
     focus-within:outline-2
     focus-within:-outline-offset-1
     font-normal
-    overflow-hidden
+    z-10
   `, 
 {
   variants: {
     size: {
       sm: "h-7 px-2",
-      md: "h-9 px-2",
+      md: "h-8 px-2",
     },
   },
 });
 
 const editorStyles = cva(
-  `white-space-nowrap word-break-keep-all flex h-full w-full resize-none flex-nowrap items-center overflow-x-auto overflow-y-hidden border-none bg-transparent outline-none`,
+  `w-full resize-none border-none bg-transparent font-[Inter] text-[13px] leading-normal outline-none`,
   {
     variants: {
       size: {
-        sm: "max-h-7 min-h-7 leading-7",
-        md: "max-h-9 min-h-9 leading-8",
+        sm: "h-7 py-2.5 leading-7",
+        md: "h-8 py-2.5 leading-6",
       },
     },
   }
@@ -56,7 +56,7 @@ const editorStyles = cva(
 
 const highlightedVariableStyles =
   "background-(--moss-templating-input-bg) text-(--moss-templating-input-text) border border-(--moss-templating-input-border) rounded-sm px-0.5 whitespace-nowrap inline-block tracking-tighter" +
-  " [height:20px] [line-height:18px] [vertical-align:middle]";
+  " [height:20px] [line-height:18px] [vertical-align:middle] [word-break:keep-all]";
 
 export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatingProps>(
   (
@@ -64,6 +64,7 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
     forwardedRef
   ) => {
     const [value, setValue] = useState(props.value || "");
+    const [isFocused, setIsFocused] = useState(false);
     const editorRef = useRef<HTMLDivElement>(null);
     const hiddenInputRef = useRef<HTMLInputElement>(null);
     const isUpdatingContent = useRef(false);
@@ -260,7 +261,18 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
     }, [value, updateEditorContent]);
 
     return (
-      <div className={cn(containerStyles({ size }), className)}>
+      <div
+        className={cn(containerStyles({ size }), className)}
+        style={{
+          height: isFocused ? "auto" : size === "sm" ? "28px" : "32px",
+          minHeight: size === "sm" ? "28px" : "32px",
+          overflow: "visible",
+          position: isFocused ? "absolute" : "relative",
+          zIndex: isFocused ? 50 : "auto",
+          width: isFocused ? "100%" : "auto",
+          backgroundColor: isFocused ? "var(--moss-controls-outlined-bg)" : "transparent",
+        }}
+      >
         {/* Hidden input for form compatibility */}
         <input
           ref={forwardedRef || hiddenInputRef}
@@ -275,17 +287,32 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
           ref={editorRef}
           className={cn(
             editorStyles({ size }),
-            "word-break-keep-all overflow-wrap-normal font-[Inter] text-[13px]",
+            "word-break-keep-all overflow-wrap-normal",
             "empty:before:pointer-events-none empty:before:flex empty:before:h-full empty:before:items-center empty:before:leading-[inherit] empty:before:whitespace-nowrap empty:before:text-(--moss-requestpage-placeholder-color) empty:before:content-[attr(data-placeholder)]",
-            "[&_*]:inline [&_*]:whitespace-nowrap"
+            "[&_*]:inline [&_*]:break-words [&_*]:whitespace-normal"
           )}
           contentEditable
           onInput={handleInput}
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
           onCopy={handleCopy}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           data-placeholder={placeholder}
           suppressContentEditableWarning={true}
+          style={{
+            whiteSpace: isFocused ? "pre-wrap" : "nowrap",
+            wordWrap: isFocused ? "break-word" : "normal",
+            overflowWrap: isFocused ? "break-word" : "normal",
+            lineHeight: "1.4",
+            height: isFocused ? "auto" : size === "sm" ? "28px" : "32px",
+            minHeight: isFocused ? "auto" : size === "sm" ? "28px" : "32px",
+            overflow: isFocused ? "visible" : "hidden",
+            textOverflow: isFocused ? "clip" : "ellipsis",
+            width: "100%",
+            paddingTop: size === "sm" ? "6px" : "8px",
+            paddingBottom: size === "sm" ? "6px" : "8px",
+          }}
         />
       </div>
     );
