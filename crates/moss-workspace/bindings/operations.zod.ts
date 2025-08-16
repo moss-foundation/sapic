@@ -5,10 +5,10 @@ import { changeCollectionIdSchema } from "./primitives.zod";
 import {
   activitybarPartStateInfoSchema,
   addVariableParamsSchema,
+  createCollectionGitParamsSchema,
   editorPartStateInfoSchema,
   environmentGroupSchema,
-  gitHubImportParamsSchema,
-  gitLabImportParamsSchema,
+  importCollectionSourceSchema,
   panelPartStateInfoSchema,
   sidebarPartStateInfoSchema,
   updateCollectionParamsSchema,
@@ -26,38 +26,11 @@ export const batchUpdateEnvironmentOutputSchema = z.object({
   ids: z.array(z.string()),
 });
 
-export const gitHubCreateParamsSchema = z.object({
-  repository: z.string(),
-  branch: z.string(),
-});
-
-export const gitLabCreateParamsSchema = z.object({
-  repository: z.string(),
-  branch: z.string(),
-});
-
-export const createCollectionGitParamsSchema = z.union([
-  z.object({
-    "gitHub": gitHubCreateParamsSchema,
-  }),
-  z.object({
-    "gitLab": gitLabCreateParamsSchema,
-  }),
-]);
-
 export const createCollectionOutputSchema = z.object({
   id: z.string(),
   name: z.string(),
   order: z.number().optional(),
   expanded: z.boolean(),
-  iconPath: z.string().optional(),
-});
-
-export const createCollectionParamsSchema = z.object({
-  name: z.string(),
-  order: z.number(),
-  externalPath: z.string().optional(),
-  gitParams: createCollectionGitParamsSchema.optional(),
   iconPath: z.string().optional(),
 });
 
@@ -151,16 +124,7 @@ export const describeStateOutputSchema = z.object({
   activitybar: activitybarPartStateInfoSchema.optional(),
 });
 
-export const importCollectionSourceSchema = z.union([
-  z.object({
-    "gitHub": gitHubImportParamsSchema,
-  }),
-  z.object({
-    "gitLab": gitLabImportParamsSchema,
-  }),
-]);
-
-export const importCollectionParamsSchema = z.object({
+export const importCollectionInputSchema = z.object({
   name: z.string(),
   order: z.number(),
   externalPath: z.string().optional(),
@@ -207,11 +171,3 @@ export const updateStateInputSchema = z.union([
     "updateActivitybarPartState": activitybarPartStateInfoSchema,
   }),
 ]);
-
-export const importCollectionInputSchema = z.object({
-  name: z.string(),
-  order: z.number(),
-  externalPath: z.string().optional(),
-  source: importCollectionSourceSchema,
-  iconPath: z.string().optional(),
-});

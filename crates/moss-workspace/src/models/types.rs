@@ -26,7 +26,7 @@ pub type EnvironmentName = String;
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
+#[ts(export, export_to = "types.ts")]
 pub struct CreateCollectionParams {
     #[validate(length(min = 1))]
     pub name: String,
@@ -43,7 +43,7 @@ pub struct CreateCollectionParams {
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
+#[ts(export, export_to = "types.ts")]
 pub struct ImportCollectionParams {
     #[validate(length(min = 1))]
     pub name: String,
@@ -222,16 +222,17 @@ pub struct EditorPartStateInfo {
     pub active_group: Option<String>,
 }
 
+/// @category Type
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
+#[ts(export, export_to = "types.ts")]
 pub enum ImportCollectionSource {
     GitHub(GitHubImportParams),
     GitLab(GitLabImportParams),
 }
 
 // FIXME: Validation for provider specific url?
-/// @category Operation
+/// @category Type
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
@@ -243,7 +244,7 @@ pub struct GitHubImportParams {
     pub branch: Option<String>,
 }
 
-/// @category Operation
+/// @category Type
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
@@ -255,17 +256,19 @@ pub struct GitLabImportParams {
     pub branch: Option<String>,
 }
 
+/// @category Type
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
+#[ts(export, export_to = "types.ts")]
 pub enum CreateCollectionGitParams {
     GitHub(GitHubCreateParams),
     GitLab(GitLabCreateParams),
 }
 
+/// @category Type
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
+#[ts(export, export_to = "types.ts")]
 pub struct GitHubCreateParams {
     #[validate(regex(path = "*GIT_URL_REGEX"))]
     pub repository: String,
@@ -273,9 +276,10 @@ pub struct GitHubCreateParams {
     pub branch: String,
 }
 
+/// @category Type
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
+#[ts(export, export_to = "types.ts")]
 pub struct GitLabCreateParams {
     #[validate(regex(path = "*GIT_URL_REGEX"))]
     pub repository: String,

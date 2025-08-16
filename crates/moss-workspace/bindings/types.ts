@@ -47,6 +47,22 @@ export type Contributor = { name: string; avatar_url: string };
 /**
  * @category Type
  */
+export type CreateCollectionGitParams = { "gitHub": GitHubCreateParams } | { "gitLab": GitLabCreateParams };
+
+/**
+ * @category Type
+ */
+export type CreateCollectionParams = {
+  name: string;
+  order: number;
+  externalPath?: string;
+  gitParams?: CreateCollectionGitParams;
+  iconPath?: string;
+};
+
+/**
+ * @category Type
+ */
 export type EditorGridLeafData = { views: Array<string>; activeView: string; id: string };
 
 /**
@@ -110,7 +126,18 @@ export type EnvironmentInfo = {
 };
 
 /**
- * @category Operation
+ * @category Type
+ */
+export type GitHubCreateParams = {
+  repository: string;
+  /**
+   * The name of the default branch
+   */
+  branch: string;
+};
+
+/**
+ * @category Type
  */
 export type GitHubImportParams = {
   repository: string;
@@ -121,7 +148,18 @@ export type GitHubImportParams = {
 };
 
 /**
- * @category Operation
+ * @category Type
+ */
+export type GitLabCreateParams = {
+  repository: string;
+  /**
+   * The name of the default branch
+   */
+  branch: string;
+};
+
+/**
+ * @category Type
  */
 export type GitLabImportParams = {
   repository: string;
@@ -130,6 +168,19 @@ export type GitLabImportParams = {
    */
   branch?: string;
 };
+
+export type ImportCollectionParams = {
+  name: string;
+  order: number;
+  externalPath?: string;
+  source: ImportCollectionSource;
+  iconPath?: string;
+};
+
+/**
+ * @category Type
+ */
+export type ImportCollectionSource = { "gitHub": GitHubImportParams } | { "gitLab": GitLabImportParams };
 
 /**
  * @category Type
