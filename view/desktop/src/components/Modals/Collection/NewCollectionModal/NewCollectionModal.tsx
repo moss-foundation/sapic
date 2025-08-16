@@ -34,12 +34,6 @@ export const NewCollectionModal = ({ closeModal, showModal, initialTab = "Create
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    console.log({
-      name,
-      gitParams,
-      order: collections?.length ? collections.length + 1 : 1,
-    });
-
     const result = await createCollection({
       name,
       gitParams,
