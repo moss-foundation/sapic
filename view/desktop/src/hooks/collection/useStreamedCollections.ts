@@ -33,17 +33,7 @@ export const useStreamedCollections = () => {
   const query = useQuery<StreamCollectionsEvent[], Error>({
     queryKey: [USE_STREAMED_COLLECTIONS_QUERY_KEY],
     queryFn: async (): Promise<StreamCollectionsEvent[]> => {
-      const collections: StreamCollectionsEvent[] = [];
-
-      const onCollectionEvent = new Channel<StreamCollectionsEvent>();
-
-      onCollectionEvent.onmessage = (collection) => {
-        collections.push(collection);
-      };
-
-      await invokeTauriIpc("stream_collections", {
-        channel: onCollectionEvent,
-      });
+      const collections = await startStreamingCollections();
 
       //Remove panels that contain collections that are not in the collections array
       api?.panels.forEach((panel) => {
