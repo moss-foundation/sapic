@@ -7,7 +7,7 @@ export const CollectionTreeContext = createContext<CollectionTreeContextProps>({
   name: "",
   repository: undefined,
   order: undefined,
-  picturePath: undefined,
+  iconPath: undefined,
   expanded: false,
   treePaddingLeft: 0,
   treePaddingRight: 0,
@@ -17,4 +17,6 @@ export const CollectionTreeContext = createContext<CollectionTreeContextProps>({
   searchInput: undefined,
   displayMode: "REQUEST_FIRST",
   showNodeOrders: false,
+  contributors: [],
+  repositoryInfo: undefined,
 });

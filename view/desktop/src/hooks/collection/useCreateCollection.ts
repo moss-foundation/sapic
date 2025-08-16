@@ -44,12 +44,10 @@ const inputToEvent = (input: CreateCollectionInput, data: CreateCollectionOutput
     }
   }
 
-  const picturePath = iconPath || undefined;
-
   return {
     repository,
     contributors: [], // Empty array as default
-    picturePath,
+    iconPath,
     ...data,
   };
 };
