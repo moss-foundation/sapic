@@ -1,7 +1,10 @@
 use derive_more::Deref;
 use futures::Stream;
 use joinerror::{OptionExt, ResultExt};
-use moss_applib::AppRuntime;
+use moss_applib::{
+    AppRuntime,
+    subscription::{Event, Subscription},
+};
 use moss_common::continue_if_err;
 use moss_db::primitives::AnyValue;
 use moss_environment::{
@@ -27,6 +30,7 @@ use std::{
 use tokio::sync::{RwLock, mpsc};
 
 use crate::{
+    builder::OnDidDeleteCollection,
     dirs,
     errors::ErrorNotFound,
     models::{
@@ -87,6 +91,32 @@ where
     fs: Arc<dyn FileSystem>,
     state: Arc<RwLock<ServiceState<R>>>,
     storage: Arc<StorageService<R>>,
+    aggregation_rx: mpsc::UnboundedReceiver<Environment<R>>,
+
+    _on_did_delete_collection: Subscription<OnDidDeleteCollection>,
+}
+
+impl<R> EnvironmentService<R>
+where
+    R: AppRuntime,
+{
+    async fn on_did_delete_collection(
+        state: Arc<RwLock<ServiceState<R>>>,
+        on_did_delete_collection_event: &Event<OnDidDeleteCollection>,
+    ) -> Subscription<OnDidDeleteCollection> {
+        on_did_delete_collection_event
+            .subscribe(move |event| {
+                let state_clone = state.clone();
+                async move {
+                    let mut state_lock = state_clone.write().await;
+                    state_lock.expanded_groups.remove(&event.collection_id);
+                    state_lock.groups.remove(&event.collection_id);
+
+                    // TODO: remove from the db
+                }
+            })
+            .await
+    }
 }
 
 impl<R> EnvironmentService<R>
@@ -98,17 +128,26 @@ where
         abs_path: &Path,
         fs: Arc<dyn FileSystem>,
         storage: Arc<StorageService<R>>,
+        aggregation_rx: mpsc::UnboundedReceiver<Environment<R>>,
+        on_did_delete_collection_event: &Event<OnDidDeleteCollection>,
     ) -> joinerror::Result<Self> {
         let abs_path = abs_path.join(dirs::ENVIRONMENTS_DIR);
+        let state = Arc::new(RwLock::new(ServiceState {
+            environments: HashMap::new(),
+            groups: FxHashSet::default(),
+            expanded_groups: HashSet::new(),
+        }));
+
+        let on_did_delete_collection =
+            Self::on_did_delete_collection(state.clone(), on_did_delete_collection_event).await;
+
         Ok(Self {
             fs,
             abs_path,
-            state: Arc::new(RwLock::new(ServiceState {
-                environments: HashMap::new(),
-                groups: FxHashSet::default(),
-                expanded_groups: HashSet::new(),
-            })),
+            state,
             storage,
+            aggregation_rx,
+            _on_did_delete_collection: on_did_delete_collection,
         })
     }
 
@@ -407,12 +446,10 @@ async fn scan<R: AppRuntime>(
     storage: &dyn WorkspaceStorage<R::AsyncContext>,
     tx: mpsc::UnboundedSender<(EnvironmentItem<R>, DescribeEnvironment)>,
 ) -> joinerror::Result<()> {
-    // let mut environments = EnvironmentMap::new();
-
     let mut read_dir = fs
         .read_dir(abs_path)
         .await
-        .map_err(|err| joinerror::Error::new::<()>(format!("failed to read directory: {}", err)))?; // TODO: specify a proper error type
+        .map_err(|err| joinerror::Error::new::<()>(format!("failed to read directory: {}", err)))?;
 
     let data = ListByPrefix::list_by_prefix(storage.item_store().as_ref(), ctx, "environment")
         .await?

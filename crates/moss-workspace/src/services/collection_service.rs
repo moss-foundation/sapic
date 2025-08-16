@@ -1,11 +1,11 @@
 use crate::{
-    dirs, models::primitives::CollectionId, services::storage_service::StorageService,
-    storage::segments::SEGKEY_COLLECTION,
+    builder::OnDidDeleteCollection, dirs, models::primitives::CollectionId,
+    services::storage_service::StorageService, storage::segments::SEGKEY_COLLECTION,
 };
 use derive_more::{Deref, DerefMut};
 use futures::Stream;
 use joinerror::{OptionExt, ResultExt};
-use moss_applib::{AppRuntime, PublicServiceMarker, ServiceMarker};
+use moss_applib::{AppRuntime, PublicServiceMarker, ServiceMarker, subscription::EventEmitter};
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_collection::{
     Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
@@ -87,6 +87,7 @@ pub struct CollectionService<R: AppRuntime> {
     state: Arc<RwLock<ServiceState<R>>>,
     github_client: Arc<GitHubClient>,
     gitlab_client: Arc<GitLabClient>,
+    on_collection_did_delete_emitter: EventEmitter<OnDidDeleteCollection>,
 }
 
 impl<R: AppRuntime> ServiceMarker for CollectionService<R> {}
@@ -100,6 +101,7 @@ impl<R: AppRuntime> CollectionService<R> {
         storage: Arc<StorageService<R>>,
         github_client: Arc<GitHubClient>,
         gitlab_client: Arc<GitLabClient>,
+        on_collection_did_delete_emitter: EventEmitter<OnDidDeleteCollection>,
     ) -> joinerror::Result<Self> {
         let abs_path = abs_path.join(dirs::COLLECTIONS_DIR);
         let expanded_items = if let Ok(expanded_items) = storage.get_expanded_items(ctx).await {
@@ -128,6 +130,7 @@ impl<R: AppRuntime> CollectionService<R> {
             })),
             github_client,
             gitlab_client,
+            on_collection_did_delete_emitter,
         })
     }
 
@@ -348,6 +351,12 @@ impl<R: AppRuntime> CollectionService<R> {
 
             txn.commit()?;
         }
+
+        self.on_collection_did_delete_emitter
+            .fire(OnDidDeleteCollection {
+                collection_id: id.to_owned(),
+            })
+            .await;
 
         if let Some(_item) = item {
             Ok(Some(abs_path))

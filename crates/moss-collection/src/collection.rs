@@ -91,6 +91,7 @@ impl<R: AppRuntime> Collection<R> {
     pub fn icon_path(&self) -> Option<PathBuf> {
         self.set_icon_service.icon_path()
     }
+
     pub async fn describe(&self) -> joinerror::Result<DescribeCollection> {
         let manifest_path = self.abs_path.join(MANIFEST_FILE_NAME);
 
@@ -172,6 +173,7 @@ impl<R: AppRuntime> Collection<R> {
 
         Ok(())
     }
+
     pub async fn environments(&self) -> Result<&EnvironmentMap<R>> {
         let result = self
             .environments

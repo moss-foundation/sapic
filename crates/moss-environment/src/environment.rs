@@ -77,6 +77,9 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
             .join_err::<()>("failed to parse environment file name")
     }
 
+    // TODO: add variables()
+
+    // TODO: rename to details
     async fn describe(&self, ctx: &R::AsyncContext) -> joinerror::Result<DescribeEnvironment> {
         let abs_path = self.abs_path().await;
         let rdr = self

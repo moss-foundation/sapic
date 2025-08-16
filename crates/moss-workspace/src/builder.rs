@@ -1,15 +1,17 @@
 use joinerror::ResultExt;
 use moss_activity_indicator::ActivityIndicator;
-use moss_applib::AppRuntime;
+use moss_applib::{AppRuntime, EventMarker, subscription::EventEmitter};
 use moss_environment::builder::{CreateEnvironmentParams, EnvironmentBuilder};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
 use std::{cell::LazyCell, path::Path, sync::Arc};
+use tokio::sync::mpsc;
 
 use crate::{
     Workspace, dirs,
     edit::WorkspaceEdit,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
+    models::primitives::CollectionId,
     services::{
         collection_service::CollectionService, environment_service::EnvironmentService,
         layout_service::LayoutService, storage_service::StorageService,
@@ -45,6 +47,13 @@ pub struct WorkspaceBuilder {
     github_client: Arc<GitHubClient>,
     gitlab_client: Arc<GitLabClient>,
 }
+
+#[derive(Clone)]
+pub struct OnDidDeleteCollection {
+    pub collection_id: CollectionId,
+}
+
+impl EventMarker for OnDidDeleteCollection {}
 
 impl WorkspaceBuilder {
     pub fn new(
@@ -101,6 +110,12 @@ impl WorkspaceBuilder {
     ) -> joinerror::Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
 
+        let (e_aggregation_tx, e_aggregation_rx) = mpsc::unbounded_channel();
+
+        let on_collection_did_delete_emitter: EventEmitter<OnDidDeleteCollection> =
+            EventEmitter::new();
+        let on_did_delete_collection_event = on_collection_did_delete_emitter.event();
+
         let storage_service: Arc<StorageService<R>> = StorageService::new(&params.abs_path)?.into();
         let layout_service = LayoutService::new(storage_service.clone());
         let collection_service = CollectionService::new(
@@ -110,12 +125,18 @@ impl WorkspaceBuilder {
             storage_service.clone(),
             self.github_client.clone(),
             self.gitlab_client.clone(),
+            on_collection_did_delete_emitter,
         )
         .await?;
 
-        let environment_service =
-            EnvironmentService::new(&params.abs_path, self.fs.clone(), storage_service.clone())
-                .await?;
+        let environment_service = EnvironmentService::new(
+            &params.abs_path,
+            self.fs.clone(),
+            storage_service.clone(),
+            e_aggregation_rx,
+            &on_did_delete_collection_event,
+        )
+        .await?;
 
         let edit = WorkspaceEdit::new(self.fs.clone(), params.abs_path.join(MANIFEST_FILE_NAME));
 
@@ -144,6 +165,12 @@ impl WorkspaceBuilder {
             .await
             .join_err::<()>("failed to initialize workspace")?;
 
+        let (e_aggregation_tx, e_aggregation_rx) = mpsc::unbounded_channel();
+
+        let on_collection_did_delete_emitter: EventEmitter<OnDidDeleteCollection> =
+            EventEmitter::new();
+        let on_did_delete_collection_event = on_collection_did_delete_emitter.event();
+
         let storage_service: Arc<StorageService<R>> = StorageService::new(&params.abs_path)?.into();
         let layout_service = LayoutService::new(storage_service.clone());
         let collection_service = CollectionService::new(
@@ -153,11 +180,17 @@ impl WorkspaceBuilder {
             storage_service.clone(),
             self.github_client.clone(),
             self.gitlab_client.clone(),
+            on_collection_did_delete_emitter,
         )
         .await?;
-        let environment_service =
-            EnvironmentService::new(&params.abs_path, self.fs.clone(), storage_service.clone())
-                .await?;
+        let environment_service = EnvironmentService::new(
+            &params.abs_path,
+            self.fs.clone(),
+            storage_service.clone(),
+            e_aggregation_rx,
+            &on_did_delete_collection_event,
+        )
+        .await?;
 
         let edit = WorkspaceEdit::new(self.fs.clone(), params.abs_path.join(MANIFEST_FILE_NAME));
 

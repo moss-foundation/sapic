@@ -4,6 +4,7 @@ pub mod collection;
 pub mod config;
 pub mod context;
 mod edit;
+mod environment_provider;
 pub mod manifest;
 pub mod models;
 pub mod services;
