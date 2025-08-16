@@ -58,13 +58,15 @@ const Trigger = ({ value, className, icon, label, disabled }: PaddedTabProps) =>
         has-[:focus-visible]:outline-(--moss-primary) 
 
         rounded-full 
-        border border-(--moss-border-color)
+        ring ring-(--moss-border-color)
 
-        hover:not-data-[state=active]:hover:border-(--moss-secondary-background-hover) 
+        hover:not-data-[state=active]:hover:ring-(--moss-secondary-background-hover) 
 
         data-[state=active]:ring-2 
         data-[state=active]:ring-offset-0
-        data-[state=active]:ring-(--moss-primary) 
+        data-[state=active]:ring-(--moss-primary)
+
+        disabled:data-[state=active]:ring-(--moss-gray-11)
       `,
         className
       )}

@@ -10,9 +10,8 @@ const radioButtonStyles = `
     has-[:focus-visible]:outline-(--moss-primary) 
     
     rounded-full 
-    border border-(--moss-border-color)
+    ring-1 ring-(--moss-border-color)
 
-    
     not-has-checked:text-(--moss-secondary-text) 
     hover:not-has-checked:text-(--moss-primary-text)
     hover:not-has-checked:hover:border-(--moss-secondary-background-hover) 

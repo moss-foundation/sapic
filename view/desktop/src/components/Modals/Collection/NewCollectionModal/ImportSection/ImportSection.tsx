@@ -83,7 +83,7 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
         You can switch modes in the workspace at any time and as often as needed.
       </span>
 
-      <div className="grid grid-cols-[min-content_1fr] items-center gap-3 py-3 pl-5">
+      <div className="grid grid-cols-[min-content_1fr] items-center gap-3 gap-y-6 py-3 pl-5">
         <div className="col-span-2 grid grid-cols-subgrid items-center">
           <div>Repository:</div>
           <InputOutlined
