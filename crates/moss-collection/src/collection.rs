@@ -10,6 +10,7 @@ use moss_applib::{
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_edit::json::EditOptions;
 use moss_environment::{environment::Environment, models::primitives::EnvironmentId};
+use moss_environment_provider::EnvironmentProvider;
 use moss_fs::{FileSystem, FsResultExt};
 use moss_git::{repo::RepoHandle, url::normalize_git_url};
 
@@ -22,7 +23,7 @@ use std::{
 use tokio::sync::OnceCell;
 
 use crate::{
-    DescribeCollection,
+    DescribeCollection, dirs,
     edit::CollectionEdit,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
     services::{set_icon_service::SetIconService, storage_service::StorageService},
@@ -72,6 +73,13 @@ pub struct Collection<R: AppRuntime> {
     /// This mutex must be a synchronous one and should not be acquired in an async block
     /// It should always be required in a `spawn_blocking` block to avoid deadlock
     pub(super) repo_handle: Arc<Mutex<Option<RepoHandle>>>,
+}
+
+impl<R: AppRuntime> From<&Collection<R>> for EnvironmentProvider {
+    fn from(collection: &Collection<R>) -> Self {
+        let abs_path = collection.abs_path.join(dirs::ENVIRONMENTS_DIR);
+        EnvironmentProvider::new(collection.fs.clone(), abs_path)
+    }
 }
 
 #[rustfmt::skip]

@@ -7,7 +7,7 @@ pub mod segments;
 pub mod utils;
 
 pub use environment::Environment;
-use std::collections::HashMap;
+use std::{collections::HashMap, path::Path, sync::Arc};
 
 use moss_applib::AppRuntime;
 use moss_bindingutils::primitives::ChangeString;
@@ -69,7 +69,7 @@ pub struct DescribeEnvironment {
 
 #[allow(private_bounds, async_fn_in_trait)]
 pub trait AnyEnvironment<R: AppRuntime> {
-    async fn abs_path(&self) -> PathBuf;
+    async fn abs_path(&self) -> Arc<Path>;
     async fn name(&self) -> joinerror::Result<String>;
     async fn describe(&self, ctx: &R::AsyncContext) -> joinerror::Result<DescribeEnvironment>;
     async fn modify(

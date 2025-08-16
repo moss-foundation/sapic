@@ -2,6 +2,7 @@ pub mod api;
 pub mod builder;
 pub mod context;
 pub mod edit;
+mod environment_registry;
 pub mod manifest;
 pub mod models;
 pub mod services;

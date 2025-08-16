@@ -1,0 +1,14 @@
+[package]
+name = "moss_environment_provider"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+moss_applib = { workspace = true }
+moss_common = { workspace = true }
+moss_fs = { workspace = true }
+moss_storage = { workspace = true }
+moss_environment = { workspace = true }
+tokio = { workspace = true }
+
+joinerror = { workspace = true }

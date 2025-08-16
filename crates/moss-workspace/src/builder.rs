@@ -2,14 +2,17 @@ use joinerror::ResultExt;
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::{AppRuntime, EventMarker, subscription::EventEmitter};
 use moss_environment::builder::{CreateEnvironmentParams, EnvironmentBuilder};
+use moss_environment_provider::EnvironmentProvider;
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
+use rustc_hash::FxHashMap;
 use std::{cell::LazyCell, path::Path, sync::Arc};
-use tokio::sync::mpsc;
+use tokio::sync::{mpsc, watch};
 
 use crate::{
     Workspace, dirs,
     edit::WorkspaceEdit,
+    environment_registry::EnvironmentProviderRegistry,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
     models::primitives::CollectionId,
     services::{
@@ -92,7 +95,6 @@ impl WorkspaceBuilder {
                     name: env.name.clone(),
                     abs_path: &params.abs_path.join(dirs::ENVIRONMENTS_DIR),
                     color: env.color.clone(),
-                    order: env.order,
                     variables: vec![],
                 })
                 .await
@@ -110,7 +112,24 @@ impl WorkspaceBuilder {
     ) -> joinerror::Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
 
-        let (e_aggregation_tx, e_aggregation_rx) = mpsc::unbounded_channel();
+        let (e_aggregation_tx, e_aggregation_rx) = watch::channel(FxHashMap::from_iter([(
+            "".to_string(),
+            EnvironmentProvider::new(
+                self.fs.clone(),
+                params.abs_path.join(dirs::ENVIRONMENTS_DIR),
+            ),
+        )]));
+
+        // let mut e_aggregation_rx_ref = e_aggregation_rx.borrow_and_update();
+        // e_aggregation_rx_ref.insert(
+        //     "".to_string(),
+        //     EnvironmentProvider::new(
+        //         self.fs.clone(),
+        //         params.abs_path.join(dirs::ENVIRONMENTS_DIR),
+        //     ),
+        // );
+
+        let mut environment_provider_registry = EnvironmentProviderRegistry::new();
 
         let on_collection_did_delete_emitter: EventEmitter<OnDidDeleteCollection> =
             EventEmitter::new();
@@ -128,12 +147,15 @@ impl WorkspaceBuilder {
             on_collection_did_delete_emitter,
         )
         .await?;
+        collection_service
+            .register_providers(&mut environment_provider_registry)
+            .await;
 
         let environment_service = EnvironmentService::new(
             &params.abs_path,
             self.fs.clone(),
             storage_service.clone(),
-            e_aggregation_rx,
+            environment_provider_registry,
             &on_did_delete_collection_event,
         )
         .await?;

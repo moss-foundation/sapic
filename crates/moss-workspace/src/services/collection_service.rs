@@ -1,6 +1,7 @@
 use crate::{
-    builder::OnDidDeleteCollection, dirs, models::primitives::CollectionId,
-    services::storage_service::StorageService, storage::segments::SEGKEY_COLLECTION,
+    builder::OnDidDeleteCollection, dirs, environment_registry::EnvironmentProviderRegistry,
+    models::primitives::CollectionId, services::storage_service::StorageService,
+    storage::segments::SEGKEY_COLLECTION,
 };
 use derive_more::{Deref, DerefMut};
 use futures::Stream;
@@ -11,17 +12,19 @@ use moss_collection::{
     Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
     builder::{CollectionCloneParams, CollectionCreateParams, CollectionLoadParams},
 };
+use moss_environment_provider::EnvironmentProvider;
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
 use moss_git_hosting_provider::{
     github::client::GitHubClient, gitlab::client::GitLabClient, models::primitives::GitProviderType,
 };
+use rustc_hash::FxHashMap;
 use std::{
     collections::{HashMap, HashSet},
     path::{Path, PathBuf},
     pin::Pin,
     sync::Arc,
 };
-use tokio::sync::RwLock;
+use tokio::sync::{RwLock, watch};
 
 // FIXME: Probable will be replaced by UpdateCollectionParams from types.rs, same way in the env service
 pub(crate) struct CollectionItemUpdateParams {
@@ -101,6 +104,7 @@ impl<R: AppRuntime> CollectionService<R> {
         storage: Arc<StorageService<R>>,
         github_client: Arc<GitHubClient>,
         gitlab_client: Arc<GitLabClient>,
+        e_aggregation_tx: watch::Sender<FxHashMap<String, EnvironmentProvider>>,
         on_collection_did_delete_emitter: EventEmitter<OnDidDeleteCollection>,
     ) -> joinerror::Result<Self> {
         let abs_path = abs_path.join(dirs::COLLECTIONS_DIR);
@@ -132,6 +136,15 @@ impl<R: AppRuntime> CollectionService<R> {
             gitlab_client,
             on_collection_did_delete_emitter,
         })
+    }
+
+    #[must_use]
+    pub(crate) async fn register_providers(&self, registry: &mut EnvironmentProviderRegistry) {
+        let state_lock = self.state.read().await;
+
+        for (id, item) in state_lock.collections.iter() {
+            registry.register::<R>(id.to_string(), item.handle.as_ref().into());
+        }
     }
 
     pub async fn collection(&self, id: &CollectionId) -> Option<Arc<CollectionHandle<R>>> {

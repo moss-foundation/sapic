@@ -14,6 +14,7 @@ use moss_environment::{
     models::{primitives::EnvironmentId, types::AddVariableParams},
     segments::{SEGKEY_VARIABLE_LOCALVALUE, SEGKEY_VARIABLE_ORDER},
 };
+use moss_environment_provider::EnvironmentProvider;
 use moss_fs::{FileSystem, FsResultExt, RemoveOptions};
 use moss_storage::{
     WorkspaceStorage,
@@ -32,6 +33,7 @@ use tokio::sync::{RwLock, mpsc};
 use crate::{
     builder::OnDidDeleteCollection,
     dirs,
+    environment_registry::EnvironmentProviderRegistry,
     errors::ErrorNotFound,
     models::{
         primitives::CollectionId,
@@ -68,7 +70,7 @@ pub struct EnvironmentItemDescription {
     pub display_name: String,
     pub order: Option<isize>,
     pub color: Option<String>,
-    pub abs_path: PathBuf,
+    pub abs_path: Arc<Path>,
     pub total_variables: usize,
 }
 
@@ -81,6 +83,7 @@ where
     environments: EnvironmentMap<R>,
     groups: FxHashSet<CollectionId>,
     expanded_groups: HashSet<CollectionId>,
+    // providers: FxHashMap<String, EnvironmentProvider>,
 }
 
 pub struct EnvironmentService<R>
@@ -91,7 +94,7 @@ where
     fs: Arc<dyn FileSystem>,
     state: Arc<RwLock<ServiceState<R>>>,
     storage: Arc<StorageService<R>>,
-    aggregation_rx: mpsc::UnboundedReceiver<Environment<R>>,
+    environment_provider_registry: EnvironmentProviderRegistry,
 
     _on_did_delete_collection: Subscription<OnDidDeleteCollection>,
 }
@@ -128,7 +131,7 @@ where
         abs_path: &Path,
         fs: Arc<dyn FileSystem>,
         storage: Arc<StorageService<R>>,
-        aggregation_rx: mpsc::UnboundedReceiver<Environment<R>>,
+        environment_provider_registry: EnvironmentProviderRegistry,
         on_did_delete_collection_event: &Event<OnDidDeleteCollection>,
     ) -> joinerror::Result<Self> {
         let abs_path = abs_path.join(dirs::ENVIRONMENTS_DIR);
@@ -146,7 +149,7 @@ where
             abs_path,
             state,
             storage,
-            aggregation_rx,
+            environment_provider_registry,
             _on_did_delete_collection: on_did_delete_collection,
         })
     }
@@ -338,7 +341,6 @@ where
                     name: params.name.clone(),
                     abs_path: &self.abs_path,
                     color: params.color,
-                    order: params.order,
                     variables: params.variables,
                 },
             )
@@ -462,17 +464,21 @@ async fn scan<R: AppRuntime>(
             continue;
         }
 
-        let environment = EnvironmentBuilder::new(fs.clone())
+        let maybe_environment = EnvironmentBuilder::new(fs.clone())
             .load::<R>(
                 storage.variable_store(),
                 EnvironmentLoadParams {
                     abs_path: entry.path(),
                 },
             )
-            .await
-            .join_err_with::<()>(|| {
-                format!("failed to load environment: {}", entry.path().display())
-            })?;
+            .await;
+        let environment = continue_if_err!(maybe_environment, |err| {
+            println!(
+                "failed to load environment {}: {}",
+                entry.path().display(),
+                err
+            );
+        });
 
         let desc = environment.describe(ctx).await?;
 

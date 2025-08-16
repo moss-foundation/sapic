@@ -16,7 +16,11 @@ use moss_storage::{
     storage::operations::{GetItem, TransactionalPutItem, TransactionalRemoveItem},
 };
 use serde_json::Value as JsonValue;
-use std::{collections::HashMap, path::PathBuf, sync::Arc};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 use tokio::sync::watch;
 
 use crate::{
@@ -34,7 +38,7 @@ pub(super) struct EnvironmentPath {
     pub parent: PathBuf,
 
     #[deref]
-    pub full_path: PathBuf,
+    pub full_path: Arc<Path>,
 }
 
 impl EnvironmentPath {
@@ -52,7 +56,7 @@ impl EnvironmentPath {
         Ok(Self {
             parent: parent.to_path_buf(),
             filename: name.to_string_lossy().to_string(),
-            full_path: abs_path,
+            full_path: abs_path.into(),
         })
     }
 }
@@ -68,7 +72,7 @@ unsafe impl<R: AppRuntime> Send for Environment<R> {}
 unsafe impl<R: AppRuntime> Sync for Environment<R> {}
 
 impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
-    async fn abs_path(&self) -> PathBuf {
+    async fn abs_path(&self) -> Arc<Path> {
         self.abs_path_rx.borrow().full_path.clone()
     }
 
