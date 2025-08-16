@@ -5,10 +5,10 @@ import { changeCollectionIdSchema } from "./primitives.zod";
 import {
   activitybarPartStateInfoSchema,
   addVariableParamsSchema,
+  createCollectionGitParamsSchema,
   editorPartStateInfoSchema,
   environmentGroupSchema,
-  gitHubImportParamsSchema,
-  gitLabImportParamsSchema,
+  importCollectionSourceSchema,
   panelPartStateInfoSchema,
   sidebarPartStateInfoSchema,
   updateCollectionParamsSchema,
@@ -25,25 +25,6 @@ export const batchUpdateCollectionOutputSchema = z.object({
 export const batchUpdateEnvironmentOutputSchema = z.object({
   ids: z.array(z.string()),
 });
-
-export const gitHubCreateParamsSchema = z.object({
-  repository: z.string(),
-  branch: z.string(),
-});
-
-export const gitLabCreateParamsSchema = z.object({
-  repository: z.string(),
-  branch: z.string(),
-});
-
-export const createCollectionGitParamsSchema = z.union([
-  z.object({
-    "gitHub": gitHubCreateParamsSchema,
-  }),
-  z.object({
-    "gitLab": gitLabCreateParamsSchema,
-  }),
-]);
 
 export const createCollectionOutputSchema = z.object({
   id: z.string(),
@@ -143,14 +124,13 @@ export const describeStateOutputSchema = z.object({
   activitybar: activitybarPartStateInfoSchema.optional(),
 });
 
-export const importCollectionParamsSchema = z.union([
-  z.object({
-    "gitHub": gitHubImportParamsSchema,
-  }),
-  z.object({
-    "gitLab": gitLabImportParamsSchema,
-  }),
-]);
+export const importCollectionInputSchema = z.object({
+  name: z.string(),
+  order: z.number(),
+  externalPath: z.string().optional(),
+  source: importCollectionSourceSchema,
+  iconPath: z.string().optional(),
+});
 
 export const streamEnvironmentsOutputSchema = z.object({
   groups: z.array(environmentGroupSchema),
@@ -191,11 +171,3 @@ export const updateStateInputSchema = z.union([
     "updateActivitybarPartState": activitybarPartStateInfoSchema,
   }),
 ]);
-
-export const importCollectionInputSchema = z.object({
-  name: z.string(),
-  order: z.number(),
-  externalPath: z.string().nullable(),
-  params: importCollectionParamsSchema,
-  iconPath: z.string().nullable(),
-});

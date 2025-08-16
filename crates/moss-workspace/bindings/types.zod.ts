@@ -32,6 +32,25 @@ export const contributorSchema = z.object({
   avatar_url: z.string(),
 });
 
+export const gitHubCreateParamsSchema = z.object({
+  repository: z.string(),
+  branch: z.string(),
+});
+
+export const gitLabCreateParamsSchema = z.object({
+  repository: z.string(),
+  branch: z.string(),
+});
+
+export const createCollectionGitParamsSchema = z.union([
+  z.object({
+    "gitHub": gitHubCreateParamsSchema,
+  }),
+  z.object({
+    "gitLab": gitLabCreateParamsSchema,
+  }),
+]);
+
 export const editorGridLeafDataSchema = z.object({
   views: z.array(z.string()),
   activeView: z.string(),
@@ -69,6 +88,15 @@ export const gitLabImportParamsSchema = z.object({
   branch: z.string().optional(),
 });
 
+export const importCollectionSourceSchema = z.union([
+  z.object({
+    "gitHub": gitHubImportParamsSchema,
+  }),
+  z.object({
+    "gitLab": gitLabImportParamsSchema,
+  }),
+]);
+
 export const panelPartStateInfoSchema = z.object({
   size: z.number(),
   visible: z.boolean(),
@@ -98,6 +126,14 @@ export const addVariableParamsSchema = z.object({
   order: z.number(),
   desc: z.string().optional(),
   options: variableOptionsSchema,
+});
+
+export const createCollectionParamsSchema = z.object({
+  name: z.string(),
+  order: z.number(),
+  externalPath: z.string().optional(),
+  gitParams: createCollectionGitParamsSchema.optional(),
+  iconPath: z.string().optional(),
 });
 
 export const editorGridStateSchema = z.object({
@@ -134,6 +170,14 @@ export const variableInfoSchema = z.object({
   disabled: z.boolean(),
   order: z.number().optional(),
   desc: z.string().optional(),
+});
+
+export const importCollectionParamsSchema = z.object({
+  name: z.string(),
+  order: z.number(),
+  externalPath: z.string().optional(),
+  source: importCollectionSourceSchema,
+  iconPath: z.string().optional(),
 });
 
 export const sidebarPartStateInfoSchema = z.object({

@@ -1,17 +1,17 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
+use crate::shared::setup_test_workspace;
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::models::{
     events::StreamCollectionsEvent, operations::CreateCollectionInput, primitives::CollectionId,
+    types::CreateCollectionParams,
 };
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex},
 };
 use tauri::ipc::{Channel, InvokeResponseBody};
-
-use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn stream_collections_empty_workspace() {
@@ -51,11 +51,13 @@ async fn stream_collections_single_collection() {
         .create_collection(
             &ctx,
             &CreateCollectionInput {
-                name: collection_name.clone(),
-                order: collection_order,
-                external_path: None,
-                git_params: None,
-                icon_path: None,
+                inner: CreateCollectionParams {
+                    name: collection_name.clone(),
+                    order: collection_order,
+                    external_path: None,
+                    git_params: None,
+                    icon_path: None,
+                },
             },
         )
         .await
@@ -109,11 +111,13 @@ async fn stream_collections_multiple_collections() {
             .create_collection(
                 &ctx,
                 &CreateCollectionInput {
-                    name: collection_name.clone(),
-                    order: collection_order,
-                    external_path: None,
-                    git_params: None,
-                    icon_path: None,
+                    inner: CreateCollectionParams {
+                        name: collection_name.clone(),
+                        order: collection_order,
+                        external_path: None,
+                        git_params: None,
+                        icon_path: None,
+                    },
                 },
             )
             .await
@@ -176,11 +180,13 @@ async fn stream_collections_with_icon() {
         .create_collection(
             &ctx,
             &CreateCollectionInput {
-                name: collection_name.clone(),
-                order: collection_order,
-                external_path: None,
-                git_params: None,
-                icon_path: Some(icon_path.clone()),
+                inner: CreateCollectionParams {
+                    name: collection_name.clone(),
+                    order: collection_order,
+                    external_path: None,
+                    git_params: None,
+                    icon_path: Some(icon_path.clone()),
+                },
             },
         )
         .await
@@ -235,11 +241,13 @@ async fn stream_collections_mixed_configurations() {
         .create_collection(
             &ctx,
             &CreateCollectionInput {
-                name: name1.clone(),
-                order: 1,
-                external_path: None,
-                git_params: None,
-                icon_path: None,
+                inner: CreateCollectionParams {
+                    name: name1.clone(),
+                    order: 1,
+                    external_path: None,
+                    git_params: None,
+                    icon_path: None,
+                },
             },
         )
         .await
@@ -252,11 +260,13 @@ async fn stream_collections_mixed_configurations() {
         .create_collection(
             &ctx,
             &CreateCollectionInput {
-                name: name2.clone(),
-                order: 2,
-                external_path: None,
-                git_params: None,
-                icon_path: Some(icon_path.clone()),
+                inner: CreateCollectionParams {
+                    name: name2.clone(),
+                    order: 2,
+                    external_path: None,
+                    git_params: None,
+                    icon_path: Some(icon_path.clone()),
+                },
             },
         )
         .await
@@ -328,11 +338,13 @@ async fn stream_collections_order_verification() {
             .create_collection(
                 &ctx,
                 &CreateCollectionInput {
-                    name: collection_name.clone(),
-                    order: *order,
-                    external_path: None,
-                    git_params: None,
-                    icon_path: None,
+                    inner: CreateCollectionParams {
+                        name: collection_name.clone(),
+                        order: *order,
+                        external_path: None,
+                        git_params: None,
+                        icon_path: None,
+                    },
                 },
             )
             .await

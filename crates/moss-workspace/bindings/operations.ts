@@ -4,10 +4,10 @@ import type { ChangeCollectionId } from "./primitives";
 import type {
   ActivitybarPartStateInfo,
   AddVariableParams,
+  CreateCollectionGitParams,
   EditorPartStateInfo,
   EnvironmentGroup,
-  GitHubImportParams,
-  GitLabImportParams,
+  ImportCollectionSource,
   PanelPartStateInfo,
   SidebarPartStateInfo,
   UpdateCollectionParams,
@@ -41,8 +41,6 @@ export type BatchUpdateEnvironmentInput = { items: Array<UpdateEnvironmentParams
  * @category Operation
  */
 export type BatchUpdateEnvironmentOutput = { ids: Array<string> };
-
-export type CreateCollectionGitParams = { "gitHub": GitHubCreateParams } | { "gitLab": GitLabCreateParams };
 
 /**
  * @category Operation
@@ -122,36 +120,18 @@ export type DescribeStateOutput = {
   activitybar?: ActivitybarPartStateInfo;
 };
 
-export type GitHubCreateParams = {
-  repository: string;
-  /**
-   * The name of the default branch
-   */
-  branch: string;
-};
-
-export type GitLabCreateParams = {
-  repository: string;
-  /**
-   * The name of the default branch
-   */
-  branch: string;
-};
-
 export type ImportCollectionInput = {
   name: string;
   order: number;
-  externalPath: string | null;
-  params: ImportCollectionParams;
-  iconPath: string | null;
+  externalPath?: string;
+  source: ImportCollectionSource;
+  iconPath?: string;
 };
 
 /**
  * @category Operation
  */
 export type ImportCollectionOutput = { id: string; name: string; order?: number; expanded: boolean; iconPath?: string };
-
-export type ImportCollectionParams = { "gitHub": GitHubImportParams } | { "gitLab": GitLabImportParams };
 
 /**
  * @category Operation

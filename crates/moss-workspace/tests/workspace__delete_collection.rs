@@ -8,6 +8,7 @@ use moss_workspace::{
     models::{
         operations::{CreateCollectionInput, DeleteCollectionInput},
         primitives::CollectionId,
+        types::CreateCollectionParams,
     },
     storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
@@ -22,11 +23,13 @@ async fn delete_collection_success() {
         .create_collection(
             &ctx,
             &CreateCollectionInput {
-                name: collection_name.clone(),
-                order: 0,
-                external_path: None,
-                git_params: None,
-                icon_path: None,
+                inner: CreateCollectionParams {
+                    name: collection_name.clone(),
+                    order: 0,
+                    external_path: None,
+                    git_params: None,
+                    icon_path: None,
+                },
             },
         )
         .await
@@ -77,11 +80,13 @@ async fn delete_collection_nonexistent_id() {
         .create_collection(
             &ctx,
             &CreateCollectionInput {
-                name: collection_name.clone(),
-                order: 0,
-                external_path: None,
-                git_params: None,
-                icon_path: None,
+                inner: CreateCollectionParams {
+                    name: collection_name.clone(),
+                    order: 0,
+                    external_path: None,
+                    git_params: None,
+                    icon_path: None,
+                },
             },
         )
         .await
@@ -114,11 +119,13 @@ async fn delete_collection_fs_already_deleted() {
         .create_collection(
             &ctx,
             &CreateCollectionInput {
-                name: collection_name.clone(),
-                order: 0,
-                external_path: None,
-                git_params: None,
-                icon_path: None,
+                inner: CreateCollectionParams {
+                    name: collection_name.clone(),
+                    order: 0,
+                    external_path: None,
+                    git_params: None,
+                    icon_path: None,
+                },
             },
         )
         .await

@@ -1,12 +1,7 @@
-use crate::{
-    dirs, models::primitives::CollectionId, services::storage_service::StorageService,
-    storage::segments::SEGKEY_COLLECTION,
-};
 use derive_more::{Deref, DerefMut};
 use futures::Stream;
 use joinerror::{OptionExt, ResultExt};
 use moss_applib::{AppRuntime, PublicServiceMarker, ServiceMarker};
-use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_collection::{
     Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
     builder::{
@@ -26,36 +21,20 @@ use std::{
 };
 use tokio::sync::RwLock;
 
-// FIXME: Probable will be replaced by UpdateCollectionParams from types.rs, same way in the env service
-pub(crate) struct CollectionItemUpdateParams {
-    pub name: Option<String>,
-    pub order: Option<isize>,
-    pub expanded: Option<bool>,
-    pub repository: Option<ChangeString>,
-    pub icon_path: Option<ChangePath>,
-}
-// FIXME: Probable will be replaced by UpdateCollectionParams from types.rs, same way in the env service
+use crate::{
+    dirs,
+    models::{
+        primitives::CollectionId,
+        types::{CreateCollectionGitParams, CreateCollectionParams, UpdateCollectionParams},
+    },
+    services::storage_service::StorageService,
+    storage::segments::SEGKEY_COLLECTION,
+};
 
-pub(crate) struct CollectionItemCreateParams {
-    pub name: String,
-    pub order: isize,
-    pub external_path: Option<PathBuf>,
-    // FIXME: Do we need this field?
-    pub icon_path: Option<PathBuf>,
-    pub git_params: Option<CollectionItemGitCreateParams>,
-}
-
-pub(crate) struct CollectionItemGitCreateParams {
-    pub repository: String,
-    pub git_provider_type: GitProviderType,
-    pub branch: String,
-}
-
-// FIXME: Probable will be replaced by UpdateCollectionParams from types.rs, same way in the env service
 pub(crate) struct CollectionItemCloneParams {
-    pub name: String,
+    pub _name: String,
     pub order: isize,
-    pub icon_path: Option<PathBuf>,
+    pub _icon_path: Option<PathBuf>,
     pub git_params: CollectionItemGitCloneParams,
 }
 
@@ -157,7 +136,7 @@ impl<R: AppRuntime> CollectionService<R> {
     pub(crate) async fn create_collection(
         &self,
         ctx: &R::AsyncContext,
-        params: CollectionItemCreateParams,
+        params: &CreateCollectionParams,
     ) -> joinerror::Result<CollectionItemDescription> {
         // Try a new CollectionId if one is already in use
         let mut id = CollectionId::new();
@@ -174,6 +153,24 @@ impl<R: AppRuntime> CollectionService<R> {
                 format!("failed to create directory `{}`", abs_path.display())
             })?;
 
+        let git_params = match params.git_params.as_ref() {
+            None => None,
+            Some(CreateCollectionGitParams::GitHub(git_params)) => {
+                Some(CollectionCreateGitParams {
+                    git_provider_type: GitProviderType::GitHub,
+                    repository: git_params.repository.clone(),
+                    branch: git_params.branch.clone(),
+                })
+            }
+            Some(CreateCollectionGitParams::GitLab(git_params)) => {
+                Some(CollectionCreateGitParams {
+                    git_provider_type: GitProviderType::GitLab,
+                    repository: git_params.repository.clone(),
+                    branch: git_params.branch.clone(),
+                })
+            }
+        };
+
         let collection = CollectionBuilder::new(
             self.fs.clone(),
             self.github_client.clone(),
@@ -185,11 +182,7 @@ impl<R: AppRuntime> CollectionService<R> {
                 name: Some(params.name.to_owned()),
                 internal_abs_path: abs_path.clone().into(),
                 external_abs_path: params.external_path.as_deref().map(|p| p.to_owned().into()),
-                git_params: params.git_params.map(|p| CollectionCreateGitParams {
-                    git_provider_type: p.git_provider_type,
-                    repository: p.repository,
-                    branch: p.branch,
-                }),
+                git_params,
                 icon_path: params.icon_path.to_owned(),
             },
         )
@@ -234,13 +227,13 @@ impl<R: AppRuntime> CollectionService<R> {
 
         Ok(CollectionItemDescription {
             id: id.to_owned(),
-            name: params.name,
+            name: params.name.clone(),
             order: Some(params.order),
             expanded: true,
             repository: None,
             icon_path,
             abs_path: abs_path.into(),
-            external_path: params.external_path,
+            external_path: params.external_path.clone(),
         })
     }
 
@@ -268,7 +261,7 @@ impl<R: AppRuntime> CollectionService<R> {
                 format!("failed to create directory `{}`", abs_path.display())
             })?;
 
-        let git_params = params.git_params;
+        let git_params = &params.git_params;
         let collection = CollectionBuilder::new(
             self.fs.clone(),
             self.github_client.clone(),
@@ -279,9 +272,9 @@ impl<R: AppRuntime> CollectionService<R> {
             CollectionCloneParams {
                 internal_abs_path: abs_path.clone(),
                 git_params: CollectionCloneGitParams {
-                    git_provider_type: git_params.git_provider_type,
-                    repository: git_params.repository,
-                    branch: git_params.branch,
+                    git_provider_type: git_params.git_provider_type.clone(),
+                    repository: git_params.repository.clone(),
+                    branch: git_params.branch.clone(),
                 },
             },
         )
@@ -383,7 +376,7 @@ impl<R: AppRuntime> CollectionService<R> {
         &self,
         ctx: &R::AsyncContext,
         id: &CollectionId,
-        params: CollectionItemUpdateParams,
+        params: UpdateCollectionParams,
     ) -> joinerror::Result<()> {
         let mut state_lock = self.state.write().await;
         let item = state_lock
