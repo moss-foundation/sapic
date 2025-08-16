@@ -1,5 +1,7 @@
 import { RadioGroup } from "@/components";
 
+import { Subheader } from "./Subheader";
+
 interface ModeRadioGroupProps {
   mode: "Default" | "Custom";
   setMode: (mode: "Default" | "Custom") => void;
@@ -8,11 +10,11 @@ interface ModeRadioGroupProps {
 export const ModeRadioGroup = ({ mode, setMode }: ModeRadioGroupProps) => {
   return (
     <div>
-      <div className="flex gap-2">
+      <Subheader>
         <span>Mode</span>
         <div className="background-(--moss-border-color) my-auto h-px w-full" />
-      </div>
-      <p className="text-xs leading-5 text-(--moss-secondary-text)">
+      </Subheader>
+      <p className="text-sm leading-5 text-(--moss-secondary-text)">
         You can switch modes in the workspace at any time and as often as needed.
       </p>
       <div className="pl-5">

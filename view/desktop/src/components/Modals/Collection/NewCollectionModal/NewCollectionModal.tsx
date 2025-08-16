@@ -81,22 +81,22 @@ export const NewCollectionModal = ({ closeModal, showModal, initialTab = "Create
 
       <Divider />
 
-      <form onSubmit={handleSubmit} className="flex w-[544px] flex-col gap-1">
+      <form onSubmit={handleSubmit} className="flex w-[544px] flex-col">
         <PaddedTabs.Root value={tab} onValueChange={(value) => setTab(value as "Create" | "Import")}>
           <PaddedTabs.List className="border-b border-(--moss-border-color) px-3">
             <PaddedTabs.Trigger value="Create">Create</PaddedTabs.Trigger>
             <PaddedTabs.Trigger value="Import">Import</PaddedTabs.Trigger>
           </PaddedTabs.List>
 
-          <PaddedTabs.Content value="Create" className="px-6 pt-3">
+          <PaddedTabs.Content value="Create">
             <CreateSection onValuesUpdate={handleCreateSectionValuesUpdate} />
           </PaddedTabs.Content>
-          <PaddedTabs.Content value="Import" className="px-6 pt-3">
+          <PaddedTabs.Content value="Import">
             <ImportSection onValuesUpdate={handleImportSectionValuesUpdate} />
           </PaddedTabs.Content>
         </PaddedTabs.Root>
 
-        <div className="px-6 pb-3">
+        <div className="px-6 pb-6">
           <ModeRadioGroup mode={mode} setMode={setMode} />
         </div>
 

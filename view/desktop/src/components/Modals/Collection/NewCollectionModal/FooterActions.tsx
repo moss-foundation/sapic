@@ -17,7 +17,7 @@ export const FooterActions = ({
   tab,
 }: FooterActionsProps) => {
   return (
-    <div className="flex items-center justify-between border-t border-(--moss-border-color) px-6 py-2.5">
+    <div className="flex items-center justify-between border-t border-(--moss-border-color) px-6 py-4">
       <CheckboxWithLabel
         label="Open automatically after creation"
         checked={openAutomatically}

@@ -51,7 +51,7 @@ const Trigger = ({ value, className, icon, label, disabled }: PaddedTabProps) =>
       value={value}
       //prettier-ignore
       className={cn(`
-        p-0 border-none! test-base leading-4
+        p-0 border-none! text-base leading-4
         cursor-pointer
         rounded-full 
 

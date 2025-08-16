@@ -8,7 +8,6 @@ import { cn } from "@/utils";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { CreateCollectionGitParams } from "@repo/moss-workspace";
 
-import { Provider } from "../ProvidersRadioGroup/ProvidersRadioGroup";
 import ProviderTabs from "../ProviderTabs/ProviderTabs";
 
 interface CreateSectionProps {
@@ -19,7 +18,7 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [name, setName] = useState("New Collection");
-  const [provider, setProvider] = useState<Provider | null>("github");
+  const [provider, setProvider] = useState<"github" | "gitlab">("github");
   const [repository, setRepository] = useState("github.com/moss-foundation/sapic");
   const [branch, setBranch] = useState("main");
   const [vcs, setVCS] = useState(true);
@@ -57,8 +56,8 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="grid grid-cols-[min-content_1fr] items-center gap-x-2 gap-y-1.5">
+    <div className="flex flex-col gap-2 px-6 py-3">
+      <div className="grid grid-cols-[min-content_1fr] items-center gap-x-2 gap-y-1.5 py-3">
         <div>Name:</div>
         <InputOutlined
           ref={inputRef}
@@ -68,21 +67,21 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
           pattern={VALID_NAME_PATTERN}
           required
         />
-        <p className="col-start-2 max-w-72 text-xs text-(--moss-secondary-text)">{`Invalid filename characters (e.g. / \ : * ? " < > |) will be escaped`}</p>
+        <p className="col-start-2 max-w-72 text-sm text-(--moss-secondary-text)">{`Invalid filename characters (e.g. / \ : * ? " < > |) will be escaped`}</p>
       </div>
 
       <div>
         <div className="flex flex-col gap-2">
           <CheckboxWithLabel checked={vcs} onCheckedChange={handleSetVCS} label="VCS" />
-          <span className="text-xs text-(--moss-secondary-text)">
+          <span className="text-sm text-(--moss-secondary-text)">
             You can switch modes in the workspace at any time and as often as needed.
           </span>
         </div>
 
-        <div className="grid grid-cols-[min-content_1fr] items-center gap-2 py-3 pl-5">
+        <div className="grid grid-cols-[min-content_1fr] items-center gap-x-3 gap-y-6 pt-3 pb-2 pl-5">
           <ProviderTabs.Root
             value={provider}
-            onValueChange={(value) => setProvider(value as Provider)}
+            onValueChange={(value) => setProvider(value as "github" | "gitlab")}
             className="contents"
           >
             <ProviderTabs.List className="col-span-2 grid h-min grid-cols-subgrid grid-rows-subgrid">

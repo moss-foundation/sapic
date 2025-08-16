@@ -5,7 +5,8 @@ import { VALID_NAME_PATTERN } from "@/constants/validation";
 import { useGitProviderStore } from "@/store/gitProvider";
 import { CreateCollectionGitParams } from "@repo/moss-workspace";
 
-import { Provider, Providers, ProvidersRadioGroup } from "../ProvidersRadioGroup/ProvidersRadioGroup";
+import ProviderTabs from "../ProviderTabs/ProviderTabs";
+import { Subheader } from "../Subheader";
 
 interface ImportSectionProps {
   onValuesUpdate: (values: { name: string; gitParams: CreateCollectionGitParams | undefined }) => void;
@@ -19,12 +20,7 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
   const [name, setName] = useState("New Collection");
   const [repository, setRepository] = useState("github.com/moss-foundation/sapic");
   const [branch, setBranch] = useState("main");
-  const [provider, setProvider] = useState<Provider | null>("github");
-
-  const providers: Providers = [
-    { value: "github", label: "GitHub", icon: "github" },
-    { value: "gitlab", label: "GitLab", icon: "gitlab" },
-  ];
+  const [provider, setProvider] = useState<"github" | "gitlab">("github");
 
   useEffect(() => {
     const deriveGitParams = () => {
@@ -50,61 +46,90 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
   }, [name, onValuesUpdate, repository, branch, provider]);
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-4 px-6 pt-3">
       <div className="grid grid-cols-[min-content_1fr] items-center gap-x-3 gap-y-6">
-        <div>From:</div>
-        <ProvidersRadioGroup selected={provider} setSelected={setProvider} providers={providers} />
+        <ProviderTabs.Root
+          value={provider}
+          onValueChange={(value) => setProvider(value as "github" | "gitlab")}
+          className="contents"
+        >
+          <ProviderTabs.List className="col-span-2 grid h-min grid-cols-subgrid grid-rows-subgrid">
+            <div>From:</div>
+            <div className="flex gap-2">
+              <ProviderTabs.Trigger value="github" label="GitHub" icon="github" />
+              <ProviderTabs.Trigger value="gitlab" label="GitLab" icon="gitlab" />
+            </div>
+          </ProviderTabs.List>
 
-        <div className="col-span-2 grid grid-cols-subgrid items-center gap-y-1.5">
-          <div>Name:</div>
-          <InputOutlined
-            ref={inputRef}
-            value={name}
-            className="max-w-72"
-            onChange={(e) => setName(e.target.value)}
-            pattern={VALID_NAME_PATTERN}
-            required
-          />
-          <p className="col-start-2 max-w-72 text-xs text-(--moss-secondary-text)">{`Invalid filename characters (e.g. / \ : * ? " < > |) will be escaped`}</p>
-        </div>
+          <ProviderTabs.Content value="github" className="contents">
+            <div className="col-span-2 grid grid-cols-subgrid items-center gap-y-1.5">
+              <div>Name:</div>
+              <InputOutlined
+                ref={inputRef}
+                value={name}
+                className="max-w-72"
+                onChange={(e) => setName(e.target.value)}
+                pattern={VALID_NAME_PATTERN}
+                required
+              />
+              <p className="col-start-2 max-w-72 text-sm whitespace-pre text-(--moss-secondary-text)">{`Invalid filename characters (e.g. / \ : * ? " < > |)\nwill be escaped`}</p>
+            </div>
+          </ProviderTabs.Content>
+          <ProviderTabs.Content value="gitlab" className="contents">
+            <div className="col-span-2 grid grid-cols-subgrid items-center gap-y-1.5">
+              <div>Name:</div>
+              <InputOutlined
+                ref={inputRef}
+                value={name}
+                className="max-w-72"
+                onChange={(e) => setName(e.target.value)}
+                pattern={VALID_NAME_PATTERN}
+                required
+              />
+              <p className="col-start-2 max-w-72 text-sm text-(--moss-secondary-text)">{`Invalid filename characters (e.g. / \ : * ? " < > |) will be escaped`}</p>
+            </div>
+          </ProviderTabs.Content>
+        </ProviderTabs.Root>
       </div>
 
-      <div className="flex justify-between gap-2">
-        <span>Git</span>
-        <div className="background-(--moss-border-color) my-auto h-px w-full" />
-        {gitProvider === null && (
-          <a className="cursor-pointer whitespace-nowrap text-(--moss-primary) hover:underline" href="">
-            Login In via GitHub
-          </a>
-        )}
-      </div>
+      <div>
+        <Subheader>
+          <span>Git</span>
+          <div className="background-(--moss-border-color) my-auto h-px w-full" />
+          {gitProvider === null && (
+            <a className="cursor-pointer whitespace-nowrap text-(--moss-primary) hover:underline" href="">
+              Log In via GitHub
+            </a>
+          )}
+        </Subheader>
 
-      <span className="text-xs text-(--moss-secondary-text)">
-        You can switch modes in the workspace at any time and as often as needed.
-      </span>
+        <span className="text-sm text-(--moss-secondary-text)">
+          You can switch modes in the workspace at any time and as often as needed.
+        </span>
 
-      <div className="grid grid-cols-[min-content_1fr] items-center gap-3 gap-y-6 py-3 pl-5">
-        <div className="col-span-2 grid grid-cols-subgrid items-center">
-          <div>Repository:</div>
-          <InputOutlined
-            ref={inputRef}
-            value={repository}
-            className="max-w-72"
-            onChange={(e) => setRepository(e.target.value)}
-            required
-          />
-        </div>
+        <div className="grid grid-cols-[min-content_1fr] items-center gap-x-3 gap-y-6 pt-3 pb-4 pl-5">
+          <div className="col-span-2 grid grid-cols-subgrid items-center">
+            <div>Repository:</div>
+            <InputOutlined
+              ref={inputRef}
+              value={repository}
+              className="max-w-72"
+              onChange={(e) => setRepository(e.target.value)}
+              required
+            />
+          </div>
 
-        <div className="col-span-2 grid grid-cols-subgrid items-center">
-          <div>Branch:</div>
-          <InputOutlined
-            ref={inputRef}
-            value={branch}
-            className="max-w-72"
-            onChange={(e) => setBranch(e.target.value)}
-            pattern={VALID_NAME_PATTERN}
-            required
-          />
+          <div className="col-span-2 grid grid-cols-subgrid items-center">
+            <div>Branch:</div>
+            <InputOutlined
+              ref={inputRef}
+              value={branch}
+              className="max-w-72"
+              onChange={(e) => setBranch(e.target.value)}
+              pattern={VALID_NAME_PATTERN}
+              required
+            />
+          </div>
         </div>
       </div>
     </div>
