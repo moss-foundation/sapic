@@ -27,10 +27,8 @@ export const calculateIsSubmitDisabled = ({
   }
 
   if (tab === "Import") {
-    if (importParams) {
-      if (gitProvider === null) {
-        return true;
-      }
+    if (!importParams) {
+      return true;
     }
   }
 
