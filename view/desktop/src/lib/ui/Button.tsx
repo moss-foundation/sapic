@@ -18,7 +18,7 @@ const buttonRootStyles = cva(
     variants: {
       isDisabled: {
         false: null,
-        true: "cursor-not-allowed border",
+        true: "cursor-not-allowed",
       },
       loading: {
         false: null,

@@ -19,16 +19,30 @@ export const calculateIsSubmitDisabled = ({
   if (!name) return true;
 
   if (tab === "Create") {
-    if (createParams) {
-      if (gitProvider === null) {
-        return true;
-      }
+    if (!createParams) {
+      return false;
+    }
+
+    if ("gitHub" in createParams) {
+      return !createParams.gitHub.repository || !createParams.gitHub.branch;
+    }
+
+    if ("gitLab" in createParams) {
+      return !createParams.gitLab.repository || !createParams.gitLab.branch;
     }
   }
 
   if (tab === "Import") {
     if (!importParams) {
-      return true;
+      return false;
+    }
+
+    if ("gitHub" in importParams) {
+      return !importParams.gitHub.repository || !importParams.gitHub.branch;
+    }
+
+    if ("gitLab" in importParams) {
+      return !importParams.gitLab.repository || !importParams.gitLab.branch;
     }
   }
 
