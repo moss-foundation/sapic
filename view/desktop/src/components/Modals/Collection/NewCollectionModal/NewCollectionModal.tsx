@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 
 import PaddedTabs from "@/components/PaddedTabs/PaddedTabs";
 import { useCreateCollection } from "@/hooks/collection/useCreateCollection";
@@ -92,23 +92,27 @@ export const NewCollectionModal = ({ closeModal, showModal, initialTab = "Create
     closeModal();
   };
 
-  const handleCreateSectionValuesUpdate = (values: {
-    name: string;
-    gitParams: CreateCollectionGitParams | undefined;
-  }) => {
-    setName(values.name);
-    setCreateParams(values.gitParams);
-  };
+  const handleCreateSectionValuesUpdate = useCallback(
+    (values: { name: string; gitParams: CreateCollectionGitParams | undefined }) => {
+      setName(values.name);
+      setCreateParams(values.gitParams);
+    },
+    []
+  );
 
-  const handleImportSectionValuesUpdate = (values: {
-    name: string;
-    importParams: ImportCollectionSource | undefined;
-  }) => {
-    setName(values.name);
-    setImportParams(values.importParams);
-  };
+  const handleImportSectionValuesUpdate = useCallback(
+    (values: { name: string; importParams: ImportCollectionSource | undefined }) => {
+      setName(values.name);
+      setImportParams(values.importParams);
+    },
+    []
+  );
 
   const isSubmitDisabled = calculateIsSubmitDisabled({ name, tab, createParams, importParams, gitProvider });
+
+  useEffect(() => {
+    console.log("createParams", createParams);
+  }, [createParams]);
 
   return (
     <Modal onBackdropClick={handleCancel} showModal={showModal}>
