@@ -28,9 +28,9 @@ export const CollectionTreeViewHeader = () => {
   const [initialTab, setInitialTab] = useState<"Create" | "Import">("Create");
 
   const {
-    showModal: showCreateCollectionModal,
-    closeModal: closeCreateCollectionModal,
-    openModal: openCreateCollectionModal,
+    showModal: showNewCollectionModal,
+    closeModal: closeNewCollectionModal,
+    openModal: openNewCollectionModal,
   } = useModal();
 
   const handleRefreshCollections = () => {
@@ -114,7 +114,7 @@ export const CollectionTreeViewHeader = () => {
               icon="Add"
               onClick={() => {
                 setInitialTab("Create");
-                openCreateCollectionModal();
+                openNewCollectionModal();
               }}
             />
             <ActionButton
@@ -129,7 +129,7 @@ export const CollectionTreeViewHeader = () => {
               icon="Import"
               onClick={() => {
                 setInitialTab("Import");
-                openCreateCollectionModal();
+                openNewCollectionModal();
               }}
             />
             <ActionButton
@@ -143,11 +143,11 @@ export const CollectionTreeViewHeader = () => {
           </>
         }
       />
-      {showCreateCollectionModal && (
+      {showNewCollectionModal && (
         <NewCollectionModal
           initialTab={initialTab}
-          showModal={showCreateCollectionModal}
-          closeModal={closeCreateCollectionModal}
+          showModal={showNewCollectionModal}
+          closeModal={closeNewCollectionModal}
         />
       )}
     </>
