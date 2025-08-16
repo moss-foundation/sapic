@@ -171,7 +171,7 @@ impl<R: AppRuntime> CollectionService<R> {
             }
         };
 
-        let collection = CollectionBuilder::new(
+        let collection_result = CollectionBuilder::new(
             self.fs.clone(),
             self.github_client.clone(),
             self.gitlab_client.clone(),
@@ -187,7 +187,30 @@ impl<R: AppRuntime> CollectionService<R> {
             },
         )
         .await
-        .join_err::<()>("failed to build collection")?;
+        .join_err::<()>("failed to build collection");
+
+        // Remove collection folder if collection fails to be created
+        let collection = match collection_result {
+            Ok(collection) => collection,
+            Err(e) => {
+                // TODO: Log or tell the frontend we failed to clean up after operation failure
+                let _ = self
+                    .fs
+                    .remove_dir(
+                        &abs_path,
+                        RemoveOptions {
+                            recursive: true,
+                            ignore_if_not_exists: true,
+                        },
+                    )
+                    .await
+                    .join_err_with::<()>(|| {
+                        format!("failed to remove directory `{}`", abs_path.display())
+                    });
+                return Err(e);
+            }
+        };
+
         let icon_path = collection.icon_path();
 
         // let on_did_change = collection.on_did_change().subscribe(|_event| async move {
@@ -262,7 +285,7 @@ impl<R: AppRuntime> CollectionService<R> {
             })?;
 
         let git_params = &params.git_params;
-        let collection = CollectionBuilder::new(
+        let collection_result = CollectionBuilder::new(
             self.fs.clone(),
             self.github_client.clone(),
             self.gitlab_client.clone(),
@@ -279,7 +302,29 @@ impl<R: AppRuntime> CollectionService<R> {
             },
         )
         .await
-        .join_err::<()>("failed to clone collection")?;
+        .join_err::<()>("failed to clone collection");
+
+        // Remove collection folder if collection fails to be cloned
+        let collection = match collection_result {
+            Ok(collection) => collection,
+            Err(e) => {
+                // TODO: Log or tell the frontend we failed to clean up after operation failure
+                let _ = self
+                    .fs
+                    .remove_dir(
+                        &abs_path,
+                        RemoveOptions {
+                            recursive: true,
+                            ignore_if_not_exists: true,
+                        },
+                    )
+                    .await
+                    .join_err_with::<()>(|| {
+                        format!("failed to remove directory `{}`", abs_path.display())
+                    });
+                return Err(e);
+            }
+        };
 
         let desc = collection.describe().await?;
 
