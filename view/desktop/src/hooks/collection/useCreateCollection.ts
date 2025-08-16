@@ -20,13 +20,11 @@ export const useCreateCollection = () => {
   return useMutation({
     mutationFn: createCollection,
     onSuccess: (data, variables) => {
-      console.log({ data, variables });
       queryClient.setQueryData([USE_STREAMED_COLLECTIONS_QUERY_KEY], (old: StreamCollectionsEvent[]) => {
         return [
           ...old,
           {
-            ...variables,
-            ...data,
+            ...inputToEvent(variables, data),
           },
         ];
       });
@@ -34,14 +32,24 @@ export const useCreateCollection = () => {
   });
 };
 
-const InputToEvent = (input: CreateCollectionInput): StreamCollectionsEvent => {
-  const {
-    name,
-    order,
-    gitParams: { gitHub, gitLab },
-  } = input;
-  const repository = gitHub.repository || gitLab.repository;
-  const branch = gitHub.branch || gitLab.branch;
+const inputToEvent = (input: CreateCollectionInput, data: CreateCollectionOutput): StreamCollectionsEvent => {
+  const { gitParams, iconPath } = input;
 
-  return { name, order, repository, branch };
+  let repository: string | undefined;
+  if (gitParams) {
+    if ("gitHub" in gitParams) {
+      repository = gitParams.gitHub.repository;
+    } else if ("gitLab" in gitParams) {
+      repository = gitParams.gitLab.repository;
+    }
+  }
+
+  const picturePath = iconPath || undefined;
+
+  return {
+    repository,
+    contributors: [], // Empty array as default
+    picturePath,
+    ...data,
+  };
 };
