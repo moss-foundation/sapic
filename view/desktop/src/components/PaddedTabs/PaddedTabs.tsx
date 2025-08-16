@@ -29,7 +29,7 @@ interface PaddedTabsListProps {
 
 const List = ({ children, className }: PaddedTabsListProps) => {
   return (
-    <TabsList className={cn("flex h-full w-full items-center gap-1", className)} data-tabs-list-container>
+    <TabsList className={cn("flex w-full items-center gap-1", className)} data-tabs-list-container>
       {children}
     </TabsList>
   );
