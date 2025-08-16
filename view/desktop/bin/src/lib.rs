@@ -122,6 +122,7 @@ pub async fn run<R: TauriRuntime>() {
             commands::describe_workspace_state,
             commands::stream_collections,
             commands::create_collection,
+            commands::import_collection,
             commands::delete_collection,
             commands::update_collection,
             commands::batch_update_collection,

@@ -24,11 +24,30 @@ export const useCreateCollection = () => {
         return [
           ...old,
           {
-            ...data,
-            ...variables,
+            ...inputToEvent(variables, data),
           },
         ];
       });
     },
   });
+};
+
+const inputToEvent = (input: CreateCollectionInput, data: CreateCollectionOutput): StreamCollectionsEvent => {
+  const { gitParams, iconPath } = input;
+
+  let repository: string | undefined;
+  if (gitParams) {
+    if ("gitHub" in gitParams) {
+      repository = gitParams.gitHub.repository;
+    } else if ("gitLab" in gitParams) {
+      repository = gitParams.gitLab.repository;
+    }
+  }
+
+  return {
+    repository,
+    contributors: [], // Empty array as default
+    iconPath,
+    ...data,
+  };
 };

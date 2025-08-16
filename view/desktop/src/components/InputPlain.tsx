@@ -13,7 +13,6 @@ const inputStyles = cva(`
     background-(--moss-input-bg-plain)
     text-(--moss-controls-plain-text)
     has-data-invalid:text-(--moss-error)
-    has-[input:focus-within]:outline-(--moss-primary)
   `, 
 {
   variants: {

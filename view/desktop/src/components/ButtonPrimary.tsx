@@ -34,8 +34,8 @@ const buttonStyles = cva(`
   }
 )
 
-export const ButtonPrimary = ({ size = "md", ...props }: ButtonPrimaryProps) => {
-  return <Button className={cn(buttonStyles({ size }), props.className)} {...props} />;
+export const ButtonPrimary = ({ size = "md", className, ...props }: ButtonPrimaryProps) => {
+  return <Button className={cn(buttonStyles({ size }), className)} {...props} />;
 };
 
 export default ButtonPrimary;

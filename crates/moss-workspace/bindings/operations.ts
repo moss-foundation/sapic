@@ -4,10 +4,10 @@ import type { ChangeCollectionId } from "./primitives";
 import type {
   ActivitybarPartStateInfo,
   AddVariableParams,
+  CreateCollectionGitParams,
   EditorPartStateInfo,
   EnvironmentGroup,
-  GitHubImportParams,
-  GitLabImportParams,
+  ImportCollectionSource,
   PanelPartStateInfo,
   SidebarPartStateInfo,
   UpdateCollectionParams,
@@ -49,7 +49,7 @@ export type CreateCollectionInput = {
   name: string;
   order: number;
   externalPath?: string;
-  repository?: string;
+  gitParams?: CreateCollectionGitParams;
   iconPath?: string;
 };
 
@@ -120,10 +120,13 @@ export type DescribeStateOutput = {
   activitybar?: ActivitybarPartStateInfo;
 };
 
-/**
- * @category Operation
- */
-export type ImportCollectionInput = { "gitHub": GitHubImportParams } | { "gitLab": GitLabImportParams };
+export type ImportCollectionInput = {
+  name: string;
+  order: number;
+  externalPath?: string;
+  source: ImportCollectionSource;
+  iconPath?: string;
+};
 
 /**
  * @category Operation

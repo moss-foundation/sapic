@@ -22,13 +22,13 @@ export const TreeRootNodeRenameForm = ({
   handleRenamingFormSubmit,
   handleRenamingFormCancel,
 }: TreeRootNodeRenameFormProps) => {
-  const { picturePath } = useContext(CollectionTreeContext);
+  const { iconPath } = useContext(CollectionTreeContext);
 
   return (
     <div className="flex grow cursor-pointer items-center gap-1.5">
       <div className="flex size-5 shrink-0 items-center justify-center rounded">
-        {picturePath ? (
-          <img src={picturePath} className="h-full w-full" />
+        {iconPath ? (
+          <img src={iconPath} className="h-full w-full" />
         ) : (
           <span className="flex size-5 shrink-0 items-center justify-center">
             <button className="flex cursor-pointer items-center justify-center rounded-full">

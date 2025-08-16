@@ -97,8 +97,7 @@ pub async fn create_test_collection() -> (
                 name: Some(random_collection_name()),
                 external_abs_path: None,
                 internal_abs_path: abs_path.clone(),
-                repository: None,
-                git_provider_type: None,
+                git_params: None,
                 icon_path: None,
             },
         )

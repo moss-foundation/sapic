@@ -36,8 +36,6 @@ const defaultRadioGroupItemStyles = `
   
   data-[state=checked]:border-none
 
-  focus-visible:outline-2 
-  focus-visible:outline-offset-2
 `;
 
 const Item = forwardRef<

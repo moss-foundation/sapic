@@ -1,13 +1,14 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
 import { cva } from "class-variance-authority";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+
 import { cn } from "@/utils";
 import {
-  extractVariables,
   createHighlightedHTML,
   extractPlainText,
+  extractVariables,
+  getCurrentCursorOffset,
   getTextOffset,
   setCursorPosition,
-  getCurrentCursorOffset,
 } from "@/utils/templating";
 
 interface InputTemplatingProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size"> {
@@ -26,10 +27,6 @@ const containerStyles = cva(`
     border-(--moss-controls-outlined-border)
     text-(--moss-controls-outlined-text)
     has-data-invalid:border-(--moss-error)
-    focus-within:outline-(--moss-primary)
-    focus-within:has-data-invalid:outline-(--moss-error)
-    focus-within:outline-2
-    focus-within:-outline-offset-1
     font-normal
     z-10
   `, 

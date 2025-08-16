@@ -41,13 +41,13 @@ export const useUpdateCollection = () => {
           };
 
           const updatedRepository = handleChangeValue(variables.repository, oldCollection.repository);
-          const updatedIconPath = handleChangeValue(variables.iconPath, oldCollection.picturePath);
+          const updatedIconPath = handleChangeValue(variables.iconPath, oldCollection.iconPath);
 
           return {
             ...oldCollection,
             ...variables,
             repository: updatedRepository,
-            picturePath: updatedIconPath,
+            iconPath: updatedIconPath,
           };
         });
       });

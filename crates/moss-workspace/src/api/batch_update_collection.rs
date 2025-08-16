@@ -5,7 +5,6 @@ use validator::Validate;
 use crate::{
     api::BatchUpdateCollectionOp,
     models::operations::{BatchUpdateCollectionInput, BatchUpdateCollectionOutput},
-    services::collection_service::CollectionItemUpdateParams,
     workspace::Workspace,
 };
 
@@ -19,21 +18,12 @@ impl<R: AppRuntime> BatchUpdateCollectionOp<R> for Workspace<R> {
 
         let mut ids = Vec::new();
         for item in input.items {
+            let id = item.id.clone();
             self.collection_service
-                .update_collection(
-                    ctx,
-                    &item.id,
-                    CollectionItemUpdateParams {
-                        order: item.order,
-                        expanded: item.expanded,
-                        name: None,
-                        repository: None,
-                        icon_path: None,
-                    },
-                )
+                .update_collection(ctx, &id, item)
                 .await?;
 
-            ids.push(item.id);
+            ids.push(id);
         }
 
         Ok(BatchUpdateCollectionOutput { ids })

@@ -2,25 +2,28 @@
 @config "@repo/tailwind-config";
 @import "./fonts.css";
 @source "./icons/";
-#root {
-  height: 100%;
-}
 
 @layer base {
+  #root {
+    height: 100%;
+  }
   html,
   body {
-    @apply font-sans font-normal;
+    @apply font-sans;
     overflow: hidden;
     position: fixed;
     width: 100vw;
     height: 100vh;
     overflow: hidden;
+    line-height: 16px;
   }
-  *:focus {
+  *:focus:not(.focus-visible) {
     outline: none;
   }
 }
-
+*:focus-visible {
+  @apply outline-2 outline-offset-1 outline-(--moss-primary);
+}
 .linux {
   -webkit-font-smoothing: antialiased;
 }

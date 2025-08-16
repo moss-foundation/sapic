@@ -1,8 +1,10 @@
-import React, { useState, useRef } from "react";
-import { cn } from "@/utils";
-import { Icon } from "@/lib/ui";
-import { ActionMenu, Divider, ButtonPrimary } from "@/components";
+import React, { useRef, useState } from "react";
+
+import { ActionMenu, ButtonPrimary, Divider } from "@/components";
 import InputTemplating from "@/components/InputTemplating";
+import { Icon } from "@/lib/ui";
+import { cn } from "@/utils";
+
 import { areUrlsEquivalent } from "./utils/urlParser";
 
 interface RequestInputFieldProps {
@@ -107,7 +109,6 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = React.memo(
                 className={cn(
                   "flex items-center justify-between rounded-md rounded-r-none px-2.5 py-2 text-base font-bold transition-colors",
                   "background-(--moss-primary-background) text-(--moss-requestpage-text)",
-                  "focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-(--moss-primary)",
                   "data-[state=open]:outline-2 data-[state=open]:-outline-offset-1 data-[state=open]:outline-(--moss-primary)",
                   "border border-r-0 border-transparent",
                   "min-h-8 w-24"

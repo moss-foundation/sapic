@@ -9,10 +9,6 @@ export interface CheckboxProps {
 
 const defaultCheckboxRootStyles = `
   border-1 border-solid rounded flex justify-center items-center size-4 text-white
-  
-  focus-visible:outline-2
-  focus-visible:outline-offset-2
-  focus-visible:outline
 
   hover:brightness-95
 

@@ -4,7 +4,6 @@ use validator::Validate;
 
 use crate::{
     models::operations::{UpdateCollectionInput, UpdateCollectionOutput},
-    services::collection_service::CollectionItemUpdateParams,
     workspace::Workspace,
 };
 
@@ -18,19 +17,9 @@ impl<R: AppRuntime> Workspace<R> {
 
         let id = input.inner.id.clone().into();
         self.collection_service
-            .update_collection(
-                ctx,
-                &id,
-                CollectionItemUpdateParams {
-                    name: input.inner.name,
-                    order: input.inner.order,
-                    expanded: input.inner.expanded,
-                    repository: input.inner.repository,
-                    icon_path: input.inner.icon_path,
-                },
-            )
+            .update_collection(ctx, &id, input.inner)
             .await?;
 
-        Ok(UpdateCollectionOutput { id: input.inner.id })
+        Ok(UpdateCollectionOutput { id })
     }
 }

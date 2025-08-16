@@ -16,7 +16,7 @@ interface TreeRootNodeButtonProps {
 }
 
 export const TreeRootNodeButton = ({ node, searchInput, shouldRenderChildNodes }: TreeRootNodeButtonProps) => {
-  const { id, picturePath, showNodeOrders } = useContext(CollectionTreeContext);
+  const { id, iconPath, showNodeOrders } = useContext(CollectionTreeContext);
   const { mutateAsync: updateCollection } = useUpdateCollection();
   const { addOrFocusPanel } = useTabbedPaneStore();
 
@@ -64,14 +64,14 @@ export const TreeRootNodeButton = ({ node, searchInput, shouldRenderChildNodes }
             icon="ChevronRight"
             className={cn("text-(--moss-icon-primary-text)", {
               "rotate-90": shouldRenderChildNodes,
-              "hidden group-hover/treeRootNodeTrigger:block": picturePath,
+              "hidden group-hover/treeRootNodeTrigger:block": iconPath,
             })}
           />
         </button>
 
-        {picturePath && (
+        {iconPath && (
           <div className="h-full w-full rounded group-hover/treeRootNodeTrigger:hidden">
-            <img src={picturePath} className="h-full w-full" />
+            <img src={iconPath} className="h-full w-full" />
           </div>
         )}
       </span>

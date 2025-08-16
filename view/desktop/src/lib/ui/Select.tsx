@@ -36,7 +36,7 @@ export interface SelectTriggerProps extends ComponentPropsWithoutRef<typeof Sele
 }
 
 const selectTriggerStyles = cva(
-  "relative flex cursor-pointer items-center justify-center rounded-sm px-2 transition duration-150 ease-in-out focus-visible:outline-2 focus-visible:outline-offset-2",
+  "relative flex cursor-pointer items-center justify-center rounded-sm px-2 transition duration-150 ease-in-out",
   {
     variants: {
       disabled: {

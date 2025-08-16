@@ -4,7 +4,6 @@ use validator::Validate;
 
 use crate::{
     models::operations::{CreateCollectionInput, CreateCollectionOutput},
-    services::collection_service::CollectionItemCreateParams,
     workspace::Workspace,
 };
 
@@ -16,21 +15,9 @@ impl<R: AppRuntime> Workspace<R> {
     ) -> joinerror::Result<CreateCollectionOutput> {
         input.validate().join_err_bare()?;
 
-        debug_assert!(input.external_path.is_none(), "Is not implemented");
-
         let description = self
             .collection_service
-            .create_collection(
-                ctx,
-                CollectionItemCreateParams {
-                    name: input.name.to_owned(),
-                    order: input.order.to_owned(),
-                    external_path: input.external_path.to_owned(),
-                    icon_path: input.icon_path.to_owned(),
-                    repository: input.repository.to_owned(),
-                    git_provider_type: input.git_provider_type.to_owned(),
-                },
-            )
+            .create_collection(ctx, &input.inner)
             .await?;
 
         Ok(CreateCollectionOutput {

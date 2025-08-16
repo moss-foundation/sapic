@@ -49,7 +49,7 @@ impl<R: AppRuntime> Workspace<R> {
                 repository: collection.repository,
                 repository_info,
                 contributors,
-                picture_path: collection.icon_path,
+                icon_path: collection.icon_path,
             }) {
                 println!("Error sending collection event: {:?}", e); // TODO: log error
             } else {
