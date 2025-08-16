@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 
-import { ButtonNeutralOutlined, ButtonPrimary } from "@/components";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import InputOutlined from "@/components/InputOutlined";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
@@ -104,60 +103,59 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
                 <ProviderTabs.Trigger value="gitlab" label="GitLab" icon="gitlab" disabled={!vcs} />
               </div>
             </ProviderTabs.List>
-            {gitProvider !== null && (
-              <>
-                <ProviderTabs.Content value="github" className="contents">
-                  <div className="col-span-2 grid grid-cols-subgrid items-center">
-                    <div className={cn(!vcs && "opacity-50")}>Repository:</div>
-                    <InputOutlined
-                      value={repository}
-                      className="max-w-72"
-                      onChange={(e) => setRepository(e.target.value)}
-                      required
-                      disabled={!vcs}
-                    />
-                  </div>
-                  <div className="col-span-2 grid grid-cols-subgrid items-center">
-                    <div className={cn(!vcs && "opacity-50")}>Branch:</div>
-                    <InputOutlined
-                      value={branch}
-                      className="max-w-72"
-                      onChange={(e) => setBranch(e.target.value)}
-                      pattern={VALID_NAME_PATTERN}
-                      required
-                      disabled={!vcs}
-                    />
-                  </div>
-                </ProviderTabs.Content>
-                <ProviderTabs.Content value="gitlab" className="contents">
-                  <div className="col-span-2 grid grid-cols-subgrid items-center">
-                    <div className={cn(!vcs && "opacity-50")}>Repository:</div>
-                    <InputOutlined
-                      value={repository}
-                      className="max-w-72"
-                      onChange={(e) => setRepository(e.target.value)}
-                      required
-                      disabled={!vcs}
-                    />
-                  </div>
-                  <div className="col-span-2 grid grid-cols-subgrid items-center">
-                    <div className={cn(!vcs && "opacity-50")}>Branch:</div>
-                    <InputOutlined
-                      value={branch}
-                      className="max-w-72"
-                      onChange={(e) => setBranch(e.target.value)}
-                      pattern={VALID_NAME_PATTERN}
-                      required
-                      disabled={!vcs}
-                    />
-                  </div>
-                </ProviderTabs.Content>
-              </>
-            )}
+
+            <>
+              <ProviderTabs.Content value="github" className="contents">
+                <div className="col-span-2 grid grid-cols-subgrid items-center">
+                  <div className={cn(!vcs && "opacity-50")}>Repository:</div>
+                  <InputOutlined
+                    value={repository}
+                    className="max-w-72"
+                    onChange={(e) => setRepository(e.target.value)}
+                    required
+                    disabled={!vcs}
+                  />
+                </div>
+                <div className="col-span-2 grid grid-cols-subgrid items-center">
+                  <div className={cn(!vcs && "opacity-50")}>Branch:</div>
+                  <InputOutlined
+                    value={branch}
+                    className="max-w-72"
+                    onChange={(e) => setBranch(e.target.value)}
+                    pattern={VALID_NAME_PATTERN}
+                    required
+                    disabled={!vcs}
+                  />
+                </div>
+              </ProviderTabs.Content>
+              <ProviderTabs.Content value="gitlab" className="contents">
+                <div className="col-span-2 grid grid-cols-subgrid items-center">
+                  <div className={cn(!vcs && "opacity-50")}>Repository:</div>
+                  <InputOutlined
+                    value={repository}
+                    className="max-w-72"
+                    onChange={(e) => setRepository(e.target.value)}
+                    required
+                    disabled={!vcs}
+                  />
+                </div>
+                <div className="col-span-2 grid grid-cols-subgrid items-center">
+                  <div className={cn(!vcs && "opacity-50")}>Branch:</div>
+                  <InputOutlined
+                    value={branch}
+                    className="max-w-72"
+                    onChange={(e) => setBranch(e.target.value)}
+                    pattern={VALID_NAME_PATTERN}
+                    required
+                    disabled={!vcs}
+                  />
+                </div>
+              </ProviderTabs.Content>
+            </>
           </ProviderTabs.Root>
         </div>
 
-        {gitProvider === null && (
+        {/* {gitProvider === null && (
           <div className={cn("flex w-full gap-5 py-3 pl-5", !vcs && "opacity-50")}>
             <ButtonPrimary className="px-3 py-1.5" disabled={!vcs} onClick={handleAddAccount}>
               {provider === "github" ? "Log In via GitHub..." : "Log In via GitLab..."}
@@ -170,7 +168,7 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
               Log In with Token...
             </ButtonNeutralOutlined>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );
