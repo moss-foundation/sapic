@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 
 import { Divider } from "@/components/Divider";
 import { Icon, Icons } from "@/lib/ui";
-import { cn, swapListById } from "@/utils";
+import { cn, swap } from "@/utils";
 import {
   attachClosestEdge,
   extractClosestEdge,
@@ -60,7 +60,9 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
         const targetData = target.data;
         if (!sourceData || !targetData) return;
 
-        const updatedItems = swapListById(sourceData.id as number, targetData.id as number, DNDList);
+        const updatedItems = swap(DNDList, sourceData.id as number, targetData.id as number, {
+          mode: "id",
+        });
         if (!updatedItems) return;
 
         setDNDList(updatedItems as Item[]);

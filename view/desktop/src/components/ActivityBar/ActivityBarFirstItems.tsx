@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { ACTIVITYBAR_POSITION } from "@/constants/layoutPositions";
 import { ActivityBarItem, useActivityBarStore } from "@/store/activityBar";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
-import { cn, swapListById } from "@/utils";
+import { cn, swap } from "@/utils";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
@@ -29,7 +29,10 @@ export const ActivityBarFirstItems = () => {
 
         if (!sourceData || !targetData || !sourceData.data || !targetData.data) return;
 
-        const updatedItems = swapListById(sourceData.data.id, targetData.data.id, items, edge);
+        const updatedItems = swap(items, sourceData.data.id, targetData.data.id, {
+          mode: "id",
+          edge,
+        });
 
         if (!updatedItems) return;
 
