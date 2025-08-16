@@ -7,7 +7,7 @@ import { useStreamedCollections } from "@/hooks/collection/useStreamedCollection
 import { Modal } from "@/lib/ui";
 import { useGitProviderStore } from "@/store/gitProvider";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
-import { CreateCollectionGitParams, ImportCollectionParams } from "@repo/moss-workspace";
+import { CreateCollectionGitParams, ImportCollectionSource } from "@repo/moss-workspace";
 
 import { ModalWrapperProps } from "../../types";
 import { CreateSection } from "./CreateSection/CreateSection";
@@ -35,7 +35,7 @@ export const NewCollectionModal = ({ closeModal, showModal, initialTab = "Create
   const [mode, setMode] = useState<"Default" | "Custom">("Default");
   const [openAutomatically, setOpenAutomatically] = useState(true);
   const [createParams, setCreateParams] = useState<CreateCollectionGitParams | undefined>(undefined);
-  const [importParams, setImportParams] = useState<ImportCollectionParams | undefined>(undefined);
+  const [importParams, setImportParams] = useState<ImportCollectionSource | undefined>(undefined);
   const [tab, setTab] = useState<"Create" | "Import">(initialTab);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -68,7 +68,7 @@ export const NewCollectionModal = ({ closeModal, showModal, initialTab = "Create
       const result = await importCollection({
         name,
         order: collections?.length ? collections.length + 1 : 1,
-        params: importParams,
+        source: importParams,
         //TODO this is hardcoded, but we don't have and interface for this yet
         externalPath: "",
         iconPath: "",
@@ -102,7 +102,7 @@ export const NewCollectionModal = ({ closeModal, showModal, initialTab = "Create
 
   const handleImportSectionValuesUpdate = (values: {
     name: string;
-    importParams: ImportCollectionParams | undefined;
+    importParams: ImportCollectionSource | undefined;
   }) => {
     setName(values.name);
     setImportParams(values.importParams);

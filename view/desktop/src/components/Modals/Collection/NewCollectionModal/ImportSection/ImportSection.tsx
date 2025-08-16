@@ -4,13 +4,13 @@ import InputOutlined from "@/components/InputOutlined";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
 import { useAddAccount } from "@/hooks/account/useAddAccount";
 import { useGitProviderStore } from "@/store/gitProvider";
-import { ImportCollectionParams } from "@repo/moss-workspace";
+import { ImportCollectionSource } from "@repo/moss-workspace";
 
 import ProviderTabs from "../ProviderTabs/ProviderTabs";
 import { Subheader } from "../Subheader";
 
 interface ImportSectionProps {
-  onValuesUpdate: (values: { name: string; importParams: ImportCollectionParams | undefined }) => void;
+  onValuesUpdate: (values: { name: string; importParams: ImportCollectionSource | undefined }) => void;
 }
 
 export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {

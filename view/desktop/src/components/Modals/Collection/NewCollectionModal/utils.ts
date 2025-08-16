@@ -1,11 +1,11 @@
 import { AddAccountOutput } from "@repo/moss-app";
-import { CreateCollectionGitParams, ImportCollectionParams } from "@repo/moss-workspace";
+import { CreateCollectionGitParams, ImportCollectionSource } from "@repo/moss-workspace";
 
 interface CalculateIsSubmitDisabledProps {
   name: string;
   tab: "Create" | "Import";
   createParams: CreateCollectionGitParams | undefined;
-  importParams: ImportCollectionParams | undefined;
+  importParams: ImportCollectionSource | undefined;
   gitProvider: AddAccountOutput | null;
 }
 
