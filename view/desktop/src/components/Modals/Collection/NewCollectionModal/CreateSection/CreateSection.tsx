@@ -6,18 +6,13 @@ import { VALID_NAME_PATTERN } from "@/constants/validation";
 import { useFocusInputOnMount } from "@/hooks";
 import { cn } from "@/utils";
 import { CheckedState } from "@radix-ui/react-checkbox";
+import { CreateCollectionGitParams } from "@repo/moss-workspace";
 
 import { Provider } from "../ProvidersRadioGroup/ProvidersRadioGroup";
 import ProviderTabs from "../ProviderTabs/ProviderTabs";
 
 interface CreateSectionProps {
-  onValuesUpdate: (values: {
-    name: string;
-    repository: string;
-    branch: string;
-    vcs: boolean;
-    provider: Provider | null;
-  }) => void;
+  onValuesUpdate: (values: { name: string; gitParams: CreateCollectionGitParams | undefined }) => void;
 }
 
 export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
@@ -32,14 +27,29 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
   useFocusInputOnMount({ inputRef });
 
   useEffect(() => {
+    const deriveGitParams = () => {
+      if (!vcs) return undefined;
+
+      if (provider === "github") {
+        return {
+          gitHub: { repository, branch },
+        };
+      }
+
+      if (provider === "gitlab") {
+        return {
+          gitLab: { repository, branch },
+        };
+      }
+
+      return undefined;
+    };
+
     onValuesUpdate({
       name,
-      repository,
-      branch,
-      vcs,
-      provider,
+      gitParams: deriveGitParams(),
     });
-  }, [name, onValuesUpdate, repository, branch, vcs, provider]);
+  }, [name, onValuesUpdate, repository, branch, provider, vcs]);
 
   const handleSetVCS = (checked: CheckedState) => {
     if (checked === "indeterminate") return;

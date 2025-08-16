@@ -3,11 +3,12 @@ import { useEffect, useRef, useState } from "react";
 import InputOutlined from "@/components/InputOutlined";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
 import { useGitProviderStore } from "@/store/gitProvider";
+import { CreateCollectionGitParams } from "@repo/moss-workspace";
 
 import { Provider, Providers, ProvidersRadioGroup } from "../ProvidersRadioGroup/ProvidersRadioGroup";
 
 interface ImportSectionProps {
-  onValuesUpdate: (values: { name: string; repository: string; branch: string; provider: Provider | null }) => void;
+  onValuesUpdate: (values: { name: string; gitParams: CreateCollectionGitParams | undefined }) => void;
 }
 
 export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
@@ -26,11 +27,25 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
   ];
 
   useEffect(() => {
+    const deriveGitParams = () => {
+      if (provider === "github") {
+        return {
+          gitHub: { repository, branch },
+        };
+      }
+
+      if (provider === "gitlab") {
+        return {
+          gitLab: { repository, branch },
+        };
+      }
+
+      return undefined;
+    };
+
     onValuesUpdate({
       name,
-      repository,
-      branch,
-      provider,
+      gitParams: deriveGitParams(),
     });
   }, [name, onValuesUpdate, repository, branch, provider]);
 
@@ -76,7 +91,6 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
             value={repository}
             className="max-w-72"
             onChange={(e) => setRepository(e.target.value)}
-            pattern={VALID_NAME_PATTERN}
             required
           />
         </div>

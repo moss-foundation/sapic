@@ -5,6 +5,7 @@ import { useCreateCollection } from "@/hooks/collection/useCreateCollection";
 import { useStreamedCollections } from "@/hooks/collection/useStreamedCollections";
 import { Modal } from "@/lib/ui";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { CreateCollectionGitParams } from "@repo/moss-workspace";
 
 import { ModalWrapperProps } from "../../types";
 import { CreateSection } from "./CreateSection/CreateSection";
@@ -13,7 +14,6 @@ import { FooterActions } from "./FooterActions";
 import { Header } from "./Header";
 import { ImportSection } from "./ImportSection/ImportSection";
 import { ModeRadioGroup } from "./ModeRadioGroup";
-import { Provider } from "./ProvidersRadioGroup/ProvidersRadioGroup";
 
 interface NewCollectionModalProps extends ModalWrapperProps {
   initialTab?: "Create" | "Import";
@@ -26,18 +26,23 @@ export const NewCollectionModal = ({ closeModal, showModal, initialTab = "Create
   const { addOrFocusPanel } = useTabbedPaneStore();
 
   const [name, setName] = useState("New Collection");
-  const [repository, setRepository] = useState("github.com/moss-foundation/sapic");
   const [mode, setMode] = useState<"Default" | "Custom">("Default");
   const [openAutomatically, setOpenAutomatically] = useState(true);
-
+  const [gitParams, setGitParams] = useState<CreateCollectionGitParams | undefined>(undefined);
   const [tab, setTab] = useState<"Create" | "Import">(initialTab);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    console.log({
+      name,
+      gitParams,
+      order: collections?.length ? collections.length + 1 : 1,
+    });
+
     const result = await createCollection({
       name,
-      repository,
+      gitParams,
       order: collections?.length ? collections.length + 1 : 1,
     });
 
@@ -58,19 +63,20 @@ export const NewCollectionModal = ({ closeModal, showModal, initialTab = "Create
     closeModal();
   };
 
-  const handleCreateSectionValuesUpdate = (values: { name: string; repository: string }) => {
+  const handleCreateSectionValuesUpdate = (values: {
+    name: string;
+    gitParams: CreateCollectionGitParams | undefined;
+  }) => {
     setName(values.name);
-    setRepository(values.repository);
+    setGitParams(values.gitParams);
   };
 
   const handleImportSectionValuesUpdate = (values: {
     name: string;
-    repository: string;
-    branch: string;
-    provider: Provider | null;
+    gitParams: CreateCollectionGitParams | undefined;
   }) => {
     setName(values.name);
-    setRepository(values.repository);
+    setGitParams(values.gitParams);
   };
 
   const isSubmitDisabled = !name;
