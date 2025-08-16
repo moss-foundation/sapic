@@ -20,7 +20,7 @@ export const calculateIsSubmitDisabled = ({
 
   if (tab === "Create") {
     if (!createParams) {
-      return true;
+      return false;
     }
 
     if ("gitHub" in createParams) {
@@ -34,7 +34,7 @@ export const calculateIsSubmitDisabled = ({
 
   if (tab === "Import") {
     if (!importParams) {
-      return true;
+      return false;
     }
 
     if ("gitHub" in importParams) {
