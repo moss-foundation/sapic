@@ -88,10 +88,10 @@ export const NewCollectionModal = ({ closeModal, showModal, initialTab = "Create
             <PaddedTabs.Trigger value="Import">Import</PaddedTabs.Trigger>
           </PaddedTabs.List>
 
-          <PaddedTabs.Content value="Create">
+          <PaddedTabs.Content value="Create" className="px-6 py-3">
             <CreateSection onValuesUpdate={handleCreateSectionValuesUpdate} />
           </PaddedTabs.Content>
-          <PaddedTabs.Content value="Import">
+          <PaddedTabs.Content value="Import" className="px-6 py-3">
             <ImportSection onValuesUpdate={handleImportSectionValuesUpdate} />
           </PaddedTabs.Content>
         </PaddedTabs.Root>

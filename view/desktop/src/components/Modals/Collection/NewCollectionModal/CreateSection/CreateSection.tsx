@@ -56,7 +56,7 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
   };
 
   return (
-    <div className="flex flex-col gap-2 px-6 py-3">
+    <div className="flex flex-col gap-3">
       <div className="grid grid-cols-[min-content_1fr] items-center gap-x-2 gap-y-1.5 py-3">
         <div>Name:</div>
         <InputOutlined

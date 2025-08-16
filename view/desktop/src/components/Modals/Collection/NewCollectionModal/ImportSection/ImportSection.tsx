@@ -46,8 +46,8 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
   }, [name, onValuesUpdate, repository, branch, provider]);
 
   return (
-    <div className="flex flex-col gap-4 px-6 pt-3">
-      <div className="grid grid-cols-[min-content_1fr] items-center gap-x-3 gap-y-6">
+    <div className="flex flex-col gap-2">
+      <div className="grid grid-cols-[min-content_1fr] items-center gap-x-3 gap-y-6 pb-2">
         <ProviderTabs.Root
           value={provider}
           onValueChange={(value) => setProvider(value as "github" | "gitlab")}
@@ -107,7 +107,7 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
           You can switch modes in the workspace at any time and as often as needed.
         </span>
 
-        <div className="grid grid-cols-[min-content_1fr] items-center gap-x-3 gap-y-6 pt-3 pb-4 pl-5">
+        <div className="grid grid-cols-[min-content_1fr] items-center gap-x-3 gap-y-6 pt-3 pb-2 pl-5">
           <div className="col-span-2 grid grid-cols-subgrid items-center">
             <div>Repository:</div>
             <InputOutlined
