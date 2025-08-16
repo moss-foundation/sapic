@@ -21,7 +21,7 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
 
   const [name, setName] = useState("New Collection");
   //TODO repository expects input like this: https://github.com/brutusyhy/test-empty-collection.git.
-  const [repository, setRepository] = useState("https://github.com/brutusyhy/test-empty-collection.git");
+  const [repository, setRepository] = useState("");
   const [branch, setBranch] = useState("main");
   const [provider, setProvider] = useState<"github" | "gitlab">("github");
 
