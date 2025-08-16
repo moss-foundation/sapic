@@ -20,7 +20,7 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
   const { gitProvider } = useGitProviderStore();
 
   const [name, setName] = useState("New Collection");
-  //TODO repository expects input like this: https://github.com/brutusyhy/test-empty-collection.git. This should
+  //TODO repository expects input like this: https://github.com/brutusyhy/test-empty-collection.git.
   const [repository, setRepository] = useState("https://github.com/brutusyhy/test-empty-collection.git");
   const [branch, setBranch] = useState("main");
   const [provider, setProvider] = useState<"github" | "gitlab">("github");
@@ -109,6 +109,7 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
             <button
               className="cursor-pointer whitespace-nowrap text-(--moss-primary) hover:underline"
               onClick={handleAddAccount}
+              type="button"
             >
               Log In via GitHub
             </button>
