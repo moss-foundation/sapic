@@ -51,13 +51,14 @@ const Trigger = ({ value, className, icon, label, disabled }: PaddedTabProps) =>
       value={value}
       //prettier-ignore
       className={cn(`
+        p-0 border-none! test-base leading-4
         cursor-pointer
+        rounded-full 
 
         has-[:focus-visible]:outline-3 
         has-[:focus-visible]:outline-offset-1 
         has-[:focus-visible]:outline-(--moss-primary) 
 
-        rounded-full 
         ring ring-(--moss-border-color)
 
         hover:not-data-[state=active]:hover:ring-(--moss-secondary-background-hover) 
@@ -72,7 +73,7 @@ const Trigger = ({ value, className, icon, label, disabled }: PaddedTabProps) =>
       )}
       disabled={disabled}
     >
-      <div className="flex items-center gap-2">
+      <div className="flex cursor-pointer items-center gap-[5px] py-2 pr-3 pl-2">
         <ProviderIcon icon={icon} />
         <span>{label}</span>
       </div>
