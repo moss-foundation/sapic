@@ -8,6 +8,7 @@ import { BranchInput } from "../components/BranchInput";
 import { NameInput } from "../components/NameInput";
 import ProviderTabs from "../components/ProviderTabs";
 import { RepositoryInput } from "../components/RepositoryInput";
+import { DEFAULT_BRANCH, DEFAULT_NAME, DEFAULT_PROVIDER, DEFAULT_REPOSITORY } from "../defaults";
 import { Subheader } from "../Sections/Subheader";
 
 interface ImportSectionProps {
@@ -18,11 +19,11 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
   const { mutateAsync: addAccount } = useAddAccount();
   const { gitProvider } = useGitProviderStore();
 
-  const [name, setName] = useState("New Collection");
+  const [name, setName] = useState(DEFAULT_NAME);
   //TODO repository expects input like this: https://github.com/brutusyhy/test-empty-collection.git.
-  const [repository, setRepository] = useState("");
-  const [branch, setBranch] = useState("main");
-  const [provider, setProvider] = useState<"github" | "gitlab">("github");
+  const [repository, setRepository] = useState(DEFAULT_REPOSITORY);
+  const [branch, setBranch] = useState(DEFAULT_BRANCH);
+  const [provider, setProvider] = useState<"github" | "gitlab">(DEFAULT_PROVIDER);
 
   useEffect(() => {
     const deriveGitParams = () => {

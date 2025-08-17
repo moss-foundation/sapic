@@ -12,6 +12,7 @@ import { BranchInput } from "../components/BranchInput";
 import { NameInput } from "../components/NameInput";
 import ProviderTabs from "../components/ProviderTabs";
 import { RepositoryInput } from "../components/RepositoryInput";
+import { DEFAULT_BRANCH, DEFAULT_NAME, DEFAULT_PROVIDER, DEFAULT_REPOSITORY, DEFAULT_VCS } from "../defaults";
 
 interface CreateSectionProps {
   onValuesUpdate: (values: { name: string; gitParams: CreateCollectionGitParams | undefined }) => void;
@@ -24,11 +25,11 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
 
   const { gitProvider } = useGitProviderStore();
 
-  const [name, setName] = useState("New Collection");
-  const [provider, setProvider] = useState<"github" | "gitlab">("github");
-  const [repository, setRepository] = useState("");
-  const [branch, setBranch] = useState("main");
-  const [vcs, setVCS] = useState(true);
+  const [name, setName] = useState(DEFAULT_NAME);
+  const [provider, setProvider] = useState<"github" | "gitlab">(DEFAULT_PROVIDER);
+  const [repository, setRepository] = useState(DEFAULT_REPOSITORY);
+  const [branch, setBranch] = useState(DEFAULT_BRANCH);
+  const [vcs, setVCS] = useState(DEFAULT_VCS);
 
   useFocusInputOnMount({ inputRef });
 
