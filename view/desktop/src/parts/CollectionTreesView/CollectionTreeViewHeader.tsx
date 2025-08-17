@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { ActionButton, ActionMenu, SidebarHeader } from "@/components";
+import { CREATE_TAB, IMPORT_TAB } from "@/components/Modals/Collection/NewCollectionModal/constansts";
 import { NewCollectionModal } from "@/components/Modals/Collection/NewCollectionModal/NewCollectionModal";
 import {
   USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY,
@@ -25,7 +26,7 @@ export const CollectionTreeViewHeader = () => {
   const { mutateAsync: batchUpdateCollectionEntry } = useBatchUpdateCollectionEntry();
   const { hasActiveWorkspace } = useActiveWorkspace();
 
-  const [initialTab, setInitialTab] = useState<"Create" | "Import">("Create");
+  const [initialTab, setInitialTab] = useState<typeof CREATE_TAB | typeof IMPORT_TAB>(CREATE_TAB);
 
   const {
     showModal: showNewCollectionModal,
@@ -113,7 +114,7 @@ export const CollectionTreeViewHeader = () => {
               disabled={!hasActiveWorkspace}
               icon="Add"
               onClick={() => {
-                setInitialTab("Create");
+                setInitialTab(CREATE_TAB);
                 openNewCollectionModal();
               }}
             />
@@ -128,7 +129,7 @@ export const CollectionTreeViewHeader = () => {
               disabled={!hasActiveWorkspace}
               icon="Import"
               onClick={() => {
-                setInitialTab("Import");
+                setInitialTab(IMPORT_TAB);
                 openNewCollectionModal();
               }}
             />

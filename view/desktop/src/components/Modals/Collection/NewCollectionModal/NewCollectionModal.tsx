@@ -12,6 +12,7 @@ import { CreateCollectionGitParams, ImportCollectionSource } from "@repo/moss-wo
 import { ModalWrapperProps } from "../../types";
 import { Divider } from "./components/Divider";
 import { ModeRadioGroup } from "./components/ModeRadioGroup";
+import { CREATE_TAB, IMPORT_TAB } from "./constansts";
 import { CreateSection } from "./Sections/CreateSection";
 import { FooterActions } from "./Sections/FooterActions";
 import { Header } from "./Sections/Header";
@@ -19,10 +20,10 @@ import { ImportSection } from "./Sections/ImportSection";
 import { calculateIsSubmitDisabled } from "./utils";
 
 interface NewCollectionModalProps extends ModalWrapperProps {
-  initialTab?: "Create" | "Import";
+  initialTab?: typeof CREATE_TAB | typeof IMPORT_TAB;
 }
 
-export const NewCollectionModal = ({ closeModal, showModal, initialTab = "Create" }: NewCollectionModalProps) => {
+export const NewCollectionModal = ({ closeModal, showModal, initialTab = CREATE_TAB }: NewCollectionModalProps) => {
   const { data: collections } = useStreamedCollections();
   const { mutateAsync: createCollection } = useCreateCollection();
   const { mutateAsync: importCollection } = useImportCollection();
@@ -36,7 +37,7 @@ export const NewCollectionModal = ({ closeModal, showModal, initialTab = "Create
   const [openAutomatically, setOpenAutomatically] = useState(true);
   const [createParams, setCreateParams] = useState<CreateCollectionGitParams | undefined>(undefined);
   const [importParams, setImportParams] = useState<ImportCollectionSource | undefined>(undefined);
-  const [tab, setTab] = useState<"Create" | "Import">(initialTab);
+  const [tab, setTab] = useState<typeof CREATE_TAB | typeof IMPORT_TAB>(initialTab);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
