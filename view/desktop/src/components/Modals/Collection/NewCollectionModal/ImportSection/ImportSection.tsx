@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import InputOutlined from "@/components/InputOutlined";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
@@ -14,8 +14,6 @@ interface ImportSectionProps {
 }
 
 export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
-  const inputRef = useRef<HTMLInputElement>(null);
-
   const { mutateAsync: addAccount } = useAddAccount();
   const { gitProvider } = useGitProviderStore();
 
@@ -74,7 +72,6 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
             <div className="col-span-2 grid grid-cols-subgrid items-center gap-y-1.5">
               <div>Name:</div>
               <InputOutlined
-                ref={inputRef}
                 value={name}
                 className="max-w-72"
                 onChange={(e) => setName(e.target.value)}
@@ -88,7 +85,6 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
             <div className="col-span-2 grid grid-cols-subgrid items-center gap-y-1.5">
               <div>Name:</div>
               <InputOutlined
-                ref={inputRef}
                 value={name}
                 className="max-w-72"
                 onChange={(e) => setName(e.target.value)}
@@ -124,7 +120,6 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
           <div className="col-span-2 grid grid-cols-subgrid items-center">
             <div>Repository:</div>
             <InputOutlined
-              ref={inputRef}
               value={repository}
               className="max-w-72"
               onChange={(e) => setRepository(e.target.value)}
@@ -136,7 +131,6 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
           <div className="col-span-2 grid grid-cols-subgrid items-center">
             <div>Branch:</div>
             <InputOutlined
-              ref={inputRef}
               value={branch}
               className="max-w-72"
               onChange={(e) => setBranch(e.target.value)}
