@@ -1,12 +1,14 @@
 import { ButtonNeutralOutlined, ButtonPrimary } from "@/components";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 
+import { CREATE_TAB, IMPORT_TAB } from "../constansts";
+
 interface FooterActionsProps {
   openAutomatically: boolean;
   setOpenAutomatically: (openAutomatically: boolean) => void;
   handleCancel: () => void;
   isSubmitDisabled: boolean;
-  tab: "Create" | "Import";
+  tab: typeof CREATE_TAB | typeof IMPORT_TAB;
 }
 
 export const FooterActions = ({
@@ -30,7 +32,7 @@ export const FooterActions = ({
           Close
         </ButtonNeutralOutlined>
         <ButtonPrimary disabled={isSubmitDisabled} type="submit">
-          {tab === "Create" ? "Create" : "Import"}
+          {tab === CREATE_TAB ? CREATE_TAB : IMPORT_TAB}
         </ButtonPrimary>
       </div>
     </div>

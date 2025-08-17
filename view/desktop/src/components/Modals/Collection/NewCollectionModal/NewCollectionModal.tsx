@@ -42,7 +42,7 @@ export const NewCollectionModal = ({ closeModal, showModal, initialTab = CREATE_
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (tab === "Create") {
+    if (tab === CREATE_TAB) {
       const result = await createCollection({
         name,
         gitParams: createParams,
@@ -115,16 +115,16 @@ export const NewCollectionModal = ({ closeModal, showModal, initialTab = CREATE_
       <Divider />
 
       <form onSubmit={handleSubmit} className="flex w-[544px] flex-col">
-        <PaddedTabs.Root value={tab} onValueChange={(value) => setTab(value as "Create" | "Import")}>
+        <PaddedTabs.Root value={tab} onValueChange={(value) => setTab(value as typeof CREATE_TAB | typeof IMPORT_TAB)}>
           <PaddedTabs.List className="border-b border-(--moss-border-color) px-3">
-            <PaddedTabs.Trigger value="Create">Create</PaddedTabs.Trigger>
-            <PaddedTabs.Trigger value="Import">Import</PaddedTabs.Trigger>
+            <PaddedTabs.Trigger value={CREATE_TAB}>Create</PaddedTabs.Trigger>
+            <PaddedTabs.Trigger value={IMPORT_TAB}>Import</PaddedTabs.Trigger>
           </PaddedTabs.List>
 
-          <PaddedTabs.Content value="Create" className="px-6 py-3">
+          <PaddedTabs.Content value={CREATE_TAB} className="px-6 py-3">
             <CreateSection onValuesUpdate={handleCreateSectionValuesUpdate} />
           </PaddedTabs.Content>
-          <PaddedTabs.Content value="Import" className="px-6 py-3">
+          <PaddedTabs.Content value={IMPORT_TAB} className="px-6 py-3">
             <ImportSection onValuesUpdate={handleImportSectionValuesUpdate} />
           </PaddedTabs.Content>
         </PaddedTabs.Root>

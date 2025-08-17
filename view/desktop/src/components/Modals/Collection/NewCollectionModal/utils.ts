@@ -1,9 +1,11 @@
 import { AddAccountOutput } from "@repo/moss-app";
 import { CreateCollectionGitParams, ImportCollectionSource } from "@repo/moss-workspace";
 
+import { CREATE_TAB, IMPORT_TAB } from "./constansts";
+
 interface CalculateIsSubmitDisabledProps {
   name: string;
-  tab: "Create" | "Import";
+  tab: typeof CREATE_TAB | typeof IMPORT_TAB;
   createParams: CreateCollectionGitParams | undefined;
   importParams: ImportCollectionSource | undefined;
   gitProvider: AddAccountOutput | null;
@@ -18,7 +20,7 @@ export const calculateIsSubmitDisabled = ({
 }: CalculateIsSubmitDisabledProps) => {
   if (!name) return true;
 
-  if (tab === "Create") {
+  if (tab === CREATE_TAB) {
     if (!createParams) {
       return false;
     }
@@ -32,7 +34,7 @@ export const calculateIsSubmitDisabled = ({
     }
   }
 
-  if (tab === "Import") {
+  if (tab === IMPORT_TAB) {
     if (!importParams) {
       return false;
     }
