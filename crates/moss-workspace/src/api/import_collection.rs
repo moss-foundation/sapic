@@ -7,6 +7,7 @@ use crate::{
     Workspace,
     models::{
         operations::{ImportCollectionInput, ImportCollectionOutput},
+        primitives::CollectionId,
         types::ImportCollectionSource,
     },
     services::collection_service::{CollectionItemCloneParams, CollectionItemGitCloneParams},
@@ -20,9 +21,11 @@ impl<R: AppRuntime> Workspace<R> {
     ) -> joinerror::Result<ImportCollectionOutput> {
         input.validate().join_err_bare()?;
         let params = &input.inner;
+        let id = CollectionId::new();
         let description = match &params.source {
             ImportCollectionSource::GitHub(git_params) => self.collection_service.clone_collection(
                 ctx,
+                &id,
                 CollectionItemCloneParams {
                     _name: params.name.clone(),
                     order: params.order,
@@ -36,6 +39,7 @@ impl<R: AppRuntime> Workspace<R> {
             ),
             ImportCollectionSource::GitLab(git_params) => self.collection_service.clone_collection(
                 ctx,
+                &id,
                 CollectionItemCloneParams {
                     _name: params.name.clone(),
                     order: params.order,

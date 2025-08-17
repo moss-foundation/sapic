@@ -136,14 +136,16 @@ impl<R: AppRuntime> CollectionService<R> {
     pub(crate) async fn create_collection(
         &self,
         ctx: &R::AsyncContext,
+        id: &CollectionId,
         params: &CreateCollectionParams,
     ) -> joinerror::Result<CollectionItemDescription> {
-        // Try a new CollectionId if one is already in use
-        let mut id = CollectionId::new();
-        let mut abs_path = self.abs_path.join(id.as_str());
-        while abs_path.exists() {
-            id = CollectionId::new();
-            abs_path = self.abs_path.join(id.as_str());
+        let id_str = id.to_string();
+        let abs_path: Arc<Path> = self.abs_path.join(id_str).into();
+        if abs_path.exists() {
+            return Err(joinerror::Error::new::<()>(format!(
+                "collection directory `{}` already exists",
+                abs_path.display()
+            )));
         }
 
         self.fs
@@ -267,16 +269,17 @@ impl<R: AppRuntime> CollectionService<R> {
     pub(crate) async fn clone_collection(
         &self,
         ctx: &R::AsyncContext,
+        id: &CollectionId,
         params: CollectionItemCloneParams,
     ) -> joinerror::Result<CollectionItemDescription> {
-        // Try a new CollectionId if one is already in use
-        let mut id = CollectionId::new();
-        let mut abs_path = self.abs_path.join(id.as_str());
-        while abs_path.exists() {
-            id = CollectionId::new();
-            abs_path = self.abs_path.join(id.as_str());
+        let id_str = id.to_string();
+        let abs_path: Arc<Path> = self.abs_path.join(id_str).into();
+        if abs_path.exists() {
+            return Err(joinerror::Error::new::<()>(format!(
+                "collection directory `{}` already exists",
+                abs_path.display()
+            )));
         }
-        let abs_path: Arc<Path> = abs_path.into();
 
         self.fs
             .create_dir(&abs_path)

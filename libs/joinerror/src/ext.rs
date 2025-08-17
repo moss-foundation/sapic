@@ -1,6 +1,8 @@
 use crate::{Error, ErrorMarker, OptionExt, ResultExt};
 use anyhow::anyhow;
 
+// FIXME: Remove conversion traits for git errors and implement crate specific traits
+
 impl From<serde_json::Error> for Error {
     fn from(err: serde_json::Error) -> Self {
         Error::new::<()>(err.to_string())
