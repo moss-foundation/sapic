@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 
-import InputOutlined from "@/components/InputOutlined";
-import { VALID_NAME_PATTERN } from "@/constants/validation";
 import { useAddAccount } from "@/hooks/account/useAddAccount";
 import { useGitProviderStore } from "@/store/gitProvider";
 import { ImportCollectionSource } from "@repo/moss-workspace";
 
+import { BranchInput } from "../BranchInput";
+import { NameInput } from "../NameInput";
 import ProviderTabs from "../ProviderTabs/ProviderTabs";
+import { RepositoryInput } from "../RepositoryInput";
 import { Subheader } from "../Subheader";
 
 interface ImportSectionProps {
@@ -69,31 +70,10 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
           </ProviderTabs.List>
 
           <ProviderTabs.Content value="github" className="contents">
-            <div className="col-span-2 grid grid-cols-subgrid items-center gap-y-1.5">
-              <div>Name:</div>
-              <InputOutlined
-                value={name}
-                className="max-w-72"
-                onChange={(e) => setName(e.target.value)}
-                pattern={VALID_NAME_PATTERN}
-                placeholder="New Collection"
-                required
-              />
-              <p className="col-start-2 max-w-72 text-sm whitespace-pre text-(--moss-secondary-text)">{`Invalid filename characters (e.g. / \ : * ? " < > |)\nwill be escaped`}</p>
-            </div>
+            <NameInput name={name} setName={setName} />
           </ProviderTabs.Content>
           <ProviderTabs.Content value="gitlab" className="contents">
-            <div className="col-span-2 grid grid-cols-subgrid items-center gap-y-1.5">
-              <div>Name:</div>
-              <InputOutlined
-                value={name}
-                className="max-w-72"
-                onChange={(e) => setName(e.target.value)}
-                pattern={VALID_NAME_PATTERN}
-                required
-              />
-              <p className="col-start-2 max-w-72 text-sm whitespace-pre text-(--moss-secondary-text)">{`Invalid filename characters (e.g. / \ : * ? " < > |)\nwill be escaped`}</p>
-            </div>
+            <NameInput name={name} setName={setName} />
           </ProviderTabs.Content>
         </ProviderTabs.Root>
       </div>
@@ -118,28 +98,9 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
         </span>
 
         <div className="grid grid-cols-[min-content_1fr] items-center gap-x-3 gap-y-6 pt-3 pb-2 pl-5">
-          <div className="col-span-2 grid grid-cols-subgrid items-center">
-            <div>Repository:</div>
-            <InputOutlined
-              value={repository}
-              className="max-w-72"
-              onChange={(e) => setRepository(e.target.value)}
-              placeholder="https://github.com/user/repo.git"
-              required
-            />
-          </div>
+          <RepositoryInput repository={repository} setRepository={setRepository} />
 
-          <div className="col-span-2 grid grid-cols-subgrid items-center">
-            <div>Branch:</div>
-            <InputOutlined
-              value={branch}
-              className="max-w-72"
-              onChange={(e) => setBranch(e.target.value)}
-              pattern={VALID_NAME_PATTERN}
-              placeholder="main"
-              required
-            />
-          </div>
+          <BranchInput branch={branch} setBranch={setBranch} />
         </div>
       </div>
     </div>

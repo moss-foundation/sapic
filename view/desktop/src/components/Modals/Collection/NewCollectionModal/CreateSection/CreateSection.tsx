@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
-import InputOutlined from "@/components/InputOutlined";
-import { VALID_NAME_PATTERN } from "@/constants/validation";
 import { useFocusInputOnMount } from "@/hooks";
 import { useAddAccount } from "@/hooks/account/useAddAccount";
 import { useGitProviderStore } from "@/store/gitProvider";
@@ -10,7 +8,10 @@ import { cn } from "@/utils";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { CreateCollectionGitParams } from "@repo/moss-workspace";
 
+import { BranchInput } from "../BranchInput";
+import { NameInput } from "../NameInput";
 import ProviderTabs from "../ProviderTabs/ProviderTabs";
+import { RepositoryInput } from "../RepositoryInput";
 
 interface CreateSectionProps {
   onValuesUpdate: (values: { name: string; gitParams: CreateCollectionGitParams | undefined }) => void;
@@ -69,18 +70,8 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="grid grid-cols-[min-content_1fr] items-center gap-x-2 gap-y-1.5 py-3">
-        <div>Name:</div>
-        <InputOutlined
-          ref={inputRef}
-          value={name}
-          className="max-w-72"
-          onChange={(e) => setName(e.target.value)}
-          pattern={VALID_NAME_PATTERN}
-          placeholder="New Collection"
-          required
-        />
-        <p className="col-start-2 max-w-72 text-sm text-(--moss-secondary-text)">{`Invalid filename characters (e.g. / \ : * ? " < > |) will be escaped`}</p>
+      <div className="grid grid-cols-[min-content_1fr] items-center gap-x-2 py-3">
+        <NameInput name={name} setName={setName} ref={inputRef} />
       </div>
 
       <div>
@@ -107,52 +98,12 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
 
             <>
               <ProviderTabs.Content value="github" className="contents">
-                <div className="col-span-2 grid grid-cols-subgrid items-center">
-                  <div className={cn(!vcs && "opacity-50")}>Repository:</div>
-                  <InputOutlined
-                    value={repository}
-                    className="max-w-72"
-                    onChange={(e) => setRepository(e.target.value)}
-                    placeholder="https://github.com/user/repo.git"
-                    required
-                    disabled={!vcs}
-                  />
-                </div>
-                <div className="col-span-2 grid grid-cols-subgrid items-center">
-                  <div className={cn(!vcs && "opacity-50")}>Branch:</div>
-                  <InputOutlined
-                    value={branch}
-                    className="max-w-72"
-                    onChange={(e) => setBranch(e.target.value)}
-                    pattern={VALID_NAME_PATTERN}
-                    placeholder="main"
-                    required
-                    disabled={!vcs}
-                  />
-                </div>
+                <RepositoryInput repository={repository} setRepository={setRepository} disabled={!vcs} />
+                <BranchInput branch={branch} setBranch={setBranch} disabled={!vcs} />
               </ProviderTabs.Content>
               <ProviderTabs.Content value="gitlab" className="contents">
-                <div className="col-span-2 grid grid-cols-subgrid items-center">
-                  <div className={cn(!vcs && "opacity-50")}>Repository:</div>
-                  <InputOutlined
-                    value={repository}
-                    className="max-w-72"
-                    onChange={(e) => setRepository(e.target.value)}
-                    required
-                    disabled={!vcs}
-                  />
-                </div>
-                <div className="col-span-2 grid grid-cols-subgrid items-center">
-                  <div className={cn(!vcs && "opacity-50")}>Branch:</div>
-                  <InputOutlined
-                    value={branch}
-                    className="max-w-72"
-                    onChange={(e) => setBranch(e.target.value)}
-                    pattern={VALID_NAME_PATTERN}
-                    required
-                    disabled={!vcs}
-                  />
-                </div>
+                <RepositoryInput repository={repository} setRepository={setRepository} disabled={!vcs} />
+                <BranchInput branch={branch} setBranch={setBranch} disabled={!vcs} />
               </ProviderTabs.Content>
             </>
           </ProviderTabs.Root>

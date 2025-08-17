@@ -4,7 +4,7 @@ import { forwardRef } from "react";
 import Input, { InputProps } from "@/lib/ui/Input";
 import { cn } from "@/utils";
 
-interface InputPlainProps extends InputProps {
+export interface InputPlainProps extends InputProps {
   size?: "sm" | "md";
 }
 
