@@ -63,6 +63,7 @@ pub struct DescribeEnvironment {
     pub id: EnvironmentId,
     pub name: String,
     pub color: Option<String>,
+    pub abs_path: Arc<Path>,
     pub variables: HashMap<VariableId, VariableInfo>,
     // TODO: git info
 }

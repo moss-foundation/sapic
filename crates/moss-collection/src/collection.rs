@@ -100,6 +100,10 @@ impl<R: AppRuntime> Collection<R> {
         self.set_icon_service.icon_path()
     }
 
+    pub fn environments_path(&self) -> PathBuf {
+        self.abs_path.join(dirs::ENVIRONMENTS_DIR)
+    }
+
     pub async fn describe(&self) -> joinerror::Result<DescribeCollection> {
         let manifest_path = self.abs_path.join(MANIFEST_FILE_NAME);
 

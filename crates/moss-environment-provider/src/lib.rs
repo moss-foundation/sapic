@@ -1,5 +1,6 @@
 use std::{
     collections::HashMap,
+    fmt,
     path::{Path, PathBuf},
     sync::Arc,
 };
@@ -22,9 +23,18 @@ pub struct EnvironmentProviderCreateParams {
     pub variables: Vec<AddVariableParams>,
 }
 
+#[derive(Clone)]
 pub struct EnvironmentProvider {
     fs: Arc<dyn FileSystem>,
     abs_path: PathBuf,
+}
+
+impl std::fmt::Debug for EnvironmentProvider {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("EnvironmentProvider")
+            .field("abs_path", &self.abs_path)
+            .finish()
+    }
 }
 
 impl EnvironmentProvider {
@@ -37,6 +47,7 @@ impl EnvironmentProvider {
         store: Arc<dyn VariableStore<R::AsyncContext>>,
         tx: UnboundedSender<Environment<R>>,
     ) -> joinerror::Result<()> {
+        println!("scanning environment provider: {}", self.abs_path.display());
         let mut read_dir = self.fs.read_dir(&self.abs_path).await.map_err(|err| {
             joinerror::Error::new::<()>(format!(
                 "failed to read directory {} : {}",

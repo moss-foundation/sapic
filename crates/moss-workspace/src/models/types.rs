@@ -8,7 +8,7 @@ use moss_environment::models::{
 };
 use moss_git::url::GIT_URL_REGEX;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 use ts_rs::TS;
 use validator::{Validate, ValidationError};
 
@@ -24,7 +24,7 @@ pub type EnvironmentName = String;
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct EnvironmentGroup {
-    pub collection_id: CollectionId,
+    pub collection_id: Arc<String>,
     pub expanded: bool,
     pub order: Option<isize>,
 }

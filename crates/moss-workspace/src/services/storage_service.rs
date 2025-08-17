@@ -102,7 +102,7 @@ impl<R: AppRuntime> StorageService<R> {
         &self,
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
-        expanded_entries: &HashSet<CollectionId>,
+        expanded_entries: &HashSet<Arc<String>>,
     ) -> joinerror::Result<()> {
         let store = self.storage.item_store();
         TransactionalPutItem::put_with_context(
@@ -121,7 +121,7 @@ impl<R: AppRuntime> StorageService<R> {
         &self,
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
-        collection_id: &CollectionId,
+        collection_id: Arc<String>,
         order: isize,
     ) -> joinerror::Result<()> {
         let store = self.storage.item_store();
@@ -357,7 +357,7 @@ impl<R: AppRuntime> StorageService<R> {
     pub(super) async fn get_expanded_groups(
         &self,
         ctx: &R::AsyncContext,
-    ) -> joinerror::Result<HashSet<CollectionId>> {
+    ) -> joinerror::Result<HashSet<Arc<String>>> {
         let value = GetItem::get(
             self.storage.item_store().as_ref(),
             ctx,
@@ -365,7 +365,7 @@ impl<R: AppRuntime> StorageService<R> {
         )
         .await?;
 
-        Ok(AnyValue::deserialize::<HashSet<CollectionId>>(&value)?)
+        Ok(AnyValue::deserialize::<HashSet<Arc<String>>>(&value)?)
     }
 
     pub(super) async fn list_environment_groups_metadata(

@@ -12,7 +12,6 @@ use tokio::sync::{mpsc, watch};
 use crate::{
     Workspace, dirs,
     edit::WorkspaceEdit,
-    environment_registry::EnvironmentProviderRegistry,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
     models::primitives::CollectionId,
     services::{
@@ -56,7 +55,13 @@ pub struct OnDidDeleteCollection {
     pub collection_id: CollectionId,
 }
 
+#[derive(Clone)]
+pub struct OnDidAddCollection {
+    pub collection_id: CollectionId,
+}
+
 impl EventMarker for OnDidDeleteCollection {}
+impl EventMarker for OnDidAddCollection {}
 
 impl WorkspaceBuilder {
     pub fn new(
@@ -112,55 +117,57 @@ impl WorkspaceBuilder {
     ) -> joinerror::Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
 
-        let (e_aggregation_tx, e_aggregation_rx) = watch::channel(FxHashMap::from_iter([(
-            "".to_string(),
-            EnvironmentProvider::new(
-                self.fs.clone(),
-                params.abs_path.join(dirs::ENVIRONMENTS_DIR),
-            ),
-        )]));
+        let mut environment_sources = FxHashMap::from_iter([(
+            "".to_string().into(),
+            params.abs_path.join(dirs::ENVIRONMENTS_DIR),
+        )]);
 
-        // let mut e_aggregation_rx_ref = e_aggregation_rx.borrow_and_update();
-        // e_aggregation_rx_ref.insert(
-        //     "".to_string(),
-        //     EnvironmentProvider::new(
-        //         self.fs.clone(),
-        //         params.abs_path.join(dirs::ENVIRONMENTS_DIR),
-        //     ),
-        // );
+        let on_did_delete_collection_emitter = EventEmitter::<OnDidDeleteCollection>::new();
+        let on_did_add_collection_emitter = EventEmitter::<OnDidAddCollection>::new();
 
-        let mut environment_provider_registry = EnvironmentProviderRegistry::new();
-
-        let on_collection_did_delete_emitter: EventEmitter<OnDidDeleteCollection> =
-            EventEmitter::new();
-        let on_did_delete_collection_event = on_collection_did_delete_emitter.event();
+        let on_did_delete_collection_event = on_did_delete_collection_emitter.event();
+        let on_did_add_collection_event = on_did_add_collection_emitter.event();
 
         let storage_service: Arc<StorageService<R>> = StorageService::new(&params.abs_path)?.into();
         let layout_service = LayoutService::new(storage_service.clone());
-        let collection_service = CollectionService::new(
+
+        let collection_service: Arc<CollectionService<R>> = CollectionService::new(
             ctx,
             &params.abs_path,
             self.fs.clone(),
             storage_service.clone(),
             self.github_client.clone(),
             self.gitlab_client.clone(),
-            on_collection_did_delete_emitter,
+            &mut environment_sources,
+            on_did_delete_collection_emitter,
+            on_did_add_collection_emitter,
         )
-        .await?;
-        collection_service
-            .register_providers(&mut environment_provider_registry)
-            .await;
+        .await?
+        .into();
 
-        let environment_service = EnvironmentService::new(
+        let environment_service: Arc<EnvironmentService<R>> = EnvironmentService::new(
             &params.abs_path,
             self.fs.clone(),
             storage_service.clone(),
-            environment_provider_registry,
-            &on_did_delete_collection_event,
+            environment_sources,
         )
-        .await?;
+        .await?
+        .into();
 
         let edit = WorkspaceEdit::new(self.fs.clone(), params.abs_path.join(MANIFEST_FILE_NAME));
+
+        let on_did_add_collection = Workspace::on_did_add_collection(
+            collection_service.clone(),
+            environment_service.clone(),
+            &on_did_add_collection_event,
+        )
+        .await;
+
+        let on_did_delete_collection = Workspace::on_did_delete_collection(
+            environment_service.clone(),
+            &on_did_delete_collection_event,
+        )
+        .await;
 
         Ok(Workspace {
             abs_path: params.abs_path,
@@ -172,6 +179,8 @@ impl WorkspaceBuilder {
             storage_service,
             github_client: self.github_client,
             gitlab_client: self.gitlab_client,
+            _on_did_add_collection: on_did_add_collection,
+            _on_did_delete_collection: on_did_delete_collection,
         })
     }
 
@@ -187,34 +196,56 @@ impl WorkspaceBuilder {
             .await
             .join_err::<()>("failed to initialize workspace")?;
 
-        let (e_aggregation_tx, e_aggregation_rx) = mpsc::unbounded_channel();
+        let mut environment_sources = FxHashMap::from_iter([(
+            "".to_string().into(),
+            params.abs_path.join(dirs::ENVIRONMENTS_DIR),
+        )]);
 
-        let on_collection_did_delete_emitter: EventEmitter<OnDidDeleteCollection> =
-            EventEmitter::new();
-        let on_did_delete_collection_event = on_collection_did_delete_emitter.event();
+        let on_did_delete_collection_emitter = EventEmitter::<OnDidDeleteCollection>::new();
+        let on_did_add_collection_emitter = EventEmitter::<OnDidAddCollection>::new();
+
+        let on_did_delete_collection_event = on_did_delete_collection_emitter.event();
+        let on_did_add_collection_event = on_did_add_collection_emitter.event();
 
         let storage_service: Arc<StorageService<R>> = StorageService::new(&params.abs_path)?.into();
         let layout_service = LayoutService::new(storage_service.clone());
-        let collection_service = CollectionService::new(
+        let collection_service: Arc<CollectionService<R>> = CollectionService::new(
             ctx,
             &params.abs_path,
             self.fs.clone(),
             storage_service.clone(),
             self.github_client.clone(),
             self.gitlab_client.clone(),
-            on_collection_did_delete_emitter,
+            &mut environment_sources,
+            on_did_delete_collection_emitter,
+            on_did_add_collection_emitter,
         )
-        .await?;
-        let environment_service = EnvironmentService::new(
+        .await?
+        .into();
+
+        let environment_service: Arc<EnvironmentService<R>> = EnvironmentService::new(
             &params.abs_path,
             self.fs.clone(),
             storage_service.clone(),
-            e_aggregation_rx,
-            &on_did_delete_collection_event,
+            environment_sources,
         )
-        .await?;
+        .await?
+        .into();
 
         let edit = WorkspaceEdit::new(self.fs.clone(), params.abs_path.join(MANIFEST_FILE_NAME));
+
+        let on_did_add_collection = Workspace::on_did_add_collection(
+            collection_service.clone(),
+            environment_service.clone(),
+            &on_did_add_collection_event,
+        )
+        .await;
+
+        let on_did_delete_collection = Workspace::on_did_delete_collection(
+            environment_service.clone(),
+            &on_did_delete_collection_event,
+        )
+        .await;
 
         Ok(Workspace {
             abs_path: params.abs_path,
@@ -226,6 +257,8 @@ impl WorkspaceBuilder {
             storage_service,
             github_client: self.github_client,
             gitlab_client: self.gitlab_client,
+            _on_did_add_collection: on_did_add_collection,
+            _on_did_delete_collection: on_did_delete_collection,
         })
     }
 }

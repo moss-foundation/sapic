@@ -156,6 +156,7 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
 
         Ok(DescribeEnvironment {
             id: parsed.metadata.id.clone(),
+            abs_path,
             color: parsed.metadata.color.clone(),
             name: self.name().await?,
             variables,
