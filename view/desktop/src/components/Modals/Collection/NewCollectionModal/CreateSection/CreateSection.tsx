@@ -77,6 +77,7 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
           className="max-w-72"
           onChange={(e) => setName(e.target.value)}
           pattern={VALID_NAME_PATTERN}
+          placeholder="New Collection"
           required
         />
         <p className="col-start-2 max-w-72 text-sm text-(--moss-secondary-text)">{`Invalid filename characters (e.g. / \ : * ? " < > |) will be escaped`}</p>
@@ -112,6 +113,7 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
                     value={repository}
                     className="max-w-72"
                     onChange={(e) => setRepository(e.target.value)}
+                    placeholder="https://github.com/user/repo.git"
                     required
                     disabled={!vcs}
                   />
@@ -123,6 +125,7 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
                     className="max-w-72"
                     onChange={(e) => setBranch(e.target.value)}
                     pattern={VALID_NAME_PATTERN}
+                    placeholder="main"
                     required
                     disabled={!vcs}
                   />

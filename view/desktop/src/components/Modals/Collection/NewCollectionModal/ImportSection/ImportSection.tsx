@@ -76,6 +76,7 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
                 className="max-w-72"
                 onChange={(e) => setName(e.target.value)}
                 pattern={VALID_NAME_PATTERN}
+                placeholder="New Collection"
                 required
               />
               <p className="col-start-2 max-w-72 text-sm whitespace-pre text-(--moss-secondary-text)">{`Invalid filename characters (e.g. / \ : * ? " < > |)\nwill be escaped`}</p>
@@ -123,7 +124,7 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
               value={repository}
               className="max-w-72"
               onChange={(e) => setRepository(e.target.value)}
-              placeholder="github.com/user/example.git"
+              placeholder="https://github.com/user/repo.git"
               required
             />
           </div>
@@ -135,6 +136,7 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
               className="max-w-72"
               onChange={(e) => setBranch(e.target.value)}
               pattern={VALID_NAME_PATTERN}
+              placeholder="main"
               required
             />
           </div>
