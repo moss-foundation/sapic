@@ -189,6 +189,7 @@ impl<R: AppRuntime> CollectionService<R> {
         .await
         .join_err::<()>("failed to build collection");
 
+        // TODO: Use atomic-fs to rollback changes
         // Remove collection folder if collection fails to be created
         let collection = match collection_result {
             Ok(collection) => collection,
@@ -304,6 +305,7 @@ impl<R: AppRuntime> CollectionService<R> {
         .await
         .join_err::<()>("failed to clone collection");
 
+        // TODO: Use atomic-fs to rollback changes
         // Remove collection folder if collection fails to be cloned
         let collection = match collection_result {
             Ok(collection) => collection,

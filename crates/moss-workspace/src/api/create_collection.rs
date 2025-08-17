@@ -15,6 +15,8 @@ impl<R: AppRuntime> Workspace<R> {
     ) -> joinerror::Result<CreateCollectionOutput> {
         input.validate().join_err_bare()?;
 
+        debug_assert!(input.inner.external_path.is_none(), "Is not implemented");
+
         let description = self
             .collection_service
             .create_collection(ctx, &input.inner)

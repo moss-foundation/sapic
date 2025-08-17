@@ -36,7 +36,6 @@ pub struct CreateCollectionParams {
 
     pub git_params: Option<CreateCollectionGitParams>,
 
-    // TODO: repo branch
     pub icon_path: Option<PathBuf>,
 }
 
