@@ -8,10 +8,10 @@ import { cn } from "@/utils";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { CreateCollectionGitParams } from "@repo/moss-workspace";
 
-import { BranchInput } from "../BranchInput";
-import { NameInput } from "../NameInput";
-import ProviderTabs from "../ProviderTabs/ProviderTabs";
-import { RepositoryInput } from "../RepositoryInput";
+import { BranchInput } from "../components/BranchInput";
+import { NameInput } from "../components/NameInput";
+import ProviderTabs from "../components/ProviderTabs";
+import { RepositoryInput } from "../components/RepositoryInput";
 
 interface CreateSectionProps {
   onValuesUpdate: (values: { name: string; gitParams: CreateCollectionGitParams | undefined }) => void;

@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/lib/ui";
 import { cn } from "@/utils";
 
-import { ProviderIcon } from "../ProviderIcon";
+import { ProviderIcon } from "./ProviderIcon";
 
 interface ProviderTabsProps {
   value?: string | null;

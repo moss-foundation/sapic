@@ -10,12 +10,12 @@ import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { CreateCollectionGitParams, ImportCollectionSource } from "@repo/moss-workspace";
 
 import { ModalWrapperProps } from "../../types";
-import { CreateSection } from "./CreateSection/CreateSection";
-import { Divider } from "./Divider";
-import { FooterActions } from "./FooterActions";
-import { Header } from "./Header";
-import { ImportSection } from "./ImportSection/ImportSection";
-import { ModeRadioGroup } from "./ModeRadioGroup";
+import { Divider } from "./components/Divider";
+import { ModeRadioGroup } from "./components/ModeRadioGroup";
+import { CreateSection } from "./Sections/CreateSection";
+import { FooterActions } from "./Sections/FooterActions";
+import { Header } from "./Sections/Header";
+import { ImportSection } from "./Sections/ImportSection";
 import { calculateIsSubmitDisabled } from "./utils";
 
 interface NewCollectionModalProps extends ModalWrapperProps {
@@ -60,10 +60,7 @@ export const NewCollectionModal = ({ closeModal, showModal, initialTab = "Create
         });
       }
     } else {
-      if (!importParams) {
-        // throw new Error("Import params are required");
-        return;
-      }
+      if (!importParams) return;
 
       const result = await importCollection({
         name,

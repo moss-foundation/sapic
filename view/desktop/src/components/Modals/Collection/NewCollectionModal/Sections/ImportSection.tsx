@@ -4,11 +4,11 @@ import { useAddAccount } from "@/hooks/account/useAddAccount";
 import { useGitProviderStore } from "@/store/gitProvider";
 import { ImportCollectionSource } from "@repo/moss-workspace";
 
-import { BranchInput } from "../BranchInput";
-import { NameInput } from "../NameInput";
-import ProviderTabs from "../ProviderTabs/ProviderTabs";
-import { RepositoryInput } from "../RepositoryInput";
-import { Subheader } from "../Subheader";
+import { BranchInput } from "../components/BranchInput";
+import { NameInput } from "../components/NameInput";
+import ProviderTabs from "../components/ProviderTabs";
+import { RepositoryInput } from "../components/RepositoryInput";
+import { Subheader } from "../Sections/Subheader";
 
 interface ImportSectionProps {
   onValuesUpdate: (values: { name: string; importParams: ImportCollectionSource | undefined }) => void;
