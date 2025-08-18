@@ -50,7 +50,10 @@ export const hasDescendantWithSearchInput = (parentNode: TreeCollectionNode, inp
 
 export const countNumberOfAllNestedChildNodes = (node: TreeCollectionNode): number => {
   if (!node.childNodes) return 0;
-  return node.childNodes.reduce((acc, child) => acc + 1 + countNumberOfAllNestedChildNodes(child), 0);
+  return node.childNodes.reduce((acc, child) => {
+    const childCount = child.kind === "Item" ? 1 : 0;
+    return acc + childCount + countNumberOfAllNestedChildNodes(child);
+  }, 0);
 };
 
 export const sortByOrder = <T extends { order?: number }>(entries: T[]) => {
