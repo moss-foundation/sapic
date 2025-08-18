@@ -2,10 +2,12 @@ import { ReactNode, useEffect, useRef } from "react";
 
 import { ActivityBar } from "@/components";
 import { EmptyWorkspace } from "@/components/EmptyWorkspace";
+import ModeToggle from "@/components/ModeToggle";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
 import { useActiveWorkspace } from "@/hooks";
 import { useGetProjectSessionState } from "@/hooks/useProjectSession";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
+import { Scrollbar } from "@/lib/ui";
 import { SidebarWorkspaceContent } from "@/parts/SideBar/SidebarWorkspaceContent";
 import { useActivityBarStore } from "@/store/activityBar";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
@@ -22,7 +24,7 @@ export const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
   return (
     <div
       className={cn(
-        "background-(--moss-secondary-background) flex h-full flex-col",
+        "background-(--moss-secondary-background) flex h-full flex-col bg-amber-600",
         {
           "border-l border-(--moss-border-color)": sideBarPosition === SIDEBAR_POSITION.LEFT,
         },
@@ -100,7 +102,10 @@ export const Sidebar = () => {
     return (
       <BaseSidebar>
         <ActivityBar />
-        {sidebarContent}
+        <Scrollbar>{sidebarContent}</Scrollbar>
+        <div className="mt-auto flex w-full border-t border-t-(--moss-border-color) px-1 py-2">
+          <ModeToggle />
+        </div>
       </BaseSidebar>
     );
   }
@@ -108,13 +113,23 @@ export const Sidebar = () => {
   if (position === ACTIVITYBAR_POSITION.BOTTOM) {
     return (
       <BaseSidebar className="relative">
-        <div className="flex-1 overflow-auto">{sidebarContent}</div>
+        <Scrollbar>{sidebarContent}</Scrollbar>
+        <div className="mt-auto flex w-full border-t border-t-(--moss-border-color) px-1 py-2">
+          <ModeToggle />
+        </div>
         <ActivityBar />
       </BaseSidebar>
     );
   }
 
-  return <BaseSidebar>{sidebarContent}</BaseSidebar>;
+  return (
+    <BaseSidebar>
+      <Scrollbar>{sidebarContent}</Scrollbar>
+      <div className="mt-auto flex w-full border-t border-t-(--moss-border-color) px-1 py-2">
+        <ModeToggle />
+      </div>
+    </BaseSidebar>
+  );
 };
 
 export default Sidebar;

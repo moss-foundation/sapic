@@ -9,7 +9,6 @@ import { Scrollbar } from "@/lib/ui";
 import { useRequestModeStore } from "@/store/requestMode";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import { ModeToggle } from "../../components/ModeToggle";
 import { CollectionCreationZone } from "./CollectionCreationZone";
 import { CollectionTreeViewHeader } from "./CollectionTreeViewHeader";
 
@@ -78,10 +77,6 @@ export const CollectionTreesView = () => {
           )}
         </div>
       </Scrollbar>
-
-      <div className="flex w-full border-t border-t-(--moss-border-color) px-1 py-2">
-        <ModeToggle />
-      </div>
     </div>
   );
 };
