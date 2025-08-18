@@ -1,8 +1,16 @@
 pub use git2::{BranchType, IndexAddOption, Signature};
-use git2::{IntoCString, PushOptions, RemoteCallbacks, Repository, build::RepoBuilder};
-use std::{collections::HashMap, path::Path, sync::Arc};
+use git2::{
+    IntoCString, PushOptions, RemoteCallbacks, Repository, Status, StatusOptions,
+    build::{CheckoutBuilder, RepoBuilder},
+};
+use joinerror::{OptionExt, ResultExt};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
-use crate::GitAuthAgent;
+use crate::{GitAuthAgent, constants::DEFAULT_REMOTE_NAME};
 
 // https://github.com/rust-lang/git2-rs/issues/194
 

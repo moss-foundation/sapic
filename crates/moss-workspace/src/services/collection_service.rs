@@ -30,6 +30,7 @@ use tokio::sync::RwLock;
 
 use crate::{
     dirs,
+    errors::ErrorNotFound,
     models::{
         primitives::CollectionId,
         types::{CreateCollectionGitParams, CreateCollectionParams, UpdateCollectionParams},

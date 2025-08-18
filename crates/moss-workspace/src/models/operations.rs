@@ -2,11 +2,7 @@ use moss_environment::models::{
     primitives::EnvironmentId,
     types::{AddVariableParams, VariableInfo},
 };
-use moss_git::url::GIT_URL_REGEX;
-use moss_git_hosting_provider::models::{
-    primitives::GitProviderType,
-    types::{Contributor, RepositoryInfo},
-};
+use moss_git_hosting_provider::models::types::{Contributor, RepositoryInfo};
 use serde::{Deserialize, Serialize};
 use std::{
     path::{Path, PathBuf},
@@ -64,7 +60,7 @@ pub struct CreateCollectionOutput {
 }
 
 /// @category Operation
-#[derive(Debug, Serialize, Deserialize, TS)]
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct ImportCollectionInput {
