@@ -1,6 +1,3 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-
-import { Item as ToggleGroupItem, Root as ToggleGroupRoot } from "@/components/ToggleGroup";
 import { useStreamedCollectionsWithEntries } from "@/hooks";
 import { useRequestModeStore } from "@/store/requestMode";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
@@ -8,48 +5,15 @@ import { cn } from "@/utils";
 
 interface ModeToggleProps {
   className?: string;
-  compact?: boolean;
 }
 
-export const ModeToggle: React.FC<ModeToggleProps> = ({ className, compact = false }) => {
-  const itemsRef = useRef<{ [key: string]: HTMLButtonElement | null }>({});
-  const containerRef = useRef<HTMLDivElement>(null);
-
+export const ModeToggle = ({ className }: ModeToggleProps) => {
   const { api } = useTabbedPaneStore();
   const { displayMode, setDisplayMode } = useRequestModeStore();
   const { data: collectionsWithEntries } = useStreamedCollectionsWithEntries();
 
-  const [sliderStyle, setSliderStyle] = useState({ width: 0, left: 0 });
-
-  const updateSliderPosition = useCallback(() => {
-    const activeItem = itemsRef.current[displayMode];
-    if (activeItem) {
-      const { width, left } = activeItem.getBoundingClientRect();
-      const parentLeft = activeItem.parentElement?.getBoundingClientRect().left || 0;
-      setSliderStyle({
-        width,
-        left: left - parentLeft,
-      });
-    }
-  }, [displayMode]);
-
-  useEffect(() => {
-    updateSliderPosition();
-
-    const resizeObserver = new ResizeObserver(() => {
-      updateSliderPosition();
-    });
-
-    if (containerRef.current) {
-      resizeObserver.observe(containerRef.current);
-    }
-
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, [displayMode, updateSliderPosition]);
-
   const handleSetRequestFirstMode = () => {
+    console.log("handleSetRequestFirstMode");
     setDisplayMode("REQUEST_FIRST");
     const allEntries = collectionsWithEntries?.map((collection) => collection.entries).flat();
 
@@ -64,42 +28,51 @@ export const ModeToggle: React.FC<ModeToggleProps> = ({ className, compact = fal
   };
 
   const handleSetDesignFirstMode = () => {
+    console.log("handleSetDesignFirstMode");
     setDisplayMode("DESIGN_FIRST");
   };
+
   return (
-    <ToggleGroupRoot
-      type="single"
-      value={displayMode}
-      className={cn("relative rounded-sm border border-[var(--moss-border-color)]", className)}
+    <div
+      className={cn(
+        "background-(--moss-display-mode-bg) flex w-full overflow-hidden rounded-sm border-1 border-(--moss-display-mode-border) p-px",
+        className
+      )}
     >
-      <div className="relative flex" ref={containerRef}>
-        <div
-          className="absolute h-[24px] rounded-sm bg-white transition-all duration-300 ease-in-out"
-          style={{
-            width: `${sliderStyle.width}px`,
-            left: `${sliderStyle.left}px`,
-          }}
-        />
-        <ToggleGroupItem
+      <div className="grow overflow-hidden">
+        <input
+          type="radio"
+          id="request-first"
           value="REQUEST_FIRST"
-          className="relative z-10 whitespace-nowrap transition-colors duration-300"
-          compact={compact}
-          ref={(el) => (itemsRef.current["REQUEST_FIRST"] = el)}
+          className={cn("peer sr-only")}
+          checked={displayMode === "REQUEST_FIRST"}
           onClick={handleSetRequestFirstMode}
+        />
+        <label
+          htmlFor="request-first"
+          className="flex grow cursor-pointer items-center justify-center truncate rounded-sm p-px leading-5 text-(--moss-display-mode-text) transition-colors duration-300 peer-checked:bg-white peer-checked:text-(--moss-display-mode-text-selected)"
         >
           Request mode
-        </ToggleGroupItem>
-        <ToggleGroupItem
+        </label>
+      </div>
+
+      <div className="grow overflow-hidden">
+        <input
+          type="radio"
+          id="design-first"
           value="DESIGN_FIRST"
-          className="relative z-10 whitespace-nowrap transition-colors duration-300"
-          compact={compact}
-          ref={(el) => (itemsRef.current["DESIGN_FIRST"] = el)}
+          className={cn("peer sr-only")}
+          checked={displayMode === "DESIGN_FIRST"}
           onClick={handleSetDesignFirstMode}
+        />
+        <label
+          htmlFor="design-first"
+          className="flex grow cursor-pointer items-center justify-center truncate rounded-sm p-px leading-5 text-(--moss-display-mode-text) transition-colors duration-300 peer-checked:bg-white peer-checked:text-(--moss-display-mode-text-selected)"
         >
           Design mode
-        </ToggleGroupItem>
+        </label>
       </div>
-    </ToggleGroupRoot>
+    </div>
   );
 };
 

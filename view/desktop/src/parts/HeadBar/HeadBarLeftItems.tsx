@@ -5,23 +5,16 @@ import { cn } from "@/utils";
 import { renderActionMenuItem } from "@/utils/renderActionMenuItem";
 
 import { windowsMenuItems } from "./mockHeadBarData";
+import NavigationButtons from "./NavigationButtons";
 import { useWorkspaceMenu } from "./WorkspaceMenuProvider";
 
 export interface HeadBarLeftItemsProps {
-  isLarge: boolean;
-  breakpoint: string;
   handleWindowsMenuAction: (action: string) => void;
   handleWorkspaceMenuAction: (action: string) => void;
   os: string | null;
 }
 
-export const HeadBarLeftItems = ({
-  isLarge,
-  breakpoint,
-  handleWindowsMenuAction,
-  handleWorkspaceMenuAction,
-  os,
-}: HeadBarLeftItemsProps) => {
+export const HeadBarLeftItems = ({ handleWindowsMenuAction, handleWorkspaceMenuAction, os }: HeadBarLeftItemsProps) => {
   const isWindowsOrLinux = os === "windows" || os === "linux";
   const { workspaceMenuItems, selectedWorkspaceMenuItems } = useWorkspaceMenu();
 
@@ -29,13 +22,7 @@ export const HeadBarLeftItems = ({
   const selectedWorkspace = activeWorkspace?.name || null;
 
   return (
-    <div
-      className={cn("flex items-center justify-start overflow-hidden", {
-        "gap-0.5": breakpoint === "md",
-        "gap-1.5": ["lg", "xl", "2xl"].includes(breakpoint),
-      })}
-      data-tauri-drag-region
-    >
+    <div className={cn("flex items-center justify-start gap-5 overflow-hidden")} data-tauri-drag-region>
       {isWindowsOrLinux && (
         <ActionMenu.Root>
           <ActionMenu.Trigger className="hover:!background-(--moss-icon-secondary-background-hover) rounded p-1">
@@ -46,6 +33,8 @@ export const HeadBarLeftItems = ({
           </ActionMenu.Content>
         </ActionMenu.Root>
       )}
+
+      <NavigationButtons onBack={() => {}} onForward={() => {}} canGoBack={false} canGoForward={false} />
 
       <ActionMenu.Root>
         <ActionMenu.Trigger asChild>
@@ -64,13 +53,6 @@ export const HeadBarLeftItems = ({
             : workspaceMenuItems.map((item) => renderActionMenuItem(item, handleWorkspaceMenuAction))}
         </ActionMenu.Content>
       </ActionMenu.Root>
-
-      {selectedWorkspace && (
-        <button className="hover:!background-[var(--moss-icon-secondary-background-hover)] flex h-[24px] cursor-pointer items-center gap-1 rounded px-1">
-          <Icon icon="Key" className="size-4.5 text-(--moss-headBar-icon-primary-text)" />
-          <span className="text-md">Vault</span>
-        </button>
-      )}
     </div>
   );
 };

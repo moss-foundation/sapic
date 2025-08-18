@@ -1,18 +1,18 @@
 import { ActionButton, ActionMenu } from "@/components";
-import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { SIDEBAR_POSITION } from "@/constants/layoutPositions";
+import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 
 import PanelToggleButtons from "./PanelToggleButtons";
 
 export interface CollapsibleActionMenuProps {
-  isCompact: boolean;
+  isCompact?: boolean;
   showDebugPanels: boolean;
   setShowDebugPanels: (show: boolean) => void;
   openPanel: (panel: string) => void;
 }
 
 // Collapsible Menu component that shows action buttons or collapses them into a dropdown
-export const CollapsibleActionMenu = ({ isCompact }: CollapsibleActionMenuProps) => {
+export const CollapsibleActionMenu = ({ isCompact = false }: CollapsibleActionMenuProps) => {
   const { sideBarPosition, bottomPane, sideBar } = useAppResizableLayoutStore();
 
   // When not in compact mode, show all buttons
