@@ -2,7 +2,8 @@ import { useEffect, useState, type ComponentPropsWithoutRef } from "react";
 
 import { Divider } from "@/components/Divider";
 import { Icons } from "@/lib/ui";
-import { cn, swap } from "@/utils";
+import { cn } from "@/utils";
+import { swapListById } from "@/utils/swapListById";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import { StatusBarActivity } from "./StatusBarActivity";
@@ -50,13 +51,11 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
         const targetData = target.data;
         if (!sourceData || !targetData) return;
 
-        const updatedItems = swap(DNDList, sourceData.id as number, targetData.id as number, {
-          mode: "id",
-        });
+        const updatedItems = swapListById(sourceData.id as number, targetData.id as number, DNDList);
 
         if (!updatedItems) return;
 
-        setDNDList(updatedItems as Item[]);
+        setDNDList(updatedItems);
       },
     });
   }, [DNDList]);
