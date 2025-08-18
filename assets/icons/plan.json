@@ -68,6 +68,12 @@
   "Collection": {
     "identical": false
   },
+  "Commit": {
+    "identical": true
+  },
+  "CommitActive": {
+    "identical": true
+  },
   "Component": {
     "identical": true
   },

@@ -2,7 +2,6 @@ import { useEffect } from "react";
 
 import { ACTIVITYBAR_POSITION } from "@/constants/layoutPositions";
 import { ActivityBarItem, useActivityBarStore } from "@/store/activityBar";
-import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn, swap } from "@/utils";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
@@ -12,7 +11,6 @@ import { ActivityBarButtonIndicator } from "./ActivityBarButtonIndicator";
 
 export const ActivityBarFirstItems = () => {
   const { items, position, setItems } = useActivityBarStore();
-  const { visible } = useAppResizableLayoutStore((state) => state.sideBar);
 
   useEffect(() => {
     return monitorForElements({
@@ -49,7 +47,7 @@ export const ActivityBarFirstItems = () => {
       })}
     >
       {items
-        .filter((item) => item.visible !== false) // Only show visible items
+        .filter((item) => item.isVisible !== false)
         .map((item) => (
           <div
             key={item.id}
@@ -60,7 +58,7 @@ export const ActivityBarFirstItems = () => {
           >
             <ActivityBarButton key={item.id} {...item} />
 
-            {item.isActive && visible && <ActivityBarButtonIndicator />}
+            {item.isActive && <ActivityBarButtonIndicator />}
           </div>
         ))}
     </div>
