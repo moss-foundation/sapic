@@ -21,7 +21,7 @@ pub struct StreamCollectionsEvent {
     pub repository_info: Option<RepositoryInfo>,
     pub contributors: Vec<Contributor>,
 
-    pub picture_path: Option<PathBuf>,
+    pub icon_path: Option<PathBuf>,
 }
 
 /// @category Event

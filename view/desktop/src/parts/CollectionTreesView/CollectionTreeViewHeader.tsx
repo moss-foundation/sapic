@@ -1,5 +1,8 @@
+import { useState } from "react";
+
 import { ActionButton, ActionMenu, SidebarHeader } from "@/components";
-import { CreateCollectionModal } from "@/components/Modals/Collection/CreateCollectionModal";
+import { CREATE_TAB, IMPORT_TAB } from "@/components/Modals/Collection/NewCollectionModal/constansts";
+import { NewCollectionModal } from "@/components/Modals/Collection/NewCollectionModal/NewCollectionModal";
 import {
   USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY,
   useActiveWorkspace,
@@ -23,10 +26,12 @@ export const CollectionTreeViewHeader = () => {
   const { mutateAsync: batchUpdateCollectionEntry } = useBatchUpdateCollectionEntry();
   const { hasActiveWorkspace } = useActiveWorkspace();
 
+  const [initialTab, setInitialTab] = useState<typeof CREATE_TAB | typeof IMPORT_TAB>(CREATE_TAB);
+
   const {
-    showModal: showCreateCollectionModal,
-    closeModal: closeCreateCollectionModal,
-    openModal: openCreateCollectionModal,
+    showModal: showNewCollectionModal,
+    closeModal: closeNewCollectionModal,
+    openModal: openNewCollectionModal,
   } = useModal();
 
   const handleRefreshCollections = () => {
@@ -108,7 +113,10 @@ export const CollectionTreeViewHeader = () => {
               title="Add collection"
               disabled={!hasActiveWorkspace}
               icon="Add"
-              onClick={openCreateCollectionModal}
+              onClick={() => {
+                setInitialTab(CREATE_TAB);
+                openNewCollectionModal();
+              }}
             />
             <ActionButton
               title="Collapse all collections"
@@ -116,7 +124,15 @@ export const CollectionTreeViewHeader = () => {
               icon="CollapseAll"
               onClick={handleCollapseAll}
             />
-            <ActionButton title="Import collection" disabled={!hasActiveWorkspace} icon="Import" />
+            <ActionButton
+              title="Import collection"
+              disabled={!hasActiveWorkspace}
+              icon="Import"
+              onClick={() => {
+                setInitialTab(IMPORT_TAB);
+                openNewCollectionModal();
+              }}
+            />
             <ActionButton
               icon="Refresh"
               onClick={handleRefreshCollections}
@@ -128,8 +144,12 @@ export const CollectionTreeViewHeader = () => {
           </>
         }
       />
-      {showCreateCollectionModal && (
-        <CreateCollectionModal showModal={showCreateCollectionModal} closeModal={closeCreateCollectionModal} />
+      {showNewCollectionModal && (
+        <NewCollectionModal
+          initialTab={initialTab}
+          showModal={showNewCollectionModal}
+          closeModal={closeNewCollectionModal}
+        />
       )}
     </>
   );

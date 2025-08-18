@@ -12,7 +12,7 @@ export type StreamCollectionsEvent = {
   repository?: string;
   repositoryInfo?: RepositoryInfo;
   contributors: Array<Contributor>;
-  picturePath?: string;
+  iconPath?: string;
 };
 
 /**

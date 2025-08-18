@@ -5,10 +5,10 @@ import { changeCollectionIdSchema } from "./primitives.zod";
 import {
   activitybarPartStateInfoSchema,
   addVariableParamsSchema,
+  createCollectionGitParamsSchema,
   editorPartStateInfoSchema,
   environmentGroupSchema,
-  gitHubImportParamsSchema,
-  gitLabImportParamsSchema,
+  importCollectionSourceSchema,
   panelPartStateInfoSchema,
   sidebarPartStateInfoSchema,
   updateCollectionParamsSchema,
@@ -24,14 +24,6 @@ export const batchUpdateCollectionOutputSchema = z.object({
 
 export const batchUpdateEnvironmentOutputSchema = z.object({
   ids: z.array(z.string()),
-});
-
-export const createCollectionInputSchema = z.object({
-  name: z.string(),
-  order: z.number(),
-  externalPath: z.string().optional(),
-  repository: z.string().optional(),
-  iconPath: z.string().optional(),
 });
 
 export const createCollectionOutputSchema = z.object({
@@ -105,6 +97,14 @@ export const batchUpdateEnvironmentInputSchema = z.object({
   items: z.array(updateEnvironmentParamsSchema),
 });
 
+export const createCollectionInputSchema = z.object({
+  name: z.string(),
+  order: z.number(),
+  externalPath: z.string().optional(),
+  gitParams: createCollectionGitParamsSchema.optional(),
+  iconPath: z.string().optional(),
+});
+
 export const createEnvironmentInputSchema = z.object({
   collectionId: z.string().optional(),
   name: z.string(),
@@ -124,14 +124,13 @@ export const describeStateOutputSchema = z.object({
   activitybar: activitybarPartStateInfoSchema.optional(),
 });
 
-export const importCollectionInputSchema = z.union([
-  z.object({
-    "gitHub": gitHubImportParamsSchema,
-  }),
-  z.object({
-    "gitLab": gitLabImportParamsSchema,
-  }),
-]);
+export const importCollectionInputSchema = z.object({
+  name: z.string(),
+  order: z.number(),
+  externalPath: z.string().optional(),
+  source: importCollectionSourceSchema,
+  iconPath: z.string().optional(),
+});
 
 export const streamEnvironmentsOutputSchema = z.object({
   groups: z.array(environmentGroupSchema),
