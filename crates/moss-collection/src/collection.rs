@@ -1,12 +1,3 @@
-use crate::{
-    DescribeCollection,
-    edit::CollectionEdit,
-    manifest::{MANIFEST_FILE_NAME, ManifestFile},
-    services::{
-        git_service::GitService, set_icon_service::SetIconService, storage_service::StorageService,
-    },
-    worktree::Worktree,
-};
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 use joinerror::ResultExt;
@@ -36,6 +27,16 @@ use std::{
     sync::Arc,
 };
 use tokio::sync::OnceCell;
+
+use crate::{
+    DescribeCollection,
+    edit::CollectionEdit,
+    manifest::{MANIFEST_FILE_NAME, ManifestFile},
+    services::{
+        git_service::GitService, set_icon_service::SetIconService, storage_service::StorageService,
+    },
+    worktree::Worktree,
+};
 
 pub struct EnvironmentItem<R: AppRuntime> {
     pub id: EnvironmentId,

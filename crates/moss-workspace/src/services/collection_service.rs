@@ -383,7 +383,15 @@ impl<R: AppRuntime> CollectionService<R> {
         let id_str = id.to_string();
         let abs_path = self.abs_path.join(id_str);
 
+        let mut state_lock = self.state.write().await;
+
+        let item = state_lock.collections.remove(&id);
+        let item_existed = item.is_some();
+
         if abs_path.exists() {
+            if let Some(item) = item {
+                item.git_service().cleanup(self.fs.clone()).await?;
+            }
             self.fs
                 .remove_dir(
                     &abs_path,
@@ -398,8 +406,6 @@ impl<R: AppRuntime> CollectionService<R> {
                 })?;
         }
 
-        let mut state_lock = self.state.write().await;
-        let item = state_lock.collections.remove(&id);
         state_lock.expanded_items.remove(&id);
 
         {
@@ -415,7 +421,7 @@ impl<R: AppRuntime> CollectionService<R> {
             txn.commit()?;
         }
 
-        if let Some(_item) = item {
+        if item_existed {
             Ok(Some(abs_path))
         } else {
             Ok(None)

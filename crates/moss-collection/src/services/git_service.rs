@@ -1,4 +1,5 @@
 use joinerror::OptionExt;
+use moss_fs::{FileSystem, RemoveOptions};
 use moss_git::{
     models::types::BranchInfo,
     repo::{FileStatus, RepoHandle},
@@ -16,6 +17,43 @@ pub struct GitService {
 }
 
 impl GitService {
+    // Sometimes objects might be set as readonly, preventing them from being deleted
+    // we will need to recursively set all files in .git/objects as writable
+    pub async fn cleanup(&self, fs: Arc<dyn FileSystem>) -> joinerror::Result<()> {
+        let repo_handle = self.repo_handle.lock()?.take();
+        if repo_handle.is_none() {
+            return Ok(());
+        }
+        let repo_handle = repo_handle.unwrap();
+        let path = repo_handle.path().to_path_buf();
+        drop(repo_handle);
+
+        let mut folders = vec![path.join("objects")];
+
+        while let Some(folder) = folders.pop() {
+            let mut read_dir = fs.read_dir(&folder).await?;
+            while let Some(entry) = read_dir.next_entry().await? {
+                if entry.file_type().await?.is_dir() {
+                    folders.push(entry.path());
+                }
+                let mut perms = entry.metadata().await?.permissions();
+                perms.set_readonly(false);
+                tokio::fs::set_permissions(&entry.path(), perms).await?;
+            }
+        }
+
+        fs.remove_dir(
+            &path,
+            RemoveOptions {
+                recursive: true,
+                ignore_if_not_exists: true,
+            },
+        )
+        .await?;
+
+        Ok(())
+    }
+
     pub async fn has_repo(&self) -> joinerror::Result<bool> {
         let repo_handle_clone = self.repo_handle.clone();
         let join = tokio::task::spawn_blocking(move || {

@@ -10,7 +10,7 @@ dotenv.workspace = true
 url.workspace = true
 regex.workspace = true
 joinerror.workspace = true
-serde.workspace = true
+serde = { workspace = true, features = ["derive"] }
 ts-rs.workspace = true
 
 [dev-dependencies]

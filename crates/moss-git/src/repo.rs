@@ -433,6 +433,10 @@ impl RepoHandle {
 
         Ok(out)
     }
+
+    pub fn path(&self) -> &Path {
+        self.repo.path()
+    }
 }
 impl RepoHandle {
     fn fast_forward(

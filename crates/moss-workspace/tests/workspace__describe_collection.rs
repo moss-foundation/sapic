@@ -2,14 +2,13 @@
 
 use crate::shared::setup_test_workspace;
 use moss_workspace::models::{
-    operations::{DescribeCollectionInput, ImportCollectionInput},
+    operations::{DeleteCollectionInput, DescribeCollectionInput, ImportCollectionInput},
     types::{GitHubImportParams, ImportCollectionParams, ImportCollectionSource, VcsInfo},
 };
 use std::env;
 
 mod shared;
 
-#[ignore]
 #[tokio::test]
 async fn describe_collection_with_repository() {
     let (ctx, workspace, cleanup) = setup_test_workspace().await;
@@ -37,7 +36,7 @@ async fn describe_collection_with_repository() {
         .describe_collection(
             &ctx,
             &DescribeCollectionInput {
-                id: import_collection_output.id,
+                id: import_collection_output.id.clone(),
             },
         )
         .await
@@ -59,5 +58,14 @@ async fn describe_collection_with_repository() {
     assert!(github_info.updated_at.is_some());
     assert_eq!(github_info.owner.unwrap(), "brutusyhy");
 
+    workspace
+        .delete_collection(
+            &ctx,
+            &DeleteCollectionInput {
+                id: import_collection_output.id,
+            },
+        )
+        .await
+        .unwrap();
     cleanup().await;
 }
