@@ -35,7 +35,7 @@ export const ModeToggle = ({ className }: ModeToggleProps) => {
   return (
     <div
       className={cn(
-        "background-(--moss-display-mode-bg) @container/ flex w-full rounded-sm border-1 border-(--moss-display-mode-border) p-px",
+        "background-(--moss-display-mode-bg) @container/mode-toggle flex w-full rounded-sm border-1 border-(--moss-display-mode-border) p-px",
         className
       )}
     >
@@ -46,13 +46,15 @@ export const ModeToggle = ({ className }: ModeToggleProps) => {
           value="REQUEST_FIRST"
           className={cn("peer sr-only")}
           checked={displayMode === "REQUEST_FIRST"}
-          onClick={handleSetRequestFirstMode}
+          onChange={handleSetRequestFirstMode}
         />
         <label
           htmlFor="request-first"
           className="flex min-w-0 cursor-pointer items-center justify-center rounded-sm px-1 py-px leading-5 text-(--moss-display-mode-text) transition-colors duration-300 peer-checked:bg-white peer-checked:text-(--moss-display-mode-text-selected)"
         >
-          <span className="w-full truncate text-center">Request mode</span>
+          <span className="w-full truncate text-center">
+            Request <span className="hidden @min-[200px]/mode-toggle:inline-block">mode</span>
+          </span>
         </label>
       </div>
 
@@ -63,13 +65,15 @@ export const ModeToggle = ({ className }: ModeToggleProps) => {
           value="DESIGN_FIRST"
           className={cn("peer sr-only")}
           checked={displayMode === "DESIGN_FIRST"}
-          onClick={handleSetDesignFirstMode}
+          onChange={handleSetDesignFirstMode}
         />
         <label
           htmlFor="design-first"
           className="flex min-w-0 cursor-pointer items-center justify-center rounded-sm px-1 py-px leading-5 text-(--moss-display-mode-text) transition-colors duration-300 peer-checked:bg-white peer-checked:text-(--moss-display-mode-text-selected)"
         >
-          <span className="w-full truncate text-center">Design mode</span>
+          <span className="w-full truncate text-center">
+            Design <span className="hidden @min-[200px]/mode-toggle:inline-block">mode</span>
+          </span>
         </label>
       </div>
     </div>

@@ -101,7 +101,7 @@ export const ActivityBarButton = ({
         },
       })
     );
-  }, [position, icon, props]);
+  }, [position, icon, props, isDraggable]);
 
   const handleClick = (id: string) => {
     if (isActive && position === ACTIVITYBAR_POSITION.DEFAULT && isSideBarVisible) {
