@@ -11,7 +11,7 @@ use moss_app::{
 use moss_common::api::OperationError;
 use moss_storage::storage::operations::{GetItem, ListByPrefix};
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_workspace_name};
-use moss_workspace::models::types::WorkspaceMode;
+use moss_workspace::models::primitives::WorkspaceMode;
 use std::{path::Path, sync::Arc};
 
 use crate::shared::set_up_test_app;

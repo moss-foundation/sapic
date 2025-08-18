@@ -4,6 +4,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_STREAMED_ENVIRONMENTS_QUERY_KEY } from "./useStreamEnvironments";
 
+const UPDATE_ENVIRONMENT_QUERY_KEY = "updateEnvironment";
+
 const updateEnvironment = async (input: UpdateEnvironmentInput) => {
   const result = await invokeTauriIpc<UpdateEnvironmentOutput>("update_environment", { input });
 
@@ -18,6 +20,7 @@ export const useUpdateEnvironment = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: [UPDATE_ENVIRONMENT_QUERY_KEY],
     mutationFn: updateEnvironment,
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: [USE_STREAMED_ENVIRONMENTS_QUERY_KEY] });

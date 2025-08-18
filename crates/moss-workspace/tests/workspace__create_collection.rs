@@ -2,15 +2,16 @@
 
 pub mod shared;
 
+use crate::shared::{generate_random_icon, setup_test_workspace};
 use moss_storage::storage::operations::GetItem;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_collection_name};
 use moss_workspace::{
-    models::{operations::CreateCollectionInput, primitives::CollectionId},
+    models::{
+        operations::CreateCollectionInput, primitives::CollectionId, types::CreateCollectionParams,
+    },
     storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
 use tauri::ipc::Channel;
-
-use crate::shared::{generate_random_icon, setup_test_workspace};
 
 #[tokio::test]
 async fn create_collection_success() {
@@ -21,12 +22,13 @@ async fn create_collection_success() {
         .create_collection(
             &ctx,
             &CreateCollectionInput {
-                name: collection_name.clone(),
-                order: 0,
-                external_path: None,
-                repository: None,
-                git_provider_type: None,
-                icon_path: None,
+                inner: CreateCollectionParams {
+                    name: collection_name.clone(),
+                    order: 0,
+                    external_path: None,
+                    git_params: None,
+                    icon_path: None,
+                },
             },
         )
         .await
@@ -75,12 +77,13 @@ async fn create_collection_empty_name() {
         .create_collection(
             &ctx,
             &CreateCollectionInput {
-                name: collection_name.clone(),
-                order: 0,
-                external_path: None,
-                repository: None,
-                git_provider_type: None,
-                icon_path: None,
+                inner: CreateCollectionParams {
+                    name: collection_name.clone(),
+                    order: 0,
+                    external_path: None,
+                    git_params: None,
+                    icon_path: None,
+                },
             },
         )
         .await;
@@ -104,12 +107,13 @@ async fn create_collection_special_chars() {
             .create_collection(
                 &ctx,
                 &CreateCollectionInput {
-                    name: collection_name.clone(),
-                    order: 0,
-                    external_path: None,
-                    repository: None,
-                    git_provider_type: None,
-                    icon_path: None,
+                    inner: CreateCollectionParams {
+                        name: collection_name.clone(),
+                        order: 0,
+                        external_path: None,
+                        git_params: None,
+                        icon_path: None,
+                    },
                 },
             )
             .await;
@@ -160,12 +164,13 @@ async fn create_collection_with_order() {
         .create_collection(
             &ctx,
             &CreateCollectionInput {
-                name: collection_name.clone(),
-                order: 42,
-                external_path: None,
-                repository: None,
-                git_provider_type: None,
-                icon_path: None,
+                inner: CreateCollectionParams {
+                    name: collection_name.clone(),
+                    order: 42,
+                    external_path: None,
+                    git_params: None,
+                    icon_path: None,
+                },
             },
         )
         .await;
@@ -217,12 +222,13 @@ async fn create_collection_with_icon() {
         .create_collection(
             &ctx,
             &CreateCollectionInput {
-                name: collection_name.clone(),
-                order: 0,
-                external_path: None,
-                repository: None,
-                git_provider_type: None,
-                icon_path: Some(input_icon_path.clone()),
+                inner: CreateCollectionParams {
+                    name: collection_name.clone(),
+                    order: 0,
+                    external_path: None,
+                    git_params: None,
+                    icon_path: Some(input_icon_path.clone()),
+                },
             },
         )
         .await;
@@ -277,12 +283,13 @@ async fn create_multiple_collections_expanded_items() {
         .create_collection(
             &ctx,
             &CreateCollectionInput {
-                name: collection_name1.clone(),
-                order: 0,
-                external_path: None,
-                repository: None,
-                git_provider_type: None,
-                icon_path: None,
+                inner: CreateCollectionParams {
+                    name: collection_name1.clone(),
+                    order: 0,
+                    external_path: None,
+                    git_params: None,
+                    icon_path: None,
+                },
             },
         )
         .await
@@ -294,12 +301,13 @@ async fn create_multiple_collections_expanded_items() {
         .create_collection(
             &ctx,
             &CreateCollectionInput {
-                name: collection_name2.clone(),
-                order: 1,
-                external_path: None,
-                repository: None,
-                git_provider_type: None,
-                icon_path: None,
+                inner: CreateCollectionParams {
+                    name: collection_name2.clone(),
+                    order: 1,
+                    external_path: None,
+                    git_params: None,
+                    icon_path: None,
+                },
             },
         )
         .await

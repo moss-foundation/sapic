@@ -21,7 +21,7 @@ pub struct StreamCollectionsEvent {
 
     pub branch: Option<BranchInfo>,
 
-    pub picture_path: Option<PathBuf>,
+    pub icon_path: Option<PathBuf>,
 }
 
 /// @category Event
@@ -38,5 +38,5 @@ pub struct StreamEnvironmentsEvent {
 
     pub name: String,
     pub order: Option<isize>,
-    pub expanded: bool,
+    pub total_variables: usize,
 }

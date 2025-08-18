@@ -123,6 +123,7 @@ pub async fn run<R: TauriRuntime>() {
             commands::stream_collections,
             commands::describe_collection,
             commands::create_collection,
+            commands::import_collection,
             commands::delete_collection,
             commands::update_collection,
             commands::batch_update_collection,
@@ -130,6 +131,8 @@ pub async fn run<R: TauriRuntime>() {
             commands::update_environment,
             commands::stream_environments,
             commands::delete_environment,
+            commands::update_environment_group,
+            commands::batch_update_environment_group,
             //
             // Collection
             //

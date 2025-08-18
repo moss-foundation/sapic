@@ -12,7 +12,6 @@ import { USE_LIST_WORKSPACES_QUERY_KEY } from "./useListWorkspaces";
 export const USE_CLOSE_WORKSPACE_QUERY_KEY = "closeWorkspace";
 
 const closeWorkspaceFn = async (workspaceId: string): Promise<CloseWorkspaceOutput> => {
-  console.log("onSuccess");
   const result = await invokeTauriIpc<CloseWorkspaceOutput>("close_workspace", {
     input: {
       id: workspaceId,

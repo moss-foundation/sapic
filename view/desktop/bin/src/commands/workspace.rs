@@ -201,3 +201,33 @@ pub async fn delete_environment<'a, R: tauri::Runtime>(
     })
     .await
 }
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(app), fields(window = window.label()))]
+pub async fn update_environment_group<'a, R: tauri::Runtime>(
+    ctx: State<'_, moss_applib::context::AsyncContext>,
+    app: App<'a, R>,
+    window: Window<R>,
+    input: UpdateEnvironmentGroupInput,
+    options: Options,
+) -> TauriResult<()> {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
+        workspace.update_environment_group(&ctx, input).await
+    })
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(app), fields(window = window.label()))]
+pub async fn batch_update_environment_group<'a, R: tauri::Runtime>(
+    ctx: State<'_, moss_applib::context::AsyncContext>,
+    app: App<'a, R>,
+    window: Window<R>,
+    input: BatchUpdateEnvironmentGroupInput,
+    options: Options,
+) -> TauriResult<()> {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
+        workspace.batch_update_environment_group(&ctx, input).await
+    })
+    .await
+}

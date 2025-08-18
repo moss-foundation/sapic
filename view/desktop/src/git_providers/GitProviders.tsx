@@ -1,11 +1,13 @@
 import { useState } from "react";
+
 import { invokeTauriIpc } from "@/lib/backend/tauri.ts";
+import { AddAccountInput, AddAccountOutput } from "@repo/moss-app";
 import { UserInfo } from "@repo/moss-git-hosting-provider";
-import { AddAccountOutput, AddAccountInput } from "@repo/moss-app";
 
 export const GitProviders = () => {
   const [currentGitHubAccount, setCurrentGitHubAccount] = useState<UserInfo>();
   const [currentGitLabAccount, setCurrentGitLabAccount] = useState<UserInfo>();
+
   async function handleGitHubLogin() {
     const input: AddAccountInput = {
       gitProviderType: "GitHub",

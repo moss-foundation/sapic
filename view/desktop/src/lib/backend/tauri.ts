@@ -38,6 +38,8 @@ export type TauriIpcCommand =
   | "create_environment"
   | "update_environment"
   | "delete_environment"
+  | "update_environment_group"
+  | "batch_update_environment_group"
   //
   // Collection
   //
@@ -47,6 +49,7 @@ export type TauriIpcCommand =
   | "stream_collection_entries"
   | "batch_update_collection_entry"
   | "batch_create_collection_entry"
+  | "import_collection"
   //
   // Env
   //

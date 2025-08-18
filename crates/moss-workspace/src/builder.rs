@@ -113,13 +113,9 @@ impl WorkspaceBuilder {
         )
         .await?;
 
-        let environment_service = EnvironmentService::new(
-            ctx,
-            &params.abs_path,
-            self.fs.clone(),
-            storage_service.clone(),
-        )
-        .await?;
+        let environment_service =
+            EnvironmentService::new(&params.abs_path, self.fs.clone(), storage_service.clone())
+                .await?;
 
         let edit = WorkspaceEdit::new(self.fs.clone(), params.abs_path.join(MANIFEST_FILE_NAME));
 
@@ -159,13 +155,9 @@ impl WorkspaceBuilder {
             self.gitlab_client.clone(),
         )
         .await?;
-        let environment_service = EnvironmentService::new(
-            ctx,
-            &params.abs_path,
-            self.fs.clone(),
-            storage_service.clone(),
-        )
-        .await?;
+        let environment_service =
+            EnvironmentService::new(&params.abs_path, self.fs.clone(), storage_service.clone())
+                .await?;
 
         let edit = WorkspaceEdit::new(self.fs.clone(), params.abs_path.join(MANIFEST_FILE_NAME));
 

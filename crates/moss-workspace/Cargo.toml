@@ -17,6 +17,8 @@ moss_edit.workspace = true
 moss_git_hosting_provider.workspace = true
 moss_keyring.workspace = true
 moss_api.workspace = true
+moss_logging.workspace = true
+moss_common.workspace = true
 
 joinerror.workspace = true
 anyhow.workspace = true
@@ -38,6 +40,7 @@ jsonptr.workspace = true
 reqwest = { workspace = true, features = ["json"] }
 dotenv = { workspace = true, optional = true }
 oauth2 = { workspace = true, features = ["ureq"], optional = true }
+rustc-hash = { workspace = true }
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }

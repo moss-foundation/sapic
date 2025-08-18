@@ -27,6 +27,7 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
   useEffect(() => {
     if (collection) {
       setName(collection.name);
+      setRepository(collection?.repository || "github.com/moss-foundation/sapic");
       const currentPanel = containerApi.getPanel(collection.id);
       currentPanel?.api.setTitle(collection.name);
     }

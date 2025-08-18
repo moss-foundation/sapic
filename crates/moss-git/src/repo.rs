@@ -1,15 +1,8 @@
-use crate::GitAuthAgent;
 pub use git2::{BranchType, IndexAddOption, Signature};
-use git2::{
-    IntoCString, PushOptions, RemoteCallbacks, Repository, Status, StatusOptions,
-    build::RepoBuilder,
-};
-use joinerror::OptionExt;
-use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
-    sync::Arc,
-};
+use git2::{IntoCString, PushOptions, RemoteCallbacks, Repository, build::RepoBuilder};
+use std::{collections::HashMap, path::Path, sync::Arc};
+
+use crate::GitAuthAgent;
 
 // https://github.com/rust-lang/git2-rs/issues/194
 
@@ -108,18 +101,39 @@ impl RepoHandle {
         Ok(())
     }
 
+    /// If remote_branch is None, configured remote for the branch will be used, otherwise "origin"
+    /// If local_branch is None, currently checked out branch will be pushed, similar to `git push`
+    /// If remote_branch is None, configured refspec will be used
+    /// If set_upstream is true, configuration will be updated
     pub fn push(
         &self,
         remote_name: Option<&str>,
-        local_branch_name: Option<&str>,
-        remote_branch_name: Option<&str>,
+        local_branch: Option<&str>,
+        remote_branch: Option<&str>,
         set_upstream: bool,
     ) -> joinerror::Result<()> {
-        let remote_name = remote_name.unwrap_or("origin");
-        // FIXME: does it make sense to default to main branch?
-        let local_branch_name = local_branch_name.unwrap_or("main");
-        let remote_branch_name = remote_branch_name.unwrap_or("main");
-        let mut remote = self.repo.find_remote(remote_name)?;
+        let repo: &Repository = &self.repo;
+
+        // If no local_branch is provided, push the current branch
+        let local_branch = if let Some(local_branch) = local_branch {
+            local_branch.to_string()
+        } else {
+            self.current_branch()?
+        };
+
+        let mut cfg = repo.config()?;
+
+        // If no remote_name is specified, use the configured remote for the branch,
+        // before falling back to `origin`
+        let remote_name = if let Some(remote_name) = remote_name {
+            remote_name.to_string()
+        } else {
+            cfg.get_string(&format!("branch.{}.remote", local_branch))
+                .unwrap_or(DEFAULT_REMOTE_NAME.to_string())
+        };
+
+        let mut remote = repo.find_remote(&remote_name)?;
+
         let mut callbacks = RemoteCallbacks::new();
         self.auth_agent.generate_callback(&mut callbacks)?;
 
@@ -135,25 +149,35 @@ impl RepoHandle {
             Ok(())
         });
 
-        remote.push(
-            &[&format!(
+        let mut refspecs = Vec::new();
+
+        // If no remote_branch is specified, use the configured refspec
+        if let Some(remote_branch) = remote_branch {
+            refspecs.push(format!(
                 "refs/heads/{}:refs/heads/{}",
-                local_branch_name, remote_branch_name
-            )],
+                local_branch, remote_branch
+            ));
+        }
+
+        remote.push(
+            refspecs.as_slice(),
             Some(&mut PushOptions::new().remote_callbacks(callbacks)),
         )?;
 
         if set_upstream {
-            let mut branch = self
-                .repo
-                .find_branch(local_branch_name, BranchType::Local)?;
-            branch.set_upstream(Some(&format!("{}/{}", remote_name, remote_branch_name)))?;
+            cfg.set_str(&format!("branch.{}.remote", local_branch), &remote_name)?;
+            let remote_branch = remote_branch.unwrap_or(local_branch.as_str());
+            cfg.set_str(
+                &format!("branch.{}.merge", local_branch),
+                &format!("refs/heads/{}", remote_branch),
+            )?;
         }
+
         Ok(())
     }
 
     pub fn fetch(&self, remote_name: Option<&str>) -> joinerror::Result<()> {
-        let remote_name = remote_name.unwrap_or("origin");
+        let remote_name = remote_name.unwrap_or(DEFAULT_REMOTE_NAME);
         let mut remote = self.repo.find_remote(remote_name)?;
         let refspec = format!("+refs/heads/*:refs/remotes/{}/*", remote_name);
 
@@ -183,7 +207,9 @@ impl RepoHandle {
 
     pub fn pull(&self, remote_name: Option<&str>) -> joinerror::Result<()> {
         // Pull = Fetch + Merge FETCH_HEAD
-        let remote = self.repo.find_remote(remote_name.unwrap_or("origin"))?;
+        let remote = self
+            .repo
+            .find_remote(remote_name.unwrap_or(DEFAULT_REMOTE_NAME))?;
         let mut callbacks = RemoteCallbacks::new();
         self.auth_agent.generate_callback(&mut callbacks)?;
 
@@ -198,7 +224,7 @@ impl RepoHandle {
 
     pub fn add_remote(&self, remote_name: Option<&str>, remote_url: &str) -> joinerror::Result<()> {
         self.repo
-            .remote(remote_name.unwrap_or("origin"), remote_url)?;
+            .remote(remote_name.unwrap_or(DEFAULT_REMOTE_NAME), remote_url)?;
 
         Ok(())
     }
@@ -258,12 +284,12 @@ impl RepoHandle {
     pub fn create_branch(
         &self,
         branch_name: &str,
-        base_branch: Option<&str>,
+        base_branch: Option<(&str, BranchType)>,
         force: bool,
     ) -> joinerror::Result<()> {
         let target = if let Some(base_branch) = base_branch {
             self.repo
-                .find_branch(base_branch, BranchType::Local)?
+                .find_branch(base_branch.0, base_branch.1)?
                 .get()
                 .peel_to_commit()?
         } else {
@@ -275,7 +301,7 @@ impl RepoHandle {
         Ok(())
     }
 
-    /// Only supports renaming local branch at the moment
+    /// FIXME: Right now we are only renaming the
     pub fn rename_branch(
         &self,
         old_name: &str,
@@ -284,6 +310,58 @@ impl RepoHandle {
     ) -> joinerror::Result<()> {
         let mut branch = self.repo.find_branch(old_name, BranchType::Local)?;
         branch.rename(new_name, force)?;
+        Ok(())
+    }
+
+    pub fn checkout_branch(
+        &self,
+        remote_name: Option<&str>,
+        branch_name: &str,
+        create_from_remote: bool,
+    ) -> joinerror::Result<()> {
+        // Try to find an existing local branch
+        match self.repo.find_branch(branch_name, BranchType::Local) {
+            // A local branch is found
+            Ok(branch) => {
+                // Convert branch wrapper into its underlying reference, get full refname.
+                let reference = branch.into_reference();
+                let refname = reference
+                    .name()
+                    .ok_or_join_err::<()>("invalid branch refname")?;
+                // Set HEAD to that branch reference (e.g. "refs/heads/<branch>")
+                self.repo.set_head(refname)?;
+            }
+            // A local branch is not found
+            Err(_) => {
+                if !create_from_remote {
+                    return Err(joinerror::Error::new::<()>(format!(
+                        "a local branch named `{}` does not exist",
+                        branch_name
+                    )));
+                }
+
+                // Create a local branch based on the remote branch
+                let remote = remote_name.unwrap_or(DEFAULT_REMOTE_NAME);
+                let remote_refname = format!("refs/remotes/{}/{}", remote, branch_name);
+                let remote_ref = self
+                    .repo
+                    .find_reference(&remote_refname)
+                    .join_err::<()>("failed to find remote branch reference")?;
+
+                let target_commit = remote_ref.peel_to_commit()?;
+                let mut local_branch = self.repo.branch(branch_name, &target_commit, false)?;
+
+                let upstream_name = format!("{}/{}", remote, branch_name);
+                local_branch.set_upstream(Some(&upstream_name))?;
+
+                // Set HEAD to the new local branch
+                let local_refname = format!("refs/heads/{}", branch_name);
+                self.repo.set_head(&local_refname)?;
+            }
+        }
+
+        let mut co = CheckoutBuilder::new();
+        self.repo.checkout_head(Some(&mut co))?;
         Ok(())
     }
 

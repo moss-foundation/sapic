@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction, useEffect } from "react";
 
 import { refreshOrders } from "@/utils/refreshOrders";
-import { swapListByIndexWithEdge } from "@/utils/swapListByIndexWithEdge";
+import { swap } from "@/utils";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { RowSelectionState, SortingState, Table } from "@tanstack/react-table";
@@ -61,7 +61,12 @@ export const useTableDragAndDrop = ({
             const sourceIndex = flatRows.findIndex((row) => row.id === sourceTarget.row.id);
             const dropIndex = flatRows.findIndex((row) => row.id === dropTarget.row.id);
 
-            const newData = swapListByIndexWithEdge(sourceIndex, dropIndex, flatRows, edge);
+            const newData = swap(flatRows, sourceIndex, dropIndex, {
+              mode: "index",
+              edge,
+            });
+
+            if (!newData) return;
 
             setData(refreshOrders(newData));
           }

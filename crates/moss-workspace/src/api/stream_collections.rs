@@ -46,7 +46,7 @@ impl<R: AppRuntime> Workspace<R> {
                 expanded: desc.expanded,
                 repository: desc.repository,
                 branch: branch_info,
-                picture_path: desc.icon_path,
+                icon_path: desc.icon_path,
             };
 
             if let Err(e) = channel.send(event) {

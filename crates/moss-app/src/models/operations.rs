@@ -8,7 +8,7 @@ use crate::models::{
 use derive_more::Deref;
 use moss_git_hosting_provider::models::{primitives::GitProviderType, types::UserInfo};
 use moss_logging::models::primitives::LogEntryId;
-use moss_workspace::models::types::WorkspaceMode;
+use moss_workspace::models::primitives::WorkspaceMode;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use ts_rs::TS;

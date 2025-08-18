@@ -75,7 +75,7 @@ const ItemWithLabel = ({
         </label>
       )}
       {description && (
-        <p className="col-start-2 text-left text-xs leading-3.75 text-(--moss-secondary-text)">{description}</p>
+        <p className="col-start-2 text-left text-sm leading-4 text-(--moss-secondary-text)">{description}</p>
       )}
     </div>
   );
@@ -163,7 +163,7 @@ const ItemWithSelect = ({
       </div>
 
       {description && (
-        <p className="col-start-2 text-left text-xs leading-3.75 text-(--moss-secondary-text)">{description}</p>
+        <p className="col-start-2 text-left text-sm leading-4 text-(--moss-secondary-text)">{description}</p>
       )}
     </div>
   );
