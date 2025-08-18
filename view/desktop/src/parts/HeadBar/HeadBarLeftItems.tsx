@@ -22,7 +22,7 @@ export const HeadBarLeftItems = ({ handleWindowsMenuAction, handleWorkspaceMenuA
   const selectedWorkspace = activeWorkspace?.name || null;
 
   return (
-    <div className={cn("flex items-center justify-start gap-6 overflow-hidden")} data-tauri-drag-region>
+    <div className={cn("flex items-center justify-start gap-3 overflow-hidden")} data-tauri-drag-region>
       {isWindowsOrLinux && (
         <ActionMenu.Root>
           <ActionMenu.Trigger className="hover:!background-(--moss-icon-secondary-background-hover) rounded p-1">
