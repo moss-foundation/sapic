@@ -82,7 +82,7 @@ export const HeadBar = () => {
 
         <div
           className={cn("relative flex h-full w-full items-center justify-between overflow-clip", {
-            "mr-2 pr-[8px] pl-5": os === "macos",
+            "mr-2 pr-[8px] pl-2.5": os === "macos",
             "ml-[7px]": os === "windows" || os === "linux",
           })}
           style={{ overflowClipMargin: 4 }}

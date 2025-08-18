@@ -35,7 +35,7 @@ export const ModeToggle = ({ className }: ModeToggleProps) => {
   return (
     <div
       className={cn(
-        "background-(--moss-display-mode-bg) flex w-full rounded-sm border-1 border-(--moss-display-mode-border) p-px",
+        "background-(--moss-display-mode-bg) @container/ flex w-full rounded-sm border-1 border-(--moss-display-mode-border) p-px",
         className
       )}
     >

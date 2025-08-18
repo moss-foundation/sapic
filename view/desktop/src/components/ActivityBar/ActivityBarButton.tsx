@@ -27,6 +27,7 @@ export const ActivityBarButton = ({
   iconActive,
   isActive,
   isDraggable = true,
+  isVisible = true,
   ...props
 }: ActivityBarButtonProps) => {
   const ref = useRef<HTMLButtonElement | null>(null);
