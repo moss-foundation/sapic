@@ -3,14 +3,15 @@ pub mod github;
 pub mod gitlab;
 pub mod models;
 
-use crate::{
-    common::GitUrlForAPI,
-    models::types::{Contributor, RepositoryMetadata, UserInfo},
-};
 use async_trait::async_trait;
 use moss_git::GitAuthAgent;
 use std::sync::Arc;
 use url::Url;
+
+use crate::{
+    common::GitUrlForAPI,
+    models::types::{Contributor, RepositoryMetadata, UserInfo},
+};
 
 #[async_trait]
 pub trait GitHostingProvider: GitAuthProvider + Send + Sync {

@@ -1,3 +1,7 @@
+use joinerror::OptionExt;
+use moss_applib::AppRuntime;
+use moss_collection::collection::Vcs;
+
 use crate::{
     Workspace,
     errors::ErrorNotFound,
@@ -6,9 +10,6 @@ use crate::{
         types::{GitHubVcsInfo, GitLabVcsInfo, VcsInfo},
     },
 };
-use joinerror::OptionExt;
-use moss_applib::AppRuntime;
-use moss_collection::collection::Vcs;
 
 impl<R: AppRuntime> Workspace<R> {
     pub async fn describe_collection(

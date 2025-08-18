@@ -1,16 +1,3 @@
-use crate::{
-    Collection,
-    config::{CONFIG_FILE_NAME, ConfigFile},
-    constants::COLLECTION_ROOT_PATH,
-    defaults, dirs,
-    edit::CollectionEdit,
-    manifest::{MANIFEST_FILE_NAME, ManifestFile},
-    models::primitives::{EntryClass, EntryId},
-    services::{
-        git_service::GitService, set_icon_service::SetIconService, storage_service::StorageService,
-    },
-    worktree::{Worktree, entry::model::EntryModel},
-};
 use joinerror::{Error, OptionExt, ResultExt};
 use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt, RemoveOptions};
@@ -28,6 +15,20 @@ use std::{
     sync::Arc,
 };
 use tokio::sync::OnceCell;
+
+use crate::{
+    Collection,
+    config::{CONFIG_FILE_NAME, ConfigFile},
+    constants::COLLECTION_ROOT_PATH,
+    defaults, dirs,
+    edit::CollectionEdit,
+    manifest::{MANIFEST_FILE_NAME, ManifestFile},
+    models::primitives::{EntryClass, EntryId},
+    services::{
+        git_service::GitService, set_icon_service::SetIconService, storage_service::StorageService,
+    },
+    worktree::{Worktree, entry::model::EntryModel},
+};
 
 const COLLECTION_ICON_SIZE: u32 = 128;
 const OTHER_DIRS: [&str; 2] = [dirs::ASSETS_DIR, dirs::ENVIRONMENTS_DIR];
