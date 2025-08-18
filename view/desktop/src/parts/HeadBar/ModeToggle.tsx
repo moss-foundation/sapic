@@ -35,7 +35,7 @@ export const ModeToggle = ({ className }: ModeToggleProps) => {
   return (
     <div
       className={cn(
-        "background-(--moss-display-mode-bg) flex w-full overflow-hidden rounded-sm border-1 border-(--moss-display-mode-border) p-px",
+        "background-(--moss-display-mode-bg) flex w-full rounded-sm border-1 border-(--moss-display-mode-border) p-px",
         className
       )}
     >
@@ -50,9 +50,9 @@ export const ModeToggle = ({ className }: ModeToggleProps) => {
         />
         <label
           htmlFor="request-first"
-          className="flex grow cursor-pointer items-center justify-center truncate rounded-sm p-px leading-5 text-(--moss-display-mode-text) transition-colors duration-300 peer-checked:bg-white peer-checked:text-(--moss-display-mode-text-selected)"
+          className="flex min-w-0 cursor-pointer items-center justify-center rounded-sm p-px leading-5 text-(--moss-display-mode-text) transition-colors duration-300 peer-checked:bg-white peer-checked:text-(--moss-display-mode-text-selected)"
         >
-          Request mode
+          <span className="w-full truncate text-center">Request mode</span>
         </label>
       </div>
 
@@ -67,9 +67,9 @@ export const ModeToggle = ({ className }: ModeToggleProps) => {
         />
         <label
           htmlFor="design-first"
-          className="flex grow cursor-pointer items-center justify-center truncate rounded-sm p-px leading-5 text-(--moss-display-mode-text) transition-colors duration-300 peer-checked:bg-white peer-checked:text-(--moss-display-mode-text-selected)"
+          className="flex min-w-0 cursor-pointer items-center justify-center rounded-sm p-px leading-5 text-(--moss-display-mode-text) transition-colors duration-300 peer-checked:bg-white peer-checked:text-(--moss-display-mode-text-selected)"
         >
-          Design mode
+          <span className="w-full truncate text-center">Design mode</span>
         </label>
       </div>
     </div>
