@@ -1,18 +1,3 @@
-use joinerror::{Error, OptionExt, ResultExt};
-use moss_applib::{AppRuntime, subscription::EventEmitter};
-use moss_fs::{CreateOptions, FileSystem, FsResultExt, RemoveOptions};
-use moss_git::repo::{BranchType, IndexAddOption, RepoHandle, Signature};
-use moss_git_hosting_provider::{
-    GitAuthProvider, GitHostingProvider, github::client::GitHubClient,
-    gitlab::client::GitLabClient, models::primitives::GitProviderType,
-};
-use std::{
-    cell::LazyCell,
-    path::{Path, PathBuf},
-    sync::Arc,
-};
-use tokio::sync::OnceCell;
-
 use crate::{
     Collection,
     config::{CONFIG_FILE_NAME, ConfigFile},
@@ -26,6 +11,23 @@ use crate::{
     },
     worktree::{Worktree, entry::model::EntryModel},
 };
+use joinerror::{Error, OptionExt, ResultExt};
+use moss_applib::{AppRuntime, subscription::EventEmitter};
+use moss_fs::{CreateOptions, FileSystem, FsResultExt, RemoveOptions};
+use moss_git::{
+    repo::{BranchType, IndexAddOption, RepoHandle, Signature},
+    url::normalize_git_url,
+};
+use moss_git_hosting_provider::{
+    GitAuthProvider, GitHostingProvider, github::client::GitHubClient,
+    gitlab::client::GitLabClient, models::primitives::GitProviderType,
+};
+use std::{
+    cell::LazyCell,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
+use tokio::sync::OnceCell;
 
 const COLLECTION_ICON_SIZE: u32 = 128;
 const OTHER_DIRS: [&str; 2] = [dirs::ASSETS_DIR, dirs::ENVIRONMENTS_DIR];
@@ -228,7 +230,20 @@ impl CollectionBuilder {
 
         let git_params = params.git_params;
 
-        let repository = git_params.as_ref().map(|p| p.repository.clone());
+        // FIXME: I'm not sure why we need to store a repo url that's different from what we expect from the user
+        let normalized_repo =
+            if let Some(repo) = git_params.as_ref().map(|params| params.repository.as_str()) {
+                match normalize_git_url(repo) {
+                    Ok(repo) => Some(repo),
+                    Err(e) => {
+                        // TODO: Tell the frontend the repository is invalid
+                        println!("invalid repository url `{}`: {}", repo, e.to_string());
+                        None
+                    }
+                }
+            } else {
+                None
+            };
         let git_provider_type = git_params.as_ref().map(|p| p.git_provider_type.clone());
 
         self.fs
@@ -239,7 +254,7 @@ impl CollectionBuilder {
                         .name
                         .unwrap_or(defaults::DEFAULT_COLLECTION_NAME.to_string()),
                     // FIXME: We might consider removing this field from the manifest file
-                    repository,
+                    repository: normalized_repo,
                     git_provider_type,
                 })?
                 .as_bytes(),

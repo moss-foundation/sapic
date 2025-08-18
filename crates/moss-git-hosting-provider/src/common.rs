@@ -3,7 +3,6 @@ pub mod utils;
 
 use joinerror::Error;
 use moss_git::GitAuthAgent;
-use std::fmt::Display;
 
 pub trait SSHAuthAgent: GitAuthAgent {}
 
