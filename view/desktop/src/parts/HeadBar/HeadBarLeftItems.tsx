@@ -34,7 +34,7 @@ export const HeadBarLeftItems = ({ handleWindowsMenuAction, handleWorkspaceMenuA
         </ActionMenu.Root>
       )}
 
-      <NavigationButtons onBack={() => {}} onForward={() => {}} canGoBack={false} canGoForward={false} />
+      <NavigationButtons onBack={() => {}} onForward={() => {}} canGoBack={true} canGoForward={true} />
 
       <ActionMenu.Root>
         <ActionMenu.Trigger asChild>
