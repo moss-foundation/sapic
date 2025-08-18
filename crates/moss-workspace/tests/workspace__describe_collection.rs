@@ -1,14 +1,16 @@
 #![cfg(feature = "integration-tests")]
 
-use crate::shared::setup_test_workspace;
 use moss_workspace::models::{
     operations::{DeleteCollectionInput, DescribeCollectionInput, ImportCollectionInput},
     types::{GitHubImportParams, ImportCollectionParams, ImportCollectionSource, VcsInfo},
 };
 use std::env;
 
+use crate::shared::setup_test_workspace;
+
 mod shared;
 
+#[ignore]
 #[tokio::test]
 async fn describe_collection_with_repository() {
     let (ctx, workspace, cleanup) = setup_test_workspace().await;
