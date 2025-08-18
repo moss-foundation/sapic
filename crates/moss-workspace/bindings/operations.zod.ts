@@ -6,32 +6,26 @@ import {
   activitybarPartStateInfoSchema,
   addVariableParamsSchema,
   contributorSchema,
+  createCollectionGitParamsSchema,
   editorPartStateInfoSchema,
-  gitHubImportParamsSchema,
-  gitLabImportParamsSchema,
+  environmentGroupSchema,
+  importCollectionSourceSchema,
   panelPartStateInfoSchema,
-  repositoryInfoSchema,
   sidebarPartStateInfoSchema,
+  updateCollectionParamsSchema,
+  updateEnvironmentGroupParamsSchema,
+  updateEnvironmentParamsSchema,
   updateVariableParamsSchema,
   variableInfoSchema,
+  vcsInfoSchema,
 } from "./types.zod";
-
-export const batchUpdateCollectionParamsSchema = z.object({
-  id: z.string(),
-  order: z.number().optional(),
-  expanded: z.boolean().optional(),
-});
 
 export const batchUpdateCollectionOutputSchema = z.object({
   ids: z.array(z.string()),
 });
 
-export const createCollectionInputSchema = z.object({
-  name: z.string(),
-  order: z.number(),
-  externalPath: z.string().optional(),
-  repository: z.string().optional(),
-  iconPath: z.string().optional(),
+export const batchUpdateEnvironmentOutputSchema = z.object({
+  ids: z.array(z.string()),
 });
 
 export const createCollectionOutputSchema = z.object({
@@ -48,7 +42,6 @@ export const createEnvironmentOutputSchema = z.object({
   name: z.string(),
   order: z.number().optional(),
   color: z.string().optional(),
-  expanded: z.boolean(),
 });
 
 export const deleteCollectionInputSchema = z.object({
@@ -85,17 +78,37 @@ export const importCollectionOutputSchema = z.object({
 
 export const streamCollectionsOutputSchema = z.object({});
 
-export const streamEnvironmentsOutputSchema = z.object({});
-
 export const updateCollectionOutputSchema = z.object({
   id: z.string(),
+});
+
+export const updateEnvironmentGroupInputSchema = z.object({
+  collectionId: z.string(),
+  expanded: z.boolean().optional(),
+  order: z.number().optional(),
 });
 
 export const updateEnvironmentOutputSchema = z.object({
   id: z.string(),
 });
 export const batchUpdateCollectionInputSchema = z.object({
-  items: z.array(batchUpdateCollectionParamsSchema),
+  items: z.array(updateCollectionParamsSchema),
+});
+
+export const batchUpdateEnvironmentGroupInputSchema = z.object({
+  items: z.array(updateEnvironmentGroupParamsSchema),
+});
+
+export const batchUpdateEnvironmentInputSchema = z.object({
+  items: z.array(updateEnvironmentParamsSchema),
+});
+
+export const createCollectionInputSchema = z.object({
+  name: z.string(),
+  order: z.number(),
+  externalPath: z.string().optional(),
+  gitParams: createCollectionGitParamsSchema.optional(),
+  iconPath: z.string().optional(),
 });
 
 export const createEnvironmentInputSchema = z.object({
@@ -108,10 +121,9 @@ export const createEnvironmentInputSchema = z.object({
 
 export const describeCollectionOutputSchema = z.object({
   name: z.string(),
-  repository: z.string().optional(),
-  repositoryInfo: repositoryInfoSchema.optional(),
+  vcs: vcsInfoSchema.optional(),
   contributors: z.array(contributorSchema),
-  currentBranch: z.string().optional(),
+  createdAt: z.string(),
 });
 
 export const describeEnvironmentOutputSchema = z.object({
@@ -125,14 +137,17 @@ export const describeStateOutputSchema = z.object({
   activitybar: activitybarPartStateInfoSchema.optional(),
 });
 
-export const importCollectionInputSchema = z.union([
-  z.object({
-    "gitHub": gitHubImportParamsSchema,
-  }),
-  z.object({
-    "gitLab": gitLabImportParamsSchema,
-  }),
-]);
+export const importCollectionInputSchema = z.object({
+  name: z.string(),
+  order: z.number(),
+  externalPath: z.string().optional(),
+  source: importCollectionSourceSchema,
+  iconPath: z.string().optional(),
+});
+
+export const streamEnvironmentsOutputSchema = z.object({
+  groups: z.array(environmentGroupSchema),
+});
 
 export const updateCollectionInputSchema = z.object({
   id: z.string(),
@@ -140,7 +155,6 @@ export const updateCollectionInputSchema = z.object({
   repository: changeStringSchema.optional(),
   iconPath: changePathSchema.optional(),
   order: z.number().optional(),
-  pinned: z.boolean().optional(),
   expanded: z.boolean().optional(),
 });
 

@@ -6,8 +6,7 @@ export const contributorSchema = z.object({
   avatar_url: z.string(),
 });
 
-export const repositoryInfoSchema = z.object({
-  createdAt: z.string(),
+export const repositoryMetadataSchema = z.object({
   updatedAt: z.string(),
   owner: z.string(),
 });

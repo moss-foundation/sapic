@@ -7,7 +7,7 @@ export const streamEnvironmentsEventSchema = z.object({
   collectionId: z.string().optional(),
   name: z.string(),
   order: z.number().optional(),
-  expanded: z.boolean(),
+  totalVariables: z.number(),
 });
 export const streamCollectionsEventSchema = z.object({
   id: z.string(),
@@ -16,5 +16,5 @@ export const streamCollectionsEventSchema = z.object({
   expanded: z.boolean(),
   repository: z.string().optional(),
   branch: branchInfoSchema.optional(),
-  picturePath: z.string().optional(),
+  iconPath: z.string().optional(),
 });

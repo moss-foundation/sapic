@@ -8,11 +8,10 @@ export type Contributor = { name: string; avatar_url: string };
 /**
  * @category Type
  */
-export type RepositoryInfo = {
+export type RepositoryMetadata = {
   /**
    * A timestamp like 2024-10-05T12:19:15Z
    */
-  createdAt: string;
   updatedAt: string;
   owner: string;
 };

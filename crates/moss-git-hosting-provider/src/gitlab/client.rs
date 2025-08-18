@@ -3,7 +3,7 @@ use crate::{
     common::SSHAuthAgent,
     constants::GITLAB_API_URL,
     gitlab::response::{AvatarResponse, ContributorsResponse},
-    models::types::{Contributor, RepositoryInfo},
+    models::types::{Contributor, RepositoryMetadata},
 };
 use async_trait::async_trait;
 use joinerror::OptionExt;
@@ -16,7 +16,7 @@ use std::sync::Arc;
 use url::Url;
 
 use crate::{
-    common::GitUrl,
+    common::GitUrlForAPI,
     gitlab::{
         auth::GitLabAuthAgent,
         response::{RepositoryResponse, UserResponse},
@@ -103,7 +103,7 @@ impl GitHostingProvider for GitLabClient {
         })
     }
 
-    async fn contributors(&self, repo_ref: &GitUrl) -> joinerror::Result<Vec<Contributor>> {
+    async fn contributors(&self, repo_ref: &GitUrlForAPI) -> joinerror::Result<Vec<Contributor>> {
         let repo_url = format!("{}/{}", &repo_ref.owner, &repo_ref.name);
         let encoded_url = urlencoding::encode(&repo_url);
 
@@ -151,7 +151,10 @@ impl GitHostingProvider for GitLabClient {
         Ok(list)
     }
 
-    async fn repository_info(&self, repo_ref: &GitUrl) -> joinerror::Result<RepositoryInfo> {
+    async fn repository_metadata(
+        &self,
+        repo_ref: &GitUrlForAPI,
+    ) -> joinerror::Result<RepositoryMetadata> {
         let repo_url = format!("{}/{}", &repo_ref.owner, &repo_ref.name);
         let encoded_url = urlencoding::encode(&repo_url);
 
@@ -171,8 +174,7 @@ impl GitHostingProvider for GitLabClient {
             .json()
             .await?;
 
-        Ok(RepositoryInfo {
-            created_at: repository_response.created_at,
+        Ok(RepositoryMetadata {
             updated_at: repository_response.updated_at,
             owner: repository_response.owner.username,
         })
@@ -195,7 +197,7 @@ mod tests {
 
     use super::*;
 
-    static REPO_REF: LazyLock<GitUrl> = LazyLock::new(|| GitUrl {
+    static REPO_REF: LazyLock<GitUrlForAPI> = LazyLock::new(|| GitUrlForAPI {
         domain: "gitlab.com".to_string(),
         owner: "brutusyhy".to_string(),
         name: "test-public-repo".to_string(),
@@ -254,9 +256,9 @@ mod tests {
     }
     #[ignore]
     #[tokio::test]
-    async fn gitlab_client_repo_info() {
+    async fn gitlab_client_repo_metadata() {
         let client = create_test_client().await;
-        let repo_info = client.repository_info(REPO_REF.deref()).await.unwrap();
+        let repo_info = client.repository_metadata(REPO_REF.deref()).await.unwrap();
         println!("{:?}", repo_info);
     }
 

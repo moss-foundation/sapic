@@ -11,7 +11,7 @@ export type StreamCollectionsEvent = {
   expanded: boolean;
   repository?: string;
   branch?: BranchInfo;
-  picturePath?: string;
+  iconPath?: string;
 };
 
 /**
@@ -26,5 +26,5 @@ export type StreamEnvironmentsEvent = {
   collectionId?: string;
   name: string;
   order?: number;
-  expanded: boolean;
+  totalVariables: number;
 };

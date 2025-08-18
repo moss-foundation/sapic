@@ -274,3 +274,34 @@ pub struct GitLabCreateParams {
     /// The name of the default branch
     pub branch: String,
 }
+
+/// @category Type
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub enum VcsInfo {
+    GitHub(GitHubVcsInfo),
+    GitLab(GitLabVcsInfo),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct GitHubVcsInfo {
+    pub branch: String,
+    pub url: String,
+    pub updated_at: Option<String>,
+    pub owner: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct GitLabVcsInfo {
+    pub branch: String,
+    pub url: String,
+    pub updated_at: Option<String>,
+    pub owner: Option<String>,
+}

@@ -5,20 +5,24 @@ import type {
   ActivitybarPartStateInfo,
   AddVariableParams,
   Contributor,
+  CreateCollectionGitParams,
   EditorPartStateInfo,
-  GitHubImportParams,
-  GitLabImportParams,
+  EnvironmentGroup,
+  ImportCollectionSource,
   PanelPartStateInfo,
-  RepositoryInfo,
   SidebarPartStateInfo,
+  UpdateCollectionParams,
+  UpdateEnvironmentGroupParams,
+  UpdateEnvironmentParams,
   UpdateVariableParams,
   VariableInfo,
+  VcsInfo,
 } from "./types";
 
 /**
  * @category Operation
  */
-export type BatchUpdateCollectionInput = { items: Array<BatchUpdateCollectionParams> };
+export type BatchUpdateCollectionInput = { items: Array<UpdateCollectionParams> };
 
 /**
  * @category Operation
@@ -28,7 +32,17 @@ export type BatchUpdateCollectionOutput = { ids: Array<string> };
 /**
  * @category Operation
  */
-export type BatchUpdateCollectionParams = { id: string; order?: number; expanded?: boolean };
+export type BatchUpdateEnvironmentGroupInput = { items: Array<UpdateEnvironmentGroupParams> };
+
+/**
+ * @category Operation
+ */
+export type BatchUpdateEnvironmentInput = { items: Array<UpdateEnvironmentParams> };
+
+/**
+ * @category Operation
+ */
+export type BatchUpdateEnvironmentOutput = { ids: Array<string> };
 
 /**
  * @category Operation
@@ -37,7 +51,7 @@ export type CreateCollectionInput = {
   name: string;
   order: number;
   externalPath?: string;
-  repository?: string;
+  gitParams?: CreateCollectionGitParams;
   iconPath?: string;
 };
 
@@ -66,7 +80,6 @@ export type CreateEnvironmentOutput = {
   name: string;
   order?: number;
   color?: string;
-  expanded: boolean;
 };
 
 /**
@@ -99,10 +112,9 @@ export type DescribeCollectionInput = { id: string };
  */
 export type DescribeCollectionOutput = {
   name: string;
-  repository?: string;
-  repositoryInfo?: RepositoryInfo;
+  vcs?: VcsInfo;
   contributors: Array<Contributor>;
-  currentBranch?: string;
+  createdAt: string;
 };
 
 /**
@@ -128,7 +140,13 @@ export type DescribeStateOutput = {
 /**
  * @category Operation
  */
-export type ImportCollectionInput = { "gitHub": GitHubImportParams } | { "gitLab": GitLabImportParams };
+export type ImportCollectionInput = {
+  name: string;
+  order: number;
+  externalPath?: string;
+  source: ImportCollectionSource;
+  iconPath?: string;
+};
 
 /**
  * @category Operation
@@ -143,7 +161,7 @@ export type StreamCollectionsOutput = {};
 /**
  * @category Operation
  */
-export type StreamEnvironmentsOutput = {};
+export type StreamEnvironmentsOutput = { groups: Array<EnvironmentGroup> };
 
 /**
  * @category Operation
@@ -154,7 +172,6 @@ export type UpdateCollectionInput = {
   repository?: ChangeString;
   iconPath?: ChangePath;
   order?: number;
-  pinned?: boolean;
   expanded?: boolean;
 };
 
@@ -162,6 +179,11 @@ export type UpdateCollectionInput = {
  * @category Operation
  */
 export type UpdateCollectionOutput = { id: string };
+
+/**
+ * @category Operation
+ */
+export type UpdateEnvironmentGroupInput = { collectionId: string; expanded?: boolean; order?: number };
 
 /**
  * @category Operation

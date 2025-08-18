@@ -2,7 +2,7 @@ use moss_environment::models::{
     primitives::EnvironmentId,
     types::{AddVariableParams, VariableInfo},
 };
-use moss_git_hosting_provider::models::types::{Contributor, RepositoryInfo};
+use moss_git_hosting_provider::models::types::Contributor;
 use serde::{Deserialize, Serialize};
 use std::{
     path::{Path, PathBuf},
@@ -21,7 +21,7 @@ use crate::models::{
 
 use super::types::{
     ActivitybarPartStateInfo, CreateCollectionParams, ImportCollectionParams, PanelPartStateInfo,
-    SidebarPartStateInfo,
+    SidebarPartStateInfo, VcsInfo,
 };
 
 // ------------------------------ //
@@ -328,10 +328,9 @@ pub struct DescribeCollectionInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct DescribeCollectionOutput {
     pub name: String,
-    pub repository: Option<String>,
-    pub repository_info: Option<RepositoryInfo>,
+    pub vcs: Option<VcsInfo>,
     pub contributors: Vec<Contributor>,
-    pub current_branch: Option<String>,
+    pub created_at: String,
 }
 
 // ------------------------------ //

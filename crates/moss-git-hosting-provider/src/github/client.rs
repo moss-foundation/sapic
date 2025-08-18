@@ -8,13 +8,13 @@ use url::Url;
 
 use crate::{
     GitAuthProvider, GitHostingProvider,
-    common::{GitUrl, SSHAuthAgent},
+    common::{GitUrlForAPI, SSHAuthAgent},
     constants::GITHUB_API_URL,
     github::{
         auth::GitHubAuthAgent,
         response::{ContributorsResponse, RepositoryResponse, UserResponse},
     },
-    models::types::{Contributor, RepositoryInfo, UserInfo},
+    models::types::{Contributor, RepositoryMetadata, UserInfo},
 };
 
 const CONTENT_TYPE: &'static str = "application/vnd.github+json";
@@ -104,7 +104,7 @@ impl GitHostingProvider for GitHubClient {
         })
     }
 
-    async fn contributors(&self, repo_ref: &GitUrl) -> joinerror::Result<Vec<Contributor>> {
+    async fn contributors(&self, repo_ref: &GitUrlForAPI) -> joinerror::Result<Vec<Contributor>> {
         let repo_url = format!("{}/{}", &repo_ref.owner, &repo_ref.name);
         let access_token = self
             .client_auth_agent
@@ -132,7 +132,10 @@ impl GitHostingProvider for GitHubClient {
             .collect())
     }
 
-    async fn repository_info(&self, repo_ref: &GitUrl) -> joinerror::Result<RepositoryInfo> {
+    async fn repository_metadata(
+        &self,
+        repo_ref: &GitUrlForAPI,
+    ) -> joinerror::Result<RepositoryMetadata> {
         let repo_url = format!("{}/{}", &repo_ref.owner, &repo_ref.name);
         let access_token = self
             .client_auth_agent
@@ -150,8 +153,7 @@ impl GitHostingProvider for GitHubClient {
             .json()
             .await?;
 
-        Ok(RepositoryInfo {
-            created_at: repo_response.created_at,
+        Ok(RepositoryMetadata {
             updated_at: repo_response.updated_at,
             owner: repo_response.owner.login,
         })
@@ -174,7 +176,7 @@ mod tests {
 
     use super::*;
 
-    static REPO_REF: LazyLock<GitUrl> = LazyLock::new(|| GitUrl {
+    static REPO_REF: LazyLock<GitUrlForAPI> = LazyLock::new(|| GitUrlForAPI {
         domain: "github.com".to_string(),
         owner: "brutusyhy".to_string(),
         name: "test-public-repo".to_string(),
@@ -233,9 +235,9 @@ mod tests {
     }
     #[ignore]
     #[tokio::test]
-    async fn github_client_repo_info() {
+    async fn github_client_repo_metadata() {
         let client = create_test_client().await;
-        let repo_info = client.repository_info(REPO_REF.deref()).await.unwrap();
+        let repo_info = client.repository_metadata(REPO_REF.deref()).await.unwrap();
         println!("{:?}", repo_info);
     }
 

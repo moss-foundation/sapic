@@ -2,7 +2,6 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub(crate) struct RepositoryResponse {
-    pub created_at: String,
     pub updated_at: String,
     pub owner: Owner,
 }

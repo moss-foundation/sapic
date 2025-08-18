@@ -127,8 +127,8 @@ impl WorkspaceBuilder {
             collection_service,
             environment_service,
             storage_service,
-            _github_client: self.github_client,
-            _gitlab_client: self.gitlab_client,
+            github_client: self.github_client,
+            gitlab_client: self.gitlab_client,
         })
     }
 
@@ -169,8 +169,8 @@ impl WorkspaceBuilder {
             collection_service,
             environment_service,
             storage_service,
-            _github_client: self.github_client,
-            _gitlab_client: self.gitlab_client,
+            github_client: self.github_client,
+            gitlab_client: self.gitlab_client,
         })
     }
 }

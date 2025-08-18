@@ -29,15 +29,16 @@ impl<R: AppRuntime> Workspace<R> {
             }
             let collection = collection.unwrap();
 
-            let branch_info = collection
-                .git_service()
-                .get_current_branch_info()
-                .await
-                .unwrap_or_else(|err| {
+            let branch_info = collection.git_service().get_current_branch_info().await;
+
+            let branch = match branch_info {
+                Ok(branch) => Some(branch),
+                Err(e) => {
                     // TODO: Tell the frontend that we failed to fetch current branch info
-                    println!("failed to fetch current branch info: {}", err.to_string());
+                    println!("failed to fetch current branch info: {}", e.to_string());
                     None
-                });
+                }
+            };
 
             let event = StreamCollectionsEvent {
                 id: desc.id,
@@ -45,7 +46,7 @@ impl<R: AppRuntime> Workspace<R> {
                 order: desc.order,
                 expanded: desc.expanded,
                 repository: desc.repository,
-                branch: branch_info,
+                branch,
                 icon_path: desc.icon_path,
             };
 
