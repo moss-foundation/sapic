@@ -5,28 +5,17 @@ import CollapsibleActionMenu from "./CollapsibleActionMenu";
 import { Controls } from "./Controls";
 
 export interface HeadBarRightItemsProps {
-  showDebugPanels: boolean;
-  setShowDebugPanels: (show: boolean) => void;
   openPanel: (panel: string) => void;
   os: OsType;
 }
 
-export const HeadBarRightItems = ({ showDebugPanels, setShowDebugPanels, openPanel, os }: HeadBarRightItemsProps) => {
+export const HeadBarRightItems = ({ openPanel, os }: HeadBarRightItemsProps) => {
   const isWindowsOrLinux = os === "windows" || os === "linux";
 
   return (
-    <div
-      className={cn("flex h-full items-center justify-end", {
-        "gap-2": os === "linux",
-      })}
-      data-tauri-drag-region
-    >
+    <div className={cn("flex h-full items-center justify-end gap-5")} data-tauri-drag-region>
       <div className="flex items-center">
-        <CollapsibleActionMenu
-          showDebugPanels={showDebugPanels}
-          setShowDebugPanels={setShowDebugPanels}
-          openPanel={openPanel}
-        />
+        <CollapsibleActionMenu openPanel={openPanel} />
       </div>
 
       {isWindowsOrLinux && <Controls os={os} />}

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 import { ConfirmationModal } from "@/components";
 import { NewWorkspaceModal } from "@/components/Modals/Workspace/NewWorkspaceModal";
@@ -10,41 +10,31 @@ import { cn } from "@/utils";
 import { type } from "@tauri-apps/plugin-os";
 
 import { Controls } from "./Controls/Controls";
-import { HeadBarActionProps, useGitMenuActions, useWindowsMenuActions, useWorkspaceActions } from "./HeadBarActions";
+import { HeadBarActionProps, useWindowsMenuActions, useWorkspaceActions } from "./HeadBarActions";
 import { HeadBarLeftItems } from "./HeadBarLeftItems";
 import { HeadBarRightItems } from "./HeadBarRightItems";
 import { WorkspaceMenuProvider } from "./WorkspaceMenuProvider";
 
 export const HeadBar = () => {
-  //FIXME: Hardoce OS type for testing
   const os = type();
   const { showDebugPanels, setShowDebugPanels } = useTabbedPaneStore();
   const openPanel = useTabbedPaneStore((state) => state.openPanel);
-
-  const [collectionName, setCollectionName] = useState("Sapic Test Collection");
-  const collectionButtonRef = useRef<HTMLButtonElement>(null);
-  const [, setIsRenamingCollection] = useState(false);
+  const { mutate: deleteWorkspace, isPending: isDeleting } = useDeleteWorkspace();
+  const [workspaceToDelete, setWorkspaceToDelete] = useState<{ id: string; name: string } | null>(null);
 
   const {
     showModal: showNewWorkspaceModal,
     closeModal: closeNewWorkspaceModal,
     openModal: openNewWorkspaceModal,
   } = useModal();
+
   const {
     showModal: showOpenWorkspaceModal,
     closeModal: closeOpenWorkspaceModal,
     openModal: openOpenWorkspaceModal,
   } = useModal();
 
-  const {
-    showModal: showDeleteWorkspaceModal,
-    closeModal: closeDeleteWorkspaceModal,
-    openModal: openDeleteWorkspaceModal,
-  } = useModal();
-
-  const [workspaceToDelete, setWorkspaceToDelete] = useState<{ id: string; name: string } | null>(null);
-
-  const { mutate: deleteWorkspace, isPending: isDeleting } = useDeleteWorkspace();
+  const { showModal: showDeleteWorkspaceModal, closeModal: closeDeleteWorkspaceModal } = useModal();
 
   const actionProps: HeadBarActionProps = {
     openPanel,
@@ -56,16 +46,8 @@ export const HeadBar = () => {
     setWorkspaceToDelete,
   };
 
-  const gitActionProps: HeadBarActionProps = { ...actionProps };
   const workspaceActionProps: HeadBarActionProps = { ...actionProps };
-  const collectionActionProps: HeadBarActionProps = {
-    ...actionProps,
-    setCollectionName,
-    collectionButtonRef,
-    setIsRenamingCollection,
-  };
 
-  const handleGitMenuAction = useGitMenuActions(gitActionProps);
   const handleWindowsMenuAction = useWindowsMenuActions();
   const handleWorkspaceMenuAction = useWorkspaceActions(workspaceActionProps);
 
@@ -112,12 +94,7 @@ export const HeadBar = () => {
             os={os}
           />
 
-          <HeadBarRightItems
-            showDebugPanels={showDebugPanels}
-            setShowDebugPanels={setShowDebugPanels}
-            openPanel={openPanel}
-            os={os}
-          />
+          <HeadBarRightItems openPanel={openPanel} os={os} />
         </div>
       </header>
 

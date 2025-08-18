@@ -9,7 +9,7 @@ import { Scrollbar } from "@/lib/ui";
 import { useRequestModeStore } from "@/store/requestMode";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import { ModeToggle } from "../HeadBar/ModeToggle";
+import { ModeToggle } from "../../components/ModeToggle";
 import { CollectionCreationZone } from "./CollectionCreationZone";
 import { CollectionTreeViewHeader } from "./CollectionTreeViewHeader";
 

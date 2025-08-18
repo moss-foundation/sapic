@@ -13,7 +13,7 @@ export const Divider: React.FC<DividerProps> = ({ height = "medium", className =
   };
 
   return (
-    <div className={`mx-1 flex h-full items-center ${className}`}>
+    <div className={`flex h-full items-center ${className}`}>
       <div className={`${heightClasses[height]} background-(--moss-divider-color) w-[1px]`}></div>
     </div>
   );
