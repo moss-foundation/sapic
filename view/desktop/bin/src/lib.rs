@@ -16,6 +16,8 @@ use moss_applib::{
 };
 use moss_fs::RealFileSystem;
 use std::{path::PathBuf, sync::Arc, time::Duration};
+#[cfg(not(debug_assertions))]
+use tauri::path::BaseDirectory;
 use tauri::{AppHandle, Manager, RunEvent, Runtime as TauriRuntime, WebviewWindow, WindowEvent};
 use tauri_plugin_os;
 use window::{CreateWindowInput, create_window};
@@ -45,20 +47,41 @@ pub async fn run<R: TauriRuntime>() {
                 let fs = Arc::new(RealFileSystem::new());
                 let app_handle = tao.app_handle();
 
-                let app_dir =
-                    PathBuf::from(std::env::var("DEV_APP_DIR").expect("DEV_APP_DIR is not set"));
+                #[cfg(debug_assertions)]
+                let (app_dir, themes_dir, locales_dir, logs_dir) = {
+                    (
+                        PathBuf::from(
+                            std::env::var("DEV_APP_DIR").expect("DEV_APP_DIR is not set"),
+                        ),
+                        PathBuf::from(
+                            std::env::var("THEMES_DIR")
+                                .expect("Environment variable THEMES_DIR is not set"),
+                        ),
+                        PathBuf::from(
+                            std::env::var("LOCALES_DIR")
+                                .expect("Environment variable LOCALES_DIR is not set"),
+                        ),
+                        PathBuf::from(
+                            std::env::var("APP_LOG_DIR")
+                                .expect("Environment variable APP_LOG_DIR is not set"),
+                        ),
+                    )
+                };
 
-                let themes_dir: PathBuf = std::env::var("THEMES_DIR")
-                    .expect("Environment variable THEMES_DIR is not set")
-                    .into();
-
-                let locales_dir: PathBuf = std::env::var("LOCALES_DIR")
-                    .expect("Environment variable LOCALES_DIR is not set")
-                    .into();
-
-                let logs_dir: PathBuf = std::env::var("APP_LOG_DIR")
-                    .expect("Environment variable APP_LOG_DIR is not set")
-                    .into();
+                #[cfg(not(debug_assertions))]
+                let (app_dir, themes_dir, locales_dir, logs_dir) = {
+                    let paths = tao.path();
+                    (
+                        paths.app_data_dir().expect("cannot resolve app data dir"),
+                        paths
+                            .resolve("resources/themes", tauri::path::BaseDirectory::Resource)
+                            .expect("cannot resolve themes dir"),
+                        paths
+                            .resolve("resources/locales", tauri::path::BaseDirectory::Resource)
+                            .expect("cannot resolve locales dir"),
+                        paths.app_log_dir().expect("cannot resolve app log dir"),
+                    )
+                };
 
                 let ctx_clone = ctx.clone();
                 let (app, session_id) = {
