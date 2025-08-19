@@ -467,7 +467,7 @@
 }
 
 .dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab .dv-tabs-container {
-  @apply h-full grow;
+  @apply grow;
 }
 
 .dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab .dv-tabs-container .dv-tab {
@@ -483,7 +483,7 @@
 }
 
 .dv-tabs-and-actions-container .dv-tabs-container {
-  @apply flex h-full overflow-x-auto overflow-y-hidden;
+  @apply flex overflow-x-auto overflow-y-hidden;
 }
 
 .dv-tabs-and-actions-container .dv-tabs-container .dv-tab {

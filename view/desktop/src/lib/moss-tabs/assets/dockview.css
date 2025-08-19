@@ -806,7 +806,6 @@
 }
 .dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab .dv-tabs-container {
   flex-grow: 1;
-  height: 100%;
 }
 .dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab .dv-tabs-container .dv-tab {
   flex-grow: 1;
@@ -825,7 +824,6 @@
   overflow-x: overlay;
   overflow-y: hidden;
   scrollbar-width: thin;
-  height: 100%;
   /* Track */
   /* Handle */
 }
