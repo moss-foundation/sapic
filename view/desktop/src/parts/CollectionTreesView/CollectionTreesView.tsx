@@ -52,10 +52,10 @@ export const CollectionTreesView = () => {
   const { collectionsTrees, isLoading } = useCollectionsTrees();
 
   return (
-    <div ref={dropTargetToggleRef} className="relative flex flex-col overflow-hidden">
+    <div ref={dropTargetToggleRef} className="grow bg-amber-300">
       <CollectionTreeViewHeader />
 
-      <div className="flex flex-col">
+      <Scrollbar className="relative flex flex-col bg-green-400">
         <div className="flex shrink items-center gap-[7px] px-2 py-1">
           <InputPlain placeholder="Search" size="sm" />
         </div>
@@ -68,11 +68,11 @@ export const CollectionTreesView = () => {
         </div>
 
         {showCollectionCreationZone && (
-          <div className="flex justify-end p-2">
+          <div className="mt-auto justify-end p-2">
             <CollectionCreationZone />
           </div>
         )}
-      </div>
+      </Scrollbar>
     </div>
   );
 };

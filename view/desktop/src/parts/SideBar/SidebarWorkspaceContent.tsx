@@ -19,7 +19,6 @@ export const SidebarWorkspaceContent = ({ groupId = "default" }: SidebarWorkspac
   const { data: workspaceState, isLoading: isLoadingWorkspace, error: workspaceError } = useDescribeWorkspaceState();
   const { hasActiveWorkspace, activeWorkspace } = useActiveWorkspace();
 
-  // Show loading state while workspace data is loading
   if (isLoadingWorkspace) {
     return <div className="flex h-full w-full items-center justify-center p-4">Loading...</div>;
   }
@@ -28,7 +27,6 @@ export const SidebarWorkspaceContent = ({ groupId = "default" }: SidebarWorkspac
     return <div className="flex h-full w-full items-center justify-center p-4">No workspace selected</div>;
   }
 
-  // Handle actual errors loading workspace data
   if (workspaceError) {
     return (
       <div className="flex h-full w-full items-center justify-center p-4">
@@ -40,7 +38,6 @@ export const SidebarWorkspaceContent = ({ groupId = "default" }: SidebarWorkspac
     );
   }
 
-  // Handle case where workspace data is null (different from error)
   if (!workspaceState) {
     return (
       <div className="flex h-full w-full items-center justify-center p-4">
@@ -52,7 +49,6 @@ export const SidebarWorkspaceContent = ({ groupId = "default" }: SidebarWorkspac
     );
   }
 
-  // Handle different sidebar views based on groupId
   switch (groupId) {
     case TREE_VIEW_GROUP_COLLECTIONS:
       return <CollectionTreesView />;

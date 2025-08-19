@@ -24,7 +24,7 @@ export const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
   return (
     <div
       className={cn(
-        "background-(--moss-secondary-background) flex h-full flex-col",
+        "flex h-full grow flex-col bg-blue-500", //background-(--moss-secondary-background)
         {
           "border-l border-(--moss-border-color)": sideBarPosition === SIDEBAR_POSITION.LEFT,
         },
@@ -100,7 +100,7 @@ export const Sidebar = () => {
     return (
       <BaseSidebar>
         <ActivityBar />
-        <Scrollbar className="grow">{sidebarContent}</Scrollbar>
+        <div className="flex-1 grow bg-amber-800">{sidebarContent}</div>
         <div className="flex w-full justify-end border-t border-t-(--moss-border-color) px-1 py-2">
           <DesignModeToggle />
         </div>
@@ -110,8 +110,8 @@ export const Sidebar = () => {
 
   if (position === ACTIVITYBAR_POSITION.BOTTOM) {
     return (
-      <BaseSidebar className="relative">
-        <Scrollbar className="grow">{sidebarContent}</Scrollbar>
+      <BaseSidebar>
+        <div className="flex-1 grow bg-amber-800">{sidebarContent}</div>
         <div className="flex w-full justify-end border-t border-t-(--moss-border-color) px-1 py-2">
           <DesignModeToggle />
         </div>
@@ -122,7 +122,7 @@ export const Sidebar = () => {
 
   return (
     <BaseSidebar>
-      <Scrollbar className="grow">{sidebarContent}</Scrollbar>
+      <div className="flex-1 grow bg-amber-800">{sidebarContent}</div>
       <div className="flex w-full justify-end border-t border-t-(--moss-border-color) px-1 py-2">
         <DesignModeToggle />
       </div>
