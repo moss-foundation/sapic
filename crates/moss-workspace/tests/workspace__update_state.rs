@@ -1,7 +1,6 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
-use crate::shared::setup_test_workspace;
 use moss_storage::storage::operations::GetItem;
 use moss_workspace::{
     models::{
@@ -12,12 +11,13 @@ use moss_workspace::{
     storage::segments::{SEGKEY_LAYOUT_PANEL, SEGKEY_LAYOUT_SIDEBAR},
 };
 
+use crate::shared::setup_test_workspace;
 #[tokio::test]
 async fn update_state_sidebar_part() {
     let (ctx, workspace, cleanup) = setup_test_workspace().await;
 
     let sidebar_state = SidebarPartStateInfo {
-        size: 250,
+        size: 250.0,
         visible: true,
         position: SidebarPosition::Left,
     };
@@ -61,8 +61,8 @@ async fn update_state_sidebar_part() {
     )
     .await
     .unwrap();
-    let stored_size: usize = size_value.deserialize().unwrap();
-    assert_eq!(stored_size, 250);
+    let stored_size: f64 = size_value.deserialize().unwrap();
+    assert_eq!(stored_size, 250.0);
 
     // Check visible
     let visible_value = GetItem::get(
@@ -83,7 +83,7 @@ async fn update_state_panel_part() {
     let (ctx, workspace, cleanup) = setup_test_workspace().await;
 
     let panel_state = PanelPartStateInfo {
-        size: 200,
+        size: 200.0,
         visible: false,
     };
 
@@ -108,8 +108,8 @@ async fn update_state_panel_part() {
     let size_value = GetItem::get(item_store.as_ref(), &ctx, SEGKEY_LAYOUT_PANEL.join("size"))
         .await
         .unwrap();
-    let stored_size: usize = size_value.deserialize().unwrap();
-    assert_eq!(stored_size, 200);
+    let stored_size: f64 = size_value.deserialize().unwrap();
+    assert_eq!(stored_size, 200.0);
 
     // Check visible
     let visible_value = GetItem::get(
@@ -131,12 +131,12 @@ async fn update_state_multiple_updates() {
 
     // Initial states
     let sidebar_state = SidebarPartStateInfo {
-        size: 250,
+        size: 250.0,
         visible: true,
         position: SidebarPosition::Left,
     };
     let panel_state = PanelPartStateInfo {
-        size: 200,
+        size: 200.0,
         visible: false,
     };
 
@@ -177,7 +177,7 @@ async fn update_state_multiple_updates() {
     .unwrap();
     assert_eq!(sidebar_position, SidebarPosition::Left);
 
-    let sidebar_size: usize = GetItem::get(
+    let sidebar_size: f64 = GetItem::get(
         item_store.as_ref(),
         &ctx,
         SEGKEY_LAYOUT_SIDEBAR.join("size"),
@@ -186,7 +186,7 @@ async fn update_state_multiple_updates() {
     .unwrap()
     .deserialize()
     .unwrap();
-    assert_eq!(sidebar_size, 250);
+    assert_eq!(sidebar_size, 250.0);
 
     let sidebar_visible: bool = GetItem::get(
         item_store.as_ref(),
@@ -200,13 +200,12 @@ async fn update_state_multiple_updates() {
     assert_eq!(sidebar_visible, true);
 
     // Check panel values
-    let panel_size: usize =
-        GetItem::get(item_store.as_ref(), &ctx, SEGKEY_LAYOUT_PANEL.join("size"))
-            .await
-            .unwrap()
-            .deserialize()
-            .unwrap();
-    assert_eq!(panel_size, 200);
+    let panel_size: f64 = GetItem::get(item_store.as_ref(), &ctx, SEGKEY_LAYOUT_PANEL.join("size"))
+        .await
+        .unwrap()
+        .deserialize()
+        .unwrap();
+    assert_eq!(panel_size, 200.0);
 
     let panel_visible: bool = GetItem::get(
         item_store.as_ref(),
@@ -221,7 +220,7 @@ async fn update_state_multiple_updates() {
 
     // Update individual states
     let updated_sidebar_state = SidebarPartStateInfo {
-        size: 300,
+        size: 300.0,
         visible: false,
         position: SidebarPosition::Left,
     };
@@ -243,7 +242,7 @@ async fn update_state_multiple_updates() {
     assert_eq!(describe_state_output.panel.unwrap(), panel_state);
 
     // Verify the database reflects the updated sidebar values
-    let updated_sidebar_size: usize = GetItem::get(
+    let updated_sidebar_size: f64 = GetItem::get(
         item_store.as_ref(),
         &ctx,
         SEGKEY_LAYOUT_SIDEBAR.join("size"),
@@ -252,7 +251,7 @@ async fn update_state_multiple_updates() {
     .unwrap()
     .deserialize()
     .unwrap();
-    assert_eq!(updated_sidebar_size, 300);
+    assert_eq!(updated_sidebar_size, 300.0);
 
     let updated_sidebar_visible: bool = GetItem::get(
         item_store.as_ref(),
@@ -266,13 +265,13 @@ async fn update_state_multiple_updates() {
     assert_eq!(updated_sidebar_visible, false);
 
     // Panel values should remain unchanged
-    let panel_size_after: usize =
+    let panel_size_after: f64 =
         GetItem::get(item_store.as_ref(), &ctx, SEGKEY_LAYOUT_PANEL.join("size"))
             .await
             .unwrap()
             .deserialize()
             .unwrap();
-    assert_eq!(panel_size_after, 200);
+    assert_eq!(panel_size_after, 200.0);
 
     let panel_visible_after: bool = GetItem::get(
         item_store.as_ref(),
@@ -294,7 +293,7 @@ async fn update_state_overwrite_existing() {
 
     // Set initial state
     let initial_sidebar_state = SidebarPartStateInfo {
-        size: 250,
+        size: 250.0,
         visible: true,
         position: SidebarPosition::Left,
     };
@@ -309,7 +308,7 @@ async fn update_state_overwrite_existing() {
 
     // Verify initial state in database
     let item_store = workspace.db().item_store();
-    let initial_size: usize = GetItem::get(
+    let initial_size: f64 = GetItem::get(
         item_store.as_ref(),
         &ctx,
         SEGKEY_LAYOUT_SIDEBAR.join("size"),
@@ -318,7 +317,7 @@ async fn update_state_overwrite_existing() {
     .unwrap()
     .deserialize()
     .unwrap();
-    assert_eq!(initial_size, 250);
+    assert_eq!(initial_size, 250.0);
 
     let initial_visible: bool = GetItem::get(
         item_store.as_ref(),
@@ -333,7 +332,7 @@ async fn update_state_overwrite_existing() {
 
     // Update with new state
     let updated_sidebar_state = SidebarPartStateInfo {
-        size: 300,
+        size: 300.0,
         visible: false,
         position: SidebarPosition::Left,
     };
@@ -354,7 +353,7 @@ async fn update_state_overwrite_existing() {
     );
 
     // Verify database was updated with new values
-    let updated_size: usize = GetItem::get(
+    let updated_size: f64 = GetItem::get(
         item_store.as_ref(),
         &ctx,
         SEGKEY_LAYOUT_SIDEBAR.join("size"),
@@ -363,7 +362,7 @@ async fn update_state_overwrite_existing() {
     .unwrap()
     .deserialize()
     .unwrap();
-    assert_eq!(updated_size, 300);
+    assert_eq!(updated_size, 300.0);
 
     let updated_visible: bool = GetItem::get(
         item_store.as_ref(),

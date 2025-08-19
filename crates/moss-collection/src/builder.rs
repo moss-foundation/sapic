@@ -185,6 +185,11 @@ impl CollectionBuilder {
             .join_err::<()>("failed to create collection storage service")?
             .into();
 
+        // Create expandedEntries key in the database to prevent warnings
+        storage_service
+            .put_expanded_entries(ctx, Vec::new())
+            .await?;
+
         let worktree_service: Arc<Worktree<R>> =
             Worktree::new(abs_path.clone(), self.fs.clone(), storage_service.clone()).into();
 
@@ -313,7 +318,7 @@ impl CollectionBuilder {
 
     pub async fn clone<R: AppRuntime>(
         self,
-        _ctx: &R::AsyncContext,
+        ctx: &R::AsyncContext,
         params: CollectionCloneParams,
     ) -> joinerror::Result<Collection<R>> {
         debug_assert!(params.internal_abs_path.is_absolute());
@@ -334,6 +339,11 @@ impl CollectionBuilder {
         let storage_service: Arc<StorageService<R>> = StorageService::new(abs_path.as_ref())
             .join_err::<()>("failed to create collection storage service")?
             .into();
+
+        // Create expandedEntries key in the database to prevent warnings
+        storage_service
+            .put_expanded_entries(ctx, Vec::new())
+            .await?;
 
         let worktree: Arc<Worktree<R>> =
             Worktree::new(abs_path.clone(), self.fs.clone(), storage_service.clone()).into();
