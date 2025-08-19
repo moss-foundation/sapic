@@ -7,7 +7,6 @@ import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositi
 import { useActiveWorkspace } from "@/hooks";
 import { useGetProjectSessionState } from "@/hooks/useProjectSession";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
-import { Scrollbar } from "@/lib/ui";
 import { SidebarWorkspaceContent } from "@/parts/SideBar/SidebarWorkspaceContent";
 import { useActivityBarStore } from "@/store/activityBar";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
@@ -24,7 +23,7 @@ export const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
   return (
     <div
       className={cn(
-        "flex h-full grow flex-col bg-blue-500", //background-(--moss-secondary-background)
+        "background-(--moss-secondary-background) flex h-full grow flex-col",
         {
           "border-l border-(--moss-border-color)": sideBarPosition === SIDEBAR_POSITION.LEFT,
         },
@@ -100,7 +99,7 @@ export const Sidebar = () => {
     return (
       <BaseSidebar>
         <ActivityBar />
-        <div className="flex-1 grow bg-amber-800">{sidebarContent}</div>
+        <div className="min-h-0 flex-1">{sidebarContent}</div>
         <div className="flex w-full justify-end border-t border-t-(--moss-border-color) px-1 py-2">
           <DesignModeToggle />
         </div>
@@ -111,7 +110,7 @@ export const Sidebar = () => {
   if (position === ACTIVITYBAR_POSITION.BOTTOM) {
     return (
       <BaseSidebar>
-        <div className="flex-1 grow bg-amber-800">{sidebarContent}</div>
+        <div className="min-h-0 flex-1">{sidebarContent}</div>
         <div className="flex w-full justify-end border-t border-t-(--moss-border-color) px-1 py-2">
           <DesignModeToggle />
         </div>
@@ -122,7 +121,7 @@ export const Sidebar = () => {
 
   return (
     <BaseSidebar>
-      <div className="flex-1 grow bg-amber-800">{sidebarContent}</div>
+      <div className="min-h-0 flex-1">{sidebarContent}</div>
       <div className="flex w-full justify-end border-t border-t-(--moss-border-color) px-1 py-2">
         <DesignModeToggle />
       </div>

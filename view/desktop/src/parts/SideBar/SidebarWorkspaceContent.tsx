@@ -43,7 +43,7 @@ export const SidebarWorkspaceContent = ({ groupId = "default" }: SidebarWorkspac
       <div className="flex h-full w-full items-center justify-center p-4">
         <div className="text-center">
           <p>Workspace "{activeWorkspace?.name}" not found</p>
-          <p className="mt-2 text-sm text-gray-500">The workspace may have been moved or deleted</p>
+          <p className="text-sm text-gray-500">The workspace may have been moved or deleted</p>
         </div>
       </div>
     );
@@ -51,10 +51,18 @@ export const SidebarWorkspaceContent = ({ groupId = "default" }: SidebarWorkspac
 
   switch (groupId) {
     case TREE_VIEW_GROUP_COLLECTIONS:
-      return <CollectionTreesView />;
+      return (
+        <div className="flex h-full flex-col">
+          <CollectionTreesView />
+        </div>
+      );
 
     case TREE_VIEW_GROUP_ENVIRONMENTS:
-      return <EnvironmentsListView />;
+      return (
+        <div className="flex h-full flex-col">
+          <EnvironmentsListView />
+        </div>
+      );
 
     case TREE_VIEW_GROUP_MOCK_SERVERS:
       return (
@@ -91,10 +99,12 @@ export const SidebarWorkspaceContent = ({ groupId = "default" }: SidebarWorkspac
 
     default:
       return (
-        <div className="p-4">
-          <h3 className="text-lg font-semibold">No content</h3>
-          <p className="mt-2 text-sm text-gray-500">No content for this group, showing default view</p>
-          <div>{groupId}</div>
+        <div className="flex h-full flex-col">
+          <div className="p-4">
+            <h3 className="text-lg font-semibold">No content</h3>
+            <p className="mt-2 text-sm text-gray-500">No content for this group, showing default view</p>
+            <div>{groupId}</div>
+          </div>
         </div>
       );
   }
