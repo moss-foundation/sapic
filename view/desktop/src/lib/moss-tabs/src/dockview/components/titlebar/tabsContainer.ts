@@ -1,4 +1,4 @@
-import { OverlayScrollbars } from "overlayscrollbars";
+import SimpleBar from "simplebar";
 
 import { getPanelData } from "../../../dnd/dataTransfer";
 import { toggleClass } from "../../../dom";
@@ -56,7 +56,7 @@ export class TabsContainer extends CompositeDisposable implements ITabsContainer
   private readonly leftActionsContainer: HTMLElement;
   private readonly preActionsContainer: HTMLElement;
   private readonly voidContainer: VoidContainer;
-  private scrollbarsInstance: OverlayScrollbars | null = null;
+  private scrollbarsInstance: SimpleBar | null = null;
 
   private tabs: IValueDisposable<Tab>[] = [];
   private selectedIndex = -1;
@@ -181,12 +181,13 @@ export class TabsContainer extends CompositeDisposable implements ITabsContainer
 
     this.tabContainer = document.createElement("div");
     this.tabContainer.className = "dv-tabs-container";
+    this.tabContainer.style.overflow = "hidden"; // Required for SimpleBar
+    this.tabContainer.style.position = "relative"; // Required for SimpleBar positioning
 
-    // Initialize OverlayScrollbars instead of using native scrolling
-    this.scrollbarsInstance = OverlayScrollbars(this.tabContainer, {
-      scrollbars: {
-        autoHide: "move",
-      },
+    // Initialize SimpleBar for custom scrolling
+    this.scrollbarsInstance = new SimpleBar(this.tabContainer, {
+      autoHide: true,
+      forceVisible: false,
     });
 
     this.voidContainer = new VoidContainer(this.accessor, this.group);
@@ -316,6 +317,20 @@ export class TabsContainer extends CompositeDisposable implements ITabsContainer
     this.tabs.forEach((tab) => {
       const isActivePanel = panel.id === tab.value.panel.id;
       tab.value.setActive(isActivePanel);
+
+      // Scroll to active tab if it's not fully visible
+      if (isActivePanel && this.scrollbarsInstance) {
+        const scrollElement = this.scrollbarsInstance.getScrollElement();
+        if (scrollElement) {
+          const tabRect = tab.value.element.getBoundingClientRect();
+          const containerRect = this.tabContainer.getBoundingClientRect();
+
+          // Check if tab is not fully visible
+          if (tabRect.left < containerRect.left || tabRect.right > containerRect.right) {
+            tab.value.element.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+          }
+        }
+      }
     });
   }
 
@@ -392,9 +407,9 @@ export class TabsContainer extends CompositeDisposable implements ITabsContainer
   public dispose(): void {
     super.dispose();
 
-    // Dispose OverlayScrollbars instance
+    // Dispose SimpleBar instance
     if (this.scrollbarsInstance) {
-      this.scrollbarsInstance.destroy();
+      this.scrollbarsInstance.unMount();
       this.scrollbarsInstance = null;
     }
 
@@ -424,5 +439,10 @@ export class TabsContainer extends CompositeDisposable implements ITabsContainer
 
   private updateClassnames(): void {
     toggleClass(this._element, "dv-single-tab", this.size === 1);
+
+    // Refresh SimpleBar when tabs change
+    if (this.scrollbarsInstance) {
+      this.scrollbarsInstance.recalculate();
+    }
   }
 }
