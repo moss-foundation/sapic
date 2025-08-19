@@ -584,25 +584,3 @@ async fn restore_collections<R: AppRuntime>(
 
     Ok(result)
 }
-
-// async fn fetch_remote_repo_info(
-//     repo_ref: &GitUrl,
-//     github_client: Arc<GitHubClient>,
-//     gitlab_client: Arc<GitLabClient>,
-// ) -> joinerror::Result<(Option<RepositoryMetadata>, Vec<Contributor>)> {
-//     let client: Arc<dyn GitHostingProvider> = match repo_ref.domain.as_str() {
-//         "github.com" => github_client,
-//         "gitlab.com" => gitlab_client,
-//         other => {
-//             return Err(joinerror::Error::new::<()>(format!(
-//                 "unsupported git provider domain: {}",
-//                 other
-//             )));
-//         }
-//     };
-//
-//     let repo_info = client.repository_metadata(&repo_ref).await?;
-//     let contributors = client.contributors(&repo_ref).await?;
-//
-//     Ok((Some(repo_info), contributors))
-// }
