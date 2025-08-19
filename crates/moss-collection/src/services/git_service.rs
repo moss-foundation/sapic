@@ -118,17 +118,37 @@ impl GitService {
 
             let current_branch = repo_handle_ref.current_branch()?;
 
+            let mut output = BranchInfo {
+                name: current_branch.to_string(),
+                ahead: None,
+                behind: None,
+            };
             // git fetch
-            repo_handle_ref.fetch(Some("origin"))?;
+            if let Err(e) = repo_handle_ref.fetch(None) {
+                // This means that we cannot get the latest info about the upstream branch
+                // However, the operation can still succeed as long as a remote-tracking branch exists
+                // Just that the results might be outdated
+                // TODO: tell the frontend
+                println!("failed to fetch from the remote repo: {}", e.to_string())
+            }
 
             // Compare local with remote state
-            let (ahead, behind) = repo_handle_ref.compare_with_remote_branch(&current_branch)?;
+            // Even if we failed to compare with the remote branch, we can still return the current branch
+            match repo_handle_ref.compare_with_remote_branch(&current_branch) {
+                Ok((ahead, behind)) => {
+                    output.ahead = Some(ahead);
+                    output.behind = Some(behind);
+                }
+                Err(e) => {
+                    // TODO: tell the frontend
+                    println!(
+                        "failed to compare local branch with remote branch: {}",
+                        e.to_string()
+                    )
+                }
+            }
 
-            Ok(BranchInfo {
-                name: current_branch,
-                ahead,
-                behind,
-            })
+            Ok(output)
         })
         .await?;
 

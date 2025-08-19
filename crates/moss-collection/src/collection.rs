@@ -62,13 +62,13 @@ pub struct CollectionModifyParams {
 
 pub enum VcsSummary {
     GitHub {
-        branch: String,
+        branch: BranchInfo,
         url: String,
         updated_at: Option<String>,
         owner: Option<String>,
     },
     GitLab {
-        branch: String,
+        branch: BranchInfo,
         url: String,
         updated_at: Option<String>,
         owner: Option<String>,
@@ -270,11 +270,6 @@ impl<R: AppRuntime> Collection<R> {
     pub async fn get_current_branch_info(&self) -> joinerror::Result<BranchInfo> {
         self.git_service.get_current_branch_info().await
     }
-
-    pub async fn get_current_branch(&self) -> joinerror::Result<String> {
-        self.git_service.get_current_branch().await
-    }
-
     pub async fn dispose(&self) -> joinerror::Result<()> {
         self.git_service.dispose(self.fs.clone()).await
     }

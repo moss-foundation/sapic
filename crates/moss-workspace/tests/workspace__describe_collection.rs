@@ -1,5 +1,6 @@
 #![cfg(feature = "integration-tests")]
 
+use moss_git::models::types::BranchInfo;
 use moss_workspace::models::{
     operations::{DeleteCollectionInput, DescribeCollectionInput, ImportCollectionInput},
     types::{GitHubImportParams, ImportCollectionParams, ImportCollectionSource, VcsInfo},
@@ -55,7 +56,14 @@ async fn describe_collection_with_repository() {
         }
     };
 
-    assert_eq!(github_info.branch, "main");
+    assert_eq!(
+        github_info.branch,
+        BranchInfo {
+            name: "main".to_string(),
+            ahead: Some(0),
+            behind: Some(0),
+        }
+    );
     assert_eq!(github_info.url, "github.com/brutusyhy/test-collection");
     assert!(github_info.updated_at.is_some());
     assert_eq!(github_info.owner.unwrap(), "brutusyhy");

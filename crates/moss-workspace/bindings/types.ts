@@ -37,7 +37,7 @@ export type AddVariableParams = {
 /**
  * @category Type
  */
-export type BranchInfo = { name: string; ahead: number; behind: number };
+export type BranchInfo = { name: string; ahead: number | null; behind: number | null };
 
 /**
  * @category Type
@@ -147,7 +147,7 @@ export type GitHubImportParams = {
   branch?: string;
 };
 
-export type GitHubVcsInfo = { branch: string; url: string; updatedAt?: string; owner?: string };
+export type GitHubVcsInfo = { branch: BranchInfo; url: string; updatedAt?: string; owner?: string };
 
 /**
  * @category Type
@@ -171,7 +171,7 @@ export type GitLabImportParams = {
   branch?: string;
 };
 
-export type GitLabVcsInfo = { branch: string; url: string; updatedAt?: string; owner?: string };
+export type GitLabVcsInfo = { branch: BranchInfo; url: string; updatedAt?: string; owner?: string };
 
 export type ImportCollectionParams = {
   name: string;

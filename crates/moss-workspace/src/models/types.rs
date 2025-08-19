@@ -6,7 +6,7 @@ use moss_environment::models::{
     primitives::{EnvironmentId, VariableId},
     types::{AddVariableParams, UpdateVariableParams, VariableInfo},
 };
-use moss_git::url::GIT_URL_REGEX;
+use moss_git::{models::types::BranchInfo, url::GIT_URL_REGEX};
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, path::PathBuf};
 use ts_rs::TS;
@@ -289,7 +289,7 @@ pub enum VcsInfo {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct GitHubVcsInfo {
-    pub branch: String,
+    pub branch: BranchInfo,
     pub url: String,
     pub updated_at: Option<String>,
     pub owner: Option<String>,
@@ -300,7 +300,7 @@ pub struct GitHubVcsInfo {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct GitLabVcsInfo {
-    pub branch: String,
+    pub branch: BranchInfo,
     pub url: String,
     pub updated_at: Option<String>,
     pub owner: Option<String>,

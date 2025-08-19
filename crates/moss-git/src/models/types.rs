@@ -7,6 +7,6 @@ use ts_rs::TS;
 #[ts(export, export_to = "types.ts")]
 pub struct BranchInfo {
     pub name: String,
-    pub ahead: usize,
-    pub behind: usize,
+    pub ahead: Option<usize>,
+    pub behind: Option<usize>,
 }

@@ -23,8 +23,8 @@ export const variableOptionsSchema = z.object({
 
 export const branchInfoSchema = z.object({
   name: z.string(),
-  ahead: z.number(),
-  behind: z.number(),
+  ahead: z.number().nullable(),
+  behind: z.number().nullable(),
 });
 
 export const contributorSchema = z.object({
@@ -84,7 +84,7 @@ export const gitHubImportParamsSchema = z.object({
 });
 
 export const gitHubVcsInfoSchema = z.object({
-  branch: z.string(),
+  branch: branchInfoSchema,
   url: z.string(),
   updatedAt: z.string().optional(),
   owner: z.string().optional(),
@@ -96,7 +96,7 @@ export const gitLabImportParamsSchema = z.object({
 });
 
 export const gitLabVcsInfoSchema = z.object({
-  branch: z.string(),
+  branch: branchInfoSchema,
   url: z.string(),
   updatedAt: z.string().optional(),
   owner: z.string().optional(),

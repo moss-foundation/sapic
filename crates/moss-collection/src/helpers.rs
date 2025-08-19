@@ -29,7 +29,7 @@ pub(crate) async fn fetch_vcs_summary<R: AppRuntime>(
     git_provider_type: GitProviderType,
     client: Arc<dyn GitHostingProvider>,
 ) -> joinerror::Result<VcsSummary> {
-    let branch = collection.get_current_branch().await?;
+    let branch = collection.get_current_branch_info().await?;
 
     let repository_metadata = client.repository_metadata(repo_ref).await;
     let url = repo_ref.to_string();
