@@ -332,6 +332,7 @@ impl CollectionBuilder {
         })
     }
 
+    // TODO: Handle non-collection repo
     pub async fn clone<R: AppRuntime>(
         self,
         _ctx: &R::AsyncContext,

@@ -512,69 +512,6 @@ impl<R: AppRuntime> CollectionService<R> {
             }
         })
     }
-
-    // pub(crate) async fn describe_collection(
-    //     &self,
-    //     _ctx: &R::AsyncContext,
-    //     id: &CollectionId,
-    // ) -> joinerror::Result<CollectionDescription> {
-    //     let state = self.state.clone();
-    //
-    //     let state_lock = state.read().await;
-    //     if !state_lock.collections.contains_key(id) {
-    //         return Err(joinerror::Error::new::<ErrorNotFound>(format!(
-    //             "collection with id `{}` not found",
-    //             id.as_str()
-    //         )));
-    //     }
-    //     let collection = state_lock.collections.get(id).unwrap();
-    //
-    //     let manifest_desc = collection.describe().await?;
-    //
-    //     let (repository_info, contributors) = if let Some(Ok(repo_ref)) = manifest_desc
-    //         .repository
-    //         .as_ref()
-    //         .map(|url| GitUrl::parse(url))
-    //     {
-    //         match fetch_remote_repo_info(
-    //             &repo_ref,
-    //             self.github_client.clone(),
-    //             self.gitlab_client.clone(),
-    //         )
-    //         .await
-    //         {
-    //             Ok((info, contributors)) => (info, contributors),
-    //             Err(err) => {
-    //                 // TODO: Tell the frontend we failed to fetch the information from the providers
-    //                 println!(
-    //                     "failed to fetch remote repo information: {}",
-    //                     err.to_string()
-    //                 );
-    //                 (None, vec![])
-    //             }
-    //         }
-    //     } else {
-    //         (None, vec![])
-    //     };
-    //
-    //     let current_branch = collection
-    //         .git_service()
-    //         .get_current_branch()
-    //         .await
-    //         .unwrap_or_else(|err| {
-    //             // TODO: Tell the frontend we failed to get the current branch
-    //             println!("failed to get current branch: {}", err.to_string());
-    //             None
-    //         });
-    //
-    //     Ok(CollectionDescription {
-    //         name: manifest_desc.name,
-    //         repository: manifest_desc.repository,
-    //         repository_info,
-    //         contributors,
-    //         current_branch,
-    //     })
-    // }
 }
 async fn restore_collections<R: AppRuntime>(
     ctx: &R::AsyncContext,
@@ -599,17 +536,25 @@ async fn restore_collections<R: AppRuntime>(
         }
 
         let id_str = entry.file_name().to_string_lossy().to_string();
-        let id: CollectionId = id_str.into();
+        let id: CollectionId = id_str.clone().into();
 
         let collection = {
             let collection_abs_path: Arc<Path> = entry.path().to_owned().into();
 
-            CollectionBuilder::new(fs.clone(), github_client.clone(), gitlab_client.clone())
-                .load(CollectionLoadParams {
-                    internal_abs_path: collection_abs_path,
-                })
-                .await
-                .join_err::<()>("failed to rebuild collection")?
+            let collection_result =
+                CollectionBuilder::new(fs.clone(), github_client.clone(), gitlab_client.clone())
+                    .load(CollectionLoadParams {
+                        internal_abs_path: collection_abs_path,
+                    })
+                    .await;
+            match collection_result {
+                Ok(collection) => collection,
+                Err(e) => {
+                    // TODO: Let the frontend know a collection is invalid
+                    println!("failed to rebuild collection `{}`: {}", id_str, e);
+                    continue;
+                }
+            }
         };
 
         collections.push((id, collection));
