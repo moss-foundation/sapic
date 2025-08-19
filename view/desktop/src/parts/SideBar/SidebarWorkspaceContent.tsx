@@ -92,7 +92,7 @@ export const SidebarWorkspaceContent = ({ groupId = "default" }: SidebarWorkspac
           <SidebarHeader title="Commits" />
           <div className="p-4">
             <h3 className="text-lg font-semibold">Commits</h3>
-            <p className="mt-2 text-sm text-gray-500">Mock server configuration</p>
+            <p className="mt-2 text-sm text-gray-500">Commits configuration</p>
           </div>
         </div>
       );
