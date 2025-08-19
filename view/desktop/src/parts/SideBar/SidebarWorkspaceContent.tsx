@@ -9,6 +9,7 @@ import {
 } from "@repo/moss-workspace";
 
 import { EnvironmentsListView } from "../EnvironmentsListView/EnvironmentsListView";
+import { SourceControlView } from "../SourceControlView/SourceControlView";
 
 interface SidebarWorkspaceContentProps {
   // FIXME: remove from props and replace with workspaceState?.sidebar?.treeViewGroupId ?? "default";
@@ -89,11 +90,7 @@ export const SidebarWorkspaceContent = ({ groupId = "default" }: SidebarWorkspac
     case "5":
       return (
         <div className="flex h-full flex-col">
-          <SidebarHeader title="Commits" />
-          <div className="p-4">
-            <h3 className="text-lg font-semibold">Commits</h3>
-            <p className="mt-2 text-sm text-gray-500">Commits configuration</p>
-          </div>
+          <SourceControlView />
         </div>
       );
 
