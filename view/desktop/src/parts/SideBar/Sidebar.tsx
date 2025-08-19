@@ -24,7 +24,7 @@ export const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
   return (
     <div
       className={cn(
-        "background-(--moss-secondary-background) flex h-full flex-col bg-amber-600",
+        "background-(--moss-secondary-background) flex h-full flex-col",
         {
           "border-l border-(--moss-border-color)": sideBarPosition === SIDEBAR_POSITION.LEFT,
         },
