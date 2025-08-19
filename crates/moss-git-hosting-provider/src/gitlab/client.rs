@@ -1,10 +1,3 @@
-use crate::{
-    GitAuthProvider, GitHostingProvider,
-    common::SSHAuthAgent,
-    constants::GITLAB_API_URL,
-    gitlab::response::{AvatarResponse, ContributorsResponse},
-    models::types::{Contributor, RepositoryMetadata},
-};
 use async_trait::async_trait;
 use joinerror::OptionExt;
 use moss_git::GitAuthAgent;
@@ -16,12 +9,14 @@ use std::sync::Arc;
 use url::Url;
 
 use crate::{
-    common::GitUrlForAPI,
+    GitAuthProvider, GitHostingProvider,
+    common::{GitUrlForAPI, SSHAuthAgent},
+    constants::GITLAB_API_URL,
     gitlab::{
         auth::GitLabAuthAgent,
-        response::{RepositoryResponse, UserResponse},
+        response::{AvatarResponse, ContributorsResponse, RepositoryResponse, UserResponse},
     },
-    models::types::UserInfo,
+    models::types::{Contributor, RepositoryMetadata, UserInfo},
 };
 
 const CONTENT_TYPE: &'static str = "application/json";
