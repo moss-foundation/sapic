@@ -11,9 +11,9 @@ export const SourceControlView = () => {
       <div className="flex flex-col gap-2 px-2 py-1">
         <Textarea />
 
-        <div className="flex justify-end gap-2">
-          <ButtonNeutralOutlined className="px-3 py-1.5">Commit</ButtonNeutralOutlined>
-          <ButtonPrimary className="px-3 py-1.5">Commit and Push</ButtonPrimary>
+        <div className="@container/buttons flex flex-wrap justify-end gap-2">
+          <ButtonNeutralOutlined className="w-full px-3 py-1.5 @[210px]/buttons:w-auto">Commit</ButtonNeutralOutlined>
+          <ButtonPrimary className="w-full px-3 py-1.5 @[210px]/buttons:w-auto">Commit and Push</ButtonPrimary>
         </div>
       </div>
     </div>
