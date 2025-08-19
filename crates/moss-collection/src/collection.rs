@@ -14,6 +14,7 @@ use moss_environment::{environment::Environment, models::primitives::Environment
 use moss_fs::{FileSystem, FsResultExt};
 use moss_git::{models::types::BranchInfo, url::normalize_git_url};
 use moss_git_hosting_provider::{
+    GitHostingProvider,
     common::GitUrlForAPI,
     github::client::GitHubClient,
     gitlab::client::GitLabClient,
@@ -28,9 +29,9 @@ use std::{
 use tokio::sync::OnceCell;
 
 use crate::{
-    DescribeCollection,
+    DescribeCollection, DescribeRepository,
     edit::CollectionEdit,
-    helpers::{fetch_contributors, fetch_vcs_info},
+    helpers::{fetch_contributors, fetch_vcs_summary},
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
     services::{
         git_service::GitService, set_icon_service::SetIconService, storage_service::StorageService,
@@ -59,7 +60,7 @@ pub struct CollectionModifyParams {
     pub icon_path: Option<ChangePath>,
 }
 
-pub enum Vcs {
+pub enum VcsSummary {
     GitHub {
         branch: String,
         url: String,
@@ -74,34 +75,9 @@ pub enum Vcs {
     },
 }
 
-impl Vcs {
-    pub fn new(
-        git_provider_type: GitProviderType,
-        branch: String,
-        url: String,
-        updated_at: Option<String>,
-        owner: Option<String>,
-    ) -> Self {
-        match git_provider_type {
-            GitProviderType::GitHub => Self::GitHub {
-                branch,
-                url,
-                updated_at,
-                owner,
-            },
-            GitProviderType::GitLab => Self::GitLab {
-                branch,
-                url,
-                updated_at,
-                owner,
-            },
-        }
-    }
-}
-
 pub struct CollectionDetails {
     pub name: String,
-    pub vcs: Option<Vcs>,
+    pub vcs: Option<VcsSummary>,
     pub contributors: Vec<Contributor>,
     pub created_at: String, // File created time | repo download time
 }
@@ -156,7 +132,10 @@ impl<R: AppRuntime> Collection<R> {
 
         Ok(DescribeCollection {
             name: manifest.name,
-            repository: manifest.repository,
+            repository: manifest.repository.map(|repo| DescribeRepository {
+                repository: repo.repository,
+                git_provider_type: repo.git_provider_type,
+            }),
         })
     }
 
@@ -180,28 +159,26 @@ impl<R: AppRuntime> Collection<R> {
             created_at: created_at.to_rfc3339(),
         };
 
-        // TODO: Maybe we can get the repo url for API from the stored remote instead of manifest
-        let repository = if let Some(repository) = desc.repository {
-            repository
-        } else {
-            return Ok(output);
-        };
+        if let Some(repo_desc) = desc.repository {
+            let repo_ref = match GitUrlForAPI::parse(&repo_desc.repository) {
+                Ok(repo_ref) => repo_ref,
+                Err(e) => {
+                    // TODO: Tell the frontend
+                    println!(
+                        "unable to parse repository {}: {}",
+                        repo_desc.repository,
+                        e.to_string()
+                    );
+                    return Ok(output);
+                }
+            };
+            let git_provider_type = repo_desc.git_provider_type;
+            let client: Arc<dyn GitHostingProvider> = match &git_provider_type {
+                GitProviderType::GitHub => github_client,
+                GitProviderType::GitLab => gitlab_client,
+            };
 
-        let repo_ref = match GitUrlForAPI::parse(&repository) {
-            Ok(repo_ref) => repo_ref,
-            Err(e) => {
-                // TODO: Tell the frontend
-                println!(
-                    "unable to parse repository {}: {}",
-                    repository,
-                    e.to_string()
-                );
-                return Ok(output);
-            }
-        };
-
-        output.contributors =
-            fetch_contributors(&repo_ref, github_client.clone(), gitlab_client.clone())
+            output.contributors = fetch_contributors(&repo_ref, client.clone())
                 .await
                 .unwrap_or_else(|e| {
                     // TODO: Tell the frontend
@@ -209,21 +186,16 @@ impl<R: AppRuntime> Collection<R> {
                     Vec::new()
                 });
 
-        output.vcs = match fetch_vcs_info(
-            &repo_ref,
-            self.git_service.clone(),
-            github_client.clone(),
-            gitlab_client.clone(),
-        )
-        .await
-        {
-            Ok(vcs) => Some(vcs),
-            Err(e) => {
-                // TODO: Tell the fronend
-                println!("unable to fetch vcs: {}", e);
-                None
-            }
-        };
+            output.vcs =
+                match fetch_vcs_summary(self, &repo_ref, git_provider_type, client.clone()).await {
+                    Ok(vcs) => Some(vcs),
+                    Err(e) => {
+                        // TODO: Tell the fronend
+                        println!("unable to fetch vcs: {}", e);
+                        None
+                    }
+                };
+        }
 
         Ok(output)
     }
@@ -304,8 +276,12 @@ impl<R: AppRuntime> Collection<R> {
         self.git_service.get_current_branch_info().await
     }
 
+    pub async fn get_current_branch(&self) -> joinerror::Result<String> {
+        self.git_service.get_current_branch().await
+    }
+
     pub async fn dispose_git(&self) -> joinerror::Result<()> {
-        self.git_service.dispose_git(self.fs.clone()).await
+        self.git_service.cleanup_git(self.fs.clone()).await
     }
 }
 

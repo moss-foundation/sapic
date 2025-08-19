@@ -1,6 +1,6 @@
 use joinerror::OptionExt;
 use moss_applib::AppRuntime;
-use moss_collection::collection::Vcs;
+use moss_collection::collection::VcsSummary;
 
 use crate::{
     Workspace,
@@ -31,7 +31,7 @@ impl<R: AppRuntime> Workspace<R> {
 
         let vcs = if let Some(vcs) = details.vcs {
             match vcs {
-                Vcs::GitHub {
+                VcsSummary::GitHub {
                     branch,
                     url,
                     updated_at,
@@ -42,7 +42,7 @@ impl<R: AppRuntime> Workspace<R> {
                     updated_at,
                     owner,
                 })),
-                Vcs::GitLab {
+                VcsSummary::GitLab {
                     branch,
                     url,
                     updated_at,

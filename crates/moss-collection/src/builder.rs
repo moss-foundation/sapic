@@ -1,10 +1,7 @@
 use joinerror::{Error, OptionExt, ResultExt};
 use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt, RemoveOptions};
-use moss_git::{
-    repo::{BranchType, IndexAddOption, RepoHandle, Signature},
-    url::normalize_git_url,
-};
+use moss_git::repo::{BranchType, IndexAddOption, RepoHandle, Signature};
 use moss_git_hosting_provider::{
     GitAuthProvider, GitHostingProvider, github::client::GitHubClient,
     gitlab::client::GitLabClient, models::primitives::GitProviderType,
@@ -22,7 +19,7 @@ use crate::{
     constants::COLLECTION_ROOT_PATH,
     defaults, dirs,
     edit::CollectionEdit,
-    manifest::{MANIFEST_FILE_NAME, ManifestFile},
+    manifest::{MANIFEST_FILE_NAME, ManifestFile, ManifestRepository},
     models::primitives::{EntryClass, EntryId},
     services::{
         git_service::GitService, set_icon_service::SetIconService, storage_service::StorageService,
@@ -149,7 +146,7 @@ impl CollectionBuilder {
 
         let repo_handle = if params.internal_abs_path.join(".git").exists() {
             self.load_repo_handle(
-                manifest.git_provider_type.clone(),
+                manifest.repository.map(|repo| repo.git_provider_type),
                 params.internal_abs_path.clone(),
             )
             .await
@@ -232,20 +229,10 @@ impl CollectionBuilder {
         let git_params = params.git_params;
 
         // FIXME: I'm not sure why we need to store a repo url that's different from what we expect from the user
-        let normalized_repo =
-            if let Some(repo) = git_params.as_ref().map(|params| params.repository.as_str()) {
-                match normalize_git_url(repo) {
-                    Ok(repo) => Some(repo),
-                    Err(e) => {
-                        // TODO: Tell the frontend the repository is invalid
-                        println!("invalid repository url `{}`: {}", repo, e.to_string());
-                        None
-                    }
-                }
-            } else {
-                None
-            };
-        let git_provider_type = git_params.as_ref().map(|p| p.git_provider_type.clone());
+        let repository = git_params.as_ref().map(|p| ManifestRepository {
+            repository: p.repository.clone(),
+            git_provider_type: p.git_provider_type.clone(),
+        });
 
         self.fs
             .create_file_with(
@@ -255,8 +242,7 @@ impl CollectionBuilder {
                         .name
                         .unwrap_or(defaults::DEFAULT_COLLECTION_NAME.to_string()),
                     // FIXME: We might consider removing this field from the manifest file
-                    repository: normalized_repo,
-                    git_provider_type,
+                    repository,
                 })?
                 .as_bytes(),
                 CreateOptions {

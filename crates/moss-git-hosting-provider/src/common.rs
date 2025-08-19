@@ -6,9 +6,6 @@ use moss_git::GitAuthAgent;
 
 pub trait SSHAuthAgent: GitAuthAgent {}
 
-pub const GITHUB_DOMAIN: &'static str = "github.com";
-pub const GITLAB_DOMAIN: &str = "gitlab.com";
-
 // FIXME: Maybe this type should not be here
 pub struct GitUrlForAPI {
     pub domain: String,

@@ -368,7 +368,7 @@ impl<R: AppRuntime> CollectionService<R> {
             order: Some(params.order),
             expanded: true,
             // FIXME: Rethink Manifest file and repository storage
-            repository: desc.repository,
+            repository: desc.repository.map(|repo_desc| repo_desc.repository),
             icon_path,
             abs_path,
             external_path: None,
@@ -504,7 +504,7 @@ impl<R: AppRuntime> CollectionService<R> {
                     name: summary.name,
                     order: item.order,
                     expanded,
-                    repository: summary.repository,
+                    repository: summary.repository.map(|repo_desc| repo_desc.repository),
                     icon_path,
                     abs_path: item.handle.abs_path().clone(),
                     external_path: None, // TODO: implement
