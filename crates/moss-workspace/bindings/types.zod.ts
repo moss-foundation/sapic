@@ -23,8 +23,8 @@ export const variableOptionsSchema = z.object({
 
 export const branchInfoSchema = z.object({
   name: z.string(),
-  ahead: z.number().nullable(),
-  behind: z.number().nullable(),
+  ahead: z.number().optional(),
+  behind: z.number().optional(),
 });
 
 export const contributorSchema = z.object({

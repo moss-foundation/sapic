@@ -37,7 +37,7 @@ export type AddVariableParams = {
 /**
  * @category Type
  */
-export type BranchInfo = { name: string; ahead: number | null; behind: number | null };
+export type BranchInfo = { name: string; ahead?: number; behind?: number };
 
 /**
  * @category Type

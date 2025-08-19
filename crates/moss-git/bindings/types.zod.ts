@@ -3,6 +3,6 @@ import { z } from "zod";
 
 export const branchInfoSchema = z.object({
   name: z.string(),
-  ahead: z.number(),
-  behind: z.number(),
+  ahead: z.number().optional(),
+  behind: z.number().optional(),
 });

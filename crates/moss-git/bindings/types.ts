@@ -3,4 +3,4 @@
 /**
  * @category Type
  */
-export type BranchInfo = { name: string; ahead: number; behind: number };
+export type BranchInfo = { name: string; ahead?: number; behind?: number };
