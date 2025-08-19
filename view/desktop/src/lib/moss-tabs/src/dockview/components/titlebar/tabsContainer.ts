@@ -1,5 +1,3 @@
-import { OverlayScrollbars } from "overlayscrollbars";
-
 import { getPanelData } from "../../../dnd/dataTransfer";
 import { toggleClass } from "../../../dom";
 import { addDisposableListener, Emitter, Event } from "../../../events";
@@ -56,7 +54,6 @@ export class TabsContainer extends CompositeDisposable implements ITabsContainer
   private readonly leftActionsContainer: HTMLElement;
   private readonly preActionsContainer: HTMLElement;
   private readonly voidContainer: VoidContainer;
-  private scrollbarsInstance: OverlayScrollbars | null = null;
 
   private tabs: IValueDisposable<Tab>[] = [];
   private selectedIndex = -1;
@@ -181,13 +178,8 @@ export class TabsContainer extends CompositeDisposable implements ITabsContainer
 
     this.tabContainer = document.createElement("div");
     this.tabContainer.className = "dv-tabs-container";
-
-    // Initialize OverlayScrollbars instead of using native scrolling
-    this.scrollbarsInstance = OverlayScrollbars(this.tabContainer, {
-      scrollbars: {
-        autoHide: "move",
-      },
-    });
+    this.tabContainer.style.overflow = "hidden";
+    this.tabContainer.style.position = "relative";
 
     this.voidContainer = new VoidContainer(this.accessor, this.group);
 
@@ -316,6 +308,17 @@ export class TabsContainer extends CompositeDisposable implements ITabsContainer
     this.tabs.forEach((tab) => {
       const isActivePanel = panel.id === tab.value.panel.id;
       tab.value.setActive(isActivePanel);
+
+      // Scroll to active tab if it's not fully visible
+      if (isActivePanel) {
+        const tabRect = tab.value.element.getBoundingClientRect();
+        const containerRect = this.tabContainer.getBoundingClientRect();
+
+        // Check if tab is not fully visible
+        if (tabRect.left < containerRect.left || tabRect.right > containerRect.right) {
+          tab.value.element.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+        }
+      }
     });
   }
 
@@ -391,12 +394,6 @@ export class TabsContainer extends CompositeDisposable implements ITabsContainer
 
   public dispose(): void {
     super.dispose();
-
-    // Dispose OverlayScrollbars instance
-    if (this.scrollbarsInstance) {
-      this.scrollbarsInstance.destroy();
-      this.scrollbarsInstance = null;
-    }
 
     for (const { value, disposable } of this.tabs) {
       disposable.dispose();

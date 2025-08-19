@@ -102,7 +102,7 @@
 /*--------------------dv-tab--------------------*/
 
 .dv-tab {
-  @apply shrink-0;
+  @apply h-full shrink-0;
 }
 
 .dv-tab:focus-within,
@@ -471,7 +471,7 @@
 }
 
 .dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab .dv-tabs-container .dv-tab {
-  @apply grow;
+  @apply h-full grow;
 }
 
 .dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab .dv-void-container {
@@ -487,7 +487,7 @@
 }
 
 .dv-tabs-and-actions-container .dv-tabs-container .dv-tab {
-  @apply relative box-border min-w-[75px] cursor-pointer outline-hidden;
+  @apply relative box-border h-full min-w-[75px] cursor-pointer outline-hidden;
   -webkit-user-drag: element;
 }
 
