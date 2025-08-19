@@ -188,7 +188,7 @@ pub struct ActivitybarPartStateInfo {
 #[ts(export, export_to = "types.ts")]
 pub struct SidebarPartStateInfo {
     pub position: SidebarPosition,
-    pub size: usize,
+    pub size: f64,
     pub visible: bool,
 }
 
@@ -201,7 +201,7 @@ pub struct SidebarPartStateInfo {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct PanelPartStateInfo {
-    pub size: usize,
+    pub size: f64,
     pub visible: bool,
 }
 

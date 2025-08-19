@@ -84,7 +84,7 @@ const ACTIVITYBAR_DEFAULTS: ActivitybarPartDefaults = ActivitybarPartDefaults {
 #[derive(Debug)]
 pub struct SidebarPartDefaults {
     position: SidebarPosition,
-    size: usize,
+    size: f64,
     is_visible: bool,
 }
 
@@ -96,7 +96,7 @@ pub struct SidebarPartPreferences {
 
 const SIDEBAR_DEFAULTS: SidebarPartDefaults = SidebarPartDefaults {
     position: SidebarPosition::Left,
-    size: 200,
+    size: 200.0,
     is_visible: true,
 };
 
@@ -106,7 +106,7 @@ const SIDEBAR_DEFAULTS: SidebarPartDefaults = SidebarPartDefaults {
 
 #[derive(Debug)]
 pub struct PanelPartDefaults {
-    size: usize,
+    size: f64,
     is_visible: bool,
 }
 
@@ -116,7 +116,7 @@ pub struct PanelPartPreferences {
 }
 
 const PANEL_DEFAULTS: PanelPartDefaults = PanelPartDefaults {
-    size: 200,
+    size: 200.0,
     is_visible: false,
 };
 
@@ -217,7 +217,7 @@ impl<R: AppRuntime> LayoutService<R> {
             .or(preferences.position)
             .unwrap_or(SIDEBAR_DEFAULTS.position),
 
-            size: get_from_cache::<usize>(cache, SEGKEY_LAYOUT_SIDEBAR.join("size"))
+            size: get_from_cache::<f64>(cache, SEGKEY_LAYOUT_SIDEBAR.join("size"))
                 .unwrap_or(SIDEBAR_DEFAULTS.size),
 
             visible: get_from_cache::<bool>(cache, SEGKEY_LAYOUT_SIDEBAR.join("visible"))
@@ -287,7 +287,7 @@ impl<R: AppRuntime> LayoutService<R> {
         let preferences = PanelPartPreferences { visible: None };
 
         Ok(PanelPartStateInfo {
-            size: get_from_cache::<usize>(cache, SEGKEY_LAYOUT_PANEL.join("size"))
+            size: get_from_cache::<f64>(cache, SEGKEY_LAYOUT_PANEL.join("size"))
                 .unwrap_or(PANEL_DEFAULTS.size),
 
             visible: get_from_cache::<bool>(cache, SEGKEY_LAYOUT_PANEL.join("visible"))
