@@ -1,8 +1,8 @@
 import { ReactNode, useEffect, useRef } from "react";
 
 import { ActivityBar } from "@/components";
+import DesignModeToggle from "@/components/DesignModeToggle";
 import { EmptyWorkspace } from "@/components/EmptyWorkspace";
-import ModeToggle from "@/components/ModeToggle";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
 import { useActiveWorkspace } from "@/hooks";
 import { useGetProjectSessionState } from "@/hooks/useProjectSession";
@@ -104,7 +104,7 @@ export const Sidebar = () => {
         <ActivityBar />
         <Scrollbar>{sidebarContent}</Scrollbar>
         <div className="mt-auto flex w-full border-t border-t-(--moss-border-color) px-1 py-2">
-          <ModeToggle />
+          <DesignModeToggle />
         </div>
       </BaseSidebar>
     );
@@ -115,7 +115,7 @@ export const Sidebar = () => {
       <BaseSidebar className="relative">
         <Scrollbar>{sidebarContent}</Scrollbar>
         <div className="mt-auto flex w-full border-t border-t-(--moss-border-color) px-1 py-2">
-          <ModeToggle />
+          <DesignModeToggle />
         </div>
         <ActivityBar />
       </BaseSidebar>
@@ -126,7 +126,7 @@ export const Sidebar = () => {
     <BaseSidebar>
       <Scrollbar>{sidebarContent}</Scrollbar>
       <div className="mt-auto flex w-full border-t border-t-(--moss-border-color) px-1 py-2">
-        <ModeToggle />
+        <DesignModeToggle />
       </div>
     </BaseSidebar>
   );

@@ -3,11 +3,11 @@ import { useRequestModeStore } from "@/store/requestMode";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 
-interface ModeToggleProps {
+interface DesignModeToggleProps {
   className?: string;
 }
 
-export const ModeToggle = ({ className }: ModeToggleProps) => {
+export const DesignModeToggle = ({ className }: DesignModeToggleProps) => {
   const { api } = useTabbedPaneStore();
   const { displayMode, setDisplayMode } = useRequestModeStore();
   const { data: collectionsWithEntries } = useStreamedCollectionsWithEntries();
@@ -80,4 +80,4 @@ export const ModeToggle = ({ className }: ModeToggleProps) => {
   );
 };
 
-export default ModeToggle;
+export default DesignModeToggle;

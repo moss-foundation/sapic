@@ -70,11 +70,34 @@ export const SidebarWorkspaceContent = ({ workspaceName, groupId = "default" }: 
         </div>
       );
 
+    case "4":
+      return (
+        <div className="flex h-full flex-col">
+          <SidebarHeader title="Preferences" />
+          <div className="p-4">
+            <h3 className="text-lg font-semibold">Preferences</h3>
+            <p className="mt-2 text-sm text-gray-500">Preferences configuration</p>
+          </div>
+        </div>
+      );
+
+    case "5":
+      return (
+        <div className="flex h-full flex-col">
+          <SidebarHeader title="Commits" />
+          <div className="p-4">
+            <h3 className="text-lg font-semibold">Commits</h3>
+            <p className="mt-2 text-sm text-gray-500">Mock server configuration</p>
+          </div>
+        </div>
+      );
+
     default:
       return (
         <div className="p-4">
           <h3 className="text-lg font-semibold">No content</h3>
           <p className="mt-2 text-sm text-gray-500">No content for this group, showing default view</p>
+          <div>{groupId}</div>
         </div>
       );
   }
