@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useRef } from "react";
 
 import { ActivityBar } from "@/components";
+import DesignModeToggle from "@/components/DesignModeToggle";
 import { EmptyWorkspace } from "@/components/EmptyWorkspace";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
 import { useActiveWorkspace } from "@/hooks";
@@ -22,7 +23,7 @@ export const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
   return (
     <div
       className={cn(
-        "background-(--moss-secondary-background) flex h-full flex-col",
+        "background-(--moss-secondary-background) flex h-full grow flex-col",
         {
           "border-l border-(--moss-border-color)": sideBarPosition === SIDEBAR_POSITION.LEFT,
         },
@@ -36,7 +37,7 @@ export const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
 
 export const Sidebar = () => {
   const { data: projectSessionState } = useGetProjectSessionState();
-  const { activeWorkspaceId, hasActiveWorkspace, activeWorkspace } = useActiveWorkspace();
+  const { activeWorkspaceId, hasActiveWorkspace } = useActiveWorkspace();
 
   const { data: workspaceState, isFetched, isSuccess } = useDescribeWorkspaceState();
   const { updateFromWorkspaceState, resetToDefaults } = useActivityBarStore();
@@ -88,10 +89,8 @@ export const Sidebar = () => {
 
   const activeGroupId = activeItem?.id || "default";
 
-  // Content based on workspace status
-  // Pass the workspace name and groupId to the SidebarWorkspaceContent component
   const sidebarContent = hasActiveWorkspace ? (
-    <SidebarWorkspaceContent workspaceName={activeWorkspace!.name} groupId={activeGroupId} />
+    <SidebarWorkspaceContent groupId={activeGroupId} />
   ) : (
     <EmptyWorkspace inSidebar={true} />
   );
@@ -100,21 +99,34 @@ export const Sidebar = () => {
     return (
       <BaseSidebar>
         <ActivityBar />
-        {sidebarContent}
+        <div className="min-h-0 flex-1">{sidebarContent}</div>
+        <div className="flex w-full justify-end border-t border-t-(--moss-border-color) px-1 py-2">
+          <DesignModeToggle />
+        </div>
       </BaseSidebar>
     );
   }
 
   if (position === ACTIVITYBAR_POSITION.BOTTOM) {
     return (
-      <BaseSidebar className="relative">
-        <div className="flex-1 overflow-auto">{sidebarContent}</div>
+      <BaseSidebar>
+        <div className="min-h-0 flex-1">{sidebarContent}</div>
+        <div className="flex w-full justify-end border-t border-t-(--moss-border-color) px-1 py-2">
+          <DesignModeToggle />
+        </div>
         <ActivityBar />
       </BaseSidebar>
     );
   }
 
-  return <BaseSidebar>{sidebarContent}</BaseSidebar>;
+  return (
+    <BaseSidebar>
+      <div className="min-h-0 flex-1">{sidebarContent}</div>
+      <div className="flex w-full justify-end border-t border-t-(--moss-border-color) px-1 py-2">
+        <DesignModeToggle />
+      </div>
+    </BaseSidebar>
+  );
 };
 
 export default Sidebar;

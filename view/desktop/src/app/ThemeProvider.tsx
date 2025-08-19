@@ -28,9 +28,7 @@ const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     setupListener();
 
     return () => {
-      if (unlisten) {
-        unlisten();
-      }
+      unlisten?.();
     };
   }, [queryClient]);
 

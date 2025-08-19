@@ -326,4 +326,10 @@
   --moss-requestpage-text-disabled: var(--moss-gray-8);
   --moss-requestpage-placeholder-color: var(--moss-gray-9);
   --moss-requestpage-header-color: var(--moss-gray-3);
+
+  /* Display Mode */
+  --moss-display-mode-border: var(--moss-gray-11);
+  --moss-display-mode-bg: var(--moss-gray-12);
+  --moss-display-mode-text: var(--moss-gray-7);
+  --moss-display-mode-text-selected: var(--moss-gray-1);
 }

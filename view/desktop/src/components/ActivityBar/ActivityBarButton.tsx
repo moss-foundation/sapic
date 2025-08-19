@@ -17,34 +17,31 @@ import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/el
 
 import DropIndicator from "../DropIndicator";
 
+type ActivityBarButtonProps = ActivityBarItem &
+  ComponentPropsWithoutRef<"button"> & {
+    isDraggable?: boolean;
+  };
+
 export const ActivityBarButton = ({
   icon,
   iconActive,
   isActive,
-  visible: _visible, // Extract visible to prevent it from being passed to DOM
+  isDraggable = true,
+  isVisible = true,
   ...props
-}: ActivityBarItem & ComponentPropsWithoutRef<"button">) => {
+}: ActivityBarButtonProps) => {
   const ref = useRef<HTMLButtonElement | null>(null);
+
   const { position, setActiveItem } = useActivityBarStore();
-  const { setVisible, visible } = useAppResizableLayoutStore((state) => state.sideBar);
+  const { setVisible, visible: isSideBarVisible } = useAppResizableLayoutStore((state) => state.sideBar);
 
   const [preview, setPreview] = useState<HTMLElement | null>(null);
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
 
-  const handleClick = (id: string) => {
-    if (isActive && position === ACTIVITYBAR_POSITION.DEFAULT && visible) {
-      setVisible(false);
-      return;
-    }
-
-    setActiveItem(id);
-    setVisible(true);
-  };
-
   useEffect(() => {
     const element = ref.current;
 
-    if (!element) return;
+    if (!element || !isDraggable) return;
 
     return combine(
       draggable({
@@ -104,8 +101,17 @@ export const ActivityBarButton = ({
         },
       })
     );
-  }, [position, icon, props]);
+  }, [position, icon, props, isDraggable]);
 
+  const handleClick = (id: string) => {
+    if (isActive && position === ACTIVITYBAR_POSITION.DEFAULT && isSideBarVisible) {
+      setVisible(false);
+      return;
+    }
+
+    setActiveItem(id);
+    setVisible(true);
+  };
   return (
     <button
       ref={ref}
@@ -113,15 +119,15 @@ export const ActivityBarButton = ({
         "background-(--moss-icon-primary-background) relative flex size-7 cursor-pointer items-center justify-center rounded-md p-1",
         {
           "hover:background-(--moss-icon-primary-background-hover) text-(--moss-icon-primary-text)":
-            !isActive || !visible,
-          "background-(--moss-icon-primary-background-active) text-(--moss-info-icon)": isActive && visible,
+            !isActive || !isSideBarVisible,
+          "background-(--moss-icon-primary-background-active) text-(--moss-info-icon)": isActive && isSideBarVisible,
         }
       )}
       onClick={() => handleClick(props.id)}
       {...props}
     >
       <Icon
-        icon={isActive && visible ? iconActive : icon}
+        icon={isActive && isSideBarVisible ? iconActive : icon}
         className={cn({
           "size-4.5": position === ACTIVITYBAR_POSITION.DEFAULT,
         })}

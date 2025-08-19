@@ -23,6 +23,7 @@ export const ActivityBarLastItems = () => {
         title="User"
         order={1}
         onClick={() => openPanel("Settings")}
+        isDraggable={false}
       />
       <ActivityBarButton
         icon="Settings"
@@ -32,6 +33,7 @@ export const ActivityBarLastItems = () => {
         title="Settings"
         order={2}
         onClick={() => openPanel("Settings")}
+        isDraggable={false}
       />
     </div>
   );

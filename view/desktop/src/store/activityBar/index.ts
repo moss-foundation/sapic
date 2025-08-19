@@ -16,7 +16,7 @@ export interface ActivityBarItem {
   title: string;
   order: number;
   isActive: boolean;
-  visible?: boolean;
+  isVisible?: boolean;
 }
 
 export interface ActivityBarStore {
@@ -32,7 +32,6 @@ export interface ActivityBarStore {
   resetToDefaults: () => void;
 }
 
-// Default activity bar items with static properties
 const defaultItems: ActivityBarItem[] = [
   {
     "id": TREE_VIEW_GROUP_COLLECTIONS,
@@ -41,7 +40,7 @@ const defaultItems: ActivityBarItem[] = [
     "icon": "Home",
     "iconActive": "HomeActive",
     "isActive": true,
-    "visible": true,
+    "isVisible": true,
   },
   {
     "id": TREE_VIEW_GROUP_ENVIRONMENTS,
@@ -50,7 +49,7 @@ const defaultItems: ActivityBarItem[] = [
     "icon": "JsonPath",
     "iconActive": "JsonPathActive",
     "isActive": false,
-    "visible": true,
+    "isVisible": true,
   },
   {
     "id": TREE_VIEW_GROUP_MOCK_SERVERS,
@@ -59,7 +58,7 @@ const defaultItems: ActivityBarItem[] = [
     "icon": "WebServer",
     "iconActive": "WebServerActive",
     "isActive": false,
-    "visible": true,
+    "isVisible": true,
   },
   {
     "id": "4",
@@ -68,7 +67,16 @@ const defaultItems: ActivityBarItem[] = [
     "icon": "Wrench",
     "iconActive": "WrenchActive",
     "isActive": false,
-    "visible": true,
+    "isVisible": true,
+  },
+  {
+    "id": "5",
+    "title": "Commit",
+    "order": 5,
+    "icon": "Commit",
+    "iconActive": "CommitActive",
+    "isActive": false,
+    "isVisible": true,
   },
 ];
 
@@ -107,7 +115,7 @@ export const useActivityBarStore = create<ActivityBarStore>((set, get) => ({
       items: state.items.map((item) => ({
         id: item.id,
         order: item.order,
-        visible: item.visible !== false,
+        visible: item.isVisible !== false,
       })),
     };
   },
@@ -127,7 +135,7 @@ export const useActivityBarStore = create<ActivityBarStore>((set, get) => ({
         return {
           ...item,
           order: workspaceItem.order,
-          visible: workspaceItem.visible,
+          isVisible: workspaceItem.visible,
           isActive: item.id === activeContainerId,
         };
       }
