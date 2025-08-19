@@ -11,6 +11,6 @@ pub struct ManifestFile {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ManifestRepository {
-    pub repository: String,
+    pub url: String,
     pub git_provider_type: GitProviderType,
 }

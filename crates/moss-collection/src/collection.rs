@@ -79,7 +79,7 @@ pub struct CollectionDetails {
     pub name: String,
     pub vcs: Option<VcsSummary>,
     pub contributors: Vec<Contributor>,
-    pub created_at: String, // File created time | repo download time
+    pub created_at: String, // File created time
 }
 
 pub struct Collection<R: AppRuntime> {
@@ -133,7 +133,7 @@ impl<R: AppRuntime> Collection<R> {
         Ok(DescribeCollection {
             name: manifest.name,
             repository: manifest.repository.map(|repo| DescribeRepository {
-                repository: repo.repository,
+                repository: repo.url,
                 git_provider_type: repo.git_provider_type,
             }),
         })
@@ -221,7 +221,7 @@ impl<R: AppRuntime> Collection<R> {
                 let normalized_url = normalize_git_url(&url)?;
                 patches.push((
                     PatchOperation::Add(AddOperation {
-                        path: unsafe { PointerBuf::new_unchecked("/repository") },
+                        path: unsafe { PointerBuf::new_unchecked("/repository/url") },
                         value: JsonValue::String(normalized_url),
                     }),
                     EditOptions {
@@ -233,7 +233,7 @@ impl<R: AppRuntime> Collection<R> {
             Some(ChangeString::Remove) => {
                 patches.push((
                     PatchOperation::Remove(RemoveOperation {
-                        path: unsafe { PointerBuf::new_unchecked("/repository") },
+                        path: unsafe { PointerBuf::new_unchecked("/repository/url") },
                     }),
                     EditOptions {
                         create_missing_segments: false,

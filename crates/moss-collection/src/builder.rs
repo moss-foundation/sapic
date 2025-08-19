@@ -230,7 +230,7 @@ impl CollectionBuilder {
 
         // FIXME: I'm not sure why we need to store a repo url that's different from what we expect from the user
         let repository = git_params.as_ref().map(|p| ManifestRepository {
-            repository: p.repository.clone(),
+            url: p.repository.clone(),
             git_provider_type: p.git_provider_type.clone(),
         });
 
