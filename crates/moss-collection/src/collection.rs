@@ -91,7 +91,7 @@ pub struct Collection<R: AppRuntime> {
     pub(super) set_icon_service: SetIconService,
     pub(super) storage_service: Arc<StorageService<R>>,
     pub(super) git_service: Arc<GitService>,
-    // TODO: Git Provider Service?
+    // TODO: Extract Git Provider Service
     pub(super) github_client: Arc<GitHubClient>,
     pub(super) gitlab_client: Arc<GitLabClient>,
     #[allow(dead_code)]
@@ -141,9 +141,6 @@ impl<R: AppRuntime> Collection<R> {
         })
     }
 
-    // FIXME: `describe_collection` will call this `details` method, which doesn't sound correct
-    // FIXME: Does it make sense to pass the provider clients or store them in the collection?
-    // Maybe it's better to eventually extract it into a service
     pub async fn describe_details(&self) -> joinerror::Result<CollectionDetails> {
         let desc = self.describe().await?;
         let created_at_time =
