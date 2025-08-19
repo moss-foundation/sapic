@@ -12,10 +12,9 @@ use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_edit::json::EditOptions;
 use moss_environment::{environment::Environment, models::primitives::EnvironmentId};
 use moss_fs::{FileSystem, FsResultExt};
-use moss_git::url::normalize_git_url;
+use moss_git::{models::types::BranchInfo, url::normalize_git_url};
 use moss_git_hosting_provider::{
-    GitHostingProvider,
-    common::{GITHUB_DOMAIN, GITLAB_DOMAIN, GitUrlForAPI},
+    common::GitUrlForAPI,
     github::client::GitHubClient,
     gitlab::client::GitLabClient,
     models::{primitives::GitProviderType, types::Contributor},
@@ -301,8 +300,12 @@ impl<R: AppRuntime> Collection<R> {
         Ok(result)
     }
 
-    pub fn git_service(&self) -> Arc<GitService> {
-        self.git_service.clone()
+    pub async fn get_current_branch_info(&self) -> joinerror::Result<BranchInfo> {
+        self.git_service.get_current_branch_info().await
+    }
+
+    pub async fn dispose_git(&self) -> joinerror::Result<()> {
+        self.git_service.dispose_git(self.fs.clone()).await
     }
 }
 

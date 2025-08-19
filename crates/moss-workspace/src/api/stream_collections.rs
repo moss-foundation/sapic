@@ -29,7 +29,7 @@ impl<R: AppRuntime> Workspace<R> {
             }
             let collection = collection.unwrap();
 
-            let branch_info = collection.git_service().get_current_branch_info().await;
+            let branch_info = collection.get_current_branch_info().await;
 
             let branch = match branch_info {
                 Ok(branch) => Some(branch),

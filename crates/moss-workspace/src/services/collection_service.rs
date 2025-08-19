@@ -390,7 +390,7 @@ impl<R: AppRuntime> CollectionService<R> {
 
         if abs_path.exists() {
             if let Some(item) = item {
-                item.git_service().cleanup(self.fs.clone()).await?;
+                item.dispose_git().await?;
             }
             self.fs
                 .remove_dir(

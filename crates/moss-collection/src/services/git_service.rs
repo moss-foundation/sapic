@@ -19,7 +19,7 @@ pub struct GitService {
 impl GitService {
     // Sometimes objects might be set as readonly, preventing them from being deleted
     // we will need to recursively set all files in .git/objects as writable
-    pub async fn cleanup(&self, fs: Arc<dyn FileSystem>) -> joinerror::Result<()> {
+    pub async fn cleanup_git(&self, fs: Arc<dyn FileSystem>) -> joinerror::Result<()> {
         let repo_handle = self.repo_handle.lock()?.take();
         if repo_handle.is_none() {
             return Ok(());
