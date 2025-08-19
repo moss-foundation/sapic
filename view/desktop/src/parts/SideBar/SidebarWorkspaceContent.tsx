@@ -69,9 +69,8 @@ export const SidebarWorkspaceContent = ({ groupId = "default" }: SidebarWorkspac
       return (
         <div className="flex h-full flex-col">
           <SidebarHeader title="Mock Servers" />
-          <div className="p-4">
-            <h3 className="text-lg font-semibold">Mock Servers</h3>
-            <p className="mt-2 text-sm text-gray-500">Mock server configuration</p>
+          <div className="flex grow items-center justify-center p-2">
+            <p className="mt-2 text-center text-sm text-gray-500">Under construction</p>
           </div>
         </div>
       );
@@ -80,9 +79,8 @@ export const SidebarWorkspaceContent = ({ groupId = "default" }: SidebarWorkspac
       return (
         <div className="flex h-full flex-col">
           <SidebarHeader title="Preferences" />
-          <div className="p-4">
-            <h3 className="text-lg font-semibold">Preferences</h3>
-            <p className="mt-2 text-sm text-gray-500">Preferences configuration</p>
+          <div className="flex grow items-center justify-center p-2">
+            <p className="mt-2 text-center text-sm text-gray-500">Under construction</p>
           </div>
         </div>
       );

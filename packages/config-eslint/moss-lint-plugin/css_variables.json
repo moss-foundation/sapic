@@ -242,5 +242,9 @@
   "--moss-display-mode-border",
   "--moss-display-mode-bg",
   "--moss-display-mode-text",
-  "--moss-display-mode-text-selected"
+  "--moss-display-mode-text-selected",
+  "--moss-textarea-bg",
+  "--moss-textarea-border",
+  "--moss-textarea-text",
+  "--moss-textarea-placeholder"
 ]

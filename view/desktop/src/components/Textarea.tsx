@@ -5,8 +5,16 @@ import { cn } from "@/utils";
 function Textarea({ className, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return (
     <textarea
-      className={cn(
-        "background-(--moss-gray-14) w-full resize-none rounded-sm border border-(--moss-gray-9) px-1.5 py-1 placeholder:text-(--moss-gray-6) focus-visible:border-(--moss-blue-5) focus-visible:outline-none",
+      // prettier-ignore
+      className={cn(`
+        background-(--moss-textarea-bg) 
+        w-full resize-none rounded-sm 
+        border border-(--moss-textarea-border) 
+        px-1.5 py-1 
+        placeholder:text-(--moss-textarea-placeholder) 
+        focus-visible:border-(--moss-primary) 
+        focus-visible:outline-none`,
+
         className
       )}
       rows={7}
