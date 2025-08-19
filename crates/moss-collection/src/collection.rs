@@ -275,8 +275,8 @@ impl<R: AppRuntime> Collection<R> {
         self.git_service.get_current_branch().await
     }
 
-    pub async fn dispose_git(&self) -> joinerror::Result<()> {
-        self.git_service.cleanup_git(self.fs.clone()).await
+    pub async fn dispose(&self) -> joinerror::Result<()> {
+        self.git_service.dispose(self.fs.clone()).await
     }
 }
 
