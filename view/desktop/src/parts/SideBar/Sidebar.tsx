@@ -38,7 +38,7 @@ export const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
 
 export const Sidebar = () => {
   const { data: projectSessionState } = useGetProjectSessionState();
-  const { activeWorkspaceId, hasActiveWorkspace, activeWorkspace } = useActiveWorkspace();
+  const { activeWorkspaceId, hasActiveWorkspace } = useActiveWorkspace();
 
   const { data: workspaceState, isFetched, isSuccess } = useDescribeWorkspaceState();
   const { updateFromWorkspaceState, resetToDefaults } = useActivityBarStore();
@@ -90,10 +90,8 @@ export const Sidebar = () => {
 
   const activeGroupId = activeItem?.id || "default";
 
-  // Content based on workspace status
-  // Pass the workspace name and groupId to the SidebarWorkspaceContent component
   const sidebarContent = hasActiveWorkspace ? (
-    <SidebarWorkspaceContent workspaceName={activeWorkspace!.name} groupId={activeGroupId} />
+    <SidebarWorkspaceContent groupId={activeGroupId} />
   ) : (
     <EmptyWorkspace inSidebar={true} />
   );
@@ -102,8 +100,8 @@ export const Sidebar = () => {
     return (
       <BaseSidebar>
         <ActivityBar />
-        <Scrollbar>{sidebarContent}</Scrollbar>
-        <div className="mt-auto flex w-full border-t border-t-(--moss-border-color) px-1 py-2">
+        <Scrollbar className="grow">{sidebarContent}</Scrollbar>
+        <div className="flex w-full justify-end border-t border-t-(--moss-border-color) px-1 py-2">
           <DesignModeToggle />
         </div>
       </BaseSidebar>
@@ -113,8 +111,8 @@ export const Sidebar = () => {
   if (position === ACTIVITYBAR_POSITION.BOTTOM) {
     return (
       <BaseSidebar className="relative">
-        <Scrollbar>{sidebarContent}</Scrollbar>
-        <div className="mt-auto flex w-full border-t border-t-(--moss-border-color) px-1 py-2">
+        <Scrollbar className="grow">{sidebarContent}</Scrollbar>
+        <div className="flex w-full justify-end border-t border-t-(--moss-border-color) px-1 py-2">
           <DesignModeToggle />
         </div>
         <ActivityBar />
@@ -124,8 +122,8 @@ export const Sidebar = () => {
 
   return (
     <BaseSidebar>
-      <Scrollbar>{sidebarContent}</Scrollbar>
-      <div className="mt-auto flex w-full border-t border-t-(--moss-border-color) px-1 py-2">
+      <Scrollbar className="grow">{sidebarContent}</Scrollbar>
+      <div className="flex w-full justify-end border-t border-t-(--moss-border-color) px-1 py-2">
         <DesignModeToggle />
       </div>
     </BaseSidebar>

@@ -52,31 +52,27 @@ export const CollectionTreesView = () => {
   const { collectionsTrees, isLoading } = useCollectionsTrees();
 
   return (
-    <div ref={dropTargetToggleRef} className="relative flex h-full flex-col overflow-hidden">
+    <div ref={dropTargetToggleRef} className="relative flex flex-col overflow-hidden">
       <CollectionTreeViewHeader />
 
-      <Scrollbar className="h-full">
-        <div className="flex h-full flex-col">
-          <div className="flex shrink items-center gap-[7px] px-2 py-1">
-            <InputPlain placeholder="Search" size="sm" />
-          </div>
-
-          <div className="flex grow flex-col">
-            {!isLoading &&
-              collectionsTrees
-                .sort((a, b) => a.order! - b.order!)
-                .map((collection) => (
-                  <CollectionTree key={collection.id} tree={collection} displayMode={displayMode} />
-                ))}
-          </div>
-
-          {showCollectionCreationZone && (
-            <div className="flex justify-end p-2">
-              <CollectionCreationZone />
-            </div>
-          )}
+      <div className="flex flex-col">
+        <div className="flex shrink items-center gap-[7px] px-2 py-1">
+          <InputPlain placeholder="Search" size="sm" />
         </div>
-      </Scrollbar>
+
+        <div className="flex grow flex-col">
+          {!isLoading &&
+            collectionsTrees
+              .sort((a, b) => a.order! - b.order!)
+              .map((collection) => <CollectionTree key={collection.id} tree={collection} displayMode={displayMode} />)}
+        </div>
+
+        {showCollectionCreationZone && (
+          <div className="flex justify-end p-2">
+            <CollectionCreationZone />
+          </div>
+        )}
+      </div>
     </div>
   );
 };

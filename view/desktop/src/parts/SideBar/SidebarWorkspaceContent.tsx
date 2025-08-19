@@ -1,3 +1,4 @@
+import { useActiveWorkspace } from "@/hooks";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { CollectionTreesView } from "@/parts/CollectionTreesView/CollectionTreesView";
 import { SidebarHeader } from "@/parts/SideBar/SidebarHeader";
@@ -10,20 +11,20 @@ import {
 import { EnvironmentsListView } from "../EnvironmentsListView/EnvironmentsListView";
 
 interface SidebarWorkspaceContentProps {
-  workspaceName?: string | null;
   // FIXME: remove from props and replace with workspaceState?.sidebar?.treeViewGroupId ?? "default";
   groupId?: string;
 }
 
-export const SidebarWorkspaceContent = ({ workspaceName, groupId = "default" }: SidebarWorkspaceContentProps) => {
+export const SidebarWorkspaceContent = ({ groupId = "default" }: SidebarWorkspaceContentProps) => {
   const { data: workspaceState, isLoading: isLoadingWorkspace, error: workspaceError } = useDescribeWorkspaceState();
+  const { hasActiveWorkspace, activeWorkspace } = useActiveWorkspace();
 
   // Show loading state while workspace data is loading
   if (isLoadingWorkspace) {
     return <div className="flex h-full w-full items-center justify-center p-4">Loading...</div>;
   }
 
-  if (!workspaceName) {
+  if (!hasActiveWorkspace) {
     return <div className="flex h-full w-full items-center justify-center p-4">No workspace selected</div>;
   }
 
@@ -32,7 +33,7 @@ export const SidebarWorkspaceContent = ({ workspaceName, groupId = "default" }: 
     return (
       <div className="flex h-full w-full items-center justify-center p-4">
         <div className="text-center">
-          <p className="text-red-600">Error loading workspace: {workspaceName}</p>
+          <p className="text-red-600">Error loading workspace: {activeWorkspace?.name}</p>
           <p className="mt-2 text-sm text-gray-500">{workspaceError?.message || "Unknown error"}</p>
         </div>
       </div>
@@ -44,7 +45,7 @@ export const SidebarWorkspaceContent = ({ workspaceName, groupId = "default" }: 
     return (
       <div className="flex h-full w-full items-center justify-center p-4">
         <div className="text-center">
-          <p>Workspace "{workspaceName}" not found</p>
+          <p>Workspace "{activeWorkspace?.name}" not found</p>
           <p className="mt-2 text-sm text-gray-500">The workspace may have been moved or deleted</p>
         </div>
       </div>
