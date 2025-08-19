@@ -1,25 +1,12 @@
-import { OverlayScrollbarsComponent, OverlayScrollbarsComponentProps } from "overlayscrollbars-react";
+import SimpleBar, { type Props as SimpleBarProps } from "simplebar-react";
 
-const defaultOptions: OverlayScrollbarsComponentProps = {
-  options: {
-    scrollbars: {
-      autoHide: "move",
-    },
-  },
+import { cn } from "@/utils";
 
-  defer: true,
-};
-
-export const Scrollbar = ({ children, options, className, ...props }: OverlayScrollbarsComponentProps) => {
-  const combinedOptions = {
-    ...defaultOptions.options,
-    ...options,
-  };
-
+export const Scrollbar = ({ children, className, ...props }: SimpleBarProps) => {
   return (
-    <OverlayScrollbarsComponent className={className} options={combinedOptions} defer={defaultOptions.defer} {...props}>
+    <SimpleBar className={cn("h-full w-full", className)} {...props}>
       {children}
-    </OverlayScrollbarsComponent>
+    </SimpleBar>
   );
 };
 

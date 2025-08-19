@@ -9,7 +9,6 @@ import { mapEditorPartStateToSerializedDockview } from "@/hooks/appState/utils";
 import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { Icon, type Icons } from "@/lib/ui";
-import { Scrollbar } from "@/lib/ui/Scrollbar";
 import {
   CollectionSettingsPage,
   FolderSettings,
@@ -336,7 +335,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
   };
 
   return (
-    <Scrollbar className="h-full">
+    <div className="h-full">
       <div className="dockview-demo relative flex h-full w-full grow flex-col rounded">
         {showDebugPanels && (
           <DockviewControls
@@ -353,7 +352,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
           />
         )}
         <div className="flex h-full">
-          <Scrollbar className="flex grow overflow-hidden">
+          <div className="flex grow overflow-hidden">
             <DebugContext.Provider value={debug}>
               <div className="h-full w-full" ref={dockviewRefWrapper}>
                 <DockviewReact
@@ -370,11 +369,11 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
                 />
               </div>
             </DebugContext.Provider>
-          </Scrollbar>
+          </div>
           {showLogs && <LogsPanel />}
         </div>
       </div>
-    </Scrollbar>
+    </div>
   );
 };
 
