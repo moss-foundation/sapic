@@ -9,6 +9,7 @@ import {
 } from "@repo/moss-workspace";
 
 import { EnvironmentsListView } from "../EnvironmentsListView/EnvironmentsListView";
+import { SourceControlView } from "../SourceControlView/SourceControlView";
 
 interface SidebarWorkspaceContentProps {
   // FIXME: remove from props and replace with workspaceState?.sidebar?.treeViewGroupId ?? "default";
@@ -68,9 +69,8 @@ export const SidebarWorkspaceContent = ({ groupId = "default" }: SidebarWorkspac
       return (
         <div className="flex h-full flex-col">
           <SidebarHeader title="Mock Servers" />
-          <div className="p-4">
-            <h3 className="text-lg font-semibold">Mock Servers</h3>
-            <p className="mt-2 text-sm text-gray-500">Mock server configuration</p>
+          <div className="flex grow items-center justify-center p-2">
+            <p className="mt-2 text-center text-sm text-gray-500">Under construction</p>
           </div>
         </div>
       );
@@ -79,9 +79,8 @@ export const SidebarWorkspaceContent = ({ groupId = "default" }: SidebarWorkspac
       return (
         <div className="flex h-full flex-col">
           <SidebarHeader title="Preferences" />
-          <div className="p-4">
-            <h3 className="text-lg font-semibold">Preferences</h3>
-            <p className="mt-2 text-sm text-gray-500">Preferences configuration</p>
+          <div className="flex grow items-center justify-center p-2">
+            <p className="mt-2 text-center text-sm text-gray-500">Under construction</p>
           </div>
         </div>
       );
@@ -89,11 +88,7 @@ export const SidebarWorkspaceContent = ({ groupId = "default" }: SidebarWorkspac
     case "5":
       return (
         <div className="flex h-full flex-col">
-          <SidebarHeader title="Commits" />
-          <div className="p-4">
-            <h3 className="text-lg font-semibold">Commits</h3>
-            <p className="mt-2 text-sm text-gray-500">Commits configuration</p>
-          </div>
+          <SourceControlView />
         </div>
       );
 

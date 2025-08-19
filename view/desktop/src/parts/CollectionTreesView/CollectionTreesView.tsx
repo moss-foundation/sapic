@@ -55,7 +55,7 @@ export const CollectionTreesView = () => {
     <div ref={dropTargetToggleRef} className="flex h-full flex-col">
       <CollectionTreeViewHeader />
 
-      <Scrollbar className="min-h-0 flex-1 flex-col">
+      <Scrollbar>
         <div className="flex h-full flex-col justify-between">
           <div>
             <div className="flex shrink items-center gap-[7px] px-2 py-1">

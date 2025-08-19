@@ -50,7 +50,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       Children.toArray(children).length === 1 &&
       Children.toArray(children).some((child) => isValidElement(child) && child.type === Icon);
 
-    const content = typeof children === "string" ? <span>{children}</span> : children;
+    const content = typeof children === "string" ? <span className="truncate">{children}</span> : children;
 
     const isDisabled = disabled || loading;
 
