@@ -92,6 +92,8 @@ pub struct Collection<R: AppRuntime> {
     pub(super) storage_service: Arc<StorageService<R>>,
     pub(super) git_service: Arc<GitService>,
     // TODO: Git Provider Service?
+    pub(super) github_client: Arc<GitHubClient>,
+    pub(super) gitlab_client: Arc<GitLabClient>,
     #[allow(dead_code)]
     pub(super) environments: OnceCell<EnvironmentMap<R>>,
 
@@ -142,11 +144,7 @@ impl<R: AppRuntime> Collection<R> {
     // FIXME: `describe_collection` will call this `details` method, which doesn't sound correct
     // FIXME: Does it make sense to pass the provider clients or store them in the collection?
     // Maybe it's better to eventually extract it into a service
-    pub async fn describe_details(
-        &self,
-        github_client: Arc<GitHubClient>,
-        gitlab_client: Arc<GitLabClient>,
-    ) -> joinerror::Result<CollectionDetails> {
+    pub async fn describe_details(&self) -> joinerror::Result<CollectionDetails> {
         let desc = self.describe().await?;
         let created_at_time =
             std::fs::metadata(self.abs_path.join(MANIFEST_FILE_NAME))?.created()?;
@@ -174,8 +172,8 @@ impl<R: AppRuntime> Collection<R> {
             };
             let git_provider_type = repo_desc.git_provider_type;
             let client: Arc<dyn GitHostingProvider> = match &git_provider_type {
-                GitProviderType::GitHub => github_client,
-                GitProviderType::GitLab => gitlab_client,
+                GitProviderType::GitHub => self.github_client.clone(),
+                GitProviderType::GitLab => self.gitlab_client.clone(),
             };
 
             output.contributors = fetch_contributors(&repo_ref, client.clone())
