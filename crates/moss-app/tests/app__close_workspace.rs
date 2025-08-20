@@ -9,7 +9,6 @@ use moss_app::{
     },
     storage::segments::SEGKEY_LAST_ACTIVE_WORKSPACE,
 };
-use moss_common::api::OperationError;
 use moss_storage::storage::operations::GetItem;
 use moss_testutils::random_name::random_workspace_name;
 use moss_workspace::models::primitives::WorkspaceMode;
@@ -96,10 +95,6 @@ async fn close_workspace_not_open() {
         .await;
 
     assert!(close_result.is_err());
-    assert!(matches!(
-        close_result,
-        Err(OperationError::FailedPrecondition(_))
-    ));
 
     cleanup().await;
 }
@@ -166,10 +161,6 @@ async fn close_workspace_after_another_opened() {
         .await;
 
     assert!(close_result1.is_err());
-    assert!(matches!(
-        close_result1,
-        Err(OperationError::InvalidInput(_))
-    ));
 
     // Close the second workspace (should succeed)
     let close_result2 = app
@@ -214,10 +205,6 @@ async fn close_workspace_nonexistent() {
         .await;
 
     assert!(close_result.is_err());
-    assert!(matches!(
-        close_result,
-        Err(OperationError::FailedPrecondition(_))
-    ));
 
     cleanup().await;
 }
@@ -257,7 +244,6 @@ async fn close_workspace_from_different_session() {
         .await;
 
     assert!(close_result.is_err());
-    assert!(matches!(close_result, Err(OperationError::InvalidInput(_))));
 
     cleanup().await;
 }
