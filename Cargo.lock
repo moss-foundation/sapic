@@ -3783,7 +3783,6 @@ dependencies = [
  "moss_db",
  "moss_edit",
  "moss_environment",
- "moss_environment_provider",
  "moss_fs",
  "moss_git",
  "moss_git_hosting_provider",
@@ -3879,19 +3878,6 @@ dependencies = [
  "tauri",
  "tokio",
  "ts-rs",
-]
-
-[[package]]
-name = "moss_environment_provider"
-version = "0.1.0"
-dependencies = [
- "joinerror",
- "moss_applib",
- "moss_common",
- "moss_environment",
- "moss_fs",
- "moss_storage",
- "tokio",
 ]
 
 [[package]]
@@ -4050,7 +4036,6 @@ dependencies = [
  "moss_db",
  "moss_edit",
  "moss_environment",
- "moss_environment_provider",
  "moss_fs",
  "moss_git",
  "moss_git_hosting_provider",

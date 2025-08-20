@@ -19,7 +19,6 @@ moss_keyring.workspace = true
 moss_api.workspace = true
 moss_logging.workspace = true
 moss_common.workspace = true
-moss_environment_provider.workspace = true
 
 joinerror.workspace = true
 anyhow.workspace = true

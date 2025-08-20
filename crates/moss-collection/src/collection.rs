@@ -11,7 +11,6 @@ use moss_applib::{
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_edit::json::EditOptions;
 use moss_environment::{environment::Environment, models::primitives::EnvironmentId};
-use moss_environment_provider::EnvironmentProvider;
 use moss_fs::{FileSystem, FsResultExt};
 use moss_git::{models::types::BranchInfo, url::normalize_git_url};
 use moss_git_hosting_provider::{
@@ -99,13 +98,6 @@ pub struct Collection<R: AppRuntime> {
     pub(super) environments: OnceCell<EnvironmentMap<R>>,
 
     pub(super) on_did_change: EventEmitter<OnDidChangeEvent>,
-}
-
-impl<R: AppRuntime> From<&Collection<R>> for EnvironmentProvider {
-    fn from(collection: &Collection<R>) -> Self {
-        let abs_path = collection.abs_path.join(dirs::ENVIRONMENTS_DIR);
-        EnvironmentProvider::new(collection.fs.clone(), abs_path)
-    }
 }
 
 #[rustfmt::skip]

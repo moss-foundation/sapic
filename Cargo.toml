@@ -23,7 +23,6 @@ members = [
     "crates/moss-vault",
     "crates/moss-workspace",
     "crates/moss-environment",
-    "crates/moss-environment-provider",
     "crates/moss-testutils",
     "crates/moss-common",
     "crates/moss-storage",
@@ -64,7 +63,6 @@ moss_keyring = { path = "crates/moss-keyring" }
 moss_vault = { path = "crates/moss-vault" }
 moss_workspace = { path = "crates/moss-workspace" }
 moss_environment = { path = "crates/moss-environment" }
-moss_environment_provider = { path = "crates/moss-environment-provider" }
 moss_common = { path = "crates/moss-common" }
 moss_testutils = { path = "crates/moss-testutils" }
 moss_storage = { path = "crates/moss-storage" }
