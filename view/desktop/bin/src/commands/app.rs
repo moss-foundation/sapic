@@ -44,9 +44,7 @@ pub async fn set_color_theme<'a, R: tauri::Runtime>(
         .map_err(|err| anyhow!("Failed to emit event to webview '{}': {}", label, err))?;
     }
 
-    app.set_color_theme(&ctx, &input)
-        .await
-        .map_err(TauriError::OperationError)
+    Ok(app.set_color_theme(&ctx, &input).await?)
 }
 
 #[tauri::command(async)]
@@ -68,9 +66,7 @@ pub async fn get_color_theme<'a, R: tauri::Runtime>(
         ctx.freeze()
     };
 
-    app.get_color_theme(&ctx, &input)
-        .await
-        .map_err(TauriError::OperationError)
+    Ok(app.get_color_theme(&ctx, &input).await?)
 }
 
 #[tauri::command(async)]
@@ -91,9 +87,7 @@ pub async fn list_color_themes<'a, R: tauri::Runtime>(
         ctx.freeze()
     };
 
-    app.list_color_themes(&ctx)
-        .await
-        .map_err(TauriError::OperationError)
+    Ok(app.list_color_themes(&ctx).await?)
 }
 
 #[tauri::command(async)]
@@ -114,9 +108,7 @@ pub async fn describe_app_state<'a, R: tauri::Runtime>(
         ctx.freeze()
     };
 
-    app.describe_app_state(&ctx)
-        .await
-        .map_err(TauriError::OperationError)
+    Ok(app.describe_app_state(&ctx).await?)
 }
 
 #[tauri::command]
@@ -138,9 +130,7 @@ pub async fn set_locale<'a, R: tauri::Runtime>(
         ctx.freeze()
     };
 
-    app.set_locale(&ctx, &input)
-        .await
-        .map_err(TauriError::OperationError)
+    Ok(app.set_locale(&ctx, &input).await?)
 }
 
 #[tauri::command(async)]
@@ -161,9 +151,7 @@ pub async fn list_locales<'a, R: tauri::Runtime>(
         ctx.freeze()
     };
 
-    app.list_locales(&ctx)
-        .await
-        .map_err(TauriError::OperationError)
+    Ok(app.list_locales(&ctx).await?)
 }
 
 #[tauri::command(async)]
@@ -185,9 +173,7 @@ pub async fn get_translations<'a, R: tauri::Runtime>(
         ctx.freeze()
     };
 
-    app.get_translations(&ctx, &input)
-        .await
-        .map_err(TauriError::OperationError)
+    Ok(app.get_translations(&ctx, &input).await?)
 }
 
 #[tauri::command(async)]
@@ -231,9 +217,7 @@ pub async fn close_workspace<'a, R: tauri::Runtime>(
         ctx.freeze()
     };
 
-    app.close_workspace(&ctx, &input)
-        .await
-        .map_err(TauriError::OperationError)
+    Ok(app.close_workspace(&ctx, &input).await?)
 }
 
 #[tauri::command(async)]
@@ -363,9 +347,7 @@ pub async fn cancel_request<'a, R: tauri::Runtime>(
     input: CancelRequestInput,
     options: Options,
 ) -> TauriResult<()> {
-    app.cancel_request(input)
-        .await
-        .map_err(TauriError::OperationError)
+    Ok(app.cancel_request(input).await?)
 }
 
 #[tauri::command(async)]

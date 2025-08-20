@@ -403,7 +403,18 @@ impl<R: AppRuntime> WorkspaceService<R> {
         let mut state_lock = self.state.write().await;
         state_lock.active_workspace = None;
 
-        self.storage.remove_last_active_workspace(ctx).await?;
+        if let Err(e) = self.storage.remove_last_active_workspace(ctx).await {
+            error(
+                LogScope::Session,
+                LogEvent {
+                    resource: None,
+                    message: format!(
+                        "failed to remove last active workspace from database: {}",
+                        e.to_string()
+                    ),
+                },
+            )
+        }
 
         // ctx.remove_value::<ctxkeys::ActiveWorkspaceId>();
 

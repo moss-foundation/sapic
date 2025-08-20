@@ -8,6 +8,7 @@ use crate::{
 };
 
 impl<R: AppRuntime> App<R> {
+    // TODO: Support renaming non-active workspace?
     pub async fn update_workspace(
         &self,
         _ctx: &R::AsyncContext,
