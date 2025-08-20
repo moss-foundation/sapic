@@ -264,5 +264,5 @@ tidy: gen-license workspace-audit check-unused-deps
 ## Create a release build
 .PHONY: build
 build:
-	# Enable compression feature for reducing binary size
+	@echo "Building with compression feature for reducing binary size..."
 	@cd $(DESKTOP_DIR) && $(PNPM) run tauri build --features compression
