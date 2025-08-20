@@ -2,7 +2,6 @@ use derive_more::{Deref, DerefMut};
 use futures::Stream;
 use joinerror::{OptionExt, ResultExt};
 use moss_applib::{AppRuntime, PublicServiceMarker, ServiceMarker, subscription::EventEmitter};
-use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_collection::{
     Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
     builder::{
@@ -10,7 +9,6 @@ use moss_collection::{
         CollectionCreateParams, CollectionLoadParams,
     },
 };
-use moss_environment_provider::EnvironmentProvider;
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
 use moss_git_hosting_provider::{
     github::client::GitHubClient, gitlab::client::GitLabClient, models::primitives::GitProviderType,
@@ -22,7 +20,7 @@ use std::{
     pin::Pin,
     sync::Arc,
 };
-use tokio::sync::{RwLock, watch};
+use tokio::sync::RwLock;
 
 use crate::{
     builder::{OnDidAddCollection, OnDidDeleteCollection},

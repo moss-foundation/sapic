@@ -9,10 +9,7 @@ use moss_applib::{
 };
 use moss_collection::Collection;
 use moss_edit::json::EditOptions;
-use moss_environment::{
-    AnyEnvironment, Environment, environment, models::primitives::EnvironmentId,
-};
-use moss_environment_provider::EnvironmentProvider;
+use moss_environment::{AnyEnvironment, Environment, models::primitives::EnvironmentId};
 use moss_fs::{FileSystem, FsResultExt};
 use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
 use serde_json::Value as JsonValue;

@@ -11,7 +11,6 @@ use moss_environment::{
     models::{primitives::EnvironmentId, types::AddVariableParams},
     segments::{SEGKEY_VARIABLE_LOCALVALUE, SEGKEY_VARIABLE_ORDER},
 };
-use moss_environment_provider::EnvironmentProvider;
 use moss_fs::{FileSystem, FsResultExt, RemoveOptions};
 use moss_storage::{
     WorkspaceStorage,
@@ -80,7 +79,6 @@ where
     groups: FxHashSet<Arc<String>>,
     expanded_groups: HashSet<Arc<String>>,
     sources: FxHashMap<Arc<String>, PathBuf>,
-    // providers: FxHashMap<Arc<String>, EnvironmentProvider>,
 }
 
 pub struct EnvironmentService<R>
@@ -91,32 +89,7 @@ where
     fs: Arc<dyn FileSystem>,
     state: Arc<RwLock<ServiceState<R>>>,
     storage: Arc<StorageService<R>>,
-    // environment_provider_registry: EnvironmentProviderRegistry,
-    // _on_did_delete_collection: Subscription<OnDidDeleteCollection>,
 }
-
-// impl<R> EnvironmentService<R>
-// where
-//     R: AppRuntime,
-// {
-//     async fn on_did_delete_collection(
-//         state: Arc<RwLock<ServiceState<R>>>,
-//         on_did_delete_collection_event: &Event<OnDidDeleteCollection>,
-//     ) -> Subscription<OnDidDeleteCollection> {
-//         on_did_delete_collection_event
-//             .subscribe(move |event| {
-//                 let state_clone = state.clone();
-//                 async move {
-//                     let mut state_lock = state_clone.write().await;
-//                     state_lock.expanded_groups.remove(&event.collection_id);
-//                     state_lock.groups.remove(&event.collection_id);
-
-//                     // TODO: remove from the db
-//                 }
-//             })
-//             .await
-//     }
-// }
 
 impl<R> EnvironmentService<R>
 where
@@ -127,8 +100,6 @@ where
         abs_path: &Path,
         fs: Arc<dyn FileSystem>,
         storage: Arc<StorageService<R>>,
-        // environment_provider_registry: EnvironmentProviderRegistry,
-        // on_did_delete_collection_event: &Event<OnDidDeleteCollection>,
         sources: FxHashMap<Arc<String>, PathBuf>,
     ) -> joinerror::Result<Self> {
         let abs_path = abs_path.join(dirs::ENVIRONMENTS_DIR);
@@ -139,16 +110,11 @@ where
             sources,
         }));
 
-        // let on_did_delete_collection =
-        //     Self::on_did_delete_collection(state.clone(), on_did_delete_collection_event).await;
-
         Ok(Self {
             fs,
             abs_path,
             state,
             storage,
-            // environment_provider_registry,
-            // _on_did_delete_collection: on_did_delete_collection,
         })
     }
 
@@ -545,21 +511,6 @@ impl<R: AppRuntime> EnvironmentSourceScanner<R> {
                         }
                     }
                 });
-
-                // while let Some(environment) = adapter_rx.recv().await {
-                //     let collection_id = if provider_id_clone.as_str() == "" {
-                //         None
-                //     } else {
-                //         Some(provider_id_clone.clone())
-                //     };
-
-                //     if provider_tx_clone
-                //         .send((collection_id, Arc::new(environment)))
-                //         .is_err()
-                //     {
-                //         break; // Receiver dropped
-                //     }
-                // }
 
                 // Wait for scan to complete
                 let _ = scan_task.await;

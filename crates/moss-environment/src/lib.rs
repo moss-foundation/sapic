@@ -7,11 +7,10 @@ pub mod segments;
 pub mod utils;
 
 pub use environment::Environment;
-use std::{collections::HashMap, path::Path, sync::Arc};
 
 use moss_applib::AppRuntime;
 use moss_bindingutils::primitives::ChangeString;
-use std::path::PathBuf;
+use std::{collections::HashMap, path::Path, sync::Arc};
 
 use crate::models::{
     primitives::{EnvironmentId, VariableId},

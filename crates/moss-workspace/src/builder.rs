@@ -2,12 +2,10 @@ use joinerror::ResultExt;
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::{AppRuntime, EventMarker, subscription::EventEmitter};
 use moss_environment::builder::{CreateEnvironmentParams, EnvironmentBuilder};
-use moss_environment_provider::EnvironmentProvider;
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
 use rustc_hash::FxHashMap;
 use std::{cell::LazyCell, path::Path, sync::Arc};
-use tokio::sync::{mpsc, watch};
 
 use crate::{
     Workspace, dirs,
@@ -22,14 +20,12 @@ use crate::{
 
 struct PredefinedEnvironment {
     name: String,
-    order: isize,
     color: Option<String>,
 }
 
 const PREDEFINED_ENVIRONMENTS: LazyCell<Vec<PredefinedEnvironment>> = LazyCell::new(|| {
     vec![PredefinedEnvironment {
         name: "Globals".to_string(),
-        order: 0,
         color: Some("#3574F0".to_string()),
     }]
 });
