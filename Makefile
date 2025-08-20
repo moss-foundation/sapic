@@ -77,7 +77,7 @@ UV := uv
 ## Run the desktop application in development mode
 .PHONY: run-desktop
 run-desktop:
-	@cd $(DESKTOP_DIR) && $(PNPM) tauri dev
+	@cd $(DESKTOP_DIR) && $(PNPM) tauri dev --features devtools
 
 
 # ======================================================
@@ -267,5 +267,5 @@ tidy: gen-license workspace-audit check-unused-deps
 ## Create a release build
 .PHONY: build
 build:
-	# Enable compression feature for reducing binary size
-	$(CARGO) build --bin desktop --features compression
+	@echo "Building with compression feature for reducing binary size..."
+	@cd $(DESKTOP_DIR) && $(PNPM) run tauri build --features compression
