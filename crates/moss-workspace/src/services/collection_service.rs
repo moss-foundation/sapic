@@ -1,10 +1,3 @@
-use crate::{
-    builder::{OnDidAddCollection, OnDidDeleteCollection},
-    dirs,
-    models::primitives::CollectionId,
-    services::storage_service::StorageService,
-    storage::segments::SEGKEY_COLLECTION,
-};
 use derive_more::{Deref, DerefMut};
 use futures::Stream;
 use joinerror::{OptionExt, ResultExt};
@@ -32,6 +25,7 @@ use std::{
 use tokio::sync::{RwLock, watch};
 
 use crate::{
+    builder::{OnDidAddCollection, OnDidDeleteCollection},
     dirs,
     models::{
         primitives::CollectionId,
@@ -464,12 +458,8 @@ impl<R: AppRuntime> CollectionService<R> {
             })
             .await;
 
-        if let Some(_item) = item {
-            if item_existed {
-                Ok(Some(abs_path))
-            } else {
-                Ok(None)
-            }
+        if item_existed {
+            Ok(Some(abs_path))
         } else {
             Ok(None)
         }
