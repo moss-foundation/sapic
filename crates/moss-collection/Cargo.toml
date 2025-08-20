@@ -39,6 +39,7 @@ json-patch.workspace = true
 reqwest = { workspace = true, optional = true }
 rustc-hash.workspace = true
 oauth2 = { workspace = true, features = ["ureq"], optional = true }
+chrono.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }

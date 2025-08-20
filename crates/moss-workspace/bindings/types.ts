@@ -37,12 +37,28 @@ export type AddVariableParams = {
 /**
  * @category Type
  */
-export type CollectionInfo = { id: string; displayName: string; order?: number };
+export type BranchInfo = { name: string; ahead?: number; behind?: number };
 
 /**
  * @category Type
  */
 export type Contributor = { name: string; avatar_url: string };
+
+/**
+ * @category Type
+ */
+export type CreateCollectionGitParams = { "gitHub": GitHubCreateParams } | { "gitLab": GitLabCreateParams };
+
+/**
+ * @category Type
+ */
+export type CreateCollectionParams = {
+  name: string;
+  order: number;
+  externalPath?: string;
+  gitParams?: CreateCollectionGitParams;
+  iconPath?: string;
+};
 
 /**
  * @category Type
@@ -110,31 +126,70 @@ export type EnvironmentInfo = {
 };
 
 /**
- * @category Operation
+ * @category Type
  */
-export type GitHubImportParams = { order: number; repository: string };
+export type GitHubCreateParams = {
+  repository: string;
+  /**
+   * The name of the default branch
+   */
+  branch: string;
+};
 
 /**
- * @category Operation
+ * @category Type
  */
-export type GitLabImportParams = { order: number; repository: string };
+export type GitHubImportParams = {
+  repository: string;
+  /**
+   * If provided, this branch will be checked out instead of the default branch
+   */
+  branch?: string;
+};
+
+export type GitHubVcsInfo = { branch: BranchInfo; url: string; updatedAt?: string; owner?: string };
+
+/**
+ * @category Type
+ */
+export type GitLabCreateParams = {
+  repository: string;
+  /**
+   * The name of the default branch
+   */
+  branch: string;
+};
+
+/**
+ * @category Type
+ */
+export type GitLabImportParams = {
+  repository: string;
+  /**
+   * If provided, this branch will be checked out instead of the default branch
+   */
+  branch?: string;
+};
+
+export type GitLabVcsInfo = { branch: BranchInfo; url: string; updatedAt?: string; owner?: string };
+
+export type ImportCollectionParams = {
+  name: string;
+  order: number;
+  externalPath?: string;
+  source: ImportCollectionSource;
+  iconPath?: string;
+};
+
+/**
+ * @category Type
+ */
+export type ImportCollectionSource = { "gitHub": GitHubImportParams } | { "gitLab": GitLabImportParams };
 
 /**
  * @category Type
  */
 export type PanelPartStateInfo = { size: number; visible: boolean };
-
-/**
- * @category Type
- */
-export type RepositoryInfo = {
-  /**
-   * A timestamp like 2024-10-05T12:19:15Z
-   */
-  createdAt: string;
-  updatedAt: string;
-  owner: string;
-};
 
 /**
  * @category Type
@@ -207,3 +262,8 @@ export type VariableInfo = {
  * @category Type
  */
 export type VariableOptions = { disabled: boolean };
+
+/**
+ * @category Type
+ */
+export type VcsInfo = { "gitHub": GitHubVcsInfo } | { "gitLab": GitLabVcsInfo };

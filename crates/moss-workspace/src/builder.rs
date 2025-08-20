@@ -177,10 +177,10 @@ impl WorkspaceBuilder {
             collection_service,
             environment_service,
             storage_service,
-            github_client: self.github_client,
-            gitlab_client: self.gitlab_client,
             _on_did_add_collection: on_did_add_collection,
             _on_did_delete_collection: on_did_delete_collection,
+            _github_client: self.github_client,
+            _gitlab_client: self.gitlab_client,
         })
     }
 
@@ -255,10 +255,10 @@ impl WorkspaceBuilder {
             collection_service,
             environment_service,
             storage_service,
-            github_client: self.github_client,
-            gitlab_client: self.gitlab_client,
             _on_did_add_collection: on_did_add_collection,
             _on_did_delete_collection: on_did_delete_collection,
+            _github_client: self.github_client,
+            _gitlab_client: self.gitlab_client,
         })
     }
 }

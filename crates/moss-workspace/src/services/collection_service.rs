@@ -12,7 +12,10 @@ use moss_applib::{AppRuntime, PublicServiceMarker, ServiceMarker, subscription::
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_collection::{
     Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
-    builder::{CollectionCloneParams, CollectionCreateParams, CollectionLoadParams},
+    builder::{
+        CollectionCloneGitParams, CollectionCloneParams, CollectionCreateGitParams,
+        CollectionCreateParams, CollectionLoadParams,
+    },
 };
 use moss_environment_provider::EnvironmentProvider;
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
@@ -28,31 +31,27 @@ use std::{
 };
 use tokio::sync::{RwLock, watch};
 
-// FIXME: Probable will be replaced by UpdateCollectionParams from types.rs, same way in the env service
-pub(crate) struct CollectionItemUpdateParams {
-    pub name: Option<String>,
-    pub order: Option<isize>,
-    pub expanded: Option<bool>,
-    pub repository: Option<ChangeString>,
-    pub icon_path: Option<ChangePath>,
-}
-// FIXME: Probable will be replaced by UpdateCollectionParams from types.rs, same way in the env service
+use crate::{
+    dirs,
+    models::{
+        primitives::CollectionId,
+        types::{CreateCollectionGitParams, CreateCollectionParams, UpdateCollectionParams},
+    },
+    services::storage_service::StorageService,
+    storage::segments::SEGKEY_COLLECTION,
+};
 
-pub(crate) struct CollectionItemCreateParams {
-    pub name: String,
-    pub order: isize,
-    pub external_path: Option<PathBuf>,
-    // FIXME: Do we need this field?
-    pub icon_path: Option<PathBuf>,
-    pub repository: Option<String>,
-    pub git_provider_type: Option<GitProviderType>,
-}
-
-// FIXME: Probable will be replaced by UpdateCollectionParams from types.rs, same way in the env service
 pub(crate) struct CollectionItemCloneParams {
-    pub git_provider_type: GitProviderType,
+    pub _name: String,
     pub order: isize,
+    pub _icon_path: Option<PathBuf>,
+    pub git_params: CollectionItemGitCloneParams,
+}
+
+pub(crate) struct CollectionItemGitCloneParams {
     pub repository: String,
+    pub git_provider_type: GitProviderType,
+    pub branch: Option<String>,
 }
 
 #[derive(Deref, DerefMut)]
@@ -159,14 +158,16 @@ impl<R: AppRuntime> CollectionService<R> {
     pub(crate) async fn create_collection(
         &self,
         ctx: &R::AsyncContext,
-        params: CollectionItemCreateParams,
+        id: &CollectionId,
+        params: &CreateCollectionParams,
     ) -> joinerror::Result<CollectionItemDescription> {
-        // Try a new CollectionId if one is already in use
-        let mut id = CollectionId::new();
-        let mut abs_path = self.abs_path.join(id.as_str());
-        while abs_path.exists() {
-            id = CollectionId::new();
-            abs_path = self.abs_path.join(id.as_str());
+        let id_str = id.to_string();
+        let abs_path: Arc<Path> = self.abs_path.join(id_str).into();
+        if abs_path.exists() {
+            return Err(joinerror::Error::new::<()>(format!(
+                "collection directory `{}` already exists",
+                abs_path.display()
+            )));
         }
 
         self.fs
@@ -176,7 +177,25 @@ impl<R: AppRuntime> CollectionService<R> {
                 format!("failed to create directory `{}`", abs_path.display())
             })?;
 
-        let collection = CollectionBuilder::new(
+        let git_params = match params.git_params.as_ref() {
+            None => None,
+            Some(CreateCollectionGitParams::GitHub(git_params)) => {
+                Some(CollectionCreateGitParams {
+                    git_provider_type: GitProviderType::GitHub,
+                    repository: git_params.repository.clone(),
+                    branch: git_params.branch.clone(),
+                })
+            }
+            Some(CreateCollectionGitParams::GitLab(git_params)) => {
+                Some(CollectionCreateGitParams {
+                    git_provider_type: GitProviderType::GitLab,
+                    repository: git_params.repository.clone(),
+                    branch: git_params.branch.clone(),
+                })
+            }
+        };
+
+        let collection_result = CollectionBuilder::new(
             self.fs.clone(),
             self.github_client.clone(),
             self.gitlab_client.clone(),
@@ -187,13 +206,36 @@ impl<R: AppRuntime> CollectionService<R> {
                 name: Some(params.name.to_owned()),
                 internal_abs_path: abs_path.clone().into(),
                 external_abs_path: params.external_path.as_deref().map(|p| p.to_owned().into()),
+                git_params,
                 icon_path: params.icon_path.to_owned(),
-                repository: params.repository.to_owned(),
-                git_provider_type: params.git_provider_type.to_owned(),
             },
         )
         .await
-        .join_err::<()>("failed to build collection")?;
+        .join_err::<()>("failed to build collection");
+
+        // TODO: Use atomic-fs to rollback changes
+        // Remove collection folder if collection fails to be created
+        let collection = match collection_result {
+            Ok(collection) => collection,
+            Err(e) => {
+                // TODO: Log or tell the frontend we failed to clean up after operation failure
+                let _ = self
+                    .fs
+                    .remove_dir(
+                        &abs_path,
+                        RemoveOptions {
+                            recursive: true,
+                            ignore_if_not_exists: true,
+                        },
+                    )
+                    .await
+                    .join_err_with::<()>(|| {
+                        format!("failed to remove directory `{}`", abs_path.display())
+                    });
+                return Err(e);
+            }
+        };
+
         let icon_path = collection.icon_path();
 
         // let on_did_change = collection.on_did_change().subscribe(|_event| async move {
@@ -241,25 +283,26 @@ impl<R: AppRuntime> CollectionService<R> {
             .await;
 
         Ok(CollectionItemDescription {
-            id,
-            name: params.name,
+            id: id.to_owned(),
+            name: params.name.clone(),
             order: Some(params.order),
             expanded: true,
             repository: None,
             icon_path,
             abs_path: abs_path.into(),
-            external_path: params.external_path,
+            external_path: params.external_path.clone(),
         })
     }
 
+    // FIXME: Setting the cloned collection's name and icon is not yet implemented
+    // Since they are currently committed to the repository
+    // Updating them here would be a committable change
     pub(crate) async fn clone_collection(
         &self,
         ctx: &R::AsyncContext,
         id: &CollectionId,
         params: CollectionItemCloneParams,
     ) -> joinerror::Result<CollectionItemDescription> {
-        // FIXME: Does it make sense to return an error when the path exists?
-        // Maybe we should simply retry with a new CollectionId
         let id_str = id.to_string();
         let abs_path: Arc<Path> = self.abs_path.join(id_str).into();
         if abs_path.exists() {
@@ -276,7 +319,8 @@ impl<R: AppRuntime> CollectionService<R> {
                 format!("failed to create directory `{}`", abs_path.display())
             })?;
 
-        let collection = CollectionBuilder::new(
+        let git_params = &params.git_params;
+        let collection_result = CollectionBuilder::new(
             self.fs.clone(),
             self.github_client.clone(),
             self.gitlab_client.clone(),
@@ -284,16 +328,43 @@ impl<R: AppRuntime> CollectionService<R> {
         .clone(
             ctx,
             CollectionCloneParams {
-                git_provider_type: params.git_provider_type,
                 internal_abs_path: abs_path.clone(),
-                repository: params.repository.clone(),
+                git_params: CollectionCloneGitParams {
+                    git_provider_type: git_params.git_provider_type.clone(),
+                    repository: git_params.repository.clone(),
+                    branch: git_params.branch.clone(),
+                },
             },
         )
         .await
-        .join_err::<()>("failed to clone collection")?;
+        .join_err::<()>("failed to clone collection");
+
+        // TODO: Use atomic-fs to rollback changes
+        // Remove collection folder if collection fails to be cloned
+        let collection = match collection_result {
+            Ok(collection) => collection,
+            Err(e) => {
+                // TODO: Log or tell the frontend we failed to clean up after operation failure
+                let _ = self
+                    .fs
+                    .remove_dir(
+                        &abs_path,
+                        RemoveOptions {
+                            recursive: true,
+                            ignore_if_not_exists: true,
+                        },
+                    )
+                    .await
+                    .join_err_with::<()>(|| {
+                        format!("failed to remove directory `{}`", abs_path.display())
+                    });
+                return Err(e);
+            }
+        };
 
         let desc = collection.describe().await?;
 
+        // FIXME: Should we allow user to set local icon when cloning a collection?
         let icon_path = collection.icon_path();
 
         let mut state_lock = self.state.write().await;
@@ -314,7 +385,7 @@ impl<R: AppRuntime> CollectionService<R> {
             .join_err::<()>("failed to start transaction")?;
 
         self.storage
-            .put_item_order_txn(ctx, &mut txn, id, params.order)
+            .put_item_order_txn(ctx, &mut txn, &id, params.order)
             .await?;
         self.storage
             .put_expanded_items_txn(ctx, &mut txn, &state_lock.expanded_items)
@@ -334,7 +405,7 @@ impl<R: AppRuntime> CollectionService<R> {
             order: Some(params.order),
             expanded: true,
             // FIXME: Rethink Manifest file and repository storage
-            repository: desc.repository,
+            repository: desc.repository.map(|repo_desc| repo_desc.repository),
             icon_path,
             abs_path,
             external_path: None,
@@ -349,7 +420,15 @@ impl<R: AppRuntime> CollectionService<R> {
         let id_str = id.to_string();
         let abs_path = self.abs_path.join(id_str);
 
+        let mut state_lock = self.state.write().await;
+
+        let item = state_lock.collections.remove(&id);
+        let item_existed = item.is_some();
+
         if abs_path.exists() {
+            if let Some(item) = item {
+                item.dispose().await?;
+            }
             self.fs
                 .remove_dir(
                     &abs_path,
@@ -364,8 +443,6 @@ impl<R: AppRuntime> CollectionService<R> {
                 })?;
         }
 
-        let mut state_lock = self.state.write().await;
-        let item = state_lock.collections.remove(&id);
         state_lock.expanded_items.remove(&id);
 
         {
@@ -388,7 +465,11 @@ impl<R: AppRuntime> CollectionService<R> {
             .await;
 
         if let Some(_item) = item {
-            Ok(Some(abs_path))
+            if item_existed {
+                Ok(Some(abs_path))
+            } else {
+                Ok(None)
+            }
         } else {
             Ok(None)
         }
@@ -398,7 +479,7 @@ impl<R: AppRuntime> CollectionService<R> {
         &self,
         ctx: &R::AsyncContext,
         id: &CollectionId,
-        params: CollectionItemUpdateParams,
+        params: UpdateCollectionParams,
     ) -> joinerror::Result<()> {
         let mut state_lock = self.state.write().await;
         let item = state_lock
@@ -470,7 +551,7 @@ impl<R: AppRuntime> CollectionService<R> {
                     name: summary.name,
                     order: item.order,
                     expanded,
-                    repository: summary.repository,
+                    repository: summary.repository.map(|repo_desc| repo_desc.repository),
                     icon_path,
                     abs_path: item.handle.abs_path().clone(),
                     external_path: None, // TODO: implement
@@ -479,7 +560,6 @@ impl<R: AppRuntime> CollectionService<R> {
         })
     }
 }
-
 async fn restore_collections<R: AppRuntime>(
     ctx: &R::AsyncContext,
     abs_path: &Path,
@@ -503,17 +583,25 @@ async fn restore_collections<R: AppRuntime>(
         }
 
         let id_str = entry.file_name().to_string_lossy().to_string();
-        let id: CollectionId = id_str.into();
+        let id: CollectionId = id_str.clone().into();
 
         let collection = {
             let collection_abs_path: Arc<Path> = entry.path().to_owned().into();
 
-            CollectionBuilder::new(fs.clone(), github_client.clone(), gitlab_client.clone())
-                .load(CollectionLoadParams {
-                    internal_abs_path: collection_abs_path,
-                })
-                .await
-                .join_err::<()>("failed to rebuild collection")?
+            let collection_result =
+                CollectionBuilder::new(fs.clone(), github_client.clone(), gitlab_client.clone())
+                    .load(CollectionLoadParams {
+                        internal_abs_path: collection_abs_path,
+                    })
+                    .await;
+            match collection_result {
+                Ok(collection) => collection,
+                Err(e) => {
+                    // TODO: Let the frontend know a collection is invalid
+                    println!("failed to rebuild collection `{}`: {}", id_str, e);
+                    continue;
+                }
+            }
         };
 
         collections.push((id, collection));

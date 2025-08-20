@@ -28,6 +28,7 @@ export type TauriIpcCommand =
   | "update_workspace_state"
   | "describe_workspace_state"
   | "list_collections"
+  | "describe_collection"
   | "create_collection"
   | "delete_collection"
   | "stream_collections"
@@ -48,6 +49,7 @@ export type TauriIpcCommand =
   | "stream_collection_entries"
   | "batch_update_collection_entry"
   | "batch_create_collection_entry"
+  | "import_collection"
   //
   // Env
   //

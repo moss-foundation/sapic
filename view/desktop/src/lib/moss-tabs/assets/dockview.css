@@ -740,6 +740,7 @@
 
 .dv-tab {
   flex-shrink: 0;
+  height: 100%;
 }
 .dv-tab:focus-within,
 .dv-tab:focus {
@@ -808,6 +809,7 @@
 }
 .dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab .dv-tabs-container .dv-tab {
   flex-grow: 1;
+  height: 100%;
 }
 .dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab .dv-void-container {
   flex-grow: 0;
@@ -841,6 +843,7 @@
   cursor: pointer;
   position: relative;
   box-sizing: border-box;
+  height: 100%;
 }
 .dv-tabs-and-actions-container .dv-tabs-container .dv-tab:not(:first-child)::before {
   content: " ";

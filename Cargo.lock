@@ -3767,6 +3767,7 @@ name = "moss_collection"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "chrono",
  "derive_more 2.0.1",
  "futures",
  "hcl-rs",
@@ -3921,7 +3922,10 @@ dependencies = [
  "git2",
  "joinerror",
  "libssh2-sys",
+ "nanoid",
  "regex",
+ "serde",
+ "ts-rs",
  "url",
 ]
 

@@ -1,4 +1,5 @@
 use anyhow::Result;
+use chrono::{DateTime, Utc};
 use joinerror::ResultExt;
 use json_patch::{
     AddOperation, PatchOperation, RemoveOperation, ReplaceOperation, jsonptr::PointerBuf,
@@ -12,21 +13,30 @@ use moss_edit::json::EditOptions;
 use moss_environment::{environment::Environment, models::primitives::EnvironmentId};
 use moss_environment_provider::EnvironmentProvider;
 use moss_fs::{FileSystem, FsResultExt};
-use moss_git::{repo::RepoHandle, url::normalize_git_url};
-
+use moss_git::{models::types::BranchInfo, url::normalize_git_url};
+use moss_git_hosting_provider::{
+    GitHostingProvider,
+    common::GitUrlForAPI,
+    github::client::GitHubClient,
+    gitlab::client::GitLabClient,
+    models::{primitives::GitProviderType, types::Contributor},
+};
 use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
-    sync::{Arc, Mutex},
+    sync::Arc,
 };
 use tokio::sync::OnceCell;
 
 use crate::{
-    DescribeCollection, dirs,
+    DescribeCollection, DescribeRepository, dirs,
     edit::CollectionEdit,
+    helpers::{fetch_contributors, fetch_vcs_summary},
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
-    services::{set_icon_service::SetIconService, storage_service::StorageService},
+    services::{
+        git_service::GitService, set_icon_service::SetIconService, storage_service::StorageService,
+    },
     worktree::Worktree,
 };
 
@@ -51,6 +61,28 @@ pub struct CollectionModifyParams {
     pub icon_path: Option<ChangePath>,
 }
 
+pub enum VcsSummary {
+    GitHub {
+        branch: BranchInfo,
+        url: String,
+        updated_at: Option<String>,
+        owner: Option<String>,
+    },
+    GitLab {
+        branch: BranchInfo,
+        url: String,
+        updated_at: Option<String>,
+        owner: Option<String>,
+    },
+}
+
+pub struct CollectionDetails {
+    pub name: String,
+    pub vcs: Option<VcsSummary>,
+    pub contributors: Vec<Contributor>,
+    pub created_at: String, // File created time
+}
+
 pub struct Collection<R: AppRuntime> {
     #[allow(dead_code)]
     pub(super) fs: Arc<dyn FileSystem>,
@@ -59,20 +91,14 @@ pub struct Collection<R: AppRuntime> {
     pub(super) worktree: Arc<Worktree<R>>,
     pub(super) set_icon_service: SetIconService,
     pub(super) storage_service: Arc<StorageService<R>>,
-
+    pub(super) git_service: Arc<GitService>,
+    // TODO: Extract Git Provider Service
+    pub(super) github_client: Arc<GitHubClient>,
+    pub(super) gitlab_client: Arc<GitLabClient>,
     #[allow(dead_code)]
     pub(super) environments: OnceCell<EnvironmentMap<R>>,
 
     pub(super) on_did_change: EventEmitter<OnDidChangeEvent>,
-
-    // Right now we are not updating the repo_handle once it's created
-    // So we still want to suppress this warning
-    #[allow(dead_code)]
-    /// Since operations over RepoHandle must be done in a synchronous closure wrapped by a
-    /// `tokio::task::spawn_blocking`
-    /// This mutex must be a synchronous one and should not be acquired in an async block
-    /// It should always be required in a `spawn_blocking` block to avoid deadlock
-    pub(super) repo_handle: Arc<Mutex<Option<RepoHandle>>>,
 }
 
 impl<R: AppRuntime> From<&Collection<R>> for EnvironmentProvider {
@@ -121,8 +147,65 @@ impl<R: AppRuntime> Collection<R> {
 
         Ok(DescribeCollection {
             name: manifest.name,
-            repository: manifest.repository,
+            repository: manifest.repository.map(|repo| DescribeRepository {
+                repository: repo.url,
+                git_provider_type: repo.git_provider_type,
+            }),
         })
+    }
+
+    pub async fn describe_details(&self) -> joinerror::Result<CollectionDetails> {
+        let desc = self.describe().await?;
+        let created_at_time =
+            std::fs::metadata(self.abs_path.join(MANIFEST_FILE_NAME))?.created()?;
+        let created_at: DateTime<Utc> = created_at_time.into();
+
+        let mut output = CollectionDetails {
+            name: desc.name,
+            vcs: None,
+            contributors: vec![],
+            created_at: created_at.to_rfc3339(),
+        };
+
+        if let Some(repo_desc) = desc.repository {
+            let repo_ref = match GitUrlForAPI::parse(&repo_desc.repository) {
+                Ok(repo_ref) => repo_ref,
+                Err(e) => {
+                    // TODO: Tell the frontend
+                    println!(
+                        "unable to parse repository {}: {}",
+                        repo_desc.repository,
+                        e.to_string()
+                    );
+                    return Ok(output);
+                }
+            };
+            let git_provider_type = repo_desc.git_provider_type;
+            let client: Arc<dyn GitHostingProvider> = match &git_provider_type {
+                GitProviderType::GitHub => self.github_client.clone(),
+                GitProviderType::GitLab => self.gitlab_client.clone(),
+            };
+
+            output.contributors = fetch_contributors(&repo_ref, client.clone())
+                .await
+                .unwrap_or_else(|e| {
+                    // TODO: Tell the frontend
+                    println!("unable to fetch contributors: {}", e);
+                    Vec::new()
+                });
+
+            output.vcs =
+                match fetch_vcs_summary(self, &repo_ref, git_provider_type, client.clone()).await {
+                    Ok(vcs) => Some(vcs),
+                    Err(e) => {
+                        // TODO: Tell the fronend
+                        println!("unable to fetch vcs: {}", e);
+                        None
+                    }
+                };
+        }
+
+        Ok(output)
     }
 
     pub async fn modify(&self, params: CollectionModifyParams) -> joinerror::Result<()> {
@@ -146,7 +229,7 @@ impl<R: AppRuntime> Collection<R> {
                 let normalized_url = normalize_git_url(&url)?;
                 patches.push((
                     PatchOperation::Add(AddOperation {
-                        path: unsafe { PointerBuf::new_unchecked("/repository") },
+                        path: unsafe { PointerBuf::new_unchecked("/repository/url") },
                         value: JsonValue::String(normalized_url),
                     }),
                     EditOptions {
@@ -158,7 +241,7 @@ impl<R: AppRuntime> Collection<R> {
             Some(ChangeString::Remove) => {
                 patches.push((
                     PatchOperation::Remove(RemoveOperation {
-                        path: unsafe { PointerBuf::new_unchecked("/repository") },
+                        path: unsafe { PointerBuf::new_unchecked("/repository/url") },
                     }),
                     EditOptions {
                         create_missing_segments: false,
@@ -197,15 +280,18 @@ impl<R: AppRuntime> Collection<R> {
 
         Ok(result)
     }
+
+    pub async fn get_current_branch_info(&self) -> joinerror::Result<BranchInfo> {
+        self.git_service.get_current_branch_info().await
+    }
+    pub async fn dispose(&self) -> joinerror::Result<()> {
+        self.git_service.dispose(self.fs.clone()).await
+    }
 }
 
 #[cfg(any(test, feature = "integration-tests"))]
 impl<R: AppRuntime> Collection<R> {
     pub fn db(&self) -> &Arc<dyn moss_storage::CollectionStorage<R::AsyncContext>> {
         self.storage_service.storage()
-    }
-
-    pub fn repo_handle(&self) -> Arc<Mutex<Option<RepoHandle>>> {
-        self.repo_handle.clone()
     }
 }

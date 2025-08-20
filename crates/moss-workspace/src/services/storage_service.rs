@@ -200,7 +200,7 @@ impl<R: AppRuntime> StorageService<R> {
         &self,
         ctx: &R::AsyncContext,
         position: SidebarPosition,
-        size: usize,
+        size: f64,
         visible: bool,
     ) -> joinerror::Result<()> {
         let store = self.storage.item_store();
@@ -239,7 +239,7 @@ impl<R: AppRuntime> StorageService<R> {
     pub(super) async fn put_panel_layout(
         &self,
         ctx: &R::AsyncContext,
-        size: usize,
+        size: f64,
         visible: bool,
     ) -> joinerror::Result<()> {
         let store = self.storage.item_store();

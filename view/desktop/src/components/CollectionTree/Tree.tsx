@@ -28,7 +28,7 @@ export const CollectionTree = ({
         name: initialTree.name,
         repository: initialTree.repository,
         order: initialTree.order,
-        picturePath: initialTree.picturePath,
+        iconPath: initialTree.iconPath,
         treePaddingLeft,
         treePaddingRight,
         nodeOffset,
@@ -37,6 +37,8 @@ export const CollectionTree = ({
         searchInput,
         displayMode,
         showNodeOrders,
+        contributors: initialTree.contributors,
+        repositoryInfo: initialTree.repositoryInfo,
       }}
     >
       <TreeRootNode node={tree} />

@@ -63,6 +63,8 @@ export const useTableDragAndDrop = ({
 
             const newData = swapListByIndexWithEdge(sourceIndex, dropIndex, flatRows, edge);
 
+            if (!newData) return;
+
             setData(refreshOrders(newData));
           }
 

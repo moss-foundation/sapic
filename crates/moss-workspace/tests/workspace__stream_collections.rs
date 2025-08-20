@@ -1,17 +1,17 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
+use crate::shared::setup_test_workspace;
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::models::{
     events::StreamCollectionsEvent, operations::CreateCollectionInput, primitives::CollectionId,
+    types::CreateCollectionParams,
 };
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex},
 };
 use tauri::ipc::{Channel, InvokeResponseBody};
-
-use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn stream_collections_empty_workspace() {
@@ -51,12 +51,13 @@ async fn stream_collections_single_collection() {
         .create_collection(
             &ctx,
             &CreateCollectionInput {
-                name: collection_name.clone(),
-                order: collection_order,
-                external_path: None,
-                repository: None,
-                git_provider_type: None,
-                icon_path: None,
+                inner: CreateCollectionParams {
+                    name: collection_name.clone(),
+                    order: collection_order,
+                    external_path: None,
+                    git_params: None,
+                    icon_path: None,
+                },
             },
         )
         .await
@@ -90,7 +91,7 @@ async fn stream_collections_single_collection() {
     assert_eq!(event.name, collection_name);
     assert_eq!(event.order, Some(collection_order));
     assert_eq!(event.repository, None);
-    assert_eq!(event.picture_path, None);
+    assert_eq!(event.icon_path, None);
 
     cleanup().await;
 }
@@ -110,12 +111,13 @@ async fn stream_collections_multiple_collections() {
             .create_collection(
                 &ctx,
                 &CreateCollectionInput {
-                    name: collection_name.clone(),
-                    order: collection_order,
-                    external_path: None,
-                    repository: None,
-                    git_provider_type: None,
-                    icon_path: None,
+                    inner: CreateCollectionParams {
+                        name: collection_name.clone(),
+                        order: collection_order,
+                        external_path: None,
+                        git_params: None,
+                        icon_path: None,
+                    },
                 },
             )
             .await
@@ -156,7 +158,7 @@ async fn stream_collections_multiple_collections() {
         assert_eq!(event.name, expected_name);
         assert_eq!(event.order, Some(expected_order));
         assert_eq!(event.repository, None);
-        assert_eq!(event.picture_path, None);
+        assert_eq!(event.icon_path, None);
     }
 
     cleanup().await;
@@ -178,12 +180,13 @@ async fn stream_collections_with_icon() {
         .create_collection(
             &ctx,
             &CreateCollectionInput {
-                name: collection_name.clone(),
-                order: collection_order,
-                external_path: None,
-                repository: None,
-                git_provider_type: None,
-                icon_path: Some(icon_path.clone()),
+                inner: CreateCollectionParams {
+                    name: collection_name.clone(),
+                    order: collection_order,
+                    external_path: None,
+                    git_params: None,
+                    icon_path: Some(icon_path.clone()),
+                },
             },
         )
         .await
@@ -217,7 +220,7 @@ async fn stream_collections_with_icon() {
     assert_eq!(event.name, collection_name);
     assert_eq!(event.order, Some(collection_order));
     assert_eq!(event.repository, None);
-    assert!(event.picture_path.is_some());
+    assert!(event.icon_path.is_some());
 
     cleanup().await;
 }
@@ -238,12 +241,13 @@ async fn stream_collections_mixed_configurations() {
         .create_collection(
             &ctx,
             &CreateCollectionInput {
-                name: name1.clone(),
-                order: 1,
-                external_path: None,
-                repository: None,
-                git_provider_type: None,
-                icon_path: None,
+                inner: CreateCollectionParams {
+                    name: name1.clone(),
+                    order: 1,
+                    external_path: None,
+                    git_params: None,
+                    icon_path: None,
+                },
             },
         )
         .await
@@ -256,12 +260,13 @@ async fn stream_collections_mixed_configurations() {
         .create_collection(
             &ctx,
             &CreateCollectionInput {
-                name: name2.clone(),
-                order: 2,
-                external_path: None,
-                repository: None,
-                git_provider_type: None,
-                icon_path: Some(icon_path.clone()),
+                inner: CreateCollectionParams {
+                    name: name2.clone(),
+                    order: 2,
+                    external_path: None,
+                    git_params: None,
+                    icon_path: Some(icon_path.clone()),
+                },
             },
         )
         .await
@@ -311,8 +316,8 @@ async fn stream_collections_mixed_configurations() {
 
         // Check icon path presence
         match expected_icon {
-            Some(_) => assert!(event.picture_path.is_some()),
-            None => assert!(event.picture_path.is_none()),
+            Some(_) => assert!(event.icon_path.is_some()),
+            None => assert!(event.icon_path.is_none()),
         }
     }
 
@@ -333,12 +338,13 @@ async fn stream_collections_order_verification() {
             .create_collection(
                 &ctx,
                 &CreateCollectionInput {
-                    name: collection_name.clone(),
-                    order: *order,
-                    external_path: None,
-                    repository: None,
-                    git_provider_type: None,
-                    icon_path: None,
+                    inner: CreateCollectionParams {
+                        name: collection_name.clone(),
+                        order: *order,
+                        external_path: None,
+                        git_params: None,
+                        icon_path: None,
+                    },
                 },
             )
             .await
@@ -437,7 +443,7 @@ async fn stream_collections_order_verification() {
 //     // Verify the API call succeeded
 //     assert!(event.repository_info.is_some());
 //
-//     assert_eq!(event.picture_path, None);
+//     assert_eq!(event.icon_path, None);
 //
 //     cleanup().await;
 // }

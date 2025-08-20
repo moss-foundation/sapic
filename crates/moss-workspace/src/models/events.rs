@@ -1,10 +1,11 @@
 use std::path::PathBuf;
 
-use crate::models::primitives::CollectionId;
 use moss_environment::models::primitives::EnvironmentId;
-use moss_git_hosting_provider::models::types::{Contributor, RepositoryInfo};
+use moss_git::models::types::BranchInfo;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
+
+use crate::models::primitives::CollectionId;
 
 /// @category Event
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
@@ -18,10 +19,9 @@ pub struct StreamCollectionsEvent {
     pub expanded: bool,
     pub repository: Option<String>,
 
-    pub repository_info: Option<RepositoryInfo>,
-    pub contributors: Vec<Contributor>,
+    pub branch: Option<BranchInfo>,
 
-    pub picture_path: Option<PathBuf>,
+    pub icon_path: Option<PathBuf>,
 }
 
 /// @category Event

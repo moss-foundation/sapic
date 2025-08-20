@@ -1,7 +1,7 @@
 import { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/types";
 
 interface Identifiable {
-  id: string;
+  id: string | number;
   order: number | null;
 }
 
@@ -11,7 +11,7 @@ export const swapListById = <T extends Identifiable>(
   list: T[],
   edge?: Edge | null
 ): T[] | null => {
-  if (fromId === toId) return list;
+  if (fromId === toId) return [...list];
 
   const fromIndex = list.findIndex((item) => item.id === fromId);
   const toIndex = list.findIndex((item) => item.id === toId);
@@ -20,7 +20,7 @@ export const swapListById = <T extends Identifiable>(
     return null;
   }
 
-  const updatedItems = [...list];
+  const updatedItems: T[] = [...list];
 
   if (!edge) {
     [updatedItems[fromIndex], updatedItems[toIndex]] = [updatedItems[toIndex], updatedItems[fromIndex]];

@@ -26,10 +26,10 @@ const monitorForElementsMock = vi.mocked(monitorForElements);
 const extractClosestEdgeMock = vi.mocked(extractClosestEdge);
 
 const MOCK_ITEMS: ActivityBarItem[] = [
-  { id: "1", order: 1, icon: "Home", iconActive: "Home", title: "Home", isActive: true, visible: true },
-  { id: "2", order: 2, icon: "Home", iconActive: "Home", title: "Home", isActive: false, visible: true },
-  { id: "3", order: 3, icon: "Home", iconActive: "Home", title: "Home", isActive: false, visible: true },
-  { id: "4", order: 4, icon: "Home", iconActive: "Home", title: "Home", isActive: false, visible: true },
+  { id: "1", order: 1, icon: "Home", iconActive: "Home", title: "Home", isActive: true, isVisible: true },
+  { id: "2", order: 2, icon: "Home", iconActive: "Home", title: "Home", isActive: false, isVisible: true },
+  { id: "3", order: 3, icon: "Home", iconActive: "Home", title: "Home", isActive: false, isVisible: true },
+  { id: "4", order: 4, icon: "Home", iconActive: "Home", title: "Home", isActive: false, isVisible: true },
 ];
 
 describe("ActivityBarFirstItems", () => {

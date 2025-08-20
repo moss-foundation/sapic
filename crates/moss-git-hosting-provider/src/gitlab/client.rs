@@ -1,10 +1,3 @@
-use crate::{
-    GitAuthProvider, GitHostingProvider,
-    common::SSHAuthAgent,
-    constants::GITLAB_API_URL,
-    gitlab::response::{AvatarResponse, ContributorsResponse},
-    models::types::{Contributor, RepositoryInfo},
-};
 use async_trait::async_trait;
 use joinerror::OptionExt;
 use moss_git::GitAuthAgent;
@@ -16,12 +9,14 @@ use std::sync::Arc;
 use url::Url;
 
 use crate::{
-    common::GitUrl,
+    GitAuthProvider, GitHostingProvider,
+    common::{GitUrlForAPI, SSHAuthAgent},
+    constants::GITLAB_API_URL,
     gitlab::{
         auth::GitLabAuthAgent,
-        response::{RepositoryResponse, UserResponse},
+        response::{AvatarResponse, ContributorsResponse, RepositoryResponse, UserResponse},
     },
-    models::types::UserInfo,
+    models::types::{Contributor, RepositoryMetadata, UserInfo},
 };
 
 const CONTENT_TYPE: &'static str = "application/json";
@@ -71,6 +66,7 @@ impl GitAuthProvider for GitLabClient {
 }
 
 // TODO: Handle authentication expiration and reauthentication
+// TODO: Better error message when failing
 #[async_trait]
 impl GitHostingProvider for GitLabClient {
     fn name(&self) -> String {
@@ -102,7 +98,7 @@ impl GitHostingProvider for GitLabClient {
         })
     }
 
-    async fn contributors(&self, repo_ref: &GitUrl) -> joinerror::Result<Vec<Contributor>> {
+    async fn contributors(&self, repo_ref: &GitUrlForAPI) -> joinerror::Result<Vec<Contributor>> {
         let repo_url = format!("{}/{}", &repo_ref.owner, &repo_ref.name);
         let encoded_url = urlencoding::encode(&repo_url);
 
@@ -150,7 +146,10 @@ impl GitHostingProvider for GitLabClient {
         Ok(list)
     }
 
-    async fn repository_info(&self, repo_ref: &GitUrl) -> joinerror::Result<RepositoryInfo> {
+    async fn repository_metadata(
+        &self,
+        repo_ref: &GitUrlForAPI,
+    ) -> joinerror::Result<RepositoryMetadata> {
         let repo_url = format!("{}/{}", &repo_ref.owner, &repo_ref.name);
         let encoded_url = urlencoding::encode(&repo_url);
 
@@ -170,8 +169,7 @@ impl GitHostingProvider for GitLabClient {
             .json()
             .await?;
 
-        Ok(RepositoryInfo {
-            created_at: repository_response.created_at,
+        Ok(RepositoryMetadata {
             updated_at: repository_response.updated_at,
             owner: repository_response.owner.username,
         })
@@ -194,7 +192,7 @@ mod tests {
 
     use super::*;
 
-    static REPO_REF: LazyLock<GitUrl> = LazyLock::new(|| GitUrl {
+    static REPO_REF: LazyLock<GitUrlForAPI> = LazyLock::new(|| GitUrlForAPI {
         domain: "gitlab.com".to_string(),
         owner: "brutusyhy".to_string(),
         name: "test-public-repo".to_string(),
@@ -253,9 +251,9 @@ mod tests {
     }
     #[ignore]
     #[tokio::test]
-    async fn gitlab_client_repo_info() {
+    async fn gitlab_client_repo_metadata() {
         let client = create_test_client().await;
-        let repo_info = client.repository_info(REPO_REF.deref()).await.unwrap();
+        let repo_info = client.repository_metadata(REPO_REF.deref()).await.unwrap();
         println!("{:?}", repo_info);
     }
 

@@ -23,7 +23,6 @@ const TabsTrigger = forwardRef<
       "border-b-2 border-transparent",
       "text-(--moss-secondary-text) hover:text-(--moss-primary-text)",
       "data-[state=active]:border-(--moss-info-background) data-[state=active]:text-(--moss-primary-text)",
-      "focus:outline-none focus-visible:ring-2 focus-visible:ring-(--moss-info-background)",
       "disabled:pointer-events-none disabled:opacity-50",
       className
     )}

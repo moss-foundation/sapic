@@ -34,7 +34,7 @@ async fn describe_layout_parts_state_sidebar_only() {
 
     // Set up only the sidebar state
     let sidebar_state = SidebarPartStateInfo {
-        size: 250,
+        size: 250.0,
         visible: true,
         position: SidebarPosition::Left,
     };
@@ -60,7 +60,7 @@ async fn describe_layout_parts_state_sidebar_only() {
     // Sidebar should match the set value
     assert!(describe_state_output.sidebar.is_some());
     let retrieved_sidebar = describe_state_output.sidebar.unwrap();
-    assert_eq!(retrieved_sidebar.size, 250);
+    assert_eq!(retrieved_sidebar.size, 250.0);
     assert_eq!(retrieved_sidebar.visible, true);
     assert_eq!(retrieved_sidebar.position, SidebarPosition::Left);
 
@@ -73,7 +73,7 @@ async fn describe_layout_parts_state_panel_only() {
 
     // Set up only the panel state
     let panel_state = PanelPartStateInfo {
-        size: 200,
+        size: 200.0,
         visible: false,
     };
 
@@ -95,7 +95,7 @@ async fn describe_layout_parts_state_panel_only() {
     // Panel should match the set value
     assert!(describe_state_output.panel.is_some());
     let retrieved_panel = describe_state_output.panel.unwrap();
-    assert_eq!(retrieved_panel.size, 200);
+    assert_eq!(retrieved_panel.size, 200.0);
     assert_eq!(retrieved_panel.visible, false);
 
     cleanup().await;
@@ -126,12 +126,12 @@ async fn describe_layout_parts_state_all() {
 
     // Set up sidebar and panel states (no editor state since it's being removed)
     let sidebar_state = SidebarPartStateInfo {
-        size: 250,
+        size: 250.0,
         visible: true,
         position: SidebarPosition::Left,
     };
     let panel_state = PanelPartStateInfo {
-        size: 200,
+        size: 200.0,
         visible: false,
     };
 
@@ -158,13 +158,13 @@ async fn describe_layout_parts_state_all() {
     // Check Sidebar
     assert!(describe_state_output.sidebar.is_some());
     let retrieved_sidebar = describe_state_output.sidebar.unwrap();
-    assert_eq!(retrieved_sidebar.size, 250);
+    assert_eq!(retrieved_sidebar.size, 250.0);
     assert_eq!(retrieved_sidebar.visible, true);
 
     // Check Panel
     assert!(describe_state_output.panel.is_some());
     let retrieved_panel = describe_state_output.panel.unwrap();
-    assert_eq!(retrieved_panel.size, 200);
+    assert_eq!(retrieved_panel.size, 200.0);
     assert_eq!(retrieved_panel.visible, false);
 
     // Check Activitybar (should have default values)
@@ -179,12 +179,12 @@ async fn describe_layout_parts_state_after_update() {
 
     // First set sidebar and panel states (no editor state since it's being removed)
     let initial_sidebar_state = SidebarPartStateInfo {
-        size: 250,
+        size: 250.0,
         visible: true,
         position: SidebarPosition::Left,
     };
     let initial_panel_state = PanelPartStateInfo {
-        size: 200,
+        size: 200.0,
         visible: false,
     };
 
@@ -206,7 +206,7 @@ async fn describe_layout_parts_state_after_update() {
 
     // Now update only the sidebar
     let updated_sidebar_state = SidebarPartStateInfo {
-        size: 300,
+        size: 300.0,
         visible: false,
         position: SidebarPosition::Left,
     };
@@ -227,13 +227,13 @@ async fn describe_layout_parts_state_after_update() {
     // Sidebar should be updated
     assert!(describe_state_output.sidebar.is_some());
     let retrieved_sidebar = describe_state_output.sidebar.unwrap();
-    assert_eq!(retrieved_sidebar.size, 300); // Updated value
+    assert_eq!(retrieved_sidebar.size, 300.0); // Updated value
     assert_eq!(retrieved_sidebar.visible, false); // Updated value
 
     // Panel should not change
     assert!(describe_state_output.panel.is_some());
     let retrieved_panel = describe_state_output.panel.unwrap();
-    assert_eq!(retrieved_panel.size, 200);
+    assert_eq!(retrieved_panel.size, 200.0);
     assert_eq!(retrieved_panel.visible, false);
 
     cleanup().await;

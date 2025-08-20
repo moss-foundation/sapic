@@ -1,31 +1,22 @@
 import { ActionButton, ActionMenu } from "@/components";
-import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { SIDEBAR_POSITION } from "@/constants/layoutPositions";
+import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 
 import PanelToggleButtons from "./PanelToggleButtons";
 
 export interface CollapsibleActionMenuProps {
-  isCompact: boolean;
-  showDebugPanels: boolean;
-  setShowDebugPanels: (show: boolean) => void;
+  isCompact?: boolean;
   openPanel: (panel: string) => void;
 }
 
 // Collapsible Menu component that shows action buttons or collapses them into a dropdown
-export const CollapsibleActionMenu = ({ isCompact }: CollapsibleActionMenuProps) => {
+export const CollapsibleActionMenu = ({ isCompact = false }: CollapsibleActionMenuProps) => {
   const { sideBarPosition, bottomPane, sideBar } = useAppResizableLayoutStore();
 
-  // When not in compact mode, show all buttons
   if (!isCompact) {
-    return (
-      <div className="flex items-center gap-0">
-        <PanelToggleButtons className="mr-1" />
-        <ActionButton icon="Bell" iconClassName="text-(--moss-headBar-icon-primary-text)" />
-      </div>
-    );
+    return <PanelToggleButtons />;
   }
 
-  // In compact mode, use ActionMenu
   return (
     <ActionMenu.Root>
       <ActionMenu.Trigger asChild>
@@ -36,9 +27,6 @@ export const CollapsibleActionMenu = ({ isCompact }: CollapsibleActionMenuProps)
         />
       </ActionMenu.Trigger>
       <ActionMenu.Content>
-        <ActionMenu.Item onClick={() => {}} icon="Bell">
-          Notifications
-        </ActionMenu.Item>
         {sideBarPosition === SIDEBAR_POSITION.LEFT ? (
           <>
             <ActionMenu.Item
