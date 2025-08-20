@@ -5,9 +5,10 @@ use joinerror::ResultExt;
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::{AppRuntime, PublicServiceMarker, ServiceMarker};
 use moss_common::api::OperationError;
-use moss_db::DatabaseError;
+use moss_db::{DatabaseError, DatabaseResult};
 use moss_fs::{FileSystem, RemoveOptions};
 use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
+use moss_logging::{LogEvent, LogScope, error, warn};
 use moss_workspace::{
     Workspace,
     builder::{CreateWorkspaceParams, LoadWorkspaceParams, WorkspaceBuilder},
@@ -257,12 +258,24 @@ impl<R: AppRuntime> WorkspaceService<R> {
         }
 
         {
-            // Only try to remove from database if it exists (ignore error if not found)
-            let _ = self
+            // Try to remove database entries for the workspace (log error if db operation fails)
+            if let Err(e) = self
                 .storage
                 .remove_all_by_prefix(ctx, &segkey_workspace(&id).to_string())
                 .await
-                .map_err(|e| WorkspaceServiceError::Storage(e.to_string())); // TODO: log error
+            {
+                warn(
+                    LogScope::Session,
+                    LogEvent {
+                        resource: None,
+                        message: format!(
+                            "failed to remove database entries for workspace `{}`: {}",
+                            id,
+                            e.to_string()
+                        ),
+                    },
+                )
+            }
         }
 
         if active_workspace_id != Some(item.id) {
@@ -367,17 +380,60 @@ impl<R: AppRuntime> WorkspaceService<R> {
             .into(),
         );
 
-        {
-            let mut txn = self.storage.begin_write_with_context(ctx).await?;
+        // We don't want database error to fail the operation
+        match self.storage.begin_write_with_context(ctx).await {
+            Ok(mut txn) => {
+                if let Err(e) = self
+                    .storage
+                    .put_last_active_workspace_txn(ctx, &mut txn, &id)
+                    .await
+                {
+                    error(
+                        LogScope::Session,
+                        LogEvent {
+                            resource: None,
+                            message: format!(
+                                "failed to put last active workspace to the database: {}",
+                                e.to_string()
+                            ),
+                        },
+                    )
+                }
 
-            self.storage
-                .put_last_active_workspace_txn(ctx, &mut txn, &id)
-                .await?;
-            self.storage
-                .put_last_opened_at_txn(ctx, &mut txn, &id, last_opened_at)
-                .await?;
+                if let Err(e) = self
+                    .storage
+                    .put_last_opened_at_txn(ctx, &mut txn, &id, last_opened_at)
+                    .await
+                {
+                    error(
+                        LogScope::Session,
+                        LogEvent {
+                            resource: None,
+                            message: format!(
+                                "failed to put workspace last opened at to the database: {}",
+                                e.to_string()
+                            ),
+                        },
+                    )
+                }
 
-            txn.commit()?;
+                if let Err(e) = txn.commit() {
+                    error(
+                        LogScope::Session,
+                        LogEvent {
+                            resource: None,
+                            message: format!("failed to commit transaction: {}", e.to_string()),
+                        },
+                    )
+                }
+            }
+            Err(e) => error(
+                LogScope::Session,
+                LogEvent {
+                    resource: None,
+                    message: format!("failed to start write transaction: {}", e.to_string()),
+                },
+            ),
         }
 
         // let active_workspace_id: ctxkeys::ActiveWorkspaceId = id.to_owned().into();
@@ -415,9 +471,20 @@ async fn restore_known_workspaces<R: AppRuntime>(
 ) -> WorkspaceServiceResult<WorkspaceMap> {
     let mut workspaces = HashMap::new();
 
+    // Log the error when we failed to restore workspace cache
     let restored_items = storage_service
         .list_all_by_prefix(ctx, SEGKEY_WORKSPACE.as_str().expect("invalid utf-8"))
-        .await?;
+        .await
+        .unwrap_or_else(|e| {
+            error(
+                LogScope::Session,
+                LogEvent {
+                    resource: None,
+                    message: format!("failed to restore workspace cache: {}", e.to_string()),
+                },
+            );
+            HashMap::new()
+        });
 
     let mut read_dir = fs
         .read_dir(&abs_path)
@@ -441,22 +508,45 @@ async fn restore_known_workspaces<R: AppRuntime>(
         let id_str = entry.file_name().to_string_lossy().to_string();
         let id: WorkspaceId = id_str.into();
 
-        let summary = WorkspaceSummary::new(fs, &entry.path())
-            .await
-            .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
+        // Log the error and skip when encountering a workspace with invalid manifest
+        let summary = match WorkspaceSummary::new(fs, &entry.path()).await {
+            Ok(summary) => summary,
+            Err(e) => {
+                error(
+                    LogScope::Session,
+                    LogEvent {
+                        resource: None,
+                        message: format!(
+                            "failed to parse workspace `{}` manifest: {}",
+                            id.as_str(),
+                            e.to_string()
+                        ),
+                    },
+                );
+                continue;
+            }
+        };
 
         let filtered_items = restored_items
             .iter()
             .filter(|(key, _)| key.starts_with(&segkey_workspace(&id)))
             .collect::<HashMap<_, _>>();
 
+        // Leave `last_opened_at` empty if we failed to fetch it from the database
+
         let last_opened_at = filtered_items
             .get(&segkey_last_opened_at(&id))
             .map(|v| {
                 v.deserialize::<i64>()
-                    .map_err(|e| WorkspaceServiceError::Storage(e.to_string()))
-            })
-            .transpose()?;
+            }).transpose().unwrap_or_else(
+            |e| {
+                error(LogScope::Session, LogEvent {
+                    resource: None,
+                    message: format!("failed to get last_opened_at time from the database for workspace `{}`: {}", id.as_str(), e.to_string()),
+                });
+                None
+            }
+        );
 
         workspaces.insert(
             id.clone(),
