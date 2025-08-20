@@ -28,6 +28,7 @@ export type TauriIpcCommand =
   | "update_workspace_state"
   | "describe_workspace_state"
   | "list_collections"
+  | "describe_collection"
   | "create_collection"
   | "delete_collection"
   | "stream_collections"

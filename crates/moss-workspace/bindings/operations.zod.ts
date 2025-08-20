@@ -5,6 +5,7 @@ import { changeCollectionIdSchema } from "./primitives.zod";
 import {
   activitybarPartStateInfoSchema,
   addVariableParamsSchema,
+  contributorSchema,
   createCollectionGitParamsSchema,
   editorPartStateInfoSchema,
   environmentGroupSchema,
@@ -16,6 +17,7 @@ import {
   updateEnvironmentParamsSchema,
   updateVariableParamsSchema,
   variableInfoSchema,
+  vcsInfoSchema,
 } from "./types.zod";
 
 export const batchUpdateCollectionOutputSchema = z.object({
@@ -55,6 +57,10 @@ export const deleteEnvironmentInputSchema = z.object({
 });
 
 export const deleteEnvironmentOutputSchema = z.object({
+  id: z.string(),
+});
+
+export const describeCollectionInputSchema = z.object({
   id: z.string(),
 });
 
@@ -111,6 +117,13 @@ export const createEnvironmentInputSchema = z.object({
   order: z.number(),
   color: z.string().optional(),
   variables: z.array(addVariableParamsSchema),
+});
+
+export const describeCollectionOutputSchema = z.object({
+  name: z.string(),
+  vcs: vcsInfoSchema.optional(),
+  contributors: z.array(contributorSchema),
+  createdAt: z.string(),
 });
 
 export const describeEnvironmentOutputSchema = z.object({

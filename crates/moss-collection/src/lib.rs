@@ -4,6 +4,7 @@ pub mod collection;
 pub mod config;
 pub mod context;
 mod edit;
+mod helpers;
 pub mod manifest;
 pub mod models;
 pub mod services;
@@ -12,10 +13,16 @@ pub mod worktree;
 
 pub use builder::CollectionBuilder;
 pub use collection::{Collection, CollectionModifyParams};
+use moss_git_hosting_provider::models::primitives::GitProviderType;
 
 pub struct DescribeCollection {
     pub name: String,
-    pub repository: Option<String>,
+    pub repository: Option<DescribeRepository>,
+}
+
+pub struct DescribeRepository {
+    pub repository: String,
+    pub git_provider_type: GitProviderType,
 }
 
 pub mod constants {

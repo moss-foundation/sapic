@@ -9,7 +9,7 @@ use moss_git_hosting_provider::{
 use std::{
     cell::LazyCell,
     path::{Path, PathBuf},
-    sync::{Arc, Mutex},
+    sync::Arc,
 };
 use tokio::sync::OnceCell;
 
@@ -19,9 +19,11 @@ use crate::{
     constants::COLLECTION_ROOT_PATH,
     defaults, dirs,
     edit::CollectionEdit,
-    manifest::{MANIFEST_FILE_NAME, ManifestFile},
+    manifest::{MANIFEST_FILE_NAME, ManifestFile, ManifestRepository},
     models::primitives::{EntryClass, EntryId},
-    services::{set_icon_service::SetIconService, storage_service::StorageService},
+    services::{
+        git_service::GitService, set_icon_service::SetIconService, storage_service::StorageService,
+    },
     worktree::{Worktree, entry::model::EntryModel},
 };
 
@@ -144,7 +146,7 @@ impl CollectionBuilder {
 
         let repo_handle = if params.internal_abs_path.join(".git").exists() {
             self.load_repo_handle(
-                manifest.git_provider_type.clone(),
+                manifest.repository.map(|repo| repo.git_provider_type),
                 params.internal_abs_path.clone(),
             )
             .await
@@ -152,16 +154,20 @@ impl CollectionBuilder {
             None
         };
 
+        let git_service = Arc::new(GitService::new(repo_handle));
+
         Ok(Collection {
             fs: self.fs.clone(),
             abs_path: params.internal_abs_path,
             edit,
             set_icon_service,
             storage_service,
+            git_service,
+            github_client: self.github_client.clone(),
+            gitlab_client: self.gitlab_client.clone(),
             worktree: worktree_service,
             environments: OnceCell::new(),
             on_did_change: EventEmitter::new(),
-            repo_handle: Arc::new(Mutex::new(repo_handle)),
         })
     }
 
@@ -229,8 +235,11 @@ impl CollectionBuilder {
 
         let git_params = params.git_params;
 
-        let repository = git_params.as_ref().map(|p| p.repository.clone());
-        let git_provider_type = git_params.as_ref().map(|p| p.git_provider_type.clone());
+        // FIXME: I'm not sure why we need to store a repo url that's different from what we expect from the user
+        let repository = git_params.as_ref().map(|p| ManifestRepository {
+            url: p.repository.clone(),
+            git_provider_type: p.git_provider_type.clone(),
+        });
 
         self.fs
             .create_file_with(
@@ -241,7 +250,6 @@ impl CollectionBuilder {
                         .unwrap_or(defaults::DEFAULT_COLLECTION_NAME.to_string()),
                     // FIXME: We might consider removing this field from the manifest file
                     repository,
-                    git_provider_type,
                 })?
                 .as_bytes(),
                 CreateOptions {
@@ -301,6 +309,7 @@ impl CollectionBuilder {
             None
         };
 
+        let git_service = Arc::new(GitService::new(repo_handle));
         // TODO: Load environments
 
         Ok(Collection {
@@ -309,13 +318,16 @@ impl CollectionBuilder {
             edit,
             set_icon_service,
             storage_service,
+            git_service,
+            github_client: self.github_client.clone(),
+            gitlab_client: self.gitlab_client.clone(),
             worktree: worktree_service,
             environments: OnceCell::new(),
             on_did_change: EventEmitter::new(),
-            repo_handle: Arc::new(Mutex::new(repo_handle)),
         })
     }
 
+    // TODO: Handle non-collection repo
     pub async fn clone<R: AppRuntime>(
         self,
         ctx: &R::AsyncContext,
@@ -335,6 +347,8 @@ impl CollectionBuilder {
                 git_params.branch,
             )
             .await?;
+
+        let git_service = Arc::new(GitService::new(Some(repo_handle)));
 
         let storage_service: Arc<StorageService<R>> = StorageService::new(abs_path.as_ref())
             .join_err::<()>("failed to create collection storage service")?
@@ -375,10 +389,12 @@ impl CollectionBuilder {
             edit,
             set_icon_service,
             storage_service,
+            git_service,
+            github_client: self.github_client.clone(),
+            gitlab_client: self.gitlab_client.clone(),
             worktree,
             environments: OnceCell::new(),
             on_did_change: EventEmitter::new(),
-            repo_handle: Arc::new(Mutex::new(Some(repo_handle))),
         })
     }
 }

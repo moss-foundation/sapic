@@ -68,6 +68,21 @@ pub async fn stream_collections<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn describe_collection<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: Window<R>,
+    input: DescribeCollectionInput,
+    options: Options,
+) -> TauriResult<DescribeCollectionOutput> {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
+        workspace.describe_collection(&ctx, &input).await
+    })
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn create_collection<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,

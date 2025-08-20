@@ -2,6 +2,7 @@ use moss_environment::models::{
     primitives::EnvironmentId,
     types::{AddVariableParams, VariableInfo},
 };
+use moss_git_hosting_provider::models::types::Contributor;
 use serde::{Deserialize, Serialize};
 use std::{
     path::{Path, PathBuf},
@@ -20,7 +21,7 @@ use crate::models::{
 
 use super::types::{
     ActivitybarPartStateInfo, CreateCollectionParams, ImportCollectionParams, PanelPartStateInfo,
-    SidebarPartStateInfo,
+    SidebarPartStateInfo, VcsInfo,
 };
 
 // ------------------------------ //
@@ -58,6 +59,7 @@ pub struct CreateCollectionOutput {
     pub external_path: Option<PathBuf>,
 }
 
+/// @category Operation
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -308,6 +310,27 @@ pub struct StreamEnvironmentsOutput {
     #[serde(skip)]
     #[ts(skip)]
     pub total_returned: usize,
+}
+
+// Describe Collection
+/// @category Operation
+#[derive(Debug, Deserialize, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct DescribeCollectionInput {
+    pub id: CollectionId,
+}
+
+/// @category Operation
+#[derive(Debug, Deserialize, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct DescribeCollectionOutput {
+    pub name: String,
+    pub vcs: Option<VcsInfo>,
+    pub contributors: Vec<Contributor>,
+    pub created_at: String,
 }
 
 // ------------------------------ //
