@@ -114,7 +114,7 @@ export const NewCollectionModal = ({ closeModal, showModal, initialTab = CREATE_
 
       <Divider />
 
-      <form onSubmit={handleSubmit} className="flex w-[544px] flex-col">
+      <form onSubmit={handleSubmit} className="flex max-w-[544px] flex-col">
         <PaddedTabs.Root value={tab} onValueChange={(value) => setTab(value as typeof CREATE_TAB | typeof IMPORT_TAB)}>
           <PaddedTabs.List className="border-b border-(--moss-border-color) px-3">
             <PaddedTabs.Trigger value={CREATE_TAB}>Create</PaddedTabs.Trigger>
