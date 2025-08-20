@@ -1,5 +1,5 @@
+use moss_api::ext::ValidationResultExt;
 use moss_applib::AppRuntime;
-use moss_common::api::OperationResult;
 use validator::Validate;
 
 use crate::{
@@ -16,8 +16,8 @@ impl<R: AppRuntime> App<R> {
         &self,
         ctx: &R::AsyncContext,
         input: &CreateWorkspaceInput,
-    ) -> OperationResult<CreateWorkspaceOutput> {
-        input.validate()?;
+    ) -> joinerror::Result<CreateWorkspaceOutput> {
+        input.validate().join_err_bare()?;
 
         let id = WorkspaceId::new();
         let item = self

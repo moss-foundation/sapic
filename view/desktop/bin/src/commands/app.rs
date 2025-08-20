@@ -209,9 +209,7 @@ pub async fn create_workspace<'a, R: tauri::Runtime>(
         ctx.freeze()
     };
 
-    app.create_workspace(&ctx, &input)
-        .await
-        .map_err(TauriError::OperationError)
+    Ok(app.create_workspace(&ctx, &input).await?)
 }
 
 #[tauri::command(async)]
@@ -256,9 +254,7 @@ pub async fn list_workspaces<'a, R: tauri::Runtime>(
         ctx.freeze()
     };
 
-    app.list_workspaces(&ctx)
-        .await
-        .map_err(TauriError::OperationError)
+    Ok(app.list_workspaces(&ctx).await?)
 }
 
 #[tauri::command(async)]
@@ -280,9 +276,7 @@ pub async fn delete_workspace<'a, R: tauri::Runtime>(
         ctx.freeze()
     };
 
-    app.delete_workspace(&ctx, &input)
-        .await
-        .map_err(TauriError::OperationError)
+    Ok(app.delete_workspace(&ctx, &input).await?)
 }
 
 #[tauri::command(async)]
@@ -304,9 +298,7 @@ pub async fn open_workspace<'a, R: tauri::Runtime>(
         ctx.freeze()
     };
 
-    app.open_workspace(&ctx, &input)
-        .await
-        .map_err(TauriError::OperationError)
+    Ok(app.open_workspace(&ctx, &input).await?)
 }
 
 #[tauri::command(async)]
@@ -328,9 +320,7 @@ pub async fn update_workspace<'a, R: tauri::Runtime>(
         ctx.freeze()
     };
 
-    app.update_workspace(&ctx, &input)
-        .await
-        .map_err(TauriError::OperationError)
+    Ok(app.update_workspace(&ctx, &input).await?)
 }
 
 #[tauri::command(async)]

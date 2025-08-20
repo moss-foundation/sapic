@@ -1,5 +1,5 @@
+use moss_api::ext::ValidationResultExt;
 use moss_applib::AppRuntime;
-use moss_common::api::OperationResult;
 use validator::Validate;
 
 use crate::{
@@ -12,8 +12,8 @@ impl<R: AppRuntime> App<R> {
         &self,
         _ctx: &R::AsyncContext,
         input: &UpdateWorkspaceInput,
-    ) -> OperationResult<()> {
-        input.validate()?;
+    ) -> joinerror::Result<()> {
+        input.validate().join_err_bare()?;
 
         self.workspace_service
             .update_workspace(WorkspaceItemUpdateParams {

@@ -1,12 +1,9 @@
-use anyhow::{Context as _, Result};
 use chrono::Utc;
 use derive_more::{Deref, DerefMut};
-use joinerror::ResultExt;
+use joinerror::{OptionExt, ResultExt};
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::{AppRuntime, PublicServiceMarker, ServiceMarker};
-use moss_common::api::OperationError;
-use moss_db::{DatabaseError, DatabaseResult};
-use moss_fs::{FileSystem, RemoveOptions};
+use moss_fs::{FileSystem, FsResultExt, RemoveOptions};
 use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
 use moss_logging::{LogEvent, LogScope, error, warn};
 use moss_workspace::{
@@ -19,7 +16,7 @@ use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
-use thiserror::Error;
+
 use tokio::sync::RwLock;
 
 use crate::{
@@ -28,54 +25,6 @@ use crate::{
     services::storage_service::StorageService,
     storage::segments::{SEGKEY_WORKSPACE, segkey_last_opened_at, segkey_workspace},
 };
-
-#[derive(Debug, Error)]
-pub enum WorkspaceServiceError {
-    #[error("IO error: {0}")]
-    Io(String),
-
-    #[error("Workspace already exists: {0}")]
-    AlreadyExists(String),
-
-    #[error("Workspace already loaded: {0}")]
-    AlreadyLoaded(String),
-
-    #[error("Storage error: {0}")]
-    Storage(String),
-
-    #[error("Workspace not found: {0}")]
-    NotFound(String),
-
-    #[error("Workspace is not active")]
-    NotActive,
-
-    #[error("Workspace error: {0}")]
-    Workspace(String),
-}
-
-impl From<DatabaseError> for WorkspaceServiceError {
-    fn from(err: DatabaseError) -> Self {
-        WorkspaceServiceError::Storage(err.to_string())
-    }
-}
-
-impl From<WorkspaceServiceError> for OperationError {
-    fn from(err: WorkspaceServiceError) -> Self {
-        match err {
-            WorkspaceServiceError::Io(e) => OperationError::Internal(e),
-            WorkspaceServiceError::AlreadyExists(e) => OperationError::AlreadyExists(e),
-            WorkspaceServiceError::AlreadyLoaded(e) => OperationError::InvalidInput(e),
-            WorkspaceServiceError::Storage(e) => OperationError::Internal(e),
-            WorkspaceServiceError::NotFound(e) => OperationError::NotFound(e),
-            WorkspaceServiceError::NotActive => {
-                OperationError::FailedPrecondition("No active workspace".to_string())
-            }
-            WorkspaceServiceError::Workspace(e) => OperationError::Internal(e),
-        }
-    }
-}
-
-type WorkspaceServiceResult<T> = Result<T, WorkspaceServiceError>;
 
 #[derive(Deref, DerefMut)]
 pub struct ActiveWorkspace<R: AppRuntime> {
@@ -145,7 +94,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
         abs_path: &Path,
         github_client: Arc<GitHubClient>,
         gitlab_client: Arc<GitLabClient>,
-    ) -> WorkspaceServiceResult<Self> {
+    ) -> joinerror::Result<Self> {
         debug_assert!(abs_path.is_absolute());
         let abs_path: Arc<Path> = abs_path.join(dirs::WORKSPACES_DIR).into();
         debug_assert!(abs_path.exists());
@@ -170,9 +119,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
         self.abs_path.join(path)
     }
 
-    pub(crate) async fn list_workspaces(
-        &self,
-    ) -> WorkspaceServiceResult<Vec<WorkspaceItemDescription>> {
+    pub(crate) async fn list_workspaces(&self) -> joinerror::Result<Vec<WorkspaceItemDescription>> {
         let state_lock = self.state.read().await;
         let active_workspace_id = state_lock.active_workspace.as_ref().map(|a| a.id.clone());
 
@@ -193,25 +140,24 @@ impl<R: AppRuntime> WorkspaceService<R> {
     pub(crate) async fn update_workspace(
         &self,
         params: WorkspaceItemUpdateParams,
-    ) -> WorkspaceServiceResult<()> {
+    ) -> joinerror::Result<()> {
         let mut state_lock = self.state.write().await;
         let workspace = state_lock
             .active_workspace
             .as_ref()
-            .ok_or(WorkspaceServiceError::NotActive)?;
+            .ok_or_join_err::<()>("no active workspace")?;
 
         let mut descriptor = state_lock
             .known_workspaces
             .get(&workspace.id)
-            .ok_or(WorkspaceServiceError::NotFound(workspace.id.to_string()))?
+            .ok_or_join_err_with::<()>(|| format!("workspace `{}` not found", workspace.id))?
             .clone();
 
         workspace
             .modify(WorkspaceModifyParams {
                 name: params.name.clone(),
             })
-            .await
-            .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
+            .await?;
 
         if let Some(new_name) = params.name {
             descriptor.name = new_name;
@@ -228,7 +174,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
         &self,
         ctx: &R::AsyncContext,
         id: &WorkspaceId,
-    ) -> WorkspaceServiceResult<()> {
+    ) -> joinerror::Result<()> {
         let (active_workspace_id, item) = {
             let state_lock = self.state.read().await;
 
@@ -238,7 +184,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
             (active_workspace_id, item)
         };
 
-        let item = item.ok_or(WorkspaceServiceError::NotFound(id.to_string()))?;
+        let item = item.ok_or_join_err_with::<()>(|| format!("workspace `{}` not found", id))?;
         if item.abs_path.exists() {
             self.fs
                 .remove_dir(
@@ -249,7 +195,12 @@ impl<R: AppRuntime> WorkspaceService<R> {
                     },
                 )
                 .await
-                .map_err(|e| WorkspaceServiceError::Io(e.to_string()))?;
+                .join_err_with::<()>(|| {
+                    format!(
+                        "failed to delete workspace `{}` directory",
+                        item.id.as_str()
+                    )
+                })?;
         }
 
         {
@@ -289,7 +240,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
         &self,
         id: &WorkspaceId,
         params: WorkspaceItemCreateParams,
-    ) -> WorkspaceServiceResult<WorkspaceItemDescription> {
+    ) -> joinerror::Result<WorkspaceItemDescription> {
         let mut state_lock = self.state.write().await;
 
         let id_str = id.to_string();
@@ -298,8 +249,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
         self.fs
             .create_dir(&abs_path)
             .await
-            .context("Failed to create workspace directory")
-            .map_err(|e| WorkspaceServiceError::Io(e.to_string()))?;
+            .join_err::<()>("failed to create workspace directory")?;
 
         WorkspaceBuilder::initialize(
             self.fs.clone(),
@@ -309,8 +259,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
             },
         )
         .await
-        .join_err::<()>("failed to initialize the workspace")
-        .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
+        .join_err::<()>("failed to initialize workspace")?;
 
         state_lock.known_workspaces.insert(
             id.clone(),
@@ -345,12 +294,12 @@ impl<R: AppRuntime> WorkspaceService<R> {
         ctx: &R::AsyncContext,
         id: &WorkspaceId,
         activity_indicator: ActivityIndicator<R::EventLoop>,
-    ) -> WorkspaceServiceResult<WorkspaceItemDescription> {
+    ) -> joinerror::Result<WorkspaceItemDescription> {
         let mut state_lock = self.state.write().await;
         let item = state_lock
             .known_workspaces
             .get_mut(&id)
-            .ok_or(WorkspaceServiceError::NotFound(id.to_string()))?;
+            .ok_or_join_err_with::<()>(|| format!("workspace `{}` not found", id))?;
 
         let last_opened_at = Utc::now().timestamp();
         let name = item.name.clone();
@@ -368,8 +317,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
             },
         )
         .await
-        .join_err::<()>("failed to load the workspace")
-        .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
+        .join_err::<()>("failed to load the workspace")?;
 
         item.last_opened_at = Some(last_opened_at);
         state_lock.active_workspace = Some(
@@ -451,7 +399,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
     pub(crate) async fn deactivate_workspace(
         &self,
         ctx: &R::AsyncContext,
-    ) -> WorkspaceServiceResult<()> {
+    ) -> joinerror::Result<()> {
         let mut state_lock = self.state.write().await;
         state_lock.active_workspace = None;
 
@@ -468,7 +416,7 @@ async fn restore_known_workspaces<R: AppRuntime>(
     abs_path: &Path,
     fs: &Arc<dyn FileSystem>,
     storage_service: &Arc<StorageService<R>>,
-) -> WorkspaceServiceResult<WorkspaceMap> {
+) -> joinerror::Result<WorkspaceMap> {
     let mut workspaces = HashMap::new();
 
     // Log the error when we failed to restore workspace cache
@@ -486,22 +434,10 @@ async fn restore_known_workspaces<R: AppRuntime>(
             HashMap::new()
         });
 
-    let mut read_dir = fs
-        .read_dir(&abs_path)
-        .await
-        .map_err(|e| WorkspaceServiceError::Io(e.to_string()))?;
+    let mut read_dir = fs.read_dir(&abs_path).await?;
 
-    while let Some(entry) = read_dir
-        .next_entry()
-        .await
-        .map_err(|e| WorkspaceServiceError::Io(e.to_string()))?
-    {
-        if !entry
-            .file_type()
-            .await
-            .map_err(|e| WorkspaceServiceError::Io(e.to_string()))?
-            .is_dir()
-        {
+    while let Some(entry) = read_dir.next_entry().await? {
+        if !entry.file_type().await?.is_dir() {
             continue;
         }
 
