@@ -76,7 +76,7 @@ UV := uv
 ## Run the desktop application in development mode
 .PHONY: run-desktop
 run-desktop:
-	@cd $(DESKTOP_DIR) && $(PNPM) tauri dev
+	@cd $(DESKTOP_DIR) && $(PNPM) tauri dev --features devtools
 
 
 # ======================================================
