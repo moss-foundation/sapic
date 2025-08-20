@@ -165,6 +165,14 @@ impl<R: AppRuntime> Workspace<R> {
             .join_err::<()>("failed to edit workspace")?;
         Ok(())
     }
+
+    pub async fn dispose(&self) {
+        // We need to unsubscribe from the events to avoid circular references
+        {
+            self._on_did_add_collection.unsubscribe().await;
+            self._on_did_delete_collection.unsubscribe().await;
+        }
+    }
 }
 
 #[cfg(any(test, feature = "integration-tests"))]
