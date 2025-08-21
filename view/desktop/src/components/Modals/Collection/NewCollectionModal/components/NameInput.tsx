@@ -1,9 +1,10 @@
 import { forwardRef } from "react";
 
-import { InputOutlined, InputPlainProps } from "@/components/InputOutlined";
+import { InputOutlined } from "@/components/InputOutlined";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
+import { InputProps } from "@/lib/ui/Input";
 
-interface NameInputProps extends InputPlainProps {
+interface NameInputProps extends InputProps {
   name: string;
   setName: (name: string) => void;
 }

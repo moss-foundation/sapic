@@ -1,6 +1,7 @@
-import InputOutlined, { InputPlainProps } from "@/components/InputOutlined";
+import InputOutlined from "@/components/InputOutlined";
+import { InputProps } from "@/lib/ui/Input";
 
-interface RepositoryInputProps extends InputPlainProps {
+interface RepositoryInputProps extends InputProps {
   repository: string;
   setRepository: (repository: string) => void;
 }
