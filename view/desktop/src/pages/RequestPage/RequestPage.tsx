@@ -194,12 +194,13 @@ const RequestPage = ({ api, ...props }: IDockviewPanelProps<RequestPageProps>) =
 
       <PageContent className={cn("relative")}>
         {props.params?.node ? (
-          <div className="flex-1 flex-col items-center gap-1.5">
+          <div className="flex shrink-0 flex-col gap-1.5 pt-1.5">
             {props.params?.collectionId && props.params?.node?.id && (
-              <div className="py-1.5">
+              <div className="px-5">
                 <Breadcrumbs collectionId={props.params.collectionId} nodeId={props.params.node.id} />
               </div>
             )}
+
             <div className="px-5">
               <RequestInputField
                 initialMethod={httpMethod}

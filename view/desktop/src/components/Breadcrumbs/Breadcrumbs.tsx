@@ -42,14 +42,14 @@ export const Breadcrumbs = ({ collectionId, nodeId }: BreadcrumbsProps) => {
   }
 
   return (
-    <div className="flex items-center justify-between px-2">
-      <div className="flex w-max items-center gap-1 overflow-hidden text-[#6F6F6F] select-none">
+    <div className="flex items-center justify-between py-1">
+      <div className="flex w-max items-center overflow-hidden text-(--moss-secondary-text) select-none">
         {nodesSequence.map((node, index) => {
           const lastItem = index === activeNode?.path.segments.length - 1;
 
           if (lastItem) {
             return (
-              <div key={node.id} className="contents">
+              <div className="contents">
                 <EntryIcon entry={node} />
                 <span className="min-w-max">{node.name}</span>
               </div>
@@ -57,23 +57,19 @@ export const Breadcrumbs = ({ collectionId, nodeId }: BreadcrumbsProps) => {
           }
 
           return (
-            <div key={node.id} className="contents">
+            <div className="contents">
               <ActionMenu.Root>
                 <ActionMenu.Trigger className="min-w-max cursor-pointer hover:underline">
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 px-1 py-0.5">
                     <EntryIcon entry={node} />
-                    {node.name}
+                    <span>{node.name}</span>
                   </div>
                 </ActionMenu.Trigger>
                 <ActionMenu.Content align="start">
                   <BreadcrumbTree tree={node} collectionId={collectionId} />
                 </ActionMenu.Content>
               </ActionMenu.Root>
-              {!lastItem && (
-                <span>
-                  <Icon icon="ChevronRight" />
-                </span>
-              )}
+              {!lastItem && <Icon icon="ChevronRight" />}
             </div>
           );
         })}
