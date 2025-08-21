@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+moss_id_macro.workspace = true
+
 tracing.workspace = true
 ts-rs.workspace = true
 serde = { workspace = true, features = ["derive", "rc"] }
