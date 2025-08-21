@@ -4,7 +4,6 @@ import { z } from "zod";
 import { changeJsonValueSchema, changePathSchema, changeStringSchema, jsonValueSchema } from "@repo/moss-bindingutils";
 import {
   activitybarPositionSchema,
-  changeCollectionIdSchema,
   editorGridOrientationSchema,
   panelRendererSchema,
   sidebarPositionSchema,
@@ -234,7 +233,6 @@ export const environmentInfoSchema = z.object({
 
 export const updateEnvironmentParamsSchema = z.object({
   id: z.string(),
-  collectionId: changeCollectionIdSchema.optional(),
   name: z.string().optional(),
   order: z.number().optional(),
   color: changeStringSchema.optional(),

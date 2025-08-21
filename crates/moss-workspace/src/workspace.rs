@@ -3,7 +3,10 @@ use joinerror::ResultExt;
 use json_patch::{PatchOperation, ReplaceOperation};
 use jsonptr::PointerBuf;
 use moss_activity_indicator::ActivityIndicator;
-use moss_applib::AppRuntime;
+use moss_applib::{
+    AppRuntime,
+    subscription::{Event, Subscription},
+};
 use moss_collection::Collection;
 use moss_edit::json::EditOptions;
 use moss_environment::{AnyEnvironment, Environment, models::primitives::EnvironmentId};
@@ -13,6 +16,7 @@ use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};
 
 use crate::{
+    builder::{OnDidAddCollection, OnDidDeleteCollection},
     edit::WorkspaceEdit,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
     models::primitives::CollectionId,
@@ -63,9 +67,12 @@ pub struct Workspace<R: AppRuntime> {
     pub(super) activity_indicator: ActivityIndicator<R::EventLoop>,
     pub(super) edit: WorkspaceEdit,
     pub(super) layout_service: LayoutService<R>,
-    pub(super) collection_service: CollectionService<R>,
-    pub(super) environment_service: EnvironmentService<R>,
+    pub(super) collection_service: Arc<CollectionService<R>>,
+    pub(super) environment_service: Arc<EnvironmentService<R>>,
     pub(super) storage_service: Arc<StorageService<R>>,
+
+    pub(super) _on_did_delete_collection: Subscription<OnDidDeleteCollection>,
+    pub(super) _on_did_add_collection: Subscription<OnDidAddCollection>,
 
     // TODO: Refine the management of git provider clients
     pub(super) _github_client: Arc<GitHubClient>,
@@ -75,6 +82,52 @@ pub struct Workspace<R: AppRuntime> {
 impl<R: AppRuntime> AnyWorkspace<R> for Workspace<R> {
     type Collection = Collection<R>;
     type Environment = Environment<R>;
+}
+
+impl<R: AppRuntime> Workspace<R> {
+    pub(super) async fn on_did_add_collection(
+        collection_service: Arc<CollectionService<R>>,
+        environment_service: Arc<EnvironmentService<R>>,
+        on_did_add_collection_event: &Event<OnDidAddCollection>,
+    ) -> Subscription<OnDidAddCollection> {
+        on_did_add_collection_event
+            .subscribe(move |event| {
+                let collection_service_clone = collection_service.clone();
+                let environment_service_clone = environment_service.clone();
+
+                async move {
+                    let collection = collection_service_clone
+                        .collection(&event.collection_id)
+                        .await;
+
+                    if let Some(collection) = collection {
+                        environment_service_clone
+                            .add_source(event.collection_id.inner(), collection.environments_path())
+                            .await;
+                    } else {
+                        unreachable!()
+                    }
+                }
+            })
+            .await
+    }
+
+    pub(super) async fn on_did_delete_collection(
+        environment_service: Arc<EnvironmentService<R>>,
+        on_did_delete_collection_event: &Event<OnDidDeleteCollection>,
+    ) -> Subscription<OnDidDeleteCollection> {
+        on_did_delete_collection_event
+            .subscribe(move |event| {
+                let environment_service_clone = environment_service.clone();
+
+                async move {
+                    environment_service_clone
+                        .remove_source(&event.collection_id.inner())
+                        .await;
+                }
+            })
+            .await
+    }
 }
 
 impl<R: AppRuntime> Workspace<R> {
@@ -111,6 +164,14 @@ impl<R: AppRuntime> Workspace<R> {
             .await
             .join_err::<()>("failed to edit workspace")?;
         Ok(())
+    }
+
+    pub async fn dispose(&self) {
+        // We need to unsubscribe from the events to avoid circular references
+        {
+            self._on_did_add_collection.unsubscribe().await;
+            self._on_did_delete_collection.unsubscribe().await;
+        }
     }
 }
 

@@ -7,11 +7,10 @@ pub mod segments;
 pub mod utils;
 
 pub use environment::Environment;
-use std::collections::HashMap;
 
 use moss_applib::AppRuntime;
 use moss_bindingutils::primitives::ChangeString;
-use std::path::PathBuf;
+use std::{collections::HashMap, path::Path, sync::Arc};
 
 use crate::models::{
     primitives::{EnvironmentId, VariableId},
@@ -63,13 +62,14 @@ pub struct DescribeEnvironment {
     pub id: EnvironmentId,
     pub name: String,
     pub color: Option<String>,
+    pub abs_path: Arc<Path>,
     pub variables: HashMap<VariableId, VariableInfo>,
     // TODO: git info
 }
 
 #[allow(private_bounds, async_fn_in_trait)]
 pub trait AnyEnvironment<R: AppRuntime> {
-    async fn abs_path(&self) -> PathBuf;
+    async fn abs_path(&self) -> Arc<Path>;
     async fn name(&self) -> joinerror::Result<String>;
     async fn describe(&self, ctx: &R::AsyncContext) -> joinerror::Result<DescribeEnvironment>;
     async fn modify(

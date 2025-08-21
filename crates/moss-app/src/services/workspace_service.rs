@@ -333,14 +333,35 @@ impl<R: AppRuntime> WorkspaceService<R> {
         id: &WorkspaceId,
         activity_indicator: ActivityIndicator<R::EventLoop>,
     ) -> WorkspaceServiceResult<WorkspaceItemDescription> {
-        let mut state_lock = self.state.write().await;
-        let item = state_lock
-            .known_workspaces
-            .get_mut(&id)
-            .ok_or(WorkspaceServiceError::NotFound(id.to_string()))?;
+        let (name, already_active) = {
+            let state_lock = self.state.read().await;
+            let item = state_lock
+                .known_workspaces
+                .get(&id)
+                .ok_or(WorkspaceServiceError::NotFound(id.to_string()))?;
+
+            let already_active = state_lock
+                .active_workspace
+                .as_ref()
+                .map(|active| active.id == *id)
+                .unwrap_or(false);
+
+            (item.name.clone(), already_active)
+        };
+
+        if already_active {
+            return Err(WorkspaceServiceError::AlreadyLoaded(id.to_string()));
+        }
+
+        {
+            let mut state_lock = self.state.write().await;
+            if let Some(previous_workspace) = state_lock.active_workspace.take() {
+                previous_workspace.dispose().await;
+                drop(previous_workspace);
+            }
+        }
 
         let last_opened_at = Utc::now().timestamp();
-        let name = item.name.clone();
         let abs_path: Arc<Path> = self.absolutize(&id.to_string()).into();
         let workspace = WorkspaceBuilder::new(
             self.fs.clone(),
@@ -358,14 +379,22 @@ impl<R: AppRuntime> WorkspaceService<R> {
         .join_err::<()>("failed to load the workspace")
         .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
 
-        item.last_opened_at = Some(last_opened_at);
-        state_lock.active_workspace = Some(
-            ActiveWorkspace {
-                id: id.clone(),
-                handle: workspace,
-            }
-            .into(),
-        );
+        {
+            let mut state_lock = self.state.write().await;
+            let item = state_lock
+                .known_workspaces
+                .get_mut(&id)
+                .expect("Workspace should still exist"); // We already checked it exists above
+
+            item.last_opened_at = Some(last_opened_at);
+            state_lock.active_workspace = Some(
+                ActiveWorkspace {
+                    id: id.clone(),
+                    handle: workspace,
+                }
+                .into(),
+            );
+        }
 
         {
             let mut txn = self.storage.begin_write_with_context(ctx).await?;
@@ -379,9 +408,6 @@ impl<R: AppRuntime> WorkspaceService<R> {
 
             txn.commit()?;
         }
-
-        // let active_workspace_id: ctxkeys::ActiveWorkspaceId = id.to_owned().into();
-        // ctx.set_value(active_workspace_id);
 
         Ok(WorkspaceItemDescription {
             id: id.to_owned(),

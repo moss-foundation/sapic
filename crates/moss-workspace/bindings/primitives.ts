@@ -8,11 +8,6 @@ export type ActivitybarPosition = "DEFAULT" | "TOP" | "BOTTOM" | "HIDDEN";
 /**
  * @category Primitive
  */
-export type ChangeCollectionId = { "UPDATE": string } | "REMOVE";
-
-/**
- * @category Primitive
- */
 export type EditorGridOrientation = "HORIZONTAL" | "VERTICAL";
 
 /**
