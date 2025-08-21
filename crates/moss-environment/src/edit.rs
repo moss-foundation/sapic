@@ -4,13 +4,13 @@ use moss_edit::json::{EditOptions, JsonEdit};
 use moss_fs::{CreateOptions, FileSystem, RenameOptions, error::FsResultExt};
 use moss_hcl::HclResultExt;
 use serde_json::Value as JsonValue;
-use std::{path::PathBuf, sync::Arc};
+use std::{path::Path, sync::Arc};
 use tokio::sync::{RwLock, watch};
 
 use crate::{configuration::SourceFile, environment::EnvironmentPath};
 
 struct EnvironmentEditingState {
-    abs_path: PathBuf,
+    abs_path: Arc<Path>,
     edit: JsonEdit,
 }
 
@@ -22,7 +22,7 @@ pub(super) struct EnvironmentEditing {
 
 impl EnvironmentEditing {
     pub fn new(fs: Arc<dyn FileSystem>, abs_path_tx: watch::Sender<EnvironmentPath>) -> Self {
-        let abs_path = abs_path_tx.borrow().to_path_buf();
+        let abs_path = abs_path_tx.borrow().full_path.clone();
         debug_assert!(abs_path.is_absolute());
 
         Self {

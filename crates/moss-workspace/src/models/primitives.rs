@@ -22,15 +22,6 @@ impl Default for WorkspaceMode {
 }
 
 /// @category Primitive
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename_all = "UPPERCASE")]
-#[ts(export, export_to = "primitives.ts")]
-pub enum ChangeCollectionId {
-    Update(CollectionId),
-    Remove,
-}
-
-/// @category Primitive
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "primitives.ts")]

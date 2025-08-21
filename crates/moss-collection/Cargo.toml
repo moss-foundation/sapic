@@ -20,8 +20,8 @@ moss_bindingutils.workspace = true
 moss_applib.workspace = true
 moss_keyring.workspace = true
 moss_id_macro.workspace = true
-joinerror.workspace = true
 
+joinerror.workspace = true
 anyhow.workspace = true
 serde = { workspace = true, features = ["derive", "rc"] }
 tokio = { workspace = true, features = ["sync"] }
