@@ -1,6 +1,6 @@
 use chrono::Utc;
 use derive_more::{Deref, DerefMut};
-use joinerror::{OptionExt, ResultExt};
+use joinerror::{Error, OptionExt, ResultExt};
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::{AppRuntime, PublicServiceMarker, ServiceMarker};
 use moss_fs::{FileSystem, FsResultExt, RemoveOptions};
@@ -295,14 +295,38 @@ impl<R: AppRuntime> WorkspaceService<R> {
         id: &WorkspaceId,
         activity_indicator: ActivityIndicator<R::EventLoop>,
     ) -> joinerror::Result<WorkspaceItemDescription> {
-        let mut state_lock = self.state.write().await;
-        let item = state_lock
-            .known_workspaces
-            .get_mut(&id)
-            .ok_or_join_err_with::<()>(|| format!("workspace `{}` not found", id))?;
+        let (name, already_active) = {
+            let state_lock = self.state.read().await;
+            let item = state_lock
+                .known_workspaces
+                .get_mut(&id)
+                .ok_or_join_err_with::<()>(|| format!("workspace `{}` not found", id))?;
+
+            let already_active = state_lock
+                .active_workspace
+                .as_ref()
+                .map(|active| active.id == *id)
+                .unwrap_or(false);
+
+            (item.name.clone(), already_active)
+        };
+
+        if already_active {
+            return Err(Error::new::<()>(format!(
+                "workspace `{}` is already loaded",
+                id
+            )));
+        }
+
+        {
+            let mut state_lock = self.state.write().await;
+            if let Some(previous_workspace) = state_lock.active_workspace.take() {
+                previous_workspace.dispose().await;
+                drop(previous_workspace);
+            }
+        }
 
         let last_opened_at = Utc::now().timestamp();
-        let name = item.name.clone();
         let abs_path: Arc<Path> = self.absolutize(&id.to_string()).into();
         let workspace = WorkspaceBuilder::new(
             self.fs.clone(),
@@ -319,14 +343,22 @@ impl<R: AppRuntime> WorkspaceService<R> {
         .await
         .join_err::<()>("failed to load the workspace")?;
 
-        item.last_opened_at = Some(last_opened_at);
-        state_lock.active_workspace = Some(
-            ActiveWorkspace {
-                id: id.clone(),
-                handle: workspace,
-            }
-            .into(),
-        );
+        {
+            let mut state_lock = self.state.write().await;
+            let item = state_lock
+                .known_workspaces
+                .get_mut(&id)
+                .expect("Workspace should still exist"); // We already checked it exists above
+
+            item.last_opened_at = Some(last_opened_at);
+            state_lock.active_workspace = Some(
+                ActiveWorkspace {
+                    id: id.clone(),
+                    handle: workspace,
+                }
+                .into(),
+            );
+        }
 
         // We don't want database error to fail the operation
         match self.storage.begin_write_with_context(ctx).await {
@@ -383,9 +415,6 @@ impl<R: AppRuntime> WorkspaceService<R> {
                 },
             ),
         }
-
-        // let active_workspace_id: ctxkeys::ActiveWorkspaceId = id.to_owned().into();
-        // ctx.set_value(active_workspace_id);
 
         Ok(WorkspaceItemDescription {
             id: id.to_owned(),

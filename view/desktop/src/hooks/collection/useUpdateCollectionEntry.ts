@@ -10,7 +10,6 @@ export interface UseUpdateCollectionEntryInput {
 }
 
 const updateCollectionEntry = async ({ collectionId, updatedEntry }: UseUpdateCollectionEntryInput) => {
-  console.log("updateCollectionEntry", updatedEntry);
   const result = await invokeTauriIpc<UpdateEntryOutput>("update_collection_entry", {
     collectionId,
     input: updatedEntry,

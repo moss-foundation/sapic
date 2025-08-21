@@ -3527,6 +3527,8 @@ dependencies = [
  "serde",
  "tauri",
  "tokio",
+ "tokio-util",
+ "uuid",
 ]
 
 [[package]]

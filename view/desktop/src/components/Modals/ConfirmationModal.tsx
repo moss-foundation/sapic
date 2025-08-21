@@ -14,6 +14,7 @@ interface ConfirmationModalProps {
   confirmLabel?: string;
   cancelLabel?: string;
   onConfirm: () => void;
+  onCancel?: () => void;
   variant?: "warning" | "danger" | "info";
   loading?: boolean;
 }
@@ -27,6 +28,7 @@ export const ConfirmationModal = ({
   confirmLabel = "OK",
   cancelLabel = "Cancel",
   onConfirm,
+  onCancel,
   loading = false,
 }: ConfirmationModalProps) => {
   const [allowBackdropClick, setAllowBackdropClick] = useState(false);
@@ -51,6 +53,7 @@ export const ConfirmationModal = ({
 
   const handleCancel = () => {
     if (loading) return;
+    onCancel?.();
     closeModal();
   };
 
@@ -65,7 +68,7 @@ export const ConfirmationModal = ({
       showModal={showModal}
       onBackdropClick={handleBackdropClick}
       onSubmit={handleConfirm}
-      className="background-(--moss-primary-background) w-[27rem] overflow-hidden border border-(--moss-border-color) text-(--moss-primary-text)"
+      className="background-(--moss-primary-background) max-w-[400px] overflow-hidden border border-(--moss-border-color) text-(--moss-primary-text)"
       title={title}
       content={
         <div className="flex h-full flex-col">

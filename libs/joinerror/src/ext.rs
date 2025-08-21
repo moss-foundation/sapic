@@ -45,6 +45,7 @@ impl From<tokio::task::JoinError> for Error {
     }
 }
 
+// FIXME: remove this from here
 impl From<git2::Error> for Error {
     fn from(err: git2::Error) -> Self {
         Error::new::<()>(err.to_string())

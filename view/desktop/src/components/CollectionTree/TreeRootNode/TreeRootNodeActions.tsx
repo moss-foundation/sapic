@@ -1,8 +1,9 @@
-import { useContext, useState } from "react";
+import { useContext } from "react";
 
 import { ActionMenu } from "@/components";
 import { ActionButton } from "@/components/ActionButton";
 import { DeleteCollectionModal } from "@/components/Modals/Collection/DeleteCollectionModal";
+import { useModal } from "@/hooks";
 
 import { useRefreshCollection } from "../actions/useRefreshCollection";
 import { useToggleAllNodes } from "../actions/useToggleAllNodes";
@@ -28,7 +29,7 @@ export const TreeRootNodeActions = ({
 }: TreeRootNodeActionsProps) => {
   const { displayMode, allFoldersAreCollapsed, allFoldersAreExpanded, id } = useContext(CollectionTreeContext);
 
-  const [showDeleteCollectionModal, setShowDeleteCollectionModal] = useState(false);
+  const { showModal: showDeleteCollectionModal, setShowModal: setShowDeleteCollectionModal } = useModal();
 
   const { expandAllNodes, collapseAllNodes } = useToggleAllNodes(node);
   const { refreshCollection } = useRefreshCollection(id);
