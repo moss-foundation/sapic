@@ -31,7 +31,7 @@ use tokio::sync::OnceCell;
 use crate::{
     // DescribeCollection, DescribeRepository,
     edit::CollectionEdit,
-    helpers::{fetch_contributors, fetch_vcs_summary},
+    helpers::fetch_contributors,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
     services::{
         git_service::GitService, set_icon_service::SetIconService, storage_service::StorageService,
@@ -80,6 +80,13 @@ impl VcsSummary {
         match self {
             VcsSummary::GitHub { url, .. } => Some(url.clone()),
             VcsSummary::GitLab { url, .. } => Some(url.clone()),
+        }
+    }
+
+    pub fn branch(&self) -> Option<BranchInfo> {
+        match self {
+            VcsSummary::GitHub { branch, .. } => Some(branch.clone()),
+            VcsSummary::GitLab { branch, .. } => Some(branch.clone()),
         }
     }
 }
@@ -206,18 +213,61 @@ impl<R: AppRuntime> Collection<R> {
                     Vec::new()
                 });
 
-            output.vcs =
-                match fetch_vcs_summary(self, &repo_ref, git_provider_type, client.clone()).await {
-                    Ok(vcs) => Some(vcs),
-                    Err(e) => {
-                        // TODO: Tell the fronend
-                        println!("unable to fetch vcs: {}", e);
-                        None
-                    }
-                };
+            output.vcs = match self
+                .fetch_vcs_summary(&repo_ref, git_provider_type, client.clone())
+                .await
+            {
+                Ok(vcs) => Some(vcs),
+                Err(e) => {
+                    // TODO: Tell the fronend
+                    println!("unable to fetch vcs: {}", e);
+                    None
+                }
+            };
         }
 
         Ok(output)
+    }
+
+    async fn fetch_vcs_summary(
+        &self,
+        repo_ref: &GitUrlForAPI,
+        git_provider_type: GitProviderType,
+        client: Arc<dyn GitHostingProvider>,
+    ) -> joinerror::Result<VcsSummary> {
+        let branch = self.git_service.get_current_branch_info().await?;
+
+        let repository_metadata = client.repository_metadata(repo_ref).await;
+        let url = repo_ref.to_string();
+
+        // Even if provider API call fails, we want to return repo_url and current branch
+        let (updated_at, owner) = match repository_metadata {
+            Ok(repository_metadata) => (
+                Some(repository_metadata.updated_at),
+                Some(repository_metadata.owner),
+            ),
+            Err(e) => {
+                // TODO: Tell the frontend provider API call fails
+                println!("git provider api call fails: {}", e);
+
+                (None, None)
+            }
+        };
+
+        match git_provider_type {
+            GitProviderType::GitHub => Ok(VcsSummary::GitHub {
+                branch,
+                url,
+                updated_at,
+                owner,
+            }),
+            GitProviderType::GitLab => Ok(VcsSummary::GitLab {
+                branch,
+                url,
+                updated_at,
+                owner,
+            }),
+        }
     }
 
     pub async fn modify(&self, params: CollectionModifyParams) -> joinerror::Result<()> {
@@ -292,9 +342,10 @@ impl<R: AppRuntime> Collection<R> {
         Ok(result)
     }
 
-    pub async fn get_current_branch_info(&self) -> joinerror::Result<BranchInfo> {
-        self.git_service.get_current_branch_info().await
-    }
+    // pub async fn get_current_branch_info(&self) -> joinerror::Result<BranchInfo> {
+    //     self.git_service.get_current_branch_info().await
+    // }
+
     pub async fn dispose(&self) -> joinerror::Result<()> {
         self.git_service.dispose(self.fs.clone()).await
     }

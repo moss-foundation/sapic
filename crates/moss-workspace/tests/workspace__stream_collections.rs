@@ -90,7 +90,6 @@ async fn stream_collections_single_collection() {
     assert_eq!(event.id, collection_id);
     assert_eq!(event.name, collection_name);
     assert_eq!(event.order, Some(collection_order));
-    assert_eq!(event.repository, None);
     assert_eq!(event.icon_path, None);
 
     cleanup().await;
@@ -157,7 +156,6 @@ async fn stream_collections_multiple_collections() {
         let event = events_map.get(&expected_id).unwrap();
         assert_eq!(event.name, expected_name);
         assert_eq!(event.order, Some(expected_order));
-        assert_eq!(event.repository, None);
         assert_eq!(event.icon_path, None);
     }
 
@@ -219,7 +217,6 @@ async fn stream_collections_with_icon() {
     assert_eq!(event.id, collection_id);
     assert_eq!(event.name, collection_name);
     assert_eq!(event.order, Some(collection_order));
-    assert_eq!(event.repository, None);
     assert!(event.icon_path.is_some());
 
     cleanup().await;
@@ -312,7 +309,6 @@ async fn stream_collections_mixed_configurations() {
         let event = events_map.get(&expected_id).unwrap();
         assert_eq!(event.name, *expected_name);
         assert_eq!(event.order, Some(expected_order));
-        assert_eq!(event.repository, expected_repo.clone());
 
         // Check icon path presence
         match expected_icon {

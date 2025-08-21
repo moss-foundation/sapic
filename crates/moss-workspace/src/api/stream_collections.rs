@@ -22,31 +22,12 @@ impl<R: AppRuntime> Workspace<R> {
             // from the main streaming, which will make the application more responsive
             // Right now the latency from HTTP requests slows down this operation quite a lot
 
-            let collection = self.collection(&desc.id).await;
-            if collection.is_none() {
-                // This should never happen since the collection is already returned from the stream
-                continue;
-            }
-            let collection = collection.unwrap();
-
-            let branch_info = collection.get_current_branch_info().await;
-
-            let branch = match branch_info {
-                Ok(branch) => Some(branch),
-                Err(e) => {
-                    // TODO: Tell the frontend that we failed to fetch current branch info
-                    println!("failed to fetch current branch info: {}", e.to_string());
-                    None
-                }
-            };
-
             let event = StreamCollectionsEvent {
                 id: desc.id,
                 name: desc.name,
                 order: desc.order,
                 expanded: desc.expanded,
-                repository: desc.repository,
-                branch,
+                branch: desc.vcs.and_then(|vcs| vcs.branch()),
                 icon_path: desc.icon_path,
             };
 

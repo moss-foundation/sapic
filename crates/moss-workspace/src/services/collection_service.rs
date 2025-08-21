@@ -60,8 +60,8 @@ pub(crate) struct CollectionItemDescription {
     pub name: String,
     pub order: Option<isize>,
     pub expanded: bool,
-    #[allow(dead_code)]
-    pub repository: Option<String>,
+    pub vcs: Option<VcsSummary>,
+    // pub repository: Option<String>,
 
     // FIXME: Do we need this field?
     pub icon_path: Option<PathBuf>,
@@ -257,7 +257,7 @@ impl<R: AppRuntime> CollectionService<R> {
             name: params.name.clone(),
             order: Some(params.order),
             expanded: true,
-            repository: None,
+            vcs: None,
             icon_path,
             abs_path: abs_path.into(),
             external_path: params.external_path.clone(),
@@ -369,7 +369,7 @@ impl<R: AppRuntime> CollectionService<R> {
             order: Some(params.order),
             expanded: true,
             // FIXME: Rethink Manifest file and repository storage
-            repository: desc.vcs.and_then(|vcs| vcs.url()),
+            vcs: desc.vcs,
             icon_path,
             abs_path,
             external_path: None,
@@ -489,26 +489,23 @@ impl<R: AppRuntime> CollectionService<R> {
         Box::pin(async_stream::stream! {
             let state_lock = state.read().await;
             for (id, item) in state_lock.collections.iter() {
-                let desc = item.details().await;
-                if desc.is_err() {
+                let details = if let Ok(details) = item.details().await {
+                    details
+                } else {
                     // TODO: log error
                     println!("failed to parse collection {} manifest file", id.to_string());
                     continue;
-                }
-                let summary = desc.unwrap();
+                };
 
                 let expanded = state_lock.expanded_items.contains(id);
                 let icon_path = item.icon_path();
 
                 yield CollectionItemDescription {
                     id: item.id.clone(),
-                    name: summary.name,
+                    name: details.name,
                     order: item.order,
                     expanded,
-                    repository: summary.vcs.map(|vcs| match vcs {
-                        VcsSummary::GitHub { url, .. } => url,
-                        VcsSummary::GitLab { url, .. } => url,
-                    }),
+                    vcs: details.vcs,
                     icon_path,
                     abs_path: item.handle.abs_path().clone(),
                     external_path: None, // TODO: implement
