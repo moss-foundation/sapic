@@ -1,4 +1,4 @@
-use joinerror::OptionExt;
+use joinerror::{Error, OptionExt};
 use moss_applib::AppRuntime;
 
 use crate::{
@@ -19,7 +19,7 @@ impl<R: AppRuntime> App<R> {
             .ok_or_join_err::<()>("no active workspace to close")?;
 
         if workspace_id != input.id {
-            return Err(joinerror::Error::new::<()>(format!(
+            return Err(Error::new::<()>(format!(
                 "Workspace {} is not currently active",
                 input.id
             )));

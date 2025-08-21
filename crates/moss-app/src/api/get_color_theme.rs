@@ -1,4 +1,4 @@
-use joinerror::ResultExt;
+use joinerror::{Error, ResultExt};
 use moss_applib::AppRuntime;
 
 use crate::{
@@ -36,7 +36,7 @@ impl<R: AppRuntime> App<R> {
 
             Ok(GetColorThemeOutput { css_content })
         } else {
-            Err(joinerror::Error::new::<()>(format!(
+            Err(Error::new::<()>(format!(
                 "theme with id `{}` not found",
                 input.id
             )))

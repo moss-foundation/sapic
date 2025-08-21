@@ -299,7 +299,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
             let state_lock = self.state.read().await;
             let item = state_lock
                 .known_workspaces
-                .get_mut(&id)
+                .get(&id)
                 .ok_or_join_err_with::<()>(|| format!("workspace `{}` not found", id))?;
 
             let already_active = state_lock
