@@ -368,6 +368,51 @@ where
             },
         );
 
+        // Create and the environment group when creating a collection environment
+        if let Some(collection_id) = collection_id_inner.clone() {
+            let group_order = state.expanded_groups.len() as isize;
+            state.groups.insert(collection_id.clone());
+            state.expanded_groups.insert(collection_id.clone());
+
+            match self.storage.begin_write(&ctx).await {
+                Ok(mut txn) => {
+                    if let Err(e) = self
+                        .storage
+                        .put_expanded_groups_txn(&ctx, &mut txn, &state.expanded_groups)
+                        .await
+                    {
+                        // TODO: log error
+                        println!(
+                            "failed to put expanded groups in the database: {}",
+                            e.to_string()
+                        );
+                    }
+                    if let Err(e) = self
+                        .storage
+                        .put_environment_group_order_txn(
+                            &ctx,
+                            &mut txn,
+                            collection_id.clone(),
+                            group_order,
+                        )
+                        .await
+                    {
+                        println!(
+                            "failed to put environment group order in the database: {}",
+                            e.to_string()
+                        );
+                    }
+                    if let Err(e) = txn.commit() {
+                        println!("failed to commit the transaction: {}", e.to_string());
+                    }
+                }
+                Err(e) => {
+                    // TODO: log error
+                    println!("failed to begin a write transaction: {}", e.to_string());
+                }
+            };
+        }
+
         if let Err(e) = self
             .storage
             .put_environment_order(ctx, &desc.id, params.order)
