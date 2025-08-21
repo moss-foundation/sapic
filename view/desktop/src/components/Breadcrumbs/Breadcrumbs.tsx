@@ -49,7 +49,7 @@ export const Breadcrumbs = ({ collectionId, nodeId }: BreadcrumbsProps) => {
 
           if (lastItem) {
             return (
-              <div className="contents">
+              <div key={node.id} className="contents">
                 <EntryIcon entry={node} />
                 <span className="min-w-max">{node.name}</span>
               </div>
@@ -57,13 +57,11 @@ export const Breadcrumbs = ({ collectionId, nodeId }: BreadcrumbsProps) => {
           }
 
           return (
-            <div className="contents">
+            <div key={node.id} className="contents">
               <ActionMenu.Root>
-                <ActionMenu.Trigger className="min-w-max cursor-pointer hover:underline">
-                  <div className="flex items-center gap-1 px-1 py-0.5">
-                    <EntryIcon entry={node} />
-                    <span>{node.name}</span>
-                  </div>
+                <ActionMenu.Trigger className="flex min-w-max cursor-pointer items-center gap-1 px-1 py-0.5 hover:underline">
+                  <EntryIcon entry={node} />
+                  <span>{node.name} </span>
                 </ActionMenu.Trigger>
                 <ActionMenu.Content align="start">
                   <BreadcrumbTree tree={node} collectionId={collectionId} />
