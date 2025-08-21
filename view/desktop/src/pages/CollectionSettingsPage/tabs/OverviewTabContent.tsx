@@ -33,23 +33,38 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
     }
   }, [collection, containerApi]);
 
-  const handleUpdateCollection = async () => {
+  const handleUpdateCollectionName = async () => {
     if (!collection || !name) return;
 
     await updateCollection({
       id: collection.id,
       name,
-      repository: !repository ? "REMOVE" : { UPDATE: repository },
     });
   };
 
-  const handleBlur = () => {
+  const handleUpdateCollectionRepository = async () => {
+    if (!collection || !repository) return;
+
+    await updateCollection({
+      id: collection.id,
+      repository: !repository ? "REMOVE" : { UPDATE: repository },
+    });
+  };
+  const handleRepositoryBlur = () => {
+    if (!collection || !repository) {
+      setRepository(collection?.repository || "github.com/moss-foundation/sapic");
+      return;
+    }
+    handleUpdateCollectionRepository();
+  };
+
+  const handleNameBlur = () => {
     if (!collection || !name) {
       setName(collection?.name ?? "");
       return;
     }
 
-    handleUpdateCollection();
+    handleUpdateCollectionName();
   };
 
   if (!collection) {
@@ -73,11 +88,11 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
               <InputOutlined
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                onBlur={handleBlur}
+                onBlur={handleNameBlur}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
-                    handleUpdateCollection();
+                    handleUpdateCollectionName();
                     e.currentTarget.blur();
                   }
                 }}
@@ -97,11 +112,11 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
               <InputOutlined
                 value={repository}
                 onChange={(e) => setRepository(e.target.value)}
-                onBlur={handleBlur}
+                onBlur={handleRepositoryBlur}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
-                    handleUpdateCollection();
+                    handleUpdateCollectionRepository();
                     e.currentTarget.blur();
                   }
                 }}
