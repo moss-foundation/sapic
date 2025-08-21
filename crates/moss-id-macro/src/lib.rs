@@ -7,7 +7,7 @@ pub fn generate_id_type(input: proc_macro::TokenStream) -> proc_macro::TokenStre
 
     let expanded = quote! {
         /// @category Primitive
-        #[derive(Clone, Debug, PartialEq, Hash, Eq, Deref, Serialize, Deserialize)]
+        #[derive(Clone, Debug, PartialEq, Hash, Eq, ::derive_more::Deref, ::serde::Serialize, ::serde::Deserialize)]
         #[serde(transparent)]
         pub struct #name(::std::sync::Arc<::std::string::String>);
 
