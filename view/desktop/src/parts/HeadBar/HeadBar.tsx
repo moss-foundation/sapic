@@ -34,7 +34,11 @@ export const HeadBar = () => {
     openModal: openOpenWorkspaceModal,
   } = useModal();
 
-  const { showModal: showDeleteWorkspaceModal, closeModal: closeDeleteWorkspaceModal } = useModal();
+  const {
+    showModal: showDeleteWorkspaceModal,
+    closeModal: closeDeleteWorkspaceModal,
+    openModal: openDeleteWorkspaceModal,
+  } = useModal();
 
   const actionProps: HeadBarActionProps = {
     openPanel,
@@ -44,6 +48,9 @@ export const HeadBar = () => {
     openOpenWorkspaceModal,
     workspaceToDelete,
     setWorkspaceToDelete,
+    showDeleteWorkspaceModal,
+    openDeleteWorkspaceModal,
+    closeDeleteWorkspaceModal,
   };
 
   const workspaceActionProps: HeadBarActionProps = { ...actionProps };

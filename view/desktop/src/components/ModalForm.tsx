@@ -1,15 +1,17 @@
+import { FormEvent, ReactNode } from "react";
+
 import { Modal, ModalProps } from "@/lib/ui";
 import { cn } from "@/utils";
 
 interface ModalFormProps extends ModalProps {
   title?: string;
-  content?: React.ReactNode;
-  footer?: React.ReactNode;
-  onSubmit?: (e: React.FormEvent<HTMLFormElement>) => void;
+  content?: ReactNode;
+  footer?: ReactNode;
+  onSubmit?: (e: FormEvent<HTMLFormElement>) => void;
   onBackdropClick?: () => void;
   titleClassName?: string;
   footerClassName?: string;
-  size?: "small" | "medium";
+  className?: string;
 }
 
 export const ModalForm = ({
@@ -19,15 +21,16 @@ export const ModalForm = ({
   onSubmit,
   titleClassName,
   footerClassName,
+  className,
   ...props
 }: ModalFormProps) => {
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onSubmit?.(e);
   };
 
   return (
-    <Modal {...props}>
+    <Modal className={className} {...props}>
       <form onSubmit={handleSubmit} onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
         {title && (
           <h2
