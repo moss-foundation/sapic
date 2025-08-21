@@ -138,10 +138,6 @@ impl<R: AppRuntime> Collection<R> {
         self.abs_path.join(dirs::ENVIRONMENTS_DIR)
     }
 
-    pub async fn describe(&self) -> joinerror::Result<DescribeCollection> {
-        let manifest_path = self.abs_path.join(MANIFEST_FILE_NAME);
-    }
-
     pub async fn details(&self) -> joinerror::Result<CollectionDetails> {
         let manifest_path = self.abs_path.join(MANIFEST_FILE_NAME);
         let rdr = self
