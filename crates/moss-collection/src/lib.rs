@@ -7,16 +7,12 @@ mod helpers;
 mod manifest;
 pub mod models;
 mod services;
+mod worktree;
 
 #[cfg(feature = "integration-tests")]
 pub mod storage;
-#[cfg(feature = "integration-tests")]
-pub mod worktree;
-
 #[cfg(not(feature = "integration-tests"))]
 mod storage;
-#[cfg(not(feature = "integration-tests"))]
-mod worktree;
 
 pub use builder::CollectionBuilder;
 pub use collection::{Collection, CollectionModifyParams};

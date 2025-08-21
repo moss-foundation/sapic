@@ -54,6 +54,7 @@ impl GitService {
         Ok(())
     }
 
+    #[allow(dead_code)] // TODO: Remove if we will not use this method
     pub async fn has_repo(&self) -> joinerror::Result<bool> {
         let repo_handle_clone = self.repo_handle.clone();
         let join = tokio::task::spawn_blocking(move || {
@@ -68,6 +69,7 @@ impl GitService {
         }
     }
 
+    #[allow(dead_code)] // TODO: Remove if we will not use this method
     pub async fn get_file_statuses(&self) -> joinerror::Result<HashMap<PathBuf, FileStatus>> {
         let repo_handle_clone = self.repo_handle.clone();
         let join = tokio::task::spawn_blocking(move || {
@@ -87,6 +89,7 @@ impl GitService {
 
     // FIXME: Maybe it doesn't make sense to have a separate method just to get the current branch name
     // Although we don't need any comparison with remote branch just for getting the name
+    #[allow(dead_code)] // TODO: Remove if we will not use this method
     pub async fn get_current_branch(&self) -> joinerror::Result<String> {
         let repo_handle_clone = self.repo_handle.clone();
         let join = tokio::task::spawn_blocking(move || {

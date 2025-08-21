@@ -11,7 +11,6 @@ use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
-use tokio::sync::OnceCell;
 
 use crate::{
     Collection,
@@ -42,7 +41,6 @@ struct PredefinedFile {
     content: Vec<u8>,
 }
 
-// TODO: Automatically generate a README
 const PREDEFINED_FILES: LazyCell<Vec<PredefinedFile>> = LazyCell::new(|| {
     vec![PredefinedFile {
         path: PathBuf::from(".gitignore"),
@@ -126,7 +124,6 @@ impl CollectionBuilder {
             self.fs.clone(),
             params.internal_abs_path.join(MANIFEST_FILE_NAME),
         );
-        // TODO: Load environments
 
         // FIXME: This logic needs to be updated when we implement support for external collections
         // Since the repo should be at the external_abs_path
@@ -166,13 +163,9 @@ impl CollectionBuilder {
             github_client: self.github_client.clone(),
             gitlab_client: self.gitlab_client.clone(),
             worktree: worktree_service,
-            environments: OnceCell::new(),
             on_did_change: EventEmitter::new(),
         })
     }
-
-    // TODO: Maybe support a simplified mode, where we will use the provider API to create the repo
-    // on behalf of the user
 
     pub async fn create<R: AppRuntime>(
         self,
@@ -229,14 +222,14 @@ impl CollectionBuilder {
         }
 
         if let Some(icon_path) = params.icon_path {
-            // TODO: Log the error here
-            set_icon_service.set_icon(&icon_path)?;
+            if let Err(err) = set_icon_service.set_icon(&icon_path) {
+                // TODO: Log the error here
+                println!("failed to set collection icon: {}", err.to_string());
+            }
         }
 
-        let git_params = params.git_params;
-
         // FIXME: I'm not sure why we need to store a repo url that's different from what we expect from the user
-        let repository = git_params.as_ref().map(|p| ManifestRepository {
+        let repository = params.git_params.as_ref().map(|p| ManifestRepository {
             url: p.repository.clone(),
             git_provider_type: p.git_provider_type.clone(),
         });
@@ -248,7 +241,7 @@ impl CollectionBuilder {
                     name: params
                         .name
                         .unwrap_or(defaults::DEFAULT_COLLECTION_NAME.to_string()),
-                    // FIXME: We might consider removing this field from the manifest file
+                    // INFO: We might consider removing this field from the manifest file
                     repository,
                 })?
                 .as_bytes(),
@@ -288,7 +281,7 @@ impl CollectionBuilder {
 
         let edit = CollectionEdit::new(self.fs.clone(), abs_path.join(MANIFEST_FILE_NAME));
 
-        let repo_handle = if let Some(git_params) = git_params {
+        let repo_handle = if let Some(git_params) = params.git_params {
             let git_provider_type = git_params.git_provider_type;
             let repository = git_params.repository;
             let branch = git_params.branch;
@@ -310,7 +303,6 @@ impl CollectionBuilder {
         };
 
         let git_service = Arc::new(GitService::new(repo_handle));
-        // TODO: Load environments
 
         Ok(Collection {
             fs: self.fs.clone(),
@@ -322,7 +314,6 @@ impl CollectionBuilder {
             github_client: self.github_client.clone(),
             gitlab_client: self.gitlab_client.clone(),
             worktree: worktree_service,
-            environments: OnceCell::new(),
             on_did_change: EventEmitter::new(),
         })
     }
@@ -336,15 +327,12 @@ impl CollectionBuilder {
         debug_assert!(params.internal_abs_path.is_absolute());
 
         let abs_path = params.internal_abs_path.clone();
-
-        let git_params = params.git_params;
-
         let repo_handle = self
             .clone_repo_handle(
-                git_params.git_provider_type,
+                params.git_params.git_provider_type,
                 abs_path.clone(),
-                git_params.repository,
-                git_params.branch,
+                params.git_params.repository,
+                params.git_params.branch,
             )
             .await?;
 
@@ -381,8 +369,6 @@ impl CollectionBuilder {
 
         let edit = CollectionEdit::new(self.fs.clone(), abs_path.join(MANIFEST_FILE_NAME));
 
-        // TODO: Load environments
-
         Ok(Collection {
             fs: self.fs.clone(),
             abs_path,
@@ -393,7 +379,6 @@ impl CollectionBuilder {
             github_client: self.github_client.clone(),
             gitlab_client: self.gitlab_client.clone(),
             worktree,
-            environments: OnceCell::new(),
             on_did_change: EventEmitter::new(),
         })
     }

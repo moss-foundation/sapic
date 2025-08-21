@@ -1,4 +1,3 @@
-use anyhow::Result;
 use chrono::{DateTime, Utc};
 use joinerror::ResultExt;
 use json_patch::{
@@ -10,7 +9,6 @@ use moss_applib::{
 };
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_edit::json::EditOptions;
-use moss_environment::{environment::Environment, models::primitives::EnvironmentId};
 use moss_fs::{FileSystem, FsResultExt};
 use moss_git::{models::types::BranchInfo, url::normalize_git_url};
 use moss_git_hosting_provider::{
@@ -22,11 +20,9 @@ use moss_git_hosting_provider::{
 };
 use serde_json::Value as JsonValue;
 use std::{
-    collections::HashMap,
     path::{Path, PathBuf},
     sync::Arc,
 };
-use tokio::sync::OnceCell;
 
 use crate::{
     dirs,
@@ -38,14 +34,6 @@ use crate::{
     },
     worktree::Worktree,
 };
-
-pub struct EnvironmentItem<R: AppRuntime> {
-    pub id: EnvironmentId,
-    pub name: String,
-    pub inner: Environment<R>,
-}
-
-type EnvironmentMap<R> = HashMap<EnvironmentId, Arc<EnvironmentItem<R>>>;
 
 #[derive(Debug, Clone)]
 pub enum OnDidChangeEvent {
@@ -110,8 +98,6 @@ pub struct Collection<R: AppRuntime> {
     // TODO: Extract Git Provider Service
     pub(super) github_client: Arc<GitHubClient>,
     pub(super) gitlab_client: Arc<GitLabClient>,
-    #[allow(dead_code)]
-    pub(super) environments: OnceCell<EnvironmentMap<R>>,
 
     pub(super) on_did_change: EventEmitter<OnDidChangeEvent>,
 }
@@ -296,18 +282,6 @@ impl<R: AppRuntime> Collection<R> {
             .join_err::<()>("failed to edit collection")?;
 
         Ok(())
-    }
-
-    pub async fn environments(&self) -> Result<&EnvironmentMap<R>> {
-        let result = self
-            .environments
-            .get_or_try_init(|| async move {
-                let environments = HashMap::new();
-                Ok::<_, anyhow::Error>(environments)
-            })
-            .await?;
-
-        Ok(result)
     }
 
     pub async fn dispose(&self) -> joinerror::Result<()> {
