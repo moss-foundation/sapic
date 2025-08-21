@@ -4,7 +4,7 @@ import PaddedTabs from "@/components/PaddedTabs/PaddedTabs";
 import { useCreateCollection } from "@/hooks/collection/useCreateCollection";
 import { useImportCollection } from "@/hooks/collection/useImportCollection";
 import { useStreamedCollections } from "@/hooks/collection/useStreamedCollections";
-import { Modal } from "@/lib/ui";
+import { Modal, Scrollbar } from "@/lib/ui";
 import { useGitProviderStore } from "@/store/gitProvider";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { CreateCollectionGitParams, ImportCollectionSource } from "@repo/moss-workspace";
@@ -109,29 +109,36 @@ export const NewCollectionModal = ({ closeModal, showModal, initialTab = CREATE_
   const isSubmitDisabled = calculateIsSubmitDisabled({ name, tab, createParams, importParams, gitProvider });
 
   return (
-    <Modal onBackdropClick={handleCancel} showModal={showModal}>
+    <Modal onBackdropClick={handleCancel} showModal={showModal} className="w-full max-w-[544px]">
       <Header />
 
       <Divider />
 
-      <form onSubmit={handleSubmit} className="flex max-w-[544px] flex-col">
-        <PaddedTabs.Root value={tab} onValueChange={(value) => setTab(value as typeof CREATE_TAB | typeof IMPORT_TAB)}>
-          <PaddedTabs.List className="border-b border-(--moss-border-color) px-3">
-            <PaddedTabs.Trigger value={CREATE_TAB}>Create</PaddedTabs.Trigger>
-            <PaddedTabs.Trigger value={IMPORT_TAB}>Import</PaddedTabs.Trigger>
-          </PaddedTabs.List>
+      <form onSubmit={handleSubmit} className="flex h-full flex-col overflow-hidden">
+        <Scrollbar className="min-h-0 flex-1">
+          <div className="flex flex-col">
+            <PaddedTabs.Root
+              value={tab}
+              onValueChange={(value) => setTab(value as typeof CREATE_TAB | typeof IMPORT_TAB)}
+            >
+              <PaddedTabs.List className="border-b border-(--moss-border-color) px-3">
+                <PaddedTabs.Trigger value={CREATE_TAB}>Create</PaddedTabs.Trigger>
+                <PaddedTabs.Trigger value={IMPORT_TAB}>Import</PaddedTabs.Trigger>
+              </PaddedTabs.List>
 
-          <PaddedTabs.Content value={CREATE_TAB} className="px-6 py-3">
-            <CreateSection onValuesUpdate={handleCreateSectionValuesUpdate} />
-          </PaddedTabs.Content>
-          <PaddedTabs.Content value={IMPORT_TAB} className="px-6 py-3">
-            <ImportSection onValuesUpdate={handleImportSectionValuesUpdate} />
-          </PaddedTabs.Content>
-        </PaddedTabs.Root>
+              <PaddedTabs.Content value={CREATE_TAB} className="px-6 py-3">
+                <CreateSection onValuesUpdate={handleCreateSectionValuesUpdate} />
+              </PaddedTabs.Content>
+              <PaddedTabs.Content value={IMPORT_TAB} className="px-6 py-3">
+                <ImportSection onValuesUpdate={handleImportSectionValuesUpdate} />
+              </PaddedTabs.Content>
+            </PaddedTabs.Root>
 
-        <div className="px-6 pb-6">
-          <ModeRadioGroup mode={mode} setMode={setMode} />
-        </div>
+            <div className="px-6 pb-6">
+              <ModeRadioGroup mode={mode} setMode={setMode} />
+            </div>
+          </div>
+        </Scrollbar>
 
         <FooterActions
           openAutomatically={openAutomatically}
