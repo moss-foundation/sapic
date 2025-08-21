@@ -12,7 +12,6 @@ derive_more = { workspace = true, features = ["deref", "deref_mut"] }
 futures.workspace = true
 dashmap.workspace = true
 serde = { workspace = true, features = ["derive"] }
-uuid.workspace = true
 tokio-util.workspace = true
 
 [dev-dependencies]
