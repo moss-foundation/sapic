@@ -1,5 +1,4 @@
 use moss_applib::AppRuntime;
-use moss_common::api::OperationResult;
 
 use crate::{
     app::App,
@@ -12,7 +11,7 @@ impl<R: AppRuntime> App<R> {
         &self,
         ctx: &R::AsyncContext,
         input: &OpenWorkspaceInput,
-    ) -> OperationResult<OpenWorkspaceOutput> {
+    ) -> joinerror::Result<OpenWorkspaceOutput> {
         let desc = self
             .workspace_service
             .activate_workspace(ctx, &input.id, self.activity_indicator.clone())

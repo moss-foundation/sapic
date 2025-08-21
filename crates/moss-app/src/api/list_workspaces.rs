@@ -1,5 +1,4 @@
 use moss_applib::AppRuntime;
-use moss_common::api::OperationResult;
 
 use crate::{
     app::App,
@@ -10,7 +9,7 @@ impl<R: AppRuntime> App<R> {
     pub async fn list_workspaces(
         &self,
         _ctx: &R::AsyncContext,
-    ) -> OperationResult<ListWorkspacesOutput> {
+    ) -> joinerror::Result<ListWorkspacesOutput> {
         let workspaces = self.workspace_service.list_workspaces().await?;
         let workspaces = workspaces
             .into_iter()

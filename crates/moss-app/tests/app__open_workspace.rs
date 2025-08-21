@@ -10,7 +10,6 @@ use moss_app::{
     },
     storage::segments::{SEGKEY_LAST_ACTIVE_WORKSPACE, segkey_last_opened_at},
 };
-use moss_common::api::OperationError;
 use moss_storage::storage::operations::GetItem;
 use moss_testutils::random_name::random_workspace_name;
 use moss_workspace::models::primitives::WorkspaceMode;
@@ -240,7 +239,6 @@ async fn open_workspace_nonexistent() {
         .await;
 
     assert!(open_result.is_err());
-    assert!(matches!(open_result, Err(OperationError::NotFound(_))));
 
     cleanup().await;
 }
@@ -284,8 +282,6 @@ async fn open_workspace_filesystem_does_not_exist() {
         .await;
 
     assert!(open_result.is_err());
-    // When filesystem doesn't exist, it returns Internal error instead of NotFound
-    assert!(matches!(open_result, Err(OperationError::Internal(_))));
 
     cleanup().await;
 }

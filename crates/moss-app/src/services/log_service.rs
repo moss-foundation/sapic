@@ -1,7 +1,18 @@
 mod rollinglog_writer;
 mod taurilog_writer;
 
+use crate::{
+    models::types::{LogEntryInfo, LogItemSourceInfo},
+    services::{
+        log_service::{
+            constants::*, rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter,
+        },
+        session_service::SessionId,
+        storage_service::StorageService,
+    },
+};
 use chrono::{DateTime, NaiveDate, NaiveDateTime};
+use joinerror::Error;
 use moss_applib::{AppRuntime, ServiceMarker};
 use moss_fs::{CreateOptions, FileSystem};
 use moss_logging::models::primitives::LogEntryId;
@@ -24,17 +35,6 @@ use tracing_subscriber::{
         time::ChronoLocal,
     },
     prelude::*,
-};
-
-use crate::{
-    models::types::{LogEntryInfo, LogItemSourceInfo},
-    services::{
-        log_service::{
-            constants::*, rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter,
-        },
-        session_service::SessionId,
-        storage_service::StorageService,
-    },
 };
 
 pub mod constants {
@@ -60,7 +60,7 @@ impl LogFilter {
     fn check_entry(&self, log_entry: &LogEntryInfo) -> joinerror::Result<bool> {
         let date =
             NaiveDate::parse_from_str(&log_entry.timestamp, TIMESTAMP_FORMAT).map_err(|e| {
-                joinerror::Error::new::<()>(format!(
+                Error::new::<()>(format!(
                     "invalid log entry timestamp {}: {}",
                     log_entry.timestamp,
                     e.to_string()
@@ -170,7 +170,7 @@ impl<R: AppRuntime> LogService<R> {
                 // Showing all logs (including span events) to the console
                 tracing_subscriber::fmt::layer()
                     .event_format(instrument_log_format)
-                    .with_span_events(FmtSpan::NEW | FmtSpan::CLOSE)
+                    .with_span_events(FmtSpan::NEW)
                     .with_ansi(true)
                     .with_writer(io::stdout),
             )
@@ -430,7 +430,7 @@ impl<R: AppRuntime> LogService<R> {
                 let timestamp =
                     NaiveDateTime::parse_from_str(&log_entry.timestamp, TIMESTAMP_FORMAT).map_err(
                         |e| {
-                            joinerror::Error::new::<()>(format!(
+                            Error::new::<()>(format!(
                                 "invalid log entry timestamp {}: {}",
                                 log_entry.timestamp,
                                 e.to_string()
