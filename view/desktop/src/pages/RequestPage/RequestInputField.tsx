@@ -105,7 +105,7 @@ export const RequestInputField = memo(
               <button
                 className={cn(
                   "flex items-center justify-between",
-                  "gap-0.5 px-2.5 py-3 pr-1 pl-3",
+                  "gap-0.5 px-2.5 py-[10px] pr-1 pl-3",
                   "transition-colors",
                   "rounded-md rounded-r-none",
                   "cursor-pointer font-bold",
