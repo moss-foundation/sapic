@@ -37,7 +37,7 @@ export type AddVariableParams = {
 /**
  * @category Type
  */
-export type CollectionInfo = { id: string; displayName: string; order?: number };
+export type BranchInfo = { name: string; ahead?: number; behind?: number };
 
 /**
  * @category Type
@@ -147,6 +147,8 @@ export type GitHubImportParams = {
   branch?: string;
 };
 
+export type GitHubVcsInfo = { branch: BranchInfo; url: string; updatedAt?: string; owner?: string };
+
 /**
  * @category Type
  */
@@ -169,6 +171,8 @@ export type GitLabImportParams = {
   branch?: string;
 };
 
+export type GitLabVcsInfo = { branch: BranchInfo; url: string; updatedAt?: string; owner?: string };
+
 export type ImportCollectionParams = {
   name: string;
   order: number;
@@ -186,18 +190,6 @@ export type ImportCollectionSource = { "gitHub": GitHubImportParams } | { "gitLa
  * @category Type
  */
 export type PanelPartStateInfo = { size: number; visible: boolean };
-
-/**
- * @category Type
- */
-export type RepositoryInfo = {
-  /**
-   * A timestamp like 2024-10-05T12:19:15Z
-   */
-  createdAt: string;
-  updatedAt: string;
-  owner: string;
-};
 
 /**
  * @category Type
@@ -270,3 +262,8 @@ export type VariableInfo = {
  * @category Type
  */
 export type VariableOptions = { disabled: boolean };
+
+/**
+ * @category Type
+ */
+export type VcsInfo = { "gitHub": GitHubVcsInfo } | { "gitLab": GitLabVcsInfo };

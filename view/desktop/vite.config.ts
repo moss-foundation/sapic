@@ -18,4 +18,10 @@ export default defineConfig({
       "@/store": resolve(__dirname, "src/store"),
     },
   },
+  build: {
+    // don't minify for debug builds
+    minify: !process.env.TAURI_ENV_DEBUG ? "esbuild" : false,
+    // produce sourcemaps for debug builds
+    sourcemap: !!process.env.TAURI_ENV_DEBUG,
+  },
 });

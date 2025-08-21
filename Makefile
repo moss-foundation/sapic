@@ -61,6 +61,7 @@ WORKSPACE_MODELS_DIR := crates/moss-workspace
 ACTIVITY_INDICATOR_MODELS_DIR := crates/moss-activity-indicator
 API_MODELS_DIR := crates/moss-api
 GIT_HOSTING_PROVIDER_MODELS_DIR := crates/moss-git-hosting-provider
+GIT_MODELS_DIR := crates/moss-git
 
 # ---- Command Executables ----
 PNPM := pnpm
@@ -76,7 +77,7 @@ UV := uv
 ## Run the desktop application in development mode
 .PHONY: run-desktop
 run-desktop:
-	@cd $(DESKTOP_DIR) && $(PNPM) tauri dev
+	@cd $(DESKTOP_DIR) && $(PNPM) tauri dev --features devtools
 
 
 # ======================================================
@@ -142,6 +143,7 @@ $(eval $(call gen_bindings,activity-indicator,ACTIVITY_INDICATOR_MODELS_DIR))
 $(eval $(call gen_bindings,bindingutils,BINDINGUTILS_DIR))
 $(eval $(call gen_bindings,api,API_MODELS_DIR))
 $(eval $(call gen_bindings,git-hosting-provider,GIT_HOSTING_PROVIDER_MODELS_DIR))
+$(eval $(call gen_bindings,git,GIT_MODELS_DIR))
 
 gen-app-bindings:
 gen-collection-bindings:
@@ -151,6 +153,7 @@ gen-activity-indicator-bindings:
 gen-bindingutils-bindings:
 gen-api-bindings:
 gen-git-hosting-provider-bindings:
+gen-git-bindings:
 
 ## Generate all TypeScript bindings
 .PHONY: gen-bindings
@@ -264,5 +267,5 @@ tidy: gen-license workspace-audit check-unused-deps
 ## Create a release build
 .PHONY: build
 build:
-	# Enable compression feature for reducing binary size
-	$(CARGO) build --bin desktop --features compression
+	@echo "Building with compression feature for reducing binary size..."
+	@cd $(DESKTOP_DIR) && $(PNPM) run tauri build --features compression

@@ -4,6 +4,7 @@ import type { ChangeCollectionId } from "./primitives";
 import type {
   ActivitybarPartStateInfo,
   AddVariableParams,
+  Contributor,
   CreateCollectionGitParams,
   EditorPartStateInfo,
   EnvironmentGroup,
@@ -15,6 +16,7 @@ import type {
   UpdateEnvironmentParams,
   UpdateVariableParams,
   VariableInfo,
+  VcsInfo,
 } from "./types";
 
 /**
@@ -103,6 +105,21 @@ export type DeleteEnvironmentOutput = { id: string };
 /**
  * @category Operation
  */
+export type DescribeCollectionInput = { id: string };
+
+/**
+ * @category Operation
+ */
+export type DescribeCollectionOutput = {
+  name: string;
+  vcs?: VcsInfo;
+  contributors: Array<Contributor>;
+  createdAt: string;
+};
+
+/**
+ * @category Operation
+ */
 export type DescribeEnvironmentInput = { id: string };
 
 /**
@@ -120,6 +137,9 @@ export type DescribeStateOutput = {
   activitybar?: ActivitybarPartStateInfo;
 };
 
+/**
+ * @category Operation
+ */
 export type ImportCollectionInput = {
   name: string;
   order: number;

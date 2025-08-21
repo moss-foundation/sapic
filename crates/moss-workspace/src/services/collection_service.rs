@@ -368,7 +368,7 @@ impl<R: AppRuntime> CollectionService<R> {
             order: Some(params.order),
             expanded: true,
             // FIXME: Rethink Manifest file and repository storage
-            repository: desc.repository,
+            repository: desc.repository.map(|repo_desc| repo_desc.repository),
             icon_path,
             abs_path,
             external_path: None,
@@ -383,7 +383,15 @@ impl<R: AppRuntime> CollectionService<R> {
         let id_str = id.to_string();
         let abs_path = self.abs_path.join(id_str);
 
+        let mut state_lock = self.state.write().await;
+
+        let item = state_lock.collections.remove(&id);
+        let item_existed = item.is_some();
+
         if abs_path.exists() {
+            if let Some(item) = item {
+                item.dispose().await?;
+            }
             self.fs
                 .remove_dir(
                     &abs_path,
@@ -398,8 +406,6 @@ impl<R: AppRuntime> CollectionService<R> {
                 })?;
         }
 
-        let mut state_lock = self.state.write().await;
-        let item = state_lock.collections.remove(&id);
         state_lock.expanded_items.remove(&id);
 
         {
@@ -415,7 +421,7 @@ impl<R: AppRuntime> CollectionService<R> {
             txn.commit()?;
         }
 
-        if let Some(_item) = item {
+        if item_existed {
             Ok(Some(abs_path))
         } else {
             Ok(None)
@@ -498,7 +504,7 @@ impl<R: AppRuntime> CollectionService<R> {
                     name: summary.name,
                     order: item.order,
                     expanded,
-                    repository: summary.repository,
+                    repository: summary.repository.map(|repo_desc| repo_desc.repository),
                     icon_path,
                     abs_path: item.handle.abs_path().clone(),
                     external_path: None, // TODO: implement
@@ -507,7 +513,6 @@ impl<R: AppRuntime> CollectionService<R> {
         })
     }
 }
-
 async fn restore_collections<R: AppRuntime>(
     ctx: &R::AsyncContext,
     abs_path: &Path,
@@ -531,17 +536,25 @@ async fn restore_collections<R: AppRuntime>(
         }
 
         let id_str = entry.file_name().to_string_lossy().to_string();
-        let id: CollectionId = id_str.into();
+        let id: CollectionId = id_str.clone().into();
 
         let collection = {
             let collection_abs_path: Arc<Path> = entry.path().to_owned().into();
 
-            CollectionBuilder::new(fs.clone(), github_client.clone(), gitlab_client.clone())
-                .load(CollectionLoadParams {
-                    internal_abs_path: collection_abs_path,
-                })
-                .await
-                .join_err::<()>("failed to rebuild collection")?
+            let collection_result =
+                CollectionBuilder::new(fs.clone(), github_client.clone(), gitlab_client.clone())
+                    .load(CollectionLoadParams {
+                        internal_abs_path: collection_abs_path,
+                    })
+                    .await;
+            match collection_result {
+                Ok(collection) => collection,
+                Err(e) => {
+                    // TODO: Let the frontend know a collection is invalid
+                    println!("failed to rebuild collection `{}`: {}", id_str, e);
+                    continue;
+                }
+            }
         };
 
         collections.push((id, collection));

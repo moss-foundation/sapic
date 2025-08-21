@@ -6,7 +6,7 @@ use moss_environment::models::{
     primitives::{EnvironmentId, VariableId},
     types::{AddVariableParams, UpdateVariableParams, VariableInfo},
 };
-use moss_git::url::GIT_URL_REGEX;
+use moss_git::{models::types::BranchInfo, url::GIT_URL_REGEX};
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, path::PathBuf};
 use ts_rs::TS;
@@ -125,17 +125,6 @@ fn validate_change_repository(repo: &ChangeString) -> Result<(), ValidationError
             .ok_or(ValidationError::new("Invalid Git URL format")),
         ChangeString::Remove => Ok(()),
     }
-}
-
-/// @category Type
-#[derive(Debug, PartialEq, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct CollectionInfo {
-    pub id: String,
-    pub display_name: String,
-    pub order: Option<isize>,
 }
 
 /// @category Type
@@ -284,4 +273,35 @@ pub struct GitLabCreateParams {
     pub repository: String,
     /// The name of the default branch
     pub branch: String,
+}
+
+/// @category Type
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub enum VcsInfo {
+    GitHub(GitHubVcsInfo),
+    GitLab(GitLabVcsInfo),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct GitHubVcsInfo {
+    pub branch: BranchInfo,
+    pub url: String,
+    pub updated_at: Option<String>,
+    pub owner: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct GitLabVcsInfo {
+    pub branch: BranchInfo,
+    pub url: String,
+    pub updated_at: Option<String>,
+    pub owner: Option<String>,
 }
