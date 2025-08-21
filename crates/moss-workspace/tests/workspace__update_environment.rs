@@ -22,6 +22,8 @@ use serde_json::Value as JsonValue;
 
 use crate::shared::setup_test_workspace;
 
+// TODO: Test updating collection_id once it's implemented
+
 #[tokio::test]
 async fn update_environment_success() {
     let (ctx, workspace, cleanup) = setup_test_workspace().await;
@@ -50,7 +52,6 @@ async fn update_environment_success() {
                 inner: UpdateEnvironmentParams {
                     id: create_environment_output.id.clone(),
                     name: Some(new_environment_name.clone()),
-                    collection_id: None,
                     order: Some(42),
                     color: Some(ChangeString::Update("#000000".to_string())),
                     expanded: Some(false),
@@ -144,7 +145,6 @@ async fn update_environment_add_variables() {
                 inner: UpdateEnvironmentParams {
                     id: id.clone(),
                     name: None,
-                    collection_id: None,
                     order: None,
                     color: None,
                     expanded: None,
@@ -224,7 +224,6 @@ async fn update_environment_update_variables() {
                 inner: UpdateEnvironmentParams {
                     id: environment_id.clone(),
                     name: None,
-                    collection_id: None,
                     order: None,
                     color: None,
                     expanded: None,
@@ -272,7 +271,6 @@ async fn update_environment_update_variables() {
                 inner: UpdateEnvironmentParams {
                     id: environment_id.clone(),
                     name: None,
-                    collection_id: None,
                     order: None,
                     color: None,
                     expanded: None,
@@ -346,7 +344,6 @@ async fn update_environment_update_variables_nonexistent() {
                 inner: UpdateEnvironmentParams {
                     id: environment_id.clone(),
                     name: None,
-                    collection_id: None,
                     order: None,
                     color: None,
                     expanded: None,
@@ -400,7 +397,6 @@ async fn update_environment_delete_variables() {
                 inner: UpdateEnvironmentParams {
                     id: environment_id.clone(),
                     name: None,
-                    collection_id: None,
                     order: None,
                     color: None,
                     expanded: None,
@@ -433,7 +429,6 @@ async fn update_environment_delete_variables() {
                 inner: UpdateEnvironmentParams {
                     id: environment_id.clone(),
                     name: None,
-                    collection_id: None,
                     order: None,
                     color: None,
                     expanded: None,
@@ -489,7 +484,6 @@ async fn update_environment_delete_variables_nonexistent() {
                 inner: UpdateEnvironmentParams {
                     id: environment_id.clone(),
                     name: None,
-                    collection_id: None,
                     order: None,
                     color: None,
                     expanded: None,

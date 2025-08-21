@@ -29,6 +29,7 @@ use std::{
 use tokio::sync::OnceCell;
 
 use crate::{
+    dirs,
     edit::CollectionEdit,
     helpers::fetch_contributors,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
@@ -131,6 +132,14 @@ impl<R: AppRuntime> Collection<R> {
 
     pub fn icon_path(&self) -> Option<PathBuf> {
         self.set_icon_service.icon_path()
+    }
+
+    pub fn environments_path(&self) -> PathBuf {
+        self.abs_path.join(dirs::ENVIRONMENTS_DIR)
+    }
+
+    pub async fn describe(&self) -> joinerror::Result<DescribeCollection> {
+        let manifest_path = self.abs_path.join(MANIFEST_FILE_NAME);
     }
 
     pub async fn details(&self) -> joinerror::Result<CollectionDetails> {
@@ -292,6 +301,7 @@ impl<R: AppRuntime> Collection<R> {
 
         Ok(())
     }
+
     pub async fn environments(&self) -> Result<&EnvironmentMap<R>> {
         let result = self
             .environments

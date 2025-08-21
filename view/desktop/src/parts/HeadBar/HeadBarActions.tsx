@@ -25,6 +25,10 @@ export interface HeadBarActionProps {
   setShowDeleteConfirmModal?: (show: boolean) => void;
   workspaceToDelete?: { id: string; name: string } | null;
   setWorkspaceToDelete?: (workspace: { id: string; name: string } | null) => void;
+  closeDeleteWorkspaceModal?: () => void;
+  showDeleteWorkspaceModal?: boolean;
+  setShowDeleteWorkspaceModal?: (show: boolean) => void;
+  openDeleteWorkspaceModal?: () => void;
 }
 
 /**
@@ -119,6 +123,7 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
     openOpenWorkspaceModal,
     setShowDeleteConfirmModal,
     setWorkspaceToDelete,
+    openDeleteWorkspaceModal,
   } = props;
 
   const { mutate: openWorkspace } = useOpenWorkspace();
@@ -146,12 +151,12 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
       } else {
         if (actionType === "delete") {
           const workspace = getWorkspaceById(workspaceId);
-          if (workspace && setShowDeleteConfirmModal && setWorkspaceToDelete) {
-            setWorkspaceToDelete({
+          if (workspace) {
+            setWorkspaceToDelete?.({
               id: workspaceId,
               name: workspace.name,
             });
-            setShowDeleteConfirmModal(true);
+            openDeleteWorkspaceModal?.();
           }
           return;
         }
@@ -174,35 +179,44 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
       }
     }
 
-    if (action === "new-workspace") {
-      openNewWorkspaceModal?.();
-    } else if (action === "open-workspace") {
-      openOpenWorkspaceModal?.();
-    } else if (action === "delete") {
-      if (activeWorkspace && setShowDeleteConfirmModal && setWorkspaceToDelete) {
-        setWorkspaceToDelete({
-          id: activeWorkspace.id,
-          name: activeWorkspace.name,
-        });
-        setShowDeleteConfirmModal(true);
-      }
-    } else if (action === "rename") {
-      if (activeWorkspace) {
-        openPanel("WorkspaceSettings");
-      }
-    } else if (action === "kitchensink") {
-      openPanel("KitchenSink");
-    } else if (action === "logs") {
-      openPanel("Logs");
-    } else if (action === "debug") {
-      setShowDebugPanels(!showDebugPanels);
-    } else if (action === "exit-workspace") {
-      if (activeWorkspace) {
-        closeWorkspace(activeWorkspace.id);
-      }
-    } else {
-      console.log(`Unhandled workspace action: ${action}`);
+    switch (action) {
+      case "new-workspace":
+        openNewWorkspaceModal?.();
+        break;
+      case "open-workspace":
+        openOpenWorkspaceModal?.();
+        break;
+      case "delete":
+        if (activeWorkspace && setShowDeleteConfirmModal && setWorkspaceToDelete) {
+          setWorkspaceToDelete({
+            id: activeWorkspace.id,
+            name: activeWorkspace.name,
+          });
+          setShowDeleteConfirmModal(true);
+        }
+        break;
+      case "rename":
+        if (activeWorkspace) {
+          openPanel("WorkspaceSettings");
+        }
+        break;
+      case "kitchensink":
+        openPanel("KitchenSink");
+        break;
+      case "logs":
+        openPanel("Logs");
+        break;
+      case "debug":
+        setShowDebugPanels(!showDebugPanels);
+        break;
+      case "exit-workspace":
+        if (activeWorkspace) {
+          closeWorkspace(activeWorkspace.id);
+        }
+        break;
+      default:
+        console.log(`Unhandled workspace action: ${action}`);
+        break;
     }
-    return;
   };
 };

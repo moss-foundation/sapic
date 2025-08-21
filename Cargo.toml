@@ -40,6 +40,7 @@ members = [
     # Tools
     #
     "tools/xtask",
+    "crates/moss-id-macro",
 ]
 
 [workspace.dependencies]
@@ -72,6 +73,7 @@ moss_bindingutils = { path = "crates/moss-bindingutils" }
 moss_wasm = { path = "crates/moss-wasm" }
 moss_edit = { path = "crates/moss-edit" }
 moss_logging = { path = "crates/moss-logging" }
+moss_id_macro = { path = "crates/moss-id-macro"}
 atomic_fs = { path = "libs/atomic-fs" }
 
 #
@@ -119,7 +121,7 @@ toml_edit = "0.22"
 nanoid = "0.4.0"
 rustc-hash = "2.1.1"
 derive_more = "2.0.1"
-image = "0.25.6"
+image = { version = "0.25.6", default-features = false, features = ["png"]}
 hcl-rs = "0.18.5"
 indexmap = "2.9.0"
 wasmtime = "34.0.2"
@@ -129,6 +131,10 @@ sha2 = "0.10.9"
 jsonptr = "0.7.1"
 json-patch = "4.0.0"
 urlencoding = "2.1.3"
+tokio-util = "0.7.12"
+proc-macro2 = "1.0.101"
+quote = "1.0.40"
+syn = {version = "2.0.106", features = ["full"]}
 
 [profile.release]
 opt-level = 3 # Maximize performance

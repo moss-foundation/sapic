@@ -1,7 +1,7 @@
 use derive_more::{Deref, DerefMut};
 use futures::Stream;
 use joinerror::{OptionExt, ResultExt};
-use moss_applib::{AppRuntime, PublicServiceMarker, ServiceMarker};
+use moss_applib::{AppRuntime, PublicServiceMarker, ServiceMarker, subscription::EventEmitter};
 use moss_collection::{
     Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
     builder::{
@@ -14,6 +14,7 @@ use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
 use moss_git_hosting_provider::{
     github::client::GitHubClient, gitlab::client::GitLabClient, models::primitives::GitProviderType,
 };
+use rustc_hash::FxHashMap;
 use std::{
     collections::{HashMap, HashSet},
     path::{Path, PathBuf},
@@ -23,6 +24,7 @@ use std::{
 use tokio::sync::RwLock;
 
 use crate::{
+    builder::{OnDidAddCollection, OnDidDeleteCollection},
     dirs,
     models::{
         primitives::CollectionId,
@@ -82,6 +84,8 @@ pub struct CollectionService<R: AppRuntime> {
     state: Arc<RwLock<ServiceState<R>>>,
     github_client: Arc<GitHubClient>,
     gitlab_client: Arc<GitLabClient>,
+    on_did_delete_collection_emitter: EventEmitter<OnDidDeleteCollection>,
+    on_did_add_collection_emitter: EventEmitter<OnDidAddCollection>,
 }
 
 impl<R: AppRuntime> ServiceMarker for CollectionService<R> {}
@@ -95,6 +99,10 @@ impl<R: AppRuntime> CollectionService<R> {
         storage: Arc<StorageService<R>>,
         github_client: Arc<GitHubClient>,
         gitlab_client: Arc<GitLabClient>,
+        environment_sources: &mut FxHashMap<Arc<String>, PathBuf>,
+        // e_aggregation_tx: watch::Sender<FxHashMap<String, EnvironmentProvider>>,
+        on_collection_did_delete_emitter: EventEmitter<OnDidDeleteCollection>,
+        on_collection_did_add_emitter: EventEmitter<OnDidAddCollection>,
     ) -> joinerror::Result<Self> {
         let abs_path = abs_path.join(dirs::COLLECTIONS_DIR);
         let expanded_items = if let Ok(expanded_items) = storage.get_expanded_items(ctx).await {
@@ -113,6 +121,10 @@ impl<R: AppRuntime> CollectionService<R> {
         )
         .await?;
 
+        for (id, collection) in collections.iter() {
+            environment_sources.insert(id.clone().inner(), collection.environments_path());
+        }
+
         Ok(Self {
             abs_path,
             fs,
@@ -123,6 +135,8 @@ impl<R: AppRuntime> CollectionService<R> {
             })),
             github_client,
             gitlab_client,
+            on_did_delete_collection_emitter: on_collection_did_delete_emitter,
+            on_did_add_collection_emitter: on_collection_did_add_emitter,
         })
     }
 
@@ -224,18 +238,21 @@ impl<R: AppRuntime> CollectionService<R> {
         // ctx.subscribe(Subscribe::OnCollectionDidChange(id, on_did_change))
         //     .await;
 
-        let mut state_lock = self.state.write().await;
-        state_lock.expanded_items.insert(id.to_owned());
-        state_lock.collections.insert(
-            id.to_owned(),
-            CollectionItem {
-                id: id.to_owned(),
-                order: Some(params.order),
-                handle: Arc::new(collection),
-            },
-        );
+        {
+            let mut state_lock = self.state.write().await;
+            state_lock.expanded_items.insert(id.to_owned());
+            state_lock.collections.insert(
+                id.to_owned(),
+                CollectionItem {
+                    id: id.to_owned(),
+                    order: Some(params.order),
+                    handle: Arc::new(collection),
+                },
+            );
+        }
 
         {
+            let state_lock = self.state.read().await;
             let mut txn = self
                 .storage
                 .begin_write(ctx)
@@ -251,6 +268,12 @@ impl<R: AppRuntime> CollectionService<R> {
 
             txn.commit()?;
         }
+
+        self.on_did_add_collection_emitter
+            .fire(OnDidAddCollection {
+                collection_id: id.clone(),
+            })
+            .await;
 
         Ok(CollectionItemDescription {
             id: id.to_owned(),
@@ -363,6 +386,12 @@ impl<R: AppRuntime> CollectionService<R> {
 
         txn.commit()?;
 
+        self.on_did_add_collection_emitter
+            .fire(OnDidAddCollection {
+                collection_id: id.clone(),
+            })
+            .await;
+
         Ok(CollectionItemDescription {
             id: id.clone(),
             name: desc.name,
@@ -421,6 +450,12 @@ impl<R: AppRuntime> CollectionService<R> {
 
             txn.commit()?;
         }
+
+        self.on_did_delete_collection_emitter
+            .fire(OnDidDeleteCollection {
+                collection_id: id.to_owned(),
+            })
+            .await;
 
         if item_existed {
             Ok(Some(abs_path))

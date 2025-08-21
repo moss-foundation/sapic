@@ -20,12 +20,14 @@ export const WelcomePage = () => {
     element.scrollIntoView({ behavior: "smooth" });
   };
   return (
-    <Scrollbar className="relative z-[50] h-full">
+    <Scrollbar className="relative h-full">
       <section className="relative flex min-h-[calc(100vh-98px)] flex-col gap-6 px-[20px] pt-32 lg:px-[60px] xl:px-[140px]">
-        <div className="flex flex-col gap-0.5">
-          <h1 className="fill-[var(--moss-gray-6)] text-[34px]">Simple API Client</h1>
+        <div className="flex flex-col gap-4 leading-6">
+          <h1 className="text-[34px]">Simple API Client</h1>
 
-          <p className="text-lg text-(--moss-secondary-text)">Design APIs, Send Requests, Unmatched Git Integration</p>
+          <p className="text-lg text-pretty text-(--moss-secondary-text)">
+            Design APIs, Send Requests, Unmatched Git Integration
+          </p>
         </div>
 
         <div className="flex flex-col gap-7.5">

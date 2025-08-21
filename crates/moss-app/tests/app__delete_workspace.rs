@@ -9,7 +9,6 @@ use moss_app::{
         primitives::WorkspaceId,
     },
 };
-use moss_common::api::OperationError;
 use moss_fs::{FileSystem, RealFileSystem};
 use moss_testutils::random_name::random_workspace_name;
 use moss_workspace::models::primitives::WorkspaceMode;
@@ -181,7 +180,6 @@ async fn delete_workspace_nonexistent() {
         .await;
 
     assert!(delete_result.is_err());
-    assert!(matches!(delete_result, Err(OperationError::NotFound(_))));
 
     cleanup().await;
 }

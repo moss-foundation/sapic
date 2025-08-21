@@ -1,5 +1,5 @@
+use moss_api::ext::ValidationResultExt;
 use moss_applib::AppRuntime;
-use moss_common::api::OperationResult;
 use validator::Validate;
 
 use crate::{
@@ -8,12 +8,13 @@ use crate::{
 };
 
 impl<R: AppRuntime> App<R> {
+    // TODO: Support renaming non-active workspace?
     pub async fn update_workspace(
         &self,
         _ctx: &R::AsyncContext,
         input: &UpdateWorkspaceInput,
-    ) -> OperationResult<()> {
-        input.validate()?;
+    ) -> joinerror::Result<()> {
+        input.validate().join_err_bare()?;
 
         self.workspace_service
             .update_workspace(WorkspaceItemUpdateParams {

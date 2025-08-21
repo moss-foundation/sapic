@@ -99,8 +99,8 @@ export const Sidebar = () => {
     return (
       <BaseSidebar>
         <ActivityBar />
-        <div className="min-h-0 flex-1">{sidebarContent}</div>
-        <div className="flex w-full justify-end border-t border-t-(--moss-border-color) px-1 py-2">
+        <div className="min-h-0 flex-1 overflow-hidden">{sidebarContent}</div>
+        <div className="z-20 flex w-full justify-end border-t border-t-(--moss-border-color) px-1 py-2">
           <DesignModeToggle />
         </div>
       </BaseSidebar>
@@ -110,8 +110,8 @@ export const Sidebar = () => {
   if (position === ACTIVITYBAR_POSITION.BOTTOM) {
     return (
       <BaseSidebar>
-        <div className="min-h-0 flex-1">{sidebarContent}</div>
-        <div className="flex w-full justify-end border-t border-t-(--moss-border-color) px-1 py-2">
+        <div className="min-h-0 flex-1 overflow-hidden">{sidebarContent}</div>
+        <div className="z-20 flex w-full justify-end border-t border-t-(--moss-border-color) px-1 py-2">
           <DesignModeToggle />
         </div>
         <ActivityBar />
@@ -121,8 +121,8 @@ export const Sidebar = () => {
 
   return (
     <BaseSidebar>
-      <div className="min-h-0 flex-1">{sidebarContent}</div>
-      <div className="flex w-full justify-end border-t border-t-(--moss-border-color) px-1 py-2">
+      <div className="min-h-0 flex-1 overflow-hidden">{sidebarContent}</div>
+      <div className="z-20 flex w-full justify-end border-t border-t-(--moss-border-color) px-1 py-2">
         <DesignModeToggle />
       </div>
     </BaseSidebar>

@@ -2,7 +2,6 @@
 pub mod shared;
 
 use moss_app::models::operations::{CreateWorkspaceInput, UpdateWorkspaceInput};
-use moss_common::api::OperationError;
 use moss_testutils::random_name::random_workspace_name;
 use moss_workspace::models::primitives::WorkspaceMode;
 
@@ -81,10 +80,6 @@ async fn rename_workspace_empty_name() {
         .await;
 
     assert!(rename_result.is_err());
-    assert!(matches!(
-        rename_result,
-        Err(OperationError::InvalidInput(_))
-    ));
 
     // Verify workspace name didn't change
     let list_workspaces = app.list_workspaces(&ctx).await.unwrap();
@@ -147,10 +142,6 @@ async fn rename_workspace_no_active_workspace() {
         .await;
 
     assert!(rename_result.is_err());
-    assert!(matches!(
-        rename_result,
-        Err(OperationError::FailedPrecondition(_))
-    ));
 
     cleanup().await;
 }
