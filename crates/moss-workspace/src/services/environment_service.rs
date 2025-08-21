@@ -327,7 +327,6 @@ where
             let state_lock = self.state.read().await;
             let collection_id_inner = collection_id.inner();
 
-            dbg!(&state_lock.sources);
             let source = state_lock
                 .sources
                 .get(&collection_id_inner)
