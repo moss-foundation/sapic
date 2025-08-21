@@ -8,7 +8,6 @@ use moss_app::{
     storage::segments::{SEGKEY_LAST_ACTIVE_WORKSPACE, segkey_last_opened_at},
 };
 
-use moss_common::api::OperationError;
 use moss_storage::storage::operations::{GetItem, ListByPrefix};
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_workspace_name};
 use moss_workspace::models::primitives::WorkspaceMode;
@@ -94,10 +93,7 @@ async fn create_workspace_empty_name() {
         )
         .await;
 
-    assert!(matches!(
-        create_result,
-        Err(OperationError::InvalidInput(_))
-    ));
+    assert!(create_result.is_err());
 
     // Ensure no workspace was created or activated
     let list_workspaces = app.list_workspaces(&ctx).await.unwrap();

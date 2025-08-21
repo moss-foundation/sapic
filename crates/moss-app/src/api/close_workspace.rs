@@ -1,5 +1,5 @@
+use joinerror::{Error, OptionExt};
 use moss_applib::AppRuntime;
-use moss_common::api::{OperationError, OperationOptionExt, OperationResult};
 
 use crate::{
     app::App,
@@ -11,21 +11,21 @@ impl<R: AppRuntime> App<R> {
         &self,
         ctx: &R::AsyncContext,
         input: &CloseWorkspaceInput,
-    ) -> OperationResult<CloseWorkspaceOutput> {
+    ) -> joinerror::Result<CloseWorkspaceOutput> {
         let workspace_id = self
             .workspace()
             .await
             .map(|w| w.id())
-            .map_err_as_failed_precondition("No active workspace to close")?;
+            .ok_or_join_err::<()>("no active workspace to close")?;
 
         if workspace_id != input.id {
-            return Err(OperationError::InvalidInput(format!(
+            return Err(Error::new::<()>(format!(
                 "Workspace {} is not currently active",
                 input.id
             )));
         }
 
-        let _ = self.workspace_service.deactivate_workspace(ctx).await;
+        self.workspace_service.deactivate_workspace(ctx).await?;
 
         Ok(CloseWorkspaceOutput { id: workspace_id })
     }

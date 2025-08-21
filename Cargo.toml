@@ -121,7 +121,7 @@ toml_edit = "0.22"
 nanoid = "0.4.0"
 rustc-hash = "2.1.1"
 derive_more = "2.0.1"
-image = "0.25.6"
+image = { version = "0.25.6", default-features = false, features = ["png"]}
 hcl-rs = "0.18.5"
 indexmap = "2.9.0"
 wasmtime = "34.0.2"
