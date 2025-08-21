@@ -1,8 +1,8 @@
-use moss_id_macro::generate_id_type;
+use moss_id_macro::ids;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-generate_id_type!(CollectionId);
+ids!([CollectionId]);
 
 /// @category Type
 #[derive(Debug, PartialEq, Serialize, Deserialize, TS, Clone)]

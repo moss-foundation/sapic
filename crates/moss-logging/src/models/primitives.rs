@@ -1,3 +1,3 @@
-use moss_id_macro::generate_id_type;
+use moss_id_macro::ids;
 
-generate_id_type!(LogEntryId);
+ids!([LogEntryId]);

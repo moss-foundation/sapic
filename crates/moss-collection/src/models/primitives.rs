@@ -1,15 +1,9 @@
-use moss_id_macro::generate_id_type;
+use moss_id_macro::ids;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use ts_rs::TS;
 
-generate_id_type!(EntryId);
-
-generate_id_type!(QueryParamId);
-
-generate_id_type!(PathParamId);
-
-generate_id_type!(HeaderId);
+ids!([EntryId, QueryParamId, PathParamId, HeaderId]);
 
 /// @category Primitive
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]

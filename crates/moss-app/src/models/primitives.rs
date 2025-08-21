@@ -1,4 +1,4 @@
-use moss_id_macro::generate_id_type;
+use moss_id_macro::ids;
 use serde::{Deserialize, Serialize};
 use tracing::Level;
 use ts_rs::TS;
@@ -9,7 +9,7 @@ use ts_rs::TS;
 pub type LocaleId = String;
 pub type ThemeId = String;
 
-generate_id_type!(WorkspaceId);
+ids!([WorkspaceId]);
 
 // ########################################################
 // ###                      Theme                       ###
