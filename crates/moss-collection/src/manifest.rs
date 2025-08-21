@@ -10,7 +10,7 @@ pub struct ManifestFile {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ManifestRepository {
+pub(super) struct ManifestRepository {
     pub url: String,
     pub git_provider_type: GitProviderType,
 }

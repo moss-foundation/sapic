@@ -8,6 +8,7 @@ use moss_collection::{
         CollectionCloneGitParams, CollectionCloneParams, CollectionCreateGitParams,
         CollectionCreateParams, CollectionLoadParams,
     },
+    collection::VcsSummary,
 };
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
 use moss_git_hosting_provider::{
@@ -331,7 +332,7 @@ impl<R: AppRuntime> CollectionService<R> {
             }
         };
 
-        let desc = collection.describe().await?;
+        let desc = collection.details().await?;
 
         // FIXME: Should we allow user to set local icon when cloning a collection?
         let icon_path = collection.icon_path();
@@ -368,7 +369,7 @@ impl<R: AppRuntime> CollectionService<R> {
             order: Some(params.order),
             expanded: true,
             // FIXME: Rethink Manifest file and repository storage
-            repository: desc.repository.map(|repo_desc| repo_desc.repository),
+            repository: desc.vcs.and_then(|vcs| vcs.url()),
             icon_path,
             abs_path,
             external_path: None,
@@ -488,7 +489,7 @@ impl<R: AppRuntime> CollectionService<R> {
         Box::pin(async_stream::stream! {
             let state_lock = state.read().await;
             for (id, item) in state_lock.collections.iter() {
-                let desc = item.describe().await;
+                let desc = item.details().await;
                 if desc.is_err() {
                     // TODO: log error
                     println!("failed to parse collection {} manifest file", id.to_string());
@@ -504,7 +505,10 @@ impl<R: AppRuntime> CollectionService<R> {
                     name: summary.name,
                     order: item.order,
                     expanded,
-                    repository: summary.repository.map(|repo_desc| repo_desc.repository),
+                    repository: summary.vcs.map(|vcs| match vcs {
+                        VcsSummary::GitHub { url, .. } => url,
+                        VcsSummary::GitLab { url, .. } => url,
+                    }),
                     icon_path,
                     abs_path: item.handle.abs_path().clone(),
                     external_path: None, // TODO: implement

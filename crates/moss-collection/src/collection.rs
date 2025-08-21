@@ -29,7 +29,7 @@ use std::{
 use tokio::sync::OnceCell;
 
 use crate::{
-    DescribeCollection, DescribeRepository,
+    // DescribeCollection, DescribeRepository,
     edit::CollectionEdit,
     helpers::{fetch_contributors, fetch_vcs_summary},
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
@@ -75,6 +75,15 @@ pub enum VcsSummary {
     },
 }
 
+impl VcsSummary {
+    pub fn url(&self) -> Option<String> {
+        match self {
+            VcsSummary::GitHub { url, .. } => Some(url.clone()),
+            VcsSummary::GitLab { url, .. } => Some(url.clone()),
+        }
+    }
+}
+
 pub struct CollectionDetails {
     pub name: String,
     pub vcs: Option<VcsSummary>,
@@ -117,51 +126,67 @@ impl<R: AppRuntime> Collection<R> {
     pub fn icon_path(&self) -> Option<PathBuf> {
         self.set_icon_service.icon_path()
     }
-    pub async fn describe(&self) -> joinerror::Result<DescribeCollection> {
-        let manifest_path = self.abs_path.join(MANIFEST_FILE_NAME);
 
-        let rdr = self
-            .fs
-            .open_file(&manifest_path)
-            .await
-            .join_err_with::<()>(|| {
-                format!("failed to open manifest file: {}", manifest_path.display())
-            })?;
+    // pub async fn describe(&self) -> joinerror::Result<DescribeCollection> {
+    //     let manifest_path = self.abs_path.join(MANIFEST_FILE_NAME);
 
-        let manifest: ManifestFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
-            format!("failed to parse manifest file: {}", manifest_path.display())
-        })?;
+    //     let rdr = self
+    //         .fs
+    //         .open_file(&manifest_path)
+    //         .await
+    //         .join_err_with::<()>(|| {
+    //             format!("failed to open manifest file: {}", manifest_path.display())
+    //         })?;
 
-        Ok(DescribeCollection {
-            name: manifest.name,
-            repository: manifest.repository.map(|repo| DescribeRepository {
-                repository: repo.url,
-                git_provider_type: repo.git_provider_type,
-            }),
-        })
-    }
+    //     let manifest: ManifestFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
+    //         format!("failed to parse manifest file: {}", manifest_path.display())
+    //     })?;
 
-    pub async fn describe_details(&self) -> joinerror::Result<CollectionDetails> {
-        let desc = self.describe().await?;
-        let created_at_time =
-            std::fs::metadata(self.abs_path.join(MANIFEST_FILE_NAME))?.created()?;
-        let created_at: DateTime<Utc> = created_at_time.into();
+    //     Ok(DescribeCollection {
+    //         name: manifest.name,
+    //         repository: manifest.repository.map(|repo| DescribeRepository {
+    //             repository: repo.url,
+    //             git_provider_type: repo.git_provider_type,
+    //         }),
+    //     })
+    // }
+
+    pub async fn details(&self) -> joinerror::Result<CollectionDetails> {
+        let manifest: ManifestFile = {
+            let manifest_path = self.abs_path.join(MANIFEST_FILE_NAME);
+
+            let rdr = self
+                .fs
+                .open_file(&manifest_path)
+                .await
+                .join_err_with::<()>(|| {
+                    format!("failed to open manifest file: {}", manifest_path.display())
+                })?;
+
+            serde_json::from_reader(rdr).join_err_with::<()>(|| {
+                format!("failed to parse manifest file: {}", manifest_path.display())
+            })?
+        };
+
+        let created_at: DateTime<Utc> = std::fs::metadata(self.abs_path.join(MANIFEST_FILE_NAME))?
+            .created()?
+            .into();
 
         let mut output = CollectionDetails {
-            name: desc.name,
+            name: manifest.name,
             vcs: None,
             contributors: vec![],
             created_at: created_at.to_rfc3339(),
         };
 
-        if let Some(repo_desc) = desc.repository {
-            let repo_ref = match GitUrlForAPI::parse(&repo_desc.repository) {
+        if let Some(repo_desc) = manifest.repository {
+            let repo_ref = match GitUrlForAPI::parse(&repo_desc.url) {
                 Ok(repo_ref) => repo_ref,
                 Err(e) => {
                     // TODO: Tell the frontend
                     println!(
                         "unable to parse repository {}: {}",
-                        repo_desc.repository,
+                        repo_desc.url,
                         e.to_string()
                     );
                     return Ok(output);
