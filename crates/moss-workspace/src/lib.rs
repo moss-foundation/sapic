@@ -1,6 +1,5 @@
 pub mod api;
 pub mod builder;
-pub mod context;
 pub mod edit;
 pub mod manifest;
 pub mod models;
