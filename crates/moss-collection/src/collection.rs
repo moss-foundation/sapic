@@ -15,7 +15,7 @@ use moss_fs::{FileSystem, FsResultExt};
 use moss_git::{models::types::BranchInfo, url::normalize_git_url};
 use moss_git_hosting_provider::{
     GitHostingProvider,
-    common::GitUrlForAPI,
+    common::GitUrl,
     github::client::GitHubClient,
     gitlab::client::GitLabClient,
     models::{primitives::GitProviderType, types::Contributor},
@@ -29,7 +29,6 @@ use std::{
 use tokio::sync::OnceCell;
 
 use crate::{
-    // DescribeCollection, DescribeRepository,
     edit::CollectionEdit,
     helpers::fetch_contributors,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
@@ -134,50 +133,20 @@ impl<R: AppRuntime> Collection<R> {
         self.set_icon_service.icon_path()
     }
 
-    // pub async fn describe(&self) -> joinerror::Result<DescribeCollection> {
-    //     let manifest_path = self.abs_path.join(MANIFEST_FILE_NAME);
-
-    //     let rdr = self
-    //         .fs
-    //         .open_file(&manifest_path)
-    //         .await
-    //         .join_err_with::<()>(|| {
-    //             format!("failed to open manifest file: {}", manifest_path.display())
-    //         })?;
-
-    //     let manifest: ManifestFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
-    //         format!("failed to parse manifest file: {}", manifest_path.display())
-    //     })?;
-
-    //     Ok(DescribeCollection {
-    //         name: manifest.name,
-    //         repository: manifest.repository.map(|repo| DescribeRepository {
-    //             repository: repo.url,
-    //             git_provider_type: repo.git_provider_type,
-    //         }),
-    //     })
-    // }
-
     pub async fn details(&self) -> joinerror::Result<CollectionDetails> {
-        let manifest: ManifestFile = {
-            let manifest_path = self.abs_path.join(MANIFEST_FILE_NAME);
+        let manifest_path = self.abs_path.join(MANIFEST_FILE_NAME);
+        let rdr = self
+            .fs
+            .open_file(&manifest_path)
+            .await
+            .join_err_with::<()>(|| {
+                format!("failed to open manifest file: {}", manifest_path.display())
+            })?;
+        let manifest: ManifestFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
+            format!("failed to parse manifest file: {}", manifest_path.display())
+        })?;
 
-            let rdr = self
-                .fs
-                .open_file(&manifest_path)
-                .await
-                .join_err_with::<()>(|| {
-                    format!("failed to open manifest file: {}", manifest_path.display())
-                })?;
-
-            serde_json::from_reader(rdr).join_err_with::<()>(|| {
-                format!("failed to parse manifest file: {}", manifest_path.display())
-            })?
-        };
-
-        let created_at: DateTime<Utc> = std::fs::metadata(self.abs_path.join(MANIFEST_FILE_NAME))?
-            .created()?
-            .into();
+        let created_at: DateTime<Utc> = std::fs::metadata(&manifest_path)?.created()?.into();
 
         let mut output = CollectionDetails {
             name: manifest.name,
@@ -186,62 +155,55 @@ impl<R: AppRuntime> Collection<R> {
             created_at: created_at.to_rfc3339(),
         };
 
-        if let Some(repo_desc) = manifest.repository {
-            let repo_ref = match GitUrlForAPI::parse(&repo_desc.url) {
-                Ok(repo_ref) => repo_ref,
-                Err(e) => {
-                    // TODO: Tell the frontend
-                    println!(
-                        "unable to parse repository {}: {}",
-                        repo_desc.url,
-                        e.to_string()
-                    );
-                    return Ok(output);
-                }
-            };
-            let git_provider_type = repo_desc.git_provider_type;
-            let client: Arc<dyn GitHostingProvider> = match &git_provider_type {
-                GitProviderType::GitHub => self.github_client.clone(),
-                GitProviderType::GitLab => self.gitlab_client.clone(),
-            };
+        let Some(repo_desc) = manifest.repository else {
+            return Ok(output);
+        };
 
-            output.contributors = fetch_contributors(&repo_ref, client.clone())
-                .await
-                .unwrap_or_else(|e| {
-                    // TODO: Tell the frontend
-                    println!("unable to fetch contributors: {}", e);
-                    Vec::new()
-                });
+        let repo_ref = match GitUrl::parse(&repo_desc.url) {
+            Ok(repo_ref) => repo_ref,
+            Err(e) => {
+                println!("unable to parse repository url{}: {}", repo_desc.url, e);
+                return Ok(output);
+            }
+        };
 
-            output.vcs = match self
-                .fetch_vcs_summary(&repo_ref, git_provider_type, client.clone())
-                .await
-            {
-                Ok(vcs) => Some(vcs),
-                Err(e) => {
-                    // TODO: Tell the fronend
-                    println!("unable to fetch vcs: {}", e);
-                    None
-                }
-            };
-        }
+        let git_provider_type = repo_desc.git_provider_type;
+        let client: Arc<dyn GitHostingProvider> = match &git_provider_type {
+            GitProviderType::GitHub => self.github_client.clone(),
+            GitProviderType::GitLab => self.gitlab_client.clone(),
+        };
+
+        output.contributors = fetch_contributors(&repo_ref, client.clone())
+            .await
+            .unwrap_or_else(|e| {
+                println!("unable to fetch contributors: {}", e);
+                Vec::new()
+            });
+
+        output.vcs = match self
+            .fetch_vcs_summary(&repo_ref, git_provider_type, client)
+            .await
+        {
+            Ok(vcs) => Some(vcs),
+            Err(e) => {
+                println!("unable to fetch vcs: {}", e);
+                None
+            }
+        };
 
         Ok(output)
     }
 
     async fn fetch_vcs_summary(
         &self,
-        repo_ref: &GitUrlForAPI,
+        url: &GitUrl,
         git_provider_type: GitProviderType,
         client: Arc<dyn GitHostingProvider>,
     ) -> joinerror::Result<VcsSummary> {
         let branch = self.git_service.get_current_branch_info().await?;
 
-        let repository_metadata = client.repository_metadata(repo_ref).await;
-        let url = repo_ref.to_string();
-
         // Even if provider API call fails, we want to return repo_url and current branch
-        let (updated_at, owner) = match repository_metadata {
+        let (updated_at, owner) = match client.repository_metadata(url).await {
             Ok(repository_metadata) => (
                 Some(repository_metadata.updated_at),
                 Some(repository_metadata.owner),
@@ -257,13 +219,13 @@ impl<R: AppRuntime> Collection<R> {
         match git_provider_type {
             GitProviderType::GitHub => Ok(VcsSummary::GitHub {
                 branch,
-                url,
+                url: url.to_string(),
                 updated_at,
                 owner,
             }),
             GitProviderType::GitLab => Ok(VcsSummary::GitLab {
                 branch,
-                url,
+                url: url.to_string(),
                 updated_at,
                 owner,
             }),
@@ -341,10 +303,6 @@ impl<R: AppRuntime> Collection<R> {
 
         Ok(result)
     }
-
-    // pub async fn get_current_branch_info(&self) -> joinerror::Result<BranchInfo> {
-    //     self.git_service.get_current_branch_info().await
-    // }
 
     pub async fn dispose(&self) -> joinerror::Result<()> {
         self.git_service.dispose(self.fs.clone()).await

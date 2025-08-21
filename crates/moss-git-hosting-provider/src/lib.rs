@@ -9,7 +9,7 @@ use std::sync::Arc;
 use url::Url;
 
 use crate::{
-    common::GitUrlForAPI,
+    common::GitUrl,
     models::types::{Contributor, RepositoryMetadata, UserInfo},
 };
 
@@ -21,12 +21,10 @@ pub trait GitHostingProvider: GitAuthProvider + Send + Sync {
     // FIXME: Where's the best place to put Provider REST APIs?
     async fn current_user(&self) -> joinerror::Result<UserInfo>;
 
-    async fn contributors(&self, repo_ref: &GitUrlForAPI) -> joinerror::Result<Vec<Contributor>>;
+    async fn contributors(&self, repo_ref: &GitUrl) -> joinerror::Result<Vec<Contributor>>;
 
-    async fn repository_metadata(
-        &self,
-        repo_ref: &GitUrlForAPI,
-    ) -> joinerror::Result<RepositoryMetadata>;
+    async fn repository_metadata(&self, repo_ref: &GitUrl)
+    -> joinerror::Result<RepositoryMetadata>;
 }
 
 pub trait GitAuthProvider {

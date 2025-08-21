@@ -18,10 +18,6 @@ impl<R: AppRuntime> Workspace<R> {
 
         let mut total_returned = 0;
         while let Some(desc) = stream.next().await {
-            // TODO: It might be better to separate the sending of information fetched from HTTP
-            // from the main streaming, which will make the application more responsive
-            // Right now the latency from HTTP requests slows down this operation quite a lot
-
             let event = StreamCollectionsEvent {
                 id: desc.id,
                 name: desc.name,

@@ -1,10 +1,8 @@
-use moss_git_hosting_provider::{
-    GitHostingProvider, common::GitUrlForAPI, models::types::Contributor,
-};
+use moss_git_hosting_provider::{GitHostingProvider, common::GitUrl, models::types::Contributor};
 use std::sync::Arc;
 
 pub(crate) async fn fetch_contributors(
-    repo_ref: &GitUrlForAPI,
+    repo_ref: &GitUrl,
     client: Arc<dyn GitHostingProvider>,
 ) -> joinerror::Result<Vec<Contributor>> {
     // INFO: In the future we might support non-VCS contributors

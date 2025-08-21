@@ -10,7 +10,7 @@ use url::Url;
 
 use crate::{
     GitAuthProvider, GitHostingProvider,
-    common::{GitUrlForAPI, SSHAuthAgent},
+    common::{GitUrl, SSHAuthAgent},
     constants::GITLAB_API_URL,
     gitlab::{
         auth::GitLabAuthAgent,
@@ -98,7 +98,7 @@ impl GitHostingProvider for GitLabClient {
         })
     }
 
-    async fn contributors(&self, repo_ref: &GitUrlForAPI) -> joinerror::Result<Vec<Contributor>> {
+    async fn contributors(&self, repo_ref: &GitUrl) -> joinerror::Result<Vec<Contributor>> {
         let repo_url = format!("{}/{}", &repo_ref.owner, &repo_ref.name);
         let encoded_url = urlencoding::encode(&repo_url);
 
@@ -148,7 +148,7 @@ impl GitHostingProvider for GitLabClient {
 
     async fn repository_metadata(
         &self,
-        repo_ref: &GitUrlForAPI,
+        repo_ref: &GitUrl,
     ) -> joinerror::Result<RepositoryMetadata> {
         let repo_url = format!("{}/{}", &repo_ref.owner, &repo_ref.name);
         let encoded_url = urlencoding::encode(&repo_url);
@@ -192,7 +192,7 @@ mod tests {
 
     use super::*;
 
-    static REPO_REF: LazyLock<GitUrlForAPI> = LazyLock::new(|| GitUrlForAPI {
+    static REPO_REF: LazyLock<GitUrl> = LazyLock::new(|| GitUrl {
         domain: "gitlab.com".to_string(),
         owner: "brutusyhy".to_string(),
         name: "test-public-repo".to_string(),
