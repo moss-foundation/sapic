@@ -1,5 +1,5 @@
 import { cva } from "class-variance-authority";
-import React from "react";
+import React, { forwardRef } from "react";
 
 import { cn } from "@/utils";
 
@@ -9,6 +9,7 @@ export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElem
   iconLeft?: Icons;
   iconRight?: Icons;
   iconClassName?: string;
+  inputFieldClassName?: string;
 }
 
 //prettier-ignore
@@ -30,13 +31,21 @@ const inputStyles = cva(`
   }
 );
 
-export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, disabled = false, iconLeft, iconRight, iconClassName, ...props }, forwardedRef) => {
+export const Input = forwardRef<HTMLInputElement, InputProps>(
+  (
+    { className, disabled = false, iconLeft, iconRight, iconClassName, inputFieldClassName, ...props },
+    forwardedRef
+  ) => {
     return (
       <div className={cn(inputStyles({ disabled }), className)}>
         {iconLeft && <Icon icon={iconLeft} className={iconClassName} />}
 
-        <input ref={forwardedRef} disabled={disabled} className="h-full w-full focus-visible:outline-none" {...props} />
+        <input
+          ref={forwardedRef}
+          disabled={disabled}
+          className={cn("h-full w-full focus-visible:outline-none", inputFieldClassName)}
+          {...props}
+        />
 
         {iconRight && <Icon icon={iconRight} className={iconClassName} />}
       </div>

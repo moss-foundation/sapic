@@ -64,14 +64,13 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
   }
 
   return (
-    <div className="relative flex h-full min-w-[800px] justify-center">
+    <div className="relative flex h-full justify-center">
       <div className="w-full max-w-2xl space-y-9 px-6 py-5">
         <div className="space-y-6">
           <div className="flex items-start gap-3.5 text-(--moss-primary-text)">
             <label className="mt-1 w-20 font-medium">Name:</label>
             <div>
               <InputOutlined
-                size="sm"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 onBlur={handleBlur}
@@ -96,7 +95,6 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
             <label className="mt-1 w-20 font-medium">Repository:</label>
             <div>
               <InputOutlined
-                size="sm"
                 value={repository}
                 onChange={(e) => setRepository(e.target.value)}
                 onBlur={handleBlur}

@@ -3,44 +3,21 @@ import { cva } from "class-variance-authority";
 import Input, { InputProps } from "@/lib/ui/Input";
 import { cn } from "@/utils";
 
-interface InputPlainProps extends InputProps {
-  size?: "sm" | "md";
-}
-
 //prettier-ignore
 const inputStyles = cva(`
     placeholder-(--moss-controls-placeholder)
     background-(--moss-input-bg-plain)
+    border border-transparent
     text-(--moss-controls-plain-text)
     has-data-invalid:text-(--moss-error)
+    py-[5px] px-2
   `, 
-{
-  variants: {
-    size: {
-      xs: "h-6 px-1.5",
-      sm: "h-7 px-2",
-      md: "h-9 px-2",
-    },
-  },
-});
+);
 
-const iconsStyles = cva("", {
-  variants: {
-    size: {
-      sm: "size-4",
-      md: "size-4",
-    },
-  },
-});
+const iconsStyles = cva("size-4");
 
-export const InputPlain = ({ size = "md", ...props }: InputPlainProps) => {
-  return (
-    <Input
-      className={cn(inputStyles({ size }), props.className)}
-      iconClassName={cn(iconsStyles({ size }), props.iconClassName)}
-      {...props}
-    />
-  );
+export const InputPlain = ({ className, iconClassName, ...props }: InputProps) => {
+  return <Input className={cn(inputStyles(), className)} iconClassName={cn(iconsStyles(), iconClassName)} {...props} />;
 };
 
 export default InputPlain;
