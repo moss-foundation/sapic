@@ -55,13 +55,13 @@ export const CollectionTreesView = () => {
     <div ref={dropTargetToggleRef} className="flex h-full flex-col">
       <CollectionTreeViewHeader />
 
-      <Scrollbar className="min-h-0 flex-1">
+      <Scrollbar className="min-h-0 flex-1" classNames={{ contentEl: "h-full w-full" }}>
         <div className="flex h-full flex-col">
           <div className="flex shrink items-center gap-[7px] px-2 py-1">
             <InputPlain placeholder="Search" size="sm" />
           </div>
 
-          <div className="flex flex-col">
+          <div className="flex h-full flex-col">
             {!isLoading &&
               collectionsTrees
                 .sort((a, b) => a.order! - b.order!)
