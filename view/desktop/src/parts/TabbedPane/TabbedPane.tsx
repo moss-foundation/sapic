@@ -268,9 +268,9 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
               <Breadcrumbs collectionId={props.params.collectionId} nodeId={props.params.node.id} />
             )}
 
-            <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col text-[42px] opacity-50">
-              <span>Default Page</span>
-              <span className="text-sm">This is a placeholder default page</span>
+            <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col opacity-50">
+              <span className="text-[42px] leading-[42px]">Default Page</span>
+              <span className="text-sm leading-3">This is a placeholder default page</span>
             </span>
 
             {isDebug && (

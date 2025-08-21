@@ -1,9 +1,21 @@
-import { cn } from "@/utils";
-import React, { useEffect, useState } from "react";
-import { Divider } from "../Divider";
-import { PageHeaderProps } from "./types";
+import { ReactNode, useEffect, useState } from "react";
 
-export const PageHeader: React.FC<PageHeaderProps> = ({ icon, tabs, toolbar, className, props }) => {
+import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
+import { Icon, Icons } from "@/lib/ui";
+import { cn } from "@/utils";
+
+import { Divider } from "../Divider";
+
+export interface PageHeaderProps {
+  icon?: Icons;
+  tabs?: ReactNode;
+  toolbar?: ReactNode;
+  className?: string;
+  title?: string;
+  props?: IDockviewPanelProps;
+}
+
+export const PageHeader = ({ icon, tabs, toolbar, className, props }: PageHeaderProps) => {
   const [title, setTitle] = useState("Untitled");
 
   useEffect(() => {
@@ -24,25 +36,21 @@ export const PageHeader: React.FC<PageHeaderProps> = ({ icon, tabs, toolbar, cla
 
   return (
     <header
-      className={cn("background-(--moss-primary-background) h-9 border-b border-(--moss-border-color)", className)}
+      className={cn("background-(--moss-primary-background) border-b border-(--moss-border-color) py-1.5", className)}
     >
-      {/* Main Header Row - Title, Tabs, and Toolbar */}
-      <div className="flex h-full items-center px-3">
-        {/* Left side - Title and Icon */}
-        <div className="flex min-w-0 flex-shrink-0 items-center gap-1.5">
-          {icon && <div className="flex-shrink-0">{icon}</div>}
-          <h1 className="truncate text-[16px] font-semibold text-(--moss-primary-text)">{title}</h1>
+      <div className="flex h-full items-center gap-3 px-3">
+        <div className="flex min-w-0 items-center gap-1.5">
+          {icon && <Icon icon={icon} className="size-[18px]" />}
+          <h2 className="truncate text-[16px] leading-6 font-semibold text-(--moss-primary-text)">{title}</h2>
         </div>
 
-        {/* Divider and Tabs - positioned after title */}
         {tabs && (
           <>
-            <Divider className="mr-2 px-2" />
-            <div className="-ml-1 flex items-center">{tabs}</div>
+            <Divider className="" />
+            <div className="flex items-center">{tabs}</div>
           </>
         )}
 
-        {/*Right side - Toolbar */}
         {toolbar && <div className="ml-auto flex items-center">{toolbar}</div>}
       </div>
     </header>

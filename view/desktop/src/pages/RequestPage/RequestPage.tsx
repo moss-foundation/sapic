@@ -1,10 +1,10 @@
-import React from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import {
   ActionButton,
   Breadcrumbs,
-  PageContent,
   PageContainerWithTabs,
+  PageContent,
   PageHeader,
   PageTabs,
   PageToolbar,
@@ -13,12 +13,12 @@ import {
 } from "@/components";
 import { TreeCollectionNode } from "@/components/CollectionTree/types";
 import { Icon } from "@/lib/ui";
+import { useRequestPage } from "@/pages/RequestPage/hooks/useRequestPage";
 import { useRequestModeStore } from "@/store/requestMode";
 import { cn } from "@/utils";
 import { EntryKind } from "@repo/moss-collection";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
 
-import Metadata from "../../parts/TabbedPane/DebugComponents/Metadata";
 import { RequestInputField } from "./RequestInputField";
 import {
   AuthTabContent,
@@ -28,10 +28,7 @@ import {
   PostRequestTabContent,
   PreRequestTabContent,
 } from "./tabs";
-import { parseUrl, areUrlsEquivalent } from "./utils/urlParser";
-import { useRequestPageStore } from "@/store/requestPage";
-
-const DebugContext = React.createContext<boolean>(false);
+import { areUrlsEquivalent, parseUrl } from "./utils/urlParser";
 
 const Badge = ({ count }: { count: number }) => (
   <span className="background-(--moss-tab-badge-color) inline-flex h-3.5 w-3.5 min-w-[14px] items-center justify-center rounded-full text-xs leading-none text-(--moss-tab-badge-text)">
@@ -39,27 +36,25 @@ const Badge = ({ count }: { count: number }) => (
   </span>
 );
 
-const RequestPage: React.FC<
-  IDockviewPanelProps<{
-    node?: TreeCollectionNode;
-    collectionId: string;
-    iconType: EntryKind;
-    someRandomString: string;
-  }>
-> = (props) => {
+interface RequestPageProps {
+  node?: TreeCollectionNode;
+  collectionId: string;
+  iconType: EntryKind;
+  someRandomString: string;
+}
+
+const RequestPage = ({ api, ...props }: IDockviewPanelProps<RequestPageProps>) => {
   const { displayMode } = useRequestModeStore();
 
-  const isDebug = React.useContext(DebugContext);
-
-  let showEndpoint = false;
+  const showEndpoint = displayMode === "DESIGN_FIRST" && props.params?.node?.class === "Endpoint";
   let dontShowTabs = true;
-  const [activeTab, setActiveTab] = React.useState(showEndpoint ? "endpoint" : "request");
-  const [activeRequestTabId, setActiveRequestTabId] = React.useState("params");
 
-  const { requestData, httpMethod, setHttpMethod, updateRequestData } = useRequestPageStore();
+  const [activeTab, setActiveTab] = useState(showEndpoint ? "endpoint" : "request");
+  const [activeRequestTabId, setActiveRequestTabId] = useState("params");
+
+  const { requestData, httpMethod, setHttpMethod, updateRequestData } = useRequestPage();
 
   if (props.params?.node) {
-    showEndpoint = displayMode === "DESIGN_FIRST" && props.params.node.class === "Endpoint";
     dontShowTabs =
       props.params.node.kind === "Dir" ||
       props.params.node.class === "Endpoint" ||
@@ -94,7 +89,7 @@ const RequestPage: React.FC<
     // Use getRequestUrlWithPathValues() for backend requests with actual path values
   };
 
-  const handleUrlChange = React.useCallback(
+  const handleUrlChange = useCallback(
     (url: string) => {
       // Prevent unnecessary updates if URLs are functionally equivalent
       if (areUrlsEquivalent(url, requestData.url.raw)) {
@@ -118,7 +113,7 @@ const RequestPage: React.FC<
     [requestData.url.raw, updateRequestData]
   );
 
-  const paramsCount = React.useMemo(() => {
+  const paramsCount = useMemo(() => {
     const queryParamsCount = requestData.url.query_params.filter(
       (param) => (param.key.trim() !== "" || param.value.trim() !== "") && !param.disabled
     ).length;
@@ -138,7 +133,7 @@ const RequestPage: React.FC<
           <Badge count={paramsCount} />
         </div>
       ),
-      content: <ParamsTabContent {...props} />,
+      content: <ParamsTabContent {...props} api={api} />,
     },
     {
       id: "auth",
@@ -148,7 +143,7 @@ const RequestPage: React.FC<
           <span>Auth</span>
         </div>
       ),
-      content: <AuthTabContent {...props} />,
+      content: <AuthTabContent {...props} api={api} />,
     },
     {
       id: "headers",
@@ -159,7 +154,7 @@ const RequestPage: React.FC<
           <Badge count={3} />
         </div>
       ),
-      content: <HeadersTabContent {...props} />,
+      content: <HeadersTabContent {...props} api={api} />,
     },
     {
       id: "body",
@@ -169,7 +164,7 @@ const RequestPage: React.FC<
           <span>Body</span>
         </div>
       ),
-      content: <BodyTabContent {...props} />,
+      content: <BodyTabContent {...props} api={api} />,
     },
     {
       id: "pre-request",
@@ -179,7 +174,7 @@ const RequestPage: React.FC<
           <span>Pre Request</span>
         </div>
       ),
-      content: <PreRequestTabContent {...props} />,
+      content: <PreRequestTabContent {...props} api={api} />,
     },
     {
       id: "post-request",
@@ -189,73 +184,54 @@ const RequestPage: React.FC<
           <span>Post Request</span>
         </div>
       ),
-      content: <PostRequestTabContent {...props} />,
+      content: <PostRequestTabContent {...props} api={api} />,
     },
   ];
 
   return (
     <PageView>
-      <PageHeader
-        icon={<Icon icon="Placeholder" className="size-[18px]" />}
-        tabs={dontShowTabs ? null : tabs}
-        toolbar={toolbar}
-        props={props}
-      />
-      <PageContent className={cn("relative", isDebug && "border-2 border-dashed border-orange-500")}>
-        <div className="flex h-full flex-col">
-          {props.params?.node ? (
-            <div className="flex-1">
-              {props.params?.collectionId && props.params?.node?.id && (
-                <div className="-mt-1 mb-2 -ml-2">
-                  <Breadcrumbs collectionId={props.params.collectionId} nodeId={props.params.node.id} />
-                </div>
-              )}
+      <PageHeader icon="Placeholder" tabs={dontShowTabs ? null : tabs} toolbar={toolbar} props={{ ...props, api }} />
 
-              <div className="mb-3.5">
-                <RequestInputField
-                  initialMethod={httpMethod}
-                  initialUrl={requestData.url.raw}
-                  onSend={handleSendRequest}
-                  onUrlChange={handleUrlChange}
-                  onMethodChange={(method) => {
-                    if (method !== httpMethod) {
-                      setHttpMethod(method);
-                    }
-                  }}
-                />
+      <PageContent className={cn("relative")}>
+        {props.params?.node ? (
+          <div className="flex-1 flex-col items-center gap-1.5">
+            {props.params?.collectionId && props.params?.node?.id && (
+              <div className="py-1.5">
+                <Breadcrumbs collectionId={props.params.collectionId} nodeId={props.params.node.id} />
               </div>
+            )}
+            <div className="px-5">
+              <RequestInputField
+                initialMethod={httpMethod}
+                initialUrl={requestData.url.raw}
+                onSend={handleSendRequest}
+                onUrlChange={handleUrlChange}
+                onMethodChange={(method) => {
+                  if (method !== httpMethod) {
+                    setHttpMethod(method);
+                  }
+                }}
+              />
+            </div>
 
-              {activeTab === "request" && (
-                <div className="mx-3">
-                  <PageContainerWithTabs
-                    tabs={requestTabs}
-                    activeTabId={activeRequestTabId}
-                    onTabChange={setActiveRequestTabId}
-                    noPadding
-                  />
-                </div>
+            {activeTab === "request" && (
+              <PageContainerWithTabs
+                tabs={requestTabs}
+                activeTabId={activeRequestTabId}
+                onTabChange={setActiveRequestTabId}
+              />
+            )}
+          </div>
+        ) : (
+          <div className="flex flex-1 items-center justify-center">
+            <div className="text-center">
+              <p className="mb-4 text-sm text-(--moss-secondary-text)">No request selected</p>
+              {props?.params.someRandomString && (
+                <p className="text-xs text-(--moss-secondary-text)">Backend ID: {props.params.someRandomString}</p>
               )}
             </div>
-          ) : (
-            <div className="flex flex-1 items-center justify-center">
-              <div className="text-center">
-                <p className="mb-4 text-sm text-(--moss-secondary-text)">No request selected</p>
-                {props?.params.someRandomString && (
-                  <p className="text-xs text-(--moss-secondary-text)">Backend ID: {props.params.someRandomString}</p>
-                )}
-              </div>
-            </div>
-          )}
-
-          {isDebug && (
-            <Metadata
-              onClick={() => {
-                props.api.setRenderer(props.api.renderer === "always" ? "onlyWhenVisible" : "always");
-              }}
-              api={props.api}
-            />
-          )}
-        </div>
+          </div>
+        )}
       </PageContent>
     </PageView>
   );

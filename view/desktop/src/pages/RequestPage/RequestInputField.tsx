@@ -1,6 +1,6 @@
-import React, { useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 
-import { ActionMenu, ButtonPrimary, Divider } from "@/components";
+import { ActionMenu, ButtonPrimary } from "@/components";
 import InputTemplating from "@/components/InputTemplating";
 import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
@@ -18,7 +18,7 @@ interface RequestInputFieldProps {
 
 const HTTP_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"];
 
-export const RequestInputField: React.FC<RequestInputFieldProps> = React.memo(
+export const RequestInputField = memo(
   ({
     className,
     initialMethod = "POST",
@@ -26,7 +26,7 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = React.memo(
     onSend,
     onUrlChange,
     onMethodChange,
-  }) => {
+  }: RequestInputFieldProps) => {
     const [method, setMethod] = useState(initialMethod);
     const [url, setUrl] = useState(initialUrl);
     const lastExternalUrlRef = useRef(initialUrl);
@@ -34,14 +34,14 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = React.memo(
     const lastSentUrlRef = useRef("");
 
     // Sync method changes
-    React.useEffect(() => {
+    useEffect(() => {
       if (initialMethod !== method) {
         setMethod(initialMethod);
       }
     }, [initialMethod, method]);
 
     // Only sync URL from external source when user is not actively typing
-    React.useEffect(() => {
+    useEffect(() => {
       // Use normalized comparison to prevent unnecessary updates
       if (
         !areUrlsEquivalent(initialUrl, lastExternalUrlRef.current) &&
@@ -58,7 +58,7 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = React.memo(
     };
 
     // Debounced URL change handler with normalized comparison
-    const debouncedOnUrlChange = React.useCallback(
+    const debouncedOnUrlChange = useCallback(
       (() => {
         let timeoutId: NodeJS.Timeout;
         return (value: string) => {
@@ -77,7 +77,7 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = React.memo(
     );
 
     // Optimized change handlers with stable references
-    const handleTemplateChange = React.useCallback(
+    const handleTemplateChange = useCallback(
       (value: string) => {
         isUserTypingRef.current = true;
         setUrl(value);
@@ -86,7 +86,7 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = React.memo(
       [debouncedOnUrlChange]
     );
 
-    const handleMethodChange = React.useCallback(
+    const handleMethodChange = useCallback(
       (newMethod: string) => {
         setMethod(newMethod);
         onMethodChange?.(newMethod);
@@ -96,26 +96,25 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = React.memo(
 
     return (
       <div
-        className={cn(
-          "relative flex w-full min-w-0 items-start rounded border border-(--moss-border-color)",
-          className
-        )}
+        className={cn("relative flex min-w-0 items-start rounded-md border border-(--moss-border-color)", className)}
       >
         {/* Left Side - HTTP Method Dropdown */}
-        <div className="relative flex-shrink-0">
+        <div className="relative">
           <ActionMenu.Root>
             <ActionMenu.Trigger asChild>
               <button
                 className={cn(
-                  "flex items-center justify-between rounded-md rounded-r-none px-2.5 py-2 text-base font-bold transition-colors",
+                  "flex items-center justify-between",
+                  "gap-0.5 px-2.5 py-3 pr-1 pl-3",
+                  "transition-colors",
+                  "rounded-md rounded-r-none",
+                  "cursor-pointer font-bold",
                   "background-(--moss-primary-background) text-(--moss-requestpage-text)",
-                  "data-[state=open]:outline-2 data-[state=open]:-outline-offset-1 data-[state=open]:outline-(--moss-primary)",
-                  "border border-r-0 border-transparent",
-                  "min-h-8 w-24"
+                  "data-[state=open]:outline-2 data-[state=open]:-outline-offset-1 data-[state=open]:outline-(--moss-primary)"
                 )}
               >
                 <span>{method}</span>
-                <Icon icon="ChevronDown" className="h-3 w-3 cursor-pointer" />
+                <Icon icon="ChevronDown" />
               </button>
             </ActionMenu.Trigger>
             <ActionMenu.Content>
@@ -134,10 +133,7 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = React.memo(
             </ActionMenu.Content>
           </ActionMenu.Root>
         </div>
-        {/* Divider between HTTP Method and URL Input */}
-        <div className="flex h-8 flex-shrink-0 items-center justify-center">
-          <Divider height="medium" className="mx-0" />
-        </div>
+
         {/* Center - URL Input Field */}
         <div className="relative z-20 min-w-0 flex-1">
           <InputTemplating
@@ -151,7 +147,7 @@ export const RequestInputField: React.FC<RequestInputFieldProps> = React.memo(
         </div>
 
         {/* Right Side - Send Button */}
-        <div className="relative z-30 flex min-h-8 flex-shrink-0 items-center rounded-md rounded-l-none border border-l-0 border-transparent p-1 focus-within:outline-2 focus-within:-outline-offset-1 focus-within:outline-(--moss-primary)">
+        <div className="relative z-30 flex min-h-8 flex-shrink-0 items-center rounded-md rounded-l-none border border-l-0 border-transparent p-1">
           <ButtonPrimary onClick={handleSend}>Send</ButtonPrimary>
         </div>
       </div>
