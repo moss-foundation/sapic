@@ -6,7 +6,6 @@ use moss_applib::{context::AsyncContext, mock::MockAppRuntime};
 use moss_collection::{
     dirs,
     models::{events::StreamEntriesEvent, operations::StreamEntriesInput, primitives::EntryKind},
-    worktree::entry::EntryDescription,
 };
 use std::{
     path::PathBuf,
@@ -24,7 +23,7 @@ async fn scan_entries_for_test(
     ctx: &AsyncContext,
     collection: &moss_collection::Collection<MockAppRuntime>,
     dir_name: &str,
-) -> Vec<EntryDescription> {
+) -> Vec<StreamEntriesEvent> {
     let entries = Arc::new(Mutex::new(Vec::new()));
     let entries_clone = entries.clone();
 
@@ -44,20 +43,7 @@ async fn scan_entries_for_test(
         .await
         .unwrap();
 
-    (*entries.lock().unwrap())
-        .clone()
-        .into_iter()
-        .map(|event| EntryDescription {
-            id: event.0.id,
-            name: event.0.name,
-            path: event.0.path.raw.into(),
-            class: event.0.class,
-            kind: event.0.kind,
-            protocol: event.0.protocol,
-            order: event.0.order,
-            expanded: event.0.expanded,
-        })
-        .collect()
+    entries.lock().unwrap().clone()
 }
 
 #[tokio::test]
@@ -116,7 +102,12 @@ async fn stream_entries_single_entry() {
 
     assert_eq!(created_entry.name, entry_name);
     assert_eq!(
-        created_entry.path.file_name().unwrap().to_string_lossy(),
+        created_entry
+            .path
+            .raw
+            .file_name()
+            .unwrap()
+            .to_string_lossy(),
         entry_name
     );
 
@@ -364,7 +355,7 @@ async fn stream_entries_verify_entry_properties() {
     // Verify all properties are set correctly for the created entry
     assert_eq!(created_entry.name, entry_name, "Name should match");
     assert!(
-        !created_entry.path.to_string_lossy().is_empty(),
+        !created_entry.path.raw.to_string_lossy().is_empty(),
         "Path should be set"
     );
 

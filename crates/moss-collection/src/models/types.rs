@@ -9,8 +9,7 @@ use validator::{Validate, ValidationError};
 use crate::{
     dirs,
     models::primitives::{
-        EntryClass, EntryId, EntryKind, EntryProtocol, FrontendEntryPath, HeaderId, PathParamId,
-        QueryParamId,
+        EntryId, EntryProtocol, FrontendEntryPath, HeaderId, PathParamId, QueryParamId,
     },
 };
 
@@ -142,44 +141,6 @@ pub struct AfterUpdateItemEntryDescription {
     pub id: EntryId,
 
     pub path: FrontendEntryPath,
-}
-
-/// @category Type
-#[derive(Clone, Debug, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct EntryInfo {
-    /// Unique identifier for this entry
-    #[ts(as = "String")]
-    pub id: EntryId,
-
-    /// Display name of the entry
-    pub name: String,
-
-    /// Path relative to the collection root.
-    /// Includes both the original path string and its segments.
-    pub path: FrontendEntryPath,
-
-    /// Classification of the entry (Request, Endpoint, Component, or Schema)
-    pub class: EntryClass,
-
-    /// Type of entry indicating its structure (Dir for directories, Item for files, Case of item cases)
-    pub kind: EntryKind,
-
-    /// HTTP protocol/method used by this entry, if applicable (GET, POST, PUT, DELETE, WebSocket, GraphQL, gRPC)
-    pub protocol: Option<EntryProtocol>,
-
-    /// Determines the display position of this entry among others in the same group.
-    /// Entries are sorted in ascending order; lower values appear before higher ones.
-    /// Negative values are allowed and will be placed before positive values.
-    /// If multiple entries have the same order, they are sorted alphabetically.
-    /// If not specified, the entry appears last and is sorted alphabetically
-    /// among unspecified items.
-    pub order: Option<isize>,
-
-    /// Whether this entry is expanded in the tree view (applies to directories)
-    pub expanded: bool,
 }
 
 // Check that input path begins with a valid top folder

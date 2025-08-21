@@ -1,15 +1,22 @@
 pub mod api;
 pub mod builder;
 pub mod collection;
-pub mod config;
-pub mod context;
+mod config;
 mod edit;
 mod helpers;
-pub mod manifest;
+mod manifest;
 pub mod models;
-pub mod services;
+mod services;
+
+#[cfg(feature = "integration-tests")]
 pub mod storage;
+#[cfg(feature = "integration-tests")]
 pub mod worktree;
+
+#[cfg(not(feature = "integration-tests"))]
+mod storage;
+#[cfg(not(feature = "integration-tests"))]
+mod worktree;
 
 pub use builder::CollectionBuilder;
 pub use collection::{Collection, CollectionModifyParams};
