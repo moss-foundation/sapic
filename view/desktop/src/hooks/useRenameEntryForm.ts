@@ -2,15 +2,12 @@ import { useState } from "react";
 
 import { useFetchEntriesForPath } from "@/hooks/collection/derivedHooks/useFetchEntriesForPath";
 import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollectionEntry";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { EntryInfo } from "@repo/moss-collection";
 import { join } from "@tauri-apps/api/path";
 
 export const useRenameEntryForm = (entry: EntryInfo, collectionId: string) => {
   const { fetchEntriesForPath } = useFetchEntriesForPath();
   const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry();
-
-  const { api } = useTabbedPaneStore();
 
   const [isRenamingEntry, setIsRenamingEntry] = useState(false);
 
@@ -52,11 +49,6 @@ export const useRenameEntryForm = (entry: EntryInfo, collectionId: string) => {
             },
           },
         });
-      }
-
-      const panel = api?.getPanel(entry.id);
-      if (panel) {
-        panel.setTitle(newName);
       }
     } catch (error) {
       console.error(error);
