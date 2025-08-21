@@ -6,7 +6,6 @@ use moss_git::GitAuthAgent;
 
 pub trait SSHAuthAgent: GitAuthAgent {}
 
-// FIXME: Maybe this type should not be here
 pub struct GitUrl {
     pub domain: String,
     pub owner: String,
