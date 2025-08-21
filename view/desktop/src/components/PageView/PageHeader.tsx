@@ -2,6 +2,7 @@ import { ReactNode, useEffect, useState } from "react";
 
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 import { Icon, Icons } from "@/lib/ui";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 
 import { Divider } from "../Divider";
@@ -35,21 +36,7 @@ export const PageHeader = ({
 }: PageHeaderProps) => {
   const [title, setTitle] = useState(initialTitle ?? "Untitled");
 
-  useEffect(() => {
-    const currentPanel = props?.containerApi?.getPanel(props.api.id);
-
-    setTitle(currentPanel?.title ?? "Untitled");
-
-    if (props?.api?.onDidTitleChange) {
-      const disposable = props.api.onDidTitleChange((event) => {
-        setTitle(event.title);
-      });
-
-      return () => {
-        disposable?.dispose();
-      };
-    }
-  }, [props?.api, props?.containerApi]);
+  const { api } = useTabbedPaneStore();
 
   const handleSubmit = () => {
     if (disableTitleChange) return;
@@ -62,6 +49,17 @@ export const PageHeader = ({
     setTitle(initialTitle ?? "Untitled");
     handleRenamingFormCancel?.();
   };
+
+  useEffect(() => {
+    if (initialTitle) {
+      setTitle(initialTitle);
+
+      const panel = api?.getPanel(props?.params?.node?.id);
+      if (panel) {
+        panel.setTitle(initialTitle);
+      }
+    }
+  }, [api, initialTitle, props?.params?.node?.id]);
 
   return (
     <header

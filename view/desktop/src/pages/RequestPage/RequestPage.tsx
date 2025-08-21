@@ -12,7 +12,8 @@ import {
   TabItem,
 } from "@/components";
 import { TreeCollectionNode } from "@/components/CollectionTree/types";
-import { useRenameNodeForm } from "@/hooks/useRenameNodeForm";
+import { useStreamedCollectionEntries } from "@/hooks";
+import { useRenameEntryForm } from "@/hooks/useRenameEntryForm";
 import { Icon } from "@/lib/ui";
 import { useRequestPage } from "@/pages/RequestPage/hooks/useRequestPage";
 import { useRequestModeStore } from "@/store/requestMode";
@@ -44,10 +45,13 @@ interface RequestPageProps {
   someRandomString: string;
 }
 
-const RequestPage = ({ api, ...props }: IDockviewPanelProps<RequestPageProps>) => {
+const RequestPage = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
   const { displayMode } = useRequestModeStore();
 
-  const showEndpoint = displayMode === "DESIGN_FIRST" && props.params?.node?.class === "Endpoint";
+  const { data: streamedEntries } = useStreamedCollectionEntries(props.params?.collectionId);
+  const node = streamedEntries?.find((entry) => entry.id === props.params?.node?.id);
+
+  const showEndpoint = displayMode === "DESIGN_FIRST" && node?.class === "Endpoint";
   let dontShowTabs = true;
 
   const [activeTab, setActiveTab] = useState(showEndpoint ? "endpoint" : "request");
@@ -55,12 +59,10 @@ const RequestPage = ({ api, ...props }: IDockviewPanelProps<RequestPageProps>) =
 
   const { requestData, httpMethod, setHttpMethod, updateRequestData } = useRequestPage();
 
-  const { isRenamingNode, setIsRenamingNode, handleRenamingFormSubmit, handleRenamingFormCancel } = useRenameNodeForm(
-    props?.params?.node,
-    props?.params?.collectionId
-  );
+  const { isRenamingEntry, setIsRenamingEntry, handleRenamingEntrySubmit, handleRenamingEntryCancel } =
+    useRenameEntryForm(props?.params?.node, props?.params?.collectionId);
 
-  if (props.params?.node) {
+  if (node) {
     dontShowTabs =
       props.params.node.kind === "Dir" ||
       props.params.node.class === "Endpoint" ||
@@ -139,7 +141,7 @@ const RequestPage = ({ api, ...props }: IDockviewPanelProps<RequestPageProps>) =
           <Badge count={paramsCount} />
         </div>
       ),
-      content: <ParamsTabContent {...props} api={api} />,
+      content: <ParamsTabContent {...props} />,
     },
     {
       id: "auth",
@@ -149,7 +151,7 @@ const RequestPage = ({ api, ...props }: IDockviewPanelProps<RequestPageProps>) =
           <span>Auth</span>
         </div>
       ),
-      content: <AuthTabContent {...props} api={api} />,
+      content: <AuthTabContent {...props} />,
     },
     {
       id: "headers",
@@ -160,7 +162,7 @@ const RequestPage = ({ api, ...props }: IDockviewPanelProps<RequestPageProps>) =
           <Badge count={3} />
         </div>
       ),
-      content: <HeadersTabContent {...props} api={api} />,
+      content: <HeadersTabContent {...props} />,
     },
     {
       id: "body",
@@ -170,7 +172,7 @@ const RequestPage = ({ api, ...props }: IDockviewPanelProps<RequestPageProps>) =
           <span>Body</span>
         </div>
       ),
-      content: <BodyTabContent {...props} api={api} />,
+      content: <BodyTabContent {...props} />,
     },
     {
       id: "pre-request",
@@ -180,7 +182,7 @@ const RequestPage = ({ api, ...props }: IDockviewPanelProps<RequestPageProps>) =
           <span>Pre Request</span>
         </div>
       ),
-      content: <PreRequestTabContent {...props} api={api} />,
+      content: <PreRequestTabContent {...props} />,
     },
     {
       id: "post-request",
@@ -190,7 +192,7 @@ const RequestPage = ({ api, ...props }: IDockviewPanelProps<RequestPageProps>) =
           <span>Post Request</span>
         </div>
       ),
-      content: <PostRequestTabContent {...props} api={api} />,
+      content: <PostRequestTabContent {...props} />,
     },
   ];
 
@@ -200,18 +202,19 @@ const RequestPage = ({ api, ...props }: IDockviewPanelProps<RequestPageProps>) =
         icon="Placeholder"
         tabs={dontShowTabs ? null : tabs}
         toolbar={toolbar}
-        props={{ ...props, api }}
-        onTitleChange={handleRenamingFormSubmit}
+        title={node?.name}
+        props={props}
+        onTitleChange={handleRenamingEntrySubmit}
         disableTitleChange={false}
-        isRenamingTitle={isRenamingNode}
-        setIsRenamingTitle={setIsRenamingNode}
-        handleRenamingFormCancel={handleRenamingFormCancel}
+        isRenamingTitle={isRenamingEntry}
+        setIsRenamingTitle={setIsRenamingEntry}
+        handleRenamingFormCancel={handleRenamingEntryCancel}
       />
 
       <PageContent className={cn("relative")}>
-        {props.params?.node ? (
+        {node ? (
           <div className="flex shrink-0 flex-col gap-1.5 pt-1.5">
-            {props.params?.collectionId && props.params?.node?.id && (
+            {props.params?.collectionId && node?.id && (
               <div className="px-5">
                 <Breadcrumbs collectionId={props.params.collectionId} nodeId={props.params.node.id} />
               </div>

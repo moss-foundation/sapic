@@ -1,40 +1,44 @@
 import { useState } from "react";
 
-import { TreeCollectionNode } from "@/components/CollectionTree/types";
 import { useFetchEntriesForPath } from "@/hooks/collection/derivedHooks/useFetchEntriesForPath";
 import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollectionEntry";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { EntryInfo } from "@repo/moss-collection";
 import { join } from "@tauri-apps/api/path";
 
-export const useRenameNodeForm = (node: TreeCollectionNode, collectionId: string) => {
+export const useRenameEntryForm = (entry: EntryInfo, collectionId: string) => {
   const { fetchEntriesForPath } = useFetchEntriesForPath();
   const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry();
 
   const { api } = useTabbedPaneStore();
 
-  const [isRenamingNode, setIsRenamingNode] = useState(false);
+  const [isRenamingEntry, setIsRenamingEntry] = useState(false);
 
-  const handleRenamingFormSubmit = async (newName: string) => {
+  const handleRenamingEntrySubmit = async (newName: string) => {
     try {
-      if (node.kind === "Dir") {
+      if (newName === entry.name) {
+        return;
+      }
+
+      if (entry.kind === "Dir") {
         await updateCollectionEntry({
           collectionId,
           updatedEntry: {
             DIR: {
-              id: node.id,
+              id: entry.id,
               name: newName,
             },
           },
         });
 
-        const newPath = await join(...node.path.segments.slice(0, node.path.segments.length - 1), newName);
+        const newPath = await join(...entry.path.segments.slice(0, entry.path.segments.length - 1), newName);
         await fetchEntriesForPath(collectionId, newPath);
       } else {
         await updateCollectionEntry({
           collectionId,
           updatedEntry: {
             ITEM: {
-              id: node.id,
+              id: entry.id,
               name: newName,
               queryParamsToAdd: [],
               queryParamsToUpdate: [],
@@ -50,25 +54,25 @@ export const useRenameNodeForm = (node: TreeCollectionNode, collectionId: string
         });
       }
 
-      const panel = api?.getPanel(node.id);
+      const panel = api?.getPanel(entry.id);
       if (panel) {
         panel.setTitle(newName);
       }
     } catch (error) {
       console.error(error);
     } finally {
-      setIsRenamingNode(false);
+      setIsRenamingEntry(false);
     }
   };
 
-  const handleRenamingFormCancel = () => {
-    setIsRenamingNode(false);
+  const handleRenamingEntryCancel = () => {
+    setIsRenamingEntry(false);
   };
 
   return {
-    isRenamingNode,
-    setIsRenamingNode,
-    handleRenamingFormSubmit,
-    handleRenamingFormCancel,
+    isRenamingEntry,
+    setIsRenamingEntry,
+    handleRenamingEntrySubmit,
+    handleRenamingEntryCancel,
   };
 };

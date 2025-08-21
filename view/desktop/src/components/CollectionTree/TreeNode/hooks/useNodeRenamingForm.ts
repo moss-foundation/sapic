@@ -17,6 +17,10 @@ export const useNodeRenamingForm = (node: TreeCollectionNode) => {
 
   const handleRenamingFormSubmit = async (newName: string) => {
     try {
+      if (newName === node.name) {
+        return;
+      }
+
       if (node.kind === "Dir") {
         await updateCollectionEntry({
           collectionId: id,

@@ -1,19 +1,29 @@
 import { useState } from "react";
 
-import { useUpdateCollection } from "@/hooks";
+import { useStreamedCollections, useUpdateCollection } from "@/hooks";
 
 export const useRenameCollectionForm = (collectionId: string) => {
   const [isRenamingCollection, setIsRenamingCollection] = useState(false);
+  const { data: streamedCollections } = useStreamedCollections();
+  const collection = streamedCollections?.find((collection) => collection.id === collectionId);
 
   const { mutateAsync: updateCollection } = useUpdateCollection();
 
-  const handleRenamingCollectionFormSubmit = (name: string) => {
-    updateCollection({
-      id: collectionId,
-      name,
-    });
+  const handleRenamingCollectionFormSubmit = async (name: string) => {
+    try {
+      if (name === collection?.name) {
+        return;
+      }
 
-    setIsRenamingCollection(false);
+      await updateCollection({
+        id: collectionId,
+        name,
+      });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsRenamingCollection(false);
+    }
   };
 
   const handleRenamingCollectionFormCancel = () => {

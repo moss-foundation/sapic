@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import { PageContainerWithTabs, TabItem } from "@/components/PageContainer";
 import { PageHeader, PageView } from "@/components/PageView";
+import { useStreamedCollections } from "@/hooks";
 import { useRenameCollectionForm } from "@/hooks/useRenameCollectionForm";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 import { Icon } from "@/lib/ui";
@@ -28,8 +29,11 @@ export interface CollectionSettingsParams {
   collectionId: string;
 }
 
-export const CollectionSettings = ({ api, ...props }: IDockviewPanelProps<CollectionSettingsParams>) => {
+export const CollectionSettings = ({ ...props }: IDockviewPanelProps<CollectionSettingsParams>) => {
   const { collectionId } = props.params;
+
+  const { data: streamedCollections } = useStreamedCollections();
+  const collection = streamedCollections?.find((collection) => collection.id === collectionId);
 
   const [activeTabId, setActiveTabId] = useState("overview");
 
@@ -60,7 +64,7 @@ export const CollectionSettings = ({ api, ...props }: IDockviewPanelProps<Collec
           <span>Overview</span>
         </div>
       ),
-      content: <OverviewTabContent {...props} api={api} />,
+      content: <OverviewTabContent {...props} />,
     },
     {
       id: "auth",
@@ -71,7 +75,7 @@ export const CollectionSettings = ({ api, ...props }: IDockviewPanelProps<Collec
           <StatusDot active={true} />
         </div>
       ),
-      content: <AuthTabContent {...props} api={api} />,
+      content: <AuthTabContent {...props} />,
     },
     {
       id: "headers",
@@ -82,7 +86,7 @@ export const CollectionSettings = ({ api, ...props }: IDockviewPanelProps<Collec
           <Badge count={3} />
         </div>
       ),
-      content: <HeadersTabContent {...props} api={api} />,
+      content: <HeadersTabContent {...props} />,
     },
     {
       id: "variables",
@@ -93,7 +97,7 @@ export const CollectionSettings = ({ api, ...props }: IDockviewPanelProps<Collec
           <Badge count={3} />
         </div>
       ),
-      content: <VariablesTabContent {...props} api={api} />,
+      content: <VariablesTabContent {...props} />,
     },
     {
       id: "pre-request",
@@ -103,7 +107,7 @@ export const CollectionSettings = ({ api, ...props }: IDockviewPanelProps<Collec
           <span>Pre Request</span>
         </div>
       ),
-      content: <PreRequestTabContent {...props} api={api} />,
+      content: <PreRequestTabContent {...props} />,
     },
     {
       id: "post-request",
@@ -113,7 +117,7 @@ export const CollectionSettings = ({ api, ...props }: IDockviewPanelProps<Collec
           <span>Post Request</span>
         </div>
       ),
-      content: <PostRequestTabContent {...props} api={api} />,
+      content: <PostRequestTabContent {...props} />,
     },
   ];
 
@@ -121,7 +125,8 @@ export const CollectionSettings = ({ api, ...props }: IDockviewPanelProps<Collec
     <PageView>
       <PageHeader
         icon="Collection"
-        props={{ ...props, api }}
+        props={props}
+        title={collection?.name}
         disableTitleChange={false}
         onTitleChange={handleRenamingCollectionFormSubmit}
         isRenamingTitle={isRenamingCollection}
