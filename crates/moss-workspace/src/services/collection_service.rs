@@ -1,7 +1,7 @@
 use derive_more::{Deref, DerefMut};
 use futures::Stream;
 use joinerror::{OptionExt, ResultExt};
-use moss_applib::{AppRuntime, PublicServiceMarker, ServiceMarker, subscription::EventEmitter};
+use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_collection::{
     Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
     builder::{
@@ -87,9 +87,6 @@ pub struct CollectionService<R: AppRuntime> {
     on_did_delete_collection_emitter: EventEmitter<OnDidDeleteCollection>,
     on_did_add_collection_emitter: EventEmitter<OnDidAddCollection>,
 }
-
-impl<R: AppRuntime> ServiceMarker for CollectionService<R> {}
-impl<R: AppRuntime> PublicServiceMarker for CollectionService<R> {}
 
 impl<R: AppRuntime> CollectionService<R> {
     pub(crate) async fn new(

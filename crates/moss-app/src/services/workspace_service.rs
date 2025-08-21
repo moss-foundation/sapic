@@ -2,7 +2,7 @@ use chrono::Utc;
 use derive_more::{Deref, DerefMut};
 use joinerror::{Error, OptionExt, ResultExt};
 use moss_activity_indicator::ActivityIndicator;
-use moss_applib::{AppRuntime, PublicServiceMarker, ServiceMarker};
+use moss_applib::AppRuntime;
 use moss_fs::{FileSystem, FsResultExt, RemoveOptions};
 use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
 use moss_logging::{LogEvent, LogScope, error, warn};
@@ -82,9 +82,6 @@ pub struct WorkspaceService<R: AppRuntime> {
     github_client: Arc<GitHubClient>,
     gitlab_client: Arc<GitLabClient>,
 }
-
-impl<R: AppRuntime> ServiceMarker for WorkspaceService<R> {}
-impl<R: AppRuntime> PublicServiceMarker for WorkspaceService<R> {}
 
 impl<R: AppRuntime> WorkspaceService<R> {
     pub async fn new(

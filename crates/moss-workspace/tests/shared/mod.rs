@@ -6,7 +6,7 @@ use moss_applib::{
     context::{AsyncContext, MutableContext},
     mock::MockAppRuntime,
 };
-use moss_fs::{FileSystem, RealFileSystem};
+use moss_fs::RealFileSystem;
 use moss_git_hosting_provider::{
     common::ssh_auth_agent::SSHAuthAgentImpl,
     envvar_keys::{GITLAB_CLIENT_ID, GITLAB_CLIENT_SECRET},
@@ -44,8 +44,6 @@ pub async fn setup_test_workspace() -> (AsyncContext, Workspace<MockAppRuntime>,
     let fs = Arc::new(RealFileSystem::new());
     let mock_app = tauri::test::mock_app();
     let app_handle = mock_app.handle().clone();
-
-    <dyn FileSystem>::set_global(fs.clone(), &app_handle);
 
     let ctx = MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
 

@@ -1,4 +1,3 @@
-use moss_applib::{ServiceMarker, context_old::ContextValue};
 use nanoid::nanoid;
 use serde::{Deserialize, Serialize};
 use std::{fmt::Display, sync::Arc};
@@ -30,13 +29,9 @@ impl Display for SessionId {
     }
 }
 
-impl ContextValue for SessionId {}
-
 pub struct SessionService {
     session_id: SessionId,
 }
-
-impl ServiceMarker for SessionService {}
 
 impl SessionService {
     pub fn new() -> Self {

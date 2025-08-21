@@ -1,5 +1,4 @@
 pub mod context;
-pub mod context_old;
 pub mod markers;
 pub mod subscription;
 pub mod task;
@@ -23,8 +22,6 @@ impl<R: TauriRuntime> AppRuntime for TauriAppRuntime<R> {
     type AsyncContext = AsyncContext;
     type EventLoop = R;
 }
-
-pub trait AppService: ServiceMarker + Send + Sync + 'static {}
 
 #[cfg(any(test, feature = "test"))]
 pub mod mock {

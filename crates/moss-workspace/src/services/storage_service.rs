@@ -1,5 +1,5 @@
 use anyhow::{Context as _, Result};
-use moss_applib::{AppRuntime, ServiceMarker};
+use moss_applib::AppRuntime;
 use moss_db::{Transaction, primitives::AnyValue};
 use moss_environment::models::primitives::EnvironmentId;
 use moss_storage::{
@@ -30,8 +30,6 @@ use crate::{
 pub struct StorageService<R: AppRuntime> {
     pub(super) storage: Arc<dyn WorkspaceStorage<R::AsyncContext>>,
 }
-
-impl<R: AppRuntime> ServiceMarker for StorageService<R> {}
 
 impl<R: AppRuntime> StorageService<R> {
     pub(crate) fn new(abs_path: &Path) -> Result<Self> {

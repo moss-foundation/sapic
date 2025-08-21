@@ -1,7 +1,5 @@
 use async_stream::stream;
 use futures::{StreamExt, stream::BoxStream};
-
-use moss_applib::GlobalMarker;
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
 use std::{io, path::Path, time::Duration};
 use tokio::{
@@ -21,8 +19,6 @@ impl RealFileSystem {
         Self
     }
 }
-
-impl GlobalMarker for RealFileSystem {}
 
 #[async_trait::async_trait]
 impl FileSystem for RealFileSystem {

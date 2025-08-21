@@ -12,7 +12,6 @@ use moss_app::{AppBuilder, builder::BuildAppParams};
 use moss_applib::{
     TauriAppRuntime,
     context::{AnyAsyncContext, AnyContext, MutableContext},
-    context_old::ContextValueSet,
 };
 use moss_fs::RealFileSystem;
 use std::{path::PathBuf, sync::Arc, time::Duration};
@@ -112,7 +111,6 @@ pub async fn run<R: TauriRuntime>() {
                     ctx.freeze()
                 });
                 app_handle.manage(app);
-                app_handle.manage(ContextValueSet::default());
 
                 Ok(())
             })

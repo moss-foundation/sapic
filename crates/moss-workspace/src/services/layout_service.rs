@@ -1,5 +1,5 @@
 use anyhow::Result;
-use moss_applib::{AppRuntime, ServiceMarker};
+use moss_applib::AppRuntime;
 use moss_db::primitives::AnyValue;
 use moss_storage::primitives::segkey::SegKeyBuf;
 use serde::de::DeserializeOwned;
@@ -135,8 +135,6 @@ const _EDITOR_DEFAULTS: EditorPartDefaults = EditorPartDefaults {};
 pub struct LayoutService<R: AppRuntime> {
     storage: Arc<StorageService<R>>,
 }
-
-impl<R: AppRuntime> ServiceMarker for LayoutService<R> {}
 
 impl<R: AppRuntime> LayoutService<R> {
     pub(crate) fn new(storage: Arc<StorageService<R>>) -> Self {

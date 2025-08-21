@@ -13,7 +13,7 @@ use crate::{
 };
 use chrono::{DateTime, NaiveDate, NaiveDateTime};
 use joinerror::Error;
-use moss_applib::{AppRuntime, ServiceMarker};
+use moss_applib::AppRuntime;
 use moss_fs::{CreateOptions, FileSystem};
 use moss_logging::models::primitives::LogEntryId;
 use std::{
@@ -104,8 +104,6 @@ pub struct LogService<R: AppRuntime> {
     _sessionlog_writerguard: WorkerGuard,
     _taurilog_writerguard: WorkerGuard,
 }
-
-impl<R: AppRuntime> ServiceMarker for LogService<R> {}
 
 impl<R: AppRuntime> LogService<R> {
     pub fn new(
