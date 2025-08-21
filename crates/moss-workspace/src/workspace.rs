@@ -71,10 +71,10 @@ pub struct Workspace<R: AppRuntime> {
     pub(super) environment_service: Arc<EnvironmentService<R>>,
     pub(super) storage_service: Arc<StorageService<R>>,
 
-    // TODO: Refine the management of git provider clients
     pub(super) _on_did_delete_collection: Subscription<OnDidDeleteCollection>,
     pub(super) _on_did_add_collection: Subscription<OnDidAddCollection>,
 
+    // TODO: Refine the management of git provider clients
     pub(super) _github_client: Arc<GitHubClient>,
     pub(super) _gitlab_client: Arc<GitLabClient>,
 }

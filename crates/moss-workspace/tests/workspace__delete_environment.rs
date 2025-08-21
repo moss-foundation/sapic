@@ -62,7 +62,6 @@ async fn delete_environment_success() {
                 inner: UpdateEnvironmentParams {
                     id: environment_id.clone(),
                     name: None,
-                    collection_id: None,
                     order: None,
                     color: None,
                     expanded: None,

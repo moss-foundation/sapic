@@ -12,9 +12,7 @@ use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use ts_rs::TS;
 use validator::{Validate, ValidationError};
 
-use crate::models::primitives::{
-    ActivitybarPosition, ChangeCollectionId, CollectionId, SidebarPosition,
-};
+use crate::models::primitives::{ActivitybarPosition, CollectionId, SidebarPosition};
 
 pub type EnvironmentName = String;
 
@@ -103,10 +101,6 @@ pub struct UpdateCollectionParams {
 #[ts(export, export_to = "types.ts")]
 pub struct UpdateEnvironmentParams {
     pub id: EnvironmentId,
-
-    /// When updating an environment, we can move it to another collection
-    /// or remove its link to a specific collection to make it global.
-    pub collection_id: Option<ChangeCollectionId>,
     pub name: Option<String>,
     pub order: Option<isize>,
     #[ts(optional, type = "ChangeString")]
