@@ -430,7 +430,10 @@ impl<R: AppRuntime> WorkspaceService<R> {
         ctx: &R::AsyncContext,
     ) -> joinerror::Result<()> {
         let mut state_lock = self.state.write().await;
-        state_lock.active_workspace = None;
+        let current_workspace = state_lock.active_workspace.take();
+        if let Some(workspace) = current_workspace {
+            workspace.dispose().await;
+        }
 
         if let Err(e) = self.storage.remove_last_active_workspace(ctx).await {
             error(
