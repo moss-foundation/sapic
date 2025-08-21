@@ -1,12 +1,12 @@
 import { useState } from "react";
 
+import { TreeCollectionNode } from "@/components/CollectionTree/types";
 import { useFetchEntriesForPath } from "@/hooks/collection/derivedHooks/useFetchEntriesForPath";
 import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollectionEntry";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
-import { EntryInfo } from "@repo/moss-collection";
 import { join } from "@tauri-apps/api/path";
 
-export const useRenameEntryForm = (node: EntryInfo, collectionId: string) => {
+export const useRenameNodeForm = (node: TreeCollectionNode, collectionId: string) => {
   const { fetchEntriesForPath } = useFetchEntriesForPath();
   const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry();
 

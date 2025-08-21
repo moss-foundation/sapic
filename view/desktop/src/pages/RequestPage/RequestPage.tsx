@@ -12,6 +12,7 @@ import {
   TabItem,
 } from "@/components";
 import { TreeCollectionNode } from "@/components/CollectionTree/types";
+import { useRenameNodeForm } from "@/hooks/useRenameNodeForm";
 import { Icon } from "@/lib/ui";
 import { useRequestPage } from "@/pages/RequestPage/hooks/useRequestPage";
 import { useRequestModeStore } from "@/store/requestMode";
@@ -37,7 +38,7 @@ const Badge = ({ count }: { count: number }) => (
 );
 
 interface RequestPageProps {
-  node?: TreeCollectionNode;
+  node: TreeCollectionNode;
   collectionId: string;
   iconType: EntryKind;
   someRandomString: string;
@@ -53,6 +54,11 @@ const RequestPage = ({ api, ...props }: IDockviewPanelProps<RequestPageProps>) =
   const [activeRequestTabId, setActiveRequestTabId] = useState("params");
 
   const { requestData, httpMethod, setHttpMethod, updateRequestData } = useRequestPage();
+
+  const { isRenamingNode, setIsRenamingNode, handleRenamingFormSubmit, handleRenamingFormCancel } = useRenameNodeForm(
+    props?.params?.node,
+    props?.params?.collectionId
+  );
 
   if (props.params?.node) {
     dontShowTabs =
@@ -190,7 +196,17 @@ const RequestPage = ({ api, ...props }: IDockviewPanelProps<RequestPageProps>) =
 
   return (
     <PageView>
-      <PageHeader icon="Placeholder" tabs={dontShowTabs ? null : tabs} toolbar={toolbar} props={{ ...props, api }} />
+      <PageHeader
+        icon="Placeholder"
+        tabs={dontShowTabs ? null : tabs}
+        toolbar={toolbar}
+        props={{ ...props, api }}
+        onTitleChange={handleRenamingFormSubmit}
+        disableTitleChange={false}
+        isRenamingTitle={isRenamingNode}
+        setIsRenamingTitle={setIsRenamingNode}
+        handleRenamingFormCancel={handleRenamingFormCancel}
+      />
 
       <PageContent className={cn("relative")}>
         {props.params?.node ? (

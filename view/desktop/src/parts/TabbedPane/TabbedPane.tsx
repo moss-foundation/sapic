@@ -8,7 +8,7 @@ import { useUpdateEditorPartState } from "@/hooks/appState/useUpdateEditorPartSt
 import { mapEditorPartStateToSerializedDockview } from "@/hooks/appState/utils";
 import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
-import { Icon, type Icons } from "@/lib/ui";
+import { type Icons } from "@/lib/ui";
 import {
   CollectionSettingsPage,
   FolderSettings,
@@ -80,7 +80,7 @@ const DynamicPageWrapper = ({
   // Standard page structure with header and content
   return (
     <PageView>
-      <PageHeader icon={config.icon ? <Icon icon={config.icon} className="size-[18px]" /> : undefined} props={props} />
+      <PageHeader icon={config.icon} props={props} />
       <PageContent>
         <PageComponent {...props} />
       </PageContent>
@@ -239,10 +239,6 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     Welcome: {
       component: WelcomePage,
     },
-    CollectionSettings: {
-      title: "CollectionSettings",
-      component: CollectionSettingsPage,
-    },
     FolderSettings: {
       title: "FolderSettings",
       component: FolderSettings,
@@ -262,7 +258,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
 
       return (
         <PageView>
-          <PageHeader icon={<Icon icon="Placeholder" className="size-[18px]" />} props={props} />
+          <PageHeader icon="Placeholder" props={props} />
           <PageContent className={cn("relative", isDebug && "border-2 border-dashed border-orange-500")}>
             {props.params?.collectionId && props.params?.node?.id && (
               <Breadcrumbs collectionId={props.params.collectionId} nodeId={props.params.node.id} />
@@ -319,12 +315,27 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     },
     Request: (
       props: IDockviewPanelProps<{
-        node?: TreeCollectionNode;
+        node: TreeCollectionNode;
         collectionId: string;
         iconType: EntryKind;
         someRandomString: string;
       }>
     ) => <RequestPage {...props} />,
+    ...Object.entries(pageConfigs).reduce(
+      (acc, [key, config]) => {
+        acc[key] = (props: IDockviewPanelProps) => <DynamicPageWrapper pageKey={key} config={config} props={props} />;
+        return acc;
+      },
+      {} as Record<string, (props: IDockviewPanelProps) => JSX.Element>
+    ),
+    CollectionSettings: (
+      props: IDockviewPanelProps<{
+        node: TreeCollectionNode;
+        collectionId: string;
+        iconType: EntryKind;
+        someRandomString: string;
+      }>
+    ) => <CollectionSettingsPage {...props} />,
     ...Object.entries(pageConfigs).reduce(
       (acc, [key, config]) => {
         acc[key] = (props: IDockviewPanelProps) => <DynamicPageWrapper pageKey={key} config={config} props={props} />;
