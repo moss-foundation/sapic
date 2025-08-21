@@ -6,6 +6,7 @@ import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 
 import { Divider } from "../Divider";
+import InputPlain from "../InputPlain";
 
 export interface PageHeaderProps {
   icon?: Icons;
@@ -71,7 +72,7 @@ export const PageHeader = ({
 
           {isRenamingTitle ? (
             <form onSubmit={handleSubmit}>
-              <input
+              <InputPlain
                 autoFocus
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
@@ -87,7 +88,8 @@ export const PageHeader = ({
                     handleCancel();
                   }
                 }}
-                className="field-sizing-content w-auto rounded text-[16px] leading-6 font-semibold text-(--moss-primary-text)"
+                className="rounded p-0 text-[16px] leading-6 font-semibold text-(--moss-primary-text) has-[input:focus-within]:outline-offset-2"
+                inputFieldClassName="field-sizing-content w-auto"
               />
             </form>
           ) : (

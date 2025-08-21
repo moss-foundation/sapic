@@ -7,7 +7,6 @@ import { cn } from "@/utils";
 const inputStyles = cva(`
     placeholder-(--moss-controls-placeholder)
     background-(--moss-input-bg-plain)
-    border border-transparent
     text-(--moss-controls-plain-text)
     has-data-invalid:text-(--moss-error)
     py-[5px] px-2

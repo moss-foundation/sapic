@@ -14,7 +14,6 @@ export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElem
 
 //prettier-ignore
 const inputStyles = cva(`
-    peer 
     flex items-center w-full gap-2
     rounded-sm py-0 font-medium transition-shadow 
     has-[input:focus-within]:outline-2 
@@ -43,7 +42,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         <input
           ref={forwardedRef}
           disabled={disabled}
-          className={cn("h-full w-full focus-visible:outline-none", inputFieldClassName)}
+          className={cn("h-auto w-full focus-visible:outline-none", inputFieldClassName)}
           {...props}
         />
 
