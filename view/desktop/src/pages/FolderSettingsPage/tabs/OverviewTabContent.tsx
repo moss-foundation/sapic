@@ -1,3 +1,4 @@
+import { PageContent } from "@/components";
 import { TreeCollectionNode } from "@/components/CollectionTree/types";
 import { useCollectionsTrees } from "@/hooks";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
@@ -25,7 +26,7 @@ export const OverviewTabContent = ({ params }: IDockviewPanelProps<FolderSetting
   }
 
   return (
-    <div className="space-y-4 p-4">
+    <PageContent className="flex flex-col gap-1">
       <div className="rounded-lg border border-(--moss-border-color) p-4">
         <h3 className="mb-3 text-lg font-semibold text-(--moss-primary-text)">Folder Information</h3>
 
@@ -115,6 +116,6 @@ export const OverviewTabContent = ({ params }: IDockviewPanelProps<FolderSetting
           </pre>
         </div>
       </div>
-    </div>
+    </PageContent>
   );
 };

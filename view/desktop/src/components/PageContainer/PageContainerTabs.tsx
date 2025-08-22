@@ -42,7 +42,7 @@ export const PageContainerTab = ({ value, children, className }: PageContainerTa
     <TabsTrigger
       value={value}
       className={cn(
-        "flex items-center px-3 py-2 text-base transition-colors",
+        "flex items-center py-2 text-base transition-colors",
         "relative border-b-1 border-transparent",
         "text-(--moss-secondary-text) hover:text-(--moss-primary-text)",
         "data-[state=active]:text-(--moss-primary-text)",

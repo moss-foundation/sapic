@@ -118,7 +118,7 @@ export const FolderSettings = ({ ...props }: IDockviewPanelProps<FolderSettingsP
         onTitleChange={handleRenamingEntrySubmit}
         {...props}
       />
-      <PageContainerWithTabs tabs={tabs} activeTabId={activeTabId} onTabChange={setActiveTabId} />
+      <PageContainerWithTabs tabs={tabs} activeTabId={activeTabId} onTabChange={setActiveTabId} noPadding />
     </PageView>
   );
 };
