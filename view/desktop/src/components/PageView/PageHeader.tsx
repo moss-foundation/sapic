@@ -103,7 +103,7 @@ export const PageHeader = ({
                     handleCancel();
                   }
                 }}
-                className="rounded-xs p-0 text-[16px] leading-6 font-semibold text-(--moss-primary-text) has-[input:focus-within]:outline-offset-1"
+                className="-mr-px rounded-xs p-0 text-[16px] leading-6 font-semibold text-(--moss-primary-text) has-[input:focus-within]:outline-offset-1"
               />
             </form>
           ) : (

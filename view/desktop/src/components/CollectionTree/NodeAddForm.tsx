@@ -57,7 +57,7 @@ export const NodeAddForm = ({ onSubmit, onCancel, restrictedNames }: NodeRenamin
         autoFocus
         minLength={1}
         maxLength={100}
-        className="relative flex w-[calc(100%-1px)] min-w-0 grow items-center gap-1 rounded-xs bg-white outline outline-(--moss-primary)"
+        className="relative flex w-[calc(100%-3px)] min-w-0 grow items-center gap-1 rounded-xs bg-white"
         onKeyUp={handleKeyUp}
         onBlur={handleBlur}
         required
