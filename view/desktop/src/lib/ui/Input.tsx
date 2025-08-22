@@ -1,7 +1,8 @@
 import { cva } from "class-variance-authority";
-import React, { forwardRef } from "react";
+import React, { forwardRef, useEffect, useRef } from "react";
 
-import { cn } from "@/utils";
+import useInputResize from "@/pages/RequestPage/hooks/useInputResize";
+import { cn, mergeRefs } from "@/utils";
 
 import Icon, { Icons } from "./Icon";
 
@@ -10,6 +11,7 @@ export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElem
   iconRight?: Icons;
   iconClassName?: string;
   inputFieldClassName?: string;
+  fieldSizing?: "content" | "auto";
 }
 
 //prettier-ignore
@@ -32,15 +34,28 @@ const inputStyles = cva(`
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   (
-    { className, disabled = false, iconLeft, iconRight, iconClassName, inputFieldClassName, ...props },
+    {
+      className,
+      disabled = false,
+      iconLeft,
+      iconRight,
+      iconClassName,
+      inputFieldClassName,
+      fieldSizing = "auto",
+      ...props
+    },
     forwardedRef
   ) => {
+    const ref = useRef<HTMLInputElement>(null);
+
+    useInputResize({ ref, enabled: fieldSizing === "content" });
+
     return (
       <div className={cn(inputStyles({ disabled }), className)}>
         {iconLeft && <Icon icon={iconLeft} className={iconClassName} />}
 
         <input
-          ref={forwardedRef}
+          ref={mergeRefs([ref, forwardedRef])}
           disabled={disabled}
           className={cn("h-auto w-full focus-visible:outline-none", inputFieldClassName)}
           {...props}

@@ -39,18 +39,6 @@ export const PageHeader = ({
 
   const { api } = useTabbedPaneStore();
 
-  const handleSubmit = () => {
-    if (disableTitleChange) return;
-
-    onTitleChange?.(title);
-    setIsRenamingTitle?.(false);
-  };
-
-  const handleCancel = () => {
-    setTitle(initialTitle ?? "Untitled");
-    handleRenamingFormCancel?.();
-  };
-
   useEffect(() => {
     if (initialTitle) {
       setTitle(initialTitle);
@@ -62,6 +50,24 @@ export const PageHeader = ({
     }
   }, [api, initialTitle, props?.params?.node?.id]);
 
+  const handleSubmit = () => {
+    if (disableTitleChange || title === initialTitle) return;
+
+    if (!title || title === "") {
+      setTitle(initialTitle ?? "Untitled");
+      setIsRenamingTitle?.(false);
+      return;
+    }
+
+    onTitleChange?.(title);
+    setIsRenamingTitle?.(false);
+  };
+
+  const handleCancel = () => {
+    setTitle(initialTitle ?? "Untitled");
+    handleRenamingFormCancel?.();
+  };
+
   return (
     <header
       className={cn("background-(--moss-primary-background) border-b border-(--moss-border-color) py-1.5", className)}
@@ -71,8 +77,14 @@ export const PageHeader = ({
           {icon && <Icon icon={icon} className="size-[18px]" />}
 
           {isRenamingTitle ? (
-            <form onSubmit={handleSubmit}>
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                handleSubmit();
+              }}
+            >
               <InputPlain
+                fieldSizing="content"
                 autoFocus
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
@@ -89,7 +101,6 @@ export const PageHeader = ({
                   }
                 }}
                 className="rounded-xs p-0 text-[16px] leading-6 font-semibold text-(--moss-primary-text) has-[input:focus-within]:outline-offset-2"
-                inputFieldClassName="field-sizing-content w-auto"
               />
             </form>
           ) : (
