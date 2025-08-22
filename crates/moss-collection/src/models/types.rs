@@ -14,24 +14,6 @@ use crate::{
 };
 
 /// @category Type
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct EnvironmentInfo {
-    pub id: String,
-    pub name: String,
-
-    /// Determines the display position of this entry among others in the same group.
-    /// Entries are sorted in ascending order; lower values appear before higher ones.
-    /// Negative values are allowed and will be placed before positive values.
-    /// If multiple entries have the same order, they are sorted alphabetically.
-    /// If not specified, the entry appears last and is sorted alphabetically
-    /// among unspecified items.
-    pub order: Option<isize>,
-}
-
-/// @category Type
 #[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]

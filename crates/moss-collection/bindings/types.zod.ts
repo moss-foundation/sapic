@@ -15,12 +15,6 @@ export const queryParamOptionsSchema = z.object({
   disabled: z.boolean(),
 });
 
-export const environmentInfoSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  order: z.number().optional(),
-});
-
 export const updateDirEntryParamsSchema = z.object({
   id: z.string(),
   path: z.string().optional(),
