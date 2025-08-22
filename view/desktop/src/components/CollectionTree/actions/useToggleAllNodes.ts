@@ -2,7 +2,7 @@ import { useContext } from "react";
 
 import { USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, useStreamedCollectionEntries } from "@/hooks";
 import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
-import { BatchUpdateEntryKind, EntryInfo } from "@repo/moss-collection";
+import { BatchUpdateEntryKind, StreamEntriesEvent } from "@repo/moss-collection";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { CollectionTreeContext } from "../CollectionTreeContext";
@@ -55,7 +55,7 @@ export const useToggleAllNodes = (node: TreeCollectionRootNode) => {
       },
     });
 
-    queryClient.setQueryData([USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, id], (oldEntries: EntryInfo[]) => {
+    queryClient.setQueryData([USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, id], (oldEntries: StreamEntriesEvent[]) => {
       return oldEntries.map((entry) => {
         if (entry.kind === "Dir" && !entry.expanded) {
           return { ...entry, expanded: true };
@@ -104,7 +104,7 @@ export const useToggleAllNodes = (node: TreeCollectionRootNode) => {
       },
     });
 
-    queryClient.setQueryData([USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, id], (oldEntries: EntryInfo[]) => {
+    queryClient.setQueryData([USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, id], (oldEntries: StreamEntriesEvent[]) => {
       return oldEntries.map((entry) => {
         if (entry.kind === "Dir" && entry.expanded) {
           return { ...entry, expanded: false };

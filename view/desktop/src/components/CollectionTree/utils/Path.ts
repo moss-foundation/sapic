@@ -1,9 +1,11 @@
-import { EntryInfo } from "@repo/moss-collection";
+import { StreamEntriesEvent } from "@repo/moss-collection";
 import { join } from "@tauri-apps/api/path";
 
 import { TreeCollectionNode } from "../types";
 
-export const getPathWithoutName = async (node: TreeCollectionNode | EntryInfo): Promise<EntryInfo["path"]> => {
+export const getPathWithoutName = async (
+  node: TreeCollectionNode | StreamEntriesEvent
+): Promise<StreamEntriesEvent["path"]> => {
   const newSegments = node.path.segments.filter((segment) => segment !== node.name);
   const newRaw = newSegments.length > 0 ? await join(...newSegments) : "";
 
@@ -14,9 +16,9 @@ export const getPathWithoutName = async (node: TreeCollectionNode | EntryInfo): 
 };
 
 export const getPathWithoutParentPath = async (
-  path: EntryInfo["path"],
-  parentPath: EntryInfo["path"]
-): Promise<EntryInfo["path"]> => {
+  path: StreamEntriesEvent["path"],
+  parentPath: StreamEntriesEvent["path"]
+): Promise<StreamEntriesEvent["path"]> => {
   const newSegments = path.segments.filter((segment) => !parentPath.segments.includes(segment));
   const newRaw = await join(...newSegments);
 
@@ -26,7 +28,7 @@ export const getPathWithoutParentPath = async (
   };
 };
 
-export const removePathBeforeName = async (path: EntryInfo["path"], name: string) => {
+export const removePathBeforeName = async (path: StreamEntriesEvent["path"], name: string) => {
   const nameIndex = path.segments.findIndex((segment) => segment === name);
 
   if (nameIndex === -1) {
@@ -45,10 +47,10 @@ export const removePathBeforeName = async (path: EntryInfo["path"], name: string
   };
 };
 
-export const prepareEntriesForDrop = async (entries: EntryInfo[]): Promise<EntryInfo[]> => {
+export const prepareEntriesForDrop = async (entries: StreamEntriesEvent[]): Promise<StreamEntriesEvent[]> => {
   const rootEntryName = entries[0].name;
 
-  const entriesPreparedForDrop: EntryInfo[] = [];
+  const entriesPreparedForDrop: StreamEntriesEvent[] = [];
 
   for await (const entry of entries) {
     const newEntryPath = await removePathBeforeName(entry.path, rootEntryName);
@@ -62,10 +64,10 @@ export const prepareEntriesForDrop = async (entries: EntryInfo[]): Promise<Entry
   return entriesPreparedForDrop;
 };
 
-export const prepareEntriesForCreation = async (entries: EntryInfo[]): Promise<EntryInfo[]> => {
+export const prepareEntriesForCreation = async (entries: StreamEntriesEvent[]): Promise<StreamEntriesEvent[]> => {
   const rootEntryName = entries[0].name;
 
-  const entriesPreparedForDrop: EntryInfo[] = [];
+  const entriesPreparedForDrop: StreamEntriesEvent[] = [];
 
   for await (const entry of entries) {
     const newEntryPath = await removePathBeforeName(entry.path, rootEntryName);

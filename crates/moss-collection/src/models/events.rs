@@ -8,6 +8,8 @@ use crate::models::{
 
 /// @category Event
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
+#[ts(optional_fields)]
+#[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "events.ts")]
 pub struct StreamEntriesEvent {
     /// Unique identifier for this entry

@@ -1,8 +1,11 @@
-import { CreateEntryInput, EntryInfo } from "@repo/moss-collection";
+import { CreateEntryInput, StreamEntriesEvent } from "@repo/moss-collection";
 import { join, sep } from "@tauri-apps/api/path";
 
 //FIXME: This is a temporary solution until we have a proper configuration model
-export const createCollectionEntryForCache = async (id: string, entry: CreateEntryInput): Promise<EntryInfo> => {
+export const createCollectionEntryForCache = async (
+  id: string,
+  entry: CreateEntryInput
+): Promise<StreamEntriesEvent> => {
   const { entryClass } = getClassFromEntryInput(entry);
 
   if ("DIR" in entry) {

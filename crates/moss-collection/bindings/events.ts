@@ -37,7 +37,7 @@ export type StreamEntriesEvent = {
   /**
    * HTTP protocol/method used by this entry, if applicable (GET, POST, PUT, DELETE, WebSocket, GraphQL, gRPC)
    */
-  protocol: EntryProtocol | null;
+  protocol?: EntryProtocol;
   /**
    * Determines the display position of this entry among others in the same group.
    * Entries are sorted in ascending order; lower values appear before higher ones.
@@ -46,7 +46,7 @@ export type StreamEntriesEvent = {
    * If not specified, the entry appears last and is sorted alphabetically
    * among unspecified items.
    */
-  order: number | null;
+  order?: number;
   /**
    * Whether this entry is expanded in the tree view (applies to directories)
    */

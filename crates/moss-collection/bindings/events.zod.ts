@@ -17,7 +17,7 @@ export const streamEntriesEventSchema = z.object({
   path: entryPathSchema,
   class: entryClassSchema,
   kind: entryKindSchema,
-  protocol: entryProtocolSchema.nullable(),
-  order: z.number().nullable(),
+  protocol: entryProtocolSchema.optional(),
+  order: z.number().optional(),
   expanded: z.boolean(),
 });

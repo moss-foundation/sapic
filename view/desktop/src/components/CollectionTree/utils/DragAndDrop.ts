@@ -4,7 +4,7 @@ import {
   DropTargetRecord,
   ElementDragPayload,
 } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
-import { EntryInfo } from "@repo/moss-collection";
+import { StreamEntriesEvent } from "@repo/moss-collection";
 
 import { DragNode, DropNode, DropRootNode, TreeCollectionNode } from "../types";
 import {
@@ -73,8 +73,8 @@ export const doesLocationHaveTreeCollectionNode = (location: DragLocationHistory
   return location.current.dropTargets[0].data.type === "TreeCollectionNode";
 };
 
-export const getAllNestedEntries = (node: TreeCollectionNode): EntryInfo[] => {
-  const result: EntryInfo[] = [];
+export const getAllNestedEntries = (node: TreeCollectionNode): StreamEntriesEvent[] => {
+  const result: StreamEntriesEvent[] = [];
 
   result.push({
     id: node.id,

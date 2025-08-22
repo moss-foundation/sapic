@@ -1,5 +1,5 @@
 import { useTabbedPaneStore } from "@/store/tabbedPane";
-import { EntryInfo } from "@repo/moss-collection";
+import { StreamEntriesEvent } from "@repo/moss-collection";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useActiveWorkspace } from "../workspace/useActiveWorkspace";
@@ -13,7 +13,7 @@ export const useStreamedCollectionEntries = (collectionId: string) => {
 
   const { hasActiveWorkspace } = useActiveWorkspace();
 
-  const query = useQuery<EntryInfo[], Error>({
+  const query = useQuery<StreamEntriesEvent[], Error>({
     queryKey: [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, collectionId],
     queryFn: async () => {
       const entires = await fetchCollectionEntries(collectionId);
