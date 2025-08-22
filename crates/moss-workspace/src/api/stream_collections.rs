@@ -1,5 +1,6 @@
 use futures::StreamExt;
 use moss_applib::AppRuntime;
+use moss_logging::session;
 use tauri::ipc::Channel as TauriChannel;
 
 use crate::{
@@ -35,7 +36,11 @@ impl<R: AppRuntime> Workspace<R> {
                 Ok(branch) => Some(branch),
                 Err(e) => {
                     // TODO: Tell the frontend that we failed to fetch current branch info
-                    println!("failed to fetch current branch info: {}", e.to_string());
+                    // TODO: Logging Resource
+                    session::error!(format!(
+                        "failed to fetch current branch info: {}",
+                        e.to_string()
+                    ));
                     None
                 }
             };
@@ -51,7 +56,10 @@ impl<R: AppRuntime> Workspace<R> {
             };
 
             if let Err(e) = channel.send(event) {
-                println!("Error sending collection event: {:?}", e); // TODO: log error
+                session::error!(format!(
+                    "failed to send collection event through tauri channel: {}",
+                    e.to_string()
+                ));
             } else {
                 total_returned += 1;
             }
