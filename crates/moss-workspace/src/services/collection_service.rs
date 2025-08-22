@@ -1,7 +1,7 @@
 use derive_more::{Deref, DerefMut};
 use futures::Stream;
 use joinerror::{OptionExt, ResultExt};
-use moss_activity_indicator::{ActivityIndicator, handle::ActivityHandle};
+use moss_activity_indicator::ActivityIndicator;
 use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_collection::{
     Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
