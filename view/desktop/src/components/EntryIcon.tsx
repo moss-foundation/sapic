@@ -33,13 +33,13 @@ export const EntryIcon = ({ entry, className }: EntryIconProps) => {
 
   switch (entry.protocol) {
     case "Get":
-      return <GetIcon className="shrink-0 pb-[1px]" />;
+      return <GetIcon className={cn("shrink-0 pb-[1px]", className)} />;
     case "Post":
-      return <PostIcon className="shrink-0 pb-[1px]" />;
+      return <PostIcon className={cn("shrink-0 pb-[1px]", className)} />;
     case "Put":
-      return <PutIcon className="shrink-0 pb-[1px]" />;
+      return <PutIcon className={cn("shrink-0 pb-[1px]", className)} />;
     case "Delete":
-      return <DeleteIcon className="shrink-0 pb-[1px]" />;
+      return <DeleteIcon className={cn("shrink-0 pb-[1px]", className)} />;
 
     default:
       return (

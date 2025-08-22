@@ -17,7 +17,7 @@ export const CustomTab = ({
   hideClose,
   closeActionOverride,
   onClick,
-  ...rest
+  ...props
 }: CustomTabProps) => {
   const [title, setTitle] = useState(api.title || "");
   const [isCloseHovered, setIsCloseHovered] = useState(false);
@@ -59,19 +59,26 @@ export const CustomTab = ({
   );
 
   return (
-    <div {...rest} onClick={handleClick} data-testid="dockview-custom-tab" className="dv-default-tab">
-      <span className="dv-default-tab-content flex max-w-40 items-center gap-1">
+    <div
+      onClick={handleClick}
+      data-testid="dockview-custom-tab"
+      className="group/customTab flex h-full items-center justify-center gap-1 px-3 hover:text-(--moss-primary-text)"
+      {...props}
+    >
+      <span className="flex max-w-40 grow items-center gap-1 opacity-70 transition-opacity group-hover/customTab:opacity-100">
         {params?.iconType ? (
           <Icon icon={params?.iconType} className="size-4" />
         ) : params?.node ? (
-          <EntryIcon entry={params?.node} />
+          <div className="relative size-4 shrink-0">
+            <EntryIcon entry={params?.node} className="absolute top-0 right-0" />
+          </div>
         ) : null}
         <span className="truncate">{title}</span>
       </span>
 
       {!hideClose && (
         <button
-          className="dv-default-tab-action cursor-pointer"
+          className="flex items-center justify-center p-0"
           onPointerDown={(e) => e.preventDefault()}
           onClick={handleClose}
         >

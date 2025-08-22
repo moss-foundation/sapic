@@ -21,7 +21,7 @@ export const PageContainerWithTabs: React.FC<PageContainerWithTabsProps> = ({
     <PageContainer className={className}>
       <PageContainerTabs value={activeTabId} onValueChange={onTabChange}>
         <PageContainerHeader className="border-b border-(--moss-border-color)">
-          <PageContainerTabsList className="px-5">
+          <PageContainerTabsList className="px-0">
             {tabs.map((tab) => (
               <PageContainerTab key={tab.id} value={tab.id}>
                 {tab.icon && <div className="flex-shrink-0">{tab.icon}</div>}
