@@ -25,8 +25,6 @@ export const CustomTab = ({
   // Subscribe to title changes
   // TODO: In theory, in the future, tab's title should be handled by panel itself
   useEffect(() => {
-    setTitle(api.title || "");
-
     const disposable = api.onDidTitleChange?.((event) => {
       setTitle(event.title);
     });

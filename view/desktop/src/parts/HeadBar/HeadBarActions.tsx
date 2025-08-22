@@ -4,6 +4,7 @@ import { useCloseWorkspace } from "@/hooks/workbench/useCloseWorkspace";
 import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
 import { useWorkspaceMapping } from "@/hooks/workbench/useWorkspaceMapping";
 import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 // Helper to extract workspace ID from prefixed action ID
 const extractWorkspaceId = (actionId: string): string => {
@@ -131,6 +132,8 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
   const { getWorkspaceById } = useWorkspaceMapping();
   const { activeWorkspace } = useActiveWorkspace();
 
+  const { addOrFocusPanel } = useTabbedPaneStore();
+
   return (action: string) => {
     if (action.startsWith("workspace:")) {
       const workspaceId = extractWorkspaceId(action);
@@ -167,7 +170,14 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
             openWorkspace(workspaceId);
 
             setTimeout(() => {
-              openPanel("WorkspaceSettings");
+              addOrFocusPanel({
+                id: "WorkspaceSettings",
+                component: "WorkspaceSettings",
+                params: {
+                  iconType: "Workspace",
+                  workspace: true,
+                },
+              });
             }, 500);
           } else {
             console.error(`Workspace not found for ID: ${workspaceId}`);
