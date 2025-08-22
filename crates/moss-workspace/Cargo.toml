@@ -42,6 +42,7 @@ reqwest = { workspace = true, features = ["json"] }
 dotenv = { workspace = true, optional = true }
 oauth2 = { workspace = true, features = ["ureq"], optional = true }
 rustc-hash = { workspace = true }
+tracing.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }

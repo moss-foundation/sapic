@@ -5,7 +5,7 @@ pub mod create_collection;
 pub mod create_environment;
 pub mod delete_collection;
 pub mod delete_environment;
-mod describe_collection;
+pub mod describe_collection;
 pub mod describe_state;
 pub mod import_collection;
 pub mod stream_collections;

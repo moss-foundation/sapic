@@ -4,7 +4,7 @@ use moss_activity_indicator::ActivityIndicator;
 use moss_applib::AppRuntime;
 use moss_fs::{FileSystem, FsResultExt, RemoveOptions};
 use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
-use moss_logging::{LogEvent, LogScope, error, warn};
+use moss_logging::session;
 use moss_workspace::{
     builder::{CreateWorkspaceParams, LoadWorkspaceParams, WorkspaceBuilder},
     workspace::{WorkspaceModifyParams, WorkspaceSummary},
@@ -195,17 +195,11 @@ impl<R: AppRuntime> WorkspaceService<R> {
                 .remove_all_by_prefix(ctx, &segkey_workspace(&id).to_string())
                 .await
             {
-                warn(
-                    LogScope::Session,
-                    LogEvent {
-                        resource: None,
-                        message: format!(
-                            "failed to remove database entries for workspace `{}`: {}",
-                            id,
-                            e.to_string()
-                        ),
-                    },
-                )
+                session::warn!(format!(
+                    "failed to remove database entries for workspace `{}`: {}",
+                    id,
+                    e.to_string()
+                ));
             }
         }
 
@@ -348,16 +342,10 @@ impl<R: AppRuntime> WorkspaceService<R> {
                     .put_last_active_workspace_txn(ctx, &mut txn, &id)
                     .await
                 {
-                    error(
-                        LogScope::Session,
-                        LogEvent {
-                            resource: None,
-                            message: format!(
-                                "failed to put last active workspace to the database: {}",
-                                e.to_string()
-                            ),
-                        },
-                    )
+                    session::error!(format!(
+                        "failed to put last active workspace to the database: {}",
+                        e.to_string()
+                    ));
                 }
 
                 if let Err(e) = self
@@ -365,35 +353,22 @@ impl<R: AppRuntime> WorkspaceService<R> {
                     .put_last_opened_at_txn(ctx, &mut txn, &id, last_opened_at)
                     .await
                 {
-                    error(
-                        LogScope::Session,
-                        LogEvent {
-                            resource: None,
-                            message: format!(
-                                "failed to put workspace last opened at to the database: {}",
-                                e.to_string()
-                            ),
-                        },
-                    )
+                    session::error!(format!(
+                        "failed to put workspace last opened at to the database: {}",
+                        e.to_string()
+                    ))
                 }
 
                 if let Err(e) = txn.commit() {
-                    error(
-                        LogScope::Session,
-                        LogEvent {
-                            resource: None,
-                            message: format!("failed to commit transaction: {}", e.to_string()),
-                        },
-                    )
+                    session::error!(format!("failed to commit transaction: {}", e.to_string()))
                 }
             }
-            Err(e) => error(
-                LogScope::Session,
-                LogEvent {
-                    resource: None,
-                    message: format!("failed to start write transaction: {}", e.to_string()),
-                },
-            ),
+            Err(e) => {
+                session::error!(format!(
+                    "failed to start write transaction: {}",
+                    e.to_string()
+                ))
+            }
         }
 
         Ok(WorkspaceItemDescription {
@@ -416,16 +391,10 @@ impl<R: AppRuntime> WorkspaceService<R> {
         }
 
         if let Err(e) = self.storage.remove_last_active_workspace(ctx).await {
-            error(
-                LogScope::Session,
-                LogEvent {
-                    resource: None,
-                    message: format!(
-                        "failed to remove last active workspace from database: {}",
-                        e.to_string()
-                    ),
-                },
-            )
+            session::error!(format!(
+                "failed to remove last active workspace from database: {}",
+                e.to_string()
+            ));
         }
 
         // ctx.remove_value::<ctxkeys::ActiveWorkspaceId>();
@@ -447,13 +416,10 @@ async fn restore_known_workspaces<R: AppRuntime>(
         .list_all_by_prefix(ctx, SEGKEY_WORKSPACE.as_str().expect("invalid utf-8"))
         .await
         .unwrap_or_else(|e| {
-            error(
-                LogScope::Session,
-                LogEvent {
-                    resource: None,
-                    message: format!("failed to restore workspace cache: {}", e.to_string()),
-                },
-            );
+            session::error!(format!(
+                "failed to restore workspace cache: {}",
+                e.to_string()
+            ));
             HashMap::new()
         });
 
@@ -471,17 +437,11 @@ async fn restore_known_workspaces<R: AppRuntime>(
         let summary = match WorkspaceSummary::new(fs, &entry.path()).await {
             Ok(summary) => summary,
             Err(e) => {
-                error(
-                    LogScope::Session,
-                    LogEvent {
-                        resource: None,
-                        message: format!(
-                            "failed to parse workspace `{}` manifest: {}",
-                            id.as_str(),
-                            e.to_string()
-                        ),
-                    },
-                );
+                session::error!(format!(
+                    "failed to parse workspace `{}` manifest: {}",
+                    id.as_str(),
+                    e.to_string()
+                ));
                 continue;
             }
         };
@@ -495,17 +455,16 @@ async fn restore_known_workspaces<R: AppRuntime>(
 
         let last_opened_at = filtered_items
             .get(&segkey_last_opened_at(&id))
-            .map(|v| {
-                v.deserialize::<i64>()
-            }).transpose().unwrap_or_else(
-            |e| {
-                error(LogScope::Session, LogEvent {
-                    resource: None,
-                    message: format!("failed to get last_opened_at time from the database for workspace `{}`: {}", id.as_str(), e.to_string()),
-                });
+            .map(|v| v.deserialize::<i64>())
+            .transpose()
+            .unwrap_or_else(|e| {
+                session::error!(format!(
+                    "failed to get last_opened_at time from the database for workspace `{}`: {}",
+                    id.as_str(),
+                    e.to_string()
+                ));
                 None
-            }
-        );
+            });
 
         workspaces.insert(
             id.clone(),

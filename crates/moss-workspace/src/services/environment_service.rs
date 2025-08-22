@@ -12,6 +12,7 @@ use moss_environment::{
     segments::{SEGKEY_VARIABLE_LOCALVALUE, SEGKEY_VARIABLE_ORDER},
 };
 use moss_fs::{FileSystem, FsResultExt, RemoveOptions};
+use moss_logging::session;
 use moss_storage::{
     WorkspaceStorage,
     common::VariableStore,
@@ -139,6 +140,8 @@ where
         params: UpdateEnvironmentGroupParams,
     ) -> joinerror::Result<()> {
         let mut state = self.state.write().await;
+
+        // TODO: Make database errors not fail the operation
         let mut txn = self.storage.storage.begin_write_with_context(ctx).await?;
 
         let collection_id_inner = params.collection_id.inner();
@@ -173,13 +176,16 @@ where
         &self,
         ctx: &R::AsyncContext,
     ) -> joinerror::Result<Vec<EnvironmentGroup>> {
-        let expanded_groups =
-            if let Ok(expanded_groups) = self.storage.get_expanded_groups(ctx).await {
-                expanded_groups
-            } else {
-                println!("failed to get expanded groups from the db"); // TODO: log error
+        let expanded_groups = match self.storage.get_expanded_groups(ctx).await {
+            Ok(expanded_groups) => expanded_groups,
+            Err(e) => {
+                session::error!(
+                    "failed to get expanded groups from the db: {}",
+                    e.to_string()
+                );
                 HashSet::new()
-            };
+            }
+        };
 
         let mut state = self.state.write().await;
         state.expanded_groups = expanded_groups;
@@ -199,17 +205,17 @@ where
 
         for group_id in state.groups.iter() {
             let group_id_str = group_id.as_str();
-            let order = continue_if_err!(
-                data.get(format!("{base_key}:{}:order", group_id_str).as_str())
-                    .map(|v| v.deserialize::<isize>())
-                    .transpose(),
-                |err| {
-                    println!(
-                        "failed to deserialize order for environment group {}: {}",
-                        group_id_str, err
-                    );
-                }
-            );
+            let order = data
+                .get(&format!("{base_key}:{}:order", group_id_str))
+                .map(|v| v.deserialize::<isize>())
+                .transpose()
+                .unwrap_or_else(|e| {
+                    session::error!(format!(
+                        "failed to deserialize order for environment group `{}`: {}",
+                        group_id_str, e
+                    ));
+                    None
+                });
 
             groups.push(EnvironmentGroup {
                 collection_id: group_id.clone(),
@@ -242,7 +248,7 @@ where
             let scan_task = {
                 tokio::spawn(async move {
                     if let Err(e) = scanner.scan(&ctx).await {
-                        println!("Environment scan failed: {}", e);
+                        session::error!(format!("environment scan failed: {}", e));
                     }
                 })
             };
@@ -310,8 +316,7 @@ where
                 .put_environment_order(ctx, &params.id, order)
                 .await
             {
-                // TODO: log error
-                println!("failed to put environment order in the db: {}", e);
+                session::error!(format!("failed to put environment order in the db: {}", e));
             }
         }
 
@@ -380,11 +385,10 @@ where
                         .put_expanded_groups_txn(&ctx, &mut txn, &state.expanded_groups)
                         .await
                     {
-                        // TODO: log error
-                        println!(
+                        session::error!(format!(
                             "failed to put expanded groups in the database: {}",
                             e.to_string()
-                        );
+                        ));
                     }
                     if let Err(e) = self
                         .storage
@@ -396,18 +400,17 @@ where
                         )
                         .await
                     {
-                        println!(
+                        session::error!(format!(
                             "failed to put environment group order in the database: {}",
                             e.to_string()
-                        );
+                        ));
                     }
                     if let Err(e) = txn.commit() {
-                        println!("failed to commit the transaction: {}", e.to_string());
+                        session::error!(format!("failed to commit transaction: {}", e.to_string()));
                     }
                 }
                 Err(e) => {
-                    // TODO: log error
-                    println!("failed to begin a write transaction: {}", e.to_string());
+                    session::error!(format!("failed to commit transaction: {}", e.to_string()));
                 }
             };
         }
@@ -417,8 +420,10 @@ where
             .put_environment_order(ctx, &desc.id, params.order)
             .await
         {
-            // TODO: log error
-            println!("failed to put environment order in the db: {}", e);
+            session::error!(format!(
+                "failed to put environment order in the db: {}",
+                e.to_string()
+            ));
         }
 
         Ok(EnvironmentItemDescription {
@@ -462,6 +467,7 @@ where
 
         // Clean all the data related to the deleted environment
         {
+            // TODO: Make database error not fail the operation
             RemoveByPrefix::remove_by_prefix(
                 self.storage.storage.item_store().as_ref(),
                 ctx,
@@ -476,14 +482,18 @@ where
                     SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE);
 
                 if let Err(e) = RemoveItem::remove(store.as_ref(), ctx, segkey_localvalue).await {
-                    // TODO: log error
-                    println!("failed to remove variable local value in the db: {}", e);
+                    session::warn!(format!(
+                        "failed to remove variable local value in the db: {}",
+                        e.to_string()
+                    ));
                 }
 
                 let segkey_order = SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_ORDER);
                 if let Err(e) = RemoveItem::remove(store.as_ref(), ctx, segkey_order).await {
-                    // TODO: log error
-                    println!("failed to remove variable order in the db: {}", e);
+                    session::warn!(format!(
+                        "failed to remove variable order in the db: {}",
+                        e.to_string()
+                    ));
                 }
             }
         }
@@ -514,6 +524,8 @@ impl<R: AppRuntime> EnvironmentSourceScanner<R> {
     /// 3. Collects environments from all providers through a unified channel
     /// 4. Enriches each environment with cached metadata and forwards to the output channel
     async fn scan(&self, ctx: &R::AsyncContext) -> joinerror::Result<()> {
+        // TODO: make database errors not fail the operation
+
         let data =
             ListByPrefix::list_by_prefix(self.storage.item_store().as_ref(), ctx, "environment")
                 .await?
@@ -551,7 +563,10 @@ impl<R: AppRuntime> EnvironmentSourceScanner<R> {
                         )
                         .await
                         {
-                            println!("Provider {} scan failed: {}", source_id_for_scan, e);
+                            session::error!(format!(
+                                "provider `{}` scan failed: {}",
+                                source_id_for_scan, e
+                            ));
                         }
                     }
                 });
@@ -570,7 +585,7 @@ impl<R: AppRuntime> EnvironmentSourceScanner<R> {
             let desc = match environment.describe(ctx).await {
                 Ok(desc) => desc,
                 Err(e) => {
-                    println!("Failed to describe environment: {}", e);
+                    session::error!(format!("failed to describe environment: {}", e));
                     continue;
                 }
             };
@@ -582,7 +597,7 @@ impl<R: AppRuntime> EnvironmentSourceScanner<R> {
             {
                 order
             } else {
-                println!("no order found for environment: {}", desc.id); // TODO: log error
+                session::error!(format!("no order found for environment `{}`", desc.id));
                 None
             };
 
@@ -611,7 +626,10 @@ async fn scan_source<R: AppRuntime>(
     store: Arc<dyn VariableStore<R::AsyncContext>>,
     job: ScanSourceJob<R>,
 ) -> joinerror::Result<()> {
-    println!("scanning environment provider: {}", job.abs_path.display());
+    session::trace!(
+        "scanning environment provider: {}",
+        job.abs_path.to_string_lossy().to_string()
+    );
     let mut read_dir = fs.read_dir(&job.abs_path).await.map_err(|err| {
         joinerror::Error::new::<()>(format!(
             "failed to read directory {} : {}",
@@ -634,11 +652,11 @@ async fn scan_source<R: AppRuntime>(
             )
             .await;
         let environment = continue_if_err!(maybe_environment, |err| {
-            println!(
-                "failed to load environment {}: {}",
+            session::error!(format!(
+                "failed to load environment `{}`: {}",
                 entry.path().display(),
                 err
-            );
+            ));
         });
 
         let collection_id = if job.source_id.as_str() == "" {

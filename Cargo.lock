@@ -3843,6 +3843,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tokio",
+ "tracing",
  "ts-rs",
  "validator",
 ]
