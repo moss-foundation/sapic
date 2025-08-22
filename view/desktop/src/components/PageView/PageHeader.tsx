@@ -2,13 +2,12 @@ import { ReactNode, useEffect, useState } from "react";
 
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 import { Icon, Icons } from "@/lib/ui";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 
 import { Divider } from "../Divider";
 import InputPlain from "../InputPlain";
 
-export interface PageHeaderProps {
+export interface PageHeaderProps extends IDockviewPanelProps {
   icon?: Icons;
   tabs?: ReactNode;
   toolbar?: ReactNode;
@@ -27,28 +26,22 @@ export const PageHeader = ({
   tabs,
   toolbar,
   className,
-  props,
   onTitleChange,
   disableTitleChange = true,
   isRenamingTitle = false,
   setIsRenamingTitle,
   handleRenamingFormCancel,
   title: initialTitle,
+  api,
 }: PageHeaderProps) => {
-  const [title, setTitle] = useState(initialTitle ?? "Untitled");
-
-  const { api } = useTabbedPaneStore();
+  const [title, setTitle] = useState(initialTitle);
 
   useEffect(() => {
     if (initialTitle) {
       setTitle(initialTitle);
-
-      const panel = api?.getPanel(props?.params?.node?.id);
-      if (panel) {
-        panel.setTitle(initialTitle);
-      }
+      api?.setTitle(initialTitle);
     }
-  }, [api, initialTitle, props?.params?.node?.id]);
+  }, [initialTitle, api]);
 
   const handleSubmit = () => {
     if (disableTitleChange || title === initialTitle) {

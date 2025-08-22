@@ -18,7 +18,7 @@ const ENABLE_REACT_QUERY_DEVTOOLS = import.meta.env.MODE === "development";
 const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onError: (err, query) => {
-      console.log("Query client error", { err, query });
+      console.error("Query client error", { err, query });
     },
   }),
   defaultOptions: {

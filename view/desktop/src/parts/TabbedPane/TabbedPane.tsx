@@ -80,7 +80,7 @@ const DynamicPageWrapper = ({
   // Standard page structure with header and content
   return (
     <PageView>
-      <PageHeader icon={config.icon} props={props} title={config.title} />
+      <PageHeader icon={config.icon} title={config.title} {...props} />
       <PageContent>
         <PageComponent {...props} />
       </PageContent>
@@ -249,7 +249,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
 
       return (
         <PageView>
-          <PageHeader icon="Placeholder" props={props} />
+          <PageHeader icon="Placeholder" {...props} />
           <PageContent className={cn("relative", isDebug && "border-2 border-dashed border-orange-500")}>
             {props.params?.collectionId && props.params?.node?.id && (
               <Breadcrumbs collectionId={props.params.collectionId} nodeId={props.params.node.id} />
@@ -293,7 +293,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
         iconType: EntryKind;
       }>
     ) => <FolderSettings {...props} />,
-    WorkspaceSettings: () => <WorkspaceSettings />,
+    WorkspaceSettings: (props: IDockviewPanelProps) => <WorkspaceSettings {...props} />,
     ...Object.entries(pageConfigs).reduce(
       (acc, [key, config]) => {
         acc[key] = (props: IDockviewPanelProps) => <DynamicPageWrapper pageKey={key} config={config} props={props} />;

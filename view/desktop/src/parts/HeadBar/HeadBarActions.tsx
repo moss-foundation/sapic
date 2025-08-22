@@ -130,7 +130,7 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
   const { mutate: openWorkspace } = useOpenWorkspace();
   const { mutate: closeWorkspace } = useCloseWorkspace();
   const { getWorkspaceById } = useWorkspaceMapping();
-  const { activeWorkspace } = useActiveWorkspace();
+  const { activeWorkspace, activeWorkspaceId } = useActiveWorkspace();
 
   const { addOrFocusPanel } = useTabbedPaneStore();
 
@@ -165,20 +165,27 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
         }
 
         if (actionType === "rename") {
+          if (workspaceId === activeWorkspaceId) {
+            addOrFocusPanel({
+              id: "WorkspaceSettings",
+              component: "WorkspaceSettings",
+            });
+            return;
+          }
+
           const workspace = getWorkspaceById(workspaceId);
           if (workspace) {
-            openWorkspace(workspaceId);
-
-            setTimeout(() => {
-              addOrFocusPanel({
-                id: "WorkspaceSettings",
-                component: "WorkspaceSettings",
-                params: {
-                  iconType: "Workspace",
-                  workspace: true,
-                },
-              });
-            }, 500);
+            openWorkspace(workspaceId, {
+              onSuccess: () => {
+                addOrFocusPanel({
+                  id: "WorkspaceSettings",
+                  component: "WorkspaceSettings",
+                });
+              },
+              onError: (error) => {
+                console.error("Failed to open workspace:", error.message);
+              },
+            });
           } else {
             console.error(`Workspace not found for ID: ${workspaceId}`);
           }

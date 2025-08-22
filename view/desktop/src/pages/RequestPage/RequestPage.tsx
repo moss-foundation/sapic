@@ -197,16 +197,16 @@ const RequestPage = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
   return (
     <PageView>
       <PageHeader
-        icon="Placeholder"
+        icon="Request"
         tabs={dontShowTabs ? null : tabs}
         toolbar={toolbar}
         title={node?.name}
-        props={props}
         onTitleChange={handleRenamingEntrySubmit}
         disableTitleChange={false}
         isRenamingTitle={isRenamingEntry}
         setIsRenamingTitle={setIsRenamingEntry}
         handleRenamingFormCancel={handleRenamingEntryCancel}
+        {...props}
       />
 
       <div className={cn("relative")}>

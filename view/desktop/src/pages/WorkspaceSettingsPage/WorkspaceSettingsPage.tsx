@@ -7,13 +7,14 @@ import { useModal } from "@/hooks";
 import { useRenameWorkspace } from "@/hooks/useRenameWorkspace";
 import { useDeleteWorkspace } from "@/hooks/workbench/useDeleteWorkspace";
 import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
+import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 
 import { WorkspaceDangerZoneSection } from "./WorkspaceDangerZoneSection";
 import { WorkspaceDataSection } from "./WorkspaceDataSection";
 import { WorkspaceNameSection } from "./WorkspaceNameSection";
 import { WorkspaceStartupSection } from "./WorkspaceStartupSection";
 
-export const WorkspaceSettings = () => {
+export const WorkspaceSettings = ({ ...props }: IDockviewPanelProps) => {
   const { hasActiveWorkspace, activeWorkspace } = useActiveWorkspace();
 
   const { mutate: deleteWorkspace, isPending: isDeleting } = useDeleteWorkspace();
@@ -83,6 +84,7 @@ export const WorkspaceSettings = () => {
         isRenamingTitle={isRenamingWorkspace}
         setIsRenamingTitle={setIsRenamingWorkspace}
         handleRenamingFormCancel={handleRenamingWorkspaceCancel}
+        {...props}
       />
 
       <div className="flex h-full justify-center">
@@ -106,6 +108,7 @@ export const WorkspaceSettings = () => {
           <WorkspaceDangerZoneSection onDeleteClick={handleDeleteClick} />
         </div>
       </div>
+
       {isDeleteWorkspaceModalOpen && (
         <ConfirmationModal
           showModal={isDeleteWorkspaceModalOpen}
