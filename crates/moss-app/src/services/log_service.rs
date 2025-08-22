@@ -526,7 +526,7 @@ mod tests {
     use crate::constants::LOGGING_SERVICE_CHANNEL;
     use moss_applib::mock::MockAppRuntime;
     use moss_fs::RealFileSystem;
-    use moss_logging::{LogEvent, LogScope, debug};
+    use moss_logging::app;
     use moss_testutils::random_name::random_string;
     use std::{fs::create_dir_all, sync::atomic::AtomicUsize, time::Duration};
     use tauri::{Listener, Manager};
@@ -565,13 +565,7 @@ mod tests {
             });
         }
 
-        debug(
-            LogScope::App,
-            LogEvent {
-                resource: None,
-                message: "".to_string(),
-            },
-        );
+        app::debug!("");
 
         tokio::time::sleep(Duration::from_millis(100)).await;
         assert_eq!(counter.load(std::sync::atomic::Ordering::SeqCst), 1);

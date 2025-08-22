@@ -1,5 +1,6 @@
 use futures::StreamExt;
 use moss_applib::AppRuntime;
+use moss_logging::session;
 use tauri::ipc::Channel as TauriChannel;
 
 use crate::{
@@ -28,7 +29,10 @@ impl<R: AppRuntime> Workspace<R> {
                 order: item.order,
                 total_variables: item.total_variables,
             }) {
-                println!("Error sending environment event: {:?}", e); // TODO: log error
+                session::error!(format!(
+                    "failed to send environment event through tauri channel: {}",
+                    e.to_string()
+                ));
             } else {
                 total_returned += 1;
             }

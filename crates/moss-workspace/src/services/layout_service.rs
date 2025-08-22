@@ -1,6 +1,7 @@
 use anyhow::Result;
 use moss_applib::{AppRuntime, ServiceMarker};
 use moss_db::primitives::AnyValue;
+use moss_logging::session;
 use moss_storage::primitives::segkey::SegKeyBuf;
 use serde::de::DeserializeOwned;
 use std::{collections::HashMap, sync::Arc};
@@ -342,7 +343,7 @@ fn get_from_cache<T: DeserializeOwned>(
         .and_then(|raw_value| match raw_value.deserialize() {
             Ok(entity) => Some(entity),
             Err(err) => {
-                println!("Error deserializing value: {:?}", err);
+                session::error!("error deserializing value: {}", err.to_string());
                 None
             }
         })

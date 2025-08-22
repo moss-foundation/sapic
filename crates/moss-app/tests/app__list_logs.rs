@@ -6,7 +6,7 @@ use chrono::{DateTime, FixedOffset};
 use moss_app::models::{operations::ListLogsInput, primitives::LogLevel};
 
 use crate::shared::set_up_test_app;
-use moss_logging::{LogEvent, LogScope, debug, error, warn};
+use moss_logging::{app, session};
 use std::{str::FromStr, time::Duration};
 
 /// These tests can work one at a time, but cannot be executed together using `cargo test`.
@@ -48,20 +48,8 @@ async fn test_list_logs_from_both_files_and_queue() {
     let (app, ctx, cleanup) = set_up_test_app().await;
 
     for _ in 0..25 {
-        warn(
-            LogScope::App,
-            LogEvent {
-                resource: None,
-                message: "".to_string(),
-            },
-        );
-        warn(
-            LogScope::Session,
-            LogEvent {
-                resource: None,
-                message: "".to_string(),
-            },
-        );
+        app::warn!("");
+        session::warn!("");
     }
 
     // Wait for all writes to finish
@@ -94,27 +82,9 @@ async fn test_list_logs_from_both_files_and_queue() {
 async fn test_list_logs_by_level() {
     let (app, ctx, cleanup) = set_up_test_app().await;
 
-    debug(
-        LogScope::App,
-        LogEvent {
-            resource: None,
-            message: "".to_string(),
-        },
-    );
-    warn(
-        LogScope::App,
-        LogEvent {
-            resource: None,
-            message: "".to_string(),
-        },
-    );
-    error(
-        LogScope::App,
-        LogEvent {
-            resource: None,
-            message: "".to_string(),
-        },
-    );
+    app::debug!("");
+    app::warn!("");
+    app::error!("");
 
     let debug_logs = app
         .list_logs(
@@ -167,27 +137,9 @@ async fn test_list_logs_by_resource() {
     let (app, ctx, cleanup) = set_up_test_app().await;
     // let log_service = services.get::<LogService<MockAppRuntime>>();
 
-    debug(
-        LogScope::App,
-        LogEvent {
-            resource: None,
-            message: "".to_string(),
-        },
-    );
-    debug(
-        LogScope::App,
-        LogEvent {
-            resource: Some("resource".to_string()),
-            message: "".to_string(),
-        },
-    );
-    debug(
-        LogScope::App,
-        LogEvent {
-            resource: Some("another".to_string()),
-            message: "".to_string(),
-        },
-    );
+    app::debug!("");
+    app::debug!("resource", "");
+    app::debug!("another", "");
 
     let resource_logs = app
         .list_logs(
