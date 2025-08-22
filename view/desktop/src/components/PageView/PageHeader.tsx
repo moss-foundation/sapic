@@ -120,7 +120,7 @@ export const PageHeader = ({
               className={cn(
                 "-mx-1 truncate rounded px-1 text-[16px] leading-6 font-semibold text-(--moss-primary-text)",
                 {
-                  "hover:background-(--moss-secondary-background) cursor-text": !disableTitleChange,
+                  "hover:background-(--moss-secondary-background-hover) cursor-text": !disableTitleChange,
                 }
               )}
             >
