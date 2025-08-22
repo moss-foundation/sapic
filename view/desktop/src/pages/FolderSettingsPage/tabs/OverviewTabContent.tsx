@@ -1,6 +1,9 @@
-import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 import { TreeCollectionNode } from "@/components/CollectionTree/types";
+import { useCollectionsTrees } from "@/hooks";
+import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 import { EntryKind } from "@repo/moss-collection";
+
+import { findNodeInCollection } from "../utils";
 
 export interface FolderSettingsParams {
   collectionId: string;
@@ -9,9 +12,11 @@ export interface FolderSettingsParams {
 }
 
 export const OverviewTabContent = ({ params }: IDockviewPanelProps<FolderSettingsParams>) => {
-  const { collectionId, node, iconType } = params || {};
+  const { collectionsTrees } = useCollectionsTrees();
+  const collection = collectionsTrees?.find((col) => col.id === params?.collectionId);
+  const node = collection ? findNodeInCollection(collection, params?.node?.id) : undefined;
 
-  if (!node || !collectionId) {
+  if (!node || !params?.collectionId) {
     return (
       <div className="p-4">
         <p className="text-(--moss-secondary-text)">No folder data available</p>
@@ -42,7 +47,7 @@ export const OverviewTabContent = ({ params }: IDockviewPanelProps<FolderSetting
           <div>
             <label className="mb-1 block text-sm font-medium text-(--moss-secondary-text)">Collection ID</label>
             <div className="background-(--moss-secondary-background) rounded border border-(--moss-border-color) px-3 py-2 font-mono text-sm text-(--moss-primary-text)">
-              {collectionId}
+              {params?.collectionId}
             </div>
           </div>
 
@@ -106,7 +111,7 @@ export const OverviewTabContent = ({ params }: IDockviewPanelProps<FolderSetting
 
         <div className="background-(--moss-secondary-background) rounded border border-(--moss-border-color) p-3">
           <pre className="overflow-auto text-sm text-(--moss-secondary-text)">
-            {JSON.stringify({ node, collectionId, iconType }, null, 2)}
+            {JSON.stringify({ node, collectionId: params?.collectionId, iconType: params?.iconType }, null, 2)}
           </pre>
         </div>
       </div>

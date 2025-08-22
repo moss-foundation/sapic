@@ -2,18 +2,22 @@ import { useState } from "react";
 
 import { useFetchEntriesForPath } from "@/hooks/collection/derivedHooks/useFetchEntriesForPath";
 import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollectionEntry";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { EntryInfo } from "@repo/moss-collection";
 import { join } from "@tauri-apps/api/path";
 
 export const useRenameEntryForm = (entry: EntryInfo, collectionId: string) => {
   const { fetchEntriesForPath } = useFetchEntriesForPath();
   const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry();
+  const { api } = useTabbedPaneStore();
 
   const [isRenamingEntry, setIsRenamingEntry] = useState(false);
 
   const handleRenamingEntrySubmit = async (newName: string) => {
+    const trimmedNewName = newName.trim();
+
     try {
-      if (newName === entry.name) {
+      if (trimmedNewName === entry.name) {
         return;
       }
 
@@ -23,12 +27,12 @@ export const useRenameEntryForm = (entry: EntryInfo, collectionId: string) => {
           updatedEntry: {
             DIR: {
               id: entry.id,
-              name: newName,
+              name: trimmedNewName,
             },
           },
         });
 
-        const newPath = await join(...entry.path.segments.slice(0, entry.path.segments.length - 1), newName);
+        const newPath = await join(...entry.path.segments.slice(0, entry.path.segments.length - 1), trimmedNewName);
         await fetchEntriesForPath(collectionId, newPath);
       } else {
         await updateCollectionEntry({
@@ -36,7 +40,7 @@ export const useRenameEntryForm = (entry: EntryInfo, collectionId: string) => {
           updatedEntry: {
             ITEM: {
               id: entry.id,
-              name: newName,
+              name: trimmedNewName,
               queryParamsToAdd: [],
               queryParamsToUpdate: [],
               queryParamsToRemove: [],
@@ -49,6 +53,10 @@ export const useRenameEntryForm = (entry: EntryInfo, collectionId: string) => {
             },
           },
         });
+      }
+      const panel = api?.getPanel(entry.id);
+      if (panel) {
+        panel.setTitle(trimmedNewName);
       }
     } catch (error) {
       console.error(error);

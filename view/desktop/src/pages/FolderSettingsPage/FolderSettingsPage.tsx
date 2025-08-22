@@ -1,12 +1,16 @@
 import { useState } from "react";
 
+import { PageHeader, PageView } from "@/components";
+import { TreeCollectionNode } from "@/components/CollectionTree/types";
 import { PageContainerWithTabs, TabItem } from "@/components/PageContainer";
+import { useStreamedCollectionEntries } from "@/hooks/collection/useStreamedCollectionEntries";
+import { useRenameEntryForm } from "@/hooks/useRenameEntryForm";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 import { Icon } from "@/lib/ui";
-import { TreeCollectionNode } from "@/components/CollectionTree/types";
 import { EntryKind } from "@repo/moss-collection";
 
 import { OverviewTabContent } from "./tabs/OverviewTabContent";
+import { getFolderIcon } from "./utils";
 
 export interface FolderSettingsParams {
   collectionId: string;
@@ -15,11 +19,15 @@ export interface FolderSettingsParams {
 }
 
 export const FolderSettings = ({ ...props }: IDockviewPanelProps<FolderSettingsParams>) => {
-  const { collectionId, node } = props.params || {};
+  const { data: streamedEntries } = useStreamedCollectionEntries(props.params?.collectionId);
+  const node = streamedEntries?.find((entry) => entry.id === props.params?.node?.id);
+
+  const { isRenamingEntry, setIsRenamingEntry, handleRenamingEntrySubmit, handleRenamingEntryCancel } =
+    useRenameEntryForm(props?.params?.node, props?.params?.collectionId);
 
   const [activeTabId, setActiveTabId] = useState("overview");
 
-  if (!collectionId || !node) {
+  if (!props?.params?.collectionId || !node) {
     return (
       <div className="flex h-full items-center justify-center text-(--moss-primary-text)">
         <div className="text-center">
@@ -30,7 +38,6 @@ export const FolderSettings = ({ ...props }: IDockviewPanelProps<FolderSettingsP
     );
   }
 
-  // Define the tabs for the folder settings
   const tabs: TabItem[] = [
     {
       id: "overview",
@@ -97,5 +104,21 @@ export const FolderSettings = ({ ...props }: IDockviewPanelProps<FolderSettingsP
     },
   ];
 
-  return <PageContainerWithTabs tabs={tabs} activeTabId={activeTabId} onTabChange={setActiveTabId} />;
+  const isRoot = node.path.segments.length === 1;
+
+  return (
+    <PageView>
+      <PageHeader
+        icon={getFolderIcon(props?.params?.node)}
+        title={node?.name}
+        disableTitleChange={isRoot}
+        props={props}
+        isRenamingTitle={isRenamingEntry}
+        setIsRenamingTitle={setIsRenamingEntry}
+        handleRenamingFormCancel={handleRenamingEntryCancel}
+        onTitleChange={handleRenamingEntrySubmit}
+      />
+      <PageContainerWithTabs tabs={tabs} activeTabId={activeTabId} onTabChange={setActiveTabId} />
+    </PageView>
+  );
 };
