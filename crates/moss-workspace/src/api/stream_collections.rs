@@ -36,7 +36,6 @@ impl<R: AppRuntime> Workspace<R> {
                 Ok(branch) => Some(branch),
                 Err(e) => {
                     // TODO: Tell the frontend that we failed to fetch current branch info
-                    // TODO: Logging Resource
                     session::error!(format!(
                         "failed to fetch current branch info: {}",
                         e.to_string()

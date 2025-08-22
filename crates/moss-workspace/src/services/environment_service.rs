@@ -179,7 +179,6 @@ where
         let expanded_groups = match self.storage.get_expanded_groups(ctx).await {
             Ok(expanded_groups) => expanded_groups,
             Err(e) => {
-                // TODO: logging resource
                 session::error!(
                     "failed to get expanded groups from the db: {}",
                     e.to_string()
@@ -211,7 +210,6 @@ where
                 .map(|v| v.deserialize::<isize>())
                 .transpose()
                 .unwrap_or_else(|e| {
-                    // TODO: logging error
                     session::error!(format!(
                         "failed to deserialize order for environment group `{}`: {}",
                         group_id_str, e
@@ -318,7 +316,6 @@ where
                 .put_environment_order(ctx, &params.id, order)
                 .await
             {
-                // TODO: logging resource
                 session::error!(format!("failed to put environment order in the db: {}", e));
             }
         }
@@ -388,7 +385,6 @@ where
                         .put_expanded_groups_txn(&ctx, &mut txn, &state.expanded_groups)
                         .await
                     {
-                        // TODO: logging resource
                         session::error!(format!(
                             "failed to put expanded groups in the database: {}",
                             e.to_string()
@@ -404,19 +400,16 @@ where
                         )
                         .await
                     {
-                        // TODO: logging resource
                         session::error!(format!(
                             "failed to put environment group order in the database: {}",
                             e.to_string()
                         ));
                     }
                     if let Err(e) = txn.commit() {
-                        // TODO: logging resource
                         session::error!(format!("failed to commit transaction: {}", e.to_string()));
                     }
                 }
                 Err(e) => {
-                    // TODO: logging resource
                     session::error!(format!("failed to commit transaction: {}", e.to_string()));
                 }
             };
@@ -427,7 +420,6 @@ where
             .put_environment_order(ctx, &desc.id, params.order)
             .await
         {
-            // TODO: logging resource
             session::error!(format!(
                 "failed to put environment order in the db: {}",
                 e.to_string()
@@ -490,7 +482,6 @@ where
                     SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE);
 
                 if let Err(e) = RemoveItem::remove(store.as_ref(), ctx, segkey_localvalue).await {
-                    // TODO: logging resource
                     session::warn!(format!(
                         "failed to remove variable local value in the db: {}",
                         e.to_string()
@@ -499,7 +490,6 @@ where
 
                 let segkey_order = SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_ORDER);
                 if let Err(e) = RemoveItem::remove(store.as_ref(), ctx, segkey_order).await {
-                    // TODO: logging resource
                     session::warn!(format!(
                         "failed to remove variable order in the db: {}",
                         e.to_string()
@@ -573,7 +563,6 @@ impl<R: AppRuntime> EnvironmentSourceScanner<R> {
                         )
                         .await
                         {
-                            // TODO: logging resource
                             session::error!(format!(
                                 "provider `{}` scan failed: {}",
                                 source_id_for_scan, e
@@ -608,7 +597,6 @@ impl<R: AppRuntime> EnvironmentSourceScanner<R> {
             {
                 order
             } else {
-                // TODO: logging resource
                 session::error!(format!("no order found for environment `{}`", desc.id));
                 None
             };
@@ -664,7 +652,6 @@ async fn scan_source<R: AppRuntime>(
             )
             .await;
         let environment = continue_if_err!(maybe_environment, |err| {
-            // TODO: logging resource
             session::error!(format!(
                 "failed to load environment `{}`: {}",
                 entry.path().display(),

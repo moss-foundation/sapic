@@ -532,7 +532,6 @@ impl<R: AppRuntime> CollectionService<R> {
             for (id, item) in state_lock.collections.iter() {
                 let desc = item.describe().await;
                 if let Err(e) = desc {
-                    // TODO: Logging resource
                     session::error!(format!("failed to describe collection `{}`: {}", id.to_string(), e.to_string()));
                     continue;
                 }
@@ -594,7 +593,6 @@ async fn restore_collections<R: AppRuntime>(
                 Ok(collection) => collection,
                 Err(e) => {
                     // TODO: Let the frontend know a collection is invalid
-                    // TODO: Logging resource
                     session::error!(format!(
                         "failed to rebuild collection `{}`: {}",
                         id_str,
