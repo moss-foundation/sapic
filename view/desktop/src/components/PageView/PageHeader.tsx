@@ -92,10 +92,9 @@ export const PageHeader = ({
                 event.preventDefault();
                 handleSubmit();
               }}
-              className="-mx-1 w-full max-w-[250px] px-1"
+              className="-mx-1 w-full max-w-[200px] px-1"
             >
               <InputPlain
-                // fieldSizing="content"
                 autoFocus
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
@@ -121,7 +120,7 @@ export const PageHeader = ({
               className={cn(
                 "-mx-1 truncate overflow-hidden rounded px-1 text-left text-[16px] leading-6 font-semibold text-(--moss-primary-text)",
                 {
-                  "hover:background-(--moss-secondary-background-hover) w-full max-w-[250px] cursor-text":
+                  "hover:background-(--moss-secondary-background-hover) w-full max-w-[200px] cursor-text":
                     !disableTitleChange,
                 }
               )}
