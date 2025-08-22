@@ -239,10 +239,6 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     Welcome: {
       component: WelcomePage,
     },
-    FolderSettings: {
-      title: "FolderSettings",
-      component: FolderSettings,
-    },
   };
 
   const components = {
@@ -297,6 +293,14 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
         someRandomString: string;
       }>
     ) => <CollectionSettingsPage {...props} />,
+    FolderSettings: (
+      props: IDockviewPanelProps<{
+        node: TreeCollectionNode;
+        collectionId: string;
+        iconType: EntryKind;
+        someRandomString: string;
+      }>
+    ) => <FolderSettings {...props} />,
     ...Object.entries(pageConfigs).reduce(
       (acc, [key, config]) => {
         acc[key] = (props: IDockviewPanelProps) => <DynamicPageWrapper pageKey={key} config={config} props={props} />;

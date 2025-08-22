@@ -51,7 +51,10 @@ export const PageHeader = ({
   }, [api, initialTitle, props?.params?.node?.id]);
 
   const handleSubmit = () => {
-    if (disableTitleChange || title === initialTitle) return;
+    if (disableTitleChange || title === initialTitle) {
+      setIsRenamingTitle?.(false);
+      return;
+    }
 
     if (!title || title === "") {
       setTitle(initialTitle ?? "Untitled");
@@ -100,13 +103,13 @@ export const PageHeader = ({
                     handleCancel();
                   }
                 }}
-                className="rounded-xs p-0 text-[16px] leading-6 font-semibold text-(--moss-primary-text) has-[input:focus-within]:outline-offset-2"
+                className="rounded-xs p-0 text-[16px] leading-6 font-semibold text-(--moss-primary-text) has-[input:focus-within]:outline-offset-1"
               />
             </form>
           ) : (
             <h2
-              onDoubleClick={() => setIsRenamingTitle?.(true)}
-              className="truncate text-[16px] leading-6 font-semibold text-(--moss-primary-text)"
+              onClick={() => setIsRenamingTitle?.(true)}
+              className="hover:background-(--moss-secondary-background) -mx-1 cursor-text truncate rounded px-1 text-[16px] leading-6 font-semibold text-(--moss-primary-text)"
             >
               {title}
             </h2>
