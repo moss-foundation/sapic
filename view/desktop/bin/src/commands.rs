@@ -10,7 +10,7 @@ pub use workspace::*;
 
 use joinerror::OptionExt;
 use moss_api::{TauriResult, constants::DEFAULT_OPERATION_TIMEOUT, errors::PreconditionFailed};
-use moss_app::{app::App, services::workspace_service::ActiveWorkspace};
+use moss_app::{ActiveWorkspace, app::App};
 use moss_applib::{
     AppRuntime,
     context::{AnyAsyncContext, AnyContext},

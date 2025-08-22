@@ -20,26 +20,11 @@ use std::{
 use tokio::sync::RwLock;
 
 use crate::{
-    dirs,
+    ActiveWorkspace, dirs,
     models::primitives::WorkspaceId,
     services::storage_service::StorageService,
     storage::segments::{SEGKEY_WORKSPACE, segkey_last_opened_at, segkey_workspace},
 };
-
-#[derive(Deref, DerefMut)]
-pub struct ActiveWorkspace<R: AppRuntime> {
-    id: WorkspaceId,
-
-    #[deref]
-    #[deref_mut]
-    handle: Workspace<R>,
-}
-
-impl<R: AppRuntime> ActiveWorkspace<R> {
-    pub fn id(&self) -> WorkspaceId {
-        self.id.clone()
-    }
-}
 
 pub(crate) struct WorkspaceItemCreateParams {
     pub name: String,
