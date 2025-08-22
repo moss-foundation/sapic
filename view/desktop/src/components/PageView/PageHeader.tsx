@@ -71,6 +71,14 @@ export const PageHeader = ({
     handleRenamingFormCancel?.();
   };
 
+  const handleStartRenaming = () => {
+    if (disableTitleChange) {
+      return;
+    }
+
+    setIsRenamingTitle?.(true);
+  };
+
   return (
     <header
       className={cn("background-(--moss-primary-background) border-b border-(--moss-border-color) py-1.5", className)}
@@ -108,8 +116,13 @@ export const PageHeader = ({
             </form>
           ) : (
             <h2
-              onClick={() => setIsRenamingTitle?.(true)}
-              className="hover:background-(--moss-secondary-background) -mx-1 cursor-text truncate rounded px-1 text-[16px] leading-6 font-semibold text-(--moss-primary-text)"
+              onClick={handleStartRenaming}
+              className={cn(
+                "-mx-1 truncate rounded px-1 text-[16px] leading-6 font-semibold text-(--moss-primary-text)",
+                {
+                  "hover:background-(--moss-secondary-background) cursor-text": !disableTitleChange,
+                }
+              )}
             >
               {title}
             </h2>
