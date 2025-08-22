@@ -76,7 +76,7 @@ export const WorkspaceSettings = () => {
   return (
     <PageView>
       <PageHeader
-        icon="Placeholder"
+        icon="Workspace"
         title={activeWorkspace?.name}
         onTitleChange={handleRenamingWorkspaceSubmit}
         disableTitleChange={false}
