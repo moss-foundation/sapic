@@ -80,7 +80,7 @@ const DynamicPageWrapper = ({
   // Standard page structure with header and content
   return (
     <PageView>
-      <PageHeader icon={config.icon} props={props} />
+      <PageHeader icon={config.icon} props={props} title={config.title} />
       <PageContent>
         <PageComponent {...props} />
       </PageContent>
@@ -232,7 +232,6 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
       title: "Logs",
       component: Logs,
     },
-
     Welcome: {
       component: WelcomePage,
     },
