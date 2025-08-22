@@ -1,5 +1,4 @@
 use chrono::Utc;
-use derive_more::{Deref, DerefMut};
 use joinerror::{Error, OptionExt, ResultExt};
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::AppRuntime;
@@ -7,7 +6,6 @@ use moss_fs::{FileSystem, FsResultExt, RemoveOptions};
 use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
 use moss_logging::{LogEvent, LogScope, error, warn};
 use moss_workspace::{
-    Workspace,
     builder::{CreateWorkspaceParams, LoadWorkspaceParams, WorkspaceBuilder},
     workspace::{WorkspaceModifyParams, WorkspaceSummary},
 };
@@ -233,7 +231,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
             .await
             .join_err::<()>("failed to create workspace directory")?;
 
-        WorkspaceBuilder::initialize(
+        WorkspaceBuilder::<R>::initialize(
             self.fs.clone(),
             CreateWorkspaceParams {
                 name: params.name.clone(),
@@ -310,14 +308,14 @@ impl<R: AppRuntime> WorkspaceService<R> {
 
         let last_opened_at = Utc::now().timestamp();
         let abs_path: Arc<Path> = self.absolutize(&id.to_string()).into();
-        let workspace = WorkspaceBuilder::new(
+        let workspace = WorkspaceBuilder::<R>::new(
             self.fs.clone(),
             self.github_client.clone(),
             self.gitlab_client.clone(),
+            activity_indicator,
         )
         .load(
             ctx,
-            activity_indicator,
             LoadWorkspaceParams {
                 abs_path: abs_path.clone(),
             },

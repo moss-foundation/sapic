@@ -92,18 +92,21 @@ pub async fn setup_test_workspace() -> (AsyncContext, Workspace<MockAppRuntime>,
         ))
     };
 
-    let workspace: Workspace<MockAppRuntime> =
-        WorkspaceBuilder::new(fs.clone(), github_client, gitlab_client)
-            .create(
-                &ctx,
-                activity_indicator,
-                CreateWorkspaceParams {
-                    name: random_workspace_name(),
-                    abs_path: abs_path.clone(),
-                },
-            )
-            .await
-            .unwrap();
+    let workspace: Workspace<MockAppRuntime> = WorkspaceBuilder::<MockAppRuntime>::new(
+        fs.clone(),
+        github_client,
+        gitlab_client,
+        activity_indicator,
+    )
+    .create(
+        &ctx,
+        CreateWorkspaceParams {
+            name: random_workspace_name(),
+            abs_path: abs_path.clone(),
+        },
+    )
+    .await
+    .unwrap();
 
     let cleanup_fn = Box::new({
         let abs_path_clone = abs_path.clone();

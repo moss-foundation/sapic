@@ -1,4 +1,5 @@
 use joinerror::{Error, OptionExt, ResultExt};
+use moss_activity_indicator::ActivityIndicator;
 use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt, RemoveOptions};
 use moss_git::repo::{BranchType, IndexAddOption, RepoHandle, Signature};
@@ -77,29 +78,29 @@ pub struct CollectionCloneGitParams {
     pub branch: Option<String>,
 }
 
-pub struct CollectionBuilder {
+pub struct CollectionBuilder<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
+    activity_indicator: ActivityIndicator<R::EventLoop>,
     github_client: Arc<GitHubClient>,
     gitlab_client: Arc<GitLabClient>,
 }
 
-impl CollectionBuilder {
+impl<R: AppRuntime> CollectionBuilder<R> {
     pub fn new(
         fs: Arc<dyn FileSystem>,
+        activity_indicator: ActivityIndicator<R::EventLoop>,
         github_client: Arc<GitHubClient>,
         gitlab_client: Arc<GitLabClient>,
     ) -> Self {
         Self {
             fs,
+            activity_indicator,
             github_client,
             gitlab_client,
         }
     }
 
-    pub async fn load<R: AppRuntime>(
-        self,
-        params: CollectionLoadParams,
-    ) -> joinerror::Result<Collection<R>> {
+    pub async fn load(self, params: CollectionLoadParams) -> joinerror::Result<Collection<R>> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
         let storage_service: Arc<StorageService<R>> =
@@ -110,6 +111,7 @@ impl CollectionBuilder {
         let worktree_service: Arc<Worktree<R>> = Worktree::new(
             params.internal_abs_path.clone(),
             self.fs.clone(),
+            self.activity_indicator.clone(),
             storage_service.clone(),
         )
         .into();
@@ -167,7 +169,7 @@ impl CollectionBuilder {
         })
     }
 
-    pub async fn create<R: AppRuntime>(
+    pub async fn create(
         self,
         ctx: &R::AsyncContext,
         params: CollectionCreateParams,
@@ -189,8 +191,13 @@ impl CollectionBuilder {
             .put_expanded_entries(ctx, Vec::new())
             .await?;
 
-        let worktree_service: Arc<Worktree<R>> =
-            Worktree::new(abs_path.clone(), self.fs.clone(), storage_service.clone()).into();
+        let worktree_service: Arc<Worktree<R>> = Worktree::new(
+            abs_path.clone(),
+            self.fs.clone(),
+            self.activity_indicator.clone(),
+            storage_service.clone(),
+        )
+        .into();
 
         let set_icon_service =
             SetIconService::new(abs_path.clone(), self.fs.clone(), COLLECTION_ICON_SIZE);
@@ -319,7 +326,7 @@ impl CollectionBuilder {
     }
 
     // TODO: Handle non-collection repo
-    pub async fn clone<R: AppRuntime>(
+    pub async fn clone(
         self,
         ctx: &R::AsyncContext,
         params: CollectionCloneParams,
@@ -347,8 +354,13 @@ impl CollectionBuilder {
             .put_expanded_entries(ctx, Vec::new())
             .await?;
 
-        let worktree: Arc<Worktree<R>> =
-            Worktree::new(abs_path.clone(), self.fs.clone(), storage_service.clone()).into();
+        let worktree: Arc<Worktree<R>> = Worktree::new(
+            abs_path.clone(),
+            self.fs.clone(),
+            self.activity_indicator.clone(),
+            storage_service.clone(),
+        )
+        .into();
 
         let set_icon_service =
             SetIconService::new(abs_path.clone(), self.fs.clone(), COLLECTION_ICON_SIZE);
@@ -384,7 +396,7 @@ impl CollectionBuilder {
     }
 }
 
-impl CollectionBuilder {
+impl<R: AppRuntime> CollectionBuilder<R> {
     async fn load_repo_handle(
         &self,
         git_provider_type: Option<GitProviderType>,

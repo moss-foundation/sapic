@@ -40,8 +40,9 @@ pub struct CreateWorkspaceParams {
     pub abs_path: Arc<Path>,
 }
 
-pub struct WorkspaceBuilder {
+pub struct WorkspaceBuilder<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
+    activity_indicator: ActivityIndicator<R::EventLoop>,
     github_client: Arc<GitHubClient>,
     gitlab_client: Arc<GitLabClient>,
 }
@@ -59,16 +60,18 @@ pub struct OnDidAddCollection {
 impl EventMarker for OnDidDeleteCollection {}
 impl EventMarker for OnDidAddCollection {}
 
-impl WorkspaceBuilder {
+impl<R: AppRuntime> WorkspaceBuilder<R> {
     pub fn new(
         fs: Arc<dyn FileSystem>,
         github_client: Arc<GitHubClient>,
         gitlab_client: Arc<GitLabClient>,
+        activity_indicator: ActivityIndicator<R::EventLoop>,
     ) -> Self {
         Self {
             fs,
             github_client,
             gitlab_client,
+            activity_indicator,
         }
     }
 
@@ -105,10 +108,9 @@ impl WorkspaceBuilder {
         Ok(())
     }
 
-    pub async fn load<R: AppRuntime>(
+    pub async fn load(
         self,
         ctx: &R::AsyncContext,
-        activity_indicator: ActivityIndicator<R::EventLoop>, // FIXME: will be passed as a service in the future
         params: LoadWorkspaceParams,
     ) -> joinerror::Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
@@ -135,6 +137,7 @@ impl WorkspaceBuilder {
             self.github_client.clone(),
             self.gitlab_client.clone(),
             &mut environment_sources,
+            self.activity_indicator.clone(),
             on_did_delete_collection_emitter,
             on_did_add_collection_emitter,
         )
@@ -167,7 +170,7 @@ impl WorkspaceBuilder {
 
         Ok(Workspace {
             abs_path: params.abs_path,
-            activity_indicator,
+            activity_indicator: self.activity_indicator,
             edit,
             layout_service,
             collection_service,
@@ -180,15 +183,14 @@ impl WorkspaceBuilder {
         })
     }
 
-    pub async fn create<R: AppRuntime>(
+    pub async fn create(
         self,
         ctx: &R::AsyncContext,
-        activity_indicator: ActivityIndicator<R::EventLoop>, // FIXME: will be passed as a service in the future
         params: CreateWorkspaceParams,
     ) -> joinerror::Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
 
-        WorkspaceBuilder::initialize(self.fs.clone(), params.clone())
+        WorkspaceBuilder::<R>::initialize(self.fs.clone(), params.clone())
             .await
             .join_err::<()>("failed to initialize workspace")?;
 
@@ -213,6 +215,7 @@ impl WorkspaceBuilder {
             self.github_client.clone(),
             self.gitlab_client.clone(),
             &mut environment_sources,
+            self.activity_indicator.clone(),
             on_did_delete_collection_emitter,
             on_did_add_collection_emitter,
         )
@@ -245,7 +248,7 @@ impl WorkspaceBuilder {
 
         Ok(Workspace {
             abs_path: params.abs_path,
-            activity_indicator,
+            activity_indicator: self.activity_indicator,
             edit,
             layout_service,
             collection_service,
