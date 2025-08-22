@@ -233,7 +233,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
       component: Logs,
     },
     WorkspaceSettings: {
-      title: "WorkspaceSettings", // This will be dynamically replaced
+      title: "WorkspaceSettings",
       component: WorkspaceSettings,
     },
     Welcome: {
@@ -281,38 +281,6 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
         </PageView>
       );
     },
-    nested: () => {
-      return (
-        <DockviewReact
-          components={components}
-          onReady={(event: DockviewReadyEvent) => {
-            event.api.addPanel({ id: "panel_1", component: "Default" });
-            event.api.addPanel({ id: "panel_2", component: "Default" });
-            event.api.addPanel({
-              id: "panel_3",
-              component: "Default",
-            });
-
-            event.api.onDidRemovePanel((e) => {
-              console.log("remove", e);
-            });
-          }}
-          className={"dockview-theme-light"}
-        />
-      );
-    },
-    iframe: (props: IDockviewPanelProps) => {
-      return (
-        <iframe
-          onMouseDown={() => {
-            if (!props.api.isActive) {
-              props.api.setActive();
-            }
-          }}
-          className="h-full w-full"
-        />
-      );
-    },
     Request: (
       props: IDockviewPanelProps<{
         node: TreeCollectionNode;
@@ -321,13 +289,6 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
         someRandomString: string;
       }>
     ) => <RequestPage {...props} />,
-    ...Object.entries(pageConfigs).reduce(
-      (acc, [key, config]) => {
-        acc[key] = (props: IDockviewPanelProps) => <DynamicPageWrapper pageKey={key} config={config} props={props} />;
-        return acc;
-      },
-      {} as Record<string, (props: IDockviewPanelProps) => JSX.Element>
-    ),
     CollectionSettings: (
       props: IDockviewPanelProps<{
         node: TreeCollectionNode;

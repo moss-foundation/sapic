@@ -211,7 +211,7 @@ const RequestPage = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
         handleRenamingFormCancel={handleRenamingEntryCancel}
       />
 
-      <PageContent className={cn("relative")}>
+      <div className={cn("relative")}>
         {node ? (
           <div className="flex shrink-0 flex-col gap-1.5 pt-1.5">
             {props.params?.collectionId && node?.id && (
@@ -252,7 +252,7 @@ const RequestPage = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
             </div>
           </div>
         )}
-      </PageContent>
+      </div>
     </PageView>
   );
 };
