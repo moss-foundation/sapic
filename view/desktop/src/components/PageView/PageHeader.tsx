@@ -95,7 +95,7 @@ export const PageHeader = ({
               }}
             >
               <InputPlain
-                fieldSizing="content"
+                // fieldSizing="content"
                 autoFocus
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
