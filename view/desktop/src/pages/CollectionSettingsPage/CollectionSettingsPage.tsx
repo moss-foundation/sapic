@@ -125,13 +125,13 @@ export const CollectionSettings = ({ ...props }: IDockviewPanelProps<CollectionS
     <PageView>
       <PageHeader
         icon="Collection"
-        props={props}
         title={collection?.name}
         disableTitleChange={false}
         onTitleChange={handleRenamingCollectionFormSubmit}
         isRenamingTitle={isRenamingCollection}
         setIsRenamingTitle={setIsRenamingCollection}
         handleRenamingFormCancel={handleRenamingCollectionFormCancel}
+        {...props}
       />
       <PageContainerWithTabs tabs={tabs} activeTabId={activeTabId} onTabChange={setActiveTabId} />
     </PageView>

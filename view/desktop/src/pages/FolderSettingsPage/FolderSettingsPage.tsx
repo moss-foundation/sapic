@@ -112,11 +112,11 @@ export const FolderSettings = ({ ...props }: IDockviewPanelProps<FolderSettingsP
         icon={getFolderIcon(props?.params?.node)}
         title={node?.name}
         disableTitleChange={isRoot}
-        props={props}
         isRenamingTitle={isRenamingEntry}
         setIsRenamingTitle={setIsRenamingEntry}
         handleRenamingFormCancel={handleRenamingEntryCancel}
         onTitleChange={handleRenamingEntrySubmit}
+        {...props}
       />
       <PageContainerWithTabs tabs={tabs} activeTabId={activeTabId} onTabChange={setActiveTabId} />
     </PageView>
