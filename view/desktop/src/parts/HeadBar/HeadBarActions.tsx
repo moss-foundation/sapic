@@ -169,6 +169,10 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
             addOrFocusPanel({
               id: "WorkspaceSettings",
               component: "WorkspaceSettings",
+              params: {
+                iconType: "Workspace",
+                workspace: true,
+              },
             });
             return;
           }
@@ -180,6 +184,10 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
                 addOrFocusPanel({
                   id: "WorkspaceSettings",
                   component: "WorkspaceSettings",
+                  params: {
+                    iconType: "Workspace",
+                    workspace: true,
+                  },
                 });
               },
               onError: (error) => {
