@@ -17,6 +17,4 @@ export const CollectionTreeContext = createContext<CollectionTreeContextProps>({
   searchInput: undefined,
   displayMode: "REQUEST_FIRST",
   showNodeOrders: false,
-  contributors: [],
-  repositoryInfo: undefined,
 });
