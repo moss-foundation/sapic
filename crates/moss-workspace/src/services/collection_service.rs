@@ -13,6 +13,7 @@ use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
 use moss_git_hosting_provider::{
     github::client::GitHubClient, gitlab::client::GitLabClient, models::primitives::GitProviderType,
 };
+use moss_logging::session;
 use rustc_hash::FxHashMap;
 use std::{
     collections::{HashMap, HashSet},
@@ -252,6 +253,9 @@ impl<R: AppRuntime> CollectionService<R> {
 
         {
             let state_lock = self.state.read().await;
+
+            // TODO: Make database errors not fail the operation
+
             let mut txn = self
                 .storage
                 .begin_write(ctx)
@@ -370,6 +374,7 @@ impl<R: AppRuntime> CollectionService<R> {
             },
         );
 
+        // TODO: Make database errors not fail the operation
         let mut txn = self
             .storage
             .begin_write(ctx)
@@ -438,6 +443,7 @@ impl<R: AppRuntime> CollectionService<R> {
         state_lock.expanded_items.remove(&id);
 
         {
+            // TODO: Make database errors not fail the operation
             let mut txn = self.storage.begin_write(ctx).await?;
 
             self.storage
@@ -477,6 +483,7 @@ impl<R: AppRuntime> CollectionService<R> {
                 format!("failed to find collection with id `{}`", id.to_string())
             })?;
 
+        // TODO: Make database errors not fail the operation
         let mut txn = self.storage.begin_write(ctx).await?;
         if let Some(order) = params.order {
             item.order = Some(order);
@@ -524,11 +531,12 @@ impl<R: AppRuntime> CollectionService<R> {
             let state_lock = state.read().await;
             for (id, item) in state_lock.collections.iter() {
                 let desc = item.describe().await;
-                if desc.is_err() {
-                    // TODO: log error
-                    println!("failed to parse collection {} manifest file", id.to_string());
+                if let Err(e) = desc {
+                    // TODO: Logging resource
+                    session::error!(format!("failed to describe collection `{}`: {}", id.to_string(), e.to_string()));
                     continue;
                 }
+
                 let summary = desc.unwrap();
 
                 let expanded = state_lock.expanded_items.contains(id);
@@ -586,7 +594,12 @@ async fn restore_collections<R: AppRuntime>(
                 Ok(collection) => collection,
                 Err(e) => {
                     // TODO: Let the frontend know a collection is invalid
-                    println!("failed to rebuild collection `{}`: {}", id_str, e);
+                    // TODO: Logging resource
+                    session::error!(format!(
+                        "failed to rebuild collection `{}`: {}",
+                        id_str,
+                        e.to_string()
+                    ));
                     continue;
                 }
             }

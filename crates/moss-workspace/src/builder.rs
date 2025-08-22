@@ -88,7 +88,7 @@ impl WorkspaceBuilder {
             CreateOptions::default(),
         )
         .await
-        .join_err::<()>(format!("failed to create manifest file"))?;
+        .join_err::<()>("failed to create manifest file")?;
 
         for env in PREDEFINED_ENVIRONMENTS.iter() {
             EnvironmentBuilder::new(fs.clone())
@@ -99,7 +99,9 @@ impl WorkspaceBuilder {
                     variables: vec![],
                 })
                 .await
-                .join_err_with::<()>(|| format!("failed to initialize environment {}", env.name))?;
+                .join_err_with::<()>(|| {
+                    format!("failed to initialize environment `{}`", env.name)
+                })?;
         }
 
         Ok(())
