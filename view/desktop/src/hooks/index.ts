@@ -19,4 +19,5 @@ export * from "./collection";
 export * from "./useResponsive";
 
 export * from "./useFocusInputOnMount";
+export * from "./useInputResize";
 export * from "./useValidateInput";

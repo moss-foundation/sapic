@@ -1,7 +1,7 @@
 import { cva } from "class-variance-authority";
 import React, { forwardRef, useRef } from "react";
 
-import useInputResize from "@/pages/RequestPage/hooks/useInputResize";
+import { useInputResize } from "@/hooks/useInputResize";
 import { cn, mergeRefs } from "@/utils";
 
 import Icon, { Icons } from "./Icon";

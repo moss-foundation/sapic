@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+import { RefObject, useEffect } from "react";
 
 interface UseInputResizeProps {
-  ref: React.RefObject<HTMLInputElement>;
+  ref: RefObject<HTMLInputElement>;
   enabled?: boolean;
 }
 
-const useInputResize = ({ ref, enabled = true }: UseInputResizeProps) => {
+export const useInputResize = ({ ref, enabled = true }: UseInputResizeProps) => {
   useEffect(() => {
     const input = ref.current;
     if (!input || input.nodeName.toLowerCase() !== "input" || !enabled) return;
@@ -59,5 +59,3 @@ const useInputResize = ({ ref, enabled = true }: UseInputResizeProps) => {
     };
   }, [enabled, ref]);
 };
-
-export default useInputResize;
