@@ -232,10 +232,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
       title: "Logs",
       component: Logs,
     },
-    WorkspaceSettings: {
-      title: "WorkspaceSettings",
-      component: WorkspaceSettings,
-    },
+
     Welcome: {
       component: WelcomePage,
     },
@@ -301,6 +298,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
         someRandomString: string;
       }>
     ) => <FolderSettings {...props} />,
+    WorkspaceSettings: () => <WorkspaceSettings />,
     ...Object.entries(pageConfigs).reduce(
       (acc, [key, config]) => {
         acc[key] = (props: IDockviewPanelProps) => <DynamicPageWrapper pageKey={key} config={config} props={props} />;

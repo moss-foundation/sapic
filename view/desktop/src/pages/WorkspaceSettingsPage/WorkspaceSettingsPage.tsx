@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 
 import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
+import { PageHeader } from "@/components/PageView/PageHeader";
+import { PageView } from "@/components/PageView/PageView";
+import { useModal } from "@/hooks";
+import { useRenameWorkspace } from "@/hooks/useRenameWorkspace";
 import { useDeleteWorkspace } from "@/hooks/workbench/useDeleteWorkspace";
-import { useUpdateWorkspace } from "@/hooks/workbench/useUpdateWorkspace";
 import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
 
 import { WorkspaceDangerZoneSection } from "./WorkspaceDangerZoneSection";
@@ -12,13 +15,18 @@ import { WorkspaceStartupSection } from "./WorkspaceStartupSection";
 
 export const WorkspaceSettings = () => {
   const { hasActiveWorkspace, activeWorkspace } = useActiveWorkspace();
-  const { mutate: updateWorkspace } = useUpdateWorkspace();
+
   const { mutate: deleteWorkspace, isPending: isDeleting } = useDeleteWorkspace();
 
   const [name, setName] = useState(activeWorkspace?.name || "");
   const [reopenOnNextSession, setReopenOnNextSession] = useState(false);
   const [openPreviousWindows, setOpenPreviousWindows] = useState(false);
-  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+
+  const {
+    openModal: openDeleteWorkspaceModal,
+    closeModal: closeDeleteWorkspaceModal,
+    showModal: isDeleteWorkspaceModalOpen,
+  } = useModal();
 
   useEffect(() => {
     if (activeWorkspace) {
@@ -26,27 +34,15 @@ export const WorkspaceSettings = () => {
     }
   }, [activeWorkspace]);
 
-  const handleSave = () => {
-    if (name.trim() && name.trim() !== activeWorkspace?.name) {
-      updateWorkspace(
-        { name: name.trim() },
-        {
-          onError: (error) => {
-            console.error("Failed to update workspace:", error.message);
-          },
-        }
-      );
-    }
-  };
+  const { isRenamingWorkspace, setIsRenamingWorkspace, handleRenamingWorkspaceSubmit, handleRenamingWorkspaceCancel } =
+    useRenameWorkspace(activeWorkspace);
 
-  // Auto-save when input loses focus
   const handleBlur = () => {
-    handleSave();
+    handleRenamingWorkspaceSubmit(name);
   };
 
-  // Delete workspace handlers
   const handleDeleteClick = () => {
-    setShowDeleteConfirmModal(true);
+    openDeleteWorkspaceModal();
   };
 
   const handleDeleteWorkspace = () => {
@@ -55,19 +51,15 @@ export const WorkspaceSettings = () => {
         { id: activeWorkspace.id },
         {
           onSuccess: () => {
-            setShowDeleteConfirmModal(false);
+            closeDeleteWorkspaceModal();
           },
           onError: (error) => {
             console.error("Failed to delete workspace:", error.message);
-            setShowDeleteConfirmModal(false);
+            closeDeleteWorkspaceModal();
           },
         }
       );
     }
-  };
-
-  const closeDeleteConfirmModal = () => {
-    setShowDeleteConfirmModal(false);
   };
 
   if (!hasActiveWorkspace) {
@@ -82,25 +74,25 @@ export const WorkspaceSettings = () => {
   }
 
   return (
-    <>
-      {showDeleteConfirmModal && (
-        <ConfirmationModal
-          showModal={showDeleteConfirmModal}
-          closeModal={closeDeleteConfirmModal}
-          title="Delete"
-          message={`Delete "${activeWorkspace?.name}"?`}
-          description="This will delete the monitors, scheduled runs and integrations and deactivate the mock servers associated with collections in the workspace."
-          confirmLabel={isDeleting ? "Deleting..." : "Delete"}
-          cancelLabel="Close"
-          onConfirm={handleDeleteWorkspace}
-          variant="danger"
-          loading={isDeleting}
-        />
-      )}
+    <PageView>
+      <PageHeader
+        icon="Placeholder"
+        title={activeWorkspace?.name}
+        onTitleChange={handleRenamingWorkspaceSubmit}
+        disableTitleChange={false}
+        isRenamingTitle={isRenamingWorkspace}
+        setIsRenamingTitle={setIsRenamingWorkspace}
+        handleRenamingFormCancel={handleRenamingWorkspaceCancel}
+      />
 
       <div className="flex h-full justify-center">
         <div className="w-full max-w-2xl space-y-6 px-6 py-5">
-          <WorkspaceNameSection name={name} setName={setName} onSave={handleSave} onBlur={handleBlur} />
+          <WorkspaceNameSection
+            name={name}
+            setName={setName}
+            onSave={() => handleRenamingWorkspaceSubmit(name)}
+            onBlur={handleBlur}
+          />
 
           <WorkspaceStartupSection
             reopenOnNextSession={reopenOnNextSession}
@@ -114,6 +106,20 @@ export const WorkspaceSettings = () => {
           <WorkspaceDangerZoneSection onDeleteClick={handleDeleteClick} />
         </div>
       </div>
-    </>
+      {isDeleteWorkspaceModalOpen && (
+        <ConfirmationModal
+          showModal={isDeleteWorkspaceModalOpen}
+          closeModal={closeDeleteWorkspaceModal}
+          title="Delete"
+          message={`Delete "${activeWorkspace?.name}"?`}
+          description="This will delete the monitors, scheduled runs and integrations and deactivate the mock servers associated with collections in the workspace."
+          confirmLabel={isDeleting ? "Deleting..." : "Delete"}
+          cancelLabel="Close"
+          onConfirm={handleDeleteWorkspace}
+          variant="danger"
+          loading={isDeleting}
+        />
+      )}
+    </PageView>
   );
 };
