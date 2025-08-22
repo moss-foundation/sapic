@@ -83,7 +83,7 @@ export const PageHeader = ({
     <header
       className={cn("background-(--moss-primary-background) border-b border-(--moss-border-color) py-1.5", className)}
     >
-      <div className="flex h-full items-center gap-3 px-3">
+      <div className="flex h-full items-center gap-3 px-5">
         <div className="flex min-w-0 grow items-center justify-start gap-1.5">
           {icon && <Icon icon={icon} className="size-[18px]" />}
           {isRenamingTitle ? (
