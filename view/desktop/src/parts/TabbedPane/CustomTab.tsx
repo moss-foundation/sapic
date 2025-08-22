@@ -22,8 +22,6 @@ export const CustomTab = ({
   const [title, setTitle] = useState(api.title || "");
   const [isCloseHovered, setIsCloseHovered] = useState(false);
 
-  // Subscribe to title changes
-  // TODO: In theory, in the future, tab's title should be handled by panel itself
   useEffect(() => {
     const disposable = api.onDidTitleChange?.((event) => {
       setTitle(event.title);
