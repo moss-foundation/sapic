@@ -243,7 +243,6 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
         node?: TreeCollectionNode;
         collectionId: string;
         iconType: EntryKind;
-        someRandomString: string;
       }>
     ) => {
       const isDebug = React.useContext(DebugContext);
@@ -278,7 +277,6 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
         node: TreeCollectionNode;
         collectionId: string;
         iconType: EntryKind;
-        someRandomString: string;
       }>
     ) => <RequestPage {...props} />,
     CollectionSettings: (
@@ -286,7 +284,6 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
         node: TreeCollectionNode;
         collectionId: string;
         iconType: EntryKind;
-        someRandomString: string;
       }>
     ) => <CollectionSettingsPage {...props} />,
     FolderSettings: (
@@ -294,7 +291,6 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
         node: TreeCollectionNode;
         collectionId: string;
         iconType: EntryKind;
-        someRandomString: string;
       }>
     ) => <FolderSettings {...props} />,
     WorkspaceSettings: () => <WorkspaceSettings />,

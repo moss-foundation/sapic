@@ -207,7 +207,14 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
         break;
       case "rename":
         if (activeWorkspace) {
-          openPanel("WorkspaceSettings");
+          addOrFocusPanel({
+            id: "WorkspaceSettings",
+            component: "WorkspaceSettings",
+            params: {
+              iconType: "Workspace",
+              workspace: true,
+            },
+          });
         }
         break;
       case "kitchensink":

@@ -15,7 +15,6 @@ export const ParamsTabContent = (
     node?: TreeCollectionNode;
     collectionId: string;
     iconType: EntryKind;
-    someRandomString: string;
   }>
 ) => {
   const { requestData, updatePathParams, updateQueryParams, reconstructUrlFromParams } = useRequestPage();

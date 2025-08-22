@@ -6,7 +6,6 @@ export const HeadersTabContent = ({}: IDockviewPanelProps<{
   node?: TreeCollectionNode;
   collectionId: string;
   iconType: EntryKind;
-  someRandomString: string;
 }>) => {
   return (
     <div className="flex h-full min-h-[400px] items-center justify-center">

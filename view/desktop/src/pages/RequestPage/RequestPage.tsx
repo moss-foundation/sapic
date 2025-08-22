@@ -4,7 +4,6 @@ import {
   ActionButton,
   Breadcrumbs,
   PageContainerWithTabs,
-  PageContent,
   PageHeader,
   PageTabs,
   PageToolbar,
@@ -42,7 +41,6 @@ interface RequestPageProps {
   node: TreeCollectionNode;
   collectionId: string;
   iconType: EntryKind;
-  someRandomString: string;
 }
 
 const RequestPage = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
@@ -246,9 +244,6 @@ const RequestPage = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
           <div className="flex flex-1 items-center justify-center">
             <div className="text-center">
               <p className="mb-4 text-sm text-(--moss-secondary-text)">No request selected</p>
-              {props?.params.someRandomString && (
-                <p className="text-xs text-(--moss-secondary-text)">Backend ID: {props.params.someRandomString}</p>
-              )}
             </div>
           </div>
         )}
