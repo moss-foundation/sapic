@@ -22,49 +22,59 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
   const { showModal, closeModal, openModal } = useModal();
 
   const [name, setName] = useState(collection?.name || "");
-  const [repository, setRepository] = useState(collection?.repository || "github.com/moss-foundation/sapic");
+  const [repository, setRepository] = useState(collection?.repository || "");
 
   useEffect(() => {
     if (collection) {
       setName(collection.name);
-      setRepository(collection?.repository || "github.com/moss-foundation/sapic");
+      setRepository(collection?.repository || "");
       const currentPanel = containerApi.getPanel(collection.id);
       currentPanel?.api.setTitle(collection.name);
     }
   }, [collection, containerApi]);
 
   const handleUpdateCollectionName = async () => {
-    if (!collection || !name) return;
+    if (!collection) return;
 
-    await updateCollection({
-      id: collection.id,
-      name,
-    });
+    if (!name || name === collection.name) {
+      setName(collection?.name);
+      return;
+    }
+    try {
+      await updateCollection({
+        id: collection.id,
+        name,
+      });
+    } catch (e) {
+      console.error("handleUpdateCollectionName", e);
+      setName(collection?.name);
+    }
+  };
+  const handleNameBlur = () => {
+    handleUpdateCollectionName();
   };
 
   const handleUpdateCollectionRepository = async () => {
-    if (!collection || !repository) return;
+    if (!collection) return;
 
-    await updateCollection({
-      id: collection.id,
-      repository: !repository ? "REMOVE" : { UPDATE: repository },
-    });
-  };
-  const handleRepositoryBlur = () => {
-    if (!collection || !repository) {
+    if (!repository || repository === collection.repository) {
       setRepository(collection?.repository || "github.com/moss-foundation/sapic");
       return;
     }
-    handleUpdateCollectionRepository();
+
+    try {
+      await updateCollection({
+        id: collection.id,
+        repository: !repository ? "REMOVE" : { UPDATE: repository },
+      });
+    } catch (e) {
+      console.error("handleUpdateCollectionRepository", e);
+      setRepository(collection?.repository || "");
+    }
   };
 
-  const handleNameBlur = () => {
-    if (!collection || !name) {
-      setName(collection?.name ?? "");
-      return;
-    }
-
-    handleUpdateCollectionName();
+  const handleRepositoryBlur = () => {
+    handleUpdateCollectionRepository();
   };
 
   if (!collection) {
