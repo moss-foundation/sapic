@@ -84,15 +84,15 @@ export const PageHeader = ({
       className={cn("background-(--moss-primary-background) border-b border-(--moss-border-color) py-1.5", className)}
     >
       <div className="flex h-full items-center gap-3 px-3">
-        <div className="flex min-w-0 items-center gap-1.5">
+        <div className="flex min-w-0 grow items-center justify-start gap-1.5">
           {icon && <Icon icon={icon} className="size-[18px]" />}
-
           {isRenamingTitle ? (
             <form
               onSubmit={(event) => {
                 event.preventDefault();
                 handleSubmit();
               }}
+              className="-mx-1 w-full max-w-[250px] px-1"
             >
               <InputPlain
                 // fieldSizing="content"
@@ -111,30 +111,31 @@ export const PageHeader = ({
                     handleCancel();
                   }
                 }}
-                className="-mr-px rounded-xs p-0 text-[16px] leading-6 font-semibold text-(--moss-primary-text) has-[input:focus-within]:outline-offset-1"
+                className="w-full rounded-xs py-0 text-[16px] leading-6 font-semibold text-(--moss-primary-text) has-[input:focus-within]:outline-offset-1"
+                inputFieldClassName="-mx-2"
               />
             </form>
           ) : (
-            <h2
+            <button
               onClick={handleStartRenaming}
               className={cn(
-                "-mx-1 truncate rounded px-1 text-[16px] leading-6 font-semibold text-(--moss-primary-text)",
+                "-mx-1 truncate overflow-hidden rounded px-1 text-left text-[16px] leading-6 font-semibold text-(--moss-primary-text)",
                 {
-                  "hover:background-(--moss-secondary-background-hover) cursor-text": !disableTitleChange,
+                  "hover:background-(--moss-secondary-background-hover) w-full max-w-[250px] cursor-text":
+                    !disableTitleChange,
                 }
               )}
             >
-              {title}
-            </h2>
+              <h2 className="truncate">{title}</h2>
+            </button>
+          )}
+          {tabs && (
+            <>
+              <Divider className="" />
+              <div className="flex items-center">{tabs}</div>
+            </>
           )}
         </div>
-
-        {tabs && (
-          <>
-            <Divider className="" />
-            <div className="flex items-center">{tabs}</div>
-          </>
-        )}
 
         {toolbar && <div className="ml-auto flex items-center">{toolbar}</div>}
       </div>
