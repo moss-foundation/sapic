@@ -14,13 +14,15 @@ export const useRenameWorkspace = (workspace: WorkspaceInfo | null) => {
       return;
     }
 
+    const trimmedNewName = newName.trim();
+
     try {
-      if (newName.trim() === workspace.name) {
+      if (trimmedNewName === workspace.name) {
         return;
       }
 
       await updateWorkspace({
-        name: newName.trim(),
+        name: trimmedNewName,
       });
     } catch (error) {
       console.error(error);

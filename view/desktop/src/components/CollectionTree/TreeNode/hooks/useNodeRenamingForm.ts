@@ -16,8 +16,10 @@ export const useNodeRenamingForm = (node: TreeCollectionNode) => {
   const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry();
 
   const handleRenamingFormSubmit = async (newName: string) => {
+    const trimmedNewName = newName.trim();
+
     try {
-      if (newName === node.name) {
+      if (trimmedNewName === node.name) {
         return;
       }
 
@@ -27,12 +29,12 @@ export const useNodeRenamingForm = (node: TreeCollectionNode) => {
           updatedEntry: {
             DIR: {
               id: node.id,
-              name: newName,
+              name: trimmedNewName,
             },
           },
         });
 
-        const newPath = await join(...node.path.segments.slice(0, node.path.segments.length - 1), newName);
+        const newPath = await join(...node.path.segments.slice(0, node.path.segments.length - 1), trimmedNewName);
         await fetchEntriesForPath(id, newPath);
       } else {
         await updateCollectionEntry({
@@ -40,7 +42,7 @@ export const useNodeRenamingForm = (node: TreeCollectionNode) => {
           updatedEntry: {
             ITEM: {
               id: node.id,
-              name: newName,
+              name: trimmedNewName,
               queryParamsToAdd: [],
               queryParamsToUpdate: [],
               queryParamsToRemove: [],

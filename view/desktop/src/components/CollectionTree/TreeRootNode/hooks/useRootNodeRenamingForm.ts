@@ -10,14 +10,16 @@ export const useRootNodeRenamingForm = (node: TreeCollectionRootNode) => {
   const { mutateAsync: updateCollection } = useUpdateCollection();
 
   const handleRenamingRootNodeFormSubmit = async (name: string) => {
+    const trimmedNewName = name.trim();
+
     try {
-      if (name === node.name) {
+      if (trimmedNewName === node.name) {
         return;
       }
 
       await updateCollection({
         id: node.id,
-        name,
+        name: trimmedNewName,
       });
     } catch (error) {
       console.error(error);

@@ -9,15 +9,17 @@ export const useRenameCollectionForm = (collectionId: string) => {
 
   const { mutateAsync: updateCollection } = useUpdateCollection();
 
-  const handleRenamingCollectionFormSubmit = async (name: string) => {
+  const handleRenamingCollectionFormSubmit = async (newName: string) => {
+    const trimmedNewName = newName.trim();
+
     try {
-      if (name === collection?.name) {
+      if (trimmedNewName === collection?.name) {
         return;
       }
 
       await updateCollection({
         id: collectionId,
-        name,
+        name: trimmedNewName,
       });
     } catch (error) {
       console.error(error);
