@@ -1,5 +1,4 @@
 use anyhow::Result;
-use moss_applib::ServiceMarker;
 use moss_fs::FileSystem;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tokio::sync::OnceCell;
@@ -14,8 +13,6 @@ pub struct ThemeService {
     themes: OnceCell<HashMap<ThemeId, ColorThemeInfo>>,
     default_theme: OnceCell<ColorThemeInfo>,
 }
-
-impl ServiceMarker for ThemeService {}
 
 impl ThemeService {
     pub fn new(fs: Arc<dyn FileSystem>, themes_dir: PathBuf) -> Self {

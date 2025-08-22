@@ -5,6 +5,5 @@ use ts_rs::TS;
 #[ts(export, export_to = "primitives.ts")]
 pub enum GitProviderType {
     GitHub,
-    // TODO: Support self-hosted gitlab
     GitLab,
 }

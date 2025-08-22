@@ -1,5 +1,5 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { EntryInfo, UpdateEntryInput, UpdateEntryOutput } from "@repo/moss-collection";
+import { StreamEntriesEvent, UpdateEntryInput, UpdateEntryOutput } from "@repo/moss-collection";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY } from "./useStreamedCollectionEntries";
@@ -30,7 +30,7 @@ export const useUpdateCollectionEntry = () => {
     onSuccess: async (data, variables) => {
       queryClient.setQueryData(
         [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, variables.collectionId],
-        (old: EntryInfo[]) => {
+        (old: StreamEntriesEvent[]) => {
           return old.map((oldEntry) => {
             const entryDataFromBackend = "ITEM" in data ? data.ITEM : data.DIR;
             const payloadEntryData =

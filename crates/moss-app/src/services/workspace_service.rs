@@ -1,13 +1,11 @@
 use chrono::Utc;
-use derive_more::{Deref, DerefMut};
 use joinerror::{Error, OptionExt, ResultExt};
 use moss_activity_indicator::ActivityIndicator;
-use moss_applib::{AppRuntime, PublicServiceMarker, ServiceMarker};
+use moss_applib::AppRuntime;
 use moss_fs::{FileSystem, FsResultExt, RemoveOptions};
 use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
 use moss_logging::session;
 use moss_workspace::{
-    Workspace,
     builder::{CreateWorkspaceParams, LoadWorkspaceParams, WorkspaceBuilder},
     workspace::{WorkspaceModifyParams, WorkspaceSummary},
 };
@@ -20,26 +18,11 @@ use std::{
 use tokio::sync::RwLock;
 
 use crate::{
-    dirs,
+    ActiveWorkspace, dirs,
     models::primitives::WorkspaceId,
     services::storage_service::StorageService,
     storage::segments::{SEGKEY_WORKSPACE, segkey_last_opened_at, segkey_workspace},
 };
-
-#[derive(Deref, DerefMut)]
-pub struct ActiveWorkspace<R: AppRuntime> {
-    id: WorkspaceId,
-
-    #[deref]
-    #[deref_mut]
-    handle: Workspace<R>,
-}
-
-impl<R: AppRuntime> ActiveWorkspace<R> {
-    pub fn id(&self) -> WorkspaceId {
-        self.id.clone()
-    }
-}
 
 pub(crate) struct WorkspaceItemCreateParams {
     pub name: String,
@@ -82,9 +65,6 @@ pub struct WorkspaceService<R: AppRuntime> {
     github_client: Arc<GitHubClient>,
     gitlab_client: Arc<GitLabClient>,
 }
-
-impl<R: AppRuntime> ServiceMarker for WorkspaceService<R> {}
-impl<R: AppRuntime> PublicServiceMarker for WorkspaceService<R> {}
 
 impl<R: AppRuntime> WorkspaceService<R> {
     pub async fn new(
@@ -245,7 +225,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
             .await
             .join_err::<()>("failed to create workspace directory")?;
 
-        WorkspaceBuilder::initialize(
+        WorkspaceBuilder::<R>::initialize(
             self.fs.clone(),
             CreateWorkspaceParams {
                 name: params.name.clone(),
@@ -322,14 +302,14 @@ impl<R: AppRuntime> WorkspaceService<R> {
 
         let last_opened_at = Utc::now().timestamp();
         let abs_path: Arc<Path> = self.absolutize(&id.to_string()).into();
-        let workspace = WorkspaceBuilder::new(
+        let workspace = WorkspaceBuilder::<R>::new(
             self.fs.clone(),
             self.github_client.clone(),
             self.gitlab_client.clone(),
+            activity_indicator,
         )
         .load(
             ctx,
-            activity_indicator,
             LoadWorkspaceParams {
                 abs_path: abs_path.clone(),
             },

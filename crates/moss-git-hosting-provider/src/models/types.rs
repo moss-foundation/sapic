@@ -1,8 +1,6 @@
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-// TODO: Maybe we should move this type out of git crate since we might have non-git contributors?
-
 /// @category Type
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "types.ts")]

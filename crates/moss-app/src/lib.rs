@@ -2,16 +2,38 @@ pub mod api;
 pub mod app;
 pub mod builder;
 pub mod command;
-pub mod context;
 pub mod models;
-pub mod services;
+mod services;
+
+#[cfg(feature = "integration-tests")]
 pub mod storage;
+#[cfg(not(feature = "integration-tests"))]
+mod storage;
 
 #[macro_use]
 extern crate derive_more;
 
 pub use app::App;
 pub use builder::AppBuilder;
+use moss_applib::AppRuntime;
+use moss_workspace::Workspace;
+
+use crate::models::primitives::WorkspaceId;
+
+#[derive(Deref, DerefMut)]
+pub struct ActiveWorkspace<R: AppRuntime> {
+    id: WorkspaceId,
+
+    #[deref]
+    #[deref_mut]
+    handle: Workspace<R>,
+}
+
+impl<R: AppRuntime> ActiveWorkspace<R> {
+    pub fn id(&self) -> WorkspaceId {
+        self.id.clone()
+    }
+}
 
 pub mod constants {
 

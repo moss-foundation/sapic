@@ -1,4 +1,4 @@
-import { BatchCreateEntryKind, CreateEntryInput, EntryInfo, EntryProtocol } from "@repo/moss-collection";
+import { BatchCreateEntryKind, CreateEntryInput, EntryProtocol, StreamEntriesEvent } from "@repo/moss-collection";
 
 interface CreateEntryKindProps {
   name: string;
@@ -40,7 +40,7 @@ export const createEntryKind = ({
 };
 
 export const convertEntryInfoToCreateInput = (
-  entry: EntryInfo,
+  entry: StreamEntriesEvent,
   newCollectionPath: string = "requests"
 ): CreateEntryInput => {
   if (entry.kind === "Dir") {

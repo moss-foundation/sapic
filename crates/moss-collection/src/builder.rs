@@ -1,4 +1,5 @@
 use joinerror::{Error, OptionExt, ResultExt};
+use moss_activity_indicator::ActivityIndicator;
 use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt, RemoveOptions};
 use moss_git::repo::{BranchType, IndexAddOption, RepoHandle, Signature};
@@ -11,7 +12,6 @@ use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
-use tokio::sync::OnceCell;
 
 use crate::{
     Collection,
@@ -42,7 +42,6 @@ struct PredefinedFile {
     content: Vec<u8>,
 }
 
-// TODO: Automatically generate a README
 const PREDEFINED_FILES: LazyCell<Vec<PredefinedFile>> = LazyCell::new(|| {
     vec![PredefinedFile {
         path: PathBuf::from(".gitignore"),
@@ -79,29 +78,29 @@ pub struct CollectionCloneGitParams {
     pub branch: Option<String>,
 }
 
-pub struct CollectionBuilder {
+pub struct CollectionBuilder<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
+    activity_indicator: ActivityIndicator<R::EventLoop>,
     github_client: Arc<GitHubClient>,
     gitlab_client: Arc<GitLabClient>,
 }
 
-impl CollectionBuilder {
+impl<R: AppRuntime> CollectionBuilder<R> {
     pub fn new(
         fs: Arc<dyn FileSystem>,
+        activity_indicator: ActivityIndicator<R::EventLoop>,
         github_client: Arc<GitHubClient>,
         gitlab_client: Arc<GitLabClient>,
     ) -> Self {
         Self {
             fs,
+            activity_indicator,
             github_client,
             gitlab_client,
         }
     }
 
-    pub async fn load<R: AppRuntime>(
-        self,
-        params: CollectionLoadParams,
-    ) -> joinerror::Result<Collection<R>> {
+    pub async fn load(self, params: CollectionLoadParams) -> joinerror::Result<Collection<R>> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
         let storage_service: Arc<StorageService<R>> =
@@ -112,6 +111,7 @@ impl CollectionBuilder {
         let worktree_service: Arc<Worktree<R>> = Worktree::new(
             params.internal_abs_path.clone(),
             self.fs.clone(),
+            self.activity_indicator.clone(),
             storage_service.clone(),
         )
         .into();
@@ -126,7 +126,6 @@ impl CollectionBuilder {
             self.fs.clone(),
             params.internal_abs_path.join(MANIFEST_FILE_NAME),
         );
-        // TODO: Load environments
 
         // FIXME: This logic needs to be updated when we implement support for external collections
         // Since the repo should be at the external_abs_path
@@ -166,15 +165,11 @@ impl CollectionBuilder {
             github_client: self.github_client.clone(),
             gitlab_client: self.gitlab_client.clone(),
             worktree: worktree_service,
-            environments: OnceCell::new(),
             on_did_change: EventEmitter::new(),
         })
     }
 
-    // TODO: Maybe support a simplified mode, where we will use the provider API to create the repo
-    // on behalf of the user
-
-    pub async fn create<R: AppRuntime>(
+    pub async fn create(
         self,
         ctx: &R::AsyncContext,
         params: CollectionCreateParams,
@@ -196,8 +191,13 @@ impl CollectionBuilder {
             .put_expanded_entries(ctx, Vec::new())
             .await?;
 
-        let worktree_service: Arc<Worktree<R>> =
-            Worktree::new(abs_path.clone(), self.fs.clone(), storage_service.clone()).into();
+        let worktree_service: Arc<Worktree<R>> = Worktree::new(
+            abs_path.clone(),
+            self.fs.clone(),
+            self.activity_indicator.clone(),
+            storage_service.clone(),
+        )
+        .into();
 
         let set_icon_service =
             SetIconService::new(abs_path.clone(), self.fs.clone(), COLLECTION_ICON_SIZE);
@@ -229,14 +229,14 @@ impl CollectionBuilder {
         }
 
         if let Some(icon_path) = params.icon_path {
-            // TODO: Log the error here
-            set_icon_service.set_icon(&icon_path)?;
+            if let Err(err) = set_icon_service.set_icon(&icon_path) {
+                // TODO: Log the error here
+                println!("failed to set collection icon: {}", err.to_string());
+            }
         }
 
-        let git_params = params.git_params;
-
         // FIXME: I'm not sure why we need to store a repo url that's different from what we expect from the user
-        let repository = git_params.as_ref().map(|p| ManifestRepository {
+        let repository = params.git_params.as_ref().map(|p| ManifestRepository {
             url: p.repository.clone(),
             git_provider_type: p.git_provider_type.clone(),
         });
@@ -248,7 +248,7 @@ impl CollectionBuilder {
                     name: params
                         .name
                         .unwrap_or(defaults::DEFAULT_COLLECTION_NAME.to_string()),
-                    // FIXME: We might consider removing this field from the manifest file
+                    // INFO: We might consider removing this field from the manifest file
                     repository,
                 })?
                 .as_bytes(),
@@ -288,7 +288,7 @@ impl CollectionBuilder {
 
         let edit = CollectionEdit::new(self.fs.clone(), abs_path.join(MANIFEST_FILE_NAME));
 
-        let repo_handle = if let Some(git_params) = git_params {
+        let repo_handle = if let Some(git_params) = params.git_params {
             let git_provider_type = git_params.git_provider_type;
             let repository = git_params.repository;
             let branch = git_params.branch;
@@ -310,7 +310,6 @@ impl CollectionBuilder {
         };
 
         let git_service = Arc::new(GitService::new(repo_handle));
-        // TODO: Load environments
 
         Ok(Collection {
             fs: self.fs.clone(),
@@ -322,13 +321,12 @@ impl CollectionBuilder {
             github_client: self.github_client.clone(),
             gitlab_client: self.gitlab_client.clone(),
             worktree: worktree_service,
-            environments: OnceCell::new(),
             on_did_change: EventEmitter::new(),
         })
     }
 
     // TODO: Handle non-collection repo
-    pub async fn clone<R: AppRuntime>(
+    pub async fn clone(
         self,
         ctx: &R::AsyncContext,
         params: CollectionCloneParams,
@@ -336,15 +334,12 @@ impl CollectionBuilder {
         debug_assert!(params.internal_abs_path.is_absolute());
 
         let abs_path = params.internal_abs_path.clone();
-
-        let git_params = params.git_params;
-
         let repo_handle = self
             .clone_repo_handle(
-                git_params.git_provider_type,
+                params.git_params.git_provider_type,
                 abs_path.clone(),
-                git_params.repository,
-                git_params.branch,
+                params.git_params.repository,
+                params.git_params.branch,
             )
             .await?;
 
@@ -359,8 +354,13 @@ impl CollectionBuilder {
             .put_expanded_entries(ctx, Vec::new())
             .await?;
 
-        let worktree: Arc<Worktree<R>> =
-            Worktree::new(abs_path.clone(), self.fs.clone(), storage_service.clone()).into();
+        let worktree: Arc<Worktree<R>> = Worktree::new(
+            abs_path.clone(),
+            self.fs.clone(),
+            self.activity_indicator.clone(),
+            storage_service.clone(),
+        )
+        .into();
 
         let set_icon_service =
             SetIconService::new(abs_path.clone(), self.fs.clone(), COLLECTION_ICON_SIZE);
@@ -381,8 +381,6 @@ impl CollectionBuilder {
 
         let edit = CollectionEdit::new(self.fs.clone(), abs_path.join(MANIFEST_FILE_NAME));
 
-        // TODO: Load environments
-
         Ok(Collection {
             fs: self.fs.clone(),
             abs_path,
@@ -393,13 +391,12 @@ impl CollectionBuilder {
             github_client: self.github_client.clone(),
             gitlab_client: self.gitlab_client.clone(),
             worktree,
-            environments: OnceCell::new(),
             on_did_change: EventEmitter::new(),
         })
     }
 }
 
-impl CollectionBuilder {
+impl<R: AppRuntime> CollectionBuilder<R> {
     async fn load_repo_handle(
         &self,
         git_provider_type: Option<GitProviderType>,

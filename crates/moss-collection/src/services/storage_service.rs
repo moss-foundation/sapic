@@ -1,5 +1,5 @@
 use anyhow::{Context as _, Result};
-use moss_applib::{AppRuntime, ServiceMarker};
+use moss_applib::AppRuntime;
 use moss_db::{Transaction, primitives::AnyValue};
 use moss_storage::{
     CollectionStorage,
@@ -14,8 +14,6 @@ use crate::{models::primitives::EntryId, storage::segments};
 pub struct StorageService<R: AppRuntime> {
     storage: Arc<dyn CollectionStorage<R::AsyncContext>>,
 }
-
-impl<R: AppRuntime> ServiceMarker for StorageService<R> {}
 
 impl<R: AppRuntime> StorageService<R> {
     pub async fn begin_write(&self, ctx: &R::AsyncContext) -> Result<Transaction> {

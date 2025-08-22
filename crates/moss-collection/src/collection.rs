@@ -1,4 +1,3 @@
-use anyhow::Result;
 use chrono::{DateTime, Utc};
 use joinerror::ResultExt;
 use json_patch::{
@@ -10,42 +9,31 @@ use moss_applib::{
 };
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_edit::json::EditOptions;
-use moss_environment::{environment::Environment, models::primitives::EnvironmentId};
 use moss_fs::{FileSystem, FsResultExt};
 use moss_git::{models::types::BranchInfo, url::normalize_git_url};
 use moss_git_hosting_provider::{
     GitHostingProvider,
-    common::GitUrlForAPI,
+    common::GitUrl,
     github::client::GitHubClient,
     gitlab::client::GitLabClient,
     models::{primitives::GitProviderType, types::Contributor},
 };
 use serde_json::Value as JsonValue;
 use std::{
-    collections::HashMap,
     path::{Path, PathBuf},
     sync::Arc,
 };
-use tokio::sync::OnceCell;
 
 use crate::{
-    DescribeCollection, DescribeRepository, dirs,
+    dirs,
     edit::CollectionEdit,
-    helpers::{fetch_contributors, fetch_vcs_summary},
+    helpers::fetch_contributors,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
     services::{
         git_service::GitService, set_icon_service::SetIconService, storage_service::StorageService,
     },
     worktree::Worktree,
 };
-
-pub struct EnvironmentItem<R: AppRuntime> {
-    pub id: EnvironmentId,
-    pub name: String,
-    pub inner: Environment<R>,
-}
-
-type EnvironmentMap<R> = HashMap<EnvironmentId, Arc<EnvironmentItem<R>>>;
 
 #[derive(Debug, Clone)]
 pub enum OnDidChangeEvent {
@@ -75,6 +63,22 @@ pub enum VcsSummary {
     },
 }
 
+impl VcsSummary {
+    pub fn url(&self) -> Option<String> {
+        match self {
+            VcsSummary::GitHub { url, .. } => Some(url.clone()),
+            VcsSummary::GitLab { url, .. } => Some(url.clone()),
+        }
+    }
+
+    pub fn branch(&self) -> Option<BranchInfo> {
+        match self {
+            VcsSummary::GitHub { branch, .. } => Some(branch.clone()),
+            VcsSummary::GitLab { branch, .. } => Some(branch.clone()),
+        }
+    }
+}
+
 pub struct CollectionDetails {
     pub name: String,
     pub vcs: Option<VcsSummary>,
@@ -94,8 +98,6 @@ pub struct Collection<R: AppRuntime> {
     // TODO: Extract Git Provider Service
     pub(super) github_client: Arc<GitHubClient>,
     pub(super) gitlab_client: Arc<GitLabClient>,
-    #[allow(dead_code)]
-    pub(super) environments: OnceCell<EnvironmentMap<R>>,
 
     pub(super) on_did_change: EventEmitter<OnDidChangeEvent>,
 }
@@ -122,9 +124,8 @@ impl<R: AppRuntime> Collection<R> {
         self.abs_path.join(dirs::ENVIRONMENTS_DIR)
     }
 
-    pub async fn describe(&self) -> joinerror::Result<DescribeCollection> {
+    pub async fn details(&self) -> joinerror::Result<CollectionDetails> {
         let manifest_path = self.abs_path.join(MANIFEST_FILE_NAME);
-
         let rdr = self
             .fs
             .open_file(&manifest_path)
@@ -132,72 +133,94 @@ impl<R: AppRuntime> Collection<R> {
             .join_err_with::<()>(|| {
                 format!("failed to open manifest file: {}", manifest_path.display())
             })?;
-
         let manifest: ManifestFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
             format!("failed to parse manifest file: {}", manifest_path.display())
         })?;
 
-        Ok(DescribeCollection {
-            name: manifest.name,
-            repository: manifest.repository.map(|repo| DescribeRepository {
-                repository: repo.url,
-                git_provider_type: repo.git_provider_type,
-            }),
-        })
-    }
-
-    pub async fn describe_details(&self) -> joinerror::Result<CollectionDetails> {
-        let desc = self.describe().await?;
-        let created_at_time =
-            std::fs::metadata(self.abs_path.join(MANIFEST_FILE_NAME))?.created()?;
-        let created_at: DateTime<Utc> = created_at_time.into();
+        let created_at: DateTime<Utc> = std::fs::metadata(&manifest_path)?.created()?.into();
 
         let mut output = CollectionDetails {
-            name: desc.name,
+            name: manifest.name,
             vcs: None,
             contributors: vec![],
             created_at: created_at.to_rfc3339(),
         };
 
-        if let Some(repo_desc) = desc.repository {
-            let repo_ref = match GitUrlForAPI::parse(&repo_desc.repository) {
-                Ok(repo_ref) => repo_ref,
-                Err(e) => {
-                    // TODO: Tell the frontend
-                    println!(
-                        "unable to parse repository {}: {}",
-                        repo_desc.repository,
-                        e.to_string()
-                    );
-                    return Ok(output);
-                }
-            };
-            let git_provider_type = repo_desc.git_provider_type;
-            let client: Arc<dyn GitHostingProvider> = match &git_provider_type {
-                GitProviderType::GitHub => self.github_client.clone(),
-                GitProviderType::GitLab => self.gitlab_client.clone(),
-            };
+        let Some(repo_desc) = manifest.repository else {
+            return Ok(output);
+        };
 
-            output.contributors = fetch_contributors(&repo_ref, client.clone())
-                .await
-                .unwrap_or_else(|e| {
-                    // TODO: Tell the frontend
-                    println!("unable to fetch contributors: {}", e);
-                    Vec::new()
-                });
+        let repo_ref = match GitUrl::parse(&repo_desc.url) {
+            Ok(repo_ref) => repo_ref,
+            Err(e) => {
+                println!("unable to parse repository url{}: {}", repo_desc.url, e);
+                return Ok(output);
+            }
+        };
 
-            output.vcs =
-                match fetch_vcs_summary(self, &repo_ref, git_provider_type, client.clone()).await {
-                    Ok(vcs) => Some(vcs),
-                    Err(e) => {
-                        // TODO: Tell the fronend
-                        println!("unable to fetch vcs: {}", e);
-                        None
-                    }
-                };
-        }
+        let git_provider_type = repo_desc.git_provider_type;
+        let client: Arc<dyn GitHostingProvider> = match &git_provider_type {
+            GitProviderType::GitHub => self.github_client.clone(),
+            GitProviderType::GitLab => self.gitlab_client.clone(),
+        };
+
+        output.contributors = fetch_contributors(&repo_ref, client.clone())
+            .await
+            .unwrap_or_else(|e| {
+                println!("unable to fetch contributors: {}", e);
+                Vec::new()
+            });
+
+        output.vcs = match self
+            .fetch_vcs_summary(&repo_ref, git_provider_type, client)
+            .await
+        {
+            Ok(vcs) => Some(vcs),
+            Err(e) => {
+                println!("unable to fetch vcs: {}", e);
+                None
+            }
+        };
 
         Ok(output)
+    }
+
+    async fn fetch_vcs_summary(
+        &self,
+        url: &GitUrl,
+        git_provider_type: GitProviderType,
+        client: Arc<dyn GitHostingProvider>,
+    ) -> joinerror::Result<VcsSummary> {
+        let branch = self.git_service.get_current_branch_info().await?;
+
+        // Even if provider API call fails, we want to return repo_url and current branch
+        let (updated_at, owner) = match client.repository_metadata(url).await {
+            Ok(repository_metadata) => (
+                Some(repository_metadata.updated_at),
+                Some(repository_metadata.owner),
+            ),
+            Err(e) => {
+                // TODO: Tell the frontend provider API call fails
+                println!("git provider api call fails: {}", e);
+
+                (None, None)
+            }
+        };
+
+        match git_provider_type {
+            GitProviderType::GitHub => Ok(VcsSummary::GitHub {
+                branch,
+                url: url.to_string(),
+                updated_at,
+                owner,
+            }),
+            GitProviderType::GitLab => Ok(VcsSummary::GitLab {
+                branch,
+                url: url.to_string(),
+                updated_at,
+                owner,
+            }),
+        }
     }
 
     pub async fn modify(&self, params: CollectionModifyParams) -> joinerror::Result<()> {
@@ -261,21 +284,6 @@ impl<R: AppRuntime> Collection<R> {
         Ok(())
     }
 
-    pub async fn environments(&self) -> Result<&EnvironmentMap<R>> {
-        let result = self
-            .environments
-            .get_or_try_init(|| async move {
-                let environments = HashMap::new();
-                Ok::<_, anyhow::Error>(environments)
-            })
-            .await?;
-
-        Ok(result)
-    }
-
-    pub async fn get_current_branch_info(&self) -> joinerror::Result<BranchInfo> {
-        self.git_service.get_current_branch_info().await
-    }
     pub async fn dispose(&self) -> joinerror::Result<()> {
         self.git_service.dispose(self.fs.clone()).await
     }

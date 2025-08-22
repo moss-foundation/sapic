@@ -55,7 +55,7 @@ async fn rename_collection_success() {
         .await
         .unwrap();
     assert_eq!(
-        collection.describe().await.unwrap().name,
+        collection.details().await.unwrap().name,
         new_collection_name
     );
 

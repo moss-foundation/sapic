@@ -1,4 +1,4 @@
-use moss_applib::{AppRuntime, ServiceMarker};
+use moss_applib::AppRuntime;
 use moss_db::{DatabaseResult, Transaction, primitives::AnyValue};
 use moss_logging::models::primitives::LogEntryId;
 use moss_storage::{
@@ -24,8 +24,6 @@ use crate::{
 pub struct StorageService<R: AppRuntime> {
     storage: Arc<dyn GlobalStorage<R::AsyncContext>>,
 }
-
-impl<R: AppRuntime> ServiceMarker for StorageService<R> {}
 
 #[cfg(feature = "integration-tests")]
 impl<R: AppRuntime> StorageService<R> {

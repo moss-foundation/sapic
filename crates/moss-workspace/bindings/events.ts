@@ -9,7 +9,6 @@ export type StreamCollectionsEvent = {
   name: string;
   order?: number;
   expanded: boolean;
-  repository?: string;
   branch?: BranchInfo;
   iconPath?: string;
 };

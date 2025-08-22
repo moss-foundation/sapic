@@ -4,13 +4,13 @@ use serde::{Deserialize, Serialize};
 pub(crate) const MANIFEST_FILE_NAME: &str = "Sapic.json";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ManifestFile {
+pub(super) struct ManifestFile {
     pub name: String,
     pub repository: Option<ManifestRepository>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ManifestRepository {
+pub(super) struct ManifestRepository {
     pub url: String,
     pub git_provider_type: GitProviderType,
 }
