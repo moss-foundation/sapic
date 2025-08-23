@@ -156,7 +156,7 @@ impl<R: AppRuntime> AppBuilder<R> {
             locale_service,
             theme_service,
             tracked_cancellations: Default::default(),
-            activity_indicator: ActivityBroadcaster::new(self.app_handle),
+            broadcaster: ActivityBroadcaster::new(self.app_handle),
 
             _github_client: github_client,
             _gitlab_client: gitlab_client,

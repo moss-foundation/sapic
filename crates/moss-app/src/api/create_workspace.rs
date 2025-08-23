@@ -31,7 +31,7 @@ impl<R: AppRuntime> App<R> {
 
         if input.open_on_creation {
             self.workspace_service
-                .activate_workspace(ctx, &id, self.activity_indicator.clone())
+                .activate_workspace(ctx, &id, self.broadcaster.clone())
                 .await?;
         }
 

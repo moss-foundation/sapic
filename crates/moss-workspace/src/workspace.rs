@@ -64,7 +64,7 @@ pub struct Workspace<R: AppRuntime> {
     pub(super) abs_path: Arc<Path>,
 
     #[allow(dead_code)]
-    pub(super) activity_indicator: ActivityBroadcaster<R::EventLoop>,
+    pub(super) broadcaster: ActivityBroadcaster<R::EventLoop>,
     pub(super) edit: WorkspaceEdit,
     pub(super) layout_service: LayoutService<R>,
     pub(super) collection_service: Arc<CollectionService<R>>,

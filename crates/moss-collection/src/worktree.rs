@@ -84,7 +84,7 @@ pub(crate) struct Worktree<R: AppRuntime> {
     abs_path: Arc<Path>,
     fs: Arc<dyn FileSystem>,
     storage: Arc<StorageService<R>>,
-    activity_indicator: ActivityBroadcaster<R::EventLoop>,
+    broadcaster: ActivityBroadcaster<R::EventLoop>,
     state: Arc<RwLock<WorktreeState>>,
 }
 
@@ -173,7 +173,7 @@ impl<R: AppRuntime> Worktree<R> {
 
         drop(job_tx);
 
-        let activity_handle = self.activity_indicator.emit_continual(ToLocation::Window {
+        let activity_handle = self.broadcaster.emit_continual(ToLocation::Window {
             activity_id: "scan_worktree",
             title: "Scanning".to_string(),
             detail: None,
@@ -670,14 +670,14 @@ impl<R: AppRuntime> Worktree<R> {
     pub fn new(
         abs_path: Arc<Path>,
         fs: Arc<dyn FileSystem>,
-        activity_indicator: ActivityBroadcaster<R::EventLoop>,
+        broadcaster: ActivityBroadcaster<R::EventLoop>,
         storage: Arc<StorageService<R>>,
     ) -> Self {
         Self {
             abs_path,
             fs,
             storage,
-            activity_indicator,
+            broadcaster,
             state: Default::default(),
         }
     }

@@ -42,7 +42,7 @@ pub struct CreateWorkspaceParams {
 
 pub struct WorkspaceBuilder<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
-    activity_indicator: ActivityBroadcaster<R::EventLoop>,
+    broadcaster: ActivityBroadcaster<R::EventLoop>,
     github_client: Arc<GitHubClient>,
     gitlab_client: Arc<GitLabClient>,
 }
@@ -65,13 +65,13 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
         fs: Arc<dyn FileSystem>,
         github_client: Arc<GitHubClient>,
         gitlab_client: Arc<GitLabClient>,
-        activity_indicator: ActivityBroadcaster<R::EventLoop>,
+        broadcaster: ActivityBroadcaster<R::EventLoop>,
     ) -> Self {
         Self {
             fs,
             github_client,
             gitlab_client,
-            activity_indicator,
+            broadcaster,
         }
     }
 
@@ -139,7 +139,7 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
             self.github_client.clone(),
             self.gitlab_client.clone(),
             &mut environment_sources,
-            self.activity_indicator.clone(),
+            self.broadcaster.clone(),
             on_did_delete_collection_emitter,
             on_did_add_collection_emitter,
         )
@@ -172,7 +172,7 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
 
         Ok(Workspace {
             abs_path: params.abs_path,
-            activity_indicator: self.activity_indicator,
+            broadcaster: self.broadcaster,
             edit,
             layout_service,
             collection_service,
@@ -217,7 +217,7 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
             self.github_client.clone(),
             self.gitlab_client.clone(),
             &mut environment_sources,
-            self.activity_indicator.clone(),
+            self.broadcaster.clone(),
             on_did_delete_collection_emitter,
             on_did_add_collection_emitter,
         )
@@ -250,7 +250,7 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
 
         Ok(Workspace {
             abs_path: params.abs_path,
-            activity_indicator: self.activity_indicator,
+            broadcaster: self.broadcaster,
             edit,
             layout_service,
             collection_service,

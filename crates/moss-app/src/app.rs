@@ -72,8 +72,7 @@ pub struct App<R: AppRuntime> {
 
     // Store cancellers by the id of API requests
     pub(super) tracked_cancellations: Arc<RwLock<HashMap<String, Canceller>>>,
-    // TODO: This is also might be better to be a service
-    pub(super) activity_indicator: ActivityBroadcaster<R::EventLoop>,
+    pub(super) broadcaster: ActivityBroadcaster<R::EventLoop>,
 
     // TODO: Refine the management of git provider clients
     pub(super) _github_client: Arc<GitHubClient>,

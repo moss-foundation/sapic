@@ -14,7 +14,7 @@ impl<R: AppRuntime> App<R> {
     ) -> joinerror::Result<OpenWorkspaceOutput> {
         let desc = self
             .workspace_service
-            .activate_workspace(ctx, &input.id, self.activity_indicator.clone())
+            .activate_workspace(ctx, &input.id, self.broadcaster.clone())
             .await?;
 
         Ok(OpenWorkspaceOutput {

@@ -92,8 +92,8 @@ pub async fn create_test_collection() -> (
         None as Option<SSHAuthAgentImpl>,
     ));
 
-    let activity_indicator = ActivityBroadcaster::new(mock_app.handle().clone());
-    let collection = CollectionBuilder::new(fs, activity_indicator, github_client, gitlab_client)
+    let broadcaster = ActivityBroadcaster::new(mock_app.handle().clone());
+    let collection = CollectionBuilder::new(fs, broadcaster, github_client, gitlab_client)
         .create(
             &ctx,
             CollectionCreateParams {

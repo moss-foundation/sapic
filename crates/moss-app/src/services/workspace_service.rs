@@ -267,7 +267,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
         &self,
         ctx: &R::AsyncContext,
         id: &WorkspaceId,
-        activity_indicator: ActivityBroadcaster<R::EventLoop>,
+        broadcaster: ActivityBroadcaster<R::EventLoop>,
     ) -> joinerror::Result<WorkspaceItemDescription> {
         let (name, already_active) = {
             let state_lock = self.state.read().await;
@@ -306,7 +306,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
             self.fs.clone(),
             self.github_client.clone(),
             self.gitlab_client.clone(),
-            activity_indicator,
+            broadcaster,
         )
         .load(
             ctx,
