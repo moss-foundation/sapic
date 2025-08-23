@@ -4,6 +4,7 @@ import { useCloseWorkspace } from "@/hooks/workbench/useCloseWorkspace";
 import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
 import { useWorkspaceMapping } from "@/hooks/workbench/useWorkspaceMapping";
 import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 // Helper to extract workspace ID from prefixed action ID
 const extractWorkspaceId = (actionId: string): string => {
@@ -129,7 +130,9 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
   const { mutate: openWorkspace } = useOpenWorkspace();
   const { mutate: closeWorkspace } = useCloseWorkspace();
   const { getWorkspaceById } = useWorkspaceMapping();
-  const { activeWorkspace } = useActiveWorkspace();
+  const { activeWorkspace, activeWorkspaceId } = useActiveWorkspace();
+
+  const { addOrFocusPanel } = useTabbedPaneStore();
 
   return (action: string) => {
     if (action.startsWith("workspace:")) {
@@ -162,13 +165,37 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
         }
 
         if (actionType === "rename") {
+          if (workspaceId === activeWorkspaceId) {
+            addOrFocusPanel({
+              id: "WorkspaceSettings",
+              component: "WorkspaceSettings",
+              title: activeWorkspace?.name || "Workspace Settings",
+              params: {
+                iconType: "Workspace",
+                workspace: true,
+              },
+            });
+            return;
+          }
+
           const workspace = getWorkspaceById(workspaceId);
           if (workspace) {
-            openWorkspace(workspaceId);
-
-            setTimeout(() => {
-              openPanel("WorkspaceSettings");
-            }, 500);
+            openWorkspace(workspaceId, {
+              onSuccess: () => {
+                addOrFocusPanel({
+                  id: "WorkspaceSettings",
+                  component: "WorkspaceSettings",
+                  title: workspace.name,
+                  params: {
+                    iconType: "Workspace",
+                    workspace: true,
+                  },
+                });
+              },
+              onError: (error) => {
+                console.error("Failed to open workspace:", error.message);
+              },
+            });
           } else {
             console.error(`Workspace not found for ID: ${workspaceId}`);
           }
@@ -197,7 +224,15 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
         break;
       case "rename":
         if (activeWorkspace) {
-          openPanel("WorkspaceSettings");
+          addOrFocusPanel({
+            id: "WorkspaceSettings",
+            component: "WorkspaceSettings",
+            title: activeWorkspace.name,
+            params: {
+              iconType: "Workspace",
+              workspace: true,
+            },
+          });
         }
         break;
       case "kitchensink":

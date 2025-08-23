@@ -58,7 +58,7 @@ export const CollectionTreesView = () => {
       <Scrollbar className="min-h-0 flex-1" classNames={{ contentEl: "h-full w-full" }}>
         <div className="flex h-full flex-col">
           <div className="flex shrink items-center gap-[7px] px-2 py-1">
-            <InputPlain placeholder="Search" size="sm" />
+            <InputPlain placeholder="Search" />
           </div>
 
           <div className="flex h-full flex-col">

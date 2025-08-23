@@ -1,9 +1,8 @@
-import React from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import {
   ActionButton,
   Breadcrumbs,
-  PageContent,
   PageContainerWithTabs,
   PageHeader,
   PageTabs,
@@ -12,13 +11,15 @@ import {
   TabItem,
 } from "@/components";
 import { TreeCollectionNode } from "@/components/CollectionTree/types";
+import { useStreamedCollectionEntries } from "@/hooks";
+import { useRenameEntryForm } from "@/hooks/useRenameEntryForm";
 import { Icon } from "@/lib/ui";
+import { useRequestPage } from "@/pages/RequestPage/hooks/useRequestPage";
 import { useRequestModeStore } from "@/store/requestMode";
 import { cn } from "@/utils";
 import { EntryKind } from "@repo/moss-collection";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
 
-import Metadata from "../../parts/TabbedPane/DebugComponents/Metadata";
 import { RequestInputField } from "./RequestInputField";
 import {
   AuthTabContent,
@@ -28,10 +29,7 @@ import {
   PostRequestTabContent,
   PreRequestTabContent,
 } from "./tabs";
-import { parseUrl, areUrlsEquivalent } from "./utils/urlParser";
-import { useRequestPageStore } from "@/store/requestPage";
-
-const DebugContext = React.createContext<boolean>(false);
+import { areUrlsEquivalent, parseUrl } from "./utils/urlParser";
 
 const Badge = ({ count }: { count: number }) => (
   <span className="background-(--moss-tab-badge-color) inline-flex h-3.5 w-3.5 min-w-[14px] items-center justify-center rounded-full text-xs leading-none text-(--moss-tab-badge-text)">
@@ -39,27 +37,30 @@ const Badge = ({ count }: { count: number }) => (
   </span>
 );
 
-const RequestPage: React.FC<
-  IDockviewPanelProps<{
-    node?: TreeCollectionNode;
-    collectionId: string;
-    iconType: EntryKind;
-    someRandomString: string;
-  }>
-> = (props) => {
+interface RequestPageProps {
+  node: TreeCollectionNode;
+  collectionId: string;
+  iconType: EntryKind;
+}
+
+const RequestPage = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
   const { displayMode } = useRequestModeStore();
 
-  const isDebug = React.useContext(DebugContext);
+  const { data: streamedEntries } = useStreamedCollectionEntries(props.params?.collectionId);
+  const node = streamedEntries?.find((entry) => entry.id === props.params?.node?.id);
 
-  let showEndpoint = false;
+  const showEndpoint = displayMode === "DESIGN_FIRST" && node?.class === "Endpoint";
   let dontShowTabs = true;
-  const [activeTab, setActiveTab] = React.useState(showEndpoint ? "endpoint" : "request");
-  const [activeRequestTabId, setActiveRequestTabId] = React.useState("params");
 
-  const { requestData, httpMethod, setHttpMethod, updateRequestData } = useRequestPageStore();
+  const [activeTab, setActiveTab] = useState(showEndpoint ? "endpoint" : "request");
+  const [activeRequestTabId, setActiveRequestTabId] = useState("params");
 
-  if (props.params?.node) {
-    showEndpoint = displayMode === "DESIGN_FIRST" && props.params.node.class === "Endpoint";
+  const { requestData, httpMethod, setHttpMethod, updateRequestData } = useRequestPage();
+
+  const { isRenamingEntry, setIsRenamingEntry, handleRenamingEntrySubmit, handleRenamingEntryCancel } =
+    useRenameEntryForm(props?.params?.node, props?.params?.collectionId);
+
+  if (node) {
     dontShowTabs =
       props.params.node.kind === "Dir" ||
       props.params.node.class === "Endpoint" ||
@@ -94,7 +95,7 @@ const RequestPage: React.FC<
     // Use getRequestUrlWithPathValues() for backend requests with actual path values
   };
 
-  const handleUrlChange = React.useCallback(
+  const handleUrlChange = useCallback(
     (url: string) => {
       // Prevent unnecessary updates if URLs are functionally equivalent
       if (areUrlsEquivalent(url, requestData.url.raw)) {
@@ -118,7 +119,7 @@ const RequestPage: React.FC<
     [requestData.url.raw, updateRequestData]
   );
 
-  const paramsCount = React.useMemo(() => {
+  const paramsCount = useMemo(() => {
     const queryParamsCount = requestData.url.query_params.filter(
       (param) => (param.key.trim() !== "" || param.value.trim() !== "") && !param.disabled
     ).length;
@@ -196,67 +197,57 @@ const RequestPage: React.FC<
   return (
     <PageView>
       <PageHeader
-        icon={<Icon icon="Placeholder" className="size-[18px]" />}
+        icon="Request"
         tabs={dontShowTabs ? null : tabs}
         toolbar={toolbar}
-        props={props}
+        title={node?.name}
+        onTitleChange={handleRenamingEntrySubmit}
+        disableTitleChange={false}
+        isRenamingTitle={isRenamingEntry}
+        setIsRenamingTitle={setIsRenamingEntry}
+        handleRenamingFormCancel={handleRenamingEntryCancel}
+        {...props}
       />
-      <PageContent className={cn("relative", isDebug && "border-2 border-dashed border-orange-500")}>
-        <div className="flex h-full flex-col">
-          {props.params?.node ? (
-            <div className="flex-1">
-              {props.params?.collectionId && props.params?.node?.id && (
-                <div className="-mt-1 mb-2 -ml-2">
-                  <Breadcrumbs collectionId={props.params.collectionId} nodeId={props.params.node.id} />
-                </div>
-              )}
 
-              <div className="mb-3.5">
-                <RequestInputField
-                  initialMethod={httpMethod}
-                  initialUrl={requestData.url.raw}
-                  onSend={handleSendRequest}
-                  onUrlChange={handleUrlChange}
-                  onMethodChange={(method) => {
-                    if (method !== httpMethod) {
-                      setHttpMethod(method);
-                    }
-                  }}
-                />
+      <div className={cn("relative")}>
+        {node ? (
+          <div className="flex shrink-0 flex-col gap-1.5 pt-1.5">
+            {props.params?.collectionId && node?.id && (
+              <div className="px-2">
+                <Breadcrumbs collectionId={props.params.collectionId} nodeId={props.params.node.id} />
               </div>
+            )}
 
-              {activeTab === "request" && (
-                <div className="mx-3">
-                  <PageContainerWithTabs
-                    tabs={requestTabs}
-                    activeTabId={activeRequestTabId}
-                    onTabChange={setActiveRequestTabId}
-                    noPadding
-                  />
-                </div>
-              )}
+            <div className="px-3">
+              <RequestInputField
+                initialMethod={httpMethod}
+                initialUrl={requestData.url.raw}
+                onSend={handleSendRequest}
+                onUrlChange={handleUrlChange}
+                onMethodChange={(method) => {
+                  if (method !== httpMethod) {
+                    setHttpMethod(method);
+                  }
+                }}
+              />
             </div>
-          ) : (
-            <div className="flex flex-1 items-center justify-center">
-              <div className="text-center">
-                <p className="mb-4 text-sm text-(--moss-secondary-text)">No request selected</p>
-                {props?.params.someRandomString && (
-                  <p className="text-xs text-(--moss-secondary-text)">Backend ID: {props.params.someRandomString}</p>
-                )}
-              </div>
-            </div>
-          )}
 
-          {isDebug && (
-            <Metadata
-              onClick={() => {
-                props.api.setRenderer(props.api.renderer === "always" ? "onlyWhenVisible" : "always");
-              }}
-              api={props.api}
-            />
-          )}
-        </div>
-      </PageContent>
+            {activeTab === "request" && (
+              <PageContainerWithTabs
+                tabs={requestTabs}
+                activeTabId={activeRequestTabId}
+                onTabChange={setActiveRequestTabId}
+              />
+            )}
+          </div>
+        ) : (
+          <div className="flex flex-1 items-center justify-center">
+            <div className="text-center">
+              <p className="mb-4 text-sm text-(--moss-secondary-text)">No request selected</p>
+            </div>
+          </div>
+        )}
+      </div>
     </PageView>
   );
 };

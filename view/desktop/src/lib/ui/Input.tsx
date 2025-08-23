@@ -1,7 +1,8 @@
 import { cva } from "class-variance-authority";
-import React from "react";
+import React, { forwardRef, useRef } from "react";
 
-import { cn } from "@/utils";
+import { useInputResize } from "@/hooks/useInputResize";
+import { cn, mergeRefs } from "@/utils";
 
 import Icon, { Icons } from "./Icon";
 
@@ -9,11 +10,12 @@ export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElem
   iconLeft?: Icons;
   iconRight?: Icons;
   iconClassName?: string;
+  inputFieldClassName?: string;
+  fieldSizing?: "content" | "auto";
 }
 
 //prettier-ignore
 const inputStyles = cva(`
-    peer 
     flex items-center w-full gap-2
     rounded-sm py-0 font-medium transition-shadow 
     has-[input:focus-within]:outline-2 
@@ -30,13 +32,34 @@ const inputStyles = cva(`
   }
 );
 
-export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, disabled = false, iconLeft, iconRight, iconClassName, ...props }, forwardedRef) => {
+export const Input = forwardRef<HTMLInputElement, InputProps>(
+  (
+    {
+      className,
+      disabled = false,
+      iconLeft,
+      iconRight,
+      iconClassName,
+      inputFieldClassName,
+      fieldSizing = "auto",
+      ...props
+    },
+    forwardedRef
+  ) => {
+    const ref = useRef<HTMLInputElement>(null);
+
+    useInputResize({ ref, enabled: fieldSizing === "content" });
+
     return (
       <div className={cn(inputStyles({ disabled }), className)}>
         {iconLeft && <Icon icon={iconLeft} className={iconClassName} />}
 
-        <input ref={forwardedRef} disabled={disabled} className="h-full w-full focus-visible:outline-none" {...props} />
+        <input
+          ref={mergeRefs([ref, forwardedRef])}
+          disabled={disabled}
+          className={cn("h-auto w-full focus-visible:outline-none", inputFieldClassName)}
+          {...props}
+        />
 
         {iconRight && <Icon icon={iconRight} className={iconClassName} />}
       </div>

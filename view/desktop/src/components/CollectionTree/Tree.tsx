@@ -37,8 +37,6 @@ export const CollectionTree = ({
         searchInput,
         displayMode,
         showNodeOrders,
-        contributors: initialTree.contributors,
-        repositoryInfo: initialTree.repositoryInfo,
       }}
     >
       <TreeRootNode node={tree} />

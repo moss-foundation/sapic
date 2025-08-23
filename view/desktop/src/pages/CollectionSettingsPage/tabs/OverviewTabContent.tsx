@@ -22,34 +22,59 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
   const { showModal, closeModal, openModal } = useModal();
 
   const [name, setName] = useState(collection?.name || "");
-  const [repository, setRepository] = useState(collection?.repository || "github.com/moss-foundation/sapic");
+  const [repository, setRepository] = useState(collection?.repository || "");
 
   useEffect(() => {
     if (collection) {
       setName(collection.name);
-      setRepository(collection?.repository || "github.com/moss-foundation/sapic");
+      setRepository(collection?.repository || "");
       const currentPanel = containerApi.getPanel(collection.id);
       currentPanel?.api.setTitle(collection.name);
     }
   }, [collection, containerApi]);
 
-  const handleUpdateCollection = async () => {
-    if (!collection || !name) return;
+  const handleUpdateCollectionName = async () => {
+    if (!collection) return;
 
-    await updateCollection({
-      id: collection.id,
-      name,
-      repository: !repository ? "REMOVE" : { UPDATE: repository },
-    });
+    if (!name || name === collection.name) {
+      setName(collection?.name);
+      return;
+    }
+    try {
+      await updateCollection({
+        id: collection.id,
+        name,
+      });
+    } catch (e) {
+      console.error("handleUpdateCollectionName", e);
+      setName(collection?.name);
+    }
+  };
+  const handleNameBlur = () => {
+    handleUpdateCollectionName();
   };
 
-  const handleBlur = () => {
-    if (!collection || !name) {
-      setName(collection?.name ?? "");
+  const handleUpdateCollectionRepository = async () => {
+    if (!collection) return;
+
+    if (!repository || repository === collection.repository) {
+      setRepository(collection?.repository || "github.com/moss-foundation/sapic");
       return;
     }
 
-    handleUpdateCollection();
+    try {
+      await updateCollection({
+        id: collection.id,
+        repository: !repository ? "REMOVE" : { UPDATE: repository },
+      });
+    } catch (e) {
+      console.error("handleUpdateCollectionRepository", e);
+      setRepository(collection?.repository || "");
+    }
+  };
+
+  const handleRepositoryBlur = () => {
+    handleUpdateCollectionRepository();
   };
 
   if (!collection) {
@@ -64,21 +89,20 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
   }
 
   return (
-    <div className="relative flex h-full min-w-[800px] justify-center">
+    <div className="relative flex h-full justify-center">
       <div className="w-full max-w-2xl space-y-9 px-6 py-5">
         <div className="space-y-6">
           <div className="flex items-start gap-3.5 text-(--moss-primary-text)">
             <label className="mt-1 w-20 font-medium">Name:</label>
             <div>
               <InputOutlined
-                size="sm"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                onBlur={handleBlur}
+                onBlur={handleNameBlur}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
-                    handleUpdateCollection();
+                    handleUpdateCollectionName();
                     e.currentTarget.blur();
                   }
                 }}
@@ -96,14 +120,13 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
             <label className="mt-1 w-20 font-medium">Repository:</label>
             <div>
               <InputOutlined
-                size="sm"
                 value={repository}
                 onChange={(e) => setRepository(e.target.value)}
-                onBlur={handleBlur}
+                onBlur={handleRepositoryBlur}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
-                    handleUpdateCollection();
+                    handleUpdateCollectionRepository();
                     e.currentTarget.blur();
                   }
                 }}

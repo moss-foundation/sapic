@@ -57,13 +57,6 @@ export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
   activePanelId: undefined,
   setActivePanelId: (id: string | undefined) => set({ activePanelId: id }),
   addOrFocusPanel: async (options) => {
-    //TODO Do we need this anymore?
-    const someRandomString = await new Promise<string>((resolve) => {
-      setTimeout(() => {
-        resolve(Math.random().toString(36).substring(7));
-      }, 50);
-    });
-
     const activePanel = get().api?.getPanel(options.id);
 
     if (activePanel) {
@@ -76,7 +69,6 @@ export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
       component: options.component || "Default",
       params: {
         ...options.params,
-        someRandomString,
       },
     } as AddPanelOptions);
   },

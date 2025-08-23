@@ -1,5 +1,7 @@
 import React from "react";
 
+import { cn } from "@/utils";
+
 interface DividerProps {
   height?: "small" | "medium" | "large";
   className?: string;
@@ -13,7 +15,7 @@ export const Divider: React.FC<DividerProps> = ({ height = "medium", className =
   };
 
   return (
-    <div className={`flex h-full items-center ${className}`}>
+    <div className={cn("flex h-full items-center", className)}>
       <div className={`${heightClasses[height]} background-(--moss-divider-color) w-[1px]`}></div>
     </div>
   );

@@ -114,7 +114,7 @@ export const NewCollectionModal = ({ closeModal, showModal, initialTab = CREATE_
 
       <Divider />
 
-      <form onSubmit={handleSubmit} className="flex h-full flex-col overflow-hidden">
+      <form onSubmit={handleSubmit} className="flex flex-col overflow-hidden">
         <Scrollbar className="min-h-0 flex-1">
           <div className="flex flex-col">
             <PaddedTabs.Root

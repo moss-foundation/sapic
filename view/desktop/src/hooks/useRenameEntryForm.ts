@@ -1,47 +1,45 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
 
 import { useFetchEntriesForPath } from "@/hooks/collection/derivedHooks/useFetchEntriesForPath";
 import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollectionEntry";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { StreamEntriesEvent } from "@repo/moss-collection";
 import { join } from "@tauri-apps/api/path";
 
-import { CollectionTreeContext } from "../../CollectionTreeContext";
-import { TreeCollectionNode } from "../../types";
-
-export const useNodeRenamingForm = (node: TreeCollectionNode) => {
-  const { id } = useContext(CollectionTreeContext);
-
+export const useRenameEntryForm = (entry: StreamEntriesEvent, collectionId: string) => {
   const { fetchEntriesForPath } = useFetchEntriesForPath();
-  const [isRenamingNode, setIsRenamingNode] = useState(false);
-
   const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry();
+  const { api } = useTabbedPaneStore();
 
-  const handleRenamingFormSubmit = async (newName: string) => {
-    const trimmedNewName = newName.trim();
+  const [isRenamingEntry, setIsRenamingEntry] = useState(false);
 
+  const handleRenamingEntrySubmit = async (newName: string) => {
     try {
-      if (trimmedNewName === node.name) {
+      const trimmedNewName = newName.trim();
+
+      if (trimmedNewName === entry.name) {
         return;
       }
 
-      if (node.kind === "Dir") {
+      if (entry.kind === "Dir") {
         await updateCollectionEntry({
-          collectionId: id,
+          collectionId,
           updatedEntry: {
             DIR: {
-              id: node.id,
+              id: entry.id,
               name: trimmedNewName,
             },
           },
         });
 
-        const newPath = await join(...node.path.segments.slice(0, node.path.segments.length - 1), trimmedNewName);
-        await fetchEntriesForPath(id, newPath);
+        const newPath = await join(...entry.path.segments.slice(0, entry.path.segments.length - 1), trimmedNewName);
+        await fetchEntriesForPath(collectionId, newPath);
       } else {
         await updateCollectionEntry({
-          collectionId: id,
+          collectionId,
           updatedEntry: {
             ITEM: {
-              id: node.id,
+              id: entry.id,
               name: trimmedNewName,
               queryParamsToAdd: [],
               queryParamsToUpdate: [],
@@ -56,21 +54,25 @@ export const useNodeRenamingForm = (node: TreeCollectionNode) => {
           },
         });
       }
+      const panel = api?.getPanel(entry.id);
+      if (panel) {
+        panel.setTitle(trimmedNewName);
+      }
     } catch (error) {
       console.error(error);
     } finally {
-      setIsRenamingNode(false);
+      setIsRenamingEntry(false);
     }
   };
 
-  const handleRenamingFormCancel = () => {
-    setIsRenamingNode(false);
+  const handleRenamingEntryCancel = () => {
+    setIsRenamingEntry(false);
   };
 
   return {
-    isRenamingNode,
-    setIsRenamingNode,
-    handleRenamingFormSubmit,
-    handleRenamingFormCancel,
+    isRenamingEntry,
+    setIsRenamingEntry,
+    handleRenamingEntrySubmit,
+    handleRenamingEntryCancel,
   };
 };

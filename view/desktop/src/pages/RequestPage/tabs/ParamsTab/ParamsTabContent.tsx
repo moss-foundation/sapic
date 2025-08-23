@@ -1,22 +1,23 @@
 import React from "react";
+
+import { ActionButton } from "@/components";
 import { TreeCollectionNode } from "@/components/CollectionTree/types";
+import { DataTable, ParameterData } from "@/components/Table";
+import { useRequestPage } from "@/pages/RequestPage/hooks/useRequestPage";
 import { EntryKind } from "@repo/moss-collection";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
-import { DataTable, ParameterData } from "@/components/Table";
-import { ActionButton } from "@/components";
+
+import { detectValueType, getParameterSuggestions } from "../../utils/urlParser";
 import { paramColumns } from "./columns";
-import { getParameterSuggestions, detectValueType } from "../../utils/urlParser";
-import { useRequestPageStore } from "@/store/requestPage";
 
 export const ParamsTabContent = (
   _props: IDockviewPanelProps<{
     node?: TreeCollectionNode;
     collectionId: string;
     iconType: EntryKind;
-    someRandomString: string;
   }>
 ) => {
-  const { requestData, updatePathParams, updateQueryParams, reconstructUrlFromParams } = useRequestPageStore();
+  const { requestData, updatePathParams, updateQueryParams, reconstructUrlFromParams } = useRequestPage();
 
   const debouncedQueryUpdate = React.useRef<NodeJS.Timeout>();
   const debouncedPathUpdate = React.useRef<NodeJS.Timeout>();

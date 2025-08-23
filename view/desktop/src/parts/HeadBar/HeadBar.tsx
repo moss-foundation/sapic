@@ -17,8 +17,9 @@ import { WorkspaceMenuProvider } from "./WorkspaceMenuProvider";
 
 export const HeadBar = () => {
   const os = type();
+
   const { showDebugPanels, setShowDebugPanels } = useTabbedPaneStore();
-  const openPanel = useTabbedPaneStore((state) => state.openPanel);
+  const { openPanel } = useTabbedPaneStore();
   const { mutate: deleteWorkspace, isPending: isDeleting } = useDeleteWorkspace();
   const [workspaceToDelete, setWorkspaceToDelete] = useState<{ id: string; name: string } | null>(null);
 

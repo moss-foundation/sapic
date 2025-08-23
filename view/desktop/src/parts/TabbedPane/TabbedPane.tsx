@@ -8,7 +8,7 @@ import { useUpdateEditorPartState } from "@/hooks/appState/useUpdateEditorPartSt
 import { mapEditorPartStateToSerializedDockview } from "@/hooks/appState/utils";
 import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
-import { Icon, type Icons } from "@/lib/ui";
+import { type Icons } from "@/lib/ui";
 import {
   CollectionSettingsPage,
   FolderSettings,
@@ -62,25 +62,9 @@ const DynamicPageWrapper = ({
 }) => {
   const PageComponent = config.component;
 
-  // Get fresh workspace data for dynamic title - must be called before any returns
-  const { activeWorkspace } = useActiveWorkspace();
-
-  // Update panel title dynamically for WorkspaceSettings - must be called before any returns
-  React.useEffect(() => {
-    if (pageKey === "WorkspaceSettings" && props.api && activeWorkspace?.name) {
-      props.api.setTitle(activeWorkspace.name);
-    }
-  }, [activeWorkspace?.name, props.api, pageKey]);
-
-  // Special case for full-page components (no title)
-  if (!config.title) {
-    return <PageComponent {...props} />;
-  }
-
-  // Standard page structure with header and content
   return (
     <PageView>
-      <PageHeader icon={config.icon ? <Icon icon={config.icon} className="size-[18px]" /> : undefined} props={props} />
+      <PageHeader icon={config.icon} title={config.title} {...props} />
       <PageContent>
         <PageComponent {...props} />
       </PageContent>
@@ -232,20 +216,8 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
       title: "Logs",
       component: Logs,
     },
-    WorkspaceSettings: {
-      title: "WorkspaceSettings", // This will be dynamically replaced
-      component: WorkspaceSettings,
-    },
     Welcome: {
       component: WelcomePage,
-    },
-    CollectionSettings: {
-      title: "CollectionSettings",
-      component: CollectionSettingsPage,
-    },
-    FolderSettings: {
-      title: "FolderSettings",
-      component: FolderSettings,
     },
   };
 
@@ -255,22 +227,21 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
         node?: TreeCollectionNode;
         collectionId: string;
         iconType: EntryKind;
-        someRandomString: string;
       }>
     ) => {
       const isDebug = React.useContext(DebugContext);
 
       return (
         <PageView>
-          <PageHeader icon={<Icon icon="Placeholder" className="size-[18px]" />} props={props} />
+          <PageHeader icon="Placeholder" {...props} />
           <PageContent className={cn("relative", isDebug && "border-2 border-dashed border-orange-500")}>
             {props.params?.collectionId && props.params?.node?.id && (
               <Breadcrumbs collectionId={props.params.collectionId} nodeId={props.params.node.id} />
             )}
 
-            <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col text-[42px] opacity-50">
-              <span>Default Page</span>
-              <span className="text-sm">This is a placeholder default page</span>
+            <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col opacity-50">
+              <span className="text-[42px] leading-[42px]">Default Page</span>
+              <span className="text-sm leading-3">This is a placeholder default page</span>
             </span>
 
             {isDebug && (
@@ -285,46 +256,28 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
         </PageView>
       );
     },
-    nested: () => {
-      return (
-        <DockviewReact
-          components={components}
-          onReady={(event: DockviewReadyEvent) => {
-            event.api.addPanel({ id: "panel_1", component: "Default" });
-            event.api.addPanel({ id: "panel_2", component: "Default" });
-            event.api.addPanel({
-              id: "panel_3",
-              component: "Default",
-            });
-
-            event.api.onDidRemovePanel((e) => {
-              console.log("remove", e);
-            });
-          }}
-          className={"dockview-theme-light"}
-        />
-      );
-    },
-    iframe: (props: IDockviewPanelProps) => {
-      return (
-        <iframe
-          onMouseDown={() => {
-            if (!props.api.isActive) {
-              props.api.setActive();
-            }
-          }}
-          className="h-full w-full"
-        />
-      );
-    },
     Request: (
       props: IDockviewPanelProps<{
-        node?: TreeCollectionNode;
+        node: TreeCollectionNode;
         collectionId: string;
         iconType: EntryKind;
-        someRandomString: string;
       }>
     ) => <RequestPage {...props} />,
+    CollectionSettings: (
+      props: IDockviewPanelProps<{
+        node: TreeCollectionNode;
+        collectionId: string;
+        iconType: EntryKind;
+      }>
+    ) => <CollectionSettingsPage {...props} />,
+    FolderSettings: (
+      props: IDockviewPanelProps<{
+        node: TreeCollectionNode;
+        collectionId: string;
+        iconType: EntryKind;
+      }>
+    ) => <FolderSettings {...props} />,
+    WorkspaceSettings: (props: IDockviewPanelProps) => <WorkspaceSettings {...props} />,
     ...Object.entries(pageConfigs).reduce(
       (acc, [key, config]) => {
         acc[key] = (props: IDockviewPanelProps) => <DynamicPageWrapper pageKey={key} config={config} props={props} />;

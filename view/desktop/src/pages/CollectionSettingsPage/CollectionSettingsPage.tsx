@@ -1,6 +1,9 @@
 import { useState } from "react";
 
 import { PageContainerWithTabs, TabItem } from "@/components/PageContainer";
+import { PageHeader, PageView } from "@/components/PageView";
+import { useStreamedCollections } from "@/hooks";
+import { useRenameCollectionForm } from "@/hooks/useRenameCollectionForm";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 import { Icon } from "@/lib/ui";
 
@@ -29,7 +32,17 @@ export interface CollectionSettingsParams {
 export const CollectionSettings = ({ ...props }: IDockviewPanelProps<CollectionSettingsParams>) => {
   const { collectionId } = props.params;
 
+  const { data: streamedCollections } = useStreamedCollections();
+  const collection = streamedCollections?.find((collection) => collection.id === collectionId);
+
   const [activeTabId, setActiveTabId] = useState("overview");
+
+  const {
+    isRenamingCollection,
+    setIsRenamingCollection,
+    handleRenamingCollectionFormSubmit,
+    handleRenamingCollectionFormCancel,
+  } = useRenameCollectionForm(collectionId);
 
   if (!collectionId) {
     return (
@@ -42,7 +55,6 @@ export const CollectionSettings = ({ ...props }: IDockviewPanelProps<CollectionS
     );
   }
 
-  // Define the tabs for the PageContainer matching the design
   const tabs: TabItem[] = [
     {
       id: "overview",
@@ -109,5 +121,19 @@ export const CollectionSettings = ({ ...props }: IDockviewPanelProps<CollectionS
     },
   ];
 
-  return <PageContainerWithTabs tabs={tabs} activeTabId={activeTabId} onTabChange={setActiveTabId} />;
+  return (
+    <PageView>
+      <PageHeader
+        icon="Collection"
+        title={collection?.name}
+        disableTitleChange={false}
+        onTitleChange={handleRenamingCollectionFormSubmit}
+        isRenamingTitle={isRenamingCollection}
+        setIsRenamingTitle={setIsRenamingCollection}
+        handleRenamingFormCancel={handleRenamingCollectionFormCancel}
+        {...props}
+      />
+      <PageContainerWithTabs tabs={tabs} activeTabId={activeTabId} onTabChange={setActiveTabId} />
+    </PageView>
+  );
 };
