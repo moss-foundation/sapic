@@ -2,7 +2,10 @@ import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { StreamEntriesEvent } from "@repo/moss-collection";
 import { Channel } from "@tauri-apps/api/core";
 
-export const fetchCollectionEntries = async (collectionId: string, path?: string): Promise<StreamEntriesEvent[]> => {
+export const startStreamingCollectionEntries = async (
+  collectionId: string,
+  path?: string
+): Promise<StreamEntriesEvent[]> => {
   const entries: StreamEntriesEvent[] = [];
   const onCollectionEntryEvent = new Channel<StreamEntriesEvent>();
 

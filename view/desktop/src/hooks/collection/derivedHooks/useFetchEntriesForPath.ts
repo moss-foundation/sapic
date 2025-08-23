@@ -1,7 +1,7 @@
 import { StreamEntriesEvent } from "@repo/moss-collection";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { fetchCollectionEntries } from "../queries/fetchCollectionEntries";
+import { startStreamingCollectionEntries } from "../queries/startStreamingCollectionEntries";
 import { USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY } from "../useStreamedCollectionEntries";
 
 export const useFetchEntriesForPath = () => {
@@ -9,7 +9,7 @@ export const useFetchEntriesForPath = () => {
 
   const fetchEntriesForPath = async (collectionId: string, path: string): Promise<StreamEntriesEvent[]> => {
     try {
-      const newEntries = await fetchCollectionEntries(collectionId, path);
+      const newEntries = await startStreamingCollectionEntries(collectionId, path);
 
       queryClient.setQueryData<StreamEntriesEvent[]>(
         [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, collectionId],

@@ -3,7 +3,7 @@ import { StreamEntriesEvent } from "@repo/moss-collection";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useActiveWorkspace } from "../workspace/useActiveWorkspace";
-import { fetchCollectionEntries } from "./queries/fetchCollectionEntries";
+import { startStreamingCollectionEntries } from "./queries/startStreamingCollectionEntries";
 
 export const USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY = "streamCollectionEntries";
 
@@ -16,7 +16,7 @@ export const useStreamedCollectionEntries = (collectionId: string) => {
   const query = useQuery<StreamEntriesEvent[], Error>({
     queryKey: [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, collectionId],
     queryFn: async () => {
-      const entires = await fetchCollectionEntries(collectionId);
+      const entires = await startStreamingCollectionEntries(collectionId);
 
       //Remove panels that contain entries that are not in the entries array
       api?.panels.forEach((panel) => {
