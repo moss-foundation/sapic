@@ -24,7 +24,6 @@ export const CustomTab = ({
 
   useEffect(() => {
     const disposable = api.onDidTitleChange?.((event) => {
-      console.log("onDidTitleChange", event.title);
       setTitle(event.title);
     });
 

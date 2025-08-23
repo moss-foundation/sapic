@@ -96,10 +96,10 @@ export const RequestInputField = memo(
 
     return (
       <div
-        className={cn("relative flex min-w-0 items-start rounded-md border border-(--moss-border-color)", className)}
+        className={cn("relative flex min-w-0 items-center rounded-md border border-(--moss-border-color)", className)}
       >
         {/* Left Side - HTTP Method Dropdown */}
-        <div className="relative">
+        <div className="relative flex items-center">
           <ActionMenu.Root>
             <ActionMenu.Trigger asChild>
               <button
@@ -110,7 +110,7 @@ export const RequestInputField = memo(
                   "rounded-md rounded-r-none",
                   "cursor-pointer font-bold",
                   "background-(--moss-primary-background) text-(--moss-requestpage-text)",
-                  "data-[state=open]:outline-2 data-[state=open]:-outline-offset-1 data-[state=open]:outline-(--moss-primary)"
+                  "data-[state=open]:outline-2 data-[state=open]:outline-offset-0 data-[state=open]:outline-(--moss-primary)"
                 )}
               >
                 <span>{method}</span>
@@ -135,7 +135,7 @@ export const RequestInputField = memo(
         </div>
 
         {/* Center - URL Input Field */}
-        <div className="relative z-20 min-w-0 flex-1">
+        <div className="relative z-20 min-w-0 flex-1 self-start">
           <InputTemplating
             value={url}
             onTemplateChange={handleTemplateChange}
