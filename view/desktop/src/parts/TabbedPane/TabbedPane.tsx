@@ -61,6 +61,7 @@ const DynamicPageWrapper = ({
   props: IDockviewPanelProps;
 }) => {
   const PageComponent = config.component;
+
   return (
     <PageView>
       <PageHeader icon={config.icon} title={config.title} {...props} />
