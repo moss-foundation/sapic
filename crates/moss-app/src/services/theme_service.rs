@@ -1,5 +1,5 @@
 use joinerror::{OptionExt, ResultExt};
-use moss_applib::errors::NotFound;
+use moss_applib::errors::{Internal, NotFound};
 use moss_fs::{FileSystem, FsResultExt};
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;
@@ -74,13 +74,13 @@ impl ThemeService {
             .fs
             .open_file(&self.themes_dir.join(theme.source.clone()))
             .await
-            .join_err_with::<()>(|| {
+            .join_err_with::<Internal>(|| {
                 format!("failed to open theme file `{}`", theme.source.display())
             })?;
 
         let mut buf = String::new();
         rdr.read_to_string(&mut buf)
-            .join_err::<()>("failed to read theme file")?;
+            .join_err::<Internal>("failed to read theme file")?;
 
         Ok(buf)
     }

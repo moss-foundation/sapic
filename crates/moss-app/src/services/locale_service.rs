@@ -1,4 +1,5 @@
 use joinerror::{OptionExt, ResultExt};
+use moss_applib::errors::Internal;
 use moss_fs::{FileSystem, FsResultExt};
 use serde_json::Value as JsonValue;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
@@ -79,10 +80,11 @@ impl LocaleService {
             .fs
             .open_file(&full_path)
             .await
-            .join_err_with::<()>(|| {
+            .join_err_with::<Internal>(|| {
                 format!("failed to open locale file `{}`", full_path.display())
             })?;
 
-        Ok(serde_json::from_reader(rdr).join_err::<()>("failed to parse locale file as JSON")?)
+        Ok(serde_json::from_reader(rdr)
+            .join_err::<Internal>("failed to parse locale file as JSON")?)
     }
 }
