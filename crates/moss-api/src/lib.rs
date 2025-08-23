@@ -1,8 +1,6 @@
 pub mod models;
 mod utils;
 
-pub use utils::*;
-
 use serde::Serialize;
 use thiserror::Error;
 
@@ -19,9 +17,6 @@ pub enum TauriError {
 
     #[error(transparent)]
     Other(#[from] anyhow::Error),
-
-    #[error("Operation timed out")]
-    Timeout,
 }
 
 impl Serialize for TauriError {
