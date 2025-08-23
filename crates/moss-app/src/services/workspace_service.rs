@@ -1,6 +1,6 @@
 use chrono::Utc;
 use joinerror::{Error, OptionExt, ResultExt};
-use moss_activity_indicator::ActivityIndicator;
+use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::AppRuntime;
 use moss_fs::{FileSystem, FsResultExt, RemoveOptions};
 use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
@@ -267,7 +267,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
         &self,
         ctx: &R::AsyncContext,
         id: &WorkspaceId,
-        activity_indicator: ActivityIndicator<R::EventLoop>,
+        activity_indicator: ActivityBroadcaster<R::EventLoop>,
     ) -> joinerror::Result<WorkspaceItemDescription> {
         let (name, already_active) = {
             let state_lock = self.state.read().await;

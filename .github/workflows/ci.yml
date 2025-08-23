@@ -190,7 +190,7 @@ jobs:
           - moss_testutils
           - moss_common
           - moss_storage
-          - moss_activity_indicator
+          - moss_activity_broadcaster
           - moss_bindingutils
           - moss_hcl
           - moss_logging
@@ -255,7 +255,7 @@ jobs:
           - moss_testutils
           - moss_common
           - moss_storage
-          - moss_activity_indicator
+          - moss_activity_broadcaster
           - desktop
           - moss_bindingutils
           - moss_hcl

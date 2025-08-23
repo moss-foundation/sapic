@@ -1,5 +1,5 @@
 use joinerror::ResultExt;
-use moss_activity_indicator::ActivityIndicator;
+use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::{AppRuntime, EventMarker, subscription::EventEmitter};
 use moss_environment::builder::{CreateEnvironmentParams, EnvironmentBuilder};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
@@ -42,7 +42,7 @@ pub struct CreateWorkspaceParams {
 
 pub struct WorkspaceBuilder<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
-    activity_indicator: ActivityIndicator<R::EventLoop>,
+    activity_indicator: ActivityBroadcaster<R::EventLoop>,
     github_client: Arc<GitHubClient>,
     gitlab_client: Arc<GitLabClient>,
 }
@@ -65,7 +65,7 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
         fs: Arc<dyn FileSystem>,
         github_client: Arc<GitHubClient>,
         gitlab_client: Arc<GitLabClient>,
-        activity_indicator: ActivityIndicator<R::EventLoop>,
+        activity_indicator: ActivityBroadcaster<R::EventLoop>,
     ) -> Self {
         Self {
             fs,

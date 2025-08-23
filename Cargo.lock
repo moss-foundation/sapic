@@ -1509,7 +1509,7 @@ dependencies = [
  "log",
  "macos-trampoline",
  "mimalloc",
- "moss_activity_indicator",
+ "moss_activity_broadcaster",
  "moss_api",
  "moss_app",
  "moss_applib",
@@ -3460,7 +3460,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "moss_activity_indicator"
+name = "moss_activity_broadcaster"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -3496,7 +3496,7 @@ dependencies = [
  "dotenv",
  "futures",
  "joinerror",
- "moss_activity_indicator",
+ "moss_activity_broadcaster",
  "moss_api",
  "moss_applib",
  "moss_common",
@@ -3566,7 +3566,7 @@ dependencies = [
  "indexmap 2.10.0",
  "joinerror",
  "json-patch 4.0.0",
- "moss_activity_indicator",
+ "moss_activity_broadcaster",
  "moss_api",
  "moss_applib",
  "moss_bindingutils",
@@ -3830,7 +3830,7 @@ dependencies = [
  "joinerror",
  "json-patch 4.0.0",
  "jsonptr 0.7.1",
- "moss_activity_indicator",
+ "moss_activity_broadcaster",
  "moss_api",
  "moss_applib",
  "moss_bindingutils",

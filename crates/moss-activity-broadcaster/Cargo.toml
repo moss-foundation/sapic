@@ -1,5 +1,5 @@
 [package]
-name = "moss_activity_indicator"
+name = "moss_activity_broadcaster"
 version = "0.1.0"
 edition = "2024"
 

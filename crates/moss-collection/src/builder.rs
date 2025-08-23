@@ -1,5 +1,5 @@
 use joinerror::{Error, OptionExt, ResultExt};
-use moss_activity_indicator::ActivityIndicator;
+use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt, RemoveOptions};
 use moss_git::repo::{BranchType, IndexAddOption, RepoHandle, Signature};
@@ -80,7 +80,7 @@ pub struct CollectionCloneGitParams {
 
 pub struct CollectionBuilder<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
-    activity_indicator: ActivityIndicator<R::EventLoop>,
+    activity_indicator: ActivityBroadcaster<R::EventLoop>,
     github_client: Arc<GitHubClient>,
     gitlab_client: Arc<GitLabClient>,
 }
@@ -88,7 +88,7 @@ pub struct CollectionBuilder<R: AppRuntime> {
 impl<R: AppRuntime> CollectionBuilder<R> {
     pub fn new(
         fs: Arc<dyn FileSystem>,
-        activity_indicator: ActivityIndicator<R::EventLoop>,
+        activity_indicator: ActivityBroadcaster<R::EventLoop>,
         github_client: Arc<GitHubClient>,
         gitlab_client: Arc<GitLabClient>,
     ) -> Self {

@@ -5,7 +5,7 @@ use std::sync::{
 };
 use tauri::{AppHandle, Emitter, Runtime as TauriRuntime};
 
-use crate::{constants::ACTIVITY_INDICATOR_CHANNEL, models::events::ActivityEvent};
+use crate::{constants, models::events::ActivityEvent};
 
 pub struct ActivityHandle<'a, R: TauriRuntime> {
     pub activity_id: &'a str,
@@ -25,7 +25,7 @@ impl<'a, R: TauriRuntime> ActivityHandle<'a, R> {
 
     pub fn emit_progress(&self, detail: Option<String>) -> Result<()> {
         self.app_handle.emit(
-            ACTIVITY_INDICATOR_CHANNEL,
+            constants::CHANNEL,
             ActivityEvent::Progress {
                 id: self.next_id.fetch_add(1, Ordering::SeqCst),
                 activity_id: self.activity_id,
@@ -37,7 +37,7 @@ impl<'a, R: TauriRuntime> ActivityHandle<'a, R> {
 
     pub fn emit_finish(&self) -> Result<()> {
         self.app_handle.emit(
-            ACTIVITY_INDICATOR_CHANNEL,
+            constants::CHANNEL,
             ActivityEvent::Finish {
                 id: self.next_id.fetch_add(1, Ordering::SeqCst),
                 activity_id: self.activity_id,

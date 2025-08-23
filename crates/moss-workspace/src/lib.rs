@@ -13,11 +13,11 @@ pub use workspace::Workspace;
 
 pub mod constants {
 
-    // ##################################################################
-    // ###                                                            ###
-    // ### !!! PLEASE UPDATE THE TYPESCRIPT CONSTANTS IN index.ts !!! ###
-    // ###                                                            ###
-    // ##################################################################
+    // ######################################################################
+    // ###                                                                ###
+    // ### !!! PLEASE UPDATE THE TYPESCRIPT CONSTANTS IN constants.ts !!! ###
+    // ###                                                                ###
+    // ######################################################################
 
     // When adding/removing/modifying the TREE_VIEW_GROUP_* constants here,
     // you must also update the corresponding TypeScript constants

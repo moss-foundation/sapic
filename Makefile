@@ -58,7 +58,7 @@ APP_MODELS_DIR := crates/moss-app
 COLLECTION_MODELS_DIR := crates/moss-collection
 ENVIRONMENT_MODELS_DIR := crates/moss-environment
 WORKSPACE_MODELS_DIR := crates/moss-workspace
-ACTIVITY_INDICATOR_MODELS_DIR := crates/moss-activity-indicator
+ACTIVITY_BROADCASTER_MODELS_DIR := crates/moss-activity-broadcaster
 API_MODELS_DIR := crates/moss-api
 GIT_HOSTING_PROVIDER_MODELS_DIR := crates/moss-git-hosting-provider
 GIT_MODELS_DIR := crates/moss-git
@@ -139,7 +139,7 @@ $(eval $(call gen_bindings,app,APP_MODELS_DIR))
 $(eval $(call gen_bindings,collection,COLLECTION_MODELS_DIR))
 $(eval $(call gen_bindings,environment,ENVIRONMENT_MODELS_DIR))
 $(eval $(call gen_bindings,workspace,WORKSPACE_MODELS_DIR))
-$(eval $(call gen_bindings,activity-indicator,ACTIVITY_INDICATOR_MODELS_DIR))
+$(eval $(call gen_bindings,activity-broadcaster,ACTIVITY_BROADCASTER_MODELS_DIR))
 $(eval $(call gen_bindings,bindingutils,BINDINGUTILS_DIR))
 $(eval $(call gen_bindings,api,API_MODELS_DIR))
 $(eval $(call gen_bindings,git-hosting-provider,GIT_HOSTING_PROVIDER_MODELS_DIR))
@@ -149,7 +149,7 @@ gen-app-bindings:
 gen-collection-bindings:
 gen-environment-bindings:
 gen-workspace-bindings:
-gen-activity-indicator-bindings:
+gen-activity-broadcaster-bindings:
 gen-bindingutils-bindings:
 gen-api-bindings:
 gen-git-hosting-provider-bindings:
@@ -162,7 +162,7 @@ gen-bindings: \
 	gen-collection-bindings \
 	gen-environment-bindings \
 	gen-workspace-bindings \
-	gen-activity-indicator-bindings \
+	gen-activity-broadcaster-bindings \
 	gen-bindingutils-bindings \
 	gen-api-bindings \
 	gen-git-hosting-provider-bindings

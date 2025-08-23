@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 
 import { DEFAULT_DISPLAY_DURATION, ONESHOT_CLEANUP_DELAY, useActivityEvents } from "@/context/ActivityEventsContext";
-import { ActivityEvent } from "@repo/moss-activity-indicator";
+import { CHANNEL as ACTIVITY_BROADCASTER_CHANNEL, ActivityEvent } from "@repo/moss-activity-broadcaster";
 
 interface ActivityEventSimulatorProps {
   className?: string;
@@ -110,7 +110,7 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
         const timeoutId = setTimeout(() => {
           if (simulationStateRef.current.isActive && !simulationStateRef.current.isPaused) {
             window.dispatchEvent(
-              new CustomEvent("workbench://activity-indicator", {
+              new CustomEvent(ACTIVITY_BROADCASTER_CHANNEL, {
                 detail: { payload: event },
               })
             );
