@@ -7,10 +7,10 @@ impl<R: AppRuntime> App<R> {
         &self,
         _ctx: &R::AsyncContext,
     ) -> joinerror::Result<ListLocalesOutput> {
-        let locales = self.locale_service.locales().await?;
+        let locales = self.locale_service.locales().await;
 
         Ok(ListLocalesOutput(
-            locales.into_iter().map(|(_, item)| item).cloned().collect(),
+            locales.into_iter().map(|(_, item)| item).collect(),
         ))
     }
 }

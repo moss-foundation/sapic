@@ -1,7 +1,6 @@
 use derive_more::Deref;
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::{AppRuntime, context::Canceller};
-use moss_fs::FileSystem;
 use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
 use moss_keyring::KeyringClient;
 use moss_text::ReadOnlyStr;
@@ -59,7 +58,6 @@ pub struct App<R: AppRuntime> {
     #[deref]
     pub(super) app_handle: AppHandle<R::EventLoop>,
     pub(super) app_dir: PathBuf,
-    pub(super) fs: Arc<dyn FileSystem>,
     pub(super) commands: AppCommands<R::EventLoop>,
     pub(super) preferences: AppPreferences,
     pub(super) defaults: AppDefaults,

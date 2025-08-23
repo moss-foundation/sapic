@@ -1,11 +1,3 @@
-// TEST: Trigger a Rust workflow
-
-pub mod api;
-
-pub trait Merge<T> {
-    fn merge(&mut self, other: T) -> &mut Self;
-}
-
 /// A macro for handling errors in loops by automatically continuing.
 ///
 /// This macro simplifies error handling in loops by automatically calling `continue`
