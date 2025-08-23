@@ -12,7 +12,7 @@ CRATES_WITH_BINDINGS = {
     "collection", 
     "environment",
     "workspace",
-    "activity-indicator",
+    "activity-broadcaster",
     "bindingutils",
     "api",
     "git-hosting-provider"

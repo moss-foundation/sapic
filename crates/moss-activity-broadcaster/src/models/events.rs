@@ -1,6 +1,8 @@
 use serde::Serialize;
 use ts_rs::TS;
 
+use crate::models::primitives::Location;
+
 /// @category Event
 #[derive(Serialize, Clone, TS)]
 #[ts(export, export_to = "events.ts")]
@@ -15,6 +17,7 @@ pub enum ActivityEvent<'a> {
         title: String,
         #[ts(optional)]
         detail: Option<String>,
+        location: Location,
     },
     /// This event is used when the activity is a long-running event
     /// and we want to track its progress, like indexing, scanning, etc.
@@ -25,6 +28,7 @@ pub enum ActivityEvent<'a> {
         title: String,
         #[ts(optional)]
         detail: Option<String>,
+        location: Location,
     },
     /// This event is used to update the progress of a long-running activity,
     /// like updating the progress of an indexer, scanner, etc.

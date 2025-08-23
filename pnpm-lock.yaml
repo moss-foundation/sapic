@@ -97,7 +97,7 @@ importers:
         specifier: ^3.2.3
         version: 3.2.4(@types/node@24.2.1)(@vitest/browser@3.2.4)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(yaml@2.8.0)
 
-  crates/moss-activity-indicator:
+  crates/moss-activity-broadcaster:
     dependencies:
       typescript:
         specifier: ^5.9.2
@@ -382,9 +382,9 @@ importers:
       '@radix-ui/react-use-controllable-state':
         specifier: ^1.1.0
         version: 1.2.2(@types/react@18.3.23)(react@18.3.1)
-      '@repo/moss-activity-indicator':
+      '@repo/moss-activity-broadcaster':
         specifier: workspace:*
-        version: link:../../crates/moss-activity-indicator
+        version: link:../../crates/moss-activity-broadcaster
       '@repo/moss-app':
         specifier: workspace:*
         version: link:../../crates/moss-app

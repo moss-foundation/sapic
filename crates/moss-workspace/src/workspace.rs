@@ -2,7 +2,7 @@ use anyhow::Result;
 use joinerror::ResultExt;
 use json_patch::{PatchOperation, ReplaceOperation};
 use jsonptr::PointerBuf;
-use moss_activity_indicator::ActivityIndicator;
+use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::{
     AppRuntime,
     subscription::{Event, Subscription},
@@ -64,7 +64,7 @@ pub struct Workspace<R: AppRuntime> {
     pub(super) abs_path: Arc<Path>,
 
     #[allow(dead_code)]
-    pub(super) activity_indicator: ActivityIndicator<R::EventLoop>,
+    pub(super) broadcaster: ActivityBroadcaster<R::EventLoop>,
     pub(super) edit: WorkspaceEdit,
     pub(super) layout_service: LayoutService<R>,
     pub(super) collection_service: Arc<CollectionService<R>>,

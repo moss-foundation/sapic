@@ -1,5 +1,5 @@
 use joinerror::{Error, OptionExt, ResultExt};
-use moss_activity_indicator::ActivityIndicator;
+use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt, RemoveOptions};
 use moss_git::repo::{BranchType, IndexAddOption, RepoHandle, Signature};
@@ -80,7 +80,7 @@ pub struct CollectionCloneGitParams {
 
 pub struct CollectionBuilder<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
-    activity_indicator: ActivityIndicator<R::EventLoop>,
+    broadcaster: ActivityBroadcaster<R::EventLoop>,
     github_client: Arc<GitHubClient>,
     gitlab_client: Arc<GitLabClient>,
 }
@@ -88,13 +88,13 @@ pub struct CollectionBuilder<R: AppRuntime> {
 impl<R: AppRuntime> CollectionBuilder<R> {
     pub fn new(
         fs: Arc<dyn FileSystem>,
-        activity_indicator: ActivityIndicator<R::EventLoop>,
+        broadcaster: ActivityBroadcaster<R::EventLoop>,
         github_client: Arc<GitHubClient>,
         gitlab_client: Arc<GitLabClient>,
     ) -> Self {
         Self {
             fs,
-            activity_indicator,
+            broadcaster,
             github_client,
             gitlab_client,
         }
@@ -111,7 +111,7 @@ impl<R: AppRuntime> CollectionBuilder<R> {
         let worktree_service: Arc<Worktree<R>> = Worktree::new(
             params.internal_abs_path.clone(),
             self.fs.clone(),
-            self.activity_indicator.clone(),
+            self.broadcaster.clone(),
             storage_service.clone(),
         )
         .into();
@@ -194,7 +194,7 @@ impl<R: AppRuntime> CollectionBuilder<R> {
         let worktree_service: Arc<Worktree<R>> = Worktree::new(
             abs_path.clone(),
             self.fs.clone(),
-            self.activity_indicator.clone(),
+            self.broadcaster.clone(),
             storage_service.clone(),
         )
         .into();
@@ -357,7 +357,7 @@ impl<R: AppRuntime> CollectionBuilder<R> {
         let worktree: Arc<Worktree<R>> = Worktree::new(
             abs_path.clone(),
             self.fs.clone(),
-            self.activity_indicator.clone(),
+            self.broadcaster.clone(),
             storage_service.clone(),
         )
         .into();

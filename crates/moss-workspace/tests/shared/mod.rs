@@ -1,7 +1,7 @@
 #![cfg(feature = "integration-tests")]
 
 use image::{ImageBuffer, Rgb};
-use moss_activity_indicator::ActivityIndicator;
+use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::{
     context::{AsyncContext, MutableContext},
     mock::MockAppRuntime,
@@ -55,7 +55,7 @@ pub async fn setup_test_workspace() -> (AsyncContext, Workspace<MockAppRuntime>,
         .into();
     fs::create_dir_all(&abs_path).unwrap();
 
-    let activity_indicator = ActivityIndicator::new(app_handle.clone());
+    let broadcaster = ActivityBroadcaster::new(app_handle.clone());
 
     let keyring_client = Arc::new(KeyringClientImpl::new());
     let reqwest_client = reqwest::ClientBuilder::new()
@@ -96,7 +96,7 @@ pub async fn setup_test_workspace() -> (AsyncContext, Workspace<MockAppRuntime>,
         fs.clone(),
         github_client,
         gitlab_client,
-        activity_indicator,
+        broadcaster,
     )
     .create(
         &ctx,

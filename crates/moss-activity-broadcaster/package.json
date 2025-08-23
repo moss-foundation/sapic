@@ -1,5 +1,5 @@
 {
-    "name": "@repo/moss-activity-indicator",
+    "name": "@repo/moss-activity-broadcaster",
     "exports": {
       ".": "./index.ts"
     },

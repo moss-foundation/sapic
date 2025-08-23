@@ -1,7 +1,7 @@
 use derive_more::{Deref, DerefMut};
 use futures::Stream;
 use joinerror::{Error, OptionExt, ResultExt};
-use moss_activity_indicator::ActivityIndicator;
+use moss_activity_broadcaster::{ActivityBroadcaster, ToLocation};
 use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_collection::{
     Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
@@ -88,7 +88,7 @@ pub struct CollectionService<R: AppRuntime> {
     github_client: Arc<GitHubClient>,
     gitlab_client: Arc<GitLabClient>,
     #[allow(dead_code)]
-    activity_indicator: ActivityIndicator<R::EventLoop>,
+    broadcaster: ActivityBroadcaster<R::EventLoop>,
     on_did_delete_collection_emitter: EventEmitter<OnDidDeleteCollection>,
     on_did_add_collection_emitter: EventEmitter<OnDidAddCollection>,
 }
@@ -102,7 +102,7 @@ impl<R: AppRuntime> CollectionService<R> {
         github_client: Arc<GitHubClient>,
         gitlab_client: Arc<GitLabClient>,
         environment_sources: &mut FxHashMap<Arc<String>, PathBuf>,
-        activity_indicator: ActivityIndicator<R::EventLoop>,
+        broadcaster: ActivityBroadcaster<R::EventLoop>,
         on_collection_did_delete_emitter: EventEmitter<OnDidDeleteCollection>,
         on_collection_did_add_emitter: EventEmitter<OnDidAddCollection>,
     ) -> joinerror::Result<Self> {
@@ -118,7 +118,7 @@ impl<R: AppRuntime> CollectionService<R> {
             &abs_path,
             &fs,
             &storage,
-            activity_indicator.clone(),
+            broadcaster.clone(),
             github_client.clone(),
             gitlab_client.clone(),
         )
@@ -138,7 +138,7 @@ impl<R: AppRuntime> CollectionService<R> {
             })),
             github_client,
             gitlab_client,
-            activity_indicator,
+            broadcaster,
             on_did_delete_collection_emitter: on_collection_did_delete_emitter,
             on_did_add_collection_emitter: on_collection_did_add_emitter,
         })
@@ -194,7 +194,7 @@ impl<R: AppRuntime> CollectionService<R> {
 
         let collection_result = CollectionBuilder::<R>::new(
             self.fs.clone(),
-            self.activity_indicator.clone(),
+            self.broadcaster.clone(),
             self.github_client.clone(),
             self.gitlab_client.clone(),
         )
@@ -323,7 +323,7 @@ impl<R: AppRuntime> CollectionService<R> {
         let git_params = &params.git_params;
         let collection_result = CollectionBuilder::new(
             self.fs.clone(),
-            self.activity_indicator.clone(),
+            self.broadcaster.clone(),
             self.github_client.clone(),
             self.gitlab_client.clone(),
         )
@@ -562,7 +562,7 @@ async fn restore_collections<R: AppRuntime>(
     abs_path: &Path,
     fs: &Arc<dyn FileSystem>,
     storage: &Arc<StorageService<R>>,
-    activity_indicator: ActivityIndicator<R::EventLoop>,
+    broadcaster: ActivityBroadcaster<R::EventLoop>,
     github_client: Arc<GitHubClient>,
     gitlab_client: Arc<GitLabClient>,
 ) -> joinerror::Result<HashMap<CollectionId, CollectionItem<R>>> {
@@ -576,11 +576,11 @@ async fn restore_collections<R: AppRuntime>(
         .await
         .join_err_with::<()>(|| format!("failed to read directory `{}`", abs_path.display()))?;
 
-    let activity_handle = activity_indicator.emit_continual(
-        "restore_collections",
-        "Restoring collections".to_string(),
-        None,
-    )?;
+    let activity_handle = broadcaster.emit_continual(ToLocation::Window {
+        activity_id: "restore_collections",
+        title: "Restoring collections".to_string(),
+        detail: None,
+    })?;
 
     while let Some(entry) = read_dir.next_entry().await? {
         if !entry.file_type().await?.is_dir() {
@@ -600,7 +600,7 @@ async fn restore_collections<R: AppRuntime>(
 
             let collection_result = CollectionBuilder::<R>::new(
                 fs.clone(),
-                activity_indicator.clone(),
+                broadcaster.clone(),
                 github_client.clone(),
                 gitlab_client.clone(),
             )

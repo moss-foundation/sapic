@@ -3,7 +3,7 @@ pub mod entry;
 use anyhow::anyhow;
 use joinerror::OptionExt;
 use json_patch::{PatchOperation, ReplaceOperation, jsonptr::PointerBuf};
-use moss_activity_indicator::ActivityIndicator;
+use moss_activity_broadcaster::{ActivityBroadcaster, ToLocation};
 use moss_applib::AppRuntime;
 use moss_common::{continue_if_err, continue_if_none};
 use moss_db::primitives::AnyValue;
@@ -84,7 +84,7 @@ pub(crate) struct Worktree<R: AppRuntime> {
     abs_path: Arc<Path>,
     fs: Arc<dyn FileSystem>,
     storage: Arc<StorageService<R>>,
-    activity_indicator: ActivityIndicator<R::EventLoop>,
+    broadcaster: ActivityBroadcaster<R::EventLoop>,
     state: Arc<RwLock<WorktreeState>>,
 }
 
@@ -173,11 +173,11 @@ impl<R: AppRuntime> Worktree<R> {
 
         drop(job_tx);
 
-        let activity_handle = self.activity_indicator.emit_continual(
-            "scan_worktree",
-            "Scanning".to_string(),
-            None,
-        )?;
+        let activity_handle = self.broadcaster.emit_continual(ToLocation::Window {
+            activity_id: "scan_worktree",
+            title: "Scanning".to_string(),
+            detail: None,
+        })?;
 
         let mut handles = Vec::new();
         while let Some(job) = job_rx.recv().await {
@@ -670,14 +670,14 @@ impl<R: AppRuntime> Worktree<R> {
     pub fn new(
         abs_path: Arc<Path>,
         fs: Arc<dyn FileSystem>,
-        activity_indicator: ActivityIndicator<R::EventLoop>,
+        broadcaster: ActivityBroadcaster<R::EventLoop>,
         storage: Arc<StorageService<R>>,
     ) -> Self {
         Self {
             abs_path,
             fs,
             storage,
-            activity_indicator,
+            broadcaster,
             state: Default::default(),
         }
     }

@@ -1,6 +1,6 @@
 #![cfg(feature = "integration-tests")]
 
-use moss_activity_indicator::ActivityIndicator;
+use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::{
     context::{AsyncContext, MutableContext},
     mock::MockAppRuntime,
@@ -92,8 +92,8 @@ pub async fn create_test_collection() -> (
         None as Option<SSHAuthAgentImpl>,
     ));
 
-    let activity_indicator = ActivityIndicator::new(mock_app.handle().clone());
-    let collection = CollectionBuilder::new(fs, activity_indicator, github_client, gitlab_client)
+    let broadcaster = ActivityBroadcaster::new(mock_app.handle().clone());
+    let collection = CollectionBuilder::new(fs, broadcaster, github_client, gitlab_client)
         .create(
             &ctx,
             CollectionCreateParams {

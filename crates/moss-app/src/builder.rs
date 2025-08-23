@@ -1,4 +1,4 @@
-use moss_activity_indicator::ActivityIndicator;
+use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::AppRuntime;
 use moss_fs::FileSystem;
 use moss_git_hosting_provider::{
@@ -156,7 +156,7 @@ impl<R: AppRuntime> AppBuilder<R> {
             locale_service,
             theme_service,
             tracked_cancellations: Default::default(),
-            activity_indicator: ActivityIndicator::new(self.app_handle),
+            broadcaster: ActivityBroadcaster::new(self.app_handle),
 
             _github_client: github_client,
             _gitlab_client: gitlab_client,

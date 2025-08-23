@@ -22,7 +22,7 @@ compression = ["tauri/compression"]
 devtools = ["tauri/devtools"]
 
 [dependencies]
-moss_activity_indicator.workspace = true
+moss_activity_broadcaster.workspace = true
 moss_applib.workspace = true
 moss_common.workspace = true
 moss_api.workspace = true

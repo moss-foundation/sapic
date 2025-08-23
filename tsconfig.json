@@ -23,7 +23,7 @@
       "path": "crates/moss-bindingutils"
     },
     {
-      "path": "crates/moss-activity-indicator"
+      "path": "crates/moss-activity-broadcaster"
     },
     {
       "path": "view/desktop"
