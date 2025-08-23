@@ -2,7 +2,7 @@ import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { ImportCollectionInput, ImportCollectionOutput, StreamCollectionsEvent } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { USE_STREAMED_COLLECTIONS_QUERY_KEY } from "./useStreamedCollections";
+import { USE_STREAM_COLLECTIONS_QUERY_KEY } from "./useStreamCollections";
 
 export const IMPORT_COLLECTION_QUERY_KEY = "importCollection";
 
@@ -23,7 +23,7 @@ export const useImportCollection = () => {
     mutationKey: [IMPORT_COLLECTION_QUERY_KEY],
     mutationFn: importCollection,
     onSuccess: (data, variables) => {
-      queryClient.setQueryData([USE_STREAMED_COLLECTIONS_QUERY_KEY], (old: StreamCollectionsEvent[]) => {
+      queryClient.setQueryData([USE_STREAM_COLLECTIONS_QUERY_KEY], (old: StreamCollectionsEvent[]) => {
         return [
           ...old,
           {

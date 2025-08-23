@@ -6,12 +6,7 @@ import {
   getSourceTreeCollectionNodeData,
   isSourceTreeCollectionNode,
 } from "@/components/CollectionTree/utils";
-import {
-  useCreateCollection,
-  useCreateCollectionEntry,
-  useDeleteCollectionEntry,
-  useStreamedCollections,
-} from "@/hooks";
+import { useCreateCollection, useCreateCollectionEntry, useDeleteCollectionEntry, useStreamCollections } from "@/hooks";
 import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
@@ -25,7 +20,7 @@ export const CollectionCreationZone = () => {
   const { mutateAsync: createCollection } = useCreateCollection();
   const { mutateAsync: createCollectionEntry } = useCreateCollectionEntry();
   const { mutateAsync: deleteCollectionEntry } = useDeleteCollectionEntry();
-  const { data: collections } = useStreamedCollections();
+  const { data: collections } = useStreamCollections();
 
   useEffect(() => {
     const element = ref.current;

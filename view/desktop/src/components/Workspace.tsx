@@ -1,4 +1,4 @@
-import { useStreamedCollections } from "@/hooks";
+import { useStreamCollections } from "@/hooks";
 import { useWorkspaceSidebarState } from "@/hooks/workspace/useWorkspaceSidebarState";
 
 import TabbedPane from "../parts/TabbedPane/TabbedPane";
@@ -12,7 +12,7 @@ export const Workspace = ({ workspaceName }: WorkspaceProps) => {
 
   useWorkspaceSidebarState();
 
-  const { isLoading: isLoadingCollections, error: collectionsError } = useStreamedCollections();
+  const { isLoading: isLoadingCollections, error: collectionsError } = useStreamCollections();
 
   // Show loading state while any critical data is loading
   if (isLoadingCollections) {

@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import { PageContainerWithTabs, TabItem } from "@/components/PageContainer";
 import { PageHeader, PageView } from "@/components/PageView";
-import { useStreamedCollections } from "@/hooks";
+import { useStreamCollections } from "@/hooks";
 import { useRenameCollectionForm } from "@/hooks/useRenameCollectionForm";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 import { Icon } from "@/lib/ui";
@@ -32,7 +32,7 @@ export interface CollectionSettingsParams {
 export const CollectionSettings = ({ ...props }: IDockviewPanelProps<CollectionSettingsParams>) => {
   const { collectionId } = props.params;
 
-  const { data: streamedCollections } = useStreamedCollections();
+  const { data: streamedCollections } = useStreamCollections();
   const collection = streamedCollections?.find((collection) => collection.id === collectionId);
 
   const [activeTabId, setActiveTabId] = useState("overview");

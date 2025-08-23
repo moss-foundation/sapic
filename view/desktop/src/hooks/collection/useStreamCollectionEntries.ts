@@ -5,16 +5,16 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useActiveWorkspace } from "../workspace/useActiveWorkspace";
 import { startStreamingCollectionEntries } from "./queries/startStreamingCollectionEntries";
 
-export const USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY = "streamCollectionEntries";
+export const USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY = "streamCollectionEntries";
 
-export const useStreamedCollectionEntries = (collectionId: string) => {
+export const useStreamCollectionEntries = (collectionId: string) => {
   const queryClient = useQueryClient();
   const { api } = useTabbedPaneStore();
 
   const { hasActiveWorkspace } = useActiveWorkspace();
 
   const query = useQuery<StreamEntriesEvent[], Error>({
-    queryKey: [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, collectionId],
+    queryKey: [USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY, collectionId],
     queryFn: async () => {
       const entires = await startStreamingCollectionEntries(collectionId);
 
@@ -37,7 +37,7 @@ export const useStreamedCollectionEntries = (collectionId: string) => {
   });
 
   const clearEntriesCacheAndRefetch = () => {
-    queryClient.resetQueries({ queryKey: [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY] });
+    queryClient.resetQueries({ queryKey: [USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY] });
   };
 
   return {

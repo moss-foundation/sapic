@@ -5,6 +5,6 @@ export * from "./useCreateCollection";
 export * from "./useCreateCollectionEntry";
 export * from "./useDeleteCollection";
 export * from "./useDeleteCollectionEntry";
-export * from "./useStreamedCollectionEntries";
-export * from "./useStreamedCollections";
+export * from "./useStreamCollectionEntries";
+export * from "./useStreamCollections";
 export * from "./useUpdateCollection";

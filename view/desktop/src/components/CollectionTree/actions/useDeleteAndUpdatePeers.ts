@@ -1,4 +1,4 @@
-import { USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, useDeleteCollectionEntry } from "@/hooks";
+import { USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY, useDeleteCollectionEntry } from "@/hooks";
 import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
 import { BatchUpdateEntryInput, BatchUpdateEntryKind, StreamEntriesEvent } from "@repo/moss-collection";
 import { useQueryClient } from "@tanstack/react-query";
@@ -67,7 +67,7 @@ export const useDeleteAndUpdatePeers = (
 
     if (result.status === "ok") {
       queryClient.setQueryData(
-        [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, collectionId],
+        [USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY, collectionId],
         (cacheData: StreamEntriesEvent[]) => {
           return cacheData.map((cacheEntry) => {
             if (updatedParentNodeChildren.some((e) => e.id === cacheEntry.id)) {

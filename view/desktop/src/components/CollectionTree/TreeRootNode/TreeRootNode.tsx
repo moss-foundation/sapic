@@ -1,6 +1,6 @@
 import { useContext, useRef } from "react";
 
-import { useStreamedCollections } from "@/hooks";
+import { useStreamCollections } from "@/hooks";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 
@@ -24,7 +24,7 @@ export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
   const draggableRootRef = useRef<HTMLDivElement>(null);
   const dropTargetRootRef = useRef<HTMLDivElement>(null);
 
-  const { data: streamedCollections } = useStreamedCollections();
+  const { data: streamedCollections } = useStreamCollections();
   const { activePanelId } = useTabbedPaneStore();
 
   const {

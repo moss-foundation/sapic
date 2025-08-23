@@ -3,7 +3,7 @@ import { FormEvent, useCallback, useState } from "react";
 import PaddedTabs from "@/components/PaddedTabs/PaddedTabs";
 import { useCreateCollection } from "@/hooks/collection/useCreateCollection";
 import { useImportCollection } from "@/hooks/collection/useImportCollection";
-import { useStreamedCollections } from "@/hooks/collection/useStreamedCollections";
+import { useStreamCollections } from "@/hooks/collection/useStreamCollections";
 import { Modal, Scrollbar } from "@/lib/ui";
 import { useGitProviderStore } from "@/store/gitProvider";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
@@ -24,7 +24,7 @@ interface NewCollectionModalProps extends ModalWrapperProps {
 }
 
 export const NewCollectionModal = ({ closeModal, showModal, initialTab = CREATE_TAB }: NewCollectionModalProps) => {
-  const { data: collections } = useStreamedCollections();
+  const { data: collections } = useStreamCollections();
   const { mutateAsync: createCollection } = useCreateCollection();
   const { mutateAsync: importCollection } = useImportCollection();
 

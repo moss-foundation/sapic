@@ -5,8 +5,8 @@ import { StreamCollectionsEvent } from "@repo/moss-workspace";
 import { useQueries } from "@tanstack/react-query";
 
 import { startStreamingCollectionEntries } from "../queries/startStreamingCollectionEntries";
-import { USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY } from "../useStreamedCollectionEntries";
-import { useStreamedCollections } from "../useStreamedCollections";
+import { USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY } from "../useStreamCollectionEntries";
+import { useStreamCollections } from "../useStreamCollections";
 
 export interface CollectionWithEntries extends StreamCollectionsEvent {
   entries: StreamEntriesEvent[];
@@ -15,11 +15,11 @@ export interface CollectionWithEntries extends StreamCollectionsEvent {
 }
 
 export const useStreamedCollectionsWithEntries = () => {
-  const { data: collections = [], isLoading: isCollectionsLoading, error: collectionsError } = useStreamedCollections();
+  const { data: collections = [], isLoading: isCollectionsLoading, error: collectionsError } = useStreamCollections();
 
   const entriesQueries = useQueries({
     queries: collections.map((collection) => ({
-      queryKey: [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, collection.id],
+      queryKey: [USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY, collection.id],
       queryFn: () => startStreamingCollectionEntries(collection.id),
       placeholderData: [] as StreamEntriesEvent[],
     })),
