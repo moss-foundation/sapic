@@ -2,6 +2,8 @@ pub mod defaults;
 pub mod error;
 pub mod ext;
 
+pub use joinerror_macros::errors;
+
 pub use error::Error;
 
 use crate::error::ErrorMarker;

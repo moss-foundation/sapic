@@ -9,14 +9,14 @@ pub use env::*;
 pub use workspace::*;
 
 use joinerror::OptionExt;
-use moss_api::{TauriResult, constants::DEFAULT_OPERATION_TIMEOUT, errors::PreconditionFailed};
+use moss_api::{TauriResult, constants::DEFAULT_OPERATION_TIMEOUT};
 use moss_app::{ActiveWorkspace, app::App};
 use moss_applib::{
     AppRuntime,
     context::{AnyAsyncContext, AnyContext},
+    errors::{FailedPrecondition, NotFound},
 };
 use moss_collection::Collection;
-use moss_common::api::OperationOptionExt;
 use moss_workspace::models::primitives::CollectionId;
 use primitives::Options;
 use std::{sync::Arc, time::Duration};
@@ -52,12 +52,12 @@ where
     let workspace = app
         .workspace()
         .await
-        .map_err_as_failed_precondition("No active workspace")?;
+        .ok_or_join_err::<FailedPrecondition>("no active workspace")?;
 
     let collection = workspace
         .collection(&id)
         .await
-        .map_err_as_not_found("Collection is not found")?;
+        .ok_or_join_err::<NotFound>("Collection is not found")?;
 
     let request_id = options.and_then(|opts| opts.request_id);
 
@@ -89,7 +89,7 @@ where
     let workspace = app
         .workspace()
         .await
-        .ok_or_join_err::<PreconditionFailed>("no active workspace")?;
+        .ok_or_join_err::<FailedPrecondition>("no active workspace")?;
 
     let timeout = options
         .as_ref()

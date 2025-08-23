@@ -1,5 +1,4 @@
-use moss_api::ext::ValidationResultExt;
-use moss_applib::AppRuntime;
+use moss_applib::{AppRuntime, errors::ValidationResultExt};
 use moss_git_hosting_provider::models::primitives::GitProviderType;
 use validator::Validate;
 

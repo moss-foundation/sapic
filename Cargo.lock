@@ -3027,11 +3027,21 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "git2",
+ "joinerror-macros",
  "reqwest",
  "serde_json",
  "tokio",
  "url",
  "validator",
+]
+
+[[package]]
+name = "joinerror-macros"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.106",
 ]
 
 [[package]]
@@ -3465,6 +3475,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "joinerror",
+ "moss_applib",
  "moss_common",
  "serde",
  "serde_json",
@@ -3524,11 +3535,13 @@ dependencies = [
  "dashmap",
  "derive_more 2.0.1",
  "futures",
+ "joinerror",
  "rustc-hash",
  "serde",
  "tauri",
  "tokio",
  "tokio-util",
+ "validator",
 ]
 
 [[package]]

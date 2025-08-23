@@ -13,6 +13,8 @@ futures.workspace = true
 dashmap.workspace = true
 serde = { workspace = true, features = ["derive"] }
 tokio-util.workspace = true
+joinerror.workspace = true
+validator.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }

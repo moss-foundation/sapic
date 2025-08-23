@@ -1,7 +1,6 @@
 use std::path::Path;
 
-use moss_api::ext::ValidationResultExt;
-use moss_applib::AppRuntime;
+use moss_applib::{AppRuntime, errors::ValidationResultExt};
 use moss_hcl::Block;
 use validator::Validate;
 

@@ -48,6 +48,7 @@ members = [
 # Library crates
 #
 joinerror = { path = "libs/joinerror" }
+atomic_fs = { path = "libs/atomic-fs" }
 #
 # Workspace crates
 #
@@ -74,8 +75,6 @@ moss_wasm = { path = "crates/moss-wasm" }
 moss_edit = { path = "crates/moss-edit" }
 moss_logging = { path = "crates/moss-logging" }
 moss_id_macro = { path = "crates/moss-id-macro"}
-atomic_fs = { path = "libs/atomic-fs" }
-
 #
 # External crates
 #

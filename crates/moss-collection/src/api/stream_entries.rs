@@ -2,7 +2,6 @@ use moss_applib::{
     AppRuntime,
     context::{AnyAsyncContext, Reason},
 };
-use moss_common::api::OperationError;
 use moss_db::primitives::AnyValue;
 use moss_storage::primitives::segkey::SegKeyBuf;
 use std::{
@@ -142,7 +141,7 @@ impl<R: AppRuntime> Collection<R> {
                     else => {
                         match ctx_clone.done() {
                             Some(Reason::Timeout) => {
-                                return Err(OperationError::Timeout("stream entries time out".into()));
+                                return Err(joinerror::Error::new::<()>("stream entries time out"));
                             },
                             Some(Reason::Canceled) => {
                                 // FIXME: Implement cancellation
