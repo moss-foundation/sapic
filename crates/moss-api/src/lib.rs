@@ -1,5 +1,4 @@
 pub mod models;
-mod utils;
 
 use serde::Serialize;
 use thiserror::Error;

@@ -1,71 +1,87 @@
-use anyhow::Result;
-use moss_fs::FileSystem;
+use joinerror::{OptionExt, ResultExt};
+use moss_applib::errors::NotFound;
+use moss_fs::{FileSystem, FsResultExt};
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
-use tokio::sync::OnceCell;
+use tokio::sync::RwLock;
 
 use crate::models::{primitives::ThemeId, types::ColorThemeInfo};
 
 const THEMES_REGISTRY_FILE: &str = "themes.json";
 
+struct ServiceState {
+    themes: HashMap<ThemeId, ColorThemeInfo>,
+    default_theme: ColorThemeInfo,
+}
+
 pub struct ThemeService {
-    pub(crate) themes_dir: PathBuf,
+    themes_dir: PathBuf,
     fs: Arc<dyn FileSystem>,
-    themes: OnceCell<HashMap<ThemeId, ColorThemeInfo>>,
-    default_theme: OnceCell<ColorThemeInfo>,
+    state: RwLock<ServiceState>,
 }
 
 impl ThemeService {
-    pub fn new(fs: Arc<dyn FileSystem>, themes_dir: PathBuf) -> Self {
-        Self {
+    pub async fn new(fs: Arc<dyn FileSystem>, themes_dir: PathBuf) -> joinerror::Result<Self> {
+        let rdr = fs.open_file(&themes_dir.join(THEMES_REGISTRY_FILE)).await?;
+
+        let parsed: Vec<ColorThemeInfo> = serde_json::from_reader(rdr)?;
+        let themes = parsed
+            .into_iter()
+            .map(|item| (item.identifier.clone(), item))
+            .collect::<HashMap<ThemeId, ColorThemeInfo>>();
+
+        let default_theme = if let Some(theme) = themes
+            .values()
+            .find(|theme| theme.is_default.unwrap_or(false))
+            .cloned()
+        {
+            theme
+        } else {
+            themes
+                .values()
+                .next() // We take the first theme as the default theme if no default theme is found
+                .ok_or_join_err::<()>("the app must have at least one theme")?
+                .clone()
+        };
+
+        Ok(Self {
             themes_dir,
             fs,
-            themes: Default::default(),
-            default_theme: Default::default(),
-        }
+            state: RwLock::new(ServiceState {
+                themes,
+                default_theme,
+            }),
+        })
     }
 
-    pub async fn default_theme(&self) -> Result<&ColorThemeInfo> {
-        self.default_theme
-            .get_or_try_init(|| async move {
-                let themes = self.themes().await?;
-                let default_theme = themes
-                    .values()
-                    .find(|theme| theme.is_default.unwrap_or(false))
-                    .cloned();
-
-                Ok::<ColorThemeInfo, anyhow::Error>(
-                    default_theme.unwrap_or(
-                        themes
-                            .values()
-                            .next() // We take the first theme as the default theme if no default theme is found
-                            .expect("The app must have at least one theme")
-                            .clone(),
-                    ),
-                )
-            })
-            .await
+    pub async fn default_theme(&self) -> ColorThemeInfo {
+        let state = self.state.read().await;
+        state.default_theme.clone()
     }
 
-    pub(crate) async fn themes(&self) -> Result<&HashMap<ThemeId, ColorThemeInfo>> {
-        self.themes
-            .get_or_try_init(|| async move {
-                let descriptors = self.parse_registry_file().await?;
-                let result = descriptors
-                    .into_iter()
-                    .map(|item| (item.identifier.clone(), item))
-                    .collect::<HashMap<ThemeId, ColorThemeInfo>>();
-
-                Ok::<_, anyhow::Error>(result)
-            })
-            .await
+    pub async fn themes(&self) -> HashMap<ThemeId, ColorThemeInfo> {
+        let state = self.state.read().await;
+        state.themes.clone()
     }
 
-    async fn parse_registry_file(&self) -> Result<Vec<ColorThemeInfo>> {
-        let reader = self
+    pub async fn read(&self, id: &ThemeId) -> joinerror::Result<String> {
+        let state = self.state.read().await;
+        let theme = state
+            .themes
+            .get(id)
+            .ok_or_join_err_with::<NotFound>(|| format!("theme with id `{}` not found", id))?;
+
+        let mut rdr = self
             .fs
-            .open_file(&self.themes_dir.join(THEMES_REGISTRY_FILE))
-            .await?;
+            .open_file(&self.themes_dir.join(theme.source.clone()))
+            .await
+            .join_err_with::<()>(|| {
+                format!("failed to open theme file `{}`", theme.source.display())
+            })?;
 
-        Ok(serde_json::from_reader(reader)?)
+        let mut buf = String::new();
+        rdr.read_to_string(&mut buf)
+            .join_err::<()>("failed to read theme file")?;
+
+        Ok(buf)
     }
 }

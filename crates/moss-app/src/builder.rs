@@ -102,8 +102,12 @@ impl<R: AppRuntime> AppBuilder<R> {
             ))
         };
 
-        let theme_service = ThemeService::new(self.fs.clone(), params.themes_dir);
-        let locale_service = LocaleService::new(self.fs.clone(), params.locales_dir);
+        let theme_service = ThemeService::new(self.fs.clone(), params.themes_dir)
+            .await
+            .expect("Failed to create theme service");
+        let locale_service = LocaleService::new(self.fs.clone(), params.locales_dir)
+            .await
+            .expect("Failed to create locale service");
         let session_service = SessionService::new();
         let storage_service: Arc<StorageService<R>> =
             StorageService::<R>::new(&params.app_dir.join(dirs::GLOBALS_DIR))
@@ -128,26 +132,13 @@ impl<R: AppRuntime> AppBuilder<R> {
         .await
         .expect("Failed to create workspace service");
 
-        let default_theme = theme_service
-            .default_theme()
-            .await
-            .cloned()
-            .expect("Failed to get default theme");
-
-        let default_locale = locale_service
-            .default_locale()
-            .await
-            .cloned()
-            .expect("Failed to get default locale");
-
         let defaults = AppDefaults {
-            theme: default_theme,
-            locale: default_locale,
+            theme: theme_service.default_theme().await,
+            locale: locale_service.default_locale().await,
         };
 
         App {
             app_dir: params.app_dir,
-            fs: self.fs,
             app_handle: self.app_handle.clone(),
             commands: self.commands,
 
