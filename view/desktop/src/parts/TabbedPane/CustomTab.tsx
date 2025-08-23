@@ -24,6 +24,7 @@ export const CustomTab = ({
 
   useEffect(() => {
     const disposable = api.onDidTitleChange?.((event) => {
+      console.log("onDidTitleChange", event.title);
       setTitle(event.title);
     });
 
@@ -69,9 +70,11 @@ export const CustomTab = ({
         {params?.iconType ? (
           <Icon icon={params?.iconType} className="size-4" />
         ) : params?.node ? (
-          <div className="relative size-4 shrink-0">
-            <EntryIcon entry={params?.node} className="absolute top-0 right-0" />
-          </div>
+          ~(
+            <div className="relative size-4 shrink-0">
+              <EntryIcon entry={params?.node} className="absolute top-0 right-0" />
+            </div>
+          )
         ) : null}
         <span className="truncate">{title}</span>
       </span>

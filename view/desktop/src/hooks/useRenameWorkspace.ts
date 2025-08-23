@@ -8,18 +8,18 @@ import { useUpdateWorkspace } from "./workbench/useUpdateWorkspace";
 export const useRenameWorkspace = (workspace: WorkspaceInfo | null) => {
   const { mutateAsync: updateWorkspace } = useUpdateWorkspace();
 
-  const [isRenamingWorkspace, setIsRenamingWorkspace] = useState(false);
-
   const { api } = useTabbedPaneStore();
+
+  const [isRenamingWorkspace, setIsRenamingWorkspace] = useState(false);
 
   const handleRenamingWorkspaceSubmit = async (newName: string) => {
     if (!workspace) {
       return;
     }
 
-    const trimmedNewName = newName.trim();
-
     try {
+      const trimmedNewName = newName.trim();
+
       if (trimmedNewName === workspace.name) {
         return;
       }

@@ -61,23 +61,6 @@ const DynamicPageWrapper = ({
   props: IDockviewPanelProps;
 }) => {
   const PageComponent = config.component;
-
-  // Get fresh workspace data for dynamic title - must be called before any returns
-  const { activeWorkspace } = useActiveWorkspace();
-
-  // Update panel title dynamically for WorkspaceSettings - must be called before any returns
-  React.useEffect(() => {
-    if (pageKey === "WorkspaceSettings" && props.api && activeWorkspace?.name) {
-      props.api.setTitle(activeWorkspace.name);
-    }
-  }, [activeWorkspace?.name, props.api, pageKey]);
-
-  // Special case for full-page components (no title)
-  if (!config.title) {
-    return <PageComponent {...props} />;
-  }
-
-  // Standard page structure with header and content
   return (
     <PageView>
       <PageHeader icon={config.icon} title={config.title} {...props} />

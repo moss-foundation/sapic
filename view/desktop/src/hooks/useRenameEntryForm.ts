@@ -14,9 +14,9 @@ export const useRenameEntryForm = (entry: EntryInfo, collectionId: string) => {
   const [isRenamingEntry, setIsRenamingEntry] = useState(false);
 
   const handleRenamingEntrySubmit = async (newName: string) => {
-    const trimmedNewName = newName.trim();
-
     try {
+      const trimmedNewName = newName.trim();
+
       if (trimmedNewName === entry.name) {
         return;
       }

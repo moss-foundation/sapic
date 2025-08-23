@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
 import { PageHeader } from "@/components/PageView/PageHeader";
@@ -28,12 +28,6 @@ export const WorkspaceSettings = ({ ...props }: IDockviewPanelProps) => {
     closeModal: closeDeleteWorkspaceModal,
     showModal: isDeleteWorkspaceModalOpen,
   } = useModal();
-
-  useEffect(() => {
-    if (activeWorkspace) {
-      setName(activeWorkspace.name);
-    }
-  }, [activeWorkspace]);
 
   const { isRenamingWorkspace, setIsRenamingWorkspace, handleRenamingWorkspaceSubmit, handleRenamingWorkspaceCancel } =
     useRenameWorkspace(activeWorkspace);
