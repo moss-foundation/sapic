@@ -27,6 +27,10 @@ errors! {
     /// The entity that a client attempted to create (e.g., file or directory) already exists.
     AlreadyExists => "already_exists",
 
+    /// The operation was rejected because the resource is not available.
+    /// Note that it is not always safe to retry non-idempotent operations.
+    Unavailable => "unavailable",
+
     /// This means that some invariants expected by the underlying system have been broken.
     /// This error is reserved for serious errors.
     Internal => "internal",
