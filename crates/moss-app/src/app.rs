@@ -16,9 +16,10 @@ use tauri::{AppHandle, Runtime as TauriRuntime};
 use tokio::sync::RwLock;
 
 use crate::{
+    ActiveWorkspace,
     command::CommandCallback,
     models::types::{ColorThemeInfo, LocaleInfo},
-    services::{session_service::SessionId, workspace_service::ActiveWorkspace, *},
+    services::{session_service::SessionId, *},
 };
 
 pub struct AppPreferences {

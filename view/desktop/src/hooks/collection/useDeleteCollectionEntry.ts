@@ -1,6 +1,6 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
-import { DeleteEntryInput, DeleteEntryOutput, EntryInfo } from "@repo/moss-collection";
+import { DeleteEntryInput, DeleteEntryOutput, StreamEntriesEvent } from "@repo/moss-collection";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY } from "./useStreamedCollectionEntries";
@@ -29,7 +29,7 @@ export const useDeleteCollectionEntry = () => {
     onSuccess: async (data, variables) => {
       queryClient.setQueryData(
         [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, variables.collectionId],
-        (old: EntryInfo[]) => {
+        (old: StreamEntriesEvent[]) => {
           const deletedEntry = old.find((entry) => entry.id === data.id);
 
           if (!deletedEntry) {

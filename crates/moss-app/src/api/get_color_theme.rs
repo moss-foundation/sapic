@@ -1,5 +1,5 @@
+use joinerror::{Error, ResultExt};
 use moss_applib::AppRuntime;
-use moss_common::api::OperationResult;
 
 use crate::{
     app::App,
@@ -11,7 +11,7 @@ impl<R: AppRuntime> App<R> {
         &self,
         _ctx: &R::AsyncContext,
         input: &GetColorThemeInput,
-    ) -> OperationResult<GetColorThemeOutput> {
+    ) -> joinerror::Result<GetColorThemeOutput> {
         let themes = self.theme_service.themes().await?;
 
         if let Some(descriptor) = themes.get(&input.id) {
@@ -27,20 +27,17 @@ impl<R: AppRuntime> App<R> {
                     .await?;
 
                 let mut content = String::new();
-                reader.read_to_string(&mut content).map_err(|e| {
-                    moss_common::api::OperationError::Internal(format!(
-                        "failed to read theme file: {}",
-                        e
-                    ))
-                })?;
+                reader
+                    .read_to_string(&mut content)
+                    .join_err::<()>("failed to read theme file")?;
 
                 content
             };
 
             Ok(GetColorThemeOutput { css_content })
         } else {
-            Err(moss_common::api::OperationError::NotFound(format!(
-                "theme with id `{}` was not found",
+            Err(Error::new::<()>(format!(
+                "theme with id `{}` not found",
                 input.id
             )))
         }

@@ -3,7 +3,7 @@ use moss_applib::{
     context::{AsyncContext, MutableContext},
     mock::MockAppRuntime,
 };
-use moss_fs::{FileSystem, RealFileSystem};
+use moss_fs::RealFileSystem;
 use moss_testutils::random_name::random_string;
 use std::{future::Future, path::PathBuf, pin::Pin, sync::Arc, time::Duration};
 
@@ -47,8 +47,6 @@ pub async fn set_up_test_app() -> (App<MockAppRuntime>, AsyncContext, CleanupFn)
     let fs = Arc::new(RealFileSystem::new());
     let tauri_app = tauri::test::mock_app();
     let app_handle = tauri_app.handle().to_owned();
-
-    <dyn FileSystem>::set_global(fs.clone(), &app_handle);
 
     let app_path = random_app_dir_path();
 

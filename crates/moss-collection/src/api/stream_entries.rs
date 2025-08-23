@@ -21,7 +21,6 @@ use crate::{
         events::StreamEntriesEvent,
         operations::{StreamEntriesInput, StreamEntriesOutput},
         primitives::{EntryId, FrontendEntryPath},
-        types::EntryInfo,
     },
     worktree::entry::EntryDescription,
 };
@@ -108,7 +107,7 @@ impl<R: AppRuntime> Collection<R> {
                 tokio::select! {
                     entry_result = rx.recv() => {
                         if let Some(entry) = entry_result {
-                            let entry_info = EntryInfo {
+                            let _ = channel.send(StreamEntriesEvent{
                                 id: entry.id,
                                 name: entry.name,
                                 path: FrontendEntryPath::new(entry.path.to_path_buf()),
@@ -117,16 +116,13 @@ impl<R: AppRuntime> Collection<R> {
                                 protocol: entry.protocol,
                                 order: entry.order,
                                 expanded: entry.expanded,
-                            };
-
-
-                            let _ = channel.send(StreamEntriesEvent(entry_info));
+                            });
                         }
                     }
 
                     _ = &mut done_rx => {
                         while let Ok(entry) = rx.try_recv() {
-                            let entry_info = EntryInfo {
+                            let _ = channel.send(StreamEntriesEvent{
                                 id: entry.id,
                                 name: entry.name,
                                 path: FrontendEntryPath {
@@ -138,10 +134,7 @@ impl<R: AppRuntime> Collection<R> {
                                 protocol: entry.protocol,
                                 order: entry.order,
                                 expanded: entry.expanded,
-                            };
-
-
-                            let _ = channel.send(StreamEntriesEvent(entry_info));
+                            });
                         }
                         break;
                     }

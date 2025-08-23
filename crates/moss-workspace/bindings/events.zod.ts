@@ -14,7 +14,6 @@ export const streamCollectionsEventSchema = z.object({
   name: z.string(),
   order: z.number().optional(),
   expanded: z.boolean(),
-  repository: z.string().optional(),
   branch: branchInfoSchema.optional(),
   iconPath: z.string().optional(),
 });

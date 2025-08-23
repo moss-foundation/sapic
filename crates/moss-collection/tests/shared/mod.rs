@@ -1,5 +1,6 @@
 #![cfg(feature = "integration-tests")]
 
+use moss_activity_indicator::ActivityIndicator;
 use moss_applib::{
     context::{AsyncContext, MutableContext},
     mock::MockAppRuntime,
@@ -51,6 +52,7 @@ pub async fn create_test_collection() -> (
     Arc<Path>,
     Collection<MockAppRuntime>,
 ) {
+    let mock_app = tauri::test::mock_app();
     let ctx = MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
     let fs = Arc::new(RealFileSystem::new());
     let internal_abs_path = random_collection_path();
@@ -90,7 +92,8 @@ pub async fn create_test_collection() -> (
         None as Option<SSHAuthAgentImpl>,
     ));
 
-    let collection = CollectionBuilder::new(fs, github_client, gitlab_client)
+    let activity_indicator = ActivityIndicator::new(mock_app.handle().clone());
+    let collection = CollectionBuilder::new(fs, activity_indicator, github_client, gitlab_client)
         .create(
             &ctx,
             CollectionCreateParams {

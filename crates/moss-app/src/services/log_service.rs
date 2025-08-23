@@ -1,8 +1,19 @@
 mod rollinglog_writer;
 mod taurilog_writer;
 
+use crate::{
+    models::types::{LogEntryInfo, LogItemSourceInfo},
+    services::{
+        log_service::{
+            constants::*, rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter,
+        },
+        session_service::SessionId,
+        storage_service::StorageService,
+    },
+};
 use chrono::{DateTime, NaiveDate, NaiveDateTime};
-use moss_applib::{AppRuntime, ServiceMarker};
+use joinerror::Error;
+use moss_applib::AppRuntime;
 use moss_fs::{CreateOptions, FileSystem};
 use moss_logging::models::primitives::LogEntryId;
 use std::{
@@ -24,17 +35,6 @@ use tracing_subscriber::{
         time::ChronoLocal,
     },
     prelude::*,
-};
-
-use crate::{
-    models::types::{LogEntryInfo, LogItemSourceInfo},
-    services::{
-        log_service::{
-            constants::*, rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter,
-        },
-        session_service::SessionId,
-        storage_service::StorageService,
-    },
 };
 
 pub mod constants {
@@ -60,7 +60,7 @@ impl LogFilter {
     fn check_entry(&self, log_entry: &LogEntryInfo) -> joinerror::Result<bool> {
         let date =
             NaiveDate::parse_from_str(&log_entry.timestamp, TIMESTAMP_FORMAT).map_err(|e| {
-                joinerror::Error::new::<()>(format!(
+                Error::new::<()>(format!(
                     "invalid log entry timestamp {}: {}",
                     log_entry.timestamp,
                     e.to_string()
@@ -104,8 +104,6 @@ pub struct LogService<R: AppRuntime> {
     _sessionlog_writerguard: WorkerGuard,
     _taurilog_writerguard: WorkerGuard,
 }
-
-impl<R: AppRuntime> ServiceMarker for LogService<R> {}
 
 impl<R: AppRuntime> LogService<R> {
     pub fn new(
@@ -170,7 +168,7 @@ impl<R: AppRuntime> LogService<R> {
                 // Showing all logs (including span events) to the console
                 tracing_subscriber::fmt::layer()
                     .event_format(instrument_log_format)
-                    .with_span_events(FmtSpan::NEW | FmtSpan::CLOSE)
+                    .with_span_events(FmtSpan::NEW)
                     .with_ansi(true)
                     .with_writer(io::stdout),
             )
@@ -430,7 +428,7 @@ impl<R: AppRuntime> LogService<R> {
                 let timestamp =
                     NaiveDateTime::parse_from_str(&log_entry.timestamp, TIMESTAMP_FORMAT).map_err(
                         |e| {
-                            joinerror::Error::new::<()>(format!(
+                            Error::new::<()>(format!(
                                 "invalid log entry timestamp {}: {}",
                                 log_entry.timestamp,
                                 e.to_string()
@@ -526,7 +524,7 @@ mod tests {
     use crate::constants::LOGGING_SERVICE_CHANNEL;
     use moss_applib::mock::MockAppRuntime;
     use moss_fs::RealFileSystem;
-    use moss_logging::{LogEvent, LogScope, debug};
+    use moss_logging::app;
     use moss_testutils::random_name::random_string;
     use std::{fs::create_dir_all, sync::atomic::AtomicUsize, time::Duration};
     use tauri::{Listener, Manager};
@@ -565,13 +563,7 @@ mod tests {
             });
         }
 
-        debug(
-            LogScope::App,
-            LogEvent {
-                resource: None,
-                message: "".to_string(),
-            },
-        );
+        app::debug!("");
 
         tokio::time::sleep(Duration::from_millis(100)).await;
         assert_eq!(counter.load(std::sync::atomic::Ordering::SeqCst), 1);

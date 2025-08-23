@@ -1,5 +1,4 @@
 use moss_applib::AppRuntime;
-use moss_common::api::OperationResult;
 
 use crate::{
     app::App,
@@ -15,7 +14,7 @@ impl<R: AppRuntime> App<R> {
     pub async fn describe_app_state(
         &self,
         ctx: &R::AsyncContext,
-    ) -> OperationResult<DescribeAppStateOutput> {
+    ) -> joinerror::Result<DescribeAppStateOutput> {
         let last_workspace_id =
             if let Ok(id_str) = self.storage_service.get_last_active_workspace(ctx).await {
                 Some(id_str)

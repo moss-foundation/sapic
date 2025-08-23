@@ -1,5 +1,4 @@
 use moss_applib::AppRuntime;
-use moss_common::api::OperationResult;
 
 use crate::{
     app::App,
@@ -11,7 +10,7 @@ impl<R: AppRuntime> App<R> {
         &self,
         _ctx: &R::AsyncContext,
         input: &GetTranslationsInput,
-    ) -> OperationResult<GetTranslationsOutput> {
+    ) -> joinerror::Result<GetTranslationsOutput> {
         let translations = self
             .locale_service
             .read_translations_from_file(&input.language, &input.namespace)

@@ -1,4 +1,4 @@
-import { EntryInfo } from "@repo/moss-collection";
+import { StreamEntriesEvent } from "@repo/moss-collection";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { fetchCollectionEntries } from "../queries/fetchCollectionEntries";
@@ -7,19 +7,22 @@ import { USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY } from "../useStreamedCollect
 export const useFetchEntriesForPath = () => {
   const queryClient = useQueryClient();
 
-  const fetchEntriesForPath = async (collectionId: string, path: string): Promise<EntryInfo[]> => {
+  const fetchEntriesForPath = async (collectionId: string, path: string): Promise<StreamEntriesEvent[]> => {
     try {
       const newEntries = await fetchCollectionEntries(collectionId, path);
 
-      queryClient.setQueryData<EntryInfo[]>([USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, collectionId], (oldEntries) => {
-        if (!oldEntries) return newEntries;
+      queryClient.setQueryData<StreamEntriesEvent[]>(
+        [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, collectionId],
+        (oldEntries) => {
+          if (!oldEntries) return newEntries;
 
-        const newEntriesMap = new Map(newEntries.map((entry) => [entry.id, entry]));
+          const newEntriesMap = new Map(newEntries.map((entry) => [entry.id, entry]));
 
-        const oldEntriesNotUpdated = oldEntries.filter((entry) => !newEntriesMap.has(entry.id));
+          const oldEntriesNotUpdated = oldEntries.filter((entry) => !newEntriesMap.has(entry.id));
 
-        return [...oldEntriesNotUpdated, ...newEntries];
-      });
+          return [...oldEntriesNotUpdated, ...newEntries];
+        }
+      );
 
       return newEntries;
     } catch (error) {

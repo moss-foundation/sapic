@@ -13,7 +13,7 @@ import {
 } from "@/hooks";
 import { useBatchUpdateCollection } from "@/hooks/collection/useBatchUpdateCollection";
 import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
-import { EntryInfo } from "@repo/moss-collection";
+import { StreamEntriesEvent } from "@repo/moss-collection";
 import { useQueryClient } from "@tanstack/react-query";
 
 export const CollectionTreeViewHeader = () => {
@@ -90,7 +90,7 @@ export const CollectionTreeViewHeader = () => {
       if (res.status === "ok") {
         queryClient.setQueryData(
           [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, collection.collectionId],
-          (old: EntryInfo[]) => {
+          (old: StreamEntriesEvent[]) => {
             return old.map((entry) => {
               const shouldCollapse = preparedEntries.some((preparedEntry) => preparedEntry.DIR.id === entry.id);
               return shouldCollapse ? { ...entry, expanded: false } : entry;

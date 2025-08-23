@@ -1,7 +1,7 @@
 pub mod shared;
 
 use moss_app::models::operations::{BatchDeleteLogInput, ListLogsInput};
-use moss_logging::{LogEvent, LogScope, warn};
+use moss_logging::app;
 
 use crate::shared::set_up_test_app;
 
@@ -18,13 +18,7 @@ async fn test_delete_logs_from_queue() {
 
     // We only have one log, less than the dump threshold
     // So we should delete from the queue
-    warn(
-        LogScope::App,
-        LogEvent {
-            resource: None,
-            message: "".to_string(),
-        },
-    );
+    app::warn!("");
 
     let logs = app
         .list_logs(
@@ -72,13 +66,7 @@ async fn test_delete_logs_from_file() {
 
     // By default, the dump threshold is 10, which means that the first log
     for _ in 0..15 {
-        warn(
-            LogScope::App,
-            LogEvent {
-                resource: None,
-                message: "".to_string(),
-            },
-        );
+        app::warn!("");
     }
 
     let logs = app
@@ -126,13 +114,7 @@ async fn test_delete_all_logs() {
     let (app, ctx, cleanup) = set_up_test_app().await;
 
     for _ in 0..15 {
-        warn(
-            LogScope::App,
-            LogEvent {
-                resource: None,
-                message: "".to_string(),
-            },
-        );
+        app::warn!("");
     }
 
     // Wait for all writes to finish

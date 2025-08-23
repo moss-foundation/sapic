@@ -8,13 +8,11 @@ use moss_environment::models::{
 };
 use moss_git::{models::types::BranchInfo, url::GIT_URL_REGEX};
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, path::PathBuf};
+use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use ts_rs::TS;
 use validator::{Validate, ValidationError};
 
-use crate::models::primitives::{
-    ActivitybarPosition, ChangeCollectionId, CollectionId, SidebarPosition,
-};
+use crate::models::primitives::{ActivitybarPosition, CollectionId, SidebarPosition};
 
 pub type EnvironmentName = String;
 
@@ -58,7 +56,7 @@ pub struct ImportCollectionParams {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct EnvironmentGroup {
-    pub collection_id: CollectionId,
+    pub collection_id: Arc<String>,
     pub expanded: bool,
     pub order: Option<isize>,
 }
@@ -103,10 +101,6 @@ pub struct UpdateCollectionParams {
 #[ts(export, export_to = "types.ts")]
 pub struct UpdateEnvironmentParams {
     pub id: EnvironmentId,
-
-    /// When updating an environment, we can move it to another collection
-    /// or remove its link to a specific collection to make it global.
-    pub collection_id: Option<ChangeCollectionId>,
     pub name: Option<String>,
     pub order: Option<isize>,
     #[ts(optional, type = "ChangeString")]

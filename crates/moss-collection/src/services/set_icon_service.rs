@@ -1,6 +1,5 @@
 use anyhow::Result;
 use image::{GenericImageView, imageops::FilterType};
-use moss_applib::ServiceMarker;
 use moss_fs::{FileSystem, RemoveOptions};
 use std::{
     path::{Path, PathBuf},
@@ -15,8 +14,6 @@ pub struct SetIconService {
     assets_abs_path: Arc<Path>,
     icon_size: u32,
 }
-
-impl ServiceMarker for SetIconService {}
 
 impl SetIconService {
     pub fn set_icon(&self, img_path: &Path) -> Result<()> {

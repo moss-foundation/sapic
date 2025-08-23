@@ -1,5 +1,5 @@
 use anyhow::{Context as _, Result};
-use moss_applib::{AppRuntime, ServiceMarker};
+use moss_applib::AppRuntime;
 use moss_db::{Transaction, primitives::AnyValue};
 use moss_environment::models::primitives::EnvironmentId;
 use moss_storage::{
@@ -30,8 +30,6 @@ use crate::{
 pub struct StorageService<R: AppRuntime> {
     pub(super) storage: Arc<dyn WorkspaceStorage<R::AsyncContext>>,
 }
-
-impl<R: AppRuntime> ServiceMarker for StorageService<R> {}
 
 impl<R: AppRuntime> StorageService<R> {
     pub(crate) fn new(abs_path: &Path) -> Result<Self> {
@@ -102,7 +100,7 @@ impl<R: AppRuntime> StorageService<R> {
         &self,
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
-        expanded_entries: &HashSet<CollectionId>,
+        expanded_entries: &HashSet<Arc<String>>,
     ) -> joinerror::Result<()> {
         let store = self.storage.item_store();
         TransactionalPutItem::put_with_context(
@@ -121,7 +119,7 @@ impl<R: AppRuntime> StorageService<R> {
         &self,
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
-        collection_id: &CollectionId,
+        collection_id: Arc<String>,
         order: isize,
     ) -> joinerror::Result<()> {
         let store = self.storage.item_store();
@@ -357,7 +355,7 @@ impl<R: AppRuntime> StorageService<R> {
     pub(super) async fn get_expanded_groups(
         &self,
         ctx: &R::AsyncContext,
-    ) -> joinerror::Result<HashSet<CollectionId>> {
+    ) -> joinerror::Result<HashSet<Arc<String>>> {
         let value = GetItem::get(
             self.storage.item_store().as_ref(),
             ctx,
@@ -365,7 +363,7 @@ impl<R: AppRuntime> StorageService<R> {
         )
         .await?;
 
-        Ok(AnyValue::deserialize::<HashSet<CollectionId>>(&value)?)
+        Ok(AnyValue::deserialize::<HashSet<Arc<String>>>(&value)?)
     }
 
     pub(super) async fn list_environment_groups_metadata(

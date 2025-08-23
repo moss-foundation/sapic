@@ -32,11 +32,11 @@ impl<R: AppRuntime> Workspace<R> {
 
         Ok(CreateEnvironmentOutput {
             id: result.id,
-            collection_id: result.collection_id,
+            collection_id: result.collection_id.map(|id| id.into()),
             name: result.display_name,
             order: result.order,
             color: result.color,
-            abs_path: result.abs_path,
+            abs_path: result.abs_path.to_path_buf(),
         })
     }
 }

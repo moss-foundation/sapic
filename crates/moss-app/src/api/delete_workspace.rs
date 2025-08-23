@@ -1,5 +1,4 @@
 use moss_applib::AppRuntime;
-use moss_common::api::OperationResult;
 
 use crate::{app::App, models::operations::DeleteWorkspaceInput};
 
@@ -8,7 +7,7 @@ impl<R: AppRuntime> App<R> {
         &self,
         ctx: &R::AsyncContext,
         input: &DeleteWorkspaceInput,
-    ) -> OperationResult<()> {
+    ) -> joinerror::Result<()> {
         self.workspace_service
             .delete_workspace(ctx, &input.id)
             .await?;

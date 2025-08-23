@@ -25,7 +25,7 @@ impl<R: AppRuntime> Workspace<R> {
                 format!("collection `{}` not found", input.id.as_str())
             })?;
 
-        let details = collection.describe_details().await?;
+        let details = collection.details().await?;
 
         let vcs = if let Some(vcs) = details.vcs {
             match vcs {

@@ -1,6 +1,6 @@
 import { USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, useDeleteCollectionEntry } from "@/hooks";
 import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
-import { BatchUpdateEntryInput, BatchUpdateEntryKind, EntryInfo } from "@repo/moss-collection";
+import { BatchUpdateEntryInput, BatchUpdateEntryKind, StreamEntriesEvent } from "@repo/moss-collection";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { TreeCollectionNode } from "../types";
@@ -66,16 +66,19 @@ export const useDeleteAndUpdatePeers = (
     });
 
     if (result.status === "ok") {
-      queryClient.setQueryData([USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, collectionId], (cacheData: EntryInfo[]) => {
-        return cacheData.map((cacheEntry) => {
-          if (updatedParentNodeChildren.some((e) => e.id === cacheEntry.id)) {
-            const updatedEntry = updatedParentNodeChildren.find((e) => e.id === cacheEntry.id);
-            return { ...cacheEntry, ...updatedEntry };
-          }
+      queryClient.setQueryData(
+        [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, collectionId],
+        (cacheData: StreamEntriesEvent[]) => {
+          return cacheData.map((cacheEntry) => {
+            if (updatedParentNodeChildren.some((e) => e.id === cacheEntry.id)) {
+              const updatedEntry = updatedParentNodeChildren.find((e) => e.id === cacheEntry.id);
+              return { ...cacheEntry, ...updatedEntry };
+            }
 
-          return cacheEntry;
-        });
-      });
+            return cacheEntry;
+          });
+        }
+      );
     }
   };
 

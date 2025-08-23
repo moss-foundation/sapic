@@ -1,29 +1,21 @@
 pub mod api;
 pub mod builder;
 pub mod collection;
-pub mod config;
-pub mod context;
+mod config;
 mod edit;
 mod helpers;
-pub mod manifest;
+mod manifest;
 pub mod models;
-pub mod services;
+mod services;
+mod worktree;
+
+#[cfg(feature = "integration-tests")]
 pub mod storage;
-pub mod worktree;
+#[cfg(not(feature = "integration-tests"))]
+mod storage;
 
 pub use builder::CollectionBuilder;
 pub use collection::{Collection, CollectionModifyParams};
-use moss_git_hosting_provider::models::primitives::GitProviderType;
-
-pub struct DescribeCollection {
-    pub name: String,
-    pub repository: Option<DescribeRepository>,
-}
-
-pub struct DescribeRepository {
-    pub repository: String,
-    pub git_provider_type: GitProviderType,
-}
 
 pub mod constants {
     pub const COLLECTION_ROOT_PATH: &str = "";
