@@ -33,20 +33,9 @@ export const useCreateCollection = () => {
 };
 
 const inputToEvent = (input: CreateCollectionInput, data: CreateCollectionOutput): StreamCollectionsEvent => {
-  const { gitParams, iconPath } = input;
-
-  let repository: string | undefined;
-  if (gitParams) {
-    if ("gitHub" in gitParams) {
-      repository = gitParams.gitHub.repository;
-    } else if ("gitLab" in gitParams) {
-      repository = gitParams.gitLab.repository;
-    }
-  }
+  const { iconPath } = input;
 
   return {
-    repository,
-    contributors: [], // Empty array as default
     iconPath,
     ...data,
   };
