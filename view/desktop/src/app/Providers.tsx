@@ -12,7 +12,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import LanguageProvider from "./LanguageProvider";
 import ThemeProvider from "./ThemeProvider";
 
-const Provider = ({ children }: { children: ReactNode }) => {
+const Providers = ({ children }: { children: ReactNode }) => {
   useInitializeAppState();
 
   return (
@@ -25,8 +25,9 @@ const Provider = ({ children }: { children: ReactNode }) => {
 };
 
 const useInitializeAppState = () => {
-  const { data } = useDescribeAppState();
   const queryClient = useQueryClient();
+
+  const { data } = useDescribeAppState();
   const { mutate: openWorkspace } = useOpenWorkspace();
   const { activeWorkspace } = useActiveWorkspace();
   const hasTriedRestoration = useRef(false);
@@ -70,4 +71,4 @@ const useInitializeAppState = () => {
   }, [data, activeWorkspace, openWorkspace]);
 };
 
-export default Provider;
+export default Providers;

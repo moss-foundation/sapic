@@ -9,16 +9,8 @@ import { mapEditorPartStateToSerializedDockview } from "@/hooks/appState/utils";
 import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { type Icons } from "@/lib/ui";
-import {
-  CollectionSettingsPage,
-  FolderSettings,
-  KitchenSink,
-  Logs,
-  RequestPage,
-  Settings,
-  WelcomePage,
-  WorkspaceSettings,
-} from "@/pages";
+import { FolderSettings, KitchenSink, Logs, RequestPage, Settings, WelcomePage, WorkspaceSettings } from "@/pages";
+import { CollectionSettingsPage } from "@/pages/CollectionSettingsPage";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import { EntryKind } from "@repo/moss-collection";
