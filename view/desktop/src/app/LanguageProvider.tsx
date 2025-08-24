@@ -1,20 +1,21 @@
-import { useEffect } from "react";
+import { ReactNode, useEffect } from "react";
 
-import { USE_DESCRIBE_APP_STATE_QUERY_KEY } from "@/hooks/appState/useDescribeAppState";
-import { applyLanguagePack } from "@/utils/applyLanguagePack";
+import { useSetLocale } from "@/hooks";
 import { LocaleInfo } from "@repo/moss-app";
-import { useQueryClient } from "@tanstack/react-query";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 
-const LanguageProvider = ({ children }: { children: React.ReactNode }) => {
-  const queryClient = useQueryClient();
+interface LanguageProviderProps {
+  children: ReactNode;
+}
+
+const LanguageProvider = ({ children }: LanguageProviderProps) => {
+  const { mutateAsync: setLocale } = useSetLocale();
 
   useEffect(() => {
     let unlisten: UnlistenFn | undefined;
 
     const handleLanguageChange = (event: { payload: LocaleInfo }) => {
-      applyLanguagePack(event.payload).catch(console.error);
-      queryClient.invalidateQueries({ queryKey: [USE_DESCRIBE_APP_STATE_QUERY_KEY] });
+      setLocale({ localeInfo: event.payload });
     };
 
     const setupListener = async () => {
@@ -28,11 +29,9 @@ const LanguageProvider = ({ children }: { children: React.ReactNode }) => {
     setupListener();
 
     return () => {
-      if (unlisten) {
-        unlisten();
-      }
+      unlisten?.();
     };
-  }, [queryClient]);
+  }, [setLocale]);
 
   return <>{children}</>;
 };

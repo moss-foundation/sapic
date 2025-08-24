@@ -1,3 +1,4 @@
+import { changeLanguage } from "@/app/i18n";
 import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { DescribeAppStateOutput, SetLocaleInput } from "@repo/moss-app";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -20,7 +21,7 @@ export const useSetLocale = () => {
   return useMutation<void, Error, SetLocaleInput>({
     mutationKey: [USE_SET_LOCALE_MUTATION_KEY],
     mutationFn: setLocaleFn,
-    onSuccess: (_, input) => {
+    onSuccess: async (_, input) => {
       queryClient.setQueryData([USE_DESCRIBE_APP_STATE_QUERY_KEY], (old: DescribeAppStateOutput) => {
         return {
           ...old,
@@ -30,6 +31,8 @@ export const useSetLocale = () => {
           },
         };
       });
+
+      await changeLanguage(input.localeInfo.code).catch(console.error);
     },
   });
 };
