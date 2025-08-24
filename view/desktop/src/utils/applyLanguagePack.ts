@@ -1,7 +1,8 @@
+import i18next from "i18next";
+
 import { changeLanguage } from "@/app/i18n";
 import { clearTranslationCache } from "@/lib/backend/nls";
 import { LocaleInfo } from "@repo/moss-app";
-import i18next from "i18next";
 
 export const applyLanguagePack = async (languagePack: LocaleInfo) => {
   try {

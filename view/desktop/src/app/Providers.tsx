@@ -1,11 +1,9 @@
 import { ReactNode, useEffect, useRef } from "react";
 
-import { initializeI18n } from "@/app/i18n";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { useDescribeAppState } from "@/hooks/appState/useDescribeAppState";
 import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
 import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
-import { applyLanguagePack } from "@/utils/applyLanguagePack";
 import { applyColorThemeFromCache } from "@/utils/applyTheme";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -36,17 +34,10 @@ const useInitializeAppState = () => {
   useEffect(() => {
     if (data) {
       const theme = data.preferences?.theme ?? data.defaults.theme;
-      const languagePack = data.preferences?.locale ?? data.defaults.locale;
 
       document.querySelector("html")?.setAttribute("data-theme", theme.mode);
 
       applyColorThemeFromCache(theme.identifier, queryClient);
-
-      initializeI18n(languagePack.code)
-        .then(() => {
-          applyLanguagePack(languagePack).catch(console.error);
-        })
-        .catch(console.error);
     }
   }, [data, queryClient]);
 
