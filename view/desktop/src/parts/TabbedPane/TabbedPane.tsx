@@ -208,9 +208,6 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
       title: "Logs",
       component: Logs,
     },
-    Welcome: {
-      component: WelcomePage,
-    },
   };
 
   const components = {
@@ -269,6 +266,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
         iconType: EntryKind;
       }>
     ) => <FolderSettings {...props} />,
+    Welcome: () => <WelcomePage />,
     WorkspaceSettings: (props: IDockviewPanelProps) => <WorkspaceSettings {...props} />,
     ...Object.entries(pageConfigs).reduce(
       (acc, [key, config]) => {
