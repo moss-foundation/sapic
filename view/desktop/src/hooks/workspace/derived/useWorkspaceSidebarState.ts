@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react";
 
-import { useUpdateSidebarPartState } from "@/hooks/appState/useUpdateSidebarPartState";
+import { useUpdateSidebarPartState } from "@/hooks/app/useUpdateSidebarPartState";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 
+import { useDescribeWorkspaceState } from "../useDescribeWorkspaceState";
 import { useActiveWorkspace } from "./useActiveWorkspace";
-import { useDescribeWorkspaceState } from "./useDescribeWorkspaceState";
 
 export const useWorkspaceSidebarState = () => {
   const { activeWorkspaceId, hasActiveWorkspace } = useActiveWorkspace();

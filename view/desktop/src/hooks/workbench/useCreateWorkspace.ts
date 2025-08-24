@@ -8,7 +8,7 @@ import {
 } from "@repo/moss-app";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { USE_DESCRIBE_APP_STATE_QUERY_KEY } from "../appState/useDescribeAppState";
+import { USE_DESCRIBE_APP_STATE_QUERY_KEY } from "../app/useDescribeAppState";
 import { USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY } from "../collection";
 import { USE_STREAM_COLLECTIONS_QUERY_KEY } from "../collection/useStreamCollections";
 import { USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY } from "../workspace/useDescribeWorkspaceState";

@@ -4,10 +4,9 @@ import React from "react";
 
 import { Breadcrumbs, PageContent, PageHeader, PageView } from "@/components";
 import { DropNode, TreeCollectionNode } from "@/components/CollectionTree/types";
-import { useUpdateEditorPartState } from "@/hooks/appState/useUpdateEditorPartState";
-import { mapEditorPartStateToSerializedDockview } from "@/hooks/appState/utils";
-import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
-import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
+import { useUpdateEditorPartState } from "@/hooks/app/useUpdateEditorPartState";
+import { mapEditorPartStateToSerializedDockview } from "@/hooks/app/utils";
+import { useActiveWorkspace, useDescribeWorkspaceState } from "@/hooks/workspace";
 import { type Icons } from "@/lib/ui";
 import { FolderSettings, KitchenSink, Logs, RequestPage, Settings, WelcomePage, WorkspaceSettings } from "@/pages";
 import { CollectionSettingsPage } from "@/pages/CollectionSettingsPage";

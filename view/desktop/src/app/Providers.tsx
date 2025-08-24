@@ -1,9 +1,9 @@
 import { ReactNode, useEffect, useRef } from "react";
 
 import ErrorBoundary from "@/components/ErrorBoundary";
-import { useDescribeAppState } from "@/hooks/appState/useDescribeAppState";
+import { useDescribeAppState } from "@/hooks/app/useDescribeAppState";
 import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
-import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
+import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
 
 import LanguageProvider from "./LanguageProvider";
 import ThemeProvider from "./ThemeProvider";

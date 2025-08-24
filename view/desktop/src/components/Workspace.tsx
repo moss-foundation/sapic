@@ -1,5 +1,5 @@
 import { useStreamCollections } from "@/hooks";
-import { useWorkspaceSidebarState } from "@/hooks/workspace/useWorkspaceSidebarState";
+import { useWorkspaceSidebarState } from "@/hooks/workspace/derived/useWorkspaceSidebarState";
 
 import TabbedPane from "../parts/TabbedPane/TabbedPane";
 

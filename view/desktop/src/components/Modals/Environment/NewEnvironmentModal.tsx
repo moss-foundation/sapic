@@ -4,8 +4,13 @@ import { ButtonNeutralOutlined, ButtonPrimary, InputOutlined, RadioGroup } from 
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { ModalForm } from "@/components/ModalForm";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
-import { useFocusInputOnMount, useStreamCollections, useValidateInput } from "@/hooks";
-import { useCreateEnvironment, useStreamEnvironments } from "@/hooks/environment";
+import {
+  useCreateEnvironment,
+  useFocusInputOnMount,
+  useStreamCollections,
+  useStreamEnvironments,
+  useValidateInput,
+} from "@/hooks";
 
 import { ModalWrapperProps } from "../types";
 

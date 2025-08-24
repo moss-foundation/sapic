@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 
 import { useGetColorTheme } from "@/hooks";
-import { USE_DESCRIBE_APP_STATE_QUERY_KEY, useDescribeAppState } from "@/hooks/appState/useDescribeAppState";
+import { USE_DESCRIBE_APP_STATE_QUERY_KEY, useDescribeAppState } from "@/hooks/app/useDescribeAppState";
 import { applyColorThemeFromCache } from "@/utils/applyTheme";
 import { ColorThemeInfo } from "@repo/moss-app";
 import { useQueryClient } from "@tanstack/react-query";

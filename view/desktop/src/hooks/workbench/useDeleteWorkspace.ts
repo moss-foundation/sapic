@@ -2,7 +2,7 @@ import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { DeleteWorkspaceInput, DeleteWorkspaceOutput } from "@repo/moss-app";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { useActiveWorkspace } from "../workspace/useActiveWorkspace";
+import { useActiveWorkspace } from "../workspace/derived/useActiveWorkspace";
 import { useCloseWorkspace } from "./useCloseWorkspace";
 import { USE_LIST_WORKSPACES_QUERY_KEY } from "./useListWorkspaces";
 

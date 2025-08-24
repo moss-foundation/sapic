@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 
-import { useStreamCollections } from "@/hooks/collection";
-import { useStreamEnvironments } from "@/hooks/environment";
+import { useStreamCollections, useStreamEnvironments } from "@/hooks";
 
 import { GroupedWithEnvironment } from "../types";
 

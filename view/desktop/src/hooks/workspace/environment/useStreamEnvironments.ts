@@ -6,7 +6,7 @@ import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Channel } from "@tauri-apps/api/core";
 
-import { useActiveWorkspace } from "../workspace";
+import { useActiveWorkspace } from "..";
 
 export const USE_STREAMED_ENVIRONMENTS_QUERY_KEY = "streamedEnvironments";
 

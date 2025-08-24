@@ -2,7 +2,7 @@ import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { SetColorThemeInput } from "@repo/moss-app";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { USE_DESCRIBE_APP_STATE_QUERY_KEY } from "../appState/useDescribeAppState";
+import { USE_DESCRIBE_APP_STATE_QUERY_KEY } from "../useDescribeAppState";
 
 export const USE_SET_COLOR_THEME_MUTATION_KEY = "setColorTheme";
 
