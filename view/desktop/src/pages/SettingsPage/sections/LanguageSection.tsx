@@ -2,7 +2,6 @@ import { useTranslation } from "react-i18next";
 
 import SelectOutlined from "@/components/SelectOutlined";
 import { useDescribeAppState, useListLocales, useSetLocale } from "@/hooks";
-import { MenuItemProps } from "@/utils/renderActionMenuItem";
 
 import { Section } from "../Section";
 
@@ -12,14 +11,6 @@ export const LanguageSection = () => {
   const { data: appState } = useDescribeAppState();
   const { data: languages } = useListLocales();
   const { mutate: mutateChangeLanguagePack } = useSetLocale();
-
-  const languageItems: MenuItemProps[] =
-    languages?.map((lang: { code: string; displayName: string }) => ({
-      id: lang.code,
-      type: "radio" as const,
-      label: lang.displayName,
-      value: lang.code,
-    })) || [];
 
   const handleLanguageChange = (newCode: string) => {
     const selectedLocaleInfo = languages?.find((lang: { code: string; displayName: string }) => lang.code === newCode);
@@ -38,14 +29,10 @@ export const LanguageSection = () => {
       <SelectOutlined.Root value={defaultLanguage} onValueChange={handleLanguageChange}>
         <SelectOutlined.Trigger />
         <SelectOutlined.Content>
-          {languageItems.map((item) => {
-            if (item.type === "separator") {
-              return <SelectOutlined.Separator key={item.id} />;
-            }
-
+          {languages?.map((item) => {
             return (
-              <SelectOutlined.Item key={item.id} value={item.value!}>
-                {item.label}
+              <SelectOutlined.Item key={item.code} value={item.code}>
+                {item.displayName}
               </SelectOutlined.Item>
             );
           })}

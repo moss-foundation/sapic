@@ -50,6 +50,7 @@ const SidebarTypeSection = () => {
       value: SIDEBAR_POSITION.RIGHT,
     },
   ];
+
   const handleSidebarTypeChange = (value: string) => {
     const sidebarType = value as SidebarPosition;
     setSideBarPosition(sidebarType);
@@ -107,6 +108,7 @@ const SidebarVisibilitySection = () => {
     const isVisible = value === "visible";
     sideBar.setVisible(isVisible);
   };
+
   return (
     <div>
       <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">Sidebar Visibility</h3>

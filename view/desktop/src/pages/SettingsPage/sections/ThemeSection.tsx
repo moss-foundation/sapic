@@ -10,7 +10,6 @@ export const ThemeSection = () => {
 
   const { data: appState } = useDescribeAppState();
   const { data: themes } = useListColorThemes();
-
   const { mutate: mutateChangeColorTheme } = useSetColorTheme();
 
   const handleThemeChange = (newIdentifier: string) => {
