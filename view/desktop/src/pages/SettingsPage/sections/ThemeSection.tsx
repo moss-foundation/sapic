@@ -13,10 +13,8 @@ export const ThemeSection = () => {
 
   const { mutate: mutateChangeColorTheme } = useSetColorTheme();
 
-  const handleThemeChange = (identifier: string) => {
-    const selectedTheme = themes?.find((theme: { identifier: string; displayName: string }) =>
-      theme.identifier.endsWith(identifier)
-    );
+  const handleThemeChange = (newIdentifier: string) => {
+    const selectedTheme = themes?.find((theme) => theme.identifier === newIdentifier);
 
     if (selectedTheme) {
       mutateChangeColorTheme({

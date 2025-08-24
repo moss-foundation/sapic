@@ -8,9 +8,10 @@ import { Section } from "../Section";
 
 export const LanguageSection = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
+
+  const { data: appState } = useDescribeAppState();
   const { data: languages } = useListLocales();
   const { mutate: mutateChangeLanguagePack } = useSetLocale();
-  const { data: appState } = useDescribeAppState();
 
   const languageItems: MenuItemProps[] =
     languages?.map((lang: { code: string; displayName: string }) => ({
@@ -20,11 +21,9 @@ export const LanguageSection = () => {
       value: lang.code,
     })) || [];
 
-  const handleLanguageChange = (value: string) => {
-    const selectedLocaleCode = value;
-    const selectedLocaleInfo = languages?.find(
-      (lang: { code: string; displayName: string }) => lang.code === selectedLocaleCode
-    );
+  const handleLanguageChange = (newCode: string) => {
+    const selectedLocaleInfo = languages?.find((lang: { code: string; displayName: string }) => lang.code === newCode);
+
     if (selectedLocaleInfo) {
       mutateChangeLanguagePack({
         localeInfo: selectedLocaleInfo,
@@ -32,12 +31,11 @@ export const LanguageSection = () => {
     }
   };
 
+  const defaultLanguage = appState?.preferences.locale?.code || appState?.defaults.locale?.code || "";
+
   return (
     <Section title={t("selectLanguage")}>
-      <SelectOutlined.Root
-        value={appState?.preferences.locale?.code || appState?.defaults.locale?.code || ""}
-        onValueChange={handleLanguageChange}
-      >
+      <SelectOutlined.Root value={defaultLanguage} onValueChange={handleLanguageChange}>
         <SelectOutlined.Trigger />
         <SelectOutlined.Content>
           {languageItems.map((item) => {
