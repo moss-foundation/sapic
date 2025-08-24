@@ -1,6 +1,7 @@
+import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
+
 import { DirDepthIndicator } from "../DirDepthIndicator";
 import { TreeCollectionNode } from "../types";
-import { sortByOrder } from "../utils";
 import { TreeNode } from "./TreeNode";
 
 interface TreeNodeChildrenProps {
@@ -9,7 +10,7 @@ interface TreeNodeChildrenProps {
 }
 
 const TreeNodeChildren = ({ node, depth }: TreeNodeChildrenProps) => {
-  const sortedChildNodes = sortByOrder(node.childNodes);
+  const sortedChildNodes = sortObjectsByOrder(node.childNodes);
 
   return (
     <ul className="relative h-full">

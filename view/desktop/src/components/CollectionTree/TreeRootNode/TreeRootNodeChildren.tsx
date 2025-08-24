@@ -1,6 +1,7 @@
 import { useContext } from "react";
 
 import { cn } from "@/utils";
+import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 
 import { EntryIcon } from "../../EntryIcon";
 import { CollectionTreeContext } from "../CollectionTreeContext";
@@ -8,7 +9,7 @@ import { DirDepthIndicator } from "../DirDepthIndicator";
 import { NodeAddForm } from "../NodeAddForm";
 import TreeNode from "../TreeNode/TreeNode";
 import { TreeCollectionRootNode } from "../types";
-import { getChildrenNames, sortByOrder } from "../utils";
+import { getChildrenNames } from "../utils";
 
 interface TreeRootNodeChildrenProps {
   node: TreeCollectionRootNode;
@@ -29,8 +30,8 @@ export const TreeRootNodeChildren = ({
 
   const nodesToRender =
     displayMode === "REQUEST_FIRST"
-      ? sortByOrder(node.requests.childNodes)
-      : sortByOrder([node.endpoints, node.schemas, node.components, node.requests]);
+      ? sortObjectsByOrder(node.requests.childNodes)
+      : sortObjectsByOrder([node.endpoints, node.schemas, node.components, node.requests]);
 
   const shouldRenderAddRootForm = displayMode === "REQUEST_FIRST" && (isAddingRootFileNode || isAddingRootFolderNode);
   const restrictedNames = getChildrenNames(node.requests);

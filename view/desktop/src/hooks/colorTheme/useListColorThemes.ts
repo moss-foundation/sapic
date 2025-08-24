@@ -1,4 +1,5 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
+import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { ListColorThemesOutput } from "@repo/moss-app";
 import { useQuery } from "@tanstack/react-query";
 
@@ -17,8 +18,9 @@ const listColorThemesFn = async (): Promise<ListColorThemesOutput> => {
 export const useListColorThemes = () => {
   return useQuery<ListColorThemesOutput, Error>({
     queryKey: [USE_LIST_COLOR_THEMES_QUERY_KEY],
-    queryFn: listColorThemesFn,
-    staleTime: 30 * 60 * 1000, // 30 minutes
-    gcTime: 60 * 60 * 1000, // 1 hour
+    queryFn: async () => {
+      const data = await listColorThemesFn();
+      return sortObjectsByOrder(data);
+    },
   });
 };

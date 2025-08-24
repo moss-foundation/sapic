@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 
-import { sortByOrder } from "@/components/CollectionTree/utils";
 import { invokeTauriIpc } from "@/lib/backend/tauri";
+import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Channel } from "@tauri-apps/api/core";
@@ -49,7 +49,7 @@ export const useStreamEnvironments = () => {
 
     if (globalEnvironments.length === 0) return [];
 
-    return sortByOrder(globalEnvironments);
+    return sortObjectsByOrder(globalEnvironments);
   }, [query.data]);
 
   const groupedEnvironments = useMemo(() => {
@@ -59,7 +59,7 @@ export const useStreamEnvironments = () => {
 
     if (groupedEnvironments.length === 0) return [];
 
-    return sortByOrder(groupedEnvironments);
+    return sortObjectsByOrder(groupedEnvironments);
   }, [query.data]);
 
   return {
