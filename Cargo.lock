@@ -3811,7 +3811,10 @@ dependencies = [
 name = "moss_user"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
+ "async-trait",
  "moss_id_macro",
+ "moss_keyring",
  "nanoid",
  "serde",
  "serde_json",
