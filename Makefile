@@ -20,6 +20,7 @@ ifeq ($(OS),Windows_NT)
     DETECTED_OS := Windows
     HOME_DIR := ${USERPROFILE}
 export DEV_APP_DIR = ${USERPROFILE}\.sapic
+
 else
     DETECTED_OS := $(shell uname)
     HOME_DIR := ${HOME}

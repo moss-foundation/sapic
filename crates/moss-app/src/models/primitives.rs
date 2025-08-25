@@ -2,14 +2,12 @@ use moss_id_macro::ids;
 use serde::{Deserialize, Serialize};
 use tracing::Level;
 use ts_rs::TS;
+
 // ########################################################
-// ###                      Id                          ###
+// ###                      Id                         ###
 // ########################################################
 
-pub type LocaleId = String;
-pub type ThemeId = String;
-
-ids!([WorkspaceId]);
+ids!([WorkspaceId, LocaleId, ThemeId]);
 
 // ########################################################
 // ###                      Theme                       ###

@@ -32,6 +32,7 @@ members = [
     "crates/moss-wasm",
     "crates/moss-edit",
     "crates/moss-logging",
+    "crates/moss-user",
     #
     # Apps
     #
@@ -75,6 +76,7 @@ moss_wasm = { path = "crates/moss-wasm" }
 moss_edit = { path = "crates/moss-edit" }
 moss_logging = { path = "crates/moss-logging" }
 moss_id_macro = { path = "crates/moss-id-macro"}
+moss_user = { path = "crates/moss-user" }
 #
 # External crates
 #

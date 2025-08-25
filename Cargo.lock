@@ -3808,6 +3808,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "moss_user"
+version = "0.1.0"
+dependencies = [
+ "moss_id_macro",
+ "nanoid",
+ "serde",
+ "serde_json",
+ "tokio",
+ "ts-rs",
+]
+
+[[package]]
 name = "moss_vault"
 version = "0.1.0"
 dependencies = [
