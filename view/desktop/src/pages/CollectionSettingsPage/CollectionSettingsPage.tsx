@@ -28,7 +28,6 @@ const StatusDot = ({ active }: { active: boolean }) =>
 export interface CollectionSettingsParams {
   collectionId: string;
 }
-
 export const CollectionSettings = ({ ...props }: IDockviewPanelProps<CollectionSettingsParams>) => {
   const { collectionId } = props.params;
 

@@ -54,6 +54,7 @@ export const NewCollectionModal = ({ closeModal, showModal, initialTab = CREATE_
       if (openAutomatically) {
         addOrFocusPanel({
           id: result.id,
+          title: result.name,
           component: "CollectionSettings",
           params: {
             collectionId: result.id,
@@ -78,6 +79,7 @@ export const NewCollectionModal = ({ closeModal, showModal, initialTab = CREATE_
         addOrFocusPanel({
           id: result.id,
           component: "CollectionSettings",
+          title: result.name,
           params: {
             collectionId: result.id,
           },

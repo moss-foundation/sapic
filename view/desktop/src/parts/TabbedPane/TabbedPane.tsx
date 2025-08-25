@@ -165,6 +165,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
   const onDidDrop = (event: DockviewDidDropEvent) => {
     if (!pragmaticDropElement || !api) return;
 
+    //TODO: this is a hardcoded component, later we we will need to have a more generic way to handle this
     addOrFocusPanel({
       id: pragmaticDropElement.node.id,
       title: pragmaticDropElement.node.name,
@@ -196,15 +197,12 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
 
   const pageConfigs: Record<string, PageConfig> = {
     KitchenSink: {
-      title: "KitchenSink",
       component: KitchenSink,
     },
     Settings: {
-      title: "Settings",
       component: Settings,
     },
     Logs: {
-      title: "Logs",
       component: Logs,
     },
   };
