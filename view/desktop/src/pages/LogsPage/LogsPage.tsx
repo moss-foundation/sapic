@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import AIDemo from "@/ai/AIDemo.tsx";
+import { PageContent } from "@/components";
 import { ActivityEventSimulator } from "@/components/ActivityEventSimulator";
 import { useActivityEvents } from "@/context/ActivityEventsContext";
+import { GitProviders } from "@/git_providers/GitProviders.tsx";
 import { LogEntryInfo, LOGGING_SERVICE_CHANNEL } from "@repo/moss-app";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { GitProviders } from "@/git_providers/GitProviders.tsx";
 
 export const Logs = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
@@ -34,7 +35,7 @@ export const Logs = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <PageContent className="space-y-6">
       <section className="mb-6">
         <h2 className="mb-2 text-xl">AI Assistant</h2>
         <div className="rounded bg-gray-50 p-4">
@@ -126,6 +127,6 @@ export const Logs = () => {
           <p className="text-secondary">{t("noLogs")}...</p>
         )}
       </section>
-    </div>
+    </PageContent>
   );
 };

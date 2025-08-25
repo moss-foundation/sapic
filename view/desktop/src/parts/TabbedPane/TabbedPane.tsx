@@ -195,18 +195,6 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     return () => event.dispose();
   }, [api, updateEditorPartState, hasActiveWorkspace]);
 
-  const pageConfigs: Record<string, PageConfig> = {
-    KitchenSink: {
-      component: KitchenSink,
-    },
-    Settings: {
-      component: Settings,
-    },
-    Logs: {
-      component: Logs,
-    },
-  };
-
   const components = {
     Default: (
       props: IDockviewPanelProps<{
@@ -265,13 +253,9 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     ) => <FolderSettings {...props} />,
     Welcome: () => <WelcomePage />,
     WorkspaceSettings: (props: IDockviewPanelProps) => <WorkspaceSettings {...props} />,
-    ...Object.entries(pageConfigs).reduce(
-      (acc, [key, config]) => {
-        acc[key] = (props: IDockviewPanelProps) => <DynamicPageWrapper pageKey={key} config={config} props={props} />;
-        return acc;
-      },
-      {} as Record<string, (props: IDockviewPanelProps) => JSX.Element>
-    ),
+    KitchenSink: () => <KitchenSink />,
+    Settings: () => <Settings />,
+    Logs: () => <Logs />,
   };
 
   return (
