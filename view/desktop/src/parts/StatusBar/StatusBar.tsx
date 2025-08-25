@@ -1,4 +1,4 @@
-import { useEffect, useState, type ComponentPropsWithoutRef } from "react";
+import { useEffect, useRef, useState, type ComponentPropsWithoutRef } from "react";
 
 import { Divider } from "@/components/Divider";
 import { Icons } from "@/lib/ui";
@@ -96,7 +96,7 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
       <div className="flex h-full gap-6">
         <ZoomButtons />
         <div className="flex gap-1">
-          <StatusBarButton label="60 FPS" />
+          <FPSCounter />
           <Divider height="medium" />
           <StatusBarButton icon={isOnline ? "Success" : "Error"} label={isOnline ? "Online" : "Offline"} />
         </div>
@@ -106,3 +106,32 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
 };
 
 export default StatusBar;
+
+const FPSCounter = ({ updateInterval = 100 }) => {
+  const [fps, setFps] = useState(0);
+  const frames = useRef(0);
+  const lastTime = useRef(performance.now());
+
+  useEffect(() => {
+    let animationFrameId: number;
+
+    const loop = (time: number) => {
+      frames.current++;
+
+      const delta = time - lastTime.current;
+      if (delta >= updateInterval) {
+        setFps(Math.round((frames.current * 1000) / delta));
+        frames.current = 0;
+        lastTime.current = time;
+      }
+
+      animationFrameId = requestAnimationFrame(loop);
+    };
+
+    animationFrameId = requestAnimationFrame(loop);
+
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [updateInterval]);
+
+  return <StatusBarButton label={`${fps} FPS`} />;
+};

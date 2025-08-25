@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 
 import { useModal } from "@/hooks/useModal";
-import { useGlobalSidebarState } from "@/hooks/workspace/useGlobalSidebarState";
+import { useGlobalSidebarState } from "@/hooks/workspace/derived/useGlobalSidebarState";
 
 import ErrorNaughtyDog from "../assets/images/ErrorNaughtyDog.svg";
 import TabbedPane from "../parts/TabbedPane/TabbedPane";

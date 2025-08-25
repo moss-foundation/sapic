@@ -2,7 +2,7 @@ import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { BatchUpdateCollectionInput, StreamCollectionsEvent, UpdateCollectionOutput } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { USE_STREAMED_COLLECTIONS_QUERY_KEY } from "./useStreamedCollections";
+import { USE_STREAM_COLLECTIONS_QUERY_KEY } from "./useStreamCollections";
 
 const batchUpdateCollection = async (input: BatchUpdateCollectionInput) => {
   const result = await invokeTauriIpc<UpdateCollectionOutput>("batch_update_collection", {
@@ -22,7 +22,7 @@ export const useBatchUpdateCollection = () => {
   return useMutation({
     mutationFn: batchUpdateCollection,
     onSuccess: (_, variables) => {
-      queryClient.setQueryData([USE_STREAMED_COLLECTIONS_QUERY_KEY], (old: StreamCollectionsEvent[]) => {
+      queryClient.setQueryData([USE_STREAM_COLLECTIONS_QUERY_KEY], (old: StreamCollectionsEvent[]) => {
         return old.map((oldCollection) => {
           const updatedCollection = variables.items.find((collection) => collection.id === oldCollection.id);
           if (updatedCollection) {

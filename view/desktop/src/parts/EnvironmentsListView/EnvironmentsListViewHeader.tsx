@@ -1,7 +1,6 @@
 import { ActionButton, SidebarHeader } from "@/components";
 import { NewEnvironmentModal } from "@/components/Modals/Environment/NewEnvironmentModal";
-import { useActiveWorkspace, useModal } from "@/hooks";
-import { useStreamEnvironments } from "@/hooks/environment";
+import { useActiveWorkspace, useModal, useStreamEnvironments } from "@/hooks";
 
 export const EnvironmentsListViewHeader = () => {
   const { hasActiveWorkspace } = useActiveWorkspace();

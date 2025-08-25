@@ -55,7 +55,3 @@ export const countNumberOfAllNestedChildNodes = (node: TreeCollectionNode): numb
     return acc + childCount + countNumberOfAllNestedChildNodes(child);
   }, 0);
 };
-
-export const sortByOrder = <T extends { order?: number }>(entries: T[]) => {
-  return [...entries].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-};

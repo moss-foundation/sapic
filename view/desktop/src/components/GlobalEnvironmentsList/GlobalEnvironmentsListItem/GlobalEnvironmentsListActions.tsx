@@ -2,8 +2,7 @@ import { useState } from "react";
 
 import { ActionMenu, ConfirmationModal } from "@/components";
 import ActionButton from "@/components/ActionButton";
-import { useModal } from "@/hooks";
-import { useDeleteEnvironment, useStreamEnvironments, useUpdateEnvironment } from "@/hooks/environment";
+import { useDeleteEnvironment, useModal, useStreamEnvironments, useUpdateEnvironment } from "@/hooks";
 import { useWorkspaceListStore } from "@/store/workspaceList";
 import { cn } from "@/utils";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";

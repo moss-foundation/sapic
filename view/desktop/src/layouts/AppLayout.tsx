@@ -7,9 +7,9 @@ import { ReactNode, useEffect, useRef, useState } from "react";
 
 import { ActivityBar, BottomPane, Sidebar } from "@/components";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
-import { useUpdateActivitybarPartState } from "@/hooks/appState/useUpdateActivitybarPartState";
-import { useUpdatePanelPartState } from "@/hooks/appState/useUpdatePanelPartState";
-import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
+import { useUpdateActivitybarPartState } from "@/hooks/app/useUpdateActivitybarPartState";
+import { useUpdatePanelPartState } from "@/hooks/app/useUpdatePanelPartState";
+import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { useActivityBarStore } from "@/store/activityBar";
 import { cn } from "@/utils";

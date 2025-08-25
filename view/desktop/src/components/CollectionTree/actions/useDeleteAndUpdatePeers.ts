@@ -1,10 +1,10 @@
-import { USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, useDeleteCollectionEntry } from "@/hooks";
+import { USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY, useDeleteCollectionEntry } from "@/hooks";
 import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
+import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { BatchUpdateEntryInput, BatchUpdateEntryKind, StreamEntriesEvent } from "@repo/moss-collection";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { TreeCollectionNode } from "../types";
-import { sortByOrder } from "../utils";
 
 export const useDeleteAndUpdatePeers = (
   collectionId: string,
@@ -24,7 +24,7 @@ export const useDeleteAndUpdatePeers = (
       },
     });
 
-    const sortedChildren = sortByOrder(parentNode.childNodes);
+    const sortedChildren = sortObjectsByOrder(parentNode.childNodes);
     const index = sortedChildren.findIndex((e) => e.id === node.id) + 1;
     const updatedParentNodeChildren = sortedChildren.slice(index).map((e) => ({
       ...e,
@@ -67,7 +67,7 @@ export const useDeleteAndUpdatePeers = (
 
     if (result.status === "ok") {
       queryClient.setQueryData(
-        [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, collectionId],
+        [USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY, collectionId],
         (cacheData: StreamEntriesEvent[]) => {
           return cacheData.map((cacheEntry) => {
             if (updatedParentNodeChildren.some((e) => e.id === cacheEntry.id)) {

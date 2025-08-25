@@ -9,6 +9,8 @@ import "allotment/dist/style.css";
 import "simplebar-react/dist/simplebar.min.css";
 import "./assets/index.css";
 
+import { scan } from "react-scan"; // must be imported before React and React DOM
+
 import { QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { getCurrentWindow } from "@tauri-apps/api/window";
@@ -28,8 +30,6 @@ const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
       refetchOnMount: false,
-      staleTime: 5 * 60 * 1000, // 5 minutes - data stays fresh longer
-      gcTime: 10 * 60 * 1000, // 10 minutes - keep in cache longer (was cacheTime)
     },
   },
 });
@@ -39,6 +39,10 @@ if (import.meta.env.MODE === "development") {
   script.src = "http://localhost:8097";
   document.head.appendChild(script);
 }
+
+scan({
+  enabled: false,
+});
 
 const App = lazy(() => import("@/app"));
 const Workbench = lazy(() => import("@/components/Workbench").then((module) => ({ default: module.Workbench })));

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { PageHeader, PageView } from "@/components";
 import { TreeCollectionNode } from "@/components/CollectionTree/types";
 import { PageContainerWithTabs, TabItem } from "@/components/PageContainer";
-import { useStreamedCollectionEntries } from "@/hooks/collection/useStreamedCollectionEntries";
+import { useStreamCollectionEntries } from "@/hooks/collection/useStreamCollectionEntries";
 import { useRenameEntryForm } from "@/hooks/useRenameEntryForm";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 import { Icon } from "@/lib/ui";
@@ -19,7 +19,7 @@ export interface FolderSettingsParams {
 }
 
 export const FolderSettings = ({ ...props }: IDockviewPanelProps<FolderSettingsParams>) => {
-  const { data: streamedEntries } = useStreamedCollectionEntries(props.params?.collectionId);
+  const { data: streamedEntries } = useStreamCollectionEntries(props.params?.collectionId);
   const node = streamedEntries?.find((entry) => entry.id === props.params?.node?.id);
 
   const { isRenamingEntry, setIsRenamingEntry, handleRenamingEntrySubmit, handleRenamingEntryCancel } =

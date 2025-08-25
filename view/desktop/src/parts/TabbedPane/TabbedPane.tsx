@@ -4,21 +4,12 @@ import React from "react";
 
 import { Breadcrumbs, PageContent, PageHeader, PageView } from "@/components";
 import { DropNode, TreeCollectionNode } from "@/components/CollectionTree/types";
-import { useUpdateEditorPartState } from "@/hooks/appState/useUpdateEditorPartState";
-import { mapEditorPartStateToSerializedDockview } from "@/hooks/appState/utils";
-import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
-import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
+import { useUpdateEditorPartState } from "@/hooks/app/useUpdateEditorPartState";
+import { mapEditorPartStateToSerializedDockview } from "@/hooks/app/utils";
+import { useActiveWorkspace, useDescribeWorkspaceState } from "@/hooks/workspace";
 import { type Icons } from "@/lib/ui";
-import {
-  CollectionSettingsPage,
-  FolderSettings,
-  KitchenSink,
-  Logs,
-  RequestPage,
-  Settings,
-  WelcomePage,
-  WorkspaceSettings,
-} from "@/pages";
+import { FolderSettings, KitchenSink, Logs, RequestPage, Settings, WelcomePage, WorkspaceSettings } from "@/pages";
+import { CollectionSettingsPage } from "@/pages/CollectionSettingsPage";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import { EntryKind } from "@repo/moss-collection";
@@ -174,6 +165,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
   const onDidDrop = (event: DockviewDidDropEvent) => {
     if (!pragmaticDropElement || !api) return;
 
+    //TODO: this is a hardcoded component, later we we will need to have a more generic way to handle this
     addOrFocusPanel({
       id: pragmaticDropElement.node.id,
       title: pragmaticDropElement.node.name,
@@ -202,24 +194,6 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
 
     return () => event.dispose();
   }, [api, updateEditorPartState, hasActiveWorkspace]);
-
-  const pageConfigs: Record<string, PageConfig> = {
-    KitchenSink: {
-      title: "KitchenSink",
-      component: KitchenSink,
-    },
-    Settings: {
-      title: "Settings",
-      component: Settings,
-    },
-    Logs: {
-      title: "Logs",
-      component: Logs,
-    },
-    Welcome: {
-      component: WelcomePage,
-    },
-  };
 
   const components = {
     Default: (
@@ -277,14 +251,11 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
         iconType: EntryKind;
       }>
     ) => <FolderSettings {...props} />,
+    Welcome: () => <WelcomePage />,
     WorkspaceSettings: (props: IDockviewPanelProps) => <WorkspaceSettings {...props} />,
-    ...Object.entries(pageConfigs).reduce(
-      (acc, [key, config]) => {
-        acc[key] = (props: IDockviewPanelProps) => <DynamicPageWrapper pageKey={key} config={config} props={props} />;
-        return acc;
-      },
-      {} as Record<string, (props: IDockviewPanelProps) => JSX.Element>
-    ),
+    KitchenSink: () => <KitchenSink />,
+    Settings: () => <Settings />,
+    Logs: () => <Logs />,
   };
 
   return (

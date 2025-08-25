@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { useUpdateEnvironment } from "@/hooks/environment";
+import { useUpdateEnvironment } from "@/hooks";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
 interface UseGlobalEnvironmentsListRenamingFormProps {

@@ -16,7 +16,7 @@ export const WelcomePageSteps = () => {
 
 const StepCard = ({ isNew = false }: { isNew?: boolean }) => {
   return (
-    <div className="background-(--moss-secondary-background) w-[275px] rounded-lg px-4 py-3">
+    <div className="background-(--moss-secondary-background) flex max-w-[275px] flex-col gap-1.5 rounded-lg px-4 py-3">
       <div className="flex items-center gap-1.5">
         <Icon icon="Info" />
         <span className="font-medium">Learn the Fundamentals</span>
@@ -26,6 +26,7 @@ const StepCard = ({ isNew = false }: { isNew?: boolean }) => {
           </div>
         )}
       </div>
+
       <div className="text-(--moss-secondary-text)">
         Explain behavior that is not clear from the setting or action name.
       </div>

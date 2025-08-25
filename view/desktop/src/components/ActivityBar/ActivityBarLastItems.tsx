@@ -6,7 +6,7 @@ import { cn } from "@/utils";
 import { ActivityBarButton } from "./ActivityBarButton";
 
 export const ActivityBarLastItems = () => {
-  const { openPanel } = useTabbedPaneStore();
+  const { addOrFocusPanel } = useTabbedPaneStore();
   const { position } = useActivityBarStore();
   return (
     <div
@@ -22,7 +22,12 @@ export const ActivityBarLastItems = () => {
         id="1"
         title="User"
         order={1}
-        onClick={() => openPanel("Settings")}
+        onClick={() =>
+          addOrFocusPanel({
+            id: "Settings",
+            component: "Settings",
+          })
+        }
         isDraggable={false}
       />
       <ActivityBarButton
@@ -32,7 +37,12 @@ export const ActivityBarLastItems = () => {
         id="2"
         title="Settings"
         order={2}
-        onClick={() => openPanel("Settings")}
+        onClick={() =>
+          addOrFocusPanel({
+            id: "Settings",
+            component: "Settings",
+          })
+        }
         isDraggable={false}
       />
     </div>

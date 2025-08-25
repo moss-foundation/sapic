@@ -17,7 +17,5 @@ export const useListLocales = () => {
   return useQuery<ListLocalesOutput, Error>({
     queryKey: [USE_LIST_LOCALES_QUERY_KEY],
     queryFn: listLocalesFn,
-    staleTime: 30 * 60 * 1000, // 30 minutes
-    gcTime: 60 * 60 * 1000, // 1 hour
   });
 };

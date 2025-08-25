@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { useStreamEnvironments } from "@/hooks/environment";
+import { useStreamEnvironments } from "@/hooks";
 import { useWorkspaceListStore } from "@/store/workspaceList";
 
 import { GlobalEnvironmentsListItem } from "./GlobalEnvironmentsListItem/GlobalEnvironmentsListItem";

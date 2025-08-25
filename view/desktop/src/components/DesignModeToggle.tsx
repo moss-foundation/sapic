@@ -13,7 +13,6 @@ export const DesignModeToggle = ({ className }: DesignModeToggleProps) => {
   const { data: collectionsWithEntries } = useStreamedCollectionsWithEntries();
 
   const handleSetRequestFirstMode = () => {
-    console.log("handleSetRequestFirstMode");
     setDisplayMode("REQUEST_FIRST");
     const allEntries = collectionsWithEntries?.map((collection) => collection.entries).flat();
 

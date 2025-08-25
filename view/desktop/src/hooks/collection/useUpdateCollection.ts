@@ -2,7 +2,7 @@ import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { StreamCollectionsEvent, UpdateCollectionInput, UpdateCollectionOutput } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { USE_STREAMED_COLLECTIONS_QUERY_KEY } from "./useStreamedCollections";
+import { USE_STREAM_COLLECTIONS_QUERY_KEY } from "./useStreamCollections";
 
 export const updateCollection = async (input: UpdateCollectionInput) => {
   const result = await invokeTauriIpc<UpdateCollectionOutput>("update_collection", { input });
@@ -20,7 +20,7 @@ export const useUpdateCollection = () => {
   return useMutation<UpdateCollectionOutput, Error, UpdateCollectionInput>({
     mutationFn: updateCollection,
     onSuccess: (data, variables) => {
-      queryClient.setQueryData([USE_STREAMED_COLLECTIONS_QUERY_KEY], (old: StreamCollectionsEvent[]) => {
+      queryClient.setQueryData([USE_STREAM_COLLECTIONS_QUERY_KEY], (old: StreamCollectionsEvent[]) => {
         return old.map((oldCollection) => {
           if (oldCollection.id !== data.id) return oldCollection;
 

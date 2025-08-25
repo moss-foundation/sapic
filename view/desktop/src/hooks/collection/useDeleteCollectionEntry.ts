@@ -3,7 +3,7 @@ import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { DeleteEntryInput, DeleteEntryOutput, StreamEntriesEvent } from "@repo/moss-collection";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY } from "./useStreamedCollectionEntries";
+import { USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY } from "./useStreamCollectionEntries";
 
 export interface UseDeleteCollectionEntryInput {
   collectionId: string;
@@ -28,7 +28,7 @@ export const useDeleteCollectionEntry = () => {
     mutationFn: deleteCollectionEntry,
     onSuccess: async (data, variables) => {
       queryClient.setQueryData(
-        [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, variables.collectionId],
+        [USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY, variables.collectionId],
         (old: StreamEntriesEvent[]) => {
           const deletedEntry = old.find((entry) => entry.id === data.id);
 

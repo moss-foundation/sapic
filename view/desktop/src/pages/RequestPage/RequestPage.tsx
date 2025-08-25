@@ -11,7 +11,7 @@ import {
   TabItem,
 } from "@/components";
 import { TreeCollectionNode } from "@/components/CollectionTree/types";
-import { useStreamedCollectionEntries } from "@/hooks";
+import { useStreamCollectionEntries } from "@/hooks";
 import { useRenameEntryForm } from "@/hooks/useRenameEntryForm";
 import { Icon } from "@/lib/ui";
 import { useRequestPage } from "@/pages/RequestPage/hooks/useRequestPage";
@@ -46,7 +46,7 @@ interface RequestPageProps {
 const RequestPage = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
   const { displayMode } = useRequestModeStore();
 
-  const { data: streamedEntries } = useStreamedCollectionEntries(props.params?.collectionId);
+  const { data: streamedEntries } = useStreamCollectionEntries(props.params?.collectionId);
   const node = streamedEntries?.find((entry) => entry.id === props.params?.node?.id);
 
   const showEndpoint = displayMode === "DESIGN_FIRST" && node?.class === "Endpoint";

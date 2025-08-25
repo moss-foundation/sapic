@@ -3,7 +3,7 @@ import { RefObject } from "react";
 import { useCloseWorkspace } from "@/hooks/workbench/useCloseWorkspace";
 import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
 import { useWorkspaceMapping } from "@/hooks/workbench/useWorkspaceMapping";
-import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
+import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 // Helper to extract workspace ID from prefixed action ID
