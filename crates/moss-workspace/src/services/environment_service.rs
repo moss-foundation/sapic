@@ -70,6 +70,7 @@ where
 pub struct EnvironmentItemDescription {
     pub id: EnvironmentId,
     pub collection_id: Option<Arc<String>>,
+    pub is_active: bool,
     pub display_name: String,
     pub order: Option<isize>,
     pub color: Option<String>,
@@ -265,11 +266,14 @@ where
             let mut state_lock = state_clone.write().await;
             while let Some((item, desc)) = rx.recv().await {
                 let id = item.id.clone();
-                let group_id = item.collection_id.clone();
+                let group_key = item.collection_id.clone().unwrap_or_else(|| {
+                    GLOBAL_ACTIVE_ENVIRONMENT_KEY.to_string().into()
+                });
 
                 let desc = EnvironmentItemDescription {
                     id: id.clone(),
                     collection_id: item.collection_id.clone(),
+                    is_active: state_lock.active_environments.get(&group_key) == Some(&desc.id),
                     display_name: desc.name,
                     order: item.order.clone(),
                     color: desc.color,
@@ -278,6 +282,7 @@ where
                 };
 
                 {
+                    let group_id = item.collection_id.clone();
                     state_lock.environments.insert(id, item);
 
                     if let Some(group_id) = group_id {
@@ -438,6 +443,8 @@ where
         Ok(EnvironmentItemDescription {
             id: desc.id.clone(),
             collection_id: collection_id_inner,
+            // FIXME: Should we provide option to activate an environment upon creation?
+            is_active: false,
             display_name: params.name.clone(),
             order: Some(params.order),
             color: desc.color,
