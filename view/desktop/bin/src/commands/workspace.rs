@@ -159,6 +159,21 @@ pub async fn batch_update_collection<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn activate_environment<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: Window<R>,
+    input: ActivateEnvironmentInput,
+    options: Options,
+) -> TauriResult<ActivateEnvironmentOutput> {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
+        workspace.activate_environment(&ctx, input).await
+    })
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn create_environment<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,

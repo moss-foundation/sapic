@@ -39,6 +39,13 @@ use crate::{
     storage::segments,
 };
 
+const GLOBAL_ACTIVE_ENVIRONMENT_KEY: &'static str = "";
+
+pub struct ActivateEnvironmentItemParams {
+    pub environment_id: EnvironmentId,
+    pub group_id: Option<CollectionId>,
+}
+
 pub struct CreateEnvironmentItemParams {
     pub collection_id: Option<CollectionId>,
     pub name: String,
@@ -77,6 +84,7 @@ where
     R: AppRuntime,
 {
     environments: EnvironmentMap<R>,
+    active_environments: HashMap<Arc<String>, EnvironmentId>,
     groups: FxHashSet<Arc<String>>,
     expanded_groups: HashSet<Arc<String>>,
     sources: FxHashMap<Arc<String>, PathBuf>,
@@ -106,6 +114,7 @@ where
         let abs_path = abs_path.join(dirs::ENVIRONMENTS_DIR);
         let state = Arc::new(RwLock::new(ServiceState {
             environments: HashMap::new(),
+            active_environments: HashMap::new(),
             groups: FxHashSet::default(),
             expanded_groups: HashSet::new(),
             sources,
@@ -448,6 +457,16 @@ where
             .remove(id)
             .ok_or_join_err_with::<ErrorNotFound>(|| format!("environment {} not found", id))?;
 
+        // If the environment is currently active, deactivate it
+        let env_group_key = environment
+            .collection_id
+            .clone()
+            .unwrap_or_else(|| GLOBAL_ACTIVE_ENVIRONMENT_KEY.to_string().into());
+
+        if state.active_environments.get(&env_group_key) == Some(&environment.id) {
+            state.active_environments.remove(&env_group_key);
+        }
+
         let desc = environment.describe(ctx).await?;
         self.fs
             .remove_file(
@@ -497,6 +516,34 @@ where
                 }
             }
         }
+
+        Ok(())
+    }
+
+    pub async fn activate_environment(
+        &self,
+        _ctx: &R::AsyncContext,
+        params: ActivateEnvironmentItemParams,
+    ) -> joinerror::Result<()> {
+        let mut state = self.state.write().await;
+
+        let environment_id = state
+            .environments
+            .get(&params.environment_id)
+            .ok_or_join_err_with::<ErrorNotFound>(|| {
+                format!("environment {} not found", params.environment_id)
+            })?
+            .id
+            .clone();
+
+        let env_group_key = params
+            .group_id
+            .unwrap_or_else(|| GLOBAL_ACTIVE_ENVIRONMENT_KEY.to_string().into())
+            .inner();
+
+        state
+            .active_environments
+            .insert(env_group_key.clone(), environment_id);
 
         Ok(())
     }

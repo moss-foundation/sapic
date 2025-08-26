@@ -1,3 +1,4 @@
+pub mod activate_environment;
 pub mod batch_update_collection;
 pub mod batch_update_environment;
 pub mod batch_update_environment_group;
