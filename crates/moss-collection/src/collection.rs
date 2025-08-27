@@ -157,7 +157,7 @@ impl<R: AppRuntime> Collection<R> {
             }
         };
 
-        let git_provider_type = vcs.git_provider_type();
+        let git_provider_type = vcs.provider();
         let client: Arc<dyn GitHostingProvider> = match &git_provider_type {
             GitProviderType::GitHub => self.github_client.clone(),
             GitProviderType::GitLab => self.gitlab_client.clone(),
@@ -239,33 +239,6 @@ impl<R: AppRuntime> Collection<R> {
         }
 
         // TODO: Reintroduce repository updating
-        // match params.repository {
-        //     Some(ChangeString::Update(url)) => {
-        //         let normalized_url = normalize_git_url(&url)?;
-        //         patches.push((
-        //             PatchOperation::Add(AddOperation {
-        //                 path: unsafe { PointerBuf::new_unchecked("/repository/url") },
-        //                 value: JsonValue::String(normalized_url),
-        //             }),
-        //             EditOptions {
-        //                 create_missing_segments: false,
-        //                 ignore_if_not_exists: false,
-        //             },
-        //         ));
-        //     }
-        //     Some(ChangeString::Remove) => {
-        //         patches.push((
-        //             PatchOperation::Remove(RemoveOperation {
-        //                 path: unsafe { PointerBuf::new_unchecked("/repository/url") },
-        //             }),
-        //             EditOptions {
-        //                 create_missing_segments: false,
-        //                 ignore_if_not_exists: true,
-        //             },
-        //         ));
-        //     }
-        //     None => {}
-        // }
 
         match params.icon_path {
             None => {}

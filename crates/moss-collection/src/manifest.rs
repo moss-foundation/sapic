@@ -12,22 +12,22 @@ pub(super) struct ManifestFile {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub(super) enum ManifestVcs {
-    GITHUB { repository: String },
-    GITLAB { repository: String },
+    GitHub { repository: String },
+    GitLab { repository: String },
 }
 
 impl ManifestVcs {
-    pub fn git_provider_type(&self) -> GitProviderType {
+    pub fn provider(&self) -> GitProviderType {
         match self {
-            ManifestVcs::GITHUB { .. } => GitProviderType::GitHub,
-            ManifestVcs::GITLAB { .. } => GitProviderType::GitLab,
+            ManifestVcs::GitHub { .. } => GitProviderType::GitHub,
+            ManifestVcs::GitLab { .. } => GitProviderType::GitLab,
         }
     }
 
     pub fn repository(&self) -> &str {
         match self {
-            ManifestVcs::GITHUB { repository, .. } => repository,
-            ManifestVcs::GITLAB { repository, .. } => repository,
+            ManifestVcs::GitHub { repository, .. } => repository,
+            ManifestVcs::GitLab { repository, .. } => repository,
         }
     }
 }

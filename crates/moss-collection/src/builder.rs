@@ -149,7 +149,7 @@ impl<R: AppRuntime> CollectionBuilder<R> {
 
         let repo_handle = if params.internal_abs_path.join(".git").exists() {
             self.load_repo_handle(
-                manifest.vcs.map(|vcs| vcs.git_provider_type()),
+                manifest.vcs.map(|vcs| vcs.provider()),
                 params.internal_abs_path.clone(),
             )
             .await
@@ -243,10 +243,10 @@ impl<R: AppRuntime> CollectionBuilder<R> {
         let vcs = params.git_params.as_ref().and_then(|p| {
             match normalize_git_url(&p.repository) {
                 Ok(normalized_repository) => match p.git_provider_type {
-                    GitProviderType::GitHub => Some(ManifestVcs::GITHUB {
+                    GitProviderType::GitHub => Some(ManifestVcs::GitHub {
                         repository: normalized_repository,
                     }),
-                    GitProviderType::GitLab => Some(ManifestVcs::GITLAB {
+                    GitProviderType::GitLab => Some(ManifestVcs::GitLab {
                         repository: normalized_repository,
                     }),
                 },
