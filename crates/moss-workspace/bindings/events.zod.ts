@@ -16,4 +16,5 @@ export const streamCollectionsEventSchema = z.object({
   expanded: z.boolean(),
   branch: branchInfoSchema.optional(),
   iconPath: z.string().optional(),
+  archived: z.boolean(),
 });

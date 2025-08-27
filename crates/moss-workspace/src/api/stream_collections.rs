@@ -26,6 +26,7 @@ impl<R: AppRuntime> Workspace<R> {
                 expanded: desc.expanded,
                 branch: desc.vcs.and_then(|vcs| vcs.branch()),
                 icon_path: desc.icon_path,
+                archived: desc.archived,
             };
 
             if let Err(e) = channel.send(event) {

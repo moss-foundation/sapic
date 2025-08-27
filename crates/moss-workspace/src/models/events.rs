@@ -18,8 +18,8 @@ pub struct StreamCollectionsEvent {
     pub order: Option<isize>,
     pub expanded: bool,
     pub branch: Option<BranchInfo>,
-
     pub icon_path: Option<PathBuf>,
+    pub archived: bool,
 }
 
 /// @category Event

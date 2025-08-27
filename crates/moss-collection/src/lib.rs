@@ -1,10 +1,10 @@
 pub mod api;
 pub mod builder;
 pub mod collection;
-mod config;
+pub mod config;
 mod edit;
 mod helpers;
-mod manifest;
+pub mod manifest;
 pub mod models;
 mod services;
 mod worktree;

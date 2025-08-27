@@ -29,6 +29,7 @@ use tokio::sync::RwLock;
 use crate::{
     builder::{OnDidAddCollection, OnDidDeleteCollection},
     dirs,
+    dirs::COLLECTIONS_DIR,
     models::{
         primitives::CollectionId,
         types::{CreateCollectionGitParams, CreateCollectionParams, UpdateCollectionParams},
@@ -66,12 +67,11 @@ pub(crate) struct CollectionItemDescription {
     pub order: Option<isize>,
     pub expanded: bool,
     pub vcs: Option<VcsSummary>,
-    // pub repository: Option<String>,
-
     // FIXME: Do we need this field?
     pub icon_path: Option<PathBuf>,
     pub abs_path: Arc<Path>,
     pub external_path: Option<PathBuf>,
+    pub archived: bool,
 }
 
 #[derive(Default)]
@@ -294,6 +294,7 @@ impl<R: AppRuntime> CollectionService<R> {
             icon_path,
             abs_path: abs_path.into(),
             external_path: params.external_path.clone(),
+            archived: false,
         })
     }
 
@@ -414,6 +415,7 @@ impl<R: AppRuntime> CollectionService<R> {
             icon_path,
             abs_path,
             external_path: None,
+            archived: false,
         })
     }
 
@@ -554,11 +556,65 @@ impl<R: AppRuntime> CollectionService<R> {
                     icon_path,
                     abs_path: item.handle.abs_path().clone(),
                     external_path: None, // TODO: implement
+                    archived: false,
                 };
+            }
+
+            for id in state_lock.archived_collections.iter() {
+                let desc = continue_if_err!(describe_archived_collection(
+                    &self.abs_path,
+                    &self.fs,
+                    id
+                ).await, |e: Error| {
+                    session::error!(format!("failed to describe archived collection `{}`: {}", id.to_string(), e.to_string()));
+                });
+
+                yield desc;
             }
         })
     }
 }
+
+async fn describe_archived_collection(
+    abs_path: &Path,
+    fs: &Arc<dyn FileSystem>,
+    collection_id: &CollectionId,
+) -> joinerror::Result<CollectionItemDescription> {
+    let collection_path = abs_path.join(COLLECTIONS_DIR).join(collection_id.as_str());
+
+    let manifest: moss_collection::manifest::ManifestFile = {
+        let manifest_path = collection_path.join(moss_collection::manifest::MANIFEST_FILE_NAME);
+        let rdr = fs.open_file(&manifest_path).await.join_err_with::<()>(|| {
+            format!("failed to open manifest file: {}", manifest_path.display())
+        })?;
+        serde_json::from_reader(rdr).join_err_with::<()>(|| {
+            format!("failed to parse manifest file: {}", manifest_path.display())
+        })?
+    };
+
+    let config: moss_collection::config::ConfigFile = {
+        let config_path = collection_path.join(moss_collection::config::CONFIG_FILE_NAME);
+        let rdr = fs.open_file(&config_path).await.join_err_with::<()>(|| {
+            format!("failed to open manifest file: {}", config_path.display())
+        })?;
+        serde_json::from_reader(rdr).join_err_with::<()>(|| {
+            format!("failed to parse manifest file: {}", config_path.display())
+        })?
+    };
+
+    Ok(CollectionItemDescription {
+        id: collection_id.clone(),
+        name: manifest.name,
+        order: None,
+        expanded: false,
+        vcs: None,
+        icon_path: None,
+        abs_path: Arc::from(collection_path.as_path()),
+        external_path: config.external_path,
+        archived: true,
+    })
+}
+
 async fn restore_collections<R: AppRuntime>(
     ctx: &R::AsyncContext,
     abs_path: &Path,
