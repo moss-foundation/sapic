@@ -1,6 +1,6 @@
 use derive_more::Deref;
 use futures::Stream;
-use joinerror::OptionExt;
+use joinerror::{Error, OptionExt};
 use moss_applib::AppRuntime;
 use moss_common::continue_if_err;
 use moss_db::primitives::AnyValue;
@@ -534,23 +534,29 @@ where
     ) -> joinerror::Result<()> {
         let mut state = self.state.write().await;
 
-        let environment_id = state
-            .environments
-            .get(&params.environment_id)
-            .ok_or_join_err_with::<ErrorNotFound>(|| {
-                format!("environment {} not found", params.environment_id)
-            })?
-            .id
-            .clone();
+        if !state.environments.contains_key(&params.environment_id) {
+            return Err(Error::new::<ErrorNotFound>(format!(
+                "environment {} not found",
+                params.environment_id
+            )));
+        }
 
-        let env_group_key = params
-            .group_id
-            .unwrap_or_else(|| GLOBAL_ACTIVE_ENVIRONMENT_KEY.to_string().into())
-            .inner();
+        // FIXME: I think we should simply find the collection_id stored in the `EnvironmentItem`
+        let env_group_key = if let Some(group_id) = params.group_id {
+            if !state.groups.contains(&group_id.inner()) {
+                return Err(Error::new::<ErrorNotFound>(format!(
+                    "environment group {} not found",
+                    group_id
+                )));
+            }
+            group_id.inner()
+        } else {
+            GLOBAL_ACTIVE_ENVIRONMENT_KEY.to_string().into()
+        };
 
         state
             .active_environments
-            .insert(env_group_key.clone(), environment_id);
+            .insert(env_group_key.clone(), params.environment_id);
 
         Ok(())
     }
