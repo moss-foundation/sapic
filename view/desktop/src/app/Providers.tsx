@@ -1,18 +1,14 @@
 import { ReactNode, useEffect, useRef } from "react";
 
-import { initializeI18n } from "@/app/i18n";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import { useDescribeAppState } from "@/hooks/appState/useDescribeAppState";
+import { useDescribeAppState } from "@/hooks/app/useDescribeAppState";
 import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
-import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
-import { applyLanguagePack } from "@/utils/applyLanguagePack";
-import { applyColorThemeFromCache } from "@/utils/applyTheme";
-import { useQueryClient } from "@tanstack/react-query";
+import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
 
 import LanguageProvider from "./LanguageProvider";
 import ThemeProvider from "./ThemeProvider";
 
-const Provider = ({ children }: { children: ReactNode }) => {
+const Providers = ({ children }: { children: ReactNode }) => {
   useInitializeAppState();
 
   return (
@@ -26,28 +22,9 @@ const Provider = ({ children }: { children: ReactNode }) => {
 
 const useInitializeAppState = () => {
   const { data } = useDescribeAppState();
-  const queryClient = useQueryClient();
   const { mutate: openWorkspace } = useOpenWorkspace();
   const { activeWorkspace } = useActiveWorkspace();
   const hasTriedRestoration = useRef(false);
-
-  // Initialize app theme and language
-  useEffect(() => {
-    if (data) {
-      const theme = data.preferences?.theme ?? data.defaults.theme;
-      const languagePack = data.preferences?.locale ?? data.defaults.locale;
-
-      document.querySelector("html")?.setAttribute("data-theme", theme.mode);
-
-      applyColorThemeFromCache(theme.identifier, queryClient);
-
-      initializeI18n(languagePack.code)
-        .then(() => {
-          applyLanguagePack(languagePack).catch(console.error);
-        })
-        .catch(console.error);
-    }
-  }, [data, queryClient]);
 
   // Restore previous workspace if available
   useEffect(() => {
@@ -70,4 +47,4 @@ const useInitializeAppState = () => {
   }, [data, activeWorkspace, openWorkspace]);
 };
 
-export default Provider;
+export default Providers;

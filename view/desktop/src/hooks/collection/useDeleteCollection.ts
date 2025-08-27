@@ -4,7 +4,7 @@ import { DeleteCollectionInput, DeleteCollectionOutput, StreamCollectionsEvent }
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useStreamedCollectionsWithEntries } from "..";
-import { USE_STREAMED_COLLECTIONS_QUERY_KEY } from "./useStreamedCollections";
+import { USE_STREAM_COLLECTIONS_QUERY_KEY } from "./useStreamCollections";
 
 export interface UseDeleteCollectionInput {
   id: string;
@@ -28,7 +28,7 @@ export const useDeleteCollection = () => {
   return useMutation({
     mutationFn: deleteStreamedCollection,
     onSuccess: (data) => {
-      queryClient.setQueryData([USE_STREAMED_COLLECTIONS_QUERY_KEY], (old: StreamCollectionsEvent[]) => {
+      queryClient.setQueryData([USE_STREAM_COLLECTIONS_QUERY_KEY], (old: StreamCollectionsEvent[]) => {
         return old.filter((collection) => collection.id !== data.id);
       });
 

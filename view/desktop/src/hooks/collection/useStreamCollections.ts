@@ -6,9 +6,9 @@ import { Channel } from "@tauri-apps/api/core";
 
 import { useActiveWorkspace } from "../workspace";
 
-export const USE_STREAMED_COLLECTIONS_QUERY_KEY = "streamedCollections";
+export const USE_STREAM_COLLECTIONS_QUERY_KEY = "streamCollections";
 
-const startStreamingCollections = async (): Promise<StreamCollectionsEvent[]> => {
+const startStreamCollections = async (): Promise<StreamCollectionsEvent[]> => {
   const collections: StreamCollectionsEvent[] = [];
 
   const onCollectionEvent = new Channel<StreamCollectionsEvent>();
@@ -24,16 +24,16 @@ const startStreamingCollections = async (): Promise<StreamCollectionsEvent[]> =>
   return collections;
 };
 
-export const useStreamedCollections = () => {
+export const useStreamCollections = () => {
   const queryClient = useQueryClient();
   const { api } = useTabbedPaneStore();
 
   const { hasActiveWorkspace } = useActiveWorkspace();
 
   const query = useQuery<StreamCollectionsEvent[], Error>({
-    queryKey: [USE_STREAMED_COLLECTIONS_QUERY_KEY],
+    queryKey: [USE_STREAM_COLLECTIONS_QUERY_KEY],
     queryFn: async (): Promise<StreamCollectionsEvent[]> => {
-      const collections = await startStreamingCollections();
+      const collections = await startStreamCollections();
 
       //Remove panels that contain collections that are not in the collections array
       api?.panels.forEach((panel) => {
@@ -54,7 +54,7 @@ export const useStreamedCollections = () => {
   });
 
   const clearCollectionsCacheAndRefetch = () => {
-    queryClient.resetQueries({ queryKey: [USE_STREAMED_COLLECTIONS_QUERY_KEY] });
+    queryClient.resetQueries({ queryKey: [USE_STREAM_COLLECTIONS_QUERY_KEY] });
   };
 
   return {

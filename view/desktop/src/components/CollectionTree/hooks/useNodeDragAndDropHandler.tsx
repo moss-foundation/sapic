@@ -6,6 +6,7 @@ import { useBatchCreateCollectionEntry } from "@/hooks/collection/useBatchCreate
 import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
 import { useCreateCollectionEntry } from "@/hooks/collection/useCreateCollectionEntry";
 import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollectionEntry";
+import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { BatchUpdateEntryKind } from "@repo/moss-collection";
 import { join } from "@tauri-apps/api/path";
@@ -24,7 +25,6 @@ import {
   isSourceTreeCollectionNode,
   prepareEntriesForCreation,
   prepareEntriesForDrop,
-  sortByOrder,
 } from "../utils";
 
 export const useNodeDragAndDropHandler = () => {
@@ -92,7 +92,7 @@ export const useNodeDragAndDropHandler = () => {
           ? locationTreeNodeData.node.order! - 0.5
           : locationTreeNodeData.node.order! + 0.5;
 
-      const sortedParentNodes = sortByOrder([...locationTreeNodeData.parentNode.childNodes]);
+      const sortedParentNodes = sortObjectsByOrder([...locationTreeNodeData.parentNode.childNodes]);
       const parentNodesWithNewOrders = [
         ...sortedParentNodes.slice(0, dropOrder).filter((entry) => entry.id !== sourceTreeNodeData.node.id),
         sourceTreeNodeData.node,
@@ -236,7 +236,7 @@ export const useNodeDragAndDropHandler = () => {
           ? locationTreeNodeData.node.order! - 0.5
           : locationTreeNodeData.node.order! + 0.5;
 
-      const sortedParentNodes = sortByOrder(locationTreeNodeData.parentNode.childNodes);
+      const sortedParentNodes = sortObjectsByOrder(locationTreeNodeData.parentNode.childNodes);
 
       const dropParentNodesWithNewOrders = [
         ...sortedParentNodes.slice(0, dropOrder),

@@ -25,7 +25,5 @@ export const useGetColorTheme = ({ themeId, enabled = true }: UseGetColorThemePa
     queryKey: [USE_GET_COLOR_THEME_QUERY_KEY, themeId],
     queryFn: () => getColorThemeFn({ id: themeId }),
     enabled: enabled && !!themeId,
-    staleTime: 15 * 60 * 1000,
-    gcTime: 30 * 60 * 1000,
   });
 };

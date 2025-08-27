@@ -4,11 +4,11 @@ import { ActionButton, ActionMenu, SidebarHeader } from "@/components";
 import { CREATE_TAB, IMPORT_TAB } from "@/components/Modals/Collection/NewCollectionModal/constansts";
 import { NewCollectionModal } from "@/components/Modals/Collection/NewCollectionModal/NewCollectionModal";
 import {
-  USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY,
+  USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY,
   useActiveWorkspace,
   useClearAllCollectionEntries,
   useModal,
-  useStreamedCollections,
+  useStreamCollections,
   useStreamedCollectionsWithEntries,
 } from "@/hooks";
 import { useBatchUpdateCollection } from "@/hooks/collection/useBatchUpdateCollection";
@@ -19,7 +19,7 @@ import { useQueryClient } from "@tanstack/react-query";
 export const CollectionTreeViewHeader = () => {
   const queryClient = useQueryClient();
 
-  const { isLoading: isCollectionsLoading, clearCollectionsCacheAndRefetch } = useStreamedCollections();
+  const { isLoading: isCollectionsLoading, clearCollectionsCacheAndRefetch } = useStreamCollections();
   const { clearAllCollectionEntriesCache } = useClearAllCollectionEntries();
   const { data: collectionsWithEntries } = useStreamedCollectionsWithEntries();
   const { mutateAsync: batchUpdateCollection } = useBatchUpdateCollection();
@@ -89,7 +89,7 @@ export const CollectionTreeViewHeader = () => {
 
       if (res.status === "ok") {
         queryClient.setQueryData(
-          [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, collection.collectionId],
+          [USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY, collection.collectionId],
           (old: StreamEntriesEvent[]) => {
             return old.map((entry) => {
               const shouldCollapse = preparedEntries.some((preparedEntry) => preparedEntry.DIR.id === entry.id);

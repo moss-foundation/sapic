@@ -1,13 +1,13 @@
 import { ReactNode } from "react";
 
-import Provider from "./Provider";
+import Providers from "./Providers";
 
 interface AppProps {
   children?: ReactNode;
 }
 
 const App = ({ children }: AppProps) => {
-  return <Provider>{children}</Provider>;
+  return <Providers>{children}</Providers>;
 };
 
 export default App;

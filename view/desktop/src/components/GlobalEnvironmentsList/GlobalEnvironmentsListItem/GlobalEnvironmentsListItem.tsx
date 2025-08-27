@@ -1,7 +1,7 @@
 import { useMemo, useRef } from "react";
 
 import { DropIndicator } from "@/components/DropIndicator";
-import { useStreamEnvironments } from "@/hooks/environment";
+import { useStreamEnvironments } from "@/hooks";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
