@@ -19,6 +19,15 @@ import {
   vcsInfoSchema,
 } from "./types.zod";
 
+export const activateEnvironmentInputSchema = z.object({
+  environmentId: z.string(),
+  groupId: z.string().optional(),
+});
+
+export const activateEnvironmentOutputSchema = z.object({
+  environmentId: z.string(),
+});
+
 export const batchUpdateCollectionOutputSchema = z.object({
   ids: z.array(z.string()),
 });
