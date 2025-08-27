@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+moss_user.workspace = true
+
+derive_more = { workspace = true, features = ["deref"] }
 anyhow.workspace = true
 git2.workspace = true
 dotenv.workspace = true
@@ -12,6 +15,7 @@ regex.workspace = true
 joinerror.workspace = true
 serde = { workspace = true, features = ["derive"] }
 ts-rs.workspace = true
+async-trait = { workspace = true }
 
 [dev-dependencies]
 nanoid.workspace = true

@@ -1,11 +1,27 @@
 // TODO: Implement other git functionalities
 // e.g. branching, merging, conflict resolution
 use anyhow::Result;
+use async_trait::async_trait;
 use git2::RemoteCallbacks;
+use moss_user::AccessToken;
 
 pub mod models;
 pub mod repo;
+pub mod repository;
 pub mod url;
+
+#[async_trait]
+pub trait AuthProvider {
+    async fn login_pkce(
+        &self,
+        client_id: &str,
+        client_secret: Option<&str>,
+        host: &str,
+        scopes: &[&str],
+    ) -> anyhow::Result<AccessToken>;
+    async fn login_pat(&self) -> joinerror::Result<()>;
+    async fn refresh(&self) -> joinerror::Result<()>;
+}
 
 pub trait GitAuthAgent {
     fn generate_callback<'a>(&'a self, cb: &mut RemoteCallbacks<'a>) -> Result<()>;

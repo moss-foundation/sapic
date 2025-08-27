@@ -9,9 +9,8 @@ pub enum ProviderId {
 
 #[derive(Clone, Debug)]
 pub enum TokenType {
-    PersonalAccess,
+    PAT,
     OAuth,
-    Installation,
 }
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]

@@ -1,6 +1,6 @@
 use keyring::{Entry, Result};
 
-pub trait KeyringClient {
+pub trait KeyringClient: Send + Sync {
     fn set_secret(&self, key: &str, secret: &str) -> Result<()>;
     fn get_secret(&self, key: &str) -> Result<Vec<u8>>;
 }

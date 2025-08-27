@@ -1,5 +1,4 @@
 use moss_applib::AppRuntime;
-use moss_git_hosting_provider::models::primitives::GitProviderType;
 
 use crate::{
     App,
@@ -12,11 +11,20 @@ impl<R: AppRuntime> App<R> {
         _ctx: &R::AsyncContext,
         input: AddAccountInput,
     ) -> joinerror::Result<AddAccountOutput> {
-        let user_info = match input.git_provider_type {
-            GitProviderType::GitHub => self._github_client.login().await,
-            GitProviderType::GitLab => self._gitlab_client.login().await,
-        }?;
+        let id = self
+            .profile_service
+            .add_account(input.profile_id, input.host, input.label, input.provider)
+            .await?;
 
-        Ok(AddAccountOutput { user_info })
+        Ok(AddAccountOutput {
+            account_id: id.to_string(),
+        })
+
+        // let user_info = match input.git_provider_type {
+        //     GitProviderType::GitHub => self._github_client.login().await,
+        //     GitProviderType::GitLab => self._gitlab_client.login().await,
+        // }?;
+
+        // Ok(AddAccountOutput { user_info })
     }
 }

@@ -12,7 +12,7 @@ use crate::{
     constants::GITHUB_API_URL,
     github::{
         auth::GitHubAuthAgent,
-        response::{ContributorsResponse, RepositoryResponse, UserResponse},
+        response::{ContributorsResponse, GetUserResponse, RepositoryResponse},
     },
     models::types::{Contributor, RepositoryMetadata, UserInfo},
 };
@@ -82,7 +82,7 @@ impl GitHostingProvider for GitHubClient {
             .access_token()
             .ok_or_join_err::<()>("github is not logged in yet")?;
 
-        let user_response: UserResponse = self
+        let user_response: GetUserResponse = self
             .client
             .get(format!("{GITHUB_API_URL}/user"))
             .header(ACCEPT, CONTENT_TYPE)

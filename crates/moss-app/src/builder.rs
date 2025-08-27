@@ -15,7 +15,7 @@ use crate::{
     app::{App, AppCommands, AppDefaults, AppPreferences},
     command::CommandDecl,
     dirs,
-    services::*,
+    services::{profile_service::ProfileService, *},
 };
 
 pub struct BuildAppParams {
@@ -121,6 +121,13 @@ impl<R: AppRuntime> AppBuilder<R> {
             storage_service.clone(),
         )
         .expect("Failed to create log service");
+        let profile_service = ProfileService::new(
+            self.fs.clone(),
+            keyring_client.clone(),
+            params.app_dir.join(dirs::PROFILES_DIR),
+        )
+        .await
+        .expect("Failed to create profile service");
         let workspace_service = WorkspaceService::<R>::new(
             ctx,
             storage_service.clone(),
@@ -155,6 +162,7 @@ impl<R: AppRuntime> AppBuilder<R> {
             workspace_service,
             locale_service,
             theme_service,
+            profile_service,
             tracked_cancellations: Default::default(),
             broadcaster: ActivityBroadcaster::new(self.app_handle),
 

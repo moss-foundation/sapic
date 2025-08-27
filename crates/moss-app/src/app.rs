@@ -18,7 +18,7 @@ use crate::{
     ActiveWorkspace,
     command::CommandCallback,
     models::types::{ColorThemeInfo, LocaleInfo},
-    services::{session_service::SessionId, *},
+    services::{profile_service::ProfileService, session_service::SessionId, *},
 };
 
 pub struct AppPreferences {
@@ -69,6 +69,7 @@ pub struct App<R: AppRuntime> {
     pub(super) workspace_service: WorkspaceService<R>,
     pub(super) locale_service: LocaleService,
     pub(super) theme_service: ThemeService,
+    pub(super) profile_service: ProfileService,
 
     // Store cancellers by the id of API requests
     pub(super) tracked_cancellations: Arc<RwLock<HashMap<String, Canceller>>>,
