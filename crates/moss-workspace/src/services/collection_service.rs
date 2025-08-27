@@ -77,6 +77,7 @@ pub(crate) struct CollectionItemDescription {
 #[derive(Default)]
 struct ServiceState<R: AppRuntime> {
     collections: HashMap<CollectionId, CollectionItem<R>>,
+    archived_collections: HashSet<CollectionId>,
     expanded_items: HashSet<CollectionId>,
 }
 
@@ -113,7 +114,7 @@ impl<R: AppRuntime> CollectionService<R> {
             HashSet::new()
         };
 
-        let collections = restore_collections(
+        let (collections, archived_collections) = restore_collections(
             ctx,
             &abs_path,
             &fs,
@@ -134,6 +135,7 @@ impl<R: AppRuntime> CollectionService<R> {
             storage,
             state: Arc::new(RwLock::new(ServiceState {
                 collections,
+                archived_collections,
                 expanded_items,
             })),
             github_client,
@@ -565,12 +567,16 @@ async fn restore_collections<R: AppRuntime>(
     broadcaster: ActivityBroadcaster<R::EventLoop>,
     github_client: Arc<GitHubClient>,
     gitlab_client: Arc<GitLabClient>,
-) -> joinerror::Result<HashMap<CollectionId, CollectionItem<R>>> {
+) -> joinerror::Result<(
+    HashMap<CollectionId, CollectionItem<R>>,
+    HashSet<CollectionId>,
+)> {
     if !abs_path.exists() {
-        return Ok(HashMap::new());
+        return Ok((HashMap::new(), HashSet::new()));
     }
 
     let mut collections = Vec::new();
+    let mut archived_collections = HashSet::new();
     let mut read_dir = fs
         .read_dir(&abs_path)
         .await
@@ -609,7 +615,12 @@ async fn restore_collections<R: AppRuntime>(
             })
             .await;
             match collection_result {
-                Ok(collection) => collection,
+                Ok(Some(collection)) => collection,
+                Ok(None) => {
+                    // The collection is archived
+                    archived_collections.insert(id);
+                    continue;
+                }
                 Err(e) => {
                     // TODO: Let the frontend know a collection is invalid
                     session::error!(format!(
@@ -629,7 +640,7 @@ async fn restore_collections<R: AppRuntime>(
         .list_items_metadata(ctx, SEGKEY_COLLECTION.to_segkey_buf())
         .await?;
 
-    let mut result = HashMap::new();
+    let mut collections_map = HashMap::new();
     for (id, collection) in collections {
         let segkey_prefix = SEGKEY_COLLECTION.join(&id);
 
@@ -637,7 +648,7 @@ async fn restore_collections<R: AppRuntime>(
             .get(&segkey_prefix.join("order"))
             .and_then(|v| v.deserialize().ok());
 
-        result.insert(
+        collections_map.insert(
             id.clone(),
             CollectionItem {
                 id,
@@ -649,5 +660,5 @@ async fn restore_collections<R: AppRuntime>(
 
     activity_handle.emit_finish()?;
 
-    Ok(result)
+    Ok((collections_map, archived_collections))
 }

@@ -6,4 +6,5 @@ pub const CONFIG_FILE_NAME: &str = "config.json";
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ConfigFile {
     pub external_path: Option<PathBuf>,
+    pub archived: bool,
 }
