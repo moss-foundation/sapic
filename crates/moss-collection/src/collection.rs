@@ -1,8 +1,6 @@
 use chrono::{DateTime, Utc};
 use joinerror::ResultExt;
-use json_patch::{
-    AddOperation, PatchOperation, RemoveOperation, ReplaceOperation, jsonptr::PointerBuf,
-};
+use json_patch::{PatchOperation, ReplaceOperation, jsonptr::PointerBuf};
 use moss_applib::{
     AppRuntime, EventMarker,
     subscription::{Event, EventEmitter},
@@ -10,7 +8,7 @@ use moss_applib::{
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_edit::json::EditOptions;
 use moss_fs::{FileSystem, FsResultExt};
-use moss_git::{models::types::BranchInfo, url::normalize_git_url};
+use moss_git::models::types::BranchInfo;
 use moss_git_hosting_provider::{
     GitHostingProvider,
     common::GitUrl,
@@ -146,19 +144,20 @@ impl<R: AppRuntime> Collection<R> {
             created_at: created_at.to_rfc3339(),
         };
 
-        let Some(repo_desc) = manifest.repository else {
+        let Some(vcs) = manifest.vcs else {
             return Ok(output);
         };
 
-        let repo_ref = match GitUrl::parse(&repo_desc.url) {
+        let repository = vcs.repository();
+        let repo_ref = match GitUrl::parse(repository) {
             Ok(repo_ref) => repo_ref,
             Err(e) => {
-                println!("unable to parse repository url{}: {}", repo_desc.url, e);
+                println!("unable to parse repository url{}: {}", repository, e);
                 return Ok(output);
             }
         };
 
-        let git_provider_type = repo_desc.git_provider_type;
+        let git_provider_type = vcs.provider();
         let client: Arc<dyn GitHostingProvider> = match &git_provider_type {
             GitProviderType::GitHub => self.github_client.clone(),
             GitProviderType::GitLab => self.gitlab_client.clone(),
@@ -239,33 +238,7 @@ impl<R: AppRuntime> Collection<R> {
             ));
         }
 
-        match params.repository {
-            Some(ChangeString::Update(url)) => {
-                let normalized_url = normalize_git_url(&url)?;
-                patches.push((
-                    PatchOperation::Add(AddOperation {
-                        path: unsafe { PointerBuf::new_unchecked("/repository/url") },
-                        value: JsonValue::String(normalized_url),
-                    }),
-                    EditOptions {
-                        create_missing_segments: false,
-                        ignore_if_not_exists: false,
-                    },
-                ));
-            }
-            Some(ChangeString::Remove) => {
-                patches.push((
-                    PatchOperation::Remove(RemoveOperation {
-                        path: unsafe { PointerBuf::new_unchecked("/repository/url") },
-                    }),
-                    EditOptions {
-                        create_missing_segments: false,
-                        ignore_if_not_exists: true,
-                    },
-                ));
-            }
-            None => {}
-        }
+        // TODO: Reintroduce repository updating
 
         match params.icon_path {
             None => {}

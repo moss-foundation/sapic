@@ -20,6 +20,7 @@ moss_bindingutils.workspace = true
 moss_applib.workspace = true
 moss_keyring.workspace = true
 moss_id_macro.workspace = true
+moss_logging.workspace = true
 
 joinerror.workspace = true
 anyhow.workspace = true
@@ -40,6 +41,7 @@ reqwest = { workspace = true, optional = true }
 rustc-hash.workspace = true
 oauth2 = { workspace = true, features = ["ureq"], optional = true }
 chrono.workspace = true
+tracing.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }
