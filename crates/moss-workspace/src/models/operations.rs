@@ -205,9 +205,25 @@ pub struct StreamCollectionsOutput {
 // ------------------------------ //
 // Environment
 // ------------------------------ //
+// Activate Environment
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct ActivateEnvironmentInput {
+    pub environment_id: EnvironmentId,
+    // FIXME: Should this be `collection_id` instead?
+    pub group_id: Option<CollectionId>,
+}
+
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct ActivateEnvironmentOutput {
+    pub environment_id: EnvironmentId,
+}
 
 // Create Environment
-
 // FIXME: Should this be refactored to use an inner params?
 
 /// @category Operation

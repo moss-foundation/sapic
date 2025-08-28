@@ -18,6 +18,10 @@ import type {
   VcsInfo,
 } from "./types";
 
+export type ActivateEnvironmentInput = { environmentId: string; groupId?: string };
+
+export type ActivateEnvironmentOutput = { environmentId: string };
+
 /**
  * @category Operation
  */

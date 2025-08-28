@@ -1,6 +1,6 @@
 use derive_more::Deref;
 use futures::Stream;
-use joinerror::OptionExt;
+use joinerror::{Error, OptionExt};
 use moss_applib::AppRuntime;
 use moss_common::continue_if_err;
 use moss_db::primitives::AnyValue;
@@ -39,6 +39,13 @@ use crate::{
     storage::segments,
 };
 
+const GLOBAL_ACTIVE_ENVIRONMENT_KEY: &'static str = "";
+
+pub struct ActivateEnvironmentItemParams {
+    pub environment_id: EnvironmentId,
+    pub group_id: Option<CollectionId>,
+}
+
 pub struct CreateEnvironmentItemParams {
     pub collection_id: Option<CollectionId>,
     pub name: String,
@@ -63,6 +70,7 @@ where
 pub struct EnvironmentItemDescription {
     pub id: EnvironmentId,
     pub collection_id: Option<Arc<String>>,
+    pub is_active: bool,
     pub display_name: String,
     pub order: Option<isize>,
     pub color: Option<String>,
@@ -77,6 +85,7 @@ where
     R: AppRuntime,
 {
     environments: EnvironmentMap<R>,
+    active_environments: HashMap<Arc<String>, EnvironmentId>,
     groups: FxHashSet<Arc<String>>,
     expanded_groups: HashSet<Arc<String>>,
     sources: FxHashMap<Arc<String>, PathBuf>,
@@ -106,6 +115,7 @@ where
         let abs_path = abs_path.join(dirs::ENVIRONMENTS_DIR);
         let state = Arc::new(RwLock::new(ServiceState {
             environments: HashMap::new(),
+            active_environments: HashMap::new(),
             groups: FxHashSet::default(),
             expanded_groups: HashSet::new(),
             sources,
@@ -256,11 +266,14 @@ where
             let mut state_lock = state_clone.write().await;
             while let Some((item, desc)) = rx.recv().await {
                 let id = item.id.clone();
-                let group_id = item.collection_id.clone();
+                let group_key = item.collection_id.clone().unwrap_or_else(|| {
+                    GLOBAL_ACTIVE_ENVIRONMENT_KEY.to_string().into()
+                });
 
                 let desc = EnvironmentItemDescription {
                     id: id.clone(),
                     collection_id: item.collection_id.clone(),
+                    is_active: state_lock.active_environments.get(&group_key) == Some(&desc.id),
                     display_name: desc.name,
                     order: item.order.clone(),
                     color: desc.color,
@@ -269,6 +282,7 @@ where
                 };
 
                 {
+                    let group_id = item.collection_id.clone();
                     state_lock.environments.insert(id, item);
 
                     if let Some(group_id) = group_id {
@@ -429,6 +443,8 @@ where
         Ok(EnvironmentItemDescription {
             id: desc.id.clone(),
             collection_id: collection_id_inner,
+            // FIXME: Should we provide option to activate an environment upon creation?
+            is_active: false,
             display_name: params.name.clone(),
             order: Some(params.order),
             color: desc.color,
@@ -447,6 +463,16 @@ where
             .environments
             .remove(id)
             .ok_or_join_err_with::<ErrorNotFound>(|| format!("environment {} not found", id))?;
+
+        // If the environment is currently active, deactivate it
+        let env_group_key = environment
+            .collection_id
+            .clone()
+            .unwrap_or_else(|| GLOBAL_ACTIVE_ENVIRONMENT_KEY.to_string().into());
+
+        if state.active_environments.get(&env_group_key) == Some(&environment.id) {
+            state.active_environments.remove(&env_group_key);
+        }
 
         let desc = environment.describe(ctx).await?;
         self.fs
@@ -497,6 +523,40 @@ where
                 }
             }
         }
+
+        Ok(())
+    }
+
+    pub async fn activate_environment(
+        &self,
+        _ctx: &R::AsyncContext,
+        params: ActivateEnvironmentItemParams,
+    ) -> joinerror::Result<()> {
+        let mut state = self.state.write().await;
+
+        if !state.environments.contains_key(&params.environment_id) {
+            return Err(Error::new::<ErrorNotFound>(format!(
+                "environment {} not found",
+                params.environment_id
+            )));
+        }
+
+        // FIXME: I think we should simply find the collection_id stored in the `EnvironmentItem`
+        let env_group_key = if let Some(group_id) = params.group_id {
+            if !state.groups.contains(&group_id.inner()) {
+                return Err(Error::new::<ErrorNotFound>(format!(
+                    "environment group {} not found",
+                    group_id
+                )));
+            }
+            group_id.inner()
+        } else {
+            GLOBAL_ACTIVE_ENVIRONMENT_KEY.to_string().into()
+        };
+
+        state
+            .active_environments
+            .insert(env_group_key.clone(), params.environment_id);
 
         Ok(())
     }
