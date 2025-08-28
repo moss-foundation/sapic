@@ -25,6 +25,7 @@ impl<R: AppRuntime> Workspace<R> {
             if let Err(e) = channel.send(StreamEnvironmentsEvent {
                 id: item.id,
                 collection_id: item.collection_id.map(|id| CollectionId::from(id)),
+                is_active: item.is_active,
                 name: item.display_name,
                 order: item.order,
                 total_variables: item.total_variables,
