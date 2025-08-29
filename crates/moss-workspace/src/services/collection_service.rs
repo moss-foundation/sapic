@@ -10,9 +10,10 @@ use moss_collection::{
         CollectionCreateParams, CollectionLoadParams,
     },
     collection::VcsSummary,
+    config::ConfigFile,
 };
 use moss_common::continue_if_err;
-use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
+use moss_fs::{CreateOptions, FileSystem, RemoveOptions, error::FsResultExt};
 use moss_git_hosting_provider::{
     github::client::GitHubClient, gitlab::client::GitLabClient, models::primitives::GitProviderType,
 };
@@ -29,7 +30,6 @@ use tokio::sync::RwLock;
 use crate::{
     builder::{OnDidAddCollection, OnDidDeleteCollection},
     dirs,
-    dirs::COLLECTIONS_DIR,
     models::{
         primitives::CollectionId,
         types::{CreateCollectionGitParams, CreateCollectionParams, UpdateCollectionParams},
@@ -479,6 +479,96 @@ impl<R: AppRuntime> CollectionService<R> {
         }
     }
 
+    pub(crate) async fn archive_collection(
+        &self,
+        ctx: &R::AsyncContext,
+        id: &CollectionId,
+    ) -> joinerror::Result<PathBuf> {
+        let id_str = id.to_string();
+        let abs_path = self.abs_path.join(&id_str);
+
+        if !abs_path.exists() {
+            return Err(Error::new::<()>(format!(
+                "cannot archive an already deleted collection: {}",
+                abs_path.display()
+            )));
+        }
+
+        set_config_archived(self.fs.clone(), &abs_path, true).await?;
+
+        let mut state_lock = self.state.write().await;
+
+        let item = state_lock.collections.remove(id);
+        state_lock.archived_collections.insert(id.clone());
+
+        if let Some(item) = item {
+            item.dispose().await?;
+        }
+
+        state_lock.expanded_items.remove(&id);
+
+        {
+            // TODO: Make database errors not fail the operation
+            let mut txn = self.storage.begin_write(ctx).await?;
+
+            self.storage
+                .remove_item_metadata_txn(ctx, &mut txn, SEGKEY_COLLECTION.join(&id.to_string()))
+                .await?;
+            self.storage
+                .put_expanded_items_txn(ctx, &mut txn, &state_lock.expanded_items)
+                .await?;
+
+            txn.commit()?;
+        }
+
+        Ok(abs_path)
+    }
+
+    pub(crate) async fn unarchive_collection(
+        &self,
+        _ctx: &R::AsyncContext,
+        id: &CollectionId,
+    ) -> joinerror::Result<PathBuf> {
+        let id_str = id.to_string();
+        let abs_path = self.abs_path.join(&id_str);
+
+        if !abs_path.exists() {
+            return Err(Error::new::<()>(format!(
+                "cannot un-archive an already deleted collection: {}",
+                abs_path.display()
+            )));
+        }
+
+        set_config_archived(self.fs.clone(), &abs_path, false).await?;
+
+        let mut state_lock = self.state.write().await;
+
+        state_lock.archived_collections.remove(id);
+
+        let collection = CollectionBuilder::<R>::new(
+            self.fs.clone(),
+            self.broadcaster.clone(),
+            self.github_client.clone(),
+            self.gitlab_client.clone(),
+        )
+        .load(CollectionLoadParams {
+            internal_abs_path: abs_path.clone().into(),
+        })
+        .await?
+        .expect("can only be none when the collection is archived");
+
+        state_lock.collections.insert(
+            id.clone(),
+            CollectionItem {
+                id: id.clone(),
+                order: None, // FIXME: What should be the order?
+                handle: Arc::new(collection),
+            },
+        );
+
+        Ok(abs_path)
+    }
+
     pub(crate) async fn update_collection(
         &self,
         ctx: &R::AsyncContext,
@@ -580,7 +670,7 @@ async fn describe_archived_collection(
     fs: &Arc<dyn FileSystem>,
     collection_id: &CollectionId,
 ) -> joinerror::Result<CollectionItemDescription> {
-    let collection_path = abs_path.join(COLLECTIONS_DIR).join(collection_id.as_str());
+    let collection_path = abs_path.join(collection_id.as_str());
 
     let manifest: moss_collection::manifest::ManifestFile = {
         let manifest_path = collection_path.join(moss_collection::manifest::MANIFEST_FILE_NAME);
@@ -717,4 +807,36 @@ async fn restore_collections<R: AppRuntime>(
     activity_handle.emit_finish()?;
 
     Ok((collections_map, archived_collections))
+}
+
+async fn set_config_archived(
+    fs: Arc<dyn FileSystem>,
+    collection_path: &Path,
+    archived: bool,
+) -> joinerror::Result<()> {
+    let config_path = collection_path.join(moss_collection::config::CONFIG_FILE_NAME);
+    let rdr = fs
+        .open_file(&config_path)
+        .await
+        .join_err_with::<()>(|| format!("failed to open config file: {}", config_path.display()))?;
+
+    let config: ConfigFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
+        format!("failed to parse config file: {}", config_path.display())
+    })?;
+
+    fs.create_file_with(
+        &config_path,
+        serde_json::to_string(&ConfigFile {
+            external_path: config.external_path,
+            archived,
+        })?
+        .as_bytes(),
+        CreateOptions {
+            overwrite: true,
+            ignore_if_exists: false,
+        },
+    )
+    .await?;
+
+    Ok(())
 }

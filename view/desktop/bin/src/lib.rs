@@ -148,6 +148,8 @@ pub async fn run<R: TauriRuntime>() {
             commands::delete_collection,
             commands::update_collection,
             commands::batch_update_collection,
+            commands::archive_collection,
+            commands::unarchive_collection,
             commands::activate_environment,
             commands::create_environment,
             commands::update_environment,
