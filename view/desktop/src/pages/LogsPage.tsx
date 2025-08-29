@@ -87,7 +87,7 @@ export const Logs = () => {
           profileId: accountForm.profileId,
           host: accountForm.host,
           label: accountForm.label,
-          provider: accountForm.provider,
+          provider: accountForm.provider.toUpperCase(),
         },
       });
       console.log("Account added:", accountForm);

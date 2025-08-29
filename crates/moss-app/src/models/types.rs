@@ -1,5 +1,6 @@
 use moss_git_hosting_provider::models::primitives::GitProviderType;
 use moss_logging::models::primitives::LogEntryId;
+use moss_user::models::primitives::AccountId;
 use serde::{Deserialize, Serialize};
 use std::{
     path::{Path, PathBuf},
@@ -7,14 +8,13 @@ use std::{
 };
 use ts_rs::TS;
 
-use crate::models::primitives::{AccountId, LocaleId, LogLevel, ThemeId, ThemeMode, WorkspaceId};
+use crate::models::primitives::{LocaleId, LogLevel, ThemeId, ThemeMode, WorkspaceId};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AccountInfo {
     pub id: AccountId,
     pub username: String,
-    pub label: Option<String>,
-    pub host: Option<String>,
+    pub host: String,
     pub provider: GitProviderType,
 }
 

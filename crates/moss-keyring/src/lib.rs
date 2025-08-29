@@ -1,8 +1,8 @@
-use keyring::{Entry, Result};
+use keyring::Entry;
 
 pub trait KeyringClient: Send + Sync {
-    fn set_secret(&self, key: &str, secret: &str) -> Result<()>;
-    fn get_secret(&self, key: &str) -> Result<Vec<u8>>;
+    fn set_secret(&self, key: &str, secret: &str) -> joinerror::Result<()>;
+    fn get_secret(&self, key: &str) -> joinerror::Result<Vec<u8>>;
 }
 
 pub struct KeyringClientImpl {
@@ -18,12 +18,22 @@ impl KeyringClientImpl {
 }
 
 impl KeyringClient for KeyringClientImpl {
-    fn set_secret(&self, key: &str, secret: &str) -> Result<()> {
-        Entry::new(key, &self.user)?.set_secret(secret.as_bytes())
+    fn set_secret(&self, key: &str, secret: &str) -> joinerror::Result<()> {
+        Entry::new(key, &self.user)
+            .map_err(|e| joinerror::Error::new::<()>(e.to_string()))?
+            .set_secret(secret.as_bytes())
+            .map_err(|e| joinerror::Error::new::<()>(e.to_string()))?;
+
+        Ok(())
     }
 
-    fn get_secret(&self, key: &str) -> Result<Vec<u8>> {
-        Entry::new(key, &self.user)?.get_secret()
+    fn get_secret(&self, key: &str) -> joinerror::Result<Vec<u8>> {
+        let bytes = Entry::new(key, &self.user)
+            .map_err(|e| joinerror::Error::new::<()>(e.to_string()))?
+            .get_secret()
+            .map_err(|e| joinerror::Error::new::<()>(e.to_string()))?;
+
+        Ok(bytes)
     }
 }
 

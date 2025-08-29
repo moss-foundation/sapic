@@ -2,6 +2,7 @@ pub mod api;
 pub mod app;
 pub mod builder;
 pub mod command;
+mod config;
 pub mod models;
 mod services;
 

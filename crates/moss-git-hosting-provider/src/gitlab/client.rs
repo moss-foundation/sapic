@@ -14,7 +14,7 @@ use crate::{
     constants::GITLAB_API_URL,
     gitlab::{
         auth::GitLabAuthAgent,
-        response::{AvatarResponse, ContributorsResponse, RepositoryResponse, UserResponse},
+        response::{AvatarResponse, ContributorsResponse, GetUserResponse, RepositoryResponse},
     },
     models::types::{Contributor, RepositoryMetadata, UserInfo},
 };
@@ -82,7 +82,7 @@ impl GitHostingProvider for GitLabClient {
             .clone()
             .access_token()
             .ok_or_join_err::<()>("gitlab is not logged in yet")?;
-        let user_response: UserResponse = self
+        let user_response: GetUserResponse = self
             .client
             .get(format!("{GITLAB_API_URL}/user"))
             .header(ACCEPT, CONTENT_TYPE)

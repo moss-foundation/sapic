@@ -3500,6 +3500,7 @@ dependencies = [
  "moss_activity_broadcaster",
  "moss_api",
  "moss_applib",
+ "moss_asp",
  "moss_common",
  "moss_db",
  "moss_environment",
@@ -3512,6 +3513,7 @@ dependencies = [
  "moss_storage",
  "moss_testutils",
  "moss_text",
+ "moss_user",
  "moss_workspace",
  "nanoid",
  "oauth2",
@@ -3544,6 +3546,15 @@ dependencies = [
  "tokio",
  "tokio-util",
  "validator",
+]
+
+[[package]]
+name = "moss_asp"
+version = "0.1.0"
+dependencies = [
+ "joinerror",
+ "moss_keyring",
+ "oauth2",
 ]
 
 [[package]]
@@ -3707,6 +3718,7 @@ dependencies = [
  "libssh2-sys",
  "moss_user",
  "nanoid",
+ "oauth2",
  "regex",
  "serde",
  "ts-rs",
@@ -3763,6 +3775,7 @@ dependencies = [
 name = "moss_keyring"
 version = "0.1.0"
 dependencies = [
+ "joinerror",
  "keyring",
  "whoami",
 ]
@@ -3819,9 +3832,13 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "joinerror",
+ "moss_asp",
  "moss_id_macro",
  "moss_keyring",
  "nanoid",
+ "oauth2",
+ "reqwest",
  "serde",
  "serde_json",
  "tokio",

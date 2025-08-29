@@ -1,5 +1,6 @@
 use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::AppRuntime;
+use moss_asp::AppSecretsProvider;
 use moss_fs::FileSystem;
 use moss_git_hosting_provider::{
     common::ssh_auth_agent::SSHAuthAgentImpl,
@@ -79,8 +80,8 @@ impl<R: AppRuntime> AppBuilder<R> {
             let github_auth_agent = Arc::new(GitHubAuthAgent::new(
                 sync_http_client.clone(),
                 keyring_client.clone(),
-                github_client_id,
-                github_client_secret,
+                github_client_id.clone(),
+                github_client_secret.clone(),
             ));
             Arc::new(GitHubClient::new(
                 reqwest_client.clone(),
@@ -92,8 +93,8 @@ impl<R: AppRuntime> AppBuilder<R> {
             let gitlab_auth_agent = Arc::new(GitLabAuthAgent::new(
                 sync_http_client.clone(),
                 keyring_client.clone(),
-                gitlab_client_id,
-                gitlab_client_secret,
+                gitlab_client_id.clone(),
+                gitlab_client_secret.clone(),
             ));
             Arc::new(GitLabClient::new(
                 reqwest_client.clone(),
@@ -101,6 +102,13 @@ impl<R: AppRuntime> AppBuilder<R> {
                 None as Option<SSHAuthAgentImpl>,
             ))
         };
+
+        let app_secrets = AppSecretsProvider::new(
+            github_client_secret.clone(),
+            gitlab_client_secret.clone(),
+            keyring_client.clone(),
+        )
+        .expect("Failed to create app secrets provider");
 
         let theme_service = ThemeService::new(self.fs.clone(), params.themes_dir)
             .await
@@ -123,8 +131,14 @@ impl<R: AppRuntime> AppBuilder<R> {
         .expect("Failed to create log service");
         let profile_service = ProfileService::new(
             self.fs.clone(),
+            app_secrets.clone(),
             keyring_client.clone(),
-            params.app_dir.join(dirs::PROFILES_DIR),
+            profile_service::ServiceConfig::new(
+                params.app_dir.join(dirs::PROFILES_DIR),
+                github_client_id,
+                gitlab_client_id,
+            )
+            .expect("Failed to create profile service config"),
         )
         .await
         .expect("Failed to create profile service");

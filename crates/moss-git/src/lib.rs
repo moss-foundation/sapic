@@ -3,7 +3,7 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use git2::RemoteCallbacks;
-use moss_user::AccessToken;
+use oauth2::{ClientId, ClientSecret};
 
 pub mod models;
 pub mod repo;
@@ -11,16 +11,17 @@ pub mod repository;
 pub mod url;
 
 #[async_trait]
-pub trait AuthProvider {
-    async fn login_pkce(
+pub trait GitSignInAdapter {
+    type PkceToken;
+    type PatToken;
+
+    async fn sign_in_with_pkce(
         &self,
-        client_id: &str,
-        client_secret: Option<&str>,
+        client_id: ClientId,
+        client_secret: ClientSecret,
         host: &str,
-        scopes: &[&str],
-    ) -> anyhow::Result<AccessToken>;
-    async fn login_pat(&self) -> joinerror::Result<()>;
-    async fn refresh(&self) -> joinerror::Result<()>;
+    ) -> anyhow::Result<Self::PkceToken>;
+    async fn sign_in_with_pat(&self) -> joinerror::Result<Self::PatToken>;
 }
 
 pub trait GitAuthAgent {

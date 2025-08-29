@@ -137,7 +137,7 @@ impl GitLabAuthAgent {
 
                 refreshed_cred
             }
-            Err(keyring::Error::NoEntry) => gen_initial_cred_fn()?,
+            // Err(keyring::Error::NoEntry) => gen_initial_cred_fn()?,
             Err(err) => return Err(err.into()),
         };
 

@@ -29,7 +29,7 @@ pub(crate) struct AvatarResponse {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub(crate) struct UserResponse {
+pub struct GetUserResponse {
     pub username: String,
     pub commit_email: String,
 }

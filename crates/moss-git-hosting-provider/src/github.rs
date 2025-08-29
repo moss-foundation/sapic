@@ -1,16 +1,18 @@
 use anyhow::{Context, anyhow};
 use async_trait::async_trait;
-use moss_git::AuthProvider;
-use moss_user::{AccessToken, TokenType};
+use moss_git::GitSignInAdapter;
+use moss_user::AccountSession;
 use oauth2::{
-    AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, PkceCodeChallenge, RedirectUrl,
-    RefreshToken, Scope, TokenResponse, TokenUrl, basic::BasicClient, ureq,
+    AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, EmptyExtraTokenFields,
+    PkceCodeChallenge, RedirectUrl, Scope, StandardTokenResponse, TokenUrl,
+    basic::{BasicClient, BasicTokenType},
+    http::header::{ACCEPT, AUTHORIZATION, USER_AGENT},
 };
 use reqwest::Client as HttpClient;
-use std::time::{Duration, SystemTime};
 
 use crate::{
     common::utils::{create_auth_tcp_listener, receive_auth_code},
+    constants::GITHUB_API_URL,
     github::response::GetUserResponse,
 };
 
@@ -18,6 +20,7 @@ pub mod auth;
 pub mod client;
 mod response;
 
+#[derive(Clone)]
 pub struct GitHubApiClient {
     client: HttpClient,
 }
@@ -27,8 +30,28 @@ impl GitHubApiClient {
         Self { client }
     }
 
-    pub async fn user(&self) -> joinerror::Result<GetUserResponse> {
-        todo!()
+    pub async fn user(
+        &self,
+        account_handle: &AccountSession,
+    ) -> joinerror::Result<GetUserResponse> {
+        let access_token = account_handle.access_token().await?;
+        let resp = self
+            .client
+            .get(format!("{GITHUB_API_URL}/user"))
+            .header(ACCEPT, "application/vnd.github+json")
+            .header(AUTHORIZATION, format!("token {}", access_token))
+            .header(USER_AGENT, "SAPIC/1.0")
+            .send()
+            .await?;
+
+        let status = resp.status();
+        if status.is_success() {
+            Ok(resp.json().await?)
+        } else {
+            let error_text = resp.text().await?;
+            eprintln!("GitHub API Error: Status {}, Body: {}", status, error_text);
+            Err(joinerror::Error::new::<()>(error_text))
+        }
     }
 }
 
@@ -45,40 +68,51 @@ fn token_url(host: &str) -> String {
 const GITHUB_SCOPES: [&'static str; 3] = ["repo", "user:email", "read:user"];
 const KEYRING_SECRET_KEY: &str = "github_auth_agent";
 
-type Host = String;
-pub struct GithubAuthProvider {}
+pub struct GithubSignInProvider {}
 
-impl GithubAuthProvider {
+impl GithubSignInProvider {
     pub fn new() -> Self {
         Self {}
     }
 }
 
+#[derive(Debug)]
+
+pub struct GithubPkceLoginCredentials {
+    // An OAuth App traditionally doesn’t issue a `refresh_token`;
+    // instead, it provides a long-lived `access_token`. The token
+    // can be manually revoked, automatically revoked if unused for a year,
+    // or revoked if it leaks into a public repository.
+    pub token: String,
+    pub scopes: Vec<String>,
+}
+
+pub struct GithubPatLoginCredentials {}
+
 #[async_trait]
-impl AuthProvider for GithubAuthProvider {
-    async fn login_pkce(
+impl GitSignInAdapter for GithubSignInProvider {
+    type PkceToken = StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>;
+    type PatToken = ();
+
+    async fn sign_in_with_pkce(
         &self,
-        client_id: &str,
-        client_secret: Option<&str>,
+        client_id: ClientId,
+        client_secret: ClientSecret,
         host: &str,
-        scopes: &[&str],
-    ) -> anyhow::Result<AccessToken> {
+    ) -> anyhow::Result<Self::PkceToken> {
         let (listener, port) = create_auth_tcp_listener()?;
         let redirect = format!("http://127.0.0.1:{port}/callback");
 
-        let mut client = BasicClient::new(ClientId::new(client_id.to_string()))
+        let client = BasicClient::new(client_id)
+            .set_client_secret(client_secret)
             .set_auth_uri(AuthUrl::new(authorize_url(host))?)
             .set_token_uri(TokenUrl::new(token_url(host))?)
             .set_redirect_uri(RedirectUrl::new(redirect.clone())?);
 
-        if let Some(cs) = client_secret {
-            client = client.set_client_secret(ClientSecret::new(cs.to_string()));
-        }
-
         let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
         let (auth_url, state) = client
             .authorize_url(CsrfToken::new_random)
-            .add_scopes(scopes.iter().map(|s| Scope::new((*s).to_string())))
+            .add_scopes(GITHUB_SCOPES.iter().map(|s| Scope::new((*s).to_string())))
             .add_extra_param("prompt", "select_account")
             .set_pkce_challenge(pkce_challenge)
             .url();
@@ -99,27 +133,10 @@ impl AuthProvider for GithubAuthProvider {
             .request_async(&reqwest::Client::new()) // TODO: reuse client instead of creating a new one
             .await?;
 
-        let access_token = AccessToken {
-            token: token.access_token().secret().to_string(),
-            token_type: TokenType::OAuth,
-            expires_at: token
-                .expires_in()
-                .map(|sec| SystemTime::now() + Duration::from_secs(sec.as_secs())),
-            refresh_token: token.refresh_token().map(|r| r.secret().to_string()),
-            scopes: token
-                .scopes()
-                .map(|s| s.iter().map(|sc| sc.to_string()).collect())
-                .unwrap_or_default(),
-        };
-
-        Ok(access_token)
+        Ok(token)
     }
 
-    async fn login_pat(&self) -> joinerror::Result<()> {
-        todo!()
-    }
-
-    async fn refresh(&self) -> joinerror::Result<()> {
+    async fn sign_in_with_pat(&self) -> joinerror::Result<Self::PatToken> {
         todo!()
     }
 }

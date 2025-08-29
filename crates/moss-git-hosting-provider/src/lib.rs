@@ -5,6 +5,8 @@ pub mod models;
 
 use async_trait::async_trait;
 use moss_git::GitAuthAgent;
+use moss_keyring::KeyringClient;
+use oauth2::{ClientId, ClientSecret};
 use std::sync::Arc;
 use url::Url;
 

@@ -118,13 +118,13 @@ impl GitHubAuthAgent {
 
                 GitHubCred::from(stored_entry)
             }
-            Err(keyring::Error::NoEntry) => {
-                let initial_cred = self.gen_initial_credentials()?;
-                let entry_str: String = KeyringCredEntry::from(&initial_cred).try_into()?;
-                self.keyring.set_secret(KEYRING_SECRET_KEY, &entry_str)?;
+            // Err(keyring::Error::NoEntry) => {
+            //     let initial_cred = self.gen_initial_credentials()?;
+            //     let entry_str: String = KeyringCredEntry::from(&initial_cred).try_into()?;
+            //     self.keyring.set_secret(KEYRING_SECRET_KEY, &entry_str)?;
 
-                initial_cred
-            }
+            //     initial_cred
+            // }
             Err(err) => return Err(err.into()),
         };
 

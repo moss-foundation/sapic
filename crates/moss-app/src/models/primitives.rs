@@ -7,7 +7,7 @@ use ts_rs::TS;
 // ###                      Id                         ###
 // ########################################################
 
-ids!([WorkspaceId, LocaleId, ThemeId, ProfileId, AccountId,]);
+ids!([WorkspaceId, LocaleId, ThemeId, ProfileId]);
 
 // ########################################################
 // ###                      Theme                       ###
