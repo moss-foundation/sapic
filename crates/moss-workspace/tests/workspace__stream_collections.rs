@@ -1,39 +1,18 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
+use moss_applib::AppRuntime;
 use moss_testutils::random_name::random_collection_name;
-use moss_workspace::models::{
-    events::StreamCollectionsEvent, operations::CreateCollectionInput, primitives::CollectionId,
-    types::CreateCollectionParams,
-};
-use std::{
-    collections::HashMap,
-    sync::{Arc, Mutex},
-};
-use tauri::ipc::{Channel, InvokeResponseBody};
+use moss_workspace::models::{operations::CreateCollectionInput, types::CreateCollectionParams};
 
-use crate::shared::setup_test_workspace;
+use crate::shared::{setup_test_workspace, test_stream_collections};
 
 #[tokio::test]
 async fn stream_collections_empty_workspace() {
     let (ctx, workspace, cleanup) = setup_test_workspace().await;
 
-    let received_events = Arc::new(Mutex::new(Vec::new()));
-    let received_events_clone = received_events.clone();
+    let (events, output) = test_stream_collections(&ctx, &workspace).await;
 
-    let channel = Channel::new(move |body: InvokeResponseBody| {
-        if let InvokeResponseBody::Json(json_str) = body {
-            if let Ok(event) = serde_json::from_str::<StreamCollectionsEvent>(&json_str) {
-                received_events_clone.lock().unwrap().push(event);
-            }
-        }
-        Ok(())
-    });
-
-    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
-
-    // Verify no events were received
-    let events = received_events.lock().unwrap();
     assert_eq!(events.len(), 0);
     assert_eq!(output.total_returned, 0);
 
@@ -67,28 +46,13 @@ async fn stream_collections_single_collection() {
     let collection_id = create_result.id;
 
     // Stream collections and capture events
-    let received_events = Arc::new(Mutex::new(Vec::new()));
-    let received_events_clone = received_events.clone();
+    let (events, output) = test_stream_collections(&ctx, &workspace).await;
 
-    let channel = Channel::new(move |body: InvokeResponseBody| {
-        if let InvokeResponseBody::Json(json_str) = body {
-            if let Ok(event) = serde_json::from_str::<StreamCollectionsEvent>(&json_str) {
-                received_events_clone.lock().unwrap().push(event);
-            }
-        }
-        Ok(())
-    });
-
-    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
-
-    // Verify one event was received
-    let events = received_events.lock().unwrap();
     assert_eq!(events.len(), 1);
     assert_eq!(output.total_returned, 1);
 
     // Verify the event data
-    let event = &events[0];
-    assert_eq!(event.id, collection_id);
+    let event = events.get(&collection_id).unwrap();
     assert_eq!(event.name, collection_name);
     assert_eq!(event.order, Some(collection_order));
     assert_eq!(event.icon_path, None);
@@ -127,34 +91,14 @@ async fn stream_collections_multiple_collections() {
     }
 
     // Stream collections and capture events
-    let received_events = Arc::new(Mutex::new(Vec::new()));
-    let received_events_clone = received_events.clone();
+    let (events, output) = test_stream_collections(&ctx, &workspace).await;
 
-    let channel = Channel::new(move |body: InvokeResponseBody| {
-        if let InvokeResponseBody::Json(json_str) = body {
-            if let Ok(event) = serde_json::from_str::<StreamCollectionsEvent>(&json_str) {
-                received_events_clone.lock().unwrap().push(event);
-            }
-        }
-        Ok(())
-    });
-
-    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
-
-    // Verify correct number of events
-    let events = received_events.lock().unwrap();
     assert_eq!(events.len(), 5);
     assert_eq!(output.total_returned, 5);
 
-    // Convert events to a map for easier verification
-    let events_map: HashMap<CollectionId, &StreamCollectionsEvent> = events
-        .iter()
-        .map(|event| (event.id.clone(), event))
-        .collect();
-
     // Verify each expected collection is present with correct data
     for (expected_id, expected_name, expected_order) in expected_collections {
-        let event = events_map.get(&expected_id).unwrap();
+        let event = events.get(&expected_id).unwrap();
         assert_eq!(event.name, expected_name);
         assert_eq!(event.order, Some(expected_order));
         assert_eq!(event.icon_path, None);
@@ -194,28 +138,13 @@ async fn stream_collections_with_icon() {
     let collection_id = create_result.id;
 
     // Stream collections and capture events
-    let received_events = Arc::new(Mutex::new(Vec::new()));
-    let received_events_clone = received_events.clone();
+    let (events, output) = test_stream_collections(&ctx, &workspace).await;
 
-    let channel = Channel::new(move |body: InvokeResponseBody| {
-        if let InvokeResponseBody::Json(json_str) = body {
-            if let Ok(event) = serde_json::from_str::<StreamCollectionsEvent>(&json_str) {
-                received_events_clone.lock().unwrap().push(event);
-            }
-        }
-        Ok(())
-    });
-
-    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
-
-    // Verify one event was received
-    let events = received_events.lock().unwrap();
     assert_eq!(events.len(), 1);
     assert_eq!(output.total_returned, 1);
 
     // Verify the event data includes icon path
-    let event = &events[0];
-    assert_eq!(event.id, collection_id);
+    let event = events.get(&collection_id).unwrap();
     assert_eq!(event.name, collection_name);
     assert_eq!(event.order, Some(collection_order));
     assert!(event.icon_path.is_some());
@@ -272,34 +201,14 @@ async fn stream_collections_mixed_configurations() {
     expected_collections.push((result2.id, name2, 2, Some("icon".to_string())));
 
     // Stream collections and capture events
-    let received_events = Arc::new(Mutex::new(Vec::new()));
-    let received_events_clone = received_events.clone();
+    let (events, output) = test_stream_collections(&ctx, &workspace).await;
 
-    let channel = Channel::new(move |body: InvokeResponseBody| {
-        if let InvokeResponseBody::Json(json_str) = body {
-            if let Ok(event) = serde_json::from_str::<StreamCollectionsEvent>(&json_str) {
-                received_events_clone.lock().unwrap().push(event);
-            }
-        }
-        Ok(())
-    });
-
-    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
-
-    // Verify correct number of events
-    let events = received_events.lock().unwrap();
     assert_eq!(events.len(), 2);
     assert_eq!(output.total_returned, 2);
 
-    // Convert events to a map for easier verification
-    let events_map: HashMap<CollectionId, &StreamCollectionsEvent> = events
-        .iter()
-        .map(|event| (event.id.clone(), event))
-        .collect();
-
     // Verify each expected collection
     for (expected_id, expected_name, expected_order, expected_icon) in expected_collections {
-        let event = events_map.get(&expected_id).unwrap();
+        let event = events.get(&expected_id).unwrap();
         assert_eq!(event.name, *expected_name);
         assert_eq!(event.order, Some(expected_order));
 
@@ -342,27 +251,16 @@ async fn stream_collections_order_verification() {
     }
 
     // Stream collections and capture events
-    let received_events = Arc::new(Mutex::new(Vec::new()));
-    let received_events_clone = received_events.clone();
+    let (events, output) = test_stream_collections(&ctx, &workspace).await;
 
-    let channel = Channel::new(move |body: InvokeResponseBody| {
-        if let InvokeResponseBody::Json(json_str) = body {
-            if let Ok(event) = serde_json::from_str::<StreamCollectionsEvent>(&json_str) {
-                received_events_clone.lock().unwrap().push(event);
-            }
-        }
-        Ok(())
-    });
-
-    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
-
-    // Verify correct number of events
-    let events = received_events.lock().unwrap();
     assert_eq!(events.len(), 5);
     assert_eq!(output.total_returned, 5);
 
     // Verify all orders are present
-    let received_orders: Vec<isize> = events.iter().map(|event| event.order.unwrap()).collect();
+    let received_orders: Vec<isize> = events
+        .iter()
+        .map(|(_, event)| event.order.unwrap())
+        .collect();
 
     for expected_order in &orders {
         assert!(received_orders.contains(expected_order));

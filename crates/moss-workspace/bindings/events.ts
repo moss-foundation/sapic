@@ -11,6 +11,7 @@ export type StreamCollectionsEvent = {
   expanded: boolean;
   branch?: BranchInfo;
   iconPath?: string;
+  archived: boolean;
 };
 
 /**

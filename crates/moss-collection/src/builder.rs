@@ -104,8 +104,30 @@ impl<R: AppRuntime> CollectionBuilder<R> {
         }
     }
 
-    pub async fn load(self, params: CollectionLoadParams) -> joinerror::Result<Collection<R>> {
+    pub async fn load(
+        self,
+        params: CollectionLoadParams,
+    ) -> joinerror::Result<Option<Collection<R>>> {
         debug_assert!(params.internal_abs_path.is_absolute());
+
+        // Check if the collection is archived, if so we don't build the collection
+        let config_path = params.internal_abs_path.join(CONFIG_FILE_NAME);
+
+        let rdr = self
+            .fs
+            .open_file(&config_path)
+            .await
+            .join_err_with::<()>(|| {
+                format!("failed to open config file: {}", config_path.display())
+            })?;
+
+        let config: ConfigFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
+            format!("failed to parse config file: {}", config_path.display())
+        })?;
+
+        if config.archived {
+            return Ok(None);
+        }
 
         let storage_service: Arc<StorageService<R>> =
             StorageService::new(params.internal_abs_path.as_ref())
@@ -159,7 +181,7 @@ impl<R: AppRuntime> CollectionBuilder<R> {
 
         let git_service = Arc::new(GitService::new(repo_handle));
 
-        Ok(Collection {
+        Ok(Some(Collection {
             fs: self.fs.clone(),
             abs_path: params.internal_abs_path,
             edit,
@@ -170,7 +192,7 @@ impl<R: AppRuntime> CollectionBuilder<R> {
             gitlab_client: self.gitlab_client.clone(),
             worktree: worktree_service,
             on_did_change: EventEmitter::new(),
-        })
+        }))
     }
 
     pub async fn create(
@@ -285,6 +307,7 @@ impl<R: AppRuntime> CollectionBuilder<R> {
                 &params.internal_abs_path.join(CONFIG_FILE_NAME),
                 serde_json::to_string(&ConfigFile {
                     external_path: params.external_abs_path.map(|p| p.to_path_buf()),
+                    archived: false,
                 })?
                 .as_bytes(),
                 CreateOptions {
@@ -391,6 +414,7 @@ impl<R: AppRuntime> CollectionBuilder<R> {
                 &abs_path.join(CONFIG_FILE_NAME),
                 serde_json::to_string(&ConfigFile {
                     external_path: None,
+                    archived: false,
                 })?
                 .as_bytes(),
                 CreateOptions {

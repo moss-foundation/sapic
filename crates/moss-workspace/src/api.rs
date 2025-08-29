@@ -1,4 +1,5 @@
 pub mod activate_environment;
+pub mod archive_collection;
 pub mod batch_update_collection;
 pub mod batch_update_environment;
 pub mod batch_update_environment_group;
@@ -11,6 +12,7 @@ pub mod describe_state;
 pub mod import_collection;
 pub mod stream_collections;
 pub mod stream_environments;
+pub mod unarchive_collection;
 pub mod update_collection;
 pub mod update_environment;
 pub mod update_environment_group;

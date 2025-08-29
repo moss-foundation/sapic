@@ -10,9 +10,10 @@ use moss_collection::{
         CollectionCreateParams, CollectionLoadParams,
     },
     collection::VcsSummary,
+    config::ConfigFile,
 };
 use moss_common::continue_if_err;
-use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
+use moss_fs::{CreateOptions, FileSystem, RemoveOptions, error::FsResultExt};
 use moss_git_hosting_provider::{
     github::client::GitHubClient, gitlab::client::GitLabClient, models::primitives::GitProviderType,
 };
@@ -66,17 +67,17 @@ pub(crate) struct CollectionItemDescription {
     pub order: Option<isize>,
     pub expanded: bool,
     pub vcs: Option<VcsSummary>,
-    // pub repository: Option<String>,
-
     // FIXME: Do we need this field?
     pub icon_path: Option<PathBuf>,
     pub abs_path: Arc<Path>,
     pub external_path: Option<PathBuf>,
+    pub archived: bool,
 }
 
 #[derive(Default)]
 struct ServiceState<R: AppRuntime> {
     collections: HashMap<CollectionId, CollectionItem<R>>,
+    archived_collections: HashSet<CollectionId>,
     expanded_items: HashSet<CollectionId>,
 }
 
@@ -113,7 +114,7 @@ impl<R: AppRuntime> CollectionService<R> {
             HashSet::new()
         };
 
-        let collections = restore_collections(
+        let (collections, archived_collections) = restore_collections(
             ctx,
             &abs_path,
             &fs,
@@ -134,6 +135,7 @@ impl<R: AppRuntime> CollectionService<R> {
             storage,
             state: Arc::new(RwLock::new(ServiceState {
                 collections,
+                archived_collections,
                 expanded_items,
             })),
             github_client,
@@ -292,6 +294,7 @@ impl<R: AppRuntime> CollectionService<R> {
             icon_path,
             abs_path: abs_path.into(),
             external_path: params.external_path.clone(),
+            archived: false,
         })
     }
 
@@ -412,6 +415,7 @@ impl<R: AppRuntime> CollectionService<R> {
             icon_path,
             abs_path,
             external_path: None,
+            archived: false,
         })
     }
 
@@ -473,6 +477,101 @@ impl<R: AppRuntime> CollectionService<R> {
         } else {
             Ok(None)
         }
+    }
+
+    pub(crate) async fn archive_collection(
+        &self,
+        ctx: &R::AsyncContext,
+        id: &CollectionId,
+    ) -> joinerror::Result<PathBuf> {
+        let id_str = id.to_string();
+        let abs_path = self.abs_path.join(&id_str);
+
+        if !abs_path.exists() {
+            return Err(Error::new::<()>(format!(
+                "cannot archive an already deleted collection: {}",
+                abs_path.display()
+            )));
+        }
+        let mut state_lock = self.state.write().await;
+
+        if state_lock.archived_collections.contains(id) {
+            return Ok(abs_path);
+        }
+
+        set_config_archived(self.fs.clone(), &abs_path, true).await?;
+
+        let item = state_lock.collections.remove(id);
+        state_lock.archived_collections.insert(id.clone());
+
+        if let Some(item) = item {
+            item.dispose().await?;
+        }
+
+        state_lock.expanded_items.remove(&id);
+
+        {
+            // TODO: Make database errors not fail the operation
+            let mut txn = self.storage.begin_write(ctx).await?;
+
+            self.storage
+                .remove_item_metadata_txn(ctx, &mut txn, SEGKEY_COLLECTION.join(&id.to_string()))
+                .await?;
+            self.storage
+                .put_expanded_items_txn(ctx, &mut txn, &state_lock.expanded_items)
+                .await?;
+
+            txn.commit()?;
+        }
+
+        Ok(abs_path)
+    }
+
+    pub(crate) async fn unarchive_collection(
+        &self,
+        _ctx: &R::AsyncContext,
+        id: &CollectionId,
+    ) -> joinerror::Result<PathBuf> {
+        let id_str = id.to_string();
+        let abs_path = self.abs_path.join(&id_str);
+
+        if !abs_path.exists() {
+            return Err(Error::new::<()>(format!(
+                "cannot un-archive an already deleted collection: {}",
+                abs_path.display()
+            )));
+        }
+        let mut state_lock = self.state.write().await;
+
+        if state_lock.collections.contains_key(id) {
+            return Ok(abs_path);
+        }
+        set_config_archived(self.fs.clone(), &abs_path, false).await?;
+
+        state_lock.archived_collections.remove(id);
+
+        let collection = CollectionBuilder::<R>::new(
+            self.fs.clone(),
+            self.broadcaster.clone(),
+            self.github_client.clone(),
+            self.gitlab_client.clone(),
+        )
+        .load(CollectionLoadParams {
+            internal_abs_path: abs_path.clone().into(),
+        })
+        .await?
+        .expect("can only be none when the collection is archived");
+
+        state_lock.collections.insert(
+            id.clone(),
+            CollectionItem {
+                id: id.clone(),
+                order: None, // FIXME: What should be the order?
+                handle: Arc::new(collection),
+            },
+        );
+
+        Ok(abs_path)
     }
 
     pub(crate) async fn update_collection(
@@ -552,11 +651,65 @@ impl<R: AppRuntime> CollectionService<R> {
                     icon_path,
                     abs_path: item.handle.abs_path().clone(),
                     external_path: None, // TODO: implement
+                    archived: false,
                 };
+            }
+
+            for id in state_lock.archived_collections.iter() {
+                let desc = continue_if_err!(describe_archived_collection(
+                    &self.abs_path,
+                    &self.fs,
+                    id
+                ).await, |e: Error| {
+                    session::error!(format!("failed to describe archived collection `{}`: {}", id.to_string(), e.to_string()));
+                });
+
+                yield desc;
             }
         })
     }
 }
+
+async fn describe_archived_collection(
+    abs_path: &Path,
+    fs: &Arc<dyn FileSystem>,
+    collection_id: &CollectionId,
+) -> joinerror::Result<CollectionItemDescription> {
+    let collection_path = abs_path.join(collection_id.as_str());
+
+    let manifest: moss_collection::manifest::ManifestFile = {
+        let manifest_path = collection_path.join(moss_collection::manifest::MANIFEST_FILE_NAME);
+        let rdr = fs.open_file(&manifest_path).await.join_err_with::<()>(|| {
+            format!("failed to open manifest file: {}", manifest_path.display())
+        })?;
+        serde_json::from_reader(rdr).join_err_with::<()>(|| {
+            format!("failed to parse manifest file: {}", manifest_path.display())
+        })?
+    };
+
+    let config: moss_collection::config::ConfigFile = {
+        let config_path = collection_path.join(moss_collection::config::CONFIG_FILE_NAME);
+        let rdr = fs.open_file(&config_path).await.join_err_with::<()>(|| {
+            format!("failed to open manifest file: {}", config_path.display())
+        })?;
+        serde_json::from_reader(rdr).join_err_with::<()>(|| {
+            format!("failed to parse manifest file: {}", config_path.display())
+        })?
+    };
+
+    Ok(CollectionItemDescription {
+        id: collection_id.clone(),
+        name: manifest.name,
+        order: None,
+        expanded: false,
+        vcs: None,
+        icon_path: None,
+        abs_path: Arc::from(collection_path.as_path()),
+        external_path: config.external_path,
+        archived: true,
+    })
+}
+
 async fn restore_collections<R: AppRuntime>(
     ctx: &R::AsyncContext,
     abs_path: &Path,
@@ -565,12 +718,16 @@ async fn restore_collections<R: AppRuntime>(
     broadcaster: ActivityBroadcaster<R::EventLoop>,
     github_client: Arc<GitHubClient>,
     gitlab_client: Arc<GitLabClient>,
-) -> joinerror::Result<HashMap<CollectionId, CollectionItem<R>>> {
+) -> joinerror::Result<(
+    HashMap<CollectionId, CollectionItem<R>>,
+    HashSet<CollectionId>,
+)> {
     if !abs_path.exists() {
-        return Ok(HashMap::new());
+        return Ok((HashMap::new(), HashSet::new()));
     }
 
     let mut collections = Vec::new();
+    let mut archived_collections = HashSet::new();
     let mut read_dir = fs
         .read_dir(&abs_path)
         .await
@@ -609,7 +766,12 @@ async fn restore_collections<R: AppRuntime>(
             })
             .await;
             match collection_result {
-                Ok(collection) => collection,
+                Ok(Some(collection)) => collection,
+                Ok(None) => {
+                    // The collection is archived
+                    archived_collections.insert(id);
+                    continue;
+                }
                 Err(e) => {
                     // TODO: Let the frontend know a collection is invalid
                     session::error!(format!(
@@ -629,7 +791,7 @@ async fn restore_collections<R: AppRuntime>(
         .list_items_metadata(ctx, SEGKEY_COLLECTION.to_segkey_buf())
         .await?;
 
-    let mut result = HashMap::new();
+    let mut collections_map = HashMap::new();
     for (id, collection) in collections {
         let segkey_prefix = SEGKEY_COLLECTION.join(&id);
 
@@ -637,7 +799,7 @@ async fn restore_collections<R: AppRuntime>(
             .get(&segkey_prefix.join("order"))
             .and_then(|v| v.deserialize().ok());
 
-        result.insert(
+        collections_map.insert(
             id.clone(),
             CollectionItem {
                 id,
@@ -649,5 +811,37 @@ async fn restore_collections<R: AppRuntime>(
 
     activity_handle.emit_finish()?;
 
-    Ok(result)
+    Ok((collections_map, archived_collections))
+}
+
+async fn set_config_archived(
+    fs: Arc<dyn FileSystem>,
+    collection_path: &Path,
+    archived: bool,
+) -> joinerror::Result<()> {
+    let config_path = collection_path.join(moss_collection::config::CONFIG_FILE_NAME);
+    let rdr = fs
+        .open_file(&config_path)
+        .await
+        .join_err_with::<()>(|| format!("failed to open config file: {}", config_path.display()))?;
+
+    let config: ConfigFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
+        format!("failed to parse config file: {}", config_path.display())
+    })?;
+
+    fs.create_file_with(
+        &config_path,
+        serde_json::to_string(&ConfigFile {
+            external_path: config.external_path,
+            archived,
+        })?
+        .as_bytes(),
+        CreateOptions {
+            overwrite: true,
+            ignore_if_exists: false,
+        },
+    )
+    .await?;
+
+    Ok(())
 }
