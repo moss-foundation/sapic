@@ -1,6 +1,6 @@
 use anyhow::{Context, anyhow};
 use async_trait::async_trait;
-use moss_git::GitSignInAdapter;
+use moss_git::GitAuthAdapter;
 use moss_user::AccountSession;
 use oauth2::{
     AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, EmptyExtraTokenFields,
@@ -8,17 +8,32 @@ use oauth2::{
     basic::{BasicClient, BasicTokenType},
     http::header::{ACCEPT, AUTHORIZATION, USER_AGENT},
 };
-use reqwest::Client as HttpClient;
+use reqwest::{Client as HttpClient, RequestBuilder};
 
 use crate::{
-    common::utils::{create_auth_tcp_listener, receive_auth_code},
+    common::{
+        GitUrl,
+        utils::{create_auth_tcp_listener, receive_auth_code},
+    },
     constants::GITHUB_API_URL,
-    github::response::GetUserResponse,
+    github::response::{GetContributorsResponse, GetRepositoryResponse, GetUserResponse},
 };
 
 pub mod auth;
 pub mod client;
 mod response;
+
+trait GitHubHttpRequestBuilderExt {
+    fn with_default_github_headers(self, access_token: String) -> Self;
+}
+
+impl GitHubHttpRequestBuilderExt for RequestBuilder {
+    fn with_default_github_headers(self, access_token: String) -> Self {
+        self.header(ACCEPT, "application/vnd.github+json")
+            .header(USER_AGENT, "SAPIC/1.0")
+            .header(AUTHORIZATION, format!("token {}", access_token))
+    }
+}
 
 #[derive(Clone)]
 pub struct GitHubApiClient {
@@ -30,7 +45,8 @@ impl GitHubApiClient {
         Self { client }
     }
 
-    pub async fn user(
+    // TODO: refactor with constants and helpers
+    pub async fn get_user(
         &self,
         account_handle: &AccountSession,
     ) -> joinerror::Result<GetUserResponse> {
@@ -38,9 +54,57 @@ impl GitHubApiClient {
         let resp = self
             .client
             .get(format!("{GITHUB_API_URL}/user"))
-            .header(ACCEPT, "application/vnd.github+json")
-            .header(AUTHORIZATION, format!("token {}", access_token))
-            .header(USER_AGENT, "SAPIC/1.0")
+            .with_default_github_headers(access_token)
+            .send()
+            .await?;
+
+        let status = resp.status();
+        if status.is_success() {
+            Ok(resp.json().await?)
+        } else {
+            let error_text = resp.text().await?;
+            eprintln!("GitHub API Error: Status {}, Body: {}", status, error_text);
+            Err(joinerror::Error::new::<()>(error_text))
+        }
+    }
+
+    // TODO: refactor with constants and helpers
+    pub async fn get_contributors(
+        &self,
+        account_handle: &AccountSession,
+        url: &GitUrl,
+    ) -> joinerror::Result<GetContributorsResponse> {
+        let access_token = account_handle.access_token().await?;
+        let repo_url = format!("{}/{}", &url.owner, &url.name);
+        let resp = self
+            .client
+            .get(format!("{GITHUB_API_URL}/repos/{repo_url}/contributors"))
+            .with_default_github_headers(access_token)
+            .send()
+            .await?;
+
+        let status = resp.status();
+        if status.is_success() {
+            Ok(resp.json().await?)
+        } else {
+            let error_text = resp.text().await?;
+            eprintln!("GitHub API Error: Status {}, Body: {}", status, error_text);
+            Err(joinerror::Error::new::<()>(error_text))
+        }
+    }
+
+    // TODO: refactor with constants and helpers
+    pub async fn get_repository(
+        &self,
+        account_handle: &AccountSession,
+        url: &GitUrl,
+    ) -> joinerror::Result<GetRepositoryResponse> {
+        let access_token = account_handle.access_token().await?;
+        let repo_url = format!("{}/{}", &url.owner, &url.name);
+        let resp = self
+            .client
+            .get(format!("{GITHUB_API_URL}/repos/{repo_url}"))
+            .with_default_github_headers(access_token)
             .send()
             .await?;
 
@@ -68,33 +132,20 @@ fn token_url(host: &str) -> String {
 const GITHUB_SCOPES: [&'static str; 3] = ["repo", "user:email", "read:user"];
 const KEYRING_SECRET_KEY: &str = "github_auth_agent";
 
-pub struct GithubSignInProvider {}
+pub struct GitHubAuthAdapter {}
 
-impl GithubSignInProvider {
+impl GitHubAuthAdapter {
     pub fn new() -> Self {
         Self {}
     }
 }
 
-#[derive(Debug)]
-
-pub struct GithubPkceLoginCredentials {
-    // An OAuth App traditionally doesn’t issue a `refresh_token`;
-    // instead, it provides a long-lived `access_token`. The token
-    // can be manually revoked, automatically revoked if unused for a year,
-    // or revoked if it leaks into a public repository.
-    pub token: String,
-    pub scopes: Vec<String>,
-}
-
-pub struct GithubPatLoginCredentials {}
-
 #[async_trait]
-impl GitSignInAdapter for GithubSignInProvider {
+impl GitAuthAdapter for GitHubAuthAdapter {
     type PkceToken = StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>;
     type PatToken = ();
 
-    async fn sign_in_with_pkce(
+    async fn auth_with_pkce(
         &self,
         client_id: ClientId,
         client_secret: ClientSecret,
@@ -136,7 +187,7 @@ impl GitSignInAdapter for GithubSignInProvider {
         Ok(token)
     }
 
-    async fn sign_in_with_pat(&self) -> joinerror::Result<Self::PatToken> {
+    async fn auth_with_pat(&self) -> joinerror::Result<Self::PatToken> {
         todo!()
     }
 }

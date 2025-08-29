@@ -3555,6 +3555,9 @@ dependencies = [
  "joinerror",
  "moss_keyring",
  "oauth2",
+ "rustc-hash",
+ "tokio",
+ "zeroize",
 ]
 
 [[package]]
@@ -3777,6 +3780,8 @@ version = "0.1.0"
 dependencies = [
  "joinerror",
  "keyring",
+ "moss_logging",
+ "tracing",
  "whoami",
 ]
 

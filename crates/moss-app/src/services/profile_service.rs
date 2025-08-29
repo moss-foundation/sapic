@@ -3,10 +3,10 @@ use moss_applib::errors::Internal;
 use moss_asp::AppSecretsProvider;
 use moss_common::continue_if_none;
 use moss_fs::{CreateOptions, FileSystem};
-use moss_git::GitSignInAdapter;
+use moss_git::GitAuthAdapter;
 use moss_git_hosting_provider::{
-    github::{GitHubApiClient, GithubSignInProvider},
-    gitlab::{GitLabApiClient, GitLabSignInProvider},
+    github::{GitHubApiClient, GitHubAuthAdapter},
+    gitlab::{GitLabApiClient, GitLabAuthAdapter},
     models::primitives::GitProviderType,
 };
 use moss_keyring::KeyringClient;
@@ -21,11 +21,7 @@ use std::{
 };
 use tokio::sync::RwLock;
 
-use crate::{
-    config::AppConfig,
-    dirs::PROFILES_DIR,
-    models::{primitives::ProfileId, types::AccountInfo},
-};
+use crate::models::{primitives::ProfileId, types::AccountInfo};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct ProfileFile {
@@ -116,14 +112,14 @@ impl ProfileService {
             GitProviderType::GitHub => {
                 let session = self.add_github_account(account_id.clone(), &host).await?;
                 let api_client = GitHubApiClient::new(HttpClient::new());
-                let user = api_client.user(&session).await?;
+                let user = api_client.get_user(&session).await?;
 
                 (session, user.login)
             }
             GitProviderType::GitLab => {
                 let session = self.add_gitlab_account(account_id.clone(), &host).await?;
                 let api_client = GitLabApiClient::new(HttpClient::new());
-                let user = api_client.user(&session).await?;
+                let user = api_client.get_user(&session).await?;
 
                 (session, user.username)
             }
@@ -175,10 +171,10 @@ impl ProfileService {
         host: &str,
     ) -> joinerror::Result<AccountSession> {
         let client_id = self.config.github_client_id.clone();
-        let client_secret = self.secrets.github_client_secret()?;
-        let github_client = GithubSignInProvider::new();
+        let client_secret = self.secrets.github_client_secret().await?;
+        let github_client = GitHubAuthAdapter::new();
         let token = github_client
-            .sign_in_with_pkce(client_id, client_secret, host)
+            .auth_with_pkce(client_id, client_secret, host)
             .await
             .unwrap();
 
@@ -197,10 +193,10 @@ impl ProfileService {
         host: &str,
     ) -> joinerror::Result<AccountSession> {
         let client_id = self.config.gitlab_client_id.clone();
-        let client_secret = self.secrets.gitlab_client_secret()?;
-        let gitlab_client = GitLabSignInProvider::new();
+        let client_secret = self.secrets.gitlab_client_secret().await?;
+        let gitlab_client = GitLabAuthAdapter::new();
         let token = gitlab_client
-            .sign_in_with_pkce(client_id.clone(), client_secret, host)
+            .auth_with_pkce(client_id.clone(), client_secret, host)
             .await
             .unwrap();
 
@@ -316,8 +312,8 @@ async fn scan(
 #[cfg(test)]
 mod tests {
     use git2::{Cred, RemoteCallbacks};
-    use moss_git::{GitSignInAdapter, repository::Repository};
-    use moss_git_hosting_provider::github::GithubSignInProvider;
+    use moss_git::{GitAuthAdapter, repository::Repository};
+    use moss_git_hosting_provider::github::GitHubAuthAdapter;
     use oauth2::{ClientSecret, TokenResponse};
 
     use super::*;
@@ -327,9 +323,9 @@ mod tests {
         let user = "g10z3r";
         let cid = dotenv::var("GITHUB_CLIENT_ID").unwrap().to_string();
         let csecret = dotenv::var("GITHUB_CLIENT_SECRET").unwrap().to_string();
-        let gh = GithubSignInProvider::new();
+        let gh = GitHubAuthAdapter::new();
         let tok = gh
-            .sign_in_with_pkce(ClientId::new(cid), ClientSecret::new(csecret), "github.com")
+            .auth_with_pkce(ClientId::new(cid), ClientSecret::new(csecret), "github.com")
             .await
             .unwrap();
 

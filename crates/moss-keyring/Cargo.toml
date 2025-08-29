@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+moss_logging.workspace = true
+
+tracing.workspace = true
 keyring.workspace = true
 whoami.workspace = true
 joinerror.workspace = true

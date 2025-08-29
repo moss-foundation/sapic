@@ -24,7 +24,11 @@ fn token_url(host: &str) -> String {
 }
 
 pub(crate) struct LastAccessToken {
+    // Access token
     token: String,
+
+    // GitLab access tokens are valid for 2 hours. But we refresh them half
+    // an hour before the expiry to avoid any timing issue.
     expires_at: Instant,
 }
 
@@ -129,7 +133,7 @@ impl GitLabSessionHandle {
         refresh_token: String,
         secrets: &AppSecretsProvider,
     ) -> joinerror::Result<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>> {
-        let client_secret = secrets.gitlab_client_secret()?;
+        let client_secret = secrets.gitlab_client_secret().await?;
         let client = BasicClient::new(self.client_id.clone())
             .set_client_secret(client_secret)
             .set_auth_uri(AuthUrl::new(auth_url(&self.host))?)

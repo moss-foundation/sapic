@@ -1,6 +1,6 @@
 use anyhow::Context;
 use async_trait::async_trait;
-use moss_git::GitSignInAdapter;
+use moss_git::GitAuthAdapter;
 use moss_user::AccountSession;
 use oauth2::{
     AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, EmptyExtraTokenFields,
@@ -11,8 +11,11 @@ use oauth2::{
 use reqwest::Client as HttpClient;
 
 use crate::{
-    common::utils::{create_auth_tcp_listener, receive_auth_code},
-    gitlab::response::GetUserResponse,
+    common::{
+        GitUrl,
+        utils::{create_auth_tcp_listener, receive_auth_code},
+    },
+    gitlab::response::{GetContributorsResponse, GetRepositoryResponse, GetUserResponse},
 };
 
 pub mod auth;
@@ -28,7 +31,7 @@ fn token_url(host: &str) -> String {
 }
 
 fn api_url(host: &str) -> String {
-    format!("https://{host}/api/v4") // TODO: make version configurable
+    format!("https://{host}/api/v4") // TODO: make version configurable?
 }
 
 const GITLAB_SCOPES: [&'static str; 4] =
@@ -46,7 +49,7 @@ impl GitLabApiClient {
         Self { client }
     }
 
-    pub async fn user(
+    pub async fn get_user(
         &self,
         account_handle: &AccountSession,
     ) -> joinerror::Result<GetUserResponse> {
@@ -68,23 +71,85 @@ impl GitLabApiClient {
             Err(joinerror::Error::new::<()>(error_text))
         }
     }
+
+    pub async fn get_contributors(
+        &self,
+        account_handle: &AccountSession,
+        url: &GitUrl,
+    ) -> joinerror::Result<GetContributorsResponse> {
+        let access_token = account_handle.access_token().await?;
+        let repo_url = format!("{}/{}", &url.owner, &url.name);
+        let encoded_url = urlencoding::encode(&repo_url);
+
+        let resp = self
+            .client
+            .get(format!(
+                "{}/projects/{}/repository/contributors",
+                api_url(&account_handle.host()),
+                encoded_url
+            ))
+            .header(ACCEPT, CONTENT_TYPE)
+            .header(AUTHORIZATION, format!("Bearer {}", access_token))
+            .send()
+            .await?;
+
+        let status = resp.status();
+        if status.is_success() {
+            Ok(resp.json().await?)
+        } else {
+            let error_text = resp.text().await?;
+            eprintln!("GitLab API Error: Status {}, Body: {}", status, error_text);
+            Err(joinerror::Error::new::<()>(error_text))
+        }
+    }
+
+    pub async fn get_repository(
+        &self,
+        account_handle: &AccountSession,
+        url: &GitUrl,
+    ) -> joinerror::Result<GetRepositoryResponse> {
+        let access_token = account_handle.access_token().await?;
+        let repo_url = format!("{}/{}", &url.owner, &url.name);
+        let encoded_url = urlencoding::encode(&repo_url);
+
+        let resp = self
+            .client
+            .get(format!(
+                "{}/projects/{}/repository/contributors",
+                api_url(&account_handle.host()),
+                encoded_url
+            ))
+            .header(ACCEPT, CONTENT_TYPE)
+            .header(AUTHORIZATION, format!("Bearer {}", access_token))
+            .send()
+            .await?;
+
+        let status = resp.status();
+        if status.is_success() {
+            Ok(resp.json().await?)
+        } else {
+            let error_text = resp.text().await?;
+            eprintln!("GitLab API Error: Status {}, Body: {}", status, error_text);
+            Err(joinerror::Error::new::<()>(error_text))
+        }
+    }
 }
-pub struct GitLabSignInProvider {
+pub struct GitLabAuthAdapter {
     // host: String,
 }
 
-impl GitLabSignInProvider {
+impl GitLabAuthAdapter {
     pub fn new() -> Self {
         Self {}
     }
 }
 
 #[async_trait]
-impl GitSignInAdapter for GitLabSignInProvider {
+impl GitAuthAdapter for GitLabAuthAdapter {
     type PkceToken = StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>;
     type PatToken = ();
 
-    async fn sign_in_with_pkce(
+    async fn auth_with_pkce(
         &self,
         client_id: ClientId,
         client_secret: ClientSecret,
@@ -127,7 +192,7 @@ impl GitSignInAdapter for GitLabSignInProvider {
         Ok(token)
     }
 
-    async fn sign_in_with_pat(&self) -> joinerror::Result<Self::PatToken> {
+    async fn auth_with_pat(&self) -> joinerror::Result<Self::PatToken> {
         unimplemented!()
     }
 }

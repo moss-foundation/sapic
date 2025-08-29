@@ -11,17 +11,17 @@ pub mod repository;
 pub mod url;
 
 #[async_trait]
-pub trait GitSignInAdapter {
+pub trait GitAuthAdapter {
     type PkceToken;
     type PatToken;
 
-    async fn sign_in_with_pkce(
+    async fn auth_with_pkce(
         &self,
         client_id: ClientId,
         client_secret: ClientSecret,
         host: &str,
     ) -> anyhow::Result<Self::PkceToken>;
-    async fn sign_in_with_pat(&self) -> joinerror::Result<Self::PatToken>;
+    async fn auth_with_pat(&self) -> joinerror::Result<Self::PatToken>;
 }
 
 pub trait GitAuthAgent {

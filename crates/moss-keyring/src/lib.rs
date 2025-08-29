@@ -1,4 +1,5 @@
 use keyring::Entry;
+use moss_logging::session;
 
 pub trait KeyringClient: Send + Sync {
     fn set_secret(&self, key: &str, secret: &str) -> joinerror::Result<()>;
@@ -19,6 +20,8 @@ impl KeyringClientImpl {
 
 impl KeyringClient for KeyringClientImpl {
     fn set_secret(&self, key: &str, secret: &str) -> joinerror::Result<()> {
+        session::trace!("Setting secret for key: {}", key);
+
         Entry::new(key, &self.user)
             .map_err(|e| joinerror::Error::new::<()>(e.to_string()))?
             .set_secret(secret.as_bytes())
@@ -28,6 +31,8 @@ impl KeyringClient for KeyringClientImpl {
     }
 
     fn get_secret(&self, key: &str) -> joinerror::Result<Vec<u8>> {
+        session::trace!("Getting secret for key: {}", key);
+
         let bytes = Entry::new(key, &self.user)
             .map_err(|e| joinerror::Error::new::<()>(e.to_string()))?
             .get_secret()
