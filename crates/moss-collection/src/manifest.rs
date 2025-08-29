@@ -11,7 +11,7 @@ pub struct ManifestFile {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
-pub(super) enum ManifestVcs {
+pub enum ManifestVcs {
     GitHub { repository: String },
     GitLab { repository: String },
 }

@@ -493,10 +493,13 @@ impl<R: AppRuntime> CollectionService<R> {
                 abs_path.display()
             )));
         }
+        let mut state_lock = self.state.write().await;
+
+        if state_lock.archived_collections.contains(id) {
+            return Ok(abs_path);
+        }
 
         set_config_archived(self.fs.clone(), &abs_path, true).await?;
-
-        let mut state_lock = self.state.write().await;
 
         let item = state_lock.collections.remove(id);
         state_lock.archived_collections.insert(id.clone());
@@ -538,10 +541,12 @@ impl<R: AppRuntime> CollectionService<R> {
                 abs_path.display()
             )));
         }
-
-        set_config_archived(self.fs.clone(), &abs_path, false).await?;
-
         let mut state_lock = self.state.write().await;
+
+        if state_lock.collections.contains_key(id) {
+            return Ok(abs_path);
+        }
+        set_config_archived(self.fs.clone(), &abs_path, false).await?;
 
         state_lock.archived_collections.remove(id);
 
