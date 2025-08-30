@@ -30,9 +30,7 @@ use crate::{
     git::GitClient,
     manifest::{MANIFEST_FILE_NAME, ManifestFile, ManifestVcs},
     models::primitives::{EntryClass, EntryId},
-    services::{
-        git_service::GitService, set_icon_service::SetIconService, storage_service::StorageService,
-    },
+    services::{set_icon_service::SetIconService, storage_service::StorageService},
     worktree::{Worktree, entry::model::EntryModel},
 };
 
@@ -411,8 +409,6 @@ impl<R: AppRuntime> CollectionBuilder<R> {
                 params.git_params.branch,
             )
             .await?;
-
-        let git_service = Arc::new(GitService::new(Some(repository), git_client));
 
         let storage_service: Arc<StorageService<R>> = StorageService::new(abs_path.as_ref())
             .join_err::<()>("failed to create collection storage service")?

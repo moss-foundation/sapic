@@ -7,9 +7,13 @@ edition = "2024"
 moss_logging.workspace = true
 
 tracing.workspace = true
-keyring.workspace = true
+keyring = { workspace = true, features = ["apple-native", "windows-native", "sync-secret-service"] }
 whoami.workspace = true
 joinerror.workspace = true
+
+# macOS specific dependencies for keychain access control
+[target.'cfg(target_os = "macos")'.dependencies]
+security-framework = "3.0"
 
 [features]
 integration-tests = []

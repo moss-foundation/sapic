@@ -28,9 +28,7 @@ use crate::{
     edit::CollectionEdit,
     git::GitClient,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
-    services::{
-        git_service::GitService, set_icon_service::SetIconService, storage_service::StorageService,
-    },
+    services::{set_icon_service::SetIconService, storage_service::StorageService},
     vcs::{CollectionVcs, Vcs},
     worktree::Worktree,
 };
