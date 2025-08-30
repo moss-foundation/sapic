@@ -18,6 +18,8 @@ impl<R: AppRuntime> App<R> {
     ) -> joinerror::Result<CreateWorkspaceOutput> {
         input.validate().join_err_bare()?;
 
+        let active_profile = self.profile_service.active_profile();
+
         let id = WorkspaceId::new();
         let item = self
             .workspace_service
@@ -31,7 +33,7 @@ impl<R: AppRuntime> App<R> {
 
         if input.open_on_creation {
             self.workspace_service
-                .activate_workspace(ctx, &id, self.broadcaster.clone())
+                .activate_workspace(ctx, &id, active_profile, self.broadcaster.clone())
                 .await?;
         }
 

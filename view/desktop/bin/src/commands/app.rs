@@ -352,6 +352,17 @@ pub async fn cancel_request<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn create_profile<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: Window<R>,
+    input: CreateProfileInput,
+) -> TauriResult<CreateProfileOutput> {
+    Ok(app.create_profile(&ctx, input).await?)
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn add_account<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,

@@ -12,9 +12,11 @@ impl<R: AppRuntime> App<R> {
         ctx: &R::AsyncContext,
         input: &OpenWorkspaceInput,
     ) -> joinerror::Result<OpenWorkspaceOutput> {
+        let active_profile = self.profile_service.active_profile();
+
         let desc = self
             .workspace_service
-            .activate_workspace(ctx, &input.id, self.broadcaster.clone())
+            .activate_workspace(ctx, &input.id, active_profile, self.broadcaster.clone())
             .await?;
 
         Ok(OpenWorkspaceOutput {

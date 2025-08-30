@@ -1,24 +1,24 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub(crate) struct RepositoryResponse {
+pub struct GetRepositoryResponse {
     pub updated_at: String,
     pub owner: Owner,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub(crate) struct Owner {
+pub struct Owner {
     pub username: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(transparent)]
-pub(crate) struct ContributorsResponse {
+pub struct GetContributorsResponse {
     pub items: Vec<ContributorItem>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub(crate) struct ContributorItem {
+pub struct ContributorItem {
     pub name: String,
     pub email: String,
 }
@@ -29,7 +29,7 @@ pub(crate) struct AvatarResponse {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub(crate) struct UserResponse {
+pub struct GetUserResponse {
     pub username: String,
     pub commit_email: String,
 }

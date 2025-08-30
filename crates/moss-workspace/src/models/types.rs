@@ -7,6 +7,7 @@ use moss_environment::models::{
     types::{AddVariableParams, UpdateVariableParams, VariableInfo},
 };
 use moss_git::{models::types::BranchInfo, url::GIT_URL_REGEX};
+use moss_user::models::primitives::AccountId;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use ts_rs::TS;
@@ -220,6 +221,8 @@ pub enum ImportCollectionSource {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct GitHubImportParams {
+    pub account_id: AccountId,
+
     #[validate(regex(path = "*GIT_URL_REGEX"))]
     pub repository: String,
     /// If provided, this branch will be checked out instead of the default branch
@@ -232,6 +235,8 @@ pub struct GitHubImportParams {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct GitLabImportParams {
+    pub account_id: AccountId,
+
     #[validate(regex(path = "*GIT_URL_REGEX"))]
     pub repository: String,
     /// If provided, this branch will be checked out instead of the default branch

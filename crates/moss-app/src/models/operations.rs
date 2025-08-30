@@ -2,7 +2,7 @@ use std::{path::Path, sync::Arc};
 
 use super::types::{ColorThemeInfo, Defaults, LocaleInfo, Preferences};
 use crate::models::{
-    primitives::{LogLevel, ThemeId, WorkspaceId},
+    primitives::{LogLevel, ProfileId, ThemeId, WorkspaceId},
     types::{LogDate, LogEntryInfo, LogItemSourceInfo, WorkspaceInfo},
 };
 use derive_more::Deref;
@@ -13,6 +13,44 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use ts_rs::TS;
 use validator::Validate;
+
+// #########################################################
+// ###                    Profile                      ###
+// #########################################################
+
+/// @category Operation
+#[derive(Debug, Clone, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct CreateProfileInput {
+    pub name: String,
+}
+
+/// @category Operation
+#[derive(Debug, Clone, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct AddAccountInput {
+    pub profile_id: ProfileId,
+    pub host: String,
+    pub label: Option<String>,
+    pub provider: GitProviderType,
+}
+
+/// @category Operation
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "operations.ts")]
+pub struct AddAccountOutput {
+    pub account_id: String,
+}
+
+/// @category Operation
+#[derive(Debug, Clone, Serialize, TS)]
+#[ts(export, export_to = "operations.ts")]
+pub struct CreateProfileOutput {
+    pub profile_id: String,
+}
 // ########################################################
 // ###                   Cancellation                   ###
 // ########################################################
@@ -290,18 +328,18 @@ pub struct CloseWorkspaceOutput {
     pub id: WorkspaceId,
 }
 
-/// @category Operation
-#[derive(Debug, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct AddAccountInput {
-    pub git_provider_type: GitProviderType,
-}
+// /// @category Operation
+// #[derive(Debug, Deserialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct AddAccountInput {
+//     pub git_provider_type: GitProviderType,
+// }
 
-/// @category Operation
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct AddAccountOutput {
-    pub user_info: UserInfo,
-}
+// /// @category Operation
+// #[derive(Debug, Serialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct AddAccountOutput {
+//     pub user_info: UserInfo,
+// }

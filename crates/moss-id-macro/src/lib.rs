@@ -45,6 +45,7 @@ pub fn ids(input: TokenStream) -> TokenStream {
                 }
             }
 
+
             impl<T> ::std::convert::From<T> for #name
             where T: ::std::convert::Into<::std::sync::Arc<::std::string::String>> {
                 fn from(s: T) -> Self {

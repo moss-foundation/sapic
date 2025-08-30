@@ -40,11 +40,11 @@ export const calculateIsSubmitDisabled = ({
     }
 
     if ("gitHub" in importParams) {
-      return !importParams.gitHub.repository || !importParams.gitHub.branch;
+      return !importParams.gitHub.repository || !importParams.gitHub.branch || !importParams.gitHub.accountId;
     }
 
     if ("gitLab" in importParams) {
-      return !importParams.gitLab.repository || !importParams.gitLab.branch;
+      return !importParams.gitLab.repository || !importParams.gitLab.branch || !importParams.gitLab.accountId;
     }
   }
 

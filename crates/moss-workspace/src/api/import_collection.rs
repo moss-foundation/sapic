@@ -1,3 +1,4 @@
+use joinerror::OptionExt;
 use moss_applib::{AppRuntime, errors::ValidationResultExt};
 use moss_git_hosting_provider::models::primitives::GitProviderType;
 use validator::Validate;
@@ -21,35 +22,56 @@ impl<R: AppRuntime> Workspace<R> {
         input.validate().join_err_bare()?;
         let params = &input.inner;
         let id = CollectionId::new();
+
         let description = match &params.source {
-            ImportCollectionSource::GitHub(git_params) => self.collection_service.clone_collection(
-                ctx,
-                &id,
-                CollectionItemCloneParams {
-                    _name: params.name.clone(),
-                    order: params.order,
-                    _icon_path: params.icon_path.clone(),
-                    git_params: CollectionItemGitCloneParams {
-                        repository: git_params.repository.clone(),
-                        git_provider_type: GitProviderType::GitHub,
-                        branch: git_params.branch.clone(),
+            ImportCollectionSource::GitHub(git_params) => {
+                let session = self
+                    .active_profile
+                    .account(&git_params.account_id)
+                    .await
+                    .ok_or_join_err::<()>("account not found")?;
+
+                self.collection_service.clone_collection(
+                    ctx,
+                    &id,
+                    session,
+                    CollectionItemCloneParams {
+                        _name: params.name.clone(),
+                        order: params.order,
+                        account_id: git_params.account_id.to_owned(),
+                        _icon_path: params.icon_path.clone(),
+                        git_params: CollectionItemGitCloneParams {
+                            repository: git_params.repository.clone(),
+                            git_provider_type: GitProviderType::GitHub,
+                            branch: git_params.branch.clone(),
+                        },
                     },
-                },
-            ),
-            ImportCollectionSource::GitLab(git_params) => self.collection_service.clone_collection(
-                ctx,
-                &id,
-                CollectionItemCloneParams {
-                    _name: params.name.clone(),
-                    order: params.order,
-                    _icon_path: params.icon_path.clone(),
-                    git_params: CollectionItemGitCloneParams {
-                        repository: git_params.repository.clone(),
-                        git_provider_type: GitProviderType::GitLab,
-                        branch: git_params.branch.clone(),
+                )
+            }
+            ImportCollectionSource::GitLab(git_params) => {
+                let session = self
+                    .active_profile
+                    .account(&git_params.account_id)
+                    .await
+                    .ok_or_join_err::<()>("account not found")?;
+
+                self.collection_service.clone_collection(
+                    ctx,
+                    &id,
+                    session,
+                    CollectionItemCloneParams {
+                        _name: params.name.clone(),
+                        order: params.order,
+                        account_id: git_params.account_id.to_owned(),
+                        _icon_path: params.icon_path.clone(),
+                        git_params: CollectionItemGitCloneParams {
+                            repository: git_params.repository.clone(),
+                            git_provider_type: GitProviderType::GitLab,
+                            branch: git_params.branch.clone(),
+                        },
                     },
-                },
-            ), // TODO: Support importing from other apps
+                )
+            } // TODO: Support importing from other apps
         }
         .await?;
 
