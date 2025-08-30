@@ -6,11 +6,14 @@ use moss_fs::{CreateOptions, FileSystem, FsResultExt, RemoveOptions};
 use moss_git::{
     // repo::{BranchType, IndexAddOption, RepoHandle, Signature},
     repository::Repository,
+    url::normalize_git_url,
 };
 use moss_git_hosting_provider::{
     GitAuthProvider, GitHostingProvider, models::primitives::GitProviderType,
 };
 use moss_user::models::primitives::AccountId;
+
+use moss_logging::session;
 use std::{
     cell::LazyCell,
     path::{Path, PathBuf},
@@ -24,7 +27,7 @@ use crate::{
     defaults, dirs,
     edit::CollectionEdit,
     git::GitClient,
-    manifest::{MANIFEST_FILE_NAME, ManifestFile, ManifestRepository},
+    manifest::{MANIFEST_FILE_NAME, ManifestFile, ManifestVcs},
     models::primitives::{EntryClass, EntryId},
     services::{
         git_service::GitService, set_icon_service::SetIconService, storage_service::StorageService,
@@ -178,7 +181,7 @@ impl<R: AppRuntime> CollectionBuilder<R> {
         let vcs_service = if let Some(git_client) = git_client {
             let repository = self
                 .load_repo_handle(
-                    manifest.repository.map(|repo| repo.git_provider_type),
+                    manifest.vcs.map(|vcs| vcs.provider()),
                     params.internal_abs_path.clone(),
                 )
                 .await;
@@ -280,9 +283,26 @@ impl<R: AppRuntime> CollectionBuilder<R> {
         }
 
         // FIXME: I'm not sure why we need to store a repo url that's different from what we expect from the user
-        let repository = params.git_params.as_ref().map(|p| ManifestRepository {
-            url: p.repository.clone(),
-            git_provider_type: p.git_provider_type.clone(),
+        let vcs = params.git_params.as_ref().and_then(|p| {
+            match normalize_git_url(&p.repository) {
+                Ok(normalized_repository) => match p.git_provider_type {
+                    GitProviderType::GitHub => Some(ManifestVcs::GitHub {
+                        repository: normalized_repository,
+                    }),
+                    GitProviderType::GitLab => Some(ManifestVcs::GitLab {
+                        repository: normalized_repository,
+                    }),
+                },
+                Err(e) => {
+                    // TODO: let the frontend know we cannot normalize the repository
+                    session::error!(format!(
+                        "failed to normalize repository url `{}`: {}",
+                        p.repository,
+                        e.to_string()
+                    ));
+                    None
+                }
+            }
         });
 
         self.fs
@@ -293,7 +313,7 @@ impl<R: AppRuntime> CollectionBuilder<R> {
                         .name
                         .unwrap_or(defaults::DEFAULT_COLLECTION_NAME.to_string()),
                     // INFO: We might consider removing this field from the manifest file
-                    repository,
+                    vcs,
                 })?
                 .as_bytes(),
                 CreateOptions {

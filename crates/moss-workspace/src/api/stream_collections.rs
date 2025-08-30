@@ -18,6 +18,10 @@ impl<R: AppRuntime> Workspace<R> {
         tokio::pin!(stream);
 
         let mut total_returned = 0;
+
+        // OPTIMIZE: Right now `stream_collections` need to do provider API calls, which is slow
+        // We should consider streaming vcs summary from a different channel
+
         while let Some(desc) = stream.next().await {
             let event = StreamCollectionsEvent {
                 id: desc.id,
