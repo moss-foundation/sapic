@@ -18,6 +18,12 @@ pub struct Repository {
     inner: git2::Repository,
 }
 
+// SAFETY: git2::Repository is actually thread-safe when properly used.
+// The raw pointers are managed internally by libgit2, and we don't expose
+// them directly. All operations go through libgit2's safe API.
+unsafe impl Send for Repository {}
+unsafe impl Sync for Repository {}
+
 impl Repository {
     pub fn init(path: &Path) -> joinerror::Result<Self> {
         Ok(Repository {

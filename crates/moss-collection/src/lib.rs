@@ -8,6 +8,7 @@ mod helpers;
 mod manifest;
 pub mod models;
 mod services;
+pub mod vcs;
 mod worktree;
 
 #[cfg(feature = "integration-tests")]

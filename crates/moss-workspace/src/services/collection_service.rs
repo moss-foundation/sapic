@@ -21,6 +21,7 @@ use moss_logging::session;
 use moss_user::{
     AccountSession, account::Account, models::primitives::AccountId, profile::ActiveProfile,
 };
+use reqwest::Client as HttpClient;
 use rustc_hash::FxHashMap;
 use std::{
     collections::{HashMap, HashSet},
@@ -164,6 +165,7 @@ impl<R: AppRuntime> CollectionService<R> {
         &self,
         ctx: &R::AsyncContext,
         id: &CollectionId,
+        account: Option<Account>,
         params: &CreateCollectionParams,
     ) -> joinerror::Result<CollectionItemDescription> {
         let id_str = id.to_string();
@@ -217,7 +219,7 @@ impl<R: AppRuntime> CollectionService<R> {
                     name: Some(params.name.to_owned()),
                     internal_abs_path: abs_path.clone(),
                     external_abs_path: params.external_path.as_deref().map(|p| p.to_owned().into()),
-                    git_params,
+                    git_params: git_params.clone(),
                     icon_path: params.icon_path.to_owned(),
                 },
             )
@@ -247,7 +249,22 @@ impl<R: AppRuntime> CollectionService<R> {
             }
         };
 
-        // TODO: Git init if needed
+        if let (Some(git_params), Some(account)) = (git_params, account) {
+            let client = match git_params.git_provider_type {
+                GitProviderType::GitHub => GitClient::GitHub {
+                    account: account,
+                    api: GitHubApiClient::new(HttpClient::new()), // FIXME:
+                },
+                GitProviderType::GitLab => GitClient::GitLab {
+                    account: account,
+                    api: GitLabApiClient::new(HttpClient::new()), // FIXME:
+                },
+            };
+
+            collection
+                .init_git(client, git_params.repository, git_params.branch)
+                .await?;
+        }
 
         let icon_path = collection.icon_path();
 
@@ -604,9 +621,6 @@ async fn restore_collections<R: AppRuntime>(
         return Ok(HashMap::new());
     }
 
-    dbg!("A");
-    dbg!(abs_path);
-
     let mut collections = Vec::new();
     let mut read_dir = fs
         .read_dir(&abs_path)
@@ -673,14 +687,37 @@ async fn restore_collections<R: AppRuntime>(
             }
         };
 
+        if let Some(vcs) = collection.vcs() {
+            let (account_id, provider) = (vcs.owner(), vcs.provider());
+            let account = active_profile
+                .account(&account_id)
+                .await
+                .ok_or_join_err_with::<()>(|| {
+                    format!(
+                        "failed to find account with id `{}`",
+                        account_id.to_string()
+                    )
+                })?;
+
+            let client = match provider {
+                GitProviderType::GitHub => GitClient::GitHub {
+                    account: account,
+                    api: GitHubApiClient::new(HttpClient::new()), // FIXME:
+                },
+                GitProviderType::GitLab => GitClient::GitLab {
+                    account: account,
+                    api: GitLabApiClient::new(HttpClient::new()), // FIXME:
+                },
+            };
+            collection.load_git(client).await?;
+        }
+
         collections.push((id, collection));
     }
 
     let metadata = storage
         .list_items_metadata(ctx, SEGKEY_COLLECTION.to_segkey_buf())
         .await?;
-
-    dbg!("B");
 
     let mut result = HashMap::new();
     for (id, collection) in collections {
@@ -699,8 +736,6 @@ async fn restore_collections<R: AppRuntime>(
             },
         );
     }
-
-    dbg!("C");
 
     activity_handle.emit_finish()?;
 

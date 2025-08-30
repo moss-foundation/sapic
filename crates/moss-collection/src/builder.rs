@@ -19,6 +19,7 @@ use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
+use tokio::sync::OnceCell;
 
 use crate::{
     Collection,
@@ -73,6 +74,7 @@ pub struct CollectionCreateParams {
     pub icon_path: Option<PathBuf>,
 }
 
+#[derive(Clone)]
 pub struct CollectionCreateGitParams {
     pub git_provider_type: GitProviderType,
     pub repository: String,
@@ -178,18 +180,18 @@ impl<R: AppRuntime> CollectionBuilder<R> {
             format!("failed to parse manifest file: {}", manifest_path.display())
         })?;
 
-        let vcs_service = if let Some(git_client) = git_client {
-            let repository = self
-                .load_repo_handle(
-                    manifest.vcs.map(|vcs| vcs.provider()),
-                    params.internal_abs_path.clone(),
-                )
-                .await;
+        // let vcs_service = if let Some(git_client) = git_client {
+        //     let repository = self
+        //         .load_repo_handle(
+        //             manifest.vcs.map(|vcs| vcs.provider()),
+        //             params.internal_abs_path.clone(),
+        //         )
+        //         .await;
 
-            Some(Arc::new(GitService::new(repository, git_client)))
-        } else {
-            None
-        };
+        //     Some(Arc::new(GitService::new(repository, git_client)))
+        // } else {
+        //     None
+        // };
 
         // let repo_handle = if params.internal_abs_path.join(".git").exists() {
         //     self.load_repo_handle(
@@ -209,7 +211,8 @@ impl<R: AppRuntime> CollectionBuilder<R> {
             edit,
             set_icon_service,
             storage_service,
-            git_service: vcs_service,
+            vcs: OnceCell::new(),
+            // git_service: OnceCell::new(),
             // git_client: git_client,
             worktree: worktree_service,
             on_did_change: EventEmitter::new(),
@@ -382,7 +385,7 @@ impl<R: AppRuntime> CollectionBuilder<R> {
             edit,
             set_icon_service,
             storage_service,
-            git_service: None,
+            vcs: OnceCell::new(),
             // git_client: self.git_client,
             worktree: worktree_service,
             on_did_change: EventEmitter::new(),
@@ -454,7 +457,7 @@ impl<R: AppRuntime> CollectionBuilder<R> {
             edit,
             set_icon_service,
             storage_service,
-            git_service: Some(git_service),
+            vcs: OnceCell::new(),
             // git_client: self.git_client,
             worktree,
             on_did_change: EventEmitter::new(),

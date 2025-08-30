@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc};
-use joinerror::ResultExt;
+use git2::{BranchType, IndexAddOption, Signature};
+use joinerror::{Error, OptionExt, ResultExt};
 use json_patch::{PatchOperation, ReplaceOperation, jsonptr::PointerBuf};
 use moss_applib::{
     AppRuntime, EventMarker,
@@ -8,17 +9,19 @@ use moss_applib::{
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_edit::json::EditOptions;
 use moss_fs::{FileSystem, FsResultExt};
-use moss_git::models::types::BranchInfo;
+use moss_git::{models::types::BranchInfo, repository::Repository};
 use moss_git_hosting_provider::{
     GitHostingProvider,
     common::GitUrl,
     models::{primitives::GitProviderType, types::Contributor},
 };
+use moss_user::{account::Account, models::primitives::AccountId};
 use serde_json::Value as JsonValue;
 use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
+use tokio::sync::OnceCell;
 
 use crate::{
     dirs,
@@ -28,6 +31,7 @@ use crate::{
     services::{
         git_service::GitService, set_icon_service::SetIconService, storage_service::StorageService,
     },
+    vcs::{CollectionVcs, Vcs},
     worktree::Worktree,
 };
 
@@ -90,7 +94,8 @@ pub struct Collection<R: AppRuntime> {
     pub(super) worktree: Arc<Worktree<R>>,
     pub(super) set_icon_service: SetIconService,
     pub(super) storage_service: Arc<StorageService<R>>,
-    pub(super) git_service: Option<Arc<GitService>>,
+    pub(super) vcs: OnceCell<Vcs>,
+    // pub(super) git_service: OnceCell<Arc<GitService>>,
     // TODO: Extract Git Provider Service
     // pub(super) github_client: Arc<GitHubClient>,
     // pub(super) gitlab_client: Arc<GitLabClient>,
@@ -98,6 +103,16 @@ pub struct Collection<R: AppRuntime> {
     // FIXME: Should be optional
     // pub(super) git_client: Option<GitClient>,
     pub(super) on_did_change: EventEmitter<OnDidChangeEvent>,
+}
+
+impl<R: AppRuntime> CollectionVcs for Collection<R> {
+    fn owner(&self) -> AccountId {
+        todo!()
+    }
+
+    fn provider(&self) -> GitProviderType {
+        todo!()
+    }
 }
 
 #[rustfmt::skip]
@@ -120,6 +135,113 @@ impl<R: AppRuntime> Collection<R> {
 
     pub fn environments_path(&self) -> PathBuf {
         self.abs_path.join(dirs::ENVIRONMENTS_DIR)
+    }
+
+    pub fn vcs(&self) -> Option<&dyn CollectionVcs> {
+        self.vcs.get().map(|vcs| vcs as &dyn CollectionVcs)
+    }
+
+    pub async fn init_git(
+        &self,
+        client: GitClient,
+        url: String,
+        default_branch: String,
+    ) -> joinerror::Result<()> {
+        let (access_token, username) = match &client {
+            GitClient::GitHub { account, .. } => {
+                (account.session().access_token().await?, account.username())
+            }
+            GitClient::GitLab { account, .. } => {
+                (account.session().access_token().await?, account.username())
+            }
+        };
+
+        let mut cb = git2::RemoteCallbacks::new();
+        let username_clone = username.clone();
+        let access_token_clone = access_token.clone();
+        cb.credentials(move |_url, username_from_url, _allowed| {
+            git2::Cred::userpass_plaintext(
+                username_from_url.unwrap_or(&username_clone),
+                &access_token_clone,
+            )
+        });
+
+        let repository = Repository::init(self.abs_path.as_ref())?;
+        repository.add_remote(None, &url)?;
+        repository.fetch(None, cb)?;
+
+        let remote_branches = repository.list_branches(Some(BranchType::Remote))?;
+
+        // We will push a default branch to the remote, if no remote branches exist
+        // TODO: Support connecting with a remote repo that already has branches?
+        if !remote_branches.is_empty() {
+            return Err(Error::new::<()>(
+                "connecting with a non-empty repo is unimplemented",
+            ));
+        }
+
+        repository.add_all(["."].iter(), IndexAddOption::DEFAULT)?;
+        let author = Signature::now(
+            &username,
+            // FIXME: This is a temporary solution to avoid the error
+            format!("{}@git.noreply.com", username).as_str(),
+        )
+        .map_err(|e| {
+            joinerror::Error::new::<()>(format!(
+                "failed to generate commit signature: {}",
+                e.to_string()
+            ))
+        })?;
+        repository.commit("Initial Commit", author)?;
+
+        let old_default_branch_name = repository
+            .list_branches(Some(BranchType::Local))?
+            .first()
+            .cloned()
+            .ok_or_join_err::<()>("no local branch exists")?;
+        repository.rename_branch(&old_default_branch_name, &default_branch, false)?;
+
+        // Don't push during integration tests
+        // git push
+        #[cfg(not(any(test, feature = "integration-tests")))]
+        {
+            let mut cb = git2::RemoteCallbacks::new();
+            let username_clone = username.clone();
+            cb.credentials(move |_url, username_from_url, _allowed| {
+                // let rt = tokio::runtime::Handle::try_current();
+                // let fut = self.session_for_remote(ws, repo_root, remote_name);
+                // let (acc, tok) = match rt {
+                //     Ok(h) => h.block_on(fut),
+                //     Err(_) => tokio::runtime::Runtime::new().unwrap().block_on(fut),
+                // }
+                // .map_err(|e| git2::Error::from_str(&format!("auth error: {e}")))?;
+                // let user = username_from_url.unwrap_or(&acc.login);
+
+                git2::Cred::userpass_plaintext(
+                    username_from_url.unwrap_or(&username_clone),
+                    &access_token,
+                )
+            });
+            repository.push(None, Some(&default_branch), Some(&default_branch), true, cb)?;
+        }
+
+        self.vcs
+            .set(Vcs::new(repository, client))
+            .map_err(|e| joinerror::Error::new::<()>(e.to_string()))
+            .join_err::<()>("failed to set git service")?;
+
+        Ok(())
+    }
+
+    pub async fn load_git(&self, client: GitClient) -> joinerror::Result<()> {
+        let repository = Repository::open(self.abs_path.as_ref())?;
+
+        self.vcs
+            .set(Vcs::new(repository, client))
+            .map_err(|e| joinerror::Error::new::<()>(e.to_string()))
+            .join_err::<()>("failed to set git service")?;
+
+        Ok(())
     }
 
     pub async fn details(&self) -> joinerror::Result<CollectionDetails> {
@@ -288,8 +410,8 @@ impl<R: AppRuntime> Collection<R> {
     }
 
     pub async fn dispose(&self) -> joinerror::Result<()> {
-        if let Some(git_service) = &self.git_service {
-            git_service.dispose(self.fs.clone()).await?;
+        if let Some(vcs) = self.vcs.get() {
+            vcs.dispose(self.fs.clone()).await?;
         }
 
         Ok(())

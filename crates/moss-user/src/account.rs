@@ -30,6 +30,10 @@ impl Account {
         }
     }
 
+    pub fn id(&self) -> AccountId {
+        self.id.clone()
+    }
+
     pub fn session(&self) -> &AccountSession {
         &self.session
     }

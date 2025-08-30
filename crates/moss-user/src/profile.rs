@@ -22,6 +22,17 @@ impl ActiveProfile {
             .get(account_id)
             .map(|account| account.clone())
     }
+
+    // HACK: Use the first account as the default account
+    // FIXME: We can avoid this by not having passing account as a parameter from the frontend
+    pub async fn first(&self) -> Option<Account> {
+        self.accounts
+            .read()
+            .await
+            .values()
+            .next()
+            .map(|account| account.clone())
+    }
 }
 
 pub struct ProfileAccount {
