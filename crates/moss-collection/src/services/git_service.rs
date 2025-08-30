@@ -1,26 +1,33 @@
 use joinerror::OptionExt;
 use moss_fs::{FileSystem, RemoveOptions};
-use moss_git::{
-    models::types::BranchInfo,
-    repo::{FileStatus, RepoHandle},
-};
+use moss_git::{models::types::BranchInfo, repo::FileStatus, repository::Repository};
 use std::{
     collections::HashMap,
     path::PathBuf,
     sync::{Arc, Mutex},
 };
 
+use crate::git::GitClient;
+
 pub struct GitService {
     /// All operations over the `RepoHandle` will be wrapped inside a `spawn_blocking` closure
     /// to avoid blocking the main thread
-    pub(super) repo_handle: Arc<Mutex<Option<RepoHandle>>>,
+    pub(super) repository: Arc<Mutex<Option<Repository>>>,
+    client: GitClient,
 }
 
 impl GitService {
+    pub fn new(repository: Option<Repository>, client: GitClient) -> Self {
+        Self {
+            repository: Arc::new(Mutex::new(repository)),
+            client,
+        }
+    }
+
     // Sometimes objects might be set as readonly, preventing them from being deleted
     // we will need to recursively set all files in .git/objects as writable
     pub async fn dispose(&self, fs: Arc<dyn FileSystem>) -> joinerror::Result<()> {
-        let repo_handle = self.repo_handle.lock()?.take();
+        let repo_handle = self.repository.lock()?.take();
         if repo_handle.is_none() {
             return Ok(());
         }
@@ -56,7 +63,7 @@ impl GitService {
 
     #[allow(dead_code)] // TODO: Remove if we will not use this method
     pub async fn has_repo(&self) -> joinerror::Result<bool> {
-        let repo_handle_clone = self.repo_handle.clone();
+        let repo_handle_clone = self.repository.clone();
         let join = tokio::task::spawn_blocking(move || {
             let repo_handle_lock = repo_handle_clone.lock()?;
             return Ok(repo_handle_lock.is_some());
@@ -71,13 +78,13 @@ impl GitService {
 
     #[allow(dead_code)] // TODO: Remove if we will not use this method
     pub async fn get_file_statuses(&self) -> joinerror::Result<HashMap<PathBuf, FileStatus>> {
-        let repo_handle_clone = self.repo_handle.clone();
+        let repo_handle_clone = self.repository.clone();
         let join = tokio::task::spawn_blocking(move || {
             let repo_handle_lock = repo_handle_clone.lock()?;
             let repo_handle_ref = repo_handle_lock
                 .as_ref()
                 .ok_or_join_err::<()>("no repo handle")?;
-            repo_handle_ref.get_file_statuses()
+            repo_handle_ref.statuses()
         })
         .await?;
 
@@ -91,7 +98,7 @@ impl GitService {
     // Although we don't need any comparison with remote branch just for getting the name
     #[allow(dead_code)] // TODO: Remove if we will not use this method
     pub async fn get_current_branch(&self) -> joinerror::Result<String> {
-        let repo_handle_clone = self.repo_handle.clone();
+        let repo_handle_clone = self.repository.clone();
         let join = tokio::task::spawn_blocking(move || {
             let repo_handle_lock = repo_handle_clone.lock()?;
             let repo_handle_ref = repo_handle_lock
@@ -110,62 +117,118 @@ impl GitService {
     }
 
     pub async fn get_current_branch_info(&self) -> joinerror::Result<BranchInfo> {
-        let repo_handle_clone = self.repo_handle.clone();
+        let repo_handle_clone = self.repository.clone();
 
-        let join = tokio::task::spawn_blocking(move || {
-            let repo_handle_lock = repo_handle_clone.lock()?;
-            let repo_handle_ref = repo_handle_lock
-                .as_ref()
-                .ok_or_join_err::<()>("no repo handle")?;
-            // TODO: Support custom origin name? We assume it's `origin` now, which we use when we create a repo
+        // let join = tokio::task::spawn_blocking(move || {
+        //     let repo_handle_lock = repo_handle_clone.lock()?;
+        //     let repo_handle_ref = repo_handle_lock
+        //         .as_ref()
+        //         .ok_or_join_err::<()>("no repo handle")?;
+        //     // TODO: Support custom origin name? We assume it's `origin` now, which we use when we create a repo
 
-            let current_branch = repo_handle_ref.current_branch()?;
+        //     let current_branch = repo_handle_ref.current_branch()?;
 
-            let mut output = BranchInfo {
-                name: current_branch.to_string(),
-                ahead: None,
-                behind: None,
-            };
-            // git fetch
-            if let Err(e) = repo_handle_ref.fetch(None) {
-                // This means that we cannot get the latest info about the upstream branch
-                // However, the operation can still succeed as long as a remote-tracking branch exists
-                // Just that the results might be outdated
+        //     let mut output = BranchInfo {
+        //         name: current_branch.to_string(),
+        //         ahead: None,
+        //         behind: None,
+        //     };
+        //     // git fetch
+        //     if let Err(e) = repo_handle_ref.fetch(None) {
+        //         // This means that we cannot get the latest info about the upstream branch
+        //         // However, the operation can still succeed as long as a remote-tracking branch exists
+        //         // Just that the results might be outdated
+        //         // TODO: tell the frontend
+        //         println!("failed to fetch from the remote repo: {}", e.to_string())
+        //     }
+
+        //     // Compare local with remote state
+        //     // Even if we failed to compare with the remote branch, we can still return the current branch
+        //     match repo_handle_ref.graph_ahead_behind(&current_branch) {
+        //         Ok((ahead, behind)) => {
+        //             output.ahead = Some(ahead);
+        //             output.behind = Some(behind);
+        //         }
+        //         Err(e) => {
+        //             // TODO: tell the frontend
+        //             println!(
+        //                 "failed to compare local branch with remote branch: {}",
+        //                 e.to_string()
+        //             )
+        //         }
+        //     }
+
+        //     Ok(output)
+        // })
+        // .await?;
+
+        // match join {
+        //     Ok(result) => Ok(result),
+        //     Err(e) => Err(e),
+        // }
+
+        let repo_handle_lock = repo_handle_clone.lock()?;
+        let repo_handle_ref = repo_handle_lock
+            .as_ref()
+            .ok_or_join_err::<()>("no repo handle")?;
+        // TODO: Support custom origin name? We assume it's `origin` now, which we use when we create a repo
+
+        let current_branch = repo_handle_ref.current_branch()?;
+
+        let mut output = BranchInfo {
+            name: current_branch.to_string(),
+            ahead: None,
+            behind: None,
+        };
+
+        let (access_token, username) = match &self.client {
+            GitClient::GitHub { account, .. } => {
+                (account.session().access_token().await?, account.username())
+            }
+            GitClient::GitLab { account, .. } => {
+                (account.session().access_token().await?, account.username())
+            }
+        };
+
+        let mut cb = git2::RemoteCallbacks::new();
+        cb.credentials(move |_url, username_from_url, _allowed| {
+            // let rt = tokio::runtime::Handle::try_current();
+            // let fut = self.session_for_remote(ws, repo_root, remote_name);
+            // let (acc, tok) = match rt {
+            //     Ok(h) => h.block_on(fut),
+            //     Err(_) => tokio::runtime::Runtime::new().unwrap().block_on(fut),
+            // }
+            // .map_err(|e| git2::Error::from_str(&format!("auth error: {e}")))?;
+            // let user = username_from_url.unwrap_or(&acc.login);
+
+            git2::Cred::userpass_plaintext(username_from_url.unwrap_or(&username), &access_token)
+        });
+
+        // git fetch
+        if let Err(e) = repo_handle_ref.fetch(None, cb) {
+            // This means that we cannot get the latest info about the upstream branch
+            // However, the operation can still succeed as long as a remote-tracking branch exists
+            // Just that the results might be outdated
+            // TODO: tell the frontend
+            println!("failed to fetch from the remote repo: {}", e.to_string())
+        }
+
+        // Compare local with remote state
+        // Even if we failed to compare with the remote branch, we can still return the current branch
+        match repo_handle_ref.graph_ahead_behind(&current_branch) {
+            Ok((ahead, behind)) => {
+                output.ahead = Some(ahead);
+                output.behind = Some(behind);
+            }
+            Err(e) => {
                 // TODO: tell the frontend
-                println!("failed to fetch from the remote repo: {}", e.to_string())
+                println!(
+                    "failed to compare local branch with remote branch: {}",
+                    e.to_string()
+                )
             }
-
-            // Compare local with remote state
-            // Even if we failed to compare with the remote branch, we can still return the current branch
-            match repo_handle_ref.compare_with_remote_branch(&current_branch) {
-                Ok((ahead, behind)) => {
-                    output.ahead = Some(ahead);
-                    output.behind = Some(behind);
-                }
-                Err(e) => {
-                    // TODO: tell the frontend
-                    println!(
-                        "failed to compare local branch with remote branch: {}",
-                        e.to_string()
-                    )
-                }
-            }
-
-            Ok(output)
-        })
-        .await?;
-
-        match join {
-            Ok(result) => Ok(result),
-            Err(e) => Err(e),
         }
-    }
-}
 
-impl GitService {
-    pub fn new(repo_handle: Option<RepoHandle>) -> Self {
-        Self {
-            repo_handle: Arc::new(Mutex::new(repo_handle)),
-        }
+        todo!()
     }
 }

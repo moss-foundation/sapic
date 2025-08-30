@@ -3,6 +3,7 @@ pub mod builder;
 pub mod collection;
 mod config;
 mod edit;
+pub mod git;
 mod helpers;
 mod manifest;
 pub mod models;

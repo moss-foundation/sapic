@@ -8,12 +8,14 @@ const GITHUB_PREFIX: &str = "gh";
 
 pub(crate) struct GitHubSessionHandle {
     pub id: AccountId,
+    // pub username: String,
     pub host: String,
 }
 
 impl GitHubSessionHandle {
     pub fn new(
         id: AccountId,
+        // username: String,
         host: String,
         initial_token: Option<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>>,
 

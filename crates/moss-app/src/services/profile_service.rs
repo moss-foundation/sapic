@@ -10,8 +10,10 @@ use moss_git_hosting_provider::{
     models::primitives::GitProviderType,
 };
 use moss_keyring::KeyringClient;
-use moss_user::{AccountSession, models::primitives::AccountId};
-use oauth2::ClientId;
+use moss_user::{
+    AccountSession, account::Account, models::primitives::AccountId, profile::ActiveProfile,
+};
+use oauth2::{ClientId, EmptyExtraTokenFields, StandardTokenResponse, basic::BasicTokenType};
 use reqwest::Client as HttpClient;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -32,7 +34,9 @@ struct ProfileFile {
 struct AccountItem {
     id: AccountId,
     username: String,
-    session: AccountSession,
+    host: String,
+    provider: GitProviderType,
+    // session: AccountSession,
 }
 
 struct ProfileItem {
@@ -78,6 +82,7 @@ pub(crate) struct ProfileService {
     secrets: AppSecretsProvider,
     keyring: Arc<dyn KeyringClient>,
     state: RwLock<ServiceState>,
+    active_profile: Arc<ActiveProfile>,
     config: ServiceConfig,
 }
 
@@ -90,13 +95,54 @@ impl ProfileService {
     ) -> joinerror::Result<Self> {
         let profiles = scan(&fs, keyring.clone(), secrets.clone(), &config).await?;
 
+        // HACK: Use the first profile as the active profile
+        let p = profiles.get(&profiles.keys().next().unwrap()).unwrap();
+        let mut accounts = HashMap::new();
+        for (account_id, account) in p.accounts.iter() {
+            let session = match account.provider {
+                GitProviderType::GitHub => AccountSession::github(
+                    account.id.clone(),
+                    account.host.clone(),
+                    secrets.clone(),
+                    keyring.clone(),
+                    None,
+                )?,
+                GitProviderType::GitLab => AccountSession::gitlab(
+                    account.id.clone(),
+                    config.gitlab_client_id.clone(),
+                    account.host.clone(),
+                    keyring.clone(),
+                    secrets.clone(),
+                    None,
+                )?,
+            };
+
+            accounts.insert(
+                account_id.clone(),
+                Account::new(
+                    account_id.clone(),
+                    account.username.clone(),
+                    account.host.clone(),
+                    session,
+                ),
+            );
+        }
+        let active_profile = ActiveProfile::new(accounts);
+        // let active_profile =
+        //     ActiveProfile::new(profiles.remove(&profiles.keys().next().unwrap()).unwrap());
+
         Ok(Self {
             fs,
             secrets,
             keyring,
             state: RwLock::new(ServiceState { profiles }),
             config,
+            active_profile: Arc::new(active_profile),
         })
+    }
+
+    pub fn active_profile(&self) -> Arc<ActiveProfile> {
+        self.active_profile.clone()
     }
 
     pub async fn add_account(
@@ -128,8 +174,8 @@ impl ProfileService {
         let account = AccountInfo {
             id: account_id.clone(),
             username: username.clone(),
-            host,
-            provider,
+            host: host.clone(),
+            provider: provider.clone(),
         };
 
         let mut state_lock = self.state.write().await;
@@ -158,7 +204,8 @@ impl ProfileService {
             AccountItem {
                 id: account_id.clone(),
                 username,
-                session,
+                provider,
+                host,
             },
         );
 
@@ -269,30 +316,34 @@ async fn scan(
 
         let mut accounts = HashMap::with_capacity(parsed.accounts.len());
         for account in parsed.accounts {
-            let session = match account.provider {
-                GitProviderType::GitHub => AccountSession::github(
-                    account.id.clone(),
-                    account.host,
-                    secrets.clone(),
-                    keyring.clone(),
-                    None,
-                )?,
-                GitProviderType::GitLab => AccountSession::gitlab(
-                    account.id.clone(),
-                    config.gitlab_client_id.clone(),
-                    account.host,
-                    keyring.clone(),
-                    secrets.clone(),
-                    None,
-                )?,
-            };
+            // let session = match account.provider {
+            //     GitProviderType::GitHub => AccountSession::github(
+            //         account.id.clone(),
+            //         account.username,
+            //         account.host,
+            //         secrets.clone(),
+            //         keyring.clone(),
+            //         None,
+            //     )?,
+            //     GitProviderType::GitLab => AccountSession::gitlab(
+            //         account.id.clone(),
+            //         account.username,
+            //         config.gitlab_client_id.clone(),
+            //         account.host,
+            //         keyring.clone(),
+            //         secrets.clone(),
+            //         None,
+            //     )?,
+            // };
 
             accounts.insert(
                 account.id.clone(),
                 AccountItem {
                     id: account.id,
                     username: account.username,
-                    session,
+                    provider: account.provider,
+                    host: account.host,
+                    // session,
                 },
             );
         }

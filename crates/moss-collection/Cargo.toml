@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+moss_user.workspace = true
 moss_api.workspace = true
 moss_edit.workspace = true
 moss_fs.workspace = true
@@ -21,6 +22,7 @@ moss_applib.workspace = true
 moss_keyring.workspace = true
 moss_id_macro.workspace = true
 
+git2.workspace = true
 joinerror.workspace = true
 anyhow.workspace = true
 serde = { workspace = true, features = ["derive", "rc"] }

@@ -10,13 +10,17 @@ use moss_collection::{
         CollectionCreateParams, CollectionLoadParams,
     },
     collection::VcsSummary,
+    git::GitClient,
 };
 use moss_common::continue_if_err;
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
 use moss_git_hosting_provider::{
-    github::client::GitHubClient, gitlab::client::GitLabClient, models::primitives::GitProviderType,
+    github::GitHubApiClient, gitlab::GitLabApiClient, models::primitives::GitProviderType,
 };
 use moss_logging::session;
+use moss_user::{
+    AccountSession, account::Account, models::primitives::AccountId, profile::ActiveProfile,
+};
 use rustc_hash::FxHashMap;
 use std::{
     collections::{HashMap, HashSet},
@@ -41,6 +45,7 @@ pub(crate) struct CollectionItemCloneParams {
     pub _name: String,
     pub order: isize,
     pub _icon_path: Option<PathBuf>,
+    pub account_id: AccountId,
     pub git_params: CollectionItemGitCloneParams,
 }
 
@@ -85,8 +90,8 @@ pub struct CollectionService<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     storage: Arc<StorageService<R>>,
     state: Arc<RwLock<ServiceState<R>>>,
-    github_client: Arc<GitHubClient>,
-    gitlab_client: Arc<GitLabClient>,
+    // github_client: Arc<GitHubClient>,
+    // gitlab_client: Arc<GitLabClient>,
     #[allow(dead_code)]
     broadcaster: ActivityBroadcaster<R::EventLoop>,
     on_did_delete_collection_emitter: EventEmitter<OnDidDeleteCollection>,
@@ -99,10 +104,11 @@ impl<R: AppRuntime> CollectionService<R> {
         abs_path: &Path,
         fs: Arc<dyn FileSystem>,
         storage: Arc<StorageService<R>>,
-        github_client: Arc<GitHubClient>,
-        gitlab_client: Arc<GitLabClient>,
+        // github_client: Arc<GitHubClient>,
+        // gitlab_client: Arc<GitLabClient>,
         environment_sources: &mut FxHashMap<Arc<String>, PathBuf>,
         broadcaster: ActivityBroadcaster<R::EventLoop>,
+        active_profile: &Arc<ActiveProfile>,
         on_collection_did_delete_emitter: EventEmitter<OnDidDeleteCollection>,
         on_collection_did_add_emitter: EventEmitter<OnDidAddCollection>,
     ) -> joinerror::Result<Self> {
@@ -119,10 +125,12 @@ impl<R: AppRuntime> CollectionService<R> {
             &fs,
             &storage,
             broadcaster.clone(),
-            github_client.clone(),
-            gitlab_client.clone(),
+            active_profile,
+            // github_client.clone(),
+            // gitlab_client.clone(),
         )
-        .await?;
+        .await
+        .join_err_with::<()>(|| format!("failed to restore collections, {}", abs_path.display()))?;
 
         for (id, collection) in collections.iter() {
             environment_sources.insert(id.clone().inner(), collection.environments_path());
@@ -136,8 +144,8 @@ impl<R: AppRuntime> CollectionService<R> {
                 collections,
                 expanded_items,
             })),
-            github_client,
-            gitlab_client,
+            // github_client,
+            // gitlab_client,
             broadcaster,
             on_did_delete_collection_emitter: on_collection_did_delete_emitter,
             on_did_add_collection_emitter: on_collection_did_add_emitter,
@@ -192,24 +200,29 @@ impl<R: AppRuntime> CollectionService<R> {
             }
         };
 
-        let collection_result = CollectionBuilder::<R>::new(
+        let abs_path: Arc<Path> = abs_path.clone().into();
+        let builder = CollectionBuilder::<R>::new(
             self.fs.clone(),
             self.broadcaster.clone(),
-            self.github_client.clone(),
-            self.gitlab_client.clone(),
+            abs_path.clone(),
+            // self.github_client.clone(),
+            // self.gitlab_client.clone(),
         )
-        .create(
-            ctx,
-            CollectionCreateParams {
-                name: Some(params.name.to_owned()),
-                internal_abs_path: abs_path.clone().into(),
-                external_abs_path: params.external_path.as_deref().map(|p| p.to_owned().into()),
-                git_params,
-                icon_path: params.icon_path.to_owned(),
-            },
-        )
-        .await
-        .join_err::<()>("failed to build collection");
+        .await?;
+
+        let collection_result = builder
+            .create(
+                ctx,
+                CollectionCreateParams {
+                    name: Some(params.name.to_owned()),
+                    internal_abs_path: abs_path.clone(),
+                    external_abs_path: params.external_path.as_deref().map(|p| p.to_owned().into()),
+                    git_params,
+                    icon_path: params.icon_path.to_owned(),
+                },
+            )
+            .await
+            .join_err::<()>("failed to build collection");
 
         // TODO: Use atomic-fs to rollback changes
         // Remove collection folder if collection fails to be created
@@ -233,6 +246,8 @@ impl<R: AppRuntime> CollectionService<R> {
                 return Err(e);
             }
         };
+
+        // TODO: Git init if needed
 
         let icon_path = collection.icon_path();
 
@@ -302,6 +317,7 @@ impl<R: AppRuntime> CollectionService<R> {
         &self,
         ctx: &R::AsyncContext,
         id: &CollectionId,
+        account: Account,
         params: CollectionItemCloneParams,
     ) -> joinerror::Result<CollectionItemDescription> {
         let id_str = id.to_string();
@@ -321,25 +337,42 @@ impl<R: AppRuntime> CollectionService<R> {
             })?;
 
         let git_params = &params.git_params;
-        let collection_result = CollectionBuilder::new(
+        let builder = CollectionBuilder::new(
             self.fs.clone(),
             self.broadcaster.clone(),
-            self.github_client.clone(),
-            self.gitlab_client.clone(),
+            abs_path.clone(),
+            // self.github_client.clone(),
+            // self.gitlab_client.clone(),
         )
-        .clone(
-            ctx,
-            CollectionCloneParams {
-                internal_abs_path: abs_path.clone(),
-                git_params: CollectionCloneGitParams {
-                    git_provider_type: git_params.git_provider_type.clone(),
-                    repository: git_params.repository.clone(),
-                    branch: git_params.branch.clone(),
-                },
+        .await?;
+
+        let http_client = reqwest::Client::new();
+        let git_client = match git_params.git_provider_type {
+            GitProviderType::GitHub => GitClient::GitHub {
+                account: account,
+                api: GitHubApiClient::new(http_client),
             },
-        )
-        .await
-        .join_err::<()>("failed to clone collection");
+            GitProviderType::GitLab => GitClient::GitLab {
+                account: account,
+                api: GitLabApiClient::new(http_client),
+            },
+        };
+        let collection_result = builder
+            .clone(
+                ctx,
+                git_client,
+                CollectionCloneParams {
+                    internal_abs_path: abs_path.clone(),
+                    account_id: params.account_id,
+                    git_params: CollectionCloneGitParams {
+                        git_provider_type: git_params.git_provider_type.clone(),
+                        repository: git_params.repository.clone(),
+                        branch: git_params.branch.clone(),
+                    },
+                },
+            )
+            .await
+            .join_err::<()>("failed to clone collection");
 
         // TODO: Use atomic-fs to rollback changes
         // Remove collection folder if collection fails to be cloned
@@ -563,12 +596,16 @@ async fn restore_collections<R: AppRuntime>(
     fs: &Arc<dyn FileSystem>,
     storage: &Arc<StorageService<R>>,
     broadcaster: ActivityBroadcaster<R::EventLoop>,
-    github_client: Arc<GitHubClient>,
-    gitlab_client: Arc<GitLabClient>,
+    active_profile: &Arc<ActiveProfile>,
+    // github_client: Arc<GitHubClient>,
+    // gitlab_client: Arc<GitLabClient>,
 ) -> joinerror::Result<HashMap<CollectionId, CollectionItem<R>>> {
     if !abs_path.exists() {
         return Ok(HashMap::new());
     }
+
+    dbg!("A");
+    dbg!(abs_path);
 
     let mut collections = Vec::new();
     let mut read_dir = fs
@@ -598,16 +635,30 @@ async fn restore_collections<R: AppRuntime>(
         let collection = {
             let collection_abs_path: Arc<Path> = entry.path().to_owned().into();
 
-            let collection_result = CollectionBuilder::<R>::new(
+            let builder = CollectionBuilder::<R>::new(
                 fs.clone(),
                 broadcaster.clone(),
-                github_client.clone(),
-                gitlab_client.clone(),
+                collection_abs_path.clone(),
+                // github_client.clone(),
+                // gitlab_client.clone(),
             )
-            .load(CollectionLoadParams {
-                internal_abs_path: collection_abs_path,
-            })
-            .await;
+            .await
+            .join_err_with::<()>(|| {
+                format!(
+                    "failed to rebuild collection `{}`, {}",
+                    id_str,
+                    collection_abs_path.display()
+                )
+            })?;
+
+            let collection_result = builder
+                .load(
+                    None, // FIXME: Hardcoded for now
+                    CollectionLoadParams {
+                        internal_abs_path: collection_abs_path,
+                    },
+                )
+                .await;
             match collection_result {
                 Ok(collection) => collection,
                 Err(e) => {
@@ -629,6 +680,8 @@ async fn restore_collections<R: AppRuntime>(
         .list_items_metadata(ctx, SEGKEY_COLLECTION.to_segkey_buf())
         .await?;
 
+    dbg!("B");
+
     let mut result = HashMap::new();
     for (id, collection) in collections {
         let segkey_prefix = SEGKEY_COLLECTION.join(&id);
@@ -646,6 +699,8 @@ async fn restore_collections<R: AppRuntime>(
             },
         );
     }
+
+    dbg!("C");
 
     activity_handle.emit_finish()?;
 

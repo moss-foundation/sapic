@@ -12,6 +12,33 @@ use crate::{
     models::primitives::AccountId,
 };
 
+#[derive(Clone)]
+pub struct Account {
+    id: AccountId,
+    username: String,
+    host: String,
+    session: AccountSession,
+}
+
+impl Account {
+    pub fn new(id: AccountId, username: String, host: String, session: AccountSession) -> Self {
+        Self {
+            id,
+            username,
+            host,
+            session,
+        }
+    }
+
+    pub fn session(&self) -> &AccountSession {
+        &self.session
+    }
+
+    pub fn username(&self) -> String {
+        self.username.clone()
+    }
+}
+
 enum Session {
     GitHub(GitHubSessionHandle),
     GitLab(GitLabSessionHandle),
@@ -21,15 +48,18 @@ enum Session {
 // The first is when we create a handler from an already added account (like when restoring a profile).
 // The second is when we’ve just added an account and received the necessary token as part of that process.
 
+#[derive(Clone)]
+
 pub struct AccountSession {
     secrets: AppSecretsProvider,
     keyring: Arc<dyn KeyringClient>,
-    inner: Session,
+    inner: Arc<Session>,
 }
 
 impl AccountSession {
     pub fn github(
         id: AccountId,
+        // username: String,
         host: String,
         secrets: AppSecretsProvider,
         keyring: Arc<dyn KeyringClient>,
@@ -41,12 +71,13 @@ impl AccountSession {
         Ok(Self {
             secrets,
             keyring,
-            inner: Session::GitHub(session),
+            inner: Arc::new(Session::GitHub(session)),
         })
     }
 
     pub fn gitlab(
         id: AccountId,
+        // username: String,
         client_id: ClientId,
         host: String,
         keyring: Arc<dyn KeyringClient>,
@@ -59,19 +90,26 @@ impl AccountSession {
         Ok(Self {
             secrets,
             keyring,
-            inner: Session::GitLab(session),
+            inner: Arc::new(Session::GitLab(session)),
         })
     }
 
+    // pub fn username(&self) -> String {
+    //     match self.inner.as_ref() {
+    //         Session::GitHub(handle) => handle.username.clone(),
+    //         Session::GitLab(handle) => handle.username.clone(),
+    //     }
+    // }
+
     pub fn host(&self) -> String {
-        match &self.inner {
+        match self.inner.as_ref() {
             Session::GitHub(handle) => handle.host.clone(),
             Session::GitLab(handle) => handle.host.clone(),
         }
     }
 
     pub async fn access_token(&self) -> joinerror::Result<String> {
-        match &self.inner {
+        match self.inner.as_ref() {
             Session::GitHub(handle) => handle.access_token(&self.keyring).await,
             Session::GitLab(handle) => handle.access_token(&self.keyring, &self.secrets).await,
         }

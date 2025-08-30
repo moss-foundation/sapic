@@ -39,6 +39,8 @@ const GITLAB_SCOPES: [&'static str; 4] =
 
 const CONTENT_TYPE: &'static str = "application/json";
 
+// TODO: add context to the client operations
+
 #[derive(Clone)]
 pub struct GitLabApiClient {
     client: HttpClient,

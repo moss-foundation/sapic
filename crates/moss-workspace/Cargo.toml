@@ -20,6 +20,7 @@ moss_api.workspace = true
 moss_logging.workspace = true
 moss_common.workspace = true
 moss_id_macro.workspace = true
+moss_user.workspace = true
 
 joinerror.workspace = true
 anyhow.workspace = true

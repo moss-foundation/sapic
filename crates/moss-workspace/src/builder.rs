@@ -3,7 +3,8 @@ use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::{AppRuntime, EventMarker, subscription::EventEmitter};
 use moss_environment::builder::{CreateEnvironmentParams, EnvironmentBuilder};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
-use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
+use moss_user::profile::ActiveProfile;
+// use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
 use rustc_hash::FxHashMap;
 use std::{cell::LazyCell, path::Path, sync::Arc};
 
@@ -43,8 +44,9 @@ pub struct CreateWorkspaceParams {
 pub struct WorkspaceBuilder<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     broadcaster: ActivityBroadcaster<R::EventLoop>,
-    github_client: Arc<GitHubClient>,
-    gitlab_client: Arc<GitLabClient>,
+    active_profile: Arc<ActiveProfile>,
+    // github_client: Arc<GitHubClient>,
+    // gitlab_client: Arc<GitLabClient>,
 }
 
 #[derive(Clone)]
@@ -63,15 +65,17 @@ impl EventMarker for OnDidAddCollection {}
 impl<R: AppRuntime> WorkspaceBuilder<R> {
     pub fn new(
         fs: Arc<dyn FileSystem>,
-        github_client: Arc<GitHubClient>,
-        gitlab_client: Arc<GitLabClient>,
+        // github_client: Arc<GitHubClient>,
+        // gitlab_client: Arc<GitLabClient>,
         broadcaster: ActivityBroadcaster<R::EventLoop>,
+        active_profile: Arc<ActiveProfile>,
     ) -> Self {
         Self {
             fs,
-            github_client,
-            gitlab_client,
+            // github_client,
+            // gitlab_client,
             broadcaster,
+            active_profile,
         }
     }
 
@@ -128,7 +132,9 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
         let on_did_delete_collection_event = on_did_delete_collection_emitter.event();
         let on_did_add_collection_event = on_did_add_collection_emitter.event();
 
-        let storage_service: Arc<StorageService<R>> = StorageService::new(&params.abs_path)?.into();
+        let storage_service: Arc<StorageService<R>> = StorageService::new(&params.abs_path)
+            .join_err::<()>("failed to create storage service")?
+            .into();
         let layout_service = LayoutService::new(storage_service.clone());
 
         let collection_service: Arc<CollectionService<R>> = CollectionService::new(
@@ -136,14 +142,16 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
             &params.abs_path,
             self.fs.clone(),
             storage_service.clone(),
-            self.github_client.clone(),
-            self.gitlab_client.clone(),
+            // self.github_client.clone(),
+            // self.gitlab_client.clone(),
             &mut environment_sources,
             self.broadcaster.clone(),
+            &self.active_profile,
             on_did_delete_collection_emitter,
             on_did_add_collection_emitter,
         )
-        .await?
+        .await
+        .join_err::<()>("failed to create collection service")?
         .into();
 
         let environment_service: Arc<EnvironmentService<R>> = EnvironmentService::new(
@@ -152,7 +160,8 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
             storage_service.clone(),
             environment_sources,
         )
-        .await?
+        .await
+        .join_err::<()>("failed to create environment service")?
         .into();
 
         let edit = WorkspaceEdit::new(self.fs.clone(), params.abs_path.join(MANIFEST_FILE_NAME));
@@ -178,10 +187,11 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
             collection_service,
             environment_service,
             storage_service,
+            active_profile: self.active_profile,
             _on_did_add_collection: on_did_add_collection,
             _on_did_delete_collection: on_did_delete_collection,
-            _github_client: self.github_client,
-            _gitlab_client: self.gitlab_client,
+            // _github_client: self.github_client,
+            // _gitlab_client: self.gitlab_client,
         })
     }
 
@@ -214,10 +224,11 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
             &params.abs_path,
             self.fs.clone(),
             storage_service.clone(),
-            self.github_client.clone(),
-            self.gitlab_client.clone(),
+            // self.github_client.clone(),
+            // self.gitlab_client.clone(),
             &mut environment_sources,
             self.broadcaster.clone(),
+            &self.active_profile,
             on_did_delete_collection_emitter,
             on_did_add_collection_emitter,
         )
@@ -256,10 +267,11 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
             collection_service,
             environment_service,
             storage_service,
+            active_profile: self.active_profile,
             _on_did_add_collection: on_did_add_collection,
             _on_did_delete_collection: on_did_delete_collection,
-            _github_client: self.github_client,
-            _gitlab_client: self.gitlab_client,
+            // _github_client: self.github_client,
+            // _gitlab_client: self.gitlab_client,
         })
     }
 }

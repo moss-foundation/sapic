@@ -35,6 +35,8 @@ impl GitHubHttpRequestBuilderExt for RequestBuilder {
     }
 }
 
+// TODO: add context to the client operations
+
 #[derive(Clone)]
 pub struct GitHubApiClient {
     client: HttpClient,

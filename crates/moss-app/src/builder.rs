@@ -2,11 +2,6 @@ use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::AppRuntime;
 use moss_asp::AppSecretsProvider;
 use moss_fs::FileSystem;
-use moss_git_hosting_provider::{
-    common::ssh_auth_agent::SSHAuthAgentImpl,
-    github::{auth::GitHubAuthAgent, client::GitHubClient},
-    gitlab::{auth::GitLabAuthAgent, client::GitLabClient},
-};
 use moss_keyring::KeyringClientImpl;
 use std::{path::PathBuf, sync::Arc};
 use tauri::AppHandle;
@@ -76,32 +71,32 @@ impl<R: AppRuntime> AppBuilder<R> {
         // Git auth agents require a synchronous http client
         let sync_http_client = oauth2::ureq::builder().redirects(0).build();
 
-        let github_client = {
-            let github_auth_agent = Arc::new(GitHubAuthAgent::new(
-                sync_http_client.clone(),
-                keyring_client.clone(),
-                github_client_id.clone(),
-                github_client_secret.clone(),
-            ));
-            Arc::new(GitHubClient::new(
-                reqwest_client.clone(),
-                github_auth_agent,
-                None as Option<SSHAuthAgentImpl>,
-            ))
-        };
-        let gitlab_client = {
-            let gitlab_auth_agent = Arc::new(GitLabAuthAgent::new(
-                sync_http_client.clone(),
-                keyring_client.clone(),
-                gitlab_client_id.clone(),
-                gitlab_client_secret.clone(),
-            ));
-            Arc::new(GitLabClient::new(
-                reqwest_client.clone(),
-                gitlab_auth_agent,
-                None as Option<SSHAuthAgentImpl>,
-            ))
-        };
+        // let github_client = {
+        //     let github_auth_agent = Arc::new(GitHubAuthAgent::new(
+        //         sync_http_client.clone(),
+        //         keyring_client.clone(),
+        //         github_client_id.clone(),
+        //         github_client_secret.clone(),
+        //     ));
+        //     Arc::new(GitHubClient::new(
+        //         reqwest_client.clone(),
+        //         github_auth_agent,
+        //         None as Option<SSHAuthAgentImpl>,
+        //     ))
+        // };
+        // let gitlab_client = {
+        //     let gitlab_auth_agent = Arc::new(GitLabAuthAgent::new(
+        //         sync_http_client.clone(),
+        //         keyring_client.clone(),
+        //         gitlab_client_id.clone(),
+        //         gitlab_client_secret.clone(),
+        //     ));
+        //     Arc::new(GitLabClient::new(
+        //         reqwest_client.clone(),
+        //         gitlab_auth_agent,
+        //         None as Option<SSHAuthAgentImpl>,
+        //     ))
+        // };
 
         let app_secrets = AppSecretsProvider::new(
             github_client_secret.clone(),
@@ -147,8 +142,8 @@ impl<R: AppRuntime> AppBuilder<R> {
             storage_service.clone(),
             self.fs.clone(),
             &params.app_dir,
-            github_client.clone(),
-            gitlab_client.clone(),
+            // github_client.clone(),
+            // gitlab_client.clone(),
         )
         .await
         .expect("Failed to create workspace service");
@@ -180,8 +175,8 @@ impl<R: AppRuntime> AppBuilder<R> {
             tracked_cancellations: Default::default(),
             broadcaster: ActivityBroadcaster::new(self.app_handle),
 
-            _github_client: github_client,
-            _gitlab_client: gitlab_client,
+            // _github_client: github_client,
+            // _gitlab_client: gitlab_client,
             _reqwest_client: reqwest_client,
             _keyring_client: keyring_client,
         }

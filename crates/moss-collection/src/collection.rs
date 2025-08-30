@@ -14,8 +14,6 @@ use moss_git::{models::types::BranchInfo, url::normalize_git_url};
 use moss_git_hosting_provider::{
     GitHostingProvider,
     common::GitUrl,
-    github::client::GitHubClient,
-    gitlab::client::GitLabClient,
     models::{primitives::GitProviderType, types::Contributor},
 };
 use serde_json::Value as JsonValue;
@@ -27,7 +25,7 @@ use std::{
 use crate::{
     dirs,
     edit::CollectionEdit,
-    helpers::fetch_contributors,
+    git::GitClient,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
     services::{
         git_service::GitService, set_icon_service::SetIconService, storage_service::StorageService,
@@ -94,11 +92,13 @@ pub struct Collection<R: AppRuntime> {
     pub(super) worktree: Arc<Worktree<R>>,
     pub(super) set_icon_service: SetIconService,
     pub(super) storage_service: Arc<StorageService<R>>,
-    pub(super) git_service: Arc<GitService>,
+    pub(super) git_service: Option<Arc<GitService>>,
     // TODO: Extract Git Provider Service
-    pub(super) github_client: Arc<GitHubClient>,
-    pub(super) gitlab_client: Arc<GitLabClient>,
+    // pub(super) github_client: Arc<GitHubClient>,
+    // pub(super) gitlab_client: Arc<GitLabClient>,
 
+    // FIXME: Should be optional
+    // pub(super) git_client: Option<GitClient>,
     pub(super) on_did_change: EventEmitter<OnDidChangeEvent>,
 }
 
@@ -142,7 +142,7 @@ impl<R: AppRuntime> Collection<R> {
         let mut output = CollectionDetails {
             name: manifest.name,
             vcs: None,
-            contributors: vec![],
+            contributors: vec![], // FIXME: hardcoded for now
             created_at: created_at.to_rfc3339(),
         };
 
@@ -150,7 +150,7 @@ impl<R: AppRuntime> Collection<R> {
             return Ok(output);
         };
 
-        let repo_ref = match GitUrl::parse(&repo_desc.url) {
+        let repo_url = match GitUrl::parse(&repo_desc.url) {
             Ok(repo_ref) => repo_ref,
             Err(e) => {
                 println!("unable to parse repository url{}: {}", repo_desc.url, e);
@@ -158,70 +158,91 @@ impl<R: AppRuntime> Collection<R> {
             }
         };
 
-        let git_provider_type = repo_desc.git_provider_type;
-        let client: Arc<dyn GitHostingProvider> = match &git_provider_type {
-            GitProviderType::GitHub => self.github_client.clone(),
-            GitProviderType::GitLab => self.gitlab_client.clone(),
-        };
+        // match &self.git_client {
+        //     GitClient::GitHub { api, session } => {
+        //         let branch = self.git_service.get_current_branch_info().await?;
+        //         let resp = match api.get_repository(session, &repo_url).await {
+        //             Ok(resp) => Some(resp),
+        //             Err(e) => {
+        //                 println!("unable to fetch repository: {}", e);
+        //                 None
+        //             }
+        //         };
 
-        output.contributors = fetch_contributors(&repo_ref, client.clone())
-            .await
-            .unwrap_or_else(|e| {
-                println!("unable to fetch contributors: {}", e);
-                Vec::new()
-            });
+        //         output.vcs = Some(VcsSummary::GitHub {
+        //             branch,
+        //             url: repo_url.to_string(),
+        //             updated_at: resp.as_ref().map(|r| r.updated_at.to_owned()),
+        //             owner: resp.as_ref().map(|r| r.owner.login.to_owned()),
+        //         });
+        //     }
+        //     GitClient::GitLab { api, session } => {
+        //         let branch = self.git_service.get_current_branch_info().await?;
+        //         let resp = match api.get_repository(session, &repo_url).await {
+        //             Ok(resp) => Some(resp),
+        //             Err(e) => {
+        //                 println!("unable to fetch repository: {}", e);
+        //                 None
+        //             }
+        //         };
 
-        output.vcs = match self
-            .fetch_vcs_summary(&repo_ref, git_provider_type, client)
-            .await
-        {
-            Ok(vcs) => Some(vcs),
-            Err(e) => {
-                println!("unable to fetch vcs: {}", e);
-                None
-            }
-        };
+        //         output.vcs = Some(VcsSummary::GitLab {
+        //             branch,
+        //             url: repo_url.to_string(),
+        //             updated_at: resp.as_ref().map(|r| r.updated_at.to_owned()),
+        //             owner: resp.as_ref().map(|r| r.owner.username.to_owned()),
+        //         });
+        //     }
+        // };
+
+        // FIXME: should be implemented in a cleaner way
+        // output.contributors = fetch_contributors(&repo_ref, client.clone())
+        //     .await
+        //     .unwrap_or_else(|e| {
+        //         println!("unable to fetch contributors: {}", e);
+        //         Vec::new()
+        //     });
 
         Ok(output)
     }
 
-    async fn fetch_vcs_summary(
-        &self,
-        url: &GitUrl,
-        git_provider_type: GitProviderType,
-        client: Arc<dyn GitHostingProvider>,
-    ) -> joinerror::Result<VcsSummary> {
-        let branch = self.git_service.get_current_branch_info().await?;
+    // async fn fetch_vcs_summary(
+    //     &self,
+    //     url: &GitUrl,
+    //     git_provider_type: GitProviderType,
+    //     client: Arc<dyn GitHostingProvider>,
+    // ) -> joinerror::Result<VcsSummary> {
+    //     let branch = self.git_service.get_current_branch_info().await?;
 
-        // Even if provider API call fails, we want to return repo_url and current branch
-        let (updated_at, owner) = match client.repository_metadata(url).await {
-            Ok(repository_metadata) => (
-                Some(repository_metadata.updated_at),
-                Some(repository_metadata.owner),
-            ),
-            Err(e) => {
-                // TODO: Tell the frontend provider API call fails
-                println!("git provider api call fails: {}", e);
+    //     // Even if provider API call fails, we want to return repo_url and current branch
+    //     let (updated_at, owner) = match client.repository_metadata(url).await {
+    //         Ok(repository_metadata) => (
+    //             Some(repository_metadata.updated_at),
+    //             Some(repository_metadata.owner),
+    //         ),
+    //         Err(e) => {
+    //             // TODO: Tell the frontend provider API call fails
+    //             println!("git provider api call fails: {}", e);
 
-                (None, None)
-            }
-        };
+    //             (None, None)
+    //         }
+    //     };
 
-        match git_provider_type {
-            GitProviderType::GitHub => Ok(VcsSummary::GitHub {
-                branch,
-                url: url.to_string(),
-                updated_at,
-                owner,
-            }),
-            GitProviderType::GitLab => Ok(VcsSummary::GitLab {
-                branch,
-                url: url.to_string(),
-                updated_at,
-                owner,
-            }),
-        }
-    }
+    //     match git_provider_type {
+    //         GitProviderType::GitHub => Ok(VcsSummary::GitHub {
+    //             branch,
+    //             url: url.to_string(),
+    //             updated_at,
+    //             owner,
+    //         }),
+    //         GitProviderType::GitLab => Ok(VcsSummary::GitLab {
+    //             branch,
+    //             url: url.to_string(),
+    //             updated_at,
+    //             owner,
+    //         }),
+    //     }
+    // }
 
     pub async fn modify(&self, params: CollectionModifyParams) -> joinerror::Result<()> {
         let mut patches = Vec::new();
@@ -285,7 +306,11 @@ impl<R: AppRuntime> Collection<R> {
     }
 
     pub async fn dispose(&self) -> joinerror::Result<()> {
-        self.git_service.dispose(self.fs.clone()).await
+        if let Some(git_service) = &self.git_service {
+            git_service.dispose(self.fs.clone()).await?;
+        }
+
+        Ok(())
     }
 }
 

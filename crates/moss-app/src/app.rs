@@ -1,7 +1,7 @@
 use derive_more::Deref;
 use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::{AppRuntime, context::Canceller};
-use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
+// use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
 use moss_keyring::KeyringClient;
 use moss_text::ReadOnlyStr;
 use rustc_hash::FxHashMap;
@@ -76,9 +76,8 @@ pub struct App<R: AppRuntime> {
     pub(super) broadcaster: ActivityBroadcaster<R::EventLoop>,
 
     // TODO: Refine the management of git provider clients
-    pub(super) _github_client: Arc<GitHubClient>,
-    pub(super) _gitlab_client: Arc<GitLabClient>,
-
+    // pub(super) _github_client: Arc<GitHubClient>,
+    // pub(super) _gitlab_client: Arc<GitLabClient>,
     pub(super) _reqwest_client: reqwest::Client,
     pub(super) _keyring_client: Arc<dyn KeyringClient + Send + Sync>,
 }

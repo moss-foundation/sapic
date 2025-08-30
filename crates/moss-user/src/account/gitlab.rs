@@ -34,6 +34,7 @@ pub(crate) struct LastAccessToken {
 
 pub(crate) struct GitLabSessionHandle {
     pub id: AccountId,
+    // pub username: String,
     pub host: String,
 
     token: RwLock<Option<LastAccessToken>>,
@@ -44,6 +45,7 @@ pub(crate) struct GitLabSessionHandle {
 impl GitLabSessionHandle {
     pub(crate) fn new(
         id: AccountId,
+        // username: String,
         host: String,
         client_id: ClientId,
 
@@ -76,6 +78,7 @@ impl GitLabSessionHandle {
 
         Ok(Self {
             id,
+            // username,
             host,
             token: RwLock::new(token),
 
