@@ -61,16 +61,15 @@ pub struct AccountSession {
 }
 
 impl AccountSession {
-    pub fn github(
+    pub async fn github(
         id: AccountId,
-        // username: String,
         host: String,
         secrets: AppSecretsProvider,
         keyring: Arc<dyn KeyringClient>,
 
         initial_token: Option<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>>,
     ) -> joinerror::Result<Self> {
-        let session = GitHubSessionHandle::new(id, host, initial_token, &keyring)?;
+        let session = GitHubSessionHandle::new(id, host, initial_token, &keyring).await?;
 
         Ok(Self {
             secrets,
@@ -79,9 +78,8 @@ impl AccountSession {
         })
     }
 
-    pub fn gitlab(
+    pub async fn gitlab(
         id: AccountId,
-        // username: String,
         client_id: ClientId,
         host: String,
         keyring: Arc<dyn KeyringClient>,
@@ -89,7 +87,8 @@ impl AccountSession {
 
         initial_token: Option<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>>,
     ) -> joinerror::Result<Self> {
-        let session = GitLabSessionHandle::new(id, host, client_id, initial_token, &keyring)?;
+        let session =
+            GitLabSessionHandle::new(id, host, client_id, initial_token, &keyring).await?;
 
         Ok(Self {
             secrets,
@@ -97,13 +96,6 @@ impl AccountSession {
             inner: Arc::new(Session::GitLab(session)),
         })
     }
-
-    // pub fn username(&self) -> String {
-    //     match self.inner.as_ref() {
-    //         Session::GitHub(handle) => handle.username.clone(),
-    //         Session::GitLab(handle) => handle.username.clone(),
-    //     }
-    // }
 
     pub fn host(&self) -> String {
         match self.inner.as_ref() {

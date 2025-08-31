@@ -7,7 +7,6 @@ edition = "2024"
 [dependencies]
 moss_keyring.workspace = true
 
-zeroize = { workspace = true }
 tokio = { workspace = true }
 rustc-hash = { workspace = true }
 joinerror = { workspace = true }

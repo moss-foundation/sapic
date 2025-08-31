@@ -1,4 +1,3 @@
-use joinerror::OptionExt;
 use moss_applib::errors::Internal;
 use moss_asp::AppSecretsProvider;
 use moss_common::continue_if_none;
@@ -13,14 +12,10 @@ use moss_keyring::KeyringClient;
 use moss_user::{
     AccountSession, account::Account, models::primitives::AccountId, profile::ActiveProfile,
 };
-use oauth2::{ClientId, EmptyExtraTokenFields, StandardTokenResponse, basic::BasicTokenType};
+use oauth2::ClientId;
 use reqwest::Client as HttpClient;
 use serde::{Deserialize, Serialize};
-use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
-    sync::Arc,
-};
+use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;
 
 use crate::models::{primitives::ProfileId, types::AccountInfo};
@@ -36,7 +31,6 @@ struct AccountItem {
     username: String,
     host: String,
     provider: GitProviderKind,
-    // session: AccountSession,
 }
 
 struct ProfileItem {
@@ -93,28 +87,34 @@ impl ProfileService {
         keyring: Arc<dyn KeyringClient>,
         config: ServiceConfig,
     ) -> joinerror::Result<Self> {
-        let profiles = scan(&fs, keyring.clone(), secrets.clone(), &config).await?;
+        let profiles = scan(&fs, &config).await?;
 
         // HACK: Use the first profile as the active profile
         let p = profiles.get(&profiles.keys().next().unwrap()).unwrap();
         let mut accounts = HashMap::new();
         for (account_id, account) in p.accounts.iter() {
             let session = match account.provider {
-                GitProviderKind::GitHub => AccountSession::github(
-                    account.id.clone(),
-                    account.host.clone(),
-                    secrets.clone(),
-                    keyring.clone(),
-                    None,
-                )?,
-                GitProviderKind::GitLab => AccountSession::gitlab(
-                    account.id.clone(),
-                    config.gitlab_client_id.clone(),
-                    account.host.clone(),
-                    keyring.clone(),
-                    secrets.clone(),
-                    None,
-                )?,
+                GitProviderKind::GitHub => {
+                    AccountSession::github(
+                        account.id.clone(),
+                        account.host.clone(),
+                        secrets.clone(),
+                        keyring.clone(),
+                        None,
+                    )
+                    .await?
+                }
+                GitProviderKind::GitLab => {
+                    AccountSession::gitlab(
+                        account.id.clone(),
+                        config.gitlab_client_id.clone(),
+                        account.host.clone(),
+                        keyring.clone(),
+                        secrets.clone(),
+                        None,
+                    )
+                    .await?
+                }
             };
 
             accounts.insert(
@@ -231,7 +231,8 @@ impl ProfileService {
             self.secrets.clone(),
             self.keyring.clone(),
             Some(token),
-        )?)
+        )
+        .await?)
     }
 
     async fn add_gitlab_account(
@@ -254,7 +255,8 @@ impl ProfileService {
             self.keyring.clone(),
             self.secrets.clone(),
             Some(token),
-        )?)
+        )
+        .await?)
     }
 
     pub async fn create_profile(&self, name: String) -> joinerror::Result<ProfileId> {
@@ -292,8 +294,6 @@ impl ProfileService {
 
 async fn scan(
     fs: &Arc<dyn FileSystem>,
-    keyring: Arc<dyn KeyringClient>,
-    secrets: AppSecretsProvider,
     config: &ServiceConfig,
 ) -> joinerror::Result<HashMap<ProfileId, ProfileItem>> {
     let mut profiles = HashMap::new();
@@ -316,26 +316,6 @@ async fn scan(
 
         let mut accounts = HashMap::with_capacity(parsed.accounts.len());
         for account in parsed.accounts {
-            // let session = match account.provider {
-            //     GitProviderType::GitHub => AccountSession::github(
-            //         account.id.clone(),
-            //         account.username,
-            //         account.host,
-            //         secrets.clone(),
-            //         keyring.clone(),
-            //         None,
-            //     )?,
-            //     GitProviderType::GitLab => AccountSession::gitlab(
-            //         account.id.clone(),
-            //         account.username,
-            //         config.gitlab_client_id.clone(),
-            //         account.host,
-            //         keyring.clone(),
-            //         secrets.clone(),
-            //         None,
-            //     )?,
-            // };
-
             accounts.insert(
                 account.id.clone(),
                 AccountItem {
@@ -343,7 +323,6 @@ async fn scan(
                     username: account.username,
                     provider: account.provider,
                     host: account.host,
-                    // session,
                 },
             );
         }
@@ -366,6 +345,7 @@ mod tests {
     use moss_git::{GitAuthAdapter, repository::Repository};
     use moss_git_hosting_provider::github::GitHubAuthAdapter;
     use oauth2::{ClientSecret, TokenResponse};
+    use std::path::Path;
 
     use super::*;
 

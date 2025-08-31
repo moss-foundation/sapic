@@ -102,7 +102,7 @@ impl CollectionVcs for Vcs {
     }
 
     fn owner(&self) -> AccountId {
-        self.client.owner()
+        self.client.account_id()
     }
 
     fn provider(&self) -> GitProviderKind {

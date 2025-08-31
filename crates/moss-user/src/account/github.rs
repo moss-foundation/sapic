@@ -1,3 +1,4 @@
+use joinerror::Error;
 use moss_keyring::KeyringClient;
 use oauth2::{EmptyExtraTokenFields, StandardTokenResponse, TokenResponse, basic::BasicTokenType};
 use std::sync::Arc;
@@ -8,14 +9,12 @@ const GITHUB_PREFIX: &str = "gh";
 
 pub(crate) struct GitHubSessionHandle {
     pub id: AccountId,
-    // pub username: String,
     pub host: String,
 }
 
 impl GitHubSessionHandle {
-    pub fn new(
+    pub async fn new(
         id: AccountId,
-        // username: String,
         host: String,
         initial_token: Option<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>>,
 
@@ -32,7 +31,8 @@ impl GitHubSessionHandle {
                     &make_secret_key(GITHUB_PREFIX, &host, &id),
                     &initial_token.access_token().secret().to_string(),
                 )
-                .map_err(|e| joinerror::Error::new::<()>(e.to_string()))?;
+                .await
+                .map_err(|e| Error::new::<()>(e.to_string()))?;
         };
 
         Ok(Self { id, host })
@@ -45,7 +45,8 @@ impl GitHubSessionHandle {
         let key = make_secret_key(GITHUB_PREFIX, &self.host, &self.id);
         let bytes = keyring
             .get_secret(&key)
-            .map_err(|e| joinerror::Error::new::<()>(e.to_string()))?;
+            .await
+            .map_err(|e| Error::new::<()>(e.to_string()))?;
 
         let access_token = String::from_utf8(bytes.to_vec())?;
 

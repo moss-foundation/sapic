@@ -3558,7 +3558,6 @@ dependencies = [
  "oauth2",
  "rustc-hash",
  "tokio",
- "zeroize",
 ]
 
 [[package]]
@@ -3784,12 +3783,15 @@ dependencies = [
 name = "moss_keyring"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "joinerror",
  "keyring",
  "moss_logging",
- "security-framework 3.3.0",
+ "rustc-hash",
+ "tokio",
  "tracing",
  "whoami",
+ "zeroize",
 ]
 
 [[package]]

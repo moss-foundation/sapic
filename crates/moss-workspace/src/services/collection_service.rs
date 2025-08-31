@@ -89,8 +89,6 @@ pub struct CollectionService<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     storage: Arc<StorageService<R>>,
     state: Arc<RwLock<ServiceState<R>>>,
-    // github_client: Arc<GitHubClient>,
-    // gitlab_client: Arc<GitLabClient>,
     #[allow(dead_code)]
     broadcaster: ActivityBroadcaster<R::EventLoop>,
     on_did_delete_collection_emitter: EventEmitter<OnDidDeleteCollection>,
@@ -103,8 +101,6 @@ impl<R: AppRuntime> CollectionService<R> {
         abs_path: &Path,
         fs: Arc<dyn FileSystem>,
         storage: Arc<StorageService<R>>,
-        // github_client: Arc<GitHubClient>,
-        // gitlab_client: Arc<GitLabClient>,
         environment_sources: &mut FxHashMap<Arc<String>, PathBuf>,
         broadcaster: ActivityBroadcaster<R::EventLoop>,
         active_profile: &Arc<ActiveProfile>,
@@ -125,8 +121,6 @@ impl<R: AppRuntime> CollectionService<R> {
             &storage,
             broadcaster.clone(),
             active_profile,
-            // github_client.clone(),
-            // gitlab_client.clone(),
         )
         .await
         .join_err_with::<()>(|| format!("failed to restore collections, {}", abs_path.display()))?;
@@ -143,8 +137,6 @@ impl<R: AppRuntime> CollectionService<R> {
                 collections,
                 expanded_items,
             })),
-            // github_client,
-            // gitlab_client,
             broadcaster,
             on_did_delete_collection_emitter: on_collection_did_delete_emitter,
             on_did_add_collection_emitter: on_collection_did_add_emitter,
@@ -201,14 +193,8 @@ impl<R: AppRuntime> CollectionService<R> {
         };
 
         let abs_path: Arc<Path> = abs_path.clone().into();
-        let builder = CollectionBuilder::<R>::new(
-            self.fs.clone(),
-            self.broadcaster.clone(),
-            abs_path.clone(),
-            // self.github_client.clone(),
-            // self.gitlab_client.clone(),
-        )
-        .await?;
+        let builder =
+            CollectionBuilder::<R>::new(self.fs.clone(), self.broadcaster.clone()).await?;
 
         let collection_result = builder
             .create(
@@ -265,13 +251,6 @@ impl<R: AppRuntime> CollectionService<R> {
         }
 
         let icon_path = collection.icon_path();
-
-        // let on_did_change = collection.on_did_change().subscribe(|_event| async move {
-
-        //     // TODO: Save in the database whether the collection was collapsed/expanded
-        // });
-        // ctx.subscribe(Subscribe::OnCollectionDidChange(id, on_did_change))
-        //     .await;
 
         {
             let mut state_lock = self.state.write().await;
@@ -353,14 +332,7 @@ impl<R: AppRuntime> CollectionService<R> {
             })?;
 
         let git_params = &params.git_params;
-        let builder = CollectionBuilder::new(
-            self.fs.clone(),
-            self.broadcaster.clone(),
-            abs_path.clone(),
-            // self.github_client.clone(),
-            // self.gitlab_client.clone(),
-        )
-        .await?;
+        let builder = CollectionBuilder::new(self.fs.clone(), self.broadcaster.clone()).await?;
 
         let git_client = match git_params.git_provider_type {
             GitProviderKind::GitHub => GitClient::GitHub {
@@ -381,7 +353,7 @@ impl<R: AppRuntime> CollectionService<R> {
                     account_id: params.account_id,
                     git_params: CollectionCloneGitParams {
                         git_provider_type: git_params.git_provider_type.clone(),
-                        repository: git_params.repository.clone(),
+                        repo_url: git_params.repository.clone(),
                         branch: git_params.branch.clone(),
                     },
                 },
@@ -627,8 +599,6 @@ async fn restore_collections<R: AppRuntime>(
     storage: &Arc<StorageService<R>>,
     broadcaster: ActivityBroadcaster<R::EventLoop>,
     active_profile: &Arc<ActiveProfile>,
-    // github_client: Arc<GitHubClient>,
-    // gitlab_client: Arc<GitLabClient>,
 ) -> joinerror::Result<HashMap<CollectionId, CollectionItem<R>>> {
     if !abs_path.exists() {
         return Ok(HashMap::new());
@@ -661,21 +631,15 @@ async fn restore_collections<R: AppRuntime>(
 
         let collection = {
             let collection_abs_path: Arc<Path> = entry.path().to_owned().into();
-            let builder = CollectionBuilder::<R>::new(
-                fs.clone(),
-                broadcaster.clone(),
-                collection_abs_path.clone(),
-                // github_client.clone(),
-                // gitlab_client.clone(),
-            )
-            .await
-            .join_err_with::<()>(|| {
-                format!(
-                    "failed to rebuild collection `{}`, {}",
-                    id_str,
-                    collection_abs_path.display()
-                )
-            })?;
+            let builder = CollectionBuilder::<R>::new(fs.clone(), broadcaster.clone())
+                .await
+                .join_err_with::<()>(|| {
+                    format!(
+                        "failed to rebuild collection `{}`, {}",
+                        id_str,
+                        collection_abs_path.display()
+                    )
+                })?;
 
             let collection_result = builder
                 .load(CollectionLoadParams {

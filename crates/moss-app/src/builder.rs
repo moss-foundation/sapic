@@ -68,41 +68,13 @@ impl<R: AppRuntime> AppBuilder<R> {
         let gitlab_client_id = dotenv::var("GITLAB_CLIENT_ID").unwrap_or_default();
         let gitlab_client_secret = dotenv::var("GITLAB_CLIENT_SECRET").unwrap_or_default();
 
-        // Git auth agents require a synchronous http client
-        let sync_http_client = oauth2::ureq::builder().redirects(0).build();
-
-        // let github_client = {
-        //     let github_auth_agent = Arc::new(GitHubAuthAgent::new(
-        //         sync_http_client.clone(),
-        //         keyring_client.clone(),
-        //         github_client_id.clone(),
-        //         github_client_secret.clone(),
-        //     ));
-        //     Arc::new(GitHubClient::new(
-        //         reqwest_client.clone(),
-        //         github_auth_agent,
-        //         None as Option<SSHAuthAgentImpl>,
-        //     ))
-        // };
-        // let gitlab_client = {
-        //     let gitlab_auth_agent = Arc::new(GitLabAuthAgent::new(
-        //         sync_http_client.clone(),
-        //         keyring_client.clone(),
-        //         gitlab_client_id.clone(),
-        //         gitlab_client_secret.clone(),
-        //     ));
-        //     Arc::new(GitLabClient::new(
-        //         reqwest_client.clone(),
-        //         gitlab_auth_agent,
-        //         None as Option<SSHAuthAgentImpl>,
-        //     ))
-        // };
-
+        // TODO: Probably we should use have it as a global resource instead of creating it here
         let app_secrets = AppSecretsProvider::new(
             github_client_secret.clone(),
             gitlab_client_secret.clone(),
             keyring_client.clone(),
         )
+        .await
         .expect("Failed to create app secrets provider");
 
         let theme_service = ThemeService::new(self.fs.clone(), params.themes_dir)
@@ -142,8 +114,6 @@ impl<R: AppRuntime> AppBuilder<R> {
             storage_service.clone(),
             self.fs.clone(),
             &params.app_dir,
-            // github_client.clone(),
-            // gitlab_client.clone(),
         )
         .await
         .expect("Failed to create workspace service");

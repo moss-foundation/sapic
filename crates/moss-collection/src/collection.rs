@@ -9,7 +9,7 @@ use moss_applib::{
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_edit::json::EditOptions;
 use moss_fs::{FileSystem, FsResultExt};
-use moss_git::{models::types::BranchInfo, repository::Repository};
+use moss_git::{models::types::BranchInfo, repository::Repository, url::normalize_git_url};
 use moss_git_hosting_provider::{
     common::GitUrl,
     models::{primitives::GitProviderKind, types::Contributor},
@@ -202,8 +202,13 @@ impl<R: AppRuntime> Collection<R> {
             repository.push(None, Some(&default_branch), Some(&default_branch), true, cb)?;
         }
 
+        let url = {
+            let normalized = normalize_git_url(&url)?;
+            GitUrl::parse(&normalized)?
+        };
+
         self.vcs
-            .set(Vcs::new(GitUrl::parse(&url)?, repository, client))
+            .set(Vcs::new(url, repository, client))
             .map_err(|e| joinerror::Error::new::<()>(e.to_string()))
             .join_err::<()>("failed to set git service")?;
 

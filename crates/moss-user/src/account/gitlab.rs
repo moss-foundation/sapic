@@ -1,4 +1,4 @@
-use joinerror::OptionExt;
+use joinerror::{Error, OptionExt};
 use moss_asp::AppSecretsProvider;
 use moss_keyring::KeyringClient;
 use oauth2::{
@@ -34,7 +34,6 @@ pub(crate) struct LastAccessToken {
 
 pub(crate) struct GitLabSessionHandle {
     pub id: AccountId,
-    // pub username: String,
     pub host: String,
 
     token: RwLock<Option<LastAccessToken>>,
@@ -43,9 +42,8 @@ pub(crate) struct GitLabSessionHandle {
 }
 
 impl GitLabSessionHandle {
-    pub(crate) fn new(
+    pub(crate) async fn new(
         id: AccountId,
-        // username: String,
         host: String,
         client_id: ClientId,
 
@@ -68,7 +66,8 @@ impl GitLabSessionHandle {
 
             keyring
                 .set_secret(&make_secret_key(GITLAB_PREFIX, &host, &id), &refresh_token)
-                .map_err(|e| joinerror::Error::new::<()>(e.to_string()))?;
+                .await
+                .map_err(|e| Error::new::<()>(e.to_string()))?;
 
             token = Some(LastAccessToken {
                 token: access_token,
@@ -78,7 +77,6 @@ impl GitLabSessionHandle {
 
         Ok(Self {
             id,
-            // username,
             host,
             token: RwLock::new(token),
 
@@ -100,7 +98,8 @@ impl GitLabSessionHandle {
         let key = make_secret_key(GITLAB_PREFIX, &self.host, &self.id);
         let bytes = keyring
             .get_secret(&key)
-            .map_err(|e| joinerror::Error::new::<()>(e.to_string()))?;
+            .await
+            .map_err(|e| Error::new::<()>(e.to_string()))?;
 
         let old_refresh_token = String::from_utf8(bytes.to_vec())?;
         let token = self
@@ -125,7 +124,8 @@ impl GitLabSessionHandle {
 
             keyring
                 .set_secret(&key, &new_refresh_token)
-                .map_err(|e| joinerror::Error::new::<()>(e.to_string()))?;
+                .await
+                .map_err(|e| Error::new::<()>(e.to_string()))?;
         }
 
         return Ok(new_access_token);

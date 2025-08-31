@@ -6,7 +6,7 @@ use moss_git_hosting_provider::{
     common::GitUrl, github::GitHubApiClient, gitlab::GitLabApiClient,
     models::primitives::GitProviderKind,
 };
-use moss_user::{account::Account, models::primitives::AccountId};
+use moss_user::{AccountSession, account::Account, models::primitives::AccountId};
 
 #[derive(Clone)]
 pub enum GitClient {
@@ -21,7 +21,7 @@ pub enum GitClient {
 }
 
 impl GitClient {
-    pub fn owner(&self) -> AccountId {
+    pub fn account_id(&self) -> AccountId {
         match self {
             GitClient::GitHub { account, .. } => account.id(),
             GitClient::GitLab { account, .. } => account.id(),
@@ -32,6 +32,20 @@ impl GitClient {
         match self {
             GitClient::GitHub { .. } => GitProviderKind::GitHub,
             GitClient::GitLab { .. } => GitProviderKind::GitLab,
+        }
+    }
+
+    pub fn session(&self) -> &AccountSession {
+        match self {
+            GitClient::GitHub { account, .. } => account.session(),
+            GitClient::GitLab { account, .. } => account.session(),
+        }
+    }
+
+    pub fn username(&self) -> String {
+        match self {
+            GitClient::GitHub { account, .. } => account.username(),
+            GitClient::GitLab { account, .. } => account.username(),
         }
     }
 
