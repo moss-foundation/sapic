@@ -49,11 +49,14 @@ tracing.workspace = true
 tauri = { workspace = true, features = ["test"] }
 moss_testutils.workspace = true
 moss_applib = { workspace = true, features = ["test"] }
+moss_asp = { workspace = true }
 
 [features]
 integration-tests = [
   "dotenv",
+  "moss_user/integration-tests",
   "moss_collection/integration-tests",
   "moss_git_hosting_provider/integration-tests",
   "oauth2",
+  "moss_keyring/test",
 ]

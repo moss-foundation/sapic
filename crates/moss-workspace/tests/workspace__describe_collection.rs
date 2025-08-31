@@ -1,11 +1,13 @@
 #![cfg(feature = "integration-tests")]
 
+use moss_applib::context::AnyAsyncContext;
 use moss_git::models::types::BranchInfo;
+use moss_user::models::primitives::AccountId;
 use moss_workspace::models::{
     operations::{DeleteCollectionInput, DescribeCollectionInput, ImportCollectionInput},
     types::{GitHubImportParams, ImportCollectionParams, ImportCollectionSource, VcsInfo},
 };
-use std::env;
+use std::{env, ops::Deref};
 
 use crate::shared::setup_test_workspace;
 
@@ -14,11 +16,18 @@ mod shared;
 #[ignore]
 #[tokio::test]
 async fn describe_collection_with_repository() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_handle, workspace, cleanup) = setup_test_workspace().await;
+
+    let account_id = ctx
+        .value::<AccountId>("account_id")
+        .unwrap()
+        .deref()
+        .clone();
 
     let import_collection_output = workspace
         .import_collection(
             &ctx,
+            &app_handle,
             &ImportCollectionInput {
                 inner: ImportCollectionParams {
                     name: "New Collection".to_string(),
@@ -28,6 +37,7 @@ async fn describe_collection_with_repository() {
                     source: ImportCollectionSource::GitHub(GitHubImportParams {
                         repository: env::var("GITHUB_COLLECTION_REPO_HTTPS").unwrap(),
                         branch: None,
+                        account_id,
                     }),
                 },
             },

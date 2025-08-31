@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+moss_applib.workspace = true
 moss_keyring.workspace = true
 moss_asp.workspace = true
 moss_id_macro = { workspace = true }
@@ -18,3 +19,6 @@ serde_json = { workspace = true }
 ts-rs = { workspace = true }
 nanoid = { workspace = true }
 joinerror = { workspace = true }
+
+[features]
+integration-tests = []

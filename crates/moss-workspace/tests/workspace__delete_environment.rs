@@ -25,7 +25,7 @@ use crate::shared::setup_test_workspace;
 mod shared;
 #[tokio::test]
 async fn delete_environment_success() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     // Create a custom environment with a variable
     let environment_name = random_environment_name();
@@ -143,7 +143,7 @@ async fn delete_environment_success() {
 
 #[tokio::test]
 async fn delete_environment_nonexistent() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let result = workspace
         .delete_environment(

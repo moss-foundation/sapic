@@ -105,6 +105,51 @@ impl KeyringClient for KeyringClientImpl {
     }
 }
 
+#[cfg(any(test, feature = "test"))]
+pub mod test {
+    use super::*;
+
+    pub struct MockKeyringClient {
+        values: Arc<RwLock<FxHashMap<String, SecretString>>>,
+    }
+
+    impl MockKeyringClient {
+        pub fn new() -> Self {
+            Self {
+                values: Arc::new(RwLock::new(FxHashMap::default())),
+            }
+        }
+    }
+
+    #[async_trait]
+    impl KeyringClient for MockKeyringClient {
+        async fn set_secret(&self, key: &str, secret: &str) -> joinerror::Result<()> {
+            self.values
+                .write()
+                .await
+                .insert(key.to_string(), SecretString::new(secret.to_string()));
+
+            Ok(())
+        }
+
+        async fn get_secret(&self, key: &str) -> joinerror::Result<Vec<u8>> {
+            if let Some(secret) = self.values.read().await.get(key) {
+                Ok(secret.expose().as_bytes().to_vec())
+            } else {
+                Err(Error::new::<()>(format!(
+                    "[MockKeyringClient] Secret not found for key: {}",
+                    key
+                )))
+            }
+        }
+
+        async fn delete_secret(&self, key: &str) -> joinerror::Result<()> {
+            self.values.write().await.remove(key);
+            Ok(())
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use keyring::Entry;

@@ -4,7 +4,6 @@ use moss_common::continue_if_none;
 use moss_fs::{CreateOptions, FileSystem};
 use moss_git::GitAuthAdapter;
 use moss_git_hosting_provider::{
-    GitProviderKind,
     github::{GitHubApiClient, GitHubAuthAdapter},
     gitlab::{GitLabApiClient, GitLabAuthAdapter},
 };

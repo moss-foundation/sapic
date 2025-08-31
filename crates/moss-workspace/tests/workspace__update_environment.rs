@@ -26,7 +26,7 @@ use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn update_environment_success() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let old_environment_name = random_environment_name();
     let create_environment_output = workspace
@@ -102,7 +102,7 @@ async fn update_environment_success() {
 
 #[tokio::test]
 async fn update_environment_add_variables() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
     let environment_name = random_environment_name();
     let create_environment_output = workspace
         .create_environment(
@@ -189,7 +189,7 @@ async fn update_environment_add_variables() {
 
 #[tokio::test]
 async fn update_environment_update_variables() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
     let environment_name = random_environment_name();
     let create_environment_output = workspace
         .create_environment(
@@ -310,7 +310,7 @@ async fn update_environment_update_variables() {
 async fn update_environment_update_variables_nonexistent() {
     // Trying to update a nonexistent variable should raise an error
 
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
     let environment_name = random_environment_name();
     let create_environment_output = workspace
         .create_environment(
@@ -362,7 +362,7 @@ async fn update_environment_update_variables_nonexistent() {
 
 #[tokio::test]
 async fn update_environment_delete_variables() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
     let environment_name = random_environment_name();
     let create_environment_output = workspace
         .create_environment(
@@ -459,7 +459,7 @@ async fn update_environment_delete_variables() {
 async fn update_environment_delete_variables_nonexistent() {
     // Delete a nonexistent variable should be a no-op
 
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
     let environment_name = random_environment_name();
     let create_environment_output = workspace
         .create_environment(

@@ -12,7 +12,7 @@ use moss_workspace::models::{
 
 #[tokio::test]
 async fn rename_collection_success() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let old_collection_name = random_collection_name();
     let create_collection_output = workspace
@@ -64,7 +64,7 @@ async fn rename_collection_success() {
 
 #[tokio::test]
 async fn rename_collection_empty_name() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let old_collection_name = random_collection_name();
     let create_collection_output = workspace
@@ -106,7 +106,7 @@ async fn rename_collection_empty_name() {
 
 #[tokio::test]
 async fn rename_collection_unchanged() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let old_collection_name = random_collection_name();
     let create_collection_output = workspace
@@ -148,7 +148,7 @@ async fn rename_collection_unchanged() {
 
 #[tokio::test]
 async fn rename_collection_nonexistent_id() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     // Use a random ID that doesn't exist
     let nonexistent_id = CollectionId::new();
@@ -176,7 +176,7 @@ async fn rename_collection_nonexistent_id() {
 
 #[tokio::test]
 async fn update_collection_new_icon() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
     let collection_name = random_collection_name();
     let id = workspace
         .create_collection(
@@ -224,7 +224,7 @@ async fn update_collection_new_icon() {
 
 #[tokio::test]
 async fn update_collection_remove_icon() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
     let collection_name = random_collection_name();
 
     let icon_path = workspace.abs_path().join("test_icon.png");

@@ -16,4 +16,5 @@ tokio = { workspace = true }
 rustc-hash = { workspace = true }
 
 [features]
+test = []
 integration-tests = []

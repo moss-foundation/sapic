@@ -3,18 +3,18 @@
 use image::{ImageBuffer, Rgb};
 use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::{
-    context::{AsyncContext, MutableContext},
+    AppHandle,
+    context::{AnyContext, AsyncContext, MutableContext},
     mock::MockAppRuntime,
 };
+use moss_asp::AppSecretsProvider;
 use moss_fs::RealFileSystem;
 use moss_git_hosting_provider::{
-    common::ssh_auth_agent::SSHAuthAgentImpl,
-    envvar_keys::{GITLAB_CLIENT_ID, GITLAB_CLIENT_SECRET},
-    github::{auth::GitHubAuthAgent, client::GitHubClient},
-    gitlab::{auth::GitLabAuthAgent, client::GitLabClient},
+    envvar_keys::GITLAB_CLIENT_SECRET, github::GitHubApiClient, gitlab::GitLabApiClient,
 };
-use moss_keyring::KeyringClientImpl;
+use moss_keyring::test::MockKeyringClient;
 use moss_testutils::random_name::random_workspace_name;
+use moss_user::{Account, AccountSession, models::primitives::AccountId, profile::ActiveProfile};
 use moss_workspace::{
     Workspace,
     builder::{CreateWorkspaceParams, WorkspaceBuilder},
@@ -27,6 +27,7 @@ use moss_workspace::{
     },
 };
 use rand::Rng;
+use reqwest::ClientBuilder as HttpClientBuilder;
 use std::{
     collections::HashMap,
     fs,
@@ -36,16 +37,36 @@ use std::{
     sync::Arc,
     time::Duration,
 };
+use tauri::Manager;
 
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
 
-pub async fn setup_test_workspace() -> (AsyncContext, Workspace<MockAppRuntime>, CleanupFn) {
+pub async fn setup_test_workspace() -> (
+    AsyncContext,
+    AppHandle<MockAppRuntime>,
+    Workspace<MockAppRuntime>,
+    CleanupFn,
+) {
     dotenv::dotenv().ok();
     let fs = Arc::new(RealFileSystem::new());
     let mock_app = tauri::test::mock_app();
-    let app_handle = mock_app.handle().clone();
+    let tao_app_handle = mock_app.handle().clone();
+    {
+        let http_client = HttpClientBuilder::new()
+            .user_agent("SAPIC/1.0")
+            .build()
+            .expect("failed to build http client");
 
-    let ctx = MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
+        let github_client = GitHubApiClient::new(http_client.clone());
+        let gitlab_client = GitLabApiClient::new(http_client.clone());
+
+        tao_app_handle.manage(http_client);
+        tao_app_handle.manage(github_client);
+        tao_app_handle.manage(gitlab_client);
+    }
+    let app_handle = AppHandle::new(tao_app_handle.clone());
+
+    let mut ctx = MutableContext::background_with_timeout(Duration::from_secs(30));
 
     let abs_path: Arc<Path> = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
@@ -55,58 +76,51 @@ pub async fn setup_test_workspace() -> (AsyncContext, Workspace<MockAppRuntime>,
         .into();
     fs::create_dir_all(&abs_path).unwrap();
 
-    let broadcaster = ActivityBroadcaster::new(app_handle.clone());
+    let broadcaster = ActivityBroadcaster::new(tao_app_handle.clone());
 
-    let keyring_client = Arc::new(KeyringClientImpl::new());
-    let reqwest_client = reqwest::ClientBuilder::new()
-        .user_agent("SAPIC")
-        .build()
-        .expect("failed to build reqwest client");
-
-    let sync_http_client = oauth2::ureq::builder().redirects(0).build();
-
-    let github_client = {
-        let github_auth_agent = Arc::new(GitHubAuthAgent::new(
-            sync_http_client.clone(),
-            keyring_client.clone(),
-            dotenv::var(GITLAB_CLIENT_ID).unwrap_or_default(),
-            dotenv::var(GITLAB_CLIENT_SECRET).unwrap_or_default(),
-        ));
-        Arc::new(GitHubClient::new(
-            reqwest_client.clone(),
-            github_auth_agent,
-            None as Option<SSHAuthAgentImpl>,
-        ))
-    };
-    let gitlab_client = {
-        let gitlab_auth_agent = Arc::new(GitLabAuthAgent::new(
-            sync_http_client.clone(),
-            keyring_client.clone(),
-            dotenv::var(GITLAB_CLIENT_ID).unwrap_or_default(),
-            dotenv::var(GITLAB_CLIENT_SECRET).unwrap_or_default(),
-        ));
-        Arc::new(GitLabClient::new(
-            reqwest_client.clone(),
-            gitlab_auth_agent,
-            None as Option<SSHAuthAgentImpl>,
-        ))
-    };
-
-    let workspace: Workspace<MockAppRuntime> = WorkspaceBuilder::<MockAppRuntime>::new(
-        fs.clone(),
-        github_client,
-        gitlab_client,
-        broadcaster,
-    )
-    .create(
-        &ctx,
-        CreateWorkspaceParams {
-            name: random_workspace_name(),
-            abs_path: abs_path.clone(),
-        },
+    let keyring = Arc::new(MockKeyringClient::new());
+    let secrets = AppSecretsProvider::new(
+        dotenv::var(GITLAB_CLIENT_SECRET).unwrap_or_default(),
+        dotenv::var(GITLAB_CLIENT_SECRET).unwrap_or_default(),
+        keyring.clone(),
     )
     .await
     .unwrap();
+
+    let account_id = AccountId::new();
+    ctx.with_value("account_id", account_id.clone());
+    let account_session = AccountSession::github(
+        account_id.clone(),
+        "github.com".to_string(),
+        secrets,
+        keyring.clone(),
+        None,
+    )
+    .await
+    .unwrap();
+    let profiles = HashMap::from([(
+        account_id.clone(),
+        Account::new(
+            account_id,
+            random_workspace_name(),
+            "github.com".to_string(),
+            account_session,
+        ),
+    )]);
+    let active_profile = ActiveProfile::new(profiles);
+
+    let ctx = ctx.freeze();
+    let workspace: Workspace<MockAppRuntime> =
+        WorkspaceBuilder::<MockAppRuntime>::new(fs.clone(), broadcaster, active_profile.into())
+            .create(
+                &ctx,
+                CreateWorkspaceParams {
+                    name: random_workspace_name(),
+                    abs_path: abs_path.clone(),
+                },
+            )
+            .await
+            .unwrap();
 
     let cleanup_fn = Box::new({
         let abs_path_clone = abs_path.clone();
@@ -119,7 +133,7 @@ pub async fn setup_test_workspace() -> (AsyncContext, Workspace<MockAppRuntime>,
         }
     });
 
-    (ctx, workspace, cleanup_fn)
+    (ctx, app_handle, workspace, cleanup_fn)
 }
 
 pub fn _create_simple_editor_state() -> EditorPartStateInfo {

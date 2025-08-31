@@ -1,7 +1,6 @@
 pub mod common;
 pub mod github;
 pub mod gitlab;
-pub mod models;
 
 #[derive(Debug, Clone)]
 pub enum GitProviderKind {
