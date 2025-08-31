@@ -2,25 +2,23 @@ use derive_more::{Deref, DerefMut};
 use futures::Stream;
 use joinerror::{Error, OptionExt, ResultExt};
 use moss_activity_broadcaster::{ActivityBroadcaster, ToLocation};
-use moss_applib::{AppRuntime, subscription::EventEmitter};
+use moss_applib::{AppHandle, AppRuntime, subscription::EventEmitter};
 use moss_collection::{
     Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
     builder::{
         CollectionCloneGitParams, CollectionCloneParams, CollectionCreateGitParams,
         CollectionCreateParams, CollectionLoadParams,
     },
-    collection::VcsSummary,
     git::GitClient,
+    vcs::VcsSummary,
 };
 use moss_common::continue_if_err;
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
 use moss_git_hosting_provider::{
-    github::GitHubApiClient, gitlab::GitLabApiClient, models::primitives::GitProviderType,
+    github::GitHubApiClient, gitlab::GitLabApiClient, models::primitives::GitProviderKind,
 };
 use moss_logging::session;
-use moss_user::{
-    AccountSession, account::Account, models::primitives::AccountId, profile::ActiveProfile,
-};
+use moss_user::{account::Account, models::primitives::AccountId, profile::ActiveProfile};
 use reqwest::Client as HttpClient;
 use rustc_hash::FxHashMap;
 use std::{
@@ -52,7 +50,7 @@ pub(crate) struct CollectionItemCloneParams {
 
 pub(crate) struct CollectionItemGitCloneParams {
     pub repository: String,
-    pub git_provider_type: GitProviderType,
+    pub git_provider_type: GitProviderKind,
     pub branch: Option<String>,
 }
 
@@ -188,14 +186,14 @@ impl<R: AppRuntime> CollectionService<R> {
             None => None,
             Some(CreateCollectionGitParams::GitHub(git_params)) => {
                 Some(CollectionCreateGitParams {
-                    git_provider_type: GitProviderType::GitHub,
+                    git_provider_type: GitProviderKind::GitHub,
                     repository: git_params.repository.clone(),
                     branch: git_params.branch.clone(),
                 })
             }
             Some(CreateCollectionGitParams::GitLab(git_params)) => {
                 Some(CollectionCreateGitParams {
-                    git_provider_type: GitProviderType::GitLab,
+                    git_provider_type: GitProviderKind::GitLab,
                     repository: git_params.repository.clone(),
                     branch: git_params.branch.clone(),
                 })
@@ -251,18 +249,18 @@ impl<R: AppRuntime> CollectionService<R> {
 
         if let (Some(git_params), Some(account)) = (git_params, account) {
             let client = match git_params.git_provider_type {
-                GitProviderType::GitHub => GitClient::GitHub {
+                GitProviderKind::GitHub => GitClient::GitHub {
                     account: account,
                     api: GitHubApiClient::new(HttpClient::new()), // FIXME:
                 },
-                GitProviderType::GitLab => GitClient::GitLab {
+                GitProviderKind::GitLab => GitClient::GitLab {
                     account: account,
                     api: GitLabApiClient::new(HttpClient::new()), // FIXME:
                 },
             };
 
             collection
-                .init_git(client, git_params.repository, git_params.branch)
+                .init_vcs(client, git_params.repository, git_params.branch)
                 .await?;
         }
 
@@ -333,6 +331,7 @@ impl<R: AppRuntime> CollectionService<R> {
     pub(crate) async fn clone_collection(
         &self,
         ctx: &R::AsyncContext,
+        app_handle: &AppHandle<R>,
         id: &CollectionId,
         account: Account,
         params: CollectionItemCloneParams,
@@ -363,15 +362,14 @@ impl<R: AppRuntime> CollectionService<R> {
         )
         .await?;
 
-        let http_client = reqwest::Client::new();
         let git_client = match git_params.git_provider_type {
-            GitProviderType::GitHub => GitClient::GitHub {
+            GitProviderKind::GitHub => GitClient::GitHub {
                 account: account,
-                api: GitHubApiClient::new(http_client),
+                api: app_handle.global::<GitHubApiClient>().clone(),
             },
-            GitProviderType::GitLab => GitClient::GitLab {
+            GitProviderKind::GitLab => GitClient::GitLab {
                 account: account,
-                api: GitLabApiClient::new(http_client),
+                api: app_handle.global::<GitLabApiClient>().clone(),
             },
         };
         let collection_result = builder
@@ -415,6 +413,11 @@ impl<R: AppRuntime> CollectionService<R> {
         };
 
         let desc = collection.details().await?;
+        let vcs = collection
+            .vcs()
+            .unwrap() // SAFETY: Collection is built from the clone operation, so it must have a VCS
+            .summary()
+            .await?;
 
         // FIXME: Should we allow user to set local icon when cloning a collection?
         let icon_path = collection.icon_path();
@@ -458,7 +461,7 @@ impl<R: AppRuntime> CollectionService<R> {
             order: Some(params.order),
             expanded: true,
             // FIXME: Rethink Manifest file and repository storage
-            vcs: desc.vcs,
+            vcs: Some(vcs),
             icon_path,
             abs_path,
             external_path: None,
@@ -590,6 +593,16 @@ impl<R: AppRuntime> CollectionService<R> {
                     session::error!(format!("failed to describe collection `{}`: {}", id.to_string(), e.to_string()));
                 });
 
+                let vcs = if let Some(vcs) = item.vcs() {
+                    match vcs.summary().await {
+                        Ok(summary) => Some(summary),
+                        Err(e) => {
+                            session::warn!(format!("failed to get VCS summary for collection `{}`: {}", id.to_string(), e.to_string()));
+                            None
+                        }
+                    }
+                } else { None };
+
                 let expanded = state_lock.expanded_items.contains(id);
                 let icon_path = item.icon_path();
 
@@ -598,7 +611,7 @@ impl<R: AppRuntime> CollectionService<R> {
                     name: details.name,
                     order: item.order,
                     expanded,
-                    vcs: details.vcs,
+                    vcs,
                     icon_path,
                     abs_path: item.handle.abs_path().clone(),
                     external_path: None, // TODO: implement
@@ -648,7 +661,6 @@ async fn restore_collections<R: AppRuntime>(
 
         let collection = {
             let collection_abs_path: Arc<Path> = entry.path().to_owned().into();
-
             let builder = CollectionBuilder::<R>::new(
                 fs.clone(),
                 broadcaster.clone(),
@@ -666,12 +678,9 @@ async fn restore_collections<R: AppRuntime>(
             })?;
 
             let collection_result = builder
-                .load(
-                    None, // FIXME: Hardcoded for now
-                    CollectionLoadParams {
-                        internal_abs_path: collection_abs_path,
-                    },
-                )
+                .load(CollectionLoadParams {
+                    internal_abs_path: collection_abs_path,
+                })
                 .await;
             match collection_result {
                 Ok(collection) => collection,
@@ -700,16 +709,16 @@ async fn restore_collections<R: AppRuntime>(
                 })?;
 
             let client = match provider {
-                GitProviderType::GitHub => GitClient::GitHub {
+                GitProviderKind::GitHub => GitClient::GitHub {
                     account: account,
                     api: GitHubApiClient::new(HttpClient::new()), // FIXME:
                 },
-                GitProviderType::GitLab => GitClient::GitLab {
+                GitProviderKind::GitLab => GitClient::GitLab {
                     account: account,
                     api: GitLabApiClient::new(HttpClient::new()), // FIXME:
                 },
             };
-            collection.load_git(client).await?;
+            collection.load_vcs(client).await?;
         }
 
         collections.push((id, collection));

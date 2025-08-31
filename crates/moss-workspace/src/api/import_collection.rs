@@ -1,6 +1,6 @@
 use joinerror::OptionExt;
-use moss_applib::{AppRuntime, errors::ValidationResultExt};
-use moss_git_hosting_provider::models::primitives::GitProviderType;
+use moss_applib::{AppHandle, AppRuntime, errors::ValidationResultExt};
+use moss_git_hosting_provider::models::primitives::GitProviderKind;
 use validator::Validate;
 
 use crate::{
@@ -17,9 +17,11 @@ impl<R: AppRuntime> Workspace<R> {
     pub async fn import_collection(
         &self,
         ctx: &R::AsyncContext,
+        app_handle: &AppHandle<R>,
         input: &ImportCollectionInput,
     ) -> joinerror::Result<ImportCollectionOutput> {
         input.validate().join_err_bare()?;
+
         let params = &input.inner;
         let id = CollectionId::new();
 
@@ -33,6 +35,7 @@ impl<R: AppRuntime> Workspace<R> {
 
                 self.collection_service.clone_collection(
                     ctx,
+                    app_handle,
                     &id,
                     session,
                     CollectionItemCloneParams {
@@ -42,7 +45,7 @@ impl<R: AppRuntime> Workspace<R> {
                         _icon_path: params.icon_path.clone(),
                         git_params: CollectionItemGitCloneParams {
                             repository: git_params.repository.clone(),
-                            git_provider_type: GitProviderType::GitHub,
+                            git_provider_type: GitProviderKind::GitHub,
                             branch: git_params.branch.clone(),
                         },
                     },
@@ -57,6 +60,7 @@ impl<R: AppRuntime> Workspace<R> {
 
                 self.collection_service.clone_collection(
                     ctx,
+                    app_handle,
                     &id,
                     session,
                     CollectionItemCloneParams {
@@ -66,7 +70,7 @@ impl<R: AppRuntime> Workspace<R> {
                         _icon_path: params.icon_path.clone(),
                         git_params: CollectionItemGitCloneParams {
                             repository: git_params.repository.clone(),
-                            git_provider_type: GitProviderType::GitLab,
+                            git_provider_type: GitProviderKind::GitLab,
                             branch: git_params.branch.clone(),
                         },
                     },

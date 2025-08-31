@@ -6,7 +6,7 @@ use crate::models::{
     types::{LogDate, LogEntryInfo, LogItemSourceInfo, WorkspaceInfo},
 };
 use derive_more::Deref;
-use moss_git_hosting_provider::models::{primitives::GitProviderType, types::UserInfo};
+use moss_git_hosting_provider::models::{primitives::GitProviderKind, types::UserInfo};
 use moss_logging::models::primitives::LogEntryId;
 use moss_workspace::models::primitives::WorkspaceMode;
 use serde::{Deserialize, Serialize};
@@ -35,7 +35,7 @@ pub struct AddAccountInput {
     pub profile_id: ProfileId,
     pub host: String,
     pub label: Option<String>,
-    pub provider: GitProviderType,
+    pub provider: GitProviderKind,
 }
 
 /// @category Operation

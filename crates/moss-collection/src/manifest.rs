@@ -1,4 +1,4 @@
-use moss_git_hosting_provider::models::primitives::GitProviderType;
+use moss_git_hosting_provider::models::primitives::GitProviderKind;
 use serde::{Deserialize, Serialize};
 
 pub(crate) const MANIFEST_FILE_NAME: &str = "Sapic.json";
@@ -17,10 +17,10 @@ pub(super) enum ManifestVcs {
 }
 
 impl ManifestVcs {
-    pub fn provider(&self) -> GitProviderType {
+    pub fn provider(&self) -> GitProviderKind {
         match self {
-            ManifestVcs::GitHub { .. } => GitProviderType::GitHub,
-            ManifestVcs::GitLab { .. } => GitProviderType::GitLab,
+            ManifestVcs::GitHub { .. } => GitProviderKind::GitHub,
+            ManifestVcs::GitLab { .. } => GitProviderKind::GitLab,
         }
     }
 

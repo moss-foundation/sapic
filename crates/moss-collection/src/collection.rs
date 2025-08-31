@@ -11,9 +11,8 @@ use moss_edit::json::EditOptions;
 use moss_fs::{FileSystem, FsResultExt};
 use moss_git::{models::types::BranchInfo, repository::Repository};
 use moss_git_hosting_provider::{
-    GitHostingProvider,
     common::GitUrl,
-    models::{primitives::GitProviderType, types::Contributor},
+    models::{primitives::GitProviderKind, types::Contributor},
 };
 use moss_user::{account::Account, models::primitives::AccountId};
 use serde_json::Value as JsonValue;
@@ -46,40 +45,40 @@ pub struct CollectionModifyParams {
     pub icon_path: Option<ChangePath>,
 }
 
-pub enum VcsSummary {
-    GitHub {
-        branch: BranchInfo,
-        url: String,
-        updated_at: Option<String>,
-        owner: Option<String>,
-    },
-    GitLab {
-        branch: BranchInfo,
-        url: String,
-        updated_at: Option<String>,
-        owner: Option<String>,
-    },
-}
+// pub enum VcsSummary {
+//     GitHub {
+//         branch: BranchInfo,
+//         url: String,
+//         updated_at: Option<String>,
+//         owner: Option<String>,
+//     },
+//     GitLab {
+//         branch: BranchInfo,
+//         url: String,
+//         updated_at: Option<String>,
+//         owner: Option<String>,
+//     },
+// }
 
-impl VcsSummary {
-    pub fn url(&self) -> Option<String> {
-        match self {
-            VcsSummary::GitHub { url, .. } => Some(url.clone()),
-            VcsSummary::GitLab { url, .. } => Some(url.clone()),
-        }
-    }
+// impl VcsSummary {
+//     pub fn url(&self) -> Option<String> {
+//         match self {
+//             VcsSummary::GitHub { url, .. } => Some(url.clone()),
+//             VcsSummary::GitLab { url, .. } => Some(url.clone()),
+//         }
+//     }
 
-    pub fn branch(&self) -> Option<BranchInfo> {
-        match self {
-            VcsSummary::GitHub { branch, .. } => Some(branch.clone()),
-            VcsSummary::GitLab { branch, .. } => Some(branch.clone()),
-        }
-    }
-}
+//     pub fn branch(&self) -> Option<BranchInfo> {
+//         match self {
+//             VcsSummary::GitHub { branch, .. } => Some(branch.clone()),
+//             VcsSummary::GitLab { branch, .. } => Some(branch.clone()),
+//         }
+//     }
+// }
 
 pub struct CollectionDetails {
     pub name: String,
-    pub vcs: Option<VcsSummary>,
+    // pub vcs: Option<VcsSummary>,
     pub contributors: Vec<Contributor>,
     pub created_at: String, // File created time
 }
@@ -101,16 +100,6 @@ pub struct Collection<R: AppRuntime> {
     // FIXME: Should be optional
     // pub(super) git_client: Option<GitClient>,
     pub(super) on_did_change: EventEmitter<OnDidChangeEvent>,
-}
-
-impl<R: AppRuntime> CollectionVcs for Collection<R> {
-    fn owner(&self) -> AccountId {
-        todo!()
-    }
-
-    fn provider(&self) -> GitProviderType {
-        todo!()
-    }
 }
 
 #[rustfmt::skip]
@@ -139,7 +128,7 @@ impl<R: AppRuntime> Collection<R> {
         self.vcs.get().map(|vcs| vcs as &dyn CollectionVcs)
     }
 
-    pub async fn init_git(
+    pub async fn init_vcs(
         &self,
         client: GitClient,
         url: String,
@@ -199,22 +188,12 @@ impl<R: AppRuntime> Collection<R> {
             .ok_or_join_err::<()>("no local branch exists")?;
         repository.rename_branch(&old_default_branch_name, &default_branch, false)?;
 
-        // Don't push during integration tests
-        // git push
+        // We don't want to push during integration tests
         #[cfg(not(any(test, feature = "integration-tests")))]
         {
             let mut cb = git2::RemoteCallbacks::new();
             let username_clone = username.clone();
             cb.credentials(move |_url, username_from_url, _allowed| {
-                // let rt = tokio::runtime::Handle::try_current();
-                // let fut = self.session_for_remote(ws, repo_root, remote_name);
-                // let (acc, tok) = match rt {
-                //     Ok(h) => h.block_on(fut),
-                //     Err(_) => tokio::runtime::Runtime::new().unwrap().block_on(fut),
-                // }
-                // .map_err(|e| git2::Error::from_str(&format!("auth error: {e}")))?;
-                // let user = username_from_url.unwrap_or(&acc.login);
-
                 git2::Cred::userpass_plaintext(
                     username_from_url.unwrap_or(&username_clone),
                     &access_token,
@@ -224,18 +203,40 @@ impl<R: AppRuntime> Collection<R> {
         }
 
         self.vcs
-            .set(Vcs::new(repository, client))
+            .set(Vcs::new(GitUrl::parse(&url)?, repository, client))
             .map_err(|e| joinerror::Error::new::<()>(e.to_string()))
             .join_err::<()>("failed to set git service")?;
 
         Ok(())
     }
 
-    pub async fn load_git(&self, client: GitClient) -> joinerror::Result<()> {
+    pub async fn load_vcs(&self, client: GitClient) -> joinerror::Result<()> {
         let repository = Repository::open(self.abs_path.as_ref())?;
 
+        let url = {
+            let manifest_path = self.abs_path.join(MANIFEST_FILE_NAME);
+            let rdr = self
+                .fs
+                .open_file(&manifest_path)
+                .await
+                .join_err_with::<()>(|| {
+                    format!("failed to open manifest file: {}", manifest_path.display())
+                })?;
+            let manifest: ManifestFile =
+                serde_json::from_reader(rdr).join_err_with::<()>(|| {
+                    format!("failed to parse manifest file: {}", manifest_path.display())
+                })?;
+
+            let url = manifest
+                .vcs
+                .map(|vcs| vcs.repository().to_string())
+                .ok_or_join_err::<()>("no repository in manifest")?;
+
+            GitUrl::parse(&url)?
+        }; // HACK: This is a hack to get the URL from the manifest file. We should come up with a better solution.
+
         self.vcs
-            .set(Vcs::new(repository, client))
+            .set(Vcs::new(url, repository, client))
             .map_err(|e| joinerror::Error::new::<()>(e.to_string()))
             .join_err::<()>("failed to set git service")?;
 
@@ -259,7 +260,7 @@ impl<R: AppRuntime> Collection<R> {
 
         let mut output = CollectionDetails {
             name: manifest.name,
-            vcs: None,
+            // vcs: None,
             contributors: vec![], // FIXME: hardcoded for now
             created_at: created_at.to_rfc3339(),
         };

@@ -1,25 +1,38 @@
+use async_trait::async_trait;
 use moss_fs::{FileSystem, RemoveOptions};
-use moss_git::repository::Repository;
-use moss_git_hosting_provider::models::primitives::GitProviderType;
+use moss_git::{models::types::BranchInfo, repository::Repository};
+use moss_git_hosting_provider::{common::GitUrl, models::primitives::GitProviderKind};
 use moss_user::models::primitives::AccountId;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-use crate::git::GitClient;
+use crate::git::{GitClient, OwnerInfo};
 
-pub trait CollectionVcs {
-    fn owner(&self) -> AccountId;
-    fn provider(&self) -> GitProviderType;
+pub struct VcsSummary {
+    pub kind: GitProviderKind,
+    pub branch: BranchInfo,
+    pub url: String,
+    pub updated_at: Option<String>,
+    pub owner: Option<OwnerInfo>,
 }
 
-pub struct Vcs {
+#[async_trait]
+pub trait CollectionVcs {
+    async fn summary(&self) -> joinerror::Result<VcsSummary>;
+    fn owner(&self) -> AccountId;
+    fn provider(&self) -> GitProviderKind;
+}
+
+pub(crate) struct Vcs {
+    url: GitUrl,
     repository: Arc<RwLock<Option<Repository>>>,
     client: GitClient,
 }
 
 impl Vcs {
-    pub(crate) fn new(repository: Repository, client: GitClient) -> Self {
+    pub(crate) fn new(url: GitUrl, repository: Repository, client: GitClient) -> Self {
         Self {
+            url,
             repository: Arc::new(RwLock::new(Some(repository))),
             client,
         }
@@ -63,12 +76,36 @@ impl Vcs {
     }
 }
 
+#[async_trait]
 impl CollectionVcs for Vcs {
+    async fn summary(&self) -> joinerror::Result<VcsSummary> {
+        let repo = self.client.repository(&self.url).await?;
+
+        let repo_lock = self.repository.read().await;
+        let current_branch_name = repo_lock.as_ref().unwrap().current_branch()?;
+        let (ahead, behind) = repo_lock
+            .as_ref()
+            .unwrap()
+            .graph_ahead_behind(&current_branch_name)?;
+
+        Ok(VcsSummary {
+            kind: self.provider(),
+            branch: BranchInfo {
+                name: current_branch_name,
+                ahead: Some(ahead),
+                behind: Some(behind),
+            },
+            url: self.url.to_string(),
+            updated_at: Some(repo.updated_at),
+            owner: Some(repo.owner),
+        })
+    }
+
     fn owner(&self) -> AccountId {
         self.client.owner()
     }
 
-    fn provider(&self) -> GitProviderType {
-        self.client.provider()
+    fn provider(&self) -> GitProviderKind {
+        self.client.kind()
     }
 }

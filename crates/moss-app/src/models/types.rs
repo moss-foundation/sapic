@@ -1,4 +1,4 @@
-use moss_git_hosting_provider::models::primitives::GitProviderType;
+use moss_git_hosting_provider::models::primitives::GitProviderKind;
 use moss_logging::models::primitives::LogEntryId;
 use moss_user::models::primitives::AccountId;
 use serde::{Deserialize, Serialize};
@@ -15,7 +15,7 @@ pub struct AccountInfo {
     pub id: AccountId,
     pub username: String,
     pub host: String,
-    pub provider: GitProviderType,
+    pub provider: GitProviderKind,
 }
 
 // ########################################################

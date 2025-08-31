@@ -1,6 +1,7 @@
 use joinerror::OptionExt;
 use moss_applib::AppRuntime;
-use moss_collection::collection::VcsSummary;
+use moss_git_hosting_provider::models::primitives::GitProviderKind;
+use moss_logging::session;
 
 use crate::{
     Workspace,
@@ -26,35 +27,41 @@ impl<R: AppRuntime> Workspace<R> {
             })?;
 
         let details = collection.details().await?;
+        let vcs = if let Some(vcs) = collection.vcs() {
+            match vcs.summary().await {
+                Ok(summary) => Some(summary),
+                Err(e) => {
+                    session::warn!(format!(
+                        "failed to get VCS summary for collection `{}`: {}",
+                        input.id.as_str(),
+                        e.to_string()
+                    ));
+                    None
+                }
+            }
+        } else {
+            None
+        };
 
-        let vcs = if let Some(vcs) = details.vcs {
-            match vcs {
-                VcsSummary::GitHub {
-                    branch,
-                    url,
-                    updated_at,
-                    owner,
-                } => Some(VcsInfo::GitHub(GitHubVcsInfo {
-                    branch,
-                    url,
-                    updated_at,
-                    owner,
+        let vcs = if let Some(vcs) = vcs {
+            match vcs.kind {
+                GitProviderKind::GitHub => Some(VcsInfo::GitHub(GitHubVcsInfo {
+                    branch: vcs.branch,
+                    url: vcs.url,
+                    updated_at: vcs.updated_at,
+                    owner: vcs.owner.map(|owner| owner.username),
                 })),
-                VcsSummary::GitLab {
-                    branch,
-                    url,
-                    updated_at,
-                    owner,
-                } => Some(VcsInfo::GitLab(GitLabVcsInfo {
-                    branch,
-                    url,
-                    updated_at,
-                    owner,
+                GitProviderKind::GitLab => Some(VcsInfo::GitLab(GitLabVcsInfo {
+                    branch: vcs.branch,
+                    url: vcs.url,
+                    updated_at: vcs.updated_at,
+                    owner: vcs.owner.map(|owner| owner.username),
                 })),
             }
         } else {
             None
         };
+
         Ok(DescribeCollectionOutput {
             name: details.name,
             vcs,

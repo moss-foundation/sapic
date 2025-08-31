@@ -7,7 +7,7 @@ use moss_git::GitAuthAdapter;
 use moss_git_hosting_provider::{
     github::{GitHubApiClient, GitHubAuthAdapter},
     gitlab::{GitLabApiClient, GitLabAuthAdapter},
-    models::primitives::GitProviderType,
+    models::primitives::GitProviderKind,
 };
 use moss_keyring::KeyringClient;
 use moss_user::{
@@ -35,7 +35,7 @@ struct AccountItem {
     id: AccountId,
     username: String,
     host: String,
-    provider: GitProviderType,
+    provider: GitProviderKind,
     // session: AccountSession,
 }
 
@@ -100,14 +100,14 @@ impl ProfileService {
         let mut accounts = HashMap::new();
         for (account_id, account) in p.accounts.iter() {
             let session = match account.provider {
-                GitProviderType::GitHub => AccountSession::github(
+                GitProviderKind::GitHub => AccountSession::github(
                     account.id.clone(),
                     account.host.clone(),
                     secrets.clone(),
                     keyring.clone(),
                     None,
                 )?,
-                GitProviderType::GitLab => AccountSession::gitlab(
+                GitProviderKind::GitLab => AccountSession::gitlab(
                     account.id.clone(),
                     config.gitlab_client_id.clone(),
                     account.host.clone(),
@@ -149,20 +149,20 @@ impl ProfileService {
         &self,
         profile_id: ProfileId,
         host: String,
-        provider: GitProviderType,
+        provider: GitProviderKind,
     ) -> joinerror::Result<AccountId> {
         // TODO: Check if the account already exists
 
         let account_id = AccountId::new();
         let (session, username) = match provider {
-            GitProviderType::GitHub => {
+            GitProviderKind::GitHub => {
                 let session = self.add_github_account(account_id.clone(), &host).await?;
                 let api_client = GitHubApiClient::new(HttpClient::new());
                 let user = api_client.get_user(&session).await?;
 
                 (session, user.login)
             }
-            GitProviderType::GitLab => {
+            GitProviderKind::GitLab => {
                 let session = self.add_gitlab_account(account_id.clone(), &host).await?;
                 let api_client = GitLabApiClient::new(HttpClient::new());
                 let user = api_client.get_user(&session).await?;

@@ -8,16 +8,21 @@ mod window;
 #[macro_use]
 extern crate tracing;
 
-use moss_app::{AppBuilder, builder::BuildAppParams};
+use moss_app::{AppBuilder as TauriAppBuilder, builder::BuildAppParams};
 use moss_applib::{
-    TauriAppRuntime,
+    AppHandle, TauriAppRuntime,
     context::{AnyAsyncContext, AnyContext, MutableContext},
 };
 use moss_fs::RealFileSystem;
+use moss_git_hosting_provider::{github::GitHubApiClient, gitlab::GitLabApiClient};
+use reqwest::ClientBuilder as HttpClientBuilder;
 use std::{path::PathBuf, sync::Arc, time::Duration};
 #[cfg(not(debug_assertions))]
 use tauri::path::BaseDirectory;
-use tauri::{AppHandle, Manager, RunEvent, Runtime as TauriRuntime, WebviewWindow, WindowEvent};
+use tauri::{
+    AppHandle as TauriAppHandle, Manager, RunEvent, Runtime as TauriRuntime, WebviewWindow,
+    WindowEvent,
+};
 use tauri_plugin_os;
 use window::{CreateWindowInput, create_window};
 
@@ -88,7 +93,7 @@ pub async fn run<R: TauriRuntime>() {
                         MutableContext::new_with_timeout(ctx_clone, Duration::from_secs(30))
                             .freeze();
 
-                    let app = AppBuilder::<TauriAppRuntime<R>>::new(app_handle.clone(), fs)
+                    let app = TauriAppBuilder::<TauriAppRuntime<R>>::new(app_handle.clone(), fs)
                         .build(
                             &app_init_ctx,
                             BuildAppParams {
@@ -111,6 +116,24 @@ pub async fn run<R: TauriRuntime>() {
                     ctx.freeze()
                 });
                 app_handle.manage(app);
+                app_handle.manage(AppHandle::<TauriAppRuntime<R>>::new(app_handle.clone()));
+
+                // Registration of global resources that will be accessible
+                // throughout the entire application via the `global` method
+                // of the app's internal handler.
+                {
+                    let http_client = HttpClientBuilder::new()
+                        .user_agent("SAPIC/1.0")
+                        .build()
+                        .expect("failed to build http client");
+
+                    let github_client = GitHubApiClient::new(http_client.clone());
+                    let gitlab_client = GitLabApiClient::new(http_client.clone());
+
+                    app_handle.manage(http_client);
+                    app_handle.manage(github_client);
+                    app_handle.manage(gitlab_client);
+                }
 
                 Ok(())
             })
@@ -198,7 +221,10 @@ pub async fn run<R: TauriRuntime>() {
         });
 }
 
-fn create_main_window<R: TauriRuntime>(app_handle: &AppHandle<R>, url: &str) -> WebviewWindow<R> {
+fn create_main_window<R: TauriRuntime>(
+    app_handle: &TauriAppHandle<R>,
+    url: &str,
+) -> WebviewWindow<R> {
     // TODO: Use ConfigurationService
 
     let window_inner_height = DEFAULT_WINDOW_HEIGHT;

@@ -1,16 +1,9 @@
-use git2::{BranchType, IndexAddOption, Signature};
-use joinerror::{Error, OptionExt, ResultExt};
+use joinerror::ResultExt;
 use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::{AppRuntime, subscription::EventEmitter};
-use moss_fs::{CreateOptions, FileSystem, FsResultExt, RemoveOptions};
-use moss_git::{
-    // repo::{BranchType, IndexAddOption, RepoHandle, Signature},
-    repository::Repository,
-    url::normalize_git_url,
-};
-use moss_git_hosting_provider::{
-    GitAuthProvider, GitHostingProvider, models::primitives::GitProviderType,
-};
+use moss_fs::{CreateOptions, FileSystem};
+use moss_git::{repository::Repository, url::normalize_git_url};
+use moss_git_hosting_provider::models::primitives::GitProviderKind;
 use moss_user::models::primitives::AccountId;
 
 use moss_logging::session;
@@ -74,7 +67,7 @@ pub struct CollectionCreateParams {
 
 #[derive(Clone)]
 pub struct CollectionCreateGitParams {
-    pub git_provider_type: GitProviderType,
+    pub git_provider_type: GitProviderKind,
     pub repository: String,
     pub branch: String,
 }
@@ -90,7 +83,7 @@ pub struct CollectionCloneParams {
 }
 
 pub struct CollectionCloneGitParams {
-    pub git_provider_type: GitProviderType,
+    pub git_provider_type: GitProviderKind,
     pub repository: String,
     pub branch: Option<String>,
 }
@@ -131,11 +124,7 @@ impl<R: AppRuntime> CollectionBuilder<R> {
     //     }
     // }
 
-    pub async fn load(
-        self,
-        git_client: Option<GitClient>,
-        params: CollectionLoadParams,
-    ) -> joinerror::Result<Collection<R>> {
+    pub async fn load(self, params: CollectionLoadParams) -> joinerror::Result<Collection<R>> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
         let storage_service: Arc<StorageService<R>> =
@@ -162,21 +151,21 @@ impl<R: AppRuntime> CollectionBuilder<R> {
             params.internal_abs_path.join(MANIFEST_FILE_NAME),
         );
 
-        // FIXME: This logic needs to be updated when we implement support for external collections
-        // Since the repo should be at the external_abs_path
-        let manifest_path = params.internal_abs_path.join(MANIFEST_FILE_NAME);
+        // // FIXME: This logic needs to be updated when we implement support for external collections
+        // // Since the repo should be at the external_abs_path
+        // let manifest_path = params.internal_abs_path.join(MANIFEST_FILE_NAME);
 
-        let rdr = self
-            .fs
-            .open_file(&manifest_path)
-            .await
-            .join_err_with::<()>(|| {
-                format!("failed to open manifest file: {}", manifest_path.display())
-            })?;
+        // let rdr = self
+        //     .fs
+        //     .open_file(&manifest_path)
+        //     .await
+        //     .join_err_with::<()>(|| {
+        //         format!("failed to open manifest file: {}", manifest_path.display())
+        //     })?;
 
-        let manifest: ManifestFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
-            format!("failed to parse manifest file: {}", manifest_path.display())
-        })?;
+        // let manifest: ManifestFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
+        //     format!("failed to parse manifest file: {}", manifest_path.display())
+        // })?;
 
         // let vcs_service = if let Some(git_client) = git_client {
         //     let repository = self
@@ -287,10 +276,10 @@ impl<R: AppRuntime> CollectionBuilder<R> {
         let vcs = params.git_params.as_ref().and_then(|p| {
             match normalize_git_url(&p.repository) {
                 Ok(normalized_repository) => match p.git_provider_type {
-                    GitProviderType::GitHub => Some(ManifestVcs::GitHub {
+                    GitProviderKind::GitHub => Some(ManifestVcs::GitHub {
                         repository: normalized_repository,
                     }),
-                    GitProviderType::GitLab => Some(ManifestVcs::GitLab {
+                    GitProviderKind::GitLab => Some(ManifestVcs::GitLab {
                         repository: normalized_repository,
                     }),
                 },
@@ -328,7 +317,6 @@ impl<R: AppRuntime> CollectionBuilder<R> {
             .create_file_with(
                 &params.internal_abs_path.join(CONFIG_FILE_NAME),
                 serde_json::to_string(&ConfigFile {
-                    account_id: None,
                     external_path: params.external_abs_path.map(|p| p.to_path_buf()),
                 })?
                 .as_bytes(),
@@ -434,7 +422,6 @@ impl<R: AppRuntime> CollectionBuilder<R> {
             .create_file_with(
                 &abs_path.join(CONFIG_FILE_NAME),
                 serde_json::to_string(&ConfigFile {
-                    account_id: Some(params.account_id),
                     external_path: None,
                 })?
                 .as_bytes(),
@@ -462,254 +449,254 @@ impl<R: AppRuntime> CollectionBuilder<R> {
 }
 
 impl<R: AppRuntime> CollectionBuilder<R> {
-    async fn load_repo_handle(
-        &self,
-        git_provider_type: Option<GitProviderType>,
-        abs_path: Arc<Path>,
-    ) -> Option<Repository> {
-        // let github_client_clone = self.github_client.clone();
-        // let gitlab_client_clone = self.gitlab_client.clone();
+    // async fn load_repo_handle(
+    //     &self,
+    //     git_provider_type: Option<GitProviderKind>,
+    //     abs_path: Arc<Path>,
+    // ) -> Option<Repository> {
+    //     // let github_client_clone = self.github_client.clone();
+    //     // let gitlab_client_clone = self.gitlab_client.clone();
 
-        // let join = tokio::task::spawn_blocking(move || {
-        //     let auth_agent = match git_provider_type {
-        //         None => {
-        //             return Err(joinerror::Error::new::<()>(
-        //                 "no git provider type provided for reloading a repo",
-        //             ));
-        //         }
-        //         Some(GitProviderType::GitHub) => github_client_clone.git_auth_agent(),
-        //         Some(GitProviderType::GitLab) => gitlab_client_clone.git_auth_agent(),
-        //     };
-        //     Ok(RepoHandle::open(abs_path.as_ref(), auth_agent)?)
-        // })
-        // .await;
+    //     // let join = tokio::task::spawn_blocking(move || {
+    //     //     let auth_agent = match git_provider_type {
+    //     //         None => {
+    //     //             return Err(joinerror::Error::new::<()>(
+    //     //                 "no git provider type provided for reloading a repo",
+    //     //             ));
+    //     //         }
+    //     //         Some(GitProviderType::GitHub) => github_client_clone.git_auth_agent(),
+    //     //         Some(GitProviderType::GitLab) => gitlab_client_clone.git_auth_agent(),
+    //     //     };
+    //     //     Ok(RepoHandle::open(abs_path.as_ref(), auth_agent)?)
+    //     // })
+    //     // .await;
 
-        // match join {
-        //     Ok(Ok(repo_handle)) => Some(repo_handle),
-        //     Ok(Err(err)) => {
-        //         // TODO: log the error
-        //         println!("failed to open local repo: {}", err.to_string());
-        //         None
-        //     }
-        //     Err(err) => {
-        //         // TODO: log the error
-        //         println!("failed to open local repo: {}", err.to_string());
-        //         None
-        //     }
-        // }
+    //     // match join {
+    //     //     Ok(Ok(repo_handle)) => Some(repo_handle),
+    //     //     Ok(Err(err)) => {
+    //     //         // TODO: log the error
+    //     //         println!("failed to open local repo: {}", err.to_string());
+    //     //         None
+    //     //     }
+    //     //     Err(err) => {
+    //     //         // TODO: log the error
+    //     //         println!("failed to open local repo: {}", err.to_string());
+    //     //         None
+    //     //     }
+    //     // }
 
-        // Ok(Repository::open(abs_path.as_ref())?)
+    //     // Ok(Repository::open(abs_path.as_ref())?)
 
-        // TODO: helper function should not decide whether to return a repo handle or a repository
-        // It should be the responsibility of the caller to decide what to do with the result
-        match Repository::open(abs_path.as_ref()) {
-            Ok(repo) => Some(repo),
-            Err(err) => {
-                // TODO: log the error
-                println!("failed to open local repo: {}", err.to_string());
-                None
-            }
-        }
-    }
+    //     // TODO: helper function should not decide whether to return a repo handle or a repository
+    //     // It should be the responsibility of the caller to decide what to do with the result
+    //     match Repository::open(abs_path.as_ref()) {
+    //         Ok(repo) => Some(repo),
+    //         Err(err) => {
+    //             // TODO: log the error
+    //             println!("failed to open local repo: {}", err.to_string());
+    //             None
+    //         }
+    //     }
+    // }
 
-    async fn create_repo_handle(
-        &self,
-        git_client: &GitClient,
-        git_provider_type: GitProviderType,
-        abs_path: Arc<Path>,
-        repo_url: String,
-        default_branch: String,
-    ) -> joinerror::Result<Repository> {
-        // let github_client_clone = self.github_client.clone();
-        // let gitlab_client_clone = self.gitlab_client.clone();
-        let abs_path_clone = abs_path.clone();
+    // async fn create_repo_handle(
+    //     &self,
+    //     git_client: &GitClient,
+    //     git_provider_type: GitProviderKind,
+    //     abs_path: Arc<Path>,
+    //     repo_url: String,
+    //     default_branch: String,
+    // ) -> joinerror::Result<Repository> {
+    //     // let github_client_clone = self.github_client.clone();
+    //     // let gitlab_client_clone = self.gitlab_client.clone();
+    //     let abs_path_clone = abs_path.clone();
 
-        // let user_info = match git_provider_type {
-        //     GitProviderType::GitHub => github_client_clone.current_user().await?,
-        //     GitProviderType::GitLab => gitlab_client_clone.current_user().await?,
-        // };
+    //     // let user_info = match git_provider_type {
+    //     //     GitProviderType::GitHub => github_client_clone.current_user().await?,
+    //     //     GitProviderType::GitLab => gitlab_client_clone.current_user().await?,
+    //     // };
 
-        // let result = tokio::task::spawn_blocking(move || {
-        //     let auth_agent = match git_provider_type {
-        //         GitProviderType::GitHub => github_client_clone.git_auth_agent(),
-        //         GitProviderType::GitLab => gitlab_client_clone.git_auth_agent(),
-        //     };
+    //     // let result = tokio::task::spawn_blocking(move || {
+    //     //     let auth_agent = match git_provider_type {
+    //     //         GitProviderType::GitHub => github_client_clone.git_auth_agent(),
+    //     //         GitProviderType::GitLab => gitlab_client_clone.git_auth_agent(),
+    //     //     };
 
-        //     // git init
-        //     // Note: This will not create a default branch
-        //     let repo_handle = RepoHandle::init(abs_path_clone.as_ref(), auth_agent)?;
+    //     //     // git init
+    //     //     // Note: This will not create a default branch
+    //     //     let repo_handle = RepoHandle::init(abs_path_clone.as_ref(), auth_agent)?;
 
-        //     // git remote add origin {repository_url}
-        //     repo_handle.add_remote(None, &repo_url)?;
+    //     //     // git remote add origin {repository_url}
+    //     //     repo_handle.add_remote(None, &repo_url)?;
 
-        //     // git fetch
-        //     repo_handle.fetch(None)?;
+    //     //     // git fetch
+    //     //     repo_handle.fetch(None)?;
 
-        //     // Check remote branches
-        //     // git branch -r
-        //     let remote_branches = repo_handle.list_branches(Some(BranchType::Remote))?;
+    //     //     // Check remote branches
+    //     //     // git branch -r
+    //     //     let remote_branches = repo_handle.list_branches(Some(BranchType::Remote))?;
 
-        //     // We will push a default branch to the remote, if no remote branches exist
-        //     // TODO: Support connecting with a remote repo that already has branches?
-        //     if !remote_branches.is_empty() {
-        //         return Err(Error::new::<()>(
-        //             "connecting with a non-empty repo is unimplemented",
-        //         ));
-        //     }
+    //     //     // We will push a default branch to the remote, if no remote branches exist
+    //     //     // TODO: Support connecting with a remote repo that already has branches?
+    //     //     if !remote_branches.is_empty() {
+    //     //         return Err(Error::new::<()>(
+    //     //             "connecting with a non-empty repo is unimplemented",
+    //     //         ));
+    //     //     }
 
-        //     // git add .
-        //     repo_handle.add(["."].iter(), IndexAddOption::DEFAULT)?;
+    //     //     // git add .
+    //     //     repo_handle.add(["."].iter(), IndexAddOption::DEFAULT)?;
 
-        //     // git commit
-        //     // This will create a default branch
-        //     let author = Signature::now(&user_info.name, &user_info.email).map_err(|e| {
-        //         joinerror::Error::new::<()>(format!(
-        //             "failed to generate commit signature: {}",
-        //             e.to_string()
-        //         ))
-        //     })?;
-        //     repo_handle.commit("Initial Commit", author)?;
+    //     //     // git commit
+    //     //     // This will create a default branch
+    //     //     let author = Signature::now(&user_info.name, &user_info.email).map_err(|e| {
+    //     //         joinerror::Error::new::<()>(format!(
+    //     //             "failed to generate commit signature: {}",
+    //     //             e.to_string()
+    //     //         ))
+    //     //     })?;
+    //     //     repo_handle.commit("Initial Commit", author)?;
 
-        //     // git branch -m {old_default_branch_name} {default_branch_name}
-        //     let old_default_branch_name = repo_handle
-        //         .list_branches(Some(BranchType::Local))?
-        //         .first()
-        //         .cloned()
-        //         .ok_or_join_err::<()>("no local branch exists")?;
-        //     repo_handle.rename_branch(&old_default_branch_name, &default_branch, false)?;
+    //     //     // git branch -m {old_default_branch_name} {default_branch_name}
+    //     //     let old_default_branch_name = repo_handle
+    //     //         .list_branches(Some(BranchType::Local))?
+    //     //         .first()
+    //     //         .cloned()
+    //     //         .ok_or_join_err::<()>("no local branch exists")?;
+    //     //     repo_handle.rename_branch(&old_default_branch_name, &default_branch, false)?;
 
-        //     // Don't push during integration tests
-        //     // git push
-        //     #[cfg(not(any(test, feature = "integration-tests")))]
-        //     repo_handle.push(None, Some(&default_branch), Some(&default_branch), true)?;
+    //     //     // Don't push during integration tests
+    //     //     // git push
+    //     //     #[cfg(not(any(test, feature = "integration-tests")))]
+    //     //     repo_handle.push(None, Some(&default_branch), Some(&default_branch), true)?;
 
-        //     Ok(repo_handle)
-        // })
-        // .await;
+    //     //     Ok(repo_handle)
+    //     // })
+    //     // .await;
 
-        // // If the repo operations fail, we want to clean up the .git folder
-        // // So that the next time we can re-start git operations in a clean state
-        // match result {
-        //     Ok(Ok(repo_handle)) => Ok(repo_handle),
-        //     Ok(Err(err)) => {
-        //         self.fs
-        //             .remove_dir(
-        //                 &abs_path.join(".git"),
-        //                 RemoveOptions {
-        //                     recursive: true,
-        //                     ignore_if_not_exists: true,
-        //                 },
-        //             )
-        //             .await?;
-        //         Err(err.join::<()>("failed to complete git operations"))
-        //     }
-        //     Err(err) => {
-        //         self.fs
-        //             .remove_dir(
-        //                 &abs_path.join(".git"),
-        //                 RemoveOptions {
-        //                     recursive: true,
-        //                     ignore_if_not_exists: true,
-        //                 },
-        //             )
-        //             .await?;
-        //         Err(Error::from(err).join::<()>("failed to complete git operations"))
-        //     }
-        // }
+    //     // // If the repo operations fail, we want to clean up the .git folder
+    //     // // So that the next time we can re-start git operations in a clean state
+    //     // match result {
+    //     //     Ok(Ok(repo_handle)) => Ok(repo_handle),
+    //     //     Ok(Err(err)) => {
+    //     //         self.fs
+    //     //             .remove_dir(
+    //     //                 &abs_path.join(".git"),
+    //     //                 RemoveOptions {
+    //     //                     recursive: true,
+    //     //                     ignore_if_not_exists: true,
+    //     //                 },
+    //     //             )
+    //     //             .await?;
+    //     //         Err(err.join::<()>("failed to complete git operations"))
+    //     //     }
+    //     //     Err(err) => {
+    //     //         self.fs
+    //     //             .remove_dir(
+    //     //                 &abs_path.join(".git"),
+    //     //                 RemoveOptions {
+    //     //                     recursive: true,
+    //     //                     ignore_if_not_exists: true,
+    //     //                 },
+    //     //             )
+    //     //             .await?;
+    //     //         Err(Error::from(err).join::<()>("failed to complete git operations"))
+    //     //     }
+    //     // }
 
-        let (access_token, username) = match git_client {
-            GitClient::GitHub { account, .. } => {
-                (account.session().access_token().await?, account.username())
-            }
-            GitClient::GitLab { account, .. } => {
-                (account.session().access_token().await?, account.username())
-            }
-        };
-        let mut cb = git2::RemoteCallbacks::new();
-        let username_clone = username.clone();
-        let access_token_clone = access_token.clone();
-        cb.credentials(move |_url, username_from_url, _allowed| {
-            // let rt = tokio::runtime::Handle::try_current();
-            // let fut = self.session_for_remote(ws, repo_root, remote_name);
-            // let (acc, tok) = match rt {
-            //     Ok(h) => h.block_on(fut),
-            //     Err(_) => tokio::runtime::Runtime::new().unwrap().block_on(fut),
-            // }
-            // .map_err(|e| git2::Error::from_str(&format!("auth error: {e}")))?;
-            // let user = username_from_url.unwrap_or(&acc.login);
+    //     let (access_token, username) = match git_client {
+    //         GitClient::GitHub { account, .. } => {
+    //             (account.session().access_token().await?, account.username())
+    //         }
+    //         GitClient::GitLab { account, .. } => {
+    //             (account.session().access_token().await?, account.username())
+    //         }
+    //     };
+    //     let mut cb = git2::RemoteCallbacks::new();
+    //     let username_clone = username.clone();
+    //     let access_token_clone = access_token.clone();
+    //     cb.credentials(move |_url, username_from_url, _allowed| {
+    //         // let rt = tokio::runtime::Handle::try_current();
+    //         // let fut = self.session_for_remote(ws, repo_root, remote_name);
+    //         // let (acc, tok) = match rt {
+    //         //     Ok(h) => h.block_on(fut),
+    //         //     Err(_) => tokio::runtime::Runtime::new().unwrap().block_on(fut),
+    //         // }
+    //         // .map_err(|e| git2::Error::from_str(&format!("auth error: {e}")))?;
+    //         // let user = username_from_url.unwrap_or(&acc.login);
 
-            git2::Cred::userpass_plaintext(
-                username_from_url.unwrap_or(&username_clone),
-                &access_token_clone,
-            )
-        });
+    //         git2::Cred::userpass_plaintext(
+    //             username_from_url.unwrap_or(&username_clone),
+    //             &access_token_clone,
+    //         )
+    //     });
 
-        let repository = Repository::init(abs_path_clone.as_ref())?;
-        repository.add_remote(None, &repo_url)?;
-        repository.fetch(None, cb)?;
+    //     let repository = Repository::init(abs_path_clone.as_ref())?;
+    //     repository.add_remote(None, &repo_url)?;
+    //     repository.fetch(None, cb)?;
 
-        let remote_branches = repository.list_branches(Some(BranchType::Remote))?;
+    //     let remote_branches = repository.list_branches(Some(BranchType::Remote))?;
 
-        // We will push a default branch to the remote, if no remote branches exist
-        // TODO: Support connecting with a remote repo that already has branches?
-        if !remote_branches.is_empty() {
-            return Err(Error::new::<()>(
-                "connecting with a non-empty repo is unimplemented",
-            ));
-        }
+    //     // We will push a default branch to the remote, if no remote branches exist
+    //     // TODO: Support connecting with a remote repo that already has branches?
+    //     if !remote_branches.is_empty() {
+    //         return Err(Error::new::<()>(
+    //             "connecting with a non-empty repo is unimplemented",
+    //         ));
+    //     }
 
-        repository.add_all(["."].iter(), IndexAddOption::DEFAULT)?;
-        let author = Signature::now(
-            &username,
-            // FIXME: This is a temporary solution to avoid the error
-            format!("{}@git.noreply.com", username).as_str(),
-        )
-        .map_err(|e| {
-            joinerror::Error::new::<()>(format!(
-                "failed to generate commit signature: {}",
-                e.to_string()
-            ))
-        })?;
-        repository.commit("Initial Commit", author)?;
+    //     repository.add_all(["."].iter(), IndexAddOption::DEFAULT)?;
+    //     let author = Signature::now(
+    //         &username,
+    //         // FIXME: This is a temporary solution to avoid the error
+    //         format!("{}@git.noreply.com", username).as_str(),
+    //     )
+    //     .map_err(|e| {
+    //         joinerror::Error::new::<()>(format!(
+    //             "failed to generate commit signature: {}",
+    //             e.to_string()
+    //         ))
+    //     })?;
+    //     repository.commit("Initial Commit", author)?;
 
-        let old_default_branch_name = repository
-            .list_branches(Some(BranchType::Local))?
-            .first()
-            .cloned()
-            .ok_or_join_err::<()>("no local branch exists")?;
-        repository.rename_branch(&old_default_branch_name, &default_branch, false)?;
+    //     let old_default_branch_name = repository
+    //         .list_branches(Some(BranchType::Local))?
+    //         .first()
+    //         .cloned()
+    //         .ok_or_join_err::<()>("no local branch exists")?;
+    //     repository.rename_branch(&old_default_branch_name, &default_branch, false)?;
 
-        // Don't push during integration tests
-        // git push
-        #[cfg(not(any(test, feature = "integration-tests")))]
-        {
-            let mut cb = git2::RemoteCallbacks::new();
-            let username_clone = username.clone();
-            cb.credentials(move |_url, username_from_url, _allowed| {
-                // let rt = tokio::runtime::Handle::try_current();
-                // let fut = self.session_for_remote(ws, repo_root, remote_name);
-                // let (acc, tok) = match rt {
-                //     Ok(h) => h.block_on(fut),
-                //     Err(_) => tokio::runtime::Runtime::new().unwrap().block_on(fut),
-                // }
-                // .map_err(|e| git2::Error::from_str(&format!("auth error: {e}")))?;
-                // let user = username_from_url.unwrap_or(&acc.login);
+    //     // Don't push during integration tests
+    //     // git push
+    //     #[cfg(not(any(test, feature = "integration-tests")))]
+    //     {
+    //         let mut cb = git2::RemoteCallbacks::new();
+    //         let username_clone = username.clone();
+    //         cb.credentials(move |_url, username_from_url, _allowed| {
+    //             // let rt = tokio::runtime::Handle::try_current();
+    //             // let fut = self.session_for_remote(ws, repo_root, remote_name);
+    //             // let (acc, tok) = match rt {
+    //             //     Ok(h) => h.block_on(fut),
+    //             //     Err(_) => tokio::runtime::Runtime::new().unwrap().block_on(fut),
+    //             // }
+    //             // .map_err(|e| git2::Error::from_str(&format!("auth error: {e}")))?;
+    //             // let user = username_from_url.unwrap_or(&acc.login);
 
-                git2::Cred::userpass_plaintext(
-                    username_from_url.unwrap_or(&username_clone),
-                    &access_token,
-                )
-            });
-            repository.push(None, Some(&default_branch), Some(&default_branch), true, cb)?;
-        }
+    //             git2::Cred::userpass_plaintext(
+    //                 username_from_url.unwrap_or(&username_clone),
+    //                 &access_token,
+    //             )
+    //         });
+    //         repository.push(None, Some(&default_branch), Some(&default_branch), true, cb)?;
+    //     }
 
-        Ok(repository)
-    }
+    //     Ok(repository)
+    // }
 
     async fn do_clone(
         &self,
         git_client: &GitClient,
-        git_provider_type: GitProviderType,
+        git_provider_type: GitProviderKind,
         abs_path: Arc<Path>,
         repo_url: String,
         branch: Option<String>,
@@ -758,15 +745,6 @@ impl<R: AppRuntime> CollectionBuilder<R> {
         };
         let mut cb = git2::RemoteCallbacks::new();
         cb.credentials(move |_url, username_from_url, _allowed| {
-            // let rt = tokio::runtime::Handle::try_current();
-            // let fut = self.session_for_remote(ws, repo_root, remote_name);
-            // let (acc, tok) = match rt {
-            //     Ok(h) => h.block_on(fut),
-            //     Err(_) => tokio::runtime::Runtime::new().unwrap().block_on(fut),
-            // }
-            // .map_err(|e| git2::Error::from_str(&format!("auth error: {e}")))?;
-            // let user = username_from_url.unwrap_or(&acc.login);
-
             git2::Cred::userpass_plaintext(username_from_url.unwrap_or(&username), &access_token)
         });
 

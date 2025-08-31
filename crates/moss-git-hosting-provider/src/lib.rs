@@ -3,35 +3,35 @@ pub mod github;
 pub mod gitlab;
 pub mod models;
 
-use async_trait::async_trait;
-use moss_git::GitAuthAgent;
-use moss_keyring::KeyringClient;
-use oauth2::{ClientId, ClientSecret};
-use std::sync::Arc;
-use url::Url;
+// use async_trait::async_trait;
+// use moss_git::GitAuthAgent;
+// use moss_keyring::KeyringClient;
+// use oauth2::{ClientId, ClientSecret};
+// use std::sync::Arc;
+// use url::Url;
 
-use crate::{
-    common::GitUrl,
-    models::types::{Contributor, RepositoryMetadata, UserInfo},
-};
+// use crate::{
+//     common::GitUrl,
+//     models::types::{Contributor, RepositoryMetadata, UserInfo},
+// };
 
-#[async_trait]
-pub trait GitHostingProvider: GitAuthProvider + Send + Sync {
-    fn name(&self) -> String;
-    fn base_url(&self) -> Url;
+// #[async_trait]
+// pub trait GitHostingProvider: GitAuthProvider + Send + Sync {
+//     fn name(&self) -> String;
+//     fn base_url(&self) -> Url;
 
-    // FIXME: Where's the best place to put Provider REST APIs?
-    async fn current_user(&self) -> joinerror::Result<UserInfo>;
+//     // FIXME: Where's the best place to put Provider REST APIs?
+//     async fn current_user(&self) -> joinerror::Result<UserInfo>;
 
-    async fn contributors(&self, repo_ref: &GitUrl) -> joinerror::Result<Vec<Contributor>>;
+//     async fn contributors(&self, repo_ref: &GitUrl) -> joinerror::Result<Vec<Contributor>>;
 
-    async fn repository_metadata(&self, repo_ref: &GitUrl)
-    -> joinerror::Result<RepositoryMetadata>;
-}
+//     async fn repository_metadata(&self, repo_ref: &GitUrl)
+//     -> joinerror::Result<RepositoryMetadata>;
+// }
 
-pub trait GitAuthProvider {
-    fn git_auth_agent(&self) -> Arc<dyn GitAuthAgent>;
-}
+// pub trait GitAuthProvider {
+//     fn git_auth_agent(&self) -> Arc<dyn GitAuthAgent>;
+// }
 
 pub(crate) mod constants {
     pub const GITHUB_API_URL: &'static str = "https://api.github.com";

@@ -129,10 +129,7 @@ fn token_url(host: &str) -> String {
     format!("https://{host}/login/oauth/access_token")
 }
 
-// const AUTH_URL: &str = "https://github.com/login/oauth/authorize";
-// const TOKEN_URL: &str = "https://github.com/login/oauth/access_token";
 const GITHUB_SCOPES: [&'static str; 3] = ["repo", "user:email", "read:user"];
-const KEYRING_SECRET_KEY: &str = "github_auth_agent";
 
 pub struct GitHubAuthAdapter {}
 

@@ -1,5 +1,5 @@
-use moss_git_hosting_provider::{GitHostingProvider, common::GitUrl, models::types::Contributor};
-use std::sync::Arc;
+// use moss_git_hosting_provider::{GitHostingProvider, common::GitUrl, models::types::Contributor};
+// use std::sync::Arc;
 
 // pub(crate) async fn fetch_contributors(
 //     repo_ref: &GitUrl,
