@@ -1,9 +1,8 @@
-use proc_macro::{Span, TokenStream};
+use proc_macro::TokenStream;
 use quote::{ToTokens, quote};
 use std::path::PathBuf;
 use syn::{
-    Attribute, ItemConst, Lit, LitStr, Meta, meta::ParseNestedMeta, parse_macro_input,
-    spanned::Spanned,
+    Attribute, ItemConst, LitStr, meta::ParseNestedMeta, parse_macro_input, spanned::Spanned,
 };
 
 /// Extract doc comments from attributes and return a formatted JSDoc block as LitStr.
