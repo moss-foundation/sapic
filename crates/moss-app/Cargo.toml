@@ -18,7 +18,7 @@ moss_git_hosting_provider.workspace = true
 moss_keyring.workspace = true
 moss_logging.workspace = true
 moss_id_macro.workspace = true
-const_export.workspace = true
+moss_bindingutils.workspace = true
 
 joinerror.workspace = true
 futures.workspace = true

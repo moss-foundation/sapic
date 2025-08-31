@@ -8,7 +8,7 @@ anyhow.workspace = true
 serde.workspace = true
 tauri.workspace = true
 ts-rs.workspace = true
-const_export.workspace = true
+moss_bindingutils.workspace = true
 
 [features]
 integration-tests = []

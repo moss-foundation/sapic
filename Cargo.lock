@@ -1055,7 +1055,6 @@ dependencies = [
 name = "const_export"
 version = "0.1.0"
 dependencies = [
- "proc-macro2",
  "quote",
  "syn 2.0.106",
 ]
@@ -3473,7 +3472,7 @@ name = "moss_activity_broadcaster"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "const_export",
+ "moss_bindingutils",
  "serde",
  "tauri",
  "ts-rs",
@@ -3502,7 +3501,6 @@ dependencies = [
  "anyhow",
  "async-trait",
  "chrono",
- "const_export",
  "derive_more 2.0.1",
  "dotenv",
  "futures",
@@ -3510,6 +3508,7 @@ dependencies = [
  "moss_activity_broadcaster",
  "moss_api",
  "moss_applib",
+ "moss_bindingutils",
  "moss_common",
  "moss_db",
  "moss_environment",
@@ -3559,6 +3558,7 @@ dependencies = [
 name = "moss_bindingutils"
 version = "0.1.0"
 dependencies = [
+ "const_export",
  "serde",
  "serde_json",
  "ts-rs",
@@ -3836,7 +3836,6 @@ dependencies = [
  "anyhow",
  "async-stream",
  "async-trait",
- "const_export",
  "derive_more 2.0.1",
  "dotenv",
  "futures",

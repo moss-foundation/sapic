@@ -12,7 +12,7 @@ use moss_environment::AnyEnvironment;
 pub use workspace::Workspace;
 
 pub mod constants {
-    use const_export::const_export;
+    use moss_bindingutils::const_export;
 
     #[const_export]
     pub const TREE_VIEW_GROUP_COLLECTIONS: &str = "workbench.view.collections";

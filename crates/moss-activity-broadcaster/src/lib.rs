@@ -13,7 +13,7 @@ use tauri::{AppHandle, Emitter, Runtime as TauriRuntime};
 use crate::models::primitives::Location;
 
 pub(crate) mod constants {
-    use const_export::const_export;
+    use moss_bindingutils::const_export;
 
     #[const_export]
     pub(crate) const CHANNEL: &str = "app://activity";

@@ -36,7 +36,7 @@ impl<R: AppRuntime> ActiveWorkspace<R> {
 }
 
 pub mod constants {
-    use const_export::const_export;
+    use moss_bindingutils::const_export;
 
     #[const_export]
     pub const LOGGING_SERVICE_CHANNEL: &'static str = "logging";
