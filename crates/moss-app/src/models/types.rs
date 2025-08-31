@@ -1,4 +1,3 @@
-use moss_git_hosting_provider::models::primitives::GitProviderKind;
 use moss_logging::models::primitives::LogEntryId;
 use moss_user::models::primitives::AccountId;
 use serde::{Deserialize, Serialize};
@@ -8,14 +7,14 @@ use std::{
 };
 use ts_rs::TS;
 
-use crate::models::primitives::{LocaleId, LogLevel, ThemeId, ThemeMode, WorkspaceId};
+use crate::models::primitives::*;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AccountInfo {
     pub id: AccountId,
     pub username: String,
     pub host: String,
-    pub provider: GitProviderKind,
+    pub provider: AccountKind,
 }
 
 // ########################################################

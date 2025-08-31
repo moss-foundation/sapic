@@ -304,3 +304,12 @@ pub struct GitLabVcsInfo {
     pub updated_at: Option<String>,
     pub owner: Option<String>,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct Contributor {
+    pub name: String,
+    pub avatar_url: Option<String>,
+}

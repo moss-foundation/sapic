@@ -4,9 +4,9 @@ use moss_common::continue_if_none;
 use moss_fs::{CreateOptions, FileSystem};
 use moss_git::GitAuthAdapter;
 use moss_git_hosting_provider::{
+    GitProviderKind,
     github::{GitHubApiClient, GitHubAuthAdapter},
     gitlab::{GitLabApiClient, GitLabAuthAdapter},
-    models::primitives::GitProviderKind,
 };
 use moss_keyring::KeyringClient;
 use moss_user::{
@@ -18,7 +18,10 @@ use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;
 
-use crate::models::{primitives::ProfileId, types::AccountInfo};
+use crate::models::{
+    primitives::{AccountKind, ProfileId},
+    types::AccountInfo,
+};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct ProfileFile {
@@ -30,7 +33,7 @@ struct AccountItem {
     id: AccountId,
     username: String,
     host: String,
-    provider: GitProviderKind,
+    provider: AccountKind,
 }
 
 struct ProfileItem {
@@ -95,7 +98,7 @@ impl ProfileService {
         let mut accounts = HashMap::new();
         for (account_id, account) in p.accounts.iter() {
             let session = match account.provider {
-                GitProviderKind::GitHub => {
+                AccountKind::GitHub => {
                     AccountSession::github(
                         account.id.clone(),
                         account.host.clone(),
@@ -105,7 +108,7 @@ impl ProfileService {
                     )
                     .await?
                 }
-                GitProviderKind::GitLab => {
+                AccountKind::GitLab => {
                     AccountSession::gitlab(
                         account.id.clone(),
                         config.gitlab_client_id.clone(),
@@ -147,20 +150,20 @@ impl ProfileService {
         &self,
         profile_id: ProfileId,
         host: String,
-        provider: GitProviderKind,
+        provider: AccountKind,
     ) -> joinerror::Result<AccountId> {
         // TODO: Check if the account already exists
 
         let account_id = AccountId::new();
         let (session, username) = match provider {
-            GitProviderKind::GitHub => {
+            AccountKind::GitHub => {
                 let session = self.add_github_account(account_id.clone(), &host).await?;
                 let api_client = GitHubApiClient::new(HttpClient::new());
                 let user = api_client.get_user(&session).await?;
 
                 (session, user.login)
             }
-            GitProviderKind::GitLab => {
+            AccountKind::GitLab => {
                 let session = self.add_gitlab_account(account_id.clone(), &host).await?;
                 let api_client = GitLabApiClient::new(HttpClient::new());
                 let user = api_client.get_user(&session).await?;

@@ -3,8 +3,7 @@ mod types;
 pub use types::*;
 
 use moss_git_hosting_provider::{
-    common::GitUrl, github::GitHubApiClient, gitlab::GitLabApiClient,
-    models::primitives::GitProviderKind,
+    GitProviderKind, common::GitUrl, github::GitHubApiClient, gitlab::GitLabApiClient,
 };
 use moss_user::{AccountSession, account::Account, models::primitives::AccountId};
 
@@ -70,6 +69,37 @@ impl GitClient {
                         username: resp.owner.username,
                     },
                 })
+            }
+        }
+    }
+
+    pub async fn contributors(&self, url: &GitUrl) -> joinerror::Result<Vec<ContributorInfo>> {
+        match self {
+            GitClient::GitHub { account, api } => {
+                let resp = api.get_contributors(account.session(), url).await?;
+
+                let mut result = Vec::with_capacity(resp.items.len());
+                for item in resp.items {
+                    result.push(ContributorInfo {
+                        username: item.login,
+                        avatar_url: Some(item.avatar_url),
+                    });
+                }
+
+                Ok(result)
+            }
+            GitClient::GitLab { account, api } => {
+                let resp = api.get_contributors(account.session(), url).await?;
+
+                let mut result = Vec::with_capacity(resp.items.len());
+                for item in resp.items {
+                    result.push(ContributorInfo {
+                        username: item.name,
+                        avatar_url: None, // FIXME: GitLab does not provide avatar URL when fetching contributors, so we have to fetch it separately
+                    });
+                }
+
+                Ok(result)
             }
         }
     }

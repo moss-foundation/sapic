@@ -2,7 +2,6 @@ use moss_environment::models::{
     primitives::EnvironmentId,
     types::{AddVariableParams, VariableInfo},
 };
-use moss_git_hosting_provider::models::types::Contributor;
 use serde::{Deserialize, Serialize};
 use std::{
     path::{Path, PathBuf},
@@ -11,18 +10,7 @@ use std::{
 use ts_rs::TS;
 use validator::Validate;
 
-use crate::models::{
-    primitives::CollectionId,
-    types::{
-        EditorPartStateInfo, EnvironmentGroup, UpdateCollectionParams,
-        UpdateEnvironmentGroupParams, UpdateEnvironmentParams,
-    },
-};
-
-use super::types::{
-    ActivitybarPartStateInfo, CreateCollectionParams, ImportCollectionParams, PanelPartStateInfo,
-    SidebarPartStateInfo, VcsInfo,
-};
+use crate::models::{primitives::*, types::*};
 
 // ------------------------------ //
 // Collection

@@ -15,3 +15,8 @@ pub struct RepositoryInfo {
     pub updated_at: String,
     pub owner: OwnerInfo,
 }
+
+pub struct ContributorInfo {
+    pub username: String,
+    pub avatar_url: Option<String>,
+}

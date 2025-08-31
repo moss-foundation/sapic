@@ -15,7 +15,6 @@ use crate::{
         GitUrl,
         utils::{create_auth_tcp_listener, receive_auth_code},
     },
-    constants::GITHUB_API_URL,
     github::response::{GetContributorsResponse, GetRepositoryResponse, GetUserResponse},
 };
 
@@ -129,6 +128,7 @@ fn token_url(host: &str) -> String {
     format!("https://{host}/login/oauth/access_token")
 }
 
+const GITHUB_API_URL: &'static str = "https://api.github.com";
 const GITHUB_SCOPES: [&'static str; 3] = ["repo", "user:email", "read:user"];
 
 pub struct GitHubAuthAdapter {}

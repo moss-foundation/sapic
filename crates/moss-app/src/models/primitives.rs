@@ -3,11 +3,20 @@ use serde::{Deserialize, Serialize};
 use tracing::Level;
 use ts_rs::TS;
 
+ids!([WorkspaceId, LocaleId, ThemeId, ProfileId]);
+
 // ########################################################
-// ###                      Id                         ###
+// ###                      Account                     ###
 // ########################################################
 
-ids!([WorkspaceId, LocaleId, ThemeId, ProfileId]);
+/// @category Primitive
+#[derive(Debug, Deserialize, Serialize, Clone, TS)]
+#[serde(rename_all = "UPPERCASE")]
+#[ts(export, export_to = "primitives.ts")]
+pub enum AccountKind {
+    GitHub,
+    GitLab,
+}
 
 // ########################################################
 // ###                      Theme                       ###

@@ -1,12 +1,12 @@
 use async_trait::async_trait;
 use moss_fs::{FileSystem, RemoveOptions};
 use moss_git::{models::types::BranchInfo, repository::Repository};
-use moss_git_hosting_provider::{common::GitUrl, models::primitives::GitProviderKind};
+use moss_git_hosting_provider::{GitProviderKind, common::GitUrl};
 use moss_user::models::primitives::AccountId;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-use crate::git::{GitClient, OwnerInfo};
+use crate::git::{ContributorInfo, GitClient, OwnerInfo};
 
 pub struct VcsSummary {
     pub kind: GitProviderKind,
@@ -17,8 +17,9 @@ pub struct VcsSummary {
 }
 
 #[async_trait]
-pub trait CollectionVcs {
+pub trait CollectionVcs: Send + Sync {
     async fn summary(&self) -> joinerror::Result<VcsSummary>;
+    async fn contributors(&self) -> joinerror::Result<Vec<ContributorInfo>>;
     fn owner(&self) -> AccountId;
     fn provider(&self) -> GitProviderKind;
 }
@@ -107,5 +108,9 @@ impl CollectionVcs for Vcs {
 
     fn provider(&self) -> GitProviderKind {
         self.client.kind()
+    }
+
+    async fn contributors(&self) -> joinerror::Result<Vec<ContributorInfo>> {
+        self.client.contributors(&self.url).await
     }
 }

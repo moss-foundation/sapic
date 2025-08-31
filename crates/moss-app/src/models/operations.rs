@@ -1,5 +1,4 @@
 use derive_more::Deref;
-use moss_git_hosting_provider::models::primitives::GitProviderKind;
 use moss_logging::models::primitives::LogEntryId;
 use moss_workspace::models::primitives::WorkspaceMode;
 use serde::{Deserialize, Serialize};
@@ -8,13 +7,7 @@ use std::{path::Path, sync::Arc};
 use ts_rs::TS;
 use validator::Validate;
 
-use crate::models::{
-    primitives::{LogLevel, ProfileId, ThemeId, WorkspaceId},
-    types::{
-        ColorThemeInfo, Defaults, LocaleInfo, LogDate, LogEntryInfo, LogItemSourceInfo,
-        Preferences, WorkspaceInfo,
-    },
-};
+use crate::models::{primitives::*, types::*};
 
 // #########################################################
 // ###                    Profile                      ###
@@ -37,7 +30,7 @@ pub struct AddAccountInput {
     pub profile_id: ProfileId,
     pub host: String,
     pub label: Option<String>,
-    pub provider: GitProviderKind,
+    pub provider: AccountKind,
 }
 
 /// @category Operation

@@ -1,14 +1,14 @@
 use serde::Deserialize;
 
 #[derive(Clone, Debug, PartialEq, Deserialize)]
-pub struct GetRepositoryResponse {
-    pub owner: Owner,
-    pub updated_at: String,
+pub struct Owner {
+    pub login: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize)]
-pub struct Owner {
-    pub login: String,
+pub struct GetRepositoryResponse {
+    pub owner: Owner,
+    pub updated_at: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize)]

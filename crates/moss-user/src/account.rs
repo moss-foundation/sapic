@@ -41,6 +41,10 @@ impl Account {
     pub fn username(&self) -> String {
         self.username.clone()
     }
+
+    pub fn host(&self) -> String {
+        self.host.clone()
+    }
 }
 
 enum Session {

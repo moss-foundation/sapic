@@ -1,6 +1,6 @@
 use joinerror::OptionExt;
 use moss_applib::{AppHandle, AppRuntime, errors::ValidationResultExt};
-use moss_git_hosting_provider::models::primitives::GitProviderKind;
+use moss_git_hosting_provider::GitProviderKind;
 use validator::Validate;
 
 use crate::{
@@ -10,7 +10,7 @@ use crate::{
         primitives::CollectionId,
         types::ImportCollectionSource,
     },
-    services::collection_service::{CollectionItemCloneParams, CollectionItemGitCloneParams},
+    services::collection_service::CollectionItemCloneParams,
 };
 
 impl<R: AppRuntime> Workspace<R> {
@@ -39,15 +39,11 @@ impl<R: AppRuntime> Workspace<R> {
                     &id,
                     session,
                     CollectionItemCloneParams {
-                        _name: params.name.clone(),
                         order: params.order,
                         account_id: git_params.account_id.to_owned(),
-                        _icon_path: params.icon_path.clone(),
-                        git_params: CollectionItemGitCloneParams {
-                            repository: git_params.repository.clone(),
-                            git_provider_type: GitProviderKind::GitHub,
-                            branch: git_params.branch.clone(),
-                        },
+                        repository: git_params.repository.clone(),
+                        git_provider_type: GitProviderKind::GitHub,
+                        branch: git_params.branch.clone(),
                     },
                 )
             }
@@ -64,15 +60,11 @@ impl<R: AppRuntime> Workspace<R> {
                     &id,
                     session,
                     CollectionItemCloneParams {
-                        _name: params.name.clone(),
                         order: params.order,
                         account_id: git_params.account_id.to_owned(),
-                        _icon_path: params.icon_path.clone(),
-                        git_params: CollectionItemGitCloneParams {
-                            repository: git_params.repository.clone(),
-                            git_provider_type: GitProviderKind::GitLab,
-                            branch: git_params.branch.clone(),
-                        },
+                        repository: git_params.repository.clone(),
+                        git_provider_type: GitProviderKind::GitLab,
+                        branch: git_params.branch.clone(),
                     },
                 )
             } // TODO: Support importing from other apps

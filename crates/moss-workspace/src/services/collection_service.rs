@@ -15,7 +15,7 @@ use moss_collection::{
 use moss_common::continue_if_err;
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
 use moss_git_hosting_provider::{
-    github::GitHubApiClient, gitlab::GitLabApiClient, models::primitives::GitProviderKind,
+    GitProviderKind, github::GitHubApiClient, gitlab::GitLabApiClient,
 };
 use moss_logging::session;
 use moss_user::{account::Account, models::primitives::AccountId, profile::ActiveProfile};
@@ -41,14 +41,8 @@ use crate::{
 };
 
 pub(crate) struct CollectionItemCloneParams {
-    pub _name: String,
     pub order: isize,
-    pub _icon_path: Option<PathBuf>,
     pub account_id: AccountId,
-    pub git_params: CollectionItemGitCloneParams,
-}
-
-pub(crate) struct CollectionItemGitCloneParams {
     pub repository: String,
     pub git_provider_type: GitProviderKind,
     pub branch: Option<String>,
@@ -161,7 +155,7 @@ impl<R: AppRuntime> CollectionService<R> {
         let id_str = id.to_string();
         let abs_path: Arc<Path> = self.abs_path.join(id_str).into();
         if abs_path.exists() {
-            return Err(joinerror::Error::new::<()>(format!(
+            return Err(Error::new::<()>(format!(
                 "collection directory `{}` already exists",
                 abs_path.display()
             )));
@@ -318,7 +312,7 @@ impl<R: AppRuntime> CollectionService<R> {
         let id_str = id.to_string();
         let abs_path: Arc<Path> = self.abs_path.join(id_str).into();
         if abs_path.exists() {
-            return Err(joinerror::Error::new::<()>(format!(
+            return Err(Error::new::<()>(format!(
                 "collection directory `{}` already exists",
                 abs_path.display()
             )));
@@ -331,10 +325,9 @@ impl<R: AppRuntime> CollectionService<R> {
                 format!("failed to create directory `{}`", abs_path.display())
             })?;
 
-        let git_params = &params.git_params;
         let builder = CollectionBuilder::new(self.fs.clone(), self.broadcaster.clone()).await?;
 
-        let git_client = match git_params.git_provider_type {
+        let git_client = match params.git_provider_type {
             GitProviderKind::GitHub => GitClient::GitHub {
                 account: account,
                 api: app_handle.global::<GitHubApiClient>().clone(),
@@ -352,9 +345,9 @@ impl<R: AppRuntime> CollectionService<R> {
                     internal_abs_path: abs_path.clone(),
                     account_id: params.account_id,
                     git_params: CollectionCloneGitParams {
-                        git_provider_type: git_params.git_provider_type.clone(),
-                        repo_url: git_params.repository.clone(),
-                        branch: git_params.branch.clone(),
+                        git_provider_type: params.git_provider_type.clone(),
+                        repo_url: params.repository.clone(),
+                        branch: params.branch.clone(),
                     },
                 },
             )

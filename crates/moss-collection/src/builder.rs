@@ -3,7 +3,7 @@ use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_fs::{CreateOptions, FileSystem};
 use moss_git::{repository::Repository, url::normalize_git_url};
-use moss_git_hosting_provider::{common::GitUrl, models::primitives::GitProviderKind};
+use moss_git_hosting_provider::{GitProviderKind, common::GitUrl};
 use moss_user::models::primitives::AccountId;
 
 use moss_logging::session;
