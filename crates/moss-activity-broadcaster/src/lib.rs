@@ -15,7 +15,7 @@ use crate::models::primitives::Location;
 pub(crate) mod constants {
     use moss_bindingutils::const_export;
 
-    #[const_export]
+    #[const_export(path = "constants.ts")]
     pub(crate) const CHANNEL: &str = "app://activity";
 }
 
