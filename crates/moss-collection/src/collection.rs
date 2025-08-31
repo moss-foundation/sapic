@@ -9,8 +9,10 @@ use moss_applib::{
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_edit::json::EditOptions;
 use moss_fs::{FileSystem, FsResultExt};
-use moss_git::{repository::Repository, url::normalize_git_url};
-use moss_git_hosting_provider::common::GitUrl;
+use moss_git::{
+    repository::Repository,
+    url::{GitUrl, normalize_git_url},
+};
 use serde_json::Value as JsonValue;
 use std::{
     path::{Path, PathBuf},

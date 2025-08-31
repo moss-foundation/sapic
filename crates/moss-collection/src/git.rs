@@ -2,8 +2,9 @@ mod types;
 
 pub use types::*;
 
+use moss_git::url::GitUrl;
 use moss_git_hosting_provider::{
-    GitProviderKind, common::GitUrl, github::GitHubApiClient, gitlab::GitLabApiClient,
+    GitProviderKind, github::GitHubApiClient, gitlab::GitLabApiClient,
 };
 use moss_user::{AccountSession, account::Account, models::primitives::AccountId};
 

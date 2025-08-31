@@ -10,7 +10,13 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::{constants, repo::FileStatus};
+use crate::constants;
+
+pub enum FileStatus {
+    Added,
+    Modified,
+    Deleted,
+}
 
 #[derive(Deref)]
 pub struct Repository {

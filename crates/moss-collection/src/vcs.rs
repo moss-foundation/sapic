@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use moss_fs::{FileSystem, RemoveOptions};
-use moss_git::{models::types::BranchInfo, repository::Repository};
-use moss_git_hosting_provider::{GitProviderKind, common::GitUrl};
+use moss_git::{models::types::BranchInfo, repository::Repository, url::GitUrl};
+use moss_git_hosting_provider::GitProviderKind;
 use moss_user::models::primitives::AccountId;
 use std::sync::Arc;
 use tokio::sync::RwLock;

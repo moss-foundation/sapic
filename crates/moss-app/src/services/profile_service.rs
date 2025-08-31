@@ -2,8 +2,8 @@ use moss_applib::errors::Internal;
 use moss_asp::AppSecretsProvider;
 use moss_common::continue_if_none;
 use moss_fs::{CreateOptions, FileSystem};
-use moss_git::GitAuthAdapter;
 use moss_git_hosting_provider::{
+    GitAuthAdapter,
     github::{GitHubApiClient, GitHubAuthAdapter},
     gitlab::{GitLabApiClient, GitLabAuthAdapter},
 };

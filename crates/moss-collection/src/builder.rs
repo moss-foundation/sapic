@@ -2,11 +2,13 @@ use joinerror::ResultExt;
 use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_fs::{CreateOptions, FileSystem};
-use moss_git::{repository::Repository, url::normalize_git_url};
-use moss_git_hosting_provider::{GitProviderKind, common::GitUrl};
-use moss_user::models::primitives::AccountId;
-
+use moss_git::{
+    repository::Repository,
+    url::{GitUrl, normalize_git_url},
+};
+use moss_git_hosting_provider::GitProviderKind;
 use moss_logging::session;
+use moss_user::models::primitives::AccountId;
 use std::{
     cell::LazyCell,
     path::{Path, PathBuf},

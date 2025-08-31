@@ -3718,7 +3718,6 @@ name = "moss_git"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "async-trait",
  "derive_more 2.0.1",
  "dotenv",
  "git2",

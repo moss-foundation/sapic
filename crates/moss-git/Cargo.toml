@@ -16,7 +16,6 @@ regex.workspace = true
 joinerror.workspace = true
 serde = { workspace = true, features = ["derive"] }
 ts-rs.workspace = true
-async-trait = { workspace = true }
 
 [dev-dependencies]
 nanoid.workspace = true
