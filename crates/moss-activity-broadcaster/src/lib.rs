@@ -19,6 +19,9 @@ pub(crate) mod constants {
     // ###                                                                ###
     // ######################################################################
 
+    use const_export::const_export;
+
+    #[const_export]
     pub(crate) const CHANNEL: &str = "app://activity";
 }
 

@@ -8,6 +8,7 @@ anyhow.workspace = true
 serde.workspace = true
 tauri.workspace = true
 ts-rs.workspace = true
+const_export.workspace = true
 
 [features]
 integration-tests = []
