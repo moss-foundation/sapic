@@ -28,7 +28,7 @@ export const branchInfoSchema = z.object({
 
 export const contributorSchema = z.object({
   name: z.string(),
-  avatar_url: z.string(),
+  avatarUrl: z.string().optional(),
 });
 
 export const gitHubCreateParamsSchema = z.object({

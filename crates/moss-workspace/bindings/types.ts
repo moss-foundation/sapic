@@ -33,10 +33,7 @@ export type AddVariableParams = {
  */
 export type BranchInfo = { name: string; ahead?: number; behind?: number };
 
-/**
- * @category Type
- */
-export type Contributor = { name: string; avatar_url: string };
+export type Contributor = { name: string; avatarUrl?: string };
 
 /**
  * @category Type
