@@ -7,7 +7,7 @@ edition = "2024"
 ts-rs = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
-moss_bindingutils_macros = { path = "moss-bindingutils-macros" }
+moss_bindingutils_macros = { path = "macro" }
 
 [features]
 integration-tests = []
