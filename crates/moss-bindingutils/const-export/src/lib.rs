@@ -22,6 +22,7 @@ pub fn const_export(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let expanded = quote! {
         #const_tokens
 
+        #[allow(non_snake_case)]
         #[cfg(test)]
         #[test]
         fn #test_fn_name() {
@@ -39,7 +40,9 @@ pub fn const_export(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
             let value = #expr;
             // write using debug formatter so strings get quoted
-            let line = format!("export const {} = {:?};\n", stringify!(#ident), value);
+
+
+            let line = format!("/**\n * @category Constant\n */\nexport const {} = {:?};\n", stringify!(#ident), value);
 
             file.write_all(line.as_bytes()).expect("failed to write constant export");
         }

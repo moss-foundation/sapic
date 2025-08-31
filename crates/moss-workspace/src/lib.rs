@@ -12,19 +12,13 @@ use moss_environment::AnyEnvironment;
 pub use workspace::Workspace;
 
 pub mod constants {
+    use const_export::const_export;
 
-    // ######################################################################
-    // ###                                                                ###
-    // ### !!! PLEASE UPDATE THE TYPESCRIPT CONSTANTS IN constants.ts !!! ###
-    // ###                                                                ###
-    // ######################################################################
-
-    // When adding/removing/modifying the TREE_VIEW_GROUP_* constants here,
-    // you must also update the corresponding TypeScript constants
-    // in moss-workspace/index.ts to match your changes.
-
+    #[const_export]
     pub const TREE_VIEW_GROUP_COLLECTIONS: &str = "workbench.view.collections";
+    #[const_export]
     pub const TREE_VIEW_GROUP_ENVIRONMENTS: &str = "workbench.view.environments";
+    #[const_export]
     pub const TREE_VIEW_GROUP_MOCK_SERVERS: &str = "workbench.view.mockServers";
 }
 

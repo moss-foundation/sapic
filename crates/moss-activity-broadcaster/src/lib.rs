@@ -13,12 +13,6 @@ use tauri::{AppHandle, Emitter, Runtime as TauriRuntime};
 use crate::models::primitives::Location;
 
 pub(crate) mod constants {
-    // ######################################################################
-    // ###                                                                ###
-    // ### !!! PLEASE UPDATE THE TYPESCRIPT CONSTANTS IN constants.ts !!! ###
-    // ###                                                                ###
-    // ######################################################################
-
     use const_export::const_export;
 
     #[const_export]
