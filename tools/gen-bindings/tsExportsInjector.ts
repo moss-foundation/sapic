@@ -19,7 +19,6 @@ import { ExportDeclaration, Project, SourceFile } from "ts-morph";
 interface Config {
   readonly targetPath: string;
   readonly indexFileName: string;
-  readonly constantsFileName: string;
   readonly bindingsDirectoryName: string;
   readonly fileExtension: string;
 }
@@ -32,7 +31,6 @@ class TypeScriptExportsInjector {
     this.config = {
       targetPath: resolve(targetPath),
       indexFileName: "index.ts",
-      constantsFileName: "constants",
       bindingsDirectoryName: "bindings",
       fileExtension: ".ts",
     };
@@ -109,24 +107,6 @@ class TypeScriptExportsInjector {
 
     return removedCount;
   }
-  /**
-   * Removes existing constants export from the index file
-   */
-  private removeExistingConstantsExport(indexFile: SourceFile): boolean {
-    const bindingExports = indexFile.getExportDeclarations().filter((decl: ExportDeclaration) => {
-      const moduleSpecifier = decl.getModuleSpecifierValue();
-      return moduleSpecifier?.startsWith(`./${this.config.constantsFileName}`);
-    });
-
-    const removedCount = bindingExports.length;
-    bindingExports.forEach((decl) => decl.remove());
-
-    if (removedCount > 0) {
-      console.log(`🗑️  Removed existing constants export`);
-    }
-
-    return removedCount > 0;
-  }
 
   /**
    * Adds new export declarations for discovered binding files
@@ -143,20 +123,6 @@ class TypeScriptExportsInjector {
 
       console.log(`📤 Added export for: ${moduleName}`);
     });
-  }
-
-  /**
-   * Adds new export declarations for discovered constants file
-   */
-
-  private addNewConstantsExport(indexFile: SourceFile): void {
-    const moduleName = this.config.constantsFileName;
-    const moduleSpecifier = `./${moduleName}`;
-    indexFile.addExportDeclaration({
-      moduleSpecifier,
-    });
-
-    console.log(`📤 Added export for: ${moduleName}`);
   }
 
   /**
@@ -196,12 +162,6 @@ class TypeScriptExportsInjector {
         console.warn("⚠️  No TypeScript binding files found");
       } else {
         this.addNewBindingExports(indexFile, bindingFiles);
-      }
-
-      this.removeExistingConstantsExport(indexFile);
-      const constantsPath = join(this.config.targetPath, this.config.constantsFileName + this.config.fileExtension);
-      if (existsSync(constantsPath)) {
-        this.addNewConstantsExport(indexFile);
       }
 
       this.organizeImportsAndExports(indexFile);

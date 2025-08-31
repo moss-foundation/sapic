@@ -38,7 +38,8 @@ impl<R: AppRuntime> ActiveWorkspace<R> {
 pub mod constants {
     use moss_bindingutils::const_export;
 
-    #[const_export(path = "constants.ts")]
+    /// @category Constant
+    #[const_export(export_to = "constants.ts")]
     pub const LOGGING_SERVICE_CHANNEL: &'static str = "logging";
 }
 

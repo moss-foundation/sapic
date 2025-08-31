@@ -116,7 +116,7 @@ define gen_bindings
 .PHONY: gen-$(1)-bindings
 gen-$(1)-bindings:
 	@echo "Removing old $(1) models"
-	@cd $($(2)) && rm -rf bindings && rm -f constants.ts
+	@cd $($(2)) && rm -rf bindings
 
 	@echo "Generating $(1) models..."
 	@$(CARGO) test --lib export_bindings_ --manifest-path $($(2))/Cargo.toml

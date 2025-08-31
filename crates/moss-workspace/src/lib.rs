@@ -14,11 +14,16 @@ pub use workspace::Workspace;
 pub mod constants {
     use moss_bindingutils::const_export;
 
-    #[const_export(path = "constants.ts")]
+    /// @category Constant
+    #[const_export(export_to = "constants.ts")]
     pub const TREE_VIEW_GROUP_COLLECTIONS: &str = "workbench.view.collections";
-    #[const_export(path = "constants.ts")]
+
+    /// @category Constant
+    #[const_export(export_to = "constants.ts")]
     pub const TREE_VIEW_GROUP_ENVIRONMENTS: &str = "workbench.view.environments";
-    #[const_export(path = "constants.ts")]
+
+    /// @category Constant
+    #[const_export(export_to = "constants.ts")]
     pub const TREE_VIEW_GROUP_MOCK_SERVERS: &str = "workbench.view.mockServers";
 }
 
