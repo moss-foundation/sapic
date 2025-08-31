@@ -225,8 +225,6 @@ fn create_main_window<R: TauriRuntime>(
     app_handle: &TauriAppHandle<R>,
     url: &str,
 ) -> WebviewWindow<R> {
-    // TODO: Use ConfigurationService
-
     let window_inner_height = DEFAULT_WINDOW_HEIGHT;
     let window_inner_width = DEFAULT_WINDOW_WIDTH;
 

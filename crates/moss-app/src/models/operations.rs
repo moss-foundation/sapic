@@ -1,18 +1,20 @@
-use std::{path::Path, sync::Arc};
-
-use super::types::{ColorThemeInfo, Defaults, LocaleInfo, Preferences};
-use crate::models::{
-    primitives::{LogLevel, ProfileId, ThemeId, WorkspaceId},
-    types::{LogDate, LogEntryInfo, LogItemSourceInfo, WorkspaceInfo},
-};
 use derive_more::Deref;
-use moss_git_hosting_provider::models::{primitives::GitProviderKind, types::UserInfo};
+use moss_git_hosting_provider::models::primitives::GitProviderKind;
 use moss_logging::models::primitives::LogEntryId;
 use moss_workspace::models::primitives::WorkspaceMode;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
+use std::{path::Path, sync::Arc};
 use ts_rs::TS;
 use validator::Validate;
+
+use crate::models::{
+    primitives::{LogLevel, ProfileId, ThemeId, WorkspaceId},
+    types::{
+        ColorThemeInfo, Defaults, LocaleInfo, LogDate, LogEntryInfo, LogItemSourceInfo,
+        Preferences, WorkspaceInfo,
+    },
+};
 
 // #########################################################
 // ###                    Profile                      ###
@@ -197,7 +199,6 @@ pub struct ListWorkspacesOutput(pub Vec<WorkspaceInfo>);
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct OpenWorkspaceInput {
-    #[ts(as = "String")]
     pub id: WorkspaceId,
 }
 
@@ -206,7 +207,6 @@ pub struct OpenWorkspaceInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct OpenWorkspaceOutput {
-    #[ts(as = "String")]
     pub id: WorkspaceId,
 
     #[serde(skip)]
@@ -241,7 +241,6 @@ fn default_open_on_creation() -> bool {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateWorkspaceOutput {
-    #[ts(as = "String")]
     pub id: WorkspaceId,
 
     pub active: bool,
@@ -258,7 +257,6 @@ pub struct CreateWorkspaceOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteWorkspaceInput {
-    #[ts(as = "String")]
     pub id: WorkspaceId,
 }
 
@@ -267,7 +265,6 @@ pub struct DeleteWorkspaceInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteWorkspaceOutput {
-    #[ts(as = "String")]
     pub id: WorkspaceId,
 
     #[serde(skip)]
@@ -314,7 +311,6 @@ pub struct DescribeWorkbenchStateOutput {
 pub struct CloseWorkspaceInput {
     /// The workspace id is required to ensure the close function
     /// is only called when a workspace is open.
-    #[ts(as = "String")]
     pub id: WorkspaceId,
 }
 
@@ -324,22 +320,5 @@ pub struct CloseWorkspaceInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct CloseWorkspaceOutput {
     /// The id of the workspace that was closed.
-    #[ts(as = "String")]
     pub id: WorkspaceId,
 }
-
-// /// @category Operation
-// #[derive(Debug, Deserialize, TS)]
-// #[serde(rename_all = "camelCase")]
-// #[ts(export, export_to = "operations.ts")]
-// pub struct AddAccountInput {
-//     pub git_provider_type: GitProviderType,
-// }
-
-// /// @category Operation
-// #[derive(Debug, Serialize, TS)]
-// #[serde(rename_all = "camelCase")]
-// #[ts(export, export_to = "operations.ts")]
-// pub struct AddAccountOutput {
-//     pub user_info: UserInfo,
-// }

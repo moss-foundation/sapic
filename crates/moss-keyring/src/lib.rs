@@ -7,8 +7,9 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
-#[async_trait]
+const SERVICE: &str = "sapic";
 
+#[async_trait]
 pub trait KeyringClient: Send + Sync {
     async fn set_secret(&self, key: &str, secret: &str) -> joinerror::Result<()>;
     async fn get_secret(&self, key: &str) -> joinerror::Result<Vec<u8>>;
@@ -45,9 +46,10 @@ impl KeyringClientImpl {
 #[async_trait]
 impl KeyringClient for KeyringClientImpl {
     async fn set_secret(&self, key: &str, secret: &str) -> joinerror::Result<()> {
+        let key = format!("{}/{}", SERVICE, key);
         session::trace!("Setting secret for key: {}", key);
 
-        Entry::new(key, &self.user)
+        Entry::new(&key, &self.user)
             .map_err(|e| Error::new::<()>(e.to_string()))?
             .set_secret(secret.as_bytes())
             .map_err(|e| Error::new::<()>(e.to_string()))?;
@@ -55,21 +57,23 @@ impl KeyringClient for KeyringClientImpl {
         self.cache
             .write()
             .await
-            .insert(key.to_string(), SecretString::new(secret.to_string()));
+            .insert(key, SecretString::new(secret.to_string()));
 
         Ok(())
     }
 
     async fn get_secret(&self, key: &str) -> joinerror::Result<Vec<u8>> {
+        let key = format!("{}/{}", SERVICE, key);
+
         let cache = self.cache.read().await;
-        if let Some(cached_secret) = cache.get(key) {
+        if let Some(cached_secret) = cache.get(&key) {
             session::trace!("Getting secret for key: {} from cache", key);
 
             Ok(cached_secret.expose().as_bytes().to_vec())
         } else {
             session::trace!("Getting secret for key: {}", key);
 
-            let bytes = Entry::new(key, &self.user)
+            let bytes = Entry::new(&key, &self.user)
                 .map_err(|e| Error::new::<()>(e.to_string()))?
                 .get_secret()
                 .map_err(|e| Error::new::<()>(e.to_string()))?;
@@ -80,21 +84,22 @@ impl KeyringClient for KeyringClientImpl {
             self.cache
                 .write()
                 .await
-                .insert(key.to_string(), SecretString::new(secret_string));
+                .insert(key, SecretString::new(secret_string));
 
             Ok(bytes)
         }
     }
 
     async fn delete_secret(&self, key: &str) -> joinerror::Result<()> {
+        let key = format!("{}/{}", SERVICE, key);
         session::trace!("Deleting secret for key: {}", key);
 
-        Entry::new(key, &self.user)
+        Entry::new(&key, &self.user)
             .map_err(|e| Error::new::<()>(e.to_string()))?
             .delete_credential()
             .map_err(|e| Error::new::<()>(e.to_string()))?;
 
-        self.cache.write().await.remove(key);
+        self.cache.write().await.remove(&key);
 
         Ok(())
     }

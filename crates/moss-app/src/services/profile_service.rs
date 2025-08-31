@@ -34,6 +34,7 @@ struct AccountItem {
 }
 
 struct ProfileItem {
+    #[allow(unused)]
     id: ProfileId,
     accounts: HashMap<AccountId, AccountItem>,
 }
@@ -128,9 +129,6 @@ impl ProfileService {
             );
         }
         let active_profile = ActiveProfile::new(accounts);
-        // let active_profile =
-        //     ActiveProfile::new(profiles.remove(&profiles.keys().next().unwrap()).unwrap());
-
         Ok(Self {
             fs,
             secrets,
@@ -171,33 +169,43 @@ impl ProfileService {
             }
         };
 
-        let account = AccountInfo {
-            id: account_id.clone(),
-            username: username.clone(),
-            host: host.clone(),
-            provider: provider.clone(),
-        };
-
         let mut state_lock = self.state.write().await;
         let profile = state_lock.profiles.get_mut(&profile_id).unwrap();
 
-        let abs_path = self
-            .config
-            .profiles_dir_abs
-            .join(format!("{}.json", profile_id));
-        let rdr = self.fs.open_file(&abs_path).await?;
-        let mut parsed: ProfileFile = serde_json::from_reader(rdr)?;
-        parsed.accounts.push(account.clone());
-        self.fs
-            .create_file_with(
-                &abs_path,
-                serde_json::to_string(&parsed)?.as_bytes(),
-                CreateOptions {
-                    overwrite: true,
-                    ignore_if_exists: false,
-                },
-            )
-            .await?;
+        {
+            let account = AccountInfo {
+                id: account_id.clone(),
+                username: username.clone(),
+                host: host.clone(),
+                provider: provider.clone(),
+            };
+            let abs_path = self
+                .config
+                .profiles_dir_abs
+                .join(format!("{}.json", profile_id));
+            let rdr = self.fs.open_file(&abs_path).await?;
+            let mut parsed: ProfileFile = serde_json::from_reader(rdr)?;
+            parsed.accounts.push(account.clone());
+            self.fs
+                .create_file_with(
+                    &abs_path,
+                    serde_json::to_string(&parsed)?.as_bytes(),
+                    CreateOptions {
+                        overwrite: true,
+                        ignore_if_exists: false,
+                    },
+                )
+                .await?;
+        }
+
+        self.active_profile
+            .add_account(Account::new(
+                account_id.clone(),
+                username.clone(),
+                host.clone(),
+                session,
+            ))
+            .await;
 
         profile.accounts.insert(
             account_id.clone(),
@@ -337,51 +345,4 @@ async fn scan(
     }
 
     Ok(profiles)
-}
-
-#[cfg(test)]
-mod tests {
-    use git2::{Cred, RemoteCallbacks};
-    use moss_git::{GitAuthAdapter, repository::Repository};
-    use moss_git_hosting_provider::github::GitHubAuthAdapter;
-    use oauth2::{ClientSecret, TokenResponse};
-    use std::path::Path;
-
-    use super::*;
-
-    #[tokio::test]
-    async fn test_clone() {
-        let user = "g10z3r";
-        let cid = dotenv::var("GITHUB_CLIENT_ID").unwrap().to_string();
-        let csecret = dotenv::var("GITHUB_CLIENT_SECRET").unwrap().to_string();
-        let gh = GitHubAuthAdapter::new();
-        let tok = gh
-            .auth_with_pkce(ClientId::new(cid), ClientSecret::new(csecret), "github.com")
-            .await
-            .unwrap();
-
-        let mut cb = RemoteCallbacks::new();
-        cb.credentials(move |_url, username_from_url, _allowed| {
-            // let rt = tokio::runtime::Handle::try_current();
-            // let fut = self.session_for_remote(ws, repo_root, remote_name);
-            // let (acc, tok) = match rt {
-            //     Ok(h) => h.block_on(fut),
-            //     Err(_) => tokio::runtime::Runtime::new().unwrap().block_on(fut),
-            // }
-            // .map_err(|e| git2::Error::from_str(&format!("auth error: {e}")))?;
-            // let user = username_from_url.unwrap_or(&acc.login);
-
-            Cred::userpass_plaintext(
-                username_from_url.unwrap_or(&user),
-                &tok.access_token().secret().to_string(),
-            )
-        });
-
-        let repo = Repository::clone(
-            "https://github.com/moss-foundation/sapic-server",
-            &Path::new("sapic-server"),
-            cb,
-        )
-        .unwrap();
-    }
 }

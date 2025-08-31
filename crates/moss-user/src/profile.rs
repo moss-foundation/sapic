@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use tokio::sync::RwLock;
 
-use crate::{AccountSession, account::Account, models::primitives::AccountId};
+use crate::{account::Account, models::primitives::AccountId};
 
 pub struct ActiveProfile {
     accounts: RwLock<HashMap<AccountId, Account>>,
@@ -33,15 +33,23 @@ impl ActiveProfile {
             .next()
             .map(|account| account.clone())
     }
-}
 
-pub struct ProfileAccount {
-    username: String,
-    session: AccountSession,
-}
+    pub async fn add_account(&self, account: Account) {
+        self.accounts.write().await.insert(account.id(), account);
+    }
 
-impl ProfileAccount {
-    pub fn session(&self) -> &AccountSession {
-        &self.session
+    pub async fn remove_account(&self, account_id: &AccountId) {
+        self.accounts.write().await.remove(account_id);
     }
 }
+
+// pub struct ProfileAccount {
+//     username: String,
+//     session: AccountSession,
+// }
+
+// impl ProfileAccount {
+//     pub fn session(&self) -> &AccountSession {
+//         &self.session
+//     }
+// }
