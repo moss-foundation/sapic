@@ -1,2 +1,2 @@
-pub use const_export::const_export;
+pub use moss_bindingutils_macros::*;
 pub mod primitives;

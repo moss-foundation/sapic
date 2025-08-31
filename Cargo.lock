@@ -1052,14 +1052,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "const_export"
-version = "0.1.0"
-dependencies = [
- "quote",
- "syn 2.0.106",
-]
-
-[[package]]
 name = "convert_case"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3558,10 +3550,18 @@ dependencies = [
 name = "moss_bindingutils"
 version = "0.1.0"
 dependencies = [
- "const_export",
+ "moss_bindingutils_macros",
  "serde",
  "serde_json",
  "ts-rs",
+]
+
+[[package]]
+name = "moss_bindingutils_macros"
+version = "0.1.0"
+dependencies = [
+ "quote",
+ "syn 2.0.106",
 ]
 
 [[package]]
