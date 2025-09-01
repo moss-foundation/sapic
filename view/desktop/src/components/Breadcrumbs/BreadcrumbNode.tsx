@@ -57,7 +57,10 @@ export const BreadcrumbNode = ({
         }}
         className="hover:background-(--moss-secondary-background-hover) relative flex w-full cursor-pointer items-center gap-1 rounded-sm py-0.5 dark:hover:text-black"
       >
-        <EntryIcon entry={node} />
+        <div className="relative size-4">
+          <EntryIcon entry={node} className="absolute top-0 right-0" />
+        </div>
+
         <NodeLabel label={node.name} />
         <span className="DragHandle h-full min-h-4 grow" />
         <Icon
