@@ -138,6 +138,8 @@ pub async fn run<R: TauriRuntime>() {
                     app_handle.manage(http_client);
                     app_handle.manage(github_client);
                     app_handle.manage(gitlab_client);
+                    app_handle.manage(github_auth_adapter);
+                    app_handle.manage(gitlab_auth_adapter);
                 }
 
                 Ok(())
