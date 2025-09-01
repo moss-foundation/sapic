@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import AIDemo from "@/ai/AIDemo.tsx";
 import { ActivityEventSimulator } from "@/components/ActivityEventSimulator";
 import { useActivityEvents } from "@/context/ActivityEventsContext";
-import { GitProviders } from "@/git_providers/GitProviders.tsx";
 import { LogEntryInfo, LOGGING_SERVICE_CHANNEL } from "@repo/moss-app";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
@@ -114,13 +113,6 @@ export const Logs = () => {
         <h2 className="mb-2 text-xl">AI Assistant</h2>
         <div className="rounded bg-gray-50 p-4">
           <AIDemo />
-        </div>
-      </section>
-
-      <section className="mb-6">
-        <h2 className="mb-2 text-xl">Git Providers</h2>
-        <div className="rounded bg-gray-50 p-4">
-          <GitProviders />
         </div>
       </section>
 
