@@ -52,7 +52,7 @@ pub async fn run<R: TauriRuntime>() {
                 let ctx = MutableContext::background().freeze();
 
                 let fs = Arc::new(RealFileSystem::new());
-                let app_handle = tao.app_handle();
+                let tao_handle = tao.app_handle();
 
                 #[cfg(debug_assertions)]
                 let (app_dir, themes_dir, locales_dir, logs_dir) = {
@@ -96,7 +96,7 @@ pub async fn run<R: TauriRuntime>() {
                         MutableContext::new_with_timeout(ctx_clone, Duration::from_secs(30))
                             .freeze();
 
-                    let app = TauriAppBuilder::<TauriAppRuntime<R>>::new(app_handle.clone(), fs)
+                    let app = TauriAppBuilder::<TauriAppRuntime<R>>::new(tao_handle.clone(), fs)
                         .build(
                             &app_init_ctx,
                             BuildAppParams {
@@ -112,14 +112,14 @@ pub async fn run<R: TauriRuntime>() {
                     (app, session_id)
                 };
 
-                app_handle.manage({
+                tao_handle.manage({
                     let mut ctx = ctx.unfreeze().expect("Failed to unfreeze the root context");
                     ctx.with_value("session_id", session_id.to_string()); // TODO: Use a proper type
 
                     ctx.freeze()
                 });
-                app_handle.manage(app);
-                app_handle.manage(AppHandle::<TauriAppRuntime<R>>::new(app_handle.clone()));
+                tao_handle.manage(app);
+                tao_handle.manage(AppHandle::<TauriAppRuntime<R>>::new(tao_handle.clone()));
 
                 // Registration of global resources that will be accessible
                 // throughout the entire application via the `global` method
@@ -130,16 +130,11 @@ pub async fn run<R: TauriRuntime>() {
                         .build()
                         .expect("failed to build http client");
 
-                    let github_client = GitHubApiClient::new(http_client.clone());
-                    let gitlab_client = GitLabApiClient::new(http_client.clone());
-                    let github_auth_adapter = GitHubAuthAdapter::new(http_client.clone());
-                    let gitlab_auth_adapter = GitLabAuthAdapter::new(http_client.clone());
-
-                    app_handle.manage(http_client);
-                    app_handle.manage(github_client);
-                    app_handle.manage(gitlab_client);
-                    app_handle.manage(github_auth_adapter);
-                    app_handle.manage(gitlab_auth_adapter);
+                    tao_handle.manage(GitHubApiClient::new(http_client.clone()));
+                    tao_handle.manage(GitLabApiClient::new(http_client.clone()));
+                    tao_handle.manage(GitHubAuthAdapter::new(http_client.clone()));
+                    tao_handle.manage(GitLabAuthAdapter::new(http_client.clone()));
+                    tao_handle.manage(http_client);
                 }
 
                 Ok(())

@@ -212,6 +212,7 @@ pub struct OpenWorkspaceOutput {
 /// @category Operation
 #[derive(Debug, Validate, Deserialize, TS, Clone)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateWorkspaceInput {
     #[validate(length(min = 1))]
