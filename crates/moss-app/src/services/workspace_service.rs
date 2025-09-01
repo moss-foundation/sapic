@@ -62,8 +62,6 @@ pub struct WorkspaceService<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     storage: Arc<StorageService<R>>,
     state: Arc<RwLock<ServiceState<R>>>,
-    // github_client: Arc<GitHubClient>,
-    // gitlab_client: Arc<GitLabClient>,
 }
 
 impl<R: AppRuntime> WorkspaceService<R> {
@@ -72,8 +70,6 @@ impl<R: AppRuntime> WorkspaceService<R> {
         storage_service: Arc<StorageService<R>>,
         fs: Arc<dyn FileSystem>,
         abs_path: &Path,
-        // github_client: Arc<GitHubClient>,
-        // gitlab_client: Arc<GitLabClient>,
     ) -> joinerror::Result<Self> {
         debug_assert!(abs_path.is_absolute());
         let abs_path: Arc<Path> = abs_path.join(dirs::WORKSPACES_DIR).into();
@@ -90,8 +86,6 @@ impl<R: AppRuntime> WorkspaceService<R> {
                 known_workspaces,
                 active_workspace: None,
             })),
-            // github_client,
-            // gitlab_client,
         })
     }
 
@@ -303,21 +297,17 @@ impl<R: AppRuntime> WorkspaceService<R> {
 
         let last_opened_at = Utc::now().timestamp();
         let abs_path: Arc<Path> = self.absolutize(&id.to_string()).into();
-        let workspace = WorkspaceBuilder::<R>::new(
-            self.fs.clone(),
-            // self.github_client.clone(),
-            // self.gitlab_client.clone(),
-            broadcaster,
-            active_profile,
-        )
-        .load(
-            ctx,
-            LoadWorkspaceParams {
-                abs_path: abs_path.clone(),
-            },
-        )
-        .await
-        .join_err_with::<()>(|| format!("failed to load the workspace, {}", abs_path.display()))?;
+        let workspace = WorkspaceBuilder::<R>::new(self.fs.clone(), broadcaster, active_profile)
+            .load(
+                ctx,
+                LoadWorkspaceParams {
+                    abs_path: abs_path.clone(),
+                },
+            )
+            .await
+            .join_err_with::<()>(|| {
+                format!("failed to load the workspace, {}", abs_path.display())
+            })?;
 
         {
             let mut state_lock = self.state.write().await;
@@ -398,8 +388,6 @@ impl<R: AppRuntime> WorkspaceService<R> {
                 e.to_string()
             ));
         }
-
-        // ctx.remove_value::<ctxkeys::ActiveWorkspaceId>();
 
         Ok(())
     }
