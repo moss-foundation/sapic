@@ -1,8 +1,6 @@
 use derive_more::Deref;
 use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::{AppRuntime, context::Canceller};
-// use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
-use moss_keyring::KeyringClient;
 use moss_text::ReadOnlyStr;
 use rustc_hash::FxHashMap;
 use std::{
@@ -74,9 +72,6 @@ pub struct App<R: AppRuntime> {
     // Store cancellers by the id of API requests
     pub(super) tracked_cancellations: Arc<RwLock<HashMap<String, Canceller>>>,
     pub(super) broadcaster: ActivityBroadcaster<R::EventLoop>,
-
-    pub(super) _reqwest_client: reqwest::Client,
-    pub(super) _keyring_client: Arc<dyn KeyringClient + Send + Sync>,
 }
 
 impl<R: AppRuntime> App<R> {
