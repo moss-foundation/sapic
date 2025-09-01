@@ -71,6 +71,7 @@ impl KeyringClient for KeyringClientImpl {
 
             Ok(cached_secret.expose().as_bytes().to_vec())
         } else {
+            drop(cache);
             session::trace!("Getting secret for key: {}", key);
 
             let bytes = Entry::new(&key, &self.user)

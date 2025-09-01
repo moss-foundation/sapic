@@ -54,6 +54,8 @@
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-id-macro/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-activity-broadcaster/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/libs/joinerror/macros/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-asp/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-user/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-edit/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-edit/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-workspacelib/src" isTestSource="false" />
