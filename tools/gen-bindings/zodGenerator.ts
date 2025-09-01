@@ -23,6 +23,7 @@ const execAsync = promisify(exec);
 interface Config {
   readonly targetPath: string;
   readonly bindingsDirectoryName: string;
+  readonly excludedFiles: string[]; // We will skip generating zod files for constants
   readonly tsFileExtension: string;
   readonly zodFileExtension: string;
   readonly zodFileSuffix: string;
@@ -43,6 +44,7 @@ class ZodSchemaGenerator {
     this.config = {
       targetPath: resolve(targetPath),
       bindingsDirectoryName: "bindings",
+      excludedFiles: ["constants.ts"],
       tsFileExtension: ".ts",
       zodFileExtension: ".zod.ts",
       zodFileSuffix: ".zod",
@@ -86,6 +88,7 @@ class ZodSchemaGenerator {
       const files = readdirSync(bindingsPath, { recursive: true, withFileTypes: true })
         .filter((dirent) => {
           if (!dirent.isFile()) return false;
+          if (this.config.excludedFiles.includes(dirent.name)) return false;
           if (!dirent.name.endsWith(this.config.tsFileExtension)) return false;
           if (dirent.name.endsWith(this.config.zodFileExtension)) return false;
           if (dirent.name.startsWith(".")) return false;

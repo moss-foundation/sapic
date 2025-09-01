@@ -3464,6 +3464,7 @@ name = "moss_activity_broadcaster"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "moss_bindingutils",
  "serde",
  "tauri",
  "ts-rs",
@@ -3499,6 +3500,7 @@ dependencies = [
  "moss_activity_broadcaster",
  "moss_api",
  "moss_applib",
+ "moss_bindingutils",
  "moss_common",
  "moss_db",
  "moss_environment",
@@ -3548,9 +3550,18 @@ dependencies = [
 name = "moss_bindingutils"
 version = "0.1.0"
 dependencies = [
+ "moss_bindingutils_macros",
  "serde",
  "serde_json",
  "ts-rs",
+]
+
+[[package]]
+name = "moss_bindingutils_macros"
+version = "0.1.0"
+dependencies = [
+ "quote",
+ "syn 2.0.106",
 ]
 
 [[package]]
