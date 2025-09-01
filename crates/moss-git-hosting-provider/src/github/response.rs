@@ -1,32 +1,31 @@
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub(crate) struct RepositoryResponse {
-    pub updated_at: String,
-    pub owner: Owner,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub(crate) struct Owner {
+#[derive(Clone, Debug, PartialEq, Deserialize)]
+pub struct Owner {
     pub login: String,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(transparent)]
-pub(crate) struct ContributorsResponse {
-    pub items: Vec<ContributorItem>,
+#[derive(Clone, Debug, PartialEq, Deserialize)]
+pub struct GetRepositoryResponse {
+    pub owner: Owner,
+    pub updated_at: String,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub(crate) struct ContributorItem {
+#[derive(Clone, Debug, PartialEq, Deserialize)]
+#[serde(transparent)]
+pub struct GetContributorsResponse {
+    pub items: Vec<Contributor>,
+}
+
+#[derive(Clone, Debug, PartialEq, Deserialize)]
+pub struct Contributor {
     pub login: String,
     pub avatar_url: String,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub(crate) struct UserResponse {
+#[derive(Clone, Debug, PartialEq, Deserialize)]
+pub struct GetUserResponse {
     pub id: u64,
     pub login: String,
-    // If the user email is private, we will construct their noreply email
     pub email: Option<String>,
 }

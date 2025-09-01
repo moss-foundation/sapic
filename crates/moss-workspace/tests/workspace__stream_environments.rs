@@ -19,7 +19,7 @@ use crate::shared::setup_test_workspace;
 pub mod shared;
 #[tokio::test]
 async fn stream_environments_no_custom_environment() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let received_events = Arc::new(Mutex::new(Vec::new()));
     let received_events_clone = received_events.clone();
@@ -47,7 +47,7 @@ async fn stream_environments_no_custom_environment() {
 
 #[tokio::test]
 async fn stream_environments_only_workspace_environments() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let mut expected_environments = Vec::new();
 
@@ -113,7 +113,7 @@ async fn stream_environments_only_workspace_environments() {
 
 #[tokio::test]
 async fn stream_environments_only_collection_environments() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let mut expected_environments = Vec::new();
 
@@ -213,7 +213,7 @@ async fn stream_environments_only_collection_environments() {
 
 #[tokio::test]
 async fn stream_environments_both_workspace_and_collection_environments() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let collection_id = workspace
@@ -316,7 +316,7 @@ async fn stream_environments_both_workspace_and_collection_environments() {
 
 #[tokio::test]
 async fn stream_environments_with_variables() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let variables = (0..5)
         .map(|i| AddVariableParams {

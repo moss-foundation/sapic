@@ -33,10 +33,7 @@ export type AddVariableParams = {
  */
 export type BranchInfo = { name: string; ahead?: number; behind?: number };
 
-/**
- * @category Type
- */
-export type Contributor = { name: string; avatar_url: string };
+export type Contributor = { name: string; avatarUrl?: string };
 
 /**
  * @category Type
@@ -134,6 +131,7 @@ export type GitHubCreateParams = {
  * @category Type
  */
 export type GitHubImportParams = {
+  accountId: string;
   repository: string;
   /**
    * If provided, this branch will be checked out instead of the default branch
@@ -158,6 +156,7 @@ export type GitLabCreateParams = {
  * @category Type
  */
 export type GitLabImportParams = {
+  accountId: string;
   repository: string;
   /**
    * If provided, this branch will be checked out instead of the default branch

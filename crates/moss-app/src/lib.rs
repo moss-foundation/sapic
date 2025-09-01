@@ -46,4 +46,5 @@ pub mod constants {
 pub mod dirs {
     pub const WORKSPACES_DIR: &str = "workspaces";
     pub const GLOBALS_DIR: &str = "globals";
+    pub const PROFILES_DIR: &str = "profiles";
 }

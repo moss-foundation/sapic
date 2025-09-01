@@ -12,7 +12,7 @@ use joinerror::OptionExt;
 use moss_api::{TauriResult, constants::DEFAULT_OPERATION_TIMEOUT};
 use moss_app::{ActiveWorkspace, app::App};
 use moss_applib::{
-    AppRuntime,
+    AppHandle, AppRuntime,
     context::{AnyAsyncContext, AnyContext},
     errors::{FailedPrecondition, NotFound},
 };
@@ -20,7 +20,7 @@ use moss_collection::Collection;
 use moss_workspace::models::primitives::CollectionId;
 use primitives::Options;
 use std::{sync::Arc, time::Duration};
-use tauri::State;
+use tauri::{Manager, State};
 
 pub mod primitives {
     use tauri::State;
@@ -83,7 +83,7 @@ pub(super) async fn with_workspace_timeout<R, T, F, Fut>(
 ) -> TauriResult<T>
 where
     R: AppRuntime,
-    F: FnOnce(R::AsyncContext, Arc<ActiveWorkspace<R>>) -> Fut + Send + 'static,
+    F: FnOnce(R::AsyncContext, AppHandle<R>, Arc<ActiveWorkspace<R>>) -> Fut + Send + 'static,
     Fut: std::future::Future<Output = joinerror::Result<T>> + Send + 'static,
 {
     let workspace = app
@@ -105,7 +105,12 @@ where
             .await;
     }
 
-    let result = f(ctx.freeze(), workspace).await;
+    let result = f(
+        ctx.freeze(),
+        app.handle().state::<AppHandle<R>>().inner().clone(),
+        workspace,
+    )
+    .await;
 
     if let Some(request_id) = &request_id {
         app.release_cancellation(request_id).await;

@@ -4,8 +4,17 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-keyring.workspace = true
+moss_logging.workspace = true
+
+tracing.workspace = true
+keyring = { workspace = true, features = ["apple-native", "windows-native", "sync-secret-service"] }
+zeroize = { workspace = true }
 whoami.workspace = true
+joinerror.workspace = true
+async-trait.workspace = true
+tokio = { workspace = true }
+rustc-hash = { workspace = true }
 
 [features]
+test = []
 integration-tests = []

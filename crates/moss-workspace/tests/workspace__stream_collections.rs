@@ -16,7 +16,7 @@ use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn stream_collections_empty_workspace() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let received_events = Arc::new(Mutex::new(Vec::new()));
     let received_events_clone = received_events.clone();
@@ -42,7 +42,7 @@ async fn stream_collections_empty_workspace() {
 
 #[tokio::test]
 async fn stream_collections_single_collection() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let collection_order = 42;
@@ -98,7 +98,7 @@ async fn stream_collections_single_collection() {
 
 #[tokio::test]
 async fn stream_collections_multiple_collections() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let mut expected_collections = Vec::new();
 
@@ -165,7 +165,7 @@ async fn stream_collections_multiple_collections() {
 
 #[tokio::test]
 async fn stream_collections_with_icon() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let collection_order = 200;
@@ -225,7 +225,7 @@ async fn stream_collections_with_icon() {
 
 #[tokio::test]
 async fn stream_collections_mixed_configurations() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     // Create icon file
     let icon_path = workspace.abs_path().join("mixed_test_icon.png");
@@ -315,7 +315,7 @@ async fn stream_collections_mixed_configurations() {
 
 #[tokio::test]
 async fn stream_collections_order_verification() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let orders = vec![10, 5, 20, 1, 15];
     let mut expected_collections = Vec::new();

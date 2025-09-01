@@ -1,12 +1,8 @@
 use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::AppRuntime;
+use moss_asp::AppSecretsProvider;
 use moss_fs::FileSystem;
-use moss_git_hosting_provider::{
-    common::ssh_auth_agent::SSHAuthAgentImpl,
-    github::{auth::GitHubAuthAgent, client::GitHubClient},
-    gitlab::{auth::GitLabAuthAgent, client::GitLabClient},
-};
-use moss_keyring::KeyringClientImpl;
+use moss_keyring::KeyringClient;
 use std::{path::PathBuf, sync::Arc};
 use tauri::AppHandle;
 use tokio::sync::RwLock;
@@ -15,7 +11,7 @@ use crate::{
     app::{App, AppCommands, AppDefaults, AppPreferences},
     command::CommandDecl,
     dirs,
-    services::*,
+    services::{profile_service::ProfileService, *},
 };
 
 pub struct BuildAppParams {
@@ -27,14 +23,20 @@ pub struct BuildAppParams {
 
 pub struct AppBuilder<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
+    keyring: Arc<dyn KeyringClient>,
     app_handle: AppHandle<R::EventLoop>,
     commands: AppCommands<R::EventLoop>,
 }
 
 impl<R: AppRuntime> AppBuilder<R> {
-    pub fn new(app_handle: AppHandle<R::EventLoop>, fs: Arc<dyn FileSystem>) -> Self {
+    pub fn new(
+        app_handle: AppHandle<R::EventLoop>,
+        fs: Arc<dyn FileSystem>,
+        keyring: Arc<dyn KeyringClient>,
+    ) -> Self {
         Self {
             fs,
+            keyring,
             app_handle,
             commands: Default::default(),
         }
@@ -46,7 +48,7 @@ impl<R: AppRuntime> AppBuilder<R> {
     }
 
     pub async fn build(self, ctx: &R::AsyncContext, params: BuildAppParams) -> App<R> {
-        for dir in &[dirs::WORKSPACES_DIR, dirs::GLOBALS_DIR] {
+        for dir in &[dirs::WORKSPACES_DIR, dirs::GLOBALS_DIR, dirs::PROFILES_DIR] {
             let dir_path = params.app_dir.join(dir);
             if dir_path.exists() {
                 continue;
@@ -58,49 +60,20 @@ impl<R: AppRuntime> AppBuilder<R> {
                 .expect("Failed to create app directories");
         }
 
-        let keyring_client = Arc::new(KeyringClientImpl::new());
-        let reqwest_client = reqwest::ClientBuilder::new()
-            .user_agent("SAPIC")
-            .build()
-            .expect("failed to build reqwest client");
-
-        // TODO: Fetch OAuth APP secrets from our server in production build
-
         dotenv::dotenv().ok();
         let github_client_id = dotenv::var("GITHUB_CLIENT_ID").unwrap_or_default();
         let github_client_secret = dotenv::var("GITHUB_CLIENT_SECRET").unwrap_or_default();
         let gitlab_client_id = dotenv::var("GITLAB_CLIENT_ID").unwrap_or_default();
         let gitlab_client_secret = dotenv::var("GITLAB_CLIENT_SECRET").unwrap_or_default();
 
-        // Git auth agents require a synchronous http client
-        let sync_http_client = oauth2::ureq::builder().redirects(0).build();
-
-        let github_client = {
-            let github_auth_agent = Arc::new(GitHubAuthAgent::new(
-                sync_http_client.clone(),
-                keyring_client.clone(),
-                github_client_id,
-                github_client_secret,
-            ));
-            Arc::new(GitHubClient::new(
-                reqwest_client.clone(),
-                github_auth_agent,
-                None as Option<SSHAuthAgentImpl>,
-            ))
-        };
-        let gitlab_client = {
-            let gitlab_auth_agent = Arc::new(GitLabAuthAgent::new(
-                sync_http_client.clone(),
-                keyring_client.clone(),
-                gitlab_client_id,
-                gitlab_client_secret,
-            ));
-            Arc::new(GitLabClient::new(
-                reqwest_client.clone(),
-                gitlab_auth_agent,
-                None as Option<SSHAuthAgentImpl>,
-            ))
-        };
+        // TODO: Probably we should use have it as a global resource instead of creating it here
+        let app_secrets = AppSecretsProvider::new(
+            github_client_secret.clone(),
+            gitlab_client_secret.clone(),
+            self.keyring.clone(),
+        )
+        .await
+        .expect("Failed to create app secrets provider");
 
         let theme_service = ThemeService::new(self.fs.clone(), params.themes_dir)
             .await
@@ -121,13 +94,24 @@ impl<R: AppRuntime> AppBuilder<R> {
             storage_service.clone(),
         )
         .expect("Failed to create log service");
+        let profile_service = ProfileService::new(
+            self.fs.clone(),
+            app_secrets.clone(),
+            self.keyring.clone(),
+            profile_service::ServiceConfig::new(
+                params.app_dir.join(dirs::PROFILES_DIR),
+                github_client_id,
+                gitlab_client_id,
+            )
+            .expect("Failed to create profile service config"),
+        )
+        .await
+        .expect("Failed to create profile service");
         let workspace_service = WorkspaceService::<R>::new(
             ctx,
             storage_service.clone(),
             self.fs.clone(),
             &params.app_dir,
-            github_client.clone(),
-            gitlab_client.clone(),
         )
         .await
         .expect("Failed to create workspace service");
@@ -136,7 +120,6 @@ impl<R: AppRuntime> AppBuilder<R> {
             theme: theme_service.default_theme().await,
             locale: locale_service.default_locale().await,
         };
-
         App {
             app_dir: params.app_dir,
             app_handle: self.app_handle.clone(),
@@ -155,13 +138,9 @@ impl<R: AppRuntime> AppBuilder<R> {
             workspace_service,
             locale_service,
             theme_service,
+            profile_service,
             tracked_cancellations: Default::default(),
             broadcaster: ActivityBroadcaster::new(self.app_handle),
-
-            _github_client: github_client,
-            _gitlab_client: gitlab_client,
-            _reqwest_client: reqwest_client,
-            _keyring_client: keyring_client,
         }
     }
 }

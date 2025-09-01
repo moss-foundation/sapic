@@ -4,7 +4,10 @@ use moss_app::{
     command::CommandContext,
     models::{events::*, operations::*},
 };
-use moss_applib::context::{AnyContext, MutableContext};
+use moss_applib::{
+    AppHandle, TauriAppRuntime,
+    context::{AnyContext, MutableContext},
+};
 use moss_text::{ReadOnlyStr, quote};
 use serde_json::Value as JsonValue;
 use std::{collections::HashMap, time::Duration};
@@ -352,12 +355,32 @@ pub async fn cancel_request<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn create_profile<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: Window<R>,
+    input: CreateProfileInput,
+) -> TauriResult<CreateProfileOutput> {
+    Ok(app.create_profile(&ctx, input).await?)
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn add_account<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
     input: AddAccountInput,
 ) -> TauriResult<AddAccountOutput> {
-    let output = app.add_account(&ctx, input).await?;
+    let output = app
+        .add_account(
+            &ctx,
+            &app.handle()
+                .state::<AppHandle<TauriAppRuntime<R>>>()
+                .inner()
+                .clone(),
+            input,
+        )
+        .await?;
     Ok(output)
 }

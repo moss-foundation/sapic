@@ -20,9 +20,15 @@ impl<R: AppRuntime> Workspace<R> {
         debug_assert!(input.inner.external_path.is_none(), "Is not implemented");
 
         let id = CollectionId::new();
+
+        let account = if input.inner.git_params.is_some() {
+            self.active_profile.first().await
+        } else {
+            None
+        };
         let description = self
             .collection_service
-            .create_collection(ctx, &id, &input.inner)
+            .create_collection(ctx, &id, account, &input.inner)
             .await?;
 
         Ok(CreateCollectionOutput {

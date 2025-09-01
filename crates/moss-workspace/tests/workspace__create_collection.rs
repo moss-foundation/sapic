@@ -15,7 +15,7 @@ use tauri::ipc::Channel;
 
 #[tokio::test]
 async fn create_collection_success() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let create_collection_output = workspace
@@ -70,7 +70,7 @@ async fn create_collection_success() {
 
 #[tokio::test]
 async fn create_collection_empty_name() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = "".to_string();
     let create_collection_result = workspace
@@ -95,7 +95,7 @@ async fn create_collection_empty_name() {
 
 #[tokio::test]
 async fn create_collection_special_chars() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name_list = FILENAME_SPECIAL_CHARS
         .into_iter()
@@ -157,7 +157,7 @@ async fn create_collection_special_chars() {
 
 #[tokio::test]
 async fn create_collection_with_order() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let create_collection_result = workspace
@@ -212,7 +212,7 @@ async fn create_collection_with_order() {
 
 #[tokio::test]
 async fn create_collection_with_icon() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let input_icon_path = workspace.abs_path().join("test_icon.png");
@@ -275,7 +275,7 @@ async fn create_collection_with_icon() {
 
 #[tokio::test]
 async fn create_multiple_collections_expanded_items() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     // Create first collection
     let collection_name1 = random_collection_name();

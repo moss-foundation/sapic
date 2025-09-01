@@ -14,7 +14,7 @@ use moss_workspace::{
 use crate::shared::setup_test_workspace;
 #[tokio::test]
 async fn update_state_sidebar_part() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let sidebar_state = SidebarPartStateInfo {
         size: 250.0,
@@ -80,7 +80,7 @@ async fn update_state_sidebar_part() {
 
 #[tokio::test]
 async fn update_state_panel_part() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let panel_state = PanelPartStateInfo {
         size: 200.0,
@@ -127,7 +127,7 @@ async fn update_state_panel_part() {
 
 #[tokio::test]
 async fn update_state_multiple_updates() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     // Initial states
     let sidebar_state = SidebarPartStateInfo {
@@ -289,7 +289,7 @@ async fn update_state_multiple_updates() {
 
 #[tokio::test]
 async fn update_state_overwrite_existing() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     // Set initial state
     let initial_sidebar_state = SidebarPartStateInfo {

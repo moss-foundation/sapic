@@ -20,11 +20,6 @@ export const logItemSourceInfoSchema = z.object({
   id: z.string(),
 });
 
-export const userInfoSchema = z.object({
-  name: z.string(),
-  email: z.string(),
-});
-
 export const workspaceInfoSchema = z.object({
   id: z.string(),
   name: z.string(),
