@@ -4,7 +4,6 @@ use moss_applib::{AppRuntime, EventMarker, subscription::EventEmitter};
 use moss_environment::builder::{CreateEnvironmentParams, EnvironmentBuilder};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_user::profile::ActiveProfile;
-// use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
 use rustc_hash::FxHashMap;
 use std::{cell::LazyCell, path::Path, sync::Arc};
 
@@ -45,8 +44,6 @@ pub struct WorkspaceBuilder<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     broadcaster: ActivityBroadcaster<R::EventLoop>,
     active_profile: Arc<ActiveProfile>,
-    // github_client: Arc<GitHubClient>,
-    // gitlab_client: Arc<GitLabClient>,
 }
 
 #[derive(Clone)]
@@ -65,15 +62,11 @@ impl EventMarker for OnDidAddCollection {}
 impl<R: AppRuntime> WorkspaceBuilder<R> {
     pub fn new(
         fs: Arc<dyn FileSystem>,
-        // github_client: Arc<GitHubClient>,
-        // gitlab_client: Arc<GitLabClient>,
         broadcaster: ActivityBroadcaster<R::EventLoop>,
         active_profile: Arc<ActiveProfile>,
     ) -> Self {
         Self {
             fs,
-            // github_client,
-            // gitlab_client,
             broadcaster,
             active_profile,
         }
@@ -142,8 +135,6 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
             &params.abs_path,
             self.fs.clone(),
             storage_service.clone(),
-            // self.github_client.clone(),
-            // self.gitlab_client.clone(),
             &mut environment_sources,
             self.broadcaster.clone(),
             &self.active_profile,
@@ -190,8 +181,6 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
             active_profile: self.active_profile,
             _on_did_add_collection: on_did_add_collection,
             _on_did_delete_collection: on_did_delete_collection,
-            // _github_client: self.github_client,
-            // _gitlab_client: self.gitlab_client,
         })
     }
 
@@ -224,8 +213,6 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
             &params.abs_path,
             self.fs.clone(),
             storage_service.clone(),
-            // self.github_client.clone(),
-            // self.gitlab_client.clone(),
             &mut environment_sources,
             self.broadcaster.clone(),
             &self.active_profile,
@@ -270,8 +257,6 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
             active_profile: self.active_profile,
             _on_did_add_collection: on_did_add_collection,
             _on_did_delete_collection: on_did_delete_collection,
-            // _github_client: self.github_client,
-            // _gitlab_client: self.gitlab_client,
         })
     }
 }

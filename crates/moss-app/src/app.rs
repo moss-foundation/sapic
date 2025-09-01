@@ -75,9 +75,6 @@ pub struct App<R: AppRuntime> {
     pub(super) tracked_cancellations: Arc<RwLock<HashMap<String, Canceller>>>,
     pub(super) broadcaster: ActivityBroadcaster<R::EventLoop>,
 
-    // TODO: Refine the management of git provider clients
-    // pub(super) _github_client: Arc<GitHubClient>,
-    // pub(super) _gitlab_client: Arc<GitLabClient>,
     pub(super) _reqwest_client: reqwest::Client,
     pub(super) _keyring_client: Arc<dyn KeyringClient + Send + Sync>,
 }

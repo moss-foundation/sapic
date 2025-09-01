@@ -12,7 +12,6 @@ use moss_edit::json::EditOptions;
 use moss_environment::{AnyEnvironment, Environment, models::primitives::EnvironmentId};
 use moss_fs::{FileSystem, FsResultExt};
 use moss_user::profile::ActiveProfile;
-// use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
 use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};
 
@@ -75,9 +74,6 @@ pub struct Workspace<R: AppRuntime> {
 
     pub(super) _on_did_delete_collection: Subscription<OnDidDeleteCollection>,
     pub(super) _on_did_add_collection: Subscription<OnDidAddCollection>,
-    // TODO: Refine the management of git provider clients
-    // pub(super) _github_client: Arc<GitHubClient>,
-    // pub(super) _gitlab_client: Arc<GitLabClient>,
 }
 
 impl<R: AppRuntime> AnyWorkspace<R> for Workspace<R> {

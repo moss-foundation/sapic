@@ -87,27 +87,30 @@ pub async fn setup_test_workspace() -> (
     .await
     .unwrap();
 
-    let account_id = AccountId::new();
-    ctx.with_value("account_id", account_id.clone());
-    let account_session = AccountSession::github(
-        account_id.clone(),
-        "github.com".to_string(),
-        secrets,
-        keyring.clone(),
-        None,
-    )
-    .await
-    .unwrap();
-    let profiles = HashMap::from([(
-        account_id.clone(),
-        Account::new(
-            account_id,
-            random_workspace_name(),
+    let active_profile = {
+        let account_id = AccountId::new();
+        ctx.with_value("account_id", account_id.clone());
+        let account_session = AccountSession::github(
+            account_id.clone(),
             "github.com".to_string(),
-            account_session,
-        ),
-    )]);
-    let active_profile = ActiveProfile::new(profiles);
+            secrets,
+            keyring.clone(),
+            None,
+        )
+        .await
+        .unwrap();
+        let profiles = HashMap::from([(
+            account_id.clone(),
+            Account::new(
+                account_id,
+                random_workspace_name(),
+                "github.com".to_string(),
+                account_session,
+            ),
+        )]);
+
+        ActiveProfile::new(profiles)
+    };
 
     let ctx = ctx.freeze();
     let workspace: Workspace<MockAppRuntime> =

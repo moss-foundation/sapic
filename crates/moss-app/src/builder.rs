@@ -2,7 +2,7 @@ use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::AppRuntime;
 use moss_asp::AppSecretsProvider;
 use moss_fs::FileSystem;
-use moss_keyring::KeyringClientImpl;
+use moss_keyring::KeyringClient;
 use std::{path::PathBuf, sync::Arc};
 use tauri::AppHandle;
 use tokio::sync::RwLock;
@@ -23,14 +23,20 @@ pub struct BuildAppParams {
 
 pub struct AppBuilder<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
+    keyring: Arc<dyn KeyringClient>,
     app_handle: AppHandle<R::EventLoop>,
     commands: AppCommands<R::EventLoop>,
 }
 
 impl<R: AppRuntime> AppBuilder<R> {
-    pub fn new(app_handle: AppHandle<R::EventLoop>, fs: Arc<dyn FileSystem>) -> Self {
+    pub fn new(
+        app_handle: AppHandle<R::EventLoop>,
+        fs: Arc<dyn FileSystem>,
+        keyring: Arc<dyn KeyringClient>,
+    ) -> Self {
         Self {
             fs,
+            keyring,
             app_handle,
             commands: Default::default(),
         }
@@ -42,7 +48,7 @@ impl<R: AppRuntime> AppBuilder<R> {
     }
 
     pub async fn build(self, ctx: &R::AsyncContext, params: BuildAppParams) -> App<R> {
-        for dir in &[dirs::WORKSPACES_DIR, dirs::GLOBALS_DIR] {
+        for dir in &[dirs::WORKSPACES_DIR, dirs::GLOBALS_DIR, dirs::PROFILES_DIR] {
             let dir_path = params.app_dir.join(dir);
             if dir_path.exists() {
                 continue;
@@ -54,7 +60,6 @@ impl<R: AppRuntime> AppBuilder<R> {
                 .expect("Failed to create app directories");
         }
 
-        let keyring_client = Arc::new(KeyringClientImpl::new());
         let reqwest_client = reqwest::ClientBuilder::new()
             .user_agent("SAPIC")
             .build()
@@ -72,7 +77,7 @@ impl<R: AppRuntime> AppBuilder<R> {
         let app_secrets = AppSecretsProvider::new(
             github_client_secret.clone(),
             gitlab_client_secret.clone(),
-            keyring_client.clone(),
+            self.keyring.clone(),
         )
         .await
         .expect("Failed to create app secrets provider");
@@ -99,7 +104,7 @@ impl<R: AppRuntime> AppBuilder<R> {
         let profile_service = ProfileService::new(
             self.fs.clone(),
             app_secrets.clone(),
-            keyring_client.clone(),
+            self.keyring.clone(),
             profile_service::ServiceConfig::new(
                 params.app_dir.join(dirs::PROFILES_DIR),
                 github_client_id,
@@ -145,10 +150,8 @@ impl<R: AppRuntime> AppBuilder<R> {
             tracked_cancellations: Default::default(),
             broadcaster: ActivityBroadcaster::new(self.app_handle),
 
-            // _github_client: github_client,
-            // _gitlab_client: gitlab_client,
             _reqwest_client: reqwest_client,
-            _keyring_client: keyring_client,
+            _keyring_client: self.keyring,
         }
     }
 }

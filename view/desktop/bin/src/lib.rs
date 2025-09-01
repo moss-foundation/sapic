@@ -18,6 +18,7 @@ use moss_git_hosting_provider::{
     github::{GitHubApiClient, GitHubAuthAdapter},
     gitlab::{GitLabApiClient, GitLabAuthAdapter},
 };
+use moss_keyring::KeyringClientImpl;
 use reqwest::ClientBuilder as HttpClientBuilder;
 use std::{path::PathBuf, sync::Arc, time::Duration};
 #[cfg(not(debug_assertions))]
@@ -52,6 +53,7 @@ pub async fn run<R: TauriRuntime>() {
                 let ctx = MutableContext::background().freeze();
 
                 let fs = Arc::new(RealFileSystem::new());
+                let keyring = Arc::new(KeyringClientImpl::new());
                 let tao_handle = tao.app_handle();
 
                 #[cfg(debug_assertions)]
@@ -96,17 +98,18 @@ pub async fn run<R: TauriRuntime>() {
                         MutableContext::new_with_timeout(ctx_clone, Duration::from_secs(30))
                             .freeze();
 
-                    let app = TauriAppBuilder::<TauriAppRuntime<R>>::new(tao_handle.clone(), fs)
-                        .build(
-                            &app_init_ctx,
-                            BuildAppParams {
-                                app_dir,
-                                themes_dir,
-                                locales_dir,
-                                logs_dir,
-                            },
-                        )
-                        .await;
+                    let app =
+                        TauriAppBuilder::<TauriAppRuntime<R>>::new(tao_handle.clone(), fs, keyring)
+                            .build(
+                                &app_init_ctx,
+                                BuildAppParams {
+                                    app_dir,
+                                    themes_dir,
+                                    locales_dir,
+                                    logs_dir,
+                                },
+                            )
+                            .await;
                     let session_id = app.session_id().clone();
 
                     (app, session_id)
