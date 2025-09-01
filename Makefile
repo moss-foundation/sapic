@@ -120,6 +120,7 @@ gen-$(1)-bindings:
 
 	@echo "Generating $(1) models..."
 	@$(CARGO) test --lib export_bindings_ --manifest-path $($(2))/Cargo.toml
+	@cd $(GEN_BINDINGS_DIR) && $(PNPM) run constantsSorter ../../$($(2))
 	@cd $(GEN_BINDINGS_DIR) && $(PNPM) run importsResolver ../../$($(2))
 
 	@echo "Generating $(1) zod schemas..."
