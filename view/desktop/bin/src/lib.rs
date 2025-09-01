@@ -14,7 +14,10 @@ use moss_applib::{
     context::{AnyAsyncContext, AnyContext, MutableContext},
 };
 use moss_fs::RealFileSystem;
-use moss_git_hosting_provider::{github::GitHubApiClient, gitlab::GitLabApiClient};
+use moss_git_hosting_provider::{
+    github::{GitHubApiClient, GitHubAuthAdapter},
+    gitlab::{GitLabApiClient, GitLabAuthAdapter},
+};
 use reqwest::ClientBuilder as HttpClientBuilder;
 use std::{path::PathBuf, sync::Arc, time::Duration};
 #[cfg(not(debug_assertions))]

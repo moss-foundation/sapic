@@ -3032,7 +3032,6 @@ dependencies = [
  "reqwest",
  "serde_json",
  "tokio",
- "tracing",
  "url",
  "validator",
 ]
