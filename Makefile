@@ -45,6 +45,7 @@ export SESSION_LOG_DIR = ${CURDIR}/logs/session
 # ---- Directory Paths ----
 # Tool directories
 GEN_BINDINGS_DIR := tools/gen-bindings
+CARGO_TSNEW_DIR := tools/cargo-tsnew
 
 # Application directories
 DESKTOP_DIR := view/desktop
@@ -87,6 +88,7 @@ run-desktop:
 ## Install dependencies and setup development environment
 .PHONY: ready
 ready: gen-icons export-css-variables gen-typedoc
+	@cd $(CARGO_TSNEW_DIR) && $(CARGO) install --path .
 	$(PNPM) i
 
 ## Generate TypeDoc documentation
