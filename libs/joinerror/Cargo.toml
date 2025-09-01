@@ -11,4 +11,5 @@ validator.workspace = true
 reqwest.workspace = true
 url.workspace = true
 git2.workspace = true
+tracing.workspace = true
 joinerror-macros = { path = "macros" }

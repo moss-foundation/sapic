@@ -1,6 +1,7 @@
-use moss_applib::errors::Internal;
+use joinerror::Error;
+use moss_applib::{AppHandle, AppRuntime, errors::Internal};
 use moss_asp::AppSecretsProvider;
-use moss_common::continue_if_none;
+use moss_common::{continue_if_err, continue_if_none};
 use moss_fs::{CreateOptions, FileSystem};
 use moss_git_hosting_provider::{
     GitAuthAdapter,
@@ -8,11 +9,11 @@ use moss_git_hosting_provider::{
     gitlab::{GitLabApiClient, GitLabAuthAdapter},
 };
 use moss_keyring::KeyringClient;
+use moss_logging::session;
 use moss_user::{
     AccountSession, account::Account, models::primitives::AccountId, profile::ActiveProfile,
 };
 use oauth2::ClientId;
-use reqwest::Client as HttpClient;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;
@@ -145,8 +146,9 @@ impl ProfileService {
         self.active_profile.clone()
     }
 
-    pub async fn add_account(
+    pub async fn add_account<R: AppRuntime>(
         &self,
+        app_handle: &AppHandle<R>,
         profile_id: ProfileId,
         host: String,
         provider: AccountKind,
@@ -156,15 +158,23 @@ impl ProfileService {
         let account_id = AccountId::new();
         let (session, username) = match provider {
             AccountKind::GitHub => {
-                let session = self.add_github_account(account_id.clone(), &host).await?;
-                let api_client = GitHubApiClient::new(HttpClient::new());
+                let auth_client = app_handle.global::<GitHubAuthAdapter>();
+                let api_client = app_handle.global::<GitHubApiClient>().clone();
+
+                let session = self
+                    .add_github_account(auth_client, account_id.clone(), &host)
+                    .await?;
                 let user = api_client.get_user(&session).await?;
 
                 (session, user.login)
             }
             AccountKind::GitLab => {
-                let session = self.add_gitlab_account(account_id.clone(), &host).await?;
-                let api_client = GitLabApiClient::new(HttpClient::new());
+                let auth_client = app_handle.global::<GitLabAuthAdapter>();
+                let api_client = app_handle.global::<GitLabApiClient>().clone();
+
+                let session = self
+                    .add_gitlab_account(auth_client, account_id.clone(), &host)
+                    .await?;
                 let user = api_client.get_user(&session).await?;
 
                 (session, user.username)
@@ -224,13 +234,13 @@ impl ProfileService {
 
     async fn add_github_account(
         &self,
+        auth_client: &GitHubAuthAdapter,
         account_id: AccountId,
         host: &str,
     ) -> joinerror::Result<AccountSession> {
         let client_id = self.config.github_client_id.clone();
         let client_secret = self.secrets.github_client_secret().await?;
-        let github_client = GitHubAuthAdapter::new();
-        let token = github_client
+        let token = auth_client
             .auth_with_pkce(client_id, client_secret, host)
             .await
             .unwrap();
@@ -247,13 +257,13 @@ impl ProfileService {
 
     async fn add_gitlab_account(
         &self,
+        auth_client: &GitLabAuthAdapter,
         account_id: AccountId,
         host: &str,
     ) -> joinerror::Result<AccountSession> {
         let client_id = self.config.gitlab_client_id.clone();
         let client_secret = self.secrets.gitlab_client_secret().await?;
-        let gitlab_client = GitLabAuthAdapter::new();
-        let token = gitlab_client
+        let token = auth_client
             .auth_with_pkce(client_id.clone(), client_secret, host)
             .await
             .unwrap();
@@ -314,15 +324,22 @@ async fn scan(
             continue;
         }
 
-        let rdr = fs.open_file(&entry.path()).await?;
-        let parsed: ProfileFile = serde_json::from_reader(rdr)?;
-        let id: ProfileId =
-            continue_if_none!(entry.path().file_stem().and_then(|s| s.to_str()), || {
-                // TODO: Log the error
-                println!("invalid profile filename: {}", entry.path().display());
-            })
-            .to_string()
-            .into();
+        let path = entry.path();
+        let parsed = continue_if_err!(
+            async {
+                let rdr = fs.open_file(&path).await?;
+                let parsed: ProfileFile = serde_json::from_reader(rdr)?;
+                Ok(parsed)
+            },
+            |e: Error| {
+                session::warn!("failed to parse profile file: {}", e.to_string());
+            }
+        );
+        let id: ProfileId = continue_if_none!(path.file_stem().and_then(|s| s.to_str()), || {
+            session::warn!("invalid profile filename: {}", path.display().to_string());
+        })
+        .to_string()
+        .into();
 
         let mut accounts = HashMap::with_capacity(parsed.accounts.len());
         for account in parsed.accounts {

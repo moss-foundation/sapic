@@ -1,10 +1,11 @@
-use anyhow::Context;
 use async_trait::async_trait;
+use joinerror::{Error, ResultExt};
 use oauth2::{
     AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, EmptyExtraTokenFields,
     PkceCodeChallenge, RedirectUrl, Scope, StandardTokenResponse, TokenUrl,
     basic::{BasicClient, BasicTokenType},
 };
+use reqwest::Client as HttpClient;
 
 use crate::{
     GitAuthAdapter,
@@ -23,12 +24,12 @@ fn token_url(host: &str) -> String {
 }
 
 pub struct GitLabAuthAdapter {
-    // host: String,
+    client: HttpClient,
 }
 
 impl GitLabAuthAdapter {
-    pub fn new() -> Self {
-        Self {}
+    pub fn new(client: HttpClient) -> Self {
+        Self { client }
     }
 }
 
@@ -42,7 +43,7 @@ impl GitAuthAdapter for GitLabAuthAdapter {
         client_id: ClientId,
         client_secret: ClientSecret,
         host: &str,
-    ) -> anyhow::Result<Self::PkceToken> {
+    ) -> joinerror::Result<Self::PkceToken> {
         let (listener, port) = create_auth_tcp_listener()?;
 
         let client = BasicClient::new(client_id)
@@ -66,16 +67,18 @@ impl GitAuthAdapter for GitLabAuthAdapter {
         }
 
         let (code, returned_state) =
-            receive_auth_code(&listener).context("failed to receive OAuth callback")?;
+            receive_auth_code(&listener).join_err::<()>("failed to receive OAuth callback")?;
         if state.secret() != returned_state.secret() {
-            return Err(anyhow::anyhow!("state mismatch"));
+            return Err(Error::new::<()>("state mismatch"));
         }
 
         let token = client
             .exchange_code(AuthorizationCode::new(code.secret().to_string()))
             .set_pkce_verifier(pkce_verifier)
-            .request_async(&reqwest::Client::new()) // TODO: reuse client instead of creating a new one
-            .await?;
+            .request_async(&self.client)
+            .await
+            .map_err(|e| Error::new::<()>(e.to_string()))
+            .join_err::<()>("failed to exchange code")?;
 
         Ok(token)
     }

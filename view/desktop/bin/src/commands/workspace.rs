@@ -96,7 +96,6 @@ pub async fn create_collection<'a, R: tauri::Runtime>(
     .await
 }
 
-#[allow(dead_code)]
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn import_collection<'a, R: tauri::Runtime>(

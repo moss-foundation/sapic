@@ -4,7 +4,10 @@ use moss_app::{
     command::CommandContext,
     models::{events::*, operations::*},
 };
-use moss_applib::context::{AnyContext, MutableContext};
+use moss_applib::{
+    AppHandle, TauriAppRuntime,
+    context::{AnyContext, MutableContext},
+};
 use moss_text::{ReadOnlyStr, quote};
 use serde_json::Value as JsonValue;
 use std::{collections::HashMap, time::Duration};
@@ -369,6 +372,15 @@ pub async fn add_account<'a, R: tauri::Runtime>(
     window: Window<R>,
     input: AddAccountInput,
 ) -> TauriResult<AddAccountOutput> {
-    let output = app.add_account(&ctx, input).await?;
+    let output = app
+        .add_account(
+            &ctx,
+            &app.handle()
+                .state::<AppHandle<TauriAppRuntime<R>>>()
+                .inner()
+                .clone(),
+            input,
+        )
+        .await?;
     Ok(output)
 }

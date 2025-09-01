@@ -9,7 +9,6 @@ moss_git.workspace = true
 moss_keyring.workspace = true
 joinerror.workspace = true
 
-anyhow.workspace = true
 git2.workspace = true
 url.workspace = true
 dotenv.workspace = true

@@ -3032,6 +3032,7 @@ dependencies = [
  "reqwest",
  "serde_json",
  "tokio",
+ "tracing",
  "url",
  "validator",
 ]
@@ -3736,7 +3737,6 @@ dependencies = [
 name = "moss_git_hosting_provider"
 version = "0.1.0"
 dependencies = [
- "anyhow",
  "async-trait",
  "dotenv",
  "git2",

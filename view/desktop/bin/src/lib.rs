@@ -129,6 +129,8 @@ pub async fn run<R: TauriRuntime>() {
 
                     let github_client = GitHubApiClient::new(http_client.clone());
                     let gitlab_client = GitLabApiClient::new(http_client.clone());
+                    let github_auth_adapter = GitHubAuthAdapter::new(http_client.clone());
+                    let gitlab_auth_adapter = GitLabAuthAdapter::new(http_client.clone());
 
                     app_handle.manage(http_client);
                     app_handle.manage(github_client);

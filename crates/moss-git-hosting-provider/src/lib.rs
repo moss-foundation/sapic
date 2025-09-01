@@ -21,7 +21,7 @@ pub trait GitAuthAdapter {
         client_id: ClientId,
         client_secret: ClientSecret,
         host: &str,
-    ) -> anyhow::Result<Self::PkceToken>;
+    ) -> joinerror::Result<Self::PkceToken>;
     async fn auth_with_pat(&self) -> joinerror::Result<Self::PatToken>;
 }
 
