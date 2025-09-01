@@ -36,17 +36,10 @@ impl<R: AppRuntime> ActiveWorkspace<R> {
 }
 
 pub mod constants {
+    use moss_bindingutils::const_export;
 
-    // ##################################################################
-    // ###                                                            ###
-    // ### !!! PLEASE UPDATE THE TYPESCRIPT CONSTANTS IN index.ts !!! ###
-    // ###                                                            ###
-    // ##################################################################
-
-    // When adding/removing/modifying any constants here,
-    // you must also update the corresponding TypeScript constants
-    // in moss-app/index.ts to match your changes.
-
+    /// @category Constant
+    #[const_export(export_to = "constants.ts")]
     pub const LOGGING_SERVICE_CHANNEL: &'static str = "logging";
 }
 

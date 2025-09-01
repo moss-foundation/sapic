@@ -13,12 +13,10 @@ use tauri::{AppHandle, Emitter, Runtime as TauriRuntime};
 use crate::models::primitives::Location;
 
 pub(crate) mod constants {
-    // ######################################################################
-    // ###                                                                ###
-    // ### !!! PLEASE UPDATE THE TYPESCRIPT CONSTANTS IN constants.ts !!! ###
-    // ###                                                                ###
-    // ######################################################################
+    use moss_bindingutils::const_export;
 
+    /// @category Constant
+    #[const_export(export_to = "constants.ts")]
     pub(crate) const CHANNEL: &str = "app://activity";
 }
 

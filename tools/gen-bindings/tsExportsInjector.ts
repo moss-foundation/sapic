@@ -156,14 +156,14 @@ class TypeScriptExportsInjector {
         throw new Error(`Failed to load index file: ${indexPath}`);
       }
 
+      this.removeExistingBindingExports(indexFile);
       const bindingFiles = this.discoverBindingFiles();
       if (bindingFiles.length === 0) {
         console.warn("⚠️  No TypeScript binding files found");
-        return;
+      } else {
+        this.addNewBindingExports(indexFile, bindingFiles);
       }
 
-      this.removeExistingBindingExports(indexFile);
-      this.addNewBindingExports(indexFile, bindingFiles);
       this.organizeImportsAndExports(indexFile);
 
       console.log(`💾 Saving changes...`);
