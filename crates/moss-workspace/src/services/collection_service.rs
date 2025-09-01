@@ -387,32 +387,33 @@ impl<R: AppRuntime> CollectionService<R> {
         // FIXME: Should we allow user to set local icon when cloning a collection?
         let icon_path = collection.icon_path();
 
-        let mut state_lock = self.state.write().await;
-        state_lock.expanded_items.insert(id.clone());
-        state_lock.collections.insert(
-            id.clone(),
-            CollectionItem {
-                id: id.clone(),
-                order: Some(params.order),
-                handle: Arc::new(collection),
-            },
-        );
+        {
+            let mut state_lock = self.state.write().await;
+            state_lock.expanded_items.insert(id.clone());
+            state_lock.collections.insert(
+                id.clone(),
+                CollectionItem {
+                    id: id.clone(),
+                    order: Some(params.order),
+                    handle: Arc::new(collection),
+                },
+            );
+            // TODO: Make database errors not fail the operation
+            let mut txn = self
+                .storage
+                .begin_write(ctx)
+                .await
+                .join_err::<()>("failed to start transaction")?;
 
-        // TODO: Make database errors not fail the operation
-        let mut txn = self
-            .storage
-            .begin_write(ctx)
-            .await
-            .join_err::<()>("failed to start transaction")?;
+            self.storage
+                .put_item_order_txn(ctx, &mut txn, &id, params.order)
+                .await?;
+            self.storage
+                .put_expanded_items_txn(ctx, &mut txn, &state_lock.expanded_items)
+                .await?;
 
-        self.storage
-            .put_item_order_txn(ctx, &mut txn, &id, params.order)
-            .await?;
-        self.storage
-            .put_expanded_items_txn(ctx, &mut txn, &state_lock.expanded_items)
-            .await?;
-
-        txn.commit()?;
+            txn.commit()?;
+        }
 
         self.on_did_add_collection_emitter
             .fire(OnDidAddCollection {
