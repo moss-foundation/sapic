@@ -120,7 +120,6 @@ impl<R: AppRuntime> AppBuilder<R> {
             theme: theme_service.default_theme().await,
             locale: locale_service.default_locale().await,
         };
-
         App {
             app_dir: params.app_dir,
             app_handle: self.app_handle.clone(),
