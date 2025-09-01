@@ -9,10 +9,7 @@ use moss_applib::{
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_edit::json::EditOptions;
 use moss_fs::{FileSystem, FsResultExt};
-use moss_git::{
-    repository::Repository,
-    url::{GitUrl, normalize_git_url},
-};
+use moss_git::{repository::Repository, url::GitUrl};
 use serde_json::Value as JsonValue;
 use std::{
     path::{Path, PathBuf},
@@ -89,7 +86,7 @@ impl<R: AppRuntime> Collection<R> {
     pub async fn init_vcs(
         &self,
         client: GitClient,
-        url: String,
+        url: GitUrl,
         default_branch: String,
     ) -> joinerror::Result<()> {
         let (access_token, username) = match &client {
@@ -112,7 +109,7 @@ impl<R: AppRuntime> Collection<R> {
         });
 
         let repository = Repository::init(self.abs_path.as_ref())?;
-        repository.add_remote(None, &url)?;
+        repository.add_remote(None, &url.to_string_with_suffix()?)?;
         repository.fetch(None, cb)?;
 
         let remote_branches = repository.list_branches(Some(BranchType::Remote))?;
@@ -159,11 +156,6 @@ impl<R: AppRuntime> Collection<R> {
             });
             repository.push(None, Some(&default_branch), Some(&default_branch), true, cb)?;
         }
-
-        let url = {
-            let normalized = normalize_git_url(&url)?;
-            GitUrl::parse(&normalized)?
-        };
 
         self.vcs
             .set(Vcs::new(url, repository, client))
