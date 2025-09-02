@@ -1,5 +1,6 @@
 use std::path::Path;
 
+use joinerror::Error;
 use moss_applib::{AppRuntime, errors::ValidationResultExt};
 use moss_hcl::Block;
 use validator::Validate;
@@ -32,6 +33,8 @@ impl<R: AppRuntime> Collection<R> {
         let model = EntryModel::from((id.clone(), class_from_path(&input.path)));
 
         self.worktree
+            .get()
+            .ok_or(Error::new::<()>("worktree is not loaded yet"))?
             .create_dir_entry(
                 ctx,
                 &input.name,
@@ -102,6 +105,8 @@ impl<R: AppRuntime> Collection<R> {
         };
 
         self.worktree
+            .get()
+            .ok_or(Error::new::<()>("worktree is not loaded yet"))?
             .create_item_entry(ctx, &input.name, &input.path, model, input.order, false)
             .await?;
 
@@ -117,6 +122,8 @@ impl<R: AppRuntime> Collection<R> {
 
         let path = self
             .worktree
+            .get()
+            .ok_or(Error::new::<()>("worktree is not loaded yet"))?
             .update_item_entry(
                 ctx,
                 &input.id,
@@ -156,6 +163,8 @@ impl<R: AppRuntime> Collection<R> {
 
         let path = self
             .worktree
+            .get()
+            .ok_or(Error::new::<()>("worktree is not loaded yet"))?
             .update_dir_entry(
                 ctx,
                 &input.id,

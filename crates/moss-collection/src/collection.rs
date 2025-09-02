@@ -2,13 +2,14 @@ use chrono::{DateTime, Utc};
 use git2::{BranchType, IndexAddOption, Signature};
 use joinerror::{Error, OptionExt, ResultExt};
 use json_patch::{PatchOperation, ReplaceOperation, jsonptr::PointerBuf};
+use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::{
     AppRuntime, EventMarker,
     subscription::{Event, EventEmitter},
 };
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_edit::json::EditOptions;
-use moss_fs::{FileSystem, FsResultExt};
+use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_git::{
     repository::Repository,
     url::{GitUrl, normalize_git_url},
@@ -21,6 +22,7 @@ use std::{
 use tokio::sync::OnceCell;
 
 use crate::{
+    config::{CONFIG_FILE_NAME, ConfigFile},
     dirs,
     edit::CollectionEdit,
     git::GitClient,
@@ -53,11 +55,13 @@ pub struct Collection<R: AppRuntime> {
     pub(super) fs: Arc<dyn FileSystem>,
     pub(super) abs_path: Arc<Path>,
     pub(super) edit: CollectionEdit,
-    pub(super) worktree: Arc<Worktree<R>>,
+    pub(super) worktree: OnceCell<Arc<Worktree<R>>>,
     pub(super) set_icon_service: SetIconService,
     pub(super) storage_service: Arc<StorageService<R>>,
     pub(super) vcs: OnceCell<Vcs>,
     pub(super) on_did_change: EventEmitter<OnDidChangeEvent>,
+    pub(super) broadcaster: ActivityBroadcaster<R::EventLoop>,
+    pub(super) archived: bool,
 }
 
 #[rustfmt::skip]
@@ -66,6 +70,9 @@ impl<R: AppRuntime> Collection<R> {
 }
 
 impl<R: AppRuntime> Collection<R> {
+    pub fn is_archived(&self) -> bool {
+        self.archived
+    }
     pub fn abs_path(&self) -> &Arc<Path> {
         &self.abs_path
     }
@@ -243,6 +250,7 @@ impl<R: AppRuntime> Collection<R> {
             ));
         }
 
+        // FIXME: Should we allow updating the icon of archived collections?
         match params.icon_path {
             None => {}
             Some(ChangePath::Update(new_icon_path)) => {
@@ -264,6 +272,91 @@ impl<R: AppRuntime> Collection<R> {
         if let Some(vcs) = self.vcs.get() {
             vcs.dispose(self.fs.clone()).await?;
         }
+
+        Ok(())
+    }
+
+    pub async fn archive(&self) -> joinerror::Result<()> {
+        if self.archived {
+            return Ok(());
+        }
+
+        let config_path = self.abs_path.join(CONFIG_FILE_NAME);
+        let rdr = self
+            .fs
+            .open_file(&config_path)
+            .await
+            .join_err_with::<()>(|| {
+                format!("failed to open config file: {}", config_path.display())
+            })?;
+
+        let mut config: ConfigFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
+            format!("failed to parse config file: {}", config_path.display())
+        })?;
+
+        config.archived = true;
+
+        self.fs
+            .create_file_with(
+                &config_path,
+                serde_json::to_string(&config)?.as_bytes(),
+                CreateOptions {
+                    overwrite: true,
+                    ignore_if_exists: false,
+                },
+            )
+            .await?;
+
+        // TODO: Dropping worktree and vcs?
+        // Right now it's impossible since OnceCell requires &mut self
+
+        Ok(())
+    }
+
+    pub async fn unarchive(&self) -> joinerror::Result<()> {
+        if !self.archived {
+            return Ok(());
+        }
+
+        let config_path = self.abs_path.join(CONFIG_FILE_NAME);
+        let rdr = self
+            .fs
+            .open_file(&config_path)
+            .await
+            .join_err_with::<()>(|| {
+                format!("failed to open config file: {}", config_path.display())
+            })?;
+
+        let mut config: ConfigFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
+            format!("failed to parse config file: {}", config_path.display())
+        })?;
+
+        config.archived = false;
+
+        self.fs
+            .create_file_with(
+                &config_path,
+                serde_json::to_string(&config)?.as_bytes(),
+                CreateOptions {
+                    overwrite: true,
+                    ignore_if_exists: false,
+                },
+            )
+            .await?;
+
+        let _ = self
+            .worktree
+            .get_or_init(|| async {
+                Arc::new(Worktree::new(
+                    self.abs_path.clone(),
+                    self.fs.clone(),
+                    self.broadcaster.clone(),
+                    self.storage_service.clone(),
+                ))
+            })
+            .await;
+
+        // TODO: Read account info from config and reload vcs
 
         Ok(())
     }

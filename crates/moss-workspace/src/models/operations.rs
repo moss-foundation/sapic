@@ -140,6 +140,42 @@ pub struct DeleteCollectionOutput {
 }
 
 /// @category Operation
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct ArchiveCollectionInput {
+    #[ts(type = "string")]
+    pub id: CollectionId,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct ArchiveCollectionOutput {
+    #[ts(type = "string")]
+    pub id: CollectionId,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct UnarchiveCollectionInput {
+    #[ts(type = "string")]
+    pub id: CollectionId,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct UnarchiveCollectionOutput {
+    #[ts(type = "string")]
+    pub id: CollectionId,
+}
+
+/// @category Operation
 #[derive(Debug, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]

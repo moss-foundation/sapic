@@ -17,6 +17,7 @@ use serde_json::Value as JsonValue;
 use std::{
     cell::LazyCell,
     collections::{HashMap, HashSet},
+    fmt::Debug,
     path::{Path, PathBuf},
     sync::Arc,
 };
@@ -86,6 +87,15 @@ pub(crate) struct Worktree<R: AppRuntime> {
     storage: Arc<StorageService<R>>,
     broadcaster: ActivityBroadcaster<R::EventLoop>,
     state: Arc<RwLock<WorktreeState>>,
+}
+
+// Required for OnceCell::set
+impl<R: AppRuntime> Debug for Worktree<R> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Worktree")
+            .field("abs_path", &self.abs_path)
+            .finish()
+    }
 }
 
 impl<R: AppRuntime> Worktree<R> {

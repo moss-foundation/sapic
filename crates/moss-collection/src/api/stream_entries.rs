@@ -21,7 +21,7 @@ use crate::{
         operations::{StreamEntriesInput, StreamEntriesOutput},
         primitives::{EntryId, FrontendEntryPath},
     },
-    worktree::entry::EntryDescription,
+    worktree::{Worktree, entry::EntryDescription},
 };
 
 const EXPANSION_DIRECTORIES: &[&str] = &[
@@ -70,7 +70,18 @@ impl<R: AppRuntime> Collection<R> {
 
         for dir in expansion_dirs {
             let entries_tx_clone = tx.clone();
-            let worktree_service_clone = self.worktree.clone();
+            let worktree_service_clone = self
+                .worktree
+                .get_or_init(|| async {
+                    Arc::new(Worktree::new(
+                        self.abs_path.clone(),
+                        self.fs.clone(),
+                        self.broadcaster.clone(),
+                        self.storage_service.clone(),
+                    ))
+                })
+                .await
+                .to_owned();
             // We need to fetch this data from the database here, otherwise we'll be requesting it every time the scan method is called.
 
             let handle = tokio::spawn({

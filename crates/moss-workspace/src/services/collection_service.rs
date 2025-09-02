@@ -33,6 +33,7 @@ use crate::{
     builder::{OnDidAddCollection, OnDidDeleteCollection},
     dirs,
     models::{
+        operations::ArchiveCollectionOutput,
         primitives::CollectionId,
         types::{CreateCollectionGitParams, CreateCollectionParams, UpdateCollectionParams},
     },
@@ -70,6 +71,7 @@ pub(crate) struct CollectionItemDescription {
     pub icon_path: Option<PathBuf>,
     pub abs_path: Arc<Path>,
     pub external_path: Option<PathBuf>,
+    pub archived: bool,
 }
 
 #[derive(Default)]
@@ -227,6 +229,7 @@ impl<R: AppRuntime> CollectionService<R> {
             }
         };
 
+        // TODO: Add account info to the config
         if let (Some(git_params), Some(account)) = (git_params, account) {
             let client = match git_params.git_provider_type {
                 GitProviderKind::GitHub => GitClient::GitHub {
@@ -295,6 +298,7 @@ impl<R: AppRuntime> CollectionService<R> {
             icon_path,
             abs_path: abs_path.into(),
             external_path: params.external_path.clone(),
+            archived: false,
         })
     }
 
@@ -421,6 +425,8 @@ impl<R: AppRuntime> CollectionService<R> {
             })
             .await;
 
+        // TODO: Add account info to the config
+
         Ok(CollectionItemDescription {
             id: id.clone(),
             name: desc.name,
@@ -431,6 +437,7 @@ impl<R: AppRuntime> CollectionService<R> {
             icon_path,
             abs_path,
             external_path: None,
+            archived: false,
         })
     }
 
@@ -581,9 +588,42 @@ impl<R: AppRuntime> CollectionService<R> {
                     icon_path,
                     abs_path: item.handle.abs_path().clone(),
                     external_path: None, // TODO: implement
+                    archived: item.is_archived(),
                 };
             }
         })
+    }
+
+    pub(crate) async fn archive_collection(
+        &self,
+        _ctx: &R::AsyncContext,
+        id: &CollectionId,
+    ) -> joinerror::Result<()> {
+        let mut state_lock = self.state.write().await;
+        let item = state_lock
+            .collections
+            .get_mut(&id)
+            .ok_or_join_err_with::<()>(|| {
+                format!("failed to find collection with id `{}`", id.to_string())
+            })?;
+
+        item.archive().await
+    }
+
+    pub(crate) async fn unarchive_collection(
+        &self,
+        _ctx: &R::AsyncContext,
+        id: &CollectionId,
+    ) -> joinerror::Result<()> {
+        let mut state_lock = self.state.write().await;
+        let item = state_lock
+            .collections
+            .get_mut(&id)
+            .ok_or_join_err_with::<()>(|| {
+                format!("failed to find collection with id `{}`", id.to_string())
+            })?;
+
+        item.unarchive().await
     }
 }
 async fn restore_collections<R: AppRuntime>(
@@ -654,7 +694,10 @@ async fn restore_collections<R: AppRuntime>(
             }
         };
 
+        // FIXME: Check whether we need reloading vcs based on details()
+
         if let Some(vcs) = collection.vcs() {
+            // FIXME: Store the account_id in config
             let (account_id, provider) = (vcs.owner(), vcs.provider());
             let account = active_profile
                 .account(&account_id)
