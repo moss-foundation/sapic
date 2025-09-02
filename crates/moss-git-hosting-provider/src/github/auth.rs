@@ -1,34 +1,45 @@
 use async_trait::async_trait;
-use joinerror::{Error, ResultExt};
+use joinerror::Error;
 use oauth2::{
-    AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, EmptyExtraTokenFields,
-    PkceCodeChallenge, RedirectUrl, Scope, StandardTokenResponse, TokenUrl,
-    basic::{BasicClient, BasicTokenType},
+    AccessToken, ClientId, ClientSecret, CsrfToken, EmptyExtraTokenFields, StandardTokenResponse,
+    basic::BasicTokenType,
 };
 use reqwest::Client as HttpClient;
-
-use crate::{
-    GitAuthAdapter,
-    utils::{create_auth_tcp_listener, receive_auth_code},
+use serde::{Deserialize, Serialize};
+use std::{
+    io::{BufRead, BufReader, Write},
+    net::TcpListener,
 };
+use url::Url;
 
-fn authorize_url(host: &str) -> String {
-    format!("https://{host}/login/oauth/authorize")
+use crate::GitAuthAdapter;
+
+#[derive(Debug, Deserialize)]
+pub struct WorkerAuthResponse {
+    pub access_token: String,
+    // pub token_type: String,
+    // pub scope: String,
 }
 
-fn token_url(host: &str) -> String {
-    format!("https://{host}/login/oauth/access_token")
+#[derive(Debug, Serialize)]
+pub struct TokenExchangeRequest {
+    pub code: String,
+    pub state: String,
 }
-
-const GITHUB_SCOPES: [&'static str; 3] = ["repo", "user:email", "read:user"];
 
 pub struct GitHubAuthAdapter {
     client: HttpClient,
+    url: String,
+    callback_port: u16,
 }
 
 impl GitHubAuthAdapter {
-    pub fn new(client: HttpClient) -> Self {
-        Self { client }
+    pub fn new(client: HttpClient, url: String, callback_port: u16) -> Self {
+        Self {
+            client,
+            url,
+            callback_port,
+        }
     }
 }
 
@@ -39,46 +50,113 @@ impl GitAuthAdapter for GitHubAuthAdapter {
 
     async fn auth_with_pkce(
         &self,
-        client_id: ClientId,
-        client_secret: ClientSecret,
-        host: &str,
+        _client_id: ClientId,
+        _client_secret: ClientSecret,
+        _host: &str,
     ) -> joinerror::Result<Self::PkceToken> {
-        let (listener, port) = create_auth_tcp_listener()?;
-        let redirect = format!("http://127.0.0.1:{port}/callback");
+        let listener = {
+            let addr = format!("127.0.0.1:{}", self.callback_port);
+            TcpListener::bind(&addr)
+                .map_err(|e| Error::new::<()>(format!("failed to bind to port {}: {}", addr, e)))?
+        };
 
-        let client = BasicClient::new(client_id)
-            .set_client_secret(client_secret)
-            .set_auth_uri(AuthUrl::new(authorize_url(host))?)
-            .set_token_uri(TokenUrl::new(token_url(host))?)
-            .set_redirect_uri(RedirectUrl::new(redirect.clone())?);
-
-        let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
-        let (auth_url, state) = client
-            .authorize_url(CsrfToken::new_random)
-            .add_scopes(GITHUB_SCOPES.iter().map(|s| Scope::new((*s).to_string())))
-            .add_extra_param("prompt", "select_account")
-            .set_pkce_challenge(pkce_challenge)
-            .url();
+        let state = CsrfToken::new_random();
+        let redirect = format!("http://127.0.0.1:{}/oauth/callback", self.callback_port);
+        let auth_url = format!(
+            "{}/auth/github/authorize?redirect_uri={}&state={}",
+            self.url,
+            urlencoding::encode(&redirect),
+            state.secret()
+        );
 
         if webbrowser::open(auth_url.as_str()).is_err() {
             eprintln!("Open this URL:\n{}\n", auth_url);
         }
 
-        let (code, returned_state) =
-            receive_auth_code(&listener).join_err::<()>("failed to receive OAuth callback")?;
-        if state.secret() != returned_state.secret() {
-            return Err(Error::new::<()>("state mismatch"));
+        let (stream, _) = listener
+            .accept()
+            .map_err(|e| Error::new::<()>(format!("failed to accept connection: {}", e)))?;
+
+        let mut reader = BufReader::new(&stream);
+        let mut request_line = String::new();
+        reader
+            .read_line(&mut request_line)
+            .map_err(|e| Error::new::<()>(format!("failed to read request: {}", e)))?;
+
+        let url_path = request_line
+            .split_whitespace()
+            .nth(1)
+            .ok_or_else(|| Error::new::<()>("invalid HTTP request"))?;
+
+        if !url_path.starts_with("/oauth/callback") {
+            return Err(Error::new::<()>(format!(
+                "unexpected callback path: {}",
+                url_path
+            )));
         }
 
-        let token = client
-            .exchange_code(AuthorizationCode::new(code.secret().to_string()))
-            .set_pkce_verifier(pkce_verifier)
-            .request_async(&self.client)
-            .await
-            .map_err(|e| Error::new::<()>(e.to_string()))
-            .join_err::<()>("failed to exchange code")?;
+        let url = Url::parse(&format!("http://localhost{}", url_path))
+            .map_err(|e| Error::new::<()>(format!("failed to parse URL: {}", e)))?;
 
-        Ok(token)
+        let code = url
+            .query_pairs()
+            .find(|(key, _)| key == "code")
+            .map(|(_, value)| value.to_string())
+            .ok_or_else(|| Error::new::<()>("authorization code not found"))?;
+
+        let returned_state = url
+            .query_pairs()
+            .find(|(key, _)| key == "state")
+            .map(|(_, value)| value.to_string())
+            .ok_or_else(|| Error::new::<()>("state parameter not found"))?;
+
+        if state.secret() != &returned_state {
+            return Err(Error::new::<()>("state mismatch - possible CSRF attack"));
+        }
+
+        let response = "HTTP/1.1 200 OK\r\n\r\n<html><body><h1>Authorization successful!</h1><p>You can close this window.</p><script>window.close();</script></body></html>";
+        let mut stream = stream;
+        stream
+            .write_all(response.as_bytes())
+            .map_err(|e| Error::new::<()>(format!("failed to send response: {}", e)))?;
+
+        let token_exchange_url = format!("{}/auth/github/token", self.url);
+        let request_body = TokenExchangeRequest {
+            code: code.clone(),
+            state: returned_state.clone(),
+        };
+
+        let response = self
+            .client
+            .post(&token_exchange_url)
+            .json(&request_body)
+            .send()
+            .await
+            .map_err(|e| Error::new::<()>(format!("failed to exchange token: {}", e)))?;
+
+        if !response.status().is_success() {
+            let error_text = response
+                .text()
+                .await
+                .unwrap_or_else(|_| "unknown error".to_string());
+            return Err(Error::new::<()>(format!(
+                "Token exchange failed: {}",
+                error_text
+            )));
+        }
+
+        let worker_response: WorkerAuthResponse = response
+            .json()
+            .await
+            .map_err(|e| Error::new::<()>(format!("failed to parse worker response: {}", e)))?;
+
+        let token_response = StandardTokenResponse::new(
+            AccessToken::new(worker_response.access_token),
+            BasicTokenType::Bearer,
+            EmptyExtraTokenFields {},
+        );
+
+        Ok(token_response)
     }
 
     async fn auth_with_pat(&self) -> joinerror::Result<Self::PatToken> {
