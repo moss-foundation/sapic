@@ -101,12 +101,6 @@ pub struct CollectionCloneParams {
     pub branch: Option<String>,
 }
 
-// pub struct CollectionCloneGitParams {
-//     pub git_provider_type: GitProviderKind,
-//     pub repo_url: String,
-//     pub branch: Option<String>,
-// }
-
 pub struct CollectionBuilder<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     broadcaster: ActivityBroadcaster<R::EventLoop>,
