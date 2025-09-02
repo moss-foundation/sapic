@@ -8,3 +8,6 @@ json-patch = { workspace = true }
 jsonptr = { workspace = true }
 joinerror = { workspace = true }
 serde_json = { workspace = true }
+
+[features]
+integration-tests = []
