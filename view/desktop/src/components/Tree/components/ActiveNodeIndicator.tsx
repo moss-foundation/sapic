@@ -13,7 +13,7 @@ export const ActiveNodeIndicator = ({ isActive, className, ...props }: ActiveNod
       className={cn(`
           absolute top-0 left-0 
           h-full w-full 
-          group-hover/TreeNode:background-(--moss-secondary-background-hover)
+          group-hover/TreeRootNodeHeader:background-(--moss-secondary-background-hover)
           -z-1
         `,
         {

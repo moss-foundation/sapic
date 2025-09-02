@@ -1,13 +1,13 @@
 import { Icon } from "@/lib/ui/Icon";
 import { cn } from "@/utils";
 
-interface TreeRootNodeIconProps {
+interface RootNodeIconProps {
   handleIconClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
-  areChildrenShown: boolean;
+  isFolderExpanded: boolean;
   iconPath?: string;
 }
 
-export const TreeRootNodeIcon = ({ handleIconClick, areChildrenShown, iconPath }: TreeRootNodeIconProps) => {
+export const RootNodeIcon = ({ handleIconClick, isFolderExpanded, iconPath }: RootNodeIconProps) => {
   return (
     <span className="flex size-5 shrink-0 items-center justify-center">
       <button
@@ -17,7 +17,7 @@ export const TreeRootNodeIcon = ({ handleIconClick, areChildrenShown, iconPath }
         <Icon
           icon="ChevronRight"
           className={cn("text-(--moss-icon-primary-text)", {
-            "rotate-90": areChildrenShown,
+            "rotate-90": isFolderExpanded,
             "hidden group-hover/treeRootNodeTrigger:block": iconPath,
           })}
         />

@@ -29,8 +29,8 @@ import {
 import { getTreeRootNodeSourceData } from "../../utils/TreeRoot";
 
 interface UseDraggableRootNodeProps {
-  dirRef: RefObject<HTMLDivElement>;
-  triggerRef: RefObject<HTMLDivElement>;
+  dirRef: RefObject<HTMLUListElement>;
+  triggerRef: RefObject<HTMLLIElement>;
   node: TreeCollectionRootNode;
   isRenamingNode: boolean;
 }
@@ -110,6 +110,7 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
       dropTargetForElements({
         element: dirElement,
         canDrop: ({ source }) => isSourceTreeRootNode(source),
+        getIsSticky: () => true,
         getData: ({ input }) => {
           const dropTarget = {
             type: "TreeCollection",

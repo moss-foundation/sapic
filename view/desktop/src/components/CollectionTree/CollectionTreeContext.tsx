@@ -1,20 +1,18 @@
 import { createContext } from "react";
 
-import { CollectionTreeContextProps } from "./types";
+import { BaseTreeContextProps } from "../Tree/types";
 
-export const CollectionTreeContext = createContext<CollectionTreeContextProps>({
+export const CollectionTreeContext = createContext<BaseTreeContextProps>({
   id: "",
   name: "",
-  repository: undefined,
-  order: undefined,
+  order: 0,
   iconPath: undefined,
-  expanded: false,
   treePaddingLeft: 0,
   treePaddingRight: 0,
   nodeOffset: 0,
   allFoldersAreExpanded: false,
   allFoldersAreCollapsed: true,
-  searchInput: undefined,
+  searchInput: "",
   displayMode: "REQUEST_FIRST",
-  showNodeOrders: false,
+  showOrders: false,
 });

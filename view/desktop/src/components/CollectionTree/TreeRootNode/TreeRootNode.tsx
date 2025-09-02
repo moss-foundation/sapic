@@ -1,37 +1,29 @@
-import { useContext, useRef } from "react";
+import { useRef } from "react";
 
+import { Tree } from "@/components/Tree";
 import { useStreamCollections } from "@/hooks";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
-import { cn } from "@/utils";
 
-import { ActiveNodeIndicator } from "../ActiveNodeIndicator";
-import { CollectionTreeContext } from "../CollectionTreeContext";
-import { DropIndicatorForDir } from "../DropIndicatorForDir";
-import { DropIndicatorForTrigger } from "../DropIndicatorForTrigger";
 import { TreeRootNodeProps } from "../types";
 import { calculateShouldRenderRootChildNodes } from "../utils";
 import { useDraggableRootNode } from "./hooks/useDraggableRootNode";
 import { useRootNodeAddForm } from "./hooks/useRootNodeAddForm";
 import { useRootNodeRenamingForm } from "./hooks/useRootNodeRenamingForm";
-import { TreeRootNodeActions } from "./TreeRootNodeActions";
-import { TreeRootNodeButton } from "./TreeRootNodeButton";
+import { TreeRootControls } from "./TreeRootControls";
 import { TreeRootNodeChildren } from "./TreeRootNodeChildren";
-import { TreeRootNodeRenameForm } from "./TreeRootNodeRenameForm";
 
 export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
-  const { searchInput, treePaddingLeft, treePaddingRight } = useContext(CollectionTreeContext);
-
-  const draggableRootRef = useRef<HTMLDivElement>(null);
-  const dropTargetRootRef = useRef<HTMLDivElement>(null);
+  const draggableHeaderRef = useRef<HTMLLIElement>(null);
+  const dropTargetRootRef = useRef<HTMLUListElement>(null);
 
   const { data: streamedCollections } = useStreamCollections();
   const { activePanelId } = useTabbedPaneStore();
 
   const {
-    isAddingRootNodeFile,
-    isAddingRootNodeFolder,
-    setIsAddingRootNodeFile,
-    setIsAddingRootNodeFolder,
+    isAddingRootFileNode,
+    isAddingRootFolderNode,
+    setIsAddingRootFileNode,
+    setIsAddingRootFolderNode,
     handleRootAddFormCancel,
     handleRootAddFormSubmit,
   } = useRootNodeAddForm(node);
@@ -45,7 +37,7 @@ export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
 
   const { isDragging, isChildDropBlocked, instruction } = useDraggableRootNode({
     dirRef: dropTargetRootRef,
-    triggerRef: draggableRootRef,
+    triggerRef: draggableHeaderRef,
     node,
     isRenamingNode: isRenamingRootNode,
   });
@@ -53,62 +45,42 @@ export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
   const shouldRenderRootChildNodes = calculateShouldRenderRootChildNodes(
     node,
     isDragging,
-    isAddingRootNodeFile,
+    isAddingRootFileNode,
     isRenamingRootNode
   );
 
   const restrictedNames = streamedCollections?.map((collection) => collection.name) ?? [];
 
   return (
-    <div ref={dropTargetRootRef} className={cn("group/Tree relative w-full", {})}>
-      <DropIndicatorForDir isChildDropBlocked={isChildDropBlocked} instruction={instruction} />
-      <DropIndicatorForTrigger instruction={instruction} />
-
-      <div
-        ref={draggableRootRef}
-        className={cn("group/TreeNode relative flex w-full min-w-0 items-center justify-between py-0.75")}
-        style={{
-          paddingLeft: treePaddingLeft,
-          paddingRight: treePaddingRight,
-        }}
-      >
-        <ActiveNodeIndicator isActive={activePanelId === node.id} />
-
+    <Tree.RootNode ref={dropTargetRootRef} isChildDropBlocked={isChildDropBlocked} instruction={instruction}>
+      <Tree.RootNodeHeader ref={draggableHeaderRef} isActive={activePanelId === node.id}>
         {isRenamingRootNode ? (
-          <TreeRootNodeRenameForm
-            node={node}
+          <Tree.RootNodeRenameForm
+            name={node.name}
             shouldRenderChildNodes={shouldRenderRootChildNodes}
             restrictedNames={restrictedNames}
             handleRenamingFormSubmit={handleRenamingRootNodeFormSubmit}
             handleRenamingFormCancel={handleRenamingRootNodeFormCancel}
           />
         ) : (
-          <TreeRootNodeButton
+          <TreeRootControls
             node={node}
-            searchInput={searchInput}
-            shouldRenderChildNodes={shouldRenderRootChildNodes}
+            setIsAddingRootFileNode={setIsAddingRootFileNode}
+            setIsAddingRootFolderNode={setIsAddingRootFolderNode}
+            setIsRenamingRootNode={setIsRenamingRootNode}
           />
         )}
-
-        <TreeRootNodeActions
-          node={node}
-          searchInput={searchInput}
-          isRenamingRootNode={isRenamingRootNode}
-          setIsAddingRootFileNode={setIsAddingRootNodeFile}
-          setIsAddingRootFolderNode={setIsAddingRootNodeFolder}
-          setIsRenamingRootNode={setIsRenamingRootNode}
-        />
-      </div>
+      </Tree.RootNodeHeader>
 
       {shouldRenderRootChildNodes && (
         <TreeRootNodeChildren
           node={node}
-          isAddingRootFileNode={isAddingRootNodeFile}
-          isAddingRootFolderNode={isAddingRootNodeFolder}
+          isAddingRootFileNode={isAddingRootFileNode}
+          isAddingRootFolderNode={isAddingRootFolderNode}
           handleAddFormRootSubmit={handleRootAddFormSubmit}
           handleAddFormRootCancel={handleRootAddFormCancel}
         />
       )}
-    </div>
+    </Tree.RootNode>
   );
 };

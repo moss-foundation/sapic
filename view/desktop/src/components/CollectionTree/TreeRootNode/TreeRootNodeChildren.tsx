@@ -1,12 +1,10 @@
 import { useContext } from "react";
 
-import { cn } from "@/utils";
+import { Tree } from "@/components/Tree";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 
 import { EntryIcon } from "../../EntryIcon";
 import { CollectionTreeContext } from "../CollectionTreeContext";
-import { DirDepthIndicator } from "../DirDepthIndicator";
-import { NodeAddForm } from "../NodeAddForm";
 import TreeNode from "../TreeNode/TreeNode";
 import { TreeCollectionRootNode } from "../types";
 import { getChildrenNames } from "../utils";
@@ -37,9 +35,7 @@ export const TreeRootNodeChildren = ({
   const restrictedNames = getChildrenNames(node.requests);
 
   return (
-    <ul className={cn("relative w-full")}>
-      {node.expanded && <DirDepthIndicator depth={0} />}
-
+    <Tree.RootNodeChildren>
       {nodesToRender.map((childNode, index) => {
         return (
           <TreeNode
@@ -71,13 +67,13 @@ export const TreeRootNodeChildren = ({
             }}
             className="opacity-0"
           />
-          <NodeAddForm
+          <Tree.NodeAddForm
             onSubmit={handleAddFormRootSubmit}
             onCancel={handleAddFormRootCancel}
             restrictedNames={restrictedNames}
           />
         </div>
       )}
-    </ul>
+    </Tree.RootNodeChildren>
   );
 };

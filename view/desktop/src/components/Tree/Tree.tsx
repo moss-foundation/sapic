@@ -1,36 +1,15 @@
-import { TreeContext, TreeContextProps } from "./components/TreeContext";
+import { ComponentProps } from "react";
 
-interface TreeProps extends Partial<TreeContextProps> {
+interface TreeProps extends ComponentProps<"div"> {
+  paddingLeft?: number;
+  paddingRight?: number;
   children: React.ReactNode;
 }
 
-export const Tree = ({
-  children,
-  id = "",
-  iconPath = "",
-  treePaddingLeft = 8,
-  treePaddingRight = 8,
-  nodeOffset = 12,
-  allFoldersAreExpanded = false,
-  allFoldersAreCollapsed = false,
-  displayMode = "REQUEST_FIRST",
-  showNodeOrders = false,
-}: TreeProps) => {
+export const Tree = ({ children, paddingLeft, paddingRight, ...props }: TreeProps) => {
   return (
-    <TreeContext.Provider
-      value={{
-        id,
-        iconPath,
-        treePaddingLeft,
-        treePaddingRight,
-        nodeOffset,
-        allFoldersAreExpanded,
-        allFoldersAreCollapsed,
-        displayMode,
-        showNodeOrders,
-      }}
-    >
+    <div style={{ paddingLeft, paddingRight }} {...props}>
       {children}
-    </TreeContext.Provider>
+    </div>
   );
 };

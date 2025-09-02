@@ -180,7 +180,7 @@ const TreeNodeButton = forwardRef<HTMLDivElement, TreeNodeButtonProps>(
                 <div className="text-(--moss-tree-entries-counter)">({numberOfAllNestedChildNodes})</div>
               )}
 
-              <span className="DragHandle h-full min-h-4 grow" />
+              {/* <span className="DragHandle h-full min-h-4 grow" /> */}
 
               {node.kind === "Dir" && (
                 <TreeNodeActions
@@ -189,6 +189,7 @@ const TreeNodeButton = forwardRef<HTMLDivElement, TreeNodeButtonProps>(
                   setIsAddingFileNode={onAddFile}
                   setIsAddingFolderNode={onAddFolder}
                   setIsRenamingNode={onRename}
+                  className="ml-auto"
                 />
               )}
             </span>

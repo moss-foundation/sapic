@@ -19,8 +19,8 @@ export const DirDepthIndicator = ({ depth }: { depth: number }) => {
 
         transition-[display,opacity] transition-discrete duration-100
         hidden opacity-0
-        group-hover/Tree:flex 
-        group-hover/Tree:opacity-100
+        group-hover/TreeRootNode:flex 
+        group-hover/TreeRootNode:opacity-100
       `}
       style={{ left }}
     />
