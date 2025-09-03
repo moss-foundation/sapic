@@ -14,6 +14,7 @@ export const ActiveNodeIndicator = ({ isActive, className, ...props }: ActiveNod
           absolute top-0 left-0 
           h-full w-full 
           group-hover/TreeRootNodeHeader:background-(--moss-secondary-background-hover)
+          group-hover/TreeNodeControls:background-(--moss-secondary-background-hover)
           -z-1
         `,
         {

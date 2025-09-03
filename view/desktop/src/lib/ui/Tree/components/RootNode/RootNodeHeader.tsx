@@ -11,13 +11,16 @@ interface RootNodeHeaderProps extends HTMLAttributes<HTMLLIElement> {
 }
 
 export const RootNodeHeader = forwardRef<HTMLLIElement, RootNodeHeaderProps>(
-  ({ isActive, children, ...props }: RootNodeHeaderProps, ref) => {
+  ({ isActive, children, className, ...props }: RootNodeHeaderProps, ref) => {
     const { treePaddingLeft, treePaddingRight } = useTreeContext();
 
     return (
       <li
         ref={ref}
-        className={cn("group/TreeRootNodeHeader relative flex w-full min-w-0 items-center justify-between py-0.75")}
+        className={cn(
+          "group/TreeRootNodeHeader relative flex w-full min-w-0 items-center justify-between py-0.75",
+          className
+        )}
         style={{
           paddingLeft: treePaddingLeft,
           paddingRight: treePaddingRight,

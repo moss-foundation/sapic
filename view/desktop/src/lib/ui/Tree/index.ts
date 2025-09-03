@@ -1,5 +1,5 @@
 import { ActionLabel } from "./components/ActionLabel";
-import { ActionsHover } from "./components/ActionsHover";
+import { HoverActions } from "./components/ActionsHover";
 import { ActionsPersistent } from "./components/ActionsPersistent";
 import { Node } from "./components/Node/Node";
 import { NodeActions } from "./components/Node/NodeActions";
@@ -49,7 +49,7 @@ interface TreeWithSubcomponents {
   NodeRenamingForm: typeof NodeRenamingForm;
 
   PersistentActions: typeof ActionsPersistent;
-  HoverActions: typeof ActionsHover;
+  HoverActions: typeof HoverActions;
   ActionLabel: typeof ActionLabel;
 }
 
@@ -79,7 +79,7 @@ TreeWithSubs.NodeAddForm = NodeAddForm;
 TreeWithSubs.NodeRenamingForm = NodeRenamingForm;
 
 TreeWithSubs.PersistentActions = ActionsPersistent;
-TreeWithSubs.HoverActions = ActionsHover;
+TreeWithSubs.HoverActions = HoverActions;
 TreeWithSubs.ActionLabel = ActionLabel;
 
 export { TreeWithSubs as Tree };
