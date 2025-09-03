@@ -1,4 +1,3 @@
-use joinerror::Error;
 use moss_applib::{AppRuntime, errors::ValidationResultExt};
 use validator::Validate;
 
@@ -14,11 +13,7 @@ impl<R: AppRuntime> Collection<R> {
         input: DeleteEntryInput,
     ) -> joinerror::Result<DeleteEntryOutput> {
         input.validate().join_err_bare()?;
-        self.worktree
-            .get()
-            .ok_or(Error::new::<()>("worktree is not loaded yet"))?
-            .remove_entry(ctx, &input.id)
-            .await?;
+        self.worktree().await.remove_entry(ctx, &input.id).await?;
 
         Ok(DeleteEntryOutput { id: input.id })
     }

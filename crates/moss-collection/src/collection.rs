@@ -85,6 +85,19 @@ impl<R: AppRuntime> Collection<R> {
 }
 
 impl<R: AppRuntime> Collection<R> {
+    pub(crate) async fn worktree(&self) -> &Arc<Worktree<R>> {
+        self.worktree
+            .get_or_init(|| async {
+                Arc::new(Worktree::new(
+                    self.abs_path.clone(),
+                    self.fs.clone(),
+                    self.broadcaster.clone(),
+                    self.storage_service.clone(),
+                ))
+            })
+            .await
+    }
+
     pub fn is_archived(&self) -> bool {
         self.archived.load(Ordering::SeqCst)
     }
