@@ -12,7 +12,7 @@ import { useNodeRenamingForm } from "./hooks/useNodeRenamingForm";
 import TreeNodeAddForm from "./TreeNodeAddForm";
 import TreeNodeChildren from "./TreeNodeChildren";
 import TreeNodeControls from "./TreeNodeControls";
-import TreeNodeRenameForm from "./TreeNodeRenameForm";
+import TreeNodeRenamingForm from "./TreeNodeRenamingForm";
 
 export interface TreeNodeComponentProps {
   node: TreeCollectionNode;
@@ -63,7 +63,7 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
   return (
     <Tree.Node ref={dropTargetListRef} isChildDropBlocked={isChildDropBlocked} instruction={instruction}>
       {isRenamingNode && !isRootNode ? (
-        <TreeNodeRenameForm
+        <TreeNodeRenamingForm
           node={node}
           depth={depth}
           restrictedNames={restrictedNames}

@@ -11,7 +11,7 @@ import { useRootNodeAddForm } from "./hooks/useRootNodeAddForm";
 import { useRootNodeRenamingForm } from "./hooks/useRootNodeRenamingForm";
 import { TreeRootControls } from "./TreeRootControls";
 import { TreeRootNodeChildren } from "./TreeRootNodeChildren";
-import { TreeRootRenamingForm } from "./TreeRootRenamingForm";
+import { TreeRootNodeRenamingForm } from "./TreeRootNodeRenamingForm";
 
 export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
   const draggableHeaderRef = useRef<HTMLLIElement>(null);
@@ -56,7 +56,8 @@ export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
     <Tree.RootNode ref={dropTargetRootRef} isChildDropBlocked={isChildDropBlocked} instruction={instruction}>
       <Tree.RootNodeHeader ref={draggableHeaderRef} isActive={activePanelId === node.id}>
         {isRenamingRootNode ? (
-          <TreeRootRenamingForm
+          <TreeRootNodeRenamingForm
+            className="py-px"
             node={node}
             shouldRenderChildNodes={shouldRenderRootChildNodes}
             restrictedNames={restrictedNames}

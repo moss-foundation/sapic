@@ -15,6 +15,7 @@ interface NodeControlsProps extends HTMLAttributes<HTMLDivElement> {
   isRootNode: boolean;
   instruction: Instruction | null;
   isLastChild: boolean;
+  hideDragHandle?: boolean;
 }
 
 export const NodeControls = forwardRef<HTMLDivElement, NodeControlsProps>(
@@ -27,6 +28,7 @@ export const NodeControls = forwardRef<HTMLDivElement, NodeControlsProps>(
       children,
       instruction,
       isLastChild,
+      hideDragHandle = false,
       ...props
     }: NodeControlsProps,
     ref
@@ -55,7 +57,7 @@ export const NodeControls = forwardRef<HTMLDivElement, NodeControlsProps>(
           isLastChild={isLastChild}
         />
 
-        {!isRootNode && (
+        {!isRootNode && !hideDragHandle && (
           <DragHandleButton
             className="absolute top-1/2 left-[1px] -translate-y-1/2 opacity-0 transition-all duration-0 group-hover/TreeNodeControls:opacity-100 group-hover/TreeNodeControls:delay-400 group-hover/TreeNodeControls:duration-150"
             slim

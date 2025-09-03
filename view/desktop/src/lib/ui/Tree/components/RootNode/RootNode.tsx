@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import { forwardRef, HTMLAttributes } from "react";
 
 import { cn } from "@/utils";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
@@ -6,7 +6,7 @@ import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types
 import { DropIndicatorForDir } from "../DropIndicatorForDir";
 import { DropIndicatorForTrigger } from "../DropIndicatorForTrigger";
 
-interface RootNodeProps {
+interface RootNodeProps extends HTMLAttributes<HTMLUListElement> {
   children: React.ReactNode;
   className?: string;
   isChildDropBlocked: boolean | null;

@@ -1,13 +1,13 @@
-import { useContext } from "react";
+import { HTMLAttributes, useContext } from "react";
 
 import { Icon } from "@/lib/ui/Icon";
+import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
 
 import { CollectionTreeContext } from "../CollectionTreeContext";
-import { NodeRenamingForm } from "../NodeRenamingForm";
 import { TreeCollectionRootNode } from "../types";
 
-interface TreeRootNodeRenameFormProps {
+interface TreeRootNodeRenamingFormProps extends HTMLAttributes<HTMLDivElement> {
   node: TreeCollectionRootNode;
   shouldRenderChildNodes: boolean;
   restrictedNames: string[];
@@ -15,17 +15,19 @@ interface TreeRootNodeRenameFormProps {
   handleRenamingFormCancel: () => void;
 }
 
-export const TreeRootNodeRenameForm = ({
+export const TreeRootNodeRenamingForm = ({
   node,
   shouldRenderChildNodes,
   restrictedNames,
   handleRenamingFormSubmit,
   handleRenamingFormCancel,
-}: TreeRootNodeRenameFormProps) => {
+  className,
+  ...props
+}: TreeRootNodeRenamingFormProps) => {
   const { iconPath } = useContext(CollectionTreeContext);
 
   return (
-    <div className="flex grow cursor-pointer items-center gap-1.5">
+    <div className={cn("flex grow cursor-pointer items-center gap-1.5", className)} {...props}>
       <div className="flex size-5 shrink-0 items-center justify-center rounded">
         {iconPath ? (
           <img src={iconPath} className="h-full w-full" />
@@ -38,7 +40,7 @@ export const TreeRootNodeRenameForm = ({
         )}
       </div>
 
-      <NodeRenamingForm
+      <Tree.NodeRenamingForm
         onSubmit={handleRenamingFormSubmit}
         onCancel={handleRenamingFormCancel}
         currentName={node.name}

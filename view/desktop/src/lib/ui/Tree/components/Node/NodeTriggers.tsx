@@ -8,7 +8,7 @@ interface NodeTriggersProps extends HTMLAttributes<HTMLDivElement> {
 
 export const NodeTriggers = ({ children, className, ...props }: NodeTriggersProps) => {
   return (
-    <div className={cn("relative z-10 flex h-full items-center gap-1", className)} {...props}>
+    <div className={cn("relative z-10 flex h-full grow items-center gap-1", className)} {...props}>
       {children}
     </div>
   );
