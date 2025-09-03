@@ -1,7 +1,7 @@
 use joinerror::ResultExt;
 use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::{AppRuntime, subscription::EventEmitter};
-use moss_fs::{CreateOptions, FileSystem};
+use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_git::{repository::Repository, url::GitUrl};
 use moss_git_hosting_provider::GitProviderKind;
 use moss_logging::session;
