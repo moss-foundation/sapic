@@ -67,7 +67,7 @@ export const NodeControls = forwardRef<HTMLDivElement, NodeControlsProps>(
 
         <div
           style={{ paddingLeft: nodePaddingLeft, paddingRight: treePaddingRight }}
-          className="flex grow items-center justify-between"
+          className="flex min-w-0 grow items-center justify-between overflow-hidden"
         >
           {children}
         </div>

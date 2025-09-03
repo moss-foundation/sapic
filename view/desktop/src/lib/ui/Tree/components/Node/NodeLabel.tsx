@@ -10,7 +10,7 @@ export const NodeLabel = ({ label, className, isRootNode, ...props }: NodeLabelP
   return (
     <span
       className={cn(
-        "w-max truncate",
+        "min-w-0 truncate",
         {
           "capitalize": isRootNode,
         },
