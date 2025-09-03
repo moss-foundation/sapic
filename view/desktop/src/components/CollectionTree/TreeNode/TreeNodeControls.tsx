@@ -120,13 +120,12 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
             instruction={instruction}
             isLastChild={isLastChild}
             ref={ref}
-            onClick={handleControlsClick}
             depth={depth}
             isChildDropBlocked={isChildDropBlocked}
             isRootNode={isRootNode}
             isActive={activePanelId === node.id}
           >
-            <Tree.NodeTriggers>
+            <Tree.NodeTriggers onClick={handleControlsClick}>
               <Tree.NodeDirToggleIcon
                 handleClickOnDir={handleClickOnDir}
                 isDir={node.kind === "Dir"}
