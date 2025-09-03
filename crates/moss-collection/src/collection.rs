@@ -17,7 +17,10 @@ use moss_git::{
 use serde_json::Value as JsonValue;
 use std::{
     path::{Path, PathBuf},
-    sync::Arc,
+    sync::{
+        Arc,
+        atomic::{AtomicBool, Ordering},
+    },
 };
 use tokio::sync::OnceCell;
 
@@ -26,7 +29,7 @@ use crate::{
     dirs,
     edit::CollectionEdit,
     git::GitClient,
-    manifest::{MANIFEST_FILE_NAME, ManifestFile},
+    manifest::{MANIFEST_FILE_NAME, ManifestFile, ManifestVcs},
     services::{set_icon_service::SetIconService, storage_service::StorageService},
     vcs::{CollectionVcs, Vcs},
     worktree::Worktree,
@@ -48,6 +51,21 @@ pub struct CollectionModifyParams {
 pub struct CollectionDetails {
     pub name: String,
     pub created_at: String, // File created time
+    pub vcs: Option<VcsDetails>,
+}
+
+pub enum VcsDetails {
+    GitHub { repository: String },
+    GitLab { repository: String },
+}
+
+impl From<ManifestVcs> for VcsDetails {
+    fn from(value: ManifestVcs) -> Self {
+        match value {
+            ManifestVcs::GitHub { repository } => VcsDetails::GitHub { repository },
+            ManifestVcs::GitLab { repository } => VcsDetails::GitLab { repository },
+        }
+    }
 }
 
 pub struct Collection<R: AppRuntime> {
@@ -61,7 +79,7 @@ pub struct Collection<R: AppRuntime> {
     pub(super) vcs: OnceCell<Vcs>,
     pub(super) on_did_change: EventEmitter<OnDidChangeEvent>,
     pub(super) broadcaster: ActivityBroadcaster<R::EventLoop>,
-    pub(super) archived: bool,
+    pub(super) archived: AtomicBool,
 }
 
 #[rustfmt::skip]
@@ -71,7 +89,7 @@ impl<R: AppRuntime> Collection<R> {
 
 impl<R: AppRuntime> Collection<R> {
     pub fn is_archived(&self) -> bool {
-        self.archived
+        self.archived.load(Ordering::SeqCst)
     }
     pub fn abs_path(&self) -> &Arc<Path> {
         &self.abs_path
@@ -231,7 +249,40 @@ impl<R: AppRuntime> Collection<R> {
         Ok(CollectionDetails {
             name: manifest.name,
             created_at: created_at.to_rfc3339(),
+            vcs: manifest.vcs.map(|vcs| vcs.into()),
         })
+    }
+
+    pub async fn config(&self) -> joinerror::Result<ConfigFile> {
+        let config_path = self.abs_path.join(CONFIG_FILE_NAME);
+
+        let rdr = self
+            .fs
+            .open_file(&config_path)
+            .await
+            .join_err_with::<()>(|| {
+                format!("failed to open config file: {}", config_path.display())
+            })?;
+
+        Ok(serde_json::from_reader(rdr).join_err_with::<()>(|| {
+            format!("failed to parse config file: {}", config_path.display())
+        })?)
+    }
+
+    // TODO: Should we use a patching method for config?
+    pub async fn set_config(&self, config: ConfigFile) -> joinerror::Result<()> {
+        let config_path = self.abs_path.join(CONFIG_FILE_NAME);
+        self.fs
+            .create_file_with(
+                &config_path,
+                serde_json::to_string(&config)?.as_bytes(),
+                CreateOptions {
+                    overwrite: true,
+                    ignore_if_exists: false,
+                },
+            )
+            .await?;
+        Ok(())
     }
 
     pub async fn modify(&self, params: CollectionModifyParams) -> joinerror::Result<()> {
@@ -277,36 +328,21 @@ impl<R: AppRuntime> Collection<R> {
     }
 
     pub async fn archive(&self) -> joinerror::Result<()> {
-        if self.archived {
+        let updated = self
+            .archived
+            .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |archived| {
+                if archived { None } else { Some(true) }
+            })
+            .is_ok();
+
+        if !updated {
             return Ok(());
         }
+        self.archived.store(true, Ordering::Relaxed);
 
-        let config_path = self.abs_path.join(CONFIG_FILE_NAME);
-        let rdr = self
-            .fs
-            .open_file(&config_path)
-            .await
-            .join_err_with::<()>(|| {
-                format!("failed to open config file: {}", config_path.display())
-            })?;
-
-        let mut config: ConfigFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
-            format!("failed to parse config file: {}", config_path.display())
-        })?;
-
+        let mut config = self.config().await?;
         config.archived = true;
-
-        self.fs
-            .create_file_with(
-                &config_path,
-                serde_json::to_string(&config)?.as_bytes(),
-                CreateOptions {
-                    overwrite: true,
-                    ignore_if_exists: false,
-                },
-            )
-            .await?;
-
+        self.set_config(config).await?;
         // TODO: Dropping worktree and vcs?
         // Right now it's impossible since OnceCell requires &mut self
 
@@ -314,35 +350,20 @@ impl<R: AppRuntime> Collection<R> {
     }
 
     pub async fn unarchive(&self) -> joinerror::Result<()> {
-        if !self.archived {
+        let updated = self
+            .archived
+            .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |archived| {
+                if !archived { None } else { Some(false) }
+            })
+            .is_ok();
+
+        if !updated {
             return Ok(());
         }
 
-        let config_path = self.abs_path.join(CONFIG_FILE_NAME);
-        let rdr = self
-            .fs
-            .open_file(&config_path)
-            .await
-            .join_err_with::<()>(|| {
-                format!("failed to open config file: {}", config_path.display())
-            })?;
-
-        let mut config: ConfigFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
-            format!("failed to parse config file: {}", config_path.display())
-        })?;
-
-        config.archived = false;
-
-        self.fs
-            .create_file_with(
-                &config_path,
-                serde_json::to_string(&config)?.as_bytes(),
-                CreateOptions {
-                    overwrite: true,
-                    ignore_if_exists: false,
-                },
-            )
-            .await?;
+        let mut config = self.config().await?;
+        config.archived = true;
+        self.set_config(config).await?;
 
         let _ = self
             .worktree

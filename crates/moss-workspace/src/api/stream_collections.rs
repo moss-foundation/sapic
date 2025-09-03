@@ -37,6 +37,8 @@ impl<R: AppRuntime> Workspace<R> {
                 archived: desc.archived,
             };
 
+            dbg!(&event);
+
             if let Err(e) = channel.send(event) {
                 session::error!(format!(
                     "failed to send collection event through tauri channel: {}",

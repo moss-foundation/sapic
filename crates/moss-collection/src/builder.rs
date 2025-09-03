@@ -136,7 +136,7 @@ impl<R: AppRuntime> CollectionBuilder<R> {
 
         // Check if the collection is archived
         // If so, we avoid loading the worktree service
-        let archived = {
+        let config: ConfigFile = {
             let config_path = params.internal_abs_path.join(CONFIG_FILE_NAME);
             let rdr = self
                 .fs
@@ -145,15 +145,12 @@ impl<R: AppRuntime> CollectionBuilder<R> {
                 .join_err_with::<()>(|| {
                     format!("failed to open config file: {}", config_path.display())
                 })?;
-
-            let config: ConfigFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
+            serde_json::from_reader(rdr).join_err_with::<()>(|| {
                 format!("failed to parse config file: {}", config_path.display())
-            })?;
-
-            config.archived
+            })?
         };
 
-        let worktree_service = if archived {
+        let worktree_service = if config.archived {
             OnceCell::new()
         } else {
             Arc::new(Worktree::new(
@@ -180,7 +177,7 @@ impl<R: AppRuntime> CollectionBuilder<R> {
             worktree: worktree_service,
             on_did_change: EventEmitter::new(),
             broadcaster: self.broadcaster,
-            archived,
+            archived: config.archived.into(),
         })
     }
 
@@ -295,6 +292,7 @@ impl<R: AppRuntime> CollectionBuilder<R> {
                 serde_json::to_string(&ConfigFile {
                     archived: false,
                     external_path: params.external_abs_path.map(|p| p.to_path_buf()),
+                    account_id: None,
                 })?
                 .as_bytes(),
                 CreateOptions {
@@ -329,7 +327,7 @@ impl<R: AppRuntime> CollectionBuilder<R> {
             worktree: worktree_service_inner.into(),
             on_did_change: EventEmitter::new(),
             broadcaster: self.broadcaster,
-            archived: false,
+            archived: false.into(),
         })
     }
 
@@ -378,6 +376,7 @@ impl<R: AppRuntime> CollectionBuilder<R> {
                 serde_json::to_string(&ConfigFile {
                     archived: false,
                     external_path: None,
+                    account_id: Some(git_client.account_id()),
                 })?
                 .as_bytes(),
                 CreateOptions {
@@ -403,7 +402,7 @@ impl<R: AppRuntime> CollectionBuilder<R> {
             worktree: worktree_inner.into(),
             on_did_change: EventEmitter::new(),
             broadcaster: self.broadcaster,
-            archived: false,
+            archived: false.into(),
         })
     }
 }

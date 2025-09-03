@@ -9,6 +9,7 @@ use moss_collection::{
         CollectionCloneGitParams, CollectionCloneParams, CollectionCreateGitParams,
         CollectionCreateParams, CollectionLoadParams,
     },
+    collection::VcsDetails,
     git::GitClient,
     vcs::VcsSummary,
 };
@@ -33,7 +34,6 @@ use crate::{
     builder::{OnDidAddCollection, OnDidDeleteCollection},
     dirs,
     models::{
-        operations::ArchiveCollectionOutput,
         primitives::CollectionId,
         types::{CreateCollectionGitParams, CreateCollectionParams, UpdateCollectionParams},
     },
@@ -229,8 +229,8 @@ impl<R: AppRuntime> CollectionService<R> {
             }
         };
 
-        // TODO: Add account info to the config
         if let (Some(git_params), Some(account)) = (git_params, account) {
+            let account_id = account.id();
             let client = match git_params.git_provider_type {
                 GitProviderKind::GitHub => GitClient::GitHub {
                     account: account,
@@ -245,6 +245,13 @@ impl<R: AppRuntime> CollectionService<R> {
             collection
                 .init_vcs(client, git_params.repository, git_params.branch)
                 .await?;
+
+            // FIXME: Not sure this is the best place to put this code
+            // However it will result in git2 type errorswhen placed inside `init_vcs()`
+            // Update account_id in config
+            let mut config = collection.config().await?;
+            config.account_id = Some(account_id);
+            collection.set_config(config).await?;
         }
 
         let icon_path = collection.icon_path();
@@ -694,32 +701,34 @@ async fn restore_collections<R: AppRuntime>(
             }
         };
 
-        // FIXME: Check whether we need reloading vcs based on details()
+        // Only load the vcs if the collection is not archived
+        if !collection.is_archived() {
+            let vcs = collection.details().await?.vcs;
+            let account_id = collection.config().await?.account_id;
 
-        if let Some(vcs) = collection.vcs() {
-            // FIXME: Store the account_id in config
-            let (account_id, provider) = (vcs.owner(), vcs.provider());
-            let account = active_profile
-                .account(&account_id)
-                .await
-                .ok_or_join_err_with::<()>(|| {
-                    format!(
-                        "failed to find account with id `{}`",
-                        account_id.to_string()
-                    )
-                })?;
+            if let (Some(vcs), Some(account_id)) = (vcs, account_id) {
+                let account = active_profile
+                    .account(&account_id)
+                    .await
+                    .ok_or_join_err_with::<()>(|| {
+                        format!(
+                            "failed to find account with id `{}`",
+                            account_id.to_string()
+                        )
+                    })?;
 
-            let client = match provider {
-                GitProviderKind::GitHub => GitClient::GitHub {
-                    account: account,
-                    api: GitHubApiClient::new(HttpClient::new()), // FIXME:
-                },
-                GitProviderKind::GitLab => GitClient::GitLab {
-                    account: account,
-                    api: GitLabApiClient::new(HttpClient::new()), // FIXME:
-                },
-            };
-            collection.load_vcs(client).await?;
+                let client = match vcs {
+                    VcsDetails::GitHub { .. } => GitClient::GitHub {
+                        account,
+                        api: GitHubApiClient::new(HttpClient::new()),
+                    },
+                    VcsDetails::GitLab { .. } => GitClient::GitLab {
+                        account,
+                        api: GitLabApiClient::new(HttpClient::new()),
+                    },
+                };
+                collection.load_vcs(client).await?;
+            }
         }
 
         collections.push((id, collection));

@@ -28,6 +28,14 @@ export const activateEnvironmentOutputSchema = z.object({
   environmentId: z.string(),
 });
 
+export const archiveCollectionInputSchema = z.object({
+  id: z.string(),
+});
+
+export const archiveCollectionOutputSchema = z.object({
+  id: z.string(),
+});
+
 export const batchUpdateCollectionOutputSchema = z.object({
   ids: z.array(z.string()),
 });
@@ -85,6 +93,14 @@ export const importCollectionOutputSchema = z.object({
 });
 
 export const streamCollectionsOutputSchema = z.object({});
+
+export const unarchiveCollectionInputSchema = z.object({
+  id: z.string(),
+});
+
+export const unarchiveCollectionOutputSchema = z.object({
+  id: z.string(),
+});
 
 export const updateCollectionOutputSchema = z.object({
   id: z.string(),
