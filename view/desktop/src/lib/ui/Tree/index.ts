@@ -11,6 +11,7 @@ import { NodeLabel } from "./components/Node/NodeLabel";
 import { NodeOrder } from "./components/Node/NodeOrders";
 import { NodeTriggers } from "./components/Node/NodeTriggers";
 import { NodeAddForm } from "./components/NodeAddForm";
+import { NodeRenamingForm } from "./components/NodeRenamingForm";
 import { RootNode } from "./components/RootNode/RootNode";
 import { RootNodeActions } from "./components/RootNode/RootNodeActions";
 import { RootNodeChildren } from "./components/RootNode/RootNodeChildren";
@@ -19,7 +20,6 @@ import { RootNodeHeader } from "./components/RootNode/RootNodeHeader";
 import { RootNodeIcon } from "./components/RootNode/RootNodeIcon";
 import { RootNodeLabel } from "./components/RootNode/RootNodeLabel";
 import { RootNodeOrder } from "./components/RootNode/RootNodeOrder";
-import { RootNodeRenameForm } from "./components/RootNode/RootNodeRenamingForm";
 import { RootNodeTriggers } from "./components/RootNode/RootNodeTriggers";
 import { Tree } from "./Tree";
 
@@ -34,7 +34,6 @@ interface TreeWithSubcomponents {
   RootNodeLabel: typeof RootNodeLabel;
   RootNodeOrder: typeof RootNodeOrder;
   RootNodeTriggers: typeof RootNodeTriggers;
-  RootNodeRenameForm: typeof RootNodeRenameForm;
 
   Node: typeof Node;
   NodeActions: typeof NodeActions;
@@ -47,6 +46,7 @@ interface TreeWithSubcomponents {
   NodeTriggers: typeof NodeTriggers;
 
   NodeAddForm: typeof NodeAddForm;
+  NodeRenamingForm: typeof NodeRenamingForm;
 
   PersistentActions: typeof ActionsPersistent;
   HoverActions: typeof ActionsHover;
@@ -64,7 +64,6 @@ TreeWithSubs.RootNodeIcon = RootNodeIcon;
 TreeWithSubs.RootNodeLabel = RootNodeLabel;
 TreeWithSubs.RootNodeOrder = RootNodeOrder;
 TreeWithSubs.RootNodeTriggers = RootNodeTriggers;
-TreeWithSubs.RootNodeRenameForm = RootNodeRenameForm;
 
 TreeWithSubs.Node = Node;
 TreeWithSubs.NodeActions = NodeActions;
@@ -77,6 +76,7 @@ TreeWithSubs.NodeLabel = NodeLabel;
 TreeWithSubs.NodeTriggers = NodeTriggers;
 
 TreeWithSubs.NodeAddForm = NodeAddForm;
+TreeWithSubs.NodeRenamingForm = NodeRenamingForm;
 
 TreeWithSubs.PersistentActions = ActionsPersistent;
 TreeWithSubs.HoverActions = ActionsHover;

@@ -1,11 +1,11 @@
 import { useContext } from "react";
 
 import { Icon } from "@/lib/ui";
+import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
 
 import { EntryIcon } from "../../EntryIcon";
 import { CollectionTreeContext } from "../CollectionTreeContext";
-import { NodeRenamingForm } from "../NodeRenamingForm";
 import { TreeCollectionNode } from "../types";
 
 interface TreeNodeRenameFormProps {
@@ -41,7 +41,7 @@ const TreeNodeRenameForm = ({
 
         <EntryIcon entry={node} />
 
-        <NodeRenamingForm
+        <Tree.NodeRenamingForm
           onSubmit={handleRenamingFormSubmit}
           onCancel={handleRenamingFormCancel}
           restrictedNames={restrictedNames}

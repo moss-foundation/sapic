@@ -3,14 +3,14 @@ import { useEffect, useRef, useState } from "react";
 import { useClickOutside, useFocusInputOnMount, useValidateInput } from "@/hooks";
 import { platform } from "@tauri-apps/plugin-os";
 
-interface RenamingFormProps {
+interface NodeRenamingFormProps {
   onSubmit: (newName: string) => void;
   onCancel: () => void;
   restrictedNames: string[];
-  currentName: string | number;
+  currentName: string;
 }
 
-export const RenamingForm = ({ onSubmit, onCancel, restrictedNames, currentName }: RenamingFormProps) => {
+export const NodeRenamingForm = ({ onSubmit, onCancel, restrictedNames, currentName }: NodeRenamingFormProps) => {
   const isMac = platform() === "macos";
   const isLinux = platform() === "linux";
   // HACK: Adding leading-[19px] class for Linux and macOS to prevent slight shifting of list items during edit mode.

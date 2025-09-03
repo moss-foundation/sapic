@@ -1,11 +1,11 @@
 import { useContext } from "react";
 
 import { Icon } from "@/lib/ui";
+import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
 
 import { EntryIcon } from "../../EntryIcon";
 import { CollectionTreeContext } from "../CollectionTreeContext";
-import { NodeAddForm } from "../NodeAddForm";
 import { TreeCollectionNode } from "../types";
 
 interface TreeNodeAddFormProps {
@@ -50,7 +50,11 @@ const TreeNodeAddForm = ({
           "opacity-0": !isAddingFolderNode,
         })}
       />
-      <NodeAddForm onSubmit={handleAddFormSubmit} onCancel={handleAddFormCancel} restrictedNames={restrictedNames} />
+      <Tree.NodeAddForm
+        onSubmit={handleAddFormSubmit}
+        onCancel={handleAddFormCancel}
+        restrictedNames={restrictedNames}
+      />
     </div>
   );
 };

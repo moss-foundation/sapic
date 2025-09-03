@@ -1,8 +1,8 @@
+import { Tree } from "@/lib/ui/Tree";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 
 import Icon from "../../lib/ui/Icon";
-import NodeLabel from "../CollectionTree/NodeLabel";
 import { TreeCollectionNode } from "../CollectionTree/types";
 import { EntryIcon } from "../EntryIcon";
 
@@ -61,7 +61,7 @@ export const BreadcrumbNode = ({
           <EntryIcon entry={node} className="absolute top-0 right-0" />
         </div>
 
-        <NodeLabel label={node.name} />
+        <Tree.NodeLabel label={node.name} />
         <span className="DragHandle h-full min-h-4 grow" />
         <Icon
           icon="ChevronRight"

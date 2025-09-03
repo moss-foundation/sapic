@@ -4,7 +4,7 @@ import { DragHandleButton } from "@/components/DragHandleButton";
 import { cn } from "@/utils";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
-import { ActiveNodeIndicator } from "../../../../../components/CollectionTree/ActiveNodeIndicator";
+import { ActiveNodeIndicator } from "../ActiveNodeIndicator";
 import { DropIndicatorForTrigger } from "../DropIndicatorForTrigger";
 import { useTreeContext } from "../TreeContext";
 
