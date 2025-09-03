@@ -1,5 +1,3 @@
-import { WorkspaceMode } from "@repo/moss-workspace";
-
 export interface BaseTreeContextProps {
   id: string;
   name: string;
@@ -11,6 +9,5 @@ export interface BaseTreeContextProps {
   allFoldersAreExpanded: boolean;
   allFoldersAreCollapsed: boolean;
   searchInput: string;
-  displayMode: WorkspaceMode;
   showOrders: boolean;
 }

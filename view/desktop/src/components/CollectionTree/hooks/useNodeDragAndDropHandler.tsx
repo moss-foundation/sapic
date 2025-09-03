@@ -372,16 +372,22 @@ export const useNodeDragAndDropHandler = () => {
       const batchCreateEntryInput = await Promise.all(
         entriesPreparedForCreation.map(async (entry, index) => {
           if (index === 0) {
-            return createEntryKind(
-              entry.name,
-              locationTreeNodeData.node.path.raw,
-              entry.kind === "Dir",
-              entry.class,
-              newOrder
-            );
+            return createEntryKind({
+              name: entry.name,
+              path: locationTreeNodeData.node.path.raw,
+              isAddingFolder: entry.kind === "Dir",
+              order: newOrder,
+              protocol: entry.protocol,
+            });
           } else {
             const newEntryPath = await join(locationTreeNodeData.node.path.raw, entry.path.raw);
-            return createEntryKind(entry.name, newEntryPath, entry.kind === "Dir", entry.class, entry.order!);
+            return createEntryKind({
+              name: entry.name,
+              path: newEntryPath,
+              isAddingFolder: entry.kind === "Dir",
+              order: entry.order!,
+              protocol: entry.protocol,
+            });
           }
         })
       );

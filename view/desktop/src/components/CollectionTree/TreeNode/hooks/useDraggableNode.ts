@@ -36,7 +36,7 @@ export const useDraggableNode = ({
   isRootNode,
   setPreview,
 }: UseDraggableNodeProps) => {
-  const { repository, id } = useContext(CollectionTreeContext);
+  const { id } = useContext(CollectionTreeContext);
 
   const [instruction, setInstruction] = useState<Instruction | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
@@ -58,7 +58,6 @@ export const useDraggableNode = ({
           type: "TreeCollectionNode",
           data: {
             collectionId: id,
-            repository,
             node,
             parentNode,
           },
@@ -86,7 +85,6 @@ export const useDraggableNode = ({
             type: "TreeCollectionNode",
             data: {
               collectionId: id,
-              repository,
               node,
               parentNode,
             },
@@ -148,7 +146,6 @@ export const useDraggableNode = ({
           type: "TreeCollectionNode",
           data: {
             collectionId: id,
-            repository,
             node,
             parentNode,
           },
@@ -184,7 +181,7 @@ export const useDraggableNode = ({
         },
       })
     );
-  }, [dropTargetListRef, id, instruction, isRootNode, node, parentNode, repository, setPreview, triggerRef]);
+  }, [dropTargetListRef, id, instruction, isRootNode, node, parentNode, setPreview, triggerRef]);
 
   return { instruction, isDragging, isChildDropBlocked };
 };

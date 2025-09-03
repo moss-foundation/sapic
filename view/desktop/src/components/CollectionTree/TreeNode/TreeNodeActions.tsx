@@ -2,7 +2,7 @@ import { useContext, useState } from "react";
 
 import { ActionMenu } from "@/components";
 import ActionButton from "@/components/ActionButton";
-import { cn } from "@/utils";
+import { Tree } from "@/components/Tree";
 
 import { useDeleteAndUpdatePeers } from "../actions/useDeleteAndUpdatePeers";
 import { CollectionTreeContext } from "../CollectionTreeContext";
@@ -36,22 +36,14 @@ export const TreeNodeActions = ({
   const [showDropdown, setShowDropdown] = useState(false);
 
   return (
-    <div
-      className={cn(
-        "hidden items-center gap-0.5 opacity-0 transition-[display,opacity] transition-discrete duration-100 group-hover/TreeNode:flex group-hover/TreeNode:opacity-100",
-        {
-          "flex opacity-100": showDropdown,
-        },
-        className
-      )}
-    >
-      <ActionButton
-        customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
-        icon="Add"
-        onClick={() => setIsAddingFileNode(true)}
-      />
+    <Tree.NodeActions className={className}>
+      <Tree.HoverActions forceVisible={showDropdown}>
+        <ActionButton
+          customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
+          icon="Add"
+          onClick={() => setIsAddingFileNode(true)}
+        />
 
-      <div className="z-10 flex items-center">
         <ActionMenu.Root onOpenChange={setShowDropdown} modal={showDropdown}>
           <ActionMenu.Trigger asChild className="">
             <ActionButton
@@ -77,7 +69,7 @@ export const TreeNodeActions = ({
             </ActionMenu.Content>
           </ActionMenu.Portal>
         </ActionMenu.Root>
-      </div>
-    </div>
+      </Tree.HoverActions>
+    </Tree.NodeActions>
   );
 };

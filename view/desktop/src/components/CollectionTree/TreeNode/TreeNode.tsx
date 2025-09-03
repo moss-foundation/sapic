@@ -1,18 +1,17 @@
 import { useContext, useRef, useState } from "react";
 
-import { cn } from "@/utils/cn";
+import { Tree } from "@/components/Tree";
 
 import { useDeleteAndUpdatePeers } from "../actions/useDeleteAndUpdatePeers";
 import { CollectionTreeContext } from "../CollectionTreeContext";
-import { DropIndicatorForDir } from "../DropIndicatorForDir";
 import { TreeCollectionNode } from "../types";
 import { getChildrenNames } from "../utils";
 import { useDraggableNode } from "./hooks/useDraggableNode";
 import { useNodeAddForm } from "./hooks/useNodeAddForm";
 import { useNodeRenamingForm } from "./hooks/useNodeRenamingForm";
 import TreeNodeAddForm from "./TreeNodeAddForm";
-import TreeNodeButton from "./TreeNodeButton";
 import TreeNodeChildren from "./TreeNodeChildren";
+import TreeNodeControls from "./TreeNodeControls";
 import TreeNodeRenameForm from "./TreeNodeRenameForm";
 
 export interface TreeNodeComponentProps {
@@ -62,9 +61,7 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
   const restrictedNames = getChildrenNames(node);
 
   return (
-    <li ref={dropTargetListRef} className={cn("relative")}>
-      <DropIndicatorForDir isChildDropBlocked={isChildDropBlocked} instruction={instruction} />
-
+    <Tree.Node ref={dropTargetListRef} isChildDropBlocked={isChildDropBlocked} instruction={instruction}>
       {isRenamingNode && !isRootNode ? (
         <TreeNodeRenameForm
           node={node}
@@ -74,7 +71,7 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
           handleRenamingFormCancel={handleRenamingFormCancel}
         />
       ) : (
-        <TreeNodeButton
+        <TreeNodeControls
           ref={triggerRef}
           node={node}
           parentNode={parentNode}
@@ -85,8 +82,8 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
           onDelete={handleDeleteNode}
           isDragging={isDragging}
           instruction={instruction}
-          preview={preview}
           isLastChild={isLastChild}
+          preview={preview}
           isRootNode={isRootNode}
           isChildDropBlocked={isChildDropBlocked}
         />
@@ -103,7 +100,7 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
           restrictedNames={restrictedNames}
         />
       )}
-    </li>
+    </Tree.Node>
   );
 };
 

@@ -1,9 +1,9 @@
 import { cn } from "@/utils/cn";
 
-interface RootNodeOrderProps {
+interface NodeOrderProps {
   order?: number;
 }
 
-export const RootNodeOrder = ({ order }: RootNodeOrderProps) => {
+export const NodeOrder = ({ order }: NodeOrderProps) => {
   return <div className={cn("underline")}>{order ?? "-"}</div>;
 };

@@ -1,8 +1,14 @@
 import { createContext } from "react";
 
+import { WorkspaceMode } from "@repo/moss-workspace";
+
 import { BaseTreeContextProps } from "../Tree/types";
 
-export const CollectionTreeContext = createContext<BaseTreeContextProps>({
+export interface CollectionTreeContextProps extends BaseTreeContextProps {
+  displayMode: WorkspaceMode;
+}
+
+export const CollectionTreeContext = createContext<CollectionTreeContextProps>({
   id: "",
   name: "",
   order: 0,

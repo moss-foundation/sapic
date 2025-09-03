@@ -1,7 +1,5 @@
 import { createContext, useContext } from "react";
 
-import { WorkspaceMode } from "@repo/moss-workspace";
-
 export interface TreeContextProps {
   id: string;
   iconPath?: string;
@@ -11,7 +9,6 @@ export interface TreeContextProps {
   allFoldersAreExpanded: boolean;
   allFoldersAreCollapsed: boolean;
   searchInput?: string;
-  displayMode: WorkspaceMode;
   showNodeOrders?: boolean;
 }
 
@@ -23,7 +20,6 @@ export const TreeContext = createContext<TreeContextProps>({
   nodeOffset: 12,
   allFoldersAreExpanded: false,
   allFoldersAreCollapsed: false,
-  displayMode: "REQUEST_FIRST",
   showNodeOrders: false,
 });
 

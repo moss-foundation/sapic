@@ -3,5 +3,5 @@ interface RootNodeControlsProps {
 }
 
 export const RootNodeControls = ({ children }: RootNodeControlsProps) => {
-  return <div className="flex w-full min-w-0 items-center justify-between">{children}</div>;
+  return <div className="group/TreeRootNodeControls flex w-full min-w-0 items-center justify-between">{children}</div>;
 };

@@ -25,7 +25,8 @@ export const TreeRootControls = ({
   setIsAddingRootFolderNode,
   setIsRenamingRootNode,
 }: TreeRootControlsProps) => {
-  const { allFoldersAreExpanded, allFoldersAreCollapsed, id, displayMode } = useContext(CollectionTreeContext);
+  const { allFoldersAreExpanded, allFoldersAreCollapsed, id, displayMode, showOrders } =
+    useContext(CollectionTreeContext);
 
   const { addOrFocusPanel } = useTabbedPaneStore();
 
@@ -72,7 +73,7 @@ export const TreeRootControls = ({
       <Tree.RootNodeControls>
         <Tree.RootNodeTriggers>
           <Tree.RootNodeIcon handleIconClick={handleIconClick} isFolderExpanded={node.expanded} />
-          <Tree.RootNodeOrder order={node.order} />
+          {showOrders && <Tree.RootNodeOrder order={node.order} />}
           <Tree.RootNodeLabel label={node.name} onClick={handleLabelClick} />
         </Tree.RootNodeTriggers>
 

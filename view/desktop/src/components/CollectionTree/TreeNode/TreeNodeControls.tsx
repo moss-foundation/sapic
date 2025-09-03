@@ -2,7 +2,7 @@ import { forwardRef, useContext } from "react";
 import { createPortal } from "react-dom";
 
 import { ActionMenu } from "@/components";
-import { DragHandleButton } from "@/components/DragHandleButton";
+import { Tree } from "@/components/Tree";
 import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollectionEntry";
 import { Icon } from "@/lib/ui";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
@@ -10,16 +10,13 @@ import { cn } from "@/utils";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
 import { EntryIcon } from "../../EntryIcon";
-import { ActiveNodeIndicator } from "../ActiveNodeIndicator";
 import { CollectionTreeContext } from "../CollectionTreeContext";
-import { DropIndicatorForTrigger } from "../DropIndicatorForTrigger";
-import NodeLabel from "../NodeLabel";
 import { TreeCollectionNode } from "../types";
 import { countNumberOfAllNestedChildNodes } from "../utils";
 import TreeNode from "./TreeNode";
 import { TreeNodeActions } from "./TreeNodeActions";
 
-interface TreeNodeButtonProps {
+interface TreeNodeControlsProps {
   node: TreeCollectionNode;
   parentNode: TreeCollectionNode;
   depth: number;
@@ -28,14 +25,14 @@ interface TreeNodeButtonProps {
   onRename: () => void;
   onDelete: () => void;
   isDragging: boolean;
-  instruction: Instruction | null;
   preview: HTMLElement | null;
-  isLastChild: boolean;
   isRootNode: boolean;
   isChildDropBlocked: boolean | null;
+  instruction: Instruction | null;
+  isLastChild: boolean;
 }
 
-const TreeNodeButton = forwardRef<HTMLDivElement, TreeNodeButtonProps>(
+const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
   (
     {
       node,
@@ -47,20 +44,19 @@ const TreeNodeButton = forwardRef<HTMLDivElement, TreeNodeButtonProps>(
       onDelete,
       preview,
       isRootNode,
+      isChildDropBlocked,
       instruction,
       isLastChild,
-      isChildDropBlocked,
     },
     ref
   ) => {
-    const { id, nodeOffset, searchInput, treePaddingRight, treePaddingLeft, showNodeOrders } =
-      useContext(CollectionTreeContext);
+    const { id, searchInput, showOrders } = useContext(CollectionTreeContext);
 
     const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
     const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry();
 
-    const handleLabelClick = () => {
+    const handleControlsClick = () => {
       if (node.kind === "Dir") {
         addOrFocusPanel({
           id: node.id,
@@ -114,85 +110,44 @@ const TreeNodeButton = forwardRef<HTMLDivElement, TreeNodeButtonProps>(
       });
     };
 
-    const nodePaddingLeft = depth * nodeOffset + treePaddingLeft;
     const shouldRenderChildNodes = !!searchInput || (!searchInput && node.kind === "Dir" && node.expanded);
     const numberOfAllNestedChildNodes = countNumberOfAllNestedChildNodes(node);
 
     return (
       <ActionMenu.Root modal={false}>
         <ActionMenu.Trigger asChild openOnRightClick>
-          <div
+          <Tree.NodeControls
+            instruction={instruction}
+            isLastChild={isLastChild}
             ref={ref}
-            onClick={handleLabelClick}
-            className={cn("group/TreeNode relative flex min-h-[28px] w-full min-w-0 cursor-pointer items-center")}
-            role="button"
-            tabIndex={0}
+            onClick={handleControlsClick}
+            depth={depth}
+            isChildDropBlocked={isChildDropBlocked}
+            isRootNode={isRootNode}
+            isActive={activePanelId === node.id}
           >
-            {isChildDropBlocked !== true && <ActiveNodeIndicator isActive={activePanelId === node.id} />}
-
-            <DropIndicatorForTrigger
-              paddingLeft={nodePaddingLeft}
-              paddingRight={treePaddingRight}
-              instruction={instruction}
-              depth={depth}
-              isLastChild={isLastChild}
-            />
-
-            <span
-              className={cn("relative z-10 flex h-full w-full items-center gap-1")}
-              style={{ paddingLeft: nodePaddingLeft, paddingRight: treePaddingRight }}
-            >
-              {!isRootNode && (
-                <DragHandleButton
-                  className="absolute top-1/2 left-[1px] -translate-y-1/2 opacity-0 transition-all duration-0 group-hover/TreeNode:opacity-100 group-hover/TreeNode:delay-400 group-hover/TreeNode:duration-150"
-                  slim
-                  ghost
-                />
-              )}
-
-              <span className="flex size-5 shrink-0 items-center justify-center">
-                <button
-                  onClick={handleClickOnDir}
-                  className={cn(
-                    "hover:background-(--moss-icon-primary-background-hover) flex cursor-pointer items-center justify-center rounded-full text-(--moss-icon-primary-text)",
-                    {
-                      "opacity-0": node.kind !== "Dir",
-                    }
-                  )}
-                >
-                  <Icon
-                    icon="ChevronRight"
-                    className={cn("text-(--moss-icon-primary-text)", {
-                      "rotate-90": shouldRenderChildNodes,
-                      "opacity-0": node.kind !== "Dir",
-                    })}
-                  />
-                </button>
-              </span>
-
-              {showNodeOrders && <div className="underline">{node.order}</div>}
-
+            <Tree.NodeTriggers>
+              <Tree.NodeDirToggleIcon
+                handleClickOnDir={handleClickOnDir}
+                isDir={node.kind === "Dir"}
+                shouldRenderChildNodes={shouldRenderChildNodes}
+              />
+              {showOrders && <Tree.NodeOrder order={node.order} />}
               <EntryIcon entry={node} />
+              <Tree.NodeLabel label={node.name} isRootNode={isRootNode} />
+              {node.kind === "Dir" && <Tree.NodeDirCount count={numberOfAllNestedChildNodes} />}
+            </Tree.NodeTriggers>
 
-              <NodeLabel label={node.name} searchInput={searchInput} className={cn({ "capitalize": isRootNode })} />
-
-              {node.kind === "Dir" && (
-                <div className="text-(--moss-tree-entries-counter)">({numberOfAllNestedChildNodes})</div>
-              )}
-
-              {/* <span className="DragHandle h-full min-h-4 grow" /> */}
-
-              {node.kind === "Dir" && (
-                <TreeNodeActions
-                  node={node}
-                  parentNode={parentNode}
-                  setIsAddingFileNode={onAddFile}
-                  setIsAddingFolderNode={onAddFolder}
-                  setIsRenamingNode={onRename}
-                  className="ml-auto"
-                />
-              )}
-            </span>
+            {node.kind === "Dir" && (
+              <TreeNodeActions
+                node={node}
+                parentNode={parentNode}
+                setIsAddingFileNode={onAddFile}
+                setIsAddingFolderNode={onAddFolder}
+                setIsRenamingNode={onRename}
+                className="ml-auto"
+              />
+            )}
 
             {preview &&
               createPortal(
@@ -215,7 +170,7 @@ const TreeNodeButton = forwardRef<HTMLDivElement, TreeNodeButtonProps>(
                 </ul>,
                 preview
               )}
-          </div>
+          </Tree.NodeControls>
         </ActionMenu.Trigger>
         <ActionMenu.Portal>
           <ActionMenu.Content>
@@ -230,4 +185,4 @@ const TreeNodeButton = forwardRef<HTMLDivElement, TreeNodeButtonProps>(
   }
 );
 
-export default TreeNodeButton;
+export default TreeNodeControls;

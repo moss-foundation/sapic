@@ -1,6 +1,6 @@
+import { Tree } from "@/components/Tree";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 
-import { DirDepthIndicator } from "../DirDepthIndicator";
 import { TreeCollectionNode } from "../types";
 import { TreeNode } from "./TreeNode";
 
@@ -13,9 +13,7 @@ const TreeNodeChildren = ({ node, depth }: TreeNodeChildrenProps) => {
   const sortedChildNodes = sortObjectsByOrder(node.childNodes);
 
   return (
-    <ul className="relative h-full">
-      {node.kind === "Dir" && node.expanded && <DirDepthIndicator depth={depth} />}
-
+    <Tree.NodeChildren depth={depth}>
       {sortedChildNodes.map((childNode, index) => (
         <TreeNode
           parentNode={node}
@@ -25,7 +23,7 @@ const TreeNodeChildren = ({ node, depth }: TreeNodeChildrenProps) => {
           isLastChild={index === node.childNodes.length - 1}
         />
       ))}
-    </ul>
+    </Tree.NodeChildren>
   );
 };
 
