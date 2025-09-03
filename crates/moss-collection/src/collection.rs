@@ -2,26 +2,33 @@ use chrono::{DateTime, Utc};
 use git2::{BranchType, IndexAddOption, Signature};
 use joinerror::{Error, OptionExt, ResultExt};
 use json_patch::{PatchOperation, ReplaceOperation, jsonptr::PointerBuf};
+use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::{
     AppRuntime, EventMarker,
     subscription::{Event, EventEmitter},
 };
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_edit::json::EditOptions;
-use moss_fs::{FileSystem, FsResultExt};
+use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_git::{repository::Repository, url::GitUrl};
+use moss_git_hosting_provider::GitProviderKind;
+use moss_user::models::primitives::AccountId;
 use serde_json::Value as JsonValue;
 use std::{
     path::{Path, PathBuf},
-    sync::Arc,
+    sync::{
+        Arc,
+        atomic::{AtomicBool, Ordering},
+    },
 };
 use tokio::sync::OnceCell;
 
 use crate::{
+    config::{CONFIG_FILE_NAME, ConfigFile},
     dirs,
     edit::CollectionEdit,
     git::GitClient,
-    manifest::{MANIFEST_FILE_NAME, ManifestFile},
+    manifest::{MANIFEST_FILE_NAME, ManifestFile, ManifestVcs},
     services::{set_icon_service::SetIconService, storage_service::StorageService},
     vcs::{CollectionVcs, Vcs},
     worktree::Worktree,
@@ -40,9 +47,36 @@ pub struct CollectionModifyParams {
     pub icon_path: Option<ChangePath>,
 }
 
+pub struct CollectionConfigModifyParams {
+    pub archived: Option<bool>,
+    pub account_id: Option<AccountId>,
+}
+
 pub struct CollectionDetails {
     pub name: String,
     pub created_at: String, // File created time
+    pub vcs: Option<VcsDetails>,
+    pub account_id: Option<AccountId>,
+}
+
+pub struct VcsDetails {
+    pub kind: GitProviderKind,
+    pub repository: String,
+}
+
+impl From<ManifestVcs> for VcsDetails {
+    fn from(value: ManifestVcs) -> Self {
+        match value {
+            ManifestVcs::GitHub { repository } => Self {
+                kind: GitProviderKind::GitHub,
+                repository,
+            },
+            ManifestVcs::GitLab { repository } => Self {
+                kind: GitProviderKind::GitLab,
+                repository,
+            },
+        }
+    }
 }
 
 pub struct Collection<R: AppRuntime> {
@@ -50,12 +84,16 @@ pub struct Collection<R: AppRuntime> {
     pub(super) fs: Arc<dyn FileSystem>,
     pub(super) abs_path: Arc<Path>,
     pub(super) edit: CollectionEdit,
-    pub(super) worktree: Arc<Worktree<R>>,
+    pub(super) worktree: OnceCell<Arc<Worktree<R>>>,
     pub(super) set_icon_service: SetIconService,
     pub(super) storage_service: Arc<StorageService<R>>,
     pub(super) vcs: OnceCell<Vcs>,
     pub(super) on_did_change: EventEmitter<OnDidChangeEvent>,
+    pub(super) broadcaster: ActivityBroadcaster<R::EventLoop>,
+    pub(super) archived: AtomicBool,
 }
+
+unsafe impl<R: AppRuntime> Send for Collection<R> {}
 
 #[rustfmt::skip]
 impl<R: AppRuntime> Collection<R> {
@@ -63,6 +101,22 @@ impl<R: AppRuntime> Collection<R> {
 }
 
 impl<R: AppRuntime> Collection<R> {
+    pub(crate) async fn worktree(&self) -> &Arc<Worktree<R>> {
+        self.worktree
+            .get_or_init(|| async {
+                Arc::new(Worktree::new(
+                    self.abs_path.clone(),
+                    self.fs.clone(),
+                    self.broadcaster.clone(),
+                    self.storage_service.clone(),
+                ))
+            })
+            .await
+    }
+
+    pub fn is_archived(&self) -> bool {
+        self.archived.load(Ordering::SeqCst)
+    }
     pub fn abs_path(&self) -> &Arc<Path> {
         &self.abs_path
     }
@@ -82,13 +136,20 @@ impl<R: AppRuntime> Collection<R> {
     pub fn vcs(&self) -> Option<&dyn CollectionVcs> {
         self.vcs.get().map(|vcs| vcs as &dyn CollectionVcs)
     }
-
     pub async fn init_vcs(
         &self,
         client: GitClient,
         url: GitUrl,
         default_branch: String,
     ) -> joinerror::Result<()> {
+        {
+            let account_id = client.account_id();
+            self.modify_config(CollectionConfigModifyParams {
+                archived: None,
+                account_id: Some(account_id),
+            })
+            .await?;
+        }
         let (access_token, username) = match &client {
             GitClient::GitHub { account, .. } => {
                 (account.session().access_token().await?, account.username())
@@ -211,11 +272,27 @@ impl<R: AppRuntime> Collection<R> {
             format!("failed to parse manifest file: {}", manifest_path.display())
         })?;
 
+        let config_path = self.abs_path.join(CONFIG_FILE_NAME);
+
+        let rdr = self
+            .fs
+            .open_file(&config_path)
+            .await
+            .join_err_with::<()>(|| {
+                format!("failed to open config file: {}", config_path.display())
+            })?;
+
+        let config: ConfigFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
+            format!("failed to parse config file: {}", config_path.display())
+        })?;
+
         let created_at: DateTime<Utc> = std::fs::metadata(&manifest_path)?.created()?.into();
 
         Ok(CollectionDetails {
             name: manifest.name,
             created_at: created_at.to_rfc3339(),
+            vcs: manifest.vcs.map(|vcs| vcs.into()),
+            account_id: config.account_id,
         })
     }
 
@@ -252,10 +329,113 @@ impl<R: AppRuntime> Collection<R> {
         Ok(())
     }
 
+    pub(crate) async fn modify_config(
+        &self,
+        params: CollectionConfigModifyParams,
+    ) -> joinerror::Result<()> {
+        let config_path = self.abs_path.join(CONFIG_FILE_NAME);
+        let rdr = self
+            .fs
+            .open_file(&config_path)
+            .await
+            .join_err_with::<()>(|| {
+                format!("failed to open config file: {}", config_path.display())
+            })?;
+
+        let mut config: ConfigFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
+            format!("failed to parse config file: {}", config_path.display())
+        })?;
+
+        match params.account_id {
+            None => {}
+            Some(account_id) => {
+                config.account_id = Some(account_id);
+            }
+        }
+
+        match params.archived {
+            None => {}
+            Some(archived) => {
+                config.archived = archived;
+            }
+        }
+
+        self.fs
+            .create_file_with(
+                &config_path,
+                serde_json::to_string(&config)?.as_bytes(),
+                CreateOptions {
+                    overwrite: true,
+                    ignore_if_exists: false,
+                },
+            )
+            .await?;
+        Ok(())
+    }
+
     pub async fn dispose(&self) -> joinerror::Result<()> {
         if let Some(vcs) = self.vcs.get() {
             vcs.dispose(self.fs.clone()).await?;
         }
+
+        Ok(())
+    }
+
+    pub async fn archive(&self) -> joinerror::Result<()> {
+        let updated = self
+            .archived
+            .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |archived| {
+                if archived { None } else { Some(true) }
+            })
+            .is_ok();
+
+        if !updated {
+            return Ok(());
+        }
+        self.archived.store(true, Ordering::Relaxed);
+
+        self.modify_config(CollectionConfigModifyParams {
+            archived: Some(true),
+            account_id: None,
+        })
+        .await?;
+        // TODO: Dropping worktree and vcs?
+        // Right now it's impossible since OnceCell requires &mut self
+
+        Ok(())
+    }
+
+    pub async fn unarchive(&self) -> joinerror::Result<()> {
+        let updated = self
+            .archived
+            .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |archived| {
+                if !archived { None } else { Some(false) }
+            })
+            .is_ok();
+
+        if !updated {
+            return Ok(());
+        }
+
+        self.modify_config(CollectionConfigModifyParams {
+            archived: Some(false),
+            account_id: None,
+        })
+        .await?;
+
+        let _ = self
+            .worktree
+            .get_or_init(|| async {
+                Arc::new(Worktree::new(
+                    self.abs_path.clone(),
+                    self.fs.clone(),
+                    self.broadcaster.clone(),
+                    self.storage_service.clone(),
+                ))
+            })
+            .await;
+
+        // TODO: Read account info from config and reload vcs
 
         Ok(())
     }
