@@ -1,11 +1,8 @@
 use joinerror::ResultExt;
 use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::{AppRuntime, subscription::EventEmitter};
-use moss_fs::{CreateOptions, FileSystem, FsResultExt};
-use moss_git::{
-    repository::Repository,
-    url::{GitUrl, normalize_git_url},
-};
+use moss_fs::{CreateOptions, FileSystem};
+use moss_git::{repository::Repository, url::GitUrl};
 use moss_git_hosting_provider::GitProviderKind;
 use moss_logging::session;
 use moss_user::models::primitives::AccountId;
@@ -88,7 +85,7 @@ pub struct CollectionCreateParams {
 #[derive(Clone)]
 pub struct CollectionCreateGitParams {
     pub git_provider_type: GitProviderKind,
-    pub repository: String,
+    pub repository: GitUrl,
     pub branch: String,
 }
 
@@ -99,12 +96,8 @@ pub struct CollectionLoadParams {
 pub struct CollectionCloneParams {
     pub internal_abs_path: Arc<Path>,
     pub account_id: AccountId,
-    pub git_params: CollectionCloneGitParams,
-}
-
-pub struct CollectionCloneGitParams {
     pub git_provider_type: GitProviderKind,
-    pub repo_url: String,
+    pub repository: GitUrl,
     pub branch: Option<String>,
 }
 
@@ -247,27 +240,28 @@ impl<R: AppRuntime> CollectionBuilder<R> {
         }
 
         // FIXME: I'm not sure why we need to store a repo url that's different from what we expect from the user
-        let manifest_vcs_block = params.git_params.as_ref().and_then(|p| {
-            match normalize_git_url(&p.repository) {
-                Ok(normalized_repository) => match p.git_provider_type {
-                    GitProviderKind::GitHub => Some(ManifestVcs::GitHub {
-                        repository: normalized_repository,
-                    }),
-                    GitProviderKind::GitLab => Some(ManifestVcs::GitLab {
-                        repository: normalized_repository,
-                    }),
-                },
-                Err(e) => {
-                    // TODO: let the frontend know we cannot normalize the repository
-                    session::error!(format!(
-                        "failed to normalize repository url `{}`: {}",
-                        p.repository,
-                        e.to_string()
-                    ));
-                    None
-                }
-            }
-        });
+        let manifest_vcs_block =
+            params
+                .git_params
+                .as_ref()
+                .and_then(|p| match p.repository.normalize_to_string() {
+                    Ok(normalized_repository) => match p.git_provider_type {
+                        GitProviderKind::GitHub => Some(ManifestVcs::GitHub {
+                            repository: normalized_repository,
+                        }),
+                        GitProviderKind::GitLab => Some(ManifestVcs::GitLab {
+                            repository: normalized_repository,
+                        }),
+                    },
+                    Err(e) => {
+                        session::error!(format!(
+                            "failed to normalize repository url `{:?}`: {}",
+                            p.repository,
+                            e.to_string()
+                        ));
+                        None
+                    }
+                });
 
         self.fs
             .create_file_with(
@@ -345,8 +339,8 @@ impl<R: AppRuntime> CollectionBuilder<R> {
             .do_clone(
                 &git_client,
                 abs_path.clone(),
-                params.git_params.repo_url.clone(),
-                params.git_params.branch,
+                params.repository.to_string_with_suffix()?,
+                params.branch,
             )
             .await?;
 
@@ -387,18 +381,13 @@ impl<R: AppRuntime> CollectionBuilder<R> {
             .await?;
 
         let edit = CollectionEdit::new(self.fs.clone(), abs_path.join(MANIFEST_FILE_NAME));
-        let url = {
-            let normalized = normalize_git_url(&params.git_params.repo_url)?;
-            GitUrl::parse(&normalized)?
-        };
-
         Ok(Collection {
             fs: self.fs,
             abs_path,
             edit,
             set_icon_service,
             storage_service,
-            vcs: OnceCell::new_with(Some(Vcs::new(url, repository, git_client))),
+            vcs: OnceCell::new_with(Some(Vcs::new(params.repository, repository, git_client))),
             worktree: worktree_inner.into(),
             on_did_change: EventEmitter::new(),
             broadcaster: self.broadcaster,

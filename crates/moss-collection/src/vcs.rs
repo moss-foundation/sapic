@@ -96,7 +96,7 @@ impl CollectionVcs for Vcs {
                 ahead: Some(ahead),
                 behind: Some(behind),
             },
-            url: self.url.to_string(),
+            url: self.url.to_string()?,
             updated_at: Some(repo.updated_at),
             owner: Some(repo.owner),
         })

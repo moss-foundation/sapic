@@ -6,8 +6,8 @@ use moss_applib::{AppHandle, AppRuntime, subscription::EventEmitter};
 use moss_collection::{
     Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
     builder::{
-        CollectionCloneGitParams, CollectionCloneParams, CollectionCreateGitParams,
-        CollectionCreateParams, CollectionLoadParams,
+        CollectionCloneParams, CollectionCreateGitParams, CollectionCreateParams,
+        CollectionLoadParams,
     },
     collection::VcsDetails,
     git::GitClient,
@@ -15,6 +15,7 @@ use moss_collection::{
 };
 use moss_common::continue_if_err;
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
+use moss_git::url::GitUrl;
 use moss_git_hosting_provider::{
     GitProviderKind, github::GitHubApiClient, gitlab::GitLabApiClient,
 };
@@ -175,14 +176,14 @@ impl<R: AppRuntime> CollectionService<R> {
             Some(CreateCollectionGitParams::GitHub(git_params)) => {
                 Some(CollectionCreateGitParams {
                     git_provider_type: GitProviderKind::GitHub,
-                    repository: git_params.repository.clone(),
+                    repository: GitUrl::parse(&git_params.repository)?,
                     branch: git_params.branch.clone(),
                 })
             }
             Some(CreateCollectionGitParams::GitLab(git_params)) => {
                 Some(CollectionCreateGitParams {
                     git_provider_type: GitProviderKind::GitLab,
-                    repository: git_params.repository.clone(),
+                    repository: GitUrl::parse(&git_params.repository)?,
                     branch: git_params.branch.clone(),
                 })
             }
@@ -355,11 +356,9 @@ impl<R: AppRuntime> CollectionService<R> {
                 CollectionCloneParams {
                     internal_abs_path: abs_path.clone(),
                     account_id: params.account_id,
-                    git_params: CollectionCloneGitParams {
-                        git_provider_type: params.git_provider_type.clone(),
-                        repo_url: params.repository.clone(),
-                        branch: params.branch.clone(),
-                    },
+                    git_provider_type: params.git_provider_type.clone(),
+                    repository: GitUrl::parse(&params.repository)?,
+                    branch: params.branch.clone(),
                 },
             )
             .await
