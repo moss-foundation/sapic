@@ -9,7 +9,6 @@ use moss_collection::{
         CollectionCloneParams, CollectionCreateGitParams, CollectionCreateParams,
         CollectionLoadParams,
     },
-    collection::VcsDetails,
     git::GitClient,
     vcs::VcsSummary,
 };
@@ -708,16 +707,17 @@ async fn restore_collections<R: AppRuntime>(
                         )
                     })?;
 
-                let client = match vcs {
-                    VcsDetails::GitHub { .. } => GitClient::GitHub {
+                let client = match vcs.kind {
+                    GitProviderKind::GitHub => GitClient::GitHub {
                         account,
                         api: GitHubApiClient::new(HttpClient::new()),
                     },
-                    VcsDetails::GitLab { .. } => GitClient::GitLab {
+                    GitProviderKind::GitLab => GitClient::GitLab {
                         account,
                         api: GitLabApiClient::new(HttpClient::new()),
                     },
                 };
+
                 collection.load_vcs(client).await?;
             }
         }

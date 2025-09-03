@@ -11,6 +11,7 @@ use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_edit::json::EditOptions;
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_git::{repository::Repository, url::GitUrl};
+use moss_git_hosting_provider::GitProviderKind;
 use moss_user::models::primitives::AccountId;
 use serde_json::Value as JsonValue;
 use std::{
@@ -57,16 +58,22 @@ pub struct CollectionDetails {
     pub vcs: Option<VcsDetails>,
 }
 
-pub enum VcsDetails {
-    GitHub { repository: String },
-    GitLab { repository: String },
+pub struct VcsDetails {
+    pub kind: GitProviderKind,
+    pub repository: String,
 }
 
 impl From<ManifestVcs> for VcsDetails {
     fn from(value: ManifestVcs) -> Self {
         match value {
-            ManifestVcs::GitHub { repository } => VcsDetails::GitHub { repository },
-            ManifestVcs::GitLab { repository } => VcsDetails::GitLab { repository },
+            ManifestVcs::GitHub { repository } => Self {
+                kind: GitProviderKind::GitHub,
+                repository,
+            },
+            ManifestVcs::GitLab { repository } => Self {
+                kind: GitProviderKind::GitLab,
+                repository,
+            },
         }
     }
 }
