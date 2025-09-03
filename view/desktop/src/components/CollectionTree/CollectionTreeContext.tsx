@@ -5,6 +5,10 @@ import { WorkspaceMode } from "@repo/moss-workspace";
 import { BaseTreeContextProps } from "../../lib/ui/Tree/types";
 
 export interface CollectionTreeContextProps extends BaseTreeContextProps {
+  iconPath?: string;
+  allFoldersAreExpanded: boolean;
+  allFoldersAreCollapsed: boolean;
+  searchInput: string;
   displayMode: WorkspaceMode;
 }
 
