@@ -231,7 +231,6 @@ impl<R: AppRuntime> CollectionService<R> {
         };
 
         if let (Some(git_params), Some(account)) = (git_params, account) {
-            let account_id = account.id();
             let client = match git_params.git_provider_type {
                 GitProviderKind::GitHub => GitClient::GitHub {
                     account: account,
@@ -246,13 +245,6 @@ impl<R: AppRuntime> CollectionService<R> {
             collection
                 .init_vcs(client, git_params.repository, git_params.branch)
                 .await?;
-
-            // FIXME: Not sure this is the best place to put this code
-            // However it will result in git2 type errorswhen placed inside `init_vcs()`
-            // Update account_id in config
-            let mut config = collection.config().await?;
-            config.account_id = Some(account_id);
-            collection.set_config(config).await?;
         }
 
         let icon_path = collection.icon_path();

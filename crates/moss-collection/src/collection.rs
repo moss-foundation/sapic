@@ -11,6 +11,7 @@ use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_edit::json::EditOptions;
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_git::{repository::Repository, url::GitUrl};
+use moss_user::models::primitives::AccountId;
 use serde_json::Value as JsonValue;
 use std::{
     path::{Path, PathBuf},
@@ -43,6 +44,11 @@ pub struct CollectionModifyParams {
     pub name: Option<String>,
     pub repository: Option<ChangeString>,
     pub icon_path: Option<ChangePath>,
+}
+
+pub struct CollectionConfigModifyParams {
+    pub archived: Option<bool>,
+    pub account_id: Option<AccountId>,
 }
 
 pub struct CollectionDetails {
@@ -78,6 +84,8 @@ pub struct Collection<R: AppRuntime> {
     pub(super) broadcaster: ActivityBroadcaster<R::EventLoop>,
     pub(super) archived: AtomicBool,
 }
+
+unsafe impl<R: AppRuntime> Send for Collection<R> {}
 
 #[rustfmt::skip]
 impl<R: AppRuntime> Collection<R> {
@@ -120,13 +128,20 @@ impl<R: AppRuntime> Collection<R> {
     pub fn vcs(&self) -> Option<&dyn CollectionVcs> {
         self.vcs.get().map(|vcs| vcs as &dyn CollectionVcs)
     }
-
     pub async fn init_vcs(
         &self,
         client: GitClient,
         url: GitUrl,
         default_branch: String,
     ) -> joinerror::Result<()> {
+        {
+            let account_id = client.account_id();
+            self.modify_config(CollectionConfigModifyParams {
+                archived: None,
+                account_id: Some(account_id),
+            })
+            .await?;
+        }
         let (access_token, username) = match &client {
             GitClient::GitHub { account, .. } => {
                 (account.session().access_token().await?, account.username())
@@ -274,22 +289,6 @@ impl<R: AppRuntime> Collection<R> {
         })?)
     }
 
-    // TODO: Should we use a patching method for config?
-    pub async fn set_config(&self, config: ConfigFile) -> joinerror::Result<()> {
-        let config_path = self.abs_path.join(CONFIG_FILE_NAME);
-        self.fs
-            .create_file_with(
-                &config_path,
-                serde_json::to_string(&config)?.as_bytes(),
-                CreateOptions {
-                    overwrite: true,
-                    ignore_if_exists: false,
-                },
-            )
-            .await?;
-        Ok(())
-    }
-
     pub async fn modify(&self, params: CollectionModifyParams) -> joinerror::Result<()> {
         let mut patches = Vec::new();
 
@@ -323,6 +322,50 @@ impl<R: AppRuntime> Collection<R> {
         Ok(())
     }
 
+    pub(crate) async fn modify_config(
+        &self,
+        params: CollectionConfigModifyParams,
+    ) -> joinerror::Result<()> {
+        let config_path = self.abs_path.join(CONFIG_FILE_NAME);
+        let rdr = self
+            .fs
+            .open_file(&config_path)
+            .await
+            .join_err_with::<()>(|| {
+                format!("failed to open config file: {}", config_path.display())
+            })?;
+
+        let mut config: ConfigFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
+            format!("failed to parse config file: {}", config_path.display())
+        })?;
+
+        match params.account_id {
+            None => {}
+            Some(account_id) => {
+                config.account_id = Some(account_id);
+            }
+        }
+
+        match params.archived {
+            None => {}
+            Some(archived) => {
+                config.archived = archived;
+            }
+        }
+
+        self.fs
+            .create_file_with(
+                &config_path,
+                serde_json::to_string(&config)?.as_bytes(),
+                CreateOptions {
+                    overwrite: true,
+                    ignore_if_exists: false,
+                },
+            )
+            .await?;
+        Ok(())
+    }
+
     pub async fn dispose(&self) -> joinerror::Result<()> {
         if let Some(vcs) = self.vcs.get() {
             vcs.dispose(self.fs.clone()).await?;
@@ -344,9 +387,11 @@ impl<R: AppRuntime> Collection<R> {
         }
         self.archived.store(true, Ordering::Relaxed);
 
-        let mut config = self.config().await?;
-        config.archived = true;
-        self.set_config(config).await?;
+        self.modify_config(CollectionConfigModifyParams {
+            archived: Some(true),
+            account_id: None,
+        })
+        .await?;
         // TODO: Dropping worktree and vcs?
         // Right now it's impossible since OnceCell requires &mut self
 
@@ -365,9 +410,11 @@ impl<R: AppRuntime> Collection<R> {
             return Ok(());
         }
 
-        let mut config = self.config().await?;
-        config.archived = true;
-        self.set_config(config).await?;
+        self.modify_config(CollectionConfigModifyParams {
+            archived: Some(false),
+            account_id: None,
+        })
+        .await?;
 
         let _ = self
             .worktree
