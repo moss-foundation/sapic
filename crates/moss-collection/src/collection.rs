@@ -56,6 +56,7 @@ pub struct CollectionDetails {
     pub name: String,
     pub created_at: String, // File created time
     pub vcs: Option<VcsDetails>,
+    pub account_id: Option<AccountId>,
 }
 
 pub struct VcsDetails {
@@ -271,16 +272,6 @@ impl<R: AppRuntime> Collection<R> {
             format!("failed to parse manifest file: {}", manifest_path.display())
         })?;
 
-        let created_at: DateTime<Utc> = std::fs::metadata(&manifest_path)?.created()?.into();
-
-        Ok(CollectionDetails {
-            name: manifest.name,
-            created_at: created_at.to_rfc3339(),
-            vcs: manifest.vcs.map(|vcs| vcs.into()),
-        })
-    }
-
-    pub async fn config(&self) -> joinerror::Result<ConfigFile> {
         let config_path = self.abs_path.join(CONFIG_FILE_NAME);
 
         let rdr = self
@@ -291,9 +282,18 @@ impl<R: AppRuntime> Collection<R> {
                 format!("failed to open config file: {}", config_path.display())
             })?;
 
-        Ok(serde_json::from_reader(rdr).join_err_with::<()>(|| {
+        let config: ConfigFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
             format!("failed to parse config file: {}", config_path.display())
-        })?)
+        })?;
+
+        let created_at: DateTime<Utc> = std::fs::metadata(&manifest_path)?.created()?.into();
+
+        Ok(CollectionDetails {
+            name: manifest.name,
+            created_at: created_at.to_rfc3339(),
+            vcs: manifest.vcs.map(|vcs| vcs.into()),
+            account_id: config.account_id,
+        })
     }
 
     pub async fn modify(&self, params: CollectionModifyParams) -> joinerror::Result<()> {

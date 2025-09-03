@@ -693,10 +693,9 @@ async fn restore_collections<R: AppRuntime>(
 
         // Only load the vcs if the collection is not archived
         if !collection.is_archived() {
-            let vcs = collection.details().await?.vcs;
-            let account_id = collection.config().await?.account_id;
+            let details = collection.details().await?;
 
-            if let (Some(vcs), Some(account_id)) = (vcs, account_id) {
+            if let (Some(vcs), Some(account_id)) = (details.vcs, details.account_id) {
                 let account = active_profile
                     .account(&account_id)
                     .await
