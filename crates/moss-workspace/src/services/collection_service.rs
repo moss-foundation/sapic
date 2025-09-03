@@ -691,34 +691,36 @@ async fn restore_collections<R: AppRuntime>(
             }
         };
 
+        if collection.is_archived() {
+            collections.push((id, collection));
+            continue;
+        }
         // Only load the vcs if the collection is not archived
-        if !collection.is_archived() {
-            let details = collection.details().await?;
+        let details = collection.details().await?;
 
-            if let (Some(vcs), Some(account_id)) = (details.vcs, details.account_id) {
-                let account = active_profile
-                    .account(&account_id)
-                    .await
-                    .ok_or_join_err_with::<()>(|| {
-                        format!(
-                            "failed to find account with id `{}`",
-                            account_id.to_string()
-                        )
-                    })?;
+        if let (Some(vcs), Some(account_id)) = (details.vcs, details.account_id) {
+            let account = active_profile
+                .account(&account_id)
+                .await
+                .ok_or_join_err_with::<()>(|| {
+                    format!(
+                        "failed to find account with id `{}`",
+                        account_id.to_string()
+                    )
+                })?;
 
-                let client = match vcs.kind {
-                    GitProviderKind::GitHub => GitClient::GitHub {
-                        account,
-                        api: GitHubApiClient::new(HttpClient::new()),
-                    },
-                    GitProviderKind::GitLab => GitClient::GitLab {
-                        account,
-                        api: GitLabApiClient::new(HttpClient::new()),
-                    },
-                };
+            let client = match vcs.kind {
+                GitProviderKind::GitHub => GitClient::GitHub {
+                    account,
+                    api: GitHubApiClient::new(HttpClient::new()),
+                },
+                GitProviderKind::GitLab => GitClient::GitLab {
+                    account,
+                    api: GitLabApiClient::new(HttpClient::new()),
+                },
+            };
 
-                collection.load_vcs(client).await?;
-            }
+            collection.load_vcs(client).await?;
         }
 
         collections.push((id, collection));
