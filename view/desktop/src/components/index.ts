@@ -12,7 +12,7 @@ export * from "./ButtonDanger";
 export * from "./ButtonNeutralOutlined";
 export * from "./ButtonPrimary";
 export * as Checkbox from "./CheckboxWithLabel";
-export * from "./CollectionTree/Tree";
+export * from "./CollectionTree/CollectionTree";
 export * from "./Divider";
 export * from "./DropIndicator";
 export * from "./IconLabelButton";
