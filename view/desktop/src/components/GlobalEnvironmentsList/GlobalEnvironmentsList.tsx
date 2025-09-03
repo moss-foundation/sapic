@@ -20,10 +20,10 @@ export const GlobalEnvironmentsList = () => {
   useMonitorGlobalEnvironmentsList();
 
   return (
-    <div className="flex flex-col">
+    <ul className="flex flex-col">
       {globalEnvironments?.map((environment) => (
         <GlobalEnvironmentsListItem key={environment.id} environment={environment} />
       ))}
-    </div>
+    </ul>
   );
 };
