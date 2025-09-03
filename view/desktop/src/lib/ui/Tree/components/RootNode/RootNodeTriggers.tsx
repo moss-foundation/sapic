@@ -9,7 +9,7 @@ interface RootNodeTriggersProps extends HTMLAttributes<HTMLDivElement> {
 
 export const RootNodeTriggers = ({ children, className, ...props }: RootNodeTriggersProps) => {
   return (
-    <div className={cn("flex grow items-center gap-1 overflow-hidden", className)} {...props}>
+    <div className={cn("flex grow items-center gap-1", className)} {...props}>
       {children}
     </div>
   );

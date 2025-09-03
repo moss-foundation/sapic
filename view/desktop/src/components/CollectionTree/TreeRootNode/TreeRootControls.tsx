@@ -71,7 +71,7 @@ export const TreeRootControls = ({
   return (
     <>
       <Tree.RootNodeControls>
-        <Tree.RootNodeTriggers>
+        <Tree.RootNodeTriggers className="overflow-hidden">
           <Tree.RootNodeIcon handleIconClick={handleIconClick} isFolderExpanded={node.expanded} />
           {showOrders && <Tree.RootNodeOrder order={node.order} />}
           <Tree.RootNodeLabel label={node.name} onClick={handleLabelClick} />

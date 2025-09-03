@@ -1,17 +1,17 @@
-import { forwardRef } from "react";
+import { forwardRef, HTMLAttributes } from "react";
 
 import { cn } from "@/utils";
 
 import { ActiveNodeIndicator } from "../ActiveNodeIndicator";
 import { useTreeContext } from "../TreeContext";
 
-interface RootNodeHeaderProps {
+interface RootNodeHeaderProps extends HTMLAttributes<HTMLLIElement> {
   isActive: boolean;
   children: React.ReactNode;
 }
 
 export const RootNodeHeader = forwardRef<HTMLLIElement, RootNodeHeaderProps>(
-  ({ isActive, children }: RootNodeHeaderProps, ref) => {
+  ({ isActive, children, ...props }: RootNodeHeaderProps, ref) => {
     const { treePaddingLeft, treePaddingRight } = useTreeContext();
 
     return (
@@ -22,6 +22,7 @@ export const RootNodeHeader = forwardRef<HTMLLIElement, RootNodeHeaderProps>(
           paddingLeft: treePaddingLeft,
           paddingRight: treePaddingRight,
         }}
+        {...props}
       >
         <ActiveNodeIndicator isActive={isActive} />
         {children}
