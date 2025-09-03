@@ -1,6 +1,6 @@
 import { useContext } from "react";
 
-import { Tree } from "@/components/Tree";
+import { Tree } from "@/lib/ui/Tree";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 
 import { EntryIcon } from "../../EntryIcon";

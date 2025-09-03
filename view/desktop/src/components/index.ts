@@ -1,4 +1,5 @@
 export * from "../layouts/index";
+export * as Tree from "../lib/ui/Tree/index";
 export * from "../parts/BottomPane";
 export * from "../parts/CollectionTreesView";
 export * from "../parts/SideBar/Sidebar";
@@ -25,7 +26,6 @@ export * from "./PageView/";
 export * as RadioGroup from "./RadioGroup";
 export * from "./SelectOutlined";
 export * from "./ToggleGroup";
-export * as Tree from "./Tree/index";
 
 export * from "../parts/EnvironmentsListView/EnvironmentsListView";
 export * from "./EmptyWorkspace";

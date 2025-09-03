@@ -2,7 +2,7 @@ import { useContext, useState } from "react";
 
 import { ActionMenu } from "@/components";
 import ActionButton from "@/components/ActionButton";
-import { Tree } from "@/components/Tree";
+import { Tree } from "@/lib/ui/Tree";
 
 import { useDeleteAndUpdatePeers } from "../actions/useDeleteAndUpdatePeers";
 import { CollectionTreeContext } from "../CollectionTreeContext";

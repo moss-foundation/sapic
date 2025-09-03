@@ -2,9 +2,9 @@ import { forwardRef, useContext } from "react";
 import { createPortal } from "react-dom";
 
 import { ActionMenu } from "@/components";
-import { Tree } from "@/components/Tree";
 import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollectionEntry";
 import { Icon } from "@/lib/ui";
+import { Tree } from "@/lib/ui/Tree";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";

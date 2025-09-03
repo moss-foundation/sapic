@@ -1,7 +1,7 @@
 import { useRef } from "react";
 
-import { Tree } from "@/components/Tree";
 import { useStreamCollections } from "@/hooks";
+import { Tree } from "@/lib/ui/Tree";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 import { TreeRootNodeProps } from "../types";

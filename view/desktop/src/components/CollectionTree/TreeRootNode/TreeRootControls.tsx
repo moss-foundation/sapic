@@ -3,8 +3,8 @@ import { useContext } from "react";
 import { ActionMenu } from "@/components";
 import ActionButton from "@/components/ActionButton";
 import { DeleteCollectionModal } from "@/components/Modals/Collection/DeleteCollectionModal";
-import { Tree } from "@/components/Tree";
 import { useModal, useUpdateCollection } from "@/hooks";
+import { Tree } from "@/lib/ui/Tree";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 import { useRefreshCollection } from "../actions/useRefreshCollection";
