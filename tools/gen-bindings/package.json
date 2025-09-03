@@ -6,7 +6,8 @@
     "zodGenerator": "ts-node zodGenerator.ts",
     "importsResolver": "ts-node importsResolver.ts",
     "importsConsolidator": "ts-node importsConsolidator.ts",
-    "tsExportsInjector": "ts-node tsExportsInjector.ts"
+    "tsExportsInjector": "ts-node tsExportsInjector.ts",
+    "constantsSorter": "ts-node constantsSorter.ts"
   },
   "keywords": [],
   "author": "",

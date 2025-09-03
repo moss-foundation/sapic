@@ -97,7 +97,7 @@ importers:
         specifier: ^3.2.3
         version: 3.2.4(@types/node@24.2.1)(@vitest/browser@3.2.4)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(tsx@4.20.5)(yaml@2.8.0)
 
-  crates/moss-activity-indicator:
+  crates/moss-activity-broadcaster:
     dependencies:
       typescript:
         specifier: ^5.9.2
@@ -201,22 +201,6 @@ importers:
         version: link:../../packages/config-typescript
 
   crates/moss-git:
-    dependencies:
-      typescript:
-        specifier: ^5.9.2
-        version: 5.9.2
-      zod:
-        specifier: ^3.24.4
-        version: 3.25.76
-    devDependencies:
-      '@repo/moss-bindingutils':
-        specifier: workspace:*
-        version: link:../moss-bindingutils
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../../packages/config-typescript
-
-  crates/moss-git-hosting-provider:
     dependencies:
       typescript:
         specifier: ^5.9.2
@@ -382,18 +366,15 @@ importers:
       '@radix-ui/react-use-controllable-state':
         specifier: ^1.1.0
         version: 1.2.2(@types/react@18.3.23)(react@18.3.1)
-      '@repo/moss-activity-indicator':
+      '@repo/moss-activity-broadcaster':
         specifier: workspace:*
-        version: link:../../crates/moss-activity-indicator
+        version: link:../../crates/moss-activity-broadcaster
       '@repo/moss-app':
         specifier: workspace:*
         version: link:../../crates/moss-app
       '@repo/moss-collection':
         specifier: workspace:*
         version: link:../../crates/moss-collection
-      '@repo/moss-git-hosting-provider':
-        specifier: workspace:*
-        version: link:../../crates/moss-git-hosting-provider
       '@repo/moss-tabs':
         specifier: workspace:*
         version: link:src/lib/moss-tabs

@@ -1,0 +1,13 @@
+[package]
+name = "moss_asp"
+description = "Application Secrete Provider"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+moss_keyring.workspace = true
+
+tokio = { workspace = true }
+rustc-hash = { workspace = true }
+joinerror = { workspace = true }
+oauth2 = { workspace = true }

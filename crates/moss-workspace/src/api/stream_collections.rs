@@ -18,14 +18,23 @@ impl<R: AppRuntime> Workspace<R> {
         tokio::pin!(stream);
 
         let mut total_returned = 0;
+
+        // OPTIMIZE: Right now `stream_collections` need to do provider API calls, which is slow
+        // We should consider streaming vcs summary from a different channel
+        //
+        // @brutusyhy, yes, absolutely, I've added a separate function to fetch VCS summary, so
+        // we can stream VCS summary in a tauri channel on the background instead of returning it
+        // as a part of the stream DTO.
+
         while let Some(desc) = stream.next().await {
             let event = StreamCollectionsEvent {
                 id: desc.id,
                 name: desc.name,
                 order: desc.order,
                 expanded: desc.expanded,
-                branch: desc.vcs.and_then(|vcs| vcs.branch()),
+                branch: desc.vcs.map(|vcs| vcs.branch),
                 icon_path: desc.icon_path,
+                archived: desc.archived,
             };
 
             if let Err(e) = channel.send(event) {

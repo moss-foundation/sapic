@@ -11,6 +11,7 @@ export type StreamCollectionsEvent = {
   expanded: boolean;
   branch?: BranchInfo;
   iconPath?: string;
+  archived: boolean;
 };
 
 /**
@@ -23,6 +24,7 @@ export type StreamEnvironmentsEvent = {
    * If the environment is global, this will be `None`.
    */
   collectionId?: string;
+  isActive: boolean;
   name: string;
   order?: number;
   totalVariables: number;

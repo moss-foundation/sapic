@@ -26,12 +26,14 @@ members = [
     "crates/moss-testutils",
     "crates/moss-common",
     "crates/moss-storage",
-    "crates/moss-activity-indicator",
+    "crates/moss-activity-broadcaster",
     "crates/moss-hcl", 
     "crates/moss-bindingutils", 
     "crates/moss-wasm",
     "crates/moss-edit",
     "crates/moss-logging",
+    "crates/moss-user",
+    "crates/moss-asp",
     #
     # Apps
     #
@@ -40,7 +42,7 @@ members = [
     # Tools
     #
     "tools/xtask",
-    "crates/moss-id-macro",
+    "crates/moss-id-macro", 
 ]
 
 [workspace.dependencies]
@@ -48,6 +50,7 @@ members = [
 # Library crates
 #
 joinerror = { path = "libs/joinerror" }
+atomic_fs = { path = "libs/atomic-fs" }
 #
 # Workspace crates
 #
@@ -67,15 +70,15 @@ moss_environment = { path = "crates/moss-environment" }
 moss_common = { path = "crates/moss-common" }
 moss_testutils = { path = "crates/moss-testutils" }
 moss_storage = { path = "crates/moss-storage" }
-moss_activity_indicator = { path = "crates/moss-activity-indicator" }
+moss_activity_broadcaster = { path = "crates/moss-activity-broadcaster" }
 moss_hcl = { path = "crates/moss-hcl" }
 moss_bindingutils = { path = "crates/moss-bindingutils" }
 moss_wasm = { path = "crates/moss-wasm" }
 moss_edit = { path = "crates/moss-edit" }
 moss_logging = { path = "crates/moss-logging" }
 moss_id_macro = { path = "crates/moss-id-macro"}
-atomic_fs = { path = "libs/atomic-fs" }
-
+moss_user = { path = "crates/moss-user" }
+moss_asp = { path = "crates/moss-asp" }
 #
 # External crates
 #
@@ -109,7 +112,7 @@ keyring = { version = "3", features = ["apple-native", "windows-native", "sync-s
 whoami = "1.5.2"
 chrono = { version = "0.4.40", features = ["now"] }
 webbrowser = "1.0.3"
-zeroize = "1.7"
+zeroize = { version = "1.7", features = ["zeroize_derive"] }
 aes-gcm = "0.10.3"
 argon2 = "0.5.1"
 validator = "0.20.0"
@@ -135,6 +138,8 @@ tokio-util = "0.7.12"
 proc-macro2 = "1.0.101"
 quote = "1.0.40"
 syn = {version = "2.0.106", features = ["full"]}
+
+
 
 [profile.release]
 opt-level = 3 # Maximize performance

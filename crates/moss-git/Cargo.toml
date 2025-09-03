@@ -4,6 +4,10 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+moss_user.workspace = true
+
+oauth2.workspace = true
+derive_more = { workspace = true, features = ["deref"] }
 anyhow.workspace = true
 git2.workspace = true
 dotenv.workspace = true

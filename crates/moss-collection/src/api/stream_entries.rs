@@ -2,7 +2,6 @@ use moss_applib::{
     AppRuntime,
     context::{AnyAsyncContext, Reason},
 };
-use moss_common::api::OperationError;
 use moss_db::primitives::AnyValue;
 use moss_storage::primitives::segkey::SegKeyBuf;
 use std::{
@@ -71,7 +70,7 @@ impl<R: AppRuntime> Collection<R> {
 
         for dir in expansion_dirs {
             let entries_tx_clone = tx.clone();
-            let worktree_service_clone = self.worktree.clone();
+            let worktree_service_clone = self.worktree().await.to_owned();
             // We need to fetch this data from the database here, otherwise we'll be requesting it every time the scan method is called.
 
             let handle = tokio::spawn({
@@ -142,7 +141,7 @@ impl<R: AppRuntime> Collection<R> {
                     else => {
                         match ctx_clone.done() {
                             Some(Reason::Timeout) => {
-                                return Err(OperationError::Timeout("stream entries time out".into()));
+                                return Err(joinerror::Error::new::<()>("stream entries time out"));
                             },
                             Some(Reason::Canceled) => {
                                 // FIXME: Implement cancellation

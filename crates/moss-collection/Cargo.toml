@@ -4,11 +4,12 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+moss_user.workspace = true
 moss_api.workspace = true
 moss_edit.workspace = true
 moss_fs.workspace = true
 moss_db.workspace = true
-moss_activity_indicator.workspace = true
+moss_activity_broadcaster.workspace = true
 moss_common.workspace = true
 moss_storage.workspace = true
 moss_text.workspace = true
@@ -20,7 +21,10 @@ moss_bindingutils.workspace = true
 moss_applib.workspace = true
 moss_keyring.workspace = true
 moss_id_macro.workspace = true
+moss_logging.workspace = true
 
+async-trait.workspace = true
+git2.workspace = true
 joinerror.workspace = true
 anyhow.workspace = true
 serde = { workspace = true, features = ["derive", "rc"] }
@@ -40,6 +44,7 @@ reqwest = { workspace = true, optional = true }
 rustc-hash.workspace = true
 oauth2 = { workspace = true, features = ["ureq"], optional = true }
 chrono.workspace = true
+tracing.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }

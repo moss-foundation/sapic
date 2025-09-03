@@ -1,18 +1,51 @@
-use std::{path::Path, sync::Arc};
-
-use super::types::{ColorThemeInfo, Defaults, LocaleInfo, Preferences};
-use crate::models::{
-    primitives::{LogLevel, ThemeId, WorkspaceId},
-    types::{LogDate, LogEntryInfo, LogItemSourceInfo, WorkspaceInfo},
-};
 use derive_more::Deref;
-use moss_git_hosting_provider::models::{primitives::GitProviderType, types::UserInfo};
 use moss_logging::models::primitives::LogEntryId;
 use moss_workspace::models::primitives::WorkspaceMode;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
+use std::{path::Path, sync::Arc};
 use ts_rs::TS;
 use validator::Validate;
+
+use crate::models::{primitives::*, types::*};
+
+// #########################################################
+// ###                    Profile                      ###
+// #########################################################
+
+/// @category Operation
+#[derive(Debug, Clone, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct CreateProfileInput {
+    pub name: String,
+}
+
+/// @category Operation
+#[derive(Debug, Clone, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct AddAccountInput {
+    pub profile_id: ProfileId,
+    pub host: String,
+    pub label: Option<String>,
+    pub provider: AccountKind,
+}
+
+/// @category Operation
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "operations.ts")]
+pub struct AddAccountOutput {
+    pub account_id: String,
+}
+
+/// @category Operation
+#[derive(Debug, Clone, Serialize, TS)]
+#[ts(export, export_to = "operations.ts")]
+pub struct CreateProfileOutput {
+    pub profile_id: String,
+}
 // ########################################################
 // ###                   Cancellation                   ###
 // ########################################################
@@ -159,7 +192,6 @@ pub struct ListWorkspacesOutput(pub Vec<WorkspaceInfo>);
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct OpenWorkspaceInput {
-    #[ts(as = "String")]
     pub id: WorkspaceId,
 }
 
@@ -168,7 +200,6 @@ pub struct OpenWorkspaceInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct OpenWorkspaceOutput {
-    #[ts(as = "String")]
     pub id: WorkspaceId,
 
     #[serde(skip)]
@@ -181,6 +212,7 @@ pub struct OpenWorkspaceOutput {
 /// @category Operation
 #[derive(Debug, Validate, Deserialize, TS, Clone)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateWorkspaceInput {
     #[validate(length(min = 1))]
@@ -203,7 +235,6 @@ fn default_open_on_creation() -> bool {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateWorkspaceOutput {
-    #[ts(as = "String")]
     pub id: WorkspaceId,
 
     pub active: bool,
@@ -220,7 +251,6 @@ pub struct CreateWorkspaceOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteWorkspaceInput {
-    #[ts(as = "String")]
     pub id: WorkspaceId,
 }
 
@@ -229,7 +259,6 @@ pub struct DeleteWorkspaceInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteWorkspaceOutput {
-    #[ts(as = "String")]
     pub id: WorkspaceId,
 
     #[serde(skip)]
@@ -276,7 +305,6 @@ pub struct DescribeWorkbenchStateOutput {
 pub struct CloseWorkspaceInput {
     /// The workspace id is required to ensure the close function
     /// is only called when a workspace is open.
-    #[ts(as = "String")]
     pub id: WorkspaceId,
 }
 
@@ -286,22 +314,5 @@ pub struct CloseWorkspaceInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct CloseWorkspaceOutput {
     /// The id of the workspace that was closed.
-    #[ts(as = "String")]
     pub id: WorkspaceId,
-}
-
-/// @category Operation
-#[derive(Debug, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct AddAccountInput {
-    pub git_provider_type: GitProviderType,
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct AddAccountOutput {
-    pub user_info: UserInfo,
 }

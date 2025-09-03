@@ -22,7 +22,7 @@ pub mod shared;
 
 #[tokio::test]
 async fn create_environment_success() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let environment_name = random_environment_name();
     let create_environment_output = workspace
@@ -78,7 +78,7 @@ async fn create_environment_success() {
 
 #[tokio::test]
 async fn create_environment_already_exists() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let environment_name = random_environment_name();
     let _ = workspace
@@ -115,7 +115,7 @@ async fn create_environment_already_exists() {
 
 #[tokio::test]
 async fn create_collection_environment_success() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let collection_id = workspace
@@ -190,7 +190,7 @@ async fn create_collection_environment_success() {
 
 #[tokio::test]
 async fn create_collection_environment_already_exists() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let collection_id = workspace
@@ -246,7 +246,7 @@ async fn create_collection_environment_already_exists() {
 
 #[tokio::test]
 async fn create_collection_environment_same_name_as_workspace_environment() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let collection_id = workspace

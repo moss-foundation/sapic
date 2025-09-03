@@ -28,7 +28,7 @@ export const branchInfoSchema = z.object({
 
 export const contributorSchema = z.object({
   name: z.string(),
-  avatar_url: z.string(),
+  avatarUrl: z.string().optional(),
 });
 
 export const gitHubCreateParamsSchema = z.object({
@@ -78,6 +78,7 @@ export const environmentGroupSchema = z.object({
 });
 
 export const gitHubImportParamsSchema = z.object({
+  accountId: z.string(),
   repository: z.string(),
   branch: z.string().optional(),
 });
@@ -90,6 +91,7 @@ export const gitHubVcsInfoSchema = z.object({
 });
 
 export const gitLabImportParamsSchema = z.object({
+  accountId: z.string(),
   repository: z.string(),
   branch: z.string().optional(),
 });

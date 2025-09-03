@@ -9,18 +9,18 @@ pub use env::*;
 pub use workspace::*;
 
 use joinerror::OptionExt;
-use moss_api::{TauriResult, constants::DEFAULT_OPERATION_TIMEOUT, errors::PreconditionFailed};
+use moss_api::{TauriResult, constants::DEFAULT_OPERATION_TIMEOUT};
 use moss_app::{ActiveWorkspace, app::App};
 use moss_applib::{
-    AppRuntime,
+    AppHandle, AppRuntime,
     context::{AnyAsyncContext, AnyContext},
+    errors::{FailedPrecondition, NotFound},
 };
 use moss_collection::Collection;
-use moss_common::api::OperationOptionExt;
 use moss_workspace::models::primitives::CollectionId;
 use primitives::Options;
 use std::{sync::Arc, time::Duration};
-use tauri::State;
+use tauri::{Manager, State};
 
 pub mod primitives {
     use tauri::State;
@@ -52,12 +52,12 @@ where
     let workspace = app
         .workspace()
         .await
-        .map_err_as_failed_precondition("No active workspace")?;
+        .ok_or_join_err::<FailedPrecondition>("no active workspace")?;
 
     let collection = workspace
         .collection(&id)
         .await
-        .map_err_as_not_found("Collection is not found")?;
+        .ok_or_join_err::<NotFound>("Collection is not found")?;
 
     let request_id = options.and_then(|opts| opts.request_id);
 
@@ -83,13 +83,13 @@ pub(super) async fn with_workspace_timeout<R, T, F, Fut>(
 ) -> TauriResult<T>
 where
     R: AppRuntime,
-    F: FnOnce(R::AsyncContext, Arc<ActiveWorkspace<R>>) -> Fut + Send + 'static,
+    F: FnOnce(R::AsyncContext, AppHandle<R>, Arc<ActiveWorkspace<R>>) -> Fut + Send + 'static,
     Fut: std::future::Future<Output = joinerror::Result<T>> + Send + 'static,
 {
     let workspace = app
         .workspace()
         .await
-        .ok_or_join_err::<PreconditionFailed>("no active workspace")?;
+        .ok_or_join_err::<FailedPrecondition>("no active workspace")?;
 
     let timeout = options
         .as_ref()
@@ -105,7 +105,12 @@ where
             .await;
     }
 
-    let result = f(ctx.freeze(), workspace).await;
+    let result = f(
+        ctx.freeze(),
+        app.handle().state::<AppHandle<R>>().inner().clone(),
+        workspace,
+    )
+    .await;
 
     if let Some(request_id) = &request_id {
         app.release_cancellation(request_id).await;

@@ -3,10 +3,11 @@ pub mod builder;
 pub mod collection;
 mod config;
 mod edit;
-mod helpers;
+pub mod git;
 mod manifest;
 pub mod models;
 mod services;
+pub mod vcs;
 mod worktree;
 
 #[cfg(feature = "integration-tests")]

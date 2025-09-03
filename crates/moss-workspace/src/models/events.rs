@@ -18,8 +18,8 @@ pub struct StreamCollectionsEvent {
     pub order: Option<isize>,
     pub expanded: bool,
     pub branch: Option<BranchInfo>,
-
     pub icon_path: Option<PathBuf>,
+    pub archived: bool,
 }
 
 /// @category Event
@@ -33,6 +33,7 @@ pub struct StreamEnvironmentsEvent {
     /// The id of the collection that the environment belongs to.
     /// If the environment is global, this will be `None`.
     pub collection_id: Option<CollectionId>,
+    pub is_active: bool,
 
     pub name: String,
     pub order: Option<isize>,

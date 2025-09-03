@@ -2,7 +2,6 @@ use moss_environment::models::{
     primitives::EnvironmentId,
     types::{AddVariableParams, VariableInfo},
 };
-use moss_git_hosting_provider::models::types::Contributor;
 use serde::{Deserialize, Serialize};
 use std::{
     path::{Path, PathBuf},
@@ -11,18 +10,7 @@ use std::{
 use ts_rs::TS;
 use validator::Validate;
 
-use crate::models::{
-    primitives::CollectionId,
-    types::{
-        EditorPartStateInfo, EnvironmentGroup, UpdateCollectionParams,
-        UpdateEnvironmentGroupParams, UpdateEnvironmentParams,
-    },
-};
-
-use super::types::{
-    ActivitybarPartStateInfo, CreateCollectionParams, ImportCollectionParams, PanelPartStateInfo,
-    SidebarPartStateInfo, VcsInfo,
-};
+use crate::models::{primitives::*, types::*};
 
 // ------------------------------ //
 // Collection
@@ -152,6 +140,42 @@ pub struct DeleteCollectionOutput {
 }
 
 /// @category Operation
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct ArchiveCollectionInput {
+    #[ts(type = "string")]
+    pub id: CollectionId,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct ArchiveCollectionOutput {
+    #[ts(type = "string")]
+    pub id: CollectionId,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct UnarchiveCollectionInput {
+    #[ts(type = "string")]
+    pub id: CollectionId,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct UnarchiveCollectionOutput {
+    #[ts(type = "string")]
+    pub id: CollectionId,
+}
+
+/// @category Operation
 #[derive(Debug, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -205,9 +229,25 @@ pub struct StreamCollectionsOutput {
 // ------------------------------ //
 // Environment
 // ------------------------------ //
+// Activate Environment
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct ActivateEnvironmentInput {
+    pub environment_id: EnvironmentId,
+    // FIXME: Should this be `collection_id` instead?
+    pub group_id: Option<CollectionId>,
+}
+
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct ActivateEnvironmentOutput {
+    pub environment_id: EnvironmentId,
+}
 
 // Create Environment
-
 // FIXME: Should this be refactored to use an inner params?
 
 /// @category Operation

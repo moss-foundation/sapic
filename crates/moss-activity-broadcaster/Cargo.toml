@@ -1,0 +1,14 @@
+[package]
+name = "moss_activity_broadcaster"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow.workspace = true
+serde.workspace = true
+tauri.workspace = true
+ts-rs.workspace = true
+moss_bindingutils.workspace = true
+
+[features]
+integration-tests = []

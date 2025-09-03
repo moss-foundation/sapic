@@ -1,9 +1,6 @@
 use derive_more::Deref;
-use moss_activity_indicator::ActivityIndicator;
+use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::{AppRuntime, context::Canceller};
-use moss_fs::FileSystem;
-use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
-use moss_keyring::KeyringClient;
 use moss_text::ReadOnlyStr;
 use rustc_hash::FxHashMap;
 use std::{
@@ -19,7 +16,7 @@ use crate::{
     ActiveWorkspace,
     command::CommandCallback,
     models::types::{ColorThemeInfo, LocaleInfo},
-    services::{session_service::SessionId, *},
+    services::{profile_service::ProfileService, session_service::SessionId, *},
 };
 
 pub struct AppPreferences {
@@ -59,7 +56,6 @@ pub struct App<R: AppRuntime> {
     #[deref]
     pub(super) app_handle: AppHandle<R::EventLoop>,
     pub(super) app_dir: PathBuf,
-    pub(super) fs: Arc<dyn FileSystem>,
     pub(super) commands: AppCommands<R::EventLoop>,
     pub(super) preferences: AppPreferences,
     pub(super) defaults: AppDefaults,
@@ -71,18 +67,11 @@ pub struct App<R: AppRuntime> {
     pub(super) workspace_service: WorkspaceService<R>,
     pub(super) locale_service: LocaleService,
     pub(super) theme_service: ThemeService,
+    pub(super) profile_service: ProfileService,
 
     // Store cancellers by the id of API requests
     pub(super) tracked_cancellations: Arc<RwLock<HashMap<String, Canceller>>>,
-    // TODO: This is also might be better to be a service
-    pub(super) activity_indicator: ActivityIndicator<R::EventLoop>,
-
-    // TODO: Refine the management of git provider clients
-    pub(super) _github_client: Arc<GitHubClient>,
-    pub(super) _gitlab_client: Arc<GitLabClient>,
-
-    pub(super) _reqwest_client: reqwest::Client,
-    pub(super) _keyring_client: Arc<dyn KeyringClient + Send + Sync>,
+    pub(super) broadcaster: ActivityBroadcaster<R::EventLoop>,
 }
 
 impl<R: AppRuntime> App<R> {

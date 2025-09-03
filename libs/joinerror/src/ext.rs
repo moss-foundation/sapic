@@ -1,7 +1,12 @@
 use crate::{Error, ErrorMarker, OptionExt, ResultExt};
-use anyhow::anyhow;
 
 // FIXME: Remove conversion traits for git errors and implement crate specific traits
+
+impl From<std::string::FromUtf8Error> for Error {
+    fn from(err: std::string::FromUtf8Error) -> Self {
+        Error::new::<()>(err.to_string())
+    }
+}
 
 impl From<serde_json::Error> for Error {
     fn from(err: serde_json::Error) -> Self {
@@ -52,9 +57,13 @@ impl From<git2::Error> for Error {
     }
 }
 
-impl From<Error> for anyhow::Error {
-    fn from(err: Error) -> Self {
-        anyhow!(err.to_string())
+impl<T> ResultExt<T> for Result<T, std::string::FromUtf8Error> {
+    fn join_err<E: ErrorMarker>(self, details: impl Into<String>) -> Result<T, Error> {
+        self.map_err(|e| Error::new::<()>(e.to_string()).join::<E>(details))
+    }
+
+    fn join_err_with<E: ErrorMarker>(self, details: impl FnOnce() -> String) -> Result<T, Error> {
+        self.map_err(|e| Error::new::<()>(e.to_string()).join::<E>(details()))
     }
 }
 

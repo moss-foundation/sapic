@@ -10,7 +10,8 @@ audit.global_ignore = [
 ]
 
 [audit.crate_ignore]
-
+joinerror = ["joinerror-macros"]
+moss_bindingutils = ["moss_bindingutils_macros"]
 desktop = [
   "tauri-plugin-shell",
   "tauri-plugin-os",

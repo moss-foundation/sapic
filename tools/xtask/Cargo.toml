@@ -6,7 +6,7 @@ publish = false
 
 [dependencies]
 toml = "0.9.4"
-cargo_metadata = "0.21"
+cargo_metadata = "0.22"
 pathdiff = "0.2"
 futures = "0.3.31"
 smol = "2.0.2"

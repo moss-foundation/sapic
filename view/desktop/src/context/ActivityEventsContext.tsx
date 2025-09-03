@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from "react";
 
-import { ActivityEvent } from "@repo/moss-activity-indicator";
+import { CHANNEL as ACTIVITY_BROADCASTER_CHANNEL, ActivityEvent } from "@repo/moss-activity-broadcaster";
 import { listen } from "@tauri-apps/api/event";
 
 export const MAX_HISTORY_SIZE = 1000; // Limit number of historical events
@@ -350,7 +350,7 @@ export const ActivityEventsProvider: React.FC<{ children: React.ReactNode }> = (
     };
 
     // Handle Tauri events from backend and simulated events from UI
-    const unlistenProgressStream = listen<ActivityEvent>("workbench://activity-indicator", (event) => {
+    const unlistenProgressStream = listen<ActivityEvent>(ACTIVITY_BROADCASTER_CHANNEL, (event) => {
       processEvent(event.payload);
     });
 
@@ -362,11 +362,11 @@ export const ActivityEventsProvider: React.FC<{ children: React.ReactNode }> = (
       }
     };
 
-    window.addEventListener("workbench://activity-indicator", handleSimulatedEvent);
+    window.addEventListener(ACTIVITY_BROADCASTER_CHANNEL, handleSimulatedEvent);
 
     return () => {
       unlistenProgressStream.then((unlisten) => unlisten());
-      window.removeEventListener("workbench://activity-indicator", handleSimulatedEvent);
+      window.removeEventListener(ACTIVITY_BROADCASTER_CHANNEL, handleSimulatedEvent);
     };
   }, [safeSetTimeout]);
 

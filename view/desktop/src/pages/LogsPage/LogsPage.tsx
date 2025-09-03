@@ -4,16 +4,49 @@ import { useTranslation } from "react-i18next";
 import AIDemo from "@/ai/AIDemo.tsx";
 import { PageContent } from "@/components";
 import { ActivityEventSimulator } from "@/components/ActivityEventSimulator";
-import { GitProviders } from "@/components/GitProviders";
 import { useActivityEvents } from "@/context/ActivityEventsContext";
 import { LogEntryInfo, LOGGING_SERVICE_CHANNEL } from "@repo/moss-app";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 
+interface CreateProfileData {
+  name: string;
+}
+
+interface AddAccountData {
+  profileId: string;
+  host?: string;
+  label?: string;
+  provider: string;
+}
+
+interface LoginData {
+  profileId: string;
+  accountId: string;
+  provider: string;
+}
+
 export const Logs = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
   const [logs, setLogs] = useState<LogEntryInfo[]>([]);
   const { activityEvents } = useActivityEvents();
+
+  const [profileForm, setProfileForm] = useState<CreateProfileData>({
+    name: "",
+  });
+
+  const [accountForm, setAccountForm] = useState<AddAccountData>({
+    profileId: "",
+    host: "github.com",
+    label: "",
+    provider: "GitHub",
+  });
+
+  const [loginForm, setLoginForm] = useState<LoginData>({
+    profileId: "",
+    accountId: "",
+    provider: "GitHub",
+  });
 
   useEffect(() => {
     const unlistenLogsStream = listen<LogEntryInfo>(LOGGING_SERVICE_CHANNEL, (event) => {
@@ -34,6 +67,47 @@ export const Logs = () => {
     }
   };
 
+  const handleCreateProfile = async () => {
+    try {
+      await invoke("create_profile", {
+        input: {
+          name: profileForm.name,
+        },
+      });
+      console.log("Profile created:", profileForm);
+    } catch (error) {
+      console.error("Error creating profile:", error);
+    }
+  };
+
+  const handleAddAccount = async () => {
+    try {
+      await invoke("add_account", {
+        input: {
+          profileId: accountForm.profileId,
+          host: accountForm.host,
+          label: accountForm.label,
+          provider: accountForm.provider.toUpperCase(),
+        },
+      });
+      console.log("Account added:", accountForm);
+    } catch (error) {
+      console.error("Error adding account:", error);
+    }
+  };
+
+  const handleLogin = async () => {
+    try {
+      await invoke("user_login", {
+        profileId: loginForm.profileId,
+        provider: loginForm.provider,
+      });
+      console.log("Login successful:", loginForm);
+    } catch (error) {
+      console.error("Error logging in:", error);
+    }
+  };
+
   return (
     <PageContent className="space-y-6">
       <section className="mb-6">
@@ -44,9 +118,88 @@ export const Logs = () => {
       </section>
 
       <section className="mb-6">
-        <h2 className="mb-2 text-xl">Git Providers</h2>
+        <h2 className="mb-2 text-xl">Profile</h2>
         <div className="rounded bg-gray-50 p-4">
-          <GitProviders />
+          <div className="grid grid-cols-3 gap-4">
+            <div className="flex flex-col gap-2">
+              <h3 className="text-lg font-medium">Create profile</h3>
+              <input
+                type="text"
+                placeholder="Profile name"
+                value={profileForm.name}
+                onChange={(e) => setProfileForm((prev) => ({ ...prev, name: e.target.value }))}
+                className="w-full rounded-md border border-gray-300 bg-white p-2"
+              />
+              <button onClick={handleCreateProfile} className="w-full rounded bg-blue-500 p-2 text-white">
+                Create
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <h3 className="text-lg font-medium">Add account</h3>
+              <input
+                type="text"
+                placeholder="Profile Id"
+                value={accountForm.profileId}
+                onChange={(e) => setAccountForm((prev) => ({ ...prev, profileId: e.target.value }))}
+                className="w-full rounded-md border border-gray-300 bg-white p-2"
+              />
+              <input
+                type="text"
+                placeholder="Host"
+                value={accountForm.host}
+                onChange={(e) => setAccountForm((prev) => ({ ...prev, host: e.target.value }))}
+                className="w-full rounded-md border border-gray-300 bg-white p-2"
+              />
+              <input
+                type="text"
+                placeholder="Label"
+                value={accountForm.label}
+                onChange={(e) => setAccountForm((prev) => ({ ...prev, label: e.target.value }))}
+                className="w-full rounded-md border border-gray-300 bg-white p-2"
+              />
+              <select
+                value={accountForm.provider}
+                onChange={(e) => setAccountForm((prev) => ({ ...prev, provider: e.target.value }))}
+                className="w-full rounded-md border border-gray-300 bg-white p-2"
+              >
+                <option value="github">GitHub</option>
+                <option value="gitlab">GitLab</option>
+              </select>
+              <button onClick={handleAddAccount} className="w-full rounded bg-blue-500 p-2 text-white">
+                Add
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <h3 className="text-lg font-medium">VCS Operations</h3>
+              <input
+                type="text"
+                placeholder="Profile Id"
+                value={loginForm.profileId}
+                onChange={(e) => setLoginForm((prev) => ({ ...prev, profileId: e.target.value }))}
+                className="w-full rounded-md border border-gray-300 bg-white p-2"
+              />
+              <input
+                type="text"
+                placeholder="Account Id"
+                value={loginForm.accountId}
+                onChange={(e) => setLoginForm((prev) => ({ ...prev, accountId: e.target.value }))}
+                className="w-full rounded-md border border-gray-300 bg-white p-2"
+              />
+              <input
+                type="text"
+                placeholder="Account Id"
+                value={loginForm.accountId}
+                onChange={(e) => setLoginForm((prev) => ({ ...prev, accountId: e.target.value }))}
+                className="w-full rounded-md border border-gray-300 bg-white p-2"
+              />
+
+              <button onClick={handleLogin} className="w-full rounded bg-blue-500 p-2 text-white">
+                Login
+              </button>
+            </div>
+          </div>
         </div>
       </section>
 

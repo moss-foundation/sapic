@@ -7,10 +7,10 @@ impl<R: AppRuntime> App<R> {
         &self,
         _ctx: &R::AsyncContext,
     ) -> joinerror::Result<ListColorThemesOutput> {
-        let themes = self.theme_service.themes().await?;
+        let themes = self.theme_service.themes().await;
 
         Ok(ListColorThemesOutput(
-            themes.into_iter().map(|(_, item)| item).cloned().collect(),
+            themes.values().cloned().collect::<Vec<_>>(),
         ))
     }
 }
