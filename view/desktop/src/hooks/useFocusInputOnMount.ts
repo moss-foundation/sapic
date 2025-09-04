@@ -1,7 +1,7 @@
 import { MutableRefObject, RefObject, useEffect, useRef } from "react";
 
 interface UseFocusOnMountProps {
-  inputRef: RefObject<HTMLInputElement>;
+  inputRef: RefObject<HTMLInputElement | null>;
   initialValue?: string;
 }
 
@@ -17,7 +17,8 @@ export function useFocusInputOnMount({ inputRef, initialValue }: UseFocusOnMount
 
     // timer because of MacOS focus bug
     const timer = setTimeout(() => {
-      const el = inputRef.current!;
+      const el = inputRef.current;
+      if (!el) return;
 
       if (initialValue) {
         el.value = initialValue;

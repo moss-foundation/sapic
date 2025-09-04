@@ -2,7 +2,7 @@ import { useMemo } from "react";
 
 import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
-import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
+import { StreamEnvironmentsEvent, StreamEnvironmentsOutput } from "@repo/moss-workspace";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Channel } from "@tauri-apps/api/core";
 
@@ -10,7 +10,12 @@ import { useActiveWorkspace } from "..";
 
 export const USE_STREAMED_ENVIRONMENTS_QUERY_KEY = "streamedEnvironments";
 
-const startStreamingEnvironments = async (): Promise<StreamEnvironmentsEvent[]> => {
+interface StreamEnvironmentsResult {
+  environments: StreamEnvironmentsEvent[];
+  groups: StreamEnvironmentsOutput["groups"];
+}
+
+const startStreamingEnvironments = async (): Promise<StreamEnvironmentsResult> => {
   const environments: StreamEnvironmentsEvent[] = [];
 
   const onEnvironmentEvent = new Channel<StreamEnvironmentsEvent>();
@@ -19,11 +24,15 @@ const startStreamingEnvironments = async (): Promise<StreamEnvironmentsEvent[]> 
     environments.push(environment);
   };
 
-  await invokeTauriIpc("stream_environments", {
+  const groups = await invokeTauriIpc<StreamEnvironmentsOutput>("stream_environments", {
     channel: onEnvironmentEvent,
   });
 
-  return environments;
+  if (groups.status === "error") {
+    throw new Error(String(groups.error));
+  }
+
+  return { environments, groups: groups.data.groups };
 };
 
 export const useStreamEnvironments = () => {
@@ -31,10 +40,10 @@ export const useStreamEnvironments = () => {
 
   const { hasActiveWorkspace } = useActiveWorkspace();
 
-  const query = useQuery<StreamEnvironmentsEvent[], Error>({
+  const query = useQuery<StreamEnvironmentsResult, Error>({
     queryKey: [USE_STREAMED_ENVIRONMENTS_QUERY_KEY],
     queryFn: startStreamingEnvironments,
-    placeholderData: [],
+    placeholderData: { environments: [], groups: [] },
     enabled: hasActiveWorkspace,
   });
 
@@ -45,7 +54,7 @@ export const useStreamEnvironments = () => {
   const globalEnvironments = useMemo(() => {
     if (!query.data) return [];
 
-    const globalEnvironments = query.data.filter((environment) => !environment.collectionId);
+    const globalEnvironments = query.data.environments.filter((environment) => !environment.collectionId);
 
     if (globalEnvironments.length === 0) return [];
 
@@ -55,17 +64,20 @@ export const useStreamEnvironments = () => {
   const groupedEnvironments = useMemo(() => {
     if (!query.data) return [];
 
-    const groupedEnvironments = query.data.filter((environment) => environment.collectionId);
+    const groupedEnvironments = query.data.environments.filter((environment) => environment.collectionId);
 
     if (groupedEnvironments.length === 0) return [];
 
     return sortObjectsByOrder(groupedEnvironments);
   }, [query.data]);
 
+  const groups = query.data?.groups;
+
   return {
     ...query,
     clearEnvironmentsCacheAndRefetch,
     globalEnvironments,
     groupedEnvironments,
+    groups,
   };
 };

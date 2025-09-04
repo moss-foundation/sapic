@@ -6,6 +6,7 @@ import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
 import { useDeleteEnvironment, useModal, useStreamEnvironments, useUpdateEnvironment } from "@/hooks";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { useWorkspaceListStore } from "@/store/workspaceList";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
@@ -17,9 +18,10 @@ interface GlobalEnvironmentsListControlsProps {
 export const GlobalEnvironmentsListControls = ({ environment, setIsEditing }: GlobalEnvironmentsListControlsProps) => {
   const { setActiveEnvironment, activeEnvironment } = useWorkspaceListStore();
 
-  const { data: environments } = useStreamEnvironments();
+  const { globalEnvironments } = useStreamEnvironments();
   const { mutate: deleteEnvironment } = useDeleteEnvironment();
   const { mutate: updateEnvironment } = useUpdateEnvironment();
+  const { addOrFocusPanel } = useTabbedPaneStore();
 
   const [showActionMenu, setShowActionMenu] = useState(false);
 
@@ -28,7 +30,7 @@ export const GlobalEnvironmentsListControls = ({ environment, setIsEditing }: Gl
   const handleDeleteEnvironment = () => {
     deleteEnvironment({ id: environment.id });
 
-    const environmentsAfterDeleted = environments?.filter(
+    const environmentsAfterDeleted = globalEnvironments.filter(
       (env) => env?.order !== undefined && environment?.order !== undefined && env.order > environment.order
     );
 
@@ -39,10 +41,21 @@ export const GlobalEnvironmentsListControls = ({ environment, setIsEditing }: Gl
     });
   };
 
+  const onClick = () => {
+    addOrFocusPanel({
+      id: environment.id,
+      component: "Default",
+      title: environment.name,
+      params: {
+        iconType: "Environment",
+      },
+    });
+  };
+
   return (
     <>
       <Tree.RootNodeControls>
-        <Tree.RootNodeTriggers className="overflow-hidden bg-amber-700">
+        <Tree.RootNodeTriggers className="cursor-pointer overflow-hidden" onClick={onClick}>
           <Icon icon="Environment" />
           <span className="truncate">{environment.name}</span>
           <span className="text-(--moss-secondary-text)">(15)</span>

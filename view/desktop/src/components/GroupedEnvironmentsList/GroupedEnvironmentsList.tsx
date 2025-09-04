@@ -8,7 +8,7 @@ export const GroupedEnvironmentsList = () => {
     <ul className="flex flex-col">
       {groupedWithEnvironments?.map((groupedWithEnvironments) => (
         <GroupedEnvironmentsListRoot
-          key={groupedWithEnvironments.id}
+          key={groupedWithEnvironments.collectionId}
           groupedWithEnvironments={groupedWithEnvironments}
         />
       ))}

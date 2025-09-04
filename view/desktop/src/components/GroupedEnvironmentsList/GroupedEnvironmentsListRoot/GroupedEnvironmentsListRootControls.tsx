@@ -1,3 +1,4 @@
+import { useStreamCollections } from "@/hooks";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
@@ -16,6 +17,12 @@ export const GroupedEnvironmentsListRootControls = ({
   setShowChildren,
   groupedWithEnvironments,
 }: GroupedEnvironmentsListRootControlsProps) => {
+  const { data: collections } = useStreamCollections();
+
+  const collectionName = collections?.find(
+    (collection) => collection.id === groupedWithEnvironments.collectionId
+  )?.name;
+
   return (
     <Tree.RootNodeControls>
       <Tree.RootNodeTriggers>
@@ -29,7 +36,7 @@ export const GroupedEnvironmentsListRootControls = ({
           <Icon icon="ChevronRight" className={cn(showChildren && "rotate-90")} />
         </button>
 
-        <div className="truncate font-medium">{groupedWithEnvironments.name}</div>
+        <div className="truncate font-medium">{collectionName}</div>
       </Tree.RootNodeTriggers>
 
       <Tree.RootNodeActions>

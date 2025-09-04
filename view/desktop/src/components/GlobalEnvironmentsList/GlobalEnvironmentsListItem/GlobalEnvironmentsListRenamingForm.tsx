@@ -25,7 +25,7 @@ export const GlobalEnvironmentsListRenamingForm = ({
   const leadingClass = isMac || isLinux ? "leading-[19px]" : "";
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const [value, setValue] = useState(String(currentName));
 
   const { isInitialized } = useFocusInputOnMount({
