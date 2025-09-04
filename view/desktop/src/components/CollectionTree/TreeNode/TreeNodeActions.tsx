@@ -37,7 +37,7 @@ export const TreeNodeActions = ({
 
   return (
     <Tree.NodeActions className={className}>
-      <Tree.HoverActions forceVisible={showDropdown}>
+      <Tree.ActionsHover forceVisible={showDropdown}>
         <ActionButton
           customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
           icon="Add"
@@ -69,7 +69,7 @@ export const TreeNodeActions = ({
             </ActionMenu.Content>
           </ActionMenu.Portal>
         </ActionMenu.Root>
-      </Tree.HoverActions>
+      </Tree.ActionsHover>
     </Tree.NodeActions>
   );
 };
