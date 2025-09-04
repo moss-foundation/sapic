@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { RefObject, useEffect, useState } from "react";
 
 import { attachClosestEdge, Edge, extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
@@ -9,7 +9,7 @@ import { DragGlobalEnvironmentsListItem, DropGlobalEnvironmentsListItem } from "
 import { getSourceGlobalEnvironmentsListItem } from "../utils";
 
 interface UseDraggableGlobalEnvironmentsListProps {
-  ref: React.RefObject<HTMLLIElement>;
+  ref: RefObject<HTMLLIElement | null>;
   environment: StreamEnvironmentsEvent;
 }
 
@@ -18,7 +18,7 @@ export const useDraggableGlobalEnvironmentsList = ({ ref, environment }: UseDrag
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
 
   useEffect(() => {
-    const element = ref.current;
+    const element = ref?.current;
 
     if (!element) return;
 

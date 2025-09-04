@@ -42,7 +42,7 @@ export const GlobalEnvironmentsListControls = ({ environment, setIsEditing }: Gl
   return (
     <>
       <Tree.RootNodeControls>
-        <Tree.RootNodeTriggers>
+        <Tree.RootNodeTriggers className="overflow-hidden bg-amber-700">
           <Icon icon="Environment" />
           <span className="truncate">{environment.name}</span>
           <span className="text-(--moss-secondary-text)">(15)</span>
