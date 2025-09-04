@@ -19,8 +19,8 @@ export const GroupedEnvironmentsListRootActions = () => {
         </ActionMenu.Trigger>
         <ActionMenu.Portal>
           <ActionMenu.Content>
-            <ActionMenu.Item>Edit</ActionMenu.Item>
-            <ActionMenu.Item>Delete</ActionMenu.Item>
+            <ActionMenu.Item>1</ActionMenu.Item>
+            <ActionMenu.Item>2</ActionMenu.Item>
           </ActionMenu.Content>
         </ActionMenu.Portal>
       </ActionMenu.Root>

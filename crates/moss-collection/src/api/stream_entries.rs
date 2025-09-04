@@ -70,7 +70,7 @@ impl<R: AppRuntime> Collection<R> {
 
         for dir in expansion_dirs {
             let entries_tx_clone = tx.clone();
-            let worktree_service_clone = self.worktree.clone();
+            let worktree_service_clone = self.worktree().await.to_owned();
             // We need to fetch this data from the database here, otherwise we'll be requesting it every time the scan method is called.
 
             let handle = tokio::spawn({

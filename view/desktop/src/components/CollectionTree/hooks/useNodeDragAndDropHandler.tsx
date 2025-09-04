@@ -6,6 +6,7 @@ import { useBatchCreateCollectionEntry } from "@/hooks/collection/useBatchCreate
 import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
 import { useCreateCollectionEntry } from "@/hooks/collection/useCreateCollectionEntry";
 import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollectionEntry";
+import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { BatchUpdateEntryKind } from "@repo/moss-collection";
 import { join } from "@tauri-apps/api/path";
@@ -24,7 +25,6 @@ import {
   isSourceTreeCollectionNode,
   prepareEntriesForCreation,
   prepareEntriesForDrop,
-  sortByOrder,
 } from "../utils";
 
 export const useNodeDragAndDropHandler = () => {
@@ -92,7 +92,7 @@ export const useNodeDragAndDropHandler = () => {
           ? locationTreeNodeData.node.order! - 0.5
           : locationTreeNodeData.node.order! + 0.5;
 
-      const sortedParentNodes = sortByOrder([...locationTreeNodeData.parentNode.childNodes]);
+      const sortedParentNodes = sortObjectsByOrder([...locationTreeNodeData.parentNode.childNodes]);
       const parentNodesWithNewOrders = [
         ...sortedParentNodes.slice(0, dropOrder).filter((entry) => entry.id !== sourceTreeNodeData.node.id),
         sourceTreeNodeData.node,
@@ -236,7 +236,7 @@ export const useNodeDragAndDropHandler = () => {
           ? locationTreeNodeData.node.order! - 0.5
           : locationTreeNodeData.node.order! + 0.5;
 
-      const sortedParentNodes = sortByOrder(locationTreeNodeData.parentNode.childNodes);
+      const sortedParentNodes = sortObjectsByOrder(locationTreeNodeData.parentNode.childNodes);
 
       const dropParentNodesWithNewOrders = [
         ...sortedParentNodes.slice(0, dropOrder),
@@ -372,16 +372,22 @@ export const useNodeDragAndDropHandler = () => {
       const batchCreateEntryInput = await Promise.all(
         entriesPreparedForCreation.map(async (entry, index) => {
           if (index === 0) {
-            return createEntryKind(
-              entry.name,
-              locationTreeNodeData.node.path.raw,
-              entry.kind === "Dir",
-              entry.class,
-              newOrder
-            );
+            return createEntryKind({
+              name: entry.name,
+              path: locationTreeNodeData.node.path.raw,
+              isAddingFolder: entry.kind === "Dir",
+              order: newOrder,
+              protocol: entry.protocol,
+            });
           } else {
             const newEntryPath = await join(locationTreeNodeData.node.path.raw, entry.path.raw);
-            return createEntryKind(entry.name, newEntryPath, entry.kind === "Dir", entry.class, entry.order!);
+            return createEntryKind({
+              name: entry.name,
+              path: newEntryPath,
+              isAddingFolder: entry.kind === "Dir",
+              order: entry.order!,
+              protocol: entry.protocol,
+            });
           }
         })
       );

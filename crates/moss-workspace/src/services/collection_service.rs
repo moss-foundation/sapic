@@ -6,14 +6,15 @@ use moss_applib::{AppHandle, AppRuntime, subscription::EventEmitter};
 use moss_collection::{
     Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
     builder::{
-        CollectionCloneGitParams, CollectionCloneParams, CollectionCreateGitParams,
-        CollectionCreateParams, CollectionLoadParams,
+        CollectionCloneParams, CollectionCreateGitParams, CollectionCreateParams,
+        CollectionLoadParams,
     },
     git::GitClient,
     vcs::VcsSummary,
 };
 use moss_common::continue_if_err;
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
+use moss_git::url::GitUrl;
 use moss_git_hosting_provider::{
     GitProviderKind, github::GitHubApiClient, gitlab::GitLabApiClient,
 };
@@ -70,6 +71,7 @@ pub(crate) struct CollectionItemDescription {
     pub icon_path: Option<PathBuf>,
     pub abs_path: Arc<Path>,
     pub external_path: Option<PathBuf>,
+    pub archived: bool,
 }
 
 #[derive(Default)]
@@ -173,14 +175,14 @@ impl<R: AppRuntime> CollectionService<R> {
             Some(CreateCollectionGitParams::GitHub(git_params)) => {
                 Some(CollectionCreateGitParams {
                     git_provider_type: GitProviderKind::GitHub,
-                    repository: git_params.repository.clone(),
+                    repository: GitUrl::parse(&git_params.repository)?,
                     branch: git_params.branch.clone(),
                 })
             }
             Some(CreateCollectionGitParams::GitLab(git_params)) => {
                 Some(CollectionCreateGitParams {
                     git_provider_type: GitProviderKind::GitLab,
-                    repository: git_params.repository.clone(),
+                    repository: GitUrl::parse(&git_params.repository)?,
                     branch: git_params.branch.clone(),
                 })
             }
@@ -295,6 +297,7 @@ impl<R: AppRuntime> CollectionService<R> {
             icon_path,
             abs_path: abs_path.into(),
             external_path: params.external_path.clone(),
+            archived: false,
         })
     }
 
@@ -344,11 +347,9 @@ impl<R: AppRuntime> CollectionService<R> {
                 CollectionCloneParams {
                     internal_abs_path: abs_path.clone(),
                     account_id: params.account_id,
-                    git_params: CollectionCloneGitParams {
-                        git_provider_type: params.git_provider_type.clone(),
-                        repo_url: params.repository.clone(),
-                        branch: params.branch.clone(),
-                    },
+                    git_provider_type: params.git_provider_type.clone(),
+                    repository: GitUrl::parse(&params.repository)?,
+                    branch: params.branch.clone(),
                 },
             )
             .await
@@ -421,6 +422,8 @@ impl<R: AppRuntime> CollectionService<R> {
             })
             .await;
 
+        // TODO: Add account info to the config
+
         Ok(CollectionItemDescription {
             id: id.clone(),
             name: desc.name,
@@ -431,6 +434,7 @@ impl<R: AppRuntime> CollectionService<R> {
             icon_path,
             abs_path,
             external_path: None,
+            archived: false,
         })
     }
 
@@ -581,9 +585,42 @@ impl<R: AppRuntime> CollectionService<R> {
                     icon_path,
                     abs_path: item.handle.abs_path().clone(),
                     external_path: None, // TODO: implement
+                    archived: item.is_archived(),
                 };
             }
         })
+    }
+
+    pub(crate) async fn archive_collection(
+        &self,
+        _ctx: &R::AsyncContext,
+        id: &CollectionId,
+    ) -> joinerror::Result<()> {
+        let mut state_lock = self.state.write().await;
+        let item = state_lock
+            .collections
+            .get_mut(&id)
+            .ok_or_join_err_with::<()>(|| {
+                format!("failed to find collection with id `{}`", id.to_string())
+            })?;
+
+        item.archive().await
+    }
+
+    pub(crate) async fn unarchive_collection(
+        &self,
+        _ctx: &R::AsyncContext,
+        id: &CollectionId,
+    ) -> joinerror::Result<()> {
+        let mut state_lock = self.state.write().await;
+        let item = state_lock
+            .collections
+            .get_mut(&id)
+            .ok_or_join_err_with::<()>(|| {
+                format!("failed to find collection with id `{}`", id.to_string())
+            })?;
+
+        item.unarchive().await
     }
 }
 async fn restore_collections<R: AppRuntime>(
@@ -654,8 +691,14 @@ async fn restore_collections<R: AppRuntime>(
             }
         };
 
-        if let Some(vcs) = collection.vcs() {
-            let (account_id, provider) = (vcs.owner(), vcs.provider());
+        if collection.is_archived() {
+            collections.push((id, collection));
+            continue;
+        }
+        // Only load the vcs if the collection is not archived
+        let details = collection.details().await?;
+
+        if let (Some(vcs), Some(account_id)) = (details.vcs, details.account_id) {
             let account = active_profile
                 .account(&account_id)
                 .await
@@ -666,16 +709,17 @@ async fn restore_collections<R: AppRuntime>(
                     )
                 })?;
 
-            let client = match provider {
+            let client = match vcs.kind {
                 GitProviderKind::GitHub => GitClient::GitHub {
-                    account: account,
-                    api: GitHubApiClient::new(HttpClient::new()), // FIXME:
+                    account,
+                    api: GitHubApiClient::new(HttpClient::new()),
                 },
                 GitProviderKind::GitLab => GitClient::GitLab {
-                    account: account,
-                    api: GitLabApiClient::new(HttpClient::new()), // FIXME:
+                    account,
+                    api: GitLabApiClient::new(HttpClient::new()),
                 },
             };
+
             collection.load_vcs(client).await?;
         }
 

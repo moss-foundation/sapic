@@ -4,8 +4,13 @@ import { ButtonNeutralOutlined, ButtonPrimary, InputOutlined, RadioGroup } from 
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { ModalForm } from "@/components/ModalForm";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
-import { useFocusInputOnMount, useStreamedCollections, useValidateInput } from "@/hooks";
-import { useCreateEnvironment, useStreamEnvironments } from "@/hooks/environment";
+import {
+  useCreateEnvironment,
+  useFocusInputOnMount,
+  useStreamCollections,
+  useStreamEnvironments,
+  useValidateInput,
+} from "@/hooks";
 
 import { ModalWrapperProps } from "../types";
 
@@ -14,7 +19,7 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
 
   const { globalEnvironments, groupedEnvironments } = useStreamEnvironments();
   const { mutateAsync: createEnvironment } = useCreateEnvironment();
-  const { data: collections } = useStreamedCollections();
+  const { data: collections } = useStreamCollections();
 
   const [name, setName] = useState("New Environment");
   const [collectionId, setCollectionId] = useState<string | null>(null);

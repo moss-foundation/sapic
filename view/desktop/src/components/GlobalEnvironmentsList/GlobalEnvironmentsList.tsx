@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { useStreamEnvironments } from "@/hooks/environment";
+import { useStreamEnvironments } from "@/hooks";
 import { useWorkspaceListStore } from "@/store/workspaceList";
 
 import { GlobalEnvironmentsListItem } from "./GlobalEnvironmentsListItem/GlobalEnvironmentsListItem";
@@ -20,10 +20,10 @@ export const GlobalEnvironmentsList = () => {
   useMonitorGlobalEnvironmentsList();
 
   return (
-    <div className="flex flex-col">
+    <ul className="flex flex-col">
       {globalEnvironments?.map((environment) => (
         <GlobalEnvironmentsListItem key={environment.id} environment={environment} />
       ))}
-    </div>
+    </ul>
   );
 };

@@ -1,7 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 
-import { useUpdateEditorPartState } from "@/hooks/appState/useUpdateEditorPartState";
+import { useUpdateEditorPartState } from "@/hooks/app/useUpdateEditorPartState";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { DockviewApi } from "@repo/moss-tabs";

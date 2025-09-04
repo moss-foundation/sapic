@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { useStreamEnvironments, useUpdateEnvironment } from "@/hooks/environment";
+import { useStreamEnvironments, useUpdateEnvironment } from "@/hooks";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import {

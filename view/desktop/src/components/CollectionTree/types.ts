@@ -49,18 +49,5 @@ export interface CollectionTreeProps {
   nodeOffset?: number;
   searchInput?: string;
   displayMode?: WorkspaceMode;
-  showNodeOrders?: boolean;
-
-  onTreeUpdate?: (tree: TreeCollectionRootNode) => void;
-}
-
-export interface CollectionTreeContextProps extends StreamCollectionsEvent {
-  treePaddingLeft: number;
-  treePaddingRight: number;
-  nodeOffset: number;
-  searchInput?: string;
-  allFoldersAreCollapsed: boolean;
-  allFoldersAreExpanded: boolean;
-  displayMode: WorkspaceMode;
-  showNodeOrders: boolean;
+  showOrders?: boolean;
 }

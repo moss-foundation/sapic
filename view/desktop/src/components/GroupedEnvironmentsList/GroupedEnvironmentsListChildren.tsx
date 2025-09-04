@@ -1,3 +1,5 @@
+import { Tree } from "@/lib/ui/Tree";
+
 import { GroupedEnvironmentsListItem } from "./GroupedEnvironmentsListItem/GroupedEnvironmentsListItem";
 import { GroupedWithEnvironment } from "./types";
 
@@ -7,10 +9,10 @@ interface GroupedEnvironmentsListChildrenProps {
 
 export const GroupedEnvironmentsListChildren = ({ groupedWithEnvironments }: GroupedEnvironmentsListChildrenProps) => {
   return (
-    <div>
+    <Tree.RootNodeChildren hideDirDepthIndicator>
       {groupedWithEnvironments.environments.map((environment) => (
         <GroupedEnvironmentsListItem key={environment.id} environment={environment} />
       ))}
-    </div>
+    </Tree.RootNodeChildren>
   );
 };
