@@ -37,6 +37,7 @@ const inputToEvent = (input: CreateCollectionInput, data: CreateCollectionOutput
 
   return {
     iconPath,
+    archived: false,
     ...data,
   };
 };

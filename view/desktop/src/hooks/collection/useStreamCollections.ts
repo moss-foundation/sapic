@@ -17,9 +17,11 @@ const startStreamCollections = async (): Promise<StreamCollectionsEvent[]> => {
     collections.push(collection);
   };
 
-  await invokeTauriIpc("stream_collections", {
+  const res = await invokeTauriIpc("stream_collections", {
     channel: onCollectionEvent,
   });
+
+  console.log(res);
 
   return collections;
 };
