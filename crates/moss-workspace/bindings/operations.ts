@@ -153,6 +153,22 @@ export type DescribeStateOutput = {
 /**
  * @category Operation
  */
+export type ExportCollectionInput = {
+  id: string;
+  /**
+   * Path to the output zip file
+   */
+  outFile: string;
+};
+
+/**
+ * @category Operation
+ */
+export type ExportCollectionOutput = Record<string, never>;
+
+/**
+ * @category Operation
+ */
 export type ImportCollectionInput = {
   name: string;
   order: number;

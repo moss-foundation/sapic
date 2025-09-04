@@ -51,6 +51,16 @@ pub struct ImportCollectionParams {
     pub icon_path: Option<PathBuf>,
 }
 
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct ExportCollectionParams {
+    pub id: CollectionId,
+    /// Path to the output zip file
+    pub out_file: PathBuf,
+}
+
 /// @category Type
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
@@ -212,6 +222,7 @@ pub struct EditorPartStateInfo {
 pub enum ImportCollectionSource {
     GitHub(GitHubImportParams),
     GitLab(GitLabImportParams),
+    ArchiveFile(ArchiveFileImportParams),
 }
 
 // FIXME: Validation for provider specific url?
@@ -241,6 +252,14 @@ pub struct GitLabImportParams {
     pub repository: String,
     /// If provided, this branch will be checked out instead of the default branch
     pub branch: Option<String>,
+}
+
+/// @category Type
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct ArchiveFileImportParams {
+    pub archive_path: PathBuf,
 }
 
 /// @category Type

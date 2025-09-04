@@ -14,6 +14,7 @@ mod worktree;
 pub mod storage;
 #[cfg(not(feature = "integration-tests"))]
 mod storage;
+mod zip;
 
 pub use builder::CollectionBuilder;
 pub use collection::{Collection, CollectionModifyParams};

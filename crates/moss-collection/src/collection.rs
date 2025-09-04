@@ -32,7 +32,11 @@ use crate::{
     services::{set_icon_service::SetIconService, storage_service::StorageService},
     vcs::{CollectionVcs, Vcs},
     worktree::Worktree,
+    zip::zip_dir,
 };
+
+const ARCHIVE_EXCLUDED_DIRECTORIES: [&'static str; 1] = [".git"];
+const ARCHIVE_EXCLUDED_FILES: [&'static str; 3] = ["config.json", "state.db", ".gitkeep"];
 
 #[derive(Debug, Clone)]
 pub enum OnDidChangeEvent {
@@ -439,8 +443,28 @@ impl<R: AppRuntime> Collection<R> {
 
         Ok(())
     }
-}
 
+    pub async fn export_archive(&self, out_file: &Path) -> joinerror::Result<()> {
+        // If the output is inside the collection folder, it will also be bundled, which we don't want
+        if out_file.starts_with(&self.abs_path) {
+            return Err(Error::new::<()>(
+                "cannot export archive file into the collection folder",
+            ));
+        }
+
+        zip_dir(
+            self.abs_path.as_ref(),
+            out_file,
+            ARCHIVE_EXCLUDED_DIRECTORIES
+                .map(|dir| dir.to_string())
+                .to_vec(),
+            ARCHIVE_EXCLUDED_FILES.map(|file| file.to_string()).to_vec(),
+        )
+        .await?;
+
+        Ok(())
+    }
+}
 #[cfg(any(test, feature = "integration-tests"))]
 impl<R: AppRuntime> Collection<R> {
     pub fn db(&self) -> &Arc<dyn moss_storage::CollectionStorage<R::AsyncContext>> {

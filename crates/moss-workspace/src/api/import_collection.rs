@@ -10,7 +10,7 @@ use crate::{
         primitives::CollectionId,
         types::ImportCollectionSource,
     },
-    services::collection_service::CollectionItemCloneParams,
+    services::collection_service::{CollectionItemCloneParams, CollectionItemImportParams},
 };
 
 impl<R: AppRuntime> Workspace<R> {
@@ -33,19 +33,21 @@ impl<R: AppRuntime> Workspace<R> {
                     .await
                     .ok_or_join_err::<()>("account not found")?;
 
-                self.collection_service.clone_collection(
-                    ctx,
-                    app_handle,
-                    &id,
-                    session,
-                    CollectionItemCloneParams {
-                        order: params.order,
-                        account_id: git_params.account_id.to_owned(),
-                        repository: git_params.repository.clone(),
-                        git_provider_type: GitProviderKind::GitHub,
-                        branch: git_params.branch.clone(),
-                    },
-                )
+                self.collection_service
+                    .clone_collection(
+                        ctx,
+                        app_handle,
+                        &id,
+                        session,
+                        CollectionItemCloneParams {
+                            order: params.order,
+                            account_id: git_params.account_id.to_owned(),
+                            repository: git_params.repository.clone(),
+                            git_provider_type: GitProviderKind::GitHub,
+                            branch: git_params.branch.clone(),
+                        },
+                    )
+                    .await?
             }
             ImportCollectionSource::GitLab(git_params) => {
                 let session = self
@@ -54,22 +56,35 @@ impl<R: AppRuntime> Workspace<R> {
                     .await
                     .ok_or_join_err::<()>("account not found")?;
 
-                self.collection_service.clone_collection(
-                    ctx,
-                    app_handle,
-                    &id,
-                    session,
-                    CollectionItemCloneParams {
-                        order: params.order,
-                        account_id: git_params.account_id.to_owned(),
-                        repository: git_params.repository.clone(),
-                        git_provider_type: GitProviderKind::GitLab,
-                        branch: git_params.branch.clone(),
-                    },
-                )
+                self.collection_service
+                    .clone_collection(
+                        ctx,
+                        app_handle,
+                        &id,
+                        session,
+                        CollectionItemCloneParams {
+                            order: params.order,
+                            account_id: git_params.account_id.to_owned(),
+                            repository: git_params.repository.clone(),
+                            git_provider_type: GitProviderKind::GitLab,
+                            branch: git_params.branch.clone(),
+                        },
+                    )
+                    .await?
+            }
+            ImportCollectionSource::ArchiveFile(archive_params) => {
+                self.collection_service
+                    .import_collection(
+                        ctx,
+                        &id,
+                        CollectionItemImportParams {
+                            order: params.order,
+                            archive_path: archive_params.archive_path.clone(),
+                        },
+                    )
+                    .await?
             } // TODO: Support importing from other apps
-        }
-        .await?;
+        };
 
         Ok(ImportCollectionOutput {
             id: description.id,

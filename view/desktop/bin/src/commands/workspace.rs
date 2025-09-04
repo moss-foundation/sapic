@@ -118,6 +118,24 @@ pub async fn import_collection<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn export_collection<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: Window<R>,
+    input: ExportCollectionInput,
+    options: Options,
+) -> TauriResult<ExportCollectionOutput> {
+    super::with_workspace_timeout(
+        ctx.inner(),
+        app,
+        options,
+        |ctx, app_handle, workspace| async move { workspace.export_collection(&ctx, &input).await },
+    )
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn delete_collection<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,

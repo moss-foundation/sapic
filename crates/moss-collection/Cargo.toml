@@ -45,6 +45,7 @@ rustc-hash.workspace = true
 oauth2 = { workspace = true, features = ["ureq"], optional = true }
 chrono.workspace = true
 tracing.workspace = true
+zip.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }
