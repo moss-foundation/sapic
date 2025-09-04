@@ -2,28 +2,40 @@ import { cva } from "class-variance-authority";
 
 import { cn } from "@/utils";
 
-interface HoverActionsProps {
+interface ActionsHoverProps {
   children: React.ReactNode;
   className?: string;
   forceVisible?: boolean;
   props?: React.HTMLAttributes<HTMLDivElement>;
   invisible?: boolean;
+  showOnTreeHover?: boolean;
 }
 
-const hoverActions = cva(["transition-[display,opacity] transition-discrete duration-100"], {
+const actionsHoverStyles = cva(["transition-[display,opacity] transition-discrete duration-100"], {
   variants: {
     invisible: {
       false: ["hidden group-hover/TreeNodeControls:contents group-hover/TreeRootNodeControls:contents"],
       true: ["opacity-0 group-hover/TreeNodeControls:opacity-100 group-hover/TreeRootNodeControls:opacity-100"],
     },
+    showOnTreeHover: {
+      true: ["group-hover/TreeRootNode:contents"],
+      false: [""],
+    },
   },
 });
 
-export const HoverActions = ({ children, className, forceVisible, invisible = false, ...props }: HoverActionsProps) => {
+export const ActionsHover = ({
+  children,
+  className,
+  forceVisible,
+  invisible = false,
+  showOnTreeHover = false,
+  ...props
+}: ActionsHoverProps) => {
   return (
     <div
       className={cn(
-        hoverActions({ invisible }),
+        actionsHoverStyles({ invisible, showOnTreeHover }),
         {
           "contents opacity-100": forceVisible,
         },

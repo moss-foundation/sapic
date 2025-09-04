@@ -45,7 +45,7 @@ export const GroupedEnvironmentsListItem = ({ environment }: GroupedEnvironments
         </Tree.NodeTriggers>
 
         <Tree.NodeActions>
-          <Tree.HoverActions forceVisible={showActionMenu}>
+          <Tree.ActionsHover forceVisible={showActionMenu}>
             <Icon icon="EnvironmentSelection" />
             <ActionMenu.Root onOpenChange={setShowActionMenu} modal={showActionMenu}>
               <ActionMenu.Trigger asChild>
@@ -58,7 +58,7 @@ export const GroupedEnvironmentsListItem = ({ environment }: GroupedEnvironments
                 </ActionMenu.Content>
               </ActionMenu.Portal>
             </ActionMenu.Root>
-          </Tree.HoverActions>
+          </Tree.ActionsHover>
         </Tree.NodeActions>
       </Tree.NodeControls>
     </Tree.Node>

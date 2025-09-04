@@ -7,7 +7,6 @@ import { useDeleteEnvironment, useModal, useStreamEnvironments, useUpdateEnviron
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { useWorkspaceListStore } from "@/store/workspaceList";
-import { cn } from "@/utils";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
 interface GlobalEnvironmentsListControlsProps {
@@ -41,55 +40,53 @@ export const GlobalEnvironmentsListControls = ({ environment, setIsEditing }: Gl
   };
 
   return (
-    <Tree.RootNodeControls>
-      <Tree.RootNodeTriggers>
-        <Icon icon="Environment" />
-        <span className="truncate">{environment.name}</span>
-        <span className="text-(--moss-secondary-text)">(15)</span>
-      </Tree.RootNodeTriggers>
+    <>
+      <Tree.RootNodeControls>
+        <Tree.RootNodeTriggers>
+          <Icon icon="Environment" />
+          <span className="truncate">{environment.name}</span>
+          <span className="text-(--moss-secondary-text)">(15)</span>
+        </Tree.RootNodeTriggers>
 
-      <Tree.RootNodeActions>
-        <ActionButton
-          onClick={(e) => {
-            e.stopPropagation();
-            setActiveEnvironment(environment);
-          }}
-          icon={activeEnvironment?.id === environment.id ? "EnvironmentSelectionActive" : "EnvironmentSelection"}
-          className={cn("cursor-pointer group-hover/GlobalEnvironmentsList:opacity-100", {
-            "opacity-0": activeEnvironment?.id !== environment.id,
-          })}
-          customHoverBackground="hover:background-(--moss-gray-10)"
+        <Tree.RootNodeActions>
+          <ActionButton
+            onClick={(e) => {
+              e.stopPropagation();
+              setActiveEnvironment(environment);
+            }}
+            icon={activeEnvironment?.id === environment.id ? "EnvironmentSelectionActive" : "EnvironmentSelection"}
+            customHoverBackground="hover:background-(--moss-gray-10)"
+          />
+          <Tree.ActionsHover invisible={true} forceVisible={showActionMenu}>
+            <ActionMenu.Root onOpenChange={setShowActionMenu} modal={showActionMenu}>
+              <ActionMenu.Trigger asChild>
+                <ActionButton
+                  icon="MoreHorizontal"
+                  className="cursor-pointer"
+                  customHoverBackground="hover:background-(--moss-gray-10)"
+                />
+              </ActionMenu.Trigger>
+
+              <ActionMenu.Portal>
+                <ActionMenu.Content>
+                  <ActionMenu.Item onClick={() => setIsEditing(true)}>Edit</ActionMenu.Item>
+                  <ActionMenu.Item onClick={() => setShowDeleteModal(true)}>Delete</ActionMenu.Item>
+                </ActionMenu.Content>
+              </ActionMenu.Portal>
+            </ActionMenu.Root>
+          </Tree.ActionsHover>
+        </Tree.RootNodeActions>
+      </Tree.RootNodeControls>
+
+      {showDeleteModal && (
+        <ConfirmationModal
+          showModal={showDeleteModal}
+          closeModal={setHideDeleteModal}
+          title="Delete Environment"
+          message={`Are you sure you want to delete ${environment.name} environment?`}
+          onConfirm={handleDeleteEnvironment}
         />
-
-        <Tree.HoverActions invisible={true} forceVisible={showActionMenu}>
-          <ActionMenu.Root onOpenChange={setShowActionMenu} modal={showActionMenu}>
-            <ActionMenu.Trigger asChild>
-              <ActionButton
-                icon="MoreHorizontal"
-                className="cursor-pointer"
-                customHoverBackground="hover:background-(--moss-gray-10)"
-              />
-            </ActionMenu.Trigger>
-
-            <ActionMenu.Portal>
-              <ActionMenu.Content>
-                <ActionMenu.Item onClick={() => setIsEditing(true)}>Edit</ActionMenu.Item>
-                <ActionMenu.Item onClick={() => setShowDeleteModal(true)}>Delete</ActionMenu.Item>
-              </ActionMenu.Content>
-            </ActionMenu.Portal>
-          </ActionMenu.Root>
-
-          {showDeleteModal && (
-            <ConfirmationModal
-              showModal={showDeleteModal}
-              closeModal={setHideDeleteModal}
-              title="Delete Environment"
-              message={`Are you sure you want to delete ${environment.name} environment?`}
-              onConfirm={handleDeleteEnvironment}
-            />
-          )}
-        </Tree.HoverActions>
-      </Tree.RootNodeActions>
-    </Tree.RootNodeControls>
+      )}
+    </>
   );
 };

@@ -80,23 +80,22 @@ export const TreeRootControls = ({
         <Tree.RootNodeActions>
           <Tree.ActionLabel>main</Tree.ActionLabel>
 
-          <Tree.HoverActions>
-            <ActionButton
-              customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
-              icon="CollapseAll"
-              disabled={allFoldersAreCollapsed}
-              onClick={collapseAllNodes}
-            />
-          </Tree.HoverActions>
-
-          <Tree.PersistentActions>
+          <Tree.ActionsHover showOnTreeHover>
             {displayMode === "REQUEST_FIRST" && (
               <ActionButton
                 customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
                 icon="Add"
                 onClick={() => setIsAddingRootFileNode(true)}
               />
-            )}
+            )}{" "}
+            <ActionButton
+              customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
+              icon="CollapseAll"
+              disabled={allFoldersAreCollapsed}
+              onClick={collapseAllNodes}
+            />
+          </Tree.ActionsHover>
+          <Tree.ActionsPersistent>
             <ActionMenu.Root>
               <ActionMenu.Trigger asChild>
                 <ActionButton
@@ -132,7 +131,7 @@ export const TreeRootControls = ({
                 </ActionMenu.Content>
               </ActionMenu.Portal>
             </ActionMenu.Root>
-          </Tree.PersistentActions>
+          </Tree.ActionsPersistent>
         </Tree.RootNodeActions>
       </Tree.RootNodeControls>
 
