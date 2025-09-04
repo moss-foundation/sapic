@@ -68,8 +68,6 @@ export const TreeRootControls = ({
     });
   };
 
-  console.log(!!(node?.branch?.ahead && node?.branch?.ahead > 0));
-
   return (
     <>
       <Tree.RootNodeControls>
