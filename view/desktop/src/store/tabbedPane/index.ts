@@ -72,7 +72,6 @@ export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
       },
     } as AddPanelOptions);
   },
-
   openPanel: (panelType: string) => {
     try {
       // Use setTimeout to prevent race condition during initialization

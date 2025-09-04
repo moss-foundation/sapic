@@ -1,14 +1,13 @@
 import { useMemo, useRef } from "react";
 
 import { DropIndicator } from "@/components/DropIndicator";
-import { useStreamEnvironments } from "@/hooks/environment";
+import { useStreamEnvironments } from "@/hooks";
+import { Tree } from "@/lib/ui/Tree";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
-import { GlobalEnvironmentsListActions } from "./GlobalEnvironmentsListActions";
-import { GlobalEnvironmentsListButton } from "./GlobalEnvironmentsListButton";
-import { GlobalEnvironmentsListIndicator } from "./GlobalEnvironmentsListIndicator";
-import { GlobalEnvironmentsListRenamingForm } from "./GlobalEnvironmentsListRenamingForm";
+import { GlobalEnvironmentsListControls } from "./GlobalEnvironmentsListControls";
+import { GlobalEnvironmentsListItemRenamingForm } from "./GlobalEnvironmentsListItemRenamingForm";
 import { useDraggableGlobalEnvironmentsList, useGlobalEnvironmentsListRenamingForm } from "./hooks";
 
 interface GlobalEnvironmentsListProps {
@@ -16,7 +15,7 @@ interface GlobalEnvironmentsListProps {
 }
 
 export const GlobalEnvironmentsListItem = ({ environment }: GlobalEnvironmentsListProps) => {
-  const globalEnvironmentsListRef = useRef<HTMLDivElement>(null);
+  const globalEnvironmentsListRef = useRef<HTMLLIElement>(null);
 
   const { data: environments } = useStreamEnvironments();
   const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
@@ -46,27 +45,19 @@ export const GlobalEnvironmentsListItem = ({ environment }: GlobalEnvironmentsLi
   }, [environments]);
 
   return (
-    <div
-      ref={globalEnvironmentsListRef}
-      className="group/GlobalEnvironmentsList relative flex min-h-[30px] w-full cursor-pointer items-center justify-between py-1 pr-2 pl-2.5"
-      onClick={onClick}
-      role="button"
-      tabIndex={0}
-    >
-      <GlobalEnvironmentsListIndicator isActive={isActive} />
+    <Tree.RootNodeHeader ref={globalEnvironmentsListRef} isActive={isActive} onClick={onClick}>
       {closestEdge && <DropIndicator noTerminal edge={closestEdge} />}
 
       {isEditing ? (
-        <GlobalEnvironmentsListRenamingForm
-          onSubmit={handleRename}
-          onCancel={handleCancel}
-          currentName={environment.name}
+        <GlobalEnvironmentsListItemRenamingForm
+          handleRename={handleRename}
+          handleCancel={handleCancel}
+          environment={environment}
           restrictedNames={restrictedNames}
         />
       ) : (
-        <GlobalEnvironmentsListButton environment={environment} />
+        <GlobalEnvironmentsListControls environment={environment} setIsEditing={setIsEditing} />
       )}
-      <GlobalEnvironmentsListActions environment={environment} setIsEditing={setIsEditing} />
-    </div>
+    </Tree.RootNodeHeader>
   );
 };

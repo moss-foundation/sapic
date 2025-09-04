@@ -150,11 +150,11 @@ export const StatusBarActivity = () => {
       if ("progress" in latestEvent) {
         const activityId = latestEvent.progress.activityId;
         const title = getStartTitleForActivity(activityId);
-        console.log(`Progress event: activityId=${activityId}, title=${title}, detail=${latestEvent.progress.detail}`);
+        // console.log(`Progress event: activityId=${activityId}, title=${title}, detail=${latestEvent.progress.detail}`);
       } else if ("finish" in latestEvent) {
-        console.log(
-          `Finish event: activityId=${latestEvent.finish.activityId}, hasActiveEvents=${hasActiveEvents}, queueLength=${displayQueue.length}`
-        );
+        // console.log(
+        //   `Finish event: activityId=${latestEvent.finish.activityId}, hasActiveEvents=${hasActiveEvents}, queueLength=${displayQueue.length}`
+        // );
       }
     }
   }, [latestEvent, getStartTitleForActivity, hasActiveEvents, displayQueue.length]);

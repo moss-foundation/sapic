@@ -9,7 +9,7 @@ import { DragGlobalEnvironmentsListItem, DropGlobalEnvironmentsListItem } from "
 import { getSourceGlobalEnvironmentsListItem } from "../utils";
 
 interface UseDraggableGlobalEnvironmentsListProps {
-  ref: React.RefObject<HTMLDivElement>;
+  ref: React.RefObject<HTMLLIElement>;
   environment: StreamEnvironmentsEvent;
 }
 

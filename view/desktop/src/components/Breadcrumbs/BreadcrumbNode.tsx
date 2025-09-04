@@ -1,8 +1,8 @@
+import { Tree } from "@/lib/ui/Tree";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 
 import Icon from "../../lib/ui/Icon";
-import NodeLabel from "../CollectionTree/NodeLabel";
 import { TreeCollectionNode } from "../CollectionTree/types";
 import { EntryIcon } from "../EntryIcon";
 
@@ -57,8 +57,11 @@ export const BreadcrumbNode = ({
         }}
         className="hover:background-(--moss-secondary-background-hover) relative flex w-full cursor-pointer items-center gap-1 rounded-sm py-0.5 dark:hover:text-black"
       >
-        <EntryIcon entry={node} />
-        <NodeLabel label={node.name} />
+        <div className="relative size-4">
+          <EntryIcon entry={node} className="absolute top-0 right-0" />
+        </div>
+
+        <Tree.NodeLabel label={node.name} />
         <span className="DragHandle h-full min-h-4 grow" />
         <Icon
           icon="ChevronRight"

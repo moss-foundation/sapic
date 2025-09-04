@@ -1,20 +1,39 @@
-import { useEffect } from "react";
+import { ReactNode, useEffect } from "react";
 
-import { USE_DESCRIBE_APP_STATE_QUERY_KEY } from "@/hooks/appState/useDescribeAppState";
+import { useDescribeAppState, useSetLocale } from "@/hooks";
 import { applyLanguagePack } from "@/utils/applyLanguagePack";
 import { LocaleInfo } from "@repo/moss-app";
-import { useQueryClient } from "@tanstack/react-query";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 
-const LanguageProvider = ({ children }: { children: React.ReactNode }) => {
-  const queryClient = useQueryClient();
+import { initializeI18n } from "./i18n";
 
+interface LanguageProviderProps {
+  children: ReactNode;
+}
+
+const LanguageProvider = ({ children }: LanguageProviderProps) => {
+  const { data } = useDescribeAppState();
+  const { mutateAsync: setLocale } = useSetLocale();
+
+  // Initialize language
+  useEffect(() => {
+    if (data) {
+      const languagePack = data.preferences?.locale ?? data.defaults.locale;
+
+      initializeI18n(languagePack.code)
+        .then(() => {
+          applyLanguagePack(languagePack).catch(console.error);
+        })
+        .catch(console.error);
+    }
+  }, [data]);
+
+  // Listen for language pack changes
   useEffect(() => {
     let unlisten: UnlistenFn | undefined;
 
     const handleLanguageChange = (event: { payload: LocaleInfo }) => {
-      applyLanguagePack(event.payload).catch(console.error);
-      queryClient.invalidateQueries({ queryKey: [USE_DESCRIBE_APP_STATE_QUERY_KEY] });
+      setLocale({ localeInfo: event.payload });
     };
 
     const setupListener = async () => {
@@ -28,11 +47,9 @@ const LanguageProvider = ({ children }: { children: React.ReactNode }) => {
     setupListener();
 
     return () => {
-      if (unlisten) {
-        unlisten();
-      }
+      unlisten?.();
     };
-  }, [queryClient]);
+  }, [setLocale]);
 
   return <>{children}</>;
 };

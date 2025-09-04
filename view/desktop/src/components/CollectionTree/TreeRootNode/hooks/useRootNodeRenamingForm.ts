@@ -29,6 +29,7 @@ export const useRootNodeRenamingForm = (node: TreeCollectionRootNode) => {
   };
 
   const handleRenamingRootNodeFormCancel = () => {
+    console.log("handleRenamingRootNodeFormCancel");
     setIsRenamingRootNode(false);
   };
 

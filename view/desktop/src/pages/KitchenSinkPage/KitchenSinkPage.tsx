@@ -1,3 +1,5 @@
+import { PageContent } from "@/components";
+
 import { ActionMenusSection } from "./Sections/ActionMenusSection";
 import { ButtonsSection } from "./Sections/ButtonsSection";
 import { CommandSection } from "./Sections/CommandSection";
@@ -8,7 +10,7 @@ import { TabsSection } from "./Sections/TabsSection";
 
 export const KitchenSink = () => {
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-10">
+    <PageContent className="mx-auto flex max-w-6xl flex-col gap-10">
       <TabsSection />
 
       <TableSection />
@@ -22,6 +24,6 @@ export const KitchenSink = () => {
       <CommandSection />
 
       <IconsSection />
-    </div>
+    </PageContent>
   );
 };

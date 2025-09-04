@@ -1,10 +1,10 @@
 import { useState } from "react";
 
+import { Tree } from "@/lib/ui/Tree";
+
 import { GroupedEnvironmentsListChildren } from "../GroupedEnvironmentsListChildren";
-import { GroupedEnvironmentsListItemIndicator } from "../GroupedEnvironmentsListItemIndicator";
 import { GroupedWithEnvironment } from "../types";
-import { GroupedEnvironmentsListRootActions } from "./GroupedEnvironmentsListRootActions";
-import { GroupedEnvironmentsListRootButton } from "./GroupedEnvironmentsListRootButton";
+import { GroupedEnvironmentsListRootControls } from "./GroupedEnvironmentsListRootControls";
 
 interface GroupedEnvironmentsListRootProps {
   groupedWithEnvironments: GroupedWithEnvironment;
@@ -18,25 +18,16 @@ export const GroupedEnvironmentsListRoot = ({ groupedWithEnvironments }: Grouped
   };
 
   return (
-    <div className="group/GroupedEnvironmentsListRoot flex flex-col">
-      <div
-        className="group/GroupedEnvironmentsListRootHeader relative flex h-[30px] cursor-pointer items-center justify-between py-2 pr-2 pl-[10px]"
-        onClick={onClick}
-        role="button"
-        tabIndex={0}
-      >
-        <GroupedEnvironmentsListRootButton
+    <Tree.RootNode isChildDropBlocked={false} instruction={null}>
+      <Tree.RootNodeHeader onClick={onClick} isActive={false} className="cursor-pointer">
+        <GroupedEnvironmentsListRootControls
           showChildren={showChildren}
           setShowChildren={setShowChildren}
           groupedWithEnvironments={groupedWithEnvironments}
         />
-
-        <GroupedEnvironmentsListRootActions />
-
-        <GroupedEnvironmentsListItemIndicator />
-      </div>
+      </Tree.RootNodeHeader>
 
       {showChildren && <GroupedEnvironmentsListChildren groupedWithEnvironments={groupedWithEnvironments} />}
-    </div>
+    </Tree.RootNode>
   );
 };

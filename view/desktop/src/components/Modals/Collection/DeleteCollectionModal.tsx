@@ -1,11 +1,11 @@
-import { useDeleteCollection, useStreamedCollections } from "@/hooks";
+import { useDeleteCollection, useStreamCollections } from "@/hooks";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 import { ConfirmationModal } from "../ConfirmationModal";
 import { ModalWrapperProps } from "../types";
 
 export const DeleteCollectionModal = ({ closeModal, showModal, id }: ModalWrapperProps & { id: string }) => {
-  const { data: streamedCollections } = useStreamedCollections();
+  const { data: streamedCollections } = useStreamCollections();
   const { mutateAsync: deleteCollection, isPending: isDeleteCollectionLoading } = useDeleteCollection();
 
   const { removePanel } = useTabbedPaneStore();

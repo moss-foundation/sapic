@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { useAddAccount } from "@/hooks/account/useAddAccount";
+import { useAddAccount } from "@/hooks/app/account/useAddAccount";
 import { useGitProviderStore } from "@/store/gitProvider";
 import { ImportCollectionSource } from "@repo/moss-workspace";
 
