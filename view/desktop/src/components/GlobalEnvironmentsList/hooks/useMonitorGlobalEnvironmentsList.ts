@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 
 import { useStreamEnvironments, useUpdateEnvironment } from "@/hooks";
+import { extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import {
@@ -21,13 +22,14 @@ export const useMonitorGlobalEnvironmentsList = () => {
       onDrop: async ({ source, location }) => {
         const sourceData = getSourceGlobalEnvironmentsListItem(source);
         const locationData = getLocationGlobalEnvironmentsListItem(location);
+        const instruction = extractInstruction(location.current.dropTargets[0]?.data);
 
-        if (!sourceData || !locationData || !globalEnvironments) return;
+        if (!sourceData || !locationData || !globalEnvironments || !instruction) return;
 
         if (sourceData.data.environment.id === locationData.data.environment.id) return;
 
         const dropOrder =
-          locationData.edge === "top"
+          instruction?.operation === "reorder-before"
             ? locationData.data.environment.order! - 0.5
             : locationData.data.environment.order! + 0.5;
 
@@ -39,7 +41,6 @@ export const useMonitorGlobalEnvironmentsList = () => {
 
         const environmentsToUpdate = dropTargetEnvironmentsWithNewOrders.filter((env) => {
           const oldEnv = globalEnvironments.find((e) => e.id === env.id);
-
           return oldEnv?.order !== env.order;
         });
 

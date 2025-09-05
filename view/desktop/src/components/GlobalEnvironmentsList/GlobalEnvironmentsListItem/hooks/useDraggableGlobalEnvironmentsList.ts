@@ -1,6 +1,6 @@
 import { RefObject, useEffect, useState } from "react";
 
-import { attachClosestEdge, Edge, extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
+import { attachInstruction, extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
@@ -15,11 +15,10 @@ interface UseDraggableGlobalEnvironmentsListProps {
 
 export const useDraggableGlobalEnvironmentsList = ({ ref, environment }: UseDraggableGlobalEnvironmentsListProps) => {
   const [isDragging, setIsDragging] = useState(false);
-  const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
+  const [instruction, setInstruction] = useState<Instruction | null>(null);
 
   useEffect(() => {
     const element = ref?.current;
-
     if (!element) return;
 
     return combine(
@@ -29,6 +28,7 @@ export const useDraggableGlobalEnvironmentsList = ({ ref, environment }: UseDrag
           type: "GlobalEnvironmentsListItem",
           data: { environment },
         }),
+
         onDragStart() {
           setIsDragging(true);
         },
@@ -38,17 +38,37 @@ export const useDraggableGlobalEnvironmentsList = ({ ref, environment }: UseDrag
       }),
       dropTargetForElements({
         element,
-        getData({ input }) {
+        getData({ input, source }) {
           const data: DropGlobalEnvironmentsListItem = {
             type: "GlobalEnvironmentsListItem",
             data: { environment },
           };
 
-          return attachClosestEdge(data, {
+          const sourceData = getSourceGlobalEnvironmentsListItem(source);
+          if (!sourceData || sourceData.data.environment.id === environment.id) {
+            return attachInstruction(data, {
+              input,
+              element,
+              operations: {
+                "reorder-before": "not-available",
+                "reorder-after": "not-available",
+                combine: "not-available",
+              },
+            });
+          }
+
+          return attachInstruction(data, {
             input,
             element,
-            allowedEdges: ["top", "bottom"],
+            operations: {
+              "reorder-before": "available",
+              "reorder-after": "available",
+              combine: "not-available",
+            },
           });
+        },
+        getIsSticky() {
+          return true;
         },
         canDrop({ source }) {
           const sourceData = getSourceGlobalEnvironmentsListItem(source);
@@ -58,26 +78,28 @@ export const useDraggableGlobalEnvironmentsList = ({ ref, environment }: UseDrag
           return !sameEnvironment;
         },
         onDragEnter({ self }) {
-          const closestEdge = extractClosestEdge(self.data);
-          setClosestEdge(closestEdge);
+          const instruction = extractInstruction(self.data);
+
+          if (instruction) {
+            setInstruction(instruction);
+          }
         },
         onDrag({ self }) {
-          const closestEdge = extractClosestEdge(self.data);
+          const instruction = extractInstruction(self.data);
 
-          setClosestEdge((current) => {
-            if (current === closestEdge) return current;
-            return closestEdge;
-          });
+          if (instruction) {
+            setInstruction(instruction);
+          }
         },
         onDragLeave() {
-          setClosestEdge(null);
+          setInstruction(null);
         },
         onDrop: () => {
-          setClosestEdge(null);
+          setInstruction(null);
         },
       })
     );
   }, [ref, environment]);
 
-  return { isDragging, closestEdge };
+  return { isDragging, instruction };
 };

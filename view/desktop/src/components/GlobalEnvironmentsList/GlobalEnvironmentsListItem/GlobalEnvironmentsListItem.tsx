@@ -1,6 +1,5 @@
 import { useMemo, useRef } from "react";
 
-import { DropIndicator } from "@/components/DropIndicator";
 import { useStreamEnvironments } from "@/hooks";
 import { Tree } from "@/lib/ui/Tree";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
@@ -24,7 +23,10 @@ export const GlobalEnvironmentsListItem = ({ environment }: GlobalEnvironmentsLi
     environment,
   });
 
-  const { closestEdge } = useDraggableGlobalEnvironmentsList({ ref: globalEnvironmentsListRef, environment });
+  const { instruction } = useDraggableGlobalEnvironmentsList({
+    ref: globalEnvironmentsListRef,
+    environment,
+  });
 
   const restrictedNames = useMemo(() => {
     if (!environments) return [];
@@ -34,19 +36,19 @@ export const GlobalEnvironmentsListItem = ({ environment }: GlobalEnvironmentsLi
   const isActive = activePanelId === environment.id;
 
   return (
-    <Tree.RootNodeHeader ref={globalEnvironmentsListRef} isActive={isActive}>
-      {closestEdge && <DropIndicator noTerminal edge={closestEdge} />}
-
-      {isEditing ? (
-        <GlobalEnvironmentsListItemRenamingForm
-          handleRename={handleRename}
-          handleCancel={handleCancel}
-          environment={environment}
-          restrictedNames={restrictedNames}
-        />
-      ) : (
-        <GlobalEnvironmentsListControls environment={environment} setIsEditing={setIsEditing} />
-      )}
-    </Tree.RootNodeHeader>
+    <Tree.RootNode isChildDropBlocked={false} instruction={instruction} dropIndicatorFullWidth={true}>
+      <Tree.RootNodeHeader ref={globalEnvironmentsListRef} isActive={isActive}>
+        {isEditing ? (
+          <GlobalEnvironmentsListItemRenamingForm
+            handleRename={handleRename}
+            handleCancel={handleCancel}
+            environment={environment}
+            restrictedNames={restrictedNames}
+          />
+        ) : (
+          <GlobalEnvironmentsListControls environment={environment} setIsEditing={setIsEditing} />
+        )}
+      </Tree.RootNodeHeader>
+    </Tree.RootNode>
   );
 };

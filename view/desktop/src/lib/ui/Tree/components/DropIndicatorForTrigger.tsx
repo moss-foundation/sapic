@@ -10,6 +10,7 @@ interface DropIndicatorProps extends HTMLAttributes<HTMLDivElement> {
   depth?: number;
   isLastChild?: boolean;
   height?: number;
+  fullWidth?: boolean;
 }
 
 export const DropIndicatorForTrigger = ({
@@ -20,15 +21,28 @@ export const DropIndicatorForTrigger = ({
   depth = 0,
   isLastChild = false,
   height = 1,
+  fullWidth = false,
   ...props
 }: DropIndicatorProps) => {
   if (!instruction || instruction.blocked || instruction.operation === "combine") return null;
 
-  const baseWidth = `calc(100% - ${paddingRight}px - ${paddingLeft}px)`;
-  const reorderWidth = depth === 1 ? baseWidth : `calc(${baseWidth} - 16px)`;
+  let reorderWidth: string;
+  let leftOffset: number;
 
-  const leftOffset =
-    paddingLeft + (depth === 1 ? 0 : instruction.operation === "reorder-before" ? 16 : isLastChild ? 0 : 16);
+  if (fullWidth) {
+    const baseWidth = `calc(100% - ${paddingRight}px - ${paddingLeft}px)`;
+
+    reorderWidth = baseWidth;
+
+    leftOffset = 0;
+  } else {
+    const baseWidth = `calc(100% - ${paddingRight}px - ${paddingLeft}px)`;
+
+    reorderWidth = depth === 1 ? baseWidth : `calc(${baseWidth} - 16px)`;
+
+    leftOffset =
+      paddingLeft + (depth === 1 ? 0 : instruction.operation === "reorder-before" ? 16 : isLastChild ? 0 : 16);
+  }
 
   const gapOffset = -(gap + height / 2);
 
@@ -41,6 +55,7 @@ export const DropIndicatorForTrigger = ({
         [instruction.operation === "reorder-before" ? "top" : "bottom"]: gapOffset,
         width: reorderWidth,
         left: leftOffset,
+        pointerEvents: "none",
         zIndex: 5,
       }}
       {...props}

@@ -9,16 +9,22 @@ import { DropIndicatorForTrigger } from "../DropIndicatorForTrigger";
 interface RootNodeProps extends HTMLAttributes<HTMLUListElement> {
   children: React.ReactNode;
   className?: string;
-  isChildDropBlocked: boolean | null;
+  isChildDropBlocked?: boolean | null;
   instruction: Instruction | null;
+  dropIndicatorFullWidth?: boolean;
 }
 
 export const RootNode = forwardRef<HTMLUListElement, RootNodeProps>(
-  ({ children, className, isChildDropBlocked, instruction, ...props }: RootNodeProps, ref) => {
+  (
+    { children, className, isChildDropBlocked, instruction, dropIndicatorFullWidth = false, ...props }: RootNodeProps,
+    ref
+  ) => {
     return (
       <ul ref={ref} className={cn("group/TreeRootNode relative w-full list-none", className)} {...props}>
-        <DropIndicatorForDir isChildDropBlocked={isChildDropBlocked} instruction={instruction} />
-        <DropIndicatorForTrigger instruction={instruction} />
+        {isChildDropBlocked && (
+          <DropIndicatorForDir isChildDropBlocked={isChildDropBlocked} instruction={instruction} />
+        )}
+        <DropIndicatorForTrigger instruction={instruction} fullWidth={dropIndicatorFullWidth} />
 
         {children}
       </ul>

@@ -30,11 +30,11 @@ export const EnvironmentsListView = () => {
           }}
         />
 
-        {environments && environments.length > 0 && <EnvironmentsListViewDivider />}
+        {environments && environments.environments.length > 0 && <EnvironmentsListViewDivider />}
 
         <GlobalEnvironmentsList />
 
-        {environments && environments.length > 0 && <EnvironmentsListViewDivider />}
+        {environments && environments.environments.length > 0 && <EnvironmentsListViewDivider />}
 
         <GroupedEnvironmentsList />
       </Scrollbar>
