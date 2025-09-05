@@ -1562,6 +1562,7 @@ dependencies = [
  "moss_fs",
  "moss_git_hosting_provider",
  "moss_keyring",
+ "moss_server_api",
  "moss_storage",
  "moss_text",
  "moss_user",

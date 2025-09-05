@@ -19,7 +19,7 @@ use moss_git_hosting_provider::{
     gitlab::{GitLabApiClient, GitLabAuthAdapter},
 };
 use moss_keyring::KeyringClientImpl;
-use moss_user::account::auth_gateway_api::AccountAuthGatewayApiClient;
+use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use reqwest::ClientBuilder as HttpClientBuilder;
 use std::{path::PathBuf, sync::Arc, time::Duration};
 #[cfg(not(debug_assertions))]
@@ -64,7 +64,7 @@ pub async fn run<R: TauriRuntime>() {
                     dotenv::var("ACCOUNT_AUTH_BASE_URL").expect("ACCOUNT_AUTH_BASE_URL is not set"),
                 ));
 
-                let tao_handle = tao.app_handle();
+                let tao_app_handle = tao.app_handle();
 
                 #[cfg(debug_assertions)]
                 let (app_dir, themes_dir, locales_dir, logs_dir) = {
@@ -106,21 +106,22 @@ pub async fn run<R: TauriRuntime>() {
                 // throughout the entire application via the `global` method
                 // of the app's internal handler.
                 {
-                    tao_handle.manage(http_client.clone());
-                    tao_handle.manage(GitHubApiClient::new(http_client.clone()));
-                    tao_handle.manage(GitLabApiClient::new(http_client.clone()));
-                    tao_handle.manage(GitHubAuthAdapter::new(
+                    tao_app_handle.manage(http_client.clone());
+                    tao_app_handle.manage(GitHubApiClient::new(http_client.clone()));
+                    tao_app_handle.manage(GitLabApiClient::new(http_client.clone()));
+                    tao_app_handle.manage(GitHubAuthAdapter::new(
                         auth_api_client.clone(),
                         auth_api_client.base_url(),
                         8080,
                     ));
-                    tao_handle.manage(GitLabAuthAdapter::new(
+                    tao_app_handle.manage(GitLabAuthAdapter::new(
                         auth_api_client.clone(),
                         auth_api_client.base_url(),
                         8081,
                     ));
 
-                    tao_handle.manage(AppHandle::<TauriAppRuntime<R>>::new(tao_handle.clone()));
+                    tao_app_handle
+                        .manage(AppHandle::<TauriAppRuntime<R>>::new(tao_app_handle.clone()));
                 }
 
                 let ctx_clone = ctx.clone();
@@ -130,7 +131,7 @@ pub async fn run<R: TauriRuntime>() {
                             .freeze();
 
                     let app = TauriAppBuilder::<TauriAppRuntime<R>>::new(
-                        tao_handle.clone(),
+                        tao_app_handle.clone(),
                         fs,
                         keyring,
                         auth_api_client,
@@ -150,13 +151,13 @@ pub async fn run<R: TauriRuntime>() {
                     (app, session_id)
                 };
 
-                tao_handle.manage({
+                tao_app_handle.manage({
                     let mut ctx = ctx.unfreeze().expect("Failed to unfreeze the root context");
                     ctx.with_value("session_id", session_id.to_string()); // TODO: Use a proper type
 
                     ctx.freeze()
                 });
-                tao_handle.manage(app);
+                tao_app_handle.manage(app);
 
                 Ok(())
             })
