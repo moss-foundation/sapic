@@ -53,6 +53,7 @@ pub(crate) struct CollectionItemCloneParams {
 }
 
 pub(crate) struct CollectionItemImportParams {
+    pub name: String,
     pub order: isize,
     pub archive_path: PathBuf,
 }
@@ -665,6 +666,15 @@ impl<R: AppRuntime> CollectionService<R> {
             )
             .await
             .join_err::<()>("failed to import collection from archive file")?;
+
+        // Update the collection name based on user input
+        collection
+            .modify(CollectionModifyParams {
+                name: Some(params.name),
+                repository: None,
+                icon_path: None,
+            })
+            .await?;
 
         let desc = collection.details().await?;
 

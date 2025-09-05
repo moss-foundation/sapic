@@ -78,6 +78,7 @@ impl<R: AppRuntime> Workspace<R> {
                         ctx,
                         &id,
                         CollectionItemImportParams {
+                            name: params.name.clone(),
                             order: params.order,
                             archive_path: archive_params.archive_path.clone(),
                         },
