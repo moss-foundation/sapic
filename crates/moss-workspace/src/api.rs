@@ -9,6 +9,7 @@ pub mod delete_collection;
 pub mod delete_environment;
 pub mod describe_collection;
 pub mod describe_state;
+pub mod export_collection;
 pub mod import_collection;
 pub mod stream_collections;
 pub mod stream_environments;

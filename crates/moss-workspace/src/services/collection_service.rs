@@ -7,7 +7,7 @@ use moss_collection::{
     Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
     builder::{
         CollectionCloneParams, CollectionCreateGitParams, CollectionCreateParams,
-        CollectionLoadParams,
+        CollectionImportParams, CollectionLoadParams,
     },
     git::GitClient,
     vcs::VcsSummary,
@@ -35,7 +35,10 @@ use crate::{
     dirs,
     models::{
         primitives::CollectionId,
-        types::{CreateCollectionGitParams, CreateCollectionParams, UpdateCollectionParams},
+        types::{
+            CreateCollectionGitParams, CreateCollectionParams, ExportCollectionParams,
+            UpdateCollectionParams,
+        },
     },
     services::storage_service::StorageService,
     storage::segments::SEGKEY_COLLECTION,
@@ -47,6 +50,12 @@ pub(crate) struct CollectionItemCloneParams {
     pub repository: String,
     pub git_provider_type: GitProviderKind,
     pub branch: Option<String>,
+}
+
+pub(crate) struct CollectionItemImportParams {
+    pub name: String,
+    pub order: isize,
+    pub archive_path: PathBuf,
 }
 
 #[derive(Deref, DerefMut)]
@@ -621,6 +630,116 @@ impl<R: AppRuntime> CollectionService<R> {
             })?;
 
         item.unarchive().await
+    }
+
+    pub(crate) async fn import_collection(
+        &self,
+        ctx: &R::AsyncContext,
+        id: &CollectionId,
+        params: CollectionItemImportParams,
+    ) -> joinerror::Result<CollectionItemDescription> {
+        let id_str = id.to_string();
+        let abs_path: Arc<Path> = self.abs_path.join(&id_str).into();
+        if abs_path.exists() {
+            return Err(Error::new::<()>(format!(
+                "collection directory `{}` already exists",
+                abs_path.display()
+            )));
+        }
+
+        self.fs
+            .create_dir(&abs_path)
+            .await
+            .join_err_with::<()>(|| {
+                format!("failed to create directory `{}`", abs_path.display())
+            })?;
+
+        let builder = CollectionBuilder::new(self.fs.clone(), self.broadcaster.clone()).await?;
+
+        let collection = builder
+            .import_archive(
+                ctx,
+                CollectionImportParams {
+                    internal_abs_path: abs_path.clone(),
+                    archive_path: params.archive_path.into(),
+                },
+            )
+            .await
+            .join_err::<()>("failed to import collection from archive file")?;
+
+        // Update the collection name based on user input
+        collection
+            .modify(CollectionModifyParams {
+                name: Some(params.name),
+                repository: None,
+                icon_path: None,
+            })
+            .await?;
+
+        let desc = collection.details().await?;
+
+        let icon_path = collection.icon_path();
+        {
+            let mut state_lock = self.state.write().await;
+            state_lock.expanded_items.insert(id.clone());
+            state_lock.collections.insert(
+                id.clone(),
+                CollectionItem {
+                    id: id.clone(),
+                    order: Some(params.order),
+                    handle: Arc::new(collection),
+                },
+            );
+            // TODO: Make database errors not fail the operation
+            let mut txn = self
+                .storage
+                .begin_write(ctx)
+                .await
+                .join_err::<()>("failed to start transaction")?;
+
+            self.storage
+                .put_item_order_txn(ctx, &mut txn, &id, params.order)
+                .await?;
+            self.storage
+                .put_expanded_items_txn(ctx, &mut txn, &state_lock.expanded_items)
+                .await?;
+
+            txn.commit()?;
+        }
+
+        self.on_did_add_collection_emitter
+            .fire(OnDidAddCollection {
+                collection_id: id.clone(),
+            })
+            .await;
+
+        Ok(CollectionItemDescription {
+            id: id.clone(),
+            name: desc.name,
+            order: Some(params.order),
+            expanded: true,
+            vcs: None,
+            icon_path,
+            abs_path,
+            external_path: None,
+            archived: false,
+        })
+    }
+
+    pub(crate) async fn export_collection(
+        &self,
+        id: &CollectionId,
+        params: &ExportCollectionParams,
+    ) -> joinerror::Result<PathBuf> {
+        let state_lock = self.state.read().await;
+        let item = state_lock
+            .collections
+            .get(&id)
+            .ok_or_join_err_with::<()>(|| {
+                format!("failed to find collection with id `{}`", id.to_string())
+            })?;
+
+        item.export_archive(&params.destination).await
     }
 }
 async fn restore_collections<R: AppRuntime>(

@@ -12,6 +12,7 @@ use moss_edit::json::EditOptions;
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_git::{repository::Repository, url::GitUrl};
 use moss_git_hosting_provider::GitProviderKind;
+use moss_text::sanitized::sanitize;
 use moss_user::models::primitives::AccountId;
 use serde_json::Value as JsonValue;
 use std::{
@@ -33,6 +34,8 @@ use crate::{
     vcs::{CollectionVcs, Vcs},
     worktree::Worktree,
 };
+
+const ARCHIVE_EXCLUDED_ENTRIES: [&'static str; 3] = ["config.json", "state.db", ".git"];
 
 #[derive(Debug, Clone)]
 pub enum OnDidChangeEvent {
@@ -439,8 +442,32 @@ impl<R: AppRuntime> Collection<R> {
 
         Ok(())
     }
-}
 
+    /// Export the collection to {destination}/{collection_name}.zip
+    /// Returns the path to the output archive file
+    pub async fn export_archive(&self, destination: &Path) -> joinerror::Result<PathBuf> {
+        // If the output is inside the collection folder, it will also be bundled, which we don't want
+        if destination.starts_with(&self.abs_path) {
+            return Err(Error::new::<()>(
+                "cannot export archive file into the collection folder",
+            ));
+        }
+        // Collection name can contain special chars that need sanitizing
+        let raw_name = format!("{}", self.details().await?.name);
+        let sanitized_name = sanitize(&raw_name);
+        let archive_path = destination.join(format!("{}.zip", sanitized_name));
+
+        self.fs
+            .zip(
+                self.abs_path.as_ref(),
+                &archive_path,
+                &ARCHIVE_EXCLUDED_ENTRIES,
+            )
+            .await?;
+
+        Ok(archive_path)
+    }
+}
 #[cfg(any(test, feature = "integration-tests"))]
 impl<R: AppRuntime> Collection<R> {
     pub fn db(&self) -> &Arc<dyn moss_storage::CollectionStorage<R::AsyncContext>> {

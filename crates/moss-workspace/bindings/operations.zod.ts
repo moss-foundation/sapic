@@ -84,6 +84,15 @@ export const describeEnvironmentInputSchema = z.object({
   id: z.string(),
 });
 
+export const exportCollectionInputSchema = z.object({
+  id: z.string(),
+  destination: z.string(),
+});
+
+export const exportCollectionOutputSchema = z.object({
+  archivePath: z.string(),
+});
+
 export const importCollectionOutputSchema = z.object({
   id: z.string(),
   name: z.string(),
