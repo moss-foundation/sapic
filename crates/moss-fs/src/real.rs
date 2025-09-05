@@ -13,7 +13,7 @@ use tokio::{
     time::{self, Instant},
 };
 use tokio_stream::wrappers::UnboundedReceiverStream;
-use tokio_util::compat::{TokioAsyncReadCompatExt, TokioAsyncWriteCompatExt};
+use tokio_util::compat::TokioAsyncWriteCompatExt;
 
 use crate::{CreateOptions, FileSystem, FsError, FsResult, RemoveOptions, RenameOptions};
 
@@ -252,7 +252,7 @@ impl FileSystem for RealFileSystem {
             )));
         }
 
-        let mut reader = ZipFileReader::new(src_archive).await.map_err(|err| {
+        let reader = ZipFileReader::new(src_archive).await.map_err(|err| {
             FsError::Other(format!(
                 "failed to read archive `{}`: {}",
                 src_archive.display(),
