@@ -6,7 +6,7 @@ edition = "2024"
 [dependencies]
 async-trait.workspace = true
 joinerror.workspace = true
-reqwest.workspace = true
+reqwest = { workspace = true, features = ["json"] }
 serde.workspace = true
 
 [features]
