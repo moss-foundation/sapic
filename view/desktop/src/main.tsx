@@ -41,7 +41,7 @@ if (import.meta.env.MODE === "development") {
 }
 
 scan({
-  enabled: false,
+  enabled: true,
 });
 
 const App = lazy(() => import("@/app"));
