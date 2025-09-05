@@ -2,7 +2,7 @@ import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { CreateEnvironmentInput, CreateEnvironmentOutput } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { StreamEnvironmentsResult, USE_STREAMED_ENVIRONMENTS_QUERY_KEY } from "./useStreamEnvironments";
+import { USE_STREAMED_ENVIRONMENTS_QUERY_KEY } from "./useStreamEnvironments";
 
 const createEnvironment = async (input: CreateEnvironmentInput) => {
   const result = await invokeTauriIpc<CreateEnvironmentOutput>("create_environment", { input });
@@ -20,12 +20,7 @@ export const useCreateEnvironment = () => {
   return useMutation({
     mutationFn: createEnvironment,
     onSuccess: (data) => {
-      queryClient.setQueryData([USE_STREAMED_ENVIRONMENTS_QUERY_KEY], (old: StreamEnvironmentsResult) => {
-        return {
-          ...old,
-          environments: [...old.environments, data],
-        };
-      });
+      queryClient.invalidateQueries({ queryKey: [USE_STREAMED_ENVIRONMENTS_QUERY_KEY] });
 
       return data;
     },

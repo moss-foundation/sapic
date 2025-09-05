@@ -3,6 +3,7 @@ import { useMemo, useRef } from "react";
 import { useStreamEnvironments } from "@/hooks";
 import { Tree } from "@/lib/ui/Tree";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { cn } from "@/utils";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
 import { GlobalEnvironmentsListControls } from "./GlobalEnvironmentsListControls";
@@ -23,7 +24,7 @@ export const GlobalEnvironmentsListItem = ({ environment }: GlobalEnvironmentsLi
     environment,
   });
 
-  const { instruction } = useDraggableGlobalEnvironmentsList({
+  const { isDragging, instruction } = useDraggableGlobalEnvironmentsList({
     ref: globalEnvironmentsListRef,
     environment,
   });
@@ -45,7 +46,11 @@ export const GlobalEnvironmentsListItem = ({ environment }: GlobalEnvironmentsLi
   };
 
   return (
-    <Tree.Node ref={globalEnvironmentsListRef} className="cursor-pointer" onClick={onClick}>
+    <Tree.Node
+      ref={globalEnvironmentsListRef}
+      className={cn("cursor-pointer", isDragging && "opacity-50")}
+      onClick={onClick}
+    >
       {isEditing ? (
         <GlobalEnvironmentsListItemRenamingForm
           handleRename={handleRename}

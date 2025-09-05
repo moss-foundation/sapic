@@ -16,7 +16,7 @@ export const GroupedEnvironmentsListItem = ({ environment }: GroupedEnvironments
 
   const onClick = () => {
     addOrFocusPanel({
-      id: `GroupedEnvironmentsListItem-${environment.id}`,
+      id: environment.id,
       component: "Default",
       title: environment.name,
       params: {
@@ -25,23 +25,15 @@ export const GroupedEnvironmentsListItem = ({ environment }: GroupedEnvironments
     });
   };
 
-  const isActive = activePanelId === `GroupedEnvironmentsListItem-${environment.id}`;
+  const isActive = activePanelId === environment.id;
 
   return (
     <Tree.Node onClick={onClick}>
-      <Tree.NodeControls
-        hideDragHandle
-        depth={1}
-        isChildDropBlocked={false}
-        isActive={isActive}
-        isRootNode={false}
-        instruction={null}
-        isLastChild={false}
-      >
-        <Tree.NodeTriggers>
+      <Tree.NodeControls hideDragHandle depth={1} isActive={isActive}>
+        <Tree.NodeTriggers className="overflow-hidden">
           <Icon icon="GroupedEnvironment" />
           <div className="truncate">{environment.name}</div>
-          <div className="text-(--moss-secondary-text)">(15)</div>
+          <div className="text-(--moss-secondary-text)">({environment.totalVariables})</div>
         </Tree.NodeTriggers>
 
         <Tree.NodeActions>
