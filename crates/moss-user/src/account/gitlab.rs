@@ -1,12 +1,5 @@
-use joinerror::{Error, OptionExt};
-use moss_asp::AppSecretsProvider;
+use joinerror::Error;
 use moss_keyring::KeyringClient;
-use oauth2::{
-    AuthUrl, ClientId, EmptyExtraTokenFields, RefreshToken, StandardTokenResponse, TokenResponse,
-    TokenUrl,
-    basic::{BasicClient, BasicTokenType},
-};
-use reqwest::Client as HttpClient;
 use std::{
     sync::Arc,
     time::{Duration, Instant},
@@ -22,14 +15,6 @@ use crate::{
 };
 
 const GITLAB_PREFIX: &str = "gl";
-const API_PATH_TOKEN_REFRESH: &str = "/auth/gitlab/refresh";
-
-// fn auth_url(host: &str) -> String {
-//     format!("https://{host}/oauth/authorize")
-// }
-// fn token_url(host: &str) -> String {
-//     format!("https://{host}/oauth/token")
-// }
 
 pub struct GitLabInitialToken {
     pub access_token: String,
@@ -50,17 +35,15 @@ pub(crate) struct GitLabSessionHandle {
     pub id: AccountId,
     pub host: String,
 
-    account_auth_api_client: Arc<dyn GitLabTokenRefreshApiReq>,
+    auth_api_client: Arc<dyn GitLabTokenRefreshApiReq>,
     token: RwLock<Option<LastAccessToken>>,
-    // client_id: ClientId,
 }
 
 impl GitLabSessionHandle {
     pub(crate) async fn new(
         id: AccountId,
         host: String,
-        account_auth_api_client: Arc<dyn GitLabTokenRefreshApiReq>,
-        // client_id: ClientId,
+        auth_api_client: Arc<dyn GitLabTokenRefreshApiReq>,
         initial_token: Option<GitLabInitialToken>,
 
         keyring: &Arc<dyn KeyringClient>,
@@ -84,16 +67,14 @@ impl GitLabSessionHandle {
         Ok(Self {
             id,
             host,
-            account_auth_api_client,
+            auth_api_client,
             token: RwLock::new(token),
-            // client_id,
         })
     }
 
     pub(crate) async fn access_token(
         &self,
         keyring: &Arc<dyn KeyringClient>,
-        // secrets: &AppSecretsProvider,
     ) -> joinerror::Result<String> {
         if let Some(token) = self.token.read().await.as_ref() {
             if token.expires_at > Instant::now() {
@@ -110,21 +91,11 @@ impl GitLabSessionHandle {
         let old_refresh_token = String::from_utf8(bytes.to_vec())?;
 
         let resp = self
-            .account_auth_api_client
+            .auth_api_client
             .gitlab_token_refresh(GitLabTokenRefreshRequest {
                 refresh_token: old_refresh_token,
             })
             .await?;
-
-        // let token = self
-        //     .refresh_gitlab_token(old_refresh_token, secrets)
-        //     .await?;
-
-        // let token_duration = token.expires_in().ok_or_join_err::<()>(
-        //     "failed to perform refresh GitLab credentials operation: expires_in value not received",
-        // )?;
-
-        // let new_access_token = token.access_token().secret().to_owned();
 
         self.token.write().await.replace(LastAccessToken {
             token: resp.access_token.clone(),
@@ -141,29 +112,4 @@ impl GitLabSessionHandle {
 
         return Ok(resp.access_token);
     }
-
-    // async fn refresh_gitlab_token(
-    //     &self,
-    //     refresh_token: String,
-    //     secrets: &AppSecretsProvider,
-    // ) -> joinerror::Result<GitLabTokenRefreshResponse> {
-    //     let resp = self
-    //         .account_auth_api_client
-    //         .gitlab_token_refresh(GitLabTokenRefreshRequest { refresh_token })
-    //         .await?;
-    //     todo!();
-    //     // let client_secret = secrets.gitlab_client_secret().await?;
-    //     // let client = BasicClient::new(self.client_id.clone())
-    //     //     .set_client_secret(client_secret)
-    //     //     .set_auth_uri(AuthUrl::new(auth_url(&self.host))?)
-    //     //     .set_token_uri(TokenUrl::new(token_url(&self.host))?);
-
-    //     // let token = client
-    //     //     .exchange_refresh_token(&RefreshToken::new(refresh_token))
-    //     //     .request_async(&reqwest::Client::new()) // TODO: reuse client instead of creating a new one
-    //     //     .await
-    //     //     .map_err(|e| joinerror::Error::new::<()>(e.to_string()))?;
-
-    //     // Ok(token)
-    // }
 }

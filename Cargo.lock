@@ -3555,7 +3555,6 @@ dependencies = [
  "moss_activity_broadcaster",
  "moss_api",
  "moss_applib",
- "moss_asp",
  "moss_bindingutils",
  "moss_common",
  "moss_db",
@@ -3602,17 +3601,6 @@ dependencies = [
  "tokio",
  "tokio-util",
  "validator",
-]
-
-[[package]]
-name = "moss_asp"
-version = "0.1.0"
-dependencies = [
- "joinerror",
- "moss_keyring",
- "oauth2",
- "rustc-hash",
- "tokio",
 ]
 
 [[package]]
@@ -3871,6 +3859,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "moss_server_api"
+version = "0.1.0"
+
+[[package]]
 name = "moss_storage"
 version = "0.1.0"
 dependencies = [
@@ -3912,7 +3904,6 @@ dependencies = [
  "async-trait",
  "joinerror",
  "moss_applib",
- "moss_asp",
  "moss_id_macro",
  "moss_keyring",
  "nanoid",
@@ -3950,7 +3941,6 @@ dependencies = [
  "moss_activity_broadcaster",
  "moss_api",
  "moss_applib",
- "moss_asp",
  "moss_bindingutils",
  "moss_collection",
  "moss_common",

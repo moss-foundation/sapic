@@ -6,7 +6,6 @@ edition = "2024"
 [dependencies]
 moss_applib.workspace = true
 moss_keyring.workspace = true
-moss_asp.workspace = true
 moss_id_macro = { workspace = true }
 
 oauth2 = { workspace = true, features = ["ureq"] }
