@@ -125,12 +125,9 @@ pub async fn export_collection<'a, R: tauri::Runtime>(
     input: ExportCollectionInput,
     options: Options,
 ) -> TauriResult<ExportCollectionOutput> {
-    super::with_workspace_timeout(
-        ctx.inner(),
-        app,
-        options,
-        |ctx, app_handle, workspace| async move { workspace.export_collection(&ctx, &input).await },
-    )
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
+        workspace.export_collection(&ctx, &input).await
+    })
     .await
 }
 

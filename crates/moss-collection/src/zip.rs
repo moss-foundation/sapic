@@ -9,8 +9,7 @@ use zip::write::SimpleFileOptions;
 pub(crate) async fn zip_dir(
     src_dir: &Path,
     out_file: &Path,
-    excluded_dirs: Vec<String>,
-    excluded_files: Vec<String>,
+    excluded_entries: Vec<String>,
 ) -> joinerror::Result<()> {
     // If the output archive file is inside the source folder, it will also be bundled, which we don't want
     if out_file.starts_with(src_dir) {
@@ -45,7 +44,7 @@ pub(crate) async fn zip_dir(
                     .unwrap_or_default()
                     .to_string_lossy()
                     .to_string();
-                if file_name.is_empty() {
+                if file_name.is_empty() || excluded_entries.contains(&file_name) {
                     continue;
                 }
 
@@ -53,7 +52,7 @@ pub(crate) async fn zip_dir(
                     .strip_prefix(&src_dir)
                     .expect("Children entries must have this prefix");
 
-                if file_type.is_dir() && !excluded_dirs.contains(&file_name) {
+                if file_type.is_dir() {
                     zip.add_directory_from_path(&relative_path, options)
                         .map_err(|err| {
                             Error::new::<()>(format!(
@@ -64,7 +63,7 @@ pub(crate) async fn zip_dir(
                     dirs.push(path.clone());
                 }
 
-                if file_type.is_file() && !excluded_files.contains(&file_name) {
+                if file_type.is_file() {
                     zip.start_file_from_path(relative_path, options)
                         .map_err(|err| {
                             Error::new::<()>(format!(

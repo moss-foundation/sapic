@@ -35,8 +35,7 @@ use crate::{
     zip::zip_dir,
 };
 
-const ARCHIVE_EXCLUDED_DIRECTORIES: [&'static str; 1] = [".git"];
-const ARCHIVE_EXCLUDED_FILES: [&'static str; 3] = ["config.json", "state.db", ".gitkeep"];
+const ARCHIVE_EXCLUDED_ENTRIES: [&'static str; 4] = ["config.json", "state.db", ".gitkeep", ".git"];
 
 #[derive(Debug, Clone)]
 pub enum OnDidChangeEvent {
@@ -455,10 +454,10 @@ impl<R: AppRuntime> Collection<R> {
         zip_dir(
             self.abs_path.as_ref(),
             out_file,
-            ARCHIVE_EXCLUDED_DIRECTORIES
-                .map(|dir| dir.to_string())
-                .to_vec(),
-            ARCHIVE_EXCLUDED_FILES.map(|file| file.to_string()).to_vec(),
+            ARCHIVE_EXCLUDED_ENTRIES
+                .iter()
+                .map(|entry| entry.to_string())
+                .collect(),
         )
         .await?;
 
