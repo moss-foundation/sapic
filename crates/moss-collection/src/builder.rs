@@ -505,7 +505,7 @@ impl<R: AppRuntime> CollectionBuilder<R> {
         }
 
         self.fs
-            .unzip_dir(archive_path.as_ref(), internal_abs_path.as_ref())
+            .unzip(archive_path.as_ref(), internal_abs_path.as_ref())
             .await?;
         Ok(())
     }

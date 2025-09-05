@@ -70,14 +70,10 @@ pub trait FileSystem: Send + Sync {
     async fn remove_file(&self, path: &Path, options: RemoveOptions) -> FsResult<()>;
     async fn open_file(&self, path: &Path) -> FsResult<Box<dyn io::Read + Send + Sync>>;
 
-    async fn zip_dir(
-        &self,
-        src_dir: &Path,
-        out_file: &Path,
-        excluded_entries: Vec<String>,
-    ) -> FsResult<()>;
+    async fn zip(&self, src_dir: &Path, out_file: &Path, excluded_entries: &[&str])
+    -> FsResult<()>;
 
-    async fn unzip_dir(&self, src_archive: &Path, out_dir: &Path) -> FsResult<()>;
+    async fn unzip(&self, src_archive: &Path, out_dir: &Path) -> FsResult<()>;
 
     fn watch(
         &self,

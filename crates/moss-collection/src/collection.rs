@@ -458,13 +458,10 @@ impl<R: AppRuntime> Collection<R> {
         let archive_path = destination.join(format!("{}.zip", sanitized_name));
 
         self.fs
-            .zip_dir(
+            .zip(
                 self.abs_path.as_ref(),
                 &archive_path,
-                ARCHIVE_EXCLUDED_ENTRIES
-                    .iter()
-                    .map(|entry| entry.to_string())
-                    .collect(),
+                &ARCHIVE_EXCLUDED_ENTRIES,
             )
             .await?;
 

@@ -168,11 +168,11 @@ impl FileSystem for RealFileSystem {
         Ok((stream.boxed(), watcher))
     }
 
-    async fn zip_dir(
+    async fn zip(
         &self,
         src_dir: &Path,
         out_file: &Path,
-        excluded_entries: Vec<String>,
+        excluded_entries: &[&str],
     ) -> FsResult<()> {
         if !src_dir.is_dir() {
             return Err(FsError::NotFound(format!(
@@ -202,7 +202,7 @@ impl FileSystem for RealFileSystem {
                 let path = entry.path();
                 let file_name = entry.file_name().to_string_lossy().to_string();
 
-                if file_name.is_empty() || excluded_entries.contains(&file_name) {
+                if file_name.is_empty() || excluded_entries.contains(&file_name.as_str()) {
                     continue;
                 }
 
@@ -244,7 +244,7 @@ impl FileSystem for RealFileSystem {
         Ok(())
     }
 
-    async fn unzip_dir(&self, src_archive: &Path, out_dir: &Path) -> FsResult<()> {
+    async fn unzip(&self, src_archive: &Path, out_dir: &Path) -> FsResult<()> {
         if !out_dir.is_dir() {
             return Err(FsError::NotFound(format!(
                 "directory `{}` does not exist",
