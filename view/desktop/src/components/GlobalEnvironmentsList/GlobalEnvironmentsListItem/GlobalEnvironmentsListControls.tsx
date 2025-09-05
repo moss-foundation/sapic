@@ -31,6 +31,7 @@ export const GlobalEnvironmentsListControls = ({ environment, setIsEditing }: Gl
       (env) => env?.order !== undefined && environment?.order !== undefined && env.order > environment.order
     );
 
+    //TODO: this should use Batch update in the future, when it's supported by the backend
     environmentsAfterDeleted?.forEach((env) => {
       if (env && typeof env.order === "number") {
         updateEnvironment({ id: env.id, order: env.order - 1, varsToAdd: [], varsToUpdate: [], varsToDelete: [] });
