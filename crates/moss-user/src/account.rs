@@ -8,7 +8,10 @@ use oauth2::{ClientId, EmptyExtraTokenFields, StandardTokenResponse, basic::Basi
 use std::sync::Arc;
 
 use crate::{
-    account::{github::GitHubSessionHandle, gitlab::GitLabSessionHandle},
+    account::{
+        github::{GitHubInitialToken, GitHubSessionHandle},
+        gitlab::{GitLabInitialToken, GitLabSessionHandle},
+    },
     models::primitives::AccountId,
 };
 
@@ -52,10 +55,6 @@ enum Session {
     GitLab(GitLabSessionHandle),
 }
 
-// There are two scenarios for creating an account handler.
-// The first is when we create a handler from an already added account (like when restoring a profile).
-// The second is when we’ve just added an account and received the necessary token as part of that process.
-
 #[derive(Clone)]
 
 pub struct AccountSession {
@@ -71,7 +70,7 @@ impl AccountSession {
         secrets: AppSecretsProvider,
         keyring: Arc<dyn KeyringClient>,
 
-        initial_token: Option<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>>,
+        initial_token: Option<GitHubInitialToken>,
     ) -> joinerror::Result<Self> {
         let session = GitHubSessionHandle::new(id, host, initial_token, &keyring).await?;
 
@@ -89,10 +88,9 @@ impl AccountSession {
         keyring: Arc<dyn KeyringClient>,
         secrets: AppSecretsProvider,
 
-        initial_token: Option<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>>,
+        initial_token: Option<GitLabInitialToken>,
     ) -> joinerror::Result<Self> {
-        let session =
-            GitLabSessionHandle::new(id, host, client_id, initial_token, &keyring).await?;
+        let session = GitLabSessionHandle::new(id, host, initial_token, &keyring).await?;
 
         Ok(Self {
             secrets,

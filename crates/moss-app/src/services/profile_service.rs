@@ -238,12 +238,9 @@ impl ProfileService {
         account_id: AccountId,
         host: &str,
     ) -> joinerror::Result<AccountSession> {
-        let client_id = self.config.github_client_id.clone();
-        let client_secret = self.secrets.github_client_secret().await?;
-        let token = auth_client
-            .auth_with_pkce(client_id, client_secret, host)
-            .await
-            .unwrap();
+        // let client_id = self.config.github_client_id.clone();
+        // let client_secret = self.secrets.github_client_secret().await?;
+        let token = auth_client.auth_with_pkce().await.unwrap();
 
         Ok(AccountSession::github(
             account_id,
@@ -263,10 +260,7 @@ impl ProfileService {
     ) -> joinerror::Result<AccountSession> {
         let client_id = self.config.gitlab_client_id.clone();
         let client_secret = self.secrets.gitlab_client_secret().await?;
-        let token = auth_client
-            .auth_with_pkce(client_id.clone(), client_secret, host)
-            .await
-            .unwrap();
+        let token = auth_client.auth_with_pkce().await.unwrap();
 
         Ok(AccountSession::gitlab(
             account_id,

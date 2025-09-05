@@ -1,30 +1,19 @@
 use async_trait::async_trait;
 use joinerror::Error;
-use oauth2::{
-    AccessToken, ClientId, ClientSecret, CsrfToken, EmptyExtraTokenFields, StandardTokenResponse,
-    basic::BasicTokenType,
-};
+use oauth2::CsrfToken;
 use reqwest::Client as HttpClient;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::{
     io::{BufRead, BufReader, Write},
     net::TcpListener,
 };
 use url::Url;
 
-use crate::GitAuthAdapter;
+use crate::{GitAuthAdapter, dto::TokenExchangeRequest};
 
 #[derive(Debug, Deserialize)]
-pub struct WorkerAuthResponse {
+pub struct GitHubPkceTokenCredentials {
     pub access_token: String,
-    // pub token_type: String,
-    // pub scope: String,
-}
-
-#[derive(Debug, Serialize)]
-pub struct TokenExchangeRequest {
-    pub code: String,
-    pub state: String,
 }
 
 pub struct GitHubAuthAdapter {
@@ -45,15 +34,10 @@ impl GitHubAuthAdapter {
 
 #[async_trait]
 impl GitAuthAdapter for GitHubAuthAdapter {
-    type PkceToken = StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>;
+    type PkceToken = GitHubPkceTokenCredentials;
     type PatToken = ();
 
-    async fn auth_with_pkce(
-        &self,
-        _client_id: ClientId,
-        _client_secret: ClientSecret,
-        _host: &str,
-    ) -> joinerror::Result<Self::PkceToken> {
+    async fn auth_with_pkce(&self) -> joinerror::Result<Self::PkceToken> {
         let listener = {
             let addr = format!("127.0.0.1:{}", self.callback_port);
             TcpListener::bind(&addr)
@@ -61,11 +45,11 @@ impl GitAuthAdapter for GitHubAuthAdapter {
         };
 
         let state = CsrfToken::new_random();
-        let redirect = format!("http://127.0.0.1:{}/oauth/callback", self.callback_port);
+        let callback_url = format!("http://127.0.0.1:{}/oauth/callback", self.callback_port);
         let auth_url = format!(
             "{}/auth/github/authorize?redirect_uri={}&state={}",
             self.url,
-            urlencoding::encode(&redirect),
+            urlencoding::encode(&callback_url),
             state.secret()
         );
 
@@ -77,13 +61,12 @@ impl GitAuthAdapter for GitHubAuthAdapter {
             .accept()
             .map_err(|e| Error::new::<()>(format!("failed to accept connection: {}", e)))?;
 
-        let mut reader = BufReader::new(&stream);
-        let mut request_line = String::new();
-        reader
-            .read_line(&mut request_line)
+        let mut rdr = BufReader::new(&stream);
+        let mut buf = String::new();
+        rdr.read_line(&mut buf)
             .map_err(|e| Error::new::<()>(format!("failed to read request: {}", e)))?;
 
-        let url_path = request_line
+        let url_path = buf
             .split_whitespace()
             .nth(1)
             .ok_or_else(|| Error::new::<()>("invalid HTTP request"))?;
@@ -140,23 +123,15 @@ impl GitAuthAdapter for GitHubAuthAdapter {
                 .await
                 .unwrap_or_else(|_| "unknown error".to_string());
             return Err(Error::new::<()>(format!(
-                "Token exchange failed: {}",
+                "token exchange failed: {}",
                 error_text
             )));
         }
 
-        let worker_response: WorkerAuthResponse = response
+        response
             .json()
             .await
-            .map_err(|e| Error::new::<()>(format!("failed to parse worker response: {}", e)))?;
-
-        let token_response = StandardTokenResponse::new(
-            AccessToken::new(worker_response.access_token),
-            BasicTokenType::Bearer,
-            EmptyExtraTokenFields {},
-        );
-
-        Ok(token_response)
+            .map_err(|e| Error::new::<()>(format!("failed to parse worker response: {}", e)))
     }
 
     async fn auth_with_pat(&self) -> joinerror::Result<Self::PatToken> {

@@ -6,7 +6,10 @@ use oauth2::{
     TokenUrl,
     basic::{BasicClient, BasicTokenType},
 };
-use std::{sync::Arc, time::Instant};
+use std::{
+    sync::Arc,
+    time::{Duration, Instant},
+};
 use tokio::sync::RwLock;
 
 use crate::{
@@ -23,6 +26,12 @@ fn token_url(host: &str) -> String {
     format!("https://{host}/oauth/token")
 }
 
+pub struct GitLabInitialToken {
+    pub access_token: String,
+    pub refresh_token: String,
+    pub expires_in: Duration,
+}
+
 pub(crate) struct LastAccessToken {
     // Access token
     token: String,
@@ -37,41 +46,31 @@ pub(crate) struct GitLabSessionHandle {
     pub host: String,
 
     token: RwLock<Option<LastAccessToken>>,
-
-    client_id: ClientId,
+    // client_id: ClientId,
 }
 
 impl GitLabSessionHandle {
     pub(crate) async fn new(
         id: AccountId,
         host: String,
-        client_id: ClientId,
-
-        initial_token: Option<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>>,
+        // client_id: ClientId,
+        initial_token: Option<GitLabInitialToken>,
 
         keyring: &Arc<dyn KeyringClient>,
     ) -> joinerror::Result<Self> {
         let mut token: Option<LastAccessToken> = None;
         if let Some(initial_token) = initial_token {
-            let refresh_token = initial_token
-                .refresh_token()
-                .ok_or_join_err::<()>(" refresh_token value not received")?
-                .secret()
-                .to_owned();
-            let token_duration = initial_token
-                .expires_in()
-                .ok_or_join_err::<()>(" expires_in value not received")?;
-
-            let access_token = initial_token.access_token().secret().to_owned();
-
             keyring
-                .set_secret(&make_secret_key(GITLAB_PREFIX, &host, &id), &refresh_token)
+                .set_secret(
+                    &make_secret_key(GITLAB_PREFIX, &host, &id),
+                    &initial_token.refresh_token,
+                )
                 .await
                 .map_err(|e| Error::new::<()>(e.to_string()))?;
 
             token = Some(LastAccessToken {
-                token: access_token,
-                expires_at: calc_expires_at(token_duration),
+                token: initial_token.access_token,
+                expires_at: calc_expires_at(initial_token.expires_in),
             });
         };
 
@@ -79,8 +78,7 @@ impl GitLabSessionHandle {
             id,
             host,
             token: RwLock::new(token),
-
-            client_id,
+            // client_id,
         })
     }
 
@@ -136,18 +134,19 @@ impl GitLabSessionHandle {
         refresh_token: String,
         secrets: &AppSecretsProvider,
     ) -> joinerror::Result<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>> {
-        let client_secret = secrets.gitlab_client_secret().await?;
-        let client = BasicClient::new(self.client_id.clone())
-            .set_client_secret(client_secret)
-            .set_auth_uri(AuthUrl::new(auth_url(&self.host))?)
-            .set_token_uri(TokenUrl::new(token_url(&self.host))?);
+        todo!();
+        // let client_secret = secrets.gitlab_client_secret().await?;
+        // let client = BasicClient::new(self.client_id.clone())
+        //     .set_client_secret(client_secret)
+        //     .set_auth_uri(AuthUrl::new(auth_url(&self.host))?)
+        //     .set_token_uri(TokenUrl::new(token_url(&self.host))?);
 
-        let token = client
-            .exchange_refresh_token(&RefreshToken::new(refresh_token))
-            .request_async(&reqwest::Client::new()) // TODO: reuse client instead of creating a new one
-            .await
-            .map_err(|e| joinerror::Error::new::<()>(e.to_string()))?;
+        // let token = client
+        //     .exchange_refresh_token(&RefreshToken::new(refresh_token))
+        //     .request_async(&reqwest::Client::new()) // TODO: reuse client instead of creating a new one
+        //     .await
+        //     .map_err(|e| joinerror::Error::new::<()>(e.to_string()))?;
 
-        Ok(token)
+        // Ok(token)
     }
 }
