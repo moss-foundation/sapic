@@ -17,7 +17,7 @@ export const GlobalEnvironmentsListItem = ({ environment }: GlobalEnvironmentsLi
   const globalEnvironmentsListRef = useRef<HTMLLIElement>(null);
 
   const { data: environments } = useStreamEnvironments();
-  const { activePanelId } = useTabbedPaneStore();
+  const { activePanelId, addOrFocusPanel } = useTabbedPaneStore();
 
   const { isEditing, setIsEditing, handleRename, handleCancel } = useGlobalEnvironmentsListRenamingForm({
     environment,
@@ -35,9 +35,25 @@ export const GlobalEnvironmentsListItem = ({ environment }: GlobalEnvironmentsLi
 
   const isActive = activePanelId === environment.id;
 
+  const onClick = () => {
+    addOrFocusPanel({
+      id: environment.id,
+      component: "Default",
+      title: environment.name,
+      params: {
+        iconType: "Environment",
+      },
+    });
+  };
+
   return (
     <Tree.RootNode isChildDropBlocked={false} instruction={instruction} dropIndicatorFullWidth={true}>
-      <Tree.RootNodeHeader ref={globalEnvironmentsListRef} isActive={isActive} className="cursor-pointer">
+      <Tree.RootNodeHeader
+        ref={globalEnvironmentsListRef}
+        isActive={isActive}
+        className="cursor-pointer"
+        onClick={onClick}
+      >
         {isEditing ? (
           <GlobalEnvironmentsListItemRenamingForm
             handleRename={handleRename}

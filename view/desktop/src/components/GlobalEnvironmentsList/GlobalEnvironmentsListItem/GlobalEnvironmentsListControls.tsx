@@ -7,7 +7,6 @@ import { useDeleteEnvironment, useModal, useStreamEnvironments, useUpdateEnviron
 import { useActivateEnvironment } from "@/hooks/workspace/environment/useActivateEnvironment";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
 interface GlobalEnvironmentsListControlsProps {
@@ -20,8 +19,6 @@ export const GlobalEnvironmentsListControls = ({ environment, setIsEditing }: Gl
   const { mutate: deleteEnvironment } = useDeleteEnvironment();
   const { mutate: updateEnvironment } = useUpdateEnvironment();
   const { mutate: activateEnvironment } = useActivateEnvironment();
-
-  const { addOrFocusPanel } = useTabbedPaneStore();
 
   const [showActionMenu, setShowActionMenu] = useState(false);
 
@@ -41,25 +38,15 @@ export const GlobalEnvironmentsListControls = ({ environment, setIsEditing }: Gl
     });
   };
 
-  const handleSetActiveEnvironment = () => {
+  const handleSetActiveEnvironment = (e) => {
+    e.stopPropagation();
     activateEnvironment({ environmentId: environment.id });
-  };
-
-  const onClick = () => {
-    addOrFocusPanel({
-      id: environment.id,
-      component: "Default",
-      title: environment.name,
-      params: {
-        iconType: "Environment",
-      },
-    });
   };
 
   return (
     <>
       <Tree.RootNodeControls>
-        <Tree.RootNodeTriggers className="cursor-pointer overflow-hidden" onClick={onClick}>
+        <Tree.RootNodeTriggers className="cursor-pointer overflow-hidden">
           <Icon icon="Environment" />
           <span className="truncate">{environment.name}</span>
           <span className="text-(--moss-secondary-text)">({environment.totalVariables})</span>
@@ -85,8 +72,22 @@ export const GlobalEnvironmentsListControls = ({ environment, setIsEditing }: Gl
 
               <ActionMenu.Portal>
                 <ActionMenu.Content>
-                  <ActionMenu.Item onClick={() => setIsEditing(true)}>Edit</ActionMenu.Item>
-                  <ActionMenu.Item onClick={() => setShowDeleteModal(true)}>Delete</ActionMenu.Item>
+                  <ActionMenu.Item
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsEditing(true);
+                    }}
+                  >
+                    Edit
+                  </ActionMenu.Item>
+                  <ActionMenu.Item
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowDeleteModal(true);
+                    }}
+                  >
+                    Delete
+                  </ActionMenu.Item>
                 </ActionMenu.Content>
               </ActionMenu.Portal>
             </ActionMenu.Root>
