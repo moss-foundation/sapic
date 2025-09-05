@@ -19,16 +19,18 @@ export const GlobalEnvironmentsListItemRenamingForm = ({
   restrictedNames,
 }: GlobalEnvironmentsListItemRenamingFormProps) => {
   return (
-    <Tree.RootNodeControls className={cn("min-h-[22px]", className)}>
-      <Tree.RootNodeTriggers>
-        <Icon icon="Environment" />
+    <Tree.NodeControls className={cn("min-h-[22px] py-1", className)}>
+      <Tree.NodeTriggers>
+        <div className="flex size-5 shrink-0 items-center justify-start">
+          <Icon icon="Environment" />
+        </div>
         <Tree.NodeRenamingForm
           onSubmit={handleRename}
           onCancel={handleCancel}
           currentName={environment.name}
           restrictedNames={restrictedNames}
         />
-      </Tree.RootNodeTriggers>
-    </Tree.RootNodeControls>
+      </Tree.NodeTriggers>
+    </Tree.NodeControls>
   );
 };

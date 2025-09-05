@@ -29,8 +29,8 @@ import {
 import { getTreeRootNodeSourceData } from "../../utils/TreeRoot";
 
 interface UseDraggableRootNodeProps {
-  dirRef: RefObject<HTMLUListElement>;
-  triggerRef: RefObject<HTMLLIElement>;
+  dirRef: RefObject<HTMLUListElement | null>;
+  triggerRef: RefObject<HTMLLIElement | null>;
   node: TreeCollectionRootNode;
   isRenamingNode: boolean;
 }

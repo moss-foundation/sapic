@@ -7,21 +7,28 @@ import { useDeleteEnvironment, useModal, useStreamEnvironments, useUpdateEnviron
 import { useActivateEnvironment } from "@/hooks/workspace/environment/useActivateEnvironment";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
 interface GlobalEnvironmentsListControlsProps {
   environment: StreamEnvironmentsEvent;
   setIsEditing: (isEditing: boolean) => void;
+  instruction: Instruction | null;
 }
 
-export const GlobalEnvironmentsListControls = ({ environment, setIsEditing }: GlobalEnvironmentsListControlsProps) => {
+export const GlobalEnvironmentsListControls = ({
+  environment,
+  setIsEditing,
+  instruction,
+}: GlobalEnvironmentsListControlsProps) => {
   const { globalEnvironments } = useStreamEnvironments();
   const { mutate: deleteEnvironment } = useDeleteEnvironment();
   const { mutate: updateEnvironment } = useUpdateEnvironment();
   const { mutate: activateEnvironment } = useActivateEnvironment();
 
   const [showActionMenu, setShowActionMenu] = useState(false);
-
+  const { activePanelId } = useTabbedPaneStore();
   const { showModal: showDeleteModal, setShowModal: setShowDeleteModal, closeModal: setHideDeleteModal } = useModal();
 
   const handleDeleteEnvironment = () => {
@@ -46,14 +53,14 @@ export const GlobalEnvironmentsListControls = ({ environment, setIsEditing }: Gl
 
   return (
     <>
-      <Tree.RootNodeControls>
-        <Tree.RootNodeTriggers className="cursor-pointer overflow-hidden">
+      <Tree.NodeControls isActive={activePanelId === environment.id} instruction={instruction} hideDragHandle>
+        <Tree.NodeTriggers className="cursor-pointer overflow-hidden">
           <Icon icon="Environment" />
           <span className="truncate">{environment.name}</span>
           <span className="text-(--moss-secondary-text)">({environment.totalVariables})</span>
-        </Tree.RootNodeTriggers>
+        </Tree.NodeTriggers>
 
-        <Tree.RootNodeActions>
+        <Tree.NodeActions>
           <Tree.ActionsHover invisible={true} forceVisible={environment.isActive}>
             <ActionButton
               onClick={handleSetActiveEnvironment}
@@ -93,8 +100,8 @@ export const GlobalEnvironmentsListControls = ({ environment, setIsEditing }: Gl
               </ActionMenu.Portal>
             </ActionMenu.Root>
           </Tree.ActionsHover>
-        </Tree.RootNodeActions>
-      </Tree.RootNodeControls>
+        </Tree.NodeActions>
+      </Tree.NodeControls>
 
       {showDeleteModal && (
         <ConfirmationModal

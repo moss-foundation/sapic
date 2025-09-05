@@ -20,8 +20,8 @@ import {
 interface UseDraggableNodeProps {
   node: TreeCollectionNode;
   parentNode: TreeCollectionNode;
-  triggerRef: RefObject<HTMLDivElement>;
-  dropTargetListRef: RefObject<HTMLLIElement>;
+  triggerRef: RefObject<HTMLDivElement | null>;
+  dropTargetListRef: RefObject<HTMLLIElement | null>;
   isLastChild: boolean;
   isRootNode: boolean;
   setPreview: React.Dispatch<React.SetStateAction<HTMLElement | null>>;

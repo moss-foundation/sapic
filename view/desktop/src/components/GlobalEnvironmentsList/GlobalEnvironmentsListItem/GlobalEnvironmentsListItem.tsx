@@ -17,7 +17,7 @@ export const GlobalEnvironmentsListItem = ({ environment }: GlobalEnvironmentsLi
   const globalEnvironmentsListRef = useRef<HTMLLIElement>(null);
 
   const { data: environments } = useStreamEnvironments();
-  const { activePanelId, addOrFocusPanel } = useTabbedPaneStore();
+  const { addOrFocusPanel } = useTabbedPaneStore();
 
   const { isEditing, setIsEditing, handleRename, handleCancel } = useGlobalEnvironmentsListRenamingForm({
     environment,
@@ -33,8 +33,6 @@ export const GlobalEnvironmentsListItem = ({ environment }: GlobalEnvironmentsLi
     return environments.environments.map((environment) => environment.name) ?? [];
   }, [environments]);
 
-  const isActive = activePanelId === environment.id;
-
   const onClick = () => {
     addOrFocusPanel({
       id: environment.id,
@@ -47,24 +45,21 @@ export const GlobalEnvironmentsListItem = ({ environment }: GlobalEnvironmentsLi
   };
 
   return (
-    <Tree.RootNode isChildDropBlocked={false} instruction={instruction} dropIndicatorFullWidth={true}>
-      <Tree.RootNodeHeader
-        ref={globalEnvironmentsListRef}
-        isActive={isActive}
-        className="cursor-pointer"
-        onClick={onClick}
-      >
-        {isEditing ? (
-          <GlobalEnvironmentsListItemRenamingForm
-            handleRename={handleRename}
-            handleCancel={handleCancel}
-            environment={environment}
-            restrictedNames={restrictedNames}
-          />
-        ) : (
-          <GlobalEnvironmentsListControls environment={environment} setIsEditing={setIsEditing} />
-        )}
-      </Tree.RootNodeHeader>
-    </Tree.RootNode>
+    <Tree.Node ref={globalEnvironmentsListRef} className="cursor-pointer" onClick={onClick}>
+      {isEditing ? (
+        <GlobalEnvironmentsListItemRenamingForm
+          handleRename={handleRename}
+          handleCancel={handleCancel}
+          environment={environment}
+          restrictedNames={restrictedNames}
+        />
+      ) : (
+        <GlobalEnvironmentsListControls
+          environment={environment}
+          setIsEditing={setIsEditing}
+          instruction={instruction}
+        />
+      )}
+    </Tree.Node>
   );
 };

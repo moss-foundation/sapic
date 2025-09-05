@@ -61,7 +61,7 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
   const restrictedNames = getChildrenNames(node);
 
   return (
-    <Tree.Node ref={dropTargetListRef} isChildDropBlocked={isChildDropBlocked} instruction={instruction}>
+    <Tree.Node ref={dropTargetListRef} isChildDropBlocked={isChildDropBlocked} dropIndicatorInstruction={instruction}>
       {isRenamingNode && !isRootNode ? (
         <TreeNodeRenamingForm
           node={node}

@@ -28,7 +28,7 @@ export const GroupedEnvironmentsListItem = ({ environment }: GroupedEnvironments
   const isActive = activePanelId === `GroupedEnvironmentsListItem-${environment.id}`;
 
   return (
-    <Tree.Node isChildDropBlocked={false} instruction={null} onClick={onClick}>
+    <Tree.Node onClick={onClick}>
       <Tree.NodeControls
         hideDragHandle
         depth={1}
