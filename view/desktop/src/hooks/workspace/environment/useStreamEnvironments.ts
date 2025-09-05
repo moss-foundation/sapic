@@ -10,7 +10,7 @@ import { useActiveWorkspace } from "..";
 
 export const USE_STREAMED_ENVIRONMENTS_QUERY_KEY = "streamedEnvironments";
 
-interface StreamEnvironmentsResult {
+export interface StreamEnvironmentsResult {
   environments: StreamEnvironmentsEvent[];
   groups: StreamEnvironmentsOutput["groups"];
 }
