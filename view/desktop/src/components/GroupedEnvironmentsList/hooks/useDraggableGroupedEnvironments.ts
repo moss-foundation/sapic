@@ -75,14 +75,6 @@ export const useDraggableGroupedEnvironmentsList = ({
         getIsSticky() {
           return true;
         },
-        canDrop({ source }) {
-          const sourceData = getSourceGroupedEnvironmentsListItem(source);
-          if (!sourceData) return false;
-
-          const sameEnvironment =
-            sourceData.data.groupWithEnvironments.collectionId === groupWithEnvironments.collectionId;
-          return !sameEnvironment;
-        },
         onDragEnter({ self }) {
           const instruction = extractInstruction(self.data);
           setInstruction(instruction);

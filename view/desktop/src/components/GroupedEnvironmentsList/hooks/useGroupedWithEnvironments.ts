@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 
 import { useStreamCollections, useStreamEnvironments } from "@/hooks";
+import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 
 import { GroupedWithEnvironment } from "../types";
 
@@ -11,12 +12,14 @@ export const useGroupedWithEnvironments = () => {
   const groupedWithEnvironments: GroupedWithEnvironment[] = useMemo(() => {
     if (!collections || !groups || !groupedEnvironments) return [];
 
-    return groups.map((group) => {
+    const groupedWithEnvironments = groups.map((group) => {
       return {
         ...group,
         environments: groupedEnvironments.filter((environment) => environment.collectionId === group.collectionId),
       };
     });
+
+    return sortObjectsByOrder(groupedWithEnvironments);
   }, [collections, groups, groupedEnvironments]);
 
   return { groupedWithEnvironments };

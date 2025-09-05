@@ -1,9 +1,12 @@
 import { GroupedEnvironmentsListContext } from "./GroupedEnvironmentsListContext";
 import { GroupedEnvironmentsListRoot } from "./GroupedEnvironmentsListRoot/GroupedEnvironmentsListRoot";
 import { useGroupedWithEnvironments } from "./hooks/useGroupedWithEnvironments";
+import { useMonitorGroupedEnvironments } from "./hooks/useMonitorGroupedEnvironments";
 
 export const GroupedEnvironmentsList = () => {
   const { groupedWithEnvironments } = useGroupedWithEnvironments();
+
+  useMonitorGroupedEnvironments();
 
   return (
     <div className="flex flex-col">

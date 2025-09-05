@@ -1,6 +1,6 @@
-import { ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
+import { DragLocationHistory, ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 
-import { DragGroupedEnvironmentsListItem, GroupedWithEnvironment } from "./types";
+import { DragGroupedEnvironmentsListItem, DropGroupedEnvironmentsListItem, GroupedWithEnvironment } from "./types";
 
 //source
 export const isSourceGroupedEnvironmentsListItem = (source: ElementDragPayload) => {
@@ -23,4 +23,14 @@ export const getSourceGroupedEnvironmentsListData = (source: ElementDragPayload)
   }
 
   return source.data.groupWithEnvironments as DragGroupedEnvironmentsListItem["data"]["groupWithEnvironments"];
+};
+
+//location
+export const getLocationGroupedEnvironmentsListItem = (
+  location: DragLocationHistory
+): DropGroupedEnvironmentsListItem | null => {
+  if (location.current.dropTargets.length === 0) return null;
+  if (location.current.dropTargets[0].data.type !== "GroupedEnvironmentsListItem") return null;
+
+  return location.current.dropTargets[0].data as unknown as DropGroupedEnvironmentsListItem;
 };
