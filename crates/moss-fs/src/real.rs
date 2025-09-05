@@ -1,10 +1,11 @@
 use async_stream::stream;
+use async_zip::{Compression, ZipEntryBuilder, tokio::write::ZipFileWriter};
 use futures::{StreamExt, stream::BoxStream};
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
 use std::{io, path::Path, time::Duration};
 use tokio::{
     fs::ReadDir,
-    io::AsyncWriteExt,
+    io::{AsyncReadExt, AsyncWriteExt},
     sync::mpsc,
     time::{self, Instant},
 };
@@ -161,5 +162,74 @@ impl FileSystem for RealFileSystem {
         };
 
         Ok((stream.boxed(), watcher))
+    }
+
+    async fn zip_dir(
+        &self,
+        src_dir: &Path,
+        out_file: &Path,
+        excluded_entries: Vec<String>,
+    ) -> FsResult<()> {
+        // If the output archive file is inside the source folder, it will also be bundled, which we don't want
+        if out_file.starts_with(src_dir) {
+            return Err(FsError::Other(
+                "cannot export archive file into the source directory".to_owned(),
+            ));
+        }
+
+        let src_dir = src_dir.to_path_buf();
+        let out_file = out_file.to_path_buf();
+
+        let mut output_writer =
+            ZipFileWriter::with_tokio(tokio::fs::File::create(&out_file).await?);
+
+        // Operations
+        let mut dirs = vec![src_dir.clone()];
+        while let Some(path) = dirs.pop() {
+            let mut read_dir = tokio::fs::read_dir(path).await?;
+            while let Some(entry) = read_dir.next_entry().await? {
+                let path = entry.path();
+                let file_name = entry.file_name().to_string_lossy().to_string();
+
+                if file_name.is_empty() || excluded_entries.contains(&file_name) {
+                    continue;
+                }
+
+                let file_type = entry.file_type().await?;
+
+                if file_type.is_dir() {
+                    dirs.push(path);
+                    continue;
+                }
+
+                // Write the entry to the zip file
+                let mut input_file = tokio::fs::File::open(&path).await?;
+                let size = input_file.metadata().await?.len();
+
+                let mut buffer = Vec::with_capacity(size as usize);
+                input_file.read_to_end(&mut buffer).await?;
+
+                let entry_path = path
+                    .strip_prefix(&src_dir)
+                    .expect("children must have source directory as prefix");
+                let entry_str = entry_path
+                    .as_os_str()
+                    .to_str()
+                    .ok_or(FsError::Other("entry file path not valid UTF-8".to_owned()))?;
+
+                let builder = ZipEntryBuilder::new(entry_str.into(), Compression::Deflate);
+                output_writer
+                    .write_entry_whole(builder, &buffer)
+                    .await
+                    .map_err(|err| {
+                        FsError::Other(format!("failed to write entry to archive file: {}", err))
+                    })?;
+            }
+        }
+        output_writer
+            .close()
+            .await
+            .map_err(|err| FsError::Other(format!("failed to close archive file: {}", err)))?;
+        Ok(())
     }
 }

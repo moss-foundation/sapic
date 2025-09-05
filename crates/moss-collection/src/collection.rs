@@ -33,10 +33,9 @@ use crate::{
     services::{set_icon_service::SetIconService, storage_service::StorageService},
     vcs::{CollectionVcs, Vcs},
     worktree::Worktree,
-    zip::zip_dir,
 };
 
-const ARCHIVE_EXCLUDED_ENTRIES: [&'static str; 4] = ["config.json", "state.db", ".gitkeep", ".git"];
+const ARCHIVE_EXCLUDED_ENTRIES: [&'static str; 3] = ["config.json", "state.db", ".git"];
 
 #[derive(Debug, Clone)]
 pub enum OnDidChangeEvent {
@@ -454,19 +453,20 @@ impl<R: AppRuntime> Collection<R> {
             ));
         }
         // Collection name can contain special chars that need sanitizing
-        let raw_name = format!("{}.zip", self.details().await?.name);
+        let raw_name = format!("{}", self.details().await?.name);
         let sanitized_name = sanitize(&raw_name);
-        let archive_path = destination.join(&sanitized_name);
+        let archive_path = destination.join(format!("{}.zip", sanitized_name));
 
-        zip_dir(
-            self.abs_path.as_ref(),
-            &archive_path,
-            ARCHIVE_EXCLUDED_ENTRIES
-                .iter()
-                .map(|entry| entry.to_string())
-                .collect(),
-        )
-        .await?;
+        self.fs
+            .zip_dir(
+                self.abs_path.as_ref(),
+                &archive_path,
+                ARCHIVE_EXCLUDED_ENTRIES
+                    .iter()
+                    .map(|entry| entry.to_string())
+                    .collect(),
+            )
+            .await?;
 
         Ok(archive_path)
     }
