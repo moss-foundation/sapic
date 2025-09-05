@@ -139,7 +139,7 @@ proc-macro2 = "1.0.101"
 quote = "1.0.40"
 syn = {version = "2.0.106", features = ["full"]}
 zip = {version =  "4.6.1", default-features = false, features = ["deflate"] }
-async_zip = {version = "0.0.18", default-features = false, features = ["deflate", "tokio", "tokio-fs"]}
+async_zip = {version = "0.0.18", default-features = false, features = ["deflate", "tokio", "tokio-fs", "tokio-util"]}
 
 [profile.release]
 opt-level = 3 # Maximize performance

@@ -76,6 +76,9 @@ pub trait FileSystem: Send + Sync {
         out_file: &Path,
         excluded_entries: Vec<String>,
     ) -> FsResult<()>;
+
+    async fn unzip_dir(&self, src_archive: &Path, out_dir: &Path) -> FsResult<()>;
+
     fn watch(
         &self,
         path: &Path,

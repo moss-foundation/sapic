@@ -26,7 +26,6 @@ use crate::{
     services::{set_icon_service::SetIconService, storage_service::StorageService},
     vcs::Vcs,
     worktree::{Worktree, entry::model::EntryModel},
-    zip::unzip_dir,
 };
 
 const COLLECTION_ICON_SIZE: u32 = 128;
@@ -505,7 +504,9 @@ impl<R: AppRuntime> CollectionBuilder<R> {
             .into());
         }
 
-        unzip_dir(archive_path.as_ref(), internal_abs_path.as_ref()).await?;
+        self.fs
+            .unzip_dir(archive_path.as_ref(), internal_abs_path.as_ref())
+            .await?;
         Ok(())
     }
 }
