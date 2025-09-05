@@ -3,7 +3,7 @@ import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils/cn";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
-interface GlobalEnvironmentsListItemRenamingFormProps {
+interface EnvironmentListItemRenamingFormProps {
   handleRename: (name: string) => void;
   handleCancel: () => void;
   environment: StreamEnvironmentsEvent;
@@ -11,13 +11,13 @@ interface GlobalEnvironmentsListItemRenamingFormProps {
   className?: string;
 }
 
-export const GlobalEnvironmentsListItemRenamingForm = ({
+export const EnvironmentListItemRenamingForm = ({
   className,
   handleRename,
   handleCancel,
   environment,
   restrictedNames,
-}: GlobalEnvironmentsListItemRenamingFormProps) => {
+}: EnvironmentListItemRenamingFormProps) => {
   return (
     <Tree.NodeControls className={cn("min-h-[22px] py-1", className)}>
       <Tree.NodeTriggers>

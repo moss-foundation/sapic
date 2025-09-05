@@ -1,16 +1,18 @@
 import { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/closest-edge";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
-export interface DragGlobalEnvironmentsListItem {
-  type: "GlobalEnvironmentsListItem";
+export type EnvironmentListType = "global" | "grouped";
+
+export interface DragEnvironmentItem {
+  type: EnvironmentListType;
   data: {
     environment: StreamEnvironmentsEvent;
   };
   [key: string | symbol]: unknown;
 }
 
-export interface DropGlobalEnvironmentsListItem {
-  type: "GlobalEnvironmentsListItem";
+export interface DropEnvironmentItem {
+  type: EnvironmentListType;
   data: {
     environment: StreamEnvironmentsEvent;
   };

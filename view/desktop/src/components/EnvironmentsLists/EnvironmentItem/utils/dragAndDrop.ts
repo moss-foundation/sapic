@@ -2,7 +2,7 @@ import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/clo
 import { DragLocationHistory, ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
-import { DragGlobalEnvironmentsListItem, DropGlobalEnvironmentsListItem } from "../types";
+import { DragEnvironmentItem, DragGlobalEnvironmentsListItem, DropGlobalEnvironmentsListItem } from "../types";
 
 //source
 export const isSourceGlobalEnvironmentsListItem = (source: ElementDragPayload) => {
@@ -25,6 +25,18 @@ export const getSourceGlobalEnvironmentsListData = (source: ElementDragPayload):
   }
 
   return source.data.environment as DragGlobalEnvironmentsListItem["data"]["environment"];
+};
+
+export const isSourceEnvironmentItem = (source: ElementDragPayload) => {
+  return source.data.type === "EnvironmentItem";
+};
+
+export const getSourceEnvironmentItem = (source: ElementDragPayload): DragEnvironmentItem | null => {
+  if (!isSourceEnvironmentItem(source)) {
+    return null;
+  }
+
+  return source.data as unknown as DragEnvironmentItem;
 };
 
 //location

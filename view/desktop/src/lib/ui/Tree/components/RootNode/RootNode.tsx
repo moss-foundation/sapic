@@ -10,7 +10,7 @@ interface RootNodeProps extends HTMLAttributes<HTMLUListElement> {
   children: React.ReactNode;
   className?: string;
   isChildDropBlocked?: boolean | null;
-  instruction: Instruction | null;
+  instruction?: Instruction | null;
   dropIndicatorFullWidth?: boolean;
 }
 
@@ -22,9 +22,9 @@ export const RootNode = forwardRef<HTMLUListElement, RootNodeProps>(
     return (
       <ul ref={ref} className={cn("group/TreeRootNode relative w-full list-none", className)} {...props}>
         {isChildDropBlocked && (
-          <DropIndicatorForDir isChildDropBlocked={isChildDropBlocked} instruction={instruction} />
+          <DropIndicatorForDir isChildDropBlocked={isChildDropBlocked} instruction={instruction ?? null} />
         )}
-        <DropIndicatorForTrigger instruction={instruction} fullWidth={dropIndicatorFullWidth} />
+        <DropIndicatorForTrigger instruction={instruction ?? null} fullWidth={dropIndicatorFullWidth} />
 
         {children}
       </ul>

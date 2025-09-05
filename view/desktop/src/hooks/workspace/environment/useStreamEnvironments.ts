@@ -61,14 +61,14 @@ export const useStreamEnvironments = () => {
     return sortObjectsByOrder(globalEnvironments);
   }, [query.data]);
 
-  const groupedEnvironments = useMemo(() => {
+  const collectionEnvironments = useMemo(() => {
     if (!query.data) return [];
 
-    const groupedEnvironments = query.data.environments.filter((environment) => environment.collectionId);
+    const collectionEnvironments = query.data.environments.filter((environment) => environment.collectionId);
 
-    if (groupedEnvironments.length === 0) return [];
+    if (collectionEnvironments.length === 0) return [];
 
-    return sortObjectsByOrder(groupedEnvironments);
+    return sortObjectsByOrder(collectionEnvironments);
   }, [query.data]);
 
   const groups = query.data?.groups;
@@ -77,7 +77,7 @@ export const useStreamEnvironments = () => {
     ...query,
     clearEnvironmentsCacheAndRefetch,
     globalEnvironments,
-    groupedEnvironments,
+    collectionEnvironments,
     groups,
   };
 };

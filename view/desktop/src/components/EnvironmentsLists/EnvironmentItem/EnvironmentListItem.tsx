@@ -3,19 +3,20 @@ import { useMemo, useRef } from "react";
 import { useStreamEnvironments } from "@/hooks";
 import { Tree } from "@/lib/ui/Tree";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
-import { cn } from "@/utils";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
-import { GlobalEnvironmentsListControls } from "./GlobalEnvironmentsListControls";
-import { GlobalEnvironmentsListItemRenamingForm } from "./GlobalEnvironmentsListItemRenamingForm";
-import { useDraggableGlobalEnvironmentsList, useGlobalEnvironmentsListRenamingForm } from "./hooks";
+import { EnvironmentItemControls } from "./EnvironmentItemControls";
+import { EnvironmentListItemRenamingForm } from "./EnvironmentListItemRenamingForm";
+import { useGlobalEnvironmentsListRenamingForm } from "./hooks/useEnvironmentListRenamingForm";
+import { EnvironmentListType } from "./types";
 
-interface GlobalEnvironmentsListProps {
+interface EnvironmentListItemProps {
   environment: StreamEnvironmentsEvent;
+  type: EnvironmentListType;
 }
 
-export const GlobalEnvironmentsListItem = ({ environment }: GlobalEnvironmentsListProps) => {
-  const globalEnvironmentsListRef = useRef<HTMLLIElement>(null);
+export const EnvironmentListItem = ({ environment, type }: EnvironmentListItemProps) => {
+  const EnvironmentListRef = useRef<HTMLLIElement>(null);
 
   const { data: environments } = useStreamEnvironments();
   const { addOrFocusPanel } = useTabbedPaneStore();
@@ -24,10 +25,11 @@ export const GlobalEnvironmentsListItem = ({ environment }: GlobalEnvironmentsLi
     environment,
   });
 
-  const { isDragging, instruction } = useDraggableGlobalEnvironmentsList({
-    ref: globalEnvironmentsListRef,
-    environment,
-  });
+  // const { isDragging, instruction } = useDraggableEnvironmentItem({
+  //   ref: EnvironmentListRef,
+  //   environment,
+  //   type,
+  // });
 
   const restrictedNames = useMemo(() => {
     if (!environments) return [];
@@ -40,30 +42,26 @@ export const GlobalEnvironmentsListItem = ({ environment }: GlobalEnvironmentsLi
       component: "Default",
       title: environment.name,
       params: {
-        iconType: "Environment",
+        iconType: type === "global" ? "Environment" : "GroupedEnvironment",
       },
     });
   };
 
   return (
     <Tree.Node
-      ref={globalEnvironmentsListRef}
-      className={cn("cursor-pointer", isDragging && "opacity-50")}
+      ref={EnvironmentListRef}
+      // className={cn("cursor-pointer", isDragging && "opacity-50")}
       onClick={onClick}
     >
       {isEditing ? (
-        <GlobalEnvironmentsListItemRenamingForm
+        <EnvironmentListItemRenamingForm
           handleRename={handleRename}
           handleCancel={handleCancel}
           environment={environment}
           restrictedNames={restrictedNames}
         />
       ) : (
-        <GlobalEnvironmentsListControls
-          environment={environment}
-          setIsEditing={setIsEditing}
-          instruction={instruction}
-        />
+        <EnvironmentItemControls environment={environment} setIsEditing={setIsEditing} type={type} />
       )}
     </Tree.Node>
   );

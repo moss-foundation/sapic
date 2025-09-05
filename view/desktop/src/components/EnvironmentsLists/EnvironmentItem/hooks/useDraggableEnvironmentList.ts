@@ -3,34 +3,33 @@ import { RefObject, useEffect, useState } from "react";
 import { attachInstruction, extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
-import { DragGroupedEnvironmentsListItem, DropGroupedEnvironmentsListItem, GroupedWithEnvironment } from "../types";
-import { getSourceGroupedEnvironmentsListItem } from "../utils";
+import { DragEnvironmentItem, DropEnvironmentItem, EnvironmentListType } from "../types";
+import { getSourceGlobalEnvironmentsListItem } from "../utils";
 
-interface UseDraggableGroupedEnvironmentsListProps {
+interface UseDraggableEnvironmentItemProps {
   ref: RefObject<HTMLLIElement | null>;
-  groupWithEnvironments: GroupedWithEnvironment;
+  environment: StreamEnvironmentsEvent;
+  type: EnvironmentListType;
 }
 
-export const useDraggableGroupedEnvironmentsList = ({
-  ref,
-  groupWithEnvironments,
-}: UseDraggableGroupedEnvironmentsListProps) => {
+export const useDraggableEnvironmentItem = ({ ref, environment, type }: UseDraggableEnvironmentItemProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const [instruction, setInstruction] = useState<Instruction | null>(null);
 
   useEffect(() => {
     const element = ref?.current;
-
     if (!element) return;
 
     return combine(
       draggable({
         element,
-        getInitialData: (): DragGroupedEnvironmentsListItem => ({
-          type: "GroupedEnvironmentsListItem",
-          data: { groupWithEnvironments },
+        getInitialData: (): DragEnvironmentItem => ({
+          type: type,
+          data: { environment },
         }),
+
         onDragStart() {
           setIsDragging(true);
         },
@@ -41,16 +40,13 @@ export const useDraggableGroupedEnvironmentsList = ({
       dropTargetForElements({
         element,
         getData({ input, source }) {
-          const data: DropGroupedEnvironmentsListItem = {
-            type: "GroupedEnvironmentsListItem",
-            data: { groupWithEnvironments },
+          const data: DropEnvironmentItem = {
+            type: type,
+            data: { environment },
           };
 
-          const sourceData = getSourceGroupedEnvironmentsListItem(source);
-          if (
-            !sourceData ||
-            sourceData.data.groupWithEnvironments.collectionId === groupWithEnvironments.collectionId
-          ) {
+          const sourceData = getSourceEnvironmentItem(source);
+          if (!sourceData || sourceData.data.environment.id === environment.id) {
             return attachInstruction(data, {
               input,
               element,
@@ -75,13 +71,26 @@ export const useDraggableGroupedEnvironmentsList = ({
         getIsSticky() {
           return true;
         },
+        canDrop({ source }) {
+          const sourceData = getSourceGlobalEnvironmentsListItem(source);
+          if (!sourceData) return false;
+
+          const sameEnvironment = sourceData.data.environment.id === environment.id;
+          return !sameEnvironment;
+        },
         onDragEnter({ self }) {
           const instruction = extractInstruction(self.data);
-          setInstruction(instruction);
+
+          if (instruction) {
+            setInstruction(instruction);
+          }
         },
         onDrag({ self }) {
           const instruction = extractInstruction(self.data);
-          setInstruction(instruction);
+
+          if (instruction) {
+            setInstruction(instruction);
+          }
         },
         onDragLeave() {
           setInstruction(null);
@@ -91,7 +100,7 @@ export const useDraggableGroupedEnvironmentsList = ({
         },
       })
     );
-  }, [ref, groupWithEnvironments]);
+  }, [ref, environment, type]);
 
   return { isDragging, instruction };
 };

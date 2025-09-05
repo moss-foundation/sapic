@@ -11,17 +11,21 @@ import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
-interface GlobalEnvironmentsListControlsProps {
+import { EnvironmentListType } from "./types";
+
+interface EnvironmentItemControlsProps {
   environment: StreamEnvironmentsEvent;
   setIsEditing: (isEditing: boolean) => void;
-  instruction: Instruction | null;
+  instruction?: Instruction | null;
+  type: EnvironmentListType;
 }
 
-export const GlobalEnvironmentsListControls = ({
+export const EnvironmentItemControls = ({
   environment,
   setIsEditing,
   instruction,
-}: GlobalEnvironmentsListControlsProps) => {
+  type,
+}: EnvironmentItemControlsProps) => {
   const { globalEnvironments } = useStreamEnvironments();
   const { mutate: deleteEnvironment } = useDeleteEnvironment();
   const { mutate: updateEnvironment } = useUpdateEnvironment();
@@ -53,9 +57,14 @@ export const GlobalEnvironmentsListControls = ({
 
   return (
     <>
-      <Tree.NodeControls isActive={activePanelId === environment.id} instruction={instruction} hideDragHandle>
+      <Tree.NodeControls
+        isActive={activePanelId === environment.id}
+        instruction={instruction}
+        hideDragHandle
+        depth={type === "global" ? 0 : 1}
+      >
         <Tree.NodeTriggers className="cursor-pointer overflow-hidden">
-          <Icon icon="Environment" />
+          <Icon icon={type === "global" ? "Environment" : "GroupedEnvironment"} />
           <span className="truncate">{environment.name}</span>
           <span className="text-(--moss-secondary-text)">({environment.totalVariables})</span>
         </Tree.NodeTriggers>
