@@ -57,7 +57,6 @@ export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
       <Tree.RootNodeHeader ref={draggableHeaderRef} isActive={activePanelId === node.id}>
         {isRenamingRootNode ? (
           <TreeRootNodeRenamingForm
-            className="py-px"
             node={node}
             shouldRenderChildNodes={shouldRenderRootChildNodes}
             restrictedNames={restrictedNames}

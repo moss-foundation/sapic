@@ -21,7 +21,7 @@ export const GlobalEnvironmentsListItemRenamingForm = ({
   return (
     <Tree.NodeControls className={cn("min-h-[22px] py-1", className)}>
       <Tree.NodeTriggers>
-        <div className="flex size-5 shrink-0 items-center justify-start">
+        <div className="flex h-5 shrink-0 items-center justify-start">
           <Icon icon="Environment" />
         </div>
         <Tree.NodeRenamingForm
