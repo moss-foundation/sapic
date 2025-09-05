@@ -31,7 +31,7 @@ export type AddVariableParams = {
 /**
  * @category Type
  */
-export type ArchiveFileImportParams = { archivePath: string };
+export type ArchiveImportParams = { archivePath: string };
 
 /**
  * @category Type
@@ -193,7 +193,7 @@ export type ImportCollectionParams = {
 export type ImportCollectionSource =
   | { "gitHub": GitHubImportParams }
   | { "gitLab": GitLabImportParams }
-  | { "archiveFile": ArchiveFileImportParams };
+  | { "archive": ArchiveImportParams };
 
 /**
  * @category Type

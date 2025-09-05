@@ -20,7 +20,7 @@ export const variableOptionsSchema = z.object({
   disabled: z.boolean(),
 });
 
-export const archiveFileImportParamsSchema = z.object({
+export const archiveImportParamsSchema = z.object({
   archivePath: z.string(),
 });
 
@@ -120,7 +120,7 @@ export const importCollectionSourceSchema = z.union([
     "gitLab": gitLabImportParamsSchema,
   }),
   z.object({
-    "archiveFile": archiveFileImportParamsSchema,
+    "archive": archiveImportParamsSchema,
   }),
 ]);
 

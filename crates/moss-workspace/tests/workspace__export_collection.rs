@@ -7,7 +7,7 @@ use moss_workspace::{
         operations::{CreateCollectionInput, ExportCollectionInput, ImportCollectionInput},
         primitives::CollectionId,
         types::{
-            ArchiveFileImportParams, CreateCollectionParams, ExportCollectionParams,
+            ArchiveImportParams, CreateCollectionParams, ExportCollectionParams,
             ImportCollectionParams, ImportCollectionSource,
         },
     },
@@ -69,9 +69,7 @@ pub async fn export_collection_success() {
                     name: collection_name.clone(),
                     order: 42,
                     external_path: None,
-                    source: ImportCollectionSource::ArchiveFile(ArchiveFileImportParams {
-                        archive_path,
-                    }),
+                    source: ImportCollectionSource::Archive(ArchiveImportParams { archive_path }),
                     icon_path: None,
                 },
             },

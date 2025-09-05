@@ -72,7 +72,7 @@ impl<R: AppRuntime> Workspace<R> {
                     )
                     .await?
             }
-            ImportCollectionSource::ArchiveFile(archive_params) => {
+            ImportCollectionSource::Archive(archive_params) => {
                 self.collection_service
                     .import_collection(
                         ctx,

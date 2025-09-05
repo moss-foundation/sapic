@@ -222,7 +222,7 @@ pub struct EditorPartStateInfo {
 pub enum ImportCollectionSource {
     GitHub(GitHubImportParams),
     GitLab(GitLabImportParams),
-    ArchiveFile(ArchiveFileImportParams),
+    Archive(ArchiveImportParams),
 }
 
 // FIXME: Validation for provider specific url?
@@ -258,7 +258,7 @@ pub struct GitLabImportParams {
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
-pub struct ArchiveFileImportParams {
+pub struct ArchiveImportParams {
     pub archive_path: PathBuf,
 }
 
