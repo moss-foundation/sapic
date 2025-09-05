@@ -4,10 +4,10 @@ import { ActionMenu } from "@/components";
 import ActionButton from "@/components/ActionButton";
 import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
 import { useDeleteEnvironment, useModal, useStreamEnvironments, useUpdateEnvironment } from "@/hooks";
+import { useActivateEnvironment } from "@/hooks/workspace/environment/useActivateEnvironment";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
-import { useWorkspaceListStore } from "@/store/workspaceList";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
 interface GlobalEnvironmentsListControlsProps {
@@ -16,11 +16,11 @@ interface GlobalEnvironmentsListControlsProps {
 }
 
 export const GlobalEnvironmentsListControls = ({ environment, setIsEditing }: GlobalEnvironmentsListControlsProps) => {
-  const { setActiveEnvironment, activeEnvironment } = useWorkspaceListStore();
-
   const { globalEnvironments } = useStreamEnvironments();
   const { mutate: deleteEnvironment } = useDeleteEnvironment();
   const { mutate: updateEnvironment } = useUpdateEnvironment();
+  const { mutate: activateEnvironment } = useActivateEnvironment();
+
   const { addOrFocusPanel } = useTabbedPaneStore();
 
   const [showActionMenu, setShowActionMenu] = useState(false);
@@ -39,6 +39,10 @@ export const GlobalEnvironmentsListControls = ({ environment, setIsEditing }: Gl
         updateEnvironment({ id: env.id, order: env.order - 1, varsToAdd: [], varsToUpdate: [], varsToDelete: [] });
       }
     });
+  };
+
+  const handleSetActiveEnvironment = () => {
+    activateEnvironment({ environmentId: environment.id });
   };
 
   const onClick = () => {
@@ -63,11 +67,8 @@ export const GlobalEnvironmentsListControls = ({ environment, setIsEditing }: Gl
 
         <Tree.RootNodeActions>
           <ActionButton
-            onClick={(e) => {
-              e.stopPropagation();
-              setActiveEnvironment(environment);
-            }}
-            icon={activeEnvironment?.id === environment.id ? "EnvironmentSelectionActive" : "EnvironmentSelection"}
+            onClick={handleSetActiveEnvironment}
+            icon={environment.isActive ? "EnvironmentSelectionActive" : "EnvironmentSelection"}
             customHoverBackground="hover:background-(--moss-gray-10)"
           />
           <Tree.ActionsHover invisible={true} forceVisible={showActionMenu}>
