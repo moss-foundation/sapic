@@ -62,7 +62,7 @@ export const GlobalEnvironmentsListControls = ({ environment, setIsEditing }: Gl
         <Tree.RootNodeTriggers className="cursor-pointer overflow-hidden" onClick={onClick}>
           <Icon icon="Environment" />
           <span className="truncate">{environment.name}</span>
-          <span className="text-(--moss-secondary-text)">(15)</span>
+          <span className="text-(--moss-secondary-text)">({environment.totalVariables})</span>
         </Tree.RootNodeTriggers>
 
         <Tree.RootNodeActions>
