@@ -9,8 +9,10 @@ interface ActionLabelProps {
 export const ActionLabel = ({ children, className, ...props }: ActionLabelProps) => {
   return (
     <div
-      //TODO change background color to a variable
-      className={cn("background-(--moss-gray-11) rounded-[3px] px-1 text-xs leading-4 text-black", className)}
+      className={cn(
+        "background-(--moss-secondary-background-active) rounded-[3px] px-1 text-xs leading-4 text-(--moss-primary-text)",
+        className
+      )}
       {...props}
     >
       {children}

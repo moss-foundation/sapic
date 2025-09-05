@@ -7,7 +7,7 @@ interface RootNodeActionsProps {
 
 export const RootNodeActions = ({ children, className, ...props }: RootNodeActionsProps) => {
   return (
-    <div className={cn("z-10 flex items-center gap-1", className)} {...props}>
+    <div className={cn("z-10 flex items-center justify-end gap-1", className)} {...props}>
       {children}
     </div>
   );
