@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { MouseEvent, useState } from "react";
 
 import { ActionMenu } from "@/components";
 import ActionButton from "@/components/ActionButton";
@@ -38,7 +38,7 @@ export const GlobalEnvironmentsListControls = ({ environment, setIsEditing }: Gl
     });
   };
 
-  const handleSetActiveEnvironment = (e) => {
+  const handleSetActiveEnvironment = (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     activateEnvironment({ environmentId: environment.id });
   };
