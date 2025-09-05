@@ -37,7 +37,7 @@ export const GlobalEnvironmentsListItem = ({ environment }: GlobalEnvironmentsLi
 
   return (
     <Tree.RootNode isChildDropBlocked={false} instruction={instruction} dropIndicatorFullWidth={true}>
-      <Tree.RootNodeHeader ref={globalEnvironmentsListRef} isActive={isActive}>
+      <Tree.RootNodeHeader ref={globalEnvironmentsListRef} isActive={isActive} className="cursor-pointer">
         {isEditing ? (
           <GlobalEnvironmentsListItemRenamingForm
             handleRename={handleRename}
