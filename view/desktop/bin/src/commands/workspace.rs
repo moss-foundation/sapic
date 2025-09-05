@@ -118,6 +118,21 @@ pub async fn import_collection<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn export_collection<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: Window<R>,
+    input: ExportCollectionInput,
+    options: Options,
+) -> TauriResult<ExportCollectionOutput> {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
+        workspace.export_collection(&ctx, &input).await
+    })
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn delete_collection<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
@@ -142,6 +157,36 @@ pub async fn update_collection<'a, R: tauri::Runtime>(
 ) -> TauriResult<UpdateCollectionOutput> {
     super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
         workspace.update_collection(&ctx, input).await
+    })
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(app), fields(window = window.label()))]
+pub async fn archive_collection<'a, R: tauri::Runtime>(
+    ctx: State<'_, moss_applib::context::AsyncContext>,
+    app: App<'a, R>,
+    window: Window<R>,
+    input: ArchiveCollectionInput,
+    options: Options,
+) -> TauriResult<ArchiveCollectionOutput> {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
+        workspace.archive_collection(&ctx, input).await
+    })
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(app), fields(window = window.label()))]
+pub async fn unarchive_collection<'a, R: tauri::Runtime>(
+    ctx: State<'_, moss_applib::context::AsyncContext>,
+    app: App<'a, R>,
+    window: Window<R>,
+    input: UnarchiveCollectionInput,
+    options: Options,
+) -> TauriResult<UnarchiveCollectionOutput> {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
+        workspace.unarchive_collection(&ctx, input).await
     })
     .await
 }

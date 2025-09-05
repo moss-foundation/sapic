@@ -2,7 +2,7 @@ import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { DescribeStateOutput } from "@repo/moss-workspace";
 import { useQuery } from "@tanstack/react-query";
 
-import { useActiveWorkspace } from "./useActiveWorkspace";
+import { useActiveWorkspace } from "./derived/useActiveWorkspace";
 
 export const USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY = "describeWorkspaceState";
 

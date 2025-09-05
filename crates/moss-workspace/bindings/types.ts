@@ -31,6 +31,11 @@ export type AddVariableParams = {
 /**
  * @category Type
  */
+export type ArchiveImportParams = { archivePath: string };
+
+/**
+ * @category Type
+ */
 export type BranchInfo = { name: string; ahead?: number; behind?: number };
 
 export type Contributor = { name: string; avatarUrl?: string };
@@ -116,6 +121,14 @@ export type EnvironmentInfo = {
   variables: Array<VariableInfo>;
 };
 
+export type ExportCollectionParams = {
+  id: string;
+  /**
+   * Path to the folder containing the output archive file
+   */
+  destination: string;
+};
+
 /**
  * @category Type
  */
@@ -177,7 +190,10 @@ export type ImportCollectionParams = {
 /**
  * @category Type
  */
-export type ImportCollectionSource = { "gitHub": GitHubImportParams } | { "gitLab": GitLabImportParams };
+export type ImportCollectionSource =
+  | { "gitHub": GitHubImportParams }
+  | { "gitLab": GitLabImportParams }
+  | { "archive": ArchiveImportParams };
 
 /**
  * @category Type

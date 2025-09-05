@@ -1,14 +1,19 @@
 use async_stream::stream;
+use async_zip::{
+    Compression, ZipEntryBuilder,
+    tokio::{read::fs::ZipFileReader, write::ZipFileWriter},
+};
 use futures::{StreamExt, stream::BoxStream};
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
 use std::{io, path::Path, time::Duration};
 use tokio::{
-    fs::ReadDir,
-    io::AsyncWriteExt,
+    fs::{OpenOptions, ReadDir},
+    io::{AsyncReadExt, AsyncWriteExt},
     sync::mpsc,
     time::{self, Instant},
 };
 use tokio_stream::wrappers::UnboundedReceiverStream;
+use tokio_util::compat::TokioAsyncWriteCompatExt;
 
 use crate::{CreateOptions, FileSystem, FsError, FsResult, RemoveOptions, RenameOptions};
 
@@ -161,5 +166,129 @@ impl FileSystem for RealFileSystem {
         };
 
         Ok((stream.boxed(), watcher))
+    }
+
+    async fn zip(
+        &self,
+        src_dir: &Path,
+        out_file: &Path,
+        excluded_entries: &[&str],
+    ) -> FsResult<()> {
+        if !src_dir.is_dir() {
+            return Err(FsError::NotFound(format!(
+                "directory `{}` does not exist",
+                src_dir.display()
+            )));
+        }
+
+        // If the output archive file is inside the source folder, it will also be bundled, which we don't want
+        if out_file.starts_with(src_dir) {
+            return Err(FsError::Other(
+                "cannot export archive file into the source directory".to_owned(),
+            ));
+        }
+
+        let src_dir = src_dir.to_path_buf();
+        let out_file = out_file.to_path_buf();
+
+        let mut output_writer =
+            ZipFileWriter::with_tokio(tokio::fs::File::create(&out_file).await?);
+
+        // Operations
+        let mut dirs = vec![src_dir.clone()];
+        while let Some(path) = dirs.pop() {
+            let mut read_dir = tokio::fs::read_dir(path).await?;
+            while let Some(entry) = read_dir.next_entry().await? {
+                let path = entry.path();
+                let file_name = entry.file_name().to_string_lossy().to_string();
+
+                if file_name.is_empty() || excluded_entries.contains(&file_name.as_str()) {
+                    continue;
+                }
+
+                let file_type = entry.file_type().await?;
+
+                if file_type.is_dir() {
+                    dirs.push(path);
+                    continue;
+                }
+
+                // Write the entry to the zip file
+                let mut input_file = tokio::fs::File::open(&path).await?;
+                let size = input_file.metadata().await?.len();
+
+                let mut buffer = Vec::with_capacity(size as usize);
+                input_file.read_to_end(&mut buffer).await?;
+
+                let entry_path = path
+                    .strip_prefix(&src_dir)
+                    .expect("children must have source directory as prefix");
+                let entry_str = entry_path
+                    .as_os_str()
+                    .to_str()
+                    .ok_or(FsError::Other("entry file path not valid UTF-8".to_owned()))?;
+
+                let builder = ZipEntryBuilder::new(entry_str.into(), Compression::Deflate);
+                output_writer
+                    .write_entry_whole(builder, &buffer)
+                    .await
+                    .map_err(|err| {
+                        FsError::Other(format!("failed to write entry to archive file: {}", err))
+                    })?;
+            }
+        }
+        output_writer
+            .close()
+            .await
+            .map_err(|err| FsError::Other(format!("failed to close archive file: {}", err)))?;
+        Ok(())
+    }
+
+    async fn unzip(&self, src_archive: &Path, out_dir: &Path) -> FsResult<()> {
+        if !out_dir.is_dir() {
+            return Err(FsError::NotFound(format!(
+                "directory `{}` does not exist",
+                out_dir.display()
+            )));
+        }
+
+        let reader = ZipFileReader::new(src_archive).await.map_err(|err| {
+            FsError::Other(format!(
+                "failed to read archive `{}`: {}",
+                src_archive.display(),
+                err
+            ))
+        })?;
+
+        for index in 0..reader.file().entries().len() {
+            let entry = &reader.file().entries()[index];
+            let path = out_dir.join(
+                entry
+                    .filename()
+                    .as_str()
+                    .map_err(|_| FsError::Other("archive entry has non-UTF-8 path".to_string()))?,
+            );
+
+            let mut entry_reader = reader.reader_without_entry(index).await.map_err(|err| {
+                FsError::Other(format!("failed to read entry in the archive file: {}", err))
+            })?;
+
+            let parent = path
+                .parent()
+                .expect("parent must exist since out_dir is valid");
+            if !parent.is_dir() {
+                tokio::fs::create_dir_all(parent).await?;
+            }
+
+            let writer = OpenOptions::new()
+                .write(true)
+                .create_new(true)
+                .open(&path)
+                .await?;
+
+            futures::io::copy(&mut entry_reader, &mut writer.compat_write()).await?;
+        }
+
+        Ok(())
     }
 }

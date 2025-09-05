@@ -18,6 +18,8 @@ tokio-stream.workspace = true
 tauri.workspace = true
 derive_more.workspace = true
 thiserror.workspace = true
+async_zip.workspace = true
+tokio-util.workspace = true
 
 [features]
 integration-tests = []

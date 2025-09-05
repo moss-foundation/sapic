@@ -25,6 +25,16 @@ export type ActivateEnvironmentOutput = { environmentId: string };
 /**
  * @category Operation
  */
+export type ArchiveCollectionInput = { id: string };
+
+/**
+ * @category Operation
+ */
+export type ArchiveCollectionOutput = { id: string };
+
+/**
+ * @category Operation
+ */
 export type BatchUpdateCollectionInput = { items: Array<UpdateCollectionParams> };
 
 /**
@@ -143,6 +153,22 @@ export type DescribeStateOutput = {
 /**
  * @category Operation
  */
+export type ExportCollectionInput = {
+  id: string;
+  /**
+   * Path to the folder containing the output archive file
+   */
+  destination: string;
+};
+
+/**
+ * @category Operation
+ */
+export type ExportCollectionOutput = { archivePath: string };
+
+/**
+ * @category Operation
+ */
 export type ImportCollectionInput = {
   name: string;
   order: number;
@@ -165,6 +191,16 @@ export type StreamCollectionsOutput = {};
  * @category Operation
  */
 export type StreamEnvironmentsOutput = { groups: Array<EnvironmentGroup> };
+
+/**
+ * @category Operation
+ */
+export type UnarchiveCollectionInput = { id: string };
+
+/**
+ * @category Operation
+ */
+export type UnarchiveCollectionOutput = { id: string };
 
 /**
  * @category Operation

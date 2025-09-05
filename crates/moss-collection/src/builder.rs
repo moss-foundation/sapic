@@ -1,7 +1,7 @@
-use joinerror::ResultExt;
+use joinerror::{Error, ResultExt};
 use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::{AppRuntime, subscription::EventEmitter};
-use moss_fs::{CreateOptions, FileSystem};
+use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_git::{repository::Repository, url::GitUrl};
 use moss_git_hosting_provider::GitProviderKind;
 use moss_logging::session;
@@ -19,6 +19,7 @@ use crate::{
     constants::COLLECTION_ROOT_PATH,
     defaults, dirs,
     edit::CollectionEdit,
+    errors::ErrorIo,
     git::GitClient,
     manifest::{MANIFEST_FILE_NAME, ManifestFile, ManifestVcs},
     models::primitives::{EntryClass, EntryId},
@@ -101,6 +102,11 @@ pub struct CollectionCloneParams {
     pub branch: Option<String>,
 }
 
+pub struct CollectionImportParams {
+    pub internal_abs_path: Arc<Path>,
+    pub archive_path: Arc<Path>,
+}
+
 pub struct CollectionBuilder<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     broadcaster: ActivityBroadcaster<R::EventLoop>,
@@ -121,20 +127,39 @@ impl<R: AppRuntime> CollectionBuilder<R> {
             StorageService::new(params.internal_abs_path.as_ref())
                 .join_err::<()>("failed to create collection storage service")?
                 .into();
-
-        let worktree_service: Arc<Worktree<R>> = Worktree::new(
-            params.internal_abs_path.clone(),
-            self.fs.clone(),
-            self.broadcaster.clone(),
-            storage_service.clone(),
-        )
-        .into();
-
         let set_icon_service = SetIconService::new(
             params.internal_abs_path.clone(),
             self.fs.clone(),
             COLLECTION_ICON_SIZE,
         );
+
+        // Check if the collection is archived
+        // If so, we avoid loading the worktree service
+        let config: ConfigFile = {
+            let config_path = params.internal_abs_path.join(CONFIG_FILE_NAME);
+            let rdr = self
+                .fs
+                .open_file(&config_path)
+                .await
+                .join_err_with::<()>(|| {
+                    format!("failed to open config file: {}", config_path.display())
+                })?;
+            serde_json::from_reader(rdr).join_err_with::<()>(|| {
+                format!("failed to parse config file: {}", config_path.display())
+            })?
+        };
+
+        let worktree_service = if config.archived {
+            OnceCell::new()
+        } else {
+            Arc::new(Worktree::new(
+                params.internal_abs_path.clone(),
+                self.fs.clone(),
+                self.broadcaster.clone(),
+                storage_service.clone(),
+            ))
+            .into()
+        };
 
         let edit = CollectionEdit::new(
             self.fs.clone(),
@@ -142,7 +167,7 @@ impl<R: AppRuntime> CollectionBuilder<R> {
         );
 
         Ok(Collection {
-            fs: self.fs.clone(),
+            fs: self.fs,
             abs_path: params.internal_abs_path,
             edit,
             set_icon_service,
@@ -150,6 +175,8 @@ impl<R: AppRuntime> CollectionBuilder<R> {
             vcs: OnceCell::new(),
             worktree: worktree_service,
             on_did_change: EventEmitter::new(),
+            broadcaster: self.broadcaster,
+            archived: config.archived.into(),
         })
     }
 
@@ -175,7 +202,7 @@ impl<R: AppRuntime> CollectionBuilder<R> {
             .put_expanded_entries(ctx, Vec::new())
             .await?;
 
-        let worktree_service: Arc<Worktree<R>> = Worktree::new(
+        let worktree_service_inner: Arc<Worktree<R>> = Worktree::new(
             abs_path.clone(),
             self.fs.clone(),
             self.broadcaster.clone(),
@@ -196,7 +223,7 @@ impl<R: AppRuntime> CollectionBuilder<R> {
                 _ => unreachable!(),
             };
 
-            worktree_service
+            worktree_service_inner
                 .create_dir_entry(
                     ctx,
                     dir,
@@ -263,7 +290,9 @@ impl<R: AppRuntime> CollectionBuilder<R> {
             .create_file_with(
                 &params.internal_abs_path.join(CONFIG_FILE_NAME),
                 serde_json::to_string(&ConfigFile {
+                    archived: false,
                     external_path: params.external_abs_path.map(|p| p.to_path_buf()),
+                    account_id: None,
                 })?
                 .as_bytes(),
                 CreateOptions {
@@ -289,14 +318,16 @@ impl<R: AppRuntime> CollectionBuilder<R> {
         let edit = CollectionEdit::new(self.fs.clone(), abs_path.join(MANIFEST_FILE_NAME));
 
         Ok(Collection {
-            fs: self.fs.clone(),
+            fs: self.fs,
             abs_path: params.internal_abs_path.to_owned().into(),
             edit,
             set_icon_service,
             storage_service,
             vcs: OnceCell::new(),
-            worktree: worktree_service,
+            worktree: worktree_service_inner.into(),
             on_did_change: EventEmitter::new(),
+            broadcaster: self.broadcaster,
+            archived: false.into(),
         })
     }
 
@@ -328,7 +359,7 @@ impl<R: AppRuntime> CollectionBuilder<R> {
             .put_expanded_entries(ctx, Vec::new())
             .await?;
 
-        let worktree: Arc<Worktree<R>> = Worktree::new(
+        let worktree_inner: Arc<Worktree<R>> = Worktree::new(
             abs_path.clone(),
             self.fs.clone(),
             self.broadcaster.clone(),
@@ -343,7 +374,9 @@ impl<R: AppRuntime> CollectionBuilder<R> {
             .create_file_with(
                 &abs_path.join(CONFIG_FILE_NAME),
                 serde_json::to_string(&ConfigFile {
+                    archived: false,
                     external_path: None,
+                    account_id: Some(git_client.account_id()),
                 })?
                 .as_bytes(),
                 CreateOptions {
@@ -355,14 +388,79 @@ impl<R: AppRuntime> CollectionBuilder<R> {
 
         let edit = CollectionEdit::new(self.fs.clone(), abs_path.join(MANIFEST_FILE_NAME));
         Ok(Collection {
-            fs: self.fs.clone(),
+            fs: self.fs,
             abs_path,
             edit,
             set_icon_service,
             storage_service,
             vcs: OnceCell::new_with(Some(Vcs::new(params.repository, repository, git_client))),
-            worktree,
+            worktree: worktree_inner.into(),
             on_did_change: EventEmitter::new(),
+            broadcaster: self.broadcaster,
+            archived: false.into(),
+        })
+    }
+
+    pub async fn import_archive(
+        self,
+        ctx: &R::AsyncContext,
+        params: CollectionImportParams,
+    ) -> joinerror::Result<Collection<R>> {
+        debug_assert!(params.internal_abs_path.is_absolute());
+
+        let abs_path = params.internal_abs_path;
+        let archive_path = params.archive_path;
+        self.do_import(abs_path.clone(), archive_path).await?;
+
+        let storage_service: Arc<StorageService<R>> = StorageService::new(abs_path.as_ref())
+            .join_err::<()>("failed to create collection storage service")?
+            .into();
+
+        // Create expandedEntries key in the database to prevent warnings
+        storage_service
+            .put_expanded_entries(ctx, Vec::new())
+            .await?;
+
+        let worktree_inner: Arc<Worktree<R>> = Worktree::new(
+            abs_path.clone(),
+            self.fs.clone(),
+            self.broadcaster.clone(),
+            storage_service.clone(),
+        )
+        .into();
+
+        let set_icon_service =
+            SetIconService::new(abs_path.clone(), self.fs.clone(), COLLECTION_ICON_SIZE);
+
+        self.fs
+            .create_file_with(
+                &abs_path.join(CONFIG_FILE_NAME),
+                serde_json::to_string(&ConfigFile {
+                    archived: false,
+                    external_path: None,
+                    account_id: None,
+                })?
+                .as_bytes(),
+                CreateOptions {
+                    overwrite: false,
+                    ignore_if_exists: false,
+                },
+            )
+            .await?;
+
+        let edit = CollectionEdit::new(self.fs.clone(), abs_path.join(MANIFEST_FILE_NAME));
+
+        Ok(Collection {
+            fs: self.fs,
+            abs_path,
+            edit,
+            set_icon_service,
+            storage_service,
+            vcs: OnceCell::new(),
+            worktree: worktree_inner.into(),
+            on_did_change: EventEmitter::new(),
+            broadcaster: self.broadcaster,
+            archived: false.into(),
         })
     }
 }
@@ -391,5 +489,24 @@ impl<R: AppRuntime> CollectionBuilder<R> {
         }
 
         Ok(repository)
+    }
+
+    async fn do_import(
+        &self,
+        internal_abs_path: Arc<Path>,
+        archive_path: Arc<Path>,
+    ) -> joinerror::Result<()> {
+        if !archive_path.exists() {
+            return Err(Error::new::<ErrorIo>(format!(
+                "archive file {} not found",
+                archive_path.display()
+            ))
+            .into());
+        }
+
+        self.fs
+            .unzip(archive_path.as_ref(), internal_abs_path.as_ref())
+            .await?;
+        Ok(())
     }
 }

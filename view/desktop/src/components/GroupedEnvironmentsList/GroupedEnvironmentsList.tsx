@@ -5,13 +5,13 @@ export const GroupedEnvironmentsList = () => {
   const { groupedWithEnvironments } = useGroupedWithEnvironments();
 
   return (
-    <div className="flex flex-col">
+    <ul className="flex flex-col">
       {groupedWithEnvironments?.map((groupedWithEnvironments) => (
         <GroupedEnvironmentsListRoot
           key={groupedWithEnvironments.id}
           groupedWithEnvironments={groupedWithEnvironments}
         />
       ))}
-    </div>
+    </ul>
   );
 };

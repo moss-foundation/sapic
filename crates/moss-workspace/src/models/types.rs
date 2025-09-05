@@ -9,7 +9,11 @@ use moss_environment::models::{
 use moss_git::{models::types::BranchInfo, url::GIT_URL_REGEX};
 use moss_user::models::primitives::AccountId;
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, path::PathBuf, sync::Arc};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 use ts_rs::TS;
 use validator::{Validate, ValidationError};
 
@@ -49,6 +53,24 @@ pub struct ImportCollectionParams {
     pub external_path: Option<PathBuf>,
     pub source: ImportCollectionSource,
     pub icon_path: Option<PathBuf>,
+}
+
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct ExportCollectionParams {
+    pub id: CollectionId,
+    /// Path to the folder containing the output archive file
+    #[validate(custom(function = "validate_export_destination"))]
+    pub destination: PathBuf,
+}
+
+fn validate_export_destination(destination: &Path) -> Result<(), ValidationError> {
+    if !destination.is_dir() {
+        return Err(ValidationError::new("destination must be a directory"));
+    }
+    Ok(())
 }
 
 /// @category Type
@@ -212,6 +234,7 @@ pub struct EditorPartStateInfo {
 pub enum ImportCollectionSource {
     GitHub(GitHubImportParams),
     GitLab(GitLabImportParams),
+    Archive(ArchiveImportParams),
 }
 
 // FIXME: Validation for provider specific url?
@@ -241,6 +264,14 @@ pub struct GitLabImportParams {
     pub repository: String,
     /// If provided, this branch will be checked out instead of the default branch
     pub branch: Option<String>,
+}
+
+/// @category Type
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct ArchiveImportParams {
+    pub archive_path: PathBuf,
 }
 
 /// @category Type

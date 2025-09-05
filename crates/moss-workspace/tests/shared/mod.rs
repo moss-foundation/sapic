@@ -3,7 +3,7 @@
 use image::{ImageBuffer, Rgb};
 use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::{
-    AppHandle,
+    AppHandle, AppRuntime,
     context::{AnyContext, AsyncContext, MutableContext},
     mock::MockAppRuntime,
 };
@@ -19,7 +19,9 @@ use moss_workspace::{
     Workspace,
     builder::{CreateWorkspaceParams, WorkspaceBuilder},
     models::{
-        primitives::{EditorGridOrientation, PanelRenderer},
+        events::StreamCollectionsEvent,
+        operations::StreamCollectionsOutput,
+        primitives::{CollectionId, EditorGridOrientation, PanelRenderer},
         types::{
             EditorGridLeafData, EditorGridNode, EditorGridState, EditorPanelState,
             EditorPartStateInfo,
@@ -34,10 +36,13 @@ use std::{
     future::Future,
     path::{Path, PathBuf},
     pin::Pin,
-    sync::Arc,
+    sync::{Arc, Mutex},
     time::Duration,
 };
-use tauri::Manager;
+use tauri::{
+    Manager,
+    ipc::{Channel, InvokeResponseBody},
+};
 
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
 
@@ -223,4 +228,39 @@ pub fn generate_random_icon(output_path: &Path) {
     }
 
     img.save(output_path).unwrap();
+}
+
+#[allow(unused)]
+pub async fn test_stream_collections<R: AppRuntime>(
+    ctx: &R::AsyncContext,
+    workspace: &Workspace<R>,
+) -> (
+    HashMap<CollectionId, StreamCollectionsEvent>,
+    StreamCollectionsOutput,
+) {
+    let received_events = Arc::new(Mutex::new(Vec::new()));
+    let received_events_clone = received_events.clone();
+
+    let channel = Channel::new(move |body: InvokeResponseBody| {
+        if let InvokeResponseBody::Json(json_str) = body {
+            if let Ok(event) = serde_json::from_str::<StreamCollectionsEvent>(&json_str) {
+                received_events_clone.lock().unwrap().push(event);
+            }
+        }
+        Ok(())
+    });
+
+    let output = workspace
+        .stream_collections(ctx, channel.clone())
+        .await
+        .unwrap();
+    (
+        received_events
+            .lock()
+            .unwrap()
+            .iter()
+            .map(|event| (event.id.clone(), event.clone()))
+            .collect(),
+        output,
+    )
 }

@@ -64,6 +64,8 @@ pub struct ImportCollectionInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct ImportCollectionOutput {
     pub id: CollectionId,
+    // FIXME: Maybe we should remove the name field until we have local display name
+    // Since a cloned/imported collection already has a name
     pub name: String,
     pub order: Option<isize>,
     pub expanded: bool,
@@ -76,6 +78,24 @@ pub struct ImportCollectionOutput {
     #[serde(skip)]
     #[ts(skip)]
     pub external_path: Option<PathBuf>,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct ExportCollectionInput {
+    #[serde(flatten)]
+    #[validate(nested)]
+    pub inner: ExportCollectionParams,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct ExportCollectionOutput {
+    pub archive_path: PathBuf,
 }
 
 /// @category Operation
@@ -137,6 +157,42 @@ pub struct DeleteCollectionOutput {
     #[serde(skip)]
     #[ts(skip)]
     pub abs_path: Option<Arc<Path>>,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct ArchiveCollectionInput {
+    #[ts(type = "string")]
+    pub id: CollectionId,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct ArchiveCollectionOutput {
+    #[ts(type = "string")]
+    pub id: CollectionId,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct UnarchiveCollectionInput {
+    #[ts(type = "string")]
+    pub id: CollectionId,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct UnarchiveCollectionOutput {
+    #[ts(type = "string")]
+    pub id: CollectionId,
 }
 
 /// @category Operation

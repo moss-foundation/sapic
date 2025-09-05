@@ -2,7 +2,7 @@ import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { CreateCollectionInput, CreateCollectionOutput, StreamCollectionsEvent } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { USE_STREAMED_COLLECTIONS_QUERY_KEY } from "./useStreamedCollections";
+import { USE_STREAM_COLLECTIONS_QUERY_KEY } from "./useStreamCollections";
 
 const createCollection = async (input: CreateCollectionInput) => {
   const result = await invokeTauriIpc<CreateCollectionOutput>("create_collection", { input });
@@ -20,7 +20,7 @@ export const useCreateCollection = () => {
   return useMutation({
     mutationFn: createCollection,
     onSuccess: (data, variables) => {
-      queryClient.setQueryData([USE_STREAMED_COLLECTIONS_QUERY_KEY], (old: StreamCollectionsEvent[]) => {
+      queryClient.setQueryData([USE_STREAM_COLLECTIONS_QUERY_KEY], (old: StreamCollectionsEvent[]) => {
         return [
           ...old,
           {
@@ -33,21 +33,11 @@ export const useCreateCollection = () => {
 };
 
 const inputToEvent = (input: CreateCollectionInput, data: CreateCollectionOutput): StreamCollectionsEvent => {
-  const { gitParams, iconPath } = input;
-
-  let repository: string | undefined;
-  if (gitParams) {
-    if ("gitHub" in gitParams) {
-      repository = gitParams.gitHub.repository;
-    } else if ("gitLab" in gitParams) {
-      repository = gitParams.gitLab.repository;
-    }
-  }
+  const { iconPath } = input;
 
   return {
-    repository,
-    contributors: [], // Empty array as default
     iconPath,
+    archived: false,
     ...data,
   };
 };
