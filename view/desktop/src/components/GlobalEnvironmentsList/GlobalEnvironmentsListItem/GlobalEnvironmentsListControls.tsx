@@ -66,11 +66,13 @@ export const GlobalEnvironmentsListControls = ({ environment, setIsEditing }: Gl
         </Tree.RootNodeTriggers>
 
         <Tree.RootNodeActions>
-          <ActionButton
-            onClick={handleSetActiveEnvironment}
-            icon={environment.isActive ? "EnvironmentSelectionActive" : "EnvironmentSelection"}
-            customHoverBackground="hover:background-(--moss-gray-10)"
-          />
+          <Tree.ActionsHover invisible={true} forceVisible={environment.isActive}>
+            <ActionButton
+              onClick={handleSetActiveEnvironment}
+              icon={environment.isActive ? "EnvironmentSelectionActive" : "EnvironmentSelection"}
+              customHoverBackground="hover:background-(--moss-gray-10)"
+            />
+          </Tree.ActionsHover>
           <Tree.ActionsHover invisible={true} forceVisible={showActionMenu}>
             <ActionMenu.Root onOpenChange={setShowActionMenu} modal={showActionMenu}>
               <ActionMenu.Trigger asChild>
