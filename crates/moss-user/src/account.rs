@@ -1,6 +1,7 @@
+pub mod auth_gateway_api;
 mod common;
-mod github;
-mod gitlab;
+pub mod github;
+pub mod gitlab;
 
 use moss_asp::AppSecretsProvider;
 use moss_keyring::KeyringClient;
@@ -9,6 +10,7 @@ use std::sync::Arc;
 
 use crate::{
     account::{
+        auth_gateway_api::GitLabTokenRefreshApiReq,
         github::{GitHubInitialToken, GitHubSessionHandle},
         gitlab::{GitLabInitialToken, GitLabSessionHandle},
     },
@@ -58,7 +60,7 @@ enum Session {
 #[derive(Clone)]
 
 pub struct AccountSession {
-    secrets: AppSecretsProvider,
+    // secrets: AppSecretsProvider,
     keyring: Arc<dyn KeyringClient>,
     inner: Arc<Session>,
 }
@@ -67,7 +69,7 @@ impl AccountSession {
     pub async fn github(
         id: AccountId,
         host: String,
-        secrets: AppSecretsProvider,
+        // secrets: AppSecretsProvider,
         keyring: Arc<dyn KeyringClient>,
 
         initial_token: Option<GitHubInitialToken>,
@@ -75,7 +77,7 @@ impl AccountSession {
         let session = GitHubSessionHandle::new(id, host, initial_token, &keyring).await?;
 
         Ok(Self {
-            secrets,
+            // secrets,
             keyring,
             inner: Arc::new(Session::GitHub(session)),
         })
@@ -83,17 +85,19 @@ impl AccountSession {
 
     pub async fn gitlab(
         id: AccountId,
-        client_id: ClientId,
+        // client_id: ClientId,
         host: String,
         keyring: Arc<dyn KeyringClient>,
-        secrets: AppSecretsProvider,
-
+        account_auth_api_client: Arc<dyn GitLabTokenRefreshApiReq>,
+        // secrets: AppSecretsProvider,
         initial_token: Option<GitLabInitialToken>,
     ) -> joinerror::Result<Self> {
-        let session = GitLabSessionHandle::new(id, host, initial_token, &keyring).await?;
+        let session =
+            GitLabSessionHandle::new(id, host, account_auth_api_client, initial_token, &keyring)
+                .await?;
 
         Ok(Self {
-            secrets,
+            // secrets,
             keyring,
             inner: Arc::new(Session::GitLab(session)),
         })
@@ -109,7 +113,7 @@ impl AccountSession {
     pub async fn access_token(&self) -> joinerror::Result<String> {
         match self.inner.as_ref() {
             Session::GitHub(handle) => handle.access_token(&self.keyring).await,
-            Session::GitLab(handle) => handle.access_token(&self.keyring, &self.secrets).await,
+            Session::GitLab(handle) => handle.access_token(&self.keyring).await,
         }
     }
 }

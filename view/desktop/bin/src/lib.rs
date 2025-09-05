@@ -19,6 +19,7 @@ use moss_git_hosting_provider::{
     gitlab::{GitLabApiClient, GitLabAuthAdapter},
 };
 use moss_keyring::KeyringClientImpl;
+use moss_user::account::auth_gateway_api::AccountAuthGatewayApiClient;
 use reqwest::ClientBuilder as HttpClientBuilder;
 use std::{path::PathBuf, sync::Arc, time::Duration};
 #[cfg(not(debug_assertions))]
@@ -54,6 +55,15 @@ pub async fn run<R: TauriRuntime>() {
 
                 let fs = Arc::new(RealFileSystem::new());
                 let keyring = Arc::new(KeyringClientImpl::new());
+                let http_client = HttpClientBuilder::new()
+                    .user_agent("SAPIC/1.0")
+                    .build()
+                    .expect("failed to build http client");
+                let auth_api_client = Arc::new(AccountAuthGatewayApiClient::new(
+                    http_client.clone(),
+                    dotenv::var("ACCOUNT_AUTH_BASE_URL").expect("ACCOUNT_AUTH_BASE_URL is not set"),
+                ));
+
                 let tao_handle = tao.app_handle();
 
                 #[cfg(debug_assertions)]
@@ -92,24 +102,49 @@ pub async fn run<R: TauriRuntime>() {
                     )
                 };
 
+                // Registration of global resources that will be accessible
+                // throughout the entire application via the `global` method
+                // of the app's internal handler.
+                {
+                    tao_handle.manage(http_client.clone());
+                    tao_handle.manage(GitHubApiClient::new(http_client.clone()));
+                    tao_handle.manage(GitLabApiClient::new(http_client.clone()));
+                    tao_handle.manage(GitHubAuthAdapter::new(
+                        auth_api_client.clone(),
+                        auth_api_client.base_url(),
+                        8080,
+                    ));
+                    tao_handle.manage(GitLabAuthAdapter::new(
+                        auth_api_client.clone(),
+                        auth_api_client.base_url(),
+                        8081,
+                    ));
+
+                    tao_handle.manage(AppHandle::<TauriAppRuntime<R>>::new(tao_handle.clone()));
+                }
+
                 let ctx_clone = ctx.clone();
                 let (app, session_id) = {
                     let app_init_ctx =
                         MutableContext::new_with_timeout(ctx_clone, Duration::from_secs(30))
                             .freeze();
 
-                    let app =
-                        TauriAppBuilder::<TauriAppRuntime<R>>::new(tao_handle.clone(), fs, keyring)
-                            .build(
-                                &app_init_ctx,
-                                BuildAppParams {
-                                    app_dir,
-                                    themes_dir,
-                                    locales_dir,
-                                    logs_dir,
-                                },
-                            )
-                            .await;
+                    let app = TauriAppBuilder::<TauriAppRuntime<R>>::new(
+                        tao_handle.clone(),
+                        fs,
+                        keyring,
+                        auth_api_client,
+                    )
+                    .build(
+                        &app_init_ctx,
+                        BuildAppParams {
+                            app_dir,
+                            themes_dir,
+                            locales_dir,
+                            logs_dir,
+                        },
+                    )
+                    .await;
                     let session_id = app.session_id().clone();
 
                     (app, session_id)
@@ -122,23 +157,6 @@ pub async fn run<R: TauriRuntime>() {
                     ctx.freeze()
                 });
                 tao_handle.manage(app);
-                tao_handle.manage(AppHandle::<TauriAppRuntime<R>>::new(tao_handle.clone()));
-
-                // Registration of global resources that will be accessible
-                // throughout the entire application via the `global` method
-                // of the app's internal handler.
-                {
-                    let http_client = HttpClientBuilder::new()
-                        .user_agent("SAPIC/1.0")
-                        .build()
-                        .expect("failed to build http client");
-
-                    tao_handle.manage(GitHubApiClient::new(http_client.clone()));
-                    tao_handle.manage(GitLabApiClient::new(http_client.clone()));
-                    tao_handle.manage(GitHubAuthAdapter::new(http_client.clone()));
-                    tao_handle.manage(GitLabAuthAdapter::new(http_client.clone()));
-                    tao_handle.manage(http_client);
-                }
 
                 Ok(())
             })

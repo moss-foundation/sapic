@@ -1,14 +1,19 @@
 use moss_git_hosting_provider::{GitAuthAdapter, gitlab::GitLabAuthAdapter};
+use moss_user::account::auth_gateway_api::AccountAuthGatewayApiClient;
 use reqwest::Client;
+use std::sync::Arc;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let worker_url = "https://account-auth-gateway-dev.20g10z3r.workers.dev".to_string();
     let callback_port = 8081;
+    let auth_api_client: Arc<AccountAuthGatewayApiClient> = AccountAuthGatewayApiClient::new(
+        Client::new(),
+        "https://account-auth-gateway-dev.20g10z3r.workers.dev".to_string(),
+    )
+    .into();
+    let worker_url = auth_api_client.base_url();
 
-    let http_client = Client::new();
-
-    let adapter = GitLabAuthAdapter::new(http_client, worker_url, callback_port);
+    let adapter = GitLabAuthAdapter::new(auth_api_client, worker_url, callback_port);
 
     println!("🚀 Run GitLab OAuth through Cloudflare Worker...");
     println!("📡 Worker URL: https://account-auth-gateway-dev.20g10z3r.workers.dev");

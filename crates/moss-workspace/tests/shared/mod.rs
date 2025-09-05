@@ -79,13 +79,19 @@ pub async fn setup_test_workspace() -> (
     let broadcaster = ActivityBroadcaster::new(tao_app_handle.clone());
 
     let keyring = Arc::new(MockKeyringClient::new());
-    let secrets = AppSecretsProvider::new(
-        dotenv::var(GITLAB_CLIENT_SECRET).unwrap_or_default(),
-        dotenv::var(GITLAB_CLIENT_SECRET).unwrap_or_default(),
-        keyring.clone(),
-    )
-    .await
-    .unwrap();
+    // let secrets = AppSecretsProvider::new(
+    //     dotenv::var(GITLAB_CLIENT_SECRET).unwrap_or_default(),
+    //     dotenv::var(GITLAB_CLIENT_SECRET).unwrap_or_default(),
+    //     keyring.clone(),
+    // )
+    // .await
+    // .unwrap();
+    // let account_auth_client: Arc<AccountAuthGatewayApiClient> = AccountAuthGatewayApiClient::new(
+    //     http_client.clone(),
+    //     dotenv::var("ACCOUNT_AUTH_BASE_URL")
+    //         .unwrap_or_default()
+    //         .into(),
+    // );
 
     let active_profile = {
         let account_id = AccountId::new();
@@ -93,7 +99,7 @@ pub async fn setup_test_workspace() -> (
         let account_session = AccountSession::github(
             account_id.clone(),
             "github.com".to_string(),
-            secrets,
+            // secrets,
             keyring.clone(),
             None,
         )

@@ -6,6 +6,8 @@ use moss_applib::{
 use moss_fs::RealFileSystem;
 use moss_keyring::test::MockKeyringClient;
 use moss_testutils::random_name::random_string;
+use moss_user::account::auth_gateway_api::AccountAuthGatewayApiClient;
+use reqwest::ClientBuilder as HttpClientBuilder;
 use std::{future::Future, path::PathBuf, pin::Pin, sync::Arc, time::Duration};
 
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
@@ -56,6 +58,14 @@ pub async fn set_up_test_app() -> (App<MockAppRuntime>, AsyncContext, CleanupFn)
     let fs = Arc::new(RealFileSystem::new());
     let tauri_app = tauri::test::mock_app();
     let app_handle = tauri_app.handle().to_owned();
+    let http_client = HttpClientBuilder::new()
+        .user_agent("SAPIC-TEST/1.0")
+        .build()
+        .expect("failed to build http client");
+    let auth_api_client = Arc::new(AccountAuthGatewayApiClient::new(
+        http_client.clone(),
+        dotenv::var("ACCOUNT_AUTH_BASE_URL").expect("ACCOUNT_AUTH_BASE_URL is not set"),
+    ));
 
     let app_path = random_app_dir_path();
 
@@ -98,7 +108,7 @@ pub async fn set_up_test_app() -> (App<MockAppRuntime>, AsyncContext, CleanupFn)
     });
 
     (
-        AppBuilder::<MockAppRuntime>::new(app_handle.clone(), fs.clone(), keyring)
+        AppBuilder::<MockAppRuntime>::new(app_handle.clone(), fs.clone(), keyring, auth_api_client)
             .build(
                 &ctx,
                 BuildAppParams {

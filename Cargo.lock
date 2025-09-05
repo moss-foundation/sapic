@@ -1520,6 +1520,7 @@ dependencies = [
  "moss_keyring",
  "moss_storage",
  "moss_text",
+ "moss_user",
  "moss_workspace",
  "objc",
  "rand 0.9.2",

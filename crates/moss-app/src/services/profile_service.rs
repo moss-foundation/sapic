@@ -11,7 +11,13 @@ use moss_git_hosting_provider::{
 use moss_keyring::KeyringClient;
 use moss_logging::session;
 use moss_user::{
-    AccountSession, account::Account, models::primitives::AccountId, profile::ActiveProfile,
+    AccountSession,
+    account::{
+        Account, auth_gateway_api::AccountAuthGatewayApiClient, github::GitHubInitialToken,
+        gitlab::GitLabInitialToken,
+    },
+    models::primitives::AccountId,
+    profile::ActiveProfile,
 };
 use oauth2::ClientId;
 use serde::{Deserialize, Serialize};
@@ -48,15 +54,15 @@ struct ServiceState {
 
 pub(crate) struct ServiceConfig {
     profiles_dir_abs: PathBuf,
-    github_client_id: ClientId,
-    gitlab_client_id: ClientId,
+    // github_client_id: ClientId,
+    // gitlab_client_id: ClientId,
 }
 
 impl ServiceConfig {
     pub fn new(
         profiles_dir_abs: PathBuf,
-        github_client_id: String,
-        gitlab_client_id: String,
+        // github_client_id: String,
+        // gitlab_client_id: String,
     ) -> joinerror::Result<Self> {
         debug_assert!(profiles_dir_abs.is_absolute());
 
@@ -69,15 +75,16 @@ impl ServiceConfig {
 
         Ok(Self {
             profiles_dir_abs,
-            github_client_id: ClientId::new(github_client_id),
-            gitlab_client_id: ClientId::new(gitlab_client_id),
+            // github_client_id: ClientId::new(github_client_id),
+            // gitlab_client_id: ClientId::new(gitlab_client_id),
         })
     }
 }
 
 pub(crate) struct ProfileService {
     fs: Arc<dyn FileSystem>,
-    secrets: AppSecretsProvider,
+    // secrets: AppSecretsProvider,
+    account_auth_api_client: Arc<AccountAuthGatewayApiClient>,
     keyring: Arc<dyn KeyringClient>,
     state: RwLock<ServiceState>,
     active_profile: Arc<ActiveProfile>,
@@ -87,7 +94,8 @@ pub(crate) struct ProfileService {
 impl ProfileService {
     pub async fn new(
         fs: Arc<dyn FileSystem>,
-        secrets: AppSecretsProvider,
+        account_auth_api_client: Arc<AccountAuthGatewayApiClient>,
+        // secrets: AppSecretsProvider,
         keyring: Arc<dyn KeyringClient>,
         config: ServiceConfig,
     ) -> joinerror::Result<Self> {
@@ -102,7 +110,7 @@ impl ProfileService {
                     AccountSession::github(
                         account.id.clone(),
                         account.host.clone(),
-                        secrets.clone(),
+                        // secrets.clone(),
                         keyring.clone(),
                         None,
                     )
@@ -111,10 +119,10 @@ impl ProfileService {
                 AccountKind::GitLab => {
                     AccountSession::gitlab(
                         account.id.clone(),
-                        config.gitlab_client_id.clone(),
                         account.host.clone(),
                         keyring.clone(),
-                        secrets.clone(),
+                        account_auth_api_client.clone(),
+                        // secrets.clone(),
                         None,
                     )
                     .await?
@@ -134,7 +142,8 @@ impl ProfileService {
         let active_profile = ActiveProfile::new(accounts);
         Ok(Self {
             fs,
-            secrets,
+            account_auth_api_client,
+            // secrets,
             keyring,
             state: RwLock::new(ServiceState { profiles }),
             config,
@@ -245,9 +254,11 @@ impl ProfileService {
         Ok(AccountSession::github(
             account_id,
             host.to_string(),
-            self.secrets.clone(),
+            // self.secrets.clone(),
             self.keyring.clone(),
-            Some(token),
+            Some(GitHubInitialToken {
+                access_token: token.access_token,
+            }),
         )
         .await?)
     }
@@ -258,17 +269,22 @@ impl ProfileService {
         account_id: AccountId,
         host: &str,
     ) -> joinerror::Result<AccountSession> {
-        let client_id = self.config.gitlab_client_id.clone();
-        let client_secret = self.secrets.gitlab_client_secret().await?;
+        // let client_id = self.config.gitlab_client_id.clone();
+        // let client_secret = self.secrets.gitlab_client_secret().await?;
         let token = auth_client.auth_with_pkce().await.unwrap();
 
         Ok(AccountSession::gitlab(
             account_id,
-            client_id,
+            // client_id,
             host.to_string(),
             self.keyring.clone(),
-            self.secrets.clone(),
-            Some(token),
+            self.account_auth_api_client.clone(),
+            // self.secrets.clone(),
+            Some(GitLabInitialToken {
+                access_token: token.access_token,
+                refresh_token: token.refresh_token,
+                expires_in: token.expires_in,
+            }),
         )
         .await?)
     }

@@ -1,4 +1,3 @@
-mod dto;
 pub mod github;
 pub mod gitlab;
 mod utils;

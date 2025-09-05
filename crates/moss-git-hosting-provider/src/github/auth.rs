@@ -1,31 +1,46 @@
 use async_trait::async_trait;
 use joinerror::Error;
+use moss_user::account::auth_gateway_api::{
+    GitHubPkceTokenExchangeApiReq, GitHubPkceTokenExchangeResponse, TokenExchangeRequest,
+};
 use oauth2::CsrfToken;
-use reqwest::Client as HttpClient;
 use serde::Deserialize;
 use std::{
     io::{BufRead, BufReader, Write},
     net::TcpListener,
+    sync::Arc,
 };
 use url::Url;
 
-use crate::{GitAuthAdapter, dto::TokenExchangeRequest};
+use crate::GitAuthAdapter;
 
 #[derive(Debug, Deserialize)]
 pub struct GitHubPkceTokenCredentials {
     pub access_token: String,
 }
 
+impl From<GitHubPkceTokenExchangeResponse> for GitHubPkceTokenCredentials {
+    fn from(response: GitHubPkceTokenExchangeResponse) -> Self {
+        Self {
+            access_token: response.access_token,
+        }
+    }
+}
+
 pub struct GitHubAuthAdapter {
-    client: HttpClient,
-    url: String,
+    api_client: Arc<dyn GitHubPkceTokenExchangeApiReq>,
+    url: Arc<String>,
     callback_port: u16,
 }
 
 impl GitHubAuthAdapter {
-    pub fn new(client: HttpClient, url: String, callback_port: u16) -> Self {
+    pub fn new(
+        api_client: Arc<dyn GitHubPkceTokenExchangeApiReq>,
+        url: Arc<String>,
+        callback_port: u16,
+    ) -> Self {
         Self {
-            client,
+            api_client,
             url,
             callback_port,
         }
@@ -103,35 +118,13 @@ impl GitAuthAdapter for GitHubAuthAdapter {
             .write_all(response.as_bytes())
             .map_err(|e| Error::new::<()>(format!("failed to send response: {}", e)))?;
 
-        let token_exchange_url = format!("{}/auth/github/token", self.url);
-        let request_body = TokenExchangeRequest {
-            code: code.clone(),
-            state: returned_state.clone(),
-        };
-
-        let response = self
-            .client
-            .post(&token_exchange_url)
-            .json(&request_body)
-            .send()
+        self.api_client
+            .github_pkce_token_exchange(TokenExchangeRequest {
+                code: code.clone(),
+                state: returned_state.clone(),
+            })
             .await
-            .map_err(|e| Error::new::<()>(format!("failed to exchange token: {}", e)))?;
-
-        if !response.status().is_success() {
-            let error_text = response
-                .text()
-                .await
-                .unwrap_or_else(|_| "unknown error".to_string());
-            return Err(Error::new::<()>(format!(
-                "token exchange failed: {}",
-                error_text
-            )));
-        }
-
-        response
-            .json()
-            .await
-            .map_err(|e| Error::new::<()>(format!("failed to parse worker response: {}", e)))
+            .map(Into::into)
     }
 
     async fn auth_with_pat(&self) -> joinerror::Result<Self::PatToken> {

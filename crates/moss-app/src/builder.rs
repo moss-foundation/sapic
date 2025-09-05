@@ -1,10 +1,11 @@
 use moss_activity_broadcaster::ActivityBroadcaster;
-use moss_applib::AppRuntime;
-use moss_asp::AppSecretsProvider;
+use moss_applib::{AppHandle, AppRuntime};
 use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
+use moss_user::account::auth_gateway_api::AccountAuthGatewayApiClient;
+use reqwest::Client as HttpClient;
 use std::{path::PathBuf, sync::Arc};
-use tauri::AppHandle;
+use tauri::{AppHandle as TauriAppHandle, Manager};
 use tokio::sync::RwLock;
 
 use crate::{
@@ -24,21 +25,24 @@ pub struct BuildAppParams {
 pub struct AppBuilder<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     keyring: Arc<dyn KeyringClient>,
-    app_handle: AppHandle<R::EventLoop>,
+    tao_handle: TauriAppHandle<R::EventLoop>,
     commands: AppCommands<R::EventLoop>,
+    auth_api_client: Arc<AccountAuthGatewayApiClient>,
 }
 
 impl<R: AppRuntime> AppBuilder<R> {
     pub fn new(
-        app_handle: AppHandle<R::EventLoop>,
+        tao_handle: TauriAppHandle<R::EventLoop>,
         fs: Arc<dyn FileSystem>,
         keyring: Arc<dyn KeyringClient>,
+        auth_api_client: Arc<AccountAuthGatewayApiClient>,
     ) -> Self {
         Self {
             fs,
             keyring,
-            app_handle,
+            tao_handle,
             commands: Default::default(),
+            auth_api_client,
         }
     }
 
@@ -60,20 +64,30 @@ impl<R: AppRuntime> AppBuilder<R> {
                 .expect("Failed to create app directories");
         }
 
-        dotenv::dotenv().ok();
-        let github_client_id = dotenv::var("GITHUB_CLIENT_ID").unwrap_or_default();
-        let github_client_secret = dotenv::var("GITHUB_CLIENT_SECRET").unwrap_or_default();
-        let gitlab_client_id = dotenv::var("GITLAB_CLIENT_ID").unwrap_or_default();
-        let gitlab_client_secret = dotenv::var("GITLAB_CLIENT_SECRET").unwrap_or_default();
+        let app_handle = self.tao_handle.state::<AppHandle<R>>().inner().clone();
+
+        // dotenv::dotenv().ok();
+        // let account_auth_base_url: Arc<String> = dotenv::var("ACCOUNT_AUTH_BASE_URL")
+        //     .expect("ACCOUNT_AUTH_BASE_URL is not set")
+        //     .into();
+        // let github_client_id = dotenv::var("GITHUB_CLIENT_ID").unwrap_or_default();
+        // let github_client_secret = dotenv::var("GITHUB_CLIENT_SECRET").unwrap_or_default();
+        // let gitlab_client_id = dotenv::var("GITLAB_CLIENT_ID").unwrap_or_default();
+        // let gitlab_client_secret = dotenv::var("GITLAB_CLIENT_SECRET").unwrap_or_default();
 
         // TODO: Probably we should use have it as a global resource instead of creating it here
-        let app_secrets = AppSecretsProvider::new(
-            github_client_secret.clone(),
-            gitlab_client_secret.clone(),
-            self.keyring.clone(),
-        )
-        .await
-        .expect("Failed to create app secrets provider");
+        // let app_secrets = AppSecretsProvider::new(
+        //     github_client_secret.clone(),
+        //     gitlab_client_secret.clone(),
+        //     self.keyring.clone(),
+        // )
+        // .await
+        // .expect("Failed to create app secrets provider");
+
+        // let account_auth_api_client = Arc::new(AccountAuthGatewayApiClient::new(
+        //     app_handle.global::<HttpClient>().clone(),
+        //     account_auth_base_url.clone(),
+        // ));
 
         let theme_service = ThemeService::new(self.fs.clone(), params.themes_dir)
             .await
@@ -88,7 +102,7 @@ impl<R: AppRuntime> AppBuilder<R> {
                 .into();
         let log_service = LogService::new(
             self.fs.clone(),
-            self.app_handle.clone(),
+            self.tao_handle.clone(),
             &params.logs_dir,
             session_service.session_id(),
             storage_service.clone(),
@@ -96,12 +110,12 @@ impl<R: AppRuntime> AppBuilder<R> {
         .expect("Failed to create log service");
         let profile_service = ProfileService::new(
             self.fs.clone(),
-            app_secrets.clone(),
+            self.auth_api_client.clone(),
             self.keyring.clone(),
             profile_service::ServiceConfig::new(
                 params.app_dir.join(dirs::PROFILES_DIR),
-                github_client_id,
-                gitlab_client_id,
+                // github_client_id,
+                // gitlab_client_id,
             )
             .expect("Failed to create profile service config"),
         )
@@ -122,7 +136,7 @@ impl<R: AppRuntime> AppBuilder<R> {
         };
         App {
             app_dir: params.app_dir,
-            app_handle: self.app_handle.clone(),
+            app_handle: self.tao_handle.clone(),
             commands: self.commands,
 
             // FIXME: hardcoded for now
@@ -140,7 +154,7 @@ impl<R: AppRuntime> AppBuilder<R> {
             theme_service,
             profile_service,
             tracked_cancellations: Default::default(),
-            broadcaster: ActivityBroadcaster::new(self.app_handle),
+            broadcaster: ActivityBroadcaster::new(self.tao_handle),
         }
     }
 }
