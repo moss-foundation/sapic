@@ -718,7 +718,6 @@ impl<R: AppRuntime> CollectionService<R> {
 
     pub(crate) async fn export_collection(
         &self,
-        _ctx: &R::AsyncContext,
         id: &CollectionId,
         params: &ExportCollectionParams,
     ) -> joinerror::Result<()> {
