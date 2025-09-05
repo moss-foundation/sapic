@@ -156,15 +156,15 @@ export type DescribeStateOutput = {
 export type ExportCollectionInput = {
   id: string;
   /**
-   * Path to the output zip file
+   * Path to the folder containing the output archive file
    */
-  outFile: string;
+  destination: string;
 };
 
 /**
  * @category Operation
  */
-export type ExportCollectionOutput = Record<string, never>;
+export type ExportCollectionOutput = { archivePath: string };
 
 /**
  * @category Operation

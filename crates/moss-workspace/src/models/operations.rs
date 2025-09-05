@@ -94,7 +94,9 @@ pub struct ExportCollectionInput {
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct ExportCollectionOutput {}
+pub struct ExportCollectionOutput {
+    pub archive_path: PathBuf,
+}
 
 /// @category Operation
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]

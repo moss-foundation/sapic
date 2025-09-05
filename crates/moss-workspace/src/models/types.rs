@@ -9,7 +9,11 @@ use moss_environment::models::{
 use moss_git::{models::types::BranchInfo, url::GIT_URL_REGEX};
 use moss_user::models::primitives::AccountId;
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, path::PathBuf, sync::Arc};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 use ts_rs::TS;
 use validator::{Validate, ValidationError};
 
@@ -57,8 +61,16 @@ pub struct ImportCollectionParams {
 #[ts(export, export_to = "types.ts")]
 pub struct ExportCollectionParams {
     pub id: CollectionId,
-    /// Path to the output zip file
-    pub out_file: PathBuf,
+    /// Path to the folder containing the output archive file
+    #[validate(custom(function = "validate_export_destination"))]
+    pub destination: PathBuf,
+}
+
+fn validate_export_destination(destination: &Path) -> Result<(), ValidationError> {
+    if !destination.is_dir() {
+        return Err(ValidationError::new("destination must be a directory"));
+    }
+    Ok(())
 }
 
 /// @category Type

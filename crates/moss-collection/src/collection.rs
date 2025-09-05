@@ -12,6 +12,7 @@ use moss_edit::json::EditOptions;
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_git::{repository::Repository, url::GitUrl};
 use moss_git_hosting_provider::GitProviderKind;
+use moss_text::sanitized::sanitize;
 use moss_user::models::primitives::AccountId;
 use serde_json::Value as JsonValue;
 use std::{
@@ -443,17 +444,23 @@ impl<R: AppRuntime> Collection<R> {
         Ok(())
     }
 
-    pub async fn export_archive(&self, out_file: &Path) -> joinerror::Result<()> {
+    /// Export the collection to {destination}/{collection_name}.zip
+    /// Returns the path to the output archive file
+    pub async fn export_archive(&self, destination: &Path) -> joinerror::Result<PathBuf> {
         // If the output is inside the collection folder, it will also be bundled, which we don't want
-        if out_file.starts_with(&self.abs_path) {
+        if destination.starts_with(&self.abs_path) {
             return Err(Error::new::<()>(
                 "cannot export archive file into the collection folder",
             ));
         }
+        // Collection name can contain special chars that need sanitizing
+        let raw_name = format!("{}.zip", self.details().await?.name);
+        let sanitized_name = sanitize(&raw_name);
+        let archive_path = destination.join(&sanitized_name);
 
         zip_dir(
             self.abs_path.as_ref(),
-            out_file,
+            &archive_path,
             ARCHIVE_EXCLUDED_ENTRIES
                 .iter()
                 .map(|entry| entry.to_string())
@@ -461,7 +468,7 @@ impl<R: AppRuntime> Collection<R> {
         )
         .await?;
 
-        Ok(())
+        Ok(archive_path)
     }
 }
 #[cfg(any(test, feature = "integration-tests"))]

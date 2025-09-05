@@ -720,7 +720,7 @@ impl<R: AppRuntime> CollectionService<R> {
         &self,
         id: &CollectionId,
         params: &ExportCollectionParams,
-    ) -> joinerror::Result<()> {
+    ) -> joinerror::Result<PathBuf> {
         let state_lock = self.state.read().await;
         let item = state_lock
             .collections
@@ -729,7 +729,7 @@ impl<R: AppRuntime> CollectionService<R> {
                 format!("failed to find collection with id `{}`", id.to_string())
             })?;
 
-        item.export_archive(&params.out_file).await
+        item.export_archive(&params.destination).await
     }
 }
 async fn restore_collections<R: AppRuntime>(

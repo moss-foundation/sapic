@@ -24,7 +24,7 @@ pub async fn export_collection_success() {
     // Create an archive file from a collection and import it back
     let (ctx, app_handle, workspace, cleanup) = setup_test_workspace().await;
 
-    let archive_path = workspace.abs_path().join("archive.zip");
+    let destination = workspace.abs_path().to_path_buf();
     let collection_name = random_collection_name();
 
     let id = workspace
@@ -44,18 +44,16 @@ pub async fn export_collection_success() {
         .unwrap()
         .id;
 
-    workspace
+    let archive_path = workspace
         .export_collection(
             &ctx,
             &ExportCollectionInput {
-                inner: ExportCollectionParams {
-                    id,
-                    out_file: archive_path.clone(),
-                },
+                inner: ExportCollectionParams { id, destination },
             },
         )
         .await
-        .unwrap();
+        .unwrap()
+        .archive_path;
 
     assert!(archive_path.exists());
 

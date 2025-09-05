@@ -124,9 +124,9 @@ export type EnvironmentInfo = {
 export type ExportCollectionParams = {
   id: string;
   /**
-   * Path to the output zip file
+   * Path to the folder containing the output archive file
    */
-  outFile: string;
+  destination: string;
 };
 
 /**

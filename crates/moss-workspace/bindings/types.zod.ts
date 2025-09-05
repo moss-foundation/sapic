@@ -83,7 +83,7 @@ export const environmentGroupSchema = z.object({
 
 export const exportCollectionParamsSchema = z.object({
   id: z.string(),
-  outFile: z.string(),
+  destination: z.string(),
 });
 
 export const gitHubImportParamsSchema = z.object({
