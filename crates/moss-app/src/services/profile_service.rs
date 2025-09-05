@@ -9,12 +9,10 @@ use moss_git_hosting_provider::{
 };
 use moss_keyring::KeyringClient;
 use moss_logging::session;
+use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_user::{
     AccountSession,
-    account::{
-        Account, auth_gateway_api::AccountAuthGatewayApiClient, github::GitHubInitialToken,
-        gitlab::GitLabInitialToken,
-    },
+    account::{Account, github::GitHubInitialToken, gitlab::GitLabInitialToken},
     models::primitives::AccountId,
     profile::ActiveProfile,
 };

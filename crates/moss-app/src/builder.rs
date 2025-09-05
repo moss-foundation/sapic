@@ -2,8 +2,7 @@ use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::{AppHandle, AppRuntime};
 use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
-use moss_user::account::auth_gateway_api::AccountAuthGatewayApiClient;
-use reqwest::Client as HttpClient;
+use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use std::{path::PathBuf, sync::Arc};
 use tauri::{AppHandle as TauriAppHandle, Manager};
 use tokio::sync::RwLock;
@@ -64,30 +63,7 @@ impl<R: AppRuntime> AppBuilder<R> {
                 .expect("Failed to create app directories");
         }
 
-        let app_handle = self.tao_handle.state::<AppHandle<R>>().inner().clone();
-
-        // dotenv::dotenv().ok();
-        // let account_auth_base_url: Arc<String> = dotenv::var("ACCOUNT_AUTH_BASE_URL")
-        //     .expect("ACCOUNT_AUTH_BASE_URL is not set")
-        //     .into();
-        // let github_client_id = dotenv::var("GITHUB_CLIENT_ID").unwrap_or_default();
-        // let github_client_secret = dotenv::var("GITHUB_CLIENT_SECRET").unwrap_or_default();
-        // let gitlab_client_id = dotenv::var("GITLAB_CLIENT_ID").unwrap_or_default();
-        // let gitlab_client_secret = dotenv::var("GITLAB_CLIENT_SECRET").unwrap_or_default();
-
-        // TODO: Probably we should use have it as a global resource instead of creating it here
-        // let app_secrets = AppSecretsProvider::new(
-        //     github_client_secret.clone(),
-        //     gitlab_client_secret.clone(),
-        //     self.keyring.clone(),
-        // )
-        // .await
-        // .expect("Failed to create app secrets provider");
-
-        // let account_auth_api_client = Arc::new(AccountAuthGatewayApiClient::new(
-        //     app_handle.global::<HttpClient>().clone(),
-        //     account_auth_base_url.clone(),
-        // ));
+        let _app_handle = self.tao_handle.state::<AppHandle<R>>().inner().clone();
 
         let theme_service = ThemeService::new(self.fs.clone(), params.themes_dir)
             .await

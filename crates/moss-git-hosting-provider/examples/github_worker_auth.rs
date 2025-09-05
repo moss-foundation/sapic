@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use moss_git_hosting_provider::{GitAuthAdapter, github::GitHubAuthAdapter};
-use moss_user::account::auth_gateway_api::AccountAuthGatewayApiClient;
+use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use reqwest::Client;
 
 #[tokio::main]

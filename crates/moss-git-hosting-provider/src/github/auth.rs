@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use joinerror::Error;
-use moss_user::account::auth_gateway_api::{
+use moss_server_api::account_auth_gateway::{
     GitHubPkceTokenExchangeApiReq, GitHubPkceTokenExchangeResponse, TokenExchangeRequest,
 };
 use oauth2::CsrfToken;

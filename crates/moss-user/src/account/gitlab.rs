@@ -1,5 +1,6 @@
 use joinerror::Error;
 use moss_keyring::KeyringClient;
+use moss_server_api::account_auth_gateway::{GitLabTokenRefreshApiReq, GitLabTokenRefreshRequest};
 use std::{
     sync::Arc,
     time::{Duration, Instant},
@@ -7,10 +8,7 @@ use std::{
 use tokio::sync::RwLock;
 
 use crate::{
-    account::{
-        auth_gateway_api::{GitLabTokenRefreshApiReq, GitLabTokenRefreshRequest},
-        common::{calc_expires_at, make_secret_key},
-    },
+    account::common::{calc_expires_at, make_secret_key},
     models::primitives::AccountId,
 };
 

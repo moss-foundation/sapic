@@ -1,5 +1,5 @@
 use moss_git_hosting_provider::{GitAuthAdapter, gitlab::GitLabAuthAdapter};
-use moss_user::account::auth_gateway_api::AccountAuthGatewayApiClient;
+use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use reqwest::Client;
 use std::sync::Arc;
 

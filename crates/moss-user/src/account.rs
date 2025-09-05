@@ -1,14 +1,13 @@
-pub mod auth_gateway_api;
 mod common;
 pub mod github;
 pub mod gitlab;
 
 use moss_keyring::KeyringClient;
+use moss_server_api::account_auth_gateway::GitLabTokenRefreshApiReq;
 use std::sync::Arc;
 
 use crate::{
     account::{
-        auth_gateway_api::GitLabTokenRefreshApiReq,
         github::{GitHubInitialToken, GitHubSessionHandle},
         gitlab::{GitLabInitialToken, GitLabSessionHandle},
     },

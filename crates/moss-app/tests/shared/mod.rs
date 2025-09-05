@@ -5,8 +5,8 @@ use moss_applib::{
 };
 use moss_fs::RealFileSystem;
 use moss_keyring::test::MockKeyringClient;
+use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_testutils::random_name::random_string;
-use moss_user::account::auth_gateway_api::AccountAuthGatewayApiClient;
 use reqwest::ClientBuilder as HttpClientBuilder;
 use std::{future::Future, path::PathBuf, pin::Pin, sync::Arc, time::Duration};
 
