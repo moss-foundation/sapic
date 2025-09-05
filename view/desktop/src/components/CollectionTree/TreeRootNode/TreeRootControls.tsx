@@ -78,16 +78,26 @@ export const TreeRootControls = ({
         </Tree.RootNodeTriggers>
 
         <Tree.RootNodeActions>
-          <Tree.ActionLabel>main</Tree.ActionLabel>
+          {node?.branch && (
+            <Tree.ActionLabel className="flex shrink-0 items-center gap-1">
+              {node?.branch && <div>{node?.branch.name}</div>}
+              {!!(node?.branch?.ahead && node?.branch?.ahead > 0) && (
+                <div className="flex shrink-0 gap-0.5 text-green-500">{node?.branch.ahead} ↑</div>
+              )}
+              {!!(node?.branch?.behind && node?.branch?.behind > 0) && (
+                <div className="flex shrink-0 gap-0.5 text-red-500">{node?.branch.behind} ↓</div>
+              )}
+            </Tree.ActionLabel>
+          )}
 
-          <Tree.ActionsHover showOnTreeHover>
+          <Tree.ActionsHover>
             {displayMode === "REQUEST_FIRST" && (
               <ActionButton
                 customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
                 icon="Add"
                 onClick={() => setIsAddingRootFileNode(true)}
               />
-            )}{" "}
+            )}
             <ActionButton
               customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
               icon="CollapseAll"
