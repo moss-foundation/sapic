@@ -30,9 +30,7 @@ export const DropIndicatorForTrigger = ({
   let leftOffset: number;
 
   if (fullWidth) {
-    const baseWidth = `calc(100% - ${paddingRight}px - ${paddingLeft}px)`;
-
-    reorderWidth = baseWidth;
+    reorderWidth = `100%`;
 
     leftOffset = 0;
   } else {

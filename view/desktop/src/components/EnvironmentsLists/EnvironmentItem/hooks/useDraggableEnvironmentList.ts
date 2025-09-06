@@ -5,8 +5,8 @@ import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
+import { getSourceEnvironmentItem } from "../../utils";
 import { DragEnvironmentItem, DropEnvironmentItem, EnvironmentListType } from "../types";
-import { getSourceEnvironmentItem, getSourceGlobalEnvironmentsListItem } from "../utils";
 
 interface UseDraggableEnvironmentItemProps {
   ref: RefObject<HTMLLIElement | null>;
@@ -40,7 +40,7 @@ export const useDraggableEnvironmentItem = ({ ref, environment, type }: UseDragg
         element,
         getData({ input, source }) {
           const data: DropEnvironmentItem = {
-            type: type,
+            type,
             data: { environment },
           };
 
@@ -67,9 +67,8 @@ export const useDraggableEnvironmentItem = ({ ref, environment, type }: UseDragg
             },
           });
         },
-        getIsSticky: () => true,
         canDrop({ source }) {
-          const sourceData = getSourceGlobalEnvironmentsListItem(source);
+          const sourceData = getSourceEnvironmentItem(source);
           if (!sourceData) return false;
 
           const sameEnvironment = sourceData.data.environment.id === environment.id;
@@ -78,16 +77,12 @@ export const useDraggableEnvironmentItem = ({ ref, environment, type }: UseDragg
         onDragEnter({ self }) {
           const instruction = extractInstruction(self.data);
 
-          if (instruction) {
-            setInstruction(instruction);
-          }
+          setInstruction(instruction);
         },
         onDrag({ self }) {
           const instruction = extractInstruction(self.data);
 
-          if (instruction) {
-            setInstruction(instruction);
-          }
+          setInstruction(instruction);
         },
         onDragLeave() {
           setInstruction(null);

@@ -8,15 +8,15 @@ import { DropIndicatorForDir } from "../DropIndicatorForDir";
 interface NodeProps extends HTMLAttributes<HTMLLIElement> {
   children: ReactNode;
   isChildDropBlocked?: boolean | null;
-  dropIndicatorInstruction?: Instruction | null;
+  dropInstructionForDir?: Instruction | null;
   className?: string;
 }
 
 export const Node = forwardRef<HTMLLIElement, NodeProps>(
-  ({ children, className, isChildDropBlocked, dropIndicatorInstruction, ...props }: NodeProps, ref) => {
+  ({ children, className, isChildDropBlocked, dropInstructionForDir, ...props }: NodeProps, ref) => {
     return (
       <li ref={ref} className={cn("relative", className)} {...props}>
-        <DropIndicatorForDir isChildDropBlocked={isChildDropBlocked} instruction={dropIndicatorInstruction ?? null} />
+        <DropIndicatorForDir isChildDropBlocked={isChildDropBlocked} instruction={dropInstructionForDir ?? null} />
 
         {children}
       </li>

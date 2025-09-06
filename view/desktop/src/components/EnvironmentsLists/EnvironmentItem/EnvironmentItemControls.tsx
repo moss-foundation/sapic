@@ -2,8 +2,7 @@ import { MouseEvent, useState } from "react";
 
 import { ActionMenu } from "@/components";
 import ActionButton from "@/components/ActionButton";
-import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
-import { useDeleteEnvironment, useModal, useStreamEnvironments, useUpdateEnvironment } from "@/hooks";
+import { useModal } from "@/hooks";
 import { useActivateEnvironment } from "@/hooks/workspace/environment/useActivateEnvironment";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
@@ -16,7 +15,7 @@ import { EnvironmentListType } from "./types";
 interface EnvironmentItemControlsProps {
   environment: StreamEnvironmentsEvent;
   setIsEditing: (isEditing: boolean) => void;
-  instruction?: Instruction | null;
+  instruction: Instruction | null;
   type: EnvironmentListType;
 }
 
@@ -26,29 +25,13 @@ export const EnvironmentItemControls = ({
   instruction,
   type,
 }: EnvironmentItemControlsProps) => {
-  const { globalEnvironments } = useStreamEnvironments();
-  const { mutate: deleteEnvironment } = useDeleteEnvironment();
-  const { mutate: updateEnvironment } = useUpdateEnvironment();
   const { mutate: activateEnvironment } = useActivateEnvironment();
 
-  const [showActionMenu, setShowActionMenu] = useState(false);
   const { activePanelId } = useTabbedPaneStore();
+
   const { showModal: showDeleteModal, setShowModal: setShowDeleteModal, closeModal: setHideDeleteModal } = useModal();
 
-  const handleDeleteEnvironment = () => {
-    deleteEnvironment({ id: environment.id });
-
-    const environmentsAfterDeleted = globalEnvironments.filter(
-      (env) => env?.order !== undefined && environment?.order !== undefined && env.order > environment.order
-    );
-
-    //TODO: this should use Batch update in the future, when it's supported by the backend
-    environmentsAfterDeleted?.forEach((env) => {
-      if (env && typeof env.order === "number") {
-        updateEnvironment({ id: env.id, order: env.order - 1, varsToAdd: [], varsToUpdate: [], varsToDelete: [] });
-      }
-    });
-  };
+  const [showActionMenu, setShowActionMenu] = useState(false);
 
   const handleSetActiveEnvironment = (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
@@ -62,6 +45,7 @@ export const EnvironmentItemControls = ({
         instruction={instruction}
         hideDragHandle
         depth={type === "GlobalEnvironmentItem" ? 0 : 1}
+        dropIndicatorFullWidth
       >
         <Tree.NodeTriggers className="cursor-pointer overflow-hidden">
           <Icon icon={type === "GlobalEnvironmentItem" ? "Environment" : "GroupedEnvironment"} />
@@ -112,7 +96,7 @@ export const EnvironmentItemControls = ({
         </Tree.NodeActions>
       </Tree.NodeControls>
 
-      {showDeleteModal && (
+      {/* {showDeleteModal && (
         <ConfirmationModal
           showModal={showDeleteModal}
           closeModal={setHideDeleteModal}
@@ -120,7 +104,7 @@ export const EnvironmentItemControls = ({
           message={`Are you sure you want to delete ${environment.name} environment?`}
           onConfirm={handleDeleteEnvironment}
         />
-      )}
+      )} */}
     </>
   );
 };

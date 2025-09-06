@@ -1,43 +1,6 @@
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
-import { DragLocationHistory, ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
+import { DragLocationHistory } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
-
-import { DragEnvironmentItem, DragGlobalEnvironmentsListItem, DropGlobalEnvironmentsListItem } from "../types";
-
-//source
-export const isSourceGlobalEnvironmentsListItem = (source: ElementDragPayload) => {
-  return source.data.type === "GlobalEnvironmentsListItem";
-};
-
-export const getSourceGlobalEnvironmentsListItem = (
-  source: ElementDragPayload
-): DragGlobalEnvironmentsListItem | null => {
-  if (!isSourceGlobalEnvironmentsListItem(source)) {
-    return null;
-  }
-
-  return source.data as unknown as DragGlobalEnvironmentsListItem;
-};
-
-export const getSourceGlobalEnvironmentsListData = (source: ElementDragPayload): StreamEnvironmentsEvent | null => {
-  if (!isSourceGlobalEnvironmentsListItem(source)) {
-    return null;
-  }
-
-  return source.data.environment as DragGlobalEnvironmentsListItem["data"]["environment"];
-};
-
-export const isSourceEnvironmentItem = (source: ElementDragPayload) => {
-  return source.data.type === "EnvironmentItem";
-};
-
-export const getSourceEnvironmentItem = (source: ElementDragPayload): DragEnvironmentItem | null => {
-  if (!isSourceEnvironmentItem(source)) {
-    return null;
-  }
-
-  return source.data as unknown as DragEnvironmentItem;
-};
 
 //location
 export const isLocationGlobalEnvironmentsListItem = (location: DragLocationHistory) => {

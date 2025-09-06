@@ -3,10 +3,12 @@ import { useMemo, useRef } from "react";
 import { useStreamEnvironments } from "@/hooks";
 import { Tree } from "@/lib/ui/Tree";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { cn } from "@/utils";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
 import { EnvironmentItemControls } from "./EnvironmentItemControls";
 import { EnvironmentListItemRenamingForm } from "./EnvironmentListItemRenamingForm";
+import { useDraggableEnvironmentItem } from "./hooks/useDraggableEnvironmentList";
 import { useGlobalEnvironmentsListRenamingForm } from "./hooks/useEnvironmentListRenamingForm";
 import { EnvironmentListType } from "./types";
 
@@ -25,16 +27,11 @@ export const EnvironmentListItem = ({ environment, type }: EnvironmentListItemPr
     environment,
   });
 
-  // const { isDragging, instruction } = useDraggableEnvironmentItem({
-  //   ref: EnvironmentListRef,
-  //   environment,
-  //   type,
-  // });
-
-  const restrictedNames = useMemo(() => {
-    if (!environments) return [];
-    return environments.environments.map((environment) => environment.name) ?? [];
-  }, [environments]);
+  const { isDragging, instruction } = useDraggableEnvironmentItem({
+    ref: EnvironmentListRef,
+    environment,
+    type,
+  });
 
   const onClick = () => {
     addOrFocusPanel({
@@ -47,12 +44,13 @@ export const EnvironmentListItem = ({ environment, type }: EnvironmentListItemPr
     });
   };
 
+  const restrictedNames = useMemo(() => {
+    if (!environments) return [];
+    return environments.environments.map((environment) => environment.name) ?? [];
+  }, [environments]);
+
   return (
-    <Tree.Node
-      ref={EnvironmentListRef}
-      // className={cn("cursor-pointer", isDragging && "opacity-50")}
-      onClick={onClick}
-    >
+    <Tree.Node ref={EnvironmentListRef} className={cn("cursor-pointer", isDragging && "opacity-50")} onClick={onClick}>
       {isEditing ? (
         <EnvironmentListItemRenamingForm
           handleRename={handleRename}
@@ -61,7 +59,12 @@ export const EnvironmentListItem = ({ environment, type }: EnvironmentListItemPr
           restrictedNames={restrictedNames}
         />
       ) : (
-        <EnvironmentItemControls environment={environment} setIsEditing={setIsEditing} type={type} />
+        <EnvironmentItemControls
+          environment={environment}
+          setIsEditing={setIsEditing}
+          type={type}
+          instruction={instruction}
+        />
       )}
     </Tree.Node>
   );
