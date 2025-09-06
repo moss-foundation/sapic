@@ -46,6 +46,8 @@ const PROFILES: &str = r#"
 }
 "#;
 
+const ACCOUNT_AUTH_BASE_URL: &str = "https://account-auth-gateway-dev.20g10z3r.workers.dev";
+
 pub fn random_app_dir_path() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
@@ -66,7 +68,7 @@ pub async fn set_up_test_app() -> (App<MockAppRuntime>, AsyncContext, CleanupFn)
         .expect("failed to build http client");
     let auth_api_client = Arc::new(AccountAuthGatewayApiClient::new(
         http_client.clone(),
-        dotenv::var("ACCOUNT_AUTH_BASE_URL").expect("ACCOUNT_AUTH_BASE_URL is not set"),
+        ACCOUNT_AUTH_BASE_URL.to_string(),
     ));
 
     {
