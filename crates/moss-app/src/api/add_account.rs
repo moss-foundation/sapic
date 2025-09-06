@@ -9,13 +9,19 @@ use crate::{
 impl<R: AppRuntime> App<R> {
     pub async fn add_account(
         &self,
-        _ctx: &R::AsyncContext,
+        ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
         input: AddAccountInput,
     ) -> joinerror::Result<AddAccountOutput> {
         let id = self
             .profile_service
-            .add_account(app_delegate, input.profile_id, input.host, input.provider)
+            .add_account(
+                ctx,
+                app_delegate,
+                input.profile_id,
+                input.host,
+                input.provider,
+            )
             .await?;
 
         Ok(AddAccountOutput {

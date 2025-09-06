@@ -133,8 +133,8 @@ impl<R: AppRuntime> Collection<R> {
         self.abs_path.join(dirs::ENVIRONMENTS_DIR)
     }
 
-    pub fn vcs(&self) -> Option<&dyn CollectionVcs> {
-        self.vcs.get().map(|vcs| vcs as &dyn CollectionVcs)
+    pub fn vcs(&self) -> Option<&dyn CollectionVcs<R>> {
+        self.vcs.get().map(|vcs| vcs as &dyn CollectionVcs<R>)
     }
     pub async fn init_vcs(
         &self,

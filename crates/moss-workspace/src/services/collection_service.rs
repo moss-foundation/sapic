@@ -384,7 +384,7 @@ impl<R: AppRuntime> CollectionService<R> {
         let vcs = collection
             .vcs()
             .unwrap() // SAFETY: Collection is built from the clone operation, so it must have a VCS
-            .summary()
+            .summary(ctx)
             .await?;
 
         // FIXME: Should we allow user to set local icon when cloning a collection?
@@ -554,19 +554,20 @@ impl<R: AppRuntime> CollectionService<R> {
 
     pub(crate) async fn list_collections(
         &self,
-        _ctx: &R::AsyncContext,
+        ctx: &R::AsyncContext,
     ) -> Pin<Box<dyn Stream<Item = CollectionItemDescription> + Send + '_>> {
-        let state = self.state.clone();
+        let state_clone = self.state.clone();
+        let ctx_clone = ctx.clone();
 
         Box::pin(async_stream::stream! {
-            let state_lock = state.read().await;
+            let state_lock = state_clone.read().await;
             for (id, item) in state_lock.collections.iter() {
                 let details = continue_if_err!(item.details().await, |e: Error| {
                     session::error!(format!("failed to describe collection `{}`: {}", id.to_string(), e.to_string()));
                 });
 
                 let vcs = if let Some(vcs) = item.vcs() {
-                    match vcs.summary().await {
+                    match vcs.summary(&ctx_clone).await {
                         Ok(summary) => Some(summary),
                         Err(e) => {
                             session::warn!(format!("failed to get VCS summary for collection `{}`: {}", id.to_string(), e.to_string()));

@@ -139,6 +139,7 @@ impl ProfileService {
 
     pub async fn add_account<R: AppRuntime>(
         &self,
+        ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
         profile_id: ProfileId,
         host: String,
@@ -155,7 +156,7 @@ impl ProfileService {
                 let session = self
                     .add_github_account(auth_client, account_id.clone(), &host)
                     .await?;
-                let user = api_client.get_user(&session).await?;
+                let user = api_client.get_user::<R>(ctx, &session).await?;
 
                 (session, user.login)
             }
@@ -166,7 +167,7 @@ impl ProfileService {
                 let session = self
                     .add_gitlab_account(auth_client, account_id.clone(), &host)
                     .await?;
-                let user = api_client.get_user(&session).await?;
+                let user = api_client.get_user::<R>(ctx, &session).await?;
 
                 (session, user.username)
             }

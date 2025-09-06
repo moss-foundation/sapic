@@ -1,3 +1,7 @@
+use moss_applib::{
+    AppRuntime,
+    context::{self, ContextResultExt},
+};
 use moss_git::url::GitUrl;
 use moss_user::AccountSession;
 use oauth2::http::header::{ACCEPT, AUTHORIZATION};
@@ -11,8 +15,6 @@ fn api_url(host: &str) -> String {
 
 const CONTENT_TYPE: &'static str = "application/json";
 
-// TODO: add context to the client operations
-
 #[derive(Clone)]
 pub struct GitLabApiClient {
     client: HttpClient,
@@ -23,18 +25,22 @@ impl GitLabApiClient {
         Self { client }
     }
 
-    pub async fn get_user(
+    pub async fn get_user<R: AppRuntime>(
         &self,
+        ctx: &R::AsyncContext,
         account_handle: &AccountSession,
     ) -> joinerror::Result<GetUserResponse> {
         let access_token = account_handle.access_token().await?;
-        let resp = self
-            .client
-            .get(format!("{}/user", api_url(&account_handle.host())))
-            .header(ACCEPT, CONTENT_TYPE)
-            .header(AUTHORIZATION, format!("Bearer {}", access_token))
-            .send()
-            .await?;
+        let resp = context::abortable(
+            ctx,
+            self.client
+                .get(format!("{}/user", api_url(&account_handle.host())))
+                .header(ACCEPT, CONTENT_TYPE)
+                .header(AUTHORIZATION, format!("Bearer {}", access_token))
+                .send(),
+        )
+        .await
+        .join_err()?;
 
         let status = resp.status();
         if status.is_success() {
@@ -46,8 +52,9 @@ impl GitLabApiClient {
         }
     }
 
-    pub async fn get_contributors(
+    pub async fn get_contributors<R: AppRuntime>(
         &self,
+        ctx: &R::AsyncContext,
         account_handle: &AccountSession,
         url: &GitUrl,
     ) -> joinerror::Result<GetContributorsResponse> {
@@ -55,17 +62,20 @@ impl GitLabApiClient {
         let repo_url = format!("{}/{}", &url.owner, &url.name);
         let encoded_url = urlencoding::encode(&repo_url);
 
-        let resp = self
-            .client
-            .get(format!(
-                "{}/projects/{}/repository/contributors",
-                api_url(&account_handle.host()),
-                encoded_url
-            ))
-            .header(ACCEPT, CONTENT_TYPE)
-            .header(AUTHORIZATION, format!("Bearer {}", access_token))
-            .send()
-            .await?;
+        let resp = context::abortable(
+            ctx,
+            self.client
+                .get(format!(
+                    "{}/projects/{}/repository/contributors",
+                    api_url(&account_handle.host()),
+                    encoded_url
+                ))
+                .header(ACCEPT, CONTENT_TYPE)
+                .header(AUTHORIZATION, format!("Bearer {}", access_token))
+                .send(),
+        )
+        .await
+        .join_err()?;
 
         let status = resp.status();
         if status.is_success() {
@@ -77,8 +87,9 @@ impl GitLabApiClient {
         }
     }
 
-    pub async fn get_repository(
+    pub async fn get_repository<R: AppRuntime>(
         &self,
+        ctx: &R::AsyncContext,
         account_handle: &AccountSession,
         url: &GitUrl,
     ) -> joinerror::Result<GetRepositoryResponse> {
@@ -86,17 +97,20 @@ impl GitLabApiClient {
         let repo_url = format!("{}/{}", &url.owner, &url.name);
         let encoded_url = urlencoding::encode(&repo_url);
 
-        let resp = self
-            .client
-            .get(format!(
-                "{}/projects/{}/repository/contributors",
-                api_url(&account_handle.host()),
-                encoded_url
-            ))
-            .header(ACCEPT, CONTENT_TYPE)
-            .header(AUTHORIZATION, format!("Bearer {}", access_token))
-            .send()
-            .await?;
+        let resp = context::abortable(
+            ctx,
+            self.client
+                .get(format!(
+                    "{}/projects/{}/repository/contributors",
+                    api_url(&account_handle.host()),
+                    encoded_url
+                ))
+                .header(ACCEPT, CONTENT_TYPE)
+                .header(AUTHORIZATION, format!("Bearer {}", access_token))
+                .send(),
+        )
+        .await
+        .join_err()?;
 
         let status = resp.status();
         if status.is_success() {
