@@ -6,7 +6,7 @@ import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-d
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
 import { DragEnvironmentItem, DropEnvironmentItem, EnvironmentListType } from "../types";
-import { getSourceGlobalEnvironmentsListItem } from "../utils";
+import { getSourceEnvironmentItem, getSourceGlobalEnvironmentsListItem } from "../utils";
 
 interface UseDraggableEnvironmentItemProps {
   ref: RefObject<HTMLLIElement | null>;
@@ -26,10 +26,9 @@ export const useDraggableEnvironmentItem = ({ ref, environment, type }: UseDragg
       draggable({
         element,
         getInitialData: (): DragEnvironmentItem => ({
-          type: type,
+          type,
           data: { environment },
         }),
-
         onDragStart() {
           setIsDragging(true);
         },
@@ -68,9 +67,7 @@ export const useDraggableEnvironmentItem = ({ ref, environment, type }: UseDragg
             },
           });
         },
-        getIsSticky() {
-          return true;
-        },
+        getIsSticky: () => true,
         canDrop({ source }) {
           const sourceData = getSourceGlobalEnvironmentsListItem(source);
           if (!sourceData) return false;

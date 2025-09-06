@@ -5,7 +5,7 @@ export const GroupedEnvironmentsList = () => {
   const { groupedEnvironments } = useGroupedEnvironments();
 
   return (
-    <div className="flex flex-col">
+    <div>
       {groupedEnvironments?.map((groupedEnv) => (
         <GroupedEnvironmentsListRoot key={groupedEnv.collectionId} groupedEnvironments={groupedEnv} />
       ))}

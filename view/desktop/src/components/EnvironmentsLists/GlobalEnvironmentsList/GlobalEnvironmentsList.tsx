@@ -6,9 +6,9 @@ export const GlobalEnvironmentsList = () => {
   const { globalEnvironments } = useStreamEnvironments();
 
   return (
-    <ul className="flex flex-col">
+    <ul>
       {globalEnvironments?.map((environment) => (
-        <EnvironmentListItem key={environment.id} environment={environment} type="global" />
+        <EnvironmentListItem key={environment.id} environment={environment} type="GlobalEnvironmentItem" />
       ))}
     </ul>
   );

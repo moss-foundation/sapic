@@ -42,7 +42,7 @@ export const EnvironmentListItem = ({ environment, type }: EnvironmentListItemPr
       component: "Default",
       title: environment.name,
       params: {
-        iconType: type === "global" ? "Environment" : "GroupedEnvironment",
+        iconType: type === "GlobalEnvironmentItem" ? "Environment" : "GroupedEnvironment",
       },
     });
   };

@@ -61,10 +61,10 @@ export const EnvironmentItemControls = ({
         isActive={activePanelId === environment.id}
         instruction={instruction}
         hideDragHandle
-        depth={type === "global" ? 0 : 1}
+        depth={type === "GlobalEnvironmentItem" ? 0 : 1}
       >
         <Tree.NodeTriggers className="cursor-pointer overflow-hidden">
-          <Icon icon={type === "global" ? "Environment" : "GroupedEnvironment"} />
+          <Icon icon={type === "GlobalEnvironmentItem" ? "Environment" : "GroupedEnvironment"} />
           <span className="truncate">{environment.name}</span>
           <span className="text-(--moss-secondary-text)">({environment.totalVariables})</span>
         </Tree.NodeTriggers>

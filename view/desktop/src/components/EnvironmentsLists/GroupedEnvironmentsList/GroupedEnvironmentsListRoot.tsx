@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef } from "react";
 
 import { Tree } from "@/lib/ui/Tree";
 
@@ -11,12 +11,7 @@ interface GroupedEnvironmentsListRootProps {
 }
 
 export const GroupedEnvironmentsListRoot = ({ groupedEnvironments }: GroupedEnvironmentsListRootProps) => {
-  const [showChildren, setShowChildren] = useState(true);
   const groupedEnvironmentsListRef = useRef<HTMLLIElement>(null);
-
-  const onClick = () => {
-    setShowChildren(!showChildren);
-  };
 
   // const { instruction, isDragging } = useDraggableGroupedEnvironmentsList({
   //   ref: groupedWithEnvironmentsListRef,
@@ -28,20 +23,11 @@ export const GroupedEnvironmentsListRoot = ({ groupedEnvironments }: GroupedEnvi
     //instruction={instruction}
     //className={cn("cursor-pointer", isDragging && "opacity-50")}
     >
-      <Tree.RootNodeHeader
-        ref={groupedEnvironmentsListRef}
-        onClick={onClick}
-        isActive={false}
-        className="cursor-pointer"
-      >
-        <GroupedEnvironmentsListRootControls
-          showChildren={showChildren}
-          setShowChildren={setShowChildren}
-          groupedWithEnvironments={groupedEnvironments}
-        />
+      <Tree.RootNodeHeader ref={groupedEnvironmentsListRef} isActive={false} className="cursor-pointer">
+        <GroupedEnvironmentsListRootControls groupedEnvironments={groupedEnvironments} />
       </Tree.RootNodeHeader>
 
-      {showChildren && <GroupedEnvironmentsListChildren groupedEnvironments={groupedEnvironments} />}
+      {groupedEnvironments.expanded && <GroupedEnvironmentsListChildren groupedEnvironments={groupedEnvironments} />}
     </Tree.RootNode>
   );
 };
