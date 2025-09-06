@@ -1,5 +1,6 @@
 import { GlobalEnvironmentsList } from "@/components/EnvironmentsLists/GlobalEnvironmentsList/GlobalEnvironmentsList";
 import { GroupedEnvironmentsList } from "@/components/EnvironmentsLists/GroupedEnvironmentsList/GroupedEnvironmentsList";
+import { useMonitorEnvironmentsLists } from "@/components/EnvironmentsLists/hooks/useMonitorEnvironmentsLists";
 import { useStreamEnvironments } from "@/hooks";
 import { Scrollbar } from "@/lib/ui";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
@@ -11,6 +12,8 @@ import { EnvironmentsListViewHeader } from "./EnvironmentsListViewHeader";
 export const EnvironmentsListView = () => {
   const { addOrFocusPanel } = useTabbedPaneStore();
   const { data: environments } = useStreamEnvironments();
+
+  useMonitorEnvironmentsLists();
 
   return (
     <div className="flex h-full flex-col">

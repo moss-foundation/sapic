@@ -11,7 +11,7 @@ import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
 import { useDeleteEnvironmentItem } from "../actions/useDeleteEnvironmentItem";
-import { EnvironmentListType } from "./types";
+import { EnvironmentListType } from "../types";
 
 interface EnvironmentItemControlsProps {
   environment: StreamEnvironmentsEvent;

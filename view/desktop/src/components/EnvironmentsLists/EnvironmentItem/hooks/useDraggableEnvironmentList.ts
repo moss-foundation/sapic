@@ -5,8 +5,8 @@ import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
+import { DragEnvironmentItem, DropEnvironmentItem, EnvironmentListType } from "../../types";
 import { getSourceEnvironmentItem } from "../../utils";
-import { DragEnvironmentItem, DropEnvironmentItem, EnvironmentListType } from "../types";
 
 interface UseDraggableEnvironmentItemProps {
   ref: RefObject<HTMLLIElement | null>;

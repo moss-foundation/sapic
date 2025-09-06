@@ -11,19 +11,21 @@ interface GroupedEnvironmentsListRootProps {
 }
 
 export const GroupedEnvironmentsListRoot = ({ groupedEnvironments }: GroupedEnvironmentsListRootProps) => {
-  const groupedEnvironmentsListRef = useRef<HTMLLIElement>(null);
+  const groupedEnvironmentsListRef = useRef<HTMLUListElement>(null);
 
-  // const { instruction, isDragging } = useDraggableGroupedEnvironmentsList({
-  //   ref: groupedWithEnvironmentsListRef,
+  // const { isChildDropBlocked, instruction } = useDraggableGroupedEnvironmentsList({
+  //   ref: groupedEnvironmentsListRef,
   //   groupWithEnvironments: groupedEnvironments,
   // });
 
   return (
     <Tree.RootNode
-    //instruction={instruction}
-    //className={cn("cursor-pointer", isDragging && "opacity-50")}
+      ref={groupedEnvironmentsListRef}
+      // instruction={instruction}
+      // isChildDropBlocked={isChildDropBlocked}
+      //className={cn("cursor-pointer", isDragging && "opacity-50")}
     >
-      <Tree.RootNodeHeader ref={groupedEnvironmentsListRef} isActive={false} className="cursor-pointer">
+      <Tree.RootNodeHeader isActive={false} className="cursor-pointer">
         <GroupedEnvironmentsListRootControls groupedEnvironments={groupedEnvironments} />
       </Tree.RootNodeHeader>
 

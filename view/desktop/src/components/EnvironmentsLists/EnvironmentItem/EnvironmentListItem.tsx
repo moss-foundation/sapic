@@ -6,11 +6,11 @@ import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
+import { EnvironmentListType } from "../types";
 import { EnvironmentItemControls } from "./EnvironmentItemControls";
 import { EnvironmentListItemRenamingForm } from "./EnvironmentListItemRenamingForm";
 import { useDraggableEnvironmentItem } from "./hooks/useDraggableEnvironmentList";
 import { useGlobalEnvironmentsListRenamingForm } from "./hooks/useEnvironmentListRenamingForm";
-import { EnvironmentListType } from "./types";
 
 interface EnvironmentListItemProps {
   environment: StreamEnvironmentsEvent;

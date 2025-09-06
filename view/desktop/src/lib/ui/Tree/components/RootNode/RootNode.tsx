@@ -21,9 +21,7 @@ export const RootNode = forwardRef<HTMLUListElement, RootNodeProps>(
   ) => {
     return (
       <ul ref={ref} className={cn("group/TreeRootNode relative w-full list-none", className)} {...props}>
-        {isChildDropBlocked && (
-          <DropIndicatorForDir isChildDropBlocked={isChildDropBlocked} instruction={instruction ?? null} />
-        )}
+        <DropIndicatorForDir isChildDropBlocked={isChildDropBlocked} instruction={instruction ?? null} />
         <DropIndicatorForTrigger instruction={instruction ?? null} fullWidth={dropIndicatorFullWidth} />
 
         {children}
