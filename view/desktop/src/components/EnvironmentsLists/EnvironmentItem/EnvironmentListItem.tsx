@@ -57,6 +57,7 @@ export const EnvironmentListItem = ({ environment, type }: EnvironmentListItemPr
           handleCancel={handleCancel}
           environment={environment}
           restrictedNames={restrictedNames}
+          type={type}
         />
       ) : (
         <EnvironmentItemControls

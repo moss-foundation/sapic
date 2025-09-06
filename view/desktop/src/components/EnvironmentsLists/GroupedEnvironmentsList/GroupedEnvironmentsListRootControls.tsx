@@ -46,7 +46,7 @@ export const GroupedEnvironmentsListRootControls = ({
           <Icon icon="ChevronRight" className={cn(groupedEnvironments.expanded && "rotate-90")} />
         </button>
 
-        <div className="truncate font-medium">{collectionName}</div>
+        <Tree.RootNodeLabel label={collectionName ?? ""} />
       </Tree.RootNodeTriggers>
 
       <Tree.RootNodeActions>

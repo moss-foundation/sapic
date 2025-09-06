@@ -49,8 +49,9 @@ export const EnvironmentItemControls = ({
       >
         <Tree.NodeTriggers className="cursor-pointer overflow-hidden">
           <Icon icon={type === "GlobalEnvironmentItem" ? "Environment" : "GroupedEnvironment"} />
-          <span className="truncate">{environment.name}</span>
-          <span className="text-(--moss-secondary-text)">({environment.totalVariables})</span>
+          <Tree.NodeOrder order={environment.order} />
+          <Tree.NodeLabel label={environment.name} />
+          <Tree.NodeDirCount count={environment.totalVariables} />
         </Tree.NodeTriggers>
 
         <Tree.NodeActions>

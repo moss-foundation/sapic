@@ -3,12 +3,15 @@ import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils/cn";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
+import { EnvironmentListType } from "./types";
+
 interface EnvironmentListItemRenamingFormProps {
   handleRename: (name: string) => void;
   handleCancel: () => void;
   environment: StreamEnvironmentsEvent;
   restrictedNames: string[];
   className?: string;
+  type: EnvironmentListType;
 }
 
 export const EnvironmentListItemRenamingForm = ({
@@ -17,12 +20,13 @@ export const EnvironmentListItemRenamingForm = ({
   handleCancel,
   environment,
   restrictedNames,
+  type,
 }: EnvironmentListItemRenamingFormProps) => {
   return (
-    <Tree.NodeControls className={cn("min-h-[22px] py-1", className)}>
+    <Tree.NodeControls depth={type === "GlobalEnvironmentItem" ? 0 : 1} className={cn("min-h-[22px] py-1", className)}>
       <Tree.NodeTriggers>
         <div className="flex h-5 shrink-0 items-center justify-start">
-          <Icon icon="Environment" />
+          <Icon icon={type === "GlobalEnvironmentItem" ? "Environment" : "GroupedEnvironment"} />
         </div>
         <Tree.NodeRenamingForm
           onSubmit={handleRename}
