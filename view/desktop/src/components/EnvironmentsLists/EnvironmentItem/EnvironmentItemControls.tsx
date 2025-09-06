@@ -1,6 +1,6 @@
 import { MouseEvent, useState } from "react";
 
-import { ActionMenu } from "@/components";
+import { ActionMenu, ConfirmationModal } from "@/components";
 import ActionButton from "@/components/ActionButton";
 import { useModal } from "@/hooks";
 import { useActivateEnvironment } from "@/hooks/workspace/environment/useActivateEnvironment";
@@ -30,7 +30,7 @@ export const EnvironmentItemControls = ({
 
   const { activePanelId } = useTabbedPaneStore();
 
-  const { showModal: showDeleteModal, setShowModal: setShowDeleteModal, closeModal: setHideDeleteModal } = useModal();
+  const { showModal: showDeleteModal, setShowModal: setShowDeleteModal, closeModal: closeDeleteModal } = useModal();
 
   const { handleDeleteEnvironment } = useDeleteEnvironmentItem({ environment, type });
 
@@ -89,7 +89,6 @@ export const EnvironmentItemControls = ({
                     onClick={(e) => {
                       e.stopPropagation();
                       setShowDeleteModal(true);
-                      handleDeleteEnvironment();
                     }}
                   >
                     Delete
@@ -101,15 +100,15 @@ export const EnvironmentItemControls = ({
         </Tree.NodeActions>
       </Tree.NodeControls>
 
-      {/* {showDeleteModal && (
+      {showDeleteModal && (
         <ConfirmationModal
           showModal={showDeleteModal}
-          closeModal={setHideDeleteModal}
+          closeModal={closeDeleteModal}
           title="Delete Environment"
           message={`Are you sure you want to delete ${environment.name} environment?`}
           onConfirm={handleDeleteEnvironment}
         />
-      )} */}
+      )}
     </>
   );
 };

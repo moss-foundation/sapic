@@ -11,7 +11,7 @@ export const GroupedEnvironmentsListChildren = ({ groupedEnvironments }: Grouped
   return (
     <Tree.RootNodeChildren hideDirDepthIndicator>
       {groupedEnvironments.environments.map((environment) => (
-        <EnvironmentListItem key={environment.id} environment={environment} type="grouped" />
+        <EnvironmentListItem key={environment.id} environment={environment} type="GroupedEnvironmentItem" />
       ))}
     </Tree.RootNodeChildren>
   );

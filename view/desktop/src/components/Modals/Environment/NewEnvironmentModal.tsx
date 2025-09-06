@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from "react";
 
 import { ButtonNeutralOutlined, ButtonPrimary, InputOutlined, RadioGroup } from "@/components";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
+import { useGroupedEnvironments } from "@/components/EnvironmentsLists/hooks/useGroupedEnvironments";
 import { ModalForm } from "@/components/ModalForm";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
 import {
@@ -20,6 +21,7 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
   const { globalEnvironments, collectionEnvironments } = useStreamEnvironments();
   const { mutateAsync: createEnvironment } = useCreateEnvironment();
   const { data: collections } = useStreamCollections();
+  const { groupedEnvironments } = useGroupedEnvironments();
 
   const [name, setName] = useState("New Environment");
   const [collectionId, setCollectionId] = useState<string | null>(null);
@@ -47,18 +49,20 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
   const handleSubmit = async () => {
     if (!isValid) return;
 
-    const newOrder = mode === "Workspace" ? getNextOrder(globalEnvironments) : getNextOrder(collectionEnvironments);
-
     if (mode === "Workspace") {
       await createEnvironment({
         name,
-        order: newOrder,
+        order: getNextOrder(globalEnvironments),
         variables: [],
       });
     } else if (mode === "Collection" && collectionId) {
+      const collectionEnvironments = groupedEnvironments.find(
+        (group) => group.collectionId === collectionId
+      )?.environments;
+
       await createEnvironment({
         name,
-        order: newOrder,
+        order: getNextOrder(collectionEnvironments),
         variables: [],
         collectionId,
       });
