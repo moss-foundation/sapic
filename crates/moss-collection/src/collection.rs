@@ -2,7 +2,6 @@ use chrono::{DateTime, Utc};
 use git2::{BranchType, IndexAddOption, Signature};
 use joinerror::{Error, OptionExt, ResultExt};
 use json_patch::{PatchOperation, ReplaceOperation, jsonptr::PointerBuf};
-use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::{
     AppRuntime, EventMarker,
     subscription::{Event, EventEmitter},
@@ -92,7 +91,6 @@ pub struct Collection<R: AppRuntime> {
     pub(super) storage_service: Arc<StorageService<R>>,
     pub(super) vcs: OnceCell<Vcs>,
     pub(super) on_did_change: EventEmitter<OnDidChangeEvent>,
-    pub(super) broadcaster: ActivityBroadcaster<R::EventLoop>,
     pub(super) archived: AtomicBool,
 }
 
@@ -110,7 +108,6 @@ impl<R: AppRuntime> Collection<R> {
                 Arc::new(Worktree::new(
                     self.abs_path.clone(),
                     self.fs.clone(),
-                    self.broadcaster.clone(),
                     self.storage_service.clone(),
                 ))
             })
@@ -432,7 +429,6 @@ impl<R: AppRuntime> Collection<R> {
                 Arc::new(Worktree::new(
                     self.abs_path.clone(),
                     self.fs.clone(),
-                    self.broadcaster.clone(),
                     self.storage_service.clone(),
                 ))
             })

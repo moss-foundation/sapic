@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+moss_app_delegate.workspace = true
 moss_applib.workspace = true
 moss_db.workspace = true
 moss_fs.workspace = true

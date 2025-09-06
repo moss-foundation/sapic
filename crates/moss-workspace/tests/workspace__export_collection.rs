@@ -22,7 +22,7 @@ mod shared;
 #[tokio::test]
 pub async fn export_collection_success() {
     // Create an archive file from a collection and import it back
-    let (ctx, app_handle, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let destination = workspace.abs_path().to_path_buf();
     let collection_name = random_collection_name();
@@ -30,6 +30,7 @@ pub async fn export_collection_success() {
     let id = workspace
         .create_collection(
             &ctx,
+            &app_delegate,
             &CreateCollectionInput {
                 inner: CreateCollectionParams {
                     name: collection_name.clone(),
@@ -61,7 +62,7 @@ pub async fn export_collection_success() {
     let import_collection_output = workspace
         .import_collection(
             &ctx,
-            &app_handle,
+            &app_delegate,
             &ImportCollectionInput {
                 inner: ImportCollectionParams {
                     name: collection_name.clone(),

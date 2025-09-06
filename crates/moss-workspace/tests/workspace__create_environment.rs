@@ -115,12 +115,13 @@ async fn create_environment_already_exists() {
 
 #[tokio::test]
 async fn create_collection_environment_success() {
-    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let collection_id = workspace
         .create_collection(
             &ctx,
+            &app_delegate,
             &CreateCollectionInput {
                 inner: CreateCollectionParams {
                     name: collection_name,
@@ -190,12 +191,13 @@ async fn create_collection_environment_success() {
 
 #[tokio::test]
 async fn create_collection_environment_already_exists() {
-    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let collection_id = workspace
         .create_collection(
             &ctx,
+            &app_delegate,
             &CreateCollectionInput {
                 inner: CreateCollectionParams {
                     name: collection_name,
@@ -246,12 +248,13 @@ async fn create_collection_environment_already_exists() {
 
 #[tokio::test]
 async fn create_collection_environment_same_name_as_workspace_environment() {
-    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let collection_id = workspace
         .create_collection(
             &ctx,
+            &app_delegate,
             &CreateCollectionInput {
                 inner: CreateCollectionParams {
                     name: collection_name,

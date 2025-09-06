@@ -9,8 +9,9 @@ mod window;
 extern crate tracing;
 
 use moss_app::{AppBuilder as TauriAppBuilder, builder::BuildAppParams};
+use moss_app_delegate::AppDelegate;
 use moss_applib::{
-    AppHandle, TauriAppRuntime,
+    TauriAppRuntime,
     context::{AnyAsyncContext, AnyContext, MutableContext},
 };
 use moss_fs::RealFileSystem;
@@ -120,8 +121,9 @@ pub async fn run<R: TauriRuntime>() {
                         8081,
                     ));
 
-                    tao_app_handle
-                        .manage(AppHandle::<TauriAppRuntime<R>>::new(tao_app_handle.clone()));
+                    tao_app_handle.manage(AppDelegate::<TauriAppRuntime<R>>::new(
+                        tao_app_handle.clone(),
+                    ));
                 }
 
                 let ctx_clone = ctx.clone();
@@ -157,7 +159,7 @@ pub async fn run<R: TauriRuntime>() {
 
                     ctx.freeze()
                 });
-                tao_app_handle.manage(app);
+                tao_app_handle.manage(Arc::new(app));
 
                 Ok(())
             })

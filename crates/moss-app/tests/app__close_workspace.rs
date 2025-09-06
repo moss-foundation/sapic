@@ -17,14 +17,14 @@ use crate::shared::set_up_test_app;
 
 #[tokio::test]
 async fn close_workspace_success() {
-    let (app, ctx, cleanup) = set_up_test_app().await;
-    // let workspace_service = services.get::<WorkspaceService<MockAppRuntime>>();
+    let (app, app_delegate, ctx, cleanup) = set_up_test_app().await;
 
     // Create and open a workspace
     let workspace_name = random_workspace_name();
     let create_output = app
         .create_workspace(
             &ctx,
+            &app_delegate,
             &CreateWorkspaceInput {
                 name: workspace_name.clone(),
                 mode: WorkspaceMode::default(),
@@ -68,13 +68,14 @@ async fn close_workspace_success() {
 
 #[tokio::test]
 async fn close_workspace_not_open() {
-    let (app, ctx, cleanup) = set_up_test_app().await;
+    let (app, app_delegate, ctx, cleanup) = set_up_test_app().await;
 
     // Create a workspace without opening it
     let workspace_name = random_workspace_name();
     let create_output = app
         .create_workspace(
             &ctx,
+            &app_delegate,
             &CreateWorkspaceInput {
                 name: workspace_name.clone(),
                 mode: WorkspaceMode::default(),
@@ -101,7 +102,7 @@ async fn close_workspace_not_open() {
 
 #[tokio::test]
 async fn close_workspace_after_another_opened() {
-    let (app, ctx, cleanup) = set_up_test_app().await;
+    let (app, app_delegate, ctx, cleanup) = set_up_test_app().await;
     // let workspace_service = services.get::<WorkspaceService<MockAppRuntime>>();
 
     // Create and open first workspace
@@ -109,6 +110,7 @@ async fn close_workspace_after_another_opened() {
     let create_output1 = app
         .create_workspace(
             &ctx,
+            &app_delegate,
             &CreateWorkspaceInput {
                 name: workspace_name1.clone(),
                 mode: WorkspaceMode::default(),
@@ -121,6 +123,7 @@ async fn close_workspace_after_another_opened() {
     // Open first workspace
     app.open_workspace(
         &ctx,
+        &app_delegate,
         &OpenWorkspaceInput {
             id: create_output1.id.clone(),
         },
@@ -133,6 +136,7 @@ async fn close_workspace_after_another_opened() {
     let create_output2 = app
         .create_workspace(
             &ctx,
+            &app_delegate,
             &CreateWorkspaceInput {
                 name: workspace_name2.clone(),
                 mode: WorkspaceMode::default(),
@@ -196,7 +200,7 @@ async fn close_workspace_after_another_opened() {
 
 #[tokio::test]
 async fn close_workspace_nonexistent() {
-    let (app, ctx, cleanup) = set_up_test_app().await;
+    let (app, _, ctx, cleanup) = set_up_test_app().await;
 
     let nonexistent_id = WorkspaceId::new();
 
@@ -211,13 +215,14 @@ async fn close_workspace_nonexistent() {
 
 #[tokio::test]
 async fn close_workspace_from_different_session() {
-    let (app, ctx, cleanup) = set_up_test_app().await;
+    let (app, app_delegate, ctx, cleanup) = set_up_test_app().await;
 
     // Create a workspace
     let workspace_name = random_workspace_name();
     let create_output = app
         .create_workspace(
             &ctx,
+            &app_delegate,
             &CreateWorkspaceInput {
                 name: workspace_name.clone(),
                 mode: WorkspaceMode::default(),
@@ -230,6 +235,7 @@ async fn close_workspace_from_different_session() {
     // Open the workspace
     app.open_workspace(
         &ctx,
+        &app_delegate,
         &OpenWorkspaceInput {
             id: create_output.id,
         },

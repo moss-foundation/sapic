@@ -2,7 +2,6 @@ use anyhow::Result;
 use joinerror::ResultExt;
 use json_patch::{PatchOperation, ReplaceOperation};
 use jsonptr::PointerBuf;
-use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::{
     AppRuntime,
     subscription::{Event, Subscription},
@@ -62,9 +61,6 @@ pub trait AnyWorkspace<R: AppRuntime> {
 
 pub struct Workspace<R: AppRuntime> {
     pub(super) abs_path: Arc<Path>,
-
-    #[allow(dead_code)]
-    pub(super) broadcaster: ActivityBroadcaster<R::EventLoop>,
     pub(super) edit: WorkspaceEdit,
     pub(super) active_profile: Arc<ActiveProfile>,
     pub(super) layout_service: LayoutService<R>,

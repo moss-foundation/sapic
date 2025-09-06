@@ -16,12 +16,13 @@ use tauri::ipc::Channel;
 
 #[tokio::test]
 async fn delete_collection_success() {
-    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let create_collection_output = workspace
         .create_collection(
             &ctx,
+            &app_delegate,
             &CreateCollectionInput {
                 inner: CreateCollectionParams {
                     name: collection_name.clone(),
@@ -73,12 +74,13 @@ async fn delete_collection_success() {
 
 #[tokio::test]
 async fn delete_collection_nonexistent_id() {
-    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let id = workspace
         .create_collection(
             &ctx,
+            &app_delegate,
             &CreateCollectionInput {
                 inner: CreateCollectionParams {
                     name: collection_name.clone(),
@@ -112,12 +114,13 @@ async fn delete_collection_nonexistent_id() {
 
 #[tokio::test]
 async fn delete_collection_fs_already_deleted() {
-    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let create_collection_output = workspace
         .create_collection(
             &ctx,
+            &app_delegate,
             &CreateCollectionInput {
                 inner: CreateCollectionParams {
                     name: collection_name.clone(),

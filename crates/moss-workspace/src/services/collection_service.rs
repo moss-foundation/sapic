@@ -1,8 +1,9 @@
 use derive_more::{Deref, DerefMut};
 use futures::Stream;
 use joinerror::{Error, OptionExt, ResultExt};
-use moss_activity_broadcaster::{ActivityBroadcaster, ToLocation};
-use moss_applib::{AppHandle, AppRuntime, subscription::EventEmitter};
+use moss_activity_broadcaster::ToLocation;
+use moss_app_delegate::AppDelegate;
+use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_collection::{
     Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
     builder::{
@@ -94,8 +95,6 @@ pub struct CollectionService<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     storage: Arc<StorageService<R>>,
     state: Arc<RwLock<ServiceState<R>>>,
-    #[allow(dead_code)]
-    broadcaster: ActivityBroadcaster<R::EventLoop>,
     on_did_delete_collection_emitter: EventEmitter<OnDidDeleteCollection>,
     on_did_add_collection_emitter: EventEmitter<OnDidAddCollection>,
 }
@@ -103,11 +102,11 @@ pub struct CollectionService<R: AppRuntime> {
 impl<R: AppRuntime> CollectionService<R> {
     pub(crate) async fn new(
         ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
         abs_path: &Path,
         fs: Arc<dyn FileSystem>,
         storage: Arc<StorageService<R>>,
         environment_sources: &mut FxHashMap<Arc<String>, PathBuf>,
-        broadcaster: ActivityBroadcaster<R::EventLoop>,
         active_profile: &Arc<ActiveProfile>,
         on_collection_did_delete_emitter: EventEmitter<OnDidDeleteCollection>,
         on_collection_did_add_emitter: EventEmitter<OnDidAddCollection>,
@@ -119,16 +118,12 @@ impl<R: AppRuntime> CollectionService<R> {
             HashSet::new()
         };
 
-        let collections = restore_collections(
-            ctx,
-            &abs_path,
-            &fs,
-            &storage,
-            broadcaster.clone(),
-            active_profile,
-        )
-        .await
-        .join_err_with::<()>(|| format!("failed to restore collections, {}", abs_path.display()))?;
+        let collections =
+            restore_collections(ctx, app_delegate, &abs_path, &fs, &storage, active_profile)
+                .await
+                .join_err_with::<()>(|| {
+                    format!("failed to restore collections, {}", abs_path.display())
+                })?;
 
         for (id, collection) in collections.iter() {
             environment_sources.insert(id.clone().inner(), collection.environments_path());
@@ -142,7 +137,6 @@ impl<R: AppRuntime> CollectionService<R> {
                 collections,
                 expanded_items,
             })),
-            broadcaster,
             on_did_delete_collection_emitter: on_collection_did_delete_emitter,
             on_did_add_collection_emitter: on_collection_did_add_emitter,
         })
@@ -159,6 +153,7 @@ impl<R: AppRuntime> CollectionService<R> {
     pub(crate) async fn create_collection(
         &self,
         ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
         id: &CollectionId,
         account: Option<Account>,
         params: &CreateCollectionParams,
@@ -198,8 +193,7 @@ impl<R: AppRuntime> CollectionService<R> {
         };
 
         let abs_path: Arc<Path> = abs_path.clone().into();
-        let builder =
-            CollectionBuilder::<R>::new(self.fs.clone(), self.broadcaster.clone()).await?;
+        let builder = CollectionBuilder::new(self.fs.clone()).await?;
 
         let collection_result = builder
             .create(
@@ -242,11 +236,11 @@ impl<R: AppRuntime> CollectionService<R> {
             let client = match git_params.git_provider_type {
                 GitProviderKind::GitHub => GitClient::GitHub {
                     account: account,
-                    api: GitHubApiClient::new(HttpClient::new()), // FIXME:
+                    api: app_delegate.global::<GitHubApiClient>().clone(),
                 },
                 GitProviderKind::GitLab => GitClient::GitLab {
                     account: account,
-                    api: GitLabApiClient::new(HttpClient::new()), // FIXME:
+                    api: app_delegate.global::<GitLabApiClient>().clone(),
                 },
             };
 
@@ -316,7 +310,7 @@ impl<R: AppRuntime> CollectionService<R> {
     pub(crate) async fn clone_collection(
         &self,
         ctx: &R::AsyncContext,
-        app_handle: &AppHandle<R>,
+        app_delegate: &AppDelegate<R>,
         id: &CollectionId,
         account: Account,
         params: CollectionItemCloneParams,
@@ -337,16 +331,16 @@ impl<R: AppRuntime> CollectionService<R> {
                 format!("failed to create directory `{}`", abs_path.display())
             })?;
 
-        let builder = CollectionBuilder::new(self.fs.clone(), self.broadcaster.clone()).await?;
+        let builder = CollectionBuilder::new(self.fs.clone()).await?;
 
         let git_client = match params.git_provider_type {
             GitProviderKind::GitHub => GitClient::GitHub {
                 account: account,
-                api: app_handle.global::<GitHubApiClient>().clone(),
+                api: app_delegate.global::<GitHubApiClient>().clone(),
             },
             GitProviderKind::GitLab => GitClient::GitLab {
                 account: account,
-                api: app_handle.global::<GitLabApiClient>().clone(),
+                api: app_delegate.global::<GitLabApiClient>().clone(),
             },
         };
         let collection_result = builder
@@ -654,7 +648,7 @@ impl<R: AppRuntime> CollectionService<R> {
                 format!("failed to create directory `{}`", abs_path.display())
             })?;
 
-        let builder = CollectionBuilder::new(self.fs.clone(), self.broadcaster.clone()).await?;
+        let builder = CollectionBuilder::new(self.fs.clone()).await?;
 
         let collection = builder
             .import_archive(
@@ -744,10 +738,10 @@ impl<R: AppRuntime> CollectionService<R> {
 }
 async fn restore_collections<R: AppRuntime>(
     ctx: &R::AsyncContext,
+    app_delegate: &AppDelegate<R>,
     abs_path: &Path,
     fs: &Arc<dyn FileSystem>,
     storage: &Arc<StorageService<R>>,
-    broadcaster: ActivityBroadcaster<R::EventLoop>,
     active_profile: &Arc<ActiveProfile>,
 ) -> joinerror::Result<HashMap<CollectionId, CollectionItem<R>>> {
     if !abs_path.exists() {
@@ -760,7 +754,7 @@ async fn restore_collections<R: AppRuntime>(
         .await
         .join_err_with::<()>(|| format!("failed to read directory `{}`", abs_path.display()))?;
 
-    let activity_handle = broadcaster.emit_continual(ToLocation::Window {
+    let activity_handle = app_delegate.emit_continual(ToLocation::Window {
         activity_id: "restore_collections",
         title: "Restoring collections".to_string(),
         detail: None,
@@ -781,7 +775,7 @@ async fn restore_collections<R: AppRuntime>(
 
         let collection = {
             let collection_abs_path: Arc<Path> = entry.path().to_owned().into();
-            let builder = CollectionBuilder::<R>::new(fs.clone(), broadcaster.clone())
+            let builder = CollectionBuilder::new(fs.clone())
                 .await
                 .join_err_with::<()>(|| {
                     format!(

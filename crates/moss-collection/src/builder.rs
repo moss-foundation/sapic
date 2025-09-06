@@ -1,5 +1,4 @@
 use joinerror::{Error, ResultExt};
-use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_git::{repository::Repository, url::GitUrl};
@@ -107,20 +106,19 @@ pub struct CollectionImportParams {
     pub archive_path: Arc<Path>,
 }
 
-pub struct CollectionBuilder<R: AppRuntime> {
+pub struct CollectionBuilder {
     fs: Arc<dyn FileSystem>,
-    broadcaster: ActivityBroadcaster<R::EventLoop>,
 }
 
-impl<R: AppRuntime> CollectionBuilder<R> {
-    pub async fn new(
-        fs: Arc<dyn FileSystem>,
-        broadcaster: ActivityBroadcaster<R::EventLoop>,
-    ) -> joinerror::Result<Self> {
-        Ok(Self { fs, broadcaster })
+impl CollectionBuilder {
+    pub async fn new(fs: Arc<dyn FileSystem>) -> joinerror::Result<Self> {
+        Ok(Self { fs })
     }
 
-    pub async fn load(self, params: CollectionLoadParams) -> joinerror::Result<Collection<R>> {
+    pub async fn load<R: AppRuntime>(
+        self,
+        params: CollectionLoadParams,
+    ) -> joinerror::Result<Collection<R>> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
         let storage_service: Arc<StorageService<R>> =
@@ -155,7 +153,6 @@ impl<R: AppRuntime> CollectionBuilder<R> {
             Arc::new(Worktree::new(
                 params.internal_abs_path.clone(),
                 self.fs.clone(),
-                self.broadcaster.clone(),
                 storage_service.clone(),
             ))
             .into()
@@ -175,12 +172,11 @@ impl<R: AppRuntime> CollectionBuilder<R> {
             vcs: OnceCell::new(),
             worktree: worktree_service,
             on_did_change: EventEmitter::new(),
-            broadcaster: self.broadcaster,
             archived: config.archived.into(),
         })
     }
 
-    pub async fn create(
+    pub async fn create<R: AppRuntime>(
         self,
         ctx: &R::AsyncContext,
         params: CollectionCreateParams,
@@ -202,13 +198,8 @@ impl<R: AppRuntime> CollectionBuilder<R> {
             .put_expanded_entries(ctx, Vec::new())
             .await?;
 
-        let worktree_service_inner: Arc<Worktree<R>> = Worktree::new(
-            abs_path.clone(),
-            self.fs.clone(),
-            self.broadcaster.clone(),
-            storage_service.clone(),
-        )
-        .into();
+        let worktree_service_inner: Arc<Worktree<R>> =
+            Worktree::new(abs_path.clone(), self.fs.clone(), storage_service.clone()).into();
 
         let set_icon_service =
             SetIconService::new(abs_path.clone(), self.fs.clone(), COLLECTION_ICON_SIZE);
@@ -326,13 +317,12 @@ impl<R: AppRuntime> CollectionBuilder<R> {
             vcs: OnceCell::new(),
             worktree: worktree_service_inner.into(),
             on_did_change: EventEmitter::new(),
-            broadcaster: self.broadcaster,
             archived: false.into(),
         })
     }
 
     // TODO: Handle non-collection repo
-    pub async fn clone(
+    pub async fn clone<R: AppRuntime>(
         self,
         ctx: &R::AsyncContext,
         git_client: GitClient,
@@ -359,13 +349,8 @@ impl<R: AppRuntime> CollectionBuilder<R> {
             .put_expanded_entries(ctx, Vec::new())
             .await?;
 
-        let worktree_inner: Arc<Worktree<R>> = Worktree::new(
-            abs_path.clone(),
-            self.fs.clone(),
-            self.broadcaster.clone(),
-            storage_service.clone(),
-        )
-        .into();
+        let worktree_inner: Arc<Worktree<R>> =
+            Worktree::new(abs_path.clone(), self.fs.clone(), storage_service.clone()).into();
 
         let set_icon_service =
             SetIconService::new(abs_path.clone(), self.fs.clone(), COLLECTION_ICON_SIZE);
@@ -396,12 +381,11 @@ impl<R: AppRuntime> CollectionBuilder<R> {
             vcs: OnceCell::new_with(Some(Vcs::new(params.repository, repository, git_client))),
             worktree: worktree_inner.into(),
             on_did_change: EventEmitter::new(),
-            broadcaster: self.broadcaster,
             archived: false.into(),
         })
     }
 
-    pub async fn import_archive(
+    pub async fn import_archive<R: AppRuntime>(
         self,
         ctx: &R::AsyncContext,
         params: CollectionImportParams,
@@ -421,13 +405,8 @@ impl<R: AppRuntime> CollectionBuilder<R> {
             .put_expanded_entries(ctx, Vec::new())
             .await?;
 
-        let worktree_inner: Arc<Worktree<R>> = Worktree::new(
-            abs_path.clone(),
-            self.fs.clone(),
-            self.broadcaster.clone(),
-            storage_service.clone(),
-        )
-        .into();
+        let worktree_inner: Arc<Worktree<R>> =
+            Worktree::new(abs_path.clone(), self.fs.clone(), storage_service.clone()).into();
 
         let set_icon_service =
             SetIconService::new(abs_path.clone(), self.fs.clone(), COLLECTION_ICON_SIZE);
@@ -459,13 +438,12 @@ impl<R: AppRuntime> CollectionBuilder<R> {
             vcs: OnceCell::new(),
             worktree: worktree_inner.into(),
             on_did_change: EventEmitter::new(),
-            broadcaster: self.broadcaster,
             archived: false.into(),
         })
     }
 }
 
-impl<R: AppRuntime> CollectionBuilder<R> {
+impl CollectionBuilder {
     async fn do_clone(
         &self,
         git_client: &GitClient,

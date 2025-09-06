@@ -1,0 +1,11 @@
+[package]
+name = "moss_app_delegate"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+moss_applib.workspace = true
+moss_activity_broadcaster.workspace = true
+
+tauri.workspace = true
+joinerror.workspace = true

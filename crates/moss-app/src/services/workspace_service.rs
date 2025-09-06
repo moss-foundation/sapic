@@ -1,6 +1,6 @@
 use chrono::Utc;
 use joinerror::{Error, OptionExt, ResultExt};
-use moss_activity_broadcaster::ActivityBroadcaster;
+use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_fs::{FileSystem, FsResultExt, RemoveOptions};
 use moss_logging::session;
@@ -219,7 +219,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
             .await
             .join_err::<()>("failed to create workspace directory")?;
 
-        WorkspaceBuilder::<R>::initialize(
+        WorkspaceBuilder::initialize(
             self.fs.clone(),
             CreateWorkspaceParams {
                 name: params.name.clone(),
@@ -260,9 +260,9 @@ impl<R: AppRuntime> WorkspaceService<R> {
     pub(crate) async fn activate_workspace(
         &self,
         ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
         id: &WorkspaceId,
         active_profile: Arc<ActiveProfile>,
-        broadcaster: ActivityBroadcaster<R::EventLoop>,
     ) -> joinerror::Result<WorkspaceItemDescription> {
         let (name, already_active) = {
             let state_lock = self.state.read().await;
@@ -297,9 +297,10 @@ impl<R: AppRuntime> WorkspaceService<R> {
 
         let last_opened_at = Utc::now().timestamp();
         let abs_path: Arc<Path> = self.absolutize(&id.to_string()).into();
-        let workspace = WorkspaceBuilder::<R>::new(self.fs.clone(), broadcaster, active_profile)
+        let workspace = WorkspaceBuilder::new(self.fs.clone(), active_profile)
             .load(
                 ctx,
+                app_delegate,
                 LoadWorkspaceParams {
                     abs_path: abs_path.clone(),
                 },

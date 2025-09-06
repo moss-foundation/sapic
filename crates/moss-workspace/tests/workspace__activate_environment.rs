@@ -91,12 +91,13 @@ async fn activate_environment_global() {
 
 #[tokio::test]
 async fn activate_environment_collection() {
-    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let collection_id = workspace
         .create_collection(
             &ctx,
+            &app_delegate,
             &CreateCollectionInput {
                 inner: CreateCollectionParams {
                     name: collection_name,
@@ -205,11 +206,12 @@ async fn activate_environment_currently_active() {
 // Activating environments for any group (including global) should not affect other groups
 #[tokio::test]
 async fn activate_environment_groups_isolation() {
-    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
     let collection_name = random_collection_name();
     let collection_id = workspace
         .create_collection(
             &ctx,
+            &app_delegate,
             &CreateCollectionInput {
                 inner: CreateCollectionParams {
                     name: collection_name,

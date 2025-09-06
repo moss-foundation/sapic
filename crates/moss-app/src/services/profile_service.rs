@@ -1,5 +1,6 @@
 use joinerror::Error;
-use moss_applib::{AppHandle, AppRuntime, errors::Internal};
+use moss_app_delegate::AppDelegate;
+use moss_applib::{AppRuntime, errors::Internal};
 use moss_common::{continue_if_err, continue_if_none};
 use moss_fs::{CreateOptions, FileSystem};
 use moss_git_hosting_provider::{
@@ -138,7 +139,7 @@ impl ProfileService {
 
     pub async fn add_account<R: AppRuntime>(
         &self,
-        app_handle: &AppHandle<R>,
+        app_delegate: &AppDelegate<R>,
         profile_id: ProfileId,
         host: String,
         provider: AccountKind,
@@ -148,8 +149,8 @@ impl ProfileService {
         let account_id = AccountId::new();
         let (session, username) = match provider {
             AccountKind::GitHub => {
-                let auth_client = app_handle.global::<GitHubAuthAdapter>();
-                let api_client = app_handle.global::<GitHubApiClient>().clone();
+                let auth_client = app_delegate.global::<GitHubAuthAdapter>();
+                let api_client = app_delegate.global::<GitHubApiClient>().clone();
 
                 let session = self
                     .add_github_account(auth_client, account_id.clone(), &host)
@@ -159,8 +160,8 @@ impl ProfileService {
                 (session, user.login)
             }
             AccountKind::GitLab => {
-                let auth_client = app_handle.global::<GitLabAuthAdapter>();
-                let api_client = app_handle.global::<GitLabApiClient>().clone();
+                let auth_client = app_delegate.global::<GitLabAuthAdapter>();
+                let api_client = app_delegate.global::<GitLabApiClient>().clone();
 
                 let session = self
                     .add_gitlab_account(auth_client, account_id.clone(), &host)
@@ -191,7 +192,7 @@ impl ProfileService {
             self.fs
                 .create_file_with(
                     &abs_path,
-                    serde_json::to_string(&parsed)?.as_bytes(),
+                    serde_json::to_string_pretty(&parsed)?.as_bytes(),
                     CreateOptions {
                         overwrite: true,
                         ignore_if_exists: false,
@@ -274,7 +275,7 @@ impl ProfileService {
         self.fs
             .create_file_with(
                 &abs_path,
-                serde_json::to_string(&ProfileFile {
+                serde_json::to_string_pretty(&ProfileFile {
                     name,
                     accounts: vec![],
                 })?

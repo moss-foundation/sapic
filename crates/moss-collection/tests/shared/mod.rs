@@ -1,6 +1,6 @@
 #![cfg(feature = "integration-tests")]
 
-use moss_activity_broadcaster::ActivityBroadcaster;
+use moss_app_delegate::AppDelegate;
 use moss_applib::{
     context::{AsyncContext, MutableContext},
     mock::MockAppRuntime,
@@ -42,7 +42,8 @@ fn random_collection_path() -> PathBuf {
 }
 
 pub async fn create_test_collection() -> (
-    AsyncContext, // TODO: this is temporary, should be a mock
+    AsyncContext,
+    AppDelegate<MockAppRuntime>,
     Arc<Path>,
     Collection<MockAppRuntime>,
 ) {
@@ -55,8 +56,8 @@ pub async fn create_test_collection() -> (
 
     let abs_path: Arc<Path> = internal_abs_path.clone().into();
 
-    let broadcaster = ActivityBroadcaster::new(mock_app.handle().clone());
-    let collection = CollectionBuilder::new(fs, broadcaster)
+    let app_delegate = AppDelegate::new(mock_app.handle().clone());
+    let collection = CollectionBuilder::new(fs)
         .await
         .unwrap()
         .create(
@@ -72,7 +73,7 @@ pub async fn create_test_collection() -> (
         .await
         .unwrap();
 
-    (ctx, abs_path, collection)
+    (ctx, app_delegate, abs_path, collection)
 }
 
 #[allow(dead_code)]

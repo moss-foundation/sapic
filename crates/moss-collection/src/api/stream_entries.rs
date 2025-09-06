@@ -1,3 +1,4 @@
+use moss_app_delegate::AppDelegate;
 use moss_applib::{
     AppRuntime,
     context::{AnyAsyncContext, Reason},
@@ -35,6 +36,7 @@ impl<R: AppRuntime> Collection<R> {
     pub async fn stream_entries(
         &self,
         ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
         channel: TauriChannel<StreamEntriesEvent>,
         input: StreamEntriesInput,
     ) -> joinerror::Result<StreamEntriesOutput> {
@@ -77,11 +79,13 @@ impl<R: AppRuntime> Collection<R> {
                 let expanded_entries_clone = expanded_entries.clone();
                 let all_entry_keys_clone = all_entry_keys.clone();
                 let ctx_clone = ctx.clone();
+                let app_handle_clone = app_delegate.clone();
 
                 async move {
                     let _ = worktree_service_clone
                         .scan(
                             &ctx_clone,
+                            app_handle_clone,
                             &dir,
                             expanded_entries_clone,
                             all_entry_keys_clone,

@@ -1,6 +1,6 @@
 use moss_app::{App, AppBuilder, builder::BuildAppParams};
+use moss_app_delegate::AppDelegate;
 use moss_applib::{
-    AppHandle,
     context::{AsyncContext, MutableContext},
     mock::MockAppRuntime,
 };
@@ -55,7 +55,12 @@ pub fn random_app_dir_path() -> PathBuf {
         .join(random_string(10))
 }
 
-pub async fn set_up_test_app() -> (App<MockAppRuntime>, AsyncContext, CleanupFn) {
+pub async fn set_up_test_app() -> (
+    App<MockAppRuntime>,
+    AppDelegate<MockAppRuntime>,
+    AsyncContext,
+    CleanupFn,
+) {
     let ctx = MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
 
     let keyring = Arc::new(MockKeyringClient::new());
@@ -70,9 +75,10 @@ pub async fn set_up_test_app() -> (App<MockAppRuntime>, AsyncContext, CleanupFn)
         http_client.clone(),
         ACCOUNT_AUTH_BASE_URL.to_string(),
     ));
+    let app_delegate = AppDelegate::<MockAppRuntime>::new(tao_app_handle.clone());
 
     {
-        tao_app_handle.manage(AppHandle::<MockAppRuntime>::new(tao_app_handle.clone()));
+        tao_app_handle.manage(app_delegate.clone());
     }
 
     let app_path = random_app_dir_path();
@@ -132,6 +138,7 @@ pub async fn set_up_test_app() -> (App<MockAppRuntime>, AsyncContext, CleanupFn)
             },
         )
         .await,
+        app_delegate,
         ctx,
         cleanup_fn,
     )

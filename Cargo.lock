@@ -1554,6 +1554,7 @@ dependencies = [
  "moss_activity_broadcaster",
  "moss_api",
  "moss_app",
+ "moss_app_delegate",
  "moss_applib",
  "moss_collection",
  "moss_common",
@@ -3518,7 +3519,8 @@ dependencies = [
 name = "moss_activity_broadcaster"
 version = "0.1.0"
 dependencies = [
- "anyhow",
+ "joinerror",
+ "moss_applib",
  "moss_bindingutils",
  "serde",
  "tauri",
@@ -3555,6 +3557,7 @@ dependencies = [
  "joinerror",
  "moss_activity_broadcaster",
  "moss_api",
+ "moss_app_delegate",
  "moss_applib",
  "moss_bindingutils",
  "moss_common",
@@ -3586,6 +3589,16 @@ dependencies = [
  "tracing-subscriber",
  "ts-rs",
  "validator",
+]
+
+[[package]]
+name = "moss_app_delegate"
+version = "0.1.0"
+dependencies = [
+ "joinerror",
+ "moss_activity_broadcaster",
+ "moss_applib",
+ "tauri",
 ]
 
 [[package]]
@@ -3640,6 +3653,7 @@ dependencies = [
  "json-patch 4.0.0",
  "moss_activity_broadcaster",
  "moss_api",
+ "moss_app_delegate",
  "moss_applib",
  "moss_bindingutils",
  "moss_common",
@@ -3950,6 +3964,7 @@ dependencies = [
  "jsonptr 0.7.1",
  "moss_activity_broadcaster",
  "moss_api",
+ "moss_app_delegate",
  "moss_applib",
  "moss_bindingutils",
  "moss_collection",

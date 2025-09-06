@@ -3,7 +3,8 @@ pub mod entry;
 use anyhow::anyhow;
 use joinerror::OptionExt;
 use json_patch::{PatchOperation, ReplaceOperation, jsonptr::PointerBuf};
-use moss_activity_broadcaster::{ActivityBroadcaster, ToLocation};
+use moss_activity_broadcaster::ToLocation;
+use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_common::{continue_if_err, continue_if_none};
 use moss_db::primitives::AnyValue;
@@ -85,7 +86,6 @@ pub(crate) struct Worktree<R: AppRuntime> {
     abs_path: Arc<Path>,
     fs: Arc<dyn FileSystem>,
     storage: Arc<StorageService<R>>,
-    broadcaster: ActivityBroadcaster<R::EventLoop>,
     state: Arc<RwLock<WorktreeState>>,
 }
 
@@ -162,6 +162,7 @@ impl<R: AppRuntime> Worktree<R> {
     pub async fn scan(
         &self,
         _ctx: &R::AsyncContext, // TODO: use ctx ctx.done() to cancel the scan if needed
+        app_delegate: AppDelegate<R>,
         path: &Path,
         expanded_entries: Arc<HashSet<EntryId>>,
         all_entry_keys: Arc<HashMap<SegKeyBuf, AnyValue>>,
@@ -183,7 +184,7 @@ impl<R: AppRuntime> Worktree<R> {
 
         drop(job_tx);
 
-        let activity_handle = self.broadcaster.emit_continual(ToLocation::Window {
+        let activity_handle = app_delegate.emit_continual(ToLocation::Window {
             activity_id: "scan_worktree",
             title: "Scanning".to_string(),
             detail: None,
@@ -680,14 +681,12 @@ impl<R: AppRuntime> Worktree<R> {
     pub fn new(
         abs_path: Arc<Path>,
         fs: Arc<dyn FileSystem>,
-        broadcaster: ActivityBroadcaster<R::EventLoop>,
         storage: Arc<StorageService<R>>,
     ) -> Self {
         Self {
             abs_path,
             fs,
             storage,
-            broadcaster,
             state: Default::default(),
         }
     }

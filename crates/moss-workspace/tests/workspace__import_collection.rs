@@ -25,7 +25,7 @@ pub mod shared;
 #[ignore]
 #[tokio::test]
 async fn clone_collection_success() {
-    let (ctx, app_handle, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     dotenv::dotenv().ok();
 
@@ -38,7 +38,7 @@ async fn clone_collection_success() {
     let clone_collection_output = workspace
         .import_collection(
             &ctx,
-            &app_handle,
+            &app_delegate,
             &ImportCollectionInput {
                 inner: ImportCollectionParams {
                     name: "New Collection".to_string(),
