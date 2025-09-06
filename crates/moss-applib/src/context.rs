@@ -10,6 +10,7 @@ use std::{
     time::{Duration, Instant},
 };
 
+use joinerror::error::ErrorMarker;
 use serde::{Deserialize, Serialize};
 use tokio::sync::Notify;
 
@@ -60,17 +61,48 @@ impl Display for Reason {
 }
 
 /// Extension trait for converting context results to joinerror::Result
-pub trait ContextResultExt<T, E> {
-    fn join_err(self) -> joinerror::Result<T>
-    where
-        E: std::error::Error + Send + Sync + 'static;
+pub trait ContextResultExt<T, E>
+where
+    E: std::error::Error + Send + Sync + 'static,
+{
+    fn join_err<EM: ErrorMarker>(self, details: impl Into<String>) -> joinerror::Result<T>;
+    fn join_err_with<EM: ErrorMarker>(
+        self,
+        details: impl FnOnce() -> String,
+    ) -> joinerror::Result<T>;
+
+    fn join_err_bare(self) -> joinerror::Result<T>;
 }
 
-impl<T, E> ContextResultExt<T, E> for Result<T, Result<Reason, E>> {
-    fn join_err(self) -> joinerror::Result<T>
-    where
-        E: std::error::Error + Send + Sync + 'static,
-    {
+impl<T, E> ContextResultExt<T, E> for Result<T, Result<Reason, E>>
+where
+    E: std::error::Error + Send + Sync + 'static,
+{
+    fn join_err<EM: ErrorMarker>(self, details: impl Into<String>) -> joinerror::Result<T> {
+        match self {
+            Ok(v) => Ok(v),
+            Err(Ok(reason)) => Err(
+                joinerror::Error::new::<()>(format!("context error: {reason}")).join::<EM>(details),
+            ),
+            Err(Err(e)) => Err(joinerror::Error::new::<()>(e.to_string()).join::<EM>(details)),
+        }
+    }
+
+    fn join_err_with<EM: ErrorMarker>(
+        self,
+        details: impl FnOnce() -> String,
+    ) -> joinerror::Result<T> {
+        match self {
+            Ok(v) => Ok(v),
+            Err(Ok(reason)) => Err(
+                joinerror::Error::new::<()>(format!("context error: {reason}"))
+                    .join_with::<EM>(details),
+            ),
+            Err(Err(e)) => Err(joinerror::Error::new::<()>(e.to_string()).join_with::<EM>(details)),
+        }
+    }
+
+    fn join_err_bare(self) -> joinerror::Result<T> {
         match self {
             Ok(v) => Ok(v),
             Err(Ok(reason)) => Err(joinerror::Error::new::<()>(format!(

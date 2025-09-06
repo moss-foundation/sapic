@@ -89,7 +89,7 @@ pub struct Collection<R: AppRuntime> {
     pub(super) worktree: OnceCell<Arc<Worktree<R>>>,
     pub(super) set_icon_service: SetIconService,
     pub(super) storage_service: Arc<StorageService<R>>,
-    pub(super) vcs: OnceCell<Vcs>,
+    pub(super) vcs: OnceCell<Vcs<R>>,
     pub(super) on_did_change: EventEmitter<OnDidChangeEvent>,
     pub(super) archived: AtomicBool,
 }
@@ -138,7 +138,8 @@ impl<R: AppRuntime> Collection<R> {
     }
     pub async fn init_vcs(
         &self,
-        client: GitClient,
+        ctx: &R::AsyncContext,
+        client: GitClient<R>,
         url: GitUrl,
         default_branch: String,
     ) -> joinerror::Result<()> {
@@ -151,12 +152,14 @@ impl<R: AppRuntime> Collection<R> {
             .await?;
         }
         let (access_token, username) = match &client {
-            GitClient::GitHub { account, .. } => {
-                (account.session().access_token().await?, account.username())
-            }
-            GitClient::GitLab { account, .. } => {
-                (account.session().access_token().await?, account.username())
-            }
+            GitClient::GitHub { account, .. } => (
+                account.session().access_token(ctx).await?,
+                account.username(),
+            ),
+            GitClient::GitLab { account, .. } => (
+                account.session().access_token(ctx).await?,
+                account.username(),
+            ),
         };
 
         let mut cb = git2::RemoteCallbacks::new();
@@ -226,7 +229,7 @@ impl<R: AppRuntime> Collection<R> {
         Ok(())
     }
 
-    pub async fn load_vcs(&self, client: GitClient) -> joinerror::Result<()> {
+    pub async fn load_vcs(&self, client: GitClient<R>) -> joinerror::Result<()> {
         let repository = Repository::open(self.abs_path.as_ref())?;
 
         let url = {

@@ -10,18 +10,18 @@ use moss_git_hosting_provider::{
 use moss_user::{AccountSession, account::Account, models::primitives::AccountId};
 
 #[derive(Clone)]
-pub enum GitClient {
+pub enum GitClient<R: AppRuntime> {
     GitHub {
-        account: Account,
+        account: Account<R>,
         api: GitHubApiClient,
     },
     GitLab {
-        account: Account,
+        account: Account<R>,
         api: GitLabApiClient,
     },
 }
 
-impl GitClient {
+impl<R: AppRuntime> GitClient<R> {
     pub fn account_id(&self) -> AccountId {
         match self {
             GitClient::GitHub { account, .. } => account.id(),
@@ -36,7 +36,7 @@ impl GitClient {
         }
     }
 
-    pub fn session(&self) -> &AccountSession {
+    pub fn session(&self) -> &AccountSession<R> {
         match self {
             GitClient::GitHub { account, .. } => account.session(),
             GitClient::GitLab { account, .. } => account.session(),
@@ -50,7 +50,7 @@ impl GitClient {
         }
     }
 
-    pub async fn repository<R: AppRuntime>(
+    pub async fn repository(
         &self,
         ctx: &R::AsyncContext,
         url: &GitUrl,
@@ -79,7 +79,7 @@ impl GitClient {
         }
     }
 
-    pub async fn contributors<R: AppRuntime>(
+    pub async fn contributors(
         &self,
         ctx: &R::AsyncContext,
         url: &GitUrl,

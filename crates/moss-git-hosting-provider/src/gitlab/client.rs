@@ -28,9 +28,9 @@ impl GitLabApiClient {
     pub async fn get_user<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
-        account_handle: &AccountSession,
+        account_handle: &AccountSession<R>,
     ) -> joinerror::Result<GetUserResponse> {
-        let access_token = account_handle.access_token().await?;
+        let access_token = account_handle.access_token(ctx).await?;
         let resp = context::abortable(
             ctx,
             self.client
@@ -40,7 +40,7 @@ impl GitLabApiClient {
                 .send(),
         )
         .await
-        .join_err()?;
+        .join_err::<()>("failed to get GitLab user")?;
 
         let status = resp.status();
         if status.is_success() {
@@ -55,10 +55,10 @@ impl GitLabApiClient {
     pub async fn get_contributors<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
-        account_handle: &AccountSession,
+        account_handle: &AccountSession<R>,
         url: &GitUrl,
     ) -> joinerror::Result<GetContributorsResponse> {
-        let access_token = account_handle.access_token().await?;
+        let access_token = account_handle.access_token(ctx).await?;
         let repo_url = format!("{}/{}", &url.owner, &url.name);
         let encoded_url = urlencoding::encode(&repo_url);
 
@@ -75,7 +75,7 @@ impl GitLabApiClient {
                 .send(),
         )
         .await
-        .join_err()?;
+        .join_err::<()>("failed to get GitLab contributors")?;
 
         let status = resp.status();
         if status.is_success() {
@@ -90,10 +90,10 @@ impl GitLabApiClient {
     pub async fn get_repository<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
-        account_handle: &AccountSession,
+        account_handle: &AccountSession<R>,
         url: &GitUrl,
     ) -> joinerror::Result<GetRepositoryResponse> {
-        let access_token = account_handle.access_token().await?;
+        let access_token = account_handle.access_token(ctx).await?;
         let repo_url = format!("{}/{}", &url.owner, &url.name);
         let encoded_url = urlencoding::encode(&repo_url);
 
@@ -110,7 +110,7 @@ impl GitLabApiClient {
                 .send(),
         )
         .await
-        .join_err()?;
+        .join_err::<()>("failed to get GitLab repository")?;
 
         let status = resp.status();
         if status.is_success() {

@@ -25,14 +25,14 @@ pub trait CollectionVcs<R: AppRuntime>: Send + Sync {
     fn provider(&self) -> GitProviderKind;
 }
 
-pub(crate) struct Vcs {
+pub(crate) struct Vcs<R: AppRuntime> {
     url: GitUrl,
     repository: Arc<RwLock<Option<Repository>>>,
-    client: GitClient,
+    client: GitClient<R>,
 }
 
-impl Vcs {
-    pub(crate) fn new(url: GitUrl, repository: Repository, client: GitClient) -> Self {
+impl<R: AppRuntime> Vcs<R> {
+    pub(crate) fn new(url: GitUrl, repository: Repository, client: GitClient<R>) -> Self {
         Self {
             url,
             repository: Arc::new(RwLock::new(Some(repository))),
@@ -79,9 +79,9 @@ impl Vcs {
 }
 
 #[async_trait]
-impl<R: AppRuntime> CollectionVcs<R> for Vcs {
+impl<R: AppRuntime> CollectionVcs<R> for Vcs<R> {
     async fn summary(&self, ctx: &R::AsyncContext) -> joinerror::Result<VcsSummary> {
-        let repo = self.client.repository::<R>(ctx, &self.url).await?;
+        let repo = self.client.repository(ctx, &self.url).await?;
 
         let repo_lock = self.repository.read().await;
         let current_branch_name = repo_lock.as_ref().unwrap().current_branch()?;
@@ -112,6 +112,6 @@ impl<R: AppRuntime> CollectionVcs<R> for Vcs {
     }
 
     async fn contributors(&self, ctx: &R::AsyncContext) -> joinerror::Result<Vec<ContributorInfo>> {
-        self.client.contributors::<R>(ctx, &self.url).await
+        self.client.contributors(ctx, &self.url).await
     }
 }

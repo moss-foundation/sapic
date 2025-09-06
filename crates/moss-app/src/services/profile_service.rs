@@ -68,16 +68,16 @@ impl ServiceConfig {
     }
 }
 
-pub(crate) struct ProfileService {
+pub(crate) struct ProfileService<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     auth_api_client: Arc<AccountAuthGatewayApiClient>,
     keyring: Arc<dyn KeyringClient>,
     state: RwLock<ServiceState>,
-    active_profile: Arc<ActiveProfile>,
+    active_profile: Arc<ActiveProfile<R>>,
     config: ServiceConfig,
 }
 
-impl ProfileService {
+impl<R: AppRuntime> ProfileService<R> {
     pub async fn new(
         fs: Arc<dyn FileSystem>,
         auth_api_client: Arc<AccountAuthGatewayApiClient>,
@@ -133,11 +133,11 @@ impl ProfileService {
         })
     }
 
-    pub fn active_profile(&self) -> Arc<ActiveProfile> {
+    pub fn active_profile(&self) -> Arc<ActiveProfile<R>> {
         self.active_profile.clone()
     }
 
-    pub async fn add_account<R: AppRuntime>(
+    pub async fn add_account(
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
@@ -150,22 +150,22 @@ impl ProfileService {
         let account_id = AccountId::new();
         let (session, username) = match provider {
             AccountKind::GitHub => {
-                let auth_client = app_delegate.global::<GitHubAuthAdapter>();
+                let auth_client = app_delegate.global::<GitHubAuthAdapter<R>>();
                 let api_client = app_delegate.global::<GitHubApiClient>().clone();
 
                 let session = self
-                    .add_github_account(auth_client, account_id.clone(), &host)
+                    .add_github_account(ctx, auth_client, account_id.clone(), &host)
                     .await?;
                 let user = api_client.get_user::<R>(ctx, &session).await?;
 
                 (session, user.login)
             }
             AccountKind::GitLab => {
-                let auth_client = app_delegate.global::<GitLabAuthAdapter>();
+                let auth_client = app_delegate.global::<GitLabAuthAdapter<R>>();
                 let api_client = app_delegate.global::<GitLabApiClient>().clone();
 
                 let session = self
-                    .add_gitlab_account(auth_client, account_id.clone(), &host)
+                    .add_gitlab_account(ctx, auth_client, account_id.clone(), &host)
                     .await?;
                 let user = api_client.get_user::<R>(ctx, &session).await?;
 
@@ -226,11 +226,12 @@ impl ProfileService {
 
     async fn add_github_account(
         &self,
-        auth_client: &GitHubAuthAdapter,
+        ctx: &R::AsyncContext,
+        auth_client: &GitHubAuthAdapter<R>,
         account_id: AccountId,
         host: &str,
-    ) -> joinerror::Result<AccountSession> {
-        let token = auth_client.auth_with_pkce().await.unwrap();
+    ) -> joinerror::Result<AccountSession<R>> {
+        let token = auth_client.auth_with_pkce(ctx).await.unwrap();
 
         Ok(AccountSession::github(
             account_id,
@@ -245,11 +246,12 @@ impl ProfileService {
 
     async fn add_gitlab_account(
         &self,
-        auth_client: &GitLabAuthAdapter,
+        ctx: &R::AsyncContext,
+        auth_client: &GitLabAuthAdapter<R>,
         account_id: AccountId,
         host: &str,
-    ) -> joinerror::Result<AccountSession> {
-        let token = auth_client.auth_with_pkce().await.unwrap();
+    ) -> joinerror::Result<AccountSession<R>> {
+        let token = auth_client.auth_with_pkce(ctx).await.unwrap();
 
         Ok(AccountSession::gitlab(
             account_id,

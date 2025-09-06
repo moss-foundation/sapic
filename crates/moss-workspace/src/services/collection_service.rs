@@ -106,7 +106,7 @@ impl<R: AppRuntime> CollectionService<R> {
         fs: Arc<dyn FileSystem>,
         storage: Arc<StorageService<R>>,
         environment_sources: &mut FxHashMap<Arc<String>, PathBuf>,
-        active_profile: &Arc<ActiveProfile>,
+        active_profile: &Arc<ActiveProfile<R>>,
         on_collection_did_delete_emitter: EventEmitter<OnDidDeleteCollection>,
         on_collection_did_add_emitter: EventEmitter<OnDidAddCollection>,
     ) -> joinerror::Result<Self> {
@@ -154,7 +154,7 @@ impl<R: AppRuntime> CollectionService<R> {
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
         id: &CollectionId,
-        account: Option<Account>,
+        account: Option<Account<R>>,
         params: &CreateCollectionParams,
     ) -> joinerror::Result<CollectionItemDescription> {
         let id_str = id.to_string();
@@ -244,7 +244,7 @@ impl<R: AppRuntime> CollectionService<R> {
             };
 
             collection
-                .init_vcs(client, git_params.repository, git_params.branch)
+                .init_vcs(ctx, client, git_params.repository, git_params.branch)
                 .await?;
         }
 
@@ -311,7 +311,7 @@ impl<R: AppRuntime> CollectionService<R> {
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
         id: &CollectionId,
-        account: Account,
+        account: Account<R>,
         params: CollectionItemCloneParams,
     ) -> joinerror::Result<CollectionItemDescription> {
         let id_str = id.to_string();
@@ -742,7 +742,7 @@ async fn restore_collections<R: AppRuntime>(
     abs_path: &Path,
     fs: &Arc<dyn FileSystem>,
     storage: &Arc<StorageService<R>>,
-    active_profile: &Arc<ActiveProfile>,
+    active_profile: &Arc<ActiveProfile<R>>,
 ) -> joinerror::Result<HashMap<CollectionId, CollectionItem<R>>> {
     if !abs_path.exists() {
         return Ok(HashMap::new());

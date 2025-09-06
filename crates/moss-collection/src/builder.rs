@@ -325,7 +325,7 @@ impl CollectionBuilder {
     pub async fn clone<R: AppRuntime>(
         self,
         ctx: &R::AsyncContext,
-        git_client: GitClient,
+        git_client: GitClient<R>,
         params: CollectionCloneParams,
     ) -> joinerror::Result<Collection<R>> {
         debug_assert!(params.internal_abs_path.is_absolute());
@@ -333,6 +333,7 @@ impl CollectionBuilder {
         let abs_path = params.internal_abs_path.clone();
         let repository = self
             .do_clone(
+                ctx,
                 &git_client,
                 abs_path.clone(),
                 params.repository.to_string_with_suffix()?,
@@ -444,14 +445,15 @@ impl CollectionBuilder {
 }
 
 impl CollectionBuilder {
-    async fn do_clone(
+    async fn do_clone<R: AppRuntime>(
         &self,
-        git_client: &GitClient,
+        ctx: &R::AsyncContext,
+        git_client: &GitClient<R>,
         abs_path: Arc<Path>,
         repo_url: String,
         branch: Option<String>,
     ) -> joinerror::Result<Repository> {
-        let access_token = git_client.session().access_token().await?;
+        let access_token = git_client.session().access_token(ctx).await?;
         let username = git_client.username();
 
         let mut cb = git2::RemoteCallbacks::new();

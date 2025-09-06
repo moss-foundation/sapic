@@ -3,6 +3,7 @@ pub mod gitlab;
 mod utils;
 
 use async_trait::async_trait;
+use moss_applib::AppRuntime;
 
 #[derive(Debug, Clone)]
 pub enum GitProviderKind {
@@ -11,12 +12,12 @@ pub enum GitProviderKind {
 }
 
 #[async_trait]
-pub trait GitAuthAdapter {
+pub trait GitAuthAdapter<R: AppRuntime> {
     type PkceToken;
     type PatToken;
 
-    async fn auth_with_pkce(&self) -> joinerror::Result<Self::PkceToken>;
-    async fn auth_with_pat(&self) -> joinerror::Result<Self::PatToken>;
+    async fn auth_with_pkce(&self, ctx: &R::AsyncContext) -> joinerror::Result<Self::PkceToken>;
+    async fn auth_with_pat(&self, ctx: &R::AsyncContext) -> joinerror::Result<Self::PatToken>;
 }
 
 #[cfg(any(test, feature = "integration-tests"))]

@@ -40,9 +40,9 @@ pub struct CreateWorkspaceParams {
     pub abs_path: Arc<Path>,
 }
 
-pub struct WorkspaceBuilder {
+pub struct WorkspaceBuilder<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
-    active_profile: Arc<ActiveProfile>,
+    active_profile: Arc<ActiveProfile<R>>,
 }
 
 #[derive(Clone)]
@@ -58,8 +58,8 @@ pub struct OnDidAddCollection {
 impl EventMarker for OnDidDeleteCollection {}
 impl EventMarker for OnDidAddCollection {}
 
-impl WorkspaceBuilder {
-    pub fn new(fs: Arc<dyn FileSystem>, active_profile: Arc<ActiveProfile>) -> Self {
+impl<R: AppRuntime> WorkspaceBuilder<R> {
+    pub fn new(fs: Arc<dyn FileSystem>, active_profile: Arc<ActiveProfile<R>>) -> Self {
         Self { fs, active_profile }
     }
 
@@ -98,7 +98,7 @@ impl WorkspaceBuilder {
         Ok(())
     }
 
-    pub async fn load<R: AppRuntime>(
+    pub async fn load(
         self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
@@ -175,7 +175,7 @@ impl WorkspaceBuilder {
         })
     }
 
-    pub async fn create<R: AppRuntime>(
+    pub async fn create(
         self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
@@ -183,7 +183,7 @@ impl WorkspaceBuilder {
     ) -> joinerror::Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
 
-        WorkspaceBuilder::initialize(self.fs.clone(), params.clone())
+        WorkspaceBuilder::<R>::initialize(self.fs.clone(), params.clone())
             .await
             .join_err::<()>("failed to initialize workspace")?;
 

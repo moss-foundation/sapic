@@ -23,8 +23,6 @@ impl GitHubHttpRequestBuilderExt for RequestBuilder {
     }
 }
 
-// TODO: add context to the client operations
-
 #[derive(Clone)]
 pub struct GitHubApiClient {
     client: HttpClient,
@@ -35,13 +33,12 @@ impl GitHubApiClient {
         Self { client }
     }
 
-    // TODO: refactor with constants and helpers
     pub async fn get_user<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
-        account_handle: &AccountSession,
+        account_handle: &AccountSession<R>,
     ) -> joinerror::Result<GetUserResponse> {
-        let access_token = account_handle.access_token().await?;
+        let access_token = account_handle.access_token(ctx).await?;
         let resp = context::abortable(
             ctx,
             self.client
@@ -50,7 +47,7 @@ impl GitHubApiClient {
                 .send(),
         )
         .await
-        .join_err()?;
+        .join_err::<()>("failed to get GitHub user")?;
 
         let status = resp.status();
         if status.is_success() {
@@ -62,14 +59,13 @@ impl GitHubApiClient {
         }
     }
 
-    // TODO: refactor with constants and helpers
     pub async fn get_contributors<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
-        account_handle: &AccountSession,
+        account_handle: &AccountSession<R>,
         url: &GitUrl,
     ) -> joinerror::Result<GetContributorsResponse> {
-        let access_token = account_handle.access_token().await?;
+        let access_token = account_handle.access_token(ctx).await?;
         let repo_url = format!("{}/{}", &url.owner, &url.name);
         let resp = context::abortable(
             ctx,
@@ -79,7 +75,7 @@ impl GitHubApiClient {
                 .send(),
         )
         .await
-        .join_err()?;
+        .join_err::<()>("failed to get GitHub contributors")?;
 
         let status = resp.status();
         if status.is_success() {
@@ -91,14 +87,13 @@ impl GitHubApiClient {
         }
     }
 
-    // TODO: refactor with constants and helpers
     pub async fn get_repository<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
-        account_handle: &AccountSession,
+        account_handle: &AccountSession<R>,
         url: &GitUrl,
     ) -> joinerror::Result<GetRepositoryResponse> {
-        let access_token = account_handle.access_token().await?;
+        let access_token = account_handle.access_token(ctx).await?;
         let repo_url = format!("{}/{}", &url.owner, &url.name);
         let resp = context::abortable(
             ctx,
@@ -108,7 +103,7 @@ impl GitHubApiClient {
                 .send(),
         )
         .await
-        .join_err()?;
+        .join_err::<()>("failed to get GitHub repository")?;
 
         let status = resp.status();
         if status.is_success() {

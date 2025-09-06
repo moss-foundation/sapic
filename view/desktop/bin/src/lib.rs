@@ -110,12 +110,12 @@ pub async fn run<R: TauriRuntime>() {
                     tao_app_handle.manage(http_client.clone());
                     tao_app_handle.manage(GitHubApiClient::new(http_client.clone()));
                     tao_app_handle.manage(GitLabApiClient::new(http_client.clone()));
-                    tao_app_handle.manage(GitHubAuthAdapter::new(
+                    tao_app_handle.manage(GitHubAuthAdapter::<TauriAppRuntime<R>>::new(
                         auth_api_client.clone(),
                         auth_api_client.base_url(),
                         8080,
                     ));
-                    tao_app_handle.manage(GitLabAuthAdapter::new(
+                    tao_app_handle.manage(GitLabAuthAdapter::<TauriAppRuntime<R>>::new(
                         auth_api_client.clone(),
                         auth_api_client.base_url(),
                         8081,

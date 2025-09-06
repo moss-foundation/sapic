@@ -219,7 +219,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
             .await
             .join_err::<()>("failed to create workspace directory")?;
 
-        WorkspaceBuilder::initialize(
+        WorkspaceBuilder::<R>::initialize(
             self.fs.clone(),
             CreateWorkspaceParams {
                 name: params.name.clone(),
@@ -262,7 +262,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
         id: &WorkspaceId,
-        active_profile: Arc<ActiveProfile>,
+        active_profile: Arc<ActiveProfile<R>>,
     ) -> joinerror::Result<WorkspaceItemDescription> {
         let (name, already_active) = {
             let state_lock = self.state.read().await;
