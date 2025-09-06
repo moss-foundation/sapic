@@ -17,7 +17,7 @@ import { ModalWrapperProps } from "../types";
 export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { globalEnvironments, groupedEnvironments } = useStreamEnvironments();
+  const { globalEnvironments, collectionEnvironments } = useStreamEnvironments();
   const { mutateAsync: createEnvironment } = useCreateEnvironment();
   const { data: collections } = useStreamCollections();
 
@@ -32,9 +32,9 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
   });
 
   const restrictedNames = useMemo(() => {
-    const list = mode === "Workspace" ? globalEnvironments : groupedEnvironments;
+    const list = mode === "Workspace" ? globalEnvironments : collectionEnvironments;
     return list?.map((env) => env.name) ?? [];
-  }, [mode, globalEnvironments, groupedEnvironments]);
+  }, [mode, globalEnvironments, collectionEnvironments]);
 
   const { isValid } = useValidateInput({
     value: name,
@@ -47,7 +47,7 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
   const handleSubmit = async () => {
     if (!isValid) return;
 
-    const newOrder = mode === "Workspace" ? getNextOrder(globalEnvironments) : getNextOrder(groupedEnvironments);
+    const newOrder = mode === "Workspace" ? getNextOrder(globalEnvironments) : getNextOrder(collectionEnvironments);
 
     if (mode === "Workspace") {
       await createEnvironment({

@@ -10,6 +10,7 @@ import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
+import { useDeleteEnvironmentItem } from "../actions/useDeleteEnvironmentItem";
 import { EnvironmentListType } from "./types";
 
 interface EnvironmentItemControlsProps {
@@ -30,6 +31,8 @@ export const EnvironmentItemControls = ({
   const { activePanelId } = useTabbedPaneStore();
 
   const { showModal: showDeleteModal, setShowModal: setShowDeleteModal, closeModal: setHideDeleteModal } = useModal();
+
+  const { handleDeleteEnvironment } = useDeleteEnvironmentItem({ environment, type });
 
   const [showActionMenu, setShowActionMenu] = useState(false);
 
@@ -86,6 +89,7 @@ export const EnvironmentItemControls = ({
                     onClick={(e) => {
                       e.stopPropagation();
                       setShowDeleteModal(true);
+                      handleDeleteEnvironment();
                     }}
                   >
                     Delete
