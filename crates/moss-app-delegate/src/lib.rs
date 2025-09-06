@@ -2,6 +2,10 @@ use moss_activity_broadcaster::{AppActivityBroadcaster, ToLocation, handle::Acti
 use moss_applib::AppRuntime;
 use tauri::{AppHandle as TauriAppHandle, Manager};
 
+pub mod broadcast {
+    pub use moss_activity_broadcaster::ToLocation;
+}
+
 /// A wrapper around `tauri::AppHandle` that provides
 /// access to the global state and actions.
 pub struct AppDelegate<R: AppRuntime> {

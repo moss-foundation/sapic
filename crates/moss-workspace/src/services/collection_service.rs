@@ -1,8 +1,7 @@
 use derive_more::{Deref, DerefMut};
 use futures::Stream;
 use joinerror::{Error, OptionExt, ResultExt};
-use moss_activity_broadcaster::ToLocation;
-use moss_app_delegate::AppDelegate;
+use moss_app_delegate::{AppDelegate, broadcast::ToLocation};
 use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_collection::{
     Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,

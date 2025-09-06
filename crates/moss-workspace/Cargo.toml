@@ -11,7 +11,6 @@ moss_fs.workspace = true
 moss_collection.workspace = true
 moss_environment.workspace = true
 moss_storage.workspace = true
-moss_activity_broadcaster.workspace = true
 moss_git.workspace = true
 moss_bindingutils.workspace = true
 moss_edit.workspace = true
