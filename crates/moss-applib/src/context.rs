@@ -562,8 +562,8 @@ mod tests {
         assert_eq!(ctx.done(), None);
     }
 
-    #[test]
     #[should_panic(expected = "Timeout must be set before")]
+    #[test]
     fn test_deadline_panics_without_deadline() {
         let ctx = MutableContext::background();
         let _ = ctx.deadline(); // Should panic without deadline
