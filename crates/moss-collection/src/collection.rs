@@ -2,7 +2,6 @@ use chrono::{DateTime, Utc};
 use git2::{BranchType, IndexAddOption, Signature};
 use joinerror::{Error, OptionExt, ResultExt};
 use json_patch::{PatchOperation, ReplaceOperation, jsonptr::PointerBuf};
-use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::{
     AppRuntime, EventMarker,
     subscription::{Event, EventEmitter},
@@ -90,9 +89,8 @@ pub struct Collection<R: AppRuntime> {
     pub(super) worktree: OnceCell<Arc<Worktree<R>>>,
     pub(super) set_icon_service: SetIconService,
     pub(super) storage_service: Arc<StorageService<R>>,
-    pub(super) vcs: OnceCell<Vcs>,
+    pub(super) vcs: OnceCell<Vcs<R>>,
     pub(super) on_did_change: EventEmitter<OnDidChangeEvent>,
-    pub(super) broadcaster: ActivityBroadcaster<R::EventLoop>,
     pub(super) archived: AtomicBool,
 }
 
@@ -110,7 +108,6 @@ impl<R: AppRuntime> Collection<R> {
                 Arc::new(Worktree::new(
                     self.abs_path.clone(),
                     self.fs.clone(),
-                    self.broadcaster.clone(),
                     self.storage_service.clone(),
                 ))
             })
@@ -136,12 +133,13 @@ impl<R: AppRuntime> Collection<R> {
         self.abs_path.join(dirs::ENVIRONMENTS_DIR)
     }
 
-    pub fn vcs(&self) -> Option<&dyn CollectionVcs> {
-        self.vcs.get().map(|vcs| vcs as &dyn CollectionVcs)
+    pub fn vcs(&self) -> Option<&dyn CollectionVcs<R>> {
+        self.vcs.get().map(|vcs| vcs as &dyn CollectionVcs<R>)
     }
     pub async fn init_vcs(
         &self,
-        client: GitClient,
+        ctx: &R::AsyncContext,
+        client: GitClient<R>,
         url: GitUrl,
         default_branch: String,
     ) -> joinerror::Result<()> {
@@ -154,12 +152,14 @@ impl<R: AppRuntime> Collection<R> {
             .await?;
         }
         let (access_token, username) = match &client {
-            GitClient::GitHub { account, .. } => {
-                (account.session().access_token().await?, account.username())
-            }
-            GitClient::GitLab { account, .. } => {
-                (account.session().access_token().await?, account.username())
-            }
+            GitClient::GitHub { account, .. } => (
+                account.session().access_token(ctx).await?,
+                account.username(),
+            ),
+            GitClient::GitLab { account, .. } => (
+                account.session().access_token(ctx).await?,
+                account.username(),
+            ),
         };
 
         let mut cb = git2::RemoteCallbacks::new();
@@ -229,7 +229,7 @@ impl<R: AppRuntime> Collection<R> {
         Ok(())
     }
 
-    pub async fn load_vcs(&self, client: GitClient) -> joinerror::Result<()> {
+    pub async fn load_vcs(&self, client: GitClient<R>) -> joinerror::Result<()> {
         let repository = Repository::open(self.abs_path.as_ref())?;
 
         let url = {
@@ -432,7 +432,6 @@ impl<R: AppRuntime> Collection<R> {
                 Arc::new(Worktree::new(
                     self.abs_path.clone(),
                     self.fs.clone(),
-                    self.broadcaster.clone(),
                     self.storage_service.clone(),
                 ))
             })

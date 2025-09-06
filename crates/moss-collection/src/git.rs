@@ -1,5 +1,6 @@
 mod types;
 
+use moss_applib::AppRuntime;
 pub use types::*;
 
 use moss_git::url::GitUrl;
@@ -9,18 +10,18 @@ use moss_git_hosting_provider::{
 use moss_user::{AccountSession, account::Account, models::primitives::AccountId};
 
 #[derive(Clone)]
-pub enum GitClient {
+pub enum GitClient<R: AppRuntime> {
     GitHub {
-        account: Account,
+        account: Account<R>,
         api: GitHubApiClient,
     },
     GitLab {
-        account: Account,
+        account: Account<R>,
         api: GitLabApiClient,
     },
 }
 
-impl GitClient {
+impl<R: AppRuntime> GitClient<R> {
     pub fn account_id(&self) -> AccountId {
         match self {
             GitClient::GitHub { account, .. } => account.id(),
@@ -35,7 +36,7 @@ impl GitClient {
         }
     }
 
-    pub fn session(&self) -> &AccountSession {
+    pub fn session(&self) -> &AccountSession<R> {
         match self {
             GitClient::GitHub { account, .. } => account.session(),
             GitClient::GitLab { account, .. } => account.session(),
@@ -49,10 +50,14 @@ impl GitClient {
         }
     }
 
-    pub async fn repository(&self, url: &GitUrl) -> joinerror::Result<RepositoryInfo> {
+    pub async fn repository(
+        &self,
+        ctx: &R::AsyncContext,
+        url: &GitUrl,
+    ) -> joinerror::Result<RepositoryInfo> {
         match self {
             GitClient::GitHub { account, api } => {
-                let resp = api.get_repository(account.session(), url).await?;
+                let resp = api.get_repository::<R>(ctx, account.session(), url).await?;
 
                 Ok(RepositoryInfo {
                     updated_at: resp.updated_at,
@@ -62,7 +67,7 @@ impl GitClient {
                 })
             }
             GitClient::GitLab { account, api } => {
-                let resp = api.get_repository(account.session(), url).await?;
+                let resp = api.get_repository::<R>(ctx, account.session(), url).await?;
 
                 Ok(RepositoryInfo {
                     updated_at: resp.updated_at,
@@ -74,10 +79,16 @@ impl GitClient {
         }
     }
 
-    pub async fn contributors(&self, url: &GitUrl) -> joinerror::Result<Vec<ContributorInfo>> {
+    pub async fn contributors(
+        &self,
+        ctx: &R::AsyncContext,
+        url: &GitUrl,
+    ) -> joinerror::Result<Vec<ContributorInfo>> {
         match self {
             GitClient::GitHub { account, api } => {
-                let resp = api.get_contributors(account.session(), url).await?;
+                let resp = api
+                    .get_contributors::<R>(ctx, account.session(), url)
+                    .await?;
 
                 let mut result = Vec::with_capacity(resp.items.len());
                 for item in resp.items {
@@ -90,7 +101,9 @@ impl GitClient {
                 Ok(result)
             }
             GitClient::GitLab { account, api } => {
-                let resp = api.get_contributors(account.session(), url).await?;
+                let resp = api
+                    .get_contributors::<R>(ctx, account.session(), url)
+                    .await?;
 
                 let mut result = Vec::with_capacity(resp.items.len());
                 for item in resp.items {

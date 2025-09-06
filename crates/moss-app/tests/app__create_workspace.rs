@@ -17,12 +17,13 @@ use crate::shared::set_up_test_app;
 
 #[tokio::test]
 async fn create_workspace_success() {
-    let (app, ctx, cleanup) = set_up_test_app().await;
+    let (app, app_delegate, ctx, cleanup) = set_up_test_app().await;
 
     let workspace_name = random_workspace_name();
     let create_result = app
         .create_workspace(
             &ctx,
+            &app_delegate,
             &CreateWorkspaceInput {
                 name: workspace_name.clone(),
                 mode: WorkspaceMode::default(),
@@ -80,11 +81,12 @@ async fn create_workspace_success() {
 
 #[tokio::test]
 async fn create_workspace_empty_name() {
-    let (app, ctx, cleanup) = set_up_test_app().await;
+    let (app, app_delegate, ctx, cleanup) = set_up_test_app().await;
 
     let create_result = app
         .create_workspace(
             &ctx,
+            &app_delegate,
             &CreateWorkspaceInput {
                 name: "".to_string(),
                 mode: WorkspaceMode::default(),
@@ -112,7 +114,7 @@ async fn create_workspace_empty_name() {
 
 #[tokio::test]
 async fn create_workspace_same_name() {
-    let (app, ctx, cleanup) = set_up_test_app().await;
+    let (app, app_delegate, ctx, cleanup) = set_up_test_app().await;
 
     let workspace_name = random_workspace_name();
 
@@ -120,6 +122,7 @@ async fn create_workspace_same_name() {
     let first_result = app
         .create_workspace(
             &ctx,
+            &app_delegate,
             &CreateWorkspaceInput {
                 name: workspace_name.clone(),
                 mode: WorkspaceMode::default(),
@@ -146,6 +149,7 @@ async fn create_workspace_same_name() {
     let second_result = app
         .create_workspace(
             &ctx,
+            &app_delegate,
             &CreateWorkspaceInput {
                 name: workspace_name.clone(),
                 mode: WorkspaceMode::default(),
@@ -224,7 +228,7 @@ async fn create_workspace_same_name() {
 
 #[tokio::test]
 async fn create_workspace_special_chars() {
-    let (app, ctx, cleanup) = set_up_test_app().await;
+    let (app, app_delegate, ctx, cleanup) = set_up_test_app().await;
 
     let base_name = random_workspace_name();
     let mut created_count = 0;
@@ -235,6 +239,7 @@ async fn create_workspace_special_chars() {
         let create_result = app
             .create_workspace(
                 &ctx,
+                &app_delegate,
                 &CreateWorkspaceInput {
                     name: name.clone(),
                     mode: WorkspaceMode::default(),
@@ -296,12 +301,13 @@ async fn create_workspace_special_chars() {
 
 #[tokio::test]
 async fn create_workspace_not_open_on_creation() {
-    let (app, ctx, cleanup) = set_up_test_app().await;
+    let (app, app_delegate, ctx, cleanup) = set_up_test_app().await;
 
     let workspace_name = random_workspace_name();
     let create_result = app
         .create_workspace(
             &ctx,
+            &app_delegate,
             &CreateWorkspaceInput {
                 name: workspace_name.clone(),
                 mode: WorkspaceMode::default(),

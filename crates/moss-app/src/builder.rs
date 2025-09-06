@@ -1,5 +1,5 @@
-use moss_activity_broadcaster::ActivityBroadcaster;
-use moss_applib::{AppHandle, AppRuntime};
+use moss_app_delegate::AppDelegate;
+use moss_applib::AppRuntime;
 use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
@@ -63,7 +63,7 @@ impl<R: AppRuntime> AppBuilder<R> {
                 .expect("Failed to create app directories");
         }
 
-        let _app_handle = self.tao_handle.state::<AppHandle<R>>().inner().clone();
+        let _delegate = self.tao_handle.state::<AppDelegate<R>>().inner().clone();
 
         let theme_service = ThemeService::new(self.fs.clone(), params.themes_dir)
             .await
@@ -130,7 +130,6 @@ impl<R: AppRuntime> AppBuilder<R> {
             theme_service,
             profile_service,
             tracked_cancellations: Default::default(),
-            broadcaster: ActivityBroadcaster::new(self.tao_handle),
         }
     }
 }

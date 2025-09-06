@@ -1,84 +1,57 @@
-use anyhow::Result;
-use moss_api::TauriResult;
+use joinerror::{OptionExt, ResultExt, errors};
 use moss_text::ReadOnlyStr;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
 use std::{collections::HashMap, future::Future, pin::Pin, sync::Arc};
-use tauri::{AppHandle, Runtime as TauriRuntime, Window};
-use thiserror::Error;
+use tauri::{Runtime as TauriRuntime, Window};
 
-#[derive(Error, Debug)]
-pub enum CommandContextError {
-    #[error("Argument '{key}' is not found")]
-    ArgNotFound { key: String },
+errors! {
+    /// The argument is not found.
+    ArgNotFound => "arg_not_found",
 
-    #[error("Failed to deserialize argument '{key}': {source}")]
-    DeserializationError {
-        key: String,
-        #[source]
-        source: serde_json::Error,
-    },
-}
-
-impl From<CommandContextError> for String {
-    fn from(err: CommandContextError) -> Self {
-        err.to_string()
-    }
+    /// The argument is not deserializable.
+    Deserialization => "deserialization",
 }
 
 pub struct CommandContext<R: TauriRuntime> {
-    app_handle: AppHandle<R>,
     window: Window<R>,
     args: HashMap<String, Value>,
 }
 
 impl<R: TauriRuntime> CommandContext<R> {
-    pub fn new(app_handle: AppHandle<R>, window: Window<R>, args: HashMap<String, Value>) -> Self {
-        Self {
-            app_handle,
-            window,
-            args,
-        }
-    }
-
-    pub fn app_handle(&self) -> &AppHandle<R> {
-        &self.app_handle
+    pub fn new(window: Window<R>, args: HashMap<String, Value>) -> Self {
+        Self { window, args }
     }
 
     pub fn window(&self) -> &Window<R> {
         &self.window
     }
 
-    pub fn take_arg<T>(&mut self, key: &str) -> Result<T, CommandContextError>
+    pub fn take_arg<T>(&mut self, key: &str) -> joinerror::Result<T>
     where
         T: DeserializeOwned,
     {
         let value = self
             .args
             .remove(key)
-            .ok_or(CommandContextError::ArgNotFound {
-                key: key.to_string(),
-            })?;
+            .ok_or_join_err_with::<ArgNotFound>(|| format!("argument '{}' is not found", key))?;
 
-        serde_json::from_value(value).map_err(|e| CommandContextError::DeserializationError {
-            key: key.to_string(),
-            source: e,
+        serde_json::from_value(value).join_err_with::<Deserialization>(|| {
+            format!("failed to deserialize argument '{}'", key)
         })
     }
 
-    pub fn get_arg<T>(&self, key: &str) -> Result<T, CommandContextError>
+    pub fn get_arg<T>(&self, key: &str) -> joinerror::Result<T>
     where
         T: DeserializeOwned,
     {
-        let value = self.args.get(key).ok_or(CommandContextError::ArgNotFound {
-            key: key.to_string(),
-        })?;
+        let value = self
+            .args
+            .get(key)
+            .ok_or_join_err_with::<ArgNotFound>(|| format!("argument '{}' is not found", key))?;
 
-        serde_json::from_value(value.clone()).map_err(|e| {
-            CommandContextError::DeserializationError {
-                key: key.to_string(),
-                source: e,
-            }
+        serde_json::from_value(value.clone()).join_err_with::<Deserialization>(|| {
+            format!("failed to deserialize argument '{}'", key)
         })
     }
 }
@@ -95,7 +68,7 @@ macro_rules! command {
     };
 }
 
-type CommandResult<'a> = Pin<Box<dyn Future<Output = TauriResult<Value>> + Send + 'a>>;
+type CommandResult<'a> = Pin<Box<dyn Future<Output = joinerror::Result<Value>> + Send + 'a>>;
 
 pub type CommandCallback<R> =
     Arc<dyn for<'a> Fn(&'a mut CommandContext<R>) -> CommandResult<'a> + Send + Sync>;

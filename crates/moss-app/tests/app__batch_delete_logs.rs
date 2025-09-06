@@ -14,7 +14,7 @@ use crate::shared::set_up_test_app;
 #[ignore]
 #[tokio::test]
 async fn test_delete_logs_from_queue() {
-    let (app, ctx, cleanup) = set_up_test_app().await;
+    let (app, _, ctx, cleanup) = set_up_test_app().await;
 
     // We only have one log, less than the dump threshold
     // So we should delete from the queue
@@ -62,7 +62,7 @@ async fn test_delete_logs_from_queue() {
 #[ignore]
 #[tokio::test]
 async fn test_delete_logs_from_file() {
-    let (app, ctx, cleanup) = set_up_test_app().await;
+    let (app, _, ctx, cleanup) = set_up_test_app().await;
 
     // By default, the dump threshold is 10, which means that the first log
     for _ in 0..15 {
@@ -111,7 +111,7 @@ async fn test_delete_logs_from_file() {
 
 #[tokio::test]
 async fn test_delete_all_logs() {
-    let (app, ctx, cleanup) = set_up_test_app().await;
+    let (app, _, ctx, cleanup) = set_up_test_app().await;
 
     for _ in 0..15 {
         app::warn!("");

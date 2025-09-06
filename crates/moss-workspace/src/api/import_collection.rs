@@ -1,5 +1,6 @@
 use joinerror::OptionExt;
-use moss_applib::{AppHandle, AppRuntime, errors::ValidationResultExt};
+use moss_app_delegate::AppDelegate;
+use moss_applib::{AppRuntime, errors::ValidationResultExt};
 use moss_git_hosting_provider::GitProviderKind;
 use validator::Validate;
 
@@ -17,7 +18,7 @@ impl<R: AppRuntime> Workspace<R> {
     pub async fn import_collection(
         &self,
         ctx: &R::AsyncContext,
-        app_handle: &AppHandle<R>,
+        app_delegate: &AppDelegate<R>,
         input: &ImportCollectionInput,
     ) -> joinerror::Result<ImportCollectionOutput> {
         input.validate().join_err_bare()?;
@@ -36,7 +37,7 @@ impl<R: AppRuntime> Workspace<R> {
                 self.collection_service
                     .clone_collection(
                         ctx,
-                        app_handle,
+                        app_delegate,
                         &id,
                         session,
                         CollectionItemCloneParams {
@@ -59,7 +60,7 @@ impl<R: AppRuntime> Workspace<R> {
                 self.collection_service
                     .clone_collection(
                         ctx,
-                        app_handle,
+                        app_delegate,
                         &id,
                         session,
                         CollectionItemCloneParams {

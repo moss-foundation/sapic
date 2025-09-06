@@ -90,9 +90,16 @@ pub async fn create_collection<'a, R: tauri::Runtime>(
     input: CreateCollectionInput,
     options: Options,
 ) -> TauriResult<CreateCollectionOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
-        workspace.create_collection(&ctx, &input).await
-    })
+    super::with_workspace_timeout(
+        ctx.inner(),
+        app,
+        options,
+        |ctx, app_delegate, workspace| async move {
+            workspace
+                .create_collection(&ctx, &app_delegate, &input)
+                .await
+        },
+    )
     .await
 }
 
@@ -109,8 +116,10 @@ pub async fn import_collection<'a, R: tauri::Runtime>(
         ctx.inner(),
         app,
         options,
-        |ctx, app_handle, workspace| async move {
-            workspace.import_collection(&ctx, &app_handle, &input).await
+        |ctx, app_delegate, workspace| async move {
+            workspace
+                .import_collection(&ctx, &app_delegate, &input)
+                .await
         },
     )
     .await

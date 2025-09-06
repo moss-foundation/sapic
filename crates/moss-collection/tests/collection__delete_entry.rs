@@ -15,7 +15,7 @@ use crate::shared::{
 
 #[tokio::test]
 async fn delete_entry_success() {
-    let (ctx, collection_path, mut collection) = create_test_collection().await;
+    let (ctx, _, collection_path, mut collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
@@ -40,7 +40,7 @@ async fn delete_entry_success() {
 
 #[tokio::test]
 async fn delete_entry_not_found() {
-    let (ctx, collection_path, collection) = create_test_collection().await;
+    let (ctx, _, collection_path, collection) = create_test_collection().await;
 
     let delete_input = DeleteEntryInput { id: EntryId::new() };
 
@@ -57,7 +57,7 @@ async fn delete_entry_not_found() {
 
 #[tokio::test]
 async fn delete_entry_with_subdirectories() {
-    let (ctx, collection_path, mut collection) = create_test_collection().await;
+    let (ctx, _, collection_path, mut collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
@@ -94,7 +94,7 @@ async fn delete_entry_with_subdirectories() {
 
 #[tokio::test]
 async fn delete_multiple_entries() {
-    let (ctx, collection_path, mut collection) = create_test_collection().await;
+    let (ctx, _, collection_path, mut collection) = create_test_collection().await;
 
     let entry1_name = format!("{}_1", random_entry_name());
     let entry2_name = format!("{}_2", random_entry_name());
@@ -137,7 +137,7 @@ async fn delete_multiple_entries() {
 
 #[tokio::test]
 async fn delete_entry_twice() {
-    let (ctx, collection_path, mut collection) = create_test_collection().await;
+    let (ctx, _, collection_path, mut collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
@@ -170,7 +170,7 @@ async fn delete_entry_twice() {
 
 #[tokio::test]
 async fn delete_entries_from_different_directories() {
-    let (ctx, collection_path, mut collection) = create_test_collection().await;
+    let (ctx, _, collection_path, mut collection) = create_test_collection().await;
 
     let mut entries = Vec::new();
 

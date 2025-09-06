@@ -16,7 +16,7 @@ mod shared;
 #[ignore]
 #[tokio::test]
 async fn describe_collection_with_repository() {
-    let (ctx, app_handle, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let account_id = ctx
         .value::<AccountId>("account_id")
@@ -27,7 +27,7 @@ async fn describe_collection_with_repository() {
     let import_collection_output = workspace
         .import_collection(
             &ctx,
-            &app_handle,
+            &app_delegate,
             &ImportCollectionInput {
                 inner: ImportCollectionParams {
                     name: "New Collection".to_string(),

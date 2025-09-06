@@ -1,3 +1,4 @@
+use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, errors::ValidationResultExt};
 use validator::Validate;
 
@@ -13,6 +14,7 @@ impl<R: AppRuntime> Workspace<R> {
     pub async fn create_collection(
         &self,
         ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
         input: &CreateCollectionInput,
     ) -> joinerror::Result<CreateCollectionOutput> {
         input.validate().join_err_bare()?;
@@ -28,7 +30,7 @@ impl<R: AppRuntime> Workspace<R> {
         };
         let description = self
             .collection_service
-            .create_collection(ctx, &id, account, &input.inner)
+            .create_collection(ctx, app_delegate, &id, account, &input.inner)
             .await?;
 
         Ok(CreateCollectionOutput {

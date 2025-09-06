@@ -4,11 +4,13 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-anyhow.workspace = true
+moss_applib.workspace = true
+
 serde.workspace = true
 tauri.workspace = true
 ts-rs.workspace = true
 moss_bindingutils.workspace = true
+joinerror.workspace = true
 
 [features]
 integration-tests = []

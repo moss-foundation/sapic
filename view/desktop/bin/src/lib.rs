@@ -9,8 +9,9 @@ mod window;
 extern crate tracing;
 
 use moss_app::{AppBuilder as TauriAppBuilder, builder::BuildAppParams};
+use moss_app_delegate::AppDelegate;
 use moss_applib::{
-    AppHandle, TauriAppRuntime,
+    TauriAppRuntime,
     context::{AnyAsyncContext, AnyContext, MutableContext},
 };
 use moss_fs::RealFileSystem;
@@ -109,19 +110,20 @@ pub async fn run<R: TauriRuntime>() {
                     tao_app_handle.manage(http_client.clone());
                     tao_app_handle.manage(GitHubApiClient::new(http_client.clone()));
                     tao_app_handle.manage(GitLabApiClient::new(http_client.clone()));
-                    tao_app_handle.manage(GitHubAuthAdapter::new(
+                    tao_app_handle.manage(GitHubAuthAdapter::<TauriAppRuntime<R>>::new(
                         auth_api_client.clone(),
                         auth_api_client.base_url(),
                         8080,
                     ));
-                    tao_app_handle.manage(GitLabAuthAdapter::new(
+                    tao_app_handle.manage(GitLabAuthAdapter::<TauriAppRuntime<R>>::new(
                         auth_api_client.clone(),
                         auth_api_client.base_url(),
                         8081,
                     ));
 
-                    tao_app_handle
-                        .manage(AppHandle::<TauriAppRuntime<R>>::new(tao_app_handle.clone()));
+                    tao_app_handle.manage(AppDelegate::<TauriAppRuntime<R>>::new(
+                        tao_app_handle.clone(),
+                    ));
                 }
 
                 let ctx_clone = ctx.clone();
@@ -157,7 +159,7 @@ pub async fn run<R: TauriRuntime>() {
 
                     ctx.freeze()
                 });
-                tao_app_handle.manage(app);
+                tao_app_handle.manage(Arc::new(app));
 
                 Ok(())
             })

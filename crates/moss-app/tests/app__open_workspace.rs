@@ -19,7 +19,7 @@ use crate::shared::set_up_test_app;
 
 #[tokio::test]
 async fn open_workspace_success() {
-    let (app, ctx, cleanup) = set_up_test_app().await;
+    let (app, app_delegate, ctx, cleanup) = set_up_test_app().await;
 
     let workspace_name = random_workspace_name();
 
@@ -27,6 +27,7 @@ async fn open_workspace_success() {
     let create_result = app
         .create_workspace(
             &ctx,
+            &app_delegate,
             &CreateWorkspaceInput {
                 name: workspace_name.clone(),
                 mode: WorkspaceMode::default(),
@@ -47,6 +48,7 @@ async fn open_workspace_success() {
     let open_result = app
         .open_workspace(
             &ctx,
+            &app_delegate,
             &OpenWorkspaceInput {
                 id: create_output.id.clone(),
             },
@@ -93,13 +95,14 @@ async fn open_workspace_success() {
 
 #[tokio::test]
 async fn open_workspace_already_opened() {
-    let (app, ctx, cleanup) = set_up_test_app().await;
+    let (app, app_delegate, ctx, cleanup) = set_up_test_app().await;
     let workspace_name = random_workspace_name();
 
     // Create and open workspace
     let create_result = app
         .create_workspace(
             &ctx,
+            &app_delegate,
             &CreateWorkspaceInput {
                 name: workspace_name.clone(),
                 mode: WorkspaceMode::default(),
@@ -117,6 +120,7 @@ async fn open_workspace_already_opened() {
     let open_result = app
         .open_workspace(
             &ctx,
+            &app_delegate,
             &OpenWorkspaceInput {
                 id: create_output.id.clone(),
             },
@@ -135,13 +139,14 @@ async fn open_workspace_already_opened() {
 
 #[tokio::test]
 async fn open_workspace_switch_between_workspaces() {
-    let (app, ctx, cleanup) = set_up_test_app().await;
+    let (app, app_delegate, ctx, cleanup) = set_up_test_app().await;
 
     // Create first workspace
     let workspace_name1 = random_workspace_name();
     let create_output1 = app
         .create_workspace(
             &ctx,
+            &app_delegate,
             &CreateWorkspaceInput {
                 name: workspace_name1.clone(),
                 mode: WorkspaceMode::default(),
@@ -156,6 +161,7 @@ async fn open_workspace_switch_between_workspaces() {
     let create_output2 = app
         .create_workspace(
             &ctx,
+            &app_delegate,
             &CreateWorkspaceInput {
                 name: workspace_name2.clone(),
                 mode: WorkspaceMode::default(),
@@ -169,6 +175,7 @@ async fn open_workspace_switch_between_workspaces() {
     let open_result1 = app
         .open_workspace(
             &ctx,
+            &app_delegate,
             &OpenWorkspaceInput {
                 id: create_output1.id.clone(),
             },
@@ -185,6 +192,7 @@ async fn open_workspace_switch_between_workspaces() {
     let open_result2 = app
         .open_workspace(
             &ctx,
+            &app_delegate,
             &OpenWorkspaceInput {
                 id: create_output2.id.clone(),
             },
@@ -201,6 +209,7 @@ async fn open_workspace_switch_between_workspaces() {
     let open_result1_again = app
         .open_workspace(
             &ctx,
+            &app_delegate,
             &OpenWorkspaceInput {
                 id: create_output1.id.clone(),
             },
@@ -230,12 +239,16 @@ async fn open_workspace_switch_between_workspaces() {
 
 #[tokio::test]
 async fn open_workspace_nonexistent() {
-    let (app, ctx, cleanup) = set_up_test_app().await;
+    let (app, app_delegate, ctx, cleanup) = set_up_test_app().await;
 
     let nonexistent_id = WorkspaceId::new();
 
     let open_result = app
-        .open_workspace(&ctx, &OpenWorkspaceInput { id: nonexistent_id })
+        .open_workspace(
+            &ctx,
+            &app_delegate,
+            &OpenWorkspaceInput { id: nonexistent_id },
+        )
         .await;
 
     assert!(open_result.is_err());
@@ -245,7 +258,7 @@ async fn open_workspace_nonexistent() {
 
 #[tokio::test]
 async fn open_workspace_filesystem_does_not_exist() {
-    let (app, ctx, cleanup) = set_up_test_app().await;
+    let (app, app_delegate, ctx, cleanup) = set_up_test_app().await;
 
     let workspace_name = random_workspace_name();
 
@@ -253,6 +266,7 @@ async fn open_workspace_filesystem_does_not_exist() {
     let create_output = app
         .create_workspace(
             &ctx,
+            &app_delegate,
             &CreateWorkspaceInput {
                 name: workspace_name.clone(),
                 mode: WorkspaceMode::default(),
@@ -275,6 +289,7 @@ async fn open_workspace_filesystem_does_not_exist() {
     let open_result = app
         .open_workspace(
             &ctx,
+            &app_delegate,
             &OpenWorkspaceInput {
                 id: create_output.id,
             },

@@ -1,3 +1,7 @@
+use moss_applib::{
+    AppRuntime,
+    context::{self, ContextResultExt},
+};
 use moss_git::url::GitUrl;
 use moss_user::AccountSession;
 use oauth2::http::header::{ACCEPT, AUTHORIZATION, USER_AGENT};
@@ -19,8 +23,6 @@ impl GitHubHttpRequestBuilderExt for RequestBuilder {
     }
 }
 
-// TODO: add context to the client operations
-
 #[derive(Clone)]
 pub struct GitHubApiClient {
     client: HttpClient,
@@ -31,76 +33,88 @@ impl GitHubApiClient {
         Self { client }
     }
 
-    // TODO: refactor with constants and helpers
-    pub async fn get_user(
+    pub async fn get_user<R: AppRuntime>(
         &self,
-        account_handle: &AccountSession,
+        ctx: &R::AsyncContext,
+        account_handle: &AccountSession<R>,
     ) -> joinerror::Result<GetUserResponse> {
-        let access_token = account_handle.access_token().await?;
-        let resp = self
-            .client
-            .get(format!("{GITHUB_API_URL}/user"))
-            .with_default_github_headers(access_token)
-            .send()
-            .await?;
+        context::abortable(ctx, async {
+            let access_token = account_handle.access_token(ctx).await?;
+            let resp = self
+                .client
+                .get(format!("{GITHUB_API_URL}/user"))
+                .with_default_github_headers(access_token)
+                .send()
+                .await?;
 
-        let status = resp.status();
-        if status.is_success() {
-            Ok(resp.json().await?)
-        } else {
-            let error_text = resp.text().await?;
-            eprintln!("GitHub API Error: Status {}, Body: {}", status, error_text);
-            Err(joinerror::Error::new::<()>(error_text))
-        }
+            let status = resp.status();
+            if status.is_success() {
+                Ok(resp.json().await?)
+            } else {
+                let error_text = resp.text().await?;
+                eprintln!("GitHub API Error: Status {}, Body: {}", status, error_text);
+                Err(joinerror::Error::new::<()>(error_text))
+            }
+        })
+        .await
+        .join_err_bare()
     }
 
-    // TODO: refactor with constants and helpers
-    pub async fn get_contributors(
+    pub async fn get_contributors<R: AppRuntime>(
         &self,
-        account_handle: &AccountSession,
+        ctx: &R::AsyncContext,
+        account_handle: &AccountSession<R>,
         url: &GitUrl,
     ) -> joinerror::Result<GetContributorsResponse> {
-        let access_token = account_handle.access_token().await?;
-        let repo_url = format!("{}/{}", &url.owner, &url.name);
-        let resp = self
-            .client
-            .get(format!("{GITHUB_API_URL}/repos/{repo_url}/contributors"))
-            .with_default_github_headers(access_token)
-            .send()
-            .await?;
+        context::abortable(ctx, async {
+            let access_token = account_handle.access_token(ctx).await?;
+            let repo_url = format!("{}/{}", &url.owner, &url.name);
+            let resp = self
+                .client
+                .get(format!("{GITHUB_API_URL}/repos/{repo_url}/contributors"))
+                .with_default_github_headers(access_token)
+                .send()
+                .await?;
 
-        let status = resp.status();
-        if status.is_success() {
-            Ok(resp.json().await?)
-        } else {
-            let error_text = resp.text().await?;
-            eprintln!("GitHub API Error: Status {}, Body: {}", status, error_text);
-            Err(joinerror::Error::new::<()>(error_text))
-        }
+            let status = resp.status();
+            if status.is_success() {
+                Ok(resp.json().await?)
+            } else {
+                let error_text = resp.text().await?;
+                eprintln!("GitHub API Error: Status {}, Body: {}", status, error_text);
+                Err(joinerror::Error::new::<()>(error_text))
+            }
+        })
+        .await
+        .join_err_bare()
     }
 
-    // TODO: refactor with constants and helpers
-    pub async fn get_repository(
+    pub async fn get_repository<R: AppRuntime>(
         &self,
-        account_handle: &AccountSession,
+        ctx: &R::AsyncContext,
+        account_handle: &AccountSession<R>,
         url: &GitUrl,
     ) -> joinerror::Result<GetRepositoryResponse> {
-        let access_token = account_handle.access_token().await?;
-        let repo_url = format!("{}/{}", &url.owner, &url.name);
-        let resp = self
-            .client
-            .get(format!("{GITHUB_API_URL}/repos/{repo_url}"))
-            .with_default_github_headers(access_token)
-            .send()
-            .await?;
+        context::abortable(ctx, async {
+            let access_token = account_handle.access_token(ctx).await?;
+            let repo_url = format!("{}/{}", &url.owner, &url.name);
+            let resp = self
+                .client
+                .get(format!("{GITHUB_API_URL}/repos/{repo_url}"))
+                .with_default_github_headers(access_token)
+                .send()
+                .await?;
 
-        let status = resp.status();
-        if status.is_success() {
-            Ok(resp.json().await?)
-        } else {
-            let error_text = resp.text().await?;
-            eprintln!("GitHub API Error: Status {}, Body: {}", status, error_text);
-            Err(joinerror::Error::new::<()>(error_text))
-        }
+            let status = resp.status();
+            if status.is_success() {
+                Ok(resp.json().await?)
+            } else {
+                let error_text = resp.text().await?;
+                eprintln!("GitHub API Error: Status {}, Body: {}", status, error_text);
+                Err(joinerror::Error::new::<()>(error_text))
+            }
+        })
+        .await
+        .join_err_bare()
     }
 }

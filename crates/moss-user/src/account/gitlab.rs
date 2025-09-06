@@ -1,4 +1,5 @@
 use joinerror::Error;
+use moss_applib::AppRuntime;
 use moss_keyring::KeyringClient;
 use moss_server_api::account_auth_gateway::{GitLabTokenRefreshApiReq, GitLabTokenRefreshRequest};
 use std::{
@@ -29,19 +30,19 @@ pub(crate) struct LastAccessToken {
     expires_at: Instant,
 }
 
-pub(crate) struct GitLabSessionHandle {
+pub(crate) struct GitLabSessionHandle<R: AppRuntime> {
     pub id: AccountId,
     pub host: String,
 
-    auth_api_client: Arc<dyn GitLabTokenRefreshApiReq>,
+    auth_api_client: Arc<dyn GitLabTokenRefreshApiReq<R>>,
     token: RwLock<Option<LastAccessToken>>,
 }
 
-impl GitLabSessionHandle {
+impl<R: AppRuntime> GitLabSessionHandle<R> {
     pub(crate) async fn new(
         id: AccountId,
         host: String,
-        auth_api_client: Arc<dyn GitLabTokenRefreshApiReq>,
+        auth_api_client: Arc<dyn GitLabTokenRefreshApiReq<R>>,
         initial_token: Option<GitLabInitialToken>,
 
         keyring: &Arc<dyn KeyringClient>,
@@ -72,6 +73,7 @@ impl GitLabSessionHandle {
 
     pub(crate) async fn access_token(
         &self,
+        ctx: &R::AsyncContext,
         keyring: &Arc<dyn KeyringClient>,
     ) -> joinerror::Result<String> {
         if let Some(token) = self.token.read().await.as_ref() {
@@ -90,9 +92,12 @@ impl GitLabSessionHandle {
 
         let resp = self
             .auth_api_client
-            .gitlab_token_refresh(GitLabTokenRefreshRequest {
-                refresh_token: old_refresh_token,
-            })
+            .gitlab_token_refresh(
+                ctx,
+                GitLabTokenRefreshRequest {
+                    refresh_token: old_refresh_token,
+                },
+            )
             .await?;
 
         self.token.write().await.replace(LastAccessToken {

@@ -20,7 +20,7 @@ pub async fn create_collection_entry<'a, R: tauri::Runtime>(
         app,
         collection_id,
         options,
-        |ctx, collection| async move { collection.create_entry(&ctx, input).await },
+        |ctx, _, collection| async move { collection.create_entry(&ctx, input).await },
     )
     .await
 }
@@ -40,7 +40,7 @@ pub async fn delete_collection_entry<'a, R: tauri::Runtime>(
         app,
         collection_id,
         options,
-        |ctx, collection| async move { collection.delete_entry(&ctx, input).await },
+        |ctx, _, collection| async move { collection.delete_entry(&ctx, input).await },
     )
     .await
 }
@@ -60,7 +60,7 @@ pub async fn update_collection_entry<'a, R: tauri::Runtime>(
         app,
         collection_id,
         options,
-        |ctx, collection| async move { collection.update_entry(&ctx, input).await },
+        |ctx, _, collection| async move { collection.update_entry(&ctx, input).await },
     )
     .await
 }
@@ -80,7 +80,7 @@ pub async fn batch_create_collection_entry<'a, R: tauri::Runtime>(
         app,
         collection_id,
         options,
-        |ctx, collection| async move { collection.batch_create_entry(&ctx, input).await },
+        |ctx, _, collection| async move { collection.batch_create_entry(&ctx, input).await },
     )
     .await
 }
@@ -101,7 +101,7 @@ pub async fn batch_update_collection_entry<'a, R: tauri::Runtime>(
         app,
         collection_id,
         options,
-        |ctx, collection| async move { collection.batch_update_entry(&ctx, input, channel).await },
+        |ctx, _, collection| async move { collection.batch_update_entry(&ctx, input, channel).await },
     )
     .await
 }
@@ -113,7 +113,7 @@ pub async fn stream_collection_entries<'a, R: tauri::Runtime>(
     app: App<'a, R>,
     window: Window<R>,
     collection_id: CollectionId,
-    input: Option<StreamEntriesInput>, // FIXME: this needs to be optional because the frontend doesn't send it yet
+    input: StreamEntriesInput,
     channel: TauriChannel<StreamEntriesEvent>,
     options: Options,
 ) -> TauriResult<StreamEntriesOutput> {
@@ -122,15 +122,10 @@ pub async fn stream_collection_entries<'a, R: tauri::Runtime>(
         app,
         collection_id,
         options,
-        |ctx, collection| async move {
-            // FIXME: temporary hack
-            let input = if let Some(input) = input {
-                input
-            } else {
-                StreamEntriesInput::LoadRoot
-            };
-
-            collection.stream_entries(&ctx, channel, input).await
+        |ctx, app_delegate, collection| async move {
+            collection
+                .stream_entries(&ctx, &app_delegate, channel, input)
+                .await
         },
     )
     .await
