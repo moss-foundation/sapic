@@ -49,7 +49,6 @@ tracing.workspace = true
 tauri = { workspace = true, features = ["test"] }
 moss_testutils.workspace = true
 moss_applib = { workspace = true, features = ["test"] }
-moss_asp = { workspace = true }
 
 [features]
 integration-tests = [

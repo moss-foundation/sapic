@@ -1,11 +1,14 @@
 use joinerror::Error;
 use moss_keyring::KeyringClient;
-use oauth2::{EmptyExtraTokenFields, StandardTokenResponse, TokenResponse, basic::BasicTokenType};
 use std::sync::Arc;
 
 use crate::{account::common::make_secret_key, models::primitives::AccountId};
 
 const GITHUB_PREFIX: &str = "gh";
+
+pub struct GitHubInitialToken {
+    pub access_token: String,
+}
 
 pub(crate) struct GitHubSessionHandle {
     pub id: AccountId,
@@ -16,7 +19,8 @@ impl GitHubSessionHandle {
     pub async fn new(
         id: AccountId,
         host: String,
-        initial_token: Option<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>>,
+
+        initial_token: Option<GitHubInitialToken>,
 
         keyring: &Arc<dyn KeyringClient>,
     ) -> joinerror::Result<Self> {
@@ -29,7 +33,7 @@ impl GitHubSessionHandle {
             keyring
                 .set_secret(
                     &make_secret_key(GITHUB_PREFIX, &host, &id),
-                    &initial_token.access_token().secret().to_string(),
+                    &initial_token.access_token,
                 )
                 .await
                 .map_err(|e| Error::new::<()>(e.to_string()))?;

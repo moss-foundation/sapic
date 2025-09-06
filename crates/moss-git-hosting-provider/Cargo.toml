@@ -4,11 +4,12 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+moss_server_api.workspace = true
 moss_user.workspace = true
 moss_git.workspace = true
 moss_keyring.workspace = true
-joinerror.workspace = true
 
+joinerror.workspace = true
 git2.workspace = true
 url.workspace = true
 dotenv.workspace = true

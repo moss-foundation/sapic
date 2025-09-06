@@ -22,6 +22,7 @@ compression = ["tauri/compression"]
 devtools = ["tauri/devtools"]
 
 [dependencies]
+moss_server_api.workspace = true
 moss_activity_broadcaster.workspace = true
 moss_applib.workspace = true
 moss_common.workspace = true
@@ -36,6 +37,7 @@ moss_storage.workspace = true
 moss_environment.workspace = true
 moss_git_hosting_provider.workspace = true
 moss_keyring.workspace = true
+moss_user.workspace = true
 
 reqwest.workspace = true
 tauri = { workspace = true, features = ["wry", "macos-private-api", "objc-exception"] }

@@ -1,14 +1,16 @@
 mod common;
-mod github;
-mod gitlab;
+pub mod github;
+pub mod gitlab;
 
-use moss_asp::AppSecretsProvider;
 use moss_keyring::KeyringClient;
-use oauth2::{ClientId, EmptyExtraTokenFields, StandardTokenResponse, basic::BasicTokenType};
+use moss_server_api::account_auth_gateway::GitLabTokenRefreshApiReq;
 use std::sync::Arc;
 
 use crate::{
-    account::{github::GitHubSessionHandle, gitlab::GitLabSessionHandle},
+    account::{
+        github::{GitHubInitialToken, GitHubSessionHandle},
+        gitlab::{GitLabInitialToken, GitLabSessionHandle},
+    },
     models::primitives::AccountId,
 };
 
@@ -52,14 +54,9 @@ enum Session {
     GitLab(GitLabSessionHandle),
 }
 
-// There are two scenarios for creating an account handler.
-// The first is when we create a handler from an already added account (like when restoring a profile).
-// The second is when we’ve just added an account and received the necessary token as part of that process.
-
 #[derive(Clone)]
 
 pub struct AccountSession {
-    secrets: AppSecretsProvider,
     keyring: Arc<dyn KeyringClient>,
     inner: Arc<Session>,
 }
@@ -68,15 +65,13 @@ impl AccountSession {
     pub async fn github(
         id: AccountId,
         host: String,
-        secrets: AppSecretsProvider,
         keyring: Arc<dyn KeyringClient>,
 
-        initial_token: Option<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>>,
+        initial_token: Option<GitHubInitialToken>,
     ) -> joinerror::Result<Self> {
         let session = GitHubSessionHandle::new(id, host, initial_token, &keyring).await?;
 
         Ok(Self {
-            secrets,
             keyring,
             inner: Arc::new(Session::GitHub(session)),
         })
@@ -84,18 +79,16 @@ impl AccountSession {
 
     pub async fn gitlab(
         id: AccountId,
-        client_id: ClientId,
         host: String,
         keyring: Arc<dyn KeyringClient>,
-        secrets: AppSecretsProvider,
-
-        initial_token: Option<StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>>,
+        auth_api_client: Arc<dyn GitLabTokenRefreshApiReq>,
+        initial_token: Option<GitLabInitialToken>,
     ) -> joinerror::Result<Self> {
         let session =
-            GitLabSessionHandle::new(id, host, client_id, initial_token, &keyring).await?;
+            GitLabSessionHandle::new(id, host, auth_api_client, initial_token, &keyring).await?;
 
         Ok(Self {
-            secrets,
+            // secrets,
             keyring,
             inner: Arc::new(Session::GitLab(session)),
         })
@@ -111,7 +104,7 @@ impl AccountSession {
     pub async fn access_token(&self) -> joinerror::Result<String> {
         match self.inner.as_ref() {
             Session::GitHub(handle) => handle.access_token(&self.keyring).await,
-            Session::GitLab(handle) => handle.access_token(&self.keyring, &self.secrets).await,
+            Session::GitLab(handle) => handle.access_token(&self.keyring).await,
         }
     }
 }

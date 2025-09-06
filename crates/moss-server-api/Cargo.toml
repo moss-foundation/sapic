@@ -1,0 +1,13 @@
+[package]
+name = "moss_server_api"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+async-trait.workspace = true
+joinerror.workspace = true
+reqwest = { workspace = true, features = ["json"] }
+serde.workspace = true
+
+[features]
+integration-tests = []

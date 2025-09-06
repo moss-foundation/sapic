@@ -3,7 +3,6 @@ pub mod gitlab;
 mod utils;
 
 use async_trait::async_trait;
-use oauth2::{ClientId, ClientSecret};
 
 #[derive(Debug, Clone)]
 pub enum GitProviderKind {
@@ -16,12 +15,7 @@ pub trait GitAuthAdapter {
     type PkceToken;
     type PatToken;
 
-    async fn auth_with_pkce(
-        &self,
-        client_id: ClientId,
-        client_secret: ClientSecret,
-        host: &str,
-    ) -> joinerror::Result<Self::PkceToken>;
+    async fn auth_with_pkce(&self) -> joinerror::Result<Self::PkceToken>;
     async fn auth_with_pat(&self) -> joinerror::Result<Self::PatToken>;
 }
 

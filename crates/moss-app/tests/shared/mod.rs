@@ -1,12 +1,16 @@
 use moss_app::{App, AppBuilder, builder::BuildAppParams};
 use moss_applib::{
+    AppHandle,
     context::{AsyncContext, MutableContext},
     mock::MockAppRuntime,
 };
 use moss_fs::RealFileSystem;
 use moss_keyring::test::MockKeyringClient;
+use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_testutils::random_name::random_string;
+use reqwest::ClientBuilder as HttpClientBuilder;
 use std::{future::Future, path::PathBuf, pin::Pin, sync::Arc, time::Duration};
+use tauri::Manager;
 
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
 
@@ -42,6 +46,8 @@ const PROFILES: &str = r#"
 }
 "#;
 
+const ACCOUNT_AUTH_BASE_URL: &str = "https://account-auth-gateway-dev.20g10z3r.workers.dev";
+
 pub fn random_app_dir_path() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
@@ -55,7 +61,19 @@ pub async fn set_up_test_app() -> (App<MockAppRuntime>, AsyncContext, CleanupFn)
     let keyring = Arc::new(MockKeyringClient::new());
     let fs = Arc::new(RealFileSystem::new());
     let tauri_app = tauri::test::mock_app();
-    let app_handle = tauri_app.handle().to_owned();
+    let tao_app_handle = tauri_app.handle().to_owned();
+    let http_client = HttpClientBuilder::new()
+        .user_agent("SAPIC-TEST/1.0")
+        .build()
+        .expect("failed to build http client");
+    let auth_api_client = Arc::new(AccountAuthGatewayApiClient::new(
+        http_client.clone(),
+        ACCOUNT_AUTH_BASE_URL.to_string(),
+    ));
+
+    {
+        tao_app_handle.manage(AppHandle::<MockAppRuntime>::new(tao_app_handle.clone()));
+    }
 
     let app_path = random_app_dir_path();
 
@@ -98,17 +116,22 @@ pub async fn set_up_test_app() -> (App<MockAppRuntime>, AsyncContext, CleanupFn)
     });
 
     (
-        AppBuilder::<MockAppRuntime>::new(app_handle.clone(), fs.clone(), keyring)
-            .build(
-                &ctx,
-                BuildAppParams {
-                    app_dir: app_path.clone(),
-                    themes_dir: themes_abs_path,
-                    locales_dir: locales_abs_path,
-                    logs_dir: logs_abs_path,
-                },
-            )
-            .await,
+        AppBuilder::<MockAppRuntime>::new(
+            tao_app_handle.clone(),
+            fs.clone(),
+            keyring,
+            auth_api_client,
+        )
+        .build(
+            &ctx,
+            BuildAppParams {
+                app_dir: app_path.clone(),
+                themes_dir: themes_abs_path,
+                locales_dir: locales_abs_path,
+                logs_dir: logs_abs_path,
+            },
+        )
+        .await,
         ctx,
         cleanup_fn,
     )

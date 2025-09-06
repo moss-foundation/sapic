@@ -7,11 +7,8 @@ use moss_applib::{
     context::{AnyContext, AsyncContext, MutableContext},
     mock::MockAppRuntime,
 };
-use moss_asp::AppSecretsProvider;
 use moss_fs::RealFileSystem;
-use moss_git_hosting_provider::{
-    envvar_keys::GITLAB_CLIENT_SECRET, github::GitHubApiClient, gitlab::GitLabApiClient,
-};
+use moss_git_hosting_provider::{github::GitHubApiClient, gitlab::GitLabApiClient};
 use moss_keyring::test::MockKeyringClient;
 use moss_testutils::random_name::random_workspace_name;
 use moss_user::{Account, AccountSession, models::primitives::AccountId, profile::ActiveProfile};
@@ -82,15 +79,7 @@ pub async fn setup_test_workspace() -> (
     fs::create_dir_all(&abs_path).unwrap();
 
     let broadcaster = ActivityBroadcaster::new(tao_app_handle.clone());
-
     let keyring = Arc::new(MockKeyringClient::new());
-    let secrets = AppSecretsProvider::new(
-        dotenv::var(GITLAB_CLIENT_SECRET).unwrap_or_default(),
-        dotenv::var(GITLAB_CLIENT_SECRET).unwrap_or_default(),
-        keyring.clone(),
-    )
-    .await
-    .unwrap();
 
     let active_profile = {
         let account_id = AccountId::new();
@@ -98,7 +87,7 @@ pub async fn setup_test_workspace() -> (
         let account_session = AccountSession::github(
             account_id.clone(),
             "github.com".to_string(),
-            secrets,
+            // secrets,
             keyring.clone(),
             None,
         )
