@@ -91,24 +91,26 @@ impl<R: AppRuntime> GitLabPkceTokenExchangeApiReq<R> for AccountAuthGatewayApiCl
         ctx: &R::AsyncContext,
         request: TokenExchangeRequest,
     ) -> joinerror::Result<GitLabPkceTokenExchangeResponse> {
-        let resp = context::abortable(
-            ctx,
-            self.client
+        context::abortable(ctx, async {
+            let resp = self
+                .client
                 .post(format!("{}/auth/gitlab/token", self.base_url))
                 .json(&request)
-                .send(),
-        )
+                .send()
+                .await
+                .join_err::<()>("failed to exchange GitLab PKCE token")?;
+
+            if !resp.status().is_success() {
+                let error_text = resp.text().await?;
+                return Err(joinerror::Error::new::<()>(error_text));
+            }
+
+            resp.json()
+                .await
+                .join_err::<()>("failed to parse GitLab PKCE token exchange response")
+        })
         .await
-        .join_err::<()>("failed to exchange GitLab PKCE token")?;
-
-        if !resp.status().is_success() {
-            let error_text = resp.text().await?;
-            return Err(joinerror::Error::new::<()>(error_text));
-        }
-
-        resp.json()
-            .await
-            .join_err::<()>("failed to parse GitLab PKCE token exchange response")
+        .join_err_bare()
     }
 }
 
@@ -119,24 +121,26 @@ impl<R: AppRuntime> GitLabTokenRefreshApiReq<R> for AccountAuthGatewayApiClient 
         ctx: &R::AsyncContext,
         request: GitLabTokenRefreshRequest,
     ) -> joinerror::Result<GitLabTokenRefreshResponse> {
-        let resp = context::abortable(
-            ctx,
-            self.client
+        context::abortable(ctx, async {
+            let resp = self
+                .client
                 .post(format!("{}/auth/gitlab/refresh", self.base_url))
                 .json(&request)
-                .send(),
-        )
+                .send()
+                .await
+                .join_err::<()>("failed to refresh GitLab token")?;
+
+            if !resp.status().is_success() {
+                let error_text = resp.text().await?;
+                return Err(joinerror::Error::new::<()>(error_text));
+            }
+
+            resp.json()
+                .await
+                .join_err::<()>("failed to parse GitLab token refresh response")
+        })
         .await
-        .join_err::<()>("failed to refresh GitLab token")?;
-
-        if !resp.status().is_success() {
-            let error_text = resp.text().await?;
-            return Err(joinerror::Error::new::<()>(error_text));
-        }
-
-        resp.json()
-            .await
-            .join_err::<()>("failed to parse GitLab token refresh response")
+        .join_err_bare()
     }
 }
 
@@ -147,23 +151,25 @@ impl<R: AppRuntime> GitHubPkceTokenExchangeApiReq<R> for AccountAuthGatewayApiCl
         ctx: &R::AsyncContext,
         request: TokenExchangeRequest,
     ) -> joinerror::Result<GitHubPkceTokenExchangeResponse> {
-        let resp = context::abortable(
-            ctx,
-            self.client
+        context::abortable(ctx, async {
+            let resp = self
+                .client
                 .post(format!("{}/auth/github/token", self.base_url))
                 .json(&request)
-                .send(),
-        )
+                .send()
+                .await
+                .join_err::<()>("failed to exchange GitHub PKCE token")?;
+
+            if !resp.status().is_success() {
+                let error_text = resp.text().await?;
+                return Err(joinerror::Error::new::<()>(error_text));
+            }
+
+            resp.json()
+                .await
+                .join_err::<()>("failed to parse GitHub PKCE token exchange response")
+        })
         .await
-        .join_err::<()>("failed to exchange GitHub PKCE token")?;
-
-        if !resp.status().is_success() {
-            let error_text = resp.text().await?;
-            return Err(joinerror::Error::new::<()>(error_text));
-        }
-
-        resp.json()
-            .await
-            .join_err::<()>("failed to parse GitHub PKCE token exchange response")
+        .join_err_bare()
     }
 }

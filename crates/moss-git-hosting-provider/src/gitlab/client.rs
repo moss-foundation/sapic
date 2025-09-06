@@ -30,26 +30,27 @@ impl GitLabApiClient {
         ctx: &R::AsyncContext,
         account_handle: &AccountSession<R>,
     ) -> joinerror::Result<GetUserResponse> {
-        let access_token = account_handle.access_token(ctx).await?;
-        let resp = context::abortable(
-            ctx,
-            self.client
+        context::abortable(ctx, async {
+            let access_token = account_handle.access_token(ctx).await?;
+            let resp = self
+                .client
                 .get(format!("{}/user", api_url(&account_handle.host())))
                 .header(ACCEPT, CONTENT_TYPE)
                 .header(AUTHORIZATION, format!("Bearer {}", access_token))
-                .send(),
-        )
-        .await
-        .join_err::<()>("failed to get GitLab user")?;
+                .send()
+                .await?;
 
-        let status = resp.status();
-        if status.is_success() {
-            Ok(resp.json().await?)
-        } else {
-            let error_text = resp.text().await?;
-            eprintln!("GitLab API Error: Status {}, Body: {}", status, error_text);
-            Err(joinerror::Error::new::<()>(error_text))
-        }
+            let status = resp.status();
+            if status.is_success() {
+                Ok(resp.json().await?)
+            } else {
+                let error_text = resp.text().await?;
+                eprintln!("GitLab API Error: Status {}, Body: {}", status, error_text);
+                Err(joinerror::Error::new::<()>(error_text))
+            }
+        })
+        .await
+        .join_err_bare()
     }
 
     pub async fn get_contributors<R: AppRuntime>(
@@ -58,13 +59,13 @@ impl GitLabApiClient {
         account_handle: &AccountSession<R>,
         url: &GitUrl,
     ) -> joinerror::Result<GetContributorsResponse> {
-        let access_token = account_handle.access_token(ctx).await?;
-        let repo_url = format!("{}/{}", &url.owner, &url.name);
-        let encoded_url = urlencoding::encode(&repo_url);
+        context::abortable(ctx, async {
+            let access_token = account_handle.access_token(ctx).await?;
+            let repo_url = format!("{}/{}", &url.owner, &url.name);
+            let encoded_url = urlencoding::encode(&repo_url);
 
-        let resp = context::abortable(
-            ctx,
-            self.client
+            let resp = self
+                .client
                 .get(format!(
                     "{}/projects/{}/repository/contributors",
                     api_url(&account_handle.host()),
@@ -72,19 +73,20 @@ impl GitLabApiClient {
                 ))
                 .header(ACCEPT, CONTENT_TYPE)
                 .header(AUTHORIZATION, format!("Bearer {}", access_token))
-                .send(),
-        )
-        .await
-        .join_err::<()>("failed to get GitLab contributors")?;
+                .send()
+                .await?;
 
-        let status = resp.status();
-        if status.is_success() {
-            Ok(resp.json().await?)
-        } else {
-            let error_text = resp.text().await?;
-            eprintln!("GitLab API Error: Status {}, Body: {}", status, error_text);
-            Err(joinerror::Error::new::<()>(error_text))
-        }
+            let status = resp.status();
+            if status.is_success() {
+                Ok(resp.json().await?)
+            } else {
+                let error_text = resp.text().await?;
+                eprintln!("GitLab API Error: Status {}, Body: {}", status, error_text);
+                Err(joinerror::Error::new::<()>(error_text))
+            }
+        })
+        .await
+        .join_err_bare()
     }
 
     pub async fn get_repository<R: AppRuntime>(
@@ -93,13 +95,13 @@ impl GitLabApiClient {
         account_handle: &AccountSession<R>,
         url: &GitUrl,
     ) -> joinerror::Result<GetRepositoryResponse> {
-        let access_token = account_handle.access_token(ctx).await?;
-        let repo_url = format!("{}/{}", &url.owner, &url.name);
-        let encoded_url = urlencoding::encode(&repo_url);
+        context::abortable(ctx, async {
+            let access_token = account_handle.access_token(ctx).await?;
+            let repo_url = format!("{}/{}", &url.owner, &url.name);
+            let encoded_url = urlencoding::encode(&repo_url);
 
-        let resp = context::abortable(
-            ctx,
-            self.client
+            let resp = self
+                .client
                 .get(format!(
                     "{}/projects/{}/repository/contributors",
                     api_url(&account_handle.host()),
@@ -107,18 +109,19 @@ impl GitLabApiClient {
                 ))
                 .header(ACCEPT, CONTENT_TYPE)
                 .header(AUTHORIZATION, format!("Bearer {}", access_token))
-                .send(),
-        )
-        .await
-        .join_err::<()>("failed to get GitLab repository")?;
+                .send()
+                .await?;
 
-        let status = resp.status();
-        if status.is_success() {
-            Ok(resp.json().await?)
-        } else {
-            let error_text = resp.text().await?;
-            eprintln!("GitLab API Error: Status {}, Body: {}", status, error_text);
-            Err(joinerror::Error::new::<()>(error_text))
-        }
+            let status = resp.status();
+            if status.is_success() {
+                Ok(resp.json().await?)
+            } else {
+                let error_text = resp.text().await?;
+                eprintln!("GitLab API Error: Status {}, Body: {}", status, error_text);
+                Err(joinerror::Error::new::<()>(error_text))
+            }
+        })
+        .await
+        .join_err_bare()
     }
 }

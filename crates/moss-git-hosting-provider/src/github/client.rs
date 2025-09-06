@@ -38,25 +38,26 @@ impl GitHubApiClient {
         ctx: &R::AsyncContext,
         account_handle: &AccountSession<R>,
     ) -> joinerror::Result<GetUserResponse> {
-        let access_token = account_handle.access_token(ctx).await?;
-        let resp = context::abortable(
-            ctx,
-            self.client
+        context::abortable(ctx, async {
+            let access_token = account_handle.access_token(ctx).await?;
+            let resp = self
+                .client
                 .get(format!("{GITHUB_API_URL}/user"))
                 .with_default_github_headers(access_token)
-                .send(),
-        )
-        .await
-        .join_err::<()>("failed to get GitHub user")?;
+                .send()
+                .await?;
 
-        let status = resp.status();
-        if status.is_success() {
-            Ok(resp.json().await?)
-        } else {
-            let error_text = resp.text().await?;
-            eprintln!("GitHub API Error: Status {}, Body: {}", status, error_text);
-            Err(joinerror::Error::new::<()>(error_text))
-        }
+            let status = resp.status();
+            if status.is_success() {
+                Ok(resp.json().await?)
+            } else {
+                let error_text = resp.text().await?;
+                eprintln!("GitHub API Error: Status {}, Body: {}", status, error_text);
+                Err(joinerror::Error::new::<()>(error_text))
+            }
+        })
+        .await
+        .join_err_bare()
     }
 
     pub async fn get_contributors<R: AppRuntime>(
@@ -65,26 +66,27 @@ impl GitHubApiClient {
         account_handle: &AccountSession<R>,
         url: &GitUrl,
     ) -> joinerror::Result<GetContributorsResponse> {
-        let access_token = account_handle.access_token(ctx).await?;
-        let repo_url = format!("{}/{}", &url.owner, &url.name);
-        let resp = context::abortable(
-            ctx,
-            self.client
+        context::abortable(ctx, async {
+            let access_token = account_handle.access_token(ctx).await?;
+            let repo_url = format!("{}/{}", &url.owner, &url.name);
+            let resp = self
+                .client
                 .get(format!("{GITHUB_API_URL}/repos/{repo_url}/contributors"))
                 .with_default_github_headers(access_token)
-                .send(),
-        )
-        .await
-        .join_err::<()>("failed to get GitHub contributors")?;
+                .send()
+                .await?;
 
-        let status = resp.status();
-        if status.is_success() {
-            Ok(resp.json().await?)
-        } else {
-            let error_text = resp.text().await?;
-            eprintln!("GitHub API Error: Status {}, Body: {}", status, error_text);
-            Err(joinerror::Error::new::<()>(error_text))
-        }
+            let status = resp.status();
+            if status.is_success() {
+                Ok(resp.json().await?)
+            } else {
+                let error_text = resp.text().await?;
+                eprintln!("GitHub API Error: Status {}, Body: {}", status, error_text);
+                Err(joinerror::Error::new::<()>(error_text))
+            }
+        })
+        .await
+        .join_err_bare()
     }
 
     pub async fn get_repository<R: AppRuntime>(
@@ -93,25 +95,26 @@ impl GitHubApiClient {
         account_handle: &AccountSession<R>,
         url: &GitUrl,
     ) -> joinerror::Result<GetRepositoryResponse> {
-        let access_token = account_handle.access_token(ctx).await?;
-        let repo_url = format!("{}/{}", &url.owner, &url.name);
-        let resp = context::abortable(
-            ctx,
-            self.client
+        context::abortable(ctx, async {
+            let access_token = account_handle.access_token(ctx).await?;
+            let repo_url = format!("{}/{}", &url.owner, &url.name);
+            let resp = self
+                .client
                 .get(format!("{GITHUB_API_URL}/repos/{repo_url}"))
                 .with_default_github_headers(access_token)
-                .send(),
-        )
-        .await
-        .join_err::<()>("failed to get GitHub repository")?;
+                .send()
+                .await?;
 
-        let status = resp.status();
-        if status.is_success() {
-            Ok(resp.json().await?)
-        } else {
-            let error_text = resp.text().await?;
-            eprintln!("GitHub API Error: Status {}, Body: {}", status, error_text);
-            Err(joinerror::Error::new::<()>(error_text))
-        }
+            let status = resp.status();
+            if status.is_success() {
+                Ok(resp.json().await?)
+            } else {
+                let error_text = resp.text().await?;
+                eprintln!("GitHub API Error: Status {}, Body: {}", status, error_text);
+                Err(joinerror::Error::new::<()>(error_text))
+            }
+        })
+        .await
+        .join_err_bare()
     }
 }
