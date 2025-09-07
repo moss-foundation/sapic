@@ -26,6 +26,7 @@ export interface GroupedEnvironmentList {
   data: {
     groupWithEnvironments: GroupedEnvironments;
   };
+  instruction?: Instruction;
 }
 
 export type EnvironmentListType = "GlobalEnvironmentItem" | "GroupedEnvironmentItem" | "GroupedEnvironmentList";
@@ -47,4 +48,4 @@ export interface DropEnvironmentItem {
   [key: string | symbol]: unknown;
 }
 
-export type DropOperation = "ReorderGlobal" | "ReorderGrouped" | "MoveToGlobal" | "MoveToGrouped" | "CombineGrouped";
+export type DropOperation = "ReorderGlobals" | "ReorderGrouped" | "MoveToGlobal" | "MoveToGrouped" | "CombineToGrouped";

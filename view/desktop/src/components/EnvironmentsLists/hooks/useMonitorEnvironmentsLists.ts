@@ -2,14 +2,14 @@ import { useCallback, useEffect } from "react";
 
 import { useCreateEnvironment, useDeleteEnvironment, useStreamEnvironments } from "@/hooks";
 import { useBatchUpdateEnvironment } from "@/hooks/workspace/environment/useBatchUpdateEnvironment";
-import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { DragLocationHistory } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
+import { ElementDragPayload, monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import { GlobalEnvironmentItem, GroupedEnvironmentItem } from "../types";
 import {
   getDropOperation,
-  getLocationEnvironmentItemData,
   getLocationGlobalEnvironmentItemData,
   getLocationGroupedEnvironmentItemData,
+  getLocationGroupedEnvironmentListData,
   getSourceEnvironmentItem,
   getSourceGlobalEnvironmentItemData,
   isSourceEnvironmentItem,
@@ -23,8 +23,13 @@ export const useMonitorEnvironmentsLists = () => {
   const { mutateAsync: createEnvironment } = useCreateEnvironment();
   const { groupedEnvironments } = useGroupedEnvironments();
 
-  const handleReorderGlobal = useCallback(
-    async (sourceData: GlobalEnvironmentItem, locationData: GlobalEnvironmentItem) => {
+  const handleReorderGlobals = useCallback(
+    async (source: ElementDragPayload, location: DragLocationHistory) => {
+      const sourceData = getSourceGlobalEnvironmentItemData(source);
+      const locationData = getLocationGlobalEnvironmentItemData(location);
+
+      if (!sourceData || !locationData) return;
+
       const sourceIndex = globalEnvironments.findIndex((env) => env.id === sourceData.data.environment.id);
       const targetIndex = globalEnvironments.findIndex((env) => env.id === locationData.data.environment.id);
       const instruction = locationData.instruction;
@@ -66,7 +71,12 @@ export const useMonitorEnvironmentsLists = () => {
   );
 
   const moveToGrouped = useCallback(
-    async (sourceData: GlobalEnvironmentItem, locationData: GroupedEnvironmentItem) => {
+    async (source: ElementDragPayload, location: DragLocationHistory) => {
+      const sourceData = getSourceGlobalEnvironmentItemData(source);
+      const locationData = getLocationGroupedEnvironmentItemData(location);
+
+      if (!sourceData || !locationData) return;
+
       const instruction = locationData.instruction;
 
       const groupedEnvironment = groupedEnvironments.find(
@@ -131,30 +141,68 @@ export const useMonitorEnvironmentsLists = () => {
     [batchUpdateEnvironment, createEnvironment, deleteEnvironment, globalEnvironments, groupedEnvironments]
   );
 
+  const combineToGrouped = useCallback(
+    async (source: ElementDragPayload, location: DragLocationHistory) => {
+      const sourceData = getSourceEnvironmentItem(source);
+      const locationData = getLocationGroupedEnvironmentListData(location);
+
+      if (!sourceData || !locationData) return;
+
+      const groupedEnvironments = locationData.data.groupWithEnvironments.environments;
+
+      if (sourceData.type === "GlobalEnvironmentItem") {
+        //delete global environment
+        await deleteEnvironment({ id: sourceData.data.environment.id });
+
+        //get reordered global environments after the deleted one
+        const globalEnvironmentsToUpdate = groupedEnvironments
+          .filter((env) => env.order! > sourceData.data.environment.order!)
+          .map((env) => ({
+            id: env.id,
+            order: env.order! - 1,
+          }));
+
+        //update global and grouped environments
+        await batchUpdateEnvironment({
+          items: globalEnvironmentsToUpdate.map((env) => ({
+            id: env.id,
+            order: env.order!,
+            varsToAdd: [],
+            varsToUpdate: [],
+            varsToDelete: [],
+          })),
+        });
+
+        //add new grouped environment
+        await createEnvironment({
+          collectionId: locationData.data.groupWithEnvironments.collectionId,
+          name: sourceData.data.environment.name,
+          order: groupedEnvironments.length + 1,
+          variables: [],
+        });
+      } else {
+        console.log("CombineToGrouped", { sourceData, locationData });
+      }
+    },
+    [batchUpdateEnvironment, createEnvironment, deleteEnvironment]
+  );
+
   useEffect(() => {
     return monitorForElements({
       canMonitor({ source }) {
         return isSourceEnvironmentItem(source);
       },
       onDrop({ source, location }) {
-        if (!isSourceEnvironmentItem(source)) return;
+        if (!isSourceEnvironmentItem(source)) {
+          console.warn("can't drop: no source");
+          return;
+        }
 
-        const sourceData = getSourceEnvironmentItem(source);
-        const locationData = getLocationEnvironmentItemData(location);
-
-        if (!sourceData || !locationData || !locationData.instruction) return;
-
-        const dropOperation = getDropOperation(sourceData, locationData, locationData.instruction);
-
-        const sourceGlobalEnvironmentItemData = getSourceGlobalEnvironmentItemData(source);
-        const locationGlobalEnvironmentItemData = getLocationGlobalEnvironmentItemData(location);
-
-        const locationGroupedEnvironmentItemData = getLocationGroupedEnvironmentItemData(location);
-
+        const dropOperation = getDropOperation(source, location);
+        console.log("onDrop", { dropOperation });
         switch (dropOperation) {
-          case "ReorderGlobal":
-            if (!sourceGlobalEnvironmentItemData || !locationGlobalEnvironmentItemData) return;
-            handleReorderGlobal(sourceGlobalEnvironmentItemData, locationGlobalEnvironmentItemData);
+          case "ReorderGlobals":
+            handleReorderGlobals(source, location);
             break;
           case "ReorderGrouped":
             console.log("ReorderGrouped");
@@ -163,16 +211,16 @@ export const useMonitorEnvironmentsLists = () => {
             console.log("MoveToGlobal");
             break;
           case "MoveToGrouped":
-            if (!sourceGlobalEnvironmentItemData || !locationGroupedEnvironmentItemData) return;
-            moveToGrouped(sourceGlobalEnvironmentItemData, locationGroupedEnvironmentItemData);
+            moveToGrouped(source, location);
             break;
-          case "CombineGrouped":
-            console.log("CombineGrouped");
+          case "CombineToGrouped":
+            combineToGrouped(source, location);
             break;
+
           default:
             break;
         }
       },
     });
-  }, [handleReorderGlobal, moveToGrouped]);
+  }, [combineToGrouped, handleReorderGlobals, moveToGrouped]);
 };

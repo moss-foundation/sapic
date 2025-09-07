@@ -3,6 +3,7 @@ import { forwardRef, HTMLAttributes } from "react";
 import { cn } from "@/utils";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
+import { DropIndicatorForCombine } from "../DropIndicatorForCombine";
 import { DropIndicatorForDir } from "../DropIndicatorForDir";
 import { DropIndicatorForTrigger } from "../DropIndicatorForTrigger";
 
@@ -12,17 +13,27 @@ interface RootNodeProps extends HTMLAttributes<HTMLUListElement> {
   isChildDropBlocked?: boolean | null;
   instruction?: Instruction | null;
   dropIndicatorFullWidth?: boolean;
+  combineInstruction?: Instruction | null;
 }
 
 export const RootNode = forwardRef<HTMLUListElement, RootNodeProps>(
   (
-    { children, className, isChildDropBlocked, instruction, dropIndicatorFullWidth = false, ...props }: RootNodeProps,
+    {
+      children,
+      className,
+      isChildDropBlocked,
+      instruction,
+      dropIndicatorFullWidth = false,
+      combineInstruction,
+      ...props
+    }: RootNodeProps,
     ref
   ) => {
     return (
       <ul ref={ref} className={cn("group/TreeRootNode relative w-full list-none", className)} {...props}>
         <DropIndicatorForDir isChildDropBlocked={isChildDropBlocked} instruction={instruction ?? null} />
         <DropIndicatorForTrigger instruction={instruction ?? null} fullWidth={dropIndicatorFullWidth} />
+        {combineInstruction && <DropIndicatorForCombine instruction={combineInstruction} />}
 
         {children}
       </ul>

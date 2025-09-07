@@ -32,8 +32,6 @@ const startStreamingEnvironments = async (): Promise<StreamEnvironmentsResult> =
     throw new Error(String(groups.error));
   }
 
-  console.log({ groups });
-
   return { environments, groups: groups.data.groups };
 };
 
@@ -56,7 +54,7 @@ export const useStreamEnvironments = () => {
   const globalEnvironments = useMemo(() => {
     if (!query.data) return [];
 
-    const globalEnvironments = query.data.environments.filter((environment) => !environment.collectionId);
+    const globalEnvironments = query.data.environments.filter((environment) => environment.collectionId);
 
     if (globalEnvironments.length === 0) return [];
 
