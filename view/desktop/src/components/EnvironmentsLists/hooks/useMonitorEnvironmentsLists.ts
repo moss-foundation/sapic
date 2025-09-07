@@ -90,6 +90,8 @@ export const useMonitorEnvironmentsLists = () => {
 
       //delete global environment
       await deleteEnvironment({ id: sourceData.data.environment.id });
+
+      //get reordered global environments after the deleted one
       const globalEnvironmentsToUpdate = globalEnvironments
         .filter((env) => env.order! > sourceData.data.environment.order!)
         .map((env) => ({
@@ -105,8 +107,7 @@ export const useMonitorEnvironmentsLists = () => {
         variables: [],
       });
 
-      console.log({ dropOrder });
-      //update grouped environments after the target index
+      //get reordered grouped environments after new grouped environment
       const groupedEnvironmentsToUpdate =
         groupedEnvironment?.environments
           .filter((env) => env.order! >= dropOrder && env.id !== newGroupedEnvironment.id)
@@ -115,6 +116,7 @@ export const useMonitorEnvironmentsLists = () => {
             order: env.order! + 1,
           })) ?? [];
 
+      //update global and grouped environments
       const envsToUpdate = [...globalEnvironmentsToUpdate, ...groupedEnvironmentsToUpdate];
       await batchUpdateEnvironment({
         items: envsToUpdate.map((env) => ({
