@@ -1,30 +1,36 @@
 import { useCallback, useEffect } from "react";
 
-import { useStreamEnvironments } from "@/hooks";
+import { useCreateEnvironment, useDeleteEnvironment, useStreamEnvironments } from "@/hooks";
 import { useBatchUpdateEnvironment } from "@/hooks/workspace/environment/useBatchUpdateEnvironment";
-import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import { DropEnvironmentItem, GlobalEnvironmentItem } from "../types";
+import { GlobalEnvironmentItem, GroupedEnvironmentItem } from "../types";
 import {
   getDropOperation,
   getLocationEnvironmentItemData,
+  getLocationGlobalEnvironmentItemData,
+  getLocationGroupedEnvironmentItemData,
   getSourceEnvironmentItem,
   getSourceGlobalEnvironmentItemData,
   isSourceEnvironmentItem,
 } from "../utils";
+import { useGroupedEnvironments } from "./useGroupedEnvironments";
 
 export const useMonitorEnvironmentsLists = () => {
   const { globalEnvironments } = useStreamEnvironments();
   const { mutateAsync: batchUpdateEnvironment } = useBatchUpdateEnvironment();
+  const { mutateAsync: deleteEnvironment } = useDeleteEnvironment();
+  const { mutateAsync: createEnvironment } = useCreateEnvironment();
+  const { groupedEnvironments } = useGroupedEnvironments();
 
   const handleReorderGlobal = useCallback(
-    async (sourceData: GlobalEnvironmentItem, locationData: DropEnvironmentItem, instruction: Instruction) => {
+    async (sourceData: GlobalEnvironmentItem, locationData: GlobalEnvironmentItem) => {
       const sourceIndex = globalEnvironments.findIndex((env) => env.id === sourceData.data.environment.id);
       const targetIndex = globalEnvironments.findIndex((env) => env.id === locationData.data.environment.id);
+      const instruction = locationData.instruction;
 
-      if (sourceIndex === -1 || targetIndex === -1) {
-        console.error("Source or target environment not found", { sourceIndex, targetIndex });
+      if (sourceIndex === -1 || targetIndex === -1 || !instruction) {
+        console.error("Source, target or instruction not found", { sourceIndex, targetIndex, instruction });
         return;
       }
 
@@ -59,6 +65,70 @@ export const useMonitorEnvironmentsLists = () => {
     [globalEnvironments, batchUpdateEnvironment]
   );
 
+  const moveToGrouped = useCallback(
+    async (sourceData: GlobalEnvironmentItem, locationData: GroupedEnvironmentItem) => {
+      const instruction = locationData.instruction;
+
+      const groupedEnvironment = groupedEnvironments.find(
+        (group) => group.collectionId === locationData.data.environment.collectionId
+      );
+
+      if (!groupedEnvironment) {
+        console.error("Grouped environment not found", { locationData });
+        return;
+      }
+
+      const targetOrder = groupedEnvironment?.environments.find(
+        (env) => env.id === locationData.data.environment.id
+      )?.order;
+
+      if (targetOrder === undefined || targetOrder === undefined || !instruction) {
+        console.error("Source, target or instruction not found", { targetOrder, instruction });
+        return;
+      }
+      const dropOrder = instruction.operation === "reorder-before" ? targetOrder : targetOrder + 1;
+
+      //delete global environment
+      await deleteEnvironment({ id: sourceData.data.environment.id });
+      const globalEnvironmentsToUpdate = globalEnvironments
+        .filter((env) => env.order! > sourceData.data.environment.order!)
+        .map((env) => ({
+          id: env.id,
+          order: env.order! - 1,
+        }));
+
+      //add new grouped environment
+      const newGroupedEnvironment = await createEnvironment({
+        collectionId: locationData.data.environment.collectionId,
+        name: sourceData.data.environment.name,
+        order: dropOrder,
+        variables: [],
+      });
+
+      console.log({ dropOrder });
+      //update grouped environments after the target index
+      const groupedEnvironmentsToUpdate =
+        groupedEnvironment?.environments
+          .filter((env) => env.order! >= dropOrder && env.id !== newGroupedEnvironment.id)
+          .map((env) => ({
+            id: env.id,
+            order: env.order! + 1,
+          })) ?? [];
+
+      const envsToUpdate = [...globalEnvironmentsToUpdate, ...groupedEnvironmentsToUpdate];
+      await batchUpdateEnvironment({
+        items: envsToUpdate.map((env) => ({
+          id: env.id,
+          order: env.order!,
+          varsToAdd: [],
+          varsToUpdate: [],
+          varsToDelete: [],
+        })),
+      });
+    },
+    [batchUpdateEnvironment, createEnvironment, deleteEnvironment, globalEnvironments, groupedEnvironments]
+  );
+
   useEffect(() => {
     return monitorForElements({
       canMonitor({ source }) {
@@ -73,11 +143,16 @@ export const useMonitorEnvironmentsLists = () => {
         if (!sourceData || !locationData || !locationData.instruction) return;
 
         const dropOperation = getDropOperation(sourceData, locationData, locationData.instruction);
+
+        const sourceGlobalEnvironmentItemData = getSourceGlobalEnvironmentItemData(source);
+        const locationGlobalEnvironmentItemData = getLocationGlobalEnvironmentItemData(location);
+
+        const locationGroupedEnvironmentItemData = getLocationGroupedEnvironmentItemData(location);
+
         switch (dropOperation) {
           case "ReorderGlobal":
-            const sourceGlobalEnvironmentItemData = getSourceGlobalEnvironmentItemData(source);
-            if (!sourceGlobalEnvironmentItemData) return;
-            handleReorderGlobal(sourceGlobalEnvironmentItemData, locationData, locationData.instruction);
+            if (!sourceGlobalEnvironmentItemData || !locationGlobalEnvironmentItemData) return;
+            handleReorderGlobal(sourceGlobalEnvironmentItemData, locationGlobalEnvironmentItemData);
             break;
           case "ReorderGrouped":
             console.log("ReorderGrouped");
@@ -86,7 +161,8 @@ export const useMonitorEnvironmentsLists = () => {
             console.log("MoveToGlobal");
             break;
           case "MoveToGrouped":
-            console.log("MoveToGrouped");
+            if (!sourceGlobalEnvironmentItemData || !locationGroupedEnvironmentItemData) return;
+            moveToGrouped(sourceGlobalEnvironmentItemData, locationGroupedEnvironmentItemData);
             break;
           case "CombineGrouped":
             console.log("CombineGrouped");
@@ -96,5 +172,5 @@ export const useMonitorEnvironmentsLists = () => {
         }
       },
     });
-  }, [handleReorderGlobal]);
+  }, [handleReorderGlobal, moveToGrouped]);
 };

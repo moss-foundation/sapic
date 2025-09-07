@@ -2,7 +2,13 @@ import { extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-dr
 import { DragLocationHistory } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 import { ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import { DragEnvironmentItem, DropEnvironmentItem, DropOperation, GlobalEnvironmentItem } from "./types";
+import {
+  DragEnvironmentItem,
+  DropEnvironmentItem,
+  DropOperation,
+  GlobalEnvironmentItem,
+  GroupedEnvironmentItem,
+} from "./types";
 
 //source
 export const getSourceEnvironmentItem = (source: ElementDragPayload): DragEnvironmentItem | null => {
@@ -47,6 +53,36 @@ export const getLocationEnvironmentItemData = (location: DragLocationHistory): D
   return {
     "data": {
       ...(location.current.dropTargets[0].data.data as DropEnvironmentItem["data"]),
+    },
+    "type": location.current.dropTargets[0].data.type,
+    "instruction": instruction ?? undefined,
+  };
+};
+
+export const getLocationGlobalEnvironmentItemData = (location: DragLocationHistory): GlobalEnvironmentItem | null => {
+  if (location.current.dropTargets.length === 0) return null;
+  if (location.current.dropTargets[0].data.type !== "GlobalEnvironmentItem") return null;
+
+  const instruction = extractInstruction(location.current.dropTargets[0].data);
+
+  return {
+    "data": {
+      ...(location.current.dropTargets[0].data.data as GlobalEnvironmentItem["data"]),
+    },
+    "type": location.current.dropTargets[0].data.type,
+    "instruction": instruction ?? undefined,
+  };
+};
+
+export const getLocationGroupedEnvironmentItemData = (location: DragLocationHistory): GroupedEnvironmentItem | null => {
+  if (location.current.dropTargets.length === 0) return null;
+  if (location.current.dropTargets[0].data.type !== "GroupedEnvironmentItem") return null;
+
+  const instruction = extractInstruction(location.current.dropTargets[0].data);
+
+  return {
+    "data": {
+      ...(location.current.dropTargets[0].data.data as GroupedEnvironmentItem["data"]),
     },
     "type": location.current.dropTargets[0].data.type,
     "instruction": instruction ?? undefined,

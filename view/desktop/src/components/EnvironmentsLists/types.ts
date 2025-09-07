@@ -10,13 +10,15 @@ export interface GlobalEnvironmentItem {
   data: {
     environment: StreamEnvironmentsEvent;
   };
+  instruction?: Instruction;
 }
 
 export interface GroupedEnvironmentItem {
   type: "GroupedEnvironmentItem";
   data: {
-    environment: GroupedEnvironments;
+    environment: StreamEnvironmentsEvent;
   };
+  instruction?: Instruction;
 }
 
 export interface GroupedEnvironmentList {

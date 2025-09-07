@@ -32,6 +32,8 @@ const startStreamingEnvironments = async (): Promise<StreamEnvironmentsResult> =
     throw new Error(String(groups.error));
   }
 
+  console.log({ groups });
+
   return { environments, groups: groups.data.groups };
 };
 
