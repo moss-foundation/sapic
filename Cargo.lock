@@ -3798,6 +3798,7 @@ dependencies = [
  "joinerror",
  "keyring",
  "libssh2-sys",
+ "moss_app_delegate",
  "moss_applib",
  "moss_git",
  "moss_keyring",

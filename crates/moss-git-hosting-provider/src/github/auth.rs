@@ -1,5 +1,6 @@
 use async_trait::async_trait;
 use joinerror::Error;
+use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_server_api::account_auth_gateway::{
     GitHubPkceTokenExchangeApiReq, GitHubPkceTokenExchangeResponse, TokenExchangeRequest,
@@ -15,6 +16,23 @@ use url::Url;
 
 use crate::GitAuthAdapter;
 
+pub trait GitHubAuthAdapter<R: AppRuntime>:
+    GitAuthAdapter<R, PkceToken = GitHubPkceTokenCredentials, PatToken = ()> + Send + Sync
+{
+}
+
+struct GlobalGitHubAuthAdapter<R: AppRuntime>(Arc<dyn GitHubAuthAdapter<R>>);
+
+impl<R: AppRuntime> dyn GitHubAuthAdapter<R> {
+    pub fn global(delegate: &AppDelegate<R>) -> Arc<dyn GitHubAuthAdapter<R>> {
+        delegate.global::<GlobalGitHubAuthAdapter<R>>().0.clone()
+    }
+
+    pub fn set_global(delegate: &AppDelegate<R>, v: Arc<dyn GitHubAuthAdapter<R>>) {
+        delegate.set_global(GlobalGitHubAuthAdapter(v));
+    }
+}
+
 #[derive(Debug, Deserialize)]
 pub struct GitHubPkceTokenCredentials {
     pub access_token: String,
@@ -28,13 +46,15 @@ impl From<GitHubPkceTokenExchangeResponse> for GitHubPkceTokenCredentials {
     }
 }
 
-pub struct GitHubAuthAdapter<R: AppRuntime> {
+pub struct RealGitHubAuthAdapter<R: AppRuntime> {
     api_client: Arc<dyn GitHubPkceTokenExchangeApiReq<R>>,
     url: Arc<String>,
     callback_port: u16,
 }
 
-impl<R: AppRuntime> GitHubAuthAdapter<R> {
+impl<R: AppRuntime> GitHubAuthAdapter<R> for RealGitHubAuthAdapter<R> {}
+
+impl<R: AppRuntime> RealGitHubAuthAdapter<R> {
     pub fn new(
         api_client: Arc<dyn GitHubPkceTokenExchangeApiReq<R>>,
         url: Arc<String>,
@@ -49,7 +69,7 @@ impl<R: AppRuntime> GitHubAuthAdapter<R> {
 }
 
 #[async_trait]
-impl<R: AppRuntime> GitAuthAdapter<R> for GitHubAuthAdapter<R> {
+impl<R: AppRuntime> GitAuthAdapter<R> for RealGitHubAuthAdapter<R> {
     type PkceToken = GitHubPkceTokenCredentials;
     type PatToken = ();
 

@@ -1,11 +1,13 @@
 mod types;
 
+use std::sync::Arc;
+
 use moss_applib::AppRuntime;
 pub use types::*;
 
 use moss_git::url::GitUrl;
 use moss_git_hosting_provider::{
-    GitProviderKind, github::GitHubApiClient, gitlab::GitLabApiClient,
+    GitProviderKind, github::client::GitHubApiClient, gitlab::client::GitLabApiClient,
 };
 use moss_user::{AccountSession, account::Account, models::primitives::AccountId};
 
@@ -13,11 +15,11 @@ use moss_user::{AccountSession, account::Account, models::primitives::AccountId}
 pub enum GitClient<R: AppRuntime> {
     GitHub {
         account: Account<R>,
-        api: GitHubApiClient,
+        api: Arc<dyn GitHubApiClient<R>>,
     },
     GitLab {
         account: Account<R>,
-        api: GitLabApiClient,
+        api: Arc<dyn GitLabApiClient<R>>,
     },
 }
 
@@ -57,7 +59,7 @@ impl<R: AppRuntime> GitClient<R> {
     ) -> joinerror::Result<RepositoryInfo> {
         match self {
             GitClient::GitHub { account, api } => {
-                let resp = api.get_repository::<R>(ctx, account.session(), url).await?;
+                let resp = api.get_repository(ctx, account.session(), url).await?;
 
                 Ok(RepositoryInfo {
                     updated_at: resp.updated_at,
@@ -67,7 +69,7 @@ impl<R: AppRuntime> GitClient<R> {
                 })
             }
             GitClient::GitLab { account, api } => {
-                let resp = api.get_repository::<R>(ctx, account.session(), url).await?;
+                let resp = api.get_repository(ctx, account.session(), url).await?;
 
                 Ok(RepositoryInfo {
                     updated_at: resp.updated_at,
@@ -86,9 +88,7 @@ impl<R: AppRuntime> GitClient<R> {
     ) -> joinerror::Result<Vec<ContributorInfo>> {
         match self {
             GitClient::GitHub { account, api } => {
-                let resp = api
-                    .get_contributors::<R>(ctx, account.session(), url)
-                    .await?;
+                let resp = api.get_contributors(ctx, account.session(), url).await?;
 
                 let mut result = Vec::with_capacity(resp.items.len());
                 for item in resp.items {
@@ -101,9 +101,7 @@ impl<R: AppRuntime> GitClient<R> {
                 Ok(result)
             }
             GitClient::GitLab { account, api } => {
-                let resp = api
-                    .get_contributors::<R>(ctx, account.session(), url)
-                    .await?;
+                let resp = api.get_contributors(ctx, account.session(), url).await?;
 
                 let mut result = Vec::with_capacity(resp.items.len());
                 for item in resp.items {

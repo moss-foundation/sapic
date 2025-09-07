@@ -28,6 +28,13 @@ impl<R: AppRuntime> AppDelegate<R> {
         self.app_handle.state::<T>().inner()
     }
 
+    pub fn set_global<T>(&self, value: T)
+    where
+        T: Send + Sync + 'static,
+    {
+        self.app_handle.manage(value);
+    }
+
     pub fn emit_oneshot(&self, to: ToLocation<'_>) -> joinerror::Result<()> {
         self.broadcaster.emit_oneshot(to)
     }

@@ -4,9 +4,8 @@ use moss_applib::{AppRuntime, errors::Internal};
 use moss_common::{continue_if_err, continue_if_none};
 use moss_fs::{CreateOptions, FileSystem};
 use moss_git_hosting_provider::{
-    GitAuthAdapter,
-    github::{GitHubApiClient, GitHubAuthAdapter},
-    gitlab::{GitLabApiClient, GitLabAuthAdapter},
+    github::{auth::GitHubAuthAdapter, client::GitHubApiClient},
+    gitlab::{auth::GitLabAuthAdapter, client::GitLabApiClient},
 };
 use moss_keyring::KeyringClient;
 use moss_logging::session;
@@ -150,24 +149,24 @@ impl<R: AppRuntime> ProfileService<R> {
         let account_id = AccountId::new();
         let (session, username) = match provider {
             AccountKind::GitHub => {
-                let auth_client = app_delegate.global::<GitHubAuthAdapter<R>>();
-                let api_client = app_delegate.global::<GitHubApiClient>().clone();
+                let auth_client = <dyn GitHubAuthAdapter<R>>::global(app_delegate);
+                let api_client = <dyn GitHubApiClient<R>>::global(app_delegate);
 
                 let session = self
-                    .add_github_account(ctx, auth_client, account_id.clone(), &host)
+                    .add_github_account(ctx, auth_client.as_ref(), account_id.clone(), &host)
                     .await?;
-                let user = api_client.get_user::<R>(ctx, &session).await?;
+                let user = api_client.get_user(ctx, &session).await?;
 
                 (session, user.login)
             }
             AccountKind::GitLab => {
-                let auth_client = app_delegate.global::<GitLabAuthAdapter<R>>();
-                let api_client = app_delegate.global::<GitLabApiClient>().clone();
+                let auth_client = <dyn GitLabAuthAdapter<R>>::global(app_delegate);
+                let api_client = <dyn GitLabApiClient<R>>::global(app_delegate);
 
                 let session = self
-                    .add_gitlab_account(ctx, auth_client, account_id.clone(), &host)
+                    .add_gitlab_account(ctx, auth_client.as_ref(), account_id.clone(), &host)
                     .await?;
-                let user = api_client.get_user::<R>(ctx, &session).await?;
+                let user = api_client.get_user(ctx, &session).await?;
 
                 (session, user.username)
             }
@@ -227,7 +226,7 @@ impl<R: AppRuntime> ProfileService<R> {
     async fn add_github_account(
         &self,
         ctx: &R::AsyncContext,
-        auth_client: &GitHubAuthAdapter<R>,
+        auth_client: &dyn GitHubAuthAdapter<R>,
         account_id: AccountId,
         host: &str,
     ) -> joinerror::Result<AccountSession<R>> {
@@ -247,7 +246,7 @@ impl<R: AppRuntime> ProfileService<R> {
     async fn add_gitlab_account(
         &self,
         ctx: &R::AsyncContext,
-        auth_client: &GitLabAuthAdapter<R>,
+        auth_client: &dyn GitLabAuthAdapter<R>,
         account_id: AccountId,
         host: &str,
     ) -> joinerror::Result<AccountSession<R>> {

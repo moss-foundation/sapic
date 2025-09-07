@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use moss_applib::{TauriAppRuntime, Wry, context::MutableContext};
-use moss_git_hosting_provider::{GitAuthAdapter, github::GitHubAuthAdapter};
+use moss_git_hosting_provider::{GitAuthAdapter, github::RealGitHubAuthAdapter};
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use reqwest::Client;
 
@@ -16,8 +16,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     .into();
     let worker_url = auth_api_client.base_url();
 
-    let adapter =
-        GitHubAuthAdapter::<TauriAppRuntime<Wry>>::new(auth_api_client, worker_url, callback_port);
+    let adapter = RealGitHubAuthAdapter::<TauriAppRuntime<Wry>>::new(
+        auth_api_client,
+        worker_url,
+        callback_port,
+    );
 
     println!("🚀 Run GitHub OAuth through Cloudflare Worker...");
     println!("📡 Worker URL: https://account-auth-gateway-dev.20g10z3r.workers.dev");

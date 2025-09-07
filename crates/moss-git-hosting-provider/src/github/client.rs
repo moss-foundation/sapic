@@ -1,3 +1,7 @@
+use std::sync::Arc;
+
+use async_trait::async_trait;
+use moss_app_delegate::AppDelegate;
 use moss_applib::{
     AppRuntime,
     context::{self, ContextResultExt},
@@ -10,6 +14,41 @@ use reqwest::{Client as HttpClient, RequestBuilder};
 use crate::github::response::{GetContributorsResponse, GetRepositoryResponse, GetUserResponse};
 
 const GITHUB_API_URL: &'static str = "https://api.github.com";
+
+#[async_trait]
+pub trait GitHubApiClient<R: AppRuntime>: Send + Sync {
+    async fn get_user(
+        &self,
+        ctx: &R::AsyncContext,
+        account_handle: &AccountSession<R>,
+    ) -> joinerror::Result<GetUserResponse>;
+
+    async fn get_contributors(
+        &self,
+        ctx: &R::AsyncContext,
+        account_handle: &AccountSession<R>,
+        url: &GitUrl,
+    ) -> joinerror::Result<GetContributorsResponse>;
+
+    async fn get_repository(
+        &self,
+        ctx: &R::AsyncContext,
+        account_handle: &AccountSession<R>,
+        url: &GitUrl,
+    ) -> joinerror::Result<GetRepositoryResponse>;
+}
+
+struct GlobalGitHubApiClient<R: AppRuntime>(Arc<dyn GitHubApiClient<R>>);
+
+impl<R: AppRuntime> dyn GitHubApiClient<R> {
+    pub fn global(delegate: &AppDelegate<R>) -> Arc<dyn GitHubApiClient<R>> {
+        delegate.global::<GlobalGitHubApiClient<R>>().0.clone()
+    }
+
+    pub fn set_global(delegate: &AppDelegate<R>, v: Arc<dyn GitHubApiClient<R>>) {
+        delegate.set_global(GlobalGitHubApiClient(v));
+    }
+}
 
 trait GitHubHttpRequestBuilderExt {
     fn with_default_github_headers(self, access_token: String) -> Self;
@@ -24,16 +63,19 @@ impl GitHubHttpRequestBuilderExt for RequestBuilder {
 }
 
 #[derive(Clone)]
-pub struct GitHubApiClient {
+pub struct RealGitHubApiClient {
     client: HttpClient,
 }
 
-impl GitHubApiClient {
+impl RealGitHubApiClient {
     pub fn new(client: HttpClient) -> Self {
         Self { client }
     }
+}
 
-    pub async fn get_user<R: AppRuntime>(
+#[async_trait]
+impl<R: AppRuntime> GitHubApiClient<R> for RealGitHubApiClient {
+    async fn get_user(
         &self,
         ctx: &R::AsyncContext,
         account_handle: &AccountSession<R>,
@@ -60,7 +102,7 @@ impl GitHubApiClient {
         .join_err_bare()
     }
 
-    pub async fn get_contributors<R: AppRuntime>(
+    async fn get_contributors(
         &self,
         ctx: &R::AsyncContext,
         account_handle: &AccountSession<R>,
@@ -89,7 +131,7 @@ impl GitHubApiClient {
         .join_err_bare()
     }
 
-    pub async fn get_repository<R: AppRuntime>(
+    async fn get_repository(
         &self,
         ctx: &R::AsyncContext,
         account_handle: &AccountSession<R>,

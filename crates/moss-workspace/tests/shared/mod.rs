@@ -8,7 +8,7 @@ use moss_applib::{
     mock::MockAppRuntime,
 };
 use moss_fs::RealFileSystem;
-use moss_git_hosting_provider::{github::GitHubApiClient, gitlab::GitLabApiClient};
+use moss_git_hosting_provider::{github::RealGitHubApiClient, gitlab::RealGitLabApiClient};
 use moss_keyring::test::MockKeyringClient;
 use moss_testutils::random_name::random_workspace_name;
 use moss_user::{Account, AccountSession, models::primitives::AccountId, profile::ActiveProfile};
@@ -59,8 +59,8 @@ pub async fn setup_test_workspace() -> (
             .build()
             .expect("failed to build http client");
 
-        let github_client = GitHubApiClient::new(http_client.clone());
-        let gitlab_client = GitLabApiClient::new(http_client.clone());
+        let github_client = RealGitHubApiClient::new(http_client.clone());
+        let gitlab_client = RealGitLabApiClient::new(http_client.clone());
 
         tao_app_handle.manage(http_client);
         tao_app_handle.manage(github_client);

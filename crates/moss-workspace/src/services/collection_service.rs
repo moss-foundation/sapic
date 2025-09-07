@@ -16,11 +16,10 @@ use moss_common::continue_if_err;
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
 use moss_git::url::GitUrl;
 use moss_git_hosting_provider::{
-    GitProviderKind, github::GitHubApiClient, gitlab::GitLabApiClient,
+    GitProviderKind, github::client::GitHubApiClient, gitlab::client::GitLabApiClient,
 };
 use moss_logging::session;
 use moss_user::{account::Account, models::primitives::AccountId, profile::ActiveProfile};
-use reqwest::Client as HttpClient;
 use rustc_hash::FxHashMap;
 use std::{
     collections::{HashMap, HashSet},
@@ -235,11 +234,11 @@ impl<R: AppRuntime> CollectionService<R> {
             let client = match git_params.git_provider_type {
                 GitProviderKind::GitHub => GitClient::GitHub {
                     account: account,
-                    api: app_delegate.global::<GitHubApiClient>().clone(),
+                    api: <dyn GitHubApiClient<R>>::global(app_delegate),
                 },
                 GitProviderKind::GitLab => GitClient::GitLab {
                     account: account,
-                    api: app_delegate.global::<GitLabApiClient>().clone(),
+                    api: <dyn GitLabApiClient<R>>::global(app_delegate),
                 },
             };
 
@@ -335,11 +334,11 @@ impl<R: AppRuntime> CollectionService<R> {
         let git_client = match params.git_provider_type {
             GitProviderKind::GitHub => GitClient::GitHub {
                 account: account,
-                api: app_delegate.global::<GitHubApiClient>().clone(),
+                api: <dyn GitHubApiClient<R>>::global(app_delegate),
             },
             GitProviderKind::GitLab => GitClient::GitLab {
                 account: account,
-                api: app_delegate.global::<GitLabApiClient>().clone(),
+                api: <dyn GitLabApiClient<R>>::global(app_delegate),
             },
         };
         let collection_result = builder
@@ -825,11 +824,11 @@ async fn restore_collections<R: AppRuntime>(
             let client = match vcs.kind {
                 GitProviderKind::GitHub => GitClient::GitHub {
                     account,
-                    api: GitHubApiClient::new(HttpClient::new()),
+                    api: <dyn GitHubApiClient<R>>::global(app_delegate),
                 },
                 GitProviderKind::GitLab => GitClient::GitLab {
                     account,
-                    api: GitLabApiClient::new(HttpClient::new()),
+                    api: <dyn GitLabApiClient<R>>::global(app_delegate),
                 },
             };
 

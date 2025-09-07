@@ -1,3 +1,7 @@
+use std::sync::Arc;
+
+use async_trait::async_trait;
+use moss_app_delegate::AppDelegate;
 use moss_applib::{
     AppRuntime,
     context::{self, ContextResultExt},
@@ -5,7 +9,7 @@ use moss_applib::{
 use moss_git::url::GitUrl;
 use moss_user::AccountSession;
 use oauth2::http::header::{ACCEPT, AUTHORIZATION};
-use reqwest::Client as HttpClient;
+use reqwest::{Client as HttpClient, RequestBuilder};
 
 use crate::gitlab::response::{GetContributorsResponse, GetRepositoryResponse, GetUserResponse};
 
@@ -15,17 +19,66 @@ fn api_url(host: &str) -> String {
 
 const CONTENT_TYPE: &'static str = "application/json";
 
+#[async_trait]
+pub trait GitLabApiClient<R: AppRuntime>: Send + Sync {
+    async fn get_user(
+        &self,
+        ctx: &R::AsyncContext,
+        account_handle: &AccountSession<R>,
+    ) -> joinerror::Result<GetUserResponse>;
+
+    async fn get_contributors(
+        &self,
+        ctx: &R::AsyncContext,
+        account_handle: &AccountSession<R>,
+        url: &GitUrl,
+    ) -> joinerror::Result<GetContributorsResponse>;
+
+    async fn get_repository(
+        &self,
+        ctx: &R::AsyncContext,
+        account_handle: &AccountSession<R>,
+        url: &GitUrl,
+    ) -> joinerror::Result<GetRepositoryResponse>;
+}
+
+struct GlobalGitLabApiClient<R: AppRuntime>(Arc<dyn GitLabApiClient<R>>);
+
+impl<R: AppRuntime> dyn GitLabApiClient<R> {
+    pub fn global(delegate: &AppDelegate<R>) -> Arc<dyn GitLabApiClient<R>> {
+        delegate.global::<GlobalGitLabApiClient<R>>().0.clone()
+    }
+
+    pub fn set_global(delegate: &AppDelegate<R>, v: Arc<dyn GitLabApiClient<R>>) {
+        delegate.set_global(GlobalGitLabApiClient(v));
+    }
+}
+
+trait GitLabHttpRequestBuilderExt {
+    fn with_default_gitlab_headers(self, access_token: String) -> Self;
+}
+
+impl GitLabHttpRequestBuilderExt for RequestBuilder {
+    fn with_default_gitlab_headers(self, access_token: String) -> Self {
+        self.header(ACCEPT, CONTENT_TYPE)
+            .header(AUTHORIZATION, format!("Bearer {}", access_token))
+    }
+}
+
 #[derive(Clone)]
-pub struct GitLabApiClient {
+pub struct RealGitLabApiClient {
     client: HttpClient,
 }
 
-impl GitLabApiClient {
+impl RealGitLabApiClient {
     pub fn new(client: HttpClient) -> Self {
         Self { client }
     }
+}
 
-    pub async fn get_user<R: AppRuntime>(
+#[async_trait]
+impl<R: AppRuntime> GitLabApiClient<R> for RealGitLabApiClient {
+    async fn get_user(
         &self,
         ctx: &R::AsyncContext,
         account_handle: &AccountSession<R>,
@@ -35,8 +88,7 @@ impl GitLabApiClient {
             let resp = self
                 .client
                 .get(format!("{}/user", api_url(&account_handle.host())))
-                .header(ACCEPT, CONTENT_TYPE)
-                .header(AUTHORIZATION, format!("Bearer {}", access_token))
+                .with_default_gitlab_headers(access_token)
                 .send()
                 .await?;
 
@@ -53,7 +105,7 @@ impl GitLabApiClient {
         .join_err_bare()
     }
 
-    pub async fn get_contributors<R: AppRuntime>(
+    async fn get_contributors(
         &self,
         ctx: &R::AsyncContext,
         account_handle: &AccountSession<R>,
@@ -71,8 +123,7 @@ impl GitLabApiClient {
                     api_url(&account_handle.host()),
                     encoded_url
                 ))
-                .header(ACCEPT, CONTENT_TYPE)
-                .header(AUTHORIZATION, format!("Bearer {}", access_token))
+                .with_default_gitlab_headers(access_token)
                 .send()
                 .await?;
 
@@ -89,7 +140,7 @@ impl GitLabApiClient {
         .join_err_bare()
     }
 
-    pub async fn get_repository<R: AppRuntime>(
+    async fn get_repository(
         &self,
         ctx: &R::AsyncContext,
         account_handle: &AccountSession<R>,
@@ -107,8 +158,7 @@ impl GitLabApiClient {
                     api_url(&account_handle.host()),
                     encoded_url
                 ))
-                .header(ACCEPT, CONTENT_TYPE)
-                .header(AUTHORIZATION, format!("Bearer {}", access_token))
+                .with_default_gitlab_headers(access_token)
                 .send()
                 .await?;
 
