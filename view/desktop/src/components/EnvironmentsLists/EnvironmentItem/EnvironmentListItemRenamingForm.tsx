@@ -4,7 +4,6 @@ import { cn } from "@/utils/cn";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 import { EnvironmentListType } from "../types";
 
-
 interface EnvironmentListItemRenamingFormProps {
   handleRename: (name: string) => void;
   handleCancel: () => void;

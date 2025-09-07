@@ -31,6 +31,7 @@ export const useDraggableGroupedEnvironmentsList = ({
         element,
         getData: ({ input }) => {
           const data = {
+            type: "GroupedEnvironmentList",
             data: { groupWithEnvironments },
           };
 

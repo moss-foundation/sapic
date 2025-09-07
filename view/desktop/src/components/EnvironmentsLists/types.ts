@@ -5,7 +5,28 @@ export interface GroupedEnvironments extends EnvironmentGroup {
   environments: StreamEnvironmentsEvent[];
 }
 
-export type EnvironmentListType = "GlobalEnvironmentItem" | "GroupedEnvironmentItem";
+export interface GlobalEnvironmentItem {
+  type: "GlobalEnvironmentItem";
+  data: {
+    environment: StreamEnvironmentsEvent;
+  };
+}
+
+export interface GroupedEnvironmentItem {
+  type: "GroupedEnvironmentItem";
+  data: {
+    environment: GroupedEnvironments;
+  };
+}
+
+export interface GroupedEnvironmentList {
+  type: "GroupedEnvironmentList";
+  data: {
+    groupWithEnvironments: GroupedEnvironments;
+  };
+}
+
+export type EnvironmentListType = "GlobalEnvironmentItem" | "GroupedEnvironmentItem" | "GroupedEnvironmentList";
 
 export interface DragEnvironmentItem {
   type: EnvironmentListType;
@@ -24,10 +45,4 @@ export interface DropEnvironmentItem {
   [key: string | symbol]: unknown;
 }
 
-export type DropOperation =
-  | "GlobalReorder"
-  | "GroupedReorder"
-  | "GlobalCombine"
-  | "GroupedCombine"
-  | "MoveToGlobal"
-  | "MoveToGrouped";
+export type DropOperation = "ReorderGlobal" | "ReorderGrouped" | "MoveToGlobal" | "MoveToGrouped" | "CombineGrouped";

@@ -1,8 +1,8 @@
-import { extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
+import { extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { DragLocationHistory } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 import { ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import { DragEnvironmentItem, DropEnvironmentItem, DropOperation } from "./types";
+import { DragEnvironmentItem, DropEnvironmentItem, DropOperation, GlobalEnvironmentItem } from "./types";
 
 //source
 export const getSourceEnvironmentItem = (source: ElementDragPayload): DragEnvironmentItem | null => {
@@ -25,6 +25,14 @@ export const isSourceGroupedEnvironmentItem = (source: ElementDragPayload): bool
   return source.data.type === "GroupedEnvironmentItem";
 };
 
+export const getSourceGlobalEnvironmentItemData = (source: ElementDragPayload): GlobalEnvironmentItem | null => {
+  if (source.data.type !== "GlobalEnvironmentItem") {
+    return null;
+  }
+
+  return source.data as unknown as GlobalEnvironmentItem;
+};
+
 //location
 export const getLocationEnvironmentItemData = (location: DragLocationHistory): DropEnvironmentItem | null => {
   if (location.current.dropTargets.length === 0) return null;
@@ -37,7 +45,9 @@ export const getLocationEnvironmentItemData = (location: DragLocationHistory): D
   const instruction = extractInstruction(location.current.dropTargets[0].data);
 
   return {
-    ...(location.current.dropTargets[0].data.data as DragEnvironmentItem),
+    "data": {
+      ...(location.current.dropTargets[0].data.data as DropEnvironmentItem["data"]),
+    },
     "type": location.current.dropTargets[0].data.type,
     "instruction": instruction ?? undefined,
   };
@@ -45,10 +55,33 @@ export const getLocationEnvironmentItemData = (location: DragLocationHistory): D
 
 //other
 
-export const getDropOperation = (location: ElementDragPayload): DropOperation | null => {
-  if (location.data.type !== "GlobalEnvironmentItem" && location.data.type !== "GroupedEnvironmentItem") {
-    return null;
-  }
+export const getDropOperation = (
+  source: DragEnvironmentItem,
+  location: DropEnvironmentItem,
+  instruction: Instruction
+): DropOperation | null => {
+  if (!instruction) return null;
 
-  return location.data as unknown as DropOperation;
+  if (instruction.operation === "combine") {
+    if (location.type === "GroupedEnvironmentList") {
+      return "CombineGrouped";
+    }
+  } else {
+    if (source.type === "GlobalEnvironmentItem" && location.type === "GlobalEnvironmentItem") {
+      return "ReorderGlobal";
+    }
+
+    if (source.type === "GroupedEnvironmentItem" && location.type === "GroupedEnvironmentItem") {
+      return "ReorderGrouped";
+    }
+
+    if (source.type === "GlobalEnvironmentItem" && location.type === "GroupedEnvironmentItem") {
+      return "MoveToGrouped";
+    }
+
+    if (source.type === "GroupedEnvironmentItem" && location.type === "GlobalEnvironmentItem") {
+      return "MoveToGlobal";
+    }
+  }
+  return null;
 };

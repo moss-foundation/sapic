@@ -54,7 +54,7 @@ export const useDraggableEnvironmentItem = ({ ref, environment, type }: UseDragg
                 "reorder-after": "not-available",
                 combine: "not-available",
               },
-            });
+            }) as DropEnvironmentItem;
           }
 
           return attachInstruction(data, {
@@ -65,7 +65,7 @@ export const useDraggableEnvironmentItem = ({ ref, environment, type }: UseDragg
               "reorder-after": "available",
               combine: "not-available",
             },
-          });
+          }) as DropEnvironmentItem;
         },
         canDrop({ source }) {
           const sourceData = getSourceEnvironmentItem(source);
