@@ -2,7 +2,7 @@ import { useCallback, useEffect } from "react";
 
 import { useStreamEnvironments } from "@/hooks";
 import { useBatchUpdateEnvironment } from "@/hooks/workspace/environment/useBatchUpdateEnvironment";
-import { extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
+import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import { DropEnvironmentItem, GlobalEnvironmentItem } from "../types";
@@ -69,16 +69,15 @@ export const useMonitorEnvironmentsLists = () => {
 
         const sourceData = getSourceEnvironmentItem(source);
         const locationData = getLocationEnvironmentItemData(location);
-        const instruction = extractInstruction(location.current.dropTargets[0].data);
 
-        if (!sourceData || !locationData || !instruction) return;
+        if (!sourceData || !locationData || !locationData.instruction) return;
 
-        const dropOperation = getDropOperation(sourceData, locationData, instruction);
+        const dropOperation = getDropOperation(sourceData, locationData, locationData.instruction);
         switch (dropOperation) {
           case "ReorderGlobal":
             const sourceGlobalEnvironmentItemData = getSourceGlobalEnvironmentItemData(source);
             if (!sourceGlobalEnvironmentItemData) return;
-            handleReorderGlobal(sourceGlobalEnvironmentItemData, locationData, instruction);
+            handleReorderGlobal(sourceGlobalEnvironmentItemData, locationData, locationData.instruction);
             break;
           case "ReorderGrouped":
             console.log("ReorderGrouped");
