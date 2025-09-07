@@ -142,7 +142,6 @@ pub async fn run<R: TauriRuntime>() {
                         )),
                     );
 
-                    tao_app_handle.manage(http_client.clone());
                     tao_app_handle.manage(delegate);
                 }
 
