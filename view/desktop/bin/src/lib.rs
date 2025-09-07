@@ -9,14 +9,21 @@ mod window;
 extern crate tracing;
 
 use moss_app::{AppBuilder as TauriAppBuilder, builder::BuildAppParams};
+use moss_app_delegate::AppDelegate;
 use moss_applib::{
-    AppHandle, TauriAppRuntime,
+    TauriAppRuntime,
     context::{AnyAsyncContext, AnyContext, MutableContext},
 };
 use moss_fs::RealFileSystem;
 use moss_git_hosting_provider::{
-    github::{GitHubApiClient, GitHubAuthAdapter},
-    gitlab::{GitLabApiClient, GitLabAuthAdapter},
+    github::{
+        RealGitHubApiClient, RealGitHubAuthAdapter, auth::GitHubAuthAdapter,
+        client::GitHubApiClient,
+    },
+    gitlab::{
+        RealGitLabApiClient, RealGitLabAuthAdapter, auth::GitLabAuthAdapter,
+        client::GitLabApiClient,
+    },
 };
 use moss_keyring::KeyringClientImpl;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
@@ -105,23 +112,37 @@ pub async fn run<R: TauriRuntime>() {
                 // Registration of global resources that will be accessible
                 // throughout the entire application via the `global` method
                 // of the app's internal handler.
-                {
-                    tao_app_handle.manage(http_client.clone());
-                    tao_app_handle.manage(GitHubApiClient::new(http_client.clone()));
-                    tao_app_handle.manage(GitLabApiClient::new(http_client.clone()));
-                    tao_app_handle.manage(GitHubAuthAdapter::new(
-                        auth_api_client.clone(),
-                        auth_api_client.base_url(),
-                        8080,
-                    ));
-                    tao_app_handle.manage(GitLabAuthAdapter::new(
-                        auth_api_client.clone(),
-                        auth_api_client.base_url(),
-                        8081,
-                    ));
 
-                    tao_app_handle
-                        .manage(AppHandle::<TauriAppRuntime<R>>::new(tao_app_handle.clone()));
+                {
+                    let delegate = AppDelegate::<TauriAppRuntime<R>>::new(tao_app_handle.clone());
+
+                    <dyn GitHubApiClient<TauriAppRuntime<R>>>::set_global(
+                        &delegate,
+                        Arc::new(RealGitHubApiClient::new(http_client.clone())),
+                    );
+                    <dyn GitHubAuthAdapter<TauriAppRuntime<R>>>::set_global(
+                        &delegate,
+                        Arc::new(RealGitHubAuthAdapter::<TauriAppRuntime<R>>::new(
+                            auth_api_client.clone(),
+                            auth_api_client.base_url(),
+                            8080,
+                        )),
+                    );
+
+                    <dyn GitLabApiClient<TauriAppRuntime<R>>>::set_global(
+                        &delegate,
+                        Arc::new(RealGitLabApiClient::new(http_client.clone())),
+                    );
+                    <dyn GitLabAuthAdapter<TauriAppRuntime<R>>>::set_global(
+                        &delegate,
+                        Arc::new(RealGitLabAuthAdapter::<TauriAppRuntime<R>>::new(
+                            auth_api_client.clone(),
+                            auth_api_client.base_url(),
+                            8081,
+                        )),
+                    );
+
+                    tao_app_handle.manage(delegate);
                 }
 
                 let ctx_clone = ctx.clone();
@@ -157,7 +178,7 @@ pub async fn run<R: TauriRuntime>() {
 
                     ctx.freeze()
                 });
-                tao_app_handle.manage(app);
+                tao_app_handle.manage(Arc::new(app));
 
                 Ok(())
             })

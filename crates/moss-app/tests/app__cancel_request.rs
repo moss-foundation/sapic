@@ -13,9 +13,9 @@ mod shared;
 
 #[tokio::test]
 async fn cancel_request_success() {
-    let (app, _ctx, cleanup) = set_up_test_app().await;
+    let (app, _, ctx, cleanup) = set_up_test_app().await;
 
-    let ctx = MutableContext::background();
+    let ctx = MutableContext::new_with_timeout(ctx, Duration::from_secs(30));
     let request_id = "request".to_string();
 
     let cancellation_map = app.cancellation_map();
@@ -59,7 +59,7 @@ async fn cancel_request_success() {
 
 #[tokio::test]
 async fn cancel_request_nonexistent() {
-    let (app, _ctx, cleanup) = set_up_test_app().await;
+    let (app, _, _, cleanup) = set_up_test_app().await;
 
     let request_id = "nonexistent".to_string();
 
@@ -74,11 +74,11 @@ async fn cancel_request_nonexistent() {
 
 #[tokio::test]
 async fn cancel_request_with_child() {
-    let (app, _ctx, cleanup) = set_up_test_app().await;
+    let (app, _, ctx, cleanup) = set_up_test_app().await;
 
     let cancellation_map = app.cancellation_map();
 
-    let parent_ctx = MutableContext::background();
+    let parent_ctx = MutableContext::new_with_timeout(ctx, Duration::from_secs(30));
     let parent_id = "parent".to_string();
 
     cancellation_map

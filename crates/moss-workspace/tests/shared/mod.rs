@@ -1,14 +1,14 @@
 #![cfg(feature = "integration-tests")]
 
 use image::{ImageBuffer, Rgb};
-use moss_activity_broadcaster::ActivityBroadcaster;
+use moss_app_delegate::AppDelegate;
 use moss_applib::{
-    AppHandle, AppRuntime,
+    AppRuntime,
     context::{AnyContext, AsyncContext, MutableContext},
     mock::MockAppRuntime,
 };
 use moss_fs::RealFileSystem;
-use moss_git_hosting_provider::{github::GitHubApiClient, gitlab::GitLabApiClient};
+use moss_git_hosting_provider::{github::RealGitHubApiClient, gitlab::RealGitLabApiClient};
 use moss_keyring::test::MockKeyringClient;
 use moss_testutils::random_name::random_workspace_name;
 use moss_user::{Account, AccountSession, models::primitives::AccountId, profile::ActiveProfile};
@@ -45,7 +45,7 @@ pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>
 
 pub async fn setup_test_workspace() -> (
     AsyncContext,
-    AppHandle<MockAppRuntime>,
+    AppDelegate<MockAppRuntime>,
     Workspace<MockAppRuntime>,
     CleanupFn,
 ) {
@@ -59,14 +59,14 @@ pub async fn setup_test_workspace() -> (
             .build()
             .expect("failed to build http client");
 
-        let github_client = GitHubApiClient::new(http_client.clone());
-        let gitlab_client = GitLabApiClient::new(http_client.clone());
+        let github_client = RealGitHubApiClient::new(http_client.clone());
+        let gitlab_client = RealGitLabApiClient::new(http_client.clone());
 
         tao_app_handle.manage(http_client);
         tao_app_handle.manage(github_client);
         tao_app_handle.manage(gitlab_client);
     }
-    let app_handle = AppHandle::new(tao_app_handle.clone());
+    let app_delegate = AppDelegate::new(tao_app_handle.clone());
 
     let mut ctx = MutableContext::background_with_timeout(Duration::from_secs(30));
 
@@ -78,7 +78,6 @@ pub async fn setup_test_workspace() -> (
         .into();
     fs::create_dir_all(&abs_path).unwrap();
 
-    let broadcaster = ActivityBroadcaster::new(tao_app_handle.clone());
     let keyring = Arc::new(MockKeyringClient::new());
 
     let active_profile = {
@@ -108,9 +107,10 @@ pub async fn setup_test_workspace() -> (
 
     let ctx = ctx.freeze();
     let workspace: Workspace<MockAppRuntime> =
-        WorkspaceBuilder::<MockAppRuntime>::new(fs.clone(), broadcaster, active_profile.into())
+        WorkspaceBuilder::new(fs.clone(), active_profile.into())
             .create(
                 &ctx,
+                &app_delegate,
                 CreateWorkspaceParams {
                     name: random_workspace_name(),
                     abs_path: abs_path.clone(),
@@ -130,7 +130,7 @@ pub async fn setup_test_workspace() -> (
         }
     });
 
-    (ctx, app_handle, workspace, cleanup_fn)
+    (ctx, app_delegate, workspace, cleanup_fn)
 }
 
 pub fn _create_simple_editor_state() -> EditorPartStateInfo {

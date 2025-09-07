@@ -19,7 +19,7 @@ use crate::shared::{create_test_collection, random_entry_name};
 
 #[tokio::test]
 async fn create_dir_entry_success() {
-    let (ctx, collection_path, collection) = create_test_collection().await;
+    let (ctx, _, collection_path, collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
@@ -54,7 +54,7 @@ async fn create_dir_entry_success() {
 
 #[tokio::test]
 async fn create_dir_entry_with_order() {
-    let (ctx, collection_path, collection) = create_test_collection().await;
+    let (ctx, _, collection_path, collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
@@ -90,7 +90,7 @@ async fn create_dir_entry_with_order() {
 
 #[tokio::test]
 async fn create_dir_entry_already_exists() {
-    let (ctx, collection_path, collection) = create_test_collection().await;
+    let (ctx, _, collection_path, collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
@@ -120,7 +120,7 @@ async fn create_dir_entry_already_exists() {
 
 #[tokio::test]
 async fn create_dir_entry_special_chars_in_name() {
-    let (ctx, collection_path, collection) = create_test_collection().await;
+    let (ctx, _, collection_path, collection) = create_test_collection().await;
 
     let base_name = random_entry_name();
 
@@ -164,7 +164,7 @@ async fn create_dir_entry_special_chars_in_name() {
 
 #[tokio::test]
 async fn create_dir_entry_inside_item_entry() {
-    let (ctx, collection_path, collection) = create_test_collection().await;
+    let (ctx, _, collection_path, collection) = create_test_collection().await;
 
     let outer_name = random_entry_name();
     let outer_path = PathBuf::from(dirs::COMPONENTS_DIR);

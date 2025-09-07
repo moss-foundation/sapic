@@ -1,5 +1,7 @@
 use async_trait::async_trait;
 use joinerror::Error;
+use moss_app_delegate::AppDelegate;
+use moss_applib::AppRuntime;
 use moss_server_api::account_auth_gateway::{
     GitLabPkceTokenExchangeApiReq, GitLabPkceTokenExchangeResponse, TokenExchangeRequest,
 };
@@ -13,6 +15,23 @@ use std::{
 use url::Url;
 
 use crate::GitAuthAdapter;
+
+pub trait GitLabAuthAdapter<R: AppRuntime>:
+    GitAuthAdapter<R, PkceToken = GitLabPkceTokenCredentials, PatToken = ()> + Send + Sync
+{
+}
+
+struct GlobalGitLabAuthAdapter<R: AppRuntime>(Arc<dyn GitLabAuthAdapter<R>>);
+
+impl<R: AppRuntime> dyn GitLabAuthAdapter<R> {
+    pub fn global(delegate: &AppDelegate<R>) -> Arc<dyn GitLabAuthAdapter<R>> {
+        delegate.global::<GlobalGitLabAuthAdapter<R>>().0.clone()
+    }
+
+    pub fn set_global(delegate: &AppDelegate<R>, v: Arc<dyn GitLabAuthAdapter<R>>) {
+        delegate.set_global(GlobalGitLabAuthAdapter(v));
+    }
+}
 
 #[derive(Debug, Deserialize)]
 pub struct GitLabPkceTokenCredentials {
@@ -31,15 +50,17 @@ impl From<GitLabPkceTokenExchangeResponse> for GitLabPkceTokenCredentials {
     }
 }
 
-pub struct GitLabAuthAdapter {
-    api_client: Arc<dyn GitLabPkceTokenExchangeApiReq>,
+pub struct RealGitLabAuthAdapter<R: AppRuntime> {
+    api_client: Arc<dyn GitLabPkceTokenExchangeApiReq<R>>,
     url: Arc<String>,
     callback_port: u16,
 }
 
-impl GitLabAuthAdapter {
+impl<R: AppRuntime> GitLabAuthAdapter<R> for RealGitLabAuthAdapter<R> {}
+
+impl<R: AppRuntime> RealGitLabAuthAdapter<R> {
     pub fn new(
-        api_client: Arc<dyn GitLabPkceTokenExchangeApiReq>,
+        api_client: Arc<dyn GitLabPkceTokenExchangeApiReq<R>>,
         url: Arc<String>,
         callback_port: u16,
     ) -> Self {
@@ -52,11 +73,11 @@ impl GitLabAuthAdapter {
 }
 
 #[async_trait]
-impl GitAuthAdapter for GitLabAuthAdapter {
+impl<R: AppRuntime> GitAuthAdapter<R> for RealGitLabAuthAdapter<R> {
     type PkceToken = GitLabPkceTokenCredentials;
     type PatToken = ();
 
-    async fn auth_with_pkce(&self) -> joinerror::Result<Self::PkceToken> {
+    async fn auth_with_pkce(&self, ctx: &R::AsyncContext) -> joinerror::Result<Self::PkceToken> {
         let listener = {
             let addr = format!("127.0.0.1:{}", self.callback_port);
             TcpListener::bind(&addr)
@@ -123,15 +144,18 @@ impl GitAuthAdapter for GitLabAuthAdapter {
             .map_err(|e| Error::new::<()>(format!("failed to send response: {}", e)))?;
 
         self.api_client
-            .gitlab_pkce_token_exchange(TokenExchangeRequest {
-                code: code.clone(),
-                state: returned_state.clone(),
-            })
+            .gitlab_pkce_token_exchange(
+                ctx,
+                TokenExchangeRequest {
+                    code: code.clone(),
+                    state: returned_state.clone(),
+                },
+            )
             .await
             .map(Into::into)
     }
 
-    async fn auth_with_pat(&self) -> joinerror::Result<Self::PatToken> {
+    async fn auth_with_pat(&self, _ctx: &R::AsyncContext) -> joinerror::Result<Self::PatToken> {
         unimplemented!()
     }
 }

@@ -1,8 +1,8 @@
 use derive_more::{Deref, DerefMut};
 use futures::Stream;
 use joinerror::{Error, OptionExt, ResultExt};
-use moss_activity_broadcaster::{ActivityBroadcaster, ToLocation};
-use moss_applib::{AppHandle, AppRuntime, subscription::EventEmitter};
+use moss_app_delegate::{AppDelegate, broadcast::ToLocation};
+use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_collection::{
     Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
     builder::{
@@ -16,11 +16,10 @@ use moss_common::continue_if_err;
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
 use moss_git::url::GitUrl;
 use moss_git_hosting_provider::{
-    GitProviderKind, github::GitHubApiClient, gitlab::GitLabApiClient,
+    GitProviderKind, github::client::GitHubApiClient, gitlab::client::GitLabApiClient,
 };
 use moss_logging::session;
 use moss_user::{account::Account, models::primitives::AccountId, profile::ActiveProfile};
-use reqwest::Client as HttpClient;
 use rustc_hash::FxHashMap;
 use std::{
     collections::{HashMap, HashSet},
@@ -94,8 +93,6 @@ pub struct CollectionService<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     storage: Arc<StorageService<R>>,
     state: Arc<RwLock<ServiceState<R>>>,
-    #[allow(dead_code)]
-    broadcaster: ActivityBroadcaster<R::EventLoop>,
     on_did_delete_collection_emitter: EventEmitter<OnDidDeleteCollection>,
     on_did_add_collection_emitter: EventEmitter<OnDidAddCollection>,
 }
@@ -103,12 +100,12 @@ pub struct CollectionService<R: AppRuntime> {
 impl<R: AppRuntime> CollectionService<R> {
     pub(crate) async fn new(
         ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
         abs_path: &Path,
         fs: Arc<dyn FileSystem>,
         storage: Arc<StorageService<R>>,
         environment_sources: &mut FxHashMap<Arc<String>, PathBuf>,
-        broadcaster: ActivityBroadcaster<R::EventLoop>,
-        active_profile: &Arc<ActiveProfile>,
+        active_profile: &Arc<ActiveProfile<R>>,
         on_collection_did_delete_emitter: EventEmitter<OnDidDeleteCollection>,
         on_collection_did_add_emitter: EventEmitter<OnDidAddCollection>,
     ) -> joinerror::Result<Self> {
@@ -119,16 +116,12 @@ impl<R: AppRuntime> CollectionService<R> {
             HashSet::new()
         };
 
-        let collections = restore_collections(
-            ctx,
-            &abs_path,
-            &fs,
-            &storage,
-            broadcaster.clone(),
-            active_profile,
-        )
-        .await
-        .join_err_with::<()>(|| format!("failed to restore collections, {}", abs_path.display()))?;
+        let collections =
+            restore_collections(ctx, app_delegate, &abs_path, &fs, &storage, active_profile)
+                .await
+                .join_err_with::<()>(|| {
+                    format!("failed to restore collections, {}", abs_path.display())
+                })?;
 
         for (id, collection) in collections.iter() {
             environment_sources.insert(id.clone().inner(), collection.environments_path());
@@ -142,7 +135,6 @@ impl<R: AppRuntime> CollectionService<R> {
                 collections,
                 expanded_items,
             })),
-            broadcaster,
             on_did_delete_collection_emitter: on_collection_did_delete_emitter,
             on_did_add_collection_emitter: on_collection_did_add_emitter,
         })
@@ -159,8 +151,9 @@ impl<R: AppRuntime> CollectionService<R> {
     pub(crate) async fn create_collection(
         &self,
         ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
         id: &CollectionId,
-        account: Option<Account>,
+        account: Option<Account<R>>,
         params: &CreateCollectionParams,
     ) -> joinerror::Result<CollectionItemDescription> {
         let id_str = id.to_string();
@@ -198,8 +191,7 @@ impl<R: AppRuntime> CollectionService<R> {
         };
 
         let abs_path: Arc<Path> = abs_path.clone().into();
-        let builder =
-            CollectionBuilder::<R>::new(self.fs.clone(), self.broadcaster.clone()).await?;
+        let builder = CollectionBuilder::new(self.fs.clone()).await?;
 
         let collection_result = builder
             .create(
@@ -242,16 +234,16 @@ impl<R: AppRuntime> CollectionService<R> {
             let client = match git_params.git_provider_type {
                 GitProviderKind::GitHub => GitClient::GitHub {
                     account: account,
-                    api: GitHubApiClient::new(HttpClient::new()), // FIXME:
+                    api: <dyn GitHubApiClient<R>>::global(app_delegate),
                 },
                 GitProviderKind::GitLab => GitClient::GitLab {
                     account: account,
-                    api: GitLabApiClient::new(HttpClient::new()), // FIXME:
+                    api: <dyn GitLabApiClient<R>>::global(app_delegate),
                 },
             };
 
             collection
-                .init_vcs(client, git_params.repository, git_params.branch)
+                .init_vcs(ctx, client, git_params.repository, git_params.branch)
                 .await?;
         }
 
@@ -316,9 +308,9 @@ impl<R: AppRuntime> CollectionService<R> {
     pub(crate) async fn clone_collection(
         &self,
         ctx: &R::AsyncContext,
-        app_handle: &AppHandle<R>,
+        app_delegate: &AppDelegate<R>,
         id: &CollectionId,
-        account: Account,
+        account: Account<R>,
         params: CollectionItemCloneParams,
     ) -> joinerror::Result<CollectionItemDescription> {
         let id_str = id.to_string();
@@ -337,16 +329,16 @@ impl<R: AppRuntime> CollectionService<R> {
                 format!("failed to create directory `{}`", abs_path.display())
             })?;
 
-        let builder = CollectionBuilder::new(self.fs.clone(), self.broadcaster.clone()).await?;
+        let builder = CollectionBuilder::new(self.fs.clone()).await?;
 
         let git_client = match params.git_provider_type {
             GitProviderKind::GitHub => GitClient::GitHub {
                 account: account,
-                api: app_handle.global::<GitHubApiClient>().clone(),
+                api: <dyn GitHubApiClient<R>>::global(app_delegate),
             },
             GitProviderKind::GitLab => GitClient::GitLab {
                 account: account,
-                api: app_handle.global::<GitLabApiClient>().clone(),
+                api: <dyn GitLabApiClient<R>>::global(app_delegate),
             },
         };
         let collection_result = builder
@@ -391,7 +383,7 @@ impl<R: AppRuntime> CollectionService<R> {
         let vcs = collection
             .vcs()
             .unwrap() // SAFETY: Collection is built from the clone operation, so it must have a VCS
-            .summary()
+            .summary(ctx)
             .await?;
 
         // FIXME: Should we allow user to set local icon when cloning a collection?
@@ -561,19 +553,20 @@ impl<R: AppRuntime> CollectionService<R> {
 
     pub(crate) async fn list_collections(
         &self,
-        _ctx: &R::AsyncContext,
+        ctx: &R::AsyncContext,
     ) -> Pin<Box<dyn Stream<Item = CollectionItemDescription> + Send + '_>> {
-        let state = self.state.clone();
+        let state_clone = self.state.clone();
+        let ctx_clone = ctx.clone();
 
         Box::pin(async_stream::stream! {
-            let state_lock = state.read().await;
+            let state_lock = state_clone.read().await;
             for (id, item) in state_lock.collections.iter() {
                 let details = continue_if_err!(item.details().await, |e: Error| {
                     session::error!(format!("failed to describe collection `{}`: {}", id.to_string(), e.to_string()));
                 });
 
                 let vcs = if let Some(vcs) = item.vcs() {
-                    match vcs.summary().await {
+                    match vcs.summary(&ctx_clone).await {
                         Ok(summary) => Some(summary),
                         Err(e) => {
                             session::warn!(format!("failed to get VCS summary for collection `{}`: {}", id.to_string(), e.to_string()));
@@ -654,7 +647,7 @@ impl<R: AppRuntime> CollectionService<R> {
                 format!("failed to create directory `{}`", abs_path.display())
             })?;
 
-        let builder = CollectionBuilder::new(self.fs.clone(), self.broadcaster.clone()).await?;
+        let builder = CollectionBuilder::new(self.fs.clone()).await?;
 
         let collection = builder
             .import_archive(
@@ -744,11 +737,11 @@ impl<R: AppRuntime> CollectionService<R> {
 }
 async fn restore_collections<R: AppRuntime>(
     ctx: &R::AsyncContext,
+    app_delegate: &AppDelegate<R>,
     abs_path: &Path,
     fs: &Arc<dyn FileSystem>,
     storage: &Arc<StorageService<R>>,
-    broadcaster: ActivityBroadcaster<R::EventLoop>,
-    active_profile: &Arc<ActiveProfile>,
+    active_profile: &Arc<ActiveProfile<R>>,
 ) -> joinerror::Result<HashMap<CollectionId, CollectionItem<R>>> {
     if !abs_path.exists() {
         return Ok(HashMap::new());
@@ -760,7 +753,7 @@ async fn restore_collections<R: AppRuntime>(
         .await
         .join_err_with::<()>(|| format!("failed to read directory `{}`", abs_path.display()))?;
 
-    let activity_handle = broadcaster.emit_continual(ToLocation::Window {
+    let activity_handle = app_delegate.emit_continual(ToLocation::Window {
         activity_id: "restore_collections",
         title: "Restoring collections".to_string(),
         detail: None,
@@ -781,7 +774,7 @@ async fn restore_collections<R: AppRuntime>(
 
         let collection = {
             let collection_abs_path: Arc<Path> = entry.path().to_owned().into();
-            let builder = CollectionBuilder::<R>::new(fs.clone(), broadcaster.clone())
+            let builder = CollectionBuilder::new(fs.clone())
                 .await
                 .join_err_with::<()>(|| {
                     format!(
@@ -831,11 +824,11 @@ async fn restore_collections<R: AppRuntime>(
             let client = match vcs.kind {
                 GitProviderKind::GitHub => GitClient::GitHub {
                     account,
-                    api: GitHubApiClient::new(HttpClient::new()),
+                    api: <dyn GitHubApiClient<R>>::global(app_delegate),
                 },
                 GitProviderKind::GitLab => GitClient::GitLab {
                     account,
-                    api: GitLabApiClient::new(HttpClient::new()),
+                    api: <dyn GitLabApiClient<R>>::global(app_delegate),
                 },
             };
 

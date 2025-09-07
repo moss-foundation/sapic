@@ -20,7 +20,7 @@ use std::{str::FromStr, time::Duration};
 #[ignore]
 #[tokio::test]
 async fn test_list_logs_empty() {
-    let (app, ctx, cleanup) = set_up_test_app().await;
+    let (app, _, ctx, cleanup) = set_up_test_app().await;
 
     let list_logs_result = app
         .list_logs(
@@ -45,7 +45,7 @@ async fn test_list_logs_empty() {
 async fn test_list_logs_from_both_files_and_queue() {
     // By default, the applong and session log queue will be flushed to files for every ten log
     // We will create 25 of each to see that the logs are successfully combined
-    let (app, ctx, cleanup) = set_up_test_app().await;
+    let (app, _, ctx, cleanup) = set_up_test_app().await;
 
     for _ in 0..25 {
         app::warn!("");
@@ -80,7 +80,7 @@ async fn test_list_logs_from_both_files_and_queue() {
 #[ignore]
 #[tokio::test]
 async fn test_list_logs_by_level() {
-    let (app, ctx, cleanup) = set_up_test_app().await;
+    let (app, _, ctx, cleanup) = set_up_test_app().await;
 
     app::debug!("");
     app::warn!("");
@@ -134,7 +134,7 @@ async fn test_list_logs_by_level() {
 #[ignore]
 #[tokio::test]
 async fn test_list_logs_by_resource() {
-    let (app, ctx, cleanup) = set_up_test_app().await;
+    let (app, _, ctx, cleanup) = set_up_test_app().await;
     // let log_service = services.get::<LogService<MockAppRuntime>>();
 
     app::debug!("");

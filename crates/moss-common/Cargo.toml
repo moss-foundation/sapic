@@ -4,21 +4,9 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-moss_db.workspace = true
-moss_fs.workspace = true
 
-anyhow.workspace = true
-serde = { workspace = true, features = ["derive"] }
-ts-rs.workspace = true
-thiserror.workspace = true
-validator.workspace = true
-tauri.workspace = true
-serde_json.workspace = true
+[dev-dependencies]
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
-toml.workspace = true
-hcl-rs.workspace = true
-nanoid.workspace = true
-derive_more.workspace = true
 
 [features]
 integration-tests = []

@@ -1,5 +1,4 @@
 use derive_more::Deref;
-use moss_activity_broadcaster::ActivityBroadcaster;
 use moss_applib::{AppRuntime, context::Canceller};
 use moss_text::ReadOnlyStr;
 use rustc_hash::FxHashMap;
@@ -67,11 +66,10 @@ pub struct App<R: AppRuntime> {
     pub(super) workspace_service: WorkspaceService<R>,
     pub(super) locale_service: LocaleService,
     pub(super) theme_service: ThemeService,
-    pub(super) profile_service: ProfileService,
+    pub(super) profile_service: ProfileService<R>,
 
     // Store cancellers by the id of API requests
     pub(super) tracked_cancellations: Arc<RwLock<HashMap<String, Canceller>>>,
-    pub(super) broadcaster: ActivityBroadcaster<R::EventLoop>,
 }
 
 impl<R: AppRuntime> App<R> {

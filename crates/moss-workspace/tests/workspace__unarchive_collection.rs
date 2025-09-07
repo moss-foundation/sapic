@@ -13,12 +13,13 @@ pub mod shared;
 
 #[tokio::test]
 pub async fn unarchive_collection_success() {
-    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let id = workspace
         .create_collection(
             &ctx,
+            &app_delegate,
             &CreateCollectionInput {
                 inner: CreateCollectionParams {
                     name: collection_name.clone(),
@@ -56,11 +57,12 @@ pub async fn unarchive_collection_success() {
 
 #[tokio::test]
 pub async fn unarchive_collection_already_unarchived() {
-    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
     let collection_name = random_collection_name();
     let id = workspace
         .create_collection(
             &ctx,
+            &app_delegate,
             &CreateCollectionInput {
                 inner: CreateCollectionParams {
                     name: collection_name.clone(),

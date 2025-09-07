@@ -9,12 +9,13 @@ use crate::shared::set_up_test_app;
 
 #[tokio::test]
 async fn rename_workspace_success() {
-    let (app, ctx, cleanup) = set_up_test_app().await;
+    let (app, app_delegate, ctx, cleanup) = set_up_test_app().await;
 
     let workspace_name = random_workspace_name();
     let create_output = app
         .create_workspace(
             &ctx,
+            &app_delegate,
             &CreateWorkspaceInput {
                 name: workspace_name.clone(),
                 mode: WorkspaceMode::default(),
@@ -54,12 +55,13 @@ async fn rename_workspace_success() {
 
 #[tokio::test]
 async fn rename_workspace_empty_name() {
-    let (app, ctx, cleanup) = set_up_test_app().await;
+    let (app, app_delegate, ctx, cleanup) = set_up_test_app().await;
 
     let workspace_name = random_workspace_name();
     let _create_output = app
         .create_workspace(
             &ctx,
+            &app_delegate,
             &CreateWorkspaceInput {
                 name: workspace_name.clone(),
                 mode: WorkspaceMode::default(),
@@ -91,12 +93,13 @@ async fn rename_workspace_empty_name() {
 
 #[tokio::test]
 async fn rename_workspace_same_name() {
-    let (app, ctx, cleanup) = set_up_test_app().await;
+    let (app, app_delegate, ctx, cleanup) = set_up_test_app().await;
 
     let workspace_name = random_workspace_name();
     let create_output = app
         .create_workspace(
             &ctx,
+            &app_delegate,
             &CreateWorkspaceInput {
                 name: workspace_name.clone(),
                 mode: WorkspaceMode::default(),
@@ -129,7 +132,7 @@ async fn rename_workspace_same_name() {
 
 #[tokio::test]
 async fn rename_workspace_no_active_workspace() {
-    let (app, ctx, cleanup) = set_up_test_app().await;
+    let (app, _, ctx, cleanup) = set_up_test_app().await;
 
     // Try to rename when no workspace is active
     let rename_result = app

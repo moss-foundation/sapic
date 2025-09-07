@@ -1554,6 +1554,7 @@ dependencies = [
  "moss_activity_broadcaster",
  "moss_api",
  "moss_app",
+ "moss_app_delegate",
  "moss_applib",
  "moss_collection",
  "moss_common",
@@ -3518,7 +3519,8 @@ dependencies = [
 name = "moss_activity_broadcaster"
 version = "0.1.0"
 dependencies = [
- "anyhow",
+ "joinerror",
+ "moss_applib",
  "moss_bindingutils",
  "serde",
  "tauri",
@@ -3555,6 +3557,7 @@ dependencies = [
  "joinerror",
  "moss_activity_broadcaster",
  "moss_api",
+ "moss_app_delegate",
  "moss_applib",
  "moss_bindingutils",
  "moss_common",
@@ -3586,6 +3589,16 @@ dependencies = [
  "tracing-subscriber",
  "ts-rs",
  "validator",
+]
+
+[[package]]
+name = "moss_app_delegate"
+version = "0.1.0"
+dependencies = [
+ "joinerror",
+ "moss_activity_broadcaster",
+ "moss_applib",
+ "tauri",
 ]
 
 [[package]]
@@ -3638,8 +3651,8 @@ dependencies = [
  "indexmap 2.11.0",
  "joinerror",
  "json-patch 4.0.0",
- "moss_activity_broadcaster",
  "moss_api",
+ "moss_app_delegate",
  "moss_applib",
  "moss_bindingutils",
  "moss_common",
@@ -3674,20 +3687,7 @@ dependencies = [
 name = "moss_common"
 version = "0.1.0"
 dependencies = [
- "anyhow",
- "derive_more 2.0.1",
- "hcl-rs",
- "moss_db",
- "moss_fs",
- "nanoid",
- "serde",
- "serde_json",
- "tauri",
- "thiserror 2.0.16",
  "tokio",
- "toml 0.9.5",
- "ts-rs",
- "validator",
 ]
 
 [[package]]
@@ -3798,6 +3798,8 @@ dependencies = [
  "joinerror",
  "keyring",
  "libssh2-sys",
+ "moss_app_delegate",
+ "moss_applib",
  "moss_git",
  "moss_keyring",
  "moss_server_api",
@@ -3867,6 +3869,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "joinerror",
+ "moss_applib",
  "reqwest",
  "serde",
 ]
@@ -3948,8 +3951,8 @@ dependencies = [
  "joinerror",
  "json-patch 4.0.0",
  "jsonptr 0.7.1",
- "moss_activity_broadcaster",
  "moss_api",
+ "moss_app_delegate",
  "moss_applib",
  "moss_bindingutils",
  "moss_collection",

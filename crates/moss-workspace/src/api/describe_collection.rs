@@ -15,7 +15,7 @@ use crate::{
 impl<R: AppRuntime> Workspace<R> {
     pub async fn describe_collection(
         &self,
-        _ctx: &R::AsyncContext,
+        ctx: &R::AsyncContext,
         input: &DescribeCollectionInput,
     ) -> joinerror::Result<DescribeCollectionOutput> {
         let collection = self
@@ -28,7 +28,7 @@ impl<R: AppRuntime> Workspace<R> {
 
         let details = collection.details().await?;
         let (vcs_summary, contributors) = if let Some(vcs) = collection.vcs() {
-            let summary = match vcs.summary().await {
+            let summary = match vcs.summary(ctx).await {
                 Ok(summary) => Some(summary),
                 Err(e) => {
                     session::warn!(format!(
@@ -40,7 +40,7 @@ impl<R: AppRuntime> Workspace<R> {
                 }
             };
 
-            let contributors = match vcs.contributors().await {
+            let contributors = match vcs.contributors(ctx).await {
                 Ok(contributors) => Some(contributors),
                 Err(e) => {
                     session::warn!(format!(

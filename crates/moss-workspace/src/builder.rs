@@ -1,5 +1,5 @@
 use joinerror::ResultExt;
-use moss_activity_broadcaster::ActivityBroadcaster;
+use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, EventMarker, subscription::EventEmitter};
 use moss_environment::builder::{CreateEnvironmentParams, EnvironmentBuilder};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
@@ -42,8 +42,7 @@ pub struct CreateWorkspaceParams {
 
 pub struct WorkspaceBuilder<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
-    broadcaster: ActivityBroadcaster<R::EventLoop>,
-    active_profile: Arc<ActiveProfile>,
+    active_profile: Arc<ActiveProfile<R>>,
 }
 
 #[derive(Clone)]
@@ -60,16 +59,8 @@ impl EventMarker for OnDidDeleteCollection {}
 impl EventMarker for OnDidAddCollection {}
 
 impl<R: AppRuntime> WorkspaceBuilder<R> {
-    pub fn new(
-        fs: Arc<dyn FileSystem>,
-        broadcaster: ActivityBroadcaster<R::EventLoop>,
-        active_profile: Arc<ActiveProfile>,
-    ) -> Self {
-        Self {
-            fs,
-            broadcaster,
-            active_profile,
-        }
+    pub fn new(fs: Arc<dyn FileSystem>, active_profile: Arc<ActiveProfile<R>>) -> Self {
+        Self { fs, active_profile }
     }
 
     pub async fn initialize(
@@ -110,6 +101,7 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
     pub async fn load(
         self,
         ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
         params: LoadWorkspaceParams,
     ) -> joinerror::Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
@@ -132,11 +124,11 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
 
         let collection_service: Arc<CollectionService<R>> = CollectionService::new(
             ctx,
+            app_delegate,
             &params.abs_path,
             self.fs.clone(),
             storage_service.clone(),
             &mut environment_sources,
-            self.broadcaster.clone(),
             &self.active_profile,
             on_did_delete_collection_emitter,
             on_did_add_collection_emitter,
@@ -172,7 +164,6 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
 
         Ok(Workspace {
             abs_path: params.abs_path,
-            broadcaster: self.broadcaster,
             edit,
             layout_service,
             collection_service,
@@ -187,6 +178,7 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
     pub async fn create(
         self,
         ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
         params: CreateWorkspaceParams,
     ) -> joinerror::Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
@@ -210,11 +202,11 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
         let layout_service = LayoutService::new(storage_service.clone());
         let collection_service: Arc<CollectionService<R>> = CollectionService::new(
             ctx,
+            app_delegate,
             &params.abs_path,
             self.fs.clone(),
             storage_service.clone(),
             &mut environment_sources,
-            self.broadcaster.clone(),
             &self.active_profile,
             on_did_delete_collection_emitter,
             on_did_add_collection_emitter,
@@ -248,7 +240,6 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
 
         Ok(Workspace {
             abs_path: params.abs_path,
-            broadcaster: self.broadcaster,
             edit,
             layout_service,
             collection_service,

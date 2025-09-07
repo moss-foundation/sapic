@@ -2,6 +2,7 @@
 pub mod shared;
 
 use futures;
+use moss_app_delegate::AppDelegate;
 use moss_applib::{context::AsyncContext, mock::MockAppRuntime};
 use moss_collection::{
     dirs,
@@ -21,6 +22,7 @@ use crate::shared::{
 // Helper function to scan entries using worktree directly
 async fn scan_entries_for_test(
     ctx: &AsyncContext,
+    app_delegate: &AppDelegate<MockAppRuntime>,
     collection: &moss_collection::Collection<MockAppRuntime>,
     dir_name: &str,
 ) -> Vec<StreamEntriesEvent> {
@@ -30,6 +32,7 @@ async fn scan_entries_for_test(
     collection
         .stream_entries(
             &ctx,
+            app_delegate,
             TauriChannel::new(move |body: InvokeResponseBody| {
                 if let InvokeResponseBody::Json(json_str) = body {
                     if let Ok(event) = serde_json::from_str::<StreamEntriesEvent>(&json_str) {
@@ -48,7 +51,7 @@ async fn scan_entries_for_test(
 
 #[tokio::test]
 async fn stream_entries_empty_collection() {
-    let (ctx, collection_path, collection) = create_test_collection().await;
+    let (ctx, app_delegate, collection_path, collection) = create_test_collection().await;
 
     // Each directory should return exactly one entry (the directory itself)
     // since the base directories are created with config files
@@ -58,7 +61,7 @@ async fn stream_entries_empty_collection() {
         dirs::COMPONENTS_DIR,
         dirs::SCHEMAS_DIR,
     ] {
-        let entries = scan_entries_for_test(&ctx, &collection, dir).await;
+        let entries = scan_entries_for_test(&ctx, &app_delegate, &collection, dir).await;
 
         assert_eq!(
             entries.len(),
@@ -79,13 +82,13 @@ async fn stream_entries_empty_collection() {
 
 #[tokio::test]
 async fn stream_entries_single_entry() {
-    let (ctx, collection_path, mut collection) = create_test_collection().await;
+    let (ctx, app_delegate, collection_path, mut collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
     create_test_request_dir_entry(&ctx, &mut collection, &entry_name).await;
 
     // Scan the components directory
-    let entries = scan_entries_for_test(&ctx, &collection, dirs::REQUESTS_DIR).await;
+    let entries = scan_entries_for_test(&ctx, &app_delegate, &collection, dirs::REQUESTS_DIR).await;
 
     // Should have 2 entries: the directory itself + the created entry
     assert_eq!(
@@ -124,7 +127,7 @@ async fn stream_entries_single_entry() {
 
 #[tokio::test]
 async fn stream_entries_multiple_entries_same_directory() {
-    let (ctx, collection_path, mut collection) = create_test_collection().await;
+    let (ctx, app_delegate, collection_path, mut collection) = create_test_collection().await;
 
     let entry1_name = format!("{}_1", random_entry_name());
     let entry2_name = format!("{}_2", random_entry_name());
@@ -134,7 +137,7 @@ async fn stream_entries_multiple_entries_same_directory() {
     create_test_request_dir_entry(&ctx, &mut collection, &entry2_name).await;
     create_test_request_dir_entry(&ctx, &mut collection, &entry3_name).await;
 
-    let entries = scan_entries_for_test(&ctx, &collection, dirs::REQUESTS_DIR).await;
+    let entries = scan_entries_for_test(&ctx, &app_delegate, &collection, dirs::REQUESTS_DIR).await;
 
     // Should have 4 entries: the directory itself + 3 created entries
     assert_eq!(
@@ -172,7 +175,7 @@ async fn stream_entries_multiple_entries_same_directory() {
 
 #[tokio::test]
 async fn stream_entries_multiple_directories() {
-    let (ctx, collection_path, mut collection) = create_test_collection().await;
+    let (ctx, app_delegate, collection_path, mut collection) = create_test_collection().await;
 
     let expected_name = "entry".to_string();
 
@@ -190,7 +193,7 @@ async fn stream_entries_multiple_directories() {
     ];
 
     for dir in directories {
-        let entries = scan_entries_for_test(&ctx, &collection, dir).await;
+        let entries = scan_entries_for_test(&ctx, &app_delegate, &collection, dir).await;
 
         // Should have 2 entries: the directory itself + the created entry
         assert_eq!(
@@ -222,7 +225,7 @@ async fn stream_entries_multiple_directories() {
 
 #[tokio::test]
 async fn stream_entries_scan_operation_stability() {
-    let (ctx, collection_path, mut collection) = create_test_collection().await;
+    let (ctx, app_delegate, collection_path, mut collection) = create_test_collection().await;
 
     // Create some entries to test scan stability
     let entry1_name = format!("{}_1", random_entry_name());
@@ -238,7 +241,7 @@ async fn stream_entries_scan_operation_stability() {
         dirs::COMPONENTS_DIR,
         dirs::SCHEMAS_DIR,
     ] {
-        let entries = scan_entries_for_test(&ctx, &collection, dir).await;
+        let entries = scan_entries_for_test(&ctx, &app_delegate, &collection, dir).await;
         // Each directory should have at least 1 entry (the directory itself)
         // and at most 2 entries (directory + 1 created entry)
         assert!(
@@ -257,7 +260,7 @@ async fn stream_entries_scan_operation_stability() {
         dirs::SCHEMAS_DIR,
     ]
     .iter()
-    .map(|dir| scan_entries_for_test(&ctx, &collection, dir));
+    .map(|dir| scan_entries_for_test(&ctx, &app_delegate, &collection, dir));
 
     let results = futures::future::join_all(futures).await;
 
@@ -277,7 +280,7 @@ async fn stream_entries_scan_operation_stability() {
 
 #[tokio::test]
 async fn stream_entries_mixed_content() {
-    let (ctx, collection_path, mut collection) = create_test_collection().await;
+    let (ctx, app_delegate, collection_path, mut collection) = create_test_collection().await;
 
     // Create entries in multiple directories
     let requests_entry = format!("{}_requests", random_entry_name());
@@ -293,7 +296,8 @@ async fn stream_entries_mixed_content() {
     // Test each directory independently
 
     // Requests should have 2 entries: directory + 1 created entry
-    let requests_entries = scan_entries_for_test(&ctx, &collection, dirs::REQUESTS_DIR).await;
+    let requests_entries =
+        scan_entries_for_test(&ctx, &app_delegate, &collection, dirs::REQUESTS_DIR).await;
     assert_eq!(requests_entries.len(), 2);
     let created_request = requests_entries
         .iter()
@@ -302,7 +306,8 @@ async fn stream_entries_mixed_content() {
     assert_eq!(created_request.name, requests_entry);
 
     // Components should have 3 entries: directory + 2 created entries
-    let components_entries = scan_entries_for_test(&ctx, &collection, dirs::COMPONENTS_DIR).await;
+    let components_entries =
+        scan_entries_for_test(&ctx, &app_delegate, &collection, dirs::COMPONENTS_DIR).await;
     assert_eq!(components_entries.len(), 3);
     let created_components: Vec<_> = components_entries
         .iter()
@@ -314,7 +319,8 @@ async fn stream_entries_mixed_content() {
     assert!(component_names.contains(&components_entry2.as_str()));
 
     // Schemas should have 2 entries: directory + 1 created entry
-    let schemas_entries = scan_entries_for_test(&ctx, &collection, dirs::SCHEMAS_DIR).await;
+    let schemas_entries =
+        scan_entries_for_test(&ctx, &app_delegate, &collection, dirs::SCHEMAS_DIR).await;
     assert_eq!(schemas_entries.len(), 2);
     let created_schema = schemas_entries
         .iter()
@@ -323,7 +329,8 @@ async fn stream_entries_mixed_content() {
     assert_eq!(created_schema.name, schemas_entry);
 
     // Endpoints should have 1 entry: just the directory
-    let endpoints_entries = scan_entries_for_test(&ctx, &collection, dirs::ENDPOINTS_DIR).await;
+    let endpoints_entries =
+        scan_entries_for_test(&ctx, &app_delegate, &collection, dirs::ENDPOINTS_DIR).await;
     assert_eq!(endpoints_entries.len(), 1);
     let dir_entry = endpoints_entries
         .iter()
@@ -337,12 +344,12 @@ async fn stream_entries_mixed_content() {
 
 #[tokio::test]
 async fn stream_entries_verify_entry_properties() {
-    let (ctx, collection_path, mut collection) = create_test_collection().await;
+    let (ctx, app_delegate, collection_path, mut collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
     create_test_request_dir_entry(&ctx, &mut collection, &entry_name).await;
 
-    let entries = scan_entries_for_test(&ctx, &collection, dirs::REQUESTS_DIR).await;
+    let entries = scan_entries_for_test(&ctx, &app_delegate, &collection, dirs::REQUESTS_DIR).await;
     // Should have 2 entries: directory + created entry
     assert_eq!(entries.len(), 2);
 

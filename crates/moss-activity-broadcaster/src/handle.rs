@@ -1,4 +1,4 @@
-use anyhow::Result;
+use moss_applib::errors::TauriResultExt;
 use std::sync::{
     Arc,
     atomic::{AtomicUsize, Ordering},
@@ -23,27 +23,28 @@ impl<'a, R: TauriRuntime> ActivityHandle<'a, R> {
         }
     }
 
-    pub fn emit_progress(&self, detail: Option<String>) -> Result<()> {
-        self.app_handle.emit(
-            constants::CHANNEL,
-            ActivityEvent::Progress {
-                id: self.next_id.fetch_add(1, Ordering::SeqCst),
-                activity_id: self.activity_id,
-                detail,
-            },
-        )?;
-        Ok(())
+    pub fn emit_progress(&self, detail: Option<String>) -> joinerror::Result<()> {
+        self.app_handle
+            .emit(
+                constants::CHANNEL,
+                ActivityEvent::Progress {
+                    id: self.next_id.fetch_add(1, Ordering::SeqCst),
+                    activity_id: self.activity_id,
+                    detail,
+                },
+            )
+            .join_err_bare()
     }
 
-    pub fn emit_finish(&self) -> Result<()> {
-        self.app_handle.emit(
-            constants::CHANNEL,
-            ActivityEvent::Finish {
-                id: self.next_id.fetch_add(1, Ordering::SeqCst),
-                activity_id: self.activity_id,
-            },
-        )?;
-
-        Ok(())
+    pub fn emit_finish(&self) -> joinerror::Result<()> {
+        self.app_handle
+            .emit(
+                constants::CHANNEL,
+                ActivityEvent::Finish {
+                    id: self.next_id.fetch_add(1, Ordering::SeqCst),
+                    activity_id: self.activity_id,
+                },
+            )
+            .join_err_bare()
     }
 }

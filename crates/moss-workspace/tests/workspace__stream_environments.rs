@@ -113,7 +113,7 @@ async fn stream_environments_only_workspace_environments() {
 
 #[tokio::test]
 async fn stream_environments_only_collection_environments() {
-    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let mut expected_environments = Vec::new();
 
@@ -124,6 +124,7 @@ async fn stream_environments_only_collection_environments() {
         let collection_id = workspace
             .create_collection(
                 &ctx,
+                &app_delegate,
                 &CreateCollectionInput {
                     inner: CreateCollectionParams {
                         name: collection_name,
@@ -213,12 +214,13 @@ async fn stream_environments_only_collection_environments() {
 
 #[tokio::test]
 async fn stream_environments_both_workspace_and_collection_environments() {
-    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let collection_id = workspace
         .create_collection(
             &ctx,
+            &app_delegate,
             &CreateCollectionInput {
                 inner: CreateCollectionParams {
                     name: collection_name,

@@ -1,11 +1,11 @@
 use joinerror::Error;
-use moss_applib::{AppHandle, AppRuntime, errors::Internal};
+use moss_app_delegate::AppDelegate;
+use moss_applib::{AppRuntime, errors::Internal};
 use moss_common::{continue_if_err, continue_if_none};
 use moss_fs::{CreateOptions, FileSystem};
 use moss_git_hosting_provider::{
-    GitAuthAdapter,
-    github::{GitHubApiClient, GitHubAuthAdapter},
-    gitlab::{GitLabApiClient, GitLabAuthAdapter},
+    github::{auth::GitHubAuthAdapter, client::GitHubApiClient},
+    gitlab::{auth::GitLabAuthAdapter, client::GitLabApiClient},
 };
 use moss_keyring::KeyringClient;
 use moss_logging::session;
@@ -67,16 +67,16 @@ impl ServiceConfig {
     }
 }
 
-pub(crate) struct ProfileService {
+pub(crate) struct ProfileService<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     auth_api_client: Arc<AccountAuthGatewayApiClient>,
     keyring: Arc<dyn KeyringClient>,
     state: RwLock<ServiceState>,
-    active_profile: Arc<ActiveProfile>,
+    active_profile: Arc<ActiveProfile<R>>,
     config: ServiceConfig,
 }
 
-impl ProfileService {
+impl<R: AppRuntime> ProfileService<R> {
     pub async fn new(
         fs: Arc<dyn FileSystem>,
         auth_api_client: Arc<AccountAuthGatewayApiClient>,
@@ -132,13 +132,14 @@ impl ProfileService {
         })
     }
 
-    pub fn active_profile(&self) -> Arc<ActiveProfile> {
+    pub fn active_profile(&self) -> Arc<ActiveProfile<R>> {
         self.active_profile.clone()
     }
 
-    pub async fn add_account<R: AppRuntime>(
+    pub async fn add_account(
         &self,
-        app_handle: &AppHandle<R>,
+        ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
         profile_id: ProfileId,
         host: String,
         provider: AccountKind,
@@ -148,24 +149,24 @@ impl ProfileService {
         let account_id = AccountId::new();
         let (session, username) = match provider {
             AccountKind::GitHub => {
-                let auth_client = app_handle.global::<GitHubAuthAdapter>();
-                let api_client = app_handle.global::<GitHubApiClient>().clone();
+                let auth_client = <dyn GitHubAuthAdapter<R>>::global(app_delegate);
+                let api_client = <dyn GitHubApiClient<R>>::global(app_delegate);
 
                 let session = self
-                    .add_github_account(auth_client, account_id.clone(), &host)
+                    .add_github_account(ctx, auth_client.as_ref(), account_id.clone(), &host)
                     .await?;
-                let user = api_client.get_user(&session).await?;
+                let user = api_client.get_user(ctx, &session).await?;
 
                 (session, user.login)
             }
             AccountKind::GitLab => {
-                let auth_client = app_handle.global::<GitLabAuthAdapter>();
-                let api_client = app_handle.global::<GitLabApiClient>().clone();
+                let auth_client = <dyn GitLabAuthAdapter<R>>::global(app_delegate);
+                let api_client = <dyn GitLabApiClient<R>>::global(app_delegate);
 
                 let session = self
-                    .add_gitlab_account(auth_client, account_id.clone(), &host)
+                    .add_gitlab_account(ctx, auth_client.as_ref(), account_id.clone(), &host)
                     .await?;
-                let user = api_client.get_user(&session).await?;
+                let user = api_client.get_user(ctx, &session).await?;
 
                 (session, user.username)
             }
@@ -191,7 +192,7 @@ impl ProfileService {
             self.fs
                 .create_file_with(
                     &abs_path,
-                    serde_json::to_string(&parsed)?.as_bytes(),
+                    serde_json::to_string_pretty(&parsed)?.as_bytes(),
                     CreateOptions {
                         overwrite: true,
                         ignore_if_exists: false,
@@ -224,11 +225,12 @@ impl ProfileService {
 
     async fn add_github_account(
         &self,
-        auth_client: &GitHubAuthAdapter,
+        ctx: &R::AsyncContext,
+        auth_client: &dyn GitHubAuthAdapter<R>,
         account_id: AccountId,
         host: &str,
-    ) -> joinerror::Result<AccountSession> {
-        let token = auth_client.auth_with_pkce().await.unwrap();
+    ) -> joinerror::Result<AccountSession<R>> {
+        let token = auth_client.auth_with_pkce(ctx).await.unwrap();
 
         Ok(AccountSession::github(
             account_id,
@@ -243,11 +245,12 @@ impl ProfileService {
 
     async fn add_gitlab_account(
         &self,
-        auth_client: &GitLabAuthAdapter,
+        ctx: &R::AsyncContext,
+        auth_client: &dyn GitLabAuthAdapter<R>,
         account_id: AccountId,
         host: &str,
-    ) -> joinerror::Result<AccountSession> {
-        let token = auth_client.auth_with_pkce().await.unwrap();
+    ) -> joinerror::Result<AccountSession<R>> {
+        let token = auth_client.auth_with_pkce(ctx).await.unwrap();
 
         Ok(AccountSession::gitlab(
             account_id,
@@ -274,7 +277,7 @@ impl ProfileService {
         self.fs
             .create_file_with(
                 &abs_path,
-                serde_json::to_string(&ProfileFile {
+                serde_json::to_string_pretty(&ProfileFile {
                     name,
                     accounts: vec![],
                 })?

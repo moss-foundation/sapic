@@ -10,13 +10,13 @@ members = [
     # Workspace crates
     #
     "crates/moss-applib",
+    "crates/moss-app",
+    "crates/moss-app-delegate",
     "crates/moss-git",
     "crates/moss-git-hosting-provider",
     "crates/moss-api",
     "crates/moss-text",
     "crates/moss-collection",
-    "crates/moss-app",
-    "crates/moss-applib",
     "crates/moss-db",
     "crates/moss-fs",
     "crates/moss-keyring",
@@ -42,7 +42,7 @@ members = [
     # Tools
     #
     "tools/xtask",
-    "crates/moss-id-macro",
+    "crates/moss-id-macro", 
 ]
 
 [workspace.dependencies]
@@ -60,6 +60,7 @@ moss_collection = { path = "crates/moss-collection" }
 moss_db = { path = "crates/moss-db" }
 moss_app = { path = "crates/moss-app" }
 moss_applib = { path = "crates/moss-applib" }
+moss_app_delegate = { path = "crates/moss-app-delegate" }
 moss_git = { path = "crates/moss-git" }
 moss_git_hosting_provider = { path = "crates/moss-git-hosting-provider" }
 moss_fs = { path = "crates/moss-fs" }
@@ -119,7 +120,6 @@ validator = "0.20.0"
 futures = "0.3.31"
 regex = { version = "1.11.1", default-features = false, features = [] }
 smallvec = "1.15.0"
-toml = "0.9"
 toml_edit = "0.22"
 nanoid = "0.4.0"
 rustc-hash = "2.1.1"
