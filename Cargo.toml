@@ -41,7 +41,7 @@ members = [
     #
     "tools/xtask",
     "crates/moss-id-macro",
-    "tools/cargo-tsnew"]
+    "tools/cargo-new-ts"]
 
 [workspace.dependencies]
 #

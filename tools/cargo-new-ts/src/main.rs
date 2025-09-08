@@ -61,7 +61,7 @@ fn main() {
     let args: Vec<String> = env::args().skip(2).collect();
 
     if args.is_empty() || args[0] == "--help" || args[0] == "-h" {
-        println!("cargo tsnew <name>");
+        println!("cargo new-ts <name>");
         return;
     }
 
