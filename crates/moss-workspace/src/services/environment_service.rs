@@ -203,7 +203,11 @@ where
         let data: FxHashMap<String, AnyValue> = self
             .storage
             .list_environment_groups_metadata(ctx)
-            .await?
+            .await
+            .unwrap_or_else(|e| {
+                session::warn!(format!("failed to get environment group metadata: {}", e));
+                HashMap::new()
+            })
             .into_iter()
             .map(|(k, v)| (k.to_string(), v))
             .collect();
@@ -385,7 +389,7 @@ where
             .await?;
 
         let abs_path = environment.abs_path().await;
-        let collection_id_inner = params.collection_id.map(|id| id.inner());
+        let collection_id_inner = params.collection_id.as_ref().map(|id| id.inner());
         let desc = environment.describe(ctx).await?;
 
         let mut state = self.state.write().await;
@@ -399,48 +403,17 @@ where
             },
         );
 
-        // Create and the environment group when creating a collection environment
-        if let Some(collection_id) = collection_id_inner.clone() {
-            let group_order = state.groups.len() as isize;
-            state.groups.insert(collection_id.clone());
-            state.expanded_groups.insert(collection_id.clone());
-
-            match self.storage.begin_write(&ctx).await {
-                Ok(mut txn) => {
-                    if let Err(e) = self
-                        .storage
-                        .put_expanded_groups_txn(&ctx, &mut txn, &state.expanded_groups)
-                        .await
-                    {
-                        session::warn!(format!(
-                            "failed to put expanded groups in the database: {}",
-                            e.to_string()
-                        ));
-                    }
-                    if let Err(e) = self
-                        .storage
-                        .put_environment_group_order_txn(
-                            &ctx,
-                            &mut txn,
-                            collection_id.clone(),
-                            group_order,
-                        )
-                        .await
-                    {
-                        session::warn!(format!(
-                            "failed to put environment group order in the database: {}",
-                            e.to_string()
-                        ));
-                    }
-                    if let Err(e) = txn.commit() {
-                        session::warn!(format!("failed to commit transaction: {}", e.to_string()));
-                    }
-                }
-                Err(e) => {
-                    session::warn!(format!("failed to commit transaction: {}", e.to_string()));
-                }
-            };
-        }
+        let output = EnvironmentItemDescription {
+            id: desc.id.clone(),
+            collection_id: collection_id_inner,
+            // FIXME: Should we provide option to activate an environment upon creation?
+            is_active: false,
+            display_name: params.name.clone(),
+            order: Some(params.order),
+            color: desc.color,
+            abs_path,
+            total_variables: desc.variables.len(),
+        };
 
         if let Err(e) = self
             .storage
@@ -451,19 +424,63 @@ where
                 "failed to put environment order in the db: {}",
                 e.to_string()
             ));
+            return Ok(output);
         }
 
-        Ok(EnvironmentItemDescription {
-            id: desc.id.clone(),
-            collection_id: collection_id_inner,
-            // FIXME: Should we provide option to activate an environment upon creation?
-            is_active: false,
-            display_name: params.name.clone(),
-            order: Some(params.order),
-            color: desc.color,
-            abs_path,
-            total_variables: desc.variables.len(),
-        })
+        let collection_id = if let Some(collection_id) = &params.collection_id {
+            collection_id.inner()
+        } else {
+            return Ok(output);
+        };
+
+        // Create a new environment group if it doesn't exist
+        if state.groups.contains(&collection_id) {
+            return Ok(output);
+        }
+
+        // FIXME: the order should be the current max group order + 1
+        let group_order = (state.groups.len() + 1) as isize;
+
+        state.groups.insert(collection_id.clone());
+        state.expanded_groups.insert(collection_id.clone());
+
+        {
+            let mut txn = match self.storage.begin_write(&ctx).await {
+                Ok(txn) => txn,
+                Err(e) => {
+                    session::warn!(format!("failed to begin write transaction: {}", e));
+                    return Ok(output);
+                }
+            };
+
+            if let Err(e) = self
+                .storage
+                .put_expanded_groups_txn(&ctx, &mut txn, &state.expanded_groups)
+                .await
+            {
+                session::warn!(format!(
+                    "failed to put expanded environment groups in the db: {}",
+                    e
+                ))
+            }
+
+            if let Err(e) = self
+                .storage
+                .put_environment_group_order_txn(&ctx, &mut txn, collection_id, group_order)
+                .await
+            {
+                session::warn!(format!(
+                    "failed to put environment group order in the db: {}",
+                    e
+                ));
+            }
+
+            if let Err(e) = txn.commit() {
+                session::warn!(format!("failed to commit transaction: {}", e));
+            }
+        }
+
+        Ok(output)
     }
 
     pub async fn delete_environment(
