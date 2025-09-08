@@ -76,7 +76,6 @@ async fn activate_environment_global() {
             &ctx,
             ActivateEnvironmentInput {
                 environment_id: id.clone(),
-                group_id: None,
             },
         )
         .await
@@ -138,7 +137,6 @@ async fn activate_environment_collection() {
             &ctx,
             ActivateEnvironmentInput {
                 environment_id: id.clone(),
-                group_id: Some(collection_id.clone()),
             },
         )
         .await
@@ -177,7 +175,6 @@ async fn activate_environment_currently_active() {
             &ctx,
             ActivateEnvironmentInput {
                 environment_id: id.clone(),
-                group_id: None,
             },
         )
         .await
@@ -189,7 +186,6 @@ async fn activate_environment_currently_active() {
             &ctx,
             ActivateEnvironmentInput {
                 environment_id: id.clone(),
-                group_id: None,
             },
         )
         .await
@@ -261,7 +257,6 @@ async fn activate_environment_groups_isolation() {
             &ctx,
             ActivateEnvironmentInput {
                 environment_id: global_env_id.clone(),
-                group_id: None,
             },
         )
         .await
@@ -282,7 +277,6 @@ async fn activate_environment_nonexistent() {
             &ctx,
             ActivateEnvironmentInput {
                 environment_id: EnvironmentId::new(),
-                group_id: None,
             },
         )
         .await;
