@@ -3,6 +3,7 @@ import { DragLocationHistory } from "@atlaskit/pragmatic-drag-and-drop/dist/type
 import { ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
+import { ENVIRONMENT_ITEM_DRAG_TYPE, ENVIRONMENT_LIST_DRAG_TYPE } from "./constants";
 import {
   DragEnvironmentItem,
   DropEnvironmentItem,
@@ -15,7 +16,10 @@ import {
 
 //source
 export const getSourceEnvironmentItem = (source: ElementDragPayload): DragEnvironmentItem | null => {
-  if (source.data.type !== "GlobalEnvironmentItem" && source.data.type !== "GroupedEnvironmentItem") {
+  if (
+    source.data.type !== ENVIRONMENT_ITEM_DRAG_TYPE.GLOBAL &&
+    source.data.type !== ENVIRONMENT_ITEM_DRAG_TYPE.GROUPED
+  ) {
     return null;
   }
 
@@ -23,19 +27,21 @@ export const getSourceEnvironmentItem = (source: ElementDragPayload): DragEnviro
 };
 
 export const isSourceEnvironmentItem = (source: ElementDragPayload): boolean => {
-  return source.data.type === "GlobalEnvironmentItem" || source.data.type === "GroupedEnvironmentItem";
+  return (
+    source.data.type === ENVIRONMENT_ITEM_DRAG_TYPE.GLOBAL || source.data.type === ENVIRONMENT_ITEM_DRAG_TYPE.GROUPED
+  );
 };
 
 export const isSourceGlobalEnvironmentItem = (source: ElementDragPayload): boolean => {
-  return source.data.type === "GlobalEnvironmentItem";
+  return source.data.type === ENVIRONMENT_ITEM_DRAG_TYPE.GLOBAL;
 };
 
 export const isSourceGroupedEnvironmentItem = (source: ElementDragPayload): boolean => {
-  return source.data.type === "GroupedEnvironmentItem";
+  return source.data.type === ENVIRONMENT_ITEM_DRAG_TYPE.GROUPED;
 };
 
 export const getSourceGlobalEnvironmentItemData = (source: ElementDragPayload): GlobalEnvironmentItem | null => {
-  if (source.data.type !== "GlobalEnvironmentItem") {
+  if (source.data.type !== ENVIRONMENT_ITEM_DRAG_TYPE.GLOBAL) {
     return null;
   }
 
@@ -43,28 +49,34 @@ export const getSourceGlobalEnvironmentItemData = (source: ElementDragPayload): 
 };
 
 export const isSourceGroupedEnvironmentList = (source: ElementDragPayload): boolean => {
-  return source.data.type === "GroupedEnvironmentList";
+  return source.data.type === ENVIRONMENT_LIST_DRAG_TYPE.GROUPED;
 };
 
 //location
 export const isLocationGroupedEnvironmentList = (location: DragLocationHistory): boolean => {
   if (location.current.dropTargets.length === 0 || location.current.dropTargets.length > 1) return false;
-  return location.current.dropTargets[0].data.type === "GroupedEnvironmentList";
+  console.log(
+    "isLocationGroupedEnvironmentList",
+    location.current.dropTargets[0].data.type,
+
+    ENVIRONMENT_LIST_DRAG_TYPE.GROUPED
+  );
+  return location.current.dropTargets[0].data.type === ENVIRONMENT_LIST_DRAG_TYPE.GROUPED;
 };
 
 export const isLocationGlobalEnvironmentItem = (location: DragLocationHistory): boolean => {
-  return location.current.dropTargets[0].data.type === "GlobalEnvironmentItem";
+  return location.current.dropTargets[0].data.type === ENVIRONMENT_ITEM_DRAG_TYPE.GLOBAL;
 };
 
 export const isLocationGroupedEnvironmentItem = (location: DragLocationHistory): boolean => {
-  return location.current.dropTargets[0].data.type === "GroupedEnvironmentItem";
+  return location.current.dropTargets[0].data.type === ENVIRONMENT_ITEM_DRAG_TYPE.GROUPED;
 };
 
 export const getLocationEnvironmentItemData = (location: DragLocationHistory): DropEnvironmentItem | null => {
   if (location.current.dropTargets.length === 0) return null;
   if (
-    location.current.dropTargets[0].data.type !== "GlobalEnvironmentItem" &&
-    location.current.dropTargets[0].data.type !== "GroupedEnvironmentItem"
+    location.current.dropTargets[0].data.type !== ENVIRONMENT_ITEM_DRAG_TYPE.GLOBAL &&
+    location.current.dropTargets[0].data.type !== ENVIRONMENT_ITEM_DRAG_TYPE.GROUPED
   )
     return null;
 
@@ -81,7 +93,7 @@ export const getLocationEnvironmentItemData = (location: DragLocationHistory): D
 
 export const getLocationGlobalEnvironmentItemData = (location: DragLocationHistory): GlobalEnvironmentItem | null => {
   if (location.current.dropTargets.length === 0) return null;
-  if (location.current.dropTargets[0].data.type !== "GlobalEnvironmentItem") return null;
+  if (location.current.dropTargets[0].data.type !== ENVIRONMENT_ITEM_DRAG_TYPE.GLOBAL) return null;
 
   const instruction = extractInstruction(location.current.dropTargets[0].data);
 
@@ -96,7 +108,7 @@ export const getLocationGlobalEnvironmentItemData = (location: DragLocationHisto
 
 export const getLocationGroupedEnvironmentItemData = (location: DragLocationHistory): GroupedEnvironmentItem | null => {
   if (location.current.dropTargets.length === 0) return null;
-  if (location.current.dropTargets[0].data.type !== "GroupedEnvironmentItem") return null;
+  if (location.current.dropTargets[0].data.type !== ENVIRONMENT_ITEM_DRAG_TYPE.GROUPED) return null;
 
   const instruction = extractInstruction(location.current.dropTargets[0].data);
 
@@ -111,7 +123,7 @@ export const getLocationGroupedEnvironmentItemData = (location: DragLocationHist
 
 export const getLocationGroupedEnvironmentListData = (location: DragLocationHistory): GroupedEnvironmentList | null => {
   if (location.current.dropTargets.length === 0 || location.current.dropTargets.length > 1) return null;
-  if (location.current.dropTargets[0].data.type !== "GroupedEnvironmentList") return null;
+  if (location.current.dropTargets[0].data.type !== ENVIRONMENT_LIST_DRAG_TYPE.GROUPED) return null;
 
   const instruction = extractInstruction(location.current.dropTargets[0].data);
 

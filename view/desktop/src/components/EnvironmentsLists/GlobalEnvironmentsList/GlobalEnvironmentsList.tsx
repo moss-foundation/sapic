@@ -1,5 +1,6 @@
 import { useStreamEnvironments } from "@/hooks";
 
+import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../constants";
 import { EnvironmentListItem } from "../EnvironmentItem/EnvironmentListItem";
 
 export const GlobalEnvironmentsList = () => {
@@ -8,7 +9,7 @@ export const GlobalEnvironmentsList = () => {
   return (
     <ul>
       {globalEnvironments?.map((environment) => (
-        <EnvironmentListItem key={environment.id} environment={environment} type="GlobalEnvironmentItem" />
+        <EnvironmentListItem key={environment.id} environment={environment} type={ENVIRONMENT_ITEM_DRAG_TYPE.GLOBAL} />
       ))}
     </ul>
   );
