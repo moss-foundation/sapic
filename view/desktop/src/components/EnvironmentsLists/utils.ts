@@ -52,6 +52,14 @@ export const isSourceGroupedEnvironmentList = (source: ElementDragPayload): bool
   return source.data.type === ENVIRONMENT_LIST_DRAG_TYPE.GROUPED;
 };
 
+export const getSourceGroupedEnvironmentItemData = (source: ElementDragPayload): GroupedEnvironmentItem | null => {
+  if (source.data.type !== ENVIRONMENT_ITEM_DRAG_TYPE.GROUPED) {
+    return null;
+  }
+
+  return source.data as unknown as GroupedEnvironmentItem;
+};
+
 //location
 export const isLocationGroupedEnvironmentList = (location: DragLocationHistory): boolean => {
   if (location.current.dropTargets.length === 0 || location.current.dropTargets.length > 1) return false;
@@ -144,7 +152,6 @@ export const getDropOperation = (source: ElementDragPayload, location: DragLocat
   const instruction = extractInstruction(location.current.dropTargets[0].data);
 
   if (!instruction || instruction.blocked) {
-    console.log("getDropOperation", { instruction, blocked: instruction?.blocked });
     return null;
   }
 
@@ -157,22 +164,18 @@ export const getDropOperation = (source: ElementDragPayload, location: DragLocat
   }
 
   if (isSourceGlobalEnvironmentItem(source) && isLocationGlobalEnvironmentItem(location)) {
-    console.log("ReorderGlobal");
     return "ReorderGlobals";
   }
 
   if (isSourceGroupedEnvironmentItem(source) && isLocationGroupedEnvironmentItem(location)) {
-    console.log("ReorderGrouped");
     return "ReorderGrouped";
   }
 
   if (isSourceGlobalEnvironmentItem(source) && isLocationGroupedEnvironmentItem(location)) {
-    console.log("MoveToGrouped");
     return "MoveToGrouped";
   }
 
   if (isSourceGroupedEnvironmentItem(source) && isLocationGlobalEnvironmentItem(location)) {
-    console.log("MoveToGlobal");
     return "MoveToGlobal";
   }
 

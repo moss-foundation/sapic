@@ -12,6 +12,7 @@ import {
   getLocationGroupedEnvironmentListData,
   getSourceEnvironmentItem,
   getSourceGlobalEnvironmentItemData,
+  getSourceGroupedEnvironmentItemData,
   isSourceEnvironmentItem,
 } from "../utils";
 import { useGroupedEnvironments } from "./useGroupedEnvironments";
@@ -192,6 +193,62 @@ export const useMonitorEnvironmentsLists = () => {
     [batchUpdateEnvironment, createEnvironment, deleteEnvironment, globalEnvironments]
   );
 
+  const handleReorderGrouped = useCallback(
+    async (source: ElementDragPayload, location: DragLocationHistory) => {
+      const sourceData = getSourceGroupedEnvironmentItemData(source);
+      const locationData = getLocationGroupedEnvironmentItemData(location);
+
+      if (!sourceData || !locationData) return;
+
+      if (sourceData.data.environment.collectionId !== locationData.data.environment.collectionId) return;
+
+      const groupEnvs = groupedEnvironments.find(
+        (env) => env.collectionId === sourceData.data.environment.collectionId
+      );
+
+      if (!groupEnvs) return;
+
+      const sourceIndex = groupEnvs?.environments.findIndex((env) => env.id === sourceData.data.environment.id);
+      const targetIndex = groupEnvs?.environments.findIndex((env) => env.id === locationData.data.environment.id);
+      const instruction = locationData.instruction;
+
+      if (sourceIndex === -1 || targetIndex === -1 || !instruction) {
+        console.error("Source, target or instruction not found", { sourceIndex, targetIndex, instruction });
+        return;
+      }
+
+      const dropOrder = instruction.operation === "reorder-before" ? targetIndex : (targetIndex ?? 0) + 1;
+
+      const inserted = [
+        ...groupEnvs.environments.slice(0, dropOrder).filter((env) => env.id !== sourceData.data.environment.id),
+        sourceData.data.environment,
+        ...groupEnvs.environments.slice(dropOrder).filter((env) => env.id !== sourceData.data.environment.id),
+      ];
+
+      const reordered = inserted.map((env, index) => ({
+        id: env.id,
+        name: env.name,
+        order: index + 1,
+      }));
+
+      const environmentsToUpdateReordered = reordered.filter((env) => {
+        const environmentUnderQuestion = groupEnvs.environments.find((sortedEnv) => sortedEnv.id === env.id);
+        return environmentUnderQuestion!.order !== env.order;
+      });
+
+      await batchUpdateEnvironment({
+        items: environmentsToUpdateReordered.map((env) => ({
+          id: env.id,
+          order: env.order,
+          varsToAdd: [],
+          varsToUpdate: [],
+          varsToDelete: [],
+        })),
+      });
+    },
+    [batchUpdateEnvironment, groupedEnvironments]
+  );
+
   useEffect(() => {
     return monitorForElements({
       canMonitor({ source }) {
@@ -211,6 +268,7 @@ export const useMonitorEnvironmentsLists = () => {
             break;
           case "ReorderGrouped":
             console.log("ReorderGrouped");
+            handleReorderGrouped(source, location);
             break;
           case "MoveToGlobal":
             console.log("MoveToGlobal");
@@ -227,5 +285,5 @@ export const useMonitorEnvironmentsLists = () => {
         }
       },
     });
-  }, [handleCombineToGrouped, handleReorderGlobals, handleMoveToGrouped]);
+  }, [handleCombineToGrouped, handleReorderGlobals, handleMoveToGrouped, handleReorderGrouped]);
 };
