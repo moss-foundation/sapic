@@ -21,7 +21,6 @@ import {
 
 export const activateEnvironmentInputSchema = z.object({
   environmentId: z.string(),
-  groupId: z.string().optional(),
 });
 
 export const activateEnvironmentOutputSchema = z.object({

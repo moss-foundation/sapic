@@ -17,7 +17,6 @@ impl<R: AppRuntime> Workspace<R> {
                 ctx,
                 ActivateEnvironmentItemParams {
                     environment_id: input.environment_id.clone(),
-                    group_id: input.group_id,
                 },
             )
             .await?;

@@ -44,7 +44,6 @@ const GLOBAL_ACTIVE_ENVIRONMENT_KEY: &'static str = "";
 
 pub struct ActivateEnvironmentItemParams {
     pub environment_id: EnvironmentId,
-    pub group_id: Option<CollectionId>,
 }
 
 pub struct CreateEnvironmentItemParams {
@@ -535,22 +534,15 @@ where
     ) -> joinerror::Result<()> {
         let mut state = self.state.write().await;
 
-        if !state.environments.contains_key(&params.environment_id) {
-            return Err(Error::new::<ErrorNotFound>(format!(
-                "environment {} not found",
-                params.environment_id
-            )));
-        }
+        let environment_item = state
+            .environments
+            .get(&params.environment_id)
+            .ok_or_join_err_with::<ErrorNotFound>(|| {
+                format!("environment {} not found", params.environment_id)
+            })?;
 
-        // FIXME: I think we should simply find the collection_id stored in the `EnvironmentItem`
-        let env_group_key = if let Some(group_id) = params.group_id {
-            if !state.groups.contains(&group_id.inner()) {
-                return Err(Error::new::<ErrorNotFound>(format!(
-                    "environment group {} not found",
-                    group_id
-                )));
-            }
-            group_id.inner()
+        let env_group_key = if let Some(group_id) = &environment_item.collection_id {
+            group_id.clone()
         } else {
             GLOBAL_ACTIVE_ENVIRONMENT_KEY.to_string().into()
         };
