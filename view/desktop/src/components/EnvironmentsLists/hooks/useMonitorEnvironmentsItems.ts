@@ -14,6 +14,7 @@ import {
   getSourceGroupedEnvironmentItemData,
   isSourceEnvironmentItem,
   isSourceGlobalEnvironmentItem,
+  isSourceGroupedEnvironmentItem,
 } from "../utils";
 import { useGroupedEnvironments } from "./useGroupedEnvironments";
 
@@ -73,71 +74,152 @@ export const useMonitorEnvironmentsItems = () => {
 
   const handleMoveToGrouped = useCallback(
     async (source: ElementDragPayload, location: DragLocationHistory) => {
-      const sourceData = getSourceGlobalEnvironmentItemData(source);
-      const locationData = getLocationGroupedEnvironmentItemData(location);
+      if (isSourceGlobalEnvironmentItem(source)) {
+        const sourceData = getSourceGlobalEnvironmentItemData(source);
+        const locationData = getLocationGroupedEnvironmentItemData(location);
 
-      if (!sourceData || !locationData) return;
+        if (!sourceData || !locationData) return;
 
-      const instruction = locationData.instruction;
+        const instruction = locationData.instruction;
 
-      const groupedEnvironment = groupedEnvironments.find(
-        (group) => group.collectionId === locationData.data.environment.collectionId
-      );
+        const groupedEnvironment = groupedEnvironments.find(
+          (group) => group.collectionId === locationData.data.environment.collectionId
+        );
 
-      if (!groupedEnvironment) {
-        console.error("Grouped environment not found", { locationData });
-        return;
+        if (!groupedEnvironment) {
+          console.error("Grouped environment not found", { locationData });
+          return;
+        }
+
+        const targetOrder = groupedEnvironment?.environments.find(
+          (env) => env.id === locationData.data.environment.id
+        )?.order;
+
+        if (targetOrder === undefined || targetOrder === undefined || !instruction) {
+          console.error("Source, target or instruction not found", { targetOrder, instruction });
+          return;
+        }
+        const dropOrder = instruction.operation === "reorder-before" ? targetOrder : targetOrder + 1;
+
+        //delete global environment
+        await deleteEnvironment({ id: sourceData.data.environment.id });
+
+        //get reordered global environments after the deleted one
+        const globalEnvironmentsToUpdate = globalEnvironments
+          .filter((env) => env.order! > sourceData.data.environment.order!)
+          .map((env) => ({
+            id: env.id,
+            order: env.order! - 1,
+          }));
+
+        //add new grouped environment
+        const newGroupedEnvironment = await createEnvironment({
+          collectionId: locationData.data.environment.collectionId,
+          name: sourceData.data.environment.name,
+          order: dropOrder,
+          variables: [],
+        });
+
+        //get reordered grouped environments after new grouped environment
+        const groupedEnvironmentsToUpdate =
+          groupedEnvironment?.environments
+            .filter((env) => env.order! >= dropOrder && env.id !== newGroupedEnvironment.id)
+            .map((env) => ({
+              id: env.id,
+              order: env.order! + 1,
+            })) ?? [];
+
+        //update global and grouped environments
+        const envsToUpdate = [...globalEnvironmentsToUpdate, ...groupedEnvironmentsToUpdate];
+        await batchUpdateEnvironment({
+          items: envsToUpdate.map((env) => ({
+            id: env.id,
+            order: env.order!,
+            varsToAdd: [],
+            varsToUpdate: [],
+            varsToDelete: [],
+          })),
+        });
       }
+      if (isSourceGroupedEnvironmentItem(source)) {
+        console.log("isSourceGroupedEnvironmentItem", source);
+        const sourceData = getSourceGroupedEnvironmentItemData(source);
+        const locationData = getLocationGroupedEnvironmentItemData(location);
 
-      const targetOrder = groupedEnvironment?.environments.find(
-        (env) => env.id === locationData.data.environment.id
-      )?.order;
+        if (!sourceData || !locationData) {
+          console.error("Source or location data not found", { sourceData, locationData });
+          return;
+        }
 
-      if (targetOrder === undefined || targetOrder === undefined || !instruction) {
-        console.error("Source, target or instruction not found", { targetOrder, instruction });
-        return;
-      }
-      const dropOrder = instruction.operation === "reorder-before" ? targetOrder : targetOrder + 1;
+        const instruction = locationData.instruction;
 
-      //delete global environment
-      await deleteEnvironment({ id: sourceData.data.environment.id });
+        if (!instruction) {
+          console.error("Instruction not found", { instruction });
+          return;
+        }
 
-      //get reordered global environments after the deleted one
-      const globalEnvironmentsToUpdate = globalEnvironments
-        .filter((env) => env.order! > sourceData.data.environment.order!)
-        .map((env) => ({
-          id: env.id,
-          order: env.order! - 1,
-        }));
+        const sourceGroup = groupedEnvironments.find(
+          (group) => group.collectionId === sourceData.data.environment.collectionId
+        );
+        const locationGroup = groupedEnvironments.find(
+          (group) => group.collectionId === locationData.data.environment.collectionId
+        );
 
-      //add new grouped environment
-      const newGroupedEnvironment = await createEnvironment({
-        collectionId: locationData.data.environment.collectionId,
-        name: sourceData.data.environment.name,
-        order: dropOrder,
-        variables: [],
-      });
+        if (!sourceGroup || !locationGroup) {
+          console.error("Source group not found", { sourceGroup, locationGroup });
+          return;
+        }
 
-      //get reordered grouped environments after new grouped environment
-      const groupedEnvironmentsToUpdate =
-        groupedEnvironment?.environments
-          .filter((env) => env.order! >= dropOrder && env.id !== newGroupedEnvironment.id)
+        const targetOrder = locationGroup.environments.find(
+          (env) => env.id === locationData.data.environment.id
+        )?.order;
+
+        if (targetOrder === undefined || targetOrder === undefined || !instruction) {
+          console.error("Source, target or instruction not found", { targetOrder, instruction });
+          return;
+        }
+
+        const targetDropOrder = instruction.operation === "reorder-before" ? targetOrder : targetOrder + 1;
+
+        //delete grouped environment
+        await deleteEnvironment({ id: sourceData.data.environment.id });
+
+        //get reordered grouped environments after the deleted one
+        const groupedEnvironmentsToUpdateSource = sourceGroup.environments
+          .filter((env) => env.order! > sourceData.data.environment.order!)
+          .map((env) => ({
+            id: env.id,
+            order: env.order! - 1,
+          }));
+
+        //add new grouped environment
+        const newGroupedEnvironment = await createEnvironment({
+          collectionId: locationData.data.environment.collectionId,
+          name: sourceData.data.environment.name,
+          order: targetDropOrder,
+          variables: [],
+        });
+
+        //get reordered grouped environments after new grouped environment
+        const groupedEnvironmentsToUpdateLocation = locationGroup.environments
+          .filter((env) => env.order! >= targetDropOrder && env.id !== newGroupedEnvironment.id)
           .map((env) => ({
             id: env.id,
             order: env.order! + 1,
-          })) ?? [];
+          }));
 
-      //update global and grouped environments
-      const envsToUpdate = [...globalEnvironmentsToUpdate, ...groupedEnvironmentsToUpdate];
-      await batchUpdateEnvironment({
-        items: envsToUpdate.map((env) => ({
-          id: env.id,
-          order: env.order!,
-          varsToAdd: [],
-          varsToUpdate: [],
-          varsToDelete: [],
-        })),
-      });
+        //update grouped environments
+        const envsToUpdate = [...groupedEnvironmentsToUpdateSource, ...groupedEnvironmentsToUpdateLocation];
+        await batchUpdateEnvironment({
+          items: envsToUpdate.map((env) => ({
+            id: env.id,
+            order: env.order!,
+            varsToAdd: [],
+            varsToUpdate: [],
+            varsToDelete: [],
+          })),
+        });
+      }
     },
     [batchUpdateEnvironment, createEnvironment, deleteEnvironment, globalEnvironments, groupedEnvironments]
   );
@@ -373,7 +455,7 @@ export const useMonitorEnvironmentsItems = () => {
         }
 
         const dropOperation = getDropOperation(source, location);
-
+        console.log("dropOperation", dropOperation);
         switch (dropOperation) {
           case "ReorderGlobals":
             handleReorderGlobals(source, location);

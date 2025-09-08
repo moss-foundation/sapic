@@ -169,12 +169,22 @@ export const getDropOperation = (source: ElementDragPayload, location: DragLocat
     return "ReorderGlobals";
   }
 
-  if (isSourceGroupedEnvironmentItem(source) && isLocationGroupedEnvironmentItem(location)) {
-    return "ReorderGrouped";
-  }
-
   if (isSourceGlobalEnvironmentItem(source) && isLocationGroupedEnvironmentItem(location)) {
     return "MoveToGrouped";
+  }
+
+  if (isSourceGroupedEnvironmentItem(source) && isLocationGroupedEnvironmentItem(location)) {
+    const sourceData = getSourceGroupedEnvironmentItemData(source);
+    const locationData = getLocationGroupedEnvironmentItemData(location);
+    if (!sourceData || !locationData) {
+      return null;
+    }
+
+    if (sourceData.data.environment.collectionId !== locationData.data.environment.collectionId) {
+      return "MoveToGrouped";
+    }
+
+    return "ReorderGrouped";
   }
 
   if (isSourceGroupedEnvironmentItem(source) && isLocationGlobalEnvironmentItem(location)) {
