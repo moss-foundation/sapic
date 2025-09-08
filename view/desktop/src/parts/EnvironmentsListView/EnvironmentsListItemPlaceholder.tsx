@@ -4,7 +4,7 @@ import { PlannedBadge } from "@/components";
 import { Icon, Icons } from "@/lib/ui";
 import { cn } from "@/utils";
 
-export const EnvironmentsListItem = ({
+export const EnvironmentsListItemPlaceholder = ({
   icon,
   label,
   disabled,

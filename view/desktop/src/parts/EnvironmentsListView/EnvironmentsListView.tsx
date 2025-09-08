@@ -3,16 +3,16 @@ import { GroupedEnvironmentsList } from "@/components/EnvironmentsLists/GroupedE
 import { useMonitorEnvironmentsItems } from "@/components/EnvironmentsLists/hooks/useMonitorEnvironmentsItems";
 import { useMonitorEnvironmentsLists } from "@/components/EnvironmentsLists/hooks/useMonitorEnvironmentsLists";
 import { useStreamEnvironments } from "@/hooks";
-import { Scrollbar } from "@/lib/ui";
+import { Icon, Scrollbar } from "@/lib/ui";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
-import { EnvironmentsListItem } from "./EnvironmentsListItem";
+import { EnvironmentsListItemPlaceholder } from "./EnvironmentsListItemPlaceholder";
 import { EnvironmentsListViewDivider } from "./EnvironmentsListViewDivider";
 import { EnvironmentsListViewHeader } from "./EnvironmentsListViewHeader";
 
 export const EnvironmentsListView = () => {
   const { addOrFocusPanel } = useTabbedPaneStore();
-  const { globalEnvironments, collectionEnvironments } = useStreamEnvironments();
+  const { globalEnvironments, collectionEnvironments, isLoading } = useStreamEnvironments();
 
   useMonitorEnvironmentsLists();
   useMonitorEnvironmentsItems();
@@ -22,7 +22,7 @@ export const EnvironmentsListView = () => {
       <EnvironmentsListViewHeader />
 
       <Scrollbar className="h-full">
-        <EnvironmentsListItem
+        <EnvironmentsListItemPlaceholder
           icon="Vault"
           label="Vault"
           title="Vaults coming soon..."
@@ -35,13 +35,23 @@ export const EnvironmentsListView = () => {
           }}
         />
 
-        {globalEnvironments && globalEnvironments.length > 0 && <EnvironmentsListViewDivider />}
+        {!isLoading ? (
+          <div className="flex flex-col items-center justify-center gap-2 p-10 text-center">
+            <span>Environments are loading... </span>
+            <span>Please wait...</span>
+            <Icon icon="Loader" className="size-6 animate-spin" />
+          </div>
+        ) : (
+          <>
+            {globalEnvironments && globalEnvironments.length > 0 && <EnvironmentsListViewDivider />}
 
-        <GlobalEnvironmentsList />
+            <GlobalEnvironmentsList />
 
-        {collectionEnvironments && collectionEnvironments.length > 0 && <EnvironmentsListViewDivider />}
+            {collectionEnvironments && collectionEnvironments.length > 0 && <EnvironmentsListViewDivider />}
 
-        <GroupedEnvironmentsList />
+            <GroupedEnvironmentsList />
+          </>
+        )}
       </Scrollbar>
     </div>
   );
