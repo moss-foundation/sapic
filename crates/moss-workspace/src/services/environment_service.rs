@@ -272,6 +272,10 @@ where
             let mut state_lock = state_clone.write().await;
             (*state_lock).active_environments = active_environments;
 
+            // Ensure that environments and groups that are not found during the scan will be removed from map
+            (*state_lock).environments = HashMap::new();
+            (*state_lock).groups = FxHashSet::default();
+
             while let Some((item, desc)) = rx.recv().await {
                 let id = item.id.clone();
                 let group_key = item.collection_id.clone().unwrap_or_else(|| {
