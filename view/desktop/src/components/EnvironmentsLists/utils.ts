@@ -63,12 +63,6 @@ export const getSourceGroupedEnvironmentItemData = (source: ElementDragPayload):
 //location
 export const isLocationGroupedEnvironmentList = (location: DragLocationHistory): boolean => {
   if (location.current.dropTargets.length === 0 || location.current.dropTargets.length > 1) return false;
-  console.log(
-    "isLocationGroupedEnvironmentList",
-    location.current.dropTargets[0].data.type,
-
-    ENVIRONMENT_LIST_DRAG_TYPE.GROUPED
-  );
   return location.current.dropTargets[0].data.type === ENVIRONMENT_LIST_DRAG_TYPE.GROUPED;
 };
 
