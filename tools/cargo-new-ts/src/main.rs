@@ -1,59 +1,72 @@
+use serde_json::json;
 use std::{
+    cell::LazyCell,
+    collections::HashMap,
     env, fs,
     path::Path,
     process::{Command, exit},
 };
 
-fn index_ts_content() -> String {
-    "".to_string()
-}
+/// These files will have the same content regardless of what the crate name is
+const PREDEFINED_FILES: LazyCell<HashMap<String, Vec<u8>>> = LazyCell::new(|| {
+    [
+        ("index.ts".into(), "".as_bytes().to_vec()),
+        (
+            "tsconfig.json".into(),
+            serde_json::to_vec_pretty(&json!({
+              "extends": "@repo/typescript-config/base.json",
+              "compilerOptions": {
+                "composite": true,
+                "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+                "skipLibCheck": true,
+                "lib": ["ES2020", "DOM", "DOM.Iterable"],
+                "module": "ESNext",
+                "moduleResolution": "bundler",
+                "allowSyntheticDefaultImports": true,
+                "strict": true,
+                "noEmit": true
+              },
+              "include": ["**/*.ts"],
+              "exclude": ["node_modules"]
+            }))
+            .unwrap(),
+        ),
+    ]
+    .into_iter()
+    .collect()
+});
 
-fn package_json_content(crate_name: &str) -> String {
+const PACKAGE_JSON_TEMPLATE: LazyCell<serde_json::Value> = LazyCell::new(|| {
+    json!(
+          {
+      "name": "@repo/{}",
+      "exports": {
+        ".": "./index.ts"
+      },
+      "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "format": "prettier --plugin=prettier-plugin-tailwindcss --write \"**/*.{ts,tsx,md}\""
+      },
+      "devDependencies": {
+        "@repo/typescript-config": "workspace:*",
+        "@repo/moss-bindingutils": "workspace:*",
+        "@repo/moss-workspace": "workspace:*"
+      },
+      "dependencies": {
+        "typescript": "^5.9.2",
+        "zod": "^3.24.4"
+      }
+    }
+      )
+});
+
+fn package_json_content(crate_name: &str) -> Vec<u8> {
     let package_name = format!("@repo/{crate_name}");
 
-    // TODO: Looks like it's unnecessary to specify `typescript` and `zod` dependencies individually
-    // Just putting them at the top-level package.json seems to be enough
-    format!(
-        r#"{{
-  "name": "{}",
-  "exports": {{
-    ".": "./index.ts"
-  }},
-  "scripts": {{
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "format": "prettier --plugin=prettier-plugin-tailwindcss --write \"**/*.{{ts,tsx,md}}\""
-  }},
-  "devDependencies": {{
-    "@repo/moss-bindingutils": "workspace:*",
-    "@repo/typescript-config": "workspace:*"
-  }},
-  "dependencies": {{
-    "typescript": "^5.9.2",
-    "zod": "^3.24.4"
-  }}
-}}"#,
-        package_name
-    )
-}
+    let mut value = (*PACKAGE_JSON_TEMPLATE).clone();
+    *value.get_mut("name").unwrap() = package_name.into();
 
-fn tsconfig_json_content() -> String {
-    r#"{
-  "extends": "",
-  "compilerOptions": {
-    "composite": true,
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
-    "skipLibCheck": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "noEmit": true
-  },
-  "include": ["**/*.ts"],
-  "exclude": ["node_modules"]
-}"#
-    .to_string()
+    serde_json::to_vec_pretty(&value).unwrap()
 }
 
 fn main() {
@@ -81,12 +94,15 @@ fn main() {
         exit(1);
     }
 
-    // Create `index.ts`, `package.json` and `tsconfig.json`
-    fs::write(crate_dir.join("index.ts"), index_ts_content()).unwrap();
+    // Create files that have static content
+    for (file, content) in PREDEFINED_FILES.iter() {
+        fs::write(crate_dir.join(file), content).unwrap();
+    }
+
+    // Create package.json with the correct package name
     fs::write(
         crate_dir.join("package.json"),
         package_json_content(crate_name),
     )
     .unwrap();
-    fs::write(crate_dir.join("tsconfig.json"), tsconfig_json_content()).unwrap();
 }
