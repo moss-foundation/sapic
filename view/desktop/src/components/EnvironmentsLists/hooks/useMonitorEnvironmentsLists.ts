@@ -10,10 +10,10 @@ import {
   getLocationGlobalEnvironmentItemData,
   getLocationGroupedEnvironmentItemData,
   getLocationGroupedEnvironmentListData,
-  getSourceEnvironmentItem,
   getSourceGlobalEnvironmentItemData,
   getSourceGroupedEnvironmentItemData,
   isSourceEnvironmentItem,
+  isSourceGlobalEnvironmentItem,
 } from "../utils";
 import { useGroupedEnvironments } from "./useGroupedEnvironments";
 
@@ -144,14 +144,17 @@ export const useMonitorEnvironmentsLists = () => {
 
   const handleCombineToGrouped = useCallback(
     async (source: ElementDragPayload, location: DragLocationHistory) => {
-      const sourceData = getSourceEnvironmentItem(source);
       const locationData = getLocationGroupedEnvironmentListData(location);
 
-      if (!sourceData || !locationData) return;
+      if (!locationData) return;
 
-      const groupedEnvironments = locationData.data.groupWithEnvironments.environments;
+      const locationGroupedEnvironments = locationData.data.groupWithEnvironments.environments;
 
-      if (sourceData.type === "GlobalEnvironmentItem") {
+      if (isSourceGlobalEnvironmentItem(source)) {
+        const sourceData = getSourceGlobalEnvironmentItemData(source);
+
+        if (!sourceData) return;
+
         //delete global environment
         await deleteEnvironment({ id: sourceData.data.environment.id });
 
@@ -178,19 +181,57 @@ export const useMonitorEnvironmentsLists = () => {
           })),
         });
 
-        console.log("add new grouped environment", groupedEnvironments);
+        console.log("add new grouped environment", locationGroupedEnvironments);
         //add new grouped environment
         await createEnvironment({
           collectionId: locationData.data.groupWithEnvironments.collectionId,
           name: sourceData.data.environment.name,
-          order: groupedEnvironments.length + 1,
+          order: locationGroupedEnvironments.length + 1,
           variables: [],
         });
       } else {
-        console.log("CombineToGrouped", { sourceData, locationData });
+        const sourceData = getSourceGroupedEnvironmentItemData(source);
+
+        if (!sourceData) return;
+
+        const sourceGroup = groupedEnvironments.find(
+          (group) => group.collectionId === sourceData.data.environment.collectionId
+        );
+
+        if (!sourceGroup) return;
+
+        //delete grouped environment
+        await deleteEnvironment({ id: sourceData.data.environment.id });
+
+        //get reordered grouped environments after the deleted one
+        const groupedEnvironmentsToUpdate = sourceGroup.environments
+          .filter((env) => env.order! > sourceData.data.environment.order!)
+          .filter((env) => env.id !== sourceData.data.environment.id)
+          .map((env) => ({
+            id: env.id,
+            order: env.order! - 1,
+          }));
+
+        await createEnvironment({
+          collectionId: locationData.data.groupWithEnvironments.collectionId,
+          name: sourceData.data.environment.name,
+          order: locationGroupedEnvironments.length + 1,
+          variables: [],
+        });
+
+        //update grouped environments
+        await batchUpdateEnvironment({
+          items: groupedEnvironmentsToUpdate.map((env) => ({
+            id: env.id,
+            order: env.order!,
+            varsToAdd: [],
+            varsToUpdate: [],
+            varsToDelete: [],
+          })),
+        });
       }
     },
-    [batchUpdateEnvironment, createEnvironment, deleteEnvironment, globalEnvironments]
+    [batchUpdateEnvironment, createEnvironment, deleteEnvironment, globalEnvironments, groupedEnvironments]
   );
 
   const handleReorderGrouped = useCallback(
