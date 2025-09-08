@@ -70,7 +70,7 @@ export const useMonitorEnvironmentsLists = () => {
     [globalEnvironments, batchUpdateEnvironment]
   );
 
-  const moveToGrouped = useCallback(
+  const handleMoveToGrouped = useCallback(
     async (source: ElementDragPayload, location: DragLocationHistory) => {
       const sourceData = getSourceGlobalEnvironmentItemData(source);
       const locationData = getLocationGroupedEnvironmentItemData(location);
@@ -141,7 +141,7 @@ export const useMonitorEnvironmentsLists = () => {
     [batchUpdateEnvironment, createEnvironment, deleteEnvironment, globalEnvironments, groupedEnvironments]
   );
 
-  const combineToGrouped = useCallback(
+  const handleCombineToGrouped = useCallback(
     async (source: ElementDragPayload, location: DragLocationHistory) => {
       const sourceData = getSourceEnvironmentItem(source);
       const locationData = getLocationGroupedEnvironmentListData(location);
@@ -211,10 +211,10 @@ export const useMonitorEnvironmentsLists = () => {
             console.log("MoveToGlobal");
             break;
           case "MoveToGrouped":
-            moveToGrouped(source, location);
+            handleMoveToGrouped(source, location);
             break;
           case "CombineToGrouped":
-            combineToGrouped(source, location);
+            handleCombineToGrouped(source, location);
             break;
 
           default:
@@ -222,5 +222,5 @@ export const useMonitorEnvironmentsLists = () => {
         }
       },
     });
-  }, [combineToGrouped, handleReorderGlobals, moveToGrouped]);
+  }, [handleCombineToGrouped, handleReorderGlobals, handleMoveToGrouped]);
 };
