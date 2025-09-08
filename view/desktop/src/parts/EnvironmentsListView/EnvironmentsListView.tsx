@@ -6,16 +6,25 @@ import { useStreamEnvironments } from "@/hooks";
 import { Icon, Scrollbar } from "@/lib/ui";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
+import ErrorNaughtyDog from "../../assets/images/ErrorNaughtyDog.svg";
 import { EnvironmentsListItemPlaceholder } from "./EnvironmentsListItemPlaceholder";
 import { EnvironmentsListViewDivider } from "./EnvironmentsListViewDivider";
 import { EnvironmentsListViewHeader } from "./EnvironmentsListViewHeader";
 
 export const EnvironmentsListView = () => {
   const { addOrFocusPanel } = useTabbedPaneStore();
-  const { globalEnvironments, collectionEnvironments, isLoading } = useStreamEnvironments();
+  const {
+    globalEnvironments,
+    collectionEnvironments,
+    isLoading,
+    isSuccess,
+    data: streamEnvironmentsData,
+  } = useStreamEnvironments();
 
   useMonitorEnvironmentsLists();
   useMonitorEnvironmentsItems();
+
+  const noEnvironments = streamEnvironmentsData?.environments.length === 0;
 
   return (
     <div className="flex h-full flex-col">
@@ -51,6 +60,13 @@ export const EnvironmentsListView = () => {
 
             <GroupedEnvironmentsList />
           </>
+        )}
+
+        {isSuccess && noEnvironments && (
+          <div className="px-2">
+            <img src={ErrorNaughtyDog} className="pointer-events-none mx-auto h-auto w-full max-w-[200px]" />
+            <p className="text-center text-(--moss-secondary-text)">You have no environments yet</p>
+          </div>
         )}
       </Scrollbar>
     </div>
