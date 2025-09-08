@@ -2,7 +2,7 @@ import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { BatchUpdateEnvironmentInput, BatchUpdateEnvironmentOutput } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { USE_STREAMED_ENVIRONMENTS_QUERY_KEY } from "./useStreamEnvironments";
+import { StreamEnvironmentsResult, USE_STREAMED_ENVIRONMENTS_QUERY_KEY } from "./useStreamEnvironments";
 
 const BATCH_UPDATE_ENVIRONMENT_QUERY_KEY = "batchUpdateEnvironment";
 
@@ -23,17 +23,22 @@ export const useBatchUpdateEnvironment = () => {
     mutationKey: [BATCH_UPDATE_ENVIRONMENT_QUERY_KEY],
     mutationFn: batchUpdateEnvironment,
     onSuccess: (_, variables) => {
-      //TODO: update the query data
-      queryClient.invalidateQueries({ queryKey: [USE_STREAMED_ENVIRONMENTS_QUERY_KEY] });
-      //   queryClient.setQueryData([USE_STREAMED_ENVIRONMENTS_QUERY_KEY], (old: StreamEnvironmentsResult) => {
-      //     return {
-      //       ...old,
-      //       environments: variables.items.map((item) => ({
-      //         ...old.environments.find((environment) => environment.id === item.id),
-      //         ...item,
-      //       })),
-      //     };
-      //   });
+      queryClient.setQueryData([USE_STREAMED_ENVIRONMENTS_QUERY_KEY], (old: StreamEnvironmentsResult) => {
+        return {
+          ...old,
+          environments: old.environments.map((oldEnv) => {
+            const updatedEnv = variables.items.find((updatedEnv) => updatedEnv.id === oldEnv.id);
+            if (updatedEnv) {
+              return {
+                ...oldEnv,
+                order: updatedEnv.order,
+              };
+            }
+
+            return oldEnv;
+          }),
+        };
+      });
     },
   });
 };
