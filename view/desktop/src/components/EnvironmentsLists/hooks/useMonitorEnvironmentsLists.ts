@@ -18,10 +18,10 @@ import { useGroupedEnvironments } from "./useGroupedEnvironments";
 
 export const useMonitorEnvironmentsLists = () => {
   const { globalEnvironments } = useStreamEnvironments();
+  const { groupedEnvironments } = useGroupedEnvironments();
   const { mutateAsync: batchUpdateEnvironment } = useBatchUpdateEnvironment();
   const { mutateAsync: deleteEnvironment } = useDeleteEnvironment();
   const { mutateAsync: createEnvironment } = useCreateEnvironment();
-  const { groupedEnvironments } = useGroupedEnvironments();
 
   const handleReorderGlobals = useCallback(
     async (source: ElementDragPayload, location: DragLocationHistory) => {
@@ -155,11 +155,15 @@ export const useMonitorEnvironmentsLists = () => {
         await deleteEnvironment({ id: sourceData.data.environment.id });
 
         //get reordered global environments after the deleted one
-        const globalEnvironmentsToUpdate = groupedEnvironments
-          .filter((env) => env.order! > sourceData.data.environment.order!)
-          .map((env) => ({
-            id: env.id,
-            order: env.order! - 1,
+        const globalEnvironmentsToUpdate = globalEnvironments
+          .filter(
+            (globalEnv) =>
+              (globalEnv.order ?? 0) > (sourceData.data.environment.order ?? 0) &&
+              globalEnv.id !== sourceData.data.environment.id
+          )
+          .map((globalEnv) => ({
+            id: globalEnv.id,
+            order: (globalEnv.order ?? 0) - 1,
           }));
 
         //update global and grouped environments
@@ -173,6 +177,7 @@ export const useMonitorEnvironmentsLists = () => {
           })),
         });
 
+        console.log("add new grouped environment", groupedEnvironments);
         //add new grouped environment
         await createEnvironment({
           collectionId: locationData.data.groupWithEnvironments.collectionId,
@@ -184,7 +189,7 @@ export const useMonitorEnvironmentsLists = () => {
         console.log("CombineToGrouped", { sourceData, locationData });
       }
     },
-    [batchUpdateEnvironment, createEnvironment, deleteEnvironment]
+    [batchUpdateEnvironment, createEnvironment, deleteEnvironment, globalEnvironments]
   );
 
   useEffect(() => {

@@ -6,6 +6,7 @@ import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
+import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../constants";
 import { EnvironmentListType } from "../types";
 import { EnvironmentItemControls } from "./EnvironmentItemControls";
 import { EnvironmentListItemRenamingForm } from "./EnvironmentListItemRenamingForm";
@@ -39,7 +40,7 @@ export const EnvironmentListItem = ({ environment, type }: EnvironmentListItemPr
       component: "Default",
       title: environment.name,
       params: {
-        iconType: type === "GlobalEnvironmentItem" ? "Environment" : "GroupedEnvironment",
+        iconType: type === ENVIRONMENT_ITEM_DRAG_TYPE.GLOBAL ? "Environment" : "GroupedEnvironment",
       },
     });
   };

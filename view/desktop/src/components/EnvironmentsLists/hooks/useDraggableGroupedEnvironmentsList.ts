@@ -8,6 +8,7 @@ import {
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
+import { ENVIRONMENT_LIST_DRAG_TYPE } from "../constants";
 import { GroupedEnvironments } from "../types";
 import {
   getSourceEnvironmentItem,
@@ -39,7 +40,7 @@ export const useDraggableGroupedEnvironmentsList = ({
         },
         getData: ({ input, source }) => {
           const data = {
-            type: "GroupedEnvironmentList",
+            type: ENVIRONMENT_LIST_DRAG_TYPE.GROUPED,
             data: { groupWithEnvironments },
           };
 
