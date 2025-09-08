@@ -61,22 +61,25 @@ fn main() {
     let args: Vec<String> = env::args().skip(2).collect();
 
     if args.is_empty() || args[0] == "--help" || args[0] == "-h" {
-        println!("cargo new-ts <name>");
+        println!("cargo new-ts [options] <name>");
         return;
     }
 
-    // `cargo new {crate_name} --lib
+    // `cargo new [options] <name>
     let crate_name = &args[0];
     let mut cargo_new = Command::new("cargo");
-    cargo_new.arg("new").arg("--lib").arg(crate_name);
+    cargo_new.arg("new");
 
-    let status = cargo_new.status().expect("failed to invoke cargo new");
-    if !status.success() {
-        eprintln!("cargo new failed");
-        exit(1);
+    for arg in &args {
+        cargo_new.arg(&arg);
     }
 
     let crate_dir = Path::new(crate_name);
+    let status = cargo_new.status().expect("failed to invoke cargo new");
+    if !status.success() || !crate_dir.exists() {
+        eprintln!("cargo new failed");
+        exit(1);
+    }
 
     // Create `index.ts`, `package.json` and `tsconfig.json`
     fs::write(crate_dir.join("index.ts"), index_ts_content()).unwrap();
