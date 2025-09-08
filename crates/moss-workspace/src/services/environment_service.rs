@@ -23,7 +23,6 @@ use moss_storage::{
 use rustc_hash::{FxHashMap, FxHashSet};
 use std::{
     collections::{HashMap, HashSet},
-    ffi::OsStr,
     path::{Path, PathBuf},
     pin::Pin,
     sync::Arc,
@@ -705,7 +704,11 @@ async fn scan_source<R: AppRuntime>(
             continue;
         }
 
-        if entry.path().extension() != Some(OsStr::new(ENVIRONMENT_FILE_EXTENSION)) {
+        if !entry
+            .file_name()
+            .to_string_lossy()
+            .ends_with(ENVIRONMENT_FILE_EXTENSION)
+        {
             continue;
         }
 
