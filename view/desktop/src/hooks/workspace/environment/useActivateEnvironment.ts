@@ -1,8 +1,9 @@
+import { useGroupedEnvironments } from "@/components/EnvironmentsLists/hooks/useGroupedEnvironments";
 import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { ActivateEnvironmentInput, ActivateEnvironmentOutput } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { StreamEnvironmentsResult, USE_STREAMED_ENVIRONMENTS_QUERY_KEY } from "./useStreamEnvironments";
+import { StreamEnvironmentsResult, USE_STREAMED_ENVIRONMENTS_QUERY_KEY, useStreamEnvironments } from "..";
 
 const ACTIVATE_ENVIRONMENT_QUERY_KEY = "activateEnvironment" as const;
 
@@ -18,20 +19,46 @@ const activateEnvironment = async (input: ActivateEnvironmentInput) => {
 
 export const useActivateEnvironment = () => {
   const queryClient = useQueryClient();
+  const { globalEnvironments } = useStreamEnvironments();
+  const { groupedEnvironments } = useGroupedEnvironments();
 
   return useMutation({
     mutationKey: [ACTIVATE_ENVIRONMENT_QUERY_KEY],
     mutationFn: activateEnvironment,
     onSuccess: (data) => {
-      queryClient.setQueryData([USE_STREAMED_ENVIRONMENTS_QUERY_KEY], (old: StreamEnvironmentsResult) => {
-        return {
-          ...old,
-          environments: old.environments.map((environment) => ({
-            ...environment,
-            isActive: environment.id === data.environmentId,
-          })),
-        };
-      });
+      if (globalEnvironments.some((environment) => environment.id === data.environmentId)) {
+        queryClient.setQueryData([USE_STREAMED_ENVIRONMENTS_QUERY_KEY], (old: StreamEnvironmentsResult) => {
+          return {
+            ...old,
+            environments: old.environments.map((environment) => {
+              if (environment.collectionId !== null) return environment;
+              return {
+                ...environment,
+                isActive: environment.id === data.environmentId,
+              };
+            }),
+          };
+        });
+      }
+
+      const groupedEnvironment = groupedEnvironments?.find((group) =>
+        group.environments.some((env) => env.id === data.environmentId)
+      );
+      if (groupedEnvironment) {
+        queryClient.setQueryData([USE_STREAMED_ENVIRONMENTS_QUERY_KEY], (old: StreamEnvironmentsResult) => {
+          return {
+            ...old,
+            environments: old.environments.map((environment) => {
+              if (environment.collectionId !== groupedEnvironment?.collectionId) return environment;
+
+              return {
+                ...environment,
+                isActive: environment.id === data.environmentId,
+              };
+            }),
+          };
+        });
+      }
     },
   });
 };
