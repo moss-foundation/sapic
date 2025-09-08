@@ -127,6 +127,8 @@ export const getLocationGroupedEnvironmentListData = (location: DragLocationHist
 //other
 
 export const getDropOperation = (source: ElementDragPayload, location: DragLocationHistory): DropOperation | null => {
+  if (location.current.dropTargets.length === 0) return null;
+
   const instruction = extractInstruction(location.current.dropTargets[0].data);
 
   if (!instruction || instruction.blocked) {
