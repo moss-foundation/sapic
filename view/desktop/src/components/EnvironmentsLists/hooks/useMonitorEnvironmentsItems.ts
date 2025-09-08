@@ -142,7 +142,6 @@ export const useMonitorEnvironmentsItems = () => {
         });
       }
       if (isSourceGroupedEnvironmentItem(source)) {
-        console.log("isSourceGroupedEnvironmentItem", source);
         const sourceData = getSourceGroupedEnvironmentItemData(source);
         const locationData = getLocationGroupedEnvironmentItemData(location);
 
@@ -263,7 +262,6 @@ export const useMonitorEnvironmentsItems = () => {
           })),
         });
 
-        console.log("add new grouped environment", locationGroupedEnvironments);
         //add new grouped environment
         await createEnvironment({
           collectionId: locationData.data.groupWithEnvironments.collectionId,
@@ -455,7 +453,6 @@ export const useMonitorEnvironmentsItems = () => {
         }
 
         const dropOperation = getDropOperation(source, location);
-        console.log("dropOperation", dropOperation);
         switch (dropOperation) {
           case "ReorderGlobals":
             handleReorderGlobals(source, location);
