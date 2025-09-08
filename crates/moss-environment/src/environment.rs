@@ -92,7 +92,8 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
             .await
             .join_err_with::<()>(|| format!("failed to open file: {}", abs_path.display()))?;
 
-        let parsed: SourceFile = hcl::from_reader(rdr).join_err::<()>("failed to parse hcl")?;
+        let parsed: SourceFile = hcl::from_reader(rdr)
+            .join_err_with::<()>(|| format!("failed to parse hcl: {}", abs_path.display()))?;
 
         let mut variables =
             HashMap::with_capacity(parsed.variables.as_ref().map_or(0, |v| v.len()));

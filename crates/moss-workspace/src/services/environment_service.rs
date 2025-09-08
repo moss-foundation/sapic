@@ -7,6 +7,7 @@ use moss_db::primitives::AnyValue;
 use moss_environment::{
     AnyEnvironment, DescribeEnvironment, Environment, ModifyEnvironmentParams,
     builder::{EnvironmentBuilder, EnvironmentLoadParams},
+    constants::ENVIRONMENT_FILE_EXTENSION,
     errors::ErrorIo,
     models::{primitives::EnvironmentId, types::AddVariableParams},
     segments::{SEGKEY_VARIABLE_LOCALVALUE, SEGKEY_VARIABLE_ORDER},
@@ -22,6 +23,7 @@ use moss_storage::{
 use rustc_hash::{FxHashMap, FxHashSet};
 use std::{
     collections::{HashMap, HashSet},
+    ffi::OsStr,
     path::{Path, PathBuf},
     pin::Pin,
     sync::Arc,
@@ -388,7 +390,7 @@ where
 
         // Create and the environment group when creating a collection environment
         if let Some(collection_id) = collection_id_inner.clone() {
-            let group_order = state.expanded_groups.len() as isize;
+            let group_order = state.groups.len() as isize;
             state.groups.insert(collection_id.clone());
             state.expanded_groups.insert(collection_id.clone());
 
@@ -700,6 +702,10 @@ async fn scan_source<R: AppRuntime>(
 
     while let Some(entry) = read_dir.next_entry().await? {
         if entry.file_type().await?.is_dir() {
+            continue;
+        }
+
+        if entry.path().extension() != Some(OsStr::new(ENVIRONMENT_FILE_EXTENSION)) {
             continue;
         }
 

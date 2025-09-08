@@ -699,6 +699,7 @@ async fn restore_collections<R: AppRuntime>(
         let details = collection.details().await?;
 
         if let (Some(vcs), Some(account_id)) = (details.vcs, details.account_id) {
+            // FIXME: Skip the collection instead of throwing error if account does not exist
             let account = active_profile
                 .account(&account_id)
                 .await
