@@ -35,7 +35,7 @@ export const EnvironmentsListView = () => {
           }}
         />
 
-        {!isLoading ? (
+        {isLoading ? (
           <div className="flex flex-col items-center justify-center gap-2 p-10 text-center">
             <span>Environments are loading... </span>
             <span>Please wait...</span>
