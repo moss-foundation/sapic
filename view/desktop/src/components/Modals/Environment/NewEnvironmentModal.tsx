@@ -28,7 +28,7 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
   const [mode, setMode] = useState<"Workspace" | "Collection">("Workspace");
   const [openAutomatically, setOpenAutomatically] = useState(true);
 
-  const { isInitialized } = useFocusInputOnMount({
+  useFocusInputOnMount({
     inputRef,
     initialValue: name,
   });
@@ -42,7 +42,6 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
     value: name,
     restrictedValues: restrictedNames,
     inputRef,
-    isInitialized,
   });
 
   const getNextOrder = (list?: { length?: number } | null) => (list?.length ?? 0) + 1;
