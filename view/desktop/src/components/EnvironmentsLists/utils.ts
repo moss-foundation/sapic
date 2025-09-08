@@ -60,6 +60,14 @@ export const getSourceGroupedEnvironmentItemData = (source: ElementDragPayload):
   return source.data as unknown as GroupedEnvironmentItem;
 };
 
+export const getSourceGroupedEnvironmentListData = (source: ElementDragPayload): GroupedEnvironmentList | null => {
+  if (source.data.type !== ENVIRONMENT_LIST_DRAG_TYPE.GROUPED) {
+    return null;
+  }
+
+  return source.data as unknown as GroupedEnvironmentList;
+};
+
 //location
 export const isLocationGroupedEnvironmentList = (location: DragLocationHistory): boolean => {
   if (location.current.dropTargets.length === 0 || location.current.dropTargets.length > 1) return false;

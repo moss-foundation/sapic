@@ -71,7 +71,7 @@ export const useStreamEnvironments = () => {
     return sortObjectsByOrder(collectionEnvironments);
   }, [query.data]);
 
-  const groups = query.data?.groups;
+  const groups = sortObjectsByOrder(query.data?.groups ?? []);
 
   return {
     ...query,

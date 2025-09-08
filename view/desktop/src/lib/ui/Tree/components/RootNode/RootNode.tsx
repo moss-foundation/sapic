@@ -14,6 +14,7 @@ interface RootNodeProps extends HTMLAttributes<HTMLUListElement> {
   instruction?: Instruction | null;
   dropIndicatorFullWidth?: boolean;
   combineInstruction?: Instruction | null;
+  isDragging?: boolean;
 }
 
 export const RootNode = forwardRef<HTMLUListElement, RootNodeProps>(
@@ -25,12 +26,23 @@ export const RootNode = forwardRef<HTMLUListElement, RootNodeProps>(
       instruction,
       dropIndicatorFullWidth = false,
       combineInstruction,
+      isDragging,
       ...props
     }: RootNodeProps,
     ref
   ) => {
     return (
-      <ul ref={ref} className={cn("group/TreeRootNode relative w-full list-none", className)} {...props}>
+      <ul
+        ref={ref}
+        className={cn(
+          "group/TreeRootNode relative w-full list-none",
+          {
+            "opacity-50": isDragging,
+          },
+          className
+        )}
+        {...props}
+      >
         <DropIndicatorForDir isChildDropBlocked={isChildDropBlocked} instruction={instruction ?? null} />
         <DropIndicatorForTrigger instruction={instruction ?? null} fullWidth={dropIndicatorFullWidth} />
         {combineInstruction && <DropIndicatorForCombine instruction={combineInstruction} />}

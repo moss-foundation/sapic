@@ -1,6 +1,7 @@
 import { useRef } from "react";
 
 import { Tree } from "@/lib/ui/Tree";
+import { cn } from "@/utils";
 
 import { useDraggableGroupedEnvironmentsList } from "../hooks/useDraggableGroupedEnvironmentsList";
 import { GroupedEnvironments } from "../types";
@@ -14,7 +15,7 @@ interface GroupedEnvironmentsListRootProps {
 export const GroupedEnvironmentsListRoot = ({ groupedEnvironments }: GroupedEnvironmentsListRootProps) => {
   const groupedEnvironmentsListRef = useRef<HTMLUListElement>(null);
 
-  const { instruction } = useDraggableGroupedEnvironmentsList({
+  const { instruction, isDragging } = useDraggableGroupedEnvironmentsList({
     ref: groupedEnvironmentsListRef,
     groupWithEnvironments: groupedEnvironments,
   });
@@ -22,8 +23,10 @@ export const GroupedEnvironmentsListRoot = ({ groupedEnvironments }: GroupedEnvi
   return (
     <Tree.RootNode
       ref={groupedEnvironmentsListRef}
+      instruction={instruction}
       combineInstruction={instruction}
-      //className={cn("cursor-pointer", isDragging && "opacity-50")}
+      className={cn("cursor-pointer")}
+      isDragging={isDragging}
     >
       <Tree.RootNodeHeader isActive={false} className="cursor-pointer">
         <GroupedEnvironmentsListRootControls groupedEnvironments={groupedEnvironments} />

@@ -29,6 +29,7 @@ export interface GroupedEnvironmentList {
     groupWithEnvironments: GroupedEnvironments;
   };
   instruction?: Instruction;
+  [key: string | symbol]: unknown;
 }
 
 export type EnvironmentListType =

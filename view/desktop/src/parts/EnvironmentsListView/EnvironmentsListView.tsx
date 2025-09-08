@@ -1,5 +1,6 @@
 import { GlobalEnvironmentsList } from "@/components/EnvironmentsLists/GlobalEnvironmentsList/GlobalEnvironmentsList";
 import { GroupedEnvironmentsList } from "@/components/EnvironmentsLists/GroupedEnvironmentsList/GroupedEnvironmentsList";
+import { useMonitorEnvironmentsItems } from "@/components/EnvironmentsLists/hooks/useMonitorEnvironmentsItems";
 import { useMonitorEnvironmentsLists } from "@/components/EnvironmentsLists/hooks/useMonitorEnvironmentsLists";
 import { useStreamEnvironments } from "@/hooks";
 import { Scrollbar } from "@/lib/ui";
@@ -14,6 +15,7 @@ export const EnvironmentsListView = () => {
   const { globalEnvironments, collectionEnvironments } = useStreamEnvironments();
 
   useMonitorEnvironmentsLists();
+  useMonitorEnvironmentsItems();
 
   return (
     <div className="flex h-full flex-col">

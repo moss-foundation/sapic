@@ -6,12 +6,13 @@ import {
   type Instruction,
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
-import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import { ENVIRONMENT_LIST_DRAG_TYPE } from "../constants";
-import { GroupedEnvironments } from "../types";
+import { GroupedEnvironmentList, GroupedEnvironments } from "../types";
 import {
   getSourceEnvironmentItem,
+  getSourceGroupedEnvironmentListData,
   hasSimilarEnv,
   isSourceEnvironmentItem,
   isSourceGroupedEnvironmentList,
@@ -27,12 +28,22 @@ export const useDraggableGroupedEnvironmentsList = ({
   groupWithEnvironments,
 }: UseDraggableGroupedEnvironmentsListProps) => {
   const [instruction, setInstruction] = useState<Instruction | null>(null);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
 
   useEffect(() => {
     const element = ref?.current;
     if (!element) return;
 
     return combine(
+      draggable({
+        element,
+        getInitialData: (): GroupedEnvironmentList => ({
+          type: ENVIRONMENT_LIST_DRAG_TYPE.GROUPED,
+          data: { groupWithEnvironments },
+        }),
+        onDragStart: () => setIsDragging(true),
+        onDrop: () => setIsDragging(false),
+      }),
       dropTargetForElements({
         element,
         canDrop: ({ source }) => {
@@ -44,28 +55,63 @@ export const useDraggableGroupedEnvironmentsList = ({
             data: { groupWithEnvironments },
           };
 
-          const sourceData = getSourceEnvironmentItem(source);
-          if (!sourceData) {
+          if (isSourceGroupedEnvironmentList(source)) {
+            const sourceData = getSourceGroupedEnvironmentListData(source);
+            if (!sourceData) {
+              return attachInstruction(data, {
+                input,
+                element,
+                operations: {
+                  "reorder-before": "not-available",
+                  "reorder-after": "not-available",
+                  combine: "not-available",
+                },
+              });
+            }
+
+            return attachInstruction(data, {
+              input,
+              element,
+              operations: {
+                "reorder-before":
+                  sourceData.data.groupWithEnvironments.collectionId === groupWithEnvironments.collectionId
+                    ? "not-available"
+                    : "available",
+                "reorder-after":
+                  sourceData.data.groupWithEnvironments.collectionId === groupWithEnvironments.collectionId
+                    ? "not-available"
+                    : "available",
+                combine: "not-available",
+              },
+            });
+          }
+
+          if (isSourceEnvironmentItem(source)) {
+            const sourceData = getSourceEnvironmentItem(source);
+            if (!sourceData) {
+              return attachInstruction(data, {
+                input,
+                element,
+                operations: {
+                  "reorder-before": "not-available",
+                  "reorder-after": "not-available",
+                  combine: "not-available",
+                },
+              });
+            }
+
             return attachInstruction(data, {
               input,
               element,
               operations: {
                 "reorder-before": "not-available",
                 "reorder-after": "not-available",
-                combine: "not-available",
+                combine: hasSimilarEnv(groupWithEnvironments, sourceData.data.environment) ? "blocked" : "available",
               },
             });
           }
 
-          return attachInstruction(data, {
-            input,
-            element,
-            operations: {
-              "reorder-before": "not-available",
-              "reorder-after": "not-available",
-              combine: hasSimilarEnv(groupWithEnvironments, sourceData.data.environment) ? "blocked" : "available",
-            },
-          });
+          return data;
         },
         onDrag: ({ location }) => {
           if (location.current.dropTargets.length > 1 || location.current.dropTargets.length === 0) {
@@ -85,5 +131,5 @@ export const useDraggableGroupedEnvironmentsList = ({
     );
   }, [ref, groupWithEnvironments]);
 
-  return { instruction };
+  return { instruction, isDragging };
 };
