@@ -54,7 +54,7 @@ export const useStreamEnvironments = () => {
   const globalEnvironments = useMemo(() => {
     if (!query.data) return [];
 
-    const globalEnvironments = query.data.environments.filter((environment) => environment.collectionId);
+    const globalEnvironments = query.data.environments.filter((environment) => environment.collectionId === null);
 
     if (globalEnvironments.length === 0) return [];
 
@@ -64,7 +64,7 @@ export const useStreamEnvironments = () => {
   const collectionEnvironments = useMemo(() => {
     if (!query.data) return [];
 
-    const collectionEnvironments = query.data.environments.filter((environment) => environment.collectionId);
+    const collectionEnvironments = query.data.environments.filter((environment) => environment.collectionId !== null);
 
     if (collectionEnvironments.length === 0) return [];
 
