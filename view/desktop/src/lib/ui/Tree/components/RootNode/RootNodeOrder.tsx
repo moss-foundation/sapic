@@ -5,5 +5,5 @@ interface RootNodeOrderProps {
 }
 
 export const RootNodeOrder = ({ order }: RootNodeOrderProps) => {
-  return <div className={cn("underline")}>{order ?? "-"}</div>;
+  return <div className={cn("text-blue-500 underline")}>{order ?? "-"}</div>;
 };
