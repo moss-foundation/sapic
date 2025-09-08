@@ -11,7 +11,7 @@ import { EnvironmentsListViewHeader } from "./EnvironmentsListViewHeader";
 
 export const EnvironmentsListView = () => {
   const { addOrFocusPanel } = useTabbedPaneStore();
-  const { data: environments } = useStreamEnvironments();
+  const { globalEnvironments, collectionEnvironments } = useStreamEnvironments();
 
   useMonitorEnvironmentsLists();
 
@@ -33,11 +33,11 @@ export const EnvironmentsListView = () => {
           }}
         />
 
-        {environments && environments.environments.length > 0 && <EnvironmentsListViewDivider />}
+        {globalEnvironments && globalEnvironments.length > 0 && <EnvironmentsListViewDivider />}
 
         <GlobalEnvironmentsList />
 
-        {environments && environments.environments.length > 0 && <EnvironmentsListViewDivider />}
+        {collectionEnvironments && collectionEnvironments.length > 0 && <EnvironmentsListViewDivider />}
 
         <GroupedEnvironmentsList />
       </Scrollbar>
