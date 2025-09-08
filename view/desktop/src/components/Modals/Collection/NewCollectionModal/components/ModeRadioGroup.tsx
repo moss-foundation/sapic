@@ -1,6 +1,6 @@
 import { RadioGroup } from "@/components";
 
-import { Subheader } from "../sections/Subheader";
+import { Subheader } from "../Sections/Subheader";
 
 interface ModeRadioGroupProps {
   mode: "Default" | "Custom";
