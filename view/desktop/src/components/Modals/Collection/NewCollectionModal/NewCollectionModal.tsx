@@ -13,10 +13,7 @@ import { ModalWrapperProps } from "../../types";
 import { Divider } from "./components/Divider";
 import { ModeRadioGroup } from "./components/ModeRadioGroup";
 import { CREATE_TAB, IMPORT_TAB } from "./constansts";
-import { CreateSection } from "./sections/CreateSection";
-import { FooterActions } from "./sections/FooterActions";
-import { Header } from "./sections/Header";
-import { ImportSection } from "./sections/ImportSection";
+import { CreateSection, FooterActions, Header, ImportSection } from "./sections";
 import { calculateIsSubmitDisabled } from "./utils";
 
 interface NewCollectionModalProps extends ModalWrapperProps {
