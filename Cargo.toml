@@ -10,13 +10,13 @@ members = [
     # Workspace crates
     #
     "crates/moss-applib",
+    "crates/moss-app",
+    "crates/moss-app-delegate",
     "crates/moss-git",
     "crates/moss-git-hosting-provider",
     "crates/moss-api",
     "crates/moss-text",
     "crates/moss-collection",
-    "crates/moss-app",
-    "crates/moss-applib",
     "crates/moss-db",
     "crates/moss-fs",
     "crates/moss-keyring",
@@ -32,6 +32,8 @@ members = [
     "crates/moss-wasm",
     "crates/moss-edit",
     "crates/moss-logging",
+    "crates/moss-user",
+    "crates/moss-server-api",
     #
     # Apps
     #
@@ -41,7 +43,8 @@ members = [
     #
     "tools/xtask",
     "crates/moss-id-macro",
-    "tools/cargo-new-ts"]
+    "tools/cargo-new-ts"
+]
 
 [workspace.dependencies]
 #
@@ -58,6 +61,7 @@ moss_collection = { path = "crates/moss-collection" }
 moss_db = { path = "crates/moss-db" }
 moss_app = { path = "crates/moss-app" }
 moss_applib = { path = "crates/moss-applib" }
+moss_app_delegate = { path = "crates/moss-app-delegate" }
 moss_git = { path = "crates/moss-git" }
 moss_git_hosting_provider = { path = "crates/moss-git-hosting-provider" }
 moss_fs = { path = "crates/moss-fs" }
@@ -75,6 +79,8 @@ moss_wasm = { path = "crates/moss-wasm" }
 moss_edit = { path = "crates/moss-edit" }
 moss_logging = { path = "crates/moss-logging" }
 moss_id_macro = { path = "crates/moss-id-macro"}
+moss_user = { path = "crates/moss-user" }
+moss_server_api = { path = "crates/moss-server-api" }
 #
 # External crates
 #
@@ -108,14 +114,13 @@ keyring = { version = "3", features = ["apple-native", "windows-native", "sync-s
 whoami = "1.5.2"
 chrono = { version = "0.4.40", features = ["now"] }
 webbrowser = "1.0.3"
-zeroize = "1.7"
+zeroize = { version = "1.7", features = ["zeroize_derive"] }
 aes-gcm = "0.10.3"
 argon2 = "0.5.1"
 validator = "0.20.0"
 futures = "0.3.31"
 regex = { version = "1.11.1", default-features = false, features = [] }
 smallvec = "1.15.0"
-toml = "0.9"
 toml_edit = "0.22"
 nanoid = "0.4.0"
 rustc-hash = "2.1.1"
@@ -134,6 +139,7 @@ tokio-util = "0.7.12"
 proc-macro2 = "1.0.101"
 quote = "1.0.40"
 syn = {version = "2.0.106", features = ["full"]}
+async_zip = {version = "0.0.18", default-features = false, features = ["deflate", "tokio", "tokio-fs", "tokio-util"]}
 
 [profile.release]
 opt-level = 3 # Maximize performance

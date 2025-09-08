@@ -20,6 +20,7 @@ ifeq ($(OS),Windows_NT)
     DETECTED_OS := Windows
     HOME_DIR := ${USERPROFILE}
 export DEV_APP_DIR = ${USERPROFILE}\.sapic
+
 else
     DETECTED_OS := $(shell uname)
     HOME_DIR := ${HOME}
@@ -61,7 +62,6 @@ ENVIRONMENT_MODELS_DIR := crates/moss-environment
 WORKSPACE_MODELS_DIR := crates/moss-workspace
 ACTIVITY_BROADCASTER_MODELS_DIR := crates/moss-activity-broadcaster
 API_MODELS_DIR := crates/moss-api
-GIT_HOSTING_PROVIDER_MODELS_DIR := crates/moss-git-hosting-provider
 GIT_MODELS_DIR := crates/moss-git
 
 # ---- Command Executables ----
@@ -145,7 +145,6 @@ $(eval $(call gen_bindings,workspace,WORKSPACE_MODELS_DIR))
 $(eval $(call gen_bindings,activity-broadcaster,ACTIVITY_BROADCASTER_MODELS_DIR))
 $(eval $(call gen_bindings,bindingutils,BINDINGUTILS_DIR))
 $(eval $(call gen_bindings,api,API_MODELS_DIR))
-$(eval $(call gen_bindings,git-hosting-provider,GIT_HOSTING_PROVIDER_MODELS_DIR))
 $(eval $(call gen_bindings,git,GIT_MODELS_DIR))
 
 gen-app-bindings:
@@ -155,7 +154,6 @@ gen-workspace-bindings:
 gen-activity-broadcaster-bindings:
 gen-bindingutils-bindings:
 gen-api-bindings:
-gen-git-hosting-provider-bindings:
 gen-git-bindings:
 
 ## Generate all TypeScript bindings
@@ -168,7 +166,7 @@ gen-bindings: \
 	gen-activity-broadcaster-bindings \
 	gen-bindingutils-bindings \
 	gen-api-bindings \
-	gen-git-hosting-provider-bindings
+	gen-git-bindings
 
 
 

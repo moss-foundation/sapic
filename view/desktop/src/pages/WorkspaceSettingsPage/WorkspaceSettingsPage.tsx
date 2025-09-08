@@ -6,7 +6,7 @@ import { PageView } from "@/components/PageView/PageView";
 import { useModal } from "@/hooks";
 import { useRenameWorkspace } from "@/hooks/useRenameWorkspace";
 import { useDeleteWorkspace } from "@/hooks/workbench/useDeleteWorkspace";
-import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
+import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 
 import { WorkspaceDangerZoneSection } from "./WorkspaceDangerZoneSection";

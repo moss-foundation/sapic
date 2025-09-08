@@ -49,7 +49,7 @@ export const CollectionTreesView = () => {
     });
   }, []);
 
-  const { collectionsTrees, isLoading } = useCollectionsTrees();
+  const { collectionsTreesSortedByOrder, isLoading } = useCollectionsTrees();
 
   return (
     <div ref={dropTargetToggleRef} className="flex h-full flex-col">
@@ -63,11 +63,9 @@ export const CollectionTreesView = () => {
 
           <div className="flex h-full flex-col">
             {!isLoading &&
-              collectionsTrees
-                .sort((a, b) => a.order! - b.order!)
-                .map((collection) => (
-                  <CollectionTree key={collection.id} tree={collection} displayMode={displayMode} />
-                ))}
+              collectionsTreesSortedByOrder.map((collection) => (
+                <CollectionTree key={collection.id} tree={collection} displayMode={displayMode} />
+              ))}
           </div>
 
           {showCollectionCreationZone && (

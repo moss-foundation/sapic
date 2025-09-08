@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { useAddAccount } from "@/hooks/account/useAddAccount";
+import { useAddAccount } from "@/hooks/app/account/useAddAccount";
 import { useGitProviderStore } from "@/store/gitProvider";
 import { ImportCollectionSource } from "@repo/moss-workspace";
 
@@ -10,6 +10,7 @@ import ProviderTabs from "../components/ProviderTabs";
 import { RepositoryInput } from "../components/RepositoryInput";
 import { DEFAULT_BRANCH, DEFAULT_NAME, DEFAULT_PROVIDER, DEFAULT_REPOSITORY } from "../defaults";
 import { Subheader } from "../Sections/Subheader";
+import { InputOutlined } from "@/components/InputOutlined";
 
 interface ImportSectionProps {
   onValuesUpdate: (values: { name: string; importParams: ImportCollectionSource | undefined }) => void;
@@ -24,18 +25,19 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
   const [repository, setRepository] = useState(DEFAULT_REPOSITORY);
   const [branch, setBranch] = useState(DEFAULT_BRANCH);
   const [provider, setProvider] = useState<"github" | "gitlab">(DEFAULT_PROVIDER);
+  const [accountId, setAccountId] = useState("");
 
   useEffect(() => {
     const deriveGitParams = () => {
       if (provider === "github") {
         return {
-          gitHub: { repository, branch },
+          gitHub: { accountId, repository, branch },
         };
       }
 
       if (provider === "gitlab") {
         return {
-          gitLab: { repository, branch },
+          gitLab: { accountId, repository, branch },
         };
       }
 
@@ -46,7 +48,7 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
       name,
       importParams: deriveGitParams(),
     });
-  }, [name, onValuesUpdate, repository, branch, provider]);
+  }, [name, onValuesUpdate, repository, branch, provider, accountId]);
 
   const handleAddAccount = () => {
     if (provider === "gitlab") return;
@@ -102,6 +104,17 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
           <RepositoryInput repository={repository} setRepository={setRepository} />
 
           <BranchInput branch={branch} setBranch={setBranch} />
+
+          <div className="col-span-2 grid grid-cols-subgrid items-center">
+            <div>Account:</div>
+            <InputOutlined
+              className="max-w-72"
+              value={accountId}
+              onChange={(e) => setAccountId(e.target.value)}
+              placeholder="Account"
+              required
+            />
+          </div>
         </div>
       </div>
     </div>

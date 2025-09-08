@@ -1,5 +1,5 @@
+use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
-use moss_git_hosting_provider::models::primitives::GitProviderType;
 
 use crate::{
     App,
@@ -9,14 +9,23 @@ use crate::{
 impl<R: AppRuntime> App<R> {
     pub async fn add_account(
         &self,
-        _ctx: &R::AsyncContext,
+        ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
         input: AddAccountInput,
     ) -> joinerror::Result<AddAccountOutput> {
-        let user_info = match input.git_provider_type {
-            GitProviderType::GitHub => self._github_client.login().await,
-            GitProviderType::GitLab => self._gitlab_client.login().await,
-        }?;
+        let id = self
+            .profile_service
+            .add_account(
+                ctx,
+                app_delegate,
+                input.profile_id,
+                input.host,
+                input.provider,
+            )
+            .await?;
 
-        Ok(AddAccountOutput { user_info })
+        Ok(AddAccountOutput {
+            account_id: id.to_string(),
+        })
     }
 }

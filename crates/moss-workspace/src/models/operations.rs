@@ -2,7 +2,6 @@ use moss_environment::models::{
     primitives::EnvironmentId,
     types::{AddVariableParams, VariableInfo},
 };
-use moss_git_hosting_provider::models::types::Contributor;
 use serde::{Deserialize, Serialize};
 use std::{
     path::{Path, PathBuf},
@@ -11,18 +10,7 @@ use std::{
 use ts_rs::TS;
 use validator::Validate;
 
-use crate::models::{
-    primitives::CollectionId,
-    types::{
-        EditorPartStateInfo, EnvironmentGroup, UpdateCollectionParams,
-        UpdateEnvironmentGroupParams, UpdateEnvironmentParams,
-    },
-};
-
-use super::types::{
-    ActivitybarPartStateInfo, CreateCollectionParams, ImportCollectionParams, PanelPartStateInfo,
-    SidebarPartStateInfo, VcsInfo,
-};
+use crate::models::{primitives::*, types::*};
 
 // ------------------------------ //
 // Collection
@@ -76,6 +64,8 @@ pub struct ImportCollectionInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct ImportCollectionOutput {
     pub id: CollectionId,
+    // FIXME: Maybe we should remove the name field until we have local display name
+    // Since a cloned/imported collection already has a name
     pub name: String,
     pub order: Option<isize>,
     pub expanded: bool,
@@ -88,6 +78,24 @@ pub struct ImportCollectionOutput {
     #[serde(skip)]
     #[ts(skip)]
     pub external_path: Option<PathBuf>,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct ExportCollectionInput {
+    #[serde(flatten)]
+    #[validate(nested)]
+    pub inner: ExportCollectionParams,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct ExportCollectionOutput {
+    pub archive_path: PathBuf,
 }
 
 /// @category Operation
@@ -149,6 +157,42 @@ pub struct DeleteCollectionOutput {
     #[serde(skip)]
     #[ts(skip)]
     pub abs_path: Option<Arc<Path>>,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct ArchiveCollectionInput {
+    #[ts(type = "string")]
+    pub id: CollectionId,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct ArchiveCollectionOutput {
+    #[ts(type = "string")]
+    pub id: CollectionId,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct UnarchiveCollectionInput {
+    #[ts(type = "string")]
+    pub id: CollectionId,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct UnarchiveCollectionOutput {
+    #[ts(type = "string")]
+    pub id: CollectionId,
 }
 
 /// @category Operation

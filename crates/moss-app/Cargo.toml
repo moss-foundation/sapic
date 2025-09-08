@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+moss_app_delegate.workspace = true
+moss_server_api.workspace = true
+moss_user.workspace = true
 moss_common.workspace = true
 moss_fs.workspace = true
 moss_applib.workspace = true
@@ -19,7 +22,9 @@ moss_keyring.workspace = true
 moss_logging.workspace = true
 moss_id_macro.workspace = true
 moss_bindingutils.workspace = true
+moss_git.workspace = true
 
+git2.workspace = true
 joinerror.workspace = true
 futures.workspace = true
 anyhow.workspace = true
@@ -48,4 +53,4 @@ moss_testutils.workspace = true
 moss_applib = { workspace = true, features = ["test"] }
 
 [features]
-integration-tests = []
+integration-tests = ["moss_keyring/test"]

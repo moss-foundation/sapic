@@ -1,9 +1,9 @@
 use joinerror::ResultExt;
-use moss_activity_broadcaster::ActivityBroadcaster;
+use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, EventMarker, subscription::EventEmitter};
 use moss_environment::builder::{CreateEnvironmentParams, EnvironmentBuilder};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
-use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
+use moss_user::profile::ActiveProfile;
 use rustc_hash::FxHashMap;
 use std::{cell::LazyCell, path::Path, sync::Arc};
 
@@ -42,9 +42,7 @@ pub struct CreateWorkspaceParams {
 
 pub struct WorkspaceBuilder<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
-    broadcaster: ActivityBroadcaster<R::EventLoop>,
-    github_client: Arc<GitHubClient>,
-    gitlab_client: Arc<GitLabClient>,
+    active_profile: Arc<ActiveProfile<R>>,
 }
 
 #[derive(Clone)]
@@ -61,18 +59,8 @@ impl EventMarker for OnDidDeleteCollection {}
 impl EventMarker for OnDidAddCollection {}
 
 impl<R: AppRuntime> WorkspaceBuilder<R> {
-    pub fn new(
-        fs: Arc<dyn FileSystem>,
-        github_client: Arc<GitHubClient>,
-        gitlab_client: Arc<GitLabClient>,
-        broadcaster: ActivityBroadcaster<R::EventLoop>,
-    ) -> Self {
-        Self {
-            fs,
-            github_client,
-            gitlab_client,
-            broadcaster,
-        }
+    pub fn new(fs: Arc<dyn FileSystem>, active_profile: Arc<ActiveProfile<R>>) -> Self {
+        Self { fs, active_profile }
     }
 
     pub async fn initialize(
@@ -113,6 +101,7 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
     pub async fn load(
         self,
         ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
         params: LoadWorkspaceParams,
     ) -> joinerror::Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
@@ -128,22 +117,24 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
         let on_did_delete_collection_event = on_did_delete_collection_emitter.event();
         let on_did_add_collection_event = on_did_add_collection_emitter.event();
 
-        let storage_service: Arc<StorageService<R>> = StorageService::new(&params.abs_path)?.into();
+        let storage_service: Arc<StorageService<R>> = StorageService::new(&params.abs_path)
+            .join_err::<()>("failed to create storage service")?
+            .into();
         let layout_service = LayoutService::new(storage_service.clone());
 
         let collection_service: Arc<CollectionService<R>> = CollectionService::new(
             ctx,
+            app_delegate,
             &params.abs_path,
             self.fs.clone(),
             storage_service.clone(),
-            self.github_client.clone(),
-            self.gitlab_client.clone(),
             &mut environment_sources,
-            self.broadcaster.clone(),
+            &self.active_profile,
             on_did_delete_collection_emitter,
             on_did_add_collection_emitter,
         )
-        .await?
+        .await
+        .join_err::<()>("failed to create collection service")?
         .into();
 
         let environment_service: Arc<EnvironmentService<R>> = EnvironmentService::new(
@@ -152,7 +143,8 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
             storage_service.clone(),
             environment_sources,
         )
-        .await?
+        .await
+        .join_err::<()>("failed to create environment service")?
         .into();
 
         let edit = WorkspaceEdit::new(self.fs.clone(), params.abs_path.join(MANIFEST_FILE_NAME));
@@ -172,22 +164,21 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
 
         Ok(Workspace {
             abs_path: params.abs_path,
-            broadcaster: self.broadcaster,
             edit,
             layout_service,
             collection_service,
             environment_service,
             storage_service,
+            active_profile: self.active_profile,
             _on_did_add_collection: on_did_add_collection,
             _on_did_delete_collection: on_did_delete_collection,
-            _github_client: self.github_client,
-            _gitlab_client: self.gitlab_client,
         })
     }
 
     pub async fn create(
         self,
         ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
         params: CreateWorkspaceParams,
     ) -> joinerror::Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
@@ -211,13 +202,12 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
         let layout_service = LayoutService::new(storage_service.clone());
         let collection_service: Arc<CollectionService<R>> = CollectionService::new(
             ctx,
+            app_delegate,
             &params.abs_path,
             self.fs.clone(),
             storage_service.clone(),
-            self.github_client.clone(),
-            self.gitlab_client.clone(),
             &mut environment_sources,
-            self.broadcaster.clone(),
+            &self.active_profile,
             on_did_delete_collection_emitter,
             on_did_add_collection_emitter,
         )
@@ -250,16 +240,14 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
 
         Ok(Workspace {
             abs_path: params.abs_path,
-            broadcaster: self.broadcaster,
             edit,
             layout_service,
             collection_service,
             environment_service,
             storage_service,
+            active_profile: self.active_profile,
             _on_did_add_collection: on_did_add_collection,
             _on_did_delete_collection: on_did_delete_collection,
-            _github_client: self.github_client,
-            _gitlab_client: self.gitlab_client,
         })
     }
 }

@@ -1,10 +1,10 @@
 use chrono::Utc;
 use joinerror::{Error, OptionExt, ResultExt};
-use moss_activity_broadcaster::ActivityBroadcaster;
+use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_fs::{FileSystem, FsResultExt, RemoveOptions};
-use moss_git_hosting_provider::{github::client::GitHubClient, gitlab::client::GitLabClient};
 use moss_logging::session;
+use moss_user::profile::ActiveProfile;
 use moss_workspace::{
     builder::{CreateWorkspaceParams, LoadWorkspaceParams, WorkspaceBuilder},
     workspace::{WorkspaceModifyParams, WorkspaceSummary},
@@ -62,8 +62,6 @@ pub struct WorkspaceService<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     storage: Arc<StorageService<R>>,
     state: Arc<RwLock<ServiceState<R>>>,
-    github_client: Arc<GitHubClient>,
-    gitlab_client: Arc<GitLabClient>,
 }
 
 impl<R: AppRuntime> WorkspaceService<R> {
@@ -72,8 +70,6 @@ impl<R: AppRuntime> WorkspaceService<R> {
         storage_service: Arc<StorageService<R>>,
         fs: Arc<dyn FileSystem>,
         abs_path: &Path,
-        github_client: Arc<GitHubClient>,
-        gitlab_client: Arc<GitLabClient>,
     ) -> joinerror::Result<Self> {
         debug_assert!(abs_path.is_absolute());
         let abs_path: Arc<Path> = abs_path.join(dirs::WORKSPACES_DIR).into();
@@ -90,8 +86,6 @@ impl<R: AppRuntime> WorkspaceService<R> {
                 known_workspaces,
                 active_workspace: None,
             })),
-            github_client,
-            gitlab_client,
         })
     }
 
@@ -266,8 +260,9 @@ impl<R: AppRuntime> WorkspaceService<R> {
     pub(crate) async fn activate_workspace(
         &self,
         ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
         id: &WorkspaceId,
-        broadcaster: ActivityBroadcaster<R::EventLoop>,
+        active_profile: Arc<ActiveProfile<R>>,
     ) -> joinerror::Result<WorkspaceItemDescription> {
         let (name, already_active) = {
             let state_lock = self.state.read().await;
@@ -302,20 +297,18 @@ impl<R: AppRuntime> WorkspaceService<R> {
 
         let last_opened_at = Utc::now().timestamp();
         let abs_path: Arc<Path> = self.absolutize(&id.to_string()).into();
-        let workspace = WorkspaceBuilder::<R>::new(
-            self.fs.clone(),
-            self.github_client.clone(),
-            self.gitlab_client.clone(),
-            broadcaster,
-        )
-        .load(
-            ctx,
-            LoadWorkspaceParams {
-                abs_path: abs_path.clone(),
-            },
-        )
-        .await
-        .join_err::<()>("failed to load the workspace")?;
+        let workspace = WorkspaceBuilder::new(self.fs.clone(), active_profile)
+            .load(
+                ctx,
+                app_delegate,
+                LoadWorkspaceParams {
+                    abs_path: abs_path.clone(),
+                },
+            )
+            .await
+            .join_err_with::<()>(|| {
+                format!("failed to load the workspace, {}", abs_path.display())
+            })?;
 
         {
             let mut state_lock = self.state.write().await;
@@ -396,8 +389,6 @@ impl<R: AppRuntime> WorkspaceService<R> {
                 e.to_string()
             ));
         }
-
-        // ctx.remove_value::<ctxkeys::ActiveWorkspaceId>();
 
         Ok(())
     }

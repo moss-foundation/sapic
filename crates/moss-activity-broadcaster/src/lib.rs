@@ -1,9 +1,9 @@
 pub mod handle;
 pub mod models;
 
-use anyhow::Result;
 use handle::ActivityHandle;
 use models::events::ActivityEvent;
+use moss_applib::errors::TauriResultExt;
 use std::sync::{
     Arc,
     atomic::{AtomicUsize, Ordering},
@@ -81,13 +81,13 @@ impl<'a> ToLocation<'a> {
 
 /// A broadcaster for activity events.
 ///
-/// Use `ActivityBroadcaster` to emit activity events to the frontend.
-pub struct ActivityBroadcaster<R: TauriRuntime> {
+/// Use `AppActivityBroadcaster` to emit activity events to the frontend.
+pub struct AppActivityBroadcaster<R: TauriRuntime> {
     app_handle: AppHandle<R>,
     next_id: Arc<AtomicUsize>,
 }
 
-impl<R: TauriRuntime> Clone for ActivityBroadcaster<R> {
+impl<R: TauriRuntime> Clone for AppActivityBroadcaster<R> {
     fn clone(&self) -> Self {
         Self {
             app_handle: self.app_handle.clone(),
@@ -96,7 +96,7 @@ impl<R: TauriRuntime> Clone for ActivityBroadcaster<R> {
     }
 }
 
-impl<R: TauriRuntime> ActivityBroadcaster<R> {
+impl<R: TauriRuntime> AppActivityBroadcaster<R> {
     pub fn new(app_handle: AppHandle<R>) -> Self {
         Self {
             app_handle,
@@ -104,33 +104,38 @@ impl<R: TauriRuntime> ActivityBroadcaster<R> {
         }
     }
 
-    pub fn emit_oneshot(&self, to: ToLocation<'_>) -> Result<()> {
-        self.app_handle.emit(
-            constants::CHANNEL,
-            ActivityEvent::Oneshot {
-                id: self.next_id.fetch_add(1, Ordering::SeqCst),
-                activity_id: to.activity_id(),
-                title: to.title(),
-                detail: to.detail(),
-                location: to.location(),
-            },
-        )?;
-
-        Ok(())
+    pub fn emit_oneshot(&self, to: ToLocation<'_>) -> joinerror::Result<()> {
+        self.app_handle
+            .emit(
+                constants::CHANNEL,
+                ActivityEvent::Oneshot {
+                    id: self.next_id.fetch_add(1, Ordering::SeqCst),
+                    activity_id: to.activity_id(),
+                    title: to.title(),
+                    detail: to.detail(),
+                    location: to.location(),
+                },
+            )
+            .join_err_bare()
     }
 
-    pub fn emit_continual<'a>(&'a self, to: ToLocation<'a>) -> Result<ActivityHandle<'a, R>> {
+    pub fn emit_continual<'a>(
+        &'a self,
+        to: ToLocation<'a>,
+    ) -> joinerror::Result<ActivityHandle<'a, R>> {
         let activity_id = to.activity_id();
-        self.app_handle.emit(
-            constants::CHANNEL,
-            ActivityEvent::Start {
-                id: self.next_id.fetch_add(1, Ordering::SeqCst),
-                activity_id: activity_id,
-                title: to.title(),
-                detail: to.detail(),
-                location: to.location(),
-            },
-        )?;
+        self.app_handle
+            .emit(
+                constants::CHANNEL,
+                ActivityEvent::Start {
+                    id: self.next_id.fetch_add(1, Ordering::SeqCst),
+                    activity_id: activity_id,
+                    title: to.title(),
+                    detail: to.detail(),
+                    location: to.location(),
+                },
+            )
+            .join_err_bare()?;
 
         Ok(ActivityHandle::new(
             activity_id,

@@ -1,11 +1,13 @@
 import { useMemo } from "react";
 
 import { TreeCollectionNode, TreeCollectionRootNode } from "@/components/CollectionTree/types";
+import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 
 import { useStreamedCollectionsWithEntries } from "./useStreamedCollectionsWithEntries";
 
 export interface UseCollectionsTreesProps {
   collectionsTrees: TreeCollectionRootNode[];
+  collectionsTreesSortedByOrder: TreeCollectionRootNode[];
   isLoading: boolean;
 }
 
@@ -121,5 +123,9 @@ export const useCollectionsTrees = (): UseCollectionsTreesProps => {
     });
   }, [validCollections]);
 
-  return { collectionsTrees, isLoading };
+  const collectionsTreesSortedByOrder = useMemo(() => {
+    return sortObjectsByOrder(collectionsTrees);
+  }, [collectionsTrees]);
+
+  return { collectionsTrees, collectionsTreesSortedByOrder, isLoading };
 };

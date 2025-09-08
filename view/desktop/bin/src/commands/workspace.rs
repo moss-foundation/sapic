@@ -16,7 +16,7 @@ pub async fn update_workspace_state<'a, R: tauri::Runtime>(
     input: UpdateStateInput,
     options: Options,
 ) -> TauriResult<()> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
         workspace.update_state(&ctx, input).await
     })
     .await
@@ -30,7 +30,7 @@ pub async fn describe_workspace_state<'a, R: tauri::Runtime>(
     window: Window<R>,
     options: Options,
 ) -> TauriResult<DescribeStateOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
         workspace.describe_state(&ctx).await
     })
     .await
@@ -45,7 +45,7 @@ pub async fn stream_environments<'a, R: tauri::Runtime>(
     channel: TauriChannel<StreamEnvironmentsEvent>,
     options: Options,
 ) -> TauriResult<StreamEnvironmentsOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
         workspace.stream_environments(&ctx, channel).await
     })
     .await
@@ -60,7 +60,7 @@ pub async fn stream_collections<'a, R: tauri::Runtime>(
     channel: TauriChannel<StreamCollectionsEvent>,
     options: Options,
 ) -> TauriResult<StreamCollectionsOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
         workspace.stream_collections(&ctx, channel).await
     })
     .await
@@ -75,7 +75,7 @@ pub async fn describe_collection<'a, R: tauri::Runtime>(
     input: DescribeCollectionInput,
     options: Options,
 ) -> TauriResult<DescribeCollectionOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
         workspace.describe_collection(&ctx, &input).await
     })
     .await
@@ -90,13 +90,19 @@ pub async fn create_collection<'a, R: tauri::Runtime>(
     input: CreateCollectionInput,
     options: Options,
 ) -> TauriResult<CreateCollectionOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
-        workspace.create_collection(&ctx, &input).await
-    })
+    super::with_workspace_timeout(
+        ctx.inner(),
+        app,
+        options,
+        |ctx, app_delegate, workspace| async move {
+            workspace
+                .create_collection(&ctx, &app_delegate, &input)
+                .await
+        },
+    )
     .await
 }
 
-#[allow(dead_code)]
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn import_collection<'a, R: tauri::Runtime>(
@@ -106,8 +112,30 @@ pub async fn import_collection<'a, R: tauri::Runtime>(
     input: ImportCollectionInput,
     options: Options,
 ) -> TauriResult<ImportCollectionOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
-        workspace.import_collection(&ctx, &input).await
+    super::with_workspace_timeout(
+        ctx.inner(),
+        app,
+        options,
+        |ctx, app_delegate, workspace| async move {
+            workspace
+                .import_collection(&ctx, &app_delegate, &input)
+                .await
+        },
+    )
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn export_collection<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: Window<R>,
+    input: ExportCollectionInput,
+    options: Options,
+) -> TauriResult<ExportCollectionOutput> {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
+        workspace.export_collection(&ctx, &input).await
     })
     .await
 }
@@ -121,7 +149,7 @@ pub async fn delete_collection<'a, R: tauri::Runtime>(
     input: DeleteCollectionInput,
     options: Options,
 ) -> TauriResult<DeleteCollectionOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
         workspace.delete_collection(&ctx, &input).await
     })
     .await
@@ -136,8 +164,38 @@ pub async fn update_collection<'a, R: tauri::Runtime>(
     input: UpdateCollectionInput,
     options: Options,
 ) -> TauriResult<UpdateCollectionOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
         workspace.update_collection(&ctx, input).await
+    })
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(app), fields(window = window.label()))]
+pub async fn archive_collection<'a, R: tauri::Runtime>(
+    ctx: State<'_, moss_applib::context::AsyncContext>,
+    app: App<'a, R>,
+    window: Window<R>,
+    input: ArchiveCollectionInput,
+    options: Options,
+) -> TauriResult<ArchiveCollectionOutput> {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
+        workspace.archive_collection(&ctx, input).await
+    })
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(app), fields(window = window.label()))]
+pub async fn unarchive_collection<'a, R: tauri::Runtime>(
+    ctx: State<'_, moss_applib::context::AsyncContext>,
+    app: App<'a, R>,
+    window: Window<R>,
+    input: UnarchiveCollectionInput,
+    options: Options,
+) -> TauriResult<UnarchiveCollectionOutput> {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
+        workspace.unarchive_collection(&ctx, input).await
     })
     .await
 }
@@ -151,7 +209,7 @@ pub async fn batch_update_collection<'a, R: tauri::Runtime>(
     input: BatchUpdateCollectionInput,
     options: Options,
 ) -> TauriResult<BatchUpdateCollectionOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
         workspace.batch_update_collection(&ctx, input).await
     })
     .await
@@ -166,7 +224,7 @@ pub async fn activate_environment<'a, R: tauri::Runtime>(
     input: ActivateEnvironmentInput,
     options: Options,
 ) -> TauriResult<ActivateEnvironmentOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
         workspace.activate_environment(&ctx, input).await
     })
     .await
@@ -181,7 +239,7 @@ pub async fn create_environment<'a, R: tauri::Runtime>(
     input: CreateEnvironmentInput,
     options: Options,
 ) -> TauriResult<CreateEnvironmentOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
         workspace.create_environment(&ctx, input).await
     })
     .await
@@ -196,7 +254,7 @@ pub async fn update_environment<'a, R: tauri::Runtime>(
     input: UpdateEnvironmentInput,
     options: Options,
 ) -> TauriResult<UpdateEnvironmentOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
         workspace.update_environment(&ctx, input).await
     })
     .await
@@ -211,7 +269,7 @@ pub async fn delete_environment<'a, R: tauri::Runtime>(
     input: DeleteEnvironmentInput,
     options: Options,
 ) -> TauriResult<DeleteEnvironmentOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
         workspace.delete_environment(&ctx, input).await
     })
     .await
@@ -226,7 +284,7 @@ pub async fn update_environment_group<'a, R: tauri::Runtime>(
     input: UpdateEnvironmentGroupInput,
     options: Options,
 ) -> TauriResult<()> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
         workspace.update_environment_group(&ctx, input).await
     })
     .await
@@ -241,7 +299,7 @@ pub async fn batch_update_environment_group<'a, R: tauri::Runtime>(
     input: BatchUpdateEnvironmentGroupInput,
     options: Options,
 ) -> TauriResult<()> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, workspace| async move {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
         workspace.batch_update_environment_group(&ctx, input).await
     })
     .await

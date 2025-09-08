@@ -1,20 +1,28 @@
 import { createContext } from "react";
 
-import { CollectionTreeContextProps } from "./types";
+import { WorkspaceMode } from "@repo/moss-workspace";
+
+import { BaseTreeContextProps } from "../../lib/ui/Tree/types";
+
+export interface CollectionTreeContextProps extends BaseTreeContextProps {
+  iconPath?: string;
+  allFoldersAreExpanded: boolean;
+  allFoldersAreCollapsed: boolean;
+  searchInput: string;
+  displayMode: WorkspaceMode;
+}
 
 export const CollectionTreeContext = createContext<CollectionTreeContextProps>({
   id: "",
   name: "",
-  repository: undefined,
-  order: undefined,
+  order: 0,
   iconPath: undefined,
-  expanded: false,
   treePaddingLeft: 0,
   treePaddingRight: 0,
   nodeOffset: 0,
   allFoldersAreExpanded: false,
   allFoldersAreCollapsed: true,
-  searchInput: undefined,
+  searchInput: "",
   displayMode: "REQUEST_FIRST",
-  showNodeOrders: false,
+  showOrders: false,
 });

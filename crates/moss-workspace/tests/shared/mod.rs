@@ -1,25 +1,24 @@
 #![cfg(feature = "integration-tests")]
 
 use image::{ImageBuffer, Rgb};
-use moss_activity_broadcaster::ActivityBroadcaster;
+use moss_app_delegate::AppDelegate;
 use moss_applib::{
-    context::{AsyncContext, MutableContext},
+    AppRuntime,
+    context::{AnyContext, AsyncContext, MutableContext},
     mock::MockAppRuntime,
 };
 use moss_fs::RealFileSystem;
-use moss_git_hosting_provider::{
-    common::ssh_auth_agent::SSHAuthAgentImpl,
-    envvar_keys::{GITLAB_CLIENT_ID, GITLAB_CLIENT_SECRET},
-    github::{auth::GitHubAuthAgent, client::GitHubClient},
-    gitlab::{auth::GitLabAuthAgent, client::GitLabClient},
-};
-use moss_keyring::KeyringClientImpl;
+use moss_git_hosting_provider::{github::RealGitHubApiClient, gitlab::RealGitLabApiClient};
+use moss_keyring::test::MockKeyringClient;
 use moss_testutils::random_name::random_workspace_name;
+use moss_user::{Account, AccountSession, models::primitives::AccountId, profile::ActiveProfile};
 use moss_workspace::{
     Workspace,
     builder::{CreateWorkspaceParams, WorkspaceBuilder},
     models::{
-        primitives::{EditorGridOrientation, PanelRenderer},
+        events::StreamCollectionsEvent,
+        operations::StreamCollectionsOutput,
+        primitives::{CollectionId, EditorGridOrientation, PanelRenderer},
         types::{
             EditorGridLeafData, EditorGridNode, EditorGridState, EditorPanelState,
             EditorPartStateInfo,
@@ -27,25 +26,49 @@ use moss_workspace::{
     },
 };
 use rand::Rng;
+use reqwest::ClientBuilder as HttpClientBuilder;
 use std::{
     collections::HashMap,
     fs,
     future::Future,
     path::{Path, PathBuf},
     pin::Pin,
-    sync::Arc,
+    sync::{Arc, Mutex},
     time::Duration,
+};
+use tauri::{
+    Manager,
+    ipc::{Channel, InvokeResponseBody},
 };
 
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
 
-pub async fn setup_test_workspace() -> (AsyncContext, Workspace<MockAppRuntime>, CleanupFn) {
+pub async fn setup_test_workspace() -> (
+    AsyncContext,
+    AppDelegate<MockAppRuntime>,
+    Workspace<MockAppRuntime>,
+    CleanupFn,
+) {
     dotenv::dotenv().ok();
     let fs = Arc::new(RealFileSystem::new());
     let mock_app = tauri::test::mock_app();
-    let app_handle = mock_app.handle().clone();
+    let tao_app_handle = mock_app.handle().clone();
+    {
+        let http_client = HttpClientBuilder::new()
+            .user_agent("SAPIC/1.0")
+            .build()
+            .expect("failed to build http client");
 
-    let ctx = MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
+        let github_client = RealGitHubApiClient::new(http_client.clone());
+        let gitlab_client = RealGitLabApiClient::new(http_client.clone());
+
+        tao_app_handle.manage(http_client);
+        tao_app_handle.manage(github_client);
+        tao_app_handle.manage(gitlab_client);
+    }
+    let app_delegate = AppDelegate::new(tao_app_handle.clone());
+
+    let mut ctx = MutableContext::background_with_timeout(Duration::from_secs(30));
 
     let abs_path: Arc<Path> = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
@@ -55,58 +78,46 @@ pub async fn setup_test_workspace() -> (AsyncContext, Workspace<MockAppRuntime>,
         .into();
     fs::create_dir_all(&abs_path).unwrap();
 
-    let broadcaster = ActivityBroadcaster::new(app_handle.clone());
+    let keyring = Arc::new(MockKeyringClient::new());
 
-    let keyring_client = Arc::new(KeyringClientImpl::new());
-    let reqwest_client = reqwest::ClientBuilder::new()
-        .user_agent("SAPIC")
-        .build()
-        .expect("failed to build reqwest client");
+    let active_profile = {
+        let account_id = AccountId::new();
+        ctx.with_value("account_id", account_id.clone());
+        let account_session = AccountSession::github(
+            account_id.clone(),
+            "github.com".to_string(),
+            // secrets,
+            keyring.clone(),
+            None,
+        )
+        .await
+        .unwrap();
+        let profiles = HashMap::from([(
+            account_id.clone(),
+            Account::new(
+                account_id,
+                random_workspace_name(),
+                "github.com".to_string(),
+                account_session,
+            ),
+        )]);
 
-    let sync_http_client = oauth2::ureq::builder().redirects(0).build();
-
-    let github_client = {
-        let github_auth_agent = Arc::new(GitHubAuthAgent::new(
-            sync_http_client.clone(),
-            keyring_client.clone(),
-            dotenv::var(GITLAB_CLIENT_ID).unwrap_or_default(),
-            dotenv::var(GITLAB_CLIENT_SECRET).unwrap_or_default(),
-        ));
-        Arc::new(GitHubClient::new(
-            reqwest_client.clone(),
-            github_auth_agent,
-            None as Option<SSHAuthAgentImpl>,
-        ))
-    };
-    let gitlab_client = {
-        let gitlab_auth_agent = Arc::new(GitLabAuthAgent::new(
-            sync_http_client.clone(),
-            keyring_client.clone(),
-            dotenv::var(GITLAB_CLIENT_ID).unwrap_or_default(),
-            dotenv::var(GITLAB_CLIENT_SECRET).unwrap_or_default(),
-        ));
-        Arc::new(GitLabClient::new(
-            reqwest_client.clone(),
-            gitlab_auth_agent,
-            None as Option<SSHAuthAgentImpl>,
-        ))
+        ActiveProfile::new(profiles)
     };
 
-    let workspace: Workspace<MockAppRuntime> = WorkspaceBuilder::<MockAppRuntime>::new(
-        fs.clone(),
-        github_client,
-        gitlab_client,
-        broadcaster,
-    )
-    .create(
-        &ctx,
-        CreateWorkspaceParams {
-            name: random_workspace_name(),
-            abs_path: abs_path.clone(),
-        },
-    )
-    .await
-    .unwrap();
+    let ctx = ctx.freeze();
+    let workspace: Workspace<MockAppRuntime> =
+        WorkspaceBuilder::new(fs.clone(), active_profile.into())
+            .create(
+                &ctx,
+                &app_delegate,
+                CreateWorkspaceParams {
+                    name: random_workspace_name(),
+                    abs_path: abs_path.clone(),
+                },
+            )
+            .await
+            .unwrap();
 
     let cleanup_fn = Box::new({
         let abs_path_clone = abs_path.clone();
@@ -119,7 +130,7 @@ pub async fn setup_test_workspace() -> (AsyncContext, Workspace<MockAppRuntime>,
         }
     });
 
-    (ctx, workspace, cleanup_fn)
+    (ctx, app_delegate, workspace, cleanup_fn)
 }
 
 pub fn _create_simple_editor_state() -> EditorPartStateInfo {
@@ -200,4 +211,39 @@ pub fn generate_random_icon(output_path: &Path) {
     }
 
     img.save(output_path).unwrap();
+}
+
+#[allow(unused)]
+pub async fn test_stream_collections<R: AppRuntime>(
+    ctx: &R::AsyncContext,
+    workspace: &Workspace<R>,
+) -> (
+    HashMap<CollectionId, StreamCollectionsEvent>,
+    StreamCollectionsOutput,
+) {
+    let received_events = Arc::new(Mutex::new(Vec::new()));
+    let received_events_clone = received_events.clone();
+
+    let channel = Channel::new(move |body: InvokeResponseBody| {
+        if let InvokeResponseBody::Json(json_str) = body {
+            if let Ok(event) = serde_json::from_str::<StreamCollectionsEvent>(&json_str) {
+                received_events_clone.lock().unwrap().push(event);
+            }
+        }
+        Ok(())
+    });
+
+    let output = workspace
+        .stream_collections(ctx, channel.clone())
+        .await
+        .unwrap();
+    (
+        received_events
+            .lock()
+            .unwrap()
+            .iter()
+            .map(|event| (event.id.clone(), event.clone()))
+            .collect(),
+        output,
+    )
 }

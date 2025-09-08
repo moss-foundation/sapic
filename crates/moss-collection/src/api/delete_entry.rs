@@ -13,7 +13,7 @@ impl<R: AppRuntime> Collection<R> {
         input: DeleteEntryInput,
     ) -> joinerror::Result<DeleteEntryOutput> {
         input.validate().join_err_bare()?;
-        self.worktree.remove_entry(ctx, &input.id).await?;
+        self.worktree().await.remove_entry(ctx, &input.id).await?;
 
         Ok(DeleteEntryOutput { id: input.id })
     }

@@ -2,6 +2,7 @@ pub mod add_account;
 pub mod batch_delete_log;
 pub mod cancel_request;
 pub mod close_workspace;
+pub mod create_profile;
 pub mod create_workspace;
 pub mod delete_workspace;
 pub mod describe_app_state;

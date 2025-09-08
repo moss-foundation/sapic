@@ -15,12 +15,13 @@ use tauri::ipc::Channel;
 
 #[tokio::test]
 async fn create_collection_success() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let create_collection_output = workspace
         .create_collection(
             &ctx,
+            &app_delegate,
             &CreateCollectionInput {
                 inner: CreateCollectionParams {
                     name: collection_name.clone(),
@@ -70,12 +71,13 @@ async fn create_collection_success() {
 
 #[tokio::test]
 async fn create_collection_empty_name() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = "".to_string();
     let create_collection_result = workspace
         .create_collection(
             &ctx,
+            &app_delegate,
             &CreateCollectionInput {
                 inner: CreateCollectionParams {
                     name: collection_name.clone(),
@@ -95,7 +97,7 @@ async fn create_collection_empty_name() {
 
 #[tokio::test]
 async fn create_collection_special_chars() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name_list = FILENAME_SPECIAL_CHARS
         .into_iter()
@@ -106,6 +108,7 @@ async fn create_collection_special_chars() {
         let create_collection_result = workspace
             .create_collection(
                 &ctx,
+                &app_delegate,
                 &CreateCollectionInput {
                     inner: CreateCollectionParams {
                         name: collection_name.clone(),
@@ -157,12 +160,13 @@ async fn create_collection_special_chars() {
 
 #[tokio::test]
 async fn create_collection_with_order() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let create_collection_result = workspace
         .create_collection(
             &ctx,
+            &app_delegate,
             &CreateCollectionInput {
                 inner: CreateCollectionParams {
                     name: collection_name.clone(),
@@ -212,7 +216,7 @@ async fn create_collection_with_order() {
 
 #[tokio::test]
 async fn create_collection_with_icon() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let input_icon_path = workspace.abs_path().join("test_icon.png");
@@ -221,6 +225,7 @@ async fn create_collection_with_icon() {
     let create_collection_result = workspace
         .create_collection(
             &ctx,
+            &app_delegate,
             &CreateCollectionInput {
                 inner: CreateCollectionParams {
                     name: collection_name.clone(),
@@ -275,13 +280,14 @@ async fn create_collection_with_icon() {
 
 #[tokio::test]
 async fn create_multiple_collections_expanded_items() {
-    let (ctx, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     // Create first collection
     let collection_name1 = random_collection_name();
     let create_result1 = workspace
         .create_collection(
             &ctx,
+            &app_delegate,
             &CreateCollectionInput {
                 inner: CreateCollectionParams {
                     name: collection_name1.clone(),
@@ -300,6 +306,7 @@ async fn create_multiple_collections_expanded_items() {
     let create_result2 = workspace
         .create_collection(
             &ctx,
+            &app_delegate,
             &CreateCollectionInput {
                 inner: CreateCollectionParams {
                     name: collection_name2.clone(),

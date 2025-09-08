@@ -8,16 +8,33 @@ mod window;
 #[macro_use]
 extern crate tracing;
 
-use moss_app::{AppBuilder, builder::BuildAppParams};
+use moss_app::{AppBuilder as TauriAppBuilder, builder::BuildAppParams};
+use moss_app_delegate::AppDelegate;
 use moss_applib::{
     TauriAppRuntime,
     context::{AnyAsyncContext, AnyContext, MutableContext},
 };
 use moss_fs::RealFileSystem;
+use moss_git_hosting_provider::{
+    github::{
+        RealGitHubApiClient, RealGitHubAuthAdapter, auth::GitHubAuthAdapter,
+        client::GitHubApiClient,
+    },
+    gitlab::{
+        RealGitLabApiClient, RealGitLabAuthAdapter, auth::GitLabAuthAdapter,
+        client::GitLabApiClient,
+    },
+};
+use moss_keyring::KeyringClientImpl;
+use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
+use reqwest::ClientBuilder as HttpClientBuilder;
 use std::{path::PathBuf, sync::Arc, time::Duration};
 #[cfg(not(debug_assertions))]
 use tauri::path::BaseDirectory;
-use tauri::{AppHandle, Manager, RunEvent, Runtime as TauriRuntime, WebviewWindow, WindowEvent};
+use tauri::{
+    AppHandle as TauriAppHandle, Manager, RunEvent, Runtime as TauriRuntime, WebviewWindow,
+    WindowEvent,
+};
 use tauri_plugin_os;
 use window::{CreateWindowInput, create_window};
 
@@ -44,7 +61,17 @@ pub async fn run<R: TauriRuntime>() {
                 let ctx = MutableContext::background().freeze();
 
                 let fs = Arc::new(RealFileSystem::new());
-                let app_handle = tao.app_handle();
+                let keyring = Arc::new(KeyringClientImpl::new());
+                let http_client = HttpClientBuilder::new()
+                    .user_agent("SAPIC/1.0")
+                    .build()
+                    .expect("failed to build http client");
+                let auth_api_client = Arc::new(AccountAuthGatewayApiClient::new(
+                    http_client.clone(),
+                    dotenv::var("ACCOUNT_AUTH_BASE_URL").expect("ACCOUNT_AUTH_BASE_URL is not set"),
+                ));
+
+                let tao_app_handle = tao.app_handle();
 
                 #[cfg(debug_assertions)]
                 let (app_dir, themes_dir, locales_dir, logs_dir) = {
@@ -82,35 +109,76 @@ pub async fn run<R: TauriRuntime>() {
                     )
                 };
 
+                // Registration of global resources that will be accessible
+                // throughout the entire application via the `global` method
+                // of the app's internal handler.
+
+                {
+                    let delegate = AppDelegate::<TauriAppRuntime<R>>::new(tao_app_handle.clone());
+
+                    <dyn GitHubApiClient<TauriAppRuntime<R>>>::set_global(
+                        &delegate,
+                        Arc::new(RealGitHubApiClient::new(http_client.clone())),
+                    );
+                    <dyn GitHubAuthAdapter<TauriAppRuntime<R>>>::set_global(
+                        &delegate,
+                        Arc::new(RealGitHubAuthAdapter::<TauriAppRuntime<R>>::new(
+                            auth_api_client.clone(),
+                            auth_api_client.base_url(),
+                            8080,
+                        )),
+                    );
+
+                    <dyn GitLabApiClient<TauriAppRuntime<R>>>::set_global(
+                        &delegate,
+                        Arc::new(RealGitLabApiClient::new(http_client.clone())),
+                    );
+                    <dyn GitLabAuthAdapter<TauriAppRuntime<R>>>::set_global(
+                        &delegate,
+                        Arc::new(RealGitLabAuthAdapter::<TauriAppRuntime<R>>::new(
+                            auth_api_client.clone(),
+                            auth_api_client.base_url(),
+                            8081,
+                        )),
+                    );
+
+                    tao_app_handle.manage(delegate);
+                }
+
                 let ctx_clone = ctx.clone();
                 let (app, session_id) = {
                     let app_init_ctx =
                         MutableContext::new_with_timeout(ctx_clone, Duration::from_secs(30))
                             .freeze();
 
-                    let app = AppBuilder::<TauriAppRuntime<R>>::new(app_handle.clone(), fs)
-                        .build(
-                            &app_init_ctx,
-                            BuildAppParams {
-                                app_dir,
-                                themes_dir,
-                                locales_dir,
-                                logs_dir,
-                            },
-                        )
-                        .await;
+                    let app = TauriAppBuilder::<TauriAppRuntime<R>>::new(
+                        tao_app_handle.clone(),
+                        fs,
+                        keyring,
+                        auth_api_client,
+                    )
+                    .build(
+                        &app_init_ctx,
+                        BuildAppParams {
+                            app_dir,
+                            themes_dir,
+                            locales_dir,
+                            logs_dir,
+                        },
+                    )
+                    .await;
                     let session_id = app.session_id().clone();
 
                     (app, session_id)
                 };
 
-                app_handle.manage({
+                tao_app_handle.manage({
                     let mut ctx = ctx.unfreeze().expect("Failed to unfreeze the root context");
                     ctx.with_value("session_id", session_id.to_string()); // TODO: Use a proper type
 
                     ctx.freeze()
                 });
-                app_handle.manage(app);
+                tao_app_handle.manage(Arc::new(app));
 
                 Ok(())
             })
@@ -134,6 +202,7 @@ pub async fn run<R: TauriRuntime>() {
             commands::delete_workspace,
             commands::close_workspace,
             commands::cancel_request,
+            commands::create_profile,
             commands::add_account,
             //
             // Workspace
@@ -145,8 +214,11 @@ pub async fn run<R: TauriRuntime>() {
             commands::describe_collection,
             commands::create_collection,
             commands::import_collection,
+            commands::export_collection,
             commands::delete_collection,
             commands::update_collection,
+            commands::archive_collection,
+            commands::unarchive_collection,
             commands::batch_update_collection,
             commands::activate_environment,
             commands::create_environment,
@@ -197,9 +269,10 @@ pub async fn run<R: TauriRuntime>() {
         });
 }
 
-fn create_main_window<R: TauriRuntime>(app_handle: &AppHandle<R>, url: &str) -> WebviewWindow<R> {
-    // TODO: Use ConfigurationService
-
+fn create_main_window<R: TauriRuntime>(
+    app_handle: &TauriAppHandle<R>,
+    url: &str,
+) -> WebviewWindow<R> {
     let window_inner_height = DEFAULT_WINDOW_HEIGHT;
     let window_inner_width = DEFAULT_WINDOW_WIDTH;
 

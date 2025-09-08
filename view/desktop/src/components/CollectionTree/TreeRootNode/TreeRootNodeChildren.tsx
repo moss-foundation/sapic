@@ -1,14 +1,13 @@
 import { useContext } from "react";
 
-import { cn } from "@/utils";
+import { Tree } from "@/lib/ui/Tree";
+import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 
 import { EntryIcon } from "../../EntryIcon";
 import { CollectionTreeContext } from "../CollectionTreeContext";
-import { DirDepthIndicator } from "../DirDepthIndicator";
-import { NodeAddForm } from "../NodeAddForm";
 import TreeNode from "../TreeNode/TreeNode";
 import { TreeCollectionRootNode } from "../types";
-import { getChildrenNames, sortByOrder } from "../utils";
+import { getChildrenNames } from "../utils";
 
 interface TreeRootNodeChildrenProps {
   node: TreeCollectionRootNode;
@@ -29,16 +28,14 @@ export const TreeRootNodeChildren = ({
 
   const nodesToRender =
     displayMode === "REQUEST_FIRST"
-      ? sortByOrder(node.requests.childNodes)
-      : sortByOrder([node.endpoints, node.schemas, node.components, node.requests]);
+      ? sortObjectsByOrder(node.requests.childNodes)
+      : sortObjectsByOrder([node.endpoints, node.schemas, node.components, node.requests]);
 
   const shouldRenderAddRootForm = displayMode === "REQUEST_FIRST" && (isAddingRootFileNode || isAddingRootFolderNode);
   const restrictedNames = getChildrenNames(node.requests);
 
   return (
-    <ul className={cn("relative w-full")}>
-      {node.expanded && <DirDepthIndicator depth={0} />}
-
+    <Tree.RootNodeChildren>
       {nodesToRender.map((childNode, index) => {
         return (
           <TreeNode
@@ -70,13 +67,13 @@ export const TreeRootNodeChildren = ({
             }}
             className="opacity-0"
           />
-          <NodeAddForm
+          <Tree.NodeAddForm
             onSubmit={handleAddFormRootSubmit}
             onCancel={handleAddFormRootCancel}
             restrictedNames={restrictedNames}
           />
         </div>
       )}
-    </ul>
+    </Tree.RootNodeChildren>
   );
 };

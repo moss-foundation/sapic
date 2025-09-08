@@ -1,22 +1,25 @@
 use derive_more::{Deref, DerefMut};
 use futures::Stream;
 use joinerror::{Error, OptionExt, ResultExt};
-use moss_activity_broadcaster::{ActivityBroadcaster, ToLocation};
+use moss_app_delegate::{AppDelegate, broadcast::ToLocation};
 use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_collection::{
     Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
     builder::{
-        CollectionCloneGitParams, CollectionCloneParams, CollectionCreateGitParams,
-        CollectionCreateParams, CollectionLoadParams,
+        CollectionCloneParams, CollectionCreateGitParams, CollectionCreateParams,
+        CollectionImportParams, CollectionLoadParams,
     },
-    collection::VcsSummary,
+    git::GitClient,
+    vcs::VcsSummary,
 };
 use moss_common::continue_if_err;
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
+use moss_git::url::GitUrl;
 use moss_git_hosting_provider::{
-    github::client::GitHubClient, gitlab::client::GitLabClient, models::primitives::GitProviderType,
+    GitProviderKind, github::client::GitHubApiClient, gitlab::client::GitLabApiClient,
 };
 use moss_logging::session;
+use moss_user::{account::Account, models::primitives::AccountId, profile::ActiveProfile};
 use rustc_hash::FxHashMap;
 use std::{
     collections::{HashMap, HashSet},
@@ -31,23 +34,27 @@ use crate::{
     dirs,
     models::{
         primitives::CollectionId,
-        types::{CreateCollectionGitParams, CreateCollectionParams, UpdateCollectionParams},
+        types::{
+            CreateCollectionGitParams, CreateCollectionParams, ExportCollectionParams,
+            UpdateCollectionParams,
+        },
     },
     services::storage_service::StorageService,
     storage::segments::SEGKEY_COLLECTION,
 };
 
 pub(crate) struct CollectionItemCloneParams {
-    pub _name: String,
     pub order: isize,
-    pub _icon_path: Option<PathBuf>,
-    pub git_params: CollectionItemGitCloneParams,
+    pub account_id: AccountId,
+    pub repository: String,
+    pub git_provider_type: GitProviderKind,
+    pub branch: Option<String>,
 }
 
-pub(crate) struct CollectionItemGitCloneParams {
-    pub repository: String,
-    pub git_provider_type: GitProviderType,
-    pub branch: Option<String>,
+pub(crate) struct CollectionItemImportParams {
+    pub name: String,
+    pub order: isize,
+    pub archive_path: PathBuf,
 }
 
 #[derive(Deref, DerefMut)]
@@ -72,6 +79,7 @@ pub(crate) struct CollectionItemDescription {
     pub icon_path: Option<PathBuf>,
     pub abs_path: Arc<Path>,
     pub external_path: Option<PathBuf>,
+    pub archived: bool,
 }
 
 #[derive(Default)]
@@ -85,10 +93,6 @@ pub struct CollectionService<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     storage: Arc<StorageService<R>>,
     state: Arc<RwLock<ServiceState<R>>>,
-    github_client: Arc<GitHubClient>,
-    gitlab_client: Arc<GitLabClient>,
-    #[allow(dead_code)]
-    broadcaster: ActivityBroadcaster<R::EventLoop>,
     on_did_delete_collection_emitter: EventEmitter<OnDidDeleteCollection>,
     on_did_add_collection_emitter: EventEmitter<OnDidAddCollection>,
 }
@@ -96,13 +100,12 @@ pub struct CollectionService<R: AppRuntime> {
 impl<R: AppRuntime> CollectionService<R> {
     pub(crate) async fn new(
         ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
         abs_path: &Path,
         fs: Arc<dyn FileSystem>,
         storage: Arc<StorageService<R>>,
-        github_client: Arc<GitHubClient>,
-        gitlab_client: Arc<GitLabClient>,
         environment_sources: &mut FxHashMap<Arc<String>, PathBuf>,
-        broadcaster: ActivityBroadcaster<R::EventLoop>,
+        active_profile: &Arc<ActiveProfile<R>>,
         on_collection_did_delete_emitter: EventEmitter<OnDidDeleteCollection>,
         on_collection_did_add_emitter: EventEmitter<OnDidAddCollection>,
     ) -> joinerror::Result<Self> {
@@ -113,16 +116,12 @@ impl<R: AppRuntime> CollectionService<R> {
             HashSet::new()
         };
 
-        let collections = restore_collections(
-            ctx,
-            &abs_path,
-            &fs,
-            &storage,
-            broadcaster.clone(),
-            github_client.clone(),
-            gitlab_client.clone(),
-        )
-        .await?;
+        let collections =
+            restore_collections(ctx, app_delegate, &abs_path, &fs, &storage, active_profile)
+                .await
+                .join_err_with::<()>(|| {
+                    format!("failed to restore collections, {}", abs_path.display())
+                })?;
 
         for (id, collection) in collections.iter() {
             environment_sources.insert(id.clone().inner(), collection.environments_path());
@@ -136,9 +135,6 @@ impl<R: AppRuntime> CollectionService<R> {
                 collections,
                 expanded_items,
             })),
-            github_client,
-            gitlab_client,
-            broadcaster,
             on_did_delete_collection_emitter: on_collection_did_delete_emitter,
             on_did_add_collection_emitter: on_collection_did_add_emitter,
         })
@@ -155,13 +151,15 @@ impl<R: AppRuntime> CollectionService<R> {
     pub(crate) async fn create_collection(
         &self,
         ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
         id: &CollectionId,
+        account: Option<Account<R>>,
         params: &CreateCollectionParams,
     ) -> joinerror::Result<CollectionItemDescription> {
         let id_str = id.to_string();
         let abs_path: Arc<Path> = self.abs_path.join(id_str).into();
         if abs_path.exists() {
-            return Err(joinerror::Error::new::<()>(format!(
+            return Err(Error::new::<()>(format!(
                 "collection directory `{}` already exists",
                 abs_path.display()
             )));
@@ -178,38 +176,36 @@ impl<R: AppRuntime> CollectionService<R> {
             None => None,
             Some(CreateCollectionGitParams::GitHub(git_params)) => {
                 Some(CollectionCreateGitParams {
-                    git_provider_type: GitProviderType::GitHub,
-                    repository: git_params.repository.clone(),
+                    git_provider_type: GitProviderKind::GitHub,
+                    repository: GitUrl::parse(&git_params.repository)?,
                     branch: git_params.branch.clone(),
                 })
             }
             Some(CreateCollectionGitParams::GitLab(git_params)) => {
                 Some(CollectionCreateGitParams {
-                    git_provider_type: GitProviderType::GitLab,
-                    repository: git_params.repository.clone(),
+                    git_provider_type: GitProviderKind::GitLab,
+                    repository: GitUrl::parse(&git_params.repository)?,
                     branch: git_params.branch.clone(),
                 })
             }
         };
 
-        let collection_result = CollectionBuilder::<R>::new(
-            self.fs.clone(),
-            self.broadcaster.clone(),
-            self.github_client.clone(),
-            self.gitlab_client.clone(),
-        )
-        .create(
-            ctx,
-            CollectionCreateParams {
-                name: Some(params.name.to_owned()),
-                internal_abs_path: abs_path.clone().into(),
-                external_abs_path: params.external_path.as_deref().map(|p| p.to_owned().into()),
-                git_params,
-                icon_path: params.icon_path.to_owned(),
-            },
-        )
-        .await
-        .join_err::<()>("failed to build collection");
+        let abs_path: Arc<Path> = abs_path.clone().into();
+        let builder = CollectionBuilder::new(self.fs.clone()).await?;
+
+        let collection_result = builder
+            .create(
+                ctx,
+                CollectionCreateParams {
+                    name: Some(params.name.to_owned()),
+                    internal_abs_path: abs_path.clone(),
+                    external_abs_path: params.external_path.as_deref().map(|p| p.to_owned().into()),
+                    git_params: git_params.clone(),
+                    icon_path: params.icon_path.to_owned(),
+                },
+            )
+            .await
+            .join_err::<()>("failed to build collection");
 
         // TODO: Use atomic-fs to rollback changes
         // Remove collection folder if collection fails to be created
@@ -234,14 +230,24 @@ impl<R: AppRuntime> CollectionService<R> {
             }
         };
 
+        if let (Some(git_params), Some(account)) = (git_params, account) {
+            let client = match git_params.git_provider_type {
+                GitProviderKind::GitHub => GitClient::GitHub {
+                    account: account,
+                    api: <dyn GitHubApiClient<R>>::global(app_delegate),
+                },
+                GitProviderKind::GitLab => GitClient::GitLab {
+                    account: account,
+                    api: <dyn GitLabApiClient<R>>::global(app_delegate),
+                },
+            };
+
+            collection
+                .init_vcs(ctx, client, git_params.repository, git_params.branch)
+                .await?;
+        }
+
         let icon_path = collection.icon_path();
-
-        // let on_did_change = collection.on_did_change().subscribe(|_event| async move {
-
-        //     // TODO: Save in the database whether the collection was collapsed/expanded
-        // });
-        // ctx.subscribe(Subscribe::OnCollectionDidChange(id, on_did_change))
-        //     .await;
 
         {
             let mut state_lock = self.state.write().await;
@@ -292,6 +298,7 @@ impl<R: AppRuntime> CollectionService<R> {
             icon_path,
             abs_path: abs_path.into(),
             external_path: params.external_path.clone(),
+            archived: false,
         })
     }
 
@@ -301,13 +308,15 @@ impl<R: AppRuntime> CollectionService<R> {
     pub(crate) async fn clone_collection(
         &self,
         ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
         id: &CollectionId,
+        account: Account<R>,
         params: CollectionItemCloneParams,
     ) -> joinerror::Result<CollectionItemDescription> {
         let id_str = id.to_string();
         let abs_path: Arc<Path> = self.abs_path.join(id_str).into();
         if abs_path.exists() {
-            return Err(joinerror::Error::new::<()>(format!(
+            return Err(Error::new::<()>(format!(
                 "collection directory `{}` already exists",
                 abs_path.display()
             )));
@@ -320,26 +329,32 @@ impl<R: AppRuntime> CollectionService<R> {
                 format!("failed to create directory `{}`", abs_path.display())
             })?;
 
-        let git_params = &params.git_params;
-        let collection_result = CollectionBuilder::new(
-            self.fs.clone(),
-            self.broadcaster.clone(),
-            self.github_client.clone(),
-            self.gitlab_client.clone(),
-        )
-        .clone(
-            ctx,
-            CollectionCloneParams {
-                internal_abs_path: abs_path.clone(),
-                git_params: CollectionCloneGitParams {
-                    git_provider_type: git_params.git_provider_type.clone(),
-                    repository: git_params.repository.clone(),
-                    branch: git_params.branch.clone(),
-                },
+        let builder = CollectionBuilder::new(self.fs.clone()).await?;
+
+        let git_client = match params.git_provider_type {
+            GitProviderKind::GitHub => GitClient::GitHub {
+                account: account,
+                api: <dyn GitHubApiClient<R>>::global(app_delegate),
             },
-        )
-        .await
-        .join_err::<()>("failed to clone collection");
+            GitProviderKind::GitLab => GitClient::GitLab {
+                account: account,
+                api: <dyn GitLabApiClient<R>>::global(app_delegate),
+            },
+        };
+        let collection_result = builder
+            .clone(
+                ctx,
+                git_client,
+                CollectionCloneParams {
+                    internal_abs_path: abs_path.clone(),
+                    account_id: params.account_id,
+                    git_provider_type: params.git_provider_type.clone(),
+                    repository: GitUrl::parse(&params.repository)?,
+                    branch: params.branch.clone(),
+                },
+            )
+            .await
+            .join_err::<()>("failed to clone collection");
 
         // TODO: Use atomic-fs to rollback changes
         // Remove collection folder if collection fails to be cloned
@@ -365,36 +380,42 @@ impl<R: AppRuntime> CollectionService<R> {
         };
 
         let desc = collection.details().await?;
+        let vcs = collection
+            .vcs()
+            .unwrap() // SAFETY: Collection is built from the clone operation, so it must have a VCS
+            .summary(ctx)
+            .await?;
 
         // FIXME: Should we allow user to set local icon when cloning a collection?
         let icon_path = collection.icon_path();
 
-        let mut state_lock = self.state.write().await;
-        state_lock.expanded_items.insert(id.clone());
-        state_lock.collections.insert(
-            id.clone(),
-            CollectionItem {
-                id: id.clone(),
-                order: Some(params.order),
-                handle: Arc::new(collection),
-            },
-        );
+        {
+            let mut state_lock = self.state.write().await;
+            state_lock.expanded_items.insert(id.clone());
+            state_lock.collections.insert(
+                id.clone(),
+                CollectionItem {
+                    id: id.clone(),
+                    order: Some(params.order),
+                    handle: Arc::new(collection),
+                },
+            );
+            // TODO: Make database errors not fail the operation
+            let mut txn = self
+                .storage
+                .begin_write(ctx)
+                .await
+                .join_err::<()>("failed to start transaction")?;
 
-        // TODO: Make database errors not fail the operation
-        let mut txn = self
-            .storage
-            .begin_write(ctx)
-            .await
-            .join_err::<()>("failed to start transaction")?;
+            self.storage
+                .put_item_order_txn(ctx, &mut txn, &id, params.order)
+                .await?;
+            self.storage
+                .put_expanded_items_txn(ctx, &mut txn, &state_lock.expanded_items)
+                .await?;
 
-        self.storage
-            .put_item_order_txn(ctx, &mut txn, &id, params.order)
-            .await?;
-        self.storage
-            .put_expanded_items_txn(ctx, &mut txn, &state_lock.expanded_items)
-            .await?;
-
-        txn.commit()?;
+            txn.commit()?;
+        }
 
         self.on_did_add_collection_emitter
             .fire(OnDidAddCollection {
@@ -402,16 +423,19 @@ impl<R: AppRuntime> CollectionService<R> {
             })
             .await;
 
+        // TODO: Add account info to the config
+
         Ok(CollectionItemDescription {
             id: id.clone(),
             name: desc.name,
             order: Some(params.order),
             expanded: true,
             // FIXME: Rethink Manifest file and repository storage
-            vcs: desc.vcs,
+            vcs: Some(vcs),
             icon_path,
             abs_path,
             external_path: None,
+            archived: false,
         })
     }
 
@@ -529,16 +553,27 @@ impl<R: AppRuntime> CollectionService<R> {
 
     pub(crate) async fn list_collections(
         &self,
-        _ctx: &R::AsyncContext,
+        ctx: &R::AsyncContext,
     ) -> Pin<Box<dyn Stream<Item = CollectionItemDescription> + Send + '_>> {
-        let state = self.state.clone();
+        let state_clone = self.state.clone();
+        let ctx_clone = ctx.clone();
 
         Box::pin(async_stream::stream! {
-            let state_lock = state.read().await;
+            let state_lock = state_clone.read().await;
             for (id, item) in state_lock.collections.iter() {
                 let details = continue_if_err!(item.details().await, |e: Error| {
                     session::error!(format!("failed to describe collection `{}`: {}", id.to_string(), e.to_string()));
                 });
+
+                let vcs = if let Some(vcs) = item.vcs() {
+                    match vcs.summary(&ctx_clone).await {
+                        Ok(summary) => Some(summary),
+                        Err(e) => {
+                            session::warn!(format!("failed to get VCS summary for collection `{}`: {}", id.to_string(), e.to_string()));
+                            None
+                        }
+                    }
+                } else { None };
 
                 let expanded = state_lock.expanded_items.contains(id);
                 let icon_path = item.icon_path();
@@ -548,23 +583,165 @@ impl<R: AppRuntime> CollectionService<R> {
                     name: details.name,
                     order: item.order,
                     expanded,
-                    vcs: details.vcs,
+                    vcs,
                     icon_path,
                     abs_path: item.handle.abs_path().clone(),
                     external_path: None, // TODO: implement
+                    archived: item.is_archived(),
                 };
             }
         })
     }
+
+    pub(crate) async fn archive_collection(
+        &self,
+        _ctx: &R::AsyncContext,
+        id: &CollectionId,
+    ) -> joinerror::Result<()> {
+        let mut state_lock = self.state.write().await;
+        let item = state_lock
+            .collections
+            .get_mut(&id)
+            .ok_or_join_err_with::<()>(|| {
+                format!("failed to find collection with id `{}`", id.to_string())
+            })?;
+
+        item.archive().await
+    }
+
+    pub(crate) async fn unarchive_collection(
+        &self,
+        _ctx: &R::AsyncContext,
+        id: &CollectionId,
+    ) -> joinerror::Result<()> {
+        let mut state_lock = self.state.write().await;
+        let item = state_lock
+            .collections
+            .get_mut(&id)
+            .ok_or_join_err_with::<()>(|| {
+                format!("failed to find collection with id `{}`", id.to_string())
+            })?;
+
+        item.unarchive().await
+    }
+
+    pub(crate) async fn import_collection(
+        &self,
+        ctx: &R::AsyncContext,
+        id: &CollectionId,
+        params: CollectionItemImportParams,
+    ) -> joinerror::Result<CollectionItemDescription> {
+        let id_str = id.to_string();
+        let abs_path: Arc<Path> = self.abs_path.join(&id_str).into();
+        if abs_path.exists() {
+            return Err(Error::new::<()>(format!(
+                "collection directory `{}` already exists",
+                abs_path.display()
+            )));
+        }
+
+        self.fs
+            .create_dir(&abs_path)
+            .await
+            .join_err_with::<()>(|| {
+                format!("failed to create directory `{}`", abs_path.display())
+            })?;
+
+        let builder = CollectionBuilder::new(self.fs.clone()).await?;
+
+        let collection = builder
+            .import_archive(
+                ctx,
+                CollectionImportParams {
+                    internal_abs_path: abs_path.clone(),
+                    archive_path: params.archive_path.into(),
+                },
+            )
+            .await
+            .join_err::<()>("failed to import collection from archive file")?;
+
+        // Update the collection name based on user input
+        collection
+            .modify(CollectionModifyParams {
+                name: Some(params.name),
+                repository: None,
+                icon_path: None,
+            })
+            .await?;
+
+        let desc = collection.details().await?;
+
+        let icon_path = collection.icon_path();
+        {
+            let mut state_lock = self.state.write().await;
+            state_lock.expanded_items.insert(id.clone());
+            state_lock.collections.insert(
+                id.clone(),
+                CollectionItem {
+                    id: id.clone(),
+                    order: Some(params.order),
+                    handle: Arc::new(collection),
+                },
+            );
+            // TODO: Make database errors not fail the operation
+            let mut txn = self
+                .storage
+                .begin_write(ctx)
+                .await
+                .join_err::<()>("failed to start transaction")?;
+
+            self.storage
+                .put_item_order_txn(ctx, &mut txn, &id, params.order)
+                .await?;
+            self.storage
+                .put_expanded_items_txn(ctx, &mut txn, &state_lock.expanded_items)
+                .await?;
+
+            txn.commit()?;
+        }
+
+        self.on_did_add_collection_emitter
+            .fire(OnDidAddCollection {
+                collection_id: id.clone(),
+            })
+            .await;
+
+        Ok(CollectionItemDescription {
+            id: id.clone(),
+            name: desc.name,
+            order: Some(params.order),
+            expanded: true,
+            vcs: None,
+            icon_path,
+            abs_path,
+            external_path: None,
+            archived: false,
+        })
+    }
+
+    pub(crate) async fn export_collection(
+        &self,
+        id: &CollectionId,
+        params: &ExportCollectionParams,
+    ) -> joinerror::Result<PathBuf> {
+        let state_lock = self.state.read().await;
+        let item = state_lock
+            .collections
+            .get(&id)
+            .ok_or_join_err_with::<()>(|| {
+                format!("failed to find collection with id `{}`", id.to_string())
+            })?;
+
+        item.export_archive(&params.destination).await
+    }
 }
 async fn restore_collections<R: AppRuntime>(
     ctx: &R::AsyncContext,
+    app_delegate: &AppDelegate<R>,
     abs_path: &Path,
     fs: &Arc<dyn FileSystem>,
     storage: &Arc<StorageService<R>>,
-    broadcaster: ActivityBroadcaster<R::EventLoop>,
-    github_client: Arc<GitHubClient>,
-    gitlab_client: Arc<GitLabClient>,
+    active_profile: &Arc<ActiveProfile<R>>,
 ) -> joinerror::Result<HashMap<CollectionId, CollectionItem<R>>> {
     if !abs_path.exists() {
         return Ok(HashMap::new());
@@ -576,7 +753,7 @@ async fn restore_collections<R: AppRuntime>(
         .await
         .join_err_with::<()>(|| format!("failed to read directory `{}`", abs_path.display()))?;
 
-    let activity_handle = broadcaster.emit_continual(ToLocation::Window {
+    let activity_handle = app_delegate.emit_continual(ToLocation::Window {
         activity_id: "restore_collections",
         title: "Restoring collections".to_string(),
         detail: None,
@@ -597,17 +774,21 @@ async fn restore_collections<R: AppRuntime>(
 
         let collection = {
             let collection_abs_path: Arc<Path> = entry.path().to_owned().into();
+            let builder = CollectionBuilder::new(fs.clone())
+                .await
+                .join_err_with::<()>(|| {
+                    format!(
+                        "failed to rebuild collection `{}`, {}",
+                        id_str,
+                        collection_abs_path.display()
+                    )
+                })?;
 
-            let collection_result = CollectionBuilder::<R>::new(
-                fs.clone(),
-                broadcaster.clone(),
-                github_client.clone(),
-                gitlab_client.clone(),
-            )
-            .load(CollectionLoadParams {
-                internal_abs_path: collection_abs_path,
-            })
-            .await;
+            let collection_result = builder
+                .load(CollectionLoadParams {
+                    internal_abs_path: collection_abs_path,
+                })
+                .await;
             match collection_result {
                 Ok(collection) => collection,
                 Err(e) => {
@@ -621,6 +802,38 @@ async fn restore_collections<R: AppRuntime>(
                 }
             }
         };
+
+        if collection.is_archived() {
+            collections.push((id, collection));
+            continue;
+        }
+        // Only load the vcs if the collection is not archived
+        let details = collection.details().await?;
+
+        if let (Some(vcs), Some(account_id)) = (details.vcs, details.account_id) {
+            let account = active_profile
+                .account(&account_id)
+                .await
+                .ok_or_join_err_with::<()>(|| {
+                    format!(
+                        "failed to find account with id `{}`",
+                        account_id.to_string()
+                    )
+                })?;
+
+            let client = match vcs.kind {
+                GitProviderKind::GitHub => GitClient::GitHub {
+                    account,
+                    api: <dyn GitHubApiClient<R>>::global(app_delegate),
+                },
+                GitProviderKind::GitLab => GitClient::GitLab {
+                    account,
+                    api: <dyn GitLabApiClient<R>>::global(app_delegate),
+                },
+            };
+
+            collection.load_vcs(client).await?;
+        }
 
         collections.push((id, collection));
     }

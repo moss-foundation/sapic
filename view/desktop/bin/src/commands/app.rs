@@ -1,14 +1,11 @@
-use anyhow::anyhow;
-use moss_api::{TauriError, TauriResult};
-use moss_app::{
-    command::CommandContext,
-    models::{events::*, operations::*},
-};
-use moss_applib::context::{AnyContext, MutableContext};
+use joinerror::Error;
+use moss_api::TauriResult;
+use moss_app::{command::CommandContext, models::operations::*};
+use moss_applib::errors::NotFound;
 use moss_text::{ReadOnlyStr, quote};
 use serde_json::Value as JsonValue;
-use std::{collections::HashMap, time::Duration};
-use tauri::{Emitter, EventTarget, Manager, Window};
+use std::collections::HashMap;
+use tauri::Window;
 
 use crate::commands::primitives::*;
 
@@ -21,30 +18,10 @@ pub async fn set_color_theme<'a, R: tauri::Runtime>(
     input: SetColorThemeInput,
     options: Options,
 ) -> TauriResult<()> {
-    let ctx = {
-        let mut ctx =
-            MutableContext::new_with_timeout(ctx.inner().clone(), Duration::from_secs(30));
-        if let Some(request_id) = options.and_then(|opts| opts.request_id) {
-            ctx.with_value("request_id", request_id);
-        }
-
-        ctx.freeze()
-    };
-
-    for (label, _) in app.webview_windows() {
-        if window.label() == &label {
-            continue;
-        }
-
-        app.emit_to(
-            EventTarget::webview_window(&label),
-            "core://color-theme-changed",
-            ColorThemeChangeEventPayload::new(&input.theme_info.identifier),
-        )
-        .map_err(|err| anyhow!("Failed to emit event to webview '{}': {}", label, err))?;
-    }
-
-    Ok(app.set_color_theme(&ctx, &input).await?)
+    super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
+        app.set_color_theme(&ctx, &input).await
+    })
+    .await
 }
 
 #[tauri::command(async)]
@@ -56,17 +33,10 @@ pub async fn get_color_theme<'a, R: tauri::Runtime>(
     input: GetColorThemeInput,
     options: Options,
 ) -> TauriResult<GetColorThemeOutput> {
-    let ctx = {
-        let mut ctx =
-            MutableContext::new_with_timeout(ctx.inner().clone(), Duration::from_secs(30));
-        if let Some(request_id) = options.and_then(|opts| opts.request_id) {
-            ctx.with_value("request_id", request_id);
-        }
-
-        ctx.freeze()
-    };
-
-    Ok(app.get_color_theme(&ctx, &input).await?)
+    super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
+        app.get_color_theme(&ctx, &input).await
+    })
+    .await
 }
 
 #[tauri::command(async)]
@@ -77,17 +47,10 @@ pub async fn list_color_themes<'a, R: tauri::Runtime>(
     window: Window<R>,
     options: Options,
 ) -> TauriResult<ListColorThemesOutput> {
-    let ctx = {
-        let mut ctx =
-            MutableContext::new_with_timeout(ctx.inner().clone(), Duration::from_secs(30));
-        if let Some(request_id) = options.and_then(|opts| opts.request_id) {
-            ctx.with_value("request_id", request_id);
-        }
-
-        ctx.freeze()
-    };
-
-    Ok(app.list_color_themes(&ctx).await?)
+    super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
+        app.list_color_themes(&ctx).await
+    })
+    .await
 }
 
 #[tauri::command(async)]
@@ -98,17 +61,10 @@ pub async fn describe_app_state<'a, R: tauri::Runtime>(
     window: Window<R>,
     options: Options,
 ) -> TauriResult<DescribeAppStateOutput> {
-    let ctx = {
-        let mut ctx =
-            MutableContext::new_with_timeout(ctx.inner().clone(), Duration::from_secs(30));
-        if let Some(request_id) = options.and_then(|opts| opts.request_id) {
-            ctx.with_value("request_id", request_id);
-        }
-
-        ctx.freeze()
-    };
-
-    Ok(app.describe_app_state(&ctx).await?)
+    super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
+        app.describe_app_state(&ctx).await
+    })
+    .await
 }
 
 #[tauri::command]
@@ -120,17 +76,10 @@ pub async fn set_locale<'a, R: tauri::Runtime>(
     input: SetLocaleInput,
     options: Options,
 ) -> TauriResult<()> {
-    let ctx = {
-        let mut ctx =
-            MutableContext::new_with_timeout(ctx.inner().clone(), Duration::from_secs(30));
-        if let Some(request_id) = options.and_then(|opts| opts.request_id) {
-            ctx.with_value("request_id", request_id);
-        }
-
-        ctx.freeze()
-    };
-
-    Ok(app.set_locale(&ctx, &input).await?)
+    super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
+        app.set_locale(&ctx, &input).await
+    })
+    .await
 }
 
 #[tauri::command(async)]
@@ -141,17 +90,10 @@ pub async fn list_locales<'a, R: tauri::Runtime>(
     window: Window<R>,
     options: Options,
 ) -> TauriResult<ListLocalesOutput> {
-    let ctx = {
-        let mut ctx =
-            MutableContext::new_with_timeout(ctx.inner().clone(), Duration::from_secs(30));
-        if let Some(request_id) = options.and_then(|opts| opts.request_id) {
-            ctx.with_value("request_id", request_id);
-        }
-
-        ctx.freeze()
-    };
-
-    Ok(app.list_locales(&ctx).await?)
+    super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
+        app.list_locales(&ctx).await
+    })
+    .await
 }
 
 #[tauri::command(async)]
@@ -163,17 +105,10 @@ pub async fn get_translations<'a, R: tauri::Runtime>(
     input: GetTranslationsInput,
     options: Options,
 ) -> TauriResult<GetTranslationsOutput> {
-    let ctx = {
-        let mut ctx =
-            MutableContext::new_with_timeout(ctx.inner().clone(), Duration::from_secs(30));
-        if let Some(request_id) = options.and_then(|opts| opts.request_id) {
-            ctx.with_value("request_id", request_id);
-        }
-
-        ctx.freeze()
-    };
-
-    Ok(app.get_translations(&ctx, &input).await?)
+    super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
+        app.get_translations(&ctx, &input).await
+    })
+    .await
 }
 
 #[tauri::command(async)]
@@ -185,17 +120,13 @@ pub async fn create_workspace<'a, R: tauri::Runtime>(
     input: CreateWorkspaceInput,
     options: Options,
 ) -> TauriResult<CreateWorkspaceOutput> {
-    let ctx = {
-        let mut ctx =
-            MutableContext::new_with_timeout(ctx.inner().clone(), Duration::from_secs(30));
-        if let Some(request_id) = options.and_then(|opts| opts.request_id) {
-            ctx.with_value("request_id", request_id);
-        }
-
-        ctx.freeze()
-    };
-
-    Ok(app.create_workspace(&ctx, &input).await?)
+    super::with_app_timeout(
+        ctx.inner(),
+        app,
+        options,
+        |ctx, app_delegate, app| async move { app.create_workspace(&ctx, &app_delegate, &input).await },
+    )
+    .await
 }
 
 #[tauri::command(async)]
@@ -207,17 +138,10 @@ pub async fn close_workspace<'a, R: tauri::Runtime>(
     input: CloseWorkspaceInput,
     options: Options,
 ) -> TauriResult<CloseWorkspaceOutput> {
-    let ctx = {
-        let mut ctx =
-            MutableContext::new_with_timeout(ctx.inner().clone(), Duration::from_secs(30));
-        if let Some(request_id) = options.and_then(|opts| opts.request_id) {
-            ctx.with_value("request_id", request_id);
-        }
-
-        ctx.freeze()
-    };
-
-    Ok(app.close_workspace(&ctx, &input).await?)
+    super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
+        app.close_workspace(&ctx, &input).await
+    })
+    .await
 }
 
 #[tauri::command(async)]
@@ -228,17 +152,10 @@ pub async fn list_workspaces<'a, R: tauri::Runtime>(
     window: Window<R>,
     options: Options,
 ) -> TauriResult<ListWorkspacesOutput> {
-    let ctx = {
-        let mut ctx =
-            MutableContext::new_with_timeout(ctx.inner().clone(), Duration::from_secs(30));
-        if let Some(request_id) = options.and_then(|opts| opts.request_id) {
-            ctx.with_value("request_id", request_id);
-        }
-
-        ctx.freeze()
-    };
-
-    Ok(app.list_workspaces(&ctx).await?)
+    super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
+        app.list_workspaces(&ctx).await
+    })
+    .await
 }
 
 #[tauri::command(async)]
@@ -250,17 +167,10 @@ pub async fn delete_workspace<'a, R: tauri::Runtime>(
     input: DeleteWorkspaceInput,
     options: Options,
 ) -> TauriResult<()> {
-    let ctx = {
-        let mut ctx =
-            MutableContext::new_with_timeout(ctx.inner().clone(), Duration::from_secs(30));
-        if let Some(request_id) = options.and_then(|opts| opts.request_id) {
-            ctx.with_value("request_id", request_id);
-        }
-
-        ctx.freeze()
-    };
-
-    Ok(app.delete_workspace(&ctx, &input).await?)
+    super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
+        app.delete_workspace(&ctx, &input).await
+    })
+    .await
 }
 
 #[tauri::command(async)]
@@ -272,17 +182,13 @@ pub async fn open_workspace<'a, R: tauri::Runtime>(
     input: OpenWorkspaceInput,
     options: Options,
 ) -> TauriResult<OpenWorkspaceOutput> {
-    let ctx = {
-        let mut ctx =
-            MutableContext::new_with_timeout(ctx.inner().clone(), Duration::from_secs(30));
-        if let Some(request_id) = options.and_then(|opts| opts.request_id) {
-            ctx.with_value("request_id", request_id);
-        }
-
-        ctx.freeze()
-    };
-
-    Ok(app.open_workspace(&ctx, &input).await?)
+    super::with_app_timeout(
+        ctx.inner(),
+        app,
+        options,
+        |ctx, app_delegate, app| async move { app.open_workspace(&ctx, &app_delegate, &input).await },
+    )
+    .await
 }
 
 #[tauri::command(async)]
@@ -294,17 +200,10 @@ pub async fn update_workspace<'a, R: tauri::Runtime>(
     input: UpdateWorkspaceInput,
     options: Options,
 ) -> TauriResult<()> {
-    let ctx = {
-        let mut ctx =
-            MutableContext::new_with_timeout(ctx.inner().clone(), Duration::from_secs(30));
-        if let Some(request_id) = options.and_then(|opts| opts.request_id) {
-            ctx.with_value("request_id", request_id);
-        }
-
-        ctx.freeze()
-    };
-
-    Ok(app.update_workspace(&ctx, &input).await?)
+    super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
+        app.update_workspace(&ctx, &input).await
+    })
+    .await
 }
 
 #[tauri::command(async)]
@@ -317,26 +216,14 @@ pub async fn execute_command<'a, R: tauri::Runtime>(
     args: HashMap<String, JsonValue>,
     options: Options,
 ) -> TauriResult<JsonValue> {
-    let _ctx = {
-        let mut ctx =
-            MutableContext::new_with_timeout(ctx.inner().clone(), Duration::from_secs(30));
-        if let Some(request_id) = options.and_then(|opts| opts.request_id) {
-            ctx.with_value("request_id", request_id);
-        }
+    super::with_app_timeout(ctx.inner(), app, options, |_, _, app| async move {
+        let command_cb = app.command(&cmd).ok_or_else(|| {
+            Error::new::<NotFound>(format!("command with id {} is not found", quote!(cmd)))
+        })?;
 
-        ctx.freeze()
-    };
-
-    let app_handle = app.handle();
-    match app.command(&cmd) {
-        Some(command_handler) => {
-            command_handler(&mut CommandContext::new(app_handle.clone(), window, args)).await
-        }
-        _ => Err(TauriError::Other(anyhow!(
-            "command with id {} is not found",
-            quote!(cmd)
-        ))),
-    }
+        command_cb(&mut CommandContext::new(window, args)).await
+    })
+    .await
 }
 
 #[tauri::command(async)]
@@ -352,12 +239,33 @@ pub async fn cancel_request<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn create_profile<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: Window<R>,
+    input: CreateProfileInput,
+    options: Options,
+) -> TauriResult<CreateProfileOutput> {
+    super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
+        app.create_profile(&ctx, input).await
+    })
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn add_account<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
     input: AddAccountInput,
+    options: Options,
 ) -> TauriResult<AddAccountOutput> {
-    let output = app.add_account(&ctx, input).await?;
-    Ok(output)
+    super::with_app_timeout(
+        ctx.inner(),
+        app,
+        options,
+        |ctx, app_delegate, app| async move { app.add_account(&ctx, &app_delegate, input).await },
+    )
+    .await
 }

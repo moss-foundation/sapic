@@ -61,9 +61,4 @@ export type Preferences = { theme?: ColorThemeInfo; locale?: LocaleInfo };
 /**
  * @category Type
  */
-export type UserInfo = { name: string; email: string };
-
-/**
- * @category Type
- */
 export type WorkspaceInfo = { id: string; name: string; lastOpenedAt?: bigint; active: boolean };

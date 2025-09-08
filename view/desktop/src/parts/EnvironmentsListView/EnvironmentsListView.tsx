@@ -1,6 +1,6 @@
 import { GlobalEnvironmentsList } from "@/components/GlobalEnvironmentsList/GlobalEnvironmentsList";
 import { GroupedEnvironmentsList } from "@/components/GroupedEnvironmentsList";
-import { useStreamEnvironments } from "@/hooks/environment";
+import { useStreamEnvironments } from "@/hooks";
 import { Scrollbar } from "@/lib/ui";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
