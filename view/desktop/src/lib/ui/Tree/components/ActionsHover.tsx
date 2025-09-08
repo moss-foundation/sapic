@@ -14,11 +14,15 @@ interface ActionsHoverProps {
 const actionsHoverStyles = cva(["transition-[display,opacity] transition-discrete duration-100"], {
   variants: {
     invisible: {
-      false: ["hidden opacity-0 group-hover/TreeNodeControls:contents group-hover/TreeRootNodeControls:contents"],
+      false: ["sr-only group-hover/TreeNodeControls:contents group-hover/TreeRootNodeControls:contents"],
       true: ["opacity-0 group-hover/TreeNodeControls:opacity-100 group-hover/TreeRootNodeControls:opacity-100"],
     },
     showOnTreeHover: {
       true: ["group-hover/TreeRootNode:contents"],
+      false: [""],
+    },
+    forceVisible: {
+      true: ["contents opacity-100"],
       false: [""],
     },
   },
@@ -33,16 +37,7 @@ export const ActionsHover = ({
   ...props
 }: ActionsHoverProps) => {
   return (
-    <div
-      className={cn(
-        actionsHoverStyles({ invisible, showOnTreeHover }),
-        {
-          "contents opacity-100": forceVisible,
-        },
-        className
-      )}
-      {...props}
-    >
+    <div className={cn(actionsHoverStyles({ invisible, showOnTreeHover, forceVisible }), className)} {...props}>
       {children}
     </div>
   );
