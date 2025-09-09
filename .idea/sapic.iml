@@ -57,6 +57,9 @@
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-bindingutils/macro/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-asp/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-user/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-app-delegate/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-git-hosting-provider/examples" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-server-api/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-edit/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-edit/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-workspacelib/src" isTestSource="false" />

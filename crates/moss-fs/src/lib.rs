@@ -7,6 +7,7 @@ pub use error::*;
 pub use real::*;
 pub use utils::{desanitize_path, normalize_path, sanitize_path};
 
+use atomic_fs::Rollback;
 use futures::stream::BoxStream;
 use std::{io, path::Path, time::Duration};
 use tokio::fs::ReadDir;
@@ -83,4 +84,47 @@ pub trait FileSystem: Send + Sync {
         BoxStream<'static, Vec<notify::Event>>,
         notify::RecommendedWatcher,
     )>;
+
+    // FIXME: Come up with better names
+    async fn rollback(&self, tmp: &Path) -> FsResult<Rollback>;
+
+    async fn create_dir_with_rollback(&self, rb: &mut Rollback, path: &Path) -> FsResult<()>;
+
+    async fn create_dir_all_with_rollback(&self, rb: &mut Rollback, path: &Path) -> FsResult<()>;
+
+    async fn remove_dir_with_rollback(
+        &self,
+        rb: &mut Rollback,
+        path: &Path,
+        options: RemoveOptions,
+    ) -> FsResult<()>;
+
+    async fn rename_with_rollback(
+        &self,
+        from: &Path,
+        to: &Path,
+        options: RenameOptions,
+    ) -> FsResult<()>;
+
+    async fn create_file_with_rollback(
+        &self,
+        rb: &mut Rollback,
+        path: &Path,
+        options: CreateOptions,
+    ) -> FsResult<()>;
+
+    async fn create_file_with_with_rollback(
+        &self,
+        rb: &mut Rollback,
+        path: &Path,
+        content: &[u8],
+        options: CreateOptions,
+    ) -> FsResult<()>;
+
+    async fn remove_file_with_rollback(
+        &self,
+        rb: &mut Rollback,
+        path: &Path,
+        options: RemoveOptions,
+    ) -> FsResult<()>;
 }

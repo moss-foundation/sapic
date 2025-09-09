@@ -1,8 +1,10 @@
+use crate::{CreateOptions, FileSystem, FsError, FsResult, RemoveOptions, RenameOptions};
 use async_stream::stream;
 use async_zip::{
     Compression, ZipEntryBuilder,
     tokio::{read::fs::ZipFileReader, write::ZipFileWriter},
 };
+use atomic_fs::Rollback;
 use futures::{StreamExt, stream::BoxStream};
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
 use std::{io, path::Path, time::Duration};
@@ -14,8 +16,6 @@ use tokio::{
 };
 use tokio_stream::wrappers::UnboundedReceiverStream;
 use tokio_util::compat::TokioAsyncWriteCompatExt;
-
-use crate::{CreateOptions, FileSystem, FsError, FsResult, RemoveOptions, RenameOptions};
 
 pub struct RealFileSystem;
 
@@ -290,5 +290,63 @@ impl FileSystem for RealFileSystem {
         }
 
         Ok(())
+    }
+
+    async fn rollback(&self, tmp: &Path) -> FsResult<Rollback> {
+        todo!()
+    }
+
+    async fn create_dir_with_rollback(&self, rb: &mut Rollback, path: &Path) -> FsResult<()> {
+        todo!()
+    }
+
+    async fn create_dir_all_with_rollback(&self, rb: &mut Rollback, path: &Path) -> FsResult<()> {
+        todo!()
+    }
+
+    async fn remove_dir_with_rollback(
+        &self,
+        rb: &mut Rollback,
+        path: &Path,
+        options: RemoveOptions,
+    ) -> FsResult<()> {
+        todo!()
+    }
+
+    async fn rename_with_rollback(
+        &self,
+        from: &Path,
+        to: &Path,
+        options: RenameOptions,
+    ) -> FsResult<()> {
+        todo!()
+    }
+
+    async fn create_file_with_rollback(
+        &self,
+        rb: &mut Rollback,
+        path: &Path,
+        options: CreateOptions,
+    ) -> FsResult<()> {
+        todo!()
+    }
+
+    async fn create_file_with_with_rollback(
+        &self,
+        rb: &mut Rollback,
+        path: &Path,
+        content: &[u8],
+        options: CreateOptions,
+    ) -> FsResult<()> {
+        todo!()
+    }
+
+    async fn remove_file_with_rollback(
+        &self,
+        rb: &mut Rollback,
+        path: &Path,
+        options: RemoveOptions,
+    ) -> FsResult<()> {
+        todo!()
     }
 }
