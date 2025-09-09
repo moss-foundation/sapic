@@ -155,3 +155,39 @@ impl<R: AppRuntime> GitAuthAdapter<R> for RealGitHubAuthAdapter<R> {
         todo!()
     }
 }
+
+#[cfg(any(test, feature = "test"))]
+pub mod test {
+    use super::*;
+
+    pub struct MockGitHubAuthAdapter {
+        pub access_token: String,
+    }
+
+    impl<R: AppRuntime> GitHubAuthAdapter<R> for MockGitHubAuthAdapter {}
+
+    impl MockGitHubAuthAdapter {
+        pub fn new(access_token: String) -> Self {
+            Self { access_token }
+        }
+    }
+
+    #[async_trait]
+    impl<R: AppRuntime> GitAuthAdapter<R> for MockGitHubAuthAdapter {
+        type PkceToken = GitHubPkceTokenCredentials;
+        type PatToken = ();
+
+        async fn auth_with_pkce(
+            &self,
+            _ctx: &R::AsyncContext,
+        ) -> joinerror::Result<Self::PkceToken> {
+            Ok(GitHubPkceTokenCredentials {
+                access_token: self.access_token.clone(),
+            })
+        }
+
+        async fn auth_with_pat(&self, _ctx: &R::AsyncContext) -> joinerror::Result<Self::PatToken> {
+            Ok(())
+        }
+    }
+}

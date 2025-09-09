@@ -5,6 +5,10 @@ use moss_applib::{
     mock::MockAppRuntime,
 };
 use moss_fs::RealFileSystem;
+use moss_git_hosting_provider::github::{
+    auth::{GitHubAuthAdapter, test::MockGitHubAuthAdapter},
+    client::{GitHubApiClient, test::MockGitHubApiClient},
+};
 use moss_keyring::test::MockKeyringClient;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_testutils::random_name::random_string;
@@ -75,13 +79,25 @@ pub async fn set_up_test_app() -> (
         http_client.clone(),
         ACCOUNT_AUTH_BASE_URL.to_string(),
     ));
-    let app_delegate = AppDelegate::<MockAppRuntime>::new(tao_app_handle.clone());
+    let app_path = random_app_dir_path();
+    let app_delegate = {
+        let delegate = AppDelegate::<MockAppRuntime>::new(tao_app_handle.clone());
+        <dyn GitHubAuthAdapter<MockAppRuntime>>::set_global(
+            &delegate,
+            Arc::new(MockGitHubAuthAdapter::new("test".to_string())),
+        );
+        <dyn GitHubApiClient<MockAppRuntime>>::set_global(
+            &delegate,
+            Arc::new(MockGitHubApiClient::new()),
+        );
+        delegate.set_app_dir(app_path.clone());
+
+        delegate
+    };
 
     {
         tao_app_handle.manage(app_delegate.clone());
     }
-
-    let app_path = random_app_dir_path();
 
     let logs_abs_path = app_path.join("logs");
     let workspaces_abs_path = app_path.join("workspaces");

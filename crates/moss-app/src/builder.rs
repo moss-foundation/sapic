@@ -149,7 +149,7 @@ impl<R: AppRuntime> AppBuilder<R> {
 
         let content = serde_json::to_string_pretty(&ProfileFile {
             name: DEFAULT_PROFILE.name.clone(),
-            is_default: true,
+            is_default: Some(true),
             accounts: vec![],
         })
         .expect("Failed to serialize default profile");

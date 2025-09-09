@@ -160,3 +160,56 @@ impl<R: AppRuntime> GitHubApiClient<R> for RealGitHubApiClient {
         .join_err_bare()
     }
 }
+
+#[cfg(any(test, feature = "test"))]
+pub mod test {
+    use crate::github::response::Owner;
+
+    use super::*;
+
+    pub struct MockGitHubApiClient {}
+
+    impl MockGitHubApiClient {
+        pub fn new() -> Self {
+            Self {}
+        }
+    }
+
+    #[async_trait]
+    impl<R: AppRuntime> GitHubApiClient<R> for MockGitHubApiClient {
+        async fn get_user(
+            &self,
+            ctx: &R::AsyncContext,
+            account_handle: &AccountSession<R>,
+        ) -> joinerror::Result<GetUserResponse> {
+            Ok(GetUserResponse {
+                id: 1,
+                login: "test".to_string(),
+                email: None,
+            })
+        }
+
+        async fn get_contributors(
+            &self,
+            ctx: &R::AsyncContext,
+            account_handle: &AccountSession<R>,
+            url: &GitUrl,
+        ) -> joinerror::Result<GetContributorsResponse> {
+            Ok(GetContributorsResponse { items: vec![] })
+        }
+
+        async fn get_repository(
+            &self,
+            ctx: &R::AsyncContext,
+            account_handle: &AccountSession<R>,
+            url: &GitUrl,
+        ) -> joinerror::Result<GetRepositoryResponse> {
+            Ok(GetRepositoryResponse {
+                owner: Owner {
+                    login: "test".to_string(),
+                },
+                updated_at: "2021-01-01".to_string(),
+            })
+        }
+    }
+}

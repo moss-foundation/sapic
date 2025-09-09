@@ -47,6 +47,8 @@ impl<R: AppRuntime> ProfileService<R> {
         auth_api_client: Arc<AccountAuthGatewayApiClient>,
         keyring: Arc<dyn KeyringClient>,
     ) -> joinerror::Result<Self> {
+        dbg!(&dir_abs);
+
         let profiles = scan(&fs, dir_abs).await?;
 
         let active_profile = {
@@ -311,7 +313,7 @@ impl<R: AppRuntime> ProfileService<R> {
                 &abs_path,
                 serde_json::to_string_pretty(&ProfileFile {
                     name: profile.name.clone(),
-                    is_default,
+                    is_default: Some(is_default),
                     accounts: vec![],
                 })?
                 .as_bytes(),
