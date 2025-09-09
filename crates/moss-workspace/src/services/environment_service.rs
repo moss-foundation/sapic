@@ -1,6 +1,6 @@
 use derive_more::Deref;
 use futures::Stream;
-use joinerror::{Error, OptionExt};
+use joinerror::OptionExt;
 use moss_applib::AppRuntime;
 use moss_common::continue_if_err;
 use moss_db::primitives::AnyValue;
