@@ -16,6 +16,19 @@ import { existsSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { Project, SourceFile } from "ts-morph";
 
+const KNOWN_PACKAGES = [
+  "moss-app",
+  "moss-common",
+  "moss-environment",
+  "moss-workspace",
+  "moss-collection",
+  "moss-activity-broadcaster",
+  "moss-bindingutils",
+  "moss-api",
+  "moss-git",
+  "moss-user",
+];
+
 interface Config {
   readonly targetPath: string;
   readonly tsConfigFileName: string;
@@ -44,16 +57,7 @@ class TypeScriptImportsResolver {
     };
 
     // Known packages that might contain type definitions
-    this.knownPackages = [
-      "moss-app",
-      "moss-common",
-      "moss-environment",
-      "moss-workspace",
-      "moss-collection",
-      "moss-activity-broadcaster",
-      "moss-bindingutils",
-      "moss-api",
-    ] as const;
+    this.knownPackages = KNOWN_PACKAGES;
 
     this.project = this.initializeProject();
     this.validatePaths();
