@@ -4,14 +4,13 @@ use image::{ImageBuffer, Rgb};
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
     AppRuntime,
-    context::{AnyContext, AsyncContext, MutableContext},
+    context::{AsyncContext, MutableContext},
     mock::MockAppRuntime,
 };
 use moss_fs::RealFileSystem;
 use moss_git_hosting_provider::{github::RealGitHubApiClient, gitlab::RealGitLabApiClient};
-use moss_keyring::test::MockKeyringClient;
 use moss_testutils::random_name::random_workspace_name;
-use moss_user::{Account, AccountSession, models::primitives::AccountId, profile::Profile};
+use moss_user::profile::Profile;
 use moss_workspace::{
     Workspace,
     builder::{CreateWorkspaceParams, WorkspaceBuilder},
