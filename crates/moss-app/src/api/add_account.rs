@@ -18,8 +18,6 @@ impl<R: AppRuntime> App<R> {
             .add_account(ctx, app_delegate, input.host, input.kind)
             .await?;
 
-        Ok(AddAccountOutput {
-            account_id: id.to_string(),
-        })
+        Ok(AddAccountOutput { account_id: id })
     }
 }

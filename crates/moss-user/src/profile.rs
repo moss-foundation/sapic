@@ -67,7 +67,11 @@ impl<R: AppRuntime> Profile<R> {
         self.accounts.write().await.insert(account.id(), account);
     }
 
-    pub async fn remove_account(&self, account_id: &AccountId) {
+    pub async fn remove_account(&self, account_id: &AccountId) -> joinerror::Result<()> {
+        // TODO: Revoke the account session
+
         self.accounts.write().await.remove(account_id);
+
+        Ok(())
     }
 }

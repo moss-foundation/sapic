@@ -1,6 +1,9 @@
-use joinerror::Error;
+use joinerror::{Error, OptionExt};
 use moss_app_delegate::AppDelegate;
-use moss_applib::{AppRuntime, errors::AlreadyExists};
+use moss_applib::{
+    AppRuntime,
+    errors::{AlreadyExists, NotFound},
+};
 use moss_common::{continue_if_err, continue_if_none};
 use moss_fs::{CreateOptions, FileSystem};
 use moss_git_hosting_provider::{
@@ -105,6 +108,56 @@ impl<R: AppRuntime> ProfileService<R> {
     pub async fn active_profile(&self) -> Arc<Profile<R>> {
         let state_lock = self.state.read().await;
         state_lock.active_profile.clone()
+    }
+
+    pub async fn remove_account(
+        &self,
+        app_delegate: &AppDelegate<R>,
+        account_id: AccountId,
+    ) -> joinerror::Result<()> {
+        let mut state_lock = self.state.write().await;
+
+        let profile_id = state_lock.active_profile.id().clone();
+        let profile = state_lock
+            .profiles
+            .get_mut(&profile_id)
+            .ok_or_join_err_with::<NotFound>(|| format!("profile `{}` not found", profile_id))?;
+
+        let mut profile_clone = profile.clone();
+        profile_clone
+            .accounts
+            .retain(|account| account.id != account_id);
+        {
+            let abs_path = app_delegate
+                .app_dir()
+                .join(dirs::PROFILES_DIR)
+                .join(format!("{}.json", profile_id));
+
+            let content = serde_json::to_string_pretty(&profile_clone)?;
+            self.fs
+                .create_file_with(
+                    &abs_path,
+                    content.as_bytes(),
+                    CreateOptions {
+                        overwrite: true,
+                        ignore_if_exists: false,
+                    },
+                )
+                .await?;
+        }
+        profile.accounts = profile_clone.accounts;
+
+        // In this case, the error isn't critical. Since we removed the account from
+        // the profile file, the next time a session for that account won't be established.
+        if let Err(err) = state_lock.active_profile.remove_account(&account_id).await {
+            session::warn!(&format!(
+                "failed to remove account `{}`: {}",
+                account_id,
+                err.to_string()
+            ));
+        }
+
+        Ok(())
     }
 
     pub async fn add_account(

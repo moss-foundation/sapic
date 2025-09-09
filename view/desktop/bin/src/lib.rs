@@ -199,6 +199,7 @@ pub async fn run<R: TauriRuntime>() {
             commands::cancel_request,
             commands::create_profile,
             commands::add_account,
+            commands::remove_account,
             //
             // Workspace
             //
