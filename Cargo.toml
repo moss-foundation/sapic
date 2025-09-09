@@ -33,7 +33,7 @@ members = [
     "crates/moss-edit",
     "crates/moss-logging",
     "crates/moss-user",
-    "crates/moss-server-api", 
+    "crates/moss-server-api",
     #
     # Apps
     #
@@ -42,7 +42,8 @@ members = [
     # Tools
     #
     "tools/xtask",
-    "crates/moss-id-macro", 
+    "crates/moss-id-macro",
+    "tools/cargo-new-ts"
 ]
 
 [workspace.dependencies]
