@@ -1,6 +1,6 @@
 use derive_more::Deref;
 use moss_logging::models::primitives::LogEntryId;
-use moss_user::models::primitives::AccountId;
+use moss_user::models::primitives::{AccountId, ProfileId};
 use moss_workspace::models::primitives::WorkspaceMode;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
@@ -13,6 +13,25 @@ use crate::models::{primitives::*, types::*};
 // #########################################################
 // ###                    Profile                      ###
 // #########################################################
+
+/// DEPRECATED  
+#[derive(Debug, Clone, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct AddAccountInput {
+    pub profile_id: ProfileId,
+    pub host: String,
+    pub label: Option<String>,
+    pub provider: AccountId,
+}
+
+/// DEPRECATED  
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "operations.ts")]
+pub struct AddAccountOutput {
+    pub account_id: String,
+}
 
 /// @category Operation
 #[derive(Debug, Clone, Deserialize, TS)]

@@ -15,6 +15,16 @@ import type {
 } from "./types";
 
 /**
+ * DEPRECATED
+ */
+export type AddAccountInput = { profileId: string; host: string; label?: string; provider: string };
+
+/**
+ * DEPRECATED
+ */
+export type AddAccountOutput = { account_id: string };
+
+/**
  * @category Operation
  */
 export type BatchDeleteLogInput = { ids: Array<string> };

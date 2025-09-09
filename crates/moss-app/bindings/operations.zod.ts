@@ -15,6 +15,17 @@ import {
   workspaceInfoSchema,
 } from "./types.zod";
 
+export const addAccountInputSchema = z.object({
+  profileId: z.string(),
+  host: z.string(),
+  label: z.string().optional(),
+  provider: z.string(),
+});
+
+export const addAccountOutputSchema = z.object({
+  account_id: z.string(),
+});
+
 export const batchDeleteLogInputSchema = z.object({
   ids: z.array(z.string()),
 });
