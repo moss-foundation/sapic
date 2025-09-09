@@ -47,7 +47,9 @@ impl<R: AppRuntime> ProfileService<R> {
         let profiles = scan(&fs, dir_abs).await?;
 
         let active_profile = {
-            // HACK: Use the first (default) profile as the active profile
+            // HACK:
+            // Since we don't support having multiple profiles yet, we select
+            // the first profile in the folder (which is the default one) as the active one.
             let p = &profiles.values().next().unwrap(); // SAFETY: When we start the app, we must have at least one profile
             let mut accounts = HashMap::with_capacity(p.accounts.len());
 
