@@ -1,5 +1,4 @@
 use moss_logging::models::primitives::LogEntryId;
-use moss_user::models::primitives::AccountId;
 use serde::{Deserialize, Serialize};
 use std::{
     path::{Path, PathBuf},
@@ -8,14 +7,6 @@ use std::{
 use ts_rs::TS;
 
 use crate::models::primitives::*;
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AccountInfo {
-    pub id: AccountId,
-    pub username: String,
-    pub host: String,
-    pub provider: AccountKind,
-}
 
 // ########################################################
 // ###                      Locale                      ###

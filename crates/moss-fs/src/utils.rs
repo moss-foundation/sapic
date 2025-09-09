@@ -3,6 +3,11 @@ use derive_more::{Deref, DerefMut};
 use moss_text::sanitized;
 use std::path::{Component, Path, PathBuf};
 
+pub async fn is_dir_empty(path: &Path) -> std::io::Result<bool> {
+    let mut entries = tokio::fs::read_dir(path).await?;
+    Ok(entries.next_entry().await?.is_none())
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Deref, DerefMut)]
 pub struct SanitizedPath(PathBuf);
 

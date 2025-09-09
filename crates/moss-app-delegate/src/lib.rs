@@ -1,3 +1,6 @@
+#[cfg(debug_assertions)]
+use std::path::PathBuf;
+
 use moss_activity_broadcaster::{AppActivityBroadcaster, ToLocation, handle::ActivityHandle};
 use moss_applib::AppRuntime;
 use tauri::{AppHandle as TauriAppHandle, Manager};
@@ -19,6 +22,19 @@ impl<R: AppRuntime> AppDelegate<R> {
             app_handle: app_handle.clone(),
             broadcaster: AppActivityBroadcaster::new(app_handle),
         }
+    }
+
+    #[cfg(debug_assertions)]
+    pub fn app_dir(&self) -> PathBuf {
+        PathBuf::from(std::env::var("DEV_APP_DIR").expect("DEV_APP_DIR is not set"))
+    }
+
+    #[cfg(not(debug_assertions))]
+    pub fn app_dir(&self) -> PathBuf {
+        self.app_handle
+            .path()
+            .app_data_dir()
+            .expect("Cannot resolve app data dir")
     }
 
     pub fn global<T>(&self) -> &T

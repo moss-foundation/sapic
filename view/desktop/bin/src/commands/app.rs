@@ -246,8 +246,8 @@ pub async fn create_profile<'a, R: tauri::Runtime>(
     input: CreateProfileInput,
     options: Options,
 ) -> TauriResult<CreateProfileOutput> {
-    super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
-        app.create_profile(&ctx, input).await
+    super::with_app_timeout(ctx.inner(), app, options, |ctx, app_delegate, app| async move {
+        app.create_profile(&ctx, &app_delegate, input).await
     })
     .await
 }

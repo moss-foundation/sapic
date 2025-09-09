@@ -1,9 +1,10 @@
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
-use moss_fs::FileSystem;
+use moss_fs::{CreateOptions, FileSystem, utils};
 use moss_keyring::KeyringClient;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
-use std::{path::PathBuf, sync::Arc};
+use moss_user::models::{primitives::ProfileId, types::ProfileInfo};
+use std::{cell::LazyCell, path::PathBuf, sync::Arc};
 use tauri::{AppHandle as TauriAppHandle, Manager};
 use tokio::sync::RwLock;
 
@@ -11,11 +12,17 @@ use crate::{
     app::{App, AppCommands, AppDefaults, AppPreferences},
     command::CommandDecl,
     dirs,
+    profile::ProfileFile,
     services::{profile_service::ProfileService, *},
 };
 
+const DEFAULT_PROFILE: LazyCell<ProfileInfo> = LazyCell::new(|| ProfileInfo {
+    id: ProfileId::new(),
+    name: "Default".to_string(),
+    accounts: vec![],
+});
+
 pub struct BuildAppParams {
-    pub app_dir: PathBuf,
     pub themes_dir: PathBuf,
     pub locales_dir: PathBuf,
     pub logs_dir: PathBuf,
@@ -51,19 +58,13 @@ impl<R: AppRuntime> AppBuilder<R> {
     }
 
     pub async fn build(self, ctx: &R::AsyncContext, params: BuildAppParams) -> App<R> {
-        for dir in &[dirs::WORKSPACES_DIR, dirs::GLOBALS_DIR, dirs::PROFILES_DIR] {
-            let dir_path = params.app_dir.join(dir);
-            if dir_path.exists() {
-                continue;
-            }
+        let delegate = self.tao_handle.state::<AppDelegate<R>>().inner().clone();
+        let app_dir = delegate.app_dir();
 
-            self.fs
-                .create_dir(&dir_path)
-                .await
-                .expect("Failed to create app directories");
-        }
+        self.create_app_dirs_if_not_exists(app_dir.clone()).await;
 
-        let _delegate = self.tao_handle.state::<AppDelegate<R>>().inner().clone();
+        self.create_default_profile_if_not_exists(app_dir.join(dirs::PROFILES_DIR))
+            .await;
 
         let theme_service = ThemeService::new(self.fs.clone(), params.themes_dir)
             .await
@@ -73,7 +74,7 @@ impl<R: AppRuntime> AppBuilder<R> {
             .expect("Failed to create locale service");
         let session_service = SessionService::new();
         let storage_service: Arc<StorageService<R>> =
-            StorageService::<R>::new(&params.app_dir.join(dirs::GLOBALS_DIR))
+            StorageService::<R>::new(&app_dir.join(dirs::GLOBALS_DIR))
                 .expect("Failed to create storage service")
                 .into();
         let log_service = LogService::new(
@@ -85,33 +86,24 @@ impl<R: AppRuntime> AppBuilder<R> {
         )
         .expect("Failed to create log service");
         let profile_service = ProfileService::new(
+            &app_dir.join(dirs::PROFILES_DIR),
             self.fs.clone(),
             self.auth_api_client.clone(),
             self.keyring.clone(),
-            profile_service::ServiceConfig::new(
-                params.app_dir.join(dirs::PROFILES_DIR),
-                // github_client_id,
-                // gitlab_client_id,
-            )
-            .expect("Failed to create profile service config"),
         )
         .await
         .expect("Failed to create profile service");
-        let workspace_service = WorkspaceService::<R>::new(
-            ctx,
-            storage_service.clone(),
-            self.fs.clone(),
-            &params.app_dir,
-        )
-        .await
-        .expect("Failed to create workspace service");
+        let workspace_service =
+            WorkspaceService::<R>::new(ctx, storage_service.clone(), self.fs.clone(), &app_dir)
+                .await
+                .expect("Failed to create workspace service");
 
         let defaults = AppDefaults {
             theme: theme_service.default_theme().await,
             locale: locale_service.default_locale().await,
         };
         App {
-            app_dir: params.app_dir,
+            app_dir,
             app_handle: self.tao_handle.clone(),
             commands: self.commands,
 
@@ -131,5 +123,48 @@ impl<R: AppRuntime> AppBuilder<R> {
             profile_service,
             tracked_cancellations: Default::default(),
         }
+    }
+
+    async fn create_app_dirs_if_not_exists(&self, app_dir: PathBuf) {
+        for dir in &[dirs::WORKSPACES_DIR, dirs::GLOBALS_DIR, dirs::PROFILES_DIR] {
+            let dir_path = app_dir.join(dir);
+            if dir_path.exists() {
+                continue;
+            }
+
+            self.fs
+                .create_dir(&dir_path)
+                .await
+                .expect("Failed to create app directories");
+        }
+    }
+
+    async fn create_default_profile_if_not_exists(&self, profile_dir_abs: PathBuf) {
+        if !utils::is_dir_empty(&profile_dir_abs)
+            .await
+            .expect("Failed to check if profiles directory is empty")
+        {
+            return;
+        }
+
+        let content = serde_json::to_string_pretty(&ProfileFile {
+            name: DEFAULT_PROFILE.name.clone(),
+            is_default: true,
+            accounts: vec![],
+        })
+        .expect("Failed to serialize default profile");
+        let path = profile_dir_abs.join(format!("{}.json", DEFAULT_PROFILE.id));
+
+        self.fs
+            .create_file_with(
+                &path,
+                content.as_bytes(),
+                CreateOptions {
+                    overwrite: false,
+                    ignore_if_exists: true,
+                },
+            )
+            .await
+            .expect("Failed to create default profile");
     }
 }

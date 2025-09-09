@@ -3644,6 +3644,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "moss_bootstrap"
+version = "0.1.0"
+dependencies = [
+ "joinerror",
+]
+
+[[package]]
 name = "moss_collection"
 version = "0.1.0"
 dependencies = [

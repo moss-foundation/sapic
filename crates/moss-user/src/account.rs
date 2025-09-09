@@ -12,14 +12,18 @@ use crate::{
         github::{GitHubInitialToken, GitHubSessionHandle},
         gitlab::{GitLabInitialToken, GitLabSessionHandle},
     },
-    models::primitives::AccountId,
+    models::{
+        primitives::{AccountId, AccountKind},
+        types::AccountInfo,
+    },
 };
 
 pub struct Account<R: AppRuntime> {
-    id: AccountId,
-    username: String,
-    host: String,
-    session: AccountSession<R>,
+    pub(crate) id: AccountId,
+    pub(crate) username: String,
+    pub(crate) host: String,
+    pub(crate) session: AccountSession<R>,
+    pub(crate) kind: AccountKind,
 }
 
 impl<R: AppRuntime> Clone for Account<R> {
@@ -29,17 +33,25 @@ impl<R: AppRuntime> Clone for Account<R> {
             username: self.username.clone(),
             host: self.host.clone(),
             session: self.session.clone(),
+            kind: self.kind.clone(),
         }
     }
 }
 
 impl<R: AppRuntime> Account<R> {
-    pub fn new(id: AccountId, username: String, host: String, session: AccountSession<R>) -> Self {
+    pub fn new(
+        id: AccountId,
+        username: String,
+        host: String,
+        session: AccountSession<R>,
+        kind: AccountKind,
+    ) -> Self {
         Self {
             id,
             username,
             host,
             session,
+            kind,
         }
     }
 
@@ -57,6 +69,15 @@ impl<R: AppRuntime> Account<R> {
 
     pub fn host(&self) -> String {
         self.host.clone()
+    }
+
+    pub fn info(&self) -> AccountInfo {
+        AccountInfo {
+            id: self.id.clone(),
+            username: self.username.clone(),
+            host: self.host.clone(),
+            kind: self.kind.clone(),
+        }
     }
 }
 

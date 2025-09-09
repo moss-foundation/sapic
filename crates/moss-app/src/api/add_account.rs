@@ -15,13 +15,7 @@ impl<R: AppRuntime> App<R> {
     ) -> joinerror::Result<AddAccountOutput> {
         let id = self
             .profile_service
-            .add_account(
-                ctx,
-                app_delegate,
-                input.profile_id,
-                input.host,
-                input.provider,
-            )
+            .add_account(ctx, app_delegate, input.host, input.kind)
             .await?;
 
         Ok(AddAccountOutput {

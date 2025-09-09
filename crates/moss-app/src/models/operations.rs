@@ -1,5 +1,6 @@
 use derive_more::Deref;
 use moss_logging::models::primitives::LogEntryId;
+use moss_user::models::primitives::AccountKind;
 use moss_workspace::models::primitives::WorkspaceMode;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
@@ -19,6 +20,7 @@ use crate::models::{primitives::*, types::*};
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateProfileInput {
     pub name: String,
+    pub is_default: Option<bool>,
 }
 
 /// @category Operation
@@ -27,10 +29,9 @@ pub struct CreateProfileInput {
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct AddAccountInput {
-    pub profile_id: ProfileId,
     pub host: String,
     pub label: Option<String>,
-    pub provider: AccountKind,
+    pub kind: AccountKind,
 }
 
 /// @category Operation

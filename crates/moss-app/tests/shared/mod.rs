@@ -131,7 +131,6 @@ pub async fn set_up_test_app() -> (
         .build(
             &ctx,
             BuildAppParams {
-                app_dir: app_path.clone(),
                 themes_dir: themes_abs_path,
                 locales_dir: locales_abs_path,
                 logs_dir: logs_abs_path,
