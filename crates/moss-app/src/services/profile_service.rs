@@ -47,8 +47,6 @@ impl<R: AppRuntime> ProfileService<R> {
         auth_api_client: Arc<AccountAuthGatewayApiClient>,
         keyring: Arc<dyn KeyringClient>,
     ) -> joinerror::Result<Self> {
-        dbg!(&dir_abs);
-
         let profiles = scan(&fs, dir_abs).await?;
 
         let active_profile = {
@@ -116,7 +114,7 @@ impl<R: AppRuntime> ProfileService<R> {
         &self,
         app_delegate: &AppDelegate<R>,
         account_id: AccountId,
-    ) -> joinerror::Result<()> {
+    ) -> joinerror::Result<AccountId> {
         let mut state_lock = self.state.write().await;
 
         let profile_id = state_lock.active_profile.id().clone();
@@ -159,7 +157,7 @@ impl<R: AppRuntime> ProfileService<R> {
             ));
         }
 
-        Ok(())
+        Ok(account_id)
     }
 
     pub async fn add_account(

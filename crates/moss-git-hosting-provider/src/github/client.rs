@@ -163,53 +163,40 @@ impl<R: AppRuntime> GitHubApiClient<R> for RealGitHubApiClient {
 
 #[cfg(any(test, feature = "test"))]
 pub mod test {
-    use crate::github::response::Owner;
-
     use super::*;
 
-    pub struct MockGitHubApiClient {}
-
-    impl MockGitHubApiClient {
-        pub fn new() -> Self {
-            Self {}
-        }
+    pub struct MockGitHubApiClient {
+        pub get_user_response: GetUserResponse,
+        pub get_contributors_response: GetContributorsResponse,
+        pub get_repository_response: GetRepositoryResponse,
     }
 
     #[async_trait]
     impl<R: AppRuntime> GitHubApiClient<R> for MockGitHubApiClient {
         async fn get_user(
             &self,
-            ctx: &R::AsyncContext,
-            account_handle: &AccountSession<R>,
+            _ctx: &R::AsyncContext,
+            _account_handle: &AccountSession<R>,
         ) -> joinerror::Result<GetUserResponse> {
-            Ok(GetUserResponse {
-                id: 1,
-                login: "test".to_string(),
-                email: None,
-            })
+            Ok(self.get_user_response.clone())
         }
 
         async fn get_contributors(
             &self,
-            ctx: &R::AsyncContext,
-            account_handle: &AccountSession<R>,
-            url: &GitUrl,
+            _ctx: &R::AsyncContext,
+            _account_handle: &AccountSession<R>,
+            _url: &GitUrl,
         ) -> joinerror::Result<GetContributorsResponse> {
-            Ok(GetContributorsResponse { items: vec![] })
+            Ok(self.get_contributors_response.clone())
         }
 
         async fn get_repository(
             &self,
-            ctx: &R::AsyncContext,
-            account_handle: &AccountSession<R>,
-            url: &GitUrl,
+            _ctx: &R::AsyncContext,
+            _account_handle: &AccountSession<R>,
+            _url: &GitUrl,
         ) -> joinerror::Result<GetRepositoryResponse> {
-            Ok(GetRepositoryResponse {
-                owner: Owner {
-                    login: "test".to_string(),
-                },
-                updated_at: "2021-01-01".to_string(),
-            })
+            Ok(self.get_repository_response.clone())
         }
     }
 }

@@ -5,9 +5,15 @@ use moss_applib::{
     mock::MockAppRuntime,
 };
 use moss_fs::RealFileSystem;
-use moss_git_hosting_provider::github::{
-    auth::{GitHubAuthAdapter, test::MockGitHubAuthAdapter},
-    client::{GitHubApiClient, test::MockGitHubApiClient},
+use moss_git_hosting_provider::{
+    github::{
+        auth::{GitHubAuthAdapter, test::MockGitHubAuthAdapter},
+        client::{GitHubApiClient, test::MockGitHubApiClient},
+    },
+    gitlab::{
+        auth::{GitLabAuthAdapter, test::MockGitLabAuthAdapter},
+        client::{GitLabApiClient, test::MockGitLabApiClient},
+    },
 };
 use moss_keyring::test::MockKeyringClient;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
@@ -52,11 +58,79 @@ const PROFILES: &str = r#"
 
 const ACCOUNT_AUTH_BASE_URL: &str = "https://account-auth-gateway-dev.20g10z3r.workers.dev";
 
+pub const TEST_GITHUB_USERNAME: &str = "test_login";
+pub const TEST_GITHUB_EMAIL: &str = "test_email@example.com";
+pub const TEST_GITLAB_USERNAME: &str = "test_username";
+pub const TEST_GITLAB_EMAIL: &str = "test_email@example.com";
+
 pub fn random_app_dir_path() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
         .join("data")
         .join(random_string(10))
+}
+
+fn mock_github_api_client() -> Arc<MockGitHubApiClient> {
+    MockGitHubApiClient {
+        get_user_response: moss_git_hosting_provider::github::response::GetUserResponse {
+            id: 1,
+            login: TEST_GITHUB_USERNAME.to_string(),
+            email: Some(TEST_GITHUB_EMAIL.to_string()),
+        },
+        get_contributors_response:
+            moss_git_hosting_provider::github::response::GetContributorsResponse { items: vec![] },
+        get_repository_response:
+            moss_git_hosting_provider::github::response::GetRepositoryResponse {
+                owner: moss_git_hosting_provider::github::response::Owner {
+                    login: TEST_GITHUB_USERNAME.to_string(),
+                },
+                updated_at: "test_updated_at".to_string(),
+            },
+    }
+    .into()
+}
+
+fn mock_github_auth_adapter() -> Arc<MockGitHubAuthAdapter> {
+    MockGitHubAuthAdapter {
+        pkce_token_credentials:
+            moss_git_hosting_provider::github::auth::GitHubPkceTokenCredentials {
+                access_token: "test_access_token".to_string(),
+            },
+        pat_token_credentials: (),
+    }
+    .into()
+}
+
+fn mock_gitlab_api_client() -> Arc<MockGitLabApiClient> {
+    MockGitLabApiClient {
+        get_user_response: moss_git_hosting_provider::gitlab::response::GetUserResponse {
+            username: TEST_GITLAB_USERNAME.to_string(),
+            commit_email: TEST_GITLAB_EMAIL.to_string(),
+        },
+        get_contributors_response:
+            moss_git_hosting_provider::gitlab::response::GetContributorsResponse { items: vec![] },
+        get_repository_response:
+            moss_git_hosting_provider::gitlab::response::GetRepositoryResponse {
+                owner: moss_git_hosting_provider::gitlab::response::Owner {
+                    username: TEST_GITLAB_USERNAME.to_string(),
+                },
+                updated_at: "test_updated_at".to_string(),
+            },
+    }
+    .into()
+}
+
+fn mock_gitlab_auth_adapter() -> Arc<MockGitLabAuthAdapter> {
+    MockGitLabAuthAdapter {
+        pkce_token_credentials:
+            moss_git_hosting_provider::gitlab::auth::GitLabPkceTokenCredentials {
+                access_token: "test_access_token".to_string(),
+                refresh_token: "test_refresh_token".to_string(),
+                expires_in: 3600,
+            },
+        pat_token_credentials: (),
+    }
+    .into()
 }
 
 pub async fn set_up_test_app() -> (
@@ -82,15 +156,12 @@ pub async fn set_up_test_app() -> (
     let app_path = random_app_dir_path();
     let app_delegate = {
         let delegate = AppDelegate::<MockAppRuntime>::new(tao_app_handle.clone());
-        <dyn GitHubAuthAdapter<MockAppRuntime>>::set_global(
-            &delegate,
-            Arc::new(MockGitHubAuthAdapter::new("test".to_string())),
-        );
-        <dyn GitHubApiClient<MockAppRuntime>>::set_global(
-            &delegate,
-            Arc::new(MockGitHubApiClient::new()),
-        );
         delegate.set_app_dir(app_path.clone());
+
+        <dyn GitHubAuthAdapter<MockAppRuntime>>::set_global(&delegate, mock_github_auth_adapter());
+        <dyn GitHubApiClient<MockAppRuntime>>::set_global(&delegate, mock_github_api_client());
+        <dyn GitLabAuthAdapter<MockAppRuntime>>::set_global(&delegate, mock_gitlab_auth_adapter());
+        <dyn GitLabApiClient<MockAppRuntime>>::set_global(&delegate, mock_gitlab_api_client());
 
         delegate
     };

@@ -1,4 +1,3 @@
-pub mod add_account;
 pub mod batch_delete_log;
 pub mod cancel_request;
 pub mod close_workspace;
@@ -13,7 +12,7 @@ pub mod list_locales;
 pub mod list_logs;
 pub mod list_workspaces;
 pub mod open_workspace;
-pub mod remove_account;
 pub mod set_color_theme;
 pub mod set_locale;
+pub mod update_profile;
 pub mod update_workspace;

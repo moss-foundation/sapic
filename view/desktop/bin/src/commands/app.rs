@@ -254,36 +254,18 @@ pub async fn create_profile<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn add_account<'a, R: tauri::Runtime>(
+pub async fn update_profile<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
-    input: AddAccountInput,
+    input: UpdateProfileInput,
     options: Options,
-) -> TauriResult<AddAccountOutput> {
+) -> TauriResult<UpdateProfileOutput> {
     super::with_app_timeout(
         ctx.inner(),
         app,
         options,
-        |ctx, app_delegate, app| async move { app.add_account(&ctx, &app_delegate, input).await },
-    )
-    .await
-}
-
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn remove_account<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: Window<R>,
-    input: RemoveAccountInput,
-    options: Options,
-) -> TauriResult<RemoveAccountOutput> {
-    super::with_app_timeout(
-        ctx.inner(),
-        app,
-        options,
-        |_, app_delegate, app| async move { app.remove_account(&app_delegate, input).await },
+        |ctx, app_delegate, app| async move { app.update_profile(&ctx, &app_delegate, input).await },
     )
     .await
 }

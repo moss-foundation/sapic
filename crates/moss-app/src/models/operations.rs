@@ -1,6 +1,6 @@
 use derive_more::Deref;
 use moss_logging::models::primitives::LogEntryId;
-use moss_user::models::primitives::{AccountId, AccountKind};
+use moss_user::models::primitives::AccountId;
 use moss_workspace::models::primitives::WorkspaceMode;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
@@ -33,33 +33,19 @@ pub struct CreateProfileOutput {
 /// @category Operation
 #[derive(Debug, Clone, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
-pub struct AddAccountInput {
-    pub host: String,
-    pub label: Option<String>,
-    pub kind: AccountKind,
-}
-
-/// @category Operation
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "operations.ts")]
-pub struct AddAccountOutput {
-    pub account_id: AccountId,
-}
-
-/// @category Operation
-#[derive(Debug, Clone, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct RemoveAccountInput {
-    pub account_id: AccountId,
+pub struct UpdateProfileInput {
+    pub accounts_to_add: Vec<AddAccountParams>,
+    pub accounts_to_remove: Vec<AccountId>,
 }
 
 /// @category Operation
 #[derive(Debug, Clone, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
-pub struct RemoveAccountOutput {}
+pub struct UpdateProfileOutput {
+    pub added_accounts: Vec<AccountId>,
+    pub removed_accounts: Vec<AccountId>,
+}
 
 // ########################################################
 // ###                   Cancellation                   ###
