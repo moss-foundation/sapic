@@ -16,7 +16,7 @@ import type {
 /**
  * @category Operation
  */
-export type AddAccountInput = { profileId: string; host: string; label?: string; provider: AccountKind };
+export type AddAccountInput = { host: string; label?: string; kind: AccountKind };
 
 /**
  * @category Operation
@@ -62,7 +62,7 @@ export type CloseWorkspaceOutput = {
 /**
  * @category Operation
  */
-export type CreateProfileInput = { name: string };
+export type CreateProfileInput = { name: string; isDefault: boolean | null };
 
 /**
  * @category Operation

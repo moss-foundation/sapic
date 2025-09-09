@@ -17,6 +17,12 @@
       "path": "crates/moss-workspace"
     },
     {
+      "path": "crates/moss-git"
+    },
+    {
+      "path": "crates/moss-user"
+    },
+    {
       "path": "crates/moss-common"
     },
     {

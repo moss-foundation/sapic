@@ -36,6 +36,7 @@ export const closeWorkspaceOutputSchema = z.object({
 
 export const createProfileInputSchema = z.object({
   name: z.string(),
+  isDefault: z.boolean().nullable(),
 });
 
 export const createProfileOutputSchema = z.object({
@@ -84,10 +85,9 @@ export const updateWorkspaceInputSchema = z.object({
   name: z.string().optional(),
 });
 export const addAccountInputSchema = z.object({
-  profileId: z.string(),
   host: z.string(),
   label: z.string().optional(),
-  provider: accountKindSchema,
+  kind: accountKindSchema,
 });
 
 export const batchDeleteLogOutputSchema = z.object({
