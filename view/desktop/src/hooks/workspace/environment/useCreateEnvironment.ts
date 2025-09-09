@@ -1,5 +1,5 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { CreateEnvironmentInput, CreateEnvironmentOutput, StreamEnvironmentsEvent } from "@repo/moss-workspace";
+import { CreateEnvironmentInput, CreateEnvironmentOutput } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_STREAMED_ENVIRONMENTS_QUERY_KEY } from "./useStreamEnvironments";
@@ -20,18 +20,7 @@ export const useCreateEnvironment = () => {
   return useMutation({
     mutationFn: createEnvironment,
     onSuccess: (data) => {
-      queryClient.setQueryData([USE_STREAMED_ENVIRONMENTS_QUERY_KEY], (old: StreamEnvironmentsEvent[]) => {
-        return [
-          ...old,
-          {
-            id: data.id,
-            collectionId: data.collectionId,
-            name: data.name,
-            order: data.order,
-            expanded: data.expanded,
-          },
-        ];
-      });
+      queryClient.invalidateQueries({ queryKey: [USE_STREAMED_ENVIRONMENTS_QUERY_KEY] });
 
       return data;
     },

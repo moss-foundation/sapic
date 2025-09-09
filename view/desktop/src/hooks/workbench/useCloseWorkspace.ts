@@ -45,6 +45,7 @@ export const useCloseWorkspace = () => {
       queryClient.removeQueries({ queryKey: [USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY] });
       queryClient.removeQueries({ queryKey: [USE_STREAMED_ENVIRONMENTS_QUERY_KEY] });
       queryClient.invalidateQueries({ queryKey: [USE_STREAMED_ENVIRONMENTS_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: [USE_STREAMED_ENVIRONMENTS_QUERY_KEY] });
     },
   });
 };

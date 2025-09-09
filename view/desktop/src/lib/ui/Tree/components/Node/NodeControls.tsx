@@ -9,26 +9,28 @@ import { DropIndicatorForTrigger } from "../DropIndicatorForTrigger";
 import { useTreeContext } from "../TreeContext";
 
 interface NodeControlsProps extends HTMLAttributes<HTMLDivElement> {
-  depth: number;
-  isChildDropBlocked: boolean | null;
-  isActive: boolean;
-  isRootNode: boolean;
-  instruction: Instruction | null;
-  isLastChild: boolean;
+  depth?: number;
+  isChildDropBlocked?: boolean | null;
+  isActive?: boolean;
+  isRootNode?: boolean;
+  instruction?: Instruction | null;
+  isLastChild?: boolean;
   hideDragHandle?: boolean;
+  dropIndicatorFullWidth?: boolean;
 }
 
 export const NodeControls = forwardRef<HTMLDivElement, NodeControlsProps>(
   (
     {
-      depth,
-      isChildDropBlocked,
-      isRootNode,
-      isActive,
+      depth = 0,
+      isChildDropBlocked = null,
+      isRootNode = false,
+      isActive = false,
       children,
-      instruction,
-      isLastChild,
+      instruction = null,
+      isLastChild = false,
       hideDragHandle = false,
+      dropIndicatorFullWidth = false,
       ...props
     }: NodeControlsProps,
     ref
@@ -52,9 +54,10 @@ export const NodeControls = forwardRef<HTMLDivElement, NodeControlsProps>(
         <DropIndicatorForTrigger
           paddingLeft={nodePaddingLeft}
           paddingRight={treePaddingRight}
-          instruction={instruction}
+          instruction={instruction ?? null}
           depth={depth}
           isLastChild={isLastChild}
+          fullWidth={dropIndicatorFullWidth}
         />
 
         {!isRootNode && !hideDragHandle && (
@@ -67,7 +70,7 @@ export const NodeControls = forwardRef<HTMLDivElement, NodeControlsProps>(
 
         <div
           style={{ paddingLeft: nodePaddingLeft, paddingRight: treePaddingRight }}
-          className="flex min-w-0 grow items-center justify-between overflow-hidden"
+          className="flex min-w-0 grow items-center justify-between"
         >
           {children}
         </div>

@@ -223,6 +223,7 @@ pub async fn run<R: TauriRuntime>() {
             commands::activate_environment,
             commands::create_environment,
             commands::update_environment,
+            commands::batch_update_environment,
             commands::stream_environments,
             commands::delete_environment,
             commands::update_environment_group,

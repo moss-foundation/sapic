@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from "react";
 
 import { ButtonNeutralOutlined, ButtonPrimary, InputOutlined, RadioGroup } from "@/components";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
+import { useGroupedEnvironments } from "@/components/EnvironmentsLists/hooks/useGroupedEnvironments";
 import { ModalForm } from "@/components/ModalForm";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
 import {
@@ -17,48 +18,50 @@ import { ModalWrapperProps } from "../types";
 export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { globalEnvironments, groupedEnvironments } = useStreamEnvironments();
+  const { globalEnvironments, collectionEnvironments } = useStreamEnvironments();
   const { mutateAsync: createEnvironment } = useCreateEnvironment();
   const { data: collections } = useStreamCollections();
+  const { groupedEnvironments } = useGroupedEnvironments();
 
   const [name, setName] = useState("New Environment");
   const [collectionId, setCollectionId] = useState<string | null>(null);
   const [mode, setMode] = useState<"Workspace" | "Collection">("Workspace");
   const [openAutomatically, setOpenAutomatically] = useState(true);
 
-  const { isInitialized } = useFocusInputOnMount({
+  useFocusInputOnMount({
     inputRef,
     initialValue: name,
   });
 
   const restrictedNames = useMemo(() => {
-    const list = mode === "Workspace" ? globalEnvironments : groupedEnvironments;
+    const list = mode === "Workspace" ? globalEnvironments : collectionEnvironments;
     return list?.map((env) => env.name) ?? [];
-  }, [mode, globalEnvironments, groupedEnvironments]);
+  }, [mode, globalEnvironments, collectionEnvironments]);
 
   const { isValid } = useValidateInput({
     value: name,
     restrictedValues: restrictedNames,
     inputRef,
-    isInitialized,
   });
 
   const getNextOrder = (list?: { length?: number } | null) => (list?.length ?? 0) + 1;
   const handleSubmit = async () => {
     if (!isValid) return;
 
-    const newOrder = mode === "Workspace" ? getNextOrder(globalEnvironments) : getNextOrder(groupedEnvironments);
-
     if (mode === "Workspace") {
       await createEnvironment({
         name,
-        order: newOrder,
+        order: getNextOrder(globalEnvironments),
         variables: [],
       });
     } else if (mode === "Collection" && collectionId) {
+      const collectionEnvironments = groupedEnvironments.find(
+        (group) => group.collectionId === collectionId
+      )?.environments;
+
       await createEnvironment({
         name,
-        order: newOrder,
+        order: getNextOrder(collectionEnvironments),
         variables: [],
         collectionId,
       });

@@ -27,8 +27,8 @@ export const TreeRootNodeRenamingForm = ({
   const { iconPath } = useContext(CollectionTreeContext);
 
   return (
-    <div className={cn("flex grow cursor-pointer items-center gap-1.5", className)} {...props}>
-      <div className="flex size-5 shrink-0 items-center justify-center rounded">
+    <div className={cn("flex grow cursor-pointer items-center gap-1.5 py-px", className)} {...props}>
+      <div className="flex h-5 shrink-0 items-center justify-center rounded">
         {iconPath ? (
           <img src={iconPath} className="h-full w-full" />
         ) : (
