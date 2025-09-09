@@ -35,6 +35,7 @@ pub struct AddAccountOutput {
 
 /// @category Operation
 #[derive(Debug, Clone, Deserialize, TS)]
+#[ts(optional_fields)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateProfileInput {
