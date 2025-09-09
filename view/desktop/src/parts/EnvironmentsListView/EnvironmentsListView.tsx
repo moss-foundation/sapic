@@ -17,8 +17,8 @@ export const EnvironmentsListView = () => {
     globalEnvironments,
     collectionEnvironments,
     isLoading,
-    isSuccess,
     data: streamEnvironmentsData,
+    isFetched,
   } = useStreamEnvironments();
 
   useMonitorEnvironmentsLists();
@@ -62,7 +62,7 @@ export const EnvironmentsListView = () => {
           </>
         )}
 
-        {isSuccess && noEnvironments && (
+        {isFetched && noEnvironments && (
           <div className="px-2">
             <img src={ErrorNaughtyDog} className="pointer-events-none mx-auto h-auto w-full max-w-[200px]" />
             <p className="text-center text-(--moss-secondary-text)">You have no environments yet</p>
