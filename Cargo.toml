@@ -35,7 +35,6 @@ members = [
     "crates/moss-user",
     "crates/moss-server-api",
     "crates/moss-id-macro",
-    "crates/moss-bootstrap",
     #
     # Apps
     #
