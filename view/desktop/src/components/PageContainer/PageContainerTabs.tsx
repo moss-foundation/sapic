@@ -67,15 +67,10 @@ interface PageContainerTabContentProps {
   noPadding?: boolean;
 }
 
-export const PageContainerTabContent = ({
-  value,
-  children,
-  className,
-  noPadding = false,
-}: PageContainerTabContentProps) => {
+export const PageContainerTabContent = ({ value, children, className }: PageContainerTabContentProps) => {
   return (
-    <TabsContent value={value} className={cn("flex-1", className)}>
-      <Scrollbar className={cn("h-full min-w-fit", noPadding ? "" : "px-5 py-3.5")}>{children}</Scrollbar>
+    <TabsContent value={value}>
+      <Scrollbar className={cn("h-full min-w-fit", className)}>{children}</Scrollbar>
     </TabsContent>
   );
 };

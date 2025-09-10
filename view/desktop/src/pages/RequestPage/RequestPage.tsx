@@ -11,6 +11,7 @@ import {
   TabItem,
 } from "@/components";
 import { TreeCollectionNode } from "@/components/CollectionTree/types";
+import { PageWrapper } from "@/components/PageView/PageWrapper";
 import { useStreamCollectionEntries } from "@/hooks";
 import { useRenameEntryForm } from "@/hooks/useRenameEntryForm";
 import { Icon } from "@/lib/ui";
@@ -211,14 +212,14 @@ const RequestPage = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
 
       <div className={cn("relative")}>
         {node ? (
-          <div className="flex shrink-0 flex-col gap-1.5 pt-1.5">
+          <div className="flex shrink-0 flex-col gap-1.5">
             {props.params?.collectionId && node?.id && (
-              <div className="px-2">
+              <div className="px-5">
                 <Breadcrumbs collectionId={props.params.collectionId} nodeId={props.params.node.id} />
               </div>
             )}
 
-            <div className="px-3">
+            <div className="px-5">
               <RequestInputField
                 initialMethod={httpMethod}
                 initialUrl={requestData.url.raw}
@@ -233,11 +234,13 @@ const RequestPage = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
             </div>
 
             {activeTab === "request" && (
-              <PageContainerWithTabs
-                tabs={requestTabs}
-                activeTabId={activeRequestTabId}
-                onTabChange={setActiveRequestTabId}
-              />
+              <PageWrapper>
+                <PageContainerWithTabs
+                  tabs={requestTabs}
+                  activeTabId={activeRequestTabId}
+                  onTabChange={setActiveRequestTabId}
+                />
+              </PageWrapper>
             )}
           </div>
         ) : (
