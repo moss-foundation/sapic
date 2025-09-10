@@ -1,19 +1,9 @@
 import { useCallback, useMemo, useState } from "react";
 
-import {
-  ActionButton,
-  Breadcrumbs,
-  PageContainerWithTabs,
-  PageHeader,
-  PageTabs,
-  PageToolbar,
-  PageView,
-  TabItem,
-} from "@/components";
+import { ActionButton, PageContainerWithTabs, PageTabs, PageToolbar, PageView, TabItem } from "@/components";
 import { TreeCollectionNode } from "@/components/CollectionTree/types";
 import { PageWrapper } from "@/components/PageView/PageWrapper";
 import { useStreamCollectionEntries } from "@/hooks";
-import { useRenameEntryForm } from "@/hooks/useRenameEntryForm";
 import { Icon } from "@/lib/ui";
 import { useRequestPage } from "@/pages/RequestPage/hooks/useRequestPage";
 import { useRequestModeStore } from "@/store/requestMode";
@@ -22,6 +12,7 @@ import { EntryKind } from "@repo/moss-collection";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
 
 import { RequestInputField } from "./RequestInputField";
+import { RequestPageHeader } from "./RequestPageHeader/RequestPageHeader";
 import {
   AuthTabContent,
   BodyTabContent,
@@ -57,9 +48,6 @@ const RequestPage = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
   const [activeRequestTabId, setActiveRequestTabId] = useState("params");
 
   const { requestData, httpMethod, setHttpMethod, updateRequestData } = useRequestPage();
-
-  const { isRenamingEntry, setIsRenamingEntry, handleRenamingEntrySubmit, handleRenamingEntryCancel } =
-    useRenameEntryForm(props?.params?.node, props?.params?.collectionId);
 
   if (node) {
     dontShowTabs =
@@ -197,7 +185,7 @@ const RequestPage = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
 
   return (
     <PageView>
-      <PageHeader
+      {/* <PageHeader
         icon="Request"
         tabs={dontShowTabs ? null : tabs}
         toolbar={toolbar}
@@ -208,17 +196,13 @@ const RequestPage = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
         setIsRenamingTitle={setIsRenamingEntry}
         handleRenamingFormCancel={handleRenamingEntryCancel}
         {...props}
-      />
+      /> */}
+
+      {node && <RequestPageHeader node={node} collectionId={props.params?.collectionId ?? ""} api={props.api} />}
 
       <div className={cn("relative")}>
         {node ? (
           <div className="flex shrink-0 flex-col gap-1.5">
-            {props.params?.collectionId && node?.id && (
-              <div className="px-5">
-                <Breadcrumbs collectionId={props.params.collectionId} nodeId={props.params.node.id} />
-              </div>
-            )}
-
             <div className="px-5">
               <RequestInputField
                 initialMethod={httpMethod}
