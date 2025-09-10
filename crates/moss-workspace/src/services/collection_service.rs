@@ -182,8 +182,14 @@ impl<R: AppRuntime> CollectionService<R> {
                 let repository = match GitUrl::parse(&git_params.repository) {
                     Ok(repository) => Some(repository),
                     Err(e) => {
-                        // TODO: notify the frontend with a toast
                         // Continue creating a collection without vcs
+                        self.app_delegate.emit_oneshot(ToLocation::Toast {
+                            activity_id: "create_collection_invalid_repository",
+                            title: "Invalid Repository".to_string(),
+                            detail: Some(
+                                "The provided repository is invalid, skipping the vcs".to_string(),
+                            ),
+                        })?;
                         session::error!(format!(
                             "failed to parse repository url: {}",
                             e.to_string()
@@ -201,8 +207,14 @@ impl<R: AppRuntime> CollectionService<R> {
                 let repository = match GitUrl::parse(&git_params.repository) {
                     Ok(repository) => Some(repository),
                     Err(e) => {
-                        // TODO: notify the frontend with a toast
                         // Continue creating a collection without vcs
+                        self.app_delegate.emit_oneshot(ToLocation::Toast {
+                            activity_id: "create_collection_invalid_repository",
+                            title: "Invalid Repository".to_string(),
+                            detail: Some(
+                                "The provided repository is invalid, skipping the vcs".to_string(),
+                            ),
+                        })?;
                         session::error!(format!(
                             "failed to parse repository url: {}",
                             e.to_string()
@@ -260,7 +272,14 @@ impl<R: AppRuntime> CollectionService<R> {
                 .init_vcs(ctx, client, git_params.repository, git_params.branch)
                 .await
             {
-                // TODO: notify the frontend with a toast
+                self.app_delegate.emit_oneshot(ToLocation::Toast {
+                    activity_id: "create_collection_init_vcs_failure",
+                    title: "Failed to initialized collection vcs".to_string(),
+                    detail: Some(
+                        "Failed to initialize collection vcs, creating a local only collection"
+                            .to_string(),
+                    ),
+                })?;
             }
         }
 

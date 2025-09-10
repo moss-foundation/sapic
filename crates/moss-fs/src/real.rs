@@ -1,4 +1,3 @@
-use crate::{CreateOptions, FileSystem, FsError, FsResult, RemoveOptions, RenameOptions};
 use async_stream::stream;
 use async_zip::{
     Compression, ZipEntryBuilder,
@@ -18,6 +17,8 @@ use tokio::{
 };
 use tokio_stream::wrappers::UnboundedReceiverStream;
 use tokio_util::compat::TokioAsyncWriteCompatExt;
+
+use crate::{CreateOptions, FileSystem, FsError, FsResult, RemoveOptions, RenameOptions};
 
 pub struct RealFileSystem {
     tmp: Arc<Path>,
