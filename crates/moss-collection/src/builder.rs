@@ -236,7 +236,6 @@ impl CollectionBuilder {
             }
         }
 
-        // FIXME: I'm not sure why we need to store a repo url that's different from what we expect from the user
         let manifest_vcs_block =
             params
                 .git_params

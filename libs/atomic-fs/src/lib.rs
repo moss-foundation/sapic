@@ -351,7 +351,7 @@ pub async fn rename(
 
     if from.is_dir() && to.is_file() {
         return Err(Error::new::<()>(format!(
-            "cannot rename a file to a directory: {} -> {}",
+            "cannot rename a directory to a file: {} -> {}",
             from.display(),
             to.display()
         )));
@@ -464,7 +464,7 @@ async fn rename_file_impl(
         (_, false) => {
             if let Err(e) = tokio::fs::rename(from, to).await {
                 return Err(Error::new::<()>(format!(
-                    "failed to rename file `{}` to `{}`",
+                    "failed to rename file `{}` to `{}`: {e}",
                     from.display(),
                     to.display()
                 )));

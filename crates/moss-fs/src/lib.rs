@@ -86,45 +86,54 @@ pub trait FileSystem: Send + Sync {
     )>;
 
     // FIXME: Come up with better names
-    async fn rollback(&self, tmp: &Path) -> FsResult<Rollback>;
+    async fn rollback(&self, tmp: &Path) -> joinerror::Result<Rollback>;
 
-    async fn create_dir_with_rollback(&self, rb: &mut Rollback, path: &Path) -> FsResult<()>;
+    async fn create_dir_with_rollback(
+        &self,
+        rb: &mut Rollback,
+        path: &Path,
+    ) -> joinerror::Result<()>;
 
-    async fn create_dir_all_with_rollback(&self, rb: &mut Rollback, path: &Path) -> FsResult<()>;
+    async fn create_dir_all_with_rollback(
+        &self,
+        rb: &mut Rollback,
+        path: &Path,
+    ) -> joinerror::Result<()>;
 
     async fn remove_dir_with_rollback(
         &self,
         rb: &mut Rollback,
         path: &Path,
         options: RemoveOptions,
-    ) -> FsResult<()>;
-
-    async fn rename_with_rollback(
-        &self,
-        from: &Path,
-        to: &Path,
-        options: RenameOptions,
-    ) -> FsResult<()>;
+    ) -> joinerror::Result<()>;
 
     async fn create_file_with_rollback(
         &self,
         rb: &mut Rollback,
         path: &Path,
         options: CreateOptions,
-    ) -> FsResult<()>;
+    ) -> joinerror::Result<()>;
 
-    async fn create_file_with_with_rollback(
+    async fn create_file_with_content_with_rollback(
         &self,
         rb: &mut Rollback,
         path: &Path,
         content: &[u8],
         options: CreateOptions,
-    ) -> FsResult<()>;
+    ) -> joinerror::Result<()>;
 
     async fn remove_file_with_rollback(
         &self,
         rb: &mut Rollback,
         path: &Path,
         options: RemoveOptions,
-    ) -> FsResult<()>;
+    ) -> joinerror::Result<()>;
+
+    async fn rename_with_rollback(
+        &self,
+        rb: &mut Rollback,
+        from: &Path,
+        to: &Path,
+        options: RenameOptions,
+    ) -> joinerror::Result<()>;
 }

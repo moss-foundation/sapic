@@ -292,16 +292,25 @@ impl FileSystem for RealFileSystem {
         Ok(())
     }
 
-    async fn rollback(&self, tmp: &Path) -> FsResult<Rollback> {
-        todo!()
+    // TODO: Do we use an application-level temporary folder?
+    async fn rollback(&self, tmp: &Path) -> joinerror::Result<Rollback> {
+        Rollback::new(tmp.to_path_buf()).await
     }
 
-    async fn create_dir_with_rollback(&self, rb: &mut Rollback, path: &Path) -> FsResult<()> {
-        todo!()
+    async fn create_dir_with_rollback(
+        &self,
+        rb: &mut Rollback,
+        path: &Path,
+    ) -> joinerror::Result<()> {
+        atomic_fs::create_dir(rb, path).await
     }
 
-    async fn create_dir_all_with_rollback(&self, rb: &mut Rollback, path: &Path) -> FsResult<()> {
-        todo!()
+    async fn create_dir_all_with_rollback(
+        &self,
+        rb: &mut Rollback,
+        path: &Path,
+    ) -> joinerror::Result<()> {
+        atomic_fs::create_dir_all(rb, path).await
     }
 
     async fn remove_dir_with_rollback(
@@ -309,17 +318,15 @@ impl FileSystem for RealFileSystem {
         rb: &mut Rollback,
         path: &Path,
         options: RemoveOptions,
-    ) -> FsResult<()> {
-        todo!()
-    }
-
-    async fn rename_with_rollback(
-        &self,
-        from: &Path,
-        to: &Path,
-        options: RenameOptions,
-    ) -> FsResult<()> {
-        todo!()
+    ) -> joinerror::Result<()> {
+        atomic_fs::remove_dir(
+            rb,
+            path,
+            atomic_fs::RemoveOptions {
+                ignore_if_not_exists: options.ignore_if_not_exists,
+            },
+        )
+        .await
     }
 
     async fn create_file_with_rollback(
@@ -327,18 +334,35 @@ impl FileSystem for RealFileSystem {
         rb: &mut Rollback,
         path: &Path,
         options: CreateOptions,
-    ) -> FsResult<()> {
-        todo!()
+    ) -> joinerror::Result<()> {
+        atomic_fs::create_file(
+            rb,
+            path,
+            atomic_fs::CreateOptions {
+                overwrite: options.overwrite,
+                ignore_if_exists: options.ignore_if_exists,
+            },
+        )
+        .await
     }
 
-    async fn create_file_with_with_rollback(
+    async fn create_file_with_content_with_rollback(
         &self,
         rb: &mut Rollback,
         path: &Path,
         content: &[u8],
         options: CreateOptions,
-    ) -> FsResult<()> {
-        todo!()
+    ) -> joinerror::Result<()> {
+        atomic_fs::create_file_with(
+            rb,
+            path,
+            atomic_fs::CreateOptions {
+                overwrite: options.overwrite,
+                ignore_if_exists: options.ignore_if_exists,
+            },
+            content,
+        )
+        .await
     }
 
     async fn remove_file_with_rollback(
@@ -346,7 +370,33 @@ impl FileSystem for RealFileSystem {
         rb: &mut Rollback,
         path: &Path,
         options: RemoveOptions,
-    ) -> FsResult<()> {
-        todo!()
+    ) -> joinerror::Result<()> {
+        atomic_fs::remove_file(
+            rb,
+            path,
+            atomic_fs::RemoveOptions {
+                ignore_if_not_exists: options.ignore_if_not_exists,
+            },
+        )
+        .await
+    }
+
+    async fn rename_with_rollback(
+        &self,
+        rb: &mut Rollback,
+        from: &Path,
+        to: &Path,
+        options: RenameOptions,
+    ) -> joinerror::Result<()> {
+        atomic_fs::rename(
+            rb,
+            from,
+            to,
+            atomic_fs::RenameOptions {
+                overwrite: options.overwrite,
+                ignore_if_exists: options.ignore_if_exists,
+            },
+        )
+        .await
     }
 }
