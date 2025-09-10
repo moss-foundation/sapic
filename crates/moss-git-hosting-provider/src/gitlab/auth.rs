@@ -33,7 +33,7 @@ impl<R: AppRuntime> dyn GitLabAuthAdapter<R> {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct GitLabPkceTokenCredentials {
     pub access_token: String,
     pub refresh_token: String,
@@ -157,5 +157,34 @@ impl<R: AppRuntime> GitAuthAdapter<R> for RealGitLabAuthAdapter<R> {
 
     async fn auth_with_pat(&self, _ctx: &R::AsyncContext) -> joinerror::Result<Self::PatToken> {
         unimplemented!()
+    }
+}
+
+#[cfg(any(test, feature = "test"))]
+pub mod test {
+    use super::*;
+
+    pub struct MockGitLabAuthAdapter {
+        pub pkce_token_credentials: GitLabPkceTokenCredentials,
+        pub pat_token_credentials: (),
+    }
+
+    impl<R: AppRuntime> GitLabAuthAdapter<R> for MockGitLabAuthAdapter {}
+
+    #[async_trait]
+    impl<R: AppRuntime> GitAuthAdapter<R> for MockGitLabAuthAdapter {
+        type PkceToken = GitLabPkceTokenCredentials;
+        type PatToken = ();
+
+        async fn auth_with_pkce(
+            &self,
+            _ctx: &R::AsyncContext,
+        ) -> joinerror::Result<Self::PkceToken> {
+            Ok(self.pkce_token_credentials.clone())
+        }
+
+        async fn auth_with_pat(&self, _ctx: &R::AsyncContext) -> joinerror::Result<Self::PatToken> {
+            Ok(self.pat_token_credentials.clone())
+        }
     }
 }

@@ -63,6 +63,7 @@ WORKSPACE_MODELS_DIR := crates/moss-workspace
 ACTIVITY_BROADCASTER_MODELS_DIR := crates/moss-activity-broadcaster
 API_MODELS_DIR := crates/moss-api
 GIT_MODELS_DIR := crates/moss-git
+USER_MODELS_DIR := crates/moss-user
 
 # ---- Command Executables ----
 PNPM := pnpm
@@ -146,6 +147,8 @@ $(eval $(call gen_bindings,activity-broadcaster,ACTIVITY_BROADCASTER_MODELS_DIR)
 $(eval $(call gen_bindings,bindingutils,BINDINGUTILS_DIR))
 $(eval $(call gen_bindings,api,API_MODELS_DIR))
 $(eval $(call gen_bindings,git,GIT_MODELS_DIR))
+$(eval $(call gen_bindings,user,USER_MODELS_DIR))
+
 
 gen-app-bindings:
 gen-collection-bindings:
@@ -155,6 +158,7 @@ gen-activity-broadcaster-bindings:
 gen-bindingutils-bindings:
 gen-api-bindings:
 gen-git-bindings:
+gen-user-bindings:
 
 ## Generate all TypeScript bindings
 .PHONY: gen-bindings
@@ -166,9 +170,8 @@ gen-bindings: \
 	gen-activity-broadcaster-bindings \
 	gen-bindingutils-bindings \
 	gen-api-bindings \
-	gen-git-bindings
-
-
+	gen-git-bindings \
+	gen-user-bindings
 
 
 # ======================================================

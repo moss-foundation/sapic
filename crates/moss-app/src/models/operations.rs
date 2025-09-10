@@ -1,5 +1,6 @@
 use derive_more::Deref;
 use moss_logging::models::primitives::LogEntryId;
+use moss_user::models::primitives::{AccountId, ProfileId};
 use moss_workspace::models::primitives::WorkspaceMode;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
@@ -13,15 +14,7 @@ use crate::models::{primitives::*, types::*};
 // ###                    Profile                      ###
 // #########################################################
 
-/// @category Operation
-#[derive(Debug, Clone, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct CreateProfileInput {
-    pub name: String,
-}
-
-/// @category Operation
+/// DEPRECATED  
 #[derive(Debug, Clone, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
@@ -30,14 +23,24 @@ pub struct AddAccountInput {
     pub profile_id: ProfileId,
     pub host: String,
     pub label: Option<String>,
-    pub provider: AccountKind,
+    pub provider: AccountId,
 }
 
-/// @category Operation
+/// DEPRECATED  
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "operations.ts")]
 pub struct AddAccountOutput {
     pub account_id: String,
+}
+
+/// @category Operation
+#[derive(Debug, Clone, Deserialize, TS)]
+#[ts(optional_fields)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct CreateProfileInput {
+    pub name: String,
+    pub is_default: Option<bool>,
 }
 
 /// @category Operation
@@ -46,6 +49,24 @@ pub struct AddAccountOutput {
 pub struct CreateProfileOutput {
     pub profile_id: String,
 }
+
+/// @category Operation
+#[derive(Debug, Clone, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct UpdateProfileInput {
+    pub accounts_to_add: Vec<AddAccountParams>,
+    pub accounts_to_remove: Vec<AccountId>,
+}
+
+/// @category Operation
+#[derive(Debug, Clone, Serialize, TS)]
+#[ts(export, export_to = "operations.ts")]
+pub struct UpdateProfileOutput {
+    pub added_accounts: Vec<AccountId>,
+    pub removed_accounts: Vec<AccountId>,
+}
+
 // ########################################################
 // ###                   Cancellation                   ###
 // ########################################################

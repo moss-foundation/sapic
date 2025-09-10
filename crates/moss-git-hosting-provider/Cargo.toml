@@ -31,4 +31,5 @@ urlencoding.workspace = true
 libssh2-sys = { version = "0.3.1", features = ["openssl-on-win32", "vendored-openssl"] }
 
 [features]
+test = []
 integration-tests = []

@@ -3,17 +3,45 @@ use std::collections::HashMap;
 use moss_applib::AppRuntime;
 use tokio::sync::RwLock;
 
-use crate::{account::Account, models::primitives::AccountId};
+use crate::{
+    account::Account,
+    models::{
+        primitives::{AccountId, AccountKind, ProfileId},
+        types::AccountInfo,
+    },
+};
 
-pub struct ActiveProfile<R: AppRuntime> {
+pub struct Profile<R: AppRuntime> {
+    id: ProfileId,
     accounts: RwLock<HashMap<AccountId, Account<R>>>,
 }
 
-impl<R: AppRuntime> ActiveProfile<R> {
-    pub fn new(accounts: HashMap<AccountId, Account<R>>) -> Self {
+impl<R: AppRuntime> Profile<R> {
+    pub fn new(id: ProfileId, accounts: HashMap<AccountId, Account<R>>) -> Self {
         Self {
+            id,
             accounts: RwLock::new(accounts),
         }
+    }
+
+    pub fn id(&self) -> &ProfileId {
+        &self.id
+    }
+
+    pub async fn is_account_exists(
+        &self,
+        username: &str,
+        kind: AccountKind,
+        host: &str,
+    ) -> Option<AccountInfo> {
+        let accounts = self.accounts.read().await;
+        for account in accounts.values() {
+            if account.username == username && account.kind == kind && account.host == host {
+                return Some(account.info());
+            }
+        }
+
+        None
     }
 
     pub async fn account(&self, account_id: &AccountId) -> Option<Account<R>> {
@@ -39,18 +67,11 @@ impl<R: AppRuntime> ActiveProfile<R> {
         self.accounts.write().await.insert(account.id(), account);
     }
 
-    pub async fn remove_account(&self, account_id: &AccountId) {
+    pub async fn remove_account(&self, account_id: &AccountId) -> joinerror::Result<()> {
+        // TODO: Revoke the account session
+
         self.accounts.write().await.remove(account_id);
+
+        Ok(())
     }
 }
-
-// pub struct ProfileAccount {
-//     username: String,
-//     session: AccountSession,
-// }
-
-// impl ProfileAccount {
-//     pub fn session(&self) -> &AccountSession {
-//         &self.session
-//     }
-// }

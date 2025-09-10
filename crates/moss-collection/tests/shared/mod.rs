@@ -56,7 +56,12 @@ pub async fn create_test_collection() -> (
 
     let abs_path: Arc<Path> = internal_abs_path.clone().into();
 
-    let app_delegate = AppDelegate::new(mock_app.handle().clone());
+    let app_delegate = {
+        let delegate = AppDelegate::new(mock_app.handle().clone());
+        delegate.set_app_dir(internal_abs_path);
+        delegate
+    };
+
     let collection = CollectionBuilder::new(fs)
         .await
         .unwrap()

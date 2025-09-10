@@ -1,0 +1,25 @@
+use serde::{Deserialize, Serialize};
+use ts_rs::TS;
+
+use crate::models::primitives::{AccountId, AccountKind, ProfileId};
+
+/// @category Type
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct ProfileInfo {
+    pub id: ProfileId,
+    pub name: String,
+    pub accounts: Vec<AccountInfo>,
+}
+
+/// @category Type
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct AccountInfo {
+    pub id: AccountId,
+    pub username: String,
+    pub host: String,
+    pub kind: AccountKind,
+}

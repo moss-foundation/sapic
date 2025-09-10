@@ -123,4 +123,8 @@ impl<R: AppRuntime> App<R> {
     pub fn cancellation_map(&self) -> Arc<RwLock<HashMap<String, Canceller>>> {
         self.tracked_cancellations.clone()
     }
+
+    pub async fn active_profile(&self) -> Arc<moss_user::profile::Profile<R>> {
+        self.profile_service.active_profile().await
+    }
 }

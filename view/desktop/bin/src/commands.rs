@@ -1,11 +1,9 @@
 mod app;
 mod collection;
-mod env;
 mod workspace;
 
 pub use app::*;
 pub use collection::*;
-pub use env::*;
 pub use workspace::*;
 
 use joinerror::OptionExt;

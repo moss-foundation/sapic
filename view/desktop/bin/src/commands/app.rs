@@ -1,5 +1,5 @@
 use joinerror::Error;
-use moss_api::TauriResult;
+use moss_api::{TauriError, TauriResult};
 use moss_app::{command::CommandContext, models::operations::*};
 use moss_applib::errors::NotFound;
 use moss_text::{ReadOnlyStr, quote};
@@ -237,6 +237,7 @@ pub async fn cancel_request<'a, R: tauri::Runtime>(
     Ok(app.cancel_request(input).await?)
 }
 
+#[allow(dead_code)]
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn create_profile<'a, R: tauri::Runtime>(
@@ -246,26 +247,35 @@ pub async fn create_profile<'a, R: tauri::Runtime>(
     input: CreateProfileInput,
     options: Options,
 ) -> TauriResult<CreateProfileOutput> {
-    super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
-        app.create_profile(&ctx, input).await
+    super::with_app_timeout(ctx.inner(), app, options, |ctx, app_delegate, app| async move {
+        app.create_profile(&ctx, &app_delegate, input).await
     })
     .await
 }
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn add_account<'a, R: tauri::Runtime>(
+pub async fn update_profile<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
-    input: AddAccountInput,
+    input: UpdateProfileInput,
     options: Options,
-) -> TauriResult<AddAccountOutput> {
+) -> TauriResult<UpdateProfileOutput> {
     super::with_app_timeout(
         ctx.inner(),
         app,
         options,
-        |ctx, app_delegate, app| async move { app.add_account(&ctx, &app_delegate, input).await },
+        |ctx, app_delegate, app| async move { app.update_profile(&ctx, &app_delegate, input).await },
     )
     .await
+}
+
+// TODO: Replace this with fetching the api key from the server
+#[tauri::command(async)]
+#[instrument(level = "trace", fields(window = window.label()))]
+pub async fn get_mistral_api_key<'a, R: tauri::Runtime>(window: Window<R>) -> TauriResult<String> {
+    let api_key = dotenv::var("MISTRAL_API_KEY")
+        .map_err(|_| TauriError::Other(anyhow::anyhow!("MISTRAL_API_KEY not set")))?;
+    Ok(api_key)
 }
