@@ -49,10 +49,12 @@ pub async fn create_test_collection() -> (
 ) {
     let mock_app = tauri::test::mock_app();
     let ctx = MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
-    let fs = Arc::new(RealFileSystem::new());
     let internal_abs_path = random_collection_path();
+    let temp_path = internal_abs_path.join("tmp");
 
-    std::fs::create_dir_all(internal_abs_path.clone()).unwrap();
+    std::fs::create_dir_all(&internal_abs_path).unwrap();
+    std::fs::create_dir_all(&temp_path).unwrap();
+    let fs = Arc::new(RealFileSystem::new(&temp_path));
 
     let abs_path: Arc<Path> = internal_abs_path.clone().into();
 

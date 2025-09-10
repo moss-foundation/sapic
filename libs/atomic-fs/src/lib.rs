@@ -53,12 +53,11 @@ impl Drop for Rollback {
 }
 
 impl Rollback {
-    pub async fn new(tmp: impl AsRef<Path>) -> joinerror::Result<Self> {
-        tokio::fs::create_dir_all(tmp.as_ref()).await?;
-        Ok(Self {
+    pub async fn new(tmp: impl AsRef<Path>) -> Self {
+        Self {
             tmp: tmp.as_ref().to_path_buf(),
             undo_stack: Vec::new(),
-        })
+        }
     }
 
     fn backup_path(&self) -> PathBuf {
@@ -289,6 +288,7 @@ pub async fn create_file_with(
             rb.undo_stack.push(Undo::RemoveFile(path.to_path_buf()));
         }
     }
+
     Ok(())
 }
 
@@ -312,12 +312,14 @@ pub async fn remove_file(
     }
 
     let backup = rb.backup_path();
+
     if let Err(e) = tokio::fs::rename(path, &backup).await {
         return Err(Error::new::<()>(format!(
             "failed to remove file {}: {e}",
             path.display()
         )));
     }
+
     rb.undo_stack.push(Undo::Restore {
         path: path.to_path_buf(),
         original: backup,
@@ -357,10 +359,12 @@ pub async fn rename(
     }
 
     if from.is_dir() {
-        rename_dir_impl(rb, from, to, options).await
+        rename_dir_impl(rb, from, to, options).await?
     } else {
-        rename_file_impl(rb, from, to, options).await
+        rename_file_impl(rb, from, to, options).await?
     }
+
+    Ok(())
 }
 
 async fn rename_dir_impl(

@@ -158,7 +158,7 @@ impl<R: AppRuntime> CollectionService<R> {
         account: Option<Account<R>>,
         params: &CreateCollectionParams,
     ) -> joinerror::Result<CollectionItemDescription> {
-        let mut rb = self.fs.rollback(&self.abs_path.join("tmp")).await?;
+        let mut rb = self.fs.start_rollback().await?;
 
         let id_str = id.to_string();
         let abs_path: Arc<Path> = self.abs_path.join(id_str).into();
@@ -330,7 +330,7 @@ impl<R: AppRuntime> CollectionService<R> {
         account: Account<R>,
         params: CollectionItemCloneParams,
     ) -> joinerror::Result<CollectionItemDescription> {
-        let mut rb = self.fs.rollback(&self.abs_path.join("tmp")).await?;
+        let mut rb = self.fs.start_rollback().await?;
 
         let id_str = id.to_string();
         let abs_path: Arc<Path> = self.abs_path.join(id_str).into();
@@ -380,7 +380,7 @@ impl<R: AppRuntime> CollectionService<R> {
                     internal_abs_path: abs_path.clone(),
                     account_id: params.account_id,
                     git_provider_type: params.git_provider_type.clone(),
-                    repository: GitUrl::parse(&params.repository)?,
+                    repository,
                     branch: params.branch.clone(),
                 },
             )
@@ -645,7 +645,7 @@ impl<R: AppRuntime> CollectionService<R> {
         id: &CollectionId,
         params: CollectionItemImportParams,
     ) -> joinerror::Result<CollectionItemDescription> {
-        let mut rb = self.fs.rollback(&self.abs_path.join("tmp")).await?;
+        let mut rb = self.fs.start_rollback().await?;
 
         let id_str = id.to_string();
         let abs_path: Arc<Path> = self.abs_path.join(&id_str).into();

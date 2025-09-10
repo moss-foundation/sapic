@@ -21,6 +21,7 @@ derive_more.workspace = true
 thiserror.workspace = true
 async_zip.workspace = true
 tokio-util.workspace = true
+nanoid.workspace = true
 
 [features]
 integration-tests = []

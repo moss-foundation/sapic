@@ -6,8 +6,10 @@ use async_zip::{
 };
 use atomic_fs::Rollback;
 use futures::{StreamExt, stream::BoxStream};
+use joinerror::ResultExt;
+use nanoid::nanoid;
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
-use std::{io, path::Path, time::Duration};
+use std::{io, path::Path, sync::Arc, time::Duration};
 use tokio::{
     fs::{OpenOptions, ReadDir},
     io::{AsyncReadExt, AsyncWriteExt},
@@ -17,11 +19,13 @@ use tokio::{
 use tokio_stream::wrappers::UnboundedReceiverStream;
 use tokio_util::compat::TokioAsyncWriteCompatExt;
 
-pub struct RealFileSystem;
+pub struct RealFileSystem {
+    tmp: Arc<Path>,
+}
 
 impl RealFileSystem {
-    pub fn new() -> Self {
-        Self
+    pub fn new(tmp: &Path) -> Self {
+        Self { tmp: tmp.into() }
     }
 }
 
@@ -292,9 +296,13 @@ impl FileSystem for RealFileSystem {
         Ok(())
     }
 
-    // TODO: Do we use an application-level temporary folder?
-    async fn rollback(&self, tmp: &Path) -> joinerror::Result<Rollback> {
-        Rollback::new(tmp.to_path_buf()).await
+    // Create a folder for a particular rollback session
+    async fn start_rollback(&self) -> joinerror::Result<Rollback> {
+        let session_tmp = self.tmp.join(nanoid!(10));
+        tokio::fs::create_dir(&session_tmp)
+            .await
+            .join_err::<()>("failed to start a fs rollback session")?;
+        Ok(Rollback::new(session_tmp).await)
     }
 
     async fn create_dir_with_rollback(

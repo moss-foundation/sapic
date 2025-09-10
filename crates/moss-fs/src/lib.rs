@@ -86,7 +86,7 @@ pub trait FileSystem: Send + Sync {
     )>;
 
     // FIXME: Come up with better names
-    async fn rollback(&self, tmp: &Path) -> joinerror::Result<Rollback>;
+    async fn start_rollback(&self) -> joinerror::Result<Rollback>;
 
     async fn create_dir_with_rollback(
         &self,

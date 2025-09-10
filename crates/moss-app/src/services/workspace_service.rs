@@ -215,7 +215,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
 
         let abs_path: Arc<Path> = self.absolutize(&id_str).into();
 
-        let mut rb = self.fs.rollback(&self.abs_path.join("tmp")).await?;
+        let mut rb = self.fs.start_rollback().await?;
 
         self.fs
             .create_dir_with_rollback(&mut rb, abs_path.as_ref())

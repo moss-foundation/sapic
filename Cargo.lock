@@ -3770,6 +3770,7 @@ dependencies = [
  "joinerror",
  "moss_applib",
  "moss_text",
+ "nanoid",
  "notify",
  "tauri",
  "thiserror 2.0.16",
