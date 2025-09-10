@@ -44,7 +44,7 @@ export const closeWorkspaceOutputSchema = z.object({
 
 export const createProfileInputSchema = z.object({
   name: z.string(),
-  isDefault: z.boolean().nullable(),
+  isDefault: z.boolean().optional(),
 });
 
 export const createProfileOutputSchema = z.object({

@@ -63,7 +63,7 @@ export type CloseWorkspaceOutput = {
 /**
  * @category Operation
  */
-export type CreateProfileInput = { name: string; isDefault: boolean | null };
+export type CreateProfileInput = { name: string; isDefault?: boolean };
 
 /**
  * @category Operation
