@@ -96,7 +96,10 @@ export const RequestInputField = memo(
 
     return (
       <div
-        className={cn("relative flex min-w-0 items-center rounded-md border border-(--moss-border-color)", className)}
+        className={cn(
+          "relative flex min-w-0 items-center gap-2 rounded-md border border-(--moss-border-color) p-[5px]",
+          className
+        )}
       >
         {/* Left Side - HTTP Method Dropdown */}
         <div className="relative flex items-center">
@@ -104,12 +107,12 @@ export const RequestInputField = memo(
             <ActionMenu.Trigger asChild>
               <button
                 className={cn(
-                  "flex items-center justify-between",
-                  "gap-0.5 px-2.5 py-[10px] pr-1 pl-3",
+                  "flex items-center justify-between bg-red-700",
+                  "gap-2 py-1.5 pr-1.5 pl-2",
                   "transition-colors",
-                  "rounded-md rounded-r-none",
+                  "rounded-md",
                   "cursor-pointer font-bold",
-                  "background-(--moss-primary-background) text-(--moss-requestpage-text)",
+                  "background-(--moss-primary-background) hover:background-(--moss-primary-background-hover) border border-(--moss-gray-11) text-(--moss-requestpage-text)",
                   "data-[state=open]:outline-2 data-[state=open]:outline-offset-0 data-[state=open]:outline-(--moss-primary)"
                 )}
               >
@@ -147,9 +150,7 @@ export const RequestInputField = memo(
         </div>
 
         {/* Right Side - Send Button */}
-        <div className="relative z-30 flex min-h-8 flex-shrink-0 items-center rounded-md rounded-l-none border border-l-0 border-transparent p-1">
-          <ButtonPrimary onClick={handleSend}>Send</ButtonPrimary>
-        </div>
+        <ButtonPrimary onClick={handleSend}>Send</ButtonPrimary>
       </div>
     );
   }
