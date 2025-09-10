@@ -373,7 +373,14 @@ impl<R: AppRuntime> CollectionService<R> {
         let repository = match GitUrl::parse(&params.repository) {
             Ok(repository) => repository,
             Err(e) => {
-                // TODO: notify the frontend with a toast
+                self.app_delegate.emit_oneshot(ToLocation::Toast {
+                    activity_id: "clone_collection_invalid_repository",
+                    title: "Invalid repository url".to_string(),
+                    detail: Some(
+                        "Cannot clone remote collection since the url is invalid".to_string(),
+                    ),
+                })?;
+
                 let _ = rb
                     .rollback()
                     .await

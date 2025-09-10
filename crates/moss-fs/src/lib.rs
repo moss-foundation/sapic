@@ -85,7 +85,6 @@ pub trait FileSystem: Send + Sync {
         notify::RecommendedWatcher,
     )>;
 
-    // FIXME: Come up with better names
     async fn start_rollback(&self) -> joinerror::Result<Rollback>;
 
     async fn create_dir_with_rollback(
