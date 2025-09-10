@@ -19,7 +19,7 @@ use moss_git_hosting_provider::{
     GitProviderKind, github::client::GitHubApiClient, gitlab::client::GitLabApiClient,
 };
 use moss_logging::session;
-use moss_user::{account::Account, models::primitives::AccountId, profile::ActiveProfile};
+use moss_user::{account::Account, models::primitives::AccountId, profile::Profile};
 use rustc_hash::FxHashMap;
 use std::{
     collections::{HashMap, HashSet},
@@ -106,7 +106,7 @@ impl<R: AppRuntime> CollectionService<R> {
         fs: Arc<dyn FileSystem>,
         storage: Arc<StorageService<R>>,
         environment_sources: &mut FxHashMap<Arc<String>, PathBuf>,
-        active_profile: &Arc<ActiveProfile<R>>,
+        active_profile: &Arc<Profile<R>>,
         on_collection_did_delete_emitter: EventEmitter<OnDidDeleteCollection>,
         on_collection_did_add_emitter: EventEmitter<OnDidAddCollection>,
     ) -> joinerror::Result<Self> {
@@ -792,7 +792,7 @@ async fn restore_collections<R: AppRuntime>(
     abs_path: &Path,
     fs: &Arc<dyn FileSystem>,
     storage: &Arc<StorageService<R>>,
-    active_profile: &Arc<ActiveProfile<R>>,
+    active_profile: &Arc<Profile<R>>,
 ) -> joinerror::Result<HashMap<CollectionId, CollectionItem<R>>> {
     if !abs_path.exists() {
         return Ok(HashMap::new());

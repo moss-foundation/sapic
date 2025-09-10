@@ -4,7 +4,7 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_fs::{FileSystem, FsResultExt, RemoveOptions};
 use moss_logging::session;
-use moss_user::profile::ActiveProfile;
+use moss_user::profile::Profile;
 use moss_workspace::{
     builder::{CreateWorkspaceParams, LoadWorkspaceParams, WorkspaceBuilder},
     workspace::{WorkspaceModifyParams, WorkspaceSummary},
@@ -270,7 +270,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
         id: &WorkspaceId,
-        active_profile: Arc<ActiveProfile<R>>,
+        active_profile: Arc<Profile<R>>,
     ) -> joinerror::Result<WorkspaceItemDescription> {
         let (name, already_active) = {
             let state_lock = self.state.read().await;

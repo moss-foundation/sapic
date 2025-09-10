@@ -229,6 +229,19 @@ importers:
         specifier: workspace:*
         version: link:../../packages/config-typescript
 
+  crates/moss-user:
+    dependencies:
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.2
+      zod:
+        specifier: ^3.24.4
+        version: 3.25.76
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/config-typescript
+
   crates/moss-workspace:
     dependencies:
       typescript:

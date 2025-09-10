@@ -7,6 +7,8 @@ use crate::{
 };
 
 // FIXME: Allow the workspace to be opened even if it encounters invalid collection
+// Ticket: https://mossland.atlassian.net/browse/SAPIC-514
+
 impl<R: AppRuntime> App<R> {
     pub async fn open_workspace(
         &self,
@@ -14,7 +16,7 @@ impl<R: AppRuntime> App<R> {
         app_delegate: &AppDelegate<R>,
         input: &OpenWorkspaceInput,
     ) -> joinerror::Result<OpenWorkspaceOutput> {
-        let active_profile = self.profile_service.active_profile();
+        let active_profile = self.profile_service.active_profile().await;
 
         let desc = self
             .workspace_service

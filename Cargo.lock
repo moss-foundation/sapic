@@ -3607,6 +3607,7 @@ dependencies = [
  "moss_activity_broadcaster",
  "moss_applib",
  "tauri",
+ "tokio",
 ]
 
 [[package]]

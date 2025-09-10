@@ -1,6 +1,9 @@
-use joinerror::Error;
+use joinerror::{Error, OptionExt};
 use moss_app_delegate::AppDelegate;
-use moss_applib::{AppRuntime, errors::Internal};
+use moss_applib::{
+    AppRuntime,
+    errors::{AlreadyExists, NotFound},
+};
 use moss_common::{continue_if_err, continue_if_none};
 use moss_fs::{CreateOptions, FileSystem};
 use moss_git_hosting_provider::{
@@ -13,141 +16,162 @@ use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_user::{
     AccountSession,
     account::{Account, github::GitHubInitialToken, gitlab::GitLabInitialToken},
-    models::primitives::AccountId,
-    profile::ActiveProfile,
+    models::{
+        primitives::{AccountId, AccountKind, ProfileId},
+        types::ProfileInfo,
+    },
+    profile::Profile,
 };
-use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, path::PathBuf, sync::Arc};
+
+use std::{collections::HashMap, path::Path, sync::Arc};
 use tokio::sync::RwLock;
 
-use crate::models::{
-    primitives::{AccountKind, ProfileId},
-    types::AccountInfo,
-};
+use crate::{dirs, profile::ProfileFile};
 
-#[derive(Debug, Serialize, Deserialize)]
-struct ProfileFile {
-    name: String,
-    accounts: Vec<AccountInfo>,
-}
-
-struct AccountItem {
-    id: AccountId,
-    username: String,
-    host: String,
-    provider: AccountKind,
-}
-
-struct ProfileItem {
-    #[allow(unused)]
-    id: ProfileId,
-    accounts: HashMap<AccountId, AccountItem>,
-}
-
-struct ServiceState {
-    profiles: HashMap<ProfileId, ProfileItem>,
-}
-
-pub(crate) struct ServiceConfig {
-    profiles_dir_abs: PathBuf,
-}
-
-impl ServiceConfig {
-    pub fn new(profiles_dir_abs: PathBuf) -> joinerror::Result<Self> {
-        debug_assert!(profiles_dir_abs.is_absolute());
-
-        if !profiles_dir_abs.exists() {
-            return Err(joinerror::Error::new::<Internal>(format!(
-                "profiles directory does not exist: {}",
-                profiles_dir_abs.display()
-            )));
-        }
-
-        Ok(Self { profiles_dir_abs })
-    }
+struct ServiceState<R: AppRuntime> {
+    profiles: HashMap<ProfileId, ProfileInfo>,
+    active_profile: Arc<Profile<R>>,
 }
 
 pub(crate) struct ProfileService<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     auth_api_client: Arc<AccountAuthGatewayApiClient>,
     keyring: Arc<dyn KeyringClient>,
-    state: RwLock<ServiceState>,
-    active_profile: Arc<ActiveProfile<R>>,
-    config: ServiceConfig,
+    state: RwLock<ServiceState<R>>,
 }
 
 impl<R: AppRuntime> ProfileService<R> {
     pub async fn new(
+        dir_abs: &Path,
         fs: Arc<dyn FileSystem>,
         auth_api_client: Arc<AccountAuthGatewayApiClient>,
         keyring: Arc<dyn KeyringClient>,
-        config: ServiceConfig,
     ) -> joinerror::Result<Self> {
-        let profiles = scan(&fs, &config).await?;
+        let profiles = scan(&fs, dir_abs).await?;
 
-        // HACK: Use the first profile as the active profile
-        let p = profiles.get(&profiles.keys().next().unwrap()).unwrap();
-        let mut accounts = HashMap::new();
-        for (account_id, account) in p.accounts.iter() {
-            let session = match account.provider {
-                AccountKind::GitHub => {
-                    AccountSession::github(
-                        account.id.clone(),
-                        account.host.clone(),
-                        keyring.clone(),
-                        None,
-                    )
-                    .await?
-                }
-                AccountKind::GitLab => {
-                    AccountSession::gitlab(
-                        account.id.clone(),
-                        account.host.clone(),
-                        keyring.clone(),
-                        auth_api_client.clone(),
-                        None,
-                    )
-                    .await?
-                }
-            };
+        let active_profile = {
+            // HACK:
+            // Since we don't support having multiple profiles yet, we select
+            // the first profile in the folder (which is the default one) as the active one.
+            let p = &profiles.values().next().unwrap(); // SAFETY: When we start the app, we must have at least one profile
+            let mut accounts = HashMap::with_capacity(p.accounts.len());
 
-            accounts.insert(
-                account_id.clone(),
-                Account::new(
-                    account_id.clone(),
-                    account.username.clone(),
-                    account.host.clone(),
-                    session,
-                ),
-            );
-        }
-        let active_profile = ActiveProfile::new(accounts);
+            for account in p.accounts.iter() {
+                let session = match account.kind {
+                    AccountKind::GitHub => {
+                        AccountSession::github(
+                            account.id.clone(),
+                            account.host.clone(),
+                            keyring.clone(),
+                            None,
+                        )
+                        .await?
+                    }
+                    AccountKind::GitLab => {
+                        AccountSession::gitlab(
+                            account.id.clone(),
+                            account.host.clone(),
+                            keyring.clone(),
+                            auth_api_client.clone(),
+                            None,
+                        )
+                        .await?
+                    }
+                };
+
+                accounts.insert(
+                    account.id.clone(),
+                    Account::new(
+                        account.id.clone(),
+                        account.username.clone(),
+                        account.host.clone(),
+                        session,
+                        account.kind.clone(),
+                    ),
+                );
+            }
+
+            Profile::new(p.id.clone(), accounts)
+        };
+
         Ok(Self {
             fs,
             auth_api_client,
             keyring,
-            state: RwLock::new(ServiceState { profiles }),
-            config,
-            active_profile: Arc::new(active_profile),
+            state: RwLock::new(ServiceState {
+                profiles,
+                active_profile: Arc::new(active_profile),
+            }),
         })
     }
 
-    pub fn active_profile(&self) -> Arc<ActiveProfile<R>> {
-        self.active_profile.clone()
+    pub async fn active_profile(&self) -> Arc<Profile<R>> {
+        let state_lock = self.state.read().await;
+        state_lock.active_profile.clone()
+    }
+
+    pub async fn remove_account(
+        &self,
+        app_delegate: &AppDelegate<R>,
+        account_id: AccountId,
+    ) -> joinerror::Result<AccountId> {
+        let mut state_lock = self.state.write().await;
+
+        let profile_id = state_lock.active_profile.id().clone();
+        let profile = state_lock
+            .profiles
+            .get_mut(&profile_id)
+            .ok_or_join_err_with::<NotFound>(|| format!("profile `{}` not found", profile_id))?;
+
+        let mut profile_clone = profile.clone();
+        profile_clone
+            .accounts
+            .retain(|account| account.id != account_id);
+        {
+            let abs_path = app_delegate
+                .app_dir()
+                .join(dirs::PROFILES_DIR)
+                .join(format!("{}.json", profile_id));
+
+            let content = serde_json::to_string_pretty(&profile_clone)?;
+            self.fs
+                .create_file_with(
+                    &abs_path,
+                    content.as_bytes(),
+                    CreateOptions {
+                        overwrite: true,
+                        ignore_if_exists: false,
+                    },
+                )
+                .await?;
+        }
+        profile.accounts = profile_clone.accounts;
+
+        // In this case, the error isn't critical. Since we removed the account from
+        // the profile file, the next time a session for that account won't be established.
+        if let Err(err) = state_lock.active_profile.remove_account(&account_id).await {
+            session::warn!(&format!(
+                "failed to remove account `{}`: {}",
+                account_id,
+                err.to_string()
+            ));
+        }
+
+        Ok(account_id)
     }
 
     pub async fn add_account(
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
-        profile_id: ProfileId,
         host: String,
-        provider: AccountKind,
+        kind: AccountKind,
     ) -> joinerror::Result<AccountId> {
-        // TODO: Check if the account already exists
+        let mut state_lock = self.state.write().await;
 
+        let profile_id = state_lock.active_profile.id().clone();
         let account_id = AccountId::new();
-        let (session, username) = match provider {
+        let (session, username) = match kind {
             AccountKind::GitHub => {
                 let auth_client = <dyn GitHubAuthAdapter<R>>::global(app_delegate);
                 let api_client = <dyn GitHubApiClient<R>>::global(app_delegate);
@@ -172,23 +196,33 @@ impl<R: AppRuntime> ProfileService<R> {
             }
         };
 
-        let mut state_lock = self.state.write().await;
-        let profile = state_lock.profiles.get_mut(&profile_id).unwrap();
+        if let Some(_) = state_lock
+            .active_profile
+            .is_account_exists(&username, kind.clone(), &host)
+            .await
+        {
+            return Err(joinerror::Error::new::<AlreadyExists>(
+                "account already exists",
+            ));
+        }
+
+        let account = Account::new(
+            account_id.clone(),
+            username.clone(),
+            host.clone(),
+            session,
+            kind.clone(),
+        );
+        let account_info = account.info();
 
         {
-            let account = AccountInfo {
-                id: account_id.clone(),
-                username: username.clone(),
-                host: host.clone(),
-                provider: provider.clone(),
-            };
-            let abs_path = self
-                .config
-                .profiles_dir_abs
+            let abs_path = app_delegate
+                .app_dir()
+                .join(dirs::PROFILES_DIR)
                 .join(format!("{}.json", profile_id));
             let rdr = self.fs.open_file(&abs_path).await?;
             let mut parsed: ProfileFile = serde_json::from_reader(rdr)?;
-            parsed.accounts.push(account.clone());
+            parsed.accounts.push(account_info.clone());
             self.fs
                 .create_file_with(
                     &abs_path,
@@ -201,24 +235,12 @@ impl<R: AppRuntime> ProfileService<R> {
                 .await?;
         }
 
-        self.active_profile
-            .add_account(Account::new(
-                account_id.clone(),
-                username.clone(),
-                host.clone(),
-                session,
-            ))
-            .await;
+        state_lock
+            .profiles
+            .get_mut(&profile_id)
+            .map(|p| p.accounts.push(account_info.clone()));
 
-        profile.accounts.insert(
-            account_id.clone(),
-            AccountItem {
-                id: account_id.clone(),
-                username,
-                provider,
-                host,
-            },
-        );
+        state_lock.active_profile.add_account(account).await;
 
         Ok(account_id)
     }
@@ -266,19 +288,30 @@ impl<R: AppRuntime> ProfileService<R> {
         .await?)
     }
 
-    pub async fn create_profile(&self, name: String) -> joinerror::Result<ProfileId> {
+    pub async fn create_profile(
+        &self,
+        app_delegate: &AppDelegate<R>,
+        name: String,
+        is_default: bool,
+    ) -> joinerror::Result<ProfileId> {
         let id = ProfileId::new();
-        let profile = ProfileItem {
+        let profile = ProfileInfo {
             id: id.clone(),
-            accounts: HashMap::new(),
+            name,
+            accounts: vec![],
         };
 
-        let abs_path = self.config.profiles_dir_abs.join(format!("{}.json", id));
+        let abs_path = app_delegate
+            .app_dir()
+            .join(dirs::PROFILES_DIR)
+            .join(format!("{}.json", profile.id));
+
         self.fs
             .create_file_with(
                 &abs_path,
                 serde_json::to_string_pretty(&ProfileFile {
-                    name,
+                    name: profile.name.clone(),
+                    is_default: Some(is_default),
                     accounts: vec![],
                 })?
                 .as_bytes(),
@@ -293,7 +326,7 @@ impl<R: AppRuntime> ProfileService<R> {
             .write()
             .await
             .profiles
-            .insert(id.clone(), profile);
+            .insert(profile.id.clone(), profile);
 
         Ok(id)
     }
@@ -301,11 +334,13 @@ impl<R: AppRuntime> ProfileService<R> {
 
 async fn scan(
     fs: &Arc<dyn FileSystem>,
-    config: &ServiceConfig,
-) -> joinerror::Result<HashMap<ProfileId, ProfileItem>> {
+    profiles_dir_abs: &Path,
+) -> joinerror::Result<HashMap<ProfileId, ProfileInfo>> {
+    debug_assert!(profiles_dir_abs.is_absolute());
+
     let mut profiles = HashMap::new();
 
-    let mut read_dir = fs.read_dir(&config.profiles_dir_abs).await?;
+    let mut read_dir = fs.read_dir(&profiles_dir_abs).await?;
     while let Some(entry) = read_dir.next_entry().await? {
         if entry.file_type().await?.is_dir() {
             continue;
@@ -328,24 +363,12 @@ async fn scan(
         .to_string()
         .into();
 
-        let mut accounts = HashMap::with_capacity(parsed.accounts.len());
-        for account in parsed.accounts {
-            accounts.insert(
-                account.id.clone(),
-                AccountItem {
-                    id: account.id,
-                    username: account.username,
-                    provider: account.provider,
-                    host: account.host,
-                },
-            );
-        }
-
         profiles.insert(
             id.clone(),
-            ProfileItem {
+            ProfileInfo {
                 id: id.clone(),
-                accounts,
+                name: parsed.name,
+                accounts: parsed.accounts,
             },
         );
     }

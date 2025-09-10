@@ -7,5 +7,9 @@ edition = "2024"
 moss_applib.workspace = true
 moss_activity_broadcaster.workspace = true
 
+tokio.workspace = true
 tauri.workspace = true
 joinerror.workspace = true
+
+[features]
+integration-tests = []

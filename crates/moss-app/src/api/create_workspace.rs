@@ -20,7 +20,7 @@ impl<R: AppRuntime> App<R> {
     ) -> joinerror::Result<CreateWorkspaceOutput> {
         input.validate().join_err_bare()?;
 
-        let active_profile = self.profile_service.active_profile();
+        let active_profile = self.profile_service.active_profile().await;
 
         let id = WorkspaceId::new();
         let item = self

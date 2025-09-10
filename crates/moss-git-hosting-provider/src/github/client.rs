@@ -160,3 +160,43 @@ impl<R: AppRuntime> GitHubApiClient<R> for RealGitHubApiClient {
         .join_err_bare()
     }
 }
+
+#[cfg(any(test, feature = "test"))]
+pub mod test {
+    use super::*;
+
+    pub struct MockGitHubApiClient {
+        pub get_user_response: GetUserResponse,
+        pub get_contributors_response: GetContributorsResponse,
+        pub get_repository_response: GetRepositoryResponse,
+    }
+
+    #[async_trait]
+    impl<R: AppRuntime> GitHubApiClient<R> for MockGitHubApiClient {
+        async fn get_user(
+            &self,
+            _ctx: &R::AsyncContext,
+            _account_handle: &AccountSession<R>,
+        ) -> joinerror::Result<GetUserResponse> {
+            Ok(self.get_user_response.clone())
+        }
+
+        async fn get_contributors(
+            &self,
+            _ctx: &R::AsyncContext,
+            _account_handle: &AccountSession<R>,
+            _url: &GitUrl,
+        ) -> joinerror::Result<GetContributorsResponse> {
+            Ok(self.get_contributors_response.clone())
+        }
+
+        async fn get_repository(
+            &self,
+            _ctx: &R::AsyncContext,
+            _account_handle: &AccountSession<R>,
+            _url: &GitUrl,
+        ) -> joinerror::Result<GetRepositoryResponse> {
+            Ok(self.get_repository_response.clone())
+        }
+    }
+}

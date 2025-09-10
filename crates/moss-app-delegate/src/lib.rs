@@ -1,5 +1,6 @@
 use moss_activity_broadcaster::{AppActivityBroadcaster, ToLocation, handle::ActivityHandle};
 use moss_applib::AppRuntime;
+use std::path::PathBuf;
 use tauri::{AppHandle as TauriAppHandle, Manager};
 
 pub mod broadcast {
@@ -19,6 +20,21 @@ impl<R: AppRuntime> AppDelegate<R> {
             app_handle: app_handle.clone(),
             broadcaster: AppActivityBroadcaster::new(app_handle),
         }
+    }
+
+    #[cfg(debug_assertions)]
+    #[cfg(not(feature = "integration-tests"))]
+    pub fn app_dir(&self) -> PathBuf {
+        PathBuf::from(std::env::var("DEV_APP_DIR").expect("DEV_APP_DIR is not set"))
+    }
+
+    #[cfg(not(debug_assertions))]
+    #[cfg(not(feature = "integration-tests"))]
+    pub fn app_dir(&self) -> PathBuf {
+        self.app_handle
+            .path()
+            .app_data_dir()
+            .expect("Cannot resolve app data dir")
     }
 
     pub fn global<T>(&self) -> &T
@@ -53,5 +69,24 @@ impl<R: AppRuntime> Clone for AppDelegate<R> {
             app_handle: self.app_handle.clone(),
             broadcaster: self.broadcaster.clone(),
         }
+    }
+}
+
+#[cfg(feature = "integration-tests")]
+pub mod test {
+    use std::path::PathBuf;
+
+    pub struct AppDir(pub PathBuf);
+}
+
+impl<R: AppRuntime> AppDelegate<R> {
+    #[cfg(feature = "integration-tests")]
+    pub fn set_app_dir(&self, app_dir: PathBuf) {
+        self.app_handle.manage(test::AppDir(app_dir));
+    }
+
+    #[cfg(feature = "integration-tests")]
+    pub fn app_dir(&self) -> PathBuf {
+        self.app_handle.state::<test::AppDir>().inner().0.clone()
     }
 }

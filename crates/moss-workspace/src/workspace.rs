@@ -10,7 +10,7 @@ use moss_collection::Collection;
 use moss_edit::json::EditOptions;
 use moss_environment::{AnyEnvironment, Environment, models::primitives::EnvironmentId};
 use moss_fs::{FileSystem, FsResultExt};
-use moss_user::profile::ActiveProfile;
+use moss_user::profile::Profile;
 use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};
 
@@ -62,7 +62,7 @@ pub trait AnyWorkspace<R: AppRuntime> {
 pub struct Workspace<R: AppRuntime> {
     pub(super) abs_path: Arc<Path>,
     pub(super) edit: WorkspaceEdit,
-    pub(super) active_profile: Arc<ActiveProfile<R>>,
+    pub(super) active_profile: Arc<Profile<R>>,
     pub(super) layout_service: LayoutService<R>,
     pub(super) collection_service: Arc<CollectionService<R>>,
     pub(super) environment_service: Arc<EnvironmentService<R>>,

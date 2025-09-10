@@ -3,7 +3,7 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, EventMarker, subscription::EventEmitter};
 use moss_environment::builder::{CreateEnvironmentParams, EnvironmentBuilder};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
-use moss_user::profile::ActiveProfile;
+use moss_user::profile::Profile;
 use rustc_hash::FxHashMap;
 use std::{cell::LazyCell, path::Path, sync::Arc};
 
@@ -42,7 +42,7 @@ pub struct CreateWorkspaceParams {
 
 pub struct WorkspaceBuilder<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
-    active_profile: Arc<ActiveProfile<R>>,
+    active_profile: Arc<Profile<R>>,
 }
 
 #[derive(Clone)]
@@ -59,7 +59,7 @@ impl EventMarker for OnDidDeleteCollection {}
 impl EventMarker for OnDidAddCollection {}
 
 impl<R: AppRuntime> WorkspaceBuilder<R> {
-    pub fn new(fs: Arc<dyn FileSystem>, active_profile: Arc<ActiveProfile<R>>) -> Self {
+    pub fn new(fs: Arc<dyn FileSystem>, active_profile: Arc<Profile<R>>) -> Self {
         Self { fs, active_profile }
     }
 
