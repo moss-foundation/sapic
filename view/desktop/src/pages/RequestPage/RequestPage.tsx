@@ -25,19 +25,6 @@ const RequestPage = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
 
   const { requestData, httpMethod, setHttpMethod, updateRequestData } = useRequestPage();
 
-  const dontShowTabs =
-    !node ||
-    props.params.node.kind === "Dir" ||
-    props.params.node.class === "Endpoint" ||
-    props.params.node.class === "Schema";
-
-  console.log({
-    node,
-    kind: props.params.node.kind,
-    class: props.params.node.class,
-    dontShowTabs,
-  });
-
   const toolbar = (
     <PageToolbar>
       <ActionButton icon="MoreHorizontal" />
@@ -95,7 +82,7 @@ const RequestPage = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
               />
             </PageWrapper>
 
-            {!dontShowTabs && <RequestPageTabs {...props} />}
+            {node && <RequestPageTabs {...props} />}
           </div>
         ) : (
           <div className="flex flex-1 items-center justify-center">
