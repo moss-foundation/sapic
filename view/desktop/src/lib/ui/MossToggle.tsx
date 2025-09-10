@@ -23,8 +23,8 @@ export const MossToggle = ({ checked, onCheckedChange }: MossToggleProps) => {
             className={cn(
               "background-(--moss-mossToggle-thumb) absolute top-0 h-full w-1/2 rounded-md border border-(--moss-mossToggle-thumb-border) transition-all",
               {
-                "left-0": checked,
-                "left-[50%]": !checked,
+                "left-0": !checked,
+                "left-[50%]": checked,
               }
             )}
           ></div>
