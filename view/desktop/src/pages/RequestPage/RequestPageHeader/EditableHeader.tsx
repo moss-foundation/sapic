@@ -43,7 +43,7 @@ export const EditableHeader = ({
   };
 
   return (
-    <div className="flex items-center gap-2" onClick={editable ? () => setIsRenamingEntry(true) : undefined}>
+    <div className="flex items-center gap-2">
       <div className="rounded-md border border-(--moss-border-color) p-1">
         <HttpSvg />
       </div>
@@ -60,7 +60,10 @@ export const EditableHeader = ({
           />
         </form>
       ) : (
-        <span className="hover:background-(--moss-secondary-background-hover) -mx-1 w-full max-w-[200px] cursor-text truncate rounded-md px-1 py-0.5 text-lg leading-6 font-bold text-(--moss-primary-text)">
+        <span
+          onClick={editable ? () => setIsRenamingEntry(true) : undefined}
+          className="hover:background-(--moss-secondary-background-hover) -mx-1 w-full max-w-[200px] cursor-text truncate rounded-md px-1 py-0.5 text-lg leading-6 font-bold text-(--moss-primary-text) transition-colors"
+        >
           {newTitle}
         </span>
       )}

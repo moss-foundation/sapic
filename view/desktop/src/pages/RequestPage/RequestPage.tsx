@@ -1,76 +1,42 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback } from "react";
 
-import { ActionButton, PageContainerWithTabs, PageTabs, PageToolbar, PageView, TabItem } from "@/components";
+import { ActionButton, PageToolbar, PageView } from "@/components";
 import { TreeCollectionNode } from "@/components/CollectionTree/types";
 import { PageWrapper } from "@/components/PageView/PageWrapper";
 import { useStreamCollectionEntries } from "@/hooks";
-import { Icon } from "@/lib/ui";
 import { useRequestPage } from "@/pages/RequestPage/hooks/useRequestPage";
-import { useRequestModeStore } from "@/store/requestMode";
-import { cn } from "@/utils";
 import { EntryKind } from "@repo/moss-collection";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
 
 import { RequestInputField } from "./RequestInputField";
 import { RequestPageHeader } from "./RequestPageHeader/RequestPageHeader";
-import {
-  AuthTabContent,
-  BodyTabContent,
-  HeadersTabContent,
-  ParamsTabContent,
-  PostRequestTabContent,
-  PreRequestTabContent,
-} from "./tabs";
+import { RequestPageTabs } from "./RequestPageTabs";
 import { areUrlsEquivalent, parseUrl } from "./utils/urlParser";
 
-const Badge = ({ count }: { count: number }) => (
-  <span className="background-(--moss-tab-badge-color) inline-flex h-3.5 w-3.5 min-w-[14px] items-center justify-center rounded-full text-xs leading-none text-(--moss-tab-badge-text)">
-    <span className="relative top-[0.5px]">{count}</span>
-  </span>
-);
-
-interface RequestPageProps {
+export interface RequestPageProps {
   node: TreeCollectionNode;
   collectionId: string;
   iconType: EntryKind;
 }
 
 const RequestPage = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
-  const { displayMode } = useRequestModeStore();
-
   const { data: streamedEntries } = useStreamCollectionEntries(props.params?.collectionId);
   const node = streamedEntries?.find((entry) => entry.id === props.params?.node?.id);
 
-  const showEndpoint = displayMode === "DESIGN_FIRST" && node?.class === "Endpoint";
-  let dontShowTabs = true;
-
-  const [activeTab, setActiveTab] = useState(showEndpoint ? "endpoint" : "request");
-  const [activeRequestTabId, setActiveRequestTabId] = useState("params");
-
   const { requestData, httpMethod, setHttpMethod, updateRequestData } = useRequestPage();
 
-  if (node) {
-    dontShowTabs =
-      props.params.node.kind === "Dir" ||
-      props.params.node.class === "Endpoint" ||
-      props.params.node.class === "Schema";
-  }
+  const dontShowTabs =
+    !node ||
+    props.params.node.kind === "Dir" ||
+    props.params.node.class === "Endpoint" ||
+    props.params.node.class === "Schema";
 
-  const tabs = (
-    <PageTabs>
-      {showEndpoint && (
-        <button data-active={activeTab === "endpoint"} onClick={() => setActiveTab("endpoint")}>
-          Endpoint
-        </button>
-      )}
-      <button data-active={activeTab === "request"} onClick={() => setActiveTab("request")}>
-        Request
-      </button>
-      <button data-active={activeTab === "mock"} onClick={() => setActiveTab("mock")}>
-        Mock
-      </button>
-    </PageTabs>
-  );
+  console.log({
+    node,
+    kind: props.params.node.kind,
+    class: props.params.node.class,
+    dontShowTabs,
+  });
 
   const toolbar = (
     <PageToolbar>
@@ -108,102 +74,14 @@ const RequestPage = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
     [requestData.url.raw, updateRequestData]
   );
 
-  const paramsCount = useMemo(() => {
-    const queryParamsCount = requestData.url.query_params.filter(
-      (param) => (param.key.trim() !== "" || param.value.trim() !== "") && !param.disabled
-    ).length;
-    const pathParamsCount = requestData.url.path_params.filter(
-      (param) => param.key.trim() !== "" && !param.disabled
-    ).length;
-    return queryParamsCount + pathParamsCount;
-  }, [requestData.url.query_params, requestData.url.path_params]);
-
-  const requestTabs: TabItem[] = [
-    {
-      id: "params",
-      label: (
-        <div className="flex items-center gap-1">
-          <Icon icon="SquareBrackets" className="h-4 w-4" />
-          <span>Params</span>
-          <Badge count={paramsCount} />
-        </div>
-      ),
-      content: <ParamsTabContent {...props} />,
-    },
-    {
-      id: "auth",
-      label: (
-        <div className="flex items-center gap-1">
-          <Icon icon="Auth" className="h-4 w-4" />
-          <span>Auth</span>
-        </div>
-      ),
-      content: <AuthTabContent {...props} />,
-    },
-    {
-      id: "headers",
-      label: (
-        <div className="flex items-center gap-1">
-          <Icon icon="Headers" className="h-4 w-4" />
-          <span>Headers</span>
-          <Badge count={3} />
-        </div>
-      ),
-      content: <HeadersTabContent {...props} />,
-    },
-    {
-      id: "body",
-      label: (
-        <div className="flex items-center gap-1">
-          <Icon icon="Braces" className="h-4 w-4" />
-          <span>Body</span>
-        </div>
-      ),
-      content: <BodyTabContent {...props} />,
-    },
-    {
-      id: "pre-request",
-      label: (
-        <div className="flex items-center gap-1">
-          <Icon icon="PreRequest" className="h-4 w-4" />
-          <span>Pre Request</span>
-        </div>
-      ),
-      content: <PreRequestTabContent {...props} />,
-    },
-    {
-      id: "post-request",
-      label: (
-        <div className="flex items-center gap-1">
-          <Icon icon="PostRequest" className="h-4 w-4" />
-          <span>Post Request</span>
-        </div>
-      ),
-      content: <PostRequestTabContent {...props} />,
-    },
-  ];
-
   return (
     <PageView>
-      {/* <PageHeader
-        icon="Request"
-        tabs={dontShowTabs ? null : tabs}
-        toolbar={toolbar}
-        title={node?.name}
-        onTitleChange={handleRenamingEntrySubmit}
-        disableTitleChange={false}
-        isRenamingTitle={isRenamingEntry}
-        setIsRenamingTitle={setIsRenamingEntry}
-        handleRenamingFormCancel={handleRenamingEntryCancel}
-        {...props}
-      /> */}
-
       {node && <RequestPageHeader node={node} collectionId={props.params?.collectionId ?? ""} api={props.api} />}
 
-      <div className={cn("relative")}>
+      <div>
         {node ? (
-          <div className="flex shrink-0 flex-col gap-1.5">
-            <div className="px-5">
+          <div>
+            <PageWrapper>
               <RequestInputField
                 initialMethod={httpMethod}
                 initialUrl={requestData.url.raw}
@@ -215,17 +93,9 @@ const RequestPage = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
                   }
                 }}
               />
-            </div>
+            </PageWrapper>
 
-            {activeTab === "request" && (
-              <PageWrapper>
-                <PageContainerWithTabs
-                  tabs={requestTabs}
-                  activeTabId={activeRequestTabId}
-                  onTabChange={setActiveRequestTabId}
-                />
-              </PageWrapper>
-            )}
+            {!dontShowTabs && <RequestPageTabs {...props} />}
           </div>
         ) : (
           <div className="flex flex-1 items-center justify-center">
