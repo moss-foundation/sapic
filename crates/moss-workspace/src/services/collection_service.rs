@@ -272,6 +272,7 @@ impl<R: AppRuntime> CollectionService<R> {
                 .init_vcs(ctx, client, git_params.repository, git_params.branch)
                 .await
             {
+                session::warn!(format!("failed to init vcs: {}", e.to_string()));
                 self.app_delegate.emit_oneshot(ToLocation::Toast {
                     activity_id: "create_collection_init_vcs_failure",
                     title: "Failed to initialized collection vcs".to_string(),
