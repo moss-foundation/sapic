@@ -345,4 +345,13 @@
   --moss-mossToggle-indicator: var(--moss-gray-6);
   --moss-mossToggle-thumb: var(--moss-gray-14);
   --moss-mossToggle-thumb-border: var(--moss-gray-8);
+
+  /* Moss Select */
+  --moss-mossSelect-bg: var(--moss-gray-13);
+  --moss-mossSelect-border: var(--moss-gray-12);
+  --moss-mossSelect-text: var(--moss-gray-1);
+  --moss-mossSelect-hover-bg: var(--moss-gray-13);
+  --moss-mossSelect-item-bg-hover: var(--moss-gray-12);
+  --moss-mossSelect-item-bg-selected: var(--moss-blue-11);
+  --moss-mossSelect-disabled-bg: var(--moss-gray-10);
 }

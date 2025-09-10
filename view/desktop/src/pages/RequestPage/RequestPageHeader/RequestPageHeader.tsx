@@ -4,6 +4,8 @@ import { PageWrapper } from "@/components/PageView/PageWrapper";
 import { useRenameEntryForm } from "@/hooks";
 import { DockviewPanelApi } from "@/lib/moss-tabs/src";
 import { MossToggle } from "@/lib/ui";
+import MossSelect from "@/lib/ui/MossSelect";
+import { cn } from "@/utils";
 import { StreamEntriesEvent } from "@repo/moss-collection";
 
 import { EditableHeader } from "./EditableHeader";
@@ -19,6 +21,17 @@ export const RequestPageHeader = ({ node, collectionId, api }: RequestPageHeader
     useRenameEntryForm(node, collectionId);
 
   const [isEnabled, setIsEnabled] = useState(false);
+
+  const [selectedValue, setSelectedValue] = useState("Released");
+
+  const options = [
+    { label: "All", value: "All" },
+    { label: "Released", value: "Released" },
+    { label: "Draft", value: "Draft" },
+    { label: "Archived", value: "Archived" },
+    { label: "Some very long name", value: "Some very long name" },
+  ];
+
   return (
     <PageWrapper>
       <header className="flex flex-col gap-3">
@@ -31,11 +44,34 @@ export const RequestPageHeader = ({ node, collectionId, api }: RequestPageHeader
             handleRenamingEntryCancel={handleRenamingEntryCancel}
             editable
           />
-          <div>
+          <div className="flex items-center gap-2">
             <div className="flex items-center gap-2">
               <span>{isEnabled ? "Enabled" : "Disabled"}</span>
               <MossToggle checked={isEnabled} onCheckedChange={setIsEnabled} />
             </div>
+            <MossSelect.Root value={selectedValue} onValueChange={setSelectedValue}>
+              <MossSelect.Trigger
+                placeholder={"Placeholder"}
+                childrenLeftSide={
+                  <span
+                    className={cn("size-1.5 rounded-full", {
+                      "background-(--moss-primary)": selectedValue === "Released",
+                      "background-(--moss-orange-5)": selectedValue === "Draft",
+                      "background-(--moss-error)": selectedValue === "Archived",
+                      "hidden": selectedValue === "Some very long name",
+                    })}
+                  />
+                }
+              />
+
+              <MossSelect.Content align="end">
+                {options?.map((option) => (
+                  <MossSelect.Item key={option.value} value={option.value}>
+                    {option.label}
+                  </MossSelect.Item>
+                ))}
+              </MossSelect.Content>
+            </MossSelect.Root>
           </div>
         </div>
 

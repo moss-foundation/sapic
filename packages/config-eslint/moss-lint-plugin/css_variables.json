@@ -251,5 +251,12 @@
   "--moss-mossToggle-border",
   "--moss-mossToggle-indicator",
   "--moss-mossToggle-thumb",
-  "--moss-mossToggle-thumb-border"
+  "--moss-mossToggle-thumb-border",
+  "--moss-mossSelect-bg",
+  "--moss-mossSelect-border",
+  "--moss-mossSelect-text",
+  "--moss-mossSelect-hover-bg",
+  "--moss-mossSelect-item-bg-hover",
+  "--moss-mossSelect-item-bg-selected",
+  "--moss-mossSelect-disabled-bg"
 ]
