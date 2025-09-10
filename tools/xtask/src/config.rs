@@ -11,6 +11,7 @@ pub struct ConfigFile {
 #[derive(Deserialize, Default)]
 pub struct AuditConfig {
     pub global_ignore: Vec<String>,
+    pub library_ignore: Vec<String>,
     pub crate_ignore: HashMap<String, Vec<String>>,
 }
 

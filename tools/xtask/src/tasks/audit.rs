@@ -26,7 +26,10 @@ pub async fn check_dependencies_job(
     metadata
         .packages
         .into_iter()
-        .filter(|p| metadata.workspace_members.contains(&p.id))
+        .filter(|p| {
+            metadata.workspace_members.contains(&p.id)
+                && !config_file.audit.library_ignore.contains(&p.name)
+        })
         .for_each(|package| {
             let config_file_clone = Arc::clone(&config_file);
 
