@@ -246,5 +246,10 @@
   "--moss-textarea-bg",
   "--moss-textarea-border",
   "--moss-textarea-text",
-  "--moss-textarea-placeholder"
+  "--moss-textarea-placeholder",
+  "--moss-mossToggle-bg",
+  "--moss-mossToggle-border",
+  "--moss-mossToggle-indicator",
+  "--moss-mossToggle-thumb",
+  "--moss-mossToggle-thumb-border"
 ]
