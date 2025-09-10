@@ -50,7 +50,7 @@ members = [
 #
 # Library crates
 #
-joinerror = { path = "libs/joinerror" }
+joinerror = { path = "libs/joinerror", features = ["anyhow", "tokio", "serde_json", "validator", "reqwest", "url", "git2"] }
 atomic_fs = { path = "libs/atomic-fs" }
 #
 # Workspace crates

@@ -262,7 +262,7 @@ check-unused-deps:
 
 ## Run a series of maintenance tasks to keep the project organized
 .PHONY: tidy
-tidy: gen-license workspace-audit check-unused-deps
+tidy: gen-license rust-audit check-unused-deps
 	$(MAKE) clean
 
 # ======================================================
