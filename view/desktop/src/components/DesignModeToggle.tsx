@@ -27,7 +27,6 @@ export const DesignModeToggle = ({ className }: DesignModeToggleProps) => {
   };
 
   const handleSetDesignFirstMode = () => {
-    console.log("handleSetDesignFirstMode");
     setDisplayMode("DESIGN_FIRST");
   };
 

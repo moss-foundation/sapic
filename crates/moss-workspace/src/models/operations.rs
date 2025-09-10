@@ -256,8 +256,6 @@ pub struct StreamCollectionsOutput {
 #[ts(export, export_to = "operations.ts")]
 pub struct ActivateEnvironmentInput {
     pub environment_id: EnvironmentId,
-    // FIXME: Should this be `collection_id` instead?
-    pub group_id: Option<CollectionId>,
 }
 
 #[derive(Debug, Serialize, Deserialize, TS)]

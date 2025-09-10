@@ -62,7 +62,6 @@ export const TreeNodeActions = ({
               <ActionMenu.Item alignWithIcons onClick={() => setIsRenamingNode(true)}>
                 Rename...
               </ActionMenu.Item>
-
               <ActionMenu.Item alignWithIcons onClick={handleDeleteNode} icon="Trash">
                 Delete
               </ActionMenu.Item>

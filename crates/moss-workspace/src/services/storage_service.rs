@@ -139,6 +139,25 @@ impl<R: AppRuntime> StorageService<R> {
         Ok(())
     }
 
+    pub(super) async fn put_active_environments_txn(
+        &self,
+        ctx: &R::AsyncContext,
+        txn: &mut Transaction,
+        activated_environments: &HashMap<Arc<String>, EnvironmentId>,
+    ) -> joinerror::Result<()> {
+        let store = self.storage.item_store();
+        TransactionalPutItem::put_with_context(
+            store.as_ref(),
+            ctx,
+            txn,
+            segments::SEGKEY_ACTIVE_ENVIRONMENTS.to_segkey_buf(),
+            AnyValue::serialize(&activated_environments)?,
+        )
+        .await?;
+
+        Ok(())
+    }
+
     pub(super) async fn get_expanded_items(
         &self,
         ctx: &R::AsyncContext,
@@ -147,6 +166,20 @@ impl<R: AppRuntime> StorageService<R> {
         let segkey = segments::SEGKEY_EXPANDED_ITEMS.to_segkey_buf();
         let value = GetItem::get(store.as_ref(), ctx, segkey).await?;
         Ok(AnyValue::deserialize::<HashSet<_>>(&value)?)
+    }
+
+    pub(super) async fn get_active_environments(
+        &self,
+        ctx: &R::AsyncContext,
+    ) -> joinerror::Result<HashMap<Arc<String>, EnvironmentId>> {
+        let store = self.storage.item_store();
+        let value = GetItem::get(
+            store.as_ref(),
+            ctx,
+            segments::SEGKEY_ACTIVE_ENVIRONMENTS.to_segkey_buf(),
+        )
+        .await?;
+        Ok(AnyValue::deserialize::<HashMap<_, _>>(&value)?)
     }
 
     pub(super) async fn list_items_metadata(
