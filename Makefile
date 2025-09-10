@@ -31,6 +31,7 @@ endif
 # ---- Environment Settings ----
 export LOG_LEVEL = trace
 export DEV_APP_DIR = ${HOME_DIR}/.sapic
+export TEMP_DIR = ${HOME_DIR}/.sapic/tmp
 
 # ---- Asset Directories ----
 export THEMES_DIR = ${CURDIR}/assets/themes

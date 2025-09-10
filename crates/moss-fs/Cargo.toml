@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+atomic_fs.workspace = true
 moss_applib.workspace = true
 moss_text.workspace = true
 
@@ -20,6 +21,7 @@ derive_more.workspace = true
 thiserror.workspace = true
 async_zip.workspace = true
 tokio-util.workspace = true
+nanoid.workspace = true
 
 [features]
 integration-tests = []

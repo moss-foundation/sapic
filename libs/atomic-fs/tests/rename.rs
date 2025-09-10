@@ -8,7 +8,7 @@ mod shared;
 
 #[tokio::test]
 pub async fn test_rename_success() {
-    let (mut rb, test_path) = setup_rollback();
+    let (mut rb, test_path) = setup_rollback().await;
 
     let data = "Hello World".as_bytes();
     let source = test_path.join("old.txt");
@@ -38,7 +38,7 @@ pub async fn test_rename_success() {
 
 #[tokio::test]
 pub async fn test_rename_different_types() {
-    let (mut rb, test_path) = setup_rollback();
+    let (mut rb, test_path) = setup_rollback().await;
 
     let source = test_path.join("old.txt");
     let dest = test_path.join("new");
@@ -65,7 +65,7 @@ pub async fn test_rename_different_types() {
 
 #[tokio::test]
 pub async fn test_rename_ignore_when_exists() {
-    let (mut rb, test_path) = setup_rollback();
+    let (mut rb, test_path) = setup_rollback().await;
 
     let source = test_path.join("old.txt");
     let dest = test_path.join("new.txt");
@@ -95,7 +95,7 @@ pub async fn test_rename_ignore_when_exists() {
 
 #[tokio::test]
 pub async fn test_rename_overwrite_existing_file() {
-    let (mut rb, test_path) = setup_rollback();
+    let (mut rb, test_path) = setup_rollback().await;
 
     let source = test_path.join("old.txt");
     let source_content = "Source".as_bytes();
@@ -127,7 +127,7 @@ pub async fn test_rename_overwrite_existing_file() {
 
 #[tokio::test]
 pub async fn test_rename_non_overwrite_already_exists() {
-    let (mut rb, test_path) = setup_rollback();
+    let (mut rb, test_path) = setup_rollback().await;
 
     let source = test_path.join("old.txt");
     let dest = test_path.join("new.txt");
@@ -154,7 +154,7 @@ pub async fn test_rename_non_overwrite_already_exists() {
 
 #[tokio::test]
 pub async fn test_rename_dir_nonempty_destination() {
-    let (mut rb, test_path) = setup_rollback();
+    let (mut rb, test_path) = setup_rollback().await;
 
     let source = test_path.join("dir");
     let dest = test_path.join("new_dir");

@@ -457,6 +457,7 @@ name = "atomic_fs"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "joinerror",
  "nanoid",
  "tokio",
 ]
@@ -3764,11 +3765,13 @@ dependencies = [
  "async-stream",
  "async-trait",
  "async_zip",
+ "atomic_fs",
  "derive_more 2.0.1",
  "futures",
  "joinerror",
  "moss_applib",
  "moss_text",
+ "nanoid",
  "notify",
  "tauri",
  "thiserror 2.0.16",

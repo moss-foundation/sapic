@@ -1,12 +1,12 @@
 #![cfg(feature = "integration-tests")]
-use atomic_fs::create_dir;
 
 use crate::shared::setup_rollback;
+use atomic_fs::create_dir;
 mod shared;
 
 #[tokio::test]
 pub async fn test_create_dir_success() {
-    let (mut rb, test_path) = setup_rollback();
+    let (mut rb, test_path) = setup_rollback().await;
     let target = test_path.join("1");
 
     create_dir(&mut rb, &target).await.unwrap();
@@ -17,11 +17,11 @@ pub async fn test_create_dir_success() {
 }
 #[tokio::test]
 pub async fn test_create_dir_missing_parent() {
-    let (mut rb, test_path) = setup_rollback();
+    let (mut rb, test_path) = setup_rollback().await;
 
     // Missing parent folder
     assert!(
-        create_dir(&mut rb, test_path.join("missing").join("1"))
+        create_dir(&mut rb, &test_path.join("missing").join("1"))
             .await
             .is_err()
     );

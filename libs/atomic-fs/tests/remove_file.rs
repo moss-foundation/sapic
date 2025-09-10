@@ -8,7 +8,7 @@ mod shared;
 
 #[tokio::test]
 pub async fn test_remove_file_success() {
-    let (mut rb, test_path) = setup_rollback();
+    let (mut rb, test_path) = setup_rollback().await;
 
     let target = test_path.join("file.txt");
     tokio::fs::File::create(&target).await.unwrap();
@@ -30,7 +30,7 @@ pub async fn test_remove_file_success() {
 
 #[tokio::test]
 pub async fn test_remove_file_ignore_when_not_exist() {
-    let (mut rb, test_path) = setup_rollback();
+    let (mut rb, test_path) = setup_rollback().await;
 
     let target = test_path.join("file.txt");
 
@@ -51,7 +51,7 @@ pub async fn test_remove_file_ignore_when_not_exist() {
 
 #[tokio::test]
 pub async fn test_remove_file_not_ignore_when_not_exist() {
-    let (mut rb, test_path) = setup_rollback();
+    let (mut rb, test_path) = setup_rollback().await;
 
     let target = test_path.join("file.txt");
 

@@ -159,6 +159,10 @@ impl<R: AppRuntime> WorkspaceService<R> {
         };
 
         let item = item.ok_or_join_err_with::<()>(|| format!("workspace `{}` not found", id))?;
+        if active_workspace_id == Some(item.id.clone()) {
+            self.deactivate_workspace(ctx).await?
+        }
+
         if item.abs_path.exists() {
             self.fs
                 .remove_dir(
@@ -197,11 +201,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
             }
         }
 
-        if active_workspace_id != Some(item.id) {
-            return Ok(());
-        }
-
-        Ok(self.deactivate_workspace(ctx).await?)
+        Ok(())
     }
 
     pub(crate) async fn create_workspace(
@@ -214,12 +214,15 @@ impl<R: AppRuntime> WorkspaceService<R> {
         let id_str = id.to_string();
 
         let abs_path: Arc<Path> = self.absolutize(&id_str).into();
+
+        let mut rb = self.fs.start_rollback().await?;
+
         self.fs
-            .create_dir(&abs_path)
+            .create_dir_with_rollback(&mut rb, abs_path.as_ref())
             .await
             .join_err::<()>("failed to create workspace directory")?;
 
-        WorkspaceBuilder::<R>::initialize(
+        if let Err(e) = WorkspaceBuilder::<R>::initialize(
             self.fs.clone(),
             CreateWorkspaceParams {
                 name: params.name.clone(),
@@ -227,7 +230,12 @@ impl<R: AppRuntime> WorkspaceService<R> {
             },
         )
         .await
-        .join_err::<()>("failed to initialize workspace")?;
+        {
+            let _ = rb.rollback().await.map_err(|e| {
+                session::warn!(format!("failed to rollback fs changes: {}", e.to_string()))
+            });
+            return Err(e.join::<()>("failed to initialize workspace"));
+        }
 
         state_lock.known_workspaces.insert(
             id.clone(),

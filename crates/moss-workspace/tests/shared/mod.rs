@@ -49,7 +49,17 @@ pub async fn setup_test_workspace() -> (
     CleanupFn,
 ) {
     dotenv::dotenv().ok();
-    let fs = Arc::new(RealFileSystem::new());
+    let abs_path: Arc<Path> = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join("data")
+        .join("workspaces")
+        .join(random_workspace_name())
+        .into();
+    let tmp_path = abs_path.join("tmp");
+    fs::create_dir_all(&abs_path).unwrap();
+    fs::create_dir_all(&tmp_path).unwrap();
+
+    let fs = Arc::new(RealFileSystem::new(&tmp_path));
     let mock_app = tauri::test::mock_app();
     let tao_app_handle = mock_app.handle().clone();
     {

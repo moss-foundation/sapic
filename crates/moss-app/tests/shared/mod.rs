@@ -142,7 +142,6 @@ pub async fn set_up_test_app() -> (
     let ctx = MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
 
     let keyring = Arc::new(MockKeyringClient::new());
-    let fs = Arc::new(RealFileSystem::new());
     let tauri_app = tauri::test::mock_app();
     let tao_app_handle = tauri_app.handle().to_owned();
     let http_client = HttpClientBuilder::new()
@@ -176,6 +175,7 @@ pub async fn set_up_test_app() -> (
     let themes_abs_path = app_path.join("themes");
     let locales_abs_path = app_path.join("locales");
     let profiles_abs_path = app_path.join("profiles");
+    let temp_abs_path = app_path.join("tmp");
 
     {
         tokio::fs::create_dir_all(&app_path).await.unwrap();
@@ -185,6 +185,7 @@ pub async fn set_up_test_app() -> (
         tokio::fs::create_dir(&themes_abs_path).await.unwrap();
         tokio::fs::create_dir(&locales_abs_path).await.unwrap();
         tokio::fs::create_dir(&profiles_abs_path).await.unwrap();
+        tokio::fs::create_dir(&temp_abs_path).await.unwrap();
 
         tokio::fs::write(&themes_abs_path.join("themes.json"), THEMES)
             .await
@@ -196,6 +197,7 @@ pub async fn set_up_test_app() -> (
             .await
             .unwrap();
     }
+    let fs = Arc::new(RealFileSystem::new(&temp_abs_path));
 
     let cleanup_fn = Box::new({
         let path = app_path.clone();

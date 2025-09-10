@@ -3,9 +3,12 @@ use async_zip::{
     Compression, ZipEntryBuilder,
     tokio::{read::fs::ZipFileReader, write::ZipFileWriter},
 };
+use atomic_fs::Rollback;
 use futures::{StreamExt, stream::BoxStream};
+use joinerror::ResultExt;
+use nanoid::nanoid;
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
-use std::{io, path::Path, time::Duration};
+use std::{io, path::Path, sync::Arc, time::Duration};
 use tokio::{
     fs::{OpenOptions, ReadDir},
     io::{AsyncReadExt, AsyncWriteExt},
@@ -17,11 +20,13 @@ use tokio_util::compat::TokioAsyncWriteCompatExt;
 
 use crate::{CreateOptions, FileSystem, FsError, FsResult, RemoveOptions, RenameOptions};
 
-pub struct RealFileSystem;
+pub struct RealFileSystem {
+    tmp: Arc<Path>,
+}
 
 impl RealFileSystem {
-    pub fn new() -> Self {
-        Self
+    pub fn new(tmp: &Path) -> Self {
+        Self { tmp: tmp.into() }
     }
 }
 
@@ -290,5 +295,117 @@ impl FileSystem for RealFileSystem {
         }
 
         Ok(())
+    }
+
+    // Create a folder for a particular rollback session
+    async fn start_rollback(&self) -> joinerror::Result<Rollback> {
+        let session_tmp = self.tmp.join(nanoid!(10));
+        tokio::fs::create_dir(&session_tmp)
+            .await
+            .join_err::<()>("failed to start a fs rollback session")?;
+        Ok(Rollback::new(session_tmp).await)
+    }
+
+    async fn create_dir_with_rollback(
+        &self,
+        rb: &mut Rollback,
+        path: &Path,
+    ) -> joinerror::Result<()> {
+        atomic_fs::create_dir(rb, path).await
+    }
+
+    async fn create_dir_all_with_rollback(
+        &self,
+        rb: &mut Rollback,
+        path: &Path,
+    ) -> joinerror::Result<()> {
+        atomic_fs::create_dir_all(rb, path).await
+    }
+
+    async fn remove_dir_with_rollback(
+        &self,
+        rb: &mut Rollback,
+        path: &Path,
+        options: RemoveOptions,
+    ) -> joinerror::Result<()> {
+        atomic_fs::remove_dir(
+            rb,
+            path,
+            atomic_fs::RemoveOptions {
+                ignore_if_not_exists: options.ignore_if_not_exists,
+            },
+        )
+        .await
+    }
+
+    async fn create_file_with_rollback(
+        &self,
+        rb: &mut Rollback,
+        path: &Path,
+        options: CreateOptions,
+    ) -> joinerror::Result<()> {
+        atomic_fs::create_file(
+            rb,
+            path,
+            atomic_fs::CreateOptions {
+                overwrite: options.overwrite,
+                ignore_if_exists: options.ignore_if_exists,
+            },
+        )
+        .await
+    }
+
+    async fn create_file_with_content_with_rollback(
+        &self,
+        rb: &mut Rollback,
+        path: &Path,
+        content: &[u8],
+        options: CreateOptions,
+    ) -> joinerror::Result<()> {
+        atomic_fs::create_file_with(
+            rb,
+            path,
+            atomic_fs::CreateOptions {
+                overwrite: options.overwrite,
+                ignore_if_exists: options.ignore_if_exists,
+            },
+            content,
+        )
+        .await
+    }
+
+    async fn remove_file_with_rollback(
+        &self,
+        rb: &mut Rollback,
+        path: &Path,
+        options: RemoveOptions,
+    ) -> joinerror::Result<()> {
+        atomic_fs::remove_file(
+            rb,
+            path,
+            atomic_fs::RemoveOptions {
+                ignore_if_not_exists: options.ignore_if_not_exists,
+            },
+        )
+        .await
+    }
+
+    async fn rename_with_rollback(
+        &self,
+        rb: &mut Rollback,
+        from: &Path,
+        to: &Path,
+        options: RenameOptions,
+    ) -> joinerror::Result<()> {
+        atomic_fs::rename(
+            rb,
+            from,
+            to,
+            atomic_fs::RenameOptions {
+                overwrite: options.overwrite,
+                ignore_if_exists: options.ignore_if_exists,
+            },
+        )
+        .await
     }
 }
