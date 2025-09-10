@@ -248,6 +248,7 @@
   "--moss-textarea-text",
   "--moss-textarea-placeholder",
   "--moss-mossToggle-bg",
+  "--moss-mossToggle-bg-checked",
   "--moss-mossToggle-border",
   "--moss-mossToggle-indicator",
   "--moss-mossToggle-thumb",
