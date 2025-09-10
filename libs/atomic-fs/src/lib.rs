@@ -66,7 +66,6 @@ impl Rollback {
     }
 
     pub async fn rollback(&mut self) -> joinerror::Result<()> {
-        dbg!(&self.undo_stack);
         while let Some(undo) = self.undo_stack.pop() {
             let result = match undo {
                 Undo::RemoveDir(path) => tokio::fs::remove_dir(&path).await,

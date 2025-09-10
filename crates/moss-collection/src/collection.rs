@@ -143,6 +143,8 @@ impl<R: AppRuntime> Collection<R> {
         url: GitUrl,
         default_branch: String,
     ) -> joinerror::Result<()> {
+        // HACK: It's impossible to set the config after git operations inside this method
+        // Since it will trigger spurious git2 type errors
         {
             let account_id = client.account_id();
             self.modify_config(CollectionConfigModifyParams {

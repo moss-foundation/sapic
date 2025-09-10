@@ -59,7 +59,6 @@ pub async fn create_test_collection() -> (
     let app_delegate = AppDelegate::new(mock_app.handle().clone());
     let collection = CollectionBuilder::new(fs)
         .await
-        .unwrap()
         .create(
             &ctx,
             CollectionCreateParams {

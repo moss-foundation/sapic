@@ -111,8 +111,8 @@ pub struct CollectionBuilder {
 }
 
 impl CollectionBuilder {
-    pub async fn new(fs: Arc<dyn FileSystem>) -> joinerror::Result<Self> {
-        Ok(Self { fs })
+    pub async fn new(fs: Arc<dyn FileSystem>) -> Self {
+        Self { fs }
     }
 
     pub async fn load<R: AppRuntime>(
