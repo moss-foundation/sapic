@@ -112,7 +112,7 @@ export const RequestInputField = memo(
                   "transition-colors",
                   "rounded-md",
                   "cursor-pointer font-bold",
-                  "background-(--moss-primary-background) hover:background-(--moss-primary-background-hover) border border-(--moss-gray-11) text-(--moss-requestpage-text)",
+                  "background-(--moss-primary-background) hover:background-(--moss-secondary-background-hover) border border-(--moss-gray-11) text-(--moss-requestpage-text)",
                   "data-[state=open]:outline-2 data-[state=open]:outline-offset-0 data-[state=open]:outline-(--moss-primary)"
                 )}
               >
