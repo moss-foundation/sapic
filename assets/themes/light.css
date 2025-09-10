@@ -355,4 +355,11 @@
   --moss-mossSelect-item-bg-hover: var(--moss-gray-12);
   --moss-mossSelect-item-bg-selected: var(--moss-blue-11);
   --moss-mossSelect-disabled-bg: var(--moss-gray-10);
+
+  /* Moss Dropdown */
+  --moss-mossDropdown-bg: var(--moss-gray-13);
+  --moss-mossDropdown-border: var(--moss-gray-11);
+  --moss-mossDropdown-text: var(--moss-gray-1);
+  --moss-mossDropdown-hover-bg: var(--moss-gray-12);
+  --moss-mossDropdown-item-bg-hover: var(--moss-gray-12);
 }

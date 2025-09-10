@@ -259,5 +259,10 @@
   "--moss-mossSelect-hover-bg",
   "--moss-mossSelect-item-bg-hover",
   "--moss-mossSelect-item-bg-selected",
-  "--moss-mossSelect-disabled-bg"
+  "--moss-mossSelect-disabled-bg",
+  "--moss-mossDropdown-bg",
+  "--moss-mossDropdown-border",
+  "--moss-mossDropdown-text",
+  "--moss-mossDropdown-hover-bg",
+  "--moss-mossDropdown-item-bg-hover"
 ]

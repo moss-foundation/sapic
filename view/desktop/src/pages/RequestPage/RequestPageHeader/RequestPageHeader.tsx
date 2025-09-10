@@ -3,7 +3,7 @@ import { useState } from "react";
 import { PageWrapper } from "@/components/PageView/PageWrapper";
 import { useRenameEntryForm } from "@/hooks";
 import { DockviewPanelApi } from "@/lib/moss-tabs/src";
-import { MossToggle } from "@/lib/ui";
+import { Icon, MossDropdown, MossToggle } from "@/lib/ui";
 import MossSelect from "@/lib/ui/MossSelect";
 import { cn } from "@/utils";
 import { StreamEntriesEvent } from "@repo/moss-collection";
@@ -72,6 +72,19 @@ export const RequestPageHeader = ({ node, collectionId, api }: RequestPageHeader
                 ))}
               </MossSelect.Content>
             </MossSelect.Root>
+
+            <MossDropdown.Root>
+              <MossDropdown.Trigger>
+                <Icon icon="MoreHorizontal" />
+              </MossDropdown.Trigger>
+              <MossDropdown.Portal>
+                <MossDropdown.Content>
+                  <MossDropdown.Item>Item 1</MossDropdown.Item>
+                  <MossDropdown.Item>Item 2</MossDropdown.Item>
+                  <MossDropdown.Item>Item 3</MossDropdown.Item>
+                </MossDropdown.Content>
+              </MossDropdown.Portal>
+            </MossDropdown.Root>
           </div>
         </div>
 
