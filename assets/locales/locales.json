@@ -4,18 +4,21 @@
     "displayName": "English",
     "code": "en",
     "direction": "ltr",
+    "order": 1,
     "isDefault": true
   },
   {
     "identifier": "moss.sapic-locale.ru",
     "displayName": "Русский",
     "code": "ru",
-    "direction": "ltr"
+    "direction": "ltr",
+    "order": 2
   },
   {
     "identifier": "moss.sapic-locale.de",
     "displayName": "Deutsche",
     "code": "de",
-    "direction": "ltr"
+    "direction": "ltr",
+    "order": 3
   }
 ]

@@ -34,6 +34,7 @@ pub struct LocaleInfo {
     pub display_name: String,
     pub code: String,
     pub direction: Option<String>,
+    pub order: Option<isize>,
     pub is_default: Option<bool>,
 }
 
