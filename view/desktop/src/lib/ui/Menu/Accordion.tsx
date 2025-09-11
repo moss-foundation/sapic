@@ -55,6 +55,8 @@ const AccordionTrigger = forwardRef<AccordionTriggerElement, AccordionTriggerPro
     const { __scopeActionMenu, className, children, ...triggerProps } = props;
     const context = useAccordionContext(ACCORDION_NAME);
 
+    console.log("props.total", props.total);
+
     return (
       <div
         role="button"
@@ -77,7 +79,7 @@ const AccordionTrigger = forwardRef<AccordionTriggerElement, AccordionTriggerPro
       >
         <Icon icon={context.open ? "ChevronDown" : "ChevronRight"} />
         {children}
-        {props.total && <span className="text-(--moss-secondary-text)">{props.total}</span>}
+        {props.total !== undefined && <span className="text-(--moss-secondary-text)">{props.total}</span>}
       </div>
     );
   }
