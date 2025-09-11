@@ -9,7 +9,6 @@ use moss_app::{
         primitives::WorkspaceId,
     },
 };
-use moss_fs::{FileSystem, RealFileSystem};
 use moss_testutils::random_name::random_workspace_name;
 use moss_workspace::models::primitives::WorkspaceMode;
 use std::{path::Path, sync::Arc};
@@ -212,16 +211,8 @@ async fn delete_workspace_filesystem_does_not_exist() {
         .join(dirs::WORKSPACES_DIR)
         .join(&create_output.id.to_string())
         .into();
-    let fs = RealFileSystem::new();
-    fs.remove_dir(
-        &workspace_path,
-        moss_fs::RemoveOptions {
-            recursive: true,
-            ignore_if_not_exists: false,
-        },
-    )
-    .await
-    .unwrap();
+
+    tokio::fs::remove_dir_all(&workspace_path).await.unwrap();
     assert!(!workspace_path.exists());
 
     // Delete the workspace (should still succeed)

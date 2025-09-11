@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import { InputOutlined } from "@/components/InputOutlined";
 import { useAddAccount } from "@/hooks/app/account/useAddAccount";
 import { useGitProviderStore } from "@/store/gitProvider";
 import { ImportCollectionSource } from "@repo/moss-workspace";
@@ -9,8 +10,7 @@ import { NameInput } from "../components/NameInput";
 import ProviderTabs from "../components/ProviderTabs";
 import { RepositoryInput } from "../components/RepositoryInput";
 import { DEFAULT_BRANCH, DEFAULT_NAME, DEFAULT_PROVIDER, DEFAULT_REPOSITORY } from "../defaults";
-import { Subheader } from "../Sections/Subheader";
-import { InputOutlined } from "@/components/InputOutlined";
+import { Subheader } from "./Subheader";
 
 interface ImportSectionProps {
   onValuesUpdate: (values: { name: string; importParams: ImportCollectionSource | undefined }) => void;

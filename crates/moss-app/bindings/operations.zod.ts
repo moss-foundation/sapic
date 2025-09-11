@@ -2,8 +2,9 @@
 import { jsonValueSchema } from "@repo/moss-bindingutils";
 import { workspaceModeSchema } from "@repo/moss-workspace";
 import { z } from "zod";
-import { accountKindSchema, logLevelSchema } from "./primitives.zod";
+import { logLevelSchema } from "./primitives.zod";
 import {
+  addAccountParamsSchema,
   colorThemeInfoSchema,
   defaultsSchema,
   localeInfoSchema,
@@ -13,6 +14,13 @@ import {
   preferencesSchema,
   workspaceInfoSchema,
 } from "./types.zod";
+
+export const addAccountInputSchema = z.object({
+  profileId: z.string(),
+  host: z.string(),
+  label: z.string().optional(),
+  provider: z.string(),
+});
 
 export const addAccountOutputSchema = z.object({
   account_id: z.string(),
@@ -36,6 +44,7 @@ export const closeWorkspaceOutputSchema = z.object({
 
 export const createProfileInputSchema = z.object({
   name: z.string(),
+  isDefault: z.boolean().optional(),
 });
 
 export const createProfileOutputSchema = z.object({
@@ -80,16 +89,14 @@ export const openWorkspaceOutputSchema = z.object({
   id: z.string(),
 });
 
+export const updateProfileOutputSchema = z.object({
+  added_accounts: z.array(z.string()),
+  removed_accounts: z.array(z.string()),
+});
+
 export const updateWorkspaceInputSchema = z.object({
   name: z.string().optional(),
 });
-export const addAccountInputSchema = z.object({
-  profileId: z.string(),
-  host: z.string(),
-  label: z.string().optional(),
-  provider: accountKindSchema,
-});
-
 export const batchDeleteLogOutputSchema = z.object({
   deletedEntries: z.array(logItemSourceInfoSchema),
 });
@@ -130,4 +137,9 @@ export const setColorThemeInputSchema = z.object({
 
 export const setLocaleInputSchema = z.object({
   localeInfo: localeInfoSchema,
+});
+
+export const updateProfileInputSchema = z.object({
+  accountsToAdd: z.array(addAccountParamsSchema),
+  accountsToRemove: z.array(z.string()),
 });

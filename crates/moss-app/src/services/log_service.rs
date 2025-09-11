@@ -539,9 +539,11 @@ mod tests {
     #[tokio::test]
     async fn test_taurilog_writer() {
         let test_app_log_path = random_app_log_path();
+        let test_temp_path = Path::new("tests").join("data").join("tmp");
         create_dir_all(&test_app_log_path).unwrap();
+        create_dir_all(&test_temp_path).unwrap();
 
-        let fs = Arc::new(RealFileSystem::new());
+        let fs = Arc::new(RealFileSystem::new(&test_temp_path));
         let mock_app = tauri::test::mock_app();
         let session_id = SessionId::new();
         let storage = Arc::new(StorageService::<MockAppRuntime>::new(&test_app_log_path).unwrap());

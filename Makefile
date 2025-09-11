@@ -31,6 +31,7 @@ endif
 # ---- Environment Settings ----
 export LOG_LEVEL = trace
 export DEV_APP_DIR = ${HOME_DIR}/.sapic
+export TEMP_DIR = ${HOME_DIR}/.sapic/tmp
 
 # ---- Asset Directories ----
 export THEMES_DIR = ${CURDIR}/assets/themes
@@ -46,6 +47,7 @@ export SESSION_LOG_DIR = ${CURDIR}/logs/session
 # ---- Directory Paths ----
 # Tool directories
 GEN_BINDINGS_DIR := tools/gen-bindings
+CARGO_NEW_TS := tools/cargo-new-ts
 
 # Application directories
 DESKTOP_DIR := view/desktop
@@ -62,6 +64,7 @@ WORKSPACE_MODELS_DIR := crates/moss-workspace
 ACTIVITY_BROADCASTER_MODELS_DIR := crates/moss-activity-broadcaster
 API_MODELS_DIR := crates/moss-api
 GIT_MODELS_DIR := crates/moss-git
+USER_MODELS_DIR := crates/moss-user
 
 # ---- Command Executables ----
 PNPM := pnpm
@@ -87,6 +90,7 @@ run-desktop:
 ## Install dependencies and setup development environment
 .PHONY: ready
 ready: gen-icons export-css-variables gen-typedoc
+	@cd $(CARGO_NEW_TS) && $(CARGO) install --path .
 	$(PNPM) i
 
 ## Generate TypeDoc documentation
@@ -144,6 +148,8 @@ $(eval $(call gen_bindings,activity-broadcaster,ACTIVITY_BROADCASTER_MODELS_DIR)
 $(eval $(call gen_bindings,bindingutils,BINDINGUTILS_DIR))
 $(eval $(call gen_bindings,api,API_MODELS_DIR))
 $(eval $(call gen_bindings,git,GIT_MODELS_DIR))
+$(eval $(call gen_bindings,user,USER_MODELS_DIR))
+
 
 gen-app-bindings:
 gen-collection-bindings:
@@ -153,6 +159,7 @@ gen-activity-broadcaster-bindings:
 gen-bindingutils-bindings:
 gen-api-bindings:
 gen-git-bindings:
+gen-user-bindings:
 
 ## Generate all TypeScript bindings
 .PHONY: gen-bindings
@@ -164,9 +171,8 @@ gen-bindings: \
 	gen-activity-broadcaster-bindings \
 	gen-bindingutils-bindings \
 	gen-api-bindings \
-	gen-git-bindings
-
-
+	gen-git-bindings \
+	gen-user-bindings
 
 
 # ======================================================
@@ -256,7 +262,7 @@ check-unused-deps:
 
 ## Run a series of maintenance tasks to keep the project organized
 .PHONY: tidy
-tidy: gen-license workspace-audit check-unused-deps
+tidy: gen-license rust-audit check-unused-deps
 	$(MAKE) clean
 
 # ======================================================

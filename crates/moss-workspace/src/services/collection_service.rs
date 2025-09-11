@@ -19,7 +19,7 @@ use moss_git_hosting_provider::{
     GitProviderKind, github::client::GitHubApiClient, gitlab::client::GitLabApiClient,
 };
 use moss_logging::session;
-use moss_user::{account::Account, models::primitives::AccountId, profile::ActiveProfile};
+use moss_user::{account::Account, models::primitives::AccountId, profile::Profile};
 use rustc_hash::FxHashMap;
 use std::{
     collections::{HashMap, HashSet},
@@ -93,6 +93,7 @@ pub struct CollectionService<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     storage: Arc<StorageService<R>>,
     state: Arc<RwLock<ServiceState<R>>>,
+    app_delegate: AppDelegate<R>,
     on_did_delete_collection_emitter: EventEmitter<OnDidDeleteCollection>,
     on_did_add_collection_emitter: EventEmitter<OnDidAddCollection>,
 }
@@ -105,7 +106,7 @@ impl<R: AppRuntime> CollectionService<R> {
         fs: Arc<dyn FileSystem>,
         storage: Arc<StorageService<R>>,
         environment_sources: &mut FxHashMap<Arc<String>, PathBuf>,
-        active_profile: &Arc<ActiveProfile<R>>,
+        active_profile: &Arc<Profile<R>>,
         on_collection_did_delete_emitter: EventEmitter<OnDidDeleteCollection>,
         on_collection_did_add_emitter: EventEmitter<OnDidAddCollection>,
     ) -> joinerror::Result<Self> {
@@ -135,6 +136,7 @@ impl<R: AppRuntime> CollectionService<R> {
                 collections,
                 expanded_items,
             })),
+            app_delegate: app_delegate.clone(),
             on_did_delete_collection_emitter: on_collection_did_delete_emitter,
             on_did_add_collection_emitter: on_collection_did_add_emitter,
         })
@@ -156,6 +158,8 @@ impl<R: AppRuntime> CollectionService<R> {
         account: Option<Account<R>>,
         params: &CreateCollectionParams,
     ) -> joinerror::Result<CollectionItemDescription> {
+        let mut rb = self.fs.start_rollback().await?;
+
         let id_str = id.to_string();
         let abs_path: Arc<Path> = self.abs_path.join(id_str).into();
         if abs_path.exists() {
@@ -166,7 +170,7 @@ impl<R: AppRuntime> CollectionService<R> {
         }
 
         self.fs
-            .create_dir(&abs_path)
+            .create_dir_with_rollback(&mut rb, &abs_path)
             .await
             .join_err_with::<()>(|| {
                 format!("failed to create directory `{}`", abs_path.display())
@@ -175,25 +179,61 @@ impl<R: AppRuntime> CollectionService<R> {
         let git_params = match params.git_params.as_ref() {
             None => None,
             Some(CreateCollectionGitParams::GitHub(git_params)) => {
-                Some(CollectionCreateGitParams {
+                let repository = match GitUrl::parse(&git_params.repository) {
+                    Ok(repository) => Some(repository),
+                    Err(e) => {
+                        // Continue creating a collection without vcs
+                        self.app_delegate.emit_oneshot(ToLocation::Toast {
+                            activity_id: "create_collection_invalid_repository",
+                            title: "Invalid Repository".to_string(),
+                            detail: Some(
+                                "The provided repository is invalid, skipping the vcs".to_string(),
+                            ),
+                        })?;
+                        session::error!(format!(
+                            "failed to parse repository url: {}",
+                            e.to_string()
+                        ));
+                        None
+                    }
+                };
+                repository.map(|repository| CollectionCreateGitParams {
                     git_provider_type: GitProviderKind::GitHub,
-                    repository: GitUrl::parse(&git_params.repository)?,
+                    repository,
                     branch: git_params.branch.clone(),
                 })
             }
             Some(CreateCollectionGitParams::GitLab(git_params)) => {
-                Some(CollectionCreateGitParams {
+                let repository = match GitUrl::parse(&git_params.repository) {
+                    Ok(repository) => Some(repository),
+                    Err(e) => {
+                        // Continue creating a collection without vcs
+                        self.app_delegate.emit_oneshot(ToLocation::Toast {
+                            activity_id: "create_collection_invalid_repository",
+                            title: "Invalid Repository".to_string(),
+                            detail: Some(
+                                "The provided repository is invalid, skipping the vcs".to_string(),
+                            ),
+                        })?;
+                        session::error!(format!(
+                            "failed to parse repository url: {}",
+                            e.to_string()
+                        ));
+                        None
+                    }
+                };
+                repository.map(|repository| CollectionCreateGitParams {
                     git_provider_type: GitProviderKind::GitLab,
-                    repository: GitUrl::parse(&git_params.repository)?,
+                    repository,
                     branch: git_params.branch.clone(),
                 })
             }
         };
 
         let abs_path: Arc<Path> = abs_path.clone().into();
-        let builder = CollectionBuilder::new(self.fs.clone()).await?;
+        let builder = CollectionBuilder::new(self.fs.clone()).await;
 
-        let collection_result = builder
+        let collection = match builder
             .create(
                 ctx,
                 CollectionCreateParams {
@@ -205,27 +245,13 @@ impl<R: AppRuntime> CollectionService<R> {
                 },
             )
             .await
-            .join_err::<()>("failed to build collection");
-
-        // TODO: Use atomic-fs to rollback changes
-        // Remove collection folder if collection fails to be created
-        let collection = match collection_result {
+            .join_err::<()>("failed to build collection")
+        {
             Ok(collection) => collection,
             Err(e) => {
-                // TODO: Log or tell the frontend we failed to clean up after operation failure
-                let _ = self
-                    .fs
-                    .remove_dir(
-                        &abs_path,
-                        RemoveOptions {
-                            recursive: true,
-                            ignore_if_not_exists: true,
-                        },
-                    )
-                    .await
-                    .join_err_with::<()>(|| {
-                        format!("failed to remove directory `{}`", abs_path.display())
-                    });
+                let _ = rb.rollback().await.map_err(|e| {
+                    session::warn!(format!("failed to rollback fs changes: {}", e.to_string()))
+                });
                 return Err(e);
             }
         };
@@ -242,9 +268,20 @@ impl<R: AppRuntime> CollectionService<R> {
                 },
             };
 
-            collection
+            if let Err(e) = collection
                 .init_vcs(ctx, client, git_params.repository, git_params.branch)
-                .await?;
+                .await
+            {
+                session::warn!(format!("failed to init vcs: {}", e.to_string()));
+                self.app_delegate.emit_oneshot(ToLocation::Toast {
+                    activity_id: "create_collection_init_vcs_failure",
+                    title: "Failed to initialized collection vcs".to_string(),
+                    detail: Some(
+                        "Failed to initialize collection vcs, creating a local only collection"
+                            .to_string(),
+                    ),
+                })?;
+            }
         }
 
         let icon_path = collection.icon_path();
@@ -302,7 +339,7 @@ impl<R: AppRuntime> CollectionService<R> {
         })
     }
 
-    // FIXME: Setting the cloned collection's name and icon is not yet implemented
+    // TODO: Setting the cloned collection's name and icon is not yet implemented
     // Since they are currently committed to the repository
     // Updating them here would be a committable change
     pub(crate) async fn clone_collection(
@@ -313,6 +350,8 @@ impl<R: AppRuntime> CollectionService<R> {
         account: Account<R>,
         params: CollectionItemCloneParams,
     ) -> joinerror::Result<CollectionItemDescription> {
+        let mut rb = self.fs.start_rollback().await?;
+
         let id_str = id.to_string();
         let abs_path: Arc<Path> = self.abs_path.join(id_str).into();
         if abs_path.exists() {
@@ -323,13 +362,32 @@ impl<R: AppRuntime> CollectionService<R> {
         }
 
         self.fs
-            .create_dir(&abs_path)
+            .create_dir_with_rollback(&mut rb, &abs_path)
             .await
             .join_err_with::<()>(|| {
                 format!("failed to create directory `{}`", abs_path.display())
             })?;
 
-        let builder = CollectionBuilder::new(self.fs.clone()).await?;
+        let builder = CollectionBuilder::new(self.fs.clone()).await;
+
+        let repository = match GitUrl::parse(&params.repository) {
+            Ok(repository) => repository,
+            Err(e) => {
+                self.app_delegate.emit_oneshot(ToLocation::Toast {
+                    activity_id: "clone_collection_invalid_repository",
+                    title: "Invalid repository url".to_string(),
+                    detail: Some(
+                        "Cannot clone remote collection since the url is invalid".to_string(),
+                    ),
+                })?;
+
+                let _ = rb
+                    .rollback()
+                    .await
+                    .map_err(|e| session::warn!(format!("failed to rollback: {}", e.to_string())));
+                return Err(e);
+            }
+        };
 
         let git_client = match params.git_provider_type {
             GitProviderKind::GitHub => GitClient::GitHub {
@@ -341,7 +399,7 @@ impl<R: AppRuntime> CollectionService<R> {
                 api: <dyn GitLabApiClient<R>>::global(app_delegate),
             },
         };
-        let collection_result = builder
+        let collection = match builder
             .clone(
                 ctx,
                 git_client,
@@ -349,32 +407,18 @@ impl<R: AppRuntime> CollectionService<R> {
                     internal_abs_path: abs_path.clone(),
                     account_id: params.account_id,
                     git_provider_type: params.git_provider_type.clone(),
-                    repository: GitUrl::parse(&params.repository)?,
+                    repository,
                     branch: params.branch.clone(),
                 },
             )
             .await
-            .join_err::<()>("failed to clone collection");
-
-        // TODO: Use atomic-fs to rollback changes
-        // Remove collection folder if collection fails to be cloned
-        let collection = match collection_result {
+            .join_err::<()>("failed to clone collection")
+        {
             Ok(collection) => collection,
             Err(e) => {
-                // TODO: Log or tell the frontend we failed to clean up after operation failure
-                let _ = self
-                    .fs
-                    .remove_dir(
-                        &abs_path,
-                        RemoveOptions {
-                            recursive: true,
-                            ignore_if_not_exists: true,
-                        },
-                    )
-                    .await
-                    .join_err_with::<()>(|| {
-                        format!("failed to remove directory `{}`", abs_path.display())
-                    });
+                let _ = rb.rollback().await.map_err(|e| {
+                    session::warn!(format!("failed to rollback fs changes: {}", e.to_string()))
+                });
                 return Err(e);
             }
         };
@@ -423,14 +467,11 @@ impl<R: AppRuntime> CollectionService<R> {
             })
             .await;
 
-        // TODO: Add account info to the config
-
         Ok(CollectionItemDescription {
             id: id.clone(),
             name: desc.name,
             order: Some(params.order),
             expanded: true,
-            // FIXME: Rethink Manifest file and repository storage
             vcs: Some(vcs),
             icon_path,
             abs_path,
@@ -631,6 +672,8 @@ impl<R: AppRuntime> CollectionService<R> {
         id: &CollectionId,
         params: CollectionItemImportParams,
     ) -> joinerror::Result<CollectionItemDescription> {
+        let mut rb = self.fs.start_rollback().await?;
+
         let id_str = id.to_string();
         let abs_path: Arc<Path> = self.abs_path.join(&id_str).into();
         if abs_path.exists() {
@@ -641,15 +684,15 @@ impl<R: AppRuntime> CollectionService<R> {
         }
 
         self.fs
-            .create_dir(&abs_path)
+            .create_dir_with_rollback(&mut rb, &abs_path)
             .await
             .join_err_with::<()>(|| {
                 format!("failed to create directory `{}`", abs_path.display())
             })?;
 
-        let builder = CollectionBuilder::new(self.fs.clone()).await?;
+        let builder = CollectionBuilder::new(self.fs.clone()).await;
 
-        let collection = builder
+        let collection = match builder
             .import_archive(
                 ctx,
                 CollectionImportParams {
@@ -658,16 +701,31 @@ impl<R: AppRuntime> CollectionService<R> {
                 },
             )
             .await
-            .join_err::<()>("failed to import collection from archive file")?;
+            .join_err::<()>("failed to import collection from archive file")
+        {
+            Ok(collection) => collection,
+            Err(e) => {
+                let _ = rb.rollback().await.map_err(|e| {
+                    session::warn!(format!("failed to rollback fs changes: {}", e.to_string()))
+                });
+                return Err(e);
+            }
+        };
 
         // Update the collection name based on user input
-        collection
+        if let Err(e) = collection
             .modify(CollectionModifyParams {
                 name: Some(params.name),
                 repository: None,
                 icon_path: None,
             })
-            .await?;
+            .await
+        {
+            let _ = rb.rollback().await.map_err(|e| {
+                session::warn!(format!("failed to rollback fs changes: {}", e.to_string()))
+            });
+            return Err(e);
+        }
 
         let desc = collection.details().await?;
 
@@ -741,7 +799,7 @@ async fn restore_collections<R: AppRuntime>(
     abs_path: &Path,
     fs: &Arc<dyn FileSystem>,
     storage: &Arc<StorageService<R>>,
-    active_profile: &Arc<ActiveProfile<R>>,
+    active_profile: &Arc<Profile<R>>,
 ) -> joinerror::Result<HashMap<CollectionId, CollectionItem<R>>> {
     if !abs_path.exists() {
         return Ok(HashMap::new());
@@ -774,15 +832,7 @@ async fn restore_collections<R: AppRuntime>(
 
         let collection = {
             let collection_abs_path: Arc<Path> = entry.path().to_owned().into();
-            let builder = CollectionBuilder::new(fs.clone())
-                .await
-                .join_err_with::<()>(|| {
-                    format!(
-                        "failed to rebuild collection `{}`, {}",
-                        id_str,
-                        collection_abs_path.display()
-                    )
-                })?;
+            let builder = CollectionBuilder::new(fs.clone()).await;
 
             let collection_result = builder
                 .load(CollectionLoadParams {
@@ -811,6 +861,7 @@ async fn restore_collections<R: AppRuntime>(
         let details = collection.details().await?;
 
         if let (Some(vcs), Some(account_id)) = (details.vcs, details.account_id) {
+            // FIXME: Skip initializing vcs instead of failing the restore process
             let account = active_profile
                 .account(&account_id)
                 .await

@@ -1,5 +1,5 @@
 use moss_logging::models::primitives::LogEntryId;
-use moss_user::models::primitives::AccountId;
+use moss_user::models::primitives::AccountKind;
 use serde::{Deserialize, Serialize};
 use std::{
     path::{Path, PathBuf},
@@ -9,12 +9,15 @@ use ts_rs::TS;
 
 use crate::models::primitives::*;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AccountInfo {
-    pub id: AccountId,
-    pub username: String,
+/// @category Type
+#[derive(Debug, Clone, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct AddAccountParams {
     pub host: String,
-    pub provider: AccountKind,
+    pub label: Option<String>,
+    pub kind: AccountKind,
 }
 
 // ########################################################

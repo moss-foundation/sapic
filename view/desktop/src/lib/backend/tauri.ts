@@ -21,7 +21,7 @@ export type TauriIpcCommand =
   | "delete_workspace"
   | "update_workspace"
   | "close_workspace"
-  | "add_account"
+  | "update_profile"
   //
   // Workspace
   //
@@ -39,9 +39,11 @@ export type TauriIpcCommand =
   | "stream_environments"
   | "create_environment"
   | "update_environment"
+  | "batch_update_environment"
   | "delete_environment"
   | "update_environment_group"
   | "batch_update_environment_group"
+  | "activate_environment"
   //
   // Collection
   //

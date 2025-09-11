@@ -52,4 +52,4 @@ moss_testutils.workspace = true
 moss_applib = { workspace = true, features = ["test"] }
 
 [features]
-integration-tests = ["reqwest", "oauth2"]
+integration-tests = ["reqwest", "oauth2", "moss_app_delegate/integration-tests"]

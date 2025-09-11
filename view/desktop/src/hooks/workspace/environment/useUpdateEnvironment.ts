@@ -1,8 +1,8 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { StreamEnvironmentsEvent, UpdateEnvironmentInput, UpdateEnvironmentOutput } from "@repo/moss-workspace";
+import { UpdateEnvironmentInput, UpdateEnvironmentOutput } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { USE_STREAMED_ENVIRONMENTS_QUERY_KEY } from "./useStreamEnvironments";
+import { StreamEnvironmentsResult, USE_STREAMED_ENVIRONMENTS_QUERY_KEY } from "./useStreamEnvironments";
 
 const UPDATE_ENVIRONMENT_QUERY_KEY = "updateEnvironment";
 
@@ -23,17 +23,19 @@ export const useUpdateEnvironment = () => {
     mutationKey: [UPDATE_ENVIRONMENT_QUERY_KEY],
     mutationFn: updateEnvironment,
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: [USE_STREAMED_ENVIRONMENTS_QUERY_KEY] });
-      queryClient.setQueryData([USE_STREAMED_ENVIRONMENTS_QUERY_KEY], (old: StreamEnvironmentsEvent[]) => {
-        return old.map((environment) =>
-          environment.id === variables.id
-            ? {
-                ...environment,
-                ...data,
-                ...variables,
-              }
-            : environment
-        );
+      queryClient.setQueryData([USE_STREAMED_ENVIRONMENTS_QUERY_KEY], (old: StreamEnvironmentsResult) => {
+        return {
+          ...old,
+          environments: old.environments.map((environment) =>
+            environment.id === variables.id
+              ? {
+                  ...environment,
+                  ...data,
+                  ...variables,
+                }
+              : environment
+          ),
+        };
       });
     },
   });

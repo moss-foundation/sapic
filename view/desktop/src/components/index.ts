@@ -34,5 +34,5 @@ export * from "./EmptyWorkspace";
 export * from "./Workbench";
 export * from "./Workspace";
 
-export * from "./GlobalEnvironmentsList/GlobalEnvironmentsList";
+export * from "./EnvironmentsLists";
 export * from "./PlannedBadge";

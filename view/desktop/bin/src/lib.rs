@@ -60,7 +60,6 @@ pub async fn run<R: TauriRuntime>() {
             futures::executor::block_on(async {
                 let ctx = MutableContext::background().freeze();
 
-                let fs = Arc::new(RealFileSystem::new());
                 let keyring = Arc::new(KeyringClientImpl::new());
                 let http_client = HttpClientBuilder::new()
                     .user_agent("SAPIC/1.0")
@@ -74,11 +73,8 @@ pub async fn run<R: TauriRuntime>() {
                 let tao_app_handle = tao.app_handle();
 
                 #[cfg(debug_assertions)]
-                let (app_dir, themes_dir, locales_dir, logs_dir) = {
+                let (themes_dir, locales_dir, logs_dir, temp_dir) = {
                     (
-                        PathBuf::from(
-                            std::env::var("DEV_APP_DIR").expect("DEV_APP_DIR is not set"),
-                        ),
                         PathBuf::from(
                             std::env::var("THEMES_DIR")
                                 .expect("Environment variable THEMES_DIR is not set"),
@@ -91,14 +87,17 @@ pub async fn run<R: TauriRuntime>() {
                             std::env::var("APP_LOG_DIR")
                                 .expect("Environment variable APP_LOG_DIR is not set"),
                         ),
+                        PathBuf::from(
+                            std::env::var("TEMP_DIR")
+                                .expect("Environment variable TEMP_DIR is not set"),
+                        ),
                     )
                 };
 
                 #[cfg(not(debug_assertions))]
-                let (app_dir, themes_dir, locales_dir, logs_dir) = {
+                let (themes_dir, locales_dir, logs_dir, temp_dir) = {
                     let paths = tao.path();
                     (
-                        paths.app_data_dir().expect("cannot resolve app data dir"),
                         paths
                             .resolve("resources/themes", tauri::path::BaseDirectory::Resource)
                             .expect("cannot resolve themes dir"),
@@ -106,8 +105,10 @@ pub async fn run<R: TauriRuntime>() {
                             .resolve("resources/locales", tauri::path::BaseDirectory::Resource)
                             .expect("cannot resolve locales dir"),
                         paths.app_log_dir().expect("cannot resolve app log dir"),
+                        paths.temp_dir().expect("cannot resolve temp dir"),
                     )
                 };
+                let fs = Arc::new(RealFileSystem::new(&temp_dir));
 
                 // Registration of global resources that will be accessible
                 // throughout the entire application via the `global` method
@@ -160,7 +161,6 @@ pub async fn run<R: TauriRuntime>() {
                     .build(
                         &app_init_ctx,
                         BuildAppParams {
-                            app_dir,
                             themes_dir,
                             locales_dir,
                             logs_dir,
@@ -202,8 +202,7 @@ pub async fn run<R: TauriRuntime>() {
             commands::delete_workspace,
             commands::close_workspace,
             commands::cancel_request,
-            commands::create_profile,
-            commands::add_account,
+            commands::update_profile,
             //
             // Workspace
             //
@@ -223,6 +222,7 @@ pub async fn run<R: TauriRuntime>() {
             commands::activate_environment,
             commands::create_environment,
             commands::update_environment,
+            commands::batch_update_environment,
             commands::stream_environments,
             commands::delete_environment,
             commands::update_environment_group,

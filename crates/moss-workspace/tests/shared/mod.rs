@@ -4,14 +4,13 @@ use image::{ImageBuffer, Rgb};
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
     AppRuntime,
-    context::{AnyContext, AsyncContext, MutableContext},
+    context::{AsyncContext, MutableContext},
     mock::MockAppRuntime,
 };
 use moss_fs::RealFileSystem;
 use moss_git_hosting_provider::{github::RealGitHubApiClient, gitlab::RealGitLabApiClient};
-use moss_keyring::test::MockKeyringClient;
 use moss_testutils::random_name::random_workspace_name;
-use moss_user::{Account, AccountSession, models::primitives::AccountId, profile::ActiveProfile};
+use moss_user::profile::Profile;
 use moss_workspace::{
     Workspace,
     builder::{CreateWorkspaceParams, WorkspaceBuilder},
@@ -50,7 +49,17 @@ pub async fn setup_test_workspace() -> (
     CleanupFn,
 ) {
     dotenv::dotenv().ok();
-    let fs = Arc::new(RealFileSystem::new());
+    let abs_path: Arc<Path> = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join("data")
+        .join("workspaces")
+        .join(random_workspace_name())
+        .into();
+    let tmp_path = abs_path.join("tmp");
+    fs::create_dir_all(&abs_path).unwrap();
+    fs::create_dir_all(&tmp_path).unwrap();
+
+    let fs = Arc::new(RealFileSystem::new(&tmp_path));
     let mock_app = tauri::test::mock_app();
     let tao_app_handle = mock_app.handle().clone();
     {
@@ -68,7 +77,7 @@ pub async fn setup_test_workspace() -> (
     }
     let app_delegate = AppDelegate::new(tao_app_handle.clone());
 
-    let mut ctx = MutableContext::background_with_timeout(Duration::from_secs(30));
+    let ctx = MutableContext::background_with_timeout(Duration::from_secs(30));
 
     let abs_path: Arc<Path> = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
@@ -78,32 +87,10 @@ pub async fn setup_test_workspace() -> (
         .into();
     fs::create_dir_all(&abs_path).unwrap();
 
-    let keyring = Arc::new(MockKeyringClient::new());
-
-    let active_profile = {
-        let account_id = AccountId::new();
-        ctx.with_value("account_id", account_id.clone());
-        let account_session = AccountSession::github(
-            account_id.clone(),
-            "github.com".to_string(),
-            // secrets,
-            keyring.clone(),
-            None,
-        )
-        .await
-        .unwrap();
-        let profiles = HashMap::from([(
-            account_id.clone(),
-            Account::new(
-                account_id,
-                random_workspace_name(),
-                "github.com".to_string(),
-                account_session,
-            ),
-        )]);
-
-        ActiveProfile::new(profiles)
-    };
+    let active_profile = Profile::new(
+        moss_user::models::primitives::ProfileId::new(),
+        HashMap::new(),
+    );
 
     let ctx = ctx.freeze();
     let workspace: Workspace<MockAppRuntime> =

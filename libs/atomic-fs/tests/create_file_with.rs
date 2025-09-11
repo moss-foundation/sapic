@@ -8,7 +8,7 @@ mod shared;
 
 #[tokio::test]
 pub async fn test_create_file_with_success() {
-    let (mut rb, test_path) = setup_rollback();
+    let (mut rb, test_path) = setup_rollback().await;
 
     let data = "Hello World".as_bytes();
     let target = test_path.join("file.txt");
@@ -18,7 +18,7 @@ pub async fn test_create_file_with_success() {
         &target,
         CreateOptions {
             overwrite: false,
-            create_new: false,
+            ignore_if_exists: false,
         },
         data,
     )
@@ -33,34 +33,35 @@ pub async fn test_create_file_with_success() {
 }
 
 #[tokio::test]
-pub async fn test_create_file_with_create_new_when_exists() {
-    let (mut rb, test_path) = setup_rollback();
+pub async fn test_create_file_with_ignore_if_exists() {
+    let (mut rb, test_path) = setup_rollback().await;
 
-    let data = "Hello World".as_bytes();
+    let old_data = "Hello World".as_bytes();
+    let new_data = "New".as_bytes();
     let target = test_path.join("file.txt");
-    tokio::fs::File::create(&target).await.unwrap();
+    tokio::fs::write(&target, old_data).await.unwrap();
 
-    // Try creating a file that already exists
-    assert!(
-        create_file_with(
-            &mut rb,
-            &target,
-            CreateOptions {
-                overwrite: false,
-                create_new: true,
-            },
-            data
-        )
-        .await
-        .is_err()
-    );
+    // Skipping when a file already exists
+    create_file_with(
+        &mut rb,
+        &target,
+        CreateOptions {
+            overwrite: false,
+            ignore_if_exists: true,
+        },
+        new_data,
+    )
+    .await
+    .unwrap();
+
+    assert!(tokio::fs::read(&target).await.unwrap() == old_data);
 
     tokio::fs::remove_dir_all(&test_path).await.unwrap();
 }
 
 #[tokio::test]
 pub async fn test_create_file_with_overwrite_existing_file() {
-    let (mut rb, test_path) = setup_rollback();
+    let (mut rb, test_path) = setup_rollback().await;
     let old_data = "Hello World".as_bytes();
     let new_data = "42".as_bytes();
     let target = test_path.join("file.txt");
@@ -72,7 +73,7 @@ pub async fn test_create_file_with_overwrite_existing_file() {
         &target,
         CreateOptions {
             overwrite: true,
-            create_new: false,
+            ignore_if_exists: false,
         },
         new_data,
     )
@@ -87,7 +88,7 @@ pub async fn test_create_file_with_overwrite_existing_file() {
 
 #[tokio::test]
 pub async fn test_create_file_with_append_to_existing_file() {
-    let (mut rb, test_path) = setup_rollback();
+    let (mut rb, test_path) = setup_rollback().await;
     let old_data = "Hello World".as_bytes();
     let new_data = "42".as_bytes();
     let target = test_path.join("file.txt");
@@ -99,7 +100,7 @@ pub async fn test_create_file_with_append_to_existing_file() {
         &target,
         CreateOptions {
             overwrite: false,
-            create_new: false,
+            ignore_if_exists: false,
         },
         new_data,
     )

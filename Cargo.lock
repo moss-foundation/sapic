@@ -457,6 +457,7 @@ name = "atomic_fs"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "joinerror",
  "nanoid",
  "tokio",
 ]
@@ -816,6 +817,13 @@ dependencies = [
  "once_cell",
  "rustix 1.0.8",
  "winx",
+]
+
+[[package]]
+name = "cargo-new-ts"
+version = "0.1.0"
+dependencies = [
+ "serde_json",
 ]
 
 [[package]]
@@ -3599,6 +3607,7 @@ dependencies = [
  "moss_activity_broadcaster",
  "moss_applib",
  "tauri",
+ "tokio",
 ]
 
 [[package]]
@@ -3756,11 +3765,13 @@ dependencies = [
  "async-stream",
  "async-trait",
  "async_zip",
+ "atomic_fs",
  "derive_more 2.0.1",
  "futures",
  "joinerror",
  "moss_applib",
  "moss_text",
+ "nanoid",
  "notify",
  "tauri",
  "thiserror 2.0.16",
@@ -5850,6 +5861,7 @@ version = "1.0.143"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d401abef1d108fbd9cbaebc3e46611f4b1021f714a0597a71f41ee463f5f4a5a"
 dependencies = [
+ "indexmap 2.11.0",
  "itoa",
  "memchr",
  "ryu",

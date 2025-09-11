@@ -8,7 +8,7 @@ mod shared;
 
 #[tokio::test]
 pub async fn test_remove_dir_success() {
-    let (mut rb, test_path) = setup_rollback();
+    let (mut rb, test_path) = setup_rollback().await;
 
     let target = test_path.join("1");
     tokio::fs::create_dir(&target).await.unwrap();
@@ -22,6 +22,7 @@ pub async fn test_remove_dir_success() {
     )
     .await
     .unwrap();
+
     assert!(!target.exists());
 
     tokio::fs::remove_dir_all(&test_path).await.unwrap();
@@ -29,7 +30,7 @@ pub async fn test_remove_dir_success() {
 
 #[tokio::test]
 pub async fn test_remove_dir_with_content() {
-    let (mut rb, test_path) = setup_rollback();
+    let (mut rb, test_path) = setup_rollback().await;
 
     let target = test_path.join("1");
     let file = target.join("file.txt");
@@ -45,6 +46,7 @@ pub async fn test_remove_dir_with_content() {
     )
     .await
     .unwrap();
+
     assert!(!target.exists());
 
     tokio::fs::remove_dir_all(&test_path).await.unwrap();
@@ -52,16 +54,17 @@ pub async fn test_remove_dir_with_content() {
 
 #[tokio::test]
 pub async fn test_remove_dir_ignore_when_not_exist() {
-    let (mut rb, test_path) = setup_rollback();
+    let (mut rb, test_path) = setup_rollback().await;
 
     // Removing non-existent directory
     let target = test_path.join("1");
+
     assert!(
         remove_dir(
             &mut rb,
             &target,
             RemoveOptions {
-                ignore_if_not_exists: true,
+                ignore_if_not_exists: true
             }
         )
         .await
@@ -73,7 +76,7 @@ pub async fn test_remove_dir_ignore_when_not_exist() {
 
 #[tokio::test]
 pub async fn test_remove_dir_not_ignore_when_not_exist() {
-    let (mut rb, test_path) = setup_rollback();
+    let (mut rb, test_path) = setup_rollback().await;
 
     // Removing non-existent directory
     let target = test_path.join("1");

@@ -33,7 +33,8 @@ members = [
     "crates/moss-edit",
     "crates/moss-logging",
     "crates/moss-user",
-    "crates/moss-server-api", 
+    "crates/moss-server-api",
+    "crates/moss-id-macro",
     #
     # Apps
     #
@@ -42,14 +43,14 @@ members = [
     # Tools
     #
     "tools/xtask",
-    "crates/moss-id-macro", 
+    "tools/cargo-new-ts",
 ]
 
 [workspace.dependencies]
 #
 # Library crates
 #
-joinerror = { path = "libs/joinerror" }
+joinerror = { path = "libs/joinerror", features = ["anyhow", "tokio", "serde_json", "validator", "reqwest", "url", "git2"] }
 atomic_fs = { path = "libs/atomic-fs" }
 #
 # Workspace crates
@@ -80,6 +81,7 @@ moss_logging = { path = "crates/moss-logging" }
 moss_id_macro = { path = "crates/moss-id-macro"}
 moss_user = { path = "crates/moss-user" }
 moss_server_api = { path = "crates/moss-server-api" }
+moss_bootstrap = { path = "crates/moss-bootstrap" }
 #
 # External crates
 #
