@@ -131,7 +131,12 @@ impl CollectionBuilder {
             COLLECTION_ICON_SIZE,
         );
 
-        // Verify that the manifest file is valid
+        // Verify that the manifest file exists
+        // We will handle proper validation later
+        if !params.internal_abs_path.join(MANIFEST_FILE_NAME).exists() {
+            return Err(Error::new::<()>("collection manifest file `{}` not found"));
+        }
+
         let _: ManifestFile = {
             let manifest_path = params.internal_abs_path.join(MANIFEST_FILE_NAME);
             let rdr = self
