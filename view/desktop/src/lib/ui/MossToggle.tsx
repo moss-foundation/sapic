@@ -18,14 +18,14 @@ export const MossToggle = ({ checked, onCheckedChange, labelLeft, labelRight }: 
 
       <div
         className={cn(
-          "relative grid h-6 w-12 grid-cols-2 place-items-center rounded-md border transition-colors peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-(--moss-primary)",
+          "relative grid h-6 w-12 grid-cols-2 place-items-center rounded-md border outline-2 outline-offset-2 outline-transparent transition-colors has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-(--moss-primary)",
           {
             "background-(--moss-mossToggle-bg) border-(--moss-mossToggle-border)": !checked,
             "background-(--moss-primary) border-(--moss-primary)": checked,
           }
         )}
       >
-        <input type="checkbox" checked={checked} onChange={handleCheckboxChange} className="peer sr-only" />
+        <input type="checkbox" checked={checked} onChange={handleCheckboxChange} className="sr-only" />
 
         <div className="background-(--moss-mossToggle-indicator-checked) h-[10px] w-[2px]" />
         <div className="col-start-2 size-2.5 rounded-full border border-(--moss-mossToggle-indicator) bg-transparent" />
