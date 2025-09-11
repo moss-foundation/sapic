@@ -28,7 +28,7 @@ export const MossToggle = ({ checked, onCheckedChange, labelLeft, labelRight }: 
         <input type="checkbox" checked={checked} onChange={handleCheckboxChange} className="sr-only" />
 
         <div className="background-(--moss-mossToggle-indicator-checked) h-[10px] w-[2px]" />
-        <div className="col-start-2 size-2.5 rounded-full border border-(--moss-mossToggle-indicator) bg-transparent" />
+        <div className="size-2.5 rounded-full border border-(--moss-mossToggle-indicator) bg-transparent" />
 
         <div
           className={cn(
