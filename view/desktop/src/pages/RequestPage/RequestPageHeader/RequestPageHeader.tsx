@@ -37,6 +37,7 @@ export const RequestPageHeader = ({ node, collectionId, api }: RequestPageHeader
       <header className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <EditableHeader
+            icon="Http"
             title={node.name}
             isRenamingEntry={isRenamingEntry}
             setIsRenamingEntry={setIsRenamingEntry}
