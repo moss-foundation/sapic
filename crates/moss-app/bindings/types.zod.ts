@@ -7,6 +7,7 @@ export const localeInfoSchema = z.object({
   displayName: z.string(),
   code: z.string(),
   direction: z.string().optional(),
+  order: z.number().optional(),
   isDefault: z.boolean().optional(),
 });
 
