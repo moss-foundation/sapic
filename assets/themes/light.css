@@ -341,9 +341,9 @@
 
   /* Moss Toggle */
   --moss-mossToggle-bg: var(--moss-gray-12);
-  --moss-mossToggle-bg-checked: var(--moss-gray-14);
   --moss-mossToggle-border: var(--moss-gray-11);
   --moss-mossToggle-indicator: var(--moss-gray-6);
+  --moss-mossToggle-indicator-checked: var(--moss-gray-14);
   --moss-mossToggle-thumb: var(--moss-gray-14);
   --moss-mossToggle-thumb-border: var(--moss-gray-8);
 

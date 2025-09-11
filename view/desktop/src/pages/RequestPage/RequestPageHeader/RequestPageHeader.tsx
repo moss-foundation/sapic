@@ -46,10 +46,11 @@ export const RequestPageHeader = ({ node, collectionId, api }: RequestPageHeader
             editable
           />
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2">
-              <span>{isEnabled ? "Enabled" : "Disabled"}</span>
-              <MossToggle checked={isEnabled} onCheckedChange={setIsEnabled} />
-            </div>
+            <MossToggle
+              checked={isEnabled}
+              onCheckedChange={setIsEnabled}
+              labelLeft={isEnabled ? "Enabled" : "Disabled"}
+            />
             <MossSelect.Root value={selectedValue} onValueChange={setSelectedValue}>
               <MossSelect.Trigger
                 placeholder={"Placeholder"}
