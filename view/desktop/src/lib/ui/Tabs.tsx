@@ -10,7 +10,6 @@ const TabsList = forwardRef<ElementRef<typeof TabsPrimitive.List>, ComponentProp
     <TabsPrimitive.List ref={ref} className={cn("flex items-center", className)} {...props} />
   )
 );
-TabsList.displayName = TabsPrimitive.List.displayName;
 
 const TabsTrigger = forwardRef<
   ElementRef<typeof TabsPrimitive.Trigger>,
@@ -29,7 +28,6 @@ const TabsTrigger = forwardRef<
     {...props}
   />
 ));
-TabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
 
 const TabsContent = forwardRef<
   ElementRef<typeof TabsPrimitive.Content>,
@@ -37,6 +35,5 @@ const TabsContent = forwardRef<
 >(({ className, ...props }, ref) => (
   <TabsPrimitive.Content ref={ref} className={cn("flex-1 overflow-auto outline-none", className)} {...props} />
 ));
-TabsContent.displayName = TabsPrimitive.Content.displayName;
 
 export { Tabs, TabsContent, TabsList, TabsTrigger };
