@@ -25,8 +25,11 @@ interface PageContainerTabsListProps {
 
 export const PageContainerTabsList = ({ children, className }: PageContainerTabsListProps) => {
   return (
-    <div className={cn("flex h-full w-full min-w-0", className)} data-tabs-list-container>
-      <TabsList className="flex h-full w-max items-center bg-transparent p-0">{children}</TabsList>
+    <div
+      className={cn("background-(--moss-secondary-background) flex h-full w-full min-w-0", className)}
+      data-tabs-list-container
+    >
+      <TabsList className="flex h-full w-max items-center p-0">{children}</TabsList>
     </div>
   );
 };

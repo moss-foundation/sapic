@@ -47,7 +47,7 @@ export const EditableHeader = ({
 
   return (
     <div className="flex items-center gap-2">
-      <div className="rounded-md border border-(--moss-border-color) p-1">
+      <div className="rounded-md border border-(--moss-border-color) p-[3px]">
         <Icon icon={icon} className="size-[18px]" />
       </div>
       {isRenamingEntry ? (

@@ -47,39 +47,24 @@ const Trigger = ({ value, children, className }: OutlinedTabProps) => {
   return (
     <TabsTrigger
       value={value}
-      //prettier-ignore
-      className={cn(`
-         group relative 
-         flex items-center min-w-0
-
-         text-base leading-5
-         px-4 py-1 
-         cursor-pointer truncate
-
-         transition-colors
-
-         text-(--moss-secondary-text) hover:text-(--moss-primary-text)
-
-         border-b-0
-         border-t-1
-         border-l-1
-         border-r-1
-         
-         data-[state=active]:text-(--moss-primary-text)
-
-         data-[state=active]:rounded-tl-md 
-         data-[state=active]:rounded-tr-md
-
-         data-[state=active]:border-t-(--moss-border-color)
-         data-[state=active]:border-l-(--moss-border-color)
-         data-[state=active]:border-r-(--moss-border-color)
-
-         data-[state=active]:shadow-[0px_1px_0px_0px_var(--moss-primary-background)]
-      `,
+      className={cn(
+        "group relative",
+        "flex min-w-0 items-center",
+        "px-4 py-1",
+        "text-base leading-5",
+        "cursor-pointer truncate",
+        "transition-colors",
+        "text-(--moss-secondary-text) hover:text-(--moss-primary-text)",
+        "border-t-1 border-r-1 border-b-0 border-l-1",
+        "data-[state=active]:text-(--moss-primary-text)",
+        "data-[state=active]:rounded-tl-md data-[state=active]:rounded-tr-md",
+        "data-[state=active]:border-t-(--moss-border-color) data-[state=active]:border-r-(--moss-border-color) data-[state=active]:border-l-(--moss-border-color)",
+        "data-[state=active]:shadow-[0px_1px_0px_0px_var(--moss-primary-background)]",
         className
       )}
     >
-      {children}
+      <div className="group-hover:background-(--moss-secondary-background-hover) absolute top-[10%] left-[10%] h-[80%] w-[80%] rounded-md px-4 py-1 transition-colors group-data-[state=active]:hidden" />
+      <div className="z-10">{children}</div>
     </TabsTrigger>
   );
 };
