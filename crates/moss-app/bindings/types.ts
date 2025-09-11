@@ -31,6 +31,7 @@ export type LocaleInfo = {
   displayName: string;
   code: string;
   direction?: string;
+  order?: number;
   isDefault?: boolean;
 };
 
