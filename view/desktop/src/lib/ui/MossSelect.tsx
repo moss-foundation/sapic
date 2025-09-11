@@ -11,6 +11,7 @@ const selectTriggerStyles = cva(`
 
     outline-(--moss-primary)
 
+    background-(--moss-mossSelect-bg)
     border border-(--moss-mossSelect-border) 
 
     data-[state=open]:border-(--moss-primary)
