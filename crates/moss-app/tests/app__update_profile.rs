@@ -6,7 +6,7 @@ use moss_app::models::{
     operations::{CreateProfileInput, UpdateProfileInput},
     types::AddAccountParams,
 };
-use moss_user::models::primitives::{AccountKind, SessionKind};
+use moss_user::models::primitives::AccountKind;
 
 use crate::shared::{TEST_GITHUB_USERNAME, TEST_GITLAB_USERNAME, set_up_test_app};
 

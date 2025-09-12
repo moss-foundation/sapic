@@ -5,19 +5,13 @@ import AIDemo from "@/ai/AIDemo.tsx";
 import { PageContent } from "@/components";
 import { ActivityEventSimulator } from "@/components/ActivityEventSimulator";
 import { useActivityEvents } from "@/context/ActivityEventsContext";
-import { LogEntryInfo, LOGGING_SERVICE_CHANNEL } from "@repo/moss-app";
+import { AddAccountParams, LogEntryInfo, LOGGING_SERVICE_CHANNEL, UpdateProfileInput } from "@repo/moss-app";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import FileStatuses from "@/git/FileStatuses.tsx";
 
 interface CreateProfileData {
   name: string;
-}
-
-interface AddAccountData {
-  profileId: string;
-  host?: string;
-  label?: string;
-  provider: string;
 }
 
 interface LoginData {
@@ -35,11 +29,11 @@ export const Logs = () => {
     name: "",
   });
 
-  const [accountForm, setAccountForm] = useState<AddAccountData>({
-    profileId: "",
+  const [accountForm, setAccountParams] = useState<AddAccountParams>({
     host: "github.com",
     label: "",
-    provider: "GitHub",
+    kind: "GITHUB",
+    pat: "",
   });
 
   const [loginForm, setLoginForm] = useState<LoginData>({
@@ -82,14 +76,11 @@ export const Logs = () => {
 
   const handleAddAccount = async () => {
     try {
-      await invoke("add_account", {
-        input: {
-          profileId: accountForm.profileId,
-          host: accountForm.host,
-          label: accountForm.label,
-          provider: accountForm.provider.toUpperCase(),
-        },
-      });
+      const input: UpdateProfileInput = {
+        accountsToAdd: [accountForm],
+        accountsToRemove: [],
+      };
+      await invoke("update_profile", { input });
       console.log("Account added:", accountForm);
     } catch (error) {
       console.error("Error adding account:", error);
@@ -110,6 +101,12 @@ export const Logs = () => {
 
   return (
     <PageContent className="space-y-6">
+      <section className="mb-6">
+        <h2 className="mb-2 text-xl">File Statuses</h2>
+        <div className="rounded bg-gray-50 p-4">
+          <FileStatuses />
+        </div>
+      </section>
       <section className="mb-6">
         <h2 className="mb-2 text-xl">AI Assistant</h2>
         <div className="rounded bg-gray-50 p-4">
@@ -139,33 +136,41 @@ export const Logs = () => {
               <h3 className="text-lg font-medium">Add account</h3>
               <input
                 type="text"
-                placeholder="Profile Id"
-                value={accountForm.profileId}
-                onChange={(e) => setAccountForm((prev) => ({ ...prev, profileId: e.target.value }))}
-                className="w-full rounded-md border border-gray-300 bg-white p-2"
-              />
-              <input
-                type="text"
                 placeholder="Host"
                 value={accountForm.host}
-                onChange={(e) => setAccountForm((prev) => ({ ...prev, host: e.target.value }))}
+                onChange={(e) => setAccountParams((prev) => ({ ...prev, host: e.target.value }))}
                 className="w-full rounded-md border border-gray-300 bg-white p-2"
               />
               <input
                 type="text"
                 placeholder="Label"
                 value={accountForm.label}
-                onChange={(e) => setAccountForm((prev) => ({ ...prev, label: e.target.value }))}
+                onChange={(e) => setAccountParams((prev) => ({ ...prev, label: e.target.value }))}
                 className="w-full rounded-md border border-gray-300 bg-white p-2"
               />
               <select
-                value={accountForm.provider}
-                onChange={(e) => setAccountForm((prev) => ({ ...prev, provider: e.target.value }))}
+                value={accountForm.kind}
+                onChange={(e) => setAccountParams((prev) => ({ ...prev, provider: e.target.value.toUpperCase() }))}
                 className="w-full rounded-md border border-gray-300 bg-white p-2"
               >
                 <option value="github">GitHub</option>
                 <option value="gitlab">GitLab</option>
               </select>
+              <input
+                type="text"
+                placeholder=""
+                value={accountForm.pat}
+                onChange={(e) => {
+                  const { pat: _pat, ...rest } = accountForm;
+                  if (e.target.value == "") {
+                    setAccountParams(rest);
+                  } else {
+                    setAccountParams({ ...rest, pat: e.target.value });
+                  }
+                }}
+                className="w-full rounded-md border border-gray-300 bg-white p-2"
+              />
+
               <button onClick={handleAddAccount} className="w-full rounded bg-blue-500 p-2 text-white">
                 Add
               </button>

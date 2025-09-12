@@ -391,6 +391,15 @@ pub struct DescribeCollectionOutput {
     pub created_at: String,
 }
 
+// Get File Statuses
+/// @category Operation
+#[derive(Debug, Deserialize, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct ListChangesOutput {
+    pub changes: Vec<EntryChange>,
+}
+
 // ------------------------------ //
 // Environment Group
 // ------------------------------ //
