@@ -1,3 +1,16 @@
+use crate::{
+    builder::{OnDidAddCollection, OnDidDeleteCollection},
+    dirs,
+    models::{
+        primitives::CollectionId,
+        types::{
+            CreateCollectionGitParams, CreateCollectionParams, ExportCollectionParams,
+            UpdateCollectionParams,
+        },
+    },
+    services::storage_service::StorageService,
+    storage::segments::SEGKEY_COLLECTION,
+};
 use derive_more::{Deref, DerefMut};
 use futures::Stream;
 use joinerror::{Error, OptionExt, ResultExt};
@@ -14,7 +27,7 @@ use moss_collection::{
 };
 use moss_common::continue_if_err;
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
-use moss_git::url::GitUrl;
+use moss_git::{models::primitives::FileStatus, url::GitUrl};
 use moss_git_hosting_provider::{
     GitProviderKind, github::client::GitHubApiClient, gitlab::client::GitLabApiClient,
 };
@@ -28,20 +41,6 @@ use std::{
     sync::Arc,
 };
 use tokio::sync::RwLock;
-
-use crate::{
-    builder::{OnDidAddCollection, OnDidDeleteCollection},
-    dirs,
-    models::{
-        primitives::CollectionId,
-        types::{
-            CreateCollectionGitParams, CreateCollectionParams, ExportCollectionParams,
-            UpdateCollectionParams,
-        },
-    },
-    services::storage_service::StorageService,
-    storage::segments::SEGKEY_COLLECTION,
-};
 
 pub(crate) struct CollectionItemCloneParams {
     pub order: isize,
@@ -791,6 +790,45 @@ impl<R: AppRuntime> CollectionService<R> {
             })?;
 
         item.export_archive(&params.destination).await
+    }
+
+    /// List file statuses for all collections that have a repository handle
+    pub(crate) async fn get_file_statuses(
+        &self,
+    ) -> joinerror::Result<HashMap<PathBuf, FileStatus>> {
+        let mut result: HashMap<PathBuf, FileStatus> = HashMap::new();
+
+        let state_lock = self.state.read().await;
+        for (id, item) in state_lock.collections.iter() {
+            let vcs = if let Some(vcs) = item.vcs() {
+                vcs
+            } else {
+                continue;
+            };
+
+            let statuses = match vcs.file_statuses().await {
+                Ok(statuses) => statuses
+                    .into_iter()
+                    .map(|(path, status)| (item.abs_path().join(path), status)),
+                Err(e) => {
+                    session::warn!(format!(
+                        "failed to get file statuses for collection `{}`: {}",
+                        id,
+                        e.to_string()
+                    ));
+                    let _ = self.app_delegate.emit_oneshot(ToLocation::Toast {
+                        activity_id: "get_file_statuses_error",
+                        title: format!("Failed to get file statuses for collection `{}`", id),
+                        detail: Some(e.to_string()),
+                    });
+                    continue;
+                }
+            };
+
+            result.extend(statuses);
+        }
+
+        Ok(result)
     }
 }
 async fn restore_collections<R: AppRuntime>(

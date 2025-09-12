@@ -1,13 +1,17 @@
+use crate::git::{ContributorInfo, GitClient, OwnerInfo};
 use async_trait::async_trait;
+use joinerror::{Error, OptionExt};
 use moss_applib::AppRuntime;
 use moss_fs::{FileSystem, RemoveOptions};
-use moss_git::{models::types::BranchInfo, repository::Repository, url::GitUrl};
+use moss_git::{
+    models::{primitives::FileStatus, types::BranchInfo},
+    repository::Repository,
+    url::GitUrl,
+};
 use moss_git_hosting_provider::GitProviderKind;
 use moss_user::models::primitives::AccountId;
-use std::sync::Arc;
+use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;
-
-use crate::git::{ContributorInfo, GitClient, OwnerInfo};
 
 pub struct VcsSummary {
     pub kind: GitProviderKind,
@@ -21,12 +25,14 @@ pub struct VcsSummary {
 pub trait CollectionVcs<R: AppRuntime>: Send + Sync {
     async fn summary(&self, ctx: &R::AsyncContext) -> joinerror::Result<VcsSummary>;
     async fn contributors(&self, ctx: &R::AsyncContext) -> joinerror::Result<Vec<ContributorInfo>>;
+    async fn file_statuses(&self) -> joinerror::Result<HashMap<PathBuf, FileStatus>>;
     fn owner(&self) -> AccountId;
     fn provider(&self) -> GitProviderKind;
 }
 
 pub(crate) struct Vcs<R: AppRuntime> {
     url: GitUrl,
+    /// An Option is used here to allow dropping it separately when cleaning up
     repository: Arc<RwLock<Option<Repository>>>,
     client: GitClient<R>,
 }
@@ -84,7 +90,10 @@ impl<R: AppRuntime> CollectionVcs<R> for Vcs<R> {
         let repo = self.client.repository(ctx, &self.url).await?;
 
         let repo_lock = self.repository.read().await;
-        let current_branch_name = repo_lock.as_ref().unwrap().current_branch()?;
+        let current_branch_name = repo_lock
+            .as_ref()
+            .ok_or_join_err::<()>("repository handle is dropped")?
+            .current_branch()?;
         let (ahead, behind) = repo_lock
             .as_ref()
             .unwrap()
@@ -113,5 +122,15 @@ impl<R: AppRuntime> CollectionVcs<R> for Vcs<R> {
 
     async fn contributors(&self, ctx: &R::AsyncContext) -> joinerror::Result<Vec<ContributorInfo>> {
         self.client.contributors(ctx, &self.url).await
+    }
+
+    async fn file_statuses(&self) -> joinerror::Result<HashMap<PathBuf, FileStatus>> {
+        let repo_lock = self.repository.read().await;
+        let repo_ref = if let Some(repo) = repo_lock.as_ref() {
+            repo
+        } else {
+            return Err(Error::new::<()>("repository handle is dropped"));
+        };
+        repo_ref.statuses()
     }
 }

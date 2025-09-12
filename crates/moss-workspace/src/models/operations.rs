@@ -2,8 +2,10 @@ use moss_environment::models::{
     primitives::EnvironmentId,
     types::{AddVariableParams, VariableInfo},
 };
+use moss_git::models::primitives::FileStatus;
 use serde::{Deserialize, Serialize};
 use std::{
+    collections::HashMap,
     path::{Path, PathBuf},
     sync::Arc,
 };
@@ -389,6 +391,15 @@ pub struct DescribeCollectionOutput {
     pub vcs: Option<VcsInfo>,
     pub contributors: Vec<Contributor>,
     pub created_at: String,
+}
+
+// Get File Statuses
+/// @category Operation
+#[derive(Debug, Deserialize, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct GetFileStatusesOutput {
+    pub statuses: Vec<(PathBuf, FileStatus)>,
 }
 
 // ------------------------------ //

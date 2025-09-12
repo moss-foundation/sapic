@@ -10,6 +10,8 @@ export const activitybarPositionSchema = z.union([
 
 export const editorGridOrientationSchema = z.union([z.literal("HORIZONTAL"), z.literal("VERTICAL")]);
 
+export const fileStatusSchema = z.union([z.literal("added"), z.literal("modified"), z.literal("deleted")]);
+
 export const panelRendererSchema = z.union([z.literal("onlyWhenVisible"), z.literal("always")]);
 
 export const sidebarPositionSchema = z.union([z.literal("LEFT"), z.literal("RIGHT")]);

@@ -13,6 +13,11 @@ export type EditorGridOrientation = "HORIZONTAL" | "VERTICAL";
 /**
  * @category Primitive
  */
+export type FileStatus = "added" | "modified" | "deleted";
+
+/**
+ * @category Primitive
+ */
 export type PanelRenderer = "onlyWhenVisible" | "always";
 
 /**
