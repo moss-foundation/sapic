@@ -468,8 +468,8 @@ impl<R: AppRuntime> Worktree<R> {
         if let Some(new_parent) = params.path {
             // We can only move entries into a directory entry
             // Check if the destination path has dir config file
-            let dest_entry_config = self.abs_path.join(&new_parent).join(DIR_CONFIG_FILENAME);
-            if !dest_entry_config.exists() {
+            let dest_abs_path = self.absolutize(&new_parent.join(DIR_CONFIG_FILENAME))?;
+            if !dest_abs_path.exists() {
                 return Err(joinerror::Error::new::<ErrorInvalidInput>(
                     "cannot move entries into a non-directory entry",
                 ));
@@ -480,7 +480,11 @@ impl<R: AppRuntime> Worktree<R> {
 
             entry
                 .edit
-                .rename(&self.abs_path, &old_path, &new_path)
+                .rename(
+                    &self.abs_path.join(dirs::RESOURCES_DIR),
+                    &old_path,
+                    &new_path,
+                )
                 .await?;
         }
 
@@ -553,8 +557,8 @@ impl<R: AppRuntime> Worktree<R> {
         if let Some(new_parent) = &params.path {
             // We can only move entries into a directory entry
             // Check if the destination path has dir config file
-            let dest_entry_config = self.abs_path.join(&new_parent).join(DIR_CONFIG_FILENAME);
-            if !dest_entry_config.exists() {
+            let dest_abs_path = self.absolutize(&new_parent.join(DIR_CONFIG_FILENAME))?;
+            if !dest_abs_path.exists() {
                 return Err(joinerror::Error::new::<ErrorInvalidInput>(
                     "cannot move entries into a non-directory entry",
                 ));
@@ -565,7 +569,11 @@ impl<R: AppRuntime> Worktree<R> {
 
             entry
                 .edit
-                .rename(&self.abs_path, &old_path, &new_path)
+                .rename(
+                    &self.abs_path.join(dirs::RESOURCES_DIR),
+                    &old_path,
+                    &new_path,
+                )
                 .await?;
         }
 
