@@ -25,8 +25,11 @@ interface PageContainerTabsListProps {
 
 export const PageContainerTabsList = ({ children, className }: PageContainerTabsListProps) => {
   return (
-    <div className={cn("flex h-full w-full min-w-0", className)} data-tabs-list-container>
-      <TabsList className="flex h-full w-max items-center bg-transparent p-0">{children}</TabsList>
+    <div
+      className={cn("background-(--moss-secondary-background) flex h-full w-full min-w-0", className)}
+      data-tabs-list-container
+    >
+      <TabsList className="flex h-full w-max items-center p-0">{children}</TabsList>
     </div>
   );
 };
@@ -67,15 +70,10 @@ interface PageContainerTabContentProps {
   noPadding?: boolean;
 }
 
-export const PageContainerTabContent = ({
-  value,
-  children,
-  className,
-  noPadding = false,
-}: PageContainerTabContentProps) => {
+export const PageContainerTabContent = ({ value, children, className }: PageContainerTabContentProps) => {
   return (
-    <TabsContent value={value} className={cn("flex-1", className)}>
-      <Scrollbar className={cn("h-full min-w-fit", noPadding ? "" : "px-5 py-3.5")}>{children}</Scrollbar>
+    <TabsContent value={value}>
+      <Scrollbar className={cn("h-full min-w-fit", className)}>{children}</Scrollbar>
     </TabsContent>
   );
 };

@@ -1,6 +1,8 @@
 import React from "react";
-import { cn } from "@/utils";
+
 import { Scrollbar } from "@/lib/ui";
+import { cn } from "@/utils";
+
 import { PageContainerContentProps } from "./types";
 
 export const PageContainerContent: React.FC<PageContainerContentProps> = ({ children, className }) => {

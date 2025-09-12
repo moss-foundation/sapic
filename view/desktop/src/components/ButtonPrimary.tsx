@@ -28,7 +28,7 @@ const buttonStyles = cva(`
   {
     variants:{
       size:{
-        md: "h-[28px]"
+        md: "py-1.5"
       }
     }
   }
