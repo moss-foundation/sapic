@@ -5,31 +5,42 @@ import { StreamEntriesEvent } from "@repo/moss-collection";
 import { TreeCollectionNode } from "./CollectionTree/types";
 
 interface EntryIconProps {
-  entry: TreeCollectionNode | StreamEntriesEvent;
+  entry?: TreeCollectionNode | StreamEntriesEvent;
   className?: string;
 }
 
 const defaultProtocolClassName = "text-xs right-0 uppercase absolute top-1/2 -translate-y-1/2   " as const;
 
 export const EntryIcon = ({ entry, className }: EntryIconProps) => {
+  if (!entry) return <div className={cn("size-4 shrink-0 opacity-0", className)} />;
+
   const isRoot = entry.path.segments.length === 1;
 
-  if (isRoot) {
-    switch (entry.class) {
-      case "Schema":
-        return <Icon icon="SchemasFolder" className={className} />;
-      case "Endpoint":
-        return <Icon icon="EndpointsFolder" className={className} />;
-      case "Component":
-        return <Icon icon="ComponentsFolder" className={className} />;
-      default:
-        return <Icon icon="RequestsFolder" className={className} />;
-    }
-  }
+  // if (isRoot) {
+  //   switch (entry.class) {
+  //     case "Schema":
+  //       return <Icon icon="SchemasFolder" className={className} />;
+  //     case "Endpoint":
+  //       return <Icon icon="EndpointsFolder" className={className} />;
+  //     case "Component":
+  //       return <Icon icon="ComponentsFolder" className={className} />;
+  //     default:
+  //       return <Icon icon="RequestsFolder" className={className} />;
+  //   }
+  // }
 
   if (entry.kind === "Dir") {
     return <Icon icon="Folder" className={className} />;
   }
+  if (entry.kind === "Item") {
+    return <Icon icon="Http" className={className} />;
+  }
+
+  return (
+    <div className="relative size-4">
+      <span className={cn(defaultProtocolClassName, "text-(--moss-gray-4)", className)}>{entry.protocol}</span>
+    </div>
+  );
 
   switch (entry.protocol) {
     case "Get":

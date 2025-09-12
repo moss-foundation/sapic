@@ -1,4 +1,4 @@
-import { TreeCollectionNode } from "../types";
+import { TreeCollectionNode, TreeCollectionRootNode } from "../types";
 
 export const hasDescendant = (parentNode: TreeCollectionNode, dropNode: TreeCollectionNode): boolean => {
   if (parentNode.id === dropNode.id) return true;
@@ -15,7 +15,10 @@ export const hasDirectDescendant = (parentNode: TreeCollectionNode, dropNode: Tr
   return parentNode.childNodes.some((child) => child.id === dropNode.id);
 };
 
-export const hasDirectSimilarDescendant = (parentNode: TreeCollectionNode, dropNode: TreeCollectionNode): boolean => {
+export const hasDirectSimilarDescendant = (
+  parentNode: TreeCollectionNode | TreeCollectionRootNode,
+  dropNode: TreeCollectionNode
+): boolean => {
   if (!parentNode.childNodes) return false;
   return parentNode.childNodes.some(
     (child) => child.id === dropNode.id || child.name.toLowerCase() === dropNode.name.toLowerCase()
@@ -23,7 +26,7 @@ export const hasDirectSimilarDescendant = (parentNode: TreeCollectionNode, dropN
 };
 
 export const hasAnotherDirectDescendantWithSimilarName = (
-  parentNode: TreeCollectionNode,
+  parentNode: TreeCollectionNode | TreeCollectionRootNode,
   dropNode: TreeCollectionNode
 ): boolean => {
   if (!parentNode.childNodes) return false;

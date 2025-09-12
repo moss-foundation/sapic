@@ -22,9 +22,8 @@ export const getFolderIcon = (node: TreeCollectionNode): Icons => {
 
 export const findNodeInCollection = (collection: TreeCollectionRootNode, searchId: string) => {
   // Search in all categories
-  const categories = [collection.endpoints, collection.schemas, collection.components, collection.requests];
 
-  for (const category of categories) {
+  for (const category of collection.childNodes) {
     if (category.id === searchId) return category;
 
     // Recursively search child nodes

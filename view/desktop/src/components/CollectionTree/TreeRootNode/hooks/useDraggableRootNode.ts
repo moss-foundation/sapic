@@ -8,20 +8,13 @@ import {
   Operation,
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
-import {
-  draggable,
-  dropTargetForElements,
-  monitorForElements,
-} from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import { CollectionTreeContext } from "../../CollectionTreeContext";
-import { DragNode, TreeCollectionNode, TreeCollectionRootNode } from "../../types";
+import { DragNode, TreeCollectionRootNode } from "../../types";
 import {
-  getInstructionFromSelf,
   getLocationTreeCollectionData,
-  getLocationTreeCollectionNodeData,
   getSourceTreeCollectionNodeData,
-  hasAnotherDirectDescendantWithSimilarName,
   hasDirectSimilarDescendant,
   isSourceTreeCollectionNode,
   isSourceTreeRootNode,
@@ -40,6 +33,7 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
 
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [instruction, setInstruction] = useState<Instruction | null>(null);
+  const [dirInstruction, setDirInstruction] = useState<Instruction | null>(null);
   const [isChildDropBlocked, setIsChildDropBlocked] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -61,69 +55,56 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
         onDragStart: () => setIsDragging(true),
         onDrop: () => setIsDragging(false),
       }),
-      //for regular nodes
-      dropTargetForElements({
-        element: triggerElement,
-        canDrop({ source }) {
-          return isSourceTreeCollectionNode(source) && displayMode === "REQUEST_FIRST";
-        },
-        getData({ input, source }) {
-          const dropTarget = {
-            type: "TreeRootNode",
-            node,
-            collectionId: id,
-          };
-
-          const sourceTarget = getSourceTreeCollectionNodeData(source);
-          if (sourceTarget) {
-            return attachInstruction(dropTarget, {
-              element: triggerElement,
-              input,
-              operations: evaluateTreeNodeOperations(node.requests, sourceTarget),
-            });
-          }
-
-          return attachInstruction(dropTarget, {
-            element: triggerElement,
-            input,
-            operations: {
-              "reorder-before": "not-available",
-              "reorder-after": "not-available",
-              combine: "not-available",
-            },
-          });
-        },
-        onDragEnter: ({ self }) => {
-          setInstruction(getInstructionFromSelf(self));
-        },
-        onDropTargetChange: () => {
-          setIsChildDropBlocked(null);
-        },
-        onDragLeave: () => {
-          setInstruction(null);
-        },
-        onDrop: () => {
-          setInstruction(null);
-        },
-      }),
-      //for collections
       dropTargetForElements({
         element: dirElement,
-        canDrop: ({ source }) => isSourceTreeRootNode(source),
-        getIsSticky: () => true,
-        getData: ({ input }) => {
+        canDrop: ({ source }) => isSourceTreeRootNode(source) || isSourceTreeCollectionNode(source),
+        getIsSticky: ({ source }) => isSourceTreeRootNode(source),
+        getData: ({ input, source }) => {
           const dropTarget = {
             type: "TreeCollection",
             node,
             collectionId: id,
           };
 
+          if (isSourceTreeRootNode(source)) {
+            return attachInstruction(dropTarget, {
+              element: dirElement,
+              input,
+              operations: {
+                "reorder-before": "available",
+                "reorder-after": "available",
+                combine: "not-available",
+              },
+            });
+          }
+
+          if (isSourceTreeCollectionNode(source)) {
+            const sourceTarget = getSourceTreeCollectionNodeData(source);
+            if (sourceTarget) {
+              return attachInstruction(dropTarget, {
+                element: dirElement,
+                input,
+                operations: evaluateTreeNodeOperations(node, sourceTarget),
+              });
+            }
+
+            return attachInstruction(dropTarget, {
+              element: dirElement,
+              input,
+              operations: {
+                "reorder-before": "available",
+                "reorder-after": "available",
+                combine: "not-available",
+              },
+            });
+          }
+
           return attachInstruction(dropTarget, {
             element: dirElement,
             input,
             operations: {
-              "reorder-before": "available",
-              "reorder-after": "available",
+              "reorder-before": "not-available",
+              "reorder-after": "not-available",
               combine: "not-available",
             },
           });
@@ -148,34 +129,6 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
           setIsChildDropBlocked(null);
           setInstruction(null);
         },
-      }),
-      //for checking if child drop is blocked
-      monitorForElements({
-        canMonitor: ({ source }) => isSourceTreeCollectionNode(source) && displayMode === "REQUEST_FIRST",
-        onDrag: ({ source, location }) => {
-          const dropTarget = getLocationTreeCollectionNodeData(location);
-          const sourceTarget = getSourceTreeCollectionNodeData(source);
-
-          if (!dropTarget || !sourceTarget) {
-            setIsChildDropBlocked(null);
-            return;
-          }
-
-          if (displayMode === "REQUEST_FIRST") {
-            if (dropTarget?.parentNode.id === node.requests.id && dropTarget.instruction?.operation !== "combine") {
-              setIsChildDropBlocked(hasAnotherDirectDescendantWithSimilarName(node.requests, sourceTarget.node));
-              return;
-            }
-          }
-
-          setIsChildDropBlocked(null);
-        },
-        onDrop: () => {
-          setIsChildDropBlocked(null);
-        },
-        onDropTargetChange: () => {
-          setIsChildDropBlocked(null);
-        },
       })
     );
   }, [dirRef, displayMode, id, isRenamingNode, node, triggerRef]);
@@ -184,7 +137,7 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
 };
 
 export const evaluateTreeNodeOperations = (
-  dropTarget: TreeCollectionNode,
+  dropTarget: TreeCollectionRootNode,
   sourceNode: DragNode
 ): {
   [TKey in Operation]?: Availability;

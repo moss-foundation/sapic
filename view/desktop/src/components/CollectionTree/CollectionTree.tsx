@@ -10,7 +10,7 @@ export const CollectionTree = ({
   nodeOffset = 12,
   searchInput,
   displayMode = "REQUEST_FIRST",
-  showOrders = false,
+  showOrders = true,
 }: CollectionTreeProps) => {
   return (
     <CollectionTreeContext.Provider

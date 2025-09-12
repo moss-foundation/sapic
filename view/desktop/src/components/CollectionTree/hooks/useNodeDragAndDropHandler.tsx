@@ -109,7 +109,11 @@ export const useNodeDragAndDropHandler = () => {
 
       const parentEntriesToUpdate = updatedParentNodes.map((entry): BatchUpdateEntryKind => {
         const isAlreadyInLocation = locationTreeNodeData.parentNode.childNodes.some((n) => n.id === entry.id);
-        const newEntryPath = isAlreadyInLocation ? undefined : locationTreeNodeData.parentNode.path.raw;
+        const newEntryPath = isAlreadyInLocation
+          ? undefined
+          : locationTreeNodeData.parentNode.path.segments.length > 1
+            ? locationTreeNodeData.parentNode.path.raw
+            : "";
 
         if (entry.kind === "Dir") {
           return {
@@ -168,7 +172,7 @@ export const useNodeDragAndDropHandler = () => {
           };
         })
       );
-      const newOrder = locationTreeRootNodeData.node.requests.childNodes.length + 1;
+      const newOrder = locationTreeRootNodeData.node.childNodes.length + 1;
 
       await deleteCollectionEntry({
         collectionId: sourceTreeNodeData.collectionId,
@@ -177,12 +181,13 @@ export const useNodeDragAndDropHandler = () => {
 
       const batchCreateEntryInput = await Promise.all(
         entriesWithoutName.map(async (entry, index) => {
-          const newEntryPath = await join(locationTreeRootNodeData.node.requests.path.raw, entry.path.raw);
+          const newEntryPath = await join(entry.path.raw);
 
           if (index === 0) {
             return createEntryKind({
               name: entry.name,
-              path: locationTreeRootNodeData.node.requests.path.raw,
+              path: "",
+              class: "Endpoint",
               isAddingFolder: entry.kind === "Dir",
               order: newOrder,
               protocol: entry.protocol,
@@ -191,6 +196,7 @@ export const useNodeDragAndDropHandler = () => {
             return createEntryKind({
               name: entry.name,
               path: newEntryPath,
+              class: "Endpoint",
               isAddingFolder: entry.kind === "Dir",
               order: entry.order!,
               protocol: entry.protocol,
@@ -206,7 +212,7 @@ export const useNodeDragAndDropHandler = () => {
         },
       });
 
-      await fetchEntriesForPath(locationTreeRootNodeData.collectionId, locationTreeRootNodeData.node.requests.path.raw);
+      await fetchEntriesForPath(locationTreeRootNodeData.collectionId, "");
       await fetchEntriesForPath(sourceTreeNodeData.collectionId, sourceTreeNodeData.parentNode.path.raw);
     },
     [deleteCollectionEntry, batchCreateCollectionEntry, fetchEntriesForPath]
@@ -330,6 +336,7 @@ export const useNodeDragAndDropHandler = () => {
               isAddingFolder: entry.kind === "Dir",
               order: newOrder,
               protocol: entry.protocol,
+              class: "Endpoint",
             });
           } else {
             const newEntryPath = await join(locationTreeNodeData.parentNode.path.raw, entry.path.raw);
@@ -339,6 +346,7 @@ export const useNodeDragAndDropHandler = () => {
               isAddingFolder: entry.kind === "Dir",
               order: entry.order!,
               protocol: entry.protocol,
+              class: "Endpoint",
             });
           }
         })
@@ -378,6 +386,7 @@ export const useNodeDragAndDropHandler = () => {
               isAddingFolder: entry.kind === "Dir",
               order: newOrder,
               protocol: entry.protocol,
+              class: "Endpoint",
             });
           } else {
             const newEntryPath = await join(locationTreeNodeData.node.path.raw, entry.path.raw);
@@ -387,6 +396,7 @@ export const useNodeDragAndDropHandler = () => {
               isAddingFolder: entry.kind === "Dir",
               order: entry.order!,
               protocol: entry.protocol,
+              class: "Endpoint",
             });
           }
         })
@@ -429,9 +439,7 @@ export const useNodeDragAndDropHandler = () => {
         }
 
         if (locationTreeRootNodeData && operation === "combine") {
-          if (
-            hasAnotherDirectDescendantWithSimilarName(locationTreeRootNodeData.node.requests, sourceTreeNodeData.node)
-          ) {
+          if (hasAnotherDirectDescendantWithSimilarName(locationTreeRootNodeData.node, sourceTreeNodeData.node)) {
             console.warn("can't drop: has direct similar descendant");
             return;
           }
@@ -451,7 +459,6 @@ export const useNodeDragAndDropHandler = () => {
         }
 
         const isSameCollection = sourceTreeNodeData.collectionId === locationTreeNodeData.collectionId;
-
         if (isSameCollection) {
           if (operation === "combine") {
             await handleCombineWithinCollection(sourceTreeNodeData, locationTreeNodeData);

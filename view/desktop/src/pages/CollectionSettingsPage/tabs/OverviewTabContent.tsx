@@ -22,12 +22,12 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
   const { showModal, closeModal, openModal } = useModal();
 
   const [name, setName] = useState(collection?.name || "");
-  const [repository, setRepository] = useState(collection?.repository || "");
+  const [repository, setRepository] = useState("");
 
   useEffect(() => {
     if (collection) {
       setName(collection.name);
-      setRepository(collection?.repository || "");
+      setRepository("");
       const currentPanel = containerApi.getPanel(collection.id);
       currentPanel?.api.setTitle(collection.name);
     }
@@ -57,8 +57,8 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
   const handleUpdateCollectionRepository = async () => {
     if (!collection) return;
 
-    if (!repository || repository === collection.repository) {
-      setRepository(collection?.repository || "github.com/moss-foundation/sapic");
+    if (!repository) {
+      setRepository("");
       return;
     }
 
@@ -69,7 +69,7 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
       });
     } catch (e) {
       console.error("handleUpdateCollectionRepository", e);
-      setRepository(collection?.repository || "");
+      setRepository("");
     }
   };
 

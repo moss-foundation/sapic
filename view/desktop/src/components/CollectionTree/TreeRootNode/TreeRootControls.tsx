@@ -25,8 +25,7 @@ export const TreeRootControls = ({
   setIsAddingRootFolderNode,
   setIsRenamingRootNode,
 }: TreeRootControlsProps) => {
-  const { allFoldersAreExpanded, allFoldersAreCollapsed, id, displayMode, showOrders } =
-    useContext(CollectionTreeContext);
+  const { allFoldersAreExpanded, allFoldersAreCollapsed, id, showOrders } = useContext(CollectionTreeContext);
 
   const { addOrFocusPanel } = useTabbedPaneStore();
 
@@ -91,13 +90,11 @@ export const TreeRootControls = ({
           )}
 
           <Tree.ActionsHover>
-            {displayMode === "REQUEST_FIRST" && (
-              <ActionButton
-                customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
-                icon="Add"
-                onClick={() => setIsAddingRootFileNode(true)}
-              />
-            )}
+            <ActionButton
+              customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
+              icon="Add"
+              onClick={() => setIsAddingRootFileNode(true)}
+            />
             <ActionButton
               customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
               icon="CollapseAll"
