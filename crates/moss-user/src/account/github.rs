@@ -10,12 +10,62 @@ pub struct GitHubInitialToken {
     pub access_token: String,
 }
 
-pub(crate) struct GitHubSessionHandle {
-    pub id: AccountId,
-    pub host: String,
+pub struct GitHubPAT {
+    pub token: String,
+}
+
+pub(crate) enum GitHubSessionHandle {
+    OAuth(GitHubOAuthSessionHandle),
+    PAT(GitHubPATSessionHandle),
 }
 
 impl GitHubSessionHandle {
+    pub(crate) async fn oauth(
+        id: AccountId,
+        host: String,
+        initial_token: Option<GitHubInitialToken>,
+        keyring: &Arc<dyn KeyringClient>,
+    ) -> joinerror::Result<Self> {
+        Ok(Self::OAuth(
+            GitHubOAuthSessionHandle::new(id, host, initial_token, keyring).await?,
+        ))
+    }
+    pub(crate) async fn pat(
+        id: AccountId,
+        host: String,
+        pat: Option<GitHubPAT>,
+        keyring: &Arc<dyn KeyringClient>,
+    ) -> joinerror::Result<Self> {
+        Ok(Self::PAT(
+            GitHubPATSessionHandle::new(id, host, pat, keyring).await?,
+        ))
+    }
+
+    pub(crate) async fn token(
+        &self,
+        keyring: &Arc<dyn KeyringClient>,
+    ) -> joinerror::Result<String> {
+        match self {
+            GitHubSessionHandle::OAuth(handle) => handle.token(keyring).await,
+            GitHubSessionHandle::PAT(handle) => handle.token(keyring).await,
+        }
+    }
+
+    pub(crate) fn host(&self) -> String {
+        match self {
+            GitHubSessionHandle::OAuth(handle) => handle.host.clone(),
+            GitHubSessionHandle::PAT(handle) => handle.host.clone(),
+        }
+    }
+}
+
+pub(crate) struct GitHubOAuthSessionHandle {
+    pub id: AccountId,
+    pub host: String,
+    // TODO: Can we store an Arc<dyn KeyringClient> here so it doesn't need to be passed everytime?
+}
+
+impl GitHubOAuthSessionHandle {
     pub async fn new(
         id: AccountId,
         host: String,
@@ -42,10 +92,7 @@ impl GitHubSessionHandle {
         Ok(Self { id, host })
     }
 
-    pub async fn access_token(
-        &self,
-        keyring: &Arc<dyn KeyringClient>,
-    ) -> joinerror::Result<String> {
+    pub async fn token(&self, keyring: &Arc<dyn KeyringClient>) -> joinerror::Result<String> {
         let key = make_secret_key(GITHUB_PREFIX, &self.host, &self.id);
         let bytes = keyring
             .get_secret(&key)
@@ -58,5 +105,41 @@ impl GitHubSessionHandle {
         // instead, it provides a long-lived `access_token`.
         // So we store it in the keyring and return it immediately.
         return Ok(access_token);
+    }
+}
+
+// TODO: A method to update PAT?
+pub(crate) struct GitHubPATSessionHandle {
+    pub id: AccountId,
+    pub host: String,
+}
+
+impl GitHubPATSessionHandle {
+    pub async fn new(
+        id: AccountId,
+        host: String,
+        pat: Option<GitHubPAT>,
+        keyring: &Arc<dyn KeyringClient>,
+    ) -> joinerror::Result<Self> {
+        if let Some(pat) = pat {
+            keyring
+                .set_secret(&make_secret_key(GITHUB_PREFIX, &host, &id), &pat.token)
+                .await
+                .map_err(|e| Error::new::<()>(e.to_string()))?;
+        };
+
+        Ok(Self { id, host })
+    }
+
+    pub async fn token(&self, keyring: &Arc<dyn KeyringClient>) -> joinerror::Result<String> {
+        let key = make_secret_key(GITHUB_PREFIX, &self.host, &self.id);
+        let bytes = keyring
+            .get_secret(&key)
+            .await
+            .map_err(|e| Error::new::<()>(e.to_string()))?;
+
+        let token = String::from_utf8(bytes.to_vec())?;
+
+        return Ok(token);
     }
 }

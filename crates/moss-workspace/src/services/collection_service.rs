@@ -858,7 +858,21 @@ async fn restore_collections<R: AppRuntime>(
             continue;
         }
         // Only load the vcs if the collection is not archived
-        let details = collection.details().await?;
+
+        let details = match collection.details().await {
+            Ok(details) => details,
+            Err(e) => {
+                app_delegate.emit_oneshot(ToLocation::Toast {
+                    activity_id: "restore_collections_failed_to_get_details",
+                    title: "Failed to get collection details".to_string(),
+                    detail: Some(format!(
+                        "Failed to get collection details: {}, it will be skipped.",
+                        e.to_string()
+                    )),
+                })?;
+                continue;
+            }
+        };
 
         if let (Some(vcs), Some(account_id)) = (details.vcs, details.account_id) {
             // FIXME: Skip initializing vcs instead of failing the restore process

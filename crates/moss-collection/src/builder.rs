@@ -130,6 +130,26 @@ impl CollectionBuilder {
             COLLECTION_ICON_SIZE,
         );
 
+        // Verify that the manifest file exists
+        // We will handle proper validation later
+        if !params.internal_abs_path.join(MANIFEST_FILE_NAME).exists() {
+            return Err(Error::new::<()>("collection manifest file `{}` not found"));
+        }
+
+        let _: ManifestFile = {
+            let manifest_path = params.internal_abs_path.join(MANIFEST_FILE_NAME);
+            let rdr = self
+                .fs
+                .open_file(&manifest_path)
+                .await
+                .join_err_with::<()>(|| {
+                    format!("failed to open manifest file: {}", manifest_path.display())
+                })?;
+            serde_json::from_reader(rdr).join_err_with::<()>(|| {
+                format!("failed to parse manifest file: {}", manifest_path.display())
+            })?
+        };
+
         // Check if the collection is archived
         // If so, we avoid loading the worktree service
         let config: ConfigFile = {
@@ -429,7 +449,7 @@ impl CollectionBuilder {
         repo_url: String,
         branch: Option<String>,
     ) -> joinerror::Result<Repository> {
-        let access_token = git_client.session().access_token(ctx).await?;
+        let access_token = git_client.session().token(ctx).await?;
         let username = git_client.username();
 
         let mut cb = git2::RemoteCallbacks::new();
