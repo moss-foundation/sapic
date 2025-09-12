@@ -1,7 +1,6 @@
 mod editor;
 pub use editor::*;
 
-use crate::models::primitives::{ActivitybarPosition, CollectionId, SidebarPosition};
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_environment::models::{
     primitives::{EnvironmentId, VariableId},
@@ -17,6 +16,8 @@ use std::{
 };
 use ts_rs::TS;
 use validator::{Validate, ValidationError};
+
+use crate::models::primitives::{ActivitybarPosition, CollectionId, SidebarPosition};
 
 pub type EnvironmentName = String;
 
