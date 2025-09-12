@@ -18,7 +18,7 @@ export const useRootNodeAddForm = (node: TreeCollectionRootNode) => {
     const newName = name.trim();
     const newEntry = createEntryKind({
       name: newName,
-      path: newName,
+      path: "",
       class: "Endpoint",
       isAddingFolder: isAddingRootFolderNode,
       order: node.childNodes.length + 1,
