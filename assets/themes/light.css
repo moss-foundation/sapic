@@ -338,4 +338,28 @@
   --moss-textarea-border: var(--moss-gray-9);
   --moss-textarea-text: var(--moss-gray-1);
   --moss-textarea-placeholder: var(--moss-gray-6);
+
+  /* Moss Toggle */
+  --moss-mossToggle-bg: var(--moss-gray-12);
+  --moss-mossToggle-border: var(--moss-gray-11);
+  --moss-mossToggle-indicator: var(--moss-gray-6);
+  --moss-mossToggle-indicator-checked: var(--moss-gray-14);
+  --moss-mossToggle-thumb: var(--moss-gray-14);
+  --moss-mossToggle-thumb-border: var(--moss-gray-8);
+
+  /* Moss Select */
+  --moss-mossSelect-bg: var(--moss-gray-13);
+  --moss-mossSelect-border: var(--moss-gray-12);
+  --moss-mossSelect-text: var(--moss-gray-1);
+  --moss-mossSelect-hover-bg: var(--moss-gray-13);
+  --moss-mossSelect-item-bg-hover: var(--moss-gray-12);
+  --moss-mossSelect-item-bg-selected: var(--moss-blue-11);
+  --moss-mossSelect-disabled-bg: var(--moss-gray-10);
+
+  /* Moss Dropdown */
+  --moss-mossDropdown-bg: var(--moss-gray-13);
+  --moss-mossDropdown-border: var(--moss-gray-11);
+  --moss-mossDropdown-text: var(--moss-gray-1);
+  --moss-mossDropdown-hover-bg: var(--moss-gray-12);
+  --moss-mossDropdown-item-bg-hover: var(--moss-gray-12);
 }

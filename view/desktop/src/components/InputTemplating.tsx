@@ -19,7 +19,7 @@ interface InputTemplatingProps extends Omit<React.InputHTMLAttributes<HTMLInputE
 
 //prettier-ignore
 const containerStyles = cva(`
-    relative
+    relative overflow-hidden
     flex w-full
     rounded-sm border transition-[outline]
     placeholder-(--moss-controls-placeholder)
@@ -33,19 +33,19 @@ const containerStyles = cva(`
 {
   variants: {
     size: {
-      sm: "h-7 px-2",
-      md: "h-8 px-2",
+      sm: "h-6 px-2",
+      md: "h-7 px-2",
     },
   },
 });
 
 const editorStyles = cva(
-  `w-full resize-none border-none bg-transparent font-[Inter] text-[13px] leading-normal outline-none`,
+  `flex w-full resize-none items-center border-none bg-transparent font-[Inter] text-[13px] outline-none`,
   {
     variants: {
       size: {
-        sm: "h-7 py-2.5 leading-7",
-        md: "h-8 py-2.5 leading-6",
+        sm: "h-6",
+        md: "h-7",
       },
     },
   }
@@ -53,7 +53,7 @@ const editorStyles = cva(
 
 const highlightedVariableStyles =
   "background-(--moss-templating-input-bg) text-(--moss-templating-input-text) border border-(--moss-templating-input-border) rounded-sm px-0.5 whitespace-nowrap inline-block tracking-tighter" +
-  " [height:20px] [line-height:18px] [vertical-align:middle] [word-break:keep-all]";
+  " [height:18px] [word-break:keep-all]";
 
 export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatingProps>(
   (
@@ -261,12 +261,11 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
       <div
         className={cn(containerStyles({ size }), className)}
         style={{
-          height: isFocused ? "auto" : size === "sm" ? "28px" : "32px",
-          minHeight: size === "sm" ? "28px" : "32px",
-          overflow: "visible",
+          overflow: "hidden",
           position: isFocused ? "absolute" : "relative",
           zIndex: isFocused ? 50 : "auto",
           width: isFocused ? "100%" : "auto",
+          height: isFocused ? "max-content" : "auto",
           backgroundColor: isFocused ? "var(--moss-controls-outlined-bg)" : "transparent",
         }}
       >
@@ -298,17 +297,10 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
           data-placeholder={placeholder}
           suppressContentEditableWarning={true}
           style={{
-            whiteSpace: isFocused ? "pre-wrap" : "nowrap",
+            whiteSpace: "nowrap",
             wordWrap: isFocused ? "break-word" : "normal",
             overflowWrap: isFocused ? "break-word" : "normal",
-            lineHeight: "1.4",
-            height: isFocused ? "auto" : size === "sm" ? "28px" : "32px",
-            minHeight: isFocused ? "auto" : size === "sm" ? "28px" : "32px",
-            overflow: isFocused ? "visible" : "hidden",
-            textOverflow: isFocused ? "clip" : "ellipsis",
             width: "100%",
-            paddingTop: size === "sm" ? "6px" : "8px",
-            paddingBottom: size === "sm" ? "6px" : "8px",
           }}
         />
       </div>

@@ -32,7 +32,7 @@ export const PageContainerWithTabs: React.FC<PageContainerWithTabsProps> = ({
         </PageContainerHeader>
 
         {tabs.map((tab) => (
-          <PageContainerTabContent key={`content-${tab.id}`} value={tab.id} noPadding={noPadding}>
+          <PageContainerTabContent key={`content-${tab.id}`} value={tab.id} className="p-2">
             {tab.content}
           </PageContainerTabContent>
         ))}

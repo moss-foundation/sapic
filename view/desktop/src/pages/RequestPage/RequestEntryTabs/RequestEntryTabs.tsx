@@ -1,0 +1,152 @@
+import { useCallback, useMemo, useState } from "react";
+
+import { PageContainerWithTabs, TabItem } from "@/components";
+import { Icon } from "@/lib/ui";
+import { IDockviewPanelProps } from "@repo/moss-tabs";
+
+import { useRequestPage } from "../hooks/useRequestPage";
+import { RequestInputField } from "../RequestInputField";
+import { RequestPageProps } from "../RequestPage";
+import {
+  AuthTabContent,
+  BodyTabContent,
+  HeadersTabContent,
+  ParamsTabContent,
+  PostRequestTabContent,
+  PreRequestTabContent,
+} from "../tabs";
+import { areUrlsEquivalent, parseUrl } from "../utils/urlParser";
+
+export const RequestEntryTabs = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
+  const [activeRequestTabId, setActiveRequestTabId] = useState("params");
+
+  const { requestData, httpMethod, setHttpMethod, updateRequestData } = useRequestPage();
+
+  const paramsCount = useMemo(() => {
+    const queryParamsCount = requestData.url.query_params.filter(
+      (param) => (param.key.trim() !== "" || param.value.trim() !== "") && !param.disabled
+    ).length;
+    const pathParamsCount = requestData.url.path_params.filter(
+      (param) => param.key.trim() !== "" && !param.disabled
+    ).length;
+    return queryParamsCount + pathParamsCount;
+  }, [requestData.url.query_params, requestData.url.path_params]);
+
+  const requestTabs: TabItem[] = [
+    {
+      id: "params",
+      label: (
+        <div className="flex items-center gap-1">
+          <Icon icon="SquareBrackets" className="h-4 w-4" />
+          <span>Params</span>
+          <Badge count={paramsCount} />
+        </div>
+      ),
+      content: <ParamsTabContent {...props} />,
+    },
+    {
+      id: "auth",
+      label: (
+        <div className="flex items-center gap-1">
+          <Icon icon="Auth" className="h-4 w-4" />
+          <span>Auth</span>
+        </div>
+      ),
+      content: <AuthTabContent {...props} />,
+    },
+    {
+      id: "headers",
+      label: (
+        <div className="flex items-center gap-1">
+          <Icon icon="Headers" className="h-4 w-4" />
+          <span>Headers</span>
+          <Badge count={3} />
+        </div>
+      ),
+      content: <HeadersTabContent {...props} />,
+    },
+    {
+      id: "body",
+      label: (
+        <div className="flex items-center gap-1">
+          <Icon icon="Braces" className="h-4 w-4" />
+          <span>Body</span>
+        </div>
+      ),
+      content: <BodyTabContent {...props} />,
+    },
+    {
+      id: "pre-request",
+      label: (
+        <div className="flex items-center gap-1">
+          <Icon icon="PreRequest" className="h-4 w-4" />
+          <span>Pre Request</span>
+        </div>
+      ),
+      content: <PreRequestTabContent {...props} />,
+    },
+    {
+      id: "post-request",
+      label: (
+        <div className="flex items-center gap-1">
+          <Icon icon="PostRequest" className="h-4 w-4" />
+          <span>Post Request</span>
+        </div>
+      ),
+      content: <PostRequestTabContent {...props} />,
+    },
+  ];
+
+  const handleSendRequest = (method: string, url: string) => {
+    console.log("Sending request:", { method, url });
+    // TODO: Implement actual request sending logic
+    // Use getRequestUrlWithPathValues() for backend requests with actual path values
+  };
+
+  const handleUrlChange = useCallback(
+    (url: string) => {
+      // Prevent unnecessary updates if URLs are functionally equivalent
+      if (areUrlsEquivalent(url, requestData.url.raw)) {
+        return;
+      }
+
+      const parsed = parseUrl(url);
+
+      const updatedData = {
+        url: {
+          raw: url,
+          originalPathTemplate: parsed.url.originalPathTemplate,
+          port: parsed.url.port,
+          host: parsed.url.host,
+          path_params: parsed.url.path_params,
+          query_params: parsed.url.query_params,
+        },
+      };
+      updateRequestData(updatedData);
+    },
+    [requestData.url.raw, updateRequestData]
+  );
+
+  return (
+    <div className="flex flex-col gap-3">
+      <RequestInputField
+        initialMethod={httpMethod}
+        initialUrl={requestData.url.raw}
+        onSend={handleSendRequest}
+        onUrlChange={handleUrlChange}
+        onMethodChange={(method) => {
+          if (method !== httpMethod) {
+            setHttpMethod(method);
+          }
+        }}
+      />
+      <PageContainerWithTabs tabs={requestTabs} activeTabId={activeRequestTabId} onTabChange={setActiveRequestTabId} />
+    </div>
+  );
+};
+
+const Badge = ({ count }: { count: number }) => (
+  <span className="background-(--moss-tab-badge-color) inline-flex h-3.5 w-3.5 min-w-[14px] items-center justify-center rounded-full text-xs leading-none text-(--moss-tab-badge-text)">
+    <span className="relative top-[0.5px]">{count}</span>
+  </span>
+);
