@@ -310,12 +310,12 @@ impl<R: AppRuntime> Worktree<R> {
     ) -> joinerror::Result<()> {
         debug_assert!(path.is_relative());
 
-        if !is_parent_dir_entry(self.abs_path.as_ref(), path) {
-            return Err(joinerror::Error::new::<ErrorInvalidInput>(format!(
-                "Cannot create entry inside Item entry {}",
-                path.to_string_lossy().to_string()
-            )));
-        }
+        // if !is_parent_dir_entry(self.abs_path.as_ref(), path) {
+        //     return Err(joinerror::Error::new::<ErrorInvalidInput>(format!(
+        //         "Cannot create entry inside Item entry {}",
+        //         path.to_string_lossy().to_string()
+        //     )));
+        // }
 
         let sanitized_path: SanitizedPath = moss_fs::utils::sanitize_path(path, None)?
             .join(sanitize(name))
@@ -382,12 +382,12 @@ impl<R: AppRuntime> Worktree<R> {
     ) -> joinerror::Result<()> {
         debug_assert!(path.is_relative());
 
-        if !is_parent_dir_entry(self.abs_path.as_ref(), path) {
-            return Err(joinerror::Error::new::<ErrorInvalidInput>(format!(
-                "Cannot create entry inside Item entry {}",
-                path.to_string_lossy().to_string()
-            )));
-        }
+        // if !is_parent_dir_entry(self.abs_path.as_ref(), path) {
+        //     return Err(joinerror::Error::new::<ErrorInvalidInput>(format!(
+        //         "Cannot create entry inside Item entry {}",
+        //         path.to_string_lossy().to_string()
+        //     )));
+        // }
 
         let sanitized_path: SanitizedPath = moss_fs::utils::sanitize_path(path, None)?
             .join(sanitize(name))
