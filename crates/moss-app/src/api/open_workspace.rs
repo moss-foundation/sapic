@@ -6,9 +6,6 @@ use crate::{
     models::operations::{OpenWorkspaceInput, OpenWorkspaceOutput},
 };
 
-// FIXME: Allow the workspace to be opened even if it encounters invalid collection
-// Ticket: https://mossland.atlassian.net/browse/SAPIC-514
-
 impl<R: AppRuntime> App<R> {
     pub async fn open_workspace(
         &self,

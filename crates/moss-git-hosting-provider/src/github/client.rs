@@ -81,11 +81,11 @@ impl<R: AppRuntime> GitHubApiClient<R> for RealGitHubApiClient {
         account_handle: &AccountSession<R>,
     ) -> joinerror::Result<GetUserResponse> {
         context::abortable(ctx, async {
-            let access_token = account_handle.access_token(ctx).await?;
+            let token = account_handle.token(ctx).await?;
             let resp = self
                 .client
                 .get(format!("{GITHUB_API_URL}/user"))
-                .with_default_github_headers(access_token)
+                .with_default_github_headers(token)
                 .send()
                 .await?;
 
@@ -109,12 +109,12 @@ impl<R: AppRuntime> GitHubApiClient<R> for RealGitHubApiClient {
         url: &GitUrl,
     ) -> joinerror::Result<GetContributorsResponse> {
         context::abortable(ctx, async {
-            let access_token = account_handle.access_token(ctx).await?;
+            let token = account_handle.token(ctx).await?;
             let repo_url = format!("{}/{}", &url.owner, &url.name);
             let resp = self
                 .client
                 .get(format!("{GITHUB_API_URL}/repos/{repo_url}/contributors"))
-                .with_default_github_headers(access_token)
+                .with_default_github_headers(token)
                 .send()
                 .await?;
 
@@ -138,12 +138,12 @@ impl<R: AppRuntime> GitHubApiClient<R> for RealGitHubApiClient {
         url: &GitUrl,
     ) -> joinerror::Result<GetRepositoryResponse> {
         context::abortable(ctx, async {
-            let access_token = account_handle.access_token(ctx).await?;
+            let token = account_handle.token(ctx).await?;
             let repo_url = format!("{}/{}", &url.owner, &url.name);
             let resp = self
                 .client
                 .get(format!("{GITHUB_API_URL}/repos/{repo_url}"))
-                .with_default_github_headers(access_token)
+                .with_default_github_headers(token)
                 .send()
                 .await?;
 

@@ -4,7 +4,15 @@ import type { AccountKind, LogLevel, ThemeMode } from "./primitives";
 /**
  * @category Type
  */
-export type AddAccountParams = { host: string; label?: string; kind: AccountKind };
+export type AddAccountParams = {
+  host: string;
+  label?: string;
+  kind: AccountKind;
+  /**
+   * If a PAT is not provided, we will use OAuth
+   */
+  pat?: string;
+};
 
 /**
  * @category Type
