@@ -6,8 +6,6 @@ export const createCollectionEntryForCache = async (
   id: string,
   entry: CreateEntryInput
 ): Promise<StreamEntriesEvent> => {
-  const { entryClass } = getClassFromEntryInput(entry);
-
   if ("DIR" in entry) {
     const rawpath = await join(entry.DIR.path, entry.DIR.name);
 
@@ -19,7 +17,7 @@ export const createCollectionEntryForCache = async (
         raw: rawpath,
         segments: rawpath.split(sep()),
       },
-      class: entryClass,
+      class: entry.DIR.class,
       kind: "Dir",
       expanded: false,
     };
@@ -34,29 +32,10 @@ export const createCollectionEntryForCache = async (
         raw: rawpath,
         segments: rawpath.split(sep()),
       },
-      class: entryClass,
+      class: entry.ITEM.class,
       kind: "Item" as const,
       protocol: entry.ITEM.protocol,
       expanded: false,
     };
   }
-};
-
-const getClassFromEntryInput = (input: CreateEntryInput) => {
-  const pathSource = "DIR" in input ? input.DIR : input.ITEM;
-  const firstPath = pathSource.path.split(sep())[0];
-
-  const pathToClassMap: Record<string, "Request" | "Endpoint" | "Component" | "Schema"> = {
-    requests: "Request",
-    endpoints: "Endpoint",
-    components: "Component",
-    schemas: "Schema",
-  };
-
-  const entryClass = pathToClassMap[firstPath];
-  if (!entryClass) {
-    throw new Error("Invalid path in CreateEntryInput");
-  }
-
-  return { entryClass };
 };

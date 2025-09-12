@@ -1,8 +1,15 @@
-import { BatchCreateEntryKind, CreateEntryInput, EntryProtocol, StreamEntriesEvent } from "@repo/moss-collection";
+import {
+  BatchCreateEntryKind,
+  CreateEntryInput,
+  EntryClass,
+  EntryProtocol,
+  StreamEntriesEvent,
+} from "@repo/moss-collection";
 
 interface CreateEntryKindProps {
   name: string;
   path: string;
+  class: EntryClass;
   isAddingFolder: boolean;
   order: number;
   protocol?: EntryProtocol;
@@ -12,6 +19,7 @@ export const createEntryKind = ({
   name,
   path,
   isAddingFolder,
+  class: entryClass,
   order,
   protocol,
 }: CreateEntryKindProps): BatchCreateEntryKind => {
@@ -20,6 +28,7 @@ export const createEntryKind = ({
       DIR: {
         name,
         path,
+        class: entryClass,
         order,
         headers: [],
       },
@@ -30,6 +39,7 @@ export const createEntryKind = ({
     ITEM: {
       name,
       path,
+      class: entryClass,
       order,
       headers: [],
       queryParams: [],
@@ -48,6 +58,7 @@ export const convertEntryInfoToCreateInput = (
       DIR: {
         name: entry.name,
         path: newCollectionPath,
+        class: entry.class,
         order: entry.order ?? 0,
         headers: [],
       },
@@ -57,6 +68,7 @@ export const convertEntryInfoToCreateInput = (
       ITEM: {
         name: entry.name,
         path: newCollectionPath,
+        class: entry.class,
         order: entry.order ?? 0,
         headers: [],
         queryParams: [],

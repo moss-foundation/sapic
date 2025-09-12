@@ -17,10 +17,8 @@ const createCollectionEntry = async ({ collectionId, input }: UseCreateCollectio
   });
 
   if (result.status === "error") {
-    console.log(result.status);
     throw new Error(String(result.error));
   }
-  console.log({ result });
 
   return result.data;
 };
@@ -32,6 +30,7 @@ export const useCreateCollectionEntry = () => {
     mutationFn: createCollectionEntry,
     onSuccess: async (data, variables) => {
       const newEntry = await createCollectionEntryForCache(data.id, variables.input);
+      console.log({ newEntry });
 
       queryClient.setQueryData(
         [USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY, variables.collectionId],

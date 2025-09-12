@@ -40,8 +40,6 @@ export const useStreamCollectionEntries = (collectionId: string) => {
     queryClient.resetQueries({ queryKey: [USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY] });
   };
 
-  // console.log({ entires: query.data });
-
   return {
     ...query,
     clearEntriesCacheAndRefetch,

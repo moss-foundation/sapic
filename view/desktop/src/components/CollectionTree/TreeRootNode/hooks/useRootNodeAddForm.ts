@@ -18,20 +18,18 @@ export const useRootNodeAddForm = (node: TreeCollectionRootNode) => {
     const newName = name.trim();
     const newEntry = createEntryKind({
       name: newName,
-      path: newName,
+      path: "",
+      class: "Endpoint",
       isAddingFolder: isAddingRootFolderNode,
       order: node.childNodes.length + 1,
       protocol: "Get",
     });
 
-    console.log({ newEntry });
-
     try {
-      const res = await createCollectionEntry({
+      await createCollectionEntry({
         collectionId: id,
         input: newEntry,
       });
-      console.log({ res });
     } catch (error) {
       console.error(error);
     } finally {
