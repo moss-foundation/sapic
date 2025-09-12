@@ -28,7 +28,7 @@ impl<R: AppRuntime> Collection<R> {
         input.validate().join_err_bare()?;
 
         let id = EntryId::new();
-        let model = EntryModel::from((id.clone(), class_from_path(&input.path)));
+        let model = EntryModel::from((id.clone(), input.class));
 
         self.worktree()
             .await
@@ -53,24 +53,13 @@ impl<R: AppRuntime> Collection<R> {
         input.validate().join_err_bare()?;
 
         let id = EntryId::new();
-        let class = class_from_path(&input.path);
-        let model = match class {
-            EntryClass::Request => EntryModel {
-                metadata: Block::new(EntryMetadataSpec {
-                    id: id.clone(),
-                    class: class_from_path(&input.path),
-                }),
-                url: Some(Block::new(UrlDetails {
-                    protocol: input.protocol.unwrap(),
-                    raw: "Hardcoded Value".to_string(),
-                })),
-                headers: None, // Hardcoded for now
-            },
+
+        let model = match input.class {
             EntryClass::Endpoint => {
                 EntryModel {
                     metadata: Block::new(EntryMetadataSpec {
                         id: id.clone(),
-                        class: class_from_path(&input.path),
+                        class: input.class,
                     }),
                     url: Some(Block::new(UrlDetails {
                         protocol: input.protocol.unwrap(),
@@ -83,7 +72,7 @@ impl<R: AppRuntime> Collection<R> {
                 EntryModel {
                     metadata: Block::new(EntryMetadataSpec {
                         id: id.clone(),
-                        class: class_from_path(&input.path),
+                        class: input.class,
                     }),
                     url: None,
                     headers: None, // Hardcoded for now
@@ -93,7 +82,7 @@ impl<R: AppRuntime> Collection<R> {
                 EntryModel {
                     metadata: Block::new(EntryMetadataSpec {
                         id: id.clone(),
-                        class: class_from_path(&input.path),
+                        class: input.class,
                     }),
                     url: None,
                     headers: None, // Hardcoded for now
@@ -190,14 +179,14 @@ impl<R: AppRuntime> Collection<R> {
     }
 }
 
-/// A function for automatically determining the class
-/// based on the path passed from the frontend.
-fn class_from_path(path: &Path) -> EntryClass {
-    match path.iter().next().and_then(|s| s.to_str()) {
-        Some(dirs::REQUESTS_DIR) => EntryClass::Request,
-        Some(dirs::ENDPOINTS_DIR) => EntryClass::Endpoint,
-        Some(dirs::COMPONENTS_DIR) => EntryClass::Component,
-        Some(dirs::SCHEMAS_DIR) => EntryClass::Schema,
-        _ => unreachable!(),
-    }
-}
+// /// A function for automatically determining the class
+// /// based on the path passed from the frontend.
+// fn class_from_path(path: &Path) -> EntryClass {
+//     match path.iter().next().and_then(|s| s.to_str()) {
+//         Some(dirs::REQUESTS_DIR) => EntryClass::Request,
+//         Some(dirs::ENDPOINTS_DIR) => EntryClass::Endpoint,
+//         Some(dirs::COMPONENTS_DIR) => EntryClass::Component,
+//         Some(dirs::SCHEMAS_DIR) => EntryClass::Schema,
+//         _ => unreachable!(),
+//     }
+// }

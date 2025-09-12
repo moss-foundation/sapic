@@ -7,7 +7,7 @@ use ts_rs::TS;
 use validator::{Validate, ValidationError};
 
 use crate::models::primitives::{
-    EntryId, EntryProtocol, FrontendEntryPath, HeaderId, PathParamId, QueryParamId,
+    EntryClass, EntryId, EntryProtocol, FrontendEntryPath, HeaderId, PathParamId, QueryParamId,
 };
 
 /// @category Type
@@ -18,6 +18,7 @@ use crate::models::primitives::{
 pub struct CreateItemEntryParams {
     #[validate(custom(function = "validate_create_entry_input_path"))]
     pub path: PathBuf,
+    pub class: EntryClass,
 
     #[validate(length(min = 1))]
     pub name: String,
@@ -38,6 +39,7 @@ pub struct CreateItemEntryParams {
 pub struct CreateDirEntryParams {
     #[validate(custom(function = "validate_create_entry_input_path"))]
     pub path: PathBuf,
+    pub class: EntryClass,
 
     #[validate(length(min = 1))]
     pub name: String,

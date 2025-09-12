@@ -80,7 +80,7 @@ mod tests {
         let model = EntryModel {
             metadata: Block::new(EntryMetadataSpec {
                 id: EntryId::new(),
-                class: EntryClass::Request,
+                class: EntryClass::Endpoint,
             }),
             url: Some(Block::new(UrlDetails {
                 protocol: EntryProtocol::Get,
