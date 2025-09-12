@@ -468,11 +468,17 @@ impl<R: AppRuntime> Worktree<R> {
         if let Some(new_parent) = params.path {
             // We can only move entries into a directory entry
             // Check if the destination path has dir config file
-            let dest_abs_path = self.absolutize(&new_parent.join(DIR_CONFIG_FILENAME))?;
-            if !dest_abs_path.exists() {
-                return Err(joinerror::Error::new::<ErrorInvalidInput>(
-                    "cannot move entries into a non-directory entry",
-                ));
+
+            if new_parent != Path::new("") {
+                dbg!(&new_parent);
+
+                // FIXME: Have a better way to check if the destination is a root
+                let dest_abs_path = self.absolutize(&new_parent.join(DIR_CONFIG_FILENAME))?;
+                if !dest_abs_path.exists() {
+                    return Err(joinerror::Error::new::<ErrorInvalidInput>(
+                        "cannot move entries into a non-directory entry",
+                    ));
+                }
             }
 
             let old_path = entry.path_rx.borrow().clone();
@@ -555,13 +561,20 @@ impl<R: AppRuntime> Worktree<R> {
             .ok_or_join_err_with::<ErrorNotFound>(|| format!("entry {} not found", id))?;
 
         if let Some(new_parent) = &params.path {
+            dbg!(&new_parent);
+
             // We can only move entries into a directory entry
             // Check if the destination path has dir config file
-            let dest_abs_path = self.absolutize(&new_parent.join(DIR_CONFIG_FILENAME))?;
-            if !dest_abs_path.exists() {
-                return Err(joinerror::Error::new::<ErrorInvalidInput>(
-                    "cannot move entries into a non-directory entry",
-                ));
+            if new_parent != Path::new("") {
+                dbg!(&new_parent);
+
+                // FIXME: Have a better way to check if the destination is a root
+                let dest_abs_path = self.absolutize(&new_parent.join(DIR_CONFIG_FILENAME))?;
+                if !dest_abs_path.exists() {
+                    return Err(joinerror::Error::new::<ErrorInvalidInput>(
+                        "cannot move entries into a non-directory entry",
+                    ));
+                }
             }
 
             let old_path = entry.path_rx.borrow().clone();
