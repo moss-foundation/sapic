@@ -18,6 +18,8 @@ pub struct AddAccountParams {
     pub host: String,
     pub label: Option<String>,
     pub kind: AccountKind,
+    /// If a PAT is not provided, we will use OAuth
+    pub pat: Option<String>,
 }
 
 // ########################################################

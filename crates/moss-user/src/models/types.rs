@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-use crate::models::primitives::{AccountId, AccountKind, ProfileId};
+use crate::models::primitives::{AccountId, AccountKind, ProfileId, SessionKind};
 
 /// @category Type
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -22,4 +22,5 @@ pub struct AccountInfo {
     pub username: String,
     pub host: String,
     pub kind: AccountKind,
+    pub session_kind: SessionKind,
 }

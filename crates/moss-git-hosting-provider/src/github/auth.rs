@@ -17,7 +17,7 @@ use url::Url;
 use crate::GitAuthAdapter;
 
 pub trait GitHubAuthAdapter<R: AppRuntime>:
-    GitAuthAdapter<R, PkceToken = GitHubPkceTokenCredentials, PatToken = ()> + Send + Sync
+    GitAuthAdapter<R, PkceToken = GitHubPkceTokenCredentials> + Send + Sync
 {
 }
 
@@ -71,7 +71,6 @@ impl<R: AppRuntime> RealGitHubAuthAdapter<R> {
 #[async_trait]
 impl<R: AppRuntime> GitAuthAdapter<R> for RealGitHubAuthAdapter<R> {
     type PkceToken = GitHubPkceTokenCredentials;
-    type PatToken = ();
 
     async fn auth_with_pkce(&self, ctx: &R::AsyncContext) -> joinerror::Result<Self::PkceToken> {
         let listener = {
@@ -150,10 +149,6 @@ impl<R: AppRuntime> GitAuthAdapter<R> for RealGitHubAuthAdapter<R> {
             .await
             .map(Into::into)
     }
-
-    async fn auth_with_pat(&self, _ctx: &R::AsyncContext) -> joinerror::Result<Self::PatToken> {
-        todo!()
-    }
 }
 
 #[cfg(any(test, feature = "test"))]
@@ -170,17 +165,12 @@ pub mod test {
     #[async_trait]
     impl<R: AppRuntime> GitAuthAdapter<R> for MockGitHubAuthAdapter {
         type PkceToken = GitHubPkceTokenCredentials;
-        type PatToken = ();
 
         async fn auth_with_pkce(
             &self,
             _ctx: &R::AsyncContext,
         ) -> joinerror::Result<Self::PkceToken> {
             Ok(self.pkce_token_credentials.clone())
-        }
-
-        async fn auth_with_pat(&self, _ctx: &R::AsyncContext) -> joinerror::Result<Self::PatToken> {
-            Ok(self.pat_token_credentials.clone())
         }
     }
 }

@@ -9,8 +9,11 @@ use std::{
 use tokio::sync::RwLock;
 
 use crate::{
-    account::common::{calc_expires_at, make_secret_key},
-    models::primitives::AccountId,
+    account::{
+        common::{calc_expires_at, make_secret_key},
+        github::GitHubSessionHandle,
+    },
+    models::primitives::{AccountId, SessionKind},
 };
 
 const GITLAB_PREFIX: &str = "gl";
@@ -19,6 +22,10 @@ pub struct GitLabInitialToken {
     pub access_token: String,
     pub refresh_token: String,
     pub expires_in: u64,
+}
+
+pub struct GitLabPAT {
+    pub token: String,
 }
 
 pub(crate) struct LastAccessToken {
@@ -30,7 +37,63 @@ pub(crate) struct LastAccessToken {
     expires_at: Instant,
 }
 
-pub(crate) struct GitLabSessionHandle<R: AppRuntime> {
+pub(crate) enum GitLabSessionHandle<R: AppRuntime> {
+    OAuth(GitLabOAuthSessionHandle<R>),
+    PAT(GitLabPATSessionHandle),
+}
+
+impl<R: AppRuntime> GitLabSessionHandle<R> {
+    pub(crate) async fn oauth(
+        id: AccountId,
+        host: String,
+        auth_api_client: Arc<dyn GitLabTokenRefreshApiReq<R>>,
+        initial_token: Option<GitLabInitialToken>,
+        keyring: &Arc<dyn KeyringClient>,
+    ) -> joinerror::Result<Self> {
+        Ok(Self::OAuth(
+            GitLabOAuthSessionHandle::new(id, host, auth_api_client, initial_token, keyring)
+                .await?,
+        ))
+    }
+
+    pub(crate) async fn pat(
+        id: AccountId,
+        host: String,
+        pat: Option<GitLabPAT>,
+        keyring: &Arc<dyn KeyringClient>,
+    ) -> joinerror::Result<Self> {
+        Ok(Self::PAT(
+            GitLabPATSessionHandle::new(id, host, pat, keyring).await?,
+        ))
+    }
+
+    pub(crate) async fn token(
+        &self,
+        ctx: &R::AsyncContext,
+        keyring: &Arc<dyn KeyringClient>,
+    ) -> joinerror::Result<String> {
+        match self {
+            GitLabSessionHandle::OAuth(handle) => handle.token(ctx, keyring).await,
+            GitLabSessionHandle::PAT(handle) => handle.token(keyring).await,
+        }
+    }
+
+    pub(crate) fn host(&self) -> String {
+        match self {
+            GitLabSessionHandle::OAuth(handle) => handle.host.clone(),
+            GitLabSessionHandle::PAT(handle) => handle.host.clone(),
+        }
+    }
+
+    pub(crate) fn session_kind(&self) -> SessionKind {
+        match self {
+            GitLabSessionHandle::OAuth(_) => SessionKind::OAuth,
+            GitLabSessionHandle::PAT(_) => SessionKind::PAT,
+        }
+    }
+}
+
+pub(crate) struct GitLabOAuthSessionHandle<R: AppRuntime> {
     pub id: AccountId,
     pub host: String,
 
@@ -38,13 +101,12 @@ pub(crate) struct GitLabSessionHandle<R: AppRuntime> {
     token: RwLock<Option<LastAccessToken>>,
 }
 
-impl<R: AppRuntime> GitLabSessionHandle<R> {
+impl<R: AppRuntime> GitLabOAuthSessionHandle<R> {
     pub(crate) async fn new(
         id: AccountId,
         host: String,
         auth_api_client: Arc<dyn GitLabTokenRefreshApiReq<R>>,
         initial_token: Option<GitLabInitialToken>,
-
         keyring: &Arc<dyn KeyringClient>,
     ) -> joinerror::Result<Self> {
         let mut token: Option<LastAccessToken> = None;
@@ -71,7 +133,7 @@ impl<R: AppRuntime> GitLabSessionHandle<R> {
         })
     }
 
-    pub(crate) async fn access_token(
+    pub(crate) async fn token(
         &self,
         ctx: &R::AsyncContext,
         keyring: &Arc<dyn KeyringClient>,
@@ -114,5 +176,38 @@ impl<R: AppRuntime> GitLabSessionHandle<R> {
             .map_err(|e| Error::new::<()>(e.to_string()))?;
 
         return Ok(resp.access_token);
+    }
+}
+
+pub(crate) struct GitLabPATSessionHandle {
+    pub id: AccountId,
+    pub host: String,
+}
+
+impl GitLabPATSessionHandle {
+    pub async fn new(
+        id: AccountId,
+        host: String,
+        pat: Option<GitLabPAT>,
+        keyring: &Arc<dyn KeyringClient>,
+    ) -> joinerror::Result<Self> {
+        if let Some(pat) = pat {
+            keyring
+                .set_secret(&make_secret_key(GITLAB_PREFIX, &host, &id), &pat.token)
+                .await
+                .map_err(|e| Error::new::<()>(e.to_string()))?;
+        };
+        Ok(Self { id, host })
+    }
+
+    pub async fn token(&self, keyring: &Arc<dyn KeyringClient>) -> joinerror::Result<String> {
+        let key = make_secret_key(GITLAB_PREFIX, &self.host, &self.id);
+        let bytes = keyring
+            .get_secret(&key)
+            .await
+            .map_err(|e| Error::new::<()>(e.to_string()))?;
+
+        let token = String::from_utf8(bytes.to_vec())?;
+        Ok(token)
     }
 }

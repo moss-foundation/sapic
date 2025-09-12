@@ -84,11 +84,11 @@ impl<R: AppRuntime> GitLabApiClient<R> for RealGitLabApiClient {
         account_handle: &AccountSession<R>,
     ) -> joinerror::Result<GetUserResponse> {
         context::abortable(ctx, async {
-            let access_token = account_handle.access_token(ctx).await?;
+            let token = account_handle.token(ctx).await?;
             let resp = self
                 .client
                 .get(format!("{}/user", api_url(&account_handle.host())))
-                .with_default_gitlab_headers(access_token)
+                .with_default_gitlab_headers(token)
                 .send()
                 .await?;
 
@@ -112,7 +112,7 @@ impl<R: AppRuntime> GitLabApiClient<R> for RealGitLabApiClient {
         url: &GitUrl,
     ) -> joinerror::Result<GetContributorsResponse> {
         context::abortable(ctx, async {
-            let access_token = account_handle.access_token(ctx).await?;
+            let token = account_handle.token(ctx).await?;
             let repo_url = format!("{}/{}", &url.owner, &url.name);
             let encoded_url = urlencoding::encode(&repo_url);
 
@@ -123,7 +123,7 @@ impl<R: AppRuntime> GitLabApiClient<R> for RealGitLabApiClient {
                     api_url(&account_handle.host()),
                     encoded_url
                 ))
-                .with_default_gitlab_headers(access_token)
+                .with_default_gitlab_headers(token)
                 .send()
                 .await?;
 
@@ -147,7 +147,7 @@ impl<R: AppRuntime> GitLabApiClient<R> for RealGitLabApiClient {
         url: &GitUrl,
     ) -> joinerror::Result<GetRepositoryResponse> {
         context::abortable(ctx, async {
-            let access_token = account_handle.access_token(ctx).await?;
+            let token = account_handle.token(ctx).await?;
             let repo_url = format!("{}/{}", &url.owner, &url.name);
             let encoded_url = urlencoding::encode(&repo_url);
 
@@ -158,7 +158,7 @@ impl<R: AppRuntime> GitLabApiClient<R> for RealGitLabApiClient {
                     api_url(&account_handle.host()),
                     encoded_url
                 ))
-                .with_default_gitlab_headers(access_token)
+                .with_default_gitlab_headers(token)
                 .send()
                 .await?;
 

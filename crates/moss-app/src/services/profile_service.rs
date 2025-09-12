@@ -23,6 +23,10 @@ use moss_user::{
     profile::Profile,
 };
 
+use moss_user::{
+    account::{github::GitHubPAT, gitlab::GitLabPAT},
+    models::primitives::SessionKind,
+};
 use std::{collections::HashMap, path::Path, sync::Arc};
 use tokio::sync::RwLock;
 
@@ -57,23 +61,41 @@ impl<R: AppRuntime> ProfileService<R> {
             let mut accounts = HashMap::with_capacity(p.accounts.len());
 
             for account in p.accounts.iter() {
-                let session = match account.kind {
-                    AccountKind::GitHub => {
-                        AccountSession::github(
+                let session = match (&account.kind, &account.session_kind) {
+                    (AccountKind::GitHub, SessionKind::OAuth) => {
+                        AccountSession::github_oauth(
                             account.id.clone(),
                             account.host.clone(),
-                            keyring.clone(),
                             None,
+                            keyring.clone(),
                         )
                         .await?
                     }
-                    AccountKind::GitLab => {
-                        AccountSession::gitlab(
+                    (AccountKind::GitHub, SessionKind::PAT) => {
+                        AccountSession::github_pat(
                             account.id.clone(),
                             account.host.clone(),
+                            None,
                             keyring.clone(),
+                        )
+                        .await?
+                    }
+                    (AccountKind::GitLab, SessionKind::OAuth) => {
+                        AccountSession::gitlab_oauth(
+                            account.id.clone(),
+                            account.host.clone(),
                             auth_api_client.clone(),
                             None,
+                            keyring.clone(),
+                        )
+                        .await?
+                    }
+                    (AccountKind::GitLab, SessionKind::PAT) => {
+                        AccountSession::gitlab_pat(
+                            account.id.clone(),
+                            account.host.clone(),
+                            None,
+                            keyring.clone(),
                         )
                         .await?
                     }
@@ -166,6 +188,7 @@ impl<R: AppRuntime> ProfileService<R> {
         app_delegate: &AppDelegate<R>,
         host: String,
         kind: AccountKind,
+        pat: Option<String>,
     ) -> joinerror::Result<AccountId> {
         let mut state_lock = self.state.write().await;
 
@@ -173,23 +196,41 @@ impl<R: AppRuntime> ProfileService<R> {
         let account_id = AccountId::new();
         let (session, username) = match kind {
             AccountKind::GitHub => {
-                let auth_client = <dyn GitHubAuthAdapter<R>>::global(app_delegate);
-                let api_client = <dyn GitHubApiClient<R>>::global(app_delegate);
+                let session = if let Some(pat) = pat {
+                    self.add_github_account_pat(account_id.clone(), &host, pat)
+                        .await?
+                } else {
+                    let auth_client = <dyn GitHubAuthAdapter<R>>::global(app_delegate);
+                    self.add_github_account_oauth(
+                        ctx,
+                        auth_client.as_ref(),
+                        account_id.clone(),
+                        &host,
+                    )
+                    .await?
+                };
 
-                let session = self
-                    .add_github_account(ctx, auth_client.as_ref(), account_id.clone(), &host)
-                    .await?;
+                let api_client = <dyn GitHubApiClient<R>>::global(app_delegate);
                 let user = api_client.get_user(ctx, &session).await?;
 
                 (session, user.login)
             }
             AccountKind::GitLab => {
-                let auth_client = <dyn GitLabAuthAdapter<R>>::global(app_delegate);
-                let api_client = <dyn GitLabApiClient<R>>::global(app_delegate);
+                let session = if let Some(pat) = pat {
+                    self.add_gitlab_account_pat(account_id.clone(), &host, pat)
+                        .await?
+                } else {
+                    let auth_client = <dyn GitLabAuthAdapter<R>>::global(app_delegate);
+                    self.add_gitlab_account_oauth(
+                        ctx,
+                        auth_client.as_ref(),
+                        account_id.clone(),
+                        &host,
+                    )
+                    .await?
+                };
 
-                let session = self
-                    .add_gitlab_account(ctx, auth_client.as_ref(), account_id.clone(), &host)
-                    .await?;
+                let api_client = <dyn GitLabApiClient<R>>::global(app_delegate);
                 let user = api_client.get_user(ctx, &session).await?;
 
                 (session, user.username)
@@ -245,7 +286,7 @@ impl<R: AppRuntime> ProfileService<R> {
         Ok(account_id)
     }
 
-    async fn add_github_account(
+    async fn add_github_account_oauth(
         &self,
         ctx: &R::AsyncContext,
         auth_client: &dyn GitHubAuthAdapter<R>,
@@ -254,18 +295,33 @@ impl<R: AppRuntime> ProfileService<R> {
     ) -> joinerror::Result<AccountSession<R>> {
         let token = auth_client.auth_with_pkce(ctx).await.unwrap();
 
-        Ok(AccountSession::github(
+        Ok(AccountSession::github_oauth(
             account_id,
             host.to_string(),
-            self.keyring.clone(),
             Some(GitHubInitialToken {
                 access_token: token.access_token,
             }),
+            self.keyring.clone(),
         )
         .await?)
     }
 
-    async fn add_gitlab_account(
+    async fn add_github_account_pat(
+        &self,
+        account_id: AccountId,
+        host: &str,
+        pat: String,
+    ) -> joinerror::Result<AccountSession<R>> {
+        Ok(AccountSession::github_pat(
+            account_id,
+            host.to_string(),
+            Some(GitHubPAT { token: pat }),
+            self.keyring.clone(),
+        )
+        .await?)
+    }
+
+    async fn add_gitlab_account_oauth(
         &self,
         ctx: &R::AsyncContext,
         auth_client: &dyn GitLabAuthAdapter<R>,
@@ -274,16 +330,31 @@ impl<R: AppRuntime> ProfileService<R> {
     ) -> joinerror::Result<AccountSession<R>> {
         let token = auth_client.auth_with_pkce(ctx).await.unwrap();
 
-        Ok(AccountSession::gitlab(
+        Ok(AccountSession::gitlab_oauth(
             account_id,
             host.to_string(),
-            self.keyring.clone(),
             self.auth_api_client.clone(),
             Some(GitLabInitialToken {
                 access_token: token.access_token,
                 refresh_token: token.refresh_token,
                 expires_in: token.expires_in,
             }),
+            self.keyring.clone(),
+        )
+        .await?)
+    }
+
+    async fn add_gitlab_account_pat(
+        &self,
+        account_id: AccountId,
+        host: &str,
+        pat: String,
+    ) -> joinerror::Result<AccountSession<R>> {
+        Ok(AccountSession::gitlab_pat(
+            account_id,
+            host.to_string(),
+            Some(GitLabPAT { token: pat }),
+            self.keyring.clone(),
         )
         .await?)
     }

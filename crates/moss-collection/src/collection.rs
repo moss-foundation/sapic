@@ -154,14 +154,12 @@ impl<R: AppRuntime> Collection<R> {
             .await?;
         }
         let (access_token, username) = match &client {
-            GitClient::GitHub { account, .. } => (
-                account.session().access_token(ctx).await?,
-                account.username(),
-            ),
-            GitClient::GitLab { account, .. } => (
-                account.session().access_token(ctx).await?,
-                account.username(),
-            ),
+            GitClient::GitHub { account, .. } => {
+                (account.session().token(ctx).await?, account.username())
+            }
+            GitClient::GitLab { account, .. } => {
+                (account.session().token(ctx).await?, account.username())
+            }
         };
 
         let mut cb = git2::RemoteCallbacks::new();
