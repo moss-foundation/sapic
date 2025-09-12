@@ -36,6 +36,7 @@ mod defaults {
 // When updating this, the `validate_input_path` method in models/operations.rs
 // should also be updated
 pub mod dirs {
+    pub const RESOURCES_DIR: &str = "resources";
     pub const REQUESTS_DIR: &str = "requests";
     pub const ENDPOINTS_DIR: &str = "endpoints";
     pub const COMPONENTS_DIR: &str = "components";

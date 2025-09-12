@@ -26,6 +26,7 @@ use tokio::{
 
 use crate::{
     constants::{self, COLLECTION_ROOT_PATH, DIR_CONFIG_FILENAME},
+    dirs,
     errors::{ErrorAlreadyExists, ErrorInvalidInput, ErrorNotFound},
     models::primitives::{EntryId, EntryKind, EntryProtocol},
     services::storage_service::StorageService,
@@ -99,10 +100,16 @@ impl<R: AppRuntime> Worktree<R> {
         }
 
         if path.file_name().is_some() {
-            Ok(self.abs_path.join(path))
+            Ok(self.abs_path.join(dirs::RESOURCES_DIR).join(path))
         } else {
-            Ok(self.abs_path.to_path_buf())
+            Ok(self.abs_path.join(dirs::RESOURCES_DIR).to_path_buf())
         }
+    }
+
+    pub fn relativize(&self, path: &Path) -> joinerror::Result<PathBuf> {
+        Ok(path
+            .strip_prefix(&self.abs_path.join(dirs::RESOURCES_DIR))?
+            .to_path_buf())
     }
 
     pub async fn remove_entry(&self, ctx: &R::AsyncContext, id: &EntryId) -> joinerror::Result<()> {
@@ -178,6 +185,7 @@ impl<R: AppRuntime> Worktree<R> {
 
         let mut handles = Vec::new();
         while let Some(job) = job_rx.recv().await {
+            dbg!(1);
             let sender = sender.clone();
             let fs = self.fs.clone();
             let state = self.state.clone();
@@ -186,52 +194,69 @@ impl<R: AppRuntime> Worktree<R> {
 
             activity_handle.emit_progress(Some(job.path.display().to_string()))?;
 
+            dbg!(2);
+
             let handle = tokio::spawn(async move {
                 let mut new_jobs = Vec::new();
 
-                match process_entry(
-                    job.path.clone(),
-                    &all_entry_keys,
-                    &expanded_entries,
-                    &fs,
-                    &job.abs_path,
-                )
-                .await
-                {
-                    Ok(Some((entry, desc))) => {
-                        if desc.expanded {
-                            state
-                                .write()
-                                .await
-                                .expanded_entries
-                                .insert(entry.id.clone());
-                        }
+                dbg!(3);
 
-                        let _ = sender.send(desc);
-                        state.write().await.entries.insert(entry.id.clone(), entry);
-                    }
-                    Ok(None) => {
-                        // TODO: log error
-                        return;
-                    }
-                    Err(_err) => {
-                        eprintln!("Error processing dir {}: {}", job.path.display(), _err);
-                        // TODO: log error
-                        return;
+                if !job.path.as_os_str().is_empty() {
+                    match process_entry(
+                        job.path.clone(),
+                        &all_entry_keys,
+                        &expanded_entries,
+                        &fs,
+                        &job.abs_path,
+                    )
+                    .await
+                    {
+                        Ok(Some((entry, desc))) => {
+                            dbg!(5);
+
+                            if desc.expanded {
+                                state
+                                    .write()
+                                    .await
+                                    .expanded_entries
+                                    .insert(entry.id.clone());
+                            }
+
+                            let _ = sender.send(desc);
+                            state.write().await.entries.insert(entry.id.clone(), entry);
+                        }
+                        Ok(None) => {
+                            dbg!(6);
+                            // TODO: log error
+                            return;
+                        }
+                        Err(_err) => {
+                            eprintln!("Error processing dir {}: {}", job.path.display(), _err);
+                            // TODO: log error
+                            return;
+                        }
                     }
                 }
+
+                dbg!(&job.abs_path);
 
                 let mut read_dir = match fs::read_dir(&job.abs_path).await {
                     Ok(dir) => dir,
                     Err(_) => return,
                 };
 
+                dbg!(7);
+
                 let mut child_paths = Vec::new();
                 while let Ok(Some(dir_entry)) = read_dir.next_entry().await {
                     child_paths.push(dir_entry);
                 }
 
+                dbg!(&child_paths);
+
                 for child_entry in child_paths {
+                    dbg!(&child_entry);
+
                     let child_file_type = continue_if_err!(child_entry.file_type().await);
                     let child_abs_path: Arc<Path> = child_entry.path().into();
                     let child_name = continue_if_none!(child_abs_path.file_name())
@@ -673,7 +698,7 @@ impl<R: AppRuntime> Worktree<R> {
         is_dir: bool,
         content: &[u8],
     ) -> joinerror::Result<()> {
-        let abs_path = self.absolutize(&path)?;
+        let abs_path = self.absolutize(&path.to_path_buf())?;
         if abs_path.exists() {
             return Err(joinerror::Error::new::<ErrorAlreadyExists>(format!(
                 "entry already exists: {}",
@@ -753,7 +778,10 @@ async fn process_entry(
         .map(|n| n.to_string_lossy().to_string())
         .unwrap_or_else(|| path.to_string_lossy().to_string());
 
+    dbg!("name", &name);
+
     if dir_config_path.exists() {
+        dbg!("dir 1");
         let mut rdr = fs.open_file(&dir_config_path).await?;
         let model: EntryModel =
             hcl::from_reader(&mut rdr).join_err::<()>("failed to parse dir configuration")?;
@@ -762,7 +790,7 @@ async fn process_entry(
         let desc = EntryDescription {
             id: id.clone(),
             name: desanitize(&name),
-            path: path.clone(),
+            path: strip_first_segment(&path).unwrap().into(), // FIXME:
             class: model.class(),
             kind: EntryKind::Dir,
             protocol: None,
@@ -786,6 +814,8 @@ async fn process_entry(
     }
 
     if item_config_path.exists() {
+        dbg!("dir 2");
+
         let mut rdr = fs.open_file(&item_config_path).await?;
         let model: EntryModel =
             hcl::from_reader(&mut rdr).join_err::<()>("failed to parse item configuration")?;
@@ -794,7 +824,7 @@ async fn process_entry(
         let desc = EntryDescription {
             id: id.clone(),
             name: desanitize(&name),
-            path: path.clone(),
+            path: strip_first_segment(&path).unwrap().into(), // FIXME:
             class: model.class(),
             kind: EntryKind::Item,
             protocol: model.protocol(),
@@ -829,4 +859,10 @@ async fn process_file(
 ) -> joinerror::Result<Option<(Entry, EntryDescription)>> {
     // TODO: implement
     Ok(None)
+}
+
+fn strip_first_segment(path: &Path) -> Option<PathBuf> {
+    let mut comps = path.components();
+    comps.next()?;
+    Some(comps.as_path().to_path_buf())
 }

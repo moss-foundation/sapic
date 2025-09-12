@@ -25,12 +25,7 @@ use crate::{
     worktree::entry::EntryDescription,
 };
 
-const EXPANSION_DIRECTORIES: &[&str] = &[
-    dirs::REQUESTS_DIR,
-    dirs::ENDPOINTS_DIR,
-    dirs::COMPONENTS_DIR,
-    dirs::SCHEMAS_DIR,
-];
+const EXPANSION_DIRECTORIES: &[&str] = &[dirs::RESOURCES_DIR];
 
 impl<R: AppRuntime> Collection<R> {
     pub async fn stream_entries(
@@ -45,10 +40,7 @@ impl<R: AppRuntime> Collection<R> {
 
         let mut handles = Vec::new();
         let expansion_dirs = match input {
-            StreamEntriesInput::LoadRoot => EXPANSION_DIRECTORIES
-                .iter()
-                .map(|dir| PathBuf::from(dir))
-                .collect::<Vec<_>>(),
+            StreamEntriesInput::LoadRoot => vec![PathBuf::from("")],
             StreamEntriesInput::ReloadPath(path) => vec![path],
         };
 

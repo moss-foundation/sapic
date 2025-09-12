@@ -26,7 +26,11 @@ use crate::{
 };
 
 const COLLECTION_ICON_SIZE: u32 = 128;
-const OTHER_DIRS: [&str; 2] = [dirs::ASSETS_DIR, dirs::ENVIRONMENTS_DIR];
+const OTHER_DIRS: [&str; 3] = [
+    dirs::ASSETS_DIR,
+    dirs::ENVIRONMENTS_DIR,
+    dirs::RESOURCES_DIR,
+];
 
 struct PredefinedFile {
     path: PathBuf,
@@ -60,6 +64,10 @@ const PREDEFINED_FILES: LazyCell<Vec<PredefinedFile>> = LazyCell::new(|| {
         },
         PredefinedFile {
             path: PathBuf::from(format!("{}/.gitkeep", dirs::ASSETS_DIR)),
+            content: None,
+        },
+        PredefinedFile {
+            path: PathBuf::from(format!("{}/.gitkeep", dirs::RESOURCES_DIR)),
             content: None,
         },
     ]
