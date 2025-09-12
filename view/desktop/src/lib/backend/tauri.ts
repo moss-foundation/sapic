@@ -36,7 +36,7 @@ export type TauriIpcCommand =
   | "archive_collection"
   | "unarchive_collection"
   | "batch_update_collection"
-  | "get_file_statuses"
+  | "list_changes"
   | "stream_environments"
   | "create_environment"
   | "update_environment"

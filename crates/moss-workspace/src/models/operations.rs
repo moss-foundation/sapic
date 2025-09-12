@@ -2,7 +2,6 @@ use moss_environment::models::{
     primitives::EnvironmentId,
     types::{AddVariableParams, VariableInfo},
 };
-use moss_git::models::primitives::FileStatus;
 use serde::{Deserialize, Serialize};
 use std::{
     path::{Path, PathBuf},
@@ -397,8 +396,8 @@ pub struct DescribeCollectionOutput {
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct GetFileStatusesOutput {
-    pub statuses: Vec<(PathBuf, FileStatus)>,
+pub struct ListChangesOutput {
+    pub changes: Vec<EntryChange>,
 }
 
 // ------------------------------ //

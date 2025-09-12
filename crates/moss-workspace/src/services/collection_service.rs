@@ -14,7 +14,7 @@ use moss_collection::{
 };
 use moss_common::continue_if_err;
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
-use moss_git::{models::primitives::FileStatus, url::GitUrl};
+use moss_git::url::GitUrl;
 use moss_git_hosting_provider::{
     GitProviderKind, github::client::GitHubApiClient, gitlab::client::GitLabApiClient,
 };
@@ -35,7 +35,7 @@ use crate::{
     models::{
         primitives::CollectionId,
         types::{
-            CreateCollectionGitParams, CreateCollectionParams, ExportCollectionParams,
+            CreateCollectionGitParams, CreateCollectionParams, EntryChange, ExportCollectionParams,
             UpdateCollectionParams,
         },
     },
@@ -794,10 +794,8 @@ impl<R: AppRuntime> CollectionService<R> {
     }
 
     /// List file statuses for all collections that have a repository handle
-    pub(crate) async fn get_file_statuses(
-        &self,
-    ) -> joinerror::Result<HashMap<PathBuf, FileStatus>> {
-        let mut result: HashMap<PathBuf, FileStatus> = HashMap::new();
+    pub(crate) async fn list_changes(&self) -> joinerror::Result<Vec<EntryChange>> {
+        let mut changes: Vec<EntryChange> = Vec::new();
 
         let state_lock = self.state.read().await;
         for (id, item) in state_lock.collections.iter() {
@@ -807,29 +805,31 @@ impl<R: AppRuntime> CollectionService<R> {
                 continue;
             };
 
-            let statuses = match vcs.file_statuses().await {
-                Ok(statuses) => statuses
-                    .into_iter()
-                    .map(|(path, status)| (item.abs_path().join(path), status)),
-                Err(e) => {
-                    session::warn!(format!(
-                        "failed to get file statuses for collection `{}`: {}",
-                        id,
-                        e.to_string()
-                    ));
-                    let _ = self.app_delegate.emit_oneshot(ToLocation::Toast {
-                        activity_id: "get_file_statuses_error",
-                        title: format!("Failed to get file statuses for collection `{}`", id),
-                        detail: Some(e.to_string()),
-                    });
-                    continue;
-                }
-            };
+            let statuses_result = vcs.statuses().await;
+            if let Err(e) = statuses_result {
+                session::warn!(format!(
+                    "failed to get file statuses for collection `{}`: {}",
+                    id,
+                    e.to_string()
+                ));
+                let _ = self.app_delegate.emit_oneshot(ToLocation::Toast {
+                    activity_id: "get_file_statuses_error",
+                    title: format!("Failed to get file statuses for collection `{}`", id),
+                    detail: Some(e.to_string()),
+                });
+                continue;
+            }
 
-            result.extend(statuses);
+            for (path, status) in statuses_result? {
+                changes.push(EntryChange {
+                    collection_id: id.clone(),
+                    path,
+                    status,
+                })
+            }
         }
 
-        Ok(result)
+        Ok(changes)
     }
 }
 async fn restore_collections<R: AppRuntime>(

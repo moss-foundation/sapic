@@ -1,12 +1,13 @@
 mod editor;
 pub use editor::*;
 
+use crate::models::primitives::{ActivitybarPosition, CollectionId, SidebarPosition};
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_environment::models::{
     primitives::{EnvironmentId, VariableId},
     types::{AddVariableParams, UpdateVariableParams, VariableInfo},
 };
-use moss_git::{models::types::BranchInfo, url::GIT_URL_REGEX};
+use moss_git::{models::types::BranchInfo, repository::FileStatus, url::GIT_URL_REGEX};
 use moss_user::models::primitives::AccountId;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -16,8 +17,6 @@ use std::{
 };
 use ts_rs::TS;
 use validator::{Validate, ValidationError};
-
-use crate::models::primitives::{ActivitybarPosition, CollectionId, SidebarPosition};
 
 pub type EnvironmentName = String;
 
@@ -343,4 +342,15 @@ pub struct GitLabVcsInfo {
 pub struct Contributor {
     pub name: String,
     pub avatar_url: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct EntryChange {
+    // TODO: entry id
+    pub collection_id: CollectionId,
+    pub path: PathBuf,
+    #[ts(type = "FileStatus")]
+    pub status: FileStatus,
 }

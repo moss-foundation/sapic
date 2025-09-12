@@ -257,6 +257,9 @@ importers:
       '@repo/moss-environment':
         specifier: workspace:*
         version: link:../moss-environment
+      '@repo/moss-git':
+        specifier: workspace:*
+        version: link:../moss-git
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/config-typescript

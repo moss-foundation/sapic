@@ -3,4 +3,4 @@
 /**
  * @category Primitive
  */
-export type FileStatus = "added" | "modified" | "deleted";
+export type FileStatus = "ADDED" | "MODIFIED" | "DELETED";

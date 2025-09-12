@@ -2,6 +2,7 @@
 import { z } from "zod";
 
 import { changeJsonValueSchema, changePathSchema, changeStringSchema, jsonValueSchema } from "@repo/moss-bindingutils";
+import { fileStatusSchema } from "@repo/moss-git";
 import {
   activitybarPositionSchema,
   editorGridOrientationSchema,
@@ -190,6 +191,12 @@ export const editorPartStateInfoSchema = z.object({
   grid: editorGridStateSchema,
   panels: z.record(z.string(), editorPanelStateSchema),
   activeGroup: z.string().optional(),
+});
+
+export const entryChangeSchema = z.object({
+  collectionId: z.string(),
+  path: z.string(),
+  status: fileStatusSchema,
 });
 
 export const variableInfoSchema = z.object({

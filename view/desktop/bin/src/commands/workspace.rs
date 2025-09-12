@@ -217,14 +217,14 @@ pub async fn batch_update_collection<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app), fields(window = window.label()))]
-pub async fn get_file_statuses<'a, R: tauri::Runtime>(
+pub async fn list_changes<'a, R: tauri::Runtime>(
     ctx: State<'_, moss_applib::context::AsyncContext>,
     app: App<'a, R>,
     window: Window<R>,
     options: Options,
-) -> TauriResult<GetFileStatusesOutput> {
+) -> TauriResult<ListChangesOutput> {
     super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
-        workspace.get_file_statuses(&ctx).await
+        workspace.list_changes(&ctx).await
     })
     .await
 }

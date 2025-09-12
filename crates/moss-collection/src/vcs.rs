@@ -26,14 +26,14 @@ pub struct VcsSummary {
 pub trait CollectionVcs<R: AppRuntime>: Send + Sync {
     async fn summary(&self, ctx: &R::AsyncContext) -> joinerror::Result<VcsSummary>;
     async fn contributors(&self, ctx: &R::AsyncContext) -> joinerror::Result<Vec<ContributorInfo>>;
-    async fn file_statuses(&self) -> joinerror::Result<HashMap<PathBuf, FileStatus>>;
+    async fn statuses(&self) -> joinerror::Result<HashMap<PathBuf, FileStatus>>;
     fn owner(&self) -> AccountId;
     fn provider(&self) -> GitProviderKind;
 }
 
 pub(crate) struct Vcs<R: AppRuntime> {
     url: GitUrl,
-    /// An Option is used here to allow dropping it separately when cleaning up
+    // An Option is used here to allow dropping it separately when cleaning up
     repository: Arc<RwLock<Option<Repository>>>,
     client: GitClient<R>,
 }
@@ -125,7 +125,7 @@ impl<R: AppRuntime> CollectionVcs<R> for Vcs<R> {
         self.client.contributors(ctx, &self.url).await
     }
 
-    async fn file_statuses(&self) -> joinerror::Result<HashMap<PathBuf, FileStatus>> {
+    async fn statuses(&self) -> joinerror::Result<HashMap<PathBuf, FileStatus>> {
         let repo_lock = self.repository.read().await;
         let repo_ref = if let Some(repo) = repo_lock.as_ref() {
             repo

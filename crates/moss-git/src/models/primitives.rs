@@ -3,7 +3,7 @@ use ts_rs::TS;
 
 /// @category Primitive
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "primitives.ts")]
 pub enum FileStatus {
     Added,

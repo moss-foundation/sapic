@@ -1,21 +1,21 @@
 import { useState } from "react";
 import { invokeTauriIpc } from "@/lib/backend/tauri.ts";
-import { GetFileStatusesOutput } from "@repo/moss-workspace";
+import { ListChangesOutput } from "@repo/moss-workspace";
 
 const FileStatuses = () => {
   const [fileStatuses, setFilesStatuses] = useState<string>("");
 
   async function handleFileStatusesButton() {
-    const result = await invokeTauriIpc<GetFileStatusesOutput>("get_file_statuses", {});
+    const result = await invokeTauriIpc<ListChangesOutput>("list_changes", {});
 
     if (result.status === "error") {
       throw new Error(String(result.status));
     }
 
     setFilesStatuses(
-      result.data.statuses
-        .map((value) => {
-          return value[1] + ": " + value[0];
+      result.data.changes
+        .map((change) => {
+          return `Collection: ${change.collectionId}, Path: ${change.path}, Status: ${change.status}`;
         })
         .join("\n")
     );
