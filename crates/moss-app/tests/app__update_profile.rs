@@ -6,7 +6,7 @@ use moss_app::models::{
     operations::{CreateProfileInput, UpdateProfileInput},
     types::AddAccountParams,
 };
-use moss_user::models::primitives::AccountKind;
+use moss_user::models::primitives::{AccountKind, SessionKind};
 
 use crate::shared::{TEST_GITHUB_USERNAME, TEST_GITLAB_USERNAME, set_up_test_app};
 
@@ -37,6 +37,7 @@ async fn add_account_github_success() {
                     host: "github.com".to_string(),
                     label: Some("Test GitHub Account".to_string()),
                     kind: AccountKind::GitHub,
+                    pat: None,
                 }],
                 accounts_to_remove: vec![],
             },
@@ -88,6 +89,7 @@ async fn add_account_gitlab_success() {
                     host: "gitlab.com".to_string(),
                     label: Some("Test GitLab Account".to_string()),
                     kind: AccountKind::GitLab,
+                    pat: None,
                 }],
                 accounts_to_remove: vec![],
             },
@@ -140,6 +142,7 @@ async fn add_account_custom_host() {
                     host: custom_host.to_string(),
                     label: Some("Custom GitLab Instance".to_string()),
                     kind: AccountKind::GitLab,
+                    pat: None,
                 }],
                 accounts_to_remove: vec![],
             },
@@ -160,6 +163,59 @@ async fn add_account_custom_host() {
     assert_eq!(account.username, TEST_GITLAB_USERNAME);
     assert_eq!(account.host, custom_host);
     assert_eq!(account.kind, AccountKind::GitLab);
+
+    cleanup().await;
+}
+
+#[tokio::test]
+async fn add_account_pat() {
+    let (app, app_delegate, ctx, cleanup) = set_up_test_app().await;
+
+    // First create a profile
+    let profile_result = app
+        .create_profile(
+            &ctx,
+            &app_delegate,
+            CreateProfileInput {
+                name: "Test Profile".to_string(),
+                is_default: Some(true),
+            },
+        )
+        .await;
+    assert!(profile_result.is_ok());
+
+    // Add account with PAT
+    let host = "github.com";
+    let update_result = app
+        .update_profile(
+            &ctx,
+            &app_delegate,
+            UpdateProfileInput {
+                accounts_to_add: vec![AddAccountParams {
+                    host: host.to_string(),
+                    label: Some("GitHub with PAT".to_string()),
+                    kind: AccountKind::GitHub,
+                    pat: Some("Test PAT".to_string()),
+                }],
+                accounts_to_remove: vec![],
+            },
+        )
+        .await;
+
+    assert!(update_result.is_ok());
+    let update_output = update_result.unwrap();
+    assert_eq!(update_output.added_accounts.len(), 1);
+    assert_eq!(update_output.removed_accounts.len(), 0);
+
+    let account_id = &update_output.added_accounts[0];
+
+    // Verify account was added to active profile with custom host
+    let active_profile = app.active_profile().await;
+    let account = active_profile.account(account_id).await.unwrap().info();
+
+    assert_eq!(account.username, TEST_GITHUB_USERNAME);
+    assert_eq!(account.host, host);
+    assert_eq!(account.kind, AccountKind::GitHub);
 
     cleanup().await;
 }
@@ -192,11 +248,13 @@ async fn add_multiple_accounts() {
                         host: "github.com".to_string(),
                         label: Some("GitHub Account".to_string()),
                         kind: AccountKind::GitHub,
+                        pat: None,
                     },
                     AddAccountParams {
                         host: "gitlab.com".to_string(),
                         label: Some("GitLab Account".to_string()),
                         kind: AccountKind::GitLab,
+                        pat: None,
                     },
                 ],
                 accounts_to_remove: vec![],
@@ -266,6 +324,7 @@ async fn add_duplicate_account_fails() {
                     host: "github.com".to_string(),
                     label: Some("First Account".to_string()),
                     kind: AccountKind::GitHub,
+                    pat: None,
                 }],
                 accounts_to_remove: vec![],
             },
@@ -283,6 +342,7 @@ async fn add_duplicate_account_fails() {
                     host: "github.com".to_string(),
                     label: Some("Duplicate Account".to_string()),
                     kind: AccountKind::GitHub,
+                    pat: None,
                 }],
                 accounts_to_remove: vec![],
             },
@@ -320,6 +380,7 @@ async fn remove_account_success() {
                     host: "github.com".to_string(),
                     label: Some("Test Account".to_string()),
                     kind: AccountKind::GitHub,
+                    pat: None,
                 }],
                 accounts_to_remove: vec![],
             },
@@ -384,11 +445,13 @@ async fn remove_multiple_accounts() {
                         host: "github.com".to_string(),
                         label: Some("GitHub Account".to_string()),
                         kind: AccountKind::GitHub,
+                        pat: None,
                     },
                     AddAccountParams {
                         host: "gitlab.com".to_string(),
                         label: Some("GitLab Account".to_string()),
                         kind: AccountKind::GitLab,
+                        pat: None,
                     },
                 ],
                 accounts_to_remove: vec![],
@@ -531,6 +594,7 @@ async fn add_and_remove_accounts_simultaneously() {
                     host: "github.com".to_string(),
                     label: Some("Initial GitHub Account".to_string()),
                     kind: AccountKind::GitHub,
+                    pat: None,
                 }],
                 accounts_to_remove: vec![],
             },
@@ -549,6 +613,7 @@ async fn add_and_remove_accounts_simultaneously() {
                     host: "gitlab.com".to_string(),
                     label: Some("New GitLab Account".to_string()),
                     kind: AccountKind::GitLab,
+                    pat: None,
                 }],
                 accounts_to_remove: vec![github_account_id.clone()],
             },

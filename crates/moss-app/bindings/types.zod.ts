@@ -31,6 +31,7 @@ export const addAccountParamsSchema = z.object({
   host: z.string(),
   label: z.string().optional(),
   kind: accountKindSchema,
+  pat: z.string().optional(),
 });
 
 export const colorThemeInfoSchema = z.object({

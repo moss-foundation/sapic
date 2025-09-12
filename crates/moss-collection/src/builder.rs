@@ -472,7 +472,7 @@ impl CollectionBuilder {
         repo_url: String,
         branch: Option<String>,
     ) -> joinerror::Result<Repository> {
-        let access_token = git_client.session().access_token(ctx).await?;
+        let access_token = git_client.session().token(ctx).await?;
         let username = git_client.username();
 
         let mut cb = git2::RemoteCallbacks::new();

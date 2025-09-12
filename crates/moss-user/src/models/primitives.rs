@@ -18,3 +18,10 @@ pub enum AccountKind {
     GitHub,
     GitLab,
 }
+
+#[derive(Debug, Deserialize, Serialize, PartialEq, Eq, Clone)]
+#[serde(rename_all = "UPPERCASE")]
+pub enum SessionKind {
+    OAuth,
+    PAT,
+}

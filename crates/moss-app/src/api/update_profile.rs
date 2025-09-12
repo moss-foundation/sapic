@@ -17,7 +17,13 @@ impl<R: AppRuntime> App<R> {
         for account_to_add in input.accounts_to_add {
             let account_id = self
                 .profile_service
-                .add_account(ctx, app_delegate, account_to_add.host, account_to_add.kind)
+                .add_account(
+                    ctx,
+                    app_delegate,
+                    account_to_add.host,
+                    account_to_add.kind,
+                    account_to_add.pat,
+                )
                 .await?;
             added_account_ids.push(account_id);
         }

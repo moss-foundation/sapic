@@ -9,8 +9,8 @@ use std::sync::Arc;
 
 use crate::{
     account::{
-        github::{GitHubInitialToken, GitHubSessionHandle},
-        gitlab::{GitLabInitialToken, GitLabSessionHandle},
+        github::{GitHubInitialToken, GitHubPAT, GitHubSessionHandle},
+        gitlab::{GitLabInitialToken, GitLabPAT, GitLabSessionHandle},
     },
     models::{
         primitives::{AccountId, AccountKind},
@@ -101,14 +101,13 @@ impl<R: AppRuntime> Clone for AccountSession<R> {
 }
 
 impl<R: AppRuntime> AccountSession<R> {
-    pub async fn github(
+    pub async fn github_oauth(
         id: AccountId,
         host: String,
-        keyring: Arc<dyn KeyringClient>,
-
         initial_token: Option<GitHubInitialToken>,
+        keyring: Arc<dyn KeyringClient>,
     ) -> joinerror::Result<Self> {
-        let session = GitHubSessionHandle::new(id, host, initial_token, &keyring).await?;
+        let session = GitHubSessionHandle::oauth(id, host, initial_token, &keyring).await?;
 
         Ok(Self {
             keyring,
@@ -116,15 +115,29 @@ impl<R: AppRuntime> AccountSession<R> {
         })
     }
 
-    pub async fn gitlab(
+    pub async fn github_pat(
         id: AccountId,
         host: String,
+        pat: Option<GitHubPAT>,
         keyring: Arc<dyn KeyringClient>,
+    ) -> joinerror::Result<Self> {
+        let session = GitHubSessionHandle::pat(id, host, pat, &keyring).await?;
+
+        Ok(Self {
+            keyring,
+            inner: Arc::new(Session::GitHub(session)),
+        })
+    }
+
+    pub async fn gitlab_oauth(
+        id: AccountId,
+        host: String,
         auth_api_client: Arc<dyn GitLabTokenRefreshApiReq<R>>,
         initial_token: Option<GitLabInitialToken>,
+        keyring: Arc<dyn KeyringClient>,
     ) -> joinerror::Result<Self> {
         let session =
-            GitLabSessionHandle::new(id, host, auth_api_client, initial_token, &keyring).await?;
+            GitLabSessionHandle::oauth(id, host, auth_api_client, initial_token, &keyring).await?;
 
         Ok(Self {
             // secrets,
@@ -133,17 +146,31 @@ impl<R: AppRuntime> AccountSession<R> {
         })
     }
 
+    pub async fn gitlab_pat(
+        id: AccountId,
+        host: String,
+        pat: Option<GitLabPAT>,
+        keyring: Arc<dyn KeyringClient>,
+    ) -> joinerror::Result<Self> {
+        let session = GitLabSessionHandle::pat(id, host, pat, &keyring).await?;
+
+        Ok(Self {
+            keyring,
+            inner: Arc::new(Session::GitLab(session)),
+        })
+    }
+
     pub fn host(&self) -> String {
         match self.inner.as_ref() {
-            Session::GitHub(handle) => handle.host.clone(),
-            Session::GitLab(handle) => handle.host.clone(),
+            Session::GitHub(handle) => handle.host(),
+            Session::GitLab(handle) => handle.host(),
         }
     }
 
-    pub async fn access_token(&self, ctx: &R::AsyncContext) -> joinerror::Result<String> {
+    pub async fn token(&self, ctx: &R::AsyncContext) -> joinerror::Result<String> {
         match self.inner.as_ref() {
-            Session::GitHub(handle) => handle.access_token(&self.keyring).await,
-            Session::GitLab(handle) => handle.access_token(ctx, &self.keyring).await,
+            Session::GitHub(handle) => handle.token(&self.keyring).await,
+            Session::GitLab(handle) => handle.token(ctx, &self.keyring).await,
         }
     }
 }
