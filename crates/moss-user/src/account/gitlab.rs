@@ -9,10 +9,7 @@ use std::{
 use tokio::sync::RwLock;
 
 use crate::{
-    account::{
-        common::{calc_expires_at, make_secret_key},
-        github::GitHubSessionHandle,
-    },
+    account::common::{calc_expires_at, make_secret_key},
     models::primitives::{AccountId, SessionKind},
 };
 
