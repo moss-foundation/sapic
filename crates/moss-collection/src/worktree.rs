@@ -12,10 +12,8 @@ use moss_fs::{CreateOptions, FileSystem, RemoveOptions, desanitize_path, utils::
 use moss_hcl::HclResultExt;
 use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_text::sanitized::{desanitize, sanitize};
-use rustc_hash::FxHashMap;
 use serde_json::Value as JsonValue;
 use std::{
-    cell::LazyCell,
     collections::{HashMap, HashSet},
     fmt::Debug,
     path::{Path, PathBuf},
@@ -29,22 +27,11 @@ use tokio::{
 use crate::{
     constants::{self, COLLECTION_ROOT_PATH, DIR_CONFIG_FILENAME},
     errors::{ErrorAlreadyExists, ErrorInvalidInput, ErrorNotFound},
-    models::primitives::{EntryClass, EntryId, EntryKind, EntryProtocol},
+    models::primitives::{EntryId, EntryKind, EntryProtocol},
     services::storage_service::StorageService,
     storage::segments,
     worktree::entry::{Entry, EntryDescription, edit::EntryEditing, model::EntryModel},
 };
-
-const CLASS_TO_DIR_NAME: LazyCell<FxHashMap<EntryClass, &str>> = LazyCell::new(|| {
-    [
-        (EntryClass::Request, "requests"),
-        (EntryClass::Endpoint, "endpoints"),
-        (EntryClass::Component, "components"),
-        (EntryClass::Schema, "schemas"),
-    ]
-    .into_iter()
-    .collect::<FxHashMap<_, _>>()
-});
 
 #[derive(Debug)]
 struct ScanJob {
@@ -467,12 +454,6 @@ impl<R: AppRuntime> Worktree<R> {
             .ok_or_join_err_with::<ErrorNotFound>(|| format!("entry {} not found", id))?;
 
         if let Some(new_parent) = params.path {
-            if !new_parent.starts_with(CLASS_TO_DIR_NAME.get(&entry.class).unwrap()) {
-                return Err(joinerror::Error::new::<ErrorInvalidInput>(
-                    "cannot move entry to a different classification folder",
-                ));
-            }
-
             // We can only move entries into a directory entry
             // Check if the destination path has dir config file
             let dest_entry_config = self.abs_path.join(&new_parent).join(DIR_CONFIG_FILENAME);
@@ -558,12 +539,6 @@ impl<R: AppRuntime> Worktree<R> {
             .ok_or_join_err_with::<ErrorNotFound>(|| format!("entry {} not found", id))?;
 
         if let Some(new_parent) = &params.path {
-            if !new_parent.starts_with(CLASS_TO_DIR_NAME.get(&entry.class).unwrap()) {
-                return Err(joinerror::Error::new::<ErrorInvalidInput>(
-                    "cannot move entry to a different classification folder",
-                ));
-            }
-
             // We can only move entries into a directory entry
             // Check if the destination path has dir config file
             let dest_entry_config = self.abs_path.join(&new_parent).join(DIR_CONFIG_FILENAME);

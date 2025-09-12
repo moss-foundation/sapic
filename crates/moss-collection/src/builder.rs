@@ -15,27 +15,18 @@ use tokio::sync::OnceCell;
 use crate::{
     Collection,
     config::{CONFIG_FILE_NAME, ConfigFile},
-    constants::COLLECTION_ROOT_PATH,
     defaults, dirs,
     edit::CollectionEdit,
     errors::ErrorIo,
     git::GitClient,
     manifest::{MANIFEST_FILE_NAME, ManifestFile, ManifestVcs},
-    models::primitives::{EntryClass, EntryId},
     services::{set_icon_service::SetIconService, storage_service::StorageService},
     vcs::Vcs,
-    worktree::{Worktree, entry::model::EntryModel},
+    worktree::Worktree,
 };
 
 const COLLECTION_ICON_SIZE: u32 = 128;
 const OTHER_DIRS: [&str; 2] = [dirs::ASSETS_DIR, dirs::ENVIRONMENTS_DIR];
-
-const WORKTREE_DIRS: [(&str, isize); 4] = [
-    (dirs::REQUESTS_DIR, 0),
-    (dirs::ENDPOINTS_DIR, 1),
-    (dirs::COMPONENTS_DIR, 2),
-    (dirs::SCHEMAS_DIR, 3),
-];
 
 struct PredefinedFile {
     path: PathBuf,
@@ -203,28 +194,6 @@ impl CollectionBuilder {
 
         let set_icon_service =
             SetIconService::new(abs_path.clone(), self.fs.clone(), COLLECTION_ICON_SIZE);
-
-        for (dir, order) in &WORKTREE_DIRS {
-            let id = EntryId::new();
-            let model = match *dir {
-                dirs::REQUESTS_DIR => EntryModel::from((id, EntryClass::Request)),
-                dirs::ENDPOINTS_DIR => EntryModel::from((id, EntryClass::Endpoint)),
-                dirs::COMPONENTS_DIR => EntryModel::from((id, EntryClass::Component)),
-                dirs::SCHEMAS_DIR => EntryModel::from((id, EntryClass::Schema)),
-                _ => unreachable!(),
-            };
-
-            worktree_service_inner
-                .create_dir_entry(
-                    ctx,
-                    dir,
-                    Path::new(COLLECTION_ROOT_PATH),
-                    model,
-                    *order,
-                    false,
-                )
-                .await?;
-        }
 
         for dir in &OTHER_DIRS {
             self.fs.create_dir(&abs_path.join(dir)).await?;

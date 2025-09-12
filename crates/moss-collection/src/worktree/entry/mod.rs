@@ -14,6 +14,7 @@ use crate::{
 pub(crate) struct Entry {
     pub id: EntryId,
     pub path_rx: watch::Receiver<Arc<Path>>,
+    #[allow(unused)]
     pub class: EntryClass,
     pub protocol: Option<EntryProtocol>,
 
