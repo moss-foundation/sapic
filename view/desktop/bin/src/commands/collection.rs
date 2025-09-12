@@ -130,3 +130,25 @@ pub async fn stream_collection_entries<'a, R: tauri::Runtime>(
     )
     .await
 }
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn execute_vcs_operation<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: Window<R>,
+    collection_id: CollectionId,
+    input: ExecuteVcsOperationInput,
+    options: Options,
+) -> TauriResult<ExecuteVcsOperationOutput> {
+    super::with_collection_timeout(
+        ctx.inner(),
+        app,
+        collection_id,
+        options,
+        |ctx, _app_delegate, collection| async move {
+            collection.execute_vcs_operation(&ctx, input).await
+        },
+    )
+    .await
+}

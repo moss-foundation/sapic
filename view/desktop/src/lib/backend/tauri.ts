@@ -56,6 +56,7 @@ export type TauriIpcCommand =
   | "batch_create_collection_entry"
   | "import_collection"
   | "export_collection"
+  | "execute_vcs_operation"
   //
   // Env
   //

@@ -188,6 +188,28 @@ impl Repository {
         Ok(())
     }
 
+    pub fn stage_paths(
+        &self,
+        paths: impl IntoIterator<Item = impl AsRef<Path>>,
+    ) -> joinerror::Result<()> {
+        let workdir = self.inner.workdir().ok_or_join_err::<()>("no workdir")?;
+        let mut index = self.inner.index()?;
+
+        for path in paths {
+            let abs_path = workdir.join(path.as_ref());
+
+            if abs_path.exists() {
+                index.add_path(path.as_ref())?;
+            } else {
+                index.remove_path(path.as_ref())?;
+            }
+        }
+
+        index.write()?;
+
+        Ok(())
+    }
+
     pub fn fetch<'a>(
         &self,
         remote_name: Option<&str>,
@@ -291,7 +313,7 @@ impl Repository {
 
     /// If remote_branch is None, configured remote for the branch will be used, otherwise "origin"
     /// If local_branch is None, currently checked out branch will be pushed, similar to `git push`
-    /// If remote_branch is None, configured refspec will be used
+    /// If remote_branch is None, the same name as the local_branch will be used
     /// If set_upstream is true, configuration will be updated
     pub fn push<'a>(
         &self,
@@ -308,6 +330,7 @@ impl Repository {
             self.current_branch()?
         };
 
+        dbg!(&local_branch);
         let mut conf = self.inner.config()?;
 
         // If no remote_name is specified, use the configured remote for the branch,
@@ -319,6 +342,7 @@ impl Repository {
                 .unwrap_or(constants::DEFAULT_REMOTE_NAME.to_string())
         };
 
+        dbg!(&remote_name);
         let mut remote = self.inner.find_remote(&remote_name)?;
         let mut refspecs = Vec::new();
 
@@ -327,6 +351,11 @@ impl Repository {
             refspecs.push(format!(
                 "refs/heads/{}:refs/heads/{}",
                 local_branch, remote_branch
+            ));
+        } else {
+            refspecs.push(format!(
+                "refs/heads/{}:refs/heads/{}",
+                local_branch, local_branch
             ));
         }
 

@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use git2::{RemoteCallbacks, Signature};
 use joinerror::{Error, OptionExt};
 use moss_applib::AppRuntime;
 use moss_fs::{FileSystem, RemoveOptions};
@@ -29,6 +30,9 @@ pub trait CollectionVcs<R: AppRuntime>: Send + Sync {
     async fn statuses(&self) -> joinerror::Result<HashMap<PathBuf, FileStatus>>;
     fn owner(&self) -> AccountId;
     fn provider(&self) -> GitProviderKind;
+
+    async fn stage_and_commit(&self, paths: Vec<PathBuf>, message: &str) -> joinerror::Result<()>;
+    async fn push<'a>(&self, ctx: &R::AsyncContext) -> joinerror::Result<()>;
 }
 
 pub(crate) struct Vcs<R: AppRuntime> {
@@ -133,5 +137,47 @@ impl<R: AppRuntime> CollectionVcs<R> for Vcs<R> {
             return Err(Error::new::<()>("repository handle is dropped"));
         };
         repo_ref.statuses()
+    }
+
+    async fn stage_and_commit(&self, paths: Vec<PathBuf>, message: &str) -> joinerror::Result<()> {
+        let repo_lock = self.repository.read().await;
+        let repo_ref = if let Some(repo) = repo_lock.as_ref() {
+            repo
+        } else {
+            return Err(Error::new::<()>("repository handle is dropped"));
+        };
+
+        repo_ref.stage_paths(paths)?;
+        let username = self.client.username();
+        repo_ref.commit(
+            message,
+            Signature::now(
+                &username,
+                // FIXME: use actual commit email
+                &format!("{}@git.noreply.com", &username),
+            )?,
+        )?;
+
+        Ok(())
+    }
+
+    // Pushing currently checked-out branch to the configured refspec+remote
+    async fn push<'a>(&self, ctx: &R::AsyncContext) -> joinerror::Result<()> {
+        let repo_lock = self.repository.read().await;
+        let repo_ref = if let Some(repo) = repo_lock.as_ref() {
+            repo
+        } else {
+            return Err(Error::new::<()>("repository handle is dropped"));
+        };
+        let username = self.client.username();
+        let token = self.client.session().token(ctx).await?;
+        let mut cb = RemoteCallbacks::new();
+        cb.credentials(move |_url, username_from_url, _allowed| {
+            git2::Cred::userpass_plaintext(&username, &token)
+        });
+
+        repo_ref.push(None, None, None, false, cb)?;
+
+        Ok(())
     }
 }

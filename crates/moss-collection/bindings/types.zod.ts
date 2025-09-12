@@ -34,6 +34,14 @@ export const updatePathParamOptionsSchema = z.object({
 export const updateQueryParamOptionsSchema = z.object({
   disabled: z.boolean().optional(),
 });
+
+export const vcsOperationSchema = z.object({
+  "COMMIT": z.object({
+    message: z.string(),
+    paths: z.array(z.string()),
+    push: z.boolean(),
+  }),
+});
 export const addHeaderParamsSchema = z.object({
   name: z.string(),
   value: jsonValueSchema,

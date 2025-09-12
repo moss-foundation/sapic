@@ -237,6 +237,7 @@ pub async fn run<R: TauriRuntime>() {
             commands::update_collection_entry,
             commands::batch_update_collection_entry,
             commands::batch_create_collection_entry,
+            commands::execute_vcs_operation,
             //
             // Env
             //

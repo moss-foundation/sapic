@@ -125,6 +125,18 @@ pub struct AfterUpdateItemEntryDescription {
     pub path: FrontendEntryPath,
 }
 
+/// @category Type
+#[derive(Clone, Debug, Deserialize, TS)]
+#[serde(rename_all = "UPPERCASE")]
+#[ts(export, export_to = "types.ts")]
+pub enum VcsOperation {
+    Commit {
+        message: String,
+        paths: Vec<PathBuf>,
+        push: bool,
+    },
+}
+
 // Check that input path begins with a valid top folder
 // such as requests, endpoints, etc.
 pub(super) fn validate_create_entry_input_path(path: &Path) -> Result<(), ValidationError> {
