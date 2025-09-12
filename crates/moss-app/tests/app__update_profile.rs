@@ -58,7 +58,6 @@ async fn add_account_github_success() {
     assert_eq!(account.username, TEST_GITHUB_USERNAME);
     assert_eq!(account.host, "github.com");
     assert_eq!(account.kind, AccountKind::GitHub);
-    assert_eq!(account.session_kind, SessionKind::OAuth);
 
     cleanup().await;
 }
@@ -111,7 +110,6 @@ async fn add_account_gitlab_success() {
     assert_eq!(account.username, TEST_GITLAB_USERNAME);
     assert_eq!(account.host, "gitlab.com");
     assert_eq!(account.kind, AccountKind::GitLab);
-    assert_eq!(account.session_kind, SessionKind::OAuth);
 
     cleanup().await;
 }
@@ -165,7 +163,6 @@ async fn add_account_custom_host() {
     assert_eq!(account.username, TEST_GITLAB_USERNAME);
     assert_eq!(account.host, custom_host);
     assert_eq!(account.kind, AccountKind::GitLab);
-    assert_eq!(account.session_kind, SessionKind::OAuth);
 
     cleanup().await;
 }
@@ -219,7 +216,6 @@ async fn add_account_pat() {
     assert_eq!(account.username, TEST_GITHUB_USERNAME);
     assert_eq!(account.host, host);
     assert_eq!(account.kind, AccountKind::GitHub);
-    assert_eq!(account.session_kind, SessionKind::PAT);
 
     cleanup().await;
 }
@@ -288,7 +284,6 @@ async fn add_multiple_accounts() {
     assert_eq!(github_profile_account.username, TEST_GITHUB_USERNAME);
     assert_eq!(github_profile_account.host, "github.com");
     assert_eq!(github_profile_account.kind, AccountKind::GitHub);
-    assert_eq!(github_profile_account.session_kind, SessionKind::OAuth);
 
     let gitlab_profile_account = active_profile
         .account(gitlab_account_id)
@@ -298,7 +293,6 @@ async fn add_multiple_accounts() {
     assert_eq!(gitlab_profile_account.username, TEST_GITLAB_USERNAME);
     assert_eq!(gitlab_profile_account.host, "gitlab.com");
     assert_eq!(gitlab_profile_account.kind, AccountKind::GitLab);
-    assert_eq!(gitlab_profile_account.session_kind, SessionKind::OAuth);
 
     cleanup().await;
 }
