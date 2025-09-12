@@ -101,6 +101,7 @@ impl<R: AppRuntime> Collection<R> {
                 // unimplemented for cancelled now
                 tokio::select! {
                     entry_result = rx.recv() => {
+                        dbg!(&entry_result);
                         if let Some(entry) = entry_result {
                             let _ = channel.send(StreamEntriesEvent{
                                 id: entry.id,

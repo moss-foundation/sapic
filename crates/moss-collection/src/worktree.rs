@@ -185,7 +185,6 @@ impl<R: AppRuntime> Worktree<R> {
 
         let mut handles = Vec::new();
         while let Some(job) = job_rx.recv().await {
-            dbg!(1);
             let sender = sender.clone();
             let fs = self.fs.clone();
             let state = self.state.clone();
@@ -194,12 +193,8 @@ impl<R: AppRuntime> Worktree<R> {
 
             activity_handle.emit_progress(Some(job.path.display().to_string()))?;
 
-            dbg!(2);
-
             let handle = tokio::spawn(async move {
                 let mut new_jobs = Vec::new();
-
-                dbg!(3);
 
                 if !job.path.as_os_str().is_empty() {
                     match process_entry(
@@ -212,8 +207,6 @@ impl<R: AppRuntime> Worktree<R> {
                     .await
                     {
                         Ok(Some((entry, desc))) => {
-                            dbg!(5);
-
                             if desc.expanded {
                                 state
                                     .write()
@@ -245,18 +238,12 @@ impl<R: AppRuntime> Worktree<R> {
                     Err(_) => return,
                 };
 
-                dbg!(7);
-
                 let mut child_paths = Vec::new();
                 while let Ok(Some(dir_entry)) = read_dir.next_entry().await {
                     child_paths.push(dir_entry);
                 }
 
-                dbg!(&child_paths);
-
                 for child_entry in child_paths {
-                    dbg!(&child_entry);
-
                     let child_file_type = continue_if_err!(child_entry.file_type().await);
                     let child_abs_path: Arc<Path> = child_entry.path().into();
                     let child_name = continue_if_none!(child_abs_path.file_name())
@@ -790,7 +777,7 @@ async fn process_entry(
         let desc = EntryDescription {
             id: id.clone(),
             name: desanitize(&name),
-            path: strip_first_segment(&path).unwrap().into(), // FIXME:
+            path: path.clone(), // FIXME:
             class: model.class(),
             kind: EntryKind::Dir,
             protocol: None,
@@ -820,11 +807,14 @@ async fn process_entry(
         let model: EntryModel =
             hcl::from_reader(&mut rdr).join_err::<()>("failed to parse item configuration")?;
 
+        dbg!(&path);
+        dbg!(strip_first_segment(&path).unwrap());
+
         let id = model.id().clone();
         let desc = EntryDescription {
             id: id.clone(),
             name: desanitize(&name),
-            path: strip_first_segment(&path).unwrap().into(), // FIXME:
+            path: path.clone(), // FIXME:
             class: model.class(),
             kind: EntryKind::Item,
             protocol: model.protocol(),
