@@ -376,6 +376,9 @@ impl<R: AppRuntime> ProfileService<R> {
                 serde_json::to_string_pretty(&ProfileFile {
                     name: profile.name.clone(),
                     is_default: Some(is_default),
+                    theme: None,
+                    locale: None,
+                    zoom_level: None,
                     accounts: vec![],
                 })?
                 .as_bytes(),

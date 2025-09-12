@@ -104,6 +104,19 @@ pub struct ListLocalesOutput(pub Vec<LocaleInfo>);
 // Describe App State
 
 /// @category Operation
+#[derive(Debug, Serialize, Clone, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct DescribeAppOutput {
+    /// The id of the workspace that is currently/last opened.
+    pub opened: Option<WorkspaceId>,
+    /// The id of the profile that is currently active.
+    pub profile: Option<ProfileId>,
+}
+
+/// DEPRECATED  
+/// @category Operation
 #[derive(Debug, Deserialize, Serialize, Clone, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
