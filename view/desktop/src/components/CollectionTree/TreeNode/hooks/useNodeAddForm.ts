@@ -17,6 +17,7 @@ export const useNodeAddForm = (parentNode: TreeCollectionNode) => {
   const [isAddingFolderNode, setIsAddingFolderNode] = useState(false);
 
   const handleAddFormSubmit = async (name: string) => {
+    console.log({ name });
     const newEntry = createEntryKind({
       name: name.trim(),
       path: parentNode.path.raw,
@@ -24,6 +25,8 @@ export const useNodeAddForm = (parentNode: TreeCollectionNode) => {
       order: parentNode.childNodes.length + 1,
       protocol: parentNode.class === "Request" || parentNode.class === "Endpoint" ? "Get" : undefined,
     });
+
+    console.log({ newEntry });
 
     try {
       await createCollectionEntry({

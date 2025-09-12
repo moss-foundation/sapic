@@ -20,63 +20,44 @@ export const useCollectionsTrees = (): UseCollectionsTreesProps => {
 
   const isLoading = isEntriesLoading || isCollectionsLoading;
 
-  const validCollections = useMemo(() => {
-    return collectionsWithEntries.filter((collection) => collection.entries.length > 0);
-  }, [collectionsWithEntries]);
+  const collectionsTrees: TreeCollectionRootNode[] = useMemo(() => {
+    return collectionsWithEntries.map((collection): TreeCollectionRootNode => {
+      const {
+        entries,
+        isEntriesLoading: _isEntriesLoading,
+        entriesError: _entriesError,
+        ...collectionTree
+      } = collection;
 
-  const collectionsTrees = useMemo(() => {
-    return validCollections.map((collection) => {
-      const { entries, isEntriesLoading, entriesError, ...rest } = collection;
-
-      const createCategoryNode = (
-        categoryName: string,
-        categoryClass: "Request" | "Endpoint" | "Component" | "Schema"
-      ): TreeCollectionNode => ({
-        id: `${collection.id}-${categoryName}`,
-        name: categoryName,
-        path: {
-          raw: categoryName,
-          segments: [categoryName],
-        },
-        class: categoryClass,
-        kind: "Dir" as const,
-        expanded: false,
-        childNodes: [],
-      });
-
-      const endpoints = createCategoryNode("endpoints", "Endpoint");
-      const schemas = createCategoryNode("schemas", "Schema");
-      const components = createCategoryNode("components", "Component");
-      const requests = createCategoryNode("requests", "Request");
-
-      const categoryMap: { [key: string]: TreeCollectionNode } = {
-        "Request": requests,
-        "Endpoint": endpoints,
-        "Component": components,
-        "Schema": schemas,
-      };
+      const childNodes: TreeCollectionNode[] = [];
 
       entries.forEach((entry) => {
-        const rootNode = categoryMap[entry.class];
-        if (!rootNode) {
-          console.error(`Unknown class ${entry.class}`);
-          return;
-        }
-
         if (entry.path.segments.length === 1) {
-          const existingChildNodes = rootNode.childNodes;
-          Object.assign(rootNode, entry, { childNodes: existingChildNodes });
+          // Root level entry - add directly to childNodes
+          const existingNode = childNodes.find((node) => node.id === entry.id);
+          if (existingNode) {
+            const existingChildNodes = existingNode.childNodes;
+            Object.assign(existingNode, entry, { childNodes: existingChildNodes });
+          } else {
+            const newNode: TreeCollectionNode = {
+              ...entry,
+              childNodes: [],
+            };
+            childNodes.push(newNode);
+          }
           return;
         }
 
-        let currentNode = rootNode;
-        const relativePath = entry.path.segments.slice(1);
+        // Nested entry - build the tree structure
+        let currentNode: TreeCollectionNode | undefined;
+        const pathSegments = entry.path.segments;
 
-        for (let i = 0; i < relativePath.length - 1; i++) {
-          const component = relativePath[i];
-          const pathSoFar = entry.path.segments.slice(0, i + 2);
+        for (let i = 0; i < pathSegments.length - 1; i++) {
+          const component = pathSegments[i];
+          const pathSoFar = pathSegments.slice(0, i + 1);
 
-          let child = currentNode.childNodes.find((node) => node.name === component && node.kind === "Dir");
+          const targetArray = i === 0 ? childNodes : currentNode?.childNodes || [];
+          let child = targetArray.find((node) => node.name === component && node.kind === "Dir");
 
           if (!child) {
             child = {
@@ -93,13 +74,15 @@ export const useCollectionsTrees = (): UseCollectionsTreesProps => {
               expanded: false,
               childNodes: [],
             };
-            currentNode.childNodes.push(child);
+            targetArray.push(child);
           }
           currentNode = child;
         }
 
-        const lastComponent = relativePath[relativePath.length - 1];
-        const existingNode = currentNode.childNodes.find((node) => node.name === lastComponent);
+        // Add the final entry
+        const lastComponent = pathSegments[pathSegments.length - 1];
+        const targetArray = currentNode?.childNodes || childNodes;
+        const existingNode = targetArray.find((node) => node.name === lastComponent);
 
         if (existingNode) {
           const existingChildNodes = existingNode.childNodes;
@@ -109,23 +92,22 @@ export const useCollectionsTrees = (): UseCollectionsTreesProps => {
             ...entry,
             childNodes: [],
           };
-          currentNode.childNodes.push(newNode);
+          targetArray.push(newNode);
         }
       });
 
       return {
-        ...rest,
-        endpoints,
-        schemas,
-        components,
-        requests,
+        ...collectionTree,
+        childNodes,
       };
     });
-  }, [validCollections]);
+  }, [collectionsWithEntries]);
 
   const collectionsTreesSortedByOrder = useMemo(() => {
     return sortObjectsByOrder(collectionsTrees);
   }, [collectionsTrees]);
+
+  // console.log({ collectionsWithEntries, collectionsTrees });
 
   return { collectionsTrees, collectionsTreesSortedByOrder, isLoading };
 };

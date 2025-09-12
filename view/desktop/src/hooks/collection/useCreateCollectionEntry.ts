@@ -17,8 +17,10 @@ const createCollectionEntry = async ({ collectionId, input }: UseCreateCollectio
   });
 
   if (result.status === "error") {
+    console.log(result.status);
     throw new Error(String(result.error));
   }
+  console.log({ result });
 
   return result.data;
 };

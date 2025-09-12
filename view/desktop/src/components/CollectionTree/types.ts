@@ -4,10 +4,7 @@ import { StreamCollectionsEvent, WorkspaceMode } from "@repo/moss-workspace";
 
 export interface TreeCollectionRootNode extends StreamCollectionsEvent {
   expanded: boolean;
-  endpoints: TreeCollectionNode;
-  schemas: TreeCollectionNode;
-  components: TreeCollectionNode;
-  requests: TreeCollectionNode;
+  childNodes: TreeCollectionNode[];
 }
 
 export interface TreeCollectionNode extends StreamEntriesEvent {

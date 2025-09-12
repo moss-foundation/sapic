@@ -15,19 +15,23 @@ export const useRootNodeAddForm = (node: TreeCollectionRootNode) => {
   const [isAddingRootFolderNode, setIsAddingRootFolderNode] = useState(false);
 
   const handleRootAddFormSubmit = async (name: string) => {
+    const newName = name.trim();
     const newEntry = createEntryKind({
-      name: name.trim(),
-      path: "requests",
+      name: newName,
+      path: newName,
       isAddingFolder: isAddingRootFolderNode,
-      order: node.requests.childNodes.length + 1,
+      order: node.childNodes.length + 1,
       protocol: "Get",
     });
 
+    console.log({ newEntry });
+
     try {
-      await createCollectionEntry({
+      const res = await createCollectionEntry({
         collectionId: id,
         input: newEntry,
       });
+      console.log({ res });
     } catch (error) {
       console.error(error);
     } finally {

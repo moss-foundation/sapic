@@ -1,7 +1,6 @@
 import { useContext } from "react";
 
 import { Tree } from "@/lib/ui/Tree";
-import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 
 import { EntryIcon } from "../../EntryIcon";
 import { CollectionTreeContext } from "../CollectionTreeContext";
@@ -26,24 +25,19 @@ export const TreeRootNodeChildren = ({
 }: TreeRootNodeChildrenProps) => {
   const { nodeOffset, displayMode } = useContext(CollectionTreeContext);
 
-  const nodesToRender =
-    displayMode === "REQUEST_FIRST"
-      ? sortObjectsByOrder(node.requests.childNodes)
-      : sortObjectsByOrder([node.endpoints, node.schemas, node.components, node.requests]);
-
-  const shouldRenderAddRootForm = displayMode === "REQUEST_FIRST" && (isAddingRootFileNode || isAddingRootFolderNode);
-  const restrictedNames = getChildrenNames(node.requests);
+  const shouldRenderAddRootForm = isAddingRootFileNode || isAddingRootFolderNode;
+  const restrictedNames = getChildrenNames(node);
 
   return (
     <Tree.RootNodeChildren>
-      {nodesToRender.map((childNode, index) => {
+      {node.childNodes.map((childNode, index) => {
         return (
           <TreeNode
-            parentNode={displayMode === "REQUEST_FIRST" ? node.requests : childNode}
+            parentNode={childNode}
             key={childNode.id}
             node={childNode}
             depth={1}
-            isLastChild={index === nodesToRender.length - 1}
+            isLastChild={index === node.childNodes.length - 1}
             isRootNode={displayMode === "DESIGN_FIRST"}
           />
         );

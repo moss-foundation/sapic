@@ -8,6 +8,7 @@ export const isSourceTreeRootNode = (source: ElementDragPayload): boolean => {
 };
 
 export const checkIfAllFoldersAreExpanded = (tree: TreeCollectionRootNode): boolean => {
+  return true;
   const checkIfAllNodesAreExpanded = (node: TreeCollectionNode): boolean => {
     if (!node || node.kind === "Item") return true;
 
@@ -16,10 +17,11 @@ export const checkIfAllFoldersAreExpanded = (tree: TreeCollectionRootNode): bool
     return node.childNodes.every(checkIfAllNodesAreExpanded);
   };
 
-  return [tree.requests, tree.endpoints, tree.components, tree.schemas].every(checkIfAllNodesAreExpanded);
+  return [tree.childNodes].every(checkIfAllNodesAreExpanded);
 };
 
 export const checkIfAllFoldersAreCollapsed = (tree: TreeCollectionRootNode): boolean => {
+  return false;
   const checkIfAllNodesAreCollapsed = (node: TreeCollectionNode): boolean => {
     if (!node || node.kind === "Item") return true;
 
@@ -27,7 +29,7 @@ export const checkIfAllFoldersAreCollapsed = (tree: TreeCollectionRootNode): boo
 
     return node.childNodes.every(checkIfAllNodesAreCollapsed);
   };
-  return [tree.requests, tree.endpoints, tree.components, tree.schemas].every(checkIfAllNodesAreCollapsed);
+  return [tree.childNodes].every(checkIfAllNodesAreCollapsed);
 };
 
 export const getTreeRootNodeSourceData = (source: ElementDragPayload) => {
@@ -80,6 +82,6 @@ export const calculateShouldRenderRootChildNodes = (
   return true;
 };
 
-export const getChildrenNames = (node: TreeCollectionNode) => {
+export const getChildrenNames = (node: TreeCollectionNode | TreeCollectionRootNode) => {
   return node.childNodes.map((childNode) => childNode.name);
 };
