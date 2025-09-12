@@ -13,7 +13,7 @@ use crate::{
         gitlab::{GitLabInitialToken, GitLabPAT, GitLabSessionHandle},
     },
     models::{
-        primitives::{AccountId, AccountKind, SessionKind},
+        primitives::{AccountId, AccountKind},
         types::AccountInfo,
     },
 };
@@ -77,7 +77,6 @@ impl<R: AppRuntime> Account<R> {
             username: self.username.clone(),
             host: self.host.clone(),
             kind: self.kind.clone(),
-            session_kind: self.session.session_kind(),
         }
     }
 }
@@ -172,13 +171,6 @@ impl<R: AppRuntime> AccountSession<R> {
         match self.inner.as_ref() {
             Session::GitHub(handle) => handle.token(&self.keyring).await,
             Session::GitLab(handle) => handle.token(ctx, &self.keyring).await,
-        }
-    }
-
-    pub fn session_kind(&self) -> SessionKind {
-        match self.inner.as_ref() {
-            Session::GitHub(handle) => handle.session_kind(),
-            Session::GitLab(handle) => handle.session_kind(),
         }
     }
 }

@@ -4,8 +4,3 @@
  * @category Primitive
  */
 export type AccountKind = "GITHUB" | "GITLAB";
-
-/**
- * @category Primitive
- */
-export type SessionKind = "OAUTH" | "PAT";

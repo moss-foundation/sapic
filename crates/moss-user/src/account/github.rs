@@ -2,10 +2,7 @@ use joinerror::Error;
 use moss_keyring::KeyringClient;
 use std::sync::Arc;
 
-use crate::{
-    account::common::make_secret_key,
-    models::primitives::{AccountId, SessionKind},
-};
+use crate::{account::common::make_secret_key, models::primitives::AccountId};
 
 const GITHUB_PREFIX: &str = "gh";
 
@@ -58,13 +55,6 @@ impl GitHubSessionHandle {
         match self {
             GitHubSessionHandle::OAuth(handle) => handle.host.clone(),
             GitHubSessionHandle::PAT(handle) => handle.host.clone(),
-        }
-    }
-
-    pub(crate) fn session_kind(&self) -> SessionKind {
-        match self {
-            GitHubSessionHandle::OAuth(_) => SessionKind::OAuth,
-            GitHubSessionHandle::PAT(_) => SessionKind::PAT,
         }
     }
 }

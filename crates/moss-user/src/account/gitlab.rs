@@ -10,7 +10,7 @@ use tokio::sync::RwLock;
 
 use crate::{
     account::common::{calc_expires_at, make_secret_key},
-    models::primitives::{AccountId, SessionKind},
+    models::primitives::AccountId,
 };
 
 const GITLAB_PREFIX: &str = "gl";
@@ -79,13 +79,6 @@ impl<R: AppRuntime> GitLabSessionHandle<R> {
         match self {
             GitLabSessionHandle::OAuth(handle) => handle.host.clone(),
             GitLabSessionHandle::PAT(handle) => handle.host.clone(),
-        }
-    }
-
-    pub(crate) fn session_kind(&self) -> SessionKind {
-        match self {
-            GitLabSessionHandle::OAuth(_) => SessionKind::OAuth,
-            GitLabSessionHandle::PAT(_) => SessionKind::PAT,
         }
     }
 }
