@@ -30,7 +30,6 @@ export const useCreateCollectionEntry = () => {
     mutationFn: createCollectionEntry,
     onSuccess: async (data, variables) => {
       const newEntry = await createCollectionEntryForCache(data.id, variables.input);
-      console.log({ newEntry });
 
       queryClient.setQueryData(
         [USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY, variables.collectionId],
