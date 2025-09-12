@@ -1,4 +1,3 @@
-use crate::git::{ContributorInfo, GitClient, OwnerInfo};
 use async_trait::async_trait;
 use joinerror::{Error, OptionExt};
 use moss_applib::AppRuntime;
@@ -12,6 +11,8 @@ use moss_git_hosting_provider::GitProviderKind;
 use moss_user::models::primitives::AccountId;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;
+
+use crate::git::{ContributorInfo, GitClient, OwnerInfo};
 
 pub struct VcsSummary {
     pub kind: GitProviderKind,

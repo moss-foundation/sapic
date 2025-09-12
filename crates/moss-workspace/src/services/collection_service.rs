@@ -1,16 +1,3 @@
-use crate::{
-    builder::{OnDidAddCollection, OnDidDeleteCollection},
-    dirs,
-    models::{
-        primitives::CollectionId,
-        types::{
-            CreateCollectionGitParams, CreateCollectionParams, ExportCollectionParams,
-            UpdateCollectionParams,
-        },
-    },
-    services::storage_service::StorageService,
-    storage::segments::SEGKEY_COLLECTION,
-};
 use derive_more::{Deref, DerefMut};
 use futures::Stream;
 use joinerror::{Error, OptionExt, ResultExt};
@@ -41,6 +28,20 @@ use std::{
     sync::Arc,
 };
 use tokio::sync::RwLock;
+
+use crate::{
+    builder::{OnDidAddCollection, OnDidDeleteCollection},
+    dirs,
+    models::{
+        primitives::CollectionId,
+        types::{
+            CreateCollectionGitParams, CreateCollectionParams, ExportCollectionParams,
+            UpdateCollectionParams,
+        },
+    },
+    services::storage_service::StorageService,
+    storage::segments::SEGKEY_COLLECTION,
+};
 
 pub(crate) struct CollectionItemCloneParams {
     pub order: isize,
