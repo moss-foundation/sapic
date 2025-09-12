@@ -13,7 +13,7 @@ export const batchCreateEntryOutputSchema = z.object({
   ids: z.array(z.string()),
 });
 
-export const batchUpdateEntryOutputSchema = z.record(z.never());
+export const batchUpdateEntryOutputSchema = z.record(z.string(), z.never());
 
 export const createEntryOutputSchema = z.object({
   id: z.string(),
@@ -34,7 +34,7 @@ export const streamEntriesInputSchema = z.union([
   }),
 ]);
 
-export const streamEntriesOutputSchema = z.record(z.never());
+export const streamEntriesOutputSchema = z.record(z.string(), z.never());
 export const batchCreateEntryKindSchema = z.union([
   z.object({
     "ITEM": createItemEntryParamsSchema,
