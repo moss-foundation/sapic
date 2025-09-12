@@ -5,7 +5,6 @@ use moss_environment::models::{
 use moss_git::models::primitives::FileStatus;
 use serde::{Deserialize, Serialize};
 use std::{
-    collections::HashMap,
     path::{Path, PathBuf},
     sync::Arc,
 };

@@ -1,5 +1,6 @@
-use crate::{Workspace, models::operations::GetFileStatusesOutput};
 use moss_applib::AppRuntime;
+
+use crate::{Workspace, models::operations::GetFileStatusesOutput};
 
 impl<R: AppRuntime> Workspace<R> {
     pub async fn get_file_statuses(
