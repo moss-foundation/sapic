@@ -21,8 +21,8 @@ pub use collection::{Collection, CollectionModifyParams};
 pub mod constants {
     pub const COLLECTION_ROOT_PATH: &str = "";
 
-    pub const ITEM_CONFIG_FILENAME: &str = "config.sapic";
-    pub const DIR_CONFIG_FILENAME: &str = "config-folder.sapic";
+    pub const ITEM_CONFIG_FILENAME: &str = "config.sap";
+    pub const DIR_CONFIG_FILENAME: &str = "config-folder.sap";
 }
 
 mod defaults {
