@@ -11,14 +11,14 @@ import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types
 
 import { EntryIcon } from "../../EntryIcon";
 import { CollectionTreeContext } from "../CollectionTreeContext";
-import { TreeCollectionNode } from "../types";
+import { TreeCollectionNode, TreeCollectionRootNode } from "../types";
 import { countNumberOfAllNestedChildNodes } from "../utils";
 import TreeNode from "./TreeNode";
 import { TreeNodeActions } from "./TreeNodeActions";
 
 interface TreeNodeControlsProps {
   node: TreeCollectionNode;
-  parentNode: TreeCollectionNode;
+  parentNode: TreeCollectionNode | TreeCollectionRootNode;
   depth: number;
   onAddFile: () => void;
   onAddFolder: () => void;
@@ -90,7 +90,7 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
             collectionId: id,
             node,
           },
-          component: node.class === "Request" ? "Request" : "Default",
+          component: node.class === "Endpoint" ? "Request" : "Default",
         });
       }
     };

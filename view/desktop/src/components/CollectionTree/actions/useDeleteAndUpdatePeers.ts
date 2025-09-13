@@ -4,12 +4,12 @@ import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { BatchUpdateEntryInput, BatchUpdateEntryKind, StreamEntriesEvent } from "@repo/moss-collection";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { TreeCollectionNode } from "../types";
+import { TreeCollectionNode, TreeCollectionRootNode } from "../types";
 
 export const useDeleteAndUpdatePeers = (
   collectionId: string,
   node: TreeCollectionNode,
-  parentNode: TreeCollectionNode
+  parentNode: TreeCollectionNode | TreeCollectionRootNode
 ) => {
   const queryClient = useQueryClient();
 

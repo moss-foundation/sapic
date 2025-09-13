@@ -74,7 +74,10 @@ export const useNodeDragAndDropHandler = () => {
         });
       }
 
-      await fetchEntriesForPath(locationTreeNodeData.collectionId, locationTreeNodeData.parentNode.path.raw);
+      await fetchEntriesForPath(
+        locationTreeNodeData.collectionId,
+        "path" in locationTreeNodeData.parentNode ? locationTreeNodeData.parentNode.path.raw : ""
+      );
 
       return;
     },
@@ -111,7 +114,7 @@ export const useNodeDragAndDropHandler = () => {
         const isAlreadyInLocation = locationTreeNodeData.parentNode.childNodes.some((n) => n.id === entry.id);
         const newEntryPath = isAlreadyInLocation
           ? undefined
-          : locationTreeNodeData.parentNode.path.segments.length > 1
+          : "path" in locationTreeNodeData.parentNode && locationTreeNodeData.parentNode.path.segments.length > 1
             ? locationTreeNodeData.parentNode.path.raw
             : "";
 
@@ -150,8 +153,14 @@ export const useNodeDragAndDropHandler = () => {
         },
       });
 
-      await fetchEntriesForPath(locationTreeNodeData.collectionId, locationTreeNodeData.parentNode.path.raw);
-      await fetchEntriesForPath(sourceTreeNodeData.collectionId, sourceTreeNodeData.parentNode.path.raw);
+      await fetchEntriesForPath(
+        locationTreeNodeData.collectionId,
+        "path" in locationTreeNodeData.parentNode ? locationTreeNodeData.parentNode.path.raw : ""
+      );
+      await fetchEntriesForPath(
+        sourceTreeNodeData.collectionId,
+        "path" in sourceTreeNodeData.parentNode ? sourceTreeNodeData.parentNode.path.raw : ""
+      );
 
       return;
     },
@@ -332,14 +341,17 @@ export const useNodeDragAndDropHandler = () => {
           if (index === 0) {
             return createEntryKind({
               name: entry.name,
-              path: locationTreeNodeData.parentNode.path.raw,
+              path: "path" in locationTreeNodeData.parentNode ? locationTreeNodeData.parentNode.path.raw : "",
               isAddingFolder: entry.kind === "Dir",
               order: newOrder,
               protocol: entry.protocol,
               class: "Endpoint",
             });
           } else {
-            const newEntryPath = await join(locationTreeNodeData.parentNode.path.raw, entry.path.raw);
+            const newEntryPath = await join(
+              "path" in locationTreeNodeData.parentNode ? locationTreeNodeData.parentNode.path.raw : "",
+              entry.path.raw
+            );
             return createEntryKind({
               name: entry.name,
               path: newEntryPath,
@@ -359,8 +371,14 @@ export const useNodeDragAndDropHandler = () => {
         },
       });
 
-      await fetchEntriesForPath(locationTreeNodeData.collectionId, locationTreeNodeData.parentNode.path.raw);
-      await fetchEntriesForPath(sourceTreeNodeData.collectionId, sourceTreeNodeData.parentNode.path.raw);
+      await fetchEntriesForPath(
+        locationTreeNodeData.collectionId,
+        "path" in locationTreeNodeData.parentNode ? locationTreeNodeData.parentNode.path.raw : ""
+      );
+      await fetchEntriesForPath(
+        sourceTreeNodeData.collectionId,
+        "path" in sourceTreeNodeData.parentNode ? sourceTreeNodeData.parentNode.path.raw : ""
+      );
     },
     [batchUpdateCollectionEntry, deleteCollectionEntry, batchCreateCollectionEntry, fetchEntriesForPath]
   );
@@ -407,8 +425,14 @@ export const useNodeDragAndDropHandler = () => {
         input: { entries: batchCreateEntryInput },
       });
 
-      await fetchEntriesForPath(locationTreeNodeData.collectionId, locationTreeNodeData.parentNode.path.raw);
-      await fetchEntriesForPath(sourceTreeNodeData.collectionId, sourceTreeNodeData.parentNode.path.raw);
+      await fetchEntriesForPath(
+        locationTreeNodeData.collectionId,
+        "path" in locationTreeNodeData.parentNode ? locationTreeNodeData.parentNode.path.raw : ""
+      );
+      await fetchEntriesForPath(
+        sourceTreeNodeData.collectionId,
+        "path" in sourceTreeNodeData.parentNode ? sourceTreeNodeData.parentNode.path.raw : ""
+      );
 
       return;
     },

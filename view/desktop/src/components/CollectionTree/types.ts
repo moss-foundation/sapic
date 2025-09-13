@@ -3,7 +3,6 @@ import { StreamEntriesEvent } from "@repo/moss-collection";
 import { StreamCollectionsEvent, WorkspaceMode } from "@repo/moss-workspace";
 
 export interface TreeCollectionRootNode extends StreamCollectionsEvent {
-  expanded: boolean;
   childNodes: TreeCollectionNode[];
 }
 
@@ -26,7 +25,7 @@ export interface DropNode {
   collectionId: string;
   repository?: string;
   node: TreeCollectionNode;
-  parentNode: TreeCollectionNode;
+  parentNode: TreeCollectionNode | TreeCollectionRootNode;
   instruction?: Instruction;
 }
 

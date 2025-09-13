@@ -4,10 +4,10 @@ import { useCreateCollectionEntry } from "@/hooks";
 import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollectionEntry";
 
 import { CollectionTreeContext } from "../../CollectionTreeContext";
-import { TreeCollectionNode } from "../../types";
+import { TreeCollectionNode, TreeCollectionRootNode } from "../../types";
 import { createEntryKind } from "../../utils";
 
-export const useNodeAddForm = (parentNode: TreeCollectionNode) => {
+export const useNodeAddForm = (parentNode: TreeCollectionNode | TreeCollectionRootNode) => {
   const { id } = useContext(CollectionTreeContext);
 
   const { mutateAsync: createCollectionEntry } = useCreateCollectionEntry();
@@ -17,13 +17,16 @@ export const useNodeAddForm = (parentNode: TreeCollectionNode) => {
   const [isAddingFolderNode, setIsAddingFolderNode] = useState(false);
 
   const handleAddFormSubmit = async (name: string) => {
+    const path = "path" in parentNode ? parentNode.path.raw || "" : "";
+    const entryClass = "class" in parentNode ? parentNode.class : "Endpoint";
+
     const newEntry = createEntryKind({
       name: name.trim(),
-      path: parentNode.path.raw,
+      path,
       isAddingFolder: isAddingFolderNode,
       order: parentNode.childNodes.length + 1,
-      protocol: parentNode.class === "Endpoint" ? "Get" : undefined,
-      class: "Endpoint",
+      protocol: entryClass === "Endpoint" ? "Get" : undefined,
+      class: entryClass,
     });
 
     try {

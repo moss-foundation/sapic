@@ -33,7 +33,6 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
 
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [instruction, setInstruction] = useState<Instruction | null>(null);
-  const [dirInstruction, setDirInstruction] = useState<Instruction | null>(null);
   const [isChildDropBlocked, setIsChildDropBlocked] = useState<boolean | null>(null);
 
   useEffect(() => {

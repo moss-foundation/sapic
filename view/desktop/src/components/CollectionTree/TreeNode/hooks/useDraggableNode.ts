@@ -6,7 +6,7 @@ import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-d
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 
 import { CollectionTreeContext } from "../../CollectionTreeContext";
-import { TreeCollectionNode } from "../../types";
+import { TreeCollectionNode, TreeCollectionRootNode } from "../../types";
 import {
   evaluateIsChildDropBlocked,
   getLocationTreeCollectionNodeData,
@@ -19,7 +19,7 @@ import {
 
 interface UseDraggableNodeProps {
   node: TreeCollectionNode;
-  parentNode: TreeCollectionNode;
+  parentNode: TreeCollectionNode | TreeCollectionRootNode;
   triggerRef: RefObject<HTMLDivElement | null>;
   dropTargetListRef: RefObject<HTMLLIElement | null>;
   isLastChild: boolean;
@@ -91,7 +91,6 @@ export const useDraggableNode = ({
           };
 
           const sourceTarget = getSourceTreeCollectionNodeData(source);
-
           if (!sourceTarget) {
             return attachInstruction(data, {
               input,

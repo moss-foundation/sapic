@@ -6,11 +6,11 @@ import { Tree } from "@/lib/ui/Tree";
 
 import { useDeleteAndUpdatePeers } from "../actions/useDeleteAndUpdatePeers";
 import { CollectionTreeContext } from "../CollectionTreeContext";
-import { TreeCollectionNode } from "../types";
+import { TreeCollectionNode, TreeCollectionRootNode } from "../types";
 
 interface TreeNodeActionsProps {
   node: TreeCollectionNode;
-  parentNode: TreeCollectionNode;
+  parentNode: TreeCollectionNode | TreeCollectionRootNode;
   setIsAddingFileNode: (isAdding: boolean) => void;
   setIsAddingFolderNode: (isAdding: boolean) => void;
   setIsRenamingNode: (isRenaming: boolean) => void;

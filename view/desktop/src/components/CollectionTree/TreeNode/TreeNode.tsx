@@ -4,7 +4,7 @@ import { Tree } from "@/lib/ui/Tree";
 
 import { useDeleteAndUpdatePeers } from "../actions/useDeleteAndUpdatePeers";
 import { CollectionTreeContext } from "../CollectionTreeContext";
-import { TreeCollectionNode } from "../types";
+import { TreeCollectionNode, TreeCollectionRootNode } from "../types";
 import { getChildrenNames } from "../utils";
 import { useDraggableNode } from "./hooks/useDraggableNode";
 import { useNodeAddForm } from "./hooks/useNodeAddForm";
@@ -17,7 +17,7 @@ import TreeNodeRenamingForm from "./TreeNodeRenamingForm";
 export interface TreeNodeComponentProps {
   node: TreeCollectionNode;
   depth: number;
-  parentNode: TreeCollectionNode;
+  parentNode: TreeCollectionNode | TreeCollectionRootNode;
   isLastChild: boolean;
   isRootNode?: boolean;
 }

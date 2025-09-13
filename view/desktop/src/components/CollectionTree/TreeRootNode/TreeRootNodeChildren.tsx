@@ -36,7 +36,7 @@ export const TreeRootNodeChildren = ({
       {sortedChildNodes.map((childNode, index) => {
         return (
           <TreeNode
-            parentNode={childNode}
+            parentNode={node}
             key={childNode.id}
             node={childNode}
             depth={1}
