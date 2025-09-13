@@ -40,48 +40,88 @@ export const useNodeDragAndDropHandler = () => {
   const handleCombineWithinCollection = useCallback(
     async (sourceTreeNodeData: DragNode, locationTreeNodeData: DropNode) => {
       const newOrder = locationTreeNodeData.node.childNodes.length + 1;
+      const sourceNodeOriginalOrder = sourceTreeNodeData.node.order!;
 
-      if (sourceTreeNodeData.node.kind === "Dir") {
-        await updateCollectionEntry({
-          collectionId: sourceTreeNodeData.collectionId,
-          updatedEntry: {
-            DIR: {
-              id: sourceTreeNodeData.node.id,
-              path: locationTreeNodeData.node.path.raw,
-              order: newOrder,
-            },
-          },
+      const sourceNodeUpdate: BatchUpdateEntryKind =
+        sourceTreeNodeData.node.kind === "Dir"
+          ? {
+              DIR: {
+                id: sourceTreeNodeData.node.id,
+                path: locationTreeNodeData.node.path.raw,
+                order: newOrder,
+              },
+            }
+          : {
+              ITEM: {
+                id: sourceTreeNodeData.node.id,
+                path: locationTreeNodeData.node.path.raw,
+                order: newOrder,
+                queryParamsToAdd: [],
+                queryParamsToUpdate: [],
+                queryParamsToRemove: [],
+                pathParamsToAdd: [],
+                pathParamsToUpdate: [],
+                pathParamsToRemove: [],
+                headersToAdd: [],
+                headersToUpdate: [],
+                headersToRemove: [],
+              },
+            };
+
+      const sourceParentNodes = sourceTreeNodeData.parentNode.childNodes;
+      const nodesToUpdate = sourceParentNodes
+        .filter((node) => node.id !== sourceTreeNodeData.node.id && node.order! > sourceNodeOriginalOrder)
+        .map((node): BatchUpdateEntryKind => {
+          const newOrderValue = node.order! - 1;
+
+          if (node.kind === "Dir") {
+            return {
+              DIR: {
+                id: node.id,
+                order: newOrderValue,
+              },
+            };
+          } else {
+            return {
+              ITEM: {
+                id: node.id,
+                order: newOrderValue,
+                queryParamsToAdd: [],
+                queryParamsToUpdate: [],
+                queryParamsToRemove: [],
+                pathParamsToAdd: [],
+                pathParamsToUpdate: [],
+                pathParamsToRemove: [],
+                headersToAdd: [],
+                headersToUpdate: [],
+                headersToRemove: [],
+              },
+            };
+          }
         });
-      } else {
-        await updateCollectionEntry({
-          collectionId: sourceTreeNodeData.collectionId,
-          updatedEntry: {
-            ITEM: {
-              id: sourceTreeNodeData.node.id,
-              path: locationTreeNodeData.node.path.raw,
-              order: newOrder,
-              queryParamsToAdd: [],
-              queryParamsToUpdate: [],
-              queryParamsToRemove: [],
-              pathParamsToAdd: [],
-              pathParamsToUpdate: [],
-              pathParamsToRemove: [],
-              headersToAdd: [],
-              headersToUpdate: [],
-              headersToRemove: [],
-            },
-          },
-        });
-      }
+
+      const allUpdates = [sourceNodeUpdate, ...nodesToUpdate];
+
+      await batchUpdateCollectionEntry({
+        collectionId: sourceTreeNodeData.collectionId,
+        entries: {
+          entries: allUpdates,
+        },
+      });
 
       await fetchEntriesForPath(
         locationTreeNodeData.collectionId,
         "path" in locationTreeNodeData.parentNode ? locationTreeNodeData.parentNode.path.raw : ""
       );
 
+      await fetchEntriesForPath(
+        sourceTreeNodeData.collectionId,
+        "path" in sourceTreeNodeData.parentNode ? sourceTreeNodeData.parentNode.path.raw : ""
+      );
+
       return;
     },
-    [updateCollectionEntry, fetchEntriesForPath]
+    [batchUpdateCollectionEntry, fetchEntriesForPath]
   );
 
   const handleReorderWithinCollection = useCallback(
