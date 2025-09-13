@@ -71,6 +71,7 @@ export const ProjectCreationZone = () => {
           console.error("Error during project creation:", error);
         }
 
+        //TODO: Project creation zone created project from item, but ignores all nested items if it's a dir
         try {
           for (const [index, entry] of nestedEntries.entries()) {
             const rootEntryName = rootEntry.name;
@@ -88,7 +89,8 @@ export const ProjectCreationZone = () => {
             const parentPath = parentSegments.length > 0 ? await join(...parentSegments) : "";
 
             const createInput = convertEntryInfoToCreateInput(entry, parentPath);
-            createInput[entry.kind === "Dir" ? "dir" : "item"].order = index + 1;
+
+            createInput[entry.kind === "Dir" ? "DIR" : "ITEM"].order = index + 1;
 
             await createCollectionEntry({
               collectionId: newCollection.id,
