@@ -6,9 +6,8 @@ import { useBatchCreateCollectionEntry } from "@/hooks/collection/useBatchCreate
 import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
 import { useCreateCollectionEntry } from "@/hooks/collection/useCreateCollectionEntry";
 import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollectionEntry";
-import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
+import { Operation } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { BatchUpdateEntryKind } from "@repo/moss-collection";
 import { join } from "@tauri-apps/api/path";
 
 import { DragNode, DropNode, DropRootNode } from "../types";
@@ -19,12 +18,17 @@ import {
   getInstructionFromLocation,
   getLocationTreeCollectionNodeData,
   getLocationTreeRootNodeData,
-  getPathWithoutName,
   getSourceTreeCollectionNodeData,
   hasAnotherDirectDescendantWithSimilarName,
   isSourceTreeCollectionNode,
+  makeDirUpdatePayload,
+  makeItemUpdatePayload,
   prepareEntriesForCreation,
-  prepareEntriesForDrop,
+  prepareNestedDirEntriesForDrop,
+  reorderedNodesForDifferentDirPayload,
+  reorderedNodesForSameDirPayload,
+  resolveParentPath,
+  siblingsAfterRemovalPayload,
 } from "../utils";
 
 export const useNodeDragAndDropHandler = () => {
@@ -41,68 +45,27 @@ export const useNodeDragAndDropHandler = () => {
   const handleCombineWithinCollection = useCallback(
     async (sourceTreeNodeData: DragNode, locationTreeNodeData: DropNode) => {
       const newOrder = locationTreeNodeData.node.childNodes.length + 1;
-      const sourceNodeOriginalOrder = sourceTreeNodeData.node.order!;
 
-      const sourceNodeUpdate: BatchUpdateEntryKind =
+      const sourceNodeUpdate =
         sourceTreeNodeData.node.kind === "Dir"
-          ? {
-              DIR: {
-                id: sourceTreeNodeData.node.id,
-                path: locationTreeNodeData.node.path.raw,
-                order: newOrder,
-              },
-            }
-          : {
-              ITEM: {
-                id: sourceTreeNodeData.node.id,
-                path: locationTreeNodeData.node.path.raw,
-                order: newOrder,
-                queryParamsToAdd: [],
-                queryParamsToUpdate: [],
-                queryParamsToRemove: [],
-                pathParamsToAdd: [],
-                pathParamsToUpdate: [],
-                pathParamsToRemove: [],
-                headersToAdd: [],
-                headersToUpdate: [],
-                headersToRemove: [],
-              },
-            };
+          ? makeDirUpdatePayload({
+              id: sourceTreeNodeData.node.id,
+              path: locationTreeNodeData.node.path.raw,
+              order: newOrder,
+            })
+          : makeItemUpdatePayload({
+              id: sourceTreeNodeData.node.id,
+              path: locationTreeNodeData.node.path.raw,
+              order: newOrder,
+            });
 
       const sourceParentNodes = sourceTreeNodeData.parentNode.childNodes;
-      const nodesToUpdate = sourceParentNodes
-        .filter((node) => node.id !== sourceTreeNodeData.node.id && node.order! > sourceNodeOriginalOrder)
-        .map((node): BatchUpdateEntryKind => {
-          const newOrderValue = node.order! - 1;
-
-          if (node.kind === "Dir") {
-            return {
-              DIR: {
-                id: node.id,
-                order: newOrderValue,
-              },
-            };
-          } else {
-            return {
-              ITEM: {
-                id: node.id,
-                order: newOrderValue,
-                queryParamsToAdd: [],
-                queryParamsToUpdate: [],
-                queryParamsToRemove: [],
-                pathParamsToAdd: [],
-                pathParamsToUpdate: [],
-                pathParamsToRemove: [],
-                headersToAdd: [],
-                headersToUpdate: [],
-                headersToRemove: [],
-              },
-            };
-          }
-        });
+      const nodesToUpdate = siblingsAfterRemovalPayload({
+        nodes: sourceParentNodes,
+        removedNode: sourceTreeNodeData.node,
+      });
 
       const allUpdates = [sourceNodeUpdate, ...nodesToUpdate];
-
       await batchUpdateCollectionEntry({
         collectionId: sourceTreeNodeData.collectionId,
         entries: {
@@ -110,15 +73,9 @@ export const useNodeDragAndDropHandler = () => {
         },
       });
 
-      await fetchEntriesForPath(
-        locationTreeNodeData.collectionId,
-        "path" in locationTreeNodeData.parentNode ? locationTreeNodeData.parentNode.path.raw : ""
-      );
+      await fetchEntriesForPath(locationTreeNodeData.collectionId, resolveParentPath(locationTreeNodeData.parentNode));
 
-      await fetchEntriesForPath(
-        sourceTreeNodeData.collectionId,
-        "path" in sourceTreeNodeData.parentNode ? sourceTreeNodeData.parentNode.path.raw : ""
-      );
+      await fetchEntriesForPath(sourceTreeNodeData.collectionId, resolveParentPath(sourceTreeNodeData.parentNode));
 
       return;
     },
@@ -126,106 +83,54 @@ export const useNodeDragAndDropHandler = () => {
   );
 
   const handleReorderWithinCollection = useCallback(
-    async (
-      sourceTreeNodeData: DragNode,
-      locationTreeNodeData: DropNode,
-      operation: "reorder-before" | "reorder-after" | "combine"
-    ) => {
-      const dropOrder =
+    async (sourceTreeNodeData: DragNode, locationTreeNodeData: DropNode, operation: Operation) => {
+      const dropIndex =
         operation === "reorder-before"
           ? locationTreeNodeData.node.order! - 0.5
           : locationTreeNodeData.node.order! + 0.5;
 
-      const sortedParentNodes = sortObjectsByOrder([...locationTreeNodeData.parentNode.childNodes]);
-      const parentNodesWithNewOrders = [
-        ...sortedParentNodes.slice(0, dropOrder).filter((entry) => entry.id !== sourceTreeNodeData.node.id),
-        sourceTreeNodeData.node,
-        ...sortedParentNodes.slice(dropOrder).filter((entry) => entry.id !== sourceTreeNodeData.node.id),
-      ].map((entry, index) => ({
-        ...entry,
-        order: index + 1,
-      }));
-
-      const updatedParentNodes = parentNodesWithNewOrders.filter((node) => {
-        const nodeInLocation = locationTreeNodeData.parentNode.childNodes.find((n) => n.id === node.id);
-        return nodeInLocation?.order !== node.order;
-      });
-
-      const parentEntriesToUpdate = updatedParentNodes.map((entry): BatchUpdateEntryKind => {
-        const isAlreadyInLocation = locationTreeNodeData.parentNode.childNodes.some((n) => n.id === entry.id);
-        const newEntryPath = isAlreadyInLocation
-          ? undefined
-          : "path" in locationTreeNodeData.parentNode
-            ? locationTreeNodeData.parentNode.path.raw
-            : "";
-
-        if (entry.kind === "Dir") {
-          return {
-            DIR: {
-              id: entry.id,
-              order: entry.order,
-              path: newEntryPath,
-            },
-          };
-        } else {
-          return {
-            ITEM: {
-              id: entry.id,
-              order: entry.order,
-              path: newEntryPath,
-              queryParamsToAdd: [],
-              queryParamsToUpdate: [],
-              queryParamsToRemove: [],
-              pathParamsToAdd: [],
-              pathParamsToUpdate: [],
-              pathParamsToRemove: [],
-              headersToAdd: [],
-              headersToUpdate: [],
-              headersToRemove: [],
-            },
-          };
-        }
-      });
-      const sourcePeerEntriesToUpdate = sourceTreeNodeData.parentNode.childNodes
-        .filter((entry) => entry.id !== sourceTreeNodeData.node.id && entry.order! > sourceTreeNodeData.node.order!)
-        .map((entry): BatchUpdateEntryKind => {
-          if (entry.kind === "Dir") {
-            return {
-              DIR: { id: entry.id, order: entry.order! - 1 },
-            };
-          }
-          return {
-            ITEM: {
-              id: entry.id,
-              order: entry.order! - 1,
-              queryParamsToAdd: [],
-              queryParamsToUpdate: [],
-              queryParamsToRemove: [],
-              pathParamsToAdd: [],
-              pathParamsToUpdate: [],
-              pathParamsToRemove: [],
-              headersToAdd: [],
-              headersToUpdate: [],
-              headersToRemove: [],
-            },
-          };
+      const inSameDir = sourceTreeNodeData.parentNode.id === locationTreeNodeData.parentNode.id;
+      if (inSameDir) {
+        const updatedSourceNodesPayload = reorderedNodesForSameDirPayload({
+          nodes: sourceTreeNodeData.parentNode.childNodes,
+          movedId: sourceTreeNodeData.node.id,
+          moveToIndex: dropIndex,
         });
-      const allUpdatedEntries = [...parentEntriesToUpdate, ...sourcePeerEntriesToUpdate];
+
+        await batchUpdateCollectionEntry({
+          collectionId: sourceTreeNodeData.collectionId,
+          entries: {
+            entries: updatedSourceNodesPayload,
+          },
+        });
+
+        await fetchEntriesForPath(sourceTreeNodeData.collectionId, resolveParentPath(sourceTreeNodeData.parentNode));
+
+        return;
+      }
+
+      const targetEntriesToUpdate = reorderedNodesForDifferentDirPayload({
+        node: locationTreeNodeData.parentNode,
+        newNode: sourceTreeNodeData.node,
+        moveToIndex: dropIndex,
+      });
+
+      const sourceEntriesToUpdate = siblingsAfterRemovalPayload({
+        nodes: sourceTreeNodeData.parentNode.childNodes,
+        removedNode: sourceTreeNodeData.node,
+      });
+
+      const allEntriesToUpdate = [...targetEntriesToUpdate, ...sourceEntriesToUpdate];
+
       await batchUpdateCollectionEntry({
         collectionId: sourceTreeNodeData.collectionId,
         entries: {
-          entries: allUpdatedEntries,
+          entries: allEntriesToUpdate,
         },
       });
 
-      await fetchEntriesForPath(
-        locationTreeNodeData.collectionId,
-        "path" in locationTreeNodeData.parentNode ? locationTreeNodeData.parentNode.path.raw : ""
-      );
-      await fetchEntriesForPath(
-        sourceTreeNodeData.collectionId,
-        "path" in sourceTreeNodeData.parentNode ? sourceTreeNodeData.parentNode.path.raw : ""
-      );
+      await fetchEntriesForPath(locationTreeNodeData.collectionId, resolveParentPath(locationTreeNodeData.parentNode));
+      await fetchEntriesForPath(sourceTreeNodeData.collectionId, resolveParentPath(sourceTreeNodeData.parentNode));
 
       return;
     },
@@ -234,107 +139,40 @@ export const useNodeDragAndDropHandler = () => {
 
   //To Another Collection
   const handleMoveToAnotherCollection = useCallback(
-    async (
-      sourceTreeNodeData: DragNode,
-      locationTreeNodeData: DropNode,
-      operation: "reorder-before" | "reorder-after" | "combine"
-    ) => {
-      const allEntries = getAllNestedEntries(sourceTreeNodeData.node);
-      const entriesPreparedForDrop = await prepareEntriesForDrop(allEntries);
-      const entriesWithoutName = await Promise.all(
-        entriesPreparedForDrop.map(async (entry) => {
-          const pathWithoutName = await getPathWithoutName(entry);
-
-          return {
-            ...entry,
-            path: pathWithoutName,
-          };
-        })
-      );
-
-      const dropOrder =
+    async (sourceTreeNodeData: DragNode, locationTreeNodeData: DropNode, operation: Operation) => {
+      const dropIndex =
         operation === "reorder-before"
           ? locationTreeNodeData.node.order! - 0.5
           : locationTreeNodeData.node.order! + 0.5;
 
-      const sortedParentNodes = sortObjectsByOrder(locationTreeNodeData.parentNode.childNodes);
+      const targetEntriesToUpdate = reorderedNodesForDifferentDirPayload({
+        node: locationTreeNodeData.parentNode,
+        newNode: sourceTreeNodeData.node,
+        moveToIndex: dropIndex,
+      }).filter((entry) => {
+        if ("ITEM" in entry) {
+          return entry.ITEM.id !== sourceTreeNodeData.node.id;
+        } else {
+          return entry.DIR.id !== sourceTreeNodeData.node.id;
+        }
+      });
 
-      const dropParentNodesWithNewOrders = [
-        ...sortedParentNodes.slice(0, dropOrder),
-        sourceTreeNodeData.node,
-        ...sortedParentNodes.slice(dropOrder),
-      ].map((entry, index) => ({ ...entry, order: index + 1 }));
-      const newOrder = dropParentNodesWithNewOrders.findIndex((entry) => entry.id === sourceTreeNodeData.node.id) + 1;
-
-      const dropParentEntriesToUpdate = dropParentNodesWithNewOrders
-        .slice(dropOrder + 1)
-        .map((entry): BatchUpdateEntryKind => {
-          if (entry.kind === "Dir") {
-            return {
-              DIR: {
-                id: entry.id,
-                order: entry.order,
-              },
-            };
-          } else {
-            return {
-              ITEM: {
-                id: entry.id,
-                order: entry.order,
-                queryParamsToAdd: [],
-                queryParamsToUpdate: [],
-                queryParamsToRemove: [],
-                pathParamsToAdd: [],
-                pathParamsToUpdate: [],
-                pathParamsToRemove: [],
-                headersToAdd: [],
-                headersToUpdate: [],
-                headersToRemove: [],
-              },
-            };
-          }
-        });
-
-      const entriesAfterDeletedNodesWithUpdatedOrders = sourceTreeNodeData.parentNode.childNodes
-        .filter((entry) => entry.order! > sourceTreeNodeData.node.order!)
-        .map((entry): BatchUpdateEntryKind => {
-          if (entry.kind === "Dir") {
-            return {
-              DIR: {
-                id: entry.id,
-                order: entry.order! - 1,
-              },
-            };
-          } else {
-            return {
-              ITEM: {
-                id: entry.id,
-                order: entry.order! - 1,
-                queryParamsToAdd: [],
-                queryParamsToUpdate: [],
-                queryParamsToRemove: [],
-                pathParamsToAdd: [],
-                pathParamsToUpdate: [],
-                pathParamsToRemove: [],
-                headersToAdd: [],
-                headersToUpdate: [],
-                headersToRemove: [],
-              },
-            };
-          }
-        });
+      const updatedSourceEntriesPayload = siblingsAfterRemovalPayload({
+        nodes: sourceTreeNodeData.parentNode.childNodes,
+        removedNode: sourceTreeNodeData.node,
+      });
 
       await batchUpdateCollectionEntry({
         collectionId: sourceTreeNodeData.collectionId,
         entries: {
-          entries: entriesAfterDeletedNodesWithUpdatedOrders,
+          entries: updatedSourceEntriesPayload,
         },
       });
 
       await batchUpdateCollectionEntry({
         collectionId: locationTreeNodeData.collectionId,
         entries: {
-          entries: dropParentEntriesToUpdate,
+          entries: targetEntriesToUpdate,
         },
       });
 
@@ -343,14 +181,18 @@ export const useNodeDragAndDropHandler = () => {
         input: { id: sourceTreeNodeData.node.id },
       });
 
+      const newDropOrder =
+        operation === "reorder-before" ? locationTreeNodeData.node.order! : locationTreeNodeData.node.order! + 1;
+      const allEntries = getAllNestedEntries(sourceTreeNodeData.node);
+      const nestedEntriesWithoutName = await prepareNestedDirEntriesForDrop(allEntries);
       const batchCreateEntryInput = await Promise.all(
-        entriesWithoutName.map(async (entry, index) => {
+        nestedEntriesWithoutName.map(async (entry, index) => {
           if (index === 0) {
             return createEntryKind({
               name: entry.name,
               path: "path" in locationTreeNodeData.parentNode ? locationTreeNodeData.parentNode.path.raw : "",
               isAddingFolder: entry.kind === "Dir",
-              order: newOrder,
+              order: newDropOrder,
               protocol: entry.protocol,
               class: "Endpoint",
             });
@@ -402,36 +244,15 @@ export const useNodeDragAndDropHandler = () => {
         input: { id: sourceTreeNodeData.node.id },
       });
 
-      const sourceEntriesToUpdate = sourceTreeNodeData.parentNode.childNodes
-        .filter((entry) => entry.id !== sourceTreeNodeData.node.id && entry.order! > sourceTreeNodeData.node.order!)
-        .map((entry): BatchUpdateEntryKind => {
-          if (entry.kind === "Dir") {
-            return {
-              DIR: { id: entry.id, order: entry.order! - 1 },
-            };
-          }
-
-          return {
-            ITEM: {
-              id: entry.id,
-              order: entry.order! - 1,
-              queryParamsToAdd: [],
-              queryParamsToUpdate: [],
-              queryParamsToRemove: [],
-              pathParamsToAdd: [],
-              pathParamsToUpdate: [],
-              pathParamsToRemove: [],
-              headersToAdd: [],
-              headersToUpdate: [],
-              headersToRemove: [],
-            },
-          };
-        });
+      const updatedSourceEntriesPayload = siblingsAfterRemovalPayload({
+        nodes: sourceTreeNodeData.parentNode.childNodes,
+        removedNode: sourceTreeNodeData.node,
+      });
 
       await batchUpdateCollectionEntry({
         collectionId: sourceTreeNodeData.collectionId,
         entries: {
-          entries: sourceEntriesToUpdate,
+          entries: updatedSourceEntriesPayload,
         },
       });
 
@@ -465,14 +286,8 @@ export const useNodeDragAndDropHandler = () => {
         input: { entries: batchCreateEntryInput },
       });
 
-      await fetchEntriesForPath(
-        locationTreeNodeData.collectionId,
-        "path" in locationTreeNodeData.parentNode ? locationTreeNodeData.parentNode.path.raw : ""
-      );
-      await fetchEntriesForPath(
-        sourceTreeNodeData.collectionId,
-        "path" in sourceTreeNodeData.parentNode ? sourceTreeNodeData.parentNode.path.raw : ""
-      );
+      await fetchEntriesForPath(locationTreeNodeData.collectionId, resolveParentPath(locationTreeNodeData.parentNode));
+      await fetchEntriesForPath(sourceTreeNodeData.collectionId, resolveParentPath(sourceTreeNodeData.parentNode));
 
       return;
     },
@@ -483,17 +298,8 @@ export const useNodeDragAndDropHandler = () => {
   const handleCombineToAnotherCollectionRoot = useCallback(
     async (sourceTreeNodeData: DragNode, locationTreeRootNodeData: DropRootNode) => {
       const allEntries = getAllNestedEntries(sourceTreeNodeData.node);
-      const entriesPreparedForDrop = await prepareEntriesForDrop(allEntries);
-      const entriesWithoutName = await Promise.all(
-        entriesPreparedForDrop.map(async (entry) => {
-          const pathWithoutName = await getPathWithoutName(entry);
+      const entriesWithoutName = await prepareNestedDirEntriesForDrop(allEntries);
 
-          return {
-            ...entry,
-            path: pathWithoutName,
-          };
-        })
-      );
       const newOrder = locationTreeRootNodeData.node.childNodes.length + 1;
 
       await deleteCollectionEntry({
@@ -501,30 +307,10 @@ export const useNodeDragAndDropHandler = () => {
         input: { id: sourceTreeNodeData.node.id },
       });
 
-      const sourceEntriesToUpdate = sourceTreeNodeData.parentNode.childNodes
-        .filter((entry) => entry.id !== sourceTreeNodeData.node.id && entry.order! > sourceTreeNodeData.node.order!)
-        .map((entry): BatchUpdateEntryKind => {
-          if (entry.kind === "Dir") {
-            return {
-              DIR: { id: entry.id, order: entry.order! - 1 },
-            };
-          }
-          return {
-            ITEM: {
-              id: entry.id,
-              order: entry.order! - 1,
-              queryParamsToAdd: [],
-              queryParamsToUpdate: [],
-              queryParamsToRemove: [],
-              pathParamsToAdd: [],
-              pathParamsToUpdate: [],
-              pathParamsToRemove: [],
-              headersToAdd: [],
-              headersToUpdate: [],
-              headersToRemove: [],
-            },
-          };
-        });
+      const updatedSourceEntriesPayload = siblingsAfterRemovalPayload({
+        nodes: sourceTreeNodeData.parentNode.childNodes,
+        removedNode: sourceTreeNodeData.node,
+      });
 
       const batchCreateEntryInput = await Promise.all(
         entriesWithoutName.map(async (entry, index) => {
@@ -555,7 +341,7 @@ export const useNodeDragAndDropHandler = () => {
       await batchUpdateCollectionEntry({
         collectionId: sourceTreeNodeData.collectionId,
         entries: {
-          entries: sourceEntriesToUpdate,
+          entries: updatedSourceEntriesPayload,
         },
       });
 
@@ -567,9 +353,7 @@ export const useNodeDragAndDropHandler = () => {
       });
 
       await fetchEntriesForPath(locationTreeRootNodeData.collectionId, "");
-
-      const sourceParentPath = "path" in sourceTreeNodeData.parentNode ? sourceTreeNodeData.parentNode.path.raw : "";
-      await fetchEntriesForPath(sourceTreeNodeData.collectionId, sourceParentPath);
+      await fetchEntriesForPath(sourceTreeNodeData.collectionId, resolveParentPath(sourceTreeNodeData.parentNode));
     },
     [deleteCollectionEntry, batchUpdateCollectionEntry, batchCreateCollectionEntry, fetchEntriesForPath]
   );

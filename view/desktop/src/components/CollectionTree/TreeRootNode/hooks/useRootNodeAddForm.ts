@@ -25,8 +25,6 @@ export const useRootNodeAddForm = (node: TreeCollectionRootNode) => {
       protocol: "Get",
     });
 
-    console.log({ newEntry });
-
     try {
       await createCollectionEntry({
         collectionId: id,
