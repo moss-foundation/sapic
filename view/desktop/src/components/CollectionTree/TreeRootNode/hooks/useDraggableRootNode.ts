@@ -35,7 +35,6 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [instruction, setInstruction] = useState<Instruction | null>(null);
   const [dirInstruction, setDirInstruction] = useState<Instruction | null>(null);
-  const [isChildDropBlocked, setIsChildDropBlocked] = useState<boolean | null>(null);
 
   useEffect(() => {
     const triggerElement = triggerRef.current;
@@ -129,12 +128,10 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
           }
         },
         onDragLeave: () => {
-          setIsChildDropBlocked(null);
           setInstruction(null);
           setDirInstruction(null);
         },
         onDrop: () => {
-          setIsChildDropBlocked(null);
           setInstruction(null);
           setDirInstruction(null);
         },
@@ -142,7 +139,7 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
     );
   }, [dirRef, displayMode, id, isRenamingNode, node, triggerRef]);
 
-  return { isDragging, isChildDropBlocked, instruction, dirInstruction };
+  return { isDragging, instruction, dirInstruction };
 };
 
 export const evaluateTreeNodeOperations = (

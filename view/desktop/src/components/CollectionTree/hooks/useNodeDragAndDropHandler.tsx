@@ -252,6 +252,31 @@ export const useNodeDragAndDropHandler = () => {
         input: { id: sourceTreeNodeData.node.id },
       });
 
+      const sourceEntriesToUpdate = sourceTreeNodeData.parentNode.childNodes
+        .filter((entry) => entry.id !== sourceTreeNodeData.node.id && entry.order! > sourceTreeNodeData.node.order!)
+        .map((entry): BatchUpdateEntryKind => {
+          if (entry.kind === "Dir") {
+            return {
+              DIR: { id: entry.id, order: entry.order! - 1 },
+            };
+          }
+          return {
+            ITEM: {
+              id: entry.id,
+              order: entry.order! - 1,
+              queryParamsToAdd: [],
+              queryParamsToUpdate: [],
+              queryParamsToRemove: [],
+              pathParamsToAdd: [],
+              pathParamsToUpdate: [],
+              pathParamsToRemove: [],
+              headersToAdd: [],
+              headersToUpdate: [],
+              headersToRemove: [],
+            },
+          };
+        });
+
       const batchCreateEntryInput = await Promise.all(
         entriesWithoutName.map(async (entry, index) => {
           const newEntryPath = await join(entry.path.raw);
@@ -278,6 +303,13 @@ export const useNodeDragAndDropHandler = () => {
         })
       );
 
+      await batchUpdateCollectionEntry({
+        collectionId: sourceTreeNodeData.collectionId,
+        entries: {
+          entries: sourceEntriesToUpdate,
+        },
+      });
+
       await batchCreateCollectionEntry({
         collectionId: locationTreeRootNodeData.collectionId,
         input: {
@@ -286,9 +318,11 @@ export const useNodeDragAndDropHandler = () => {
       });
 
       await fetchEntriesForPath(locationTreeRootNodeData.collectionId, "");
-      await fetchEntriesForPath(sourceTreeNodeData.collectionId, sourceTreeNodeData.parentNode.path.raw);
+
+      const sourceParentPath = "path" in sourceTreeNodeData.parentNode ? sourceTreeNodeData.parentNode.path.raw : "";
+      await fetchEntriesForPath(sourceTreeNodeData.collectionId, sourceParentPath);
     },
-    [deleteCollectionEntry, batchCreateCollectionEntry, fetchEntriesForPath]
+    [deleteCollectionEntry, batchUpdateCollectionEntry, batchCreateCollectionEntry, fetchEntriesForPath]
   );
 
   const handleMoveToAnotherCollection = useCallback(
@@ -381,6 +415,7 @@ export const useNodeDragAndDropHandler = () => {
             };
           }
         });
+
       await batchUpdateCollectionEntry({
         collectionId: sourceTreeNodeData.collectionId,
         entries: {
@@ -459,6 +494,39 @@ export const useNodeDragAndDropHandler = () => {
         input: { id: sourceTreeNodeData.node.id },
       });
 
+      const sourceEntriesToUpdate = sourceTreeNodeData.parentNode.childNodes
+        .filter((entry) => entry.id !== sourceTreeNodeData.node.id && entry.order! > sourceTreeNodeData.node.order!)
+        .map((entry): BatchUpdateEntryKind => {
+          if (entry.kind === "Dir") {
+            return {
+              DIR: { id: entry.id, order: entry.order! - 1 },
+            };
+          }
+
+          return {
+            ITEM: {
+              id: entry.id,
+              order: entry.order! - 1,
+              queryParamsToAdd: [],
+              queryParamsToUpdate: [],
+              queryParamsToRemove: [],
+              pathParamsToAdd: [],
+              pathParamsToUpdate: [],
+              pathParamsToRemove: [],
+              headersToAdd: [],
+              headersToUpdate: [],
+              headersToRemove: [],
+            },
+          };
+        });
+
+      await batchUpdateCollectionEntry({
+        collectionId: sourceTreeNodeData.collectionId,
+        entries: {
+          entries: sourceEntriesToUpdate,
+        },
+      });
+
       const batchCreateEntryInput = await Promise.all(
         entriesPreparedForCreation.map(async (entry, index) => {
           if (index === 0) {
@@ -500,7 +568,7 @@ export const useNodeDragAndDropHandler = () => {
 
       return;
     },
-    [batchCreateCollectionEntry, deleteCollectionEntry, fetchEntriesForPath]
+    [batchCreateCollectionEntry, batchUpdateCollectionEntry, deleteCollectionEntry, fetchEntriesForPath]
   );
 
   useEffect(() => {
