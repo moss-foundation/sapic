@@ -1,9 +1,12 @@
+use crate::git::{ContributorInfo, GitClient, OwnerInfo};
 use async_trait::async_trait;
 use git2::{RemoteCallbacks, Signature};
 use joinerror::OptionExt;
+use moss_app_delegate::{AppDelegate, broadcast::ToLocation};
 use moss_applib::AppRuntime;
 use moss_fs::{FileSystem, RemoveOptions};
 use moss_git::{
+    errors::DirtyWorktree,
     models::{primitives::FileStatus, types::BranchInfo},
     repository::Repository,
     url::GitUrl,
@@ -12,8 +15,6 @@ use moss_git_hosting_provider::GitProviderKind;
 use moss_user::models::primitives::AccountId;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;
-
-use crate::git::{ContributorInfo, GitClient, OwnerInfo};
 
 pub struct VcsSummary {
     pub kind: GitProviderKind,
@@ -32,7 +33,13 @@ pub trait CollectionVcs<R: AppRuntime>: Send + Sync {
     fn provider(&self) -> GitProviderKind;
 
     async fn stage_and_commit(&self, paths: Vec<PathBuf>, message: &str) -> joinerror::Result<()>;
-    async fn push<'a>(&self, ctx: &R::AsyncContext) -> joinerror::Result<()>;
+    async fn push(&self, ctx: &R::AsyncContext) -> joinerror::Result<()>;
+    async fn pull(
+        &self,
+        ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
+    ) -> joinerror::Result<()>;
+    async fn fetch(&self, ctx: &R::AsyncContext) -> joinerror::Result<()>;
     async fn discard_changes(&self, paths: Vec<PathBuf>) -> joinerror::Result<()>;
 }
 
@@ -100,10 +107,12 @@ impl<R: AppRuntime> CollectionVcs<R> for Vcs<R> {
             .as_ref()
             .ok_or_join_err::<()>("repository handle is dropped")?
             .current_branch()?;
+        dbg!(&current_branch_name);
         let (ahead, behind) = repo_lock
             .as_ref()
             .unwrap()
             .graph_ahead_behind(&current_branch_name)?;
+        dbg!(&ahead, &behind);
 
         Ok(VcsSummary {
             kind: self.client.kind(),
@@ -160,7 +169,7 @@ impl<R: AppRuntime> CollectionVcs<R> for Vcs<R> {
     }
 
     // Pushing currently checked-out branch to the configured refspec+remote
-    async fn push<'a>(&self, ctx: &R::AsyncContext) -> joinerror::Result<()> {
+    async fn push(&self, ctx: &R::AsyncContext) -> joinerror::Result<()> {
         let repo_lock = self.repository.read().await;
         let repo_ref = repo_lock
             .as_ref()
@@ -174,6 +183,61 @@ impl<R: AppRuntime> CollectionVcs<R> for Vcs<R> {
         });
 
         repo_ref.push(None, None, None, false, cb)?;
+
+        Ok(())
+    }
+
+    async fn pull(
+        &self,
+        ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
+    ) -> joinerror::Result<()> {
+        let repo_lock = self.repository.write().await;
+        let repo_ref = repo_lock
+            .as_ref()
+            .ok_or_join_err::<()>("repository handle is dropped")?;
+
+        let username = self.client.username();
+        let token = self.client.session().token(ctx).await?;
+        let mut cb = RemoteCallbacks::new();
+        cb.credentials(move |_url, username_from_url, _allowed| {
+            git2::Cred::userpass_plaintext(&username_from_url.unwrap_or(&username), &token)
+        });
+
+        let result = repo_ref.pull(None, cb);
+        if result.is_ok() {
+            return Ok(());
+        }
+
+        let e = result.unwrap_err();
+        if e.is::<DirtyWorktree>() {
+            // Prompt the user to stash before pulling
+            let _ = app_delegate.emit_oneshot(ToLocation::Toast {
+                activity_id: "pull_dirty_worktree",
+                title: "Failed to pull due to dirty worktre".to_string(),
+                detail: Some(
+                    "Please stash your changes before pulling to avoid loss of local changes"
+                        .to_string(),
+                ),
+            });
+        }
+        Err(e)
+    }
+
+    async fn fetch(&self, ctx: &R::AsyncContext) -> joinerror::Result<()> {
+        let repo_lock = self.repository.read().await;
+        let repo_ref = repo_lock
+            .as_ref()
+            .ok_or_join_err::<()>("repository handle is dropped")?;
+
+        let username = self.client.username();
+        let token = self.client.session().token(ctx).await?;
+        let mut cb = RemoteCallbacks::new();
+        cb.credentials(move |_url, username_from_url, _allowed| {
+            git2::Cred::userpass_plaintext(&username_from_url.unwrap_or(&username), &token)
+        });
+
+        repo_ref.fetch(None, cb)?;
 
         Ok(())
     }

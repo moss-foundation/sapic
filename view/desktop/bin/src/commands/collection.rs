@@ -146,8 +146,10 @@ pub async fn execute_vcs_operation<'a, R: tauri::Runtime>(
         app,
         collection_id,
         options,
-        |ctx, _app_delegate, collection| async move {
-            collection.execute_vcs_operation(&ctx, input).await
+        |ctx, app_delegate, collection| async move {
+            collection
+                .execute_vcs_operation(&ctx, &app_delegate, input)
+                .await
         },
     )
     .await

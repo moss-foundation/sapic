@@ -177,4 +177,6 @@ export type UpdateQueryParamParams = {
 export type VcsOperation =
   | { "COMMIT": { message: string; paths: Array<string>; push: boolean } }
   | { "DISCARD": { paths: Array<string> } }
-  | "PUSH";
+  | "PUSH"
+  | "PULL"
+  | "FETCH";

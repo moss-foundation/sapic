@@ -1,12 +1,13 @@
 import { useState } from "react";
 
 import { invokeTauriIpc } from "@/lib/backend/tauri.ts";
-import { EntryChange, ListChangesOutput } from "@repo/moss-workspace";
 import { ExecuteVcsOperationInput, ExecuteVcsOperationOutput } from "@repo/moss-collection";
+import { EntryChange, ListChangesOutput } from "@repo/moss-workspace";
 
 const GitTest = () => {
   const [entryChanges, setEntryChanges] = useState<EntryChange[]>([]);
   const [selectedKeys, setSelectedKeys] = useState<Record<string, boolean>>({});
+  const [targetCollectionId, setTargetCollectionId] = useState<string>("");
   const [push, setPush] = useState(false);
 
   const keyFor = (c: EntryChange) => `${c.collectionId}:${c.path}`;
@@ -85,6 +86,45 @@ const GitTest = () => {
     }
   }
 
+  async function handleFetchButton() {
+    const input: ExecuteVcsOperationInput = {
+      operation: "FETCH",
+    };
+    const result = await invokeTauriIpc<ExecuteVcsOperationOutput>("execute_vcs_operation", {
+      collectionId: targetCollectionId,
+      input: input,
+    });
+    if (result.status === "error") {
+      throw new Error(String(result.status));
+    }
+  }
+
+  async function handlePullButton() {
+    const input: ExecuteVcsOperationInput = {
+      operation: "PULL",
+    };
+    const result = await invokeTauriIpc<ExecuteVcsOperationOutput>("execute_vcs_operation", {
+      collectionId: targetCollectionId,
+      input: input,
+    });
+    if (result.status === "error") {
+      throw new Error(String(result.status));
+    }
+  }
+
+  async function handlePushButton() {
+    const input: ExecuteVcsOperationInput = {
+      operation: "PUSH",
+    };
+    const result = await invokeTauriIpc<ExecuteVcsOperationOutput>("execute_vcs_operation", {
+      collectionId: targetCollectionId,
+      input: input,
+    });
+    if (result.status === "error") {
+      throw new Error(String(result.status));
+    }
+  }
+
   const selectedCount = entryChanges.reduce((acc, ch) => acc + (selectedKeys[keyFor(ch)] ? 1 : 0), 0);
 
   return (
@@ -111,6 +151,34 @@ const GitTest = () => {
           disabled={selectedCount === 0}
         >
           Discard Selected ({selectedCount})
+        </button>
+      </div>
+
+      <div>
+        <input
+          type="text"
+          className="bg-white"
+          placeholder="Collection Id"
+          onChange={(e) => setTargetCollectionId(e.target.value)}
+          value={targetCollectionId}
+        />
+        <button
+          className="cursor-pointer rounded bg-pink-500 p-2 text-white hover:bg-pink-600"
+          onClick={handleFetchButton}
+        >
+          Fetch Collection {`${targetCollectionId}`}
+        </button>
+        <button
+          className="cursor-pointer rounded bg-purple-500 p-2 text-white hover:bg-purple-600"
+          onClick={handlePullButton}
+        >
+          Pull Collection {`${targetCollectionId}`}
+        </button>
+        <button
+          className="cursor-pointer rounded bg-yellow-500 p-2 text-white hover:bg-yellow-600"
+          onClick={handlePushButton}
+        >
+          Push Collection {`${targetCollectionId}`}
         </button>
       </div>
 

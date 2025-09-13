@@ -1,4 +1,5 @@
 use joinerror::OptionExt;
+use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 
 use crate::{
@@ -13,6 +14,7 @@ impl<R: AppRuntime> Collection<R> {
     pub async fn execute_vcs_operation(
         &self,
         ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
         input: ExecuteVcsOperationInput,
     ) -> joinerror::Result<ExecuteVcsOperationOutput> {
         let vcs = self.vcs().ok_or_join_err::<()>("vcs not found")?;
@@ -34,6 +36,12 @@ impl<R: AppRuntime> Collection<R> {
             }
             VcsOperation::Push => {
                 vcs.push(ctx).await?;
+            }
+            VcsOperation::Pull => {
+                vcs.pull(ctx, app_delegate).await?;
+            }
+            VcsOperation::Fetch => {
+                vcs.fetch(ctx).await?;
             }
         }
 

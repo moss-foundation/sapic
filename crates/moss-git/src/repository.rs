@@ -1,17 +1,17 @@
-use crate::constants;
-pub use crate::models::primitives::FileStatus;
 use derive_more::Deref;
 use git2::{
-    BranchType, IndexAddOption, IntoCString, PushOptions, RemoteCallbacks, Signature, Status,
-    StatusOptions,
+    BranchType, IndexAddOption, IntoCString, PushOptions, RemoteCallbacks, Signature, StashFlags,
+    Status, StatusOptions,
     build::{CheckoutBuilder, RepoBuilder},
 };
-use joinerror::{OptionExt, ResultExt};
+use joinerror::{Error, OptionExt, ResultExt};
 use moss_logging::session;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
 };
+
+use crate::{constants, errors::DirtyWorktree, models::primitives::FileStatus};
 
 #[derive(Deref)]
 pub struct Repository {
@@ -440,39 +440,15 @@ impl Repository {
     }
 
     // Helper functions
-
-    fn fast_forward(
-        &self,
-        our_reference: &mut git2::Reference,
-        incoming_commit: &git2::AnnotatedCommit,
-    ) -> joinerror::Result<()> {
-        let name = match our_reference.name() {
-            Some(s) => s.to_string(),
-            None => String::from_utf8_lossy(our_reference.name_bytes()).to_string(),
-        };
-        let msg = format!(
-            "Fast-Forward: Setting {} to id: {}",
-            name,
-            incoming_commit.id()
-        );
-        println!("{}", msg);
-        our_reference.set_target(incoming_commit.id(), &msg)?;
-        self.inner.set_head(&name)?;
-        self.inner.checkout_head(Some(
-            git2::build::CheckoutBuilder::default()
-                // TODO: Handle dirty workspace state (stashing?)
-                .force(),
-        ))?;
-        Ok(())
-    }
-
+}
+impl Repository {
     fn merge_internal(&self, incoming_commit: git2::AnnotatedCommit) -> joinerror::Result<()> {
-        let head = self.inner.head()?;
-        let our_branch = head.name().unwrap_or("main");
+        let our_branch = self.current_branch()?;
 
         let analysis = self.inner.merge_analysis(&[&incoming_commit])?;
+        dbg!("analysis success");
         if analysis.0.is_fast_forward() {
-            println!("Doing a fast forward");
+            session::info!("fast forwarding");
             // do a fast forward
             let refname = format!("refs/heads/{}", our_branch);
             match self.inner.find_reference(&refname) {
@@ -499,6 +475,7 @@ impl Repository {
                 }
             };
         } else if analysis.0.is_normal() {
+            session::info!("normal merging");
             // do a normal merge
             let head_commit = self
                 .inner
@@ -507,6 +484,41 @@ impl Repository {
         } else {
             println!("Nothing to do...");
         }
+        Ok(())
+    }
+    fn fast_forward(
+        &self,
+        our_reference: &mut git2::Reference,
+        incoming_commit: &git2::AnnotatedCommit,
+    ) -> joinerror::Result<()> {
+        let name = match our_reference.name() {
+            Some(s) => s.to_string(),
+            None => String::from_utf8_lossy(our_reference.name_bytes()).to_string(),
+        };
+        let msg = format!(
+            "Fast-Forward: Setting {} to id: {}",
+            name,
+            incoming_commit.id()
+        );
+
+        println!("{}", msg);
+
+        // If the worktree is dirty, we stop and prompt the user to stash local changes
+        if self.is_worktree_dirty()? {
+            // TODO: Prompt the user to stash local changes
+            return Err(Error::new::<DirtyWorktree>(
+                "cannot fast-forward when the worktree is dirty",
+            ));
+        }
+
+        // fast-forwarding
+        our_reference.set_target(incoming_commit.id(), &msg)?;
+        self.inner.set_head(&name)?;
+        self.inner.checkout_head(Some(
+            // The worktree must be clean
+            &mut git2::build::CheckoutBuilder::default(),
+        ))?;
+
         Ok(())
     }
 
@@ -529,7 +541,7 @@ impl Repository {
             .merge_trees(&ancestor, &our_tree, &incoming_tree, None)?;
 
         if idx.has_conflicts() {
-            println!("Merge conflicts detected...");
+            session::warn!("Conflict detected");
             self.inner.checkout_index(Some(&mut idx), None)?;
             return Ok(());
         }
@@ -554,5 +566,20 @@ impl Repository {
         // Set working tree to match head.
         self.inner.checkout_head(None)?;
         Ok(())
+    }
+
+    fn is_worktree_dirty(&self) -> joinerror::Result<bool> {
+        let mut opts = git2::StatusOptions::new();
+        opts.include_untracked(true)
+            .include_ignored(false)
+            .recurse_untracked_dirs(true)
+            .show(git2::StatusShow::IndexAndWorkdir);
+
+        let statuses = self.inner.statuses(Some(&mut opts))?;
+        Ok(statuses.iter().any(|e| {
+            let s = e.status();
+            // treat anything that is not CURRENT (unmodified) as dirty
+            s != git2::Status::CURRENT
+        }))
     }
 }
