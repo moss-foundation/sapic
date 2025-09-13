@@ -11,7 +11,11 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::{constants, errors::DirtyWorktree, models::primitives::FileStatus};
+use crate::{
+    constants,
+    errors::{Conflicts, DirtyWorktree},
+    models::primitives::FileStatus,
+};
 
 #[derive(Deref)]
 pub struct Repository {
@@ -55,28 +59,6 @@ impl Repository {
             .remote(remote_name.unwrap_or(constants::DEFAULT_REMOTE_NAME), url)?;
 
         Ok(())
-    }
-
-    pub fn list_remotes(&self) -> joinerror::Result<HashMap<String, String>> {
-        let remote_names = self.inner.remotes()?;
-        let mut result = HashMap::with_capacity(remote_names.len());
-
-        for remote_name in remote_names.iter() {
-            if remote_name.is_none() {
-                continue;
-            }
-
-            let remote_name = remote_name.unwrap();
-            let remote = self.inner.find_remote(remote_name)?;
-            let url = remote.url();
-            if url.is_none() {
-                continue;
-            }
-
-            result.insert(remote_name.to_string(), url.unwrap().to_string());
-        }
-
-        Ok(result)
     }
 
     pub fn list_branches(&self, branch_type: Option<BranchType>) -> joinerror::Result<Vec<String>> {
@@ -422,7 +404,6 @@ impl Repository {
             }
 
             let path = PathBuf::from(path.unwrap());
-
             // FIXME: Technically if the status begins with INDEX_, it means they are already staged
             // This should never happen if the user interacts with git only through our application
             // Since we will only stage files immediately before making a commit
@@ -446,7 +427,6 @@ impl Repository {
         let our_branch = self.current_branch()?;
 
         let analysis = self.inner.merge_analysis(&[&incoming_commit])?;
-        dbg!("analysis success");
         if analysis.0.is_fast_forward() {
             session::info!("fast forwarding");
             // do a fast forward
@@ -482,7 +462,6 @@ impl Repository {
                 .reference_to_annotated_commit(&self.inner.head()?)?;
             self.normal_merge(&head_commit, &incoming_commit)?;
         } else {
-            println!("Nothing to do...");
         }
         Ok(())
     }
@@ -542,8 +521,7 @@ impl Repository {
 
         if idx.has_conflicts() {
             session::warn!("Conflict detected");
-            self.inner.checkout_index(Some(&mut idx), None)?;
-            return Ok(());
+            return Err(Error::new::<Conflicts>("Cannot merge due to conflicts"));
         }
         let result_tree = self.inner.find_tree(idx.write_tree_to(&self.inner)?)?;
 
@@ -582,4 +560,49 @@ impl Repository {
             s != git2::Status::CURRENT
         }))
     }
+}
+
+// Useful for debugging
+fn status_label(status: Status) -> Vec<&'static str> {
+    let mut v = Vec::new();
+    if status.is_empty() {
+        v.push("clean");
+        return v;
+    }
+    if status.contains(Status::INDEX_NEW) {
+        v.push("INDEX_NEW (staged new)");
+    }
+    if status.contains(Status::INDEX_MODIFIED) {
+        v.push("INDEX_MODIFIED (staged modified)");
+    }
+    if status.contains(Status::INDEX_DELETED) {
+        v.push("INDEX_DELETED (staged deleted)");
+    }
+    if status.contains(Status::INDEX_RENAMED) {
+        v.push("INDEX_RENAMED");
+    }
+    if status.contains(Status::INDEX_TYPECHANGE) {
+        v.push("INDEX_TYPECHANGE");
+    }
+
+    if status.contains(Status::WT_NEW) {
+        v.push("WT_NEW (untracked)");
+    }
+    if status.contains(Status::WT_MODIFIED) {
+        v.push("WT_MODIFIED (modified, unstaged)");
+    }
+    if status.contains(Status::WT_DELETED) {
+        v.push("WT_DELETED (deleted, unstaged)");
+    }
+    if status.contains(Status::WT_RENAMED) {
+        v.push("WT_RENAMED");
+    }
+    if status.contains(Status::WT_TYPECHANGE) {
+        v.push("WT_TYPECHANGE");
+    }
+
+    if status.contains(Status::CONFLICTED) {
+        v.push("CONFLICTED");
+    }
+    v
 }

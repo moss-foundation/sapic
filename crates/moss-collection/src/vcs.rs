@@ -1,4 +1,3 @@
-use crate::git::{ContributorInfo, GitClient, OwnerInfo};
 use async_trait::async_trait;
 use git2::{RemoteCallbacks, Signature};
 use joinerror::OptionExt;
@@ -6,7 +5,7 @@ use moss_app_delegate::{AppDelegate, broadcast::ToLocation};
 use moss_applib::AppRuntime;
 use moss_fs::{FileSystem, RemoveOptions};
 use moss_git::{
-    errors::DirtyWorktree,
+    errors::{Conflicts, DirtyWorktree},
     models::{primitives::FileStatus, types::BranchInfo},
     repository::Repository,
     url::GitUrl,
@@ -15,6 +14,8 @@ use moss_git_hosting_provider::GitProviderKind;
 use moss_user::models::primitives::AccountId;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;
+
+use crate::git::{ContributorInfo, GitClient, OwnerInfo};
 
 pub struct VcsSummary {
     pub kind: GitProviderKind,
@@ -214,9 +215,20 @@ impl<R: AppRuntime> CollectionVcs<R> for Vcs<R> {
             // Prompt the user to stash before pulling
             let _ = app_delegate.emit_oneshot(ToLocation::Toast {
                 activity_id: "pull_dirty_worktree",
-                title: "Failed to pull due to dirty worktre".to_string(),
+                title: "Failed to pull due to dirty worktree".to_string(),
                 detail: Some(
                     "Please stash your changes before pulling to avoid loss of local changes"
+                        .to_string(),
+                ),
+            });
+        } else if e.is::<Conflicts>() {
+            // Right now our app cannot handle conflict resolution
+            // Thus we have to reject merge/pull that result in conflicts
+            let _ = app_delegate.emit_oneshot(ToLocation::Toast {
+                activity_id: "pull_conflicts",
+                title: "Failed to pull due to dirty worktree".to_string(),
+                detail: Some(
+                    "Please manually pull and resolve conflicts, as the functionality is WIP"
                         .to_string(),
                 ),
             });
