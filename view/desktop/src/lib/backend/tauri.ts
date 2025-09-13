@@ -23,6 +23,7 @@ export type TauriIpcCommand =
   | "update_workspace"
   | "close_workspace"
   | "update_profile"
+  | "get_profile"
   //
   // Workspace
   //

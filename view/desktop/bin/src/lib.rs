@@ -204,6 +204,7 @@ pub async fn run<R: TauriRuntime>() {
             commands::close_workspace,
             commands::cancel_request,
             commands::update_profile,
+            commands::get_profile,
             //
             // Workspace
             //

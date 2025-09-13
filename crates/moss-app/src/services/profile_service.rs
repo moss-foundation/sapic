@@ -21,7 +21,10 @@ use moss_user::{
         github::{GitHubInitialToken, GitHubPAT},
         gitlab::{GitLabInitialToken, GitLabPAT},
     },
-    models::primitives::{AccountId, AccountKind, ProfileId, SessionKind},
+    models::{
+        primitives::{AccountId, AccountKind, ProfileId, SessionKind},
+        types::AccountInfo,
+    },
     profile::Profile,
 };
 use std::{cell::LazyCell, collections::HashMap, path::Path, sync::Arc};
@@ -41,6 +44,11 @@ const DEFAULT_PROFILE: LazyCell<ProfileRegistryItem> = LazyCell::new(|| ProfileR
     accounts: vec![],
     is_default: Some(true),
 });
+
+pub(crate) struct ProfileDetails {
+    pub name: String,
+    pub accounts: Vec<AccountInfo>,
+}
 
 struct ServiceState<R: AppRuntime> {
     profiles: NonEmptyHashMap<ProfileId, ProfileRegistryItem>,
@@ -95,6 +103,24 @@ impl<R: AppRuntime> ProfileService<R> {
                 profiles: profiles,
                 active_profile: Arc::new(active_profile),
             }),
+        })
+    }
+
+    pub async fn profile(&self, id: &ProfileId) -> Option<ProfileDetails> {
+        let state_lock = self.state.read().await;
+        let profile = state_lock.profiles.get(id).cloned();
+        profile.map(|p| ProfileDetails {
+            name: p.name,
+            accounts: p
+                .accounts
+                .iter()
+                .map(|a| AccountInfo {
+                    id: a.id.clone(),
+                    username: a.username.clone(),
+                    host: a.host.clone(),
+                    kind: a.kind.clone(),
+                })
+                .collect(),
         })
     }
 

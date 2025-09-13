@@ -104,6 +104,19 @@ pub struct GetTranslationsOutput(#[ts(type = "JsonValue")] pub JsonValue);
 #[ts(export, export_to = "operations.ts")]
 pub struct ListLocalesOutput(pub Vec<LocaleInfo>);
 
+// Get Profile
+
+/// @category Operation
+#[derive(Debug, Serialize, Clone, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct GetProfileOutput {
+    pub id: ProfileId,
+    pub name: String,
+    pub accounts: Vec<AccountInfo>,
+}
+
 // Describe App
 
 /// @category Operation
