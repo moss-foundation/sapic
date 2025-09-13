@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use git2::{RemoteCallbacks, Signature};
 use joinerror::OptionExt;
 use moss_app_delegate::{AppDelegate, broadcast::ToLocation};
-use moss_applib::AppRuntime;
+use moss_applib::{AppRuntime, errors::Internal};
 use moss_fs::{FileSystem, RemoveOptions};
 use moss_git::{
     errors::{Conflicts, DirtyWorktree},
@@ -106,7 +106,7 @@ impl<R: AppRuntime> CollectionVcs<R> for Vcs<R> {
         let repo_lock = self.repository.read().await;
         let current_branch_name = repo_lock
             .as_ref()
-            .ok_or_join_err::<()>("repository handle is dropped")?
+            .ok_or_join_err::<Internal>("repository handle is dropped")?
             .current_branch()?;
         dbg!(&current_branch_name);
         let (ahead, behind) = repo_lock
@@ -144,7 +144,7 @@ impl<R: AppRuntime> CollectionVcs<R> for Vcs<R> {
         let repo_lock = self.repository.read().await;
         let repo_ref = repo_lock
             .as_ref()
-            .ok_or_join_err::<()>("repository handle is dropped")?;
+            .ok_or_join_err::<Internal>("repository handle is dropped")?;
 
         repo_ref.statuses()
     }
@@ -153,7 +153,7 @@ impl<R: AppRuntime> CollectionVcs<R> for Vcs<R> {
         let repo_lock = self.repository.read().await;
         let repo_ref = repo_lock
             .as_ref()
-            .ok_or_join_err::<()>("repository handle is dropped")?;
+            .ok_or_join_err::<Internal>("repository handle is dropped")?;
 
         repo_ref.stage_paths(paths)?;
         let username = self.client.username();
@@ -174,7 +174,7 @@ impl<R: AppRuntime> CollectionVcs<R> for Vcs<R> {
         let repo_lock = self.repository.read().await;
         let repo_ref = repo_lock
             .as_ref()
-            .ok_or_join_err::<()>("repository handle is dropped")?;
+            .ok_or_join_err::<Internal>("repository handle is dropped")?;
 
         let username = self.client.username();
         let token = self.client.session().token(ctx).await?;
@@ -196,7 +196,7 @@ impl<R: AppRuntime> CollectionVcs<R> for Vcs<R> {
         let repo_lock = self.repository.write().await;
         let repo_ref = repo_lock
             .as_ref()
-            .ok_or_join_err::<()>("repository handle is dropped")?;
+            .ok_or_join_err::<Internal>("repository handle is dropped")?;
 
         let username = self.client.username();
         let token = self.client.session().token(ctx).await?;
@@ -240,7 +240,7 @@ impl<R: AppRuntime> CollectionVcs<R> for Vcs<R> {
         let repo_lock = self.repository.read().await;
         let repo_ref = repo_lock
             .as_ref()
-            .ok_or_join_err::<()>("repository handle is dropped")?;
+            .ok_or_join_err::<Internal>("repository handle is dropped")?;
 
         let username = self.client.username();
         let token = self.client.session().token(ctx).await?;
@@ -258,7 +258,7 @@ impl<R: AppRuntime> CollectionVcs<R> for Vcs<R> {
         let repo_lock = self.repository.read().await;
         let repo_ref = repo_lock
             .as_ref()
-            .ok_or_join_err::<()>("repository handle is dropped")?;
+            .ok_or_join_err::<Internal>("repository handle is dropped")?;
 
         repo_ref.discard_changes(paths)?;
 

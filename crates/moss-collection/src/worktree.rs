@@ -778,6 +778,22 @@ async fn process_entry(
         .map(|n| n.to_string_lossy().to_string())
         .unwrap_or_else(|| path.to_string_lossy().to_string());
 
+    if fs.is_dir_empty(&abs_path).await? {
+        session::info!(format!(
+            "Deleting empty entry folder: {}",
+            abs_path.display()
+        ));
+        fs.remove_dir(
+            &abs_path,
+            RemoveOptions {
+                recursive: false,
+                ignore_if_not_exists: false,
+            },
+        )
+        .await?;
+        return Ok(None);
+    }
+
     if dir_config_path.exists() {
         let mut rdr = fs.open_file(&dir_config_path).await?;
         let model: EntryModel =
@@ -839,19 +855,6 @@ async fn process_entry(
             },
             desc,
         )));
-    } else if fs.is_dir_empty(&abs_path).await? {
-        session::info!(format!(
-            "Deleting empty entry folder: {}",
-            abs_path.display()
-        ));
-        fs.remove_dir(
-            &abs_path,
-            RemoveOptions {
-                recursive: false,
-                ignore_if_not_exists: false,
-            },
-        )
-        .await?;
     }
 
     Ok(None)
