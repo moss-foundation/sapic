@@ -1,5 +1,13 @@
 pub mod entry;
 
+use crate::{
+    constants::{self, COLLECTION_ROOT_PATH, DIR_CONFIG_FILENAME},
+    errors::{ErrorAlreadyExists, ErrorInvalidInput, ErrorNotFound},
+    models::primitives::{EntryClass, EntryId, EntryKind, EntryProtocol},
+    services::storage_service::StorageService,
+    storage::segments,
+    worktree::entry::{Entry, EntryDescription, edit::EntryEditing, model::EntryModel},
+};
 use anyhow::anyhow;
 use joinerror::OptionExt;
 use json_patch::{PatchOperation, ReplaceOperation, jsonptr::PointerBuf};
@@ -10,6 +18,7 @@ use moss_db::primitives::AnyValue;
 use moss_edit::json::EditOptions;
 use moss_fs::{CreateOptions, FileSystem, RemoveOptions, desanitize_path, utils::SanitizedPath};
 use moss_hcl::HclResultExt;
+use moss_logging::session;
 use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_text::sanitized::{desanitize, sanitize};
 use rustc_hash::FxHashMap;
@@ -24,15 +33,6 @@ use std::{
 use tokio::{
     fs,
     sync::{RwLock, mpsc, watch},
-};
-
-use crate::{
-    constants::{self, COLLECTION_ROOT_PATH, DIR_CONFIG_FILENAME},
-    errors::{ErrorAlreadyExists, ErrorInvalidInput, ErrorNotFound},
-    models::primitives::{EntryClass, EntryId, EntryKind, EntryProtocol},
-    services::storage_service::StorageService,
-    storage::segments,
-    worktree::entry::{Entry, EntryDescription, edit::EntryEditing, model::EntryModel},
 };
 
 const CLASS_TO_DIR_NAME: LazyCell<FxHashMap<EntryClass, &str>> = LazyCell::new(|| {
@@ -808,9 +808,7 @@ async fn process_entry(
             },
             desc,
         )));
-    }
-
-    if item_config_path.exists() {
+    } else if item_config_path.exists() {
         let mut rdr = fs.open_file(&item_config_path).await?;
         let model: EntryModel =
             hcl::from_reader(&mut rdr).join_err::<()>("failed to parse item configuration")?;
@@ -841,6 +839,19 @@ async fn process_entry(
             },
             desc,
         )));
+    } else if fs.is_dir_empty(&abs_path).await? {
+        session::info!(format!(
+            "Deleting empty entry folder: {}",
+            abs_path.display()
+        ));
+        fs.remove_dir(
+            &abs_path,
+            RemoveOptions {
+                recursive: false,
+                ignore_if_not_exists: false,
+            },
+        )
+        .await?;
     }
 
     Ok(None)

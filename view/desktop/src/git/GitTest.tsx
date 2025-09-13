@@ -58,6 +58,33 @@ const GitTest = () => {
     }
   }
 
+  async function handleDiscardButton() {
+    const selected = entryChanges.filter((ch) => selectedKeys[keyFor(ch)]);
+
+    const grouped: Record<string, EntryChange[]> = {};
+    for (const ch of selected) {
+      if (!grouped[ch.collectionId]) grouped[ch.collectionId] = [];
+      grouped[ch.collectionId].push(ch);
+    }
+
+    for (const collectionId in grouped) {
+      const input: ExecuteVcsOperationInput = {
+        operation: {
+          "DISCARD": {
+            paths: grouped[collectionId].map((ch) => ch.path),
+          },
+        },
+      };
+      const result = await invokeTauriIpc<ExecuteVcsOperationOutput>("execute_vcs_operation", {
+        collectionId: collectionId,
+        input: input,
+      });
+      if (result.status === "error") {
+        throw new Error(String(result.status));
+      }
+    }
+  }
+
   const selectedCount = entryChanges.reduce((acc, ch) => acc + (selectedKeys[keyFor(ch)] ? 1 : 0), 0);
 
   return (
@@ -74,10 +101,17 @@ const GitTest = () => {
           onClick={handleCommitButton}
           disabled={selectedCount === 0}
         >
-          Collect Selected ({selectedCount})
+          Commit Selected ({selectedCount})
         </button>
         <label>Push:</label>
         <input type="checkbox" checked={push} onChange={() => togglePush()} />
+        <button
+          className={`cursor-pointer rounded p-2 text-white ${selectedCount ? "bg-red-600 hover:bg-red-700" : "cursor-not-allowed bg-gray-400"}`}
+          onClick={handleDiscardButton}
+          disabled={selectedCount === 0}
+        >
+          Discard Selected ({selectedCount})
+        </button>
       </div>
 
       <div className="max-h-64 overflow-auto rounded border p-2">

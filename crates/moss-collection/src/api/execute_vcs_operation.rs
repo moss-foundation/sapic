@@ -29,6 +29,9 @@ impl<R: AppRuntime> Collection<R> {
                     vcs.push(ctx).await?;
                 }
             }
+            VcsOperation::Discard { paths } => {
+                vcs.discard_changes(paths).await?;
+            }
         }
 
         Ok(ExecuteVcsOperationOutput {})

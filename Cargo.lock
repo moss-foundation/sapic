@@ -3790,11 +3790,13 @@ dependencies = [
  "git2",
  "joinerror",
  "libssh2-sys",
+ "moss_logging",
  "moss_user",
  "nanoid",
  "oauth2",
  "regex",
  "serde",
+ "tracing",
  "ts-rs",
  "url",
 ]

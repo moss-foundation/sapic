@@ -174,4 +174,6 @@ export type UpdateQueryParamParams = {
 /**
  * @category Type
  */
-export type VcsOperation = { "COMMIT": { message: string; paths: Array<string>; push: boolean } };
+export type VcsOperation =
+  | { "COMMIT": { message: string; paths: Array<string>; push: boolean } }
+  | { "DISCARD": { paths: Array<string> } };

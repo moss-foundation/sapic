@@ -35,13 +35,20 @@ export const updateQueryParamOptionsSchema = z.object({
   disabled: z.boolean().optional(),
 });
 
-export const vcsOperationSchema = z.object({
-  "COMMIT": z.object({
-    message: z.string(),
-    paths: z.array(z.string()),
-    push: z.boolean(),
+export const vcsOperationSchema = z.union([
+  z.object({
+    "COMMIT": z.object({
+      message: z.string(),
+      paths: z.array(z.string()),
+      push: z.boolean(),
+    }),
   }),
-});
+  z.object({
+    "DISCARD": z.object({
+      paths: z.array(z.string()),
+    }),
+  }),
+]);
 export const addHeaderParamsSchema = z.object({
   name: z.string(),
   value: jsonValueSchema,

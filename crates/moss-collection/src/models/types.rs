@@ -135,6 +135,9 @@ pub enum VcsOperation {
         paths: Vec<PathBuf>,
         push: bool,
     },
+    Discard {
+        paths: Vec<PathBuf>,
+    },
 }
 
 // Check that input path begins with a valid top folder

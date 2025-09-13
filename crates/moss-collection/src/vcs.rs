@@ -33,6 +33,7 @@ pub trait CollectionVcs<R: AppRuntime>: Send + Sync {
 
     async fn stage_and_commit(&self, paths: Vec<PathBuf>, message: &str) -> joinerror::Result<()>;
     async fn push<'a>(&self, ctx: &R::AsyncContext) -> joinerror::Result<()>;
+    async fn discard_changes(&self, paths: Vec<PathBuf>) -> joinerror::Result<()>;
 }
 
 pub(crate) struct Vcs<R: AppRuntime> {
@@ -131,21 +132,18 @@ impl<R: AppRuntime> CollectionVcs<R> for Vcs<R> {
 
     async fn statuses(&self) -> joinerror::Result<HashMap<PathBuf, FileStatus>> {
         let repo_lock = self.repository.read().await;
-        let repo_ref = if let Some(repo) = repo_lock.as_ref() {
-            repo
-        } else {
-            return Err(Error::new::<()>("repository handle is dropped"));
-        };
+        let repo_ref = repo_lock
+            .as_ref()
+            .ok_or_join_err::<()>("repository handle is dropped")?;
+
         repo_ref.statuses()
     }
 
     async fn stage_and_commit(&self, paths: Vec<PathBuf>, message: &str) -> joinerror::Result<()> {
         let repo_lock = self.repository.read().await;
-        let repo_ref = if let Some(repo) = repo_lock.as_ref() {
-            repo
-        } else {
-            return Err(Error::new::<()>("repository handle is dropped"));
-        };
+        let repo_ref = repo_lock
+            .as_ref()
+            .ok_or_join_err::<()>("repository handle is dropped")?;
 
         repo_ref.stage_paths(paths)?;
         let username = self.client.username();
@@ -164,11 +162,10 @@ impl<R: AppRuntime> CollectionVcs<R> for Vcs<R> {
     // Pushing currently checked-out branch to the configured refspec+remote
     async fn push<'a>(&self, ctx: &R::AsyncContext) -> joinerror::Result<()> {
         let repo_lock = self.repository.read().await;
-        let repo_ref = if let Some(repo) = repo_lock.as_ref() {
-            repo
-        } else {
-            return Err(Error::new::<()>("repository handle is dropped"));
-        };
+        let repo_ref = repo_lock
+            .as_ref()
+            .ok_or_join_err::<()>("repository handle is dropped")?;
+
         let username = self.client.username();
         let token = self.client.session().token(ctx).await?;
         let mut cb = RemoteCallbacks::new();
@@ -177,6 +174,17 @@ impl<R: AppRuntime> CollectionVcs<R> for Vcs<R> {
         });
 
         repo_ref.push(None, None, None, false, cb)?;
+
+        Ok(())
+    }
+
+    async fn discard_changes(&self, paths: Vec<PathBuf>) -> joinerror::Result<()> {
+        let repo_lock = self.repository.read().await;
+        let repo_ref = repo_lock
+            .as_ref()
+            .ok_or_join_err::<()>("repository handle is dropped")?;
+
+        repo_ref.discard_changes(paths)?;
 
         Ok(())
     }

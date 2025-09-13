@@ -1,3 +1,5 @@
+use crate::constants;
+pub use crate::models::primitives::FileStatus;
 use derive_more::Deref;
 use git2::{
     BranchType, IndexAddOption, IntoCString, PushOptions, RemoteCallbacks, Signature, Status,
@@ -5,13 +7,11 @@ use git2::{
     build::{CheckoutBuilder, RepoBuilder},
 };
 use joinerror::{OptionExt, ResultExt};
+use moss_logging::session;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
 };
-
-use crate::constants;
-pub use crate::models::primitives::FileStatus;
 
 #[derive(Deref)]
 pub struct Repository {
@@ -188,6 +188,13 @@ impl Repository {
         Ok(())
     }
 
+    // We will only update the index immediately before a commit, thus there should only be
+    // three types of file statuses (excluding conflict and ignored)
+    // that we need to handle:
+    // WT_NEW: new file yet to be tracked (never committed)
+    // WT_MODIFIED: tracked file that's modified
+    // WT_DELETED: tracked file that's deleted
+
     pub fn stage_paths(
         &self,
         paths: impl IntoIterator<Item = impl AsRef<Path>>,
@@ -204,8 +211,35 @@ impl Repository {
                 index.remove_path(path.as_ref())?;
             }
         }
-
         index.write()?;
+
+        Ok(())
+    }
+    pub fn discard_changes(
+        &self,
+        paths: impl IntoIterator<Item = impl AsRef<Path>>,
+    ) -> joinerror::Result<()> {
+        // Reset changes to tracked files to the INDEX
+        let workdir = self.inner.workdir().ok_or_join_err::<()>("no workdir")?;
+        let mut co = CheckoutBuilder::new();
+        co.force();
+
+        for path in paths {
+            let path = path.as_ref();
+            let status = self.inner.status_file(path)?;
+
+            if status.is_wt_new() {
+                // Untracked file, discard change by deleting it
+                std::fs::remove_file(workdir.join(path))?;
+            } else if status.is_wt_modified() || status.is_wt_deleted() {
+                // Tracked file, add to the checkout
+                co.path(path);
+            } else {
+                // This should never happen under normal circumstances
+                session::warn!(format!("unexpected file status for `{}`", path.display()));
+            }
+        }
+        self.inner.checkout_index(None, Some(&mut co))?;
 
         Ok(())
     }
