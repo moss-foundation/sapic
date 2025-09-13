@@ -94,6 +94,15 @@ impl ConfigurationService {
                     let profile = profile_clone.clone();
 
                     async move {
+                        if !settings_path.exists() {
+                            *profile.write().await = Some(ConfigurationModel {
+                                keys: HashSet::new(),
+                                contents: HashMap::new(),
+                            });
+
+                            return;
+                        }
+
                         let rdr = match fs.open_file(&settings_path).await {
                             Ok(rdr) => rdr,
                             Err(e) => {
