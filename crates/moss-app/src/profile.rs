@@ -10,6 +10,13 @@ pub(crate) struct ProfileFile {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub is_default: Option<bool>,
 
+    pub accounts: Vec<ProfileFileAccount>,
+
+    pub settings: ProfileSettings,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub(crate) struct ProfileSettings {
     /// The preferred color theme for this profile.
     /// If not set, the default theme will be used.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -24,8 +31,6 @@ pub(crate) struct ProfileFile {
     /// If not set, the default zoom level will be used.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub zoom_level: Option<f32>,
-
-    pub accounts: Vec<ProfileFileAccount>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

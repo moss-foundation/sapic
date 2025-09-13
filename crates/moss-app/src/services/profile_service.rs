@@ -32,7 +32,7 @@ use tokio::sync::RwLock;
 
 use crate::{
     dirs,
-    profile::{ProfileFile, ProfileFileAccount, ProfileFileAccountMetadata},
+    profile::{ProfileFile, ProfileFileAccount, ProfileFileAccountMetadata, ProfileSettings},
 };
 
 struct ServiceState<R: AppRuntime> {
@@ -376,9 +376,11 @@ impl<R: AppRuntime> ProfileService<R> {
                 serde_json::to_string_pretty(&ProfileFile {
                     name: profile.name.clone(),
                     is_default: Some(is_default),
-                    theme: None,
-                    locale: None,
-                    zoom_level: None,
+                    settings: ProfileSettings {
+                        theme: None,
+                        locale: None,
+                        zoom_level: None,
+                    },
                     accounts: vec![],
                 })?
                 .as_bytes(),

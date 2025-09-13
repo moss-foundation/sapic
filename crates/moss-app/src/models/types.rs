@@ -1,13 +1,29 @@
 use moss_logging::models::primitives::LogEntryId;
 use moss_user::models::primitives::AccountKind;
 use serde::{Deserialize, Serialize};
+use serde_json::Value as JsonValue;
 use std::{
+    collections::HashMap,
     path::{Path, PathBuf},
     sync::Arc,
 };
 use ts_rs::TS;
 
 use crate::models::primitives::*;
+
+/// @category Type
+#[derive(Debug, Serialize, Clone, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct Configuration {
+    pub keys: Vec<String>,
+    pub contents: HashMap<String, JsonValue>,
+}
+
+// ########################################################
+// ###                      Profile                     ###
+// ########################################################
 
 /// @category Type
 #[derive(Debug, Clone, Deserialize, TS)]
