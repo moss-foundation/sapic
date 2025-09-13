@@ -18,6 +18,7 @@ use crate::models::primitives::*;
 #[ts(export, export_to = "types.ts")]
 pub struct Configuration {
     pub keys: Vec<String>,
+    #[ts(type = "{ [key: string]: JsonValue }")]
     pub contents: HashMap<String, JsonValue>,
 }
 
