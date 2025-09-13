@@ -105,18 +105,15 @@ export const getInstructionFromSelf = (self: DropTargetRecord): Instruction | nu
 
 export const canDropNode = (sourceTarget: DragNode, dropTarget: DropNode, operation: Operation) => {
   if (sourceTarget.node.class !== dropTarget.node.class) {
-    console.warn("class does not match");
     return false;
   }
 
   if (sourceTarget.node.id === dropTarget.node.id) {
-    console.warn("id does not match");
     return false;
   }
 
   if (dropTarget.node.kind === "Item") {
     if (hasAnotherDirectDescendantWithSimilarName(dropTarget.parentNode, sourceTarget.node)) {
-      console.warn("has another direct descendant with similar name");
       return false;
     }
   }
@@ -124,23 +121,18 @@ export const canDropNode = (sourceTarget: DragNode, dropTarget: DropNode, operat
   if (dropTarget.node.kind === "Dir") {
     if (operation === "combine") {
       if (hasDescendant(dropTarget.node, sourceTarget.node)) {
-        console.warn("has descendant");
         return false;
       }
 
       if (hasAnotherDirectDescendantWithSimilarName(dropTarget.node, sourceTarget.node)) {
-        console.warn("has another direct descendant with similar name");
         return false;
       }
     } else {
       if (hasAnotherDirectDescendantWithSimilarName(dropTarget.parentNode, sourceTarget.node)) {
-        console.warn("has another direct descendant with similar name");
         return false;
       }
     }
   }
-
-  console.warn("can drop");
 
   return true;
 };

@@ -37,6 +37,7 @@ export const useNodeDragAndDropHandler = () => {
 
   const { fetchEntriesForPath } = useFetchEntriesForPath();
 
+  //Within Collection
   const handleCombineWithinCollection = useCallback(
     async (sourceTreeNodeData: DragNode, locationTreeNodeData: DropNode) => {
       const newOrder = locationTreeNodeData.node.childNodes.length + 1;
@@ -231,100 +232,7 @@ export const useNodeDragAndDropHandler = () => {
     [batchUpdateCollectionEntry, fetchEntriesForPath]
   );
 
-  const handleCombineToAnotherCollectionRoot = useCallback(
-    async (sourceTreeNodeData: DragNode, locationTreeRootNodeData: DropRootNode) => {
-      const allEntries = getAllNestedEntries(sourceTreeNodeData.node);
-      const entriesPreparedForDrop = await prepareEntriesForDrop(allEntries);
-      const entriesWithoutName = await Promise.all(
-        entriesPreparedForDrop.map(async (entry) => {
-          const pathWithoutName = await getPathWithoutName(entry);
-
-          return {
-            ...entry,
-            path: pathWithoutName,
-          };
-        })
-      );
-      const newOrder = locationTreeRootNodeData.node.childNodes.length + 1;
-
-      await deleteCollectionEntry({
-        collectionId: sourceTreeNodeData.collectionId,
-        input: { id: sourceTreeNodeData.node.id },
-      });
-
-      const sourceEntriesToUpdate = sourceTreeNodeData.parentNode.childNodes
-        .filter((entry) => entry.id !== sourceTreeNodeData.node.id && entry.order! > sourceTreeNodeData.node.order!)
-        .map((entry): BatchUpdateEntryKind => {
-          if (entry.kind === "Dir") {
-            return {
-              DIR: { id: entry.id, order: entry.order! - 1 },
-            };
-          }
-          return {
-            ITEM: {
-              id: entry.id,
-              order: entry.order! - 1,
-              queryParamsToAdd: [],
-              queryParamsToUpdate: [],
-              queryParamsToRemove: [],
-              pathParamsToAdd: [],
-              pathParamsToUpdate: [],
-              pathParamsToRemove: [],
-              headersToAdd: [],
-              headersToUpdate: [],
-              headersToRemove: [],
-            },
-          };
-        });
-
-      const batchCreateEntryInput = await Promise.all(
-        entriesWithoutName.map(async (entry, index) => {
-          const newEntryPath = await join(entry.path.raw);
-
-          if (index === 0) {
-            return createEntryKind({
-              name: entry.name,
-              path: "",
-              class: "Endpoint",
-              isAddingFolder: entry.kind === "Dir",
-              order: newOrder,
-              protocol: entry.protocol,
-            });
-          } else {
-            return createEntryKind({
-              name: entry.name,
-              path: newEntryPath,
-              class: "Endpoint",
-              isAddingFolder: entry.kind === "Dir",
-              order: entry.order!,
-              protocol: entry.protocol,
-            });
-          }
-        })
-      );
-
-      await batchUpdateCollectionEntry({
-        collectionId: sourceTreeNodeData.collectionId,
-        entries: {
-          entries: sourceEntriesToUpdate,
-        },
-      });
-
-      await batchCreateCollectionEntry({
-        collectionId: locationTreeRootNodeData.collectionId,
-        input: {
-          entries: batchCreateEntryInput,
-        },
-      });
-
-      await fetchEntriesForPath(locationTreeRootNodeData.collectionId, "");
-
-      const sourceParentPath = "path" in sourceTreeNodeData.parentNode ? sourceTreeNodeData.parentNode.path.raw : "";
-      await fetchEntriesForPath(sourceTreeNodeData.collectionId, sourceParentPath);
-    },
-    [deleteCollectionEntry, batchUpdateCollectionEntry, batchCreateCollectionEntry, fetchEntriesForPath]
-  );
-
+  //To Another Collection
   const handleMoveToAnotherCollection = useCallback(
     async (
       sourceTreeNodeData: DragNode,
@@ -569,6 +477,101 @@ export const useNodeDragAndDropHandler = () => {
       return;
     },
     [batchCreateCollectionEntry, batchUpdateCollectionEntry, deleteCollectionEntry, fetchEntriesForPath]
+  );
+
+  //To Another Collection's Root
+  const handleCombineToAnotherCollectionRoot = useCallback(
+    async (sourceTreeNodeData: DragNode, locationTreeRootNodeData: DropRootNode) => {
+      const allEntries = getAllNestedEntries(sourceTreeNodeData.node);
+      const entriesPreparedForDrop = await prepareEntriesForDrop(allEntries);
+      const entriesWithoutName = await Promise.all(
+        entriesPreparedForDrop.map(async (entry) => {
+          const pathWithoutName = await getPathWithoutName(entry);
+
+          return {
+            ...entry,
+            path: pathWithoutName,
+          };
+        })
+      );
+      const newOrder = locationTreeRootNodeData.node.childNodes.length + 1;
+
+      await deleteCollectionEntry({
+        collectionId: sourceTreeNodeData.collectionId,
+        input: { id: sourceTreeNodeData.node.id },
+      });
+
+      const sourceEntriesToUpdate = sourceTreeNodeData.parentNode.childNodes
+        .filter((entry) => entry.id !== sourceTreeNodeData.node.id && entry.order! > sourceTreeNodeData.node.order!)
+        .map((entry): BatchUpdateEntryKind => {
+          if (entry.kind === "Dir") {
+            return {
+              DIR: { id: entry.id, order: entry.order! - 1 },
+            };
+          }
+          return {
+            ITEM: {
+              id: entry.id,
+              order: entry.order! - 1,
+              queryParamsToAdd: [],
+              queryParamsToUpdate: [],
+              queryParamsToRemove: [],
+              pathParamsToAdd: [],
+              pathParamsToUpdate: [],
+              pathParamsToRemove: [],
+              headersToAdd: [],
+              headersToUpdate: [],
+              headersToRemove: [],
+            },
+          };
+        });
+
+      const batchCreateEntryInput = await Promise.all(
+        entriesWithoutName.map(async (entry, index) => {
+          const newEntryPath = await join(entry.path.raw);
+
+          if (index === 0) {
+            return createEntryKind({
+              name: entry.name,
+              path: "",
+              class: "Endpoint",
+              isAddingFolder: entry.kind === "Dir",
+              order: newOrder,
+              protocol: entry.protocol,
+            });
+          } else {
+            return createEntryKind({
+              name: entry.name,
+              path: newEntryPath,
+              class: "Endpoint",
+              isAddingFolder: entry.kind === "Dir",
+              order: entry.order!,
+              protocol: entry.protocol,
+            });
+          }
+        })
+      );
+
+      await batchUpdateCollectionEntry({
+        collectionId: sourceTreeNodeData.collectionId,
+        entries: {
+          entries: sourceEntriesToUpdate,
+        },
+      });
+
+      await batchCreateCollectionEntry({
+        collectionId: locationTreeRootNodeData.collectionId,
+        input: {
+          entries: batchCreateEntryInput,
+        },
+      });
+
+      await fetchEntriesForPath(locationTreeRootNodeData.collectionId, "");
+
+      const sourceParentPath = "path" in sourceTreeNodeData.parentNode ? sourceTreeNodeData.parentNode.path.raw : "";
+      await fetchEntriesForPath(sourceTreeNodeData.collectionId, sourceParentPath);
+    },
+    [deleteCollectionEntry, batchUpdateCollectionEntry, batchCreateCollectionEntry, fetchEntriesForPath]
   );
 
   useEffect(() => {
