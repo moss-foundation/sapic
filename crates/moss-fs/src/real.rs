@@ -69,6 +69,18 @@ impl FileSystem for RealFileSystem {
         Ok(())
     }
 
+    async fn is_dir_empty(&self, path: &Path) -> FsResult<bool> {
+        if !path.is_dir() {
+            return Err(FsError::Other(format!(
+                "{} is not a directory",
+                path.display()
+            )));
+        }
+
+        let mut entries = tokio::fs::read_dir(path).await?;
+        Ok(entries.next_entry().await?.is_none())
+    }
+
     async fn create_file_with(
         &self,
         path: &Path,

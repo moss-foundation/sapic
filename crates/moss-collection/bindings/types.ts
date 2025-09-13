@@ -170,3 +170,13 @@ export type UpdateQueryParamParams = {
   desc?: ChangeString;
   options?: QueryParamOptions;
 };
+
+/**
+ * @category Type
+ */
+export type VcsOperation =
+  | { "COMMIT": { message: string; paths: Array<string>; push: boolean } }
+  | { "DISCARD": { paths: Array<string> } }
+  | "PUSH"
+  | "PULL"
+  | "FETCH";

@@ -4,18 +4,16 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-moss_user.workspace = true
+moss_logging.workspace = true
 
-oauth2.workspace = true
 derive_more = { workspace = true, features = ["deref"] }
-anyhow.workspace = true
 git2.workspace = true
-dotenv.workspace = true
 url.workspace = true
 regex.workspace = true
 joinerror.workspace = true
 serde = { workspace = true, features = ["derive"] }
 ts-rs.workspace = true
+tracing.workspace = true
 
 [dev-dependencies]
 nanoid.workspace = true

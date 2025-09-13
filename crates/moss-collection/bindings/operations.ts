@@ -6,6 +6,7 @@ import type {
   CreateItemEntryParams,
   UpdateDirEntryParams,
   UpdateItemEntryParams,
+  VcsOperation,
 } from "./types";
 
 /**
@@ -64,6 +65,16 @@ export type DeleteEntryInput = { id: string };
  * @category Operation
  */
 export type DeleteEntryOutput = { id: string };
+
+/**
+ * @category Operation
+ */
+export type ExecuteVcsOperationInput = { operation: VcsOperation };
+
+/**
+ * @category Operation
+ */
+export type ExecuteVcsOperationOutput = Record<string, never>;
 
 /**
  * @category Operation
