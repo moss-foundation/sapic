@@ -48,6 +48,7 @@ export const vcsOperationSchema = z.union([
       paths: z.array(z.string()),
     }),
   }),
+  z.literal("PUSH"),
 ]);
 export const addHeaderParamsSchema = z.object({
   name: z.string(),
