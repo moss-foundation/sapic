@@ -1,11 +1,9 @@
 use moss_applib::AppRuntime;
+use moss_logging::session;
 
 use crate::{
     app::App,
-    models::{
-        operations::DescribeAppOutput,
-        types::{Defaults, Preferences},
-    },
+    models::{operations::DescribeAppOutput, types::Configuration},
 };
 
 impl<R: AppRuntime> App<R> {
@@ -13,25 +11,36 @@ impl<R: AppRuntime> App<R> {
         &self,
         ctx: &R::AsyncContext,
     ) -> joinerror::Result<DescribeAppOutput> {
-        // let last_workspace_id =
-        //     if let Ok(id_str) = self.storage_service.get_last_active_workspace(ctx).await {
-        //         Some(id_str)
-        //     } else {
-        //         None
-        //     };
+        let last_workspace_id = match self.storage_service.get_last_active_workspace(ctx).await {
+            Ok(id) => Some(id),
+            Err(err) => {
+                session::error!(format!(
+                    "failed to restore last active workspace: {}",
+                    err.to_string()
+                ));
 
-        // Ok(DescribeAppStateOutput {
-        //     preferences: Preferences {
-        //         theme: self.preferences().theme.read().await.clone(),
-        //         locale: self.preferences().locale.read().await.clone(),
-        //     },
-        //     defaults: Defaults {
-        //         theme: self.defaults().theme.clone(),
-        //         locale: self.defaults().locale.clone(),
-        //     },
-        //     prev_workspace_id: last_workspace_id,
-        // })
+                None
+            }
+        };
+        let active_profile = self.profile_service.active_profile().await;
+        let configuration = self.configuration_service.configuration().await;
 
-        todo!()
+        Ok(DescribeAppOutput {
+            opened: last_workspace_id,
+            profile: Some(active_profile.id().clone()),
+
+            configuration: Configuration {
+                keys: configuration
+                    .keys
+                    .into_iter()
+                    .map(|key| key.to_string())
+                    .collect(),
+                contents: configuration
+                    .contents
+                    .into_iter()
+                    .map(|(key, value)| (key.to_string(), value))
+                    .collect(),
+            },
+        })
     }
 }

@@ -187,6 +187,7 @@ pub async fn run<R: TauriRuntime>() {
             //
             // App
             //
+            commands::describe_app,
             commands::execute_command,
             commands::set_color_theme,
             commands::get_color_theme,

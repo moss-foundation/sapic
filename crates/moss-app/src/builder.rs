@@ -1,26 +1,19 @@
 use moss_app_delegate::AppDelegate;
-use moss_applib::AppRuntime;
-use moss_fs::{CreateOptions, FileSystem, utils};
+use moss_applib::{AppRuntime, subscription::EventEmitter};
+use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
-use moss_user::models::{primitives::ProfileId, types::ProfileInfo};
-use std::{cell::LazyCell, path::PathBuf, sync::Arc};
+use std::{path::PathBuf, sync::Arc};
 use tauri::{AppHandle as TauriAppHandle, Manager};
 use tokio::sync::RwLock;
 
 use crate::{
+    OnDidChangeProfile, OnDidChangeWorkspace,
     app::{App, AppCommands, AppDefaults, AppPreferences},
     command::CommandDecl,
     dirs,
-    profile::{ProfileFile, ProfileSettings},
     services::{profile_service::ProfileService, *},
 };
-
-const DEFAULT_PROFILE: LazyCell<ProfileInfo> = LazyCell::new(|| ProfileInfo {
-    id: ProfileId::new(),
-    name: "Default".to_string(),
-    accounts: vec![],
-});
 
 pub struct BuildAppParams {
     pub themes_dir: PathBuf,
@@ -63,8 +56,19 @@ impl<R: AppRuntime> AppBuilder<R> {
 
         self.create_app_dirs_if_not_exists(app_dir.clone()).await;
 
-        self.create_default_profile_if_not_exists(app_dir.join(dirs::PROFILES_DIR))
-            .await;
+        let on_did_change_profile_emitter = EventEmitter::<OnDidChangeProfile>::new();
+        let on_did_change_profile_event = on_did_change_profile_emitter.event();
+
+        let on_did_change_workspace_emitter = EventEmitter::<OnDidChangeWorkspace>::new();
+        let on_did_change_workspace_event = on_did_change_workspace_emitter.event();
+
+        let configuration_service = ConfigurationService::new(
+            &delegate,
+            self.fs.clone(),
+            &on_did_change_profile_event,
+            &on_did_change_workspace_event,
+        )
+        .await;
 
         let theme_service = ThemeService::new(self.fs.clone(), params.themes_dir)
             .await
@@ -90,6 +94,7 @@ impl<R: AppRuntime> AppBuilder<R> {
             self.fs.clone(),
             self.auth_api_client.clone(),
             self.keyring.clone(),
+            on_did_change_profile_emitter,
         )
         .await
         .expect("Failed to create profile service");
@@ -121,12 +126,18 @@ impl<R: AppRuntime> AppBuilder<R> {
             locale_service,
             theme_service,
             profile_service,
+            configuration_service,
             tracked_cancellations: Default::default(),
         }
     }
 
     async fn create_app_dirs_if_not_exists(&self, app_dir: PathBuf) {
-        for dir in &[dirs::WORKSPACES_DIR, dirs::GLOBALS_DIR, dirs::PROFILES_DIR] {
+        for dir in &[
+            dirs::WORKSPACES_DIR,
+            dirs::GLOBALS_DIR,
+            dirs::PROFILES_DIR,
+            dirs::TMP_DIR,
+        ] {
             let dir_path = app_dir.join(dir);
             if dir_path.exists() {
                 continue;
@@ -137,39 +148,5 @@ impl<R: AppRuntime> AppBuilder<R> {
                 .await
                 .expect("Failed to create app directories");
         }
-    }
-
-    async fn create_default_profile_if_not_exists(&self, profile_dir_abs: PathBuf) {
-        if !utils::is_dir_empty(&profile_dir_abs)
-            .await
-            .expect("Failed to check if profiles directory is empty")
-        {
-            return;
-        }
-
-        let content = serde_json::to_string_pretty(&ProfileFile {
-            name: DEFAULT_PROFILE.name.clone(),
-            is_default: Some(true),
-            settings: ProfileSettings {
-                theme: None,
-                locale: None,
-                zoom_level: None,
-            },
-            accounts: vec![],
-        })
-        .expect("Failed to serialize default profile");
-        let path = profile_dir_abs.join(format!("{}.json", DEFAULT_PROFILE.id));
-
-        self.fs
-            .create_file_with(
-                &path,
-                content.as_bytes(),
-                CreateOptions {
-                    overwrite: false,
-                    ignore_if_exists: true,
-                },
-            )
-            .await
-            .expect("Failed to create default profile");
     }
 }
