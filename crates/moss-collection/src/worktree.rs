@@ -34,6 +34,22 @@ use crate::{
     worktree::entry::{Entry, EntryDescription, edit::EntryEditing, model::EntryModel},
 };
 
+trait IsRoot {
+    fn is_root(&self) -> bool;
+}
+
+impl IsRoot for Path {
+    fn is_root(&self) -> bool {
+        self.as_os_str().is_empty()
+    }
+}
+
+impl IsRoot for PathBuf {
+    fn is_root(&self) -> bool {
+        self.as_os_str().is_empty()
+    }
+}
+
 #[derive(Debug)]
 struct ScanJob {
     abs_path: Arc<Path>,
@@ -104,12 +120,6 @@ impl<R: AppRuntime> Worktree<R> {
         } else {
             Ok(self.abs_path.join(dirs::RESOURCES_DIR).to_path_buf())
         }
-    }
-
-    pub fn relativize(&self, path: &Path) -> joinerror::Result<PathBuf> {
-        Ok(path
-            .strip_prefix(&self.abs_path.join(dirs::RESOURCES_DIR))?
-            .to_path_buf())
     }
 
     pub async fn remove_entry(&self, ctx: &R::AsyncContext, id: &EntryId) -> joinerror::Result<()> {
@@ -219,7 +229,6 @@ impl<R: AppRuntime> Worktree<R> {
                             state.write().await.entries.insert(entry.id.clone(), entry);
                         }
                         Ok(None) => {
-                            dbg!(6);
                             // TODO: log error
                             return;
                         }
@@ -230,8 +239,6 @@ impl<R: AppRuntime> Worktree<R> {
                         }
                     }
                 }
-
-                dbg!(&job.abs_path);
 
                 let mut read_dir = match fs::read_dir(&job.abs_path).await {
                     Ok(dir) => dir,
@@ -322,12 +329,12 @@ impl<R: AppRuntime> Worktree<R> {
     ) -> joinerror::Result<()> {
         debug_assert!(path.is_relative());
 
-        // if !is_parent_dir_entry(self.abs_path.as_ref(), path) {
-        //     return Err(joinerror::Error::new::<ErrorInvalidInput>(format!(
-        //         "Cannot create entry inside Item entry {}",
-        //         path.to_string_lossy().to_string()
-        //     )));
-        // }
+        if !path.is_dir() {
+            return Err(joinerror::Error::new::<ErrorInvalidInput>(format!(
+                "destination path is not a directory {}",
+                path.to_string_lossy().to_string()
+            )));
+        }
 
         let sanitized_path: SanitizedPath = moss_fs::utils::sanitize_path(path, None)?
             .join(sanitize(name))
@@ -394,12 +401,12 @@ impl<R: AppRuntime> Worktree<R> {
     ) -> joinerror::Result<()> {
         debug_assert!(path.is_relative());
 
-        // if !is_parent_dir_entry(self.abs_path.as_ref(), path) {
-        //     return Err(joinerror::Error::new::<ErrorInvalidInput>(format!(
-        //         "Cannot create entry inside Item entry {}",
-        //         path.to_string_lossy().to_string()
-        //     )));
-        // }
+        if !path.is_dir() {
+            return Err(joinerror::Error::new::<ErrorInvalidInput>(format!(
+                "destination path is not a directory {}",
+                path.to_string_lossy().to_string()
+            )));
+        }
 
         let sanitized_path: SanitizedPath = moss_fs::utils::sanitize_path(path, None)?
             .join(sanitize(name))
@@ -466,13 +473,9 @@ impl<R: AppRuntime> Worktree<R> {
             .ok_or_join_err_with::<ErrorNotFound>(|| format!("entry {} not found", id))?;
 
         if let Some(new_parent) = params.path {
-            // We can only move entries into a directory entry
-            // Check if the destination path has dir config file
-
-            if new_parent != Path::new("") {
-                dbg!(&new_parent);
-
-                // FIXME: Have a better way to check if the destination is a root
+            if !new_parent.is_root() {
+                // For now, we can only move entries into a directory entry
+                // Check if the destination path has dir config file
                 let dest_abs_path = self.absolutize(&new_parent.join(DIR_CONFIG_FILENAME))?;
                 if !dest_abs_path.exists() {
                     return Err(joinerror::Error::new::<ErrorInvalidInput>(
@@ -561,14 +564,9 @@ impl<R: AppRuntime> Worktree<R> {
             .ok_or_join_err_with::<ErrorNotFound>(|| format!("entry {} not found", id))?;
 
         if let Some(new_parent) = &params.path {
-            dbg!(&new_parent);
-
-            // We can only move entries into a directory entry
-            // Check if the destination path has dir config file
-            if new_parent != Path::new("") {
-                dbg!(&new_parent);
-
-                // FIXME: Have a better way to check if the destination is a root
+            if !new_parent.is_root() {
+                // For now, we can only move entries into a directory entry
+                // Check if the destination path has dir config file
                 let dest_abs_path = self.absolutize(&new_parent.join(DIR_CONFIG_FILENAME))?;
                 if !dest_abs_path.exists() {
                     return Err(joinerror::Error::new::<ErrorInvalidInput>(
@@ -759,18 +757,6 @@ fn update_path_parent(path: &Path, new_parent: &Path) -> anyhow::Result<PathBuf>
     Ok(new_parent.join(name))
 }
 
-// We don't allow creating subentries inside an item
-fn is_parent_dir_entry(abs_path: &Path, parent_path: &Path) -> bool {
-    if parent_path == Path::new(COLLECTION_ROOT_PATH) {
-        // Ignore the root level since it's not an entry
-        return true;
-    }
-    abs_path
-        .join(parent_path)
-        .join(constants::DIR_CONFIG_FILENAME)
-        .exists()
-}
-
 async fn process_entry(
     path: Arc<Path>,
     all_entry_keys: &HashMap<SegKeyBuf, AnyValue>,
@@ -786,10 +772,7 @@ async fn process_entry(
         .map(|n| n.to_string_lossy().to_string())
         .unwrap_or_else(|| path.to_string_lossy().to_string());
 
-    dbg!("name", &name);
-
     if dir_config_path.exists() {
-        dbg!("dir 1");
         let mut rdr = fs.open_file(&dir_config_path).await?;
         let model: EntryModel =
             hcl::from_reader(&mut rdr).join_err::<()>("failed to parse dir configuration")?;
@@ -798,7 +781,7 @@ async fn process_entry(
         let desc = EntryDescription {
             id: id.clone(),
             name: desanitize(&name),
-            path: path.clone(), // FIXME:
+            path: path.clone(),
             class: model.class(),
             kind: EntryKind::Dir,
             protocol: None,
@@ -822,20 +805,15 @@ async fn process_entry(
     }
 
     if item_config_path.exists() {
-        dbg!("dir 2");
-
         let mut rdr = fs.open_file(&item_config_path).await?;
         let model: EntryModel =
             hcl::from_reader(&mut rdr).join_err::<()>("failed to parse item configuration")?;
-
-        dbg!(&path);
-        dbg!(strip_first_segment(&path).unwrap());
 
         let id = model.id().clone();
         let desc = EntryDescription {
             id: id.clone(),
             name: desanitize(&name),
-            path: path.clone(), // FIXME:
+            path: path.clone(),
             class: model.class(),
             kind: EntryKind::Item,
             protocol: model.protocol(),
@@ -870,10 +848,4 @@ async fn process_file(
 ) -> joinerror::Result<Option<(Entry, EntryDescription)>> {
     // TODO: implement
     Ok(None)
-}
-
-fn strip_first_segment(path: &Path) -> Option<PathBuf> {
-    let mut comps = path.components();
-    comps.next()?;
-    Some(comps.as_path().to_path_buf())
 }
