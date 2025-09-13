@@ -329,13 +329,6 @@ impl<R: AppRuntime> Worktree<R> {
     ) -> joinerror::Result<()> {
         debug_assert!(path.is_relative());
 
-        if !path.is_dir() {
-            return Err(joinerror::Error::new::<ErrorInvalidInput>(format!(
-                "destination path is not a directory {}",
-                path.to_string_lossy().to_string()
-            )));
-        }
-
         let sanitized_path: SanitizedPath = moss_fs::utils::sanitize_path(path, None)?
             .join(sanitize(name))
             .into();
@@ -400,13 +393,6 @@ impl<R: AppRuntime> Worktree<R> {
         expanded: bool,
     ) -> joinerror::Result<()> {
         debug_assert!(path.is_relative());
-
-        if !path.is_dir() {
-            return Err(joinerror::Error::new::<ErrorInvalidInput>(format!(
-                "destination path is not a directory {}",
-                path.to_string_lossy().to_string()
-            )));
-        }
 
         let sanitized_path: SanitizedPath = moss_fs::utils::sanitize_path(path, None)?
             .join(sanitize(name))
