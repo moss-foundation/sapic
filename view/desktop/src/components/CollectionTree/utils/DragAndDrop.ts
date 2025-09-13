@@ -1,4 +1,9 @@
-import { Availability, extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
+import {
+  Availability,
+  extractInstruction,
+  Instruction,
+  Operation,
+} from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import {
   DragLocationHistory,
   DropTargetRecord,
@@ -98,7 +103,7 @@ export const getInstructionFromSelf = (self: DropTargetRecord): Instruction | nu
   return extractInstruction(self.data);
 };
 
-export const canDropNode = (sourceTarget: DragNode, dropTarget: DropNode) => {
+export const canDropNode = (sourceTarget: DragNode, dropTarget: DropNode, operation: Operation) => {
   if (sourceTarget.node.class !== dropTarget.node.class) {
     console.warn("class does not match");
     return false;
@@ -117,14 +122,21 @@ export const canDropNode = (sourceTarget: DragNode, dropTarget: DropNode) => {
   }
 
   if (dropTarget.node.kind === "Dir") {
-    if (hasDescendant(dropTarget.node, sourceTarget.node)) {
-      console.warn("has descendant");
-      return false;
-    }
+    if (operation === "combine") {
+      if (hasDescendant(dropTarget.node, sourceTarget.node)) {
+        console.warn("has descendant");
+        return false;
+      }
 
-    if (hasAnotherDirectDescendantWithSimilarName(dropTarget.node, sourceTarget.node)) {
-      console.warn("has another direct descendant with similar name");
-      return false;
+      if (hasAnotherDirectDescendantWithSimilarName(dropTarget.node, sourceTarget.node)) {
+        console.warn("has another direct descendant with similar name");
+        return false;
+      }
+    } else {
+      if (hasAnotherDirectDescendantWithSimilarName(dropTarget.parentNode, sourceTarget.node)) {
+        console.warn("has another direct descendant with similar name");
+        return false;
+      }
     }
   }
 

@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import { useStreamCollections } from "@/hooks";
 import { Tree } from "@/lib/ui/Tree";
@@ -36,7 +36,7 @@ export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
     handleRenamingRootNodeFormCancel,
   } = useRootNodeRenamingForm(node);
 
-  const { isDragging, isChildDropBlocked, instruction } = useDraggableRootNode({
+  const { isDragging, isChildDropBlocked, instruction, dirInstruction } = useDraggableRootNode({
     dirRef: dropTargetRootRef,
     triggerRef: draggableHeaderRef,
     node,
@@ -52,8 +52,12 @@ export const TreeRootNode = ({ node }: TreeRootNodeProps) => {
 
   const restrictedNames = streamedCollections?.map((collection) => collection.name) ?? [];
 
+  useEffect(() => {
+    console.log({ instruction, dirInstruction });
+  }, [instruction, dirInstruction]);
+
   return (
-    <Tree.RootNode ref={dropTargetRootRef} isChildDropBlocked={isChildDropBlocked} instruction={instruction}>
+    <Tree.RootNode ref={dropTargetRootRef} instruction={instruction} combineInstruction={dirInstruction}>
       <Tree.RootNodeHeader ref={draggableHeaderRef} isActive={activePanelId === node.id}>
         {isRenamingRootNode ? (
           <TreeRootNodeRenamingForm

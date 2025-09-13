@@ -14,6 +14,7 @@ import { CollectionTreeContext } from "../../CollectionTreeContext";
 import { DragNode, TreeCollectionRootNode } from "../../types";
 import {
   getLocationTreeCollectionData,
+  getLocationTreeRootNodeData,
   getSourceTreeCollectionNodeData,
   hasDirectSimilarDescendant,
   isSourceTreeCollectionNode,
@@ -33,6 +34,7 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
 
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [instruction, setInstruction] = useState<Instruction | null>(null);
+  const [dirInstruction, setDirInstruction] = useState<Instruction | null>(null);
   const [isChildDropBlocked, setIsChildDropBlocked] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -60,7 +62,7 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
         getIsSticky: ({ source }) => isSourceTreeRootNode(source),
         getData: ({ input, source }) => {
           const dropTarget = {
-            type: "TreeCollection",
+            type: "TreeRootNode",
             node,
             collectionId: id,
           };
@@ -86,16 +88,6 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
                 operations: evaluateTreeNodeOperations(node, sourceTarget),
               });
             }
-
-            return attachInstruction(dropTarget, {
-              element: dirElement,
-              input,
-              operations: {
-                "reorder-before": "available",
-                "reorder-after": "available",
-                combine: "not-available",
-              },
-            });
           }
 
           return attachInstruction(dropTarget, {
@@ -111,28 +103,46 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
         onDrag: ({ source, location, self }) => {
           const sourceTarget = getTreeRootNodeSourceData(source);
           const dropTarget = getLocationTreeCollectionData(location);
+          const rootDropTarget = getLocationTreeRootNodeData(location);
           const instruction = extractInstruction(self.data);
 
-          if (!sourceTarget || !dropTarget) {
+          if (!sourceTarget) {
+            setInstruction(null);
+            setDirInstruction(null);
+            return;
+          }
+
+          if (!rootDropTarget && !dropTarget) {
+            setDirInstruction(null);
             setInstruction(null);
             return;
           }
 
-          setInstruction(instruction);
+          if (rootDropTarget) {
+            setInstruction(null);
+            setDirInstruction(instruction);
+          }
+
+          if (dropTarget) {
+            setInstruction(instruction);
+            setDirInstruction(null);
+          }
         },
         onDragLeave: () => {
           setIsChildDropBlocked(null);
           setInstruction(null);
+          setDirInstruction(null);
         },
         onDrop: () => {
           setIsChildDropBlocked(null);
           setInstruction(null);
+          setDirInstruction(null);
         },
       })
     );
   }, [dirRef, displayMode, id, isRenamingNode, node, triggerRef]);
 
-  return { isDragging, isChildDropBlocked, instruction };
+  return { isDragging, isChildDropBlocked, instruction, dirInstruction };
 };
 
 export const evaluateTreeNodeOperations = (

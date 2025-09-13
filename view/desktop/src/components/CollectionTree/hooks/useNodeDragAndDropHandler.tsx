@@ -154,7 +154,7 @@ export const useNodeDragAndDropHandler = () => {
         const isAlreadyInLocation = locationTreeNodeData.parentNode.childNodes.some((n) => n.id === entry.id);
         const newEntryPath = isAlreadyInLocation
           ? undefined
-          : "path" in locationTreeNodeData.parentNode && locationTreeNodeData.parentNode.path.segments.length > 1
+          : "path" in locationTreeNodeData.parentNode
             ? locationTreeNodeData.parentNode.path.raw
             : "";
 
@@ -185,11 +185,35 @@ export const useNodeDragAndDropHandler = () => {
           };
         }
       });
-
+      const sourcePeerEntriesToUpdate = sourceTreeNodeData.parentNode.childNodes
+        .filter((entry) => entry.id !== sourceTreeNodeData.node.id && entry.order! > sourceTreeNodeData.node.order!)
+        .map((entry): BatchUpdateEntryKind => {
+          if (entry.kind === "Dir") {
+            return {
+              DIR: { id: entry.id, order: entry.order! - 1 },
+            };
+          }
+          return {
+            ITEM: {
+              id: entry.id,
+              order: entry.order! - 1,
+              queryParamsToAdd: [],
+              queryParamsToUpdate: [],
+              queryParamsToRemove: [],
+              pathParamsToAdd: [],
+              pathParamsToUpdate: [],
+              pathParamsToRemove: [],
+              headersToAdd: [],
+              headersToUpdate: [],
+              headersToRemove: [],
+            },
+          };
+        });
+      const allUpdatedEntries = [...parentEntriesToUpdate, ...sourcePeerEntriesToUpdate];
       await batchUpdateCollectionEntry({
         collectionId: sourceTreeNodeData.collectionId,
         entries: {
-          entries: parentEntriesToUpdate,
+          entries: allUpdatedEntries,
         },
       });
 
@@ -497,8 +521,8 @@ export const useNodeDragAndDropHandler = () => {
           return;
         }
 
-        if (instruction?.blocked) {
-          console.warn("can't drop: blocked");
+        if (instruction?.blocked || !operation) {
+          console.warn("can't drop: blocked or no operation", { instruction, operation });
           return;
         }
 
@@ -517,7 +541,7 @@ export const useNodeDragAndDropHandler = () => {
           return;
         }
 
-        if (!canDropNode(sourceTreeNodeData, locationTreeNodeData) || !operation) {
+        if (!canDropNode(sourceTreeNodeData, locationTreeNodeData, operation)) {
           console.warn("can't drop: invalid operation");
           return;
         }
