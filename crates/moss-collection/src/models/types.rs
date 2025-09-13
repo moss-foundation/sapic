@@ -6,11 +6,8 @@ use std::path::{Path, PathBuf};
 use ts_rs::TS;
 use validator::{Validate, ValidationError};
 
-use crate::{
-    dirs,
-    models::primitives::{
-        EntryId, EntryProtocol, FrontendEntryPath, HeaderId, PathParamId, QueryParamId,
-    },
+use crate::models::primitives::{
+    EntryClass, EntryId, EntryProtocol, FrontendEntryPath, HeaderId, PathParamId, QueryParamId,
 };
 
 /// @category Type
@@ -21,6 +18,7 @@ use crate::{
 pub struct CreateItemEntryParams {
     #[validate(custom(function = "validate_create_entry_input_path"))]
     pub path: PathBuf,
+    pub class: EntryClass,
 
     #[validate(length(min = 1))]
     pub name: String,
@@ -41,6 +39,7 @@ pub struct CreateItemEntryParams {
 pub struct CreateDirEntryParams {
     #[validate(custom(function = "validate_create_entry_input_path"))]
     pub path: PathBuf,
+    pub class: EntryClass,
 
     #[validate(length(min = 1))]
     pub name: String,
@@ -55,7 +54,6 @@ pub struct CreateDirEntryParams {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct UpdateItemEntryParams {
-    #[ts(as = "String")]
     pub id: EntryId,
 
     /// If provided, the entry will move to the new path
@@ -89,7 +87,6 @@ pub struct UpdateItemEntryParams {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct UpdateDirEntryParams {
-    #[ts(as = "String")]
     pub id: EntryId,
 
     /// If provided, the directory will move to the new path
@@ -108,7 +105,6 @@ pub struct UpdateDirEntryParams {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct AfterUpdateDirEntryDescription {
-    #[ts(as = "String")]
     pub id: EntryId,
 
     pub path: FrontendEntryPath,
@@ -119,26 +115,15 @@ pub struct AfterUpdateDirEntryDescription {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct AfterUpdateItemEntryDescription {
-    #[ts(as = "String")]
     pub id: EntryId,
 
     pub path: FrontendEntryPath,
 }
 
-// Check that input path begins with a valid top folder
-// such as requests, endpoints, etc.
 pub(super) fn validate_create_entry_input_path(path: &Path) -> Result<(), ValidationError> {
-    for folder in [
-        dirs::REQUESTS_DIR,
-        dirs::ENDPOINTS_DIR,
-        dirs::COMPONENTS_DIR,
-        dirs::SCHEMAS_DIR,
-    ] {
-        if path.starts_with(folder) {
-            return Ok(());
-        }
+    if path.is_absolute() {
+        return Err(ValidationError::new("the input path must be relative"));
     }
-    Err(ValidationError::new(
-        "The input path does not start with a valid top folder",
-    ))
+
+    Ok(())
 }

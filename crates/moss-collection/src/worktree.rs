@@ -12,10 +12,8 @@ use moss_fs::{CreateOptions, FileSystem, RemoveOptions, desanitize_path, utils::
 use moss_hcl::HclResultExt;
 use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_text::sanitized::{desanitize, sanitize};
-use rustc_hash::FxHashMap;
 use serde_json::Value as JsonValue;
 use std::{
-    cell::LazyCell,
     collections::{HashMap, HashSet},
     fmt::Debug,
     path::{Path, PathBuf},
@@ -27,24 +25,30 @@ use tokio::{
 };
 
 use crate::{
-    constants::{self, COLLECTION_ROOT_PATH, DIR_CONFIG_FILENAME},
+    constants::{self, DIR_CONFIG_FILENAME},
+    dirs,
     errors::{ErrorAlreadyExists, ErrorInvalidInput, ErrorNotFound},
-    models::primitives::{EntryClass, EntryId, EntryKind, EntryProtocol},
+    models::primitives::{EntryId, EntryKind, EntryProtocol},
     services::storage_service::StorageService,
     storage::segments,
     worktree::entry::{Entry, EntryDescription, edit::EntryEditing, model::EntryModel},
 };
 
-const CLASS_TO_DIR_NAME: LazyCell<FxHashMap<EntryClass, &str>> = LazyCell::new(|| {
-    [
-        (EntryClass::Request, "requests"),
-        (EntryClass::Endpoint, "endpoints"),
-        (EntryClass::Component, "components"),
-        (EntryClass::Schema, "schemas"),
-    ]
-    .into_iter()
-    .collect::<FxHashMap<_, _>>()
-});
+trait IsRoot {
+    fn is_root(&self) -> bool;
+}
+
+impl IsRoot for Path {
+    fn is_root(&self) -> bool {
+        self.as_os_str().is_empty()
+    }
+}
+
+impl IsRoot for PathBuf {
+    fn is_root(&self) -> bool {
+        self.as_os_str().is_empty()
+    }
+}
 
 #[derive(Debug)]
 struct ScanJob {
@@ -112,9 +116,9 @@ impl<R: AppRuntime> Worktree<R> {
         }
 
         if path.file_name().is_some() {
-            Ok(self.abs_path.join(path))
+            Ok(self.abs_path.join(dirs::RESOURCES_DIR).join(path))
         } else {
-            Ok(self.abs_path.to_path_buf())
+            Ok(self.abs_path.join(dirs::RESOURCES_DIR).to_path_buf())
         }
     }
 
@@ -202,35 +206,37 @@ impl<R: AppRuntime> Worktree<R> {
             let handle = tokio::spawn(async move {
                 let mut new_jobs = Vec::new();
 
-                match process_entry(
-                    job.path.clone(),
-                    &all_entry_keys,
-                    &expanded_entries,
-                    &fs,
-                    &job.abs_path,
-                )
-                .await
-                {
-                    Ok(Some((entry, desc))) => {
-                        if desc.expanded {
-                            state
-                                .write()
-                                .await
-                                .expanded_entries
-                                .insert(entry.id.clone());
-                        }
+                if !job.path.as_os_str().is_empty() {
+                    match process_entry(
+                        job.path.clone(),
+                        &all_entry_keys,
+                        &expanded_entries,
+                        &fs,
+                        &job.abs_path,
+                    )
+                    .await
+                    {
+                        Ok(Some((entry, desc))) => {
+                            if desc.expanded {
+                                state
+                                    .write()
+                                    .await
+                                    .expanded_entries
+                                    .insert(entry.id.clone());
+                            }
 
-                        let _ = sender.send(desc);
-                        state.write().await.entries.insert(entry.id.clone(), entry);
-                    }
-                    Ok(None) => {
-                        // TODO: log error
-                        return;
-                    }
-                    Err(_err) => {
-                        eprintln!("Error processing dir {}: {}", job.path.display(), _err);
-                        // TODO: log error
-                        return;
+                            let _ = sender.send(desc);
+                            state.write().await.entries.insert(entry.id.clone(), entry);
+                        }
+                        Ok(None) => {
+                            // TODO: log error
+                            return;
+                        }
+                        Err(_err) => {
+                            eprintln!("Error processing dir {}: {}", job.path.display(), _err);
+                            // TODO: log error
+                            return;
+                        }
                     }
                 }
 
@@ -323,13 +329,6 @@ impl<R: AppRuntime> Worktree<R> {
     ) -> joinerror::Result<()> {
         debug_assert!(path.is_relative());
 
-        if !is_parent_dir_entry(self.abs_path.as_ref(), path) {
-            return Err(joinerror::Error::new::<ErrorInvalidInput>(format!(
-                "Cannot create entry inside Item entry {}",
-                path.to_string_lossy().to_string()
-            )));
-        }
-
         let sanitized_path: SanitizedPath = moss_fs::utils::sanitize_path(path, None)?
             .join(sanitize(name))
             .into();
@@ -394,13 +393,6 @@ impl<R: AppRuntime> Worktree<R> {
         expanded: bool,
     ) -> joinerror::Result<()> {
         debug_assert!(path.is_relative());
-
-        if !is_parent_dir_entry(self.abs_path.as_ref(), path) {
-            return Err(joinerror::Error::new::<ErrorInvalidInput>(format!(
-                "Cannot create entry inside Item entry {}",
-                path.to_string_lossy().to_string()
-            )));
-        }
 
         let sanitized_path: SanitizedPath = moss_fs::utils::sanitize_path(path, None)?
             .join(sanitize(name))
@@ -467,19 +459,15 @@ impl<R: AppRuntime> Worktree<R> {
             .ok_or_join_err_with::<ErrorNotFound>(|| format!("entry {} not found", id))?;
 
         if let Some(new_parent) = params.path {
-            if !new_parent.starts_with(CLASS_TO_DIR_NAME.get(&entry.class).unwrap()) {
-                return Err(joinerror::Error::new::<ErrorInvalidInput>(
-                    "cannot move entry to a different classification folder",
-                ));
-            }
-
-            // We can only move entries into a directory entry
-            // Check if the destination path has dir config file
-            let dest_entry_config = self.abs_path.join(&new_parent).join(DIR_CONFIG_FILENAME);
-            if !dest_entry_config.exists() {
-                return Err(joinerror::Error::new::<ErrorInvalidInput>(
-                    "cannot move entries into a non-directory entry",
-                ));
+            if !new_parent.is_root() {
+                // For now, we can only move entries into a directory entry
+                // Check if the destination path has dir config file
+                let dest_abs_path = self.absolutize(&new_parent.join(DIR_CONFIG_FILENAME))?;
+                if !dest_abs_path.exists() {
+                    return Err(joinerror::Error::new::<ErrorInvalidInput>(
+                        "cannot move entries into a non-directory entry",
+                    ));
+                }
             }
 
             let old_path = entry.path_rx.borrow().clone();
@@ -487,7 +475,11 @@ impl<R: AppRuntime> Worktree<R> {
 
             entry
                 .edit
-                .rename(&self.abs_path, &old_path, &new_path)
+                .rename(
+                    &self.abs_path.join(dirs::RESOURCES_DIR),
+                    &old_path,
+                    &new_path,
+                )
                 .await?;
         }
 
@@ -558,19 +550,15 @@ impl<R: AppRuntime> Worktree<R> {
             .ok_or_join_err_with::<ErrorNotFound>(|| format!("entry {} not found", id))?;
 
         if let Some(new_parent) = &params.path {
-            if !new_parent.starts_with(CLASS_TO_DIR_NAME.get(&entry.class).unwrap()) {
-                return Err(joinerror::Error::new::<ErrorInvalidInput>(
-                    "cannot move entry to a different classification folder",
-                ));
-            }
-
-            // We can only move entries into a directory entry
-            // Check if the destination path has dir config file
-            let dest_entry_config = self.abs_path.join(&new_parent).join(DIR_CONFIG_FILENAME);
-            if !dest_entry_config.exists() {
-                return Err(joinerror::Error::new::<ErrorInvalidInput>(
-                    "cannot move entries into a non-directory entry",
-                ));
+            if !new_parent.is_root() {
+                // For now, we can only move entries into a directory entry
+                // Check if the destination path has dir config file
+                let dest_abs_path = self.absolutize(&new_parent.join(DIR_CONFIG_FILENAME))?;
+                if !dest_abs_path.exists() {
+                    return Err(joinerror::Error::new::<ErrorInvalidInput>(
+                        "cannot move entries into a non-directory entry",
+                    ));
+                }
             }
 
             let old_path = entry.path_rx.borrow().clone();
@@ -578,7 +566,11 @@ impl<R: AppRuntime> Worktree<R> {
 
             entry
                 .edit
-                .rename(&self.abs_path, &old_path, &new_path)
+                .rename(
+                    &self.abs_path.join(dirs::RESOURCES_DIR),
+                    &old_path,
+                    &new_path,
+                )
                 .await?;
         }
 
@@ -698,7 +690,7 @@ impl<R: AppRuntime> Worktree<R> {
         is_dir: bool,
         content: &[u8],
     ) -> joinerror::Result<()> {
-        let abs_path = self.absolutize(&path)?;
+        let abs_path = self.absolutize(&path.to_path_buf())?;
         if abs_path.exists() {
             return Err(joinerror::Error::new::<ErrorAlreadyExists>(format!(
                 "entry already exists: {}",
@@ -749,18 +741,6 @@ fn update_path_parent(path: &Path, new_parent: &Path) -> anyhow::Result<PathBuf>
         .to_string();
 
     Ok(new_parent.join(name))
-}
-
-// We don't allow creating subentries inside an item
-fn is_parent_dir_entry(abs_path: &Path, parent_path: &Path) -> bool {
-    if parent_path == Path::new(COLLECTION_ROOT_PATH) {
-        // Ignore the root level since it's not an entry
-        return true;
-    }
-    abs_path
-        .join(parent_path)
-        .join(constants::DIR_CONFIG_FILENAME)
-        .exists()
 }
 
 async fn process_entry(

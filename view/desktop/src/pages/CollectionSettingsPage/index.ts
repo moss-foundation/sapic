@@ -1,1 +1,1 @@
-export { CollectionSettings as CollectionSettingsPage } from "./CollectionSettingsPage";
+export { ProjectSettingsPage } from "./ProjectSettingsPage";

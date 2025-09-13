@@ -1,7 +1,7 @@
 import React from "react";
 
 import { ActionButton } from "@/components";
-import { TreeCollectionNode } from "@/components/CollectionTree/types";
+import { ProjectTreeNode } from "@/components/ProjectTree/types";
 import { DataTable, ParameterData } from "@/components/Table";
 import { useRequestPage } from "@/pages/RequestPage/hooks/useRequestPage";
 import { EntryKind } from "@repo/moss-collection";
@@ -12,7 +12,7 @@ import { paramColumns } from "./columns";
 
 export const ParamsTabContent = (
   _props: IDockviewPanelProps<{
-    node?: TreeCollectionNode;
+    node?: ProjectTreeNode;
     collectionId: string;
     iconType: EntryKind;
   }>

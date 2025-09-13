@@ -15,13 +15,18 @@ export interface CollectionWithEntries extends StreamCollectionsEvent {
 }
 
 export const useStreamedCollectionsWithEntries = () => {
-  const { data: collections = [], isLoading: isCollectionsLoading, error: collectionsError } = useStreamCollections();
+  const {
+    data: collections = [],
+    isLoading: isCollectionsLoading,
+    error: collectionsError,
+    ...query
+  } = useStreamCollections();
 
   const entriesQueries = useQueries({
     queries: collections.map((collection) => ({
       queryKey: [USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY, collection.id],
       queryFn: () => startStreamingCollectionEntries(collection.id),
-      placeholderData: [] as StreamEntriesEvent[],
+      placeholderData: [],
     })),
     combine: (results) => {
       return {
@@ -51,5 +56,6 @@ export const useStreamedCollectionsWithEntries = () => {
     error: collectionsError,
     isEntriesLoading: entriesQueries.isLoading,
     hasEntriesError: entriesQueries.hasError,
+    ...query,
   };
 };

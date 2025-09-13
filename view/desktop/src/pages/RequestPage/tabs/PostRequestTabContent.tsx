@@ -1,9 +1,9 @@
-import { TreeCollectionNode } from "@/components/CollectionTree/types";
+import { ProjectTreeNode } from "@/components/ProjectTree/types";
 import { EntryKind } from "@repo/moss-collection";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
 
 export const PostRequestTabContent = ({}: IDockviewPanelProps<{
-  node?: TreeCollectionNode;
+  node?: ProjectTreeNode;
   collectionId: string;
   iconType: EntryKind;
 }>) => {

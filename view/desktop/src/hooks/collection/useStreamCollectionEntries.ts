@@ -9,6 +9,7 @@ export const USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY = "streamCollectionEntries"
 
 export const useStreamCollectionEntries = (collectionId: string) => {
   const queryClient = useQueryClient();
+
   const { api } = useTabbedPaneStore();
 
   const { hasActiveWorkspace } = useActiveWorkspace();

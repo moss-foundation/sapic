@@ -29,7 +29,6 @@ impl FrontendEntryPath {
 #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq, Hash, TS)]
 #[ts(export, export_to = "primitives.ts")]
 pub enum EntryClass {
-    Request,
     Endpoint,
     Component,
     Schema,
@@ -38,7 +37,6 @@ pub enum EntryClass {
 impl ToString for EntryClass {
     fn to_string(&self) -> String {
         match self {
-            EntryClass::Request => "request".to_string(),
             EntryClass::Endpoint => "endpoint".to_string(),
             EntryClass::Component => "component".to_string(),
             EntryClass::Schema => "schema".to_string(),

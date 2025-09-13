@@ -1,6 +1,6 @@
 import { PageView } from "@/components";
-import { TreeCollectionNode } from "@/components/CollectionTree/types";
 import { PageWrapper } from "@/components/PageView/PageWrapper";
+import { ProjectTreeNode } from "@/components/ProjectTree/types";
 import { useStreamCollectionEntries } from "@/hooks";
 import { EntryKind } from "@repo/moss-collection";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
@@ -9,7 +9,7 @@ import { RequestPageHeader } from "./RequestPageHeader/RequestPageHeader";
 import { RequestPageTabs } from "./RequestPageTabs";
 
 export interface RequestPageProps {
-  node: TreeCollectionNode;
+  node: ProjectTreeNode;
   collectionId: string;
   iconType: EntryKind;
 }

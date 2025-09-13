@@ -1,4 +1,4 @@
-export * from "./CollectionSettingsPage/CollectionSettingsPage";
+export * from "./CollectionSettingsPage/ProjectSettingsPage";
 export * from "./FolderSettingsPage/FolderSettingsPage";
 export * from "./KitchenSinkPage/KitchenSinkPage";
 export * from "./LogsPage/LogsPage";
