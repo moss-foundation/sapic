@@ -67,6 +67,7 @@ pub struct App<R: AppRuntime> {
     pub(super) locale_service: LocaleService,
     pub(super) theme_service: ThemeService,
     pub(super) profile_service: ProfileService<R>,
+    pub(super) configuration_service: ConfigurationService,
 
     // Store cancellers by the id of API requests
     pub(super) tracked_cancellations: Arc<RwLock<HashMap<String, Canceller>>>,

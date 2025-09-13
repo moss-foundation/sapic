@@ -99,6 +99,15 @@ export const Logs = () => {
     }
   };
 
+  const handleDescribeApp = async () => {
+    try {
+      const result = await invoke("describe_app");
+      console.log("App described:", result);
+    } catch (error) {
+      console.error("Error describing app:", error);
+    }
+  };
+
   return (
     <PageContent className="space-y-6">
       <section className="mb-6">
@@ -111,6 +120,15 @@ export const Logs = () => {
         <h2 className="mb-2 text-xl">AI Assistant</h2>
         <div className="rounded bg-gray-50 p-4">
           <AIDemo />
+        </div>
+      </section>
+
+      <section className="mb-6">
+        <h2 className="mb-2 text-xl">App</h2>
+        <div className="rounded bg-gray-50 p-4">
+          <button onClick={handleDescribeApp} className="w-full rounded bg-blue-500 p-2 text-white">
+            Describe App
+          </button>
         </div>
       </section>
 

@@ -3,8 +3,10 @@ import { JsonValue } from "@repo/moss-bindingutils";
 import { WorkspaceMode } from "@repo/moss-workspace";
 import type { LogLevel } from "./primitives";
 import type {
+  AccountInfo,
   AddAccountParams,
   ColorThemeInfo,
+  Configuration,
   Defaults,
   LocaleInfo,
   LogDate,
@@ -93,7 +95,28 @@ export type DeleteWorkspaceOutput = { id: string };
 /**
  * @category Operation
  */
+export type DescribeAppOutput = {
+  /**
+   * The id of the workspace that is currently/last opened.
+   */
+  opened?: string;
+  /**
+   * The id of the profile that is currently active.
+   */
+  profile?: string;
+  configuration: Configuration;
+};
+
+/**
+ * DEPRECATED
+ * @category Operation
+ */
 export type DescribeAppStateOutput = { preferences: Preferences; defaults: Defaults; prevWorkspaceId?: string };
+
+/**
+ * @category Operation
+ */
+export type DescribeProfileOutput = { profile: string; name: string; accounts: Array<AccountInfo> };
 
 /**
  * @category Operation
@@ -109,6 +132,11 @@ export type GetColorThemeInput = { id: string };
  * @category Operation
  */
 export type GetColorThemeOutput = { cssContent: string };
+
+/**
+ * @category Operation
+ */
+export type GetProfileOutput = { id: string; name: string; accounts: Array<AccountInfo> };
 
 /**
  * @category Operation

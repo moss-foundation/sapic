@@ -50,10 +50,14 @@ const LOCALES: &str = r#"
 "#;
 
 const PROFILES: &str = r#"
-{
-  "name": "Default",
-  "accounts": []
-}
+[
+  {
+    "id": "e_MChWGYcY",
+    "name": "Default",
+    "accounts": [],
+    "is_default": true
+  }
+]
 "#;
 
 const ACCOUNT_AUTH_BASE_URL: &str = "https://account-auth-gateway-dev.20g10z3r.workers.dev";
@@ -193,7 +197,7 @@ pub async fn set_up_test_app() -> (
         tokio::fs::write(&locales_abs_path.join("locales.json"), LOCALES)
             .await
             .unwrap();
-        tokio::fs::write(&profiles_abs_path.join("e_MChWGYcY.json"), PROFILES)
+        tokio::fs::write(&profiles_abs_path.join("profiles.json"), PROFILES)
             .await
             .unwrap();
     }

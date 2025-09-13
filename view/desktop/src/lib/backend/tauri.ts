@@ -7,6 +7,7 @@ export type TauriIpcCommand =
   //
   // App
   //
+  | "describe_app"
   | "set_color_theme"
   | "set_locale"
   | "execute_command"
@@ -22,6 +23,7 @@ export type TauriIpcCommand =
   | "update_workspace"
   | "close_workspace"
   | "update_profile"
+  | "get_profile"
   //
   // Workspace
   //
