@@ -25,7 +25,7 @@ use tokio::{
 };
 
 use crate::{
-    constants::{self, COLLECTION_ROOT_PATH, DIR_CONFIG_FILENAME},
+    constants::{self, DIR_CONFIG_FILENAME},
     dirs,
     errors::{ErrorAlreadyExists, ErrorInvalidInput, ErrorNotFound},
     models::primitives::{EntryId, EntryKind, EntryProtocol},
