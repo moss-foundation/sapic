@@ -11,6 +11,7 @@ pub mod describe_collection;
 pub mod describe_state;
 pub mod export_collection;
 pub mod import_collection;
+pub mod list_changes;
 pub mod stream_collections;
 pub mod stream_environments;
 pub mod unarchive_collection;

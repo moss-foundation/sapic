@@ -7,6 +7,7 @@ import {
   contributorSchema,
   createCollectionGitParamsSchema,
   editorPartStateInfoSchema,
+  entryChangeSchema,
   environmentGroupSchema,
   importCollectionSourceSchema,
   panelPartStateInfoSchema,
@@ -175,6 +176,10 @@ export const importCollectionInputSchema = z.object({
   externalPath: z.string().optional(),
   source: importCollectionSourceSchema,
   iconPath: z.string().optional(),
+});
+
+export const listChangesOutputSchema = z.object({
+  changes: z.array(entryChangeSchema),
 });
 
 export const streamEnvironmentsOutputSchema = z.object({

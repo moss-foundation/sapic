@@ -6,6 +6,7 @@ import type {
   Contributor,
   CreateCollectionGitParams,
   EditorPartStateInfo,
+  EntryChange,
   EnvironmentGroup,
   ImportCollectionSource,
   PanelPartStateInfo,
@@ -181,6 +182,11 @@ export type ImportCollectionInput = {
  * @category Operation
  */
 export type ImportCollectionOutput = { id: string; name: string; order?: number; expanded: boolean; iconPath?: string };
+
+/**
+ * @category Operation
+ */
+export type ListChangesOutput = { changes: Array<EntryChange> };
 
 /**
  * @category Operation
