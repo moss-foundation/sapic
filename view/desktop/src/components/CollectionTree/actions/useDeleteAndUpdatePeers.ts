@@ -1,10 +1,11 @@
 import { USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY, useDeleteCollectionEntry } from "@/hooks";
 import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
-import { BatchUpdateEntryInput, BatchUpdateEntryKind, StreamEntriesEvent } from "@repo/moss-collection";
+import { StreamEntriesEvent } from "@repo/moss-collection";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { TreeCollectionNode, TreeCollectionRootNode } from "../types";
+import { siblingsAfterRemovalPayload } from "../utils";
 
 export const useDeleteAndUpdatePeers = (
   collectionId: string,
@@ -31,38 +32,14 @@ export const useDeleteAndUpdatePeers = (
       order: e.order! - 1,
     }));
 
-    const input: BatchUpdateEntryInput = {
-      entries: updatedParentNodeChildren.map((e): BatchUpdateEntryKind => {
-        if (e.kind === "Dir") {
-          return {
-            DIR: {
-              id: e.id,
-              order: e.order,
-            },
-          };
-        }
-
-        return {
-          ITEM: {
-            id: e.id,
-            order: e.order,
-            queryParamsToAdd: [],
-            queryParamsToUpdate: [],
-            queryParamsToRemove: [],
-            pathParamsToAdd: [],
-            pathParamsToUpdate: [],
-            pathParamsToRemove: [],
-            headersToAdd: [],
-            headersToUpdate: [],
-            headersToRemove: [],
-          },
-        };
-      }),
-    };
-
     const result = await batchUpdateCollectionEntry({
       collectionId,
-      entries: input,
+      entries: {
+        entries: siblingsAfterRemovalPayload({
+          nodes: parentNode.childNodes,
+          removedNode: node,
+        }),
+      },
     });
 
     if (result.status === "ok") {

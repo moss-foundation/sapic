@@ -8,28 +8,35 @@ export const isSourceTreeRootNode = (source: ElementDragPayload): boolean => {
 };
 
 export const checkIfAllFoldersAreExpanded = (tree: TreeCollectionRootNode): boolean => {
-  return true;
   const checkIfAllNodesAreExpanded = (node: TreeCollectionNode): boolean => {
     if (!node || node.kind === "Item") return true;
 
     if (!node.expanded) return false;
 
+    if (!node.childNodes || node.childNodes.length === 0) return true;
+
     return node.childNodes.every(checkIfAllNodesAreExpanded);
   };
 
-  return [tree.childNodes].every(checkIfAllNodesAreExpanded);
+  if (!tree.childNodes || tree.childNodes.length === 0) return true;
+
+  return tree.childNodes.every(checkIfAllNodesAreExpanded);
 };
 
 export const checkIfAllFoldersAreCollapsed = (tree: TreeCollectionRootNode): boolean => {
-  return false;
   const checkIfAllNodesAreCollapsed = (node: TreeCollectionNode): boolean => {
     if (!node || node.kind === "Item") return true;
 
     if (node.expanded) return false;
 
+    if (!node.childNodes || node.childNodes.length === 0) return true;
+
     return node.childNodes.every(checkIfAllNodesAreCollapsed);
   };
-  return [tree.childNodes].every(checkIfAllNodesAreCollapsed);
+
+  if (!tree.childNodes || tree.childNodes.length === 0) return true;
+
+  return tree.childNodes.every(checkIfAllNodesAreCollapsed);
 };
 
 export const getTreeRootNodeSourceData = (source: ElementDragPayload) => {
