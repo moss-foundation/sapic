@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use git2::{RemoteCallbacks, Signature};
-use joinerror::{Error, OptionExt};
+use joinerror::OptionExt;
 use moss_applib::AppRuntime;
 use moss_fs::{FileSystem, RemoveOptions};
 use moss_git::{
@@ -170,7 +170,7 @@ impl<R: AppRuntime> CollectionVcs<R> for Vcs<R> {
         let token = self.client.session().token(ctx).await?;
         let mut cb = RemoteCallbacks::new();
         cb.credentials(move |_url, username_from_url, _allowed| {
-            git2::Cred::userpass_plaintext(&username, &token)
+            git2::Cred::userpass_plaintext(&username_from_url.unwrap_or(&username), &token)
         });
 
         repo_ref.push(None, None, None, false, cb)?;

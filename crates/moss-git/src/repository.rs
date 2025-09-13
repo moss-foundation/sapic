@@ -364,7 +364,6 @@ impl Repository {
             self.current_branch()?
         };
 
-        dbg!(&local_branch);
         let mut conf = self.inner.config()?;
 
         // If no remote_name is specified, use the configured remote for the branch,
@@ -376,7 +375,6 @@ impl Repository {
                 .unwrap_or(constants::DEFAULT_REMOTE_NAME.to_string())
         };
 
-        dbg!(&remote_name);
         let mut remote = self.inner.find_remote(&remote_name)?;
         let mut refspecs = Vec::new();
 
