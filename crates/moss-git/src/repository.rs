@@ -11,12 +11,7 @@ use std::{
 };
 
 use crate::constants;
-
-pub enum FileStatus {
-    Added,
-    Modified,
-    Deleted,
-}
+pub use crate::models::primitives::FileStatus;
 
 #[derive(Deref)]
 pub struct Repository {

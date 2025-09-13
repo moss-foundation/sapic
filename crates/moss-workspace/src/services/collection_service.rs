@@ -35,7 +35,7 @@ use crate::{
     models::{
         primitives::CollectionId,
         types::{
-            CreateCollectionGitParams, CreateCollectionParams, ExportCollectionParams,
+            CreateCollectionGitParams, CreateCollectionParams, EntryChange, ExportCollectionParams,
             UpdateCollectionParams,
         },
     },
@@ -791,6 +791,45 @@ impl<R: AppRuntime> CollectionService<R> {
             })?;
 
         item.export_archive(&params.destination).await
+    }
+
+    /// List file statuses for all collections that have a repository handle
+    pub(crate) async fn list_changes(&self) -> joinerror::Result<Vec<EntryChange>> {
+        let mut changes: Vec<EntryChange> = Vec::new();
+
+        let state_lock = self.state.read().await;
+        for (id, item) in state_lock.collections.iter() {
+            let vcs = if let Some(vcs) = item.vcs() {
+                vcs
+            } else {
+                continue;
+            };
+
+            let statuses_result = vcs.statuses().await;
+            if let Err(e) = statuses_result {
+                session::warn!(format!(
+                    "failed to get file statuses for collection `{}`: {}",
+                    id,
+                    e.to_string()
+                ));
+                let _ = self.app_delegate.emit_oneshot(ToLocation::Toast {
+                    activity_id: "get_file_statuses_error",
+                    title: format!("Failed to get file statuses for collection `{}`", id),
+                    detail: Some(e.to_string()),
+                });
+                continue;
+            }
+
+            for (path, status) in statuses_result? {
+                changes.push(EntryChange {
+                    collection_id: id.clone(),
+                    path,
+                    status,
+                })
+            }
+        }
+
+        Ok(changes)
     }
 }
 async fn restore_collections<R: AppRuntime>(
