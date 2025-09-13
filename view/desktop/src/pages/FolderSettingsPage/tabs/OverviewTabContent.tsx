@@ -1,5 +1,5 @@
 import { PageContent } from "@/components";
-import { TreeCollectionNode } from "@/components/CollectionTree/types";
+import { ProjectTreeNode } from "@/components/ProjectTree/types";
 import { useCollectionsTrees } from "@/hooks";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 import { EntryKind } from "@repo/moss-collection";
@@ -8,7 +8,7 @@ import { findNodeInCollection } from "../utils";
 
 export interface FolderSettingsParams {
   collectionId: string;
-  node: TreeCollectionNode;
+  node: ProjectTreeNode;
   iconType: EntryKind;
 }
 

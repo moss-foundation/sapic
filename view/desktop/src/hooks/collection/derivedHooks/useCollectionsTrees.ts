@@ -1,13 +1,13 @@
 import { useMemo } from "react";
 
-import { TreeCollectionNode, TreeCollectionRootNode } from "@/components/CollectionTree/types";
+import { ProjectTreeNode, ProjectTreeRootNode } from "@/components/ProjectTree/types";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 
 import { useStreamedCollectionsWithEntries } from "./useStreamedCollectionsWithEntries";
 
 export interface UseCollectionsTreesProps {
-  collectionsTrees: TreeCollectionRootNode[];
-  collectionsTreesSortedByOrder: TreeCollectionRootNode[];
+  collectionsTrees: ProjectTreeRootNode[];
+  collectionsTreesSortedByOrder: ProjectTreeRootNode[];
   isLoading: boolean;
 }
 
@@ -20,8 +20,8 @@ export const useCollectionsTrees = (): UseCollectionsTreesProps => {
 
   const isLoading = isEntriesLoading || isCollectionsLoading;
 
-  const collectionsTrees: TreeCollectionRootNode[] = useMemo(() => {
-    return collectionsWithEntries.map((collection): TreeCollectionRootNode => {
+  const collectionsTrees: ProjectTreeRootNode[] = useMemo(() => {
+    return collectionsWithEntries.map((collection): ProjectTreeRootNode => {
       const {
         entries,
         isEntriesLoading: _isEntriesLoading,
@@ -29,7 +29,7 @@ export const useCollectionsTrees = (): UseCollectionsTreesProps => {
         ...collectionTree
       } = collection;
 
-      const childNodes: TreeCollectionNode[] = [];
+      const childNodes: ProjectTreeNode[] = [];
 
       entries.forEach((entry) => {
         if (entry.path.segments.length === 1) {
@@ -39,7 +39,7 @@ export const useCollectionsTrees = (): UseCollectionsTreesProps => {
             const existingChildNodes = existingNode.childNodes;
             Object.assign(existingNode, entry, { childNodes: existingChildNodes });
           } else {
-            const newNode: TreeCollectionNode = {
+            const newNode: ProjectTreeNode = {
               ...entry,
               childNodes: [],
             };
@@ -49,7 +49,7 @@ export const useCollectionsTrees = (): UseCollectionsTreesProps => {
         }
 
         // Nested entry - build the tree structure
-        let currentNode: TreeCollectionNode | undefined;
+        let currentNode: ProjectTreeNode | undefined;
         const pathSegments = entry.path.segments;
 
         for (let i = 0; i < pathSegments.length - 1; i++) {
@@ -88,7 +88,7 @@ export const useCollectionsTrees = (): UseCollectionsTreesProps => {
           const existingChildNodes = existingNode.childNodes;
           Object.assign(existingNode, entry, { childNodes: existingChildNodes });
         } else {
-          const newNode: TreeCollectionNode = {
+          const newNode: ProjectTreeNode = {
             ...entry,
             childNodes: [],
           };

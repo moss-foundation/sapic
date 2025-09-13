@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 
+import { ProjectTreeNode } from "@/components/ProjectTree/types";
 import { useCollectionsTrees } from "@/hooks/collection/derivedHooks/useCollectionsTrees";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
-import { TreeCollectionNode } from "@/components/CollectionTree/types";
 import { StreamCollectionsEvent } from "@repo/moss-workspace";
 
 export interface RequestPathProps {
@@ -13,11 +13,11 @@ export const RequestPath: React.FC<RequestPathProps> = ({ className = "" }) => {
   const { activePanelId, api } = useTabbedPaneStore();
   const { collectionsTrees } = useCollectionsTrees();
   const [path, setPath] = useState<string[]>([]);
-  const [activeTree, setActiveTree] = useState<TreeCollectionNode | null>(null);
+  const [activeTree, setActiveTree] = useState<ProjectTreeNode | null>(null);
   const [activeCollection, setActiveCollection] = useState<StreamCollectionsEvent | null>(null);
 
   // Find path function (same logic as Breadcrumbs)
-  const findPath = (node: TreeCollectionNode, target: string): string[] | null => {
+  const findPath = (node: ProjectTreeNode, target: string): string[] | null => {
     if (node.id === target) return [node.id];
 
     if (node.childNodes && node.childNodes.length > 0) {

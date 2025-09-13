@@ -1,6 +1,6 @@
 import { useActiveWorkspace } from "@/hooks";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
-import { CollectionTreesView } from "@/parts/CollectionTreesView/CollectionTreesView";
+import { CollectionTreesView } from "@/parts/ProjectTreesView/ProjectTreesView";
 import { SidebarHeader } from "@/parts/SideBar/SidebarHeader";
 import {
   TREE_VIEW_GROUP_COLLECTIONS,

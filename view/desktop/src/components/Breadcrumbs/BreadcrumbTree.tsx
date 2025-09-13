@@ -1,18 +1,18 @@
 import { useState } from "react";
 
-import { TreeCollectionNode } from "../CollectionTree/types";
+import { ProjectTreeNode } from "../ProjectTree/types";
 import BreadcrumbNode from "./BreadcrumbNode";
 import { closeAllNodesInTree, updateTreeNode } from "./utils";
 
 interface BreadcrumbTreeProps {
-  tree: TreeCollectionNode;
+  tree: ProjectTreeNode;
   collectionId: string;
 }
 
 export const BreadcrumbTree = ({ tree: initialTree, collectionId }: BreadcrumbTreeProps) => {
-  const [tree, setTree] = useState<TreeCollectionNode>(closeAllNodesInTree(initialTree));
+  const [tree, setTree] = useState<ProjectTreeNode>(closeAllNodesInTree(initialTree));
 
-  const handleNodeUpdate = (updatedNode: TreeCollectionNode) => {
+  const handleNodeUpdate = (updatedNode: ProjectTreeNode) => {
     setTree(updateTreeNode(tree, updatedNode));
   };
 

@@ -1,7 +1,7 @@
-import { TreeCollectionNode, TreeCollectionRootNode } from "@/components/CollectionTree/types";
+import { ProjectTreeNode, ProjectTreeRootNode } from "@/components/ProjectTree/types";
 import { Icons } from "@/lib/ui";
 
-export const getFolderIcon = (node: TreeCollectionNode): Icons => {
+export const getFolderIcon = (node: ProjectTreeNode): Icons => {
   const isRoot = node.path.segments.length === 1;
 
   if (isRoot) {
@@ -20,14 +20,14 @@ export const getFolderIcon = (node: TreeCollectionNode): Icons => {
   return "Folder";
 };
 
-export const findNodeInCollection = (collection: TreeCollectionRootNode, searchId: string) => {
+export const findNodeInCollection = (collection: ProjectTreeRootNode, searchId: string) => {
   // Search in all categories
 
   for (const category of collection.childNodes) {
     if (category.id === searchId) return category;
 
     // Recursively search child nodes
-    const findInChildren = (node: TreeCollectionNode): TreeCollectionNode | undefined => {
+    const findInChildren = (node: ProjectTreeNode): ProjectTreeNode | undefined => {
       if (node.id === searchId) return node;
       for (const child of node.childNodes) {
         const found = findInChildren(child);

@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 
 import { InputOutlined } from "@/components";
-import { DeleteCollectionModal } from "@/components/Modals/Collection/DeleteCollectionModal";
+import { DeleteProjectModal } from "@/components/Modals/Project/DeleteCollectionModal";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
 import { useModal, useStreamCollections, useUpdateCollection } from "@/hooks";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 
-import { CollectionDangerZoneSection } from "../CollectionDangerZoneSection";
-import { CollectionSummarySection } from "../CollectionSummarySection";
+import { ProjectDangerZoneSection } from "../ProjectDangerZoneSection";
+import { ProjectSummarySection } from "../ProjectSummarySection";
 
 interface OverviewTabContentProps {
   collectionId: string;
@@ -138,15 +138,15 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
           </div>
         </div>
 
-        <CollectionDangerZoneSection onDeleteClick={openModal} />
+        <ProjectDangerZoneSection onDeleteClick={openModal} />
       </div>
 
       {/* Right Column - Summary positioned absolutely on the right */}
       <div className="absolute top-0 right-2 w-60 py-2">
-        <CollectionSummarySection />
+        <ProjectSummarySection />
       </div>
 
-      {showModal && <DeleteCollectionModal showModal={showModal} closeModal={closeModal} id={params.collectionId} />}
+      {showModal && <DeleteProjectModal showModal={showModal} closeModal={closeModal} id={params.collectionId} />}
     </div>
   );
 };

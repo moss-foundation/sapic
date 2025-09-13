@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import { TreeCollectionNode } from "@/components/CollectionTree/types";
+import { ProjectTreeNode } from "@/components/ProjectTree/types";
 import { Icons } from "@/lib/ui";
 import { AddPanelOptions, DockviewApi, SerializedDockview } from "@repo/moss-tabs";
 
@@ -9,7 +9,7 @@ interface AddPanelOptionsWithoutMandatoryComponent
     AddPanelOptions<{
       iconType?: Icons;
       collectionId?: string;
-      node?: TreeCollectionNode;
+      node?: ProjectTreeNode;
       workspace?: boolean;
     }>,
     "component"

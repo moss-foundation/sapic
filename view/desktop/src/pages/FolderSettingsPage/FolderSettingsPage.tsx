@@ -1,8 +1,9 @@
 import { useState } from "react";
 
 import { PageHeader, PageView } from "@/components";
-import { TreeCollectionNode } from "@/components/CollectionTree/types";
 import { PageContainerWithTabs, TabItem } from "@/components/PageContainer";
+import { PageWrapper } from "@/components/PageView/PageWrapper";
+import { ProjectTreeNode } from "@/components/ProjectTree/types";
 import { useStreamCollectionEntries } from "@/hooks/collection/useStreamCollectionEntries";
 import { useRenameEntryForm } from "@/hooks/useRenameEntryForm";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
@@ -14,7 +15,7 @@ import { getFolderIcon } from "./utils";
 
 export interface FolderSettingsParams {
   collectionId: string;
-  node: TreeCollectionNode;
+  node: ProjectTreeNode;
   iconType: EntryKind;
 }
 
@@ -118,7 +119,9 @@ export const FolderSettings = ({ ...props }: IDockviewPanelProps<FolderSettingsP
         onTitleChange={handleRenamingEntrySubmit}
         {...props}
       />
-      <PageContainerWithTabs tabs={tabs} activeTabId={activeTabId} onTabChange={setActiveTabId} noPadding />
+      <PageWrapper>
+        <PageContainerWithTabs tabs={tabs} activeTabId={activeTabId} onTabChange={setActiveTabId} noPadding />
+      </PageWrapper>
     </PageView>
   );
 };

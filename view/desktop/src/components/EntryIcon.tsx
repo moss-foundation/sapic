@@ -2,10 +2,10 @@ import { Icon } from "@/lib/ui/Icon";
 import { cn } from "@/utils";
 import { StreamEntriesEvent } from "@repo/moss-collection";
 
-import { TreeCollectionNode } from "./CollectionTree/types";
+import { ProjectTreeNode } from "./ProjectTree/types";
 
 interface EntryIconProps {
-  entry?: TreeCollectionNode | StreamEntriesEvent;
+  entry?: ProjectTreeNode | StreamEntriesEvent;
   className?: string;
 }
 
