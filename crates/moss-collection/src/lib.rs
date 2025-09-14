@@ -37,10 +37,10 @@ mod defaults {
 // should also be updated
 pub mod dirs {
     pub const RESOURCES_DIR: &str = "resources";
-    pub const REQUESTS_DIR: &str = "requests";
-    pub const ENDPOINTS_DIR: &str = "endpoints";
-    pub const COMPONENTS_DIR: &str = "components";
-    pub const SCHEMAS_DIR: &str = "schemas";
+    // pub const REQUESTS_DIR: &str = "requests";
+    // pub const ENDPOINTS_DIR: &str = "endpoints";
+    // pub const COMPONENTS_DIR: &str = "components";
+    // pub const SCHEMAS_DIR: &str = "schemas";
     pub const ENVIRONMENTS_DIR: &str = "environments";
     pub const ASSETS_DIR: &str = "assets";
 }
