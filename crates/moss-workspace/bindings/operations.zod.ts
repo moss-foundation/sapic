@@ -5,16 +5,16 @@ import {
   activitybarPartStateInfoSchema,
   addVariableParamsSchema,
   contributorSchema,
-  createCollectionGitParamsSchema,
+  createProjectGitParamsSchema,
   editorPartStateInfoSchema,
   entryChangeSchema,
   environmentGroupSchema,
-  importCollectionSourceSchema,
+  importProjectSourceSchema,
   panelPartStateInfoSchema,
   sidebarPartStateInfoSchema,
-  updateCollectionParamsSchema,
   updateEnvironmentGroupParamsSchema,
   updateEnvironmentParamsSchema,
+  updateProjectParamsSchema,
   updateVariableParamsSchema,
   variableInfoSchema,
   vcsInfoSchema,
@@ -28,28 +28,20 @@ export const activateEnvironmentOutputSchema = z.object({
   environmentId: z.string(),
 });
 
-export const archiveCollectionInputSchema = z.object({
+export const archiveProjectInputSchema = z.object({
   id: z.string(),
 });
 
-export const archiveCollectionOutputSchema = z.object({
+export const archiveProjectOutputSchema = z.object({
   id: z.string(),
-});
-
-export const batchUpdateCollectionOutputSchema = z.object({
-  ids: z.array(z.string()),
 });
 
 export const batchUpdateEnvironmentOutputSchema = z.object({
   ids: z.array(z.string()),
 });
 
-export const createCollectionOutputSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  order: z.number().optional(),
-  expanded: z.boolean(),
-  iconPath: z.string().optional(),
+export const batchUpdateProjectOutputSchema = z.object({
+  ids: z.array(z.string()),
 });
 
 export const createEnvironmentOutputSchema = z.object({
@@ -60,12 +52,12 @@ export const createEnvironmentOutputSchema = z.object({
   color: z.string().optional(),
 });
 
-export const deleteCollectionInputSchema = z.object({
+export const createProjectOutputSchema = z.object({
   id: z.string(),
-});
-
-export const deleteCollectionOutputSchema = z.object({
-  id: z.string(),
+  name: z.string(),
+  order: z.number().optional(),
+  expanded: z.boolean(),
+  iconPath: z.string().optional(),
 });
 
 export const deleteEnvironmentInputSchema = z.object({
@@ -76,7 +68,11 @@ export const deleteEnvironmentOutputSchema = z.object({
   id: z.string(),
 });
 
-export const describeCollectionInputSchema = z.object({
+export const deleteProjectInputSchema = z.object({
+  id: z.string(),
+});
+
+export const deleteProjectOutputSchema = z.object({
   id: z.string(),
 });
 
@@ -84,16 +80,20 @@ export const describeEnvironmentInputSchema = z.object({
   id: z.string(),
 });
 
-export const exportCollectionInputSchema = z.object({
+export const describeProjectInputSchema = z.object({
+  id: z.string(),
+});
+
+export const exportProjectInputSchema = z.object({
   id: z.string(),
   destination: z.string(),
 });
 
-export const exportCollectionOutputSchema = z.object({
+export const exportProjectOutputSchema = z.object({
   archivePath: z.string(),
 });
 
-export const importCollectionOutputSchema = z.object({
+export const importProjectOutputSchema = z.object({
   id: z.string(),
   name: z.string(),
   order: z.number().optional(),
@@ -101,17 +101,13 @@ export const importCollectionOutputSchema = z.object({
   iconPath: z.string().optional(),
 });
 
-export const streamCollectionsOutputSchema = z.object({});
+export const streamProjectsOutputSchema = z.object({});
 
-export const unarchiveCollectionInputSchema = z.object({
+export const unarchiveProjectInputSchema = z.object({
   id: z.string(),
 });
 
-export const unarchiveCollectionOutputSchema = z.object({
-  id: z.string(),
-});
-
-export const updateCollectionOutputSchema = z.object({
+export const unarchiveProjectOutputSchema = z.object({
   id: z.string(),
 });
 
@@ -124,10 +120,10 @@ export const updateEnvironmentGroupInputSchema = z.object({
 export const updateEnvironmentOutputSchema = z.object({
   id: z.string(),
 });
-export const batchUpdateCollectionInputSchema = z.object({
-  items: z.array(updateCollectionParamsSchema),
-});
 
+export const updateProjectOutputSchema = z.object({
+  id: z.string(),
+});
 export const batchUpdateEnvironmentGroupInputSchema = z.object({
   items: z.array(updateEnvironmentGroupParamsSchema),
 });
@@ -136,12 +132,8 @@ export const batchUpdateEnvironmentInputSchema = z.object({
   items: z.array(updateEnvironmentParamsSchema),
 });
 
-export const createCollectionInputSchema = z.object({
-  name: z.string(),
-  order: z.number(),
-  externalPath: z.string().optional(),
-  gitParams: createCollectionGitParamsSchema.optional(),
-  iconPath: z.string().optional(),
+export const batchUpdateProjectInputSchema = z.object({
+  items: z.array(updateProjectParamsSchema),
 });
 
 export const createEnvironmentInputSchema = z.object({
@@ -152,15 +144,23 @@ export const createEnvironmentInputSchema = z.object({
   variables: z.array(addVariableParamsSchema),
 });
 
-export const describeCollectionOutputSchema = z.object({
+export const createProjectInputSchema = z.object({
   name: z.string(),
-  vcs: vcsInfoSchema.optional(),
-  contributors: z.array(contributorSchema),
-  createdAt: z.string(),
+  order: z.number(),
+  externalPath: z.string().optional(),
+  gitParams: createProjectGitParamsSchema.optional(),
+  iconPath: z.string().optional(),
 });
 
 export const describeEnvironmentOutputSchema = z.object({
   variables: variableInfoSchema,
+});
+
+export const describeProjectOutputSchema = z.object({
+  name: z.string(),
+  vcs: vcsInfoSchema.optional(),
+  contributors: z.array(contributorSchema),
+  createdAt: z.string(),
 });
 
 export const describeStateOutputSchema = z.object({
@@ -170,11 +170,11 @@ export const describeStateOutputSchema = z.object({
   activitybar: activitybarPartStateInfoSchema.optional(),
 });
 
-export const importCollectionInputSchema = z.object({
+export const importProjectInputSchema = z.object({
   name: z.string(),
   order: z.number(),
   externalPath: z.string().optional(),
-  source: importCollectionSourceSchema,
+  source: importProjectSourceSchema,
   iconPath: z.string().optional(),
 });
 
@@ -186,15 +186,6 @@ export const streamEnvironmentsOutputSchema = z.object({
   groups: z.array(environmentGroupSchema),
 });
 
-export const updateCollectionInputSchema = z.object({
-  id: z.string(),
-  name: z.string().optional(),
-  repository: changeStringSchema.optional(),
-  iconPath: changePathSchema.optional(),
-  order: z.number().optional(),
-  expanded: z.boolean().optional(),
-});
-
 export const updateEnvironmentInputSchema = z.object({
   id: z.string(),
   name: z.string().optional(),
@@ -204,6 +195,15 @@ export const updateEnvironmentInputSchema = z.object({
   varsToAdd: z.array(addVariableParamsSchema),
   varsToUpdate: z.array(updateVariableParamsSchema),
   varsToDelete: z.array(z.string()),
+});
+
+export const updateProjectInputSchema = z.object({
+  id: z.string(),
+  name: z.string().optional(),
+  repository: changeStringSchema.optional(),
+  iconPath: changePathSchema.optional(),
+  order: z.number().optional(),
+  expanded: z.boolean().optional(),
 });
 
 export const updateStateInputSchema = z.union([

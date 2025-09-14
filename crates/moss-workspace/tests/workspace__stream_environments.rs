@@ -4,8 +4,8 @@ use moss_environment::models::types::{AddVariableParams, VariableOptions};
 use moss_testutils::random_name::{random_collection_name, random_environment_name};
 use moss_workspace::models::{
     events::StreamEnvironmentsEvent,
-    operations::{CreateCollectionInput, CreateEnvironmentInput},
-    types::CreateCollectionParams,
+    operations::{CreateEnvironmentInput, CreateProjectInput},
+    types::CreateProjectParams,
 };
 use serde_json::Value as JsonValue;
 use std::{
@@ -122,11 +122,11 @@ async fn stream_environments_only_collection_environments() {
     for i in 0..5 {
         let collection_name = format!("Collection {}", i);
         let collection_id = workspace
-            .create_collection(
+            .create_project(
                 &ctx,
                 &app_delegate,
-                &CreateCollectionInput {
-                    inner: CreateCollectionParams {
+                &CreateProjectInput {
+                    inner: CreateProjectParams {
                         name: collection_name,
                         order: i,
                         external_path: None,
@@ -218,11 +218,11 @@ async fn stream_environments_both_workspace_and_collection_environments() {
 
     let collection_name = random_collection_name();
     let collection_id = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name,
                     order: 0,
                     external_path: None,

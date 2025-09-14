@@ -7,8 +7,8 @@ use moss_workspace::{
     Workspace,
     models::{
         events::StreamEnvironmentsEvent,
-        operations::{ActivateEnvironmentInput, CreateCollectionInput, CreateEnvironmentInput},
-        types::CreateCollectionParams,
+        operations::{ActivateEnvironmentInput, CreateEnvironmentInput, CreateProjectInput},
+        types::CreateProjectParams,
     },
 };
 use std::{
@@ -94,11 +94,11 @@ async fn activate_environment_collection() {
 
     let collection_name = random_collection_name();
     let collection_id = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name,
                     order: 0,
                     external_path: None,
@@ -205,11 +205,11 @@ async fn activate_environment_groups_isolation() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
     let collection_name = random_collection_name();
     let collection_id = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name,
                     order: 0,
                     external_path: None,

@@ -44,16 +44,16 @@ export type Contributor = { name: string; avatarUrl?: string };
 /**
  * @category Type
  */
-export type CreateCollectionGitParams = { "gitHub": GitHubCreateParams } | { "gitLab": GitLabCreateParams };
+export type CreateProjectGitParams = { "gitHub": GitHubCreateParams } | { "gitLab": GitLabCreateParams };
 
 /**
  * @category Type
  */
-export type CreateCollectionParams = {
+export type CreateProjectParams = {
   name: string;
   order: number;
   externalPath?: string;
-  gitParams?: CreateCollectionGitParams;
+  gitParams?: CreateProjectGitParams;
   iconPath?: string;
 };
 
@@ -124,7 +124,7 @@ export type EnvironmentInfo = {
   variables: Array<VariableInfo>;
 };
 
-export type ExportCollectionParams = {
+export type ExportProjectParams = {
   id: string;
   /**
    * Path to the folder containing the output archive file
@@ -182,18 +182,18 @@ export type GitLabImportParams = {
 
 export type GitLabVcsInfo = { branch: BranchInfo; url: string; updatedAt?: string; owner?: string };
 
-export type ImportCollectionParams = {
+export type ImportProjectParams = {
   name: string;
   order: number;
   externalPath?: string;
-  source: ImportCollectionSource;
+  source: ImportProjectSource;
   iconPath?: string;
 };
 
 /**
  * @category Type
  */
-export type ImportCollectionSource =
+export type ImportProjectSource =
   | { "gitHub": GitHubImportParams }
   | { "gitLab": GitLabImportParams }
   | { "archive": ArchiveImportParams };
@@ -207,18 +207,6 @@ export type PanelPartStateInfo = { size: number; visible: boolean };
  * @category Type
  */
 export type SidebarPartStateInfo = { position: SidebarPosition; size: number; visible: boolean };
-
-/**
- * @category Type
- */
-export type UpdateCollectionParams = {
-  id: string;
-  name?: string;
-  repository?: ChangeString;
-  iconPath?: ChangePath;
-  order?: number;
-  expanded?: boolean;
-};
 
 /**
  * @category Type
@@ -237,6 +225,18 @@ export type UpdateEnvironmentParams = {
   varsToAdd: Array<AddVariableParams>;
   varsToUpdate: Array<UpdateVariableParams>;
   varsToDelete: Array<string>;
+};
+
+/**
+ * @category Type
+ */
+export type UpdateProjectParams = {
+  id: string;
+  name?: string;
+  repository?: ChangeString;
+  iconPath?: ChangePath;
+  order?: number;
+  expanded?: boolean;
 };
 
 /**

@@ -3,8 +3,8 @@ pub mod shared;
 
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::models::{
-    events::StreamCollectionsEvent, operations::CreateCollectionInput, primitives::ProjectId,
-    types::CreateCollectionParams,
+    events::StreamProjectsEvent, operations::CreateProjectInput, primitives::ProjectId,
+    types::CreateProjectParams,
 };
 use std::{
     collections::HashMap,
@@ -23,14 +23,14 @@ async fn stream_collections_empty_workspace() {
 
     let channel = Channel::new(move |body: InvokeResponseBody| {
         if let InvokeResponseBody::Json(json_str) = body {
-            if let Ok(event) = serde_json::from_str::<StreamCollectionsEvent>(&json_str) {
+            if let Ok(event) = serde_json::from_str::<StreamProjectsEvent>(&json_str) {
                 received_events_clone.lock().unwrap().push(event);
             }
         }
         Ok(())
     });
 
-    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
+    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
 
     // Verify no events were received
     let events = received_events.lock().unwrap();
@@ -49,11 +49,11 @@ async fn stream_collections_single_collection() {
 
     // Create a single collection
     let create_result = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name.clone(),
                     order: collection_order,
                     external_path: None,
@@ -73,14 +73,14 @@ async fn stream_collections_single_collection() {
 
     let channel = Channel::new(move |body: InvokeResponseBody| {
         if let InvokeResponseBody::Json(json_str) = body {
-            if let Ok(event) = serde_json::from_str::<StreamCollectionsEvent>(&json_str) {
+            if let Ok(event) = serde_json::from_str::<StreamProjectsEvent>(&json_str) {
                 received_events_clone.lock().unwrap().push(event);
             }
         }
         Ok(())
     });
 
-    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
+    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
 
     // Verify one event was received
     let events = received_events.lock().unwrap();
@@ -109,11 +109,11 @@ async fn stream_collections_multiple_collections() {
         let collection_order = i * 10;
 
         let create_result = workspace
-            .create_collection(
+            .create_project(
                 &ctx,
                 &app_delegate,
-                &CreateCollectionInput {
-                    inner: CreateCollectionParams {
+                &CreateProjectInput {
+                    inner: CreateProjectParams {
                         name: collection_name.clone(),
                         order: collection_order,
                         external_path: None,
@@ -134,14 +134,14 @@ async fn stream_collections_multiple_collections() {
 
     let channel = Channel::new(move |body: InvokeResponseBody| {
         if let InvokeResponseBody::Json(json_str) = body {
-            if let Ok(event) = serde_json::from_str::<StreamCollectionsEvent>(&json_str) {
+            if let Ok(event) = serde_json::from_str::<StreamProjectsEvent>(&json_str) {
                 received_events_clone.lock().unwrap().push(event);
             }
         }
         Ok(())
     });
 
-    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
+    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
 
     // Verify correct number of events
     let events = received_events.lock().unwrap();
@@ -149,7 +149,7 @@ async fn stream_collections_multiple_collections() {
     assert_eq!(output.total_returned, 5);
 
     // Convert events to a map for easier verification
-    let events_map: HashMap<ProjectId, &StreamCollectionsEvent> = events
+    let events_map: HashMap<ProjectId, &StreamProjectsEvent> = events
         .iter()
         .map(|event| (event.id.clone(), event))
         .collect();
@@ -178,11 +178,11 @@ async fn stream_collections_with_icon() {
 
     // Create a collection with icon
     let create_result = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name.clone(),
                     order: collection_order,
                     external_path: None,
@@ -202,14 +202,14 @@ async fn stream_collections_with_icon() {
 
     let channel = Channel::new(move |body: InvokeResponseBody| {
         if let InvokeResponseBody::Json(json_str) = body {
-            if let Ok(event) = serde_json::from_str::<StreamCollectionsEvent>(&json_str) {
+            if let Ok(event) = serde_json::from_str::<StreamProjectsEvent>(&json_str) {
                 received_events_clone.lock().unwrap().push(event);
             }
         }
         Ok(())
     });
 
-    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
+    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
 
     // Verify one event was received
     let events = received_events.lock().unwrap();
@@ -239,11 +239,11 @@ async fn stream_collections_mixed_configurations() {
     // Collection 1: Basic
     let name1 = "Basic Collection".to_string();
     let result1 = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: name1.clone(),
                     order: 1,
                     external_path: None,
@@ -259,11 +259,11 @@ async fn stream_collections_mixed_configurations() {
     // Collection 2: With icon
     let name2 = "Icon Collection".to_string();
     let result2 = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: name2.clone(),
                     order: 2,
                     external_path: None,
@@ -282,14 +282,14 @@ async fn stream_collections_mixed_configurations() {
 
     let channel = Channel::new(move |body: InvokeResponseBody| {
         if let InvokeResponseBody::Json(json_str) = body {
-            if let Ok(event) = serde_json::from_str::<StreamCollectionsEvent>(&json_str) {
+            if let Ok(event) = serde_json::from_str::<StreamProjectsEvent>(&json_str) {
                 received_events_clone.lock().unwrap().push(event);
             }
         }
         Ok(())
     });
 
-    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
+    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
 
     // Verify correct number of events
     let events = received_events.lock().unwrap();
@@ -297,7 +297,7 @@ async fn stream_collections_mixed_configurations() {
     assert_eq!(output.total_returned, 2);
 
     // Convert events to a map for easier verification
-    let events_map: HashMap<ProjectId, &StreamCollectionsEvent> = events
+    let events_map: HashMap<ProjectId, &StreamProjectsEvent> = events
         .iter()
         .map(|event| (event.id.clone(), event))
         .collect();
@@ -329,11 +329,11 @@ async fn stream_collections_order_verification() {
     for order in orders.iter() {
         let collection_name = format!("Collection Order {}", order);
         let result = workspace
-            .create_collection(
+            .create_project(
                 &ctx,
                 &app_delegate,
-                &CreateCollectionInput {
-                    inner: CreateCollectionParams {
+                &CreateProjectInput {
+                    inner: CreateProjectParams {
                         name: collection_name.clone(),
                         order: *order,
                         external_path: None,
@@ -353,14 +353,14 @@ async fn stream_collections_order_verification() {
 
     let channel = Channel::new(move |body: InvokeResponseBody| {
         if let InvokeResponseBody::Json(json_str) = body {
-            if let Ok(event) = serde_json::from_str::<StreamCollectionsEvent>(&json_str) {
+            if let Ok(event) = serde_json::from_str::<StreamProjectsEvent>(&json_str) {
                 received_events_clone.lock().unwrap().push(event);
             }
         }
         Ok(())
     });
 
-    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
+    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
 
     // Verify correct number of events
     let events = received_events.lock().unwrap();

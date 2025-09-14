@@ -2,9 +2,9 @@
 
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::models::{
-    operations::{ArchiveCollectionInput, CreateCollectionInput},
+    operations::{ArchiveProjectInput, CreateProjectInput},
     primitives::ProjectId,
-    types::CreateCollectionParams,
+    types::CreateProjectParams,
 };
 
 use crate::shared::{setup_test_workspace, test_stream_collections};
@@ -17,11 +17,11 @@ pub async fn archive_collection_success() {
 
     let collection_name = random_collection_name();
     let id = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name.clone(),
                     order: 0,
                     external_path: None,
@@ -39,7 +39,7 @@ pub async fn archive_collection_success() {
     assert!(!events.get(&id).unwrap().archived);
 
     workspace
-        .archive_collection(&ctx, ArchiveCollectionInput { id: id.clone() })
+        .archive_project(&ctx, ArchiveProjectInput { id: id.clone() })
         .await
         .unwrap();
 
@@ -58,11 +58,11 @@ pub async fn archive_collection_already_archived() {
 
     let collection_name = random_collection_name();
     let id = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name.clone(),
                     order: 0,
                     external_path: None,
@@ -76,12 +76,12 @@ pub async fn archive_collection_already_archived() {
         .id;
 
     workspace
-        .archive_collection(&ctx, ArchiveCollectionInput { id: id.clone() })
+        .archive_project(&ctx, ArchiveProjectInput { id: id.clone() })
         .await
         .unwrap();
 
     let result = workspace
-        .archive_collection(&ctx, ArchiveCollectionInput { id: id.clone() })
+        .archive_project(&ctx, ArchiveProjectInput { id: id.clone() })
         .await;
     assert!(result.is_ok());
 
@@ -99,9 +99,9 @@ pub async fn archived_collection_nonexistent() {
     let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let result = workspace
-        .archive_collection(
+        .archive_project(
             &ctx,
-            ArchiveCollectionInput {
+            ArchiveProjectInput {
                 id: ProjectId::new(),
             },
         )

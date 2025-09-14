@@ -4,16 +4,16 @@ import type {
   ActivitybarPartStateInfo,
   AddVariableParams,
   Contributor,
-  CreateCollectionGitParams,
+  CreateProjectGitParams,
   EditorPartStateInfo,
   EntryChange,
   EnvironmentGroup,
-  ImportCollectionSource,
+  ImportProjectSource,
   PanelPartStateInfo,
   SidebarPartStateInfo,
-  UpdateCollectionParams,
   UpdateEnvironmentGroupParams,
   UpdateEnvironmentParams,
+  UpdateProjectParams,
   UpdateVariableParams,
   VariableInfo,
   VcsInfo,
@@ -26,22 +26,12 @@ export type ActivateEnvironmentOutput = { environmentId: string };
 /**
  * @category Operation
  */
-export type ArchiveCollectionInput = { id: string };
+export type ArchiveProjectInput = { id: string };
 
 /**
  * @category Operation
  */
-export type ArchiveCollectionOutput = { id: string };
-
-/**
- * @category Operation
- */
-export type BatchUpdateCollectionInput = { items: Array<UpdateCollectionParams> };
-
-/**
- * @category Operation
- */
-export type BatchUpdateCollectionOutput = { ids: Array<string> };
+export type ArchiveProjectOutput = { id: string };
 
 /**
  * @category Operation
@@ -61,18 +51,12 @@ export type BatchUpdateEnvironmentOutput = { ids: Array<string> };
 /**
  * @category Operation
  */
-export type CreateCollectionInput = {
-  name: string;
-  order: number;
-  externalPath?: string;
-  gitParams?: CreateCollectionGitParams;
-  iconPath?: string;
-};
+export type BatchUpdateProjectInput = { items: Array<UpdateProjectParams> };
 
 /**
  * @category Operation
  */
-export type CreateCollectionOutput = { id: string; name: string; order?: number; expanded: boolean; iconPath?: string };
+export type BatchUpdateProjectOutput = { ids: Array<string> };
 
 /**
  * @category Operation
@@ -99,12 +83,18 @@ export type CreateEnvironmentOutput = {
 /**
  * @category Operation
  */
-export type DeleteCollectionInput = { id: string };
+export type CreateProjectInput = {
+  name: string;
+  order: number;
+  externalPath?: string;
+  gitParams?: CreateProjectGitParams;
+  iconPath?: string;
+};
 
 /**
  * @category Operation
  */
-export type DeleteCollectionOutput = { id: string };
+export type CreateProjectOutput = { id: string; name: string; order?: number; expanded: boolean; iconPath?: string };
 
 /**
  * @category Operation
@@ -119,17 +109,12 @@ export type DeleteEnvironmentOutput = { id: string };
 /**
  * @category Operation
  */
-export type DescribeCollectionInput = { id: string };
+export type DeleteProjectInput = { id: string };
 
 /**
  * @category Operation
  */
-export type DescribeCollectionOutput = {
-  name: string;
-  vcs?: VcsInfo;
-  contributors: Array<Contributor>;
-  createdAt: string;
-};
+export type DeleteProjectOutput = { id: string };
 
 /**
  * @category Operation
@@ -144,6 +129,21 @@ export type DescribeEnvironmentOutput = { variables: VariableInfo };
 /**
  * @category Operation
  */
+export type DescribeProjectInput = { id: string };
+
+/**
+ * @category Operation
+ */
+export type DescribeProjectOutput = {
+  name: string;
+  vcs?: VcsInfo;
+  contributors: Array<Contributor>;
+  createdAt: string;
+};
+
+/**
+ * @category Operation
+ */
 export type DescribeStateOutput = {
   editor?: EditorPartStateInfo;
   sidebar?: SidebarPartStateInfo;
@@ -154,7 +154,7 @@ export type DescribeStateOutput = {
 /**
  * @category Operation
  */
-export type ExportCollectionInput = {
+export type ExportProjectInput = {
   id: string;
   /**
    * Path to the folder containing the output archive file
@@ -165,23 +165,23 @@ export type ExportCollectionInput = {
 /**
  * @category Operation
  */
-export type ExportCollectionOutput = { archivePath: string };
+export type ExportProjectOutput = { archivePath: string };
 
 /**
  * @category Operation
  */
-export type ImportCollectionInput = {
+export type ImportProjectInput = {
   name: string;
   order: number;
   externalPath?: string;
-  source: ImportCollectionSource;
+  source: ImportProjectSource;
   iconPath?: string;
 };
 
 /**
  * @category Operation
  */
-export type ImportCollectionOutput = { id: string; name: string; order?: number; expanded: boolean; iconPath?: string };
+export type ImportProjectOutput = { id: string; name: string; order?: number; expanded: boolean; iconPath?: string };
 
 /**
  * @category Operation
@@ -191,39 +191,22 @@ export type ListChangesOutput = { changes: Array<EntryChange> };
 /**
  * @category Operation
  */
-export type StreamCollectionsOutput = {};
-
-/**
- * @category Operation
- */
 export type StreamEnvironmentsOutput = { groups: Array<EnvironmentGroup> };
 
 /**
  * @category Operation
  */
-export type UnarchiveCollectionInput = { id: string };
+export type StreamProjectsOutput = {};
 
 /**
  * @category Operation
  */
-export type UnarchiveCollectionOutput = { id: string };
+export type UnarchiveProjectInput = { id: string };
 
 /**
  * @category Operation
  */
-export type UpdateCollectionInput = {
-  id: string;
-  name?: string;
-  repository?: ChangeString;
-  iconPath?: ChangePath;
-  order?: number;
-  expanded?: boolean;
-};
-
-/**
- * @category Operation
- */
-export type UpdateCollectionOutput = { id: string };
+export type UnarchiveProjectOutput = { id: string };
 
 /**
  * @category Operation
@@ -248,6 +231,23 @@ export type UpdateEnvironmentInput = {
  * @category Operation
  */
 export type UpdateEnvironmentOutput = { id: string };
+
+/**
+ * @category Operation
+ */
+export type UpdateProjectInput = {
+  id: string;
+  name?: string;
+  repository?: ChangeString;
+  iconPath?: ChangePath;
+  order?: number;
+  expanded?: boolean;
+};
+
+/**
+ * @category Operation
+ */
+export type UpdateProjectOutput = { id: string };
 
 /**
  * @category Operation

@@ -10,7 +10,7 @@ export const streamEnvironmentsEventSchema = z.object({
   order: z.number().optional(),
   totalVariables: z.number(),
 });
-export const streamCollectionsEventSchema = z.object({
+export const streamProjectsEventSchema = z.object({
   id: z.string(),
   name: z.string(),
   order: z.number().optional(),

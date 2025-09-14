@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { USE_STREAM_COLLECTIONS_QUERY_KEY } from "./useStreamCollections";
 
 const batchUpdateCollection = async (input: BatchUpdateCollectionInput) => {
-  const result = await invokeTauriIpc<UpdateCollectionOutput>("batch_update_collection", {
+  const result = await invokeTauriIpc<UpdateCollectionOutput>("batch_update_project", {
     input,
   });
 

@@ -1,24 +1,24 @@
 use crate::{
     Workspace,
-    models::operations::{ExportCollectionInput, ExportCollectionOutput},
+    models::operations::{ExportProjectInput, ExportProjectOutput},
 };
 use moss_applib::{AppRuntime, errors::ValidationResultExt};
 use validator::Validate;
 
 impl<R: AppRuntime> Workspace<R> {
-    pub async fn export_collection(
+    pub async fn export_project(
         &self,
         _ctx: &R::AsyncContext,
-        input: &ExportCollectionInput,
-    ) -> joinerror::Result<ExportCollectionOutput> {
+        input: &ExportProjectInput,
+    ) -> joinerror::Result<ExportProjectOutput> {
         input.validate().join_err_bare()?;
         let id = input.inner.id.clone();
 
         let archive_path = self
-            .collection_service
+            .project_service
             .export_collection(&id, &input.inner)
             .await?;
 
-        Ok(ExportCollectionOutput { archive_path })
+        Ok(ExportProjectOutput { archive_path })
     }
 }

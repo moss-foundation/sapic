@@ -6,9 +6,7 @@ use crate::shared::{generate_random_icon, setup_test_workspace};
 use moss_storage::storage::operations::GetItem;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_collection_name};
 use moss_workspace::{
-    models::{
-        operations::CreateCollectionInput, primitives::ProjectId, types::CreateCollectionParams,
-    },
+    models::{operations::CreateProjectInput, primitives::ProjectId, types::CreateProjectParams},
     storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
 use tauri::ipc::Channel;
@@ -19,11 +17,11 @@ async fn create_collection_success() {
 
     let collection_name = random_collection_name();
     let create_collection_output = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name.clone(),
                     order: 0,
                     external_path: None,
@@ -37,7 +35,7 @@ async fn create_collection_success() {
 
     // Verify through stream_collections
     let channel = Channel::new(move |_| Ok(()));
-    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
+    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
     assert_eq!(output.total_returned, 1);
 
     // Verify the directory was created
@@ -75,11 +73,11 @@ async fn create_collection_empty_name() {
 
     let collection_name = "".to_string();
     let create_collection_result = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name.clone(),
                     order: 0,
                     external_path: None,
@@ -106,11 +104,11 @@ async fn create_collection_special_chars() {
 
     for collection_name in &collection_name_list {
         let create_collection_result = workspace
-            .create_collection(
+            .create_project(
                 &ctx,
                 &app_delegate,
-                &CreateCollectionInput {
-                    inner: CreateCollectionParams {
+                &CreateProjectInput {
+                    inner: CreateProjectParams {
                         name: collection_name.clone(),
                         order: 0,
                         external_path: None,
@@ -152,7 +150,7 @@ async fn create_collection_special_chars() {
 
     // Verify all collections are returned through stream_collections
     let channel = Channel::new(move |_| Ok(()));
-    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
+    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
     assert_eq!(output.total_returned, collection_name_list.len());
 
     cleanup().await;
@@ -164,11 +162,11 @@ async fn create_collection_with_order() {
 
     let collection_name = random_collection_name();
     let create_collection_result = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name.clone(),
                     order: 42,
                     external_path: None,
@@ -182,7 +180,7 @@ async fn create_collection_with_order() {
     let create_collection_output = create_collection_result.unwrap();
 
     let channel = Channel::new(move |_| Ok(()));
-    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
+    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
     assert_eq!(output.total_returned, 1);
 
     // Verify the directory was created
@@ -223,11 +221,11 @@ async fn create_collection_with_icon() {
     generate_random_icon(&input_icon_path);
 
     let create_collection_result = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name.clone(),
                     order: 0,
                     external_path: None,
@@ -243,7 +241,7 @@ async fn create_collection_with_icon() {
     let id = create_collection_output.id;
 
     let channel = Channel::new(move |_| Ok(()));
-    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
+    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
     assert_eq!(output.total_returned, 1);
 
     // Verify the directory was created
@@ -285,11 +283,11 @@ async fn create_multiple_collections_expanded_items() {
     // Create first collection
     let collection_name1 = random_collection_name();
     let create_result1 = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name1.clone(),
                     order: 0,
                     external_path: None,
@@ -304,11 +302,11 @@ async fn create_multiple_collections_expanded_items() {
     // Create second collection
     let collection_name2 = random_collection_name();
     let create_result2 = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name2.clone(),
                     order: 1,
                     external_path: None,

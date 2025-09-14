@@ -5,9 +5,9 @@ use crate::shared::{generate_random_icon, setup_test_workspace};
 use moss_bindingutils::primitives::ChangePath;
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::models::{
-    operations::{CreateCollectionInput, UpdateCollectionInput},
+    operations::{CreateProjectInput, UpdateProjectInput},
     primitives::ProjectId,
-    types::{CreateCollectionParams, UpdateCollectionParams},
+    types::{CreateProjectParams, UpdateProjectParams},
 };
 
 #[tokio::test]
@@ -16,11 +16,11 @@ async fn rename_collection_success() {
 
     let old_collection_name = random_collection_name();
     let create_collection_output = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: old_collection_name.clone(),
                     order: 0,
                     external_path: None,
@@ -34,10 +34,10 @@ async fn rename_collection_success() {
 
     let new_collection_name = random_collection_name();
     let _ = workspace
-        .update_collection(
+        .update_project(
             &ctx,
-            UpdateCollectionInput {
-                inner: UpdateCollectionParams {
+            UpdateProjectInput {
+                inner: UpdateProjectParams {
                     id: create_collection_output.id.clone(),
                     name: Some(new_collection_name.clone()),
                     repository: None,
@@ -69,11 +69,11 @@ async fn rename_collection_empty_name() {
 
     let old_collection_name = random_collection_name();
     let create_collection_output = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: old_collection_name.clone(),
                     order: 0,
                     external_path: None,
@@ -87,10 +87,10 @@ async fn rename_collection_empty_name() {
 
     let new_collection_name = "".to_string();
     let rename_collection_result = workspace
-        .update_collection(
+        .update_project(
             &ctx,
-            UpdateCollectionInput {
-                inner: UpdateCollectionParams {
+            UpdateProjectInput {
+                inner: UpdateProjectParams {
                     id: create_collection_output.id,
                     name: Some(new_collection_name.clone()),
                     repository: None,
@@ -112,11 +112,11 @@ async fn rename_collection_unchanged() {
 
     let old_collection_name = random_collection_name();
     let create_collection_output = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: old_collection_name.clone(),
                     order: 0,
                     external_path: None,
@@ -130,10 +130,10 @@ async fn rename_collection_unchanged() {
 
     let new_collection_name = old_collection_name;
     let _ = workspace
-        .update_collection(
+        .update_project(
             &ctx,
-            UpdateCollectionInput {
-                inner: UpdateCollectionParams {
+            UpdateProjectInput {
+                inner: UpdateProjectParams {
                     id: create_collection_output.id,
                     name: Some(new_collection_name),
                     repository: None,
@@ -157,10 +157,10 @@ async fn rename_collection_nonexistent_id() {
     let nonexistent_id = ProjectId::new();
 
     let result = workspace
-        .update_collection(
+        .update_project(
             &ctx,
-            UpdateCollectionInput {
-                inner: UpdateCollectionParams {
+            UpdateProjectInput {
+                inner: UpdateProjectParams {
                     id: nonexistent_id,
                     name: Some(random_collection_name()),
                     repository: None,
@@ -182,11 +182,11 @@ async fn update_collection_new_icon() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
     let collection_name = random_collection_name();
     let id = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name.to_string(),
                     order: 0,
                     external_path: None,
@@ -203,10 +203,10 @@ async fn update_collection_new_icon() {
     generate_random_icon(&icon_path);
 
     let _ = workspace
-        .update_collection(
+        .update_project(
             &ctx,
-            UpdateCollectionInput {
-                inner: UpdateCollectionParams {
+            UpdateProjectInput {
+                inner: UpdateProjectParams {
                     id: id.clone(),
                     name: None,
                     repository: None,
@@ -235,11 +235,11 @@ async fn update_collection_remove_icon() {
     generate_random_icon(&icon_path);
 
     let id = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name.clone(),
                     order: 0,
                     external_path: None,
@@ -253,10 +253,10 @@ async fn update_collection_remove_icon() {
         .id;
 
     let _ = workspace
-        .update_collection(
+        .update_project(
             &ctx,
-            UpdateCollectionInput {
-                inner: UpdateCollectionParams {
+            UpdateProjectInput {
+                inner: UpdateProjectParams {
                     id: id.clone(),
                     name: None,
                     repository: None,

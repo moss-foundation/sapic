@@ -13,8 +13,8 @@ use crate::{
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
     models::primitives::ProjectId,
     services::{
-        collection_service::CollectionService, environment_service::EnvironmentService,
-        layout_service::LayoutService, storage_service::StorageService,
+        environment_service::EnvironmentService, layout_service::LayoutService,
+        project_service::ProjectService, storage_service::StorageService,
     },
 };
 
@@ -46,17 +46,17 @@ pub struct WorkspaceBuilder<R: AppRuntime> {
 }
 
 #[derive(Clone)]
-pub struct OnDidDeleteCollection {
-    pub collection_id: ProjectId,
+pub struct OnDidDeleteProject {
+    pub project_id: ProjectId,
 }
 
 #[derive(Clone)]
-pub struct OnDidAddCollection {
-    pub collection_id: ProjectId,
+pub struct OnDidAddProject {
+    pub project_id: ProjectId,
 }
 
-impl EventMarker for OnDidDeleteCollection {}
-impl EventMarker for OnDidAddCollection {}
+impl EventMarker for OnDidDeleteProject {}
+impl EventMarker for OnDidAddProject {}
 
 impl<R: AppRuntime> WorkspaceBuilder<R> {
     pub fn new(fs: Arc<dyn FileSystem>, active_profile: Arc<Profile<R>>) -> Self {
@@ -69,7 +69,7 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
     ) -> joinerror::Result<()> {
         debug_assert!(params.abs_path.is_absolute());
 
-        for dir in &[dirs::COLLECTIONS_DIR, dirs::ENVIRONMENTS_DIR] {
+        for dir in &[dirs::PROJECTS_DIR, dirs::ENVIRONMENTS_DIR] {
             fs.create_dir(&params.abs_path.join(dir)).await?;
         }
 
@@ -111,8 +111,8 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
             params.abs_path.join(dirs::ENVIRONMENTS_DIR),
         )]);
 
-        let on_did_delete_collection_emitter = EventEmitter::<OnDidDeleteCollection>::new();
-        let on_did_add_collection_emitter = EventEmitter::<OnDidAddCollection>::new();
+        let on_did_delete_collection_emitter = EventEmitter::<OnDidDeleteProject>::new();
+        let on_did_add_collection_emitter = EventEmitter::<OnDidAddProject>::new();
 
         let on_did_delete_collection_event = on_did_delete_collection_emitter.event();
         let on_did_add_collection_event = on_did_add_collection_emitter.event();
@@ -122,7 +122,7 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
             .into();
         let layout_service = LayoutService::new(storage_service.clone());
 
-        let collection_service: Arc<CollectionService<R>> = CollectionService::new(
+        let collection_service: Arc<ProjectService<R>> = ProjectService::new(
             ctx,
             app_delegate,
             &params.abs_path,
@@ -149,14 +149,14 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
 
         let edit = WorkspaceEdit::new(self.fs.clone(), params.abs_path.join(MANIFEST_FILE_NAME));
 
-        let on_did_add_collection = Workspace::on_did_add_collection(
+        let on_did_add_collection = Workspace::on_did_add_project(
             collection_service.clone(),
             environment_service.clone(),
             &on_did_add_collection_event,
         )
         .await;
 
-        let on_did_delete_collection = Workspace::on_did_delete_collection(
+        let on_did_delete_collection = Workspace::on_did_delete_project(
             environment_service.clone(),
             &on_did_delete_collection_event,
         )
@@ -166,12 +166,12 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
             abs_path: params.abs_path,
             edit,
             layout_service,
-            collection_service,
+            project_service: collection_service,
             environment_service,
             storage_service,
             active_profile: self.active_profile,
-            _on_did_add_collection: on_did_add_collection,
-            _on_did_delete_collection: on_did_delete_collection,
+            _on_did_add_project: on_did_add_collection,
+            _on_did_delete_project: on_did_delete_collection,
         })
     }
 
@@ -192,15 +192,15 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
             params.abs_path.join(dirs::ENVIRONMENTS_DIR),
         )]);
 
-        let on_did_delete_collection_emitter = EventEmitter::<OnDidDeleteCollection>::new();
-        let on_did_add_collection_emitter = EventEmitter::<OnDidAddCollection>::new();
+        let on_did_delete_collection_emitter = EventEmitter::<OnDidDeleteProject>::new();
+        let on_did_add_collection_emitter = EventEmitter::<OnDidAddProject>::new();
 
         let on_did_delete_collection_event = on_did_delete_collection_emitter.event();
         let on_did_add_collection_event = on_did_add_collection_emitter.event();
 
         let storage_service: Arc<StorageService<R>> = StorageService::new(&params.abs_path)?.into();
         let layout_service = LayoutService::new(storage_service.clone());
-        let collection_service: Arc<CollectionService<R>> = CollectionService::new(
+        let collection_service: Arc<ProjectService<R>> = ProjectService::new(
             ctx,
             app_delegate,
             &params.abs_path,
@@ -225,14 +225,14 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
 
         let edit = WorkspaceEdit::new(self.fs.clone(), params.abs_path.join(MANIFEST_FILE_NAME));
 
-        let on_did_add_collection = Workspace::on_did_add_collection(
+        let on_did_add_collection = Workspace::on_did_add_project(
             collection_service.clone(),
             environment_service.clone(),
             &on_did_add_collection_event,
         )
         .await;
 
-        let on_did_delete_collection = Workspace::on_did_delete_collection(
+        let on_did_delete_collection = Workspace::on_did_delete_project(
             environment_service.clone(),
             &on_did_delete_collection_event,
         )
@@ -242,12 +242,12 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
             abs_path: params.abs_path,
             edit,
             layout_service,
-            collection_service,
+            project_service: collection_service,
             environment_service,
             storage_service,
             active_profile: self.active_profile,
-            _on_did_add_collection: on_did_add_collection,
-            _on_did_delete_collection: on_did_delete_collection,
+            _on_did_add_project: on_did_add_collection,
+            _on_did_delete_project: on_did_delete_collection,
         })
     }
 }

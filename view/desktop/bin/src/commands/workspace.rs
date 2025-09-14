@@ -53,51 +53,49 @@ pub async fn stream_environments<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
-pub async fn stream_collections<'a, R: tauri::Runtime>(
+pub async fn stream_projects<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
-    channel: TauriChannel<StreamCollectionsEvent>,
+    channel: TauriChannel<StreamProjectsEvent>,
     options: Options,
-) -> TauriResult<StreamCollectionsOutput> {
+) -> TauriResult<StreamProjectsOutput> {
     super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
-        workspace.stream_collections(&ctx, channel).await
+        workspace.stream_projects(&ctx, channel).await
     })
     .await
 }
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn describe_collection<'a, R: tauri::Runtime>(
+pub async fn describe_project<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
-    input: DescribeCollectionInput,
+    input: DescribeProjectInput,
     options: Options,
-) -> TauriResult<DescribeCollectionOutput> {
+) -> TauriResult<DescribeProjectOutput> {
     super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
-        workspace.describe_collection(&ctx, &input).await
+        workspace.describe_project(&ctx, &input).await
     })
     .await
 }
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn create_collection<'a, R: tauri::Runtime>(
+pub async fn create_project<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
-    input: CreateCollectionInput,
+    input: CreateProjectInput,
     options: Options,
-) -> TauriResult<CreateCollectionOutput> {
+) -> TauriResult<CreateProjectOutput> {
     super::with_workspace_timeout(
         ctx.inner(),
         app,
         options,
         |ctx, app_delegate, workspace| async move {
-            workspace
-                .create_collection(&ctx, &app_delegate, &input)
-                .await
+            workspace.create_project(&ctx, &app_delegate, &input).await
         },
     )
     .await
@@ -105,21 +103,19 @@ pub async fn create_collection<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn import_collection<'a, R: tauri::Runtime>(
+pub async fn import_project<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
-    input: ImportCollectionInput,
+    input: ImportProjectInput,
     options: Options,
-) -> TauriResult<ImportCollectionOutput> {
+) -> TauriResult<ImportProjectOutput> {
     super::with_workspace_timeout(
         ctx.inner(),
         app,
         options,
         |ctx, app_delegate, workspace| async move {
-            workspace
-                .import_collection(&ctx, &app_delegate, &input)
-                .await
+            workspace.import_project(&ctx, &app_delegate, &input).await
         },
     )
     .await
@@ -127,90 +123,90 @@ pub async fn import_collection<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn export_collection<'a, R: tauri::Runtime>(
+pub async fn export_project<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
-    input: ExportCollectionInput,
+    input: ExportProjectInput,
     options: Options,
-) -> TauriResult<ExportCollectionOutput> {
+) -> TauriResult<ExportProjectOutput> {
     super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
-        workspace.export_collection(&ctx, &input).await
+        workspace.export_project(&ctx, &input).await
     })
     .await
 }
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn delete_collection<'a, R: tauri::Runtime>(
+pub async fn delete_project<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
-    input: DeleteCollectionInput,
+    input: DeleteProjectInput,
     options: Options,
-) -> TauriResult<DeleteCollectionOutput> {
+) -> TauriResult<DeleteProjectOutput> {
     super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
-        workspace.delete_collection(&ctx, &input).await
+        workspace.delete_project(&ctx, &input).await
     })
     .await
 }
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app), fields(window = window.label()))]
-pub async fn update_collection<'a, R: tauri::Runtime>(
+pub async fn update_project<'a, R: tauri::Runtime>(
     ctx: State<'_, moss_applib::context::AsyncContext>,
     app: App<'a, R>,
     window: Window<R>,
-    input: UpdateCollectionInput,
+    input: UpdateProjectInput,
     options: Options,
-) -> TauriResult<UpdateCollectionOutput> {
+) -> TauriResult<UpdateProjectOutput> {
     super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
-        workspace.update_collection(&ctx, input).await
+        workspace.update_project(&ctx, input).await
     })
     .await
 }
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app), fields(window = window.label()))]
-pub async fn archive_collection<'a, R: tauri::Runtime>(
+pub async fn archive_project<'a, R: tauri::Runtime>(
     ctx: State<'_, moss_applib::context::AsyncContext>,
     app: App<'a, R>,
     window: Window<R>,
-    input: ArchiveCollectionInput,
+    input: ArchiveProjectInput,
     options: Options,
-) -> TauriResult<ArchiveCollectionOutput> {
+) -> TauriResult<ArchiveProjectOutput> {
     super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
-        workspace.archive_collection(&ctx, input).await
+        workspace.archive_project(&ctx, input).await
     })
     .await
 }
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app), fields(window = window.label()))]
-pub async fn unarchive_collection<'a, R: tauri::Runtime>(
+pub async fn unarchive_project<'a, R: tauri::Runtime>(
     ctx: State<'_, moss_applib::context::AsyncContext>,
     app: App<'a, R>,
     window: Window<R>,
-    input: UnarchiveCollectionInput,
+    input: UnarchiveProjectInput,
     options: Options,
-) -> TauriResult<UnarchiveCollectionOutput> {
+) -> TauriResult<UnarchiveProjectOutput> {
     super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
-        workspace.unarchive_collection(&ctx, input).await
+        workspace.unarchive_project(&ctx, input).await
     })
     .await
 }
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app), fields(window = window.label()))]
-pub async fn batch_update_collection<'a, R: tauri::Runtime>(
+pub async fn batch_update_project<'a, R: tauri::Runtime>(
     ctx: State<'_, moss_applib::context::AsyncContext>,
     app: App<'a, R>,
     window: Window<R>,
-    input: BatchUpdateCollectionInput,
+    input: BatchUpdateProjectInput,
     options: Options,
-) -> TauriResult<BatchUpdateCollectionOutput> {
+) -> TauriResult<BatchUpdateProjectOutput> {
     super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
-        workspace.batch_update_collection(&ctx, input).await
+        workspace.batch_update_project(&ctx, input).await
     })
     .await
 }

@@ -6,9 +6,9 @@ use moss_storage::storage::operations::{GetItem, ListByPrefix};
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::{
     models::{
-        operations::{CreateCollectionInput, DeleteCollectionInput},
+        operations::{CreateProjectInput, DeleteProjectInput},
         primitives::ProjectId,
-        types::CreateCollectionParams,
+        types::CreateProjectParams,
     },
     storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
@@ -20,11 +20,11 @@ async fn delete_collection_success() {
 
     let collection_name = random_collection_name();
     let create_collection_output = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name.clone(),
                     order: 0,
                     external_path: None,
@@ -38,13 +38,13 @@ async fn delete_collection_success() {
 
     let id = create_collection_output.id;
     let _ = workspace
-        .delete_collection(&ctx, &DeleteCollectionInput { id: id.clone() })
+        .delete_project(&ctx, &DeleteProjectInput { id: id.clone() })
         .await
         .unwrap();
 
     // Check updating collections
     let channel = Channel::new(move |_| Ok(()));
-    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
+    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
     assert_eq!(output.total_returned, 0);
 
     // Check updating database - collection metadata should be removed
@@ -78,11 +78,11 @@ async fn delete_collection_nonexistent_id() {
 
     let collection_name = random_collection_name();
     let id = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name.clone(),
                     order: 0,
                     external_path: None,
@@ -96,13 +96,13 @@ async fn delete_collection_nonexistent_id() {
         .id;
 
     workspace
-        .delete_collection(&ctx, &DeleteCollectionInput { id: id.clone() })
+        .delete_project(&ctx, &DeleteProjectInput { id: id.clone() })
         .await
         .unwrap();
 
     // Delete the collection again - should succeed but return None abs_path
     let delete_collection_result = workspace
-        .delete_collection(&ctx, &DeleteCollectionInput { id: id.clone() })
+        .delete_project(&ctx, &DeleteProjectInput { id: id.clone() })
         .await
         .unwrap();
 
@@ -118,11 +118,11 @@ async fn delete_collection_fs_already_deleted() {
 
     let collection_name = random_collection_name();
     let create_collection_output = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name.clone(),
                     order: 0,
                     external_path: None,
@@ -141,9 +141,9 @@ async fn delete_collection_fs_already_deleted() {
 
     // Even though filesystem is already deleted, deletion should succeed
     let _ = workspace
-        .delete_collection(
+        .delete_project(
             &ctx,
-            &DeleteCollectionInput {
+            &DeleteProjectInput {
                 id: create_collection_output.id,
             },
         )
@@ -152,7 +152,7 @@ async fn delete_collection_fs_already_deleted() {
 
     // Check collections are updated
     let channel = Channel::new(move |_| Ok(()));
-    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
+    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
     assert_eq!(output.total_returned, 0);
 
     // TODO: Check database after implementing self-healing mechanism?

@@ -4,22 +4,22 @@ use moss_logging::session;
 use tauri::ipc::Channel as TauriChannel;
 
 use crate::{
-    models::{events::StreamCollectionsEvent, operations::StreamCollectionsOutput},
+    models::{events::StreamProjectsEvent, operations::StreamProjectsOutput},
     workspace::Workspace,
 };
 
 impl<R: AppRuntime> Workspace<R> {
-    pub async fn stream_collections(
+    pub async fn stream_projects(
         &self,
         ctx: &R::AsyncContext,
-        channel: TauriChannel<StreamCollectionsEvent>,
-    ) -> joinerror::Result<StreamCollectionsOutput> {
-        let stream = self.collection_service.list_collections(ctx).await;
+        channel: TauriChannel<StreamProjectsEvent>,
+    ) -> joinerror::Result<StreamProjectsOutput> {
+        let stream = self.project_service.list_projects(ctx).await;
         tokio::pin!(stream);
 
         let mut total_returned = 0;
 
-        // OPTIMIZE: Right now `stream_collections` need to do provider API calls, which is slow
+        // OPTIMIZE: Right now `stream_projects` need to do provider API calls, which is slow
         // We should consider streaming vcs summary from a different channel
         //
         // @brutusyhy, yes, absolutely, I've added a separate function to fetch VCS summary, so
@@ -27,7 +27,7 @@ impl<R: AppRuntime> Workspace<R> {
         // as a part of the stream DTO.
 
         while let Some(desc) = stream.next().await {
-            let event = StreamCollectionsEvent {
+            let event = StreamProjectsEvent {
                 id: desc.id,
                 name: desc.name,
                 order: desc.order,
@@ -39,7 +39,7 @@ impl<R: AppRuntime> Workspace<R> {
 
             if let Err(e) = channel.send(event) {
                 session::error!(format!(
-                    "failed to send collection event through tauri channel: {}",
+                    "failed to send project event through tauri channel: {}",
                     e.to_string()
                 ));
             } else {
@@ -47,6 +47,6 @@ impl<R: AppRuntime> Workspace<R> {
             }
         }
 
-        Ok(StreamCollectionsOutput { total_returned })
+        Ok(StreamProjectsOutput { total_returned })
     }
 }

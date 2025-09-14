@@ -7,7 +7,7 @@ import { USE_STREAM_COLLECTIONS_QUERY_KEY } from "./useStreamCollections";
 export const IMPORT_COLLECTION_QUERY_KEY = "importCollection";
 
 const importCollection = async (input: ImportCollectionInput) => {
-  const result = await invokeTauriIpc<ImportCollectionOutput>("import_collection", { input });
+  const result = await invokeTauriIpc<ImportCollectionOutput>("import_project", { input });
 
   if (result.status === "error") {
     throw new Error(String(result.error));

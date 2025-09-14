@@ -11,7 +11,7 @@ export interface UseDeleteCollectionInput {
 }
 
 const deleteStreamedCollection = async ({ id }: DeleteCollectionInput) => {
-  const result = await invokeTauriIpc<DeleteCollectionOutput>("delete_collection", { input: { id } });
+  const result = await invokeTauriIpc<DeleteCollectionOutput>("delete_project", { input: { id } });
 
   if (result.status === "error") {
     throw new Error(String(result.error));

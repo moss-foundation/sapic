@@ -11,9 +11,9 @@ use moss_storage::storage::operations::GetItem;
 use moss_user::models::primitives::AccountId;
 use moss_workspace::{
     models::{
-        operations::ImportCollectionInput,
+        operations::ImportProjectInput,
         primitives::ProjectId,
-        types::{GitHubImportParams, ImportCollectionParams, ImportCollectionSource},
+        types::{GitHubImportParams, ImportProjectParams, ImportProjectSource},
     },
     storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
@@ -36,16 +36,16 @@ async fn clone_collection_success() {
         .clone();
 
     let clone_collection_output = workspace
-        .import_collection(
+        .import_project(
             &ctx,
             &app_delegate,
-            &ImportCollectionInput {
-                inner: ImportCollectionParams {
+            &ImportProjectInput {
+                inner: ImportProjectParams {
                     name: "New Collection".to_string(),
                     order: 0,
                     external_path: None,
                     icon_path: None,
-                    source: ImportCollectionSource::GitHub(GitHubImportParams {
+                    source: ImportProjectSource::GitHub(GitHubImportParams {
                         repository: env::var("GITHUB_COLLECTION_REPO_HTTPS").unwrap(),
                         branch: None,
                         account_id,
@@ -58,7 +58,7 @@ async fn clone_collection_success() {
 
     // Verify through stream_collections
     let channel = Channel::new(move |_| Ok(()));
-    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
+    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
     assert_eq!(output.total_returned, 1);
 
     // Verify the directory was created

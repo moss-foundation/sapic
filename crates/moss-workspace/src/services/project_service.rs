@@ -11,7 +11,7 @@ use moss_git_hosting_provider::{
 };
 use moss_logging::session;
 use moss_project::{
-    Project as CollectionHandle, ProjectBuilder, ProjectModifyParams,
+    Project as ProjectHandle, ProjectBuilder, ProjectModifyParams,
     builder::{
         ProjectCloneParams, ProjectCreateGitParams, ProjectCreateParams, ProjectImportParams,
         ProjectLoadParams,
@@ -30,20 +30,20 @@ use std::{
 use tokio::sync::RwLock;
 
 use crate::{
-    builder::{OnDidAddCollection, OnDidDeleteCollection},
+    builder::{OnDidAddProject, OnDidDeleteProject},
     dirs,
     models::{
         primitives::ProjectId,
         types::{
-            CreateCollectionGitParams, CreateCollectionParams, EntryChange, ExportCollectionParams,
-            UpdateCollectionParams,
+            CreateProjectGitParams, CreateProjectParams, EntryChange, ExportProjectParams,
+            UpdateProjectParams,
         },
     },
     services::storage_service::StorageService,
     storage::segments::SEGKEY_COLLECTION,
 };
 
-pub(crate) struct CollectionItemCloneParams {
+pub(crate) struct ProjectItemCloneParams {
     pub order: isize,
     pub account_id: AccountId,
     pub repository: String,
@@ -51,23 +51,23 @@ pub(crate) struct CollectionItemCloneParams {
     pub branch: Option<String>,
 }
 
-pub(crate) struct CollectionItemImportParams {
+pub(crate) struct ProjectItemImportParams {
     pub name: String,
     pub order: isize,
     pub archive_path: PathBuf,
 }
 
 #[derive(Deref, DerefMut)]
-struct CollectionItem<R: AppRuntime> {
+struct ProjectItem<R: AppRuntime> {
     pub id: ProjectId,
     pub order: Option<isize>,
 
     #[deref]
     #[deref_mut]
-    pub handle: Arc<CollectionHandle<R>>,
+    pub handle: Arc<ProjectHandle<R>>,
 }
 
-pub(crate) struct CollectionItemDescription {
+pub(crate) struct ProjectItemDescription {
     pub id: ProjectId,
     pub name: String,
     pub order: Option<isize>,
@@ -84,21 +84,21 @@ pub(crate) struct CollectionItemDescription {
 
 #[derive(Default)]
 struct ServiceState<R: AppRuntime> {
-    collections: HashMap<ProjectId, CollectionItem<R>>,
+    projects: HashMap<ProjectId, ProjectItem<R>>,
     expanded_items: HashSet<ProjectId>,
 }
 
-pub struct CollectionService<R: AppRuntime> {
+pub struct ProjectService<R: AppRuntime> {
     abs_path: PathBuf,
     fs: Arc<dyn FileSystem>,
     storage: Arc<StorageService<R>>,
     state: Arc<RwLock<ServiceState<R>>>,
     app_delegate: AppDelegate<R>,
-    on_did_delete_collection_emitter: EventEmitter<OnDidDeleteCollection>,
-    on_did_add_collection_emitter: EventEmitter<OnDidAddCollection>,
+    on_did_delete_project_emitter: EventEmitter<OnDidDeleteProject>,
+    on_did_add_project_emitter: EventEmitter<OnDidAddProject>,
 }
 
-impl<R: AppRuntime> CollectionService<R> {
+impl<R: AppRuntime> ProjectService<R> {
     pub(crate) async fn new(
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
@@ -107,10 +107,10 @@ impl<R: AppRuntime> CollectionService<R> {
         storage: Arc<StorageService<R>>,
         environment_sources: &mut FxHashMap<Arc<String>, PathBuf>,
         active_profile: &Arc<Profile<R>>,
-        on_collection_did_delete_emitter: EventEmitter<OnDidDeleteCollection>,
-        on_collection_did_add_emitter: EventEmitter<OnDidAddCollection>,
+        on_project_did_delete_emitter: EventEmitter<OnDidDeleteProject>,
+        on_project_did_add_emitter: EventEmitter<OnDidAddProject>,
     ) -> joinerror::Result<Self> {
-        let abs_path = abs_path.join(dirs::COLLECTIONS_DIR);
+        let abs_path = abs_path.join(dirs::PROJECTS_DIR);
         let expanded_items = if let Ok(expanded_items) = storage.get_expanded_items(ctx).await {
             expanded_items.into_iter().collect::<HashSet<_>>()
         } else {
@@ -133,31 +133,28 @@ impl<R: AppRuntime> CollectionService<R> {
             fs,
             storage,
             state: Arc::new(RwLock::new(ServiceState {
-                collections,
+                projects: collections,
                 expanded_items,
             })),
             app_delegate: app_delegate.clone(),
-            on_did_delete_collection_emitter: on_collection_did_delete_emitter,
-            on_did_add_collection_emitter: on_collection_did_add_emitter,
+            on_did_delete_project_emitter: on_project_did_delete_emitter,
+            on_did_add_project_emitter: on_project_did_add_emitter,
         })
     }
 
-    pub async fn collection(&self, id: &ProjectId) -> Option<Arc<CollectionHandle<R>>> {
+    pub async fn project(&self, id: &ProjectId) -> Option<Arc<ProjectHandle<R>>> {
         let state_lock = self.state.read().await;
-        state_lock
-            .collections
-            .get(id)
-            .map(|item| item.handle.clone())
+        state_lock.projects.get(id).map(|item| item.handle.clone())
     }
 
-    pub(crate) async fn create_collection(
+    pub(crate) async fn create_project(
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
         id: &ProjectId,
         account: Option<Account<R>>,
-        params: &CreateCollectionParams,
-    ) -> joinerror::Result<CollectionItemDescription> {
+        params: &CreateProjectParams,
+    ) -> joinerror::Result<ProjectItemDescription> {
         let mut rb = self.fs.start_rollback().await?;
 
         let id_str = id.to_string();
@@ -178,7 +175,7 @@ impl<R: AppRuntime> CollectionService<R> {
 
         let git_params = match params.git_params.as_ref() {
             None => None,
-            Some(CreateCollectionGitParams::GitHub(git_params)) => {
+            Some(CreateProjectGitParams::GitHub(git_params)) => {
                 let repository = match GitUrl::parse(&git_params.repository) {
                     Ok(repository) => Some(repository),
                     Err(e) => {
@@ -203,7 +200,7 @@ impl<R: AppRuntime> CollectionService<R> {
                     branch: git_params.branch.clone(),
                 })
             }
-            Some(CreateCollectionGitParams::GitLab(git_params)) => {
+            Some(CreateProjectGitParams::GitLab(git_params)) => {
                 let repository = match GitUrl::parse(&git_params.repository) {
                     Ok(repository) => Some(repository),
                     Err(e) => {
@@ -289,9 +286,9 @@ impl<R: AppRuntime> CollectionService<R> {
         {
             let mut state_lock = self.state.write().await;
             state_lock.expanded_items.insert(id.to_owned());
-            state_lock.collections.insert(
+            state_lock.projects.insert(
                 id.to_owned(),
-                CollectionItem {
+                ProjectItem {
                     id: id.to_owned(),
                     order: Some(params.order),
                     handle: Arc::new(collection),
@@ -320,13 +317,13 @@ impl<R: AppRuntime> CollectionService<R> {
             txn.commit()?;
         }
 
-        self.on_did_add_collection_emitter
-            .fire(OnDidAddCollection {
-                collection_id: id.clone(),
+        self.on_did_add_project_emitter
+            .fire(OnDidAddProject {
+                project_id: id.clone(),
             })
             .await;
 
-        Ok(CollectionItemDescription {
+        Ok(ProjectItemDescription {
             id: id.to_owned(),
             name: params.name.clone(),
             order: Some(params.order),
@@ -342,14 +339,14 @@ impl<R: AppRuntime> CollectionService<R> {
     // TODO: Setting the cloned collection's name and icon is not yet implemented
     // Since they are currently committed to the repository
     // Updating them here would be a committable change
-    pub(crate) async fn clone_collection(
+    pub(crate) async fn clone_project(
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
         id: &ProjectId,
         account: Account<R>,
-        params: CollectionItemCloneParams,
-    ) -> joinerror::Result<CollectionItemDescription> {
+        params: ProjectItemCloneParams,
+    ) -> joinerror::Result<ProjectItemDescription> {
         let mut rb = self.fs.start_rollback().await?;
 
         let id_str = id.to_string();
@@ -436,9 +433,9 @@ impl<R: AppRuntime> CollectionService<R> {
         {
             let mut state_lock = self.state.write().await;
             state_lock.expanded_items.insert(id.clone());
-            state_lock.collections.insert(
+            state_lock.projects.insert(
                 id.clone(),
-                CollectionItem {
+                ProjectItem {
                     id: id.clone(),
                     order: Some(params.order),
                     handle: Arc::new(collection),
@@ -461,13 +458,13 @@ impl<R: AppRuntime> CollectionService<R> {
             txn.commit()?;
         }
 
-        self.on_did_add_collection_emitter
-            .fire(OnDidAddCollection {
-                collection_id: id.clone(),
+        self.on_did_add_project_emitter
+            .fire(OnDidAddProject {
+                project_id: id.clone(),
             })
             .await;
 
-        Ok(CollectionItemDescription {
+        Ok(ProjectItemDescription {
             id: id.clone(),
             name: desc.name,
             order: Some(params.order),
@@ -480,7 +477,7 @@ impl<R: AppRuntime> CollectionService<R> {
         })
     }
 
-    pub(crate) async fn delete_collection(
+    pub(crate) async fn delete_project(
         &self,
         ctx: &R::AsyncContext,
         id: &ProjectId,
@@ -490,7 +487,7 @@ impl<R: AppRuntime> CollectionService<R> {
 
         let mut state_lock = self.state.write().await;
 
-        let item = state_lock.collections.remove(&id);
+        let item = state_lock.projects.remove(&id);
         let item_existed = item.is_some();
 
         if abs_path.exists() {
@@ -527,9 +524,9 @@ impl<R: AppRuntime> CollectionService<R> {
             txn.commit()?;
         }
 
-        self.on_did_delete_collection_emitter
-            .fire(OnDidDeleteCollection {
-                collection_id: id.to_owned(),
+        self.on_did_delete_project_emitter
+            .fire(OnDidDeleteProject {
+                project_id: id.to_owned(),
             })
             .await;
 
@@ -540,15 +537,15 @@ impl<R: AppRuntime> CollectionService<R> {
         }
     }
 
-    pub(crate) async fn update_collection(
+    pub(crate) async fn update_project(
         &self,
         ctx: &R::AsyncContext,
         id: &ProjectId,
-        params: UpdateCollectionParams,
+        params: UpdateProjectParams,
     ) -> joinerror::Result<()> {
         let mut state_lock = self.state.write().await;
         let item = state_lock
-            .collections
+            .projects
             .get_mut(&id)
             .ok_or_join_err_with::<()>(|| {
                 format!("failed to find collection with id `{}`", id.to_string())
@@ -592,16 +589,16 @@ impl<R: AppRuntime> CollectionService<R> {
         Ok(())
     }
 
-    pub(crate) async fn list_collections(
+    pub(crate) async fn list_projects(
         &self,
         ctx: &R::AsyncContext,
-    ) -> Pin<Box<dyn Stream<Item = CollectionItemDescription> + Send + '_>> {
+    ) -> Pin<Box<dyn Stream<Item = ProjectItemDescription> + Send + '_>> {
         let state_clone = self.state.clone();
         let ctx_clone = ctx.clone();
 
         Box::pin(async_stream::stream! {
             let state_lock = state_clone.read().await;
-            for (id, item) in state_lock.collections.iter() {
+            for (id, item) in state_lock.projects.iter() {
                 let details = continue_if_err!(item.details().await, |e: Error| {
                     session::error!(format!("failed to describe collection `{}`: {}", id.to_string(), e.to_string()));
                 });
@@ -619,7 +616,7 @@ impl<R: AppRuntime> CollectionService<R> {
                 let expanded = state_lock.expanded_items.contains(id);
                 let icon_path = item.icon_path();
 
-                yield CollectionItemDescription {
+                yield ProjectItemDescription {
                     id: item.id.clone(),
                     name: details.name,
                     order: item.order,
@@ -634,14 +631,14 @@ impl<R: AppRuntime> CollectionService<R> {
         })
     }
 
-    pub(crate) async fn archive_collection(
+    pub(crate) async fn archive_project(
         &self,
         _ctx: &R::AsyncContext,
         id: &ProjectId,
     ) -> joinerror::Result<()> {
         let mut state_lock = self.state.write().await;
         let item = state_lock
-            .collections
+            .projects
             .get_mut(&id)
             .ok_or_join_err_with::<()>(|| {
                 format!("failed to find collection with id `{}`", id.to_string())
@@ -650,14 +647,14 @@ impl<R: AppRuntime> CollectionService<R> {
         item.archive().await
     }
 
-    pub(crate) async fn unarchive_collection(
+    pub(crate) async fn unarchive_project(
         &self,
         _ctx: &R::AsyncContext,
         id: &ProjectId,
     ) -> joinerror::Result<()> {
         let mut state_lock = self.state.write().await;
         let item = state_lock
-            .collections
+            .projects
             .get_mut(&id)
             .ok_or_join_err_with::<()>(|| {
                 format!("failed to find collection with id `{}`", id.to_string())
@@ -666,12 +663,12 @@ impl<R: AppRuntime> CollectionService<R> {
         item.unarchive().await
     }
 
-    pub(crate) async fn import_collection(
+    pub(crate) async fn import_project(
         &self,
         ctx: &R::AsyncContext,
         id: &ProjectId,
-        params: CollectionItemImportParams,
-    ) -> joinerror::Result<CollectionItemDescription> {
+        params: ProjectItemImportParams,
+    ) -> joinerror::Result<ProjectItemDescription> {
         let mut rb = self.fs.start_rollback().await?;
 
         let id_str = id.to_string();
@@ -733,9 +730,9 @@ impl<R: AppRuntime> CollectionService<R> {
         {
             let mut state_lock = self.state.write().await;
             state_lock.expanded_items.insert(id.clone());
-            state_lock.collections.insert(
+            state_lock.projects.insert(
                 id.clone(),
-                CollectionItem {
+                ProjectItem {
                     id: id.clone(),
                     order: Some(params.order),
                     handle: Arc::new(collection),
@@ -758,13 +755,13 @@ impl<R: AppRuntime> CollectionService<R> {
             txn.commit()?;
         }
 
-        self.on_did_add_collection_emitter
-            .fire(OnDidAddCollection {
-                collection_id: id.clone(),
+        self.on_did_add_project_emitter
+            .fire(OnDidAddProject {
+                project_id: id.clone(),
             })
             .await;
 
-        Ok(CollectionItemDescription {
+        Ok(ProjectItemDescription {
             id: id.clone(),
             name: desc.name,
             order: Some(params.order),
@@ -780,15 +777,12 @@ impl<R: AppRuntime> CollectionService<R> {
     pub(crate) async fn export_collection(
         &self,
         id: &ProjectId,
-        params: &ExportCollectionParams,
+        params: &ExportProjectParams,
     ) -> joinerror::Result<PathBuf> {
         let state_lock = self.state.read().await;
-        let item = state_lock
-            .collections
-            .get(&id)
-            .ok_or_join_err_with::<()>(|| {
-                format!("failed to find collection with id `{}`", id.to_string())
-            })?;
+        let item = state_lock.projects.get(&id).ok_or_join_err_with::<()>(|| {
+            format!("failed to find collection with id `{}`", id.to_string())
+        })?;
 
         item.export_archive(&params.destination).await
     }
@@ -798,7 +792,7 @@ impl<R: AppRuntime> CollectionService<R> {
         let mut changes: Vec<EntryChange> = Vec::new();
 
         let state_lock = self.state.read().await;
-        for (id, item) in state_lock.collections.iter() {
+        for (id, item) in state_lock.projects.iter() {
             let vcs = if let Some(vcs) = item.vcs() {
                 vcs
             } else {
@@ -839,7 +833,7 @@ async fn restore_collections<R: AppRuntime>(
     fs: &Arc<dyn FileSystem>,
     storage: &Arc<StorageService<R>>,
     active_profile: &Arc<Profile<R>>,
-) -> joinerror::Result<HashMap<ProjectId, CollectionItem<R>>> {
+) -> joinerror::Result<HashMap<ProjectId, ProjectItem<R>>> {
     if !abs_path.exists() {
         return Ok(HashMap::new());
     }
@@ -956,7 +950,7 @@ async fn restore_collections<R: AppRuntime>(
 
         result.insert(
             id.clone(),
-            CollectionItem {
+            ProjectItem {
                 id,
                 order,
                 handle: Arc::new(collection),

@@ -4,19 +4,19 @@ use validator::Validate;
 
 use crate::{
     models::{
-        operations::{CreateCollectionInput, CreateCollectionOutput},
+        operations::{CreateProjectInput, CreateProjectOutput},
         primitives::ProjectId,
     },
     workspace::Workspace,
 };
 
 impl<R: AppRuntime> Workspace<R> {
-    pub async fn create_collection(
+    pub async fn create_project(
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
-        input: &CreateCollectionInput,
-    ) -> joinerror::Result<CreateCollectionOutput> {
+        input: &CreateProjectInput,
+    ) -> joinerror::Result<CreateProjectOutput> {
         input.validate().join_err_bare()?;
 
         debug_assert!(input.inner.external_path.is_none(), "Is not implemented");
@@ -29,11 +29,11 @@ impl<R: AppRuntime> Workspace<R> {
             None
         };
         let description = self
-            .collection_service
-            .create_collection(ctx, app_delegate, &id, account, &input.inner)
+            .project_service
+            .create_project(ctx, app_delegate, &id, account, &input.inner)
             .await?;
 
-        Ok(CreateCollectionOutput {
+        Ok(CreateProjectOutput {
             id: description.id,
             name: description.name,
             order: description.order,

@@ -2,8 +2,8 @@
 
 use moss_testutils::random_name::{random_collection_name, random_environment_name};
 use moss_workspace::models::{
-    operations::{CreateCollectionInput, CreateEnvironmentInput, UpdateEnvironmentGroupInput},
-    types::{CreateCollectionParams, UpdateEnvironmentGroupParams},
+    operations::{CreateEnvironmentInput, CreateProjectInput, UpdateEnvironmentGroupInput},
+    types::{CreateProjectParams, UpdateEnvironmentGroupParams},
 };
 use tauri::ipc::Channel;
 
@@ -17,11 +17,11 @@ async fn update_environment_group_expand() {
 
     let collection_name = random_collection_name();
     let collection_id = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name,
                     order: 0,
                     external_path: None,
@@ -101,11 +101,11 @@ async fn update_environment_group_order() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
     let collection_name = random_collection_name();
     let collection_id = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name.clone(),
                     order: 0,
                     external_path: None,

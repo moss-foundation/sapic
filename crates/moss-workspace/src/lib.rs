@@ -28,12 +28,12 @@ pub mod constants {
 }
 
 pub mod dirs {
-    pub const COLLECTIONS_DIR: &str = "collections";
+    pub const PROJECTS_DIR: &str = "projects";
     pub const ENVIRONMENTS_DIR: &str = "environments";
 }
 
 pub trait AnyWorkspace<R: AppRuntime> {
-    type Collection;
+    type Project;
     type Environment: AnyEnvironment<R>;
 }
 

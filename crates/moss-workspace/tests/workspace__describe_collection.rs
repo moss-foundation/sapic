@@ -4,8 +4,8 @@ use moss_applib::context::AnyAsyncContext;
 use moss_git::models::types::BranchInfo;
 use moss_user::models::primitives::AccountId;
 use moss_workspace::models::{
-    operations::{DeleteCollectionInput, DescribeCollectionInput, ImportCollectionInput},
-    types::{GitHubImportParams, ImportCollectionParams, ImportCollectionSource, VcsInfo},
+    operations::{DeleteProjectInput, DescribeProjectInput, ImportProjectInput},
+    types::{GitHubImportParams, ImportProjectParams, ImportProjectSource, VcsInfo},
 };
 use std::{env, ops::Deref};
 
@@ -25,16 +25,16 @@ async fn describe_collection_with_repository() {
         .clone();
 
     let import_collection_output = workspace
-        .import_collection(
+        .import_project(
             &ctx,
             &app_delegate,
-            &ImportCollectionInput {
-                inner: ImportCollectionParams {
+            &ImportProjectInput {
+                inner: ImportProjectParams {
                     name: "New Collection".to_string(),
                     order: 0,
                     external_path: None,
                     icon_path: None,
-                    source: ImportCollectionSource::GitHub(GitHubImportParams {
+                    source: ImportProjectSource::GitHub(GitHubImportParams {
                         repository: env::var("GITHUB_COLLECTION_REPO_HTTPS").unwrap(),
                         branch: None,
                         account_id,
@@ -46,9 +46,9 @@ async fn describe_collection_with_repository() {
         .unwrap();
 
     let description = workspace
-        .describe_collection(
+        .describe_project(
             &ctx,
-            &DescribeCollectionInput {
+            &DescribeProjectInput {
                 id: import_collection_output.id.clone(),
             },
         )
@@ -79,9 +79,9 @@ async fn describe_collection_with_repository() {
     assert_eq!(github_info.owner.unwrap(), "brutusyhy");
 
     workspace
-        .delete_collection(
+        .delete_project(
             &ctx,
-            &DeleteCollectionInput {
+            &DeleteProjectInput {
                 id: import_collection_output.id,
             },
         )

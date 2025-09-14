@@ -2,23 +2,23 @@ use moss_applib::{AppRuntime, errors::ValidationResultExt};
 use validator::Validate;
 
 use crate::{
-    models::operations::{UpdateCollectionInput, UpdateCollectionOutput},
+    models::operations::{UpdateProjectInput, UpdateProjectOutput},
     workspace::Workspace,
 };
 
 impl<R: AppRuntime> Workspace<R> {
-    pub async fn update_collection(
+    pub async fn update_project(
         &self,
         ctx: &R::AsyncContext,
-        input: UpdateCollectionInput,
-    ) -> joinerror::Result<UpdateCollectionOutput> {
+        input: UpdateProjectInput,
+    ) -> joinerror::Result<UpdateProjectOutput> {
         input.validate().join_err_bare()?;
 
         let id = input.inner.id.clone().into();
-        self.collection_service
-            .update_collection(ctx, &id, input.inner)
+        self.project_service
+            .update_project(ctx, &id, input.inner)
             .await?;
 
-        Ok(UpdateCollectionOutput { id })
+        Ok(UpdateProjectOutput { id })
     }
 }

@@ -7,32 +7,32 @@ use crate::{
     Workspace,
     errors::ErrorNotFound,
     models::{
-        operations::{DescribeCollectionInput, DescribeCollectionOutput},
+        operations::{DescribeProjectInput, DescribeProjectOutput},
         types::{Contributor, GitHubVcsInfo, GitLabVcsInfo, VcsInfo},
     },
 };
 
 impl<R: AppRuntime> Workspace<R> {
-    pub async fn describe_collection(
+    pub async fn describe_project(
         &self,
         ctx: &R::AsyncContext,
-        input: &DescribeCollectionInput,
-    ) -> joinerror::Result<DescribeCollectionOutput> {
-        let collection = self
-            .collection_service
-            .collection(&input.id)
+        input: &DescribeProjectInput,
+    ) -> joinerror::Result<DescribeProjectOutput> {
+        let project = self
+            .project_service
+            .project(&input.id)
             .await
             .ok_or_join_err_with::<ErrorNotFound>(|| {
-                format!("collection `{}` not found", input.id.as_str())
+                format!("project `{}` not found", input.id.as_str())
             })?;
 
-        let details = collection.details().await?;
-        let (vcs_summary, contributors) = if let Some(vcs) = collection.vcs() {
+        let details = project.details().await?;
+        let (vcs_summary, contributors) = if let Some(vcs) = project.vcs() {
             let summary = match vcs.summary(ctx).await {
                 Ok(summary) => Some(summary),
                 Err(e) => {
                     session::warn!(format!(
-                        "failed to get VCS summary for collection `{}`: {}",
+                        "failed to get VCS summary for project `{}`: {}",
                         input.id.as_str(),
                         e.to_string()
                     ));
@@ -44,7 +44,7 @@ impl<R: AppRuntime> Workspace<R> {
                 Ok(contributors) => Some(contributors),
                 Err(e) => {
                     session::warn!(format!(
-                        "failed to get VCS contributors for collection `{}`: {}",
+                        "failed to get VCS contributors for project `{}`: {}",
                         input.id.as_str(),
                         e.to_string()
                     ));
@@ -88,7 +88,7 @@ impl<R: AppRuntime> Workspace<R> {
             })
             .unwrap_or_default();
 
-        Ok(DescribeCollectionOutput {
+        Ok(DescribeProjectOutput {
             name: details.name,
             vcs,
             contributors,

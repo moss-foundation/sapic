@@ -30,14 +30,14 @@ pub type EnvironmentName = String;
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
-pub struct CreateCollectionParams {
+pub struct CreateProjectParams {
     #[validate(length(min = 1))]
     pub name: String,
 
     pub order: isize,
     pub external_path: Option<PathBuf>,
 
-    pub git_params: Option<CreateCollectionGitParams>,
+    pub git_params: Option<CreateProjectGitParams>,
 
     pub icon_path: Option<PathBuf>,
 }
@@ -46,12 +46,12 @@ pub struct CreateCollectionParams {
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
-pub struct ImportCollectionParams {
+pub struct ImportProjectParams {
     #[validate(length(min = 1))]
     pub name: String,
     pub order: isize,
     pub external_path: Option<PathBuf>,
-    pub source: ImportCollectionSource,
+    pub source: ImportProjectSource,
     pub icon_path: Option<PathBuf>,
 }
 
@@ -59,7 +59,7 @@ pub struct ImportCollectionParams {
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
-pub struct ExportCollectionParams {
+pub struct ExportProjectParams {
     pub id: ProjectId,
     /// Path to the folder containing the output archive file
     #[validate(custom(function = "validate_export_destination"))]
@@ -100,7 +100,7 @@ pub struct UpdateEnvironmentGroupParams {
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
-pub struct UpdateCollectionParams {
+pub struct UpdateProjectParams {
     pub id: ProjectId,
 
     #[validate(length(min = 1))]
@@ -231,7 +231,7 @@ pub struct EditorPartStateInfo {
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
-pub enum ImportCollectionSource {
+pub enum ImportProjectSource {
     GitHub(GitHubImportParams),
     GitLab(GitLabImportParams),
     Archive(ArchiveImportParams),
@@ -278,7 +278,7 @@ pub struct ArchiveImportParams {
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
-pub enum CreateCollectionGitParams {
+pub enum CreateProjectGitParams {
     GitHub(GitHubCreateParams),
     GitLab(GitLabCreateParams),
 }

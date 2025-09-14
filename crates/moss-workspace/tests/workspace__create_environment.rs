@@ -8,8 +8,8 @@ use moss_storage::storage::operations::GetItem;
 use moss_testutils::random_name::{random_collection_name, random_environment_name};
 use moss_workspace::{
     models::{
-        operations::{CreateCollectionInput, CreateEnvironmentInput},
-        types::CreateCollectionParams,
+        operations::{CreateEnvironmentInput, CreateProjectInput},
+        types::CreateProjectParams,
     },
     storage::segments::SEGKEY_ENVIRONMENT,
 };
@@ -119,11 +119,11 @@ async fn create_collection_environment_success() {
 
     let collection_name = random_collection_name();
     let collection_id = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name,
                     order: 0,
                     external_path: None,
@@ -195,11 +195,11 @@ async fn create_collection_environment_already_exists() {
 
     let collection_name = random_collection_name();
     let collection_id = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name,
                     order: 0,
                     external_path: None,
@@ -252,11 +252,11 @@ async fn create_collection_environment_same_name_as_workspace_environment() {
 
     let collection_name = random_collection_name();
     let collection_id = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name,
                     order: 0,
                     external_path: None,

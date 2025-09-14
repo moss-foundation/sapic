@@ -15,13 +15,13 @@ use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};
 
 use crate::{
-    builder::{OnDidAddCollection, OnDidDeleteCollection},
+    builder::{OnDidAddProject, OnDidDeleteProject},
     edit::WorkspaceEdit,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
     models::primitives::ProjectId,
     services::{
-        collection_service::CollectionService, environment_service::EnvironmentService,
-        layout_service::LayoutService, storage_service::StorageService,
+        environment_service::EnvironmentService, layout_service::LayoutService,
+        project_service::ProjectService, storage_service::StorageService,
     },
 };
 
@@ -55,7 +55,7 @@ pub struct WorkspaceModifyParams {
 }
 
 pub trait AnyWorkspace<R: AppRuntime> {
-    type Collection;
+    type Project;
     type Environment: AnyEnvironment<R>;
 }
 
@@ -64,38 +64,36 @@ pub struct Workspace<R: AppRuntime> {
     pub(super) edit: WorkspaceEdit,
     pub(super) active_profile: Arc<Profile<R>>,
     pub(super) layout_service: LayoutService<R>,
-    pub(super) collection_service: Arc<CollectionService<R>>,
+    pub(super) project_service: Arc<ProjectService<R>>,
     pub(super) environment_service: Arc<EnvironmentService<R>>,
     pub(super) storage_service: Arc<StorageService<R>>,
 
-    pub(super) _on_did_delete_collection: Subscription<OnDidDeleteCollection>,
-    pub(super) _on_did_add_collection: Subscription<OnDidAddCollection>,
+    pub(super) _on_did_delete_project: Subscription<OnDidDeleteProject>,
+    pub(super) _on_did_add_project: Subscription<OnDidAddProject>,
 }
 
 impl<R: AppRuntime> AnyWorkspace<R> for Workspace<R> {
-    type Collection = Project<R>;
+    type Project = Project<R>;
     type Environment = Environment<R>;
 }
 
 impl<R: AppRuntime> Workspace<R> {
-    pub(super) async fn on_did_add_collection(
-        collection_service: Arc<CollectionService<R>>,
+    pub(super) async fn on_did_add_project(
+        project_service: Arc<ProjectService<R>>,
         environment_service: Arc<EnvironmentService<R>>,
-        on_did_add_collection_event: &Event<OnDidAddCollection>,
-    ) -> Subscription<OnDidAddCollection> {
-        on_did_add_collection_event
+        on_did_add_project_event: &Event<OnDidAddProject>,
+    ) -> Subscription<OnDidAddProject> {
+        on_did_add_project_event
             .subscribe(move |event| {
-                let collection_service_clone = collection_service.clone();
+                let project_service_clone = project_service.clone();
                 let environment_service_clone = environment_service.clone();
 
                 async move {
-                    let collection = collection_service_clone
-                        .collection(&event.collection_id)
-                        .await;
+                    let project = project_service_clone.project(&event.project_id).await;
 
-                    if let Some(collection) = collection {
+                    if let Some(project) = project {
                         environment_service_clone
-                            .add_source(event.collection_id.inner(), collection.environments_path())
+                            .add_source(event.project_id.inner(), project.environments_path())
                             .await;
                     } else {
                         unreachable!()
@@ -105,17 +103,17 @@ impl<R: AppRuntime> Workspace<R> {
             .await
     }
 
-    pub(super) async fn on_did_delete_collection(
+    pub(super) async fn on_did_delete_project(
         environment_service: Arc<EnvironmentService<R>>,
-        on_did_delete_collection_event: &Event<OnDidDeleteCollection>,
-    ) -> Subscription<OnDidDeleteCollection> {
-        on_did_delete_collection_event
+        on_did_delete_project_event: &Event<OnDidDeleteProject>,
+    ) -> Subscription<OnDidDeleteProject> {
+        on_did_delete_project_event
             .subscribe(move |event| {
                 let environment_service_clone = environment_service.clone();
 
                 async move {
                     environment_service_clone
-                        .remove_source(&event.collection_id.inner())
+                        .remove_source(&event.project_id.inner())
                         .await;
                 }
             })
@@ -129,7 +127,7 @@ impl<R: AppRuntime> Workspace<R> {
     }
 
     pub async fn project(&self, id: &ProjectId) -> Option<Arc<Project<R>>> {
-        self.collection_service.collection(id).await
+        self.project_service.project(id).await
     }
 
     pub async fn environment(&self, id: &EnvironmentId) -> Option<Arc<Environment<R>>> {
@@ -162,8 +160,8 @@ impl<R: AppRuntime> Workspace<R> {
     pub async fn dispose(&self) {
         // We need to unsubscribe from the events to avoid circular references
         {
-            self._on_did_add_collection.unsubscribe().await;
-            self._on_did_delete_collection.unsubscribe().await;
+            self._on_did_add_project.unsubscribe().await;
+            self._on_did_delete_project.unsubscribe().await;
         }
     }
 }

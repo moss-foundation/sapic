@@ -4,19 +4,6 @@ import type { BranchInfo } from "./types";
 /**
  * @category Event
  */
-export type StreamCollectionsEvent = {
-  id: string;
-  name: string;
-  order?: number;
-  expanded: boolean;
-  branch?: BranchInfo;
-  iconPath?: string;
-  archived: boolean;
-};
-
-/**
- * @category Event
- */
 export type StreamEnvironmentsEvent = {
   id: string;
   /**
@@ -28,4 +15,17 @@ export type StreamEnvironmentsEvent = {
   name: string;
   order?: number;
   totalVariables: number;
+};
+
+/**
+ * @category Event
+ */
+export type StreamProjectsEvent = {
+  id: string;
+  name: string;
+  order?: number;
+  expanded: boolean;
+  branch?: BranchInfo;
+  iconPath?: string;
+  archived: boolean;
 };

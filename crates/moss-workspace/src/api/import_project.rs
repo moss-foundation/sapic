@@ -7,40 +7,40 @@ use validator::Validate;
 use crate::{
     Workspace,
     models::{
-        operations::{ImportCollectionInput, ImportCollectionOutput},
+        operations::{ImportProjectInput, ImportProjectOutput},
         primitives::ProjectId,
-        types::ImportCollectionSource,
+        types::ImportProjectSource,
     },
-    services::collection_service::{CollectionItemCloneParams, CollectionItemImportParams},
+    services::project_service::{ProjectItemCloneParams, ProjectItemImportParams},
 };
 
 impl<R: AppRuntime> Workspace<R> {
-    pub async fn import_collection(
+    pub async fn import_project(
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
-        input: &ImportCollectionInput,
-    ) -> joinerror::Result<ImportCollectionOutput> {
+        input: &ImportProjectInput,
+    ) -> joinerror::Result<ImportProjectOutput> {
         input.validate().join_err_bare()?;
 
         let params = &input.inner;
         let id = ProjectId::new();
 
         let description = match &params.source {
-            ImportCollectionSource::GitHub(git_params) => {
+            ImportProjectSource::GitHub(git_params) => {
                 let session = self
                     .active_profile
                     .account(&git_params.account_id)
                     .await
                     .ok_or_join_err::<()>("account not found")?;
 
-                self.collection_service
-                    .clone_collection(
+                self.project_service
+                    .clone_project(
                         ctx,
                         app_delegate,
                         &id,
                         session,
-                        CollectionItemCloneParams {
+                        ProjectItemCloneParams {
                             order: params.order,
                             account_id: git_params.account_id.to_owned(),
                             repository: git_params.repository.clone(),
@@ -50,20 +50,20 @@ impl<R: AppRuntime> Workspace<R> {
                     )
                     .await?
             }
-            ImportCollectionSource::GitLab(git_params) => {
+            ImportProjectSource::GitLab(git_params) => {
                 let session = self
                     .active_profile
                     .account(&git_params.account_id)
                     .await
                     .ok_or_join_err::<()>("account not found")?;
 
-                self.collection_service
-                    .clone_collection(
+                self.project_service
+                    .clone_project(
                         ctx,
                         app_delegate,
                         &id,
                         session,
-                        CollectionItemCloneParams {
+                        ProjectItemCloneParams {
                             order: params.order,
                             account_id: git_params.account_id.to_owned(),
                             repository: git_params.repository.clone(),
@@ -73,12 +73,12 @@ impl<R: AppRuntime> Workspace<R> {
                     )
                     .await?
             }
-            ImportCollectionSource::Archive(archive_params) => {
-                self.collection_service
-                    .import_collection(
+            ImportProjectSource::Archive(archive_params) => {
+                self.project_service
+                    .import_project(
                         ctx,
                         &id,
-                        CollectionItemImportParams {
+                        ProjectItemImportParams {
                             name: params.name.clone(),
                             order: params.order,
                             archive_path: archive_params.archive_path.clone(),
@@ -88,7 +88,7 @@ impl<R: AppRuntime> Workspace<R> {
             } // TODO: Support importing from other apps
         };
 
-        Ok(ImportCollectionOutput {
+        Ok(ImportProjectOutput {
             id: description.id,
             name: description.name,
             order: description.order,

@@ -1,23 +1,23 @@
 pub mod activate_environment;
-pub mod archive_collection;
-pub mod batch_update_collection;
+pub mod archive_project;
 pub mod batch_update_environment;
 pub mod batch_update_environment_group;
-pub mod create_collection;
+pub mod batch_update_project;
 pub mod create_environment;
-pub mod delete_collection;
+pub mod create_project;
 pub mod delete_environment;
-pub mod describe_collection;
+pub mod delete_project;
+pub mod describe_project;
 pub mod describe_state;
-pub mod export_collection;
-pub mod import_collection;
+pub mod export_project;
+pub mod import_project;
 pub mod list_changes;
-pub mod stream_collections;
 pub mod stream_environments;
-pub mod unarchive_collection;
-pub mod update_collection;
+pub mod stream_projects;
+pub mod unarchive_project;
 pub mod update_environment;
 pub mod update_environment_group;
+pub mod update_project;
 pub mod update_state;
 
 use moss_applib::AppRuntime;
@@ -26,11 +26,11 @@ use crate::{AnyWorkspace, models::operations::*};
 
 #[allow(async_fn_in_trait)]
 pub trait BatchUpdateCollectionOp<R: AppRuntime> {
-    async fn batch_update_collection(
+    async fn batch_update_project(
         &self,
         ctx: &R::AsyncContext,
-        input: BatchUpdateCollectionInput,
-    ) -> joinerror::Result<BatchUpdateCollectionOutput>;
+        input: BatchUpdateProjectInput,
+    ) -> joinerror::Result<BatchUpdateProjectOutput>;
 }
 
 pub trait AnyWorkspaceApi<R: AppRuntime>: AnyWorkspace<R> + BatchUpdateCollectionOp<R> {}

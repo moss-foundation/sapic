@@ -27,16 +27,17 @@ export type TauriIpcCommand =
   //
   | "update_workspace_state"
   | "describe_workspace_state"
-  | "list_collections"
-  | "describe_collection"
-  | "create_collection"
-  | "delete_collection"
-  | "stream_collections"
-  | "update_collection"
-  | "archive_collection"
-  | "unarchive_collection"
-  | "batch_update_collection"
+  | "describe_project"
+  | "create_project"
+  | "delete_project"
+  | "stream_projects"
+  | "update_project"
+  | "archive_project"
+  | "unarchive_project"
+  | "batch_update_project"
   | "list_changes"
+  | "import_project"
+  | "export_project"
   | "stream_environments"
   | "create_environment"
   | "update_environment"
@@ -45,8 +46,7 @@ export type TauriIpcCommand =
   | "update_environment_group"
   | "batch_update_environment_group"
   | "activate_environment"
-  | "import_collection"
-  | "export_collection"
+
   //
   // Project
   //

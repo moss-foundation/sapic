@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { USE_STREAM_COLLECTIONS_QUERY_KEY } from "./useStreamCollections";
 
 export const updateCollection = async (input: UpdateCollectionInput) => {
-  const result = await invokeTauriIpc<UpdateCollectionOutput>("update_collection", { input });
+  const result = await invokeTauriIpc<UpdateCollectionOutput>("update_project", { input });
 
   if (result.status === "error") {
     throw new Error(String(result.error));

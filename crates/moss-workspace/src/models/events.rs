@@ -12,7 +12,7 @@ use crate::models::primitives::ProjectId;
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "events.ts")]
-pub struct StreamCollectionsEvent {
+pub struct StreamProjectsEvent {
     pub id: ProjectId,
     pub name: String,
     pub order: Option<isize>,
