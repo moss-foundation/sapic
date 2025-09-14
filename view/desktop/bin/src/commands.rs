@@ -93,10 +93,10 @@ where
         .await
         .ok_or_join_err::<FailedPrecondition>("no active workspace")?;
 
-    let collection = workspace
+    let project = workspace
         .project(&id)
         .await
-        .ok_or_join_err::<NotFound>("Collection is not found")?;
+        .ok_or_join_err::<NotFound>("project is not found")?;
 
     let request_id = options.and_then(|opts| opts.request_id);
 
@@ -109,7 +109,7 @@ where
     let result = f(
         ctx.freeze(),
         app.handle().state::<AppDelegate<R>>().inner().clone(),
-        collection,
+        project,
     )
     .await;
 
