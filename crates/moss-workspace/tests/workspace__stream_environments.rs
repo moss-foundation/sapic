@@ -193,7 +193,7 @@ async fn stream_environments_only_collection_environments() {
     let groups_map: HashMap<_, _> = output
         .groups
         .iter()
-        .map(|group| (group.collection_id.clone(), group))
+        .map(|group| (group.project_id.clone(), group))
         .collect();
 
     for (expected_id, expected_name, expected_order, expected_group) in expected_environments {
@@ -287,10 +287,7 @@ async fn stream_environments_both_workspace_and_collection_environments() {
     // Only one group for the collection
     assert_eq!(output.groups.len(), 1);
 
-    assert_eq!(
-        output.groups[0].collection_id,
-        collection_id.clone().inner()
-    );
+    assert_eq!(output.groups[0].project_id, collection_id.clone().inner());
     assert_eq!(output.groups[0].expanded, true);
 
     let events_map: HashMap<_, _> = events

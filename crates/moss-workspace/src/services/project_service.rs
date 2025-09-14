@@ -816,7 +816,7 @@ impl<R: AppRuntime> ProjectService<R> {
 
             for (path, status) in statuses_result? {
                 changes.push(EntryChange {
-                    collection_id: id.clone(),
+                    project_id: id.clone(),
                     path,
                     status,
                 })

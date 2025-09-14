@@ -154,7 +154,7 @@ where
         // TODO: Make database errors not fail the operation
         let mut txn = self.storage.storage.begin_write_with_context(ctx).await?;
 
-        let collection_id_inner = params.collection_id.inner();
+        let collection_id_inner = params.project_id.inner();
         if let Some(expanded) = params.expanded {
             if expanded {
                 state.expanded_groups.insert(collection_id_inner.clone());
@@ -232,7 +232,7 @@ where
                 });
 
             groups.push(EnvironmentGroup {
-                collection_id: group_id.clone(),
+                project_id: group_id.clone(),
                 expanded: state.expanded_groups.contains(group_id),
                 order,
             });

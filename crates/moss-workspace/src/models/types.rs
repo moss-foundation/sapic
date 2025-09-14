@@ -22,7 +22,7 @@ use crate::models::primitives::{ActivitybarPosition, ProjectId, SidebarPosition}
 pub type EnvironmentName = String;
 
 // ------------------------------ //
-// Collection
+// Project
 // ------------------------------ //
 
 /// @category Type
@@ -79,7 +79,7 @@ fn validate_export_destination(destination: &Path) -> Result<(), ValidationError
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct EnvironmentGroup {
-    pub collection_id: Arc<String>,
+    pub project_id: Arc<String>,
     pub expanded: bool,
     pub order: Option<isize>,
 }
@@ -90,7 +90,7 @@ pub struct EnvironmentGroup {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct UpdateEnvironmentGroupParams {
-    pub collection_id: ProjectId,
+    pub project_id: ProjectId,
     pub expanded: Option<bool>,
     pub order: Option<isize>,
 }
@@ -151,7 +151,7 @@ fn validate_change_repository(repo: &ChangeString) -> Result<(), ValidationError
 #[ts(export, export_to = "types.ts")]
 pub struct EnvironmentInfo {
     pub id: String,
-    pub collection_id: Option<String>,
+    pub project_id: Option<String>,
     pub name: String,
     pub display_name: String,
     pub order: isize,
@@ -350,7 +350,7 @@ pub struct Contributor {
 #[ts(export, export_to = "types.ts")]
 pub struct EntryChange {
     // TODO: entry id
-    pub collection_id: ProjectId,
+    pub project_id: ProjectId,
     pub path: PathBuf,
     #[ts(type = "FileStatus")]
     pub status: FileStatus,
