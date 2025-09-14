@@ -104,19 +104,19 @@ export type EditorPartStateInfo = {
   activeGroup?: string;
 };
 
-export type EntryChange = { collectionId: string; path: string; status: FileStatus };
+export type EntryChange = { projectId: string; path: string; status: FileStatus };
 
 /**
  * @category Type
  */
-export type EnvironmentGroup = { collectionId: string; expanded: boolean; order?: number };
+export type EnvironmentGroup = { projectId: string; expanded: boolean; order?: number };
 
 /**
  * @category Type
  */
 export type EnvironmentInfo = {
   id: string;
-  collectionId?: string;
+  projectId?: string;
   name: string;
   displayName: string;
   order: number;
@@ -211,7 +211,7 @@ export type SidebarPartStateInfo = { position: SidebarPosition; size: number; vi
 /**
  * @category Type
  */
-export type UpdateEnvironmentGroupParams = { collectionId: string; expanded?: boolean; order?: number };
+export type UpdateEnvironmentGroupParams = { projectId: string; expanded?: boolean; order?: number };
 
 /**
  * @category Type

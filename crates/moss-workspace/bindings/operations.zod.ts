@@ -112,7 +112,7 @@ export const unarchiveProjectOutputSchema = z.object({
 });
 
 export const updateEnvironmentGroupInputSchema = z.object({
-  collectionId: z.string(),
+  projectId: z.string(),
   expanded: z.boolean().optional(),
   order: z.number().optional(),
 });

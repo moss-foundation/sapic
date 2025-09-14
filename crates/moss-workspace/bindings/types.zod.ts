@@ -77,7 +77,7 @@ export const editorGridNodeSchema: z.ZodSchema<EditorGridNode> = z.lazy(() =>
 );
 
 export const environmentGroupSchema = z.object({
-  collectionId: z.string(),
+  projectId: z.string(),
   expanded: z.boolean(),
   order: z.number().optional(),
 });
@@ -131,7 +131,7 @@ export const panelPartStateInfoSchema = z.object({
 });
 
 export const updateEnvironmentGroupParamsSchema = z.object({
-  collectionId: z.string(),
+  projectId: z.string(),
   expanded: z.boolean().optional(),
   order: z.number().optional(),
 });
@@ -194,7 +194,7 @@ export const editorPartStateInfoSchema = z.object({
 });
 
 export const entryChangeSchema = z.object({
-  collectionId: z.string(),
+  projectId: z.string(),
   path: z.string(),
   status: fileStatusSchema,
 });
@@ -244,7 +244,7 @@ export const updateProjectParamsSchema = z.object({
 
 export const environmentInfoSchema = z.object({
   id: z.string(),
-  collectionId: z.string().optional(),
+  projectId: z.string().optional(),
   name: z.string(),
   displayName: z.string(),
   order: z.number(),

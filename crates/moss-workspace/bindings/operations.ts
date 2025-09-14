@@ -205,7 +205,7 @@ export type UnarchiveProjectOutput = { id: string };
 /**
  * @category Operation
  */
-export type UpdateEnvironmentGroupInput = { collectionId: string; expanded?: boolean; order?: number };
+export type UpdateEnvironmentGroupInput = { projectId: string; expanded?: boolean; order?: number };
 
 /**
  * @category Operation
