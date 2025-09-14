@@ -1,9 +1,9 @@
 #![cfg(feature = "integration-tests")]
 
-use moss_testutils::random_name::{random_collection_name, random_environment_name};
+use moss_testutils::random_name::{random_environment_name, random_project_name};
 use moss_workspace::models::{
-    operations::{CreateCollectionInput, CreateEnvironmentInput, UpdateEnvironmentGroupInput},
-    types::{CreateCollectionParams, UpdateEnvironmentGroupParams},
+    operations::{CreateEnvironmentInput, CreateProjectInput, UpdateEnvironmentGroupInput},
+    types::{CreateProjectParams, UpdateEnvironmentGroupParams},
 };
 use tauri::ipc::Channel;
 
@@ -15,13 +15,13 @@ pub mod shared;
 async fn update_environment_group_expand() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
-    let collection_name = random_collection_name();
+    let collection_name = random_project_name();
     let collection_id = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name,
                     order: 0,
                     external_path: None,
@@ -39,7 +39,7 @@ async fn update_environment_group_expand() {
         .create_environment(
             &ctx,
             CreateEnvironmentInput {
-                collection_id: Some(collection_id.clone()),
+                project_id: Some(collection_id.clone()),
                 name: environment_name.clone(),
                 order: 0,
                 color: None,
@@ -57,7 +57,7 @@ async fn update_environment_group_expand() {
             &ctx,
             UpdateEnvironmentGroupInput {
                 inner: UpdateEnvironmentGroupParams {
-                    collection_id: collection_id.clone(),
+                    project_id: collection_id.clone(),
                     expanded: Some(false),
                     order: None,
                 },
@@ -81,7 +81,7 @@ async fn update_environment_group_expand() {
             &ctx,
             UpdateEnvironmentGroupInput {
                 inner: UpdateEnvironmentGroupParams {
-                    collection_id: collection_id.clone(),
+                    project_id: collection_id.clone(),
                     expanded: Some(true),
                     order: None,
                 },
@@ -99,14 +99,14 @@ async fn update_environment_group_expand() {
 #[tokio::test]
 async fn update_environment_group_order() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
-    let collection_name = random_collection_name();
-    let collection_id = workspace
-        .create_collection(
+    let project_name = random_project_name();
+    let project_id = workspace
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
-                    name: collection_name.clone(),
+            &CreateProjectInput {
+                inner: CreateProjectParams {
+                    name: project_name.clone(),
                     order: 0,
                     external_path: None,
                     git_params: None,
@@ -123,7 +123,7 @@ async fn update_environment_group_order() {
         .create_environment(
             &ctx,
             CreateEnvironmentInput {
-                collection_id: Some(collection_id.clone()),
+                project_id: Some(project_id.clone()),
                 name: environment_name,
                 order: 0,
                 color: None,
@@ -138,7 +138,7 @@ async fn update_environment_group_order() {
             &ctx,
             UpdateEnvironmentGroupInput {
                 inner: UpdateEnvironmentGroupParams {
-                    collection_id,
+                    project_id,
                     expanded: None,
                     order: Some(42),
                 },

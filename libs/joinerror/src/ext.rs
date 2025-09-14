@@ -20,6 +20,12 @@ impl<T> From<std::sync::PoisonError<T>> for Error {
     }
 }
 
+impl From<std::path::StripPrefixError> for Error {
+    fn from(err: std::path::StripPrefixError) -> Self {
+        Error::new::<()>(err.to_string())
+    }
+}
+
 #[cfg(feature = "serde_json")]
 impl From<serde_json::Error> for Error {
     fn from(err: serde_json::Error) -> Self {
@@ -59,6 +65,16 @@ impl From<tokio::task::JoinError> for Error {
 impl From<git2::Error> for Error {
     fn from(err: git2::Error) -> Self {
         Error::new::<()>(err.to_string())
+    }
+}
+
+impl<T> ResultExt<T> for Result<T, std::path::StripPrefixError> {
+    fn join_err<E: ErrorMarker>(self, details: impl Into<String>) -> Result<T, Error> {
+        self.map_err(|e| Error::new::<()>(e.to_string()).join::<E>(details))
+    }
+
+    fn join_err_with<E: ErrorMarker>(self, details: impl FnOnce() -> String) -> Result<T, Error> {
+        self.map_err(|e| Error::new::<()>(e.to_string()).join::<E>(details()))
     }
 }
 

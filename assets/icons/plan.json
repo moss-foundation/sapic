@@ -65,9 +65,6 @@
   "CollapseAll": {
     "identical": true
   },
-  "Collection": {
-    "identical": false
-  },
   "Commit": {
     "identical": true
   },
@@ -243,6 +240,9 @@
     "identical": false
   },
   "PreRequest": {
+    "identical": false
+  },
+  "Project": {
     "identical": false
   },
   "Put": {

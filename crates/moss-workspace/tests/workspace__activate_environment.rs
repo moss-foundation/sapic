@@ -2,13 +2,13 @@
 
 use moss_applib::AppRuntime;
 use moss_environment::models::primitives::EnvironmentId;
-use moss_testutils::random_name::{random_collection_name, random_environment_name};
+use moss_testutils::random_name::{random_environment_name, random_project_name};
 use moss_workspace::{
     Workspace,
     models::{
         events::StreamEnvironmentsEvent,
-        operations::{ActivateEnvironmentInput, CreateCollectionInput, CreateEnvironmentInput},
-        types::CreateCollectionParams,
+        operations::{ActivateEnvironmentInput, CreateEnvironmentInput, CreateProjectInput},
+        types::CreateProjectParams,
     },
 };
 use std::{
@@ -56,7 +56,7 @@ async fn activate_environment_global() {
             &ctx,
             CreateEnvironmentInput {
                 name: environment_name,
-                collection_id: None,
+                project_id: None,
                 order: 42,
                 color: None,
                 variables: vec![],
@@ -92,13 +92,13 @@ async fn activate_environment_global() {
 async fn activate_environment_collection() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
-    let collection_name = random_collection_name();
+    let collection_name = random_project_name();
     let collection_id = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name,
                     order: 0,
                     external_path: None,
@@ -117,7 +117,7 @@ async fn activate_environment_collection() {
             &ctx,
             CreateEnvironmentInput {
                 name: environment_name,
-                collection_id: Some(collection_id.clone()),
+                project_id: Some(collection_id.clone()),
                 order: 42,
                 color: None,
                 variables: vec![],
@@ -160,7 +160,7 @@ async fn activate_environment_currently_active() {
             &ctx,
             CreateEnvironmentInput {
                 name: environment_name,
-                collection_id: None,
+                project_id: None,
                 order: 0,
                 color: None,
                 variables: vec![],
@@ -203,13 +203,13 @@ async fn activate_environment_currently_active() {
 #[tokio::test]
 async fn activate_environment_groups_isolation() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
-    let collection_name = random_collection_name();
+    let collection_name = random_project_name();
     let collection_id = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name,
                     order: 0,
                     external_path: None,
@@ -227,7 +227,7 @@ async fn activate_environment_groups_isolation() {
         .create_environment(
             &ctx,
             CreateEnvironmentInput {
-                collection_id: Some(collection_id.clone()),
+                project_id: Some(collection_id.clone()),
                 name: collection_env_name,
                 order: 0,
                 color: None,
@@ -243,7 +243,7 @@ async fn activate_environment_groups_isolation() {
         .create_environment(
             &ctx,
             CreateEnvironmentInput {
-                collection_id: None,
+                project_id: None,
                 name: global_env_name,
                 order: 0,
                 color: None,

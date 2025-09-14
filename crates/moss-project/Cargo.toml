@@ -1,0 +1,55 @@
+[package]
+name = "moss_project"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+moss_app_delegate.workspace = true
+moss_user.workspace = true
+moss_api.workspace = true
+moss_edit.workspace = true
+moss_fs.workspace = true
+moss_db.workspace = true
+moss_common.workspace = true
+moss_storage.workspace = true
+moss_text.workspace = true
+moss_environment.workspace = true
+moss_git.workspace = true
+moss_git_hosting_provider.workspace = true
+moss_hcl.workspace = true
+moss_bindingutils.workspace = true
+moss_applib.workspace = true
+moss_keyring.workspace = true
+moss_id_macro.workspace = true
+moss_logging.workspace = true
+
+async-trait.workspace = true
+git2.workspace = true
+joinerror.workspace = true
+anyhow.workspace = true
+serde = { workspace = true, features = ["derive", "rc"] }
+tokio = { workspace = true, features = ["sync"] }
+ts-rs = { workspace = true, features = ["serde-json-impl", "url-impl"] }
+serde_json.workspace = true
+validator = { workspace = true, features = ["derive"] }
+tauri.workspace = true
+futures.workspace = true
+image.workspace = true
+hcl-rs.workspace = true
+derive_more = { workspace = true, features = ["deref", "deref_mut"] }
+indexmap.workspace = true
+nanoid.workspace = true
+json-patch.workspace = true
+reqwest = { workspace = true, optional = true }
+rustc-hash.workspace = true
+oauth2 = { workspace = true, features = ["ureq"], optional = true }
+chrono.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+tauri = { workspace = true, features = ["test"] }
+moss_testutils.workspace = true
+moss_applib = { workspace = true, features = ["test"] }
+
+[features]
+integration-tests = ["reqwest", "oauth2", "moss_app_delegate/integration-tests"]

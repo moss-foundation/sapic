@@ -1564,13 +1564,13 @@ dependencies = [
  "moss_app",
  "moss_app_delegate",
  "moss_applib",
- "moss_collection",
  "moss_common",
  "moss_db",
  "moss_environment",
  "moss_fs",
  "moss_git_hosting_provider",
  "moss_keyring",
+ "moss_project",
  "moss_server_api",
  "moss_storage",
  "moss_text",
@@ -3646,53 +3646,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "moss_collection"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "chrono",
- "derive_more 2.0.1",
- "futures",
- "git2",
- "hcl-rs",
- "image",
- "indexmap 2.11.0",
- "joinerror",
- "json-patch 4.0.0",
- "moss_api",
- "moss_app_delegate",
- "moss_applib",
- "moss_bindingutils",
- "moss_common",
- "moss_db",
- "moss_edit",
- "moss_environment",
- "moss_fs",
- "moss_git",
- "moss_git_hosting_provider",
- "moss_hcl",
- "moss_id_macro",
- "moss_keyring",
- "moss_logging",
- "moss_storage",
- "moss_testutils",
- "moss_text",
- "moss_user",
- "nanoid",
- "oauth2",
- "reqwest",
- "rustc-hash",
- "serde",
- "serde_json",
- "tauri",
- "tokio",
- "tracing",
- "ts-rs",
- "validator",
-]
-
-[[package]]
 name = "moss_common"
 version = "0.1.0"
 dependencies = [
@@ -3876,6 +3829,53 @@ dependencies = [
 ]
 
 [[package]]
+name = "moss_project"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "chrono",
+ "derive_more 2.0.1",
+ "futures",
+ "git2",
+ "hcl-rs",
+ "image",
+ "indexmap 2.11.0",
+ "joinerror",
+ "json-patch 4.0.0",
+ "moss_api",
+ "moss_app_delegate",
+ "moss_applib",
+ "moss_bindingutils",
+ "moss_common",
+ "moss_db",
+ "moss_edit",
+ "moss_environment",
+ "moss_fs",
+ "moss_git",
+ "moss_git_hosting_provider",
+ "moss_hcl",
+ "moss_id_macro",
+ "moss_keyring",
+ "moss_logging",
+ "moss_storage",
+ "moss_testutils",
+ "moss_text",
+ "moss_user",
+ "nanoid",
+ "oauth2",
+ "reqwest",
+ "rustc-hash",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tokio",
+ "tracing",
+ "ts-rs",
+ "validator",
+]
+
+[[package]]
 name = "moss_server_api"
 version = "0.1.0"
 dependencies = [
@@ -3967,7 +3967,6 @@ dependencies = [
  "moss_app_delegate",
  "moss_applib",
  "moss_bindingutils",
- "moss_collection",
  "moss_common",
  "moss_db",
  "moss_edit",
@@ -3978,6 +3977,7 @@ dependencies = [
  "moss_id_macro",
  "moss_keyring",
  "moss_logging",
+ "moss_project",
  "moss_storage",
  "moss_testutils",
  "moss_user",

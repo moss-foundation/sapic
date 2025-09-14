@@ -46,7 +46,7 @@ export const gitLabCreateParamsSchema = z.object({
   branch: z.string(),
 });
 
-export const createCollectionGitParamsSchema = z.union([
+export const createProjectGitParamsSchema = z.union([
   z.object({
     "gitHub": gitHubCreateParamsSchema,
   }),
@@ -77,12 +77,12 @@ export const editorGridNodeSchema: z.ZodSchema<EditorGridNode> = z.lazy(() =>
 );
 
 export const environmentGroupSchema = z.object({
-  collectionId: z.string(),
+  projectId: z.string(),
   expanded: z.boolean(),
   order: z.number().optional(),
 });
 
-export const exportCollectionParamsSchema = z.object({
+export const exportProjectParamsSchema = z.object({
   id: z.string(),
   destination: z.string(),
 });
@@ -113,7 +113,7 @@ export const gitLabVcsInfoSchema = z.object({
   owner: z.string().optional(),
 });
 
-export const importCollectionSourceSchema = z.union([
+export const importProjectSourceSchema = z.union([
   z.object({
     "gitHub": gitHubImportParamsSchema,
   }),
@@ -131,7 +131,7 @@ export const panelPartStateInfoSchema = z.object({
 });
 
 export const updateEnvironmentGroupParamsSchema = z.object({
-  collectionId: z.string(),
+  projectId: z.string(),
   expanded: z.boolean().optional(),
   order: z.number().optional(),
 });
@@ -159,11 +159,11 @@ export const addVariableParamsSchema = z.object({
   options: variableOptionsSchema,
 });
 
-export const createCollectionParamsSchema = z.object({
+export const createProjectParamsSchema = z.object({
   name: z.string(),
   order: z.number(),
   externalPath: z.string().optional(),
-  gitParams: createCollectionGitParamsSchema.optional(),
+  gitParams: createProjectGitParamsSchema.optional(),
   iconPath: z.string().optional(),
 });
 
@@ -194,7 +194,7 @@ export const editorPartStateInfoSchema = z.object({
 });
 
 export const entryChangeSchema = z.object({
-  collectionId: z.string(),
+  projectId: z.string(),
   path: z.string(),
   status: fileStatusSchema,
 });
@@ -209,11 +209,11 @@ export const variableInfoSchema = z.object({
   desc: z.string().optional(),
 });
 
-export const importCollectionParamsSchema = z.object({
+export const importProjectParamsSchema = z.object({
   name: z.string(),
   order: z.number(),
   externalPath: z.string().optional(),
-  source: importCollectionSourceSchema,
+  source: importProjectSourceSchema,
   iconPath: z.string().optional(),
 });
 
@@ -221,15 +221,6 @@ export const sidebarPartStateInfoSchema = z.object({
   position: sidebarPositionSchema,
   size: z.number(),
   visible: z.boolean(),
-});
-
-export const updateCollectionParamsSchema = z.object({
-  id: z.string(),
-  name: z.string().optional(),
-  repository: changeStringSchema.optional(),
-  iconPath: changePathSchema.optional(),
-  order: z.number().optional(),
-  expanded: z.boolean().optional(),
 });
 
 export const updateVariableParamsSchema = z.object({
@@ -242,9 +233,18 @@ export const updateVariableParamsSchema = z.object({
   options: variableOptionsSchema.optional(),
 });
 
+export const updateProjectParamsSchema = z.object({
+  id: z.string(),
+  name: z.string().optional(),
+  repository: changeStringSchema.optional(),
+  iconPath: changePathSchema.optional(),
+  order: z.number().optional(),
+  expanded: z.boolean().optional(),
+});
+
 export const environmentInfoSchema = z.object({
   id: z.string(),
-  collectionId: z.string().optional(),
+  projectId: z.string().optional(),
   name: z.string(),
   displayName: z.string(),
   order: z.number(),

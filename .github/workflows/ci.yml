@@ -178,7 +178,7 @@ jobs:
           - moss_git_hosting_provider
           - moss_api
           - moss_text
-          - moss_collection
+          - moss_project
           - moss_app
           - moss_applib
           - moss_db
@@ -245,7 +245,7 @@ jobs:
           - moss_git_hosting_provider
           - moss_api
           - moss_text
-          - moss_collection
+          - moss_project
           - moss_app
           - moss_applib
           - moss_db

@@ -46,33 +46,31 @@ export const useMonitorEnvironmentsLists = () => {
         }
 
         const targetIndex = groups.findIndex(
-          (group) => group.collectionId === locationData.data.groupWithEnvironments.collectionId
+          (group) => group.projectId === locationData.data.groupWithEnvironments.projectId
         );
-
-        console.log("targetIndex", targetIndex);
 
         const inserted = [
           ...groups
             .slice(0, targetIndex)
-            .filter((group) => group.collectionId !== sourceData.data.groupWithEnvironments.collectionId),
+            .filter((group) => group.projectId !== sourceData.data.groupWithEnvironments.projectId),
           sourceData.data.groupWithEnvironments,
           ...groups
             .slice(targetIndex)
-            .filter((group) => group.collectionId !== sourceData.data.groupWithEnvironments.collectionId),
+            .filter((group) => group.projectId !== sourceData.data.groupWithEnvironments.projectId),
         ].map((group, index) => ({
           ...group,
           order: index + 1,
         }));
 
         const groupsToUpdate = inserted.filter((group) => {
-          const groupInLocation = groups.find((g) => g.collectionId === group.collectionId);
+          const groupInLocation = groups.find((g) => g.projectId === group.projectId);
           return groupInLocation?.order !== group.order;
         });
 
         batchUpdateEnvironmentGroup({
           items: groupsToUpdate.map((group) => ({
             order: group.order,
-            collectionId: group.collectionId,
+            projectId: group.projectId,
           })),
         });
       },

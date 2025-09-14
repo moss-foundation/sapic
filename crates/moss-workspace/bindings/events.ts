@@ -4,7 +4,23 @@ import type { BranchInfo } from "./types";
 /**
  * @category Event
  */
-export type StreamCollectionsEvent = {
+export type StreamEnvironmentsEvent = {
+  id: string;
+  /**
+   * The id of the project that the environment belongs to.
+   * If the environment is global, this will be `None`.
+   */
+  projectId?: string;
+  isActive: boolean;
+  name: string;
+  order?: number;
+  totalVariables: number;
+};
+
+/**
+ * @category Event
+ */
+export type StreamProjectsEvent = {
   id: string;
   name: string;
   order?: number;
@@ -12,20 +28,4 @@ export type StreamCollectionsEvent = {
   branch?: BranchInfo;
   iconPath?: string;
   archived: boolean;
-};
-
-/**
- * @category Event
- */
-export type StreamEnvironmentsEvent = {
-  id: string;
-  /**
-   * The id of the collection that the environment belongs to.
-   * If the environment is global, this will be `None`.
-   */
-  collectionId?: string;
-  isActive: boolean;
-  name: string;
-  order?: number;
-  totalVariables: number;
 };

@@ -1102,9 +1102,9 @@ export class DockviewComponent extends BaseGrid<DockviewGroupPanel> implements I
     const data = this.gridview.serialize();
 
     const panels = this.panels.reduce(
-      (collection, panel) => {
-        collection[panel.id] = panel.toJSON();
-        return collection;
+      (project, panel) => {
+        project[panel.id] = panel.toJSON();
+        return project;
       },
       {} as { [key: string]: GroupviewPanelState }
     );

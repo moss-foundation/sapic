@@ -74,11 +74,11 @@ export const useDraggableGroupedEnvironmentsList = ({
               element,
               operations: {
                 "reorder-before":
-                  sourceData.data.groupWithEnvironments.collectionId === groupWithEnvironments.collectionId
+                  sourceData.data.groupWithEnvironments.projectId === groupWithEnvironments.projectId
                     ? "not-available"
                     : "available",
                 "reorder-after":
-                  sourceData.data.groupWithEnvironments.collectionId === groupWithEnvironments.collectionId
+                  sourceData.data.groupWithEnvironments.projectId === groupWithEnvironments.projectId
                     ? "not-available"
                     : "available",
                 combine: "not-available",

@@ -27,7 +27,7 @@ export const useDeleteEnvironment = () => {
           groups: old.groups.filter((group) => {
             const envsWithoutDeleted = old.environments.filter((environment) => environment.id !== data.id);
 
-            if (envsWithoutDeleted.some((environment) => environment.collectionId === group.collectionId)) {
+            if (envsWithoutDeleted.some((environment) => environment.projectId === group.projectId)) {
               return true;
             }
 

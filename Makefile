@@ -58,7 +58,7 @@ SCRIPTS_DIR := scripts
 # ---- Crate Directories ----
 BINDINGUTILS_DIR := crates/moss-bindingutils
 APP_MODELS_DIR := crates/moss-app
-COLLECTION_MODELS_DIR := crates/moss-collection
+PROJECT_MODELS_DIR := crates/moss-project
 ENVIRONMENT_MODELS_DIR := crates/moss-environment
 WORKSPACE_MODELS_DIR := crates/moss-workspace
 ACTIVITY_BROADCASTER_MODELS_DIR := crates/moss-activity-broadcaster
@@ -141,7 +141,7 @@ endef
 
 # Apply the gen_bindings function to each crate
 $(eval $(call gen_bindings,app,APP_MODELS_DIR))
-$(eval $(call gen_bindings,collection,COLLECTION_MODELS_DIR))
+$(eval $(call gen_bindings,project,PROJECT_MODELS_DIR))
 $(eval $(call gen_bindings,environment,ENVIRONMENT_MODELS_DIR))
 $(eval $(call gen_bindings,workspace,WORKSPACE_MODELS_DIR))
 $(eval $(call gen_bindings,activity-broadcaster,ACTIVITY_BROADCASTER_MODELS_DIR))
@@ -152,7 +152,7 @@ $(eval $(call gen_bindings,user,USER_MODELS_DIR))
 
 
 gen-app-bindings:
-gen-collection-bindings:
+gen-project-bindings:
 gen-environment-bindings:
 gen-workspace-bindings:
 gen-activity-broadcaster-bindings:
@@ -165,7 +165,7 @@ gen-user-bindings:
 .PHONY: gen-bindings
 gen-bindings: \
 	gen-app-bindings \
-	gen-collection-bindings \
+	gen-project-bindings \
 	gen-environment-bindings \
 	gen-workspace-bindings \
 	gen-activity-broadcaster-bindings \

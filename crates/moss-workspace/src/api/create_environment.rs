@@ -20,7 +20,7 @@ impl<R: AppRuntime> Workspace<R> {
             .create_environment(
                 ctx,
                 CreateEnvironmentItemParams {
-                    collection_id: input.collection_id,
+                    collection_id: input.project_id,
                     name: input.name.clone(),
                     order: input.order,
                     color: input.color.clone(),
@@ -31,7 +31,7 @@ impl<R: AppRuntime> Workspace<R> {
 
         Ok(CreateEnvironmentOutput {
             id: result.id,
-            collection_id: result.collection_id.map(|id| id.into()),
+            project_id: result.collection_id.map(|id| id.into()),
             name: result.display_name,
             order: result.order,
             color: result.color,

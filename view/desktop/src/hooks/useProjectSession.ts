@@ -1,9 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  TREE_VIEW_GROUP_COLLECTIONS,
   TREE_VIEW_GROUP_ENVIRONMENTS,
   TREE_VIEW_GROUP_MOCK_SERVERS,
+  TREE_VIEW_GROUP_PROJECTS,
 } from "@repo/moss-workspace";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export interface ProjectSessionState {
   lastActiveGroup: string;
@@ -20,10 +20,10 @@ export const USE_CHANGE_PROJECT_SESSION_STATE_MUTATION_KEY = "changeProjectSessi
 
 // FIXME: remove mock data
 let projectSessionState = {
-  "lastActiveGroup": TREE_VIEW_GROUP_COLLECTIONS,
+  "lastActiveGroup": TREE_VIEW_GROUP_PROJECTS,
   changedViews: [
     {
-      "id": TREE_VIEW_GROUP_COLLECTIONS,
+      "id": TREE_VIEW_GROUP_PROJECTS,
       collapsed: false,
     },
     {

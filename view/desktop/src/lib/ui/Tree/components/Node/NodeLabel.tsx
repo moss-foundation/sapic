@@ -4,15 +4,15 @@ import { cn } from "@/utils";
 
 interface NodeLabelProps extends HTMLAttributes<HTMLSpanElement> {
   label: string;
-  isRootNode?: boolean;
+  capitalize?: boolean;
 }
-export const NodeLabel = ({ label, className, isRootNode, ...props }: NodeLabelProps) => {
+export const NodeLabel = ({ label, className, capitalize, ...props }: NodeLabelProps) => {
   return (
     <span
       className={cn(
         "min-w-0 truncate",
         {
-          "capitalize": isRootNode,
+          "capitalize": capitalize,
         },
         className
       )}

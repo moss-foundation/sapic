@@ -5,15 +5,15 @@ use moss_git::models::types::BranchInfo;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-use crate::models::primitives::CollectionId;
+use crate::models::primitives::ProjectId;
 
 /// @category Event
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "events.ts")]
-pub struct StreamCollectionsEvent {
-    pub id: CollectionId,
+pub struct StreamProjectsEvent {
+    pub id: ProjectId,
     pub name: String,
     pub order: Option<isize>,
     pub expanded: bool,
@@ -30,9 +30,9 @@ pub struct StreamCollectionsEvent {
 pub struct StreamEnvironmentsEvent {
     pub id: EnvironmentId,
 
-    /// The id of the collection that the environment belongs to.
+    /// The id of the project that the environment belongs to.
     /// If the environment is global, this will be `None`.
-    pub collection_id: Option<CollectionId>,
+    pub project_id: Option<ProjectId>,
     pub is_active: bool,
 
     pub name: String,

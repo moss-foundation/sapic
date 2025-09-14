@@ -34,7 +34,7 @@ async fn delete_environment_success() {
             &ctx,
             CreateEnvironmentInput {
                 name: environment_name.clone(),
-                collection_id: None,
+                project_id: None,
                 order: 42,
                 color: Some("#3574F0".to_string()),
                 variables: vec![],

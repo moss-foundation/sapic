@@ -43,7 +43,7 @@ export const EmptyWorkspace = ({ inSidebar = false }: EmptyWorkspaceProps) => {
         <div>
           <img src={ErrorNaughtyDog} className="pointer-events-none mx-auto h-auto w-full max-w-[200px]" />
           <p className="text-(--moss-secondary-text)">
-            You need to open a workspace before accessing collections, environments, or sending requests. Please open or
+            You need to open a workspace before accessing projects, environments, or sending requests. Please open or
             create a workspace to proceed.
           </p>
         </div>

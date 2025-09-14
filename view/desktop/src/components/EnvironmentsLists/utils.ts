@@ -180,7 +180,7 @@ export const getDropOperation = (source: ElementDragPayload, location: DragLocat
       return null;
     }
 
-    if (sourceData.data.environment.collectionId !== locationData.data.environment.collectionId) {
+    if (sourceData.data.environment.projectId !== locationData.data.environment.projectId) {
       return "MoveToGrouped";
     }
 

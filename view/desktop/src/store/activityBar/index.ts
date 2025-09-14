@@ -4,9 +4,9 @@ import { Icons } from "@/lib/ui/Icon";
 import {
   ActivitybarPartStateInfo,
   ActivitybarPosition,
-  TREE_VIEW_GROUP_COLLECTIONS,
   TREE_VIEW_GROUP_ENVIRONMENTS,
   TREE_VIEW_GROUP_MOCK_SERVERS,
+  TREE_VIEW_GROUP_PROJECTS,
 } from "@repo/moss-workspace";
 
 export interface ActivityBarItem {
@@ -34,8 +34,8 @@ export interface ActivityBarStore {
 
 const defaultItems: ActivityBarItem[] = [
   {
-    "id": TREE_VIEW_GROUP_COLLECTIONS,
-    "title": "Collections",
+    "id": TREE_VIEW_GROUP_PROJECTS,
+    "title": "Projects",
     "order": 1,
     "icon": "Home",
     "iconActive": "HomeActive",
@@ -83,7 +83,7 @@ const defaultItems: ActivityBarItem[] = [
 export const useActivityBarStore = create<ActivityBarStore>((set, get) => ({
   items: defaultItems,
   position: "DEFAULT",
-  lastActiveContainerId: TREE_VIEW_GROUP_COLLECTIONS,
+  lastActiveContainerId: TREE_VIEW_GROUP_PROJECTS,
   setPosition: (position: ActivitybarPosition) => {
     set({ position });
   },
@@ -103,7 +103,7 @@ export const useActivityBarStore = create<ActivityBarStore>((set, get) => ({
     set({
       items: [...defaultItems],
       position: "DEFAULT",
-      lastActiveContainerId: TREE_VIEW_GROUP_COLLECTIONS,
+      lastActiveContainerId: TREE_VIEW_GROUP_PROJECTS,
     });
   },
   toWorkspaceState: (): ActivitybarPartStateInfo => {
@@ -122,8 +122,8 @@ export const useActivityBarStore = create<ActivityBarStore>((set, get) => ({
   updateFromWorkspaceState: (activitybarState: ActivitybarPartStateInfo) => {
     const currentItems = get().items;
 
-    // Ensure we have a valid lastActiveContainerId, default to Collections if not
-    const activeContainerId = activitybarState.lastActiveContainerId || TREE_VIEW_GROUP_COLLECTIONS;
+    // Ensure we have a valid lastActiveContainerId, default to Projects if not
+    const activeContainerId = activitybarState.lastActiveContainerId || TREE_VIEW_GROUP_PROJECTS;
 
     // Create a map of workspace state items by id for easy lookup
     const workspaceItemsMap = new Map(activitybarState.items.map((item) => [item.id, item]));

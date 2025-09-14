@@ -1,11 +1,11 @@
 import { useActiveWorkspace } from "@/hooks";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
-import { CollectionTreesView } from "@/parts/CollectionTreesView/CollectionTreesView";
+import { ProjectTreesView } from "@/parts/ProjectTreesView/ProjectTreesView";
 import { SidebarHeader } from "@/parts/SideBar/SidebarHeader";
 import {
-  TREE_VIEW_GROUP_COLLECTIONS,
   TREE_VIEW_GROUP_ENVIRONMENTS,
   TREE_VIEW_GROUP_MOCK_SERVERS,
+  TREE_VIEW_GROUP_PROJECTS,
 } from "@repo/moss-workspace";
 
 import { EnvironmentsListView } from "../EnvironmentsListView/EnvironmentsListView";
@@ -51,10 +51,10 @@ export const SidebarWorkspaceContent = ({ groupId = "default" }: SidebarWorkspac
   }
 
   switch (groupId) {
-    case TREE_VIEW_GROUP_COLLECTIONS:
+    case TREE_VIEW_GROUP_PROJECTS:
       return (
         <div className="flex h-full flex-col">
-          <CollectionTreesView />
+          <ProjectTreesView />
         </div>
       );
 

@@ -9,13 +9,13 @@ interface RequestModeStore {
 }
 
 export const useRequestModeStore = create<RequestModeStore>((set) => ({
-  displayMode: "REQUEST_FIRST",
+  displayMode: "LIVE",
   setDisplayMode: (displayMode: WorkspaceMode) => {
     set({ displayMode });
   },
   toggleDisplayMode: () => {
     set((state) => ({
-      displayMode: state.displayMode === "REQUEST_FIRST" ? "DESIGN_FIRST" : "REQUEST_FIRST",
+      displayMode: state.displayMode === "LIVE" ? "DESIGN" : "LIVE",
     }));
   },
 }));

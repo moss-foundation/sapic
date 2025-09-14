@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import { invokeTauriIpc } from "@/lib/backend/tauri.ts";
 import { ListChangesOutput } from "@repo/moss-workspace";
 
@@ -15,7 +16,7 @@ const FileStatuses = () => {
     setFilesStatuses(
       result.data.changes
         .map((change) => {
-          return `Collection: ${change.collectionId}, Path: ${change.path}, Status: ${change.status}`;
+          return `Collection: ${change.projectId}, Path: ${change.path}, Status: ${change.status}`;
         })
         .join("\n")
     );

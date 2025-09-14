@@ -16,7 +16,7 @@ pub mod constants {
 
     /// @category Constant
     #[const_export(export_to = "constants.ts")]
-    pub const TREE_VIEW_GROUP_COLLECTIONS: &str = "workbench.view.collections";
+    pub const TREE_VIEW_GROUP_PROJECTS: &str = "workbench.view.projects";
 
     /// @category Constant
     #[const_export(export_to = "constants.ts")]
@@ -28,12 +28,12 @@ pub mod constants {
 }
 
 pub mod dirs {
-    pub const COLLECTIONS_DIR: &str = "collections";
+    pub const PROJECTS_DIR: &str = "projects";
     pub const ENVIRONMENTS_DIR: &str = "environments";
 }
 
 pub trait AnyWorkspace<R: AppRuntime> {
-    type Collection;
+    type Project;
     type Environment: AnyEnvironment<R>;
 }
 

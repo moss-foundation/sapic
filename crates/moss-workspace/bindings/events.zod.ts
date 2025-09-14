@@ -4,13 +4,13 @@ import { branchInfoSchema } from "./types.zod";
 
 export const streamEnvironmentsEventSchema = z.object({
   id: z.string(),
-  collectionId: z.string().optional(),
+  projectId: z.string().optional(),
   isActive: z.boolean(),
   name: z.string(),
   order: z.number().optional(),
   totalVariables: z.number(),
 });
-export const streamCollectionsEventSchema = z.object({
+export const streamProjectsEventSchema = z.object({
   id: z.string(),
   name: z.string(),
   order: z.number().optional(),

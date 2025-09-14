@@ -5,11 +5,11 @@ use moss_environment::{
     models::types::{AddVariableParams, VariableOptions},
 };
 use moss_storage::storage::operations::GetItem;
-use moss_testutils::random_name::{random_collection_name, random_environment_name};
+use moss_testutils::random_name::{random_environment_name, random_project_name};
 use moss_workspace::{
     models::{
-        operations::{CreateCollectionInput, CreateEnvironmentInput},
-        types::CreateCollectionParams,
+        operations::{CreateEnvironmentInput, CreateProjectInput},
+        types::CreateProjectParams,
     },
     storage::segments::SEGKEY_ENVIRONMENT,
 };
@@ -30,7 +30,7 @@ async fn create_environment_success() {
             &ctx,
             CreateEnvironmentInput {
                 name: environment_name.clone(),
-                collection_id: None,
+                project_id: None,
                 order: 42,
                 color: Some("#3574F0".to_string()),
                 variables: vec![AddVariableParams {
@@ -86,7 +86,7 @@ async fn create_environment_already_exists() {
             &ctx,
             CreateEnvironmentInput {
                 name: environment_name.clone(),
-                collection_id: None,
+                project_id: None,
                 order: 42,
                 color: Some("#3574F0".to_string()),
                 variables: vec![],
@@ -100,7 +100,7 @@ async fn create_environment_already_exists() {
             &ctx,
             CreateEnvironmentInput {
                 name: environment_name.clone(),
-                collection_id: None,
+                project_id: None,
                 order: 42,
                 color: Some("#3574F0".to_string()),
                 variables: vec![],
@@ -117,13 +117,13 @@ async fn create_environment_already_exists() {
 async fn create_collection_environment_success() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
-    let collection_name = random_collection_name();
+    let collection_name = random_project_name();
     let collection_id = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name,
                     order: 0,
                     external_path: None,
@@ -143,7 +143,7 @@ async fn create_collection_environment_success() {
             &ctx,
             CreateEnvironmentInput {
                 name: environment_name.clone(),
-                collection_id: Some(collection_id),
+                project_id: Some(collection_id),
                 order: 42,
                 color: None,
                 variables: vec![AddVariableParams {
@@ -193,13 +193,13 @@ async fn create_collection_environment_success() {
 async fn create_collection_environment_already_exists() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
-    let collection_name = random_collection_name();
+    let collection_name = random_project_name();
     let collection_id = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name,
                     order: 0,
                     external_path: None,
@@ -219,7 +219,7 @@ async fn create_collection_environment_already_exists() {
             &ctx,
             CreateEnvironmentInput {
                 name: environment_name.clone(),
-                collection_id: Some(collection_id.clone()),
+                project_id: Some(collection_id.clone()),
                 order: 42,
                 color: None,
                 variables: vec![],
@@ -233,7 +233,7 @@ async fn create_collection_environment_already_exists() {
             &ctx,
             CreateEnvironmentInput {
                 name: environment_name.clone(),
-                collection_id: Some(collection_id.clone()),
+                project_id: Some(collection_id.clone()),
                 order: 42,
                 color: None,
                 variables: vec![],
@@ -250,13 +250,13 @@ async fn create_collection_environment_already_exists() {
 async fn create_collection_environment_same_name_as_workspace_environment() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
-    let collection_name = random_collection_name();
+    let collection_name = random_project_name();
     let collection_id = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name,
                     order: 0,
                     external_path: None,
@@ -276,7 +276,7 @@ async fn create_collection_environment_same_name_as_workspace_environment() {
             &ctx,
             CreateEnvironmentInput {
                 name: environment_name.clone(),
-                collection_id: Some(collection_id.clone()),
+                project_id: Some(collection_id.clone()),
                 order: 42,
                 color: None,
                 variables: vec![],
@@ -292,7 +292,7 @@ async fn create_collection_environment_same_name_as_workspace_environment() {
             &ctx,
             CreateEnvironmentInput {
                 name: environment_name.clone(),
-                collection_id: None,
+                project_id: None,
                 order: 42,
                 color: None,
                 variables: vec![],

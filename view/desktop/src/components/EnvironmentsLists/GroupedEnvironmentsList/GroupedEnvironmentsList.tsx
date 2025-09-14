@@ -7,7 +7,7 @@ export const GroupedEnvironmentsList = () => {
   return (
     <div>
       {groupedEnvironments?.map((groupedEnv) => (
-        <GroupedEnvironmentsListRoot key={groupedEnv.collectionId} groupedEnvironments={groupedEnv} />
+        <GroupedEnvironmentsListRoot key={groupedEnv.projectId} groupedEnvironments={groupedEnv} />
       ))}
     </div>
   );

@@ -1,23 +1,23 @@
 import { PageContent } from "@/components";
-import { TreeCollectionNode } from "@/components/CollectionTree/types";
-import { useCollectionsTrees } from "@/hooks";
+import { ProjectTreeNode } from "@/components/ProjectTree/types";
+import { useProjectsTrees } from "@/hooks";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
-import { EntryKind } from "@repo/moss-collection";
+import { EntryKind } from "@repo/moss-project";
 
-import { findNodeInCollection } from "../utils";
+import { findNodeInProject } from "../utils";
 
 export interface FolderSettingsParams {
-  collectionId: string;
-  node: TreeCollectionNode;
+  projectId: string;
+  node: ProjectTreeNode;
   iconType: EntryKind;
 }
 
 export const OverviewTabContent = ({ params }: IDockviewPanelProps<FolderSettingsParams>) => {
-  const { collectionsTrees } = useCollectionsTrees();
-  const collection = collectionsTrees?.find((col) => col.id === params?.collectionId);
-  const node = collection ? findNodeInCollection(collection, params?.node?.id) : undefined;
+  const { projectsTrees: projectsTrees } = useProjectsTrees();
+  const project = projectsTrees?.find((col) => col.id === params?.projectId);
+  const node = project ? findNodeInProject(project, params?.node?.id) : undefined;
 
-  if (!node || !params?.collectionId) {
+  if (!node || !params?.projectId) {
     return (
       <div className="p-4">
         <p className="text-(--moss-secondary-text)">No folder data available</p>
@@ -46,9 +46,9 @@ export const OverviewTabContent = ({ params }: IDockviewPanelProps<FolderSetting
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-(--moss-secondary-text)">Collection ID</label>
+            <label className="mb-1 block text-sm font-medium text-(--moss-secondary-text)">Project ID</label>
             <div className="background-(--moss-secondary-background) rounded border border-(--moss-border-color) px-3 py-2 font-mono text-sm text-(--moss-primary-text)">
-              {params?.collectionId}
+              {params?.projectId}
             </div>
           </div>
 
@@ -112,7 +112,7 @@ export const OverviewTabContent = ({ params }: IDockviewPanelProps<FolderSetting
 
         <div className="background-(--moss-secondary-background) rounded border border-(--moss-border-color) p-3">
           <pre className="overflow-auto text-sm text-(--moss-secondary-text)">
-            {JSON.stringify({ node, collectionId: params?.collectionId, iconType: params?.iconType }, null, 2)}
+            {JSON.stringify({ node, projectId: params?.projectId, iconType: params?.iconType }, null, 2)}
           </pre>
         </div>
       </div>
