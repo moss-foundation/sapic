@@ -1,4 +1,5 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 import {
   DescribeAppStateOutput,
   ListWorkspacesOutput,
@@ -10,7 +11,7 @@ import { DescribeStateOutput } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_DESCRIBE_APP_STATE_QUERY_KEY } from "../app/useDescribeAppState";
-import { USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY } from "../collection";
+import { USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY, useStreamedCollectionsWithEntries } from "../collection";
 import { USE_STREAM_COLLECTIONS_QUERY_KEY } from "../collection/useStreamCollections";
 import { USE_STREAMED_ENVIRONMENTS_QUERY_KEY } from "../workspace/environment";
 import { USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY } from "../workspace/useDescribeWorkspaceState";
@@ -34,6 +35,10 @@ const openWorkspaceFn = async (workspaceId: string): Promise<OpenWorkspaceOutput
 
 export const useOpenWorkspace = () => {
   const queryClient = useQueryClient();
+
+  const { data: collectionsWithEntries } = useStreamedCollectionsWithEntries();
+  const { api } = useTabbedPaneStore();
+
   return useMutation<OpenWorkspaceOutput, Error, string>({
     mutationKey: [USE_OPEN_WORKSPACE_QUERY_KEY],
     mutationFn: openWorkspaceFn,
@@ -81,6 +86,19 @@ export const useOpenWorkspace = () => {
       queryClient.removeQueries({ queryKey: [USE_STREAM_COLLECTIONS_QUERY_KEY] });
       queryClient.removeQueries({ queryKey: [USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY] });
       queryClient.removeQueries({ queryKey: [USE_STREAMED_ENVIRONMENTS_QUERY_KEY] });
+
+      collectionsWithEntries?.forEach((collection) => {
+        const collectionPanelToRemove = api?.getPanel(collection.id);
+
+        if (collectionPanelToRemove) {
+          api?.removePanel(collectionPanelToRemove);
+        }
+
+        collection.entries.forEach((entry) => {
+          const entryPanelToRemove = api?.getPanel(entry.id);
+          if (entryPanelToRemove) api?.removePanel(entryPanelToRemove);
+        });
+      });
     },
   });
 };
