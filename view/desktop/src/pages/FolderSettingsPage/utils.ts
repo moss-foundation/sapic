@@ -2,21 +2,6 @@ import { ProjectTreeNode, ProjectTreeRootNode } from "@/components/ProjectTree/t
 import { Icons } from "@/lib/ui";
 
 export const getFolderIcon = (node: ProjectTreeNode): Icons => {
-  const isRoot = node.path.segments.length === 1;
-
-  if (isRoot) {
-    switch (node.class) {
-      case "Schema":
-        return "SchemasFolder";
-      case "Endpoint":
-        return "EndpointsFolder";
-      case "Component":
-        return "ComponentsFolder";
-      default:
-        return "RequestsFolder";
-    }
-  }
-
   return "Folder";
 };
 
