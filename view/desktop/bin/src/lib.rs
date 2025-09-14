@@ -240,6 +240,7 @@ pub async fn run<R: TauriRuntime>() {
             commands::update_project_entry,
             commands::batch_update_project_entry,
             commands::batch_create_project_entry,
+            commands::execute_vcs_operation,
             //
             // Env
             //

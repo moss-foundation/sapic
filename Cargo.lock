@@ -3738,17 +3738,15 @@ dependencies = [
 name = "moss_git"
 version = "0.1.0"
 dependencies = [
- "anyhow",
  "derive_more 2.0.1",
- "dotenv",
  "git2",
  "joinerror",
  "libssh2-sys",
- "moss_user",
+ "moss_logging",
  "nanoid",
- "oauth2",
  "regex",
  "serde",
+ "tracing",
  "ts-rs",
  "url",
 ]

@@ -6,7 +6,10 @@ use moss_environment::models::{
     primitives::{EnvironmentId, VariableId},
     types::{AddVariableParams, UpdateVariableParams, VariableInfo},
 };
-use moss_git::{models::types::BranchInfo, repository::FileStatus, url::GIT_URL_REGEX};
+use moss_git::{
+    models::{primitives::FileStatus, types::BranchInfo},
+    url::GIT_URL_REGEX,
+};
 use moss_user::models::primitives::AccountId;
 use serde::{Deserialize, Serialize};
 use std::{

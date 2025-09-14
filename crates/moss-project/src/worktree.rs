@@ -10,6 +10,7 @@ use moss_db::primitives::AnyValue;
 use moss_edit::json::EditOptions;
 use moss_fs::{CreateOptions, FileSystem, RemoveOptions, desanitize_path, utils::SanitizedPath};
 use moss_hcl::HclResultExt;
+use moss_logging::session;
 use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_text::sanitized::{desanitize, sanitize};
 use serde_json::Value as JsonValue;
@@ -766,6 +767,22 @@ async fn process_entry(
         .map(|n| n.to_string_lossy().to_string())
         .unwrap_or_else(|| path.to_string_lossy().to_string());
 
+    if fs.is_dir_empty(&abs_path).await? {
+        session::info!(format!(
+            "Deleting empty entry folder: {}",
+            abs_path.display()
+        ));
+        fs.remove_dir(
+            &abs_path,
+            RemoveOptions {
+                recursive: false,
+                ignore_if_not_exists: false,
+            },
+        )
+        .await?;
+        return Ok(None);
+    }
+
     if dir_config_path.exists() {
         let mut rdr = fs.open_file(&dir_config_path).await?;
         let model: EntryModel =
@@ -796,9 +813,7 @@ async fn process_entry(
             },
             desc,
         )));
-    }
-
-    if item_config_path.exists() {
+    } else if item_config_path.exists() {
         let mut rdr = fs.open_file(&item_config_path).await?;
         let model: EntryModel =
             hcl::from_reader(&mut rdr).join_err::<()>("failed to parse item configuration")?;

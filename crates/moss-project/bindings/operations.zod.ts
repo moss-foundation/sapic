@@ -7,6 +7,7 @@ import {
   createItemEntryParamsSchema,
   updateDirEntryParamsSchema,
   updateItemEntryParamsSchema,
+  vcsOperationSchema,
 } from "./types.zod";
 
 export const batchCreateEntryOutputSchema = z.object({
@@ -26,6 +27,8 @@ export const deleteEntryInputSchema = z.object({
 export const deleteEntryOutputSchema = z.object({
   id: z.string(),
 });
+
+export const executeVcsOperationOutputSchema = z.record(z.string(), z.never());
 
 export const streamEntriesInputSchema = z.union([
   z.literal("LOAD_ROOT"),
@@ -70,6 +73,10 @@ export const createEntryInputSchema = z.union([
     "DIR": createDirEntryParamsSchema,
   }),
 ]);
+
+export const executeVcsOperationInputSchema = z.object({
+  operation: vcsOperationSchema,
+});
 
 export const updateEntryInputSchema = z.union([
   z.object({

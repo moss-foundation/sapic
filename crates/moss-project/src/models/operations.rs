@@ -7,10 +7,9 @@ use crate::models::{
     primitives::EntryId,
     types::{
         AfterUpdateDirEntryDescription, AfterUpdateItemEntryDescription, CreateDirEntryParams,
-        CreateItemEntryParams, UpdateDirEntryParams, UpdateItemEntryParams,
+        CreateItemEntryParams, UpdateDirEntryParams, UpdateItemEntryParams, VcsOperation,
     },
 };
-
 // ########################################################
 // ###                   Create Entry                   ###
 // ########################################################
@@ -157,8 +156,20 @@ pub enum StreamEntriesInput {
 
 /// @category Operation
 #[derive(Clone, Debug, Serialize, TS)]
-// #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct StreamEntriesOutput {
     // TODO: count total?
 }
+
+/// @category Operation
+#[derive(Clone, Debug, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct ExecuteVcsOperationInput {
+    pub operation: VcsOperation,
+}
+
+/// @category Operation
+#[derive(Clone, Debug, Serialize, TS)]
+#[ts(export, export_to = "operations.ts")]
+pub struct ExecuteVcsOperationOutput {}

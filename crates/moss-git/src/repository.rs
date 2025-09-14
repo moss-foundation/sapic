@@ -4,14 +4,18 @@ use git2::{
     StatusOptions,
     build::{CheckoutBuilder, RepoBuilder},
 };
-use joinerror::{OptionExt, ResultExt};
+use joinerror::{Error, OptionExt, ResultExt};
+use moss_logging::session;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
 };
 
-use crate::constants;
-pub use crate::models::primitives::FileStatus;
+use crate::{
+    constants,
+    errors::{Conflicts, DirtyWorktree},
+    models::primitives::FileStatus,
+};
 
 #[derive(Deref)]
 pub struct Repository {
@@ -55,28 +59,6 @@ impl Repository {
             .remote(remote_name.unwrap_or(constants::DEFAULT_REMOTE_NAME), url)?;
 
         Ok(())
-    }
-
-    pub fn list_remotes(&self) -> joinerror::Result<HashMap<String, String>> {
-        let remote_names = self.inner.remotes()?;
-        let mut result = HashMap::with_capacity(remote_names.len());
-
-        for remote_name in remote_names.iter() {
-            if remote_name.is_none() {
-                continue;
-            }
-
-            let remote_name = remote_name.unwrap();
-            let remote = self.inner.find_remote(remote_name)?;
-            let url = remote.url();
-            if url.is_none() {
-                continue;
-            }
-
-            result.insert(remote_name.to_string(), url.unwrap().to_string());
-        }
-
-        Ok(result)
     }
 
     pub fn list_branches(&self, branch_type: Option<BranchType>) -> joinerror::Result<Vec<String>> {
@@ -188,6 +170,62 @@ impl Repository {
         Ok(())
     }
 
+    // We will only update the index immediately before a commit, thus there should only be
+    // three types of file statuses (excluding conflict and ignored)
+    // that we need to handle:
+    // WT_NEW: new file yet to be tracked (never committed)
+    // WT_MODIFIED: tracked file that's modified
+    // WT_DELETED: tracked file that's deleted
+
+    pub fn stage_paths(
+        &self,
+        paths: impl IntoIterator<Item = impl AsRef<Path>>,
+    ) -> joinerror::Result<()> {
+        let workdir = self.inner.workdir().ok_or_join_err::<()>("no workdir")?;
+        let mut index = self.inner.index()?;
+
+        for path in paths {
+            let abs_path = workdir.join(path.as_ref());
+
+            if abs_path.exists() {
+                index.add_path(path.as_ref())?;
+            } else {
+                index.remove_path(path.as_ref())?;
+            }
+        }
+        index.write()?;
+
+        Ok(())
+    }
+    pub fn discard_changes(
+        &self,
+        paths: impl IntoIterator<Item = impl AsRef<Path>>,
+    ) -> joinerror::Result<()> {
+        // Reset changes to tracked files to the INDEX
+        let workdir = self.inner.workdir().ok_or_join_err::<()>("no workdir")?;
+        let mut co = CheckoutBuilder::new();
+        co.force();
+
+        for path in paths {
+            let path = path.as_ref();
+            let status = self.inner.status_file(path)?;
+
+            if status.is_wt_new() {
+                // Untracked file, discard change by deleting it
+                std::fs::remove_file(workdir.join(path))?;
+            } else if status.is_wt_modified() || status.is_wt_deleted() {
+                // Tracked file, add to the checkout
+                co.path(path);
+            } else {
+                // This should never happen under normal circumstances
+                session::warn!(format!("unexpected file status for `{}`", path.display()));
+            }
+        }
+        self.inner.checkout_index(None, Some(&mut co))?;
+
+        Ok(())
+    }
+
     pub fn fetch<'a>(
         &self,
         remote_name: Option<&str>,
@@ -291,7 +329,7 @@ impl Repository {
 
     /// If remote_branch is None, configured remote for the branch will be used, otherwise "origin"
     /// If local_branch is None, currently checked out branch will be pushed, similar to `git push`
-    /// If remote_branch is None, configured refspec will be used
+    /// If remote_branch is None, the same name as the local_branch will be used
     /// If set_upstream is true, configuration will be updated
     pub fn push<'a>(
         &self,
@@ -328,6 +366,11 @@ impl Repository {
                 "refs/heads/{}:refs/heads/{}",
                 local_branch, remote_branch
             ));
+        } else {
+            refspecs.push(format!(
+                "refs/heads/{}:refs/heads/{}",
+                local_branch, local_branch
+            ));
         }
 
         remote.push(
@@ -361,7 +404,6 @@ impl Repository {
             }
 
             let path = PathBuf::from(path.unwrap());
-
             // FIXME: Technically if the status begins with INDEX_, it means they are already staged
             // This should never happen if the user interacts with git only through our application
             // Since we will only stage files immediately before making a commit
@@ -379,39 +421,14 @@ impl Repository {
     }
 
     // Helper functions
-
-    fn fast_forward(
-        &self,
-        our_reference: &mut git2::Reference,
-        incoming_commit: &git2::AnnotatedCommit,
-    ) -> joinerror::Result<()> {
-        let name = match our_reference.name() {
-            Some(s) => s.to_string(),
-            None => String::from_utf8_lossy(our_reference.name_bytes()).to_string(),
-        };
-        let msg = format!(
-            "Fast-Forward: Setting {} to id: {}",
-            name,
-            incoming_commit.id()
-        );
-        println!("{}", msg);
-        our_reference.set_target(incoming_commit.id(), &msg)?;
-        self.inner.set_head(&name)?;
-        self.inner.checkout_head(Some(
-            git2::build::CheckoutBuilder::default()
-                // TODO: Handle dirty workspace state (stashing?)
-                .force(),
-        ))?;
-        Ok(())
-    }
-
+}
+impl Repository {
     fn merge_internal(&self, incoming_commit: git2::AnnotatedCommit) -> joinerror::Result<()> {
-        let head = self.inner.head()?;
-        let our_branch = head.name().unwrap_or("main");
+        let our_branch = self.current_branch()?;
 
         let analysis = self.inner.merge_analysis(&[&incoming_commit])?;
         if analysis.0.is_fast_forward() {
-            println!("Doing a fast forward");
+            session::info!("fast forwarding");
             // do a fast forward
             let refname = format!("refs/heads/{}", our_branch);
             match self.inner.find_reference(&refname) {
@@ -438,14 +455,49 @@ impl Repository {
                 }
             };
         } else if analysis.0.is_normal() {
+            session::info!("normal merging");
             // do a normal merge
             let head_commit = self
                 .inner
                 .reference_to_annotated_commit(&self.inner.head()?)?;
             self.normal_merge(&head_commit, &incoming_commit)?;
         } else {
-            println!("Nothing to do...");
         }
+        Ok(())
+    }
+    fn fast_forward(
+        &self,
+        our_reference: &mut git2::Reference,
+        incoming_commit: &git2::AnnotatedCommit,
+    ) -> joinerror::Result<()> {
+        let name = match our_reference.name() {
+            Some(s) => s.to_string(),
+            None => String::from_utf8_lossy(our_reference.name_bytes()).to_string(),
+        };
+        let msg = format!(
+            "Fast-Forward: Setting {} to id: {}",
+            name,
+            incoming_commit.id()
+        );
+
+        println!("{}", msg);
+
+        // If the worktree is dirty, we stop and prompt the user to stash local changes
+        if self.is_worktree_dirty()? {
+            // TODO: Prompt the user to stash local changes
+            return Err(Error::new::<DirtyWorktree>(
+                "cannot fast-forward when the worktree is dirty",
+            ));
+        }
+
+        // fast-forwarding
+        our_reference.set_target(incoming_commit.id(), &msg)?;
+        self.inner.set_head(&name)?;
+        self.inner.checkout_head(Some(
+            // The worktree must be clean
+            &mut git2::build::CheckoutBuilder::default(),
+        ))?;
+
         Ok(())
     }
 
@@ -468,9 +520,8 @@ impl Repository {
             .merge_trees(&ancestor, &our_tree, &incoming_tree, None)?;
 
         if idx.has_conflicts() {
-            println!("Merge conflicts detected...");
-            self.inner.checkout_index(Some(&mut idx), None)?;
-            return Ok(());
+            session::warn!("Conflict detected");
+            return Err(Error::new::<Conflicts>("Cannot merge due to conflicts"));
         }
         let result_tree = self.inner.find_tree(idx.write_tree_to(&self.inner)?)?;
 
@@ -494,4 +545,64 @@ impl Repository {
         self.inner.checkout_head(None)?;
         Ok(())
     }
+
+    fn is_worktree_dirty(&self) -> joinerror::Result<bool> {
+        let mut opts = git2::StatusOptions::new();
+        opts.include_untracked(true)
+            .include_ignored(false)
+            .recurse_untracked_dirs(true)
+            .show(git2::StatusShow::IndexAndWorkdir);
+
+        let statuses = self.inner.statuses(Some(&mut opts))?;
+        Ok(statuses.iter().any(|e| {
+            let s = e.status();
+            // treat anything that is not CURRENT (unmodified) as dirty
+            s != git2::Status::CURRENT
+        }))
+    }
 }
+
+// Useful for debugging
+// fn status_label(status: Status) -> Vec<&'static str> {
+//     let mut v = Vec::new();
+//     if status.is_empty() {
+//         v.push("clean");
+//         return v;
+//     }
+//     if status.contains(Status::INDEX_NEW) {
+//         v.push("INDEX_NEW (staged new)");
+//     }
+//     if status.contains(Status::INDEX_MODIFIED) {
+//         v.push("INDEX_MODIFIED (staged modified)");
+//     }
+//     if status.contains(Status::INDEX_DELETED) {
+//         v.push("INDEX_DELETED (staged deleted)");
+//     }
+//     if status.contains(Status::INDEX_RENAMED) {
+//         v.push("INDEX_RENAMED");
+//     }
+//     if status.contains(Status::INDEX_TYPECHANGE) {
+//         v.push("INDEX_TYPECHANGE");
+//     }
+//
+//     if status.contains(Status::WT_NEW) {
+//         v.push("WT_NEW (untracked)");
+//     }
+//     if status.contains(Status::WT_MODIFIED) {
+//         v.push("WT_MODIFIED (modified, unstaged)");
+//     }
+//     if status.contains(Status::WT_DELETED) {
+//         v.push("WT_DELETED (deleted, unstaged)");
+//     }
+//     if status.contains(Status::WT_RENAMED) {
+//         v.push("WT_RENAMED");
+//     }
+//     if status.contains(Status::WT_TYPECHANGE) {
+//         v.push("WT_TYPECHANGE");
+//     }
+//
+//     if status.contains(Status::CONFLICTED) {
+//         v.push("CONFLICTED");
+//     }
+//     v
+// }

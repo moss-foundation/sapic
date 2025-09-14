@@ -8,7 +8,7 @@ import { useActivityEvents } from "@/context/ActivityEventsContext";
 import { AddAccountParams, LogEntryInfo, LOGGING_SERVICE_CHANNEL, UpdateProfileInput } from "@repo/moss-app";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import FileStatuses from "@/git/FileStatuses.tsx";
+import GitTest from "@/git/GitTest.tsx";
 
 interface CreateProfileData {
   name: string;
@@ -113,7 +113,7 @@ export const Logs = () => {
       <section className="mb-6">
         <h2 className="mb-2 text-xl">File Statuses</h2>
         <div className="rounded bg-gray-50 p-4">
-          <FileStatuses />
+          <GitTest />
         </div>
       </section>
       <section className="mb-6">

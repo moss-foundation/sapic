@@ -56,7 +56,8 @@ export type TauriIpcCommand =
   | "update_project_entry"
   | "stream_project_entries"
   | "batch_update_project_entry"
-  | "batch_create_project_entry";
+  | "batch_create_project_entry"
+  | "execute_vcs_operation";
 
 export type IpcResult<T, E> = { status: "ok"; data: T } | { status: "error"; error: E };
 
