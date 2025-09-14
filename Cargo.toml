@@ -16,7 +16,7 @@ members = [
     "crates/moss-git-hosting-provider",
     "crates/moss-api",
     "crates/moss-text",
-    "crates/moss-collection",
+    "crates/moss-project",
     "crates/moss-db",
     "crates/moss-fs",
     "crates/moss-keyring",
@@ -57,7 +57,7 @@ atomic_fs = { path = "libs/atomic-fs" }
 #
 moss_api = { path = "crates/moss-api" }
 moss_text = { path = "crates/moss-text" }
-moss_collection = { path = "crates/moss-collection" }
+moss_project = { path = "crates/moss-project" }
 moss_db = { path = "crates/moss-db" }
 moss_app = { path = "crates/moss-app" }
 moss_applib = { path = "crates/moss-applib" }

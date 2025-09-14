@@ -1,11 +1,11 @@
 #![cfg(feature = "integration-tests")]
 
 use moss_environment::models::types::{AddVariableParams, VariableOptions};
-use moss_testutils::random_name::{random_collection_name, random_environment_name};
+use moss_testutils::random_name::{random_environment_name, random_project_name};
 use moss_workspace::models::{
     events::StreamEnvironmentsEvent,
-    operations::{CreateCollectionInput, CreateEnvironmentInput},
-    types::CreateCollectionParams,
+    operations::{CreateEnvironmentInput, CreateProjectInput},
+    types::CreateProjectParams,
 };
 use serde_json::Value as JsonValue;
 use std::{
@@ -61,7 +61,7 @@ async fn stream_environments_only_workspace_environments() {
             .create_environment(
                 &ctx,
                 CreateEnvironmentInput {
-                    collection_id: None,
+                    project_id: None,
                     name: environment_name.clone(),
                     order: environment_order,
                     color: None,
@@ -104,7 +104,7 @@ async fn stream_environments_only_workspace_environments() {
         let event = events_map.get(&expected_id).unwrap();
         assert_eq!(event.name, expected_name);
         assert_eq!(event.order, Some(expected_order));
-        assert_eq!(event.collection_id, None);
+        assert_eq!(event.project_id, None);
         assert_eq!(event.total_variables, 0);
     }
 
@@ -122,11 +122,11 @@ async fn stream_environments_only_collection_environments() {
     for i in 0..5 {
         let collection_name = format!("Collection {}", i);
         let collection_id = workspace
-            .create_collection(
+            .create_project(
                 &ctx,
                 &app_delegate,
-                &CreateCollectionInput {
-                    inner: CreateCollectionParams {
+                &CreateProjectInput {
+                    inner: CreateProjectParams {
                         name: collection_name,
                         order: i,
                         external_path: None,
@@ -145,7 +145,7 @@ async fn stream_environments_only_collection_environments() {
             .create_environment(
                 &ctx,
                 CreateEnvironmentInput {
-                    collection_id: Some(collection_id.clone()),
+                    project_id: Some(collection_id.clone()),
                     name: environment_name.clone(),
                     order: environment_order,
                     color: None,
@@ -193,14 +193,14 @@ async fn stream_environments_only_collection_environments() {
     let groups_map: HashMap<_, _> = output
         .groups
         .iter()
-        .map(|group| (group.collection_id.clone(), group))
+        .map(|group| (group.project_id.clone(), group))
         .collect();
 
     for (expected_id, expected_name, expected_order, expected_group) in expected_environments {
         let event = events_map.get(&expected_id).unwrap();
         assert_eq!(event.name, expected_name);
         assert_eq!(event.order, Some(expected_order));
-        assert_eq!(event.collection_id, Some(expected_group.clone()));
+        assert_eq!(event.project_id, Some(expected_group.clone()));
         assert_eq!(event.total_variables, 0);
 
         let group = groups_map.get(&expected_group.inner()).unwrap();
@@ -216,13 +216,13 @@ async fn stream_environments_only_collection_environments() {
 async fn stream_environments_both_workspace_and_collection_environments() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
-    let collection_name = random_collection_name();
+    let collection_name = random_project_name();
     let collection_id = workspace
-        .create_collection(
+        .create_project(
             &ctx,
             &app_delegate,
-            &CreateCollectionInput {
-                inner: CreateCollectionParams {
+            &CreateProjectInput {
+                inner: CreateProjectParams {
                     name: collection_name,
                     order: 0,
                     external_path: None,
@@ -240,7 +240,7 @@ async fn stream_environments_both_workspace_and_collection_environments() {
         .create_environment(
             &ctx,
             CreateEnvironmentInput {
-                collection_id: Some(collection_id.clone()),
+                project_id: Some(collection_id.clone()),
                 name: collection_env_name.clone(),
                 order: 0,
                 color: None,
@@ -255,7 +255,7 @@ async fn stream_environments_both_workspace_and_collection_environments() {
         .create_environment(
             &ctx,
             CreateEnvironmentInput {
-                collection_id: None,
+                project_id: None,
                 name: workspace_env_name.clone(),
                 order: 0,
                 color: None,
@@ -287,10 +287,7 @@ async fn stream_environments_both_workspace_and_collection_environments() {
     // Only one group for the collection
     assert_eq!(output.groups.len(), 1);
 
-    assert_eq!(
-        output.groups[0].collection_id,
-        collection_id.clone().inner()
-    );
+    assert_eq!(output.groups[0].project_id, collection_id.clone().inner());
     assert_eq!(output.groups[0].expanded, true);
 
     let events_map: HashMap<_, _> = events
@@ -301,16 +298,13 @@ async fn stream_environments_both_workspace_and_collection_environments() {
     let collection_env_event = events_map.get(&collection_env_result.id).unwrap();
     assert_eq!(collection_env_event.name, collection_env_name);
     assert_eq!(collection_env_event.order, Some(0));
-    assert_eq!(
-        collection_env_event.collection_id,
-        Some(collection_id.clone())
-    );
+    assert_eq!(collection_env_event.project_id, Some(collection_id.clone()));
     assert_eq!(collection_env_event.total_variables, 0);
 
     let workspace_env_event = events_map.get(&workspace_env_result.id).unwrap();
     assert_eq!(workspace_env_event.name, workspace_env_name);
     assert_eq!(workspace_env_event.order, Some(0));
-    assert_eq!(workspace_env_event.collection_id, None);
+    assert_eq!(workspace_env_event.project_id, None);
     assert_eq!(workspace_env_event.total_variables, 0);
 
     cleanup().await;
@@ -336,7 +330,7 @@ async fn stream_environments_with_variables() {
         .create_environment(
             &ctx,
             CreateEnvironmentInput {
-                collection_id: None,
+                project_id: None,
                 name: environment_name.clone(),
                 order: 0,
                 color: None,
@@ -374,7 +368,7 @@ async fn stream_environments_with_variables() {
     let event = events_map.get(&environment_result.id).unwrap();
     assert_eq!(event.name, environment_name);
     assert_eq!(event.order, Some(0));
-    assert_eq!(event.collection_id, None);
+    assert_eq!(event.project_id, None);
     assert_eq!(event.total_variables, 5);
 
     cleanup().await;

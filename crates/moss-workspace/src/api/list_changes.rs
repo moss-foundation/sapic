@@ -8,7 +8,7 @@ impl<R: AppRuntime> Workspace<R> {
         _ctx: &R::AsyncContext,
     ) -> joinerror::Result<ListChangesOutput> {
         let changes = self
-            .collection_service
+            .project_service
             .list_changes()
             .await?
             .into_iter()

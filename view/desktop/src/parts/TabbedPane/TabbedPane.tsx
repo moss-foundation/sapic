@@ -3,16 +3,23 @@ import "./assets/styles.css";
 import React from "react";
 
 import { Breadcrumbs, PageContent, PageHeader, PageView } from "@/components";
-import { DropNode, TreeCollectionNode } from "@/components/CollectionTree/types";
+import { DropNode, ProjectTreeNode } from "@/components/ProjectTree/types";
 import { useUpdateEditorPartState } from "@/hooks/app/useUpdateEditorPartState";
 import { mapEditorPartStateToSerializedDockview } from "@/hooks/app/utils";
 import { useActiveWorkspace, useDescribeWorkspaceState } from "@/hooks/workspace";
-import { type Icons } from "@/lib/ui";
-import { FolderSettings, KitchenSink, Logs, RequestPage, Settings, WelcomePage, WorkspaceSettings } from "@/pages";
-import { CollectionSettingsPage } from "@/pages/CollectionSettingsPage";
+import {
+  FolderSettings,
+  KitchenSink,
+  Logs,
+  ProjectSettingsPage,
+  RequestPage,
+  Settings,
+  WelcomePage,
+  WorkspaceSettings,
+} from "@/pages";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
-import { EntryKind } from "@repo/moss-collection";
+import { EntryKind } from "@repo/moss-project";
 import {
   DockviewDidDropEvent,
   DockviewReact,
@@ -34,34 +41,6 @@ import ToolBar from "./ToolBar";
 import Watermark from "./Watermark";
 
 const DebugContext = React.createContext<boolean>(false);
-
-type PageConfig = {
-  title?: string;
-  icon?: Icons;
-  component: React.ComponentType<IDockviewPanelProps>;
-};
-
-// Wrapper component for pages with dynamic titles
-const DynamicPageWrapper = ({
-  pageKey,
-  config,
-  props,
-}: {
-  pageKey: string;
-  config: PageConfig;
-  props: IDockviewPanelProps;
-}) => {
-  const PageComponent = config.component;
-
-  return (
-    <PageView>
-      <PageHeader icon={config.icon} title={config.title} {...props} />
-      <PageContent>
-        <PageComponent {...props} />
-      </PageContent>
-    </PageView>
-  );
-};
 
 const PanelToolbar = (props: IDockviewHeaderActionsProps) => {
   const { api } = useTabbedPaneStore();
@@ -171,7 +150,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
       title: pragmaticDropElement.node.name,
       component: "Request",
       params: {
-        collectionId: pragmaticDropElement.collectionId,
+        projectId: pragmaticDropElement.projectId,
         node: pragmaticDropElement.node,
       },
       position: {
@@ -198,8 +177,8 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
   const components = {
     Default: (
       props: IDockviewPanelProps<{
-        node?: TreeCollectionNode;
-        collectionId: string;
+        node?: ProjectTreeNode;
+        projectId: string;
         iconType: EntryKind;
       }>
     ) => {
@@ -209,8 +188,8 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
         <PageView>
           <PageHeader icon="Placeholder" {...props} />
           <PageContent className={cn("relative", isDebug && "border-2 border-dashed border-orange-500")}>
-            {props.params?.collectionId && props.params?.node?.id && (
-              <Breadcrumbs collectionId={props.params.collectionId} nodeId={props.params.node.id} />
+            {props.params?.projectId && props.params?.node?.id && (
+              <Breadcrumbs projectId={props.params.projectId} nodeId={props.params.node.id} />
             )}
 
             <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col opacity-50">
@@ -232,22 +211,22 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     },
     Request: (
       props: IDockviewPanelProps<{
-        node: TreeCollectionNode;
-        collectionId: string;
+        node: ProjectTreeNode;
+        projectId: string;
         iconType: EntryKind;
       }>
     ) => <RequestPage {...props} />,
-    CollectionSettings: (
+    ProjectSettings: (
       props: IDockviewPanelProps<{
-        node: TreeCollectionNode;
-        collectionId: string;
+        node: ProjectTreeNode;
+        projectId: string;
         iconType: EntryKind;
       }>
-    ) => <CollectionSettingsPage {...props} />,
+    ) => <ProjectSettingsPage {...props} />,
     FolderSettings: (
       props: IDockviewPanelProps<{
-        node: TreeCollectionNode;
-        collectionId: string;
+        node: ProjectTreeNode;
+        projectId: string;
         iconType: EntryKind;
       }>
     ) => <FolderSettings {...props} />,

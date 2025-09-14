@@ -2,7 +2,6 @@ import { InvokeArgs, invoke as invokeTauri } from "@tauri-apps/api/core";
 import type { EventCallback, EventName } from "@tauri-apps/api/event";
 import { listen as listenTauri } from "@tauri-apps/api/event";
 
-// Define all possible Tauri IPC commands as string literals
 export type TauriIpcCommand =
   //
   // App
@@ -23,21 +22,23 @@ export type TauriIpcCommand =
   | "update_workspace"
   | "close_workspace"
   | "update_profile"
+  | "get_mistral_api_key"
   //
   // Workspace
   //
   | "update_workspace_state"
   | "describe_workspace_state"
-  | "list_collections"
-  | "describe_collection"
-  | "create_collection"
-  | "delete_collection"
-  | "stream_collections"
-  | "update_collection"
-  | "archive_collection"
-  | "unarchive_collection"
-  | "batch_update_collection"
+  | "describe_project"
+  | "create_project"
+  | "delete_project"
+  | "stream_projects"
+  | "update_project"
+  | "archive_project"
+  | "unarchive_project"
+  | "batch_update_project"
   | "list_changes"
+  | "import_project"
+  | "export_project"
   | "stream_environments"
   | "create_environment"
   | "update_environment"
@@ -46,22 +47,17 @@ export type TauriIpcCommand =
   | "update_environment_group"
   | "batch_update_environment_group"
   | "activate_environment"
+
   //
-  // Collection
+  // Project
   //
-  | "create_collection_entry"
-  | "delete_collection_entry"
-  | "update_collection_entry"
-  | "stream_collection_entries"
-  | "batch_update_collection_entry"
-  | "batch_create_collection_entry"
-  | "import_collection"
-  | "export_collection"
-  | "execute_vcs_operation"
-  //
-  // Env
-  //
-  | "get_mistral_api_key";
+  | "create_project_entry"
+  | "delete_project_entry"
+  | "update_project_entry"
+  | "stream_project_entries"
+  | "batch_update_project_entry"
+  | "batch_create_project_entry"
+  | "execute_vcs_operation";
 
 export type IpcResult<T, E> = { status: "ok"; data: T } | { status: "error"; error: E };
 

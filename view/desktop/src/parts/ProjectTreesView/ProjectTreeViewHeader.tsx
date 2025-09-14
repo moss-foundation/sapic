@@ -1,0 +1,167 @@
+import { useState } from "react";
+
+import { ActionButton, ActionMenu, SidebarHeader } from "@/components";
+import { CREATE_TAB, IMPORT_TAB } from "@/components/Modals/Project/NewProjectModal/constansts";
+import { NewProjectModal } from "@/components/Modals/Project/NewProjectModal/NewProjectModal";
+import {
+  USE_STREAM_PROJECT_ENTRIES_QUERY_KEY,
+  useActiveWorkspace,
+  useClearAllProjectEntries,
+  useModal,
+  useStreamedProjectsWithEntries,
+  useStreamProjects,
+} from "@/hooks";
+import { useBatchUpdateProject } from "@/hooks/project/useBatchUpdateProject";
+import { useBatchUpdateProjectEntry } from "@/hooks/project/useBatchUpdateProjectEntry";
+import { StreamEntriesEvent } from "@repo/moss-project";
+import { useQueryClient } from "@tanstack/react-query";
+
+export const ProjectTreeViewHeader = () => {
+  const queryClient = useQueryClient();
+
+  const { isLoading: areProjectsLoading, clearProjectsCacheAndRefetch } = useStreamProjects();
+  const { clearAllProjectEntriesCache } = useClearAllProjectEntries();
+  const { data: projectsWithEntries } = useStreamedProjectsWithEntries();
+  const { mutateAsync: batchUpdateProject } = useBatchUpdateProject();
+  const { mutateAsync: batchUpdateProjectEntry } = useBatchUpdateProjectEntry();
+  const { hasActiveWorkspace } = useActiveWorkspace();
+
+  const [initialTab, setInitialTab] = useState<typeof CREATE_TAB | typeof IMPORT_TAB>(CREATE_TAB);
+
+  const {
+    showModal: showNewProjectModal,
+    closeModal: closeNewProjectModal,
+    openModal: openNewProjectModal,
+  } = useModal();
+
+  const handleRefreshProjects = () => {
+    clearProjectsCacheAndRefetch();
+    clearAllProjectEntriesCache();
+  };
+
+  const areAllProjectsCollapsed = projectsWithEntries.every((p) => !p.expanded);
+  const areAllDirNodesCollapsed = projectsWithEntries.every((p) => {
+    return p.entries.filter((entry) => entry.kind === "Dir").every((entry) => !entry.expanded);
+  });
+
+  const handleCollapseAll = async () => {
+    await collapseExpandedProjects();
+    await collapseExpandedDirEntries();
+  };
+
+  const collapseExpandedProjects = async () => {
+    const openedProjects = projectsWithEntries.filter((p) => p.expanded);
+
+    if (openedProjects.length === 0) return;
+
+    await batchUpdateProject({
+      items: openedProjects.map((p) => ({
+        id: p.id,
+        expanded: false,
+      })),
+    });
+  };
+
+  const collapseExpandedDirEntries = async () => {
+    const projectsWithExpandedDirs = projectsWithEntries
+      .map((p) => ({
+        projectId: p.id,
+        entries: p.entries.filter((entry) => entry.kind === "Dir" && entry.expanded),
+      }))
+      .filter((p) => p.entries.length > 0);
+
+    if (projectsWithExpandedDirs.length === 0) return;
+
+    const promises = projectsWithExpandedDirs.map(async (p) => {
+      const preparedEntries = p.entries.map((entry) => ({
+        DIR: {
+          id: entry.id,
+          expanded: false,
+        },
+      }));
+
+      const res = await batchUpdateProjectEntry({
+        projectId: p.projectId,
+        entries: {
+          entries: preparedEntries,
+        },
+      });
+
+      if (res.status === "ok") {
+        queryClient.setQueryData([USE_STREAM_PROJECT_ENTRIES_QUERY_KEY, p.projectId], (old: StreamEntriesEvent[]) => {
+          return old.map((entry) => {
+            const shouldCollapse = preparedEntries.some((preparedEntry) => preparedEntry.DIR.id === entry.id);
+            return shouldCollapse ? { ...entry, expanded: false } : entry;
+          });
+        });
+      }
+    });
+
+    await Promise.all(promises);
+  };
+
+  return (
+    <>
+      <SidebarHeader
+        title="Projects"
+        actionsContent={
+          <>
+            <ActionButton
+              title="Add Project"
+              disabled={!hasActiveWorkspace}
+              icon="Add"
+              onClick={() => {
+                setInitialTab(CREATE_TAB);
+                openNewProjectModal();
+              }}
+            />
+            <ActionButton
+              title="Collapse all Projects"
+              disabled={!hasActiveWorkspace || (areAllDirNodesCollapsed && areAllProjectsCollapsed)}
+              icon="CollapseAll"
+              onClick={handleCollapseAll}
+            />
+            <ActionButton
+              title="Import Project"
+              disabled={!hasActiveWorkspace}
+              icon="Import"
+              onClick={() => {
+                setInitialTab(IMPORT_TAB);
+                openNewProjectModal();
+              }}
+            />
+            <ActionButton
+              icon="Refresh"
+              onClick={handleRefreshProjects}
+              title="Refresh Projects"
+              disabled={areProjectsLoading || !hasActiveWorkspace}
+            />
+
+            <PlaceholderDropdownMenu />
+          </>
+        }
+      />
+      {showNewProjectModal && (
+        <NewProjectModal initialTab={initialTab} showModal={showNewProjectModal} closeModal={closeNewProjectModal} />
+      )}
+    </>
+  );
+};
+
+const PlaceholderDropdownMenu = () => {
+  return (
+    <ActionMenu.Root>
+      <ActionMenu.Trigger asChild>
+        <ActionButton icon="MoreHorizontal" />
+      </ActionMenu.Trigger>
+
+      <ActionMenu.Portal>
+        <ActionMenu.Content align="center">
+          <ActionMenu.Item onSelect={() => console.log("Item 1 selected")}>Placeholder Item 1</ActionMenu.Item>
+          <ActionMenu.Item onSelect={() => console.log("Item 2 selected")}>Placeholder Item 2</ActionMenu.Item>
+          <ActionMenu.Item onSelect={() => console.log("Item 3 selected")}>Placeholder Item 3</ActionMenu.Item>
+        </ActionMenu.Content>
+      </ActionMenu.Portal>
+    </ActionMenu.Root>
+  );
+};

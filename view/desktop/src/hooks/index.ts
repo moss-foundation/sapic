@@ -1,5 +1,5 @@
 export * from "./app";
-export * from "./collection";
+export * from "./project";
 export * from "./workbench";
 export * from "./workspace";
 
@@ -9,8 +9,8 @@ export * from "./useInputResize";
 export * from "./useModal";
 export * from "./useProjectSession";
 
-export * from "./useRenameCollectionForm";
 export * from "./useRenameEntryForm";
+export * from "./useRenameProjectForm";
 export * from "./useRenameWorkspace";
 
 export * from "./useResponsive";

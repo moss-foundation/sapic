@@ -42,9 +42,9 @@ const createStandardMenuItems = (prefix = ""): MenuItemProps[] => {
           label: "Request",
         },
         {
-          id: `${idPrefix}new-collection`,
+          id: `${idPrefix}new-project`,
           type: "action",
-          label: "Collection",
+          label: "Project",
         },
       ],
     },
@@ -80,7 +80,7 @@ const createStandardMenuItems = (prefix = ""): MenuItemProps[] => {
   ];
 };
 
-export const collectionActionMenuItems: MenuItemProps[] = createStandardMenuItems();
+export const projectActionMenuItems: MenuItemProps[] = createStandardMenuItems();
 
 export const createAllWorkspacesMenuSection = (workspaces: ListWorkspacesOutput = []): MenuItemProps => {
   return {
@@ -128,15 +128,15 @@ export const baseSelectedWorkspaceMenuItems: MenuItemProps[] = [
   },
   ...createStandardMenuItems().slice(0, 4), // Include only the first 4 items (rename, duplicate, delete, separator)
   {
-    id: "new-collection",
+    id: "new-project",
     type: "action",
-    label: "New Collection",
+    label: "New Project",
     icon: "Add",
   },
   {
-    id: "import-collection",
+    id: "import-project",
     type: "action",
-    label: "Import Collection",
+    label: "Import Project",
     icon: "Import",
   },
   {

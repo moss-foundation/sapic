@@ -15,9 +15,9 @@ export interface HeadBarActionProps {
   openPanel: (panel: string) => void;
   setShowDebugPanels: (show: boolean) => void;
   showDebugPanels: boolean;
-  setCollectionName?: (name: string) => void;
-  collectionButtonRef?: RefObject<HTMLButtonElement>;
-  setIsRenamingCollection?: (isRenaming: boolean) => void;
+  setProjectName?: (name: string) => void;
+  projectButtonRef?: RefObject<HTMLButtonElement>;
+  setIsRenamingProject?: (isRenaming: boolean) => void;
   setSelectedUser?: (user: string | null) => void;
   setSelectedBranch?: (branch: string | null) => void;
   openNewWorkspaceModal?: () => void;
@@ -71,44 +71,48 @@ export const useWindowsMenuActions = () => {
 };
 
 /**
- * Collection action menu handler
+ * Project action menu handler
  */
-export const useCollectionActions = (props: HeadBarActionProps) => {
-  const { setCollectionName, collectionButtonRef, setIsRenamingCollection } = props;
+export const useProjectActions = (props: HeadBarActionProps) => {
+  const {
+    setProjectName: setProjectName,
+    projectButtonRef: projectButtonRef,
+    setIsRenamingProject: setIsRenamingProject,
+  } = props;
 
-  const startRenameCollection = () => {
-    setIsRenamingCollection?.(true);
+  const startRenameProject = () => {
+    setIsRenamingProject?.(true);
 
     setTimeout(() => {
-      if (collectionButtonRef?.current) {
+      if (projectButtonRef?.current) {
         const doubleClickEvent = new MouseEvent("dblclick", {
           bubbles: true,
           cancelable: true,
           view: window,
         });
-        collectionButtonRef.current.dispatchEvent(doubleClickEvent);
+        projectButtonRef.current.dispatchEvent(doubleClickEvent);
       }
     }, 50);
   };
 
-  const handleRenameCollection = (newName: string) => {
+  const handleRenameProject = (newName: string) => {
     if (newName.trim() !== "") {
-      setCollectionName?.(newName);
+      setProjectName?.(newName);
     }
-    setIsRenamingCollection?.(false);
+    setIsRenamingProject?.(false);
   };
 
-  const handleCollectionActionMenuAction = (action: string) => {
+  const handleProjectActionMenuAction = (action: string) => {
     if (action === "rename") {
-      startRenameCollection();
+      startRenameProject();
     }
     return;
   };
 
   return {
-    handleCollectionActionMenuAction,
-    handleRenameCollection,
-    startRenameCollection,
+    handleProjectActionMenuAction,
+    handleRenameProject,
+    startRenameProject,
   };
 };
 

@@ -1,26 +1,26 @@
 import { PageView } from "@/components";
-import { TreeCollectionNode } from "@/components/CollectionTree/types";
 import { PageWrapper } from "@/components/PageView/PageWrapper";
-import { useStreamCollectionEntries } from "@/hooks";
-import { EntryKind } from "@repo/moss-collection";
+import { ProjectTreeNode } from "@/components/ProjectTree/types";
+import { useStreamProjectEntries } from "@/hooks";
+import { EntryKind } from "@repo/moss-project";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
 
 import { RequestPageHeader } from "./RequestPageHeader/RequestPageHeader";
 import { RequestPageTabs } from "./RequestPageTabs";
 
 export interface RequestPageProps {
-  node: TreeCollectionNode;
-  collectionId: string;
+  node: ProjectTreeNode;
+  projectId: string;
   iconType: EntryKind;
 }
 
 const RequestPage = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
-  const { data: streamedEntries } = useStreamCollectionEntries(props.params?.collectionId);
+  const { data: streamedEntries } = useStreamProjectEntries(props.params?.projectId);
   const node = streamedEntries?.find((entry) => entry.id === props.params?.node?.id);
 
   return (
     <PageView>
-      {node && <RequestPageHeader node={node} collectionId={props.params?.collectionId ?? ""} api={props.api} />}
+      {node && <RequestPageHeader node={node} projectId={props.params?.projectId ?? ""} api={props.api} />}
 
       {node ? (
         <RequestPageTabs {...props} />

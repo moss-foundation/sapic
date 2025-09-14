@@ -3,17 +3,17 @@ import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 
 import Icon from "../../lib/ui/Icon";
-import { TreeCollectionNode } from "../CollectionTree/types";
 import { EntryIcon } from "../EntryIcon";
+import { ProjectTreeNode } from "../ProjectTree/types";
 
 interface BreadcrumbNodeProps {
-  node: TreeCollectionNode;
-  onNodeUpdate: (node: TreeCollectionNode) => void;
+  node: ProjectTreeNode;
+  onNodeUpdate: (node: ProjectTreeNode) => void;
   depth?: number;
   paddingLeft?: number;
   paddingRight?: number;
   nodeOffset?: number;
-  collectionId: string;
+  projectId: string;
 }
 
 export const BreadcrumbNode = ({
@@ -23,7 +23,7 @@ export const BreadcrumbNode = ({
   paddingLeft = 12,
   paddingRight = 8,
   nodeOffset = 12,
-  collectionId,
+  projectId,
 }: BreadcrumbNodeProps) => {
   const { addOrFocusPanel } = useTabbedPaneStore();
 
@@ -49,7 +49,7 @@ export const BreadcrumbNode = ({
               id: `${node.id}`,
               title: node.name,
               params: {
-                collectionId,
+                projectId,
                 node,
               },
               component: "Default",
@@ -78,7 +78,7 @@ export const BreadcrumbNode = ({
             {node.childNodes.map((childNode) => (
               <BreadcrumbNode
                 key={childNode.id}
-                collectionId={collectionId}
+                projectId={projectId}
                 onNodeUpdate={onNodeUpdate}
                 node={childNode}
                 depth={depth + 1}

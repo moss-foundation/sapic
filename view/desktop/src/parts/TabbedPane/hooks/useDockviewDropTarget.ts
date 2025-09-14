@@ -1,12 +1,12 @@
 import React from "react";
 
-import { DragNode } from "@/components/CollectionTree/types";
-import { getSourceTreeCollectionNodeData, isSourceTreeCollectionNode } from "@/components/CollectionTree/utils";
+import { DropNode } from "@/components/ProjectTree/types";
+import { getSourceProjectTreeNodeData, isSourceProjectTreeNode } from "@/components/ProjectTree/utils";
 import { dropTargetForElements, ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 export const useTabbedPaneDropTarget = (
   dockviewRef: React.RefObject<HTMLDivElement>,
-  setPragmaticDropElement: React.Dispatch<React.SetStateAction<DragNode | null>>
+  setPragmaticDropElement: React.Dispatch<React.SetStateAction<DropNode | null>>
 ) => {
   const [canDrop, setCanDrop] = React.useState(true);
   const [isDragging, setIsDragging] = React.useState(false);
@@ -17,10 +17,10 @@ export const useTabbedPaneDropTarget = (
     const evaluateDropTarget = ({ source }: { source: ElementDragPayload }) => {
       setIsDragging(true);
 
-      if (isSourceTreeCollectionNode(source)) {
+      if (isSourceProjectTreeNode(source)) {
         setCanDrop(true);
 
-        const sourceTarget = getSourceTreeCollectionNodeData(source);
+        const sourceTarget = getSourceProjectTreeNodeData(source);
         if (sourceTarget) {
           setPragmaticDropElement(sourceTarget);
         } else {

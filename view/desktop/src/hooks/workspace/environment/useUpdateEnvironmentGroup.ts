@@ -27,7 +27,7 @@ export const useUpdateEnvironmentGroup = () => {
         return {
           ...old,
           groups: old.groups.map((group) => {
-            if (group.collectionId === variables.collectionId) {
+            if (group.projectId === variables.projectId) {
               return {
                 ...group,
                 ...variables,

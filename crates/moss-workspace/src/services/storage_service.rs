@@ -18,7 +18,7 @@ use std::{
 };
 
 use crate::{
-    models::primitives::{ActivitybarPosition, CollectionId, SidebarPosition},
+    models::primitives::{ActivitybarPosition, ProjectId, SidebarPosition},
     storage::{
         entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity},
         segments::{
@@ -81,7 +81,7 @@ impl<R: AppRuntime> StorageService<R> {
         &self,
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
-        expanded_entries: &HashSet<CollectionId>,
+        expanded_entries: &HashSet<ProjectId>,
     ) -> joinerror::Result<()> {
         let store = self.storage.item_store();
         TransactionalPutItem::put_with_context(
@@ -161,7 +161,7 @@ impl<R: AppRuntime> StorageService<R> {
     pub(super) async fn get_expanded_items(
         &self,
         ctx: &R::AsyncContext,
-    ) -> joinerror::Result<HashSet<CollectionId>> {
+    ) -> joinerror::Result<HashSet<ProjectId>> {
         let store = self.storage.item_store();
         let segkey = segments::SEGKEY_EXPANDED_ITEMS.to_segkey_buf();
         let value = GetItem::get(store.as_ref(), ctx, segkey).await?;

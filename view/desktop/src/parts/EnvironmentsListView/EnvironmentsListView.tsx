@@ -15,7 +15,7 @@ export const EnvironmentsListView = () => {
   const { addOrFocusPanel } = useTabbedPaneStore();
   const {
     globalEnvironments,
-    collectionEnvironments,
+    projectEnvironments,
     isLoading,
     data: streamEnvironmentsData,
     isFetched,
@@ -56,7 +56,7 @@ export const EnvironmentsListView = () => {
 
             <GlobalEnvironmentsList />
 
-            {collectionEnvironments && collectionEnvironments.length > 0 && <EnvironmentsListViewDivider />}
+            {projectEnvironments && projectEnvironments.length > 0 && <EnvironmentsListViewDivider />}
 
             <GroupedEnvironmentsList />
           </>

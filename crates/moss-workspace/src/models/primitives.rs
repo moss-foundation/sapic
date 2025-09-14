@@ -2,22 +2,22 @@ use moss_id_macro::ids;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-ids!([CollectionId]);
+ids!([ProjectId]);
 
 /// @category Type
 #[derive(Debug, PartialEq, Serialize, Deserialize, TS, Clone)]
 #[ts(export, export_to = "primitives.ts")]
 pub enum WorkspaceMode {
-    #[serde(rename = "DESIGN_FIRST")]
-    DesignFirst,
+    #[serde(rename = "LIVE")]
+    Live,
 
-    #[serde(rename = "REQUEST_FIRST")]
-    RequestFirst,
+    #[serde(rename = "DESIGN")]
+    Design,
 }
 
 impl Default for WorkspaceMode {
     fn default() -> Self {
-        Self::RequestFirst
+        Self::Live
     }
 }
 

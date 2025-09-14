@@ -6,19 +6,19 @@ import { DockviewPanelApi } from "@/lib/moss-tabs/src";
 import { Icon, MossDropdown, MossToggle } from "@/lib/ui";
 import MossSelect from "@/lib/ui/MossSelect";
 import { cn } from "@/utils";
-import { StreamEntriesEvent } from "@repo/moss-collection";
+import { StreamEntriesEvent } from "@repo/moss-project";
 
 import { EditableHeader } from "./EditableHeader";
 
 interface RequestPageHeaderProps {
   node: StreamEntriesEvent;
-  collectionId: string;
+  projectId: string;
   api: DockviewPanelApi;
 }
 
-export const RequestPageHeader = ({ node, collectionId, api }: RequestPageHeaderProps) => {
+export const RequestPageHeader = ({ node, projectId, api }: RequestPageHeaderProps) => {
   const { isRenamingEntry, setIsRenamingEntry, handleRenamingEntrySubmit, handleRenamingEntryCancel } =
-    useRenameEntryForm(node, collectionId);
+    useRenameEntryForm(node, projectId);
 
   const [isEnabled, setIsEnabled] = useState(false);
 

@@ -1,4 +1,4 @@
-import { useStreamCollections } from "@/hooks";
+import { useStreamProjects } from "@/hooks";
 import { useUpdateEnvironmentGroup } from "@/hooks/workspace/environment/useUpdateEnvironmentGroup";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
@@ -14,16 +14,16 @@ interface GroupedEnvironmentsListRootControlsProps {
 export const GroupedEnvironmentsListRootControls = ({
   groupedEnvironments,
 }: GroupedEnvironmentsListRootControlsProps) => {
-  const { data: collections } = useStreamCollections();
+  const { data: projects } = useStreamProjects();
 
   const { mutate: updateEnvironmentGroup } = useUpdateEnvironmentGroup();
 
-  const collectionName = collections?.find((collection) => collection.id === groupedEnvironments.collectionId)?.name;
+  const projectName = projects?.find((project) => project.id === groupedEnvironments.projectId)?.name;
 
   const onHeaderClick = () => {
     if (!groupedEnvironments.expanded) {
       updateEnvironmentGroup({
-        collectionId: groupedEnvironments.collectionId,
+        projectId: groupedEnvironments.projectId,
         expanded: true,
       });
     }
@@ -31,7 +31,7 @@ export const GroupedEnvironmentsListRootControls = ({
 
   const onIconClick = () => {
     updateEnvironmentGroup({
-      collectionId: groupedEnvironments.collectionId,
+      projectId: groupedEnvironments.projectId,
       expanded: !groupedEnvironments.expanded,
     });
   };
@@ -46,7 +46,7 @@ export const GroupedEnvironmentsListRootControls = ({
           <Icon icon="ChevronRight" className={cn(groupedEnvironments.expanded && "rotate-90")} />
         </button>
 
-        <Tree.RootNodeLabel label={collectionName ?? ""} />
+        <Tree.RootNodeLabel label={projectName ?? ""} />
       </Tree.RootNodeTriggers>
 
       <Tree.RootNodeActions>

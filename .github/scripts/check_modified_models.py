@@ -9,7 +9,7 @@ pattern = r"crates/moss-(\w+)/src/models*"
 # Only these crates will be checked for model changes
 CRATES_WITH_BINDINGS = {
     "app",
-    "collection", 
+    "project", 
     "environment",
     "workspace",
     "activity-broadcaster",

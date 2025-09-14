@@ -13,17 +13,17 @@ use validator::Validate;
 use crate::models::{primitives::*, types::*};
 
 // ------------------------------ //
-// Collection
+// Project
 // ------------------------------ //
 
 /// @category Operation
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct CreateCollectionInput {
+pub struct CreateProjectInput {
     #[serde(flatten)]
     #[validate(nested)]
-    pub inner: CreateCollectionParams,
+    pub inner: CreateProjectParams,
 }
 
 /// @category Operation
@@ -31,8 +31,8 @@ pub struct CreateCollectionInput {
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
-pub struct CreateCollectionOutput {
-    pub id: CollectionId,
+pub struct CreateProjectOutput {
+    pub id: ProjectId,
     pub name: String,
     pub order: Option<isize>,
     pub expanded: bool,
@@ -51,10 +51,10 @@ pub struct CreateCollectionOutput {
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct ImportCollectionInput {
+pub struct ImportProjectInput {
     #[serde(flatten)]
     #[validate(nested)]
-    pub inner: ImportCollectionParams,
+    pub inner: ImportProjectParams,
 }
 
 /// @category Operation
@@ -62,10 +62,10 @@ pub struct ImportCollectionInput {
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
-pub struct ImportCollectionOutput {
-    pub id: CollectionId,
+pub struct ImportProjectOutput {
+    pub id: ProjectId,
     // FIXME: Maybe we should remove the name field until we have local display name
-    // Since a cloned/imported collection already has a name
+    // Since a cloned/imported project already has a name
     pub name: String,
     pub order: Option<isize>,
     pub expanded: bool,
@@ -84,17 +84,17 @@ pub struct ImportCollectionOutput {
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct ExportCollectionInput {
+pub struct ExportProjectInput {
     #[serde(flatten)]
     #[validate(nested)]
-    pub inner: ExportCollectionParams,
+    pub inner: ExportProjectParams,
 }
 
 /// @category Operation
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct ExportCollectionOutput {
+pub struct ExportProjectOutput {
     pub archive_path: PathBuf,
 }
 
@@ -103,19 +103,19 @@ pub struct ExportCollectionOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
-pub struct UpdateCollectionInput {
+pub struct UpdateProjectInput {
     #[serde(flatten)]
     #[validate(nested)]
-    pub inner: UpdateCollectionParams,
+    pub inner: UpdateProjectParams,
 }
 
 /// @category Operation
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct UpdateCollectionOutput {
+pub struct UpdateProjectOutput {
     #[ts(type = "string")]
-    pub id: CollectionId,
+    pub id: ProjectId,
 }
 
 /// @category Operation
@@ -123,36 +123,36 @@ pub struct UpdateCollectionOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
-pub struct BatchUpdateCollectionInput {
+pub struct BatchUpdateProjectInput {
     #[validate(nested)]
-    pub items: Vec<UpdateCollectionParams>,
+    pub items: Vec<UpdateProjectParams>,
 }
 
 /// @category Operation
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct BatchUpdateCollectionOutput {
+pub struct BatchUpdateProjectOutput {
     #[ts(as = "Vec<String>")]
-    pub ids: Vec<CollectionId>,
+    pub ids: Vec<ProjectId>,
 }
 
 /// @category Operation
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct DeleteCollectionInput {
+pub struct DeleteProjectInput {
     #[ts(type = "string")]
-    pub id: CollectionId,
+    pub id: ProjectId,
 }
 
 /// @category Operation
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct DeleteCollectionOutput {
+pub struct DeleteProjectOutput {
     #[ts(type = "string")]
-    pub id: CollectionId,
+    pub id: ProjectId,
 
     #[serde(skip)]
     #[ts(skip)]
@@ -163,36 +163,36 @@ pub struct DeleteCollectionOutput {
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct ArchiveCollectionInput {
+pub struct ArchiveProjectInput {
     #[ts(type = "string")]
-    pub id: CollectionId,
+    pub id: ProjectId,
 }
 
 /// @category Operation
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct ArchiveCollectionOutput {
+pub struct ArchiveProjectOutput {
     #[ts(type = "string")]
-    pub id: CollectionId,
+    pub id: ProjectId,
 }
 
 /// @category Operation
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct UnarchiveCollectionInput {
+pub struct UnarchiveProjectInput {
     #[ts(type = "string")]
-    pub id: CollectionId,
+    pub id: ProjectId,
 }
 
 /// @category Operation
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct UnarchiveCollectionOutput {
+pub struct UnarchiveProjectOutput {
     #[ts(type = "string")]
-    pub id: CollectionId,
+    pub id: ProjectId,
 }
 
 /// @category Operation
@@ -201,7 +201,7 @@ pub struct UnarchiveCollectionOutput {
 #[ts(export, export_to = "operations.ts")]
 pub struct DescribeEnvironmentInput {
     #[ts(type = "string")]
-    pub id: CollectionId,
+    pub id: ProjectId,
 }
 
 /// @category Operation
@@ -240,7 +240,7 @@ pub enum UpdateStateInput {
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct StreamCollectionsOutput {
+pub struct StreamProjectsOutput {
     #[serde(skip)]
     #[ts(skip)]
     pub total_returned: usize,
@@ -274,7 +274,7 @@ pub struct ActivateEnvironmentOutput {
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateEnvironmentInput {
-    pub collection_id: Option<CollectionId>,
+    pub project_id: Option<ProjectId>,
     #[validate(length(min = 1))]
     pub name: String,
     pub order: isize,
@@ -289,7 +289,7 @@ pub struct CreateEnvironmentInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateEnvironmentOutput {
     pub id: EnvironmentId,
-    pub collection_id: Option<CollectionId>,
+    pub project_id: Option<ProjectId>,
     pub name: String,
     pub order: Option<isize>,
     pub color: Option<String>,
@@ -370,13 +370,14 @@ pub struct StreamEnvironmentsOutput {
     pub total_returned: usize,
 }
 
-// Describe Collection
+// Describe Project
+
 /// @category Operation
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct DescribeCollectionInput {
-    pub id: CollectionId,
+pub struct DescribeProjectInput {
+    pub id: ProjectId,
 }
 
 /// @category Operation
@@ -384,7 +385,7 @@ pub struct DescribeCollectionInput {
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
-pub struct DescribeCollectionOutput {
+pub struct DescribeProjectOutput {
     pub name: String,
     pub vcs: Option<VcsInfo>,
     pub contributors: Vec<Contributor>,

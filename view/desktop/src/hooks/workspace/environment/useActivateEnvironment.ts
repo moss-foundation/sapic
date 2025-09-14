@@ -31,7 +31,7 @@ export const useActivateEnvironment = () => {
           return {
             ...old,
             environments: old.environments.map((environment) => {
-              if (environment.collectionId !== null) return environment;
+              if (environment.projectId !== null) return environment;
               return {
                 ...environment,
                 isActive: environment.id === data.environmentId,
@@ -49,7 +49,7 @@ export const useActivateEnvironment = () => {
           return {
             ...old,
             environments: old.environments.map((environment) => {
-              if (environment.collectionId !== groupedEnvironment?.collectionId) return environment;
+              if (environment.projectId !== groupedEnvironment?.projectId) return environment;
 
               return {
                 ...environment,

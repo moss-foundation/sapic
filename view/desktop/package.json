@@ -35,7 +35,7 @@
     "@radix-ui/react-use-controllable-state": "^1.1.0",
     "@repo/moss-activity-broadcaster": "workspace:*",
     "@repo/moss-app": "workspace:*",
-    "@repo/moss-collection": "workspace:*",
+    "@repo/moss-project": "workspace:*",
     "@repo/moss-tabs": "workspace:*",
     "@repo/moss-workspace": "workspace:*",
     "@tanstack/react-pacer": "^0.16.1",

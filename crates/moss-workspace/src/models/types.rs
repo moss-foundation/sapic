@@ -1,7 +1,6 @@
 mod editor;
 pub use editor::*;
 
-use crate::models::primitives::{ActivitybarPosition, CollectionId, SidebarPosition};
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_environment::models::{
     primitives::{EnvironmentId, VariableId},
@@ -21,10 +20,12 @@ use std::{
 use ts_rs::TS;
 use validator::{Validate, ValidationError};
 
+use crate::models::primitives::{ActivitybarPosition, ProjectId, SidebarPosition};
+
 pub type EnvironmentName = String;
 
 // ------------------------------ //
-// Collection
+// Project
 // ------------------------------ //
 
 /// @category Type
@@ -32,14 +33,14 @@ pub type EnvironmentName = String;
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
-pub struct CreateCollectionParams {
+pub struct CreateProjectParams {
     #[validate(length(min = 1))]
     pub name: String,
 
     pub order: isize,
     pub external_path: Option<PathBuf>,
 
-    pub git_params: Option<CreateCollectionGitParams>,
+    pub git_params: Option<CreateProjectGitParams>,
 
     pub icon_path: Option<PathBuf>,
 }
@@ -48,12 +49,12 @@ pub struct CreateCollectionParams {
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
-pub struct ImportCollectionParams {
+pub struct ImportProjectParams {
     #[validate(length(min = 1))]
     pub name: String,
     pub order: isize,
     pub external_path: Option<PathBuf>,
-    pub source: ImportCollectionSource,
+    pub source: ImportProjectSource,
     pub icon_path: Option<PathBuf>,
 }
 
@@ -61,8 +62,8 @@ pub struct ImportCollectionParams {
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
-pub struct ExportCollectionParams {
-    pub id: CollectionId,
+pub struct ExportProjectParams {
+    pub id: ProjectId,
     /// Path to the folder containing the output archive file
     #[validate(custom(function = "validate_export_destination"))]
     pub destination: PathBuf,
@@ -81,7 +82,7 @@ fn validate_export_destination(destination: &Path) -> Result<(), ValidationError
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct EnvironmentGroup {
-    pub collection_id: Arc<String>,
+    pub project_id: Arc<String>,
     pub expanded: bool,
     pub order: Option<isize>,
 }
@@ -92,7 +93,7 @@ pub struct EnvironmentGroup {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct UpdateEnvironmentGroupParams {
-    pub collection_id: CollectionId,
+    pub project_id: ProjectId,
     pub expanded: Option<bool>,
     pub order: Option<isize>,
 }
@@ -102,8 +103,8 @@ pub struct UpdateEnvironmentGroupParams {
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
-pub struct UpdateCollectionParams {
-    pub id: CollectionId,
+pub struct UpdateProjectParams {
+    pub id: ProjectId,
 
     #[validate(length(min = 1))]
     pub name: Option<String>,
@@ -153,7 +154,7 @@ fn validate_change_repository(repo: &ChangeString) -> Result<(), ValidationError
 #[ts(export, export_to = "types.ts")]
 pub struct EnvironmentInfo {
     pub id: String,
-    pub collection_id: Option<String>,
+    pub project_id: Option<String>,
     pub name: String,
     pub display_name: String,
     pub order: isize,
@@ -233,7 +234,7 @@ pub struct EditorPartStateInfo {
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
-pub enum ImportCollectionSource {
+pub enum ImportProjectSource {
     GitHub(GitHubImportParams),
     GitLab(GitLabImportParams),
     Archive(ArchiveImportParams),
@@ -280,7 +281,7 @@ pub struct ArchiveImportParams {
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
-pub enum CreateCollectionGitParams {
+pub enum CreateProjectGitParams {
     GitHub(GitHubCreateParams),
     GitLab(GitLabCreateParams),
 }
@@ -352,7 +353,7 @@ pub struct Contributor {
 #[ts(export, export_to = "types.ts")]
 pub struct EntryChange {
     // TODO: entry id
-    pub collection_id: CollectionId,
+    pub project_id: ProjectId,
     pub path: PathBuf,
     #[ts(type = "FileStatus")]
     pub status: FileStatus,

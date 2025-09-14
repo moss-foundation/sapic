@@ -1,0 +1,378 @@
+#![cfg(feature = "integration-tests")]
+
+mod shared;
+
+use moss_project::{
+    dirs,
+    models::{operations::UpdateEntryInput, primitives::EntryId, types::UpdateDirEntryParams},
+    storage::segments::{SEGKEY_EXPANDED_ENTRIES, SEGKEY_RESOURCE_ENTRY},
+};
+use moss_storage::storage::operations::GetItem;
+use moss_testutils::fs_specific::FILENAME_SPECIAL_CHARS;
+use moss_text::sanitized::sanitize;
+use std::path::{Path, PathBuf};
+
+use crate::shared::{
+    RESOURCES_ROOT_DIR, create_test_component_dir_entry, create_test_endpoint_dir_entry,
+    create_test_project, random_entry_name,
+};
+// TODO: Test updating entry order
+
+#[tokio::test]
+async fn rename_dir_entry_success() {
+    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let resources_dir = project_path.join(dirs::RESOURCES_DIR);
+
+    let old_entry_name = random_entry_name();
+    let new_entry_name = random_entry_name();
+
+    let id = create_test_endpoint_dir_entry(&ctx, &mut project, &old_entry_name).await;
+
+    let _ = project
+        .update_entry(
+            &ctx,
+            UpdateEntryInput::Dir(UpdateDirEntryParams {
+                id,
+                path: Default::default(),
+                name: Some(new_entry_name.clone()),
+                order: None,
+                expanded: None,
+            }),
+        )
+        .await
+        .unwrap();
+
+    // Verify the path has been renamed
+    let old_path = resources_dir.join(RESOURCES_ROOT_DIR).join(&old_entry_name);
+    let new_path = resources_dir.join(RESOURCES_ROOT_DIR).join(&new_entry_name);
+    assert!(!old_path.exists());
+    assert!(new_path.exists());
+
+    // Cleanup
+    std::fs::remove_dir_all(project_path).unwrap();
+}
+
+#[tokio::test]
+async fn rename_dir_entry_empty_name() {
+    let (ctx, _, project_path, mut project) = create_test_project().await;
+
+    let old_entry_name = random_entry_name();
+    let new_entry_name = "".to_string();
+
+    let id = create_test_component_dir_entry(&ctx, &mut project, &old_entry_name).await;
+
+    let result = project
+        .update_entry(
+            &ctx,
+            UpdateEntryInput::Dir(UpdateDirEntryParams {
+                id,
+                path: Default::default(),
+                name: Some(new_entry_name.clone()),
+                order: None,
+                expanded: None,
+            }),
+        )
+        .await;
+
+    assert!(result.is_err());
+
+    //Cleanup
+    std::fs::remove_dir_all(project_path).unwrap();
+}
+
+#[tokio::test]
+async fn rename_dir_entry_already_exists() {
+    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let first_entry_name = random_entry_name();
+    let second_entry_name = random_entry_name();
+
+    let first_id = create_test_component_dir_entry(&ctx, &mut project, &first_entry_name).await;
+
+    let _ = create_test_component_dir_entry(&ctx, &mut project, &second_entry_name).await;
+
+    // Try to rename first entry to the second name
+    let result = project
+        .update_entry(
+            &ctx,
+            UpdateEntryInput::Dir(UpdateDirEntryParams {
+                id: first_id,
+                path: Default::default(),
+                name: Some(second_entry_name.clone()),
+                order: None,
+                expanded: None,
+            }),
+        )
+        .await;
+
+    assert!(result.is_err());
+
+    // Cleanup
+    std::fs::remove_dir_all(project_path).unwrap();
+}
+
+#[tokio::test]
+async fn rename_dir_entry_special_chars_in_name() {
+    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let resources_dir = project_path.join(dirs::RESOURCES_DIR);
+
+    let entry_base_path = PathBuf::from(RESOURCES_ROOT_DIR);
+
+    for special_char in FILENAME_SPECIAL_CHARS {
+        let entry_name = random_entry_name();
+        let new_entry_name = format!("{}{}", entry_name, special_char);
+
+        let id = create_test_component_dir_entry(&ctx, &mut project, &entry_name).await;
+
+        let result = project
+            .update_entry(
+                &ctx,
+                UpdateEntryInput::Dir(UpdateDirEntryParams {
+                    id,
+                    path: Default::default(),
+                    name: Some(new_entry_name.clone()),
+                    order: None,
+                    expanded: None,
+                }),
+            )
+            .await;
+
+        if result.is_err() {
+            // Some special characters might legitimately fail, just skip them
+            eprintln!(
+                "Skipping special char '{}' due to filesystem limitations",
+                special_char
+            );
+            continue;
+        }
+        let _ = result.unwrap();
+
+        let expected_dir = resources_dir
+            .join(&entry_base_path)
+            .join(&sanitize(&new_entry_name));
+        dbg!(&expected_dir);
+        assert!(expected_dir.exists());
+        assert!(expected_dir.is_dir());
+    }
+
+    // Cleanup
+    std::fs::remove_dir_all(project_path).unwrap();
+}
+
+#[tokio::test]
+async fn update_dir_entry_order() {
+    let (ctx, _, project_path, mut project) = create_test_project().await;
+
+    let entry_name = random_entry_name();
+
+    let id = create_test_component_dir_entry(&ctx, &mut project, &entry_name).await;
+
+    let _ = project
+        .update_entry(
+            &ctx,
+            UpdateEntryInput::Dir(UpdateDirEntryParams {
+                id: id.clone(),
+                path: Default::default(),
+                name: None,
+                order: Some(42),
+                expanded: None,
+            }),
+        )
+        .await
+        .unwrap();
+
+    let resource_store = project.db().resource_store();
+
+    // Check order was updated
+    let order_key = SEGKEY_RESOURCE_ENTRY.join(&id.to_string()).join("order");
+    let order_value = GetItem::get(resource_store.as_ref(), &ctx, order_key)
+        .await
+        .unwrap();
+    let stored_order: isize = order_value.deserialize().unwrap();
+    assert_eq!(stored_order, 42);
+
+    // Cleanup
+    std::fs::remove_dir_all(project_path).unwrap();
+}
+
+#[tokio::test]
+async fn expand_and_collapse_dir_entry() {
+    let (ctx, _, project_path, mut project) = create_test_project().await;
+
+    let entry_name = random_entry_name();
+
+    let id = create_test_component_dir_entry(&ctx, &mut project, &entry_name).await;
+
+    let resource_store = project.db().resource_store();
+
+    // Expanding the entry
+    let _ = project
+        .update_entry(
+            &ctx,
+            UpdateEntryInput::Dir(UpdateDirEntryParams {
+                id: id.clone(),
+                path: Default::default(),
+                name: None,
+                order: None,
+                expanded: Some(true),
+            }),
+        )
+        .await
+        .unwrap();
+
+    // Check expanded_items contains the entry id
+    let expanded_items_value = GetItem::get(
+        resource_store.as_ref(),
+        &ctx,
+        SEGKEY_EXPANDED_ENTRIES.to_segkey_buf(),
+    )
+    .await
+    .unwrap();
+    let expanded_items: Vec<EntryId> = expanded_items_value.deserialize().unwrap();
+    assert!(expanded_items.contains(&id));
+
+    // Collapsing the entry
+    let _ = project
+        .update_entry(
+            &ctx,
+            UpdateEntryInput::Dir(UpdateDirEntryParams {
+                id: id.clone(),
+                path: Default::default(),
+                name: None,
+                order: None,
+                expanded: Some(false),
+            }),
+        )
+        .await
+        .unwrap();
+
+    // Check expanded_items contains the entry id
+    let expanded_items_value = GetItem::get(
+        resource_store.as_ref(),
+        &ctx,
+        SEGKEY_EXPANDED_ENTRIES.to_segkey_buf(),
+    )
+    .await
+    .unwrap();
+    let expanded_items: Vec<EntryId> = expanded_items_value.deserialize().unwrap();
+    assert!(!expanded_items.contains(&id));
+
+    // Cleanup
+    std::fs::remove_dir_all(project_path).unwrap()
+}
+
+#[tokio::test]
+async fn move_dir_entry_success() {
+    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let resources_dir = project_path.join(dirs::RESOURCES_DIR);
+
+    let entry_name = random_entry_name();
+
+    let id = create_test_component_dir_entry(&ctx, &mut project, &entry_name).await;
+
+    // Create a destination_directory named dest
+    let _ = create_test_component_dir_entry(&ctx, &mut project, "dest").await;
+
+    let old_dest = PathBuf::from(RESOURCES_ROOT_DIR);
+    let new_dest = Path::new(RESOURCES_ROOT_DIR).join("dest");
+
+    // Move entry path from `components/{entry_name}` to `components/dest/{entry_name}`
+    let _output = project
+        .update_entry(
+            &ctx,
+            UpdateEntryInput::Dir(UpdateDirEntryParams {
+                id,
+                path: Some(new_dest.clone()),
+                name: None,
+                order: None,
+                expanded: None,
+            }),
+        )
+        .await
+        .unwrap();
+
+    // Verify the path has been changed
+    let old_path = resources_dir.join(old_dest).join(&entry_name);
+    let new_path = resources_dir.join(new_dest).join(&entry_name);
+    assert!(!old_path.exists());
+    assert!(new_path.exists());
+
+    // Cleanup
+    std::fs::remove_dir_all(project_path).unwrap();
+}
+
+#[tokio::test]
+async fn move_dir_entry_nonexistent_destination() {
+    let (ctx, _, project_path, mut project) = create_test_project().await;
+
+    let entry_name = random_entry_name();
+
+    let id = create_test_component_dir_entry(&ctx, &mut project, &entry_name).await;
+
+    let new_dest = Path::new(RESOURCES_ROOT_DIR).join("dest");
+
+    // Move entry path from `{entry_name}` to `dest/{entry_name}`
+    let result = project
+        .update_entry(
+            &ctx,
+            UpdateEntryInput::Dir(UpdateDirEntryParams {
+                id,
+                path: Some(new_dest.clone()),
+                name: None,
+                order: None,
+                expanded: None,
+            }),
+        )
+        .await;
+
+    assert!(result.is_err());
+
+    // Cleanup
+    std::fs::remove_dir_all(project_path).unwrap();
+}
+
+#[tokio::test]
+async fn move_dir_entry_already_exists() {
+    let (ctx, _, project_path, mut project) = create_test_project().await;
+
+    // First create a dest/entry entry
+    let dest_name = "dest".to_string();
+    let entry_name = "entry".to_string();
+
+    create_test_component_dir_entry(&ctx, &mut project, &dest_name).await;
+    let existing_id = create_test_component_dir_entry(&ctx, &mut project, &entry_name).await;
+
+    let dest = Path::new(RESOURCES_ROOT_DIR).join(&dest_name);
+    let _ = project
+        .update_entry(
+            &ctx,
+            UpdateEntryInput::Dir(UpdateDirEntryParams {
+                id: existing_id,
+                path: Some(dest.clone()),
+                name: None,
+                order: None,
+                expanded: None,
+            }),
+        )
+        .await
+        .unwrap();
+
+    // Create a new entry and try to move it into dest
+    let new_id = create_test_component_dir_entry(&ctx, &mut project, &entry_name).await;
+    let result = project
+        .update_entry(
+            &ctx,
+            UpdateEntryInput::Dir(UpdateDirEntryParams {
+                id: new_id,
+                path: Some(dest.clone()),
+                name: None,
+                order: None,
+                expanded: None,
+            }),
+        )
+        .await;
+
+    assert!(result.is_err());
+
+    // Cleanup
+    std::fs::remove_dir_all(project_path).unwrap();
+}

@@ -1,34 +1,18 @@
-import { TreeCollectionNode, TreeCollectionRootNode } from "@/components/CollectionTree/types";
+import { ProjectTreeNode, ProjectTreeRootNode } from "@/components/ProjectTree/types";
 import { Icons } from "@/lib/ui";
 
-export const getFolderIcon = (node: TreeCollectionNode): Icons => {
-  const isRoot = node.path.segments.length === 1;
-
-  if (isRoot) {
-    switch (node.class) {
-      case "Schema":
-        return "SchemasFolder";
-      case "Endpoint":
-        return "EndpointsFolder";
-      case "Component":
-        return "ComponentsFolder";
-      default:
-        return "RequestsFolder";
-    }
-  }
-
+export const getFolderIcon = (node: ProjectTreeNode): Icons => {
   return "Folder";
 };
 
-export const findNodeInCollection = (collection: TreeCollectionRootNode, searchId: string) => {
+export const findNodeInProject = (project: ProjectTreeRootNode, searchId: string) => {
   // Search in all categories
-  const categories = [collection.endpoints, collection.schemas, collection.components, collection.requests];
 
-  for (const category of categories) {
+  for (const category of project.childNodes) {
     if (category.id === searchId) return category;
 
     // Recursively search child nodes
-    const findInChildren = (node: TreeCollectionNode): TreeCollectionNode | undefined => {
+    const findInChildren = (node: ProjectTreeNode): ProjectTreeNode | undefined => {
       if (node.id === searchId) return node;
       for (const child of node.childNodes) {
         const found = findInChildren(child);

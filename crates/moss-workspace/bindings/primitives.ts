@@ -23,4 +23,4 @@ export type SidebarPosition = "LEFT" | "RIGHT";
 /**
  * @category Type
  */
-export type WorkspaceMode = "DESIGN_FIRST" | "REQUEST_FIRST";
+export type WorkspaceMode = "LIVE" | "DESIGN";
