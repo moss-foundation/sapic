@@ -1,6 +1,4 @@
-import { useStreamedCollectionsWithEntries } from "@/hooks";
 import { useRequestModeStore } from "@/store/requestMode";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 
 interface DesignModeToggleProps {
@@ -8,22 +6,10 @@ interface DesignModeToggleProps {
 }
 
 export const DesignModeToggle = ({ className }: DesignModeToggleProps) => {
-  const { api } = useTabbedPaneStore();
   const { displayMode, setDisplayMode } = useRequestModeStore();
-  const { data: collectionsWithEntries } = useStreamedCollectionsWithEntries();
 
   const handleSetRequestFirstMode = () => {
     setDisplayMode("REQUEST_FIRST");
-    const allEntries = collectionsWithEntries?.map((collection) => collection.entries).flat();
-
-    allEntries?.forEach((entry) => {
-      if (entry.class !== "Request" || entry.path.segments.length === 1) {
-        const panel = api?.getPanel(entry.id);
-        if (panel) {
-          api?.removePanel(panel);
-        }
-      }
-    });
   };
 
   const handleSetDesignFirstMode = () => {
