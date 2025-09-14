@@ -122,7 +122,7 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
             isChildDropBlocked={isChildDropBlocked}
             isActive={activePanelId === node.id}
           >
-            <Tree.NodeTriggers onClick={handleControlsClick}>
+            <Tree.NodeTriggers onClick={handleControlsClick} className="overflow-hidden">
               <Tree.NodeDirToggleIcon
                 handleClickOnDir={handleClickOnDir}
                 isDir={node.kind === "Dir"}
