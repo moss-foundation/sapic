@@ -1,4 +1,4 @@
-use moss_app::{App, AppBuilder, builder::BuildAppParams};
+use moss_app::{App, AppBuilder, app::OnAppReadyOptions, builder::BuildAppParams};
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
     context::{AsyncContext, MutableContext},
@@ -50,10 +50,14 @@ const LOCALES: &str = r#"
 "#;
 
 const PROFILES: &str = r#"
-{
-  "name": "Default",
-  "accounts": []
-}
+[
+  {
+    "id": "e_MChWGYcY",
+    "name": "Default",
+    "accounts": [],
+    "is_default": true
+  }
+]
 "#;
 
 const ACCOUNT_AUTH_BASE_URL: &str = "https://account-auth-gateway-dev.20g10z3r.workers.dev";
@@ -193,7 +197,7 @@ pub async fn set_up_test_app() -> (
         tokio::fs::write(&locales_abs_path.join("locales.json"), LOCALES)
             .await
             .unwrap();
-        tokio::fs::write(&profiles_abs_path.join("e_MChWGYcY.json"), PROFILES)
+        tokio::fs::write(&profiles_abs_path.join("profiles.json"), PROFILES)
             .await
             .unwrap();
     }
@@ -210,24 +214,31 @@ pub async fn set_up_test_app() -> (
         }
     });
 
-    (
-        AppBuilder::<MockAppRuntime>::new(
-            tao_app_handle.clone(),
-            fs.clone(),
-            keyring,
-            auth_api_client,
-        )
-        .build(
-            &ctx,
-            BuildAppParams {
-                themes_dir: themes_abs_path,
-                locales_dir: locales_abs_path,
-                logs_dir: logs_abs_path,
-            },
-        )
-        .await,
-        app_delegate,
-        ctx,
-        cleanup_fn,
+    let app = AppBuilder::<MockAppRuntime>::new(
+        tao_app_handle.clone(),
+        fs.clone(),
+        keyring,
+        auth_api_client,
     )
+    .build(
+        &ctx,
+        BuildAppParams {
+            themes_dir: themes_abs_path,
+            locales_dir: locales_abs_path,
+            logs_dir: logs_abs_path,
+        },
+    )
+    .await;
+
+    app.on_app_ready(
+        &ctx,
+        &app_delegate,
+        OnAppReadyOptions {
+            restore_last_workspace: false,
+        },
+    )
+    .await
+    .unwrap();
+
+    (app, app_delegate, ctx, cleanup_fn)
 }

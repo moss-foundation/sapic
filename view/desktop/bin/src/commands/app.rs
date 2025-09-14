@@ -11,6 +11,20 @@ use crate::commands::primitives::*;
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn describe_app<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: Window<R>,
+    options: Options,
+) -> TauriResult<DescribeAppOutput> {
+    super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
+        app.describe_app(&ctx).await
+    })
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn set_color_theme<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,

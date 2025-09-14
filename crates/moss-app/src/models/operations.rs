@@ -1,6 +1,9 @@
 use derive_more::Deref;
 use moss_logging::models::primitives::LogEntryId;
-use moss_user::models::primitives::{AccountId, ProfileId};
+use moss_user::models::{
+    primitives::{AccountId, ProfileId},
+    types::ProfileInfo,
+};
 use moss_workspace::models::primitives::WorkspaceMode;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
@@ -101,8 +104,23 @@ pub struct GetTranslationsOutput(#[ts(type = "JsonValue")] pub JsonValue);
 #[ts(export, export_to = "operations.ts")]
 pub struct ListLocalesOutput(pub Vec<LocaleInfo>);
 
-// Describe App State
+// Describe App
 
+/// @category Operation
+#[derive(Debug, Serialize, Clone, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct DescribeAppOutput {
+    /// The id of the workspace that is currently opened.
+    pub workspace: Option<WorkspaceId>,
+    /// The id of the profile that is currently active.
+    #[ts(optional, type = "ProfileInfo")]
+    pub profile: Option<ProfileInfo>,
+    pub configuration: Configuration,
+}
+
+/// DEPRECATED  
 /// @category Operation
 #[derive(Debug, Deserialize, Serialize, Clone, TS)]
 #[serde(rename_all = "camelCase")]

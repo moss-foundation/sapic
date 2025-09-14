@@ -1,6 +1,5 @@
-use std::collections::HashMap;
-
 use moss_applib::AppRuntime;
+use std::collections::HashMap;
 use tokio::sync::RwLock;
 
 use crate::{

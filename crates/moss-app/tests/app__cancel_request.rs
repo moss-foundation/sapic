@@ -1,5 +1,3 @@
-// FIXME: These tests are temporarily commented out because we need to rethink our approach to log management.
-
 #![cfg(feature = "integration-tests")]
 
 use futures::future;
