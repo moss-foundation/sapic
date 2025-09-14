@@ -8,7 +8,9 @@ mod window;
 #[macro_use]
 extern crate tracing;
 
-use moss_app::{App, AppBuilder as TauriAppBuilder, builder::BuildAppParams};
+use moss_app::{
+    App, AppBuilder as TauriAppBuilder, app::OnAppReadyOptions, builder::BuildAppParams,
+};
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
     TauriAppRuntime,
@@ -204,7 +206,6 @@ pub async fn run<R: TauriRuntime>() {
             commands::close_workspace,
             commands::cancel_request,
             commands::update_profile,
-            commands::get_profile,
             //
             // Workspace
             //
@@ -274,9 +275,15 @@ pub async fn run<R: TauriRuntime>() {
                         .inner()
                         .clone();
 
-                    app.on_app_ready(&ctx, &app_delegate)
-                        .await
-                        .expect("Failed to prepare the app");
+                    app.on_app_ready(
+                        &ctx,
+                        &app_delegate,
+                        OnAppReadyOptions {
+                            restore_last_workspace: false,
+                        },
+                    )
+                    .await
+                    .expect("Failed to prepare the app");
                 });
             }
 
