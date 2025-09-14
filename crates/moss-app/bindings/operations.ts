@@ -4,7 +4,6 @@ import { ProfileInfo } from "@repo/moss-user";
 import { WorkspaceMode } from "@repo/moss-workspace";
 import type { LogLevel } from "./primitives";
 import type {
-  AccountInfo,
   AddAccountParams,
   ColorThemeInfo,
   Configuration,
@@ -128,11 +127,6 @@ export type GetColorThemeInput = { id: string };
  * @category Operation
  */
 export type GetColorThemeOutput = { cssContent: string };
-
-/**
- * @category Operation
- */
-export type GetProfileOutput = { id: string; name: string; accounts: Array<AccountInfo> };
 
 /**
  * @category Operation

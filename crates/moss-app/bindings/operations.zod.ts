@@ -5,7 +5,6 @@ import { workspaceModeSchema } from "@repo/moss-workspace";
 import { z } from "zod";
 import { logLevelSchema } from "./primitives.zod";
 import {
-  accountInfoSchema,
   addAccountParamsSchema,
   colorThemeInfoSchema,
   configurationSchema,
@@ -120,12 +119,6 @@ export const describeAppStateOutputSchema = z.object({
   preferences: preferencesSchema,
   defaults: defaultsSchema,
   prevWorkspaceId: z.string().optional(),
-});
-
-export const getProfileOutputSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  accounts: z.array(accountInfoSchema),
 });
 
 export const getTranslationsOutputSchema = jsonValueSchema;

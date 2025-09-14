@@ -28,13 +28,6 @@ export const workspaceInfoSchema = z.object({
   lastOpenedAt: z.bigint().optional(),
   active: z.boolean(),
 });
-export const accountInfoSchema = z.object({
-  id: z.string(),
-  username: z.string(),
-  host: z.string(),
-  kind: accountKindSchema,
-});
-
 export const addAccountParamsSchema = z.object({
   host: z.string(),
   label: z.string().optional(),

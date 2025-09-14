@@ -5,11 +5,6 @@ import type { AccountKind, LogLevel, ThemeMode } from "./primitives";
 /**
  * @category Type
  */
-export type AccountInfo = { id: string; username: string; host: string; kind: AccountKind };
-
-/**
- * @category Type
- */
 export type AddAccountParams = {
   host: string;
   label?: string;
