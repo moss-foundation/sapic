@@ -49,8 +49,6 @@ export const useMonitorEnvironmentsLists = () => {
           (group) => group.collectionId === locationData.data.groupWithEnvironments.collectionId
         );
 
-        console.log("targetIndex", targetIndex);
-
         const inserted = [
           ...groups
             .slice(0, targetIndex)

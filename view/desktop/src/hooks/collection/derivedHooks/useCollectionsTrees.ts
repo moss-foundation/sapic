@@ -107,7 +107,5 @@ export const useCollectionsTrees = (): UseCollectionsTreesProps => {
     return sortObjectsByOrder(collectionsTrees);
   }, [collectionsTrees]);
 
-  // console.log({ collectionsWithEntries, collectionsTrees });
-
   return { collectionsTrees, collectionsTreesSortedByOrder, isLoading };
 };

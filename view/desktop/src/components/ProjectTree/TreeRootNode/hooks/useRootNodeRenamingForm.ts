@@ -29,7 +29,6 @@ export const useRootNodeRenamingForm = (node: ProjectTreeRootNode) => {
   };
 
   const handleRenamingRootNodeFormCancel = () => {
-    console.log("handleRenamingRootNodeFormCancel");
     setIsRenamingRootNode(false);
   };
 
