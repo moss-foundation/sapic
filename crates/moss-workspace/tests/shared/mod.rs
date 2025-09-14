@@ -201,7 +201,7 @@ pub fn generate_random_icon(output_path: &Path) {
 }
 
 #[allow(unused)]
-pub async fn test_stream_collections<R: AppRuntime>(
+pub async fn test_stream_projects<R: AppRuntime>(
     ctx: &R::AsyncContext,
     workspace: &Workspace<R>,
 ) -> (

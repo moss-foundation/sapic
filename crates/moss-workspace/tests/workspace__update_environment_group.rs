@@ -1,6 +1,6 @@
 #![cfg(feature = "integration-tests")]
 
-use moss_testutils::random_name::{random_collection_name, random_environment_name};
+use moss_testutils::random_name::{random_environment_name, random_project_name};
 use moss_workspace::models::{
     operations::{CreateEnvironmentInput, CreateProjectInput, UpdateEnvironmentGroupInput},
     types::{CreateProjectParams, UpdateEnvironmentGroupParams},
@@ -15,7 +15,7 @@ pub mod shared;
 async fn update_environment_group_expand() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
-    let collection_name = random_collection_name();
+    let collection_name = random_project_name();
     let collection_id = workspace
         .create_project(
             &ctx,
@@ -99,7 +99,7 @@ async fn update_environment_group_expand() {
 #[tokio::test]
 async fn update_environment_group_order() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
-    let collection_name = random_collection_name();
+    let collection_name = random_project_name();
     let collection_id = workspace
         .create_project(
             &ctx,

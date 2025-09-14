@@ -3,7 +3,7 @@ pub mod shared;
 
 use crate::shared::{generate_random_icon, setup_test_workspace};
 use moss_bindingutils::primitives::ChangePath;
-use moss_testutils::random_name::random_collection_name;
+use moss_testutils::random_name::random_project_name;
 use moss_workspace::models::{
     operations::{CreateProjectInput, UpdateProjectInput},
     primitives::ProjectId,
@@ -11,17 +11,17 @@ use moss_workspace::models::{
 };
 
 #[tokio::test]
-async fn rename_collection_success() {
+async fn rename_project_success() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
-    let old_collection_name = random_collection_name();
-    let create_collection_output = workspace
+    let old_project_name = random_project_name();
+    let create_project_output = workspace
         .create_project(
             &ctx,
             &app_delegate,
             &CreateProjectInput {
                 inner: CreateProjectParams {
-                    name: old_collection_name.clone(),
+                    name: old_project_name.clone(),
                     order: 0,
                     external_path: None,
                     git_params: None,
@@ -32,14 +32,14 @@ async fn rename_collection_success() {
         .await
         .unwrap();
 
-    let new_collection_name = random_collection_name();
+    let new_project_name = random_project_name();
     let _ = workspace
         .update_project(
             &ctx,
             UpdateProjectInput {
                 inner: UpdateProjectParams {
-                    id: create_collection_output.id.clone(),
-                    name: Some(new_collection_name.clone()),
+                    id: create_project_output.id.clone(),
+                    name: Some(new_project_name.clone()),
                     repository: None,
                     icon_path: None,
                     order: None,
@@ -51,30 +51,27 @@ async fn rename_collection_success() {
         .unwrap();
 
     // Verify the manifest is updated
-    let collection = workspace
-        .project(&create_collection_output.id.into())
+    let project = workspace
+        .project(&create_project_output.id.into())
         .await
         .unwrap();
-    assert_eq!(
-        collection.details().await.unwrap().name,
-        new_collection_name
-    );
+    assert_eq!(project.details().await.unwrap().name, new_project_name);
 
     cleanup().await;
 }
 
 #[tokio::test]
-async fn rename_collection_empty_name() {
+async fn rename_project_empty_name() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
-    let old_collection_name = random_collection_name();
-    let create_collection_output = workspace
+    let old_project_name = random_project_name();
+    let create_project_output = workspace
         .create_project(
             &ctx,
             &app_delegate,
             &CreateProjectInput {
                 inner: CreateProjectParams {
-                    name: old_collection_name.clone(),
+                    name: old_project_name.clone(),
                     order: 0,
                     external_path: None,
                     git_params: None,
@@ -85,14 +82,14 @@ async fn rename_collection_empty_name() {
         .await
         .unwrap();
 
-    let new_collection_name = "".to_string();
-    let rename_collection_result = workspace
+    let new_project_name = "".to_string();
+    let rename_project_result = workspace
         .update_project(
             &ctx,
             UpdateProjectInput {
                 inner: UpdateProjectParams {
-                    id: create_collection_output.id,
-                    name: Some(new_collection_name.clone()),
+                    id: create_project_output.id,
+                    name: Some(new_project_name.clone()),
                     repository: None,
                     icon_path: None,
                     order: None,
@@ -102,22 +99,22 @@ async fn rename_collection_empty_name() {
         )
         .await;
 
-    assert!(rename_collection_result.is_err());
+    assert!(rename_project_result.is_err());
     cleanup().await;
 }
 
 #[tokio::test]
-async fn rename_collection_unchanged() {
+async fn rename_project_unchanged() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
-    let old_collection_name = random_collection_name();
-    let create_collection_output = workspace
+    let old_project_name = random_project_name();
+    let create_project_output = workspace
         .create_project(
             &ctx,
             &app_delegate,
             &CreateProjectInput {
                 inner: CreateProjectParams {
-                    name: old_collection_name.clone(),
+                    name: old_project_name.clone(),
                     order: 0,
                     external_path: None,
                     git_params: None,
@@ -128,14 +125,14 @@ async fn rename_collection_unchanged() {
         .await
         .unwrap();
 
-    let new_collection_name = old_collection_name;
+    let new_project_name = old_project_name;
     let _ = workspace
         .update_project(
             &ctx,
             UpdateProjectInput {
                 inner: UpdateProjectParams {
-                    id: create_collection_output.id,
-                    name: Some(new_collection_name),
+                    id: create_project_output.id,
+                    name: Some(new_project_name),
                     repository: None,
                     icon_path: None,
                     order: None,
@@ -150,7 +147,7 @@ async fn rename_collection_unchanged() {
 }
 
 #[tokio::test]
-async fn rename_collection_nonexistent_id() {
+async fn rename_project_nonexistent_id() {
     let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     // Use a random ID that doesn't exist
@@ -162,7 +159,7 @@ async fn rename_collection_nonexistent_id() {
             UpdateProjectInput {
                 inner: UpdateProjectParams {
                     id: nonexistent_id,
-                    name: Some(random_collection_name()),
+                    name: Some(random_project_name()),
                     repository: None,
                     icon_path: None,
                     order: None,
@@ -178,16 +175,16 @@ async fn rename_collection_nonexistent_id() {
 }
 
 #[tokio::test]
-async fn update_collection_new_icon() {
+async fn update_project_new_icon() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
-    let collection_name = random_collection_name();
+    let project_name = random_project_name();
     let id = workspace
         .create_project(
             &ctx,
             &app_delegate,
             &CreateProjectInput {
                 inner: CreateProjectParams {
-                    name: collection_name.to_string(),
+                    name: project_name.to_string(),
                     order: 0,
                     external_path: None,
                     git_params: None,
@@ -220,16 +217,16 @@ async fn update_collection_new_icon() {
         .unwrap();
 
     // Verify the icon is generated
-    let collection = workspace.project(&id).await.unwrap();
-    assert!(collection.icon_path().is_some());
+    let project = workspace.project(&id).await.unwrap();
+    assert!(project.icon_path().is_some());
 
     cleanup().await;
 }
 
 #[tokio::test]
-async fn update_collection_remove_icon() {
+async fn update_project_remove_icon() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
-    let collection_name = random_collection_name();
+    let project_name = random_project_name();
 
     let icon_path = workspace.abs_path().join("test_icon.png");
     generate_random_icon(&icon_path);
@@ -240,7 +237,7 @@ async fn update_collection_remove_icon() {
             &app_delegate,
             &CreateProjectInput {
                 inner: CreateProjectParams {
-                    name: collection_name.clone(),
+                    name: project_name.clone(),
                     order: 0,
                     external_path: None,
                     git_params: None,
@@ -270,27 +267,27 @@ async fn update_collection_remove_icon() {
         .unwrap();
 
     // Verify the icon is removed
-    let collection = workspace.project(&id).await.unwrap();
-    assert!(collection.icon_path().is_none());
+    let project = workspace.project(&id).await.unwrap();
+    assert!(project.icon_path().is_none());
 
     cleanup().await;
 }
 
-// TODO: Reenable this test once we introduce relinking a collection with a new remote repo
+// TODO: Reenable this test once we introduce relinking a project with a new remote repo
 
 // #[tokio::test]
 // async fn update_collection_repo() {
 //     let (ctx, workspace, cleanup) = setup_test_workspace().await;
 //
-//     let collection_name = random_collection_name();
+//     let project_name = random_project_name();
 //     let old_repo = "https://github.com/xxx/1.git".to_string();
 //     let new_repo = "https://github.com/xxx/2.git".to_string();
 //     let new_normalized_repo = "github.com/xxx/2";
-//     let create_collection_output = workspace
+//     let create_project_output = workspace
 //         .create_collection(
 //             &ctx,
 //             &CreateCollectionInput {
-//                 name: collection_name,
+//                 name: project_name,
 //                 order: 0,
 //                 external_path: None,
 //                 repository: Some(old_repo),
@@ -304,7 +301,7 @@ async fn update_collection_remove_icon() {
 //         .update_collection(
 //             &ctx,
 //             UpdateCollectionInput {
-//                 id: create_collection_output.id.clone(),
+//                 id: create_project_output.id.clone(),
 //                 name: None,
 //                 repository: Some(ChangeString::Update(new_repo.clone())),
 //                 icon_path: None,
@@ -318,7 +315,7 @@ async fn update_collection_remove_icon() {
 //
 //     // Verify the manifest is updated
 //     let collection = workspace
-//         .collection(&create_collection_output.id.into())
+//         .collection(&create_project_output.id.into())
 //         .await
 //         .unwrap();
 //

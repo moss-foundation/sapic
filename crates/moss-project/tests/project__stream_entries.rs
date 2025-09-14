@@ -14,21 +14,21 @@ use std::{
 use tauri::ipc::{Channel as TauriChannel, InvokeResponseBody};
 
 use crate::shared::{
-    RESOURCES_ROOT_DIR, create_test_collection, create_test_component_dir_entry,
-    create_test_endpoint_dir_entry, create_test_schema_dir_entry, random_entry_name,
+    RESOURCES_ROOT_DIR, create_test_component_dir_entry, create_test_endpoint_dir_entry,
+    create_test_project, create_test_schema_dir_entry, random_entry_name,
 };
 
 // Helper function to scan entries using worktree directly
 async fn scan_entries_for_test(
     ctx: &AsyncContext,
     app_delegate: &AppDelegate<MockAppRuntime>,
-    collection: &moss_project::Project<MockAppRuntime>,
+    project: &moss_project::Project<MockAppRuntime>,
     dir_name: &str,
 ) -> Vec<StreamEntriesEvent> {
     let entries = Arc::new(Mutex::new(Vec::new()));
     let entries_clone = entries.clone();
 
-    collection
+    project
         .stream_entries(
             &ctx,
             app_delegate,
@@ -49,27 +49,26 @@ async fn scan_entries_for_test(
 }
 
 #[tokio::test]
-async fn stream_entries_empty_collection() {
-    let (ctx, app_delegate, collection_path, collection) = create_test_collection().await;
+async fn stream_entries_empty_project() {
+    let (ctx, app_delegate, project_path, project) = create_test_project().await;
 
-    let entries =
-        scan_entries_for_test(&ctx, &app_delegate, &collection, dirs::RESOURCES_DIR).await;
+    let entries = scan_entries_for_test(&ctx, &app_delegate, &project, dirs::RESOURCES_DIR).await;
 
     assert_eq!(entries.len(), 0);
 
     // Cleanup
-    std::fs::remove_dir_all(collection_path).unwrap();
+    std::fs::remove_dir_all(project_path).unwrap();
 }
 
 #[tokio::test]
 async fn stream_entries_single_entry() {
-    let (ctx, app_delegate, collection_path, mut collection) = create_test_collection().await;
+    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
 
     let entry_name = random_entry_name();
-    create_test_endpoint_dir_entry(&ctx, &mut collection, &entry_name).await;
+    create_test_endpoint_dir_entry(&ctx, &mut project, &entry_name).await;
 
     // Scan the resources directory
-    let entries = scan_entries_for_test(&ctx, &app_delegate, &collection, RESOURCES_ROOT_DIR).await;
+    let entries = scan_entries_for_test(&ctx, &app_delegate, &project, RESOURCES_ROOT_DIR).await;
 
     assert_eq!(entries.len(), 1);
 
@@ -91,22 +90,22 @@ async fn stream_entries_single_entry() {
     );
 
     // Cleanup
-    std::fs::remove_dir_all(collection_path).unwrap();
+    std::fs::remove_dir_all(project_path).unwrap();
 }
 
 #[tokio::test]
 async fn stream_entries_multiple_entries_same_directory() {
-    let (ctx, app_delegate, collection_path, mut collection) = create_test_collection().await;
+    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
 
     let entry1_name = format!("{}_1", random_entry_name());
     let entry2_name = format!("{}_2", random_entry_name());
     let entry3_name = format!("{}_3", random_entry_name());
 
-    create_test_endpoint_dir_entry(&ctx, &mut collection, &entry1_name).await;
-    create_test_endpoint_dir_entry(&ctx, &mut collection, &entry2_name).await;
-    create_test_endpoint_dir_entry(&ctx, &mut collection, &entry3_name).await;
+    create_test_endpoint_dir_entry(&ctx, &mut project, &entry1_name).await;
+    create_test_endpoint_dir_entry(&ctx, &mut project, &entry2_name).await;
+    create_test_endpoint_dir_entry(&ctx, &mut project, &entry3_name).await;
 
-    let entries = scan_entries_for_test(&ctx, &app_delegate, &collection, RESOURCES_ROOT_DIR).await;
+    let entries = scan_entries_for_test(&ctx, &app_delegate, &project, RESOURCES_ROOT_DIR).await;
 
     assert_eq!(
         entries.len(),
@@ -120,34 +119,34 @@ async fn stream_entries_multiple_entries_same_directory() {
     assert!(entry_names.contains(&entry3_name.as_str()));
 
     // Cleanup
-    std::fs::remove_dir_all(collection_path).unwrap();
+    std::fs::remove_dir_all(project_path).unwrap();
 }
 
 #[tokio::test]
 async fn stream_entries_multiple_directories() {
-    let (ctx, app_delegate, collection_path, mut collection) = create_test_collection().await;
+    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
 
     let mut entries = Vec::new();
     {
         let name = random_entry_name();
-        let id = create_test_endpoint_dir_entry(&ctx, &mut collection, &name).await;
+        let id = create_test_endpoint_dir_entry(&ctx, &mut project, &name).await;
         entries.push((id, name));
     }
 
     {
         let name = random_entry_name();
-        let id = create_test_component_dir_entry(&ctx, &mut collection, &name).await;
+        let id = create_test_component_dir_entry(&ctx, &mut project, &name).await;
         entries.push((id, name));
     }
 
     {
         let name = random_entry_name();
-        let id = create_test_schema_dir_entry(&ctx, &mut collection, &name).await;
+        let id = create_test_schema_dir_entry(&ctx, &mut project, &name).await;
         entries.push((id, name));
     }
 
     for (_, name) in entries {
-        let scan_result = scan_entries_for_test(&ctx, &app_delegate, &collection, &name).await;
+        let scan_result = scan_entries_for_test(&ctx, &app_delegate, &project, &name).await;
 
         // Should have 2 entries: the directory itself + the created entry
         assert_eq!(scan_result.len(), 1,);
@@ -162,5 +161,5 @@ async fn stream_entries_multiple_directories() {
     }
 
     // Cleanup
-    std::fs::remove_dir_all(collection_path).unwrap();
+    std::fs::remove_dir_all(project_path).unwrap();
 }

@@ -5,7 +5,7 @@ use moss_environment::{
     models::types::{AddVariableParams, VariableOptions},
 };
 use moss_storage::storage::operations::GetItem;
-use moss_testutils::random_name::{random_collection_name, random_environment_name};
+use moss_testutils::random_name::{random_environment_name, random_project_name};
 use moss_workspace::{
     models::{
         operations::{CreateEnvironmentInput, CreateProjectInput},
@@ -117,7 +117,7 @@ async fn create_environment_already_exists() {
 async fn create_collection_environment_success() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
-    let collection_name = random_collection_name();
+    let collection_name = random_project_name();
     let collection_id = workspace
         .create_project(
             &ctx,
@@ -193,7 +193,7 @@ async fn create_collection_environment_success() {
 async fn create_collection_environment_already_exists() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
-    let collection_name = random_collection_name();
+    let collection_name = random_project_name();
     let collection_id = workspace
         .create_project(
             &ctx,
@@ -250,7 +250,7 @@ async fn create_collection_environment_already_exists() {
 async fn create_collection_environment_same_name_as_workspace_environment() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
-    let collection_name = random_collection_name();
+    let collection_name = random_project_name();
     let collection_id = workspace
         .create_project(
             &ctx,

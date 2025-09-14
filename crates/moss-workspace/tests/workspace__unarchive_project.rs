@@ -1,28 +1,28 @@
 #![cfg(feature = "integration-tests")]
 
-use moss_testutils::random_name::random_collection_name;
+use moss_testutils::random_name::random_project_name;
 use moss_workspace::models::{
     operations::{ArchiveProjectInput, CreateProjectInput, UnarchiveProjectInput},
     primitives::ProjectId,
     types::CreateProjectParams,
 };
 
-use crate::shared::{setup_test_workspace, test_stream_collections};
+use crate::shared::{setup_test_workspace, test_stream_projects};
 
 pub mod shared;
 
 #[tokio::test]
-pub async fn unarchive_collection_success() {
+pub async fn unarchive_project_success() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
-    let collection_name = random_collection_name();
+    let project_name = random_project_name();
     let id = workspace
         .create_project(
             &ctx,
             &app_delegate,
             &CreateProjectInput {
                 inner: CreateProjectParams {
-                    name: collection_name.clone(),
+                    name: project_name.clone(),
                     order: 0,
                     external_path: None,
                     git_params: None,
@@ -34,7 +34,7 @@ pub async fn unarchive_collection_success() {
         .unwrap()
         .id;
 
-    // First archive the collection and unarchive it
+    // First archive the project and unarchive it
     workspace
         .archive_project(&ctx, ArchiveProjectInput { id: id.clone() })
         .await
@@ -45,9 +45,9 @@ pub async fn unarchive_collection_success() {
         .await
         .unwrap();
 
-    // Check that the collection is now unarchived
-    // Check that collection is flagged as archived during streaming
-    let (events, _stream_output) = test_stream_collections(&ctx, &workspace).await;
+    // Check that the project is now unarchived
+    // Check that project is flagged as archived during streaming
+    let (events, _stream_output) = test_stream_projects(&ctx, &workspace).await;
 
     assert_eq!(events.len(), 1);
     assert!(!events.get(&id).unwrap().archived);
@@ -56,16 +56,16 @@ pub async fn unarchive_collection_success() {
 }
 
 #[tokio::test]
-pub async fn unarchive_collection_already_unarchived() {
+pub async fn unarchive_project_already_unarchived() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
-    let collection_name = random_collection_name();
+    let project_name = random_project_name();
     let id = workspace
         .create_project(
             &ctx,
             &app_delegate,
             &CreateProjectInput {
                 inner: CreateProjectParams {
-                    name: collection_name.clone(),
+                    name: project_name.clone(),
                     order: 0,
                     external_path: None,
                     git_params: None,
@@ -77,8 +77,8 @@ pub async fn unarchive_collection_already_unarchived() {
         .unwrap()
         .id;
 
-    // Check that the collection is already unarchived
-    let (events, _stream_output) = test_stream_collections(&ctx, &workspace).await;
+    // Check that the project is already unarchived
+    let (events, _stream_output) = test_stream_projects(&ctx, &workspace).await;
     assert!(!events.get(&id).unwrap().archived);
 
     let result = workspace
@@ -86,8 +86,8 @@ pub async fn unarchive_collection_already_unarchived() {
         .await;
     assert!(result.is_ok());
 
-    // Check that collection is still unarchived
-    let (events, _stream_output) = test_stream_collections(&ctx, &workspace).await;
+    // Check that project is still unarchived
+    let (events, _stream_output) = test_stream_projects(&ctx, &workspace).await;
 
     assert_eq!(events.len(), 1);
     assert!(!events.get(&id).unwrap().archived);
@@ -96,7 +96,7 @@ pub async fn unarchive_collection_already_unarchived() {
 }
 
 #[tokio::test]
-pub async fn unarchived_collection_nonexistent() {
+pub async fn unarchived_project_nonexistent() {
     let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
     let result = workspace
         .unarchive_project(

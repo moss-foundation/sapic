@@ -2,7 +2,7 @@
 
 use moss_applib::AppRuntime;
 use moss_environment::models::primitives::EnvironmentId;
-use moss_testutils::random_name::{random_collection_name, random_environment_name};
+use moss_testutils::random_name::{random_environment_name, random_project_name};
 use moss_workspace::{
     Workspace,
     models::{
@@ -92,7 +92,7 @@ async fn activate_environment_global() {
 async fn activate_environment_collection() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
-    let collection_name = random_collection_name();
+    let collection_name = random_project_name();
     let collection_id = workspace
         .create_project(
             &ctx,
@@ -203,7 +203,7 @@ async fn activate_environment_currently_active() {
 #[tokio::test]
 async fn activate_environment_groups_isolation() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
-    let collection_name = random_collection_name();
+    let collection_name = random_project_name();
     let collection_id = workspace
         .create_project(
             &ctx,

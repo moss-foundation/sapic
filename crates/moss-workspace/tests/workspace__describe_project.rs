@@ -15,7 +15,7 @@ mod shared;
 
 #[ignore]
 #[tokio::test]
-async fn describe_collection_with_repository() {
+async fn describe_project_with_repository() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let account_id = ctx
@@ -24,18 +24,18 @@ async fn describe_collection_with_repository() {
         .deref()
         .clone();
 
-    let import_collection_output = workspace
+    let import_project_output = workspace
         .import_project(
             &ctx,
             &app_delegate,
             &ImportProjectInput {
                 inner: ImportProjectParams {
-                    name: "New Collection".to_string(),
+                    name: "New Project".to_string(),
                     order: 0,
                     external_path: None,
                     icon_path: None,
                     source: ImportProjectSource::GitHub(GitHubImportParams {
-                        repository: env::var("GITHUB_COLLECTION_REPO_HTTPS").unwrap(),
+                        repository: env::var("GITHUB_PROJECT_REPO_HTTPS").unwrap(),
                         branch: None,
                         account_id,
                     }),
@@ -49,14 +49,14 @@ async fn describe_collection_with_repository() {
         .describe_project(
             &ctx,
             &DescribeProjectInput {
-                id: import_collection_output.id.clone(),
+                id: import_project_output.id.clone(),
             },
         )
         .await
         .unwrap();
 
     dbg!(&description);
-    assert_eq!(description.name, "New Collection");
+    assert_eq!(description.name, "New Project");
 
     let vcs = description.vcs.unwrap();
     let github_info = match vcs {
@@ -74,7 +74,7 @@ async fn describe_collection_with_repository() {
             behind: Some(0),
         }
     );
-    assert_eq!(github_info.url, "github.com/brutusyhy/test-collection");
+    assert_eq!(github_info.url, "github.com/brutusyhy/test-project");
     assert!(github_info.updated_at.is_some());
     assert_eq!(github_info.owner.unwrap(), "brutusyhy");
 
@@ -82,7 +82,7 @@ async fn describe_collection_with_repository() {
         .delete_project(
             &ctx,
             &DeleteProjectInput {
-                id: import_collection_output.id,
+                id: import_project_output.id,
             },
         )
         .await

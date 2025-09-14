@@ -24,7 +24,7 @@ pub mod shared;
 
 #[ignore]
 #[tokio::test]
-async fn clone_collection_success() {
+async fn clone_project_success() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     dotenv::dotenv().ok();
@@ -35,18 +35,18 @@ async fn clone_collection_success() {
         .deref()
         .clone();
 
-    let clone_collection_output = workspace
+    let clone_project_output = workspace
         .import_project(
             &ctx,
             &app_delegate,
             &ImportProjectInput {
                 inner: ImportProjectParams {
-                    name: "New Collection".to_string(),
+                    name: "New Project".to_string(),
                     order: 0,
                     external_path: None,
                     icon_path: None,
                     source: ImportProjectSource::GitHub(GitHubImportParams {
-                        repository: env::var("GITHUB_COLLECTION_REPO_HTTPS").unwrap(),
+                        repository: env::var("GITHUB_PROJECT_REPO_HTTPS").unwrap(),
                         branch: None,
                         account_id,
                     }),
@@ -56,16 +56,16 @@ async fn clone_collection_success() {
         .await
         .unwrap();
 
-    // Verify through stream_collections
+    // Verify through stream_projects
     let channel = Channel::new(move |_| Ok(()));
     let output = workspace.stream_projects(&ctx, channel).await.unwrap();
     assert_eq!(output.total_returned, 1);
 
     // Verify the directory was created
-    assert!(clone_collection_output.abs_path.exists());
+    assert!(clone_project_output.abs_path.exists());
 
     // Verify the db entries were created
-    let id = clone_collection_output.id;
+    let id = clone_project_output.id;
     let item_store = workspace.db().item_store();
 
     // Check order was stored
@@ -76,7 +76,7 @@ async fn clone_collection_success() {
     let stored_order: usize = order_value.deserialize().unwrap();
     assert_eq!(stored_order, 0);
 
-    // Check expanded_items contains the collection id
+    // Check expanded_items contains the project id
     let expanded_items_value = GetItem::get(
         item_store.as_ref(),
         &ctx,

@@ -1,7 +1,7 @@
 #![cfg(feature = "integration-tests")]
 
 use moss_environment::models::types::{AddVariableParams, VariableOptions};
-use moss_testutils::random_name::{random_collection_name, random_environment_name};
+use moss_testutils::random_name::{random_environment_name, random_project_name};
 use moss_workspace::models::{
     events::StreamEnvironmentsEvent,
     operations::{CreateEnvironmentInput, CreateProjectInput},
@@ -216,7 +216,7 @@ async fn stream_environments_only_collection_environments() {
 async fn stream_environments_both_workspace_and_collection_environments() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
-    let collection_name = random_collection_name();
+    let collection_name = random_project_name();
     let collection_id = workspace
         .create_project(
             &ctx,

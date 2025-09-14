@@ -1,7 +1,7 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
-use moss_testutils::random_name::random_collection_name;
+use moss_testutils::random_name::random_project_name;
 use moss_workspace::models::{
     events::StreamProjectsEvent, operations::CreateProjectInput, primitives::ProjectId,
     types::CreateProjectParams,
@@ -15,7 +15,7 @@ use tauri::ipc::{Channel, InvokeResponseBody};
 use crate::shared::setup_test_workspace;
 
 #[tokio::test]
-async fn stream_collections_empty_workspace() {
+async fn stream_projects_empty_workspace() {
     let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let received_events = Arc::new(Mutex::new(Vec::new()));
@@ -41,11 +41,11 @@ async fn stream_collections_empty_workspace() {
 }
 
 #[tokio::test]
-async fn stream_collections_single_collection() {
+async fn stream_projects_single_project() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
-    let collection_name = random_collection_name();
-    let collection_order = 42;
+    let project_name = random_project_name();
+    let project_order = 42;
 
     // Create a single collection
     let create_result = workspace
@@ -54,8 +54,8 @@ async fn stream_collections_single_collection() {
             &app_delegate,
             &CreateProjectInput {
                 inner: CreateProjectParams {
-                    name: collection_name.clone(),
-                    order: collection_order,
+                    name: project_name.clone(),
+                    order: project_order,
                     external_path: None,
                     git_params: None,
                     icon_path: None,
@@ -65,9 +65,9 @@ async fn stream_collections_single_collection() {
         .await
         .unwrap();
 
-    let collection_id = create_result.id;
+    let project_id = create_result.id;
 
-    // Stream collections and capture events
+    // Stream projects and capture events
     let received_events = Arc::new(Mutex::new(Vec::new()));
     let received_events_clone = received_events.clone();
 
@@ -89,24 +89,24 @@ async fn stream_collections_single_collection() {
 
     // Verify the event data
     let event = &events[0];
-    assert_eq!(event.id, collection_id);
-    assert_eq!(event.name, collection_name);
-    assert_eq!(event.order, Some(collection_order));
+    assert_eq!(event.id, project_id);
+    assert_eq!(event.name, project_name);
+    assert_eq!(event.order, Some(project_order));
     assert_eq!(event.icon_path, None);
 
     cleanup().await;
 }
 
 #[tokio::test]
-async fn stream_collections_multiple_collections() {
+async fn stream_projects_multiple_projects() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
-    let mut expected_collections = Vec::new();
+    let mut expected_projects = Vec::new();
 
-    // Create multiple collections with different parameters
+    // Create multiple projects with different parameters
     for i in 0..5 {
-        let collection_name = format!("Collection {}", i);
-        let collection_order = i * 10;
+        let project_name = format!("Project {}", i);
+        let project_order = i * 10;
 
         let create_result = workspace
             .create_project(
@@ -114,8 +114,8 @@ async fn stream_collections_multiple_collections() {
                 &app_delegate,
                 &CreateProjectInput {
                     inner: CreateProjectParams {
-                        name: collection_name.clone(),
-                        order: collection_order,
+                        name: project_name.clone(),
+                        order: project_order,
                         external_path: None,
                         git_params: None,
                         icon_path: None,
@@ -125,10 +125,10 @@ async fn stream_collections_multiple_collections() {
             .await
             .unwrap();
 
-        expected_collections.push((create_result.id, collection_name, collection_order));
+        expected_projects.push((create_result.id, project_name, project_order));
     }
 
-    // Stream collections and capture events
+    // Stream projects and capture events
     let received_events = Arc::new(Mutex::new(Vec::new()));
     let received_events_clone = received_events.clone();
 
@@ -154,8 +154,8 @@ async fn stream_collections_multiple_collections() {
         .map(|event| (event.id.clone(), event))
         .collect();
 
-    // Verify each expected collection is present with correct data
-    for (expected_id, expected_name, expected_order) in expected_collections {
+    // Verify each expected project is present with correct data
+    for (expected_id, expected_name, expected_order) in expected_projects {
         let event = events_map.get(&expected_id).unwrap();
         assert_eq!(event.name, expected_name);
         assert_eq!(event.order, Some(expected_order));
@@ -166,11 +166,11 @@ async fn stream_collections_multiple_collections() {
 }
 
 #[tokio::test]
-async fn stream_collections_with_icon() {
+async fn stream_projects_with_icon() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
-    let collection_name = random_collection_name();
-    let collection_order = 200;
+    let project_name = random_project_name();
+    let project_order = 200;
 
     // Create a test icon file
     let icon_path = workspace.abs_path().join("test_icon.png");
@@ -183,8 +183,8 @@ async fn stream_collections_with_icon() {
             &app_delegate,
             &CreateProjectInput {
                 inner: CreateProjectParams {
-                    name: collection_name.clone(),
-                    order: collection_order,
+                    name: project_name.clone(),
+                    order: project_order,
                     external_path: None,
                     git_params: None,
                     icon_path: Some(icon_path.clone()),
@@ -194,9 +194,9 @@ async fn stream_collections_with_icon() {
         .await
         .unwrap();
 
-    let collection_id = create_result.id;
+    let project_id = create_result.id;
 
-    // Stream collections and capture events
+    // Stream projects and capture events
     let received_events = Arc::new(Mutex::new(Vec::new()));
     let received_events_clone = received_events.clone();
 
@@ -218,26 +218,26 @@ async fn stream_collections_with_icon() {
 
     // Verify the event data includes icon path
     let event = &events[0];
-    assert_eq!(event.id, collection_id);
-    assert_eq!(event.name, collection_name);
-    assert_eq!(event.order, Some(collection_order));
+    assert_eq!(event.id, project_id);
+    assert_eq!(event.name, project_name);
+    assert_eq!(event.order, Some(project_order));
     assert!(event.icon_path.is_some());
 
     cleanup().await;
 }
 
 #[tokio::test]
-async fn stream_collections_mixed_configurations() {
+async fn stream_projects_mixed_configurations() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     // Create icon file
     let icon_path = workspace.abs_path().join("mixed_test_icon.png");
     shared::generate_random_icon(&icon_path);
 
-    let mut expected_collections = Vec::new();
+    let mut expected_projects = Vec::new();
 
-    // Collection 1: Basic
-    let name1 = "Basic Collection".to_string();
+    // Project 1: Basic
+    let name1 = "Basic Project".to_string();
     let result1 = workspace
         .create_project(
             &ctx,
@@ -254,10 +254,10 @@ async fn stream_collections_mixed_configurations() {
         )
         .await
         .unwrap();
-    expected_collections.push((result1.id, name1, 1, None::<String>));
+    expected_projects.push((result1.id, name1, 1, None::<String>));
 
-    // Collection 2: With icon
-    let name2 = "Icon Collection".to_string();
+    // Project 2: With icon
+    let name2 = "Icon Project".to_string();
     let result2 = workspace
         .create_project(
             &ctx,
@@ -274,9 +274,9 @@ async fn stream_collections_mixed_configurations() {
         )
         .await
         .unwrap();
-    expected_collections.push((result2.id, name2, 2, Some("icon".to_string())));
+    expected_projects.push((result2.id, name2, 2, Some("icon".to_string())));
 
-    // Stream collections and capture events
+    // Stream projects and capture events
     let received_events = Arc::new(Mutex::new(Vec::new()));
     let received_events_clone = received_events.clone();
 
@@ -302,8 +302,8 @@ async fn stream_collections_mixed_configurations() {
         .map(|event| (event.id.clone(), event))
         .collect();
 
-    // Verify each expected collection
-    for (expected_id, expected_name, expected_order, expected_icon) in expected_collections {
+    // Verify each expected project
+    for (expected_id, expected_name, expected_order, expected_icon) in expected_projects {
         let event = events_map.get(&expected_id).unwrap();
         assert_eq!(event.name, *expected_name);
         assert_eq!(event.order, Some(expected_order));
@@ -319,22 +319,22 @@ async fn stream_collections_mixed_configurations() {
 }
 
 #[tokio::test]
-async fn stream_collections_order_verification() {
+async fn stream_projects_order_verification() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let orders = vec![10, 5, 20, 1, 15];
-    let mut expected_collections = Vec::new();
+    let mut expected_projects = Vec::new();
 
-    // Create collections with different orders
+    // Create projects with different orders
     for order in orders.iter() {
-        let collection_name = format!("Collection Order {}", order);
+        let project_name = format!("Project Order {}", order);
         let result = workspace
             .create_project(
                 &ctx,
                 &app_delegate,
                 &CreateProjectInput {
                     inner: CreateProjectParams {
-                        name: collection_name.clone(),
+                        name: project_name.clone(),
                         order: *order,
                         external_path: None,
                         git_params: None,
@@ -344,10 +344,10 @@ async fn stream_collections_order_verification() {
             )
             .await
             .unwrap();
-        expected_collections.push((result.id, collection_name, *order));
+        expected_projects.push((result.id, project_name, *order));
     }
 
-    // Stream collections and capture events
+    // Stream projects and capture events
     let received_events = Arc::new(Mutex::new(Vec::new()));
     let received_events_clone = received_events.clone();
 
@@ -383,8 +383,8 @@ async fn stream_collections_order_verification() {
 // async fn stream_collections_with_repository() {
 //     let (ctx, workspace, cleanup) = setup_test_workspace().await;
 //
-//     let collection_name = random_collection_name();
-//     let collection_order = 100;
+//     let project_name = random_project_name();
+//     let project_order = 100;
 //     let repository_url =
 //         "https://github.com/brutusyhy/test-sapic-collection-private.git".to_string();
 //
@@ -393,8 +393,8 @@ async fn stream_collections_order_verification() {
 //         .create_collection(
 //             &ctx,
 //             &CreateCollectionInput {
-//                 name: collection_name.clone(),
-//                 order: collection_order,
+//                 name: project_name.clone(),
+//                 order: project_order,
 //                 external_path: None,
 //                 repository: Some(repository_url.clone()),
 //                 git_provider_type: Some(GitProviderType::GitHub),
@@ -404,9 +404,9 @@ async fn stream_collections_order_verification() {
 //         .await
 //         .unwrap();
 //
-//     let collection_id = create_result.id;
+//     let project_id = create_result.id;
 //
-//     // Stream collections and capture events
+//     // Stream projects and capture events
 //     let received_events = Arc::new(Mutex::new(Vec::new()));
 //     let received_events_clone = received_events.clone();
 //
@@ -428,9 +428,9 @@ async fn stream_collections_order_verification() {
 //
 //     // Verify the event data includes repository
 //     let event = &events[0];
-//     assert_eq!(event.id, collection_id);
-//     assert_eq!(event.name, collection_name);
-//     assert_eq!(event.order, Some(collection_order));
+//     assert_eq!(event.id, project_id);
+//     assert_eq!(event.name, project_name);
+//     assert_eq!(event.order, Some(project_order));
 //     assert_eq!(
 //         event.repository,
 //         Some("https://github.com/brutusyhy/test-sapic-collection-private.git".to_string())

@@ -16,7 +16,7 @@ use moss_project::{
     },
     project::Project,
 };
-use moss_testutils::random_name::{random_collection_name, random_string};
+use moss_testutils::random_name::{random_project_name, random_string};
 use nanoid::nanoid;
 use std::{
     path::{Path, PathBuf},
@@ -35,14 +35,14 @@ pub fn random_entry_name() -> String {
     format!("Test_{}_Entry", random_string(10))
 }
 
-fn random_collection_path() -> PathBuf {
+fn random_project_path() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
         .join("data")
         .join(nanoid!(10))
 }
 
-pub async fn create_test_collection() -> (
+pub async fn create_test_project() -> (
     AsyncContext,
     AppDelegate<MockAppRuntime>,
     Arc<Path>,
@@ -50,7 +50,7 @@ pub async fn create_test_collection() -> (
 ) {
     let mock_app = tauri::test::mock_app();
     let ctx = MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
-    let internal_abs_path = random_collection_path();
+    let internal_abs_path = random_project_path();
     let temp_path = internal_abs_path.join("tmp");
 
     std::fs::create_dir_all(&internal_abs_path).unwrap();
@@ -65,12 +65,12 @@ pub async fn create_test_collection() -> (
         delegate
     };
 
-    let collection = ProjectBuilder::new(fs)
+    let project = ProjectBuilder::new(fs)
         .await
         .create(
             &ctx,
             ProjectCreateParams {
-                name: Some(random_collection_name()),
+                name: Some(random_project_name()),
                 external_abs_path: None,
                 internal_abs_path: abs_path.clone(),
                 git_params: None,
@@ -80,16 +80,16 @@ pub async fn create_test_collection() -> (
         .await
         .unwrap();
 
-    (ctx, app_delegate, abs_path, collection)
+    (ctx, app_delegate, abs_path, project)
 }
 
 #[allow(dead_code)]
 pub async fn create_test_endpoint_dir_entry(
     ctx: &AsyncContext,
-    collection: &mut Project<MockAppRuntime>,
+    project: &mut Project<MockAppRuntime>,
     name: &str,
 ) -> EntryId {
-    collection
+    project
         .create_entry(
             &ctx,
             CreateEntryInput::Dir(CreateDirEntryParams {
@@ -108,10 +108,10 @@ pub async fn create_test_endpoint_dir_entry(
 #[allow(dead_code)]
 pub async fn create_test_component_dir_entry(
     ctx: &AsyncContext,
-    collection: &mut Project<MockAppRuntime>,
+    project: &mut Project<MockAppRuntime>,
     name: &str,
 ) -> EntryId {
-    collection
+    project
         .create_entry(
             &ctx,
             CreateEntryInput::Dir(CreateDirEntryParams {
@@ -130,10 +130,10 @@ pub async fn create_test_component_dir_entry(
 #[allow(dead_code)]
 pub async fn create_test_component_item_entry(
     ctx: &AsyncContext,
-    collection: &mut Project<MockAppRuntime>,
+    project: &mut Project<MockAppRuntime>,
     name: &str,
 ) -> EntryId {
-    collection
+    project
         .create_entry(
             &ctx,
             CreateEntryInput::Item(CreateItemEntryParams {
@@ -155,10 +155,10 @@ pub async fn create_test_component_item_entry(
 #[allow(dead_code)]
 pub async fn create_test_schema_dir_entry(
     ctx: &AsyncContext,
-    collection: &mut Project<MockAppRuntime>,
+    project: &mut Project<MockAppRuntime>,
     name: &str,
 ) -> EntryId {
-    collection
+    project
         .create_entry(
             &ctx,
             CreateEntryInput::Dir(CreateDirEntryParams {

@@ -1,28 +1,28 @@
 #![cfg(feature = "integration-tests")]
 
-use moss_testutils::random_name::random_collection_name;
+use moss_testutils::random_name::random_project_name;
 use moss_workspace::models::{
     operations::{ArchiveProjectInput, CreateProjectInput},
     primitives::ProjectId,
     types::CreateProjectParams,
 };
 
-use crate::shared::{setup_test_workspace, test_stream_collections};
+use crate::shared::{setup_test_workspace, test_stream_projects};
 
 pub mod shared;
 
 #[tokio::test]
-pub async fn archive_collection_success() {
+pub async fn archive_project_success() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
-    let collection_name = random_collection_name();
+    let project_name = random_project_name();
     let id = workspace
         .create_project(
             &ctx,
             &app_delegate,
             &CreateProjectInput {
                 inner: CreateProjectParams {
-                    name: collection_name.clone(),
+                    name: project_name.clone(),
                     order: 0,
                     external_path: None,
                     git_params: None,
@@ -34,8 +34,8 @@ pub async fn archive_collection_success() {
         .unwrap()
         .id;
 
-    // Check that the collection is initially not archived
-    let (events, _stream_output) = test_stream_collections(&ctx, &workspace).await;
+    // Check that the project is initially not archived
+    let (events, _stream_output) = test_stream_projects(&ctx, &workspace).await;
     assert!(!events.get(&id).unwrap().archived);
 
     workspace
@@ -43,8 +43,8 @@ pub async fn archive_collection_success() {
         .await
         .unwrap();
 
-    // Check that collection is flagged as archived during streaming
-    let (events, _stream_output) = test_stream_collections(&ctx, &workspace).await;
+    // Check that project is flagged as archived during streaming
+    let (events, _stream_output) = test_stream_projects(&ctx, &workspace).await;
 
     assert_eq!(events.len(), 1);
     assert!(events.get(&id).unwrap().archived);
@@ -53,17 +53,17 @@ pub async fn archive_collection_success() {
 }
 
 #[tokio::test]
-pub async fn archive_collection_already_archived() {
+pub async fn archive_project_already_archived() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
-    let collection_name = random_collection_name();
+    let project_name = random_project_name();
     let id = workspace
         .create_project(
             &ctx,
             &app_delegate,
             &CreateProjectInput {
                 inner: CreateProjectParams {
-                    name: collection_name.clone(),
+                    name: project_name.clone(),
                     order: 0,
                     external_path: None,
                     git_params: None,
@@ -85,8 +85,8 @@ pub async fn archive_collection_already_archived() {
         .await;
     assert!(result.is_ok());
 
-    // Check that collection is still flagged as archived during streaming
-    let (events, _stream_output) = test_stream_collections(&ctx, &workspace).await;
+    // Check that project is still flagged as archived during streaming
+    let (events, _stream_output) = test_stream_projects(&ctx, &workspace).await;
 
     assert_eq!(events.len(), 1);
     assert!(events.get(&id).unwrap().archived);
@@ -95,7 +95,7 @@ pub async fn archive_collection_already_archived() {
 }
 
 #[tokio::test]
-pub async fn archived_collection_nonexistent() {
+pub async fn archived_project_nonexistent() {
     let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let result = workspace

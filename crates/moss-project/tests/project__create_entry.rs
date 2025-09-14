@@ -12,12 +12,12 @@ use moss_testutils::fs_specific::FILENAME_SPECIAL_CHARS;
 use moss_text::sanitized::sanitize;
 use std::path::PathBuf;
 
-use crate::shared::{RESOURCES_ROOT_DIR, create_test_collection, random_entry_name};
+use crate::shared::{RESOURCES_ROOT_DIR, create_test_project, random_entry_name};
 
 #[tokio::test]
 async fn create_dir_entry_success() {
-    let (ctx, _, collection_path, collection) = create_test_collection().await;
-    let resources_dir = collection_path.join(dirs::RESOURCES_DIR);
+    let (ctx, _, project_path, project) = create_test_project().await;
+    let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from("");
@@ -29,7 +29,7 @@ async fn create_dir_entry_success() {
         headers: vec![],
     });
 
-    let result = collection.create_entry(&ctx, input).await;
+    let result = project.create_entry(&ctx, input).await;
 
     let output = result.unwrap();
 
@@ -47,13 +47,13 @@ async fn create_dir_entry_success() {
     assert!(config_content.contains(&output.id.to_string()));
 
     // Cleanup
-    std::fs::remove_dir_all(collection_path).unwrap();
+    std::fs::remove_dir_all(project_path).unwrap();
 }
 
 #[tokio::test]
 async fn create_dir_entry_with_order() {
-    let (ctx, _, collection_path, collection) = create_test_collection().await;
-    let resources_dir = collection_path.join(dirs::RESOURCES_DIR);
+    let (ctx, _, project_path, project) = create_test_project().await;
+    let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from(RESOURCES_ROOT_DIR);
@@ -67,14 +67,14 @@ async fn create_dir_entry_with_order() {
         headers: vec![],
     });
 
-    let result = collection.create_entry(&ctx, input).await;
+    let result = project.create_entry(&ctx, input).await;
     let id = result.unwrap().id;
 
     // Verify the directory was created
     let expected_dir = resources_dir.join(&entry_path).join(&entry_name);
     assert!(expected_dir.exists());
 
-    let resource_store = collection.db().resource_store();
+    let resource_store = project.db().resource_store();
 
     // Check order was updated
     let order_key = SEGKEY_RESOURCE_ENTRY.join(&id.to_string()).join("order");
@@ -85,12 +85,12 @@ async fn create_dir_entry_with_order() {
     assert_eq!(stored_order, 42);
 
     // Cleanup
-    std::fs::remove_dir_all(collection_path).unwrap();
+    std::fs::remove_dir_all(project_path).unwrap();
 }
 
 #[tokio::test]
 async fn create_dir_entry_already_exists() {
-    let (ctx, _, collection_path, collection) = create_test_collection().await;
+    let (ctx, _, project_path, project) = create_test_project().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from(RESOURCES_ROOT_DIR);
@@ -104,11 +104,11 @@ async fn create_dir_entry_already_exists() {
     });
 
     // Create the entry first time - should succeed
-    let first_result = collection.create_entry(&ctx, input.clone()).await;
+    let first_result = project.create_entry(&ctx, input.clone()).await;
     let _ = first_result.unwrap();
 
     // Try to create the same entry again - should fail
-    let second_result = collection.create_entry(&ctx, input).await;
+    let second_result = project.create_entry(&ctx, input).await;
     assert!(second_result.is_err());
 
     if let Err(error) = second_result {
@@ -116,13 +116,13 @@ async fn create_dir_entry_already_exists() {
     }
 
     // Cleanup
-    std::fs::remove_dir_all(collection_path).unwrap();
+    std::fs::remove_dir_all(project_path).unwrap();
 }
 
 #[tokio::test]
 async fn create_dir_entry_special_chars_in_name() {
-    let (ctx, _, collection_path, collection) = create_test_collection().await;
-    let resources_dir = collection_path.join(dirs::RESOURCES_DIR);
+    let (ctx, _, project_path, project) = create_test_project().await;
+    let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let base_name = random_entry_name();
 
@@ -138,7 +138,7 @@ async fn create_dir_entry_special_chars_in_name() {
             headers: vec![],
         });
 
-        let result = collection.create_entry(&ctx, input).await;
+        let result = project.create_entry(&ctx, input).await;
 
         // Entry creation should succeed - the filesystem layer handles sanitization
         if result.is_err() {
@@ -160,5 +160,5 @@ async fn create_dir_entry_special_chars_in_name() {
     }
 
     // Cleanup
-    std::fs::remove_dir_all(collection_path).unwrap();
+    std::fs::remove_dir_all(project_path).unwrap();
 }

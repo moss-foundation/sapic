@@ -10,14 +10,14 @@ use moss_project::{
 };
 use std::path::PathBuf;
 
-use crate::shared::{RESOURCES_ROOT_DIR, create_test_collection, random_entry_name};
+use crate::shared::{RESOURCES_ROOT_DIR, create_test_project, random_entry_name};
 
 pub mod shared;
 
 #[tokio::test]
 async fn batch_create_entry_success() {
-    let (ctx, _, collection_path, collection) = create_test_collection().await;
-    let resources_dir = collection_path.join(dirs::RESOURCES_DIR);
+    let (ctx, _, project_path, project) = create_test_project().await;
+    let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let entry_base_path = PathBuf::from(RESOURCES_ROOT_DIR);
 
@@ -48,7 +48,7 @@ async fn batch_create_entry_success() {
         entries: vec![inner_input, outer_input],
     };
 
-    let output = collection.batch_create_entry(&ctx, input).await.unwrap();
+    let output = project.batch_create_entry(&ctx, input).await.unwrap();
     assert_eq!(output.ids.len(), 2);
 
     // Verify the directories were created
@@ -67,12 +67,12 @@ async fn batch_create_entry_success() {
     assert!(inner_config.is_file());
 
     // Cleanup
-    std::fs::remove_dir_all(collection_path).unwrap();
+    std::fs::remove_dir_all(project_path).unwrap();
 }
 
 #[tokio::test]
 async fn batch_create_entry_missing_parent() {
-    let (ctx, _, collection_path, collection) = create_test_collection().await;
+    let (ctx, _, project_path, project) = create_test_project().await;
 
     let entry_base_path = PathBuf::from(RESOURCES_ROOT_DIR);
     let inner_name = random_entry_name();
@@ -92,22 +92,22 @@ async fn batch_create_entry_missing_parent() {
         entries: vec![inner_input],
     };
 
-    let result = collection.batch_create_entry(&ctx, input).await;
+    let result = project.batch_create_entry(&ctx, input).await;
     assert!(result.is_err());
 
     // Cleanup
-    std::fs::remove_dir_all(collection_path).unwrap();
+    std::fs::remove_dir_all(project_path).unwrap();
 }
 
 #[tokio::test]
 async fn batch_create_entry_empty_input() {
-    let (ctx, _, collection_path, collection) = create_test_collection().await;
+    let (ctx, _, project_path, project) = create_test_project().await;
 
     let input = BatchCreateEntryInput { entries: vec![] };
-    let output = collection.batch_create_entry(&ctx, input).await.unwrap();
+    let output = project.batch_create_entry(&ctx, input).await.unwrap();
 
     assert_eq!(output.ids.len(), 0);
 
     // Cleanup
-    std::fs::remove_dir_all(collection_path).unwrap();
+    std::fs::remove_dir_all(project_path).unwrap();
 }
