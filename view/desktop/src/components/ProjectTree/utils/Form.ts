@@ -70,6 +70,7 @@ export const convertEntryInfoToCreateInput = (
         path: newProjectPath,
         class: entry.class,
         order: entry.order ?? 0,
+        protocol: entry.protocol ?? "Get",
         headers: [],
         queryParams: [],
         pathParams: [],
