@@ -26,7 +26,6 @@ interface TreeNodeControlsProps {
   onDelete: () => void;
   isDragging: boolean;
   preview: HTMLElement | null;
-  isRootNode: boolean;
   isChildDropBlocked: boolean | null;
   instruction: Instruction | null;
   isLastChild: boolean;
@@ -43,7 +42,6 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
       onRename,
       onDelete,
       preview,
-      isRootNode,
       isChildDropBlocked,
       instruction,
       isLastChild,
@@ -122,7 +120,6 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
             ref={ref}
             depth={depth}
             isChildDropBlocked={isChildDropBlocked}
-            isRootNode={isRootNode}
             isActive={activePanelId === node.id}
           >
             <Tree.NodeTriggers onClick={handleControlsClick}>
@@ -133,7 +130,7 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
               />
               {showOrders && <Tree.NodeOrder order={node.order} />}
               <EntryIcon entry={node} />
-              <Tree.NodeLabel label={node.name} isRootNode={isRootNode} />
+              <Tree.NodeLabel label={node.name} />
               {node.kind === "Dir" && <Tree.NodeDirCount count={numberOfAllNestedChildNodes} />}
             </Tree.NodeTriggers>
 
@@ -152,7 +149,6 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
               createPortal(
                 <ul className="background-(--moss-primary-background) flex gap-1 rounded-sm">
                   <TreeNode
-                    isRootNode={isRootNode}
                     parentNode={{
                       ...node,
                       id: "-",
@@ -175,8 +171,8 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
           <ActionMenu.Content>
             {node.kind === "Dir" && <ActionMenu.Item onClick={onAddFile}>Add File</ActionMenu.Item>}
             {node.kind === "Dir" && <ActionMenu.Item onClick={onAddFolder}>Add Folder</ActionMenu.Item>}
-            {!isRootNode && <ActionMenu.Item onClick={onRename}>Edit</ActionMenu.Item>}
-            {!isRootNode && <ActionMenu.Item onClick={onDelete}>Delete</ActionMenu.Item>}
+            <ActionMenu.Item onClick={onRename}>Edit</ActionMenu.Item>
+            <ActionMenu.Item onClick={onDelete}>Delete</ActionMenu.Item>
           </ActionMenu.Content>
         </ActionMenu.Portal>
       </ActionMenu.Root>

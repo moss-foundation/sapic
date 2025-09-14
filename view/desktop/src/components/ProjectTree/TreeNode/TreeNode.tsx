@@ -19,10 +19,9 @@ export interface TreeNodeComponentProps {
   depth: number;
   parentNode: ProjectTreeNode | ProjectTreeRootNode;
   isLastChild: boolean;
-  isRootNode?: boolean;
 }
 
-export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = false }: TreeNodeComponentProps) => {
+export const TreeNode = ({ node, depth, parentNode, isLastChild }: TreeNodeComponentProps) => {
   const { id } = useContext(ProjectTreeContext);
 
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -53,7 +52,6 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
     triggerRef,
     dropTargetListRef,
     isLastChild,
-    isRootNode,
     setPreview,
   });
 
@@ -62,7 +60,7 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
 
   return (
     <Tree.Node ref={dropTargetListRef} isChildDropBlocked={isChildDropBlocked} dropInstructionForDir={instruction}>
-      {isRenamingNode && !isRootNode ? (
+      {isRenamingNode ? (
         <TreeNodeRenamingForm
           node={node}
           depth={depth}
@@ -84,7 +82,6 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild, isRootNode = fa
           instruction={instruction}
           isLastChild={isLastChild}
           preview={preview}
-          isRootNode={isRootNode}
           isChildDropBlocked={isChildDropBlocked}
         />
       )}

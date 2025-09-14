@@ -24,7 +24,6 @@ interface UseDraggableNodeProps {
   triggerRef: RefObject<HTMLDivElement | null>;
   dropTargetListRef: RefObject<HTMLLIElement | null>;
   isLastChild: boolean;
-  isRootNode: boolean;
   setPreview: React.Dispatch<React.SetStateAction<HTMLElement | null>>;
 }
 
@@ -34,7 +33,6 @@ export const useDraggableNode = ({
   triggerRef,
   dropTargetListRef,
   isLastChild,
-  isRootNode,
   setPreview,
 }: UseDraggableNodeProps) => {
   const { id } = useContext(ProjectTreeContext);
@@ -52,9 +50,6 @@ export const useDraggableNode = ({
     return combine(
       draggable({
         element,
-        canDrag() {
-          return !isRootNode;
-        },
         getInitialData: () => ({
           type: ProjectDragType.NODE,
           data: {
@@ -108,11 +103,8 @@ export const useDraggableNode = ({
             input,
             element,
             operations: {
-              "reorder-before": isRootNode ? "not-available" : isReorderAvailable(sourceTarget, data.data),
-              "reorder-after":
-                isRootNode || (node.kind === "Dir" && node.expanded)
-                  ? "not-available"
-                  : isReorderAvailable(sourceTarget, data.data),
+              "reorder-before": isReorderAvailable(sourceTarget, data.data),
+              "reorder-after": isReorderAvailable(sourceTarget, data.data),
               combine: isCombineAvailable(sourceTarget, data.data),
             },
           });
@@ -181,7 +173,7 @@ export const useDraggableNode = ({
         },
       })
     );
-  }, [dropTargetListRef, id, instruction, isRootNode, node, parentNode, setPreview, triggerRef]);
+  }, [dropTargetListRef, id, instruction, node, parentNode, setPreview, triggerRef]);
 
   return { instruction, isDragging, isChildDropBlocked };
 };
