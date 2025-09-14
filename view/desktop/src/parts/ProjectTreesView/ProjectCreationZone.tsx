@@ -61,17 +61,16 @@ export const ProjectCreationZone = () => {
         });
 
         try {
-          for (const entry of entries) {
-            await deleteCollectionEntry({
-              collectionId: sourceTarget.collectionId,
-              input: { id: entry.id },
-            });
-          }
+          await deleteCollectionEntry({
+            collectionId: sourceTarget.collectionId,
+            input: { id: rootEntry.id },
+          });
         } catch (error) {
           console.error("Error during project creation:", error);
         }
 
-        //TODO: Project creation zone created project from item, but ignores all nested items if it's a dir
+        //FIXME: Project creation zone created project from item, but ignores all nested items if it's a dir
+        console.log("nestedEntries", nestedEntries);
         try {
           for (const [index, entry] of nestedEntries.entries()) {
             const rootEntryName = rootEntry.name;
@@ -91,6 +90,8 @@ export const ProjectCreationZone = () => {
             const createInput = convertEntryInfoToCreateInput(entry, parentPath);
 
             createInput[entry.kind === "Dir" ? "DIR" : "ITEM"].order = index + 1;
+
+            console.log("createInput", createInput);
 
             await createCollectionEntry({
               collectionId: newCollection.id,

@@ -130,7 +130,7 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
               />
               {showOrders && <Tree.NodeOrder order={node.order} />}
               <EntryIcon entry={node} />
-              <Tree.NodeLabel label={node.name} />
+              <Tree.NodeLabel label={`${node.name} | ${node.id}`} />
               {node.kind === "Dir" && <Tree.NodeDirCount count={numberOfAllNestedChildNodes} />}
             </Tree.NodeTriggers>
 
