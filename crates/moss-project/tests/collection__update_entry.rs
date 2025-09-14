@@ -2,7 +2,7 @@
 
 mod shared;
 
-use moss_collection::{
+use moss_project::{
     dirs,
     models::{operations::UpdateEntryInput, primitives::EntryId, types::UpdateDirEntryParams},
     storage::segments::{SEGKEY_EXPANDED_ENTRIES, SEGKEY_RESOURCE_ENTRY},

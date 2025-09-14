@@ -21,7 +21,7 @@ const KNOWN_PACKAGES = [
   "moss-common",
   "moss-environment",
   "moss-workspace",
-  "moss-collection",
+  "moss-project",
   "moss-activity-broadcaster",
   "moss-bindingutils",
   "moss-api",

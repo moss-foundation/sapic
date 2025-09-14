@@ -19,7 +19,7 @@ import {
 } from "@/pages";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
-import { EntryKind } from "@repo/moss-collection";
+import { EntryKind } from "@repo/moss-project";
 import {
   DockviewDidDropEvent,
   DockviewReact,

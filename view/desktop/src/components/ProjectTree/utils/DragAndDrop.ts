@@ -9,7 +9,7 @@ import {
   DropTargetRecord,
   ElementDragPayload,
 } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
-import { StreamEntriesEvent } from "@repo/moss-collection";
+import { StreamEntriesEvent } from "@repo/moss-project";
 
 import { ProjectDragType } from "../constants";
 import { DragNode, DropNode, DropRootNode, ProjectTreeNode } from "../types";

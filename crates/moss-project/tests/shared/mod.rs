@@ -5,7 +5,8 @@ use moss_applib::{
     context::{AsyncContext, MutableContext},
     mock::MockAppRuntime,
 };
-use moss_collection::{
+use moss_fs::RealFileSystem;
+use moss_project::{
     CollectionBuilder,
     builder::CollectionCreateParams,
     collection::Collection,
@@ -15,7 +16,6 @@ use moss_collection::{
         types::{CreateDirEntryParams, CreateItemEntryParams},
     },
 };
-use moss_fs::RealFileSystem;
 use moss_testutils::random_name::{random_collection_name, random_string};
 use nanoid::nanoid;
 use std::{

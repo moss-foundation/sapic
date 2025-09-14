@@ -2,7 +2,7 @@ import { PageContent } from "@/components";
 import { ProjectTreeNode } from "@/components/ProjectTree/types";
 import { useCollectionsTrees } from "@/hooks";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
-import { EntryKind } from "@repo/moss-collection";
+import { EntryKind } from "@repo/moss-project";
 
 import { findNodeInCollection } from "../utils";
 

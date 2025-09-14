@@ -231,12 +231,12 @@ pub async fn run<R: TauriRuntime>() {
             //
             // Collection
             //
-            commands::create_collection_entry,
-            commands::delete_collection_entry,
-            commands::stream_collection_entries,
-            commands::update_collection_entry,
-            commands::batch_update_collection_entry,
-            commands::batch_create_collection_entry,
+            commands::create_project_resource,
+            commands::delete_project_resource,
+            commands::stream_project_resources,
+            commands::update_project_resource,
+            commands::batch_update_project_resource,
+            commands::batch_create_project_resource,
             //
             // Env
             //

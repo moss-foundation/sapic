@@ -1,4 +1,4 @@
-import { CreateEntryInput, StreamEntriesEvent } from "@repo/moss-collection";
+import { CreateEntryInput, StreamEntriesEvent } from "@repo/moss-project";
 import { join, sep } from "@tauri-apps/api/path";
 
 //FIXME: This is a temporary solution until we have a proper configuration model

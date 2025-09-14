@@ -3,7 +3,7 @@ pub mod shared;
 
 use moss_app_delegate::AppDelegate;
 use moss_applib::{context::AsyncContext, mock::MockAppRuntime};
-use moss_collection::{
+use moss_project::{
     dirs,
     models::{events::StreamEntriesEvent, operations::StreamEntriesInput},
 };
@@ -22,7 +22,7 @@ use crate::shared::{
 async fn scan_entries_for_test(
     ctx: &AsyncContext,
     app_delegate: &AppDelegate<MockAppRuntime>,
-    collection: &moss_collection::Collection<MockAppRuntime>,
+    collection: &moss_project::Collection<MockAppRuntime>,
     dir_name: &str,
 ) -> Vec<StreamEntriesEvent> {
     let entries = Arc::new(Mutex::new(Vec::new()));

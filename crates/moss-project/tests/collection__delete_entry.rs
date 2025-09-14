@@ -1,7 +1,7 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
-use moss_collection::{
+use moss_project::{
     dirs,
     errors::ErrorNotFound,
     models::{operations::DeleteEntryInput, primitives::EntryId},

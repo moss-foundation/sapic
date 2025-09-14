@@ -2,7 +2,7 @@ import { useContext } from "react";
 
 import { USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY, useStreamCollectionEntries } from "@/hooks";
 import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
-import { BatchUpdateEntryKind, StreamEntriesEvent } from "@repo/moss-collection";
+import { BatchUpdateEntryKind, StreamEntriesEvent } from "@repo/moss-project";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { ProjectTreeContext } from "../ProjectTreeContext";

@@ -1,5 +1,5 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { StreamEntriesEvent, UpdateEntryInput, UpdateEntryOutput } from "@repo/moss-collection";
+import { StreamEntriesEvent, UpdateEntryInput, UpdateEntryOutput } from "@repo/moss-project";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY } from "./useStreamCollectionEntries";
@@ -10,7 +10,7 @@ export interface UseUpdateCollectionEntryInput {
 }
 
 const updateCollectionEntry = async ({ collectionId, updatedEntry }: UseUpdateCollectionEntryInput) => {
-  const result = await invokeTauriIpc<UpdateEntryOutput>("update_collection_entry", {
+  const result = await invokeTauriIpc<UpdateEntryOutput>("update_project_resource", {
     collectionId,
     input: updatedEntry,
   });

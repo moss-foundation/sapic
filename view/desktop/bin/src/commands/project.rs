@@ -1,5 +1,5 @@
 use moss_api::TauriResult;
-use moss_collection::models::{events::*, operations::*};
+use moss_project::models::{events::*, operations::*};
 use moss_workspace::models::primitives::CollectionId;
 use tauri::{Window, ipc::Channel as TauriChannel};
 
@@ -7,7 +7,7 @@ use crate::commands::primitives::*;
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn create_collection_entry<'a, R: tauri::Runtime>(
+pub async fn create_project_resource<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
@@ -27,7 +27,7 @@ pub async fn create_collection_entry<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn delete_collection_entry<'a, R: tauri::Runtime>(
+pub async fn delete_project_resource<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
@@ -47,7 +47,7 @@ pub async fn delete_collection_entry<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn update_collection_entry<'a, R: tauri::Runtime>(
+pub async fn update_project_resource<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
@@ -67,7 +67,7 @@ pub async fn update_collection_entry<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn batch_create_collection_entry<'a, R: tauri::Runtime>(
+pub async fn batch_create_project_resource<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
@@ -87,7 +87,7 @@ pub async fn batch_create_collection_entry<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
-pub async fn batch_update_collection_entry<'a, R: tauri::Runtime>(
+pub async fn batch_update_project_resource<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
@@ -108,7 +108,7 @@ pub async fn batch_update_collection_entry<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
-pub async fn stream_collection_entries<'a, R: tauri::Runtime>(
+pub async fn stream_project_resources<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,

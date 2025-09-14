@@ -1,5 +1,5 @@
 import { invokeTauriIpc, IpcResult } from "@/lib/backend/tauri";
-import { BatchUpdateEntryInput, BatchUpdateEntryOutput, BatchUpdateEntryOutputKind } from "@repo/moss-collection";
+import { BatchUpdateEntryInput, BatchUpdateEntryOutput, BatchUpdateEntryOutputKind } from "@repo/moss-project";
 import { useMutation } from "@tanstack/react-query";
 import { Channel } from "@tauri-apps/api/core";
 
@@ -11,7 +11,7 @@ export interface UseBatchUpdateCollectionEntryInput {
 const batchUpdateCollectionEntry = async ({ collectionId, entries }: UseBatchUpdateCollectionEntryInput) => {
   const onCollectionEvent = new Channel<BatchUpdateEntryOutputKind>();
 
-  const result = await invokeTauriIpc<BatchUpdateEntryOutput>("batch_update_collection_entry", {
+  const result = await invokeTauriIpc<BatchUpdateEntryOutput>("batch_update_project_resource", {
     channel: onCollectionEvent,
     collectionId,
     input: {

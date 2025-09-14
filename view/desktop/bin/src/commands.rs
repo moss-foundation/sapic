@@ -1,9 +1,9 @@
 mod app;
-mod collection;
+mod project;
 mod workspace;
 
 pub use app::*;
-pub use collection::*;
+pub use project::*;
 pub use workspace::*;
 
 use joinerror::OptionExt;
@@ -15,7 +15,7 @@ use moss_applib::{
     context::{AnyAsyncContext, AnyContext},
     errors::{FailedPrecondition, NotFound},
 };
-use moss_collection::Collection;
+use moss_project::Collection;
 use moss_workspace::models::primitives::CollectionId;
 use primitives::Options;
 use std::{sync::Arc, time::Duration};

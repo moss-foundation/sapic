@@ -1,6 +1,6 @@
 #![cfg(feature = "integration-tests")]
 
-use moss_collection::{
+use moss_project::{
     constants, dirs,
     models::{
         operations::{BatchCreateEntryInput, BatchCreateEntryKind},

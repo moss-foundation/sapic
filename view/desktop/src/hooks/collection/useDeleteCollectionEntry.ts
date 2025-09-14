@@ -1,6 +1,6 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
-import { DeleteEntryInput, DeleteEntryOutput, StreamEntriesEvent } from "@repo/moss-collection";
+import { DeleteEntryInput, DeleteEntryOutput, StreamEntriesEvent } from "@repo/moss-project";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY } from "./useStreamCollectionEntries";
@@ -11,7 +11,7 @@ export interface UseDeleteCollectionEntryInput {
 }
 
 const deleteCollectionEntry = async ({ collectionId, input }: UseDeleteCollectionEntryInput) => {
-  const result = await invokeTauriIpc<DeleteEntryOutput>("delete_collection_entry", { collectionId, input });
+  const result = await invokeTauriIpc<DeleteEntryOutput>("delete_project_resource", { collectionId, input });
 
   if (result.status === "error") {
     throw new Error(String(result.error));

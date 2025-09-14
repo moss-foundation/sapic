@@ -22,6 +22,7 @@ export type TauriIpcCommand =
   | "update_workspace"
   | "close_workspace"
   | "update_profile"
+  | "get_mistral_api_key"
   //
   // Workspace
   //
@@ -45,21 +46,17 @@ export type TauriIpcCommand =
   | "update_environment_group"
   | "batch_update_environment_group"
   | "activate_environment"
-  //
-  // Collection
-  //
-  | "create_collection_entry"
-  | "delete_collection_entry"
-  | "update_collection_entry"
-  | "stream_collection_entries"
-  | "batch_update_collection_entry"
-  | "batch_create_collection_entry"
   | "import_collection"
   | "export_collection"
   //
-  // Env
+  // Project
   //
-  | "get_mistral_api_key";
+  | "create_project_resource"
+  | "delete_project_resource"
+  | "update_project_resource"
+  | "stream_project_resources"
+  | "batch_update_project_resource"
+  | "batch_create_project_resource";
 
 export type IpcResult<T, E> = { status: "ok"; data: T } | { status: "error"; error: E };
 
