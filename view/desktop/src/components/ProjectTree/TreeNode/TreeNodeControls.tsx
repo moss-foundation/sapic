@@ -2,7 +2,7 @@ import { forwardRef, useContext } from "react";
 import { createPortal } from "react-dom";
 
 import { ActionMenu } from "@/components";
-import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollectionEntry";
+import { useUpdateProjectEntry } from "@/hooks/project/useUpdateProjectEntry";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
@@ -52,7 +52,7 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
 
     const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
-    const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry();
+    const { mutateAsync: updateCollectionEntry } = useUpdateProjectEntry();
 
     const handleControlsClick = () => {
       if (node.kind === "Dir") {
@@ -60,7 +60,7 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
           id: node.id,
           title: node.name,
           params: {
-            collectionId: id,
+            projectId: id,
             node: {
               ...node,
               expanded: true,
@@ -71,7 +71,7 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
 
         if (!node.expanded) {
           updateCollectionEntry({
-            collectionId: id,
+            projectId: id,
             updatedEntry: {
               DIR: {
                 id: node.id,
@@ -85,7 +85,7 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
           id: node.id,
           title: node.name,
           params: {
-            collectionId: id,
+            projectId: id,
             node,
           },
           component: node.class === "Endpoint" ? "Request" : "Default",
@@ -98,7 +98,7 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
       if (node.kind === "Item") return;
 
       updateCollectionEntry({
-        collectionId: id,
+        projectId: id,
         updatedEntry: {
           DIR: {
             id: node.id,

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 import { ProjectTreeNode } from "@/components/ProjectTree/types";
-import { useCollectionsTrees } from "@/hooks/collection/derivedHooks/useCollectionsTrees";
+import { useProjectsTrees } from "@/hooks/project/derivedHooks/useProjectsTrees";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { StreamCollectionsEvent } from "@repo/moss-workspace";
 
@@ -11,7 +11,7 @@ export interface RequestPathProps {
 
 export const RequestPath: React.FC<RequestPathProps> = ({ className = "" }) => {
   const { activePanelId, api } = useTabbedPaneStore();
-  const { collectionsTrees } = useCollectionsTrees();
+  const { projectsTrees: collectionsTrees } = useProjectsTrees();
   const [path, setPath] = useState<string[]>([]);
   const [activeTree, setActiveTree] = useState<ProjectTreeNode | null>(null);
   const [activeCollection, setActiveCollection] = useState<StreamCollectionsEvent | null>(null);

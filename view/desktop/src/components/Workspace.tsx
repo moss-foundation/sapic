@@ -1,4 +1,4 @@
-import { useStreamCollections } from "@/hooks";
+import { useStreamProjects } from "@/hooks";
 import { useWorkspaceSidebarState } from "@/hooks/workspace/derived/useWorkspaceSidebarState";
 
 import TabbedPane from "../parts/TabbedPane/TabbedPane";
@@ -12,10 +12,10 @@ export const Workspace = ({ workspaceName }: WorkspaceProps) => {
 
   useWorkspaceSidebarState();
 
-  const { isLoading: isLoadingCollections, error: collectionsError } = useStreamCollections();
+  const { isLoading: isLoadingProjects, error: projectsError } = useStreamProjects();
 
   // Show loading state while any critical data is loading
-  if (isLoadingCollections) {
+  if (isLoadingProjects) {
     return <div className="flex h-full w-full items-center justify-center">Loading workspace...</div>;
   }
 
@@ -25,12 +25,12 @@ export const Workspace = ({ workspaceName }: WorkspaceProps) => {
   }
 
   // Handle actual errors loading workspace data
-  if (collectionsError) {
+  if (projectsError) {
     return (
       <div className="flex h-full w-full items-center justify-center">
         <div className="text-center">
           <p className="text-red-600">Error loading workspace: {effectiveWorkspaceName}</p>
-          <p className="mt-2 text-sm text-gray-500">{collectionsError?.message || "Unknown error"}</p>
+          <p className="mt-2 text-sm text-gray-500">{projectsError?.message || "Unknown error"}</p>
         </div>
       </div>
     );

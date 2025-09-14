@@ -49,7 +49,7 @@ export const BreadcrumbNode = ({
               id: `${node.id}`,
               title: node.name,
               params: {
-                collectionId,
+                projectId: collectionId,
                 node,
               },
               component: "Default",

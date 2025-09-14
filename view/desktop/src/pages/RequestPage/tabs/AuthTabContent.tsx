@@ -4,7 +4,7 @@ import { IDockviewPanelProps } from "@repo/moss-tabs";
 
 export const AuthTabContent = ({}: IDockviewPanelProps<{
   node?: ProjectTreeNode;
-  collectionId: string;
+  projectId: string;
   iconType: EntryKind;
 }>) => {
   return (

@@ -6,7 +6,7 @@ import {
   getSourceProjectTreeNodeData,
   isSourceProjectTreeNode,
 } from "@/components/ProjectTree/utils";
-import { useCreateCollection, useCreateCollectionEntry, useDeleteCollectionEntry, useStreamCollections } from "@/hooks";
+import { useCreateProject, useCreateProjectEntry, useDeleteProjectEntry, useStreamProjects } from "@/hooks";
 import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
@@ -17,10 +17,10 @@ export const ProjectCreationZone = () => {
 
   const [canDrop, setCanDrop] = useState<boolean | null>(null);
 
-  const { mutateAsync: createCollection } = useCreateCollection();
-  const { mutateAsync: createCollectionEntry } = useCreateCollectionEntry();
-  const { mutateAsync: deleteCollectionEntry } = useDeleteCollectionEntry();
-  const { data: collections } = useStreamCollections();
+  const { mutateAsync: createProject } = useCreateProject();
+  const { mutateAsync: createProjectEntry } = useCreateProjectEntry();
+  const { mutateAsync: deleteProjectEntry } = useDeleteProjectEntry();
+  const { data: projects } = useStreamProjects();
 
   useEffect(() => {
     const element = ref.current;
@@ -55,14 +55,14 @@ export const ProjectCreationZone = () => {
         const rootEntry = entries[0];
         const nestedEntries = entries.slice(1);
 
-        const newCollection = await createCollection({
+        const newProject = await createProject({
           name: rootEntry.name,
-          order: (collections?.length ?? 0) + 1,
+          order: (projects?.length ?? 0) + 1,
         });
 
         try {
-          await deleteCollectionEntry({
-            collectionId: sourceTarget.collectionId,
+          await deleteProjectEntry({
+            projectId: sourceTarget.projectId,
             input: { id: rootEntry.id },
           });
         } catch (error) {
@@ -89,8 +89,8 @@ export const ProjectCreationZone = () => {
 
             createInput[entry.kind === "Dir" ? "DIR" : "ITEM"].order = index + 1;
 
-            await createCollectionEntry({
-              collectionId: newCollection.id,
+            await createProjectEntry({
+              projectId: newProject.id,
               input: createInput,
             });
           }
@@ -99,7 +99,7 @@ export const ProjectCreationZone = () => {
         }
       },
     });
-  }, [collections?.length, createCollection, createCollectionEntry, deleteCollectionEntry]);
+  }, [projects?.length, createProject, createProjectEntry, deleteProjectEntry]);
 
   return (
     <div

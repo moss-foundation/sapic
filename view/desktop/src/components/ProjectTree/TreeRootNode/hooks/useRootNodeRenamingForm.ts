@@ -1,13 +1,13 @@
 import { useState } from "react";
 
-import { useUpdateCollection } from "@/hooks";
+import { useUpdateProject } from "@/hooks";
 
 import { ProjectTreeRootNode } from "../../types";
 
 export const useRootNodeRenamingForm = (node: ProjectTreeRootNode) => {
   const [isRenamingRootNode, setIsRenamingRootNode] = useState(false);
 
-  const { mutateAsync: updateCollection } = useUpdateCollection();
+  const { mutateAsync: updateCollection } = useUpdateProject();
 
   const handleRenamingRootNodeFormSubmit = async (name: string) => {
     const trimmedNewName = name.trim();

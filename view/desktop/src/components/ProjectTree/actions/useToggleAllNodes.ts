@@ -1,7 +1,7 @@
 import { useContext } from "react";
 
-import { USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY, useStreamCollectionEntries } from "@/hooks";
-import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
+import { USE_STREAM_PROJECT_ENTRIES_QUERY_KEY, useStreamProjectEntries } from "@/hooks";
+import { useBatchUpdateProjectEntry } from "@/hooks/project/useBatchUpdateProjectEntry";
 import { BatchUpdateEntryKind, StreamEntriesEvent } from "@repo/moss-project";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -13,8 +13,8 @@ export const useToggleAllNodes = (node: ProjectTreeRootNode) => {
 
   const queryClient = useQueryClient();
 
-  const { data: streamedEntries } = useStreamCollectionEntries(id);
-  const { mutateAsync: batchUpdateCollectionEntry } = useBatchUpdateCollectionEntry();
+  const { data: streamedEntries } = useStreamProjectEntries(id);
+  const { mutateAsync: batchUpdateCollectionEntry } = useBatchUpdateProjectEntry();
 
   const expandAllNodes = async () => {
     if (!streamedEntries) return;
@@ -49,13 +49,13 @@ export const useToggleAllNodes = (node: ProjectTreeRootNode) => {
     });
 
     await batchUpdateCollectionEntry({
-      collectionId: node.id,
+      projectId: node.id,
       entries: {
         entries: inputEntries,
       },
     });
 
-    queryClient.setQueryData([USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY, id], (oldEntries: StreamEntriesEvent[]) => {
+    queryClient.setQueryData([USE_STREAM_PROJECT_ENTRIES_QUERY_KEY, id], (oldEntries: StreamEntriesEvent[]) => {
       return oldEntries.map((entry) => {
         if (entry.kind === "Dir" && !entry.expanded) {
           return { ...entry, expanded: true };
@@ -98,13 +98,13 @@ export const useToggleAllNodes = (node: ProjectTreeRootNode) => {
     });
 
     await batchUpdateCollectionEntry({
-      collectionId: node.id,
+      projectId: node.id,
       entries: {
         entries: inputEntries,
       },
     });
 
-    queryClient.setQueryData([USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY, id], (oldEntries: StreamEntriesEvent[]) => {
+    queryClient.setQueryData([USE_STREAM_PROJECT_ENTRIES_QUERY_KEY, id], (oldEntries: StreamEntriesEvent[]) => {
       return oldEntries.map((entry) => {
         if (entry.kind === "Dir" && entry.expanded) {
           return { ...entry, expanded: false };

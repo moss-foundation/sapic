@@ -44,7 +44,7 @@ export const getTreeRootNodeSourceData = (source: ElementDragPayload) => {
   return source.data as {
     type: "TreeRootNode";
     data: {
-      collectionId: string;
+      projectId: string;
       node: ProjectTreeRootNode;
     };
   };
@@ -63,7 +63,7 @@ export const getTreeRootNodeTargetData = (location: DragLocationHistory) => {
     type: "TreeRootNode";
     data: {
       instruction: Instruction;
-      collectionId: string;
+      projectId: string;
       node: ProjectTreeRootNode;
     };
   };

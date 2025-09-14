@@ -13,7 +13,7 @@ import { paramColumns } from "./columns";
 export const ParamsTabContent = (
   _props: IDockviewPanelProps<{
     node?: ProjectTreeNode;
-    collectionId: string;
+    projectId: string;
     iconType: EntryKind;
   }>
 ) => {

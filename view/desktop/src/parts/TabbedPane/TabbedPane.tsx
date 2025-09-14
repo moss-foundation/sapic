@@ -150,7 +150,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
       title: pragmaticDropElement.node.name,
       component: "Request",
       params: {
-        collectionId: pragmaticDropElement.collectionId,
+        projectId: pragmaticDropElement.collectionId,
         node: pragmaticDropElement.node,
       },
       position: {

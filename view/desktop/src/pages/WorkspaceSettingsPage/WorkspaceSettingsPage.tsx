@@ -109,7 +109,7 @@ export const WorkspaceSettings = ({ ...props }: IDockviewPanelProps) => {
           closeModal={closeDeleteWorkspaceModal}
           title="Delete"
           message={`Delete "${activeWorkspace?.name}"?`}
-          description="This will delete the monitors, scheduled runs and integrations and deactivate the mock servers associated with collections in the workspace."
+          description="This will delete the monitors, scheduled runs and integrations and deactivate the mock servers associated with projects in the workspace."
           confirmLabel={isDeleting ? "Deleting..." : "Delete"}
           cancelLabel="Close"
           onConfirm={handleDeleteWorkspace}

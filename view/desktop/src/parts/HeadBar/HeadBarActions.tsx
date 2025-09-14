@@ -15,9 +15,9 @@ export interface HeadBarActionProps {
   openPanel: (panel: string) => void;
   setShowDebugPanels: (show: boolean) => void;
   showDebugPanels: boolean;
-  setCollectionName?: (name: string) => void;
-  collectionButtonRef?: RefObject<HTMLButtonElement>;
-  setIsRenamingCollection?: (isRenaming: boolean) => void;
+  setProjectName?: (name: string) => void;
+  projectButtonRef?: RefObject<HTMLButtonElement>;
+  setIsRenamingProject?: (isRenaming: boolean) => void;
   setSelectedUser?: (user: string | null) => void;
   setSelectedBranch?: (branch: string | null) => void;
   openNewWorkspaceModal?: () => void;
@@ -74,7 +74,11 @@ export const useWindowsMenuActions = () => {
  * Collection action menu handler
  */
 export const useCollectionActions = (props: HeadBarActionProps) => {
-  const { setCollectionName, collectionButtonRef, setIsRenamingCollection } = props;
+  const {
+    setProjectName: setCollectionName,
+    projectButtonRef: collectionButtonRef,
+    setIsRenamingProject: setIsRenamingCollection,
+  } = props;
 
   const startRenameCollection = () => {
     setIsRenamingCollection?.(true);

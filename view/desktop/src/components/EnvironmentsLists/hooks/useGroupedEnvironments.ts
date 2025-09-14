@@ -1,12 +1,12 @@
 import { useMemo } from "react";
 
-import { useStreamCollections, useStreamEnvironments } from "@/hooks";
+import { useStreamEnvironments, useStreamProjects } from "@/hooks";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 
 import { GroupedEnvironments } from "../types";
 
 export const useGroupedEnvironments = () => {
-  const { data: collections } = useStreamCollections();
+  const { data: collections } = useStreamProjects();
   const { groups, collectionEnvironments } = useStreamEnvironments();
 
   const groupedEnvironments: GroupedEnvironments[] = useMemo(() => {

@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 
-import { useCreateCollectionEntry } from "@/hooks";
+import { useCreateProjectEntry } from "@/hooks";
 
 import { ProjectTreeContext } from "../../ProjectTreeContext";
 import { ProjectTreeRootNode } from "../../types";
@@ -9,7 +9,7 @@ import { createEntryKind } from "../../utils";
 export const useRootNodeAddForm = (node: ProjectTreeRootNode) => {
   const { id } = useContext(ProjectTreeContext);
 
-  const { mutateAsync: createCollectionEntry } = useCreateCollectionEntry();
+  const { mutateAsync: createCollectionEntry } = useCreateProjectEntry();
 
   const [isAddingRootFileNode, setIsAddingRootFileNode] = useState(false);
   const [isAddingRootFolderNode, setIsAddingRootFolderNode] = useState(false);
@@ -27,7 +27,7 @@ export const useRootNodeAddForm = (node: ProjectTreeRootNode) => {
 
     try {
       await createCollectionEntry({
-        collectionId: id,
+        projectId: id,
         input: newEntry,
       });
     } catch (error) {

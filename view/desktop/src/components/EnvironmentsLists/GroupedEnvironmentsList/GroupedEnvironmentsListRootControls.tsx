@@ -1,4 +1,4 @@
-import { useStreamCollections } from "@/hooks";
+import { useStreamProjects } from "@/hooks";
 import { useUpdateEnvironmentGroup } from "@/hooks/workspace/environment/useUpdateEnvironmentGroup";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
@@ -14,7 +14,7 @@ interface GroupedEnvironmentsListRootControlsProps {
 export const GroupedEnvironmentsListRootControls = ({
   groupedEnvironments,
 }: GroupedEnvironmentsListRootControlsProps) => {
-  const { data: collections } = useStreamCollections();
+  const { data: collections } = useStreamProjects();
 
   const { mutate: updateEnvironmentGroup } = useUpdateEnvironmentGroup();
 

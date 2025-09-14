@@ -5,10 +5,10 @@ export const getFolderIcon = (node: ProjectTreeNode): Icons => {
   return "Folder";
 };
 
-export const findNodeInCollection = (collection: ProjectTreeRootNode, searchId: string) => {
+export const findNodeInProject = (project: ProjectTreeRootNode, searchId: string) => {
   // Search in all categories
 
-  for (const category of collection.childNodes) {
+  for (const category of project.childNodes) {
     if (category.id === searchId) return category;
 
     // Recursively search child nodes

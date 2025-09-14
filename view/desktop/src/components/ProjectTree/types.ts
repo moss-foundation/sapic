@@ -1,10 +1,10 @@
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { StreamEntriesEvent } from "@repo/moss-project";
-import { StreamCollectionsEvent, WorkspaceMode } from "@repo/moss-workspace";
+import { StreamProjectsEvent, WorkspaceMode } from "@repo/moss-workspace";
 
 import { ProjectDragType } from "./constants";
 
-export interface ProjectTreeRootNode extends StreamCollectionsEvent {
+export interface ProjectTreeRootNode extends StreamProjectsEvent {
   childNodes: ProjectTreeNode[];
 }
 
@@ -17,14 +17,14 @@ export interface ProjectTreeRootNodeProps {
 }
 
 export interface DragNode {
-  collectionId: string;
+  projectId: string;
   repository?: string;
   node: ProjectTreeNode;
   parentNode: ProjectTreeNode;
 }
 
 export interface DropNode {
-  collectionId: string;
+  projectId: string;
   repository?: string;
   node: ProjectTreeNode;
   parentNode: ProjectTreeNode | ProjectTreeRootNode;
@@ -33,7 +33,7 @@ export interface DropNode {
 
 export interface DropRootNode {
   type: ProjectDragType.ROOT_NODE;
-  collectionId: string;
+  projectId: string;
   repository?: string;
   node: ProjectTreeRootNode;
   instruction?: Instruction;

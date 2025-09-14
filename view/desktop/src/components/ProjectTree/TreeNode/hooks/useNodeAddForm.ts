@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 
-import { useCreateCollectionEntry } from "@/hooks";
-import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollectionEntry";
+import { useCreateProjectEntry } from "@/hooks";
+import { useUpdateProjectEntry } from "@/hooks/project/useUpdateProjectEntry";
 
 import { ProjectTreeContext } from "../../ProjectTreeContext";
 import { ProjectTreeNode, ProjectTreeRootNode } from "../../types";
@@ -10,8 +10,8 @@ import { createEntryKind } from "../../utils";
 export const useNodeAddForm = (parentNode: ProjectTreeNode | ProjectTreeRootNode) => {
   const { id } = useContext(ProjectTreeContext);
 
-  const { mutateAsync: createCollectionEntry } = useCreateCollectionEntry();
-  const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry();
+  const { mutateAsync: createCollectionEntry } = useCreateProjectEntry();
+  const { mutateAsync: updateCollectionEntry } = useUpdateProjectEntry();
 
   const [isAddingFileNode, setIsAddingFileNode] = useState(false);
   const [isAddingFolderNode, setIsAddingFolderNode] = useState(false);
@@ -31,12 +31,12 @@ export const useNodeAddForm = (parentNode: ProjectTreeNode | ProjectTreeRootNode
 
     try {
       await createCollectionEntry({
-        collectionId: id,
+        projectId: id,
         input: newEntry,
       });
 
       await updateCollectionEntry({
-        collectionId: id,
+        projectId: id,
         updatedEntry: {
           DIR: {
             id: parentNode.id,

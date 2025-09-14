@@ -2,7 +2,7 @@ import { useContext } from "react";
 
 import { ActionMenu } from "@/components";
 import { ActionButton } from "@/components/ActionButton";
-import { DeleteProjectModal } from "@/components/Modals/Project/DeleteCollectionModal";
+import { DeleteProjectModal } from "@/components/Modals/Project/DeleteProjectModal";
 import { useModal } from "@/hooks";
 
 import { useRefreshCollection } from "../actions/useRefreshProject";

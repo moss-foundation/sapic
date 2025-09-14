@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 
-import { useFetchEntriesForPath } from "@/hooks/collection/derivedHooks/useFetchEntriesForPath";
-import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollectionEntry";
+import { useFetchEntriesForPath } from "@/hooks/project/derivedHooks/useFetchEntriesForPath";
+import { useUpdateProjectEntry } from "@/hooks/project/useUpdateProjectEntry";
 import { join } from "@tauri-apps/api/path";
 
 import { ProjectTreeContext } from "../../ProjectTreeContext";
@@ -13,7 +13,7 @@ export const useNodeRenamingForm = (node: ProjectTreeNode) => {
   const { fetchEntriesForPath } = useFetchEntriesForPath();
   const [isRenamingNode, setIsRenamingNode] = useState(false);
 
-  const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry();
+  const { mutateAsync: updateCollectionEntry } = useUpdateProjectEntry();
 
   const handleRenamingFormSubmit = async (newName: string) => {
     const trimmedNewName = newName.trim();
@@ -25,7 +25,7 @@ export const useNodeRenamingForm = (node: ProjectTreeNode) => {
 
       if (node.kind === "Dir") {
         await updateCollectionEntry({
-          collectionId: id,
+          projectId: id,
           updatedEntry: {
             DIR: {
               id: node.id,
@@ -38,7 +38,7 @@ export const useNodeRenamingForm = (node: ProjectTreeNode) => {
         await fetchEntriesForPath(id, newPath);
       } else {
         await updateCollectionEntry({
-          collectionId: id,
+          projectId: id,
           updatedEntry: {
             ITEM: {
               id: node.id,

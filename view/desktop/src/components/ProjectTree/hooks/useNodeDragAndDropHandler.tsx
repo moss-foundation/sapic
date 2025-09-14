@@ -1,11 +1,11 @@
 import { useCallback, useEffect } from "react";
 
-import { useDeleteCollectionEntry } from "@/hooks";
-import { useFetchEntriesForPath } from "@/hooks/collection/derivedHooks/useFetchEntriesForPath";
-import { useBatchCreateCollectionEntry } from "@/hooks/collection/useBatchCreateCollectionEntry";
-import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
-import { useCreateCollectionEntry } from "@/hooks/collection/useCreateCollectionEntry";
-import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollectionEntry";
+import { useDeleteProjectEntry } from "@/hooks";
+import { useFetchEntriesForPath } from "@/hooks/project/derivedHooks/useFetchEntriesForPath";
+import { useBatchCreateProjectEntry } from "@/hooks/project/useBatchCreateProjectEntry";
+import { useBatchUpdateProjectEntry } from "@/hooks/project/useBatchUpdateProjectEntry";
+import { useCreateProjectEntry } from "@/hooks/project/useCreateProjectEntry";
+import { useUpdateProjectEntry } from "@/hooks/project/useUpdateProjectEntry";
 import { Operation } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { join } from "@tauri-apps/api/path";
@@ -32,12 +32,12 @@ import {
 } from "../utils";
 
 export const useNodeDragAndDropHandler = () => {
-  const { mutateAsync: createCollectionEntry } = useCreateCollectionEntry();
-  const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry();
-  const { mutateAsync: deleteCollectionEntry } = useDeleteCollectionEntry();
+  const { mutateAsync: createCollectionEntry } = useCreateProjectEntry();
+  const { mutateAsync: updateCollectionEntry } = useUpdateProjectEntry();
+  const { mutateAsync: deleteCollectionEntry } = useDeleteProjectEntry();
 
-  const { mutateAsync: batchCreateCollectionEntry } = useBatchCreateCollectionEntry();
-  const { mutateAsync: batchUpdateCollectionEntry } = useBatchUpdateCollectionEntry();
+  const { mutateAsync: batchCreateCollectionEntry } = useBatchCreateProjectEntry();
+  const { mutateAsync: batchUpdateCollectionEntry } = useBatchUpdateProjectEntry();
 
   const { fetchEntriesForPath } = useFetchEntriesForPath();
 
@@ -67,7 +67,7 @@ export const useNodeDragAndDropHandler = () => {
 
       const allUpdates = [sourceNodeUpdate, ...nodesToUpdate];
       await batchUpdateCollectionEntry({
-        collectionId: sourceTreeNodeData.collectionId,
+        projectId: sourceTreeNodeData.collectionId,
         entries: {
           entries: allUpdates,
         },
@@ -98,7 +98,7 @@ export const useNodeDragAndDropHandler = () => {
         });
 
         await batchUpdateCollectionEntry({
-          collectionId: sourceTreeNodeData.collectionId,
+          projectId: sourceTreeNodeData.collectionId,
           entries: {
             entries: updatedSourceNodesPayload,
           },
@@ -123,7 +123,7 @@ export const useNodeDragAndDropHandler = () => {
       const allEntriesToUpdate = [...targetEntriesToUpdate, ...sourceEntriesToUpdate];
 
       await batchUpdateCollectionEntry({
-        collectionId: sourceTreeNodeData.collectionId,
+        projectId: sourceTreeNodeData.collectionId,
         entries: {
           entries: allEntriesToUpdate,
         },
@@ -163,21 +163,21 @@ export const useNodeDragAndDropHandler = () => {
       });
 
       await batchUpdateCollectionEntry({
-        collectionId: sourceTreeNodeData.collectionId,
+        projectId: sourceTreeNodeData.collectionId,
         entries: {
           entries: updatedSourceEntriesPayload,
         },
       });
 
       await batchUpdateCollectionEntry({
-        collectionId: locationTreeNodeData.collectionId,
+        projectId: locationTreeNodeData.collectionId,
         entries: {
           entries: targetEntriesToUpdate,
         },
       });
 
       await deleteCollectionEntry({
-        collectionId: sourceTreeNodeData.collectionId,
+        projectId: sourceTreeNodeData.collectionId,
         input: { id: sourceTreeNodeData.node.id },
       });
 
@@ -240,7 +240,7 @@ export const useNodeDragAndDropHandler = () => {
       const newOrder = locationTreeNodeData.node.childNodes.length + 1;
 
       await deleteCollectionEntry({
-        collectionId: sourceTreeNodeData.collectionId,
+        projectId: sourceTreeNodeData.collectionId,
         input: { id: sourceTreeNodeData.node.id },
       });
 
@@ -250,7 +250,7 @@ export const useNodeDragAndDropHandler = () => {
       });
 
       await batchUpdateCollectionEntry({
-        collectionId: sourceTreeNodeData.collectionId,
+        projectId: sourceTreeNodeData.collectionId,
         entries: {
           entries: updatedSourceEntriesPayload,
         },
@@ -303,7 +303,7 @@ export const useNodeDragAndDropHandler = () => {
       const newOrder = locationTreeRootNodeData.node.childNodes.length + 1;
 
       await deleteCollectionEntry({
-        collectionId: sourceTreeNodeData.collectionId,
+        projectId: sourceTreeNodeData.collectionId,
         input: { id: sourceTreeNodeData.node.id },
       });
 
@@ -339,7 +339,7 @@ export const useNodeDragAndDropHandler = () => {
       );
 
       await batchUpdateCollectionEntry({
-        collectionId: sourceTreeNodeData.collectionId,
+        projectId: sourceTreeNodeData.collectionId,
         entries: {
           entries: updatedSourceEntriesPayload,
         },

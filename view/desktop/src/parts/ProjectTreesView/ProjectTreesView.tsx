@@ -2,22 +2,22 @@ import { useEffect, useRef, useState } from "react";
 
 import { InputPlain, ProjectTree } from "@/components";
 import { useNodeDragAndDropHandler } from "@/components/ProjectTree/hooks/useNodeDragAndDropHandler";
-import { useCollectionDragAndDropHandler } from "@/components/ProjectTree/hooks/useProjectDragAndDropHandler";
+import { useProjectDragAndDropHandler } from "@/components/ProjectTree/hooks/useProjectDragAndDropHandler";
 import { isSourceProjectTreeNode } from "@/components/ProjectTree/utils";
-import { useCollectionsTrees } from "@/hooks/collection/derivedHooks/useCollectionsTrees";
+import { useProjectsTrees } from "@/hooks/project/derivedHooks/useProjectsTrees";
 import { Scrollbar } from "@/lib/ui";
 import { useRequestModeStore } from "@/store/requestMode";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import { ProjectCreationZone } from "./ProjectCreationZone";
-import { CollectionTreeViewHeader } from "./ProjectTreeViewHeader";
+import { ProjectTreeViewHeader } from "./ProjectTreeViewHeader";
 
-export const CollectionTreesView = () => {
+export const ProjectTreesView = () => {
   const dropTargetToggleRef = useRef<HTMLDivElement>(null);
 
   const { displayMode } = useRequestModeStore();
 
-  useCollectionDragAndDropHandler();
+  useProjectDragAndDropHandler();
   useNodeDragAndDropHandler();
 
   const [showProjectCreationZone, setShowProjectCreationZone] = useState<boolean>(false);
@@ -49,11 +49,11 @@ export const CollectionTreesView = () => {
     });
   }, []);
 
-  const { collectionsTreesSortedByOrder, isLoading } = useCollectionsTrees();
+  const { projectsTreesSortedByOrder, isLoading } = useProjectsTrees();
 
   return (
     <div ref={dropTargetToggleRef} className="flex h-full flex-col">
-      <CollectionTreeViewHeader />
+      <ProjectTreeViewHeader />
 
       <Scrollbar className="min-h-0 flex-1" classNames={{ contentEl: "h-full w-full" }}>
         <div className="flex h-full flex-col">
@@ -63,9 +63,7 @@ export const CollectionTreesView = () => {
 
           <div className="flex h-full flex-col">
             {!isLoading &&
-              collectionsTreesSortedByOrder.map((collection) => (
-                <ProjectTree key={collection.id} tree={collection} displayMode={displayMode} />
-              ))}
+              projectsTreesSortedByOrder.map((p) => <ProjectTree key={p.id} tree={p} displayMode={displayMode} />)}
           </div>
 
           {showProjectCreationZone && (

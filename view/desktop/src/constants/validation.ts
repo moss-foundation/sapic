@@ -3,7 +3,7 @@
  */
 
 /**
- * Pattern for valid workspace and collection names.
+ * Pattern for valid workspace and project names.
  * Allows letters, numbers, spaces, dots, underscores, and hyphens.
  * Excludes filesystem-unsafe characters like: / \ : * ? " < > |
  */

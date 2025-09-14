@@ -8,7 +8,7 @@ interface AddPanelOptionsWithoutMandatoryComponent
   extends Omit<
     AddPanelOptions<{
       iconType?: Icons;
-      collectionId?: string;
+      projectId?: string;
       node?: ProjectTreeNode;
       workspace?: boolean;
     }>,

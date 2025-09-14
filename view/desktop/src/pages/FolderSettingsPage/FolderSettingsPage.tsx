@@ -4,7 +4,7 @@ import { PageHeader, PageView } from "@/components";
 import { PageContainerWithTabs, TabItem } from "@/components/PageContainer";
 import { PageWrapper } from "@/components/PageView/PageWrapper";
 import { ProjectTreeNode } from "@/components/ProjectTree/types";
-import { useStreamCollectionEntries } from "@/hooks/collection/useStreamCollectionEntries";
+import { useStreamProjectEntries } from "@/hooks/project/useStreamProjectEntries";
 import { useRenameEntryForm } from "@/hooks/useRenameEntryForm";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 import { Icon } from "@/lib/ui";
@@ -14,21 +14,21 @@ import { OverviewTabContent } from "./tabs/OverviewTabContent";
 import { getFolderIcon } from "./utils";
 
 export interface FolderSettingsParams {
-  collectionId: string;
+  projectId: string;
   node: ProjectTreeNode;
   iconType: EntryKind;
 }
 
 export const FolderSettings = ({ ...props }: IDockviewPanelProps<FolderSettingsParams>) => {
-  const { data: streamedEntries } = useStreamCollectionEntries(props.params?.collectionId);
+  const { data: streamedEntries } = useStreamProjectEntries(props.params?.projectId);
   const node = streamedEntries?.find((entry) => entry.id === props.params?.node?.id);
 
   const { isRenamingEntry, setIsRenamingEntry, handleRenamingEntrySubmit, handleRenamingEntryCancel } =
-    useRenameEntryForm(props?.params?.node, props?.params?.collectionId);
+    useRenameEntryForm(props?.params?.node, props?.params?.projectId);
 
   const [activeTabId, setActiveTabId] = useState("overview");
 
-  if (!props?.params?.collectionId || !node) {
+  if (!props?.params?.projectId || !node) {
     return (
       <div className="flex h-full items-center justify-center text-(--moss-primary-text)">
         <div className="text-center">

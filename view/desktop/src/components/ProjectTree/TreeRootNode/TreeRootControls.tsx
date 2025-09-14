@@ -2,8 +2,8 @@ import { useContext } from "react";
 
 import { ActionMenu } from "@/components";
 import ActionButton from "@/components/ActionButton";
-import { DeleteProjectModal } from "@/components/Modals/Project/DeleteCollectionModal";
-import { useModal, useUpdateCollection } from "@/hooks";
+import { DeleteProjectModal } from "@/components/Modals/Project/DeleteProjectModal";
+import { useModal, useUpdateProject } from "@/hooks";
 import { Tree } from "@/lib/ui/Tree";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
@@ -29,7 +29,7 @@ export const TreeRootControls = ({
 
   const { addOrFocusPanel } = useTabbedPaneStore();
 
-  const { mutateAsync: updateCollection } = useUpdateCollection();
+  const { mutateAsync: updateCollection } = useUpdateProject();
   const { expandAllNodes, collapseAllNodes } = useToggleAllNodes(node);
   const { refreshCollection } = useRefreshCollection(id);
 
@@ -61,7 +61,7 @@ export const TreeRootControls = ({
       title: node.name,
       component: "ProjectSettings",
       params: {
-        collectionId: id,
+        projectId: id,
         iconType: "Collection",
       },
     });

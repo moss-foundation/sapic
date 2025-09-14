@@ -1,14 +1,14 @@
 import { useState } from "react";
 
-import { useFetchEntriesForPath } from "@/hooks/collection/derivedHooks/useFetchEntriesForPath";
-import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollectionEntry";
+import { useFetchEntriesForPath } from "@/hooks/project/derivedHooks/useFetchEntriesForPath";
+import { useUpdateProjectEntry } from "@/hooks/project/useUpdateProjectEntry";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { StreamEntriesEvent } from "@repo/moss-project";
 import { join } from "@tauri-apps/api/path";
 
-export const useRenameEntryForm = (entry: StreamEntriesEvent, collectionId: string) => {
+export const useRenameEntryForm = (entry: StreamEntriesEvent, projectId: string) => {
   const { fetchEntriesForPath } = useFetchEntriesForPath();
-  const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry();
+  const { mutateAsync: updateProjectEntry } = useUpdateProjectEntry();
   const { api } = useTabbedPaneStore();
 
   const [isRenamingEntry, setIsRenamingEntry] = useState(false);
@@ -22,8 +22,8 @@ export const useRenameEntryForm = (entry: StreamEntriesEvent, collectionId: stri
       }
 
       if (entry.kind === "Dir") {
-        await updateCollectionEntry({
-          collectionId,
+        await updateProjectEntry({
+          projectId,
           updatedEntry: {
             DIR: {
               id: entry.id,
@@ -33,10 +33,10 @@ export const useRenameEntryForm = (entry: StreamEntriesEvent, collectionId: stri
         });
 
         const newPath = await join(...entry.path.segments.slice(0, entry.path.segments.length - 1), trimmedNewName);
-        await fetchEntriesForPath(collectionId, newPath);
+        await fetchEntriesForPath(projectId, newPath);
       } else {
-        await updateCollectionEntry({
-          collectionId,
+        await updateProjectEntry({
+          projectId,
           updatedEntry: {
             ITEM: {
               id: entry.id,

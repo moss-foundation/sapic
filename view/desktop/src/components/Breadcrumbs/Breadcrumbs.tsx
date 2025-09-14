@@ -1,4 +1,4 @@
-import { useCollectionsTrees } from "@/hooks/collection";
+import { useProjectsTrees } from "@/hooks/project";
 import { Icon } from "@/lib/ui";
 
 import { ActionMenu } from "..";
@@ -12,7 +12,7 @@ interface BreadcrumbsProps {
 }
 
 export const Breadcrumbs = ({ collectionId, nodeId }: BreadcrumbsProps) => {
-  const { collectionsTrees, isLoading } = useCollectionsTrees();
+  const { projectsTrees: collectionsTrees, isLoading } = useProjectsTrees();
 
   if (isLoading) {
     return null;

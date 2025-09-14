@@ -4,26 +4,26 @@ import { ActionButton, ActionMenu, SidebarHeader } from "@/components";
 import { CREATE_TAB, IMPORT_TAB } from "@/components/Modals/Project/NewProjectModal/constansts";
 import { NewProjectModal } from "@/components/Modals/Project/NewProjectModal/NewProjectModal";
 import {
-  USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY,
+  USE_STREAM_PROJECT_ENTRIES_QUERY_KEY,
   useActiveWorkspace,
-  useClearAllCollectionEntries,
+  useClearAllProjectEntries,
   useModal,
-  useStreamCollections,
-  useStreamedCollectionsWithEntries,
+  useStreamedProjectsWithEntries,
+  useStreamProjects,
 } from "@/hooks";
-import { useBatchUpdateCollection } from "@/hooks/collection/useBatchUpdateCollection";
-import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
+import { useBatchUpdateProject } from "@/hooks/project/useBatchUpdateProject";
+import { useBatchUpdateProjectEntry } from "@/hooks/project/useBatchUpdateProjectEntry";
 import { StreamEntriesEvent } from "@repo/moss-project";
 import { useQueryClient } from "@tanstack/react-query";
 
-export const CollectionTreeViewHeader = () => {
+export const ProjectTreeViewHeader = () => {
   const queryClient = useQueryClient();
 
-  const { isLoading: isCollectionsLoading, clearCollectionsCacheAndRefetch } = useStreamCollections();
-  const { clearAllCollectionEntriesCache } = useClearAllCollectionEntries();
-  const { data: collectionsWithEntries } = useStreamedCollectionsWithEntries();
-  const { mutateAsync: batchUpdateCollection } = useBatchUpdateCollection();
-  const { mutateAsync: batchUpdateCollectionEntry } = useBatchUpdateCollectionEntry();
+  const { isLoading: areProjectsLoading, clearProjectsCacheAndRefetch } = useStreamProjects();
+  const { clearAllProjectEntriesCache } = useClearAllProjectEntries();
+  const { data: projectsWithEntries } = useStreamedProjectsWithEntries();
+  const { mutateAsync: batchUpdateProject } = useBatchUpdateProject();
+  const { mutateAsync: batchUpdateProjectEntry } = useBatchUpdateProjectEntry();
   const { hasActiveWorkspace } = useActiveWorkspace();
 
   const [initialTab, setInitialTab] = useState<typeof CREATE_TAB | typeof IMPORT_TAB>(CREATE_TAB);
@@ -35,13 +35,13 @@ export const CollectionTreeViewHeader = () => {
   } = useModal();
 
   const handleRefreshProjects = () => {
-    clearCollectionsCacheAndRefetch();
-    clearAllCollectionEntriesCache();
+    clearProjectsCacheAndRefetch();
+    clearAllProjectEntriesCache();
   };
 
-  const areAllProjectsCollapsed = collectionsWithEntries.every((collection) => !collection.expanded);
-  const areAllDirNodesCollapsed = collectionsWithEntries.every((collection) => {
-    return collection.entries.filter((entry) => entry.kind === "Dir").every((entry) => !entry.expanded);
+  const areAllProjectsCollapsed = projectsWithEntries.every((p) => !p.expanded);
+  const areAllDirNodesCollapsed = projectsWithEntries.every((p) => {
+    return p.entries.filter((entry) => entry.kind === "Dir").every((entry) => !entry.expanded);
   });
 
   const handleCollapseAll = async () => {
@@ -50,53 +50,50 @@ export const CollectionTreeViewHeader = () => {
   };
 
   const collapseExpandedProjects = async () => {
-    const openedProjects = collectionsWithEntries.filter((collection) => collection.expanded);
+    const openedProjects = projectsWithEntries.filter((p) => p.expanded);
 
     if (openedProjects.length === 0) return;
 
-    await batchUpdateCollection({
-      items: openedProjects.map((collection) => ({
-        id: collection.id,
+    await batchUpdateProject({
+      items: openedProjects.map((p) => ({
+        id: p.id,
         expanded: false,
       })),
     });
   };
 
   const collapseExpandedDirEntries = async () => {
-    const projectsWithExpandedDirs = collectionsWithEntries
-      .map((collection) => ({
-        collectionId: collection.id,
-        entries: collection.entries.filter((entry) => entry.kind === "Dir" && entry.expanded),
+    const projectsWithExpandedDirs = projectsWithEntries
+      .map((p) => ({
+        projectId: p.id,
+        entries: p.entries.filter((entry) => entry.kind === "Dir" && entry.expanded),
       }))
-      .filter((collection) => collection.entries.length > 0);
+      .filter((p) => p.entries.length > 0);
 
     if (projectsWithExpandedDirs.length === 0) return;
 
-    const promises = projectsWithExpandedDirs.map(async (collection) => {
-      const preparedEntries = collection.entries.map((entry) => ({
+    const promises = projectsWithExpandedDirs.map(async (p) => {
+      const preparedEntries = p.entries.map((entry) => ({
         DIR: {
           id: entry.id,
           expanded: false,
         },
       }));
 
-      const res = await batchUpdateCollectionEntry({
-        collectionId: collection.collectionId,
+      const res = await batchUpdateProjectEntry({
+        projectId: p.projectId,
         entries: {
           entries: preparedEntries,
         },
       });
 
       if (res.status === "ok") {
-        queryClient.setQueryData(
-          [USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY, collection.collectionId],
-          (old: StreamEntriesEvent[]) => {
-            return old.map((entry) => {
-              const shouldCollapse = preparedEntries.some((preparedEntry) => preparedEntry.DIR.id === entry.id);
-              return shouldCollapse ? { ...entry, expanded: false } : entry;
-            });
-          }
-        );
+        queryClient.setQueryData([USE_STREAM_PROJECT_ENTRIES_QUERY_KEY, p.projectId], (old: StreamEntriesEvent[]) => {
+          return old.map((entry) => {
+            const shouldCollapse = preparedEntries.some((preparedEntry) => preparedEntry.DIR.id === entry.id);
+            return shouldCollapse ? { ...entry, expanded: false } : entry;
+          });
+        });
       }
     });
 
@@ -137,7 +134,7 @@ export const CollectionTreeViewHeader = () => {
               icon="Refresh"
               onClick={handleRefreshProjects}
               title="Refresh Projects"
-              disabled={isCollectionsLoading || !hasActiveWorkspace}
+              disabled={areProjectsLoading || !hasActiveWorkspace}
             />
 
             <PlaceholderDropdownMenu />

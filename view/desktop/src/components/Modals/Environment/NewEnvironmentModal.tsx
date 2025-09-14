@@ -8,8 +8,8 @@ import { VALID_NAME_PATTERN } from "@/constants/validation";
 import {
   useCreateEnvironment,
   useFocusInputOnMount,
-  useStreamCollections,
   useStreamEnvironments,
+  useStreamProjects,
   useValidateInput,
 } from "@/hooks";
 
@@ -18,14 +18,14 @@ import { ModalWrapperProps } from "../types";
 export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { globalEnvironments, collectionEnvironments } = useStreamEnvironments();
+  const { globalEnvironments, projectEnvironments } = useStreamEnvironments();
   const { mutateAsync: createEnvironment } = useCreateEnvironment();
-  const { data: collections } = useStreamCollections();
+  const { data: projects } = useStreamProjects();
   const { groupedEnvironments } = useGroupedEnvironments();
 
   const [name, setName] = useState("New Environment");
-  const [collectionId, setCollectionId] = useState<string | null>(null);
-  const [mode, setMode] = useState<"Workspace" | "Collection">("Workspace");
+  const [projectId, setProjectId] = useState<string | null>(null);
+  const [mode, setMode] = useState<"Workspace" | "Project">("Workspace");
   const [openAutomatically, setOpenAutomatically] = useState(true);
 
   useFocusInputOnMount({
@@ -34,9 +34,9 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
   });
 
   const restrictedNames = useMemo(() => {
-    const list = mode === "Workspace" ? globalEnvironments : collectionEnvironments;
+    const list = mode === "Workspace" ? globalEnvironments : projectEnvironments;
     return list?.map((env) => env.name) ?? [];
-  }, [mode, globalEnvironments, collectionEnvironments]);
+  }, [mode, globalEnvironments, projectEnvironments]);
 
   const { isValid } = useValidateInput({
     value: name,
@@ -54,16 +54,14 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
         order: getNextOrder(globalEnvironments),
         variables: [],
       });
-    } else if (mode === "Collection" && collectionId) {
-      const collectionEnvironments = groupedEnvironments.find(
-        (group) => group.collectionId === collectionId
-      )?.environments;
+    } else if (mode === "Project" && projectId) {
+      const projectEnvironments = groupedEnvironments.find((group) => group.collectionId === projectId)?.environments;
 
       await createEnvironment({
         name,
-        order: getNextOrder(collectionEnvironments),
+        order: getNextOrder(projectEnvironments),
         variables: [],
-        collectionId,
+        collectionId: projectId,
       });
     }
 
@@ -74,9 +72,9 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
     closeModal();
   };
 
-  const handleSelectCollection = (value: string) => {
-    setCollectionId(value);
-    setMode("Collection");
+  const handleSelectProject = (value: string) => {
+    setProjectId(value);
+    setMode("Project");
   };
 
   return (
@@ -117,27 +115,27 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
               <RadioGroup.Root required>
                 <RadioGroup.ItemWithLabel
                   label="Workspace"
-                  description="This mode is suitable when your collection is stored in a separate repository or doesn’t have a repository at all."
+                  description="This mode is suitable when your project is stored in a separate repository or doesn’t have a repository at all."
                   value="Workspace"
                   checked={mode === "Workspace"}
                   onClick={() => setMode("Workspace")}
                 />
 
                 <RadioGroup.ItemWithSelect
-                  placeholder="Choose collection"
-                  label="Collection"
-                  description="This mode is suitable if you want to store the collection in your project’s repository or in any other folder you specify."
-                  value="Collection"
-                  checked={mode === "Collection"}
-                  onClick={() => setMode("Collection")}
-                  disabled={!collections || collections.length === 0}
-                  options={collections?.map((collection) => ({
-                    label: collection.name,
-                    value: collection.id,
+                  placeholder="Choose project"
+                  label="Project"
+                  description="This mode is suitable if you want to store the project in your project’s repository or in any other folder you specify."
+                  value="Project"
+                  checked={mode === "Project"}
+                  onClick={() => setMode("Project")}
+                  disabled={!projects || projects.length === 0}
+                  options={projects?.map((project) => ({
+                    label: project.name,
+                    value: project.id,
                   }))}
-                  selectValue={collectionId ?? undefined}
-                  onChange={handleSelectCollection}
-                  required={mode === "Collection"}
+                  selectValue={projectId ?? undefined}
+                  onChange={handleSelectProject}
+                  required={mode === "Project"}
                 />
               </RadioGroup.Root>
             </div>

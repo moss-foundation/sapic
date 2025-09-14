@@ -1,5 +1,5 @@
-import { USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY, useDeleteCollectionEntry } from "@/hooks";
-import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
+import { USE_STREAM_PROJECT_ENTRIES_QUERY_KEY, useDeleteProjectEntry } from "@/hooks";
+import { useBatchUpdateProjectEntry } from "@/hooks/project/useBatchUpdateProjectEntry";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { StreamEntriesEvent } from "@repo/moss-project";
 import { useQueryClient } from "@tanstack/react-query";
@@ -14,12 +14,12 @@ export const useDeleteAndUpdatePeers = (
 ) => {
   const queryClient = useQueryClient();
 
-  const { mutateAsync: deleteCollectionEntry } = useDeleteCollectionEntry();
-  const { mutateAsync: batchUpdateCollectionEntry } = useBatchUpdateCollectionEntry();
+  const { mutateAsync: deleteCollectionEntry } = useDeleteProjectEntry();
+  const { mutateAsync: batchUpdateCollectionEntry } = useBatchUpdateProjectEntry();
 
   const deleteAndUpdatePeers = async () => {
     await deleteCollectionEntry({
-      collectionId,
+      projectId: collectionId,
       input: {
         id: node.id,
       },
@@ -33,7 +33,7 @@ export const useDeleteAndUpdatePeers = (
     }));
 
     const result = await batchUpdateCollectionEntry({
-      collectionId,
+      projectId: collectionId,
       entries: {
         entries: siblingsAfterRemovalPayload({
           nodes: parentNode.childNodes,
@@ -44,7 +44,7 @@ export const useDeleteAndUpdatePeers = (
 
     if (result.status === "ok") {
       queryClient.setQueryData(
-        [USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY, collectionId],
+        [USE_STREAM_PROJECT_ENTRIES_QUERY_KEY, collectionId],
         (cacheData: StreamEntriesEvent[]) => {
           return cacheData.map((cacheEntry) => {
             if (updatedParentNodeChildren.some((e) => e.id === cacheEntry.id)) {

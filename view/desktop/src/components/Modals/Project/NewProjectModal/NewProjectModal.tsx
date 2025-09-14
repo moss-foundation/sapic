@@ -1,13 +1,13 @@
 import { FormEvent, useCallback, useState } from "react";
 
 import PaddedTabs from "@/components/PaddedTabs/PaddedTabs";
-import { useCreateCollection } from "@/hooks/collection/useCreateCollection";
-import { useImportCollection } from "@/hooks/collection/useImportCollection";
-import { useStreamCollections } from "@/hooks/collection/useStreamCollections";
+import { useCreateProject } from "@/hooks/project/useCreateProject";
+import { useImportProject } from "@/hooks/project/useImportProject";
+import { useStreamProjects } from "@/hooks/project/useStreamProjects";
 import { Modal, Scrollbar } from "@/lib/ui";
 import { useGitProviderStore } from "@/store/gitProvider";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
-import { CreateCollectionGitParams, ImportCollectionSource } from "@repo/moss-workspace";
+import { CreateProjectGitParams, ImportProjectSource } from "@repo/moss-workspace";
 
 import { ModalWrapperProps } from "../../types";
 import { Divider } from "./components/Divider";
@@ -21,9 +21,9 @@ interface NewProjectModalProps extends ModalWrapperProps {
 }
 
 export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB }: NewProjectModalProps) => {
-  const { data: collections } = useStreamCollections();
-  const { mutateAsync: createCollection } = useCreateCollection();
-  const { mutateAsync: importCollection } = useImportCollection();
+  const { data: projects } = useStreamProjects();
+  const { mutateAsync: createProject } = useCreateProject();
+  const { mutateAsync: importProject } = useImportProject();
 
   const { addOrFocusPanel } = useTabbedPaneStore();
 
@@ -32,18 +32,18 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
   const [name, setName] = useState("New Project");
   const [mode, setMode] = useState<"Default" | "Custom">("Default");
   const [openAutomatically, setOpenAutomatically] = useState(true);
-  const [createParams, setCreateParams] = useState<CreateCollectionGitParams | undefined>(undefined);
-  const [importParams, setImportParams] = useState<ImportCollectionSource | undefined>(undefined);
+  const [createParams, setCreateParams] = useState<CreateProjectGitParams | undefined>(undefined);
+  const [importParams, setImportParams] = useState<ImportProjectSource | undefined>(undefined);
   const [tab, setTab] = useState<typeof CREATE_TAB | typeof IMPORT_TAB>(initialTab);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (tab === CREATE_TAB) {
-      const result = await createCollection({
+      const result = await createProject({
         name,
         gitParams: createParams,
-        order: collections?.length ? collections.length + 1 : 1,
+        order: projects?.length ? projects.length + 1 : 1,
       });
 
       closeModal();
@@ -54,16 +54,16 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
           title: result.name,
           component: "ProjectSettings",
           params: {
-            collectionId: result.id,
+            projectId: result.id,
           },
         });
       }
     } else {
       if (!importParams) return;
 
-      const result = await importCollection({
+      const result = await importProject({
         name,
-        order: collections?.length ? collections.length + 1 : 1,
+        order: projects?.length ? projects.length + 1 : 1,
         source: importParams,
         //TODO this is hardcoded, but we don't have and interface for this yet
         externalPath: "",
@@ -78,7 +78,7 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
           component: "ProjectSettings",
           title: result.name,
           params: {
-            collectionId: result.id,
+            projectId: result.id,
           },
         });
       }
@@ -90,7 +90,7 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
   };
 
   const handleCreateSectionValuesUpdate = useCallback(
-    (values: { name: string; gitParams: CreateCollectionGitParams | undefined }) => {
+    (values: { name: string; gitParams: CreateProjectGitParams | undefined }) => {
       setName(values.name);
       setCreateParams(values.gitParams);
     },
@@ -98,7 +98,7 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
   );
 
   const handleImportSectionValuesUpdate = useCallback(
-    (values: { name: string; importParams: ImportCollectionSource | undefined }) => {
+    (values: { name: string; importParams: ImportProjectSource | undefined }) => {
       setName(values.name);
       setImportParams(values.importParams);
     },
