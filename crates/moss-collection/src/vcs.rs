@@ -108,12 +108,10 @@ impl<R: AppRuntime> CollectionVcs<R> for Vcs<R> {
             .as_ref()
             .ok_or_join_err::<Internal>("repository handle is dropped")?
             .current_branch()?;
-        dbg!(&current_branch_name);
         let (ahead, behind) = repo_lock
             .as_ref()
             .unwrap()
             .graph_ahead_behind(&current_branch_name)?;
-        dbg!(&ahead, &behind);
 
         Ok(VcsSummary {
             kind: self.client.kind(),

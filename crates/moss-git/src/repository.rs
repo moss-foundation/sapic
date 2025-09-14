@@ -1,7 +1,7 @@
 use derive_more::Deref;
 use git2::{
-    BranchType, IndexAddOption, IntoCString, PushOptions, RemoteCallbacks, Signature, StashFlags,
-    Status, StatusOptions,
+    BranchType, IndexAddOption, IntoCString, PushOptions, RemoteCallbacks, Signature, Status,
+    StatusOptions,
     build::{CheckoutBuilder, RepoBuilder},
 };
 use joinerror::{Error, OptionExt, ResultExt};
@@ -563,46 +563,46 @@ impl Repository {
 }
 
 // Useful for debugging
-fn status_label(status: Status) -> Vec<&'static str> {
-    let mut v = Vec::new();
-    if status.is_empty() {
-        v.push("clean");
-        return v;
-    }
-    if status.contains(Status::INDEX_NEW) {
-        v.push("INDEX_NEW (staged new)");
-    }
-    if status.contains(Status::INDEX_MODIFIED) {
-        v.push("INDEX_MODIFIED (staged modified)");
-    }
-    if status.contains(Status::INDEX_DELETED) {
-        v.push("INDEX_DELETED (staged deleted)");
-    }
-    if status.contains(Status::INDEX_RENAMED) {
-        v.push("INDEX_RENAMED");
-    }
-    if status.contains(Status::INDEX_TYPECHANGE) {
-        v.push("INDEX_TYPECHANGE");
-    }
-
-    if status.contains(Status::WT_NEW) {
-        v.push("WT_NEW (untracked)");
-    }
-    if status.contains(Status::WT_MODIFIED) {
-        v.push("WT_MODIFIED (modified, unstaged)");
-    }
-    if status.contains(Status::WT_DELETED) {
-        v.push("WT_DELETED (deleted, unstaged)");
-    }
-    if status.contains(Status::WT_RENAMED) {
-        v.push("WT_RENAMED");
-    }
-    if status.contains(Status::WT_TYPECHANGE) {
-        v.push("WT_TYPECHANGE");
-    }
-
-    if status.contains(Status::CONFLICTED) {
-        v.push("CONFLICTED");
-    }
-    v
-}
+// fn status_label(status: Status) -> Vec<&'static str> {
+//     let mut v = Vec::new();
+//     if status.is_empty() {
+//         v.push("clean");
+//         return v;
+//     }
+//     if status.contains(Status::INDEX_NEW) {
+//         v.push("INDEX_NEW (staged new)");
+//     }
+//     if status.contains(Status::INDEX_MODIFIED) {
+//         v.push("INDEX_MODIFIED (staged modified)");
+//     }
+//     if status.contains(Status::INDEX_DELETED) {
+//         v.push("INDEX_DELETED (staged deleted)");
+//     }
+//     if status.contains(Status::INDEX_RENAMED) {
+//         v.push("INDEX_RENAMED");
+//     }
+//     if status.contains(Status::INDEX_TYPECHANGE) {
+//         v.push("INDEX_TYPECHANGE");
+//     }
+//
+//     if status.contains(Status::WT_NEW) {
+//         v.push("WT_NEW (untracked)");
+//     }
+//     if status.contains(Status::WT_MODIFIED) {
+//         v.push("WT_MODIFIED (modified, unstaged)");
+//     }
+//     if status.contains(Status::WT_DELETED) {
+//         v.push("WT_DELETED (deleted, unstaged)");
+//     }
+//     if status.contains(Status::WT_RENAMED) {
+//         v.push("WT_RENAMED");
+//     }
+//     if status.contains(Status::WT_TYPECHANGE) {
+//         v.push("WT_TYPECHANGE");
+//     }
+//
+//     if status.contains(Status::CONFLICTED) {
+//         v.push("CONFLICTED");
+//     }
+//     v
+// }
