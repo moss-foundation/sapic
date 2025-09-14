@@ -11,16 +11,16 @@ pub async fn create_project_entry<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
-    collection_id: ProjectId,
+    project_id: ProjectId,
     input: CreateEntryInput,
     options: Options,
 ) -> TauriResult<CreateEntryOutput> {
     super::with_project_timeout(
         ctx.inner(),
         app,
-        collection_id,
+        project_id,
         options,
-        |ctx, _, collection| async move { collection.create_entry(&ctx, input).await },
+        |ctx, _, project| async move { project.create_entry(&ctx, input).await },
     )
     .await
 }
@@ -31,16 +31,16 @@ pub async fn delete_project_entry<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
-    collection_id: ProjectId,
+    project_id: ProjectId,
     input: DeleteEntryInput,
     options: Options,
 ) -> TauriResult<DeleteEntryOutput> {
     super::with_project_timeout(
         ctx.inner(),
         app,
-        collection_id,
+        project_id,
         options,
-        |ctx, _, collection| async move { collection.delete_entry(&ctx, input).await },
+        |ctx, _, project| async move { project.delete_entry(&ctx, input).await },
     )
     .await
 }
@@ -51,16 +51,16 @@ pub async fn update_project_entry<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
-    collection_id: ProjectId,
+    project_id: ProjectId,
     input: UpdateEntryInput,
     options: Options,
 ) -> TauriResult<UpdateEntryOutput> {
     super::with_project_timeout(
         ctx.inner(),
         app,
-        collection_id,
+        project_id,
         options,
-        |ctx, _, collection| async move { collection.update_entry(&ctx, input).await },
+        |ctx, _, project| async move { project.update_entry(&ctx, input).await },
     )
     .await
 }
@@ -71,16 +71,16 @@ pub async fn batch_create_project_entry<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
-    collection_id: ProjectId,
+    project_id: ProjectId,
     input: BatchCreateEntryInput,
     options: Options,
 ) -> TauriResult<BatchCreateEntryOutput> {
     super::with_project_timeout(
         ctx.inner(),
         app,
-        collection_id,
+        project_id,
         options,
-        |ctx, _, collection| async move { collection.batch_create_entry(&ctx, input).await },
+        |ctx, _, project| async move { project.batch_create_entry(&ctx, input).await },
     )
     .await
 }
@@ -92,16 +92,16 @@ pub async fn batch_update_project_entry<'a, R: tauri::Runtime>(
     app: App<'a, R>,
     window: Window<R>,
     channel: TauriChannel<BatchUpdateEntryEvent>,
-    collection_id: ProjectId,
+    project_id: ProjectId,
     input: BatchUpdateEntryInput,
     options: Options,
 ) -> TauriResult<BatchUpdateEntryOutput> {
     super::with_project_timeout(
         ctx.inner(),
         app,
-        collection_id,
+        project_id,
         options,
-        |ctx, _, collection| async move { collection.batch_update_entry(&ctx, input, channel).await },
+        |ctx, _, project| async move { project.batch_update_entry(&ctx, input, channel).await },
     )
     .await
 }
@@ -112,7 +112,7 @@ pub async fn stream_project_entries<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
-    collection_id: ProjectId,
+    project_id: ProjectId,
     input: StreamEntriesInput,
     channel: TauriChannel<StreamEntriesEvent>,
     options: Options,
@@ -120,10 +120,10 @@ pub async fn stream_project_entries<'a, R: tauri::Runtime>(
     super::with_project_timeout(
         ctx.inner(),
         app,
-        collection_id,
+        project_id,
         options,
-        |ctx, app_delegate, collection| async move {
-            collection
+        |ctx, app_delegate, project| async move {
+            project
                 .stream_entries(&ctx, &app_delegate, channel, input)
                 .await
         },
