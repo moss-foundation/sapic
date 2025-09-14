@@ -1,16 +1,16 @@
 import { useState } from "react";
 
 import { invokeTauriIpc } from "@/lib/backend/tauri.ts";
-import { ExecuteVcsOperationInput, ExecuteVcsOperationOutput } from "@repo/moss-collection";
+import { ExecuteVcsOperationInput, ExecuteVcsOperationOutput } from "@repo/moss-project";
 import { EntryChange, ListChangesOutput } from "@repo/moss-workspace";
 
 const GitTest = () => {
   const [entryChanges, setEntryChanges] = useState<EntryChange[]>([]);
   const [selectedKeys, setSelectedKeys] = useState<Record<string, boolean>>({});
-  const [targetCollectionId, setTargetCollectionId] = useState<string>("");
+  const [targetProjectId, setTargetProjectId] = useState<string>("");
   const [push, setPush] = useState(false);
 
-  const keyFor = (c: EntryChange) => `${c.collectionId}:${c.path}`;
+  const keyFor = (c: EntryChange) => `${c.projectId}:${c.path}`;
 
   async function handleFileStatusesButton() {
     const result = await invokeTauriIpc<ListChangesOutput>("list_changes", {});
@@ -35,22 +35,22 @@ const GitTest = () => {
 
     const grouped: Record<string, EntryChange[]> = {};
     for (const ch of selected) {
-      if (!grouped[ch.collectionId]) grouped[ch.collectionId] = [];
-      grouped[ch.collectionId].push(ch);
+      if (!grouped[ch.projectId]) grouped[ch.projectId] = [];
+      grouped[ch.projectId].push(ch);
     }
 
-    for (const collectionId in grouped) {
+    for (const projectId in grouped) {
       const input: ExecuteVcsOperationInput = {
         operation: {
           "COMMIT": {
             message: `Committed from app at ${Date.now()}`,
-            paths: grouped[collectionId].map((ch) => ch.path),
+            paths: grouped[projectId].map((ch) => ch.path),
             push: push,
           },
         },
       };
       const result = await invokeTauriIpc<ExecuteVcsOperationOutput>("execute_vcs_operation", {
-        collectionId: collectionId,
+        projectId: projectId,
         input: input,
       });
       if (result.status === "error") {
@@ -64,20 +64,20 @@ const GitTest = () => {
 
     const grouped: Record<string, EntryChange[]> = {};
     for (const ch of selected) {
-      if (!grouped[ch.collectionId]) grouped[ch.collectionId] = [];
-      grouped[ch.collectionId].push(ch);
+      if (!grouped[ch.projectId]) grouped[ch.projectId] = [];
+      grouped[ch.projectId].push(ch);
     }
 
-    for (const collectionId in grouped) {
+    for (const projectId in grouped) {
       const input: ExecuteVcsOperationInput = {
         operation: {
           "DISCARD": {
-            paths: grouped[collectionId].map((ch) => ch.path),
+            paths: grouped[projectId].map((ch) => ch.path),
           },
         },
       };
       const result = await invokeTauriIpc<ExecuteVcsOperationOutput>("execute_vcs_operation", {
-        collectionId: collectionId,
+        projectId: projectId,
         input: input,
       });
       if (result.status === "error") {
@@ -91,7 +91,7 @@ const GitTest = () => {
       operation: "FETCH",
     };
     const result = await invokeTauriIpc<ExecuteVcsOperationOutput>("execute_vcs_operation", {
-      collectionId: targetCollectionId,
+      projectId: targetProjectId,
       input: input,
     });
     if (result.status === "error") {
@@ -104,7 +104,7 @@ const GitTest = () => {
       operation: "PULL",
     };
     const result = await invokeTauriIpc<ExecuteVcsOperationOutput>("execute_vcs_operation", {
-      collectionId: targetCollectionId,
+      projectId: targetProjectId,
       input: input,
     });
     if (result.status === "error") {
@@ -117,7 +117,7 @@ const GitTest = () => {
       operation: "PUSH",
     };
     const result = await invokeTauriIpc<ExecuteVcsOperationOutput>("execute_vcs_operation", {
-      collectionId: targetCollectionId,
+      projectId: targetProjectId,
       input: input,
     });
     if (result.status === "error") {
@@ -159,26 +159,26 @@ const GitTest = () => {
           type="text"
           className="bg-white"
           placeholder="Collection Id"
-          onChange={(e) => setTargetCollectionId(e.target.value)}
-          value={targetCollectionId}
+          onChange={(e) => setTargetProjectId(e.target.value)}
+          value={targetProjectId}
         />
         <button
           className="cursor-pointer rounded bg-pink-500 p-2 text-white hover:bg-pink-600"
           onClick={handleFetchButton}
         >
-          Fetch Collection {`${targetCollectionId}`}
+          Fetch Collection {`${targetProjectId}`}
         </button>
         <button
           className="cursor-pointer rounded bg-purple-500 p-2 text-white hover:bg-purple-600"
           onClick={handlePullButton}
         >
-          Pull Collection {`${targetCollectionId}`}
+          Pull Collection {`${targetProjectId}`}
         </button>
         <button
           className="cursor-pointer rounded bg-yellow-500 p-2 text-white hover:bg-yellow-600"
           onClick={handlePushButton}
         >
-          Push Collection {`${targetCollectionId}`}
+          Push Collection {`${targetProjectId}`}
         </button>
       </div>
 
@@ -201,7 +201,7 @@ const GitTest = () => {
                   <label htmlFor={`chk-${k}`} className="flex-1">
                     <div className="text-sm font-medium">{ch.path}</div>
                     <div className="text-xs text-gray-500">
-                      Collection: {ch.collectionId} — Status: {ch.status}
+                      Collection: {ch.projectId} — Status: {ch.status}
                     </div>
                   </label>
                 </li>

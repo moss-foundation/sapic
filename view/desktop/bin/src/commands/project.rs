@@ -137,14 +137,14 @@ pub async fn execute_vcs_operation<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
-    collection_id: ProjectId,
+    project_id: ProjectId,
     input: ExecuteVcsOperationInput,
     options: Options,
 ) -> TauriResult<ExecuteVcsOperationOutput> {
     super::with_project_timeout(
         ctx.inner(),
         app,
-        collection_id,
+        project_id,
         options,
         |ctx, app_delegate, collection| async move {
             collection
