@@ -16,7 +16,6 @@ use tokio::sync::{mpsc, oneshot};
 use crate::{
     Collection,
     collection::OnDidChangeEvent,
-    dirs,
     models::{
         events::StreamEntriesEvent,
         operations::{StreamEntriesInput, StreamEntriesOutput},
@@ -24,8 +23,6 @@ use crate::{
     },
     worktree::entry::EntryDescription,
 };
-
-const EXPANSION_DIRECTORIES: &[&str] = &[dirs::RESOURCES_DIR];
 
 impl<R: AppRuntime> Collection<R> {
     pub async fn stream_entries(
