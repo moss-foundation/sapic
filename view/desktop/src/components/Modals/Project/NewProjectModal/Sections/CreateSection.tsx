@@ -6,7 +6,7 @@ import { useAddAccount } from "@/hooks/app/account/useAddAccount";
 import { useGitProviderStore } from "@/store/gitProvider";
 import { cn } from "@/utils";
 import { CheckedState } from "@radix-ui/react-checkbox";
-import { CreateCollectionGitParams } from "@repo/moss-workspace";
+import { CreateProjectGitParams } from "@repo/moss-workspace";
 
 import { BranchInput } from "../components/BranchInput";
 import { NameInput } from "../components/NameInput";
@@ -15,7 +15,7 @@ import { RepositoryInput } from "../components/RepositoryInput";
 import { DEFAULT_BRANCH, DEFAULT_NAME, DEFAULT_PROVIDER, DEFAULT_REPOSITORY, DEFAULT_VCS } from "../defaults";
 
 interface CreateSectionProps {
-  onValuesUpdate: (values: { name: string; gitParams: CreateCollectionGitParams | undefined }) => void;
+  onValuesUpdate: (values: { name: string; gitParams: CreateProjectGitParams | undefined }) => void;
 }
 
 export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {

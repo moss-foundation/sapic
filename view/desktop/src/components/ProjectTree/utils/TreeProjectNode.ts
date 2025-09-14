@@ -42,12 +42,12 @@ const doesStringIncludePartialString = (str: string, partialStr: string) => {
 export const hasDescendantWithSearchInput = (parentNode: ProjectTreeNode, input: string): boolean => {
   if (!parentNode.childNodes) return false;
 
-  const collectionId = String(parentNode.id);
+  const projectId = String(parentNode.id);
 
-  if (doesStringIncludePartialString(collectionId, input)) return true;
+  if (doesStringIncludePartialString(projectId, input)) return true;
 
   return parentNode.childNodes.some(
-    (child) => doesStringIncludePartialString(collectionId, input) || hasDescendantWithSearchInput(child, input)
+    (child) => doesStringIncludePartialString(projectId, input) || hasDescendantWithSearchInput(child, input)
   );
 };
 

@@ -32,17 +32,17 @@ import {
 } from "../utils";
 
 export const useNodeDragAndDropHandler = () => {
-  const { mutateAsync: createCollectionEntry } = useCreateProjectEntry();
-  const { mutateAsync: updateCollectionEntry } = useUpdateProjectEntry();
-  const { mutateAsync: deleteCollectionEntry } = useDeleteProjectEntry();
+  const { mutateAsync: createProjectEntry } = useCreateProjectEntry();
+  const { mutateAsync: updateProjectEntry } = useUpdateProjectEntry();
+  const { mutateAsync: deleteProjectEntry } = useDeleteProjectEntry();
 
-  const { mutateAsync: batchCreateCollectionEntry } = useBatchCreateProjectEntry();
-  const { mutateAsync: batchUpdateCollectionEntry } = useBatchUpdateProjectEntry();
+  const { mutateAsync: batchCreateProjectEntry } = useBatchCreateProjectEntry();
+  const { mutateAsync: batchUpdateProjectEntry } = useBatchUpdateProjectEntry();
 
   const { fetchEntriesForPath } = useFetchEntriesForPath();
 
-  //Within Collection
-  const handleCombineWithinCollection = useCallback(
+  //Within Project
+  const handleCombineWithinProject = useCallback(
     async (sourceTreeNodeData: DragNode, locationTreeNodeData: DropNode) => {
       const newOrder = locationTreeNodeData.node.childNodes.length + 1;
 
@@ -66,23 +66,23 @@ export const useNodeDragAndDropHandler = () => {
       });
 
       const allUpdates = [sourceNodeUpdate, ...nodesToUpdate];
-      await batchUpdateCollectionEntry({
-        projectId: sourceTreeNodeData.collectionId,
+      await batchUpdateProjectEntry({
+        projectId: sourceTreeNodeData.projectId,
         entries: {
           entries: allUpdates,
         },
       });
 
-      await fetchEntriesForPath(locationTreeNodeData.collectionId, resolveParentPath(locationTreeNodeData.parentNode));
+      await fetchEntriesForPath(locationTreeNodeData.projectId, resolveParentPath(locationTreeNodeData.parentNode));
 
-      await fetchEntriesForPath(sourceTreeNodeData.collectionId, resolveParentPath(sourceTreeNodeData.parentNode));
+      await fetchEntriesForPath(sourceTreeNodeData.projectId, resolveParentPath(sourceTreeNodeData.parentNode));
 
       return;
     },
-    [batchUpdateCollectionEntry, fetchEntriesForPath]
+    [batchUpdateProjectEntry, fetchEntriesForPath]
   );
 
-  const handleReorderWithinCollection = useCallback(
+  const handleReorderWithinProject = useCallback(
     async (sourceTreeNodeData: DragNode, locationTreeNodeData: DropNode, operation: Operation) => {
       const dropIndex =
         operation === "reorder-before"
@@ -97,14 +97,14 @@ export const useNodeDragAndDropHandler = () => {
           moveToIndex: dropIndex,
         });
 
-        await batchUpdateCollectionEntry({
-          projectId: sourceTreeNodeData.collectionId,
+        await batchUpdateProjectEntry({
+          projectId: sourceTreeNodeData.projectId,
           entries: {
             entries: updatedSourceNodesPayload,
           },
         });
 
-        await fetchEntriesForPath(sourceTreeNodeData.collectionId, resolveParentPath(sourceTreeNodeData.parentNode));
+        await fetchEntriesForPath(sourceTreeNodeData.projectId, resolveParentPath(sourceTreeNodeData.parentNode));
 
         return;
       }
@@ -122,23 +122,23 @@ export const useNodeDragAndDropHandler = () => {
 
       const allEntriesToUpdate = [...targetEntriesToUpdate, ...sourceEntriesToUpdate];
 
-      await batchUpdateCollectionEntry({
-        projectId: sourceTreeNodeData.collectionId,
+      await batchUpdateProjectEntry({
+        projectId: sourceTreeNodeData.projectId,
         entries: {
           entries: allEntriesToUpdate,
         },
       });
 
-      await fetchEntriesForPath(locationTreeNodeData.collectionId, resolveParentPath(locationTreeNodeData.parentNode));
-      await fetchEntriesForPath(sourceTreeNodeData.collectionId, resolveParentPath(sourceTreeNodeData.parentNode));
+      await fetchEntriesForPath(locationTreeNodeData.projectId, resolveParentPath(locationTreeNodeData.parentNode));
+      await fetchEntriesForPath(sourceTreeNodeData.projectId, resolveParentPath(sourceTreeNodeData.parentNode));
 
       return;
     },
-    [batchUpdateCollectionEntry, fetchEntriesForPath]
+    [batchUpdateProjectEntry, fetchEntriesForPath]
   );
 
-  //To Another Collection
-  const handleMoveToAnotherCollection = useCallback(
+  //To Another Project
+  const handleMoveToAnotherProject = useCallback(
     async (sourceTreeNodeData: DragNode, locationTreeNodeData: DropNode, operation: Operation) => {
       const dropIndex =
         operation === "reorder-before"
@@ -162,22 +162,22 @@ export const useNodeDragAndDropHandler = () => {
         removedNode: sourceTreeNodeData.node,
       });
 
-      await batchUpdateCollectionEntry({
-        projectId: sourceTreeNodeData.collectionId,
+      await batchUpdateProjectEntry({
+        projectId: sourceTreeNodeData.projectId,
         entries: {
           entries: updatedSourceEntriesPayload,
         },
       });
 
-      await batchUpdateCollectionEntry({
-        projectId: locationTreeNodeData.collectionId,
+      await batchUpdateProjectEntry({
+        projectId: locationTreeNodeData.projectId,
         entries: {
           entries: targetEntriesToUpdate,
         },
       });
 
-      await deleteCollectionEntry({
-        projectId: sourceTreeNodeData.collectionId,
+      await deleteProjectEntry({
+        projectId: sourceTreeNodeData.projectId,
         input: { id: sourceTreeNodeData.node.id },
       });
 
@@ -213,34 +213,34 @@ export const useNodeDragAndDropHandler = () => {
         })
       );
 
-      await batchCreateCollectionEntry({
-        collectionId: locationTreeNodeData.collectionId,
+      await batchCreateProjectEntry({
+        projectId: locationTreeNodeData.projectId,
         input: {
           entries: batchCreateEntryInput,
         },
       });
 
       await fetchEntriesForPath(
-        locationTreeNodeData.collectionId,
+        locationTreeNodeData.projectId,
         "path" in locationTreeNodeData.parentNode ? locationTreeNodeData.parentNode.path.raw : ""
       );
       await fetchEntriesForPath(
-        sourceTreeNodeData.collectionId,
+        sourceTreeNodeData.projectId,
         "path" in sourceTreeNodeData.parentNode ? sourceTreeNodeData.parentNode.path.raw : ""
       );
     },
-    [batchUpdateCollectionEntry, deleteCollectionEntry, batchCreateCollectionEntry, fetchEntriesForPath]
+    [batchUpdateProjectEntry, deleteProjectEntry, batchCreateProjectEntry, fetchEntriesForPath]
   );
 
-  const handleCombineToAnotherCollection = useCallback(
+  const handleCombineToAnotherProject = useCallback(
     async (sourceTreeNodeData: DragNode, locationTreeNodeData: DropNode) => {
       const allEntries = getAllNestedEntries(sourceTreeNodeData.node);
       const entriesPreparedForCreation = await prepareEntriesForCreation(allEntries);
 
       const newOrder = locationTreeNodeData.node.childNodes.length + 1;
 
-      await deleteCollectionEntry({
-        projectId: sourceTreeNodeData.collectionId,
+      await deleteProjectEntry({
+        projectId: sourceTreeNodeData.projectId,
         input: { id: sourceTreeNodeData.node.id },
       });
 
@@ -249,8 +249,8 @@ export const useNodeDragAndDropHandler = () => {
         removedNode: sourceTreeNodeData.node,
       });
 
-      await batchUpdateCollectionEntry({
-        projectId: sourceTreeNodeData.collectionId,
+      await batchUpdateProjectEntry({
+        projectId: sourceTreeNodeData.projectId,
         entries: {
           entries: updatedSourceEntriesPayload,
         },
@@ -281,29 +281,29 @@ export const useNodeDragAndDropHandler = () => {
         })
       );
 
-      await batchCreateCollectionEntry({
-        collectionId: locationTreeNodeData.collectionId,
+      await batchCreateProjectEntry({
+        projectId: locationTreeNodeData.projectId,
         input: { entries: batchCreateEntryInput },
       });
 
-      await fetchEntriesForPath(locationTreeNodeData.collectionId, resolveParentPath(locationTreeNodeData.parentNode));
-      await fetchEntriesForPath(sourceTreeNodeData.collectionId, resolveParentPath(sourceTreeNodeData.parentNode));
+      await fetchEntriesForPath(locationTreeNodeData.projectId, resolveParentPath(locationTreeNodeData.parentNode));
+      await fetchEntriesForPath(sourceTreeNodeData.projectId, resolveParentPath(sourceTreeNodeData.parentNode));
 
       return;
     },
-    [batchCreateCollectionEntry, batchUpdateCollectionEntry, deleteCollectionEntry, fetchEntriesForPath]
+    [batchCreateProjectEntry, batchUpdateProjectEntry, deleteProjectEntry, fetchEntriesForPath]
   );
 
-  //To Another Collection's Root
-  const handleCombineToAnotherCollectionRoot = useCallback(
+  //To Another Project's Root
+  const handleCombineToAnotherProjectRoot = useCallback(
     async (sourceTreeNodeData: DragNode, locationTreeRootNodeData: DropRootNode) => {
       const allEntries = getAllNestedEntries(sourceTreeNodeData.node);
       const entriesWithoutName = await prepareNestedDirEntriesForDrop(allEntries);
 
       const newOrder = locationTreeRootNodeData.node.childNodes.length + 1;
 
-      await deleteCollectionEntry({
-        projectId: sourceTreeNodeData.collectionId,
+      await deleteProjectEntry({
+        projectId: sourceTreeNodeData.projectId,
         input: { id: sourceTreeNodeData.node.id },
       });
 
@@ -338,24 +338,24 @@ export const useNodeDragAndDropHandler = () => {
         })
       );
 
-      await batchUpdateCollectionEntry({
-        projectId: sourceTreeNodeData.collectionId,
+      await batchUpdateProjectEntry({
+        projectId: sourceTreeNodeData.projectId,
         entries: {
           entries: updatedSourceEntriesPayload,
         },
       });
 
-      await batchCreateCollectionEntry({
-        collectionId: locationTreeRootNodeData.collectionId,
+      await batchCreateProjectEntry({
+        projectId: locationTreeRootNodeData.projectId,
         input: {
           entries: batchCreateEntryInput,
         },
       });
 
-      await fetchEntriesForPath(locationTreeRootNodeData.collectionId, "");
-      await fetchEntriesForPath(sourceTreeNodeData.collectionId, resolveParentPath(sourceTreeNodeData.parentNode));
+      await fetchEntriesForPath(locationTreeRootNodeData.projectId, "");
+      await fetchEntriesForPath(sourceTreeNodeData.projectId, resolveParentPath(sourceTreeNodeData.parentNode));
     },
-    [deleteCollectionEntry, batchUpdateCollectionEntry, batchCreateCollectionEntry, fetchEntriesForPath]
+    [deleteProjectEntry, batchUpdateProjectEntry, batchCreateProjectEntry, fetchEntriesForPath]
   );
 
   useEffect(() => {
@@ -387,7 +387,7 @@ export const useNodeDragAndDropHandler = () => {
             return;
           }
 
-          await handleCombineToAnotherCollectionRoot(sourceTreeNodeData, locationTreeRootNodeData);
+          await handleCombineToAnotherProjectRoot(sourceTreeNodeData, locationTreeRootNodeData);
           return;
         }
 
@@ -401,33 +401,33 @@ export const useNodeDragAndDropHandler = () => {
           return;
         }
 
-        const isSameCollection = sourceTreeNodeData.collectionId === locationTreeNodeData.collectionId;
-        if (isSameCollection) {
+        const isSameProject = sourceTreeNodeData.projectId === locationTreeNodeData.projectId;
+        if (isSameProject) {
           if (operation === "combine") {
-            await handleCombineWithinCollection(sourceTreeNodeData, locationTreeNodeData);
+            await handleCombineWithinProject(sourceTreeNodeData, locationTreeNodeData);
           } else {
-            await handleReorderWithinCollection(sourceTreeNodeData, locationTreeNodeData, operation);
+            await handleReorderWithinProject(sourceTreeNodeData, locationTreeNodeData, operation);
           }
         } else {
           if (operation === "combine") {
-            await handleCombineToAnotherCollection(sourceTreeNodeData, locationTreeNodeData);
+            await handleCombineToAnotherProject(sourceTreeNodeData, locationTreeNodeData);
           } else {
-            await handleMoveToAnotherCollection(sourceTreeNodeData, locationTreeNodeData, operation);
+            await handleMoveToAnotherProject(sourceTreeNodeData, locationTreeNodeData, operation);
           }
         }
       },
     });
   }, [
-    batchCreateCollectionEntry,
-    batchUpdateCollectionEntry,
-    createCollectionEntry,
-    deleteCollectionEntry,
+    batchCreateProjectEntry,
+    batchUpdateProjectEntry,
+    createProjectEntry,
+    deleteProjectEntry,
     fetchEntriesForPath,
-    handleCombineWithinCollection,
-    handleMoveToAnotherCollection,
-    handleReorderWithinCollection,
-    handleCombineToAnotherCollectionRoot,
-    updateCollectionEntry,
-    handleCombineToAnotherCollection,
+    handleCombineWithinProject,
+    handleMoveToAnotherProject,
+    handleReorderWithinProject,
+    handleCombineToAnotherProjectRoot,
+    updateProjectEntry,
+    handleCombineToAnotherProject,
   ]);
 };

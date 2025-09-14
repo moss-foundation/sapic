@@ -15,7 +15,6 @@ export const WorkspaceNameSection = ({ name, setName, onBlur, onSave }: Workspac
         <label className="mt-1 font-medium">Name:</label>
         <div>
           <InputOutlined
-            size="sm"
             value={name}
             onChange={(e) => setName(e.target.value)}
             onBlur={onBlur}

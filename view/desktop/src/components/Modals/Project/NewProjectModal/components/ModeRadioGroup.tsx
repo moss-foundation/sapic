@@ -21,7 +21,7 @@ export const ModeRadioGroup = ({ mode, setMode }: ModeRadioGroupProps) => {
         <RadioGroup.Root>
           <RadioGroup.ItemWithLabel
             label="Default"
-            description="This mode is suitable when your collection is stored in a separate repository or doesn’t have a repository at all."
+            description="This mode is suitable when your project is stored in a separate repository or doesn’t have a repository at all."
             value="Default"
             checked={mode === "Default"}
             onClick={() => setMode("Default")}
@@ -29,7 +29,7 @@ export const ModeRadioGroup = ({ mode, setMode }: ModeRadioGroupProps) => {
 
           <RadioGroup.ItemWithLabel
             label="Custom"
-            description="This mode is suitable if you want to store the collection in your project’s repository or in any other folder you specify."
+            description="This mode is suitable if you want to store the project in your project’s repository or in any other folder you specify."
             value="Custom"
             checked={mode === "Custom"}
             onClick={() => setMode("Custom")}

@@ -10,8 +10,8 @@ import { createEntryKind } from "../../utils";
 export const useNodeAddForm = (parentNode: ProjectTreeNode | ProjectTreeRootNode) => {
   const { id } = useContext(ProjectTreeContext);
 
-  const { mutateAsync: createCollectionEntry } = useCreateProjectEntry();
-  const { mutateAsync: updateCollectionEntry } = useUpdateProjectEntry();
+  const { mutateAsync: createProjectEntry } = useCreateProjectEntry();
+  const { mutateAsync: updateProjectEntry } = useUpdateProjectEntry();
 
   const [isAddingFileNode, setIsAddingFileNode] = useState(false);
   const [isAddingFolderNode, setIsAddingFolderNode] = useState(false);
@@ -30,12 +30,12 @@ export const useNodeAddForm = (parentNode: ProjectTreeNode | ProjectTreeRootNode
     });
 
     try {
-      await createCollectionEntry({
+      await createProjectEntry({
         projectId: id,
         input: newEntry,
       });
 
-      await updateCollectionEntry({
+      await updateProjectEntry({
         projectId: id,
         updatedEntry: {
           DIR: {

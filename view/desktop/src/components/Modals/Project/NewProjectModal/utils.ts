@@ -1,13 +1,13 @@
 import { AddAccountOutput } from "@repo/moss-app";
-import { CreateCollectionGitParams, ImportCollectionSource } from "@repo/moss-workspace";
+import { CreateProjectGitParams, ImportProjectSource } from "@repo/moss-workspace";
 
 import { CREATE_TAB, IMPORT_TAB } from "./constansts";
 
 interface CalculateIsSubmitDisabledProps {
   name: string;
   tab: typeof CREATE_TAB | typeof IMPORT_TAB;
-  createParams: CreateCollectionGitParams | undefined;
-  importParams: ImportCollectionSource | undefined;
+  createParams: CreateProjectGitParams | undefined;
+  importParams: ImportProjectSource | undefined;
   gitProvider: AddAccountOutput | null;
 }
 

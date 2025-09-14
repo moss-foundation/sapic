@@ -11,7 +11,7 @@ export const startStreamingProjectEntries = async (projectId: string, path?: str
   };
 
   const result = await invokeTauriIpc("stream_project_entries", {
-    collectionId: projectId,
+    projectId,
     channel: onProjectEntryEvent,
     input: path ? { "RELOAD_PATH": path } : "LOAD_ROOT",
   });

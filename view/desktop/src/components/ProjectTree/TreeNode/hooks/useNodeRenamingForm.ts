@@ -13,7 +13,7 @@ export const useNodeRenamingForm = (node: ProjectTreeNode) => {
   const { fetchEntriesForPath } = useFetchEntriesForPath();
   const [isRenamingNode, setIsRenamingNode] = useState(false);
 
-  const { mutateAsync: updateCollectionEntry } = useUpdateProjectEntry();
+  const { mutateAsync: updateProjectEntry } = useUpdateProjectEntry();
 
   const handleRenamingFormSubmit = async (newName: string) => {
     const trimmedNewName = newName.trim();
@@ -24,7 +24,7 @@ export const useNodeRenamingForm = (node: ProjectTreeNode) => {
       }
 
       if (node.kind === "Dir") {
-        await updateCollectionEntry({
+        await updateProjectEntry({
           projectId: id,
           updatedEntry: {
             DIR: {
@@ -37,7 +37,7 @@ export const useNodeRenamingForm = (node: ProjectTreeNode) => {
         const newPath = await join(...node.path.segments.slice(0, node.path.segments.length - 1), trimmedNewName);
         await fetchEntriesForPath(id, newPath);
       } else {
-        await updateCollectionEntry({
+        await updateProjectEntry({
           projectId: id,
           updatedEntry: {
             ITEM: {

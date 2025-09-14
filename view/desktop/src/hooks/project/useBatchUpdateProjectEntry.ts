@@ -13,7 +13,7 @@ const batchUpdateProjectEntry = async ({ projectId, entries }: UseBatchUpdatePro
 
   const result = await invokeTauriIpc<BatchUpdateEntryOutput>("batch_update_project_entry", {
     channel: onProjectEvent,
-    collectionId: projectId,
+    projectId: projectId,
     input: {
       entries: entries.entries,
     },

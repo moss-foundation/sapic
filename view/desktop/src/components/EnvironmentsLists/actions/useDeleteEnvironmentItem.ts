@@ -37,11 +37,11 @@ export const useDeleteEnvironmentItem = ({ environment, type }: UseDeleteEnviron
     if (type === "GroupedEnvironmentItem") {
       await deleteEnvironment({ id: environment.id });
 
-      const collectionEnvironments = groupedEnvironments.find(
-        (group) => group.collectionId === environment.collectionId
+      const projectEnvironments = groupedEnvironments.find(
+        (group) => group.projectId === environment.projectId
       )?.environments;
 
-      const environmentsAfterDeleted = collectionEnvironments?.filter((env) => env.order! > environment.order!);
+      const environmentsAfterDeleted = projectEnvironments?.filter((env) => env.order! > environment.order!);
 
       if (environmentsAfterDeleted) {
         await batchUpdateEnvironment({

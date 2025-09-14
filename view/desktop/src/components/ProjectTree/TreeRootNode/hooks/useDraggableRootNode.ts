@@ -50,7 +50,7 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
           type: ProjectDragType.ROOT_NODE,
           data: {
             node,
-            collectionId: id,
+            projectId: id,
           },
         }),
         onDragStart: () => setIsDragging(true),
@@ -64,7 +64,7 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
           const dropTarget = {
             type: ProjectDragType.ROOT_NODE,
             node,
-            collectionId: id,
+            projectId: id,
           };
 
           if (isSourceTreeRootNode(source)) {

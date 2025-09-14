@@ -53,7 +53,7 @@ export const useDraggableNode = ({
         getInitialData: () => ({
           type: ProjectDragType.NODE,
           data: {
-            collectionId: id,
+            projectId: id,
             node,
             parentNode,
           },
@@ -80,7 +80,7 @@ export const useDraggableNode = ({
           const data = {
             type: ProjectDragType.NODE,
             data: {
-              collectionId: id,
+              projectId: id,
               node,
               parentNode,
             },
@@ -137,7 +137,7 @@ export const useDraggableNode = ({
         getData: () => ({
           type: ProjectDragType.NODE,
           data: {
-            collectionId: id,
+            projectId: id,
             node,
             parentNode,
           },

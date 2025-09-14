@@ -9,7 +9,7 @@ import { createEntryKind } from "../../utils";
 export const useRootNodeAddForm = (node: ProjectTreeRootNode) => {
   const { id } = useContext(ProjectTreeContext);
 
-  const { mutateAsync: createCollectionEntry } = useCreateProjectEntry();
+  const { mutateAsync: createProjectEntry } = useCreateProjectEntry();
 
   const [isAddingRootFileNode, setIsAddingRootFileNode] = useState(false);
   const [isAddingRootFolderNode, setIsAddingRootFolderNode] = useState(false);
@@ -26,7 +26,7 @@ export const useRootNodeAddForm = (node: ProjectTreeRootNode) => {
     });
 
     try {
-      await createCollectionEntry({
+      await createProjectEntry({
         projectId: id,
         input: newEntry,
       });

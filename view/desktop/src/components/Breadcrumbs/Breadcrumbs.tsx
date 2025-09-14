@@ -7,26 +7,26 @@ import BreadcrumbTree from "./BreadcrumbTree";
 import { findNodeByIdInTree, findNodesSequence } from "./utils";
 
 interface BreadcrumbsProps {
-  collectionId?: string;
+  projectId?: string;
   nodeId?: string;
 }
 
-export const Breadcrumbs = ({ collectionId, nodeId }: BreadcrumbsProps) => {
-  const { projectsTrees: collectionsTrees, isLoading } = useProjectsTrees();
+export const Breadcrumbs = ({ projectId, nodeId }: BreadcrumbsProps) => {
+  const { projectsTrees: projectsTrees, isLoading } = useProjectsTrees();
 
   if (isLoading) {
     return null;
   }
 
-  if (!collectionId || !nodeId) {
+  if (!projectId || !nodeId) {
     return null;
   }
 
-  if (!collectionsTrees || collectionsTrees.length === 0) {
+  if (!projectsTrees || projectsTrees.length === 0) {
     return null;
   }
 
-  const activeTree = collectionsTrees?.find((tree) => tree.id === collectionId);
+  const activeTree = projectsTrees?.find((tree) => tree.id === projectId);
   if (!activeTree) {
     return null;
   }
@@ -64,7 +64,7 @@ export const Breadcrumbs = ({ collectionId, nodeId }: BreadcrumbsProps) => {
                   <span>{node.name} </span>
                 </ActionMenu.Trigger>
                 <ActionMenu.Content align="start">
-                  <BreadcrumbTree tree={node} collectionId={collectionId} />
+                  <BreadcrumbTree tree={node} projectId={projectId} />
                 </ActionMenu.Content>
               </ActionMenu.Root>
               {!lastItem && <Icon icon="ChevronRight" />}

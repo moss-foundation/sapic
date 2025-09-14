@@ -14,7 +14,7 @@ export const useToggleAllNodes = (node: ProjectTreeRootNode) => {
   const queryClient = useQueryClient();
 
   const { data: streamedEntries } = useStreamProjectEntries(id);
-  const { mutateAsync: batchUpdateCollectionEntry } = useBatchUpdateProjectEntry();
+  const { mutateAsync: batchUpdateProjectEntry } = useBatchUpdateProjectEntry();
 
   const expandAllNodes = async () => {
     if (!streamedEntries) return;
@@ -48,7 +48,7 @@ export const useToggleAllNodes = (node: ProjectTreeRootNode) => {
       }
     });
 
-    await batchUpdateCollectionEntry({
+    await batchUpdateProjectEntry({
       projectId: node.id,
       entries: {
         entries: inputEntries,
@@ -97,7 +97,7 @@ export const useToggleAllNodes = (node: ProjectTreeRootNode) => {
       }
     });
 
-    await batchUpdateCollectionEntry({
+    await batchUpdateProjectEntry({
       projectId: node.id,
       entries: {
         entries: inputEntries,

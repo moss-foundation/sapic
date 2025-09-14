@@ -29,10 +29,9 @@ export const useBatchUpdateEnvironmentGroup = () => {
           ...old,
           groups: old.groups.map((group) => ({
             ...group,
-            expanded:
-              variables.items.find((item) => item.collectionId === group.collectionId)?.expanded ?? group.expanded,
-            order: variables.items.find((item) => item.collectionId === group.collectionId)?.order ?? group.order,
-            environments: old.environments.filter((environment) => environment.collectionId === group.collectionId),
+            expanded: variables.items.find((item) => item.projectId === group.projectId)?.expanded ?? group.expanded,
+            order: variables.items.find((item) => item.projectId === group.projectId)?.order ?? group.order,
+            environments: old.environments.filter((environment) => environment.projectId === group.projectId),
           })),
         };
       });

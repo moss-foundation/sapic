@@ -7,7 +7,7 @@ import { ProjectTreeRootNode } from "../../types";
 export const useRootNodeRenamingForm = (node: ProjectTreeRootNode) => {
   const [isRenamingRootNode, setIsRenamingRootNode] = useState(false);
 
-  const { mutateAsync: updateCollection } = useUpdateProject();
+  const { mutateAsync: updateProject } = useUpdateProject();
 
   const handleRenamingRootNodeFormSubmit = async (name: string) => {
     const trimmedNewName = name.trim();
@@ -17,7 +17,7 @@ export const useRootNodeRenamingForm = (node: ProjectTreeRootNode) => {
         return;
       }
 
-      await updateCollection({
+      await updateProject({
         id: node.id,
         name: trimmedNewName,
       });

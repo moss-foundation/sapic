@@ -12,7 +12,7 @@ export interface UseCreateProjectEntryInputProps {
 
 const createProjectEntry = async ({ projectId, input }: UseCreateProjectEntryInputProps) => {
   const result = await invokeTauriIpc<CreateEntryOutput>("create_project_entry", {
-    collectionId: projectId,
+    projectId: projectId,
     input,
   });
 

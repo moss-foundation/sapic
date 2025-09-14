@@ -17,7 +17,7 @@ export const TreeRootNode = ({ node }: ProjectTreeRootNodeProps) => {
   const draggableHeaderRef = useRef<HTMLLIElement>(null);
   const dropTargetRootRef = useRef<HTMLUListElement>(null);
 
-  const { data: streamedCollections } = useStreamProjects();
+  const { data: streamedProjects } = useStreamProjects();
   const { activePanelId } = useTabbedPaneStore();
 
   const {
@@ -49,7 +49,7 @@ export const TreeRootNode = ({ node }: ProjectTreeRootNodeProps) => {
     isRenamingRootNode
   );
 
-  const restrictedNames = streamedCollections?.map((collection) => collection.name) ?? [];
+  const restrictedNames = streamedProjects?.map((project) => project.name) ?? [];
 
   return (
     <Tree.RootNode

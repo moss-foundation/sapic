@@ -19,7 +19,7 @@ export const NameInput = forwardRef<HTMLInputElement, NameInputProps>(({ name, s
         className="max-w-72"
         onChange={(e) => setName(e.target.value)}
         pattern={VALID_NAME_PATTERN}
-        placeholder="New Collection"
+        placeholder="New Project"
         required
         {...props}
       />

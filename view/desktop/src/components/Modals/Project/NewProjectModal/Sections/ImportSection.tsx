@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { InputOutlined } from "@/components/InputOutlined";
 import { useAddAccount } from "@/hooks/app/account/useAddAccount";
 import { useGitProviderStore } from "@/store/gitProvider";
-import { ImportCollectionSource } from "@repo/moss-workspace";
+import { ImportProjectSource } from "@repo/moss-workspace";
 
 import { BranchInput } from "../components/BranchInput";
 import { NameInput } from "../components/NameInput";
@@ -13,7 +13,7 @@ import { DEFAULT_BRANCH, DEFAULT_NAME, DEFAULT_PROVIDER, DEFAULT_REPOSITORY } fr
 import { Subheader } from "./Subheader";
 
 interface ImportSectionProps {
-  onValuesUpdate: (values: { name: string; importParams: ImportCollectionSource | undefined }) => void;
+  onValuesUpdate: (values: { name: string; importParams: ImportProjectSource | undefined }) => void;
 }
 
 export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {

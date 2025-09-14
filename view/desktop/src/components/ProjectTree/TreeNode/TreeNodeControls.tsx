@@ -52,7 +52,7 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
 
     const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
-    const { mutateAsync: updateCollectionEntry } = useUpdateProjectEntry();
+    const { mutateAsync: updateProjectEntry } = useUpdateProjectEntry();
 
     const handleControlsClick = () => {
       if (node.kind === "Dir") {
@@ -70,7 +70,7 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
         });
 
         if (!node.expanded) {
-          updateCollectionEntry({
+          updateProjectEntry({
             projectId: id,
             updatedEntry: {
               DIR: {
@@ -97,7 +97,7 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
       e.stopPropagation();
       if (node.kind === "Item") return;
 
-      updateCollectionEntry({
+      updateProjectEntry({
         projectId: id,
         updatedEntry: {
           DIR: {

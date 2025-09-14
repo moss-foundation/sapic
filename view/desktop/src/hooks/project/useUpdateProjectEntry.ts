@@ -11,7 +11,7 @@ export interface UseUpdateProjectEntryInput {
 
 const updateProjectEntry = async ({ projectId, updatedEntry }: UseUpdateProjectEntryInput) => {
   const result = await invokeTauriIpc<UpdateEntryOutput>("update_project_entry", {
-    collectionId: projectId,
+    projectId: projectId,
     input: updatedEntry,
   });
 

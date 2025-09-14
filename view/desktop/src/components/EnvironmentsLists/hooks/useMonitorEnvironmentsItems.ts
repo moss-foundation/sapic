@@ -83,7 +83,7 @@ export const useMonitorEnvironmentsItems = () => {
         const instruction = locationData.instruction;
 
         const groupedEnvironment = groupedEnvironments.find(
-          (group) => group.collectionId === locationData.data.environment.collectionId
+          (group) => group.projectId === locationData.data.environment.projectId
         );
 
         if (!groupedEnvironment) {
@@ -114,7 +114,7 @@ export const useMonitorEnvironmentsItems = () => {
 
         //add new grouped environment
         const newGroupedEnvironment = await createEnvironment({
-          collectionId: locationData.data.environment.collectionId,
+          projectId: locationData.data.environment.projectId,
           name: sourceData.data.environment.name,
           order: dropOrder,
           variables: [],
@@ -158,10 +158,10 @@ export const useMonitorEnvironmentsItems = () => {
         }
 
         const sourceGroup = groupedEnvironments.find(
-          (group) => group.collectionId === sourceData.data.environment.collectionId
+          (group) => group.projectId === sourceData.data.environment.projectId
         );
         const locationGroup = groupedEnvironments.find(
-          (group) => group.collectionId === locationData.data.environment.collectionId
+          (group) => group.projectId === locationData.data.environment.projectId
         );
 
         if (!sourceGroup || !locationGroup) {
@@ -193,7 +193,7 @@ export const useMonitorEnvironmentsItems = () => {
 
         //add new grouped environment
         const newGroupedEnvironment = await createEnvironment({
-          collectionId: locationData.data.environment.collectionId,
+          projectId: locationData.data.environment.projectId,
           name: sourceData.data.environment.name,
           order: targetDropOrder,
           variables: [],
@@ -264,7 +264,7 @@ export const useMonitorEnvironmentsItems = () => {
 
         //add new grouped environment
         await createEnvironment({
-          collectionId: locationData.data.groupWithEnvironments.collectionId,
+          projectId: locationData.data.groupWithEnvironments.projectId,
           name: sourceData.data.environment.name,
           order: locationGroupedEnvironments.length + 1,
           variables: [],
@@ -275,7 +275,7 @@ export const useMonitorEnvironmentsItems = () => {
         if (!sourceData) return;
 
         const sourceGroup = groupedEnvironments.find(
-          (group) => group.collectionId === sourceData.data.environment.collectionId
+          (group) => group.projectId === sourceData.data.environment.projectId
         );
 
         if (!sourceGroup) return;
@@ -293,7 +293,7 @@ export const useMonitorEnvironmentsItems = () => {
           }));
 
         await createEnvironment({
-          collectionId: locationData.data.groupWithEnvironments.collectionId,
+          projectId: locationData.data.groupWithEnvironments.projectId,
           name: sourceData.data.environment.name,
           order: locationGroupedEnvironments.length + 1,
           variables: [],
@@ -321,11 +321,9 @@ export const useMonitorEnvironmentsItems = () => {
 
       if (!sourceData || !locationData) return;
 
-      if (sourceData.data.environment.collectionId !== locationData.data.environment.collectionId) return;
+      if (sourceData.data.environment.projectId !== locationData.data.environment.projectId) return;
 
-      const groupEnvs = groupedEnvironments.find(
-        (env) => env.collectionId === sourceData.data.environment.collectionId
-      );
+      const groupEnvs = groupedEnvironments.find((env) => env.projectId === sourceData.data.environment.projectId);
 
       if (!groupEnvs) return;
 
@@ -382,9 +380,7 @@ export const useMonitorEnvironmentsItems = () => {
 
       const instruction = locationData.instruction;
 
-      const group = groupedEnvironments.find(
-        (group) => group.collectionId === sourceData.data.environment.collectionId
-      );
+      const group = groupedEnvironments.find((group) => group.projectId === sourceData.data.environment.projectId);
 
       if (!group) {
         console.error("Group environment not found", { locationData });

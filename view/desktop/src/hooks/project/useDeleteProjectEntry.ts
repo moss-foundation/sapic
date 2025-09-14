@@ -11,7 +11,7 @@ export interface UseDeleteProjectEntryInput {
 }
 
 const deleteProjectEntry = async ({ projectId, input }: UseDeleteProjectEntryInput) => {
-  const result = await invokeTauriIpc<DeleteEntryOutput>("delete_project_entry", { collectionId: projectId, input });
+  const result = await invokeTauriIpc<DeleteEntryOutput>("delete_project_entry", { projectId: projectId, input });
 
   if (result.status === "error") {
     throw new Error(String(result.error));

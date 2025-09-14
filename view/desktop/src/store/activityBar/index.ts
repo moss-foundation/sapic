@@ -35,7 +35,7 @@ export interface ActivityBarStore {
 const defaultItems: ActivityBarItem[] = [
   {
     "id": TREE_VIEW_GROUP_PROJECTS,
-    "title": "Collections",
+    "title": "Projects",
     "order": 1,
     "icon": "Home",
     "iconActive": "HomeActive",
@@ -122,7 +122,7 @@ export const useActivityBarStore = create<ActivityBarStore>((set, get) => ({
   updateFromWorkspaceState: (activitybarState: ActivitybarPartStateInfo) => {
     const currentItems = get().items;
 
-    // Ensure we have a valid lastActiveContainerId, default to Collections if not
+    // Ensure we have a valid lastActiveContainerId, default to Projects if not
     const activeContainerId = activitybarState.lastActiveContainerId || TREE_VIEW_GROUP_PROJECTS;
 
     // Create a map of workspace state items by id for easy lookup

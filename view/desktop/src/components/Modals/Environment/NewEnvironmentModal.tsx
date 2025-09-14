@@ -55,13 +55,13 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
         variables: [],
       });
     } else if (mode === "Project" && projectId) {
-      const projectEnvironments = groupedEnvironments.find((group) => group.collectionId === projectId)?.environments;
+      const projectEnvironments = groupedEnvironments.find((group) => group.projectId === projectId)?.environments;
 
       await createEnvironment({
         name,
         order: getNextOrder(projectEnvironments),
         variables: [],
-        collectionId: projectId,
+        projectId,
       });
     }
 

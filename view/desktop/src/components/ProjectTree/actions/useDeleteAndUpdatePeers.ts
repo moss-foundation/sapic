@@ -8,18 +8,18 @@ import { ProjectTreeNode, ProjectTreeRootNode } from "../types";
 import { siblingsAfterRemovalPayload } from "../utils";
 
 export const useDeleteAndUpdatePeers = (
-  collectionId: string,
+  projectId: string,
   node: ProjectTreeNode,
   parentNode: ProjectTreeNode | ProjectTreeRootNode
 ) => {
   const queryClient = useQueryClient();
 
-  const { mutateAsync: deleteCollectionEntry } = useDeleteProjectEntry();
-  const { mutateAsync: batchUpdateCollectionEntry } = useBatchUpdateProjectEntry();
+  const { mutateAsync: deleteProjectEntry } = useDeleteProjectEntry();
+  const { mutateAsync: batchUpdateProjectEntry } = useBatchUpdateProjectEntry();
 
   const deleteAndUpdatePeers = async () => {
-    await deleteCollectionEntry({
-      projectId: collectionId,
+    await deleteProjectEntry({
+      projectId,
       input: {
         id: node.id,
       },
@@ -32,8 +32,8 @@ export const useDeleteAndUpdatePeers = (
       order: e.order! - 1,
     }));
 
-    const result = await batchUpdateCollectionEntry({
-      projectId: collectionId,
+    const result = await batchUpdateProjectEntry({
+      projectId,
       entries: {
         entries: siblingsAfterRemovalPayload({
           nodes: parentNode.childNodes,
@@ -43,19 +43,16 @@ export const useDeleteAndUpdatePeers = (
     });
 
     if (result.status === "ok") {
-      queryClient.setQueryData(
-        [USE_STREAM_PROJECT_ENTRIES_QUERY_KEY, collectionId],
-        (cacheData: StreamEntriesEvent[]) => {
-          return cacheData.map((cacheEntry) => {
-            if (updatedParentNodeChildren.some((e) => e.id === cacheEntry.id)) {
-              const updatedEntry = updatedParentNodeChildren.find((e) => e.id === cacheEntry.id);
-              return { ...cacheEntry, ...updatedEntry };
-            }
+      queryClient.setQueryData([USE_STREAM_PROJECT_ENTRIES_QUERY_KEY, projectId], (cacheData: StreamEntriesEvent[]) => {
+        return cacheData.map((cacheEntry) => {
+          if (updatedParentNodeChildren.some((e) => e.id === cacheEntry.id)) {
+            const updatedEntry = updatedParentNodeChildren.find((e) => e.id === cacheEntry.id);
+            return { ...cacheEntry, ...updatedEntry };
+          }
 
-            return cacheEntry;
-          });
-        }
-      );
+          return cacheEntry;
+        });
+      });
     }
   };
 

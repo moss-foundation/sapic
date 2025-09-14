@@ -150,7 +150,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
       title: pragmaticDropElement.node.name,
       component: "Request",
       params: {
-        projectId: pragmaticDropElement.collectionId,
+        projectId: pragmaticDropElement.projectId,
         node: pragmaticDropElement.node,
       },
       position: {
@@ -178,7 +178,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     Default: (
       props: IDockviewPanelProps<{
         node?: ProjectTreeNode;
-        collectionId: string;
+        projectId: string;
         iconType: EntryKind;
       }>
     ) => {
@@ -188,8 +188,8 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
         <PageView>
           <PageHeader icon="Placeholder" {...props} />
           <PageContent className={cn("relative", isDebug && "border-2 border-dashed border-orange-500")}>
-            {props.params?.collectionId && props.params?.node?.id && (
-              <Breadcrumbs collectionId={props.params.collectionId} nodeId={props.params.node.id} />
+            {props.params?.projectId && props.params?.node?.id && (
+              <Breadcrumbs projectId={props.params.projectId} nodeId={props.params.node.id} />
             )}
 
             <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col opacity-50">
@@ -212,21 +212,21 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     Request: (
       props: IDockviewPanelProps<{
         node: ProjectTreeNode;
-        collectionId: string;
+        projectId: string;
         iconType: EntryKind;
       }>
     ) => <RequestPage {...props} />,
     ProjectSettings: (
       props: IDockviewPanelProps<{
         node: ProjectTreeNode;
-        collectionId: string;
+        projectId: string;
         iconType: EntryKind;
       }>
     ) => <ProjectSettingsPage {...props} />,
     FolderSettings: (
       props: IDockviewPanelProps<{
         node: ProjectTreeNode;
-        collectionId: string;
+        projectId: string;
         iconType: EntryKind;
       }>
     ) => <FolderSettings {...props} />,

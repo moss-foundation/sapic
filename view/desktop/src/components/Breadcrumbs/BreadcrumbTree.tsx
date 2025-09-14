@@ -6,10 +6,10 @@ import { closeAllNodesInTree, updateTreeNode } from "./utils";
 
 interface BreadcrumbTreeProps {
   tree: ProjectTreeNode;
-  collectionId: string;
+  projectId: string;
 }
 
-export const BreadcrumbTree = ({ tree: initialTree, collectionId }: BreadcrumbTreeProps) => {
+export const BreadcrumbTree = ({ tree: initialTree, projectId }: BreadcrumbTreeProps) => {
   const [tree, setTree] = useState<ProjectTreeNode>(closeAllNodesInTree(initialTree));
 
   const handleNodeUpdate = (updatedNode: ProjectTreeNode) => {
@@ -19,12 +19,7 @@ export const BreadcrumbTree = ({ tree: initialTree, collectionId }: BreadcrumbTr
   return (
     <ul>
       {tree.childNodes.map((childNode) => (
-        <BreadcrumbNode
-          key={childNode.id}
-          collectionId={collectionId}
-          node={childNode}
-          onNodeUpdate={handleNodeUpdate}
-        />
+        <BreadcrumbNode key={childNode.id} projectId={projectId} node={childNode} onNodeUpdate={handleNodeUpdate} />
       ))}
     </ul>
   );

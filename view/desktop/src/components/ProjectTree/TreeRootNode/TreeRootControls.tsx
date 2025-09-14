@@ -7,7 +7,7 @@ import { useModal, useUpdateProject } from "@/hooks";
 import { Tree } from "@/lib/ui/Tree";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
-import { useRefreshCollection } from "../actions/useRefreshProject";
+import { useRefreshProject } from "../actions/useRefreshProject";
 import { useToggleAllNodes } from "../actions/useToggleAllNodes";
 import { ProjectTreeContext } from "../ProjectTreeContext";
 import { ProjectTreeRootNode } from "../types";
@@ -29,20 +29,20 @@ export const TreeRootControls = ({
 
   const { addOrFocusPanel } = useTabbedPaneStore();
 
-  const { mutateAsync: updateCollection } = useUpdateProject();
+  const { mutateAsync: updateProject } = useUpdateProject();
   const { expandAllNodes, collapseAllNodes } = useToggleAllNodes(node);
-  const { refreshCollection } = useRefreshCollection(id);
+  const { refreshProject } = useRefreshProject(id);
 
-  const { showModal: showDeleteCollectionModal, setShowModal: setShowDeleteCollectionModal } = useModal();
+  const { showModal: showDeleteProjectModal, setShowModal: setShowDeleteProjectModal } = useModal();
 
   const handleRefresh = () => {
-    refreshCollection();
+    refreshProject();
   };
 
   const handleIconClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
 
-    await updateCollection({
+    await updateProject({
       id,
       expanded: !node.expanded,
     });
@@ -50,7 +50,7 @@ export const TreeRootControls = ({
 
   const handleLabelClick = async () => {
     if (!node.expanded) {
-      await updateCollection({
+      await updateProject({
         id,
         expanded: true,
       });
@@ -62,7 +62,7 @@ export const TreeRootControls = ({
       component: "ProjectSettings",
       params: {
         projectId: id,
-        iconType: "Collection",
+        iconType: "Project",
       },
     });
   };
@@ -124,7 +124,7 @@ export const TreeRootControls = ({
                   <ActionMenu.Item alignWithIcons onClick={handleRefresh}>
                     Refresh
                   </ActionMenu.Item>
-                  <ActionMenu.Item alignWithIcons onClick={() => setShowDeleteCollectionModal(true)} icon="Trash">
+                  <ActionMenu.Item alignWithIcons onClick={() => setShowDeleteProjectModal(true)} icon="Trash">
                     Delete
                   </ActionMenu.Item>
                   <ActionMenu.Item
@@ -142,11 +142,11 @@ export const TreeRootControls = ({
         </Tree.RootNodeActions>
       </Tree.RootNodeControls>
 
-      {showDeleteCollectionModal && (
+      {showDeleteProjectModal && (
         <DeleteProjectModal
           id={node.id}
-          showModal={showDeleteCollectionModal}
-          closeModal={() => setShowDeleteCollectionModal(false)}
+          showModal={showDeleteProjectModal}
+          closeModal={() => setShowDeleteProjectModal(false)}
         />
       )}
     </>

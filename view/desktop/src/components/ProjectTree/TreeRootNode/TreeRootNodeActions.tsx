@@ -5,7 +5,7 @@ import { ActionButton } from "@/components/ActionButton";
 import { DeleteProjectModal } from "@/components/Modals/Project/DeleteProjectModal";
 import { useModal } from "@/hooks";
 
-import { useRefreshCollection } from "../actions/useRefreshProject";
+import { useRefreshProject } from "../actions/useRefreshProject";
 import { useToggleAllNodes } from "../actions/useToggleAllNodes";
 import { ProjectTreeContext } from "../ProjectTreeContext";
 import { ProjectTreeRootNode } from "../types";
@@ -29,13 +29,13 @@ export const TreeRootNodeActions = ({
 }: TreeRootNodeActionsProps) => {
   const { displayMode, allFoldersAreCollapsed, allFoldersAreExpanded, id } = useContext(ProjectTreeContext);
 
-  const { showModal: showDeleteCollectionModal, setShowModal: setShowDeleteCollectionModal } = useModal();
+  const { showModal: showDeleteProjectModal, setShowModal: setShowDeleteProjectModal } = useModal();
 
   const { expandAllNodes, collapseAllNodes } = useToggleAllNodes(node);
-  const { refreshCollection } = useRefreshCollection(id);
+  const { refreshProject } = useRefreshProject(id);
 
   const handleRefresh = () => {
-    refreshCollection();
+    refreshProject();
   };
 
   return (
@@ -45,7 +45,7 @@ export const TreeRootNodeActions = ({
           <div
             className={`hidden items-center opacity-0 transition-[display,opacity] transition-discrete duration-100 group-hover/Tree:flex group-hover/Tree:opacity-100`}
           >
-            {displayMode === "REQUEST_FIRST" && (
+            {displayMode === "LIVE" && (
               <ActionButton
                 customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
                 icon="Add"
@@ -81,7 +81,7 @@ export const TreeRootNodeActions = ({
               <ActionMenu.Item alignWithIcons onClick={handleRefresh}>
                 Refresh
               </ActionMenu.Item>
-              <ActionMenu.Item alignWithIcons onClick={() => setShowDeleteCollectionModal(true)} icon="Trash">
+              <ActionMenu.Item alignWithIcons onClick={() => setShowDeleteProjectModal(true)} icon="Trash">
                 Delete
               </ActionMenu.Item>
               <ActionMenu.Item
@@ -96,11 +96,11 @@ export const TreeRootNodeActions = ({
           </ActionMenu.Portal>
         </ActionMenu.Root>
       </div>
-      {showDeleteCollectionModal && (
+      {showDeleteProjectModal && (
         <DeleteProjectModal
           id={node.id}
-          showModal={showDeleteCollectionModal}
-          closeModal={() => setShowDeleteCollectionModal(false)}
+          showModal={showDeleteProjectModal}
+          closeModal={() => setShowDeleteProjectModal(false)}
         />
       )}
     </>
