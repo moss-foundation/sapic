@@ -580,7 +580,11 @@ impl<R: AppRuntime> Worktree<R> {
 
             entry
                 .edit
-                .rename(&self.abs_path, &old_path, &new_path)
+                .rename(
+                    &self.abs_path.join(dirs::RESOURCES_DIR),
+                    &old_path,
+                    &new_path,
+                )
                 .await?;
         }
 
@@ -697,6 +701,8 @@ impl<R: AppRuntime> Worktree<R> {
                 abs_path.display()
             )));
         }
+
+        dbg!(&abs_path);
 
         self.fs.create_dir(&abs_path).await?;
 

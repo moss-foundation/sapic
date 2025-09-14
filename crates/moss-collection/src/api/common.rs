@@ -1,13 +1,12 @@
 use moss_applib::{AppRuntime, errors::ValidationResultExt};
 use moss_hcl::Block;
-use std::path::Path;
 use validator::Validate;
 
 use crate::{
-    Collection, dirs,
+    Collection,
     models::{
         operations::CreateEntryOutput,
-        primitives::{EntryClass, EntryId, FrontendEntryPath},
+        primitives::{EntryClass, EntryId, EntryProtocol, FrontendEntryPath},
         types::{
             AfterUpdateDirEntryDescription, AfterUpdateItemEntryDescription, CreateDirEntryParams,
             CreateItemEntryParams, UpdateDirEntryParams, UpdateItemEntryParams,
@@ -62,7 +61,7 @@ impl<R: AppRuntime> Collection<R> {
                         class: input.class,
                     }),
                     url: Some(Block::new(UrlDetails {
-                        protocol: input.protocol.unwrap(),
+                        protocol: input.protocol.clone().unwrap_or(EntryProtocol::Get),
                         raw: "Hardcoded Value".to_string(),
                     })),
                     headers: None, // Hardcoded for now
