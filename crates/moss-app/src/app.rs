@@ -1,5 +1,7 @@
 use derive_more::Deref;
+use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, context::Canceller};
+use moss_logging::session;
 use moss_text::ReadOnlyStr;
 use rustc_hash::FxHashMap;
 use std::{
@@ -48,6 +50,10 @@ impl<R: TauriRuntime> DerefMut for AppCommands<R> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
+}
+
+pub struct OnAppReadyOptions {
+    pub restore_last_workspace: bool,
 }
 
 #[derive(Deref)]
@@ -113,6 +119,33 @@ impl<R: AppRuntime> App<R> {
 
         write.remove(request_id);
     }
+
+    pub async fn on_app_ready(
+        &self,
+        ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
+        options: OnAppReadyOptions,
+    ) -> joinerror::Result<()> {
+        let profile = self.profile_service.activate_profile().await?;
+
+        if options.restore_last_workspace {
+            match self.storage_service.get_last_active_workspace(ctx).await {
+                Ok(id) => {
+                    self.workspace_service
+                        .activate_workspace(ctx, app_delegate, &id, profile)
+                        .await?;
+                }
+                Err(err) => {
+                    session::warn!(format!(
+                        "failed to restore last active workspace: {}",
+                        err.to_string()
+                    ));
+                }
+            };
+        }
+
+        Ok(())
+    }
 }
 
 #[cfg(feature = "integration-tests")]
@@ -125,7 +158,7 @@ impl<R: AppRuntime> App<R> {
         self.tracked_cancellations.clone()
     }
 
-    pub async fn active_profile(&self) -> Arc<moss_user::profile::Profile<R>> {
+    pub async fn active_profile(&self) -> Option<Arc<moss_user::profile::Profile<R>>> {
         self.profile_service.active_profile().await
     }
 }

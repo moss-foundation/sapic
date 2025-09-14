@@ -176,7 +176,6 @@ async fn delete_workspace_nonexistent() {
     let (app, _, ctx, cleanup) = set_up_test_app().await;
 
     let nonexistent_id = WorkspaceId::new();
-
     let delete_result = app
         .delete_workspace(&ctx, &DeleteWorkspaceInput { id: nonexistent_id })
         .await;

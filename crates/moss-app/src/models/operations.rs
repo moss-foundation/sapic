@@ -2,7 +2,7 @@ use derive_more::Deref;
 use moss_logging::models::primitives::LogEntryId;
 use moss_user::models::{
     primitives::{AccountId, ProfileId},
-    types::AccountInfo,
+    types::{AccountInfo, ProfileInfo},
 };
 use moss_workspace::models::primitives::WorkspaceMode;
 use serde::{Deserialize, Serialize};
@@ -125,10 +125,10 @@ pub struct GetProfileOutput {
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct DescribeAppOutput {
-    /// The id of the workspace that is currently/last opened.
-    pub opened: Option<WorkspaceId>,
+    /// The id of the workspace that is currently opened.
+    pub workspace: Option<WorkspaceId>,
     /// The id of the profile that is currently active.
-    pub profile: Option<ProfileId>,
+    pub profile: Option<ProfileInfo>,
     pub configuration: Configuration,
 }
 
@@ -143,19 +143,6 @@ pub struct DescribeAppStateOutput {
     pub defaults: Defaults,
     #[ts(as = "Option<String>")]
     pub prev_workspace_id: Option<WorkspaceId>,
-}
-
-// Describe Profile
-
-/// @category Operation
-#[derive(Debug, Serialize, Clone, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct DescribeProfileOutput {
-    pub profile: ProfileId,
-    pub name: String,
-    pub accounts: Vec<AccountInfo>,
 }
 
 /// @category Operation

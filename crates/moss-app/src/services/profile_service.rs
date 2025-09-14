@@ -2,7 +2,7 @@ use joinerror::OptionExt;
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
     AppRuntime,
-    errors::{AlreadyExists, NotFound},
+    errors::{AlreadyExists, FailedPrecondition, NotFound},
     subscription::EventEmitter,
 };
 use moss_common::collections::{nonempty_hashmap::NonEmptyHashMap, nonempty_vec::NonEmptyVec};
@@ -50,16 +50,18 @@ pub(crate) struct ProfileDetails {
     pub accounts: Vec<AccountInfo>,
 }
 
-struct ServiceState<R: AppRuntime> {
+struct ServiceCache {
     profiles: NonEmptyHashMap<ProfileId, ProfileRegistryItem>,
-    active_profile: Arc<Profile<R>>,
 }
 
 pub(crate) struct ProfileService<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     auth_api_client: Arc<AccountAuthGatewayApiClient>,
     keyring: Arc<dyn KeyringClient>,
-    state: RwLock<ServiceState<R>>,
+    active_profile: RwLock<Option<Arc<Profile<R>>>>,
+    cache: RwLock<ServiceCache>,
+
+    on_did_change_profile_emitter: EventEmitter<OnDidChangeProfile>,
 }
 
 impl<R: AppRuntime> ProfileService<R> {
@@ -72,16 +74,6 @@ impl<R: AppRuntime> ProfileService<R> {
         on_did_change_profile_emitter: EventEmitter<OnDidChangeProfile>,
     ) -> joinerror::Result<Self> {
         let profiles = load_or_init_profiles(fs.as_ref(), dir_abs).await?;
-
-        // HACK: since we don't support having multiple profiles yet, we select
-        // the first profile in the folder (which is the default one) as the active one.
-        let active_profile = activate_profile(
-            profiles.first(),
-            keyring.clone(),
-            auth_api_client.clone(),
-            on_did_change_profile_emitter,
-        )
-        .await?;
 
         let profiles = {
             let first_profile_item = profiles.first().clone();
@@ -99,16 +91,15 @@ impl<R: AppRuntime> ProfileService<R> {
             fs,
             auth_api_client,
             keyring,
-            state: RwLock::new(ServiceState {
-                profiles: profiles,
-                active_profile: Arc::new(active_profile),
-            }),
+            active_profile: RwLock::new(None),
+            cache: RwLock::new(ServiceCache { profiles: profiles }),
+            on_did_change_profile_emitter,
         })
     }
 
-    pub async fn profile(&self, id: &ProfileId) -> Option<ProfileDetails> {
-        let state_lock = self.state.read().await;
-        let profile = state_lock.profiles.get(id).cloned();
+    pub async fn profile_details(&self, id: &ProfileId) -> Option<ProfileDetails> {
+        let cache_lock = self.cache.read().await;
+        let profile = cache_lock.profiles.get(id).cloned();
         profile.map(|p| ProfileDetails {
             name: p.name,
             accounts: p
@@ -124,9 +115,30 @@ impl<R: AppRuntime> ProfileService<R> {
         })
     }
 
-    pub async fn active_profile(&self) -> Arc<Profile<R>> {
-        let state_lock = self.state.read().await;
-        state_lock.active_profile.clone()
+    pub async fn activate_profile(&self) -> joinerror::Result<Arc<Profile<R>>> {
+        // HACK: since we don't support having multiple profiles yet, we select
+        // the first profile in the folder (which is the default one) as the active one.
+        let cache_lock = self.cache.read().await;
+        let active_profile: Arc<Profile<R>> = activate_profile::<R>(
+            cache_lock.profiles.first().1,
+            self.keyring.clone(),
+            self.auth_api_client.clone(),
+            &self.on_did_change_profile_emitter,
+        )
+        .await?
+        .into();
+
+        let _ = self
+            .active_profile
+            .write()
+            .await
+            .insert(active_profile.clone());
+
+        Ok(active_profile)
+    }
+
+    pub async fn active_profile(&self) -> Option<Arc<Profile<R>>> {
+        self.active_profile.read().await.clone()
     }
 
     pub async fn remove_account(
@@ -134,22 +146,27 @@ impl<R: AppRuntime> ProfileService<R> {
         app_delegate: &AppDelegate<R>,
         account_id: AccountId,
     ) -> joinerror::Result<AccountId> {
-        let mut state_lock = self.state.write().await;
+        let active_profile_lock = self.active_profile.write().await;
+        let active_profile = active_profile_lock
+            .as_ref()
+            .ok_or_join_err::<FailedPrecondition>("active profile not found")?;
 
-        let profile_id = state_lock.active_profile.id().clone();
-        let profile = state_lock
+        let mut cache_lock = self.cache.write().await;
+        let profile = cache_lock
             .profiles
-            .get_mut(&profile_id)
-            .ok_or_join_err_with::<NotFound>(|| format!("profile `{}` not found", profile_id))?;
+            .get_mut(active_profile.id())
+            .ok_or_join_err_with::<NotFound>(|| {
+                format!("profile `{}` not found", active_profile.id())
+            })?;
 
         profile.accounts.retain(|account| account.id != account_id);
 
-        self.save_profiles_registry(app_delegate, &state_lock.profiles)
+        self.save_profiles_registry(app_delegate, &cache_lock.profiles)
             .await?;
 
         // In this case, the error isn't critical. Since we removed the account from
         // the profile file, the next time a session for that account won't be established.
-        if let Err(err) = state_lock.active_profile.remove_account(&account_id).await {
+        if let Err(err) = active_profile.remove_account(&account_id).await {
             session::warn!(&format!(
                 "failed to remove account `{}`: {}",
                 account_id,
@@ -168,11 +185,12 @@ impl<R: AppRuntime> ProfileService<R> {
         kind: AccountKind,
         pat: Option<String>,
     ) -> joinerror::Result<AccountId> {
-        let mut state_lock = self.state.write().await;
+        let active_profile_lock = self.active_profile.write().await;
+        let active_profile = active_profile_lock
+            .as_ref()
+            .ok_or_join_err::<FailedPrecondition>("active profile not found")?;
 
-        let profile_id = state_lock.active_profile.id().clone();
         let account_id = AccountId::new();
-
         let (session, session_kind, username) = match kind {
             AccountKind::GitHub => {
                 let (session, session_kind) = if let Some(pat) = pat {
@@ -249,10 +267,12 @@ impl<R: AppRuntime> ProfileService<R> {
             }
         };
 
-        if let Some(_) = state_lock
-            .active_profile
+        let mut cache_lock = self.cache.write().await;
+
+        if active_profile
             .is_account_exists(&username, kind.clone(), &host)
             .await
+            .is_some()
         {
             return Err(joinerror::Error::new::<AlreadyExists>(
                 "account already exists",
@@ -269,7 +289,7 @@ impl<R: AppRuntime> ProfileService<R> {
         let account_info = account.info();
 
         // Add account to profile registry item
-        state_lock.profiles.get_mut(&profile_id).map(|p| {
+        cache_lock.profiles.get_mut(active_profile.id()).map(|p| {
             p.accounts.push(ProfileRegistryAccount {
                 id: account_info.id.clone(),
                 username: account_info.username.clone(),
@@ -280,10 +300,10 @@ impl<R: AppRuntime> ProfileService<R> {
         });
 
         // Update the registry file
-        self.save_profiles_registry(app_delegate, &state_lock.profiles)
+        self.save_profiles_registry(app_delegate, &cache_lock.profiles)
             .await?;
 
-        state_lock.active_profile.add_account(account).await;
+        active_profile.add_account(account).await;
 
         Ok(account_id)
     }
@@ -294,7 +314,7 @@ impl<R: AppRuntime> ProfileService<R> {
         name: String,
         _is_default: bool,
     ) -> joinerror::Result<ProfileId> {
-        let mut state_lock = self.state.write().await;
+        let mut state_lock = self.cache.write().await;
 
         let id = ProfileId::new();
         let profile = ProfileRegistryItem {
@@ -351,7 +371,7 @@ async fn activate_profile<R: AppRuntime>(
     keyring: Arc<dyn KeyringClient>,
     auth_api_client: Arc<AccountAuthGatewayApiClient>,
 
-    on_did_change_profile_emitter: EventEmitter<OnDidChangeProfile>,
+    on_did_change_profile_emitter: &EventEmitter<OnDidChangeProfile>,
 ) -> joinerror::Result<Profile<R>> {
     let mut accounts = HashMap::with_capacity(profile_item.accounts.len());
 
