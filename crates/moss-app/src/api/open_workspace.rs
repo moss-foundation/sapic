@@ -1,5 +1,6 @@
+use joinerror::OptionExt;
 use moss_app_delegate::AppDelegate;
-use moss_applib::AppRuntime;
+use moss_applib::{AppRuntime, errors::FailedPrecondition};
 
 use crate::{
     app::App,
@@ -13,7 +14,11 @@ impl<R: AppRuntime> App<R> {
         app_delegate: &AppDelegate<R>,
         input: &OpenWorkspaceInput,
     ) -> joinerror::Result<OpenWorkspaceOutput> {
-        let active_profile = self.profile_service.active_profile().await;
+        let active_profile = self
+            .profile_service
+            .active_profile()
+            .await
+            .ok_or_join_err::<FailedPrecondition>("no active profile to open a workspace")?;
 
         let desc = self
             .workspace_service

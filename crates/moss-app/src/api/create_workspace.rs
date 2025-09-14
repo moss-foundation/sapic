@@ -1,5 +1,9 @@
+use joinerror::OptionExt;
 use moss_app_delegate::AppDelegate;
-use moss_applib::{AppRuntime, errors::ValidationResultExt};
+use moss_applib::{
+    AppRuntime,
+    errors::{FailedPrecondition, ValidationResultExt},
+};
 use validator::Validate;
 
 use crate::{
@@ -20,7 +24,11 @@ impl<R: AppRuntime> App<R> {
     ) -> joinerror::Result<CreateWorkspaceOutput> {
         input.validate().join_err_bare()?;
 
-        let active_profile = self.profile_service.active_profile().await;
+        let active_profile = self
+            .profile_service
+            .active_profile()
+            .await
+            .ok_or_join_err::<FailedPrecondition>("no active profile to create a workspace")?;
 
         let id = WorkspaceId::new();
         let item = self

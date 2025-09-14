@@ -7,6 +7,7 @@ export type TauriIpcCommand =
   //
   // App
   //
+  | "describe_app"
   | "set_color_theme"
   | "set_locale"
   | "execute_command"
