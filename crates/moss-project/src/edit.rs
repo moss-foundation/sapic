@@ -10,13 +10,13 @@ struct CollectionEditingState {
     edit: JsonEdit,
 }
 
-pub(super) struct CollectionEdit {
+pub(super) struct ProjectEdit {
     fs: Arc<dyn FileSystem>,
     state: RwLock<CollectionEditingState>,
     manifest_abs_path: PathBuf,
 }
 
-impl CollectionEdit {
+impl ProjectEdit {
     pub fn new(fs: Arc<dyn FileSystem>, manifest_abs_path: PathBuf) -> Self {
         Self {
             fs,

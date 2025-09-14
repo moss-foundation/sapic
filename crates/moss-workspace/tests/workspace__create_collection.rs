@@ -7,7 +7,7 @@ use moss_storage::storage::operations::GetItem;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_collection_name};
 use moss_workspace::{
     models::{
-        operations::CreateCollectionInput, primitives::CollectionId, types::CreateCollectionParams,
+        operations::CreateCollectionInput, primitives::ProjectId, types::CreateCollectionParams,
     },
     storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
@@ -63,7 +63,7 @@ async fn create_collection_success() {
     )
     .await
     .unwrap();
-    let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
+    let expanded_items: Vec<ProjectId> = expanded_items_value.deserialize().unwrap();
     assert!(expanded_items.contains(&id));
 
     cleanup().await;
@@ -146,7 +146,7 @@ async fn create_collection_special_chars() {
         )
         .await
         .unwrap();
-        let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
+        let expanded_items: Vec<ProjectId> = expanded_items_value.deserialize().unwrap();
         assert!(expanded_items.contains(&id));
     }
 
@@ -208,7 +208,7 @@ async fn create_collection_with_order() {
     )
     .await
     .unwrap();
-    let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
+    let expanded_items: Vec<ProjectId> = expanded_items_value.deserialize().unwrap();
     assert!(expanded_items.contains(&id));
 
     cleanup().await;
@@ -251,7 +251,7 @@ async fn create_collection_with_icon() {
     assert!(collection_path.exists());
 
     // Verify that the icon is stored in the assets folder
-    let collection = workspace.collection(&id).await.unwrap();
+    let collection = workspace.project(&id).await.unwrap();
     assert!(collection.icon_path().is_some());
 
     // Check order was stored
@@ -272,7 +272,7 @@ async fn create_collection_with_icon() {
     )
     .await
     .unwrap();
-    let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
+    let expanded_items: Vec<ProjectId> = expanded_items_value.deserialize().unwrap();
     assert!(expanded_items.contains(&id));
 
     cleanup().await;
@@ -329,7 +329,7 @@ async fn create_multiple_collections_expanded_items() {
     )
     .await
     .unwrap();
-    let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
+    let expanded_items: Vec<ProjectId> = expanded_items_value.deserialize().unwrap();
 
     assert_eq!(expanded_items.len(), 2);
     assert!(expanded_items.contains(&create_result1.id));

@@ -13,7 +13,7 @@ export const startStreamingCollectionEntries = async (
     entries.push(collectionEntry);
   };
 
-  const result = await invokeTauriIpc("stream_project_resources", {
+  const result = await invokeTauriIpc("stream_project_entries", {
     collectionId,
     channel: onCollectionEntryEvent,
     input: path ? { "RELOAD_PATH": path } : "LOAD_ROOT",

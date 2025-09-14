@@ -14,17 +14,17 @@ use tauri::ipc::Channel as TauriChannel;
 use tokio::sync::{mpsc, oneshot};
 
 use crate::{
-    Collection,
-    collection::OnDidChangeEvent,
+    Project,
     models::{
         events::StreamEntriesEvent,
         operations::{StreamEntriesInput, StreamEntriesOutput},
         primitives::{EntryId, FrontendEntryPath},
     },
+    project::OnDidChangeEvent,
     worktree::entry::EntryDescription,
 };
 
-impl<R: AppRuntime> Collection<R> {
+impl<R: AppRuntime> Project<R> {
     pub async fn stream_entries(
         &self,
         ctx: &R::AsyncContext,

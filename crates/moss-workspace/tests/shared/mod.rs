@@ -17,7 +17,7 @@ use moss_workspace::{
     models::{
         events::StreamCollectionsEvent,
         operations::StreamCollectionsOutput,
-        primitives::{CollectionId, EditorGridOrientation, PanelRenderer},
+        primitives::{EditorGridOrientation, PanelRenderer, ProjectId},
         types::{
             EditorGridLeafData, EditorGridNode, EditorGridState, EditorPanelState,
             EditorPartStateInfo,
@@ -205,7 +205,7 @@ pub async fn test_stream_collections<R: AppRuntime>(
     ctx: &R::AsyncContext,
     workspace: &Workspace<R>,
 ) -> (
-    HashMap<CollectionId, StreamCollectionsEvent>,
+    HashMap<ProjectId, StreamCollectionsEvent>,
     StreamCollectionsOutput,
 ) {
     let received_events = Arc::new(Mutex::new(Vec::new()));

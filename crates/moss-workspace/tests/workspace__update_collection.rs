@@ -6,7 +6,7 @@ use moss_bindingutils::primitives::ChangePath;
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::models::{
     operations::{CreateCollectionInput, UpdateCollectionInput},
-    primitives::CollectionId,
+    primitives::ProjectId,
     types::{CreateCollectionParams, UpdateCollectionParams},
 };
 
@@ -52,7 +52,7 @@ async fn rename_collection_success() {
 
     // Verify the manifest is updated
     let collection = workspace
-        .collection(&create_collection_output.id.into())
+        .project(&create_collection_output.id.into())
         .await
         .unwrap();
     assert_eq!(
@@ -154,7 +154,7 @@ async fn rename_collection_nonexistent_id() {
     let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     // Use a random ID that doesn't exist
-    let nonexistent_id = CollectionId::new();
+    let nonexistent_id = ProjectId::new();
 
     let result = workspace
         .update_collection(
@@ -220,7 +220,7 @@ async fn update_collection_new_icon() {
         .unwrap();
 
     // Verify the icon is generated
-    let collection = workspace.collection(&id).await.unwrap();
+    let collection = workspace.project(&id).await.unwrap();
     assert!(collection.icon_path().is_some());
 
     cleanup().await;
@@ -270,7 +270,7 @@ async fn update_collection_remove_icon() {
         .unwrap();
 
     // Verify the icon is removed
-    let collection = workspace.collection(&id).await.unwrap();
+    let collection = workspace.project(&id).await.unwrap();
     assert!(collection.icon_path().is_none());
 
     cleanup().await;

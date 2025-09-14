@@ -9,7 +9,7 @@ use moss_applib::{
 use moss_edit::json::EditOptions;
 use moss_environment::{AnyEnvironment, Environment, models::primitives::EnvironmentId};
 use moss_fs::{FileSystem, FsResultExt};
-use moss_project::Collection;
+use moss_project::Project;
 use moss_user::profile::Profile;
 use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};
@@ -18,7 +18,7 @@ use crate::{
     builder::{OnDidAddCollection, OnDidDeleteCollection},
     edit::WorkspaceEdit,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
-    models::primitives::CollectionId,
+    models::primitives::ProjectId,
     services::{
         collection_service::CollectionService, environment_service::EnvironmentService,
         layout_service::LayoutService, storage_service::StorageService,
@@ -73,7 +73,7 @@ pub struct Workspace<R: AppRuntime> {
 }
 
 impl<R: AppRuntime> AnyWorkspace<R> for Workspace<R> {
-    type Collection = Collection<R>;
+    type Collection = Project<R>;
     type Environment = Environment<R>;
 }
 
@@ -128,7 +128,7 @@ impl<R: AppRuntime> Workspace<R> {
         &self.abs_path
     }
 
-    pub async fn collection(&self, id: &CollectionId) -> Option<Arc<Collection<R>>> {
+    pub async fn project(&self, id: &ProjectId) -> Option<Arc<Project<R>>> {
         self.collection_service.collection(id).await
     }
 

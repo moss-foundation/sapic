@@ -2,7 +2,6 @@ import { InvokeArgs, invoke as invokeTauri } from "@tauri-apps/api/core";
 import type { EventCallback, EventName } from "@tauri-apps/api/event";
 import { listen as listenTauri } from "@tauri-apps/api/event";
 
-// Define all possible Tauri IPC commands as string literals
 export type TauriIpcCommand =
   //
   // App
@@ -51,12 +50,12 @@ export type TauriIpcCommand =
   //
   // Project
   //
-  | "create_project_resource"
-  | "delete_project_resource"
-  | "update_project_resource"
-  | "stream_project_resources"
-  | "batch_update_project_resource"
-  | "batch_create_project_resource";
+  | "create_project_entry"
+  | "delete_project_entry"
+  | "update_project_entry"
+  | "stream_project_entries"
+  | "batch_update_project_entry"
+  | "batch_create_project_entry";
 
 export type IpcResult<T, E> = { status: "ok"; data: T } | { status: "error"; error: E };
 

@@ -7,14 +7,14 @@ use moss_applib::{
 };
 use moss_fs::RealFileSystem;
 use moss_project::{
-    CollectionBuilder,
-    builder::CollectionCreateParams,
-    collection::Collection,
+    ProjectBuilder,
+    builder::ProjectCreateParams,
     models::{
         operations::CreateEntryInput,
         primitives::{EntryClass, EntryId},
         types::{CreateDirEntryParams, CreateItemEntryParams},
     },
+    project::Project,
 };
 use moss_testutils::random_name::{random_collection_name, random_string};
 use nanoid::nanoid;
@@ -46,7 +46,7 @@ pub async fn create_test_collection() -> (
     AsyncContext,
     AppDelegate<MockAppRuntime>,
     Arc<Path>,
-    Collection<MockAppRuntime>,
+    Project<MockAppRuntime>,
 ) {
     let mock_app = tauri::test::mock_app();
     let ctx = MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
@@ -65,11 +65,11 @@ pub async fn create_test_collection() -> (
         delegate
     };
 
-    let collection = CollectionBuilder::new(fs)
+    let collection = ProjectBuilder::new(fs)
         .await
         .create(
             &ctx,
-            CollectionCreateParams {
+            ProjectCreateParams {
                 name: Some(random_collection_name()),
                 external_abs_path: None,
                 internal_abs_path: abs_path.clone(),
@@ -86,7 +86,7 @@ pub async fn create_test_collection() -> (
 #[allow(dead_code)]
 pub async fn create_test_endpoint_dir_entry(
     ctx: &AsyncContext,
-    collection: &mut Collection<MockAppRuntime>,
+    collection: &mut Project<MockAppRuntime>,
     name: &str,
 ) -> EntryId {
     collection
@@ -108,7 +108,7 @@ pub async fn create_test_endpoint_dir_entry(
 #[allow(dead_code)]
 pub async fn create_test_component_dir_entry(
     ctx: &AsyncContext,
-    collection: &mut Collection<MockAppRuntime>,
+    collection: &mut Project<MockAppRuntime>,
     name: &str,
 ) -> EntryId {
     collection
@@ -130,7 +130,7 @@ pub async fn create_test_component_dir_entry(
 #[allow(dead_code)]
 pub async fn create_test_component_item_entry(
     ctx: &AsyncContext,
-    collection: &mut Collection<MockAppRuntime>,
+    collection: &mut Project<MockAppRuntime>,
     name: &str,
 ) -> EntryId {
     collection
@@ -155,7 +155,7 @@ pub async fn create_test_component_item_entry(
 #[allow(dead_code)]
 pub async fn create_test_schema_dir_entry(
     ctx: &AsyncContext,
-    collection: &mut Collection<MockAppRuntime>,
+    collection: &mut Project<MockAppRuntime>,
     name: &str,
 ) -> EntryId {
     collection

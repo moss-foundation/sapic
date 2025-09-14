@@ -22,7 +22,7 @@ use crate::shared::{
 async fn scan_entries_for_test(
     ctx: &AsyncContext,
     app_delegate: &AppDelegate<MockAppRuntime>,
-    collection: &moss_project::Collection<MockAppRuntime>,
+    collection: &moss_project::Project<MockAppRuntime>,
     dir_name: &str,
 ) -> Vec<StreamEntriesEvent> {
     let entries = Arc::new(Mutex::new(Vec::new()));

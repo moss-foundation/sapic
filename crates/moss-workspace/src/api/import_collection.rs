@@ -8,7 +8,7 @@ use crate::{
     Workspace,
     models::{
         operations::{ImportCollectionInput, ImportCollectionOutput},
-        primitives::CollectionId,
+        primitives::ProjectId,
         types::ImportCollectionSource,
     },
     services::collection_service::{CollectionItemCloneParams, CollectionItemImportParams},
@@ -24,7 +24,7 @@ impl<R: AppRuntime> Workspace<R> {
         input.validate().join_err_bare()?;
 
         let params = &input.inner;
-        let id = CollectionId::new();
+        let id = ProjectId::new();
 
         let description = match &params.source {
             ImportCollectionSource::GitHub(git_params) => {

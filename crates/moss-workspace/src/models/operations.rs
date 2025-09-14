@@ -32,7 +32,7 @@ pub struct CreateCollectionInput {
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateCollectionOutput {
-    pub id: CollectionId,
+    pub id: ProjectId,
     pub name: String,
     pub order: Option<isize>,
     pub expanded: bool,
@@ -63,7 +63,7 @@ pub struct ImportCollectionInput {
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct ImportCollectionOutput {
-    pub id: CollectionId,
+    pub id: ProjectId,
     // FIXME: Maybe we should remove the name field until we have local display name
     // Since a cloned/imported collection already has a name
     pub name: String,
@@ -115,7 +115,7 @@ pub struct UpdateCollectionInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateCollectionOutput {
     #[ts(type = "string")]
-    pub id: CollectionId,
+    pub id: ProjectId,
 }
 
 /// @category Operation
@@ -134,7 +134,7 @@ pub struct BatchUpdateCollectionInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct BatchUpdateCollectionOutput {
     #[ts(as = "Vec<String>")]
-    pub ids: Vec<CollectionId>,
+    pub ids: Vec<ProjectId>,
 }
 
 /// @category Operation
@@ -143,7 +143,7 @@ pub struct BatchUpdateCollectionOutput {
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteCollectionInput {
     #[ts(type = "string")]
-    pub id: CollectionId,
+    pub id: ProjectId,
 }
 
 /// @category Operation
@@ -152,7 +152,7 @@ pub struct DeleteCollectionInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteCollectionOutput {
     #[ts(type = "string")]
-    pub id: CollectionId,
+    pub id: ProjectId,
 
     #[serde(skip)]
     #[ts(skip)]
@@ -165,7 +165,7 @@ pub struct DeleteCollectionOutput {
 #[ts(export, export_to = "operations.ts")]
 pub struct ArchiveCollectionInput {
     #[ts(type = "string")]
-    pub id: CollectionId,
+    pub id: ProjectId,
 }
 
 /// @category Operation
@@ -174,7 +174,7 @@ pub struct ArchiveCollectionInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct ArchiveCollectionOutput {
     #[ts(type = "string")]
-    pub id: CollectionId,
+    pub id: ProjectId,
 }
 
 /// @category Operation
@@ -183,7 +183,7 @@ pub struct ArchiveCollectionOutput {
 #[ts(export, export_to = "operations.ts")]
 pub struct UnarchiveCollectionInput {
     #[ts(type = "string")]
-    pub id: CollectionId,
+    pub id: ProjectId,
 }
 
 /// @category Operation
@@ -192,7 +192,7 @@ pub struct UnarchiveCollectionInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct UnarchiveCollectionOutput {
     #[ts(type = "string")]
-    pub id: CollectionId,
+    pub id: ProjectId,
 }
 
 /// @category Operation
@@ -201,7 +201,7 @@ pub struct UnarchiveCollectionOutput {
 #[ts(export, export_to = "operations.ts")]
 pub struct DescribeEnvironmentInput {
     #[ts(type = "string")]
-    pub id: CollectionId,
+    pub id: ProjectId,
 }
 
 /// @category Operation
@@ -274,7 +274,7 @@ pub struct ActivateEnvironmentOutput {
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateEnvironmentInput {
-    pub collection_id: Option<CollectionId>,
+    pub collection_id: Option<ProjectId>,
     #[validate(length(min = 1))]
     pub name: String,
     pub order: isize,
@@ -289,7 +289,7 @@ pub struct CreateEnvironmentInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateEnvironmentOutput {
     pub id: EnvironmentId,
-    pub collection_id: Option<CollectionId>,
+    pub collection_id: Option<ProjectId>,
     pub name: String,
     pub order: Option<isize>,
     pub color: Option<String>,
@@ -376,7 +376,7 @@ pub struct StreamEnvironmentsOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DescribeCollectionInput {
-    pub id: CollectionId,
+    pub id: ProjectId,
 }
 
 /// @category Operation

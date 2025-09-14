@@ -5,7 +5,7 @@ use validator::Validate;
 use crate::{
     models::{
         operations::{CreateCollectionInput, CreateCollectionOutput},
-        primitives::CollectionId,
+        primitives::ProjectId,
     },
     workspace::Workspace,
 };
@@ -21,7 +21,7 @@ impl<R: AppRuntime> Workspace<R> {
 
         debug_assert!(input.inner.external_path.is_none(), "Is not implemented");
 
-        let id = CollectionId::new();
+        let id = ProjectId::new();
 
         let account = if input.inner.git_params.is_some() {
             self.active_profile.first().await

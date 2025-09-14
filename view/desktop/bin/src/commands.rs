@@ -15,8 +15,8 @@ use moss_applib::{
     context::{AnyAsyncContext, AnyContext},
     errors::{FailedPrecondition, NotFound},
 };
-use moss_project::Collection;
-use moss_workspace::models::primitives::CollectionId;
+use moss_project::Project;
+use moss_workspace::models::primitives::ProjectId;
 use primitives::Options;
 use std::{sync::Arc, time::Duration};
 use tauri::{Manager, State};
@@ -69,16 +69,16 @@ where
     result.map_err(|e| e.into())
 }
 
-pub(super) async fn with_collection_timeout<R, T, F, Fut>(
+pub(super) async fn with_project_timeout<R, T, F, Fut>(
     ctx: &R::AsyncContext,
     app: State<'_, Arc<App<R>>>,
-    id: CollectionId,
+    id: ProjectId,
     options: Options,
     f: F,
 ) -> TauriResult<T>
 where
     R: AppRuntime,
-    F: FnOnce(R::AsyncContext, AppDelegate<R>, Arc<Collection<R>>) -> Fut + Send + 'static,
+    F: FnOnce(R::AsyncContext, AppDelegate<R>, Arc<Project<R>>) -> Fut + Send + 'static,
     Fut: std::future::Future<Output = joinerror::Result<T>> + Send + 'static,
 {
     let timeout = options
@@ -94,7 +94,7 @@ where
         .ok_or_join_err::<FailedPrecondition>("no active workspace")?;
 
     let collection = workspace
-        .collection(&id)
+        .project(&id)
         .await
         .ok_or_join_err::<NotFound>("Collection is not found")?;
 

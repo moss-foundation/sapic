@@ -13,10 +13,10 @@ use std::{
 use tokio::sync::OnceCell;
 
 use crate::{
-    Collection,
+    Project,
     config::{CONFIG_FILE_NAME, ConfigFile},
     defaults, dirs,
-    edit::CollectionEdit,
+    edit::ProjectEdit,
     errors::ErrorIo,
     git::GitClient,
     manifest::{MANIFEST_FILE_NAME, ManifestFile, ManifestVcs},
@@ -25,7 +25,7 @@ use crate::{
     worktree::Worktree,
 };
 
-const COLLECTION_ICON_SIZE: u32 = 128;
+const PROJECT_ICON_SIZE: u32 = 128;
 const OTHER_DIRS: [&str; 3] = [
     dirs::ASSETS_DIR,
     dirs::ENVIRONMENTS_DIR,
@@ -37,14 +37,14 @@ struct PredefinedFile {
     content: Option<Vec<u8>>,
 }
 
-/// List of files that are always created when a collection is created.
+/// List of files that are always created when a project is created.
 /// This list should include only files whose content is fixed and doesn't
 /// depend on any parameters or conditions.
 ///
 /// Example:
 /// * .gitignore — This file is always created with the exact same content, regardless of context.
 /// * config.json — While it's always created, its content depends on the specific parameters of the
-/// collection being created, so it is **not included** in the list of predefined files.
+/// project being created, so it is **not included** in the list of predefined files.
 const PREDEFINED_FILES: LazyCell<Vec<PredefinedFile>> = LazyCell::new(|| {
     vec![
         PredefinedFile {
@@ -52,10 +52,10 @@ const PREDEFINED_FILES: LazyCell<Vec<PredefinedFile>> = LazyCell::new(|| {
             content: Some("config.json\n**/state.db".as_bytes().to_vec()),
         },
         // ---------------------------------------------------------------------------
-        // We need to create `.gitkeep` files; otherwise, when committing the collection
+        // We need to create `.gitkeep` files; otherwise, when committing the project
         // to the repository, that folder won't be included in the commit.
         //
-        // This will cause errors when cloning the collection, since we expect that folder
+        // This will cause errors when cloning the project, since we expect that folder
         // to always exist.
         // ---------------------------------------------------------------------------
         PredefinedFile {
@@ -73,26 +73,26 @@ const PREDEFINED_FILES: LazyCell<Vec<PredefinedFile>> = LazyCell::new(|| {
     ]
 });
 
-pub struct CollectionCreateParams {
+pub struct ProjectCreateParams {
     pub name: Option<String>,
     pub internal_abs_path: Arc<Path>,
     pub external_abs_path: Option<Arc<Path>>,
-    pub git_params: Option<CollectionCreateGitParams>,
+    pub git_params: Option<ProjectCreateGitParams>,
     pub icon_path: Option<PathBuf>,
 }
 
 #[derive(Clone)]
-pub struct CollectionCreateGitParams {
+pub struct ProjectCreateGitParams {
     pub git_provider_type: GitProviderKind,
     pub repository: GitUrl,
     pub branch: String,
 }
 
-pub struct CollectionLoadParams {
+pub struct ProjectLoadParams {
     pub internal_abs_path: Arc<Path>,
 }
 
-pub struct CollectionCloneParams {
+pub struct ProjectCloneParams {
     pub internal_abs_path: Arc<Path>,
     pub account_id: AccountId,
     pub git_provider_type: GitProviderKind,
@@ -100,40 +100,40 @@ pub struct CollectionCloneParams {
     pub branch: Option<String>,
 }
 
-pub struct CollectionImportParams {
+pub struct ProjectImportParams {
     pub internal_abs_path: Arc<Path>,
     pub archive_path: Arc<Path>,
 }
 
-pub struct CollectionBuilder {
+pub struct ProjectBuilder {
     fs: Arc<dyn FileSystem>,
 }
 
-impl CollectionBuilder {
+impl ProjectBuilder {
     pub async fn new(fs: Arc<dyn FileSystem>) -> Self {
         Self { fs }
     }
 
     pub async fn load<R: AppRuntime>(
         self,
-        params: CollectionLoadParams,
-    ) -> joinerror::Result<Collection<R>> {
+        params: ProjectLoadParams,
+    ) -> joinerror::Result<Project<R>> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
         let storage_service: Arc<StorageService<R>> =
             StorageService::new(params.internal_abs_path.as_ref())
-                .join_err::<()>("failed to create collection storage service")?
+                .join_err::<()>("failed to create project storage service")?
                 .into();
         let set_icon_service = SetIconService::new(
             params.internal_abs_path.clone(),
             self.fs.clone(),
-            COLLECTION_ICON_SIZE,
+            PROJECT_ICON_SIZE,
         );
 
         // Verify that the manifest file exists
         // We will handle proper validation later
         if !params.internal_abs_path.join(MANIFEST_FILE_NAME).exists() {
-            return Err(Error::new::<()>("collection manifest file `{}` not found"));
+            return Err(Error::new::<()>("project manifest file `{}` not found"));
         }
 
         let _: ManifestFile = {
@@ -150,7 +150,7 @@ impl CollectionBuilder {
             })?
         };
 
-        // Check if the collection is archived
+        // Check if the project is archived
         // If so, we avoid loading the worktree service
         let config: ConfigFile = {
             let config_path = params.internal_abs_path.join(CONFIG_FILE_NAME);
@@ -177,12 +177,12 @@ impl CollectionBuilder {
             .into()
         };
 
-        let edit = CollectionEdit::new(
+        let edit = ProjectEdit::new(
             self.fs.clone(),
             params.internal_abs_path.join(MANIFEST_FILE_NAME),
         );
 
-        Ok(Collection {
+        Ok(Project {
             fs: self.fs,
             abs_path: params.internal_abs_path,
             edit,
@@ -198,8 +198,8 @@ impl CollectionBuilder {
     pub async fn create<R: AppRuntime>(
         self,
         ctx: &R::AsyncContext,
-        params: CollectionCreateParams,
-    ) -> joinerror::Result<Collection<R>> {
+        params: ProjectCreateParams,
+    ) -> joinerror::Result<Project<R>> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
         let abs_path: Arc<Path> = params
@@ -209,7 +209,7 @@ impl CollectionBuilder {
             .into();
 
         let storage_service: Arc<StorageService<R>> = StorageService::new(abs_path.as_ref())
-            .join_err::<()>("failed to create collection storage service")?
+            .join_err::<()>("failed to create project storage service")?
             .into();
 
         // Create expandedEntries key in the database to prevent warnings
@@ -221,7 +221,7 @@ impl CollectionBuilder {
             Worktree::new(abs_path.clone(), self.fs.clone(), storage_service.clone()).into();
 
         let set_icon_service =
-            SetIconService::new(abs_path.clone(), self.fs.clone(), COLLECTION_ICON_SIZE);
+            SetIconService::new(abs_path.clone(), self.fs.clone(), PROJECT_ICON_SIZE);
 
         for dir in &OTHER_DIRS {
             self.fs.create_dir(&abs_path.join(dir)).await?;
@@ -229,7 +229,7 @@ impl CollectionBuilder {
 
         if let Some(icon_path) = params.icon_path {
             if let Err(err) = set_icon_service.set_icon(&icon_path) {
-                session::warn!("failed to set collection icon: {}", err.to_string());
+                session::warn!("failed to set project icon: {}", err.to_string());
             }
         }
 
@@ -262,7 +262,7 @@ impl CollectionBuilder {
                 serde_json::to_string(&ManifestFile {
                     name: params
                         .name
-                        .unwrap_or(defaults::DEFAULT_COLLECTION_NAME.to_string()),
+                        .unwrap_or(defaults::DEFAULT_PROJECT_NAME.to_string()),
                     vcs: manifest_vcs_block,
                 })?
                 .as_bytes(),
@@ -302,9 +302,9 @@ impl CollectionBuilder {
                 .await?;
         }
 
-        let edit = CollectionEdit::new(self.fs.clone(), abs_path.join(MANIFEST_FILE_NAME));
+        let edit = ProjectEdit::new(self.fs.clone(), abs_path.join(MANIFEST_FILE_NAME));
 
-        Ok(Collection {
+        Ok(Project {
             fs: self.fs,
             abs_path: params.internal_abs_path.to_owned().into(),
             edit,
@@ -322,8 +322,8 @@ impl CollectionBuilder {
         self,
         ctx: &R::AsyncContext,
         git_client: GitClient<R>,
-        params: CollectionCloneParams,
-    ) -> joinerror::Result<Collection<R>> {
+        params: ProjectCloneParams,
+    ) -> joinerror::Result<Project<R>> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
         let abs_path = params.internal_abs_path.clone();
@@ -350,7 +350,7 @@ impl CollectionBuilder {
             Worktree::new(abs_path.clone(), self.fs.clone(), storage_service.clone()).into();
 
         let set_icon_service =
-            SetIconService::new(abs_path.clone(), self.fs.clone(), COLLECTION_ICON_SIZE);
+            SetIconService::new(abs_path.clone(), self.fs.clone(), PROJECT_ICON_SIZE);
 
         self.fs
             .create_file_with(
@@ -368,8 +368,8 @@ impl CollectionBuilder {
             )
             .await?;
 
-        let edit = CollectionEdit::new(self.fs.clone(), abs_path.join(MANIFEST_FILE_NAME));
-        Ok(Collection {
+        let edit = ProjectEdit::new(self.fs.clone(), abs_path.join(MANIFEST_FILE_NAME));
+        Ok(Project {
             fs: self.fs,
             abs_path,
             edit,
@@ -385,8 +385,8 @@ impl CollectionBuilder {
     pub async fn import_archive<R: AppRuntime>(
         self,
         ctx: &R::AsyncContext,
-        params: CollectionImportParams,
-    ) -> joinerror::Result<Collection<R>> {
+        params: ProjectImportParams,
+    ) -> joinerror::Result<Project<R>> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
         let abs_path = params.internal_abs_path;
@@ -406,7 +406,7 @@ impl CollectionBuilder {
             Worktree::new(abs_path.clone(), self.fs.clone(), storage_service.clone()).into();
 
         let set_icon_service =
-            SetIconService::new(abs_path.clone(), self.fs.clone(), COLLECTION_ICON_SIZE);
+            SetIconService::new(abs_path.clone(), self.fs.clone(), PROJECT_ICON_SIZE);
 
         self.fs
             .create_file_with(
@@ -424,9 +424,9 @@ impl CollectionBuilder {
             )
             .await?;
 
-        let edit = CollectionEdit::new(self.fs.clone(), abs_path.join(MANIFEST_FILE_NAME));
+        let edit = ProjectEdit::new(self.fs.clone(), abs_path.join(MANIFEST_FILE_NAME));
 
-        Ok(Collection {
+        Ok(Project {
             fs: self.fs,
             abs_path,
             edit,
@@ -440,7 +440,7 @@ impl CollectionBuilder {
     }
 }
 
-impl CollectionBuilder {
+impl ProjectBuilder {
     async fn do_clone<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,

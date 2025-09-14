@@ -11,7 +11,7 @@ use crate::{
     Workspace, dirs,
     edit::WorkspaceEdit,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
-    models::primitives::CollectionId,
+    models::primitives::ProjectId,
     services::{
         collection_service::CollectionService, environment_service::EnvironmentService,
         layout_service::LayoutService, storage_service::StorageService,
@@ -47,12 +47,12 @@ pub struct WorkspaceBuilder<R: AppRuntime> {
 
 #[derive(Clone)]
 pub struct OnDidDeleteCollection {
-    pub collection_id: CollectionId,
+    pub collection_id: ProjectId,
 }
 
 #[derive(Clone)]
 pub struct OnDidAddCollection {
-    pub collection_id: CollectionId,
+    pub collection_id: ProjectId,
 }
 
 impl EventMarker for OnDidDeleteCollection {}

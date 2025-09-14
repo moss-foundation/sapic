@@ -3,7 +3,7 @@ pub mod shared;
 
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::models::{
-    events::StreamCollectionsEvent, operations::CreateCollectionInput, primitives::CollectionId,
+    events::StreamCollectionsEvent, operations::CreateCollectionInput, primitives::ProjectId,
     types::CreateCollectionParams,
 };
 use std::{
@@ -149,7 +149,7 @@ async fn stream_collections_multiple_collections() {
     assert_eq!(output.total_returned, 5);
 
     // Convert events to a map for easier verification
-    let events_map: HashMap<CollectionId, &StreamCollectionsEvent> = events
+    let events_map: HashMap<ProjectId, &StreamCollectionsEvent> = events
         .iter()
         .map(|event| (event.id.clone(), event))
         .collect();
@@ -297,7 +297,7 @@ async fn stream_collections_mixed_configurations() {
     assert_eq!(output.total_returned, 2);
 
     // Convert events to a map for easier verification
-    let events_map: HashMap<CollectionId, &StreamCollectionsEvent> = events
+    let events_map: HashMap<ProjectId, &StreamCollectionsEvent> = events
         .iter()
         .map(|event| (event.id.clone(), event))
         .collect();

@@ -12,7 +12,7 @@ use moss_user::models::primitives::AccountId;
 use moss_workspace::{
     models::{
         operations::ImportCollectionInput,
-        primitives::CollectionId,
+        primitives::ProjectId,
         types::{GitHubImportParams, ImportCollectionParams, ImportCollectionSource},
     },
     storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
@@ -84,7 +84,7 @@ async fn clone_collection_success() {
     )
     .await
     .unwrap();
-    let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
+    let expanded_items: Vec<ProjectId> = expanded_items_value.deserialize().unwrap();
     assert!(expanded_items.contains(&id));
 
     cleanup().await;

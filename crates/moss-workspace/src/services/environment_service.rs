@@ -33,7 +33,7 @@ use crate::{
     dirs,
     errors::ErrorNotFound,
     models::{
-        primitives::CollectionId,
+        primitives::ProjectId,
         types::{EnvironmentGroup, UpdateEnvironmentGroupParams, UpdateEnvironmentParams},
     },
     services::storage_service::StorageService,
@@ -47,7 +47,7 @@ pub struct ActivateEnvironmentItemParams {
 }
 
 pub struct CreateEnvironmentItemParams {
-    pub collection_id: Option<CollectionId>,
+    pub collection_id: Option<ProjectId>,
     pub name: String,
     pub order: isize,
     pub color: Option<String>,

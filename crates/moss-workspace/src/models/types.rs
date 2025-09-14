@@ -17,7 +17,7 @@ use std::{
 use ts_rs::TS;
 use validator::{Validate, ValidationError};
 
-use crate::models::primitives::{ActivitybarPosition, CollectionId, SidebarPosition};
+use crate::models::primitives::{ActivitybarPosition, ProjectId, SidebarPosition};
 
 pub type EnvironmentName = String;
 
@@ -60,7 +60,7 @@ pub struct ImportCollectionParams {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct ExportCollectionParams {
-    pub id: CollectionId,
+    pub id: ProjectId,
     /// Path to the folder containing the output archive file
     #[validate(custom(function = "validate_export_destination"))]
     pub destination: PathBuf,
@@ -90,7 +90,7 @@ pub struct EnvironmentGroup {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct UpdateEnvironmentGroupParams {
-    pub collection_id: CollectionId,
+    pub collection_id: ProjectId,
     pub expanded: Option<bool>,
     pub order: Option<isize>,
 }
@@ -101,7 +101,7 @@ pub struct UpdateEnvironmentGroupParams {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct UpdateCollectionParams {
-    pub id: CollectionId,
+    pub id: ProjectId,
 
     #[validate(length(min = 1))]
     pub name: Option<String>,
@@ -350,7 +350,7 @@ pub struct Contributor {
 #[ts(export, export_to = "types.ts")]
 pub struct EntryChange {
     // TODO: entry id
-    pub collection_id: CollectionId,
+    pub collection_id: ProjectId,
     pub path: PathBuf,
     #[ts(type = "FileStatus")]
     pub status: FileStatus,

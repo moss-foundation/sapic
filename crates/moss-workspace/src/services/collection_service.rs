@@ -11,10 +11,10 @@ use moss_git_hosting_provider::{
 };
 use moss_logging::session;
 use moss_project::{
-    Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
+    Project as CollectionHandle, ProjectBuilder, ProjectModifyParams,
     builder::{
-        CollectionCloneParams, CollectionCreateGitParams, CollectionCreateParams,
-        CollectionImportParams, CollectionLoadParams,
+        ProjectCloneParams, ProjectCreateGitParams, ProjectCreateParams, ProjectImportParams,
+        ProjectLoadParams,
     },
     git::GitClient,
     vcs::VcsSummary,
@@ -33,7 +33,7 @@ use crate::{
     builder::{OnDidAddCollection, OnDidDeleteCollection},
     dirs,
     models::{
-        primitives::CollectionId,
+        primitives::ProjectId,
         types::{
             CreateCollectionGitParams, CreateCollectionParams, EntryChange, ExportCollectionParams,
             UpdateCollectionParams,
@@ -59,7 +59,7 @@ pub(crate) struct CollectionItemImportParams {
 
 #[derive(Deref, DerefMut)]
 struct CollectionItem<R: AppRuntime> {
-    pub id: CollectionId,
+    pub id: ProjectId,
     pub order: Option<isize>,
 
     #[deref]
@@ -68,7 +68,7 @@ struct CollectionItem<R: AppRuntime> {
 }
 
 pub(crate) struct CollectionItemDescription {
-    pub id: CollectionId,
+    pub id: ProjectId,
     pub name: String,
     pub order: Option<isize>,
     pub expanded: bool,
@@ -84,8 +84,8 @@ pub(crate) struct CollectionItemDescription {
 
 #[derive(Default)]
 struct ServiceState<R: AppRuntime> {
-    collections: HashMap<CollectionId, CollectionItem<R>>,
-    expanded_items: HashSet<CollectionId>,
+    collections: HashMap<ProjectId, CollectionItem<R>>,
+    expanded_items: HashSet<ProjectId>,
 }
 
 pub struct CollectionService<R: AppRuntime> {
@@ -142,7 +142,7 @@ impl<R: AppRuntime> CollectionService<R> {
         })
     }
 
-    pub async fn collection(&self, id: &CollectionId) -> Option<Arc<CollectionHandle<R>>> {
+    pub async fn collection(&self, id: &ProjectId) -> Option<Arc<CollectionHandle<R>>> {
         let state_lock = self.state.read().await;
         state_lock
             .collections
@@ -154,7 +154,7 @@ impl<R: AppRuntime> CollectionService<R> {
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
-        id: &CollectionId,
+        id: &ProjectId,
         account: Option<Account<R>>,
         params: &CreateCollectionParams,
     ) -> joinerror::Result<CollectionItemDescription> {
@@ -197,7 +197,7 @@ impl<R: AppRuntime> CollectionService<R> {
                         None
                     }
                 };
-                repository.map(|repository| CollectionCreateGitParams {
+                repository.map(|repository| ProjectCreateGitParams {
                     git_provider_type: GitProviderKind::GitHub,
                     repository,
                     branch: git_params.branch.clone(),
@@ -222,7 +222,7 @@ impl<R: AppRuntime> CollectionService<R> {
                         None
                     }
                 };
-                repository.map(|repository| CollectionCreateGitParams {
+                repository.map(|repository| ProjectCreateGitParams {
                     git_provider_type: GitProviderKind::GitLab,
                     repository,
                     branch: git_params.branch.clone(),
@@ -231,12 +231,12 @@ impl<R: AppRuntime> CollectionService<R> {
         };
 
         let abs_path: Arc<Path> = abs_path.clone().into();
-        let builder = CollectionBuilder::new(self.fs.clone()).await;
+        let builder = ProjectBuilder::new(self.fs.clone()).await;
 
         let collection = match builder
             .create(
                 ctx,
-                CollectionCreateParams {
+                ProjectCreateParams {
                     name: Some(params.name.to_owned()),
                     internal_abs_path: abs_path.clone(),
                     external_abs_path: params.external_path.as_deref().map(|p| p.to_owned().into()),
@@ -346,7 +346,7 @@ impl<R: AppRuntime> CollectionService<R> {
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
-        id: &CollectionId,
+        id: &ProjectId,
         account: Account<R>,
         params: CollectionItemCloneParams,
     ) -> joinerror::Result<CollectionItemDescription> {
@@ -368,7 +368,7 @@ impl<R: AppRuntime> CollectionService<R> {
                 format!("failed to create directory `{}`", abs_path.display())
             })?;
 
-        let builder = CollectionBuilder::new(self.fs.clone()).await;
+        let builder = ProjectBuilder::new(self.fs.clone()).await;
 
         let repository = match GitUrl::parse(&params.repository) {
             Ok(repository) => repository,
@@ -403,7 +403,7 @@ impl<R: AppRuntime> CollectionService<R> {
             .clone(
                 ctx,
                 git_client,
-                CollectionCloneParams {
+                ProjectCloneParams {
                     internal_abs_path: abs_path.clone(),
                     account_id: params.account_id,
                     git_provider_type: params.git_provider_type.clone(),
@@ -483,7 +483,7 @@ impl<R: AppRuntime> CollectionService<R> {
     pub(crate) async fn delete_collection(
         &self,
         ctx: &R::AsyncContext,
-        id: &CollectionId,
+        id: &ProjectId,
     ) -> joinerror::Result<Option<PathBuf>> {
         let id_str = id.to_string();
         let abs_path = self.abs_path.join(id_str);
@@ -543,7 +543,7 @@ impl<R: AppRuntime> CollectionService<R> {
     pub(crate) async fn update_collection(
         &self,
         ctx: &R::AsyncContext,
-        id: &CollectionId,
+        id: &ProjectId,
         params: UpdateCollectionParams,
     ) -> joinerror::Result<()> {
         let mut state_lock = self.state.write().await;
@@ -565,7 +565,7 @@ impl<R: AppRuntime> CollectionService<R> {
 
         // TODO: Implement relinking and unlinking remote repo when the user update it
 
-        item.modify(CollectionModifyParams {
+        item.modify(ProjectModifyParams {
             name: params.name,
             repository: params.repository,
             icon_path: params.icon_path,
@@ -637,7 +637,7 @@ impl<R: AppRuntime> CollectionService<R> {
     pub(crate) async fn archive_collection(
         &self,
         _ctx: &R::AsyncContext,
-        id: &CollectionId,
+        id: &ProjectId,
     ) -> joinerror::Result<()> {
         let mut state_lock = self.state.write().await;
         let item = state_lock
@@ -653,7 +653,7 @@ impl<R: AppRuntime> CollectionService<R> {
     pub(crate) async fn unarchive_collection(
         &self,
         _ctx: &R::AsyncContext,
-        id: &CollectionId,
+        id: &ProjectId,
     ) -> joinerror::Result<()> {
         let mut state_lock = self.state.write().await;
         let item = state_lock
@@ -669,7 +669,7 @@ impl<R: AppRuntime> CollectionService<R> {
     pub(crate) async fn import_collection(
         &self,
         ctx: &R::AsyncContext,
-        id: &CollectionId,
+        id: &ProjectId,
         params: CollectionItemImportParams,
     ) -> joinerror::Result<CollectionItemDescription> {
         let mut rb = self.fs.start_rollback().await?;
@@ -690,12 +690,12 @@ impl<R: AppRuntime> CollectionService<R> {
                 format!("failed to create directory `{}`", abs_path.display())
             })?;
 
-        let builder = CollectionBuilder::new(self.fs.clone()).await;
+        let builder = ProjectBuilder::new(self.fs.clone()).await;
 
         let collection = match builder
             .import_archive(
                 ctx,
-                CollectionImportParams {
+                ProjectImportParams {
                     internal_abs_path: abs_path.clone(),
                     archive_path: params.archive_path.into(),
                 },
@@ -714,7 +714,7 @@ impl<R: AppRuntime> CollectionService<R> {
 
         // Update the collection name based on user input
         if let Err(e) = collection
-            .modify(CollectionModifyParams {
+            .modify(ProjectModifyParams {
                 name: Some(params.name),
                 repository: None,
                 icon_path: None,
@@ -779,7 +779,7 @@ impl<R: AppRuntime> CollectionService<R> {
 
     pub(crate) async fn export_collection(
         &self,
-        id: &CollectionId,
+        id: &ProjectId,
         params: &ExportCollectionParams,
     ) -> joinerror::Result<PathBuf> {
         let state_lock = self.state.read().await;
@@ -839,7 +839,7 @@ async fn restore_collections<R: AppRuntime>(
     fs: &Arc<dyn FileSystem>,
     storage: &Arc<StorageService<R>>,
     active_profile: &Arc<Profile<R>>,
-) -> joinerror::Result<HashMap<CollectionId, CollectionItem<R>>> {
+) -> joinerror::Result<HashMap<ProjectId, CollectionItem<R>>> {
     if !abs_path.exists() {
         return Ok(HashMap::new());
     }
@@ -867,14 +867,14 @@ async fn restore_collections<R: AppRuntime>(
         )))?;
 
         let id_str = entry.file_name().to_string_lossy().to_string();
-        let id: CollectionId = id_str.clone().into();
+        let id: ProjectId = id_str.clone().into();
 
         let collection = {
             let collection_abs_path: Arc<Path> = entry.path().to_owned().into();
-            let builder = CollectionBuilder::new(fs.clone()).await;
+            let builder = ProjectBuilder::new(fs.clone()).await;
 
             let collection_result = builder
-                .load(CollectionLoadParams {
+                .load(ProjectLoadParams {
                     internal_abs_path: collection_abs_path,
                 })
                 .await;

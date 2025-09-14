@@ -2,15 +2,15 @@ use moss_applib::AppRuntime;
 use tauri::ipc::Channel as TauriChannel;
 
 use crate::{
-    collection::Collection,
     errors::ErrorInternal,
     models::{
         events::BatchUpdateEntryEvent,
         operations::{BatchUpdateEntryInput, BatchUpdateEntryKind, BatchUpdateEntryOutput},
     },
+    project::Project,
 };
 
-impl<R: AppRuntime> Collection<R> {
+impl<R: AppRuntime> Project<R> {
     pub async fn batch_update_entry(
         &self,
         ctx: &R::AsyncContext,

@@ -1,11 +1,11 @@
 use moss_applib::AppRuntime;
 
 use crate::{
-    Collection,
+    Project,
     models::operations::{BatchCreateEntryInput, BatchCreateEntryKind, BatchCreateEntryOutput},
 };
 
-impl<R: AppRuntime> Collection<R> {
+impl<R: AppRuntime> Project<R> {
     pub async fn batch_create_entry(
         &self,
         ctx: &R::AsyncContext,

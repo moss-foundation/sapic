@@ -1,11 +1,11 @@
 use moss_applib::AppRuntime;
 
 use crate::{
-    collection::Collection,
     models::operations::{CreateEntryInput, CreateEntryOutput},
+    project::Project,
 };
 
-impl<R: AppRuntime> Collection<R> {
+impl<R: AppRuntime> Project<R> {
     pub async fn create_entry(
         &self,
         ctx: &R::AsyncContext,

@@ -2,11 +2,11 @@ use moss_applib::{AppRuntime, errors::ValidationResultExt};
 use validator::Validate;
 
 use crate::{
-    collection::Collection,
     models::operations::{DeleteEntryInput, DeleteEntryOutput},
+    project::Project,
 };
 
-impl<R: AppRuntime> Collection<R> {
+impl<R: AppRuntime> Project<R> {
     pub async fn delete_entry(
         &self,
         ctx: &R::AsyncContext,

@@ -23,7 +23,7 @@ pub struct VcsSummary {
 }
 
 #[async_trait]
-pub trait CollectionVcs<R: AppRuntime>: Send + Sync {
+pub trait ProjectVcs<R: AppRuntime>: Send + Sync {
     async fn summary(&self, ctx: &R::AsyncContext) -> joinerror::Result<VcsSummary>;
     async fn contributors(&self, ctx: &R::AsyncContext) -> joinerror::Result<Vec<ContributorInfo>>;
     async fn statuses(&self) -> joinerror::Result<HashMap<PathBuf, FileStatus>>;
@@ -86,7 +86,7 @@ impl<R: AppRuntime> Vcs<R> {
 }
 
 #[async_trait]
-impl<R: AppRuntime> CollectionVcs<R> for Vcs<R> {
+impl<R: AppRuntime> ProjectVcs<R> for Vcs<R> {
     async fn summary(&self, ctx: &R::AsyncContext) -> joinerror::Result<VcsSummary> {
         let repo = self.client.repository(ctx, &self.url).await?;
 

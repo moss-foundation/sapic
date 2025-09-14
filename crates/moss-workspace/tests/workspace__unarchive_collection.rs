@@ -3,7 +3,7 @@
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::models::{
     operations::{ArchiveCollectionInput, CreateCollectionInput, UnarchiveCollectionInput},
-    primitives::CollectionId,
+    primitives::ProjectId,
     types::CreateCollectionParams,
 };
 
@@ -102,7 +102,7 @@ pub async fn unarchived_collection_nonexistent() {
         .unarchive_collection(
             &ctx,
             UnarchiveCollectionInput {
-                id: CollectionId::new(),
+                id: ProjectId::new(),
             },
         )
         .await;

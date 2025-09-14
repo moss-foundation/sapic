@@ -26,11 +26,11 @@ use tokio::sync::OnceCell;
 use crate::{
     config::{CONFIG_FILE_NAME, ConfigFile},
     dirs,
-    edit::CollectionEdit,
+    edit::ProjectEdit,
     git::GitClient,
     manifest::{MANIFEST_FILE_NAME, ManifestFile, ManifestVcs},
     services::{set_icon_service::SetIconService, storage_service::StorageService},
-    vcs::{CollectionVcs, Vcs},
+    vcs::{ProjectVcs, Vcs},
     worktree::Worktree,
 };
 
@@ -43,18 +43,18 @@ pub enum OnDidChangeEvent {
 
 impl EventMarker for OnDidChangeEvent {}
 
-pub struct CollectionModifyParams {
+pub struct ProjectModifyParams {
     pub name: Option<String>,
     pub repository: Option<ChangeString>,
     pub icon_path: Option<ChangePath>,
 }
 
-pub struct CollectionConfigModifyParams {
+pub struct ProjectConfigModifyParams {
     pub archived: Option<bool>,
     pub account_id: Option<AccountId>,
 }
 
-pub struct CollectionDetails {
+pub struct ProjectDetails {
     pub name: String,
     pub created_at: String, // File created time
     pub vcs: Option<VcsDetails>,
@@ -81,11 +81,11 @@ impl From<ManifestVcs> for VcsDetails {
     }
 }
 
-pub struct Collection<R: AppRuntime> {
+pub struct Project<R: AppRuntime> {
     #[allow(dead_code)]
     pub(super) fs: Arc<dyn FileSystem>,
     pub(super) abs_path: Arc<Path>,
-    pub(super) edit: CollectionEdit,
+    pub(super) edit: ProjectEdit,
     pub(super) worktree: OnceCell<Arc<Worktree<R>>>,
     pub(super) set_icon_service: SetIconService,
     pub(super) storage_service: Arc<StorageService<R>>,
@@ -94,14 +94,14 @@ pub struct Collection<R: AppRuntime> {
     pub(super) archived: AtomicBool,
 }
 
-unsafe impl<R: AppRuntime> Send for Collection<R> {}
+unsafe impl<R: AppRuntime> Send for Project<R> {}
 
 #[rustfmt::skip]
-impl<R: AppRuntime> Collection<R> {
+impl<R: AppRuntime> Project<R> {
     pub fn on_did_change(&self) -> Event<OnDidChangeEvent> { self.on_did_change.event() }
 }
 
-impl<R: AppRuntime> Collection<R> {
+impl<R: AppRuntime> Project<R> {
     pub(crate) async fn worktree(&self) -> &Arc<Worktree<R>> {
         self.worktree
             .get_or_init(|| async {
@@ -133,8 +133,8 @@ impl<R: AppRuntime> Collection<R> {
         self.abs_path.join(dirs::ENVIRONMENTS_DIR)
     }
 
-    pub fn vcs(&self) -> Option<&dyn CollectionVcs<R>> {
-        self.vcs.get().map(|vcs| vcs as &dyn CollectionVcs<R>)
+    pub fn vcs(&self) -> Option<&dyn ProjectVcs<R>> {
+        self.vcs.get().map(|vcs| vcs as &dyn ProjectVcs<R>)
     }
     pub async fn init_vcs(
         &self,
@@ -147,7 +147,7 @@ impl<R: AppRuntime> Collection<R> {
         // Since it will trigger spurious git2 type errors
         {
             let account_id = client.account_id();
-            self.modify_config(CollectionConfigModifyParams {
+            self.modify_config(ProjectConfigModifyParams {
                 archived: None,
                 account_id: Some(account_id),
             })
@@ -262,7 +262,7 @@ impl<R: AppRuntime> Collection<R> {
         Ok(())
     }
 
-    pub async fn details(&self) -> joinerror::Result<CollectionDetails> {
+    pub async fn details(&self) -> joinerror::Result<ProjectDetails> {
         let manifest_path = self.abs_path.join(MANIFEST_FILE_NAME);
         let rdr = self
             .fs
@@ -291,7 +291,7 @@ impl<R: AppRuntime> Collection<R> {
 
         let created_at: DateTime<Utc> = std::fs::metadata(&manifest_path)?.created()?.into();
 
-        Ok(CollectionDetails {
+        Ok(ProjectDetails {
             name: manifest.name,
             created_at: created_at.to_rfc3339(),
             vcs: manifest.vcs.map(|vcs| vcs.into()),
@@ -299,7 +299,7 @@ impl<R: AppRuntime> Collection<R> {
         })
     }
 
-    pub async fn modify(&self, params: CollectionModifyParams) -> joinerror::Result<()> {
+    pub async fn modify(&self, params: ProjectModifyParams) -> joinerror::Result<()> {
         let mut patches = Vec::new();
 
         if let Some(new_name) = params.name {
@@ -327,14 +327,14 @@ impl<R: AppRuntime> Collection<R> {
         self.edit
             .edit(&patches)
             .await
-            .join_err::<()>("failed to edit collection")?;
+            .join_err::<()>("failed to edit project")?;
 
         Ok(())
     }
 
     pub(crate) async fn modify_config(
         &self,
-        params: CollectionConfigModifyParams,
+        params: ProjectConfigModifyParams,
     ) -> joinerror::Result<()> {
         let config_path = self.abs_path.join(CONFIG_FILE_NAME);
         let rdr = self
@@ -397,7 +397,7 @@ impl<R: AppRuntime> Collection<R> {
         }
         self.archived.store(true, Ordering::Relaxed);
 
-        self.modify_config(CollectionConfigModifyParams {
+        self.modify_config(ProjectConfigModifyParams {
             archived: Some(true),
             account_id: None,
         })
@@ -420,7 +420,7 @@ impl<R: AppRuntime> Collection<R> {
             return Ok(());
         }
 
-        self.modify_config(CollectionConfigModifyParams {
+        self.modify_config(ProjectConfigModifyParams {
             archived: Some(false),
             account_id: None,
         })
@@ -442,16 +442,16 @@ impl<R: AppRuntime> Collection<R> {
         Ok(())
     }
 
-    /// Export the collection to {destination}/{collection_name}.zip
+    /// Export the project to {destination}/{project_name}.zip
     /// Returns the path to the output archive file
     pub async fn export_archive(&self, destination: &Path) -> joinerror::Result<PathBuf> {
         // If the output is inside the collection folder, it will also be bundled, which we don't want
         if destination.starts_with(&self.abs_path) {
             return Err(Error::new::<()>(
-                "cannot export archive file into the collection folder",
+                "cannot export archive file into the project folder",
             ));
         }
-        // Collection name can contain special chars that need sanitizing
+        // Project name can contain special chars that need sanitizing
         let raw_name = format!("{}", self.details().await?.name);
         let sanitized_name = sanitize(&raw_name);
         let archive_path = destination.join(format!("{}.zip", sanitized_name));
@@ -468,7 +468,7 @@ impl<R: AppRuntime> Collection<R> {
     }
 }
 #[cfg(any(test, feature = "integration-tests"))]
-impl<R: AppRuntime> Collection<R> {
+impl<R: AppRuntime> Project<R> {
     pub fn db(&self) -> &Arc<dyn moss_storage::CollectionStorage<R::AsyncContext>> {
         self.storage_service.storage()
     }

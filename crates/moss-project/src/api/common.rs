@@ -3,7 +3,7 @@ use moss_hcl::Block;
 use validator::Validate;
 
 use crate::{
-    Collection,
+    Project,
     models::{
         operations::CreateEntryOutput,
         primitives::{EntryClass, EntryId, EntryProtocol, FrontendEntryPath},
@@ -18,7 +18,7 @@ use crate::{
     },
 };
 
-impl<R: AppRuntime> Collection<R> {
+impl<R: AppRuntime> Project<R> {
     pub(super) async fn create_dir_entry(
         &self,
         ctx: &R::AsyncContext,

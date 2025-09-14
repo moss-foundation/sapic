@@ -7,7 +7,7 @@ use crate::{
     Workspace,
     models::{
         events::StreamEnvironmentsEvent, operations::StreamEnvironmentsOutput,
-        primitives::CollectionId,
+        primitives::ProjectId,
     },
 };
 
@@ -24,7 +24,7 @@ impl<R: AppRuntime> Workspace<R> {
         while let Some(item) = stream.next().await {
             if let Err(e) = channel.send(StreamEnvironmentsEvent {
                 id: item.id,
-                collection_id: item.collection_id.map(|id| CollectionId::from(id)),
+                collection_id: item.collection_id.map(|id| ProjectId::from(id)),
                 is_active: item.is_active,
                 name: item.display_name,
                 order: item.order,
