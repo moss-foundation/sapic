@@ -8,7 +8,7 @@ use std::{collections::HashMap, sync::Arc};
 
 use crate::{
     constants::{
-        TREE_VIEW_GROUP_COLLECTIONS, TREE_VIEW_GROUP_ENVIRONMENTS, TREE_VIEW_GROUP_MOCK_SERVERS,
+        TREE_VIEW_GROUP_ENVIRONMENTS, TREE_VIEW_GROUP_MOCK_SERVERS, TREE_VIEW_GROUP_PROJECTS,
     },
     models::{
         primitives::{ActivitybarPosition, SidebarPosition},
@@ -61,7 +61,7 @@ const ACTIVITYBAR_DEFAULTS: ActivitybarPartDefaults = ActivitybarPartDefaults {
     position: ActivitybarPosition::Default,
     items: &[
         ActivitybarItem {
-            id: TREE_VIEW_GROUP_COLLECTIONS,
+            id: TREE_VIEW_GROUP_PROJECTS,
             order: 0,
             visible: true,
         },
@@ -241,7 +241,7 @@ impl<R: AppRuntime> LayoutService<R> {
                 cache,
                 SEGKEY_LAYOUT_ACTIVITYBAR.join("lastActiveContainerId"),
             )
-            .or_else(|| Some(TREE_VIEW_GROUP_COLLECTIONS.to_string())),
+            .or_else(|| Some(TREE_VIEW_GROUP_PROJECTS.to_string())),
 
             position: get_from_cache::<ActivitybarPosition>(
                 cache,
