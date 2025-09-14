@@ -39,6 +39,7 @@ pub struct CreateItemEntryParams {
 pub struct CreateDirEntryParams {
     #[validate(custom(function = "validate_create_entry_input_path"))]
     pub path: PathBuf,
+    pub class: EntryClass,
 
     #[validate(length(min = 1))]
     pub name: String,

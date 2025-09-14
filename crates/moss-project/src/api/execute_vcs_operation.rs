@@ -3,14 +3,14 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 
 use crate::{
-    Collection,
+    Project,
     models::{
         operations::{ExecuteVcsOperationInput, ExecuteVcsOperationOutput},
         types::VcsOperation,
     },
 };
 
-impl<R: AppRuntime> Collection<R> {
+impl<R: AppRuntime> Project<R> {
     pub async fn execute_vcs_operation(
         &self,
         ctx: &R::AsyncContext,
