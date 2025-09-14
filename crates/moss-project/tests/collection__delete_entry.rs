@@ -1,7 +1,7 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
-use moss_collection::{
+use moss_project::{
     dirs,
     errors::ErrorNotFound,
     models::{operations::DeleteEntryInput, primitives::EntryId},
@@ -9,20 +9,21 @@ use moss_collection::{
 use std::path::PathBuf;
 
 use crate::shared::{
-    create_test_collection, create_test_component_dir_entry, create_test_endpoint_dir_entry,
-    create_test_request_dir_entry, create_test_schema_dir_entry, random_entry_name,
+    RESOURCES_ROOT_DIR, create_test_collection, create_test_component_dir_entry,
+    create_test_endpoint_dir_entry, create_test_schema_dir_entry, random_entry_name,
 };
 
 #[tokio::test]
 async fn delete_entry_success() {
     let (ctx, _, collection_path, mut collection) = create_test_collection().await;
+    let resources_dir = collection_path.join(dirs::RESOURCES_DIR);
 
     let entry_name = random_entry_name();
-    let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
-    let entry_id = create_test_request_dir_entry(&ctx, &mut collection, &entry_name).await;
+    let entry_path = PathBuf::from(RESOURCES_ROOT_DIR);
+    let entry_id = create_test_endpoint_dir_entry(&ctx, &mut collection, &entry_name).await;
 
     // Verify entry was created
-    let expected_dir = collection_path.join(&entry_path).join(&entry_name);
+    let expected_dir = resources_dir.join(&entry_path).join(&entry_name);
     assert!(expected_dir.exists());
 
     // Delete the entry
@@ -58,13 +59,14 @@ async fn delete_entry_not_found() {
 #[tokio::test]
 async fn delete_entry_with_subdirectories() {
     let (ctx, _, collection_path, mut collection) = create_test_collection().await;
+    let resources_dir = collection_path.join(dirs::RESOURCES_DIR);
 
     let entry_name = random_entry_name();
-    let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
-    let entry_id = create_test_request_dir_entry(&ctx, &mut collection, &entry_name).await;
+    let entry_path = PathBuf::from(RESOURCES_ROOT_DIR);
+    let entry_id = create_test_endpoint_dir_entry(&ctx, &mut collection, &entry_name).await;
 
     // Create some subdirectories and files inside the entry
-    let entry_dir = collection_path.join(&entry_path).join(&entry_name);
+    let entry_dir = resources_dir.join(&entry_path).join(&entry_name);
     let sub_dir = entry_dir.join("subdir");
     let sub_sub_dir = sub_dir.join("subsubdir");
 
@@ -95,19 +97,20 @@ async fn delete_entry_with_subdirectories() {
 #[tokio::test]
 async fn delete_multiple_entries() {
     let (ctx, _, collection_path, mut collection) = create_test_collection().await;
+    let resources_dir = collection_path.join(dirs::RESOURCES_DIR);
 
     let entry1_name = format!("{}_1", random_entry_name());
     let entry2_name = format!("{}_2", random_entry_name());
 
-    let entry1_path = PathBuf::from(dirs::REQUESTS_DIR);
-    let entry1_id = create_test_request_dir_entry(&ctx, &mut collection, &entry1_name).await;
+    let entry1_path = PathBuf::from(RESOURCES_ROOT_DIR);
+    let entry1_id = create_test_endpoint_dir_entry(&ctx, &mut collection, &entry1_name).await;
 
-    let entry2_path = PathBuf::from(dirs::ENDPOINTS_DIR);
+    let entry2_path = PathBuf::from(RESOURCES_ROOT_DIR);
     let entry2_id = create_test_endpoint_dir_entry(&ctx, &mut collection, &entry2_name).await;
 
     // Verify both entries were created
-    let expected_dir1 = collection_path.join(&entry1_path).join(&entry1_name);
-    let expected_dir2 = collection_path.join(&entry2_path).join(&entry2_name);
+    let expected_dir1 = resources_dir.join(&entry1_path).join(&entry1_name);
+    let expected_dir2 = resources_dir.join(&entry2_path).join(&entry2_name);
     assert!(expected_dir1.exists());
     assert!(expected_dir2.exists());
 
@@ -138,13 +141,14 @@ async fn delete_multiple_entries() {
 #[tokio::test]
 async fn delete_entry_twice() {
     let (ctx, _, collection_path, mut collection) = create_test_collection().await;
+    let resources_dir = collection_path.join(dirs::RESOURCES_DIR);
 
     let entry_name = random_entry_name();
-    let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
-    let entry_id = create_test_request_dir_entry(&ctx, &mut collection, &entry_name).await;
+    let entry_path = PathBuf::from(RESOURCES_ROOT_DIR);
+    let entry_id = create_test_endpoint_dir_entry(&ctx, &mut collection, &entry_name).await;
 
     // Verify entry was created
-    let expected_dir = collection_path.join(&entry_path).join(&entry_name);
+    let expected_dir = resources_dir.join(&entry_path).join(&entry_name);
     assert!(expected_dir.exists());
 
     // Delete the entry first time - should succeed
@@ -171,38 +175,39 @@ async fn delete_entry_twice() {
 #[tokio::test]
 async fn delete_entries_from_different_directories() {
     let (ctx, _, collection_path, mut collection) = create_test_collection().await;
+    let resources_dir = collection_path.join(dirs::RESOURCES_DIR);
 
     let mut entries = Vec::new();
 
-    // We have to manually do this now, since we will validate path against configuration
-    let request_id = create_test_request_dir_entry(&ctx, &mut collection, "entry").await;
-    entries.push(request_id);
+    {
+        let name = random_entry_name();
+        let endpoint_id = create_test_endpoint_dir_entry(&ctx, &mut collection, &name).await;
+        entries.push((endpoint_id, name));
+    }
 
-    let endpoint_id = create_test_endpoint_dir_entry(&ctx, &mut collection, "entry").await;
-    entries.push(endpoint_id);
+    {
+        let name = random_entry_name();
+        let component_id = create_test_component_dir_entry(&ctx, &mut collection, &name).await;
+        entries.push((component_id, name));
+    }
 
-    let component_id = create_test_component_dir_entry(&ctx, &mut collection, "entry").await;
-    entries.push(component_id);
-
-    let schema_id = create_test_schema_dir_entry(&ctx, &mut collection, "entry").await;
-    entries.push(schema_id);
+    {
+        let name = random_entry_name();
+        let schema_id = create_test_schema_dir_entry(&ctx, &mut collection, &name).await;
+        entries.push((schema_id, name));
+    }
 
     // Create entries in different directories
-    for entry_id in entries {
+    for (id, _) in &entries {
         let _ = collection
-            .delete_entry(&ctx, DeleteEntryInput { id: entry_id })
+            .delete_entry(&ctx, DeleteEntryInput { id: id.clone() })
             .await
             .unwrap();
     }
 
     // Verify that all the dir entries are removed
-    for dir in [
-        dirs::REQUESTS_DIR,
-        dirs::ENDPOINTS_DIR,
-        dirs::COMPONENTS_DIR,
-        dirs::SCHEMAS_DIR,
-    ] {
-        let expected_dir = collection_path.join(dir).join("entry");
+    for (_, name) in entries {
+        let expected_dir = resources_dir.join(&name);
         assert!(
             !expected_dir.exists(),
             "Entry not deleted at {:?}",

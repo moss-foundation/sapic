@@ -6,7 +6,7 @@ import { DockviewPanelApi } from "@/lib/moss-tabs/src";
 import { Icon, MossDropdown, MossToggle } from "@/lib/ui";
 import MossSelect from "@/lib/ui/MossSelect";
 import { cn } from "@/utils";
-import { StreamEntriesEvent } from "@repo/moss-collection";
+import { StreamEntriesEvent } from "@repo/moss-project";
 
 import { EditableHeader } from "./EditableHeader";
 

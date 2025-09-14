@@ -2,7 +2,7 @@
 
 mod shared;
 
-use moss_collection::{
+use moss_project::{
     dirs,
     models::{operations::UpdateEntryInput, primitives::EntryId, types::UpdateDirEntryParams},
     storage::segments::{SEGKEY_EXPANDED_ENTRIES, SEGKEY_RESOURCE_ENTRY},
@@ -13,20 +13,20 @@ use moss_text::sanitized::sanitize;
 use std::path::{Path, PathBuf};
 
 use crate::shared::{
-    create_test_collection, create_test_component_dir_entry, create_test_component_item_entry,
-    create_test_request_dir_entry, random_entry_name,
+    RESOURCES_ROOT_DIR, create_test_collection, create_test_component_dir_entry,
+    create_test_endpoint_dir_entry, random_entry_name,
 };
 // TODO: Test updating entry order
 
 #[tokio::test]
 async fn rename_dir_entry_success() {
     let (ctx, _, collection_path, mut collection) = create_test_collection().await;
+    let resources_dir = collection_path.join(dirs::RESOURCES_DIR);
 
     let old_entry_name = random_entry_name();
     let new_entry_name = random_entry_name();
-    let entry_path = dirs::COMPONENTS_DIR;
 
-    let id = create_test_component_dir_entry(&ctx, &mut collection, &old_entry_name).await;
+    let id = create_test_endpoint_dir_entry(&ctx, &mut collection, &old_entry_name).await;
 
     let _ = collection
         .update_entry(
@@ -43,8 +43,8 @@ async fn rename_dir_entry_success() {
         .unwrap();
 
     // Verify the path has been renamed
-    let old_path = collection_path.join(entry_path).join(&old_entry_name);
-    let new_path = collection_path.join(entry_path).join(&new_entry_name);
+    let old_path = resources_dir.join(RESOURCES_ROOT_DIR).join(&old_entry_name);
+    let new_path = resources_dir.join(RESOURCES_ROOT_DIR).join(&new_entry_name);
     assert!(!old_path.exists());
     assert!(new_path.exists());
 
@@ -113,12 +113,13 @@ async fn rename_dir_entry_already_exists() {
 #[tokio::test]
 async fn rename_dir_entry_special_chars_in_name() {
     let (ctx, _, collection_path, mut collection) = create_test_collection().await;
-    let entry_path = PathBuf::from(dirs::COMPONENTS_DIR);
+    let resources_dir = collection_path.join(dirs::RESOURCES_DIR);
+
+    let entry_base_path = PathBuf::from(RESOURCES_ROOT_DIR);
 
     for special_char in FILENAME_SPECIAL_CHARS {
         let entry_name = random_entry_name();
         let new_entry_name = format!("{}{}", entry_name, special_char);
-        dbg!(&new_entry_name);
 
         let id = create_test_component_dir_entry(&ctx, &mut collection, &entry_name).await;
 
@@ -145,8 +146,8 @@ async fn rename_dir_entry_special_chars_in_name() {
         }
         let _ = result.unwrap();
 
-        let expected_dir = collection_path
-            .join(&entry_path)
+        let expected_dir = resources_dir
+            .join(&entry_base_path)
             .join(&sanitize(&new_entry_name));
         dbg!(&expected_dir);
         assert!(expected_dir.exists());
@@ -262,6 +263,7 @@ async fn expand_and_collapse_dir_entry() {
 #[tokio::test]
 async fn move_dir_entry_success() {
     let (ctx, _, collection_path, mut collection) = create_test_collection().await;
+    let resources_dir = collection_path.join(dirs::RESOURCES_DIR);
 
     let entry_name = random_entry_name();
 
@@ -270,8 +272,8 @@ async fn move_dir_entry_success() {
     // Create a destination_directory named dest
     let _ = create_test_component_dir_entry(&ctx, &mut collection, "dest").await;
 
-    let old_dest = PathBuf::from(dirs::COMPONENTS_DIR);
-    let new_dest = Path::new(dirs::COMPONENTS_DIR).join("dest");
+    let old_dest = PathBuf::from(RESOURCES_ROOT_DIR);
+    let new_dest = Path::new(RESOURCES_ROOT_DIR).join("dest");
 
     // Move entry path from `components/{entry_name}` to `components/dest/{entry_name}`
     let _output = collection
@@ -289,8 +291,8 @@ async fn move_dir_entry_success() {
         .unwrap();
 
     // Verify the path has been changed
-    let old_path = collection_path.join(old_dest).join(&entry_name);
-    let new_path = collection_path.join(new_dest).join(&entry_name);
+    let old_path = resources_dir.join(old_dest).join(&entry_name);
+    let new_path = resources_dir.join(new_dest).join(&entry_name);
     assert!(!old_path.exists());
     assert!(new_path.exists());
 
@@ -306,75 +308,9 @@ async fn move_dir_entry_nonexistent_destination() {
 
     let id = create_test_component_dir_entry(&ctx, &mut collection, &entry_name).await;
 
-    let new_dest = Path::new(dirs::COMPONENTS_DIR).join("dest");
+    let new_dest = Path::new(RESOURCES_ROOT_DIR).join("dest");
 
-    // Move entry path from `components/{entry_name}` to `components/dest/{entry_name}`
-    let result = collection
-        .update_entry(
-            &ctx,
-            UpdateEntryInput::Dir(UpdateDirEntryParams {
-                id,
-                path: Some(new_dest.clone()),
-                name: None,
-                order: None,
-                expanded: None,
-            }),
-        )
-        .await;
-
-    assert!(result.is_err());
-
-    // Cleanup
-    std::fs::remove_dir_all(collection_path).unwrap();
-}
-
-#[tokio::test]
-async fn move_dir_entry_different_classification_folder() {
-    let (ctx, _, collection_path, mut collection) = create_test_collection().await;
-
-    let entry_name = random_entry_name();
-
-    let id = create_test_component_dir_entry(&ctx, &mut collection, &entry_name).await;
-
-    // Create a destination_directory named dest
-    let _ = create_test_request_dir_entry(&ctx, &mut collection, "dest").await;
-
-    let new_dest = Path::new(dirs::REQUESTS_DIR).join("dest");
-
-    // Move entry path from `components/{entry_name}` to `requests/dest/{entry_name}`
-    let result = collection
-        .update_entry(
-            &ctx,
-            UpdateEntryInput::Dir(UpdateDirEntryParams {
-                id,
-                path: Some(new_dest.clone()),
-                name: None,
-                order: None,
-                expanded: None,
-            }),
-        )
-        .await;
-
-    assert!(result.is_err());
-
-    // Cleanup
-    std::fs::remove_dir_all(collection_path).unwrap();
-}
-
-#[tokio::test]
-async fn move_dir_entry_non_dir_destination() {
-    let (ctx, _, collection_path, mut collection) = create_test_collection().await;
-
-    let entry_name = random_entry_name();
-
-    let id = create_test_component_dir_entry(&ctx, &mut collection, &entry_name).await;
-
-    // Create a destination entry (non-directory) named dest
-    let _ = create_test_component_item_entry(&ctx, &mut collection, "dest").await;
-
-    let new_dest = Path::new(dirs::COMPONENTS_DIR).join("dest");
-
-    // Move entry path from `components/{entry_name}` to `components/dest/{entry_name}`
+    // Move entry path from `{entry_name}` to `dest/{entry_name}`
     let result = collection
         .update_entry(
             &ctx,
@@ -405,7 +341,7 @@ async fn move_dir_entry_already_exists() {
     create_test_component_dir_entry(&ctx, &mut collection, &dest_name).await;
     let existing_id = create_test_component_dir_entry(&ctx, &mut collection, &entry_name).await;
 
-    let dest = Path::new(dirs::COMPONENTS_DIR).join(&dest_name);
+    let dest = Path::new(RESOURCES_ROOT_DIR).join(&dest_name);
     let _ = collection
         .update_entry(
             &ctx,

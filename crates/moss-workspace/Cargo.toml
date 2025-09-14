@@ -8,7 +8,7 @@ moss_app_delegate.workspace = true
 moss_applib.workspace = true
 moss_db.workspace = true
 moss_fs.workspace = true
-moss_collection.workspace = true
+moss_project.workspace = true
 moss_environment.workspace = true
 moss_storage.workspace = true
 moss_git.workspace = true
@@ -54,7 +54,7 @@ moss_applib = { workspace = true, features = ["test"] }
 integration-tests = [
   "dotenv",
   "moss_user/integration-tests",
-  "moss_collection/integration-tests",
+  "moss_project/integration-tests",
   "moss_git_hosting_provider/integration-tests",
   "oauth2",
   "moss_keyring/test",

@@ -1,5 +1,5 @@
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
-import { BatchUpdateEntryKind, StreamEntriesEvent } from "@repo/moss-collection";
+import { BatchUpdateEntryKind, StreamEntriesEvent } from "@repo/moss-project";
 import { join } from "@tauri-apps/api/path";
 
 import { ProjectTreeNode, ProjectTreeRootNode } from "../types";

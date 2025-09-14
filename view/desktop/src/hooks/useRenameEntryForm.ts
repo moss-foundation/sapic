@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useFetchEntriesForPath } from "@/hooks/collection/derivedHooks/useFetchEntriesForPath";
 import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollectionEntry";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
-import { StreamEntriesEvent } from "@repo/moss-collection";
+import { StreamEntriesEvent } from "@repo/moss-project";
 import { join } from "@tauri-apps/api/path";
 
 export const useRenameEntryForm = (entry: StreamEntriesEvent, collectionId: string) => {

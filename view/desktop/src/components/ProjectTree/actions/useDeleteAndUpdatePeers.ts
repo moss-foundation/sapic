@@ -1,7 +1,7 @@
 import { USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY, useDeleteCollectionEntry } from "@/hooks";
 import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
-import { StreamEntriesEvent } from "@repo/moss-collection";
+import { StreamEntriesEvent } from "@repo/moss-project";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { ProjectTreeNode, ProjectTreeRootNode } from "../types";

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import { StreamEntriesEvent } from "@repo/moss-collection";
+import { StreamEntriesEvent } from "@repo/moss-project";
 import { StreamCollectionsEvent } from "@repo/moss-workspace";
 import { useQueries } from "@tanstack/react-query";
 

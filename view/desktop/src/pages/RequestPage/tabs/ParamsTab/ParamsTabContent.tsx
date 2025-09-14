@@ -4,7 +4,7 @@ import { ActionButton } from "@/components";
 import { ProjectTreeNode } from "@/components/ProjectTree/types";
 import { DataTable, ParameterData } from "@/components/Table";
 import { useRequestPage } from "@/pages/RequestPage/hooks/useRequestPage";
-import { EntryKind } from "@repo/moss-collection";
+import { EntryKind } from "@repo/moss-project";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
 
 import { detectValueType, getParameterSuggestions } from "../../utils/urlParser";

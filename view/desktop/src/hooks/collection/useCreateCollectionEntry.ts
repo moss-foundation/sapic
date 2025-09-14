@@ -1,5 +1,5 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { CreateEntryInput, CreateEntryOutput, StreamEntriesEvent } from "@repo/moss-collection";
+import { CreateEntryInput, CreateEntryOutput, StreamEntriesEvent } from "@repo/moss-project";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY } from "./useStreamCollectionEntries";
@@ -11,7 +11,7 @@ export interface UseCreateCollectionEntryInputProps {
 }
 
 const createCollectionEntry = async ({ collectionId, input }: UseCreateCollectionEntryInputProps) => {
-  const result = await invokeTauriIpc<CreateEntryOutput>("create_collection_entry", {
+  const result = await invokeTauriIpc<CreateEntryOutput>("create_project_resource", {
     collectionId,
     input,
   });

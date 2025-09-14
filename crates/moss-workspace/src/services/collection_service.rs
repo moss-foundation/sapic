@@ -3,7 +3,14 @@ use futures::Stream;
 use joinerror::{Error, OptionExt, ResultExt};
 use moss_app_delegate::{AppDelegate, broadcast::ToLocation};
 use moss_applib::{AppRuntime, subscription::EventEmitter};
-use moss_collection::{
+use moss_common::continue_if_err;
+use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
+use moss_git::url::GitUrl;
+use moss_git_hosting_provider::{
+    GitProviderKind, github::client::GitHubApiClient, gitlab::client::GitLabApiClient,
+};
+use moss_logging::session;
+use moss_project::{
     Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
     builder::{
         CollectionCloneParams, CollectionCreateGitParams, CollectionCreateParams,
@@ -12,13 +19,6 @@ use moss_collection::{
     git::GitClient,
     vcs::VcsSummary,
 };
-use moss_common::continue_if_err;
-use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
-use moss_git::url::GitUrl;
-use moss_git_hosting_provider::{
-    GitProviderKind, github::client::GitHubApiClient, gitlab::client::GitLabApiClient,
-};
-use moss_logging::session;
 use moss_user::{account::Account, models::primitives::AccountId, profile::Profile};
 use rustc_hash::FxHashMap;
 use std::{

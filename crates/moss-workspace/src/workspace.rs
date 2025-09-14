@@ -6,10 +6,10 @@ use moss_applib::{
     AppRuntime,
     subscription::{Event, Subscription},
 };
-use moss_collection::Collection;
 use moss_edit::json::EditOptions;
 use moss_environment::{AnyEnvironment, Environment, models::primitives::EnvironmentId};
 use moss_fs::{FileSystem, FsResultExt};
+use moss_project::Collection;
 use moss_user::profile::Profile;
 use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};

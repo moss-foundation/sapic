@@ -1,5 +1,5 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { BatchCreateEntryInput, BatchCreateEntryOutput } from "@repo/moss-collection";
+import { BatchCreateEntryInput, BatchCreateEntryOutput } from "@repo/moss-project";
 import { useMutation } from "@tanstack/react-query";
 
 interface UseBatchCreateCollectionEntryInput {
@@ -8,7 +8,7 @@ interface UseBatchCreateCollectionEntryInput {
 }
 
 const batchCreateCollectionEntry = async ({ collectionId, input }: UseBatchCreateCollectionEntryInput) => {
-  const result = await invokeTauriIpc<BatchCreateEntryOutput>("batch_create_collection_entry", {
+  const result = await invokeTauriIpc<BatchCreateEntryOutput>("batch_create_project_resource", {
     collectionId,
     input,
   });

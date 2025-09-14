@@ -1,5 +1,5 @@
 import { ProjectTreeNode } from "@/components/ProjectTree/types";
-import { EntryKind } from "@repo/moss-collection";
+import { EntryKind } from "@repo/moss-project";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
 
 export const PostRequestTabContent = ({}: IDockviewPanelProps<{

@@ -1,5 +1,5 @@
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
-import { StreamEntriesEvent } from "@repo/moss-collection";
+import { StreamEntriesEvent } from "@repo/moss-project";
 import { StreamCollectionsEvent, WorkspaceMode } from "@repo/moss-workspace";
 
 import { ProjectDragType } from "./constants";

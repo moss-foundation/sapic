@@ -8,7 +8,7 @@ import { useStreamCollectionEntries } from "@/hooks/collection/useStreamCollecti
 import { useRenameEntryForm } from "@/hooks/useRenameEntryForm";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 import { Icon } from "@/lib/ui";
-import { EntryKind } from "@repo/moss-collection";
+import { EntryKind } from "@repo/moss-project";
 
 import { OverviewTabContent } from "./tabs/OverviewTabContent";
 import { getFolderIcon } from "./utils";

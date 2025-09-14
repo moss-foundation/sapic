@@ -2,7 +2,7 @@ import { PageView } from "@/components";
 import { PageWrapper } from "@/components/PageView/PageWrapper";
 import { ProjectTreeNode } from "@/components/ProjectTree/types";
 import { useStreamCollectionEntries } from "@/hooks";
-import { EntryKind } from "@repo/moss-collection";
+import { EntryKind } from "@repo/moss-project";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
 
 import { RequestPageHeader } from "./RequestPageHeader/RequestPageHeader";

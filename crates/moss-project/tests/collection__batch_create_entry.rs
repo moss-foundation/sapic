@@ -1,23 +1,25 @@
 #![cfg(feature = "integration-tests")]
 
-use moss_collection::{
+use moss_project::{
     constants, dirs,
     models::{
         operations::{BatchCreateEntryInput, BatchCreateEntryKind},
+        primitives::EntryClass,
         types::{CreateDirEntryParams, CreateItemEntryParams},
     },
 };
 use std::path::PathBuf;
 
-use crate::shared::{create_test_collection, random_entry_name};
+use crate::shared::{RESOURCES_ROOT_DIR, create_test_collection, random_entry_name};
 
 pub mod shared;
 
 #[tokio::test]
 async fn batch_create_entry_success() {
     let (ctx, _, collection_path, collection) = create_test_collection().await;
+    let resources_dir = collection_path.join(dirs::RESOURCES_DIR);
 
-    let class_path = PathBuf::from(dirs::COMPONENTS_DIR);
+    let entry_base_path = PathBuf::from(RESOURCES_ROOT_DIR);
 
     // components/{outer_name}
     // components/{outer_name}/{inner_name}
@@ -25,13 +27,15 @@ async fn batch_create_entry_success() {
     let outer_name = random_entry_name();
     let inner_name = random_entry_name();
     let outer_input = BatchCreateEntryKind::Dir(CreateDirEntryParams {
-        path: class_path.clone(),
+        class: EntryClass::Endpoint,
+        path: entry_base_path.clone(),
         name: outer_name.clone(),
         order: 0,
         headers: vec![],
     });
     let inner_input = BatchCreateEntryKind::Item(CreateItemEntryParams {
-        path: class_path.join(&outer_name),
+        class: EntryClass::Endpoint,
+        path: entry_base_path.join(&outer_name),
         name: inner_name.clone(),
         order: 0,
         protocol: None,
@@ -48,7 +52,7 @@ async fn batch_create_entry_success() {
     assert_eq!(output.ids.len(), 2);
 
     // Verify the directories were created
-    let outer_dir = collection_path.join(&class_path).join(&outer_name);
+    let outer_dir = resources_dir.join(&entry_base_path).join(&outer_name);
     assert!(outer_dir.exists());
     assert!(outer_dir.is_dir());
     let outer_config = outer_dir.join(constants::DIR_CONFIG_FILENAME);
@@ -70,12 +74,13 @@ async fn batch_create_entry_success() {
 async fn batch_create_entry_missing_parent() {
     let (ctx, _, collection_path, collection) = create_test_collection().await;
 
-    let class_path = PathBuf::from(dirs::COMPONENTS_DIR);
+    let entry_base_path = PathBuf::from(RESOURCES_ROOT_DIR);
     let inner_name = random_entry_name();
 
     // Try creating components/parent/{inner_name}
     let inner_input = BatchCreateEntryKind::Item(CreateItemEntryParams {
-        path: class_path.join("parent"),
+        class: EntryClass::Endpoint,
+        path: entry_base_path.join("parent"),
         name: inner_name.clone(),
         order: 0,
         protocol: None,

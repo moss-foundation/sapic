@@ -1,4 +1,4 @@
-import { StreamEntriesEvent } from "@repo/moss-collection";
+import { StreamEntriesEvent } from "@repo/moss-project";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { startStreamingCollectionEntries } from "../queries/startStreamingCollectionEntries";

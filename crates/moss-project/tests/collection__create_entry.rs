@@ -1,13 +1,10 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
-use moss_collection::{
+use moss_project::{
     constants, dirs,
     errors::ErrorAlreadyExists,
-    models::{
-        operations::CreateEntryInput,
-        types::{CreateDirEntryParams, CreateItemEntryParams},
-    },
+    models::{operations::CreateEntryInput, primitives::EntryClass, types::CreateDirEntryParams},
     storage::segments::SEGKEY_RESOURCE_ENTRY,
 };
 use moss_storage::storage::operations::GetItem;
@@ -15,16 +12,17 @@ use moss_testutils::fs_specific::FILENAME_SPECIAL_CHARS;
 use moss_text::sanitized::sanitize;
 use std::path::PathBuf;
 
-use crate::shared::{create_test_collection, random_entry_name};
+use crate::shared::{RESOURCES_ROOT_DIR, create_test_collection, random_entry_name};
 
 #[tokio::test]
 async fn create_dir_entry_success() {
     let (ctx, _, collection_path, collection) = create_test_collection().await;
+    let resources_dir = collection_path.join(dirs::RESOURCES_DIR);
 
     let entry_name = random_entry_name();
-    let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
-
+    let entry_path = PathBuf::from("");
     let input = CreateEntryInput::Dir(CreateDirEntryParams {
+        class: EntryClass::Endpoint,
         path: entry_path.clone(),
         name: entry_name.clone(),
         order: 0,
@@ -36,7 +34,7 @@ async fn create_dir_entry_success() {
     let output = result.unwrap();
 
     // Verify the directory was created
-    let expected_dir = collection_path.join(&entry_path).join(&entry_name);
+    let expected_dir = resources_dir.join(&entry_path).join(&entry_name);
     assert!(expected_dir.exists());
     assert!(expected_dir.is_dir());
 
@@ -55,12 +53,14 @@ async fn create_dir_entry_success() {
 #[tokio::test]
 async fn create_dir_entry_with_order() {
     let (ctx, _, collection_path, collection) = create_test_collection().await;
+    let resources_dir = collection_path.join(dirs::RESOURCES_DIR);
 
     let entry_name = random_entry_name();
-    let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
+    let entry_path = PathBuf::from(RESOURCES_ROOT_DIR);
     let order_value = 42;
 
     let input = CreateEntryInput::Dir(CreateDirEntryParams {
+        class: EntryClass::Endpoint,
         path: entry_path.clone(),
         name: entry_name.clone(),
         order: order_value,
@@ -71,7 +71,7 @@ async fn create_dir_entry_with_order() {
     let id = result.unwrap().id;
 
     // Verify the directory was created
-    let expected_dir = collection_path.join(&entry_path).join(&entry_name);
+    let expected_dir = resources_dir.join(&entry_path).join(&entry_name);
     assert!(expected_dir.exists());
 
     let resource_store = collection.db().resource_store();
@@ -93,9 +93,10 @@ async fn create_dir_entry_already_exists() {
     let (ctx, _, collection_path, collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
-    let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
+    let entry_path = PathBuf::from(RESOURCES_ROOT_DIR);
 
     let input = CreateEntryInput::Dir(CreateDirEntryParams {
+        class: EntryClass::Endpoint,
         path: entry_path.clone(),
         name: entry_name.clone(),
         order: 0,
@@ -121,14 +122,16 @@ async fn create_dir_entry_already_exists() {
 #[tokio::test]
 async fn create_dir_entry_special_chars_in_name() {
     let (ctx, _, collection_path, collection) = create_test_collection().await;
+    let resources_dir = collection_path.join(dirs::RESOURCES_DIR);
 
     let base_name = random_entry_name();
 
     for special_char in FILENAME_SPECIAL_CHARS {
         let entry_name = format!("{}{}", base_name, special_char);
-        let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
+        let entry_path = PathBuf::from(RESOURCES_ROOT_DIR);
 
         let input = CreateEntryInput::Dir(CreateDirEntryParams {
+            class: EntryClass::Endpoint,
             path: entry_path.clone(),
             name: entry_name.clone(),
             order: 0,
@@ -151,49 +154,10 @@ async fn create_dir_entry_special_chars_in_name() {
 
         // The exact directory name might be sanitized, but some directory should exist
         // We just verify that the operation completed successfully
-        let expected_dir = collection_path
-            .join(&entry_path)
-            .join(sanitize(&entry_name));
+        let expected_dir = resources_dir.join(&entry_path).join(sanitize(&entry_name));
         assert!(expected_dir.exists());
         assert!(expected_dir.is_dir());
     }
-
-    // Cleanup
-    std::fs::remove_dir_all(collection_path).unwrap();
-}
-
-#[tokio::test]
-async fn create_dir_entry_inside_item_entry() {
-    let (ctx, _, collection_path, collection) = create_test_collection().await;
-
-    let outer_name = random_entry_name();
-    let outer_path = PathBuf::from(dirs::COMPONENTS_DIR);
-    let outer_input = CreateEntryInput::Item(CreateItemEntryParams {
-        path: outer_path.clone(),
-        name: outer_name.clone(),
-        order: 0,
-        protocol: None,
-        query_params: vec![],
-        path_params: vec![],
-        headers: vec![],
-    });
-
-    let _ = collection.create_entry(&ctx, outer_input).await.unwrap();
-
-    // Try creating an entry inside an item entry
-
-    let inner_name = random_entry_name();
-    let inner_path = PathBuf::from(dirs::COMPONENTS_DIR).join(&outer_name);
-    let inner_input = CreateEntryInput::Dir(CreateDirEntryParams {
-        path: inner_path.clone(),
-        name: inner_name.clone(),
-        order: 0,
-        headers: vec![],
-    });
-
-    let result = collection.create_entry(&ctx, inner_input).await;
-
-    assert!(result.is_err());
 
     // Cleanup
     std::fs::remove_dir_all(collection_path).unwrap();

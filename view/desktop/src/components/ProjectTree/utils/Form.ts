@@ -4,7 +4,7 @@ import {
   EntryClass,
   EntryProtocol,
   StreamEntriesEvent,
-} from "@repo/moss-collection";
+} from "@repo/moss-project";
 
 interface CreateEntryKindProps {
   name: string;

@@ -5,18 +5,17 @@ use moss_applib::{
     context::{AsyncContext, MutableContext},
     mock::MockAppRuntime,
 };
-use moss_collection::{
+use moss_fs::RealFileSystem;
+use moss_project::{
     CollectionBuilder,
     builder::CollectionCreateParams,
     collection::Collection,
-    dirs,
     models::{
         operations::CreateEntryInput,
-        primitives::EntryId,
+        primitives::{EntryClass, EntryId},
         types::{CreateDirEntryParams, CreateItemEntryParams},
     },
 };
-use moss_fs::RealFileSystem;
 use moss_testutils::random_name::{random_collection_name, random_string};
 use nanoid::nanoid;
 use std::{
@@ -24,6 +23,8 @@ use std::{
     sync::Arc,
     time::Duration,
 };
+
+pub const RESOURCES_ROOT_DIR: &str = "";
 
 #[allow(dead_code)]
 pub fn random_dir_name() -> String {
@@ -83,27 +84,6 @@ pub async fn create_test_collection() -> (
 }
 
 #[allow(dead_code)]
-pub async fn create_test_request_dir_entry(
-    ctx: &AsyncContext,
-    collection: &mut Collection<MockAppRuntime>,
-    name: &str,
-) -> EntryId {
-    collection
-        .create_entry(
-            &ctx,
-            CreateEntryInput::Dir(CreateDirEntryParams {
-                path: PathBuf::from(dirs::REQUESTS_DIR),
-                name: name.to_string(),
-                order: 0,
-                headers: vec![],
-            }),
-        )
-        .await
-        .unwrap()
-        .id
-}
-
-#[allow(dead_code)]
 pub async fn create_test_endpoint_dir_entry(
     ctx: &AsyncContext,
     collection: &mut Collection<MockAppRuntime>,
@@ -113,7 +93,8 @@ pub async fn create_test_endpoint_dir_entry(
         .create_entry(
             &ctx,
             CreateEntryInput::Dir(CreateDirEntryParams {
-                path: PathBuf::from(dirs::ENDPOINTS_DIR),
+                class: EntryClass::Endpoint,
+                path: PathBuf::from(""),
                 name: name.to_string(),
                 order: 0,
                 headers: vec![],
@@ -134,7 +115,8 @@ pub async fn create_test_component_dir_entry(
         .create_entry(
             &ctx,
             CreateEntryInput::Dir(CreateDirEntryParams {
-                path: PathBuf::from(dirs::COMPONENTS_DIR),
+                class: EntryClass::Component,
+                path: PathBuf::from(""),
                 name: name.to_string(),
                 order: 0,
                 headers: vec![],
@@ -155,7 +137,8 @@ pub async fn create_test_component_item_entry(
         .create_entry(
             &ctx,
             CreateEntryInput::Item(CreateItemEntryParams {
-                path: PathBuf::from(dirs::COMPONENTS_DIR),
+                class: EntryClass::Component,
+                path: PathBuf::from(""),
                 name: name.to_string(),
                 order: 0,
                 protocol: None,
@@ -179,7 +162,8 @@ pub async fn create_test_schema_dir_entry(
         .create_entry(
             &ctx,
             CreateEntryInput::Dir(CreateDirEntryParams {
-                path: PathBuf::from(dirs::SCHEMAS_DIR),
+                class: EntryClass::Schema,
+                path: PathBuf::from(""),
                 name: name.to_string(),
                 order: 0,
                 headers: vec![],

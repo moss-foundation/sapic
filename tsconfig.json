@@ -8,7 +8,7 @@
       "path": "crates/moss-api"
     },
     {
-      "path": "crates/moss-collection"
+      "path": "crates/moss-project"
     },
     {
       "path": "crates/moss-environment"

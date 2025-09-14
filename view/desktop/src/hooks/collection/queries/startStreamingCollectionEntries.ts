@@ -1,5 +1,5 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { StreamEntriesEvent } from "@repo/moss-collection";
+import { StreamEntriesEvent } from "@repo/moss-project";
 import { Channel } from "@tauri-apps/api/core";
 
 export const startStreamingCollectionEntries = async (
@@ -13,7 +13,7 @@ export const startStreamingCollectionEntries = async (
     entries.push(collectionEntry);
   };
 
-  const result = await invokeTauriIpc("stream_collection_entries", {
+  const result = await invokeTauriIpc("stream_project_resources", {
     collectionId,
     channel: onCollectionEntryEvent,
     input: path ? { "RELOAD_PATH": path } : "LOAD_ROOT",

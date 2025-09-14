@@ -13,7 +13,7 @@ import {
 } from "@/hooks";
 import { useBatchUpdateCollection } from "@/hooks/collection/useBatchUpdateCollection";
 import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
-import { StreamEntriesEvent } from "@repo/moss-collection";
+import { StreamEntriesEvent } from "@repo/moss-project";
 import { useQueryClient } from "@tanstack/react-query";
 
 export const CollectionTreeViewHeader = () => {
