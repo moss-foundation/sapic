@@ -7,10 +7,10 @@ import type { BranchInfo } from "./types";
 export type StreamEnvironmentsEvent = {
   id: string;
   /**
-   * The id of the collection that the environment belongs to.
+   * The id of the project that the environment belongs to.
    * If the environment is global, this will be `None`.
    */
-  collectionId?: string;
+  projectId?: string;
   isActive: boolean;
   name: string;
   order?: number;

@@ -46,7 +46,7 @@ export const batchUpdateProjectOutputSchema = z.object({
 
 export const createEnvironmentOutputSchema = z.object({
   id: z.string(),
-  collectionId: z.string().optional(),
+  projectId: z.string().optional(),
   name: z.string(),
   order: z.number().optional(),
   color: z.string().optional(),
@@ -137,7 +137,7 @@ export const batchUpdateProjectInputSchema = z.object({
 });
 
 export const createEnvironmentInputSchema = z.object({
-  collectionId: z.string().optional(),
+  projectId: z.string().optional(),
   name: z.string(),
   order: z.number(),
   color: z.string().optional(),

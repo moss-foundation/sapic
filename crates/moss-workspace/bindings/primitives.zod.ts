@@ -14,4 +14,4 @@ export const panelRendererSchema = z.union([z.literal("onlyWhenVisible"), z.lite
 
 export const sidebarPositionSchema = z.union([z.literal("LEFT"), z.literal("RIGHT")]);
 
-export const workspaceModeSchema = z.union([z.literal("DESIGN_FIRST"), z.literal("REQUEST_FIRST")]);
+export const workspaceModeSchema = z.union([z.literal("LIVE"), z.literal("DESIGN")]);

@@ -34,7 +34,7 @@ async fn update_environment_success() {
             &ctx,
             CreateEnvironmentInput {
                 name: old_environment_name.clone(),
-                collection_id: None,
+                project_id: None,
                 order: 0,
                 color: Some("#ffffff".to_string()),
                 variables: vec![],
@@ -109,7 +109,7 @@ async fn update_environment_add_variables() {
             &ctx,
             CreateEnvironmentInput {
                 name: environment_name.clone(),
-                collection_id: None,
+                project_id: None,
                 order: 0,
                 color: Some("#ffffff".to_string()),
                 variables: vec![],
@@ -196,7 +196,7 @@ async fn update_environment_update_variables() {
             &ctx,
             CreateEnvironmentInput {
                 name: environment_name.clone(),
-                collection_id: None,
+                project_id: None,
                 order: 0,
                 color: Some("#ffffff".to_string()),
                 variables: vec![],
@@ -317,7 +317,7 @@ async fn update_environment_update_variables_nonexistent() {
             &ctx,
             CreateEnvironmentInput {
                 name: environment_name.clone(),
-                collection_id: None,
+                project_id: None,
                 order: 0,
                 color: Some("#ffffff".to_string()),
                 variables: vec![],
@@ -369,7 +369,7 @@ async fn update_environment_delete_variables() {
             &ctx,
             CreateEnvironmentInput {
                 name: environment_name.clone(),
-                collection_id: None,
+                project_id: None,
                 order: 0,
                 color: Some("#ffffff".to_string()),
                 variables: vec![],
@@ -466,7 +466,7 @@ async fn update_environment_delete_variables_nonexistent() {
             &ctx,
             CreateEnvironmentInput {
                 name: environment_name.clone(),
-                collection_id: None,
+                project_id: None,
                 order: 0,
                 color: Some("#ffffff".to_string()),
                 variables: vec![],

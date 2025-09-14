@@ -65,7 +65,7 @@ pub struct ImportProjectInput {
 pub struct ImportProjectOutput {
     pub id: ProjectId,
     // FIXME: Maybe we should remove the name field until we have local display name
-    // Since a cloned/imported collection already has a name
+    // Since a cloned/imported project already has a name
     pub name: String,
     pub order: Option<isize>,
     pub expanded: bool,
@@ -274,7 +274,7 @@ pub struct ActivateEnvironmentOutput {
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateEnvironmentInput {
-    pub collection_id: Option<ProjectId>,
+    pub project_id: Option<ProjectId>,
     #[validate(length(min = 1))]
     pub name: String,
     pub order: isize,
@@ -289,7 +289,7 @@ pub struct CreateEnvironmentInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateEnvironmentOutput {
     pub id: EnvironmentId,
-    pub collection_id: Option<ProjectId>,
+    pub project_id: Option<ProjectId>,
     pub name: String,
     pub order: Option<isize>,
     pub color: Option<String>,

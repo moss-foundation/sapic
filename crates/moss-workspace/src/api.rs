@@ -25,7 +25,7 @@ use moss_applib::AppRuntime;
 use crate::{AnyWorkspace, models::operations::*};
 
 #[allow(async_fn_in_trait)]
-pub trait BatchUpdateCollectionOp<R: AppRuntime> {
+pub trait BatchUpdateProjectOp<R: AppRuntime> {
     async fn batch_update_project(
         &self,
         ctx: &R::AsyncContext,
@@ -33,4 +33,4 @@ pub trait BatchUpdateCollectionOp<R: AppRuntime> {
     ) -> joinerror::Result<BatchUpdateProjectOutput>;
 }
 
-pub trait AnyWorkspaceApi<R: AppRuntime>: AnyWorkspace<R> + BatchUpdateCollectionOp<R> {}
+pub trait AnyWorkspaceApi<R: AppRuntime>: AnyWorkspace<R> + BatchUpdateProjectOp<R> {}

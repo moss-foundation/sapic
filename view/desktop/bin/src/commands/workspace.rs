@@ -1,6 +1,6 @@
 use moss_api::TauriResult;
 use moss_workspace::{
-    api::BatchUpdateCollectionOp,
+    api::BatchUpdateProjectOp,
     models::{events::*, operations::*},
 };
 use tauri::{State, Window, ipc::Channel as TauriChannel};

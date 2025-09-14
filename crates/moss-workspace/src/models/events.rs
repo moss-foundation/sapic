@@ -30,9 +30,9 @@ pub struct StreamProjectsEvent {
 pub struct StreamEnvironmentsEvent {
     pub id: EnvironmentId,
 
-    /// The id of the collection that the environment belongs to.
+    /// The id of the project that the environment belongs to.
     /// If the environment is global, this will be `None`.
-    pub collection_id: Option<ProjectId>,
+    pub project_id: Option<ProjectId>,
     pub is_active: bool,
 
     pub name: String,

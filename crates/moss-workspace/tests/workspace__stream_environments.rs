@@ -61,7 +61,7 @@ async fn stream_environments_only_workspace_environments() {
             .create_environment(
                 &ctx,
                 CreateEnvironmentInput {
-                    collection_id: None,
+                    project_id: None,
                     name: environment_name.clone(),
                     order: environment_order,
                     color: None,
@@ -104,7 +104,7 @@ async fn stream_environments_only_workspace_environments() {
         let event = events_map.get(&expected_id).unwrap();
         assert_eq!(event.name, expected_name);
         assert_eq!(event.order, Some(expected_order));
-        assert_eq!(event.collection_id, None);
+        assert_eq!(event.project_id, None);
         assert_eq!(event.total_variables, 0);
     }
 
@@ -145,7 +145,7 @@ async fn stream_environments_only_collection_environments() {
             .create_environment(
                 &ctx,
                 CreateEnvironmentInput {
-                    collection_id: Some(collection_id.clone()),
+                    project_id: Some(collection_id.clone()),
                     name: environment_name.clone(),
                     order: environment_order,
                     color: None,
@@ -200,7 +200,7 @@ async fn stream_environments_only_collection_environments() {
         let event = events_map.get(&expected_id).unwrap();
         assert_eq!(event.name, expected_name);
         assert_eq!(event.order, Some(expected_order));
-        assert_eq!(event.collection_id, Some(expected_group.clone()));
+        assert_eq!(event.project_id, Some(expected_group.clone()));
         assert_eq!(event.total_variables, 0);
 
         let group = groups_map.get(&expected_group.inner()).unwrap();
@@ -240,7 +240,7 @@ async fn stream_environments_both_workspace_and_collection_environments() {
         .create_environment(
             &ctx,
             CreateEnvironmentInput {
-                collection_id: Some(collection_id.clone()),
+                project_id: Some(collection_id.clone()),
                 name: collection_env_name.clone(),
                 order: 0,
                 color: None,
@@ -255,7 +255,7 @@ async fn stream_environments_both_workspace_and_collection_environments() {
         .create_environment(
             &ctx,
             CreateEnvironmentInput {
-                collection_id: None,
+                project_id: None,
                 name: workspace_env_name.clone(),
                 order: 0,
                 color: None,
@@ -301,16 +301,13 @@ async fn stream_environments_both_workspace_and_collection_environments() {
     let collection_env_event = events_map.get(&collection_env_result.id).unwrap();
     assert_eq!(collection_env_event.name, collection_env_name);
     assert_eq!(collection_env_event.order, Some(0));
-    assert_eq!(
-        collection_env_event.collection_id,
-        Some(collection_id.clone())
-    );
+    assert_eq!(collection_env_event.project_id, Some(collection_id.clone()));
     assert_eq!(collection_env_event.total_variables, 0);
 
     let workspace_env_event = events_map.get(&workspace_env_result.id).unwrap();
     assert_eq!(workspace_env_event.name, workspace_env_name);
     assert_eq!(workspace_env_event.order, Some(0));
-    assert_eq!(workspace_env_event.collection_id, None);
+    assert_eq!(workspace_env_event.project_id, None);
     assert_eq!(workspace_env_event.total_variables, 0);
 
     cleanup().await;
@@ -336,7 +333,7 @@ async fn stream_environments_with_variables() {
         .create_environment(
             &ctx,
             CreateEnvironmentInput {
-                collection_id: None,
+                project_id: None,
                 name: environment_name.clone(),
                 order: 0,
                 color: None,
@@ -374,7 +371,7 @@ async fn stream_environments_with_variables() {
     let event = events_map.get(&environment_result.id).unwrap();
     assert_eq!(event.name, environment_name);
     assert_eq!(event.order, Some(0));
-    assert_eq!(event.collection_id, None);
+    assert_eq!(event.project_id, None);
     assert_eq!(event.total_variables, 5);
 
     cleanup().await;

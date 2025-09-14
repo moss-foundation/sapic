@@ -62,7 +62,7 @@ export type BatchUpdateProjectOutput = { ids: Array<string> };
  * @category Operation
  */
 export type CreateEnvironmentInput = {
-  collectionId?: string;
+  projectId?: string;
   name: string;
   order: number;
   color?: string;
@@ -72,13 +72,7 @@ export type CreateEnvironmentInput = {
 /**
  * @category Operation
  */
-export type CreateEnvironmentOutput = {
-  id: string;
-  collectionId?: string;
-  name: string;
-  order?: number;
-  color?: string;
-};
+export type CreateEnvironmentOutput = { id: string; projectId?: string; name: string; order?: number; color?: string };
 
 /**
  * @category Operation

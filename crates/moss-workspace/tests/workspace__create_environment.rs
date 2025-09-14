@@ -30,7 +30,7 @@ async fn create_environment_success() {
             &ctx,
             CreateEnvironmentInput {
                 name: environment_name.clone(),
-                collection_id: None,
+                project_id: None,
                 order: 42,
                 color: Some("#3574F0".to_string()),
                 variables: vec![AddVariableParams {
@@ -86,7 +86,7 @@ async fn create_environment_already_exists() {
             &ctx,
             CreateEnvironmentInput {
                 name: environment_name.clone(),
-                collection_id: None,
+                project_id: None,
                 order: 42,
                 color: Some("#3574F0".to_string()),
                 variables: vec![],
@@ -100,7 +100,7 @@ async fn create_environment_already_exists() {
             &ctx,
             CreateEnvironmentInput {
                 name: environment_name.clone(),
-                collection_id: None,
+                project_id: None,
                 order: 42,
                 color: Some("#3574F0".to_string()),
                 variables: vec![],
@@ -143,7 +143,7 @@ async fn create_collection_environment_success() {
             &ctx,
             CreateEnvironmentInput {
                 name: environment_name.clone(),
-                collection_id: Some(collection_id),
+                project_id: Some(collection_id),
                 order: 42,
                 color: None,
                 variables: vec![AddVariableParams {
@@ -219,7 +219,7 @@ async fn create_collection_environment_already_exists() {
             &ctx,
             CreateEnvironmentInput {
                 name: environment_name.clone(),
-                collection_id: Some(collection_id.clone()),
+                project_id: Some(collection_id.clone()),
                 order: 42,
                 color: None,
                 variables: vec![],
@@ -233,7 +233,7 @@ async fn create_collection_environment_already_exists() {
             &ctx,
             CreateEnvironmentInput {
                 name: environment_name.clone(),
-                collection_id: Some(collection_id.clone()),
+                project_id: Some(collection_id.clone()),
                 order: 42,
                 color: None,
                 variables: vec![],
@@ -276,7 +276,7 @@ async fn create_collection_environment_same_name_as_workspace_environment() {
             &ctx,
             CreateEnvironmentInput {
                 name: environment_name.clone(),
-                collection_id: Some(collection_id.clone()),
+                project_id: Some(collection_id.clone()),
                 order: 42,
                 color: None,
                 variables: vec![],
@@ -292,7 +292,7 @@ async fn create_collection_environment_same_name_as_workspace_environment() {
             &ctx,
             CreateEnvironmentInput {
                 name: environment_name.clone(),
-                collection_id: None,
+                project_id: None,
                 order: 42,
                 color: None,
                 variables: vec![],

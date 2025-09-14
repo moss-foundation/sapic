@@ -39,7 +39,7 @@ async fn update_environment_group_expand() {
         .create_environment(
             &ctx,
             CreateEnvironmentInput {
-                collection_id: Some(collection_id.clone()),
+                project_id: Some(collection_id.clone()),
                 name: environment_name.clone(),
                 order: 0,
                 color: None,
@@ -123,7 +123,7 @@ async fn update_environment_group_order() {
         .create_environment(
             &ctx,
             CreateEnvironmentInput {
-                collection_id: Some(collection_id.clone()),
+                project_id: Some(collection_id.clone()),
                 name: environment_name,
                 order: 0,
                 color: None,

@@ -2,12 +2,12 @@ use moss_applib::{AppRuntime, errors::ValidationResultExt};
 use validator::Validate;
 
 use crate::{
-    api::BatchUpdateCollectionOp,
+    api::BatchUpdateProjectOp,
     models::operations::{BatchUpdateProjectInput, BatchUpdateProjectOutput},
     workspace::Workspace,
 };
 
-impl<R: AppRuntime> BatchUpdateCollectionOp<R> for Workspace<R> {
+impl<R: AppRuntime> BatchUpdateProjectOp<R> for Workspace<R> {
     async fn batch_update_project(
         &self,
         ctx: &R::AsyncContext,
