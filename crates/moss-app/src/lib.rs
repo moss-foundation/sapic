@@ -16,10 +16,25 @@ extern crate derive_more;
 
 pub use app::App;
 pub use builder::AppBuilder;
-use moss_applib::AppRuntime;
+use moss_applib::{AppRuntime, EventMarker};
+use moss_user::models::primitives::ProfileId;
 use moss_workspace::Workspace;
 
 use crate::models::primitives::WorkspaceId;
+
+#[derive(Clone)]
+pub struct OnDidChangeProfile {
+    pub id: ProfileId,
+}
+
+impl EventMarker for OnDidChangeProfile {}
+
+#[derive(Clone)]
+pub struct OnDidChangeWorkspace {
+    pub id: WorkspaceId,
+}
+
+impl EventMarker for OnDidChangeWorkspace {}
 
 #[derive(Deref, DerefMut)]
 pub struct ActiveWorkspace<R: AppRuntime> {
@@ -48,4 +63,5 @@ pub mod dirs {
     pub const WORKSPACES_DIR: &str = "workspaces";
     pub const GLOBALS_DIR: &str = "globals";
     pub const PROFILES_DIR: &str = "profiles";
+    pub const TMP_DIR: &str = "tmp";
 }

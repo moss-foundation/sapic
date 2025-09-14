@@ -135,6 +135,9 @@ importers:
       '@repo/moss-bindingutils':
         specifier: workspace:*
         version: link:../moss-bindingutils
+      '@repo/moss-user':
+        specifier: workspace:*
+        version: link:../moss-user
       '@repo/moss-workspace':
         specifier: workspace:*
         version: link:../moss-workspace

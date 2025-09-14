@@ -8,7 +8,9 @@ mod window;
 #[macro_use]
 extern crate tracing;
 
-use moss_app::{AppBuilder as TauriAppBuilder, builder::BuildAppParams};
+use moss_app::{
+    App, AppBuilder as TauriAppBuilder, app::OnAppReadyOptions, builder::BuildAppParams,
+};
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
     TauriAppRuntime,
@@ -187,6 +189,7 @@ pub async fn run<R: TauriRuntime>() {
             //
             // App
             //
+            commands::describe_app,
             commands::execute_command,
             commands::set_color_theme,
             commands::get_color_theme,
@@ -262,6 +265,26 @@ pub async fn run<R: TauriRuntime>() {
                 let webview_window = create_main_window(&app_handle, "/");
                 webview_window
                     .on_menu_event(move |window, event| menu::handle_event(window, &event));
+
+                futures::executor::block_on(async {
+                    let app = app_handle.state::<Arc<App<TauriAppRuntime<R>>>>();
+                    let ctx =
+                        MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
+                    let app_delegate = app_handle
+                        .state::<AppDelegate<TauriAppRuntime<R>>>()
+                        .inner()
+                        .clone();
+
+                    app.on_app_ready(
+                        &ctx,
+                        &app_delegate,
+                        OnAppReadyOptions {
+                            restore_last_workspace: false,
+                        },
+                    )
+                    .await
+                    .expect("Failed to prepare the app");
+                });
             }
 
             RunEvent::Exit => {}

@@ -1,3 +1,5 @@
+pub mod collections;
+
 /// A macro for handling errors in loops by automatically continuing.
 ///
 /// This macro simplifies error handling in loops by automatically calling `continue`

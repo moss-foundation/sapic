@@ -103,7 +103,6 @@ async fn close_workspace_not_open() {
 #[tokio::test]
 async fn close_workspace_after_another_opened() {
     let (app, app_delegate, ctx, cleanup) = set_up_test_app().await;
-    // let workspace_service = services.get::<WorkspaceService<MockAppRuntime>>();
 
     // Create and open first workspace
     let workspace_name1 = random_workspace_name();

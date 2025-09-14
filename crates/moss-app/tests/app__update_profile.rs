@@ -2,9 +2,12 @@
 
 pub mod shared;
 
-use moss_app::models::{
-    operations::{CreateProfileInput, UpdateProfileInput},
-    types::AddAccountParams,
+use moss_app::{
+    app::OnAppReadyOptions,
+    models::{
+        operations::{CreateProfileInput, UpdateProfileInput},
+        types::AddAccountParams,
+    },
 };
 use moss_user::models::primitives::AccountKind;
 
@@ -52,7 +55,10 @@ async fn add_account_github_success() {
     let account_id = &update_output.added_accounts[0];
 
     // Verify account was added to active profile
-    let active_profile = app.active_profile().await;
+    let active_profile = app
+        .active_profile()
+        .await
+        .expect("active profile should exist");
     let account = active_profile.account(account_id).await.unwrap().info();
 
     assert_eq!(account.username, TEST_GITHUB_USERNAME);
@@ -104,7 +110,10 @@ async fn add_account_gitlab_success() {
     let account_id = &update_output.added_accounts[0];
 
     // Verify account was added to active profile
-    let active_profile = app.active_profile().await;
+    let active_profile = app
+        .active_profile()
+        .await
+        .expect("active profile should exist");
     let account = active_profile.account(account_id).await.unwrap().info();
 
     assert_eq!(account.username, TEST_GITLAB_USERNAME);
@@ -157,7 +166,10 @@ async fn add_account_custom_host() {
     let account_id = &update_output.added_accounts[0];
 
     // Verify account was added to active profile with custom host
-    let active_profile = app.active_profile().await;
+    let active_profile = app
+        .active_profile()
+        .await
+        .expect("active profile should exist");
     let account = active_profile.account(account_id).await.unwrap().info();
 
     assert_eq!(account.username, TEST_GITLAB_USERNAME);
@@ -210,7 +222,10 @@ async fn add_account_pat() {
     let account_id = &update_output.added_accounts[0];
 
     // Verify account was added to active profile with custom host
-    let active_profile = app.active_profile().await;
+    let active_profile = app
+        .active_profile()
+        .await
+        .expect("active profile should exist");
     let account = active_profile.account(account_id).await.unwrap().info();
 
     assert_eq!(account.username, TEST_GITHUB_USERNAME);
@@ -274,7 +289,10 @@ async fn add_multiple_accounts() {
     assert_ne!(github_account_id, gitlab_account_id);
 
     // Verify both accounts are in the active profile
-    let active_profile = app.active_profile().await;
+    let active_profile = app
+        .active_profile()
+        .await
+        .expect("active profile should exist");
 
     let github_profile_account = active_profile
         .account(github_account_id)
@@ -390,7 +408,10 @@ async fn remove_account_success() {
     let account_id = add_result.unwrap().added_accounts[0].clone();
 
     // Verify account exists in profile
-    let active_profile = app.active_profile().await;
+    let active_profile = app
+        .active_profile()
+        .await
+        .expect("active profile should exist");
     assert!(active_profile.account(&account_id).await.is_some());
 
     // Remove the account
@@ -411,7 +432,10 @@ async fn remove_account_success() {
     assert_eq!(remove_output.removed_accounts[0], account_id);
 
     // Verify account was removed from profile
-    let active_profile_after = app.active_profile().await;
+    let active_profile_after = app
+        .active_profile()
+        .await
+        .expect("active profile should exist");
     assert!(active_profile_after.account(&account_id).await.is_none());
 
     cleanup().await;
@@ -464,7 +488,10 @@ async fn remove_multiple_accounts() {
     let gitlab_account_id = add_output.added_accounts[1].clone();
 
     // Verify both accounts exist
-    let active_profile = app.active_profile().await;
+    let active_profile = app
+        .active_profile()
+        .await
+        .expect("active profile should exist");
     assert!(active_profile.account(&github_account_id).await.is_some());
     assert!(active_profile.account(&gitlab_account_id).await.is_some());
 
@@ -482,7 +509,10 @@ async fn remove_multiple_accounts() {
     assert!(remove_github.is_ok());
 
     // Verify GitHub account was removed but GitLab account still exists
-    let active_profile_after = app.active_profile().await;
+    let active_profile_after = app
+        .active_profile()
+        .await
+        .expect("active profile should exist");
     assert!(
         active_profile_after
             .account(&github_account_id)
@@ -518,7 +548,10 @@ async fn remove_multiple_accounts() {
     assert!(remove_gitlab.is_ok());
 
     // Verify both accounts are now removed
-    let final_profile = app.active_profile().await;
+    let final_profile = app
+        .active_profile()
+        .await
+        .expect("active profile should exist");
     assert!(final_profile.account(&github_account_id).await.is_none());
     assert!(final_profile.account(&gitlab_account_id).await.is_none());
 
@@ -528,6 +561,15 @@ async fn remove_multiple_accounts() {
 #[tokio::test]
 async fn remove_nonexistent_account_succeeds() {
     let (app, app_delegate, ctx, cleanup) = set_up_test_app().await;
+    app.on_app_ready(
+        &ctx,
+        &app_delegate,
+        OnAppReadyOptions {
+            restore_last_workspace: false,
+        },
+    )
+    .await
+    .unwrap();
 
     // First create a profile
     let profile_result = app
@@ -570,6 +612,15 @@ async fn remove_nonexistent_account_succeeds() {
 #[tokio::test]
 async fn add_and_remove_accounts_simultaneously() {
     let (app, app_delegate, ctx, cleanup) = set_up_test_app().await;
+    app.on_app_ready(
+        &ctx,
+        &app_delegate,
+        OnAppReadyOptions {
+            restore_last_workspace: false,
+        },
+    )
+    .await
+    .unwrap();
 
     // First create a profile
     let profile_result = app
@@ -629,7 +680,10 @@ async fn add_and_remove_accounts_simultaneously() {
     let gitlab_account_id = update_output.added_accounts[0].clone();
 
     // Verify final state: GitHub removed, GitLab added
-    let final_profile = app.active_profile().await;
+    let final_profile = app
+        .active_profile()
+        .await
+        .expect("active profile should exist");
     assert!(final_profile.account(&github_account_id).await.is_none());
     assert!(final_profile.account(&gitlab_account_id).await.is_some());
 

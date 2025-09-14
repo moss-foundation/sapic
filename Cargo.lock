@@ -3649,6 +3649,7 @@ dependencies = [
 name = "moss_common"
 version = "0.1.0"
 dependencies = [
+ "derive_more 2.0.1",
  "tokio",
 ]
 

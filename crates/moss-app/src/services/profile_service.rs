@@ -1,10 +1,11 @@
-use joinerror::{Error, OptionExt};
+use joinerror::OptionExt;
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
     AppRuntime,
-    errors::{AlreadyExists, NotFound},
+    errors::{AlreadyExists, FailedPrecondition, NotFound},
+    subscription::EventEmitter,
 };
-use moss_common::{continue_if_err, continue_if_none};
+use moss_common::collections::{nonempty_hashmap::NonEmptyHashMap, nonempty_vec::NonEmptyVec};
 use moss_fs::{CreateOptions, FileSystem};
 use moss_git_hosting_provider::{
     github::{auth::GitHubAuthAdapter, client::GitHubApiClient},
@@ -15,36 +16,52 @@ use moss_logging::session;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_user::{
     AccountSession,
-    account::{Account, github::GitHubInitialToken, gitlab::GitLabInitialToken},
+    account::{
+        Account,
+        github::{GitHubInitialToken, GitHubPAT},
+        gitlab::{GitLabInitialToken, GitLabPAT},
+    },
     models::{
-        primitives::{AccountId, AccountKind, ProfileId},
-        types::ProfileInfo,
+        primitives::{AccountId, AccountKind, ProfileId, SessionKind},
+        types::AccountInfo,
     },
     profile::Profile,
 };
-
-use moss_user::{
-    account::{github::GitHubPAT, gitlab::GitLabPAT},
-    models::{primitives::SessionKind, types::AccountInfo},
-};
-use std::{collections::HashMap, path::Path, sync::Arc};
+use std::{cell::LazyCell, collections::HashMap, path::Path, sync::Arc};
 use tokio::sync::RwLock;
 
 use crate::{
-    dirs,
-    profile::{ProfileFile, ProfileFileAccount, ProfileFileAccountMetadata},
+    OnDidChangeProfile, dirs,
+    profile::{
+        PROFILES_REGISTRY_FILE, ProfileRegistryAccount, ProfileRegistryAccountMetadata,
+        ProfileRegistryItem,
+    },
 };
 
-struct ServiceState<R: AppRuntime> {
-    profiles: HashMap<ProfileId, ProfileInfo>,
-    active_profile: Arc<Profile<R>>,
+const DEFAULT_PROFILE: LazyCell<ProfileRegistryItem> = LazyCell::new(|| ProfileRegistryItem {
+    id: ProfileId::new(),
+    name: "Default".to_string(),
+    accounts: vec![],
+    is_default: Some(true),
+});
+
+pub(crate) struct ProfileDetails {
+    pub name: String,
+    pub accounts: Vec<AccountInfo>,
+}
+
+struct ServiceCache {
+    profiles: NonEmptyHashMap<ProfileId, ProfileRegistryItem>,
 }
 
 pub(crate) struct ProfileService<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     auth_api_client: Arc<AccountAuthGatewayApiClient>,
     keyring: Arc<dyn KeyringClient>,
-    state: RwLock<ServiceState<R>>,
+    active_profile: RwLock<Option<Arc<Profile<R>>>>,
+    cache: RwLock<ServiceCache>,
+
+    on_did_change_profile_emitter: EventEmitter<OnDidChangeProfile>,
 }
 
 impl<R: AppRuntime> ProfileService<R> {
@@ -53,109 +70,75 @@ impl<R: AppRuntime> ProfileService<R> {
         fs: Arc<dyn FileSystem>,
         auth_api_client: Arc<AccountAuthGatewayApiClient>,
         keyring: Arc<dyn KeyringClient>,
+
+        on_did_change_profile_emitter: EventEmitter<OnDidChangeProfile>,
     ) -> joinerror::Result<Self> {
-        let profile_files = scan(&fs, dir_abs).await?;
+        let profiles = load_or_init_profiles(fs.as_ref(), dir_abs).await?;
 
-        let active_profile = {
-            // HACK:
-            // Since we don't support having multiple profiles yet, we select
-            // the first profile in the folder (which is the default one) as the active one.
-            let (profile_id, profile) = profile_files.iter().next().unwrap(); // SAFETY: When we start the app, we must have at least one profile
-            let mut accounts = HashMap::with_capacity(profile.accounts.len());
+        let profiles = {
+            let first_profile_item = profiles.first().clone();
+            let mut result =
+                NonEmptyHashMap::new(first_profile_item.id.clone(), first_profile_item);
 
-            for account in profile.accounts.iter() {
-                let session = match (&account.kind, &account.metadata.session_kind) {
-                    (AccountKind::GitHub, SessionKind::OAuth) => {
-                        AccountSession::github_oauth(
-                            account.id.clone(),
-                            account.host.clone(),
-                            None,
-                            keyring.clone(),
-                        )
-                        .await?
-                    }
-                    (AccountKind::GitHub, SessionKind::PAT) => {
-                        AccountSession::github_pat(
-                            account.id.clone(),
-                            account.host.clone(),
-                            None,
-                            keyring.clone(),
-                        )
-                        .await?
-                    }
-                    (AccountKind::GitLab, SessionKind::OAuth) => {
-                        AccountSession::gitlab_oauth(
-                            account.id.clone(),
-                            account.host.clone(),
-                            auth_api_client.clone(),
-                            None,
-                            keyring.clone(),
-                        )
-                        .await?
-                    }
-                    (AccountKind::GitLab, SessionKind::PAT) => {
-                        AccountSession::gitlab_pat(
-                            account.id.clone(),
-                            account.host.clone(),
-                            None,
-                            keyring.clone(),
-                        )
-                        .await?
-                    }
-                };
-
-                accounts.insert(
-                    account.id.clone(),
-                    Account::new(
-                        account.id.clone(),
-                        account.username.clone(),
-                        account.host.clone(),
-                        session,
-                        account.kind.clone(),
-                    ),
-                );
+            for item in profiles.tail() {
+                result.insert(item.id.clone(), item.clone());
             }
 
-            Profile::new(profile_id.to_owned(), accounts)
+            result
         };
-
-        let profiles: HashMap<ProfileId, ProfileInfo> = profile_files
-            .into_iter()
-            .map(|(id, profile_file)| {
-                (
-                    id.clone(),
-                    ProfileInfo {
-                        id,
-                        name: profile_file.name,
-                        accounts: profile_file
-                            .accounts
-                            .into_iter()
-                            .map(|account| AccountInfo {
-                                id: account.id,
-                                username: account.username,
-                                host: account.host,
-                                kind: account.kind,
-                            })
-                            .collect(),
-                    },
-                )
-            })
-            .collect();
 
         Ok(Self {
             fs,
             auth_api_client,
             keyring,
-            state: RwLock::new(ServiceState {
-                profiles,
-                active_profile: Arc::new(active_profile),
-            }),
+            active_profile: RwLock::new(None),
+            cache: RwLock::new(ServiceCache { profiles: profiles }),
+            on_did_change_profile_emitter,
         })
     }
 
-    pub async fn active_profile(&self) -> Arc<Profile<R>> {
-        let state_lock = self.state.read().await;
-        state_lock.active_profile.clone()
+    pub async fn profile_details(&self, id: &ProfileId) -> Option<ProfileDetails> {
+        let cache_lock = self.cache.read().await;
+        let profile = cache_lock.profiles.get(id).cloned();
+        profile.map(|p| ProfileDetails {
+            name: p.name,
+            accounts: p
+                .accounts
+                .iter()
+                .map(|a| AccountInfo {
+                    id: a.id.clone(),
+                    username: a.username.clone(),
+                    host: a.host.clone(),
+                    kind: a.kind.clone(),
+                })
+                .collect(),
+        })
+    }
+
+    pub async fn activate_profile(&self) -> joinerror::Result<Arc<Profile<R>>> {
+        // HACK: since we don't support having multiple profiles yet, we select
+        // the first profile in the folder (which is the default one) as the active one.
+        let cache_lock = self.cache.read().await;
+        let active_profile: Arc<Profile<R>> = activate_profile::<R>(
+            cache_lock.profiles.first().1,
+            self.keyring.clone(),
+            self.auth_api_client.clone(),
+            &self.on_did_change_profile_emitter,
+        )
+        .await?
+        .into();
+
+        let _ = self
+            .active_profile
+            .write()
+            .await
+            .insert(active_profile.clone());
+
+        Ok(active_profile)
+    }
+
+    pub async fn active_profile(&self) -> Option<Arc<Profile<R>>> {
+        self.active_profile.read().await.clone()
     }
 
     pub async fn remove_account(
@@ -163,41 +146,27 @@ impl<R: AppRuntime> ProfileService<R> {
         app_delegate: &AppDelegate<R>,
         account_id: AccountId,
     ) -> joinerror::Result<AccountId> {
-        let mut state_lock = self.state.write().await;
+        let active_profile_lock = self.active_profile.write().await;
+        let active_profile = active_profile_lock
+            .as_ref()
+            .ok_or_join_err::<FailedPrecondition>("active profile not found")?;
 
-        let profile_id = state_lock.active_profile.id().clone();
-        let profile = state_lock
+        let mut cache_lock = self.cache.write().await;
+        let profile = cache_lock
             .profiles
-            .get_mut(&profile_id)
-            .ok_or_join_err_with::<NotFound>(|| format!("profile `{}` not found", profile_id))?;
+            .get_mut(active_profile.id())
+            .ok_or_join_err_with::<NotFound>(|| {
+                format!("profile `{}` not found", active_profile.id())
+            })?;
 
-        let mut profile_clone = profile.clone();
-        profile_clone
-            .accounts
-            .retain(|account| account.id != account_id);
-        {
-            let abs_path = app_delegate
-                .app_dir()
-                .join(dirs::PROFILES_DIR)
-                .join(format!("{}.json", profile_id));
+        profile.accounts.retain(|account| account.id != account_id);
 
-            let content = serde_json::to_string_pretty(&profile_clone)?;
-            self.fs
-                .create_file_with(
-                    &abs_path,
-                    content.as_bytes(),
-                    CreateOptions {
-                        overwrite: true,
-                        ignore_if_exists: false,
-                    },
-                )
-                .await?;
-        }
-        profile.accounts = profile_clone.accounts;
+        self.save_profiles_registry(app_delegate, &cache_lock.profiles)
+            .await?;
 
         // In this case, the error isn't critical. Since we removed the account from
         // the profile file, the next time a session for that account won't be established.
-        if let Err(err) = state_lock.active_profile.remove_account(&account_id).await {
+        if let Err(err) = active_profile.remove_account(&account_id).await {
             session::warn!(&format!(
                 "failed to remove account `{}`: {}",
                 account_id,
@@ -216,11 +185,12 @@ impl<R: AppRuntime> ProfileService<R> {
         kind: AccountKind,
         pat: Option<String>,
     ) -> joinerror::Result<AccountId> {
-        let mut state_lock = self.state.write().await;
+        let active_profile_lock = self.active_profile.write().await;
+        let active_profile = active_profile_lock
+            .as_ref()
+            .ok_or_join_err::<FailedPrecondition>("active profile not found")?;
 
-        let profile_id = state_lock.active_profile.id().clone();
         let account_id = AccountId::new();
-
         let (session, session_kind, username) = match kind {
             AccountKind::GitHub => {
                 let (session, session_kind) = if let Some(pat) = pat {
@@ -297,10 +267,12 @@ impl<R: AppRuntime> ProfileService<R> {
             }
         };
 
-        if let Some(_) = state_lock
-            .active_profile
+        let mut cache_lock = self.cache.write().await;
+
+        if active_profile
             .is_account_exists(&username, kind.clone(), &host)
             .await
+            .is_some()
         {
             return Err(joinerror::Error::new::<AlreadyExists>(
                 "account already exists",
@@ -316,38 +288,22 @@ impl<R: AppRuntime> ProfileService<R> {
         );
         let account_info = account.info();
 
-        {
-            let abs_path = app_delegate
-                .app_dir()
-                .join(dirs::PROFILES_DIR)
-                .join(format!("{}.json", profile_id));
-            let rdr = self.fs.open_file(&abs_path).await?;
-            let mut parsed: ProfileFile = serde_json::from_reader(rdr)?;
-            parsed.accounts.push(ProfileFileAccount {
+        // Add account to profile registry item
+        cache_lock.profiles.get_mut(active_profile.id()).map(|p| {
+            p.accounts.push(ProfileRegistryAccount {
                 id: account_info.id.clone(),
                 username: account_info.username.clone(),
                 host: account_info.host.clone(),
                 kind: account_info.kind.clone(),
-                metadata: ProfileFileAccountMetadata { session_kind },
-            });
-            self.fs
-                .create_file_with(
-                    &abs_path,
-                    serde_json::to_string_pretty(&parsed)?.as_bytes(),
-                    CreateOptions {
-                        overwrite: true,
-                        ignore_if_exists: false,
-                    },
-                )
-                .await?;
-        }
+                metadata: ProfileRegistryAccountMetadata { session_kind },
+            })
+        });
 
-        state_lock
-            .profiles
-            .get_mut(&profile_id)
-            .map(|p| p.accounts.push(account_info.clone()));
+        // Update the registry file
+        self.save_profiles_registry(app_delegate, &cache_lock.profiles)
+            .await?;
 
-        state_lock.active_profile.add_account(account).await;
+        active_profile.add_account(account).await;
 
         Ok(account_id)
     }
@@ -356,29 +312,49 @@ impl<R: AppRuntime> ProfileService<R> {
         &self,
         app_delegate: &AppDelegate<R>,
         name: String,
-        is_default: bool,
+        _is_default: bool,
     ) -> joinerror::Result<ProfileId> {
+        let mut state_lock = self.cache.write().await;
+
         let id = ProfileId::new();
-        let profile = ProfileInfo {
+        let profile = ProfileRegistryItem {
             id: id.clone(),
             name,
+            is_default: None,
             accounts: vec![],
         };
 
-        let abs_path = app_delegate
+        // Add profile to state
+        state_lock.profiles.insert(profile.id.clone(), profile);
+
+        // Update the registry file
+        self.save_profiles_registry(app_delegate, &state_lock.profiles)
+            .await?;
+
+        Ok(id)
+    }
+
+    /// Save all profiles to the registry file
+    async fn save_profiles_registry(
+        &self,
+        app_delegate: &AppDelegate<R>,
+        profiles: &NonEmptyHashMap<ProfileId, ProfileRegistryItem>,
+    ) -> joinerror::Result<()> {
+        let registry_items: Vec<ProfileRegistryItem> = profiles
+            .iter()
+            .map(|(_, profile_item)| profile_item.clone())
+            .collect();
+
+        let content = serde_json::to_string_pretty(&registry_items)?;
+        let registry_path = app_delegate
             .app_dir()
             .join(dirs::PROFILES_DIR)
-            .join(format!("{}.json", profile.id));
+            .join(PROFILES_REGISTRY_FILE);
 
         self.fs
             .create_file_with(
-                &abs_path,
-                serde_json::to_string_pretty(&ProfileFile {
-                    name: profile.name.clone(),
-                    is_default: Some(is_default),
-                    accounts: vec![],
-                })?
-                .as_bytes(),
+                &registry_path,
+                content.as_bytes(),
                 CreateOptions {
                     overwrite: true,
                     ignore_if_exists: false,
@@ -386,49 +362,118 @@ impl<R: AppRuntime> ProfileService<R> {
             )
             .await?;
 
-        self.state
-            .write()
-            .await
-            .profiles
-            .insert(profile.id.clone(), profile);
-
-        Ok(id)
+        Ok(())
     }
 }
 
-async fn scan(
-    fs: &Arc<dyn FileSystem>,
-    profiles_dir_abs: &Path,
-) -> joinerror::Result<HashMap<ProfileId, ProfileFile>> {
-    debug_assert!(profiles_dir_abs.is_absolute());
+async fn activate_profile<R: AppRuntime>(
+    profile_item: &ProfileRegistryItem,
+    keyring: Arc<dyn KeyringClient>,
+    auth_api_client: Arc<AccountAuthGatewayApiClient>,
 
-    let mut profiles = HashMap::new();
+    on_did_change_profile_emitter: &EventEmitter<OnDidChangeProfile>,
+) -> joinerror::Result<Profile<R>> {
+    let mut accounts = HashMap::with_capacity(profile_item.accounts.len());
 
-    let mut read_dir = fs.read_dir(&profiles_dir_abs).await?;
-    while let Some(entry) = read_dir.next_entry().await? {
-        if entry.file_type().await?.is_dir() {
-            continue;
-        }
-
-        let path = entry.path();
-        let parsed = continue_if_err!(
-            async {
-                let rdr = fs.open_file(&path).await?;
-                let parsed: ProfileFile = serde_json::from_reader(rdr)?;
-                Ok(parsed)
-            },
-            |e: Error| {
-                session::warn!("failed to parse profile file: {}", e.to_string());
+    for account in profile_item.accounts.iter() {
+        let session = match (&account.kind, &account.metadata.session_kind) {
+            (AccountKind::GitHub, SessionKind::OAuth) => {
+                AccountSession::github_oauth(
+                    account.id.clone(),
+                    account.host.clone(),
+                    None,
+                    keyring.clone(),
+                )
+                .await?
             }
-        );
-        let id: ProfileId = continue_if_none!(path.file_stem().and_then(|s| s.to_str()), || {
-            session::warn!("invalid profile filename: {}", path.display().to_string());
-        })
-        .to_string()
-        .into();
+            (AccountKind::GitHub, SessionKind::PAT) => {
+                AccountSession::github_pat(
+                    account.id.clone(),
+                    account.host.clone(),
+                    None,
+                    keyring.clone(),
+                )
+                .await?
+            }
+            (AccountKind::GitLab, SessionKind::OAuth) => {
+                AccountSession::gitlab_oauth(
+                    account.id.clone(),
+                    account.host.clone(),
+                    auth_api_client.clone(),
+                    None,
+                    keyring.clone(),
+                )
+                .await?
+            }
+            (AccountKind::GitLab, SessionKind::PAT) => {
+                AccountSession::gitlab_pat(
+                    account.id.clone(),
+                    account.host.clone(),
+                    None,
+                    keyring.clone(),
+                )
+                .await?
+            }
+        };
 
-        profiles.insert(id.clone(), parsed);
+        accounts.insert(
+            account.id.clone(),
+            Account::new(
+                account.id.clone(),
+                account.username.clone(),
+                account.host.clone(),
+                session,
+                account.kind.clone(),
+            ),
+        );
     }
 
-    Ok(profiles)
+    let profile = Profile::new(profile_item.id.clone(), accounts);
+    on_did_change_profile_emitter
+        .fire(OnDidChangeProfile {
+            id: profile_item.id.clone(),
+        })
+        .await;
+
+    Ok(profile)
+}
+
+async fn load_or_init_profiles(
+    fs: &dyn FileSystem,
+    dir_abs: &Path,
+) -> joinerror::Result<NonEmptyVec<ProfileRegistryItem>> {
+    // If the profile registry file was not found, then we create this file by adding the default profile to it.
+    if !dir_abs.join(PROFILES_REGISTRY_FILE).exists() {
+        return create_default_profile(fs, dir_abs).await;
+    }
+
+    let rdr = fs.open_file(&dir_abs.join(PROFILES_REGISTRY_FILE)).await?;
+    let profiles: Vec<ProfileRegistryItem> = serde_json::from_reader(rdr)?;
+
+    match NonEmptyVec::from_vec_option(profiles) {
+        Some(non_empty_profiles) => Ok(non_empty_profiles),
+        None => {
+            // If the profile registry file is empty, create with default profile
+            create_default_profile(fs, dir_abs).await
+        }
+    }
+}
+
+async fn create_default_profile(
+    fs: &dyn FileSystem,
+    dir_abs: &Path,
+) -> joinerror::Result<NonEmptyVec<ProfileRegistryItem>> {
+    let default_profiles = NonEmptyVec::new(DEFAULT_PROFILE.clone());
+    let content = serde_json::to_string_pretty(&default_profiles.clone().into_vec())?;
+    fs.create_file_with(
+        &dir_abs.join(PROFILES_REGISTRY_FILE),
+        content.as_bytes(),
+        CreateOptions {
+            overwrite: true,
+            ignore_if_exists: false,
+        },
+    )
+    .await?;
+
+    return Ok(default_profiles);
 }
