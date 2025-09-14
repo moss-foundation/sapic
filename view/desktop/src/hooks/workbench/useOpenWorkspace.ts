@@ -87,6 +87,7 @@ export const useOpenWorkspace = () => {
       queryClient.removeQueries({ queryKey: [USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY] });
       queryClient.removeQueries({ queryKey: [USE_STREAMED_ENVIRONMENTS_QUERY_KEY] });
 
+      // Remove panels that contain collections or entries that didn't come in streamed collections or entries for the new workspace
       collectionsWithEntries?.forEach((collection) => {
         const collectionPanelToRemove = api?.getPanel(collection.id);
 
