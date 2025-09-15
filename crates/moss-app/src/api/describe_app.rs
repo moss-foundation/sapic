@@ -37,11 +37,11 @@ impl<R: AppRuntime> App<R> {
         let configuration = self.configuration_service.configuration().await;
 
         Ok(DescribeAppOutput {
-            workspace: maybe_workspace_details.map(|v| WorkspaceInfo {
-                id: v.id,
-                name: v.name,
-                last_opened_at: v.last_opened_at,
-                abs_path: v.abs_path,
+            workspace: maybe_workspace_details.map(|details| WorkspaceInfo {
+                id: details.id,
+                name: details.name,
+                last_opened_at: details.last_opened_at,
+                abs_path: details.abs_path,
             }),
             profile: Some(ProfileInfo {
                 id: active_profile.id().clone(),

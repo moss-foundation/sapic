@@ -40,12 +40,11 @@ pub(crate) struct WorkspaceItem {
     pub last_opened_at: Option<i64>,
 }
 
-pub(crate) struct WorkspaceItemDescription {
+pub(crate) struct WorkspaceDetails {
     pub id: WorkspaceId,
     pub name: String,
     pub abs_path: Arc<Path>,
     pub last_opened_at: Option<i64>,
-    pub active: bool,
 }
 
 type WorkspaceMap = HashMap<WorkspaceId, WorkspaceItem>;
@@ -93,36 +92,29 @@ impl<R: AppRuntime> WorkspaceService<R> {
         self.abs_path.join(path)
     }
 
-    pub(crate) async fn workspace_details(
-        &self,
-        id: &WorkspaceId,
-    ) -> Option<WorkspaceItemDescription> {
+    pub(crate) async fn workspace_details(&self, id: &WorkspaceId) -> Option<WorkspaceDetails> {
         let state_lock = self.state.read().await;
         state_lock
             .known_workspaces
             .get(id)
-            .map(|item| WorkspaceItemDescription {
+            .map(|item| WorkspaceDetails {
                 id: item.id.clone(),
                 name: item.name.clone(),
                 abs_path: item.abs_path.clone(),
                 last_opened_at: item.last_opened_at,
-                active: false,
             })
     }
 
-    pub(crate) async fn list_workspaces(&self) -> joinerror::Result<Vec<WorkspaceItemDescription>> {
+    pub(crate) async fn list_workspaces(&self) -> joinerror::Result<Vec<WorkspaceDetails>> {
         let state_lock = self.state.read().await;
-        let active_workspace_id = state_lock.active_workspace.as_ref().map(|a| a.id.clone());
-
         let workspaces = state_lock
             .known_workspaces
             .values()
-            .map(|item| WorkspaceItemDescription {
+            .map(|item| WorkspaceDetails {
                 id: item.id.clone(),
                 name: item.name.clone(),
                 abs_path: item.abs_path.clone(),
                 last_opened_at: item.last_opened_at,
-                active: Some(item.id.clone()) == active_workspace_id,
             })
             .collect();
         Ok(workspaces)
@@ -225,7 +217,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
         &self,
         id: &WorkspaceId,
         params: WorkspaceItemCreateParams,
-    ) -> joinerror::Result<WorkspaceItemDescription> {
+    ) -> joinerror::Result<WorkspaceDetails> {
         let mut state_lock = self.state.write().await;
 
         let id_str = id.to_string();
@@ -264,12 +256,11 @@ impl<R: AppRuntime> WorkspaceService<R> {
             },
         );
 
-        Ok(WorkspaceItemDescription {
+        Ok(WorkspaceDetails {
             id: id.to_owned(),
             name: params.name,
             abs_path: Arc::clone(&abs_path),
             last_opened_at: None,
-            active: false,
         })
     }
 
@@ -288,7 +279,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
         app_delegate: &AppDelegate<R>,
         id: &WorkspaceId,
         active_profile: Arc<Profile<R>>,
-    ) -> joinerror::Result<WorkspaceItemDescription> {
+    ) -> joinerror::Result<WorkspaceDetails> {
         let (name, already_active) = {
             let state_lock = self.state.read().await;
             let item = state_lock
@@ -389,12 +380,11 @@ impl<R: AppRuntime> WorkspaceService<R> {
             }
         }
 
-        Ok(WorkspaceItemDescription {
+        Ok(WorkspaceDetails {
             id: id.to_owned(),
             name,
             abs_path: Arc::clone(&abs_path),
             last_opened_at: Some(last_opened_at),
-            active: true,
         })
     }
 
