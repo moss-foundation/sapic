@@ -1,11 +1,14 @@
 import { useRequestModeStore } from "@/store/requestMode";
 import { cn } from "@/utils";
 
+import { PlannedBadge } from "./PlannedBadge";
+
 interface DesignModeToggleProps {
   className?: string;
+  disabled?: boolean;
 }
 
-export const DesignModeToggle = ({ className }: DesignModeToggleProps) => {
+export const DesignModeToggle = ({ className, disabled = true }: DesignModeToggleProps) => {
   const { displayMode, setDisplayMode } = useRequestModeStore();
 
   const handleSetLiveMode = () => {
@@ -19,11 +22,11 @@ export const DesignModeToggle = ({ className }: DesignModeToggleProps) => {
   return (
     <div
       className={cn(
-        "background-(--moss-display-mode-bg) @container/mode-toggle flex w-full rounded-sm border-1 border-(--moss-display-mode-border) p-px",
+        "background-(--moss-display-mode-bg) @container/mode-toggle flex w-full items-center rounded-sm border-1 border-(--moss-display-mode-border) p-px",
         className
       )}
     >
-      <div className="grow overflow-hidden">
+      <div className={cn("grow overflow-hidden", { "cursor-not-allowed opacity-50": disabled })}>
         <input
           type="radio"
           id="live"
@@ -31,16 +34,22 @@ export const DesignModeToggle = ({ className }: DesignModeToggleProps) => {
           className={cn("peer sr-only")}
           checked={displayMode === "LIVE"}
           onChange={handleSetLiveMode}
+          disabled={disabled}
         />
         <label
           htmlFor="live"
-          className="flex min-w-0 cursor-pointer items-center justify-center rounded-sm px-1 py-px leading-5 text-(--moss-display-mode-text) transition-colors duration-300 peer-checked:bg-white peer-checked:text-(--moss-display-mode-text-selected)"
+          className={cn(
+            "flex min-w-0 cursor-pointer items-center justify-center rounded-sm px-1 py-px leading-5 text-(--moss-display-mode-text) transition-colors duration-300 peer-checked:bg-white peer-checked:text-(--moss-display-mode-text-selected)",
+            {
+              "cursor-not-allowed": disabled,
+            }
+          )}
         >
           <span className="w-full truncate text-center">Live</span>
         </label>
       </div>
 
-      <div className="grow overflow-hidden">
+      <div className={cn("grow overflow-hidden", { "cursor-not-allowed opacity-50": disabled })}>
         <input
           type="radio"
           id="design"
@@ -48,14 +57,21 @@ export const DesignModeToggle = ({ className }: DesignModeToggleProps) => {
           className={cn("peer sr-only")}
           checked={displayMode === "DESIGN"}
           onChange={handleSetDesignMode}
+          disabled={disabled}
         />
         <label
           htmlFor="design"
-          className="flex min-w-0 cursor-pointer items-center justify-center rounded-sm px-1 py-px leading-5 text-(--moss-display-mode-text) transition-colors duration-300 peer-checked:bg-white peer-checked:text-(--moss-display-mode-text-selected)"
+          className={cn(
+            "flex min-w-0 cursor-pointer items-center justify-center rounded-sm px-1 py-px leading-5 text-(--moss-display-mode-text) transition-colors duration-300 peer-checked:bg-white peer-checked:text-(--moss-display-mode-text-selected)",
+            {
+              "cursor-not-allowed": disabled,
+            }
+          )}
         >
           <span className="w-full truncate text-center">Design</span>
         </label>
       </div>
+      <PlannedBadge />
     </div>
   );
 };
