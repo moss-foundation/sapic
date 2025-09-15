@@ -6,9 +6,8 @@ import { useActiveWorkspace, useDescribeAppState } from "@/hooks";
 import { AppLayout, RootLayout } from "@/layouts";
 
 export const Workbench = () => {
-  const { activeWorkspace } = useActiveWorkspace();
+  const { activeWorkspace, hasActiveWorkspace } = useActiveWorkspace();
   const { isLoading } = useDescribeAppState();
-  const hasWorkspace = !!activeWorkspace;
 
   if (isLoading) {
     return <PageLoader />;
@@ -17,7 +16,9 @@ export const Workbench = () => {
   return (
     <ActivityEventsProvider>
       <RootLayout>
-        <AppLayout>{hasWorkspace ? <Workspace workspaceName={activeWorkspace.name} /> : <EmptyWorkspace />}</AppLayout>
+        <AppLayout>
+          {hasActiveWorkspace ? <Workspace workspaceName={activeWorkspace?.name} /> : <EmptyWorkspace />}
+        </AppLayout>
       </RootLayout>
     </ActivityEventsProvider>
   );

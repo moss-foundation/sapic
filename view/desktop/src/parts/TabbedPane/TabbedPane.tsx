@@ -95,7 +95,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
 
     try {
       if (mode === "welcome") {
-        event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
+        event.api.addPanel({ id: "WelcomePage", title: "Welcome", component: "Welcome" });
       } else if (mode === "empty") {
         console.log("Starting with empty TabbedPane for workspace");
       }
@@ -108,7 +108,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
       }
 
       if (mode === "welcome" || mode === "auto") {
-        event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
+        event.api.addPanel({ id: "WelcomePage", title: "Welcome", component: "Welcome" });
       }
     }
   };

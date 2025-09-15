@@ -1,39 +1,44 @@
 import { ReactNode, useEffect } from "react";
 
-import { useDescribeAppState, useSetLocale } from "@/hooks";
-import { applyLanguagePack } from "@/utils/applyLanguagePack";
+import { useSetLocale } from "@/hooks";
+import { useGetLocale } from "@/hooks/app/locales/useGetLocale";
+import { useDescribeApp } from "@/hooks/useDescribeApp";
 import { LocaleInfo } from "@repo/moss-app";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
-
-import { initializeI18n } from "./i18n";
 
 interface LanguageProviderProps {
   children: ReactNode;
 }
 
 const LanguageProvider = ({ children }: LanguageProviderProps) => {
-  const { data } = useDescribeAppState();
-  const { mutateAsync: setLocale } = useSetLocale();
+  const { data: appState, isSuccess } = useDescribeApp();
+  const { applyLocaleById } = useSetLocale();
+  const { getLocaleById } = useGetLocale({ identifier: appState?.configuration.contents.locale as string });
 
   // Initialize language
   useEffect(() => {
-    if (data) {
-      const languagePack = data.preferences?.locale ?? data.defaults.locale;
+    const initialize = async () => {
+      if (!appState?.configuration.contents.locale) {
+        throw new Error("Locale not found");
+      }
 
-      initializeI18n(languagePack.code)
-        .then(() => {
-          applyLanguagePack(languagePack).catch(console.error);
-        })
-        .catch(console.error);
+      const localePackId = appState.configuration.contents.locale as string;
+
+      const locale = await getLocaleById(localePackId);
+      applyLocaleById(locale.code);
+    };
+
+    if (appState && isSuccess) {
+      initialize();
     }
-  }, [data]);
+  }, [appState, applyLocaleById, getLocaleById, isSuccess]);
 
   // Listen for language pack changes
   useEffect(() => {
     let unlisten: UnlistenFn | undefined;
 
     const handleLanguageChange = (event: { payload: LocaleInfo }) => {
-      setLocale({ localeInfo: event.payload });
+      applyLocaleById(event.payload.code);
     };
 
     const setupListener = async () => {
@@ -49,7 +54,7 @@ const LanguageProvider = ({ children }: LanguageProviderProps) => {
     return () => {
       unlisten?.();
     };
-  }, [setLocale]);
+  }, [applyLocaleById]);
 
   return <>{children}</>;
 };

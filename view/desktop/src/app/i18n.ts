@@ -14,13 +14,11 @@ export const initializeI18n = async (language?: string) => {
     return;
   }
 
-  const lng = language || "en";
-
   await i18next
     .use(I18nTauriBackend)
     .use(initReactI18next)
     .init({
-      lng,
+      lng: language || "en",
       fallbackLng: "en",
       ns: ["ns1", "ns2"],
       defaultNS: "ns1",
@@ -42,10 +40,6 @@ export const initializeI18n = async (language?: string) => {
     });
 
   isInitialized = true;
-};
-
-export const changeLanguage = async (language: string) => {
-  await i18next.changeLanguage(language);
 };
 
 initializeI18n();

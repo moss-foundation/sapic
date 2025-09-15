@@ -1,6 +1,7 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import {
+  DescribeAppOutput,
   DescribeAppStateOutput,
   ListWorkspacesOutput,
   OpenWorkspaceInput,
@@ -13,6 +14,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { USE_DESCRIBE_APP_STATE_QUERY_KEY } from "../app/useDescribeAppState";
 import { USE_STREAM_PROJECT_ENTRIES_QUERY_KEY, useStreamedProjectsWithEntries } from "../project";
 import { USE_STREAM_PROJECTS_QUERY_KEY } from "../project/useStreamProjects";
+import { USE_DESCRIBE_APP_QUERY_KEY } from "../useDescribeApp";
 import { USE_STREAMED_ENVIRONMENTS_QUERY_KEY } from "../workspace/environment";
 import { USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY } from "../workspace/useDescribeWorkspaceState";
 import { USE_LIST_WORKSPACES_QUERY_KEY } from "./useListWorkspaces";
@@ -24,6 +26,10 @@ const openWorkspaceFn = async (workspaceId: string): Promise<OpenWorkspaceOutput
     input: {
       id: workspaceId,
     } as OpenWorkspaceInput,
+  });
+
+  console.log({
+    openWorkspaceResult: result,
   });
 
   if (result.status === "error") {
@@ -53,6 +59,16 @@ export const useOpenWorkspace = () => {
           return {
             ...oldData,
             prevWorkspaceId: workspaceId,
+          };
+        }
+        return oldData;
+      });
+
+      queryClient.setQueryData([USE_DESCRIBE_APP_QUERY_KEY], (oldData: DescribeAppOutput | undefined) => {
+        if (oldData) {
+          return {
+            ...oldData,
+            workspace: workspaceId,
           };
         }
         return oldData;

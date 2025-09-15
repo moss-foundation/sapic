@@ -1,14 +1,15 @@
 import { useTranslation } from "react-i18next";
 
 import SelectOutlined from "@/components/SelectOutlined";
-import { useDescribeAppState, useListColorThemes, useSetColorTheme } from "@/hooks";
+import { useListColorThemes, useSetColorTheme } from "@/hooks";
+import { useDescribeApp } from "@/hooks/useDescribeApp";
 
 import { Section } from "../Section";
 
 export const ThemeSection = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
 
-  const { data: appState } = useDescribeAppState();
+  const { data: appState } = useDescribeApp();
   const { data: themes } = useListColorThemes();
   const { mutate: mutateChangeColorTheme } = useSetColorTheme();
 
@@ -22,7 +23,7 @@ export const ThemeSection = () => {
     }
   };
 
-  const defaultTheme = appState?.preferences.theme?.identifier || appState?.defaults.theme?.identifier || "";
+  const defaultTheme = appState?.configuration.contents.colorTheme as string;
 
   return (
     <Section title={t("selectTheme")}>

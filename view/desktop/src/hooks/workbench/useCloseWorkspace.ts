@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { USE_STREAM_PROJECT_ENTRIES_QUERY_KEY } from "..";
 import { USE_DESCRIBE_APP_STATE_QUERY_KEY } from "../app/useDescribeAppState";
 import { USE_STREAM_PROJECTS_QUERY_KEY } from "../project";
+import { USE_DESCRIBE_APP_QUERY_KEY } from "../useDescribeApp";
 import { USE_STREAMED_ENVIRONMENTS_QUERY_KEY } from "../workspace/environment";
 import { USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY } from "../workspace/useDescribeWorkspaceState";
 import { USE_LIST_WORKSPACES_QUERY_KEY } from "./useListWorkspaces";
@@ -38,6 +39,7 @@ export const useCloseWorkspace = () => {
 
       // Invalidate other related queries
       queryClient.invalidateQueries({ queryKey: [USE_DESCRIBE_APP_STATE_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: [USE_DESCRIBE_APP_QUERY_KEY] });
 
       // Remove ALL cached workspace state queries since no workspace is active
       queryClient.removeQueries({ queryKey: [USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY] });

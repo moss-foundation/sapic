@@ -1,14 +1,15 @@
 import { useTranslation } from "react-i18next";
 
 import SelectOutlined from "@/components/SelectOutlined";
-import { useDescribeAppState, useListLocales, useSetLocale } from "@/hooks";
+import { useListLocales, useSetLocale } from "@/hooks";
+import { useDescribeApp } from "@/hooks/useDescribeApp";
 
 import { Section } from "../Section";
 
 export const LanguageSection = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
 
-  const { data: appState } = useDescribeAppState();
+  const { data: appState } = useDescribeApp();
   const { data: languages } = useListLocales();
   const { mutate: mutateChangeLanguagePack } = useSetLocale();
 
@@ -22,7 +23,7 @@ export const LanguageSection = () => {
     }
   };
 
-  const defaultLanguage = appState?.preferences.locale?.code || appState?.defaults.locale?.code || "";
+  const defaultLanguage = appState?.configuration.contents.locale as string;
 
   return (
     <Section title={t("selectLanguage")}>

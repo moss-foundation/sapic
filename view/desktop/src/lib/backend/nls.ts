@@ -27,15 +27,15 @@ export const clearTranslationCache = (language?: string) => {
 
 const getTranslationsFn = async (input: GetTranslationsInput): Promise<IpcResult<GetTranslationsOutput, string>> => {
   return await invokeTauriIpc<GetTranslationsOutput, string>("get_translations", {
-    input: input,
+    input,
   });
 };
+
 const I18nTauriBackend: BackendModule = {
   type: "backend",
   init: () => {},
   read: async (language: string, namespace: string, callback: ReadCallback) => {
     const cacheKey = getCacheKey(language, namespace);
-
     if (translationCache.has(cacheKey)) {
       callback(null, translationCache.get(cacheKey)!);
       return;
