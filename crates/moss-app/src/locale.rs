@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 pub(crate) const LOCALES_REGISTRY_FILE: &str = "locales.json";
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub(crate) struct LocaleRegistryItem {
     pub identifier: LocaleId,
     pub display_name: String,
