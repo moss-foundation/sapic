@@ -7,7 +7,6 @@ import type {
   AddAccountParams,
   ColorThemeInfo,
   Configuration,
-  Defaults,
   LocaleInfo,
   LogDate,
   LogEntryInfo,
@@ -111,7 +110,12 @@ export type DescribeAppOutput = {
  * DEPRECATED
  * @category Operation
  */
-export type DescribeAppStateOutput = { preferences: Preferences; defaults: Defaults; prevWorkspaceId?: string };
+export type DescribeAppStateOutput = { preferences: Preferences; prevWorkspaceId?: string };
+
+/**
+ * @category Operation
+ */
+export type DescribeLocaleOutput = { displayName: string; code: string; direction?: string };
 
 /**
  * @category Operation
@@ -127,6 +131,26 @@ export type GetColorThemeInput = { id: string };
  * @category Operation
  */
 export type GetColorThemeOutput = { cssContent: string };
+
+/**
+ * @category Operation
+ */
+export type GetLocaleInput = { identifier: string };
+
+/**
+ * @category Operation
+ */
+export type GetLocaleOutput = { displayName: string; code: string; direction?: string };
+
+/**
+ * @category Operation
+ */
+export type GetTranslationInput = { identifier: string };
+
+/**
+ * @category Operation
+ */
+export type GetTranslationOutput = { namespaces: Array<string>; translations: { [key: string]: JsonValue } };
 
 /**
  * @category Operation

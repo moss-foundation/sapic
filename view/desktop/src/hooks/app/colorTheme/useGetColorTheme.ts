@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 export const USE_GET_COLOR_THEME_QUERY_KEY = "getColorTheme";
 
 const getColorThemeFn = async (input: GetColorThemeInput): Promise<GetColorThemeOutput> => {
-  const result = await invokeTauriIpc<GetColorThemeOutput>("get_color_theme", {
+  const result = await invokeTauriIpc<GetColorThemeOutput>("describe_color_theme", {
     input: input,
   });
   if (result.status === "error") {

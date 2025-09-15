@@ -40,7 +40,7 @@ pub async fn set_color_theme<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx,app), fields(window = window.label()))]
-pub async fn get_color_theme<'a, R: tauri::Runtime>(
+pub async fn describe_color_theme<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
@@ -51,20 +51,6 @@ pub async fn get_color_theme<'a, R: tauri::Runtime>(
         app.get_color_theme(&ctx, &input).await
     })
     .await
-}
-
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx,app), fields(window = window.label()))]
-pub async fn get_color_theme_test<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: Window<R>,
-    input: GetColorThemeInput,
-    options: Options,
-) -> TauriResult<JsonValue> {
-    Ok(serde_json::json!({
-        "source": "/assets/themes/dark.css",
-    }))
 }
 
 #[tauri::command(async)]
@@ -124,6 +110,37 @@ pub async fn list_locales<'a, R: tauri::Runtime>(
     .await
 }
 
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn get_locale<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: Window<R>,
+    input: GetLocaleInput,
+    options: Options,
+) -> TauriResult<GetLocaleOutput> {
+    super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
+        app.get_locale(&ctx, &input).await
+    })
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn get_translation<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: Window<R>,
+    input: GetTranslationInput,
+    options: Options,
+) -> TauriResult<GetTranslationOutput> {
+    super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
+        app.get_translation(&ctx, &input).await
+    })
+    .await
+}
+
+// DEPRECATED
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn get_translations<'a, R: tauri::Runtime>(

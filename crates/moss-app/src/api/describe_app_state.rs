@@ -2,12 +2,10 @@ use moss_applib::AppRuntime;
 
 use crate::{
     app::App,
-    models::{
-        operations::DescribeAppStateOutput,
-        types::{Defaults, Preferences},
-    },
+    models::{operations::DescribeAppStateOutput, types::Preferences},
 };
 
+// DEPRECATED
 // TODO: We must rewrite this crap later, it's a mess
 
 impl<R: AppRuntime> App<R> {
@@ -26,10 +24,6 @@ impl<R: AppRuntime> App<R> {
             preferences: Preferences {
                 theme: self.preferences().theme.read().await.clone(),
                 locale: self.preferences().locale.read().await.clone(),
-            },
-            defaults: Defaults {
-                theme: self.defaults().theme.clone(),
-                locale: self.defaults().locale.clone(),
             },
             prev_workspace_id: last_workspace_id,
         })

@@ -63,8 +63,7 @@ pub struct App<R: AppRuntime> {
     pub(super) app_dir: PathBuf,
     pub(super) commands: AppCommands<R::EventLoop>,
     pub(super) preferences: AppPreferences,
-    pub(super) defaults: AppDefaults,
-
+    // pub(super) defaults: AppDefaults,
     #[allow(unused)]
     pub(super) session_service: SessionService,
     pub(super) log_service: LogService<R>,
@@ -96,9 +95,9 @@ impl<R: AppRuntime> App<R> {
         &self.preferences
     }
 
-    pub fn defaults(&self) -> &AppDefaults {
-        &self.defaults
-    }
+    // pub fn defaults(&self) -> &AppDefaults {
+    //     &self.defaults
+    // }
 
     pub async fn workspace(&self) -> Option<Arc<ActiveWorkspace<R>>> {
         self.workspace_service.workspace().await

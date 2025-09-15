@@ -7,7 +7,7 @@ use moss_user::models::{
 use moss_workspace::models::primitives::WorkspaceMode;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
-use std::{path::Path, sync::Arc};
+use std::{collections::HashMap, path::Path, sync::Arc};
 use ts_rs::TS;
 use validator::Validate;
 
@@ -89,11 +89,60 @@ pub struct CancelRequestInput {
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
+pub struct GetLocaleInput {
+    pub identifier: LocaleId,
+}
+
+/// @category Operation
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct GetLocaleOutput {
+    pub display_name: String,
+    pub code: String,
+    pub direction: Option<String>,
+}
+
+/// @category Operation
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct DescribeLocaleOutput {
+    pub display_name: String,
+    pub code: String,
+    pub direction: Option<String>,
+}
+
+/// @category Operation
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct GetTranslationInput {
+    pub identifier: LocaleId,
+}
+
+/// @category Operation
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "operations.ts")]
+pub struct GetTranslationOutput {
+    pub namespaces: Vec<String>,
+    #[ts(type = "{ [key: string]: JsonValue }")]
+    pub translations: HashMap<String, JsonValue>,
+}
+
+// DEPRECATED
+/// @category Operation
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
 pub struct GetTranslationsInput {
     pub language: String,
     pub namespace: String,
 }
 
+// DEPRECATED
 /// @category Operation
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "operations.ts")]
@@ -128,7 +177,7 @@ pub struct DescribeAppOutput {
 #[ts(export, export_to = "operations.ts")]
 pub struct DescribeAppStateOutput {
     pub preferences: Preferences,
-    pub defaults: Defaults,
+
     #[ts(as = "Option<String>")]
     pub prev_workspace_id: Option<WorkspaceId>,
 }

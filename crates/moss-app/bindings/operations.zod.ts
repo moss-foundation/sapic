@@ -8,7 +8,6 @@ import {
   addAccountParamsSchema,
   colorThemeInfoSchema,
   configurationSchema,
-  defaultsSchema,
   localeInfoSchema,
   logDateSchema,
   logEntryInfoSchema,
@@ -66,6 +65,12 @@ export const deleteWorkspaceOutputSchema = z.object({
   id: z.string(),
 });
 
+export const describeLocaleOutputSchema = z.object({
+  displayName: z.string(),
+  code: z.string(),
+  direction: z.string().optional(),
+});
+
 export const describeWorkbenchStateOutputSchema = z.object({
   prevWorkspaceId: z.string().optional(),
 });
@@ -76,6 +81,20 @@ export const getColorThemeInputSchema = z.object({
 
 export const getColorThemeOutputSchema = z.object({
   cssContent: z.string(),
+});
+
+export const getLocaleInputSchema = z.object({
+  identifier: z.string(),
+});
+
+export const getLocaleOutputSchema = z.object({
+  displayName: z.string(),
+  code: z.string(),
+  direction: z.string().optional(),
+});
+
+export const getTranslationInputSchema = z.object({
+  identifier: z.string(),
 });
 
 export const getTranslationsInputSchema = z.object({
@@ -117,8 +136,12 @@ export const describeAppOutputSchema = z.object({
 
 export const describeAppStateOutputSchema = z.object({
   preferences: preferencesSchema,
-  defaults: defaultsSchema,
   prevWorkspaceId: z.string().optional(),
+});
+
+export const getTranslationOutputSchema = z.object({
+  namespaces: z.array(z.string()),
+  translations: z.record(z.string(), jsonValueSchema),
 });
 
 export const getTranslationsOutputSchema = jsonValueSchema;

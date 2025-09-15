@@ -103,10 +103,10 @@ impl<R: AppRuntime> AppBuilder<R> {
                 .await
                 .expect("Failed to create workspace service");
 
-        let defaults = AppDefaults {
-            theme: theme_service.default_theme().await,
-            locale: locale_service.default_locale().await,
-        };
+        // let defaults = AppDefaults {
+        //     theme: theme_service.default_theme().await,
+        //     locale: locale_service.default_locale().await,
+        // };
         App {
             app_dir,
             app_handle: self.tao_handle.clone(),
@@ -118,7 +118,7 @@ impl<R: AppRuntime> AppBuilder<R> {
                 locale: RwLock::new(None),
             },
 
-            defaults,
+            // defaults,
             session_service,
             log_service,
             storage_service,
