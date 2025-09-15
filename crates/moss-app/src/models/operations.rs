@@ -113,7 +113,7 @@ pub struct ListLocalesOutput(pub Vec<LocaleInfo>);
 #[ts(export, export_to = "operations.ts")]
 pub struct DescribeAppOutput {
     /// The id of the workspace that is currently opened.
-    pub workspace: Option<WorkspaceId>,
+    pub workspace: Option<WorkspaceInfo>,
     /// The id of the profile that is currently active.
     #[ts(optional, type = "ProfileInfo")]
     pub profile: Option<ProfileInfo>,

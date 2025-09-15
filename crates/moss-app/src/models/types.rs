@@ -145,12 +145,10 @@ pub struct LogEntryInfo {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct WorkspaceInfo {
-    #[ts(as = "String")]
     pub id: WorkspaceId,
     pub name: String,
     pub last_opened_at: Option<i64>,
-    pub active: bool,
-
+    // pub active: bool,
     #[serde(skip)]
     #[ts(skip)]
     pub abs_path: Arc<Path>,

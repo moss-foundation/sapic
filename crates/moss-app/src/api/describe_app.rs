@@ -4,7 +4,10 @@ use moss_user::models::types::ProfileInfo;
 
 use crate::{
     app::App,
-    models::{operations::DescribeAppOutput, types::Configuration},
+    models::{
+        operations::DescribeAppOutput,
+        types::{Configuration, WorkspaceInfo},
+    },
 };
 
 impl<R: AppRuntime> App<R> {
@@ -12,7 +15,14 @@ impl<R: AppRuntime> App<R> {
         &self,
         _ctx: &R::AsyncContext,
     ) -> joinerror::Result<DescribeAppOutput> {
-        let maybe_workspace_id = self.workspace_service.workspace().await.map(|w| w.id());
+        let maybe_workspace_details =
+            if let Some(workspace) = self.workspace_service.workspace().await {
+                self.workspace_service
+                    .workspace_details(&workspace.id)
+                    .await
+            } else {
+                None
+            };
 
         let active_profile = self
             .profile_service
@@ -27,7 +37,12 @@ impl<R: AppRuntime> App<R> {
         let configuration = self.configuration_service.configuration().await;
 
         Ok(DescribeAppOutput {
-            workspace: maybe_workspace_id,
+            workspace: maybe_workspace_details.map(|v| WorkspaceInfo {
+                id: v.id,
+                name: v.name,
+                last_opened_at: v.last_opened_at,
+                abs_path: v.abs_path,
+            }),
             profile: Some(ProfileInfo {
                 id: active_profile.id().clone(),
                 name: profile_details.name,

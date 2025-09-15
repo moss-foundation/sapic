@@ -99,7 +99,7 @@ export type DescribeAppOutput = {
   /**
    * The id of the workspace that is currently opened.
    */
-  workspace?: string;
+  workspace?: WorkspaceInfo;
   /**
    * The id of the profile that is currently active.
    */

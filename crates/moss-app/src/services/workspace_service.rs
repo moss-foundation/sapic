@@ -93,6 +93,23 @@ impl<R: AppRuntime> WorkspaceService<R> {
         self.abs_path.join(path)
     }
 
+    pub(crate) async fn workspace_details(
+        &self,
+        id: &WorkspaceId,
+    ) -> Option<WorkspaceItemDescription> {
+        let state_lock = self.state.read().await;
+        state_lock
+            .known_workspaces
+            .get(id)
+            .map(|item| WorkspaceItemDescription {
+                id: item.id.clone(),
+                name: item.name.clone(),
+                abs_path: item.abs_path.clone(),
+                last_opened_at: item.last_opened_at,
+                active: false,
+            })
+    }
+
     pub(crate) async fn list_workspaces(&self) -> joinerror::Result<Vec<WorkspaceItemDescription>> {
         let state_lock = self.state.read().await;
         let active_workspace_id = state_lock.active_workspace.as_ref().map(|a| a.id.clone());

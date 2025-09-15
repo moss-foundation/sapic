@@ -26,7 +26,6 @@ export const workspaceInfoSchema = z.object({
   id: z.string(),
   name: z.string(),
   lastOpenedAt: z.bigint().optional(),
-  active: z.boolean(),
 });
 export const addAccountParamsSchema = z.object({
   host: z.string(),

@@ -110,7 +110,7 @@ export const createWorkspaceInputSchema = z.object({
 });
 
 export const describeAppOutputSchema = z.object({
-  workspace: z.string().optional(),
+  workspace: workspaceInfoSchema.optional(),
   profile: profileInfoSchema.optional(),
   configuration: configurationSchema,
 });
