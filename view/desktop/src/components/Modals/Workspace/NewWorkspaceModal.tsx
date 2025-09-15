@@ -19,7 +19,7 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
   const { mutate: openWorkspace, isPending: isOpening } = useOpenWorkspace();
 
   const [name, setName] = useState("New Workspace");
-  const [mode, setMode] = useState<WorkspaceMode>("REQUEST_FIRST");
+  const [mode, setMode] = useState<WorkspaceMode>("LIVE");
   const [openAutomatically, setOpenAutomatically] = useState(true);
 
   useEffect(() => {
@@ -73,7 +73,7 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
   const reset = () => {
     setTimeout(() => {
       setName("");
-      setMode("REQUEST_FIRST");
+      setMode("LIVE");
       setOpenAutomatically(true);
     }, 200);
   };
@@ -113,21 +113,21 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
             <div className="pl-5">
               <RadioGroup.Root>
                 <RadioGroup.ItemWithLabel
-                  label="Request-first mode"
+                  label="Live mode"
                   description="Start by designing your API structure (endpoints, schemas, etc.) before writing requests. Ideal for
                     planning and generating documentation upfront."
-                  value="REQUEST_FIRST"
-                  checked={mode === "REQUEST_FIRST"}
-                  onClick={() => setMode("REQUEST_FIRST")}
+                  value="LIVE"
+                  checked={mode === "LIVE"}
+                  onClick={() => setMode("LIVE")}
                 />
 
                 <RadioGroup.ItemWithLabel
-                  label="Design-first mode"
+                  label="Design mode"
                   description="Begin by writing and testing requests, then define the API structure based on actual usage. Great
                     for quick prototyping and iterating."
-                  value="DESIGN_FIRST"
-                  checked={mode === "DESIGN_FIRST"}
-                  onClick={() => setMode("DESIGN_FIRST")}
+                  value="DESIGN"
+                  checked={mode === "DESIGN"}
+                  onClick={() => setMode("DESIGN")}
                 />
               </RadioGroup.Root>
             </div>

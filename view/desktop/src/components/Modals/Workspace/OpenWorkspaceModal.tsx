@@ -15,7 +15,7 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
   const { data: workspaces, isLoading } = useListWorkspaces();
   const { mutate: openWorkspace } = useOpenWorkspace();
 
-  const [mode, setMode] = useState<WorkspaceMode>("REQUEST_FIRST");
+  const [mode, setMode] = useState<WorkspaceMode>("LIVE");
   const [selectedWorkspace, setSelectedWorkspace] = useState<string>("");
   const [reopenOnSession, setReopenOnSession] = useState(true);
 
@@ -41,7 +41,7 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
   const resetForm = () => {
     setTimeout(() => {
       setSelectedWorkspace("");
-      setMode("REQUEST_FIRST");
+      setMode("LIVE");
       setReopenOnSession(true);
     }, 200);
   };
@@ -84,17 +84,17 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
             <div className="pl-5">
               <RadioGroup.Root>
                 <RadioGroup.ItemWithLabel
-                  value="REQUEST_FIRST"
-                  checked={mode === "REQUEST_FIRST"}
-                  onClick={() => setMode("REQUEST_FIRST")}
-                  label="Request-first mode"
+                  value="LIVE"
+                  checked={mode === "LIVE"}
+                  onClick={() => setMode("LIVE")}
+                  label="Live mode"
                   description="Start by designing your API structure (endpoints, schemas, etc.) before writing requests. Ideal for planning and generating documentation upfront."
                 />
                 <RadioGroup.ItemWithLabel
-                  value="DESIGN_FIRST"
-                  checked={mode === "DESIGN_FIRST"}
-                  onClick={() => setMode("DESIGN_FIRST")}
-                  label="Design-first mode"
+                  value="DESIGN"
+                  checked={mode === "DESIGN"}
+                  onClick={() => setMode("DESIGN")}
+                  label="Design mode"
                   description="Begin by writing and testing requests, then define the API structure based on actual usage. Great for quick prototyping and iterating."
                 />
               </RadioGroup.Root>
