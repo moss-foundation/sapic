@@ -48,7 +48,6 @@ impl<R: AppRuntime> App<R> {
                 name: profile_details.name,
                 accounts: profile_details.accounts,
             }),
-
             configuration: Configuration {
                 keys: configuration
                     .keys

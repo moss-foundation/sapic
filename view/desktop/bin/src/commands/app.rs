@@ -54,6 +54,20 @@ pub async fn get_color_theme<'a, R: tauri::Runtime>(
 }
 
 #[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx,app), fields(window = window.label()))]
+pub async fn get_color_theme_test<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: Window<R>,
+    input: GetColorThemeInput,
+    options: Options,
+) -> TauriResult<JsonValue> {
+    Ok(serde_json::json!({
+        "source": "/assets/themes/dark.css",
+    }))
+}
+
+#[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn list_color_themes<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
