@@ -6,6 +6,8 @@ import { useDescribeApp } from "@/hooks/useDescribeApp";
 import { LocaleInfo } from "@repo/moss-app";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 
+import { initializeI18n } from "./i18n";
+
 interface LanguageProviderProps {
   children: ReactNode;
 }
@@ -26,18 +28,12 @@ const LanguageProvider = ({ children }: LanguageProviderProps) => {
   // Initialize language
   useEffect(() => {
     const initialize = async () => {
-      if (!localeId || !locale || isInitialized.current) {
+      if (!locale || isInitialized.current) {
         return;
       }
 
       try {
-        setLocaleLocally({
-          localeInfo: {
-            identifier: localeId,
-            displayName: locale.displayName,
-            code: locale.code,
-          },
-        });
+        initializeI18n(locale.code);
 
         isInitialized.current = true;
       } catch (error) {
@@ -48,7 +44,7 @@ const LanguageProvider = ({ children }: LanguageProviderProps) => {
     if (appState && isSuccess && isLocaleSuccess) {
       initialize();
     }
-  }, [appState, setLocaleLocally, isSuccess, isLocaleSuccess, locale, localeId]);
+  }, [appState, setLocaleLocally, isSuccess, isLocaleSuccess, locale]);
 
   // Listen for language pack changes
   useEffect(() => {
