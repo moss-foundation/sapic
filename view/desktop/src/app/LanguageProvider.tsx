@@ -14,7 +14,7 @@ const LanguageProvider = ({ children }: LanguageProviderProps) => {
   const isInitialized = useRef(false);
 
   const { data: appState, isSuccess } = useDescribeApp();
-  const { mutateAsync: mutateChangeLanguagePack } = useSetLocale();
+  const { setLocaleLocally } = useSetLocale();
 
   const localeId = appState?.configuration.contents.locale as string;
 
@@ -31,7 +31,7 @@ const LanguageProvider = ({ children }: LanguageProviderProps) => {
       }
 
       try {
-        mutateChangeLanguagePack({
+        setLocaleLocally({
           localeInfo: {
             identifier: localeId,
             displayName: locale.displayName,
@@ -48,7 +48,7 @@ const LanguageProvider = ({ children }: LanguageProviderProps) => {
     if (appState && isSuccess && isLocaleSuccess) {
       initialize();
     }
-  }, [appState, mutateChangeLanguagePack, isSuccess, isLocaleSuccess, locale, localeId]);
+  }, [appState, setLocaleLocally, isSuccess, isLocaleSuccess, locale, localeId]);
 
   // Listen for language pack changes
   useEffect(() => {
@@ -57,7 +57,7 @@ const LanguageProvider = ({ children }: LanguageProviderProps) => {
     const handleLanguageChange = (event: { payload: LocaleInfo }) => {
       const eventLang = event.payload;
 
-      mutateChangeLanguagePack({
+      setLocaleLocally({
         localeInfo: {
           identifier: eventLang.identifier,
           displayName: eventLang.displayName,
@@ -79,7 +79,7 @@ const LanguageProvider = ({ children }: LanguageProviderProps) => {
     return () => {
       unlisten?.();
     };
-  }, [mutateChangeLanguagePack]);
+  }, [setLocaleLocally]);
 
   return <>{children}</>;
 };
