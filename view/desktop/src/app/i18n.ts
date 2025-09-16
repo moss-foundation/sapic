@@ -23,4 +23,6 @@ export const initializeI18n = async (languageCode: string) => {
     });
 };
 
+initializeI18n("en");
+
 export default i18next;

@@ -15,12 +15,12 @@ interface LanguageProviderProps {
 const LanguageProvider = ({ children }: LanguageProviderProps) => {
   const isInitialized = useRef(false);
 
-  const { data: appState, isSuccess } = useDescribeApp();
+  const { data: appState } = useDescribeApp();
   const { setLocaleLocally } = useSetLocale();
 
   const localeId = appState?.configuration.contents.locale as string;
 
-  const { data: locale, isSuccess: isLocaleSuccess } = useGetLocale({
+  const { data: locale } = useGetLocale({
     identifier: localeId,
     options: { enabled: !!localeId },
   });
@@ -28,9 +28,7 @@ const LanguageProvider = ({ children }: LanguageProviderProps) => {
   // Initialize language
   useEffect(() => {
     const initialize = async () => {
-      if (!locale || isInitialized.current) {
-        return;
-      }
+      if (!locale) return;
 
       try {
         initializeI18n(locale.code);
@@ -41,10 +39,10 @@ const LanguageProvider = ({ children }: LanguageProviderProps) => {
       }
     };
 
-    if (appState && isSuccess && isLocaleSuccess) {
+    if (!isInitialized.current) {
       initialize();
     }
-  }, [appState, setLocaleLocally, isSuccess, isLocaleSuccess, locale]);
+  }, [setLocaleLocally, locale]);
 
   // Listen for language pack changes
   useEffect(() => {

@@ -26,10 +26,6 @@ const openWorkspaceFn = async (workspaceId: string): Promise<OpenWorkspaceOutput
     } as OpenWorkspaceInput,
   });
 
-  console.log({
-    openWorkspaceResult: result,
-  });
-
   if (result.status === "error") {
     throw new Error(String(result.error));
   }
@@ -54,9 +50,14 @@ export const useOpenWorkspace = () => {
 
       queryClient.setQueryData([USE_DESCRIBE_APP_QUERY_KEY], (oldData: DescribeAppOutput | undefined) => {
         if (oldData) {
+          //TODO: i guess maybe useOpenWorkspace should return the workspace name.
           return {
             ...oldData,
-            workspace: workspaceId,
+            workspace: {
+              id: workspaceId,
+              name: "",
+              lastOpenedAt: undefined,
+            },
           };
         }
         return oldData;
