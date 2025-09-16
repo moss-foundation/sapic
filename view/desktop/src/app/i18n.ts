@@ -4,7 +4,6 @@ import { initReactI18next } from "react-i18next";
 import I18nTauriBackend from "../lib/backend/nls";
 
 export const initializeI18n = async (languageCode: string) => {
-  console.log("initializeI18n", languageCode);
   await i18next
     .use(I18nTauriBackend)
     .use(initReactI18next)
@@ -17,7 +16,7 @@ export const initializeI18n = async (languageCode: string) => {
         escapeValue: false,
       },
       react: {
-        useSuspense: false,
+        useSuspense: true,
       },
       initImmediate: true,
       load: "languageOnly",
