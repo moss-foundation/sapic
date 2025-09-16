@@ -5,7 +5,7 @@ export const useActiveWorkspace = () => {
 
   const activeWorkspace = appState?.workspace || null;
   const activeWorkspaceId = appState?.workspace?.id || null;
-  const hasActiveWorkspace = !!activeWorkspace && !isLoading;
+  const hasActiveWorkspace = !!appState?.workspace && !isLoading;
 
   return {
     activeWorkspace,
