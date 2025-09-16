@@ -48,7 +48,11 @@ export const useCreateWorkspace = () => {
           if (oldData) {
             return {
               ...oldData,
-              workspace: data.id,
+              workspace: {
+                id: data.id,
+                name: variables.name,
+                lastOpenedAt: undefined,
+              },
             };
           }
           return oldData;
