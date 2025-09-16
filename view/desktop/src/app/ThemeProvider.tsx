@@ -10,23 +10,23 @@ const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const queryClient = useQueryClient();
 
   const { data: appState } = useDescribeApp();
-  const { data: colorTheme } = useDescribeColorTheme({
+  const { data: colorThemeCss } = useDescribeColorTheme({
     themeId: (appState?.configuration.contents.colorTheme as string) ?? "",
   });
 
   useEffect(() => {
-    if (appState && colorTheme) {
+    if (appState && colorThemeCss) {
       const theme = appState.configuration.contents.colorTheme as string;
 
-      setThemeStyle(theme, colorTheme.cssContent);
+      setThemeStyle(theme, colorThemeCss.cssContent);
     }
-  }, [appState, colorTheme, queryClient]);
+  }, [appState, colorThemeCss, queryClient]);
 
   useEffect(() => {
     let unlisten: UnlistenFn | undefined;
 
     const handleThemeChange = (event: { payload: ColorThemeInfo }) => {
-      setThemeStyle(event.payload.identifier, colorTheme?.cssContent ?? "");
+      setThemeStyle(event.payload.identifier, colorThemeCss?.cssContent ?? "");
     };
 
     const setupListener = async () => {
@@ -42,7 +42,7 @@ const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       unlisten?.();
     };
-  }, [queryClient, colorTheme]);
+  }, [queryClient, colorThemeCss]);
 
   return <>{children}</>;
 };
