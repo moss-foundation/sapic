@@ -1,10 +1,8 @@
 import i18next from "@/app/i18n";
+import { USE_DESCRIBE_APP_QUERY_KEY } from "@/hooks/useDescribeApp";
 import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { DescribeAppStateOutput, SetLocaleInput } from "@repo/moss-app";
+import { DescribeAppOutput, SetLocaleInput } from "@repo/moss-app";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-import { USE_DESCRIBE_APP_STATE_QUERY_KEY } from "../useDescribeAppState";
-import { getLocaleFn } from "./useGetLocale";
 
 export const USE_SET_LOCALE_MUTATION_KEY = "setLocale";
 
@@ -20,16 +18,20 @@ const setLocaleFn = async (input: SetLocaleInput): Promise<void> => {
 
 export const useSetLocale = () => {
   const queryClient = useQueryClient();
-  const mutation = useMutation<void, Error, SetLocaleInput>({
+
+  return useMutation<void, Error, SetLocaleInput>({
     mutationKey: [USE_SET_LOCALE_MUTATION_KEY],
     mutationFn: setLocaleFn,
     onSuccess: async (_, input) => {
-      queryClient.setQueryData([USE_DESCRIBE_APP_STATE_QUERY_KEY], (old: DescribeAppStateOutput) => {
+      queryClient.setQueryData([USE_DESCRIBE_APP_QUERY_KEY], (old: DescribeAppOutput) => {
         return {
           ...old,
-          preferences: {
-            ...old.preferences,
-            locale: input.localeInfo,
+          configuration: {
+            ...old.configuration,
+            contents: {
+              ...old.configuration.contents,
+              locale: input.localeInfo.identifier,
+            },
           },
         };
       });
@@ -37,11 +39,4 @@ export const useSetLocale = () => {
       await i18next.changeLanguage(input.localeInfo.code).catch(console.error);
     },
   });
-
-  const applyLocaleById = async (id: string) => {
-    const result = await getLocaleFn(id);
-    i18next.changeLanguage(result.code);
-  };
-
-  return { ...mutation, applyLocaleById };
 };

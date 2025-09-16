@@ -1,6 +1,6 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { GetLocaleInput, GetLocaleOutput } from "@repo/moss-app";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 
 export const USE_GET_LOCALE_QUERY_KEY = "getLocale";
 
@@ -14,16 +14,15 @@ export const getLocaleFn = async (identifier: string): Promise<GetLocaleOutput> 
   return result.data;
 };
 
-export const useGetLocale = ({ identifier }: GetLocaleInput) => {
-  const query = useQuery<GetLocaleOutput, Error>({
+interface UseGetLocaleOptions extends GetLocaleInput {
+  identifier: string;
+  options?: Omit<UseQueryOptions<GetLocaleOutput, Error>, "queryKey" | "queryFn">;
+}
+
+export const useGetLocale = ({ identifier, options }: UseGetLocaleOptions) => {
+  return useQuery<GetLocaleOutput, Error>({
     queryKey: [USE_GET_LOCALE_QUERY_KEY],
     queryFn: () => getLocaleFn(identifier),
+    ...options,
   });
-
-  const getLocaleById = async (id: string) => {
-    const result = await getLocaleFn(id);
-    return result;
-  };
-
-  return { ...query, getLocaleById };
 };

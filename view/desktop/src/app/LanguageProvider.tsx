@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useRef } from "react";
 
 import { useSetLocale } from "@/hooks";
 import { useGetLocale } from "@/hooks/app/locales/useGetLocale";
@@ -11,34 +11,59 @@ interface LanguageProviderProps {
 }
 
 const LanguageProvider = ({ children }: LanguageProviderProps) => {
+  const isInitialized = useRef(false);
+
   const { data: appState, isSuccess } = useDescribeApp();
-  const { applyLocaleById } = useSetLocale();
-  const { getLocaleById } = useGetLocale({ identifier: appState?.configuration.contents.locale as string });
+  const { mutateAsync: mutateChangeLanguagePack } = useSetLocale();
+
+  const localeId = appState?.configuration.contents.locale as string;
+
+  const { data: locale, isSuccess: isLocaleSuccess } = useGetLocale({
+    identifier: localeId,
+    options: { enabled: !!localeId },
+  });
 
   // Initialize language
   useEffect(() => {
     const initialize = async () => {
-      if (!appState?.configuration.contents.locale) {
-        throw new Error("Locale not found");
+      if (!localeId || !locale || isInitialized.current) {
+        return;
       }
 
-      const localePackId = appState.configuration.contents.locale as string;
+      try {
+        mutateChangeLanguagePack({
+          localeInfo: {
+            identifier: localeId,
+            displayName: locale.displayName,
+            code: locale.code,
+          },
+        });
 
-      const locale = await getLocaleById(localePackId);
-      applyLocaleById(locale.code);
+        isInitialized.current = true;
+      } catch (error) {
+        console.error("Failed to initialize locale:", error);
+      }
     };
 
-    if (appState && isSuccess) {
+    if (appState && isSuccess && isLocaleSuccess) {
       initialize();
     }
-  }, [appState, applyLocaleById, getLocaleById, isSuccess]);
+  }, [appState, mutateChangeLanguagePack, isSuccess, isLocaleSuccess, locale, localeId]);
 
   // Listen for language pack changes
   useEffect(() => {
     let unlisten: UnlistenFn | undefined;
 
     const handleLanguageChange = (event: { payload: LocaleInfo }) => {
-      applyLocaleById(event.payload.code);
+      const eventLang = event.payload;
+
+      mutateChangeLanguagePack({
+        localeInfo: {
+          identifier: eventLang.identifier,
+          displayName: eventLang.displayName,
+          code: eventLang.code,
+        },
+      });
     };
 
     const setupListener = async () => {
@@ -54,7 +79,7 @@ const LanguageProvider = ({ children }: LanguageProviderProps) => {
     return () => {
       unlisten?.();
     };
-  }, [applyLocaleById]);
+  }, [mutateChangeLanguagePack]);
 
   return <>{children}</>;
 };
