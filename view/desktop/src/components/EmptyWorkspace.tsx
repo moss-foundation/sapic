@@ -1,5 +1,3 @@
-import { useTranslation } from "react-i18next";
-
 import { useModal } from "@/hooks/useModal";
 import { useGlobalSidebarState } from "@/hooks/workspace/derived/useGlobalSidebarState";
 
@@ -14,8 +12,6 @@ interface EmptyWorkspaceProps {
 }
 
 export const EmptyWorkspace = ({ inSidebar = false }: EmptyWorkspaceProps) => {
-  const { t } = useTranslation();
-
   useGlobalSidebarState();
 
   const {
@@ -49,8 +45,8 @@ export const EmptyWorkspace = ({ inSidebar = false }: EmptyWorkspaceProps) => {
         </div>
 
         <div className="flex flex-col gap-3.5">
-          <ButtonPrimary onClick={openNewWorkspaceModal}>{t("New workspace")}</ButtonPrimary>
-          <ButtonPrimary onClick={openOpenWorkspaceModal}>{t("Open workspace")}</ButtonPrimary>
+          <ButtonPrimary onClick={openNewWorkspaceModal}>New workspace</ButtonPrimary>
+          <ButtonPrimary onClick={openOpenWorkspaceModal}>Open workspace</ButtonPrimary>
         </div>
       </div>
     );
