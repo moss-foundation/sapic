@@ -10,7 +10,10 @@ use crate::{
     errors::ErrorInvalidInput,
     models::{
         operations::CreateEntryOutput,
-        primitives::{EntryClass, EntryId, EntryProtocol, FrontendEntryPath, HeaderId},
+        primitives::{
+            EntryClass, EntryId, EntryProtocol, FrontendEntryPath, HeaderId, PathParamId,
+            QueryParamId,
+        },
         types::{
             AfterUpdateDirEntryDescription, AfterUpdateItemEntryDescription, CreateDirEntryParams,
             CreateItemEntryParams, UpdateDirEntryParams, UpdateItemEntryParams,
@@ -19,7 +22,8 @@ use crate::{
     worktree::{
         ModifyParams,
         entry::model::{
-            EntryMetadataSpec, EntryModel, HeaderParamOptions, HeaderParamSpec, UrlDetails,
+            EntryMetadataSpec, EntryModel, HeaderParamOptions, HeaderParamSpec, PathParamOptions,
+            PathParamSpec, QueryParamOptions, QueryParamSpec, UrlDetails,
         },
     },
 };
@@ -62,6 +66,8 @@ impl<R: AppRuntime> Project<R> {
         let model = match input.class {
             EntryClass::Endpoint => {
                 let mut header_map = IndexMap::new();
+                let mut path_param_map = IndexMap::new();
+                let mut query_param_map = IndexMap::new();
 
                 for param in input.headers {
                     header_map.insert(
@@ -75,14 +81,57 @@ impl<R: AppRuntime> Project<R> {
                                     e
                                 ))
                             })?,
-                            disabled: param.options.disabled,
                             description: param.desc,
                             options: HeaderParamOptions {
+                                disabled: param.options.disabled,
                                 propagate: param.options.propagate,
                             },
                         },
                     );
                 }
+
+                for param in input.path_params {
+                    path_param_map.insert(
+                        PathParamId::new(),
+                        PathParamSpec {
+                            name: param.name,
+                            value: json_to_hcl(&param.value).map_err(|e| {
+                                Error::new::<ErrorInvalidInput>(format!(
+                                    "failed to parse header value `{}`: {}",
+                                    param.value.to_string(),
+                                    e
+                                ))
+                            })?,
+                            description: param.desc,
+                            options: PathParamOptions {
+                                disabled: param.options.disabled,
+                                propagate: param.options.propagate,
+                            },
+                        },
+                    );
+                }
+
+                for param in input.query_params {
+                    query_param_map.insert(
+                        QueryParamId::new(),
+                        QueryParamSpec {
+                            name: param.name,
+                            value: json_to_hcl(&param.value).map_err(|e| {
+                                Error::new::<ErrorInvalidInput>(format!(
+                                    "failed to parse header value `{}`: {}",
+                                    param.value.to_string(),
+                                    e
+                                ))
+                            })?,
+                            description: param.desc,
+                            options: QueryParamOptions {
+                                disabled: param.options.disabled,
+                                propagate: param.options.propagate,
+                            },
+                        },
+                    );
+                }
+
                 EntryModel {
                     metadata: Block::new(EntryMetadataSpec {
                         id: id.clone(),
@@ -93,6 +142,8 @@ impl<R: AppRuntime> Project<R> {
                         raw: "Hardcoded Value".to_string(),
                     })),
                     headers: Some(LabeledBlock::new(header_map)),
+                    path_params: Some(LabeledBlock::new(path_param_map)),
+                    query_params: Some(LabeledBlock::new(query_param_map)),
                 }
             }
             EntryClass::Component => {
@@ -103,6 +154,8 @@ impl<R: AppRuntime> Project<R> {
                     }),
                     url: None,
                     headers: None, // Hardcoded for now
+                    path_params: None,
+                    query_params: None,
                 }
             }
             EntryClass::Schema => {
@@ -113,6 +166,8 @@ impl<R: AppRuntime> Project<R> {
                     }),
                     url: None,
                     headers: None, // Hardcoded for now
+                    path_params: None,
+                    query_params: None,
                 }
             }
         };
