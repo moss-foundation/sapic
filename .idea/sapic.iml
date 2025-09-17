@@ -63,6 +63,7 @@
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-server-api/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-project/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-project/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-theme/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-edit/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-edit/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-workspacelib/src" isTestSource="false" />

@@ -232,6 +232,25 @@ importers:
         specifier: workspace:*
         version: link:../../packages/config-typescript
 
+  crates/moss-theme:
+    dependencies:
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.2
+      zod:
+        specifier: ^3.24.4
+        version: 3.25.76
+    devDependencies:
+      '@repo/moss-bindingutils':
+        specifier: workspace:*
+        version: link:../moss-bindingutils
+      '@repo/moss-workspace':
+        specifier: workspace:*
+        version: link:../moss-workspace
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/config-typescript
+
   crates/moss-user:
     dependencies:
       typescript:
@@ -321,6 +340,16 @@ importers:
       zod:
         specifier: ^3.24.4
         version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^24.3.0
+        version: 24.3.1
+
+  tools/theme-converter:
+    dependencies:
+      postcss:
+        specifier: 8.5.6
+        version: 8.5.6
     devDependencies:
       '@types/node':
         specifier: ^24.3.0

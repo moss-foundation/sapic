@@ -23,6 +23,7 @@ moss_logging.workspace = true
 moss_id_macro.workspace = true
 moss_bindingutils.workspace = true
 moss_git.workspace = true
+moss_theme.workspace = true
 
 git2.workspace = true
 joinerror.workspace = true

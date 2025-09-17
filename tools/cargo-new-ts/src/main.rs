@@ -74,11 +74,11 @@ fn main() {
     let args: Vec<String> = env::args().skip(2).collect();
 
     if args.is_empty() || args[0] == "--help" || args[0] == "-h" {
-        println!("cargo new-ts [options] <name>");
+        println!("cargo new-ts <name> [options]");
         return;
     }
 
-    // `cargo new [options] <name>
+    // `cargo new <name> [options]
     let crate_name = &args[0];
     let mut cargo_new = Command::new("cargo");
     cargo_new.arg("new");
