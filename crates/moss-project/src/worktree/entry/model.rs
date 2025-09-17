@@ -21,7 +21,7 @@ pub struct HeaderParamSpec {
     pub name: String,
     pub value: Expression,
     pub disabled: bool,
-    pub description: String,
+    pub description: Option<String>,
     pub options: HeaderParamOptions,
 }
 

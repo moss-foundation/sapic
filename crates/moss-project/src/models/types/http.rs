@@ -109,6 +109,7 @@ pub struct UpdatePathParamParams {
 #[serde(rename_all = "camelCase")]
 pub struct HeaderParamOptions {
     pub disabled: bool,
+    pub propagate: bool,
 }
 
 /// @category Type

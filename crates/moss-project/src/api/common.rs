@@ -1,12 +1,16 @@
+use hcl::ser::LabeledBlock;
+use indexmap::IndexMap;
+use joinerror::Error;
 use moss_applib::{AppRuntime, errors::ValidationResultExt};
-use moss_hcl::Block;
+use moss_hcl::{Block, json_to_hcl};
 use validator::Validate;
 
 use crate::{
     Project,
+    errors::ErrorInvalidInput,
     models::{
         operations::CreateEntryOutput,
-        primitives::{EntryClass, EntryId, EntryProtocol, FrontendEntryPath},
+        primitives::{EntryClass, EntryId, EntryProtocol, FrontendEntryPath, HeaderId},
         types::{
             AfterUpdateDirEntryDescription, AfterUpdateItemEntryDescription, CreateDirEntryParams,
             CreateItemEntryParams, UpdateDirEntryParams, UpdateItemEntryParams,
@@ -14,7 +18,9 @@ use crate::{
     },
     worktree::{
         ModifyParams,
-        entry::model::{EntryMetadataSpec, EntryModel, UrlDetails},
+        entry::model::{
+            EntryMetadataSpec, EntryModel, HeaderParamOptions, HeaderParamSpec, UrlDetails,
+        },
     },
 };
 
@@ -55,6 +61,28 @@ impl<R: AppRuntime> Project<R> {
 
         let model = match input.class {
             EntryClass::Endpoint => {
+                let mut header_map = IndexMap::new();
+
+                for param in input.headers {
+                    header_map.insert(
+                        HeaderId::new(),
+                        HeaderParamSpec {
+                            name: param.name,
+                            value: json_to_hcl(&param.value).map_err(|e| {
+                                Error::new::<ErrorInvalidInput>(format!(
+                                    "failed to parse header value `{}`: {}",
+                                    param.value.to_string(),
+                                    e
+                                ))
+                            })?,
+                            disabled: param.options.disabled,
+                            description: param.desc,
+                            options: HeaderParamOptions {
+                                propagate: param.options.propagate,
+                            },
+                        },
+                    );
+                }
                 EntryModel {
                     metadata: Block::new(EntryMetadataSpec {
                         id: id.clone(),
@@ -64,7 +92,7 @@ impl<R: AppRuntime> Project<R> {
                         protocol: input.protocol.clone().unwrap_or(EntryProtocol::Get),
                         raw: "Hardcoded Value".to_string(),
                     })),
-                    headers: None, // Hardcoded for now
+                    headers: Some(LabeledBlock::new(header_map)),
                 }
             }
             EntryClass::Component => {
