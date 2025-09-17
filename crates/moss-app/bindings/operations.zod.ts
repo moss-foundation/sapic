@@ -93,8 +93,9 @@ export const getLocaleOutputSchema = z.object({
   direction: z.string().optional(),
 });
 
-export const getTranslationInputSchema = z.object({
-  identifier: z.string(),
+export const getTranslationNamespaceInputSchema = z.object({
+  language: z.string(),
+  namespace: z.string(),
 });
 
 export const getTranslationsInputSchema = z.object({
@@ -139,9 +140,8 @@ export const describeAppStateOutputSchema = z.object({
   prevWorkspaceId: z.string().optional(),
 });
 
-export const getTranslationOutputSchema = z.object({
-  namespaces: z.array(z.string()),
-  translations: z.record(z.string(), jsonValueSchema),
+export const getTranslationNamespaceOutputSchema = z.object({
+  contents: jsonValueSchema,
 });
 
 export const getTranslationsOutputSchema = jsonValueSchema;

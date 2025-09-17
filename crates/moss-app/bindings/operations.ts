@@ -145,12 +145,12 @@ export type GetLocaleOutput = { displayName: string; code: string; direction?: s
 /**
  * @category Operation
  */
-export type GetTranslationInput = { identifier: string };
+export type GetTranslationNamespaceInput = { language: string; namespace: string };
 
 /**
  * @category Operation
  */
-export type GetTranslationOutput = { namespaces: Array<string>; translations: { [key: string]: JsonValue } };
+export type GetTranslationNamespaceOutput = { contents: JsonValue };
 
 /**
  * @category Operation

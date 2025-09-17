@@ -1,6 +1,6 @@
 import { BackendModule, ReadCallback } from "i18next";
 
-import { GetTranslationsInput, GetTranslationsOutput } from "@repo/moss-app";
+import { GetTranslationNamespaceInput, GetTranslationNamespaceOutput } from "@repo/moss-app";
 
 import { invokeTauriIpc, IpcResult } from "./tauri";
 
@@ -25,8 +25,11 @@ export const clearTranslationCache = (language?: string) => {
   }
 };
 
-const getTranslationsFn = async (input: GetTranslationsInput): Promise<IpcResult<GetTranslationsOutput, string>> => {
-  return await invokeTauriIpc<GetTranslationsOutput, string>("get_translations", {
+//TODO should be in services
+const getTranslationNamespaceFn = async (
+  input: GetTranslationNamespaceInput
+): Promise<IpcResult<GetTranslationNamespaceOutput, string>> => {
+  return await invokeTauriIpc<GetTranslationNamespaceOutput, string>("get_translation_namespace", {
     input,
   });
 };
@@ -42,10 +45,10 @@ const I18nTauriBackend: BackendModule = {
     }
 
     try {
-      const result = await getTranslationsFn({ language, namespace });
+      const result = await getTranslationNamespaceFn({ language, namespace });
 
       if (result.status === "ok") {
-        const translations = result.data as I18nDictionary;
+        const translations = result.data.contents as I18nDictionary;
         translationCache.set(cacheKey, translations);
         callback(null, translations);
       } else {
