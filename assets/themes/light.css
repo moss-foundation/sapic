@@ -1,0 +1,365 @@
+:root {
+  /* Palette */
+
+  --moss-gray-1: #000000;
+  --moss-gray-2: #27282e;
+  --moss-gray-3: #383a42;
+  --moss-gray-4: #494b57;
+  --moss-gray-5: #5a5d6b;
+  --moss-gray-6: #6c707e;
+  --moss-gray-7: #818594;
+  --moss-gray-8: #a8adbd;
+  --moss-gray-9: #c9ccd6;
+  --moss-gray-10: #d3d5db;
+  --moss-gray-11: #dfe1e5;
+  --moss-gray-12: #ebecf0;
+  --moss-gray-13: #f7f8fa;
+  --moss-gray-14: #ffffff;
+
+  --moss-blue-1: #2e55a3;
+  --moss-blue-2: #315fbd;
+  --moss-blue-3: #3369d6;
+  --moss-blue-4: #3574f0;
+  --moss-blue-5: #4682fa;
+  --moss-blue-6: #588cf3;
+  --moss-blue-7: #709cf5;
+  --moss-blue-8: #88adf7;
+  --moss-blue-9: #a0bdf8;
+  --moss-blue-10: #c2d6fc;
+  --moss-blue-11: #d4e2ff;
+  --moss-blue-12: #edf3ff;
+  --moss-blue-13: #f5f8fe;
+
+  --moss-green-1: #1e6b33;
+  --moss-green-2: #1f7536;
+  --moss-green-3: #1f8039;
+  --moss-green-4: #208a3c;
+  --moss-green-5: #369650;
+  --moss-green-6: #55a76a;
+  --moss-green-7: #89c398;
+  --moss-green-8: #afdbb8;
+  --moss-green-9: #c5e5cc;
+  --moss-green-10: #e6f7e9;
+  --moss-green-11: #f2fcf3;
+
+  --moss-red-1: #ad2b38;
+  --moss-red-2: #bc303e;
+  --moss-red-3: #cc3645;
+  --moss-red-4: #db3b4b;
+  --moss-red-5: #e55765;
+  --moss-red-6: #e46a76;
+  --moss-red-7: #ed99a1;
+  --moss-red-8: #f2b6bb;
+  --moss-red-9: #fad4d8;
+  --moss-red-10: #fff2f3;
+  --moss-red-11: #fff7f7;
+
+  --moss-yellow-1: #a46704;
+  --moss-yellow-2: #c27d04;
+  --moss-yellow-3: #df9303;
+  --moss-yellow-4: #ffaf0f;
+  --moss-yellow-5: #fdbd3d;
+  --moss-yellow-6: #fed277;
+  --moss-yellow-7: #fee6b1;
+  --moss-yellow-8: #fff1d1;
+  --moss-yellow-9: #fff6de;
+  --moss-yellow-10: #fffaeb;
+
+  --moss-orange-1: #a14916;
+  --moss-orange-2: #b85516;
+  --moss-orange-3: #ce6117;
+  --moss-orange-4: #e56d17;
+  --moss-orange-5: #ec8f4c;
+  --moss-orange-6: #f2b181;
+  --moss-orange-7: #f9d2b6;
+  --moss-orange-8: #fce6d6;
+  --moss-orange-9: #fff4eb;
+
+  --moss-purple-1: #55339c;
+  --moss-purple-2: #643cb8;
+  --moss-purple-3: #7444d4;
+  --moss-purple-4: #834df0;
+  --moss-purple-5: #a177f4;
+  --moss-purple-6: #bfa1f8;
+  --moss-purple-7: #dccbfb;
+  --moss-purple-8: #efe5ff;
+  --moss-purple-9: #faf5ff;
+
+  --moss-teal-1: #096a6e;
+  --moss-teal-2: #077a7f;
+  --moss-teal-3: #058b90;
+  --moss-teal-4: #039ba1;
+  --moss-teal-5: #3fb3b8;
+  --moss-teal-6: #7bcccf;
+  --moss-teal-7: #b6e4e5;
+  --moss-teal-8: #daf4f5;
+  --moss-teal-9: #f2fcfc;
+
+  /* Base Colors */
+  --moss-primary: var(--moss-blue-4);
+
+  --moss-error: var(--moss-red-3);
+  --moss-error-background: var(--moss-red-9);
+
+  --moss-success: var(--moss-green-3);
+  --moss-success-background: var(--moss-green-11);
+
+  --moss-border-color: var(--moss-gray-12);
+
+  --moss-primary-background: var(--moss-gray-14);
+  --moss-primary-background-hover: var(--moss-blue-13);
+  --moss-primary-text: var(--moss-gray-1);
+
+  --moss-secondary-background: var(--moss-gray-13);
+  --moss-secondary-background-hover: var(--moss-gray-12);
+  --moss-secondary-background-active: var(--moss-gray-11);
+  --moss-secondary-text: var(--moss-gray-6);
+
+  --moss-info-background: var(--moss-blue-12);
+  --moss-info-background-hover: var(--moss-blue-11);
+  --moss-info-text: var(--moss-primary-text);
+  --moss-info-icon: var(--moss-primary);
+  --moss-info-border: var(--moss-primary);
+
+  --moss-divider-color: var(--moss-gray-11);
+
+  --moss-not-selected-item-color: var(--moss-gray-7);
+
+  --moss-shortcut-text: var(--moss-gray-7);
+
+  --moss-tree-entries-counter: var(--moss-gray-7);
+
+  /* Resizable */
+  --focus-border: var(--moss-primary);
+  --separator-border: var(--moss-border-color);
+
+  /* Icons */
+  --moss-icon-primary-background: var(--moss-gray-12);
+  --moss-icon-primary-text: var(--moss-gray-6);
+  --moss-icon-primary-background-hover: var(--moss-gray-10);
+  --moss-icon-primary-background-active: var(--moss-blue-11);
+
+  --moss-icon-secondary-background: transparent;
+  --moss-icon-secondary-text: var(--moss-gray-6);
+  --moss-icon-secondary-background-hover: var(--moss-gray-12);
+  --moss-icon-secondary-background-active: var(--moss-gray-11);
+
+  /* HeadBar */
+  --moss-headBar-icon-primary-text: var(--moss-gray-4);
+  --moss-headBar-primary-background: var(--moss-gray-12);
+  --moss-headBar-primary-background-hover: var(--moss-gray-11);
+  --moss-headBar-border-color: var(--moss-gray-11);
+
+  /* StatusBar */
+  --moss-statusBar-icon-primary-text: var(--moss-gray-1);
+  --moss-statusBar-icon-secondary-text: var(--moss-gray-4);
+  --moss-statusBar-icon-background-hover: var(--moss-gray-12);
+
+  /* Layout */
+  --moss-statusBar-background: var(--moss-gray-2);
+
+  /* Window Controls */
+  --moss-button-icon-color: black;
+  --moss-windowsCloseButton-background: rgba(196, 43, 28, 1);
+  --moss-windowControlsLinux-background: #e7e7e7;
+  --moss-windowControlsLinux-text: rgba(61, 61, 61, 1);
+  --moss-windowControlsLinux-hoverBackground: rgba(209, 209, 209, 1);
+  --moss-windowControlsLinux-activeBackground: rgba(191, 191, 191, 1);
+
+  /* Dockview */
+
+  --moss-sash-active-highlight: #047cd4;
+
+  /* Pane View */
+  --moss-paneview-active-outline-color: var(--moss-primary);
+  --moss-paneview-header-border-color: 13px;
+
+  /* Drag and Drop */
+  --moss-drag-over-background-color: var(--moss-blue-11);
+  --moss-drag-over-border-color: var(--moss-primary-background);
+
+  /* Group View */
+  --moss-group-view-background-color: var(--moss-primary-background);
+  --moss-tabs-and-actions-container-background-color: var(--moss-primary-background);
+  --moss-tabs-and-actions-container-height: 35px;
+
+  /* Tab States */
+  --moss-activegroup-visiblepanel-tab-background-color: var(--moss-primary-background-hover);
+  --moss-inactivegroup-visiblepanel-tab-background-color: var(--moss-primary-background);
+  --moss-activegroup-visiblepanel-tab-color: var(--moss-primary-text);
+  --moss-inactivegroup-visiblepanel-tab-color: var(--moss-secondary-text);
+  --moss-activegroup-visiblepanel-tab-border-color: var(--moss-primary);
+  --moss-activegroup-hiddenpanel-tab-border-color: transparent;
+  --moss-inactivegroup-visiblepanel-tab-border-color: var(--moss-gray-8);
+
+  --moss-activegroup-hiddenpanel-tab-background-color: var(--moss-primary-background);
+  --moss-inactivegroup-hiddenpanel-tab-background-color: var(--moss-primary-background);
+  --moss-activegroup-hiddenpanel-tab-color: var(--moss-secondary-text);
+  --moss-inactivegroup-hiddenpanel-tab-color: var(--moss-secondary-text);
+
+  --moss-tab-divider-color: var(--moss-border-color);
+
+  /* Separators and Borders */
+  --moss-separator-border: var(--moss-border-color);
+
+  /* Overlay and Shadows */
+  --moss-floating-box-shadow: 8px 8px 8px 0px rgba(83, 89, 93, 0.5);
+  --moss-overlay-z-index: 999;
+
+  /* Button System */
+
+  /* --- Primary Buttons  */
+  --moss-button-primary-solid-background: var(--moss-blue-4);
+  --moss-button-primary-solid-background-hover: var(--moss-blue-3);
+  --moss-button-primary-solid-background-active: var(--moss-blue-2);
+  --moss-button-primary-solid-border: transparent;
+  --moss-button-primary-solid-border-hover: transparent;
+  --moss-button-primary-solid-border-active: transparent;
+  --moss-button-primary-solid-text: var(--moss-gray-14);
+
+  --moss-button-primary-outlined-background: var(--moss-gray-14);
+  --moss-button-primary-outlined-background-hover: var(--moss-blue-12);
+  --moss-button-primary-outlined-background-active: var(--moss-blue-11);
+  --moss-button-primary-outlined-border: var(--moss-blue-4);
+  --moss-button-primary-outlined-border-hover: var(--moss-blue-5);
+  --moss-button-primary-outlined-border-active: var(--moss-blue-6);
+  --moss-button-primary-outlined-text: var(--moss-blue-4);
+
+  /* --- Neutral Buttons  */
+  --moss-button-neutral-solid-background: var(--moss-gray-4);
+  --moss-button-neutral-solid-background-hover: var(--moss-gray-3);
+  --moss-button-neutral-solid-background-active: var(--moss-gray-2);
+  --moss-button-neutral-solid-border: transparent;
+  --moss-button-neutral-solid-border-hover: transparent;
+  --moss-button-neutral-solid-border-active: transparent;
+  --moss-button-neutral-solid-text: var(--moss-gray-14);
+
+  --moss-button-neutral-outlined-background: var(--moss-gray-14);
+  --moss-button-neutral-outlined-background-hover: var(--moss-gray-14);
+  --moss-button-neutral-outlined-background-active: var(--moss-gray-13);
+  --moss-button-neutral-outlined-border: var(--moss-gray-9);
+  --moss-button-neutral-outlined-border-hover: var(--moss-gray-8);
+  --moss-button-neutral-outlined-border-active: var(--moss-gray-7);
+  --moss-button-neutral-outlined-text: var(--moss-gray-1);
+
+  /* --- Disabled buttons */
+  --moss-button-background-disabled: var(--moss-gray-12);
+  --moss-button-background-disabled-hover: var(--moss-gray-12);
+  --moss-button-background-disabled-active: var(--moss-gray-12);
+  --moss-button-border-disabled: transparent;
+  --moss-button-border-disabled-hover: transparent;
+  --moss-button-border-disabled-active: transparent;
+  --moss-button-text-disabled: var(--moss-gray-8);
+
+  /* --- Danger buttons */
+  --moss-button-background-danger: var(--moss-red-4);
+  --moss-button-background-danger-hover: var(--moss-red-2);
+  --moss-button-text-danger: var(--moss-gray-14);
+
+  /* Form Controls */
+  --moss-controls-plain-bg: transparent;
+  --moss-controls-plain-border: none;
+  --moss-controls-plain-text: var(--moss-gray-1);
+  --moss-controls-outlined-bg: var(--moss-gray-14);
+  --moss-controls-outlined-border: var(--moss-gray-12);
+  --moss-controls-outlined-text: var(--moss-gray-1);
+  --moss-controls-placeholder: var(--moss-gray-6);
+
+  /* Select Inputs */
+  --moss-select-bg-outlined: var(--moss-gray-14);
+  --moss-select-border-outlined: var(--moss-gray-12);
+  --moss-select-text-outlined: var(--moss-gray-1);
+  --moss-select-hover-bg: var(--moss-gray-13);
+
+  --moss-select-item-bg-outlined-hover: var(--moss-gray-12);
+  --moss-select-item-bg-outlined-selected: var(--moss-blue-11);
+
+  --moss-select-disabled-bg: var(--moss-gray-10);
+
+  /* Input Fields */
+  --moss-input-bg-plain: var(--moss-gray-14);
+  --moss-input-bg-outlined: var(--moss-gray-14);
+  --moss-input-border: var(--moss-gray-9);
+
+  --moss-stepCard-text: var(--moss-blue-2);
+  --moss-stepCard-bg: var(--moss-blue-11);
+
+  --moss-templating-input-text: var(--moss-blue-3);
+  --moss-templating-input-border: var(--moss-blue-10);
+  --moss-templating-input-bg: var(--moss-blue-12);
+
+  /* Checkbox */
+  --moss-checkbox-border: var(--moss-gray-8);
+
+  --moss-checkbox-border-disabled: var(--moss-gray-10);
+  --moss-checkbox-bg-disabled: var(--moss-gray-8);
+
+  /* RadioGroup */
+  --moss-radio-bg: var(--moss-gray-14);
+  --moss-radio-border: var(--moss-gray-8);
+
+  --moss-radio-bg-disabled: var(--moss-gray-10);
+  --moss-radio-border-disabled: var(--moss-gray-10);
+
+  /* Table */
+  --moss-table-header-bg: var(--moss-gray-13);
+  --moss-table-cell-bg: var(--moss-gray-14);
+  --moss-table-add-form-text: var(--moss-gray-9);
+  --moss-table-add-row-form-text: var(--moss-gray-9);
+
+  /* Drag Handle */
+  --moss-drag-handle-bg: var(--moss-gray-14);
+
+  /* PageContainer */
+  --moss-tab-active-border-color: var(--moss-blue-4);
+  --moss-auth-indicator-color: var(--moss-green-4);
+  --moss-tab-badge-color: var(--moss-blue-4);
+  --moss-tab-badge-text: var(--moss-gray-14);
+
+  /* RequestPage */
+  --moss-requestpage-border-color: var(--moss-gray-11);
+  --moss-requestpage-text: var(--moss-orange-4);
+  --moss-requestpage-string-color: var(--moss-green-3);
+  --moss-requestpage-number-color: var(--moss-purple-3);
+  --moss-requestpage-bool-color: var(--moss-teal-3);
+  --moss-requestpage-icon-color: var(--moss-gray-7);
+  --moss-requestpage-text-disabled: var(--moss-gray-8);
+  --moss-requestpage-placeholder-color: var(--moss-gray-9);
+  --moss-requestpage-header-color: var(--moss-gray-3);
+
+  /* Display Mode */
+  --moss-display-mode-border: var(--moss-gray-11);
+  --moss-display-mode-bg: var(--moss-gray-12);
+  --moss-display-mode-text: var(--moss-gray-7);
+  --moss-display-mode-text-selected: var(--moss-gray-1);
+
+  /* Textarea */
+  --moss-textarea-bg: var(--moss-gray-14);
+  --moss-textarea-border: var(--moss-gray-9);
+  --moss-textarea-text: var(--moss-gray-1);
+  --moss-textarea-placeholder: var(--moss-gray-6);
+
+  /* Moss Toggle */
+  --moss-mossToggle-bg: var(--moss-gray-12);
+  --moss-mossToggle-border: var(--moss-gray-11);
+  --moss-mossToggle-indicator: var(--moss-gray-6);
+  --moss-mossToggle-indicator-checked: var(--moss-gray-14);
+  --moss-mossToggle-thumb: var(--moss-gray-14);
+  --moss-mossToggle-thumb-border: var(--moss-gray-8);
+
+  /* Moss Select */
+  --moss-mossSelect-bg: var(--moss-gray-13);
+  --moss-mossSelect-border: var(--moss-gray-12);
+  --moss-mossSelect-text: var(--moss-gray-1);
+  --moss-mossSelect-hover-bg: var(--moss-gray-13);
+  --moss-mossSelect-item-bg-hover: var(--moss-gray-12);
+  --moss-mossSelect-item-bg-selected: var(--moss-blue-11);
+  --moss-mossSelect-disabled-bg: var(--moss-gray-10);
+
+  /* Moss Dropdown */
+  --moss-mossDropdown-bg: var(--moss-gray-13);
+  --moss-mossDropdown-border: var(--moss-gray-11);
+  --moss-mossDropdown-text: var(--moss-gray-1);
+  --moss-mossDropdown-hover-bg: var(--moss-gray-12);
+  --moss-mossDropdown-item-bg-hover: var(--moss-gray-12);
+}
