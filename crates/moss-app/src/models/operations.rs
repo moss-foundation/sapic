@@ -7,7 +7,7 @@ use moss_user::models::{
 use moss_workspace::models::primitives::WorkspaceMode;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
-use std::{collections::HashMap, path::Path, sync::Arc};
+use std::{path::Path, sync::Arc};
 use ts_rs::TS;
 use validator::Validate;
 

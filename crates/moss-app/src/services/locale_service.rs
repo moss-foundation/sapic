@@ -1,5 +1,5 @@
-use joinerror::{OptionExt, ResultExt};
-use moss_applib::errors::{Internal, NotFound};
+use joinerror::ResultExt;
+use moss_applib::errors::Internal;
 use moss_fs::{FileSystem, FsResultExt};
 use serde_json::Value as JsonValue;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};

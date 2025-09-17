@@ -9,7 +9,7 @@ use tokio::sync::RwLock;
 
 use crate::{
     OnDidChangeProfile, OnDidChangeWorkspace,
-    app::{App, AppCommands, AppDefaults, AppPreferences},
+    app::{App, AppCommands, AppPreferences},
     command::CommandDecl,
     dirs,
     services::{profile_service::ProfileService, *},
