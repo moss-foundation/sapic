@@ -1,0 +1,11 @@
+[package]
+name = "moss_theme"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+joinerror.workspace = true
+
+serde.workspace = true
+serde_json = { workspace = true, features = ["preserve_order"] }
+ts-rs.workspace = true

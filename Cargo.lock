@@ -3919,6 +3919,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "moss_theme"
+version = "0.1.0"
+dependencies = [
+ "joinerror",
+ "serde",
+ "serde_json",
+ "ts-rs",
+]
+
+[[package]]
 name = "moss_user"
 version = "0.1.0"
 dependencies = [
