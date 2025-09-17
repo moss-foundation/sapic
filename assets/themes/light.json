@@ -935,7 +935,7 @@
       "type": "Variable",
       "value": "moss.orange.4"
     },
-    "moss.requestpage.String.color": {
+    "moss.requestpage.string.color": {
       "type": "Variable",
       "value": "moss.green.3"
     },

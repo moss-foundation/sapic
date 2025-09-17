@@ -1,59 +1,59 @@
 {
-  "identifier": "moss.sapic-theme.darkDefault",
-  "displayName": "Dark Default",
-  "mode": "dark",
+  "identifier": "",
+  "displayName": "",
+  "mode": "light",
   "tokens": {
     "moss.gray.1": {
       "type": "String",
-      "value": "#1e1f22"
+      "value": "#000000"
     },
     "moss.gray.2": {
       "type": "String",
-      "value": "#2b2d30"
+      "value": "#27282e"
     },
     "moss.gray.3": {
       "type": "String",
-      "value": "#393b40"
+      "value": "#383a42"
     },
     "moss.gray.4": {
       "type": "String",
-      "value": "#43454a"
+      "value": "#494b57"
     },
     "moss.gray.5": {
       "type": "String",
-      "value": "#4e5157"
+      "value": "#5a5d6b"
     },
     "moss.gray.6": {
       "type": "String",
-      "value": "#5a5d63"
+      "value": "#6c707e"
     },
     "moss.gray.7": {
       "type": "String",
-      "value": "#6f737a"
+      "value": "#818594"
     },
     "moss.gray.8": {
       "type": "String",
-      "value": "#868a91"
+      "value": "#a8adbd"
     },
     "moss.gray.9": {
       "type": "String",
-      "value": "#9da0a8"
+      "value": "#c9ccd6"
     },
     "moss.gray.10": {
       "type": "String",
-      "value": "#b4b8bf"
+      "value": "#d3d5db"
     },
     "moss.gray.11": {
       "type": "String",
-      "value": "#ced0d6"
+      "value": "#dfe1e5"
     },
     "moss.gray.12": {
       "type": "String",
-      "value": "#dfe1e5"
+      "value": "#ebecf0"
     },
     "moss.gray.13": {
       "type": "String",
-      "value": "#f0f1f2"
+      "value": "#f7f8fa"
     },
     "moss.gray.14": {
       "type": "String",
@@ -61,311 +61,143 @@
     },
     "moss.blue.1": {
       "type": "String",
-      "value": "#25324d"
+      "value": "#2e55a3"
     },
     "moss.blue.2": {
       "type": "String",
-      "value": "#2e436e"
+      "value": "#315fbd"
     },
     "moss.blue.3": {
       "type": "String",
-      "value": "#35538f"
+      "value": "#3369d6"
     },
     "moss.blue.4": {
       "type": "String",
-      "value": "#375fad"
+      "value": "#3574f0"
     },
     "moss.blue.5": {
       "type": "String",
-      "value": "#366acf"
+      "value": "#4682fa"
     },
     "moss.blue.6": {
       "type": "String",
-      "value": "#3574f0"
+      "value": "#588cf3"
     },
     "moss.blue.7": {
       "type": "String",
-      "value": "#467ff2"
+      "value": "#709cf5"
     },
     "moss.blue.8": {
       "type": "String",
-      "value": "#548af7"
+      "value": "#88adf7"
     },
     "moss.blue.9": {
       "type": "String",
-      "value": "#6b9bfa"
+      "value": "#a0bdf8"
     },
     "moss.blue.10": {
       "type": "String",
-      "value": "#83acfc"
+      "value": "#c2d6fc"
     },
     "moss.blue.11": {
       "type": "String",
-      "value": "#99bbff"
+      "value": "#d4e2ff"
+    },
+    "moss.blue.12": {
+      "type": "String",
+      "value": "#edf3ff"
+    },
+    "moss.blue.13": {
+      "type": "String",
+      "value": "#f5f8fe"
     },
     "moss.green.1": {
       "type": "String",
-      "value": "#253627"
+      "value": "#1e6b33"
     },
     "moss.green.2": {
       "type": "String",
-      "value": "#375239"
+      "value": "#1f7536"
     },
     "moss.green.3": {
       "type": "String",
-      "value": "#436946"
+      "value": "#1f8039"
     },
     "moss.green.4": {
       "type": "String",
-      "value": "#4e8052"
+      "value": "#208a3c"
     },
     "moss.green.5": {
       "type": "String",
-      "value": "#57965c"
+      "value": "#369650"
     },
     "moss.green.6": {
       "type": "String",
-      "value": "#5fad65"
+      "value": "#55a76a"
     },
     "moss.green.7": {
       "type": "String",
-      "value": "#73bd79"
+      "value": "#89c398"
     },
     "moss.green.8": {
       "type": "String",
-      "value": "#89cc8e"
+      "value": "#afdbb8"
     },
     "moss.green.9": {
       "type": "String",
-      "value": "#a0dba5"
+      "value": "#c5e5cc"
     },
     "moss.green.10": {
       "type": "String",
-      "value": "#b9ebbd"
+      "value": "#e6f7e9"
     },
     "moss.green.11": {
       "type": "String",
-      "value": "#d4fad7"
-    },
-    "moss.yellow.1": {
-      "type": "String",
-      "value": "#3d3223"
-    },
-    "moss.yellow.2": {
-      "type": "String",
-      "value": "#5e4d33"
-    },
-    "moss.yellow.3": {
-      "type": "String",
-      "value": "#826a41"
-    },
-    "moss.yellow.4": {
-      "type": "String",
-      "value": "#9e814a"
-    },
-    "moss.yellow.5": {
-      "type": "String",
-      "value": "#ba9752"
-    },
-    "moss.yellow.6": {
-      "type": "String",
-      "value": "#d6ae58"
-    },
-    "moss.yellow.7": {
-      "type": "String",
-      "value": "#f2c55c"
-    },
-    "moss.yellow.8": {
-      "type": "String",
-      "value": "#f5d273"
-    },
-    "moss.yellow.9": {
-      "type": "String",
-      "value": "#f7de8b"
-    },
-    "moss.yellow.10": {
-      "type": "String",
-      "value": "#fceba4"
-    },
-    "moss.yellow.11": {
-      "type": "String",
-      "value": "#fff6bd"
+      "value": "#f2fcf3"
     },
     "moss.red.1": {
       "type": "String",
-      "value": "#402929"
+      "value": "#ad2b38"
     },
     "moss.red.2": {
       "type": "String",
-      "value": "#5e3838"
+      "value": "#bc303e"
     },
     "moss.red.3": {
       "type": "String",
-      "value": "#7a4343"
+      "value": "#cc3645"
     },
     "moss.red.4": {
       "type": "String",
-      "value": "#9c4e4e"
+      "value": "#db3b4b"
     },
     "moss.red.5": {
       "type": "String",
-      "value": "#bd5757"
+      "value": "#e55765"
     },
     "moss.red.6": {
       "type": "String",
-      "value": "#db5c5c"
+      "value": "#e46a76"
     },
     "moss.red.7": {
       "type": "String",
-      "value": "#e37774"
+      "value": "#ed99a1"
     },
     "moss.red.8": {
       "type": "String",
-      "value": "#eb938d"
+      "value": "#f2b6bb"
     },
     "moss.red.9": {
       "type": "String",
-      "value": "#f2b1aa"
+      "value": "#fad4d8"
     },
     "moss.red.10": {
       "type": "String",
-      "value": "#f7ccc6"
+      "value": "#fff2f3"
     },
     "moss.red.11": {
       "type": "String",
-      "value": "#fae3de"
-    },
-    "moss.orange.1": {
-      "type": "String",
-      "value": "#45322b"
-    },
-    "moss.orange.2": {
-      "type": "String",
-      "value": "#614438"
-    },
-    "moss.orange.3": {
-      "type": "String",
-      "value": "#825845"
-    },
-    "moss.orange.4": {
-      "type": "String",
-      "value": "#a36b4e"
-    },
-    "moss.orange.5": {
-      "type": "String",
-      "value": "#c77d55"
-    },
-    "moss.orange.6": {
-      "type": "String",
-      "value": "#e08855"
-    },
-    "moss.orange.7": {
-      "type": "String",
-      "value": "#e5986c"
-    },
-    "moss.orange.8": {
-      "type": "String",
-      "value": "#f0ac81"
-    },
-    "moss.orange.9": {
-      "type": "String",
-      "value": "#f5bd98"
-    },
-    "moss.orange.10": {
-      "type": "String",
-      "value": "#faceaf"
-    },
-    "moss.orange.11": {
-      "type": "String",
-      "value": "#ffdfc7"
-    },
-    "moss.purple.1": {
-      "type": "String",
-      "value": "#2f2936"
-    },
-    "moss.purple.2": {
-      "type": "String",
-      "value": "#433358"
-    },
-    "moss.purple.3": {
-      "type": "String",
-      "value": "#583d7a"
-    },
-    "moss.purple.4": {
-      "type": "String",
-      "value": "#6c469c"
-    },
-    "moss.purple.5": {
-      "type": "String",
-      "value": "#8150be"
-    },
-    "moss.purple.6": {
-      "type": "String",
-      "value": "#955ae0"
-    },
-    "moss.purple.7": {
-      "type": "String",
-      "value": "#a571e6"
-    },
-    "moss.purple.8": {
-      "type": "String",
-      "value": "#b589ec"
-    },
-    "moss.purple.9": {
-      "type": "String",
-      "value": "#c4a0f3"
-    },
-    "moss.purple.10": {
-      "type": "String",
-      "value": "#d4b8f9"
-    },
-    "moss.purple.11": {
-      "type": "String",
-      "value": "#e4ceff"
-    },
-    "moss.teal.1": {
-      "type": "String",
-      "value": "#1d3838"
-    },
-    "moss.teal.2": {
-      "type": "String",
-      "value": "#1e4d4a"
-    },
-    "moss.teal.3": {
-      "type": "String",
-      "value": "#20635d"
-    },
-    "moss.teal.4": {
-      "type": "String",
-      "value": "#21786f"
-    },
-    "moss.teal.5": {
-      "type": "String",
-      "value": "#238e82"
-    },
-    "moss.teal.6": {
-      "type": "String",
-      "value": "#24a394"
-    },
-    "moss.teal.7": {
-      "type": "String",
-      "value": "#42b1a4"
-    },
-    "moss.teal.8": {
-      "type": "String",
-      "value": "#60c0b5"
-    },
-    "moss.teal.9": {
-      "type": "String",
-      "value": "#7dcec5"
-    },
-    "moss.teal.10": {
-      "type": "String",
-      "value": "#9bddd6"
-    },
-    "moss.teal.11": {
-      "type": "String",
-      "value": "#b9ebe6"
+      "value": "#fff7f7"
     },
     "moss.primary": {
       "type": "String",
@@ -373,7 +205,7 @@
     },
     "moss.error": {
       "type": "String",
-      "value": "#fb2c36"
+      "value": "#f48771"
     },
     "moss.error.background": {
       "type": "String",
@@ -389,7 +221,7 @@
     },
     "moss.primary.background": {
       "type": "String",
-      "value": "rgba(22, 24, 25, 1)"
+      "value": "#1e1e1e"
     },
     "moss.primary.background.hover": {
       "type": "String",
@@ -397,19 +229,19 @@
     },
     "moss.primary.text": {
       "type": "String",
-      "value": "white"
+      "value": "#d4d4d4"
     },
     "moss.secondary.background": {
       "type": "String",
-      "value": "rgba(39, 39, 42, 1)"
+      "value": "#333333"
     },
     "moss.secondary.background.hover": {
       "type": "String",
-      "value": "rgba(255, 255, 255, 0.1)"
+      "value": "#3c3c3c"
     },
     "moss.secondary.text": {
       "type": "String",
-      "value": "#a1a1aa"
+      "value": "#cccccc"
     },
     "moss.info.background": {
       "type": "String",
@@ -442,6 +274,10 @@
     "separator.border": {
       "type": "Variable",
       "value": "moss.border.color"
+    },
+    "moss.sash.active.highlight": {
+      "type": "String",
+      "value": "#047cd4"
     },
     "moss.icon.primary.background": {
       "type": "String",
@@ -489,7 +325,7 @@
     },
     "moss.button.icon.color": {
       "type": "String",
-      "value": "white"
+      "value": "#d4d4d4"
     },
     "moss.windowsCloseButton.background": {
       "type": "String",
@@ -497,19 +333,19 @@
     },
     "moss.windowControlsLinux.background": {
       "type": "String",
-      "value": "rgba(55, 55, 55, 1)"
+      "value": "#333333"
     },
     "moss.windowControlsLinux.text": {
       "type": "String",
-      "value": "rgba(255, 255, 255, 1)"
+      "value": "#d4d4d4"
     },
     "moss.windowControlsLinux.hoverBackground": {
       "type": "String",
-      "value": "rgba(65, 65, 65, 1)"
+      "value": "#3c3c3c"
     },
     "moss.windowControlsLinux.activeBackground": {
       "type": "String",
-      "value": "rgba(75, 75, 75, 1)"
+      "value": "#505050"
     },
     "moss.paneview.active.outline.color": {
       "type": "Variable",
@@ -521,7 +357,7 @@
     },
     "moss.drag.over.background.color": {
       "type": "String",
-      "value": "rgba(83, 89, 93, 0.5)"
+      "value": "rgba(0, 122, 204, 0.2)"
     },
     "moss.drag.over.border.color": {
       "type": "Variable",
@@ -591,13 +427,9 @@
       "type": "Variable",
       "value": "moss.border.color"
     },
-    "moss.sash.active.highlight": {
-      "type": "String",
-      "value": "#047cd4"
-    },
     "moss.floating.box.shadow": {
       "type": "String",
-      "value": "8px 8px 8px 0px rgba(83, 89, 93, 0.5)"
+      "value": "0 2px 8px rgba(0, 0, 0, 0.15)"
     },
     "moss.overlay.z.index": {
       "type": "String",
@@ -605,327 +437,247 @@
     },
     "moss.button.primary.solid.background": {
       "type": "String",
-      "value": "linear-gradient(rgb(59, 130, 246), rgb(37, 99, 235) 0%)"
+      "value": "#007acc"
     },
     "moss.button.primary.solid.border": {
       "type": "String",
-      "value": "rgb(255, 255, 255, 0.3)"
+      "value": "#007acc"
     },
     "moss.button.primary.solid.text": {
       "type": "String",
-      "value": "white"
+      "value": "#ffffff"
     },
     "moss.button.primary.solid.boxShadow": {
       "type": "String",
-      "value": "rgba(255, 255, 255, 0.1) 0px 2px 4px 0px inset"
+      "value": "none"
     },
     "moss.button.primary.outlined.background": {
       "type": "String",
-      "value": "rgba(59, 130, 246, 0.05)"
+      "value": "transparent"
     },
     "moss.button.primary.outlined.border": {
       "type": "String",
-      "value": "rgba(59, 130, 246, 0.05)"
+      "value": "#007acc"
     },
     "moss.button.primary.outlined.text": {
       "type": "String",
-      "value": "rgb(147, 197, 253)"
+      "value": "#007acc"
     },
     "moss.button.primary.outlined.boxShadow": {
       "type": "String",
-      "value": "rgba(255, 255, 255, 0) 0px 1px 0px 0px inset, rgba(59, 130, 246, 0.3) 0px 0px 0px 1px,\r\n    rgba(0, 0, 0, 0.1) 0px 1px 2px 0px"
+      "value": "none"
     },
     "moss.button.primary.soft.background": {
       "type": "String",
-      "value": "rgba(59, 130, 246, 0.1)"
+      "value": "rgba(0, 122, 204, 0.1)"
     },
     "moss.button.primary.soft.border": {
       "type": "String",
-      "value": "null"
+      "value": "transparent"
     },
     "moss.button.primary.soft.text": {
       "type": "String",
-      "value": "rgb(147, 197, 253)"
+      "value": "#007acc"
     },
     "moss.button.primary.soft.boxShadow": {
       "type": "String",
-      "value": "null"
+      "value": "none"
     },
     "moss.button.primary.ghost.background": {
       "type": "String",
-      "value": "rgba(59, 130, 246, 0.1)"
+      "value": "transparent"
     },
     "moss.button.primary.ghost.border": {
       "type": "String",
-      "value": "null"
+      "value": "transparent"
     },
     "moss.button.primary.ghost.text": {
       "type": "String",
-      "value": "rgb(147, 197, 253)"
+      "value": "#007acc"
     },
     "moss.button.primary.ghost.boxShadow": {
       "type": "String",
-      "value": "null"
+      "value": "none"
     },
     "moss.button.danger.solid.background": {
       "type": "String",
-      "value": "linear-gradient(rgb(239, 68, 68), rgb(220, 38, 38) 0%)"
+      "value": "#f48771"
     },
     "moss.button.danger.solid.border": {
       "type": "String",
-      "value": "rgb(241 95 95)"
+      "value": "#f48771"
     },
     "moss.button.danger.solid.text": {
       "type": "String",
-      "value": "white"
+      "value": "#ffffff"
     },
     "moss.button.danger.solid.boxShadow": {
       "type": "String",
-      "value": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(255, 255, 255, 0.1) 0px 2px 4px 0px inset"
+      "value": "none"
     },
     "moss.button.danger.outlined.background": {
       "type": "String",
-      "value": "rgba(239, 68, 68, 0.05)"
+      "value": "transparent"
     },
     "moss.button.danger.outlined.border": {
       "type": "String",
-      "value": "null"
+      "value": "#f48771"
     },
     "moss.button.danger.outlined.text": {
       "type": "String",
-      "value": "rgb(252, 165, 165)"
+      "value": "#f48771"
     },
     "moss.button.danger.outlined.boxShadow": {
       "type": "String",
-      "value": "rgba(255, 255, 255, 0) 0px 1px 0px 0px inset, rgba(239, 68, 68, 0.3) 0px 0px 0px 1px,\r\n    rgba(0, 0, 0, 0.1) 0px 1px 2px 0px"
+      "value": "none"
     },
     "moss.button.danger.soft.background": {
       "type": "String",
-      "value": "rgba(239, 68, 68, 0.1)"
+      "value": "rgba(244, 135, 113, 0.1)"
     },
     "moss.button.danger.soft.border": {
       "type": "String",
-      "value": "null"
+      "value": "transparent"
     },
     "moss.button.danger.soft.text": {
       "type": "String",
-      "value": "rgb(252, 165, 165)"
+      "value": "#f48771"
     },
     "moss.button.danger.soft.boxShadow": {
       "type": "String",
-      "value": "null"
+      "value": "none"
     },
     "moss.button.danger.ghost.background": {
       "type": "String",
-      "value": "rgba(239, 68, 68, 0.1)"
+      "value": "transparent"
     },
     "moss.button.danger.ghost.border": {
       "type": "String",
-      "value": "null"
+      "value": "transparent"
     },
     "moss.button.danger.ghost.text": {
       "type": "String",
-      "value": "rgb(252, 165, 165)"
+      "value": "#f48771"
     },
     "moss.button.danger.ghost.boxShadow": {
       "type": "String",
-      "value": "null"
+      "value": "none"
     },
     "moss.button.neutral.solid.background": {
       "type": "String",
-      "value": "linear-gradient(rgb(113, 113, 122), rgb(82, 82, 91) 0%)"
+      "value": "#424242"
     },
     "moss.button.neutral.solid.border": {
       "type": "String",
-      "value": "rgb(113 113 122)"
+      "value": "#424242"
     },
     "moss.button.neutral.solid.text": {
       "type": "String",
-      "value": "white"
+      "value": "#ffffff"
     },
     "moss.button.neutral.solid.boxShadow": {
       "type": "String",
-      "value": "rgba(255, 255, 255, 0.1) 0px 2px 4px 0px inset"
+      "value": "none"
     },
     "moss.button.neutral.outlined.background": {
       "type": "String",
-      "value": "rgba(113, 113, 122, 0.05)"
+      "value": "transparent"
     },
     "moss.button.neutral.outlined.border": {
       "type": "String",
-      "value": "null"
+      "value": "#424242"
     },
     "moss.button.neutral.outlined.text": {
       "type": "String",
-      "value": "rgb(212, 212, 216)"
+      "value": "#d4d4d4"
     },
     "moss.button.neutral.outlined.boxShadow": {
       "type": "String",
-      "value": "rgba(255, 255, 255, 0) 0px 1px 0px 0px inset, rgba(113, 113, 122, 0.3) 0px 0px 0px 1px,\r\n    rgba(0, 0, 0, 0.1) 0px 1px 2px 0px"
+      "value": "none"
     },
     "moss.button.neutral.soft.background": {
       "type": "String",
-      "value": "rgba(113, 113, 122, 0.1)"
+      "value": "rgba(66, 66, 66, 0.1)"
     },
     "moss.button.neutral.soft.border": {
       "type": "String",
-      "value": "null"
+      "value": "transparent"
     },
     "moss.button.neutral.soft.text": {
       "type": "String",
-      "value": "rgb(212, 212, 216)"
+      "value": "#d4d4d4"
     },
     "moss.button.neutral.soft.boxShadow": {
       "type": "String",
-      "value": "null"
+      "value": "none"
     },
     "moss.button.neutral.ghost.background": {
       "type": "String",
-      "value": "rgba(113, 113, 122, 0.1)"
+      "value": "transparent"
     },
     "moss.button.neutral.ghost.border": {
       "type": "String",
-      "value": "null"
+      "value": "transparent"
     },
     "moss.button.neutral.ghost.text": {
       "type": "String",
-      "value": "rgb(212, 212, 216)"
+      "value": "#d4d4d4"
     },
     "moss.button.neutral.ghost.boxShadow": {
       "type": "String",
-      "value": "null"
-    },
-    "moss.button.background.danger": {
-      "type": "Variable",
-      "value": "moss.red.5"
-    },
-    "moss.button.background.danger.hover": {
-      "type": "Variable",
-      "value": "moss.red.3"
-    },
-    "moss.button.text.danger": {
-      "type": "Variable",
-      "value": "moss.gray.14"
+      "value": "none"
     },
     "moss.controls.plain.bg": {
       "type": "String",
-      "value": "transparent"
+      "value": "#3c3c3c"
     },
     "moss.controls.plain.border": {
       "type": "String",
-      "value": "rgb(39, 39, 42)"
+      "value": "#3c3c3c"
     },
     "moss.controls.plain.text": {
       "type": "String",
-      "value": "white"
+      "value": "#d4d4d4"
     },
     "moss.controls.outlined.bg": {
       "type": "String",
-      "value": "rgba(39, 39, 42, 0.5)"
+      "value": "#3c3c3c"
     },
     "moss.controls.outlined.border": {
       "type": "String",
-      "value": "rgb(39, 39, 42)"
+      "value": "#3c3c3c"
     },
     "moss.controls.outlined.text": {
       "type": "String",
-      "value": "white"
+      "value": "#d4d4d4"
     },
     "moss.controls.placeholder": {
       "type": "String",
-      "value": "rgb(82, 82, 91)"
+      "value": "#969696"
     },
     "moss.select.bg.outlined": {
       "type": "String",
-      "value": "rgb(24, 24, 27)"
+      "value": "#3c3c3c"
     },
     "moss.select.border.outlined": {
       "type": "String",
-      "value": "rgb(39, 39, 42)"
+      "value": "#3c3c3c"
     },
     "moss.select.text.outlined": {
       "type": "String",
-      "value": "white"
+      "value": "#d4d4d4"
     },
     "moss.select.hover.bg": {
       "type": "String",
-      "value": "rgb(39, 39, 42)"
+      "value": "#505050"
     },
     "moss.input.bg.plain": {
-      "type": "Variable",
-      "value": "moss.gray.14"
+      "type": "String",
+      "value": "#3c3c3c"
     },
     "moss.input.bg.outlined": {
-      "type": "Variable",
-      "value": "moss.gray.14"
-    },
-    "moss.input.border": {
-      "type": "Variable",
-      "value": "moss.gray.9"
-    },
-    "moss.templating.input.text": {
-      "type": "Variable",
-      "value": "moss.blue.3"
-    },
-    "moss.templating.input.border": {
-      "type": "Variable",
-      "value": "moss.blue.10"
-    },
-    "moss.templating.input.bg": {
-      "type": "Variable",
-      "value": "moss.blue.12"
-    },
-    "moss.tab.active.border.color": {
-      "type": "Variable",
-      "value": "moss.blue.4"
-    },
-    "moss.auth.indicator.color": {
-      "type": "Variable",
-      "value": "moss.green.4"
-    },
-    "moss.tab.badge.color": {
-      "type": "Variable",
-      "value": "moss.blue.4"
-    },
-    "moss.tab.badge.text": {
-      "type": "Variable",
-      "value": "moss.gray.14"
-    },
-    "moss.requestpage.border.color": {
-      "type": "Variable",
-      "value": "moss.gray.11"
-    },
-    "moss.requestpage.text": {
-      "type": "Variable",
-      "value": "moss.orange.4"
-    },
-    "moss.requestpage.string.color": {
-      "type": "Variable",
-      "value": "moss.green.3"
-    },
-    "moss.requestpage.number.color": {
-      "type": "Variable",
-      "value": "moss.purple.3"
-    },
-    "moss.requestpage.bool.color": {
-      "type": "Variable",
-      "value": "moss.teal.3"
-    },
-    "moss.requestpage.icon.color": {
-      "type": "Variable",
-      "value": "moss.gray.7"
-    },
-    "moss.requestpage.text.disabled": {
-      "type": "Variable",
-      "value": "moss.gray.8"
-    },
-    "moss.requestpage.placeholder.color": {
-      "type": "Variable",
-      "value": "moss.gray.9"
-    },
-    "moss.requestpage.header.color": {
-      "type": "Variable",
-      "value": "moss.gray.3"
+      "type": "String",
+      "value": "#3c3c3c"
     }
   }
 }

@@ -1,0 +1,18 @@
+{
+  "name": "theme-converter",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "themeConverter": "ts-node themeConverter.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.9.0",
+  "dependencies": {
+    "postcss": "8.5.6"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0"
+  }
+}
