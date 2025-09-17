@@ -1,10 +1,10 @@
 import { create } from "zustand";
 
-import { AddAccountOutput } from "@repo/moss-app";
+import { AddAccountParams } from "@repo/moss-app";
 
 interface GitProviderStore {
-  gitProvider: AddAccountOutput | null;
-  setGitProvider: (gitProvider: AddAccountOutput) => void;
+  gitProvider: AddAccountParams | null;
+  setGitProvider: (gitProvider: AddAccountParams) => void;
 }
 
 export const useGitProviderStore = create<GitProviderStore>((set) => ({

@@ -1,4 +1,4 @@
-import { AddAccountOutput } from "@repo/moss-app";
+import { AddAccountParams } from "@repo/moss-app";
 import { CreateProjectGitParams, ImportProjectSource } from "@repo/moss-workspace";
 
 import { CREATE_TAB, IMPORT_TAB } from "./constansts";
@@ -8,7 +8,7 @@ interface CalculateIsSubmitDisabledProps {
   tab: typeof CREATE_TAB | typeof IMPORT_TAB;
   createParams: CreateProjectGitParams | undefined;
   importParams: ImportProjectSource | undefined;
-  gitProvider: AddAccountOutput | null;
+  gitProvider: AddAccountParams | null;
 }
 
 export const calculateIsSubmitDisabled = ({
