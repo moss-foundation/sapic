@@ -127,15 +127,15 @@ pub async fn get_locale<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn get_translation<'a, R: tauri::Runtime>(
+pub async fn get_translation_namespace<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
-    input: GetTranslationInput,
+    input: GetTranslationNamespaceInput,
     options: Options,
-) -> TauriResult<GetTranslationOutput> {
+) -> TauriResult<GetTranslationNamespaceOutput> {
     super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
-        app.get_translation(&ctx, &input).await
+        app.get_translation_namespace(&ctx, &input).await
     })
     .await
 }

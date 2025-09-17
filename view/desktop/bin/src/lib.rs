@@ -199,7 +199,7 @@ pub async fn run<R: TauriRuntime>() {
             commands::list_locales,
             commands::get_locale,
             commands::get_translations,
-            commands::get_translation,
+            commands::get_translation_namespace,
             commands::open_workspace,
             commands::update_workspace,
             commands::create_workspace,

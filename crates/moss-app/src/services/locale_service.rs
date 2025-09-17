@@ -96,38 +96,20 @@ impl LocaleService {
             .collect()
     }
 
-    pub async fn get_translation(
-        &self,
-        identifier: &LocaleId,
-    ) -> joinerror::Result<HashMap<String, JsonValue>> {
-        let state = self.state.read().await;
-        let locale = state
-            .locales
-            .get(identifier)
-            .ok_or_join_err_with::<NotFound>(|| {
-                format!("locale with id `{}` not found", identifier)
+    pub async fn get_namespace(&self, code: &str, ns: &str) -> joinerror::Result<JsonValue> {
+        let abs_path = self.locales_dir.join(code).join(format!("{ns}.json"));
+
+        let rdr = self
+            .fs
+            .open_file(&abs_path)
+            .await
+            .join_err_with::<Internal>(|| {
+                format!("failed to open locale file `{}`", abs_path.display())
             })?;
 
-        let mut translations = HashMap::new();
-        for ns in &locale.namespaces {
-            let abs_path = self
-                .locales_dir
-                .join(&locale.code)
-                .join(format!("{ns}.json"));
+        let parsed: JsonValue = serde_json::from_reader(rdr)?;
 
-            let rdr = self
-                .fs
-                .open_file(&abs_path)
-                .await
-                .join_err_with::<Internal>(|| {
-                    format!("failed to open locale file `{}`", abs_path.display())
-                })?;
-
-            let parsed: JsonValue = serde_json::from_reader(rdr)?;
-            translations.insert(ns.clone(), parsed);
-        }
-
-        Ok(translations)
+        Ok(parsed)
     }
 
     pub async fn read_translations_from_file(
