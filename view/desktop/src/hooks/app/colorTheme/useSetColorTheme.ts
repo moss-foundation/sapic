@@ -1,4 +1,4 @@
-import { USE_DESCRIBE_APP_QUERY_KEY } from "@/hooks/useDescribeApp";
+import { USE_DESCRIBE_APP_QUERY_KEY } from "@/hooks/app/useDescribeApp";
 import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { DescribeAppOutput, SetColorThemeInput } from "@repo/moss-app";
 import { useMutation, useQueryClient } from "@tanstack/react-query";

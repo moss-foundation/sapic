@@ -3,7 +3,7 @@ import { PageLoader } from "@/components/PageLoader";
 import { Workspace } from "@/components/Workspace";
 import { ActivityEventsProvider } from "@/context/ActivityEventsContext";
 import { useActiveWorkspace } from "@/hooks";
-import { useDescribeApp } from "@/hooks/useDescribeApp";
+import { useDescribeApp } from "@/hooks/app/useDescribeApp";
 import { AppLayout, RootLayout } from "@/layouts";
 
 export const Workbench = () => {

@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 
 import { useDescribeColorTheme } from "@/hooks";
-import { useDescribeApp } from "@/hooks/useDescribeApp";
+import { useDescribeApp } from "@/hooks/app/useDescribeApp";
 import { ColorThemeInfo } from "@repo/moss-app";
 import { useQueryClient } from "@tanstack/react-query";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";

@@ -1,4 +1,4 @@
-import { useDescribeApp } from "@/hooks/useDescribeApp";
+import { useDescribeApp } from "@/hooks/app/useDescribeApp";
 
 export const useActiveWorkspace = () => {
   const { data: appState, isLoading } = useDescribeApp();

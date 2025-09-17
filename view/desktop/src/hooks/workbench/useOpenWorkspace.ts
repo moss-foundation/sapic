@@ -4,9 +4,9 @@ import { DescribeAppOutput, OpenWorkspaceInput, OpenWorkspaceOutput } from "@rep
 import { DescribeStateOutput } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { USE_DESCRIBE_APP_QUERY_KEY } from "../app/useDescribeApp";
 import { USE_STREAM_PROJECT_ENTRIES_QUERY_KEY, useStreamedProjectsWithEntries } from "../project";
 import { USE_STREAM_PROJECTS_QUERY_KEY } from "../project/useStreamProjects";
-import { USE_DESCRIBE_APP_QUERY_KEY } from "../useDescribeApp";
 import { USE_STREAMED_ENVIRONMENTS_QUERY_KEY } from "../workspace/environment";
 import { USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY } from "../workspace/useDescribeWorkspaceState";
 import { useListWorkspaces } from "./useListWorkspaces";

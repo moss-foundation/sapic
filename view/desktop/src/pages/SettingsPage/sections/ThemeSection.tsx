@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 
 import SelectOutlined from "@/components/SelectOutlined";
 import { useListColorThemes, useSetColorTheme } from "@/hooks";
-import { useDescribeApp } from "@/hooks/useDescribeApp";
+import { useDescribeApp } from "@/hooks/app/useDescribeApp";
 
 import { Section } from "../Section";
 

@@ -2,7 +2,7 @@ import { ReactNode, useEffect, useRef } from "react";
 
 import { useSetLocale } from "@/hooks";
 import { useGetLocale } from "@/hooks/app/locales/useGetLocale";
-import { useDescribeApp } from "@/hooks/useDescribeApp";
+import { useDescribeApp } from "@/hooks/app/useDescribeApp";
 import { LocaleInfo } from "@repo/moss-app";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 
