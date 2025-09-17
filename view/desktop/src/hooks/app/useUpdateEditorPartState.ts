@@ -1,6 +1,6 @@
 import { DEBOUNCE_TIME } from "@/constants/tanstackConfig";
-import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { SerializedDockview } from "@/lib/moss-tabs/src";
+import { AppService } from "@/lib/services/app";
 import { asyncDebounce } from "@tanstack/react-pacer/async-debouncer";
 import { useMutation } from "@tanstack/react-query";
 
@@ -10,9 +10,7 @@ export const USE_UPDATE_EDITOR_PART_STATE_MUTATION_KEY = "updateEditorPartState"
 
 const debouncedSetEditorPartState = asyncDebounce(
   async (editor: SerializedDockview) => {
-    await invokeTauriIpc("update_workspace_state", {
-      input: { "updateEditorPartState": mapSerializedDockviewToEditorPartState(editor) },
-    });
+    await AppService.updateEditorPartState(mapSerializedDockviewToEditorPartState(editor));
   },
   { wait: DEBOUNCE_TIME }
 );
