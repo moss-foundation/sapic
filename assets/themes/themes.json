@@ -4,7 +4,7 @@
     "displayName": "Light Default",
     "mode": "light",
     "order": 1,
-    "source": "light.css",
+    "source": "light.json",
     "isDefault": true
   },
   {
@@ -12,13 +12,13 @@
     "displayName": "Dark Default",
     "mode": "dark",
     "order": 2,
-    "source": "dark.css"
+    "source": "dark.json"
   },
   {
     "identifier": "moss.sapic-theme.vscode",
     "displayName": "VS Code",
     "mode": "dark",
     "order": 3,
-    "source": "vscode.css"
+    "source": "vscode.json"
   }
 ]

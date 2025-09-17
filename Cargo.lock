@@ -3581,6 +3581,7 @@ dependencies = [
  "moss_storage",
  "moss_testutils",
  "moss_text",
+ "moss_theme",
  "moss_user",
  "moss_workspace",
  "nanoid",
