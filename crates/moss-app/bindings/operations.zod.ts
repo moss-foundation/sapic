@@ -12,20 +12,8 @@ import {
   logDateSchema,
   logEntryInfoSchema,
   logItemSourceInfoSchema,
-  preferencesSchema,
   workspaceInfoSchema,
 } from "./types.zod";
-
-export const addAccountInputSchema = z.object({
-  profileId: z.string(),
-  host: z.string(),
-  label: z.string().optional(),
-  provider: z.string(),
-});
-
-export const addAccountOutputSchema = z.object({
-  account_id: z.string(),
-});
 
 export const batchDeleteLogInputSchema = z.object({
   ids: z.array(z.string()),
@@ -98,11 +86,6 @@ export const getTranslationNamespaceInputSchema = z.object({
   namespace: z.string(),
 });
 
-export const getTranslationsInputSchema = z.object({
-  language: z.string(),
-  namespace: z.string(),
-});
-
 export const openWorkspaceInputSchema = z.object({
   id: z.string(),
 });
@@ -135,16 +118,9 @@ export const describeAppOutputSchema = z.object({
   configuration: configurationSchema,
 });
 
-export const describeAppStateOutputSchema = z.object({
-  preferences: preferencesSchema,
-  prevWorkspaceId: z.string().optional(),
-});
-
 export const getTranslationNamespaceOutputSchema = z.object({
   contents: jsonValueSchema,
 });
-
-export const getTranslationsOutputSchema = jsonValueSchema;
 
 export const listColorThemesOutputSchema = z.array(colorThemeInfoSchema);
 
