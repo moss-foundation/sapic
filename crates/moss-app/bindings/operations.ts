@@ -11,19 +11,8 @@ import type {
   LogDate,
   LogEntryInfo,
   LogItemSourceInfo,
-  Preferences,
   WorkspaceInfo,
 } from "./types";
-
-/**
- * DEPRECATED
- */
-export type AddAccountInput = { profileId: string; host: string; label?: string; provider: string };
-
-/**
- * DEPRECATED
- */
-export type AddAccountOutput = { account_id: string };
 
 /**
  * @category Operation
@@ -107,12 +96,6 @@ export type DescribeAppOutput = {
 };
 
 /**
- * DEPRECATED
- * @category Operation
- */
-export type DescribeAppStateOutput = { preferences: Preferences; prevWorkspaceId?: string };
-
-/**
  * @category Operation
  */
 export type DescribeLocaleOutput = { displayName: string; code: string; direction?: string };
@@ -151,16 +134,6 @@ export type GetTranslationNamespaceInput = { language: string; namespace: string
  * @category Operation
  */
 export type GetTranslationNamespaceOutput = { contents: JsonValue };
-
-/**
- * @category Operation
- */
-export type GetTranslationsInput = { language: string; namespace: string };
-
-/**
- * @category Operation
- */
-export type GetTranslationsOutput = JsonValue;
 
 /**
  * @category Operation

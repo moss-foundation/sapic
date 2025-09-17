@@ -1,5 +1,5 @@
 use crate::models::primitives::LocaleId;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 pub(crate) const LOCALES_REGISTRY_FILE: &str = "locales.json";
 
@@ -12,5 +12,4 @@ pub(crate) struct LocaleRegistryItem {
     pub direction: Option<String>,
     pub order: Option<isize>,
     pub is_default: Option<bool>,
-    pub namespaces: Vec<String>,
 }

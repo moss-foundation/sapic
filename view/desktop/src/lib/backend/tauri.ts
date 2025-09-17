@@ -14,7 +14,6 @@ export type TauriIpcCommand =
   | "get_translation_namespace"
   | "describe_color_theme"
   | "list_locales"
-  | "describe_app_state"
   | "list_color_themes"
   | "create_workspace"
   | "open_workspace"

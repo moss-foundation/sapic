@@ -10,7 +10,6 @@ const THEMES_REGISTRY_FILE: &str = "themes.json";
 
 struct ServiceState {
     themes: HashMap<ThemeId, ColorThemeInfo>,
-    default_theme: ColorThemeInfo,
 }
 
 pub struct ThemeService {
@@ -29,33 +28,11 @@ impl ThemeService {
             .map(|item| (item.identifier.clone(), item))
             .collect::<HashMap<ThemeId, ColorThemeInfo>>();
 
-        let default_theme = if let Some(theme) = themes
-            .values()
-            .find(|theme| theme.is_default.unwrap_or(false))
-            .cloned()
-        {
-            theme
-        } else {
-            themes
-                .values()
-                .next() // We take the first theme as the default theme if no default theme is found
-                .ok_or_join_err::<()>("the app must have at least one theme")?
-                .clone()
-        };
-
         Ok(Self {
             themes_dir,
             fs,
-            state: RwLock::new(ServiceState {
-                themes,
-                default_theme,
-            }),
+            state: RwLock::new(ServiceState { themes }),
         })
-    }
-
-    pub async fn default_theme(&self) -> ColorThemeInfo {
-        let state = self.state.read().await;
-        state.default_theme.clone()
     }
 
     pub async fn themes(&self) -> HashMap<ThemeId, ColorThemeInfo> {
