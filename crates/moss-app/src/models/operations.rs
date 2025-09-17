@@ -119,17 +119,17 @@ pub struct DescribeLocaleOutput {
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct GetTranslationInput {
-    pub identifier: LocaleId,
+pub struct GetTranslationNamespaceInput {
+    pub language: String,
+    pub namespace: String,
 }
 
 /// @category Operation
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "operations.ts")]
-pub struct GetTranslationOutput {
-    pub namespaces: Vec<String>,
-    #[ts(type = "{ [key: string]: JsonValue }")]
-    pub translations: HashMap<String, JsonValue>,
+pub struct GetTranslationNamespaceOutput {
+    #[ts(type = "JsonValue")]
+    pub contents: JsonValue,
 }
 
 // DEPRECATED

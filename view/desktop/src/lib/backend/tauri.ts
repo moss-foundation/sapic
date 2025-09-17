@@ -12,7 +12,7 @@ export type TauriIpcCommand =
   | "execute_command"
   | "get_locale"
   | "get_translations"
-  | "get_translation"
+  | "get_translation_namespace"
   | "describe_color_theme"
   | "list_locales"
   | "describe_app_state"
