@@ -95,10 +95,6 @@ impl<R: AppRuntime> App<R> {
         &self.preferences
     }
 
-    // pub fn defaults(&self) -> &AppDefaults {
-    //     &self.defaults
-    // }
-
     pub async fn workspace(&self) -> Option<Arc<ActiveWorkspace<R>>> {
         self.workspace_service.workspace().await
     }
