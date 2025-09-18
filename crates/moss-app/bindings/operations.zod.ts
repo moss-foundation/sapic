@@ -8,25 +8,12 @@ import {
   addAccountParamsSchema,
   colorThemeInfoSchema,
   configurationSchema,
-  defaultsSchema,
   localeInfoSchema,
   logDateSchema,
   logEntryInfoSchema,
   logItemSourceInfoSchema,
-  preferencesSchema,
   workspaceInfoSchema,
 } from "./types.zod";
-
-export const addAccountInputSchema = z.object({
-  profileId: z.string(),
-  host: z.string(),
-  label: z.string().optional(),
-  provider: z.string(),
-});
-
-export const addAccountOutputSchema = z.object({
-  account_id: z.string(),
-});
 
 export const batchDeleteLogInputSchema = z.object({
   ids: z.array(z.string()),
@@ -66,6 +53,12 @@ export const deleteWorkspaceOutputSchema = z.object({
   id: z.string(),
 });
 
+export const describeLocaleOutputSchema = z.object({
+  displayName: z.string(),
+  code: z.string(),
+  direction: z.string().optional(),
+});
+
 export const describeWorkbenchStateOutputSchema = z.object({
   prevWorkspaceId: z.string().optional(),
 });
@@ -78,7 +71,17 @@ export const getColorThemeOutputSchema = z.object({
   cssContent: z.string(),
 });
 
-export const getTranslationsInputSchema = z.object({
+export const getLocaleInputSchema = z.object({
+  identifier: z.string(),
+});
+
+export const getLocaleOutputSchema = z.object({
+  displayName: z.string(),
+  code: z.string(),
+  direction: z.string().optional(),
+});
+
+export const getTranslationNamespaceInputSchema = z.object({
   language: z.string(),
   namespace: z.string(),
 });
@@ -110,18 +113,14 @@ export const createWorkspaceInputSchema = z.object({
 });
 
 export const describeAppOutputSchema = z.object({
-  workspace: z.string().optional(),
+  workspace: workspaceInfoSchema.optional(),
   profile: profileInfoSchema.optional(),
   configuration: configurationSchema,
 });
 
-export const describeAppStateOutputSchema = z.object({
-  preferences: preferencesSchema,
-  defaults: defaultsSchema,
-  prevWorkspaceId: z.string().optional(),
+export const getTranslationNamespaceOutputSchema = z.object({
+  contents: jsonValueSchema,
 });
-
-export const getTranslationsOutputSchema = jsonValueSchema;
 
 export const listColorThemesOutputSchema = z.array(colorThemeInfoSchema);
 

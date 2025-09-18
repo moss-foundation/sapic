@@ -2,13 +2,13 @@ import { EmptyWorkspace } from "@/components/EmptyWorkspace";
 import { PageLoader } from "@/components/PageLoader";
 import { Workspace } from "@/components/Workspace";
 import { ActivityEventsProvider } from "@/context/ActivityEventsContext";
-import { useActiveWorkspace, useDescribeAppState } from "@/hooks";
+import { useActiveWorkspace } from "@/hooks";
+import { useDescribeApp } from "@/hooks/app/useDescribeApp";
 import { AppLayout, RootLayout } from "@/layouts";
 
 export const Workbench = () => {
-  const { activeWorkspace } = useActiveWorkspace();
-  const { isLoading } = useDescribeAppState();
-  const hasWorkspace = !!activeWorkspace;
+  const { activeWorkspace, hasActiveWorkspace } = useActiveWorkspace();
+  const { isLoading } = useDescribeApp();
 
   if (isLoading) {
     return <PageLoader />;
@@ -17,7 +17,9 @@ export const Workbench = () => {
   return (
     <ActivityEventsProvider>
       <RootLayout>
-        <AppLayout>{hasWorkspace ? <Workspace workspaceName={activeWorkspace.name} /> : <EmptyWorkspace />}</AppLayout>
+        <AppLayout>
+          {hasActiveWorkspace ? <Workspace workspaceName={activeWorkspace?.name} /> : <EmptyWorkspace />}
+        </AppLayout>
       </RootLayout>
     </ActivityEventsProvider>
   );

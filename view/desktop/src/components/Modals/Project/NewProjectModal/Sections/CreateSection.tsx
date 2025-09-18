@@ -2,8 +2,6 @@ import { useEffect, useRef, useState } from "react";
 
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { useFocusInputOnMount } from "@/hooks";
-import { useAddAccount } from "@/hooks/app/account/useAddAccount";
-import { useGitProviderStore } from "@/store/gitProvider";
 import { cn } from "@/utils";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { CreateProjectGitParams } from "@repo/moss-workspace";
@@ -20,10 +18,6 @@ interface CreateSectionProps {
 
 export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const { mutateAsync: addAccount } = useAddAccount();
-
-  const { gitProvider } = useGitProviderStore();
 
   const [name, setName] = useState(DEFAULT_NAME);
   const [provider, setProvider] = useState<"github" | "gitlab">(DEFAULT_PROVIDER);
@@ -61,12 +55,6 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
   const handleSetVCS = (checked: CheckedState) => {
     if (checked === "indeterminate") return;
     setVCS(checked);
-  };
-
-  const handleAddAccount = () => {
-    if (provider === "gitlab") return;
-
-    addAccount({ gitProviderType: "GitHub" });
   };
 
   return (

@@ -81,4 +81,4 @@ export type Preferences = { theme?: ColorThemeInfo; locale?: LocaleInfo };
 /**
  * @category Type
  */
-export type WorkspaceInfo = { id: string; name: string; lastOpenedAt?: bigint; active: boolean };
+export type WorkspaceInfo = { id: string; name: string; lastOpenedAt?: bigint };

@@ -40,7 +40,7 @@ pub async fn set_color_theme<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx,app), fields(window = window.label()))]
-pub async fn get_color_theme<'a, R: tauri::Runtime>(
+pub async fn describe_color_theme<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
@@ -63,20 +63,6 @@ pub async fn list_color_themes<'a, R: tauri::Runtime>(
 ) -> TauriResult<ListColorThemesOutput> {
     super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
         app.list_color_themes(&ctx).await
-    })
-    .await
-}
-
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn describe_app_state<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: Window<R>,
-    options: Options,
-) -> TauriResult<DescribeAppStateOutput> {
-    super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
-        app.describe_app_state(&ctx).await
     })
     .await
 }
@@ -112,15 +98,30 @@ pub async fn list_locales<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn get_translations<'a, R: tauri::Runtime>(
+pub async fn get_locale<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
-    input: GetTranslationsInput,
+    input: GetLocaleInput,
     options: Options,
-) -> TauriResult<GetTranslationsOutput> {
+) -> TauriResult<GetLocaleOutput> {
     super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
-        app.get_translations(&ctx, &input).await
+        app.get_locale(&ctx, &input).await
+    })
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn get_translation_namespace<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: Window<R>,
+    input: GetTranslationNamespaceInput,
+    options: Options,
+) -> TauriResult<GetTranslationNamespaceOutput> {
+    super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
+        app.get_translation_namespace(&ctx, &input).await
     })
     .await
 }

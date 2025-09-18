@@ -9,7 +9,7 @@ use tokio::sync::RwLock;
 
 use crate::{
     OnDidChangeProfile, OnDidChangeWorkspace,
-    app::{App, AppCommands, AppDefaults, AppPreferences},
+    app::{App, AppCommands, AppPreferences},
     command::CommandDecl,
     dirs,
     services::{profile_service::ProfileService, *},
@@ -103,10 +103,6 @@ impl<R: AppRuntime> AppBuilder<R> {
                 .await
                 .expect("Failed to create workspace service");
 
-        let defaults = AppDefaults {
-            theme: theme_service.default_theme().await,
-            locale: locale_service.default_locale().await,
-        };
         App {
             app_dir,
             app_handle: self.tao_handle.clone(),
@@ -118,7 +114,6 @@ impl<R: AppRuntime> AppBuilder<R> {
                 locale: RwLock::new(None),
             },
 
-            defaults,
             session_service,
             log_service,
             storage_service,

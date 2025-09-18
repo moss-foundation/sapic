@@ -5,10 +5,10 @@ import AIDemo from "@/ai/AIDemo.tsx";
 import { PageContent } from "@/components";
 import { ActivityEventSimulator } from "@/components/ActivityEventSimulator";
 import { useActivityEvents } from "@/context/ActivityEventsContext";
+import GitTest from "@/git/GitTest.tsx";
 import { AddAccountParams, LogEntryInfo, LOGGING_SERVICE_CHANNEL, UpdateProfileInput } from "@repo/moss-app";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import GitTest from "@/git/GitTest.tsx";
 
 interface CreateProfileData {
   name: string;

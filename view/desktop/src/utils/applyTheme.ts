@@ -10,7 +10,7 @@ interface ThemeStore {
 
 // Legacy direct API call (used by non-React contexts)
 export const getColorTheme = async (input: GetColorThemeInput): Promise<IpcResult<GetColorThemeOutput, string>> => {
-  return await invokeTauriIpc("get_color_theme", {
+  return await invokeTauriIpc("describe_color_theme", {
     input: input,
   });
 };

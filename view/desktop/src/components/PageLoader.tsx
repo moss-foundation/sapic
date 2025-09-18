@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-// FIXME: fetch tips from backend when they are available
+// TODO: fetch tips from backend when they are available
 const tips = [
   "The statusbar color can be changed in the appearance settings",
   "You can change the order of widget actions. Try it!",
@@ -9,6 +9,7 @@ const tips = [
 
 export const PageLoader = () => {
   const [tip, setTip] = useState(tips[0]);
+
   useEffect(() => {
     const interval = setInterval(() => {
       const randomTip = tips[Math.floor(Math.random() * tips.length)];

@@ -7,24 +7,12 @@ import type {
   AddAccountParams,
   ColorThemeInfo,
   Configuration,
-  Defaults,
   LocaleInfo,
   LogDate,
   LogEntryInfo,
   LogItemSourceInfo,
-  Preferences,
   WorkspaceInfo,
 } from "./types";
-
-/**
- * DEPRECATED
- */
-export type AddAccountInput = { profileId: string; host: string; label?: string; provider: string };
-
-/**
- * DEPRECATED
- */
-export type AddAccountOutput = { account_id: string };
 
 /**
  * @category Operation
@@ -99,7 +87,7 @@ export type DescribeAppOutput = {
   /**
    * The id of the workspace that is currently opened.
    */
-  workspace?: string;
+  workspace?: WorkspaceInfo;
   /**
    * The id of the profile that is currently active.
    */
@@ -108,10 +96,9 @@ export type DescribeAppOutput = {
 };
 
 /**
- * DEPRECATED
  * @category Operation
  */
-export type DescribeAppStateOutput = { preferences: Preferences; defaults: Defaults; prevWorkspaceId?: string };
+export type DescribeLocaleOutput = { displayName: string; code: string; direction?: string };
 
 /**
  * @category Operation
@@ -131,12 +118,22 @@ export type GetColorThemeOutput = { cssContent: string };
 /**
  * @category Operation
  */
-export type GetTranslationsInput = { language: string; namespace: string };
+export type GetLocaleInput = { identifier: string };
 
 /**
  * @category Operation
  */
-export type GetTranslationsOutput = JsonValue;
+export type GetLocaleOutput = { displayName: string; code: string; direction?: string };
+
+/**
+ * @category Operation
+ */
+export type GetTranslationNamespaceInput = { language: string; namespace: string };
+
+/**
+ * @category Operation
+ */
+export type GetTranslationNamespaceOutput = { contents: JsonValue };
 
 /**
  * @category Operation

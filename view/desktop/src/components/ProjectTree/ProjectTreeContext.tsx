@@ -23,6 +23,6 @@ export const ProjectTreeContext = createContext<ProjectTreeContextProps>({
   allFoldersAreExpanded: false,
   allFoldersAreCollapsed: true,
   searchInput: "",
-  displayMode: "REQUEST_FIRST",
+  displayMode: "LIVE",
   showOrders: false,
 });

@@ -1,37 +1,38 @@
 import { useTranslation } from "react-i18next";
 
 import SelectOutlined from "@/components/SelectOutlined";
-import { useDescribeAppState, useListLocales, useSetLocale } from "@/hooks";
+import { useListLocales, useSetLocale } from "@/hooks";
+import { useDescribeApp } from "@/hooks/app/useDescribeApp";
 
 import { Section } from "../Section";
 
 export const LanguageSection = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
 
-  const { data: appState } = useDescribeAppState();
+  const { data: appState } = useDescribeApp();
   const { data: languages } = useListLocales();
-  const { mutate: mutateChangeLanguagePack } = useSetLocale();
+  const { mutate: mutateSetLocalePack } = useSetLocale();
 
   const handleLanguageChange = (newCode: string) => {
-    const selectedLocaleInfo = languages?.find((lang: { code: string; displayName: string }) => lang.code === newCode);
+    const selectedLocaleInfo = languages?.find((lang) => lang.identifier === newCode);
 
     if (selectedLocaleInfo) {
-      mutateChangeLanguagePack({
+      mutateSetLocalePack({
         localeInfo: selectedLocaleInfo,
       });
     }
   };
 
-  const defaultLanguage = appState?.preferences.locale?.code || appState?.defaults.locale?.code || "";
+  const currentLanguage = appState?.configuration.contents.locale as string;
 
   return (
     <Section title={t("selectLanguage")}>
-      <SelectOutlined.Root value={defaultLanguage} onValueChange={handleLanguageChange}>
+      <SelectOutlined.Root value={currentLanguage} onValueChange={handleLanguageChange}>
         <SelectOutlined.Trigger />
         <SelectOutlined.Content>
           {languages?.map((item) => {
             return (
-              <SelectOutlined.Item key={item.code} value={item.code}>
+              <SelectOutlined.Item key={item.identifier} value={item.identifier}>
                 {item.displayName}
               </SelectOutlined.Item>
             );

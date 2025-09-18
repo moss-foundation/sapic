@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 
 import { InputOutlined } from "@/components/InputOutlined";
-import { useAddAccount } from "@/hooks/app/account/useAddAccount";
 import { useGitProviderStore } from "@/store/gitProvider";
 import { ImportProjectSource } from "@repo/moss-workspace";
 
@@ -17,7 +16,6 @@ interface ImportSectionProps {
 }
 
 export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
-  const { mutateAsync: addAccount } = useAddAccount();
   const { gitProvider } = useGitProviderStore();
 
   const [name, setName] = useState(DEFAULT_NAME);
@@ -50,11 +48,7 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
     });
   }, [name, onValuesUpdate, repository, branch, provider, accountId]);
 
-  const handleAddAccount = () => {
-    if (provider === "gitlab") return;
-
-    addAccount({ gitProviderType: "GitHub" });
-  };
+  const handleAddAccount = () => {};
 
   return (
     <div className="flex flex-col gap-2">

@@ -55,8 +55,6 @@ const AccordionTrigger = forwardRef<AccordionTriggerElement, AccordionTriggerPro
     const { __scopeActionMenu, className, children, ...triggerProps } = props;
     const context = useAccordionContext(ACCORDION_NAME);
 
-    console.log("props.total", props.total);
-
     return (
       <div
         role="button"

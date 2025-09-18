@@ -1,11 +1,11 @@
-import { useWorkspaceMapping } from "@/hooks";
+import { useDescribeApp } from "@/hooks/app/useDescribeApp";
 
 export const useActiveWorkspace = () => {
-  const { workspaces } = useWorkspaceMapping();
+  const { data: appState, isLoading } = useDescribeApp();
 
-  const activeWorkspace = workspaces.find((workspace) => workspace.active) || null;
-  const activeWorkspaceId = activeWorkspace?.id || null;
-  const hasActiveWorkspace = !!activeWorkspace;
+  const activeWorkspace = appState?.workspace || null;
+  const activeWorkspaceId = appState?.workspace?.id || null;
+  const hasActiveWorkspace = !!appState?.workspace && !isLoading;
 
   return {
     activeWorkspace,

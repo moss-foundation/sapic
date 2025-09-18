@@ -1,21 +1,15 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
-import {
-  DescribeAppStateOutput,
-  ListWorkspacesOutput,
-  OpenWorkspaceInput,
-  OpenWorkspaceOutput,
-  WorkspaceInfo,
-} from "@repo/moss-app";
+import { DescribeAppOutput, OpenWorkspaceInput, OpenWorkspaceOutput } from "@repo/moss-app";
 import { DescribeStateOutput } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { USE_DESCRIBE_APP_STATE_QUERY_KEY } from "../app/useDescribeAppState";
+import { USE_DESCRIBE_APP_QUERY_KEY } from "../app/useDescribeApp";
 import { USE_STREAM_PROJECT_ENTRIES_QUERY_KEY, useStreamedProjectsWithEntries } from "../project";
 import { USE_STREAM_PROJECTS_QUERY_KEY } from "../project/useStreamProjects";
 import { USE_STREAMED_ENVIRONMENTS_QUERY_KEY } from "../workspace/environment";
 import { USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY } from "../workspace/useDescribeWorkspaceState";
-import { USE_LIST_WORKSPACES_QUERY_KEY } from "./useListWorkspaces";
+import { useListWorkspaces } from "./useListWorkspaces";
 
 export const USE_OPEN_WORKSPACE_QUERY_KEY = "openWorkspace";
 
@@ -36,6 +30,7 @@ const openWorkspaceFn = async (workspaceId: string): Promise<OpenWorkspaceOutput
 export const useOpenWorkspace = () => {
   const queryClient = useQueryClient();
 
+  const { data: workspaces } = useListWorkspaces();
   const { data: projectsWithEntries } = useStreamedProjectsWithEntries();
   const { api } = useTabbedPaneStore();
 
@@ -48,24 +43,15 @@ export const useOpenWorkspace = () => {
         exact: false,
       });
 
-      queryClient.setQueryData([USE_DESCRIBE_APP_STATE_QUERY_KEY], (oldData: DescribeAppStateOutput | undefined) => {
-        if (oldData) {
-          return {
-            ...oldData,
-            prevWorkspaceId: workspaceId,
-          };
-        }
-        return oldData;
-      });
-
-      queryClient.setQueryData([USE_LIST_WORKSPACES_QUERY_KEY], (oldData: ListWorkspacesOutput | undefined) => {
-        if (Array.isArray(oldData)) {
-          return oldData.map((workspace: WorkspaceInfo) => ({
-            ...workspace,
-            active: workspace.id === workspaceId,
-          }));
-        }
-        return oldData;
+      queryClient.setQueryData([USE_DESCRIBE_APP_QUERY_KEY], (oldData: DescribeAppOutput | undefined) => {
+        return {
+          ...oldData,
+          workspace: {
+            id: workspaceId,
+            name: workspaces?.find((workspace) => workspace.id === workspaceId)?.name || "",
+            lastOpenedAt: undefined,
+          },
+        };
       });
 
       // Pre-fetch the new workspace state to ensure it's ready

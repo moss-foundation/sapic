@@ -1,9 +1,6 @@
 use derive_more::Deref;
 use moss_logging::models::primitives::LogEntryId;
-use moss_user::models::{
-    primitives::{AccountId, ProfileId},
-    types::ProfileInfo,
-};
+use moss_user::models::{primitives::AccountId, types::ProfileInfo};
 use moss_workspace::models::primitives::WorkspaceMode;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
@@ -16,25 +13,6 @@ use crate::models::{primitives::*, types::*};
 // #########################################################
 // ###                    Profile                      ###
 // #########################################################
-
-/// DEPRECATED  
-#[derive(Debug, Clone, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct AddAccountInput {
-    pub profile_id: ProfileId,
-    pub host: String,
-    pub label: Option<String>,
-    pub provider: AccountId,
-}
-
-/// DEPRECATED  
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "operations.ts")]
-pub struct AddAccountOutput {
-    pub account_id: String,
-}
 
 /// @category Operation
 #[derive(Debug, Clone, Deserialize, TS)]
@@ -89,7 +67,37 @@ pub struct CancelRequestInput {
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct GetTranslationsInput {
+pub struct GetLocaleInput {
+    pub identifier: LocaleId,
+}
+
+/// @category Operation
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct GetLocaleOutput {
+    pub display_name: String,
+    pub code: String,
+    pub direction: Option<String>,
+}
+
+/// @category Operation
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct DescribeLocaleOutput {
+    pub display_name: String,
+    pub code: String,
+    pub direction: Option<String>,
+}
+
+/// @category Operation
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct GetTranslationNamespaceInput {
     pub language: String,
     pub namespace: String,
 }
@@ -97,7 +105,10 @@ pub struct GetTranslationsInput {
 /// @category Operation
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "operations.ts")]
-pub struct GetTranslationsOutput(#[ts(type = "JsonValue")] pub JsonValue);
+pub struct GetTranslationNamespaceOutput {
+    #[ts(type = "JsonValue")]
+    pub contents: JsonValue,
+}
 
 /// @category Operation
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -113,24 +124,11 @@ pub struct ListLocalesOutput(pub Vec<LocaleInfo>);
 #[ts(export, export_to = "operations.ts")]
 pub struct DescribeAppOutput {
     /// The id of the workspace that is currently opened.
-    pub workspace: Option<WorkspaceId>,
+    pub workspace: Option<WorkspaceInfo>,
     /// The id of the profile that is currently active.
     #[ts(optional, type = "ProfileInfo")]
     pub profile: Option<ProfileInfo>,
     pub configuration: Configuration,
-}
-
-/// DEPRECATED  
-/// @category Operation
-#[derive(Debug, Deserialize, Serialize, Clone, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct DescribeAppStateOutput {
-    pub preferences: Preferences,
-    pub defaults: Defaults,
-    #[ts(as = "Option<String>")]
-    pub prev_workspace_id: Option<WorkspaceId>,
 }
 
 /// @category Operation

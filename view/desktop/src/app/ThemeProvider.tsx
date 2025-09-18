@@ -1,8 +1,7 @@
 import { useEffect } from "react";
 
-import { useGetColorTheme } from "@/hooks";
-import { USE_DESCRIBE_APP_STATE_QUERY_KEY, useDescribeAppState } from "@/hooks/app/useDescribeAppState";
-import { applyColorThemeFromCache } from "@/utils/applyTheme";
+import { useDescribeColorTheme } from "@/hooks";
+import { useDescribeApp } from "@/hooks/app/useDescribeApp";
 import { ColorThemeInfo } from "@repo/moss-app";
 import { useQueryClient } from "@tanstack/react-query";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
@@ -10,26 +9,24 @@ import { listen, UnlistenFn } from "@tauri-apps/api/event";
 const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const queryClient = useQueryClient();
 
-  const { data } = useDescribeAppState();
-  const { data: colorTheme } = useGetColorTheme({ themeId: data?.preferences?.theme?.identifier ?? "" });
+  const { data: appState } = useDescribeApp();
+  const { data: colorThemeCss } = useDescribeColorTheme({
+    themeId: (appState?.configuration.contents.colorTheme as string) ?? "",
+  });
 
-  // Initialize app theme
   useEffect(() => {
-    if (data) {
-      const theme = data.preferences?.theme ?? data.defaults.theme;
+    if (appState && colorThemeCss) {
+      const theme = appState.configuration.contents.colorTheme as string;
 
-      document.querySelector("html")?.setAttribute("data-theme", theme.mode);
-
-      applyColorThemeFromCache(theme.identifier, queryClient);
+      setThemeStyle(theme, colorThemeCss.cssContent);
     }
-  }, [data, queryClient]);
+  }, [appState, colorThemeCss, queryClient]);
 
   useEffect(() => {
     let unlisten: UnlistenFn | undefined;
 
     const handleThemeChange = (event: { payload: ColorThemeInfo }) => {
-      applyColorThemeFromCache(event.payload.identifier, queryClient);
-      queryClient.invalidateQueries({ queryKey: [USE_DESCRIBE_APP_STATE_QUERY_KEY] });
+      setThemeStyle(event.payload.identifier, colorThemeCss?.cssContent ?? "");
     };
 
     const setupListener = async () => {
@@ -45,9 +42,22 @@ const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       unlisten?.();
     };
-  }, [queryClient]);
+  }, [queryClient, colorThemeCss]);
 
   return <>{children}</>;
 };
 
 export default ThemeProvider;
+
+const setThemeStyle = (id: string, css: string): void => {
+  let styleTag = document.getElementById("theme-style") as HTMLStyleElement | null;
+
+  if (!styleTag) {
+    styleTag = document.createElement("style");
+    styleTag.id = "theme-style";
+    document.head.appendChild(styleTag);
+  }
+  document.querySelector("html")?.setAttribute("data-theme", id);
+
+  styleTag.innerHTML = css;
+};

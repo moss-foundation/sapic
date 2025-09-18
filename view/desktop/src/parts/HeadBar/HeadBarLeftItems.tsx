@@ -1,5 +1,5 @@
 import { ActionMenu, IconLabelButton } from "@/components";
-import { useActiveWorkspace } from "@/hooks";
+import { useActiveWorkspace, useListWorkspaces } from "@/hooks";
 import Icon from "@/lib/ui/Icon";
 import { cn } from "@/utils";
 import { renderActionMenuItem } from "@/utils/renderActionMenuItem";
@@ -19,7 +19,9 @@ export const HeadBarLeftItems = ({ handleWindowsMenuAction, handleWorkspaceMenuA
   const { workspaceMenuItems, selectedWorkspaceMenuItems } = useWorkspaceMenu();
 
   const { hasActiveWorkspace, activeWorkspace } = useActiveWorkspace();
-  const selectedWorkspace = activeWorkspace?.name || null;
+  const { data: workspaceList } = useListWorkspaces();
+
+  const selectedWorkspaceName = workspaceList?.find((workspace) => workspace.id === activeWorkspace?.id)?.name || null;
 
   return (
     <div className={cn("flex items-center justify-start gap-[6px] overflow-hidden")} data-tauri-drag-region>
@@ -40,7 +42,7 @@ export const HeadBarLeftItems = ({ handleWindowsMenuAction, handleWorkspaceMenuA
         <ActionMenu.Trigger asChild>
           <IconLabelButton
             rightIcon="ChevronDown"
-            title={selectedWorkspace || "My Workspace"}
+            title={selectedWorkspaceName || "My Workspace"}
             placeholder="No workspace selected"
             showPlaceholder={!hasActiveWorkspace}
             labelClassName="text-md"
@@ -48,7 +50,7 @@ export const HeadBarLeftItems = ({ handleWindowsMenuAction, handleWorkspaceMenuA
           />
         </ActionMenu.Trigger>
         <ActionMenu.Content>
-          {selectedWorkspace
+          {hasActiveWorkspace
             ? selectedWorkspaceMenuItems.map((item) => renderActionMenuItem(item, handleWorkspaceMenuAction))
             : workspaceMenuItems.map((item) => renderActionMenuItem(item, handleWorkspaceMenuAction))}
         </ActionMenu.Content>

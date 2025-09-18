@@ -17,7 +17,6 @@ impl<R: AppRuntime> App<R> {
                 id: item.id,
                 name: item.name.clone(),
                 last_opened_at: item.last_opened_at,
-                active: item.active,
                 abs_path: item.abs_path,
             })
             .collect();

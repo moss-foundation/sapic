@@ -1,7 +1,8 @@
 import { ReactNode, useEffect } from "react";
 
-import { useDescribeAppState, useSetLocale } from "@/hooks";
-import { applyLanguagePack } from "@/utils/applyLanguagePack";
+import { useSetLocale } from "@/hooks";
+import { useGetLocale } from "@/hooks/app/locales/useGetLocale";
+import { useDescribeApp } from "@/hooks/app/useDescribeApp";
 import { LocaleInfo } from "@repo/moss-app";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 
@@ -12,28 +13,35 @@ interface LanguageProviderProps {
 }
 
 const LanguageProvider = ({ children }: LanguageProviderProps) => {
-  const { data } = useDescribeAppState();
-  const { mutateAsync: setLocale } = useSetLocale();
+  const { data: appState } = useDescribeApp();
+  const { setLocaleLocally } = useSetLocale();
 
-  // Initialize language
+  const localeId = appState?.configuration.contents.locale as string;
+
+  const { data: locale } = useGetLocale({
+    identifier: localeId,
+    options: { enabled: !!localeId },
+  });
+
   useEffect(() => {
-    if (data) {
-      const languagePack = data.preferences?.locale ?? data.defaults.locale;
-
-      initializeI18n(languagePack.code)
-        .then(() => {
-          applyLanguagePack(languagePack).catch(console.error);
-        })
-        .catch(console.error);
-    }
-  }, [data]);
+    if (!locale) return;
+    initializeI18n(locale.code);
+  }, [locale]);
 
   // Listen for language pack changes
   useEffect(() => {
     let unlisten: UnlistenFn | undefined;
 
     const handleLanguageChange = (event: { payload: LocaleInfo }) => {
-      setLocale({ localeInfo: event.payload });
+      const eventLang = event.payload;
+
+      setLocaleLocally({
+        localeInfo: {
+          identifier: eventLang.identifier,
+          displayName: eventLang.displayName,
+          code: eventLang.code,
+        },
+      });
     };
 
     const setupListener = async () => {
@@ -49,7 +57,7 @@ const LanguageProvider = ({ children }: LanguageProviderProps) => {
     return () => {
       unlisten?.();
     };
-  }, [setLocale]);
+  }, [setLocaleLocally]);
 
   return <>{children}</>;
 };

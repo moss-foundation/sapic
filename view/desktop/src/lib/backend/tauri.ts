@@ -10,10 +10,10 @@ export type TauriIpcCommand =
   | "set_color_theme"
   | "set_locale"
   | "execute_command"
-  | "get_translations"
-  | "get_color_theme"
+  | "get_locale"
+  | "get_translation_namespace"
+  | "describe_color_theme"
   | "list_locales"
-  | "describe_app_state"
   | "list_color_themes"
   | "create_workspace"
   | "open_workspace"
@@ -73,6 +73,27 @@ export const invokeTauriIpc = async <T, E = unknown>(
 ): Promise<IpcResult<T, E>> => {
   try {
     const data = await invokeTauri<T>(cmd, args);
+    return { status: "ok", data };
+  } catch (err) {
+    handleTauriIpcError(cmd, err);
+    return { status: "error", error: err as E };
+  }
+};
+
+interface InvokeTauriServiceIpcArgs<Input> {
+  cmd: TauriIpcCommand;
+  args?: {
+    input?: Input extends undefined ? InvokeArgs : Input & InvokeArgs;
+    options?: undefined;
+  };
+}
+
+export const invokeTauriServiceIpc = async <Input, Output, E = unknown>({
+  cmd,
+  args,
+}: InvokeTauriServiceIpcArgs<Input>): Promise<IpcResult<Output, E>> => {
+  try {
+    const data = await invokeTauri<Output>(cmd, args);
     return { status: "ok", data };
   } catch (err) {
     handleTauriIpcError(cmd, err);
