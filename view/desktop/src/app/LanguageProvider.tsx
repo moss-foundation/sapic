@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useRef } from "react";
+import { ReactNode, useEffect } from "react";
 
 import { useSetLocale } from "@/hooks";
 import { useGetLocale } from "@/hooks/app/locales/useGetLocale";
@@ -13,8 +13,6 @@ interface LanguageProviderProps {
 }
 
 const LanguageProvider = ({ children }: LanguageProviderProps) => {
-  const isInitialized = useRef(false);
-
   const { data: appState } = useDescribeApp();
   const { setLocaleLocally } = useSetLocale();
 
@@ -25,24 +23,10 @@ const LanguageProvider = ({ children }: LanguageProviderProps) => {
     options: { enabled: !!localeId },
   });
 
-  // Initialize language
   useEffect(() => {
-    const initialize = async () => {
-      if (!locale) return;
-
-      try {
-        initializeI18n(locale.code);
-
-        isInitialized.current = true;
-      } catch (error) {
-        console.error("Failed to initialize locale:", error);
-      }
-    };
-
-    if (!isInitialized.current) {
-      initialize();
-    }
-  }, [setLocaleLocally, locale]);
+    if (!locale) return;
+    initializeI18n(locale.code);
+  }, [locale]);
 
   // Listen for language pack changes
   useEffect(() => {
