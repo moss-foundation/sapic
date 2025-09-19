@@ -8,7 +8,9 @@ mod locale;
 mod logging;
 pub mod models;
 mod profile;
-mod services;
+mod session;
+mod theme;
+mod workspace;
 
 #[cfg(feature = "integration-tests")]
 pub mod storage;

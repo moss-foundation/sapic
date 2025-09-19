@@ -13,8 +13,13 @@ use crate::{
     configuration::ConfigurationService,
     dirs,
     internal::events::{OnDidChangeConfiguration, OnDidChangeProfile, OnDidChangeWorkspace},
+    locale::LocaleService,
     logging::LogService,
-    services::{profile_service::ProfileService, *},
+    profile::ProfileService,
+    session::SessionService,
+    storage::StorageService,
+    theme::ThemeService,
+    workspace::WorkspaceService,
 };
 
 pub struct BuildAppParams {

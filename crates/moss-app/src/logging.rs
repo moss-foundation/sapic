@@ -1,11 +1,6 @@
 mod rollinglog_writer;
 mod taurilog_writer;
 
-use crate::{
-    logging::{constants::*, rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter},
-    models::types::{LogEntryInfo, LogItemSourceInfo},
-    services::{session_service::SessionId, storage_service::StorageService},
-};
 use chrono::{DateTime, NaiveDate, NaiveDateTime};
 use joinerror::Error;
 use moss_applib::AppRuntime;
@@ -30,6 +25,15 @@ use tracing_subscriber::{
         time::ChronoLocal,
     },
     prelude::*,
+};
+
+use crate::{
+    logging::{constants::*, rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter},
+    models::{
+        primitives::SessionId,
+        types::{LogEntryInfo, LogItemSourceInfo},
+    },
+    storage::StorageService,
 };
 
 pub mod constants {

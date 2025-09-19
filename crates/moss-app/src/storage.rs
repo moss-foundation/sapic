@@ -1,3 +1,6 @@
+mod entities;
+pub mod segments;
+
 use moss_applib::AppRuntime;
 use moss_db::{DatabaseResult, Transaction, primitives::AnyValue};
 use moss_logging::models::primitives::LogEntryId;

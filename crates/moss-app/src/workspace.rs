@@ -20,8 +20,10 @@ use tokio::sync::RwLock;
 use crate::{
     ActiveWorkspace, dirs,
     models::primitives::WorkspaceId,
-    services::storage_service::StorageService,
-    storage::segments::{SEGKEY_WORKSPACE, segkey_last_opened_at, segkey_workspace},
+    storage::{
+        StorageService,
+        segments::{SEGKEY_WORKSPACE, segkey_last_opened_at, segkey_workspace},
+    },
 };
 
 pub(crate) struct WorkspaceItemCreateParams {

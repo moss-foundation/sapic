@@ -17,9 +17,17 @@ use crate::{
     ActiveWorkspace,
     command::CommandCallback,
     configuration::ConfigurationService,
+    locale::LocaleService,
     logging::LogService,
-    models::types::{ColorThemeInfo, LocaleInfo},
-    services::{profile_service::ProfileService, session_service::SessionId, *},
+    models::{
+        primitives::SessionId,
+        types::{ColorThemeInfo, LocaleInfo},
+    },
+    profile::ProfileService,
+    session::SessionService,
+    storage::StorageService,
+    theme::ThemeService,
+    workspace::WorkspaceService,
 };
 
 pub struct AppPreferences {

@@ -11,7 +11,7 @@ use std::{
 use crate::{
     logging::constants::{FILE_TIMESTAMP_FORMAT, TIMESTAMP_FORMAT},
     models::types::LogEntryInfo,
-    services::storage_service::StorageService,
+    storage::StorageService,
 };
 
 // log:{log_id}: log_entry_path
