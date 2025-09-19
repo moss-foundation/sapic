@@ -79,8 +79,8 @@ export type DescribeEntryOutput = {
   name: string;
   class: EntryClass;
   kind: EntryKind;
-  protocol: EntryProtocol | null;
-  url: string | null;
+  protocol?: EntryProtocol;
+  url?: string;
   headers: Array<HeaderInfo>;
   pathParams: Array<PathParamInfo>;
   queryParams: Array<QueryParamInfo>;

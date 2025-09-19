@@ -141,6 +141,7 @@ pub enum VcsOperation {
 /// @category Type
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct HeaderInfo {
     pub id: HeaderId,
@@ -156,6 +157,7 @@ pub struct HeaderInfo {
 /// @category Type
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct PathParamInfo {
     pub id: PathParamId,
@@ -171,6 +173,7 @@ pub struct PathParamInfo {
 /// @category Type
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct QueryParamInfo {
     pub id: QueryParamId,

@@ -71,10 +71,10 @@ export type HeaderInfo = {
   id: string;
   name: string;
   value: JsonValue;
-  description: string | null;
+  description?: string;
   disabled: boolean;
   propagate: boolean;
-  order: number | null;
+  order?: number;
 };
 
 /**
@@ -89,10 +89,10 @@ export type PathParamInfo = {
   id: string;
   name: string;
   value: JsonValue;
-  description: string | null;
+  description?: string;
   disabled: boolean;
   propagate: boolean;
-  order: number | null;
+  order?: number;
 };
 
 /**
@@ -107,10 +107,10 @@ export type QueryParamInfo = {
   id: string;
   name: string;
   value: JsonValue;
-  description: string | null;
+  description?: string;
   disabled: boolean;
   propagate: boolean;
-  order: number | null;
+  order?: number;
 };
 
 /**
@@ -166,15 +166,15 @@ export type UpdateItemEntryParams = {
   order?: number;
   expanded?: boolean;
   protocol?: EntryProtocol;
-  queryParamsToAdd: Array<AddQueryParamParams>;
-  queryParamsToUpdate: Array<UpdateQueryParamParams>;
-  queryParamsToRemove: Array<string>;
-  pathParamsToAdd: Array<AddPathParamParams>;
-  pathParamsToUpdate: Array<UpdatePathParamParams>;
-  pathParamsToRemove: Array<string>;
   headersToAdd: Array<AddHeaderParams>;
   headersToUpdate: Array<UpdateHeaderParams>;
   headersToRemove: Array<string>;
+  pathParamsToAdd: Array<AddPathParamParams>;
+  pathParamsToUpdate: Array<UpdatePathParamParams>;
+  pathParamsToRemove: Array<string>;
+  queryParamsToAdd: Array<AddQueryParamParams>;
+  queryParamsToUpdate: Array<UpdateQueryParamParams>;
+  queryParamsToRemove: Array<string>;
 };
 
 /**

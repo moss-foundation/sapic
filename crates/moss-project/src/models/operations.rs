@@ -175,6 +175,7 @@ pub struct DescribeEntryInput {
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct DescribeEntryOutput {
     // TODO: Separate dir/item entry?
