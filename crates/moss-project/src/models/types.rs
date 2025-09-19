@@ -68,17 +68,17 @@ pub struct UpdateItemEntryParams {
 
     pub protocol: Option<EntryProtocol>,
 
-    pub query_params_to_add: Vec<AddQueryParamParams>,
-    pub query_params_to_update: Vec<UpdateQueryParamParams>,
-    pub query_params_to_remove: Vec<QueryParamId>,
+    pub headers_to_add: Vec<AddHeaderParams>,
+    pub headers_to_update: Vec<UpdateHeaderParams>,
+    pub headers_to_remove: Vec<HeaderId>,
 
     pub path_params_to_add: Vec<AddPathParamParams>,
     pub path_params_to_update: Vec<UpdatePathParamParams>,
     pub path_params_to_remove: Vec<PathParamId>,
 
-    pub headers_to_add: Vec<AddHeaderParams>,
-    pub headers_to_update: Vec<UpdateHeaderParams>,
-    pub headers_to_remove: Vec<HeaderId>,
+    pub query_params_to_add: Vec<AddQueryParamParams>,
+    pub query_params_to_update: Vec<UpdateQueryParamParams>,
+    pub query_params_to_remove: Vec<QueryParamId>,
 }
 
 /// @category Type

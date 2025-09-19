@@ -185,10 +185,10 @@ mod tests {
         };
 
         let str = hcl::to_string(&model).unwrap();
-        //println!("{}", str);
+        println!("{}", str);
 
         let json = serde_json::to_string(&model).unwrap();
-        //println!("{}", json);
+        println!("{}", json);
 
         let model = hcl::from_str::<EntryModel>(&str).unwrap();
 

@@ -1,7 +1,7 @@
 pub mod entry;
 
 use anyhow::anyhow;
-use joinerror::{Error, OptionExt, ResultExt};
+use joinerror::{Error, OptionExt};
 use json_patch::{
     AddOperation, PatchOperation, RemoveOperation, ReplaceOperation, jsonptr::PointerBuf,
 };
@@ -29,7 +29,7 @@ use tokio::{
 };
 
 use crate::{
-    constants::{self, DIR_CONFIG_FILENAME},
+    constants::{self, DIR_CONFIG_FILENAME, ITEM_CONFIG_FILENAME},
     dirs,
     dirs::RESOURCES_DIR,
     errors::{ErrorAlreadyExists, ErrorInvalidInput, ErrorNotFound},
@@ -374,7 +374,7 @@ impl<R: AppRuntime> Worktree<R> {
             Entry {
                 id: id.clone(),
                 path_rx,
-                edit: EntryEditing::new(self.fs.clone(), path_tx),
+                edit: EntryEditing::new(self.fs.clone(), path_tx, ITEM_CONFIG_FILENAME),
                 class: model.metadata.class.clone(),
                 protocol: model.protocol(),
             },
@@ -438,7 +438,7 @@ impl<R: AppRuntime> Worktree<R> {
             Entry {
                 id: id.clone(),
                 path_rx,
-                edit: EntryEditing::new(self.fs.clone(), path_tx),
+                edit: EntryEditing::new(self.fs.clone(), path_tx, DIR_CONFIG_FILENAME),
                 class: model.metadata.class.clone(),
                 protocol: None,
             },
@@ -870,8 +870,6 @@ impl<R: AppRuntime> Worktree<R> {
                 entry.protocol = Some(protocol.clone());
             });
         }
-
-        // TODO:
 
         for header_to_add in &params.headers_to_add {
             let id = HeaderId::new();
@@ -1564,7 +1562,10 @@ impl<R: AppRuntime> Worktree<R> {
             return Ok(());
         }
 
-        entry.edit.edit(&self.abs_path, &patches).await?;
+        entry
+            .edit
+            .edit(&self.abs_path.join(dirs::RESOURCES_DIR), &patches)
+            .await?;
 
         for mut callback in on_edit_success {
             callback();
@@ -1651,7 +1652,7 @@ async fn process_entry(
             Entry {
                 id,
                 path_rx,
-                edit: EntryEditing::new(fs.clone(), path_tx),
+                edit: EntryEditing::new(fs.clone(), path_tx, DIR_CONFIG_FILENAME),
                 class: model.class(),
                 protocol: None,
             },
@@ -1682,7 +1683,7 @@ async fn process_entry(
             Entry {
                 id,
                 path_rx,
-                edit: EntryEditing::new(fs.clone(), path_tx),
+                edit: EntryEditing::new(fs.clone(), path_tx, ITEM_CONFIG_FILENAME),
                 class: model.class(),
                 protocol: model.protocol(),
             },
