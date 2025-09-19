@@ -1,29 +1,7 @@
 pub mod entry;
 
-use crate::{
-    constants::{self, DIR_CONFIG_FILENAME},
-    dirs,
-    errors::{ErrorAlreadyExists, ErrorInvalidInput, ErrorNotFound},
-    models::{
-        primitives::{EntryId, EntryKind, EntryProtocol, HeaderId, PathParamId, QueryParamId},
-        types::http::{
-            AddHeaderParams, AddPathParamParams, AddQueryParamParams, UpdateHeaderParams,
-            UpdatePathParamParams, UpdateQueryParamParams,
-        },
-    },
-    services::storage_service::StorageService,
-    storage::segments,
-    worktree::entry::{
-        Entry, EntryDescription,
-        edit::EntryEditing,
-        model::{
-            EntryModel, HeaderParamSpec, HeaderParamSpecOptions, PathParamSpec,
-            PathParamSpecOptions, QueryParamSpec, QueryParamSpecOptions,
-        },
-    },
-};
 use anyhow::anyhow;
-use joinerror::OptionExt;
+use joinerror::{Error, OptionExt, ResultExt};
 use json_patch::{
     AddOperation, PatchOperation, RemoveOperation, ReplaceOperation, jsonptr::PointerBuf,
 };
@@ -34,7 +12,7 @@ use moss_common::{continue_if_err, continue_if_none};
 use moss_db::primitives::AnyValue;
 use moss_edit::json::EditOptions;
 use moss_fs::{CreateOptions, FileSystem, RemoveOptions, desanitize_path, utils::SanitizedPath};
-use moss_hcl::{HclResultExt, json_to_hcl};
+use moss_hcl::{HclResultExt, hcl_to_json, json_to_hcl};
 use moss_logging::session;
 use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_text::sanitized::{desanitize, sanitize};
@@ -48,6 +26,40 @@ use std::{
 use tokio::{
     fs,
     sync::{RwLock, mpsc, watch},
+};
+
+use crate::{
+    constants::{self, DIR_CONFIG_FILENAME},
+    dirs,
+    dirs::RESOURCES_DIR,
+    errors::{ErrorAlreadyExists, ErrorInvalidInput, ErrorNotFound},
+    models::{
+        operations::DescribeEntryOutput,
+        primitives::{EntryId, EntryKind, EntryProtocol, HeaderId, PathParamId, QueryParamId},
+        types::{
+            HeaderInfo, PathParamInfo, QueryParamInfo,
+            http::{
+                AddHeaderParams, AddPathParamParams, AddQueryParamParams, UpdateHeaderParams,
+                UpdatePathParamParams, UpdateQueryParamParams,
+            },
+        },
+    },
+    services::storage_service::StorageService,
+    storage::{
+        segments,
+        segments::{
+            segkey_entry_header_order, segkey_entry_path_param_order,
+            segkey_entry_query_param_order,
+        },
+    },
+    worktree::entry::{
+        Entry, EntryDescription,
+        edit::EntryEditing,
+        model::{
+            EntryModel, HeaderParamSpec, HeaderParamSpecOptions, PathParamSpec,
+            PathParamSpecOptions, QueryParamSpec, QueryParamSpecOptions,
+        },
+    },
 };
 
 trait IsRoot {
@@ -648,6 +660,137 @@ impl<R: AppRuntime> Worktree<R> {
         txn.commit()?;
 
         Ok(path)
+    }
+
+    pub async fn describe_entry(
+        &self,
+        ctx: &R::AsyncContext,
+        id: &EntryId,
+    ) -> joinerror::Result<DescribeEntryOutput> {
+        let state_lock = self.state.read().await;
+        let entry = state_lock
+            .entries
+            .get(&id)
+            .ok_or_join_err_with::<ErrorNotFound>(|| format!("entry {} not found", id))?;
+        let entry_path = self
+            .abs_path
+            .join(RESOURCES_DIR)
+            .join(entry.path_rx.borrow().as_ref());
+        let dir_config_path = entry_path.join(constants::DIR_CONFIG_FILENAME);
+        let item_config_path = entry_path.join(constants::ITEM_CONFIG_FILENAME);
+
+        let name = entry_path
+            .file_name()
+            .map(|n| n.to_string_lossy().to_string())
+            .unwrap_or_else(|| entry_path.to_string_lossy().to_string());
+
+        if dir_config_path.exists() {
+            let mut rdr = self.fs.open_file(&dir_config_path).await?;
+            let model: EntryModel =
+                hcl::from_reader(&mut rdr).join_err::<()>("failed to parse dir configuration")?;
+
+            return Ok(DescribeEntryOutput {
+                name: desanitize(&name),
+                class: model.class(),
+                kind: EntryKind::Dir,
+                protocol: None,
+                url: None,
+                headers: vec![],
+                path_params: vec![],
+                query_params: vec![],
+            });
+        } else if item_config_path.exists() {
+            dbg!(&item_config_path);
+            let entry_keys = self
+                .storage
+                .get_entry_keys(ctx, id)
+                .await
+                .unwrap_or_else(|err| {
+                    session::error!(format!("failed to get entry cache: {}", err.to_string()));
+                    HashMap::new()
+                });
+
+            let mut rdr = self.fs.open_file(&item_config_path).await?;
+            let model: EntryModel =
+                hcl::from_reader(&mut rdr).join_err::<()>("failed to parse item configuration")?;
+            let class = model.class();
+            let protocol = model.protocol();
+            let url = model.url.map(|url| url.raw.clone());
+
+            let mut header_infos = Vec::new();
+            let mut path_param_infos = Vec::new();
+            let mut query_param_infos = Vec::new();
+
+            if let Some(headers_block) = model.headers {
+                let header_map = headers_block.into_inner();
+                for (header_id, header_spec) in header_map {
+                    header_infos.push(HeaderInfo {
+                        id: header_id.clone(),
+                        name: header_spec.name,
+                        value: continue_if_err!(hcl_to_json(&header_spec.value), |err| {
+                            session::error!("failed to convert value expression: {}", err)
+                        }),
+                        description: header_spec.description,
+                        disabled: header_spec.options.disabled,
+                        propagate: header_spec.options.propagate,
+                        order: entry_keys
+                            .get(&segkey_entry_header_order(id, &header_id))
+                            .and_then(|value| value.deserialize().ok()),
+                    })
+                }
+            }
+
+            if let Some(path_param_block) = model.path_params {
+                let path_param_map = path_param_block.into_inner();
+                for (path_param_id, path_param_spec) in path_param_map {
+                    path_param_infos.push(PathParamInfo {
+                        id: path_param_id.clone(),
+                        name: path_param_spec.name,
+                        value: continue_if_err!(hcl_to_json(&path_param_spec.value), |err| {
+                            session::error!("failed to convert value expression: {}", err)
+                        }),
+                        description: path_param_spec.description,
+                        disabled: path_param_spec.options.disabled,
+                        propagate: path_param_spec.options.propagate,
+                        order: entry_keys
+                            .get(&segkey_entry_path_param_order(id, &path_param_id))
+                            .and_then(|value| value.deserialize().ok()),
+                    })
+                }
+            }
+
+            if let Some(query_param_block) = model.query_params {
+                let query_param_map = query_param_block.into_inner();
+                for (query_param_id, query_param_spec) in query_param_map {
+                    query_param_infos.push(QueryParamInfo {
+                        id: query_param_id.clone(),
+                        name: query_param_spec.name,
+                        value: continue_if_err!(hcl_to_json(&query_param_spec.value), |err| {
+                            session::error!("failed to convert value expression: {}", err)
+                        }),
+                        description: query_param_spec.description,
+                        disabled: query_param_spec.options.disabled,
+                        propagate: query_param_spec.options.propagate,
+                        order: entry_keys
+                            .get(&segkey_entry_query_param_order(id, &query_param_id))
+                            .and_then(|value| value.deserialize().ok()),
+                    })
+                }
+            }
+
+            return Ok(DescribeEntryOutput {
+                name: desanitize(&name),
+                class,
+                kind: EntryKind::Item,
+                protocol,
+                url,
+                headers: header_infos,
+                path_params: path_param_infos,
+                query_params: query_param_infos,
+            });
+        } else {
+            return Err(Error::new::<()>("cannot find entry config"));
+        }
     }
 }
 

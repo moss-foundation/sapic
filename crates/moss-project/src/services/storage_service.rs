@@ -176,6 +176,22 @@ impl<R: AppRuntime> StorageService<R> {
         Ok(value.into_iter().collect())
     }
 
+    pub async fn get_entry_keys(
+        &self,
+        ctx: &R::AsyncContext,
+        id: &EntryId,
+    ) -> Result<HashMap<SegKeyBuf, AnyValue>> {
+        let store = self.storage.resource_store();
+        let value = ListByPrefix::list_by_prefix(
+            store.as_ref(),
+            ctx,
+            &segments::SEGKEY_RESOURCE_ENTRY.join(id).to_string(),
+        )
+        .await?;
+
+        Ok(value.into_iter().collect())
+    }
+
     pub async fn put_expanded_entries(
         &self,
         ctx: &R::AsyncContext,

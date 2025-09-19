@@ -200,7 +200,7 @@ mod tests {
         let model = test_item();
         let model_string = hcl::to_string(&model).unwrap();
 
-        let value: serde_json::Value = hcl::from_str(&model_string).unwrap();
-        dbg!(&value);
+        let model = hcl::from_str::<EntryModel>(&model_string).unwrap();
+        dbg!(&model);
     }
 }

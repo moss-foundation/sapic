@@ -4,12 +4,23 @@ pub mod shared;
 use moss_project::{
     constants, dirs,
     errors::ErrorAlreadyExists,
-    models::{operations::CreateEntryInput, primitives::EntryClass, types::CreateDirEntryParams},
+    models::{
+        operations::{CreateEntryInput, DescribeEntryInput},
+        primitives::{EntryClass, EntryKind, EntryProtocol},
+        types::{
+            CreateDirEntryParams, CreateItemEntryParams,
+            http::{
+                AddHeaderParams, AddPathParamParams, AddQueryParamParams, HeaderParamOptions,
+                PathParamOptions, QueryParamOptions,
+            },
+        },
+    },
     storage::segments::SEGKEY_RESOURCE_ENTRY,
 };
 use moss_storage::storage::operations::GetItem;
 use moss_testutils::fs_specific::FILENAME_SPECIAL_CHARS;
 use moss_text::sanitized::sanitize;
+use serde_json::Value as JsonValue;
 use std::path::PathBuf;
 
 use crate::shared::{RESOURCES_ROOT_DIR, create_test_project, random_entry_name};
@@ -26,7 +37,6 @@ async fn create_dir_entry_success() {
         path: entry_path.clone(),
         name: entry_name.clone(),
         order: 0,
-        headers: vec![],
     });
 
     let result = project.create_entry(&ctx, input).await;
@@ -64,7 +74,6 @@ async fn create_dir_entry_with_order() {
         path: entry_path.clone(),
         name: entry_name.clone(),
         order: order_value,
-        headers: vec![],
     });
 
     let result = project.create_entry(&ctx, input).await;
@@ -100,7 +109,6 @@ async fn create_dir_entry_already_exists() {
         path: entry_path.clone(),
         name: entry_name.clone(),
         order: 0,
-        headers: vec![],
     });
 
     // Create the entry first time - should succeed
@@ -135,7 +143,6 @@ async fn create_dir_entry_special_chars_in_name() {
             path: entry_path.clone(),
             name: entry_name.clone(),
             order: 0,
-            headers: vec![],
         });
 
         let result = project.create_entry(&ctx, input).await;
@@ -158,6 +165,107 @@ async fn create_dir_entry_special_chars_in_name() {
         assert!(expected_dir.exists());
         assert!(expected_dir.is_dir());
     }
+
+    // Cleanup
+    std::fs::remove_dir_all(project_path).unwrap();
+}
+
+#[tokio::test]
+async fn create_item_entry_endpoint() {
+    let (ctx, _, project_path, project) = create_test_project().await;
+    let resources_dir = project_path.join(dirs::RESOURCES_DIR);
+
+    let entry_name = random_entry_name();
+    let entry_path = PathBuf::from("");
+    let input = CreateEntryInput::Item(CreateItemEntryParams {
+        path: entry_path.clone(),
+        class: EntryClass::Endpoint,
+        name: entry_name.clone(),
+        order: 0,
+        protocol: Some(EntryProtocol::Get),
+        headers: vec![AddHeaderParams {
+            name: "header1".to_string(),
+            value: JsonValue::String("value1".to_string()),
+            order: 42,
+            desc: Some("description".to_string()),
+            options: HeaderParamOptions {
+                disabled: false,
+                propagate: false,
+            },
+        }],
+        path_params: vec![AddPathParamParams {
+            name: "path_param1".to_string(),
+            value: JsonValue::String("value1".to_string()),
+            order: 42,
+            desc: Some("description".to_string()),
+            options: PathParamOptions {
+                disabled: false,
+                propagate: false,
+            },
+        }],
+        query_params: vec![AddQueryParamParams {
+            name: "query_param1".to_string(),
+            value: JsonValue::String("value1".to_string()),
+            order: 42,
+            desc: Some("description".to_string()),
+            options: QueryParamOptions {
+                disabled: false,
+                propagate: false,
+            },
+        }],
+    });
+
+    let result = project.create_entry(&ctx, input).await;
+
+    let id = result.unwrap().id;
+
+    // Verify the directory was created
+    let expected_dir = resources_dir.join(&entry_path).join(&entry_name);
+    assert!(expected_dir.exists());
+    assert!(expected_dir.is_dir());
+
+    let config_file = expected_dir.join(constants::ITEM_CONFIG_FILENAME);
+    assert!(config_file.exists());
+    assert!(config_file.is_file());
+
+    // Verify the config is correctly set
+
+    let desc = project
+        .describe_entry(&ctx, DescribeEntryInput { id })
+        .await
+        .unwrap();
+
+    assert_eq!(desc.name, entry_name);
+    assert_eq!(desc.class, EntryClass::Endpoint);
+    assert_eq!(desc.kind, EntryKind::Item);
+    assert_eq!(desc.protocol, Some(EntryProtocol::Get));
+
+    assert_eq!(desc.headers.len(), 1);
+    let header = desc.headers.first().unwrap();
+    assert_eq!(header.name, "header1");
+    assert_eq!(header.value, JsonValue::String("value1".to_string()));
+    assert_eq!(header.order, Some(42));
+    assert_eq!(header.description, Some("description".to_string()));
+    assert!(!header.disabled);
+    assert!(!header.propagate);
+
+    assert_eq!(desc.path_params.len(), 1);
+    let path_param = desc.path_params.first().unwrap();
+    assert_eq!(path_param.name, "path_param1");
+    assert_eq!(path_param.value, JsonValue::String("value1".to_string()));
+    assert_eq!(path_param.order, Some(42));
+    assert_eq!(path_param.description, Some("description".to_string()));
+    assert!(!path_param.disabled);
+    assert!(!path_param.propagate);
+
+    assert_eq!(desc.query_params.len(), 1);
+    let query_param = desc.query_params.first().unwrap();
+    assert_eq!(query_param.name, "query_param1");
+    assert_eq!(query_param.value, JsonValue::String("value1".to_string()));
+    assert_eq!(query_param.order, Some(42));
+    assert_eq!(query_param.description, Some("description".to_string()));
+    assert!(!query_param.disabled);
+    assert!(!query_param.propagate);
 
     // Cleanup
     std::fs::remove_dir_all(project_path).unwrap();

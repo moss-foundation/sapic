@@ -2,6 +2,7 @@ pub mod http;
 
 use http::*;
 use serde::{Deserialize, Serialize};
+use serde_json::Value as JsonValue;
 use std::path::{Path, PathBuf};
 use ts_rs::TS;
 use validator::{Validate, ValidationError};
@@ -24,11 +25,12 @@ pub struct CreateItemEntryParams {
     pub name: String,
     pub order: isize,
 
+    // TODO: url
     pub protocol: Option<EntryProtocol>,
 
-    pub query_params: Vec<AddQueryParamParams>,
-    pub path_params: Vec<AddPathParamParams>,
     pub headers: Vec<AddHeaderParams>,
+    pub path_params: Vec<AddPathParamParams>,
+    pub query_params: Vec<AddQueryParamParams>,
 }
 
 /// @category Type
@@ -44,8 +46,6 @@ pub struct CreateDirEntryParams {
     #[validate(length(min = 1))]
     pub name: String,
     pub order: isize,
-
-    pub headers: Vec<AddHeaderParams>,
 }
 
 /// @category Type
@@ -136,6 +136,51 @@ pub enum VcsOperation {
     Push,
     Pull,
     Fetch,
+}
+
+/// @category Type
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct HeaderInfo {
+    pub id: HeaderId,
+    pub name: String,
+    #[ts(type = "JsonValue")]
+    pub value: JsonValue,
+    pub description: Option<String>,
+    pub disabled: bool,
+    pub propagate: bool,
+    pub order: Option<isize>,
+}
+
+/// @category Type
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct PathParamInfo {
+    pub id: PathParamId,
+    pub name: String,
+    #[ts(type = "JsonValue")]
+    pub value: JsonValue,
+    pub description: Option<String>,
+    pub disabled: bool,
+    pub propagate: bool,
+    pub order: Option<isize>,
+}
+
+/// @category Type
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct QueryParamInfo {
+    pub id: QueryParamId,
+    pub name: String,
+    #[ts(type = "JsonValue")]
+    pub value: JsonValue,
+    pub description: Option<String>,
+    pub disabled: bool,
+    pub propagate: bool,
+    pub order: Option<isize>,
 }
 
 // Check that input path begins with a valid top folder
