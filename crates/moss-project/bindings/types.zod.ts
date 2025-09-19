@@ -5,14 +5,17 @@ import { entryClassSchema, entryPathSchema, entryProtocolSchema } from "./primit
 
 export const headerParamOptionsSchema = z.object({
   disabled: z.boolean(),
+  propagate: z.boolean(),
 });
 
 export const pathParamOptionsSchema = z.object({
   disabled: z.boolean(),
+  propagate: z.boolean(),
 });
 
 export const queryParamOptionsSchema = z.object({
   disabled: z.boolean(),
+  propagate: z.boolean(),
 });
 
 export const updateDirEntryParamsSchema = z.object({
@@ -25,14 +28,17 @@ export const updateDirEntryParamsSchema = z.object({
 
 export const updateHeaderParamOptionsSchema = z.object({
   disabled: z.boolean().optional(),
+  propagate: z.boolean().optional(),
 });
 
 export const updatePathParamOptionsSchema = z.object({
   disabled: z.boolean().optional(),
+  propagate: z.boolean().optional(),
 });
 
 export const updateQueryParamOptionsSchema = z.object({
   disabled: z.boolean().optional(),
+  propagate: z.boolean().optional(),
 });
 
 export const vcsOperationSchema = z.union([
@@ -91,7 +97,6 @@ export const createDirEntryParamsSchema = z.object({
   class: entryClassSchema,
   name: z.string(),
   order: z.number(),
-  headers: z.array(addHeaderParamsSchema),
 });
 
 export const createItemEntryParamsSchema = z.object({
@@ -100,9 +105,39 @@ export const createItemEntryParamsSchema = z.object({
   name: z.string(),
   order: z.number(),
   protocol: entryProtocolSchema.optional(),
-  queryParams: z.array(addQueryParamParamsSchema),
-  pathParams: z.array(addPathParamParamsSchema),
   headers: z.array(addHeaderParamsSchema),
+  pathParams: z.array(addPathParamParamsSchema),
+  queryParams: z.array(addQueryParamParamsSchema),
+});
+
+export const headerInfoSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  value: jsonValueSchema,
+  description: z.string().optional(),
+  disabled: z.boolean(),
+  propagate: z.boolean(),
+  order: z.number().optional(),
+});
+
+export const pathParamInfoSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  value: jsonValueSchema,
+  description: z.string().optional(),
+  disabled: z.boolean(),
+  propagate: z.boolean(),
+  order: z.number().optional(),
+});
+
+export const queryParamInfoSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  value: jsonValueSchema,
+  description: z.string().optional(),
+  disabled: z.boolean(),
+  propagate: z.boolean(),
+  order: z.number().optional(),
 });
 
 export const updateHeaderParamsSchema = z.object({
@@ -114,15 +149,6 @@ export const updateHeaderParamsSchema = z.object({
   options: headerParamOptionsSchema.optional(),
 });
 
-export const updateQueryParamParamsSchema = z.object({
-  id: z.string(),
-  name: z.string().optional(),
-  value: changeJsonValueSchema.optional(),
-  order: z.number().optional(),
-  desc: changeStringSchema.optional(),
-  options: queryParamOptionsSchema.optional(),
-});
-
 export const updatePathParamParamsSchema = z.object({
   id: z.string(),
   name: z.string().optional(),
@@ -132,6 +158,15 @@ export const updatePathParamParamsSchema = z.object({
   options: pathParamOptionsSchema.optional(),
 });
 
+export const updateQueryParamParamsSchema = z.object({
+  id: z.string(),
+  name: z.string().optional(),
+  value: changeJsonValueSchema.optional(),
+  order: z.number().optional(),
+  desc: changeStringSchema.optional(),
+  options: queryParamOptionsSchema.optional(),
+});
+
 export const updateItemEntryParamsSchema = z.object({
   id: z.string(),
   path: z.string().optional(),
@@ -139,13 +174,13 @@ export const updateItemEntryParamsSchema = z.object({
   order: z.number().optional(),
   expanded: z.boolean().optional(),
   protocol: entryProtocolSchema.optional(),
-  queryParamsToAdd: z.array(addQueryParamParamsSchema),
-  queryParamsToUpdate: z.array(updateQueryParamParamsSchema),
-  queryParamsToRemove: z.array(z.string()),
-  pathParamsToAdd: z.array(addPathParamParamsSchema),
-  pathParamsToUpdate: z.array(updatePathParamParamsSchema),
-  pathParamsToRemove: z.array(z.string()),
   headersToAdd: z.array(addHeaderParamsSchema),
   headersToUpdate: z.array(updateHeaderParamsSchema),
   headersToRemove: z.array(z.string()),
+  pathParamsToAdd: z.array(addPathParamParamsSchema),
+  pathParamsToUpdate: z.array(updatePathParamParamsSchema),
+  pathParamsToRemove: z.array(z.string()),
+  queryParamsToAdd: z.array(addQueryParamParamsSchema),
+  queryParamsToUpdate: z.array(updateQueryParamParamsSchema),
+  queryParamsToRemove: z.array(z.string()),
 });

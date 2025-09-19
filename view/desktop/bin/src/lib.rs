@@ -232,12 +232,13 @@ pub async fn run<R: TauriRuntime>() {
             commands::update_environment_group,
             commands::batch_update_environment_group,
             //
-            // Collection
+            // Project
             //
             commands::create_project_entry,
             commands::delete_project_entry,
             commands::stream_project_entries,
             commands::update_project_entry,
+            commands::describe_project_entry,
             commands::batch_update_project_entry,
             commands::batch_create_project_entry,
             commands::execute_vcs_operation,

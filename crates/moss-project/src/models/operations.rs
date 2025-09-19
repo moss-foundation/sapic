@@ -4,10 +4,11 @@ use ts_rs::TS;
 use validator::Validate;
 
 use crate::models::{
-    primitives::EntryId,
+    primitives::{EntryClass, EntryId, EntryKind, EntryProtocol},
     types::{
         AfterUpdateDirEntryDescription, AfterUpdateItemEntryDescription, CreateDirEntryParams,
-        CreateItemEntryParams, UpdateDirEntryParams, UpdateItemEntryParams, VcsOperation,
+        CreateItemEntryParams, HeaderInfo, PathParamInfo, QueryParamInfo, UpdateDirEntryParams,
+        UpdateItemEntryParams, VcsOperation,
     },
 };
 // ########################################################
@@ -159,6 +160,26 @@ pub enum StreamEntriesInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct StreamEntriesOutput {
     // TODO: count total?
+}
+
+// ########################################################
+// ###                  Describe Entry                  ###
+// ########################################################
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct DescribeEntryOutput {
+    // TODO: Separate dir/item entry?
+    pub name: String,
+    pub class: EntryClass,
+    pub kind: EntryKind,
+    pub protocol: Option<EntryProtocol>,
+    pub url: Option<String>,
+    pub headers: Vec<HeaderInfo>,
+    pub path_params: Vec<PathParamInfo>,
+    pub query_params: Vec<QueryParamInfo>,
 }
 
 /// @category Operation

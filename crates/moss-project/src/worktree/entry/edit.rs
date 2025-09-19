@@ -21,11 +21,17 @@ pub(crate) struct EntryEditing {
     fs: Arc<dyn FileSystem>,
     state: RwLock<EntryEditingState>,
     path_tx: watch::Sender<Arc<Path>>,
+    // We need to know if it's item or dir config
+    config_filename: String,
 }
 
 impl EntryEditing {
-    pub fn new(fs: Arc<dyn FileSystem>, path_tx: watch::Sender<Arc<Path>>) -> Self {
-        let path = path_tx.borrow().clone();
+    pub fn new(
+        fs: Arc<dyn FileSystem>,
+        path_tx: watch::Sender<Arc<Path>>,
+        file_name: &str,
+    ) -> Self {
+        let path = path_tx.borrow().clone().into();
 
         Self {
             fs,
@@ -34,6 +40,7 @@ impl EntryEditing {
                 path,
                 edit: JsonEdit::new(),
             }),
+            config_filename: file_name.to_string(),
         }
     }
 
@@ -97,7 +104,7 @@ impl EntryEditing {
     ) -> joinerror::Result<()> {
         let mut state_lock = self.state.write().await;
 
-        let abs_path = abs_path.join(&state_lock.path);
+        let abs_path = abs_path.join(&state_lock.path.join(&self.config_filename));
         let rdr = self
             .fs
             .open_file(&abs_path)

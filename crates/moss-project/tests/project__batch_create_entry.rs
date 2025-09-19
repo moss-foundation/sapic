@@ -31,7 +31,6 @@ async fn batch_create_entry_success() {
         path: entry_base_path.clone(),
         name: outer_name.clone(),
         order: 0,
-        headers: vec![],
     });
     let inner_input = BatchCreateEntryKind::Item(CreateItemEntryParams {
         class: EntryClass::Endpoint,
