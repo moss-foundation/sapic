@@ -133,6 +133,26 @@ pub async fn stream_project_entries<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn describe_project_entry<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: Window<R>,
+    project_id: ProjectId,
+    input: DescribeEntryInput,
+    options: Options,
+) -> TauriResult<DescribeEntryOutput> {
+    super::with_project_timeout(
+        ctx.inner(),
+        app,
+        project_id,
+        options,
+        |ctx, _, project| async move { project.describe_entry(&ctx, input).await },
+    )
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn execute_vcs_operation<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
