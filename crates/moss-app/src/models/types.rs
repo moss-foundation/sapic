@@ -12,6 +12,18 @@ use ts_rs::TS;
 use crate::models::primitives::*;
 
 /// @category Type
+#[derive(Debug, Clone, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct UpdateConfigurationParams {
+    pub key: String,
+    #[ts(type = "JsonValue")]
+    pub value: JsonValue,
+    pub target: ConfigurationTarget,
+}
+
+/// @category Type
 #[derive(Debug, Serialize, Clone, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
@@ -71,27 +83,6 @@ pub struct ColorThemeInfo {
     pub is_default: Option<bool>,
 }
 
-// State
-
-/// @category Type
-#[derive(Debug, Deserialize, Serialize, Clone, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct Preferences {
-    pub theme: Option<ColorThemeInfo>,
-    pub locale: Option<LocaleInfo>,
-}
-
-/// @category Type
-#[derive(Debug, Deserialize, Serialize, Clone, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
-pub struct Defaults {
-    pub theme: ColorThemeInfo,
-    pub locale: LocaleInfo,
-}
-
 // #########################################################
 // ###                      Log                          ###
 // #########################################################
@@ -148,7 +139,7 @@ pub struct WorkspaceInfo {
     pub id: WorkspaceId,
     pub name: String,
     pub last_opened_at: Option<i64>,
-    // pub active: bool,
+
     #[serde(skip)]
     #[ts(skip)]
     pub abs_path: Arc<Path>,

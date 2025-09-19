@@ -11,7 +11,21 @@ use validator::Validate;
 use crate::models::{primitives::*, types::*};
 
 // #########################################################
-// ###                    Profile                      ###
+// ###                    Profile                        ###
+// #########################################################
+
+/// @category Operation
+#[derive(Debug, Clone, Deserialize, TS, Validate)]
+#[ts(optional_fields)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct UpdateConfigurationInput {
+    #[serde(flatten)]
+    pub inner: UpdateConfigurationParams,
+}
+
+// #########################################################
+// ###                    Profile                        ###
 // #########################################################
 
 /// @category Operation
@@ -131,6 +145,7 @@ pub struct DescribeAppOutput {
     pub configuration: Configuration,
 }
 
+// DEPRECATED
 /// @category Operation
 #[derive(Debug, Deserialize, Serialize, Clone, TS)]
 #[serde(rename_all = "camelCase")]
@@ -139,6 +154,7 @@ pub struct SetColorThemeInput {
     pub theme_info: ColorThemeInfo,
 }
 
+// DEPRECATED
 /// @category Operation
 #[derive(Debug, Deserialize, Serialize, Clone, TS)]
 #[serde(rename_all = "camelCase")]

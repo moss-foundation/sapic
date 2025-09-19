@@ -1,8 +1,29 @@
 use serde::Serialize;
+use serde_json::Value as JsonValue;
+use std::collections::HashMap;
 use ts_rs::TS;
 
-use crate::models::primitives::ThemeId;
+use crate::models::{primitives::ThemeId, types::LogEntryInfo};
 
+/// @category Event
+#[derive(Debug, Serialize, Clone, TS)]
+#[serde(rename = "OnDidChangeConfiguration")]
+#[ts(export, export_to = "events.ts")]
+pub struct OnDidChangeConfigurationForFrontend {
+    pub affected_keys: Vec<String>,
+    pub changes: HashMap<String, JsonValue>,
+}
+
+/// @category Event
+#[derive(Debug, Serialize, Clone, TS)]
+#[serde(rename = "OnDidAppendLogEntry")]
+#[ts(export, export_to = "events.ts")]
+pub struct OnDidAppendLogEntryForFrontend {
+    #[serde(flatten)]
+    pub inner: LogEntryInfo,
+}
+
+// DEPRECATED
 /// @category Event
 #[derive(Debug, Serialize, Clone, TS)]
 #[serde(rename_all = "camelCase")]

@@ -22,12 +22,10 @@ moss_keyring.workspace = true
 moss_logging.workspace = true
 moss_id_macro.workspace = true
 moss_bindingutils.workspace = true
-moss_git.workspace = true
+moss_edit.workspace = true
 
-git2.workspace = true
+json-patch.workspace = true
 joinerror.workspace = true
-futures.workspace = true
-anyhow.workspace = true
 tauri = { workspace = true, features = ["wry"] }
 thiserror.workspace = true
 tokio = { workspace = true, features = ["time", "rt-multi-thread"] }
@@ -43,11 +41,10 @@ derive_more = { workspace = true, features = ["deref", "deref_mut", "from"] }
 validator.workspace = true
 async-trait.workspace = true
 nanoid.workspace = true
-reqwest = { workspace = true, features = ["json"] }
-dotenv.workspace = true
-oauth2 = { workspace = true, features = ["ureq"] }
 
 [dev-dependencies]
+futures.workspace = true
+reqwest = { workspace = true, features = ["json"] }
 tauri = { workspace = true, features = ["test"] }
 moss_testutils.workspace = true
 moss_applib = { workspace = true, features = ["test"] }

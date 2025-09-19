@@ -2,6 +2,7 @@ use moss_applib::AppRuntime;
 
 use crate::{app::App, models::operations::SetLocaleInput};
 
+// DEPRECATED
 impl<R: AppRuntime> App<R> {
     pub async fn set_locale(
         &self,

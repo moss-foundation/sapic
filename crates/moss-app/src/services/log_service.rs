@@ -521,7 +521,7 @@ impl<R: AppRuntime> LogService<R> {
 
 #[cfg(test)]
 mod tests {
-    use crate::constants::LOGGING_SERVICE_CHANNEL;
+    use crate::constants::ON_DID_APPEND_LOG_ENTRY_CHANNEL;
     use moss_applib::mock::MockAppRuntime;
     use moss_fs::RealFileSystem;
     use moss_logging::app;
@@ -560,7 +560,7 @@ mod tests {
 
         {
             let counter = counter.clone();
-            mock_app.listen(LOGGING_SERVICE_CHANNEL, move |_| {
+            mock_app.listen(ON_DID_APPEND_LOG_ENTRY_CHANNEL, move |_| {
                 counter.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
             });
         }

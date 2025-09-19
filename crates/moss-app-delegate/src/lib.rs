@@ -1,3 +1,4 @@
+use derive_more::Deref;
 use moss_activity_broadcaster::{AppActivityBroadcaster, ToLocation, handle::ActivityHandle};
 use moss_applib::AppRuntime;
 use std::path::PathBuf;
@@ -9,7 +10,9 @@ pub mod broadcast {
 
 /// A wrapper around `tauri::AppHandle` that provides
 /// access to the global state and actions.
+#[derive(Deref)]
 pub struct AppDelegate<R: AppRuntime> {
+    #[deref]
     app_handle: TauriAppHandle<R::EventLoop>,
     broadcaster: AppActivityBroadcaster<R::EventLoop>,
 }

@@ -31,7 +31,8 @@ use std::{cell::LazyCell, collections::HashMap, path::Path, sync::Arc};
 use tokio::sync::RwLock;
 
 use crate::{
-    OnDidChangeProfile, dirs,
+    dirs,
+    internal::events::OnDidChangeProfile,
     profile::{
         PROFILES_REGISTRY_FILE, ProfileRegistryAccount, ProfileRegistryAccountMetadata,
         ProfileRegistryItem,
