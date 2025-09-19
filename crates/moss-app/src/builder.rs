@@ -13,6 +13,7 @@ use crate::{
     configuration::ConfigurationService,
     dirs,
     internal::events::{OnDidChangeConfiguration, OnDidChangeProfile, OnDidChangeWorkspace},
+    logging::LogService,
     services::{profile_service::ProfileService, *},
 };
 

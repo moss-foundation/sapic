@@ -2,14 +2,9 @@ mod rollinglog_writer;
 mod taurilog_writer;
 
 use crate::{
+    logging::{constants::*, rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter},
     models::types::{LogEntryInfo, LogItemSourceInfo},
-    services::{
-        log_service::{
-            constants::*, rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter,
-        },
-        session_service::SessionId,
-        storage_service::StorageService,
-    },
+    services::{session_service::SessionId, storage_service::StorageService},
 };
 use chrono::{DateTime, NaiveDate, NaiveDateTime};
 use joinerror::Error;
@@ -42,7 +37,6 @@ pub mod constants {
     pub const SESSION_SCOPE: &'static str = "session";
 
     pub const TIMESTAMP_FORMAT: &'static str = "%Y-%m-%dT%H:%M:%S%.3f%z";
-
     pub const FILE_TIMESTAMP_FORMAT: &'static str = "%Y_%m_%dT%H_%M_%S%z";
 }
 

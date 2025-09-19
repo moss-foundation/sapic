@@ -17,6 +17,7 @@ use crate::{
     ActiveWorkspace,
     command::CommandCallback,
     configuration::ConfigurationService,
+    logging::LogService,
     models::types::{ColorThemeInfo, LocaleInfo},
     services::{profile_service::ProfileService, session_service::SessionId, *},
 };
