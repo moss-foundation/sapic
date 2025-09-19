@@ -11,6 +11,7 @@ use crate::models::{primitives::ThemeId, types::LogEntryInfo};
 #[ts(export, export_to = "events.ts")]
 pub struct OnDidChangeConfigurationForFrontend {
     pub affected_keys: Vec<String>,
+    #[ts(type = "{ [key: string]: JsonValue }")]
     pub changes: HashMap<String, JsonValue>,
 }
 
@@ -23,7 +24,7 @@ pub struct OnDidAppendLogEntryForFrontend {
     pub inner: LogEntryInfo,
 }
 
-// DEPRECATED
+/// DEPRECATED
 /// @category Event
 #[derive(Debug, Serialize, Clone, TS)]
 #[serde(rename_all = "camelCase")]
