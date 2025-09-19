@@ -1,15 +1,40 @@
 pub mod entry;
 
+use crate::{
+    constants::{self, DIR_CONFIG_FILENAME},
+    dirs,
+    errors::{ErrorAlreadyExists, ErrorInvalidInput, ErrorNotFound},
+    models::{
+        primitives::{EntryId, EntryKind, EntryProtocol, HeaderId, PathParamId, QueryParamId},
+        types::http::{
+            AddHeaderParams, AddPathParamParams, AddQueryParamParams, UpdateHeaderParams,
+            UpdatePathParamParams, UpdateQueryParamParams,
+        },
+    },
+    services::storage_service::StorageService,
+    storage::segments,
+    worktree::entry::{
+        Entry, EntryDescription,
+        edit::EntryEditing,
+        model::{
+            EntryModel, HeaderParamSpec, HeaderParamSpecOptions, PathParamSpec,
+            PathParamSpecOptions, QueryParamSpec, QueryParamSpecOptions,
+        },
+    },
+};
 use anyhow::anyhow;
 use joinerror::OptionExt;
-use json_patch::{PatchOperation, ReplaceOperation, jsonptr::PointerBuf};
+use json_patch::{
+    AddOperation, PatchOperation, RemoveOperation, ReplaceOperation, jsonptr::PointerBuf,
+};
 use moss_app_delegate::{AppDelegate, broadcast::ToLocation};
 use moss_applib::AppRuntime;
+use moss_bindingutils::primitives::{ChangeJsonValue, ChangeString};
 use moss_common::{continue_if_err, continue_if_none};
 use moss_db::primitives::AnyValue;
 use moss_edit::json::EditOptions;
 use moss_fs::{CreateOptions, FileSystem, RemoveOptions, desanitize_path, utils::SanitizedPath};
-use moss_hcl::HclResultExt;
+use moss_hcl::{HclResultExt, json_to_hcl};
 use moss_logging::session;
 use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_text::sanitized::{desanitize, sanitize};
@@ -23,16 +48,6 @@ use std::{
 use tokio::{
     fs,
     sync::{RwLock, mpsc, watch},
-};
-
-use crate::{
-    constants::{self, DIR_CONFIG_FILENAME},
-    dirs,
-    errors::{ErrorAlreadyExists, ErrorInvalidInput, ErrorNotFound},
-    models::primitives::{EntryId, EntryKind, EntryProtocol},
-    services::storage_service::StorageService,
-    storage::segments,
-    worktree::entry::{Entry, EntryDescription, edit::EntryEditing, model::EntryModel},
 };
 
 trait IsRoot {
@@ -64,20 +79,18 @@ pub(crate) struct ModifyParams {
     pub expanded: Option<bool>,
     pub order: Option<isize>,
     pub path: Option<PathBuf>,
-    //
-    //TODO: Add
-    //
-    // pub query_params_to_add: Vec<AddQueryParamParams>,
-    // pub query_params_to_update: Vec<UpdateQueryParamParams>,
-    // pub query_params_to_remove: Vec<QueryParamId>,
 
-    // pub path_params_to_add: Vec<AddPathParamParams>,
-    // pub path_params_to_update: Vec<UpdatePathParamParams>,
-    // pub path_params_to_remove: Vec<PathParamId>,
+    pub headers_to_add: Vec<AddHeaderParams>,
+    pub headers_to_update: Vec<UpdateHeaderParams>,
+    pub headers_to_remove: Vec<HeaderId>,
 
-    // pub headers_to_add: Vec<AddHeaderParams>,
-    // pub headers_to_update: Vec<UpdateHeaderParams>,
-    // pub headers_to_remove: Vec<HeaderParamId>,
+    pub query_params_to_add: Vec<AddQueryParamParams>,
+    pub query_params_to_update: Vec<UpdateQueryParamParams>,
+    pub query_params_to_remove: Vec<QueryParamId>,
+
+    pub path_params_to_add: Vec<AddPathParamParams>,
+    pub path_params_to_update: Vec<UpdatePathParamParams>,
+    pub path_params_to_remove: Vec<PathParamId>,
 }
 
 #[derive(Default)]
@@ -593,7 +606,7 @@ impl<R: AppRuntime> Worktree<R> {
                 .await?;
         }
 
-        self.patch_item_entry(entry, &params).await?;
+        self.patch_item_entry(ctx, entry, &params).await?;
 
         let path = entry.path_rx.borrow().clone();
         drop(state_lock);
@@ -635,45 +648,6 @@ impl<R: AppRuntime> Worktree<R> {
         txn.commit()?;
 
         Ok(path)
-    }
-
-    async fn patch_item_entry(
-        &self,
-        entry: &mut Entry,
-        params: &ModifyParams,
-    ) -> joinerror::Result<()> {
-        let mut on_edit_success = Vec::new();
-        let mut patches = Vec::new();
-
-        if let Some(protocol) = &params.protocol {
-            patches.push((
-                PatchOperation::Replace(ReplaceOperation {
-                    path: unsafe { PointerBuf::new_unchecked("/url/protocol") },
-                    value: JsonValue::String(protocol.to_string()),
-                }),
-                EditOptions {
-                    create_missing_segments: false,
-                    ignore_if_not_exists: false,
-                },
-            ));
-            on_edit_success.push(|| {
-                entry.protocol = Some(protocol.clone());
-            });
-        }
-
-        // TODO: handle other stuff
-
-        if patches.is_empty() {
-            return Ok(());
-        }
-
-        entry.edit.edit(&self.abs_path, &patches).await?;
-
-        for mut callback in on_edit_success {
-            callback();
-        }
-
-        Ok(())
     }
 }
 
@@ -725,6 +699,733 @@ impl<R: AppRuntime> Worktree<R> {
                 },
             )
             .await?;
+
+        Ok(())
+    }
+
+    async fn patch_item_entry(
+        &self,
+        ctx: &R::AsyncContext,
+        entry: &mut Entry,
+        params: &ModifyParams,
+    ) -> joinerror::Result<()> {
+        let mut on_edit_success = Vec::new();
+        let mut patches = Vec::new();
+
+        if let Some(protocol) = &params.protocol {
+            patches.push((
+                PatchOperation::Replace(ReplaceOperation {
+                    path: unsafe { PointerBuf::new_unchecked("/url/protocol") },
+                    value: JsonValue::String(protocol.to_string()),
+                }),
+                EditOptions {
+                    create_missing_segments: false,
+                    ignore_if_not_exists: false,
+                },
+            ));
+            on_edit_success.push(|| {
+                entry.protocol = Some(protocol.clone());
+            });
+        }
+
+        // TODO:
+
+        for header_to_add in &params.headers_to_add {
+            let id = HeaderId::new();
+            let id_str = id.to_string();
+
+            let value = continue_if_err!(json_to_hcl(&header_to_add.value), |err| {
+                session::error!("failed to convert value expression: {}", err)
+            });
+
+            let spec = HeaderParamSpec {
+                name: header_to_add.name.clone(),
+                value,
+                description: header_to_add.desc.clone(),
+                options: HeaderParamSpecOptions {
+                    disabled: header_to_add.options.disabled,
+                    propagate: header_to_add.options.propagate,
+                },
+            };
+
+            let spec_value = continue_if_err!(serde_json::to_value(&spec), |err| {
+                session::error!(format!("failed to convert header spec to json: {}", err))
+            });
+
+            patches.push((
+                PatchOperation::Add(AddOperation {
+                    path: unsafe { PointerBuf::new_unchecked(format!("/header/{}", id_str)) },
+                    value: spec_value,
+                }),
+                EditOptions {
+                    create_missing_segments: true,
+                    ignore_if_not_exists: false,
+                },
+            ));
+
+            // We don't want database failure to stop the function
+            let mut txn = continue_if_err!(self.storage.begin_write(ctx).await, |err| {
+                session::error!(format!("failed to start a write transaction: {}", err))
+            });
+
+            continue_if_err!(
+                self.storage
+                    .put_entry_header_order_txn(ctx, &mut txn, &entry.id, &id, header_to_add.order)
+                    .await,
+                |err| { session::error!(format!("failed to put header order: {}", err)) }
+            );
+            continue_if_err!(txn.commit(), |err| {
+                session::error!(format!("failed to commit transaction: {}", err))
+            });
+        }
+
+        for header_to_update in &params.headers_to_update {
+            if let Some(new_name) = &header_to_update.name {
+                patches.push((
+                    PatchOperation::Replace(ReplaceOperation {
+                        path: unsafe {
+                            PointerBuf::new_unchecked(format!(
+                                "/header/{}/name",
+                                header_to_update.id
+                            ))
+                        },
+                        value: JsonValue::String(new_name.clone()),
+                    }),
+                    EditOptions {
+                        create_missing_segments: false,
+                        ignore_if_not_exists: false,
+                    },
+                ));
+            }
+
+            match &header_to_update.value {
+                Some(ChangeJsonValue::Update(value)) => {
+                    patches.push((
+                        PatchOperation::Replace(ReplaceOperation {
+                            path: unsafe {
+                                PointerBuf::new_unchecked(format!(
+                                    "/header/{}/value",
+                                    header_to_update.id
+                                ))
+                            },
+                            value: value.clone(),
+                        }),
+                        EditOptions {
+                            // Raise an error if the variable does not exist
+                            create_missing_segments: false,
+                            ignore_if_not_exists: false,
+                        },
+                    ));
+                }
+                Some(ChangeJsonValue::Remove) => {
+                    patches.push((
+                        PatchOperation::Remove(RemoveOperation {
+                            path: unsafe {
+                                PointerBuf::new_unchecked(format!(
+                                    "/header/{}/value",
+                                    header_to_update.id
+                                ))
+                            },
+                        }),
+                        EditOptions {
+                            // Raise an error if the variable does not exist
+                            create_missing_segments: false,
+                            ignore_if_not_exists: false,
+                        },
+                    ));
+                }
+                _ => {}
+            }
+
+            match &header_to_update.desc {
+                Some(ChangeString::Update(value)) => {
+                    patches.push((
+                        PatchOperation::Replace(ReplaceOperation {
+                            path: unsafe {
+                                PointerBuf::new_unchecked(format!(
+                                    "/header/{}/description",
+                                    header_to_update.id
+                                ))
+                            },
+                            value: JsonValue::String(value.clone()),
+                        }),
+                        EditOptions {
+                            // Raise an error if the variable does not exist
+                            create_missing_segments: false,
+                            ignore_if_not_exists: false,
+                        },
+                    ));
+                }
+                Some(ChangeString::Remove) => {
+                    patches.push((
+                        PatchOperation::Remove(RemoveOperation {
+                            path: unsafe {
+                                PointerBuf::new_unchecked(format!(
+                                    "/header/{}/description",
+                                    header_to_update.id
+                                ))
+                            },
+                        }),
+                        EditOptions {
+                            // Raise an error if the variable does not exist
+                            create_missing_segments: false,
+                            ignore_if_not_exists: false,
+                        },
+                    ));
+                }
+                _ => {}
+            }
+
+            if let Some(options) = &header_to_update.options {
+                let options = HeaderParamSpecOptions {
+                    disabled: options.disabled,
+                    propagate: options.propagate,
+                };
+                let options_value = continue_if_err!(serde_json::to_value(options), |err| {
+                    session::error!(format!("failed to convert options value: {}", err))
+                });
+
+                patches.push((
+                    PatchOperation::Replace(ReplaceOperation {
+                        path: unsafe {
+                            PointerBuf::new_unchecked(format!(
+                                "/header/{}/options",
+                                header_to_update.id
+                            ))
+                        },
+                        value: options_value,
+                    }),
+                    EditOptions {
+                        create_missing_segments: false,
+                        ignore_if_not_exists: false,
+                    },
+                ));
+            }
+
+            if let Some(order) = header_to_update.order {
+                // We don't want database failure to stop the function
+                let mut txn = continue_if_err!(self.storage.begin_write(ctx).await, |err| {
+                    session::error!(format!("failed to start a write transaction: {}", err))
+                });
+
+                continue_if_err!(
+                    self.storage
+                        .put_entry_header_order_txn(
+                            ctx,
+                            &mut txn,
+                            &entry.id,
+                            &header_to_update.id,
+                            order
+                        )
+                        .await,
+                    |err| { session::error!(format!("failed to put header order: {}", err)) }
+                );
+                continue_if_err!(txn.commit(), |err| {
+                    session::error!(format!("failed to commit transaction: {}", err))
+                });
+            }
+        }
+
+        for id in &params.headers_to_remove {
+            patches.push((
+                PatchOperation::Remove(RemoveOperation {
+                    path: unsafe { PointerBuf::new_unchecked(format!("/header/{}", id)) },
+                }),
+                EditOptions {
+                    create_missing_segments: false,
+                    ignore_if_not_exists: false,
+                },
+            ));
+
+            // We don't want database failure to stop the function
+            let mut txn = continue_if_err!(self.storage.begin_write(ctx).await, |err| {
+                session::error!(format!("failed to start a write transaction: {}", err))
+            });
+
+            continue_if_err!(
+                self.storage
+                    .remove_entry_header_order_txn(ctx, &mut txn, &entry.id, &id,)
+                    .await,
+                |err| { session::error!(format!("failed to remove header order: {}", err)) }
+            );
+            continue_if_err!(txn.commit(), |err| {
+                session::error!(format!("failed to commit transaction: {}", err))
+            });
+        }
+
+        for path_param_to_add in &params.path_params_to_add {
+            let id = PathParamId::new();
+            let id_str = id.to_string();
+
+            let value = continue_if_err!(json_to_hcl(&path_param_to_add.value), |err| {
+                session::error!("failed to convert value expression: {}", err)
+            });
+
+            let spec = PathParamSpec {
+                name: path_param_to_add.name.clone(),
+                value,
+                description: path_param_to_add.desc.clone(),
+                options: PathParamSpecOptions {
+                    disabled: path_param_to_add.options.disabled,
+                    propagate: path_param_to_add.options.propagate,
+                },
+            };
+
+            let spec_value = continue_if_err!(serde_json::to_value(&spec), |err| {
+                session::error!(format!(
+                    "failed to convert path param spec to json: {}",
+                    err
+                ))
+            });
+
+            patches.push((
+                PatchOperation::Add(AddOperation {
+                    path: unsafe { PointerBuf::new_unchecked(format!("/path_param/{}", id_str)) },
+                    value: spec_value,
+                }),
+                EditOptions {
+                    create_missing_segments: true,
+                    ignore_if_not_exists: false,
+                },
+            ));
+
+            // We don't want database failure to stop the function
+            let mut txn = continue_if_err!(self.storage.begin_write(ctx).await, |err| {
+                session::error!(format!("failed to start a write transaction: {}", err))
+            });
+
+            continue_if_err!(
+                self.storage
+                    .put_entry_path_param_order_txn(
+                        ctx,
+                        &mut txn,
+                        &entry.id,
+                        &id,
+                        path_param_to_add.order
+                    )
+                    .await,
+                |err| { session::error!(format!("failed to put path param order: {}", err)) }
+            );
+            continue_if_err!(txn.commit(), |err| {
+                session::error!(format!("failed to commit transaction: {}", err))
+            });
+        }
+
+        for path_param_to_update in &params.path_params_to_update {
+            if let Some(new_name) = &path_param_to_update.name {
+                patches.push((
+                    PatchOperation::Replace(ReplaceOperation {
+                        path: unsafe {
+                            PointerBuf::new_unchecked(format!(
+                                "/path_param/{}/name",
+                                path_param_to_update.id
+                            ))
+                        },
+                        value: JsonValue::String(new_name.clone()),
+                    }),
+                    EditOptions {
+                        create_missing_segments: false,
+                        ignore_if_not_exists: false,
+                    },
+                ));
+            }
+
+            match &path_param_to_update.value {
+                Some(ChangeJsonValue::Update(value)) => {
+                    patches.push((
+                        PatchOperation::Replace(ReplaceOperation {
+                            path: unsafe {
+                                PointerBuf::new_unchecked(format!(
+                                    "/path_param/{}/value",
+                                    path_param_to_update.id
+                                ))
+                            },
+                            value: value.clone(),
+                        }),
+                        EditOptions {
+                            // Raise an error if the variable does not exist
+                            create_missing_segments: false,
+                            ignore_if_not_exists: false,
+                        },
+                    ));
+                }
+                Some(ChangeJsonValue::Remove) => {
+                    patches.push((
+                        PatchOperation::Remove(RemoveOperation {
+                            path: unsafe {
+                                PointerBuf::new_unchecked(format!(
+                                    "/path_param/{}/value",
+                                    path_param_to_update.id
+                                ))
+                            },
+                        }),
+                        EditOptions {
+                            // Raise an error if the variable does not exist
+                            create_missing_segments: false,
+                            ignore_if_not_exists: false,
+                        },
+                    ));
+                }
+                _ => {}
+            }
+
+            match &path_param_to_update.desc {
+                Some(ChangeString::Update(value)) => {
+                    patches.push((
+                        PatchOperation::Replace(ReplaceOperation {
+                            path: unsafe {
+                                PointerBuf::new_unchecked(format!(
+                                    "/path_param/{}/description",
+                                    path_param_to_update.id
+                                ))
+                            },
+                            value: JsonValue::String(value.clone()),
+                        }),
+                        EditOptions {
+                            // Raise an error if the variable does not exist
+                            create_missing_segments: false,
+                            ignore_if_not_exists: false,
+                        },
+                    ));
+                }
+                Some(ChangeString::Remove) => {
+                    patches.push((
+                        PatchOperation::Remove(RemoveOperation {
+                            path: unsafe {
+                                PointerBuf::new_unchecked(format!(
+                                    "/path_param/{}/description",
+                                    path_param_to_update.id
+                                ))
+                            },
+                        }),
+                        EditOptions {
+                            // Raise an error if the variable does not exist
+                            create_missing_segments: false,
+                            ignore_if_not_exists: false,
+                        },
+                    ));
+                }
+                _ => {}
+            }
+
+            if let Some(options) = &path_param_to_update.options {
+                let options = PathParamSpecOptions {
+                    disabled: options.disabled,
+                    propagate: options.propagate,
+                };
+                let options_value = continue_if_err!(serde_json::to_value(options), |err| {
+                    session::error!(format!("failed to convert options value: {}", err))
+                });
+
+                patches.push((
+                    PatchOperation::Replace(ReplaceOperation {
+                        path: unsafe {
+                            PointerBuf::new_unchecked(format!(
+                                "/path_param/{}/options",
+                                path_param_to_update.id
+                            ))
+                        },
+                        value: options_value,
+                    }),
+                    EditOptions {
+                        create_missing_segments: false,
+                        ignore_if_not_exists: false,
+                    },
+                ));
+            }
+
+            if let Some(order) = path_param_to_update.order {
+                // We don't want database failure to stop the function
+                let mut txn = continue_if_err!(self.storage.begin_write(ctx).await, |err| {
+                    session::error!(format!("failed to start a write transaction: {}", err))
+                });
+
+                continue_if_err!(
+                    self.storage
+                        .put_entry_path_param_order_txn(
+                            ctx,
+                            &mut txn,
+                            &entry.id,
+                            &path_param_to_update.id,
+                            order
+                        )
+                        .await,
+                    |err| { session::error!(format!("failed to put path param order: {}", err)) }
+                );
+                continue_if_err!(txn.commit(), |err| {
+                    session::error!(format!("failed to commit transaction: {}", err))
+                });
+            }
+        }
+
+        for id in &params.path_params_to_remove {
+            patches.push((
+                PatchOperation::Remove(RemoveOperation {
+                    path: unsafe { PointerBuf::new_unchecked(format!("/path_param/{}", id)) },
+                }),
+                EditOptions {
+                    create_missing_segments: false,
+                    ignore_if_not_exists: false,
+                },
+            ));
+
+            // We don't want database failure to stop the function
+            let mut txn = continue_if_err!(self.storage.begin_write(ctx).await, |err| {
+                session::error!(format!("failed to start a write transaction: {}", err))
+            });
+
+            continue_if_err!(
+                self.storage
+                    .remove_entry_path_param_order_txn(ctx, &mut txn, &entry.id, &id,)
+                    .await,
+                |err| { session::error!(format!("failed to remove path param order: {}", err)) }
+            );
+            continue_if_err!(txn.commit(), |err| {
+                session::error!(format!("failed to commit transaction: {}", err))
+            });
+        }
+
+        for query_param_to_add in &params.query_params_to_add {
+            let id = QueryParamId::new();
+            let id_str = id.to_string();
+
+            let value = continue_if_err!(json_to_hcl(&query_param_to_add.value), |err| {
+                session::error!("failed to convert value expression: {}", err)
+            });
+
+            let spec = QueryParamSpec {
+                name: query_param_to_add.name.clone(),
+                value,
+                description: query_param_to_add.desc.clone(),
+                options: QueryParamSpecOptions {
+                    disabled: query_param_to_add.options.disabled,
+                    propagate: query_param_to_add.options.propagate,
+                },
+            };
+
+            let spec_value = continue_if_err!(serde_json::to_value(&spec), |err| {
+                session::error!(format!(
+                    "failed to convert query param spec to json: {}",
+                    err
+                ))
+            });
+
+            patches.push((
+                PatchOperation::Add(AddOperation {
+                    path: unsafe { PointerBuf::new_unchecked(format!("/query_param/{}", id_str)) },
+                    value: spec_value,
+                }),
+                EditOptions {
+                    create_missing_segments: true,
+                    ignore_if_not_exists: false,
+                },
+            ));
+
+            // We don't want database failure to stop the function
+            let mut txn = continue_if_err!(self.storage.begin_write(ctx).await, |err| {
+                session::error!(format!("failed to start a write transaction: {}", err))
+            });
+
+            continue_if_err!(
+                self.storage
+                    .put_entry_query_param_order_txn(
+                        ctx,
+                        &mut txn,
+                        &entry.id,
+                        &id,
+                        query_param_to_add.order
+                    )
+                    .await,
+                |err| { session::error!(format!("failed to put query param order: {}", err)) }
+            );
+            continue_if_err!(txn.commit(), |err| {
+                session::error!(format!("failed to commit transaction: {}", err))
+            });
+        }
+
+        for query_param_to_update in &params.query_params_to_update {
+            if let Some(new_name) = &query_param_to_update.name {
+                patches.push((
+                    PatchOperation::Replace(ReplaceOperation {
+                        path: unsafe {
+                            PointerBuf::new_unchecked(format!(
+                                "/query_param/{}/name",
+                                query_param_to_update.id
+                            ))
+                        },
+                        value: JsonValue::String(new_name.clone()),
+                    }),
+                    EditOptions {
+                        create_missing_segments: false,
+                        ignore_if_not_exists: false,
+                    },
+                ));
+            }
+
+            match &query_param_to_update.value {
+                Some(ChangeJsonValue::Update(value)) => {
+                    patches.push((
+                        PatchOperation::Replace(ReplaceOperation {
+                            path: unsafe {
+                                PointerBuf::new_unchecked(format!(
+                                    "/query_param/{}/value",
+                                    query_param_to_update.id
+                                ))
+                            },
+                            value: value.clone(),
+                        }),
+                        EditOptions {
+                            // Raise an error if the variable does not exist
+                            create_missing_segments: false,
+                            ignore_if_not_exists: false,
+                        },
+                    ));
+                }
+                Some(ChangeJsonValue::Remove) => {
+                    patches.push((
+                        PatchOperation::Remove(RemoveOperation {
+                            path: unsafe {
+                                PointerBuf::new_unchecked(format!(
+                                    "/query_param/{}/value",
+                                    query_param_to_update.id
+                                ))
+                            },
+                        }),
+                        EditOptions {
+                            // Raise an error if the variable does not exist
+                            create_missing_segments: false,
+                            ignore_if_not_exists: false,
+                        },
+                    ));
+                }
+                _ => {}
+            }
+
+            match &query_param_to_update.desc {
+                Some(ChangeString::Update(value)) => {
+                    patches.push((
+                        PatchOperation::Replace(ReplaceOperation {
+                            path: unsafe {
+                                PointerBuf::new_unchecked(format!(
+                                    "/query_param/{}/description",
+                                    query_param_to_update.id
+                                ))
+                            },
+                            value: JsonValue::String(value.clone()),
+                        }),
+                        EditOptions {
+                            // Raise an error if the variable does not exist
+                            create_missing_segments: false,
+                            ignore_if_not_exists: false,
+                        },
+                    ));
+                }
+                Some(ChangeString::Remove) => {
+                    patches.push((
+                        PatchOperation::Remove(RemoveOperation {
+                            path: unsafe {
+                                PointerBuf::new_unchecked(format!(
+                                    "/query_param/{}/description",
+                                    query_param_to_update.id
+                                ))
+                            },
+                        }),
+                        EditOptions {
+                            // Raise an error if the variable does not exist
+                            create_missing_segments: false,
+                            ignore_if_not_exists: false,
+                        },
+                    ));
+                }
+                _ => {}
+            }
+
+            if let Some(options) = &query_param_to_update.options {
+                let options = QueryParamSpecOptions {
+                    disabled: options.disabled,
+                    propagate: options.propagate,
+                };
+                let options_value = continue_if_err!(serde_json::to_value(options), |err| {
+                    session::error!(format!("failed to convert options value: {}", err))
+                });
+
+                patches.push((
+                    PatchOperation::Replace(ReplaceOperation {
+                        path: unsafe {
+                            PointerBuf::new_unchecked(format!(
+                                "/query_param/{}/options",
+                                query_param_to_update.id
+                            ))
+                        },
+                        value: options_value,
+                    }),
+                    EditOptions {
+                        create_missing_segments: false,
+                        ignore_if_not_exists: false,
+                    },
+                ));
+            }
+
+            if let Some(order) = query_param_to_update.order {
+                // We don't want database failure to stop the function
+                let mut txn = continue_if_err!(self.storage.begin_write(ctx).await, |err| {
+                    session::error!(format!("failed to start a write transaction: {}", err))
+                });
+
+                continue_if_err!(
+                    self.storage
+                        .put_entry_query_param_order_txn(
+                            ctx,
+                            &mut txn,
+                            &entry.id,
+                            &query_param_to_update.id,
+                            order
+                        )
+                        .await,
+                    |err| { session::error!(format!("failed to put query param order: {}", err)) }
+                );
+                continue_if_err!(txn.commit(), |err| {
+                    session::error!(format!("failed to commit transaction: {}", err))
+                });
+            }
+        }
+
+        for id in &params.query_params_to_remove {
+            patches.push((
+                PatchOperation::Remove(RemoveOperation {
+                    path: unsafe { PointerBuf::new_unchecked(format!("/query_param/{}", id)) },
+                }),
+                EditOptions {
+                    create_missing_segments: false,
+                    ignore_if_not_exists: false,
+                },
+            ));
+
+            // We don't want database failure to stop the function
+            let mut txn = continue_if_err!(self.storage.begin_write(ctx).await, |err| {
+                session::error!(format!("failed to start a write transaction: {}", err))
+            });
+
+            continue_if_err!(
+                self.storage
+                    .remove_entry_query_param_order_txn(ctx, &mut txn, &entry.id, id,)
+                    .await,
+                |err| { session::error!(format!("failed to remove query param order: {}", err)) }
+            );
+            continue_if_err!(txn.commit(), |err| {
+                session::error!(format!("failed to commit transaction: {}", err))
+            });
+        }
+
+        if patches.is_empty() {
+            return Ok(());
+        }
+
+        entry.edit.edit(&self.abs_path, &patches).await?;
+
+        for mut callback in on_edit_success {
+            callback();
+        }
 
         Ok(())
     }

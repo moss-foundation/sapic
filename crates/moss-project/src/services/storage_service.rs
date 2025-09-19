@@ -5,11 +5,14 @@ use moss_storage::{
     CollectionStorage,
     collection_storage::CollectionStorageImpl,
     primitives::segkey::SegKeyBuf,
-    storage::operations::{GetItem, ListByPrefix, TransactionalPutItem},
+    storage::operations::{GetItem, ListByPrefix, TransactionalPutItem, TransactionalRemoveItem},
 };
 use std::{collections::HashMap, path::Path, sync::Arc};
 
-use crate::{models::primitives::EntryId, storage::segments};
+use crate::{
+    models::primitives::{EntryId, HeaderId, PathParamId, QueryParamId},
+    storage::segments,
+};
 
 pub struct StorageService<R: AppRuntime> {
     storage: Arc<dyn CollectionStorage<R::AsyncContext>>,
@@ -43,6 +46,117 @@ impl<R: AppRuntime> StorageService<R> {
             AnyValue::serialize(&order)?,
         )
         .await?;
+
+        Ok(())
+    }
+
+    pub async fn put_entry_header_order_txn(
+        &self,
+        ctx: &R::AsyncContext,
+        txn: &mut Transaction,
+        entry_id: &EntryId,
+        header_id: &HeaderId,
+        order: isize,
+    ) -> Result<()> {
+        let store = self.storage.resource_store();
+
+        let segkey = segments::segkey_entry_header_order(entry_id, header_id);
+        TransactionalPutItem::put_with_context(
+            store.as_ref(),
+            ctx,
+            txn,
+            segkey,
+            AnyValue::serialize(&order)?,
+        )
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn remove_entry_header_order_txn(
+        &self,
+        ctx: &R::AsyncContext,
+        txn: &mut Transaction,
+        entry_id: &EntryId,
+        header_id: &HeaderId,
+    ) -> Result<()> {
+        let store = self.storage.resource_store();
+        let segkey = segments::segkey_entry_header_order(entry_id, header_id);
+        TransactionalRemoveItem::remove(store.as_ref(), ctx, txn, segkey).await?;
+
+        Ok(())
+    }
+
+    pub async fn put_entry_path_param_order_txn(
+        &self,
+        ctx: &R::AsyncContext,
+        txn: &mut Transaction,
+        entry_id: &EntryId,
+        path_param_id: &PathParamId,
+        order: isize,
+    ) -> Result<()> {
+        let store = self.storage.resource_store();
+
+        let segkey = segments::segkey_entry_path_param_order(entry_id, path_param_id);
+        TransactionalPutItem::put_with_context(
+            store.as_ref(),
+            ctx,
+            txn,
+            segkey,
+            AnyValue::serialize(&order)?,
+        )
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn remove_entry_path_param_order_txn(
+        &self,
+        ctx: &R::AsyncContext,
+        txn: &mut Transaction,
+        entry_id: &EntryId,
+        path_param_id: &PathParamId,
+    ) -> Result<()> {
+        let store = self.storage.resource_store();
+        let segkey = segments::segkey_entry_path_param_order(entry_id, path_param_id);
+        TransactionalRemoveItem::remove(store.as_ref(), ctx, txn, segkey).await?;
+
+        Ok(())
+    }
+
+    pub async fn put_entry_query_param_order_txn(
+        &self,
+        ctx: &R::AsyncContext,
+        txn: &mut Transaction,
+        entry_id: &EntryId,
+        query_param_id: &QueryParamId,
+        order: isize,
+    ) -> Result<()> {
+        let store = self.storage.resource_store();
+
+        let segkey = segments::segkey_entry_query_param_order(entry_id, query_param_id);
+        TransactionalPutItem::put_with_context(
+            store.as_ref(),
+            ctx,
+            txn,
+            segkey,
+            AnyValue::serialize(&order)?,
+        )
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn remove_entry_query_param_order_txn(
+        &self,
+        ctx: &R::AsyncContext,
+        txn: &mut Transaction,
+        entry_id: &EntryId,
+        query_param_id: &QueryParamId,
+    ) -> Result<()> {
+        let store = self.storage.resource_store();
+        let segkey = segments::segkey_entry_query_param_order(entry_id, query_param_id);
+        TransactionalRemoveItem::remove(store.as_ref(), ctx, txn, segkey).await?;
 
         Ok(())
     }

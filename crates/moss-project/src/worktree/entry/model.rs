@@ -1,11 +1,18 @@
 use hcl::Expression;
 use indexmap::IndexMap;
-use moss_hcl::{Block, LabeledBlock};
+use moss_hcl::{Block, LabeledBlock, deserialize_expression, expression, serialize_expression};
 use serde::{Deserialize, Serialize};
 
 use crate::models::primitives::{
     EntryClass, EntryId, EntryProtocol, HeaderId, PathParamId, QueryParamId,
 };
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EntryMetadataSpec {
+    pub id: EntryId,
+    #[serde(rename = "_class")]
+    pub class: EntryClass,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UrlDetails {
@@ -14,7 +21,7 @@ pub struct UrlDetails {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct HeaderParamOptions {
+pub struct HeaderParamSpecOptions {
     pub disabled: bool,
     pub propagate: bool,
 }
@@ -22,27 +29,18 @@ pub struct HeaderParamOptions {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HeaderParamSpec {
     pub name: String,
+    #[serde(
+        serialize_with = "serialize_expression",
+        deserialize_with = "deserialize_expression",
+        skip_serializing_if = "expression::is_null"
+    )]
     pub value: Expression,
     pub description: Option<String>,
-    pub options: HeaderParamOptions,
+    pub options: HeaderParamSpecOptions,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct QueryParamOptions {
-    pub disabled: bool,
-    pub propagate: bool,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct QueryParamSpec {
-    pub name: String,
-    pub value: Expression,
-    pub description: Option<String>,
-    pub options: QueryParamOptions,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PathParamOptions {
+pub struct PathParamSpecOptions {
     pub disabled: bool,
     pub propagate: bool,
 }
@@ -50,16 +48,33 @@ pub struct PathParamOptions {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PathParamSpec {
     pub name: String,
+    #[serde(
+        serialize_with = "serialize_expression",
+        deserialize_with = "deserialize_expression",
+        skip_serializing_if = "expression::is_null"
+    )]
     pub value: Expression,
     pub description: Option<String>,
-    pub options: PathParamOptions,
+    pub options: PathParamSpecOptions,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EntryMetadataSpec {
-    pub id: EntryId,
-    #[serde(rename = "_class")]
-    pub class: EntryClass,
+pub struct QueryParamSpecOptions {
+    pub disabled: bool,
+    pub propagate: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct QueryParamSpec {
+    pub name: String,
+    #[serde(
+        serialize_with = "serialize_expression",
+        deserialize_with = "deserialize_expression",
+        skip_serializing_if = "expression::is_null"
+    )]
+    pub value: Expression,
+    pub description: Option<String>,
+    pub options: QueryParamSpecOptions,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -115,8 +130,7 @@ mod tests {
 
     use super::*;
 
-    #[test]
-    fn test_item() {
+    fn test_item() -> EntryModel {
         let model = EntryModel {
             metadata: Block::new(EntryMetadataSpec {
                 id: EntryId::new(),
@@ -131,7 +145,7 @@ mod tests {
                         name: "Content-Type".to_string(),
                         value: HclExpression::String("application/json".to_string()),
                         description: Some("The content type of the request".to_string()),
-                        options: HeaderParamOptions {
+                        options: HeaderParamSpecOptions {
                             disabled: false,
                             propagate: true
                         },
@@ -140,7 +154,7 @@ mod tests {
                         name: "Accept".to_string(),
                         value: HclExpression::String("application/json, application/xml".to_string()),
                         description: Some("The accept type of the request".to_string()),
-                        options: HeaderParamOptions {
+                        options: HeaderParamSpecOptions {
                             disabled: false,
                             propagate: true
                     },
@@ -151,7 +165,7 @@ mod tests {
                     name: "path_param1".to_string(),
                     value: Expression::String("bar".to_string()),
                     description: None,
-                    options: PathParamOptions {
+                    options: PathParamSpecOptions {
                         disabled: false,
                         propagate: true,
                     },
@@ -162,7 +176,7 @@ mod tests {
                     name: "query_param1".to_string(),
                     value: HclExpression::String("foo".to_string()),
                     description: None,
-                    options: QueryParamOptions {
+                    options: QueryParamSpecOptions {
                         disabled: false,
                         propagate: true
                     }
@@ -171,13 +185,22 @@ mod tests {
         };
 
         let str = hcl::to_string(&model).unwrap();
-        println!("{}", str);
+        //println!("{}", str);
 
         let json = serde_json::to_string(&model).unwrap();
-        println!("{}", json);
+        //println!("{}", json);
 
-        let new = hcl::from_str::<EntryModel>(&str).unwrap();
+        let model = hcl::from_str::<EntryModel>(&str).unwrap();
 
-        println!("{:#?}", new);
+        model
+    }
+
+    #[test]
+    fn test_edit() {
+        let model = test_item();
+        let model_string = hcl::to_string(&model).unwrap();
+
+        let value: serde_json::Value = hcl::from_str(&model_string).unwrap();
+        dbg!(&value);
     }
 }
