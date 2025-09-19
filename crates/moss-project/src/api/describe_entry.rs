@@ -1,15 +1,16 @@
+use moss_applib::AppRuntime;
+
 use crate::{
     Project,
-    models::operations::{DescribeEntryInput, DescribeEntryOutput},
+    models::{operations::DescribeEntryOutput, primitives::EntryId},
 };
-use moss_applib::AppRuntime;
 
 impl<R: AppRuntime> Project<R> {
     pub async fn describe_entry(
         &self,
         ctx: &R::AsyncContext,
-        input: DescribeEntryInput,
+        entry_id: EntryId,
     ) -> joinerror::Result<DescribeEntryOutput> {
-        self.worktree().await.describe_entry(ctx, &input.id).await
+        self.worktree().await.describe_entry(ctx, &entry_id).await
     }
 }

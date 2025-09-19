@@ -32,10 +32,6 @@ export const deleteEntryOutputSchema = z.object({
   id: z.string(),
 });
 
-export const describeEntryInputSchema = z.object({
-  id: z.string(),
-});
-
 export const executeVcsOperationOutputSchema = z.record(z.string(), z.never());
 
 export const streamEntriesInputSchema = z.union([

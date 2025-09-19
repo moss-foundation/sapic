@@ -6,7 +6,7 @@ use moss_bindingutils::primitives::{ChangeJsonValue, ChangeString};
 use moss_project::{
     dirs,
     models::{
-        operations::{CreateEntryInput, DescribeEntryInput, UpdateEntryInput},
+        operations::{CreateEntryInput, UpdateEntryInput},
         primitives::{EntryClass, EntryId, EntryProtocol},
         types::{
             CreateItemEntryParams, UpdateDirEntryParams, UpdateItemEntryParams,
@@ -417,10 +417,7 @@ async fn update_item_entry_endpoint_headers() {
 
     let id = project.create_entry(&ctx, input).await.unwrap().id;
 
-    let desc = project
-        .describe_entry(&ctx, DescribeEntryInput { id: id.clone() })
-        .await
-        .unwrap();
+    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
     let header_id = desc.headers.first().unwrap().id.clone();
 
     // Test update header
@@ -458,10 +455,7 @@ async fn update_item_entry_endpoint_headers() {
         .await
         .unwrap();
 
-    let desc = project
-        .describe_entry(&ctx, DescribeEntryInput { id: id.clone() })
-        .await
-        .unwrap();
+    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
     let header = desc.headers.first().unwrap();
 
     assert_eq!(header.name, "2");
@@ -497,10 +491,7 @@ async fn update_item_entry_endpoint_headers() {
         .await
         .unwrap();
 
-    let desc = project
-        .describe_entry(&ctx, DescribeEntryInput { id: id.clone() })
-        .await
-        .unwrap();
+    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
     assert!(desc.headers.is_empty());
 
     // Test add header
@@ -537,10 +528,7 @@ async fn update_item_entry_endpoint_headers() {
         .await
         .unwrap();
 
-    let desc = project
-        .describe_entry(&ctx, DescribeEntryInput { id: id.clone() })
-        .await
-        .unwrap();
+    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
     assert_eq!(desc.headers.len(), 1);
     let header = desc.headers.first().unwrap();
     assert_eq!(header.name, "3");
@@ -580,10 +568,7 @@ async fn update_item_entry_endpoint_path_params() {
 
     let id = project.create_entry(&ctx, input).await.unwrap().id;
 
-    let desc = project
-        .describe_entry(&ctx, DescribeEntryInput { id: id.clone() })
-        .await
-        .unwrap();
+    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
     let path_param_id = desc.path_params.first().unwrap().id.clone();
 
     // Test update header
@@ -621,10 +606,7 @@ async fn update_item_entry_endpoint_path_params() {
         .await
         .unwrap();
 
-    let desc = project
-        .describe_entry(&ctx, DescribeEntryInput { id: id.clone() })
-        .await
-        .unwrap();
+    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
     let path_param = desc.path_params.first().unwrap();
 
     assert_eq!(path_param.name, "2");
@@ -659,10 +641,7 @@ async fn update_item_entry_endpoint_path_params() {
         .await
         .unwrap();
 
-    let desc = project
-        .describe_entry(&ctx, DescribeEntryInput { id: id.clone() })
-        .await
-        .unwrap();
+    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
     assert!(desc.path_params.is_empty());
 
     // Test add header
@@ -699,10 +678,7 @@ async fn update_item_entry_endpoint_path_params() {
         .await
         .unwrap();
 
-    let desc = project
-        .describe_entry(&ctx, DescribeEntryInput { id: id.clone() })
-        .await
-        .unwrap();
+    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
     assert_eq!(desc.path_params.len(), 1);
     let path_param = desc.path_params.first().unwrap();
     assert_eq!(path_param.name, "3");
@@ -742,10 +718,7 @@ async fn update_item_entry_endpoint_query_params() {
 
     let id = project.create_entry(&ctx, input).await.unwrap().id;
 
-    let desc = project
-        .describe_entry(&ctx, DescribeEntryInput { id: id.clone() })
-        .await
-        .unwrap();
+    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
     let query_param_id = desc.query_params.first().unwrap().id.clone();
 
     // Test update header
@@ -783,10 +756,7 @@ async fn update_item_entry_endpoint_query_params() {
         .await
         .unwrap();
 
-    let desc = project
-        .describe_entry(&ctx, DescribeEntryInput { id: id.clone() })
-        .await
-        .unwrap();
+    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
     let query_param = desc.query_params.first().unwrap();
 
     assert_eq!(query_param.name, "2");
@@ -821,10 +791,7 @@ async fn update_item_entry_endpoint_query_params() {
         .await
         .unwrap();
 
-    let desc = project
-        .describe_entry(&ctx, DescribeEntryInput { id: id.clone() })
-        .await
-        .unwrap();
+    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
     assert!(desc.query_params.is_empty());
 
     // Test add header
@@ -861,10 +828,7 @@ async fn update_item_entry_endpoint_query_params() {
         .await
         .unwrap();
 
-    let desc = project
-        .describe_entry(&ctx, DescribeEntryInput { id: id.clone() })
-        .await
-        .unwrap();
+    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
     assert_eq!(desc.query_params.len(), 1);
     let query_param = desc.query_params.first().unwrap();
     assert_eq!(query_param.name, "3");

@@ -5,7 +5,7 @@ use moss_project::{
     constants, dirs,
     errors::ErrorAlreadyExists,
     models::{
-        operations::{CreateEntryInput, DescribeEntryInput},
+        operations::CreateEntryInput,
         primitives::{EntryClass, EntryKind, EntryProtocol},
         types::{
             CreateDirEntryParams, CreateItemEntryParams,
@@ -230,10 +230,7 @@ async fn create_item_entry_endpoint() {
 
     // Verify the config is correctly set
 
-    let desc = project
-        .describe_entry(&ctx, DescribeEntryInput { id })
-        .await
-        .unwrap();
+    let desc = project.describe_entry(&ctx, id).await.unwrap();
 
     assert_eq!(desc.name, entry_name);
     assert_eq!(desc.class, EntryClass::Endpoint);

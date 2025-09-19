@@ -165,13 +165,6 @@ pub struct StreamEntriesOutput {
 // ########################################################
 // ###                  Describe Entry                  ###
 // ########################################################
-/// @category Operation
-#[derive(Clone, Debug, Deserialize, TS)]
-#[ts(export, export_to = "operations.ts")]
-pub struct DescribeEntryInput {
-    #[ts(as = "String")]
-    pub id: EntryId,
-}
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]

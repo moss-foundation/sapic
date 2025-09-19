@@ -70,11 +70,6 @@ export type DeleteEntryInput = { id: string };
  */
 export type DeleteEntryOutput = { id: string };
 
-/**
- * @category Operation
- */
-export type DescribeEntryInput = { id: string };
-
 export type DescribeEntryOutput = {
   name: string;
   class: EntryClass;
