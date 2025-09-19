@@ -700,7 +700,6 @@ impl<R: AppRuntime> Worktree<R> {
                 query_params: vec![],
             });
         } else if item_config_path.exists() {
-            dbg!(&item_config_path);
             let entry_keys = self
                 .storage
                 .get_entry_keys(ctx, id)
