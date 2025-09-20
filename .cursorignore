@@ -1,0 +1,8 @@
+**/target
+**/tests/data/
+
+.idea
+.vscode
+
+/node_modules/
+/logs/
