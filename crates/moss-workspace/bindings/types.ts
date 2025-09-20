@@ -201,6 +201,16 @@ export type ImportProjectSource =
 /**
  * @category Type
  */
+export type Layouts = {
+  editor: EditorPartStateInfo | null;
+  sidebar: SidebarPartStateInfo | null;
+  panel: PanelPartStateInfo | null;
+  activitybar: ActivitybarPartStateInfo | null;
+};
+
+/**
+ * @category Type
+ */
 export type PanelPartStateInfo = { size: number; visible: boolean };
 
 /**

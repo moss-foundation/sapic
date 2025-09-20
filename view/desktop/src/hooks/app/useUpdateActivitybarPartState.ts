@@ -1,7 +1,7 @@
 import { DEBOUNCE_TIME } from "@/constants/tanstackConfig";
 import { USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { AppService } from "@/lib/services/app";
-import { ActivitybarPartStateInfo, DescribeStateOutput } from "@repo/moss-workspace";
+import { ActivitybarPartStateInfo, DescribeWorkspaceOutput } from "@repo/moss-workspace";
 import { asyncDebounce } from "@tanstack/react-pacer/async-debouncer";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -23,7 +23,8 @@ export const useUpdateActivitybarPartState = () => {
       await debouncedSetActivitybarPartState(activitybar);
     },
     onSuccess: (_, variables) => {
-      queryClient.setQueryData<DescribeStateOutput>([USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY], (old) => {
+      queryClient.setQueryData<DescribeWorkspaceOutput>([USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY], (old) => {
+        if (!old) return old;
         return {
           ...old,
           activitybar: variables,

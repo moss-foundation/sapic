@@ -1,7 +1,7 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { DescribeAppOutput, OpenWorkspaceInput, OpenWorkspaceOutput } from "@repo/moss-app";
-import { DescribeStateOutput } from "@repo/moss-workspace";
+import { DescribeWorkspaceOutput } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_DESCRIBE_APP_QUERY_KEY } from "../app/useDescribeApp";
@@ -57,10 +57,10 @@ export const useOpenWorkspace = () => {
       // Pre-fetch the new workspace state to ensure it's ready
       queryClient.prefetchQuery({
         queryKey: [USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY, workspaceId],
-        queryFn: async (): Promise<DescribeStateOutput> => {
+        queryFn: async (): Promise<DescribeWorkspaceOutput> => {
           // Small delay to ensure backend workspace switch is complete
           await new Promise((resolve) => setTimeout(resolve, 50));
-          const result = await invokeTauriIpc<DescribeStateOutput>("describe_workspace_state");
+          const result = await invokeTauriIpc<DescribeWorkspaceOutput>("describe_workspace");
           if (result.status === "error") {
             throw new Error(String(result.error));
           }

@@ -9,6 +9,7 @@ import type {
   EntryChange,
   EnvironmentGroup,
   ImportProjectSource,
+  Layouts,
   PanelPartStateInfo,
   SidebarPartStateInfo,
   UpdateEnvironmentGroupParams,
@@ -138,12 +139,7 @@ export type DescribeProjectOutput = {
 /**
  * @category Operation
  */
-export type DescribeStateOutput = {
-  editor?: EditorPartStateInfo;
-  sidebar?: SidebarPartStateInfo;
-  panel?: PanelPartStateInfo;
-  activitybar?: ActivitybarPartStateInfo;
-};
+export type DescribeWorkspaceOutput = { layouts: Layouts };
 
 /**
  * @category Operation
@@ -229,6 +225,16 @@ export type UpdateEnvironmentOutput = { id: string };
 /**
  * @category Operation
  */
+export type UpdateLayoutInput = {
+  editor?: EditorPartStateInfo;
+  sidebar?: SidebarPartStateInfo;
+  panel?: PanelPartStateInfo;
+  activitybar?: ActivitybarPartStateInfo;
+};
+
+/**
+ * @category Operation
+ */
 export type UpdateProjectInput = {
   id: string;
   name?: string;
@@ -244,6 +250,7 @@ export type UpdateProjectInput = {
 export type UpdateProjectOutput = { id: string };
 
 /**
+ * DEPRECATED
  * @category Operation
  */
 export type UpdateStateInput =

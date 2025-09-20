@@ -252,6 +252,13 @@ export const environmentInfoSchema = z.object({
   variables: z.array(variableInfoSchema),
 });
 
+export const layoutsSchema = z.object({
+  editor: editorPartStateInfoSchema.nullable(),
+  sidebar: sidebarPartStateInfoSchema.nullable(),
+  panel: panelPartStateInfoSchema.nullable(),
+  activitybar: activitybarPartStateInfoSchema.nullable(),
+});
+
 export const updateEnvironmentParamsSchema = z.object({
   id: z.string(),
   name: z.string().optional(),
