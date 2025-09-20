@@ -162,6 +162,17 @@ pub struct EnvironmentInfo {
     pub variables: Vec<VariableInfo>,
 }
 
+/// @category Type
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct Layouts {
+    pub editor: Option<EditorPartStateInfo>,
+    pub sidebar: Option<SidebarPartStateInfo>,
+    pub panel: Option<PanelPartStateInfo>,
+    pub activitybar: Option<ActivitybarPartStateInfo>,
+}
+
 // ------------------------------------------------------------
 // Activitybar Part State
 // ------------------------------------------------------------

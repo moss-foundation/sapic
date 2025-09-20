@@ -1,12 +1,15 @@
 use moss_applib::AppRuntime;
 
-use crate::{Workspace, models::operations::DescribeStateOutput};
+use crate::{
+    Workspace,
+    models::{operations::DescribeWorkspaceOutput, types::Layouts},
+};
 
 impl<R: AppRuntime> Workspace<R> {
-    pub async fn describe_state(
+    pub async fn describe_workspace(
         &self,
         ctx: &R::AsyncContext,
-    ) -> joinerror::Result<DescribeStateOutput> {
+    ) -> joinerror::Result<DescribeWorkspaceOutput> {
         // HACK: cache here is a temporary solution
         let mut cache = self.storage_service.get_layout_cache(ctx).await?;
 
@@ -17,11 +20,13 @@ impl<R: AppRuntime> Workspace<R> {
             .layout_service
             .get_activitybar_layout_state(&mut cache)?;
 
-        Ok(DescribeStateOutput {
-            editor: editor_state,
-            sidebar: Some(sidebar_state),
-            panel: Some(panel_state),
-            activitybar: Some(activitybar_state),
+        Ok(DescribeWorkspaceOutput {
+            layouts: Layouts {
+                editor: editor_state,
+                sidebar: Some(sidebar_state),
+                panel: Some(panel_state),
+                activitybar: Some(activitybar_state),
+            },
         })
     }
 }

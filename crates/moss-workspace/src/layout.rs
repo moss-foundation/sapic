@@ -126,6 +126,7 @@ const PANEL_DEFAULTS: PanelPartDefaults = PanelPartDefaults {
 // ------------------------------------
 
 #[derive(Debug)]
+#[allow(unused)] // Will be deleted soon
 pub struct EditorPartDefaults {}
 
 #[derive(Debug)]
@@ -142,7 +143,7 @@ impl<R: AppRuntime> LayoutService<R> {
         Self { storage }
     }
 
-    pub(crate) async fn put_editor_layout_state(
+    pub(crate) async fn update_editor_layout(
         &self,
         ctx: &R::AsyncContext,
         state: EditorPartStateInfo,
@@ -161,7 +162,7 @@ impl<R: AppRuntime> LayoutService<R> {
         Ok(())
     }
 
-    pub(crate) async fn put_sidebar_layout_state(
+    pub(crate) async fn update_sidebar_layout(
         &self,
         ctx: &R::AsyncContext,
         state: SidebarPartStateInfo,
@@ -173,7 +174,7 @@ impl<R: AppRuntime> LayoutService<R> {
         Ok(())
     }
 
-    pub(crate) async fn put_panel_layout_state(
+    pub(crate) async fn update_panel_layout(
         &self,
         ctx: &R::AsyncContext,
         state: PanelPartStateInfo,
@@ -185,7 +186,7 @@ impl<R: AppRuntime> LayoutService<R> {
         Ok(())
     }
 
-    pub(crate) async fn put_activitybar_layout_state(
+    pub(crate) async fn update_activitybar_layout(
         &self,
         ctx: &R::AsyncContext,
         state: ActivitybarPartStateInfo,

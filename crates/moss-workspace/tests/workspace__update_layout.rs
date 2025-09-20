@@ -4,7 +4,7 @@ pub mod shared;
 use moss_storage::storage::operations::GetItem;
 use moss_workspace::{
     models::{
-        operations::UpdateStateInput,
+        operations::UpdateLayoutInput,
         primitives::SidebarPosition,
         types::{PanelPartStateInfo, SidebarPartStateInfo},
     },
@@ -23,19 +23,24 @@ async fn update_state_sidebar_part() {
     };
 
     let update_state_result = workspace
-        .update_state(
+        .update_layout(
             &ctx,
-            UpdateStateInput::UpdateSidebarPartState(sidebar_state.clone()),
+            UpdateLayoutInput {
+                editor: None,
+                sidebar: Some(sidebar_state.clone()),
+                panel: None,
+                activitybar: None,
+            },
         )
         .await;
 
     let _ = update_state_result.unwrap();
 
     // Verify the state was stored correctly via describe_state
-    let describe_state_output = workspace.describe_state(&ctx).await.unwrap();
-    assert!(describe_state_output.sidebar.is_some());
+    let describe_state_output = workspace.describe_workspace(&ctx).await.unwrap();
+    assert!(describe_state_output.layouts.sidebar.is_some());
     assert_eq!(
-        describe_state_output.sidebar.as_ref().unwrap(),
+        describe_state_output.layouts.sidebar.as_ref().unwrap(),
         &sidebar_state
     );
 
@@ -88,18 +93,23 @@ async fn update_state_panel_part() {
     };
 
     let update_state_result = workspace
-        .update_state(
+        .update_layout(
             &ctx,
-            UpdateStateInput::UpdatePanelPartState(panel_state.clone()),
+            UpdateLayoutInput {
+                editor: None,
+                sidebar: None,
+                panel: Some(panel_state.clone()),
+                activitybar: None,
+            },
         )
         .await;
 
     let _ = update_state_result.unwrap();
 
     // Verify the state was stored correctly via describe_state
-    let describe_state_output = workspace.describe_state(&ctx).await.unwrap();
-    assert!(describe_state_output.panel.is_some());
-    assert_eq!(describe_state_output.panel.unwrap(), panel_state);
+    let describe_state_output = workspace.describe_workspace(&ctx).await.unwrap();
+    assert!(describe_state_output.layouts.panel.is_some());
+    assert_eq!(describe_state_output.layouts.panel.unwrap(), panel_state);
 
     // Verify the database is updated with individual keys
     let item_store = workspace.db().item_store();
@@ -142,25 +152,38 @@ async fn update_state_multiple_updates() {
 
     // Update states
     let update_sidebar_result = workspace
-        .update_state(
+        .update_layout(
             &ctx,
-            UpdateStateInput::UpdateSidebarPartState(sidebar_state.clone()),
+            UpdateLayoutInput {
+                editor: None,
+                sidebar: Some(sidebar_state.clone()),
+                panel: None,
+                activitybar: None,
+            },
         )
         .await;
     let _ = update_sidebar_result.unwrap();
 
     let update_panel_result = workspace
-        .update_state(
+        .update_layout(
             &ctx,
-            UpdateStateInput::UpdatePanelPartState(panel_state.clone()),
+            UpdateLayoutInput {
+                editor: None,
+                sidebar: None,
+                panel: Some(panel_state.clone()),
+                activitybar: None,
+            },
         )
         .await;
     let _ = update_panel_result.unwrap();
 
     // Verify all states were stored correctly via describe_state
-    let describe_state_output = workspace.describe_state(&ctx).await.unwrap();
-    assert_eq!(describe_state_output.sidebar.unwrap(), sidebar_state);
-    assert_eq!(describe_state_output.panel.unwrap(), panel_state);
+    let describe_state_output = workspace.describe_workspace(&ctx).await.unwrap();
+    assert_eq!(
+        describe_state_output.layouts.sidebar.unwrap(),
+        sidebar_state
+    );
+    assert_eq!(describe_state_output.layouts.panel.unwrap(), panel_state);
 
     // Verify the database is updated with individual keys
     let item_store = workspace.db().item_store();
@@ -226,20 +249,25 @@ async fn update_state_multiple_updates() {
     };
 
     let update_sidebar_result = workspace
-        .update_state(
+        .update_layout(
             &ctx,
-            UpdateStateInput::UpdateSidebarPartState(updated_sidebar_state.clone()),
+            UpdateLayoutInput {
+                editor: None,
+                sidebar: Some(updated_sidebar_state.clone()),
+                panel: None,
+                activitybar: None,
+            },
         )
         .await;
     let _ = update_sidebar_result.unwrap();
 
     // Verify only sidebar state was updated via describe_state
-    let describe_state_output = workspace.describe_state(&ctx).await.unwrap();
+    let describe_state_output = workspace.describe_workspace(&ctx).await.unwrap();
     assert_eq!(
-        describe_state_output.sidebar.as_ref().unwrap(),
+        describe_state_output.layouts.sidebar.as_ref().unwrap(),
         &updated_sidebar_state
     );
-    assert_eq!(describe_state_output.panel.unwrap(), panel_state);
+    assert_eq!(describe_state_output.layouts.panel.unwrap(), panel_state);
 
     // Verify the database reflects the updated sidebar values
     let updated_sidebar_size: f64 = GetItem::get(
@@ -299,9 +327,14 @@ async fn update_state_overwrite_existing() {
     };
 
     let update_sidebar_result = workspace
-        .update_state(
+        .update_layout(
             &ctx,
-            UpdateStateInput::UpdateSidebarPartState(initial_sidebar_state),
+            UpdateLayoutInput {
+                editor: None,
+                sidebar: Some(initial_sidebar_state),
+                panel: None,
+                activitybar: None,
+            },
         )
         .await;
     let _ = update_sidebar_result.unwrap();
@@ -338,17 +371,22 @@ async fn update_state_overwrite_existing() {
     };
 
     let update_sidebar_result = workspace
-        .update_state(
+        .update_layout(
             &ctx,
-            UpdateStateInput::UpdateSidebarPartState(updated_sidebar_state.clone()),
+            UpdateLayoutInput {
+                editor: None,
+                sidebar: Some(updated_sidebar_state.clone()),
+                panel: None,
+                activitybar: None,
+            },
         )
         .await;
     let _ = update_sidebar_result.unwrap();
 
     // Verify state was overwritten via describe_state
-    let describe_state_output = workspace.describe_state(&ctx).await.unwrap();
+    let describe_state_output = workspace.describe_workspace(&ctx).await.unwrap();
     assert_eq!(
-        describe_state_output.sidebar.as_ref().unwrap(),
+        describe_state_output.layouts.sidebar.as_ref().unwrap(),
         &updated_sidebar_state
     );
 

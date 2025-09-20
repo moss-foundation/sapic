@@ -114,7 +114,6 @@ pub struct UpdateProjectInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateProjectOutput {
-    #[ts(type = "string")]
     pub id: ProjectId,
 }
 
@@ -142,7 +141,6 @@ pub struct BatchUpdateProjectOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteProjectInput {
-    #[ts(type = "string")]
     pub id: ProjectId,
 }
 
@@ -151,7 +149,6 @@ pub struct DeleteProjectInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteProjectOutput {
-    #[ts(type = "string")]
     pub id: ProjectId,
 
     #[serde(skip)]
@@ -164,7 +161,6 @@ pub struct DeleteProjectOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct ArchiveProjectInput {
-    #[ts(type = "string")]
     pub id: ProjectId,
 }
 
@@ -173,7 +169,6 @@ pub struct ArchiveProjectInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct ArchiveProjectOutput {
-    #[ts(type = "string")]
     pub id: ProjectId,
 }
 
@@ -182,7 +177,6 @@ pub struct ArchiveProjectOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct UnarchiveProjectInput {
-    #[ts(type = "string")]
     pub id: ProjectId,
 }
 
@@ -191,7 +185,6 @@ pub struct UnarchiveProjectInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct UnarchiveProjectOutput {
-    #[ts(type = "string")]
     pub id: ProjectId,
 }
 
@@ -200,7 +193,6 @@ pub struct UnarchiveProjectOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DescribeEnvironmentInput {
-    #[ts(type = "string")]
     pub id: ProjectId,
 }
 
@@ -214,17 +206,27 @@ pub struct DescribeEnvironmentOutput {
 }
 
 /// @category Operation
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct DescribeWorkspaceOutput {
+    pub layouts: Layouts,
+}
+
+/// @category Operation
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
-pub struct DescribeStateOutput {
+pub struct UpdateLayoutInput {
     pub editor: Option<EditorPartStateInfo>,
     pub sidebar: Option<SidebarPartStateInfo>,
     pub panel: Option<PanelPartStateInfo>,
     pub activitybar: Option<ActivitybarPartStateInfo>,
 }
 
+/// DEPRECATED
 /// @category Operation
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[serde(rename_all = "camelCase")]

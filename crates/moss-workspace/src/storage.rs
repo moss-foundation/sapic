@@ -46,6 +46,7 @@ impl<R: AppRuntime> StorageService<R> {
         self.storage.variable_store()
     }
 
+    #[allow(unused)]
     pub fn item_store(&self) -> Arc<dyn WorkspaceItemStore<R::AsyncContext>> {
         self.storage.item_store()
     }
