@@ -42,16 +42,17 @@ impl<R: AppRuntime> ActiveWorkspace<R> {
     }
 }
 
+#[rustfmt::skip]
 pub mod constants {
     use moss_bindingutils::const_export;
 
     /// @category Constant
     #[const_export(export_to = "constants.ts")]
-    pub const ON_DID_CHANGE_CONFIGURATION_CHANNEL: &'static str = "app-onDidChangeConfiguration";
+    pub const ON_DID_CHANGE_CONFIGURATION_CHANNEL: &'static str = "app__on_did_change_configuration";
 
     /// @category Constant
     #[const_export(export_to = "constants.ts")]
-    pub const ON_DID_APPEND_LOG_ENTRY_CHANNEL: &'static str = "app-onDidAppendLogEntry";
+    pub const ON_DID_APPEND_LOG_ENTRY_CHANNEL: &'static str = "app__on_did_append_log_entry";
 }
 
 pub mod dirs {

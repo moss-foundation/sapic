@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use ts_rs::TS;
@@ -6,7 +6,7 @@ use ts_rs::TS;
 use crate::models::{primitives::ThemeId, types::LogEntryInfo};
 
 /// @category Event
-#[derive(Debug, Serialize, Clone, TS)]
+#[derive(Debug, Deserialize, Serialize, Clone, TS)]
 #[serde(rename = "OnDidChangeConfiguration")]
 #[ts(export, export_to = "events.ts")]
 pub struct OnDidChangeConfigurationForFrontend {

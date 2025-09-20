@@ -27,6 +27,10 @@ impl ConfigurationEdit {
         }
     }
 
+    pub fn abs_path(&self) -> &Arc<Path> {
+        &self.abs_path
+    }
+
     pub async fn edit(&self, params: &[(PatchOperation, EditOptions)]) -> joinerror::Result<()> {
         let rdr = self
             .fs
