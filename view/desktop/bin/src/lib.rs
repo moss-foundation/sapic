@@ -282,7 +282,7 @@ pub async fn run<R: TauriRuntime>() {
                         &ctx,
                         &app_delegate,
                         OnAppReadyOptions {
-                            restore_last_workspace: false,
+                            restore_last_workspace: true,
                         },
                     )
                     .await
