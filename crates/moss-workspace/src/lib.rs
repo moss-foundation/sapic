@@ -1,9 +1,11 @@
 pub mod api;
 pub mod builder;
-pub mod edit;
-pub mod manifest;
+mod edit;
+mod environment;
+mod layout;
+mod manifest;
 pub mod models;
-pub mod services;
+mod project;
 pub mod storage;
 pub mod workspace;
 

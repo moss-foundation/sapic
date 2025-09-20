@@ -1,13 +1,13 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { DescribeStateOutput } from "@repo/moss-workspace";
+import { DescribeWorkspaceOutput } from "@repo/moss-workspace";
 import { useQuery } from "@tanstack/react-query";
 
 import { useActiveWorkspace } from "./derived/useActiveWorkspace";
 
 export const USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY = "describeWorkspaceState";
 
-const describeWorkspaceStateFn = async (): Promise<DescribeStateOutput> => {
-  const result = await invokeTauriIpc<DescribeStateOutput>("describe_workspace_state");
+const describeWorkspaceStateFn = async (): Promise<DescribeWorkspaceOutput> => {
+  const result = await invokeTauriIpc<DescribeWorkspaceOutput>("describe_workspace");
 
   if (result.status === "error") {
     throw new Error(String(result.error));
@@ -23,7 +23,7 @@ interface UseDescribeWorkspaceStateOptions {
 export const useDescribeWorkspaceState = ({ enabled = true }: UseDescribeWorkspaceStateOptions = {}) => {
   const { activeWorkspaceId, hasActiveWorkspace } = useActiveWorkspace();
 
-  return useQuery<DescribeStateOutput, Error>({
+  return useQuery<DescribeWorkspaceOutput, Error>({
     queryKey: [USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY, activeWorkspaceId],
     queryFn: describeWorkspaceStateFn,
     enabled: enabled && hasActiveWorkspace,

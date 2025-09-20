@@ -43,6 +43,7 @@ pub async fn update_configuration<'a, R: tauri::Runtime>(
     .await
 }
 
+// DEPRECATED
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn set_color_theme<'a, R: tauri::Runtime>(
@@ -87,6 +88,7 @@ pub async fn list_color_themes<'a, R: tauri::Runtime>(
     .await
 }
 
+// DEPRECATED
 #[tauri::command]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn set_locale<'a, R: tauri::Runtime>(

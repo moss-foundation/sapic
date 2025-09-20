@@ -2,8 +2,8 @@ use moss_applib::AppRuntime;
 
 use crate::{
     Workspace,
+    environment::ActivateEnvironmentItemParams,
     models::operations::{ActivateEnvironmentInput, ActivateEnvironmentOutput},
-    services::environment_service::ActivateEnvironmentItemParams,
 };
 
 impl<R: AppRuntime> Workspace<R> {

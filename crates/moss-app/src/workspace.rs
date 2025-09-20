@@ -42,6 +42,7 @@ pub(crate) struct WorkspaceItem {
     pub last_opened_at: Option<i64>,
 }
 
+#[derive(Debug)]
 pub(crate) struct WorkspaceDetails {
     pub id: WorkspaceId,
     pub name: String,

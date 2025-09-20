@@ -211,8 +211,9 @@ pub async fn run<R: TauriRuntime>() {
             // Workspace
             //
             commands::stream_environments,
-            commands::update_workspace_state,
-            commands::describe_workspace_state,
+            commands::update_workspace_state, // DEPRECATED
+            commands::update_layout,
+            commands::describe_workspace,
             commands::stream_projects,
             commands::describe_project,
             commands::create_project,
@@ -281,7 +282,7 @@ pub async fn run<R: TauriRuntime>() {
                         &ctx,
                         &app_delegate,
                         OnAppReadyOptions {
-                            restore_last_workspace: false,
+                            restore_last_workspace: true,
                         },
                     )
                     .await

@@ -39,8 +39,7 @@ use crate::{
             UpdateProjectParams,
         },
     },
-    services::storage_service::StorageService,
-    storage::segments::SEGKEY_COLLECTION,
+    storage::{StorageService, segments::SEGKEY_COLLECTION},
 };
 
 pub(crate) struct ProjectItemCloneParams {

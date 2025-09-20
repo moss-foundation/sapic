@@ -10,12 +10,12 @@ use std::{cell::LazyCell, path::Path, sync::Arc};
 use crate::{
     Workspace, dirs,
     edit::WorkspaceEdit,
+    environment::EnvironmentService,
+    layout::LayoutService,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
     models::primitives::ProjectId,
-    services::{
-        environment_service::EnvironmentService, layout_service::LayoutService,
-        project_service::ProjectService, storage_service::StorageService,
-    },
+    project::ProjectService,
+    storage::StorageService,
 };
 
 struct PredefinedEnvironment {

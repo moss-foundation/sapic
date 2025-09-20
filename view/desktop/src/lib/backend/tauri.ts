@@ -27,8 +27,9 @@ export type TauriIpcCommand =
   //
   // Workspace
   //
-  | "update_workspace_state"
-  | "describe_workspace_state"
+  | "update_workspace_state" // DEPRECATED
+  | "update_layout"
+  | "describe_workspace"
   | "describe_project"
   | "create_project"
   | "delete_project"
@@ -48,7 +49,6 @@ export type TauriIpcCommand =
   | "update_environment_group"
   | "batch_update_environment_group"
   | "activate_environment"
-
   //
   // Project
   //

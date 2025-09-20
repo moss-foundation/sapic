@@ -7,6 +7,7 @@ use tauri::{State, Window, ipc::Channel as TauriChannel};
 
 use crate::commands::primitives::*;
 
+// DEPRECATED
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn update_workspace_state<'a, R: tauri::Runtime>(
@@ -24,14 +25,29 @@ pub async fn update_workspace_state<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn describe_workspace_state<'a, R: tauri::Runtime>(
+pub async fn update_layout<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: Window<R>,
+    input: UpdateLayoutInput,
+    options: Options,
+) -> TauriResult<()> {
+    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
+        workspace.update_layout(&ctx, input).await
+    })
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn describe_workspace<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
     options: Options,
-) -> TauriResult<DescribeStateOutput> {
+) -> TauriResult<DescribeWorkspaceOutput> {
     super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
-        workspace.describe_state(&ctx).await
+        workspace.describe_workspace(&ctx).await
     })
     .await
 }

@@ -1,8 +1,7 @@
-Sapic
-============
+# Sapic
 
-Join Our Team 
+Join Our Team
 
-We're looking for talented developers with skills in either TypeScript, React, or Rust to help us build the Simple API Client.
+We're looking for talented developers with skills in either TypeScript, React, or Rust to help us build the Application Resource Console.
 
 Interested? -> g10z3r@duck.com

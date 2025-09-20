@@ -117,10 +117,10 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     if (!api || mode !== "auto") return;
 
     try {
-      if (layout?.editor) {
+      if (layout?.layouts.editor) {
         // Set flag to prevent automatic state updates during restoration
         isRestoringLayout.current = true;
-        api.fromJSON(mapEditorPartStateToSerializedDockview(layout.editor));
+        api.fromJSON(mapEditorPartStateToSerializedDockview(layout.layouts.editor));
         // Reset flag after a short delay to allow layout change events to settle
         setTimeout(() => {
           isRestoringLayout.current = false;

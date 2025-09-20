@@ -17,12 +17,12 @@ use std::{path::Path, sync::Arc};
 use crate::{
     builder::{OnDidAddProject, OnDidDeleteProject},
     edit::WorkspaceEdit,
+    environment::EnvironmentService,
+    layout::LayoutService,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
     models::primitives::ProjectId,
-    services::{
-        environment_service::EnvironmentService, layout_service::LayoutService,
-        project_service::ProjectService, storage_service::StorageService,
-    },
+    project::ProjectService,
+    storage::StorageService,
 };
 
 pub struct WorkspaceSummary {

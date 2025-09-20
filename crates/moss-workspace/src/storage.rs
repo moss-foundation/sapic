@@ -1,3 +1,6 @@
+pub mod entities;
+pub mod segments;
+
 use anyhow::{Context as _, Result};
 use moss_applib::AppRuntime;
 use moss_db::{Transaction, primitives::AnyValue};
@@ -21,13 +24,11 @@ use crate::{
     models::primitives::{ActivitybarPosition, ProjectId, SidebarPosition},
     storage::{
         entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity},
-        segments::{
-            self, SEGKEY_COLLECTION, SEGKEY_ENVIRONMENT, SEGKEY_EXPANDED_ENVIRONMENT_GROUPS,
-        },
+        segments::{SEGKEY_COLLECTION, SEGKEY_ENVIRONMENT, SEGKEY_EXPANDED_ENVIRONMENT_GROUPS},
     },
 };
 
-pub struct StorageService<R: AppRuntime> {
+pub(crate) struct StorageService<R: AppRuntime> {
     pub(super) storage: Arc<dyn WorkspaceStorage<R::AsyncContext>>,
 }
 
@@ -45,6 +46,7 @@ impl<R: AppRuntime> StorageService<R> {
         self.storage.variable_store()
     }
 
+    #[allow(unused)]
     pub fn item_store(&self) -> Arc<dyn WorkspaceItemStore<R::AsyncContext>> {
         self.storage.item_store()
     }

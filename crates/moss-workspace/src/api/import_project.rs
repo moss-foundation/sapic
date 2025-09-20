@@ -11,7 +11,7 @@ use crate::{
         primitives::ProjectId,
         types::ImportProjectSource,
     },
-    services::project_service::{ProjectItemCloneParams, ProjectItemImportParams},
+    project::{ProjectItemCloneParams, ProjectItemImportParams},
 };
 
 impl<R: AppRuntime> Workspace<R> {

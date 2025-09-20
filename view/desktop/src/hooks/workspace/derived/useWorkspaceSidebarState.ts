@@ -38,17 +38,17 @@ export const useWorkspaceSidebarState = () => {
 
     if (lastInitializedWorkspaceId.current === activeWorkspaceId) return;
 
-    if (workspaceState?.sidebar) {
+    if (workspaceState?.layouts.sidebar) {
       initialize({
         sideBar: {
-          width: workspaceState.sidebar.size,
-          visible: workspaceState.sidebar.visible,
+          width: workspaceState.layouts.sidebar.size,
+          visible: workspaceState.layouts.sidebar.visible,
         },
         // Don't modify bottomPane here, it should be handled separately
         bottomPane: {},
       });
 
-      setSideBarPosition(workspaceState.sidebar.position);
+      setSideBarPosition(workspaceState.layouts.sidebar.position);
     }
 
     lastInitializedWorkspaceId.current = activeWorkspaceId;
@@ -57,7 +57,7 @@ export const useWorkspaceSidebarState = () => {
       canUpdatePartState.current = true;
       isTransitioning.current = false;
     }, 150);
-  }, [activeWorkspaceId, workspaceState?.sidebar, isFetched, isSuccess, initialize, setSideBarPosition]);
+  }, [activeWorkspaceId, workspaceState?.layouts.sidebar, isFetched, isSuccess, initialize, setSideBarPosition]);
 
   // Save sidebar state changes to backend (only when workspace is active and initialization is complete)
   useEffect(() => {
