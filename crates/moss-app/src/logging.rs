@@ -1,16 +1,6 @@
 mod rollinglog_writer;
 mod taurilog_writer;
 
-use crate::{
-    models::types::{LogEntryInfo, LogItemSourceInfo},
-    services::{
-        log_service::{
-            constants::*, rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter,
-        },
-        session_service::SessionId,
-        storage_service::StorageService,
-    },
-};
 use chrono::{DateTime, NaiveDate, NaiveDateTime};
 use joinerror::Error;
 use moss_applib::AppRuntime;
@@ -37,12 +27,20 @@ use tracing_subscriber::{
     prelude::*,
 };
 
+use crate::{
+    logging::{constants::*, rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter},
+    models::{
+        primitives::SessionId,
+        types::{LogEntryInfo, LogItemSourceInfo},
+    },
+    storage::StorageService,
+};
+
 pub mod constants {
     pub const APP_SCOPE: &'static str = "app";
     pub const SESSION_SCOPE: &'static str = "session";
 
     pub const TIMESTAMP_FORMAT: &'static str = "%Y-%m-%dT%H:%M:%S%.3f%z";
-
     pub const FILE_TIMESTAMP_FORMAT: &'static str = "%Y_%m_%dT%H_%M_%S%z";
 }
 
@@ -521,7 +519,7 @@ impl<R: AppRuntime> LogService<R> {
 
 #[cfg(test)]
 mod tests {
-    use crate::constants::LOGGING_SERVICE_CHANNEL;
+    use crate::constants::ON_DID_APPEND_LOG_ENTRY_CHANNEL;
     use moss_applib::mock::MockAppRuntime;
     use moss_fs::RealFileSystem;
     use moss_logging::app;
@@ -560,7 +558,7 @@ mod tests {
 
         {
             let counter = counter.clone();
-            mock_app.listen(LOGGING_SERVICE_CHANNEL, move |_| {
+            mock_app.listen(ON_DID_APPEND_LOG_ENTRY_CHANNEL, move |_| {
                 counter.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
             });
         }

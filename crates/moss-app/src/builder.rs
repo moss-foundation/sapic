@@ -8,11 +8,18 @@ use tauri::{AppHandle as TauriAppHandle, Manager};
 use tokio::sync::RwLock;
 
 use crate::{
-    OnDidChangeProfile, OnDidChangeWorkspace,
     app::{App, AppCommands, AppPreferences},
     command::CommandDecl,
+    configuration::ConfigurationService,
     dirs,
-    services::{profile_service::ProfileService, *},
+    internal::events::{OnDidChangeConfiguration, OnDidChangeProfile, OnDidChangeWorkspace},
+    locale::LocaleService,
+    logging::LogService,
+    profile::ProfileService,
+    session::SessionService,
+    storage::StorageService,
+    theme::ThemeService,
+    workspace::WorkspaceService,
 };
 
 pub struct BuildAppParams {
@@ -62,9 +69,13 @@ impl<R: AppRuntime> AppBuilder<R> {
         let on_did_change_workspace_emitter = EventEmitter::<OnDidChangeWorkspace>::new();
         let on_did_change_workspace_event = on_did_change_workspace_emitter.event();
 
+        let on_did_change_configuration_emitter = EventEmitter::<OnDidChangeConfiguration>::new();
+        let _on_did_change_configuration_event = on_did_change_configuration_emitter.event();
+
         let configuration_service = ConfigurationService::new(
             &delegate,
             self.fs.clone(),
+            on_did_change_configuration_emitter,
             &on_did_change_profile_event,
             &on_did_change_workspace_event,
         )

@@ -15,5 +15,6 @@ pub mod list_workspaces;
 pub mod open_workspace;
 pub mod set_color_theme;
 pub mod set_locale;
+pub mod update_configuration;
 pub mod update_profile;
 pub mod update_workspace;

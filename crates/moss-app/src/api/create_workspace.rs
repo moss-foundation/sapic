@@ -12,7 +12,7 @@ use crate::{
         operations::{CreateWorkspaceInput, CreateWorkspaceOutput},
         primitives::WorkspaceId,
     },
-    services::workspace_service::WorkspaceItemCreateParams,
+    workspace::WorkspaceItemCreateParams,
 };
 
 impl<R: AppRuntime> App<R> {

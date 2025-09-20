@@ -2,7 +2,7 @@
 import { JsonValue } from "@repo/moss-bindingutils";
 import { ProfileInfo } from "@repo/moss-user";
 import { WorkspaceMode } from "@repo/moss-workspace";
-import type { LogLevel } from "./primitives";
+import type { ConfigurationTarget, LogLevel } from "./primitives";
 import type {
   AddAccountParams,
   ColorThemeInfo,
@@ -179,6 +179,11 @@ export type SetColorThemeInput = { themeInfo: ColorThemeInfo };
  * @category Operation
  */
 export type SetLocaleInput = { localeInfo: LocaleInfo };
+
+/**
+ * @category Operation
+ */
+export type UpdateConfigurationInput = { key: string; value: JsonValue; target: ConfigurationTarget };
 
 /**
  * @category Operation

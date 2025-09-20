@@ -9,12 +9,11 @@ use std::{
 };
 
 use crate::{
+    logging::constants::{FILE_TIMESTAMP_FORMAT, TIMESTAMP_FORMAT},
     models::types::LogEntryInfo,
-    services::{
-        log_service::constants::{FILE_TIMESTAMP_FORMAT, TIMESTAMP_FORMAT},
-        storage_service::StorageService,
-    },
+    storage::StorageService,
 };
+
 // log:{log_id}: log_entry_path
 
 pub struct RollingLogWriter<R: AppRuntime> {

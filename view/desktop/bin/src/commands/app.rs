@@ -25,6 +25,26 @@ pub async fn describe_app<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn update_configuration<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: Window<R>,
+    input: UpdateConfigurationInput,
+    options: Options,
+) -> TauriResult<()> {
+    super::with_app_timeout(
+        ctx.inner(),
+        app,
+        options,
+        |ctx, app_delegate, app| async move {
+            app.update_configuration(&ctx, &app_delegate, input).await
+        },
+    )
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn set_color_theme<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,

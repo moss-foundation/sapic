@@ -3,8 +3,8 @@ use moss_applib::AppRuntime;
 
 use crate::{
     app::App,
+    logging::LogFilter,
     models::operations::{ListLogsInput, ListLogsOutput},
-    services::log_service::LogFilter,
 };
 
 impl<R: AppRuntime> App<R> {

@@ -5,6 +5,8 @@
  */
 export type AccountKind = "GITHUB" | "GITLAB";
 
+export type ConfigurationTarget = "PROFILE" | "WORKSPACE";
+
 /**
  * @category Primitive
  */

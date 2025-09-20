@@ -16,8 +16,18 @@ use tokio::sync::RwLock;
 use crate::{
     ActiveWorkspace,
     command::CommandCallback,
-    models::types::{ColorThemeInfo, LocaleInfo},
-    services::{profile_service::ProfileService, session_service::SessionId, *},
+    configuration::ConfigurationService,
+    locale::LocaleService,
+    logging::LogService,
+    models::{
+        primitives::SessionId,
+        types::{ColorThemeInfo, LocaleInfo},
+    },
+    profile::ProfileService,
+    session::SessionService,
+    storage::StorageService,
+    theme::ThemeService,
+    workspace::WorkspaceService,
 };
 
 pub struct AppPreferences {
@@ -63,7 +73,7 @@ pub struct App<R: AppRuntime> {
     pub(super) app_dir: PathBuf,
     pub(super) commands: AppCommands<R::EventLoop>,
     pub(super) preferences: AppPreferences,
-    // pub(super) defaults: AppDefaults,
+
     #[allow(unused)]
     pub(super) session_service: SessionService,
     pub(super) log_service: LogService<R>,

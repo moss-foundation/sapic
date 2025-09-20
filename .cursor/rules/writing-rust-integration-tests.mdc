@@ -1,0 +1,18 @@
+---
+description: Writing Rust integration tests
+globs: crates/**/tests/**
+alwaysApply: true
+---
+
+## Testing conventions
+
+- When adding new tests or modifying old ones, always run them to check the correctness of the changes being made.
+- Always attempt to find related tests in an existing test file before creating a new test file
+- Run the tests strictly in the crate where they are located and avoid running all the tests in the workspace.
+- Be rigorous and test for edge-cases and unexpected inputs.
+
+## Test Organization
+
+- Integration tests for API operations must always be written in the tests folder located in the root folder of the crate.
+- One integration test file should represent only one API operation.
+- The name of an integration test file representing a single API operation should follow the format `{crate_name}__{api_operation_name}.rs`.

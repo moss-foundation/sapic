@@ -2,10 +2,15 @@ pub mod api;
 pub mod app;
 pub mod builder;
 pub mod command;
+mod configuration;
+mod internal;
 mod locale;
+mod logging;
 pub mod models;
 mod profile;
-mod services;
+mod session;
+mod theme;
+mod workspace;
 
 #[cfg(feature = "integration-tests")]
 pub mod storage;
@@ -17,25 +22,10 @@ extern crate derive_more;
 
 pub use app::App;
 pub use builder::AppBuilder;
-use moss_applib::{AppRuntime, EventMarker};
-use moss_user::models::primitives::ProfileId;
+use moss_applib::AppRuntime;
 use moss_workspace::Workspace;
 
 use crate::models::primitives::WorkspaceId;
-
-#[derive(Clone)]
-pub struct OnDidChangeProfile {
-    pub id: ProfileId,
-}
-
-impl EventMarker for OnDidChangeProfile {}
-
-#[derive(Clone)]
-pub struct OnDidChangeWorkspace {
-    pub id: WorkspaceId,
-}
-
-impl EventMarker for OnDidChangeWorkspace {}
 
 #[derive(Deref, DerefMut)]
 pub struct ActiveWorkspace<R: AppRuntime> {
@@ -52,12 +42,17 @@ impl<R: AppRuntime> ActiveWorkspace<R> {
     }
 }
 
+#[rustfmt::skip]
 pub mod constants {
     use moss_bindingutils::const_export;
 
     /// @category Constant
     #[const_export(export_to = "constants.ts")]
-    pub const LOGGING_SERVICE_CHANNEL: &'static str = "logging";
+    pub const ON_DID_CHANGE_CONFIGURATION_CHANNEL: &'static str = "app__on_did_change_configuration";
+
+    /// @category Constant
+    #[const_export(export_to = "constants.ts")]
+    pub const ON_DID_APPEND_LOG_ENTRY_CHANNEL: &'static str = "app__on_did_append_log_entry";
 }
 
 pub mod dirs {

@@ -3,7 +3,7 @@ import { jsonValueSchema } from "@repo/moss-bindingutils";
 import { profileInfoSchema } from "@repo/moss-user";
 import { workspaceModeSchema } from "@repo/moss-workspace";
 import { z } from "zod";
-import { logLevelSchema } from "./primitives.zod";
+import { configurationTargetSchema, logLevelSchema } from "./primitives.zod";
 import {
   addAccountParamsSchema,
   colorThemeInfoSchema,
@@ -144,6 +144,12 @@ export const setColorThemeInputSchema = z.object({
 
 export const setLocaleInputSchema = z.object({
   localeInfo: localeInfoSchema,
+});
+
+export const updateConfigurationInputSchema = z.object({
+  key: z.string(),
+  value: jsonValueSchema,
+  target: configurationTargetSchema,
 });
 
 export const updateProfileInputSchema = z.object({

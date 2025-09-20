@@ -1,7 +1,10 @@
 use std::io::ErrorKind;
 use tauri::{AppHandle, Emitter, Runtime as TauriRuntime};
 
-use crate::{constants::LOGGING_SERVICE_CHANNEL, models::types::LogEntryInfo};
+use crate::{
+    constants::ON_DID_APPEND_LOG_ENTRY_CHANNEL,
+    models::{events::OnDidAppendLogEntryForFrontend, types::LogEntryInfo},
+};
 
 pub struct TauriLogWriter<R: TauriRuntime> {
     pub app_handle: AppHandle<R>,
@@ -22,7 +25,10 @@ impl<'a, R: TauriRuntime> std::io::Write for TauriLogWriter<R> {
         let log_body = String::from_utf8_lossy(buf).to_string();
         let log_entry: LogEntryInfo = serde_json::from_str(log_body.as_str())?;
         self.app_handle
-            .emit(LOGGING_SERVICE_CHANNEL, log_entry)
+            .emit(
+                ON_DID_APPEND_LOG_ENTRY_CHANNEL,
+                OnDidAppendLogEntryForFrontend { inner: log_entry },
+            )
             .map_err(|e| {
                 std::io::Error::new(
                     ErrorKind::Other,
