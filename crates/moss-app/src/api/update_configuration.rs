@@ -37,7 +37,7 @@ impl<R: AppRuntime> App<R> {
             },
         ) {
             session::error!(
-                "failed to emit onDidChangeConfiguration event: {}",
+                "failed to emit event after updating configuration: {}",
                 e.to_string()
             );
         }
