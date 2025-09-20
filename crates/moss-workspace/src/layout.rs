@@ -17,8 +17,8 @@ use crate::{
             PanelPartStateInfo, SidebarPartStateInfo,
         },
     },
-    services::storage_service::StorageService,
     storage::{
+        StorageService,
         entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity},
         segments::{
             SEGKEY_LAYOUT_ACTIVITYBAR, SEGKEY_LAYOUT_EDITOR, SEGKEY_LAYOUT_PANEL,

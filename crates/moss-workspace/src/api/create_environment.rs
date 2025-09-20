@@ -2,8 +2,8 @@ use moss_applib::{AppRuntime, errors::ValidationResultExt};
 use validator::Validate;
 
 use crate::{
+    environment::CreateEnvironmentItemParams,
     models::operations::{CreateEnvironmentInput, CreateEnvironmentOutput},
-    services::environment_service::CreateEnvironmentItemParams,
     workspace::Workspace,
 };
 

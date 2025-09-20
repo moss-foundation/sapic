@@ -36,8 +36,7 @@ use crate::{
         primitives::ProjectId,
         types::{EnvironmentGroup, UpdateEnvironmentGroupParams, UpdateEnvironmentParams},
     },
-    services::storage_service::StorageService,
-    storage::segments,
+    storage::{StorageService, segments},
 };
 
 const GLOBAL_ACTIVE_ENVIRONMENT_KEY: &'static str = "";
