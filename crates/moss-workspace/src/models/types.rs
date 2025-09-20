@@ -165,6 +165,7 @@ pub struct EnvironmentInfo {
 /// @category Type
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct Layouts {
     pub editor: Option<EditorPartStateInfo>,

@@ -202,10 +202,10 @@ export type ImportProjectSource =
  * @category Type
  */
 export type Layouts = {
-  editor: EditorPartStateInfo | null;
-  sidebar: SidebarPartStateInfo | null;
-  panel: PanelPartStateInfo | null;
-  activitybar: ActivitybarPartStateInfo | null;
+  editor?: EditorPartStateInfo;
+  sidebar?: SidebarPartStateInfo;
+  panel?: PanelPartStateInfo;
+  activitybar?: ActivitybarPartStateInfo;
 };
 
 /**

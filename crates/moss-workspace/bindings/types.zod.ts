@@ -253,10 +253,10 @@ export const environmentInfoSchema = z.object({
 });
 
 export const layoutsSchema = z.object({
-  editor: editorPartStateInfoSchema.nullable(),
-  sidebar: sidebarPartStateInfoSchema.nullable(),
-  panel: panelPartStateInfoSchema.nullable(),
-  activitybar: activitybarPartStateInfoSchema.nullable(),
+  editor: editorPartStateInfoSchema.optional(),
+  sidebar: sidebarPartStateInfoSchema.optional(),
+  panel: panelPartStateInfoSchema.optional(),
+  activitybar: activitybarPartStateInfoSchema.optional(),
 });
 
 export const updateEnvironmentParamsSchema = z.object({
