@@ -52,15 +52,15 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
     }
 
     // Initialize bottom pane from workspace state if available
-    if (workspaceState?.panel) {
+    if (workspaceState?.layouts.panel) {
       const { initialize } = useAppResizableLayoutStore.getState();
       initialize({
         sideBar: {
           // Don't modify sidebar - handled by workspace hooks
         },
         bottomPane: {
-          height: workspaceState.panel.size,
-          visible: workspaceState.panel.visible,
+          height: workspaceState.layouts.panel.size,
+          visible: workspaceState.layouts.panel.visible,
         },
       });
     }

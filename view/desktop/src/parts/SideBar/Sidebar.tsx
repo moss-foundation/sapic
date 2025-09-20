@@ -69,19 +69,19 @@ export const Sidebar = () => {
 
   // Restore activity bar state from workspace state
   useEffect(() => {
-    if (!activeWorkspaceId || !isFetched || !isSuccess || !workspaceState?.activitybar) return;
+    if (!activeWorkspaceId || !isFetched || !isSuccess || !workspaceState?.layouts.activitybar) return;
 
     if (lastRestoredWorkspaceId.current === activeWorkspaceId) return;
 
     // Only restore if we have fresh workspace state for this workspace
     // Add a small delay to ensure workspace switching is complete
     const timeoutId = setTimeout(() => {
-      updateFromWorkspaceState(workspaceState.activitybar!);
+      updateFromWorkspaceState(workspaceState.layouts.activitybar!);
       lastRestoredWorkspaceId.current = activeWorkspaceId;
     }, 100);
 
     return () => clearTimeout(timeoutId);
-  }, [activeWorkspaceId, workspaceState?.activitybar, isFetched, isSuccess, updateFromWorkspaceState]);
+  }, [activeWorkspaceId, workspaceState?.layouts.activitybar, isFetched, isSuccess, updateFromWorkspaceState]);
 
   const { position } = useActivityBarStore();
 
