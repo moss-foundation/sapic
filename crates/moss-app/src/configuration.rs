@@ -149,6 +149,7 @@ impl ConfigurationHandle {
 }
 
 pub struct ConfigurationService {
+    #[allow(unused)]
     registry: ConfigurationRegistry,
     defaults: ConfigurationModel,
     profile: Arc<RwLock<Option<ConfigurationHandle>>>,
@@ -178,18 +179,6 @@ impl ConfigurationService {
         on_did_change_workspace_event: &Event<OnDidChangeWorkspace>,
     ) -> Self {
         let registry = ConfigurationRegistry::new(inventory::iter::<ConfigurationDecl>());
-
-        // let defaults = HashMap::from([
-        //     (
-        //         read_only_str!("colorTheme"),
-        //         JsonValue::String("moss.sapic-theme.lightDefault".to_string()),
-        //     ),
-        //     (
-        //         read_only_str!("locale"),
-        //         JsonValue::String("moss.sapic-locale.en".to_string()),
-        //     ),
-        // ]);
-
         let defaults = registry.defaults();
 
         let profile = Arc::new(RwLock::new(None));
@@ -271,6 +260,12 @@ impl ConfigurationService {
         value: JsonValue,
         target: ConfigurationTarget,
     ) -> joinerror::Result<()> {
+        if !self.registry.is_parameter_known(key) {
+            session::warn!("parameter '{}' is unknown", key);
+        } else {
+            self.registry.validate_parameter(key, &value)?;
+        }
+
         match target {
             ConfigurationTarget::Profile => {
                 let mut handle_lock = self.profile.write().await;

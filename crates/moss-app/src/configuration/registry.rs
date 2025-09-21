@@ -1,4 +1,3 @@
-use moss_common::continue_if_none;
 use moss_configuration::{ConfigurationDecl, ParameterDecl, ParameterType};
 use moss_logging::session;
 use moss_text::ReadOnlyStr;
@@ -9,7 +8,8 @@ use std::{
     sync::Arc,
 };
 
-pub(crate) struct ParameterValue {
+#[allow(unused)] // All fields of the structure will be used later
+pub struct ParameterValue {
     pub id: ReadOnlyStr,
     pub default: Option<JsonValue>,
     pub typ: ParameterType,
@@ -37,7 +37,8 @@ impl From<&ParameterDecl> for ParameterValue {
     }
 }
 
-pub(crate) struct ConfigurationValue {
+#[allow(unused)] // All fields of the structure will be used later
+pub struct ConfigurationValue {
     pub id: ReadOnlyStr,
     pub parent_id: Option<ReadOnlyStr>,
     pub order: Option<i64>,
@@ -52,7 +53,8 @@ impl ConfigurationValue {
     }
 }
 
-pub(crate) struct ConfigurationRegistry {
+#[allow(unused)] // All fields of the structure will be used later
+pub struct ConfigurationRegistry {
     nodes: HashMap<ReadOnlyStr, ConfigurationValue>,
     parameters: HashMap<ReadOnlyStr, Arc<ParameterValue>>,
 
@@ -166,5 +168,54 @@ impl ConfigurationRegistry {
         }
 
         defaults
+    }
+
+    pub fn is_parameter_known(&self, id: &str) -> bool {
+        self.parameters.contains_key(id)
+    }
+
+    pub fn validate_parameter(&self, id: &str, value: &JsonValue) -> joinerror::Result<()> {
+        let param = match self.parameters.get(id) {
+            Some(param) => param,
+            None => {
+                return Ok(());
+            }
+        };
+
+        // TODO: Implement more complete validation logic based on the schema.
+
+        match param.typ {
+            ParameterType::String => {
+                if !value.is_string() {
+                    return Err(joinerror::Error::new::<()>("value is not a string"));
+                }
+            }
+
+            ParameterType::Number => {
+                if !value.is_number() {
+                    return Err(joinerror::Error::new::<()>("value is not a number"));
+                }
+            }
+
+            ParameterType::Boolean => {
+                if !value.is_boolean() {
+                    return Err(joinerror::Error::new::<()>("value is not a boolean"));
+                }
+            }
+
+            ParameterType::Object => {
+                if !value.is_object() {
+                    return Err(joinerror::Error::new::<()>("value is not an object"));
+                }
+            }
+
+            ParameterType::Array => {
+                if !value.is_array() {
+                    return Err(joinerror::Error::new::<()>("value is not an array"));
+                }
+            }
+        }
+
+        Ok(())
     }
 }
