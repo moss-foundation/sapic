@@ -21,7 +21,11 @@ moss_logging.workspace = true
 moss_common.workspace = true
 moss_id_macro.workspace = true
 moss_user.workspace = true
+moss_configuration.workspace = true
+moss_text.workspace = true
 
+static_json.workspace = true
+inventory.workspace = true
 joinerror.workspace = true
 anyhow.workspace = true
 serde = { workspace = true, features = ["derive", "rc"] }
@@ -29,7 +33,7 @@ ts-rs = { workspace = true, features = ["url-impl"] }
 tokio.workspace = true
 validator = { workspace = true, features = ["derive"] }
 tauri.workspace = true
-serde_json.workspace = true
+serde_json = { workspace = true, features = ["raw_value"] }
 futures.workspace = true
 derive_more = { workspace = true, features = ["deref", "deref_mut"] }
 image.workspace = true

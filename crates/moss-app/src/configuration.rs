@@ -1,4 +1,5 @@
 mod edit;
+mod registry;
 
 use joinerror::{OptionExt, ResultExt};
 use json_patch::{PatchOperation, ReplaceOperation, jsonptr::PointerBuf};
@@ -8,10 +9,11 @@ use moss_applib::{
     errors::{FailedPrecondition, Internal},
     subscription::{Event, EventEmitter, Subscription},
 };
+use moss_configuration::ConfigurationDecl;
 use moss_edit::json::EditOptions;
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_logging::session;
-use moss_text::{ReadOnlyStr, read_only_str};
+use moss_text::ReadOnlyStr;
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde_json::Value as JsonValue;
 use std::{
@@ -22,7 +24,7 @@ use std::{
 use tokio::sync::RwLock;
 
 use crate::{
-    configuration::edit::ConfigurationEdit,
+    configuration::{edit::ConfigurationEdit, registry::ConfigurationRegistry},
     dirs,
     internal::events::{OnDidChangeConfiguration, OnDidChangeProfile, OnDidChangeWorkspace},
     models::primitives::ConfigurationTarget,
@@ -147,6 +149,7 @@ impl ConfigurationHandle {
 }
 
 pub struct ConfigurationService {
+    registry: ConfigurationRegistry,
     defaults: ConfigurationModel,
     profile: Arc<RwLock<Option<ConfigurationHandle>>>,
     workspace: Arc<RwLock<Option<ConfigurationHandle>>>,
@@ -174,17 +177,20 @@ impl ConfigurationService {
         on_did_change_profile_event: &Event<OnDidChangeProfile>,
         on_did_change_workspace_event: &Event<OnDidChangeWorkspace>,
     ) -> Self {
-        // HACK: hardcoded here for now
-        let defaults = HashMap::from([
-            (
-                read_only_str!("colorTheme"),
-                JsonValue::String("moss.sapic-theme.lightDefault".to_string()),
-            ),
-            (
-                read_only_str!("locale"),
-                JsonValue::String("moss.sapic-locale.en".to_string()),
-            ),
-        ]);
+        let registry = ConfigurationRegistry::new(inventory::iter::<ConfigurationDecl>());
+
+        // let defaults = HashMap::from([
+        //     (
+        //         read_only_str!("colorTheme"),
+        //         JsonValue::String("moss.sapic-theme.lightDefault".to_string()),
+        //     ),
+        //     (
+        //         read_only_str!("locale"),
+        //         JsonValue::String("moss.sapic-locale.en".to_string()),
+        //     ),
+        // ]);
+
+        let defaults = registry.defaults();
 
         let profile = Arc::new(RwLock::new(None));
         let workspace = Arc::new(RwLock::new(None));
@@ -197,6 +203,7 @@ impl ConfigurationService {
         let profile_clone = profile.clone();
 
         Self {
+            registry,
             defaults: ConfigurationModel {
                 keys: defaults.keys().map(|key| key.clone()).collect(),
                 contents: defaults,

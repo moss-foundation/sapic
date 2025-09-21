@@ -1,3 +1,6 @@
+#[path = "../contrib/mod.rs"]
+mod contrib;
+
 pub mod api;
 pub mod app;
 pub mod builder;

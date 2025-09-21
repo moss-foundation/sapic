@@ -10,8 +10,35 @@ pub mod storage;
 pub mod workspace;
 
 use moss_applib::AppRuntime;
+use moss_configuration::{ConfigurationDecl, ParameterDecl, ParameterType};
 use moss_environment::AnyEnvironment;
+use moss_text::read_only_str;
+
 pub use workspace::Workspace;
+
+inventory::submit! {
+    ConfigurationDecl {
+        id: Some(read_only_str!("moss_workspace")),
+        parent_id: None,
+        name: Some("Workspace"),
+        order: Some(1),
+        description: Some("Workspace configuration"),
+        parameters: &[
+            ParameterDecl {
+                id: read_only_str!("name"),
+                default: Some(static_json::Value::Str("Hello, World!")),
+                typ: ParameterType::String,
+                description: None,
+                maximum: None,
+                minimum: None,
+                excluded: false,
+                protected: false,
+                order: None,
+                tags: &[],
+            },
+        ],
+    }
+}
 
 pub mod constants {
     use moss_bindingutils::const_export;
