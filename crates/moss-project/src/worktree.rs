@@ -44,9 +44,8 @@ use crate::{
             },
         },
     },
-    services::storage_service::StorageService,
     storage::{
-        segments,
+        StorageService, segments,
         segments::{
             segkey_entry_header_order, segkey_entry_path_param_order,
             segkey_entry_query_param_order,

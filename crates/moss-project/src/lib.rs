@@ -6,10 +6,10 @@ pub mod git;
 mod manifest;
 pub mod models;
 pub mod project;
-mod services;
 pub mod vcs;
 mod worktree;
 
+mod set_icon;
 #[cfg(feature = "integration-tests")]
 pub mod storage;
 #[cfg(not(feature = "integration-tests"))]
