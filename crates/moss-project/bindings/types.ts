@@ -48,13 +48,7 @@ export type AfterUpdateItemEntryDescription = { id: string; path: EntryPath };
 /**
  * @category Type
  */
-export type CreateDirEntryParams = {
-  path: string;
-  class: EntryClass;
-  name: string;
-  order: number;
-  headers: Array<AddHeaderParams>;
-};
+export type CreateDirEntryParams = { path: string; class: EntryClass; name: string; order: number };
 
 /**
  * @category Type
@@ -65,25 +59,64 @@ export type CreateItemEntryParams = {
   name: string;
   order: number;
   protocol?: EntryProtocol;
-  queryParams: Array<AddQueryParamParams>;
-  pathParams: Array<AddPathParamParams>;
   headers: Array<AddHeaderParams>;
+  pathParams: Array<AddPathParamParams>;
+  queryParams: Array<AddQueryParamParams>;
 };
 
 /**
  * @category Type
  */
-export type HeaderParamOptions = { disabled: boolean };
+export type HeaderInfo = {
+  id: string;
+  name: string;
+  value: JsonValue;
+  description?: string;
+  disabled: boolean;
+  propagate: boolean;
+  order?: number;
+};
 
 /**
  * @category Type
  */
-export type PathParamOptions = { disabled: boolean };
+export type HeaderParamOptions = { disabled: boolean; propagate: boolean };
 
 /**
  * @category Type
  */
-export type QueryParamOptions = { disabled: boolean };
+export type PathParamInfo = {
+  id: string;
+  name: string;
+  value: JsonValue;
+  description?: string;
+  disabled: boolean;
+  propagate: boolean;
+  order?: number;
+};
+
+/**
+ * @category Type
+ */
+export type PathParamOptions = { disabled: boolean; propagate: boolean };
+
+/**
+ * @category Type
+ */
+export type QueryParamInfo = {
+  id: string;
+  name: string;
+  value: JsonValue;
+  description?: string;
+  disabled: boolean;
+  propagate: boolean;
+  order?: number;
+};
+
+/**
+ * @category Type
+ */
+export type QueryParamOptions = { disabled: boolean; propagate: boolean };
 
 /**
  * @category Type
@@ -104,7 +137,7 @@ export type UpdateDirEntryParams = {
 /**
  * @category Type
  */
-export type UpdateHeaderParamOptions = { disabled?: boolean };
+export type UpdateHeaderParamOptions = { disabled?: boolean; propagate?: boolean };
 
 /**
  * @category Type
@@ -133,21 +166,21 @@ export type UpdateItemEntryParams = {
   order?: number;
   expanded?: boolean;
   protocol?: EntryProtocol;
-  queryParamsToAdd: Array<AddQueryParamParams>;
-  queryParamsToUpdate: Array<UpdateQueryParamParams>;
-  queryParamsToRemove: Array<string>;
-  pathParamsToAdd: Array<AddPathParamParams>;
-  pathParamsToUpdate: Array<UpdatePathParamParams>;
-  pathParamsToRemove: Array<string>;
   headersToAdd: Array<AddHeaderParams>;
   headersToUpdate: Array<UpdateHeaderParams>;
   headersToRemove: Array<string>;
+  pathParamsToAdd: Array<AddPathParamParams>;
+  pathParamsToUpdate: Array<UpdatePathParamParams>;
+  pathParamsToRemove: Array<string>;
+  queryParamsToAdd: Array<AddQueryParamParams>;
+  queryParamsToUpdate: Array<UpdateQueryParamParams>;
+  queryParamsToRemove: Array<string>;
 };
 
 /**
  * @category Type
  */
-export type UpdatePathParamOptions = { disabled?: boolean };
+export type UpdatePathParamOptions = { disabled?: boolean; propagate?: boolean };
 
 /**
  * @category Type
@@ -164,7 +197,7 @@ export type UpdatePathParamParams = {
 /**
  * @category Type
  */
-export type UpdateQueryParamOptions = { disabled?: boolean };
+export type UpdateQueryParamOptions = { disabled?: boolean; propagate?: boolean };
 
 /**
  * @category Type

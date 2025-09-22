@@ -97,7 +97,6 @@ pub async fn create_test_endpoint_dir_entry(
                 path: PathBuf::from(""),
                 name: name.to_string(),
                 order: 0,
-                headers: vec![],
             }),
         )
         .await
@@ -119,7 +118,6 @@ pub async fn create_test_component_dir_entry(
                 path: PathBuf::from(""),
                 name: name.to_string(),
                 order: 0,
-                headers: vec![],
             }),
         )
         .await
@@ -166,7 +164,6 @@ pub async fn create_test_schema_dir_entry(
                 path: PathBuf::from(""),
                 name: name.to_string(),
                 order: 0,
-                headers: vec![],
             }),
         )
         .await

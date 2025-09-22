@@ -56,6 +56,7 @@ export type TauriIpcCommand =
   | "delete_project_entry"
   | "update_project_entry"
   | "stream_project_entries"
+  | "describe_project_entry"
   | "batch_update_project_entry"
   | "batch_create_project_entry"
   | "execute_vcs_operation";
