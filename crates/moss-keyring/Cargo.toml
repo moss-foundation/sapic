@@ -8,7 +8,7 @@ moss_logging.workspace = true
 
 tracing.workspace = true
 keyring = { workspace = true, features = ["apple-native", "windows-native", "sync-secret-service"] }
-zeroize = { workspace = true }
+zeroize = { workspace = true, features = ["zeroize_derive"] }
 whoami.workspace = true
 joinerror.workspace = true
 async-trait.workspace = true

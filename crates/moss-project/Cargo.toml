@@ -34,7 +34,7 @@ serde_json.workspace = true
 validator = { workspace = true, features = ["derive"] }
 tauri.workspace = true
 futures.workspace = true
-image.workspace = true
+image = { workspace = true, features = ["png"] }
 hcl-rs.workspace = true
 derive_more = { workspace = true, features = ["deref", "deref_mut"] }
 indexmap.workspace = true

@@ -19,7 +19,7 @@ tokio-stream.workspace = true
 tauri.workspace = true
 derive_more.workspace = true
 thiserror.workspace = true
-async_zip.workspace = true
+async_zip = { workspace = true, features = ["deflate", "tokio", "tokio-fs", "tokio-util"] }
 tokio-util.workspace = true
 nanoid.workspace = true
 
