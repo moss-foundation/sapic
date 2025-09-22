@@ -20,7 +20,8 @@ use crate::{
     errors::ErrorIo,
     git::GitClient,
     manifest::{MANIFEST_FILE_NAME, ManifestFile, ManifestVcs},
-    services::{set_icon_service::SetIconService, storage_service::StorageService},
+    set_icon::SetIconService,
+    storage::StorageService,
     vcs::Vcs,
     worktree::Worktree,
 };
