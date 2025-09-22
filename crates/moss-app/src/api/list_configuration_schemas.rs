@@ -11,7 +11,7 @@ impl<R: AppRuntime> App<R> {
         Ok(ListConfigurationSchemasOutput {
             schemas: schemas
                 .into_iter()
-                .map(|(_, schema)| (&schema).into())
+                .map(|(_, schema)| schema.as_ref().into())
                 .collect(),
         })
     }

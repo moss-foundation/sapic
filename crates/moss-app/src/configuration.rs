@@ -9,7 +9,7 @@ use moss_applib::{
     errors::{FailedPrecondition, Internal},
     subscription::{Event, EventEmitter, Subscription},
 };
-use moss_configuration::ConfigurationDecl;
+use moss_configuration::IncludeConfigurationDecl;
 use moss_edit::json::EditOptions;
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_logging::session;
@@ -26,7 +26,7 @@ use tokio::sync::RwLock;
 use crate::{
     configuration::{
         edit::ConfigurationEdit,
-        registry::{ConfigurationRegistry, NodeValue},
+        registry::{ConfigurationNode, ConfigurationRegistry},
     },
     dirs,
     internal::events::{OnDidChangeConfiguration, OnDidChangeProfile, OnDidChangeWorkspace},
@@ -179,8 +179,9 @@ impl ConfigurationService {
 
         on_did_change_profile_event: &Event<OnDidChangeProfile>,
         on_did_change_workspace_event: &Event<OnDidChangeWorkspace>,
-    ) -> Self {
-        let registry = ConfigurationRegistry::new(inventory::iter::<ConfigurationDecl>());
+    ) -> joinerror::Result<Self> {
+        let registry = ConfigurationRegistry::new(inventory::iter::<IncludeConfigurationDecl>())
+            .join_err_with::<()>(|| format!("failed to build configuration registry"))?;
         let defaults = registry.defaults();
 
         let profile = Arc::new(RwLock::new(None));
@@ -193,7 +194,7 @@ impl ConfigurationService {
         let fs_clone = fs.clone();
         let profile_clone = profile.clone();
 
-        Self {
+        Ok(Self {
             registry,
             defaults: ConfigurationModel {
                 keys: defaults.keys().map(|key| key.clone()).collect(),
@@ -239,10 +240,10 @@ impl ConfigurationService {
             _on_did_change_workspace: on_did_change_workspace_event
                 .subscribe(move |_event| async {})
                 .await,
-        }
+        })
     }
 
-    pub fn schemas(&self) -> HashMap<ReadOnlyStr, NodeValue> {
+    pub fn schemas(&self) -> HashMap<ReadOnlyStr, Arc<ConfigurationNode>> {
         self.registry.nodes()
     }
 

@@ -1,12 +1,13 @@
 use std::{env, fs, path::Path, process::Command};
 
 fn main() {
-    let out_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-    let jsonnet_file = "contrib/index.jsonnet";
-    let output_file = Path::new(&out_dir).join("contrib.json");
+    let out_dir = env::var("OUT_DIR").unwrap();
+    let package_name = env::var("CARGO_PKG_NAME").unwrap();
+    let input_file = "contrib/index.jsonnet";
+    let output_file = Path::new(&out_dir).join(format!("{}.contrib.json", package_name));
 
     // Rerun this build script if the jsonnet file changes
-    println!("cargo:rerun-if-changed={}", jsonnet_file);
+    println!("cargo:rerun-if-changed={}", input_file);
     println!("cargo:rerun-if-changed=../../contrib/configuration.libsonnet");
     println!("cargo:rerun-if-changed=../../contrib/index.libsonnet");
 
@@ -15,7 +16,7 @@ fn main() {
     } else {
         "jsonnet"
     };
-    let output = Command::new(jsonnet_cmd).arg(jsonnet_file).output();
+    let output = Command::new(jsonnet_cmd).arg(input_file).output();
 
     match output {
         Ok(output) => {

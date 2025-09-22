@@ -79,7 +79,8 @@ impl<R: AppRuntime> AppBuilder<R> {
             &on_did_change_profile_event,
             &on_did_change_workspace_event,
         )
-        .await;
+        .await
+        .expect("Failed to create configuration service");
 
         let theme_service = ThemeService::new(self.fs.clone(), params.themes_dir)
             .await

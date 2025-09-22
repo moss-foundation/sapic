@@ -1,21 +1,40 @@
-use moss_configuration::{ConfigurationDecl, ParameterDecl, models::primitives::ParameterType};
+use joinerror::ResultExt;
+use moss_configuration::IncludeConfigurationDecl;
 use moss_logging::session;
 use moss_text::ReadOnlyStr;
+use serde::Deserialize;
 use serde_json::Value as JsonValue;
 use std::{
-    borrow::Cow,
     collections::{HashMap, HashSet},
     sync::Arc,
 };
 
-use crate::models::types::{ConfigurationParameterValue, ConfigurationSchema};
+use crate::models::{
+    primitives::ConfigurationParameterType as ParameterType,
+    types::{ConfigurationNodeSchema, ConfigurationParameterItemSchema},
+};
 
-#[derive(Clone)]
-pub(crate) struct ParameterValue {
+#[derive(Debug, Deserialize)]
+struct ParameterDecl {
     pub id: ReadOnlyStr,
     pub default: Option<JsonValue>,
     pub typ: ParameterType,
-    pub description: Option<Cow<'static, str>>,
+    pub description: Option<String>,
+    pub maximum: Option<u64>,
+    pub minimum: Option<u64>,
+    pub excluded: bool,
+    pub protected: bool,
+    pub order: Option<i64>,
+    #[serde(default)]
+    pub tags: Vec<ReadOnlyStr>,
+}
+
+#[derive(Clone)]
+pub(crate) struct ParameterItem {
+    pub id: ReadOnlyStr,
+    pub default: Option<JsonValue>,
+    pub typ: ParameterType,
+    pub description: Option<String>,
     pub maximum: Option<u64>,
     pub minimum: Option<u64>,
     pub protected: bool,
@@ -23,13 +42,13 @@ pub(crate) struct ParameterValue {
     pub tags: Vec<ReadOnlyStr>,
 }
 
-impl From<&ParameterDecl> for ParameterValue {
-    fn from(decl: &ParameterDecl) -> Self {
+impl From<ParameterDecl> for ParameterItem {
+    fn from(decl: ParameterDecl) -> Self {
         Self {
             id: decl.id.clone(),
             default: decl.default.map(|d| d.into()),
             typ: decl.typ,
-            description: decl.description.map(|s| Cow::Borrowed(s)),
+            description: decl.description,
             maximum: decl.maximum,
             minimum: decl.minimum,
             protected: decl.protected,
@@ -39,8 +58,8 @@ impl From<&ParameterDecl> for ParameterValue {
     }
 }
 
-impl From<&ParameterValue> for ConfigurationParameterValue {
-    fn from(param: &ParameterValue) -> Self {
+impl From<&ParameterItem> for ConfigurationParameterItemSchema {
+    fn from(param: &ParameterItem) -> Self {
         Self {
             id: param.id.to_string(),
             default: param.default.clone(),
@@ -55,18 +74,27 @@ impl From<&ParameterValue> for ConfigurationParameterValue {
     }
 }
 
-#[derive(Clone)]
-pub(crate) struct NodeValue {
+#[derive(Debug, Deserialize)]
+struct ConfigurationDecl {
+    pub id: Option<ReadOnlyStr>,
+    pub parent_id: Option<ReadOnlyStr>,
+    pub order: Option<i64>,
+    pub name: Option<String>,
+    pub description: Option<String>,
+    pub parameters: Vec<ParameterDecl>,
+}
+
+pub(crate) struct ConfigurationNode {
     pub id: ReadOnlyStr,
     pub parent_id: Option<ReadOnlyStr>,
     pub order: Option<i64>,
-    pub name: Option<Cow<'static, str>>,
-    pub description: Option<Cow<'static, str>>,
-    pub parameters: Vec<Arc<ParameterValue>>,
+    pub name: Option<String>,
+    pub description: Option<String>,
+    pub parameters: Vec<Arc<ParameterItem>>,
 }
 
-impl From<&NodeValue> for ConfigurationSchema {
-    fn from(value: &NodeValue) -> Self {
+impl From<&ConfigurationNode> for ConfigurationNodeSchema {
+    fn from(value: &ConfigurationNode) -> Self {
         Self {
             id: value.id.to_string(),
             parent_id: value.parent_id.as_ref().map(|s| s.to_string()),
@@ -78,28 +106,39 @@ impl From<&NodeValue> for ConfigurationSchema {
     }
 }
 
-impl NodeValue {
-    fn extend(&mut self, params: Vec<Arc<ParameterValue>>) {
+impl ConfigurationNode {
+    fn extend(&mut self, params: Vec<Arc<ParameterItem>>) {
         self.parameters.extend(params);
     }
 }
 
 #[allow(unused)] // All fields of the structure will be used later
 pub(super) struct ConfigurationRegistry {
-    nodes: HashMap<ReadOnlyStr, NodeValue>,
-    parameters: HashMap<ReadOnlyStr, Arc<ParameterValue>>,
+    nodes: HashMap<ReadOnlyStr, Arc<ConfigurationNode>>,
+    parameters: HashMap<ReadOnlyStr, Arc<ParameterItem>>,
 
     // Excluded parameters are hidden from the UI but can still be registered.
-    excluded: HashMap<ReadOnlyStr, Arc<ParameterValue>>,
+    excluded: HashMap<ReadOnlyStr, Arc<ParameterItem>>,
     keys: HashSet<ReadOnlyStr>,
 }
 
 impl ConfigurationRegistry {
-    pub fn new<'a>(decls: impl Iterator<Item = &'a ConfigurationDecl>) -> Self {
+    pub fn new<'a>(
+        includes: impl Iterator<Item = &'a IncludeConfigurationDecl>,
+    ) -> joinerror::Result<Self> {
         let mut nodes = HashMap::new();
         let mut parameters = HashMap::new();
         let mut excluded = HashMap::new();
         let mut keys = HashSet::new();
+
+        let mut decls = Vec::new();
+        for include in includes {
+            let decl: ConfigurationDecl =
+                serde_json::from_str(include.0).join_err_with::<()>(|| {
+                    format!("failed to parse included configuration: {}", include.0)
+                })?;
+            decls.push(decl);
+        }
 
         let mut extensions = Vec::new();
         let mut bases = Vec::new();
@@ -112,14 +151,14 @@ impl ConfigurationRegistry {
         }
 
         for decl in bases {
-            let id = if let Some(id) = &decl.id {
+            let id = if let Some(id) = decl.id {
                 id.clone()
             } else {
                 session::warn!(format!("configuration declaration has no id:\n{:?}", decl));
                 continue;
             };
 
-            let mut params: Vec<Arc<ParameterValue>> = Vec::with_capacity(decl.parameters.len());
+            let mut params: Vec<Arc<ParameterItem>> = Vec::with_capacity(decl.parameters.len());
             for param_decl in decl.parameters {
                 if param_decl.excluded {
                     excluded.insert(param_decl.id.clone(), Arc::new(param_decl.into()));
@@ -132,12 +171,12 @@ impl ConfigurationRegistry {
             keys.extend(params.iter().map(|p| p.id.clone()));
             nodes.insert(
                 id.clone(),
-                NodeValue {
+                ConfigurationNode {
                     id,
                     parent_id: decl.parent_id.clone(),
                     order: decl.order,
-                    name: decl.name.map(|s| Cow::Borrowed(s)),
-                    description: decl.description.map(|s| Cow::Borrowed(s)),
+                    name: decl.name,
+                    description: decl.description,
                     parameters: params,
                 },
             );
@@ -162,7 +201,7 @@ impl ConfigurationRegistry {
                 }
             };
 
-            let mut params: Vec<Arc<ParameterValue>> = Vec::with_capacity(decl.parameters.len());
+            let mut params: Vec<Arc<ParameterItem>> = Vec::with_capacity(decl.parameters.len());
             for param_decl in decl.parameters {
                 if param_decl.excluded {
                     excluded.insert(param_decl.id.clone(), Arc::new(param_decl.into()));
@@ -176,12 +215,12 @@ impl ConfigurationRegistry {
             parent.extend(params);
         }
 
-        Self {
-            nodes,
+        Ok(Self {
+            nodes: nodes.into_iter().map(|(k, v)| (k, Arc::new(v))).collect(),
             parameters,
             excluded,
             keys,
-        }
+        })
     }
 
     pub fn defaults(&self) -> HashMap<ReadOnlyStr, JsonValue> {
@@ -201,7 +240,7 @@ impl ConfigurationRegistry {
         defaults
     }
 
-    pub fn nodes(&self) -> HashMap<ReadOnlyStr, NodeValue> {
+    pub fn nodes(&self) -> HashMap<ReadOnlyStr, Arc<ConfigurationNode>> {
         self.nodes.clone()
     }
 

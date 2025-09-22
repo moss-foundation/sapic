@@ -16,7 +16,7 @@ use crate::models::{primitives::*, types::*};
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct ListConfigurationSchemasOutput {
-    pub schemas: Vec<ConfigurationSchema>,
+    pub schemas: Vec<ConfigurationNodeSchema>,
 }
 
 /// @category Operation
