@@ -2,7 +2,8 @@ use crate::models::types::{ColorValue, Theme};
 
 const INDENT: &str = "  ";
 
-pub fn convert_theme_json_to_css(theme: Theme) -> String {
+pub fn convert_theme_json_to_css(content: &str) -> joinerror::Result<String> {
+    let theme: Theme = serde_json::from_str(content)?;
     let mut lines =
         Vec::with_capacity(theme.palette.len() + theme.colors.len() + theme.box_shadows.len() + 7);
     lines.push(":root {".to_string());
@@ -38,7 +39,7 @@ pub fn convert_theme_json_to_css(theme: Theme) -> String {
     }
     lines.push("}".to_string());
 
-    lines.join("\n")
+    Ok(lines.join("\n"))
 }
 
 fn convert_color(color: &ColorValue) -> String {

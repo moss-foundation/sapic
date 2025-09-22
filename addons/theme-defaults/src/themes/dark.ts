@@ -2,9 +2,9 @@ import { Theme } from "../theme";
 import { linearGradient, rgb, rgba } from "../color";
 
 export const defaultDarkTheme: Theme = {
-  identifier: "moss.sapic-theme.lightDefault",
-  displayName: "Light Default",
-  mode: "light",
+  identifier: "moss.sapic-theme.darkDefault",
+  displayName: "Dark Default",
+  mode: "dark",
   palette: {
     "moss.gray.1": {
       type: "solid",

@@ -3919,6 +3919,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "moss_theme"
+version = "0.1.0"
+dependencies = [
+ "indexmap 2.11.0",
+ "joinerror",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "moss_user"
 version = "0.1.0"
 dependencies = [
@@ -6741,10 +6751,7 @@ name = "theme-install"
 version = "0.1.0"
 dependencies = [
  "clap",
- "indexmap 2.11.0",
- "joinerror",
- "serde",
- "serde_json",
+ "moss_theme",
 ]
 
 [[package]]

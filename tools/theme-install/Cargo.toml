@@ -4,9 +4,6 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-joinerror.workspace = true
+moss_theme.workspace = true
 
-serde.workspace = true
-serde_json = { workspace = true, features = ["preserve_order"] }
 clap = { version = "4.5.48", features = ["derive"] }
-indexmap = { workspace = true, features = ["serde"] }
