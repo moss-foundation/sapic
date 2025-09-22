@@ -1,6 +1,5 @@
 :root {
   /* Palette */
-
   --moss-gray-1: #1e1f22;
   --moss-gray-2: #2b2d30;
   --moss-gray-3: #393b40;
@@ -15,7 +14,6 @@
   --moss-gray-12: #dfe1e5;
   --moss-gray-13: #f0f1f2;
   --moss-gray-14: #ffffff;
-
   --moss-blue-1: #25324d;
   --moss-blue-2: #2e436e;
   --moss-blue-3: #35538f;
@@ -27,7 +25,6 @@
   --moss-blue-9: #6b9bfa;
   --moss-blue-10: #83acfc;
   --moss-blue-11: #99bbff;
-
   --moss-green-1: #253627;
   --moss-green-2: #375239;
   --moss-green-3: #436946;
@@ -39,7 +36,6 @@
   --moss-green-9: #a0dba5;
   --moss-green-10: #b9ebbd;
   --moss-green-11: #d4fad7;
-
   --moss-yellow-1: #3d3223;
   --moss-yellow-2: #5e4d33;
   --moss-yellow-3: #826a41;
@@ -51,7 +47,6 @@
   --moss-yellow-9: #f7de8b;
   --moss-yellow-10: #fceba4;
   --moss-yellow-11: #fff6bd;
-
   --moss-red-1: #402929;
   --moss-red-2: #5e3838;
   --moss-red-3: #7a4343;
@@ -63,7 +58,6 @@
   --moss-red-9: #f2b1aa;
   --moss-red-10: #f7ccc6;
   --moss-red-11: #fae3de;
-
   --moss-orange-1: #45322b;
   --moss-orange-2: #614438;
   --moss-orange-3: #825845;
@@ -75,7 +69,6 @@
   --moss-orange-9: #f5bd98;
   --moss-orange-10: #faceaf;
   --moss-orange-11: #ffdfc7;
-
   --moss-purple-1: #2f2936;
   --moss-purple-2: #433358;
   --moss-purple-3: #583d7a;
@@ -87,7 +80,6 @@
   --moss-purple-9: #c4a0f3;
   --moss-purple-10: #d4b8f9;
   --moss-purple-11: #e4ceff;
-
   --moss-teal-1: #1d3838;
   --moss-teal-2: #1e4d4a;
   --moss-teal-3: #20635d;
@@ -100,76 +92,48 @@
   --moss-teal-10: #9bddd6;
   --moss-teal-11: #b9ebe6;
 
-  /* Base Colors */
+  /* Colors */
   --moss-primary: #0065ff;
   --moss-error: #fb2c36;
   --moss-error-background: #f7d7d7;
   --moss-success-background: #f2fcf3;
-
   --moss-border-color: #3c3c3c;
-
   --moss-primary-background: rgba(22, 24, 25, 1);
   --moss-primary-background-hover: #d4e2ff;
   --moss-primary-text: white;
-
   --moss-secondary-background: rgba(39, 39, 42, 1);
   --moss-secondary-background-hover: rgba(255, 255, 255, 0.1);
   --moss-secondary-text: #a1a1aa;
-
   --moss-info-background: #edf3ff;
   --moss-info-background-hover: #d4e2ff;
   --moss-info-text: var(--moss-primary-text);
   --moss-info-icon: var(--moss-primary);
   --moss-info-border: var(--moss-primary);
-
   --moss-divider-color: var(--moss-border-color);
-
   --moss-not-selected-item-color: var(--moss-border-color);
-
-  /* Resizable */
   --separator-border: var(--moss-border-color);
-
-  /* Icons */
   --moss-icon-primary-background: transparent;
   --moss-icon-primary-text: var(--moss-gray-7);
   --moss-icon-primary-background-hover: rgba(0, 0, 0, 0.33);
   --moss-icon-primary-background-active: #3574f0;
-
-  /* HeadBar */
   --moss-headBar-icon-primary-text: var(--moss-gray-4);
   --moss-headBar-primary-background: var(--moss-gray-12);
   --moss-headBar-primary-background-hover: var(--moss-gray-11);
   --moss-headBar-border-color: var(--moss-gray-11);
-
-  /* StatusBar */
   --moss-statusBar-icon-primary-text: var(--moss-gray-1);
   --moss-statusBar-icon-secondary-text: var(--moss-gray-4);
   --moss-statusBar-icon-background-hover: var(--moss-gray-12);
-
-  /* Window Controls */
   --moss-button-icon-color: white;
   --moss-windowsCloseButton-background: rgba(196, 43, 28, 1);
   --moss-windowControlsLinux-background: rgba(55, 55, 55, 1);
   --moss-windowControlsLinux-text: rgba(255, 255, 255, 1);
   --moss-windowControlsLinux-hoverBackground: rgba(65, 65, 65, 1);
   --moss-windowControlsLinux-activeBackground: rgba(75, 75, 75, 1);
-
-  /* Dockview */
-
-  /* Pane View */
   --moss-paneview-active-outline-color: var(--moss-primary);
-  --moss-paneview-header-border-color: 13px;
-
-  /* Drag and Drop */
   --moss-drag-over-background-color: rgba(83, 89, 93, 0.5);
   --moss-drag-over-border-color: var(--moss-primary-background);
-
-  /* Group View */
   --moss-group-view-background-color: var(--moss-primary-background);
   --moss-tabs-and-actions-container-background-color: var(--moss-primary-background);
-  --moss-tabs-and-actions-container-height: 35px;
-
-  /* Tab States */
   --moss-activegroup-visiblepanel-tab-background-color: var(--moss-primary-background-hover);
   --moss-inactivegroup-visiblepanel-tab-background-color: var(--moss-primary-background);
   --moss-activegroup-visiblepanel-tab-color: var(--moss-primary-text);
@@ -177,91 +141,52 @@
   --moss-activegroup-visiblepanel-tab-border-color: var(--moss-primary);
   --moss-activegroup-hiddenpanel-tab-border-color: transparent;
   --moss-inactivegroup-visiblepanel-tab-border-color: var(--moss-gray-8);
-
   --moss-activegroup-hiddenpanel-tab-background-color: var(--moss-primary-background);
   --moss-inactivegroup-hiddenpanel-tab-background-color: var(--moss-primary-background);
   --moss-activegroup-hiddenpanel-tab-color: var(--moss-secondary-text);
   --moss-inactivegroup-hiddenpanel-tab-color: var(--moss-secondary-text);
-
   --moss-tab-divider-color: var(--moss-border-color);
-
-  /* Separators and Borders */
   --moss-separator-border: var(--moss-border-color);
   --moss-sash-active-highlight: #047cd4;
-
-  /* Overlay and Shadows */
-  --moss-floating-box-shadow: 8px 8px 8px 0px rgba(83, 89, 93, 0.5);
-  --moss-overlay-z-index: 999;
-
-  /* Button System */
-
-  /* Primary Buttons */
-  --moss-button-primary-solid-background: linear-gradient(rgb(59, 130, 246), rgb(37, 99, 235) 0%);
-  --moss-button-primary-solid-border: rgb(255, 255, 255, 0.3);
+  --moss-button-primary-solid-background: linear-gradient(rgb(59, 130, 246), rgb(37, 99, 235));
+  --moss-button-primary-solid-border: rgba(255, 255, 255, 0.3);
   --moss-button-primary-solid-text: white;
-  --moss-button-primary-solid-boxShadow: rgba(255, 255, 255, 0.1) 0px 2px 4px 0px inset;
   --moss-button-primary-outlined-background: rgba(59, 130, 246, 0.05);
   --moss-button-primary-outlined-border: rgba(59, 130, 246, 0.05);
   --moss-button-primary-outlined-text: rgb(147, 197, 253);
-  --moss-button-primary-outlined-boxShadow:
-    rgba(255, 255, 255, 0) 0px 1px 0px 0px inset, rgba(59, 130, 246, 0.3) 0px 0px 0px 1px,
-    rgba(0, 0, 0, 0.1) 0px 1px 2px 0px;
   --moss-button-primary-soft-background: rgba(59, 130, 246, 0.1);
   --moss-button-primary-soft-border: null;
   --moss-button-primary-soft-text: rgb(147, 197, 253);
-  --moss-button-primary-soft-boxShadow: null;
   --moss-button-primary-ghost-background: rgba(59, 130, 246, 0.1);
   --moss-button-primary-ghost-border: null;
   --moss-button-primary-ghost-text: rgb(147, 197, 253);
-  --moss-button-primary-ghost-boxShadow: null;
-
-  /* Danger Buttons */
-  --moss-button-danger-solid-background: linear-gradient(rgb(239, 68, 68), rgb(220, 38, 38) 0%);
-  --moss-button-danger-solid-border: rgb(241 95 95);
+  --moss-button-danger-solid-background: linear-gradient(rgb(239, 68, 68), rgb(220, 38, 38));
+  --moss-button-danger-solid-border: rgb(241, 95, 95);
   --moss-button-danger-solid-text: white;
-  --moss-button-danger-solid-boxShadow:
-    rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(255, 255, 255, 0.1) 0px 2px 4px 0px inset;
   --moss-button-danger-outlined-background: rgba(239, 68, 68, 0.05);
   --moss-button-danger-outlined-border: null;
   --moss-button-danger-outlined-text: rgb(252, 165, 165);
-  --moss-button-danger-outlined-boxShadow:
-    rgba(255, 255, 255, 0) 0px 1px 0px 0px inset, rgba(239, 68, 68, 0.3) 0px 0px 0px 1px,
-    rgba(0, 0, 0, 0.1) 0px 1px 2px 0px;
   --moss-button-danger-soft-background: rgba(239, 68, 68, 0.1);
   --moss-button-danger-soft-border: null;
   --moss-button-danger-soft-text: rgb(252, 165, 165);
-  --moss-button-danger-soft-boxShadow: null;
   --moss-button-danger-ghost-background: rgba(239, 68, 68, 0.1);
   --moss-button-danger-ghost-border: null;
   --moss-button-danger-ghost-text: rgb(252, 165, 165);
-  --moss-button-danger-ghost-boxShadow: null;
-
-  /* Neutral Buttons */
-  --moss-button-neutral-solid-background: linear-gradient(rgb(113, 113, 122), rgb(82, 82, 91) 0%);
-  --moss-button-neutral-solid-border: rgb(113 113 122);
+  --moss-button-neutral-solid-background: linear-gradient(rgb(113, 113, 122), rgb(82, 82, 91));
+  --moss-button-neutral-solid-border: rgb(113, 113, 122);
   --moss-button-neutral-solid-text: white;
-  --moss-button-neutral-solid-boxShadow: rgba(255, 255, 255, 0.1) 0px 2px 4px 0px inset;
   --moss-button-neutral-outlined-background: rgba(113, 113, 122, 0.05);
   --moss-button-neutral-outlined-border: null;
   --moss-button-neutral-outlined-text: rgb(212, 212, 216);
-  --moss-button-neutral-outlined-boxShadow:
-    rgba(255, 255, 255, 0) 0px 1px 0px 0px inset, rgba(113, 113, 122, 0.3) 0px 0px 0px 1px,
-    rgba(0, 0, 0, 0.1) 0px 1px 2px 0px;
   --moss-button-neutral-soft-background: rgba(113, 113, 122, 0.1);
   --moss-button-neutral-soft-border: null;
   --moss-button-neutral-soft-text: rgb(212, 212, 216);
-  --moss-button-neutral-soft-boxShadow: null;
   --moss-button-neutral-ghost-background: rgba(113, 113, 122, 0.1);
   --moss-button-neutral-ghost-border: null;
   --moss-button-neutral-ghost-text: rgb(212, 212, 216);
-  --moss-button-neutral-ghost-boxShadow: null;
-
-  /* --- Danger buttons */
   --moss-button-background-danger: var(--moss-red-5);
   --moss-button-background-danger-hover: var(--moss-red-3);
   --moss-button-text-danger: var(--moss-gray-14);
-
-  /* Form Controls */
   --moss-controls-plain-bg: transparent;
   --moss-controls-plain-border: rgb(39, 39, 42);
   --moss-controls-plain-text: white;
@@ -269,29 +194,20 @@
   --moss-controls-outlined-border: rgb(39, 39, 42);
   --moss-controls-outlined-text: white;
   --moss-controls-placeholder: rgb(82, 82, 91);
-
-  /* Select Inputs */
   --moss-select-bg-outlined: rgb(24, 24, 27);
   --moss-select-border-outlined: rgb(39, 39, 42);
   --moss-select-text-outlined: white;
   --moss-select-hover-bg: rgb(39, 39, 42);
-
-  /* Input Fields */
   --moss-input-bg-plain: var(--moss-gray-14);
   --moss-input-bg-outlined: var(--moss-gray-14);
   --moss-input-border: var(--moss-gray-9);
-
   --moss-templating-input-text: var(--moss-blue-3);
   --moss-templating-input-border: var(--moss-blue-10);
   --moss-templating-input-bg: var(--moss-blue-12);
-
-  /* PageContainer */
   --moss-tab-active-border-color: var(--moss-blue-4);
   --moss-auth-indicator-color: var(--moss-green-4);
   --moss-tab-badge-color: var(--moss-blue-4);
   --moss-tab-badge-text: var(--moss-gray-14);
-
-  /* RequestPage */
   --moss-requestpage-border-color: var(--moss-gray-11);
   --moss-requestpage-text: var(--moss-orange-4);
   --moss-requestpage-string-color: var(--moss-green-3);
@@ -301,4 +217,26 @@
   --moss-requestpage-text-disabled: var(--moss-gray-8);
   --moss-requestpage-placeholder-color: var(--moss-gray-9);
   --moss-requestpage-header-color: var(--moss-gray-3);
+
+  /* BoxShadows */
+  --moss-floating-box-shadow: 8px 8px 8px 0px rgba(83, 89, 93, 0.5);
+  --moss-button-primary-solid-boxShadow: rgba(255, 255, 255, 0.1) 0px 2px 4px 0px inset;
+  --moss-button-primary-outlined-boxShadow:
+    rgba(255, 255, 255, 0) 0px 1px 0px 0px inset, rgba(59, 130, 246, 0.3) 0px 0px 0px 1px,
+    rgba(0, 0, 0, 0.1) 0px 1px 2px 0px;
+  --moss-button-danger-solid-boxShadow:
+    rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(255, 255, 255, 0.1) 0px 2px 4px 0px inset;
+  --moss-button-danger-outlined-boxShadow:
+    rgba(255, 255, 255, 0) 0px 1px 0px 0px inset, rgba(239, 68, 68, 0.3) 0px 0px 0px 1px,
+    rgba(0, 0, 0, 0.1) 0px 1px 2px 0px;
+  --moss-button-primary-soft-boxShadow: null;
+  --moss-button-primary-ghost-boxShadow: null;
+  --moss-button-danger-soft-boxShadow: null;
+  --moss-button-danger-ghost-boxShadow: null;
+  --moss-button-neutral-solid-boxShadow: rgba(255, 255, 255, 0.1) 0px 2px 4px 0px inset;
+  --moss-button-neutral-outlined-boxShadow:
+    rgba(255, 255, 255, 0) 0px 1px 0px 0px inset, rgba(113, 113, 122, 0.3) 0px 0px 0px 1px,
+    rgba(0, 0, 0, 0.1) 0px 1px 2px 0px;
+  --moss-button-neutral-soft-boxShadow: null;
+  --moss-button-neutral-ghost-boxShadow: null;
 }

@@ -1,5 +1,5 @@
 [package]
-name = "moss_theme"
+name = "theme-install"
 version = "0.1.0"
 edition = "2024"
 
@@ -8,4 +8,5 @@ joinerror.workspace = true
 
 serde.workspace = true
 serde_json = { workspace = true, features = ["preserve_order"] }
-ts-rs.workspace = true
+clap = { version = "4.5.48", features = ["derive"] }
+indexmap = { workspace = true, features = ["serde"] }

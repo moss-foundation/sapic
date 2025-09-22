@@ -1,7 +1,6 @@
 use joinerror::{OptionExt, ResultExt};
 use moss_applib::errors::{Internal, NotFound};
 use moss_fs::{FileSystem, FsResultExt};
-use moss_theme::conversion::convert_theme_json_to_css;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;
 
@@ -83,6 +82,6 @@ impl ThemeService {
         rdr.read_to_string(&mut buf)
             .join_err::<Internal>("failed to read theme file")?;
 
-        Ok(convert_theme_json_to_css(&buf)?)
+        Ok(buf)
     }
 }
