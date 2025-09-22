@@ -32,7 +32,7 @@ use moss_workspace::Workspace;
 use crate::models::primitives::WorkspaceId;
 
 inventory::submit! {
-    IncludeConfigurationDecl(include_str!("../index.contrib.json"))
+    IncludeConfigurationDecl(include_str!("../contrib.json"))
 }
 
 #[derive(Deref, DerefMut)]
