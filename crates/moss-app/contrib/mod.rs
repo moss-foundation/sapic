@@ -1,4 +1,4 @@
-use moss_configuration::{ConfigurationDecl, ParameterDecl, ParameterType};
+use moss_configuration::{ConfigurationDecl, ParameterDecl, models::primitives::ParameterType};
 use moss_text::read_only_str as id;
 use static_json::Value;
 

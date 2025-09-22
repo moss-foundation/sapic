@@ -3669,8 +3669,10 @@ version = "0.1.0"
 dependencies = [
  "inventory",
  "moss_text",
+ "serde",
  "serde_json",
  "static_json",
+ "ts-rs",
 ]
 
 [[package]]

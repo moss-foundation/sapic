@@ -1,4 +1,4 @@
-use moss_configuration::{ConfigurationDecl, ParameterDecl, ParameterType};
+use moss_configuration::{ConfigurationDecl, ParameterDecl, models::primitives::ParameterType};
 use moss_logging::session;
 use moss_text::ReadOnlyStr;
 use serde_json::Value as JsonValue;
@@ -8,8 +8,10 @@ use std::{
     sync::Arc,
 };
 
-#[allow(unused)] // All fields of the structure will be used later
-pub struct ParameterValue {
+use crate::models::types::{ConfigurationParameterValue, ConfigurationSchema};
+
+#[derive(Clone)]
+pub(crate) struct ParameterValue {
     pub id: ReadOnlyStr,
     pub default: Option<JsonValue>,
     pub typ: ParameterType,
@@ -18,7 +20,7 @@ pub struct ParameterValue {
     pub minimum: Option<u64>,
     pub protected: bool,
     pub order: Option<i64>,
-    pub tags: Vec<Cow<'static, str>>,
+    pub tags: Vec<ReadOnlyStr>,
 }
 
 impl From<&ParameterDecl> for ParameterValue {
@@ -32,13 +34,29 @@ impl From<&ParameterDecl> for ParameterValue {
             minimum: decl.minimum,
             protected: decl.protected,
             order: decl.order,
-            tags: decl.tags.iter().map(|s| Cow::Borrowed(*s)).collect(),
+            tags: decl.tags.iter().map(|tag| tag.clone()).collect(),
         }
     }
 }
 
-#[allow(unused)] // All fields of the structure will be used later
-pub struct ConfigurationValue {
+impl From<&ParameterValue> for ConfigurationParameterValue {
+    fn from(param: &ParameterValue) -> Self {
+        Self {
+            id: param.id.to_string(),
+            default: param.default.clone(),
+            typ: param.typ,
+            description: param.description.as_ref().map(|s| s.to_string()),
+            maximum: param.maximum,
+            minimum: param.minimum,
+            protected: param.protected,
+            order: param.order,
+            tags: param.tags.iter().map(|s| s.to_string()).collect(),
+        }
+    }
+}
+
+#[derive(Clone)]
+pub(crate) struct NodeValue {
     pub id: ReadOnlyStr,
     pub parent_id: Option<ReadOnlyStr>,
     pub order: Option<i64>,
@@ -47,15 +65,28 @@ pub struct ConfigurationValue {
     pub parameters: Vec<Arc<ParameterValue>>,
 }
 
-impl ConfigurationValue {
+impl From<&NodeValue> for ConfigurationSchema {
+    fn from(value: &NodeValue) -> Self {
+        Self {
+            id: value.id.to_string(),
+            parent_id: value.parent_id.as_ref().map(|s| s.to_string()),
+            order: value.order,
+            name: value.name.as_ref().map(|s| s.to_string()),
+            description: value.description.as_ref().map(|s| s.to_string()),
+            parameters: value.parameters.iter().map(|p| (&**p).into()).collect(),
+        }
+    }
+}
+
+impl NodeValue {
     fn extend(&mut self, params: Vec<Arc<ParameterValue>>) {
         self.parameters.extend(params);
     }
 }
 
 #[allow(unused)] // All fields of the structure will be used later
-pub struct ConfigurationRegistry {
-    nodes: HashMap<ReadOnlyStr, ConfigurationValue>,
+pub(super) struct ConfigurationRegistry {
+    nodes: HashMap<ReadOnlyStr, NodeValue>,
     parameters: HashMap<ReadOnlyStr, Arc<ParameterValue>>,
 
     // Excluded parameters are hidden from the UI but can still be registered.
@@ -101,7 +132,7 @@ impl ConfigurationRegistry {
             keys.extend(params.iter().map(|p| p.id.clone()));
             nodes.insert(
                 id.clone(),
-                ConfigurationValue {
+                NodeValue {
                     id,
                     parent_id: decl.parent_id.clone(),
                     order: decl.order,
@@ -168,6 +199,10 @@ impl ConfigurationRegistry {
         }
 
         defaults
+    }
+
+    pub fn nodes(&self) -> HashMap<ReadOnlyStr, NodeValue> {
+        self.nodes.clone()
     }
 
     pub fn is_parameter_known(&self, id: &str) -> bool {

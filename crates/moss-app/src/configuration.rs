@@ -1,5 +1,5 @@
 mod edit;
-mod registry;
+pub(crate) mod registry;
 
 use joinerror::{OptionExt, ResultExt};
 use json_patch::{PatchOperation, ReplaceOperation, jsonptr::PointerBuf};
@@ -24,7 +24,10 @@ use std::{
 use tokio::sync::RwLock;
 
 use crate::{
-    configuration::{edit::ConfigurationEdit, registry::ConfigurationRegistry},
+    configuration::{
+        edit::ConfigurationEdit,
+        registry::{ConfigurationRegistry, NodeValue},
+    },
     dirs,
     internal::events::{OnDidChangeConfiguration, OnDidChangeProfile, OnDidChangeWorkspace},
     models::primitives::ConfigurationTarget,
@@ -149,7 +152,6 @@ impl ConfigurationHandle {
 }
 
 pub struct ConfigurationService {
-    #[allow(unused)]
     registry: ConfigurationRegistry,
     defaults: ConfigurationModel,
     profile: Arc<RwLock<Option<ConfigurationHandle>>>,
@@ -238,6 +240,10 @@ impl ConfigurationService {
                 .subscribe(move |_event| async {})
                 .await,
         }
+    }
+
+    pub fn schemas(&self) -> HashMap<ReadOnlyStr, NodeValue> {
+        self.registry.nodes()
     }
 
     pub async fn configuration(&self) -> ConfigurationModel {

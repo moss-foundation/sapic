@@ -1,3 +1,4 @@
+use moss_configuration::models::primitives::ParameterType;
 use moss_logging::models::primitives::LogEntryId;
 use moss_user::models::primitives::AccountKind;
 use serde::{Deserialize, Serialize};
@@ -10,6 +11,39 @@ use std::{
 use ts_rs::TS;
 
 use crate::models::primitives::*;
+
+/// @category Type
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct ConfigurationSchema {
+    pub id: String,
+    pub parent_id: Option<String>,
+    pub order: Option<i64>,
+    pub name: Option<String>,
+    pub description: Option<String>,
+    pub parameters: Vec<ConfigurationParameterValue>,
+}
+
+/// @category Type
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct ConfigurationParameterValue {
+    pub id: String,
+    #[ts(optional, type = "JsonValue")]
+    pub default: Option<JsonValue>,
+    #[ts(type = "ParameterType")]
+    pub typ: ParameterType,
+    pub description: Option<String>,
+    pub maximum: Option<u64>,
+    pub minimum: Option<u64>,
+    pub protected: bool,
+    pub order: Option<i64>,
+    pub tags: Vec<String>,
+}
 
 /// @category Type
 #[derive(Debug, Clone, Deserialize, TS)]

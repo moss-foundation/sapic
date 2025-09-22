@@ -6,6 +6,8 @@ edition = "2024"
 [dependencies]
 moss_text.workspace = true
 
+ts-rs.workspace = true
 static_json.workspace = true
 inventory.workspace = true
 serde_json = { workspace = true }
+serde = { workspace = true, features = ["derive"] }

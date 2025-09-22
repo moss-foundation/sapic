@@ -1,13 +1,9 @@
+pub mod models;
+
 use moss_text::ReadOnlyStr;
 use static_json::Value as JsonValueRef;
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ParameterType {
-    String,
-    Number,
-    Boolean,
-    Object,
-    Array,
-}
+
+use crate::models::primitives::ParameterType;
 
 #[derive(Debug)]
 pub struct ParameterDecl {
@@ -26,7 +22,7 @@ pub struct ParameterDecl {
 
     /// The order in which the parameter appears within its group in the settings UI.
     pub order: Option<i64>,
-    pub tags: &'static [&'static str],
+    pub tags: &'static [ReadOnlyStr],
 }
 
 #[derive(Debug)]

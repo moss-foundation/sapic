@@ -10,7 +10,7 @@ pub mod storage;
 pub mod workspace;
 
 use moss_applib::AppRuntime;
-use moss_configuration::{ConfigurationDecl, ParameterDecl, ParameterType};
+use moss_configuration::{ConfigurationDecl, ParameterDecl, models::primitives::ParameterType};
 use moss_environment::AnyEnvironment;
 use moss_text::read_only_str;
 

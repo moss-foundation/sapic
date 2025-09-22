@@ -1,5 +1,5 @@
 {
-    "name": "@repo/moss-app",
+    "name": "@repo/moss-configuration",
     "exports": {
       ".": "./index.ts"
     },
@@ -8,11 +8,7 @@
       "format": "prettier --plugin=prettier-plugin-tailwindcss --write \"**/*.{ts,tsx,md}\""
     },
     "devDependencies": {
-      "@repo/typescript-config": "workspace:*",
-      "@repo/moss-bindingutils": "workspace:*",
-      "@repo/moss-workspace": "workspace:*",
-      "@repo/moss-user": "workspace:*", 
-      "@repo/moss-configuration": "workspace:*"
+      "@repo/typescript-config": "workspace:*"
     },
     "dependencies": {
       "typescript": "^5.9.2",

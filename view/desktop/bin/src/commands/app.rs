@@ -43,6 +43,20 @@ pub async fn update_configuration<'a, R: tauri::Runtime>(
     .await
 }
 
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn list_configuration_schemas<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: Window<R>,
+    options: Options,
+) -> TauriResult<ListConfigurationSchemasOutput> {
+    super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
+        app.list_configuration_schemas(&ctx).await
+    })
+    .await
+}
+
 // DEPRECATED
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
