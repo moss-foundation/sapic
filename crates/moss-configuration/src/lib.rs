@@ -37,4 +37,7 @@ pub struct ConfigurationDecl {
     pub parameters: &'static [ParameterDecl],
 }
 
+pub struct IncludeConfigurationDecl(pub &'static str);
+inventory::collect!(IncludeConfigurationDecl);
+
 inventory::collect!(ConfigurationDecl);
