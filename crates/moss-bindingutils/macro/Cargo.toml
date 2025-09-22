@@ -7,5 +7,5 @@ edition = "2024"
 proc-macro = true
 
 [dependencies]
-syn.workspace = true
+syn = { workspace = true, features = ["full"] }
 quote.workspace = true

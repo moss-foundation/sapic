@@ -32,8 +32,8 @@ tauri.workspace = true
 serde_json.workspace = true
 futures.workspace = true
 derive_more = { workspace = true, features = ["deref", "deref_mut"] }
-image.workspace = true
-rand.workspace = true
+image = { workspace = true, features = ["png"] }
+rand = { workspace = true, features = ["thread_rng"] }
 async-trait.workspace = true
 async-stream.workspace = true
 nanoid.workspace = true
