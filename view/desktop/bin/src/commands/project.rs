@@ -1,9 +1,8 @@
+use crate::commands::primitives::*;
 use moss_api::TauriResult;
-use moss_project::models::{events::*, operations::*};
+use moss_project::models::{events::*, operations::*, primitives::EntryId};
 use moss_workspace::models::primitives::ProjectId;
 use tauri::{Window, ipc::Channel as TauriChannel};
-
-use crate::commands::primitives::*;
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
@@ -127,6 +126,26 @@ pub async fn stream_project_entries<'a, R: tauri::Runtime>(
                 .stream_entries(&ctx, &app_delegate, channel, input)
                 .await
         },
+    )
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn describe_project_entry<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: Window<R>,
+    project_id: ProjectId,
+    entry_id: EntryId,
+    options: Options,
+) -> TauriResult<DescribeEntryOutput> {
+    super::with_project_timeout(
+        ctx.inner(),
+        app,
+        project_id,
+        options,
+        |ctx, _, project| async move { project.describe_entry(&ctx, entry_id).await },
     )
     .await
 }

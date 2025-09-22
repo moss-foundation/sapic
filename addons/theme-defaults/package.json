@@ -1,0 +1,6 @@
+{
+  "name": "@repo/theme-defaults",
+  "scripts": {
+    "build": "ts-node src/index.ts"
+  }
+}

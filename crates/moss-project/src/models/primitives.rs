@@ -45,7 +45,7 @@ impl ToString for EntryClass {
 }
 
 /// @category Primitive
-#[derive(Clone, Debug, Deserialize, Serialize, TS)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "primitives.ts")]
 pub enum EntryKind {
     Dir,
@@ -54,7 +54,7 @@ pub enum EntryKind {
 }
 
 /// @category Primitive
-#[derive(Clone, Debug, Deserialize, Serialize, TS)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "primitives.ts")]
 pub enum EntryProtocol {
     Get,

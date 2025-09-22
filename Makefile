@@ -41,6 +41,9 @@ export ICONS_OUTPUT_DIR = ${CURDIR}/view/desktop/src/assets/icons
 export APP_LOG_DIR = ${CURDIR}/logs/app
 export SESSION_LOG_DIR = ${CURDIR}/logs/session
 
+# ---- Addon Directories ----
+export ADDON_THEME_DEFAULTS = ${CURDIR}/addons/theme-defaults
+
 # ---- Default Goal ----
 .DEFAULT_GOAL := run-desktop
 
@@ -48,6 +51,7 @@ export SESSION_LOG_DIR = ${CURDIR}/logs/session
 # Tool directories
 GEN_BINDINGS_DIR := tools/gen-bindings
 CARGO_NEW_TS := tools/cargo-new-ts
+THEME_INSTALL := tools/theme-install
 
 # Application directories
 DESKTOP_DIR := view/desktop
@@ -90,7 +94,7 @@ run-desktop:
 
 ## Install dependencies and setup development environment
 .PHONY: ready
-ready: gen-icons export-css-variables gen-typedoc
+ready: gen-themes gen-icons export-css-variables gen-typedoc
 	@cd $(CARGO_NEW_TS) && $(CARGO) install --path .
 	$(PNPM) i
 
@@ -107,6 +111,13 @@ gen-icons:
 								 --light-css ../assets/themes/light.css \
 								 --dark-css ../assets/themes/dark.css \
 								 --output-dir ${ICONS_OUTPUT_DIR}
+
+.PHONY: gen-themes
+gen-themes:
+	@cd $(ADDON_THEME_DEFAULTS) && $(PNPM) run build
+	@cd $(THEME_INSTALL) && $(CARGO) run -- --input-path ../../addons/theme-defaults/dark.json --output-path ../../assets/themes/dark.css
+	@cd $(THEME_INSTALL) && $(CARGO) run -- --input-path ../../addons/theme-defaults/light.json --output-path ../../assets/themes/light.css
+	@cd $(THEME_INSTALL) && $(CARGO) run -- --input-path ../../addons/theme-defaults/vscode.json --output-path ../../assets/themes/vscode.css
 
 # ======================================================
 # TypeScript Bindings Generation
@@ -151,7 +162,6 @@ $(eval $(call gen_bindings,api,API_MODELS_DIR))
 $(eval $(call gen_bindings,git,GIT_MODELS_DIR))
 $(eval $(call gen_bindings,user,USER_MODELS_DIR))
 $(eval $(call gen_bindings,configuration,CONFIGURATION_MODELS_DIR))
-
 
 gen-app-bindings:
 gen-project-bindings:

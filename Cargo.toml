@@ -37,6 +37,7 @@ members = [
     "crates/moss-server-api",
     "crates/moss-id-macro",
     "crates/moss-configuration",
+    "crates/moss-theme",
     #
     # Apps
     #
@@ -45,7 +46,8 @@ members = [
     # Tools
     #
     "tools/xtask",
-    "tools/cargo-new-ts",
+    "tools/cargo-new-ts", 
+    "tools/theme-install",
 ]
 
 [workspace.dependencies]
@@ -86,6 +88,8 @@ moss_user = { path = "crates/moss-user" }
 moss_server_api = { path = "crates/moss-server-api" }
 moss_bootstrap = { path = "crates/moss-bootstrap" }
 moss_configuration = { path = "crates/moss-configuration" }
+moss_theme = { path = "crates/moss-theme" }
+
 #
 # External crates
 #
