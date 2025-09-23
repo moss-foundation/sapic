@@ -5,6 +5,8 @@
  */
 export type AccountKind = "GITHUB" | "GITLAB";
 
+export type ConfigurationParameterType = "string" | "number" | "boolean" | "object" | "array";
+
 export type ConfigurationTarget = "PROFILE" | "WORKSPACE";
 
 /**

@@ -3,6 +3,14 @@ import { z } from "zod";
 
 export const accountKindSchema = z.union([z.literal("GITHUB"), z.literal("GITLAB")]);
 
+export const configurationParameterTypeSchema = z.union([
+  z.literal("string"),
+  z.literal("number"),
+  z.literal("boolean"),
+  z.literal("object"),
+  z.literal("array"),
+]);
+
 export const configurationTargetSchema = z.union([z.literal("PROFILE"), z.literal("WORKSPACE")]);
 
 export const logLevelSchema = z.union([
