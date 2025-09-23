@@ -11,8 +11,7 @@
       "@repo/typescript-config": "workspace:*",
       "@repo/moss-bindingutils": "workspace:*",
       "@repo/moss-workspace": "workspace:*",
-      "@repo/moss-user": "workspace:*", 
-      "@repo/moss-configuration": "workspace:*"
+      "@repo/moss-user": "workspace:*"
     },
     "dependencies": {
       "typescript": "^5.9.2",

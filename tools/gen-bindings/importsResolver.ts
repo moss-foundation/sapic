@@ -27,7 +27,6 @@ const KNOWN_PACKAGES = [
   "moss-api",
   "moss-git",
   "moss-user",
-  "moss-configuration",
 ];
 
 interface Config {

@@ -1,4 +1,3 @@
-// use moss_configuration::models::primitives::ParameterType;
 use moss_logging::models::primitives::LogEntryId;
 use moss_user::models::primitives::AccountKind;
 use serde::{Deserialize, Serialize};

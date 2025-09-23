@@ -197,7 +197,7 @@ jobs:
           - moss_user
           - moss_edit
           - moss_server_api
-          - moss_configuration
+          - moss_contrib
           - moss_theme
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -267,7 +267,7 @@ jobs:
           - moss_user
           - moss_edit
           - moss_server_api
-          - moss_configuration
+          - moss_contrib
           - moss_theme
     steps:
       - name: Harden the runner (Audit all outbound calls)
