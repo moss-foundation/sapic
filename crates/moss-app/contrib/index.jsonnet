@@ -11,13 +11,11 @@ contrib.configuration.Configuration(
       id = "colorTheme",
       default = "moss.sapic-theme.lightDefault",
       typ = contrib.configuration.ParameterType.String,
-      tags = [],
     ),
     contrib.configuration.Parameter(
       id = "locale",
       default = "moss.sapic-locale.en",
       typ = contrib.configuration.ParameterType.String,
-      tags = [],
     ),
   ],
 )
