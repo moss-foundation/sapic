@@ -17,7 +17,6 @@ CRATES_WITH_BINDINGS = {
     "api",
     "git",
     "git-hosting-provider",
-    "configuration",
     "user"
 }
 
