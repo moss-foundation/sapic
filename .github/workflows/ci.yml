@@ -114,6 +114,7 @@ jobs:
             libappindicator3-dev
             librsvg2-dev
             patchelf
+            jsonnet
 
       - name: Use Rust Cache
         uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.8.0
@@ -153,6 +154,7 @@ jobs:
             libappindicator3-dev
             librsvg2-dev
             patchelf
+            jsonnet
 
       - name: Use Rust Cache
         uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.8.0
@@ -219,6 +221,7 @@ jobs:
             libappindicator3-dev
             librsvg2-dev
             patchelf
+            jsonnet
 
       - name: Use Rust Cache
         uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.8.0
@@ -289,6 +292,7 @@ jobs:
             libappindicator3-dev
             librsvg2-dev
             patchelf
+            jsonnet
 
       - name: Use Rust Cache
         uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.8.0
