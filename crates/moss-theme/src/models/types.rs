@@ -1,10 +1,8 @@
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
-use std::fmt::Display;
 
 use crate::models::primitives::ThemeMode;
 
-/// @category Type
 #[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Theme {
@@ -16,7 +14,6 @@ pub struct Theme {
     pub box_shadows: IndexMap<String, String>,
 }
 
-/// @category Type
 #[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(tag = "type", content = "value")]
 #[serde(rename_all = "camelCase")]
