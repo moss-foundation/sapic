@@ -36,7 +36,7 @@ members = [
     "crates/moss-user",
     "crates/moss-server-api",
     "crates/moss-id-macro",
-    "crates/moss-configuration",
+    "crates/moss-contrib",
     "crates/moss-theme",
     #
     # Apps
@@ -87,7 +87,7 @@ moss_id_macro = { path = "crates/moss-id-macro"}
 moss_user = { path = "crates/moss-user" }
 moss_server_api = { path = "crates/moss-server-api" }
 moss_bootstrap = { path = "crates/moss-bootstrap" }
-moss_configuration = { path = "crates/moss-configuration" }
+moss_contrib = { path = "crates/moss-contrib" }
 moss_theme = { path = "crates/moss-theme" }
 
 #

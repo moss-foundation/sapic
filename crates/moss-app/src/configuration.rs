@@ -9,7 +9,7 @@ use moss_applib::{
     errors::{FailedPrecondition, Internal},
     subscription::{Event, EventEmitter, Subscription},
 };
-use moss_configuration::IncludeConfigurationDecl;
+use moss_contrib::IncludeConfigurationDecl;
 use moss_edit::json::EditOptions;
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_logging::session;

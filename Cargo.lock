@@ -3577,7 +3577,7 @@ dependencies = [
  "moss_applib",
  "moss_bindingutils",
  "moss_common",
- "moss_configuration",
+ "moss_contrib",
  "moss_db",
  "moss_edit",
  "moss_environment",
@@ -3664,7 +3664,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "moss_configuration"
+name = "moss_contrib"
 version = "0.1.0"
 dependencies = [
  "inventory",
@@ -3999,7 +3999,7 @@ dependencies = [
  "moss_applib",
  "moss_bindingutils",
  "moss_common",
- "moss_configuration",
+ "moss_contrib",
  "moss_db",
  "moss_edit",
  "moss_environment",

@@ -23,7 +23,7 @@ extern crate derive_more;
 pub use app::App;
 pub use builder::AppBuilder;
 use moss_applib::AppRuntime;
-use moss_configuration::IncludeConfigurationDecl;
+use moss_contrib::IncludeConfigurationDecl;
 use moss_workspace::Workspace;
 
 use crate::models::primitives::WorkspaceId;
@@ -66,7 +66,3 @@ pub mod dirs {
     pub const PROFILES_DIR: &str = "profiles";
     pub const TMP_DIR: &str = "tmp";
 }
-
-// /// Generated configuration from Jsonnet at build time
-// pub const GENERATED_CONFIG_JSON: &str =
-//     include_str!(concat!(env!("OUT_DIR"), "/generated_config.json"));

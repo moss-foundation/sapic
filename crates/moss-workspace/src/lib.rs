@@ -1,6 +1,3 @@
-#[path = "../contrib/mod.rs"]
-mod contrib;
-
 pub mod api;
 pub mod builder;
 mod edit;

@@ -23,7 +23,7 @@ moss_logging.workspace = true
 moss_id_macro.workspace = true
 moss_bindingutils.workspace = true
 moss_edit.workspace = true
-moss_configuration.workspace = true
+moss_contrib.workspace = true
 
 static_json.workspace = true
 inventory.workspace = true

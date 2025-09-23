@@ -1,5 +1,5 @@
 use joinerror::ResultExt;
-use moss_configuration::IncludeConfigurationDecl;
+use moss_contrib::IncludeConfigurationDecl;
 use moss_logging::session;
 use moss_text::ReadOnlyStr;
 use serde::Deserialize;
@@ -112,13 +112,14 @@ impl ConfigurationNode {
     }
 }
 
-#[allow(unused)] // All fields of the structure will be used later
 pub(super) struct ConfigurationRegistry {
     nodes: HashMap<ReadOnlyStr, Arc<ConfigurationNode>>,
     parameters: HashMap<ReadOnlyStr, Arc<ParameterItem>>,
 
     // Excluded parameters are hidden from the UI but can still be registered.
     excluded: HashMap<ReadOnlyStr, Arc<ParameterItem>>,
+
+    #[allow(unused)]
     keys: HashSet<ReadOnlyStr>,
 }
 
