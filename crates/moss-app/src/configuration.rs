@@ -1,4 +1,5 @@
 mod edit;
+pub(crate) mod registry;
 
 use joinerror::{OptionExt, ResultExt};
 use json_patch::{PatchOperation, ReplaceOperation, jsonptr::PointerBuf};
@@ -8,10 +9,11 @@ use moss_applib::{
     errors::{FailedPrecondition, Internal},
     subscription::{Event, EventEmitter, Subscription},
 };
+use moss_contrib::IncludeConfigurationDecl;
 use moss_edit::json::EditOptions;
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_logging::session;
-use moss_text::{ReadOnlyStr, read_only_str};
+use moss_text::ReadOnlyStr;
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde_json::Value as JsonValue;
 use std::{
@@ -22,7 +24,10 @@ use std::{
 use tokio::sync::RwLock;
 
 use crate::{
-    configuration::edit::ConfigurationEdit,
+    configuration::{
+        edit::ConfigurationEdit,
+        registry::{ConfigurationNode, ConfigurationRegistry},
+    },
     dirs,
     internal::events::{OnDidChangeConfiguration, OnDidChangeProfile, OnDidChangeWorkspace},
     models::primitives::ConfigurationTarget,
@@ -147,6 +152,7 @@ impl ConfigurationHandle {
 }
 
 pub struct ConfigurationService {
+    registry: ConfigurationRegistry,
     defaults: ConfigurationModel,
     profile: Arc<RwLock<Option<ConfigurationHandle>>>,
     workspace: Arc<RwLock<Option<ConfigurationHandle>>>,
@@ -173,18 +179,10 @@ impl ConfigurationService {
 
         on_did_change_profile_event: &Event<OnDidChangeProfile>,
         on_did_change_workspace_event: &Event<OnDidChangeWorkspace>,
-    ) -> Self {
-        // HACK: hardcoded here for now
-        let defaults = HashMap::from([
-            (
-                read_only_str!("colorTheme"),
-                JsonValue::String("moss.sapic-theme.lightDefault".to_string()),
-            ),
-            (
-                read_only_str!("locale"),
-                JsonValue::String("moss.sapic-locale.en".to_string()),
-            ),
-        ]);
+    ) -> joinerror::Result<Self> {
+        let registry = ConfigurationRegistry::new(inventory::iter::<IncludeConfigurationDecl>())
+            .join_err_with::<()>(|| format!("failed to build configuration registry"))?;
+        let defaults = registry.defaults();
 
         let profile = Arc::new(RwLock::new(None));
         let workspace = Arc::new(RwLock::new(None));
@@ -196,7 +194,8 @@ impl ConfigurationService {
         let fs_clone = fs.clone();
         let profile_clone = profile.clone();
 
-        Self {
+        Ok(Self {
+            registry,
             defaults: ConfigurationModel {
                 keys: defaults.keys().map(|key| key.clone()).collect(),
                 contents: defaults,
@@ -241,7 +240,11 @@ impl ConfigurationService {
             _on_did_change_workspace: on_did_change_workspace_event
                 .subscribe(move |_event| async {})
                 .await,
-        }
+        })
+    }
+
+    pub fn schemas(&self) -> HashMap<ReadOnlyStr, Arc<ConfigurationNode>> {
+        self.registry.nodes()
     }
 
     pub async fn configuration(&self) -> ConfigurationModel {
@@ -264,6 +267,12 @@ impl ConfigurationService {
         value: JsonValue,
         target: ConfigurationTarget,
     ) -> joinerror::Result<()> {
+        if !self.registry.is_parameter_known(key) {
+            session::warn!("parameter '{}' is unknown", key);
+        } else {
+            self.registry.validate_parameter(key, &value)?;
+        }
+
         match target {
             ConfigurationTarget::Profile => {
                 let mut handle_lock = self.profile.write().await;

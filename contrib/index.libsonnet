@@ -1,0 +1,3 @@
+{
+    configuration: import "configuration.libsonnet",
+}

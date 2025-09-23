@@ -114,6 +114,7 @@ jobs:
             libappindicator3-dev
             librsvg2-dev
             patchelf
+            jsonnet
 
       - name: Use Rust Cache
         uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.8.0
@@ -153,6 +154,7 @@ jobs:
             libappindicator3-dev
             librsvg2-dev
             patchelf
+            jsonnet
 
       - name: Use Rust Cache
         uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.8.0
@@ -197,6 +199,8 @@ jobs:
           - moss_user
           - moss_edit
           - moss_server_api
+          - moss_contrib
+          - moss_theme
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
@@ -217,6 +221,7 @@ jobs:
             libappindicator3-dev
             librsvg2-dev
             patchelf
+            jsonnet
 
       - name: Use Rust Cache
         uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.8.0
@@ -265,6 +270,8 @@ jobs:
           - moss_user
           - moss_edit
           - moss_server_api
+          - moss_contrib
+          - moss_theme
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
@@ -285,6 +292,7 @@ jobs:
             libappindicator3-dev
             librsvg2-dev
             patchelf
+            jsonnet
 
       - name: Use Rust Cache
         uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.8.0

@@ -10,9 +10,14 @@ use validator::Validate;
 
 use crate::models::{primitives::*, types::*};
 
-// #########################################################
-// ###                    Profile                        ###
-// #########################################################
+/// @category Operation
+#[derive(Debug, Clone, Serialize, TS, Validate)]
+#[ts(optional_fields)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct ListConfigurationSchemasOutput {
+    pub schemas: Vec<ConfigurationNodeSchema>,
+}
 
 /// @category Operation
 #[derive(Debug, Clone, Deserialize, TS, Validate)]

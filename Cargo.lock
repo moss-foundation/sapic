@@ -2947,6 +2947,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "inventory"
+version = "0.3.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bc61209c082fbeb19919bee74b176221b27223e27b65d781eb91af24eb1fb46e"
+dependencies = [
+ "rustversion",
+]
+
+[[package]]
 name = "io-extras"
 version = "0.18.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3559,6 +3568,7 @@ dependencies = [
  "chrono",
  "derive_more 2.0.1",
  "futures",
+ "inventory",
  "joinerror",
  "json-patch 4.0.0",
  "moss_activity_broadcaster",
@@ -3567,6 +3577,7 @@ dependencies = [
  "moss_applib",
  "moss_bindingutils",
  "moss_common",
+ "moss_contrib",
  "moss_db",
  "moss_edit",
  "moss_environment",
@@ -3586,6 +3597,7 @@ dependencies = [
  "rustc-hash",
  "serde",
  "serde_json",
+ "static_json",
  "tauri",
  "thiserror 2.0.16",
  "tokio",
@@ -3649,6 +3661,18 @@ version = "0.1.0"
 dependencies = [
  "derive_more 2.0.1",
  "tokio",
+]
+
+[[package]]
+name = "moss_contrib"
+version = "0.1.0"
+dependencies = [
+ "inventory",
+ "moss_text",
+ "serde",
+ "serde_json",
+ "static_json",
+ "ts-rs",
 ]
 
 [[package]]
@@ -3966,6 +3990,7 @@ dependencies = [
  "dotenv",
  "futures",
  "image",
+ "inventory",
  "joinerror",
  "json-patch 4.0.0",
  "jsonptr 0.7.1",
@@ -3974,6 +3999,7 @@ dependencies = [
  "moss_applib",
  "moss_bindingutils",
  "moss_common",
+ "moss_contrib",
  "moss_db",
  "moss_edit",
  "moss_environment",
@@ -3986,6 +4012,7 @@ dependencies = [
  "moss_project",
  "moss_storage",
  "moss_testutils",
+ "moss_text",
  "moss_user",
  "nanoid",
  "oauth2",
@@ -3994,6 +4021,7 @@ dependencies = [
  "rustc-hash",
  "serde",
  "serde_json",
+ "static_json",
  "tauri",
  "tokio",
  "tracing",
@@ -6150,6 +6178,13 @@ name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
+
+[[package]]
+name = "static_json"
+version = "0.1.0"
+dependencies = [
+ "serde_json",
+]
 
 [[package]]
 name = "string_cache"

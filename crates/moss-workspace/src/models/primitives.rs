@@ -32,6 +32,17 @@ pub enum ActivitybarPosition {
     Hidden,
 }
 
+impl ActivitybarPosition {
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            ActivitybarPosition::Default => "DEFAULT",
+            ActivitybarPosition::Top => "TOP",
+            ActivitybarPosition::Bottom => "BOTTOM",
+            ActivitybarPosition::Hidden => "HIDDEN",
+        }
+    }
+}
+
 impl Default for ActivitybarPosition {
     fn default() -> Self {
         Self::Default
