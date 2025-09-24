@@ -3559,6 +3559,7 @@ dependencies = [
  "chrono",
  "derive_more 2.0.1",
  "futures",
+ "indexmap 2.11.0",
  "joinerror",
  "json-patch 4.0.0",
  "moss_activity_broadcaster",
@@ -3582,6 +3583,7 @@ dependencies = [
  "moss_user",
  "moss_workspace",
  "nanoid",
+ "regorus",
  "reqwest",
  "rustc-hash",
  "serde",
@@ -3914,16 +3916,6 @@ dependencies = [
  "bstr",
  "moss_testutils",
  "serde",
-]
-
-[[package]]
-name = "moss_theme"
-version = "0.1.0"
-dependencies = [
- "indexmap 2.11.0",
- "joinerror",
- "serde",
- "serde_json",
 ]
 
 [[package]]
@@ -5422,6 +5414,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "caf4aa5b0f434c91fe5c7f1ecb6a5ece2130b02ad2a590589dda5146df959001"
 
 [[package]]
+name = "regorus"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ee058fce2fefa4eb9364b0a514296c70235f0f29bb92ec2c0d24766b837f08aa"
+dependencies = [
+ "anyhow",
+ "lazy_static",
+ "regex",
+ "scientific",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.16",
+]
+
+[[package]]
 name = "rend"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5732,6 +5739,26 @@ dependencies = [
  "proc-macro2",
  "quote",
  "serde_derive_internals",
+ "syn 2.0.106",
+]
+
+[[package]]
+name = "scientific"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "38a4b339a8de779ecb098a772ecbba2ace74e23ed959a5b4f30631d8bf1799a8"
+dependencies = [
+ "scientific-macro",
+]
+
+[[package]]
+name = "scientific-macro"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d2ee4885492bb655bfa05d039cd9163eb8fe9f79ddebf00ca23a1637510c2fd2"
+dependencies = [
+ "proc-macro2",
+ "quote",
  "syn 2.0.106",
 ]
 
@@ -6749,7 +6776,7 @@ name = "theme-install"
 version = "0.1.0"
 dependencies = [
  "clap",
- "moss_theme",
+ "moss_app",
 ]
 
 [[package]]

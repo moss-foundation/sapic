@@ -1,3 +1,8 @@
+mod conversion;
+pub mod install;
+mod models;
+mod validation;
+
 use joinerror::{OptionExt, ResultExt};
 use moss_applib::errors::{Internal, NotFound};
 use moss_fs::{FileSystem, FsResultExt};

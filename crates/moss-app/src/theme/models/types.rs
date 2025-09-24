@@ -1,6 +1,5 @@
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
-use std::fmt::Display;
 
 use crate::models::primitives::ThemeMode;
 

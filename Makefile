@@ -113,10 +113,20 @@ gen-icons:
 .PHONY: gen-themes
 gen-themes:
 	@cd $(ADDON_THEME_DEFAULTS) && $(PNPM) run build
-	@cd $(THEME_INSTALL) && $(CARGO) run -- --input-path ../../addons/theme-defaults/dark.json --output-path ../../assets/themes/dark.css
-	@cd $(THEME_INSTALL) && $(CARGO) run -- --input-path ../../addons/theme-defaults/light.json --output-path ../../assets/themes/light.css
-	@cd $(THEME_INSTALL) && $(CARGO) run -- --input-path ../../addons/theme-defaults/vscode.json --output-path ../../assets/themes/vscode.css
+	@cd $(THEME_INSTALL) && $(CARGO) run -- \
+									 --input-path ../../addons/theme-defaults/dark.json \
+									 --policy-path ../../policies/theme.rego \
+									 --output-path ../../assets/themes
 
+	@cd $(THEME_INSTALL) && $(CARGO) run -- \
+									 --input-path ../../addons/theme-defaults/light.json \
+									 --policy-path ../../policies/theme.rego \
+									 --output-path ../../assets/themes
+
+	@cd $(THEME_INSTALL) && $(CARGO) run -- \
+									 --input-path ../../addons/theme-defaults/vscode.json \
+									 --policy-path ../../policies/theme.rego \
+									 --output-path ../../assets/themes
 # ======================================================
 # TypeScript Bindings Generation
 # ======================================================
