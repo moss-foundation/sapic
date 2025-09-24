@@ -23,9 +23,14 @@ extern crate derive_more;
 pub use app::App;
 pub use builder::AppBuilder;
 use moss_applib::AppRuntime;
+use moss_contrib::IncludeConfigurationDecl;
 use moss_workspace::Workspace;
 
 use crate::models::primitives::WorkspaceId;
+
+inventory::submit! {
+    IncludeConfigurationDecl(include_str!(concat!(env!("OUT_DIR"), "/", env!("CARGO_PKG_NAME"), ".contrib.json")))
+}
 
 #[derive(Deref, DerefMut)]
 pub struct ActiveWorkspace<R: AppRuntime> {

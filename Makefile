@@ -69,6 +69,7 @@ ACTIVITY_BROADCASTER_MODELS_DIR := crates/moss-activity-broadcaster
 API_MODELS_DIR := crates/moss-api
 GIT_MODELS_DIR := crates/moss-git
 USER_MODELS_DIR := crates/moss-user
+
 # ---- Command Executables ----
 PNPM := pnpm
 CARGO := cargo
@@ -191,7 +192,7 @@ gen-bindings: \
 	gen-bindingutils-bindings \
 	gen-api-bindings \
 	gen-git-bindings \
-	gen-user-bindings \
+	gen-user-bindings 
 
 
 # ======================================================

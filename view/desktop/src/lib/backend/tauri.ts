@@ -8,6 +8,7 @@ export type TauriIpcCommand =
   //
   | "describe_app"
   | "update_configuration"
+  | "list_configuration_schemas"
   | "set_color_theme" // DEPRECATED
   | "set_locale" // DEPRECATED
   | "execute_command"

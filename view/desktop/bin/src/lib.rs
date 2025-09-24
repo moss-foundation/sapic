@@ -191,6 +191,7 @@ pub async fn run<R: TauriRuntime>() {
             //
             commands::describe_app,
             commands::update_configuration,
+            commands::list_configuration_schemas,
             commands::execute_command,
             commands::set_color_theme,
             commands::describe_color_theme,

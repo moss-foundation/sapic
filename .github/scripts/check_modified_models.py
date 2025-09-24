@@ -15,7 +15,9 @@ CRATES_WITH_BINDINGS = {
     "activity-broadcaster",
     "bindingutils",
     "api",
-    "git-hosting-provider"
+    "git",
+    "git-hosting-provider",
+    "user"
 }
 
 if __name__ == "__main__":

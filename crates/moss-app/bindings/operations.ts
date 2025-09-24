@@ -7,6 +7,7 @@ import type {
   AddAccountParams,
   ColorThemeInfo,
   Configuration,
+  ConfigurationNodeSchema,
   LocaleInfo,
   LogDate,
   LogEntryInfo,
@@ -139,6 +140,11 @@ export type GetTranslationNamespaceOutput = { contents: JsonValue };
  * @category Operation
  */
 export type ListColorThemesOutput = Array<ColorThemeInfo>;
+
+/**
+ * @category Operation
+ */
+export type ListConfigurationSchemasOutput = { schemas: Array<ConfigurationNodeSchema> };
 
 /**
  * @category Operation
