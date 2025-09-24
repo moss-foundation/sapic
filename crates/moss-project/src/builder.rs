@@ -121,38 +121,7 @@ impl ProjectBuilder {
     ) -> joinerror::Result<Project<R>> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
-        let storage_service: Arc<StorageService<R>> =
-            StorageService::new(params.internal_abs_path.as_ref())
-                .join_err::<()>("failed to create project storage service")?
-                .into();
-        let set_icon_service = SetIconService::new(
-            params.internal_abs_path.clone(),
-            self.fs.clone(),
-            PROJECT_ICON_SIZE,
-        );
-
-        // Verify that the manifest file exists
-        // We will handle proper validation later
-        if !params.internal_abs_path.join(MANIFEST_FILE_NAME).exists() {
-            return Err(Error::new::<()>("project manifest file `{}` not found"));
-        }
-
-        let _: ManifestFile = {
-            let manifest_path = params.internal_abs_path.join(MANIFEST_FILE_NAME);
-            let rdr = self
-                .fs
-                .open_file(&manifest_path)
-                .await
-                .join_err_with::<()>(|| {
-                    format!("failed to open manifest file: {}", manifest_path.display())
-                })?;
-            serde_json::from_reader(rdr).join_err_with::<()>(|| {
-                format!("failed to parse manifest file: {}", manifest_path.display())
-            })?
-        };
-
-        // Check if the project is archived
-        // If so, we avoid loading the worktree service
+        // Check if the project has an external path
         let config: ConfigFile = {
             let config_path = params.internal_abs_path.join(CONFIG_FILE_NAME);
             let rdr = self
@@ -166,26 +135,44 @@ impl ProjectBuilder {
                 format!("failed to parse config file: {}", config_path.display())
             })?
         };
+        let abs_path = config
+            .external_path
+            .clone()
+            .map(|p| p.into())
+            .unwrap_or(params.internal_abs_path.clone());
+
+        // Verify that the manifest file exists
+        // We will handle proper validation later
+        if !abs_path.join(MANIFEST_FILE_NAME).exists() {
+            return Err(Error::new::<()>("project manifest file `{}` not found"));
+        }
+
+        // Databases are stored in the internal directory
+        let storage_service: Arc<StorageService<R>> =
+            StorageService::new(params.internal_abs_path.as_ref())
+                .join_err::<()>("failed to create project storage service")?
+                .into();
+
+        let set_icon_service =
+            SetIconService::new(abs_path.clone(), self.fs.clone(), PROJECT_ICON_SIZE);
 
         let worktree_service = if config.archived {
             OnceCell::new()
         } else {
             Arc::new(Worktree::new(
-                params.internal_abs_path.clone(),
+                abs_path.clone(),
                 self.fs.clone(),
                 storage_service.clone(),
             ))
             .into()
         };
 
-        let edit = ProjectEdit::new(
-            self.fs.clone(),
-            params.internal_abs_path.join(MANIFEST_FILE_NAME),
-        );
+        let edit = ProjectEdit::new(self.fs.clone(), abs_path.join(MANIFEST_FILE_NAME));
 
         Ok(Project {
             fs: self.fs,
-            abs_path: params.internal_abs_path,
+            internal_abs_path: params.internal_abs_path,
+            external_abs_path: config.external_path.map(|p| p.into()),
             edit,
             set_icon_service,
             storage_service,
@@ -209,9 +196,11 @@ impl ProjectBuilder {
             .unwrap_or(params.internal_abs_path.clone())
             .into();
 
-        let storage_service: Arc<StorageService<R>> = StorageService::new(abs_path.as_ref())
-            .join_err::<()>("failed to create project storage service")?
-            .into();
+        // Create databases inside internal path
+        let storage_service: Arc<StorageService<R>> =
+            StorageService::new(params.internal_abs_path.as_ref())
+                .join_err::<()>("failed to create project storage service")?
+                .into();
 
         // Create expandedEntries key in the database to prevent warnings
         storage_service
@@ -279,7 +268,7 @@ impl ProjectBuilder {
                 &params.internal_abs_path.join(CONFIG_FILE_NAME),
                 serde_json::to_string(&ConfigFile {
                     archived: false,
-                    external_path: params.external_abs_path.map(|p| p.to_path_buf()),
+                    external_path: params.external_abs_path.clone().map(|p| p.to_path_buf()),
                     account_id: None,
                 })?
                 .as_bytes(),
@@ -307,7 +296,8 @@ impl ProjectBuilder {
 
         Ok(Project {
             fs: self.fs,
-            abs_path: params.internal_abs_path.to_owned().into(),
+            internal_abs_path: params.internal_abs_path,
+            external_abs_path: params.external_abs_path,
             edit,
             set_icon_service,
             storage_service,
@@ -372,7 +362,8 @@ impl ProjectBuilder {
         let edit = ProjectEdit::new(self.fs.clone(), abs_path.join(MANIFEST_FILE_NAME));
         Ok(Project {
             fs: self.fs,
-            abs_path,
+            internal_abs_path: abs_path,
+            external_abs_path: None,
             edit,
             set_icon_service,
             storage_service,
@@ -429,7 +420,8 @@ impl ProjectBuilder {
 
         Ok(Project {
             fs: self.fs,
-            abs_path,
+            internal_abs_path: abs_path,
+            external_abs_path: None,
             edit,
             set_icon_service,
             storage_service,

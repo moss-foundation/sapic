@@ -19,8 +19,6 @@ impl<R: AppRuntime> Workspace<R> {
     ) -> joinerror::Result<CreateProjectOutput> {
         input.validate().join_err_bare()?;
 
-        debug_assert!(input.inner.external_path.is_none(), "Is not implemented");
-
         let id = ProjectId::new();
 
         let account = if input.inner.git_params.is_some() {
@@ -39,7 +37,7 @@ impl<R: AppRuntime> Workspace<R> {
             order: description.order,
             expanded: description.expanded,
             icon_path: description.icon_path,
-            abs_path: description.abs_path,
+            abs_path: description.internal_abs_path,
             external_path: description.external_path,
         })
     }

@@ -94,7 +94,7 @@ impl<R: AppRuntime> Workspace<R> {
             order: description.order,
             expanded: description.expanded,
             icon_path: description.icon_path,
-            abs_path: description.abs_path,
+            abs_path: description.internal_abs_path,
             external_path: description.external_path,
         })
     }

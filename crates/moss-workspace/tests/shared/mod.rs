@@ -79,14 +79,6 @@ pub async fn setup_test_workspace() -> (
 
     let ctx = MutableContext::background_with_timeout(Duration::from_secs(30));
 
-    let abs_path: Arc<Path> = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("tests")
-        .join("data")
-        .join("workspaces")
-        .join(random_workspace_name())
-        .into();
-    fs::create_dir_all(&abs_path).unwrap();
-
     let active_profile = Profile::new(
         moss_user::models::primitives::ProfileId::new(),
         HashMap::new(),

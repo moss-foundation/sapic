@@ -2,14 +2,17 @@
 
 pub mod shared;
 
-use crate::shared::{generate_random_icon, setup_test_workspace};
 use moss_storage::storage::operations::GetItem;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_project_name};
 use moss_workspace::{
     models::{operations::CreateProjectInput, primitives::ProjectId, types::CreateProjectParams},
     storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
+use serde_json::Value as JsonValue;
+use std::path::Path;
 use tauri::ipc::Channel;
+
+use crate::shared::{generate_random_icon, setup_test_workspace};
 
 #[tokio::test]
 async fn create_project_success() {
@@ -336,341 +339,90 @@ async fn create_multiple_projects_expanded_items() {
     cleanup().await;
 }
 
-// FIXME: figure out how to incorporate repo-operations into CI pipeline
+#[tokio::test]
+async fn create_project_external_success() {
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
-// #[tokio::test]
-// async fn create_collection_with_github_public_repo() {
-//     let (ctx, workspace, cleanup) = setup_test_workspace().await;
-//
-//     let project_name = random_project_name();
-//     let repo = "https://github.com/moss-foundation/sapic-test-collection-public.git".to_string();
-//     let normalized_repo = "github.com/moss-foundation/sapic-test-collection-public";
-//     let create_project_result = workspace
-//         .create_collection(
-//             &ctx,
-//             &CreateCollectionInput {
-//                 name: project_name.clone(),
-//                 order: 0,
-//                 external_path: None,
-//                 repository: Some(repo.clone()),
-//                 git_provider_type: Some(GitProviderType::GitHub),
-//                 icon_path: None,
-//             },
-//         )
-//         .await;
-//
-//     let create_project_output = create_project_result.unwrap();
-//
-//     let channel = Channel::new(move |_| Ok(()));
-//     let output = workspace.stream_collections(&ctx, channel).await.unwrap();
-//     assert_eq!(output.total_returned, 1);
-//
-//     // Verify the directory was created
-//     assert!(create_project_output.abs_path.exists());
-//
-//     // Verify that the repo is stored in the manifest model
-//     let id = create_project_output.id;
-//     let collection = workspace.collection(&id).await.unwrap();
-//     assert_eq!(
-//         collection.describe().await.unwrap().repository,
-//         Some(normalized_repo.to_string())
-//     );
-//
-//     // Verify the db entries were created
-//     let item_store = workspace.db().item_store();
-//
-//     // Check order was stored
-//     let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
-//     let order_value = GetItem::get(item_store.as_ref(), &ctx, order_key)
-//         .await
-//         .unwrap();
-//     let stored_order: usize = order_value.deserialize().unwrap();
-//     assert_eq!(stored_order, 0);
-//
-//     // Check expanded_items contains the project id
-//     let expanded_items_value = GetItem::get(
-//         item_store.as_ref(),
-//         &ctx,
-//         SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
-//     )
-//         .await
-//         .unwrap();
-//     let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
-//     assert!(expanded_items.contains(&id));
-//
-//
-//     tokio::task::spawn_blocking(move || {
-//         // Check the local git repo is correctly created
-//         assert!(create_project_output.abs_path.join(".git").exists());
-//
-//         let repo_handle = collection.repo_handle();
-//         let repo_handle_lock = repo_handle.lock().unwrap();
-//         let repo_handle_ref = repo_handle_lock.as_ref().unwrap();
-//
-//         // Check the default branch is created locally (which implies the initial commit is successful)
-//         // TODO: Check the default branch is renamed based on user input
-//         let branches = repo_handle_ref.list_branches(None).unwrap();
-//         assert_eq!(branches.len(), 1);
-//
-//         // Check the remote is correctly set
-//         let remotes = repo_handle_ref.list_remotes().unwrap();
-//         assert_eq!(remotes.len(), 1);
-//         assert_eq!(remotes["origin"], repo);
-//
-//     }).await.unwrap();
-//
-//     cleanup().await;
-// }
-//
-// #[tokio::test]
-// async fn create_collection_with_github_private_repo() {
-//     let (ctx, workspace, cleanup) = setup_test_workspace().await;
-//
-//     let project_name = random_project_name();
-//     let repo = "https://github.com/moss-foundation/sapic-test-collection-private.git".to_string();
-//     let normalized_repo = "github.com/moss-foundation/sapic-test-collection-private";
-//     let create_project_result = workspace
-//         .create_collection(
-//             &ctx,
-//             &CreateCollectionInput {
-//                 name: project_name.clone(),
-//                 order: 0,
-//                 external_path: None,
-//                 repository: Some(repo.clone()),
-//                 git_provider_type: Some(GitProviderType::GitHub),
-//                 icon_path: None,
-//             },
-//         )
-//         .await;
-//
-//     let create_project_output = create_project_result.unwrap();
-//
-//     let channel = Channel::new(move |_| Ok(()));
-//     let output = workspace.stream_collections(&ctx, channel).await.unwrap();
-//     assert_eq!(output.total_returned, 1);
-//
-//     // Verify the directory was created
-//     assert!(create_project_output.abs_path.exists());
-//
-//     // Verify that the repo is stored in the manifest model
-//     let id = create_project_output.id;
-//     let collection = workspace.collection(&id).await.unwrap();
-//     assert_eq!(
-//         collection.describe().await.unwrap().repository,
-//         Some(normalized_repo.to_string())
-//     );
-//
-//     // Verify the db entries were created
-//     let item_store = workspace.db().item_store();
-//
-//     // Check order was stored
-//     let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
-//     let order_value = GetItem::get(item_store.as_ref(), &ctx, order_key)
-//         .await
-//         .unwrap();
-//     let stored_order: usize = order_value.deserialize().unwrap();
-//     assert_eq!(stored_order, 0);
-//
-//     // Check expanded_items contains the project id
-//     let expanded_items_value = GetItem::get(
-//         item_store.as_ref(),
-//         &ctx,
-//         SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
-//     )
-//         .await
-//         .unwrap();
-//     let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
-//     assert!(expanded_items.contains(&id));
-//
-//
-//     tokio::task::spawn_blocking(move || {
-//         // Check the local git repo is correctly created
-//         assert!(create_project_output.abs_path.join(".git").exists());
-//
-//         let repo_handle = collection.repo_handle();
-//         let repo_handle_lock = repo_handle.lock().unwrap();
-//         let repo_handle_ref = repo_handle_lock.as_ref().unwrap();
-//
-//         // Check the default branch is created locally (which implies the initial commit is successful)
-//         // TODO: Check the default branch is renamed based on user input
-//         let branches = repo_handle_ref.list_branches(None).unwrap();
-//         assert_eq!(branches.len(), 1);
-//
-//         // Check the remote is correctly set
-//         let remotes = repo_handle_ref.list_remotes().unwrap();
-//         assert_eq!(remotes.len(), 1);
-//         assert_eq!(remotes["origin"], repo);
-//
-//     }).await.unwrap();
-//
-//     cleanup().await;
-// }
-//
-//
-// #[tokio::test]
-// async fn create_collection_with_gitlab_public_repo() {
-//     let (ctx, workspace, cleanup) = setup_test_workspace().await;
-//
-//     let project_name = random_project_name();
-//     let repo = "https://gitlab.com/moss-foundation/sapic-collection-public.git".to_string();
-//     let normalized_repo = "gitlab.com/moss-foundation/sapic-collection-public";
-//     let create_project_result = workspace
-//         .create_collection(
-//             &ctx,
-//             &CreateCollectionInput {
-//                 name: project_name.clone(),
-//                 order: 0,
-//                 external_path: None,
-//                 repository: Some(repo.clone()),
-//                 git_provider_type: Some(GitProviderType::GitLab),
-//                 icon_path: None,
-//             },
-//         )
-//         .await;
-//
-//     let create_project_output = create_project_result.unwrap();
-//
-//     let channel = Channel::new(move |_| Ok(()));
-//     let output = workspace.stream_collections(&ctx, channel).await.unwrap();
-//     assert_eq!(output.total_returned, 1);
-//
-//     // Verify the directory was created
-//     assert!(create_project_output.abs_path.exists());
-//
-//     // Verify that the repo is stored in the manifest model
-//     let id = create_project_output.id;
-//     let collection = workspace.collection(&id).await.unwrap();
-//     assert_eq!(
-//         collection.describe().await.unwrap().repository,
-//         Some(normalized_repo.to_string())
-//     );
-//
-//     // Verify the db entries were created
-//     let item_store = workspace.db().item_store();
-//
-//     // Check order was stored
-//     let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
-//     let order_value = GetItem::get(item_store.as_ref(), &ctx, order_key)
-//         .await
-//         .unwrap();
-//     let stored_order: usize = order_value.deserialize().unwrap();
-//     assert_eq!(stored_order, 0);
-//
-//     // Check expanded_items contains the project id
-//     let expanded_items_value = GetItem::get(
-//         item_store.as_ref(),
-//         &ctx,
-//         SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
-//     )
-//         .await
-//         .unwrap();
-//     let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
-//     assert!(expanded_items.contains(&id));
-//
-//
-//     tokio::task::spawn_blocking(move || {
-//         // Check the local git repo is correctly created
-//         assert!(create_project_output.abs_path.join(".git").exists());
-//
-//         let repo_handle = collection.repo_handle();
-//         let repo_handle_lock = repo_handle.lock().unwrap();
-//         let repo_handle_ref = repo_handle_lock.as_ref().unwrap();
-//
-//         // Check the default branch is created locally (which implies the initial commit is successful)
-//         // TODO: Check the default branch is renamed based on user input
-//         let branches = repo_handle_ref.list_branches(None).unwrap();
-//         assert_eq!(branches.len(), 1);
-//
-//         // Check the remote is correctly set
-//         let remotes = repo_handle_ref.list_remotes().unwrap();
-//         assert_eq!(remotes.len(), 1);
-//         assert_eq!(remotes["origin"], repo);
-//
-//     }).await.unwrap();
-//
-//     cleanup().await;
-// }
-//
-// #[tokio::test]
-// async fn create_collection_with_gitlab_private_repo() {
-//     let (ctx, workspace, cleanup) = setup_test_workspace().await;
-//
-//     let project_name = random_project_name();
-//     let repo = "https://gitlab.com/moss-foundation/sapic-collection-private.git".to_string();
-//     let normalized_repo = "gitlab.com/moss-foundation/sapic-collection-private";
-//     let create_project_result = workspace
-//         .create_collection(
-//             &ctx,
-//             &CreateCollectionInput {
-//                 name: project_name.clone(),
-//                 order: 0,
-//                 external_path: None,
-//                 repository: Some(repo.clone()),
-//                 git_provider_type: Some(GitProviderType::GitLab),
-//                 icon_path: None,
-//             },
-//         )
-//         .await;
-//
-//     let create_project_output = create_project_result.unwrap();
-//
-//     let channel = Channel::new(move |_| Ok(()));
-//     let output = workspace.stream_collections(&ctx, channel).await.unwrap();
-//     assert_eq!(output.total_returned, 1);
-//
-//     // Verify the directory was created
-//     assert!(create_project_output.abs_path.exists());
-//
-//     // Verify that the repo is stored in the manifest model
-//     let id = create_project_output.id;
-//     let collection = workspace.collection(&id).await.unwrap();
-//     assert_eq!(
-//         collection.describe().await.unwrap().repository,
-//         Some(normalized_repo.to_string())
-//     );
-//
-//     // Verify the db entries were created
-//     let item_store = workspace.db().item_store();
-//
-//     // Check order was stored
-//     let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
-//     let order_value = GetItem::get(item_store.as_ref(), &ctx, order_key)
-//         .await
-//         .unwrap();
-//     let stored_order: usize = order_value.deserialize().unwrap();
-//     assert_eq!(stored_order, 0);
-//
-//     // Check expanded_items contains the project id
-//     let expanded_items_value = GetItem::get(
-//         item_store.as_ref(),
-//         &ctx,
-//         SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
-//     )
-//         .await
-//         .unwrap();
-//     let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
-//     assert!(expanded_items.contains(&id));
-//
-//
-//     tokio::task::spawn_blocking(move || {
-//         // Check the local git repo is correctly created
-//         assert!(create_project_output.abs_path.join(".git").exists());
-//
-//         let repo_handle = collection.repo_handle();
-//         let repo_handle_lock = repo_handle.lock().unwrap();
-//         let repo_handle_ref = repo_handle_lock.as_ref().unwrap();
-//
-//         // Check the default branch is created locally (which implies the initial commit is successful)
-//         // TODO: Check the default branch is renamed based on user input
-//         let branches = repo_handle_ref.list_branches(None).unwrap();
-//         assert_eq!(branches.len(), 1);
-//
-//         // Check the remote is correctly set
-//         let remotes = repo_handle_ref.list_remotes().unwrap();
-//         assert_eq!(remotes.len(), 1);
-//         assert_eq!(remotes["origin"], repo);
-//
-//     }).await.unwrap();
-//
-//     cleanup().await;
-// }
+    let project_name = random_project_name();
+    let external_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join("data")
+        .join("external_projects")
+        .join(&project_name);
+    tokio::fs::create_dir_all(&external_path).await.unwrap();
+
+    let create_project_output = workspace
+        .create_project(
+            &ctx,
+            &app_delegate,
+            &CreateProjectInput {
+                inner: CreateProjectParams {
+                    name: project_name.clone(),
+                    order: 0,
+                    external_path: Some(external_path.clone()),
+                    git_params: None,
+                    icon_path: None,
+                },
+            },
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(
+        create_project_output.external_path,
+        Some(external_path.clone())
+    );
+
+    // Verify the internal directory is created
+    assert!(create_project_output.abs_path.exists());
+
+    // Verify the internal directory has state database
+    let internal_path = create_project_output.abs_path;
+    assert!(internal_path.exists());
+    assert!(internal_path.join("state.db").exists());
+
+    // Verify the correct config is created in internal directory
+    let config_path = internal_path.join("config.json");
+    assert!(config_path.exists());
+    let config: JsonValue =
+        serde_json::from_str(&std::fs::read_to_string(&config_path).unwrap()).unwrap();
+    assert_eq!(
+        Path::new(config["external_path"].as_str().unwrap()),
+        external_path
+    );
+
+    // Verify the manifest is created in external directory
+    let manifest_path = external_path.join("Sapic.json");
+    assert!(manifest_path.exists());
+
+    // Verify through stream_projects
+    let channel = Channel::new(move |_| Ok(()));
+    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
+    assert_eq!(output.total_returned, 1);
+
+    // Verify the db entries were created
+    let id = create_project_output.id;
+    let item_store = workspace.db().item_store();
+
+    // Check order was stored
+    let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
+    let order_value = GetItem::get(item_store.as_ref(), &ctx, order_key)
+        .await
+        .unwrap();
+    let stored_order: usize = order_value.deserialize().unwrap();
+    assert_eq!(stored_order, 0);
+
+    // Check expanded_items contains the project id
+    let expanded_items_value = GetItem::get(
+        item_store.as_ref(),
+        &ctx,
+        SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
+    )
+    .await
+    .unwrap();
+    let expanded_items: Vec<ProjectId> = expanded_items_value.deserialize().unwrap();
+    assert!(expanded_items.contains(&id));
+
+    tokio::fs::remove_dir_all(&external_path).await.unwrap();
+    cleanup().await;
+}

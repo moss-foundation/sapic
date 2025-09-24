@@ -76,7 +76,7 @@ pub(crate) struct ProjectItemDescription {
 
     // FIXME: Do we need this field?
     pub icon_path: Option<PathBuf>,
-    pub abs_path: Arc<Path>,
+    pub internal_abs_path: Arc<Path>,
     pub external_path: Option<PathBuf>,
     pub archived: bool,
 }
@@ -229,7 +229,7 @@ impl<R: AppRuntime> ProjectService<R> {
         let abs_path: Arc<Path> = abs_path.clone().into();
         let builder = ProjectBuilder::new(self.fs.clone()).await;
 
-        let collection = match builder
+        let project = match builder
             .create(
                 ctx,
                 ProjectCreateParams {
@@ -264,7 +264,7 @@ impl<R: AppRuntime> ProjectService<R> {
                 },
             };
 
-            if let Err(e) = collection
+            if let Err(e) = project
                 .init_vcs(ctx, client, git_params.repository, git_params.branch)
                 .await
             {
@@ -280,7 +280,7 @@ impl<R: AppRuntime> ProjectService<R> {
             }
         }
 
-        let icon_path = collection.icon_path();
+        let icon_path = project.icon_path();
 
         {
             let mut state_lock = self.state.write().await;
@@ -290,7 +290,7 @@ impl<R: AppRuntime> ProjectService<R> {
                 ProjectItem {
                     id: id.to_owned(),
                     order: Some(params.order),
-                    handle: Arc::new(collection),
+                    handle: Arc::new(project),
                 },
             );
         }
@@ -329,7 +329,7 @@ impl<R: AppRuntime> ProjectService<R> {
             expanded: true,
             vcs: None,
             icon_path,
-            abs_path: abs_path.into(),
+            internal_abs_path: abs_path.into(),
             external_path: params.external_path.clone(),
             archived: false,
         })
@@ -470,7 +470,7 @@ impl<R: AppRuntime> ProjectService<R> {
             expanded: true,
             vcs: Some(vcs),
             icon_path,
-            abs_path,
+            internal_abs_path: abs_path,
             external_path: None,
             archived: false,
         })
@@ -622,8 +622,8 @@ impl<R: AppRuntime> ProjectService<R> {
                     expanded,
                     vcs,
                     icon_path,
-                    abs_path: item.handle.abs_path().clone(),
-                    external_path: None, // TODO: implement
+                    internal_abs_path: item.handle.internal_abs_path().clone(),
+                    external_path: item.handle.external_abs_path().map(|p| p.to_path_buf()),
                     archived: item.is_archived(),
                 };
             }
@@ -767,7 +767,7 @@ impl<R: AppRuntime> ProjectService<R> {
             expanded: true,
             vcs: None,
             icon_path,
-            abs_path,
+            internal_abs_path: abs_path,
             external_path: None,
             archived: false,
         })
