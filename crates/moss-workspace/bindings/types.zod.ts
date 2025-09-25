@@ -87,6 +87,10 @@ export const exportProjectParamsSchema = z.object({
   destination: z.string(),
 });
 
+export const externalImportParamsSchema = z.object({
+  externalPath: z.string(),
+});
+
 export const gitHubImportParamsSchema = z.object({
   accountId: z.string(),
   repository: z.string(),
@@ -122,6 +126,9 @@ export const importProjectSourceSchema = z.union([
   }),
   z.object({
     "archive": archiveImportParamsSchema,
+  }),
+  z.object({
+    "external": externalImportParamsSchema,
   }),
 ]);
 
@@ -212,7 +219,6 @@ export const variableInfoSchema = z.object({
 export const importProjectParamsSchema = z.object({
   name: z.string(),
   order: z.number(),
-  externalPath: z.string().optional(),
   source: importProjectSourceSchema,
   iconPath: z.string().optional(),
 });

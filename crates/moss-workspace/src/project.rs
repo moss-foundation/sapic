@@ -808,13 +808,10 @@ impl<R: AppRuntime> ProjectService<R> {
 
         let builder = ProjectBuilder::new(self.fs.clone()).await;
         let project = match builder
-            .import_external(
-                ctx,
-                ProjectImportExternalParams {
-                    internal_abs_path: internal_abs_path.clone(),
-                    external_abs_path: params.external_path.clone().into(),
-                },
-            )
+            .import_external(ProjectImportExternalParams {
+                internal_abs_path: internal_abs_path.clone(),
+                external_abs_path: params.external_path.clone().into(),
+            })
             .await
             .join_err::<()>("failed to import external project")
         {

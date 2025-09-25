@@ -135,6 +135,11 @@ export type ExportProjectParams = {
 /**
  * @category Type
  */
+export type ExternalImportParams = { externalPath: string };
+
+/**
+ * @category Type
+ */
 export type GitHubCreateParams = {
   repository: string;
   /**
@@ -182,13 +187,7 @@ export type GitLabImportParams = {
 
 export type GitLabVcsInfo = { branch: BranchInfo; url: string; updatedAt?: string; owner?: string };
 
-export type ImportProjectParams = {
-  name: string;
-  order: number;
-  externalPath?: string;
-  source: ImportProjectSource;
-  iconPath?: string;
-};
+export type ImportProjectParams = { name: string; order: number; source: ImportProjectSource; iconPath?: string };
 
 /**
  * @category Type
@@ -196,7 +195,8 @@ export type ImportProjectParams = {
 export type ImportProjectSource =
   | { "gitHub": GitHubImportParams }
   | { "gitLab": GitLabImportParams }
-  | { "archive": ArchiveImportParams };
+  | { "archive": ArchiveImportParams }
+  | { "external": ExternalImportParams };
 
 /**
  * @category Type

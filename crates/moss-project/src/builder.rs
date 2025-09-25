@@ -439,7 +439,6 @@ impl ProjectBuilder {
 
     pub async fn import_external<R: AppRuntime>(
         self,
-        ctx: &R::AsyncContext,
         params: ProjectImportExternalParams,
     ) -> joinerror::Result<Project<R>> {
         self.fs
