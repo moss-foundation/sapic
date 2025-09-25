@@ -67,7 +67,6 @@ pub async fn export_project_success() {
                 inner: ImportProjectParams {
                     name: project_name.clone(),
                     order: 42,
-                    external_path: None,
                     source: ImportProjectSource::Archive(ArchiveImportParams { archive_path }),
                     icon_path: None,
                 },

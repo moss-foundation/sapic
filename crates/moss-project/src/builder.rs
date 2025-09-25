@@ -101,9 +101,14 @@ pub struct ProjectCloneParams {
     pub branch: Option<String>,
 }
 
-pub struct ProjectImportParams {
+pub struct ProjectImportArchiveParams {
     pub internal_abs_path: Arc<Path>,
     pub archive_path: Arc<Path>,
+}
+
+pub struct ProjectImportExternalParams {
+    pub internal_abs_path: Arc<Path>,
+    pub external_abs_path: Arc<Path>,
 }
 
 pub struct ProjectBuilder {
@@ -377,7 +382,7 @@ impl ProjectBuilder {
     pub async fn import_archive<R: AppRuntime>(
         self,
         ctx: &R::AsyncContext,
-        params: ProjectImportParams,
+        params: ProjectImportArchiveParams,
     ) -> joinerror::Result<Project<R>> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
@@ -430,6 +435,33 @@ impl ProjectBuilder {
             on_did_change: EventEmitter::new(),
             archived: false.into(),
         })
+    }
+
+    pub async fn import_external<R: AppRuntime>(
+        self,
+        ctx: &R::AsyncContext,
+        params: ProjectImportExternalParams,
+    ) -> joinerror::Result<Project<R>> {
+        self.fs
+            .create_file_with(
+                &params.internal_abs_path.join(CONFIG_FILE_NAME),
+                serde_json::to_string(&ConfigFile {
+                    archived: false,
+                    external_path: Some(params.external_abs_path.clone().to_path_buf()),
+                    account_id: None,
+                })?
+                .as_bytes(),
+                CreateOptions {
+                    overwrite: false,
+                    ignore_if_exists: false,
+                },
+            )
+            .await?;
+
+        self.load(ProjectLoadParams {
+            internal_abs_path: params.internal_abs_path,
+        })
+        .await
     }
 }
 

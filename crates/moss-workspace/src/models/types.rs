@@ -53,7 +53,6 @@ pub struct ImportProjectParams {
     #[validate(length(min = 1))]
     pub name: String,
     pub order: isize,
-    pub external_path: Option<PathBuf>,
     pub source: ImportProjectSource,
     pub icon_path: Option<PathBuf>,
 }
@@ -250,6 +249,7 @@ pub enum ImportProjectSource {
     GitHub(GitHubImportParams),
     GitLab(GitLabImportParams),
     Archive(ArchiveImportParams),
+    External(ExternalImportParams),
 }
 
 // FIXME: Validation for provider specific url?
@@ -287,6 +287,14 @@ pub struct GitLabImportParams {
 #[ts(export, export_to = "types.ts")]
 pub struct ArchiveImportParams {
     pub archive_path: PathBuf,
+}
+
+/// @category Type
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct ExternalImportParams {
+    pub external_path: PathBuf,
 }
 
 /// @category Type

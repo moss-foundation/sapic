@@ -11,7 +11,9 @@ use crate::{
         primitives::ProjectId,
         types::ImportProjectSource,
     },
-    project::{ProjectItemCloneParams, ProjectItemImportParams},
+    project::{
+        ProjectItemCloneParams, ProjectItemImportArchiveParams, ProjectItemImportExternalParams,
+    },
 };
 
 impl<R: AppRuntime> Workspace<R> {
@@ -75,17 +77,31 @@ impl<R: AppRuntime> Workspace<R> {
             }
             ImportProjectSource::Archive(archive_params) => {
                 self.project_service
-                    .import_project(
+                    .import_archived_project(
                         ctx,
                         &id,
-                        ProjectItemImportParams {
+                        ProjectItemImportArchiveParams {
                             name: params.name.clone(),
                             order: params.order,
                             archive_path: archive_params.archive_path.clone(),
                         },
                     )
                     .await?
-            } // TODO: Support importing from other apps
+            }
+
+            // TODO: Support importing from other apps
+            ImportProjectSource::External(external_params) => {
+                self.project_service
+                    .import_external_project(
+                        ctx,
+                        &id,
+                        ProjectItemImportExternalParams {
+                            order: params.order,
+                            external_path: external_params.external_path.clone(),
+                        },
+                    )
+                    .await?
+            }
         };
 
         Ok(ImportProjectOutput {

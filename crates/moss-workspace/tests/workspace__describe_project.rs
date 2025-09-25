@@ -32,7 +32,6 @@ async fn describe_project_with_repository() {
                 inner: ImportProjectParams {
                     name: "New Project".to_string(),
                     order: 0,
-                    external_path: None,
                     icon_path: None,
                     source: ImportProjectSource::GitHub(GitHubImportParams {
                         repository: env::var("GITHUB_PROJECT_REPO_HTTPS").unwrap(),
