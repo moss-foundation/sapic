@@ -216,7 +216,14 @@ export type PanelPartStateInfo = { size: number; visible: boolean };
 /**
  * @category Type
  */
-export type SidebarPartStateInfo = { position: SidebarPosition; size: number; visible: boolean };
+export type SidebarPartStateInfo = {
+  /**
+   * DEPRECATED (parameter should now be taken from the configuration)
+   */
+  position: SidebarPosition;
+  size: number;
+  visible: boolean;
+};
 
 /**
  * @category Type

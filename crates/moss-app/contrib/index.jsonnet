@@ -10,12 +10,13 @@ contrib.configuration.Configuration(
     contrib.configuration.Parameter(
       id = "colorTheme",
       default = "moss.sapic-theme.lightDefault",
-      typ = contrib.configuration.ParameterType.String,
+      description = "Specifies the color theme used in the app.",
+      type = contrib.configuration.ParameterType.String,
     ),
     contrib.configuration.Parameter(
       id = "locale",
       default = "moss.sapic-locale.en",
-      typ = contrib.configuration.ParameterType.String,
+      type = contrib.configuration.ParameterType.String,
     ),
   ],
 )

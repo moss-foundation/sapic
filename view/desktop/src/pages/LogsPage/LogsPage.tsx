@@ -102,7 +102,7 @@ export const Logs = () => {
   const handleDescribeApp = async () => {
     try {
       const result = await invoke("describe_app");
-      console.log("App described:", result);
+      console.log(result);
     } catch (error) {
       console.error("Error describing app:", error);
     }

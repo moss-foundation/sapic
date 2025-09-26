@@ -208,6 +208,7 @@ pub struct ActivitybarPartStateInfo {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct SidebarPartStateInfo {
+    /// DEPRECATED (parameter should now be taken from the configuration)
     pub position: SidebarPosition,
     pub size: f64,
     pub visible: bool,
