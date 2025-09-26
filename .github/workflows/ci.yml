@@ -200,7 +200,6 @@ jobs:
           - moss_edit
           - moss_server_api
           - moss_contrib
-          - moss_theme
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
@@ -271,7 +270,6 @@ jobs:
           - moss_edit
           - moss_server_api
           - moss_contrib
-          - moss_theme
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0

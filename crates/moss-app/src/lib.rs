@@ -9,7 +9,7 @@ mod logging;
 pub mod models;
 mod profile;
 mod session;
-mod theme;
+pub mod theme;
 mod workspace;
 
 #[cfg(feature = "integration-tests")]

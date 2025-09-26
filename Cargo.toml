@@ -6,7 +6,7 @@ members = [
     #
     "libs/joinerror",
     "libs/atomic-fs",
-    "libs/static-json", 
+    "libs/static-json",
     #
     # Workspace crates
     #
@@ -37,7 +37,6 @@ members = [
     "crates/moss-server-api",
     "crates/moss-id-macro",
     "crates/moss-contrib",
-    "crates/moss-theme",
     #
     # Apps
     #
@@ -46,7 +45,7 @@ members = [
     # Tools
     #
     "tools/xtask",
-    "tools/cargo-new-ts", 
+    "tools/cargo-new-ts",
     "tools/theme-install",
 ]
 
@@ -88,7 +87,6 @@ moss_user = { path = "crates/moss-user" }
 moss_server_api = { path = "crates/moss-server-api" }
 moss_bootstrap = { path = "crates/moss-bootstrap" }
 moss_contrib = { path = "crates/moss-contrib" }
-moss_theme = { path = "crates/moss-theme" }
 
 #
 # External crates
@@ -147,9 +145,11 @@ urlencoding = "2.1.3"
 tokio-util = "0.7.12"
 proc-macro2 = "1.0.101"
 quote = "1.0.40"
-syn = { version = "2.0.106" }
-async_zip = { version = "0.0.18", default-features = false }
+syn = {version = "2.0.106"}
+async_zip = {version = "0.0.18", default-features = false}
+regorus = {version = "0.5.0", default-features = false}
 inventory = "0.3.21"
+
 
 [profile.release]
 opt-level = 3 # Maximize performance
