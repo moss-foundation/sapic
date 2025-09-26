@@ -18,6 +18,7 @@ use crate::models::{
 struct ParameterDecl {
     pub id: ReadOnlyStr,
     pub default: Option<JsonValue>,
+    #[serde(rename = "type")]
     pub typ: ParameterType,
     pub description: Option<String>,
     pub maximum: Option<u64>,

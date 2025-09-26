@@ -1,3 +1,11 @@
+// In the future, we'll likely move away from the concept of managing
+// the state of components on the backend. Since their state isn't that
+// important from a UX perspective, we can delegate this task entirely
+// to the frontend and store panel sizes and visibility directly
+// in the frontend cache. The only thing we should persist is the panel
+// positions if the user has changed them (currently this is only available for the sidebar position),
+// and this should be managed through global settings, not through individual service data.
+
 use anyhow::Result;
 use moss_applib::AppRuntime;
 use moss_db::primitives::AnyValue;
