@@ -40,7 +40,8 @@ color_ok(color) := true if {
 
 color_ok(color) := true if {
 	color.type == "variable"
-    # TODO: Variable validation rule?
+    is_string(color.value)
+    color.value != ""
 }
 
 default boxshadow_ok(x) := false
@@ -51,11 +52,9 @@ boxshadow_ok(x) := true if {
     x != ""
 }
 
-
 errors contains "must have 'identifier' field" if {
 	object.get(input, "identifier", "") == ""
 }
-
 
 errors contains "'identifier' must be a string" if {
 	not is_string(input.identifier)
@@ -64,7 +63,6 @@ errors contains "'identifier' must be a string" if {
 errors contains "must have 'displayName' field" if {
 	object.get(input, "displayName", "") == ""
 }
-
 
 errors contains "'displayName' must be a string" if {
 	not is_string(input.identifier)
