@@ -21,10 +21,6 @@ export const variableOptionsSchema = z.object({
   disabled: z.boolean(),
 });
 
-export const archiveImportParamsSchema = z.object({
-  archivePath: z.string(),
-});
-
 export const branchInfoSchema = z.object({
   name: z.string(),
   ahead: z.number().optional(),
@@ -54,10 +50,6 @@ export const createProjectGitParamsSchema = z.union([
     "gitLab": gitLabCreateParamsSchema,
   }),
 ]);
-
-export const diskImportParamsSchema = z.object({
-  externalPath: z.string(),
-});
 
 export const editorGridLeafDataSchema = z.object({
   views: z.array(z.string()),
@@ -91,23 +83,11 @@ export const exportProjectParamsSchema = z.object({
   destination: z.string(),
 });
 
-export const gitHubImportParamsSchema = z.object({
-  accountId: z.string(),
-  repository: z.string(),
-  branch: z.string().optional(),
-});
-
 export const gitHubVcsInfoSchema = z.object({
   branch: branchInfoSchema,
   url: z.string(),
   updatedAt: z.string().optional(),
   owner: z.string().optional(),
-});
-
-export const gitLabImportParamsSchema = z.object({
-  accountId: z.string(),
-  repository: z.string(),
-  branch: z.string().optional(),
 });
 
 export const gitLabVcsInfoSchema = z.object({
@@ -117,18 +97,38 @@ export const gitLabVcsInfoSchema = z.object({
   owner: z.string().optional(),
 });
 
+export const importArchiveParamsSchema = z.object({
+  archivePath: z.string(),
+});
+
+export const importDiskParamsSchema = z.object({
+  externalPath: z.string(),
+});
+
+export const importGitHubParamsSchema = z.object({
+  accountId: z.string(),
+  repository: z.string(),
+  branch: z.string().optional(),
+});
+
+export const importGitLabParamsSchema = z.object({
+  accountId: z.string(),
+  repository: z.string(),
+  branch: z.string().optional(),
+});
+
 export const importProjectSourceSchema = z.union([
   z.object({
-    "gitHub": gitHubImportParamsSchema,
+    "gitHub": importGitHubParamsSchema,
   }),
   z.object({
-    "gitLab": gitLabImportParamsSchema,
+    "gitLab": importGitLabParamsSchema,
   }),
   z.object({
-    "archive": archiveImportParamsSchema,
+    "archive": importArchiveParamsSchema,
   }),
   z.object({
-    "disk": diskImportParamsSchema,
+    "disk": importDiskParamsSchema,
   }),
 ]);
 

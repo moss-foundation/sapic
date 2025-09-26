@@ -301,34 +301,13 @@ impl<R: AppRuntime> ProjectService<R> {
             );
         }
 
-        {
-            let state_lock = self.state.read().await;
-
-            // TODO: Make database errors not fail the operation
-
-            let mut txn = self
-                .storage
-                .begin_write(ctx)
-                .await
-                .join_err::<()>("failed to start transaction")?;
-
-            self.storage
-                .put_item_order_txn(ctx, &mut txn, id.as_str(), params.order)
-                .await?;
-            self.storage
-                .put_expanded_items_txn(ctx, &mut txn, &state_lock.expanded_items)
-                .await?;
-
-            txn.commit()?;
-        }
-
         self.on_did_add_project_emitter
             .fire(OnDidAddProject {
                 project_id: id.clone(),
             })
             .await;
 
-        Ok(ProjectItemDescription {
+        let desc = ProjectItemDescription {
             id: id.to_owned(),
             name: params.name.clone(),
             order: Some(params.order),
@@ -338,7 +317,44 @@ impl<R: AppRuntime> ProjectService<R> {
             internal_abs_path: abs_path.into(),
             external_path: params.external_path.clone(),
             archived: false,
-        })
+        };
+
+        {
+            let state_lock = self.state.read().await;
+
+            let mut txn = match self.storage.begin_write(ctx).await {
+                Ok(txn) => txn,
+                Err(e) => {
+                    session::warn!(format!("failed to begin write transaction: {}", e));
+                    return Ok(desc);
+                }
+            };
+
+            if let Err(e) = self
+                .storage
+                .put_item_order_txn(ctx, &mut txn, id.as_str(), params.order)
+                .await
+            {
+                session::warn!(format!("failed to put item order in the db: {}", e));
+                return Ok(desc);
+            }
+
+            if let Err(e) = self
+                .storage
+                .put_expanded_items_txn(ctx, &mut txn, &state_lock.expanded_items)
+                .await
+            {
+                session::warn!(format!("failed to put expanded items in the db: {}", e));
+                return Ok(desc);
+            }
+
+            if let Err(e) = txn.commit() {
+                session::warn!(format!("failed to commit transaction: {}", e));
+                return Ok(desc);
+            }
+        }
+
+        Ok(desc)
     }
 
     // TODO: Setting the cloned collection's name and icon is not yet implemented

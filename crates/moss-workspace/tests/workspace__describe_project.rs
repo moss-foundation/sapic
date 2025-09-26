@@ -5,7 +5,7 @@ use moss_git::models::types::BranchInfo;
 use moss_user::models::primitives::AccountId;
 use moss_workspace::models::{
     operations::{DeleteProjectInput, DescribeProjectInput, ImportProjectInput},
-    types::{GitHubImportParams, ImportProjectParams, ImportProjectSource, VcsInfo},
+    types::{ImportGitHubParams, ImportProjectParams, ImportProjectSource, VcsInfo},
 };
 use std::{env, ops::Deref};
 
@@ -33,7 +33,7 @@ async fn describe_project_with_repository() {
                     name: "New Project".to_string(),
                     order: 0,
                     icon_path: None,
-                    source: ImportProjectSource::GitHub(GitHubImportParams {
+                    source: ImportProjectSource::GitHub(ImportGitHubParams {
                         repository: env::var("GITHUB_PROJECT_REPO_HTTPS").unwrap(),
                         branch: None,
                         account_id,

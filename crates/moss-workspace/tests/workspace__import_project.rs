@@ -5,7 +5,7 @@
 // These tests should be done manually
 // Since it requires authentication and env variables
 
-use crate::shared::setup_test_workspace;
+use crate::shared::{setup_external_project, setup_test_workspace};
 use moss_applib::context::AnyAsyncContext;
 use moss_storage::storage::operations::GetItem;
 use moss_testutils::random_name::random_project_name;
@@ -15,7 +15,7 @@ use moss_workspace::{
         operations::{CreateProjectInput, DeleteProjectInput, ImportProjectInput},
         primitives::ProjectId,
         types::{
-            CreateProjectParams, DiskImportParams, GitHubImportParams, ImportProjectParams,
+            CreateProjectParams, ImportDiskParams, ImportGitHubParams, ImportProjectParams,
             ImportProjectSource,
         },
     },
@@ -48,7 +48,7 @@ async fn clone_project_success() {
                     name: "New Project".to_string(),
                     order: 0,
                     icon_path: None,
-                    source: ImportProjectSource::GitHub(GitHubImportParams {
+                    source: ImportProjectSource::GitHub(ImportGitHubParams {
                         repository: env::var("GITHUB_PROJECT_REPO_HTTPS").unwrap(),
                         branch: None,
                         account_id,
@@ -98,38 +98,8 @@ async fn import_external_project_success() {
     // Create an external project and import it
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
-    let project_name = random_project_name();
-    let external_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("tests")
-        .join("data")
-        .join("external_projects")
-        .join(&project_name);
-    tokio::fs::create_dir_all(&external_path).await.unwrap();
-
-    let id = workspace
-        .create_project(
-            &ctx,
-            &app_delegate,
-            &CreateProjectInput {
-                inner: CreateProjectParams {
-                    name: project_name.clone(),
-                    order: 0,
-                    external_path: Some(external_path.clone()),
-                    git_params: None,
-                    icon_path: None,
-                },
-            },
-        )
-        .await
-        .unwrap()
-        .id;
-
-    // Delete the external project
-    // The external folder should remain intact, possible to be imported again
-    workspace
-        .delete_project(&ctx, &DeleteProjectInput { id })
-        .await
-        .unwrap();
+    let (project_name, external_path) =
+        setup_external_project(&ctx, &app_delegate, &workspace).await;
 
     // Import the external project
     let import_project_output = workspace
@@ -140,7 +110,7 @@ async fn import_external_project_success() {
                 inner: ImportProjectParams {
                     name: project_name.clone(),
                     order: 0,
-                    source: ImportProjectSource::Disk(DiskImportParams {
+                    source: ImportProjectSource::Disk(ImportDiskParams {
                         external_path: external_path.clone(),
                     }),
                     icon_path: None,

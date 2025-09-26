@@ -7,7 +7,7 @@ use moss_workspace::{
         operations::{CreateProjectInput, ExportProjectInput, ImportProjectInput},
         primitives::ProjectId,
         types::{
-            ArchiveImportParams, CreateProjectParams, ExportProjectParams, ImportProjectParams,
+            CreateProjectParams, ExportProjectParams, ImportArchiveParams, ImportProjectParams,
             ImportProjectSource,
         },
     },
@@ -67,7 +67,7 @@ pub async fn export_project_success() {
                 inner: ImportProjectParams {
                     name: project_name.clone(),
                     order: 42,
-                    source: ImportProjectSource::Archive(ArchiveImportParams { archive_path }),
+                    source: ImportProjectSource::Archive(ImportArchiveParams { archive_path }),
                     icon_path: None,
                 },
             },
