@@ -249,7 +249,7 @@ pub enum ImportProjectSource {
     GitHub(GitHubImportParams),
     GitLab(GitLabImportParams),
     Archive(ArchiveImportParams),
-    External(ExternalImportParams),
+    Disk(DiskImportParams),
 }
 
 // FIXME: Validation for provider specific url?
@@ -293,7 +293,7 @@ pub struct ArchiveImportParams {
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
-pub struct ExternalImportParams {
+pub struct DiskImportParams {
     pub external_path: PathBuf,
 }
 

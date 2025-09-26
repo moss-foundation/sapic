@@ -1,15 +1,3 @@
-use crate::{
-    builder::{OnDidAddProject, OnDidDeleteProject},
-    dirs,
-    models::{
-        primitives::ProjectId,
-        types::{
-            CreateProjectGitParams, CreateProjectParams, EntryChange, ExportProjectParams,
-            UpdateProjectParams,
-        },
-    },
-    storage::{StorageService, segments::SEGKEY_COLLECTION},
-};
 use derive_more::{Deref, DerefMut};
 use futures::Stream;
 use joinerror::{Error, OptionExt, ResultExt};
@@ -41,6 +29,18 @@ use std::{
 };
 use tokio::sync::RwLock;
 
+use crate::{
+    builder::{OnDidAddProject, OnDidDeleteProject},
+    dirs,
+    models::{
+        primitives::ProjectId,
+        types::{
+            CreateProjectGitParams, CreateProjectParams, EntryChange, ExportProjectParams,
+            UpdateProjectParams,
+        },
+    },
+    storage::{StorageService, segments::SEGKEY_COLLECTION},
+};
 // TODO: Rename all collections to projects
 
 pub(crate) struct ProjectItemCloneParams {
@@ -51,13 +51,13 @@ pub(crate) struct ProjectItemCloneParams {
     pub branch: Option<String>,
 }
 
-pub(crate) struct ProjectItemImportArchiveParams {
+pub(crate) struct ProjectItemImportFromArchiveParams {
     pub name: String,
     pub order: isize,
     pub archive_path: PathBuf,
 }
 
-pub(crate) struct ProjectItemImportExternalParams {
+pub(crate) struct ProjectItemImportFromDiskParams {
     pub order: isize,
     pub external_path: PathBuf,
 }
@@ -672,7 +672,7 @@ impl<R: AppRuntime> ProjectService<R> {
         &self,
         ctx: &R::AsyncContext,
         id: &ProjectId,
-        params: ProjectItemImportArchiveParams,
+        params: ProjectItemImportFromArchiveParams,
     ) -> joinerror::Result<ProjectItemDescription> {
         let mut rb = self.fs.start_rollback().await?;
 
@@ -783,7 +783,7 @@ impl<R: AppRuntime> ProjectService<R> {
         &self,
         ctx: &R::AsyncContext,
         id: &ProjectId,
-        params: ProjectItemImportExternalParams,
+        params: ProjectItemImportFromDiskParams,
     ) -> joinerror::Result<ProjectItemDescription> {
         let mut rb = self.fs.start_rollback().await?;
 

@@ -55,6 +55,10 @@ export const createProjectGitParamsSchema = z.union([
   }),
 ]);
 
+export const diskImportParamsSchema = z.object({
+  externalPath: z.string(),
+});
+
 export const editorGridLeafDataSchema = z.object({
   views: z.array(z.string()),
   activeView: z.string(),
@@ -85,10 +89,6 @@ export const environmentGroupSchema = z.object({
 export const exportProjectParamsSchema = z.object({
   id: z.string(),
   destination: z.string(),
-});
-
-export const externalImportParamsSchema = z.object({
-  externalPath: z.string(),
 });
 
 export const gitHubImportParamsSchema = z.object({
@@ -128,7 +128,7 @@ export const importProjectSourceSchema = z.union([
     "archive": archiveImportParamsSchema,
   }),
   z.object({
-    "external": externalImportParamsSchema,
+    "disk": diskImportParamsSchema,
   }),
 ]);
 

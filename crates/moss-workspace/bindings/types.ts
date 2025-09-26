@@ -60,6 +60,11 @@ export type CreateProjectParams = {
 /**
  * @category Type
  */
+export type DiskImportParams = { externalPath: string };
+
+/**
+ * @category Type
+ */
 export type EditorGridLeafData = { views: Array<string>; activeView: string; id: string };
 
 /**
@@ -135,11 +140,6 @@ export type ExportProjectParams = {
 /**
  * @category Type
  */
-export type ExternalImportParams = { externalPath: string };
-
-/**
- * @category Type
- */
 export type GitHubCreateParams = {
   repository: string;
   /**
@@ -196,7 +196,7 @@ export type ImportProjectSource =
   | { "gitHub": GitHubImportParams }
   | { "gitLab": GitLabImportParams }
   | { "archive": ArchiveImportParams }
-  | { "external": ExternalImportParams };
+  | { "disk": DiskImportParams };
 
 /**
  * @category Type

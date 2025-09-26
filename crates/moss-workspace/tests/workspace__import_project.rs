@@ -15,7 +15,7 @@ use moss_workspace::{
         operations::{CreateProjectInput, DeleteProjectInput, ImportProjectInput},
         primitives::ProjectId,
         types::{
-            CreateProjectParams, ExternalImportParams, GitHubImportParams, ImportProjectParams,
+            CreateProjectParams, DiskImportParams, GitHubImportParams, ImportProjectParams,
             ImportProjectSource,
         },
     },
@@ -140,7 +140,7 @@ async fn import_external_project_success() {
                 inner: ImportProjectParams {
                     name: project_name.clone(),
                     order: 0,
-                    source: ImportProjectSource::External(ExternalImportParams {
+                    source: ImportProjectSource::Disk(DiskImportParams {
                         external_path: external_path.clone(),
                     }),
                     icon_path: None,
