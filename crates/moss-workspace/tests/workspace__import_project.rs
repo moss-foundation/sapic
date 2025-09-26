@@ -5,24 +5,21 @@
 // These tests should be done manually
 // Since it requires authentication and env variables
 
-use crate::shared::{setup_external_project, setup_test_workspace};
 use moss_applib::context::AnyAsyncContext;
 use moss_storage::storage::operations::GetItem;
-use moss_testutils::random_name::random_project_name;
 use moss_user::models::primitives::AccountId;
 use moss_workspace::{
     models::{
-        operations::{CreateProjectInput, DeleteProjectInput, ImportProjectInput},
+        operations::ImportProjectInput,
         primitives::ProjectId,
-        types::{
-            CreateProjectParams, ImportDiskParams, ImportGitHubParams, ImportProjectParams,
-            ImportProjectSource,
-        },
+        types::{ImportDiskParams, ImportGitHubParams, ImportProjectParams, ImportProjectSource},
     },
     storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
 use std::{env, ops::Deref, path::Path};
 use tauri::ipc::Channel;
+
+use crate::shared::{setup_external_project, setup_test_workspace};
 
 pub mod shared;
 
