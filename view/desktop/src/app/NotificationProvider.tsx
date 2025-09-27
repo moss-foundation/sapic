@@ -33,13 +33,13 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const newNotification: NotificationData = {
       ...notification,
       id,
-      duration: notification.duration !== undefined ? notification.duration : 5000, // Default 5 seconds
+      duration: notification.duration !== undefined ? notification.duration : 3000, // Default 3 seconds
     };
 
     setNotifications((prev) => [...prev, newNotification]);
 
     // Auto-dismiss if duration is set and greater than 0
-    if (newNotification.duration > 0) {
+    if (newNotification.duration && newNotification.duration > 0) {
       setTimeout(() => {
         removeNotification(id);
       }, newNotification.duration);

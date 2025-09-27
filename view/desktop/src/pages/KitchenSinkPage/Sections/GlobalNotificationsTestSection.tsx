@@ -49,7 +49,6 @@ export const GlobalNotificationsTestSection = () => {
       description: "Successfully updated 2,662 files in 844 commits",
       linkText: "View commits",
       onLinkClick: () => alert("View commits clicked!"),
-      duration: 5000, // Auto-dismiss after 5 seconds
     });
   };
 
