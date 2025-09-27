@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from "react";
+import React, { createContext, useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 
 import { CHANNEL as ACTIVITY_BROADCASTER_CHANNEL, ActivityEvent } from "@repo/moss-activity-broadcaster";
 import { listen } from "@tauri-apps/api/event";
@@ -9,15 +9,24 @@ export const PROGRESS_CLEANUP_DELAY = 1000; // ms
 export const DEFAULT_DISPLAY_DURATION = 10; // ms
 
 // Helper function to get location from an activity event
-const getEventLocation = (event: ActivityEvent): string => {
+const getEventLocation = (
+  event: ActivityEvent,
+  activityLocationsRef: React.MutableRefObject<Map<string, string>>
+): string => {
   if ("oneshot" in event) return event.oneshot.location;
   if ("start" in event) return event.start.location;
+
   // Progress and Finish events don't have location, they inherit from their Start event
+  const activityId = getActivityId(event);
+  if (activityId && activityLocationsRef.current.has(activityId)) {
+    return activityLocationsRef.current.get(activityId)!;
+  }
+
   return "window"; // Default fallback
 };
 
 // Activity events grouped by location
-interface ActivityEventsContextType {
+export interface ActivityEventsContextType {
   // Window location events (for status bar)
   windowEvents: {
     activityEvents: ActivityEvent[];
@@ -267,7 +276,7 @@ function activityRouterReducer(state: ActivityState, action: ActivityAction): Ac
   }
 }
 
-const ActivityRouterContext = createContext<ActivityEventsContextType>({
+export const ActivityRouterContext = createContext<ActivityEventsContextType>({
   windowEvents: {
     activityEvents: [],
     activeProgressEvents: new Map(),
@@ -279,14 +288,6 @@ const ActivityRouterContext = createContext<ActivityEventsContextType>({
   },
   clearEvents: () => {},
 });
-
-export const useActivityRouter = () => useContext(ActivityRouterContext);
-
-// Hook specifically for window events (status bar)
-export const useWindowActivityEvents = () => {
-  const { windowEvents } = useActivityRouter();
-  return windowEvents;
-};
 
 // TODO: Add hooks for notification events
 // export const useNotificationActivityEvents = () => {
@@ -318,6 +319,7 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
 
   const processingQueueRef = useRef(false);
   const displayDurationRef = useRef(DEFAULT_DISPLAY_DURATION);
+  const activityLocationsRef = useRef(new Map<string, string>());
 
   // Safe setTimeout wrapper that tracks timeout IDs for cleanup
   const safeSetTimeout = useCallback((callback: () => void, delay: number): void => {
@@ -406,7 +408,12 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
   // Activity Router - Process incoming events and route by location
   useEffect(() => {
     const routeEvent = (event: ActivityEvent) => {
-      const location = getEventLocation(event);
+      const location = getEventLocation(event, activityLocationsRef);
+
+      // Track location for start events so progress/finish events can inherit it
+      if ("start" in event) {
+        activityLocationsRef.current.set(event.start.activityId, location);
+      }
 
       switch (location) {
         case "window":
@@ -476,6 +483,7 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
   }, [safeSetTimeout]);
 
   const clearEvents = useCallback(() => {
+    activityLocationsRef.current.clear();
     dispatch({ type: "CLEAR_ALL" });
   }, []);
 

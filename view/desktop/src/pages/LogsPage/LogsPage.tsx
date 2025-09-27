@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import AIDemo from "@/ai/AIDemo.tsx";
 import { PageContent } from "@/components";
 import { ActivityEventSimulator } from "@/components/ActivityEventSimulator";
-import { useActivityRouter } from "@/app/ActivityRouterProvider";
+import { useActivityRouter } from "@/hooks/app";
 import GitTest from "@/git/GitTest.tsx";
 import { AddAccountParams, LogEntryInfo, ON_DID_APPEND_LOG_ENTRY_CHANNEL, UpdateProfileInput } from "@repo/moss-app";
 import { invoke } from "@tauri-apps/api/core";

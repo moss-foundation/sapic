@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { useWindowActivityEvents } from "@/app/ActivityRouterProvider";
+import { useWindowActivityEvents } from "@/hooks/app";
 import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
 import { ActivityEvent } from "@repo/moss-activity-broadcaster";
