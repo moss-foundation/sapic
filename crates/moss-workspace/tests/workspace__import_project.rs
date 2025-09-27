@@ -16,7 +16,7 @@ use moss_workspace::{
     },
     storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
-use std::{env, ops::Deref, path::Path};
+use std::{env, ops::Deref};
 use tauri::ipc::Channel;
 
 use crate::shared::{setup_external_project, setup_test_workspace};

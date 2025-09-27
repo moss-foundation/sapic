@@ -112,6 +112,8 @@ pub async fn setup_test_workspace() -> (
     (ctx, app_delegate, workspace, cleanup_fn)
 }
 
+// Suppress false warning
+#[allow(unused)]
 // Create an external project that can be tested for import
 pub async fn setup_external_project(
     ctx: &<MockAppRuntime as AppRuntime>::AsyncContext,
