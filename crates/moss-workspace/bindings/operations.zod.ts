@@ -171,7 +171,6 @@ export const describeWorkspaceOutputSchema = z.object({
 export const importProjectInputSchema = z.object({
   name: z.string(),
   order: z.number(),
-  externalPath: z.string().optional(),
   source: importProjectSourceSchema,
   iconPath: z.string().optional(),
 });

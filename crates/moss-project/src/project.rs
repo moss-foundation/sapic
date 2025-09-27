@@ -85,7 +85,8 @@ impl From<ManifestVcs> for VcsDetails {
 pub struct Project<R: AppRuntime> {
     #[allow(dead_code)]
     pub(super) fs: Arc<dyn FileSystem>,
-    pub(super) abs_path: Arc<Path>,
+    pub(super) internal_abs_path: Arc<Path>,
+    pub(super) external_abs_path: Option<Arc<Path>>,
     pub(super) edit: ProjectEdit,
     pub(super) worktree: OnceCell<Arc<Worktree<R>>>,
     pub(super) set_icon_service: SetIconService,
@@ -107,7 +108,7 @@ impl<R: AppRuntime> Project<R> {
         self.worktree
             .get_or_init(|| async {
                 Arc::new(Worktree::new(
-                    self.abs_path.clone(),
+                    self.abs_path(),
                     self.fs.clone(),
                     self.storage_service.clone(),
                 ))
@@ -118,12 +119,21 @@ impl<R: AppRuntime> Project<R> {
     pub fn is_archived(&self) -> bool {
         self.archived.load(Ordering::SeqCst)
     }
-    pub fn abs_path(&self) -> &Arc<Path> {
-        &self.abs_path
+
+    pub fn internal_abs_path(&self) -> &Arc<Path> {
+        &self.internal_abs_path
     }
 
-    pub fn external_path(&self) -> Option<&Arc<Path>> {
-        unimplemented!()
+    pub fn external_abs_path(&self) -> Option<&Arc<Path>> {
+        self.external_abs_path.as_ref()
+    }
+
+    // Actual path where resources, manifest and other committable files are stored
+    // It's the internal_abs_path for normal project, external_abs_path for external project
+    pub fn abs_path(&self) -> Arc<Path> {
+        self.external_abs_path
+            .clone()
+            .unwrap_or(self.internal_abs_path.clone())
     }
 
     pub fn icon_path(&self) -> Option<PathBuf> {
@@ -131,7 +141,7 @@ impl<R: AppRuntime> Project<R> {
     }
 
     pub fn environments_path(&self) -> PathBuf {
-        self.abs_path.join(dirs::ENVIRONMENTS_DIR)
+        self.abs_path().join(dirs::ENVIRONMENTS_DIR)
     }
 
     pub fn vcs(&self) -> Option<&dyn ProjectVcs<R>> {
@@ -173,7 +183,7 @@ impl<R: AppRuntime> Project<R> {
             )
         });
 
-        let repository = Repository::init(self.abs_path.as_ref())?;
+        let repository = Repository::init(&self.abs_path())?;
         repository.add_remote(None, &url.to_string_with_suffix()?)?;
         repository.fetch(None, cb)?;
 
@@ -231,10 +241,11 @@ impl<R: AppRuntime> Project<R> {
     }
 
     pub async fn load_vcs(&self, client: GitClient<R>) -> joinerror::Result<()> {
-        let repository = Repository::open(self.abs_path.as_ref())?;
+        let abs_path = self.abs_path();
+        let repository = Repository::open(&abs_path)?;
 
         let url = {
-            let manifest_path = self.abs_path.join(MANIFEST_FILE_NAME);
+            let manifest_path = abs_path.join(MANIFEST_FILE_NAME);
             let rdr = self
                 .fs
                 .open_file(&manifest_path)
@@ -264,7 +275,7 @@ impl<R: AppRuntime> Project<R> {
     }
 
     pub async fn details(&self) -> joinerror::Result<ProjectDetails> {
-        let manifest_path = self.abs_path.join(MANIFEST_FILE_NAME);
+        let manifest_path = self.abs_path().join(MANIFEST_FILE_NAME);
         let rdr = self
             .fs
             .open_file(&manifest_path)
@@ -276,7 +287,7 @@ impl<R: AppRuntime> Project<R> {
             format!("failed to parse manifest file: {}", manifest_path.display())
         })?;
 
-        let config_path = self.abs_path.join(CONFIG_FILE_NAME);
+        let config_path = self.internal_abs_path.join(CONFIG_FILE_NAME);
 
         let rdr = self
             .fs
@@ -337,7 +348,7 @@ impl<R: AppRuntime> Project<R> {
         &self,
         params: ProjectConfigModifyParams,
     ) -> joinerror::Result<()> {
-        let config_path = self.abs_path.join(CONFIG_FILE_NAME);
+        let config_path = self.internal_abs_path.join(CONFIG_FILE_NAME);
         let rdr = self
             .fs
             .open_file(&config_path)
@@ -431,7 +442,7 @@ impl<R: AppRuntime> Project<R> {
             .worktree
             .get_or_init(|| async {
                 Arc::new(Worktree::new(
-                    self.abs_path.clone(),
+                    self.internal_abs_path.clone(),
                     self.fs.clone(),
                     self.storage_service.clone(),
                 ))
@@ -447,7 +458,9 @@ impl<R: AppRuntime> Project<R> {
     /// Returns the path to the output archive file
     pub async fn export_archive(&self, destination: &Path) -> joinerror::Result<PathBuf> {
         // If the output is inside the collection folder, it will also be bundled, which we don't want
-        if destination.starts_with(&self.abs_path) {
+        let abs_path = self.abs_path();
+
+        if destination.starts_with(&abs_path) {
             return Err(Error::new::<()>(
                 "cannot export archive file into the project folder",
             ));
@@ -458,16 +471,13 @@ impl<R: AppRuntime> Project<R> {
         let archive_path = destination.join(format!("{}.zip", sanitized_name));
 
         self.fs
-            .zip(
-                self.abs_path.as_ref(),
-                &archive_path,
-                &ARCHIVE_EXCLUDED_ENTRIES,
-            )
+            .zip(&abs_path, &archive_path, &ARCHIVE_EXCLUDED_ENTRIES)
             .await?;
 
         Ok(archive_path)
     }
 }
+
 #[cfg(any(test, feature = "integration-tests"))]
 impl<R: AppRuntime> Project<R> {
     pub fn db(&self) -> &Arc<dyn moss_storage::CollectionStorage<R::AsyncContext>> {

@@ -9,9 +9,13 @@
 
   Parameter(
     id, 
-    default = null, 
-    typ,
+    default = null,
+    enum = null,
+    enumDescriptions = null,
+    type,
     description = null, 
+    minLength = null,
+    maxLength = null,
     maximum = null, 
     minimum = null, 
     excluded = false,
@@ -20,9 +24,14 @@
     tags = [],
   )::
     assert std.member(["string"], std.type(id)) : "id must be string";
-    assert std.member(["string"], std.type(typ)) : "typ must be string";
+    assert std.member(["string"], std.type(type)) : "typ must be string";
     assert std.member(["string", "null"], std.type(default)) : "default must be string or null";
+    assert std.member(["array", "null"], std.type(enum)) : "enum must be array or null";
+    assert std.member(["array", "null"], std.type(enumDescriptions)) : "enumDescriptions must be array or null";
+    assert enumDescriptions == null || std.all([std.member(["string"], std.type(x)) for x in enumDescriptions]) : "enumDescriptions elements must be strings";
     assert std.member(["string", "null"], std.type(description)) : "description must be string or null";
+    assert std.member(["number", "null"], std.type(minLength)) : "minLength must be number or null";
+    assert std.member(["number", "null"], std.type(maxLength)) : "maxLength must be number or null";
     assert std.member(["number", "null"], std.type(maximum)) : "maximum must be number or null";
     assert std.member(["number", "null"], std.type(minimum)) : "minimum must be number or null";
     assert std.member(["boolean"], std.type(excluded)) : "excluded must be boolean";
@@ -33,8 +42,11 @@
     local this = {
       id: id,
       default: default,
-      typ: typ,
+      enum: enum,
+      type: type,
       description: description,
+      minLength: minLength,
+      maxLength: maxLength,
       maximum: maximum,
       minimum: minimum,
       excluded: excluded,

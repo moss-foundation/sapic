@@ -160,13 +160,7 @@ export type ExportProjectOutput = { archivePath: string };
 /**
  * @category Operation
  */
-export type ImportProjectInput = {
-  name: string;
-  order: number;
-  externalPath?: string;
-  source: ImportProjectSource;
-  iconPath?: string;
-};
+export type ImportProjectInput = { name: string; order: number; source: ImportProjectSource; iconPath?: string };
 
 /**
  * @category Operation

@@ -67,7 +67,9 @@ impl Rollback {
     pub async fn rollback(&mut self) -> joinerror::Result<()> {
         while let Some(undo) = self.undo_stack.pop() {
             let result = match undo {
-                Undo::RemoveDir(path) => tokio::fs::remove_dir(&path).await,
+                // Some files might be created outside of a rollback session
+                // Thus a directory might not be empty when we roll back its creation
+                Undo::RemoveDir(path) => tokio::fs::remove_dir_all(&path).await,
                 Undo::RemoveFile(path) => tokio::fs::remove_file(&path).await,
                 Undo::Restore { path, original } => tokio::fs::rename(&original, &path).await,
                 Undo::CreateDir(path) => tokio::fs::create_dir(&path).await,
