@@ -32,6 +32,10 @@ endif
 export LOG_LEVEL = trace
 export DEV_APP_DIR = ${HOME_DIR}/.sapic
 export TEMP_DIR = ${HOME_DIR}/.sapic/tmp
+export ADDONS_DIR = ${CURDIR}/addons
+
+export DEV_USER_DIR = ${HOME_DIR}/.sapic
+export DEV_APPLICATION_DIR = ${CURDIR}
 
 # ---- Asset Directories ----
 export THEMES_DIR = ${CURDIR}/assets/themes

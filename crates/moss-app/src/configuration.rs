@@ -1,4 +1,5 @@
 mod edit;
+mod point;
 pub(crate) mod registry;
 
 use joinerror::{OptionExt, ResultExt};

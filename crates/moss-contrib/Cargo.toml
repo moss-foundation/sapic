@@ -4,9 +4,11 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-moss_text.workspace = true
+moss_fs.workspace = true
+moss_logging.workspace = true
 
-ts-rs.workspace = true
+tracing.workspace = true
+joinerror.workspace = true
 static_json.workspace = true
 inventory.workspace = true
 serde_json = { workspace = true }

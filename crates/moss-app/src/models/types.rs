@@ -110,9 +110,9 @@ pub struct ColorThemeInfo {
     pub identifier: ThemeId,
     pub display_name: String,
     pub mode: ThemeMode,
-    pub order: Option<isize>,
+    pub order: Option<isize>, // DEPRECATED
     pub source: PathBuf,
-    pub is_default: Option<bool>,
+    pub is_default: Option<bool>, // DEPRECATED
 }
 
 // #########################################################

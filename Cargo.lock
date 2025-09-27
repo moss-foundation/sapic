@@ -3100,6 +3100,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "git2",
+ "joinerror",
  "joinerror-macros",
  "reqwest",
  "serde_json",
@@ -3670,11 +3671,13 @@ name = "moss_contrib"
 version = "0.1.0"
 dependencies = [
  "inventory",
- "moss_text",
+ "joinerror",
+ "moss_fs",
+ "moss_logging",
  "serde",
  "serde_json",
  "static_json",
- "ts-rs",
+ "tracing",
 ]
 
 [[package]]

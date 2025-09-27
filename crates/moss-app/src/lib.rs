@@ -3,6 +3,7 @@ pub mod app;
 pub mod builder;
 pub mod command;
 mod configuration;
+mod extension;
 mod internal;
 mod locale;
 mod logging;
