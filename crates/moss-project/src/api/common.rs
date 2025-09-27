@@ -76,6 +76,7 @@ impl<R: AppRuntime> Project<R> {
                     headers: None, // Hardcoded for now
                     path_params: None,
                     query_params: None,
+                    body: None,
                 };
                 self.worktree()
                     .await
@@ -256,6 +257,7 @@ impl<R: AppRuntime> Project<R> {
             headers: Some(LabeledBlock::new(header_map)),
             path_params: Some(LabeledBlock::new(path_param_map)),
             query_params: Some(LabeledBlock::new(query_param_map)),
+            body: None, // TODO
         };
 
         self.worktree()

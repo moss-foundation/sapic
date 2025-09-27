@@ -1,10 +1,20 @@
 use hcl::Expression;
 use indexmap::IndexMap;
-use moss_hcl::{Block, LabeledBlock, deserialize_expression, expression, serialize_expression};
-use serde::{Deserialize, Serialize};
+use moss_hcl::{
+    Block, LabeledBlock, deserialize_expression, expression,
+    heredoc::{serialize_jsonvalue_as_heredoc, serialize_string_as_heredoc},
+    serialize_expression,
+};
+use serde::{
+    Deserialize, Deserializer, Serialize, Serializer,
+    de::{Error, IntoDeserializer},
+};
+use serde_json::Value as JsonValue;
+use std::path::PathBuf;
 
 use crate::models::primitives::{
-    EntryClass, EntryId, EntryProtocol, HeaderId, PathParamId, QueryParamId,
+    EntryClass, EntryId, EntryProtocol, FormDataParamId, HeaderId, PathParamId, QueryParamId,
+    UrlencodedParamId,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -78,6 +88,74 @@ pub struct QueryParamSpec {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UrlencodedParamSpecOptions {
+    pub disabled: bool,
+    pub propagate: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UrlencodedParamSpec {
+    pub name: String,
+    #[serde(
+        serialize_with = "serialize_expression",
+        deserialize_with = "deserialize_expression",
+        skip_serializing_if = "expression::is_null"
+    )]
+    pub value: Expression,
+    pub description: Option<String>,
+    pub options: UrlencodedParamSpecOptions,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FormDataParamSpecOptions {
+    pub disabled: bool,
+    pub propagate: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum FormDataParamValue {
+    #[serde(
+        serialize_with = "serialize_expression",
+        deserialize_with = "deserialize_expression"
+    )]
+    #[serde(rename = "text")]
+    Text(Expression),
+
+    #[serde(rename = "path")]
+    Binary(PathBuf),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FormDataParamSpec {
+    pub name: String,
+    // TODO: Handling both text value and file upload
+    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/POST
+    pub value: FormDataParamValue,
+    pub description: Option<String>,
+    pub options: FormDataParamSpecOptions,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum BodyValue {
+    #[serde(serialize_with = "serialize_string_as_heredoc")]
+    Text(String),
+
+    #[serde(serialize_with = "serialize_jsonvalue_as_heredoc")]
+    Json(JsonValue),
+
+    // TODO: Find a way to fully support xml
+    // Currently there isn't a good counterpart to serde_json::Value for xml
+    // `xmltree::Element` will silently discard extra root nodes instead of raising an error
+    #[serde(serialize_with = "serialize_string_as_heredoc")]
+    Xml(String),
+
+    Binary(PathBuf),
+    Urlencoded(LabeledBlock<IndexMap<UrlencodedParamId, UrlencodedParamSpec>>),
+    FormData(LabeledBlock<IndexMap<FormDataParamId, FormDataParamSpec>>),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EntryModel {
     pub metadata: Block<EntryMetadataSpec>,
 
@@ -95,6 +173,9 @@ pub struct EntryModel {
     #[serde(rename = "query_param")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub query_params: Option<LabeledBlock<IndexMap<QueryParamId, QueryParamSpec>>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub body: Option<Block<BodyValue>>,
 }
 
 impl From<(EntryId, EntryClass)> for EntryModel {
@@ -105,6 +186,7 @@ impl From<(EntryId, EntryClass)> for EntryModel {
             headers: None,
             query_params: None,
             path_params: None,
+            body: None,
         }
     }
 }
@@ -182,6 +264,19 @@ mod tests {
                     }
                 }
             })),
+            body: Some(Block::new(BodyValue::Urlencoded(LabeledBlock::new(
+                indexmap! {
+                    UrlencodedParamId::new() => UrlencodedParamSpec {
+                        name: "1".to_string(),
+                        value: Expression::String("1".to_string()),
+                        description: None,
+                        options: UrlencodedParamSpecOptions {
+                            disabled: false,
+                            propagate: false,
+                        },
+                    }
+                },
+            )))),
         };
 
         let str = hcl::to_string(&model).unwrap();
@@ -199,8 +294,48 @@ mod tests {
     fn test_edit() {
         let model = test_item();
         let model_string = hcl::to_string(&model).unwrap();
+        dbg!(&model_string);
+    }
 
-        let model = hcl::from_str::<EntryModel>(&model_string).unwrap();
-        dbg!(&model);
+    #[test]
+    fn test_body() {
+        let formdata = LabeledBlock::new(indexmap! {
+            FormDataParamId::new() => FormDataParamSpec {
+                name: "file".to_string(),
+                value: FormDataParamValue::Binary("foo/bar.txt".into()),
+                description: None,
+                options: FormDataParamSpecOptions {
+                    disabled: false,
+                    propagate: false,
+                }
+            },
+            FormDataParamId::new() => FormDataParamSpec {
+                name: "text".to_string(),
+                value: FormDataParamValue::Text(Expression::String("Test".to_string())),
+                description: None,
+                options: FormDataParamSpecOptions {
+                    disabled: false,
+                    propagate: false,
+                }
+            }
+        });
+
+        let model = EntryModel {
+            metadata: Block::new(EntryMetadataSpec {
+                id: EntryId::new(),
+                class: EntryClass::Endpoint,
+            }),
+            url: None,
+            headers: None,
+            path_params: None,
+            query_params: None,
+            body: Some(Block::new(BodyValue::FormData(formdata))),
+        };
+
+        let str = hcl::to_string(&model).unwrap();
+        dbg!(&str);
+        std::fs::write("example_body", &str).unwrap();
+        let body: EntryModel = hcl::from_str(&str).unwrap();
+        dbg!(&body);
     }
 }
