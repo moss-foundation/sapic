@@ -45,7 +45,7 @@ export const Notification = forwardRef<React.ElementRef<typeof Primitive.div>, N
       <Primitive.div
         ref={ref}
         className={cn(
-          "relative flex w-90 items-start gap-2 rounded-lg border border-gray-700 px-2.5 py-[7px] shadow-lg",
+          "relative flex w-90 items-start gap-2 rounded-lg border border-gray-700 px-2.5 pt-[7px] pb-4 shadow-lg",
           "background-[var(--moss-notification-bg)] text-[var(--moss-notification-text)]",
           className
         )}
@@ -57,7 +57,7 @@ export const Notification = forwardRef<React.ElementRef<typeof Primitive.div>, N
         <div className="min-w-0 flex-1">
           {title && <div className="text-md leading-5 font-semibold text-[var(--moss-notification-text)]">{title}</div>}
           {description && (
-            <div className="text-md mt-1 leading-5 text-[var(--moss-notification-text)]">{description}</div>
+            <div className="text-md pt-0.5 leading-4 text-[var(--moss-notification-text)]">{description}</div>
           )}
 
           {(buttonText || linkText) && (
