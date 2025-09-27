@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 
+import { NotificationContainer } from "@/components/NotificationContainer";
 import Providers from "./Providers";
 
 interface AppProps {
@@ -7,7 +8,12 @@ interface AppProps {
 }
 
 const App = ({ children }: AppProps) => {
-  return <Providers>{children}</Providers>;
+  return (
+    <Providers>
+      {children}
+      <NotificationContainer />
+    </Providers>
+  );
 };
 
 export default App;
