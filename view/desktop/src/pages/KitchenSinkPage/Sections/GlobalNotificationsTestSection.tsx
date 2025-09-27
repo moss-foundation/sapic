@@ -1,5 +1,5 @@
 import { useNotifications } from "../../../app/NotificationProvider";
-import { Button } from "@/lib/ui";
+import { Button, Icon } from "@/lib/ui";
 
 export const GlobalNotificationsTestSection = () => {
   const { addNotification, clearAllNotifications, removeNotification } = useNotifications();
@@ -38,7 +38,7 @@ export const GlobalNotificationsTestSection = () => {
 
   const showErrorNotification = () => {
     const notificationId = addNotification({
-      icon: "Error",
+      icon: "Failed",
       title: "Build failed",
       description: "The compilation process encountered errors. Please check your code.",
       buttonText: "View errors",
@@ -82,14 +82,7 @@ export const GlobalNotificationsTestSection = () => {
         >
           <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-500 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
           <span className="relative flex items-center gap-2">
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
+            <Icon icon="Info" className="h-4 w-4" />
             Show Info Notification
           </span>
         </Button>
@@ -100,15 +93,8 @@ export const GlobalNotificationsTestSection = () => {
         >
           <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-yellow-500 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
           <span className="relative flex items-center gap-2">
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-              />
-            </svg>
-            Show Warning Toast 5 seconds
+            <Icon icon="Warning" className="h-4 w-4" />
+            Show Warning Toast
           </span>
         </Button>
 
@@ -118,14 +104,7 @@ export const GlobalNotificationsTestSection = () => {
         >
           <div className="absolute inset-0 bg-gradient-to-r from-red-400 to-red-500 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
           <span className="relative flex items-center gap-2">
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
+            <Icon icon="Failed" className="h-4 w-4" />
             Show Error Notification
           </span>
         </Button>
@@ -136,9 +115,7 @@ export const GlobalNotificationsTestSection = () => {
         >
           <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-green-500 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
           <span className="relative flex items-center gap-2">
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
+            <Icon icon="GreenCheckmark" className="h-4 w-4" />
             Show Success Toast
           </span>
         </Button>
@@ -151,14 +128,7 @@ export const GlobalNotificationsTestSection = () => {
         >
           <div className="absolute inset-0 bg-gradient-to-r from-gray-500 to-gray-600 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
           <span className="relative flex items-center gap-2">
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-              />
-            </svg>
+            <Icon icon="Delete" className="h-4 w-4" />
             Clear All Notifications
           </span>
         </Button>
