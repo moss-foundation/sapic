@@ -22,8 +22,9 @@ export const GlobalNotificationsTestSection = () => {
     });
   };
 
-  const showWarningNotification = () => {
+  const showWarningToastDelayed = () => {
     const notificationId = addNotification({
+      icon: "Warning",
       title: "Low memory",
       description: "The IDE is running low on memory and this might affect performance.",
       buttonText: "Analyze memory use",
@@ -31,12 +32,13 @@ export const GlobalNotificationsTestSection = () => {
         alert("Analyze memory use clicked!");
         removeNotification(notificationId);
       },
-      duration: 8000, // Auto-dismiss after 8 seconds
+      duration: 5000, // Auto-dismiss after 5 seconds
     });
   };
 
   const showErrorNotification = () => {
     const notificationId = addNotification({
+      icon: "Error",
       title: "Build failed",
       description: "The compilation process encountered errors. Please check your code.",
       buttonText: "View errors",
@@ -53,7 +55,7 @@ export const GlobalNotificationsTestSection = () => {
     });
   };
 
-  const showSuccessNotification = () => {
+  const showSuccessToast = () => {
     const notificationId = addNotification({
       icon: "GreenCheckmark",
       title: "2,662 files updated",
@@ -63,7 +65,6 @@ export const GlobalNotificationsTestSection = () => {
         alert("View commits clicked!");
         removeNotification(notificationId);
       },
-      duration: 5000, // Auto-dismiss after 5 seconds
     });
   };
 
@@ -71,7 +72,7 @@ export const GlobalNotificationsTestSection = () => {
     <section className="rounded-xl bg-white p-6 shadow-md dark:bg-stone-800">
       <h2 className="mb-4 text-2xl font-bold text-gray-800 capitalize dark:text-gray-100">Global Notifications Test</h2>
       <p className="mb-6 text-gray-600 dark:text-gray-300">
-        Click these buttons to trigger notifications that appear in the bottom-right corner like IntelliJ.
+        Click these buttons to trigger notifications that appear in the bottom-right corner.
       </p>
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -94,7 +95,7 @@ export const GlobalNotificationsTestSection = () => {
         </Button>
 
         <Button
-          onClick={showWarningNotification}
+          onClick={showWarningToastDelayed}
           className="group relative h-12 overflow-hidden bg-gradient-to-r from-yellow-500 to-yellow-600 px-6 py-3 text-white shadow-lg transition-all duration-200 hover:scale-105 hover:from-yellow-600 hover:to-yellow-700 hover:shadow-xl active:scale-95"
         >
           <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-yellow-500 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
@@ -107,7 +108,7 @@ export const GlobalNotificationsTestSection = () => {
                 d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
               />
             </svg>
-            Show Warning Notification
+            Show Warning Toast 5 seconds
           </span>
         </Button>
 
@@ -130,7 +131,7 @@ export const GlobalNotificationsTestSection = () => {
         </Button>
 
         <Button
-          onClick={showSuccessNotification}
+          onClick={showSuccessToast}
           className="group relative h-12 overflow-hidden bg-gradient-to-r from-green-500 to-green-600 px-6 py-3 text-white shadow-lg transition-all duration-200 hover:scale-105 hover:from-green-600 hover:to-green-700 hover:shadow-xl active:scale-95"
         >
           <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-green-500 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
@@ -138,7 +139,7 @@ export const GlobalNotificationsTestSection = () => {
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
-            Show Success Notification
+            Show Success Toast
           </span>
         </Button>
       </div>
