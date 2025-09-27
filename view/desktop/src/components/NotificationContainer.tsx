@@ -18,11 +18,10 @@ export const NotificationContainer = () => {
           key={notification.id}
           className={cn(
             "transform transition-all duration-300 ease-in-out",
-            "animate-in slide-in-from-right-full",
-            index === notifications.length - 1 && "animate-in fade-in-0"
+            index === notifications.length - 1 ? "animate-in slide-in-from-right-full" : "animate-in fade-in-0"
           )}
           style={{
-            animationDelay: `${index * 100}ms`,
+            animationDelay: index === notifications.length - 1 ? "0ms" : `${index * 100}ms`,
           }}
         >
           <div className="relative">
