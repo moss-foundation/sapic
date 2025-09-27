@@ -96,49 +96,14 @@ const iconMap: Record<NotificationVariant, Icons> = {
 export interface NotificationProps
   extends ComponentPropsWithoutRef<typeof Primitive.div>,
     VariantProps<typeof notificationVariants> {
-  /**
-   * The title of the notification
-   */
   title?: string;
-
-  /**
-   * The description/message of the notification
-   */
   description?: string;
-
-  /**
-   * Custom icon to display. If not provided, uses default icon based on variant
-   */
   icon?: Icons | null;
-
-  /**
-   * Primary action button text
-   */
   buttonText?: string;
-
-  /**
-   * Primary action button click handler
-   */
   onButtonClick?: () => void;
-
-  /**
-   * Secondary action link text
-   */
   linkText?: string;
-
-  /**
-   * Secondary action link click handler
-   */
   onLinkClick?: () => void;
-
-  /**
-   * Custom content to render instead of default layout
-   */
   children?: ReactNode;
-
-  /**
-   * Additional class name
-   */
   className?: string;
 }
 
@@ -159,7 +124,6 @@ export const Notification = forwardRef<React.ElementRef<typeof Primitive.div>, N
     },
     ref
   ) => {
-    // If custom children provided, render them instead of default layout
     if (children) {
       return (
         <Primitive.div ref={ref} className={cn(notificationVariants({ variant }), className)} {...props}>
@@ -168,26 +132,18 @@ export const Notification = forwardRef<React.ElementRef<typeof Primitive.div>, N
       );
     }
 
-    // Determine which icon to show
     const displayIcon = icon !== null ? icon || iconMap[variant!] : null;
 
     return (
       <Primitive.div ref={ref} className={cn(notificationVariants({ variant }), className)} role="alert" {...props}>
-        {/* Icon */}
         {displayIcon && <Icon icon={displayIcon} className={cn("size-5", iconVariants({ variant }))} />}
 
-        {/* Content */}
         <div className="min-w-0 flex-1">
-          {/* Title */}
           {title && <div className={cn(titleVariants({ variant }))}>{title}</div>}
-
-          {/* Description */}
           {description && <div className={cn(descriptionVariants({ variant }))}>{description}</div>}
 
-          {/* Actions */}
           {(buttonText || linkText) && (
             <div className="mt-3 flex items-center gap-3">
-              {/* Primary Button */}
               {buttonText && onButtonClick && (
                 <Button
                   onClick={onButtonClick}
@@ -200,7 +156,6 @@ export const Notification = forwardRef<React.ElementRef<typeof Primitive.div>, N
                 </Button>
               )}
 
-              {/* Secondary Link */}
               {linkText && onLinkClick && (
                 <button onClick={onLinkClick} className={cn(linkVariants({ variant }))} type="button">
                   {linkText}

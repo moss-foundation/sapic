@@ -5,11 +5,10 @@ import { listen } from "@tauri-apps/api/event";
 import { useNotifications } from "./NotificationProvider";
 
 export const MAX_HISTORY_SIZE = 1000; // Limit number of historical events
-export const ONESHOT_CLEANUP_DELAY = 1000; // ms
-export const PROGRESS_CLEANUP_DELAY = 1000; // ms
-export const DEFAULT_DISPLAY_DURATION = 10; // ms
+export const ONESHOT_CLEANUP_DELAY = 1000;
+export const PROGRESS_CLEANUP_DELAY = 1000;
+export const DEFAULT_DISPLAY_DURATION = 10;
 
-// Helper function to get location from an activity event
 const getEventLocation = (
   event: ActivityEvent,
   activityLocationsRef: React.MutableRefObject<Map<string, string>>
@@ -38,12 +37,6 @@ export interface ActivityEventsContextType {
     displayQueue: ActivityEvent[];
     getStartTitleForActivity: (activityId: string) => string | null;
   };
-
-  // TODO: Add notification events context
-  // notificationEvents: NotificationEventsContextType;
-
-  // TODO: Add toast events context
-  // toastEvents: ToastEventsContextType;
 
   clearEvents: () => void;
 }
@@ -87,12 +80,6 @@ interface ActivityState {
     displayQueue: ActivityEvent[];
   };
 
-  // TODO: Add state for notification events
-  // notificationEvents: NotificationActivityState;
-
-  // TODO: Add state for toast events
-  // toastEvents: ToastActivityState;
-
   timeoutIds: Set<number>; // Track timeouts for cleanup
 }
 
@@ -109,10 +96,6 @@ type ActivityAction =
   | { type: "CLEAR_ALL" }
   | { type: "ADD_TIMEOUT_ID"; payload: { id: number } }
   | { type: "REMOVE_TIMEOUT_ID"; payload: { id: number } };
-// TODO: Add actions for notification events
-// | { type: "ADD_NOTIFICATION_EVENT"; payload: ActivityEvent }
-// TODO: Add actions for toast events
-// | { type: "ADD_TOAST_EVENT"; payload: ActivityEvent }
 
 function activityRouterReducer(state: ActivityState, action: ActivityAction): ActivityState {
   switch (action.type) {
@@ -305,7 +288,7 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
   };
 
   const [state, dispatch] = useReducer(activityRouterReducer, initialState);
-  const { addNotification } = useNotifications();
+  const { addNotification, removeNotification } = useNotifications();
 
   const processingQueueRef = useRef(false);
   const displayDurationRef = useRef(DEFAULT_DISPLAY_DURATION);
@@ -436,7 +419,7 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
         case "notification":
           // Route to notification system - persistent notification
           if ("oneshot" in event) {
-            addNotification({
+            const notificationId = addNotification({
               variant: "info",
               icon: "Info",
               title: event.oneshot.title,
@@ -444,15 +427,17 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
               buttonText: "Details",
               linkText: "Ignore",
               onButtonClick: () => {
-                console.log("Details clicked for notification:", event.oneshot.title);
+                alert("Details clicked!");
+                removeNotification(notificationId);
               },
               onLinkClick: () => {
-                console.log("Ignore clicked for notification:", event.oneshot.title);
+                alert("Ignore clicked!");
+                removeNotification(notificationId);
               },
               duration: 0, // Persistent - no auto-dismiss
             });
           } else if ("start" in event) {
-            addNotification({
+            const notificationId = addNotification({
               variant: "info",
               icon: "Info",
               title: event.start.title,
@@ -460,10 +445,12 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
               buttonText: "Details",
               linkText: "Ignore",
               onButtonClick: () => {
-                console.log("Details clicked for notification:", event.start.title);
+                alert("Details clicked!");
+                removeNotification(notificationId);
               },
               onLinkClick: () => {
-                console.log("Ignore clicked for notification:", event.start.title);
+                alert("Ignore clicked!");
+                removeNotification(notificationId);
               },
               duration: 0, // Persistent - no auto-dismiss
             });
@@ -473,7 +460,7 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
         case "toast":
           // Route to toast system - auto-dismiss after default duration
           if ("oneshot" in event) {
-            addNotification({
+            const notificationId = addNotification({
               variant: "info",
               icon: "Info",
               title: event.oneshot.title,
@@ -481,15 +468,17 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
               buttonText: "Details",
               linkText: "Ignore",
               onButtonClick: () => {
-                console.log("Details clicked for toast:", event.oneshot.title);
+                alert("Details clicked!");
+                removeNotification(notificationId);
               },
               onLinkClick: () => {
-                console.log("Ignore clicked for toast:", event.oneshot.title);
+                alert("Ignore clicked!");
+                removeNotification(notificationId);
               },
               duration: undefined, // Use default duration (2 seconds)
             });
           } else if ("start" in event) {
-            addNotification({
+            const notificationId = addNotification({
               variant: "info",
               icon: "Info",
               title: event.start.title,
@@ -497,10 +486,12 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
               buttonText: "Details",
               linkText: "Ignore",
               onButtonClick: () => {
-                console.log("Details clicked for toast:", event.start.title);
+                alert("Details clicked!");
+                removeNotification(notificationId);
               },
               onLinkClick: () => {
-                console.log("Ignore clicked for toast:", event.start.title);
+                alert("Ignore clicked!");
+                removeNotification(notificationId);
               },
               duration: undefined, // Use default duration (2 seconds)
             });

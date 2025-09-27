@@ -30,14 +30,11 @@ export const NotificationContainer = () => {
               className={cn(notification.className, "max-w-sm min-w-80 shadow-xl")}
               onButtonClick={() => {
                 notification.onButtonClick?.();
-                // Keep notification open after button click unless explicitly closed
               }}
               onLinkClick={() => {
                 notification.onLinkClick?.();
-                // Keep notification open after link click unless explicitly closed
               }}
               onClick={(e) => {
-                // Allow clicking anywhere on notification to dismiss it
                 if (e.target === e.currentTarget) {
                   removeNotification(notification.id);
                 }
