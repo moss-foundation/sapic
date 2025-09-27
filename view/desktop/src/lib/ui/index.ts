@@ -6,6 +6,7 @@ export * from "./Modal";
 export * as MossDropdown from "./MossDropdown";
 export * from "./MossSelect";
 export * from "./MossToggle";
+export * from "./Notification";
 export * as RadioGroup from "./RadioGroup";
 export * from "./Resizable";
 export * from "./Scrollbar";
