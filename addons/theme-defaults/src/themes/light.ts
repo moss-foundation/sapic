@@ -1068,13 +1068,17 @@ export const defaultLightTheme: Theme = {
       type: "variable",
       value: "moss.blue.8",
     },
+    "moss.notification.link.hover": {
+      type: "variable",
+      value: "moss.blue.10",
+    },
     "moss.notification.button.outline": {
       type: "variable",
       value: "moss.gray.7",
     },
     "moss.notification.button.hover": {
       type: "variable",
-      value: "moss.gray.3",
+      value: "moss.gray.4",
     },
   },
   boxShadows: {

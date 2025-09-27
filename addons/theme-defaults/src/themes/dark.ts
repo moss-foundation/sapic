@@ -902,13 +902,17 @@ export const defaultDarkTheme: Theme = {
       type: "variable",
       value: "moss.blue.9",
     },
+    "moss.notification.link.hover": {
+      type: "variable",
+      value: "moss.blue.11",
+    },
     "moss.notification.button.outline": {
       type: "variable",
       value: "moss.gray.7",
     },
     "moss.notification.button.hover": {
       type: "variable",
-      value: "moss.gray.4",
+      value: "moss.gray.5",
     },
   },
   boxShadows: {

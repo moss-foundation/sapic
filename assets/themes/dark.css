@@ -221,8 +221,9 @@
   --moss-notification-bg: var(--moss-gray-3);
   --moss-notification-text: var(--moss-gray-14);
   --moss-notification-link-text: var(--moss-blue-9);
+  --moss-notification-link-hover: var(--moss-blue-11);
   --moss-notification-button-outline: var(--moss-gray-7);
-  --moss-notification-button-hover: var(--moss-gray-4);
+  --moss-notification-button-hover: var(--moss-gray-5);
 
   /* BoxShadows */
   --moss-floating-box-shadow: 8px 8px 8px 0px rgba(83, 89, 93, 0.5);

@@ -264,6 +264,7 @@
   "--moss-notification-bg",
   "--moss-notification-text",
   "--moss-notification-link-text",
+  "--moss-notification-link-hover",
   "--moss-notification-button-outline",
   "--moss-notification-button-hover",
   "--moss-floating-box-shadow"
