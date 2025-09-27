@@ -2,6 +2,7 @@ import React, { createContext, useCallback, useEffect, useMemo, useReducer, useR
 
 import { CHANNEL as ACTIVITY_BROADCASTER_CHANNEL, ActivityEvent } from "@repo/moss-activity-broadcaster";
 import { listen } from "@tauri-apps/api/event";
+import { useNotifications } from "./NotificationProvider";
 
 export const MAX_HISTORY_SIZE = 1000; // Limit number of historical events
 export const ONESHOT_CLEANUP_DELAY = 1000; // ms
@@ -289,18 +290,6 @@ export const ActivityRouterContext = createContext<ActivityEventsContextType>({
   clearEvents: () => {},
 });
 
-// TODO: Add hooks for notification events
-// export const useNotificationActivityEvents = () => {
-//   const { notificationEvents } = useActivityRouter();
-//   return notificationEvents;
-// };
-
-// TODO: Add hooks for toast events
-// export const useToastActivityEvents = () => {
-//   const { toastEvents } = useActivityRouter();
-//   return toastEvents;
-// };
-
 export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const initialState: ActivityState = {
     windowEvents: {
@@ -316,6 +305,7 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
   };
 
   const [state, dispatch] = useReducer(activityRouterReducer, initialState);
+  const { addNotification } = useNotifications();
 
   const processingQueueRef = useRef(false);
   const displayDurationRef = useRef(DEFAULT_DISPLAY_DURATION);
@@ -444,13 +434,77 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
           break;
 
         case "notification":
-          // TODO: Route to notification system
-          console.log("TODO: Route to notification system", event);
+          // Route to notification system - persistent notification
+          if ("oneshot" in event) {
+            addNotification({
+              variant: "info",
+              icon: "Info",
+              title: event.oneshot.title,
+              description: event.oneshot.detail || undefined,
+              buttonText: "Details",
+              linkText: "Ignore",
+              onButtonClick: () => {
+                console.log("Details clicked for notification:", event.oneshot.title);
+              },
+              onLinkClick: () => {
+                console.log("Ignore clicked for notification:", event.oneshot.title);
+              },
+              duration: 0, // Persistent - no auto-dismiss
+            });
+          } else if ("start" in event) {
+            addNotification({
+              variant: "info",
+              icon: "Info",
+              title: event.start.title,
+              description: event.start.detail || undefined,
+              buttonText: "Details",
+              linkText: "Ignore",
+              onButtonClick: () => {
+                console.log("Details clicked for notification:", event.start.title);
+              },
+              onLinkClick: () => {
+                console.log("Ignore clicked for notification:", event.start.title);
+              },
+              duration: 0, // Persistent - no auto-dismiss
+            });
+          }
           break;
 
         case "toast":
-          // TODO: Route to toast system
-          console.log("TODO: Route to toast system", event);
+          // Route to toast system - auto-dismiss after default duration
+          if ("oneshot" in event) {
+            addNotification({
+              variant: "info",
+              icon: "Info",
+              title: event.oneshot.title,
+              description: event.oneshot.detail || undefined,
+              buttonText: "Details",
+              linkText: "Ignore",
+              onButtonClick: () => {
+                console.log("Details clicked for toast:", event.oneshot.title);
+              },
+              onLinkClick: () => {
+                console.log("Ignore clicked for toast:", event.oneshot.title);
+              },
+              duration: undefined, // Use default duration (2 seconds)
+            });
+          } else if ("start" in event) {
+            addNotification({
+              variant: "info",
+              icon: "Info",
+              title: event.start.title,
+              description: event.start.detail || undefined,
+              buttonText: "Details",
+              linkText: "Ignore",
+              onButtonClick: () => {
+                console.log("Details clicked for toast:", event.start.title);
+              },
+              onLinkClick: () => {
+                console.log("Ignore clicked for toast:", event.start.title);
+              },
+              duration: undefined, // Use default duration (2 seconds)
+            });
+          }
           break;
 
         default:
