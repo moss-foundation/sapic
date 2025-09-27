@@ -15,6 +15,8 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
   const [progressEventCount, setProgressEventCount] = useState(10);
   const [oneshotEventCount, setOneshotEventCount] = useState(3);
   const [concurrentProgressEvents, setConcurrentProgressEvents] = useState(2);
+  const [notificationEventCount, setNotificationEventCount] = useState(2);
+  const [toastEventCount, setToastEventCount] = useState(2);
   const [priorityTestMode, setPriorityTestMode] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
 
@@ -51,6 +53,48 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
     { title: "Format", detail: "Document formatted" },
     { title: "Notification", detail: "New update available" },
     { title: "Linting", detail: "No issues found" },
+  ];
+
+  const notificationTypes = [
+    {
+      title: "JDK Update Available",
+      detail:
+        "A newer version of JDK is available for download. Update now to get the latest features and security improvements.",
+    },
+    {
+      title: "Build Configuration Changed",
+      detail: "Your build configuration has been modified. This may affect compilation and runtime behavior.",
+    },
+    {
+      title: "Database Connection Lost",
+      detail: "Connection to the database server has been lost. Please check your network settings and try again.",
+    },
+    {
+      title: "Memory Usage Warning",
+      detail:
+        "Application memory usage is approaching 80% of the allocated heap. Consider increasing memory allocation.",
+    },
+    {
+      title: "Code Quality Alert",
+      detail:
+        "Static code analysis found potential issues in your codebase. Review the findings to improve code quality.",
+    },
+    {
+      title: "Security Vulnerability Found",
+      detail:
+        "A security vulnerability has been detected in your dependencies. Update to the latest versions to fix this issue.",
+    },
+  ];
+
+  const toastTypes = [
+    { title: "File Saved", detail: "All changes have been saved successfully." },
+    { title: "Git Push Complete", detail: "Changes pushed to origin/main branch." },
+    { title: "Test Passed", detail: "All unit tests completed successfully." },
+    { title: "Format Applied", detail: "Code formatting applied to 5 files." },
+    { title: "Dependencies Updated", detail: "Package dependencies updated to latest versions." },
+    { title: "Server Connected", detail: "Successfully connected to development server." },
+    { title: "Build Successful", detail: "Project compiled without errors." },
+    { title: "Sync Complete", detail: "Workspace synchronized with remote repository." },
   ];
 
   useEffect(() => {
@@ -301,6 +345,78 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
       }
     };
 
+    const simulateNotificationEvents = async (count: number, baseDelay: number) => {
+      try {
+        for (let i = 0; i < count; i++) {
+          if (!simulationStateRef.current.isActive) {
+            break;
+          }
+
+          if (simulationStateRef.current.isPaused) {
+            break;
+          }
+
+          const notificationType = notificationTypes[Math.floor(Math.random() * notificationTypes.length)];
+
+          const notificationEvent = {
+            oneshot: {
+              id: 50000 + i,
+              activityId: `notification-${i}`,
+              title: notificationType.title,
+              detail: notificationType.detail,
+              location: "notification",
+            },
+          } as ActivityEvent;
+
+          await emitEvent(notificationEvent, randomDelay(baseDelay * 0.5, baseDelay * 2));
+
+          // Space out notification events
+          await new Promise<void>((resolve) => {
+            const timeoutId = setTimeout(resolve, randomDelay(baseDelay * 0.5, baseDelay));
+            activeTimeoutsRef.current.push(timeoutId);
+          });
+        }
+      } catch (error) {
+        console.error("Error in notification simulation:", error);
+      }
+    };
+
+    const simulateToastEvents = async (count: number, baseDelay: number) => {
+      try {
+        for (let i = 0; i < count; i++) {
+          if (!simulationStateRef.current.isActive) {
+            break;
+          }
+
+          if (simulationStateRef.current.isPaused) {
+            break;
+          }
+
+          const toastType = toastTypes[Math.floor(Math.random() * toastTypes.length)];
+
+          const toastEvent = {
+            oneshot: {
+              id: 60000 + i,
+              activityId: `toast-${i}`,
+              title: toastType.title,
+              detail: toastType.detail,
+              location: "toast",
+            },
+          } as ActivityEvent;
+
+          await emitEvent(toastEvent, randomDelay(baseDelay * 0.3, baseDelay * 1.2));
+
+          // Space out toast events (shorter than notifications since they auto-dismiss)
+          await new Promise<void>((resolve) => {
+            const timeoutId = setTimeout(resolve, randomDelay(baseDelay * 0.3, baseDelay * 0.8));
+            activeTimeoutsRef.current.push(timeoutId);
+          });
+        }
+      } catch (error) {
+        console.error("Error in toast simulation:", error);
+      }
+    };
+
     const simulateAll = async () => {
       try {
         if (priorityTestMode) {
@@ -430,8 +546,10 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
           }
 
           const oneshotPromise = simulateOneshotEvents(oneshotEventCount, simulationDelay);
+          const notificationPromise = simulateNotificationEvents(notificationEventCount, simulationDelay);
+          const toastPromise = simulateToastEvents(toastEventCount, simulationDelay);
 
-          await Promise.all([...progressPromises, oneshotPromise]);
+          await Promise.all([...progressPromises, oneshotPromise, notificationPromise, toastPromise]);
         }
 
         console.log("All simulations completed");
@@ -483,7 +601,7 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
     <div className={`rounded-md border p-4 ${className}`}>
       <h2 className="mb-2 text-xl">Activity Event Simulator</h2>
 
-      <div className="mb-4 grid grid-cols-2 gap-4">
+      <div className="mb-4 grid grid-cols-3 gap-4">
         <div>
           <label className="mb-1 block text-sm font-medium">Delay between events (ms)</label>
           <input
@@ -533,7 +651,31 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
             disabled={isSimulating || priorityTestMode}
           />
         </div>
-        <div className="col-span-2 mt-2">
+        <div>
+          <label className="mb-1 block text-sm font-medium">Number of notification events</label>
+          <input
+            type="number"
+            min="0"
+            max="10"
+            value={notificationEventCount}
+            onChange={(e) => setNotificationEventCount(Number(e.target.value))}
+            className="w-full rounded border p-2"
+            disabled={isSimulating || priorityTestMode}
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium">Number of toast events</label>
+          <input
+            type="number"
+            min="0"
+            max="20"
+            value={toastEventCount}
+            onChange={(e) => setToastEventCount(Number(e.target.value))}
+            className="w-full rounded border p-2"
+            disabled={isSimulating || priorityTestMode}
+          />
+        </div>
+        <div className="col-span-3 mt-2">
           <div className="flex items-center">
             <input
               type="checkbox"

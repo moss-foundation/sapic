@@ -10,13 +10,13 @@ import ThemeProvider from "./ThemeProvider";
 const Providers = ({ children }: { children: ReactNode }) => {
   return (
     <ErrorBoundary>
-      <ActivityRouterProvider>
-        <NotificationProvider>
+      <NotificationProvider>
+        <ActivityRouterProvider>
           <LanguageProvider>
             <ThemeProvider>{children}</ThemeProvider>
           </LanguageProvider>
-        </NotificationProvider>
-      </ActivityRouterProvider>
+        </ActivityRouterProvider>
+      </NotificationProvider>
     </ErrorBoundary>
   );
 };
