@@ -16,6 +16,7 @@ export const NotificationsSection = () => {
       <div>
         <h3 className="mb-3 text-lg font-semibold text-gray-700 dark:text-gray-300">Info Notification</h3>
         <Notification
+          icon="Info"
           title="JDK 18 required"
           description="You need to install JDK 18 in order to run this project."
           buttonText="Install JDK 18"
@@ -29,6 +30,7 @@ export const NotificationsSection = () => {
       <div>
         <h3 className="mb-3 text-lg font-semibold text-gray-700 dark:text-gray-300">Warning Notification</h3>
         <Notification
+          icon="Warning"
           title="Low memory"
           description="The IDE is running low on memory and this might affect performance. Please consider increasing the heap size."
           buttonText="Analyze memory use"
@@ -40,6 +42,7 @@ export const NotificationsSection = () => {
       <div>
         <h3 className="mb-3 text-lg font-semibold text-gray-700 dark:text-gray-300">Error Notification</h3>
         <Notification
+          icon="Error"
           title="Build failed"
           description="The compilation process encountered errors. Please check your code for syntax issues."
           buttonText="View errors"
@@ -53,9 +56,10 @@ export const NotificationsSection = () => {
       <div>
         <h3 className="mb-3 text-lg font-semibold text-gray-700 dark:text-gray-300">Minimal Variants</h3>
         <div className="space-y-3">
-          <Notification title="File saved successfully" />
-          <Notification description="This action cannot be undone." />
+          <Notification icon="GreenCheckmark" title="File saved successfully" />
+          <Notification icon="Warning" description="This action cannot be undone." />
           <Notification
+            icon="Error"
             title="Connection failed"
             linkText="Retry connection"
             onLinkClick={() => alert("Retry connection clicked!")}
