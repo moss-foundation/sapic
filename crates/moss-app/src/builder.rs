@@ -12,13 +12,14 @@ use crate::{
     command::CommandDecl,
     configuration::ConfigurationService,
     dirs,
+    extension::ExtensionService,
     internal::events::{OnDidChangeConfiguration, OnDidChangeProfile, OnDidChangeWorkspace},
     locale::LocaleService,
     logging::LogService,
     profile::ProfileService,
     session::SessionService,
     storage::StorageService,
-    theme::ThemeService,
+    theme::{ThemeExtensionPoint, ThemeRegistry, ThemeService},
     workspace::WorkspaceService,
 };
 
@@ -85,6 +86,8 @@ impl<R: AppRuntime> AppBuilder<R> {
         let theme_service = ThemeService::new(self.fs.clone(), params.themes_dir)
             .await
             .expect("Failed to create theme service");
+        <dyn ThemeRegistry>::set_global(&delegate, theme_service.registry());
+
         let locale_service = LocaleService::new(self.fs.clone(), params.locales_dir)
             .await
             .expect("Failed to create locale service");
@@ -115,6 +118,14 @@ impl<R: AppRuntime> AppBuilder<R> {
                 .await
                 .expect("Failed to create workspace service");
 
+        let extension_service = ExtensionService::<R>::new(
+            &delegate,
+            self.fs.clone(),
+            vec![ThemeExtensionPoint::new()],
+        )
+        .await
+        .expect("Failed to create extension service");
+
         App {
             app_dir,
             app_handle: self.tao_handle.clone(),
@@ -134,6 +145,7 @@ impl<R: AppRuntime> AppBuilder<R> {
             theme_service,
             profile_service,
             configuration_service,
+            extension_service,
             tracked_cancellations: Default::default(),
         }
     }

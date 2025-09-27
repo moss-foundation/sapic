@@ -10,8 +10,8 @@ impl<R: AppRuntime> App<R> {
         input: &SetLocaleInput,
     ) -> joinerror::Result<()> {
         // TODO: this implementation is not good enough, we need revisit it, and refactor it
-        let mut locale_lock = self.preferences.locale.write().await;
-        *locale_lock = Some(input.locale_info.clone());
+        // let mut locale_lock = self.preferences.locale.write().await;
+        // *locale_lock = Some(input.locale_info.clone());
 
         Ok(())
     }
