@@ -16,7 +16,6 @@ export const NotificationsSection = () => {
       <div>
         <h3 className="mb-3 text-lg font-semibold text-gray-700 dark:text-gray-300">Info Notification</h3>
         <Notification
-          variant="info"
           title="JDK 18 required"
           description="You need to install JDK 18 in order to run this project."
           buttonText="Install JDK 18"
@@ -30,7 +29,6 @@ export const NotificationsSection = () => {
       <div>
         <h3 className="mb-3 text-lg font-semibold text-gray-700 dark:text-gray-300">Warning Notification</h3>
         <Notification
-          variant="warning"
           title="Low memory"
           description="The IDE is running low on memory and this might affect performance. Please consider increasing the heap size."
           buttonText="Analyze memory use"
@@ -42,7 +40,6 @@ export const NotificationsSection = () => {
       <div>
         <h3 className="mb-3 text-lg font-semibold text-gray-700 dark:text-gray-300">Error Notification</h3>
         <Notification
-          variant="error"
           title="Build failed"
           description="The compilation process encountered errors. Please check your code for syntax issues."
           buttonText="View errors"
@@ -56,10 +53,9 @@ export const NotificationsSection = () => {
       <div>
         <h3 className="mb-3 text-lg font-semibold text-gray-700 dark:text-gray-300">Minimal Variants</h3>
         <div className="space-y-3">
-          <Notification variant="info" title="File saved successfully" />
-          <Notification variant="warning" description="This action cannot be undone." />
+          <Notification title="File saved successfully" />
+          <Notification description="This action cannot be undone." />
           <Notification
-            variant="error"
             title="Connection failed"
             linkText="Retry connection"
             onLinkClick={() => alert("Retry connection clicked!")}
@@ -71,7 +67,6 @@ export const NotificationsSection = () => {
       <div>
         <h3 className="mb-3 text-lg font-semibold text-gray-700 dark:text-gray-300">Custom Icon</h3>
         <Notification
-          variant="info"
           icon="Bell"
           title="2,662 files updated in 844 commits"
           linkText="View commits"
@@ -83,7 +78,6 @@ export const NotificationsSection = () => {
       <div>
         <h3 className="mb-3 text-lg font-semibold text-gray-700 dark:text-gray-300">No Icon</h3>
         <Notification
-          variant="warning"
           icon={null}
           title="Update available"
           description="A new version of the application is available for download."
@@ -95,7 +89,7 @@ export const NotificationsSection = () => {
       {/* Custom Content */}
       <div>
         <h3 className="mb-3 text-lg font-semibold text-gray-700 dark:text-gray-300">Custom Content</h3>
-        <Notification variant="info">
+        <Notification>
           <div className="flex items-start gap-3">
             <div className="mt-0.5 flex-shrink-0">
               <div className="flex size-5 items-center justify-center rounded-full bg-blue-400">

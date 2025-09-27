@@ -420,7 +420,6 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
           // Route to notification system - persistent notification
           if ("oneshot" in event) {
             const notificationId = addNotification({
-              variant: "info",
               icon: "Info",
               title: event.oneshot.title,
               description: event.oneshot.detail || undefined,
@@ -438,7 +437,6 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
             });
           } else if ("start" in event) {
             const notificationId = addNotification({
-              variant: "info",
               icon: "Info",
               title: event.start.title,
               description: event.start.detail || undefined,
@@ -461,7 +459,6 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
           // Route to toast system - auto-dismiss after default duration
           if ("oneshot" in event) {
             const notificationId = addNotification({
-              variant: "info",
               icon: "Info",
               title: event.oneshot.title,
               description: event.oneshot.detail || undefined,
@@ -479,7 +476,6 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
             });
           } else if ("start" in event) {
             const notificationId = addNotification({
-              variant: "info",
               icon: "Info",
               title: event.start.title,
               description: event.start.detail || undefined,

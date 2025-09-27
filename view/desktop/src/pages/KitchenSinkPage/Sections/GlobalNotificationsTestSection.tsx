@@ -6,7 +6,6 @@ export const GlobalNotificationsTestSection = () => {
 
   const showInfoNotification = () => {
     const notificationId = addNotification({
-      variant: "info",
       title: "JDK 18 required",
       description: "You need to install JDK 18 in order to run this project.",
       buttonText: "Install JDK 18",
@@ -25,7 +24,6 @@ export const GlobalNotificationsTestSection = () => {
 
   const showWarningNotification = () => {
     const notificationId = addNotification({
-      variant: "warning",
       title: "Low memory",
       description: "The IDE is running low on memory and this might affect performance.",
       buttonText: "Analyze memory use",
@@ -39,7 +37,6 @@ export const GlobalNotificationsTestSection = () => {
 
   const showErrorNotification = () => {
     const notificationId = addNotification({
-      variant: "error",
       title: "Build failed",
       description: "The compilation process encountered errors. Please check your code.",
       buttonText: "View errors",
@@ -58,7 +55,6 @@ export const GlobalNotificationsTestSection = () => {
 
   const showSuccessNotification = () => {
     const notificationId = addNotification({
-      variant: "info",
       icon: "GreenCheckmark",
       title: "2,662 files updated",
       description: "Successfully updated 2,662 files in 844 commits",
