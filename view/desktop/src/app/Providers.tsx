@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { ActivityRouterProvider } from "./ActivityRouterProvider";
 
 import LanguageProvider from "./LanguageProvider";
 import ThemeProvider from "./ThemeProvider";
@@ -8,9 +9,11 @@ import ThemeProvider from "./ThemeProvider";
 const Providers = ({ children }: { children: ReactNode }) => {
   return (
     <ErrorBoundary>
-      <LanguageProvider>
-        <ThemeProvider>{children}</ThemeProvider>
-      </LanguageProvider>
+      <ActivityRouterProvider>
+        <LanguageProvider>
+          <ThemeProvider>{children}</ThemeProvider>
+        </LanguageProvider>
+      </ActivityRouterProvider>
     </ErrorBoundary>
   );
 };

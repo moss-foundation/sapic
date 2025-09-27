@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 
-import { DEFAULT_DISPLAY_DURATION, ONESHOT_CLEANUP_DELAY, useActivityEvents } from "@/context/ActivityEventsContext";
+import { useActivityRouter, DEFAULT_DISPLAY_DURATION, ONESHOT_CLEANUP_DELAY } from "@/app/ActivityRouterProvider";
 import { CHANNEL as ACTIVITY_BROADCASTER_CHANNEL, ActivityEvent } from "@repo/moss-activity-broadcaster";
 
 interface ActivityEventSimulatorProps {
@@ -8,7 +8,7 @@ interface ActivityEventSimulatorProps {
 }
 
 export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ className = "" }) => {
-  const { clearEvents } = useActivityEvents();
+  const { clearEvents } = useActivityRouter();
   const [isSimulating, setIsSimulating] = useState(false);
   const [simulationDelay, setSimulationDelay] = useState(1000); // Increased default to accommodate display duration
   const [progressEventCount, setProgressEventCount] = useState(10);
@@ -152,6 +152,7 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
                 activityId: `oneshot-${i}`,
                 title: oneshotType.title,
                 detail: oneshotType.detail,
+                location: "window",
               },
             } as ActivityEvent,
             // Give more space between oneshot events to ensure display visibility
@@ -189,6 +190,7 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
                 id: baseId,
                 activityId: activityId,
                 title: activityType.title,
+                location: "window",
               },
             } as ActivityEvent,
             100
@@ -248,6 +250,7 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
                   activityId: `oneshot-${i}`,
                   title: oneshotType.title,
                   detail: oneshotType.detail,
+                  location: "window",
                 },
               } as ActivityEvent,
               10 // Nearly immediate emit
@@ -343,6 +346,7 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
                         id: baseId,
                         activityId: `test/simulation-${sequenceId}`,
                         title: activityType.title,
+                        location: "window",
                       },
                     } as ActivityEvent,
                     10

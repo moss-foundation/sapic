@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { useActivityEvents } from "@/context/ActivityEventsContext";
+import { useWindowActivityEvents } from "@/app/ActivityRouterProvider";
 import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
 import { ActivityEvent } from "@repo/moss-activity-broadcaster";
@@ -23,7 +23,7 @@ const getEventKey = (event: ActivityEvent | null): string | null => {
 };
 
 export const StatusBarActivity = () => {
-  const { hasActiveEvents, latestEvent, getStartTitleForActivity, displayQueue } = useActivityEvents();
+  const { hasActiveEvents, latestEvent, getStartTitleForActivity, displayQueue } = useWindowActivityEvents();
   const [animateIcon, setAnimateIcon] = useState(false);
   const [displayText, setDisplayText] = useState<string | null>(null);
   const [currentEventKey, setCurrentEventKey] = useState<string | null>(null);
@@ -148,16 +148,14 @@ export const StatusBarActivity = () => {
   useEffect(() => {
     if (latestEvent) {
       if ("progress" in latestEvent) {
-        const activityId = latestEvent.progress.activityId;
-        const title = getStartTitleForActivity(activityId);
-        // console.log(`Progress event: activityId=${activityId}, title=${title}, detail=${latestEvent.progress.detail}`);
+        // console.log(`Progress event: activityId=${latestEvent.progress.activityId}, detail=${latestEvent.progress.detail}`);
       } else if ("finish" in latestEvent) {
         // console.log(
         //   `Finish event: activityId=${latestEvent.finish.activityId}, hasActiveEvents=${hasActiveEvents}, queueLength=${displayQueue.length}`
         // );
       }
     }
-  }, [latestEvent, getStartTitleForActivity, hasActiveEvents, displayQueue.length]);
+  }, [latestEvent, hasActiveEvents, displayQueue.length]);
 
   if (forceHide || (!hasActiveEvents && displayQueue.length === 0 && !displayText)) {
     return null;

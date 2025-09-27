@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import AIDemo from "@/ai/AIDemo.tsx";
 import { PageContent } from "@/components";
 import { ActivityEventSimulator } from "@/components/ActivityEventSimulator";
-import { useActivityEvents } from "@/context/ActivityEventsContext";
+import { useActivityRouter } from "@/app/ActivityRouterProvider";
 import GitTest from "@/git/GitTest.tsx";
 import { AddAccountParams, LogEntryInfo, ON_DID_APPEND_LOG_ENTRY_CHANNEL, UpdateProfileInput } from "@repo/moss-app";
 import { invoke } from "@tauri-apps/api/core";
@@ -23,7 +23,7 @@ interface LoginData {
 export const Logs = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
   const [logs, setLogs] = useState<LogEntryInfo[]>([]);
-  const { activityEvents } = useActivityEvents();
+  const { windowEvents } = useActivityRouter();
 
   const [profileForm, setProfileForm] = useState<CreateProfileData>({
     name: "",
@@ -237,9 +237,9 @@ export const Logs = () => {
       <section className="mb-4">
         <h2 className="text-xl">{t("Activity Events")}</h2>
 
-        {activityEvents.length > 0 ? (
+        {windowEvents.activityEvents.length > 0 ? (
           <ul className="mt-2 space-y-1 rounded bg-gray-50 p-3">
-            {activityEvents.map((activityEvent, index) => {
+            {windowEvents.activityEvents.map((activityEvent, index) => {
               // Format the event differently based on type
               let eventInfo;
               if ("start" in activityEvent) {
