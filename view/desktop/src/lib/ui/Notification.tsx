@@ -29,7 +29,7 @@ export const Notification = forwardRef<React.ElementRef<typeof Primitive.div>, N
           ref={ref}
           className={cn(
             "relative flex w-90 items-start gap-3 rounded-lg border border-gray-700 p-4 shadow-lg",
-            "bg-[var(--moss-notification-bg)] text-[var(--moss-notification-text)]",
+            "background-[var(--moss-notification-bg)] text-[var(--moss-notification-text)]",
             className
           )}
           {...props}
@@ -46,7 +46,7 @@ export const Notification = forwardRef<React.ElementRef<typeof Primitive.div>, N
         ref={ref}
         className={cn(
           "relative flex w-90 items-start gap-3 rounded-lg border border-gray-700 p-4 shadow-lg",
-          "bg-[var(--moss-notification-bg)] text-[var(--moss-notification-text)]",
+          "background-[var(--moss-notification-bg)] text-[var(--moss-notification-text)]",
           className
         )}
         role="alert"
@@ -65,12 +65,7 @@ export const Notification = forwardRef<React.ElementRef<typeof Primitive.div>, N
               {buttonText && onButtonClick && (
                 <Button
                   onClick={onButtonClick}
-                  className="h-auto rounded-md border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-[var(--moss-notification-button-hover)]"
-                  style={{
-                    borderColor: "var(--moss-notification-button-outline)",
-                    backgroundColor: "var(--moss-notification-bg)",
-                    color: "var(--moss-notification-text)",
-                  }}
+                  className="hover:background-[var(--moss-notification-button-hover)] background-[var(--moss-notification-bg)] h-auto rounded-md border border-[var(--moss-notification-button-outline)] px-3 py-1.5 text-sm font-medium text-[var(--moss-notification-text)] transition-colors"
                 >
                   {buttonText}
                 </Button>
@@ -79,8 +74,7 @@ export const Notification = forwardRef<React.ElementRef<typeof Primitive.div>, N
               {linkText && onLinkClick && (
                 <button
                   onClick={onLinkClick}
-                  className="cursor-pointer text-sm underline-offset-4 transition-colors hover:underline"
-                  style={{ color: "var(--moss-notification-link-text)" }}
+                  className="cursor-pointer text-sm text-[var(--moss-notification-link-text)] underline-offset-4 transition-colors hover:underline"
                   type="button"
                 >
                   {linkText}
