@@ -52,12 +52,12 @@ export const Notification = forwardRef<React.ElementRef<typeof Primitive.div>, N
         role="alert"
         {...props}
       >
-        {displayIcon && <Icon icon={displayIcon} className="mt-0.5 size-5 flex-shrink-0 text-orange-400" />}
+        {displayIcon && <Icon icon={displayIcon} className="mt-0.5 size-4 flex-shrink-0" />}
 
         <div className="min-w-0 flex-1">
-          {title && <div className="text-sm leading-5 font-semibold text-[var(--moss-notification-text)]">{title}</div>}
+          {title && <div className="text-md leading-5 font-semibold text-[var(--moss-notification-text)]">{title}</div>}
           {description && (
-            <div className="mt-1 text-sm leading-5 text-[var(--moss-notification-text)]">{description}</div>
+            <div className="text-md mt-1 leading-5 text-[var(--moss-notification-text)]">{description}</div>
           )}
 
           {(buttonText || linkText) && (
@@ -65,7 +65,7 @@ export const Notification = forwardRef<React.ElementRef<typeof Primitive.div>, N
               {buttonText && onButtonClick && (
                 <Button
                   onClick={onButtonClick}
-                  className="hover:background-[var(--moss-notification-button-hover)] background-[var(--moss-notification-bg)] h-auto rounded-md border border-[var(--moss-notification-button-outline)] px-3 py-1.5 text-sm font-medium text-[var(--moss-notification-text)] transition-colors"
+                  className="hover:background-[var(--moss-notification-button-hover)] background-[var(--moss-notification-bg)] text-md h-auto rounded-md border border-[var(--moss-notification-button-outline)] px-3 py-[5px] text-[var(--moss-notification-text)] transition-colors"
                 >
                   {buttonText}
                 </Button>
@@ -74,7 +74,7 @@ export const Notification = forwardRef<React.ElementRef<typeof Primitive.div>, N
               {linkText && onLinkClick && (
                 <button
                   onClick={onLinkClick}
-                  className="cursor-pointer text-sm text-[var(--moss-notification-link-text)] underline-offset-4 transition-colors hover:underline"
+                  className="text-md cursor-pointer text-[var(--moss-notification-link-text)] underline-offset-4 transition-colors hover:underline"
                   type="button"
                 >
                   {linkText}
