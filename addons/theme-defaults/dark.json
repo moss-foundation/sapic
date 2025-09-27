@@ -892,6 +892,10 @@
     "moss.notification.button.hover": {
       "type": "variable",
       "value": "moss.gray.5"
+    },
+    "moss.notification.close.color": {
+      "type": "variable",
+      "value": "moss.gray.7"
     }
   },
   "boxShadows": {

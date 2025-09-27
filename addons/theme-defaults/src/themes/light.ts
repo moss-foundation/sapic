@@ -1080,6 +1080,10 @@ export const defaultLightTheme: Theme = {
       type: "variable",
       value: "moss.gray.4",
     },
+    "moss.notification.close.color": {
+      type: "variable",
+      value: "moss.gray.6",
+    },
   },
   boxShadows: {
     "moss.floating.box.shadow": "8px 8px 8px 0px rgba(83, 89, 93, 0.5)",
