@@ -32,11 +32,6 @@ export type AddVariableParams = {
 /**
  * @category Type
  */
-export type ArchiveImportParams = { archivePath: string };
-
-/**
- * @category Type
- */
 export type BranchInfo = { name: string; ahead?: number; behind?: number };
 
 export type Contributor = { name: string; avatarUrl?: string };
@@ -143,18 +138,6 @@ export type GitHubCreateParams = {
   branch: string;
 };
 
-/**
- * @category Type
- */
-export type GitHubImportParams = {
-  accountId: string;
-  repository: string;
-  /**
-   * If provided, this branch will be checked out instead of the default branch
-   */
-  branch?: string;
-};
-
 export type GitHubVcsInfo = { branch: BranchInfo; url: string; updatedAt?: string; owner?: string };
 
 /**
@@ -168,10 +151,22 @@ export type GitLabCreateParams = {
   branch: string;
 };
 
+export type GitLabVcsInfo = { branch: BranchInfo; url: string; updatedAt?: string; owner?: string };
+
 /**
  * @category Type
  */
-export type GitLabImportParams = {
+export type ImportArchiveParams = { archivePath: string };
+
+/**
+ * @category Type
+ */
+export type ImportDiskParams = { externalPath: string };
+
+/**
+ * @category Type
+ */
+export type ImportGitHubParams = {
   accountId: string;
   repository: string;
   /**
@@ -180,23 +175,28 @@ export type GitLabImportParams = {
   branch?: string;
 };
 
-export type GitLabVcsInfo = { branch: BranchInfo; url: string; updatedAt?: string; owner?: string };
-
-export type ImportProjectParams = {
-  name: string;
-  order: number;
-  externalPath?: string;
-  source: ImportProjectSource;
-  iconPath?: string;
+/**
+ * @category Type
+ */
+export type ImportGitLabParams = {
+  accountId: string;
+  repository: string;
+  /**
+   * If provided, this branch will be checked out instead of the default branch
+   */
+  branch?: string;
 };
+
+export type ImportProjectParams = { name: string; order: number; source: ImportProjectSource; iconPath?: string };
 
 /**
  * @category Type
  */
 export type ImportProjectSource =
-  | { "gitHub": GitHubImportParams }
-  | { "gitLab": GitLabImportParams }
-  | { "archive": ArchiveImportParams };
+  | { "gitHub": ImportGitHubParams }
+  | { "gitLab": ImportGitLabParams }
+  | { "archive": ImportArchiveParams }
+  | { "disk": ImportDiskParams };
 
 /**
  * @category Type

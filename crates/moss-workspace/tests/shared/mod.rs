@@ -16,11 +16,11 @@ use moss_workspace::{
     builder::{CreateWorkspaceParams, WorkspaceBuilder},
     models::{
         events::StreamProjectsEvent,
-        operations::StreamProjectsOutput,
+        operations::{CreateProjectInput, DeleteProjectInput, StreamProjectsOutput},
         primitives::{EditorGridOrientation, PanelRenderer, ProjectId},
         types::{
-            EditorGridLeafData, EditorGridNode, EditorGridState, EditorPanelState,
-            EditorPartStateInfo,
+            CreateProjectParams, EditorGridLeafData, EditorGridNode, EditorGridState,
+            EditorPanelState, EditorPartStateInfo,
         },
     },
 };
@@ -79,14 +79,6 @@ pub async fn setup_test_workspace() -> (
 
     let ctx = MutableContext::background_with_timeout(Duration::from_secs(30));
 
-    let abs_path: Arc<Path> = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("tests")
-        .join("data")
-        .join("workspaces")
-        .join(random_workspace_name())
-        .into();
-    fs::create_dir_all(&abs_path).unwrap();
-
     let active_profile = Profile::new(
         moss_user::models::primitives::ProfileId::new(),
         HashMap::new(),
@@ -118,6 +110,50 @@ pub async fn setup_test_workspace() -> (
     });
 
     (ctx, app_delegate, workspace, cleanup_fn)
+}
+
+// Suppress false warning
+#[allow(unused)]
+// Create an external project that can be tested for import
+pub async fn setup_external_project(
+    ctx: &<MockAppRuntime as AppRuntime>::AsyncContext,
+    app_delegate: &AppDelegate<MockAppRuntime>,
+    workspace: &Workspace<MockAppRuntime>,
+) -> (String, PathBuf) {
+    let project_name = random_workspace_name();
+    let external_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join("data")
+        .join("external_projects")
+        .join(&project_name);
+    tokio::fs::create_dir_all(&external_path).await.unwrap();
+
+    let id = workspace
+        .create_project(
+            ctx,
+            app_delegate,
+            &CreateProjectInput {
+                inner: CreateProjectParams {
+                    name: project_name.clone(),
+                    order: 0,
+                    external_path: Some(external_path.clone()),
+                    git_params: None,
+                    icon_path: None,
+                },
+            },
+        )
+        .await
+        .unwrap()
+        .id;
+
+    // Delete the external project
+    // The external folder should remain intact, possible to be imported again
+    workspace
+        .delete_project(ctx, &DeleteProjectInput { id })
+        .await
+        .unwrap();
+
+    (project_name, external_path)
 }
 
 pub fn _create_simple_editor_state() -> EditorPartStateInfo {

@@ -13,8 +13,8 @@ use moss_logging::session;
 use moss_project::{
     Project as ProjectHandle, ProjectBuilder, ProjectModifyParams,
     builder::{
-        ProjectCloneParams, ProjectCreateGitParams, ProjectCreateParams, ProjectImportParams,
-        ProjectLoadParams,
+        ProjectCloneParams, ProjectCreateGitParams, ProjectCreateParams,
+        ProjectImportArchiveParams, ProjectImportExternalParams, ProjectLoadParams,
     },
     git::GitClient,
     vcs::VcsSummary,
@@ -41,6 +41,7 @@ use crate::{
     },
     storage::{StorageService, segments::SEGKEY_COLLECTION},
 };
+// TODO: Rename all collections to projects
 
 pub(crate) struct ProjectItemCloneParams {
     pub order: isize,
@@ -50,10 +51,15 @@ pub(crate) struct ProjectItemCloneParams {
     pub branch: Option<String>,
 }
 
-pub(crate) struct ProjectItemImportParams {
+pub(crate) struct ProjectItemImportFromArchiveParams {
     pub name: String,
     pub order: isize,
     pub archive_path: PathBuf,
+}
+
+pub(crate) struct ProjectItemImportFromDiskParams {
+    pub order: isize,
+    pub external_path: PathBuf,
 }
 
 #[derive(Deref, DerefMut)]
@@ -76,7 +82,7 @@ pub(crate) struct ProjectItemDescription {
 
     // FIXME: Do we need this field?
     pub icon_path: Option<PathBuf>,
-    pub abs_path: Arc<Path>,
+    pub internal_abs_path: Arc<Path>,
     pub external_path: Option<PathBuf>,
     pub archived: bool,
 }
@@ -229,7 +235,7 @@ impl<R: AppRuntime> ProjectService<R> {
         let abs_path: Arc<Path> = abs_path.clone().into();
         let builder = ProjectBuilder::new(self.fs.clone()).await;
 
-        let collection = match builder
+        let project = match builder
             .create(
                 ctx,
                 ProjectCreateParams {
@@ -264,7 +270,7 @@ impl<R: AppRuntime> ProjectService<R> {
                 },
             };
 
-            if let Err(e) = collection
+            if let Err(e) = project
                 .init_vcs(ctx, client, git_params.repository, git_params.branch)
                 .await
             {
@@ -280,7 +286,7 @@ impl<R: AppRuntime> ProjectService<R> {
             }
         }
 
-        let icon_path = collection.icon_path();
+        let icon_path = project.icon_path();
 
         {
             let mut state_lock = self.state.write().await;
@@ -290,30 +296,9 @@ impl<R: AppRuntime> ProjectService<R> {
                 ProjectItem {
                     id: id.to_owned(),
                     order: Some(params.order),
-                    handle: Arc::new(collection),
+                    handle: Arc::new(project),
                 },
             );
-        }
-
-        {
-            let state_lock = self.state.read().await;
-
-            // TODO: Make database errors not fail the operation
-
-            let mut txn = self
-                .storage
-                .begin_write(ctx)
-                .await
-                .join_err::<()>("failed to start transaction")?;
-
-            self.storage
-                .put_item_order_txn(ctx, &mut txn, id.as_str(), params.order)
-                .await?;
-            self.storage
-                .put_expanded_items_txn(ctx, &mut txn, &state_lock.expanded_items)
-                .await?;
-
-            txn.commit()?;
         }
 
         self.on_did_add_project_emitter
@@ -322,17 +307,54 @@ impl<R: AppRuntime> ProjectService<R> {
             })
             .await;
 
-        Ok(ProjectItemDescription {
+        let desc = ProjectItemDescription {
             id: id.to_owned(),
             name: params.name.clone(),
             order: Some(params.order),
             expanded: true,
             vcs: None,
             icon_path,
-            abs_path: abs_path.into(),
+            internal_abs_path: abs_path.into(),
             external_path: params.external_path.clone(),
             archived: false,
-        })
+        };
+
+        {
+            let state_lock = self.state.read().await;
+
+            let mut txn = match self.storage.begin_write(ctx).await {
+                Ok(txn) => txn,
+                Err(e) => {
+                    session::warn!(format!("failed to begin write transaction: {}", e));
+                    return Ok(desc);
+                }
+            };
+
+            if let Err(e) = self
+                .storage
+                .put_item_order_txn(ctx, &mut txn, id.as_str(), params.order)
+                .await
+            {
+                session::warn!(format!("failed to put item order in the db: {}", e));
+                return Ok(desc);
+            }
+
+            if let Err(e) = self
+                .storage
+                .put_expanded_items_txn(ctx, &mut txn, &state_lock.expanded_items)
+                .await
+            {
+                session::warn!(format!("failed to put expanded items in the db: {}", e));
+                return Ok(desc);
+            }
+
+            if let Err(e) = txn.commit() {
+                session::warn!(format!("failed to commit transaction: {}", e));
+                return Ok(desc);
+            }
+        }
+
+        Ok(desc)
     }
 
     // TODO: Setting the cloned collection's name and icon is not yet implemented
@@ -470,7 +492,7 @@ impl<R: AppRuntime> ProjectService<R> {
             expanded: true,
             vcs: Some(vcs),
             icon_path,
-            abs_path,
+            internal_abs_path: abs_path,
             external_path: None,
             archived: false,
         })
@@ -622,8 +644,8 @@ impl<R: AppRuntime> ProjectService<R> {
                     expanded,
                     vcs,
                     icon_path,
-                    abs_path: item.handle.abs_path().clone(),
-                    external_path: None, // TODO: implement
+                    internal_abs_path: item.handle.internal_abs_path().clone(),
+                    external_path: item.handle.external_abs_path().map(|p| p.to_path_buf()),
                     archived: item.is_archived(),
                 };
             }
@@ -662,11 +684,11 @@ impl<R: AppRuntime> ProjectService<R> {
         item.unarchive().await
     }
 
-    pub(crate) async fn import_project(
+    pub(crate) async fn import_archived_project(
         &self,
         ctx: &R::AsyncContext,
         id: &ProjectId,
-        params: ProjectItemImportParams,
+        params: ProjectItemImportFromArchiveParams,
     ) -> joinerror::Result<ProjectItemDescription> {
         let mut rb = self.fs.start_rollback().await?;
 
@@ -691,7 +713,7 @@ impl<R: AppRuntime> ProjectService<R> {
         let collection = match builder
             .import_archive(
                 ctx,
-                ProjectImportParams {
+                ProjectImportArchiveParams {
                     internal_abs_path: abs_path.clone(),
                     archive_path: params.archive_path.into(),
                 },
@@ -767,8 +789,120 @@ impl<R: AppRuntime> ProjectService<R> {
             expanded: true,
             vcs: None,
             icon_path,
-            abs_path,
+            internal_abs_path: abs_path,
             external_path: None,
+            archived: false,
+        })
+    }
+
+    pub(crate) async fn import_external_project(
+        &self,
+        ctx: &R::AsyncContext,
+        id: &ProjectId,
+        params: ProjectItemImportFromDiskParams,
+    ) -> joinerror::Result<ProjectItemDescription> {
+        let mut rb = self.fs.start_rollback().await?;
+
+        let id_str = id.to_string();
+        let internal_abs_path: Arc<Path> = self.abs_path.join(&id_str).into();
+        if internal_abs_path.exists() {
+            return Err(Error::new::<()>(format!(
+                "collection directory `{}` already exists",
+                internal_abs_path.display()
+            )));
+        }
+
+        self.fs
+            .create_dir_with_rollback(&mut rb, &internal_abs_path)
+            .await
+            .join_err_with::<()>(|| {
+                format!(
+                    "failed to create directory `{}`",
+                    internal_abs_path.display()
+                )
+            })?;
+
+        let builder = ProjectBuilder::new(self.fs.clone()).await;
+        let project = match builder
+            .import_external(ProjectImportExternalParams {
+                internal_abs_path: internal_abs_path.clone(),
+                external_abs_path: params.external_path.clone().into(),
+            })
+            .await
+            .join_err::<()>("failed to import external project")
+        {
+            Ok(project) => project,
+            Err(e) => {
+                let _ = rb.rollback().await.map_err(|e| {
+                    session::warn!(format!("failed to rollback fs changes: {}", e.to_string()))
+                });
+                return Err(e);
+            }
+        };
+
+        let icon_path = project.icon_path();
+        let name = project.details().await?.name;
+        let vcs_summary = if let Some(vcs) = project.vcs() {
+            match vcs.summary(ctx).await {
+                Ok(summary) => Some(summary),
+                Err(e) => {
+                    session::error!(format!("failed to get vcs summary: {}", e));
+                    None
+                }
+            }
+        } else {
+            None
+        };
+
+        {
+            let mut state_lock = self.state.write().await;
+            state_lock.expanded_items.insert(id.to_owned());
+            state_lock.projects.insert(
+                id.to_owned(),
+                ProjectItem {
+                    id: id.to_owned(),
+                    order: Some(params.order),
+                    handle: Arc::new(project),
+                },
+            );
+        }
+
+        {
+            let state_lock = self.state.read().await;
+
+            // TODO: Make database errors not fail the operation
+
+            let mut txn = self
+                .storage
+                .begin_write(ctx)
+                .await
+                .join_err::<()>("failed to start transaction")?;
+
+            self.storage
+                .put_item_order_txn(ctx, &mut txn, id.as_str(), params.order)
+                .await?;
+            self.storage
+                .put_expanded_items_txn(ctx, &mut txn, &state_lock.expanded_items)
+                .await?;
+
+            txn.commit()?;
+        }
+
+        self.on_did_add_project_emitter
+            .fire(OnDidAddProject {
+                project_id: id.clone(),
+            })
+            .await;
+
+        Ok(ProjectItemDescription {
+            id: id.to_owned(),
+            name,
+            order: Some(params.order),
+            expanded: true,
+            vcs: vcs_summary,
+            icon_path,
+            internal_abs_path,
+            external_path: Some(params.external_path),
             archived: false,
         })
     }

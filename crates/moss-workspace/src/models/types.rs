@@ -53,7 +53,6 @@ pub struct ImportProjectParams {
     #[validate(length(min = 1))]
     pub name: String,
     pub order: isize,
-    pub external_path: Option<PathBuf>,
     pub source: ImportProjectSource,
     pub icon_path: Option<PathBuf>,
 }
@@ -248,9 +247,10 @@ pub struct EditorPartStateInfo {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub enum ImportProjectSource {
-    GitHub(GitHubImportParams),
-    GitLab(GitLabImportParams),
-    Archive(ArchiveImportParams),
+    GitHub(ImportGitHubParams),
+    GitLab(ImportGitLabParams),
+    Archive(ImportArchiveParams),
+    Disk(ImportDiskParams),
 }
 
 // FIXME: Validation for provider specific url?
@@ -259,7 +259,7 @@ pub enum ImportProjectSource {
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
-pub struct GitHubImportParams {
+pub struct ImportGitHubParams {
     pub account_id: AccountId,
 
     #[validate(regex(path = "*GIT_URL_REGEX"))]
@@ -273,7 +273,7 @@ pub struct GitHubImportParams {
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
-pub struct GitLabImportParams {
+pub struct ImportGitLabParams {
     pub account_id: AccountId,
 
     #[validate(regex(path = "*GIT_URL_REGEX"))]
@@ -286,8 +286,16 @@ pub struct GitLabImportParams {
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
-pub struct ArchiveImportParams {
+pub struct ImportArchiveParams {
     pub archive_path: PathBuf,
+}
+
+/// @category Type
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct ImportDiskParams {
+    pub external_path: PathBuf,
 }
 
 /// @category Type
