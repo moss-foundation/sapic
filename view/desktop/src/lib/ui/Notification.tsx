@@ -28,7 +28,8 @@ export const Notification = forwardRef<React.ElementRef<typeof Primitive.div>, N
         <Primitive.div
           ref={ref}
           className={cn(
-            "relative flex items-start gap-3 rounded-lg border border-gray-700 bg-gray-800 p-4 text-white shadow-lg",
+            "relative flex w-90 items-start gap-3 rounded-lg border border-gray-700 p-4 shadow-lg",
+            "bg-[var(--moss-notification-bg)] text-[var(--moss-notification-text)]",
             className
           )}
           {...props}
@@ -44,7 +45,8 @@ export const Notification = forwardRef<React.ElementRef<typeof Primitive.div>, N
       <Primitive.div
         ref={ref}
         className={cn(
-          "relative flex items-start gap-3 rounded-lg border border-gray-700 bg-gray-800 p-4 text-white shadow-lg",
+          "relative flex w-90 items-start gap-3 rounded-lg border border-gray-700 p-4 shadow-lg",
+          "bg-[var(--moss-notification-bg)] text-[var(--moss-notification-text)]",
           className
         )}
         role="alert"
@@ -53,15 +55,22 @@ export const Notification = forwardRef<React.ElementRef<typeof Primitive.div>, N
         {displayIcon && <Icon icon={displayIcon} className="mt-0.5 size-5 flex-shrink-0 text-orange-400" />}
 
         <div className="min-w-0 flex-1">
-          {title && <div className="text-sm leading-5 font-semibold text-white">{title}</div>}
-          {description && <div className="mt-1 text-sm leading-5 text-gray-300">{description}</div>}
+          {title && <div className="text-sm leading-5 font-semibold text-[var(--moss-notification-text)]">{title}</div>}
+          {description && (
+            <div className="mt-1 text-sm leading-5 text-[var(--moss-notification-text)]">{description}</div>
+          )}
 
           {(buttonText || linkText) && (
             <div className="mt-3 flex items-center gap-3">
               {buttonText && onButtonClick && (
                 <Button
                   onClick={onButtonClick}
-                  className="h-auto rounded-md border border-gray-600 bg-gray-700 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-600"
+                  className="h-auto rounded-md border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-[var(--moss-notification-button-hover)]"
+                  style={{
+                    borderColor: "var(--moss-notification-button-outline)",
+                    backgroundColor: "var(--moss-notification-bg)",
+                    color: "var(--moss-notification-text)",
+                  }}
                 >
                   {buttonText}
                 </Button>
@@ -70,7 +79,8 @@ export const Notification = forwardRef<React.ElementRef<typeof Primitive.div>, N
               {linkText && onLinkClick && (
                 <button
                   onClick={onLinkClick}
-                  className="cursor-pointer text-sm text-gray-400 underline-offset-4 transition-colors hover:text-gray-300 hover:underline"
+                  className="cursor-pointer text-sm underline-offset-4 transition-colors hover:underline"
+                  style={{ color: "var(--moss-notification-link-text)" }}
                   type="button"
                 >
                   {linkText}

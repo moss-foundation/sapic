@@ -23,7 +23,6 @@ export const NotificationsSection = () => {
           linkText="Remind me later"
           onButtonClick={() => alert("Install JDK 18 clicked!")}
           onLinkClick={() => alert("Remind me later clicked!")}
-          className="w-90"
         />
       </div>
 
@@ -36,7 +35,6 @@ export const NotificationsSection = () => {
           description="The IDE is running low on memory and this might affect performance. Please consider increasing the heap size."
           buttonText="Analyze memory use"
           onButtonClick={() => alert("Analyze memory use clicked!")}
-          className="w-90"
         />
       </div>
 
@@ -51,7 +49,6 @@ export const NotificationsSection = () => {
           linkText="Ignore for now"
           onButtonClick={() => alert("View errors clicked!")}
           onLinkClick={() => alert("Ignore for now clicked!")}
-          className="w-90"
         />
       </div>
 
@@ -59,14 +56,13 @@ export const NotificationsSection = () => {
       <div>
         <h3 className="mb-3 text-lg font-semibold text-gray-700 dark:text-gray-300">Minimal Variants</h3>
         <div className="space-y-3">
-          <Notification icon="GreenCheckmark" title="File saved successfully" className="w-90" />
-          <Notification icon="Warning" description="This action cannot be undone." className="w-90" />
+          <Notification icon="GreenCheckmark" title="File saved successfully" />
+          <Notification icon="Warning" description="This action cannot be undone." />
           <Notification
             icon="Failed"
             title="Connection failed"
             linkText="Retry connection"
             onLinkClick={() => alert("Retry connection clicked!")}
-            className="w-90"
           />
         </div>
       </div>
@@ -79,7 +75,6 @@ export const NotificationsSection = () => {
           title="2,662 files updated in 844 commits"
           linkText="View commits"
           onLinkClick={() => alert("View commits clicked!")}
-          className="w-90"
         />
       </div>
 
@@ -92,14 +87,13 @@ export const NotificationsSection = () => {
           description="A new version of the application is available for download."
           buttonText="Download now"
           onButtonClick={() => alert("Download now clicked!")}
-          className="w-90"
         />
       </div>
 
       {/* Custom Content */}
       <div>
         <h3 className="mb-3 text-lg font-semibold text-gray-700 dark:text-gray-300">Custom Content</h3>
-        <Notification className="w-90">
+        <Notification>
           <div className="flex items-start gap-3">
             <div className="mt-0.5 flex-shrink-0">
               <div className="flex size-5 items-center justify-center rounded-full bg-blue-400">
