@@ -2,23 +2,12 @@ use moss_fs::FileSystem;
 use moss_logging::session;
 use serde::Deserialize;
 use serde_json::Value as JsonValue;
-use std::{
-    collections::HashMap,
-    fmt::{self, Display},
-    path::PathBuf,
-    sync::Arc,
-};
+use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ExtensionKind {
     BuiltIn,
     User,
-}
-
-impl ExtensionKind {
-    pub fn is_builtin(&self) -> bool {
-        self == &ExtensionKind::BuiltIn
-    }
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -28,6 +17,7 @@ pub struct ExtensionManifestFile {
 
 #[derive(Debug)]
 pub struct ExtensionDescription {
+    #[allow(unused)]
     pub kind: ExtensionKind,
     pub abs_path: PathBuf,
     pub contributes: HashMap<String, JsonValue>,

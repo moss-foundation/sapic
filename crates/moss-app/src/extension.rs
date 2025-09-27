@@ -5,6 +5,7 @@ use joinerror::OptionExt;
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_common::continue_if_err;
+use moss_contrib::ContributionKey;
 use moss_fs::FileSystem;
 use moss_logging::session;
 use rustc_hash::FxHashMap;
@@ -15,39 +16,6 @@ use crate::extension::scanner::{ExtensionKind, ExtensionScanner};
 
 pub struct ContributionInfo {
     pub source: PathBuf,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum ContributionKey {
-    Configuration,
-    Themes,
-    Localizations,
-    ResourceParams,
-}
-
-impl std::fmt::Display for ContributionKey {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ContributionKey::Configuration => write!(f, "configuration"),
-            ContributionKey::Themes => write!(f, "themes"),
-            ContributionKey::Localizations => write!(f, "localizations"),
-            ContributionKey::ResourceParams => write!(f, "resource_params"),
-        }
-    }
-}
-
-impl TryFrom<&str> for ContributionKey {
-    type Error = String;
-
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        match value {
-            "configuration" => Ok(ContributionKey::Configuration),
-            "themes" => Ok(ContributionKey::Themes),
-            "localizations" => Ok(ContributionKey::Localizations),
-            "resource_params" => Ok(ContributionKey::ResourceParams),
-            _ => Err(format!("Unknown contribution key: {}", value)),
-        }
-    }
 }
 
 #[async_trait]
@@ -61,6 +29,7 @@ pub trait ExtensionPoint<R: AppRuntime>: Send + Sync + 'static {
     ) -> joinerror::Result<()>;
 }
 
+#[allow(unused)]
 pub struct ExtensionService<R: AppRuntime> {
     scanner: ExtensionScanner,
     points: FxHashMap<ContributionKey, Box<dyn ExtensionPoint<R>>>,

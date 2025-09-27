@@ -75,7 +75,6 @@ pub struct App<R: AppRuntime> {
     pub(super) commands: AppCommands<R::EventLoop>,
     pub(super) preferences: AppPreferences,
 
-    #[allow(unused)]
     pub(super) session_service: SessionService,
     pub(super) log_service: LogService<R>,
     pub(super) storage_service: Arc<StorageService<R>>,
@@ -84,6 +83,8 @@ pub struct App<R: AppRuntime> {
     pub(super) theme_service: ThemeService,
     pub(super) profile_service: ProfileService<R>,
     pub(super) configuration_service: ConfigurationService,
+
+    #[allow(unused)]
     pub(super) extension_service: ExtensionService<R>,
 
     // Store cancellers by the id of API requests

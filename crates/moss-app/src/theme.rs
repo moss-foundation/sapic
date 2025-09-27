@@ -4,12 +4,13 @@ mod models;
 mod validation;
 
 use async_trait::async_trait;
-use joinerror::{Error, OptionExt, ResultExt};
+use joinerror::{OptionExt, ResultExt};
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
     AppRuntime,
     errors::{Internal, NotFound},
 };
+use moss_contrib::ContributionKey;
 use moss_fs::{FileSystem, FsResultExt};
 use serde::Deserialize;
 use serde_json::Value as JsonValue;
@@ -17,14 +18,12 @@ use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;
 
 use crate::{
-    extension::{ContributionInfo, ContributionKey, ExtensionPoint},
+    extension::{ContributionInfo, ExtensionPoint},
     models::{
         primitives::{ThemeId, ThemeMode},
         types::ColorThemeInfo,
     },
 };
-
-const THEMES_REGISTRY_FILE: &str = "themes.json";
 
 #[derive(Deserialize, Debug)]
 pub struct ThemeContributionEntry {
@@ -93,17 +92,6 @@ pub struct ThemeRegistryItem {
     pub path: PathBuf,
 }
 
-// impl From<ThemeContributionEntry> for ThemeRegistryItem {
-//     fn from(entry: ThemeContributionEntry) -> Self {
-//         Self {
-//             id: entry.id,
-//             display_name: entry.label,
-//             mode: entry.mode,
-//             source: entry.path,
-//         }
-//     }
-// }
-
 struct AppThemeRegistry {
     themes: RwLock<HashMap<ThemeId, ThemeRegistryItem>>,
 }
@@ -147,34 +135,18 @@ impl dyn ThemeRegistry {
     }
 }
 
-// struct ServiceState {
-//     themes: HashMap<ThemeId, ColorThemeInfo>,
-// }
-
 pub struct ThemeService {
     themes_dir: PathBuf,
     fs: Arc<dyn FileSystem>,
     registry: Arc<dyn ThemeRegistry>,
-    // state: RwLock<ServiceState>,
 }
 
 impl ThemeService {
     pub async fn new(fs: Arc<dyn FileSystem>, themes_dir: PathBuf) -> joinerror::Result<Self> {
-        // let rdr = fs.open_file(&themes_dir.join(THEMES_REGISTRY_FILE)).await?;
-
-        // let parsed: Vec<ColorThemeInfo> = serde_json::from_reader(rdr)?;
-        // let themes = parsed
-        //     .into_iter()
-        //     .map(|item| (item.identifier.clone(), item))
-        //     .collect::<HashMap<ThemeId, ColorThemeInfo>>();
-
         Ok(Self {
             themes_dir,
             fs,
-            // state: RwLock::new(ServiceState { themes }),
-            registry: Arc::new(AppThemeRegistry {
-                themes: RwLock::new(HashMap::new()),
-            }),
+            registry: Arc::new(AppThemeRegistry::new()),
         })
     }
 

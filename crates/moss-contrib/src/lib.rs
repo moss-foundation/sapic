@@ -1,32 +1,38 @@
-use moss_fs::FileSystem;
-use moss_logging::session;
-use serde::{Deserialize, Serialize};
-use serde_json::Value as JsonValue;
-use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
-    sync::Arc,
-};
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum ContributionKey {
+    Configuration,
+    Themes,
+    Localizations,
+    ResourceParams,
+}
+
+impl std::fmt::Display for ContributionKey {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ContributionKey::Configuration => write!(f, "configuration"),
+            ContributionKey::Themes => write!(f, "themes"),
+            ContributionKey::Localizations => write!(f, "localizations"),
+            ContributionKey::ResourceParams => write!(f, "resource_params"),
+        }
+    }
+}
+
+impl TryFrom<&str> for ContributionKey {
+    type Error = String;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
+            "configuration" => Ok(ContributionKey::Configuration),
+            "themes" => Ok(ContributionKey::Themes),
+            "localizations" => Ok(ContributionKey::Localizations),
+            "resource_params" => Ok(ContributionKey::ResourceParams),
+            _ => Err(format!("Unknown contribution key: {}", value)),
+        }
+    }
+}
 
 pub struct IncludeConfigurationDecl(pub &'static str);
 inventory::collect!(IncludeConfigurationDecl);
 
 pub struct IncludeContribution(pub &'static str);
 inventory::collect!(IncludeContribution);
-
-pub struct ExtensionPoint {
-    key: &'static str,
-    handler: fn(&mut HashMap<String, JsonValue>),
-}
-inventory::collect!(ExtensionPoint);
-
-inventory::submit! {
-    ExtensionPoint {
-        key: "configuration",
-        handler: |params| {
-            params.insert("configuration".to_string(), JsonValue::Null);
-        },
-    }
-}
-
-// pub struct ExtensionService {}
