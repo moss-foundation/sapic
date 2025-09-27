@@ -50,7 +50,7 @@ export const NotificationContainer = () => {
                 e.stopPropagation();
                 removeNotification(notification.id);
               }}
-              className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-black/20 text-xs text-white opacity-70 transition-opacity hover:opacity-100"
+              className="absolute top-2 right-2 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-black/20 text-xs text-white opacity-70 transition-opacity hover:opacity-100"
               aria-label="Close notification"
             >
               ✕
