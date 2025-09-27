@@ -28,7 +28,7 @@ export const Notification = forwardRef<React.ElementRef<typeof Primitive.div>, N
         <Primitive.div
           ref={ref}
           className={cn(
-            "relative flex w-90 items-start gap-3 rounded-lg border border-gray-700 p-4 shadow-lg",
+            "relative flex w-90 items-start gap-2 rounded-lg border border-gray-700 p-4 shadow-lg",
             "background-[var(--moss-notification-bg)] text-[var(--moss-notification-text)]",
             className
           )}
@@ -45,7 +45,7 @@ export const Notification = forwardRef<React.ElementRef<typeof Primitive.div>, N
       <Primitive.div
         ref={ref}
         className={cn(
-          "relative flex w-90 items-start gap-3 rounded-lg border border-gray-700 p-4 shadow-lg",
+          "relative flex w-90 items-start gap-2 rounded-lg border border-gray-700 px-2.5 py-[7px] shadow-lg",
           "background-[var(--moss-notification-bg)] text-[var(--moss-notification-text)]",
           className
         )}
