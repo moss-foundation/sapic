@@ -33,7 +33,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const newNotification: NotificationData = {
       ...notification,
       id,
-      duration: notification.duration !== undefined ? notification.duration : 3000, // Default 3 seconds
+      duration: notification.duration !== undefined ? notification.duration : 2000, // Default 2 seconds
     };
 
     setNotifications((prev) => [...prev, newNotification]);

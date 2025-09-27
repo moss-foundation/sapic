@@ -2,53 +2,72 @@ import { useNotifications } from "../../../app/NotificationProvider";
 import { Button } from "@/lib/ui";
 
 export const GlobalNotificationsTestSection = () => {
-  const { addNotification, clearAllNotifications } = useNotifications();
+  const { addNotification, clearAllNotifications, removeNotification } = useNotifications();
 
   const showInfoNotification = () => {
-    addNotification({
+    const notificationId = addNotification({
       variant: "info",
       title: "JDK 18 required",
       description: "You need to install JDK 18 in order to run this project.",
       buttonText: "Install JDK 18",
       linkText: "Remind me later",
-      onButtonClick: () => alert("Install JDK 18 clicked!"),
-      onLinkClick: () => alert("Remind me later clicked!"),
+      onButtonClick: () => {
+        alert("Install JDK 18 clicked!");
+        removeNotification(notificationId);
+      },
+      onLinkClick: () => {
+        alert("Remind me later clicked!");
+        removeNotification(notificationId);
+      },
       duration: 0, // Don't auto-dismiss
     });
   };
 
   const showWarningNotification = () => {
-    addNotification({
+    const notificationId = addNotification({
       variant: "warning",
       title: "Low memory",
       description: "The IDE is running low on memory and this might affect performance.",
       buttonText: "Analyze memory use",
-      onButtonClick: () => alert("Analyze memory use clicked!"),
+      onButtonClick: () => {
+        alert("Analyze memory use clicked!");
+        removeNotification(notificationId);
+      },
       duration: 8000, // Auto-dismiss after 8 seconds
     });
   };
 
   const showErrorNotification = () => {
-    addNotification({
+    const notificationId = addNotification({
       variant: "error",
       title: "Build failed",
       description: "The compilation process encountered errors. Please check your code.",
       buttonText: "View errors",
       linkText: "Ignore",
-      onButtonClick: () => alert("View errors clicked!"),
-      onLinkClick: () => alert("Ignore clicked!"),
+      onButtonClick: () => {
+        alert("View errors clicked!");
+        removeNotification(notificationId);
+      },
+      onLinkClick: () => {
+        alert("Ignore clicked!");
+        removeNotification(notificationId);
+      },
       duration: 0, // Don't auto-dismiss
     });
   };
 
   const showSuccessNotification = () => {
-    addNotification({
+    const notificationId = addNotification({
       variant: "info",
       icon: "GreenCheckmark",
       title: "2,662 files updated",
       description: "Successfully updated 2,662 files in 844 commits",
       linkText: "View commits",
-      onLinkClick: () => alert("View commits clicked!"),
+      onLinkClick: () => {
+        alert("View commits clicked!");
+        removeNotification(notificationId);
+      },
+      duration: 5000, // Auto-dismiss after 5 seconds
     });
   };
 
