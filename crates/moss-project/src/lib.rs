@@ -15,10 +15,17 @@ pub mod storage;
 #[cfg(not(feature = "integration-tests"))]
 mod storage;
 
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
+use async_trait::async_trait;
 pub use builder::ProjectBuilder;
+use derive_more::Deref;
+use moss_addon::{ExtensionInfo, ExtensionPoint};
+use moss_app_delegate::AppDelegate;
+use moss_applib::AppRuntime;
+use moss_contrib::ContributionKey;
 pub use project::{Project, ProjectModifyParams};
+use serde_json::Value as JsonValue;
 use tokio::sync::RwLock;
 
 pub struct ResourceParamsExtensionPoint {}
@@ -26,6 +33,22 @@ pub struct ResourceParamsExtensionPoint {}
 impl ResourceParamsExtensionPoint {
     pub fn new() -> Self {
         Self {}
+    }
+}
+
+#[async_trait]
+impl<R: AppRuntime> ExtensionPoint<R> for ResourceParamsExtensionPoint {
+    fn key(&self) -> ContributionKey {
+        ContributionKey::ResourceParams
+    }
+
+    async fn handle(
+        &self,
+        app_delegate: &AppDelegate<R>,
+        info: &ExtensionInfo,
+        contribution: JsonValue,
+    ) -> joinerror::Result<()> {
+        Ok(())
     }
 }
 
@@ -43,6 +66,12 @@ pub struct ResourceHeaderItem {
     pub disabled: bool,
 }
 
+#[async_trait]
+pub trait ResourceParamsRegistry: Send + Sync {
+    async fn statuses(&self) -> Vec<ResourceStatusItem>;
+    async fn headers(&self) -> HashMap<String, ResourceHeaderItem>;
+}
+
 pub struct AppResourceParamsRegistry {
     statuses: RwLock<Vec<ResourceStatusItem>>,
     headers: RwLock<HashMap<String, ResourceHeaderItem>>,
@@ -56,6 +85,20 @@ impl AppResourceParamsRegistry {
         }
     }
 }
+
+#[async_trait]
+impl ResourceParamsRegistry for AppResourceParamsRegistry {
+    async fn statuses(&self) -> Vec<ResourceStatusItem> {
+        self.statuses.read().await.clone()
+    }
+
+    async fn headers(&self) -> HashMap<String, ResourceHeaderItem> {
+        self.headers.read().await.clone()
+    }
+}
+
+#[derive(Deref, Clone)]
+struct GlobalResourceParamsRegistry(Arc<dyn ResourceParamsRegistry>);
 
 pub mod constants {
     pub const ITEM_CONFIG_FILENAME: &str = "config.sap";

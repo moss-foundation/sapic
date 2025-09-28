@@ -5,6 +5,7 @@ mod validation;
 
 use async_trait::async_trait;
 use joinerror::{OptionExt, ResultExt};
+use moss_addon::ExtensionInfo;
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
     AppRuntime,
@@ -18,7 +19,7 @@ use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;
 
 use crate::{
-    extension::{ContributionInfo, ExtensionPoint},
+    extension::ExtensionPoint,
     models::{
         primitives::{ThemeId, ThemeMode},
         types::ColorThemeInfo,
@@ -50,7 +51,7 @@ impl<R: AppRuntime> ExtensionPoint<R> for ThemeExtensionPoint {
     async fn handle(
         &self,
         app_delegate: &AppDelegate<R>,
-        info: &ContributionInfo,
+        info: &ExtensionInfo,
         data: JsonValue,
     ) -> joinerror::Result<()> {
         if !data.is_array() {

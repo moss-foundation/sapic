@@ -1,6 +1,9 @@
 use async_trait::async_trait;
 use joinerror::OptionExt;
-use moss_addon::scanner::{AddonKind, AddonScanner};
+use moss_addon::{
+    ExtensionInfo,
+    scanner::{AddonKind, AddonScanner},
+};
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_common::continue_if_err;
@@ -11,17 +14,13 @@ use rustc_hash::FxHashMap;
 use serde_json::Value as JsonValue;
 use std::{path::PathBuf, sync::Arc};
 
-pub struct ContributionInfo {
-    pub source: PathBuf,
-}
-
 #[async_trait]
 pub trait ExtensionPoint<R: AppRuntime>: Send + Sync + 'static {
     fn key(&self) -> ContributionKey;
     async fn handle(
         &self,
         app_delegate: &AppDelegate<R>,
-        info: &ContributionInfo,
+        info: &ExtensionInfo,
         data: JsonValue,
     ) -> joinerror::Result<()>;
 }
@@ -67,7 +66,7 @@ impl<R: AppRuntime> ExtensionService<R> {
 
         let descriptions = scanner.scan().await?;
         for desc in descriptions {
-            let info = ContributionInfo {
+            let info = ExtensionInfo {
                 source: desc.abs_path.clone(),
             };
 
