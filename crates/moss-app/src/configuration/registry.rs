@@ -1,5 +1,5 @@
 use joinerror::ResultExt;
-use moss_contrib::IncludeConfigurationDecl;
+use moss_contrib::include::IncludeConfigurationDecl;
 use moss_logging::session;
 use moss_text::ReadOnlyStr;
 use serde::Deserialize;

@@ -24,7 +24,7 @@ extern crate derive_more;
 pub use app::App;
 pub use builder::AppBuilder;
 use moss_applib::AppRuntime;
-use moss_contrib::IncludeConfigurationDecl;
+use moss_contrib::include::IncludeConfigurationDecl;
 use moss_workspace::Workspace;
 
 use crate::models::primitives::WorkspaceId;

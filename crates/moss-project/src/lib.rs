@@ -15,8 +15,47 @@ pub mod storage;
 #[cfg(not(feature = "integration-tests"))]
 mod storage;
 
+use std::collections::HashMap;
+
 pub use builder::ProjectBuilder;
 pub use project::{Project, ProjectModifyParams};
+use tokio::sync::RwLock;
+
+pub struct ResourceParamsExtensionPoint {}
+
+impl ResourceParamsExtensionPoint {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+pub struct ResourceStatusItem {
+    pub name: String,
+    pub description: Option<String>,
+    pub color: String,
+}
+
+pub struct ResourceHeaderItem {
+    pub name: String,
+    pub description: Option<String>,
+    pub value: String,
+    pub protected: bool,
+    pub disabled: bool,
+}
+
+pub struct AppResourceParamsRegistry {
+    statuses: RwLock<Vec<ResourceStatusItem>>,
+    headers: RwLock<HashMap<String, ResourceHeaderItem>>,
+}
+
+impl AppResourceParamsRegistry {
+    pub fn new() -> Self {
+        Self {
+            statuses: RwLock::new(vec![]),
+            headers: RwLock::new(HashMap::new()),
+        }
+    }
+}
 
 pub mod constants {
     pub const ITEM_CONFIG_FILENAME: &str = "config.sap";

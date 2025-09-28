@@ -1,7 +1,6 @@
-mod scanner;
-
 use async_trait::async_trait;
 use joinerror::OptionExt;
+use moss_addon::scanner::{AddonKind, AddonScanner};
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_common::continue_if_err;
@@ -11,8 +10,6 @@ use moss_logging::session;
 use rustc_hash::FxHashMap;
 use serde_json::Value as JsonValue;
 use std::{path::PathBuf, sync::Arc};
-
-use crate::extension::scanner::{ExtensionKind, ExtensionScanner};
 
 pub struct ContributionInfo {
     pub source: PathBuf,
@@ -31,7 +28,7 @@ pub trait ExtensionPoint<R: AppRuntime>: Send + Sync + 'static {
 
 #[allow(unused)]
 pub struct ExtensionService<R: AppRuntime> {
-    scanner: ExtensionScanner,
+    scanner: AddonScanner,
     points: FxHashMap<ContributionKey, Box<dyn ExtensionPoint<R>>>,
     fs: Arc<dyn FileSystem>,
 }
@@ -47,7 +44,7 @@ impl<R: AppRuntime> ExtensionService<R> {
             .map(|p| (p.key(), Box::new(p) as Box<dyn ExtensionPoint<R>>))
             .collect();
 
-        let scanner = ExtensionScanner::new(
+        let scanner = AddonScanner::new(
             fs.clone(),
             // HACK: the paths are temporarily hardcoded here, later they will need
             // to be retrieved either from the app delegate or in some other dynamic way.
@@ -58,12 +55,12 @@ impl<R: AppRuntime> ExtensionService<R> {
                             .expect("DEV_APPLICATION_DIR is not set"),
                     )
                     .join("addons"),
-                    ExtensionKind::BuiltIn,
+                    AddonKind::BuiltIn,
                 ),
                 (
                     PathBuf::from(std::env::var("DEV_USER_DIR").expect("DEV_USER_DIR is not set"))
                         .join("addons"),
-                    ExtensionKind::User,
+                    AddonKind::User,
                 ),
             ],
         );

@@ -3546,6 +3546,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "moss_addon"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "joinerror",
+ "moss_app_delegate",
+ "moss_applib",
+ "moss_contrib",
+ "moss_fs",
+ "moss_logging",
+ "serde",
+ "serde_json",
+ "static_json",
+ "tracing",
+]
+
+[[package]]
 name = "moss_api"
 version = "0.1.0"
 dependencies = [
@@ -3574,6 +3591,7 @@ dependencies = [
  "joinerror",
  "json-patch 4.0.0",
  "moss_activity_broadcaster",
+ "moss_addon",
  "moss_api",
  "moss_app_delegate",
  "moss_applib",
@@ -3671,13 +3689,6 @@ name = "moss_contrib"
 version = "0.1.0"
 dependencies = [
  "inventory",
- "joinerror",
- "moss_fs",
- "moss_logging",
- "serde",
- "serde_json",
- "static_json",
- "tracing",
 ]
 
 [[package]]

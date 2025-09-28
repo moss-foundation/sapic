@@ -1,3 +1,5 @@
+pub mod include;
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ContributionKey {
     Configuration,
@@ -30,9 +32,3 @@ impl TryFrom<&str> for ContributionKey {
         }
     }
 }
-
-pub struct IncludeConfigurationDecl(pub &'static str);
-inventory::collect!(IncludeConfigurationDecl);
-
-pub struct IncludeContribution(pub &'static str);
-inventory::collect!(IncludeContribution);
