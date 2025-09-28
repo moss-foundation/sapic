@@ -423,7 +423,7 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
               <div className="flex items-start gap-2">
                 <Icon icon="Info" className="mt-0.5 size-4 flex-shrink-0" />
                 <div className="min-w-0 flex-1">
-                  <div className="text-md leading-5 font-semibold text-[var(--moss-notification-text)]">
+                  <div className="text-md leading-5 font-medium text-[var(--moss-notification-text)]">
                     {event.oneshot.title}
                   </div>
                   {event.oneshot.detail && (
@@ -460,7 +460,7 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
               <div className="flex items-start gap-2">
                 <Icon icon="Info" className="mt-0.5 size-4 flex-shrink-0" />
                 <div className="min-w-0 flex-1">
-                  <div className="text-md leading-5 font-semibold text-[var(--moss-notification-text)]">
+                  <div className="text-md leading-5 font-medium text-[var(--moss-notification-text)]">
                     {event.start.title}
                   </div>
                   {event.start.detail && (
@@ -502,7 +502,7 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
               <div className="flex items-start gap-2">
                 <Icon icon="Info" className="mt-0.5 size-4 flex-shrink-0" />
                 <div className="min-w-0 flex-1">
-                  <div className="text-md leading-5 font-semibold text-[var(--moss-notification-text)]">
+                  <div className="text-md leading-5 font-medium text-[var(--moss-notification-text)]">
                     {event.oneshot.title}
                   </div>
                   {event.oneshot.detail && (
@@ -539,7 +539,7 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
               <div className="flex items-start gap-2">
                 <Icon icon="Info" className="mt-0.5 size-4 flex-shrink-0" />
                 <div className="min-w-0 flex-1">
-                  <div className="text-md leading-5 font-semibold text-[var(--moss-notification-text)]">
+                  <div className="text-md leading-5 font-medium text-[var(--moss-notification-text)]">
                     {event.start.title}
                   </div>
                   {event.start.detail && (

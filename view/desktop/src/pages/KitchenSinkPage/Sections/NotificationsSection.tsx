@@ -15,7 +15,7 @@ export const NotificationsSection = () => {
       <div className="flex items-start gap-2">
         <Icon icon="Info" className="mt-0.5 size-4 flex-shrink-0" />
         <div className="min-w-0 flex-1">
-          <div className="text-md leading-5 font-semibold text-[var(--moss-notification-text)]">JDK 18 required</div>
+          <div className="text-md leading-5 font-medium text-[var(--moss-notification-text)]">JDK 18 required</div>
           <div className="text-md pt-0.5 leading-4 text-[var(--moss-notification-text)]">
             You need to install JDK 18 in order to run this project.
           </div>
@@ -50,7 +50,7 @@ export const NotificationsSection = () => {
       <div className="flex items-start gap-2">
         <Icon icon="Warning" className="mt-0.5 size-4 flex-shrink-0" />
         <div className="min-w-0 flex-1">
-          <div className="text-md leading-5 font-semibold text-[var(--moss-notification-text)]">Low memory</div>
+          <div className="text-md leading-5 font-medium text-[var(--moss-notification-text)]">Low memory</div>
           <div className="text-md pt-0.5 leading-4 text-[var(--moss-notification-text)]">
             The IDE is running low on memory and this might affect performance.
           </div>
@@ -65,7 +65,7 @@ export const NotificationsSection = () => {
       <div className="flex items-start gap-2">
         <Icon icon="Failed" className="mt-0.5 size-4 flex-shrink-0" />
         <div className="min-w-0 flex-1">
-          <div className="text-md leading-5 font-semibold text-[var(--moss-notification-text)]">Build failed</div>
+          <div className="text-md leading-5 font-medium text-[var(--moss-notification-text)]">Build failed</div>
           <div className="text-md pt-0.5 leading-4 text-[var(--moss-notification-text)]">
             The compilation process encountered errors.
           </div>
