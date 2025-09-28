@@ -1,71 +1,111 @@
-import { useNotifications } from "../../../app/NotificationProvider";
+import { toast } from "sonner";
 import { Button, Icon } from "@/lib/ui";
 
 export const GlobalNotificationsTestSection = () => {
-  const { addNotification, clearAllNotifications, removeNotification } = useNotifications();
-
   const showInfoNotification = () => {
-    const notificationId = addNotification({
-      title: "JDK 18 required",
-      description: "You need to install JDK 18 in order to run this project.",
-      buttonText: "Install JDK 18",
-      linkText: "Remind me later",
-      onButtonClick: () => {
-        alert("Install JDK 18 clicked!");
-        removeNotification(notificationId);
-      },
-      onLinkClick: () => {
-        alert("Remind me later clicked!");
-        removeNotification(notificationId);
-      },
-      duration: 0, // Don't auto-dismiss
-    });
+    toast(
+      <div className="flex items-start gap-2">
+        <Icon icon="Info" className="mt-0.5 size-4 flex-shrink-0" />
+        <div className="min-w-0 flex-1">
+          <div className="text-md leading-5 font-semibold text-[var(--moss-notification-text)]">JDK 18 required</div>
+          <div className="text-md pt-0.5 leading-4 text-[var(--moss-notification-text)]">
+            You need to install JDK 18 in order to run this project.
+          </div>
+          <div className="mt-3 flex items-center gap-3">
+            <button
+              onClick={() => alert("Install JDK 18 clicked!")}
+              className="hover:background-[var(--moss-notification-button-hover)] background-[var(--moss-notification-bg)] text-md h-auto rounded-md border border-[var(--moss-notification-button-outline)] px-3 py-[5px] text-[var(--moss-notification-text)] transition-colors"
+            >
+              Install JDK 18
+            </button>
+            <button
+              onClick={() => alert("Remind me later clicked!")}
+              className="text-md cursor-pointer text-[var(--moss-notification-link-text)] underline-offset-4 transition-colors hover:text-[var(--moss-notification-link-hover)]"
+            >
+              Remind me later
+            </button>
+          </div>
+        </div>
+      </div>,
+      { duration: Infinity } // Persistent
+    );
   };
 
   const showWarningToastDelayed = () => {
-    const notificationId = addNotification({
-      icon: "Warning",
-      title: "Low memory",
-      description: "The IDE is running low on memory and this might affect performance.",
-      buttonText: "Analyze memory use",
-      onButtonClick: () => {
-        alert("Analyze memory use clicked!");
-        removeNotification(notificationId);
-      },
-      duration: 5000, // Auto-dismiss after 5 seconds
-    });
+    toast(
+      <div className="flex items-start gap-2">
+        <Icon icon="Warning" className="mt-0.5 size-4 flex-shrink-0" />
+        <div className="min-w-0 flex-1">
+          <div className="text-md leading-5 font-semibold text-[var(--moss-notification-text)]">Low memory</div>
+          <div className="text-md pt-0.5 leading-4 text-[var(--moss-notification-text)]">
+            The IDE is running low on memory and this might affect performance.
+          </div>
+          <div className="mt-3 flex items-center gap-3">
+            <button
+              onClick={() => alert("Analyze memory use clicked!")}
+              className="hover:background-[var(--moss-notification-button-hover)] background-[var(--moss-notification-bg)] text-md h-auto rounded-md border border-[var(--moss-notification-button-outline)] px-3 py-[5px] text-[var(--moss-notification-text)] transition-colors"
+            >
+              Analyze memory use
+            </button>
+          </div>
+        </div>
+      </div>,
+      { duration: 5000 } // Auto-dismiss after 5 seconds
+    );
   };
 
   const showErrorNotification = () => {
-    const notificationId = addNotification({
-      icon: "Failed",
-      title: "Build failed",
-      description: "The compilation process encountered errors. Please check your code.",
-      buttonText: "View errors",
-      linkText: "Ignore",
-      onButtonClick: () => {
-        alert("View errors clicked!");
-        removeNotification(notificationId);
-      },
-      onLinkClick: () => {
-        alert("Ignore clicked!");
-        removeNotification(notificationId);
-      },
-      duration: 0, // Don't auto-dismiss
-    });
+    toast(
+      <div className="flex items-start gap-2">
+        <Icon icon="Failed" className="mt-0.5 size-4 flex-shrink-0" />
+        <div className="min-w-0 flex-1">
+          <div className="text-md leading-5 font-semibold text-[var(--moss-notification-text)]">Build failed</div>
+          <div className="text-md pt-0.5 leading-4 text-[var(--moss-notification-text)]">
+            The compilation process encountered errors. Please check your code.
+          </div>
+          <div className="mt-3 flex items-center gap-3">
+            <button
+              onClick={() => alert("View errors clicked!")}
+              className="hover:background-[var(--moss-notification-button-hover)] background-[var(--moss-notification-bg)] text-md h-auto rounded-md border border-[var(--moss-notification-button-outline)] px-3 py-[5px] text-[var(--moss-notification-text)] transition-colors"
+            >
+              View errors
+            </button>
+            <button
+              onClick={() => alert("Ignore clicked!")}
+              className="text-md cursor-pointer text-[var(--moss-notification-link-text)] underline-offset-4 transition-colors hover:text-[var(--moss-notification-link-hover)]"
+            >
+              Ignore
+            </button>
+          </div>
+        </div>
+      </div>,
+      { duration: Infinity } // Persistent
+    );
   };
 
   const showSuccessToast = () => {
-    const notificationId = addNotification({
-      icon: "GreenCheckmark",
-      title: "2,662 files updated",
-      description: "Successfully updated 2,662 files in 844 commits",
-      linkText: "View commits",
-      onLinkClick: () => {
-        alert("View commits clicked!");
-        removeNotification(notificationId);
-      },
-    });
+    toast(
+      <div className="flex items-start gap-2">
+        <Icon icon="GreenCheckmark" className="mt-0.5 size-4 flex-shrink-0" />
+        <div className="min-w-0 flex-1">
+          <div className="text-md leading-5 font-semibold text-[var(--moss-notification-text)]">
+            2,662 files updated
+          </div>
+          <div className="text-md pt-0.5 leading-4 text-[var(--moss-notification-text)]">
+            Successfully updated 2,662 files in 844 commits
+          </div>
+          <div className="mt-3 flex items-center gap-3">
+            <button
+              onClick={() => alert("View commits clicked!")}
+              className="text-md cursor-pointer text-[var(--moss-notification-link-text)] underline-offset-4 transition-colors hover:text-[var(--moss-notification-link-hover)]"
+            >
+              View commits
+            </button>
+          </div>
+        </div>
+      </div>,
+      { duration: 2000 } // Auto-dismiss after 2 seconds
+    );
   };
 
   return (
@@ -123,7 +163,7 @@ export const GlobalNotificationsTestSection = () => {
 
       <div className="flex justify-center">
         <Button
-          onClick={clearAllNotifications}
+          onClick={() => toast.dismiss()}
           className="group relative h-12 overflow-hidden bg-gradient-to-r from-gray-600 to-gray-700 px-8 py-3 text-white shadow-lg transition-all duration-200 hover:scale-105 hover:from-gray-700 hover:to-gray-800 hover:shadow-xl active:scale-95"
         >
           <div className="absolute inset-0 bg-gradient-to-r from-gray-500 to-gray-600 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />

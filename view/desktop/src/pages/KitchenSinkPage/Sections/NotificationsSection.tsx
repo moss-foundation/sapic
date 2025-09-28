@@ -1,124 +1,125 @@
 import { useState } from "react";
+import { toast } from "sonner";
 
-import { Notification } from "@/lib/ui";
+import { Icon } from "@/lib/ui";
 
 import { KitchenSinkSection } from "../KitchenSinkSection";
 
 export const NotificationsSection = () => {
-  const [showCustom, setShowCustom] = useState(false);
+  const showSimpleToast = () => {
+    toast("This is a simple toast message");
+  };
+
+  const showInfoNotification = () => {
+    toast(
+      <div className="flex items-start gap-2">
+        <Icon icon="Info" className="mt-0.5 size-4 flex-shrink-0" />
+        <div className="min-w-0 flex-1">
+          <div className="text-md leading-5 font-semibold text-[var(--moss-notification-text)]">JDK 18 required</div>
+          <div className="text-md pt-0.5 leading-4 text-[var(--moss-notification-text)]">
+            You need to install JDK 18 in order to run this project.
+          </div>
+          <div className="mt-3 flex items-center gap-3">
+            <button
+              onClick={() => alert("Install JDK 18 clicked!")}
+              className="hover:background-[var(--moss-notification-button-hover)] background-[var(--moss-notification-bg)] text-md h-auto rounded-md border border-[var(--moss-notification-button-outline)] px-3 py-[5px] text-[var(--moss-notification-text)] transition-colors"
+            >
+              Install JDK 18
+            </button>
+            <button
+              onClick={() => alert("Remind me later clicked!")}
+              className="text-md cursor-pointer text-[var(--moss-notification-link-text)] underline-offset-4 transition-colors hover:text-[var(--moss-notification-link-hover)]"
+            >
+              Remind me later
+            </button>
+          </div>
+        </div>
+      </div>,
+      { duration: Infinity }
+    );
+  };
+
+  const showWarningToast = () => {
+    toast(
+      <div className="flex items-start gap-2">
+        <Icon icon="Warning" className="mt-0.5 size-4 flex-shrink-0" />
+        <div className="min-w-0 flex-1">
+          <div className="text-md leading-5 font-semibold text-[var(--moss-notification-text)]">Low memory</div>
+          <div className="text-md pt-0.5 leading-4 text-[var(--moss-notification-text)]">
+            The IDE is running low on memory and this might affect performance.
+          </div>
+        </div>
+      </div>,
+      { duration: 5000 }
+    );
+  };
+
+  const showErrorNotification = () => {
+    toast(
+      <div className="flex items-start gap-2">
+        <Icon icon="Failed" className="mt-0.5 size-4 flex-shrink-0" />
+        <div className="min-w-0 flex-1">
+          <div className="text-md leading-5 font-semibold text-[var(--moss-notification-text)]">Build failed</div>
+          <div className="text-md pt-0.5 leading-4 text-[var(--moss-notification-text)]">
+            The compilation process encountered errors.
+          </div>
+          <div className="mt-3 flex items-center gap-3">
+            <button
+              onClick={() => alert("View errors clicked!")}
+              className="hover:background-[var(--moss-notification-button-hover)] background-[var(--moss-notification-bg)] text-md h-auto rounded-md border border-[var(--moss-notification-button-outline)] px-3 py-[5px] text-[var(--moss-notification-text)] transition-colors"
+            >
+              View errors
+            </button>
+            <button
+              onClick={() => alert("Ignore clicked!")}
+              className="text-md cursor-pointer text-[var(--moss-notification-link-text)] underline-offset-4 transition-colors hover:text-[var(--moss-notification-link-hover)]"
+            >
+              Ignore
+            </button>
+          </div>
+        </div>
+      </div>,
+      { duration: Infinity }
+    );
+  };
 
   return (
     <KitchenSinkSection
-      header="Notification Components"
-      description="Notification cards with different variants, icons, and action buttons for various user feedback scenarios."
+      header="Sonner Toast Notifications"
+      description="Demo buttons to trigger Sonner toast notifications with our custom design."
     >
-      {/* Info Notification */}
-      <div>
-        <h3 className="mb-3 text-lg font-semibold text-gray-700 dark:text-gray-300">Info Notification</h3>
-        <Notification
-          icon="Info"
-          title="JDK 18 required"
-          description="You need to install JDK 18 in order to run this project."
-          buttonText="Install JDK 18"
-          linkText="Remind me later"
-          onButtonClick={() => alert("Install JDK 18 clicked!")}
-          onLinkClick={() => alert("Remind me later clicked!")}
-        />
-      </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <button
+          onClick={showSimpleToast}
+          className="rounded-lg border border-gray-300 bg-gray-50 p-4 text-left transition-colors hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600"
+        >
+          <div className="font-medium">Simple Toast</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">Basic message</div>
+        </button>
 
-      {/* Warning Notification */}
-      <div>
-        <h3 className="mb-3 text-lg font-semibold text-gray-700 dark:text-gray-300">Warning Notification</h3>
-        <Notification
-          icon="Warning"
-          title="Low memory"
-          description="The IDE is running low on memory and this might affect performance. Please consider increasing the heap size."
-          buttonText="Analyze memory use"
-          onButtonClick={() => alert("Analyze memory use clicked!")}
-        />
-      </div>
+        <button
+          onClick={showInfoNotification}
+          className="rounded-lg border border-blue-300 bg-blue-50 p-4 text-left transition-colors hover:bg-blue-100 dark:border-blue-600 dark:bg-blue-900 dark:hover:bg-blue-800"
+        >
+          <div className="font-medium text-blue-800 dark:text-blue-200">Info Notification</div>
+          <div className="text-sm text-blue-600 dark:text-blue-300">Persistent with actions</div>
+        </button>
 
-      {/* Error Notification */}
-      <div>
-        <h3 className="mb-3 text-lg font-semibold text-gray-700 dark:text-gray-300">Error Notification</h3>
-        <Notification
-          icon="Failed"
-          title="Build failed"
-          description="The compilation process encountered errors. Please check your code for syntax issues."
-          buttonText="View errors"
-          linkText="Ignore for now"
-          onButtonClick={() => alert("View errors clicked!")}
-          onLinkClick={() => alert("Ignore for now clicked!")}
-        />
-      </div>
+        <button
+          onClick={showWarningToast}
+          className="rounded-lg border border-yellow-300 bg-yellow-50 p-4 text-left transition-colors hover:bg-yellow-100 dark:border-yellow-600 dark:bg-yellow-900 dark:hover:bg-yellow-800"
+        >
+          <div className="font-medium text-yellow-800 dark:text-yellow-200">Warning Toast</div>
+          <div className="text-sm text-yellow-600 dark:text-yellow-300">Auto-dismiss 5s</div>
+        </button>
 
-      {/* Minimal Notifications */}
-      <div>
-        <h3 className="mb-3 text-lg font-semibold text-gray-700 dark:text-gray-300">Minimal Variants</h3>
-        <div className="space-y-3">
-          <Notification icon="GreenCheckmark" title="File saved successfully" />
-          <Notification icon="Warning" description="This action cannot be undone." />
-          <Notification
-            icon="Failed"
-            title="Connection failed"
-            linkText="Retry connection"
-            onLinkClick={() => alert("Retry connection clicked!")}
-          />
-        </div>
-      </div>
-
-      {/* Custom Icon */}
-      <div>
-        <h3 className="mb-3 text-lg font-semibold text-gray-700 dark:text-gray-300">Custom Icon</h3>
-        <Notification
-          icon="Bell"
-          title="2,662 files updated in 844 commits"
-          linkText="View commits"
-          onLinkClick={() => alert("View commits clicked!")}
-        />
-      </div>
-
-      {/* No Icon */}
-      <div>
-        <h3 className="mb-3 text-lg font-semibold text-gray-700 dark:text-gray-300">No Icon</h3>
-        <Notification
-          icon={null}
-          title="Update available"
-          description="A new version of the application is available for download."
-          buttonText="Download now"
-          onButtonClick={() => alert("Download now clicked!")}
-        />
-      </div>
-
-      {/* Custom Content */}
-      <div>
-        <h3 className="mb-3 text-lg font-semibold text-gray-700 dark:text-gray-300">Custom Content</h3>
-        <Notification>
-          <div className="flex items-start gap-3">
-            <div className="mt-0.5 flex-shrink-0">
-              <div className="flex size-5 items-center justify-center rounded-full bg-blue-400">
-                <span className="text-xs font-bold text-blue-900">!</span>
-              </div>
-            </div>
-            <div className="flex-1">
-              <div className="mb-1 font-semibold text-blue-100">Custom Layout</div>
-              <div className="mb-3 text-sm text-blue-200">
-                This notification uses custom children to demonstrate the flexibility of the component.
-              </div>
-              <button
-                onClick={() => setShowCustom(!showCustom)}
-                className="text-sm text-blue-300 underline-offset-4 hover:text-blue-200 hover:underline"
-              >
-                {showCustom ? "Hide details" : "Show details"}
-              </button>
-              {showCustom && (
-                <div className="mt-2 rounded bg-blue-900/50 p-2 text-sm text-blue-200">
-                  Additional content can be shown here when needed.
-                </div>
-              )}
-            </div>
-          </div>
-        </Notification>
+        <button
+          onClick={showErrorNotification}
+          className="rounded-lg border border-red-300 bg-red-50 p-4 text-left transition-colors hover:bg-red-100 dark:border-red-600 dark:bg-red-900 dark:hover:bg-red-800"
+        >
+          <div className="font-medium text-red-800 dark:text-red-200">Error Notification</div>
+          <div className="text-sm text-red-600 dark:text-red-300">Persistent with actions</div>
+        </button>
       </div>
     </KitchenSinkSection>
   );

@@ -1,8 +1,9 @@
 import React, { createContext, useCallback, useEffect, useMemo, useReducer, useRef } from "react";
+import { toast } from "sonner";
 
 import { CHANNEL as ACTIVITY_BROADCASTER_CHANNEL, ActivityEvent } from "@repo/moss-activity-broadcaster";
 import { listen } from "@tauri-apps/api/event";
-import { useNotifications } from "./NotificationProvider";
+import { Icon } from "@/lib/ui";
 
 export const MAX_HISTORY_SIZE = 1000; // Limit number of historical events
 export const ONESHOT_CLEANUP_DELAY = 1000;
@@ -288,7 +289,6 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
   };
 
   const [state, dispatch] = useReducer(activityRouterReducer, initialState);
-  const { addNotification, removeNotification } = useNotifications();
 
   const processingQueueRef = useRef(false);
   const displayDurationRef = useRef(DEFAULT_DISPLAY_DURATION);
@@ -419,78 +419,134 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
         case "notification":
           // Route to notification system - persistent notification
           if ("oneshot" in event) {
-            const notificationId = addNotification({
-              icon: "Info",
-              title: event.oneshot.title,
-              description: event.oneshot.detail || undefined,
-              buttonText: "Details",
-              linkText: "Ignore",
-              onButtonClick: () => {
-                alert("Details clicked!");
-                removeNotification(notificationId);
-              },
-              onLinkClick: () => {
-                alert("Ignore clicked!");
-                removeNotification(notificationId);
-              },
-              duration: 0, // Persistent - no auto-dismiss
-            });
+            toast(
+              <div className="flex items-start gap-2">
+                <Icon icon="Info" className="mt-0.5 size-4 flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <div className="text-md leading-5 font-semibold text-[var(--moss-notification-text)]">
+                    {event.oneshot.title}
+                  </div>
+                  {event.oneshot.detail && (
+                    <div className="text-md pt-0.5 leading-4 text-[var(--moss-notification-text)]">
+                      {event.oneshot.detail}
+                    </div>
+                  )}
+                  <div className="mt-3 flex items-center gap-3">
+                    <button
+                      onClick={() => alert("Details clicked!")}
+                      className="hover:background-[var(--moss-notification-button-hover)] background-[var(--moss-notification-bg)] text-md h-auto rounded-md border border-[var(--moss-notification-button-outline)] px-3 py-[5px] text-[var(--moss-notification-text)] transition-colors"
+                    >
+                      Details
+                    </button>
+                    <button
+                      onClick={() => alert("Ignore clicked!")}
+                      className="text-md cursor-pointer text-[var(--moss-notification-link-text)] underline-offset-4 transition-colors hover:text-[var(--moss-notification-link-hover)]"
+                    >
+                      Ignore
+                    </button>
+                  </div>
+                </div>
+              </div>,
+              { duration: Infinity } // Persistent
+            );
           } else if ("start" in event) {
-            const notificationId = addNotification({
-              icon: "Info",
-              title: event.start.title,
-              description: event.start.detail || undefined,
-              buttonText: "Details",
-              linkText: "Ignore",
-              onButtonClick: () => {
-                alert("Details clicked!");
-                removeNotification(notificationId);
-              },
-              onLinkClick: () => {
-                alert("Ignore clicked!");
-                removeNotification(notificationId);
-              },
-              duration: 0, // Persistent - no auto-dismiss
-            });
+            toast(
+              <div className="flex items-start gap-2">
+                <Icon icon="Info" className="mt-0.5 size-4 flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <div className="text-md leading-5 font-semibold text-[var(--moss-notification-text)]">
+                    {event.start.title}
+                  </div>
+                  {event.start.detail && (
+                    <div className="text-md pt-0.5 leading-4 text-[var(--moss-notification-text)]">
+                      {event.start.detail}
+                    </div>
+                  )}
+                  <div className="mt-3 flex items-center gap-3">
+                    <button
+                      onClick={() => alert("Details clicked!")}
+                      className="hover:background-[var(--moss-notification-button-hover)] background-[var(--moss-notification-bg)] text-md h-auto rounded-md border border-[var(--moss-notification-button-outline)] px-3 py-[5px] text-[var(--moss-notification-text)] transition-colors"
+                    >
+                      Details
+                    </button>
+                    <button
+                      onClick={() => alert("Ignore clicked!")}
+                      className="text-md cursor-pointer text-[var(--moss-notification-link-text)] underline-offset-4 transition-colors hover:text-[var(--moss-notification-link-hover)]"
+                    >
+                      Ignore
+                    </button>
+                  </div>
+                </div>
+              </div>,
+              { duration: Infinity } // Persistent
+            );
           }
           break;
 
         case "toast":
           // Route to toast system - auto-dismiss after default duration
           if ("oneshot" in event) {
-            const notificationId = addNotification({
-              icon: "Info",
-              title: event.oneshot.title,
-              description: event.oneshot.detail || undefined,
-              buttonText: "Details",
-              linkText: "Ignore",
-              onButtonClick: () => {
-                alert("Details clicked!");
-                removeNotification(notificationId);
-              },
-              onLinkClick: () => {
-                alert("Ignore clicked!");
-                removeNotification(notificationId);
-              },
-              duration: undefined, // Use default duration (2 seconds)
-            });
+            toast(
+              <div className="flex items-start gap-2">
+                <Icon icon="Info" className="mt-0.5 size-4 flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <div className="text-md leading-5 font-semibold text-[var(--moss-notification-text)]">
+                    {event.oneshot.title}
+                  </div>
+                  {event.oneshot.detail && (
+                    <div className="text-md pt-0.5 leading-4 text-[var(--moss-notification-text)]">
+                      {event.oneshot.detail}
+                    </div>
+                  )}
+                  <div className="mt-3 flex items-center gap-3">
+                    <button
+                      onClick={() => alert("Details clicked!")}
+                      className="hover:background-[var(--moss-notification-button-hover)] background-[var(--moss-notification-bg)] text-md h-auto rounded-md border border-[var(--moss-notification-button-outline)] px-3 py-[5px] text-[var(--moss-notification-text)] transition-colors"
+                    >
+                      Details
+                    </button>
+                    <button
+                      onClick={() => alert("Ignore clicked!")}
+                      className="text-md cursor-pointer text-[var(--moss-notification-link-text)] underline-offset-4 transition-colors hover:text-[var(--moss-notification-link-hover)]"
+                    >
+                      Ignore
+                    </button>
+                  </div>
+                </div>
+              </div>,
+              { duration: 2000 } // Auto-dismiss after 2 seconds
+            );
           } else if ("start" in event) {
-            const notificationId = addNotification({
-              icon: "Info",
-              title: event.start.title,
-              description: event.start.detail || undefined,
-              buttonText: "Details",
-              linkText: "Ignore",
-              onButtonClick: () => {
-                alert("Details clicked!");
-                removeNotification(notificationId);
-              },
-              onLinkClick: () => {
-                alert("Ignore clicked!");
-                removeNotification(notificationId);
-              },
-              duration: undefined, // Use default duration (2 seconds)
-            });
+            toast(
+              <div className="flex items-start gap-2">
+                <Icon icon="Info" className="mt-0.5 size-4 flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <div className="text-md leading-5 font-semibold text-[var(--moss-notification-text)]">
+                    {event.start.title}
+                  </div>
+                  {event.start.detail && (
+                    <div className="text-md pt-0.5 leading-4 text-[var(--moss-notification-text)]">
+                      {event.start.detail}
+                    </div>
+                  )}
+                  <div className="mt-3 flex items-center gap-3">
+                    <button
+                      onClick={() => alert("Details clicked!")}
+                      className="hover:background-[var(--moss-notification-button-hover)] background-[var(--moss-notification-bg)] text-md h-auto rounded-md border border-[var(--moss-notification-button-outline)] px-3 py-[5px] text-[var(--moss-notification-text)] transition-colors"
+                    >
+                      Details
+                    </button>
+                    <button
+                      onClick={() => alert("Ignore clicked!")}
+                      className="text-md cursor-pointer text-[var(--moss-notification-link-text)] underline-offset-4 transition-colors hover:text-[var(--moss-notification-link-hover)]"
+                    >
+                      Ignore
+                    </button>
+                  </div>
+                </div>
+              </div>,
+              { duration: 2000 } // Auto-dismiss after 2 seconds
+            );
           }
           break;
 

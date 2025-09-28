@@ -1,8 +1,8 @@
 import { ReactNode } from "react";
+import { Toaster } from "sonner";
 
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ActivityRouterProvider } from "./ActivityRouterProvider";
-import { NotificationProvider } from "./NotificationProvider";
 
 import LanguageProvider from "./LanguageProvider";
 import ThemeProvider from "./ThemeProvider";
@@ -10,13 +10,29 @@ import ThemeProvider from "./ThemeProvider";
 const Providers = ({ children }: { children: ReactNode }) => {
   return (
     <ErrorBoundary>
-      <NotificationProvider>
-        <ActivityRouterProvider>
-          <LanguageProvider>
-            <ThemeProvider>{children}</ThemeProvider>
-          </LanguageProvider>
-        </ActivityRouterProvider>
-      </NotificationProvider>
+      <ActivityRouterProvider>
+        <LanguageProvider>
+          <ThemeProvider>
+            {children}
+            <Toaster
+              position="bottom-right"
+              closeButton
+              richColors={false}
+              toastOptions={{
+                style: {
+                  background: "var(--moss-notification-bg)",
+                  color: "var(--moss-notification-text)",
+                  border: "1px solid var(--moss-notification-button-outline)",
+                  borderRadius: "8px",
+                  padding: "10px 16px",
+                  gap: "8px",
+                  width: "360px",
+                },
+              }}
+            />
+          </ThemeProvider>
+        </LanguageProvider>
+      </ActivityRouterProvider>
     </ErrorBoundary>
   );
 };
