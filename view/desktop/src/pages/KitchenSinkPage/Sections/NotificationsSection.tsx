@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { Icon } from "@/lib/ui";
+import { Button, Icon } from "@/lib/ui";
 
 import { KitchenSinkSection } from "../KitchenSinkSection";
 
@@ -11,7 +11,7 @@ export const NotificationsSection = () => {
   };
 
   const showInfoNotification = () => {
-    toast(
+    const toastId = toast(
       <div className="flex items-start gap-2">
         <Icon icon="Info" className="mt-0.5 size-4 flex-shrink-0" />
         <div className="min-w-0 flex-1">
@@ -20,18 +20,24 @@ export const NotificationsSection = () => {
             You need to install JDK 18 in order to run this project.
           </div>
           <div className="mt-3 flex items-center gap-3">
-            <button
-              onClick={() => alert("Install JDK 18 clicked!")}
+            <Button
+              onClick={() => {
+                alert("Install JDK 18 clicked!");
+                toast.dismiss(toastId);
+              }}
               className="hover:background-[var(--moss-notification-button-hover)] background-[var(--moss-notification-bg)] text-md h-auto rounded-md border border-[var(--moss-notification-button-outline)] px-3 py-[5px] text-[var(--moss-notification-text)] transition-colors"
             >
               Install JDK 18
-            </button>
-            <button
-              onClick={() => alert("Remind me later clicked!")}
+            </Button>
+            <Button
+              onClick={() => {
+                alert("Remind me later clicked!");
+                toast.dismiss(toastId);
+              }}
               className="text-md cursor-pointer text-[var(--moss-notification-link-text)] underline-offset-4 transition-colors hover:text-[var(--moss-notification-link-hover)]"
             >
               Remind me later
-            </button>
+            </Button>
           </div>
         </div>
       </div>,
@@ -55,7 +61,7 @@ export const NotificationsSection = () => {
   };
 
   const showErrorNotification = () => {
-    toast(
+    const toastId = toast(
       <div className="flex items-start gap-2">
         <Icon icon="Failed" className="mt-0.5 size-4 flex-shrink-0" />
         <div className="min-w-0 flex-1">
@@ -64,18 +70,24 @@ export const NotificationsSection = () => {
             The compilation process encountered errors.
           </div>
           <div className="mt-3 flex items-center gap-3">
-            <button
-              onClick={() => alert("View errors clicked!")}
+            <Button
+              onClick={() => {
+                alert("View errors clicked!");
+                toast.dismiss(toastId);
+              }}
               className="hover:background-[var(--moss-notification-button-hover)] background-[var(--moss-notification-bg)] text-md h-auto rounded-md border border-[var(--moss-notification-button-outline)] px-3 py-[5px] text-[var(--moss-notification-text)] transition-colors"
             >
               View errors
-            </button>
-            <button
-              onClick={() => alert("Ignore clicked!")}
+            </Button>
+            <Button
+              onClick={() => {
+                alert("Ignore clicked!");
+                toast.dismiss(toastId);
+              }}
               className="text-md cursor-pointer text-[var(--moss-notification-link-text)] underline-offset-4 transition-colors hover:text-[var(--moss-notification-link-hover)]"
             >
               Ignore
-            </button>
+            </Button>
           </div>
         </div>
       </div>,
@@ -120,6 +132,16 @@ export const NotificationsSection = () => {
           <div className="font-medium text-red-800 dark:text-red-200">Error Notification</div>
           <div className="text-sm text-red-600 dark:text-red-300">Persistent with actions</div>
         </button>
+      </div>
+
+      <div className="mt-6 flex justify-center">
+        <Button
+          onClick={() => toast.dismiss()}
+          className="flex items-center gap-2 rounded-lg border border-gray-400 bg-gray-100 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-200 dark:border-gray-500 dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500"
+        >
+          <Icon icon="Delete" className="h-4 w-4" />
+          Clear All Notifications
+        </Button>
       </div>
     </KitchenSinkSection>
   );

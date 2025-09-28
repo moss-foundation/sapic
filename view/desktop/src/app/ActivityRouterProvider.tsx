@@ -3,7 +3,7 @@ import { toast } from "sonner";
 
 import { CHANNEL as ACTIVITY_BROADCASTER_CHANNEL, ActivityEvent } from "@repo/moss-activity-broadcaster";
 import { listen } from "@tauri-apps/api/event";
-import { Icon } from "@/lib/ui";
+import { Button, Icon } from "@/lib/ui";
 
 export const MAX_HISTORY_SIZE = 1000; // Limit number of historical events
 export const ONESHOT_CLEANUP_DELAY = 1000;
@@ -419,7 +419,7 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
         case "notification":
           // Route to notification system - persistent notification
           if ("oneshot" in event) {
-            toast(
+            const toastId = toast(
               <div className="flex items-start gap-2">
                 <Icon icon="Info" className="mt-0.5 size-4 flex-shrink-0" />
                 <div className="min-w-0 flex-1">
@@ -432,25 +432,31 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
                     </div>
                   )}
                   <div className="mt-3 flex items-center gap-3">
-                    <button
-                      onClick={() => alert("Details clicked!")}
+                    <Button
+                      onClick={() => {
+                        alert("Details clicked!");
+                        toast.dismiss(toastId);
+                      }}
                       className="hover:background-[var(--moss-notification-button-hover)] background-[var(--moss-notification-bg)] text-md h-auto rounded-md border border-[var(--moss-notification-button-outline)] px-3 py-[5px] text-[var(--moss-notification-text)] transition-colors"
                     >
                       Details
-                    </button>
-                    <button
-                      onClick={() => alert("Ignore clicked!")}
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        alert("Ignore clicked!");
+                        toast.dismiss(toastId);
+                      }}
                       className="text-md cursor-pointer text-[var(--moss-notification-link-text)] underline-offset-4 transition-colors hover:text-[var(--moss-notification-link-hover)]"
                     >
                       Ignore
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>,
               { duration: Infinity } // Persistent
             );
           } else if ("start" in event) {
-            toast(
+            const toastId = toast(
               <div className="flex items-start gap-2">
                 <Icon icon="Info" className="mt-0.5 size-4 flex-shrink-0" />
                 <div className="min-w-0 flex-1">
@@ -463,18 +469,24 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
                     </div>
                   )}
                   <div className="mt-3 flex items-center gap-3">
-                    <button
-                      onClick={() => alert("Details clicked!")}
+                    <Button
+                      onClick={() => {
+                        alert("Details clicked!");
+                        toast.dismiss(toastId);
+                      }}
                       className="hover:background-[var(--moss-notification-button-hover)] background-[var(--moss-notification-bg)] text-md h-auto rounded-md border border-[var(--moss-notification-button-outline)] px-3 py-[5px] text-[var(--moss-notification-text)] transition-colors"
                     >
                       Details
-                    </button>
-                    <button
-                      onClick={() => alert("Ignore clicked!")}
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        alert("Ignore clicked!");
+                        toast.dismiss(toastId);
+                      }}
                       className="text-md cursor-pointer text-[var(--moss-notification-link-text)] underline-offset-4 transition-colors hover:text-[var(--moss-notification-link-hover)]"
                     >
                       Ignore
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>,
@@ -486,7 +498,7 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
         case "toast":
           // Route to toast system - auto-dismiss after default duration
           if ("oneshot" in event) {
-            toast(
+            const toastId = toast(
               <div className="flex items-start gap-2">
                 <Icon icon="Info" className="mt-0.5 size-4 flex-shrink-0" />
                 <div className="min-w-0 flex-1">
@@ -499,25 +511,31 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
                     </div>
                   )}
                   <div className="mt-3 flex items-center gap-3">
-                    <button
-                      onClick={() => alert("Details clicked!")}
+                    <Button
+                      onClick={() => {
+                        alert("Details clicked!");
+                        toast.dismiss(toastId);
+                      }}
                       className="hover:background-[var(--moss-notification-button-hover)] background-[var(--moss-notification-bg)] text-md h-auto rounded-md border border-[var(--moss-notification-button-outline)] px-3 py-[5px] text-[var(--moss-notification-text)] transition-colors"
                     >
                       Details
-                    </button>
-                    <button
-                      onClick={() => alert("Ignore clicked!")}
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        alert("Ignore clicked!");
+                        toast.dismiss(toastId);
+                      }}
                       className="text-md cursor-pointer text-[var(--moss-notification-link-text)] underline-offset-4 transition-colors hover:text-[var(--moss-notification-link-hover)]"
                     >
                       Ignore
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>,
               { duration: 2000 } // Auto-dismiss after 2 seconds
             );
           } else if ("start" in event) {
-            toast(
+            const toastId = toast(
               <div className="flex items-start gap-2">
                 <Icon icon="Info" className="mt-0.5 size-4 flex-shrink-0" />
                 <div className="min-w-0 flex-1">
@@ -530,18 +548,24 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
                     </div>
                   )}
                   <div className="mt-3 flex items-center gap-3">
-                    <button
-                      onClick={() => alert("Details clicked!")}
+                    <Button
+                      onClick={() => {
+                        alert("Details clicked!");
+                        toast.dismiss(toastId);
+                      }}
                       className="hover:background-[var(--moss-notification-button-hover)] background-[var(--moss-notification-bg)] text-md h-auto rounded-md border border-[var(--moss-notification-button-outline)] px-3 py-[5px] text-[var(--moss-notification-text)] transition-colors"
                     >
                       Details
-                    </button>
-                    <button
-                      onClick={() => alert("Ignore clicked!")}
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        alert("Ignore clicked!");
+                        toast.dismiss(toastId);
+                      }}
                       className="text-md cursor-pointer text-[var(--moss-notification-link-text)] underline-offset-4 transition-colors hover:text-[var(--moss-notification-link-hover)]"
                     >
                       Ignore
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>,
