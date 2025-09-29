@@ -15,7 +15,7 @@ export * as Checkbox from "./CheckboxWithLabel";
 export * from "./Divider";
 export * from "./DropIndicator";
 export * from "./IconLabelButton";
-export * from "./Input";
+export * from "./Inputs";
 export * from "./Modals/ConfirmationModal";
 export * from "./PageLoader";
 export * from "./PageView/";

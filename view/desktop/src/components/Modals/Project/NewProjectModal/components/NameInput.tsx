@@ -1,6 +1,6 @@
 import { forwardRef } from "react";
 
-import { InputOutlined } from "@/components/Input/InputOutlined";
+import { InputOutlined } from "@/components";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
 import { InputProps } from "@/lib/ui/Input";
 
