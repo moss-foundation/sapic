@@ -22,8 +22,6 @@ const Providers = ({ children }: { children: ReactNode }) => {
                   background: "var(--moss-notification-bg)",
                   color: "var(--moss-notification-text)",
                   borderRadius: "8px",
-                  padding: "10px 16px",
-                  gap: "8px",
                   width: "360px",
                 },
               }}
