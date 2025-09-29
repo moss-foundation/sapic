@@ -26,13 +26,13 @@ export const createNotificationContent = ({
   return (
     <>
       {onClose && (
-        <button
+        <Button
           onClick={onClose}
-          className="absolute top-2 right-2 z-10 cursor-pointer p-1 text-[var(--moss-notification-close-color)] opacity-70 transition-opacity hover:text-[var(--moss-notification-close-color)] hover:opacity-100"
-          style={{ position: "absolute", top: "6px", right: "6px" }}
+          className="absolute top-2 z-10 cursor-pointer p-1 text-[var(--moss-notification-close-color)] opacity-70 transition-opacity hover:text-[var(--moss-notification-close-color)] hover:opacity-100"
+          style={{ position: "absolute", top: "4px", right: "-18px" }}
         >
           <Icon icon="Close" className="size-4" />
-        </button>
+        </Button>
       )}
       <div className="flex items-start gap-2.5 pr-8 text-base tracking-wide">
         <Icon icon={icon} className="mt-0.5 size-4 flex-shrink-0" />
