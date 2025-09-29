@@ -23,8 +23,9 @@ jobs:
   check-modified-files:
     runs-on: ubuntu-latest
     outputs:
-      node: ${{ steps.node.outputs.any_changed }}
       rust: ${{ steps.rust.outputs.any_changed }}
+      rust-lib: ${{ steps.rust-lib.outputs.any_changed }}
+      node: ${{ steps.node.outputs.any_changed }}
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
@@ -43,6 +44,14 @@ jobs:
             Cargo.toml
           files_ignore: |
             .github/**
+
+      - name: Get all changed Rust libraries
+        id: rust-lib
+        uses: tj-actions/changed-files@823fcebdb31bb35fdf2229d9f769b400309430d0 # v46.0.3
+        with:
+          files: |
+            libs/**/**.rs
+            libs/**/Cargo.toml
 
       - name: Get all changed NodeJS files
         id: node
@@ -229,6 +238,49 @@ jobs:
 
       - name: Run Tests - ${{ matrix.package }}
         run: cargo test -p ${{ matrix.package }} --features integration-tests
+
+  rust-library-tests:
+    name: Rust Library Tests - ${{ matrix.package }}
+    needs: check-modified-files
+    if: ${{ needs.check-modified-files.outputs.rust-lib == 'true'}}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - atomic_fs
+          - joinerror
+          - static_json
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout Code
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@4305c38b25d97ef35a8ad1f985ccf2d2242004f2 # stable
+
+      - name: Use Linux Apt Cache
+        uses: awalsh128/cache-apt-pkgs-action@7ca5f46d061ad9aa95863cd9b214dd48edef361d # latest
+        with:
+          packages: |
+            libwebkit2gtk-4.1-dev
+            libappindicator3-dev
+            librsvg2-dev
+            patchelf
+            jsonnet
+
+      - name: Use Rust Cache
+        uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.8.0
+        with:
+          cache-all-crates: "true"
+
+      - name: Run Tests - ${{ matrix.package }}
+        run: cargo test -p ${{ matrix.package }}
 
   # Run Rust Lint Check in each package individually.
   # Right now it includes warnings check and grit check
