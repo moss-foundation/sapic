@@ -9,3 +9,6 @@ joinerror.workspace = true
 tokio = { workspace = true, features = ["full"] }
 nanoid.workspace = true
 anyhow.workspace = true
+
+[features]
+tests = []
