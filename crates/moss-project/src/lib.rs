@@ -28,6 +28,16 @@ pub use project::{Project, ProjectModifyParams};
 use serde_json::Value as JsonValue;
 use tokio::sync::RwLock;
 
+pub use moss_contrib::include::{IncludeHttpHeaders, IncludeResourceStatuses};
+
+inventory::submit! {
+    IncludeResourceStatuses(include_str!(concat!(env!("OUT_DIR"), "/", env!("CARGO_PKG_NAME"), ".resource_statuses.json")))
+}
+
+inventory::submit! {
+    IncludeHttpHeaders(include_str!(concat!(env!("OUT_DIR"), "/", env!("CARGO_PKG_NAME"), ".http_headers.json")))
+}
+
 pub struct ResourceParamsExtensionPoint {}
 
 impl ResourceParamsExtensionPoint {
@@ -36,10 +46,12 @@ impl ResourceParamsExtensionPoint {
     }
 }
 
+const RESOURCE_PARAMS_KEY: ContributionKey = ContributionKey::new("resource_params");
+
 #[async_trait]
 impl<R: AppRuntime> ExtensionPoint<R> for ResourceParamsExtensionPoint {
     fn key(&self) -> ContributionKey {
-        ContributionKey::ResourceParams
+        RESOURCE_PARAMS_KEY
     }
 
     async fn handle(
@@ -52,12 +64,14 @@ impl<R: AppRuntime> ExtensionPoint<R> for ResourceParamsExtensionPoint {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct ResourceStatusItem {
     pub name: String,
     pub description: Option<String>,
     pub color: String,
 }
 
+#[derive(Debug, Clone)]
 pub struct ResourceHeaderItem {
     pub name: String,
     pub description: Option<String>,
@@ -99,6 +113,19 @@ impl ResourceParamsRegistry for AppResourceParamsRegistry {
 
 #[derive(Deref, Clone)]
 struct GlobalResourceParamsRegistry(Arc<dyn ResourceParamsRegistry>);
+
+impl dyn ResourceParamsRegistry {
+    pub fn global<R: AppRuntime>(delegate: &AppDelegate<R>) -> Arc<dyn ResourceParamsRegistry> {
+        delegate.global::<GlobalResourceParamsRegistry>().0.clone()
+    }
+
+    pub fn set_global<R: AppRuntime>(
+        delegate: &AppDelegate<R>,
+        v: Arc<dyn ResourceParamsRegistry>,
+    ) {
+        delegate.set_global(GlobalResourceParamsRegistry(v));
+    }
+}
 
 pub mod constants {
     pub const ITEM_CONFIG_FILENAME: &str = "config.sap";

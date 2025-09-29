@@ -3,6 +3,9 @@ name = "moss_project"
 version = "0.1.0"
 edition = "2024"
 
+[build-dependencies]
+serde_json.workspace = true
+
 [dependencies]
 moss_app_delegate.workspace = true
 moss_user.workspace = true
@@ -25,6 +28,7 @@ moss_logging.workspace = true
 moss_contrib.workspace = true
 moss_addon.workspace = true
 
+inventory.workspace = true
 async-trait.workspace = true
 git2.workspace = true
 joinerror.workspace = true

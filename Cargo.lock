@@ -3550,6 +3550,7 @@ name = "moss_addon"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "inventory",
  "joinerror",
  "moss_app_delegate",
  "moss_applib",
@@ -3877,6 +3878,7 @@ dependencies = [
  "hcl-rs",
  "image",
  "indexmap 2.11.0",
+ "inventory",
  "joinerror",
  "json-patch 4.0.0",
  "moss_addon",

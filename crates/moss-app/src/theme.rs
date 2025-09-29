@@ -5,7 +5,7 @@ mod validation;
 
 use async_trait::async_trait;
 use joinerror::{OptionExt, ResultExt};
-use moss_addon::ExtensionInfo;
+use moss_addon::{ExtensionInfo, ExtensionPoint};
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
     AppRuntime,
@@ -18,12 +18,9 @@ use serde_json::Value as JsonValue;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;
 
-use crate::{
-    extension::ExtensionPoint,
-    models::{
-        primitives::{ThemeId, ThemeMode},
-        types::ColorThemeInfo,
-    },
+use crate::models::{
+    primitives::{ThemeId, ThemeMode},
+    types::ColorThemeInfo,
 };
 
 #[derive(Deserialize, Debug)]
@@ -37,15 +34,17 @@ pub struct ThemeContributionEntry {
 pub struct ThemeExtensionPoint {}
 
 impl ThemeExtensionPoint {
-    pub fn new() -> Self {
-        Self {}
+    pub fn new() -> Box<Self> {
+        Box::new(Self {})
     }
 }
+
+const THEMES_KEY: ContributionKey = ContributionKey::new("themes");
 
 #[async_trait]
 impl<R: AppRuntime> ExtensionPoint<R> for ThemeExtensionPoint {
     fn key(&self) -> ContributionKey {
-        ContributionKey::Themes
+        THEMES_KEY
     }
 
     async fn handle(
@@ -93,7 +92,7 @@ pub struct ThemeRegistryItem {
     pub path: PathBuf,
 }
 
-struct AppThemeRegistry {
+pub struct AppThemeRegistry {
     themes: RwLock<HashMap<ThemeId, ThemeRegistryItem>>,
 }
 
@@ -116,10 +115,10 @@ impl ThemeRegistry for AppThemeRegistry {
 }
 
 impl AppThemeRegistry {
-    pub fn new() -> Self {
-        Self {
+    pub fn new() -> Arc<Self> {
+        Arc::new(Self {
             themes: RwLock::new(HashMap::new()),
-        }
+        })
     }
 }
 
@@ -143,16 +142,16 @@ pub struct ThemeService {
 }
 
 impl ThemeService {
-    pub async fn new(fs: Arc<dyn FileSystem>, themes_dir: PathBuf) -> joinerror::Result<Self> {
+    pub async fn new(
+        fs: Arc<dyn FileSystem>,
+        registry: Arc<dyn ThemeRegistry>,
+        themes_dir: PathBuf,
+    ) -> joinerror::Result<Self> {
         Ok(Self {
             themes_dir,
             fs,
-            registry: Arc::new(AppThemeRegistry::new()),
+            registry,
         })
-    }
-
-    pub fn registry(&self) -> Arc<dyn ThemeRegistry> {
-        self.registry.clone()
     }
 
     pub async fn themes(&self) -> HashMap<ThemeId, ColorThemeInfo> {

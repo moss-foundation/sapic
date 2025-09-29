@@ -1,34 +1,20 @@
-use async_trait::async_trait;
 use joinerror::OptionExt;
 use moss_addon::{
-    ExtensionInfo,
+    ExtensionInfo, ExtensionPoint,
     scanner::{AddonKind, AddonScanner},
 };
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_common::continue_if_err;
-use moss_contrib::ContributionKey;
 use moss_fs::FileSystem;
 use moss_logging::session;
 use rustc_hash::FxHashMap;
-use serde_json::Value as JsonValue;
 use std::{path::PathBuf, sync::Arc};
-
-#[async_trait]
-pub trait ExtensionPoint<R: AppRuntime>: Send + Sync + 'static {
-    fn key(&self) -> ContributionKey;
-    async fn handle(
-        &self,
-        app_delegate: &AppDelegate<R>,
-        info: &ExtensionInfo,
-        data: JsonValue,
-    ) -> joinerror::Result<()>;
-}
 
 #[allow(unused)]
 pub struct ExtensionService<R: AppRuntime> {
     scanner: AddonScanner,
-    points: FxHashMap<ContributionKey, Box<dyn ExtensionPoint<R>>>,
+    points: FxHashMap<&'static str, Box<dyn ExtensionPoint<R>>>,
     fs: Arc<dyn FileSystem>,
 }
 
@@ -36,31 +22,22 @@ impl<R: AppRuntime> ExtensionService<R> {
     pub async fn new(
         app_delegate: &AppDelegate<R>,
         fs: Arc<dyn FileSystem>,
-        points: impl IntoIterator<Item = impl ExtensionPoint<R>>,
+        points: Vec<Box<dyn ExtensionPoint<R>>>,
+
+        // HACK: the paths are temporarily hardcoded here, later they will need
+        // to be retrieved either from the app delegate or in some other dynamic way.
+        // Task: https://mossland.atlassian.net/browse/SAPIC-546
+        application_dir: PathBuf,
+        user_dir: PathBuf,
     ) -> joinerror::Result<Self> {
-        let points: FxHashMap<ContributionKey, Box<dyn ExtensionPoint<R>>> = points
-            .into_iter()
-            .map(|p| (p.key(), Box::new(p) as Box<dyn ExtensionPoint<R>>))
-            .collect();
+        let points: FxHashMap<&'static str, Box<dyn ExtensionPoint<R>>> =
+            points.into_iter().map(|p| (p.key().as_str(), p)).collect();
 
         let scanner = AddonScanner::new(
             fs.clone(),
-            // HACK: the paths are temporarily hardcoded here, later they will need
-            // to be retrieved either from the app delegate or in some other dynamic way.
             vec![
-                (
-                    PathBuf::from(
-                        std::env::var("DEV_APPLICATION_DIR")
-                            .expect("DEV_APPLICATION_DIR is not set"),
-                    )
-                    .join("addons"),
-                    AddonKind::BuiltIn,
-                ),
-                (
-                    PathBuf::from(std::env::var("DEV_USER_DIR").expect("DEV_USER_DIR is not set"))
-                        .join("addons"),
-                    AddonKind::User,
-                ),
+                (application_dir.join("addons"), AddonKind::BuiltIn),
+                (user_dir.join("addons"), AddonKind::User),
             ],
         );
 
@@ -80,16 +57,8 @@ impl<R: AppRuntime> ExtensionService<R> {
                     continue;
                 }
 
-                let key = continue_if_err!(ContributionKey::try_from(key.as_str()), |err| {
-                    session::warn!(format!(
-                        "Failed to parse contribution key: {} from extension: {}",
-                        err,
-                        desc.abs_path.display()
-                    ));
-                });
-
                 let point = points
-                    .get(&key)
+                    .get(key.as_str())
                     // Error should never happen, if it does, it's definitely a bug.
                     .ok_or_join_err::<()>(format!(
                         "Failed to find extension point for key: {}",

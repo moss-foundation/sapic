@@ -1,5 +1,5 @@
 use joinerror::ResultExt;
-use moss_contrib::include::IncludeConfigurationDecl;
+use moss_contrib::include::IncludeConfiguration;
 use moss_logging::session;
 use moss_text::ReadOnlyStr;
 use serde::Deserialize;
@@ -126,7 +126,7 @@ pub(super) struct ConfigurationRegistry {
 
 impl ConfigurationRegistry {
     pub fn new<'a>(
-        includes: impl Iterator<Item = &'a IncludeConfigurationDecl>,
+        includes: impl Iterator<Item = &'a IncludeConfiguration>,
     ) -> joinerror::Result<Self> {
         let mut nodes = HashMap::new();
         let mut parameters = HashMap::new();

@@ -47,7 +47,7 @@ members = [
     #
     "tools/xtask",
     "tools/cargo-new-ts",
-    "tools/theme-install",
+    "tools/theme-install", 
 ]
 
 [workspace.dependencies]

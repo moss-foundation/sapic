@@ -9,7 +9,10 @@ mod window;
 extern crate tracing;
 
 use moss_app::{
-    App, AppBuilder as TauriAppBuilder, app::OnAppReadyOptions, builder::BuildAppParams,
+    App, AppBuilder as TauriAppBuilder,
+    app::OnAppReadyOptions,
+    builder::BuildAppParams,
+    theme::{AppThemeRegistry, ThemeExtensionPoint, ThemeRegistry},
 };
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
@@ -145,6 +148,8 @@ pub async fn run<R: TauriRuntime>() {
                         )),
                     );
 
+                    <dyn ThemeRegistry>::set_global(&delegate, AppThemeRegistry::new());
+
                     tao_app_handle.manage(delegate);
                 }
 
@@ -159,6 +164,7 @@ pub async fn run<R: TauriRuntime>() {
                         fs,
                         keyring,
                         auth_api_client,
+                        vec![ThemeExtensionPoint::new()],
                     )
                     .build(
                         &app_init_ctx,
@@ -166,6 +172,16 @@ pub async fn run<R: TauriRuntime>() {
                             themes_dir,
                             locales_dir,
                             logs_dir,
+
+                            // HACK: the paths are temporarily hardcoded here, later they will need
+                            // to be retrieved either from the app delegate or in some other dynamic way.
+                            // Task: https://mossland.atlassian.net/browse/SAPIC-546
+                            application_dir: std::env::var("DEV_APPLICATION_DIR")
+                                .expect("Environment variable APPLICATION_DIR is not set")
+                                .into(),
+                            user_dir: std::env::var("DEV_USER_DIR")
+                                .expect("Environment variable USER_DIR is not set")
+                                .into(),
                         },
                     )
                     .await;

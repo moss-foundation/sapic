@@ -1,5 +1,8 @@
-pub struct IncludeConfigurationDecl(pub &'static str);
-inventory::collect!(IncludeConfigurationDecl);
+pub struct IncludeConfiguration(pub &'static str);
+inventory::collect!(IncludeConfiguration);
 
-pub struct IncludeContribution(pub &'static str);
-inventory::collect!(IncludeContribution);
+pub struct IncludeResourceStatuses(pub &'static str);
+inventory::collect!(IncludeResourceStatuses);
+
+pub struct IncludeHttpHeaders(pub &'static str);
+inventory::collect!(IncludeHttpHeaders);

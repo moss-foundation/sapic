@@ -1,4 +1,4 @@
-use moss_fs::FileSystem;
+use moss_fs::{FileSystem, FsResultExt};
 use moss_logging::session;
 use serde_json::Value as JsonValue;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
@@ -33,7 +33,10 @@ impl AddonScanner {
         let mut addons = Vec::new();
 
         for (abs_path, kind) in &self.roots {
-            let mut read_dir = self.fs.read_dir(abs_path).await?;
+            let mut read_dir = self.fs.read_dir(abs_path).await.join_err_with::<()>(|| {
+                format!("failed to read directory {}", abs_path.display())
+            })?;
+
             while let Some(entry) = read_dir.next_entry().await? {
                 if entry.file_type().await?.is_file() {
                     continue;

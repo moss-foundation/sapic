@@ -1,25 +1,30 @@
 {
-    Status(
+    ResourceStatus(
         name,
         description = null,
         // This parameter determines the color of the status in the UI.
         color = "#6C707E",
+        // This parameter determines the resources that the status is applicable to.
+        resources = ["*"],
     )::
         assert std.member(["string"], std.type(name)) : "name must be string";
         assert std.member(["string", "null"], std.type(description)) : "description must be string or null";
         assert std.member(["string"], std.type(color)) : "color must be string";
+        assert std.member(["array"], std.type(resources)) : "resources must be array";
+        assert std.all([std.member(["string"], std.type(x)) for x in resources]) : "resources must be array of strings";
 
         local this = {
             name: name,
             description: description,
             color: color,
+            resources: resources,
         };
 
         this + {
-            __kind__:: "Status"
+            __kind__:: "ResourceStatus"
         },
 
-    Header(
+    HttpHeader(
         name,
         description = null,
         value,
@@ -27,38 +32,22 @@
         protected = false,
         // This parameter determines whether this header will be enabled by default for all endpoints.
         disabled = true,
-        order = null,
     )::
         assert std.member(["string"], std.type(name)) : "name must be string";
         assert std.member(["string", "null"], std.type(description)) : "description must be string or null";
         assert std.member(["string"], std.type(value)) : "value must be string";
         assert std.member(["boolean"], std.type(protected)) : "protected must be boolean";
-        assert std.member(["number", "null"], std.type(order)) : "order must be number or null";
+        assert std.member(["boolean"], std.type(disabled)) : "disabled must be boolean";
         
         local this = {
             name: name,
             description: description,
             value: value,
             protected: protected,
+            disabled: disabled,
         };
 
         this + {
-            __kind__:: "Header"
-        },
-
-    ResourceParams(
-        statuses = [],
-        headers = [],
-    )::
-        assert std.all([x.__kind__ == "Status" for x in statuses]) : "statuses must be array of Status";
-        assert std.all([x.__kind__ == "Header" for x in headers]) : "headers must be array of Header";
-
-        local this = {
-            statuses: statuses,
-            headers: headers,
-        };
-
-        this + {
-            __kind__:: "ResourceParams"
+            __kind__:: "HttpHeader"
         },
 }

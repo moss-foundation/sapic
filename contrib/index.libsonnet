@@ -6,19 +6,23 @@ local modules = {
 local types = {
     ContributionPoint: {
         Configuration: "configuration",
-        Resource: "resource",
+        ResourceStatuses: "resourceStatuses",
+        HttpHeaders: "httpHeaders"
     },
 
     Register(
         configuration = null,
-        resource_params = null,
+        resourceStatuses = [],
+        httpHeaders = [],
     )::
         assert configuration == null || configuration.__kind__ == "Configuration" : "configuration must be Configuration or null";
-        assert resource_params == null || resource_params.__kind__ == "ResourceParams" : "resource_params must be ResourceParams or null";
+        assert std.all([x.__kind__ == "ResourceStatus" for x in resourceStatuses]) : "resourceStatuses must be array of ResourceStatus";
+        assert std.all([x.__kind__ == "HttpHeader" for x in httpHeaders]) : "httpHeaders must be array of HttpHeader";
 
         std.prune({
             configuration: configuration,
-            resource_params: resource_params,
+            resourceStatuses: resourceStatuses,
+            httpHeaders: httpHeaders,
         }),
 };
 
