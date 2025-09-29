@@ -1,5 +1,5 @@
 use joinerror::ResultExt;
-use moss_contrib::include::IncludeConfiguration;
+use moss_extension::include::IncludeConfiguration;
 use moss_logging::session;
 use moss_text::ReadOnlyStr;
 use serde::Deserialize;
@@ -125,16 +125,14 @@ pub(super) struct ConfigurationRegistry {
 }
 
 impl ConfigurationRegistry {
-    pub fn new<'a>(
-        includes: impl Iterator<Item = &'a IncludeConfiguration>,
-    ) -> joinerror::Result<Self> {
+    pub fn new<'a>() -> joinerror::Result<Self> {
         let mut nodes = HashMap::new();
         let mut parameters = HashMap::new();
         let mut excluded = HashMap::new();
         let mut keys = HashSet::new();
 
         let mut decls = Vec::new();
-        for include in includes {
+        for include in inventory::iter::<IncludeConfiguration>() {
             let decl: Vec<ConfigurationDecl> = serde_json::from_str(include.0)
                 .join_err_with::<()>(|| {
                     format!("failed to parse included configuration: {}", include.0)

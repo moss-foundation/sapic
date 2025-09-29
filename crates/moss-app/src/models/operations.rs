@@ -1,5 +1,6 @@
 use derive_more::Deref;
 use moss_logging::models::primitives::LogEntryId;
+use moss_theme::models::primitives::ThemeId;
 use moss_user::models::{primitives::AccountId, types::ProfileInfo};
 use moss_workspace::models::primitives::WorkspaceMode;
 use serde::{Deserialize, Serialize};

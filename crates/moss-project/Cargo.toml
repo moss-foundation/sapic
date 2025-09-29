@@ -25,7 +25,7 @@ moss_applib.workspace = true
 moss_keyring.workspace = true
 moss_id_macro.workspace = true
 moss_logging.workspace = true
-moss_contrib.workspace = true
+moss_extension.workspace = true
 moss_addon.workspace = true
 
 inventory.workspace = true

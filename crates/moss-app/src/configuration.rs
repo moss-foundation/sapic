@@ -9,8 +9,8 @@ use moss_applib::{
     errors::{FailedPrecondition, Internal},
     subscription::{Event, EventEmitter, Subscription},
 };
-use moss_contrib::include::IncludeConfiguration;
 use moss_edit::json::EditOptions;
+use moss_extension::include::IncludeConfiguration;
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_logging::session;
 use moss_text::ReadOnlyStr;
@@ -151,7 +151,7 @@ impl ConfigurationHandle {
     }
 }
 
-pub struct ConfigurationService {
+pub(crate) struct ConfigurationService {
     registry: ConfigurationRegistry,
     defaults: ConfigurationModel,
     profile: Arc<RwLock<Option<ConfigurationHandle>>>,
@@ -180,7 +180,7 @@ impl ConfigurationService {
         on_did_change_profile_event: &Event<OnDidChangeProfile>,
         on_did_change_workspace_event: &Event<OnDidChangeWorkspace>,
     ) -> joinerror::Result<Self> {
-        let registry = ConfigurationRegistry::new(inventory::iter::<IncludeConfiguration>())
+        let registry = ConfigurationRegistry::new()
             .join_err_with::<()>(|| format!("failed to build configuration registry"))?;
         let defaults = registry.defaults();
 

@@ -1,22 +1,22 @@
 [package]
-name = "moss_addon"
+name = "moss_theme"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-moss_fs.workspace = true
+moss_id_macro.workspace = true
 moss_app_delegate.workspace = true
 moss_applib.workspace = true
 moss_logging.workspace = true
 moss_extension.workspace = true
+moss_fs.workspace = true
 
-inventory.workspace = true
 async-trait.workspace = true
-tracing.workspace = true
+ts-rs.workspace = true
 joinerror.workspace = true
-static_json.workspace = true
-serde_json = { workspace = true }
+serde_json.workspace = true
 serde = { workspace = true, features = ["derive"] }
-
-[features]
-integration-tests = []
+inventory.workspace = true
+tokio.workspace = true
+derive_more = { workspace = true, features = ["deref", "display"] }
+regorus.workspace = true

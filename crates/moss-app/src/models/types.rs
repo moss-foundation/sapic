@@ -1,4 +1,5 @@
 use moss_logging::models::primitives::LogEntryId;
+use moss_theme::models::primitives::{ThemeId, ThemeMode};
 use moss_user::models::primitives::AccountKind;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;

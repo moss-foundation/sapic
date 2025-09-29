@@ -2,7 +2,7 @@ pub mod api;
 pub mod app;
 pub mod builder;
 pub mod command;
-mod configuration;
+pub mod configuration;
 mod extension;
 mod internal;
 mod locale;
@@ -24,7 +24,7 @@ extern crate derive_more;
 pub use app::App;
 pub use builder::AppBuilder;
 use moss_applib::AppRuntime;
-use moss_contrib::include::IncludeConfiguration;
+use moss_extension::include::IncludeConfiguration;
 use moss_workspace::Workspace;
 
 use crate::models::primitives::WorkspaceId;

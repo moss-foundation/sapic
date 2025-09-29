@@ -18,7 +18,7 @@ mod storage;
 pub use builder::ProjectBuilder;
 pub use project::{Project, ProjectModifyParams};
 
-use moss_contrib::include::{IncludeHttpHeaders, IncludeResourceStatuses};
+use moss_extension::include::{IncludeHttpHeaders, IncludeResourceStatuses};
 
 inventory::submit! {
     IncludeResourceStatuses(include_str!(concat!(env!("OUT_DIR"), "/resourceStatuses.json")))

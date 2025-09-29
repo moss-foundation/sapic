@@ -5,19 +5,19 @@
         "id": "moss.sapic-theme.lightDefault",
         "label": "Light Default",
         "mode": "light",
-        "path": "dist/default-light.css"
+        "path": "themes/light-default.json"
       },
       {
         "id": "moss.sapic-theme.darkDefault",
         "label": "Dark Default",
         "mode": "dark",
-        "path": "dist/default-dark.css"
+        "path": "themes/dark-default.json"
       },
       {
         "id": "moss.sapic-theme.vscode",
         "label": "VS Code Dark",
         "mode": "dark",
-        "path": "dist/vscode-dark.css"
+        "path": "themes/vscode.json"
       }
     ]
   }

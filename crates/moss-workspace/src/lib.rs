@@ -10,8 +10,8 @@ pub mod storage;
 pub mod workspace;
 
 use moss_applib::AppRuntime;
-use moss_contrib::include::IncludeConfiguration;
 use moss_environment::AnyEnvironment;
+use moss_extension::include::IncludeConfiguration;
 
 pub use workspace::Workspace;
 

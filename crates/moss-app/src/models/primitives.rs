@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use tracing::Level;
 use ts_rs::TS;
 
-ids!([SessionId, WorkspaceId, LocaleId, ThemeId]);
+ids!([SessionId, WorkspaceId, LocaleId]);
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, TS)]
 #[serde(rename_all = "lowercase")]
@@ -28,14 +28,14 @@ pub enum ConfigurationTarget {
 // ###                      Theme                       ###
 // ########################################################
 
-/// @category Primitive
-#[derive(Debug, Deserialize, Serialize, Clone, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "primitives.ts")]
-pub enum ThemeMode {
-    Light,
-    Dark,
-}
+// /// @category Primitive
+// #[derive(Debug, Deserialize, Serialize, Clone, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "primitives.ts")]
+// pub enum ThemeMode {
+//     Light,
+//     Dark,
+// }
 
 // #########################################################
 // ###                      Log                          ###

@@ -9,16 +9,14 @@ mod window;
 extern crate tracing;
 
 use moss_app::{
-    App, AppBuilder as TauriAppBuilder,
-    app::OnAppReadyOptions,
-    builder::BuildAppParams,
-    theme::{AppThemeRegistry, ThemeExtensionPoint, ThemeRegistry},
+    App, AppBuilder as TauriAppBuilder, app::OnAppReadyOptions, builder::BuildAppParams,
 };
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
     TauriAppRuntime,
     context::{AnyAsyncContext, AnyContext, MutableContext},
 };
+use moss_extension_points::themes::ThemeExtensionPoint;
 use moss_fs::RealFileSystem;
 use moss_git_hosting_provider::{
     github::{
@@ -32,6 +30,7 @@ use moss_git_hosting_provider::{
 };
 use moss_keyring::KeyringClientImpl;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
+use moss_theme::registry::{AppThemeRegistry, ThemeRegistry};
 use reqwest::ClientBuilder as HttpClientBuilder;
 use std::{path::PathBuf, sync::Arc, time::Duration};
 #[cfg(not(debug_assertions))]
