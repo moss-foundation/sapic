@@ -8,6 +8,9 @@ mod window;
 #[macro_use]
 extern crate tracing;
 
+#[cfg(target_os = "windows")]
+use wry;
+
 use moss_app::{
     App, AppBuilder as TauriAppBuilder, app::OnAppReadyOptions, builder::BuildAppParams,
 };
@@ -312,6 +315,9 @@ fn create_main_window<R: TauriRuntime>(
         title: "Sapic",
         inner_size: (window_inner_width, window_inner_height),
         position: (100.0, 100.0),
+        // Hide scroll bars on Windows for a cleaner interface
+        #[cfg(target_os = "windows")]
+        scroll_bar_style: Some(wry::ScrollBarStyle::Hidden),
     };
 
     create_window(app_handle, config)
