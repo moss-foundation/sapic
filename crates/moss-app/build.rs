@@ -1,10 +1,9 @@
-use std::{env, fs, path::Path, process::Command};
+use serde_json::Value as JsonValue;
+use std::{collections::HashMap, env, fs, path::Path, process::Command};
 
 fn main() {
     let out_dir = env::var("OUT_DIR").unwrap();
-    let package_name = env::var("CARGO_PKG_NAME").unwrap();
     let input_file = "contrib/index.jsonnet";
-    let output_file = Path::new(&out_dir).join(format!("{}.contrib.json", package_name));
 
     // Rerun this build script if the jsonnet file changes
     println!("cargo:rerun-if-changed={}", input_file);
@@ -22,10 +21,14 @@ fn main() {
     match output {
         Ok(output) => {
             if output.status.success() {
-                fs::write(&output_file, output.stdout)
-                    .expect("Failed to write generated JSON file");
+                let parsed: HashMap<String, JsonValue> = serde_json::from_slice(&output.stdout)
+                    .expect("Failed to parse generated JSON file");
 
-                println!("Generated configuration JSON at: {:?}", output_file);
+                for (key, value) in parsed {
+                    let output_file = Path::new(&out_dir).join(format!("{}.json", key));
+                    fs::write(&output_file, serde_json::to_string_pretty(&value).unwrap())
+                        .expect("Failed to write generated JSON file");
+                }
             } else {
                 let stderr = String::from_utf8_lossy(&output.stderr);
                 panic!("jsonnet command failed: {}", stderr);

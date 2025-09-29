@@ -16,7 +16,7 @@ use moss_environment::AnyEnvironment;
 pub use workspace::Workspace;
 
 inventory::submit! {
-    IncludeConfiguration(include_str!(concat!(env!("OUT_DIR"), "/", env!("CARGO_PKG_NAME"), ".contrib.json")))
+    IncludeConfiguration(include_str!(concat!(env!("OUT_DIR"), "/configurations.json")))
 }
 
 pub mod constants {

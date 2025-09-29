@@ -1,7 +1,5 @@
 use serde_json::Value as JsonValue;
-use std::collections::HashMap;
-
-use std::{env, fs, path::Path, process::Command};
+use std::{collections::HashMap, env, fs, path::Path, process::Command};
 
 fn main() {
     let out_dir = env::var("OUT_DIR").unwrap();

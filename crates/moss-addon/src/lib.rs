@@ -3,14 +3,10 @@ pub mod scanner;
 
 use async_trait::async_trait;
 use moss_app_delegate::AppDelegate;
-use moss_applib::{AppRuntime, TauriAppRuntime, Wry};
+use moss_applib::AppRuntime;
 use moss_contrib::ContributionKey;
 use serde_json::Value as JsonValue;
-use std::{
-    path::PathBuf,
-    ptr::NonNull,
-    sync::{Arc, LazyLock},
-};
+use std::path::PathBuf;
 
 pub struct ExtensionInfo {
     pub source: PathBuf,

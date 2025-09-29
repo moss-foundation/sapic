@@ -84,7 +84,7 @@
       parameters: parameters,
     };
 
-    std.prune(this + {
+    this + {
       __kind__:: "Configuration"
-    }),
+    },
 }

@@ -135,11 +135,11 @@ impl ConfigurationRegistry {
 
         let mut decls = Vec::new();
         for include in includes {
-            let decl: ConfigurationDecl =
-                serde_json::from_str(include.0).join_err_with::<()>(|| {
+            let decl: Vec<ConfigurationDecl> = serde_json::from_str(include.0)
+                .join_err_with::<()>(|| {
                     format!("failed to parse included configuration: {}", include.0)
                 })?;
-            decls.push(decl);
+            decls.extend(decl);
         }
 
         let mut extensions = Vec::new();
