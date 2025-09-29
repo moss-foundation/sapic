@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { InputOutlined } from "@/components/InputOutlined";
+import { InputOutlined } from "@/components/Input/InputOutlined";
 import { useGitProviderStore } from "@/store/gitProvider";
 import { ImportProjectSource } from "@repo/moss-workspace";
 

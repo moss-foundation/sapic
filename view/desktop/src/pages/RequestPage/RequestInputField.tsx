@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 import { ActionMenu, ButtonPrimary } from "@/components";
-import InputTemplating from "@/components/InputTemplating";
+import InputTemplating from "@/components/Input/InputTemplating";
 import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
 

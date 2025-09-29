@@ -1,4 +1,4 @@
-import { InputOutlined } from "@/components/InputOutlined";
+import { InputOutlined } from "@/components/Input/InputOutlined";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
 import { InputProps } from "@/lib/ui/Input";
 

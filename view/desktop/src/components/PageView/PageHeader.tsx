@@ -5,7 +5,7 @@ import { Icon, Icons } from "@/lib/ui";
 import { cn } from "@/utils";
 
 import { Divider } from "../Divider";
-import InputPlain from "../InputPlain";
+import InputPlain from "../Input/InputPlain";
 
 export interface PageHeaderProps extends IDockviewPanelProps {
   icon?: Icons;
