@@ -898,14 +898,6 @@ export const defaultDarkTheme: Theme = {
       type: "variable",
       value: "moss.gray.14",
     },
-    "moss.notification.link.text": {
-      type: "variable",
-      value: "moss.blue.9",
-    },
-    "moss.notification.link.hover": {
-      type: "variable",
-      value: "moss.blue.11",
-    },
     "moss.notification.button.outline": {
       type: "variable",
       value: "moss.gray.7",
@@ -917,6 +909,14 @@ export const defaultDarkTheme: Theme = {
     "moss.notification.close.color": {
       type: "variable",
       value: "moss.gray.7",
+    },
+    "moss.link.text": {
+      type: "variable",
+      value: "moss.blue.9",
+    },
+    "moss.link.hover": {
+      type: "variable",
+      value: "moss.blue.11",
     },
   },
   boxShadows: {

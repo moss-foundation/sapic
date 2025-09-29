@@ -263,10 +263,10 @@
   "--moss-mossDropdown-item-bg-hover",
   "--moss-notification-bg",
   "--moss-notification-text",
-  "--moss-notification-link-text",
-  "--moss-notification-link-hover",
   "--moss-notification-button-outline",
   "--moss-notification-button-hover",
   "--moss-notification-close-color",
+  "--moss-link-text",
+  "--moss-link-hover",
   "--moss-floating-box-shadow"
 ]

@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 
-import { Button, Icon } from "@/lib/ui";
+import { Button, Icon, Link } from "@/lib/ui";
 
 export interface NotificationContentProps {
   title: string;
@@ -28,13 +28,13 @@ export const createNotificationContent = ({
       {onClose && (
         <Button
           onClick={onClose}
-          className="absolute top-2 z-10 cursor-pointer p-1 text-[var(--moss-notification-close-color)] opacity-70 transition-opacity hover:text-[var(--moss-notification-close-color)] hover:opacity-100"
+          className="absolute top-2 z-10 cursor-pointer p-1 font-sans text-base text-[var(--moss-notification-close-color)] opacity-70 transition-opacity hover:text-[var(--moss-notification-close-color)] hover:opacity-100"
           style={{ position: "absolute", top: "4px", right: "-18px" }}
         >
           <Icon icon="Close" className="size-4" />
         </Button>
       )}
-      <div className="flex items-start gap-2.5 pr-8 text-base tracking-wide">
+      <div className="-mt-0.5 -ml-1.5 flex items-start gap-2 pr-4 font-sans text-base">
         <Icon icon={icon} className="mt-0.5 size-4 flex-shrink-0" />
         <div className="min-w-0 flex-1">
           <div className="leading-5 font-medium text-[var(--moss-notification-text)]">{title}</div>
@@ -58,14 +58,13 @@ export const createNotificationContent = ({
                 </Button>
               )}
               {linkText && (
-                <Button
+                <Link
                   onClick={() => {
                     onLinkClick?.();
                   }}
-                  className="cursor-pointer text-[var(--moss-notification-link-text)] underline-offset-4 transition-colors hover:text-[var(--moss-notification-link-hover)]"
                 >
                   {linkText}
-                </Button>
+                </Link>
               )}
             </div>
           )}
