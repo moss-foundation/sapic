@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { PageContainerTabs, PageHeader, PageView } from "@/components";
+import { PageContainerTabs, PageHeader, PageView, TabItemProps } from "@/components";
 import { PageWrapper } from "@/components/PageView/PageWrapper";
 import { ProjectTreeNode } from "@/components/ProjectTree/types";
 import { useStreamProjectEntries } from "@/hooks/project/useStreamProjectEntries";
@@ -38,7 +38,7 @@ export const FolderSettings = ({ ...props }: IDockviewPanelProps<FolderSettingsP
     );
   }
 
-  const tabs: TabItem[] = [
+  const tabs: TabItemProps[] = [
     {
       id: "overview",
       label: (
