@@ -26,6 +26,7 @@ const createActivityNotification = (title: string, detail?: string, persistent: 
         alert("Ignore clicked!");
         toast.dismiss(toastId);
       },
+      onClose: () => toast.dismiss(toastId),
     }),
     { duration: persistent ? Infinity : 2000 }
   );

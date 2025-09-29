@@ -25,17 +25,19 @@ export const NotificationsSection = () => {
           alert("Remind me later clicked!");
           toast.dismiss(toastId);
         },
+        onClose: () => toast.dismiss(toastId),
       }),
       { duration: Infinity }
     );
   };
 
   const showWarningToast = () => {
-    toast(
+    const toastId = toast(
       createNotificationContent({
         title: "Low memory",
         description: "The IDE is running low on memory and this might affect performance.",
         icon: "Warning",
+        onClose: () => toast.dismiss(toastId),
       }),
       { duration: 5000 }
     );
@@ -57,6 +59,7 @@ export const NotificationsSection = () => {
           alert("Ignore clicked!");
           toast.dismiss(toastId);
         },
+        onClose: () => toast.dismiss(toastId),
       }),
       { duration: Infinity }
     );

@@ -10,6 +10,7 @@ export interface NotificationContentProps {
   onButtonClick?: () => void;
   linkText?: string;
   onLinkClick?: () => void;
+  onClose?: () => void;
 }
 
 export const createNotificationContent = ({
@@ -20,10 +21,19 @@ export const createNotificationContent = ({
   onButtonClick,
   linkText,
   onLinkClick,
+  onClose,
 }: NotificationContentProps) => {
   return (
-    <div className="-mt-0.5 -ml-1 flex items-start gap-2.5 text-base tracking-wide">
+    <div className="relative -mt-0.5 -ml-1 flex items-start gap-2.5 text-base tracking-wide">
       <Icon icon={icon} className="mt-0.5 size-4 flex-shrink-0" />
+      {onClose && (
+        <button
+          onClick={onClose}
+          className="absolute top-0 right-0 -mr-2 text-[var(--moss-notification-text)] opacity-70 transition-opacity hover:text-[var(--moss-notification-text)] hover:opacity-100"
+        >
+          <Icon icon="Close" className="size-4" />
+        </button>
+      )}
       <div className="min-w-0 flex-1">
         <div className="leading-5 font-medium text-[var(--moss-notification-text)]">{title}</div>
         {description && <div className="pt-0.5 leading-4 text-[var(--moss-notification-text)]">{description}</div>}
@@ -91,6 +101,7 @@ export const showNotification = ({
             toast.dismiss(toastId);
           }
         : undefined,
+      onClose: () => toast.dismiss(toastId),
     }),
     { duration: persistent ? Infinity : duration }
   );

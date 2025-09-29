@@ -16,7 +16,6 @@ const Providers = ({ children }: { children: ReactNode }) => {
             {children}
             <Toaster
               position="bottom-right"
-              closeButton
               richColors={false}
               toastOptions={{
                 style: {
