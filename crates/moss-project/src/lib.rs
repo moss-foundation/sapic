@@ -31,11 +31,11 @@ use tokio::sync::RwLock;
 pub use moss_contrib::include::{IncludeHttpHeaders, IncludeResourceStatuses};
 
 inventory::submit! {
-    IncludeResourceStatuses(include_str!(concat!(env!("OUT_DIR"), "/", env!("CARGO_PKG_NAME"), ".resource_statuses.json")))
+    IncludeResourceStatuses(include_str!(concat!(env!("OUT_DIR"), "/resourceStatuses.json")))
 }
 
 inventory::submit! {
-    IncludeHttpHeaders(include_str!(concat!(env!("OUT_DIR"), "/", env!("CARGO_PKG_NAME"), ".http_headers.json")))
+    IncludeHttpHeaders(include_str!(concat!(env!("OUT_DIR"), "/httpHeaders.json")))
 }
 
 pub struct ResourceParamsExtensionPoint {}
