@@ -24,45 +24,48 @@ export const createNotificationContent = ({
   onClose,
 }: NotificationContentProps) => {
   return (
-    <div className="relative -mt-0.5 -ml-1 flex items-start gap-2.5 text-base tracking-wide">
-      <Icon icon={icon} className="mt-0.5 size-4 flex-shrink-0" />
-      <div className="relative min-w-0 flex-1 pr-8">
-        {onClose && (
-          <button
-            onClick={onClose}
-            className="absolute top-0 -right-2 cursor-pointer text-[var(--moss-notification-close-color)] opacity-70 transition-opacity hover:text-[var(--moss-notification-close-color)] hover:opacity-100"
-          >
-            <Icon icon="Close" className="size-4" />
-          </button>
-        )}
-        <div className="leading-5 font-medium text-[var(--moss-notification-text)]">{title}</div>
-        {description && <div className="pt-0.5 leading-4 text-[var(--moss-notification-text)]">{description}</div>}
-        {(buttonText || linkText) && (
-          <div className="mt-3 mb-1 flex items-center gap-3">
-            {buttonText && (
-              <Button
-                onClick={() => {
-                  onButtonClick?.();
-                }}
-                className="hover:background-[var(--moss-notification-button-hover)] background-[var(--moss-notification-bg)] h-auto rounded-md border border-[var(--moss-notification-button-outline)] px-3 py-1 text-[var(--moss-notification-text)] transition-colors"
-              >
-                {buttonText}
-              </Button>
-            )}
-            {linkText && (
-              <Button
-                onClick={() => {
-                  onLinkClick?.();
-                }}
-                className="cursor-pointer text-[var(--moss-notification-link-text)] underline-offset-4 transition-colors hover:text-[var(--moss-notification-link-hover)]"
-              >
-                {linkText}
-              </Button>
-            )}
-          </div>
-        )}
+    <>
+      {onClose && (
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 z-10 cursor-pointer p-1 text-[var(--moss-notification-close-color)] opacity-70 transition-opacity hover:text-[var(--moss-notification-close-color)] hover:opacity-100"
+          style={{ position: "absolute", top: "6px", right: "6px" }}
+        >
+          <Icon icon="Close" className="size-4" />
+        </button>
+      )}
+      <div className="flex items-start gap-2.5 pr-8 text-base tracking-wide">
+        <Icon icon={icon} className="mt-0.5 size-4 flex-shrink-0" />
+        <div className="min-w-0 flex-1">
+          <div className="leading-5 font-medium text-[var(--moss-notification-text)]">{title}</div>
+          {description && <div className="pt-0.5 leading-4 text-[var(--moss-notification-text)]">{description}</div>}
+          {(buttonText || linkText) && (
+            <div className="mt-3 mb-1 flex items-center gap-3">
+              {buttonText && (
+                <Button
+                  onClick={() => {
+                    onButtonClick?.();
+                  }}
+                  className="hover:background-[var(--moss-notification-button-hover)] background-[var(--moss-notification-bg)] h-auto rounded-md border border-[var(--moss-notification-button-outline)] px-3 py-1 text-[var(--moss-notification-text)] transition-colors"
+                >
+                  {buttonText}
+                </Button>
+              )}
+              {linkText && (
+                <Button
+                  onClick={() => {
+                    onLinkClick?.();
+                  }}
+                  className="cursor-pointer text-[var(--moss-notification-link-text)] underline-offset-4 transition-colors hover:text-[var(--moss-notification-link-hover)]"
+                >
+                  {linkText}
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
