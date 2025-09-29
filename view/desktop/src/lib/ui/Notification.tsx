@@ -38,7 +38,13 @@ export const createNotificationContent = ({
         <Icon icon={icon} className="mt-0.5 size-4 flex-shrink-0" />
         <div className="min-w-0 flex-1">
           <div className="leading-5 font-medium text-[var(--moss-notification-text)]">{title}</div>
-          {description && <div className="pt-0.5 leading-4 text-[var(--moss-notification-text)]">{description}</div>}
+          {description && (
+            <div
+              className={`pt-0.5 leading-4 text-[var(--moss-notification-text)] ${!(buttonText || linkText) ? "mb-1" : ""}`}
+            >
+              {description}
+            </div>
+          )}
           {(buttonText || linkText) && (
             <div className="mt-3 mb-1 flex items-center gap-3">
               {buttonText && (
