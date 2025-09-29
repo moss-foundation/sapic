@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 
 import { InputOutlined } from "@/components/Inputs/InputOutlined";
+import { ProviderTabs } from "@/components/Tabs";
 import { useGitProviderStore } from "@/store/gitProvider";
 import { ImportProjectSource } from "@repo/moss-workspace";
 
 import { BranchInput } from "../components/BranchInput";
 import { NameInput } from "../components/NameInput";
-import ProviderTabs from "../components/ProviderTabs";
 import { RepositoryInput } from "../components/RepositoryInput";
 import { DEFAULT_BRANCH, DEFAULT_NAME, DEFAULT_PROVIDER, DEFAULT_REPOSITORY } from "../defaults";
 import { Subheader } from "./Subheader";

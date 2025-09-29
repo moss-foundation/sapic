@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
+import { ProviderTabs } from "@/components/Tabs";
 import { useFocusInputOnMount } from "@/hooks";
 import { cn } from "@/utils";
 import { CheckedState } from "@radix-ui/react-checkbox";
@@ -8,7 +9,6 @@ import { CreateProjectGitParams } from "@repo/moss-workspace";
 
 import { BranchInput } from "../components/BranchInput";
 import { NameInput } from "../components/NameInput";
-import ProviderTabs from "../components/ProviderTabs";
 import { RepositoryInput } from "../components/RepositoryInput";
 import { DEFAULT_BRANCH, DEFAULT_NAME, DEFAULT_PROVIDER, DEFAULT_REPOSITORY, DEFAULT_VCS } from "../defaults";
 

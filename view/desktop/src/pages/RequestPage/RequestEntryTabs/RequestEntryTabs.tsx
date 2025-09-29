@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 
-import { PageContainerTabs, TabItem } from "@/components";
+import { PageContainerTabs, TabItemProps } from "@/components";
 import { Icon } from "@/lib/ui";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
 
@@ -32,7 +32,7 @@ export const RequestEntryTabs = ({ ...props }: IDockviewPanelProps<RequestPagePr
     return queryParamsCount + pathParamsCount;
   }, [requestData.url.query_params, requestData.url.path_params]);
 
-  const requestTabs: TabItem[] = [
+  const requestTabs: TabItemProps[] = [
     {
       id: "params",
       label: (
