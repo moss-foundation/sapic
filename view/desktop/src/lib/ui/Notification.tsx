@@ -22,13 +22,11 @@ export const createNotificationContent = ({
   onLinkClick,
 }: NotificationContentProps) => {
   return (
-    <div className="flex items-start gap-2.5">
+    <div className="-mt-0.5 -ml-1 flex items-start gap-2.5 text-base">
       <Icon icon={icon} className="mt-0.5 size-4 flex-shrink-0" />
       <div className="min-w-0 flex-1">
-        <div className="text-md leading-5 font-medium text-[var(--moss-notification-text)]">{title}</div>
-        {description && (
-          <div className="text-md pt-0.5 leading-4 text-[var(--moss-notification-text)]">{description}</div>
-        )}
+        <div className="leading-5 font-medium text-[var(--moss-notification-text)]">{title}</div>
+        {description && <div className="pt-0.5 leading-4 text-[var(--moss-notification-text)]">{description}</div>}
         {(buttonText || linkText) && (
           <div className="mt-3 flex items-center gap-3">
             {buttonText && (
@@ -36,7 +34,7 @@ export const createNotificationContent = ({
                 onClick={() => {
                   onButtonClick?.();
                 }}
-                className="hover:background-[var(--moss-notification-button-hover)] background-[var(--moss-notification-bg)] text-md h-auto rounded-md border border-[var(--moss-notification-button-outline)] px-3 py-[5px] text-[var(--moss-notification-text)] transition-colors"
+                className="hover:background-[var(--moss-notification-button-hover)] background-[var(--moss-notification-bg)] h-auto rounded-md border border-[var(--moss-notification-button-outline)] px-3 py-[5px] text-[var(--moss-notification-text)] transition-colors"
               >
                 {buttonText}
               </Button>
@@ -46,7 +44,7 @@ export const createNotificationContent = ({
                 onClick={() => {
                   onLinkClick?.();
                 }}
-                className="text-md cursor-pointer text-[var(--moss-notification-link-text)] underline-offset-4 transition-colors hover:text-[var(--moss-notification-link-hover)]"
+                className="cursor-pointer text-[var(--moss-notification-link-text)] underline-offset-4 transition-colors hover:text-[var(--moss-notification-link-hover)]"
               >
                 {linkText}
               </Button>
