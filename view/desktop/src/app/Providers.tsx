@@ -21,7 +21,6 @@ const Providers = ({ children }: { children: ReactNode }) => {
                 style: {
                   background: "var(--moss-notification-bg)",
                   color: "var(--moss-notification-text)",
-                  border: "1px solid var(--moss-notification-button-outline)",
                   borderRadius: "8px",
                   padding: "10px 16px",
                   gap: "8px",
