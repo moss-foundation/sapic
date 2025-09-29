@@ -11,4 +11,4 @@ nanoid.workspace = true
 anyhow.workspace = true
 
 [features]
-integration-tests = []
+tests = []
