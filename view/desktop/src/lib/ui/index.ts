@@ -3,6 +3,7 @@ export * as Checkbox from "./Checkbox";
 export * from "./Icon";
 export * as Menu from "./Menu";
 export * from "./Modal";
+export * from "./Notification";
 export * as MossDropdown from "./MossDropdown";
 export * from "./MossSelect";
 export * from "./MossToggle";

@@ -1,7 +1,6 @@
-import { useState } from "react";
 import { toast } from "sonner";
 
-import { Button, Icon } from "@/lib/ui";
+import { Button, Icon, createNotificationContent } from "@/lib/ui";
 
 import { KitchenSinkSection } from "../KitchenSinkSection";
 
@@ -12,85 +11,53 @@ export const NotificationsSection = () => {
 
   const showInfoNotification = () => {
     const toastId = toast(
-      <div className="flex items-start gap-2">
-        <Icon icon="Info" className="mt-0.5 size-4 flex-shrink-0" />
-        <div className="min-w-0 flex-1">
-          <div className="text-md leading-5 font-medium text-[var(--moss-notification-text)]">JDK 18 required</div>
-          <div className="text-md pt-0.5 leading-4 text-[var(--moss-notification-text)]">
-            You need to install JDK 18 in order to run this project.
-          </div>
-          <div className="mt-3 flex items-center gap-3">
-            <Button
-              onClick={() => {
-                alert("Install JDK 18 clicked!");
-                toast.dismiss(toastId);
-              }}
-              className="hover:background-[var(--moss-notification-button-hover)] background-[var(--moss-notification-bg)] text-md h-auto rounded-md border border-[var(--moss-notification-button-outline)] px-3 py-[5px] text-[var(--moss-notification-text)] transition-colors"
-            >
-              Install JDK 18
-            </Button>
-            <Button
-              onClick={() => {
-                alert("Remind me later clicked!");
-                toast.dismiss(toastId);
-              }}
-              className="text-md cursor-pointer text-[var(--moss-notification-link-text)] underline-offset-4 transition-colors hover:text-[var(--moss-notification-link-hover)]"
-            >
-              Remind me later
-            </Button>
-          </div>
-        </div>
-      </div>,
+      createNotificationContent({
+        title: "JDK 18 required",
+        description: "You need to install JDK 18 in order to run this project.",
+        icon: "Info",
+        buttonText: "Install JDK 18",
+        onButtonClick: () => {
+          alert("Install JDK 18 clicked!");
+          toast.dismiss(toastId);
+        },
+        linkText: "Remind me later",
+        onLinkClick: () => {
+          alert("Remind me later clicked!");
+          toast.dismiss(toastId);
+        },
+      }),
       { duration: Infinity }
     );
   };
 
   const showWarningToast = () => {
     toast(
-      <div className="flex items-start gap-2">
-        <Icon icon="Warning" className="mt-0.5 size-4 flex-shrink-0" />
-        <div className="min-w-0 flex-1">
-          <div className="text-md leading-5 font-medium text-[var(--moss-notification-text)]">Low memory</div>
-          <div className="text-md pt-0.5 leading-4 text-[var(--moss-notification-text)]">
-            The IDE is running low on memory and this might affect performance.
-          </div>
-        </div>
-      </div>,
+      createNotificationContent({
+        title: "Low memory",
+        description: "The IDE is running low on memory and this might affect performance.",
+        icon: "Warning",
+      }),
       { duration: 5000 }
     );
   };
 
   const showErrorNotification = () => {
     const toastId = toast(
-      <div className="flex items-start gap-2">
-        <Icon icon="Failed" className="mt-0.5 size-4 flex-shrink-0" />
-        <div className="min-w-0 flex-1">
-          <div className="text-md leading-5 font-medium text-[var(--moss-notification-text)]">Build failed</div>
-          <div className="text-md pt-0.5 leading-4 text-[var(--moss-notification-text)]">
-            The compilation process encountered errors.
-          </div>
-          <div className="mt-3 flex items-center gap-3">
-            <Button
-              onClick={() => {
-                alert("View errors clicked!");
-                toast.dismiss(toastId);
-              }}
-              className="hover:background-[var(--moss-notification-button-hover)] background-[var(--moss-notification-bg)] text-md h-auto rounded-md border border-[var(--moss-notification-button-outline)] px-3 py-[5px] text-[var(--moss-notification-text)] transition-colors"
-            >
-              View errors
-            </Button>
-            <Button
-              onClick={() => {
-                alert("Ignore clicked!");
-                toast.dismiss(toastId);
-              }}
-              className="text-md cursor-pointer text-[var(--moss-notification-link-text)] underline-offset-4 transition-colors hover:text-[var(--moss-notification-link-hover)]"
-            >
-              Ignore
-            </Button>
-          </div>
-        </div>
-      </div>,
+      createNotificationContent({
+        title: "Build failed",
+        description: "The compilation process encountered errors.",
+        icon: "Failed",
+        buttonText: "View errors",
+        onButtonClick: () => {
+          alert("View errors clicked!");
+          toast.dismiss(toastId);
+        },
+        linkText: "Ignore",
+        onLinkClick: () => {
+          alert("Ignore clicked!");
+          toast.dismiss(toastId);
+        },
+      }),
       { duration: Infinity }
     );
   };
