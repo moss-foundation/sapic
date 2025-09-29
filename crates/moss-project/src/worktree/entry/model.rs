@@ -136,6 +136,7 @@ pub struct FormDataParamSpec {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type")]
 #[serde(rename_all = "kebab-case")]
 pub enum BodyValue {
     #[serde(serialize_with = "serialize_string_as_heredoc")]
@@ -320,6 +321,8 @@ mod tests {
             }
         });
 
+        let empty_formdata = LabeledBlock::new(indexmap! {});
+
         let model = EntryModel {
             metadata: Block::new(EntryMetadataSpec {
                 id: EntryId::new(),
@@ -330,6 +333,7 @@ mod tests {
             path_params: None,
             query_params: None,
             body: Some(Block::new(BodyValue::FormData(formdata))),
+            // body: Some(Block::new(BodyValue::FormData(empty_formdata))),
         };
 
         let str = hcl::to_string(&model).unwrap();
