@@ -217,6 +217,14 @@
   --moss-requestpage-text-disabled: var(--moss-gray-8);
   --moss-requestpage-placeholder-color: var(--moss-gray-9);
   --moss-requestpage-header-color: var(--moss-gray-3);
+  --moss-notification-header-color: var(--moss-gray-3);
+  --moss-notification-bg: var(--moss-gray-3);
+  --moss-notification-text: var(--moss-gray-14);
+  --moss-notification-button-outline: var(--moss-gray-7);
+  --moss-notification-button-hover: var(--moss-gray-5);
+  --moss-notification-close-color: var(--moss-gray-7);
+  --moss-link-text: var(--moss-blue-9);
+  --moss-link-hover: var(--moss-blue-11);
 
   /* BoxShadows */
   --moss-floating-box-shadow: 8px 8px 8px 0px rgba(83, 89, 93, 0.5);

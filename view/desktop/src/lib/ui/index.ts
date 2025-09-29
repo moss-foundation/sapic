@@ -1,8 +1,10 @@
 export * from "./Button";
 export * as Checkbox from "./Checkbox";
 export * from "./Icon";
+export * from "./Link";
 export * as Menu from "./Menu";
 export * from "./Modal";
+export * from "./Notification";
 export * as MossDropdown from "./MossDropdown";
 export * from "./MossSelect";
 export * from "./MossToggle";

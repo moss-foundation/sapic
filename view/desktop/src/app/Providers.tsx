@@ -1,6 +1,8 @@
 import { ReactNode } from "react";
+import { Toaster } from "sonner";
 
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { ActivityRouterProvider } from "./ActivityRouterProvider";
 
 import LanguageProvider from "./LanguageProvider";
 import ThemeProvider from "./ThemeProvider";
@@ -8,9 +10,25 @@ import ThemeProvider from "./ThemeProvider";
 const Providers = ({ children }: { children: ReactNode }) => {
   return (
     <ErrorBoundary>
-      <LanguageProvider>
-        <ThemeProvider>{children}</ThemeProvider>
-      </LanguageProvider>
+      <ActivityRouterProvider>
+        <LanguageProvider>
+          <ThemeProvider>
+            {children}
+            <Toaster
+              position="bottom-right"
+              richColors={false}
+              toastOptions={{
+                style: {
+                  background: "var(--moss-notification-bg)",
+                  color: "var(--moss-notification-text)",
+                  borderRadius: "8px",
+                  width: "360px",
+                },
+              }}
+            />
+          </ThemeProvider>
+        </LanguageProvider>
+      </ActivityRouterProvider>
     </ErrorBoundary>
   );
 };
