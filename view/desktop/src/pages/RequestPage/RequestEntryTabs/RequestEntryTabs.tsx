@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 
-import { PageContainerWithTabs, TabItem } from "@/components";
+import { PageContainerTabs, TabItem } from "@/components";
 import { Icon } from "@/lib/ui";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
 
@@ -140,7 +140,21 @@ export const RequestEntryTabs = ({ ...props }: IDockviewPanelProps<RequestPagePr
           }
         }}
       />
-      <PageContainerWithTabs tabs={requestTabs} activeTabId={activeRequestTabId} onTabChange={setActiveRequestTabId} />
+      <PageContainerTabs.Root value={activeRequestTabId} onValueChange={setActiveRequestTabId}>
+        <PageContainerTabs.List>
+          {requestTabs.map((tab) => (
+            <PageContainerTabs.Trigger key={tab.id} value={tab.id}>
+              {tab.label}
+            </PageContainerTabs.Trigger>
+          ))}
+        </PageContainerTabs.List>
+
+        {requestTabs.map((tab) => (
+          <PageContainerTabs.Content key={tab.id} value={tab.id}>
+            {tab.content}
+          </PageContainerTabs.Content>
+        ))}
+      </PageContainerTabs.Root>
     </div>
   );
 };

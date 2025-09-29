@@ -1,6 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 
 import { Scrollbar } from "@/lib/ui";
+import { detectValueType, getParameterSuggestions } from "@/pages/RequestPage/utils/urlParser";
 import {
   getCoreRowModel,
   getSortedRowModel,
@@ -8,8 +9,6 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table";
-
-import { detectValueType, getParameterSuggestions } from "@/pages/RequestPage/utils/urlParser";
 
 import { useAdjustColumnsWithoutSizes } from "./hooks/useAdjustColumnsWithoutSizes";
 import { useTableDragAndDrop } from "./hooks/useTableDragAndDrop";

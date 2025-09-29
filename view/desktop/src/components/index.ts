@@ -19,14 +19,12 @@ export * from "./InputOutlined";
 export * from "./InputPlain";
 export * from "./InputTemplating";
 export * from "./Modals/ConfirmationModal";
-export { default as OutlinedTabs } from "./OutlinedTabs/OutlinedTabs";
-export { default as PaddedTabs } from "./PaddedTabs/PaddedTabs";
-export * from "./PageContainer/";
 export * from "./PageLoader";
 export * from "./PageView/";
 export * from "./ProjectTree/ProjectTree";
 export * as RadioGroup from "./RadioGroup";
 export * from "./SelectOutlined";
+export * from "./Tabs";
 export * from "./ToggleGroup";
 
 export * from "../parts/EnvironmentsListView/EnvironmentsListView";

@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { PageContainerWithTabs, TabItem } from "@/components/PageContainer";
+import { PageContainerTabs, TabItem } from "@/components";
 import { PageHeader, PageView } from "@/components/PageView";
 import { PageWrapper } from "@/components/PageView/PageWrapper";
 import { useStreamProjects } from "@/hooks";
@@ -29,6 +29,7 @@ const StatusDot = ({ active }: { active: boolean }) =>
 export interface ProjectSettingsParams {
   projectId: string;
 }
+
 export const ProjectSettingsPage = ({ ...props }: IDockviewPanelProps<ProjectSettingsParams>) => {
   const { projectId } = props.params;
 
@@ -130,7 +131,15 @@ export const ProjectSettingsPage = ({ ...props }: IDockviewPanelProps<ProjectSet
         {...props}
       />
       <PageWrapper>
-        <PageContainerWithTabs tabs={tabs} activeTabId={activeTabId} onTabChange={setActiveTabId} />
+        <PageContainerTabs.Root value={activeTabId} onValueChange={setActiveTabId}>
+          <PageContainerTabs.List>
+            {tabs.map((tab) => (
+              <PageContainerTabs.Trigger key={tab.id} value={tab.id}>
+                {tab.label}
+              </PageContainerTabs.Trigger>
+            ))}
+          </PageContainerTabs.List>
+        </PageContainerTabs.Root>
       </PageWrapper>
     </PageView>
   );

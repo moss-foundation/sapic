@@ -1,4 +1,4 @@
-import React from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import { ActionButton } from "@/components";
 import { ProjectTreeNode } from "@/components/ProjectTree/types";
@@ -19,8 +19,8 @@ export const ParamsTabContent = (
 ) => {
   const { requestData, updatePathParams, updateQueryParams, reconstructUrlFromParams } = useRequestPage();
 
-  const debouncedQueryUpdate = React.useRef<NodeJS.Timeout>();
-  const debouncedPathUpdate = React.useRef<NodeJS.Timeout>();
+  const debouncedQueryUpdate = useRef<NodeJS.Timeout>();
+  const debouncedPathUpdate = useRef<NodeJS.Timeout>();
 
   const convertUrlParamsToTableData = (
     params: Array<{ key: string; value: string; type?: string; description?: string; disabled?: boolean }>,
@@ -65,16 +65,16 @@ export const ParamsTabContent = (
     });
   };
 
-  const queryParams = React.useMemo(
+  const queryParams = useMemo(
     () => convertUrlParamsToTableData(requestData.url.query_params, "query"),
     [requestData.url.query_params]
   );
-  const pathParams = React.useMemo(
+  const pathParams = useMemo(
     () => convertUrlParamsToTableData(requestData.url.path_params, "path"),
     [requestData.url.path_params]
   );
 
-  const handleQueryParamsUpdate = React.useCallback(
+  const handleQueryParamsUpdate = useCallback(
     (updatedData: ParameterData[]) => {
       if (debouncedQueryUpdate.current) {
         clearTimeout(debouncedQueryUpdate.current);
@@ -116,7 +116,7 @@ export const ParamsTabContent = (
     [updateQueryParams, reconstructUrlFromParams, requestData.url.query_params]
   );
 
-  const handlePathParamsUpdate = React.useCallback(
+  const handlePathParamsUpdate = useCallback(
     (updatedData: ParameterData[]) => {
       if (debouncedPathUpdate.current) {
         clearTimeout(debouncedPathUpdate.current);
@@ -158,7 +158,7 @@ export const ParamsTabContent = (
     [updatePathParams, reconstructUrlFromParams, requestData.url.path_params]
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
       if (debouncedQueryUpdate.current) {
         clearTimeout(debouncedQueryUpdate.current);

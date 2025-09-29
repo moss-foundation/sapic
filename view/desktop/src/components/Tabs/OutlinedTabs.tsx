@@ -26,6 +26,7 @@ interface OutlinedTabsListProps {
   children: ReactNode;
   className?: string;
 }
+
 const List = ({ children, className }: OutlinedTabsListProps) => {
   return (
     <TabsList

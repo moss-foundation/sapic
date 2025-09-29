@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 
-import { Scrollbar, Tabs, TabsContent, TabsList, TabsTrigger } from "@/lib/ui";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/lib/ui";
 import { cn } from "@/utils";
 
 interface PageContainerTabsProps {
@@ -10,9 +10,13 @@ interface PageContainerTabsProps {
   className?: string;
 }
 
-export const PageContainerTabs = ({ value, onValueChange, children, className }: PageContainerTabsProps) => {
+const Root = ({ value, onValueChange, children, className }: PageContainerTabsProps) => {
   return (
-    <Tabs value={value} onValueChange={onValueChange} className={cn("flex h-full flex-col", className)}>
+    <Tabs
+      value={value}
+      onValueChange={onValueChange}
+      className={cn("flex h-full flex-col rounded-md border border-(--moss-border-color)", className)}
+    >
       <div className="flex h-full min-h-fit min-w-fit flex-col">{children}</div>
     </Tabs>
   );
@@ -23,10 +27,13 @@ interface PageContainerTabsListProps {
   className?: string;
 }
 
-export const PageContainerTabsList = ({ children, className }: PageContainerTabsListProps) => {
+const List = ({ children, className }: PageContainerTabsListProps) => {
   return (
     <div
-      className={cn("background-(--moss-secondary-background) flex h-full w-full min-w-0", className)}
+      className={cn(
+        "background-(--moss-secondary-background) flex h-full w-full min-w-0 border-b border-(--moss-border-color)",
+        className
+      )}
       data-tabs-list-container
     >
       <TabsList className="flex h-full w-max items-center p-0">{children}</TabsList>
@@ -40,7 +47,7 @@ interface PageContainerTabProps {
   className?: string;
 }
 
-export const PageContainerTab = ({ value, children, className }: PageContainerTabProps) => {
+const Trigger = ({ value, children, className }: PageContainerTabProps) => {
   return (
     <TabsTrigger
       value={value}
@@ -70,10 +77,19 @@ interface PageContainerTabContentProps {
   noPadding?: boolean;
 }
 
-export const PageContainerTabContent = ({ value, children, className }: PageContainerTabContentProps) => {
+const Content = ({ value, children, className }: PageContainerTabContentProps) => {
   return (
-    <TabsContent value={value}>
-      <Scrollbar className={cn("h-full min-w-fit", className)}>{children}</Scrollbar>
+    <TabsContent value={value} className={className}>
+      {children}
     </TabsContent>
   );
 };
+
+const PageContainerTabs = {
+  Root,
+  List,
+  Trigger,
+  Content,
+};
+
+export default PageContainerTabs;

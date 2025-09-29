@@ -1,6 +1,6 @@
 import { FormEvent, useCallback, useState } from "react";
 
-import PaddedTabs from "@/components/PaddedTabs/PaddedTabs";
+import { PaddedTabs } from "@/components/Tabs";
 import { useCreateProject } from "@/hooks/project/useCreateProject";
 import { useImportProject } from "@/hooks/project/useImportProject";
 import { useStreamProjects } from "@/hooks/project/useStreamProjects";

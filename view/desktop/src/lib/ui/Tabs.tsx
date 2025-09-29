@@ -33,7 +33,7 @@ const TabsContent = forwardRef<
   ElementRef<typeof TabsPrimitive.Content>,
   ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
 >(({ className, ...props }, ref) => (
-  <TabsPrimitive.Content ref={ref} className={cn("flex-1 overflow-auto outline-none", className)} {...props} />
+  <TabsPrimitive.Content ref={ref} className={cn("outline-none", className)} {...props} />
 ));
 
 export { Tabs, TabsContent, TabsList, TabsTrigger };

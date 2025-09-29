@@ -1,7 +1,6 @@
 import { useState } from "react";
 
-import { PageHeader, PageView } from "@/components";
-import { PageContainerWithTabs, TabItem } from "@/components/PageContainer";
+import { PageContainerTabs, PageHeader, PageView } from "@/components";
 import { PageWrapper } from "@/components/PageView/PageWrapper";
 import { ProjectTreeNode } from "@/components/ProjectTree/types";
 import { useStreamProjectEntries } from "@/hooks/project/useStreamProjectEntries";
@@ -120,7 +119,21 @@ export const FolderSettings = ({ ...props }: IDockviewPanelProps<FolderSettingsP
         {...props}
       />
       <PageWrapper>
-        <PageContainerWithTabs tabs={tabs} activeTabId={activeTabId} onTabChange={setActiveTabId} noPadding />
+        <PageContainerTabs.Root value={activeTabId} onValueChange={setActiveTabId}>
+          <PageContainerTabs.List>
+            {tabs.map((tab) => (
+              <PageContainerTabs.Trigger key={tab.id} value={tab.id}>
+                {tab.label}
+              </PageContainerTabs.Trigger>
+            ))}
+          </PageContainerTabs.List>
+
+          {tabs.map((tab) => (
+            <PageContainerTabs.Content key={tab.id} value={tab.id}>
+              {tab.content}
+            </PageContainerTabs.Content>
+          ))}
+        </PageContainerTabs.Root>
       </PageWrapper>
     </PageView>
   );
