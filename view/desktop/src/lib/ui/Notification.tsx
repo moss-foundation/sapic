@@ -22,7 +22,7 @@ export const createNotificationContent = ({
   onLinkClick,
 }: NotificationContentProps) => {
   return (
-    <div className="flex items-start gap-2">
+    <div className="flex items-start gap-2.5">
       <Icon icon={icon} className="mt-0.5 size-4 flex-shrink-0" />
       <div className="min-w-0 flex-1">
         <div className="text-md leading-5 font-medium text-[var(--moss-notification-text)]">{title}</div>
