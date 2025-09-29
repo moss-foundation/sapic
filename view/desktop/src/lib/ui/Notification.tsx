@@ -29,7 +29,7 @@ export const createNotificationContent = ({
       {onClose && (
         <button
           onClick={onClose}
-          className="absolute top-0 right-0 -mr-2 text-[var(--moss-notification-text)] opacity-70 transition-opacity hover:text-[var(--moss-notification-text)] hover:opacity-100"
+          className="absolute top-0 right-0 -mr-2 cursor-pointer text-[var(--moss-notification-close-color)] opacity-70 transition-opacity hover:text-[var(--moss-notification-close-color)] hover:opacity-100"
         >
           <Icon icon="Close" className="size-4" />
         </button>
