@@ -4,6 +4,7 @@ use moss_applib::{
     context::{AsyncContext, MutableContext},
     mock::MockAppRuntime,
 };
+use moss_configuration::registry::{AppConfigurationRegistry, ConfigurationRegistry};
 use moss_fs::RealFileSystem;
 use moss_git_hosting_provider::{
     github::{
@@ -168,6 +169,10 @@ pub async fn set_up_test_app() -> (
         <dyn GitHubApiClient<MockAppRuntime>>::set_global(&delegate, mock_github_api_client());
         <dyn GitLabAuthAdapter<MockAppRuntime>>::set_global(&delegate, mock_gitlab_auth_adapter());
         <dyn GitLabApiClient<MockAppRuntime>>::set_global(&delegate, mock_gitlab_api_client());
+        <dyn ConfigurationRegistry>::set_global(
+            &delegate,
+            AppConfigurationRegistry::new().unwrap(), // TODO: probably should mock this
+        );
 
         delegate
     };
