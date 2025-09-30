@@ -17,7 +17,10 @@ use moss_applib::{
     context::{AnyAsyncContext, AnyContext, MutableContext},
 };
 use moss_configuration::registry::{AppConfigurationRegistry, ConfigurationRegistry};
-use moss_extension_points::themes::ThemeExtensionPoint;
+use moss_extension_points::{
+    configurations::ConfigurationExtensionPoint, http_headers::HttpHeadersExtensionPoint,
+    resource_statuses::ResourceStatusesExtensionPoint, themes::ThemeExtensionPoint,
+};
 use moss_fs::RealFileSystem;
 use moss_git_hosting_provider::{
     github::{
@@ -28,6 +31,10 @@ use moss_git_hosting_provider::{
     },
 };
 use moss_keyring::KeyringClientImpl;
+use moss_project::registries::{
+    http_headers::{AppHttpHeaderRegistry, HttpHeaderRegistry},
+    resource_statuses::{AppResourceStatusRegistry, ResourceStatusRegistry},
+};
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_theme::registry::{AppThemeRegistry, ThemeRegistry};
 use reqwest::ClientBuilder as HttpClientBuilder;
@@ -156,9 +163,15 @@ pub async fn run<R: TauriRuntime>() {
                     let theme_registry = AppThemeRegistry::new();
                     let configuration_registry = AppConfigurationRegistry::new()
                         .expect("failed to build configuration registry");
+                    let resource_status_registry = AppResourceStatusRegistry::new()
+                        .expect("failed to build resource status registry");
+                    let http_header_registry =
+                        AppHttpHeaderRegistry::new().expect("failed to build http header registry");
 
                     <dyn ThemeRegistry>::set_global(&delegate, theme_registry);
                     <dyn ConfigurationRegistry>::set_global(&delegate, configuration_registry);
+                    <dyn ResourceStatusRegistry>::set_global(&delegate, resource_status_registry);
+                    <dyn HttpHeaderRegistry>::set_global(&delegate, http_header_registry);
 
                     tao_app_handle.manage(delegate);
                 }
@@ -174,7 +187,12 @@ pub async fn run<R: TauriRuntime>() {
                         fs,
                         keyring,
                         auth_api_client,
-                        vec![ThemeExtensionPoint::new()],
+                        vec![
+                            ThemeExtensionPoint::new(),
+                            ConfigurationExtensionPoint::new(),
+                            ResourceStatusesExtensionPoint::new(),
+                            HttpHeadersExtensionPoint::new(),
+                        ],
                     )
                     .build(
                         &app_init_ctx,

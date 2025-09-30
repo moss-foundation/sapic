@@ -1,11 +1,13 @@
 pub mod api;
 pub mod builder;
 mod config;
+pub mod contribution;
 mod edit;
 pub mod git;
 mod manifest;
 pub mod models;
 pub mod project;
+pub mod registries;
 pub mod vcs;
 mod worktree;
 
@@ -18,14 +20,14 @@ mod storage;
 pub use builder::ProjectBuilder;
 pub use project::{Project, ProjectModifyParams};
 
-use moss_extension::include::{IncludeHttpHeaders, IncludeResourceStatuses};
+use crate::contribution::{RegisterHttpHeadersContribution, RegisterResourceStatusesContribution};
 
 inventory::submit! {
-    IncludeResourceStatuses(include_str!(concat!(env!("OUT_DIR"), "/resourceStatuses.json")))
+    RegisterResourceStatusesContribution(include_str!(concat!(env!("OUT_DIR"), "/resourceStatuses.json")))
 }
 
 inventory::submit! {
-    IncludeHttpHeaders(include_str!(concat!(env!("OUT_DIR"), "/httpHeaders.json")))
+    RegisterHttpHeadersContribution(include_str!(concat!(env!("OUT_DIR"), "/httpHeaders.json")))
 }
 
 pub mod constants {

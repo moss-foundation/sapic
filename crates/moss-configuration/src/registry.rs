@@ -127,18 +127,18 @@ impl AppConfigurationRegistry {
         let mut excluded = HashMap::new();
         let mut keys = HashSet::new();
 
-        let mut decls = Vec::new();
-        for include in inventory::iter::<RegisterConfigurationContribution>() {
-            let decl: Vec<ConfigurationDecl> = serde_json::from_str(include.0)
+        let mut contribs = Vec::new();
+        for contrib in inventory::iter::<RegisterConfigurationContribution>() {
+            let decl: Vec<ConfigurationDecl> = serde_json::from_str(contrib.0)
                 .join_err_with::<()>(|| {
-                    format!("failed to parse included configuration: {}", include.0)
+                    format!("failed to parse included configuration: {}", contrib.0)
                 })?;
-            decls.extend(decl);
+            contribs.extend(decl);
         }
 
         let mut extensions = Vec::new();
         let mut bases = Vec::new();
-        for decl in decls {
+        for decl in contribs {
             if decl.parent_id.is_some() {
                 extensions.push(decl);
             } else {

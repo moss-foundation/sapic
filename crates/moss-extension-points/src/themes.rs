@@ -3,30 +3,20 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_extension::{ExtensionInfo, ExtensionPoint, contribution::ContributionKey};
 use moss_theme::{
-    models::primitives::{ThemeId, ThemeMode},
+    contribution::ThemeContributionDecl,
     registry::{GlobalThemeRegistry, ThemeRegistryItem},
 };
-use serde::Deserialize;
 use serde_json::Value as JsonValue;
-use std::path::PathBuf;
 
-#[derive(Deserialize, Debug)]
-struct ThemeContributionEntry {
-    id: ThemeId,
-    label: String,
-    mode: ThemeMode,
-    path: PathBuf,
-}
+const THEMES_KEY: ContributionKey = ContributionKey::new("themes");
 
-pub struct ThemeExtensionPoint {}
+pub struct ThemeExtensionPoint;
 
 impl ThemeExtensionPoint {
     pub fn new() -> Box<Self> {
         Box::new(Self {})
     }
 }
-
-const THEMES_KEY: ContributionKey = ContributionKey::new("themes");
 
 #[async_trait]
 impl<R: AppRuntime> ExtensionPoint<R> for ThemeExtensionPoint {
@@ -44,7 +34,7 @@ impl<R: AppRuntime> ExtensionPoint<R> for ThemeExtensionPoint {
             joinerror::bail!("themes contribution must be an array");
         }
 
-        let themes: Vec<ThemeContributionEntry> = serde_json::from_value(data)?;
+        let themes: Vec<ThemeContributionDecl> = serde_json::from_value(data)?;
         let items = themes
             .into_iter()
             .map(|entry| ThemeRegistryItem {

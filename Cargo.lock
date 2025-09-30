@@ -3791,6 +3791,7 @@ dependencies = [
  "moss_extension",
  "moss_fs",
  "moss_logging",
+ "moss_project",
  "moss_theme",
  "serde",
  "serde_json",

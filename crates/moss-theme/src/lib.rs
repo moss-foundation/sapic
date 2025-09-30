@@ -1,3 +1,4 @@
+pub mod contribution;
 pub mod loader;
 pub mod manifest;
 pub mod models;
