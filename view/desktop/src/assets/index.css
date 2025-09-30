@@ -1,7 +1,6 @@
 @import "tailwindcss";
 @config "@repo/tailwind-config";
 @import "./fonts.css";
-@import "./scrollbar.css";
 @source "./icons/";
 
 @layer base {

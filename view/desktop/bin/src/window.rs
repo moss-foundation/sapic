@@ -1,8 +1,5 @@
 use tauri::{AppHandle, Runtime as TauriRuntime, WebviewUrl, WebviewWindow};
 
-#[cfg(target_os = "windows")]
-use wry::{ScrollBarStyle, WebViewBuilderExtWindows};
-
 use crate::{MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH};
 
 #[derive(Debug)]
@@ -12,10 +9,6 @@ pub struct CreateWindowInput<'a> {
     pub title: &'a str,
     pub inner_size: (f64, f64),
     pub position: (f64, f64),
-
-    // Optional scroll bar style for Windows
-    #[cfg(target_os = "windows")]
-    pub scroll_bar_style: Option<ScrollBarStyle>,
 }
 
 #[instrument(level = "debug", skip(app_handle))]
@@ -38,19 +31,10 @@ pub fn create_window<R: TauriRuntime>(
     .min_inner_size(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT);
 
     #[cfg(target_os = "windows")]
-    let win_builder = {
-        let mut builder = win_builder
-            .transparent(false)
-            .shadow(true)
-            .decorations(false);
-
-        // Apply scroll bar style if specified
-        if let Some(scroll_style) = input.scroll_bar_style {
-            builder = builder.with_scroll_bar_style(scroll_style);
-        }
-
-        builder
-    };
+    let win_builder = win_builder
+        .transparent(false)
+        .shadow(true)
+        .decorations(false);
 
     #[cfg(target_os = "macos")]
     let win_builder = win_builder
