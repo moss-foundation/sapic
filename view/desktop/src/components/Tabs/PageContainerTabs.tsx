@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/lib/ui";
+import { Icon, Icons, Scrollbar, Tabs, TabsContent, TabsList, TabsTrigger } from "@/lib/ui";
 import { cn } from "@/utils";
 
 interface PageContainerTabsProps {
@@ -15,9 +15,9 @@ const Root = ({ value, onValueChange, children, className }: PageContainerTabsPr
     <Tabs
       value={value}
       onValueChange={onValueChange}
-      className={cn("flex h-full flex-col rounded-md border border-(--moss-border-color)", className)}
+      className={cn("flex flex-col rounded-md border border-(--moss-border-color)", className)}
     >
-      <div className="flex h-full min-h-fit flex-col">{children}</div>
+      <div className="flex flex-1 flex-col">{children}</div>
     </Tabs>
   );
 };
@@ -25,19 +25,25 @@ const Root = ({ value, onValueChange, children, className }: PageContainerTabsPr
 interface PageContainerTabsListProps {
   children: ReactNode;
   className?: string;
+  toolbar?: ReactNode;
 }
 
-const List = ({ children, className }: PageContainerTabsListProps) => {
+const List = ({ children, className, toolbar }: PageContainerTabsListProps) => {
   return (
-    <div
+    <Scrollbar
       className={cn(
-        "background-(--moss-secondary-background) flex h-full w-full min-w-0 border-b border-(--moss-border-color)",
+        "background-(--moss-secondary-background) h-auto w-full min-w-0 items-center justify-between border-none shadow-[0px_-1px_0px_0px_var(--moss-border-color)_inset]",
+        { "pr-2": toolbar },
         className
       )}
+      classNames={{
+        contentEl: "h-auto flex justify-between gap-1",
+      }}
       data-tabs-list-container
     >
-      <TabsList className="flex h-full w-max items-center p-0">{children}</TabsList>
-    </div>
+      <TabsList className="flex grow items-center">{children}</TabsList>
+      {toolbar && <div className="flex shrink-0 items-center">{toolbar}</div>}
+    </Scrollbar>
   );
 };
 
@@ -45,9 +51,11 @@ interface PageContainerTabProps {
   value: string;
   children: ReactNode;
   className?: string;
+  icon?: Icons;
+  count?: number;
 }
 
-const Trigger = ({ value, children, className }: PageContainerTabProps) => {
+const Trigger = ({ value, children, className, icon, count }: PageContainerTabProps) => {
   return (
     <TabsTrigger
       value={value}
@@ -61,11 +69,16 @@ const Trigger = ({ value, children, className }: PageContainerTabProps) => {
         "min-w-0 flex-shrink-0 whitespace-nowrap",
         "data-[state=active]:border-b-(--moss-tab-active-border-color)",
         "cursor-pointer",
-
         className
       )}
     >
-      {children}
+      {icon && <Icon icon={icon} className="h-4 w-4" />}
+      <span>{children}</span>
+      {count && (
+        <span className="background-(--moss-primary) flex size-4 items-center justify-center rounded-full text-xs leading-2.5 text-white">
+          {count}
+        </span>
+      )}
     </TabsTrigger>
   );
 };
