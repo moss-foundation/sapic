@@ -97,7 +97,7 @@ impl<R: AppRuntime> AppBuilder<R> {
         let theme_service = ThemeService::new(
             self.fs.clone(),
             <dyn ThemeRegistry>::global(&delegate),
-            params.themes_dir,
+            params.application_dir.clone(),
         )
         .await
         .expect("Failed to create theme service");

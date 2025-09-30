@@ -12,6 +12,7 @@ use moss_applib::{
 use moss_extension::{ExtensionInfo, ExtensionPoint, contribution::ContributionKey};
 use moss_fs::{FileSystem, FsResultExt};
 use moss_theme::{
+    loader::ThemeLoader,
     models::primitives::{ThemeId, ThemeMode},
     registry::{GlobalThemeRegistry, ThemeRegistry, ThemeRegistryItem},
 };
@@ -134,8 +135,7 @@ use crate::models::types::ColorThemeInfo;
 // }
 
 pub struct ThemeService {
-    themes_dir: PathBuf,
-    fs: Arc<dyn FileSystem>,
+    loader: ThemeLoader,
     registry: Arc<dyn ThemeRegistry>,
 }
 
@@ -143,12 +143,15 @@ impl ThemeService {
     pub async fn new(
         fs: Arc<dyn FileSystem>,
         registry: Arc<dyn ThemeRegistry>,
-        themes_dir: PathBuf,
+
+        // HACK: the paths are temporarily hardcoded here, later they will need
+        // to be retrieved either from the app delegate or in some other dynamic way.
+        // Task: https://mossland.atlassian.net/browse/SAPIC-546
+        application_dir: PathBuf,
     ) -> joinerror::Result<Self> {
         Ok(Self {
-            themes_dir,
-            fs,
             registry,
+            loader: ThemeLoader::new(fs, application_dir.join("policies/theme.rego")),
         })
     }
 
@@ -179,18 +182,24 @@ impl ThemeService {
             .await
             .ok_or_join_err_with::<NotFound>(|| format!("theme with id `{}` not found", id))?;
 
-        let mut rdr = self
-            .fs
-            .open_file(&self.themes_dir.join(item.path.clone()))
-            .await
-            .join_err_with::<Internal>(|| {
-                format!("failed to open theme file `{}`", item.path.display())
-            })?;
+        // let mut rdr = self
+        //     .fs
+        //     .open_file(&self.themes_dir.join(item.path.clone()))
+        //     .await
+        //     .join_err_with::<Internal>(|| {
+        //         format!("failed to open theme file `{}`", item.path.display())
+        //     })?;
 
-        let mut buf = String::new();
-        rdr.read_to_string(&mut buf)
-            .join_err::<Internal>("failed to read theme file")?;
+        // let mut buf = String::new();
+        // rdr.read_to_string(&mut buf)
+        //     .join_err::<Internal>("failed to read theme file")?;
 
-        Ok(buf)
+        let theme = self.loader.load(&item.path).await?;
+
+        // TODO: apply color theme token overrides
+
+        let css = moss_theme::convert(&theme).await?;
+
+        Ok(css)
     }
 }
