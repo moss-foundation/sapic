@@ -21,4 +21,6 @@ export const logLevelSchema = z.union([
   z.literal("ERROR"),
 ]);
 
+export const themeIdSchema = z.string();
+
 export const themeModeSchema = z.union([z.literal("light"), z.literal("dark")]);

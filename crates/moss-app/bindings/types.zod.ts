@@ -6,6 +6,7 @@ import {
   configurationParameterTypeSchema,
   configurationTargetSchema,
   logLevelSchema,
+  themeIdSchema,
   themeModeSchema,
 } from "./primitives.zod";
 
@@ -41,7 +42,7 @@ export const addAccountParamsSchema = z.object({
 });
 
 export const colorThemeInfoSchema = z.object({
-  identifier: z.string(),
+  identifier: themeIdSchema,
   displayName: z.string(),
   mode: themeModeSchema,
   order: z.number().optional(),
@@ -54,7 +55,7 @@ export const configurationSchema = z.object({
   contents: z.record(z.string(), jsonValueSchema),
 });
 
-export const configurationParameterItemSchemaSchema = z.object({
+export const parameterSchemaSchema = z.object({
   id: z.string(),
   default: jsonValueSchema.optional(),
   typ: configurationParameterTypeSchema,
@@ -80,11 +81,11 @@ export const updateConfigurationParamsSchema = z.object({
   target: configurationTargetSchema,
 });
 
-export const configurationNodeSchemaSchema = z.object({
+export const configurationSchemaSchema = z.object({
   id: z.string(),
   parentId: z.string().optional(),
   order: z.bigint().optional(),
   name: z.string().optional(),
   description: z.string().optional(),
-  parameters: z.array(configurationParameterItemSchemaSchema),
+  parameters: z.array(parameterSchemaSchema),
 });

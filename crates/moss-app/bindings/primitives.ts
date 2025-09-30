@@ -17,4 +17,9 @@ export type LogLevel = "TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR";
 /**
  * @category Primitive
  */
+export type ThemeId = string;
+
+/**
+ * @category Primitive
+ */
 export type ThemeMode = "light" | "dark";

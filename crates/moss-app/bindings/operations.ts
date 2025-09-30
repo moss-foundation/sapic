@@ -2,12 +2,12 @@
 import { JsonValue } from "@repo/moss-bindingutils";
 import { ProfileInfo } from "@repo/moss-user";
 import { WorkspaceMode } from "@repo/moss-workspace";
-import type { ConfigurationTarget, LogLevel } from "./primitives";
+import type { ConfigurationTarget, LogLevel, ThemeId } from "./primitives";
 import type {
   AddAccountParams,
   ColorThemeInfo,
   Configuration,
-  ConfigurationNodeSchema,
+  ConfigurationSchema,
   LocaleInfo,
   LogDate,
   LogEntryInfo,
@@ -109,7 +109,7 @@ export type DescribeWorkbenchStateOutput = { prevWorkspaceId?: string };
 /**
  * @category Operation
  */
-export type GetColorThemeInput = { id: string };
+export type GetColorThemeInput = { id: ThemeId };
 
 /**
  * @category Operation
@@ -144,7 +144,7 @@ export type ListColorThemesOutput = Array<ColorThemeInfo>;
 /**
  * @category Operation
  */
-export type ListConfigurationSchemasOutput = { schemas: Array<ConfigurationNodeSchema> };
+export type ListConfigurationSchemasOutput = { schemas: Array<ConfigurationSchema> };
 
 /**
  * @category Operation

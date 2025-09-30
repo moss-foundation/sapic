@@ -3,12 +3,12 @@ import { jsonValueSchema } from "@repo/moss-bindingutils";
 import { profileInfoSchema } from "@repo/moss-user";
 import { workspaceModeSchema } from "@repo/moss-workspace";
 import { z } from "zod";
-import { configurationTargetSchema, logLevelSchema } from "./primitives.zod";
+import { configurationTargetSchema, logLevelSchema, themeIdSchema } from "./primitives.zod";
 import {
   addAccountParamsSchema,
   colorThemeInfoSchema,
-  configurationNodeSchemaSchema,
   configurationSchema,
+  configurationSchemaSchema,
   localeInfoSchema,
   logDateSchema,
   logEntryInfoSchema,
@@ -64,10 +64,6 @@ export const describeWorkbenchStateOutputSchema = z.object({
   prevWorkspaceId: z.string().optional(),
 });
 
-export const getColorThemeInputSchema = z.object({
-  id: z.string(),
-});
-
 export const getColorThemeOutputSchema = z.object({
   cssContent: z.string(),
 });
@@ -119,6 +115,10 @@ export const describeAppOutputSchema = z.object({
   configuration: configurationSchema,
 });
 
+export const getColorThemeInputSchema = z.object({
+  id: themeIdSchema,
+});
+
 export const getTranslationNamespaceOutputSchema = z.object({
   contents: jsonValueSchema,
 });
@@ -126,7 +126,7 @@ export const getTranslationNamespaceOutputSchema = z.object({
 export const listColorThemesOutputSchema = z.array(colorThemeInfoSchema);
 
 export const listConfigurationSchemasOutputSchema = z.object({
-  schemas: z.array(configurationNodeSchemaSchema),
+  schemas: z.array(configurationSchemaSchema),
 });
 
 export const listLocalesOutputSchema = z.array(localeInfoSchema);
