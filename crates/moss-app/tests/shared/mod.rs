@@ -187,10 +187,10 @@ pub async fn set_up_test_app() -> (
     let application_abs_path = app_path.join("app");
 
     {
-        tokio::fs::create_dir_all(&application_abs_path.join("addons"))
+        tokio::fs::create_dir_all(&application_abs_path.join("extensions"))
             .await
             .unwrap();
-        tokio::fs::create_dir_all(&app_path.join("addons"))
+        tokio::fs::create_dir_all(&app_path.join("extensions"))
             .await
             .unwrap();
 

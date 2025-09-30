@@ -4,7 +4,7 @@ use moss_applib::AppRuntime;
 use moss_common::continue_if_err;
 use moss_extension::{
     ExtensionInfo, ExtensionPoint,
-    scanner::{AddonKind, AddonScanner},
+    scanner::{ExtensionScanner, ExtensionsKind},
 };
 use moss_fs::FileSystem;
 use moss_logging::session;
@@ -13,7 +13,7 @@ use std::{path::PathBuf, sync::Arc};
 
 #[allow(unused)]
 pub struct ExtensionService<R: AppRuntime> {
-    scanner: AddonScanner,
+    scanner: ExtensionScanner,
     points: FxHashMap<&'static str, Box<dyn ExtensionPoint<R>>>,
     fs: Arc<dyn FileSystem>,
 }
@@ -33,11 +33,11 @@ impl<R: AppRuntime> ExtensionService<R> {
         let points: FxHashMap<&'static str, Box<dyn ExtensionPoint<R>>> =
             points.into_iter().map(|p| (p.key().as_str(), p)).collect();
 
-        let scanner = AddonScanner::new(
+        let scanner = ExtensionScanner::new(
             fs.clone(),
             vec![
-                (application_dir.join("addons"), AddonKind::BuiltIn),
-                (user_dir.join("addons"), AddonKind::User),
+                (application_dir.join("extensions"), ExtensionsKind::BuiltIn),
+                (user_dir.join("extensions"), ExtensionsKind::User),
             ],
         );
 
