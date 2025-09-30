@@ -4,42 +4,47 @@ import { OutlinedTabs } from "@/components";
 import { PageWrapper } from "@/components/PageView/PageWrapper";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
 
-import { RequestEntryTabs } from "./RequestEntryTabs/RequestEntryTabs";
-import { RequestPageProps } from "./RequestPage";
+import { RequestPageProps } from "../../RequestPage";
+import { AlertsTab, InsightsTab, IssuesTab, MockTab, OverviewTab, RunTab } from "./tabs";
 
-export const RequestPageTabs = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
+export const RequestPageBody = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
   const [activeTab, setActiveTab] = useState("run");
 
   const tabs = [
     {
+      id: "overview",
+      label: "Overview",
+      content: <OverviewTab {...props} />,
+    },
+    {
       id: "run",
       label: "Run",
-      content: <RequestEntryTabs {...props} />,
+      content: <RunTab {...props} />,
     },
     {
       id: "issues",
       label: "Issues",
-      content: <div>Issues</div>,
+      content: <IssuesTab {...props} />,
     },
     {
       id: "alerts",
       label: "Alerts",
-      content: <div>Alerts</div>,
+      content: <AlertsTab {...props} />,
     },
     {
       id: "insights",
       label: "Insights",
-      content: <div>Insights</div>,
+      content: <InsightsTab {...props} />,
     },
     {
       id: "mock",
       label: "Mock",
-      content: <div>Mock</div>,
+      content: <MockTab {...props} />,
     },
   ];
 
   return (
-    <OutlinedTabs.Root value={activeTab} onValueChange={setActiveTab}>
+    <OutlinedTabs.Root value={activeTab} onValueChange={setActiveTab} className="flex flex-1 flex-col">
       <OutlinedTabs.List className="flex items-center justify-between">
         <div className="flex items-center">
           {tabs.map((tab) => (
@@ -52,8 +57,8 @@ export const RequestPageTabs = ({ ...props }: IDockviewPanelProps<RequestPagePro
       </OutlinedTabs.List>
 
       {tabs.map((tab) => (
-        <OutlinedTabs.Content key={tab.id} value={tab.id}>
-          <PageWrapper>{tab.content}</PageWrapper>
+        <OutlinedTabs.Content key={tab.id} value={tab.id} className="flex flex-1">
+          <PageWrapper className="flex flex-1 flex-col">{tab.content}</PageWrapper>
         </OutlinedTabs.Content>
       ))}
     </OutlinedTabs.Root>

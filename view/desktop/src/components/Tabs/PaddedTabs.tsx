@@ -12,7 +12,7 @@ interface PaddedTabsProps {
 
 const Root = ({ value, onValueChange, children, className }: PaddedTabsProps) => {
   return (
-    <Tabs value={value} onValueChange={onValueChange} className={cn("flex h-full min-h-fit flex-col", className)}>
+    <Tabs value={value} onValueChange={onValueChange} className={cn("flex min-h-fit grow flex-col", className)}>
       {children}
     </Tabs>
   );

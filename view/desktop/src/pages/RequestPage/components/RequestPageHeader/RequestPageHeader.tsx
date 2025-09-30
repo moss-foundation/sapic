@@ -16,7 +16,7 @@ interface RequestPageHeaderProps {
   api: DockviewPanelApi;
 }
 
-export const RequestPageHeader = ({ node, projectId, api }: RequestPageHeaderProps) => {
+export const RequestPageHeader = ({ node, projectId }: RequestPageHeaderProps) => {
   const { isRenamingEntry, setIsRenamingEntry, handleRenamingEntrySubmit, handleRenamingEntryCancel } =
     useRenameEntryForm(node, projectId);
 

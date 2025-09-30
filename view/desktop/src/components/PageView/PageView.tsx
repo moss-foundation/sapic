@@ -5,7 +5,13 @@ import { PageViewProps } from "./types";
 
 export const PageView = ({ children, className }: PageViewProps) => {
   return (
-    <Scrollbar className={cn("background-(--moss-primary-background) relative flex h-full flex-col", className)}>
+    <Scrollbar
+      className={cn("background-(--moss-primary-background) relative flex grow flex-col", className)}
+      classNames={{
+        contentEl: "flex grow flex-col",
+        contentWrapper: "flex grow flex-col",
+      }}
+    >
       {children}
     </Scrollbar>
   );

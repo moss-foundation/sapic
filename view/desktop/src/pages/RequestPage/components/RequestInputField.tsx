@@ -4,7 +4,7 @@ import { ActionMenu, ButtonPrimary, InputTemplating } from "@/components";
 import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
 
-import { areUrlsEquivalent } from "./utils/urlParser";
+import { areUrlsEquivalent } from "../utils/urlParser";
 
 interface RequestInputFieldProps {
   className?: string;

@@ -1,0 +1,80 @@
+import { useState } from "react";
+
+import ActionButton from "@/components/ActionButton";
+import { PageContainerTabs } from "@/components/Tabs";
+import { TabItemProps } from "@/components/Tabs/types";
+import { IDockviewPanelProps } from "@repo/moss-tabs";
+
+import { RequestPageProps } from "../../../../../RequestPage";
+import { BodyTab, CookiesTab, HeadersTab } from "./tabs";
+
+export const OutputView = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
+  const [activeOutputTabId, setActiveOutputTabId] = useState("body");
+
+  const outputTabs: TabItemProps[] = [
+    {
+      id: "body",
+      label: "Body",
+      icon: "Braces",
+      content: <BodyTab />,
+    },
+    {
+      id: "headers",
+      label: "Headers",
+      icon: "Headers",
+      count: 3,
+      content: <HeadersTab />,
+    },
+    {
+      id: "cookies",
+      label: "Cookies",
+      icon: "Braces",
+      content: <CookiesTab />,
+    },
+  ];
+  return (
+    <div className="flex flex-1 flex-col gap-3">
+      <PageContainerTabs.Root
+        value={activeOutputTabId}
+        onValueChange={setActiveOutputTabId}
+        className="flex grow flex-col"
+      >
+        <PageContainerTabs.List toolbar={<ToolbarPlaceholder />}>
+          {outputTabs.map((tab) => (
+            <PageContainerTabs.Trigger key={tab.id} value={tab.id} icon={tab.icon} count={tab.count}>
+              {tab.label}
+            </PageContainerTabs.Trigger>
+          ))}
+        </PageContainerTabs.List>
+
+        {outputTabs.map((tab) => (
+          <PageContainerTabs.Content key={tab.id} value={tab.id} className="flex grow">
+            {tab.content}
+          </PageContainerTabs.Content>
+        ))}
+      </PageContainerTabs.Root>
+    </div>
+  );
+};
+
+const ToolbarPlaceholder = () => {
+  return (
+    <div className="flex items-center justify-between gap-5 text-sm">
+      <div className="flex items-center gap-2">
+        <div className="background-(--moss-green-11) rounded-md border border-(--moss-green-9) px-2 text-(--moss-success)">
+          200 OK
+        </div>
+        <div className="background-(--moss-gray-8) size-1 rounded-full" />
+        <div className="text-(--moss-gray-6)">1.24 ms</div>
+        <div className="background-(--moss-gray-8) size-1 rounded-full" />
+        <div className="text-(--moss-gray-6)">1.21 KB</div>
+      </div>
+
+      <div className="flex items-center">
+        <button className="cursor-pointer px-2">Save Response</button>
+        <ActionButton className="p-1.25" iconClassName="size-4.5" icon="MoreHorizontal" />
+        <ActionButton className="p-1.25" iconClassName="size-4.5" icon="Delete" />
+      </div>
+    </div>
+  );
+};

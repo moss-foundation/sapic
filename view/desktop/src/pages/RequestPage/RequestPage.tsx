@@ -5,8 +5,7 @@ import { useStreamProjectEntries } from "@/hooks";
 import { EntryKind } from "@repo/moss-project";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
 
-import { RequestPageHeader } from "./RequestPageHeader/RequestPageHeader";
-import { RequestPageTabs } from "./RequestPageTabs";
+import { RequestPageBody, RequestPageHeader } from "./components";
 
 export interface RequestPageProps {
   node: ProjectTreeNode;
@@ -18,21 +17,21 @@ const RequestPage = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
   const { data: streamedEntries } = useStreamProjectEntries(props.params?.projectId);
   const node = streamedEntries?.find((entry) => entry.id === props.params?.node?.id);
 
+  if (!node) {
+    return (
+      <PageWrapper>
+        <div className="flex flex-1 items-center justify-center">
+          <div className="text-center">
+            <p className="mb-4 text-sm text-(--moss-secondary-text)">No request selected</p>
+          </div>
+        </div>
+      </PageWrapper>
+    );
+  }
   return (
     <PageView>
-      {node && <RequestPageHeader node={node} projectId={props.params?.projectId ?? ""} api={props.api} />}
-
-      {node ? (
-        <RequestPageTabs {...props} />
-      ) : (
-        <PageWrapper>
-          <div className="flex flex-1 items-center justify-center">
-            <div className="text-center">
-              <p className="mb-4 text-sm text-(--moss-secondary-text)">No request selected</p>
-            </div>
-          </div>
-        </PageWrapper>
-      )}
+      <RequestPageHeader node={node} projectId={props.params?.projectId ?? ""} api={props.api} />
+      <RequestPageBody {...props} />
     </PageView>
   );
 };

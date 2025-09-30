@@ -37,7 +37,7 @@ const List = ({ children, className, toolbar }: PageContainerTabsListProps) => {
         className
       )}
       classNames={{
-        contentEl: "h-auto flex justify-between gap-1",
+        contentEl: "flex justify-between gap-1",
       }}
       data-tabs-list-container
     >
@@ -73,7 +73,7 @@ const Trigger = ({ value, children, className, icon, count }: PageContainerTabPr
       )}
     >
       {icon && <Icon icon={icon} className="h-4 w-4" />}
-      <span>{children}</span>
+      <span className="leading-4">{children}</span>
       {count && (
         <span className="background-(--moss-primary) flex size-4 items-center justify-center rounded-full text-xs leading-2.5 text-white">
           {count}
