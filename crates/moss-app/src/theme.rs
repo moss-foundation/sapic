@@ -1,138 +1,11 @@
-mod conversion;
-pub mod install;
-mod validation;
+use joinerror::OptionExt;
+use moss_applib::errors::NotFound;
+use moss_fs::FileSystem;
+use moss_theme::{loader::ThemeLoader, models::primitives::ThemeId, registry::ThemeRegistry};
 
-use async_trait::async_trait;
-use joinerror::{OptionExt, ResultExt};
-use moss_app_delegate::AppDelegate;
-use moss_applib::{
-    AppRuntime,
-    errors::{Internal, NotFound},
-};
-use moss_extension::{ExtensionInfo, ExtensionPoint, contribution::ContributionKey};
-use moss_fs::{FileSystem, FsResultExt};
-use moss_theme::{
-    loader::ThemeLoader,
-    models::primitives::{ThemeId, ThemeMode},
-    registry::{GlobalThemeRegistry, ThemeRegistry, ThemeRegistryItem},
-};
-use serde::Deserialize;
-use serde_json::Value as JsonValue;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
 use crate::models::types::ColorThemeInfo;
-
-// #[derive(Deserialize, Debug)]
-// pub struct ThemeContributionEntry {
-//     id: ThemeId,
-//     label: String,
-//     mode: ThemeMode,
-//     path: PathBuf,
-// }
-
-// pub struct ThemeExtensionPoint {}
-
-// impl ThemeExtensionPoint {
-//     pub fn new() -> Box<Self> {
-//         Box::new(Self {})
-//     }
-// }
-
-// const THEMES_KEY: ContributionKey = ContributionKey::new("themes");
-
-// #[async_trait]
-// impl<R: AppRuntime> ExtensionPoint<R> for ThemeExtensionPoint {
-//     fn key(&self) -> ContributionKey {
-//         THEMES_KEY
-//     }
-
-//     async fn handle(
-//         &self,
-//         app_delegate: &AppDelegate<R>,
-//         info: &ExtensionInfo,
-//         data: JsonValue,
-//     ) -> joinerror::Result<()> {
-//         if !data.is_array() {
-//             joinerror::bail!("themes contribution must be an array");
-//         }
-
-//         let themes: Vec<ThemeContributionEntry> = serde_json::from_value(data)?;
-//         let items = themes
-//             .into_iter()
-//             .map(|entry| ThemeRegistryItem {
-//                 id: entry.id,
-//                 display_name: entry.label,
-//                 mode: entry.mode,
-//                 path: info.source.join(entry.path),
-//             })
-//             .collect();
-
-//         app_delegate
-//             .global::<GlobalThemeRegistry>()
-//             .register(items)
-//             .await;
-
-//         Ok(())
-//     }
-// }
-
-// #[async_trait]
-// pub trait ThemeRegistry: Send + Sync {
-//     async fn register(&self, items: Vec<ThemeRegistryItem>);
-//     async fn get(&self, identifier: &ThemeId) -> Option<ThemeRegistryItem>;
-//     async fn list(&self) -> HashMap<ThemeId, ThemeRegistryItem>;
-// }
-
-// #[derive(Debug, Clone)]
-// pub struct ThemeRegistryItem {
-//     pub id: ThemeId,
-//     pub display_name: String,
-//     pub mode: ThemeMode,
-//     pub path: PathBuf,
-// }
-
-// pub struct AppThemeRegistry {
-//     themes: RwLock<HashMap<ThemeId, ThemeRegistryItem>>,
-// }
-
-// #[async_trait]
-// impl ThemeRegistry for AppThemeRegistry {
-//     async fn register(&self, items: Vec<ThemeRegistryItem>) {
-//         self.themes
-//             .write()
-//             .await
-//             .extend(items.into_iter().map(|item| (item.id.clone(), item)));
-//     }
-
-//     async fn get(&self, identifier: &ThemeId) -> Option<ThemeRegistryItem> {
-//         self.themes.read().await.get(identifier).cloned()
-//     }
-
-//     async fn list(&self) -> HashMap<ThemeId, ThemeRegistryItem> {
-//         self.themes.read().await.clone()
-//     }
-// }
-
-// impl AppThemeRegistry {
-//     pub fn new() -> Arc<Self> {
-//         Arc::new(Self {
-//             themes: RwLock::new(HashMap::new()),
-//         })
-//     }
-// }
-
-// #[derive(Deref, Clone)]
-// struct GlobalThemeRegistry(Arc<dyn ThemeRegistry>);
-
-// impl dyn ThemeRegistry {
-//     pub fn global<R: AppRuntime>(delegate: &AppDelegate<R>) -> Arc<dyn ThemeRegistry> {
-//         delegate.global::<GlobalThemeRegistry>().0.clone()
-//     }
-
-//     pub fn set_global<R: AppRuntime>(delegate: &AppDelegate<R>, v: Arc<dyn ThemeRegistry>) {
-//         delegate.set_global(GlobalThemeRegistry(v));
-//     }
-// }
 
 pub struct ThemeService {
     loader: ThemeLoader,
@@ -181,18 +54,6 @@ impl ThemeService {
             .get(id)
             .await
             .ok_or_join_err_with::<NotFound>(|| format!("theme with id `{}` not found", id))?;
-
-        // let mut rdr = self
-        //     .fs
-        //     .open_file(&self.themes_dir.join(item.path.clone()))
-        //     .await
-        //     .join_err_with::<Internal>(|| {
-        //         format!("failed to open theme file `{}`", item.path.display())
-        //     })?;
-
-        // let mut buf = String::new();
-        // rdr.read_to_string(&mut buf)
-        //     .join_err::<Internal>("failed to read theme file")?;
 
         let theme = self.loader.load(&item.path).await?;
 
