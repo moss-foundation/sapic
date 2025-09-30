@@ -12,11 +12,7 @@ interface OutlinedTabsProps {
 
 const Root = ({ value, onValueChange, children, className }: OutlinedTabsProps) => {
   return (
-    <Tabs
-      value={value}
-      onValueChange={onValueChange}
-      className={cn("flex h-full min-h-fit min-w-fit flex-col", className)}
-    >
+    <Tabs value={value} onValueChange={onValueChange} className={cn("flex h-full min-h-fit flex-col", className)}>
       {children}
     </Tabs>
   );

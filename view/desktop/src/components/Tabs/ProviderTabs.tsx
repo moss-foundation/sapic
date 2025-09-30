@@ -17,7 +17,7 @@ const Root = ({ value, onValueChange, children, className }: ProviderTabsProps) 
     <Tabs
       value={value ?? undefined}
       onValueChange={onValueChange}
-      className={cn("flex h-full min-h-fit min-w-fit flex-col", className)}
+      className={cn("flex h-full min-h-fit flex-col", className)}
     >
       {children}
     </Tabs>

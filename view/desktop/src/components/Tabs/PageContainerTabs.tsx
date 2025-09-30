@@ -17,7 +17,7 @@ const Root = ({ value, onValueChange, children, className }: PageContainerTabsPr
       onValueChange={onValueChange}
       className={cn("flex h-full flex-col rounded-md border border-(--moss-border-color)", className)}
     >
-      <div className="flex h-full min-h-fit min-w-fit flex-col">{children}</div>
+      <div className="flex h-full min-h-fit flex-col">{children}</div>
     </Tabs>
   );
 };
