@@ -30,6 +30,7 @@ moss_extension.workspace = true
 moss_extension_points.workspace = true
 moss_addon.workspace = true
 moss_theme.workspace = true
+moss_configuration.workspace = true
 
 static_json.workspace = true
 inventory.workspace = true

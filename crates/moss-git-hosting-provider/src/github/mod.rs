@@ -2,5 +2,5 @@ pub mod auth;
 pub mod client;
 pub mod response;
 
-pub use auth::RealGitHubAuthAdapter;
-pub use client::RealGitHubApiClient;
+pub use auth::AppGitHubAuthAdapter;
+pub use client::AppGitHubApiClient;

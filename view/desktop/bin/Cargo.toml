@@ -40,6 +40,7 @@ moss_git_hosting_provider.workspace = true
 moss_keyring.workspace = true
 moss_user.workspace = true
 moss_theme.workspace = true
+moss_configuration.workspace = true
 moss_extension_points.workspace = true
 
 reqwest.workspace = true

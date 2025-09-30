@@ -24,13 +24,13 @@ extern crate derive_more;
 pub use app::App;
 pub use builder::AppBuilder;
 use moss_applib::AppRuntime;
-use moss_extension::include::IncludeConfiguration;
+use moss_configuration::RegisterConfigurationContribution;
 use moss_workspace::Workspace;
 
 use crate::models::primitives::WorkspaceId;
 
 inventory::submit! {
-    IncludeConfiguration(include_str!(concat!(env!("OUT_DIR"), "/configurations.json")))
+    RegisterConfigurationContribution(include_str!(concat!(env!("OUT_DIR"), "/configurations.json")))
 }
 
 #[derive(Deref, DerefMut)]

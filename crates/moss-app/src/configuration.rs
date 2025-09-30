@@ -9,8 +9,11 @@ use moss_applib::{
     errors::{FailedPrecondition, Internal},
     subscription::{Event, EventEmitter, Subscription},
 };
+use moss_configuration::{
+    models::primitives::ConfigurationTarget,
+    registry::{ConfigurationNode, ConfigurationRegistry},
+};
 use moss_edit::json::EditOptions;
-use moss_extension::include::IncludeConfiguration;
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_logging::session;
 use moss_text::ReadOnlyStr;
@@ -24,13 +27,9 @@ use std::{
 use tokio::sync::RwLock;
 
 use crate::{
-    configuration::{
-        edit::ConfigurationEdit,
-        registry::{ConfigurationNode, ConfigurationRegistry},
-    },
+    configuration::edit::ConfigurationEdit,
     dirs,
     internal::events::{OnDidChangeConfiguration, OnDidChangeProfile, OnDidChangeWorkspace},
-    models::primitives::ConfigurationTarget,
     profile::PROFILE_SETTINGS_FILE,
 };
 
@@ -152,7 +151,7 @@ impl ConfigurationHandle {
 }
 
 pub(crate) struct ConfigurationService {
-    registry: ConfigurationRegistry,
+    registry: Arc<dyn ConfigurationRegistry>,
     defaults: ConfigurationModel,
     profile: Arc<RwLock<Option<ConfigurationHandle>>>,
     workspace: Arc<RwLock<Option<ConfigurationHandle>>>,
@@ -180,8 +179,7 @@ impl ConfigurationService {
         on_did_change_profile_event: &Event<OnDidChangeProfile>,
         on_did_change_workspace_event: &Event<OnDidChangeWorkspace>,
     ) -> joinerror::Result<Self> {
-        let registry = ConfigurationRegistry::new()
-            .join_err_with::<()>(|| format!("failed to build configuration registry"))?;
+        let registry = <dyn ConfigurationRegistry>::global(app_delegate);
         let defaults = registry.defaults();
 
         let profile = Arc::new(RwLock::new(None));

@@ -1566,6 +1566,7 @@ dependencies = [
  "moss_app_delegate",
  "moss_applib",
  "moss_common",
+ "moss_configuration",
  "moss_db",
  "moss_environment",
  "moss_extension_points",
@@ -3600,6 +3601,7 @@ dependencies = [
  "moss_applib",
  "moss_bindingutils",
  "moss_common",
+ "moss_configuration",
  "moss_db",
  "moss_edit",
  "moss_environment",
@@ -3687,6 +3689,22 @@ version = "0.1.0"
 dependencies = [
  "derive_more 2.0.1",
  "tokio",
+]
+
+[[package]]
+name = "moss_configuration"
+version = "0.1.0"
+dependencies = [
+ "inventory",
+ "joinerror",
+ "moss_app_delegate",
+ "moss_applib",
+ "moss_logging",
+ "moss_text",
+ "serde",
+ "serde_json",
+ "tracing",
+ "ts-rs",
 ]
 
 [[package]]
@@ -4059,6 +4077,7 @@ dependencies = [
  "moss_applib",
  "moss_bindingutils",
  "moss_common",
+ "moss_configuration",
  "moss_db",
  "moss_edit",
  "moss_environment",

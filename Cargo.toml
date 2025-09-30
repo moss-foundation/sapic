@@ -40,6 +40,7 @@ members = [
     "crates/moss-addon",
     "crates/moss-extension-points", 
     "crates/moss-theme", 
+    "crates/moss-configuration",
     #
     # Apps
     #
@@ -93,6 +94,7 @@ moss_extension = { path = "crates/moss-extension" }
 moss_extension_points = { path = "crates/moss-extension-points" }
 moss_addon = { path = "crates/moss-addon" }
 moss_theme = { path = "crates/moss-theme" }
+moss_configuration = { path = "crates/moss-configuration" }
 #
 # External crates
 #

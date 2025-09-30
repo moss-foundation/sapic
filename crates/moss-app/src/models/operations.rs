@@ -1,4 +1,5 @@
 use derive_more::Deref;
+use moss_configuration::models::types::ConfigurationSchema;
 use moss_logging::models::primitives::LogEntryId;
 use moss_theme::models::primitives::ThemeId;
 use moss_user::models::{primitives::AccountId, types::ProfileInfo};
@@ -17,7 +18,7 @@ use crate::models::{primitives::*, types::*};
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct ListConfigurationSchemasOutput {
-    pub schemas: Vec<ConfigurationNodeSchema>,
+    pub schemas: Vec<ConfigurationSchema>,
 }
 
 /// @category Operation
