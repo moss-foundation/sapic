@@ -5,42 +5,6 @@ use ts_rs::TS;
 
 ids!([SessionId, WorkspaceId, LocaleId]);
 
-// #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, TS)]
-// #[serde(rename_all = "lowercase")]
-// #[ts(export, export_to = "primitives.ts")]
-// pub enum ConfigurationParameterType {
-//     String,
-//     Number,
-//     Boolean,
-//     Object,
-//     Array,
-// }
-
-// #[derive(Debug, Deserialize, Serialize, Clone, TS)]
-// #[serde(rename_all = "UPPERCASE")]
-// #[ts(export, export_to = "primitives.ts")]
-// pub enum ConfigurationTarget {
-//     Profile,
-//     Workspace,
-// }
-
-// ########################################################
-// ###                      Theme                       ###
-// ########################################################
-
-// /// @category Primitive
-// #[derive(Debug, Deserialize, Serialize, Clone, TS)]
-// #[serde(rename_all = "camelCase")]
-// #[ts(export, export_to = "primitives.ts")]
-// pub enum ThemeMode {
-//     Light,
-//     Dark,
-// }
-
-// #########################################################
-// ###                      Log                          ###
-// #########################################################
-
 /// @category Primitive
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, TS, PartialEq)]
 #[ts(export, export_to = "primitives.ts")]

@@ -31,6 +31,7 @@ pub struct OnDidAppendLogEntryForFrontend {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "events.ts")]
 pub struct ColorThemeChangeEventPayload<'a> {
+    #[ts(type = "ThemeId")]
     pub id: &'a ThemeId,
 }
 

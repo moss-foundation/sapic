@@ -13,38 +13,6 @@ use ts_rs::TS;
 
 use crate::models::primitives::*;
 
-// /// @category Type
-// #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-// #[serde(rename_all = "camelCase")]
-// #[ts(optional_fields)]
-// #[ts(export, export_to = "types.ts")]
-// pub struct ConfigurationNodeSchema {
-//     pub id: String,
-//     pub parent_id: Option<String>,
-//     pub order: Option<i64>,
-//     pub name: Option<String>,
-//     pub description: Option<String>,
-//     pub parameters: Vec<ConfigurationParameterItemSchema>,
-// }
-
-// /// @category Type
-// #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-// #[serde(rename_all = "camelCase")]
-// #[ts(optional_fields)]
-// #[ts(export, export_to = "types.ts")]
-// pub struct ConfigurationParameterItemSchema {
-//     pub id: String,
-//     #[ts(optional, type = "JsonValue")]
-//     pub default: Option<JsonValue>,
-//     pub typ: ConfigurationParameterType,
-//     pub description: Option<String>,
-//     pub maximum: Option<u64>,
-//     pub minimum: Option<u64>,
-//     pub protected: bool,
-//     pub order: Option<i64>,
-//     pub tags: Vec<String>,
-// }
-
 /// @category Type
 #[derive(Debug, Clone, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -54,6 +22,7 @@ pub struct UpdateConfigurationParams {
     pub key: String,
     #[ts(type = "JsonValue")]
     pub value: JsonValue,
+    #[ts(type = "ConfigurationTarget")]
     pub target: ConfigurationTarget,
 }
 
@@ -80,6 +49,7 @@ pub struct Configuration {
 pub struct AddAccountParams {
     pub host: String,
     pub label: Option<String>,
+    #[ts(type = "AccountKind")]
     pub kind: AccountKind,
     /// If a PAT is not provided, we will use OAuth
     pub pat: Option<String>,
@@ -109,8 +79,10 @@ pub struct LocaleInfo {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct ColorThemeInfo {
+    #[ts(type = "ThemeId")]
     pub identifier: ThemeId,
     pub display_name: String,
+    #[ts(type = "ThemeMode")]
     pub mode: ThemeMode,
     pub order: Option<isize>, // DEPRECATED
     pub source: PathBuf,
@@ -137,7 +109,6 @@ pub struct LogDate {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct LogItemSourceInfo {
-    #[ts(as = "String")]
     pub id: LogEntryId,
 
     #[serde(skip)]
@@ -151,7 +122,6 @@ pub struct LogItemSourceInfo {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct LogEntryInfo {
-    #[ts(as = "String")]
     pub id: LogEntryId,
     /// A timestamp string, such as "2025-06-06T19:26:39.084+0300"
     pub timestamp: String,

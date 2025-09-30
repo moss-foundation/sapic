@@ -18,6 +18,7 @@ use crate::models::{primitives::*, types::*};
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct ListConfigurationSchemasOutput {
+    #[ts(type = "ConfigurationSchema[]")]
     pub schemas: Vec<ConfigurationSchema>,
 }
 
@@ -179,6 +180,7 @@ pub struct SetLocaleInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct GetColorThemeInput {
+    #[ts(type = "ThemeId")]
     pub id: ThemeId,
 }
 
