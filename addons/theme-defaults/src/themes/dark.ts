@@ -886,6 +886,38 @@ export const defaultDarkTheme: Theme = {
       type: "variable",
       value: "moss.gray.3",
     },
+    "moss.notification.header.color": {
+      type: "variable",
+      value: "moss.gray.3",
+    },
+    "moss.notification.bg": {
+      type: "variable",
+      value: "moss.gray.3",
+    },
+    "moss.notification.text": {
+      type: "variable",
+      value: "moss.gray.14",
+    },
+    "moss.notification.button.outline": {
+      type: "variable",
+      value: "moss.gray.7",
+    },
+    "moss.notification.button.hover": {
+      type: "variable",
+      value: "moss.gray.5",
+    },
+    "moss.notification.close.color": {
+      type: "variable",
+      value: "moss.gray.7",
+    },
+    "moss.link.text": {
+      type: "variable",
+      value: "moss.blue.9",
+    },
+    "moss.link.hover": {
+      type: "variable",
+      value: "moss.blue.11",
+    },
   },
   boxShadows: {
     "moss.floating.box.shadow": "8px 8px 8px 0px rgba(83, 89, 93, 0.5)",
