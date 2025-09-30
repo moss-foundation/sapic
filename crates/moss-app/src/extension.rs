@@ -1,9 +1,11 @@
 use joinerror::OptionExt;
-use moss_addon::scanner::{AddonKind, AddonScanner};
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_common::continue_if_err;
-use moss_extension::{ExtensionInfo, ExtensionPoint};
+use moss_extension::{
+    ExtensionInfo, ExtensionPoint,
+    scanner::{AddonKind, AddonScanner},
+};
 use moss_fs::FileSystem;
 use moss_logging::session;
 use rustc_hash::FxHashMap;

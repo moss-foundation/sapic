@@ -37,7 +37,6 @@ members = [
     "crates/moss-server-api",
     "crates/moss-id-macro",
     "crates/moss-extension",
-    "crates/moss-addon",
     "crates/moss-extension-points", 
     "crates/moss-theme", 
     "crates/moss-configuration",
@@ -91,7 +90,6 @@ moss_server_api = { path = "crates/moss-server-api" }
 moss_bootstrap = { path = "crates/moss-bootstrap" }
 moss_extension = { path = "crates/moss-extension" }
 moss_extension_points = { path = "crates/moss-extension-points" }
-moss_addon = { path = "crates/moss-addon" }
 moss_theme = { path = "crates/moss-theme" }
 moss_configuration = { path = "crates/moss-configuration" }
 #
