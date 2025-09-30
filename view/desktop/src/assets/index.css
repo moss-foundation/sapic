@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @config "@repo/tailwind-config";
 @import "./fonts.css";
+@import "./scrollbar.css";
 @source "./icons/";
 
 @layer base {
@@ -17,20 +18,20 @@
     overflow: hidden;
     line-height: 16px;
   }
+  *:focus-visible {
+    @apply outline-2 outline-offset-1 outline-(--moss-primary);
+  }
   *:focus:not(.focus-visible) {
     outline: none;
   }
-}
-*:focus-visible {
-  @apply outline-2 outline-offset-1 outline-(--moss-primary);
-}
-.linux {
-  -webkit-font-smoothing: antialiased;
-}
+  .linux {
+    -webkit-font-smoothing: antialiased;
+  }
 
-svg:not(.animate-spin),
-svg:not(.animate-spin) * {
-  /* TODO: This breaks some icons, so i turned it off for now */
-  /* transform: translateZ(0); */
-  image-rendering: optimizeSpeed;
+  svg:not(.animate-spin),
+  svg:not(.animate-spin) * {
+    /* TODO: This breaks some icons, so i turned it off for now */
+    /* transform: translateZ(0); */
+    image-rendering: optimizeSpeed;
+  }
 }
