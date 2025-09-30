@@ -32,6 +32,12 @@
       "path": "crates/moss-activity-broadcaster"
     },
     {
+      "path": "crates/moss-theme"
+    },
+    {
+      "path": "crates/moss-configuration"
+    },
+    {
       "path": "view/desktop"
     },
     {
