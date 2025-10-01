@@ -1,6 +1,7 @@
 import { createTypeScriptImportResolver } from "eslint-import-resolver-typescript";
 import importX, { createNodeResolver } from "eslint-plugin-import-x";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
+import reactYouMightNotNeedAnEffect from "eslint-plugin-react-you-might-not-need-an-effect";
 import tseslint from "typescript-eslint";
 
 import tseslintParser from "@typescript-eslint/parser";
@@ -11,6 +12,7 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   importX.flatConfigs.recommended,
   importX.flatConfigs.typescript,
+  reactYouMightNotNeedAnEffect.configs.recommended,
   {
     ignores: [
       "node_modules/",

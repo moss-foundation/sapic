@@ -1,0 +1,83 @@
+import { useCallback, useState } from "react";
+
+import { Resizable, ResizablePanel } from "@/lib/ui";
+import { useEndpointPage } from "@/pages/EndpointPage/hooks/useEndpointPage";
+import { cn } from "@/utils/cn";
+import { IDockviewPanelProps } from "@repo/moss-tabs";
+
+import { EndpointPageProps } from "../../../../EndpointPage";
+import { areUrlsEquivalent, parseUrl } from "../../../../utils/urlParser";
+import { EndpointInputField } from "../../../EndpointInputField";
+import { InputView } from "./InputView/InputView";
+import { OutputView } from "./OutputView/OutputView";
+
+export const RunTab = ({ ...props }: IDockviewPanelProps<EndpointPageProps>) => {
+  const { endpointData, httpMethod, setHttpMethod, updateEndpointData } = useEndpointPage();
+  const [isResizableVertical, setIsResizableVertical] = useState(false);
+
+  const handleSendEndpoint = (method: string, url: string) => {
+    console.log("Sending endpoint:", { method, url });
+    // TODO: Implement actual request sending logic
+    // Use getRequestUrlWithPathValues() for backend endpoints with actual path values
+    setIsResizableVertical(!isResizableVertical);
+  };
+
+  const handleUrlChange = useCallback(
+    (url: string) => {
+      // Prevent unnecessary updates if URLs are functionally equivalent
+      if (areUrlsEquivalent(url, endpointData.url.raw)) {
+        return;
+      }
+
+      const parsed = parseUrl(url);
+
+      const updatedData = {
+        url: {
+          raw: url,
+          originalPathTemplate: parsed.url.originalPathTemplate,
+          port: parsed.url.port,
+          host: parsed.url.host,
+          path_params: parsed.url.path_params,
+          query_params: parsed.url.query_params,
+        },
+      };
+      updateEndpointData(updatedData);
+    },
+    [endpointData.url.raw, updateEndpointData]
+  );
+
+  return (
+    <div className="flex grow flex-col gap-3">
+      <EndpointInputField
+        initialMethod={httpMethod}
+        initialUrl={endpointData.url.raw}
+        onSend={handleSendEndpoint}
+        onUrlChange={handleUrlChange}
+        onMethodChange={(method) => {
+          if (method !== httpMethod) {
+            setHttpMethod(method);
+          }
+        }}
+      />
+
+      <Resizable separator={false} key={isResizableVertical ? "vertical" : "horizontal"} vertical={isResizableVertical}>
+        <ResizablePanel
+          className={cn("flex flex-col", {
+            "pb-1": isResizableVertical,
+            "pr-1": !isResizableVertical,
+          })}
+        >
+          <InputView {...props} />
+        </ResizablePanel>
+        <ResizablePanel
+          className={cn("flex flex-col", {
+            "pt-1": isResizableVertical,
+            "pl-1": !isResizableVertical,
+          })}
+        >
+          <OutputView {...props} />
+        </ResizablePanel>
+      </Resizable>
+    </div>
+  );
+};

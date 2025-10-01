@@ -18,7 +18,7 @@ export const AddPanelButton = (props: IDockviewHeaderActionsProps) => {
       position: {
         referenceGroup: props.group,
       },
-      title: `Untitled Request ${nextId()}`,
+      title: `Untitled Endpoint ${nextId()}`,
     });
   };
 

@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 
-import { InputOutlined } from "@/components/InputOutlined";
+import { InputOutlined } from "@/components/Inputs/InputOutlined";
+import { PillTabs } from "@/lib/ui/Tabs/index";
 import { useGitProviderStore } from "@/store/gitProvider";
 import { ImportProjectSource } from "@repo/moss-workspace";
 
 import { BranchInput } from "../components/BranchInput";
 import { NameInput } from "../components/NameInput";
-import ProviderTabs from "../components/ProviderTabs";
+import { ProviderIcon } from "../components/ProviderIcon";
 import { RepositoryInput } from "../components/RepositoryInput";
 import { DEFAULT_BRANCH, DEFAULT_NAME, DEFAULT_PROVIDER, DEFAULT_REPOSITORY } from "../defaults";
 import { Subheader } from "./Subheader";
@@ -53,26 +54,26 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
   return (
     <div className="flex flex-col gap-2">
       <div className="grid grid-cols-[min-content_1fr] items-center gap-x-3 gap-y-6 pb-2">
-        <ProviderTabs.Root
+        <PillTabs.Root
           value={provider}
           onValueChange={(value) => setProvider(value as "github" | "gitlab")}
           className="contents"
         >
-          <ProviderTabs.List className="col-span-2 grid h-min grid-cols-subgrid grid-rows-subgrid">
-            <div>From:</div>
+          <div>From:</div>
+          <PillTabs.List className="col-span-2 grid h-min grid-cols-subgrid grid-rows-subgrid">
             <div className="flex gap-2">
-              <ProviderTabs.Trigger value="github" label="GitHub" icon="github" />
-              <ProviderTabs.Trigger value="gitlab" label="GitLab" icon="gitlab" />
+              <PillTabs.Trigger value="github" label="GitHub" leadingContent={<ProviderIcon icon="github" />} />
+              <PillTabs.Trigger value="gitlab" label="GitLab" leadingContent={<ProviderIcon icon="gitlab" />} />
             </div>
-          </ProviderTabs.List>
+          </PillTabs.List>
 
-          <ProviderTabs.Content value="github" className="contents">
+          <PillTabs.Content value="github" className="contents">
             <NameInput name={name} setName={setName} />
-          </ProviderTabs.Content>
-          <ProviderTabs.Content value="gitlab" className="contents">
+          </PillTabs.Content>
+          <PillTabs.Content value="gitlab" className="contents">
             <NameInput name={name} setName={setName} />
-          </ProviderTabs.Content>
-        </ProviderTabs.Root>
+          </PillTabs.Content>
+        </PillTabs.Root>
       </div>
 
       <div>
