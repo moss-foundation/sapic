@@ -112,7 +112,7 @@ export const Logs = () => {
   return (
     <PageContent className="space-y-6">
       <section className="mb-6">
-        <h2 className="mb-2 text-xl">File Statuses</h2>
+        <h2 className="mb-2 text-xl">Shortcut Demo</h2>
         <div className="rounded bg-gray-50 p-4">
           <Shortcut />
         </div>
