@@ -90,7 +90,7 @@ run-desktop:
 
 ## Install dependencies and setup development environment
 .PHONY: ready
-ready: gen-icons gen-typedoc
+ready: gen-icons export-css-variables gen-typedoc
 	@cd $(CARGO_NEW_TS) && $(CARGO) install --path .
 	$(PNPM) i
 
@@ -178,6 +178,13 @@ gen-bindings: \
 # ======================================================
 # Utility Commands
 # ======================================================
+
+## Export CSS variables to JSON
+.PHONY: export-css-variables
+export-css-variables:
+	@cd $(SCRIPTS_DIR) && $(UV) run css_variables_exporter.py --source ../assets/themes/light.css \
+														   --dest ../packages/config-eslint/moss-lint-plugin/css_variables.json
+	@$(PNPM) prettier --plugin=prettier-plugin-tailwindcss --write packages/config-eslint/moss-lint-plugin/css_variables.json
 
 ## Open TypeDoc documentation in browser
 .PHONY: open-docs

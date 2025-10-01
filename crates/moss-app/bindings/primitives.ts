@@ -3,18 +3,4 @@
 /**
  * @category Primitive
  */
-export type AccountKind = "GITHUB" | "GITLAB";
-
-export type ConfigurationParameterType = "string" | "number" | "boolean" | "object" | "array";
-
-export type ConfigurationTarget = "PROFILE" | "WORKSPACE";
-
-/**
- * @category Primitive
- */
 export type LogLevel = "TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR";
-
-/**
- * @category Primitive
- */
-export type ThemeMode = "light" | "dark";
