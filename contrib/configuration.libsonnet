@@ -75,16 +75,12 @@
     assert std.member(["string", "null"], std.type(description)) : "description must be string or null";
     assert std.all([x.__kind__ == "Parameter" for x in parameters]) : "parameters must be array of Parameter";
 
-    local this = {
+    std.prune({
       id: id,
       parent_id: parent_id,
       order: order,
       name: name,
       description: description,
       parameters: parameters,
-    };
-
-    this + {
-      __kind__:: "Configuration"
-    },
+    }),
 }

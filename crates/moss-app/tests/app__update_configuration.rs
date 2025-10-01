@@ -6,10 +6,9 @@ use moss_app::{
     constants::ON_DID_CHANGE_CONFIGURATION_CHANNEL,
     models::{
         events::OnDidChangeConfigurationForFrontend, operations::UpdateConfigurationInput,
-        types::UpdateConfigurationParams,
+        primitives::ConfigurationTarget, types::UpdateConfigurationParams,
     },
 };
-use moss_configuration::models::primitives::ConfigurationTarget;
 use serde_json::{Value as JsonValue, json};
 use tauri::Listener;
 

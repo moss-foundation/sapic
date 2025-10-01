@@ -57,7 +57,7 @@ export const RequestPath: React.FC<RequestPathProps> = ({ className = "" }) => {
   }, [projectsTrees, activePanelId, findPath]);
 
   if (!activeTree || path.length === 0) {
-    // Get current panel name when no project/request is active
+    // Get current panel name when no project/endpoint is active
     const currentPanel = activePanelId ? api?.getPanel(activePanelId) : null;
     const panelTitle = currentPanel?.title || "";
 

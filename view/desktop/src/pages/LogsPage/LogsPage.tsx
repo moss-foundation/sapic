@@ -9,7 +9,6 @@ import GitTest from "@/git/GitTest.tsx";
 import { AddAccountParams, LogEntryInfo, ON_DID_APPEND_LOG_ENTRY_CHANNEL, UpdateProfileInput } from "@repo/moss-app";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import Shortcut from "@/shortcut/Shortcut.tsx";
 
 interface CreateProfileData {
   name: string;
@@ -111,13 +110,6 @@ export const Logs = () => {
 
   return (
     <PageContent className="space-y-6">
-      <section className="mb-6">
-        <h2 className="mb-2 text-xl">Shortcut Demo</h2>
-        <div className="rounded bg-gray-50 p-4">
-          <Shortcut />
-        </div>
-      </section>
-
       <section className="mb-6">
         <h2 className="mb-2 text-xl">File Statuses</h2>
         <div className="rounded bg-gray-50 p-4">

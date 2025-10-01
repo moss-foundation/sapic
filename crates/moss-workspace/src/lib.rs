@@ -10,13 +10,13 @@ pub mod storage;
 pub mod workspace;
 
 use moss_applib::AppRuntime;
-use moss_configuration::RegisterConfigurationContribution;
+use moss_contrib::IncludeConfigurationDecl;
 use moss_environment::AnyEnvironment;
 
 pub use workspace::Workspace;
 
 inventory::submit! {
-    RegisterConfigurationContribution(include_str!(concat!(env!("OUT_DIR"), "/configurations.json")))
+    IncludeConfigurationDecl(include_str!(concat!(env!("OUT_DIR"), "/", env!("CARGO_PKG_NAME"), ".contrib.json")))
 }
 
 pub mod constants {

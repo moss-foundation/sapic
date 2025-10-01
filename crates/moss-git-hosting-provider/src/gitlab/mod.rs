@@ -2,5 +2,5 @@ pub mod auth;
 pub mod client;
 pub mod response;
 
-pub use auth::{AppGitLabAuthAdapter, GitLabPkceTokenCredentials};
-pub use client::AppGitLabApiClient;
+pub use auth::{GitLabPkceTokenCredentials, RealGitLabAuthAdapter};
+pub use client::RealGitLabApiClient;

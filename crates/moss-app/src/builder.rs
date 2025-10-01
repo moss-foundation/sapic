@@ -1,10 +1,8 @@
 use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, subscription::EventEmitter};
-use moss_extension::ExtensionPoint;
 use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
-use moss_theme::registry::ThemeRegistry;
 use std::{path::PathBuf, sync::Arc};
 use tauri::{AppHandle as TauriAppHandle, Manager};
 use tokio::sync::RwLock;
@@ -14,7 +12,6 @@ use crate::{
     command::CommandDecl,
     configuration::ConfigurationService,
     dirs,
-    extension::ExtensionService,
     internal::events::{OnDidChangeConfiguration, OnDidChangeProfile, OnDidChangeWorkspace},
     locale::LocaleService,
     logging::LogService,
@@ -29,19 +26,12 @@ pub struct BuildAppParams {
     pub themes_dir: PathBuf,
     pub locales_dir: PathBuf,
     pub logs_dir: PathBuf,
-
-    // HACK: the paths are temporarily hardcoded here, later they will need
-    // to be retrieved either from the app delegate or in some other dynamic way.
-    // Task: https://mossland.atlassian.net/browse/SAPIC-546
-    pub application_dir: PathBuf,
-    pub user_dir: PathBuf,
 }
 
 pub struct AppBuilder<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     keyring: Arc<dyn KeyringClient>,
     tao_handle: TauriAppHandle<R::EventLoop>,
-    extension_points: Vec<Box<dyn ExtensionPoint<R>>>,
     commands: AppCommands<R::EventLoop>,
     auth_api_client: Arc<AccountAuthGatewayApiClient>,
 }
@@ -52,13 +42,11 @@ impl<R: AppRuntime> AppBuilder<R> {
         fs: Arc<dyn FileSystem>,
         keyring: Arc<dyn KeyringClient>,
         auth_api_client: Arc<AccountAuthGatewayApiClient>,
-        extension_points: Vec<Box<dyn ExtensionPoint<R>>>,
     ) -> Self {
         Self {
             fs,
             keyring,
             tao_handle,
-            extension_points,
             commands: Default::default(),
             auth_api_client,
         }
@@ -94,14 +82,9 @@ impl<R: AppRuntime> AppBuilder<R> {
         .await
         .expect("Failed to create configuration service");
 
-        let theme_service = ThemeService::new(
-            self.fs.clone(),
-            <dyn ThemeRegistry>::global(&delegate),
-            params.application_dir.clone(),
-        )
-        .await
-        .expect("Failed to create theme service");
-
+        let theme_service = ThemeService::new(self.fs.clone(), params.themes_dir)
+            .await
+            .expect("Failed to create theme service");
         let locale_service = LocaleService::new(self.fs.clone(), params.locales_dir)
             .await
             .expect("Failed to create locale service");
@@ -132,16 +115,6 @@ impl<R: AppRuntime> AppBuilder<R> {
                 .await
                 .expect("Failed to create workspace service");
 
-        let extension_service = ExtensionService::<R>::new(
-            &delegate,
-            self.fs.clone(),
-            self.extension_points,
-            params.application_dir,
-            params.user_dir,
-        )
-        .await
-        .expect("Failed to create extension service");
-
         App {
             app_dir,
             app_handle: self.tao_handle.clone(),
@@ -161,7 +134,6 @@ impl<R: AppRuntime> AppBuilder<R> {
             theme_service,
             profile_service,
             configuration_service,
-            extension_service,
             tracked_cancellations: Default::default(),
         }
     }

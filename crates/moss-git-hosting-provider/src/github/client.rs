@@ -63,18 +63,18 @@ impl GitHubHttpRequestBuilderExt for RequestBuilder {
 }
 
 #[derive(Clone)]
-pub struct AppGitHubApiClient {
+pub struct RealGitHubApiClient {
     client: HttpClient,
 }
 
-impl AppGitHubApiClient {
+impl RealGitHubApiClient {
     pub fn new(client: HttpClient) -> Self {
         Self { client }
     }
 }
 
 #[async_trait]
-impl<R: AppRuntime> GitHubApiClient<R> for AppGitHubApiClient {
+impl<R: AppRuntime> GitHubApiClient<R> for RealGitHubApiClient {
     async fn get_user(
         &self,
         ctx: &R::AsyncContext,

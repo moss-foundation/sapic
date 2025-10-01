@@ -1,66 +1,69 @@
-use joinerror::OptionExt;
-use moss_applib::errors::NotFound;
-use moss_fs::FileSystem;
-use moss_theme::{loader::ThemeLoader, models::primitives::ThemeId, registry::ThemeRegistry};
+mod conversion;
+pub mod install;
+mod models;
+mod validation;
 
+use joinerror::{OptionExt, ResultExt};
+use moss_applib::errors::{Internal, NotFound};
+use moss_fs::{FileSystem, FsResultExt};
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
+use tokio::sync::RwLock;
 
-use crate::models::types::ColorThemeInfo;
+use crate::models::{primitives::ThemeId, types::ColorThemeInfo};
+
+const THEMES_REGISTRY_FILE: &str = "themes.json";
+
+struct ServiceState {
+    themes: HashMap<ThemeId, ColorThemeInfo>,
+}
 
 pub struct ThemeService {
-    loader: ThemeLoader,
-    registry: Arc<dyn ThemeRegistry>,
+    themes_dir: PathBuf,
+    fs: Arc<dyn FileSystem>,
+    state: RwLock<ServiceState>,
 }
 
 impl ThemeService {
-    pub async fn new(
-        fs: Arc<dyn FileSystem>,
-        registry: Arc<dyn ThemeRegistry>,
+    pub async fn new(fs: Arc<dyn FileSystem>, themes_dir: PathBuf) -> joinerror::Result<Self> {
+        let rdr = fs.open_file(&themes_dir.join(THEMES_REGISTRY_FILE)).await?;
 
-        // HACK: the paths are temporarily hardcoded here, later they will need
-        // to be retrieved either from the app delegate or in some other dynamic way.
-        // Task: https://mossland.atlassian.net/browse/SAPIC-546
-        application_dir: PathBuf,
-    ) -> joinerror::Result<Self> {
+        let parsed: Vec<ColorThemeInfo> = serde_json::from_reader(rdr)?;
+        let themes = parsed
+            .into_iter()
+            .map(|item| (item.identifier.clone(), item))
+            .collect::<HashMap<ThemeId, ColorThemeInfo>>();
+
         Ok(Self {
-            registry,
-            loader: ThemeLoader::new(fs, application_dir.join("policies/theme.rego")),
+            themes_dir,
+            fs,
+            state: RwLock::new(ServiceState { themes }),
         })
     }
 
     pub async fn themes(&self) -> HashMap<ThemeId, ColorThemeInfo> {
-        let themes = self.registry.list().await;
-        themes
-            .into_iter()
-            .map(|(id, item)| {
-                (
-                    id,
-                    ColorThemeInfo {
-                        identifier: item.id,
-                        display_name: item.display_name,
-                        mode: item.mode,
-                        order: None,
-                        source: item.path,
-                        is_default: None,
-                    },
-                )
-            })
-            .collect()
+        let state = self.state.read().await;
+        state.themes.clone()
     }
 
     pub async fn read(&self, id: &ThemeId) -> joinerror::Result<String> {
-        let item = self
-            .registry
+        let state = self.state.read().await;
+        let theme = state
+            .themes
             .get(id)
-            .await
             .ok_or_join_err_with::<NotFound>(|| format!("theme with id `{}` not found", id))?;
 
-        let theme = self.loader.load(&item.path).await?;
+        let mut rdr = self
+            .fs
+            .open_file(&self.themes_dir.join(theme.source.clone()))
+            .await
+            .join_err_with::<Internal>(|| {
+                format!("failed to open theme file `{}`", theme.source.display())
+            })?;
 
-        // TODO: apply color theme token overrides
+        let mut buf = String::new();
+        rdr.read_to_string(&mut buf)
+            .join_err::<Internal>("failed to read theme file")?;
 
-        let css = moss_theme::convert(&theme).await?;
-
-        Ok(css)
+        Ok(buf)
     }
 }

@@ -1,8 +1,9 @@
-mod shared;
-
+#![cfg(feature = "integration-tests")]
 use atomic_fs::{CreateOptions, create_file};
 
 use crate::shared::setup_rollback;
+
+mod shared;
 
 #[tokio::test]
 pub async fn test_create_file_success() {

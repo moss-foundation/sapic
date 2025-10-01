@@ -17,7 +17,6 @@ use crate::{
     ActiveWorkspace,
     command::CommandCallback,
     configuration::ConfigurationService,
-    extension::ExtensionService,
     locale::LocaleService,
     logging::LogService,
     models::{
@@ -75,6 +74,7 @@ pub struct App<R: AppRuntime> {
     pub(super) commands: AppCommands<R::EventLoop>,
     pub(super) preferences: AppPreferences,
 
+    #[allow(unused)]
     pub(super) session_service: SessionService,
     pub(super) log_service: LogService<R>,
     pub(super) storage_service: Arc<StorageService<R>>,
@@ -83,9 +83,6 @@ pub struct App<R: AppRuntime> {
     pub(super) theme_service: ThemeService,
     pub(super) profile_service: ProfileService<R>,
     pub(super) configuration_service: ConfigurationService,
-
-    #[allow(unused)]
-    pub(super) extension_service: ExtensionService<R>,
 
     // Store cancellers by the id of API requests
     pub(super) tracked_cancellations: Arc<RwLock<HashMap<String, Canceller>>>,
@@ -136,23 +133,28 @@ impl<R: AppRuntime> App<R> {
     ) -> joinerror::Result<()> {
         let profile = self.profile_service.activate_profile().await?;
 
-        if !options.restore_last_workspace {
-            return Ok(());
+        if options.restore_last_workspace {
+            match self.storage_service.get_last_active_workspace(ctx).await {
+                Ok(id) => {
+                    if let Err(err) = self
+                        .workspace_service
+                        .activate_workspace(ctx, app_delegate, &id, profile)
+                        .await
+                    {
+                        session::warn!(format!(
+                            "failed to activate last active workspace: {}",
+                            err.to_string()
+                        ));
+                    }
+                }
+                Err(err) => {
+                    session::warn!(format!(
+                        "failed to restore last active workspace: {}",
+                        err.to_string()
+                    ));
+                }
+            };
         }
-
-        match self.storage_service.get_last_active_workspace(ctx).await {
-            Ok(id) => {
-                self.workspace_service
-                    .activate_workspace(ctx, app_delegate, &id, profile)
-                    .await?;
-            }
-            Err(err) => {
-                session::warn!(format!(
-                    "failed to restore last active workspace: {}",
-                    err.to_string()
-                ));
-            }
-        };
 
         Ok(())
     }

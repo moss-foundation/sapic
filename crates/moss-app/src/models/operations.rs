@@ -1,7 +1,5 @@
 use derive_more::Deref;
-use moss_configuration::models::types::ConfigurationSchema;
 use moss_logging::models::primitives::LogEntryId;
-use moss_theme::models::primitives::ThemeId;
 use moss_user::models::{primitives::AccountId, types::ProfileInfo};
 use moss_workspace::models::primitives::WorkspaceMode;
 use serde::{Deserialize, Serialize};
@@ -18,8 +16,7 @@ use crate::models::{primitives::*, types::*};
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct ListConfigurationSchemasOutput {
-    #[ts(type = "ConfigurationSchema[]")]
-    pub schemas: Vec<ConfigurationSchema>,
+    pub schemas: Vec<ConfigurationNodeSchema>,
 }
 
 /// @category Operation
@@ -180,7 +177,6 @@ pub struct SetLocaleInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct GetColorThemeInput {
-    #[ts(type = "ThemeId")]
     pub id: ThemeId,
 }
 

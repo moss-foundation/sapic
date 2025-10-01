@@ -1,8 +1,10 @@
-mod shared;
+#![cfg(feature = "integration-tests")]
 
 use atomic_fs::{RenameOptions, rename};
 
 use crate::shared::setup_rollback;
+
+mod shared;
 
 #[tokio::test]
 pub async fn test_rename_success() {

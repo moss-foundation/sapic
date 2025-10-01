@@ -8,11 +8,11 @@ import { useUpdateEditorPartState } from "@/hooks/app/useUpdateEditorPartState";
 import { mapEditorPartStateToSerializedDockview } from "@/hooks/app/utils";
 import { useActiveWorkspace, useDescribeWorkspaceState } from "@/hooks/workspace";
 import {
+  EndpointPage,
   FolderSettings,
   KitchenSink,
   Logs,
   ProjectSettingsPage,
-  RequestPage,
   Settings,
   WelcomePage,
   WorkspaceSettings,
@@ -148,7 +148,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     addOrFocusPanel({
       id: pragmaticDropElement.node.id,
       title: pragmaticDropElement.node.name,
-      component: "Request",
+      component: "Endpoint",
       params: {
         projectId: pragmaticDropElement.projectId,
         node: pragmaticDropElement.node,
@@ -209,13 +209,13 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
         </PageView>
       );
     },
-    Request: (
+    Endpoint: (
       props: IDockviewPanelProps<{
         node: ProjectTreeNode;
         projectId: string;
         iconType: EntryKind;
       }>
-    ) => <RequestPage {...props} />,
+    ) => <EndpointPage {...props} />,
     ProjectSettings: (
       props: IDockviewPanelProps<{
         node: ProjectTreeNode;

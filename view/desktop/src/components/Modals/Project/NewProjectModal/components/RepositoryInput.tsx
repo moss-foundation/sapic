@@ -1,4 +1,4 @@
-import InputOutlined from "@/components/InputOutlined";
+import { InputOutlined } from "@/components";
 import { InputProps } from "@/lib/ui/Input";
 
 interface RepositoryInputProps extends InputProps {

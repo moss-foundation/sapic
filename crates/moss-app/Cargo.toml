@@ -3,9 +3,6 @@ name = "moss_app"
 version = "0.1.0"
 edition = "2024"
 
-[build-dependencies]
-serde_json.workspace = true
-
 [dependencies]
 moss_app_delegate.workspace = true
 moss_server_api.workspace = true
@@ -26,10 +23,7 @@ moss_logging.workspace = true
 moss_id_macro.workspace = true
 moss_bindingutils.workspace = true
 moss_edit.workspace = true
-moss_extension.workspace = true
-moss_extension_points.workspace = true
-moss_theme.workspace = true
-moss_configuration.workspace = true
+moss_contrib.workspace = true
 
 static_json.workspace = true
 inventory.workspace = true

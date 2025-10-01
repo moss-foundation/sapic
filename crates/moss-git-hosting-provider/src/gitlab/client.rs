@@ -66,18 +66,18 @@ impl GitLabHttpRequestBuilderExt for RequestBuilder {
 }
 
 #[derive(Clone)]
-pub struct AppGitLabApiClient {
+pub struct RealGitLabApiClient {
     client: HttpClient,
 }
 
-impl AppGitLabApiClient {
+impl RealGitLabApiClient {
     pub fn new(client: HttpClient) -> Self {
         Self { client }
     }
 }
 
 #[async_trait]
-impl<R: AppRuntime> GitLabApiClient<R> for AppGitLabApiClient {
+impl<R: AppRuntime> GitLabApiClient<R> for RealGitLabApiClient {
     async fn get_user(
         &self,
         ctx: &R::AsyncContext,

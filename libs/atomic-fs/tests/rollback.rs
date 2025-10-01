@@ -1,4 +1,4 @@
-mod shared;
+#![cfg(feature = "integration-tests")]
 
 use atomic_fs::{
     CreateOptions, RemoveOptions, RenameOptions, create_dir, create_dir_all, create_file,
@@ -6,6 +6,8 @@ use atomic_fs::{
 };
 
 use crate::shared::setup_rollback;
+
+mod shared;
 
 /// -------------------------------------------
 ///          Simple Rollback Scenarios
