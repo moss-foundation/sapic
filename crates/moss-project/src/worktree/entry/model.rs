@@ -1,11 +1,14 @@
+use crate::models::primitives::{
+    EntryClass, EntryId, EntryProtocol, FormDataParamId, HeaderId, PathParamId, QueryParamId,
+};
 use hcl::Expression;
 use indexmap::IndexMap;
-use moss_hcl::{Block, LabeledBlock, deserialize_expression, expression, serialize_expression};
-use serde::{Deserialize, Serialize};
-
-use crate::models::primitives::{
-    EntryClass, EntryId, EntryProtocol, HeaderId, PathParamId, QueryParamId,
+use moss_hcl::{
+    Block, LabeledBlock, deserialize_expression, expression, heredoc::*, serialize_expression,
 };
+use serde::{Deserialize, Serialize};
+use serde_json::Value as JsonValue;
+use std::path::PathBuf;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EntryMetadataSpec {
@@ -78,6 +81,53 @@ pub struct QueryParamSpec {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum FormDataParamValue {
+    #[serde(
+        serialize_with = "serialize_expression",
+        deserialize_with = "deserialize_expression"
+    )]
+    #[serde(rename = "text")]
+    Text(Expression),
+
+    #[serde(rename = "path")]
+    Binary(PathBuf),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FormDataParamSpecOptions {
+    pub disabled: bool,
+    pub propagate: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FormDataParamSpec {
+    pub name: String,
+    // TODO: Handling both text value and file upload
+    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/POST
+    pub value: FormDataParamValue,
+    pub description: Option<String>,
+    pub options: FormDataParamSpecOptions,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type")]
+#[serde(rename_all = "kebab-case")]
+pub enum BodyValue {
+    #[serde(serialize_with = "serialize_string_as_heredoc")]
+    Text(String),
+
+    #[serde(serialize_with = "serialize_jsonvalue_as_heredoc")]
+    Json(JsonValue),
+
+    FormData(LabeledBlock<IndexMap<FormDataParamId, FormDataParamSpec>>),
+
+    Binary(PathBuf),
+}
+
+// TODO:
+// I guess it's better to name it ResourceModel ?
+// Ticket: https://mossland.atlassian.net/browse/SAPIC-533
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EntryModel {
     pub metadata: Block<EntryMetadataSpec>,
 
@@ -95,6 +145,10 @@ pub struct EntryModel {
     #[serde(rename = "query_param")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub query_params: Option<LabeledBlock<IndexMap<QueryParamId, QueryParamSpec>>>,
+
+    #[serde(rename = "body")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub body: Option<LabeledBlock<IndexMap<String, BodyValue>>>,
 }
 
 impl From<(EntryId, EntryClass)> for EntryModel {
@@ -105,6 +159,7 @@ impl From<(EntryId, EntryClass)> for EntryModel {
             headers: None,
             query_params: None,
             path_params: None,
+            body: None,
         }
     }
 }
@@ -181,6 +236,9 @@ mod tests {
                         propagate: true
                     }
                 }
+            })),
+            body: Some(LabeledBlock::new(indexmap! {
+                "text".to_string() => BodyValue::Text("body".to_string()),
             })),
         };
 

@@ -41,9 +41,6 @@ export ICONS_OUTPUT_DIR = ${CURDIR}/view/desktop/src/assets/icons
 export APP_LOG_DIR = ${CURDIR}/logs/app
 export SESSION_LOG_DIR = ${CURDIR}/logs/session
 
-# ---- Addon Directories ----
-export ADDON_THEME_DEFAULTS = ${CURDIR}/addons/theme-defaults
-
 # ---- Default Goal ----
 .DEFAULT_GOAL := run-desktop
 
@@ -93,7 +90,7 @@ run-desktop:
 
 ## Install dependencies and setup development environment
 .PHONY: ready
-ready: gen-themes gen-icons export-css-variables gen-typedoc
+ready: gen-icons gen-typedoc
 	@cd $(CARGO_NEW_TS) && $(CARGO) install --path .
 	$(PNPM) i
 
@@ -111,23 +108,6 @@ gen-icons:
 								 --dark-css ../assets/themes/dark.css \
 								 --output-dir ${ICONS_OUTPUT_DIR}
 
-.PHONY: gen-themes
-gen-themes:
-	@cd $(ADDON_THEME_DEFAULTS) && $(PNPM) run build
-	@cd $(THEME_INSTALL) && $(CARGO) run -- \
-									 --input-path ../../addons/theme-defaults/dark.json \
-									 --policy-path ../../policies/theme.rego \
-									 --output-path ../../assets/themes
-
-	@cd $(THEME_INSTALL) && $(CARGO) run -- \
-									 --input-path ../../addons/theme-defaults/light.json \
-									 --policy-path ../../policies/theme.rego \
-									 --output-path ../../assets/themes
-
-	@cd $(THEME_INSTALL) && $(CARGO) run -- \
-									 --input-path ../../addons/theme-defaults/vscode.json \
-									 --policy-path ../../policies/theme.rego \
-									 --output-path ../../assets/themes
 # ======================================================
 # TypeScript Bindings Generation
 # ======================================================
@@ -198,13 +178,6 @@ gen-bindings: \
 # ======================================================
 # Utility Commands
 # ======================================================
-
-## Export CSS variables to JSON
-.PHONY: export-css-variables
-export-css-variables:
-	@cd $(SCRIPTS_DIR) && $(UV) run css_variables_exporter.py --source ../assets/themes/light.css \
-														   --dest ../packages/config-eslint/moss-lint-plugin/css_variables.json
-	@$(PNPM) prettier --plugin=prettier-plugin-tailwindcss --write packages/config-eslint/moss-lint-plugin/css_variables.json
 
 ## Open TypeDoc documentation in browser
 .PHONY: open-docs

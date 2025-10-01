@@ -3,7 +3,13 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use ts_rs::TS;
 
-ids!([EntryId, QueryParamId, PathParamId, HeaderId]);
+ids!([
+    EntryId,
+    QueryParamId,
+    PathParamId,
+    HeaderId,
+    FormDataParamId
+]);
 
 /// @category Primitive
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
