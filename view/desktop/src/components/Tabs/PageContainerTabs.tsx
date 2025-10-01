@@ -12,13 +12,11 @@ interface PageContainerTabsProps {
 
 const Root = ({ value, onValueChange, children, className }: PageContainerTabsProps) => {
   return (
-    <Tabs
-      value={value}
-      onValueChange={onValueChange}
-      className={cn("flex flex-col rounded-md border border-(--moss-border-color)", className)}
-    >
-      <div className="flex flex-1 flex-col">{children}</div>
-    </Tabs>
+    <div className="flex grow flex-col overflow-hidden rounded-md border border-(--moss-border-color)">
+      <Tabs value={value} onValueChange={onValueChange} className={cn("flex flex-col", className)}>
+        <div className="flex flex-1 flex-col">{children}</div>
+      </Tabs>
+    </div>
   );
 };
 
@@ -38,6 +36,7 @@ const List = ({ children, className, toolbar }: PageContainerTabsListProps) => {
       )}
       classNames={{
         contentEl: "flex justify-between gap-1",
+        contentWrapper: "mr-2",
       }}
       data-tabs-list-container
     >

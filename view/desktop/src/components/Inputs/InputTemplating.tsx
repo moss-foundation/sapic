@@ -262,7 +262,6 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
         className={cn(containerStyles({ size }), className)}
         style={{
           overflow: "hidden",
-          position: isFocused ? "absolute" : "relative",
           zIndex: isFocused ? 50 : "auto",
           width: isFocused ? "100%" : "auto",
           height: isFocused ? "max-content" : "auto",
