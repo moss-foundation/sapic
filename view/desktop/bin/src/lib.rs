@@ -10,6 +10,7 @@ extern crate tracing;
 
 use moss_app::{
     App, AppBuilder as TauriAppBuilder, app::OnAppReadyOptions, builder::BuildAppParams,
+    command::CommandDecl,
 };
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
@@ -30,12 +31,13 @@ use moss_git_hosting_provider::{
 use moss_keyring::KeyringClientImpl;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use reqwest::ClientBuilder as HttpClientBuilder;
+use serde_json::Value;
 use std::{path::PathBuf, sync::Arc, time::Duration};
 #[cfg(not(debug_assertions))]
 use tauri::path::BaseDirectory;
 use tauri::{
-    AppHandle as TauriAppHandle, Manager, RunEvent, Runtime as TauriRuntime, WebviewWindow,
-    WindowEvent,
+    AppHandle as TauriAppHandle, Emitter, Manager, RunEvent, Runtime as TauriRuntime,
+    WebviewWindow, WindowEvent,
 };
 use tauri_plugin_os;
 use window::{CreateWindowInput, create_window};
@@ -150,6 +152,22 @@ pub async fn run<R: TauriRuntime>() {
 
                 let ctx_clone = ctx.clone();
                 let (app, session_id) = {
+                    let shortcut_println_command =
+                        CommandDecl::<R>::new("shortcut.println".into(), |ctx| {
+                            Box::pin(async move {
+                                println!("Triggering println using shortcut");
+                                Ok(Value::Null)
+                            })
+                        });
+
+                    let shortcut_alert_command =
+                        CommandDecl::<R>::new("shortcut.alert".into(), |ctx| {
+                            Box::pin(async move {
+                                let _ = ctx.window().emit("alert", ());
+                                Ok(Value::Null)
+                            })
+                        });
+
                     let app_init_ctx =
                         MutableContext::new_with_timeout(ctx_clone, Duration::from_secs(30))
                             .freeze();
@@ -160,6 +178,8 @@ pub async fn run<R: TauriRuntime>() {
                         keyring,
                         auth_api_client,
                     )
+                    .with_command(shortcut_println_command)
+                    .with_command(shortcut_alert_command)
                     .build(
                         &app_init_ctx,
                         BuildAppParams {
