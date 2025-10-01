@@ -17,19 +17,27 @@ use moss_applib::{
     TauriAppRuntime,
     context::{AnyAsyncContext, AnyContext, MutableContext},
 };
+use moss_configuration::registry::{AppConfigurationRegistry, ConfigurationRegistry};
+use moss_extension_points::{
+    configurations::ConfigurationExtensionPoint, http_headers::HttpHeadersExtensionPoint,
+    resource_statuses::ResourceStatusesExtensionPoint, themes::ThemeExtensionPoint,
+};
 use moss_fs::RealFileSystem;
 use moss_git_hosting_provider::{
     github::{
-        RealGitHubApiClient, RealGitHubAuthAdapter, auth::GitHubAuthAdapter,
-        client::GitHubApiClient,
+        AppGitHubApiClient, AppGitHubAuthAdapter, auth::GitHubAuthAdapter, client::GitHubApiClient,
     },
     gitlab::{
-        RealGitLabApiClient, RealGitLabAuthAdapter, auth::GitLabAuthAdapter,
-        client::GitLabApiClient,
+        AppGitLabApiClient, AppGitLabAuthAdapter, auth::GitLabAuthAdapter, client::GitLabApiClient,
     },
 };
 use moss_keyring::KeyringClientImpl;
+use moss_project::registries::{
+    http_headers::{AppHttpHeaderRegistry, HttpHeaderRegistry},
+    resource_statuses::{AppResourceStatusRegistry, ResourceStatusRegistry},
+};
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
+use moss_theme::registry::{AppThemeRegistry, ThemeRegistry};
 use reqwest::ClientBuilder as HttpClientBuilder;
 use serde_json::Value;
 use std::{path::PathBuf, sync::Arc, time::Duration};
@@ -121,31 +129,51 @@ pub async fn run<R: TauriRuntime>() {
                 {
                     let delegate = AppDelegate::<TauriAppRuntime<R>>::new(tao_app_handle.clone());
 
-                    <dyn GitHubApiClient<TauriAppRuntime<R>>>::set_global(
-                        &delegate,
-                        Arc::new(RealGitHubApiClient::new(http_client.clone())),
-                    );
-                    <dyn GitHubAuthAdapter<TauriAppRuntime<R>>>::set_global(
-                        &delegate,
-                        Arc::new(RealGitHubAuthAdapter::<TauriAppRuntime<R>>::new(
+                    let github_api_client = Arc::new(AppGitHubApiClient::new(http_client.clone()));
+                    let github_auth_adapter =
+                        Arc::new(AppGitHubAuthAdapter::<TauriAppRuntime<R>>::new(
                             auth_api_client.clone(),
                             auth_api_client.base_url(),
                             8080,
-                        )),
+                        ));
+                    let gitlab_api_client = Arc::new(AppGitLabApiClient::new(http_client.clone()));
+                    let gitlab_auth_adapter =
+                        Arc::new(AppGitLabAuthAdapter::<TauriAppRuntime<R>>::new(
+                            auth_api_client.clone(),
+                            auth_api_client.base_url(),
+                            8081,
+                        ));
+
+                    <dyn GitHubApiClient<TauriAppRuntime<R>>>::set_global(
+                        &delegate,
+                        github_api_client,
+                    );
+                    <dyn GitHubAuthAdapter<TauriAppRuntime<R>>>::set_global(
+                        &delegate,
+                        github_auth_adapter,
                     );
 
                     <dyn GitLabApiClient<TauriAppRuntime<R>>>::set_global(
                         &delegate,
-                        Arc::new(RealGitLabApiClient::new(http_client.clone())),
+                        gitlab_api_client,
                     );
                     <dyn GitLabAuthAdapter<TauriAppRuntime<R>>>::set_global(
                         &delegate,
-                        Arc::new(RealGitLabAuthAdapter::<TauriAppRuntime<R>>::new(
-                            auth_api_client.clone(),
-                            auth_api_client.base_url(),
-                            8081,
-                        )),
+                        gitlab_auth_adapter,
                     );
+
+                    let theme_registry = AppThemeRegistry::new();
+                    let configuration_registry = AppConfigurationRegistry::new()
+                        .expect("failed to build configuration registry");
+                    let resource_status_registry = AppResourceStatusRegistry::new()
+                        .expect("failed to build resource status registry");
+                    let http_header_registry =
+                        AppHttpHeaderRegistry::new().expect("failed to build http header registry");
+
+                    <dyn ThemeRegistry>::set_global(&delegate, theme_registry);
+                    <dyn ConfigurationRegistry>::set_global(&delegate, configuration_registry);
+                    <dyn ResourceStatusRegistry>::set_global(&delegate, resource_status_registry);
+                    <dyn HttpHeaderRegistry>::set_global(&delegate, http_header_registry);
 
                     tao_app_handle.manage(delegate);
                 }
@@ -177,6 +205,12 @@ pub async fn run<R: TauriRuntime>() {
                         fs,
                         keyring,
                         auth_api_client,
+                        vec![
+                            ThemeExtensionPoint::new(),
+                            ConfigurationExtensionPoint::new(),
+                            ResourceStatusesExtensionPoint::new(),
+                            HttpHeadersExtensionPoint::new(),
+                        ],
                     )
                     .with_command(shortcut_println_command)
                     .with_command(shortcut_alert_command)
@@ -186,6 +220,16 @@ pub async fn run<R: TauriRuntime>() {
                             themes_dir,
                             locales_dir,
                             logs_dir,
+
+                            // HACK: the paths are temporarily hardcoded here, later they will need
+                            // to be retrieved either from the app delegate or in some other dynamic way.
+                            // Task: https://mossland.atlassian.net/browse/SAPIC-546
+                            application_dir: std::env::var("DEV_APPLICATION_DIR")
+                                .expect("Environment variable APPLICATION_DIR is not set")
+                                .into(),
+                            user_dir: std::env::var("DEV_USER_DIR")
+                                .expect("Environment variable USER_DIR is not set")
+                                .into(),
                         },
                     )
                     .await;

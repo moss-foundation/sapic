@@ -1,11 +1,13 @@
 pub mod api;
 pub mod builder;
 mod config;
+pub mod contribution;
 mod edit;
 pub mod git;
 mod manifest;
 pub mod models;
 pub mod project;
+pub mod registries;
 pub mod vcs;
 mod worktree;
 
@@ -17,6 +19,16 @@ mod storage;
 
 pub use builder::ProjectBuilder;
 pub use project::{Project, ProjectModifyParams};
+
+use crate::contribution::{RegisterHttpHeadersContribution, RegisterResourceStatusesContribution};
+
+inventory::submit! {
+    RegisterResourceStatusesContribution(include_str!(concat!(env!("OUT_DIR"), "/resourceStatuses.json")))
+}
+
+inventory::submit! {
+    RegisterHttpHeadersContribution(include_str!(concat!(env!("OUT_DIR"), "/httpHeaders.json")))
+}
 
 pub mod constants {
     pub const ITEM_CONFIG_FILENAME: &str = "config.sap";

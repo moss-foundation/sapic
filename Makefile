@@ -33,6 +33,9 @@ export LOG_LEVEL = trace
 export DEV_APP_DIR = ${HOME_DIR}/.sapic
 export TEMP_DIR = ${HOME_DIR}/.sapic/tmp
 
+export DEV_USER_DIR = ${HOME_DIR}/.sapic
+export DEV_APPLICATION_DIR = ${CURDIR}
+
 # ---- Asset Directories ----
 export THEMES_DIR = ${CURDIR}/assets/themes
 export LOCALES_DIR = ${CURDIR}/assets/locales
@@ -40,9 +43,6 @@ export ICONS_DIR = ${CURDIR}/assets/icons
 export ICONS_OUTPUT_DIR = ${CURDIR}/view/desktop/src/assets/icons
 export APP_LOG_DIR = ${CURDIR}/logs/app
 export SESSION_LOG_DIR = ${CURDIR}/logs/session
-
-# ---- Addon Directories ----
-export ADDON_THEME_DEFAULTS = ${CURDIR}/addons/theme-defaults
 
 # ---- Default Goal ----
 .DEFAULT_GOAL := run-desktop
@@ -69,6 +69,8 @@ ACTIVITY_BROADCASTER_MODELS_DIR := crates/moss-activity-broadcaster
 API_MODELS_DIR := crates/moss-api
 GIT_MODELS_DIR := crates/moss-git
 USER_MODELS_DIR := crates/moss-user
+THEME_MODELS_DIR := crates/moss-theme
+CONFIGURATION_MODELS_DIR := crates/moss-configuration
 
 # ---- Command Executables ----
 PNPM := pnpm
@@ -93,7 +95,7 @@ run-desktop:
 
 ## Install dependencies and setup development environment
 .PHONY: ready
-ready: gen-themes gen-icons export-css-variables gen-typedoc
+ready: gen-icons export-css-variables gen-typedoc
 	@cd $(CARGO_NEW_TS) && $(CARGO) install --path .
 	$(PNPM) i
 
@@ -111,23 +113,6 @@ gen-icons:
 								 --dark-css ../assets/themes/dark.css \
 								 --output-dir ${ICONS_OUTPUT_DIR}
 
-.PHONY: gen-themes
-gen-themes:
-	@cd $(ADDON_THEME_DEFAULTS) && $(PNPM) run build
-	@cd $(THEME_INSTALL) && $(CARGO) run -- \
-									 --input-path ../../addons/theme-defaults/dark.json \
-									 --policy-path ../../policies/theme.rego \
-									 --output-path ../../assets/themes
-
-	@cd $(THEME_INSTALL) && $(CARGO) run -- \
-									 --input-path ../../addons/theme-defaults/light.json \
-									 --policy-path ../../policies/theme.rego \
-									 --output-path ../../assets/themes
-
-	@cd $(THEME_INSTALL) && $(CARGO) run -- \
-									 --input-path ../../addons/theme-defaults/vscode.json \
-									 --policy-path ../../policies/theme.rego \
-									 --output-path ../../assets/themes
 # ======================================================
 # TypeScript Bindings Generation
 # ======================================================
@@ -170,6 +155,8 @@ $(eval $(call gen_bindings,bindingutils,BINDINGUTILS_DIR))
 $(eval $(call gen_bindings,api,API_MODELS_DIR))
 $(eval $(call gen_bindings,git,GIT_MODELS_DIR))
 $(eval $(call gen_bindings,user,USER_MODELS_DIR))
+$(eval $(call gen_bindings,theme,THEME_MODELS_DIR))
+$(eval $(call gen_bindings,configuration,CONFIGURATION_MODELS_DIR))
 
 gen-app-bindings:
 gen-project-bindings:
@@ -180,6 +167,8 @@ gen-bindingutils-bindings:
 gen-api-bindings:
 gen-git-bindings:
 gen-user-bindings:
+gen-theme-bindings:
+gen-configuration-bindings:
 
 ## Generate all TypeScript bindings
 .PHONY: gen-bindings
@@ -192,7 +181,9 @@ gen-bindings: \
 	gen-bindingutils-bindings \
 	gen-api-bindings \
 	gen-git-bindings \
-	gen-user-bindings 
+	gen-user-bindings \
+	gen-theme-bindings \
+	gen-configuration-bindings
 
 
 # ======================================================
