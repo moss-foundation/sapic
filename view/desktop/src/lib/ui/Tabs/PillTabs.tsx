@@ -30,7 +30,7 @@ interface PillTabsListProps {
 
 const List = ({ children, className }: PillTabsListProps) => {
   return (
-    <TabsPrimitive.TabsList className={cn("w-full", className)} data-tabs-list-container>
+    <TabsPrimitive.TabsList className={cn("w-full p-0.5", className)} data-tabs-list-container>
       {children}
     </TabsPrimitive.TabsList>
   );

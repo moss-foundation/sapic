@@ -28,7 +28,7 @@ interface FolderTabsListProps {
 
 const List = ({ children, className, toolbar }: FolderTabsListProps) => {
   return (
-    <div className="background-(--moss-secondary-background) flex grow items-center justify-between shadow-[0px_-1px_0px_0px_var(--moss-border-color)_inset]">
+    <div className="background-(--moss-secondary-background) flex items-center justify-between shadow-[0px_-1px_0px_0px_var(--moss-border-color)_inset]">
       <TabsPrimitive.TabsList className={cn("flex grow items-center", className)}>{children}</TabsPrimitive.TabsList>
       {toolbar && <div className="flex shrink-0 items-center">{toolbar}</div>}
     </div>

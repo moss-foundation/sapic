@@ -105,7 +105,7 @@ const PillTabsSection = () => {
     <>
       <KitchenSinkSectionSubHeader>Pill Tabs</KitchenSinkSectionSubHeader>
       <PillTabs.Root value={value} onValueChange={setValue}>
-        <PillTabs.List className="flex gap-2 p-1">
+        <PillTabs.List className="flex gap-2">
           <PillTabs.Trigger value="tab1" leadingContent={<ProviderIcon icon="github" />} label="GitHub" />
           <PillTabs.Trigger value="tab2" leadingContent={<ProviderIcon icon="gitlab" />} label="GitLab" />
           <PillTabs.Trigger value="tab3" leadingContent={<ProviderIcon icon="postman" />} label="Postman" />

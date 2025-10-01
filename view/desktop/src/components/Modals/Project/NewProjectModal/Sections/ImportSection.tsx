@@ -59,8 +59,8 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
           onValueChange={(value) => setProvider(value as "github" | "gitlab")}
           className="contents"
         >
+          <div>From:</div>
           <PillTabs.List className="col-span-2 grid h-min grid-cols-subgrid grid-rows-subgrid">
-            <div>From:</div>
             <div className="flex gap-2">
               <PillTabs.Trigger value="github" label="GitHub" leadingContent={<ProviderIcon icon="github" />} />
               <PillTabs.Trigger value="gitlab" label="GitLab" leadingContent={<ProviderIcon icon="gitlab" />} />

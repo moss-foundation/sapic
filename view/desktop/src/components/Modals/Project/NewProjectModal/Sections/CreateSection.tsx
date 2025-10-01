@@ -78,8 +78,8 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
             onValueChange={(value) => setProvider(value as "github" | "gitlab")}
             className="contents"
           >
+            <div className={cn(!vcs && "opacity-50")}>Provider:</div>
             <PillTabs.List className="col-span-2 grid h-min grid-cols-subgrid grid-rows-subgrid">
-              <div className={cn(!vcs && "opacity-50")}>Provider:</div>
               <div className="flex gap-2">
                 <PillTabs.Trigger
                   value="github"
