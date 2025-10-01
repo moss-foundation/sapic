@@ -96,12 +96,12 @@ pub async fn run<R: TauriRuntime>() {
                                 .expect("Environment variable LOCALES_DIR is not set"),
                         ),
                         PathBuf::from(
-                            std::env::var("APP_LOG_DIR")
-                                .expect("Environment variable APP_LOG_DIR is not set"),
+                            std::env::var("DEV_LOG_DIR")
+                                .expect("Environment variable DEV_LOG_DIR is not set"),
                         ),
                         PathBuf::from(
-                            std::env::var("TEMP_DIR")
-                                .expect("Environment variable TEMP_DIR is not set"),
+                            std::env::var("DEV_TEMP_DIR")
+                                .expect("Environment variable DEV_TEMP_DIR is not set"),
                         ),
                     )
                 };
@@ -220,16 +220,6 @@ pub async fn run<R: TauriRuntime>() {
                             themes_dir,
                             locales_dir,
                             logs_dir,
-
-                            // HACK: the paths are temporarily hardcoded here, later they will need
-                            // to be retrieved either from the app delegate or in some other dynamic way.
-                            // Task: https://mossland.atlassian.net/browse/SAPIC-546
-                            application_dir: std::env::var("DEV_APPLICATION_DIR")
-                                .expect("Environment variable APPLICATION_DIR is not set")
-                                .into(),
-                            user_dir: std::env::var("DEV_USER_DIR")
-                                .expect("Environment variable USER_DIR is not set")
-                                .into(),
                         },
                     )
                     .await;

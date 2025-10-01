@@ -23,12 +23,6 @@ impl<R: AppRuntime> ExtensionService<R> {
         app_delegate: &AppDelegate<R>,
         fs: Arc<dyn FileSystem>,
         points: Vec<Box<dyn ExtensionPoint<R>>>,
-
-        // HACK: the paths are temporarily hardcoded here, later they will need
-        // to be retrieved either from the app delegate or in some other dynamic way.
-        // Task: https://mossland.atlassian.net/browse/SAPIC-546
-        application_dir: PathBuf,
-        user_dir: PathBuf,
     ) -> joinerror::Result<Self> {
         let points: FxHashMap<&'static str, Box<dyn ExtensionPoint<R>>> =
             points.into_iter().map(|p| (p.key().as_str(), p)).collect();
@@ -36,8 +30,14 @@ impl<R: AppRuntime> ExtensionService<R> {
         let scanner = ExtensionScanner::new(
             fs.clone(),
             vec![
-                (application_dir.join("extensions"), ExtensionsKind::BuiltIn),
-                (user_dir.join("extensions"), ExtensionsKind::User),
+                (
+                    app_delegate.resource_dir().join("extensions"),
+                    ExtensionsKind::BuiltIn,
+                ),
+                (
+                    app_delegate.user_dir().join("extensions"),
+                    ExtensionsKind::User,
+                ),
             ],
         );
 

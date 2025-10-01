@@ -27,17 +27,32 @@ impl<R: AppRuntime> AppDelegate<R> {
 
     #[cfg(debug_assertions)]
     #[cfg(not(feature = "integration-tests"))]
-    pub fn app_dir(&self) -> PathBuf {
-        PathBuf::from(std::env::var("DEV_APP_DIR").expect("DEV_APP_DIR is not set"))
+    pub fn resource_dir(&self) -> PathBuf {
+        PathBuf::from(std::env::var("DEV_RESOURCE_DIR").expect("DEV_RESOURCE_DIR is not set"))
     }
 
     #[cfg(not(debug_assertions))]
     #[cfg(not(feature = "integration-tests"))]
-    pub fn app_dir(&self) -> PathBuf {
+    pub fn resource_dir(&self) -> PathBuf {
+        self.app_handle
+            .path()
+            .resource_dir()
+            .expect("Cannot resolve resource dir")
+    }
+
+    #[cfg(debug_assertions)]
+    #[cfg(not(feature = "integration-tests"))]
+    pub fn user_dir(&self) -> PathBuf {
+        PathBuf::from(std::env::var("DEV_USER_DIR").expect("DEV_USER_DIR is not set"))
+    }
+
+    #[cfg(not(debug_assertions))]
+    #[cfg(not(feature = "integration-tests"))]
+    pub fn user_dir(&self) -> PathBuf {
         self.app_handle
             .path()
             .app_data_dir()
-            .expect("Cannot resolve app data dir")
+            .expect("Cannot resolve user dir")
     }
 
     pub fn global<T>(&self) -> &T
@@ -79,17 +94,32 @@ impl<R: AppRuntime> Clone for AppDelegate<R> {
 pub mod test {
     use std::path::PathBuf;
 
-    pub struct AppDir(pub PathBuf);
+    pub struct ResourceDir(pub PathBuf);
+    pub struct UserDir(pub PathBuf);
 }
 
 impl<R: AppRuntime> AppDelegate<R> {
     #[cfg(feature = "integration-tests")]
-    pub fn set_app_dir(&self, app_dir: PathBuf) {
-        self.app_handle.manage(test::AppDir(app_dir));
+    pub fn set_resource_dir(&self, resource_dir: PathBuf) {
+        self.app_handle.manage(test::ResourceDir(resource_dir));
     }
 
     #[cfg(feature = "integration-tests")]
-    pub fn app_dir(&self) -> PathBuf {
-        self.app_handle.state::<test::AppDir>().inner().0.clone()
+    pub fn resource_dir(&self) -> PathBuf {
+        self.app_handle
+            .state::<test::ResourceDir>()
+            .inner()
+            .0
+            .clone()
+    }
+
+    #[cfg(feature = "integration-tests")]
+    pub fn set_user_dir(&self, user_dir: PathBuf) {
+        self.app_handle.manage(test::UserDir(user_dir));
+    }
+
+    #[cfg(feature = "integration-tests")]
+    pub fn user_dir(&self) -> PathBuf {
+        self.app_handle.state::<test::UserDir>().inner().0.clone()
     }
 }

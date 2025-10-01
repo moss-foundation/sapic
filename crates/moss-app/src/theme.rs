@@ -3,9 +3,10 @@ use moss_applib::errors::NotFound;
 use moss_fs::FileSystem;
 use moss_theme::{loader::ThemeLoader, models::primitives::ThemeId, registry::ThemeRegistry};
 
-use std::{collections::HashMap, path::PathBuf, sync::Arc};
-
 use crate::models::types::ColorThemeInfo;
+use moss_app_delegate::AppDelegate;
+use moss_applib::AppRuntime;
+use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
 pub struct ThemeService {
     loader: ThemeLoader,
@@ -13,18 +14,14 @@ pub struct ThemeService {
 }
 
 impl ThemeService {
-    pub async fn new(
+    pub async fn new<R: AppRuntime>(
+        app_delegate: &AppDelegate<R>,
         fs: Arc<dyn FileSystem>,
         registry: Arc<dyn ThemeRegistry>,
-
-        // HACK: the paths are temporarily hardcoded here, later they will need
-        // to be retrieved either from the app delegate or in some other dynamic way.
-        // Task: https://mossland.atlassian.net/browse/SAPIC-546
-        application_dir: PathBuf,
     ) -> joinerror::Result<Self> {
         Ok(Self {
             registry,
-            loader: ThemeLoader::new(fs, application_dir.join("policies/theme.rego")),
+            loader: ThemeLoader::new(fs, app_delegate.resource_dir().join("policies/theme.rego")),
         })
     }
 

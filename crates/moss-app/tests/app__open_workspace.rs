@@ -37,8 +37,8 @@ async fn open_workspace_success() {
         .await;
     let create_output = create_result.unwrap();
 
-    let expected_path: Arc<Path> = app
-        .app_dir()
+    let expected_path: Arc<Path> = app_delegate
+        .user_dir()
         .join(dirs::WORKSPACES_DIR)
         .join(&create_output.id.to_string())
         .into();
@@ -277,8 +277,8 @@ async fn open_workspace_filesystem_does_not_exist() {
         .unwrap();
 
     // Manually delete the filesystem directory
-    let workspace_path: Arc<Path> = app
-        .app_dir()
+    let workspace_path: Arc<Path> = app_delegate
+        .user_dir()
         .join(dirs::WORKSPACES_DIR)
         .join(&create_output.id.to_string())
         .into();

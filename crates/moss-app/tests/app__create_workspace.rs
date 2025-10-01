@@ -33,8 +33,8 @@ async fn create_workspace_success() {
         .await;
 
     let create_output = create_result.unwrap();
-    let expected_path: Arc<Path> = app
-        .app_dir()
+    let expected_path: Arc<Path> = app_delegate
+        .user_dir()
         .join(dirs::WORKSPACES_DIR)
         .join(&create_output.id.to_string())
         .into();
@@ -132,8 +132,8 @@ async fn create_workspace_same_name() {
         .await;
     let first_output = first_result.unwrap();
 
-    let first_path: Arc<Path> = app
-        .app_dir()
+    let first_path: Arc<Path> = app_delegate
+        .user_dir()
         .join(dirs::WORKSPACES_DIR)
         .join(&first_output.id.to_string())
         .into();
@@ -159,8 +159,8 @@ async fn create_workspace_same_name() {
         .await;
     let second_output = second_result.unwrap();
 
-    let second_path: Arc<Path> = app
-        .app_dir()
+    let second_path: Arc<Path> = app_delegate
+        .user_dir()
         .join(dirs::WORKSPACES_DIR)
         .join(&second_output.id.to_string())
         .into();
@@ -250,8 +250,8 @@ async fn create_workspace_special_chars() {
         let create_output = create_result.unwrap();
         created_count += 1;
 
-        let expected_path: Arc<Path> = app
-            .app_dir()
+        let expected_path: Arc<Path> = app_delegate
+            .user_dir()
             .join(dirs::WORKSPACES_DIR)
             .join(&create_output.id.to_string())
             .into();
@@ -317,8 +317,8 @@ async fn create_workspace_not_open_on_creation() {
         .await;
     let create_output = create_result.unwrap();
 
-    let expected_path: Arc<Path> = app
-        .app_dir()
+    let expected_path: Arc<Path> = app_delegate
+        .user_dir()
         .join(dirs::WORKSPACES_DIR)
         .join(&create_output.id.to_string())
         .into();
