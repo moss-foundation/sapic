@@ -1,10 +1,10 @@
 import { FormEvent, useCallback, useState } from "react";
 
-import { PaddedTabs } from "@/components/Tabs";
 import { useCreateProject } from "@/hooks/project/useCreateProject";
 import { useImportProject } from "@/hooks/project/useImportProject";
 import { useStreamProjects } from "@/hooks/project/useStreamProjects";
 import { Modal, Scrollbar } from "@/lib/ui";
+import { UnderlinedTabs } from "@/lib/ui/Tabs/index";
 import { useGitProviderStore } from "@/store/gitProvider";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { CreateProjectGitParams, ImportProjectSource } from "@repo/moss-workspace";
@@ -116,22 +116,22 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
       <form onSubmit={handleSubmit} className="flex flex-col overflow-hidden">
         <Scrollbar className="min-h-0 flex-1">
           <div className="flex flex-col">
-            <PaddedTabs.Root
+            <UnderlinedTabs.Root
               value={tab}
               onValueChange={(value) => setTab(value as typeof CREATE_TAB | typeof IMPORT_TAB)}
             >
-              <PaddedTabs.List className="border-b border-(--moss-border-color) px-3">
-                <PaddedTabs.Trigger value={CREATE_TAB}>Create</PaddedTabs.Trigger>
-                <PaddedTabs.Trigger value={IMPORT_TAB}>Import</PaddedTabs.Trigger>
-              </PaddedTabs.List>
+              <UnderlinedTabs.List className="border-b border-(--moss-border-color) px-3">
+                <UnderlinedTabs.Trigger value={CREATE_TAB}>Create</UnderlinedTabs.Trigger>
+                <UnderlinedTabs.Trigger value={IMPORT_TAB}>Import</UnderlinedTabs.Trigger>
+              </UnderlinedTabs.List>
 
-              <PaddedTabs.Content value={CREATE_TAB} className="px-6 py-3">
+              <UnderlinedTabs.Content value={CREATE_TAB} className="px-6 py-3">
                 <CreateSection onValuesUpdate={handleCreateSectionValuesUpdate} />
-              </PaddedTabs.Content>
-              <PaddedTabs.Content value={IMPORT_TAB} className="px-6 py-3">
+              </UnderlinedTabs.Content>
+              <UnderlinedTabs.Content value={IMPORT_TAB} className="px-6 py-3">
                 <ImportSection onValuesUpdate={handleImportSectionValuesUpdate} />
-              </PaddedTabs.Content>
-            </PaddedTabs.Root>
+              </UnderlinedTabs.Content>
+            </UnderlinedTabs.Root>
 
             <div className="px-6 pb-6">
               <ModeRadioGroup mode={mode} setMode={setMode} />

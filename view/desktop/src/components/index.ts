@@ -22,7 +22,6 @@ export * from "./PageView/";
 export * from "./ProjectTree/ProjectTree";
 export * as RadioGroup from "./RadioGroup";
 export * from "./SelectOutlined";
-export * from "./Tabs";
 export * from "./ToggleGroup";
 
 export * from "../parts/EnvironmentsListView/EnvironmentsListView";

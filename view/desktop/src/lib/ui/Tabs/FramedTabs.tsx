@@ -1,48 +1,52 @@
 import { ReactNode } from "react";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/lib/ui";
+import { TabsPrimitive } from "@/lib/ui";
 import { cn } from "@/utils";
 
-interface OutlinedTabsProps {
+interface FramedTabsProps {
   value: string;
   onValueChange: (value: string) => void;
   children: ReactNode;
   className?: string;
 }
 
-const Root = ({ value, onValueChange, children, className }: OutlinedTabsProps) => {
+const Root = ({ value, onValueChange, children, className }: FramedTabsProps) => {
   return (
-    <Tabs value={value} onValueChange={onValueChange} className={cn("flex min-h-fit grow flex-col", className)}>
+    <TabsPrimitive.Tabs
+      value={value}
+      onValueChange={onValueChange}
+      className={cn("flex min-h-fit grow flex-col", className)}
+    >
       {children}
-    </Tabs>
+    </TabsPrimitive.Tabs>
   );
 };
 
-interface OutlinedTabsListProps {
+interface FramedListProps {
   children: ReactNode;
   className?: string;
 }
 
-const List = ({ children, className }: OutlinedTabsListProps) => {
+const List = ({ children, className }: FramedListProps) => {
   return (
-    <TabsList
+    <TabsPrimitive.TabsList
       className={cn("flex w-full items-center gap-1 border-b border-(--moss-border-color) px-5", className)}
       data-tabs-list-container
     >
       {children}
-    </TabsList>
+    </TabsPrimitive.TabsList>
   );
 };
 
-interface OutlinedTabProps {
+interface FramedTabProps {
   value: string;
   children: ReactNode;
   className?: string;
 }
 
-const Trigger = ({ value, children, className }: OutlinedTabProps) => {
+const Trigger = ({ value, children, className }: FramedTabProps) => {
   return (
-    <TabsTrigger
+    <TabsPrimitive.TabsTrigger
       value={value}
       className={cn(
         "group relative",
@@ -52,9 +56,8 @@ const Trigger = ({ value, children, className }: OutlinedTabProps) => {
         "cursor-pointer truncate",
         "transition-colors",
         "text-(--moss-secondary-text) hover:text-(--moss-primary-text)",
-        "border-t-1 border-r-1 border-b-0 border-l-1",
+        "rounded-tl-md rounded-tr-md border-t-1 border-r-1 border-b-0 border-l-1",
         "data-[state=active]:text-(--moss-primary-text)",
-        "data-[state=active]:rounded-tl-md data-[state=active]:rounded-tr-md",
         "data-[state=active]:border-t-(--moss-border-color) data-[state=active]:border-r-(--moss-border-color) data-[state=active]:border-l-(--moss-border-color)",
         "data-[state=active]:shadow-[0px_1px_0px_0px_var(--moss-primary-background)]",
         className
@@ -62,29 +65,29 @@ const Trigger = ({ value, children, className }: OutlinedTabProps) => {
     >
       <div className="group-hover:background-(--moss-secondary-background-hover) absolute top-[10%] left-[10%] h-[80%] w-[80%] rounded-md px-4 py-1 transition-colors group-data-[state=active]:hidden" />
       <div className="z-10">{children}</div>
-    </TabsTrigger>
+    </TabsPrimitive.TabsTrigger>
   );
 };
 
-interface OutlinedTabContentProps {
+interface FramedTabContentProps {
   value: string;
   children: ReactNode;
   className?: string;
 }
 
-const Content = ({ value, children, className }: OutlinedTabContentProps) => {
+const Content = ({ value, children, className }: FramedTabContentProps) => {
   return (
-    <TabsContent value={value} className={cn(className)}>
+    <TabsPrimitive.TabsContent value={value} className={cn(className)}>
       {children}
-    </TabsContent>
+    </TabsPrimitive.TabsContent>
   );
 };
 
-const OutlinedTabs = {
+const FramedTabs = {
   Root,
   List,
   Trigger,
   Content,
 };
 
-export default OutlinedTabs;
+export default FramedTabs;

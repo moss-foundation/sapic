@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 
-import { PageContainerTabs, TabItemProps } from "@/components";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
+import { FolderTabs, TabItemProps } from "@/lib/ui";
 
 import { EndpointPageProps } from "../../../../../EndpointPage";
 import { useEndpointPage } from "../../../../../hooks/useEndpointPage";
@@ -71,24 +71,20 @@ export const InputView = ({ ...props }: IDockviewPanelProps<EndpointPageProps>) 
   ];
 
   return (
-    <PageContainerTabs.Root
-      value={activeEndpointTabId}
-      onValueChange={setActiveEndpointTabId}
-      className="flex grow flex-col"
-    >
-      <PageContainerTabs.List>
+    <FolderTabs.Root value={activeEndpointTabId} onValueChange={setActiveEndpointTabId} className="flex grow flex-col">
+      <FolderTabs.List>
         {endpointTabs.map((tab) => (
-          <PageContainerTabs.Trigger key={tab.id} value={tab.id} icon={tab.icon} count={tab.count}>
+          <FolderTabs.Trigger key={tab.id} value={tab.id} icon={tab.icon} count={tab.count}>
             {tab.label}
-          </PageContainerTabs.Trigger>
+          </FolderTabs.Trigger>
         ))}
-      </PageContainerTabs.List>
+      </FolderTabs.List>
 
       {endpointTabs.map((tab) => (
-        <PageContainerTabs.Content key={tab.id} value={tab.id} className="flex grow">
+        <FolderTabs.Content key={tab.id} value={tab.id} className="flex grow">
           {tab.content}
-        </PageContainerTabs.Content>
+        </FolderTabs.Content>
       ))}
-    </PageContainerTabs.Root>
+    </FolderTabs.Root>
   );
 };

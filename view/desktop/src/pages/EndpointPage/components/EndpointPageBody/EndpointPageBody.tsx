@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-import { OutlinedTabs } from "@/components";
 import { PageWrapper } from "@/components/PageView/PageWrapper";
+import { FramedTabs } from "@/lib/ui";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
 
 import { EndpointPageProps } from "../../EndpointPage";
@@ -44,24 +44,24 @@ export const EndpointPageBody = ({ ...props }: IDockviewPanelProps<EndpointPageP
   ];
 
   return (
-    <OutlinedTabs.Root value={activeTab} onValueChange={setActiveTab} className="flex flex-1 flex-col">
-      <OutlinedTabs.List className="flex items-center justify-between">
+    <FramedTabs.Root value={activeTab} onValueChange={setActiveTab} className="flex flex-1 flex-col">
+      <FramedTabs.List className="flex items-center justify-between">
         <div className="flex items-center">
           {tabs.map((tab) => (
-            <OutlinedTabs.Trigger key={tab.id} value={tab.id}>
+            <FramedTabs.Trigger key={tab.id} value={tab.id}>
               {tab.label}
-            </OutlinedTabs.Trigger>
+            </FramedTabs.Trigger>
           ))}
         </div>
         <ToolbarPlaceholder />
-      </OutlinedTabs.List>
+      </FramedTabs.List>
 
       {tabs.map((tab) => (
-        <OutlinedTabs.Content key={tab.id} value={tab.id} className="flex flex-1">
+        <FramedTabs.Content key={tab.id} value={tab.id} className="flex flex-1">
           <PageWrapper className="flex flex-1 flex-col">{tab.content}</PageWrapper>
-        </OutlinedTabs.Content>
+        </FramedTabs.Content>
       ))}
-    </OutlinedTabs.Root>
+    </FramedTabs.Root>
   );
 };
 

@@ -1,48 +1,37 @@
 import { ReactNode } from "react";
 
-import { Icon, Icons, Scrollbar, Tabs, TabsContent, TabsList, TabsTrigger } from "@/lib/ui";
+import { Icon, Icons, TabsPrimitive } from "@/lib/ui";
 import { cn } from "@/utils";
 
-interface PageContainerTabsProps {
+interface FolderTabsProps {
   value: string;
   onValueChange: (value: string) => void;
   children: ReactNode;
   className?: string;
 }
 
-const Root = ({ value, onValueChange, children, className }: PageContainerTabsProps) => {
+const Root = ({ value, onValueChange, children, className }: FolderTabsProps) => {
   return (
     <div className="flex grow flex-col overflow-hidden rounded-md border border-(--moss-border-color)">
-      <Tabs value={value} onValueChange={onValueChange} className={cn("flex flex-col", className)}>
+      <TabsPrimitive.Tabs value={value} onValueChange={onValueChange} className={cn("flex flex-col", className)}>
         <div className="flex flex-1 flex-col">{children}</div>
-      </Tabs>
+      </TabsPrimitive.Tabs>
     </div>
   );
 };
 
-interface PageContainerTabsListProps {
+interface FolderTabsListProps {
   children: ReactNode;
   className?: string;
   toolbar?: ReactNode;
 }
 
-const List = ({ children, className, toolbar }: PageContainerTabsListProps) => {
+const List = ({ children, className, toolbar }: FolderTabsListProps) => {
   return (
-    <Scrollbar
-      className={cn(
-        "background-(--moss-secondary-background) h-auto w-full min-w-0 items-center justify-between border-none shadow-[0px_-1px_0px_0px_var(--moss-border-color)_inset]",
-        { "pr-2": toolbar },
-        className
-      )}
-      classNames={{
-        contentEl: "flex justify-between gap-1",
-        contentWrapper: "mr-2",
-      }}
-      data-tabs-list-container
-    >
-      <TabsList className="flex grow items-center">{children}</TabsList>
+    <div className="background-(--moss-secondary-background) flex grow items-center justify-between shadow-[0px_-1px_0px_0px_var(--moss-border-color)_inset]">
+      <TabsPrimitive.TabsList className={cn("flex grow items-center", className)}>{children}</TabsPrimitive.TabsList>
       {toolbar && <div className="flex shrink-0 items-center">{toolbar}</div>}
-    </Scrollbar>
+    </div>
   );
 };
 
@@ -56,7 +45,7 @@ interface PageContainerTabProps {
 
 const Trigger = ({ value, children, className, icon, count }: PageContainerTabProps) => {
   return (
-    <TabsTrigger
+    <TabsPrimitive.TabsTrigger
       value={value}
       className={cn(
         "flex items-center py-2 text-base transition-colors",
@@ -78,7 +67,7 @@ const Trigger = ({ value, children, className, icon, count }: PageContainerTabPr
           {count}
         </span>
       )}
-    </TabsTrigger>
+    </TabsPrimitive.TabsTrigger>
   );
 };
 
@@ -91,17 +80,17 @@ interface PageContainerTabContentProps {
 
 const Content = ({ value, children, className }: PageContainerTabContentProps) => {
   return (
-    <TabsContent value={value} className={className}>
+    <TabsPrimitive.TabsContent value={value} className={className}>
       {children}
-    </TabsContent>
+    </TabsPrimitive.TabsContent>
   );
 };
 
-const PageContainerTabs = {
+const FolderTabs = {
   Root,
   List,
   Trigger,
   Content,
 };
 
-export default PageContainerTabs;
+export default FolderTabs;

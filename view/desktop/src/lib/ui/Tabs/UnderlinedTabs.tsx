@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/lib/ui";
+import { TabsPrimitive } from "@/lib/ui";
 import { cn } from "@/utils";
 
 interface PaddedTabsProps {
@@ -12,9 +12,13 @@ interface PaddedTabsProps {
 
 const Root = ({ value, onValueChange, children, className }: PaddedTabsProps) => {
   return (
-    <Tabs value={value} onValueChange={onValueChange} className={cn("flex min-h-fit grow flex-col", className)}>
+    <TabsPrimitive.Tabs
+      value={value}
+      onValueChange={onValueChange}
+      className={cn("flex min-h-fit grow flex-col", className)}
+    >
       {children}
-    </Tabs>
+    </TabsPrimitive.Tabs>
   );
 };
 
@@ -25,9 +29,9 @@ interface PaddedTabsListProps {
 
 const List = ({ children, className }: PaddedTabsListProps) => {
   return (
-    <TabsList className={cn("flex w-full items-center gap-1", className)} data-tabs-list-container>
+    <TabsPrimitive.TabsList className={cn("flex w-full items-center gap-1", className)} data-tabs-list-container>
       {children}
-    </TabsList>
+    </TabsPrimitive.TabsList>
   );
 };
 
@@ -39,7 +43,7 @@ interface PaddedTabProps {
 
 const Trigger = ({ value, children, className }: PaddedTabProps) => {
   return (
-    <TabsTrigger
+    <TabsPrimitive.TabsTrigger
       value={value}
       //prettier-ignore
       className={cn(`
@@ -76,7 +80,7 @@ const Trigger = ({ value, children, className }: PaddedTabProps) => {
           group-data-[state=active]:background-(--moss-tab-active-border-color) 
         `}
       />
-    </TabsTrigger>
+    </TabsPrimitive.TabsTrigger>
   );
 };
 
@@ -88,17 +92,17 @@ interface PaddedTabContentProps {
 
 const Content = ({ value, children, className }: PaddedTabContentProps) => {
   return (
-    <TabsContent value={value} className={cn(className)}>
+    <TabsPrimitive.TabsContent value={value} className={cn(className)}>
       {children}
-    </TabsContent>
+    </TabsPrimitive.TabsContent>
   );
 };
 
-const PaddedTabs = {
+const UnderlinedTabs = {
   Root,
   List,
   Trigger,
   Content,
 };
 
-export default PaddedTabs;
+export default UnderlinedTabs;

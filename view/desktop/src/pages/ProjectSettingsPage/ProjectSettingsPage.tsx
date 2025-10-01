@@ -1,12 +1,11 @@
 import { useState } from "react";
 
-import { PageContainerTabs, TabItemProps } from "@/components";
 import { PageHeader, PageView } from "@/components/PageView";
 import { PageWrapper } from "@/components/PageView/PageWrapper";
 import { useStreamProjects } from "@/hooks";
 import { useRenameProjectForm } from "@/hooks/useRenameProjectForm";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
-import { Icon } from "@/lib/ui";
+import { FolderTabs, Icon, TabItemProps } from "@/lib/ui";
 
 import { AuthTabContent } from "./tabs/AuthTabContent";
 import { HeadersTabContent } from "./tabs/HeadersTabContent";
@@ -131,15 +130,15 @@ export const ProjectSettingsPage = ({ ...props }: IDockviewPanelProps<ProjectSet
         {...props}
       />
       <PageWrapper>
-        <PageContainerTabs.Root value={activeTabId} onValueChange={setActiveTabId}>
-          <PageContainerTabs.List>
+        <FolderTabs.Root value={activeTabId} onValueChange={setActiveTabId}>
+          <FolderTabs.List>
             {tabs.map((tab) => (
-              <PageContainerTabs.Trigger key={tab.id} value={tab.id}>
+              <FolderTabs.Trigger key={tab.id} value={tab.id}>
                 {tab.label}
-              </PageContainerTabs.Trigger>
+              </FolderTabs.Trigger>
             ))}
-          </PageContainerTabs.List>
-        </PageContainerTabs.Root>
+          </FolderTabs.List>
+        </FolderTabs.Root>
       </PageWrapper>
     </PageView>
   );

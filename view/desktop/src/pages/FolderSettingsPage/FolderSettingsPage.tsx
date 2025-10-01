@@ -1,12 +1,12 @@
 import { useState } from "react";
 
-import { PageContainerTabs, PageHeader, PageView, TabItemProps } from "@/components";
+import { PageHeader, PageView } from "@/components";
 import { PageWrapper } from "@/components/PageView/PageWrapper";
 import { ProjectTreeNode } from "@/components/ProjectTree/types";
 import { useStreamProjectEntries } from "@/hooks/project/useStreamProjectEntries";
 import { useRenameEntryForm } from "@/hooks/useRenameEntryForm";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
-import { Icon } from "@/lib/ui";
+import { FolderTabs, Icon, TabItemProps } from "@/lib/ui";
 import { EntryKind } from "@repo/moss-project";
 
 import { OverviewTabContent } from "./tabs/OverviewTabContent";
@@ -119,21 +119,21 @@ export const FolderSettings = ({ ...props }: IDockviewPanelProps<FolderSettingsP
         {...props}
       />
       <PageWrapper>
-        <PageContainerTabs.Root value={activeTabId} onValueChange={setActiveTabId}>
-          <PageContainerTabs.List>
+        <FolderTabs.Root value={activeTabId} onValueChange={setActiveTabId}>
+          <FolderTabs.List>
             {tabs.map((tab) => (
-              <PageContainerTabs.Trigger key={tab.id} value={tab.id}>
+              <FolderTabs.Trigger key={tab.id} value={tab.id}>
                 {tab.label}
-              </PageContainerTabs.Trigger>
+              </FolderTabs.Trigger>
             ))}
-          </PageContainerTabs.List>
+          </FolderTabs.List>
 
           {tabs.map((tab) => (
-            <PageContainerTabs.Content key={tab.id} value={tab.id}>
+            <FolderTabs.Content key={tab.id} value={tab.id}>
               {tab.content}
-            </PageContainerTabs.Content>
+            </FolderTabs.Content>
           ))}
-        </PageContainerTabs.Root>
+        </FolderTabs.Root>
       </PageWrapper>
     </PageView>
   );

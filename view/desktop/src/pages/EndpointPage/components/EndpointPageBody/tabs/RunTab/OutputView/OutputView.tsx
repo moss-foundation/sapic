@@ -1,8 +1,7 @@
 import { useState } from "react";
 
 import ActionButton from "@/components/ActionButton";
-import { PageContainerTabs } from "@/components/Tabs";
-import { TabItemProps } from "@/components/Tabs/types";
+import { FolderTabs, TabItemProps } from "@/lib/ui";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
 
 import { EndpointPageProps } from "../../../../../EndpointPage";
@@ -34,25 +33,21 @@ export const OutputView = ({ ...props }: IDockviewPanelProps<EndpointPageProps>)
   ];
   return (
     <div className="flex flex-1 flex-col gap-3">
-      <PageContainerTabs.Root
-        value={activeOutputTabId}
-        onValueChange={setActiveOutputTabId}
-        className="flex grow flex-col"
-      >
-        <PageContainerTabs.List toolbar={<ToolbarPlaceholder />}>
+      <FolderTabs.Root value={activeOutputTabId} onValueChange={setActiveOutputTabId} className="flex grow flex-col">
+        <FolderTabs.List toolbar={<ToolbarPlaceholder />}>
           {outputTabs.map((tab) => (
-            <PageContainerTabs.Trigger key={tab.id} value={tab.id} icon={tab.icon} count={tab.count}>
+            <FolderTabs.Trigger key={tab.id} value={tab.id} icon={tab.icon} count={tab.count}>
               {tab.label}
-            </PageContainerTabs.Trigger>
+            </FolderTabs.Trigger>
           ))}
-        </PageContainerTabs.List>
+        </FolderTabs.List>
 
         {outputTabs.map((tab) => (
-          <PageContainerTabs.Content key={tab.id} value={tab.id} className="flex grow">
+          <FolderTabs.Content key={tab.id} value={tab.id} className="flex grow">
             {tab.content}
-          </PageContainerTabs.Content>
+          </FolderTabs.Content>
         ))}
-      </PageContainerTabs.Root>
+      </FolderTabs.Root>
     </div>
   );
 };

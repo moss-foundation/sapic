@@ -1,6 +1,7 @@
 import { useState } from "react";
 
-import { OutlinedTabs, PaddedTabs, PageContainerTabs, ProviderTabs } from "@/components";
+import { ProviderIcon } from "@/components/Modals/Project/NewProjectModal/components/ProviderIcon";
+import { FolderTabs, FramedTabs, Icon, PillTabs, UnderlinedTabs } from "@/lib/ui";
 
 import { KitchenSinkSection } from "../KitchenSinkSection";
 import { KitchenSinkSectionSubHeader } from "../KitchenSinkSectionSubHeader";
@@ -10,120 +11,120 @@ export const TabsSection = () => {
 
   return (
     <KitchenSinkSection header="Tabs">
-      <PaddedTabsSection value={value} setValue={setValue} />
+      <UnderlinedTabsSection value={value} setValue={setValue} />
 
-      <OutlinedTabsSection value={value} setValue={setValue} />
+      <FramedTabsSection value={value} setValue={setValue} />
 
-      <PageContainerTabsSection value={value} setValue={setValue} />
+      <FolderTabsSection value={value} setValue={setValue} />
 
-      <ProviderTabsSection />
+      <PillTabsSection />
     </KitchenSinkSection>
   );
 };
 
-const PaddedTabsSection = ({ value, setValue }: { value: string; setValue: (value: string) => void }) => {
+const UnderlinedTabsSection = ({ value, setValue }: { value: string; setValue: (value: string) => void }) => {
   return (
     <>
-      <KitchenSinkSectionSubHeader>Padded Tabs</KitchenSinkSectionSubHeader>
-      <PaddedTabs.Root value={value} onValueChange={setValue}>
-        <PaddedTabs.List>
-          <PaddedTabs.Trigger value="tab1">Create</PaddedTabs.Trigger>
-          <PaddedTabs.Trigger value="tab2">Import</PaddedTabs.Trigger>
-          <PaddedTabs.Trigger value="tab3">Tab 3</PaddedTabs.Trigger>
-        </PaddedTabs.List>
+      <KitchenSinkSectionSubHeader>Underlined Tabs</KitchenSinkSectionSubHeader>
+      <UnderlinedTabs.Root value={value} onValueChange={setValue}>
+        <UnderlinedTabs.List>
+          <UnderlinedTabs.Trigger value="tab1">Create</UnderlinedTabs.Trigger>
+          <UnderlinedTabs.Trigger value="tab2">Import</UnderlinedTabs.Trigger>
+          <UnderlinedTabs.Trigger value="tab3">Tab 3</UnderlinedTabs.Trigger>
+        </UnderlinedTabs.List>
 
-        <PaddedTabs.Content value="tab1">
+        <UnderlinedTabs.Content value="tab1">
           <div>Create</div>
-        </PaddedTabs.Content>
-        <PaddedTabs.Content value="tab2">
+        </UnderlinedTabs.Content>
+        <UnderlinedTabs.Content value="tab2">
           <div>Import</div>
-        </PaddedTabs.Content>
-        <PaddedTabs.Content value="tab3">
+        </UnderlinedTabs.Content>
+        <UnderlinedTabs.Content value="tab3">
           <div>Tab 3 content</div>
-        </PaddedTabs.Content>
-      </PaddedTabs.Root>
+        </UnderlinedTabs.Content>
+      </UnderlinedTabs.Root>
     </>
   );
 };
 
-const OutlinedTabsSection = ({ value, setValue }: { value: string; setValue: (value: string) => void }) => {
+const FramedTabsSection = ({ value, setValue }: { value: string; setValue: (value: string) => void }) => {
   return (
     <>
-      <KitchenSinkSectionSubHeader>Outlined Tabs</KitchenSinkSectionSubHeader>
+      <KitchenSinkSectionSubHeader>Framed Tabs</KitchenSinkSectionSubHeader>
 
-      <OutlinedTabs.Root value={value} onValueChange={setValue}>
-        <OutlinedTabs.List>
-          <OutlinedTabs.Trigger value="tab1">Create</OutlinedTabs.Trigger>
-          <OutlinedTabs.Trigger value="tab2">Import</OutlinedTabs.Trigger>
-          <OutlinedTabs.Trigger value="tab3">Tab 3</OutlinedTabs.Trigger>
-        </OutlinedTabs.List>
+      <FramedTabs.Root value={value} onValueChange={setValue}>
+        <FramedTabs.List>
+          <FramedTabs.Trigger value="tab1">Create</FramedTabs.Trigger>
+          <FramedTabs.Trigger value="tab2">Import</FramedTabs.Trigger>
+          <FramedTabs.Trigger value="tab3">Tab 3</FramedTabs.Trigger>
+        </FramedTabs.List>
 
-        <OutlinedTabs.Content value="tab1">
+        <FramedTabs.Content value="tab1">
           <div>Create</div>
-        </OutlinedTabs.Content>
-        <OutlinedTabs.Content value="tab2">
+        </FramedTabs.Content>
+        <FramedTabs.Content value="tab2">
           <div>Import</div>
-        </OutlinedTabs.Content>
-        <OutlinedTabs.Content value="tab3">
+        </FramedTabs.Content>
+        <FramedTabs.Content value="tab3">
           <div>Tab 3 content</div>
-        </OutlinedTabs.Content>
-      </OutlinedTabs.Root>
+        </FramedTabs.Content>
+      </FramedTabs.Root>
     </>
   );
 };
 
-const PageContainerTabsSection = ({ value, setValue }: { value: string; setValue: (value: string) => void }) => {
+const FolderTabsSection = ({ value, setValue }: { value: string; setValue: (value: string) => void }) => {
   return (
     <>
-      <KitchenSinkSectionSubHeader>Page Container Tabs</KitchenSinkSectionSubHeader>
-      <PageContainerTabs.Root value={value} onValueChange={setValue}>
-        <PageContainerTabs.List>
-          <PageContainerTabs.Trigger value="tab1">Create</PageContainerTabs.Trigger>
-          <PageContainerTabs.Trigger value="tab2">Import</PageContainerTabs.Trigger>
-          <PageContainerTabs.Trigger value="tab3">Tab 3</PageContainerTabs.Trigger>
-        </PageContainerTabs.List>
+      <KitchenSinkSectionSubHeader>Folder Tabs</KitchenSinkSectionSubHeader>
+      <FolderTabs.Root value={value} onValueChange={setValue}>
+        <FolderTabs.List>
+          <FolderTabs.Trigger value="tab1">Create</FolderTabs.Trigger>
+          <FolderTabs.Trigger value="tab2">Import</FolderTabs.Trigger>
+          <FolderTabs.Trigger value="tab3">Tab 3</FolderTabs.Trigger>
+        </FolderTabs.List>
 
-        <PageContainerTabs.Content value="tab1">
+        <FolderTabs.Content value="tab1">
           <div>Create</div>
-        </PageContainerTabs.Content>
-        <PageContainerTabs.Content value="tab2">
+        </FolderTabs.Content>
+        <FolderTabs.Content value="tab2">
           <div>Import</div>
-        </PageContainerTabs.Content>
-        <PageContainerTabs.Content value="tab3">
+        </FolderTabs.Content>
+        <FolderTabs.Content value="tab3">
           <div>Tab 3 content</div>
-        </PageContainerTabs.Content>
-      </PageContainerTabs.Root>
+        </FolderTabs.Content>
+      </FolderTabs.Root>
     </>
   );
 };
 
-const ProviderTabsSection = () => {
+const PillTabsSection = () => {
   const [value, setValue] = useState("tab1");
 
   return (
     <>
-      <KitchenSinkSectionSubHeader>Provider Tabs</KitchenSinkSectionSubHeader>
-      <ProviderTabs.Root value={value} onValueChange={setValue}>
-        <ProviderTabs.List className="flex gap-2">
-          <ProviderTabs.Trigger value="tab1" icon="github" label="GitHub" />
-          <ProviderTabs.Trigger value="tab2" icon="gitlab" label="GitLab" />
-          <ProviderTabs.Trigger value="tab3" icon="postman" label="Postman" />
-          <ProviderTabs.Trigger value="tab4" icon="insomnia" label="Insomnia" />
-        </ProviderTabs.List>
+      <KitchenSinkSectionSubHeader>Pill Tabs</KitchenSinkSectionSubHeader>
+      <PillTabs.Root value={value} onValueChange={setValue}>
+        <PillTabs.List className="flex gap-2 p-1">
+          <PillTabs.Trigger value="tab1" leadingContent={<ProviderIcon icon="github" />} label="GitHub" />
+          <PillTabs.Trigger value="tab2" leadingContent={<ProviderIcon icon="gitlab" />} label="GitLab" />
+          <PillTabs.Trigger value="tab3" leadingContent={<ProviderIcon icon="postman" />} label="Postman" />
+          <PillTabs.Trigger value="tab4" leadingContent={<ProviderIcon icon="insomnia" />} label="Insomnia" />
+          <PillTabs.Trigger value="tab5" trailingContent={<Icon icon="Auth" />} label="Auth" />
+          <PillTabs.Trigger
+            value="tab6"
+            leadingContent={<Icon icon="Http" />}
+            trailingContent={<Icon icon="Send" />}
+            label="Send"
+          />
+        </PillTabs.List>
 
-        <ProviderTabs.Content value="tab1">
-          <div>Create</div>
-        </ProviderTabs.Content>
-        <ProviderTabs.Content value="tab2">
-          <div>Import</div>
-        </ProviderTabs.Content>
-        <ProviderTabs.Content value="tab3">
-          <div>Tab 3 content</div>
-        </ProviderTabs.Content>
-        <ProviderTabs.Content value="tab4">
-          <div>Tab 4 content</div>
-        </ProviderTabs.Content>
-      </ProviderTabs.Root>
+        {Array.from({ length: 6 }).map((_, index) => (
+          <PillTabs.Content key={index} value={`tab${index + 1}`}>
+            <div>Tab {index + 1} content</div>
+          </PillTabs.Content>
+        ))}
+      </PillTabs.Root>
     </>
   );
 };

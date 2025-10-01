@@ -9,5 +9,3 @@ export interface TabItemProps {
   icon?: Icons;
   count?: number;
 }
-
-export type ProviderIcon = "github" | "gitlab" | "postman" | "insomnia";
