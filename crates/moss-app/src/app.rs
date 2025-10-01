@@ -136,9 +136,16 @@ impl<R: AppRuntime> App<R> {
         if options.restore_last_workspace {
             match self.storage_service.get_last_active_workspace(ctx).await {
                 Ok(id) => {
-                    self.workspace_service
+                    if let Err(err) = self
+                        .workspace_service
                         .activate_workspace(ctx, app_delegate, &id, profile)
-                        .await?;
+                        .await
+                    {
+                        session::warn!(format!(
+                            "failed to activate last active workspace: {}",
+                            err.to_string()
+                        ));
+                    }
                 }
                 Err(err) => {
                     session::warn!(format!(
