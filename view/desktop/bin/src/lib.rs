@@ -153,7 +153,7 @@ pub async fn run<R: TauriRuntime>() {
                 let ctx_clone = ctx.clone();
                 let (app, session_id) = {
                     let shortcut_println_command =
-                        CommandDecl::<R>::new("shortcut.println".into(), |ctx| {
+                        CommandDecl::<R>::new("shortcut.println".into(), |_ctx| {
                             Box::pin(async move {
                                 println!("Triggering println using shortcut");
                                 Ok(Value::Null)
