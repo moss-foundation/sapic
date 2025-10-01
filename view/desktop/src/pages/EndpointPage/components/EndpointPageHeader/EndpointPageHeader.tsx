@@ -10,13 +10,13 @@ import { StreamEntriesEvent } from "@repo/moss-project";
 
 import { EditableHeader } from "./EditableHeader";
 
-interface RequestPageHeaderProps {
+interface EndpointPageHeaderProps {
   node: StreamEntriesEvent;
   projectId: string;
   api: DockviewPanelApi;
 }
 
-export const RequestPageHeader = ({ node, projectId }: RequestPageHeaderProps) => {
+export const EndpointPageHeader = ({ node, projectId }: EndpointPageHeaderProps) => {
   const { isRenamingEntry, setIsRenamingEntry, handleRenamingEntrySubmit, handleRenamingEntryCancel } =
     useRenameEntryForm(node, projectId);
 

@@ -3,8 +3,8 @@ import { useMemo, useState } from "react";
 import { PageContainerTabs, TabItemProps } from "@/components";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 
-import { useRequestPage } from "../../../../../hooks/useRequestPage";
-import { RequestPageProps } from "../../../../../RequestPage";
+import { EndpointPageProps } from "../../../../../EndpointPage";
+import { useEndpointPage } from "../../../../../hooks/useEndpointPage";
 import {
   AuthTabContent,
   BodyTabContent,
@@ -14,27 +14,22 @@ import {
   PreRequestTabContent,
 } from "./tabs";
 
-export const InputView = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
-  const [activeRequestTabId, setActiveRequestTabId] = useState("params");
+export const InputView = ({ ...props }: IDockviewPanelProps<EndpointPageProps>) => {
+  const [activeEndpointTabId, setActiveEndpointTabId] = useState("params");
 
-  const {
-    requestData,
-    httpMethod: _httpMethod,
-    setHttpMethod: _setHttpMethod,
-    updateRequestData: _updateRequestData,
-  } = useRequestPage();
+  const { endpointData } = useEndpointPage();
 
   const paramsCount = useMemo(() => {
-    const queryParamsCount = requestData.url.query_params.filter(
+    const queryParamsCount = endpointData.url.query_params.filter(
       (param) => (param.key.trim() !== "" || param.value.trim() !== "") && !param.disabled
     ).length;
-    const pathParamsCount = requestData.url.path_params.filter(
+    const pathParamsCount = endpointData.url.path_params.filter(
       (param) => param.key.trim() !== "" && !param.disabled
     ).length;
     return queryParamsCount + pathParamsCount;
-  }, [requestData.url.query_params, requestData.url.path_params]);
+  }, [endpointData.url.query_params, endpointData.url.path_params]);
 
-  const requestTabs: TabItemProps[] = [
+  const endpointTabs: TabItemProps[] = [
     {
       id: "params",
       label: "Params",
@@ -77,19 +72,19 @@ export const InputView = ({ ...props }: IDockviewPanelProps<RequestPageProps>) =
 
   return (
     <PageContainerTabs.Root
-      value={activeRequestTabId}
-      onValueChange={setActiveRequestTabId}
+      value={activeEndpointTabId}
+      onValueChange={setActiveEndpointTabId}
       className="flex grow flex-col"
     >
       <PageContainerTabs.List>
-        {requestTabs.map((tab) => (
+        {endpointTabs.map((tab) => (
           <PageContainerTabs.Trigger key={tab.id} value={tab.id} icon={tab.icon} count={tab.count}>
             {tab.label}
           </PageContainerTabs.Trigger>
         ))}
       </PageContainerTabs.List>
 
-      {requestTabs.map((tab) => (
+      {endpointTabs.map((tab) => (
         <PageContainerTabs.Content key={tab.id} value={tab.id} className="flex grow">
           {tab.content}
         </PageContainerTabs.Content>

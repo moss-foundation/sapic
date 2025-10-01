@@ -5,15 +5,15 @@ import { useStreamProjectEntries } from "@/hooks";
 import { EntryKind } from "@repo/moss-project";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
 
-import { RequestPageBody, RequestPageHeader } from "./components";
+import { EndpointPageBody, EndpointPageHeader } from "./components";
 
-export interface RequestPageProps {
+export interface EndpointPageProps {
   node: ProjectTreeNode;
   projectId: string;
   iconType: EntryKind;
 }
 
-const RequestPage = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
+const EndpointPage = ({ ...props }: IDockviewPanelProps<EndpointPageProps>) => {
   const { data: streamedEntries } = useStreamProjectEntries(props.params?.projectId);
   const node = streamedEntries?.find((entry) => entry.id === props.params?.node?.id);
 
@@ -22,7 +22,7 @@ const RequestPage = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
       <PageWrapper>
         <div className="flex flex-1 items-center justify-center">
           <div className="text-center">
-            <p className="mb-4 text-sm text-(--moss-secondary-text)">No request selected</p>
+            <p className="mb-4 text-sm text-(--moss-secondary-text)">No endpoint selected</p>
           </div>
         </div>
       </PageWrapper>
@@ -30,10 +30,10 @@ const RequestPage = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
   }
   return (
     <PageView>
-      <RequestPageHeader node={node} projectId={props.params?.projectId ?? ""} api={props.api} />
-      <RequestPageBody {...props} />
+      <EndpointPageHeader node={node} projectId={props.params?.projectId ?? ""} api={props.api} />
+      <EndpointPageBody {...props} />
     </PageView>
   );
 };
 
-export { RequestPage };
+export { EndpointPage };

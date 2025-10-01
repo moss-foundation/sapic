@@ -5,10 +5,10 @@ import { PageContainerTabs } from "@/components/Tabs";
 import { TabItemProps } from "@/components/Tabs/types";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
 
-import { RequestPageProps } from "../../../../../RequestPage";
+import { EndpointPageProps } from "../../../../../EndpointPage";
 import { BodyTab, CookiesTab, HeadersTab } from "./tabs";
 
-export const OutputView = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
+export const OutputView = ({ ...props }: IDockviewPanelProps<EndpointPageProps>) => {
   const [activeOutputTabId, setActiveOutputTabId] = useState("body");
 
   const outputTabs: TabItemProps[] = [

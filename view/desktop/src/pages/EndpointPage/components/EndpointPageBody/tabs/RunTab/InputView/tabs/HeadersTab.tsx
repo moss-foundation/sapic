@@ -14,7 +14,7 @@ export const HeadersTabContent = ({}: IDockviewPanelProps<{
 
       <div className="flex flex-col items-center justify-center gap-2">
         <h3 className="text-lg font-medium text-(--moss-primary-text)">Headers</h3>
-        <p className="text-(--moss-secondary-text)">This section will contain request headers configuration</p>
+        <p className="text-(--moss-secondary-text)">This section will contain endpoint headers configuration</p>
         <p className="text-sm text-(--moss-secondary-text)">Coming soon...</p>
       </div>
     </div>

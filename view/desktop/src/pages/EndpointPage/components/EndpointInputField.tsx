@@ -6,7 +6,7 @@ import { cn } from "@/utils";
 
 import { areUrlsEquivalent } from "../utils/urlParser";
 
-interface RequestInputFieldProps {
+interface EndpointInputFieldProps {
   className?: string;
   initialMethod?: string;
   initialUrl?: string;
@@ -17,7 +17,7 @@ interface RequestInputFieldProps {
 
 const HTTP_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"];
 
-export const RequestInputField = memo(
+export const EndpointInputField = memo(
   ({
     className,
     initialMethod = "POST",
@@ -25,7 +25,7 @@ export const RequestInputField = memo(
     onSend,
     onUrlChange,
     onMethodChange,
-  }: RequestInputFieldProps) => {
+  }: EndpointInputFieldProps) => {
     const [method, setMethod] = useState(initialMethod);
     const [url, setUrl] = useState(initialUrl);
     const lastExternalUrlRef = useRef(initialUrl);

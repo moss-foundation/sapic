@@ -47,7 +47,7 @@ export const parameterSuggestions: Record<string, ParameterSuggestion> = {
   organizationid: { type: "string", description: "Organization identifier" },
   projectid: { type: "string", description: "Project identifier" },
   sessionid: { type: "string", description: "Session identifier" },
-  requestid: { type: "string", description: "Request identifier" },
+  endpointid: { type: "string", description: "Endpoint identifier" },
   transactionid: { type: "string", description: "Transaction identifier" },
 
   // Status & State
@@ -115,7 +115,7 @@ export const parameterSuggestions: Record<string, ParameterSuggestion> = {
   cache: { type: "bool", description: "Enable/disable caching" },
   nocache: { type: "bool", description: "Bypass cache" },
   refresh: { type: "bool", description: "Force refresh" },
-  timeout: { type: "number", description: "Request timeout in seconds" },
+  timeout: { type: "number", description: "Endpoint timeout in seconds" },
 
   // Debug & Testing
   debug: { type: "bool", description: "Enable debug mode" },

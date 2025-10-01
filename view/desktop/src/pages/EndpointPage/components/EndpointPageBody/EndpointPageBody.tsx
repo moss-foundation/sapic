@@ -4,10 +4,10 @@ import { OutlinedTabs } from "@/components";
 import { PageWrapper } from "@/components/PageView/PageWrapper";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
 
-import { RequestPageProps } from "../../RequestPage";
+import { EndpointPageProps } from "../../EndpointPage";
 import { AlertsTab, InsightsTab, IssuesTab, MockTab, OverviewTab, RunTab } from "./tabs";
 
-export const RequestPageBody = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
+export const EndpointPageBody = ({ ...props }: IDockviewPanelProps<EndpointPageProps>) => {
   const [activeTab, setActiveTab] = useState("run");
 
   const tabs = [

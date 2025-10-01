@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 
-import { areUrlsEquivalent, parseUrl, reconstructUrl } from "@/pages/RequestPage/utils/urlParser";
+import { areUrlsEquivalent, parseUrl, reconstructUrl } from "@/pages/EndpointPage/utils/urlParser";
 
 export interface UrlParameter {
   key: string;
@@ -8,7 +8,7 @@ export interface UrlParameter {
   disabled?: boolean;
 }
 
-export interface RequestPageUrl {
+export interface EndpointPageUrl {
   raw: string;
   originalPathTemplate: string;
   port: number | null;
@@ -17,12 +17,12 @@ export interface RequestPageUrl {
   query_params: UrlParameter[];
 }
 
-export interface RequestPageData {
-  url: RequestPageUrl;
+export interface EndpointPageData {
+  url: EndpointPageUrl;
 }
 
-export const useRequestPage = () => {
-  const [requestData, setRequestData] = useState<RequestPageData>({
+export const useEndpointPage = () => {
+  const [endpointData, setEndpointData] = useState<EndpointPageData>({
     url: {
       raw: "{{baseUrl}}/docs/:docId/tables/:tableIdOrName/columns?sort={{sortValue}}&limit=2",
       originalPathTemplate: "{{baseUrl}}/docs/:docId/tables/:tableIdOrName/columns",
@@ -43,7 +43,7 @@ export const useRequestPage = () => {
 
   const setUrl = useCallback((rawUrl: string) => {
     const parsedUrl = parseUrl(rawUrl);
-    setRequestData((prev) => ({
+    setEndpointData((prev) => ({
       ...prev,
       url: {
         ...prev.url,
@@ -55,12 +55,12 @@ export const useRequestPage = () => {
     }));
   }, []);
 
-  const updateRequestData = useCallback((data: RequestPageData) => {
-    setRequestData(data);
+  const updateEndpointData = useCallback((data: EndpointPageData) => {
+    setEndpointData(data);
   }, []);
 
   const updatePathParams = useCallback((pathParams: UrlParameter[]) => {
-    setRequestData((prev) => ({
+    setEndpointData((prev) => ({
       ...prev,
       url: {
         ...prev.url,
@@ -70,7 +70,7 @@ export const useRequestPage = () => {
   }, []);
 
   const updateQueryParams = useCallback((queryParams: UrlParameter[]) => {
-    setRequestData((prev) => ({
+    setEndpointData((prev) => ({
       ...prev,
       url: {
         ...prev.url,
@@ -80,7 +80,7 @@ export const useRequestPage = () => {
   }, []);
 
   const updatePathParam = useCallback((index: number, param: UrlParameter) => {
-    setRequestData((prev) => {
+    setEndpointData((prev) => {
       const newPathParams = [...prev.url.path_params];
       newPathParams[index] = param;
 
@@ -95,7 +95,7 @@ export const useRequestPage = () => {
   }, []);
 
   const updateQueryParam = useCallback((index: number, param: UrlParameter) => {
-    setRequestData((prev) => {
+    setEndpointData((prev) => {
       const newQueryParams = [...prev.url.query_params];
       newQueryParams[index] = param;
 
@@ -110,7 +110,7 @@ export const useRequestPage = () => {
   }, []);
 
   const addPathParam = useCallback((param: UrlParameter) => {
-    setRequestData((prev) => ({
+    setEndpointData((prev) => ({
       ...prev,
       url: {
         ...prev.url,
@@ -120,7 +120,7 @@ export const useRequestPage = () => {
   }, []);
 
   const addQueryParam = useCallback((param: UrlParameter) => {
-    setRequestData((prev) => ({
+    setEndpointData((prev) => ({
       ...prev,
       url: {
         ...prev.url,
@@ -130,7 +130,7 @@ export const useRequestPage = () => {
   }, []);
 
   const removePathParam = useCallback((index: number) => {
-    setRequestData((prev) => ({
+    setEndpointData((prev) => ({
       ...prev,
       url: {
         ...prev.url,
@@ -140,7 +140,7 @@ export const useRequestPage = () => {
   }, []);
 
   const removeQueryParam = useCallback((index: number) => {
-    setRequestData((prev) => ({
+    setEndpointData((prev) => ({
       ...prev,
       url: {
         ...prev.url,
@@ -150,9 +150,9 @@ export const useRequestPage = () => {
   }, []);
 
   const reconstructUrlFromParams = useCallback(() => {
-    const { path_params, query_params, originalPathTemplate } = requestData.url;
+    const { path_params, query_params, originalPathTemplate } = endpointData.url;
 
-    let reconstructedPath = originalPathTemplate || requestData.url.raw.split("?")[0];
+    let reconstructedPath = originalPathTemplate || endpointData.url.raw.split("?")[0];
 
     const enabledPathParams = path_params.filter((param) => !param.disabled);
     const currentParamKeys = new Set(enabledPathParams.map((param) => param.key));
@@ -175,8 +175,8 @@ export const useRequestPage = () => {
     const newUrl = reconstructUrl(reconstructedPath, [], enabledQueryParams);
 
     // Use normalized comparison to prevent unnecessary updates
-    if (!areUrlsEquivalent(newUrl, requestData.url.raw)) {
-      setRequestData((prev) => ({
+    if (!areUrlsEquivalent(newUrl, endpointData.url.raw)) {
+      setEndpointData((prev) => ({
         ...prev,
         url: {
           ...prev.url,
@@ -184,12 +184,12 @@ export const useRequestPage = () => {
         },
       }));
     }
-  }, [requestData.url]);
+  }, [endpointData.url]);
 
-  const getRequestUrlWithPathValues = useCallback(() => {
-    const { path_params, query_params, originalPathTemplate } = requestData.url;
+  const getEndpointUrlWithPathValues = useCallback(() => {
+    const { path_params, query_params, originalPathTemplate } = endpointData.url;
 
-    let requestPath = originalPathTemplate || requestData.url.raw.split("?")[0];
+    let endpointPath = originalPathTemplate || endpointData.url.raw.split("?")[0];
 
     // Replace path parameters with actual values for HTTP requests
     const enabledPathParams = path_params.filter((param) => !param.disabled);
@@ -198,22 +198,22 @@ export const useRequestPage = () => {
       if (param.key && param.key.trim() !== "") {
         const paramPattern = new RegExp(`:${param.key}\\b`, "g");
         if (param.value && param.value.trim() !== "") {
-          requestPath = requestPath.replace(paramPattern, param.value);
+          endpointPath = endpointPath.replace(paramPattern, param.value);
         }
       }
     });
 
     const enabledQueryParams = query_params.filter((param) => !param.disabled);
 
-    return reconstructUrl(requestPath, [], enabledQueryParams);
-  }, [requestData.url]);
+    return reconstructUrl(endpointPath, [], enabledQueryParams);
+  }, [endpointData.url]);
 
   return {
-    requestData,
+    endpointData,
     httpMethod,
     setUrl,
     setHttpMethod,
-    updateRequestData,
+    updateEndpointData,
     updatePathParams,
     updateQueryParams,
     updatePathParam,
@@ -223,6 +223,6 @@ export const useRequestPage = () => {
     removePathParam,
     removeQueryParam,
     reconstructUrlFromParams,
-    getRequestUrlWithPathValues,
+    getEndpointUrlWithPathValues,
   };
 };

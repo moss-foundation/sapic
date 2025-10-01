@@ -1,31 +1,31 @@
 import { useCallback, useState } from "react";
 
 import { Resizable, ResizablePanel } from "@/lib/ui";
+import { useEndpointPage } from "@/pages/EndpointPage/hooks/useEndpointPage";
 import { cn } from "@/utils/cn";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
 
-import { useRequestPage } from "../../../../hooks/useRequestPage";
-import { RequestPageProps } from "../../../../RequestPage";
+import { EndpointPageProps } from "../../../../EndpointPage";
 import { areUrlsEquivalent, parseUrl } from "../../../../utils/urlParser";
-import { RequestInputField } from "../../../RequestInputField";
+import { EndpointInputField } from "../../../EndpointInputField";
 import { InputView } from "./InputView/InputView";
 import { OutputView } from "./OutputView/OutputView";
 
-export const RunTab = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
-  const { requestData, httpMethod, setHttpMethod, updateRequestData } = useRequestPage();
+export const RunTab = ({ ...props }: IDockviewPanelProps<EndpointPageProps>) => {
+  const { endpointData, httpMethod, setHttpMethod, updateEndpointData } = useEndpointPage();
   const [isResizableVertical, setIsResizableVertical] = useState(false);
 
-  const handleSendRequest = (method: string, url: string) => {
-    console.log("Sending request:", { method, url });
+  const handleSendEndpoint = (method: string, url: string) => {
+    console.log("Sending endpoint:", { method, url });
     // TODO: Implement actual request sending logic
-    // Use getRequestUrlWithPathValues() for backend requests with actual path values
+    // Use getRequestUrlWithPathValues() for backend endpoints with actual path values
     setIsResizableVertical(!isResizableVertical);
   };
 
   const handleUrlChange = useCallback(
     (url: string) => {
       // Prevent unnecessary updates if URLs are functionally equivalent
-      if (areUrlsEquivalent(url, requestData.url.raw)) {
+      if (areUrlsEquivalent(url, endpointData.url.raw)) {
         return;
       }
 
@@ -41,17 +41,17 @@ export const RunTab = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
           query_params: parsed.url.query_params,
         },
       };
-      updateRequestData(updatedData);
+      updateEndpointData(updatedData);
     },
-    [requestData.url.raw, updateRequestData]
+    [endpointData.url.raw, updateEndpointData]
   );
 
   return (
     <div className="flex grow flex-col gap-3">
-      <RequestInputField
+      <EndpointInputField
         initialMethod={httpMethod}
-        initialUrl={requestData.url.raw}
-        onSend={handleSendRequest}
+        initialUrl={endpointData.url.raw}
+        onSend={handleSendEndpoint}
         onUrlChange={handleUrlChange}
         onMethodChange={(method) => {
           if (method !== httpMethod) {

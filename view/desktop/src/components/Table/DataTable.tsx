@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 
 import { Scrollbar } from "@/lib/ui";
-import { detectValueType, getParameterSuggestions } from "@/pages/RequestPage/utils/urlParser";
+import { detectValueType, getParameterSuggestions } from "@/pages/EndpointPage/utils/urlParser";
 import {
   getCoreRowModel,
   getSortedRowModel,

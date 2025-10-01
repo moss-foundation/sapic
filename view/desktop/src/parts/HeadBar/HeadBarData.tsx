@@ -37,9 +37,9 @@ const createStandardMenuItems = (prefix = ""): MenuItemProps[] => {
       icon: "Add",
       items: [
         {
-          id: `${idPrefix}new-request`,
+          id: `${idPrefix}new-endpoint`,
           type: "action",
-          label: "Request",
+          label: "Endpoint",
         },
         {
           id: `${idPrefix}new-project`,
