@@ -2,14 +2,13 @@ import { useEffect, useRef, useState } from "react";
 
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { useFocusInputOnMount } from "@/hooks";
-import { PillTabs } from "@/lib/ui/Tabs/index";
 import { cn } from "@/utils";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { CreateProjectGitParams } from "@repo/moss-workspace";
 
 import { BranchInput } from "../components/BranchInput";
 import { NameInput } from "../components/NameInput";
-import { ProviderIcon } from "../components/ProviderIcon";
+import ProviderTabs from "../components/ProviderTabs";
 import { RepositoryInput } from "../components/RepositoryInput";
 import { DEFAULT_BRANCH, DEFAULT_NAME, DEFAULT_PROVIDER, DEFAULT_REPOSITORY, DEFAULT_VCS } from "../defaults";
 
@@ -73,40 +72,30 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
         </div>
 
         <div className="grid grid-cols-[min-content_1fr] items-center gap-x-3 gap-y-6 pt-3 pb-2 pl-5">
-          <PillTabs.Root
+          <ProviderTabs.Root
             value={provider}
             onValueChange={(value) => setProvider(value as "github" | "gitlab")}
             className="contents"
           >
-            <div className={cn(!vcs && "opacity-50")}>Provider:</div>
-            <PillTabs.List className="col-span-2 grid h-min grid-cols-subgrid grid-rows-subgrid">
+            <ProviderTabs.List className="col-span-2 grid h-min grid-cols-subgrid grid-rows-subgrid">
+              <div className={cn(!vcs && "opacity-50")}>Provider:</div>
               <div className="flex gap-2">
-                <PillTabs.Trigger
-                  value="github"
-                  label="GitHub"
-                  leadingContent={<ProviderIcon icon="github" />}
-                  disabled={!vcs}
-                />
-                <PillTabs.Trigger
-                  value="gitlab"
-                  label="GitLab"
-                  leadingContent={<ProviderIcon icon="gitlab" />}
-                  disabled={!vcs}
-                />
+                <ProviderTabs.Trigger value="github" label="GitHub" icon="github" disabled={!vcs} />
+                <ProviderTabs.Trigger value="gitlab" label="GitLab" icon="gitlab" disabled={!vcs} />
               </div>
-            </PillTabs.List>
+            </ProviderTabs.List>
 
             <>
-              <PillTabs.Content value="github" className="contents">
+              <ProviderTabs.Content value="github" className="contents">
                 <RepositoryInput repository={repository} setRepository={setRepository} disabled={!vcs} />
                 <BranchInput branch={branch} setBranch={setBranch} disabled={!vcs} />
-              </PillTabs.Content>
-              <PillTabs.Content value="gitlab" className="contents">
+              </ProviderTabs.Content>
+              <ProviderTabs.Content value="gitlab" className="contents">
                 <RepositoryInput repository={repository} setRepository={setRepository} disabled={!vcs} />
                 <BranchInput branch={branch} setBranch={setBranch} disabled={!vcs} />
-              </PillTabs.Content>
+              </ProviderTabs.Content>
             </>
-          </PillTabs.Root>
+          </ProviderTabs.Root>
         </div>
 
         {/* {gitProvider === null && (

@@ -309,7 +309,7 @@
 }
 
 .dv-pane-container .dv-view:not(:first-child) .dv-pane > .dv-pane-header {
-  @apply border-t border-(--moss-border-color);
+  @apply border-t border-[var(--moss-paneview-header-border-color)];
 }
 
 .dv-pane-container .dv-view .dv-default-header {
@@ -463,7 +463,7 @@
 /*--------------------dv-split-view-contain--------------------*/
 
 .dv-tabs-and-actions-container {
-  @apply box-border flex h-8.75 shrink-0 bg-[var(--moss-tabs-and-actions-container-background-color)] text-[var(--moss-tabs-and-actions-container-font-size)];
+  @apply box-border flex h-[var(--moss-tabs-and-actions-container-height)] shrink-0 bg-[var(--moss-tabs-and-actions-container-background-color)] text-[var(--moss-tabs-and-actions-container-font-size)];
 }
 
 .dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab .dv-tabs-container {

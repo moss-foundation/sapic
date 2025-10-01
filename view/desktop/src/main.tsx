@@ -5,6 +5,8 @@ import "@/app/i18n";
 
 import { PageLoader } from "./components/PageLoader";
 
+import "allotment/dist/style.css";
+import "simplebar-react/dist/simplebar.min.css";
 import "./assets/index.css";
 
 import { scan } from "react-scan"; // must be imported before React and React DOM

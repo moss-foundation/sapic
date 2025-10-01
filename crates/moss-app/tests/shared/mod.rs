@@ -4,6 +4,7 @@ use moss_applib::{
     context::{AsyncContext, MutableContext},
     mock::MockAppRuntime,
 };
+use moss_configuration::registry::{AppConfigurationRegistry, ConfigurationRegistry};
 use moss_fs::RealFileSystem;
 use moss_git_hosting_provider::{
     github::{
@@ -18,6 +19,7 @@ use moss_git_hosting_provider::{
 use moss_keyring::test::MockKeyringClient;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_testutils::random_name::random_string;
+use moss_theme::registry::{AppThemeRegistry, ThemeRegistry};
 use reqwest::ClientBuilder as HttpClientBuilder;
 use std::{future::Future, path::PathBuf, pin::Pin, sync::Arc, time::Duration};
 use tauri::Manager;
@@ -156,6 +158,9 @@ pub async fn set_up_test_app() -> (
         http_client.clone(),
         ACCOUNT_AUTH_BASE_URL.to_string(),
     ));
+
+    // Technically, it's now user_dir and should be adapted and renamed in the task:
+    // https://mossland.atlassian.net/browse/SAPIC-546
     let app_path = random_app_dir_path();
     let app_delegate = {
         let delegate = AppDelegate::<MockAppRuntime>::new(tao_app_handle.clone());
@@ -165,6 +170,11 @@ pub async fn set_up_test_app() -> (
         <dyn GitHubApiClient<MockAppRuntime>>::set_global(&delegate, mock_github_api_client());
         <dyn GitLabAuthAdapter<MockAppRuntime>>::set_global(&delegate, mock_gitlab_auth_adapter());
         <dyn GitLabApiClient<MockAppRuntime>>::set_global(&delegate, mock_gitlab_api_client());
+        <dyn ConfigurationRegistry>::set_global(
+            &delegate,
+            AppConfigurationRegistry::new().unwrap(), // TODO: probably should mock this
+        );
+        <dyn ThemeRegistry>::set_global(&delegate, AppThemeRegistry::new()); // TODO: probably should mock this
 
         delegate
     };
@@ -181,8 +191,16 @@ pub async fn set_up_test_app() -> (
     let profiles_abs_path = app_path.join("profiles");
     let temp_abs_path = app_path.join("tmp");
 
+    let application_abs_path = app_path.join("app");
+
     {
-        tokio::fs::create_dir_all(&app_path).await.unwrap();
+        tokio::fs::create_dir_all(&application_abs_path.join("extensions"))
+            .await
+            .unwrap();
+        tokio::fs::create_dir_all(&app_path.join("extensions"))
+            .await
+            .unwrap();
+
         tokio::fs::create_dir(&logs_abs_path).await.unwrap();
         tokio::fs::create_dir(&workspaces_abs_path).await.unwrap();
         tokio::fs::create_dir(&globals_abs_path).await.unwrap();
@@ -219,6 +237,7 @@ pub async fn set_up_test_app() -> (
         fs.clone(),
         keyring,
         auth_api_client,
+        vec![],
     )
     .build(
         &ctx,
@@ -226,6 +245,9 @@ pub async fn set_up_test_app() -> (
             themes_dir: themes_abs_path,
             locales_dir: locales_abs_path,
             logs_dir: logs_abs_path,
+
+            application_dir: application_abs_path,
+            user_dir: app_path,
         },
     )
     .await;

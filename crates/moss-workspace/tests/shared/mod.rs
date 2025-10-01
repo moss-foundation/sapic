@@ -8,7 +8,7 @@ use moss_applib::{
     mock::MockAppRuntime,
 };
 use moss_fs::RealFileSystem;
-use moss_git_hosting_provider::{github::RealGitHubApiClient, gitlab::RealGitLabApiClient};
+use moss_git_hosting_provider::{github::AppGitHubApiClient, gitlab::AppGitLabApiClient};
 use moss_testutils::random_name::random_workspace_name;
 use moss_user::profile::Profile;
 use moss_workspace::{
@@ -68,8 +68,8 @@ pub async fn setup_test_workspace() -> (
             .build()
             .expect("failed to build http client");
 
-        let github_client = RealGitHubApiClient::new(http_client.clone());
-        let gitlab_client = RealGitLabApiClient::new(http_client.clone());
+        let github_client = AppGitHubApiClient::new(http_client.clone());
+        let gitlab_client = AppGitLabApiClient::new(http_client.clone());
 
         tao_app_handle.manage(http_client);
         tao_app_handle.manage(github_client);

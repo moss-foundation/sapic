@@ -1545,6 +1545,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.106",
+ "unicode-xid",
 ]
 
 [[package]]
@@ -1565,8 +1566,10 @@ dependencies = [
  "moss_app_delegate",
  "moss_applib",
  "moss_common",
+ "moss_configuration",
  "moss_db",
  "moss_environment",
+ "moss_extension_points",
  "moss_fs",
  "moss_git_hosting_provider",
  "moss_keyring",
@@ -1574,6 +1577,7 @@ dependencies = [
  "moss_server_api",
  "moss_storage",
  "moss_text",
+ "moss_theme",
  "moss_user",
  "moss_workspace",
  "objc",
@@ -3578,10 +3582,12 @@ dependencies = [
  "moss_applib",
  "moss_bindingutils",
  "moss_common",
- "moss_contrib",
+ "moss_configuration",
  "moss_db",
  "moss_edit",
  "moss_environment",
+ "moss_extension",
+ "moss_extension_points",
  "moss_fs",
  "moss_git_hosting_provider",
  "moss_id_macro",
@@ -3591,6 +3597,7 @@ dependencies = [
  "moss_storage",
  "moss_testutils",
  "moss_text",
+ "moss_theme",
  "moss_user",
  "moss_workspace",
  "nanoid",
@@ -3666,14 +3673,18 @@ dependencies = [
 ]
 
 [[package]]
-name = "moss_contrib"
+name = "moss_configuration"
 version = "0.1.0"
 dependencies = [
  "inventory",
+ "joinerror",
+ "moss_app_delegate",
+ "moss_applib",
+ "moss_logging",
  "moss_text",
  "serde",
  "serde_json",
- "static_json",
+ "tracing",
  "ts-rs",
 ]
 
@@ -3733,6 +3744,41 @@ dependencies = [
  "tauri",
  "tokio",
  "ts-rs",
+]
+
+[[package]]
+name = "moss_extension"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "inventory",
+ "joinerror",
+ "moss_app_delegate",
+ "moss_applib",
+ "moss_fs",
+ "moss_logging",
+ "serde",
+ "serde_json",
+ "tracing",
+]
+
+[[package]]
+name = "moss_extension_points"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "inventory",
+ "joinerror",
+ "moss_app_delegate",
+ "moss_applib",
+ "moss_extension",
+ "moss_fs",
+ "moss_logging",
+ "moss_project",
+ "moss_theme",
+ "serde",
+ "serde_json",
+ "tokio",
 ]
 
 [[package]]
@@ -3863,6 +3909,7 @@ dependencies = [
  "hcl-rs",
  "image",
  "indexmap 2.11.0",
+ "inventory",
  "joinerror",
  "json-patch 4.0.0",
  "moss_api",
@@ -3873,6 +3920,7 @@ dependencies = [
  "moss_db",
  "moss_edit",
  "moss_environment",
+ "moss_extension",
  "moss_fs",
  "moss_git",
  "moss_git_hosting_provider",
@@ -3943,6 +3991,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "moss_theme"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "derive_more 2.0.1",
+ "inventory",
+ "joinerror",
+ "moss_app_delegate",
+ "moss_applib",
+ "moss_extension",
+ "moss_fs",
+ "moss_id_macro",
+ "moss_logging",
+ "regorus",
+ "serde",
+ "serde_json",
+ "tokio",
+ "ts-rs",
+]
+
+[[package]]
 name = "moss_user"
 version = "0.1.0"
 dependencies = [
@@ -3991,10 +4060,11 @@ dependencies = [
  "moss_applib",
  "moss_bindingutils",
  "moss_common",
- "moss_contrib",
+ "moss_configuration",
  "moss_db",
  "moss_edit",
  "moss_environment",
+ "moss_extension",
  "moss_fs",
  "moss_git",
  "moss_git_hosting_provider",
@@ -6804,14 +6874,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "06794f8f6c5c898b3275aebefa6b8a1cb24cd2c6c79397ab15774837a0bc5755"
 dependencies = [
  "winapi-util",
-]
-
-[[package]]
-name = "theme-install"
-version = "0.1.0"
-dependencies = [
- "clap",
- "moss_app",
 ]
 
 [[package]]

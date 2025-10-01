@@ -1,5 +1,5 @@
 use moss_applib::{TauriAppRuntime, Wry, context::MutableContext};
-use moss_git_hosting_provider::{GitAuthAdapter, gitlab::RealGitLabAuthAdapter};
+use moss_git_hosting_provider::{GitAuthAdapter, gitlab::AppGitLabAuthAdapter};
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use reqwest::Client;
 use std::sync::Arc;
@@ -15,7 +15,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     .into();
     let worker_url = auth_api_client.base_url();
 
-    let adapter = RealGitLabAuthAdapter::<TauriAppRuntime<Wry>>::new(
+    let adapter = AppGitLabAuthAdapter::<TauriAppRuntime<Wry>>::new(
         auth_api_client,
         worker_url,
         callback_port,
