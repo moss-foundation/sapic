@@ -1,4 +1,3 @@
-#![cfg(feature = "integration-tests")]
 use atomic_fs::Rollback;
 use nanoid::nanoid;
 use std::path::{Path, PathBuf};

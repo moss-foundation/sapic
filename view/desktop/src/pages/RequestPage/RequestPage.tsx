@@ -1,0 +1,40 @@
+import { PageView } from "@/components";
+import { PageWrapper } from "@/components/PageView/PageWrapper";
+import { ProjectTreeNode } from "@/components/ProjectTree/types";
+import { useStreamProjectEntries } from "@/hooks";
+import { EntryKind } from "@repo/moss-project";
+import { IDockviewPanelProps } from "@repo/moss-tabs";
+
+import { RequestPageHeader } from "./RequestPageHeader/RequestPageHeader";
+import { RequestPageTabs } from "./RequestPageTabs";
+
+export interface RequestPageProps {
+  node: ProjectTreeNode;
+  projectId: string;
+  iconType: EntryKind;
+}
+
+const RequestPage = ({ ...props }: IDockviewPanelProps<RequestPageProps>) => {
+  const { data: streamedEntries } = useStreamProjectEntries(props.params?.projectId);
+  const node = streamedEntries?.find((entry) => entry.id === props.params?.node?.id);
+
+  return (
+    <PageView>
+      {node && <RequestPageHeader node={node} projectId={props.params?.projectId ?? ""} api={props.api} />}
+
+      {node ? (
+        <RequestPageTabs {...props} />
+      ) : (
+        <PageWrapper>
+          <div className="flex flex-1 items-center justify-center">
+            <div className="text-center">
+              <p className="mb-4 text-sm text-(--moss-secondary-text)">No request selected</p>
+            </div>
+          </div>
+        </PageWrapper>
+      )}
+    </PageView>
+  );
+};
+
+export { RequestPage };

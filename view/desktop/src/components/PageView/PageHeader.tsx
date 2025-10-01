@@ -1,11 +1,11 @@
 import { ReactNode, useEffect, useState } from "react";
 
-import { InputPlain } from "@/components";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 import { Icon, Icons } from "@/lib/ui";
 import { cn } from "@/utils";
 
 import { Divider } from "../Divider";
+import InputPlain from "../InputPlain";
 
 export interface PageHeaderProps extends IDockviewPanelProps {
   icon?: Icons;

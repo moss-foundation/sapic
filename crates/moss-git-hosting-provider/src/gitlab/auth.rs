@@ -50,15 +50,15 @@ impl From<GitLabPkceTokenExchangeResponse> for GitLabPkceTokenCredentials {
     }
 }
 
-pub struct RealGitLabAuthAdapter<R: AppRuntime> {
+pub struct AppGitLabAuthAdapter<R: AppRuntime> {
     api_client: Arc<dyn GitLabPkceTokenExchangeApiReq<R>>,
     url: Arc<String>,
     callback_port: u16,
 }
 
-impl<R: AppRuntime> GitLabAuthAdapter<R> for RealGitLabAuthAdapter<R> {}
+impl<R: AppRuntime> GitLabAuthAdapter<R> for AppGitLabAuthAdapter<R> {}
 
-impl<R: AppRuntime> RealGitLabAuthAdapter<R> {
+impl<R: AppRuntime> AppGitLabAuthAdapter<R> {
     pub fn new(
         api_client: Arc<dyn GitLabPkceTokenExchangeApiReq<R>>,
         url: Arc<String>,
@@ -73,7 +73,7 @@ impl<R: AppRuntime> RealGitLabAuthAdapter<R> {
 }
 
 #[async_trait]
-impl<R: AppRuntime> GitAuthAdapter<R> for RealGitLabAuthAdapter<R> {
+impl<R: AppRuntime> GitAuthAdapter<R> for AppGitLabAuthAdapter<R> {
     type PkceToken = GitLabPkceTokenCredentials;
 
     async fn auth_with_pkce(&self, ctx: &R::AsyncContext) -> joinerror::Result<Self::PkceToken> {
