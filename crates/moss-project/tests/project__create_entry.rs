@@ -57,7 +57,7 @@ async fn create_dir_entry_success() {
     assert!(config_content.contains(&output.id.to_string()));
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    //std::fs::remove_dir_all(project_path).unwrap();
 }
 
 #[tokio::test]

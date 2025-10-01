@@ -35,7 +35,7 @@ pub fn random_entry_name() -> String {
     format!("Test_{}_Entry", random_string(10))
 }
 
-fn random_project_path() -> PathBuf {
+fn random_test_path() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
         .join("data")
@@ -50,18 +50,22 @@ pub async fn create_test_project() -> (
 ) {
     let mock_app = tauri::test::mock_app();
     let ctx = MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
-    let internal_abs_path = random_project_path();
-    let temp_path = internal_abs_path.join("tmp");
+    let test_path = random_test_path();
+    let resource_path = test_path.join("resources");
+    let user_path = test_path.join("users");
+    let temp_path = test_path.join("tmp");
+    let project_path = test_path.join("project");
 
-    std::fs::create_dir_all(&internal_abs_path).unwrap();
+    std::fs::create_dir_all(&resource_path).unwrap();
+    std::fs::create_dir_all(&user_path).unwrap();
     std::fs::create_dir_all(&temp_path).unwrap();
+    std::fs::create_dir_all(&project_path).unwrap();
     let fs = Arc::new(RealFileSystem::new(&temp_path));
-
-    let abs_path: Arc<Path> = internal_abs_path.clone().into();
 
     let app_delegate = {
         let delegate = AppDelegate::new(mock_app.handle().clone());
-        delegate.set_app_dir(internal_abs_path);
+        delegate.set_resource_dir(resource_path.clone());
+        delegate.set_user_dir(user_path.clone());
         delegate
     };
 
@@ -72,7 +76,7 @@ pub async fn create_test_project() -> (
             ProjectCreateParams {
                 name: Some(random_project_name()),
                 external_abs_path: None,
-                internal_abs_path: abs_path.clone(),
+                internal_abs_path: project_path.clone().into(),
                 git_params: None,
                 icon_path: None,
             },
@@ -80,7 +84,7 @@ pub async fn create_test_project() -> (
         .await
         .unwrap();
 
-    (ctx, app_delegate, abs_path, project)
+    (ctx, app_delegate, project_path.into(), project)
 }
 
 #[allow(dead_code)]
