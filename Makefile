@@ -193,7 +193,7 @@ gen-bindings: \
 ## Export CSS variables to JSON
 .PHONY: export-css-variables
 export-css-variables:
-	@cd $(SCRIPTS_DIR) && $(UV) run css_variables_exporter.py --source ../assets/themes/light.css \
+	@cd $(SCRIPTS_DIR) && $(UV) run css_variables_exporter.py --source ../extensions/theme-defaults/themes/light-default.json \
 														   --dest ../packages/config-eslint/moss-lint-plugin/css_variables.json
 	@$(PNPM) prettier --plugin=prettier-plugin-tailwindcss --write packages/config-eslint/moss-lint-plugin/css_variables.json
 
