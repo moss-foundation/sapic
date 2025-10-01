@@ -8,8 +8,7 @@ export const PageView = ({ children, className }: PageViewProps) => {
     <Scrollbar
       className={cn("background-(--moss-primary-background) relative flex grow flex-col", className)}
       classNames={{
-        contentEl: "flex grow flex-col",
-        contentWrapper: "flex grow flex-col",
+        contentEl: "flex grow flex-col h-full",
       }}
     >
       {children}
