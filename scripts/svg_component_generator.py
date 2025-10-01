@@ -68,27 +68,42 @@ def to_lower_camel_case(snake_str):
 
 
 
-def extract_css_palette(css_path: Path) -> Dict[str, str]:
+# def extract_css_palette(css_path: Path) -> Dict[str, str]:
+#     """
+#     Parse a CSS file and extract custom property names for colors.
+#     Returns mapping from normalized hex value to CSS variable name.
+#     """
+#     logging.debug(f"Reading CSS palette from %s", css_path)
+#     content = css_path.read_text()
+#     rules = tinycss2.parse_stylesheet(content, skip_comments=True, skip_whitespace=True)
+#
+#     palette: Dict[str, str] = {}
+#     for rule in rules:
+#         if rule.type != "qualified-rule":
+#             continue
+#         for decl in tinycss2.parse_declaration_list(rule.content):
+#             if decl.type == "declaration" and decl.lower_name.startswith("--")\
+#                     and decl.lower_name.split("-")[-1].isdigit():
+#                 vals = [tok for tok in decl.value if tok.type == "hash"]
+#                 if len(vals) == 1:
+#                     hex_code = webcolors.normalize_hex(f"#{vals[0].value}")
+#                     palette[hex_code] = decl.lower_name
+#                     logging.debug("Mapped %s → %s", hex_code, decl.lower_name)
+#     return palette
+
+def extract_palette_from_json(json_path: Path) -> Dict[str, str]:
     """
-    Parse a CSS file and extract custom property names for colors.
+    Parse a theme JSON file and extract custom property names for colors.
     Returns mapping from normalized hex value to CSS variable name.
     """
-    logging.debug(f"Reading CSS palette from %s", css_path)
-    content = css_path.read_text()
-    rules = tinycss2.parse_stylesheet(content, skip_comments=True, skip_whitespace=True)
-
+    logging.debug(f"Reading JSON palette from %s", json_path)
+    palette_json = json.loads(json_path.read_text())["palette"]
     palette: Dict[str, str] = {}
-    for rule in rules:
-        if rule.type != "qualified-rule":
-            continue
-        for decl in tinycss2.parse_declaration_list(rule.content):
-            if decl.type == "declaration" and decl.lower_name.startswith("--")\
-                    and decl.lower_name.split("-")[-1].isdigit():
-                vals = [tok for tok in decl.value if tok.type == "hash"]
-                if len(vals) == 1:
-                    hex_code = webcolors.normalize_hex(f"#{vals[0].value}")
-                    palette[hex_code] = decl.lower_name
-                    logging.debug("Mapped %s → %s", hex_code, decl.lower_name)
+    for key, item in palette_json.items():
+        hex_code = webcolors.normalize_hex(item["value"])
+        palette[hex_code] = key
+        logging.debug("Mapped %s → %s", hex_code, key)
+
     return palette
 
 
@@ -241,8 +256,8 @@ def svg_to_component(name: str, svg_xml: str) -> str:
 
 def generate_components(
         icons_dir: Path,
-        light_css: Path,
-        dark_css: Path,
+        light_json: Path,
+        dark_json: Path,
         output_dir: Path
 ) -> None:
     """
@@ -254,8 +269,8 @@ def generate_components(
         return
 
     plan_data = json.loads(plan_file.read_text())
-    light_palette = extract_css_palette(light_css)
-    dark_palette = extract_css_palette(dark_css)
+    light_palette = extract_palette_from_json(light_json)
+    dark_palette = extract_palette_from_json(dark_json)
 
     # Remove old build artifacts
     if output_dir.exists():
@@ -367,8 +382,8 @@ def main():
 
     gen_parser = subparsers.add_parser('gen', help='Generate React components')
     gen_parser.add_argument('--source', type=Path, required=True, help='Source icons folder')
-    gen_parser.add_argument('--light-css', type=Path, required=True, help='Light theme CSS file')
-    gen_parser.add_argument('--dark-css', type=Path, required=True, help='Dark theme CSS file')
+    gen_parser.add_argument('--light-json', type=Path, required=True, help='Light theme JSON file')
+    gen_parser.add_argument('--dark-json', type=Path, required=True, help='Dark theme JSON file')
     gen_parser.add_argument('--output-dir', type=Path, required=True, help='Output directory')
 
     args = parser.parse_args()
@@ -377,7 +392,7 @@ def main():
     if args.command == 'plan':
         create_plan(args.source, args.force)
     elif args.command == 'gen':
-        generate_components(args.source, args.light_css, args.dark_css, args.output_dir)
+        generate_components(args.source, args.light_json, args.dark_json, args.output_dir)
     else:
         parser.print_help()
 

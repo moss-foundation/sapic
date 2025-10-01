@@ -109,8 +109,8 @@ gen-typedoc:
 gen-icons:
 	@cd $(SCRIPTS_DIR) && $(UV) run svg_component_generator.py plan --source ${ICONS_DIR}
 	@cd $(SCRIPTS_DIR) && $(UV) run svg_component_generator.py gen --source ${ICONS_DIR} \
-								 --light-css ../assets/themes/light.css \
-								 --dark-css ../assets/themes/dark.css \
+								 --light-json ../extensions/theme-defaults/themes/light-default.json \
+								 --dark-json ../extensions/theme-defaults/themes/dark-default.json \
 								 --output-dir ${ICONS_OUTPUT_DIR}
 
 # ======================================================
