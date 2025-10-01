@@ -19,6 +19,7 @@ use moss_git_hosting_provider::{
 use moss_keyring::test::MockKeyringClient;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_testutils::random_name::random_string;
+use moss_theme::registry::{AppThemeRegistry, ThemeRegistry};
 use reqwest::ClientBuilder as HttpClientBuilder;
 use std::{future::Future, path::PathBuf, pin::Pin, sync::Arc, time::Duration};
 use tauri::Manager;
@@ -173,6 +174,7 @@ pub async fn set_up_test_app() -> (
             &delegate,
             AppConfigurationRegistry::new().unwrap(), // TODO: probably should mock this
         );
+        <dyn ThemeRegistry>::set_global(&delegate, AppThemeRegistry::new()); // TODO: probably should mock this
 
         delegate
     };
