@@ -73,7 +73,7 @@ const ToolbarPlaceholder = () => {
       <div className="flex items-center">
         <button className="cursor-pointer px-2">Save Response</button>
         <ActionButton className="p-1.25" iconClassName="size-4.5" icon="MoreHorizontal" />
-        <ActionButton className="p-1.25" iconClassName="size-4.5" icon="Delete" />
+        <ActionButton className="p-1.25" iconClassName="size-4.5" icon="Broom" />
       </div>
     </div>
   );
