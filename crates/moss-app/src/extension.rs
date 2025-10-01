@@ -9,7 +9,7 @@ use moss_extension::{
 use moss_fs::FileSystem;
 use moss_logging::session;
 use rustc_hash::FxHashMap;
-use std::{path::PathBuf, sync::Arc};
+use std::sync::Arc;
 
 #[allow(unused)]
 pub struct ExtensionService<R: AppRuntime> {

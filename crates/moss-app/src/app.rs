@@ -7,7 +7,6 @@ use rustc_hash::FxHashMap;
 use std::{
     collections::HashMap,
     ops::{Deref, DerefMut},
-    path::{Path, PathBuf},
     sync::Arc,
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};

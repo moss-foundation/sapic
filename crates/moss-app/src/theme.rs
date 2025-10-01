@@ -6,7 +6,7 @@ use moss_theme::{loader::ThemeLoader, models::primitives::ThemeId, registry::The
 use crate::models::types::ColorThemeInfo;
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
-use std::{collections::HashMap, path::PathBuf, sync::Arc};
+use std::{collections::HashMap, sync::Arc};
 
 pub struct ThemeService {
     loader: ThemeLoader,
