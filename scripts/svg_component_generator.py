@@ -66,31 +66,6 @@ def to_lower_camel_case(snake_str):
     camel_string = to_camel_case(snake_str)
     return snake_str[0].lower() + camel_string[1:]
 
-
-
-# def extract_css_palette(css_path: Path) -> Dict[str, str]:
-#     """
-#     Parse a CSS file and extract custom property names for colors.
-#     Returns mapping from normalized hex value to CSS variable name.
-#     """
-#     logging.debug(f"Reading CSS palette from %s", css_path)
-#     content = css_path.read_text()
-#     rules = tinycss2.parse_stylesheet(content, skip_comments=True, skip_whitespace=True)
-#
-#     palette: Dict[str, str] = {}
-#     for rule in rules:
-#         if rule.type != "qualified-rule":
-#             continue
-#         for decl in tinycss2.parse_declaration_list(rule.content):
-#             if decl.type == "declaration" and decl.lower_name.startswith("--")\
-#                     and decl.lower_name.split("-")[-1].isdigit():
-#                 vals = [tok for tok in decl.value if tok.type == "hash"]
-#                 if len(vals) == 1:
-#                     hex_code = webcolors.normalize_hex(f"#{vals[0].value}")
-#                     palette[hex_code] = decl.lower_name
-#                     logging.debug("Mapped %s → %s", hex_code, decl.lower_name)
-#     return palette
-
 def extract_palette_from_json(json_path: Path) -> Dict[str, str]:
     """
     Parse a theme JSON file and extract custom property names for colors.
