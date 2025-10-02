@@ -1,5 +1,5 @@
 import { Allotment, AllotmentHandle } from "allotment";
-import { ComponentProps, forwardRef, useEffect, useState } from "react";
+import { ComponentProps, forwardRef, useEffect, useRef, useState } from "react";
 
 import { cn } from "@/utils";
 
@@ -15,7 +15,7 @@ type ResizableProps = ComponentProps<typeof Allotment> & { smoothHide?: boolean 
 export const Resizable = forwardRef<AllotmentHandle, ResizableProps>(
   ({ smoothHide = false, className, children, ...props }, ref) => {
     const [disableSmoothHide, setDisableSmoothHide] = useState(false);
-    const [isReady, setIsReady] = useState(false);
+    const isReady = useRef(false);
 
     useEffect(() => {
       if (!smoothHide) return;
@@ -36,8 +36,10 @@ export const Resizable = forwardRef<AllotmentHandle, ResizableProps>(
 
     // This is a workaround to deal with "Index out of bounds" error
     useEffect(() => {
+      if (isReady.current) return;
+
       setTimeout(() => {
-        setIsReady(true);
+        isReady.current = true;
       }, 100);
     }, []);
 
