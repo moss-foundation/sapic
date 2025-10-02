@@ -25,7 +25,6 @@ endif
 export DEV_RESOURCE_DIR = ${CURDIR}
 
 # ---- Asset Directories ----
-export THEMES_DIR = ${CURDIR}/assets/themes
 export LOCALES_DIR = ${CURDIR}/assets/locales
 export ICONS_DIR = ${CURDIR}/assets/icons
 export ICONS_OUTPUT_DIR = ${CURDIR}/view/desktop/src/assets/icons

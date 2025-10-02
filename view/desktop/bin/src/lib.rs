@@ -85,7 +85,7 @@ pub async fn run<R: TauriRuntime>() {
                 let tao_app_handle = tao.app_handle();
 
                 #[cfg(debug_assertions)]
-                let (themes_dir, locales_dir, logs_dir, temp_dir) = {
+                let (locales_dir, logs_dir, temp_dir) = {
                     let dev_user_dir = PathBuf::from(
                         std::env::var("DEV_USER_DIR")
                             .expect("Environment variable DEV_USER_DIR is not set"),
@@ -94,10 +94,6 @@ pub async fn run<R: TauriRuntime>() {
                     let dev_temp_dir = dev_user_dir.join("temp");
 
                     (
-                        PathBuf::from(
-                            std::env::var("THEMES_DIR")
-                                .expect("Environment variable THEMES_DIR is not set"),
-                        ),
                         PathBuf::from(
                             std::env::var("LOCALES_DIR")
                                 .expect("Environment variable LOCALES_DIR is not set"),
@@ -108,12 +104,9 @@ pub async fn run<R: TauriRuntime>() {
                 };
 
                 #[cfg(not(debug_assertions))]
-                let (themes_dir, locales_dir, logs_dir, temp_dir) = {
+                let (locales_dir, logs_dir, temp_dir) = {
                     let paths = tao.path();
                     (
-                        paths
-                            .resolve("resources/themes", tauri::path::BaseDirectory::Resource)
-                            .expect("cannot resolve themes dir"),
                         paths
                             .resolve("resources/locales", tauri::path::BaseDirectory::Resource)
                             .expect("cannot resolve locales dir"),
@@ -218,7 +211,6 @@ pub async fn run<R: TauriRuntime>() {
                     .build(
                         &app_init_ctx,
                         BuildAppParams {
-                            themes_dir,
                             locales_dir,
                             logs_dir,
                         },

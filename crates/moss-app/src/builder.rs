@@ -26,7 +26,6 @@ use crate::{
 };
 
 pub struct BuildAppParams {
-    pub themes_dir: PathBuf,
     pub locales_dir: PathBuf,
     pub logs_dir: PathBuf,
 }
