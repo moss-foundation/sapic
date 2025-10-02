@@ -22,9 +22,7 @@ export DEV_USER_DIR = ${HOME}/.sapic
 endif
 
 # ---- Directory Settings ----
-export DEV_TEMP_DIR = ${HOME_DIR}/.sapic/tmp
 export DEV_RESOURCE_DIR = ${CURDIR}
-export DEV_LOG_DIR = ${CURDIR}/logs/app
 
 # ---- Asset Directories ----
 export THEMES_DIR = ${CURDIR}/assets/themes

@@ -69,7 +69,7 @@ pub const TEST_GITHUB_EMAIL: &str = "test_email@example.com";
 pub const TEST_GITLAB_USERNAME: &str = "test_username";
 pub const TEST_GITLAB_EMAIL: &str = "test_email@example.com";
 
-pub fn random_test_path() -> PathBuf {
+pub fn random_test_dir_path() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
         .join("data")
@@ -159,11 +159,9 @@ pub async fn set_up_test_app() -> (
         ACCOUNT_AUTH_BASE_URL.to_string(),
     ));
 
-    // Technically, it's now user_dir and should be adapted and renamed in the task:
-    // https://mossland.atlassian.net/browse/SAPIC-546
-    let test_path = random_test_path();
-    let resource_path = test_path.join("resources");
-    let user_path = test_path.join("user");
+    let test_dir_path = random_test_dir_path();
+    let resource_path = test_dir_path.join("resources");
+    let user_path = test_dir_path.join("user");
 
     let app_delegate = {
         let delegate = AppDelegate::<MockAppRuntime>::new(tao_app_handle.clone());
@@ -224,7 +222,7 @@ pub async fn set_up_test_app() -> (
     let fs = Arc::new(RealFileSystem::new(&temp_abs_path));
 
     let cleanup_fn = Box::new({
-        let path = test_path.clone();
+        let path = test_dir_path.clone();
         move || {
             Box::pin(async move {
                 if let Err(e) = tokio::fs::remove_dir_all(&path).await {

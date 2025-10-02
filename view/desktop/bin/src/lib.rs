@@ -86,6 +86,13 @@ pub async fn run<R: TauriRuntime>() {
 
                 #[cfg(debug_assertions)]
                 let (themes_dir, locales_dir, logs_dir, temp_dir) = {
+                    let dev_user_dir = PathBuf::from(
+                        std::env::var("DEV_USER_DIR")
+                            .expect("Environment variable DEV_USER_DIR is not set"),
+                    );
+                    let dev_log_dir = dev_user_dir.join("logs");
+                    let dev_temp_dir = dev_user_dir.join("temp");
+
                     (
                         PathBuf::from(
                             std::env::var("THEMES_DIR")
@@ -95,14 +102,8 @@ pub async fn run<R: TauriRuntime>() {
                             std::env::var("LOCALES_DIR")
                                 .expect("Environment variable LOCALES_DIR is not set"),
                         ),
-                        PathBuf::from(
-                            std::env::var("DEV_LOG_DIR")
-                                .expect("Environment variable DEV_LOG_DIR is not set"),
-                        ),
-                        PathBuf::from(
-                            std::env::var("DEV_TEMP_DIR")
-                                .expect("Environment variable DEV_TEMP_DIR is not set"),
-                        ),
+                        dev_log_dir,
+                        dev_temp_dir,
                     )
                 };
 
