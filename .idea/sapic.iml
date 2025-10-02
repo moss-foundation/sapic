@@ -67,6 +67,9 @@
       <sourceFolder url="file://$MODULE_DIR$/tools/theme-install/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-contrib/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/libs/static-json/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-configuration/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-extension-points/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-extension/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-edit/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-edit/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-workspacelib/src" isTestSource="false" />

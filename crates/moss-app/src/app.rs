@@ -7,7 +7,6 @@ use rustc_hash::FxHashMap;
 use std::{
     collections::HashMap,
     ops::{Deref, DerefMut},
-    path::{Path, PathBuf},
     sync::Arc,
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
@@ -71,7 +70,6 @@ pub struct OnAppReadyOptions {
 pub struct App<R: AppRuntime> {
     #[deref]
     pub(super) app_handle: AppHandle<R::EventLoop>,
-    pub(super) app_dir: PathBuf,
     pub(super) commands: AppCommands<R::EventLoop>,
     pub(super) preferences: AppPreferences,
 
@@ -92,10 +90,6 @@ pub struct App<R: AppRuntime> {
 }
 
 impl<R: AppRuntime> App<R> {
-    pub fn app_dir(&self) -> &Path {
-        &self.app_dir
-    }
-
     pub fn session_id(&self) -> &SessionId {
         self.session_service.session_id()
     }

@@ -34,8 +34,8 @@ async fn delete_workspace_success() {
         .await
         .unwrap();
 
-    let workspace_path: Arc<Path> = app
-        .app_dir()
+    let workspace_path: Arc<Path> = app_delegate
+        .user_dir()
         .join(dirs::WORKSPACES_DIR)
         .join(&create_output.id.to_string())
         .into();
@@ -87,8 +87,8 @@ async fn delete_workspace_filesystem_only() {
         .await
         .unwrap();
 
-    let workspace_path: Arc<Path> = app
-        .app_dir()
+    let workspace_path: Arc<Path> = app_delegate
+        .user_dir()
         .join(dirs::WORKSPACES_DIR)
         .join(&create_output.id.to_string())
         .into();
@@ -135,8 +135,8 @@ async fn delete_workspace_opened() {
         .await
         .unwrap();
 
-    let workspace_path: Arc<Path> = app
-        .app_dir()
+    let workspace_path: Arc<Path> = app_delegate
+        .user_dir()
         .join(dirs::WORKSPACES_DIR)
         .join(&create_output.id.to_string())
         .into();
@@ -205,8 +205,8 @@ async fn delete_workspace_filesystem_does_not_exist() {
         .unwrap();
 
     // Manually delete the filesystem directory
-    let workspace_path: Arc<Path> = app
-        .app_dir()
+    let workspace_path: Arc<Path> = app_delegate
+        .user_dir()
         .join(dirs::WORKSPACES_DIR)
         .join(&create_output.id.to_string())
         .into();
