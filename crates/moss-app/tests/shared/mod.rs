@@ -172,12 +172,10 @@ pub async fn set_up_test_app() -> (
         tao_app_handle.manage(app_delegate.clone());
     }
 
-    let logs_abs_path = user_path.join("logs");
     let workspaces_abs_path = user_path.join("workspaces");
     let globals_abs_path = user_path.join("globals");
     let locales_abs_path = user_path.join("locales");
     let profiles_abs_path = user_path.join("profiles");
-    let temp_abs_path = user_path.join("tmp");
 
     {
         tokio::fs::create_dir_all(&resource_path.join("extensions"))
@@ -187,12 +185,10 @@ pub async fn set_up_test_app() -> (
             .await
             .unwrap();
 
-        tokio::fs::create_dir(&logs_abs_path).await.unwrap();
         tokio::fs::create_dir(&workspaces_abs_path).await.unwrap();
         tokio::fs::create_dir(&globals_abs_path).await.unwrap();
         tokio::fs::create_dir(&locales_abs_path).await.unwrap();
         tokio::fs::create_dir(&profiles_abs_path).await.unwrap();
-        tokio::fs::create_dir(&temp_abs_path).await.unwrap();
 
         tokio::fs::write(&locales_abs_path.join("locales.json"), LOCALES)
             .await
@@ -201,7 +197,7 @@ pub async fn set_up_test_app() -> (
             .await
             .unwrap();
     }
-    let fs = Arc::new(RealFileSystem::new(&temp_abs_path));
+    let fs = Arc::new(RealFileSystem::new(&app_delegate.tmp_dir()));
 
     let cleanup_fn = Box::new({
         let path = test_dir_path.clone();
@@ -225,7 +221,6 @@ pub async fn set_up_test_app() -> (
         &ctx,
         BuildAppParams {
             locales_dir: locales_abs_path,
-            logs_dir: logs_abs_path,
         },
     )
     .await;
