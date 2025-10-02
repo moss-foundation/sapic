@@ -185,9 +185,9 @@ impl ConfigurationService {
         let profile = Arc::new(RwLock::new(None));
         let workspace = Arc::new(RwLock::new(None));
 
-        let app_dir = app_delegate.app_dir();
-        let profile_dir = app_dir.join(dirs::PROFILES_DIR);
-        let _workspace_dir = app_dir.join(dirs::WORKSPACES_DIR);
+        let user_dir = app_delegate.user_dir();
+        let profile_dir = user_dir.join(dirs::PROFILES_DIR);
+        let _workspace_dir = user_dir.join(dirs::WORKSPACES_DIR);
 
         let fs_clone = fs.clone();
         let profile_clone = profile.clone();

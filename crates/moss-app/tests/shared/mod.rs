@@ -26,19 +26,6 @@ use tauri::Manager;
 
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
 
-const THEMES: &str = r#"
-[
-    {
-        "identifier": "moss.sapic-theme.lightDefault",
-        "displayName": "Light Default",
-        "mode": "light",
-        "order": 1,
-        "source": "light.css",
-        "isDefault": true
-    }
-]
-"#;
-
 const LOCALES: &str = r#"
 [
     {
@@ -69,7 +56,7 @@ pub const TEST_GITHUB_EMAIL: &str = "test_email@example.com";
 pub const TEST_GITLAB_USERNAME: &str = "test_username";
 pub const TEST_GITLAB_EMAIL: &str = "test_email@example.com";
 
-pub fn random_app_dir_path() -> PathBuf {
+pub fn random_test_dir_path() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
         .join("data")
@@ -159,12 +146,14 @@ pub async fn set_up_test_app() -> (
         ACCOUNT_AUTH_BASE_URL.to_string(),
     ));
 
-    // Technically, it's now user_dir and should be adapted and renamed in the task:
-    // https://mossland.atlassian.net/browse/SAPIC-546
-    let app_path = random_app_dir_path();
+    let test_dir_path = random_test_dir_path();
+    let resource_path = test_dir_path.join("resources");
+    let user_path = test_dir_path.join("user");
+
     let app_delegate = {
         let delegate = AppDelegate::<MockAppRuntime>::new(tao_app_handle.clone());
-        delegate.set_app_dir(app_path.clone());
+        delegate.set_resource_dir(resource_path.clone());
+        delegate.set_user_dir(user_path.clone());
 
         <dyn GitHubAuthAdapter<MockAppRuntime>>::set_global(&delegate, mock_github_auth_adapter());
         <dyn GitHubApiClient<MockAppRuntime>>::set_global(&delegate, mock_github_api_client());
@@ -183,35 +172,24 @@ pub async fn set_up_test_app() -> (
         tao_app_handle.manage(app_delegate.clone());
     }
 
-    let logs_abs_path = app_path.join("logs");
-    let workspaces_abs_path = app_path.join("workspaces");
-    let globals_abs_path = app_path.join("globals");
-    let themes_abs_path = app_path.join("themes");
-    let locales_abs_path = app_path.join("locales");
-    let profiles_abs_path = app_path.join("profiles");
-    let temp_abs_path = app_path.join("tmp");
-
-    let application_abs_path = app_path.join("app");
+    let workspaces_abs_path = user_path.join("workspaces");
+    let globals_abs_path = user_path.join("globals");
+    let locales_abs_path = user_path.join("locales");
+    let profiles_abs_path = user_path.join("profiles");
 
     {
-        tokio::fs::create_dir_all(&application_abs_path.join("extensions"))
+        tokio::fs::create_dir_all(&resource_path.join("extensions"))
             .await
             .unwrap();
-        tokio::fs::create_dir_all(&app_path.join("extensions"))
+        tokio::fs::create_dir_all(&user_path.join("extensions"))
             .await
             .unwrap();
 
-        tokio::fs::create_dir(&logs_abs_path).await.unwrap();
         tokio::fs::create_dir(&workspaces_abs_path).await.unwrap();
         tokio::fs::create_dir(&globals_abs_path).await.unwrap();
-        tokio::fs::create_dir(&themes_abs_path).await.unwrap();
         tokio::fs::create_dir(&locales_abs_path).await.unwrap();
         tokio::fs::create_dir(&profiles_abs_path).await.unwrap();
-        tokio::fs::create_dir(&temp_abs_path).await.unwrap();
 
-        tokio::fs::write(&themes_abs_path.join("themes.json"), THEMES)
-            .await
-            .unwrap();
         tokio::fs::write(&locales_abs_path.join("locales.json"), LOCALES)
             .await
             .unwrap();
@@ -219,10 +197,10 @@ pub async fn set_up_test_app() -> (
             .await
             .unwrap();
     }
-    let fs = Arc::new(RealFileSystem::new(&temp_abs_path));
+    let fs = Arc::new(RealFileSystem::new(&app_delegate.tmp_dir()));
 
     let cleanup_fn = Box::new({
-        let path = app_path.clone();
+        let path = test_dir_path.clone();
         move || {
             Box::pin(async move {
                 if let Err(e) = tokio::fs::remove_dir_all(&path).await {
@@ -242,12 +220,7 @@ pub async fn set_up_test_app() -> (
     .build(
         &ctx,
         BuildAppParams {
-            themes_dir: themes_abs_path,
             locales_dir: locales_abs_path,
-            logs_dir: logs_abs_path,
-
-            application_dir: application_abs_path,
-            user_dir: app_path,
         },
     )
     .await;

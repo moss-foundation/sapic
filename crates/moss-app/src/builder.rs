@@ -26,15 +26,7 @@ use crate::{
 };
 
 pub struct BuildAppParams {
-    pub themes_dir: PathBuf,
     pub locales_dir: PathBuf,
-    pub logs_dir: PathBuf,
-
-    // HACK: the paths are temporarily hardcoded here, later they will need
-    // to be retrieved either from the app delegate or in some other dynamic way.
-    // Task: https://mossland.atlassian.net/browse/SAPIC-546
-    pub application_dir: PathBuf,
-    pub user_dir: PathBuf,
 }
 
 pub struct AppBuilder<R: AppRuntime> {
@@ -71,9 +63,9 @@ impl<R: AppRuntime> AppBuilder<R> {
 
     pub async fn build(self, ctx: &R::AsyncContext, params: BuildAppParams) -> App<R> {
         let delegate = self.tao_handle.state::<AppDelegate<R>>().inner().clone();
-        let app_dir = delegate.app_dir();
+        let user_dir = delegate.user_dir();
 
-        self.create_app_dirs_if_not_exists(app_dir.clone()).await;
+        self.create_user_dirs_if_not_exists(user_dir.clone()).await;
 
         let on_did_change_profile_emitter = EventEmitter::<OnDidChangeProfile>::new();
         let on_did_change_profile_event = on_did_change_profile_emitter.event();
@@ -95,9 +87,9 @@ impl<R: AppRuntime> AppBuilder<R> {
         .expect("Failed to create configuration service");
 
         let theme_service = ThemeService::new(
+            &delegate,
             self.fs.clone(),
             <dyn ThemeRegistry>::global(&delegate),
-            params.application_dir.clone(),
         )
         .await
         .expect("Failed to create theme service");
@@ -107,19 +99,19 @@ impl<R: AppRuntime> AppBuilder<R> {
             .expect("Failed to create locale service");
         let session_service = SessionService::new();
         let storage_service: Arc<StorageService<R>> =
-            StorageService::<R>::new(&app_dir.join(dirs::GLOBALS_DIR))
+            StorageService::<R>::new(&user_dir.join(dirs::GLOBALS_DIR))
                 .expect("Failed to create storage service")
                 .into();
         let log_service = LogService::new(
             self.fs.clone(),
             self.tao_handle.clone(),
-            &params.logs_dir,
+            &delegate.logs_dir(),
             session_service.session_id(),
             storage_service.clone(),
         )
         .expect("Failed to create log service");
         let profile_service = ProfileService::new(
-            &app_dir.join(dirs::PROFILES_DIR),
+            &user_dir.join(dirs::PROFILES_DIR),
             self.fs.clone(),
             self.auth_api_client.clone(),
             self.keyring.clone(),
@@ -128,22 +120,16 @@ impl<R: AppRuntime> AppBuilder<R> {
         .await
         .expect("Failed to create profile service");
         let workspace_service =
-            WorkspaceService::<R>::new(ctx, storage_service.clone(), self.fs.clone(), &app_dir)
+            WorkspaceService::<R>::new(ctx, storage_service.clone(), self.fs.clone(), &user_dir)
                 .await
                 .expect("Failed to create workspace service");
 
-        let extension_service = ExtensionService::<R>::new(
-            &delegate,
-            self.fs.clone(),
-            self.extension_points,
-            params.application_dir,
-            params.user_dir,
-        )
-        .await
-        .expect("Failed to create extension service");
+        let extension_service =
+            ExtensionService::<R>::new(&delegate, self.fs.clone(), self.extension_points)
+                .await
+                .expect("Failed to create extension service");
 
         App {
-            app_dir,
             app_handle: self.tao_handle.clone(),
             commands: self.commands,
 
@@ -166,14 +152,14 @@ impl<R: AppRuntime> AppBuilder<R> {
         }
     }
 
-    async fn create_app_dirs_if_not_exists(&self, app_dir: PathBuf) {
+    async fn create_user_dirs_if_not_exists(&self, user_dir: PathBuf) {
         for dir in &[
             dirs::WORKSPACES_DIR,
             dirs::GLOBALS_DIR,
             dirs::PROFILES_DIR,
             dirs::TMP_DIR,
         ] {
-            let dir_path = app_dir.join(dir);
+            let dir_path = user_dir.join(dir);
             if dir_path.exists() {
                 continue;
             }

@@ -5,13 +5,6 @@
 # ---- Environment Settings ----
 export LOG_LEVEL = trace
 
-# ---- Asset Directories ----
-export THEMES_DIR = ${CURDIR}/assets/themes
-export LOCALES_DIR = ${CURDIR}/assets/locales
-export APP_LOG_DIR = ${CURDIR}/logs/app
-export SESSION_LOG_DIR = ${CURDIR}/logs/session
-export TYPEDOC_DIR = ${CURDIR}/autodocs
-
 # ---- Default Goal ----
 .DEFAULT_GOAL := run-desktop
 
@@ -19,30 +12,24 @@ export TYPEDOC_DIR = ${CURDIR}/autodocs
 ifeq ($(OS),Windows_NT)
     DETECTED_OS := Windows
     HOME_DIR := ${USERPROFILE}
-export DEV_APP_DIR = ${USERPROFILE}\.sapic
+export DEV_USER_DIR = ${USERPROFILE}\.sapic
 
 else
     DETECTED_OS := $(shell uname)
     HOME_DIR := ${HOME}
 
-export DEV_APP_DIR = ${HOME}/.sapic
+export DEV_USER_DIR = ${HOME}/.sapic
 endif
 
-# ---- Environment Settings ----
-export LOG_LEVEL = trace
-export DEV_APP_DIR = ${HOME_DIR}/.sapic
-export TEMP_DIR = ${HOME_DIR}/.sapic/tmp
+# ---- Directory Settings ----
+export DEV_RESOURCE_DIR = ${CURDIR}
 
 # ---- Asset Directories ----
-export THEMES_DIR = ${CURDIR}/assets/themes
 export LOCALES_DIR = ${CURDIR}/assets/locales
 export ICONS_DIR = ${CURDIR}/assets/icons
 export ICONS_OUTPUT_DIR = ${CURDIR}/view/desktop/src/assets/icons
-export APP_LOG_DIR = ${CURDIR}/logs/app
-export SESSION_LOG_DIR = ${CURDIR}/logs/session
 
-# ---- Default Goal ----
-.DEFAULT_GOAL := run-desktop
+export TYPEDOC_DIR = ${CURDIR}/autodocs
 
 # ---- Directory Paths ----
 # Tool directories
@@ -106,8 +93,8 @@ gen-typedoc:
 gen-icons:
 	@cd $(SCRIPTS_DIR) && $(UV) run svg_component_generator.py plan --source ${ICONS_DIR}
 	@cd $(SCRIPTS_DIR) && $(UV) run svg_component_generator.py gen --source ${ICONS_DIR} \
-								 --light-css ../assets/themes/light.css \
-								 --dark-css ../assets/themes/dark.css \
+								 --light-json ../extensions/theme-defaults/themes/light-default.json \
+								 --dark-json ../extensions/theme-defaults/themes/dark-default.json \
 								 --output-dir ${ICONS_OUTPUT_DIR}
 
 # ======================================================
@@ -190,7 +177,7 @@ gen-bindings: \
 ## Export CSS variables to JSON
 .PHONY: export-css-variables
 export-css-variables:
-	@cd $(SCRIPTS_DIR) && $(UV) run css_variables_exporter.py --source ../assets/themes/light.css \
+	@cd $(SCRIPTS_DIR) && $(UV) run css_variables_exporter.py --source ../extensions/theme-defaults/themes/light-default.json \
 														   --dest ../packages/config-eslint/moss-lint-plugin/css_variables.json
 	@$(PNPM) prettier --plugin=prettier-plugin-tailwindcss --write packages/config-eslint/moss-lint-plugin/css_variables.json
 

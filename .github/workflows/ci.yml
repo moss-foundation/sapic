@@ -37,7 +37,7 @@ jobs:
 
       - name: Get all changed Rust files
         id: rust
-        uses: tj-actions/changed-files@823fcebdb31bb35fdf2229d9f769b400309430d0 # v46.0.3
+        uses: tj-actions/changed-files@24d32ffd492484c1d75e0c0b894501ddb9d30d62 # v47.0.0
         with:
           files: |
             **/*.rs
@@ -62,7 +62,7 @@ jobs:
 
       - name: Get all changed NodeJS files
         id: node
-        uses: tj-actions/changed-files@823fcebdb31bb35fdf2229d9f769b400309430d0 # v46.0.3
+        uses: tj-actions/changed-files@24d32ffd492484c1d75e0c0b894501ddb9d30d62 # v47.0.0
         with:
           files: |
             **.ts
@@ -417,7 +417,7 @@ jobs:
         uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
 
       - name: Set Up Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version-file: "package.json"
           cache: "pnpm"
@@ -432,14 +432,14 @@ jobs:
         run: pnpm exec playwright install chromium --with-deps
 
       - name: Cache optional Playwright paths
-        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: |
             ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json', 'pnpm-lock.yaml') }}
 
       - name: Setup uv
-        uses: astral-sh/setup-uv@557e51de59eb14aaaba2ed9621916900a91d50c6 # v6.6.1
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
 
       - name: Build Icons
         run: make gen-icons

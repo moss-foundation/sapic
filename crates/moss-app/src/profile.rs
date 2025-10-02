@@ -352,7 +352,7 @@ impl<R: AppRuntime> ProfileService<R> {
 
         let content = serde_json::to_string_pretty(&registry_items)?;
         let registry_path = app_delegate
-            .app_dir()
+            .user_dir()
             .join(dirs::PROFILES_DIR)
             .join(PROFILES_REGISTRY_FILE);
 
