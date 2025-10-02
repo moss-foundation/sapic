@@ -136,23 +136,28 @@ impl<R: AppRuntime> App<R> {
     ) -> joinerror::Result<()> {
         let profile = self.profile_service.activate_profile().await?;
 
-        if !options.restore_last_workspace {
-            return Ok(());
+        if options.restore_last_workspace {
+            match self.storage_service.get_last_active_workspace(ctx).await {
+                Ok(id) => {
+                    if let Err(err) = self
+                        .workspace_service
+                        .activate_workspace(ctx, app_delegate, &id, profile)
+                        .await
+                    {
+                        session::warn!(format!(
+                            "failed to activate last active workspace: {}",
+                            err.to_string()
+                        ));
+                    }
+                }
+                Err(err) => {
+                    session::warn!(format!(
+                        "failed to restore last active workspace: {}",
+                        err.to_string()
+                    ));
+                }
+            };
         }
-
-        match self.storage_service.get_last_active_workspace(ctx).await {
-            Ok(id) => {
-                self.workspace_service
-                    .activate_workspace(ctx, app_delegate, &id, profile)
-                    .await?;
-            }
-            Err(err) => {
-                session::warn!(format!(
-                    "failed to restore last active workspace: {}",
-                    err.to_string()
-                ));
-            }
-        };
 
         Ok(())
     }

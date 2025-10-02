@@ -26,8 +26,8 @@
   "devDependencies": {
     "@repo/tailwind-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@types/node": "^24.3.0",
-    "jsdom": "^26.0.0",
+    "@types/node": "^24.6.1",
+    "jsdom": "^27.0.0",
     "ts-node": "^10.9.2"
   },
   "peerDependencies": {
@@ -35,6 +35,6 @@
   },
   "dependencies": {
     "@total-typescript/shoehorn": "^0.1.2",
-    "cross-env": "^10.0.0"
+    "cross-env": "^10.1.0"
   }
 }
