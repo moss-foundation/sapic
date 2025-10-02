@@ -112,6 +112,7 @@ pub enum BodySpec {
     Text(Option<String>),
     Json(Option<JsonValue>),
     FormData(IndexMap<FormDataParamId, FormDataParamSpec>),
+    XWwwFormUrlencoded(IndexMap<FormDataParamId, FormDataParamSpec>),
     Binary(Option<PathBuf>),
 }
 
@@ -121,6 +122,7 @@ impl BodySpec {
             BodySpec::Text(_) => "text",
             BodySpec::Json(_) => "json",
             BodySpec::FormData(_) => "form-data",
+            BodySpec::XWwwFormUrlencoded(_) => "x-www-form-urlencoded",
             BodySpec::Binary(_) => "binary",
         }
     }
@@ -129,7 +131,7 @@ impl BodySpec {
     pub fn is_empty(&self) -> bool {
         match self {
             BodySpec::Text(None) | BodySpec::Json(None) | BodySpec::Binary(None) => true,
-            BodySpec::FormData(map) => map.is_empty(),
+            BodySpec::FormData(map) | BodySpec::XWwwFormUrlencoded(map) => map.is_empty(),
             _ => false,
         }
     }
@@ -585,16 +587,60 @@ fn create_body_block(body_spec: &BodySpec) -> Result<hcl::structure::Block, Stri
 
             if !form_data.is_empty() {
                 for (id, spec) in form_data.iter() {
-                    let spec_value = hcl::to_value(spec).map_err(|e| e.to_string())?;
+                    // Serialize spec to HCL string, then parse back to extract attributes
+                    let spec_hcl = format!(
+                        "temp {{\n{}\n}}",
+                        hcl::to_string(spec).map_err(|e| e.to_string())?
+                    );
+                    let temp_body: hcl::Body =
+                        hcl::from_str(&spec_hcl).map_err(|e| e.to_string())?;
+                    let temp_block = temp_body
+                        .blocks()
+                        .next()
+                        .ok_or_else(|| "Failed to parse spec block".to_string())?;
 
                     let mut nested_builder =
                         HclBlock::builder(Identifier::new("form-data").map_err(|e| e.to_string())?)
-                            .add_label(Identifier::new(id.to_string()).map_err(|e| e.to_string())?);
+                            .add_label(hcl::structure::BlockLabel::String(id.to_string()));
 
-                    if let hcl::Value::Object(obj) = spec_value {
-                        for (key, value) in obj {
-                            nested_builder = nested_builder.add_attribute((key, value));
-                        }
+                    for attr in temp_block.body().attributes() {
+                        nested_builder = nested_builder
+                            .add_attribute((attr.key().to_string(), attr.expr().clone()));
+                    }
+
+                    builder = builder.add_block(nested_builder.build());
+                }
+            }
+
+            Ok(builder.build())
+        }
+        BodySpec::XWwwFormUrlencoded(form_data) => {
+            let mut builder =
+                HclBlock::builder(Identifier::new("body").map_err(|e| e.to_string())?)
+                    .add_label(Identifier::new(label).map_err(|e| e.to_string())?);
+
+            if !form_data.is_empty() {
+                for (id, spec) in form_data.iter() {
+                    // Serialize spec to HCL string, then parse back to extract attributes
+                    let spec_hcl = format!(
+                        "temp {{\n{}\n}}",
+                        hcl::to_string(spec).map_err(|e| e.to_string())?
+                    );
+                    let temp_body: hcl::Body =
+                        hcl::from_str(&spec_hcl).map_err(|e| e.to_string())?;
+                    let temp_block = temp_body
+                        .blocks()
+                        .next()
+                        .ok_or_else(|| "Failed to parse spec block".to_string())?;
+
+                    let mut nested_builder = HclBlock::builder(
+                        Identifier::new("x-www-form-urlencoded").map_err(|e| e.to_string())?,
+                    )
+                    .add_label(hcl::structure::BlockLabel::String(id.to_string()));
+
+                    for attr in temp_block.body().attributes() {
+                        nested_builder = nested_builder
+                            .add_attribute((attr.key().to_string(), attr.expr().clone()));
                     }
 
                     builder = builder.add_block(nested_builder.build());
@@ -632,6 +678,9 @@ fn deserialize_body_spec_from_block(block: &hcl::structure::Block) -> Result<Bod
         #[serde(rename = "form-data")]
         #[serde(default)]
         form_data: Option<LabeledBlock<IndexMap<FormDataParamId, FormDataParamSpec>>>,
+        #[serde(rename = "x-www-form-urlencoded")]
+        #[serde(default)]
+        x_www_form_urlencoded: Option<LabeledBlock<IndexMap<FormDataParamId, FormDataParamSpec>>>,
     }
 
     use hcl::structure::BlockLabel;
@@ -669,6 +718,13 @@ fn deserialize_body_spec_from_block(block: &hcl::structure::Block) -> Result<Bod
                 .map(|lb| lb.into_inner())
                 .unwrap_or_default();
             Ok(BodySpec::FormData(form_data))
+        }
+        "x-www-form-urlencoded" => {
+            let params = body_content
+                .x_www_form_urlencoded
+                .map(|lb| lb.into_inner())
+                .unwrap_or_default();
+            Ok(BodySpec::XWwwFormUrlencoded(params))
         }
         "binary" => Ok(BodySpec::Binary(body_content.path)),
         _ => Err(format!("Unknown body type: {}", body_type)),
@@ -763,9 +819,26 @@ mod tests {
             })),
             body: None,
         };
-        model.body = Some(BodyBlock::new(BodySpec::Text(Some(
-            "Test body content".to_string(),
-        ))));
+        model.body = Some(BodyBlock::new(BodySpec::FormData(indexmap! {
+            FormDataParamId::new() => FormDataParamSpec {
+                name: "file".to_string(),
+                value: FormDataParamValue::Binary(PathBuf::from("foo/bar.txt")),
+                description: None,
+                options: FormDataParamSpecOptions {
+                    disabled: false,
+                    propagate: false,
+                },
+            },
+            FormDataParamId::new() => FormDataParamSpec {
+                name: "text".to_string(),
+                value: FormDataParamValue::Text(HclExpression::String("Test".to_string())),
+                description: None,
+                options: FormDataParamSpecOptions {
+                    disabled: false,
+                    propagate: false,
+                },
+            },
+        })));
 
         let str = hcl::to_string(&model).unwrap();
         println!("\n=== HCL Output ===\n{}", str);
@@ -950,6 +1023,53 @@ mod tests {
                 assert!(form_data.is_empty());
             }
             _ => panic!("Expected empty FormData body"),
+        }
+    }
+
+    #[test]
+    fn test_body_x_www_form_urlencoded() {
+        let mut model = EntryModel {
+            metadata: Block::new(EntryMetadataSpec {
+                id: EntryId::new(),
+                class: EntryClass::Endpoint,
+            }),
+            url: None,
+            headers: None,
+            path_params: None,
+            query_params: None,
+            body: Some(BodyBlock::new(BodySpec::XWwwFormUrlencoded(indexmap! {
+                FormDataParamId::new() => FormDataParamSpec {
+                    name: "username".to_string(),
+                    value: FormDataParamValue::Text(HclExpression::String("john_doe".to_string())),
+                    description: None,
+                    options: FormDataParamSpecOptions {
+                        disabled: false,
+                        propagate: false,
+                    },
+                },
+                FormDataParamId::new() => FormDataParamSpec {
+                    name: "password".to_string(),
+                    value: FormDataParamValue::Text(HclExpression::String("secret123".to_string())),
+                    description: None,
+                    options: FormDataParamSpecOptions {
+                        disabled: false,
+                        propagate: false,
+                    },
+                },
+            }))),
+        };
+
+        let hcl_str = hcl::to_string(&model).unwrap();
+        println!("\n=== X-WWW-Form-Urlencoded Body HCL ===\n{}", hcl_str);
+        assert!(hcl_str.contains(r#"body x-www-form-urlencoded {"#));
+        assert!(hcl_str.contains(r#"x-www-form-urlencoded "#));
+
+        let parsed = hcl::from_str::<EntryModel>(&hcl_str).unwrap();
+        match parsed.body.as_ref().map(|b| &**b) {
+            Some(BodySpec::XWwwFormUrlencoded(params)) => {
+                assert_eq!(params.len(), 2);
+            }
+            _ => panic!("Expected XWwwFormUrlencoded body"),
         }
     }
 
