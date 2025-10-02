@@ -195,7 +195,7 @@ endif
 ## Count Lines of Code
 .PHONY: loc
 loc:
-	@cloc --exclude-dir=target,node_modules --include-ext=rs,ts,tsx,py .
+	@cloc --vcs git --include-ext=rs,ts,tsx,py .
 
 # ======================================================
 # Cleanup Commands
