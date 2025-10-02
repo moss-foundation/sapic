@@ -12,10 +12,10 @@
     "identical": true
   },
   "ArrowLeft": {
-    "identical": false
+    "identical": true
   },
   "ArrowRight": {
-    "identical": false
+    "identical": true
   },
   "Auth": {
     "identical": true
@@ -180,7 +180,7 @@
     "identical": true
   },
   "JsonPathActive": {
-    "identical": true
+    "identical": false
   },
   "Key": {
     "identical": true
@@ -201,10 +201,10 @@
     "identical": true
   },
   "NewWorkspace": {
-    "identical": true
+    "identical": false
   },
   "NewWorkspaceActive": {
-    "identical": true
+    "identical": false
   },
   "OpenPanelBottom": {
     "identical": true
@@ -258,7 +258,7 @@
     "identical": true
   },
   "RemoveCircle": {
-    "identical": true
+    "identical": false
   },
   "Request": {
     "identical": true
@@ -333,27 +333,27 @@
     "identical": false
   },
   "Warning": {
-    "identical": true
+    "identical": false
   },
   "WebServer": {
     "identical": true
   },
   "WebServerActive": {
-    "identical": true
+    "identical": false
   },
   "WindowsMenu": {
     "identical": true
   },
   "Workspace": {
-    "identical": true
+    "identical": false
   },
   "WorkspaceActive": {
-    "identical": true
+    "identical": false
   },
   "Wrench": {
-    "identical": true
+    "identical": false
   },
   "WrenchActive": {
-    "identical": true
+    "identical": false
   }
 }

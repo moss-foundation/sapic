@@ -66,6 +66,15 @@ def to_lower_camel_case(snake_str):
     camel_string = to_camel_case(snake_str)
     return snake_str[0].lower() + camel_string[1:]
 
+def convert_token(token: str):
+    """
+    Convert a token to css variable name
+    For example:
+    moss.gray.1 => --moss-gray-1
+    """
+    return "--" + "-".join(token.split("."))
+
+
 def extract_palette_from_json(json_path: Path) -> Dict[str, str]:
     """
     Parse a theme JSON file and extract custom property names for colors.
@@ -76,8 +85,8 @@ def extract_palette_from_json(json_path: Path) -> Dict[str, str]:
     palette: Dict[str, str] = {}
     for key, item in palette_json.items():
         hex_code = webcolors.normalize_hex(item["value"])
-        palette[hex_code] = key
-        logging.debug("Mapped %s → %s", hex_code, key)
+        palette[hex_code] = convert_token(key)
+        logging.debug("Mapped %s → %s", hex_code, convert_token(key))
 
     return palette
 
@@ -333,11 +342,14 @@ def create_plan(icons_dir: Path, force: bool = False) -> None:
             logging.error(f"`dark.svg` not found for icon `{name}`")
             continue
 
-        light = ET.parse(icons_dir / name / 'light.svg')
-        dark = ET.parse(icons_dir / name / 'dark.svg')
-        identical = compare_svg_structure(light, dark)
-        updated[name] = {'identical': identical}
-        logging.info("Planned icon '%s': identical=%s", name, identical)
+        try:
+            light = ET.parse(icons_dir / name / 'light.svg')
+            dark = ET.parse(icons_dir / name / 'dark.svg')
+            identical = compare_svg_structure(light, dark)
+            updated[name] = {'identical': identical}
+            logging.info("Planned icon '%s': identical=%s", name, identical)
+        except Exception as e:
+            logging.error(f"Failed to create plan for icon `{name}`: {e}")
 
     plan_path.write_text(json.dumps(updated, indent=2))
 
