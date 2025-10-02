@@ -25,7 +25,6 @@ endif
 export DEV_RESOURCE_DIR = ${CURDIR}
 
 # ---- Asset Directories ----
-export THEMES_DIR = ${CURDIR}/assets/themes
 export LOCALES_DIR = ${CURDIR}/assets/locales
 export ICONS_DIR = ${CURDIR}/assets/icons
 export ICONS_OUTPUT_DIR = ${CURDIR}/view/desktop/src/assets/icons
@@ -94,8 +93,8 @@ gen-typedoc:
 gen-icons:
 	@cd $(SCRIPTS_DIR) && $(UV) run svg_component_generator.py plan --source ${ICONS_DIR}
 	@cd $(SCRIPTS_DIR) && $(UV) run svg_component_generator.py gen --source ${ICONS_DIR} \
-								 --light-css ../assets/themes/light.css \
-								 --dark-css ../assets/themes/dark.css \
+								 --light-json ../extensions/theme-defaults/themes/light-default.json \
+								 --dark-json ../extensions/theme-defaults/themes/dark-default.json \
 								 --output-dir ${ICONS_OUTPUT_DIR}
 
 # ======================================================
@@ -178,7 +177,7 @@ gen-bindings: \
 ## Export CSS variables to JSON
 .PHONY: export-css-variables
 export-css-variables:
-	@cd $(SCRIPTS_DIR) && $(UV) run css_variables_exporter.py --source ../assets/themes/light.css \
+	@cd $(SCRIPTS_DIR) && $(UV) run css_variables_exporter.py --source ../extensions/theme-defaults/themes/light-default.json \
 														   --dest ../packages/config-eslint/moss-lint-plugin/css_variables.json
 	@$(PNPM) prettier --plugin=prettier-plugin-tailwindcss --write packages/config-eslint/moss-lint-plugin/css_variables.json
 

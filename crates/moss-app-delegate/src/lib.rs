@@ -55,6 +55,36 @@ impl<R: AppRuntime> AppDelegate<R> {
             .expect("Cannot resolve user dir")
     }
 
+    #[cfg(debug_assertions)]
+    #[cfg(not(feature = "integration-tests"))]
+    pub fn tmp_dir(&self) -> PathBuf {
+        self.user_dir().join("tmp")
+    }
+
+    #[cfg(not(debug_assertions))]
+    #[cfg(not(feature = "integration-tests"))]
+    pub fn tmp_dir(&self) -> PathBuf {
+        self.app_handle
+            .path()
+            .temp_dir()
+            .expect("Cannot resolve tmp dir")
+    }
+
+    #[cfg(debug_assertions)]
+    #[cfg(not(feature = "integration-tests"))]
+    pub fn logs_dir(&self) -> PathBuf {
+        self.user_dir().join("logs")
+    }
+
+    #[cfg(not(debug_assertions))]
+    #[cfg(not(feature = "integration-tests"))]
+    pub fn logs_dir(&self) -> PathBuf {
+        self.app_handle
+            .path()
+            .app_log_dir()
+            .expect("Cannot resolve log dir")
+    }
+
     pub fn global<T>(&self) -> &T
     where
         T: Send + Sync + 'static,
@@ -121,5 +151,15 @@ impl<R: AppRuntime> AppDelegate<R> {
     #[cfg(feature = "integration-tests")]
     pub fn user_dir(&self) -> PathBuf {
         self.app_handle.state::<test::UserDir>().inner().0.clone()
+    }
+
+    #[cfg(feature = "integration-tests")]
+    pub fn tmp_dir(&self) -> PathBuf {
+        self.user_dir().join("tmp")
+    }
+
+    #[cfg(feature = "integration-tests")]
+    pub fn logs_dir(&self) -> PathBuf {
+        self.user_dir().join("logs")
     }
 }
