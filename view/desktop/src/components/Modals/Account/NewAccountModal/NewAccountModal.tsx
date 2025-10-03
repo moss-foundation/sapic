@@ -73,7 +73,7 @@ export const NewAccountModal = ({ showModal, closeModal, onAccountAdded }: NewAc
   const isSubmitDisabled = isSubmitting || (flow === "PAT" && !token);
 
   return (
-    <Modal onBackdropClick={handleClose} showModal={showModal} className="w-full max-w-[544px]">
+    <Modal onBackdropClick={handleClose} showModal={showModal} className="w-full max-w-136">
       <form onSubmit={handleSubmit} className="flex flex-col overflow-hidden">
         <h2 className="flex items-center justify-center border-b border-(--moss-border-color) py-2 leading-4 font-medium">
           New Account
