@@ -719,9 +719,8 @@ impl<R: AppRuntime> Worktree<R> {
             let mut path_param_infos = Vec::new();
             let mut query_param_infos = Vec::new();
 
-            if let Some(headers_block) = model.headers {
-                let header_map = headers_block.into_inner();
-                for (header_id, header_spec) in header_map {
+            if let Some(header_map) = model.headers {
+                for (header_id, header_spec) in header_map.into_inner() {
                     header_infos.push(HeaderInfo {
                         id: header_id.clone(),
                         name: header_spec.name,

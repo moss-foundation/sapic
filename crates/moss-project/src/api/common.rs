@@ -76,6 +76,7 @@ impl<R: AppRuntime> Project<R> {
                     headers: None, // Hardcoded for now
                     path_params: None,
                     query_params: None,
+                    body: None, // HACK: hardcoded for now, fix before merging
                 };
                 self.worktree()
                     .await
@@ -199,7 +200,7 @@ impl<R: AppRuntime> Project<R> {
                     },
                 },
             );
-            header_orders.insert(id.clone(), param.order.clone());
+            header_orders.insert(id, param.order);
         }
 
         for param in &input.path_params {
@@ -253,9 +254,14 @@ impl<R: AppRuntime> Project<R> {
                 protocol: input.protocol.clone().unwrap_or(EntryProtocol::Get),
                 raw: "Hardcoded Value".to_string(),
             })),
-            headers: Some(LabeledBlock::new(header_map)),
+            headers: if header_map.is_empty() {
+                None
+            } else {
+                Some(LabeledBlock::new(header_map))
+            },
             path_params: Some(LabeledBlock::new(path_param_map)),
             query_params: Some(LabeledBlock::new(query_param_map)),
+            body: None, // HACK: hardcoded for now, fix before merging
         };
 
         self.worktree()
