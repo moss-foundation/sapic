@@ -1,23 +1,22 @@
 import { useId } from "react";
 
 import { Checkbox as CheckboxPrimitive, Icon } from "@/lib/ui";
+import { cn } from "@/utils";
 import { CheckedState } from "@radix-ui/react-checkbox";
 
-const CheckboxWithLabel = ({
-  checked,
-  onCheckedChange,
-  label,
-  disabled,
-}: {
-  checked: boolean;
+interface CheckboxWithLabelProps {
+  checked: CheckedState;
   onCheckedChange: (checked: CheckedState) => void;
   label?: string;
   disabled?: boolean;
-}) => {
+  className?: string;
+}
+
+const CheckboxWithLabel = ({ checked, onCheckedChange, label, disabled, className }: CheckboxWithLabelProps) => {
   const id = useId();
 
   return (
-    <div className="flex items-center gap-2">
+    <div className={cn("flex shrink-0 items-center gap-2", className)}>
       <CheckboxPrimitive.Root
         id={id}
         className="cursor-pointer rounded-[3px] border-(--moss-checkbox-border)"
@@ -26,7 +25,7 @@ const CheckboxWithLabel = ({
         disabled={disabled}
       >
         <CheckboxPrimitive.Indicator>
-          <Icon icon="CheckboxIndicator" />
+          <Icon icon={checked === "indeterminate" ? "CheckboxIntermediate" : "CheckboxChecked"} />
         </CheckboxPrimitive.Indicator>
       </CheckboxPrimitive.Root>
       {label && (

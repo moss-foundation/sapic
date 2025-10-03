@@ -1,4 +1,3 @@
-import { type Icons } from "@/lib/ui/Icon";
 import { MenuItemProps } from "@/utils/renderActionMenuItem";
 
 // User menu items function that returns appropriate items based on whether a user is selected
@@ -7,13 +6,13 @@ export const userMenuItems: MenuItemProps[] = [
     id: "user-profile",
     type: "action",
     label: "Profile",
-    icon: "UserAvatar" as Icons,
+    icon: "UserAvatar",
   },
   {
     id: "user-settings",
     type: "action",
     label: "User Settings",
-    icon: "Settings" as Icons,
+    icon: "Settings",
   },
   {
     id: "separator",
@@ -23,13 +22,13 @@ export const userMenuItems: MenuItemProps[] = [
     id: "status",
     type: "submenu",
     label: "Status",
-    icon: "Placeholder" as Icons,
+    icon: "Placeholder",
     items: [
       {
         id: "status-online",
         type: "action",
         label: "Online",
-        icon: "CheckboxIndicator" as Icons,
+        icon: "CheckboxChecked",
       },
       {
         id: "status-away",
@@ -61,13 +60,13 @@ export const noUserMenuItems: MenuItemProps[] = [
     id: "sign-in",
     type: "action",
     label: "Sign In",
-    icon: "UserAvatar" as Icons,
+    icon: "UserAvatar",
   },
   {
     id: "create-account",
     type: "action",
     label: "Create Account",
-    icon: "AddCircle" as Icons,
+    icon: "AddCircle",
   },
 ];
 
@@ -87,7 +86,7 @@ export const gitBranchMenuItems: MenuItemProps[] = [
     id: "main",
     type: "action",
     label: "main",
-    icon: "CheckboxIndicator" as Icons,
+    icon: "CheckboxChecked",
   },
   {
     id: "separator-1",
@@ -145,7 +144,7 @@ export const gitBranchMenuItems: MenuItemProps[] = [
     id: "create-branch",
     type: "action",
     label: "Create New Branch...",
-    icon: "AddCircle" as Icons,
+    icon: "AddCircle",
   },
   {
     id: "pull",
@@ -165,19 +164,19 @@ export const noBranchMenuItems: MenuItemProps[] = [
     id: "select-branch",
     type: "action",
     label: "Select Branch",
-    icon: "VCS" as Icons,
+    icon: "VCS",
   },
   {
     id: "create-branch",
     type: "action",
     label: "Create New Branch...",
-    icon: "AddCircle" as Icons,
+    icon: "AddCircle",
   },
   {
     id: "init-repo",
     type: "action",
     label: "Initialize Repository",
-    icon: "Placeholder" as Icons,
+    icon: "Placeholder",
   },
 ];
 
