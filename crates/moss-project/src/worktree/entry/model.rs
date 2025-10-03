@@ -1,10 +1,14 @@
 use hcl::Expression;
 use indexmap::IndexMap;
-use moss_hcl::{Block, LabeledBlock, deserialize_expression, expression, serialize_expression};
+use moss_hcl::{
+    Block, LabeledBlock, deserialize_expression, expression,
+    heredoc::serialize_option_string_as_heredoc, serialize_expression,
+};
 use serde::{Deserialize, Serialize};
+use serde_json::Value as JsonValue;
 
 use crate::models::primitives::{
-    EntryClass, EntryId, EntryProtocol, HeaderId, PathParamId, QueryParamId,
+    EntryClass, EntryId, EntryProtocol, FormDataParamId, HeaderId, PathParamId, QueryParamId,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -78,7 +82,41 @@ pub struct QueryParamSpec {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct BodySpec {}
+pub struct FormDataParamSpec {
+    pub name: String,
+    pub text: Option<String>,
+    pub description: Option<String>,
+    pub options: FormDataParamSpecOptions,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FormDataParamSpecOptions {
+    pub disabled: bool,
+    pub propagate: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BodySpec {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(serialize_with = "serialize_option_string_as_heredoc")]
+    pub text: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub json: Option<JsonValue>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub from_data: Option<LabeledBlock<IndexMap<FormDataParamId, FormDataParamSpec>>>,
+}
+
+impl Default for BodySpec {
+    fn default() -> Self {
+        Self {
+            text: None,
+            json: None,
+            from_data: None,
+        }
+    }
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EntryModel {
@@ -134,6 +172,7 @@ impl EntryModel {
 mod tests {
     use hcl::{Expression as HclExpression, ser::LabeledBlock};
     use indexmap::indexmap;
+    use serde_json::json;
 
     use super::*;
 
@@ -189,7 +228,38 @@ mod tests {
                     }
                 }
             })),
-            body: None,
+            body: Some(LabeledBlock::new(indexmap! {
+                "json".to_string() => BodySpec {
+                    json: Some(json!({
+                        "text": "text",
+                        "array": [1, 2, 3],
+                    })),
+                    ..Default::default()
+                },
+                "form-data".to_string() => BodySpec {
+                    from_data: Some(LabeledBlock::new(indexmap! {
+                        FormDataParamId::new() => FormDataParamSpec {
+                            name: "form_data_param1".to_string(),
+                            text: Some("text".to_string()),
+                            description: None,
+                            options: FormDataParamSpecOptions {
+                                disabled: false,
+                                propagate: true
+                            }
+                        },
+                        FormDataParamId::new() => FormDataParamSpec {
+                            name: "form_data_param2".to_string(),
+                            text: None,
+                            description: None,
+                            options: FormDataParamSpecOptions {
+                                disabled: false,
+                                propagate: true
+                            }
+                        }
+                    })),
+                    ..Default::default()
+                }
+            })),
         };
 
         let str = hcl::to_string(&model).unwrap();
