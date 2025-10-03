@@ -1,7 +1,6 @@
 import { useState } from "react";
 
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
-import { Icon } from "@/lib/ui";
 import ButtonDanger from "@/components/ButtonDanger";
 import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
 import ButtonPrimary from "@/components/ButtonPrimary";
@@ -13,6 +12,7 @@ import { AccountInfo, ProfileInfo } from "@repo/moss-user";
 import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
 import { ProfilePageProps } from "../../../ProfilePage";
 import { NewAccountModal } from "@/components/Modals/Account/NewAccountModal";
+import { ProviderIcon } from "@/components/Modals/Account/NewAccountModal/components/ProviderIcon";
 
 interface OverviewTabProps extends IDockviewPanelProps<ProfilePageProps> {
   profile: ProfileInfo;
@@ -58,11 +58,11 @@ export const OverviewTab = ({ profile }: OverviewTabProps) => {
   const getProviderIcon = (kind: string) => {
     switch (kind) {
       case "GITHUB":
-        return "VCS";
+        return <ProviderIcon icon="github" />;
       case "GITLAB":
-        return "VCS";
+        return <ProviderIcon icon="gitlab" />;
       default:
-        return "Placeholder";
+        return null;
     }
   };
 
@@ -115,10 +115,10 @@ export const OverviewTab = ({ profile }: OverviewTabProps) => {
               profile.accounts.map((account: AccountInfo) => (
                 <div
                   key={account.id}
-                  className="flex items-center justify-between rounded-sm border border-(--moss-border-color) px-4 py-3"
+                  className="flex items-center justify-between rounded-md border border-(--moss-border-color) px-4 py-3"
                 >
                   <div className="flex items-center gap-3">
-                    <Icon icon={getProviderIcon(account.kind)} className="size-4" />
+                    {getProviderIcon(account.kind)}
                     <span className="text-sm">{account.username}</span>
                   </div>
                   <div className="-mr-1 flex items-center gap-3">
