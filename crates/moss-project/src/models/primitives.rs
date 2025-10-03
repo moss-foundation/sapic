@@ -33,6 +33,7 @@ impl FrontendEntryPath {
 
 /// @category Primitive
 #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq, Hash, TS)]
+#[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "primitives.ts")]
 pub enum EntryClass {
     Endpoint,
