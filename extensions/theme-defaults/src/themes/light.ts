@@ -1,5 +1,5 @@
-import { Theme } from "../theme";
 import { rgba } from "../color";
+import { Theme } from "../theme";
 
 export const defaultLightTheme: Theme = {
   identifier: "moss.sapic-theme.lightDefault",
@@ -643,6 +643,10 @@ export const defaultLightTheme: Theme = {
     "moss.button.primary.outlined.background": {
       type: "variable",
       value: "moss.gray.14",
+    },
+    "moss.button.primary.outlined.background.contrast": {
+      type: "variable",
+      value: "moss.gray.13",
     },
     "moss.button.primary.outlined.background.hover": {
       type: "variable",

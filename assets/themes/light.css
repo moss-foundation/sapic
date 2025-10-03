@@ -195,6 +195,7 @@
   --moss-controls-plain-border: none;
   --moss-controls-plain-text: var(--moss-gray-1);
   --moss-controls-outlined-bg: var(--moss-gray-14);
+  --moss-controls-outlined-bg-contrast: var(--moss-gray-13);
   --moss-controls-outlined-border: var(--moss-gray-12);
   --moss-controls-outlined-text: var(--moss-gray-1);
   --moss-controls-placeholder: var(--moss-gray-6);
