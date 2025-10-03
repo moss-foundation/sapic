@@ -13,29 +13,38 @@ export interface ProfilePageProps {
 const ProfilePage = ({ ...props }: IDockviewPanelProps<ProfilePageProps>) => {
   const { profile, isLoading, error } = useProfileData();
 
+  // Add error boundary protection
+  if (error) {
+    console.error("ProfilePage error:", error);
+  }
+
   if (isLoading) {
     return (
-      <PageWrapper>
-        <div className="flex flex-1 items-center justify-center">
-          <div className="text-center">
-            <p className="mb-4 text-sm text-(--moss-secondary-text)">Loading profile...</p>
+      <PageView>
+        <PageWrapper>
+          <div className="flex flex-1 items-center justify-center">
+            <div className="text-center">
+              <p className="mb-4 text-sm text-(--moss-secondary-text)">Loading profile...</p>
+            </div>
           </div>
-        </div>
-      </PageWrapper>
+        </PageWrapper>
+      </PageView>
     );
   }
 
-  if (error || !profile) {
+  if (!profile) {
     return (
-      <PageWrapper>
-        <div className="flex flex-1 items-center justify-center">
-          <div className="text-center">
-            <p className="mb-4 text-sm text-(--moss-secondary-text)">
-              {error ? "Error loading profile" : "No profile found"}
-            </p>
+      <PageView>
+        <PageWrapper>
+          <div className="flex flex-1 items-center justify-center">
+            <div className="text-center">
+              <p className="mb-4 text-sm text-(--moss-secondary-text)">
+                {error ? "Error loading profile" : "No profile found"}
+              </p>
+            </div>
           </div>
-        </div>
-      </PageWrapper>
+        </PageWrapper>
+      </PageView>
     );
   }
 

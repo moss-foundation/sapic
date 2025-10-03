@@ -20,7 +20,7 @@ export const ProfilePageBody = ({ profile, ...props }: ProfilePageBodyProps) => 
       </FramedTabs.List>
 
       <FramedTabs.Content value="overview" className="flex flex-1">
-        <PageWrapper className="flex flex-1 flex-col">
+        <PageWrapper className="flex flex-1 flex-col pl-7.5">
           <OverviewTab profile={profile} {...props} />
         </PageWrapper>
       </FramedTabs.Content>

@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 import { Button, Icon } from "@/lib/ui";
+import ButtonPrimary from "@/components/ButtonPrimary";
 import { Input } from "@/lib/ui/Input";
 import { invoke } from "@tauri-apps/api/core";
 import { AddAccountParams, UpdateProfileInput } from "@repo/moss-app";
@@ -86,14 +87,7 @@ export const OverviewTab = ({ profile }: OverviewTabProps) => {
       <section>
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-[16px] font-normal">Accounts</h2>
-          {!isAddingAccount && (
-            <Button
-              onClick={() => setIsAddingAccount(true)}
-              className="background-(--moss-primary) hover:background-(--moss-primary-hover) rounded-sm px-4 py-1.5 text-sm font-medium text-(--moss-primary-text-inverse)"
-            >
-              Connect
-            </Button>
-          )}
+          {!isAddingAccount && <ButtonPrimary onClick={() => setIsAddingAccount(true)}>Connect</ButtonPrimary>}
         </div>
 
         {/* Add Account Form */}
