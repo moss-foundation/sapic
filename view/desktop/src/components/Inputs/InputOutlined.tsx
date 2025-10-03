@@ -30,7 +30,6 @@ interface InputOutlinedProps extends InputProps {
 
 export const InputOutlined = forwardRef<HTMLInputElement, InputOutlinedProps>(
   ({ className, contrast = false, iconClassName, ...props }, ref) => {
-    console.log("contrast", contrast, inputStyles({ contrast }));
     return (
       <Input
         ref={ref}
