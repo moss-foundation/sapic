@@ -15,7 +15,7 @@ export const FlowSection = ({ flow, setFlow, token, setToken, provider }: FlowSe
   const tokenInputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1">
       <div>
         <span className="text-base">Flow</span>
       </div>

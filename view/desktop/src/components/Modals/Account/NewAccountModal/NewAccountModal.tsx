@@ -80,11 +80,11 @@ export const NewAccountModal = ({ showModal, closeModal, onAccountAdded }: NewAc
         </h2>
 
         <Scrollbar className="min-h-0 flex-1">
-          <div className="flex flex-col px-6 pt-6 pb-5">
+          <div className="flex flex-col px-6 pt-2 pb-5">
             <PillTabs.Root
               value={provider}
               onValueChange={(value) => setProvider(value as AccountKind)}
-              className="flex flex-col gap-4"
+              className="flex flex-col gap-3.5"
             >
               <div className="flex items-center gap-3">
                 <span>Provider:</span>
