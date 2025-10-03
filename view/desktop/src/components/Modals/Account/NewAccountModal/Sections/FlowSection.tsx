@@ -48,14 +48,14 @@ export const FlowSection = ({ flow, setFlow, token, setToken, provider }: FlowSe
 
       {/* PAT Token Input */}
       {flow === "PAT" && (
-        <div className="grid grid-cols-[min-content_1fr] items-center gap-x-3 pt-2">
+        <div className="grid grid-cols-[min-content_1fr] items-center gap-x-3 pt-2 pl-10.5">
           <label className="text-base">Token:</label>
           <InputOutlined
             ref={tokenInputRef}
             value={token}
             onChange={(e) => setToken(e.target.value)}
             placeholder={`${provider === "GITHUB" ? "github.com" : "gitlab.com"}/moss-foundation/sapic`}
-            className="w-full"
+            className="h-12 w-full"
           />
         </div>
       )}
