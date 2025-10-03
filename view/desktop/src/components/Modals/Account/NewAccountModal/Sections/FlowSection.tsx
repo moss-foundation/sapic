@@ -20,32 +20,36 @@ export const FlowSection = ({ flow, setFlow, token, setToken, provider }: FlowSe
         <span className="text-base">Flow</span>
       </div>
 
-      <p className="text-xs leading-5 text-(--moss-secondary-text)">
+      <p className="text-sm text-(--moss-secondary-text)">
         You can switch modes in the workspace at any time and as often as needed.
       </p>
 
-      <RadioGroup.Root>
-        <RadioGroup.ItemWithLabel
-          label="OAuth 2.0"
-          description="This mode is suitable when your collection is stored in a separate repository or doesn't have a repository at all."
-          value="OAUTH"
-          checked={flow === "OAUTH"}
-          onClick={() => setFlow("OAUTH")}
-        />
+      <div className="pt-1.5 pl-4.5">
+        <RadioGroup.Root>
+          <RadioGroup.ItemWithLabel
+            label="OAuth 2.0"
+            description="This mode is suitable when your collection is stored in a separate repository or doesn't have a repository at all."
+            value="OAUTH"
+            checked={flow === "OAUTH"}
+            onClick={() => setFlow("OAUTH")}
+            className={flow !== "OAUTH" ? "opacity-50" : ""}
+          />
 
-        <RadioGroup.ItemWithLabel
-          label="PAT"
-          description="This mode is suitable if you want to store the collection in your project's repository or in any other folder you specify."
-          value="PAT"
-          checked={flow === "PAT"}
-          onClick={() => setFlow("PAT")}
-        />
-      </RadioGroup.Root>
+          <RadioGroup.ItemWithLabel
+            label="PAT"
+            description="This mode is suitable if you want to store the collection in your project's repository or in any other folder you specify."
+            value="PAT"
+            checked={flow === "PAT"}
+            onClick={() => setFlow("PAT")}
+            className={flow !== "PAT" ? "opacity-50" : ""}
+          />
+        </RadioGroup.Root>
+      </div>
 
       {/* PAT Token Input */}
       {flow === "PAT" && (
         <div className="grid grid-cols-[min-content_1fr] items-center gap-x-3 pt-2">
-          <label className="text-sm">Token:</label>
+          <label className="text-base">Token:</label>
           <InputOutlined
             ref={tokenInputRef}
             value={token}
