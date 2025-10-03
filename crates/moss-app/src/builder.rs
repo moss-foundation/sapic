@@ -26,9 +26,7 @@ use crate::{
 };
 
 pub struct BuildAppParams {
-    pub themes_dir: PathBuf,
     pub locales_dir: PathBuf,
-    pub logs_dir: PathBuf,
 }
 
 pub struct AppBuilder<R: AppRuntime> {
@@ -107,7 +105,7 @@ impl<R: AppRuntime> AppBuilder<R> {
         let log_service = LogService::new(
             self.fs.clone(),
             self.tao_handle.clone(),
-            &params.logs_dir,
+            &delegate.logs_dir(),
             session_service.session_id(),
             storage_service.clone(),
         )

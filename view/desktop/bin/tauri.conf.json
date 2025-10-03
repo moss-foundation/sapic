@@ -20,7 +20,6 @@
     "active": true,
     "targets": "all",
     "resources": {
-      "../../../assets/themes/": "resources/themes",
       "../../../assets/locales/": "resources/locales",
       "../../../extensions/": "resources/extensions"
     },

@@ -85,51 +85,24 @@ pub async fn run<R: TauriRuntime>() {
                 let tao_app_handle = tao.app_handle();
 
                 #[cfg(debug_assertions)]
-                let (themes_dir, locales_dir, logs_dir, temp_dir) = {
-                    let dev_user_dir = PathBuf::from(
-                        std::env::var("DEV_USER_DIR")
-                            .expect("Environment variable DEV_USER_DIR is not set"),
-                    );
-                    let dev_log_dir = dev_user_dir.join("logs");
-                    let dev_temp_dir = dev_user_dir.join("temp");
-
-                    (
-                        PathBuf::from(
-                            std::env::var("THEMES_DIR")
-                                .expect("Environment variable THEMES_DIR is not set"),
-                        ),
-                        PathBuf::from(
-                            std::env::var("LOCALES_DIR")
-                                .expect("Environment variable LOCALES_DIR is not set"),
-                        ),
-                        dev_log_dir,
-                        dev_temp_dir,
-                    )
-                };
+                let locales_dir = PathBuf::from(
+                    std::env::var("LOCALES_DIR")
+                        .expect("Environment variable LOCALES_DIR is not set"),
+                );
 
                 #[cfg(not(debug_assertions))]
-                let (themes_dir, locales_dir, logs_dir, temp_dir) = {
-                    let paths = tao.path();
-                    (
-                        paths
-                            .resolve("resources/themes", tauri::path::BaseDirectory::Resource)
-                            .expect("cannot resolve themes dir"),
-                        paths
-                            .resolve("resources/locales", tauri::path::BaseDirectory::Resource)
-                            .expect("cannot resolve locales dir"),
-                        paths.app_log_dir().expect("cannot resolve app log dir"),
-                        paths.temp_dir().expect("cannot resolve temp dir"),
-                    )
-                };
-                let fs = Arc::new(RealFileSystem::new(&temp_dir));
+                let locales_dir = tao
+                    .path()
+                    .resolve("resources/locales", tauri::path::BaseDirectory::Resource)
+                    .expect("cannot resolve locales dir");
+
+                let delegate = AppDelegate::<TauriAppRuntime<R>>::new(tao_app_handle.clone());
+                let fs = Arc::new(RealFileSystem::new(&delegate.tmp_dir()));
 
                 // Registration of global resources that will be accessible
                 // throughout the entire application via the `global` method
                 // of the app's internal handler.
-
                 {
-                    let delegate = AppDelegate::<TauriAppRuntime<R>>::new(tao_app_handle.clone());
-
                     let github_api_client = Arc::new(AppGitHubApiClient::new(http_client.clone()));
                     let github_auth_adapter =
                         Arc::new(AppGitHubAuthAdapter::<TauriAppRuntime<R>>::new(
@@ -215,14 +188,7 @@ pub async fn run<R: TauriRuntime>() {
                     )
                     .with_command(shortcut_println_command)
                     .with_command(shortcut_alert_command)
-                    .build(
-                        &app_init_ctx,
-                        BuildAppParams {
-                            themes_dir,
-                            locales_dir,
-                            logs_dir,
-                        },
-                    )
+                    .build(&app_init_ctx, BuildAppParams { locales_dir })
                     .await;
                     let session_id = app.session_id().clone();
 
