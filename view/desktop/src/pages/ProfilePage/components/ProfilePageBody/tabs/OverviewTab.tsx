@@ -115,16 +115,16 @@ export const OverviewTab = ({ profile }: OverviewTabProps) => {
               profile.accounts.map((account: AccountInfo) => (
                 <div
                   key={account.id}
-                  className="flex items-center justify-between rounded-md border border-(--moss-border-color) px-4 py-3"
+                  className="flex items-center justify-between rounded-md border border-(--moss-border-color) px-3 py-2.5"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     {getProviderIcon(account.kind)}
                     <span className="text-sm">{account.username}</span>
                   </div>
-                  <div className="-mr-1 flex items-center gap-3">
+                  <div className="flex items-center gap-3">
                     <ButtonNeutralOutlined
                       onClick={() => handleEditDetails(account)}
-                      className="background-(--moss-secondary-background) px-3"
+                      className="background-(--moss-secondary-background) border-(--moss-border-color) px-3"
                     >
                       Edit details
                     </ButtonNeutralOutlined>
