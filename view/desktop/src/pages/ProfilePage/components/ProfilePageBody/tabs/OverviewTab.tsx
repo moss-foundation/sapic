@@ -8,7 +8,7 @@ import { UpdateProfileInput } from "@repo/moss-app";
 import { AccountInfo, ProfileInfo } from "@repo/moss-user";
 
 import { ProfilePageProps } from "../../../ProfilePage";
-import { NewAccountModal } from "../../NewAccountModal";
+import { NewAccountModal } from "@/components/Modals/Account/NewAccountModal";
 
 interface OverviewTabProps extends IDockviewPanelProps<ProfilePageProps> {
   profile: ProfileInfo;
