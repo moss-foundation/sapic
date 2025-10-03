@@ -3,10 +3,9 @@ import { useState } from "react";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 import { Button, Icon } from "@/lib/ui";
 import { Input } from "@/lib/ui/Input";
-import MossSelect from "@/lib/ui/MossSelect";
 import { invoke } from "@tauri-apps/api/core";
 import { AddAccountParams, UpdateProfileInput } from "@repo/moss-app";
-import { AccountInfo, ProfileInfo } from "@repo/moss-user";
+import { AccountInfo, AccountKind, ProfileInfo } from "@repo/moss-user";
 
 import { ProfilePageProps } from "../../../ProfilePage";
 
@@ -20,7 +19,6 @@ export const OverviewTab = ({ profile }: OverviewTabProps) => {
     host: "github.com",
     label: "",
     kind: "GITHUB",
-    pat: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -38,7 +36,6 @@ export const OverviewTab = ({ profile }: OverviewTabProps) => {
         host: "github.com",
         label: "",
         kind: "GITHUB",
-        pat: "",
       });
       setIsAddingAccount(false);
       window.location.reload();
@@ -128,34 +125,14 @@ export const OverviewTab = ({ profile }: OverviewTabProps) => {
 
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm text-(--moss-secondary-text)">Provider</label>
-                <MossSelect.Root
+                <select
                   value={accountForm.kind}
-                  onValueChange={(value) => setAccountForm((prev) => ({ ...prev, kind: value as "GITHUB" | "GITLAB" }))}
+                  onChange={(e) => setAccountForm((prev) => ({ ...prev, kind: e.target.value as AccountKind }))}
+                  className="background-(--moss-secondary-background) w-full rounded-sm border border-(--moss-border-color) px-2 py-1.5 text-sm"
                 >
-                  <MossSelect.Trigger placeholder="Select provider" />
-                  <MossSelect.Content>
-                    <MossSelect.Item value="GITHUB">GitHub</MossSelect.Item>
-                    <MossSelect.Item value="GITLAB">GitLab</MossSelect.Item>
-                  </MossSelect.Content>
-                </MossSelect.Root>
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm text-(--moss-secondary-text)">Personal Access Token (optional)</label>
-                <Input
-                  type="password"
-                  value={accountForm.pat}
-                  onChange={(e) => {
-                    const { pat: _pat, ...rest } = accountForm;
-                    if (e.target.value === "") {
-                      setAccountForm(rest);
-                    } else {
-                      setAccountForm({ ...rest, pat: e.target.value });
-                    }
-                  }}
-                  placeholder="Leave empty to use OAuth"
-                  className="background-(--moss-secondary-background) rounded-sm border border-(--moss-border-color) px-2 py-1.5 text-sm"
-                />
+                  <option value="GITHUB">GitHub</option>
+                  <option value="GITLAB">GitLab</option>
+                </select>
               </div>
 
               <div className="flex gap-2">
@@ -174,7 +151,6 @@ export const OverviewTab = ({ profile }: OverviewTabProps) => {
                       host: "github.com",
                       label: "",
                       kind: "GITHUB",
-                      pat: "",
                     });
                   }}
                   disabled={isSubmitting}
