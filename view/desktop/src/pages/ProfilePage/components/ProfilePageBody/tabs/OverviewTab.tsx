@@ -1,7 +1,9 @@
 import { useState } from "react";
 
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
-import { Button, Icon } from "@/lib/ui";
+import { Icon } from "@/lib/ui";
+import ButtonDanger from "@/components/ButtonDanger";
+import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
 import ButtonPrimary from "@/components/ButtonPrimary";
 import { useModal } from "@/hooks";
 import { invoke } from "@tauri-apps/api/core";
@@ -120,19 +122,15 @@ export const OverviewTab = ({ profile }: OverviewTabProps) => {
                     <span className="text-sm">{account.username}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button
+                    <ButtonNeutralOutlined
                       onClick={() => handleEditDetails(account)}
-                      className="background-(--moss-secondary-background) hover:background-(--moss-secondary-background-hover) rounded-sm border border-(--moss-border-color) px-3 py-1 text-xs"
+                      className="background-(--moss-secondary-background) px-3"
                     >
                       Edit details
-                    </Button>
-                    <Button
-                      onClick={() => handleRevokeClick(account)}
-                      disabled={isSubmitting}
-                      className="background-(--moss-error) rounded-sm px-3 py-1 text-xs text-white hover:opacity-90"
-                    >
+                    </ButtonNeutralOutlined>
+                    <ButtonDanger onClick={() => handleRevokeClick(account)} disabled={isSubmitting}>
                       Revoke
-                    </Button>
+                    </ButtonDanger>
                   </div>
                 </div>
               ))
