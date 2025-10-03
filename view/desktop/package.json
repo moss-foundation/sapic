@@ -36,6 +36,7 @@
     "@repo/moss-activity-broadcaster": "workspace:*",
     "@repo/moss-app": "workspace:*",
     "@repo/moss-project": "workspace:*",
+    "@repo/moss-user": "workspace:*",
     "@repo/moss-tabs": "workspace:*",
     "@repo/moss-workspace": "workspace:*",
     "@tanstack/react-pacer": "^0.16.1",
