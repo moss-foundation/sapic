@@ -28,6 +28,10 @@ export const OverviewTab = ({ profile }: OverviewTabProps) => {
     openRevokeModal();
   };
 
+  const handleEditDetails = (account: AccountInfo) => {
+    alert(`Edit details for ${account.username} (${account.kind})\n\nThis feature is not yet implemented.`);
+  };
+
   const handleRemoveAccount = async () => {
     if (!accountToRemove) return;
 
@@ -117,7 +121,7 @@ export const OverviewTab = ({ profile }: OverviewTabProps) => {
                   </div>
                   <div className="flex items-center gap-2">
                     <Button
-                      onClick={() => console.log("Edit details for", account.id)}
+                      onClick={() => handleEditDetails(account)}
                       className="background-(--moss-secondary-background) hover:background-(--moss-secondary-background-hover) rounded-sm border border-(--moss-border-color) px-3 py-1 text-xs"
                     >
                       Edit details
