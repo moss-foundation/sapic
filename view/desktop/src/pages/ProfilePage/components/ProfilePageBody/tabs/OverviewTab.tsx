@@ -121,7 +121,7 @@ export const OverviewTab = ({ profile }: OverviewTabProps) => {
                     <Icon icon={getProviderIcon(account.kind)} className="size-4" />
                     <span className="text-sm">{account.username}</span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="-mr-1 flex items-center gap-3">
                     <ButtonNeutralOutlined
                       onClick={() => handleEditDetails(account)}
                       className="background-(--moss-secondary-background) px-3"
