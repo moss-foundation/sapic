@@ -157,8 +157,14 @@ export const OverviewTab = ({ profile }: OverviewTabProps) => {
           </div>
         )}
 
+        {/* Divider and Description */}
+        <div className="-mt-2 flex flex-col gap-2.5">
+          <div className="h-px w-full bg-(--moss-border-color)" />
+          <p className="text-sm text-(--moss-secondary-text)">Choose a preferred theme for the app</p>
+        </div>
+
         {/* Accounts List */}
-        <div className="flex flex-col gap-2">
+        <div className="mt-2.5 flex flex-col gap-2">
           {profile.accounts.length === 0 ? (
             <div className="rounded-sm border border-(--moss-border-color) p-6 text-center text-sm text-(--moss-secondary-text)">
               <p>No accounts connected yet</p>
