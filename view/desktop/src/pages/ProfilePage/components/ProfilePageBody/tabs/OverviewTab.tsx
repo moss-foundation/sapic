@@ -85,7 +85,7 @@ export const OverviewTab = ({ profile }: OverviewTabProps) => {
       {/* Accounts Section */}
       <section>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-base font-normal">Accounts</h2>
+          <h2 className="text-[16px] font-normal">Accounts</h2>
           {!isAddingAccount && (
             <Button
               onClick={() => setIsAddingAccount(true)}

@@ -13,8 +13,8 @@ export const ProfilePageHeader = ({ profile }: ProfilePageHeaderProps) => {
     <PageWrapper>
       <header className="flex flex-col gap-2">
         <div className="flex items-center gap-2">
-          <Icon icon="Person" className="size-5" />
-          <h1 className="text-xl font-medium">{profile.name}</h1>
+          <Icon icon="Profile" className="size-6.5" />
+          <h1 className="text-lg font-medium">{profile.name}</h1>
         </div>
       </header>
     </PageWrapper>
