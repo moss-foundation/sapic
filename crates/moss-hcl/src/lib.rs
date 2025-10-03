@@ -1,4 +1,5 @@
 pub mod expression;
+pub mod heredoc;
 pub mod object;
 pub mod util;
 
