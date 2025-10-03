@@ -1,6 +1,6 @@
 import { useRef } from "react";
 
-import { InputOutlined, RadioGroup } from "@/components";
+import { RadioGroup } from "@/components";
 import { AccountKind } from "@repo/moss-user";
 
 interface FlowSectionProps {
@@ -12,7 +12,7 @@ interface FlowSectionProps {
 }
 
 export const FlowSection = ({ flow, setFlow, token, setToken, provider }: FlowSectionProps) => {
-  const tokenInputRef = useRef<HTMLInputElement>(null);
+  const tokenInputRef = useRef<HTMLTextAreaElement>(null);
 
   return (
     <div className="flex flex-col gap-1">
@@ -48,14 +48,14 @@ export const FlowSection = ({ flow, setFlow, token, setToken, provider }: FlowSe
 
       {/* PAT Token Input */}
       {flow === "PAT" && (
-        <div className="grid grid-cols-[min-content_1fr] items-center gap-x-3 pt-2 pl-10.5">
-          <label className="text-base">Token:</label>
-          <InputOutlined
+        <div className="grid grid-cols-[min-content_1fr] items-start gap-x-3 pt-2 pl-10.5">
+          <label className="pt-1.5 text-base">Token:</label>
+          <textarea
             ref={tokenInputRef}
             value={token}
             onChange={(e) => setToken(e.target.value)}
             placeholder={`${provider === "GITHUB" ? "github.com" : "gitlab.com"}/moss-foundation/sapic`}
-            className="h-12 w-full"
+            className="h-24.5 w-full resize-none rounded-sm border border-(--moss-border-color) px-2 py-1.5 text-sm placeholder-(--moss-secondary-text) focus:outline-2 focus:outline-(--moss-primary)"
           />
         </div>
       )}

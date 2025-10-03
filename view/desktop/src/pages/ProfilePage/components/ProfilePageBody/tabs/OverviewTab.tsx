@@ -3,10 +3,12 @@ import { useState } from "react";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 import { Button, Icon } from "@/lib/ui";
 import ButtonPrimary from "@/components/ButtonPrimary";
+import { useModal } from "@/hooks";
 import { invoke } from "@tauri-apps/api/core";
 import { UpdateProfileInput } from "@repo/moss-app";
 import { AccountInfo, ProfileInfo } from "@repo/moss-user";
 
+import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
 import { ProfilePageProps } from "../../../ProfilePage";
 import { NewAccountModal } from "@/components/Modals/Account/NewAccountModal";
 
@@ -17,20 +19,27 @@ interface OverviewTabProps extends IDockviewPanelProps<ProfilePageProps> {
 export const OverviewTab = ({ profile }: OverviewTabProps) => {
   const [showNewAccountModal, setShowNewAccountModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [accountToRemove, setAccountToRemove] = useState<AccountInfo | null>(null);
 
-  const handleRemoveAccount = async (accountId: string) => {
-    if (!confirm("Are you sure you want to remove this account?")) {
-      return;
-    }
+  const { openModal: openRevokeModal, closeModal: closeRevokeModal, showModal: isRevokeModalOpen } = useModal();
+
+  const handleRevokeClick = (account: AccountInfo) => {
+    setAccountToRemove(account);
+    openRevokeModal();
+  };
+
+  const handleRemoveAccount = async () => {
+    if (!accountToRemove) return;
 
     try {
       setIsSubmitting(true);
       const input: UpdateProfileInput = {
         accountsToAdd: [],
-        accountsToRemove: [accountId],
+        accountsToRemove: [accountToRemove.id],
       };
       await invoke("update_profile", { input });
       console.log("Account removed successfully");
+      closeRevokeModal();
       window.location.reload();
     } catch (error) {
       console.error("Error removing account:", error);
@@ -61,6 +70,21 @@ export const OverviewTab = ({ profile }: OverviewTabProps) => {
         }}
       />
 
+      {isRevokeModalOpen && accountToRemove && (
+        <ConfirmationModal
+          showModal={isRevokeModalOpen}
+          closeModal={closeRevokeModal}
+          title="Revoke Account"
+          message={`Are you sure you want to remove this account?`}
+          description={`This will revoke access for ${accountToRemove.username} (${accountToRemove.kind}).`}
+          confirmLabel={isSubmitting ? "Revoking..." : "Revoke"}
+          cancelLabel="Cancel"
+          onConfirm={handleRemoveAccount}
+          variant="danger"
+          loading={isSubmitting}
+        />
+      )}
+
       <div className="flex flex-col gap-6">
         {/* Accounts Section */}
         <section>
@@ -72,7 +96,7 @@ export const OverviewTab = ({ profile }: OverviewTabProps) => {
           {/* Divider and Description */}
           <div className="-mt-2 flex flex-col gap-2.5">
             <div className="h-px w-full bg-(--moss-border-color)" />
-            <p className="text-sm text-(--moss-secondary-text)">Choose a preferred theme for the app</p>
+            <p className="text-sm text-(--moss-secondary-text)">Manage your connected accounts</p>
           </div>
 
           {/* Accounts List */}
@@ -99,7 +123,7 @@ export const OverviewTab = ({ profile }: OverviewTabProps) => {
                       Edit details
                     </Button>
                     <Button
-                      onClick={() => handleRemoveAccount(account.id)}
+                      onClick={() => handleRevokeClick(account)}
                       disabled={isSubmitting}
                       className="background-(--moss-error) rounded-sm px-3 py-1 text-xs text-white hover:opacity-90"
                     >
