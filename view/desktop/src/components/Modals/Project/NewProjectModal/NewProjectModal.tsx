@@ -65,8 +65,6 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
         name,
         order: projects?.length ? projects.length + 1 : 1,
         source: importParams,
-        //TODO this is hardcoded, but we don't have and interface for this yet
-        externalPath: "",
         iconPath: "",
       });
 
