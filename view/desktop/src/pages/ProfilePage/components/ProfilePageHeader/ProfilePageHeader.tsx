@@ -11,12 +11,10 @@ interface ProfilePageHeaderProps {
 export const ProfilePageHeader = ({ profile }: ProfilePageHeaderProps) => {
   return (
     <PageWrapper>
-      <header className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Icon icon="Person" className="size-6" />
-            <h1 className="text-2xl font-semibold">{profile.name}</h1>
-          </div>
+      <header className="flex flex-col gap-2">
+        <div className="flex items-center gap-2">
+          <Icon icon="Person" className="size-5" />
+          <h1 className="text-xl font-medium">{profile.name}</h1>
         </div>
       </header>
     </PageWrapper>
