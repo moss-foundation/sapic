@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ComponentPropsWithoutRef } from "react";
+import { useEffect, useState, type ComponentPropsWithoutRef } from "react";
 
 import { Divider } from "@/components/Divider";
 import { Icons } from "@/lib/ui";
@@ -8,6 +8,7 @@ import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/ad
 
 import { StatusBarActivity } from "./StatusBarActivity";
 import { StatusBarButton } from "./StatusBarButton";
+import { StatusBarFPSCounter } from "./StatusBarFPSCounter";
 import { StatusBarIndicators } from "./StatusBarIndicators";
 import ZoomButtons from "./ZoomButtons";
 
@@ -96,7 +97,7 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
       <div className="flex h-full gap-6">
         <ZoomButtons />
         <div className="flex gap-1">
-          <FPSCounter />
+          <StatusBarFPSCounter />
           <Divider height="medium" />
           <StatusBarButton icon={isOnline ? "Success" : "Error"} label={isOnline ? "Online" : "Offline"} />
         </div>
@@ -106,32 +107,3 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
 };
 
 export default StatusBar;
-
-const FPSCounter = ({ updateInterval = 100 }) => {
-  const [fps, setFps] = useState(0);
-  const frames = useRef(0);
-  const lastTime = useRef(performance.now());
-
-  useEffect(() => {
-    let animationFrameId: number;
-
-    const loop = (time: number) => {
-      frames.current++;
-
-      const delta = time - lastTime.current;
-      if (delta >= updateInterval) {
-        setFps(Math.round((frames.current * 1000) / delta));
-        frames.current = 0;
-        lastTime.current = time;
-      }
-
-      animationFrameId = requestAnimationFrame(loop);
-    };
-
-    animationFrameId = requestAnimationFrame(loop);
-
-    return () => cancelAnimationFrame(animationFrameId);
-  }, [updateInterval]);
-
-  return <StatusBarButton label={`${fps} FPS`} />;
-};
