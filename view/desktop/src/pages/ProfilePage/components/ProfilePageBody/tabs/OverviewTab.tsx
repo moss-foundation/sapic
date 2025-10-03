@@ -101,7 +101,7 @@ export const OverviewTab = ({ profile }: OverviewTabProps) => {
 
           {/* Divider and Description */}
           <div className="-mt-2 flex flex-col gap-2.5">
-            <div className="h-px w-full bg-(--moss-border-color)" />
+            <div className="background-(--moss-border-color) h-px w-full" />
             <p className="text-sm text-(--moss-secondary-text)">Manage your connected accounts</p>
           </div>
 

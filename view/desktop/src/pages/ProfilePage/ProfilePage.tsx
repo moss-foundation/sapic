@@ -6,9 +6,7 @@ import { ProfilePageBody } from "./components/ProfilePageBody";
 import { ProfilePageHeader } from "./components/ProfilePageHeader";
 import { useProfileData } from "./hooks/useProfileData";
 
-export interface ProfilePageProps {
-  // Profile page doesn't need params from outside, it reads active profile
-}
+export type ProfilePageProps = Record<string, never>;
 
 const ProfilePage = ({ ...props }: IDockviewPanelProps<ProfilePageProps>) => {
   const { profile, isLoading, error } = useProfileData();
