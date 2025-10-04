@@ -16,9 +16,10 @@ import { ProviderIcon } from "@/components/ProviderIcon";
 
 interface OverviewTabProps extends IDockviewPanelProps<ProfilePageProps> {
   profile: ProfileInfo;
+  refetchProfile: () => void;
 }
 
-export const OverviewTab = ({ profile }: OverviewTabProps) => {
+export const OverviewTab = ({ profile, refetchProfile }: OverviewTabProps) => {
   const [showNewAccountModal, setShowNewAccountModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [accountToRemove, setAccountToRemove] = useState<AccountInfo | null>(null);
@@ -46,7 +47,8 @@ export const OverviewTab = ({ profile }: OverviewTabProps) => {
       await invoke("update_profile", { input });
       console.log("Account removed successfully");
       closeRevokeModal();
-      window.location.reload();
+      setAccountToRemove(null);
+      refetchProfile();
     } catch (error) {
       console.error("Error removing account:", error);
       alert(`Failed to remove account: ${error}`);
@@ -73,6 +75,7 @@ export const OverviewTab = ({ profile }: OverviewTabProps) => {
         closeModal={() => setShowNewAccountModal(false)}
         onAccountAdded={() => {
           console.log("Account added successfully");
+          refetchProfile();
         }}
       />
 

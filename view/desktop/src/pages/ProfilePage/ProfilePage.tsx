@@ -9,7 +9,7 @@ import { useProfileData } from "./hooks/useProfileData";
 export type ProfilePageProps = Record<string, never>;
 
 const ProfilePage = ({ ...props }: IDockviewPanelProps<ProfilePageProps>) => {
-  const { profile, isLoading, error } = useProfileData();
+  const { profile, isLoading, error, refetch } = useProfileData();
 
   // Add error boundary protection
   if (error) {
@@ -49,7 +49,7 @@ const ProfilePage = ({ ...props }: IDockviewPanelProps<ProfilePageProps>) => {
   return (
     <PageView>
       <ProfilePageHeader profile={profile} api={props.api} />
-      <ProfilePageBody profile={profile} {...props} />
+      <ProfilePageBody profile={profile} refetchProfile={refetch} {...props} />
     </PageView>
   );
 };

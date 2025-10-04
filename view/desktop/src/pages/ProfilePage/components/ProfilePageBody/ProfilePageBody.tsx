@@ -8,9 +8,10 @@ import { OverviewTab } from "./tabs/OverviewTab";
 
 interface ProfilePageBodyProps extends IDockviewPanelProps<ProfilePageProps> {
   profile: ProfileInfo;
+  refetchProfile: () => void;
 }
 
-export const ProfilePageBody = ({ profile, ...props }: ProfilePageBodyProps) => {
+export const ProfilePageBody = ({ profile, refetchProfile, ...props }: ProfilePageBodyProps) => {
   return (
     <FramedTabs.Root value="overview" onValueChange={() => {}} className="flex flex-1 flex-col">
       <FramedTabs.List className="flex items-center justify-between">
@@ -21,7 +22,7 @@ export const ProfilePageBody = ({ profile, ...props }: ProfilePageBodyProps) => 
 
       <FramedTabs.Content value="overview" className="flex flex-1">
         <PageWrapper className="flex flex-1 flex-col pl-7.5">
-          <OverviewTab profile={profile} {...props} />
+          <OverviewTab profile={profile} refetchProfile={refetchProfile} {...props} />
         </PageWrapper>
       </FramedTabs.Content>
     </FramedTabs.Root>

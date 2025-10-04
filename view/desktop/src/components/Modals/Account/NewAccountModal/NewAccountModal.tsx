@@ -45,9 +45,8 @@ export const NewAccountModal = ({ showModal, closeModal, onAccountAdded }: NewAc
       await invoke("update_profile", { input });
       console.log("Account added successfully");
 
-      onAccountAdded?.();
       handleClose();
-      window.location.reload();
+      onAccountAdded?.();
     } catch (error) {
       console.error("Error adding account:", error);
       alert(`Failed to add account: ${error}`);
