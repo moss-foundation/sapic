@@ -5,50 +5,50 @@ import { AccountKind } from "@repo/moss-user";
 
 import { Subheader } from "./Subheader";
 
-interface FlowSectionProps {
-  flow: "OAUTH" | "PAT";
-  setFlow: (flow: "OAUTH" | "PAT") => void;
+interface MethodSectionProps {
+  method: "OAUTH" | "PAT";
+  setMethod: (method: "OAUTH" | "PAT") => void;
   token: string;
   setToken: (token: string) => void;
   provider: AccountKind;
 }
 
-export const FlowSection = ({ flow, setFlow, token, setToken, provider }: FlowSectionProps) => {
+export const MethodSection = ({ method, setMethod, token, setToken, provider }: MethodSectionProps) => {
   const tokenInputRef = useRef<HTMLTextAreaElement>(null);
 
   return (
     <div>
       <Subheader>
-        <span>Flow</span>
+        <span>Method</span>
         <div className="background-(--moss-border-color) my-auto h-px w-full" />
       </Subheader>
       <p className="text-sm leading-5 text-(--moss-secondary-text)">
-        You can switch modes in the workspace at any time and as often as needed.
+        Pick the authentication method for connecting your account.
       </p>
       <div className="pl-5">
         <RadioGroup.Root>
           <RadioGroup.ItemWithLabel
             label="OAuth 2.0"
-            description="This mode is suitable when your collection is stored in a separate repository or doesn't have a repository at all."
+            description="Use your GitHub account directly. Suitable when you don't want to manage tokens manually. Recommended for most users."
             value="OAUTH"
-            checked={flow === "OAUTH"}
-            onClick={() => setFlow("OAUTH")}
-            className={flow !== "OAUTH" ? "opacity-50" : ""}
+            checked={method === "OAUTH"}
+            onClick={() => setMethod("OAUTH")}
+            className={method !== "OAUTH" ? "opacity-50" : ""}
           />
 
           <RadioGroup.ItemWithLabel
             label="PAT"
-            description="This mode is suitable if you want to store the collection in your project's repository or in any other folder you specify."
+            description="You can get it in your GitHub settings. The token is stored locally and used only for login."
             value="PAT"
-            checked={flow === "PAT"}
-            onClick={() => setFlow("PAT")}
-            className={flow !== "PAT" ? "opacity-50" : ""}
+            checked={method === "PAT"}
+            onClick={() => setMethod("PAT")}
+            className={method !== "PAT" ? "opacity-50" : ""}
           />
         </RadioGroup.Root>
       </div>
 
       {/* PAT Token Input */}
-      {flow === "PAT" && (
+      {method === "PAT" && (
         <div className="grid grid-cols-[min-content_1fr] items-start gap-x-3 pt-2 pl-10.5">
           <label className="pt-1.5 text-base">Token:</label>
           <textarea

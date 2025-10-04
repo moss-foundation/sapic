@@ -7,7 +7,7 @@ import { AddAccountParams, UpdateProfileInput } from "@repo/moss-app";
 import { AccountKind } from "@repo/moss-user";
 
 import { ModalWrapperProps } from "../../types";
-import { FlowSection, FooterActions } from "./Sections";
+import { MethodSection, FooterActions } from "./Sections";
 
 interface NewAccountModalProps extends ModalWrapperProps {
   onAccountAdded?: () => void;
@@ -15,7 +15,7 @@ interface NewAccountModalProps extends ModalWrapperProps {
 
 export const NewAccountModal = ({ showModal, closeModal, onAccountAdded }: NewAccountModalProps) => {
   const [provider, setProvider] = useState<AccountKind>("GITHUB");
-  const [flow, setFlow] = useState<"OAUTH" | "PAT">("OAUTH");
+  const [method, setMethod] = useState<"OAUTH" | "PAT">("OAUTH");
   const [token, setToken] = useState("");
   const [useAsDefault, setUseAsDefault] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,8 +32,8 @@ export const NewAccountModal = ({ showModal, closeModal, onAccountAdded }: NewAc
         kind: provider,
       };
 
-      // If PAT flow is selected, we would add the token here
-      if (flow === "PAT" && token) {
+      // If PAT method is selected, we would add the token here
+      if (method === "PAT" && token) {
         console.log("PAT token:", token);
       }
 
@@ -64,13 +64,13 @@ export const NewAccountModal = ({ showModal, closeModal, onAccountAdded }: NewAc
   const reset = () => {
     setTimeout(() => {
       setProvider("GITHUB");
-      setFlow("OAUTH");
+      setMethod("OAUTH");
       setToken("");
       setUseAsDefault(false);
     }, 200);
   };
 
-  const isSubmitDisabled = isSubmitting || (flow === "PAT" && !token);
+  const isSubmitDisabled = isSubmitting || (method === "PAT" && !token);
 
   return (
     <Modal onBackdropClick={handleClose} showModal={showModal} className="w-full max-w-136">
@@ -88,10 +88,22 @@ export const NewAccountModal = ({ showModal, closeModal, onAccountAdded }: NewAc
               layout="vertical"
             >
               <PillTabs.Content value="github">
-                <FlowSection flow={flow} setFlow={setFlow} token={token} setToken={setToken} provider={provider} />
+                <MethodSection
+                  method={method}
+                  setMethod={setMethod}
+                  token={token}
+                  setToken={setToken}
+                  provider={provider}
+                />
               </PillTabs.Content>
               <PillTabs.Content value="gitlab">
-                <FlowSection flow={flow} setFlow={setFlow} token={token} setToken={setToken} provider={provider} />
+                <MethodSection
+                  method={method}
+                  setMethod={setMethod}
+                  token={token}
+                  setToken={setToken}
+                  provider={provider}
+                />
               </PillTabs.Content>
             </ProviderSwitcher>
           </div>
