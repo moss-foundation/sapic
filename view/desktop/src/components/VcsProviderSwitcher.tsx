@@ -7,7 +7,7 @@ import { ProviderIcon, ProviderIconType } from "./ProviderIcon";
 
 export type ProviderType = "github" | "gitlab";
 
-interface ProviderSwitcherProps {
+interface VcsProviderSwitcherProps {
   value: string;
   onValueChange: (value: string) => void;
   label?: string;
@@ -17,7 +17,7 @@ interface ProviderSwitcherProps {
   className?: string;
 }
 
-export const ProviderSwitcher = ({
+export const VcsProviderSwitcher = ({
   value,
   onValueChange,
   label = "Provider:",
@@ -25,7 +25,7 @@ export const ProviderSwitcher = ({
   layout = "vertical",
   children,
   className,
-}: ProviderSwitcherProps) => {
+}: VcsProviderSwitcherProps) => {
   // Normalize value to lowercase for icon matching
   const normalizedValue = value.toLowerCase() as ProviderIconType;
 

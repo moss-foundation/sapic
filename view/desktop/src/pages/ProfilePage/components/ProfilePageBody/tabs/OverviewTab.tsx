@@ -109,34 +109,38 @@ export const OverviewTab = ({ profile, refetchProfile }: OverviewTabProps) => {
           </div>
 
           {/* Accounts List */}
-          <div className="mt-2.5 flex flex-col gap-2">
+          <div className="mt-2.5">
             {profile.accounts.length === 0 ? (
               <div className="rounded-sm border border-(--moss-border-color) p-6 text-center text-sm text-(--moss-secondary-text)">
                 <p>No accounts connected yet</p>
               </div>
             ) : (
-              profile.accounts.map((account: AccountInfo) => (
-                <div
-                  key={account.id}
-                  className="flex items-center justify-between rounded-md border border-(--moss-border-color) px-3 py-2.5"
-                >
-                  <div className="flex items-center gap-2">
-                    {getProviderIcon(account.kind)}
-                    <span className="text-sm">{account.username}</span>
+              <div className="overflow-hidden rounded-md border border-(--moss-border-color)">
+                {profile.accounts.map((account: AccountInfo, index: number) => (
+                  <div
+                    key={account.id}
+                    className={`flex items-center justify-between px-3 py-2.5 ${
+                      index !== profile.accounts.length - 1 ? "border-b border-(--moss-border-color)" : ""
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {getProviderIcon(account.kind)}
+                      <span className="text-sm">{account.username}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <ButtonNeutralOutlined
+                        onClick={() => handleEditDetails(account)}
+                        className="background-(--moss-secondary-background) border-(--moss-border-color) px-3"
+                      >
+                        Edit details
+                      </ButtonNeutralOutlined>
+                      <ButtonDanger onClick={() => handleRevokeClick(account)} disabled={isSubmitting}>
+                        Revoke
+                      </ButtonDanger>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <ButtonNeutralOutlined
-                      onClick={() => handleEditDetails(account)}
-                      className="background-(--moss-secondary-background) border-(--moss-border-color) px-3"
-                    >
-                      Edit details
-                    </ButtonNeutralOutlined>
-                    <ButtonDanger onClick={() => handleRevokeClick(account)} disabled={isSubmitting}>
-                      Revoke
-                    </ButtonDanger>
-                  </div>
-                </div>
-              ))
+                ))}
+              </div>
             )}
           </div>
         </section>

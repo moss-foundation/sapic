@@ -36,7 +36,7 @@ export const MethodSection = ({ method, setMethod, token, setToken, provider }: 
         <RadioGroup.Root>
           <RadioGroup.ItemWithLabel
             label="OAuth 2.0"
-            description="Use your GitHub account directly. Suitable when you don't want to manage tokens manually. Recommended for most users."
+            description={`Use your ${providerName} account directly. Suitable when you don't want to manage tokens manually. Recommended for most users.`}
             value="OAUTH"
             checked={method === "OAUTH"}
             onClick={() => setMethod("OAUTH")}

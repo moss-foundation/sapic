@@ -1,6 +1,6 @@
 import { FormEvent, useState } from "react";
 
-import { ProviderSwitcher } from "@/components/ProviderSwitcher";
+import { VcsProviderSwitcher } from "@/components/VcsProviderSwitcher";
 import { Modal, PillTabs, Scrollbar } from "@/lib/ui";
 import { invoke } from "@tauri-apps/api/core";
 import { AddAccountParams, UpdateProfileInput } from "@repo/moss-app";
@@ -80,7 +80,7 @@ export const NewAccountModal = ({ showModal, closeModal, onAccountAdded }: NewAc
 
         <Scrollbar className="min-h-0 flex-1">
           <div className="flex flex-col px-6 pt-2 pb-5">
-            <ProviderSwitcher
+            <VcsProviderSwitcher
               value={provider}
               onValueChange={(value) => setProvider(value.toUpperCase() as AccountKind)}
               label="Provider:"
@@ -104,7 +104,7 @@ export const NewAccountModal = ({ showModal, closeModal, onAccountAdded }: NewAc
                   provider={provider}
                 />
               </PillTabs.Content>
-            </ProviderSwitcher>
+            </VcsProviderSwitcher>
           </div>
         </Scrollbar>
 

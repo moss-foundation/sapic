@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
-import { ProviderSwitcher } from "@/components/ProviderSwitcher";
+import { VcsProviderSwitcher } from "@/components/VcsProviderSwitcher";
 import { useFocusInputOnMount } from "@/hooks";
 import { PillTabs } from "@/lib/ui/Tabs/index";
 import { CheckedState } from "@radix-ui/react-checkbox";
@@ -72,7 +72,7 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
         </div>
 
         <div className="grid grid-cols-[min-content_1fr] items-center gap-x-3 gap-y-6 pt-3 pb-2 pl-5">
-          <ProviderSwitcher
+          <VcsProviderSwitcher
             value={provider}
             onValueChange={(value) => setProvider(value as "github" | "gitlab")}
             label="Provider:"
@@ -89,7 +89,7 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
                 <BranchInput branch={branch} setBranch={setBranch} disabled={!vcs} />
               </PillTabs.Content>
             </>
-          </ProviderSwitcher>
+          </VcsProviderSwitcher>
         </div>
 
         {/* {gitProvider === null && (

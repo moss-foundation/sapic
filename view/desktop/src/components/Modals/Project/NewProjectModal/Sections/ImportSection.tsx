@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { InputOutlined } from "@/components/Inputs/InputOutlined";
-import { ProviderSwitcher } from "@/components/ProviderSwitcher";
+import { VcsProviderSwitcher } from "@/components/VcsProviderSwitcher";
 import { PillTabs } from "@/lib/ui/Tabs/index";
 import { useGitProviderStore } from "@/store/gitProvider";
 import { ImportProjectSource } from "@repo/moss-workspace";
@@ -54,7 +54,7 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
   return (
     <div className="flex flex-col gap-2">
       <div className="grid grid-cols-[min-content_1fr] items-center gap-x-3 gap-y-6 pb-2">
-        <ProviderSwitcher
+        <VcsProviderSwitcher
           value={provider}
           onValueChange={(value) => setProvider(value as "github" | "gitlab")}
           label="From:"
@@ -66,7 +66,7 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
           <PillTabs.Content value="gitlab" className="contents">
             <NameInput name={name} setName={setName} />
           </PillTabs.Content>
-        </ProviderSwitcher>
+        </VcsProviderSwitcher>
       </div>
 
       <div>
