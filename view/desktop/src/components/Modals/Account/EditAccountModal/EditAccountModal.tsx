@@ -80,7 +80,7 @@ export const EditAccountModal = ({ showModal, closeModal, account, onAccountUpda
           Edit details
         </h2>
 
-        <div className="flex flex-col gap-4 px-6 py-5">
+        <div className="flex flex-col gap-4 px-6 pt-6 pb-5">
           <div className="grid grid-cols-[min-content_1fr] items-start gap-x-3">
             <label className="pt-1.5 text-base">Token:</label>
             <textarea
