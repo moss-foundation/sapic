@@ -5,10 +5,5 @@ interface SubheaderProps {
 }
 
 export const Subheader = ({ children }: SubheaderProps) => {
-  return (
-    <div className="col-span-2 flex gap-2 pt-4 pb-3">
-      {children}
-      <div className="background-(--moss-border-color) my-auto h-px w-full" />
-    </div>
-  );
+  return <div className="flex justify-between gap-2 py-1.5">{children}</div>;
 };

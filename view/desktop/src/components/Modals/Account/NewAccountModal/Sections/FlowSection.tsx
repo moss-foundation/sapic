@@ -3,6 +3,8 @@ import { useRef } from "react";
 import { RadioGroup } from "@/components";
 import { AccountKind } from "@repo/moss-user";
 
+import { Subheader } from "./Subheader";
+
 interface FlowSectionProps {
   flow: "OAUTH" | "PAT";
   setFlow: (flow: "OAUTH" | "PAT") => void;
@@ -15,16 +17,15 @@ export const FlowSection = ({ flow, setFlow, token, setToken, provider }: FlowSe
   const tokenInputRef = useRef<HTMLTextAreaElement>(null);
 
   return (
-    <div className="flex flex-col gap-1">
-      <div>
-        <span className="text-base">Flow</span>
-      </div>
-
-      <p className="text-sm text-(--moss-secondary-text)">
+    <div>
+      <Subheader>
+        <span>Flow</span>
+        <div className="background-(--moss-border-color) my-auto h-px w-full" />
+      </Subheader>
+      <p className="text-sm leading-5 text-(--moss-secondary-text)">
         You can switch modes in the workspace at any time and as often as needed.
       </p>
-
-      <div className="pt-1.5 pl-4.5">
+      <div className="pl-5">
         <RadioGroup.Root>
           <RadioGroup.ItemWithLabel
             label="OAuth 2.0"
