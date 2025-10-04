@@ -9,6 +9,7 @@ import { AddAccountParams, UpdateProfileInput } from "@repo/moss-app";
 import { AccountInfo } from "@repo/moss-user";
 
 import { ModalWrapperProps } from "../../types";
+import { getPatPlaceholder, getProviderName, getProviderSettingsUrl } from "../accountUtils";
 
 interface EditAccountModalProps extends ModalWrapperProps {
   account: AccountInfo | null;
@@ -67,13 +68,10 @@ export const EditAccountModal = ({ showModal, closeModal, account, onAccountUpda
 
   const isSubmitDisabled = isSubmitting || !token;
 
-  const providerName = account?.kind === "GITHUB" ? "GitHub" : "GitLab";
-  const settingsUrl =
-    account?.kind === "GITHUB"
-      ? "https://github.com/settings/tokens"
-      : "https://gitlab.com/-/user_settings/personal_access_tokens";
-
   if (!account) return null;
+
+  const providerName = getProviderName(account.kind);
+  const settingsUrl = getProviderSettingsUrl(account.kind);
 
   return (
     <Modal onBackdropClick={handleClose} showModal={showModal} className="w-full max-w-136">
@@ -88,7 +86,7 @@ export const EditAccountModal = ({ showModal, closeModal, account, onAccountUpda
             <textarea
               value={token}
               onChange={(e) => setToken(e.target.value)}
-              placeholder={`${account.kind === "GITHUB" ? "github" : "gitlab"}_pat_11AJP6K3A0nS9zI77AkyOB_uLU0OUSZu0TRUGo9czDrXzur3kMGpusg9XJpzYaeYYEAKALQUTZ0L3v6q9i`}
+              placeholder={getPatPlaceholder(account.kind)}
               className="h-24.5 w-full resize-none rounded-sm border border-(--moss-border-color) px-2 py-1.5 text-sm placeholder-(--moss-secondary-text) focus:outline-2 focus:outline-(--moss-primary)"
               autoFocus
             />
