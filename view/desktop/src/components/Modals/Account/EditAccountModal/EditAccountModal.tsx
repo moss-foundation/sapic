@@ -80,8 +80,8 @@ export const EditAccountModal = ({ showModal, closeModal, account, onAccountUpda
           Edit details
         </h2>
 
-        <div className="flex flex-col gap-4 px-6 pt-6 pb-5">
-          <div className="grid grid-cols-[min-content_1fr] items-start gap-x-3">
+        <div className="px-6 pt-6 pb-3.5">
+          <div className="grid grid-cols-[min-content_1fr] items-start gap-x-3 gap-y-1.5">
             <label className="pt-1.5 text-base">Token:</label>
             <textarea
               value={token}
@@ -90,14 +90,15 @@ export const EditAccountModal = ({ showModal, closeModal, account, onAccountUpda
               className="h-24.5 w-full resize-none rounded-sm border border-(--moss-border-color) px-2 py-1.5 text-sm placeholder-(--moss-secondary-text) focus:outline-2 focus:outline-(--moss-primary)"
               autoFocus
             />
+            <div></div>
+            <p className="text-sm leading-4 text-(--moss-secondary-text)">
+              Enter your personal access token (PAT). You can get it in your{" "}
+              <Link href={settingsUrl} target="_blank" rel="noopener noreferrer">
+                {providerName}
+              </Link>{" "}
+              settings. The token is stored locally and used only for login.
+            </p>
           </div>
-          <p className="text-sm leading-5 text-(--moss-secondary-text)">
-            Enter your personal access token (PAT). You can get it in your{" "}
-            <Link href={settingsUrl} target="_blank" rel="noopener noreferrer">
-              {providerName}
-            </Link>{" "}
-            settings. The token is stored locally and used only for login.
-          </p>
         </div>
 
         <div className="flex items-center justify-end gap-3 border-t border-(--moss-border-color) px-6 py-4">
