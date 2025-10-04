@@ -1,6 +1,7 @@
 import { useRef } from "react";
 
 import { RadioGroup } from "@/components";
+import { Link } from "@/lib/ui";
 import { AccountKind } from "@repo/moss-user";
 
 import { Subheader } from "./Subheader";
@@ -15,6 +16,12 @@ interface MethodSectionProps {
 
 export const MethodSection = ({ method, setMethod, token, setToken, provider }: MethodSectionProps) => {
   const tokenInputRef = useRef<HTMLTextAreaElement>(null);
+
+  const providerName = provider === "GITHUB" ? "GitHub" : "GitLab";
+  const settingsUrl =
+    provider === "GITHUB"
+      ? "https://github.com/settings/tokens"
+      : "https://gitlab.com/-/user_settings/personal_access_tokens";
 
   return (
     <div>
@@ -38,7 +45,15 @@ export const MethodSection = ({ method, setMethod, token, setToken, provider }: 
 
           <RadioGroup.ItemWithLabel
             label="PAT"
-            description="You can get it in your GitHub settings. The token is stored locally and used only for login."
+            description={
+              <span>
+                You can get it in your{" "}
+                <Link href={settingsUrl} target="_blank" rel="noopener noreferrer">
+                  {providerName}
+                </Link>{" "}
+                settings. The token is stored locally and used only for login.
+              </span>
+            }
             value="PAT"
             checked={method === "PAT"}
             onClick={() => setMethod("PAT")}
