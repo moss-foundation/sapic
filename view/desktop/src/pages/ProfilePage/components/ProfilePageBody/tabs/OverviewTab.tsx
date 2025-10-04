@@ -91,7 +91,6 @@ export const OverviewTab = ({ profile, refetchProfile }: OverviewTabProps) => {
         }}
         account={accountToEdit}
         onAccountUpdated={() => {
-          console.log("Account updated successfully");
           refetchProfile();
         }}
       />

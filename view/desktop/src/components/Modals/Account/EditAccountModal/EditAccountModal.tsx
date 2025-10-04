@@ -28,6 +28,7 @@ export const EditAccountModal = ({ showModal, closeModal, account, onAccountUpda
     try {
       setIsSubmitting(true);
 
+      // TODO: Replace with dedicated update account endpoint when available
       // Strategy: Remove old account and add new account with updated PAT
       // This is necessary because there's no dedicated "update account" endpoint
       const accountParams: AddAccountParams = {
@@ -43,7 +44,6 @@ export const EditAccountModal = ({ showModal, closeModal, account, onAccountUpda
       };
 
       await invoke("update_profile", { input });
-      console.log("Account updated successfully");
 
       handleClose();
       onAccountUpdated?.();
