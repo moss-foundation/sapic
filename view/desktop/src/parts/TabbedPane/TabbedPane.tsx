@@ -12,6 +12,7 @@ import {
   FolderSettings,
   KitchenSink,
   Logs,
+  ProfilePage,
   ProjectSettingsPage,
   Settings,
   WelcomePage,
@@ -234,6 +235,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     WorkspaceSettings: (props: IDockviewPanelProps) => <WorkspaceSettings {...props} />,
     KitchenSink: () => <KitchenSink />,
     Settings: () => <Settings />,
+    Profile: (props: IDockviewPanelProps) => <ProfilePage {...props} />,
     Logs: () => <Logs />,
   };
 

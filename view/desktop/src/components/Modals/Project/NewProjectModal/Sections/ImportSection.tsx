@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 
 import { InputOutlined } from "@/components/Inputs/InputOutlined";
+import { VcsProviderSwitcher } from "@/components/VcsProviderSwitcher";
 import { PillTabs } from "@/lib/ui/Tabs/index";
 import { useGitProviderStore } from "@/store/gitProvider";
 import { ImportProjectSource } from "@repo/moss-workspace";
 
 import { BranchInput } from "../components/BranchInput";
 import { NameInput } from "../components/NameInput";
-import { ProviderIcon } from "../components/ProviderIcon";
 import { RepositoryInput } from "../components/RepositoryInput";
 import { DEFAULT_BRANCH, DEFAULT_NAME, DEFAULT_PROVIDER, DEFAULT_REPOSITORY } from "../defaults";
 import { Subheader } from "./Subheader";
@@ -54,26 +54,19 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
   return (
     <div className="flex flex-col gap-2">
       <div className="grid grid-cols-[min-content_1fr] items-center gap-x-3 gap-y-6 pb-2">
-        <PillTabs.Root
+        <VcsProviderSwitcher
           value={provider}
           onValueChange={(value) => setProvider(value as "github" | "gitlab")}
-          className="contents"
+          label="From:"
+          layout="grid"
         >
-          <div>From:</div>
-          <PillTabs.List className="col-span-2 grid h-min grid-cols-subgrid grid-rows-subgrid">
-            <div className="flex gap-2">
-              <PillTabs.Trigger value="github" label="GitHub" leadingContent={<ProviderIcon icon="github" />} />
-              <PillTabs.Trigger value="gitlab" label="GitLab" leadingContent={<ProviderIcon icon="gitlab" />} />
-            </div>
-          </PillTabs.List>
-
           <PillTabs.Content value="github" className="contents">
             <NameInput name={name} setName={setName} />
           </PillTabs.Content>
           <PillTabs.Content value="gitlab" className="contents">
             <NameInput name={name} setName={setName} />
           </PillTabs.Content>
-        </PillTabs.Root>
+        </VcsProviderSwitcher>
       </div>
 
       <div>
