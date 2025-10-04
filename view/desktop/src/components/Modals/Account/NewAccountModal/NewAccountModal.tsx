@@ -30,12 +30,8 @@ export const NewAccountModal = ({ showModal, closeModal, onAccountAdded }: NewAc
         host: provider === "GITHUB" ? "github.com" : "gitlab.com",
         label: "",
         kind: provider,
+        pat: method === "PAT" && token ? token : undefined,
       };
-
-      // If PAT method is selected, we would add the token here
-      if (method === "PAT" && token) {
-        console.log("PAT token:", token);
-      }
 
       const input: UpdateProfileInput = {
         accountsToAdd: [accountParams],
