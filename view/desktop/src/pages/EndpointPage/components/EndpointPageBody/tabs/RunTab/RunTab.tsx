@@ -47,7 +47,7 @@ export const RunTab = ({ ...props }: IDockviewPanelProps<EndpointPageProps>) => 
   );
 
   return (
-    <div className="flex grow flex-col gap-3">
+    <div className="flex grow flex-col gap-2.5">
       <EndpointInputField
         initialMethod={httpMethod}
         initialUrl={endpointData.url.raw}
