@@ -5,15 +5,15 @@ import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { Icon } from "@/lib/ui";
 import { CheckedState } from "@radix-ui/react-checkbox";
 
-import { QueryParam } from "../types";
+import { ParamProps } from "./types";
 
-interface QueryParamRowProps {
-  param: QueryParam;
-  onChange: (updatedParam: QueryParam) => void;
+interface ParamRowProps {
+  param: ParamProps;
+  onChange: (updatedParam: ParamProps) => void;
   keyToFocusOnMount?: string | null;
 }
 
-export const QueryParamRow = memo(({ param, onChange, keyToFocusOnMount }: QueryParamRowProps) => {
+export const ParamRow = memo(({ param, onChange, keyToFocusOnMount }: ParamRowProps) => {
   const keyRef = useRef<HTMLInputElement>(null);
   const valueRef = useRef<HTMLInputElement>(null);
 

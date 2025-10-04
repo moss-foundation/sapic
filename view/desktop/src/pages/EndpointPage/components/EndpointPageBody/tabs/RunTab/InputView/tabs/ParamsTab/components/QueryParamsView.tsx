@@ -1,36 +1,40 @@
-import { useCallback, useState } from "react";
+import { useState } from "react";
 
 import { ActionButton } from "@/components";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { Scrollbar } from "@/lib/ui";
 import { Counter } from "@/lib/ui/RoundedCounter";
 
-import { NewPathParamRowForm } from "./components/NewPathParamRowForm";
-import { PathParamRow } from "./components/PathParamRow";
-import { PathParam } from "./types";
+import { NewParamRowForm } from "./NewParamRowForm";
+import { ParamRow } from "./ParamRow";
+import { ParamProps } from "./types";
 
-export const PathParamsView = () => {
-  const [params, setParams] = useState<PathParam[]>([
+export const QueryParamsView = () => {
+  const [params, setParams] = useState<ParamProps[]>([
     {
       id: "1",
       checked: false,
       key: "id",
       value: "716d8407-dd06-43d5-8957-074af3dc09ae",
+      isRequired: true,
+      type: "string",
     },
     {
       id: "2",
       checked: false,
       key: "sort_by",
       value: "ASC",
+      isRequired: true,
+      type: "string",
     },
   ]);
   const [columnToFocusOnMount, setColumnToFocusOnMount] = useState<string | null>(null);
 
-  const handleParamRowChange = useCallback((updatedParam: PathParam) => {
-    setParams((prev) => prev.map((p) => (p.id === updatedParam.id ? updatedParam : p)));
-  }, []);
+  const handleParamRowChange = (updatedParam: ParamProps) => {
+    setParams(params.map((p) => (p.id === updatedParam.id ? updatedParam : p)));
+  };
 
-  const addNewRowAtTheEnd = (queryParam: PathParam) => {
+  const addNewRowAtTheEnd = (queryParam: ParamProps) => {
     if (queryParam.key) {
       setColumnToFocusOnMount("key");
     } else if (queryParam.value) {
@@ -49,7 +53,7 @@ export const PathParamsView = () => {
 
   return (
     <div>
-      <div className="flex justify-between border-b border-(--moss-border-color) px-3 py-[5px]">
+      <div className="flex w-full justify-between border-b border-(--moss-border-color) px-3 py-[5px]">
         <div className="flex items-center gap-1 overflow-hidden">
           <CheckboxWithLabel
             checked={headerCheckedState}
@@ -60,7 +64,7 @@ export const PathParamsView = () => {
                 setParams(params.map((p) => ({ ...p, checked: true })));
               }
             }}
-            label="Path Params"
+            label="Query Params"
             className="gap-3 truncate"
           />
           <Counter count={1} color="gray" />
@@ -70,22 +74,23 @@ export const PathParamsView = () => {
           <ActionButton icon="MoreHorizontal" />
         </div>
       </div>
-      <div>
-        <Scrollbar>
-          {/* Params */}
-          <div className="grid grid-cols-[min-content_minmax(128px,1fr)_minmax(128px,1fr)_min-content] gap-2 p-3">
-            {params.map((param, index) => (
-              <PathParamRow
+      <Scrollbar>
+        {/* Params */}
+        <div className="grid grid-cols-[min-content_minmax(128px,1fr)_minmax(128px,1fr)_min-content_min-content_min-content] gap-2 p-3">
+          {params.map((param, index) => {
+            const isLastRow = index === params.length - 1;
+            return (
+              <ParamRow
                 key={param.id}
                 param={param}
                 onChange={handleParamRowChange}
-                keyToFocusOnMount={index === params.length - 1 ? columnToFocusOnMount : null}
+                keyToFocusOnMount={isLastRow ? columnToFocusOnMount : null}
               />
-            ))}
-            <NewPathParamRowForm onAdd={addNewRowAtTheEnd} />
-          </div>
-        </Scrollbar>
-      </div>
+            );
+          })}
+          <NewParamRowForm onAdd={addNewRowAtTheEnd} />
+        </div>
+      </Scrollbar>
     </div>
   );
 };

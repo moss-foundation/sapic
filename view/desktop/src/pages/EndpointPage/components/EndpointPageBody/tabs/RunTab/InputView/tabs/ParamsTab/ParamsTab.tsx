@@ -3,8 +3,8 @@ import { Resizable, ResizablePanel } from "@/lib/ui";
 import { EntryKind } from "@repo/moss-project";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
 
-import { PathParamsView } from "./components/PathParamsView/PathParamsView";
-import { QueryParamsView } from "./components/QueryParamsView/QueryParamsView";
+import { PathParamsView } from "./components/PathParamsView";
+import { QueryParamsView } from "./components/QueryParamsView";
 
 export const ParamsTabContent = ({
   ...props
