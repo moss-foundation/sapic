@@ -1,12 +1,12 @@
 import { FormEvent, useState } from "react";
 
+import { ProviderSwitcher } from "@/components/ProviderSwitcher";
 import { Modal, PillTabs, Scrollbar } from "@/lib/ui";
 import { invoke } from "@tauri-apps/api/core";
 import { AddAccountParams, UpdateProfileInput } from "@repo/moss-app";
 import { AccountKind } from "@repo/moss-user";
 
 import { ModalWrapperProps } from "../../types";
-import { ProviderIcon } from "./components";
 import { FlowSection, FooterActions } from "./Sections";
 
 interface NewAccountModalProps extends ModalWrapperProps {
@@ -81,28 +81,19 @@ export const NewAccountModal = ({ showModal, closeModal, onAccountAdded }: NewAc
 
         <Scrollbar className="min-h-0 flex-1">
           <div className="flex flex-col px-6 pt-2 pb-5">
-            <PillTabs.Root
+            <ProviderSwitcher
               value={provider}
-              onValueChange={(value) => setProvider(value as AccountKind)}
-              className="flex flex-col gap-3.5"
+              onValueChange={(value) => setProvider(value.toUpperCase() as AccountKind)}
+              label="Provider:"
+              layout="vertical"
             >
-              <div className="flex items-center gap-3">
-                <span>Provider:</span>
-                <PillTabs.List>
-                  <div className="flex gap-2">
-                    <PillTabs.Trigger value="GITHUB" label="GitHub" leadingContent={<ProviderIcon icon="github" />} />
-                    <PillTabs.Trigger value="GITLAB" label="GitLab" leadingContent={<ProviderIcon icon="gitlab" />} />
-                  </div>
-                </PillTabs.List>
-              </div>
-
-              <PillTabs.Content value="GITHUB">
+              <PillTabs.Content value="github">
                 <FlowSection flow={flow} setFlow={setFlow} token={token} setToken={setToken} provider={provider} />
               </PillTabs.Content>
-              <PillTabs.Content value="GITLAB">
+              <PillTabs.Content value="gitlab">
                 <FlowSection flow={flow} setFlow={setFlow} token={token} setToken={setToken} provider={provider} />
               </PillTabs.Content>
-            </PillTabs.Root>
+            </ProviderSwitcher>
           </div>
         </Scrollbar>
 

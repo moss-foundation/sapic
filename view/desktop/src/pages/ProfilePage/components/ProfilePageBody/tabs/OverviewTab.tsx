@@ -12,7 +12,7 @@ import { AccountInfo, ProfileInfo } from "@repo/moss-user";
 import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
 import { ProfilePageProps } from "../../../ProfilePage";
 import { NewAccountModal } from "@/components/Modals/Account/NewAccountModal";
-import { ProviderIcon } from "@/components/Modals/Account/NewAccountModal/components/ProviderIcon";
+import { ProviderIcon } from "@/components/ProviderIcon";
 
 interface OverviewTabProps extends IDockviewPanelProps<ProfilePageProps> {
   profile: ProfileInfo;

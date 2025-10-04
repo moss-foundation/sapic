@@ -1,15 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
+import { ProviderSwitcher } from "@/components/ProviderSwitcher";
 import { useFocusInputOnMount } from "@/hooks";
 import { PillTabs } from "@/lib/ui/Tabs/index";
-import { cn } from "@/utils";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { CreateProjectGitParams } from "@repo/moss-workspace";
 
 import { BranchInput } from "../components/BranchInput";
 import { NameInput } from "../components/NameInput";
-import { ProviderIcon } from "../components/ProviderIcon";
 import { RepositoryInput } from "../components/RepositoryInput";
 import { DEFAULT_BRANCH, DEFAULT_NAME, DEFAULT_PROVIDER, DEFAULT_REPOSITORY, DEFAULT_VCS } from "../defaults";
 
@@ -73,29 +72,13 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
         </div>
 
         <div className="grid grid-cols-[min-content_1fr] items-center gap-x-3 gap-y-6 pt-3 pb-2 pl-5">
-          <PillTabs.Root
+          <ProviderSwitcher
             value={provider}
             onValueChange={(value) => setProvider(value as "github" | "gitlab")}
-            className="contents"
+            label="Provider:"
+            disabled={!vcs}
+            layout="grid"
           >
-            <div className={cn(!vcs && "opacity-50")}>Provider:</div>
-            <PillTabs.List className="col-span-2 grid h-min grid-cols-subgrid grid-rows-subgrid">
-              <div className="flex gap-2">
-                <PillTabs.Trigger
-                  value="github"
-                  label="GitHub"
-                  leadingContent={<ProviderIcon icon="github" />}
-                  disabled={!vcs}
-                />
-                <PillTabs.Trigger
-                  value="gitlab"
-                  label="GitLab"
-                  leadingContent={<ProviderIcon icon="gitlab" />}
-                  disabled={!vcs}
-                />
-              </div>
-            </PillTabs.List>
-
             <>
               <PillTabs.Content value="github" className="contents">
                 <RepositoryInput repository={repository} setRepository={setRepository} disabled={!vcs} />
@@ -106,7 +89,7 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
                 <BranchInput branch={branch} setBranch={setBranch} disabled={!vcs} />
               </PillTabs.Content>
             </>
-          </PillTabs.Root>
+          </ProviderSwitcher>
         </div>
 
         {/* {gitProvider === null && (
