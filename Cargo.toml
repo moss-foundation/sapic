@@ -40,6 +40,8 @@ members = [
     "crates/moss-extension-points", 
     "crates/moss-theme", 
     "crates/moss-configuration",
+
+     "crates/moss-wasm/plugin-hello",
     #
     # Apps
     #
@@ -50,6 +52,8 @@ members = [
     "tools/xtask",
     "tools/cargo-new-ts",
 ]
+
+
 
 [workspace.dependencies]
 #

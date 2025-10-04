@@ -1,0 +1,5 @@
+package plugin:example;
+
+world plugin {
+  export run: func(name: string) -> string;
+}

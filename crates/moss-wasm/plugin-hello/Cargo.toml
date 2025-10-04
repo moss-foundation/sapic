@@ -1,0 +1,9 @@
+[package]
+name = "plugin_hello"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wit-bindgen = "0.24"
