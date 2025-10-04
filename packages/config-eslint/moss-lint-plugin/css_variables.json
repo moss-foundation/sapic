@@ -192,6 +192,7 @@
   "--moss-controls-plain-border",
   "--moss-controls-plain-text",
   "--moss-controls-outlined-bg",
+  "--moss-controls-outlined-bg-contrast",
   "--moss-controls-outlined-border",
   "--moss-controls-outlined-text",
   "--moss-controls-placeholder",

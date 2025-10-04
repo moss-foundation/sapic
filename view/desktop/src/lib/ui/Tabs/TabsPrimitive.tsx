@@ -3,23 +3,13 @@ import { ComponentPropsWithoutRef, ElementRef, forwardRef } from "react";
 import { cn } from "@/utils";
 import * as RadixTabsPrimitive from "@radix-ui/react-tabs";
 
-import Scrollbar from "../Scrollbar";
-
 const Tabs = RadixTabsPrimitive.Root;
 
 const TabsList = forwardRef<
   ElementRef<typeof RadixTabsPrimitive.List>,
   ComponentPropsWithoutRef<typeof RadixTabsPrimitive.List>
 >(({ className, ...props }, ref) => (
-  <Scrollbar
-    className={cn("h-auto w-full min-w-0 items-center", { "pr-2": toolbar })}
-    classNames={{
-      contentWrapper: "mr-2",
-    }}
-    data-tabs-list-container
-  >
-    <RadixTabsPrimitive.List ref={ref} className={cn("flex items-center", className)} {...props} />
-  </Scrollbar>
+  <RadixTabsPrimitive.List ref={ref} className={cn("flex items-center", className)} {...props} />
 ));
 
 const TabsTrigger = forwardRef<

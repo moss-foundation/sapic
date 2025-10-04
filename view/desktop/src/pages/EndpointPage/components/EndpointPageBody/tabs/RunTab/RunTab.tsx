@@ -47,7 +47,7 @@ export const RunTab = ({ ...props }: IDockviewPanelProps<EndpointPageProps>) => 
   );
 
   return (
-    <div className="flex grow flex-col gap-3">
+    <div className="flex grow flex-col gap-2.5">
       <EndpointInputField
         initialMethod={httpMethod}
         initialUrl={endpointData.url.raw}
@@ -66,6 +66,7 @@ export const RunTab = ({ ...props }: IDockviewPanelProps<EndpointPageProps>) => 
             "pb-1": isResizableVertical,
             "pr-1": !isResizableVertical,
           })}
+          minSize={isResizableVertical ? 103 : 310}
         >
           <InputView {...props} />
         </ResizablePanel>
@@ -74,6 +75,7 @@ export const RunTab = ({ ...props }: IDockviewPanelProps<EndpointPageProps>) => 
             "pt-1": isResizableVertical,
             "pl-1": !isResizableVertical,
           })}
+          minSize={isResizableVertical ? 103 : 310}
         >
           <OutputView {...props} />
         </ResizablePanel>
