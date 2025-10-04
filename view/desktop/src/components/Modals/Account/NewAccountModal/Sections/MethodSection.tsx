@@ -4,6 +4,7 @@ import { RadioGroup } from "@/components";
 import { Link } from "@/lib/ui";
 import { AccountKind } from "@repo/moss-user";
 
+import { getPatPlaceholder, getProviderName, getProviderSettingsUrl } from "../../accountUtils";
 import { Subheader } from "./Subheader";
 
 interface MethodSectionProps {
@@ -17,11 +18,8 @@ interface MethodSectionProps {
 export const MethodSection = ({ method, setMethod, token, setToken, provider }: MethodSectionProps) => {
   const tokenInputRef = useRef<HTMLTextAreaElement>(null);
 
-  const providerName = provider === "GITHUB" ? "GitHub" : "GitLab";
-  const settingsUrl =
-    provider === "GITHUB"
-      ? "https://github.com/settings/tokens"
-      : "https://gitlab.com/-/user_settings/personal_access_tokens";
+  const providerName = getProviderName(provider);
+  const settingsUrl = getProviderSettingsUrl(provider);
 
   return (
     <div>
@@ -70,7 +68,7 @@ export const MethodSection = ({ method, setMethod, token, setToken, provider }: 
             ref={tokenInputRef}
             value={token}
             onChange={(e) => setToken(e.target.value)}
-            placeholder={`${provider === "GITHUB" ? "github" : "gitlab"}_pat_11AJP6K3A0nS9zI77AkyOB_uLU0OUSZu0TRUGo9czDrXzur3kMGpusg9XJpzYaeYYEAKALQUTZ0L3v6q9i`}
+            placeholder={getPatPlaceholder(provider)}
             className="h-24.5 w-full resize-none rounded-sm border border-(--moss-border-color) px-2 py-1.5 text-sm placeholder-(--moss-secondary-text) focus:outline-2 focus:outline-(--moss-primary)"
           />
         </div>

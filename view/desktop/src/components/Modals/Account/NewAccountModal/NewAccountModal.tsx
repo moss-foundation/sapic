@@ -7,6 +7,7 @@ import { AddAccountParams, UpdateProfileInput } from "@repo/moss-app";
 import { AccountKind } from "@repo/moss-user";
 
 import { ModalWrapperProps } from "../../types";
+import { getProviderHost } from "../accountUtils";
 import { MethodSection, FooterActions } from "./Sections";
 
 interface NewAccountModalProps extends ModalWrapperProps {
@@ -27,15 +28,11 @@ export const NewAccountModal = ({ showModal, closeModal, onAccountAdded }: NewAc
       setIsSubmitting(true);
 
       const accountParams: AddAccountParams = {
-        host: provider === "GITHUB" ? "github.com" : "gitlab.com",
+        host: getProviderHost(provider),
         label: "",
         kind: provider,
+        pat: method === "PAT" && token ? token : undefined,
       };
-
-      // If PAT method is selected, we would add the token here
-      if (method === "PAT" && token) {
-        console.log("PAT token:", token);
-      }
 
       const input: UpdateProfileInput = {
         accountsToAdd: [accountParams],
