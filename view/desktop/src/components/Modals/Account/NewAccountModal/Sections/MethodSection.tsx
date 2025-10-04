@@ -25,7 +25,7 @@ export const MethodSection = ({ method, setMethod, token, setToken, provider }: 
       <p className="text-sm leading-5 text-(--moss-secondary-text)">
         Pick the authentication method for connecting your account.
       </p>
-      <div className="pl-5">
+      <div className="mt-2 pl-5">
         <RadioGroup.Root>
           <RadioGroup.ItemWithLabel
             label="OAuth 2.0"
@@ -49,7 +49,7 @@ export const MethodSection = ({ method, setMethod, token, setToken, provider }: 
 
       {/* PAT Token Input */}
       {method === "PAT" && (
-        <div className="grid grid-cols-[min-content_1fr] items-start gap-x-3 pt-2 pl-10.5">
+        <div className="grid grid-cols-[min-content_1fr] items-start gap-x-3 pt-3.5 pl-10.5">
           <label className="pt-1.5 text-base">Token:</label>
           <textarea
             ref={tokenInputRef}

@@ -64,7 +64,7 @@ export const ProviderSwitcher = ({
     <PillTabs.Root
       value={normalizedValue}
       onValueChange={(val) => onValueChange(val)}
-      className={cn("flex flex-col gap-3.5", className)}
+      className={cn("flex flex-col gap-2.5", className)}
     >
       <div className="flex items-center gap-3">
         <span>{label}</span>
