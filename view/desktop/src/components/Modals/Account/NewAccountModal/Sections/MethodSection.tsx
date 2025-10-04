@@ -55,7 +55,7 @@ export const MethodSection = ({ method, setMethod, token, setToken, provider }: 
             ref={tokenInputRef}
             value={token}
             onChange={(e) => setToken(e.target.value)}
-            placeholder={`${provider === "GITHUB" ? "github.com" : "gitlab.com"}/moss-foundation/sapic`}
+            placeholder={`${provider === "GITHUB" ? "github" : "gitlab"}_pat_11AJP6K3A0nS9zI77AkyOB_uLU0OUSZu0TRUGo9czDrXzur3kMGpusg9XJpzYaeYYEAKALQUTZ0L3v6q9i`}
             className="h-24.5 w-full resize-none rounded-sm border border-(--moss-border-color) px-2 py-1.5 text-sm placeholder-(--moss-secondary-text) focus:outline-2 focus:outline-(--moss-primary)"
           />
         </div>
