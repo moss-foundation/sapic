@@ -20,12 +20,12 @@ export const ActivityBarLastItems = () => {
         iconActive="PersonActive"
         isActive={false}
         id="1"
-        title="User"
+        title="Profile"
         order={1}
         onClick={() =>
           addOrFocusPanel({
-            id: "Settings",
-            component: "Settings",
+            id: "Profile",
+            component: "Profile",
           })
         }
         isDraggable={false}

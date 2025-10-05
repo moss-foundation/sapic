@@ -7,6 +7,7 @@ import { ActivityEventSimulator } from "@/components/ActivityEventSimulator";
 import { useActivityRouter } from "@/hooks/app";
 import GitTest from "@/git/GitTest.tsx";
 import { AddAccountParams, LogEntryInfo, ON_DID_APPEND_LOG_ENTRY_CHANNEL, UpdateProfileInput } from "@repo/moss-app";
+import { AccountKind } from "@repo/moss-user";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 
@@ -29,11 +30,10 @@ export const Logs = () => {
     name: "",
   });
 
-  const [accountForm, setAccountParams] = useState<AddAccountParams>({
+  const [accountForm, setAccountForm] = useState<AddAccountParams>({
     host: "github.com",
     label: "",
     kind: "GITHUB",
-    pat: "",
   });
 
   const [loginForm, setLoginForm] = useState<LoginData>({
@@ -156,39 +156,24 @@ export const Logs = () => {
                 type="text"
                 placeholder="Host"
                 value={accountForm.host}
-                onChange={(e) => setAccountParams((prev) => ({ ...prev, host: e.target.value }))}
+                onChange={(e) => setAccountForm((prev) => ({ ...prev, host: e.target.value }))}
                 className="w-full rounded-md border border-gray-300 bg-white p-2"
               />
               <input
                 type="text"
                 placeholder="Label"
                 value={accountForm.label}
-                onChange={(e) => setAccountParams((prev) => ({ ...prev, label: e.target.value }))}
+                onChange={(e) => setAccountForm((prev) => ({ ...prev, label: e.target.value }))}
                 className="w-full rounded-md border border-gray-300 bg-white p-2"
               />
               <select
                 value={accountForm.kind}
-                onChange={(e) => setAccountParams((prev) => ({ ...prev, provider: e.target.value.toUpperCase() }))}
+                onChange={(e) => setAccountForm((prev) => ({ ...prev, kind: e.target.value as AccountKind }))}
                 className="w-full rounded-md border border-gray-300 bg-white p-2"
               >
                 <option value="github">GitHub</option>
                 <option value="gitlab">GitLab</option>
               </select>
-              <input
-                type="text"
-                placeholder=""
-                value={accountForm.pat}
-                onChange={(e) => {
-                  const { pat: _pat, ...rest } = accountForm;
-                  if (e.target.value == "") {
-                    setAccountParams(rest);
-                  } else {
-                    setAccountParams({ ...rest, pat: e.target.value });
-                  }
-                }}
-                className="w-full rounded-md border border-gray-300 bg-white p-2"
-              />
-
               <button onClick={handleAddAccount} className="w-full rounded bg-blue-500 p-2 text-white">
                 Add
               </button>

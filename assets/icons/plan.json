@@ -248,6 +248,9 @@
   "PreRequest": {
     "identical": false
   },
+  "Profile": {
+    "identical": true
+  },
   "Project": {
     "identical": false
   },

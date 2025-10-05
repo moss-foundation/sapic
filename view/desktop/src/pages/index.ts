@@ -2,6 +2,7 @@ export * from "./EndpointPage/EndpointPage";
 export * from "./FolderSettingsPage/FolderSettingsPage";
 export * from "./KitchenSinkPage/KitchenSinkPage";
 export * from "./LogsPage/LogsPage";
+export * from "./ProfilePage/ProfilePage";
 export * from "./ProjectSettingsPage/ProjectSettingsPage";
 export * from "./SettingsPage/SettingsPage";
 export * from "./WelcomePage/WelcomePage";

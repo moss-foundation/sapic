@@ -65,8 +65,6 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
         name,
         order: projects?.length ? projects.length + 1 : 1,
         source: importParams,
-        //TODO this is hardcoded, but we don't have and interface for this yet
-        externalPath: "",
         iconPath: "",
       });
 
@@ -108,7 +106,7 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
   const isSubmitDisabled = calculateIsSubmitDisabled({ name, tab, createParams, importParams, gitProvider });
 
   return (
-    <Modal onBackdropClick={handleCancel} showModal={showModal} className="w-full max-w-[544px]">
+    <Modal onBackdropClick={handleCancel} showModal={showModal} className="w-full max-w-136">
       <h2 className="flex items-center justify-center py-2 leading-4 font-medium">New Project</h2>
 
       <Divider />
