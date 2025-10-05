@@ -27,6 +27,7 @@
     "core:window:allow-start-dragging",
     "core:window:allow-set-fullscreen",
     "core:window:allow-set-decorations",
+    "core:webview:allow-set-webview-zoom",
 
     "core:webview:default",
     "core:webview:allow-internal-toggle-devtools",
