@@ -62,7 +62,7 @@ export const ParamRow = memo(({ param, onChange, keyToFocusOnMount }: ParamRowPr
 
 const TypeBadgePlaceholder = ({ type }: { type: string }) => {
   return (
-    <div className="background-(--moss-green-9) flex h-min items-center justify-center rounded-full px-1.5 text-[10px] leading-4 text-(--moss-green-1)">
+    <div className="background-(--moss-green-9) flex items-center justify-center rounded-full px-1.5 text-[10px] leading-[15px] text-(--moss-green-1)">
       {type}
     </div>
   );
