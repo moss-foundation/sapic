@@ -1,5 +1,5 @@
-import { Theme } from "../theme";
 import { rgba } from "../color";
+import { Theme } from "../theme";
 
 export const defaultVSCodeTheme: Theme = {
   "identifier": "moss.sapic-theme.vscode",
@@ -583,6 +583,10 @@ export const defaultVSCodeTheme: Theme = {
     "moss.controls.outlined.bg": {
       type: "solid",
       value: "#3c3c3c",
+    },
+    "moss.controls.outlined.bg.contrast": {
+      type: "variable",
+      value: "moss.gray.13",
     },
     "moss.controls.outlined.border": {
       type: "solid",

@@ -1,5 +1,5 @@
-import { Theme } from "../theme";
 import { linearGradient, rgb, rgba } from "../color";
+import { Theme } from "../theme";
 
 export const defaultDarkTheme: Theme = {
   identifier: "moss.sapic-theme.darkDefault",
@@ -781,6 +781,10 @@ export const defaultDarkTheme: Theme = {
     "moss.controls.outlined.bg": {
       type: "solid",
       value: rgba(39, 39, 42, 0.5),
+    },
+    "moss.controls.outlined.bg.contrast": {
+      type: "variable",
+      value: "moss.gray.13",
     },
     "moss.controls.outlined.border": {
       type: "solid",
