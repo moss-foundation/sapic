@@ -641,10 +641,6 @@
       "type": "variable",
       "value": "moss.gray.14"
     },
-    "moss.button.primary.outlined.background.contrast": {
-      "type": "variable",
-      "value": "moss.gray.13"
-    },
     "moss.button.primary.outlined.background.hover": {
       "type": "variable",
       "value": "moss.blue.12"
@@ -780,6 +776,10 @@
     "moss.controls.outlined.bg": {
       "type": "variable",
       "value": "moss.gray.14"
+    },
+    "moss.controls.outlined.bg.contrast": {
+      "type": "variable",
+      "value": "moss.gray.13"
     },
     "moss.controls.outlined.border": {
       "type": "variable",
