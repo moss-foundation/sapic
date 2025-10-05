@@ -12,6 +12,7 @@ import { AccountInfo, ProfileInfo } from "@repo/moss-user";
 import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
 import { ProfilePageProps } from "../../../ProfilePage";
 import { NewAccountModal } from "@/components/Modals/Account/NewAccountModal";
+import { EditAccountModal } from "@/components/Modals/Account/EditAccountModal";
 import { ProviderIcon } from "@/components/ProviderIcon";
 
 interface OverviewTabProps extends IDockviewPanelProps<ProfilePageProps> {
@@ -23,8 +24,10 @@ export const OverviewTab = ({ profile, refetchProfile }: OverviewTabProps) => {
   const [showNewAccountModal, setShowNewAccountModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [accountToRemove, setAccountToRemove] = useState<AccountInfo | null>(null);
+  const [accountToEdit, setAccountToEdit] = useState<AccountInfo | null>(null);
 
   const { openModal: openRevokeModal, closeModal: closeRevokeModal, showModal: isRevokeModalOpen } = useModal();
+  const { openModal: openEditModal, closeModal: closeEditModal, showModal: isEditModalOpen } = useModal();
 
   const handleRevokeClick = (account: AccountInfo) => {
     setAccountToRemove(account);
@@ -32,7 +35,8 @@ export const OverviewTab = ({ profile, refetchProfile }: OverviewTabProps) => {
   };
 
   const handleEditDetails = (account: AccountInfo) => {
-    alert(`Edit details for ${account.username} (${account.kind})\n\nThis feature is not yet implemented.`);
+    setAccountToEdit(account);
+    openEditModal();
   };
 
   const handleRemoveAccount = async () => {
@@ -75,6 +79,18 @@ export const OverviewTab = ({ profile, refetchProfile }: OverviewTabProps) => {
         closeModal={() => setShowNewAccountModal(false)}
         onAccountAdded={() => {
           console.log("Account added successfully");
+          refetchProfile();
+        }}
+      />
+
+      <EditAccountModal
+        showModal={isEditModalOpen}
+        closeModal={() => {
+          closeEditModal();
+          setAccountToEdit(null);
+        }}
+        account={accountToEdit}
+        onAccountUpdated={() => {
           refetchProfile();
         }}
       />
