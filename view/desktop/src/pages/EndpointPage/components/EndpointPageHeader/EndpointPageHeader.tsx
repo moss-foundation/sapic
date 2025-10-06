@@ -1,22 +1,17 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 
 import { PageWrapper } from "@/components/PageView/PageWrapper";
 import { useRenameEntryForm } from "@/hooks";
-import { DockviewPanelApi } from "@/lib/moss-tabs/src";
 import { Icon, MossDropdown, MossToggle } from "@/lib/ui";
 import MossSelect from "@/lib/ui/MossSelect";
 import { cn } from "@/utils";
-import { StreamEntriesEvent } from "@repo/moss-project";
 
+import { EndpointPageContext } from "../../EndpointPageContext";
 import { EditableHeader } from "./EditableHeader";
 
-interface EndpointPageHeaderProps {
-  node: StreamEntriesEvent;
-  projectId: string;
-  api: DockviewPanelApi;
-}
+export const EndpointPageHeader = () => {
+  const { entryDescription: entry, projectId, node } = useContext(EndpointPageContext);
 
-export const EndpointPageHeader = ({ node, projectId }: EndpointPageHeaderProps) => {
   const { isRenamingEntry, setIsRenamingEntry, handleRenamingEntrySubmit, handleRenamingEntryCancel } =
     useRenameEntryForm(node, projectId);
 
@@ -38,7 +33,7 @@ export const EndpointPageHeader = ({ node, projectId }: EndpointPageHeaderProps)
         <div className="flex items-center justify-between">
           <EditableHeader
             icon="Http"
-            title={node.name}
+            title={entry.name}
             isRenamingEntry={isRenamingEntry}
             setIsRenamingEntry={setIsRenamingEntry}
             handleRenamingEntrySubmit={handleRenamingEntrySubmit}

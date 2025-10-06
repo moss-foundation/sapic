@@ -2,12 +2,10 @@ import { useState } from "react";
 
 import ActionButton from "@/components/ActionButton";
 import { FolderTabs, Scrollbar, TabItemProps } from "@/lib/ui";
-import { IDockviewPanelProps } from "@repo/moss-tabs";
 
-import { EndpointPageProps } from "../../../../../EndpointPage";
 import { BodyTab, CookiesTab, HeadersTab } from "./tabs";
 
-export const OutputView = ({ ...props }: IDockviewPanelProps<EndpointPageProps>) => {
+export const OutputView = () => {
   const [activeOutputTabId, setActiveOutputTabId] = useState("body");
 
   const outputTabs: TabItemProps[] = [

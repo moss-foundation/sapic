@@ -1,13 +1,6 @@
-import { ProjectTreeNode } from "@/components/ProjectTree/types";
 import { Icon } from "@/lib/ui";
-import { EntryKind } from "@repo/moss-project";
-import { IDockviewPanelProps } from "@repo/moss-tabs";
 
-export const AuthTabContent = ({}: IDockviewPanelProps<{
-  node?: ProjectTreeNode;
-  projectId: string;
-  iconType: EntryKind;
-}>) => {
+export const AuthTabContent = () => {
   return (
     <div className="flex grow flex-col items-center justify-center gap-4 text-center opacity-60">
       <Icon icon="Auth" className="size-16 text-(--moss-secondary-text)" />

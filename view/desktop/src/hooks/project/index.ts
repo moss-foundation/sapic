@@ -13,6 +13,8 @@ export * from "./useCreateProjectEntry";
 export * from "./useDeleteProject";
 export * from "./useDeleteProjectEntry";
 
+export * from "./useDescribeProjectEntry";
+
 export * from "./useImportProject";
 
 export * from "./useStreamProjectEntries";

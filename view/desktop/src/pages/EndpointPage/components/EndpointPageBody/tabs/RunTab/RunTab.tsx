@@ -3,16 +3,15 @@ import { useCallback, useState } from "react";
 import { Resizable, ResizablePanel } from "@/lib/ui";
 import { useEndpointPage } from "@/pages/EndpointPage/hooks/useEndpointPage";
 import { cn } from "@/utils/cn";
-import { IDockviewPanelProps } from "@repo/moss-tabs";
 
-import { EndpointPageProps } from "../../../../EndpointPage";
 import { areUrlsEquivalent, parseUrl } from "../../../../utils/urlParser";
 import { EndpointInputField } from "../../../EndpointInputField";
 import { InputView } from "./InputView/InputView";
 import { OutputView } from "./OutputView/OutputView";
 
-export const RunTab = ({ ...props }: IDockviewPanelProps<EndpointPageProps>) => {
+export const RunTab = () => {
   const { endpointData, httpMethod, setHttpMethod, updateEndpointData } = useEndpointPage();
+
   const [isResizableVertical, setIsResizableVertical] = useState(false);
 
   const handleSendEndpoint = (method: string, url: string) => {
@@ -68,7 +67,7 @@ export const RunTab = ({ ...props }: IDockviewPanelProps<EndpointPageProps>) => 
           })}
           minSize={isResizableVertical ? 103 : 310}
         >
-          <InputView {...props} />
+          <InputView />
         </ResizablePanel>
         <ResizablePanel
           className={cn("flex flex-col", {
@@ -77,7 +76,7 @@ export const RunTab = ({ ...props }: IDockviewPanelProps<EndpointPageProps>) => 
           })}
           minSize={isResizableVertical ? 103 : 310}
         >
-          <OutputView {...props} />
+          <OutputView />
         </ResizablePanel>
       </Resizable>
     </div>

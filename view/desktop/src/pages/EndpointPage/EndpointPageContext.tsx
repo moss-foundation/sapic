@@ -1,0 +1,35 @@
+import { createContext } from "react";
+
+import { DescribeEntryOutput, StreamEntriesEvent } from "@repo/moss-project";
+
+interface EndpointPageContext {
+  projectId: string;
+  node: StreamEntriesEvent;
+  entryDescription: DescribeEntryOutput;
+}
+
+export const EndpointPageContext = createContext<EndpointPageContext>({
+  projectId: "",
+  node: {
+    id: "",
+    name: "",
+    path: {
+      segments: [],
+      raw: "",
+    },
+    class: "Component",
+    kind: "Item",
+    protocol: "Get",
+    expanded: false,
+  },
+  entryDescription: {
+    name: "",
+    class: "Component",
+    kind: "Item",
+    protocol: "Get",
+    url: "",
+    headers: [],
+    pathParams: [],
+    queryParams: [],
+  },
+});

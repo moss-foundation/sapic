@@ -3,34 +3,32 @@ import { ChangeEvent } from "react";
 import { InputOutlined } from "@/components";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { CheckedState } from "@radix-ui/react-checkbox";
-
-import { ParamProps } from "./types";
+import { QueryParamInfo } from "@repo/moss-project";
 
 interface NewParamRowFormProps {
-  onAdd: (Param: ParamProps) => void;
+  onAdd: (Param: QueryParamInfo) => void;
 }
 
 export const NewParamRowForm = ({ onAdd }: NewParamRowFormProps) => {
-  const placeholderParam: ParamProps = {
+  const placeholderParam: QueryParamInfo = {
     id: "__NewParamRowForm",
-    checked: false,
-    key: "",
+    disabled: true,
+    name: "",
     value: "",
-    isRequired: false,
-    type: "string",
+    propagate: false,
   };
 
   const onCheckedChange = (checked: CheckedState) => {
     onAdd({
       ...placeholderParam,
-      checked: checked === "indeterminate" ? true : Boolean(checked),
+      disabled: checked === "indeterminate" ? false : Boolean(!checked),
     });
   };
 
   const onKeyChange = (e: ChangeEvent<HTMLInputElement>) => {
     onAdd({
       ...placeholderParam,
-      key: e.target.value,
+      name: e.target.value,
     });
   };
 
@@ -43,15 +41,21 @@ export const NewParamRowForm = ({ onAdd }: NewParamRowFormProps) => {
 
   return (
     <div className="col-span-full grid grid-cols-subgrid items-center">
-      <CheckboxWithLabel checked={placeholderParam.checked} onCheckedChange={onCheckedChange} className="col-span-1" />
+      <CheckboxWithLabel
+        checked={!placeholderParam.disabled}
+        onCheckedChange={onCheckedChange}
+        className="col-span-1"
+      />
       <InputOutlined
-        value={placeholderParam.key}
+        value={placeholderParam.name}
         onChange={onKeyChange}
         placeholder="Key"
         contrast
         className="col-span-1"
       />
+
       <InputOutlined
+        //@ts-expect-error We are not being able to handle anything except string for now
         value={placeholderParam.value}
         onChange={onValueChange}
         placeholder="Value"

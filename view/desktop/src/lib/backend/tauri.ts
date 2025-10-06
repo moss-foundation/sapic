@@ -70,6 +70,9 @@ export const handleTauriIpcError = (cmd: TauriIpcCommand, error: unknown) => {
   // TODO: dispatch to a global error handler or show user notifications
 };
 
+/**
+ * @deprecated InvokeTauriServiceIpc should be used instead, specifically from services folder.
+ */
 export const invokeTauriIpc = async <T, E = unknown>(
   cmd: TauriIpcCommand,
   args?: InvokeArgs
