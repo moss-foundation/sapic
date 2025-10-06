@@ -28,7 +28,8 @@ pub fn create_window<R: TauriRuntime>(
     .disable_drag_drop_handler()
     .inner_size(input.inner_size.0, input.inner_size.1)
     .position(input.position.0, input.position.1)
-    .min_inner_size(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT);
+    .min_inner_size(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT)
+    .zoom_hotkeys_enabled(true);
 
     #[cfg(target_os = "windows")]
     let win_builder = win_builder

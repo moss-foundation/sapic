@@ -777,6 +777,10 @@
       "type": "variable",
       "value": "moss.gray.14"
     },
+    "moss.controls.outlined.bg.contrast": {
+      "type": "variable",
+      "value": "moss.gray.13"
+    },
     "moss.controls.outlined.border": {
       "type": "variable",
       "value": "moss.gray.12"

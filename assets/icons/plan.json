@@ -35,7 +35,10 @@
   "Changes": {
     "identical": true
   },
-  "CheckboxIndicator": {
+  "CheckboxChecked": {
+    "identical": true
+  },
+  "CheckboxIntermediate": {
     "identical": true
   },
   "Checkmark": {
@@ -270,6 +273,9 @@
     "identical": true
   },
   "RequestsFolder": {
+    "identical": true
+  },
+  "RequiredAsterisk": {
     "identical": true
   },
   "Schema": {
