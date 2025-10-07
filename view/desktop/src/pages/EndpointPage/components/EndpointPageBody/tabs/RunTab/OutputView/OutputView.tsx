@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import ActionButton from "@/components/ActionButton";
-import { FolderTabs, TabItemProps } from "@/lib/ui";
+import { FolderTabs, Scrollbar, TabItemProps } from "@/lib/ui";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
 
 import { EndpointPageProps } from "../../../../../EndpointPage";
@@ -44,7 +44,7 @@ export const OutputView = ({ ...props }: IDockviewPanelProps<EndpointPageProps>)
 
         {outputTabs.map((tab) => (
           <FolderTabs.Content key={tab.id} value={tab.id} className="flex grow">
-            {tab.content}
+            <Scrollbar className="h-full w-full">{tab.content}</Scrollbar>
           </FolderTabs.Content>
         ))}
       </FolderTabs.Root>

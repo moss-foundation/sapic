@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 
-import { Icon, Icons, TabsPrimitive } from "@/lib/ui";
+import { Icon, Icons, Scrollbar, TabsPrimitive } from "@/lib/ui";
 import { cn } from "@/utils";
 
 interface FolderTabsProps {
@@ -28,10 +28,20 @@ interface FolderTabsListProps {
 
 const List = ({ children, className, toolbar }: FolderTabsListProps) => {
   return (
-    <div className="background-(--moss-secondary-background) flex items-center justify-between shadow-[0px_-1px_0px_0px_var(--moss-border-color)_inset]">
+    <Scrollbar
+      className={cn(
+        "background-(--moss-secondary-background) h-auto w-full min-w-0 items-center shadow-[0px_-1px_0px_0px_var(--moss-border-color)_inset]",
+        { "pr-2": toolbar }
+      )}
+      classNames={{
+        contentWrapper: "mr-2",
+        contentEl: "flex items-center justify-between",
+      }}
+      data-tabs-list-container
+    >
       <TabsPrimitive.TabsList className={cn("flex grow items-center", className)}>{children}</TabsPrimitive.TabsList>
       {toolbar && <div className="flex shrink-0 items-center">{toolbar}</div>}
-    </div>
+    </Scrollbar>
   );
 };
 

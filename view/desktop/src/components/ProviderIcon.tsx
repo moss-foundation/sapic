@@ -1,10 +1,10 @@
-export type ProviderIcon = "github" | "gitlab" | "postman" | "insomnia";
+export type ProviderIconType = "github" | "gitlab" | "postman" | "insomnia";
 
-interface IconProps {
-  icon: ProviderIcon;
+interface ProviderIconProps {
+  icon: ProviderIconType;
 }
 
-export const ProviderIcon = ({ icon }: IconProps) => {
+export const ProviderIcon = ({ icon }: ProviderIconProps) => {
   switch (icon) {
     case "github":
       return (

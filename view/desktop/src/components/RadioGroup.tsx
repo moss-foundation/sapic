@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useId, ReactNode } from "react";
 
 import { cn } from "@/utils";
 
@@ -21,7 +21,7 @@ const radioGroupItemStyles = `
 
 export interface ItemWithLabelProps {
   label?: string;
-  description?: string;
+  description?: string | ReactNode;
   value: string;
   checked?: boolean;
   onClick: () => void;
@@ -75,7 +75,7 @@ const ItemWithLabel = ({
         </label>
       )}
       {description && (
-        <p className="col-start-2 text-left text-sm leading-4 text-(--moss-secondary-text)">{description}</p>
+        <div className="col-start-2 text-left text-sm leading-4 text-(--moss-secondary-text)">{description}</div>
       )}
     </div>
   );
@@ -163,7 +163,7 @@ const ItemWithSelect = ({
       </div>
 
       {description && (
-        <p className="col-start-2 text-left text-sm leading-4 text-(--moss-secondary-text)">{description}</p>
+        <div className="col-start-2 text-left text-sm leading-4 text-(--moss-secondary-text)">{description}</div>
       )}
     </div>
   );

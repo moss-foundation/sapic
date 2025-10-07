@@ -263,7 +263,7 @@ def generate_components(
 
     for name, props in plan_data.items():
         svg_path = icons_dir / name
-        logging.info("Processing icon '%s'", name)
+        # logging.info("Processing icon '%s'", name)
         light_tree = ET.parse(svg_path / 'light.svg')
         dark_tree = ET.parse(svg_path / 'dark.svg')
 
