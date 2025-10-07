@@ -9,8 +9,3 @@ export type Direction = "ltr" | "rtl";
  * @category Primitive
  */
 export type LocaleId = string;
-
-/**
- * @category Primitive
- */
-export type LogLevel = "TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR";

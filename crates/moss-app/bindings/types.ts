@@ -3,7 +3,7 @@ import { JsonValue } from "@repo/moss-bindingutils";
 import { ConfigurationTarget } from "@repo/moss-configuration";
 import { ThemeId, ThemeMode } from "@repo/moss-theme";
 import { AccountKind } from "@repo/moss-user";
-import type { LogLevel } from "./primitives";
+import type { Direction, LocaleId, LogLevel } from "./primitives";
 
 /**
  * @category Type
@@ -39,10 +39,10 @@ export type Configuration = { keys: Array<string>; contents: { [key: string]: Js
  * @category Type
  */
 export type LocaleInfo = {
-  identifier: string;
+  identifier: LocaleId;
   displayName: string;
   code: string;
-  direction?: string;
+  direction?: Direction;
   order?: number;
   isDefault?: boolean;
 };

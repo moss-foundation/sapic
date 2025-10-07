@@ -4,16 +4,7 @@ import { configurationTargetSchema } from "@repo/moss-configuration";
 import { themeIdSchema, themeModeSchema } from "@repo/moss-theme";
 import { accountKindSchema } from "@repo/moss-user";
 import { z } from "zod";
-import { logLevelSchema } from "./primitives.zod";
-
-export const localeInfoSchema = z.object({
-  identifier: z.string(),
-  displayName: z.string(),
-  code: z.string(),
-  direction: z.string().optional(),
-  order: z.number().optional(),
-  isDefault: z.boolean().optional(),
-});
+import { directionSchema, localeIdSchema, logLevelSchema } from "./primitives.zod";
 
 export const logDateSchema = z.object({
   year: z.number(),
@@ -49,6 +40,15 @@ export const colorThemeInfoSchema = z.object({
 export const configurationSchema = z.object({
   keys: z.array(z.string()),
   contents: z.record(z.string(), jsonValueSchema),
+});
+
+export const localeInfoSchema = z.object({
+  identifier: localeIdSchema,
+  displayName: z.string(),
+  code: z.string(),
+  direction: directionSchema.optional(),
+  order: z.number().optional(),
+  isDefault: z.boolean().optional(),
 });
 
 export const logEntryInfoSchema = z.object({

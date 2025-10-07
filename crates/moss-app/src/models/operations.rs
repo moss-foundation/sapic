@@ -1,5 +1,6 @@
 use derive_more::Deref;
 use moss_configuration::models::types::ConfigurationSchema;
+use moss_locale::models::primitives::{Direction, LocaleId};
 use moss_logging::models::primitives::LogEntryId;
 use moss_theme::models::primitives::ThemeId;
 use moss_user::models::{primitives::AccountId, types::ProfileInfo};
@@ -101,7 +102,7 @@ pub struct GetLocaleInput {
 pub struct GetLocaleOutput {
     pub display_name: String,
     pub code: String,
-    pub direction: Option<String>,
+    pub direction: Option<Direction>,
 }
 
 /// @category Operation
@@ -112,7 +113,7 @@ pub struct GetLocaleOutput {
 pub struct DescribeLocaleOutput {
     pub display_name: String,
     pub code: String,
-    pub direction: Option<String>,
+    pub direction: Option<Direction>,
 }
 
 /// @category Operation

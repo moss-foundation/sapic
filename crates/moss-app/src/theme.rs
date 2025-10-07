@@ -1,12 +1,11 @@
 use joinerror::OptionExt;
-use moss_applib::errors::NotFound;
+use moss_app_delegate::AppDelegate;
+use moss_applib::{AppRuntime, errors::NotFound};
 use moss_fs::FileSystem;
 use moss_theme::{loader::ThemeLoader, models::primitives::ThemeId, registry::ThemeRegistry};
+use std::{collections::HashMap, sync::Arc};
 
 use crate::models::types::ColorThemeInfo;
-use moss_app_delegate::AppDelegate;
-use moss_applib::AppRuntime;
-use std::{collections::HashMap, sync::Arc};
 
 pub struct ThemeService {
     loader: ThemeLoader,
@@ -36,9 +35,9 @@ impl ThemeService {
                         identifier: item.id,
                         display_name: item.display_name,
                         mode: item.mode,
-                        order: None,
+                        order: None, // FIXME
                         source: item.path,
-                        is_default: None,
+                        is_default: None, // FIXME
                     },
                 )
             })

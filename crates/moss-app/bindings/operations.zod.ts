@@ -5,7 +5,7 @@ import { themeIdSchema } from "@repo/moss-theme";
 import { profileInfoSchema } from "@repo/moss-user";
 import { workspaceModeSchema } from "@repo/moss-workspace";
 import { z } from "zod";
-import { logLevelSchema } from "./primitives.zod";
+import { directionSchema, localeIdSchema, logLevelSchema } from "./primitives.zod";
 import {
   addAccountParamsSchema,
   colorThemeInfoSchema,
@@ -55,28 +55,12 @@ export const deleteWorkspaceOutputSchema = z.object({
   id: z.string(),
 });
 
-export const describeLocaleOutputSchema = z.object({
-  displayName: z.string(),
-  code: z.string(),
-  direction: z.string().optional(),
-});
-
 export const describeWorkbenchStateOutputSchema = z.object({
   prevWorkspaceId: z.string().optional(),
 });
 
 export const getColorThemeOutputSchema = z.object({
   cssContent: z.string(),
-});
-
-export const getLocaleInputSchema = z.object({
-  identifier: z.string(),
-});
-
-export const getLocaleOutputSchema = z.object({
-  displayName: z.string(),
-  code: z.string(),
-  direction: z.string().optional(),
 });
 
 export const getTranslationNamespaceInputSchema = z.object({
@@ -116,8 +100,24 @@ export const describeAppOutputSchema = z.object({
   configuration: configurationSchema,
 });
 
+export const describeLocaleOutputSchema = z.object({
+  displayName: z.string(),
+  code: z.string(),
+  direction: directionSchema.optional(),
+});
+
 export const getColorThemeInputSchema = z.object({
   id: themeIdSchema,
+});
+
+export const getLocaleInputSchema = z.object({
+  identifier: localeIdSchema,
+});
+
+export const getLocaleOutputSchema = z.object({
+  displayName: z.string(),
+  code: z.string(),
+  direction: directionSchema.optional(),
 });
 
 export const getTranslationNamespaceOutputSchema = z.object({

@@ -17,6 +17,7 @@ use moss_git_hosting_provider::{
     },
 };
 use moss_keyring::test::MockKeyringClient;
+use moss_locale::registry::{AppLocaleRegistry, LocaleRegistry};
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_testutils::random_name::random_string;
 use moss_theme::registry::{AppThemeRegistry, ThemeRegistry};
@@ -164,6 +165,7 @@ pub async fn set_up_test_app() -> (
             AppConfigurationRegistry::new().unwrap(), // TODO: probably should mock this
         );
         <dyn ThemeRegistry>::set_global(&delegate, AppThemeRegistry::new()); // TODO: probably should mock this
+        <dyn LocaleRegistry>::set_global(&delegate, AppLocaleRegistry::new());
 
         delegate
     };
@@ -174,7 +176,6 @@ pub async fn set_up_test_app() -> (
 
     let workspaces_abs_path = user_path.join("workspaces");
     let globals_abs_path = user_path.join("globals");
-    let locales_abs_path = user_path.join("locales");
     let profiles_abs_path = user_path.join("profiles");
 
     {
@@ -187,12 +188,8 @@ pub async fn set_up_test_app() -> (
 
         tokio::fs::create_dir(&workspaces_abs_path).await.unwrap();
         tokio::fs::create_dir(&globals_abs_path).await.unwrap();
-        tokio::fs::create_dir(&locales_abs_path).await.unwrap();
         tokio::fs::create_dir(&profiles_abs_path).await.unwrap();
 
-        tokio::fs::write(&locales_abs_path.join("locales.json"), LOCALES)
-            .await
-            .unwrap();
         tokio::fs::write(&profiles_abs_path.join("profiles.json"), PROFILES)
             .await
             .unwrap();
@@ -217,12 +214,7 @@ pub async fn set_up_test_app() -> (
         auth_api_client,
         vec![],
     )
-    .build(
-        &ctx,
-        BuildAppParams {
-            locales_dir: locales_abs_path,
-        },
-    )
+    .build(&ctx)
     .await;
 
     app.on_app_ready(

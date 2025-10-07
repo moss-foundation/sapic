@@ -1,4 +1,5 @@
 use moss_configuration::models::primitives::ConfigurationTarget;
+use moss_locale::models::primitives::{Direction, LocaleId};
 use moss_logging::models::primitives::LogEntryId;
 use moss_theme::models::primitives::{ThemeId, ThemeMode};
 use moss_user::models::primitives::AccountKind;
@@ -68,7 +69,7 @@ pub struct LocaleInfo {
     pub identifier: LocaleId,
     pub display_name: String,
     pub code: String,
-    pub direction: Option<String>,
+    pub direction: Option<Direction>,
     pub order: Option<isize>,
     pub is_default: Option<bool>,
 }

@@ -1,0 +1,13 @@
+{
+  "contributes": {
+    "locales": [
+      {
+        "identifier": "moss.sapic-locale.ru",
+        "displayName": "Русский",
+        "code": "ru",
+        "direction": "ltr",
+        "path": "locales/ru"
+      }
+    ]
+  }
+}

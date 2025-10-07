@@ -1,98 +1,70 @@
-mod registry;
-
-use moss_applib::errors::Internal;
-use moss_fs::{FileSystem, FsResultExt};
+use joinerror::OptionExt;
+use moss_applib::AppRuntime;
+use moss_fs::FileSystem;
+use moss_locale::{loader::LocaleLoader, models::primitives::LocaleId, registry::LocaleRegistry};
 use serde_json::Value as JsonValue;
-use std::{collections::HashMap, path::PathBuf, sync::Arc};
-use tokio::sync::RwLock;
+use std::{collections::HashMap, sync::Arc};
 
-use crate::{
-    locale::registry::LocaleRegistryItem,
-    models::{primitives::LocaleId, types::LocaleInfo},
-};
-
-pub(crate) const LOCALES_REGISTRY_FILE: &str = "locales.json";
-
-struct ServiceState {
-    locales: HashMap<LocaleId, LocaleRegistryItem>,
-}
+use crate::models::types::LocaleInfo;
 
 pub struct LocaleService {
-    locales_dir: PathBuf,
-    fs: Arc<dyn FileSystem>,
-    state: RwLock<ServiceState>,
+    loader: LocaleLoader,
+    registry: Arc<dyn LocaleRegistry>,
 }
 
 impl LocaleService {
-    pub async fn new(fs: Arc<dyn FileSystem>, locales_dir: PathBuf) -> joinerror::Result<Self> {
-        let rdr = fs
-            .open_file(&locales_dir.join(LOCALES_REGISTRY_FILE))
-            .await?;
-
-        let parsed: Vec<LocaleRegistryItem> = serde_json::from_reader(rdr)?;
-        let locales = parsed
-            .into_iter()
-            .map(|item| (item.identifier.clone(), item))
-            .collect::<HashMap<LocaleId, LocaleRegistryItem>>();
-
+    pub async fn new<R: AppRuntime>(
+        fs: Arc<dyn FileSystem>,
+        registry: Arc<dyn LocaleRegistry>,
+    ) -> joinerror::Result<Self> {
         Ok(Self {
-            locales_dir,
-            fs,
-            state: RwLock::new(ServiceState { locales }),
+            registry,
+            loader: LocaleLoader::new(fs),
         })
     }
 
-    pub async fn get_locale(&self, identifier: &LocaleId) -> Option<LocaleInfo> {
-        let state = self.state.read().await;
-        state
-            .locales
-            .get(identifier)
-            .cloned()
-            .map(|item| LocaleInfo {
-                identifier: item.identifier,
-                display_name: item.display_name,
-                code: item.code,
-                direction: item.direction,
-                order: item.order,
-                is_default: item.is_default,
-            })
-    }
-
     pub async fn locales(&self) -> HashMap<LocaleId, LocaleInfo> {
-        let state = self.state.read().await;
-        state
-            .locales
-            .clone()
+        let locales = self.registry.list().await;
+        locales
             .into_iter()
             .map(|(id, item)| {
                 (
-                    id,
+                    id.clone(),
                     LocaleInfo {
                         identifier: item.identifier,
                         display_name: item.display_name,
-                        code: item.code,
+                        code: item.code.clone(),
                         direction: item.direction,
-                        order: item.order,
-                        is_default: item.is_default,
+                        order: None,      // FIXME
+                        is_default: None, // FIXME
                     },
                 )
             })
             .collect()
     }
 
+    pub async fn get_locale(&self, id: &LocaleId) -> Option<LocaleInfo> {
+        self.registry.get(id).await.map(|item| LocaleInfo {
+            identifier: item.identifier,
+            display_name: item.display_name,
+            code: item.code,
+            direction: item.direction,
+            order: None,      // FIXME
+            is_default: None, // FIXME
+        })
+    }
+
+    // TODO: Should we maintain a separate map based on language code?
     pub async fn get_namespace(&self, code: &str, ns: &str) -> joinerror::Result<JsonValue> {
-        let abs_path = self.locales_dir.join(code).join(format!("{ns}.json"));
-
-        let rdr = self
-            .fs
-            .open_file(&abs_path)
+        let (_, locale) = self
+            .registry
+            .list()
             .await
-            .join_err_with::<Internal>(|| {
-                format!("failed to open locale file `{}`", abs_path.display())
-            })?;
+            .into_iter()
+            .find(|(_id, item)| item.code == code)
+            .ok_or_join_err::<()>(format!("Locale for language code `{}` not found", code))?;
+        let namespace = self.loader.load_namespace(&locale.path, ns).await?;
 
-        let parsed: JsonValue = serde_json::from_reader(rdr)?;
-
-        Ok(parsed)
+        Ok(namespace)
     }
 }

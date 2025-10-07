@@ -1,0 +1,13 @@
+{
+  "contributes": {
+    "locales": [
+      {
+        "identifier": "moss.sapic-locale.en",
+        "displayName": "English",
+        "code": "en",
+        "direction": "ltr",
+        "path": "locales/en"
+      }
+    ]
+  }
+}

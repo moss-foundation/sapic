@@ -28,13 +28,13 @@ impl<R: AppRuntime> ExtensionPoint<R> for ThemeExtensionPoint {
         &self,
         app_delegate: &AppDelegate<R>,
         info: &ExtensionInfo,
-        data: JsonValue,
+        contribution: JsonValue,
     ) -> joinerror::Result<()> {
-        if !data.is_array() {
+        if !contribution.is_array() {
             joinerror::bail!("themes contribution must be an array");
         }
 
-        let themes: Vec<ThemeContributionDecl> = serde_json::from_value(data)?;
+        let themes: Vec<ThemeContributionDecl> = serde_json::from_value(contribution)?;
         let items = themes
             .into_iter()
             .map(|entry| ThemeRegistryItem {

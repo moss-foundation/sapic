@@ -4,7 +4,7 @@ import { ConfigurationSchema, ConfigurationTarget } from "@repo/moss-configurati
 import { ThemeId } from "@repo/moss-theme";
 import { ProfileInfo } from "@repo/moss-user";
 import { WorkspaceMode } from "@repo/moss-workspace";
-import type { LogLevel } from "./primitives";
+import type { Direction, LocaleId, LogLevel } from "./primitives";
 import type {
   AddAccountParams,
   ColorThemeInfo,
@@ -100,7 +100,7 @@ export type DescribeAppOutput = {
 /**
  * @category Operation
  */
-export type DescribeLocaleOutput = { displayName: string; code: string; direction?: string };
+export type DescribeLocaleOutput = { displayName: string; code: string; direction?: Direction };
 
 /**
  * @category Operation
@@ -120,12 +120,12 @@ export type GetColorThemeOutput = { cssContent: string };
 /**
  * @category Operation
  */
-export type GetLocaleInput = { identifier: string };
+export type GetLocaleInput = { identifier: LocaleId };
 
 /**
  * @category Operation
  */
-export type GetLocaleOutput = { displayName: string; code: string; direction?: string };
+export type GetLocaleOutput = { displayName: string; code: string; direction?: Direction };
 
 /**
  * @category Operation
