@@ -1,4 +1,4 @@
-use moss_app::{App, AppBuilder, app::OnAppReadyOptions, builder::BuildAppParams};
+use moss_app::{App, AppBuilder, app::OnAppReadyOptions};
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
     context::{AsyncContext, MutableContext},
@@ -26,18 +26,6 @@ use std::{future::Future, path::PathBuf, pin::Pin, sync::Arc, time::Duration};
 use tauri::Manager;
 
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
-
-const LOCALES: &str = r#"
-[
-    {
-    "identifier": "moss.sapic-locale.en",
-    "displayName": "English",
-    "code": "en",
-    "direction": "ltr",
-    "isDefault": true
-    }
-]
-"#;
 
 const PROFILES: &str = r#"
 [

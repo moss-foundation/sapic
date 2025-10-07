@@ -66,6 +66,7 @@ pub struct AddAccountParams {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct LocaleInfo {
+    #[ts(type = "LocaleId")]
     pub identifier: LocaleId,
     pub display_name: String,
     pub code: String,

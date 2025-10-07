@@ -26,10 +26,6 @@ use crate::{
     workspace::WorkspaceService,
 };
 
-pub struct BuildAppParams {
-    pub locales_dir: PathBuf,
-}
-
 pub struct AppBuilder<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     keyring: Arc<dyn KeyringClient>,
