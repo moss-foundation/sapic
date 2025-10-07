@@ -8,7 +8,8 @@ ids!([
     QueryParamId,
     PathParamId,
     HeaderId,
-    FormDataParamId
+    FormDataParamId,
+    UrlencodedParamId,
 ]);
 
 /// @category Primitive

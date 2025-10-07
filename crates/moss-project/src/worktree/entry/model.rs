@@ -2,13 +2,16 @@ use hcl::Expression;
 use indexmap::IndexMap;
 use moss_hcl::{
     Block, LabeledBlock, deserialize_expression, expression,
-    heredoc::serialize_option_string_as_heredoc, serialize_expression,
+    heredoc::{serialize_option_jsonvalue_as_heredoc, serialize_option_string_as_heredoc},
+    serialize_expression,
 };
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::Value as JsonValue;
+use std::path::PathBuf;
 
 use crate::models::primitives::{
     EntryClass, EntryId, EntryProtocol, FormDataParamId, HeaderId, PathParamId, QueryParamId,
+    UrlencodedParamId,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -84,13 +87,42 @@ pub struct QueryParamSpec {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FormDataParamSpec {
     pub name: String,
-    pub text: Option<String>,
+    // multipart/form-data can be used both for data and files
+    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/POST#multipart_form_submission
+    pub value: Option<FormDataParamValue>,
     pub description: Option<String>,
     pub options: FormDataParamSpecOptions,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum FormDataParamValue {
+    #[serde(
+        serialize_with = "serialize_expression",
+        deserialize_with = "deserialize_expression"
+    )]
+    #[serde(rename = "text")]
+    Text(Expression),
+
+    #[serde(rename = "path")]
+    Binary(PathBuf),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FormDataParamSpecOptions {
+    pub disabled: bool,
+    pub propagate: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UrlencodedParamSpec {
+    pub name: String,
+    pub value: Option<Expression>,
+    pub description: Option<String>,
+    pub options: UrlencodedParamSpecOptions,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UrlencodedParamSpecOptions {
     pub disabled: bool,
     pub propagate: bool,
 }
@@ -102,10 +134,24 @@ pub struct BodySpec {
     pub text: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(serialize_with = "serialize_option_jsonvalue_as_heredoc")]
     pub json: Option<JsonValue>,
 
+    // TODO: Find a way to fully support xml
+    // Currently there isn't a good counterpart to serde_json::Value for xml
+    // `xmltree::Element` will silently discard extra root nodes instead of raising an error
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub from_data: Option<LabeledBlock<IndexMap<FormDataParamId, FormDataParamSpec>>>,
+    #[serde(serialize_with = "serialize_option_string_as_heredoc")]
+    pub xml: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub binary: Option<PathBuf>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub urlencoded: Option<LabeledBlock<IndexMap<UrlencodedParamId, UrlencodedParamSpec>>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub form_data: Option<LabeledBlock<IndexMap<FormDataParamId, FormDataParamSpec>>>,
 }
 
 impl Default for BodySpec {
@@ -113,7 +159,57 @@ impl Default for BodySpec {
         Self {
             text: None,
             json: None,
-            from_data: None,
+            xml: None,
+            binary: None,
+            urlencoded: None,
+            form_data: None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum BodyKind {
+    Text,
+    Json,
+    Xml,
+    Binary,
+    Urlencoded,
+    FormData,
+}
+
+impl Serialize for BodyKind {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            BodyKind::Text => serializer.serialize_str("text"),
+            BodyKind::Json => serializer.serialize_str("json"),
+            BodyKind::Xml => serializer.serialize_str("xml"),
+            BodyKind::Binary => serializer.serialize_str("binary"),
+            BodyKind::Urlencoded => serializer.serialize_str("x-www-form-urlencoded"),
+            BodyKind::FormData => serializer.serialize_str("form-data"),
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for BodyKind {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let typ = String::deserialize(deserializer)?;
+        match typ.as_str() {
+            "text" => Ok(BodyKind::Text),
+            "json" => Ok(BodyKind::Json),
+            "xml" => Ok(BodyKind::Xml),
+            "binary" => Ok(BodyKind::Binary),
+            "x-www-form-urlencoded" => Ok(BodyKind::Urlencoded),
+            "form-data" => Ok(BodyKind::FormData),
+            _ => Err(serde::de::Error::custom(format!(
+                "unknown body kind: {}",
+                typ
+            ))),
         }
     }
 }
@@ -138,7 +234,7 @@ pub struct EntryModel {
     pub query_params: Option<LabeledBlock<IndexMap<QueryParamId, QueryParamSpec>>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub body: Option<LabeledBlock<IndexMap<String, BodySpec>>>,
+    pub body: Option<LabeledBlock<IndexMap<BodyKind, BodySpec>>>,
 }
 
 impl From<(EntryId, EntryClass)> for EntryModel {
@@ -229,18 +325,20 @@ mod tests {
                 }
             })),
             body: Some(LabeledBlock::new(indexmap! {
-                "json".to_string() => BodySpec {
+                BodyKind::Json => BodySpec {
                     json: Some(json!({
                         "text": "text",
                         "array": [1, 2, 3],
                     })),
                     ..Default::default()
                 },
-                "form-data".to_string() => BodySpec {
-                    from_data: Some(LabeledBlock::new(indexmap! {
+                BodyKind::FormData => BodySpec {
+                    form_data: Some(LabeledBlock::new(indexmap! {
                         FormDataParamId::new() => FormDataParamSpec {
-                            name: "form_data_param1".to_string(),
-                            text: Some("text".to_string()),
+                            name: "form_data_text".to_string(),
+                            value: Some(FormDataParamValue::Text(
+                                Expression::String("text".to_string())
+                            )),
                             description: None,
                             options: FormDataParamSpecOptions {
                                 disabled: false,
@@ -248,15 +346,18 @@ mod tests {
                             }
                         },
                         FormDataParamId::new() => FormDataParamSpec {
-                            name: "form_data_param2".to_string(),
-                            text: None,
+                            name: "form_data_file".to_string(),
+                            value: Some(FormDataParamValue::Binary(
+                                PathBuf::from("foo/bar.txt")
+                            )),
                             description: None,
                             options: FormDataParamSpecOptions {
                                 disabled: false,
                                 propagate: true
                             }
                         }
-                    })),
+                    }))
+                    ,
                     ..Default::default()
                 }
             })),
