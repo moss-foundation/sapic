@@ -3,7 +3,7 @@ use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_extension::ExtensionPoint;
 use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
-use moss_locale::registry::LocaleRegistry;
+use moss_language::registry::LanguageRegistry;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_theme::registry::ThemeRegistry;
 use std::{path::PathBuf, sync::Arc};
@@ -92,7 +92,7 @@ impl<R: AppRuntime> AppBuilder<R> {
         .expect("Failed to create theme service");
 
         let locale_service =
-            LocaleService::new::<R>(self.fs.clone(), <dyn LocaleRegistry>::global(&delegate))
+            LocaleService::new::<R>(self.fs.clone(), <dyn LanguageRegistry>::global(&delegate))
                 .await
                 .expect("Failed to create locale service");
         let session_service = SessionService::new();

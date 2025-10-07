@@ -70,7 +70,7 @@
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-configuration/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-extension-points/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-extension/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/crates/moss-locale/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/moss-language/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-edit/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-edit/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-workspacelib/src" isTestSource="false" />

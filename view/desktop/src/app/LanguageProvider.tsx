@@ -3,10 +3,10 @@ import { ReactNode, useEffect } from "react";
 import { useSetLocale } from "@/hooks";
 import { useGetLocale } from "@/hooks/app/locales/useGetLocale";
 import { useDescribeApp } from "@/hooks/app/useDescribeApp";
-import { LocaleInfo } from "@repo/moss-app";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 
 import { initializeI18n } from "./i18n";
+import { LocaleInfo } from "@repo/moss-app";
 
 interface LanguageProviderProps {
   children: ReactNode;

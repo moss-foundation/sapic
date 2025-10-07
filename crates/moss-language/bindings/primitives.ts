@@ -8,4 +8,4 @@ export type Direction = "ltr" | "rtl";
 /**
  * @category Primitive
  */
-export type LocaleId = string;
+export type LanguageId = string;

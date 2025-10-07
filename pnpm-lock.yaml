@@ -138,6 +138,9 @@ importers:
       '@repo/moss-configuration':
         specifier: workspace:*
         version: link:../moss-configuration
+      '@repo/moss-language':
+        specifier: workspace:*
+        version: link:../moss-language
       '@repo/moss-theme':
         specifier: workspace:*
         version: link:../moss-theme
@@ -225,7 +228,7 @@ importers:
         specifier: workspace:*
         version: link:../../packages/config-typescript
 
-  crates/moss-locale:
+  crates/moss-language:
     dependencies:
       typescript:
         specifier: ^5.9.2

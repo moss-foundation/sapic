@@ -17,7 +17,7 @@ use moss_git_hosting_provider::{
     },
 };
 use moss_keyring::test::MockKeyringClient;
-use moss_locale::registry::{AppLocaleRegistry, LocaleRegistry};
+use moss_language::registry::{AppLanguageRegistry, LanguageRegistry};
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_testutils::random_name::random_string;
 use moss_theme::registry::{AppThemeRegistry, ThemeRegistry};
@@ -153,7 +153,7 @@ pub async fn set_up_test_app() -> (
             AppConfigurationRegistry::new().unwrap(), // TODO: probably should mock this
         );
         <dyn ThemeRegistry>::set_global(&delegate, AppThemeRegistry::new()); // TODO: probably should mock this
-        <dyn LocaleRegistry>::set_global(&delegate, AppLocaleRegistry::new());
+        <dyn LanguageRegistry>::set_global(&delegate, AppLanguageRegistry::new());
 
         delegate
     };

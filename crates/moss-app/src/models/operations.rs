@@ -1,6 +1,6 @@
 use derive_more::Deref;
 use moss_configuration::models::types::ConfigurationSchema;
-use moss_locale::models::primitives::{Direction, LocaleId};
+use moss_language::models::primitives::{Direction, LanguageId};
 use moss_logging::models::primitives::LogEntryId;
 use moss_theme::models::primitives::ThemeId;
 use moss_user::models::{primitives::AccountId, types::ProfileInfo};
@@ -91,7 +91,8 @@ pub struct CancelRequestInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct GetLocaleInput {
-    pub identifier: LocaleId,
+    #[ts(type = "LanguageId")]
+    pub identifier: LanguageId,
 }
 
 /// @category Operation

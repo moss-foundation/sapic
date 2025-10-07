@@ -1,7 +1,9 @@
 use joinerror::OptionExt;
 use moss_applib::AppRuntime;
 use moss_fs::FileSystem;
-use moss_locale::{loader::LocaleLoader, models::primitives::LocaleId, registry::LocaleRegistry};
+use moss_language::{
+    loader::LocaleLoader, models::primitives::LanguageId, registry::LanguageRegistry,
+};
 use serde_json::Value as JsonValue;
 use std::{collections::HashMap, sync::Arc};
 
@@ -9,13 +11,13 @@ use crate::models::types::LocaleInfo;
 
 pub struct LocaleService {
     loader: LocaleLoader,
-    registry: Arc<dyn LocaleRegistry>,
+    registry: Arc<dyn LanguageRegistry>,
 }
 
 impl LocaleService {
     pub async fn new<R: AppRuntime>(
         fs: Arc<dyn FileSystem>,
-        registry: Arc<dyn LocaleRegistry>,
+        registry: Arc<dyn LanguageRegistry>,
     ) -> joinerror::Result<Self> {
         Ok(Self {
             registry,
@@ -23,7 +25,7 @@ impl LocaleService {
         })
     }
 
-    pub async fn locales(&self) -> HashMap<LocaleId, LocaleInfo> {
+    pub async fn locales(&self) -> HashMap<LanguageId, LocaleInfo> {
         let locales = self.registry.list().await;
         locales
             .into_iter()
@@ -43,7 +45,7 @@ impl LocaleService {
             .collect()
     }
 
-    pub async fn get_locale(&self, id: &LocaleId) -> Option<LocaleInfo> {
+    pub async fn get_locale(&self, id: &LanguageId) -> Option<LocaleInfo> {
         self.registry.get(id).await.map(|item| LocaleInfo {
             identifier: item.identifier,
             display_name: item.display_name,

@@ -1,5 +1,5 @@
 {
-  "name": "@repo/moss-locale",
+  "name": "@repo/moss-language",
   "exports": {
     ".": "./index.ts"
   },

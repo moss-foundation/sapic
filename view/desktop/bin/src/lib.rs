@@ -17,7 +17,7 @@ use moss_applib::{
 use moss_configuration::registry::{AppConfigurationRegistry, ConfigurationRegistry};
 use moss_extension_points::{
     configurations::ConfigurationExtensionPoint, http_headers::HttpHeadersExtensionPoint,
-    locales::LocaleExtensionPoint, resource_statuses::ResourceStatusesExtensionPoint,
+    languages::LanguageExtensionPoint, resource_statuses::ResourceStatusesExtensionPoint,
     themes::ThemeExtensionPoint,
 };
 use moss_fs::RealFileSystem;
@@ -30,7 +30,7 @@ use moss_git_hosting_provider::{
     },
 };
 use moss_keyring::KeyringClientImpl;
-use moss_locale::registry::{AppLocaleRegistry, LocaleRegistry};
+use moss_language::registry::{AppLanguageRegistry, LanguageRegistry};
 use moss_project::registries::{
     http_headers::{AppHttpHeaderRegistry, HttpHeaderRegistry},
     resource_statuses::{AppResourceStatusRegistry, ResourceStatusRegistry},
@@ -124,7 +124,7 @@ pub async fn run<R: TauriRuntime>() {
                     );
 
                     let theme_registry = AppThemeRegistry::new();
-                    let locale_registry = AppLocaleRegistry::new();
+                    let locale_registry = AppLanguageRegistry::new();
                     let configuration_registry = AppConfigurationRegistry::new()
                         .expect("failed to build configuration registry");
                     let resource_status_registry = AppResourceStatusRegistry::new()
@@ -133,7 +133,7 @@ pub async fn run<R: TauriRuntime>() {
                         AppHttpHeaderRegistry::new().expect("failed to build http header registry");
 
                     <dyn ThemeRegistry>::set_global(&delegate, theme_registry);
-                    <dyn LocaleRegistry>::set_global(&delegate, locale_registry);
+                    <dyn LanguageRegistry>::set_global(&delegate, locale_registry);
                     <dyn ConfigurationRegistry>::set_global(&delegate, configuration_registry);
                     <dyn ResourceStatusRegistry>::set_global(&delegate, resource_status_registry);
                     <dyn HttpHeaderRegistry>::set_global(&delegate, http_header_registry);
@@ -170,7 +170,7 @@ pub async fn run<R: TauriRuntime>() {
                         auth_api_client,
                         vec![
                             ThemeExtensionPoint::new(),
-                            LocaleExtensionPoint::new(),
+                            LanguageExtensionPoint::new(),
                             ConfigurationExtensionPoint::new(),
                             ResourceStatusesExtensionPoint::new(),
                             HttpHeadersExtensionPoint::new(),

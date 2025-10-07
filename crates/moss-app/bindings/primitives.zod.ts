@@ -3,8 +3,6 @@ import { z } from "zod";
 
 export const directionSchema = z.union([z.literal("ltr"), z.literal("rtl")]);
 
-export const localeIdSchema = z.string();
-
 export const logLevelSchema = z.union([
   z.literal("TRACE"),
   z.literal("DEBUG"),

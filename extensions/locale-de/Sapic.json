@@ -1,12 +1,12 @@
 {
   "contributes": {
-    "locales": [
+    "languages": [
       {
         "identifier": "moss.sapic-locale.de",
         "displayName": "Deutsche",
         "code": "de",
         "direction": "ltr",
-        "path": "locales/de"
+        "path": "languages/de"
       }
     ]
   }
