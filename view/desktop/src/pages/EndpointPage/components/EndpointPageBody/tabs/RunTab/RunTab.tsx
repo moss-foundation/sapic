@@ -7,6 +7,7 @@ import { cn } from "@/utils/cn";
 import { areUrlsEquivalent, parseUrl } from "../../../../utils/urlParser";
 import { EndpointInputField } from "../../../EndpointInputField";
 import { InputView } from "./InputView/InputView";
+import { useMonitorParamsRowForms } from "./InputView/tabs/ParamsTab/hooks/useMonitorParamRowForms";
 import { useMonitorParamsRows } from "./InputView/tabs/ParamsTab/hooks/useMonitorParamsRows";
 import { OutputView } from "./OutputView/OutputView";
 
@@ -47,6 +48,7 @@ export const RunTab = () => {
   );
 
   useMonitorParamsRows();
+  useMonitorParamsRowForms();
 
   return (
     <div className="flex grow flex-col gap-2.5">

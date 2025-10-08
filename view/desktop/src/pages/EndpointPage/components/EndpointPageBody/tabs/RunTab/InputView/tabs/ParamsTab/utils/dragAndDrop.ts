@@ -63,3 +63,27 @@ export const getFirstNewParamRowFormLocationData = (
   if (!isLocationNewParamRowForm(location)) return null;
   return location.current.dropTargets[0].data as unknown as DropTargetNewParamRowFormData;
 };
+
+//rest
+export const calculateDropType = (
+  sourceData: DraggableParamRowData,
+  dropTargetData: DropTargetParamRowData | DropTargetNewParamRowFormData
+) => {
+  if (sourceData.data.paramType === "query" && dropTargetData.data.paramType === "query") {
+    return "WithinQueryList";
+  }
+
+  if (sourceData.data.paramType === "path" && dropTargetData.data.paramType === "path") {
+    return "WithinPathList";
+  }
+
+  if (sourceData.data.paramType === "query" && dropTargetData.data.paramType === "path") {
+    return "QueryToPath";
+  }
+
+  if (sourceData.data.paramType === "path" && dropTargetData.data.paramType === "query") {
+    return "PathToQuery";
+  }
+
+  return "Invalid";
+};
