@@ -21,7 +21,7 @@ export const NewParamRowForm = ({ onAdd, paramType }: NewParamRowFormProps) => {
 
   const [placeholderParam, setPlaceholderParam] = useState<QueryParamInfo>({
     id: "__NewParamRowForm",
-    disabled: true,
+    disabled: false,
     name: "",
     value: "",
     description: "",
@@ -72,11 +72,7 @@ export const NewParamRowForm = ({ onAdd, paramType }: NewParamRowFormProps) => {
     <div ref={newParamRowFormRef} className="relative col-span-full grid grid-cols-subgrid items-center">
       {closestEdge && <DropIndicator edge={closestEdge} gap={8} className="-ml-1.5" />}
 
-      <CheckboxWithLabel
-        checked={!placeholderParam.disabled}
-        onCheckedChange={onCheckedChange}
-        className="col-span-1"
-      />
+      <CheckboxWithLabel checked={false} onCheckedChange={onCheckedChange} className="col-span-1" />
       <InputOutlined
         value={placeholderParam.name}
         onChange={onKeyChange}

@@ -118,10 +118,13 @@ export const ParamRow = memo(
           <CheckboxWithLabel checked={!param.disabled} onCheckedChange={onCheckedChange} />
           <DragHandleButton
             ref={dragHandleRef}
-            className={cn("absolute top-1/2 left-0 -translate-y-1/2 rounded-xs transition-opacity duration-200", {
-              "pointer-events-auto opacity-100": isHovered,
-              "pointer-events-none opacity-0": !isHovered,
-            })}
+            className={cn(
+              "absolute top-1/2 left-0 -translate-y-1/2 rounded-xs shadow-none transition-opacity duration-200",
+              {
+                "pointer-events-auto opacity-100": isHovered,
+                "pointer-events-none opacity-0": !isHovered,
+              }
+            )}
           />
         </div>
 
