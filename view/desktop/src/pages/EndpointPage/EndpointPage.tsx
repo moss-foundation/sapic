@@ -21,6 +21,9 @@ const EndpointPage = ({ ...props }: IDockviewPanelProps<EndpointPageProps>) => {
   const { data: entryDescription } = useDescribeProjectEntry({
     projectId: props.params?.projectId ?? "",
     entryId: entry?.id ?? "",
+    options: {
+      enabled: !!entry?.id,
+    },
   });
 
   if (!entry || !entryDescription) {

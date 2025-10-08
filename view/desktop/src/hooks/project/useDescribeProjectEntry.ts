@@ -1,5 +1,6 @@
 import { ProjectService } from "@/lib/services/project";
-import { useQuery } from "@tanstack/react-query";
+import { DescribeEntryOutput } from "@repo/moss-project";
+import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 
 export const USE_DESCRIBE_PROJECT_ENTRY_QUERY_KEY = "describeProjectEntry";
 
@@ -16,11 +17,13 @@ const describeProjectEntryFn = async ({ projectId, entryId }: UseDescribeProject
 export interface UseDescribeProjectEntryProps {
   projectId: string;
   entryId: string;
+  options?: Omit<UseQueryOptions<DescribeEntryOutput, Error>, "queryKey" | "queryFn">;
 }
 
-export const useDescribeProjectEntry = ({ projectId, entryId }: UseDescribeProjectEntryProps) => {
+export const useDescribeProjectEntry = ({ projectId, entryId, options }: UseDescribeProjectEntryProps) => {
   return useQuery({
     queryKey: [USE_DESCRIBE_PROJECT_ENTRY_QUERY_KEY, projectId, entryId],
     queryFn: () => describeProjectEntryFn({ projectId, entryId }),
+    ...options,
   });
 };
