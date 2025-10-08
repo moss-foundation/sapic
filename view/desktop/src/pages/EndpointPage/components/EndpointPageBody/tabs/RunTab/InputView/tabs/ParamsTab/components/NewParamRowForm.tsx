@@ -1,15 +1,24 @@
-import { ChangeEvent, useCallback, useRef, useState } from "react";
+import { ChangeEvent, useCallback, useContext, useRef, useState } from "react";
 
-import { InputOutlined } from "@/components";
+import { DropIndicator, InputOutlined } from "@/components";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
+import { EndpointPageContext } from "@/pages/EndpointPage/EndpointPageContext";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { QueryParamInfo } from "@repo/moss-project";
 
+import { ParamDragType } from "../constants";
+import { useDropTargetNewParamRowForm } from "../hooks/useDropTargetNewParamRowForm";
+
 interface NewParamRowFormProps {
   onAdd: (Param: QueryParamInfo) => void;
+  paramType: ParamDragType;
 }
 
-export const NewParamRowForm = ({ onAdd }: NewParamRowFormProps) => {
+export const NewParamRowForm = ({ onAdd, paramType }: NewParamRowFormProps) => {
+  const { entry } = useContext(EndpointPageContext);
+
+  const newParamRowFormRef = useRef<HTMLDivElement>(null);
+
   const [placeholderParam, setPlaceholderParam] = useState<QueryParamInfo>({
     id: "__NewParamRowForm",
     disabled: true,
@@ -52,8 +61,16 @@ export const NewParamRowForm = ({ onAdd }: NewParamRowFormProps) => {
     debouncedOnChange(updatedParam);
   };
 
+  const { closestEdge } = useDropTargetNewParamRowForm({
+    newParamRowFormRef,
+    entryId: entry.id,
+    paramType,
+  });
+
   return (
-    <div className="col-span-full grid grid-cols-subgrid items-center">
+    <div ref={newParamRowFormRef} className="relative col-span-full grid grid-cols-subgrid items-center">
+      {closestEdge && <DropIndicator edge={closestEdge} gap={8} className="-ml-1.5" />}
+
       <CheckboxWithLabel
         checked={!placeholderParam.disabled}
         onCheckedChange={onCheckedChange}

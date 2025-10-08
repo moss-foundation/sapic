@@ -1,8 +1,12 @@
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { DragLocationHistory, ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 
-import { DRAGGABLE_PARAM_ROW_TYPE, DROP_TARGET_PARAM_ROW_TYPE } from "../constants";
-import { DraggableParamRowData, DropTargetParamRowData } from "../types";
+import {
+  DRAGGABLE_PARAM_ROW_TYPE,
+  DROP_TARGET_NEW_PARAM_ROW_FORM_TYPE,
+  DROP_TARGET_PARAM_ROW_TYPE,
+} from "../constants";
+import { DraggableParamRowData, DropTargetNewParamRowFormData, DropTargetParamRowData } from "../types";
 
 //source
 export const isSourceParamRow = (source: ElementDragPayload) => {
@@ -44,4 +48,18 @@ export const getFirstDraggableParamRowLocationData = (location: DragLocationHist
 export const getAllDraggableParamRowLocationData = (location: DragLocationHistory): DropTargetParamRowData[] | null => {
   if (!isLocationParamRow(location)) return null;
   return location.current.dropTargets.map((target) => target.data as unknown as DropTargetParamRowData);
+};
+
+// location NewParamRowForm
+export const isLocationNewParamRowForm = (location: DragLocationHistory) => {
+  if (location.current.dropTargets.length === 0) return false;
+  if (location.current.dropTargets[0].data.type !== DROP_TARGET_NEW_PARAM_ROW_FORM_TYPE) return false;
+  return true;
+};
+
+export const getFirstNewParamRowFormLocationData = (
+  location: DragLocationHistory
+): DropTargetNewParamRowFormData | null => {
+  if (!isLocationNewParamRowForm(location)) return null;
+  return location.current.dropTargets[0].data as unknown as DropTargetNewParamRowFormData;
 };

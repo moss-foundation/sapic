@@ -10,6 +10,7 @@ import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { AddQueryParamParams, QueryParamInfo, UpdateQueryParamParams } from "@repo/moss-project";
 
+import { ParamDragType } from "../constants";
 import { NewParamRowForm } from "./NewParamRowForm";
 import { ParamRow } from "./ParamRow";
 
@@ -209,7 +210,7 @@ export const QueryParamsView = () => {
               />
             );
           })}
-          <NewParamRowForm onAdd={handleAddNewRow} key={sortedQueryParams.length} />
+          <NewParamRowForm onAdd={handleAddNewRow} paramType={ParamDragType.QUERY} key={sortedQueryParams.length} />
         </div>
       </Scrollbar>
     </div>
