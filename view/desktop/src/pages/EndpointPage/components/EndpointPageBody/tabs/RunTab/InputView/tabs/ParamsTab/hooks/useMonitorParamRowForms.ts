@@ -11,7 +11,7 @@ import {
   calculateDropType,
   getDraggableParamRowSourceData,
   getFirstNewParamRowFormLocationData,
-  isLocationNewParamRowForm,
+  isLocationParamRow,
   isSourceParamRow,
 } from "../utils/dragAndDrop";
 
@@ -267,7 +267,7 @@ export const useMonitorParamsRowForms = () => {
         const dropTargetData = getFirstNewParamRowFormLocationData(location);
 
         if (!sourceData || !dropTargetData) {
-          if (!isLocationNewParamRowForm(location)) {
+          if (!isLocationParamRow(location)) {
             console.warn("Invalid source or drop target data for new param row form", {
               sourceData,
               dropTargetData,
