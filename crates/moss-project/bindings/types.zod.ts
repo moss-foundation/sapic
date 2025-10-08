@@ -3,6 +3,11 @@ import { changeJsonValueSchema, changeStringSchema, jsonValueSchema } from "@rep
 import { z } from "zod";
 import { entryClassSchema, entryPathSchema, entryProtocolSchema } from "./primitives.zod";
 
+export const formDataParamOptionsSchema = z.object({
+  disabled: z.boolean(),
+  propagate: z.boolean(),
+});
+
 export const headerParamOptionsSchema = z.object({
   disabled: z.boolean(),
   propagate: z.boolean(),
@@ -14,6 +19,11 @@ export const pathParamOptionsSchema = z.object({
 });
 
 export const queryParamOptionsSchema = z.object({
+  disabled: z.boolean(),
+  propagate: z.boolean(),
+});
+
+export const urlencodedParamOptionsSchema = z.object({
   disabled: z.boolean(),
   propagate: z.boolean(),
 });
@@ -58,6 +68,22 @@ export const vcsOperationSchema = z.union([
   z.literal("PULL"),
   z.literal("FETCH"),
 ]);
+export const addUrlencodedParamParamsSchema = z.object({
+  name: z.string(),
+  value: jsonValueSchema,
+  order: z.number(),
+  description: z.string().optional(),
+  options: urlencodedParamOptionsSchema,
+});
+
+export const addFormDataParamParamsSchema = z.object({
+  name: z.string(),
+  value: jsonValueSchema,
+  order: z.number(),
+  description: z.string().optional(),
+  options: formDataParamOptionsSchema,
+});
+
 export const addHeaderParamsSchema = z.object({
   name: z.string(),
   value: jsonValueSchema,
@@ -92,6 +118,26 @@ export const afterUpdateItemEntryDescriptionSchema = z.object({
   path: entryPathSchema,
 });
 
+export const urlencodedParamInfoSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  value: jsonValueSchema,
+  description: z.string().optional(),
+  disabled: z.boolean(),
+  propagate: z.boolean(),
+  order: z.number().optional(),
+});
+
+export const formDataParamInfoSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  value: jsonValueSchema,
+  description: z.string().optional(),
+  disabled: z.boolean(),
+  propagate: z.boolean(),
+  order: z.number().optional(),
+});
+
 export const createDirEntryParamsSchema = z.object({
   path: z.string(),
   class: entryClassSchema,
@@ -99,16 +145,26 @@ export const createDirEntryParamsSchema = z.object({
   order: z.number(),
 });
 
-export const createItemEntryParamsSchema = z.object({
-  path: z.string(),
-  class: entryClassSchema,
-  name: z.string(),
-  order: z.number(),
-  protocol: entryProtocolSchema.optional(),
-  headers: z.array(addHeaderParamsSchema),
-  pathParams: z.array(addPathParamParamsSchema),
-  queryParams: z.array(addQueryParamParamsSchema),
-});
+export const addBodyParamsSchema = z.union([
+  z.object({
+    "text": z.string(),
+  }),
+  z.object({
+    "json": jsonValueSchema,
+  }),
+  z.object({
+    "xml": z.string(),
+  }),
+  z.object({
+    "binary": z.string(),
+  }),
+  z.object({
+    "urlencoded": z.array(addUrlencodedParamParamsSchema),
+  }),
+  z.object({
+    "formData": z.array(addFormDataParamParamsSchema),
+  }),
+]);
 
 export const headerInfoSchema = z.object({
   id: z.string(),
@@ -165,6 +221,39 @@ export const updateQueryParamParamsSchema = z.object({
   order: z.number().optional(),
   desc: changeStringSchema.optional(),
   options: queryParamOptionsSchema.optional(),
+});
+
+export const bodyInfoSchema = z.union([
+  z.object({
+    "text": z.string(),
+  }),
+  z.object({
+    "json": jsonValueSchema,
+  }),
+  z.object({
+    "xml": z.string(),
+  }),
+  z.object({
+    "binary": z.string(),
+  }),
+  z.object({
+    "urlencoded": z.array(urlencodedParamInfoSchema),
+  }),
+  z.object({
+    "formData": z.array(formDataParamInfoSchema),
+  }),
+]);
+
+export const createItemEntryParamsSchema = z.object({
+  path: z.string(),
+  class: entryClassSchema,
+  name: z.string(),
+  order: z.number(),
+  protocol: entryProtocolSchema.optional(),
+  headers: z.array(addHeaderParamsSchema),
+  pathParams: z.array(addPathParamParamsSchema),
+  queryParams: z.array(addQueryParamParamsSchema),
+  body: addBodyParamsSchema.optional(),
 });
 
 export const updateItemEntryParamsSchema = z.object({

@@ -1,6 +1,8 @@
 pub mod entry;
 
 use anyhow::anyhow;
+use hcl::ser::LabeledBlock;
+use indexmap::IndexMap;
 use joinerror::{Error, OptionExt};
 use json_patch::{
     AddOperation, PatchOperation, RemoveOperation, ReplaceOperation, jsonptr::PointerBuf,
@@ -37,7 +39,8 @@ use crate::{
         operations::DescribeEntryOutput,
         primitives::{EntryId, EntryKind, EntryProtocol, HeaderId, PathParamId, QueryParamId},
         types::{
-            HeaderInfo, PathParamInfo, QueryParamInfo,
+            BodyInfo, FormDataParamInfo, HeaderInfo, PathParamInfo, QueryParamInfo,
+            UrlencodedParamInfo,
             http::{
                 AddHeaderParams, AddPathParamParams, AddQueryParamParams, UpdateHeaderParams,
                 UpdatePathParamParams, UpdateQueryParamParams,
@@ -47,6 +50,7 @@ use crate::{
     storage::{
         StorageService, segments,
         segments::{
+            segkey_entry_body_formdata_param_order, segkey_entry_body_urlencoded_param_order,
             segkey_entry_header_order, segkey_entry_path_param_order,
             segkey_entry_query_param_order,
         },
@@ -55,7 +59,7 @@ use crate::{
         Entry, EntryDescription,
         edit::EntryEditing,
         model::{
-            EntryModel, HeaderParamSpec, HeaderParamSpecOptions, PathParamSpec,
+            BodyKind, BodySpec, EntryModel, HeaderParamSpec, HeaderParamSpecOptions, PathParamSpec,
             PathParamSpecOptions, QueryParamSpec, QueryParamSpecOptions,
         },
     },
@@ -569,6 +573,7 @@ impl<R: AppRuntime> Worktree<R> {
     pub async fn update_item_entry(
         &self,
         ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
         id: &EntryId,
         params: ModifyParams,
     ) -> joinerror::Result<Arc<Path>> {
@@ -617,7 +622,8 @@ impl<R: AppRuntime> Worktree<R> {
                 .await?;
         }
 
-        self.patch_item_entry(ctx, entry, &params).await?;
+        self.patch_item_entry(ctx, app_delegate, entry, &params)
+            .await?;
 
         let path = entry.path_rx.borrow().clone();
         drop(state_lock);
@@ -664,6 +670,7 @@ impl<R: AppRuntime> Worktree<R> {
     pub async fn describe_entry(
         &self,
         ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
         id: &EntryId,
     ) -> joinerror::Result<DescribeEntryOutput> {
         let state_lock = self.state.read().await;
@@ -697,6 +704,7 @@ impl<R: AppRuntime> Worktree<R> {
                 headers: vec![],
                 path_params: vec![],
                 query_params: vec![],
+                body: None,
             });
         } else if item_config_path.exists() {
             let entry_keys = self
@@ -719,15 +727,28 @@ impl<R: AppRuntime> Worktree<R> {
             let mut path_param_infos = Vec::new();
             let mut query_param_infos = Vec::new();
 
-            if let Some(headers_block) = model.headers {
-                let header_map = headers_block.into_inner();
-                for (header_id, header_spec) in header_map {
+            if let Some(header_block) = model.headers {
+                for (header_id, header_spec) in header_block.into_inner() {
+                    let value = match hcl_to_json(&header_spec.value) {
+                        Ok(value) => value,
+                        Err(err) => {
+                            session::error!(format!(
+                                "failed to convert value expression `{}`, {}",
+                                &header_spec.value,
+                                err.to_string()
+                            ));
+                            let _ = app_delegate.emit_oneshot(ToLocation::Toast {
+                                activity_id: "expression_conversion_error",
+                                title: "Failed to convert value expression".to_string(),
+                                detail: Some(err.to_string()),
+                            });
+                            JsonValue::Null
+                        }
+                    };
                     header_infos.push(HeaderInfo {
                         id: header_id.clone(),
                         name: header_spec.name,
-                        value: continue_if_err!(hcl_to_json(&header_spec.value), |err| {
-                            session::error!("failed to convert value expression: {}", err)
-                        }),
+                        value,
                         description: header_spec.description,
                         disabled: header_spec.options.disabled,
                         propagate: header_spec.options.propagate,
@@ -739,14 +760,28 @@ impl<R: AppRuntime> Worktree<R> {
             }
 
             if let Some(path_param_block) = model.path_params {
-                let path_param_map = path_param_block.into_inner();
-                for (path_param_id, path_param_spec) in path_param_map {
+                for (path_param_id, path_param_spec) in path_param_block.into_inner() {
+                    let value = match hcl_to_json(&path_param_spec.value) {
+                        Ok(value) => value,
+                        Err(err) => {
+                            session::error!(format!(
+                                "failed to convert value expression `{}`, {}",
+                                &path_param_spec.value,
+                                err.to_string()
+                            ));
+                            let _ = app_delegate.emit_oneshot(ToLocation::Toast {
+                                activity_id: "expression_conversion_error",
+                                title: "Failed to convert value expression".to_string(),
+                                detail: Some(err.to_string()),
+                            });
+                            JsonValue::Null
+                        }
+                    };
+
                     path_param_infos.push(PathParamInfo {
                         id: path_param_id.clone(),
                         name: path_param_spec.name,
-                        value: continue_if_err!(hcl_to_json(&path_param_spec.value), |err| {
-                            session::error!("failed to convert value expression: {}", err)
-                        }),
+                        value,
                         description: path_param_spec.description,
                         disabled: path_param_spec.options.disabled,
                         propagate: path_param_spec.options.propagate,
@@ -758,14 +793,28 @@ impl<R: AppRuntime> Worktree<R> {
             }
 
             if let Some(query_param_block) = model.query_params {
-                let query_param_map = query_param_block.into_inner();
-                for (query_param_id, query_param_spec) in query_param_map {
+                for (query_param_id, query_param_spec) in query_param_block.into_inner() {
+                    let value = match hcl_to_json(&query_param_spec.value) {
+                        Ok(value) => value,
+                        Err(err) => {
+                            session::error!(format!(
+                                "failed to convert value expression `{}`, {}",
+                                &query_param_spec.value,
+                                err.to_string()
+                            ));
+                            let _ = app_delegate.emit_oneshot(ToLocation::Toast {
+                                activity_id: "expression_conversion_error",
+                                title: "Failed to convert value expression".to_string(),
+                                detail: Some(err.to_string()),
+                            });
+                            JsonValue::Null
+                        }
+                    };
+
                     query_param_infos.push(QueryParamInfo {
                         id: query_param_id.clone(),
                         name: query_param_spec.name,
-                        value: continue_if_err!(hcl_to_json(&query_param_spec.value), |err| {
-                            session::error!("failed to convert value expression: {}", err)
-                        }),
+                        value,
                         description: query_param_spec.description,
                         disabled: query_param_spec.options.disabled,
                         propagate: query_param_spec.options.propagate,
@@ -776,6 +825,12 @@ impl<R: AppRuntime> Worktree<R> {
                 }
             }
 
+            let body_info = if let Some(body) = model.body {
+                describe_body(app_delegate, id, body, &entry_keys).await
+            } else {
+                None
+            };
+
             return Ok(DescribeEntryOutput {
                 name: desanitize(&name),
                 class,
@@ -785,6 +840,7 @@ impl<R: AppRuntime> Worktree<R> {
                 headers: header_infos,
                 path_params: path_param_infos,
                 query_params: query_param_infos,
+                body: body_info,
             });
         } else {
             return Err(Error::new::<()>("cannot find entry config"));
@@ -847,6 +903,7 @@ impl<R: AppRuntime> Worktree<R> {
     async fn patch_item_entry(
         &self,
         ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
         entry: &mut Entry,
         params: &ModifyParams,
     ) -> joinerror::Result<()> {
@@ -874,7 +931,12 @@ impl<R: AppRuntime> Worktree<R> {
             let id_str = id.to_string();
 
             let value = continue_if_err!(json_to_hcl(&header_to_add.value), |err| {
-                session::error!("failed to convert value expression: {}", err)
+                session::error!("failed to convert value expression: {}", err);
+                let _ = app_delegate.emit_oneshot(ToLocation::Toast {
+                    activity_id: "expression_conversion_error",
+                    title: "Failed to convert value expression".to_string(),
+                    detail: Some(err),
+                });
             });
 
             let spec = HeaderParamSpec {
@@ -887,9 +949,17 @@ impl<R: AppRuntime> Worktree<R> {
                 },
             };
 
-            let spec_value = continue_if_err!(serde_json::to_value(&spec), |err| {
-                session::error!(format!("failed to convert header spec to json: {}", err))
-            });
+            let spec_value = continue_if_err!(
+                serde_json::to_value(&spec).map_err(|e| e.to_string()),
+                |err| {
+                    session::error!(format!("failed to convert header spec to json: {}", err));
+                    let _ = app_delegate.emit_oneshot(ToLocation::Toast {
+                        activity_id: "header_spec_conversion_error",
+                        title: "Failed to convert header spec to json".to_string(),
+                        detail: Some(err),
+                    });
+                }
+            );
 
             patches.push((
                 PatchOperation::Add(AddOperation {
@@ -1097,7 +1167,12 @@ impl<R: AppRuntime> Worktree<R> {
             let id_str = id.to_string();
 
             let value = continue_if_err!(json_to_hcl(&path_param_to_add.value), |err| {
-                session::error!("failed to convert value expression: {}", err)
+                session::error!("failed to convert value expression: {}", err);
+                let _ = app_delegate.emit_oneshot(ToLocation::Toast {
+                    activity_id: "expression_conversion_error",
+                    title: "Failed to convert value expression".to_string(),
+                    detail: Some(err),
+                });
             });
 
             let spec = PathParamSpec {
@@ -1110,12 +1185,20 @@ impl<R: AppRuntime> Worktree<R> {
                 },
             };
 
-            let spec_value = continue_if_err!(serde_json::to_value(&spec), |err| {
-                session::error!(format!(
-                    "failed to convert path param spec to json: {}",
-                    err
-                ))
-            });
+            let spec_value = continue_if_err!(
+                serde_json::to_value(&spec).map_err(|err| err.to_string()),
+                |err| {
+                    session::error!(format!(
+                        "failed to convert path param spec to json: {}",
+                        err
+                    ));
+                    let _ = app_delegate.emit_oneshot(ToLocation::Toast {
+                        activity_id: "expression_conversion_error",
+                        title: "Failed to convert value expression".to_string(),
+                        detail: Some(err),
+                    });
+                }
+            );
 
             patches.push((
                 PatchOperation::Add(AddOperation {
@@ -1329,7 +1412,12 @@ impl<R: AppRuntime> Worktree<R> {
             let id_str = id.to_string();
 
             let value = continue_if_err!(json_to_hcl(&query_param_to_add.value), |err| {
-                session::error!("failed to convert value expression: {}", err)
+                session::error!("failed to convert value expression: {}", err);
+                let _ = app_delegate.emit_oneshot(ToLocation::Toast {
+                    activity_id: "expression_conversion_error",
+                    title: "Failed to convert value expression".to_string(),
+                    detail: Some(err),
+                });
             });
 
             let spec = QueryParamSpec {
@@ -1342,12 +1430,20 @@ impl<R: AppRuntime> Worktree<R> {
                 },
             };
 
-            let spec_value = continue_if_err!(serde_json::to_value(&spec), |err| {
-                session::error!(format!(
-                    "failed to convert query param spec to json: {}",
-                    err
-                ))
-            });
+            let spec_value = continue_if_err!(
+                serde_json::to_value(&spec).map_err(|err| err.to_string()),
+                |err| {
+                    session::error!(format!(
+                        "failed to convert query param spec to json: {}",
+                        err
+                    ));
+                    let _ = app_delegate.emit_oneshot(ToLocation::Toast {
+                        activity_id: "query_param_spec_conversion_error",
+                        title: "Failed to convert query param spec to json".to_string(),
+                        detail: Some(err),
+                    });
+                }
+            );
 
             patches.push((
                 PatchOperation::Add(AddOperation {
@@ -1700,4 +1796,94 @@ async fn process_file(
 ) -> joinerror::Result<Option<(Entry, EntryDescription)>> {
     // TODO: implement
     Ok(None)
+}
+
+async fn describe_body<R: AppRuntime>(
+    app_delegate: &AppDelegate<R>,
+    entry_id: &EntryId,
+    body: LabeledBlock<IndexMap<BodyKind, BodySpec>>,
+    entry_keys: &HashMap<SegKeyBuf, AnyValue>,
+) -> Option<BodyInfo> {
+    let (kind, spec) = body
+        .iter()
+        .map(|(kind, spec)| (kind, spec.clone()))
+        .next()?;
+
+    let inner = match kind {
+        BodyKind::Text => BodyInfo::Text(spec.text?),
+        BodyKind::Json => BodyInfo::Json(spec.json?),
+        BodyKind::Xml => BodyInfo::Xml(spec.xml?),
+        BodyKind::Binary => BodyInfo::Binary(spec.binary?),
+        BodyKind::Urlencoded => {
+            let mut param_infos = Vec::new();
+            for (param_id, param_spec) in spec.urlencoded?.into_inner() {
+                let value = match hcl_to_json(&param_spec.value) {
+                    Ok(value) => value,
+                    Err(err) => {
+                        session::error!(format!(
+                            "failed to convert value expression `{}`: {}",
+                            &param_spec.value,
+                            err.to_string()
+                        ));
+                        let _ = app_delegate.emit_oneshot(ToLocation::Toast {
+                            activity_id: "expression_conversion_error",
+                            title: "Failed to convert value expression".to_string(),
+                            detail: Some(err.to_string()),
+                        });
+                        JsonValue::Null
+                    }
+                };
+
+                param_infos.push(UrlencodedParamInfo {
+                    id: param_id.clone(),
+                    name: param_spec.name,
+                    value,
+                    description: param_spec.description,
+                    disabled: param_spec.options.disabled,
+                    propagate: param_spec.options.propagate,
+                    order: entry_keys
+                        .get(&segkey_entry_body_urlencoded_param_order(
+                            entry_id, &param_id,
+                        ))
+                        .and_then(|value| value.deserialize().ok()),
+                });
+            }
+            BodyInfo::Urlencoded(param_infos)
+        }
+        BodyKind::FormData => {
+            let mut param_infos = Vec::new();
+            for (param_id, param_spec) in spec.form_data?.into_inner() {
+                let value = match hcl_to_json(&param_spec.value) {
+                    Ok(value) => value,
+                    Err(err) => {
+                        session::error!(format!(
+                            "failed to convert value expression `{}`: {}",
+                            &param_spec.value,
+                            err.to_string()
+                        ));
+                        let _ = app_delegate.emit_oneshot(ToLocation::Toast {
+                            activity_id: "expression_conversion_error",
+                            title: "Failed to convert value expression".to_string(),
+                            detail: Some(err.to_string()),
+                        });
+                        JsonValue::Null
+                    }
+                };
+
+                param_infos.push(FormDataParamInfo {
+                    id: param_id.clone(),
+                    name: param_spec.name,
+                    value,
+                    description: param_spec.description,
+                    disabled: param_spec.options.disabled,
+                    propagate: param_spec.options.propagate,
+                    order: entry_keys
+                        .get(&segkey_entry_body_formdata_param_order(entry_id, &param_id))
+                        .and_then(|value| value.deserialize().ok()),
+                });
+            }
+            BodyInfo::FormData(param_infos)
+        }
+    };
+    Some(inner)
 }

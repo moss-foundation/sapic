@@ -6,9 +6,9 @@ use validator::Validate;
 use crate::models::{
     primitives::{EntryClass, EntryId, EntryKind, EntryProtocol},
     types::{
-        AfterUpdateDirEntryDescription, AfterUpdateItemEntryDescription, CreateDirEntryParams,
-        CreateItemEntryParams, HeaderInfo, PathParamInfo, QueryParamInfo, UpdateDirEntryParams,
-        UpdateItemEntryParams, VcsOperation,
+        AfterUpdateDirEntryDescription, AfterUpdateItemEntryDescription, BodyInfo,
+        CreateDirEntryParams, CreateItemEntryParams, HeaderInfo, PathParamInfo, QueryParamInfo,
+        UpdateDirEntryParams, UpdateItemEntryParams, VcsOperation,
     },
 };
 // ########################################################
@@ -171,7 +171,6 @@ pub struct StreamEntriesOutput {
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct DescribeEntryOutput {
-    // TODO: Separate dir/item entry?
     pub name: String,
     pub class: EntryClass,
     pub kind: EntryKind,
@@ -180,6 +179,7 @@ pub struct DescribeEntryOutput {
     pub headers: Vec<HeaderInfo>,
     pub path_params: Vec<PathParamInfo>,
     pub query_params: Vec<QueryParamInfo>,
+    pub body: Option<BodyInfo>,
 }
 
 /// @category Operation

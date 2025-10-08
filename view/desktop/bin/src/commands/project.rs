@@ -59,7 +59,9 @@ pub async fn update_project_entry<'a, R: tauri::Runtime>(
         app,
         project_id,
         options,
-        |ctx, _, project| async move { project.update_entry(&ctx, input).await },
+        |ctx, app_delegate, project| async move {
+            project.update_entry(&ctx, &app_delegate, input).await
+        },
     )
     .await
 }
@@ -100,7 +102,11 @@ pub async fn batch_update_project_entry<'a, R: tauri::Runtime>(
         app,
         project_id,
         options,
-        |ctx, _, project| async move { project.batch_update_entry(&ctx, input, channel).await },
+        |ctx, app_delegate, project| async move {
+            project
+                .batch_update_entry(&ctx, &app_delegate, input, channel)
+                .await
+        },
     )
     .await
 }
@@ -145,7 +151,9 @@ pub async fn describe_project_entry<'a, R: tauri::Runtime>(
         app,
         project_id,
         options,
-        |ctx, _, project| async move { project.describe_entry(&ctx, entry_id).await },
+        |ctx, app_delegate, project| async move {
+            project.describe_entry(&ctx, &app_delegate, entry_id).await
+        },
     )
     .await
 }

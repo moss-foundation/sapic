@@ -33,7 +33,7 @@ use crate::shared::{
 
 #[tokio::test]
 async fn rename_dir_entry_success() {
-    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let old_entry_name = random_entry_name();
@@ -44,6 +44,7 @@ async fn rename_dir_entry_success() {
     let _ = project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Dir(UpdateDirEntryParams {
                 id,
                 path: Default::default(),
@@ -67,7 +68,7 @@ async fn rename_dir_entry_success() {
 
 #[tokio::test]
 async fn rename_dir_entry_empty_name() {
-    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
 
     let old_entry_name = random_entry_name();
     let new_entry_name = "".to_string();
@@ -77,6 +78,7 @@ async fn rename_dir_entry_empty_name() {
     let result = project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Dir(UpdateDirEntryParams {
                 id,
                 path: Default::default(),
@@ -95,7 +97,7 @@ async fn rename_dir_entry_empty_name() {
 
 #[tokio::test]
 async fn rename_dir_entry_already_exists() {
-    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
     let first_entry_name = random_entry_name();
     let second_entry_name = random_entry_name();
 
@@ -107,6 +109,7 @@ async fn rename_dir_entry_already_exists() {
     let result = project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Dir(UpdateDirEntryParams {
                 id: first_id,
                 path: Default::default(),
@@ -125,7 +128,7 @@ async fn rename_dir_entry_already_exists() {
 
 #[tokio::test]
 async fn rename_dir_entry_special_chars_in_name() {
-    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let entry_base_path = PathBuf::from(RESOURCES_ROOT_DIR);
@@ -139,6 +142,7 @@ async fn rename_dir_entry_special_chars_in_name() {
         let result = project
             .update_entry(
                 &ctx,
+                &app_delegate,
                 UpdateEntryInput::Dir(UpdateDirEntryParams {
                     id,
                     path: Default::default(),
@@ -173,7 +177,7 @@ async fn rename_dir_entry_special_chars_in_name() {
 
 #[tokio::test]
 async fn update_dir_entry_order() {
-    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
 
     let entry_name = random_entry_name();
 
@@ -182,6 +186,7 @@ async fn update_dir_entry_order() {
     let _ = project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Dir(UpdateDirEntryParams {
                 id: id.clone(),
                 path: Default::default(),
@@ -209,7 +214,7 @@ async fn update_dir_entry_order() {
 
 #[tokio::test]
 async fn expand_and_collapse_dir_entry() {
-    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
 
     let entry_name = random_entry_name();
 
@@ -221,6 +226,7 @@ async fn expand_and_collapse_dir_entry() {
     let _ = project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Dir(UpdateDirEntryParams {
                 id: id.clone(),
                 path: Default::default(),
@@ -247,6 +253,7 @@ async fn expand_and_collapse_dir_entry() {
     let _ = project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Dir(UpdateDirEntryParams {
                 id: id.clone(),
                 path: Default::default(),
@@ -275,7 +282,7 @@ async fn expand_and_collapse_dir_entry() {
 
 #[tokio::test]
 async fn move_dir_entry_success() {
-    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let entry_name = random_entry_name();
@@ -292,6 +299,7 @@ async fn move_dir_entry_success() {
     let _output = project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Dir(UpdateDirEntryParams {
                 id,
                 path: Some(new_dest.clone()),
@@ -315,7 +323,7 @@ async fn move_dir_entry_success() {
 
 #[tokio::test]
 async fn move_dir_entry_nonexistent_destination() {
-    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
 
     let entry_name = random_entry_name();
 
@@ -327,6 +335,7 @@ async fn move_dir_entry_nonexistent_destination() {
     let result = project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Dir(UpdateDirEntryParams {
                 id,
                 path: Some(new_dest.clone()),
@@ -345,7 +354,7 @@ async fn move_dir_entry_nonexistent_destination() {
 
 #[tokio::test]
 async fn move_dir_entry_already_exists() {
-    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
 
     // First create a dest/entry entry
     let dest_name = "dest".to_string();
@@ -358,6 +367,7 @@ async fn move_dir_entry_already_exists() {
     let _ = project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Dir(UpdateDirEntryParams {
                 id: existing_id,
                 path: Some(dest.clone()),
@@ -374,6 +384,7 @@ async fn move_dir_entry_already_exists() {
     let result = project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Dir(UpdateDirEntryParams {
                 id: new_id,
                 path: Some(dest.clone()),
@@ -392,7 +403,7 @@ async fn move_dir_entry_already_exists() {
 
 #[tokio::test]
 async fn update_item_entry_endpoint_headers() {
-    let (ctx, _, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, project) = create_test_project().await;
 
     let entry_name = random_entry_name();
     let input = CreateEntryInput::Item(CreateItemEntryParams {
@@ -413,17 +424,22 @@ async fn update_item_entry_endpoint_headers() {
         }],
         path_params: vec![],
         query_params: vec![],
+        body: None,
     });
 
     let id = project.create_entry(&ctx, input).await.unwrap().id;
 
-    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
     let header_id = desc.headers.first().unwrap().id.clone();
 
     // Test update header
     project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Item(UpdateItemEntryParams {
                 id: id.clone(),
                 path: None,
@@ -455,7 +471,10 @@ async fn update_item_entry_endpoint_headers() {
         .await
         .unwrap();
 
-    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
     let header = desc.headers.first().unwrap();
 
     assert_eq!(header.name, "2");
@@ -470,6 +489,7 @@ async fn update_item_entry_endpoint_headers() {
     project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Item(UpdateItemEntryParams {
                 id: id.clone(),
                 path: None,
@@ -491,13 +511,17 @@ async fn update_item_entry_endpoint_headers() {
         .await
         .unwrap();
 
-    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
     assert!(desc.headers.is_empty());
 
     // Test add header
     project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Item(UpdateItemEntryParams {
                 id: id.clone(),
                 path: None,
@@ -528,7 +552,10 @@ async fn update_item_entry_endpoint_headers() {
         .await
         .unwrap();
 
-    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
     assert_eq!(desc.headers.len(), 1);
     let header = desc.headers.first().unwrap();
     assert_eq!(header.name, "3");
@@ -543,7 +570,7 @@ async fn update_item_entry_endpoint_headers() {
 
 #[tokio::test]
 async fn update_item_entry_endpoint_path_params() {
-    let (ctx, _, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, project) = create_test_project().await;
 
     let entry_name = random_entry_name();
     let input = CreateEntryInput::Item(CreateItemEntryParams {
@@ -564,17 +591,22 @@ async fn update_item_entry_endpoint_path_params() {
             },
         }],
         query_params: vec![],
+        body: None,
     });
 
     let id = project.create_entry(&ctx, input).await.unwrap().id;
 
-    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
     let path_param_id = desc.path_params.first().unwrap().id.clone();
 
     // Test update header
     project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Item(UpdateItemEntryParams {
                 id: id.clone(),
                 path: None,
@@ -606,7 +638,10 @@ async fn update_item_entry_endpoint_path_params() {
         .await
         .unwrap();
 
-    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
     let path_param = desc.path_params.first().unwrap();
 
     assert_eq!(path_param.name, "2");
@@ -620,6 +655,7 @@ async fn update_item_entry_endpoint_path_params() {
     project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Item(UpdateItemEntryParams {
                 id: id.clone(),
                 path: None,
@@ -641,13 +677,17 @@ async fn update_item_entry_endpoint_path_params() {
         .await
         .unwrap();
 
-    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
     assert!(desc.path_params.is_empty());
 
     // Test add header
     project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Item(UpdateItemEntryParams {
                 id: id.clone(),
                 path: None,
@@ -678,7 +718,10 @@ async fn update_item_entry_endpoint_path_params() {
         .await
         .unwrap();
 
-    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
     assert_eq!(desc.path_params.len(), 1);
     let path_param = desc.path_params.first().unwrap();
     assert_eq!(path_param.name, "3");
@@ -693,7 +736,7 @@ async fn update_item_entry_endpoint_path_params() {
 
 #[tokio::test]
 async fn update_item_entry_endpoint_query_params() {
-    let (ctx, _, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, project) = create_test_project().await;
 
     let entry_name = random_entry_name();
     let input = CreateEntryInput::Item(CreateItemEntryParams {
@@ -714,17 +757,22 @@ async fn update_item_entry_endpoint_query_params() {
                 propagate: false,
             },
         }],
+        body: None,
     });
 
     let id = project.create_entry(&ctx, input).await.unwrap().id;
 
-    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
     let query_param_id = desc.query_params.first().unwrap().id.clone();
 
     // Test update header
     project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Item(UpdateItemEntryParams {
                 id: id.clone(),
                 path: None,
@@ -756,7 +804,10 @@ async fn update_item_entry_endpoint_query_params() {
         .await
         .unwrap();
 
-    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
     let query_param = desc.query_params.first().unwrap();
 
     assert_eq!(query_param.name, "2");
@@ -770,6 +821,7 @@ async fn update_item_entry_endpoint_query_params() {
     project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Item(UpdateItemEntryParams {
                 id: id.clone(),
                 path: None,
@@ -791,13 +843,17 @@ async fn update_item_entry_endpoint_query_params() {
         .await
         .unwrap();
 
-    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
     assert!(desc.query_params.is_empty());
 
     // Test add header
     project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Item(UpdateItemEntryParams {
                 id: id.clone(),
                 path: None,
@@ -828,7 +884,10 @@ async fn update_item_entry_endpoint_query_params() {
         .await
         .unwrap();
 
-    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
     assert_eq!(desc.query_params.len(), 1);
     let query_param = desc.query_params.first().unwrap();
     assert_eq!(query_param.name, "3");
