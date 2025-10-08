@@ -1,4 +1,4 @@
-import { DescribeAppOutput } from "@repo/moss-app";
+import { DescribeAppOutput, UpdateConfigurationInput } from "@repo/moss-app";
 import {
   ActivitybarPartStateInfo,
   EditorPartStateInfo,
@@ -47,6 +47,17 @@ export const AppService = {
       cmd: "update_workspace_state",
       args: {
         input: { "updateSidebarPartState": sidebar },
+      },
+    });
+  },
+
+  updateConfiguration: async (configuration: UpdateConfigurationInput) => {
+    return await invokeTauriServiceIpc<UpdateConfigurationInput, void>({
+      cmd: "update_configuration",
+      args: {
+        input: {
+          ...configuration,
+        },
       },
     });
   },

@@ -1,8 +1,10 @@
 import { useTranslation } from "react-i18next";
 
+import i18next from "@/app/i18n";
 import SelectOutlined from "@/components/SelectOutlined";
-import { useListLocales, useSetLocale } from "@/hooks";
+import { useListLocales } from "@/hooks";
 import { useDescribeApp } from "@/hooks/app/useDescribeApp";
+import { useUpdateConfiguration } from "@/hooks/useUpdateConfiguration";
 
 import { Section } from "../Section";
 
@@ -11,28 +13,34 @@ export const LanguageSection = () => {
 
   const { data: appState } = useDescribeApp();
   const { data: languages } = useListLocales();
-  const { mutate: mutateSetLocalePack } = useSetLocale();
+  const { mutate: mutateUpdateConfiguration } = useUpdateConfiguration();
 
   const handleLanguageChange = (newCode: string) => {
-    const selectedLocaleInfo = languages?.find((lang) => lang.identifier === newCode);
+    mutateUpdateConfiguration({
+      key: "language",
+      value: newCode,
+      target: "PROFILE",
+    });
 
-    if (selectedLocaleInfo) {
-      mutateSetLocalePack({
-        localeInfo: selectedLocaleInfo,
-      });
-    }
+    i18next.changeLanguage(newCode).catch(console.error);
   };
 
-  const currentLanguage = appState?.configuration.contents.locale as string;
+  const currentLanguage = appState?.configuration.contents.language as string;
 
   return (
     <Section title={t("selectLanguage")}>
       <SelectOutlined.Root value={currentLanguage} onValueChange={handleLanguageChange}>
         <SelectOutlined.Trigger />
         <SelectOutlined.Content>
+          <SelectOutlined.Item key="default" value="default">
+            Default
+          </SelectOutlined.Item>
+
+          <SelectOutlined.Separator />
+
           {languages?.map((item) => {
             return (
-              <SelectOutlined.Item key={item.identifier} value={item.identifier}>
+              <SelectOutlined.Item key={item.code} value={item.code}>
                 {item.displayName}
               </SelectOutlined.Item>
             );
