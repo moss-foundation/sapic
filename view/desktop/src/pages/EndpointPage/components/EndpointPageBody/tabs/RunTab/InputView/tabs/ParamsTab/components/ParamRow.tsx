@@ -137,7 +137,6 @@ export const ParamRow = memo(
           <ActionButton icon="ConfigMap" />
           <ActionButton icon="AddToVcs" />
           <ActionButton icon="RemoveCircle" onClick={onDelete} />
-          <div className="underline">{param.order}</div>
         </div>
       </div>
     );
