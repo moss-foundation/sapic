@@ -10,7 +10,7 @@ import { EndpointPageContext } from "../../EndpointPageContext";
 import { EditableHeader } from "./EditableHeader";
 
 export const EndpointPageHeader = () => {
-  const { entryDescription: entry, projectId, node } = useContext(EndpointPageContext);
+  const { entryDescription: entry, projectId, entry: node } = useContext(EndpointPageContext);
 
   const { isRenamingEntry, setIsRenamingEntry, handleRenamingEntrySubmit, handleRenamingEntryCancel } =
     useRenameEntryForm(node, projectId);

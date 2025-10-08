@@ -14,7 +14,7 @@ import { NewParamRowForm } from "./NewParamRowForm";
 import { ParamRow } from "./ParamRow";
 
 export const QueryParamsView = () => {
-  const { entryDescription, node, projectId } = useContext(EndpointPageContext);
+  const { entryDescription, entry: node, projectId } = useContext(EndpointPageContext);
 
   const { mutate: updateProjectEntry } = useUpdateProjectEntry();
   const [columnToFocusOnMount, setColumnToFocusOnMount] = useState<string | null>(null);
@@ -73,7 +73,12 @@ export const QueryParamsView = () => {
 
     if (!deletedParam) return;
 
-    const queryParamsToUpdate = entryDescription.queryParams.filter((param) => param.order! > deletedParam.order!);
+    const queryParamsToUpdate = entryDescription.queryParams
+      .filter((param) => param.order! > deletedParam.order!)
+      .map((param) => ({
+        id: param.id,
+        order: param.order! - 1,
+      }));
 
     if (entryDescription.kind === "Item") {
       updateProjectEntry({
@@ -81,7 +86,6 @@ export const QueryParamsView = () => {
         updatedEntry: {
           ITEM: {
             id: node.id,
-            queryParamsToRemove: [paramId],
             headersToAdd: [],
             headersToUpdate: [],
             headersToRemove: [],
@@ -89,10 +93,8 @@ export const QueryParamsView = () => {
             pathParamsToUpdate: [],
             pathParamsToRemove: [],
             queryParamsToAdd: [],
-            queryParamsToUpdate: queryParamsToUpdate.map((param) => ({
-              id: param.id,
-              order: param.order! - 1,
-            })),
+            queryParamsToUpdate: queryParamsToUpdate,
+            queryParamsToRemove: [paramId],
           },
         },
       });
@@ -203,6 +205,7 @@ export const QueryParamsView = () => {
                 onChange={handleParamRowChange}
                 onDelete={() => handleParamRowDelete(param.id)}
                 keyToFocusOnMount={isLastRow ? columnToFocusOnMount : null}
+                paramType="query"
               />
             );
           })}

@@ -16,14 +16,14 @@ export interface EndpointPageProps {
 
 const EndpointPage = ({ ...props }: IDockviewPanelProps<EndpointPageProps>) => {
   const { data: streamedEntries } = useStreamProjectEntries(props.params?.projectId);
-  const node = streamedEntries?.find((entry) => entry.id === props.params?.node?.id);
+  const entry = streamedEntries?.find((entry) => entry.id === props.params?.node?.id);
 
   const { data: entryDescription } = useDescribeProjectEntry({
     projectId: props.params?.projectId ?? "",
-    entryId: node?.id ?? "",
+    entryId: entry?.id ?? "",
   });
 
-  if (!node || !entryDescription) {
+  if (!entry || !entryDescription) {
     return (
       <PageWrapper>
         <div className="flex flex-1 items-center justify-center">
@@ -36,7 +36,7 @@ const EndpointPage = ({ ...props }: IDockviewPanelProps<EndpointPageProps>) => {
   }
 
   return (
-    <EndpointPageContext.Provider value={{ projectId: props.params.projectId, entryDescription, node }}>
+    <EndpointPageContext.Provider value={{ projectId: props.params.projectId, entryDescription, entry: entry }}>
       <PageView>
         <EndpointPageHeader />
         <EndpointPageBody />

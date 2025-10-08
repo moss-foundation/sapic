@@ -4,13 +4,13 @@ import { DescribeEntryOutput, StreamEntriesEvent } from "@repo/moss-project";
 
 interface EndpointPageContext {
   projectId: string;
-  node: StreamEntriesEvent;
+  entry: StreamEntriesEvent;
   entryDescription: DescribeEntryOutput;
 }
 
 export const EndpointPageContext = createContext<EndpointPageContext>({
   projectId: "",
-  node: {
+  entry: {
     id: "",
     name: "",
     path: {

@@ -7,6 +7,7 @@ import { cn } from "@/utils/cn";
 import { areUrlsEquivalent, parseUrl } from "../../../../utils/urlParser";
 import { EndpointInputField } from "../../../EndpointInputField";
 import { InputView } from "./InputView/InputView";
+import { useMonitorParamsRows } from "./InputView/tabs/ParamsTab/hooks/useMonitorParamsRows";
 import { OutputView } from "./OutputView/OutputView";
 
 export const RunTab = () => {
@@ -44,6 +45,8 @@ export const RunTab = () => {
     },
     [endpointData.url.raw, updateEndpointData]
   );
+
+  useMonitorParamsRows();
 
   return (
     <div className="flex grow flex-col gap-2.5">

@@ -14,7 +14,7 @@ import { NewParamRowForm } from "./NewParamRowForm";
 import { ParamRow } from "./ParamRow";
 
 export const PathParamsView = () => {
-  const { entryDescription, node, projectId } = useContext(EndpointPageContext);
+  const { entryDescription, entry: node, projectId } = useContext(EndpointPageContext);
 
   const { mutate: updateProjectEntry } = useUpdateProjectEntry();
   const [columnToFocusOnMount, setColumnToFocusOnMount] = useState<string | null>(null);
@@ -73,7 +73,12 @@ export const PathParamsView = () => {
 
     if (!deletedParam) return;
 
-    const pathParamsToUpdate = entryDescription.pathParams.filter((param) => param.order! > deletedParam.order!);
+    const pathParamsToUpdate = entryDescription.pathParams
+      .filter((param) => param.order! > deletedParam.order!)
+      .map((param) => ({
+        id: param.id,
+        order: param.order! - 1,
+      }));
 
     if (entryDescription.kind === "Item") {
       updateProjectEntry({
@@ -85,13 +90,10 @@ export const PathParamsView = () => {
             headersToUpdate: [],
             headersToRemove: [],
             pathParamsToAdd: [],
-            pathParamsToUpdate: [],
+            pathParamsToUpdate: pathParamsToUpdate,
             pathParamsToRemove: [paramId],
             queryParamsToAdd: [],
-            queryParamsToUpdate: pathParamsToUpdate.map((param) => ({
-              id: param.id,
-              order: param.order! - 1,
-            })),
+            queryParamsToUpdate: [],
             queryParamsToRemove: [],
           },
         },
@@ -203,6 +205,7 @@ export const PathParamsView = () => {
                 onChange={handleParamRowChange}
                 onDelete={() => handleParamRowDelete(param.id)}
                 keyToFocusOnMount={isLastRow ? columnToFocusOnMount : null}
+                paramType="path"
               />
             );
           })}

@@ -29,6 +29,7 @@ export const OutputView = () => {
       content: <CookiesTab />,
     },
   ];
+
   return (
     <div className="flex flex-1 flex-col gap-3">
       <FolderTabs.Root value={activeOutputTabId} onValueChange={setActiveOutputTabId} className="flex grow flex-col">
