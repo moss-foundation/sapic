@@ -8,5 +8,8 @@ local i18n = import "../../../i18n/index.libsonnet";
         "noLogs": "No logs received yet",
         "receivedData": "Received data",
         "title": "Moss Studio",
+        "selectTheme": "Select theme:",
+        "selectLanguage": "Select language:",
+        "user": "My name is: {{name}}",
     }),
 }
