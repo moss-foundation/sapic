@@ -53,6 +53,8 @@ export const useMonitorParamsRows = () => {
           order: param.order,
         }));
 
+      if (queryParamsToUpdate.length === 0) return;
+
       updateProjectEntry({
         projectId,
         updatedEntry: {
@@ -97,6 +99,8 @@ export const useMonitorParamsRows = () => {
           id: param.id,
           order: param.order,
         }));
+
+      if (pathParamsToUpdate.length === 0) return;
 
       updateProjectEntry({
         projectId,
@@ -176,6 +180,15 @@ export const useMonitorParamsRows = () => {
         },
       };
 
+      if (
+        pathParamsToUpdate.length === 0 &&
+        queryParamsToUpdate.length === 0 &&
+        !pathParamToAdd.name &&
+        !queryParamToRemove
+      ) {
+        return;
+      }
+
       updateProjectEntry({
         projectId,
         updatedEntry: {
@@ -254,6 +267,15 @@ export const useMonitorParamsRows = () => {
         },
       };
 
+      if (
+        pathParamsToUpdate.length === 0 &&
+        queryParamsToUpdate.length === 0 &&
+        !pathParamToRemove &&
+        !queryParamToAdd
+      ) {
+        return;
+      }
+
       updateProjectEntry({
         projectId,
         updatedEntry: {
@@ -322,6 +344,15 @@ export const useMonitorParamsRows = () => {
         },
       };
 
+      if (
+        pathParamsToUpdate.length === 0 &&
+        queryParamsToUpdate.length === 0 &&
+        !pathParamToAdd &&
+        !queryParamToRemove
+      ) {
+        return;
+      }
+
       updateProjectEntry({
         projectId,
         updatedEntry: {
@@ -389,6 +420,15 @@ export const useMonitorParamsRows = () => {
         },
       };
 
+      if (
+        pathParamsToUpdate.length === 0 &&
+        queryParamsToUpdate.length === 0 &&
+        !pathParamToRemove &&
+        !queryParamToAdd
+      ) {
+        return;
+      }
+
       updateProjectEntry({
         projectId,
         updatedEntry: {
@@ -427,7 +467,7 @@ export const useMonitorParamsRows = () => {
         })
         .map((param) => ({ id: param.id, order: param.order }));
 
-      console.log("queryParamsToUpdate", queryParamsToUpdate);
+      if (queryParamsToUpdate.length === 0) return;
 
       updateProjectEntry({
         projectId,
@@ -466,6 +506,8 @@ export const useMonitorParamsRows = () => {
           return newOrder !== oldOrder;
         })
         .map((param) => ({ id: param.id, order: param.order }));
+
+      if (pathParamsToUpdate.length === 0) return;
 
       updateProjectEntry({
         projectId,
@@ -507,7 +549,6 @@ export const useMonitorParamsRows = () => {
           }
 
           const dropType = calculateDropType(sourceData, dropTargetData);
-          console.log("dropType", dropType);
           switch (dropType) {
             case "WithinQueryList":
               handleWithinQueryList(sourceData, dropTargetData);
@@ -543,7 +584,6 @@ export const useMonitorParamsRows = () => {
           }
 
           const dropType = calculateDropType(sourceData, dropTargetData);
-          console.log("dropType", dropType);
           switch (dropType) {
             case "WithinQueryList":
               handleWithinQueryListNewParamRowForm(sourceData);
