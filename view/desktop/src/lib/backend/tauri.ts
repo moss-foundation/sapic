@@ -71,7 +71,7 @@ export const handleTauriIpcError = (cmd: TauriIpcCommand, error: unknown) => {
 };
 
 /**
- * @deprecated InvokeTauriServiceIpc should be used instead, specifically from services folder.
+ * @deprecated InvokeTauriServiceIpc should be used instead, specifically using services from the "view/desktop/src/lib/services" folder.
  */
 export const invokeTauriIpc = async <T, E = unknown>(
   cmd: TauriIpcCommand,
