@@ -58,7 +58,7 @@ const Trigger = ({ value, children, className, icon, count }: PageContainerTabPr
     <TabsPrimitive.TabsTrigger
       value={value}
       className={cn(
-        "flex items-center py-2 text-base transition-colors",
+        "flex items-center py-2.25 text-base transition-colors",
         "relative border-b-1 border-transparent",
         "text-(--moss-secondary-text) hover:text-(--moss-primary-text)",
         "data-[state=active]:text-(--moss-primary-text)",
