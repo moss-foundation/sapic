@@ -209,7 +209,7 @@ export const QueryParamsView = () => {
               />
             );
           })}
-          <NewParamRowForm onAdd={handleAddNewRow} />
+          <NewParamRowForm onAdd={handleAddNewRow} key={sortedQueryParams.length} />
         </div>
       </Scrollbar>
     </div>

@@ -1,4 +1,4 @@
-import { ChangeEvent } from "react";
+import { ChangeEvent, useCallback, useRef, useState } from "react";
 
 import { InputOutlined } from "@/components";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
@@ -10,13 +10,28 @@ interface NewParamRowFormProps {
 }
 
 export const NewParamRowForm = ({ onAdd }: NewParamRowFormProps) => {
-  const placeholderParam: QueryParamInfo = {
+  const [placeholderParam, setPlaceholderParam] = useState<QueryParamInfo>({
     id: "__NewParamRowForm",
     disabled: true,
     name: "",
     value: "",
     propagate: false,
-  };
+  });
+
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const debouncedOnChange = useCallback(
+    (updatedParam: QueryParamInfo) => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+
+      debounceTimeoutRef.current = setTimeout(() => {
+        onAdd(updatedParam);
+      }, 500);
+    },
+    [onAdd]
+  );
 
   const onCheckedChange = (checked: CheckedState) => {
     onAdd({
@@ -26,17 +41,15 @@ export const NewParamRowForm = ({ onAdd }: NewParamRowFormProps) => {
   };
 
   const onKeyChange = (e: ChangeEvent<HTMLInputElement>) => {
-    onAdd({
-      ...placeholderParam,
-      name: e.target.value,
-    });
+    const updatedParam = { ...placeholderParam, name: e.target.value };
+    setPlaceholderParam(updatedParam);
+    debouncedOnChange(updatedParam);
   };
 
   const onValueChange = (e: ChangeEvent<HTMLInputElement>) => {
-    onAdd({
-      ...placeholderParam,
-      value: e.target.value,
-    });
+    const updatedParam = { ...placeholderParam, value: e.target.value };
+    setPlaceholderParam(updatedParam);
+    debouncedOnChange(updatedParam);
   };
 
   return (

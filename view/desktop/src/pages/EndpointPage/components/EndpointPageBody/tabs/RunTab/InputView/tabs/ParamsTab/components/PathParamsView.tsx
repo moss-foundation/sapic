@@ -209,7 +209,7 @@ export const PathParamsView = () => {
               />
             );
           })}
-          <NewParamRowForm onAdd={handleAddNewRow} />
+          <NewParamRowForm onAdd={handleAddNewRow} key={sortedPathParams.length} />
         </div>
       </Scrollbar>
     </div>
