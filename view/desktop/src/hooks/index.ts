@@ -5,6 +5,7 @@ export * from "./workspace";
 
 export * from "./useClickOutside";
 export * from "./useFocusInputOnMount";
+export * from "./useHoverDelay";
 export * from "./useInputResize";
 export * from "./useModal";
 export * from "./useProjectSession";

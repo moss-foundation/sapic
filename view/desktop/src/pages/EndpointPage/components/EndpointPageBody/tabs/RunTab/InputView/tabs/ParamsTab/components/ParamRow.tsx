@@ -2,7 +2,10 @@ import { ChangeEvent, memo, useCallback, useEffect, useRef, useState } from "rea
 
 import { ActionButton, InputOutlined } from "@/components";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
+import { DragHandleButton } from "@/components/DragHandleButton";
+import { useHoverDelay } from "@/hooks";
 import { Icon } from "@/lib/ui";
+import { cn } from "@/utils";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { QueryParamInfo } from "@repo/moss-project";
 
@@ -19,6 +22,8 @@ export const ParamRow = memo(({ param: initialParam, onChange, keyToFocusOnMount
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [param, setParam] = useState(initialParam);
+
+  const { isHovered, handleMouseEnter, handleMouseLeave } = useHoverDelay();
 
   useEffect(() => {
     setParam(initialParam);
@@ -83,7 +88,19 @@ export const ParamRow = memo(({ param: initialParam, onChange, keyToFocusOnMount
 
   return (
     <div key={param.id} className="col-span-full grid grid-cols-subgrid items-center">
-      <CheckboxWithLabel checked={!param.disabled} onCheckedChange={onCheckedChange} />
+      <div
+        className="group/paramRow relative flex items-center gap-1"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        <CheckboxWithLabel checked={!param.disabled} onCheckedChange={onCheckedChange} />
+        <DragHandleButton
+          className={cn("absolute top-1/2 left-0 -translate-y-1/2 rounded-xs transition-opacity duration-200", {
+            "pointer-events-auto opacity-100": isHovered,
+            "pointer-events-none opacity-0": !isHovered,
+          })}
+        />
+      </div>
 
       <InputOutlined ref={keyRef} value={param.name} onChange={onKeyChange} contrast />
 
