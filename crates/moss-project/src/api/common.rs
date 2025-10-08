@@ -233,95 +233,14 @@ impl<R: AppRuntime> Project<R> {
         }
 
         let body = if let Some(body_params) = input.body {
-            let (kind, spec) = match body_params {
-                AddBodyParams::Text(text) => (
-                    BodyKind::Text,
-                    BodySpec {
-                        text: Some(text),
-                        ..Default::default()
-                    },
-                ),
-                AddBodyParams::Json(json) => (
-                    BodyKind::Json,
-                    BodySpec {
-                        json: Some(json),
-                        ..Default::default()
-                    },
-                ),
-                AddBodyParams::Xml(xml) => (
-                    BodyKind::Xml,
-                    BodySpec {
-                        xml: Some(xml),
-                        ..Default::default()
-                    },
-                ),
-                AddBodyParams::Binary(path) => (
-                    BodyKind::Binary,
-                    BodySpec {
-                        binary: Some(path),
-                        ..Default::default()
-                    },
-                ),
-                AddBodyParams::Urlencoded(urlencoded) => {
-                    let mut urlencoded_map = IndexMap::with_capacity(urlencoded.len());
-                    for param in urlencoded {
-                        let id = UrlencodedParamId::new();
-                        let value = continue_if_err!(json_to_hcl(&param.value), |err| {
-                            session::error!("failed to convert value expression: {}", err)
-                        });
-
-                        urlencoded_map.insert(
-                            id.clone(),
-                            UrlencodedParamSpec {
-                                name: param.name,
-                                value,
-                                description: param.description,
-                                options: UrlencodedParamSpecOptions {
-                                    disabled: param.options.disabled,
-                                    propagate: param.options.propagate,
-                                },
-                            },
-                        );
-                        urlencoded_param_orders.insert(id.clone(), param.order);
-                    }
-                    let spec = BodySpec {
-                        urlencoded: Some(LabeledBlock::new(urlencoded_map)),
-                        ..Default::default()
-                    };
-                    (BodyKind::Urlencoded, spec)
-                }
-                AddBodyParams::FormData(form_data) => {
-                    let mut formdata_map = IndexMap::with_capacity(form_data.len());
-                    for param in form_data {
-                        let id = FormDataParamId::new();
-                        let value = continue_if_err!(json_to_hcl(&param.value), |err| {
-                            session::error!("failed to convert value expression: {}", err)
-                        });
-
-                        formdata_map.insert(
-                            id.clone(),
-                            FormDataParamSpec {
-                                name: param.name,
-                                value,
-                                description: param.description,
-                                options: FormDataParamSpecOptions {
-                                    disabled: param.options.disabled,
-                                    propagate: param.options.propagate,
-                                },
-                            },
-                        );
-                        formdata_param_orders.insert(id.clone(), param.order);
-                    }
-                    let spec = BodySpec {
-                        form_data: Some(LabeledBlock::new(formdata_map)),
-                        ..Default::default()
-                    };
-                    (BodyKind::FormData, spec)
-                }
-            };
-            Some(LabeledBlock::new(indexmap! {
-                kind => spec
-            }))
+            Some(
+                create_body_block(
+                    body_params,
+                    &mut urlencoded_param_orders,
+                    &mut formdata_param_orders,
+                )
+                .await,
+            )
         } else {
             None
         };
@@ -467,4 +386,100 @@ impl<R: AppRuntime> Project<R> {
 
         Ok(output)
     }
+}
+
+async fn create_body_block(
+    params: AddBodyParams,
+    urlencoded_param_orders: &mut HashMap<UrlencodedParamId, isize>,
+    formdata_param_orders: &mut HashMap<FormDataParamId, isize>,
+) -> LabeledBlock<IndexMap<BodyKind, BodySpec>> {
+    let (kind, spec) = match params {
+        AddBodyParams::Text(text) => (
+            BodyKind::Text,
+            BodySpec {
+                text: Some(text),
+                ..Default::default()
+            },
+        ),
+        AddBodyParams::Json(json) => (
+            BodyKind::Json,
+            BodySpec {
+                json: Some(json),
+                ..Default::default()
+            },
+        ),
+        AddBodyParams::Xml(xml) => (
+            BodyKind::Xml,
+            BodySpec {
+                xml: Some(xml),
+                ..Default::default()
+            },
+        ),
+        AddBodyParams::Binary(path) => (
+            BodyKind::Binary,
+            BodySpec {
+                binary: Some(path),
+                ..Default::default()
+            },
+        ),
+        AddBodyParams::Urlencoded(urlencoded) => {
+            let mut urlencoded_map = IndexMap::with_capacity(urlencoded.len());
+            for param in urlencoded {
+                let id = UrlencodedParamId::new();
+                let value = continue_if_err!(json_to_hcl(&param.value), |err| {
+                    session::error!("failed to convert value expression: {}", err)
+                });
+
+                urlencoded_map.insert(
+                    id.clone(),
+                    UrlencodedParamSpec {
+                        name: param.name,
+                        value,
+                        description: param.description,
+                        options: UrlencodedParamSpecOptions {
+                            disabled: param.options.disabled,
+                            propagate: param.options.propagate,
+                        },
+                    },
+                );
+                urlencoded_param_orders.insert(id.clone(), param.order);
+            }
+            let spec = BodySpec {
+                urlencoded: Some(LabeledBlock::new(urlencoded_map)),
+                ..Default::default()
+            };
+            (BodyKind::Urlencoded, spec)
+        }
+        AddBodyParams::FormData(form_data) => {
+            let mut formdata_map = IndexMap::with_capacity(form_data.len());
+            for param in form_data {
+                let id = FormDataParamId::new();
+                let value = continue_if_err!(json_to_hcl(&param.value), |err| {
+                    session::error!("failed to convert value expression: {}", err)
+                });
+
+                formdata_map.insert(
+                    id.clone(),
+                    FormDataParamSpec {
+                        name: param.name,
+                        value,
+                        description: param.description,
+                        options: FormDataParamSpecOptions {
+                            disabled: param.options.disabled,
+                            propagate: param.options.propagate,
+                        },
+                    },
+                );
+                formdata_param_orders.insert(id.clone(), param.order);
+            }
+            let spec = BodySpec {
+                form_data: Some(LabeledBlock::new(formdata_map)),
+                ..Default::default()
+            };
+            (BodyKind::FormData, spec)
+        }
+    };
+    LabeledBlock::new(indexmap! {
+        kind => spec
+    })
 }
