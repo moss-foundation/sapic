@@ -1,5 +1,6 @@
 use hcl::ser::LabeledBlock;
 use indexmap::{IndexMap, indexmap};
+use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, errors::ValidationResultExt};
 use moss_common::continue_if_err;
 use moss_hcl::{Block, json_to_hcl};
@@ -93,6 +94,7 @@ impl<R: AppRuntime> Project<R> {
     pub(super) async fn update_item_entry(
         &self,
         ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
         input: UpdateItemEntryParams,
     ) -> joinerror::Result<AfterUpdateItemEntryDescription> {
         input.validate().join_err_bare()?;
@@ -102,6 +104,7 @@ impl<R: AppRuntime> Project<R> {
             .await
             .update_item_entry(
                 ctx,
+                app_delegate,
                 &input.id,
                 ModifyParams {
                     name: input.name,
