@@ -178,8 +178,8 @@ export const PathParamsView = () => {
   const sortedPathParams = sortObjectsByOrder(entryDescription.pathParams);
 
   return (
-    <div>
-      <div className="flex w-full justify-between border-b border-(--moss-border-color) px-3 py-[5px]">
+    <div className="flex h-full flex-col">
+      <div className="flex w-full shrink-0 justify-between border-b border-(--moss-border-color) px-3 py-[5px]">
         <div className="flex items-center gap-1 overflow-hidden">
           <CheckboxWithLabel
             checked={headerCheckedState}
@@ -195,7 +195,7 @@ export const PathParamsView = () => {
         </div>
       </div>
 
-      <Scrollbar>
+      <Scrollbar className="min-h-0 flex-1">
         <div className="grid grid-cols-[min-content_minmax(128px,1fr)_minmax(128px,1fr)_min-content_min-content_min-content] gap-2 p-3">
           {sortedPathParams.map((param, index) => {
             const isLastRow = index === entryDescription.pathParams.length - 1;
