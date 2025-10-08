@@ -16,11 +16,19 @@ export const LanguageSection = () => {
   const { mutate: mutateUpdateConfiguration } = useUpdateConfiguration();
 
   const handleLanguageChange = (newCode: string) => {
-    mutateUpdateConfiguration({
-      key: "language",
-      value: newCode,
-      target: "PROFILE",
-    });
+    if (newCode === "default") {
+      mutateUpdateConfiguration({
+        key: "language",
+        value: "en",
+        target: "PROFILE",
+      });
+    } else {
+      mutateUpdateConfiguration({
+        key: "language",
+        value: newCode,
+        target: "PROFILE",
+      });
+    }
 
     i18next.changeLanguage(newCode).catch(console.error);
   };
@@ -32,7 +40,7 @@ export const LanguageSection = () => {
       <SelectOutlined.Root value={currentLanguage} onValueChange={handleLanguageChange}>
         <SelectOutlined.Trigger />
         <SelectOutlined.Content>
-          <SelectOutlined.Item key="default" value="default">
+          <SelectOutlined.Item key="en" value="en">
             Default
           </SelectOutlined.Item>
 
