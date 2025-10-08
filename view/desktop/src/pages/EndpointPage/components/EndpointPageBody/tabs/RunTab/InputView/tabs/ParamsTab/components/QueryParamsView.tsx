@@ -34,6 +34,12 @@ export const QueryParamsView = () => {
         updateObj.value = {
           "UPDATE": updated.value,
         };
+
+      if (initial.description !== updated.description && updated.description)
+        updateObj.description = {
+          "UPDATE": updated.description,
+        };
+
       if (initial.order !== updated.order) updateObj.order = updated.order;
 
       const optionsChanged = initial.disabled !== updated.disabled || initial.propagate !== updated.propagate;

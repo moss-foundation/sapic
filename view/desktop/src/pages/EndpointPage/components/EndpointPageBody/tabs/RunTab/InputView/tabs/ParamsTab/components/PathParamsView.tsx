@@ -35,6 +35,10 @@ export const PathParamsView = () => {
           "UPDATE": updated.value,
         };
       if (initial.order !== updated.order) updateObj.order = updated.order;
+      if (initial.description !== updated.description && updated.description)
+        updateObj.description = {
+          "UPDATE": updated.description,
+        };
 
       const optionsChanged = initial.disabled !== updated.disabled || initial.propagate !== updated.propagate;
 
