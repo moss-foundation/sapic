@@ -24,6 +24,7 @@ export const NewParamRowForm = ({ onAdd, paramType }: NewParamRowFormProps) => {
     disabled: true,
     name: "",
     value: "",
+    description: "",
     propagate: false,
   });
 
