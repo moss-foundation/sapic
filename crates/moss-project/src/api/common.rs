@@ -425,7 +425,7 @@ async fn create_body_block(
         AddBodyParams::Urlencoded(urlencoded) => {
             let mut urlencoded_map = IndexMap::with_capacity(urlencoded.len());
             for param in urlencoded {
-                let id = UrlencodedParamId::new();
+                let id = param.id.unwrap_or(UrlencodedParamId::new());
                 let value = continue_if_err!(json_to_hcl(&param.value), |err| {
                     session::error!("failed to convert value expression: {}", err)
                 });
@@ -453,7 +453,7 @@ async fn create_body_block(
         AddBodyParams::FormData(form_data) => {
             let mut formdata_map = IndexMap::with_capacity(form_data.len());
             for param in form_data {
-                let id = FormDataParamId::new();
+                let id = param.id.unwrap_or(FormDataParamId::new());
                 let value = continue_if_err!(json_to_hcl(&param.value), |err| {
                     session::error!("failed to convert value expression: {}", err)
                 });

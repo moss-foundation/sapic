@@ -5,7 +5,9 @@ use std::path::PathBuf;
 use ts_rs::TS;
 use validator::Validate;
 
-use crate::models::primitives::{HeaderId, PathParamId, QueryParamId};
+use crate::models::primitives::{
+    FormDataParamId, HeaderId, PathParamId, QueryParamId, UrlencodedParamId,
+};
 
 /// @category Type
 #[derive(Clone, Debug, Deserialize, Serialize, Validate, TS)]
@@ -191,6 +193,9 @@ pub struct AddUrlencodedParamParams {
     pub order: isize,
     pub description: Option<String>,
     pub options: UrlencodedParamOptions,
+    /// This field should be provided when the frontend switches back to urlencoded body type
+    /// We will reuse the old ids to avoid unnecessary changes
+    pub id: Option<UrlencodedParamId>,
 }
 
 /// @category Type
@@ -214,4 +219,7 @@ pub struct AddFormDataParamParams {
     pub order: isize,
     pub description: Option<String>,
     pub options: FormDataParamOptions,
+    /// This field should be provided when the frontend switches back to formdata body type
+    /// We will reuse the old ids to avoid unnecessary changes
+    pub id: Option<FormDataParamId>,
 }
