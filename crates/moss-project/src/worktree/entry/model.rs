@@ -123,7 +123,6 @@ pub struct FormDataParamSpecOptions {
     pub propagate: bool,
 }
 
-// TODO: Could raw content like text and xml contain expressions to be evaluated?
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BodySpec {
     #[serde(skip_serializing_if = "Option::is_none")]
