@@ -5,7 +5,7 @@ use moss_applib::AppRuntime;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;
 
-use crate::models::primitives::{Direction, LanguageId};
+use crate::models::primitives::{LanguageDirection, LanguageId};
 
 #[async_trait]
 pub trait LanguageRegistry: Send + Sync {
@@ -19,7 +19,7 @@ pub struct LanguageRegistryItem {
     pub identifier: LanguageId,
     pub display_name: String,
     pub code: String,
-    pub direction: Option<Direction>,
+    pub direction: Option<LanguageDirection>,
     pub path: PathBuf,
 }
 

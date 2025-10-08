@@ -3,7 +3,7 @@
 /**
  * @category Primitive
  */
-export type Direction = "ltr" | "rtl";
+export type LanguageDirection = "ltr" | "rtl";
 
 /**
  * @category Primitive

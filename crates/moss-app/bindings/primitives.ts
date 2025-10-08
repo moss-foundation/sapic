@@ -3,9 +3,4 @@
 /**
  * @category Primitive
  */
-export type Direction = "ltr" | "rtl";
-
-/**
- * @category Primitive
- */
 export type LogLevel = "TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR";

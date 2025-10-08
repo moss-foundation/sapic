@@ -11,7 +11,7 @@ pub struct LanguageId(Arc<String>);
 /// @category Primitive
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "primitives.ts")]
-pub enum Direction {
+pub enum LanguageDirection {
     #[serde(rename = "ltr")]
     LtR,
     #[serde(rename = "rtl")]

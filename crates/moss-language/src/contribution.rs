@@ -1,4 +1,4 @@
-use crate::models::primitives::{Direction, LanguageId};
+use crate::models::primitives::{LanguageDirection, LanguageId};
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
@@ -7,6 +7,6 @@ pub struct LanguageContributionDecl {
     pub identifier: LanguageId,
     pub display_name: String,
     pub code: String,
-    pub direction: Option<Direction>,
+    pub direction: Option<LanguageDirection>,
     pub path: String,
 }
