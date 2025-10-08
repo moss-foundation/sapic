@@ -187,7 +187,7 @@ async fn create_item_entry_endpoint() {
             name: "header1".to_string(),
             value: JsonValue::String("value1".to_string()),
             order: 42,
-            desc: Some("description".to_string()),
+            description: Some("description".to_string()),
             options: HeaderParamOptions {
                 disabled: false,
                 propagate: false,
@@ -197,7 +197,7 @@ async fn create_item_entry_endpoint() {
             name: "path_param1".to_string(),
             value: JsonValue::String("value1".to_string()),
             order: 42,
-            desc: Some("description".to_string()),
+            description: Some("description".to_string()),
             options: PathParamOptions {
                 disabled: false,
                 propagate: false,
@@ -207,7 +207,7 @@ async fn create_item_entry_endpoint() {
             name: "query_param1".to_string(),
             value: JsonValue::String("value1".to_string()),
             order: 42,
-            desc: Some("description".to_string()),
+            description: Some("description".to_string()),
             options: QueryParamOptions {
                 disabled: false,
                 propagate: false,

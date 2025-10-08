@@ -192,7 +192,7 @@ impl<R: AppRuntime> Project<R> {
                 HeaderParamSpec {
                     name: param.name.clone(),
                     value,
-                    description: param.desc.clone(),
+                    description: param.description.clone(),
                     options: HeaderParamSpecOptions {
                         disabled: param.options.disabled,
                         propagate: param.options.propagate,
@@ -213,7 +213,7 @@ impl<R: AppRuntime> Project<R> {
                 PathParamSpec {
                     name: param.name.clone(),
                     value,
-                    description: param.desc.clone(),
+                    description: param.description.clone(),
                     options: PathParamSpecOptions {
                         disabled: param.options.disabled,
                         propagate: param.options.propagate,
@@ -234,7 +234,7 @@ impl<R: AppRuntime> Project<R> {
                 QueryParamSpec {
                     name: param.name.clone(),
                     value,
-                    description: param.desc.clone(),
+                    description: param.description.clone(),
                     options: QueryParamSpecOptions {
                         disabled: param.options.disabled,
                         propagate: param.options.propagate,

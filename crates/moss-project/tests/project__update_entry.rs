@@ -405,7 +405,7 @@ async fn update_item_entry_endpoint_headers() {
             name: "1".to_string(),
             value: JsonValue::String("1".to_string()),
             order: 1,
-            desc: Some("1".to_string()),
+            description: Some("1".to_string()),
             options: HeaderParamOptions {
                 disabled: false,
                 propagate: false,
@@ -437,7 +437,7 @@ async fn update_item_entry_endpoint_headers() {
                     name: Some("2".to_string()),
                     value: Some(ChangeJsonValue::Update(JsonValue::String("2".to_string()))),
                     order: Some(2),
-                    desc: Some(ChangeString::Update("2".to_string())),
+                    description: Some(ChangeString::Update("2".to_string())),
                     options: Some(HeaderParamOptions {
                         disabled: true,
                         propagate: true,
@@ -509,7 +509,7 @@ async fn update_item_entry_endpoint_headers() {
                     name: "3".to_string(),
                     value: JsonValue::String("3".to_string()),
                     order: 3,
-                    desc: Some("3".to_string()),
+                    description: Some("3".to_string()),
                     options: HeaderParamOptions {
                         disabled: false,
                         propagate: false,
@@ -557,7 +557,7 @@ async fn update_item_entry_endpoint_path_params() {
             name: "1".to_string(),
             value: JsonValue::String("1".to_string()),
             order: 1,
-            desc: Some("1".to_string()),
+            description: Some("1".to_string()),
             options: PathParamOptions {
                 disabled: false,
                 propagate: false,
@@ -591,7 +591,7 @@ async fn update_item_entry_endpoint_path_params() {
                     name: Some("2".to_string()),
                     value: Some(ChangeJsonValue::Update(JsonValue::String("2".to_string()))),
                     order: Some(2),
-                    desc: Some(ChangeString::Update("2".to_string())),
+                    description: Some(ChangeString::Update("2".to_string())),
                     options: Some(PathParamOptions {
                         disabled: true,
                         propagate: true,
@@ -662,7 +662,7 @@ async fn update_item_entry_endpoint_path_params() {
                     name: "3".to_string(),
                     value: JsonValue::String("3".to_string()),
                     order: 3,
-                    desc: Some("3".to_string()),
+                    description: Some("3".to_string()),
                     options: PathParamOptions {
                         disabled: false,
                         propagate: false,
@@ -708,7 +708,7 @@ async fn update_item_entry_endpoint_query_params() {
             name: "1".to_string(),
             value: JsonValue::String("1".to_string()),
             order: 1,
-            desc: Some("1".to_string()),
+            description: Some("1".to_string()),
             options: QueryParamOptions {
                 disabled: false,
                 propagate: false,
@@ -744,7 +744,7 @@ async fn update_item_entry_endpoint_query_params() {
                     name: Some("2".to_string()),
                     value: Some(ChangeJsonValue::Update(JsonValue::String("2".to_string()))),
                     order: Some(2),
-                    desc: Some(ChangeString::Update("2".to_string())),
+                    description: Some(ChangeString::Update("2".to_string())),
                     options: Some(QueryParamOptions {
                         disabled: true,
                         propagate: true,
@@ -815,7 +815,7 @@ async fn update_item_entry_endpoint_query_params() {
                     name: "3".to_string(),
                     value: JsonValue::String("3".to_string()),
                     order: 3,
-                    desc: Some("3".to_string()),
+                    description: Some("3".to_string()),
                     options: QueryParamOptions {
                         disabled: false,
                         propagate: false,

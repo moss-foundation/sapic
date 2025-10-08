@@ -9,7 +9,7 @@ export type AddHeaderParams = {
   name: string;
   value: JsonValue;
   order: number;
-  desc?: string;
+  description?: string;
   options: HeaderParamOptions;
 };
 
@@ -20,7 +20,7 @@ export type AddPathParamParams = {
   name: string;
   value: JsonValue;
   order: number;
-  desc?: string;
+  description?: string;
   options: PathParamOptions;
 };
 
@@ -31,7 +31,7 @@ export type AddQueryParamParams = {
   name: string;
   value: JsonValue;
   order: number;
-  desc?: string;
+  description?: string;
   options: QueryParamOptions;
 };
 
@@ -147,7 +147,7 @@ export type UpdateHeaderParams = {
   name?: string;
   value?: ChangeJsonValue;
   order?: number;
-  desc?: ChangeString;
+  description?: ChangeString;
   options?: HeaderParamOptions;
 };
 
@@ -190,7 +190,7 @@ export type UpdatePathParamParams = {
   name?: string;
   value?: ChangeJsonValue;
   order?: number;
-  desc?: ChangeString;
+  description?: ChangeString;
   options?: PathParamOptions;
 };
 
@@ -207,7 +207,7 @@ export type UpdateQueryParamParams = {
   name?: string;
   value?: ChangeJsonValue;
   order?: number;
-  desc?: ChangeString;
+  description?: ChangeString;
   options?: QueryParamOptions;
 };
 
