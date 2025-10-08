@@ -30,11 +30,13 @@ export const useNodeAddForm = (parentNode: ProjectTreeNode | ProjectTreeRootNode
     });
 
     try {
+      setIsAddingFileNode(false);
+      setIsAddingFolderNode(false);
+
       await createProjectEntry({
         projectId: id,
         input: newEntry,
       });
-
       await updateProjectEntry({
         projectId: id,
         updatedEntry: {

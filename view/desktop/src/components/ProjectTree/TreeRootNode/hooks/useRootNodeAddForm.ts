@@ -26,6 +26,9 @@ export const useRootNodeAddForm = (node: ProjectTreeRootNode) => {
     });
 
     try {
+      setIsAddingRootFileNode(false);
+      setIsAddingRootFolderNode(false);
+
       await createProjectEntry({
         projectId: id,
         input: newEntry,

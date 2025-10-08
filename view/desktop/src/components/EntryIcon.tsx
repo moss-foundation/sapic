@@ -23,7 +23,7 @@ export const EntryIcon = ({ entry, className }: EntryIconProps) => {
 
   return (
     <div className="relative">
-      <span className={cn(defaultProtocolClassName, "size-[18px] text-(--moss-gray-4)", className)}>
+      <span className={cn(defaultProtocolClassName, "size-[18px] shrink-0 text-(--moss-gray-4)", className)}>
         {entry.protocol}
       </span>
     </div>
