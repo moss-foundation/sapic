@@ -8,7 +8,8 @@ use ts_rs::TS;
 use validator::{Validate, ValidationError};
 
 use crate::models::primitives::{
-    EntryClass, EntryId, EntryProtocol, FrontendEntryPath, HeaderId, PathParamId, QueryParamId,
+    EntryClass, EntryId, EntryProtocol, FormDataParamId, FrontendEntryPath, HeaderId, PathParamId,
+    QueryParamId, UrlencodedParamId,
 };
 
 /// @category Type
@@ -31,6 +32,7 @@ pub struct CreateItemEntryParams {
     pub headers: Vec<AddHeaderParams>,
     pub path_params: Vec<AddPathParamParams>,
     pub query_params: Vec<AddQueryParamParams>,
+    pub body: Option<AddBodyParams>,
 }
 
 /// @category Type
@@ -184,6 +186,51 @@ pub struct QueryParamInfo {
     pub disabled: bool,
     pub propagate: bool,
     pub order: Option<isize>,
+}
+
+/// @category Type
+#[derive(Clone, Debug, PartialEq, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct UrlencodedParamInfo {
+    pub id: UrlencodedParamId,
+    pub name: String,
+    #[ts(type = "JsonValue")]
+    pub value: JsonValue,
+    pub description: Option<String>,
+    pub disabled: bool,
+    pub propagate: bool,
+    pub order: Option<isize>,
+}
+
+/// @category Type
+#[derive(Clone, Debug, PartialEq, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct FormDataParamInfo {
+    pub id: FormDataParamId,
+    pub name: String,
+    #[ts(type = "JsonValue")]
+    pub value: JsonValue,
+    pub description: Option<String>,
+    pub disabled: bool,
+    pub propagate: bool,
+    pub order: Option<isize>,
+}
+
+/// @category Type
+#[derive(Clone, Debug, PartialEq, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub enum BodyInfo {
+    Text(String),
+    Json(#[ts(type = "JsonValue")] JsonValue),
+    Xml(String),
+    Binary(PathBuf),
+    Urlencoded(Vec<UrlencodedParamInfo>),
+    FormData(Vec<FormDataParamInfo>),
 }
 
 // Check that input path begins with a valid top folder

@@ -1,5 +1,5 @@
 use hcl::ser::LabeledBlock;
-use indexmap::IndexMap;
+use indexmap::{IndexMap, indexmap};
 use moss_applib::{AppRuntime, errors::ValidationResultExt};
 use moss_common::continue_if_err;
 use moss_hcl::{Block, json_to_hcl};
@@ -12,19 +12,22 @@ use crate::{
     models::{
         operations::CreateEntryOutput,
         primitives::{
-            EntryClass, EntryId, EntryProtocol, FrontendEntryPath, HeaderId, PathParamId,
-            QueryParamId,
+            EntryClass, EntryId, EntryProtocol, FormDataParamId, FrontendEntryPath, HeaderId,
+            PathParamId, QueryParamId, UrlencodedParamId,
         },
         types::{
             AfterUpdateDirEntryDescription, AfterUpdateItemEntryDescription, CreateDirEntryParams,
             CreateItemEntryParams, UpdateDirEntryParams, UpdateItemEntryParams,
+            http::AddBodyParams,
         },
     },
     worktree::{
         ModifyParams,
         entry::model::{
-            EntryMetadataSpec, EntryModel, HeaderParamSpec, HeaderParamSpecOptions, PathParamSpec,
+            BodyKind, BodySpec, EntryMetadataSpec, EntryModel, FormDataParamSpec,
+            FormDataParamSpecOptions, HeaderParamSpec, HeaderParamSpecOptions, PathParamSpec,
             PathParamSpecOptions, QueryParamSpec, QueryParamSpecOptions, UrlDetails,
+            UrlencodedParamSpec, UrlencodedParamSpecOptions,
         },
     },
 };
@@ -76,7 +79,7 @@ impl<R: AppRuntime> Project<R> {
                     headers: None, // Hardcoded for now
                     path_params: None,
                     query_params: None,
-                    body: None, // HACK: hardcoded for now, fix before merging
+                    body: None,
                 };
                 self.worktree()
                     .await
@@ -181,6 +184,8 @@ impl<R: AppRuntime> Project<R> {
         let mut path_param_orders = HashMap::new();
         let mut query_param_map = IndexMap::new();
         let mut query_param_orders = HashMap::new();
+        let mut urlencoded_param_orders = HashMap::new();
+        let mut formdata_param_orders = HashMap::new();
 
         for param in &input.headers {
             let id = HeaderId::new();
@@ -224,6 +229,100 @@ impl<R: AppRuntime> Project<R> {
             path_param_orders.insert(id.clone(), param.order.clone());
         }
 
+        let body = if let Some(body_params) = input.body {
+            let (kind, spec) = match body_params {
+                AddBodyParams::Text(text) => (
+                    BodyKind::Text,
+                    BodySpec {
+                        text: Some(text),
+                        ..Default::default()
+                    },
+                ),
+                AddBodyParams::Json(json) => (
+                    BodyKind::Json,
+                    BodySpec {
+                        json: Some(json),
+                        ..Default::default()
+                    },
+                ),
+                AddBodyParams::Xml(xml) => (
+                    BodyKind::Xml,
+                    BodySpec {
+                        xml: Some(xml),
+                        ..Default::default()
+                    },
+                ),
+                AddBodyParams::Binary(path) => (
+                    BodyKind::Binary,
+                    BodySpec {
+                        binary: Some(path),
+                        ..Default::default()
+                    },
+                ),
+                AddBodyParams::Urlencoded(urlencoded) => {
+                    let mut urlencoded_map = IndexMap::with_capacity(urlencoded.len());
+                    for param in urlencoded {
+                        let id = UrlencodedParamId::new();
+                        let value = continue_if_err!(json_to_hcl(&param.value), |err| {
+                            session::error!("failed to convert value expression: {}", err)
+                        });
+
+                        urlencoded_map.insert(
+                            id.clone(),
+                            UrlencodedParamSpec {
+                                name: param.name,
+                                value,
+                                description: param.description,
+                                options: UrlencodedParamSpecOptions {
+                                    disabled: param.options.disabled,
+                                    propagate: param.options.propagate,
+                                },
+                            },
+                        );
+                        urlencoded_param_orders.insert(id.clone(), param.order);
+                    }
+                    let spec = BodySpec {
+                        urlencoded: Some(LabeledBlock::new(urlencoded_map)),
+                        ..Default::default()
+                    };
+                    (BodyKind::Urlencoded, spec)
+                }
+                AddBodyParams::FormData(form_data) => {
+                    let mut formdata_map = IndexMap::with_capacity(form_data.len());
+                    for param in form_data {
+                        let id = FormDataParamId::new();
+                        let value = continue_if_err!(json_to_hcl(&param.value), |err| {
+                            session::error!("failed to convert value expression: {}", err)
+                        });
+
+                        formdata_map.insert(
+                            id.clone(),
+                            FormDataParamSpec {
+                                name: param.name,
+                                value,
+                                description: param.description,
+                                options: FormDataParamSpecOptions {
+                                    disabled: param.options.disabled,
+                                    propagate: param.options.propagate,
+                                },
+                            },
+                        );
+                        formdata_param_orders.insert(id.clone(), param.order);
+                    }
+                    let spec = BodySpec {
+                        form_data: Some(LabeledBlock::new(formdata_map)),
+                        ..Default::default()
+                    };
+                    (BodyKind::FormData, spec)
+                }
+            };
+            Some(LabeledBlock::new(indexmap! {
+                kind => spec
+            }))
+        } else {
+            None
+        };
+
         for param in &input.query_params {
             let id = QueryParamId::new();
             let value = continue_if_err!(json_to_hcl(&param.value), |err| {
@@ -261,7 +360,7 @@ impl<R: AppRuntime> Project<R> {
             },
             path_params: Some(LabeledBlock::new(path_param_map)),
             query_params: Some(LabeledBlock::new(query_param_map)),
-            body: None, // HACK: hardcoded for now, fix before merging
+            body,
         };
 
         self.worktree()
@@ -271,7 +370,11 @@ impl<R: AppRuntime> Project<R> {
 
         let output = CreateEntryOutput { id: id.clone() };
 
-        if header_orders.is_empty() && path_param_orders.is_empty() && query_param_orders.is_empty()
+        if header_orders.is_empty()
+            && path_param_orders.is_empty()
+            && query_param_orders.is_empty()
+            && urlencoded_param_orders.is_empty()
+            && formdata_param_orders.is_empty()
         {
             return Ok(output);
         }
@@ -314,6 +417,43 @@ impl<R: AppRuntime> Project<R> {
                     .await,
                 |err| {
                     session::error!(format!("failed to put query param order: {}", err));
+                }
+            )
+        }
+
+        for (urlencoded_param_id, order) in urlencoded_param_orders {
+            continue_if_err!(
+                self.storage_service
+                    .put_entry_body_urlencoded_param_order_txn(
+                        ctx,
+                        &mut txn,
+                        &id,
+                        &urlencoded_param_id,
+                        order,
+                    )
+                    .await,
+                |err| {
+                    session::error!(format!(
+                        "failed to put entry body urlencoded param order: {}",
+                        err
+                    ));
+                }
+            )
+        }
+
+        for (formdata_param_id, order) in formdata_param_orders {
+            continue_if_err!(
+                self.storage_service
+                    .put_entry_body_formdata_param_order_txn(
+                        ctx,
+                        &mut txn,
+                        &id,
+                        &formdata_param_id,
+                        order,
+                    )
+                    .await,
+                |err| {
+                    session::error!(format!("failed to put entry formdata param order: {}", err));
                 }
             )
         }

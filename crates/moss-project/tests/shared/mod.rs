@@ -141,6 +141,7 @@ pub async fn create_test_component_item_entry(
                 query_params: vec![],
                 path_params: vec![],
                 headers: vec![],
+                body: None,
             }),
         )
         .await

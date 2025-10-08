@@ -1,6 +1,8 @@
 pub mod entry;
 
 use anyhow::anyhow;
+use hcl::ser::LabeledBlock;
+use indexmap::IndexMap;
 use joinerror::{Error, OptionExt};
 use json_patch::{
     AddOperation, PatchOperation, RemoveOperation, ReplaceOperation, jsonptr::PointerBuf,
@@ -37,7 +39,8 @@ use crate::{
         operations::DescribeEntryOutput,
         primitives::{EntryId, EntryKind, EntryProtocol, HeaderId, PathParamId, QueryParamId},
         types::{
-            HeaderInfo, PathParamInfo, QueryParamInfo,
+            BodyInfo, FormDataParamInfo, HeaderInfo, PathParamInfo, QueryParamInfo,
+            UrlencodedParamInfo,
             http::{
                 AddHeaderParams, AddPathParamParams, AddQueryParamParams, UpdateHeaderParams,
                 UpdatePathParamParams, UpdateQueryParamParams,
@@ -47,6 +50,7 @@ use crate::{
     storage::{
         StorageService, segments,
         segments::{
+            segkey_entry_body_formdata_param_order, segkey_entry_body_urlencoded_param_order,
             segkey_entry_header_order, segkey_entry_path_param_order,
             segkey_entry_query_param_order,
         },
@@ -55,7 +59,7 @@ use crate::{
         Entry, EntryDescription,
         edit::EntryEditing,
         model::{
-            EntryModel, HeaderParamSpec, HeaderParamSpecOptions, PathParamSpec,
+            BodyKind, BodySpec, EntryModel, HeaderParamSpec, HeaderParamSpecOptions, PathParamSpec,
             PathParamSpecOptions, QueryParamSpec, QueryParamSpecOptions,
         },
     },
@@ -697,6 +701,7 @@ impl<R: AppRuntime> Worktree<R> {
                 headers: vec![],
                 path_params: vec![],
                 query_params: vec![],
+                body: None,
             });
         } else if item_config_path.exists() {
             let entry_keys = self
@@ -775,6 +780,12 @@ impl<R: AppRuntime> Worktree<R> {
                 }
             }
 
+            let body_info = if let Some(body) = model.body {
+                describe_body(id, body, &entry_keys).await
+            } else {
+                None
+            };
+
             return Ok(DescribeEntryOutput {
                 name: desanitize(&name),
                 class,
@@ -784,6 +795,7 @@ impl<R: AppRuntime> Worktree<R> {
                 headers: header_infos,
                 path_params: path_param_infos,
                 query_params: query_param_infos,
+                body: body_info,
             });
         } else {
             return Err(Error::new::<()>("cannot find entry config"));
@@ -1699,4 +1711,77 @@ async fn process_file(
 ) -> joinerror::Result<Option<(Entry, EntryDescription)>> {
     // TODO: implement
     Ok(None)
+}
+// HACK: When deserializing heredoc strings, hcl-rs always seems to append a trailing '\n'
+// A custom deserialization function for these fields will apparently mess up with the overall process
+// Thus we have to do the stripping at this point
+fn strip_extra_newline(text: &str) -> String {
+    if let Some(stripped) = text.strip_suffix("\n") {
+        stripped.to_string()
+    } else {
+        text.to_string()
+    }
+}
+
+async fn describe_body(
+    entry_id: &EntryId,
+    body: LabeledBlock<IndexMap<BodyKind, BodySpec>>,
+    entry_keys: &HashMap<SegKeyBuf, AnyValue>,
+) -> Option<BodyInfo> {
+    let (kind, spec) = body
+        .iter()
+        .map(|(kind, spec)| (kind, spec.clone()))
+        .next()?;
+
+    let inner = match kind {
+        BodyKind::Text => BodyInfo::Text(strip_extra_newline(&spec.text?)),
+        BodyKind::Json => BodyInfo::Json(spec.json?),
+        BodyKind::Xml => BodyInfo::Xml(strip_extra_newline(&spec.xml?)),
+        BodyKind::Binary => BodyInfo::Binary(spec.binary?),
+        BodyKind::Urlencoded => {
+            let mut param_infos = Vec::new();
+            for (param_id, param_spec) in spec.urlencoded?.into_inner() {
+                let value = continue_if_err!(hcl_to_json(&param_spec.value), |err| {
+                    session::error!("failed to convert value expression: {}", err)
+                });
+
+                param_infos.push(UrlencodedParamInfo {
+                    id: param_id.clone(),
+                    name: param_spec.name,
+                    value,
+                    description: param_spec.description,
+                    disabled: param_spec.options.disabled,
+                    propagate: param_spec.options.propagate,
+                    order: entry_keys
+                        .get(&segkey_entry_body_urlencoded_param_order(
+                            entry_id, &param_id,
+                        ))
+                        .and_then(|value| value.deserialize().ok()),
+                });
+            }
+            BodyInfo::Urlencoded(param_infos)
+        }
+        BodyKind::FormData => {
+            let mut param_infos = Vec::new();
+            for (param_id, param_spec) in spec.form_data?.into_inner() {
+                let value = continue_if_err!(hcl_to_json(&param_spec.value), |err| {
+                    session::error!("failed to convert value expression: {}", err)
+                });
+
+                param_infos.push(FormDataParamInfo {
+                    id: param_id.clone(),
+                    name: param_spec.name,
+                    value,
+                    description: param_spec.description,
+                    disabled: param_spec.options.disabled,
+                    propagate: param_spec.options.propagate,
+                    order: entry_keys
+                        .get(&segkey_entry_body_formdata_param_order(entry_id, &param_id))
+                        .and_then(|value| value.deserialize().ok()),
+                });
+            }
+            BodyInfo::FormData(param_infos)
+        }
+    };
+    Some(inner)
 }

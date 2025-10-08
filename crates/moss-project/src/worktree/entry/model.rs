@@ -2,8 +2,7 @@ use hcl::Expression;
 use indexmap::IndexMap;
 use moss_hcl::{
     Block, LabeledBlock, deserialize_expression, expression,
-    heredoc::{serialize_option_jsonvalue_as_heredoc, serialize_option_string_as_heredoc},
-    serialize_expression,
+    heredoc::serialize_option_string_as_heredoc, serialize_expression,
 };
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::Value as JsonValue;
@@ -85,38 +84,14 @@ pub struct QueryParamSpec {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct FormDataParamSpec {
-    pub name: String,
-    // multipart/form-data can be used both for data and files
-    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/POST#multipart_form_submission
-    pub value: Option<FormDataParamValue>,
-    pub description: Option<String>,
-    pub options: FormDataParamSpecOptions,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum FormDataParamValue {
-    #[serde(
-        serialize_with = "serialize_expression",
-        deserialize_with = "deserialize_expression"
-    )]
-    #[serde(rename = "text")]
-    Text(Expression),
-
-    #[serde(rename = "path")]
-    Binary(PathBuf),
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct FormDataParamSpecOptions {
-    pub disabled: bool,
-    pub propagate: bool,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UrlencodedParamSpec {
     pub name: String,
-    pub value: Option<Expression>,
+    #[serde(
+        serialize_with = "serialize_expression",
+        deserialize_with = "deserialize_expression",
+        skip_serializing_if = "expression::is_null"
+    )]
+    pub value: Expression,
     pub description: Option<String>,
     pub options: UrlencodedParamSpecOptions,
 }
@@ -128,13 +103,34 @@ pub struct UrlencodedParamSpecOptions {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FormDataParamSpec {
+    pub name: String,
+    // multipart/form-data can contain both data and files
+    // We will use functions to support files
+    #[serde(
+        serialize_with = "serialize_expression",
+        deserialize_with = "deserialize_expression",
+        skip_serializing_if = "expression::is_null"
+    )]
+    pub value: Expression,
+    pub description: Option<String>,
+    pub options: FormDataParamSpecOptions,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FormDataParamSpecOptions {
+    pub disabled: bool,
+    pub propagate: bool,
+}
+
+// TODO: Could raw content like text and xml contain expressions to be evaluated?
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BodySpec {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(serialize_with = "serialize_option_string_as_heredoc")]
     pub text: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(serialize_with = "serialize_option_jsonvalue_as_heredoc")]
     pub json: Option<JsonValue>,
 
     // TODO: Find a way to fully support xml
@@ -325,6 +321,10 @@ mod tests {
                 }
             })),
             body: Some(LabeledBlock::new(indexmap! {
+                BodyKind::Text => BodySpec {
+                    text: Some("foo".to_string()),
+                    ..Default::default()
+                },
                 BodyKind::Json => BodySpec {
                     json: Some(json!({
                         "text": "text",
@@ -332,24 +332,33 @@ mod tests {
                     })),
                     ..Default::default()
                 },
+                BodyKind::Xml => BodySpec {
+                    xml: Some(r#"<?xml version="1.0" encoding="UTF-8"?>"#.to_string()),
+                    ..Default::default()
+                },
+                BodyKind::Binary => BodySpec {
+                    binary: Some(PathBuf::from("foo/bar.txt")),
+                    ..Default::default()
+                },
+                BodyKind::Urlencoded => BodySpec {
+                    urlencoded: Some(LabeledBlock::new(indexmap! {
+                        UrlencodedParamId::new() => UrlencodedParamSpec {
+                            name: "urlencoded_param1".to_string(),
+                            value: Expression::String("value1".to_string()),
+                            description: None,
+                            options: UrlencodedParamSpecOptions {
+                                disabled: false,
+                                propagate: false,
+                            }
+                        }
+                    })),
+                    ..Default::default()
+                },
                 BodyKind::FormData => BodySpec {
                     form_data: Some(LabeledBlock::new(indexmap! {
                         FormDataParamId::new() => FormDataParamSpec {
-                            name: "form_data_text".to_string(),
-                            value: Some(FormDataParamValue::Text(
-                                Expression::String("text".to_string())
-                            )),
-                            description: None,
-                            options: FormDataParamSpecOptions {
-                                disabled: false,
-                                propagate: true
-                            }
-                        },
-                        FormDataParamId::new() => FormDataParamSpec {
-                            name: "form_data_file".to_string(),
-                            value: Some(FormDataParamValue::Binary(
-                                PathBuf::from("foo/bar.txt")
-                            )),
+                            name: "form_data_param1".to_string(),
+                            value: Expression::String("value1".to_string()),
                             description: None,
                             options: FormDataParamSpecOptions {
                                 disabled: false,

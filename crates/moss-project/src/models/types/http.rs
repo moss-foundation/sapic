@@ -1,6 +1,7 @@
 use moss_bindingutils::primitives::{ChangeJsonValue, ChangeString};
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
+use std::path::PathBuf;
 use ts_rs::TS;
 use validator::Validate;
 
@@ -154,4 +155,63 @@ pub struct UpdatePathParamParams {
     #[ts(optional, type = "ChangeString")]
     pub desc: Option<ChangeString>,
     pub options: Option<PathParamOptions>,
+}
+
+/// @category Type
+#[derive(Clone, Debug, Deserialize, Serialize, TS)]
+#[ts(export, export_to = "types.ts")]
+#[serde(rename_all = "camelCase")]
+pub enum AddBodyParams {
+    Text(String),
+    Json(#[ts(type = "JsonValue")] JsonValue),
+    Xml(String),
+    Binary(PathBuf),
+    Urlencoded(Vec<AddUrlencodedParamParams>),
+    FormData(Vec<AddFormDataParamParams>),
+}
+
+/// @category Type
+#[derive(Clone, Debug, Deserialize, Serialize, Validate, TS)]
+#[ts(export, export_to = "types.ts")]
+#[serde(rename_all = "camelCase")]
+pub struct UrlencodedParamOptions {
+    pub disabled: bool,
+    pub propagate: bool,
+}
+
+/// @category Type
+#[derive(Clone, Debug, Deserialize, Serialize, Validate, TS)]
+#[ts(export, export_to = "types.ts")]
+#[ts(optional_fields)]
+#[serde(rename_all = "camelCase")]
+pub struct AddUrlencodedParamParams {
+    pub name: String,
+    #[ts(type = "JsonValue")]
+    pub value: JsonValue,
+    pub order: isize,
+    pub description: Option<String>,
+    pub options: UrlencodedParamOptions,
+}
+
+/// @category Type
+#[derive(Clone, Debug, Deserialize, Serialize, Validate, TS)]
+#[ts(export, export_to = "types.ts")]
+#[serde(rename_all = "camelCase")]
+pub struct FormDataParamOptions {
+    pub disabled: bool,
+    pub propagate: bool,
+}
+
+/// @category Type
+#[derive(Clone, Debug, Deserialize, Serialize, Validate, TS)]
+#[ts(export, export_to = "types.ts")]
+#[ts(optional_fields)]
+#[serde(rename_all = "camelCase")]
+pub struct AddFormDataParamParams {
+    pub name: String,
+    #[ts(type = "JsonValue")]
+    pub value: JsonValue,
+    pub order: isize,
+    pub description: Option<String>,
+    pub options: FormDataParamOptions,
 }

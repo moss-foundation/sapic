@@ -1,6 +1,7 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
+use crate::shared::{RESOURCES_ROOT_DIR, create_test_project, random_entry_name};
 use moss_project::{
     constants, dirs,
     errors::ErrorAlreadyExists,
@@ -8,10 +9,11 @@ use moss_project::{
         operations::CreateEntryInput,
         primitives::{EntryClass, EntryKind, EntryProtocol},
         types::{
-            CreateDirEntryParams, CreateItemEntryParams,
+            BodyInfo, CreateDirEntryParams, CreateItemEntryParams,
             http::{
-                AddHeaderParams, AddPathParamParams, AddQueryParamParams, HeaderParamOptions,
-                PathParamOptions, QueryParamOptions,
+                AddBodyParams, AddFormDataParamParams, AddHeaderParams, AddPathParamParams,
+                AddQueryParamParams, AddUrlencodedParamParams, FormDataParamOptions,
+                HeaderParamOptions, PathParamOptions, QueryParamOptions, UrlencodedParamOptions,
             },
         },
     },
@@ -20,10 +22,8 @@ use moss_project::{
 use moss_storage::storage::operations::GetItem;
 use moss_testutils::fs_specific::FILENAME_SPECIAL_CHARS;
 use moss_text::sanitized::sanitize;
-use serde_json::Value as JsonValue;
+use serde_json::{Value as JsonValue, json};
 use std::path::PathBuf;
-
-use crate::shared::{RESOURCES_ROOT_DIR, create_test_project, random_entry_name};
 
 #[tokio::test]
 async fn create_dir_entry_success() {
@@ -213,6 +213,7 @@ async fn create_item_entry_endpoint() {
                 propagate: false,
             },
         }],
+        body: None,
     });
 
     let result = project.create_entry(&ctx, input).await;
@@ -263,6 +264,298 @@ async fn create_item_entry_endpoint() {
     assert_eq!(query_param.description, Some("description".to_string()));
     assert!(!query_param.disabled);
     assert!(!query_param.propagate);
+
+    // Cleanup
+    std::fs::remove_dir_all(project_path).unwrap();
+}
+
+#[tokio::test]
+async fn create_item_entry_body_text() {
+    let (ctx, _, project_path, project) = create_test_project().await;
+
+    let entry_name = random_entry_name();
+    let entry_path = PathBuf::from("");
+    let text = r#"Test
+Multiline
+String"#;
+    let input = CreateEntryInput::Item(CreateItemEntryParams {
+        path: entry_path.clone(),
+        class: EntryClass::Endpoint,
+        name: entry_name.clone(),
+        order: 0,
+        protocol: Some(EntryProtocol::Get),
+        headers: vec![],
+        path_params: vec![],
+        query_params: vec![],
+        body: Some(AddBodyParams::Text(text.to_string())),
+    });
+
+    let result = project.create_entry(&ctx, input).await;
+    let id = result.unwrap().id;
+
+    let body_desc = project
+        .describe_entry(&ctx, id)
+        .await
+        .unwrap()
+        .body
+        .unwrap();
+    assert_eq!(body_desc, BodyInfo::Text(text.to_string()));
+
+    // Cleanup
+    std::fs::remove_dir_all(project_path).unwrap();
+}
+
+#[tokio::test]
+async fn create_item_entry_body_json() {
+    let (ctx, _, project_path, project) = create_test_project().await;
+
+    let entry_name = random_entry_name();
+    let entry_path = PathBuf::from("");
+    let json = json!({
+        "foo": 1,
+        "bar": [2, 3],
+        "baz": {"4": "5"}
+    });
+    let input = CreateEntryInput::Item(CreateItemEntryParams {
+        path: entry_path.clone(),
+        class: EntryClass::Endpoint,
+        name: entry_name.clone(),
+        order: 0,
+        protocol: Some(EntryProtocol::Get),
+        headers: vec![],
+        path_params: vec![],
+        query_params: vec![],
+        body: Some(AddBodyParams::Json(json.clone())),
+    });
+
+    let result = project.create_entry(&ctx, input).await;
+    let id = result.unwrap().id;
+
+    let body_desc = project
+        .describe_entry(&ctx, id)
+        .await
+        .unwrap()
+        .body
+        .unwrap();
+    assert_eq!(body_desc, BodyInfo::Json(json));
+
+    // Cleanup
+    std::fs::remove_dir_all(project_path).unwrap();
+}
+
+#[tokio::test]
+async fn create_item_entry_body_xml() {
+    let (ctx, _, project_path, project) = create_test_project().await;
+
+    let entry_name = random_entry_name();
+    let entry_path = PathBuf::from("");
+    let xml = r#""<?xml version="1.0" encoding="UTF-8"?>""#;
+    let input = CreateEntryInput::Item(CreateItemEntryParams {
+        path: entry_path.clone(),
+        class: EntryClass::Endpoint,
+        name: entry_name.clone(),
+        order: 0,
+        protocol: Some(EntryProtocol::Get),
+        headers: vec![],
+        path_params: vec![],
+        query_params: vec![],
+        body: Some(AddBodyParams::Xml(xml.to_string())),
+    });
+
+    let result = project.create_entry(&ctx, input).await;
+    let id = result.unwrap().id;
+
+    let body_desc = project
+        .describe_entry(&ctx, id)
+        .await
+        .unwrap()
+        .body
+        .unwrap();
+    assert_eq!(body_desc, BodyInfo::Xml(xml.to_string()));
+
+    // Cleanup
+    std::fs::remove_dir_all(project_path).unwrap();
+}
+
+#[tokio::test]
+async fn create_item_entry_body_binary() {
+    let (ctx, _, project_path, project) = create_test_project().await;
+
+    let entry_name = random_entry_name();
+    let entry_path = PathBuf::from("");
+    let binary = PathBuf::from("foo/bar.txt");
+    let input = CreateEntryInput::Item(CreateItemEntryParams {
+        path: entry_path.clone(),
+        class: EntryClass::Endpoint,
+        name: entry_name.clone(),
+        order: 0,
+        protocol: Some(EntryProtocol::Get),
+        headers: vec![],
+        path_params: vec![],
+        query_params: vec![],
+        body: Some(AddBodyParams::Binary(binary.clone())),
+    });
+
+    let result = project.create_entry(&ctx, input).await;
+    let id = result.unwrap().id;
+
+    let body_desc = project
+        .describe_entry(&ctx, id)
+        .await
+        .unwrap()
+        .body
+        .unwrap();
+    assert_eq!(body_desc, BodyInfo::Binary(binary));
+
+    // Cleanup
+    std::fs::remove_dir_all(project_path).unwrap();
+}
+
+#[tokio::test]
+async fn create_item_entry_body_urlencoded() {
+    let (ctx, _, project_path, project) = create_test_project().await;
+
+    let entry_name = random_entry_name();
+    let entry_path = PathBuf::from("");
+    let params = vec![
+        AddUrlencodedParamParams {
+            name: "param1".to_string(),
+            value: JsonValue::String("value1".to_string()),
+            order: 1,
+            description: Some("description".to_string()),
+            options: UrlencodedParamOptions {
+                disabled: false,
+                propagate: false,
+            },
+        },
+        AddUrlencodedParamParams {
+            name: "param2".to_string(),
+            value: JsonValue::String("value2".to_string()),
+            order: 2,
+            description: Some("description".to_string()),
+            options: UrlencodedParamOptions {
+                disabled: false,
+                propagate: false,
+            },
+        },
+    ];
+    let input = CreateEntryInput::Item(CreateItemEntryParams {
+        path: entry_path.clone(),
+        class: EntryClass::Endpoint,
+        name: entry_name.clone(),
+        order: 0,
+        protocol: Some(EntryProtocol::Get),
+        headers: vec![],
+        path_params: vec![],
+        query_params: vec![],
+        body: Some(AddBodyParams::Urlencoded(params)),
+    });
+    let result = project.create_entry(&ctx, input).await;
+    let id = result.unwrap().id;
+
+    let body_desc = project
+        .describe_entry(&ctx, id)
+        .await
+        .unwrap()
+        .body
+        .unwrap();
+
+    match body_desc {
+        BodyInfo::Urlencoded(urlencoded) => {
+            assert!(urlencoded.iter().any(|param| {
+                param.name == "param1"
+                    && param.value == JsonValue::String("value1".to_string())
+                    && param.order == Some(1)
+                    && param.description.as_deref() == Some("description")
+                    && !param.propagate
+                    && !param.disabled
+            }));
+            assert!(urlencoded.iter().any(|param| {
+                param.name == "param2"
+                    && param.value == JsonValue::String("value2".to_string())
+                    && param.order == Some(2)
+                    && param.description.as_deref() == Some("description")
+                    && !param.propagate
+                    && !param.disabled
+            }));
+        }
+        _ => panic!("incorrect body type"),
+    }
+
+    // Cleanup
+    std::fs::remove_dir_all(project_path).unwrap();
+}
+
+#[tokio::test]
+async fn create_item_entry_body_formdata() {
+    let (ctx, _, project_path, project) = create_test_project().await;
+
+    let entry_name = random_entry_name();
+    let entry_path = PathBuf::from("");
+    let params = vec![
+        AddFormDataParamParams {
+            name: "param1".to_string(),
+            value: JsonValue::String("value1".to_string()),
+            order: 1,
+            description: Some("description".to_string()),
+            options: FormDataParamOptions {
+                disabled: false,
+                propagate: false,
+            },
+        },
+        AddFormDataParamParams {
+            name: "param2".to_string(),
+            value: JsonValue::String("value2".to_string()),
+            order: 2,
+            description: Some("description".to_string()),
+            options: FormDataParamOptions {
+                disabled: false,
+                propagate: false,
+            },
+        },
+    ];
+    let input = CreateEntryInput::Item(CreateItemEntryParams {
+        path: entry_path.clone(),
+        class: EntryClass::Endpoint,
+        name: entry_name.clone(),
+        order: 0,
+        protocol: Some(EntryProtocol::Get),
+        headers: vec![],
+        path_params: vec![],
+        query_params: vec![],
+        body: Some(AddBodyParams::FormData(params.clone())),
+    });
+    let result = project.create_entry(&ctx, input).await;
+    let id = result.unwrap().id;
+
+    let body_desc = project
+        .describe_entry(&ctx, id)
+        .await
+        .unwrap()
+        .body
+        .unwrap();
+
+    match body_desc {
+        BodyInfo::FormData(form_data) => {
+            assert!(form_data.iter().any(|param| {
+                param.name == "param1"
+                    && param.value == JsonValue::String("value1".to_string())
+                    && param.order == Some(1)
+                    && param.description.as_deref() == Some("description")
+                    && !param.propagate
+                    && !param.disabled
+            }));
+            assert!(form_data.iter().any(|param| {
+                param.name == "param2"
+                    && param.value == JsonValue::String("value2".to_string())
+                    && param.order == Some(2)
+                    && param.description.as_deref() == Some("description")
+                    && !param.propagate
+                    && !param.disabled
+            }));
+        }
+        _ => panic!("incorrect body type"),
+    }
 
     // Cleanup
     std::fs::remove_dir_all(project_path).unwrap();

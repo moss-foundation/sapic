@@ -413,6 +413,7 @@ async fn update_item_entry_endpoint_headers() {
         }],
         path_params: vec![],
         query_params: vec![],
+        body: None,
     });
 
     let id = project.create_entry(&ctx, input).await.unwrap().id;
@@ -564,6 +565,7 @@ async fn update_item_entry_endpoint_path_params() {
             },
         }],
         query_params: vec![],
+        body: None,
     });
 
     let id = project.create_entry(&ctx, input).await.unwrap().id;
@@ -714,6 +716,7 @@ async fn update_item_entry_endpoint_query_params() {
                 propagate: false,
             },
         }],
+        body: None,
     });
 
     let id = project.create_entry(&ctx, input).await.unwrap().id;
