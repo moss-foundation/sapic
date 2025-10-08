@@ -1,9 +1,6 @@
-import { useContext } from "react";
-
 import { Tree } from "@/lib/ui/Tree";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 
-import { ProjectTreeContext } from "../ProjectTreeContext";
 import TreeNode from "../TreeNode/TreeNode";
 import { ProjectTreeRootNode } from "../types";
 import { getChildrenNames } from "../utils";
@@ -24,8 +21,6 @@ export const TreeRootNodeChildren = ({
   handleAddFormRootSubmit,
   handleAddFormRootCancel,
 }: TreeRootNodeChildrenProps) => {
-  const { nodeOffset } = useContext(ProjectTreeContext);
-
   const shouldRenderAddRootForm = isAddingRootFileNode || isAddingRootFolderNode;
   const restrictedNames = getChildrenNames(node);
 
