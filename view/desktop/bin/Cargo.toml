@@ -44,6 +44,7 @@ moss_configuration.workspace = true
 moss_extension_points.workspace = true
 moss_language.workspace = true
 
+inventory.workspace = true
 reqwest.workspace = true
 tauri = { workspace = true, features = ["wry", "macos-private-api", "objc-exception"] }
 tauri-plugin-fs = "2.3.0"

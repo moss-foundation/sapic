@@ -13,8 +13,8 @@ export const initializeI18n = async (languageCode: string) => {
       .init({
         lng: languageCode,
         fallbackLng: "en",
-        ns: ["ns1", "ns2"],
-        defaultNS: "ns1",
+        ns: ["main", "bootstrap"],
+        defaultNS: "main",
         interpolation: {
           escapeValue: false,
         },

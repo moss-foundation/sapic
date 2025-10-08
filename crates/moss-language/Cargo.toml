@@ -15,3 +15,5 @@ ts-rs.workspace = true
 derive_more = { workspace = true, features = ["display", "deref"] }
 async-trait.workspace = true
 tokio.workspace = true
+inventory.workspace = true
+rustc-hash.workspace = true

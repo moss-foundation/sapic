@@ -30,7 +30,10 @@ use moss_git_hosting_provider::{
     },
 };
 use moss_keyring::KeyringClientImpl;
-use moss_language::registry::{AppLanguageRegistry, LanguageRegistry};
+use moss_language::{
+    RegisterTranslationContribution,
+    registry::{AppLanguageRegistry, LanguageRegistry},
+};
 use moss_project::registries::{
     http_headers::{AppHttpHeaderRegistry, HttpHeaderRegistry},
     resource_statuses::{AppResourceStatusRegistry, ResourceStatusRegistry},
@@ -50,6 +53,10 @@ use tauri_plugin_os;
 use window::{CreateWindowInput, create_window};
 
 use crate::{constants::*, plugins::*};
+
+inventory::submit! {
+    RegisterTranslationContribution(include_str!(concat!(env!("OUT_DIR"), "/main.i18n.json")))
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub async fn run<R: TauriRuntime>() {

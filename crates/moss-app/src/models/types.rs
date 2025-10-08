@@ -72,8 +72,8 @@ pub struct LocaleInfo {
     pub code: String,
     #[ts(optional, type = "LanguageDirection")]
     pub direction: Option<LanguageDirection>,
-    pub order: Option<isize>,
-    pub is_default: Option<bool>,
+    pub order: Option<isize>,     // DEPRECATED: remove before merging
+    pub is_default: Option<bool>, // DEPRECATED: remove before merging
 }
 
 /// @category Type

@@ -7,7 +7,7 @@ import { useDescribeApp } from "@/hooks/app/useDescribeApp";
 import { Section } from "../Section";
 
 export const LanguageSection = () => {
-  const { t } = useTranslation(["ns1", "ns2"]);
+  const { t } = useTranslation(["main", "bootstrap"]);
 
   const { data: appState } = useDescribeApp();
   const { data: languages } = useListLocales();
