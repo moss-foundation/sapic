@@ -290,7 +290,6 @@ export const useMonitorParamsRows = () => {
         }
 
         const dropType = calculateDropType(sourceData, dropTargetData);
-        console.log("dropType", dropType);
         switch (dropType) {
           case "WithinQueryList":
             handleWithinQueryList(sourceData, dropTargetData);
