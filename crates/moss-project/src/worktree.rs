@@ -826,7 +826,7 @@ impl<R: AppRuntime> Worktree<R> {
             }
 
             let body_info = if let Some(body) = model.body {
-                describe_body(id, app_delegate, body, &entry_keys).await
+                describe_body(app_delegate, id, body, &entry_keys).await
             } else {
                 None
             };
@@ -1797,16 +1797,6 @@ async fn process_file(
     // TODO: implement
     Ok(None)
 }
-// HACK: When deserializing heredoc strings, hcl-rs always seems to append a trailing '\n'
-// A custom deserialization function for these fields will apparently mess up with the overall process
-// Thus we have to do the stripping at this point
-fn strip_extra_newline(text: &str) -> String {
-    if let Some(stripped) = text.strip_suffix("\n") {
-        stripped.to_string()
-    } else {
-        text.to_string()
-    }
-}
 
 async fn describe_body<R: AppRuntime>(
     app_delegate: &AppDelegate<R>,
@@ -1820,9 +1810,9 @@ async fn describe_body<R: AppRuntime>(
         .next()?;
 
     let inner = match kind {
-        BodyKind::Text => BodyInfo::Text(strip_extra_newline(&spec.text?)),
+        BodyKind::Text => BodyInfo::Text(spec.text?),
         BodyKind::Json => BodyInfo::Json(spec.json?),
-        BodyKind::Xml => BodyInfo::Xml(strip_extra_newline(&spec.xml?)),
+        BodyKind::Xml => BodyInfo::Xml(spec.xml?),
         BodyKind::Binary => BodyInfo::Binary(spec.binary?),
         BodyKind::Urlencoded => {
             let mut param_infos = Vec::new();

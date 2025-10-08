@@ -172,7 +172,7 @@ async fn create_dir_entry_special_chars_in_name() {
 
 #[tokio::test]
 async fn create_item_entry_endpoint() {
-    let (ctx, _, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, project) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let entry_name = random_entry_name();
@@ -231,7 +231,10 @@ async fn create_item_entry_endpoint() {
 
     // Verify the config is correctly set
 
-    let desc = project.describe_entry(&ctx, id).await.unwrap();
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id)
+        .await
+        .unwrap();
 
     assert_eq!(desc.name, entry_name);
     assert_eq!(desc.class, EntryClass::Endpoint);
@@ -269,9 +272,11 @@ async fn create_item_entry_endpoint() {
     std::fs::remove_dir_all(project_path).unwrap();
 }
 
+// Note: deserialization of heredoc strings will append a newline character at the end
+// This will probably need to be handled on the frontend.
 #[tokio::test]
 async fn create_item_entry_body_text() {
-    let (ctx, _, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, project) = create_test_project().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from("");
@@ -294,12 +299,12 @@ String"#;
     let id = result.unwrap().id;
 
     let body_desc = project
-        .describe_entry(&ctx, id)
+        .describe_entry(&ctx, &app_delegate, id)
         .await
         .unwrap()
         .body
         .unwrap();
-    assert_eq!(body_desc, BodyInfo::Text(text.to_string()));
+    assert_eq!(body_desc, BodyInfo::Text(text.to_string() + "\n"));
 
     // Cleanup
     std::fs::remove_dir_all(project_path).unwrap();
@@ -307,7 +312,7 @@ String"#;
 
 #[tokio::test]
 async fn create_item_entry_body_json() {
-    let (ctx, _, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, project) = create_test_project().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from("");
@@ -332,7 +337,7 @@ async fn create_item_entry_body_json() {
     let id = result.unwrap().id;
 
     let body_desc = project
-        .describe_entry(&ctx, id)
+        .describe_entry(&ctx, &app_delegate, id)
         .await
         .unwrap()
         .body
@@ -345,7 +350,7 @@ async fn create_item_entry_body_json() {
 
 #[tokio::test]
 async fn create_item_entry_body_xml() {
-    let (ctx, _, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, project) = create_test_project().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from("");
@@ -366,12 +371,12 @@ async fn create_item_entry_body_xml() {
     let id = result.unwrap().id;
 
     let body_desc = project
-        .describe_entry(&ctx, id)
+        .describe_entry(&ctx, &app_delegate, id)
         .await
         .unwrap()
         .body
         .unwrap();
-    assert_eq!(body_desc, BodyInfo::Xml(xml.to_string()));
+    assert_eq!(body_desc, BodyInfo::Xml(xml.to_string() + "\n"));
 
     // Cleanup
     std::fs::remove_dir_all(project_path).unwrap();
@@ -379,7 +384,7 @@ async fn create_item_entry_body_xml() {
 
 #[tokio::test]
 async fn create_item_entry_body_binary() {
-    let (ctx, _, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, project) = create_test_project().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from("");
@@ -400,7 +405,7 @@ async fn create_item_entry_body_binary() {
     let id = result.unwrap().id;
 
     let body_desc = project
-        .describe_entry(&ctx, id)
+        .describe_entry(&ctx, &app_delegate, id)
         .await
         .unwrap()
         .body
@@ -413,7 +418,7 @@ async fn create_item_entry_body_binary() {
 
 #[tokio::test]
 async fn create_item_entry_body_urlencoded() {
-    let (ctx, _, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, project) = create_test_project().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from("");
@@ -454,7 +459,7 @@ async fn create_item_entry_body_urlencoded() {
     let id = result.unwrap().id;
 
     let body_desc = project
-        .describe_entry(&ctx, id)
+        .describe_entry(&ctx, &app_delegate, id)
         .await
         .unwrap()
         .body
@@ -488,7 +493,7 @@ async fn create_item_entry_body_urlencoded() {
 
 #[tokio::test]
 async fn create_item_entry_body_formdata() {
-    let (ctx, _, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, project) = create_test_project().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from("");
@@ -529,7 +534,7 @@ async fn create_item_entry_body_formdata() {
     let id = result.unwrap().id;
 
     let body_desc = project
-        .describe_entry(&ctx, id)
+        .describe_entry(&ctx, &app_delegate, id)
         .await
         .unwrap()
         .body
