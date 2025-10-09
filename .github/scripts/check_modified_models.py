@@ -16,8 +16,11 @@ CRATES_WITH_BINDINGS = {
     "bindingutils",
     "api",
     "git",
-    "git-hosting-provider",
     "user"
+    "language",
+    "configuration",
+    "theme",
+
 }
 
 if __name__ == "__main__":
