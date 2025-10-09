@@ -4,6 +4,7 @@ import { entryClassSchema, entryKindSchema, entryProtocolSchema } from "./primit
 import {
   afterUpdateDirEntryDescriptionSchema,
   afterUpdateItemEntryDescriptionSchema,
+  bodyInfoSchema,
   createDirEntryParamsSchema,
   createItemEntryParamsSchema,
   headerInfoSchema,
@@ -87,6 +88,7 @@ export const describeEntryOutputSchema = z.object({
   headers: z.array(headerInfoSchema),
   pathParams: z.array(pathParamInfoSchema),
   queryParams: z.array(queryParamInfoSchema),
+  body: bodyInfoSchema.optional(),
 });
 
 export const executeVcsOperationInputSchema = z.object({

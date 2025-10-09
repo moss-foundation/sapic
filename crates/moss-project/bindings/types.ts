@@ -5,11 +5,33 @@ import type { EntryClass, EntryPath, EntryProtocol } from "./primitives";
 /**
  * @category Type
  */
+export type AddBodyParams =
+  | { "text": string }
+  | { "json": JsonValue }
+  | { "xml": string }
+  | { "binary": string }
+  | { "urlencoded": Array<AddUrlencodedParamParams> }
+  | { "formData": Array<AddFormDataParamParams> };
+
+/**
+ * @category Type
+ */
+export type AddFormDataParamParams = {
+  name: string;
+  value: JsonValue;
+  order: number;
+  description?: string;
+  options: FormDataParamOptions;
+};
+
+/**
+ * @category Type
+ */
 export type AddHeaderParams = {
   name: string;
   value: JsonValue;
   order: number;
-  desc?: string;
+  description?: string;
   options: HeaderParamOptions;
 };
 
@@ -20,7 +42,7 @@ export type AddPathParamParams = {
   name: string;
   value: JsonValue;
   order: number;
-  desc?: string;
+  description?: string;
   options: PathParamOptions;
 };
 
@@ -31,8 +53,19 @@ export type AddQueryParamParams = {
   name: string;
   value: JsonValue;
   order: number;
-  desc?: string;
+  description?: string;
   options: QueryParamOptions;
+};
+
+/**
+ * @category Type
+ */
+export type AddUrlencodedParamParams = {
+  name: string;
+  value: JsonValue;
+  order: number;
+  description?: string;
+  options: UrlencodedParamOptions;
 };
 
 /**
@@ -44,6 +77,17 @@ export type AfterUpdateDirEntryDescription = { id: string; path: EntryPath };
  * @category Type
  */
 export type AfterUpdateItemEntryDescription = { id: string; path: EntryPath };
+
+/**
+ * @category Type
+ */
+export type BodyInfo =
+  | { "text": string }
+  | { "json": JsonValue }
+  | { "xml": string }
+  | { "binary": string }
+  | { "urlencoded": Array<UrlencodedParamInfo> }
+  | { "formData": Array<FormDataParamInfo> };
 
 /**
  * @category Type
@@ -62,7 +106,26 @@ export type CreateItemEntryParams = {
   headers: Array<AddHeaderParams>;
   pathParams: Array<AddPathParamParams>;
   queryParams: Array<AddQueryParamParams>;
+  body?: AddBodyParams;
 };
+
+/**
+ * @category Type
+ */
+export type FormDataParamInfo = {
+  id: string;
+  name: string;
+  value: JsonValue;
+  description?: string;
+  disabled: boolean;
+  propagate: boolean;
+  order?: number;
+};
+
+/**
+ * @category Type
+ */
+export type FormDataParamOptions = { disabled: boolean; propagate: boolean };
 
 /**
  * @category Type
@@ -147,7 +210,7 @@ export type UpdateHeaderParams = {
   name?: string;
   value?: ChangeJsonValue;
   order?: number;
-  desc?: ChangeString;
+  description?: ChangeString;
   options?: HeaderParamOptions;
 };
 
@@ -190,7 +253,7 @@ export type UpdatePathParamParams = {
   name?: string;
   value?: ChangeJsonValue;
   order?: number;
-  desc?: ChangeString;
+  description?: ChangeString;
   options?: PathParamOptions;
 };
 
@@ -207,9 +270,27 @@ export type UpdateQueryParamParams = {
   name?: string;
   value?: ChangeJsonValue;
   order?: number;
-  desc?: ChangeString;
+  description?: ChangeString;
   options?: QueryParamOptions;
 };
+
+/**
+ * @category Type
+ */
+export type UrlencodedParamInfo = {
+  id: string;
+  name: string;
+  value: JsonValue;
+  description?: string;
+  disabled: boolean;
+  propagate: boolean;
+  order?: number;
+};
+
+/**
+ * @category Type
+ */
+export type UrlencodedParamOptions = { disabled: boolean; propagate: boolean };
 
 /**
  * @category Type

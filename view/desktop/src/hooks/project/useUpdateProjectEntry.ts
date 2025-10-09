@@ -2,6 +2,7 @@ import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { StreamEntriesEvent, UpdateEntryInput, UpdateEntryOutput } from "@repo/moss-project";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { USE_DESCRIBE_PROJECT_ENTRY_QUERY_KEY } from "./useDescribeProjectEntry";
 import { USE_STREAM_PROJECT_ENTRIES_QUERY_KEY } from "./useStreamProjectEntries";
 
 export interface UseUpdateProjectEntryInput {
@@ -48,6 +49,18 @@ export const useUpdateProjectEntry = () => {
           });
         }
       );
+
+      if ("ITEM" in data) {
+        queryClient.invalidateQueries({
+          queryKey: [USE_DESCRIBE_PROJECT_ENTRY_QUERY_KEY, variables.projectId, data.ITEM.id],
+        });
+      }
+
+      if ("DIR" in data) {
+        queryClient.invalidateQueries({
+          queryKey: [USE_DESCRIBE_PROJECT_ENTRY_QUERY_KEY, variables.projectId, data.DIR.id],
+        });
+      }
     },
   });
 };

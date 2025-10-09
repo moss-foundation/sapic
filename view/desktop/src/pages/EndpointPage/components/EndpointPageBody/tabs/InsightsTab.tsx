@@ -1,6 +1,3 @@
-import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
-import { EndpointPageProps } from "@/pages/EndpointPage/EndpointPage";
-
-export const InsightsTab = ({ ...props }: IDockviewPanelProps<EndpointPageProps>) => {
+export const InsightsTab = () => {
   return <div>InsightsTab</div>;
 };

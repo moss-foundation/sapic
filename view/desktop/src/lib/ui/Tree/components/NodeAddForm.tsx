@@ -1,14 +1,16 @@
 import { useRef, useState } from "react";
 
 import { useFocusInputOnMount, useValidateInput } from "@/hooks";
+import { cn } from "@/utils";
 
 interface NodeRenamingFormProps {
   onSubmit: (name: string) => void;
   onCancel: () => void;
   restrictedNames?: string[];
+  className?: string;
 }
 
-export const NodeAddForm = ({ onSubmit, onCancel, restrictedNames }: NodeRenamingFormProps) => {
+export const NodeAddForm = ({ onSubmit, onCancel, restrictedNames, className }: NodeRenamingFormProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [value, setValue] = useState("");
@@ -49,7 +51,7 @@ export const NodeAddForm = ({ onSubmit, onCancel, restrictedNames }: NodeRenamin
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full grow">
+    <form onSubmit={handleSubmit} className={cn("h-full w-full grow py-1 pr-1", className)}>
       <input
         ref={inputRef}
         value={value}
@@ -57,7 +59,7 @@ export const NodeAddForm = ({ onSubmit, onCancel, restrictedNames }: NodeRenamin
         autoFocus
         minLength={1}
         maxLength={100}
-        className="relative flex w-[calc(100%-3px)] min-w-0 grow items-center gap-1 rounded-xs bg-white"
+        className="relative flex h-full w-[calc(100%-3px)] min-w-0 grow items-center rounded-xs bg-white py-0.5 focus-visible:outline-1 focus-visible:outline-offset-0 focus-visible:outline-(--moss-primary)"
         onKeyUp={handleKeyUp}
         onBlur={handleBlur}
         required
