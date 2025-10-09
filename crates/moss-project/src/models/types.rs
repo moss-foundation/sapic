@@ -92,7 +92,7 @@ pub struct UpdateItemEntryParams {
 pub enum UpdateBodyParams {
     Remove,
     Text(String),
-    Json(JsonValue),
+    Json(#[ts(type = "JsonValue")] JsonValue),
     Xml(String),
     Binary(PathBuf),
     Urlencoded {
