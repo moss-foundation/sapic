@@ -19,7 +19,7 @@ export const useRootNodeAddForm = (node: ProjectTreeRootNode) => {
     const newEntry = createEntryKind({
       name: newName,
       path: "",
-      class: "Endpoint",
+      class: "endpoint",
       isAddingFolder: isAddingRootFolderNode,
       order: node.childNodes.length + 1,
       protocol: "Get",

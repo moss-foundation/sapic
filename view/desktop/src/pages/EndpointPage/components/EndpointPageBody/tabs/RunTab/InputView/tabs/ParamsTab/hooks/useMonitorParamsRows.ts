@@ -172,7 +172,7 @@ export const useMonitorParamsRows = () => {
         name: newPathParam.name,
         value: newPathParam.value,
         order: newPathParam.order,
-        desc: newPathParam.description,
+        description: newPathParam.description,
         options: {
           disabled: newPathParam.disabled,
           propagate: newPathParam.propagate,
@@ -259,7 +259,7 @@ export const useMonitorParamsRows = () => {
         name: newQueryParam.name,
         value: newQueryParam.value,
         order: newQueryParam.order,
-        desc: newQueryParam.description,
+        description: newQueryParam.description,
         options: {
           disabled: newQueryParam.disabled,
           propagate: newQueryParam.propagate,

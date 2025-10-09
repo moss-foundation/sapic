@@ -32,7 +32,6 @@ export const useDraggableNode = ({
   parentNode,
   triggerRef,
   dropTargetListRef,
-  isLastChild,
   setPreview,
 }: UseDraggableNodeProps) => {
   const { id } = useContext(ProjectTreeContext);
