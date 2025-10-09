@@ -42,5 +42,5 @@
     }
   },
   "include": ["./src", "eslint.config.js"],
-  "exclude": ["node_modules", "dist", "lib", "**/*.test.ts", "**/*.spec.ts", "**/*.test.tsx", "**/*.spec.tsx"]
+  "exclude": ["node_modules", "**/*.test.ts", "**/*.spec.ts", "**/*.test.tsx", "**/*.spec.tsx"]
 }
