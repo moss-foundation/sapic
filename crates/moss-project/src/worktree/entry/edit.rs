@@ -134,4 +134,22 @@ impl EntryEditing {
 
         Ok(())
     }
+
+    // HACK: We need to get compare the type of existing body and body update params
+    // Since we'll remove the old type block when switching to a new body type
+    // Thus we need to parse the body model during body patching
+    pub async fn model(&self, abs_path: &Path) -> joinerror::Result<EntryModel> {
+        let state_lock = self.state.read().await;
+
+        let abs_path = abs_path.join(&state_lock.path.join(&self.config_filename));
+        let rdr = self
+            .fs
+            .open_file(&abs_path)
+            .await
+            .join_err_with::<()>(|| format!("failed to open file: {}", abs_path.display()))?;
+
+        let model: EntryModel = hcl::from_reader(rdr).join_err::<()>("failed to parse json")?;
+
+        Ok(model)
+    }
 }

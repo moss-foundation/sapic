@@ -223,3 +223,35 @@ pub struct AddFormDataParamParams {
     /// We will reuse the old ids to avoid unnecessary changes
     pub id: Option<FormDataParamId>,
 }
+
+/// @category Type
+#[derive(Clone, Debug, Deserialize, Serialize, Validate, TS)]
+#[ts(export, export_to = "types.ts")]
+#[ts(optional_fields)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateUrlencodedParamParams {
+    pub id: UrlencodedParamId,
+    pub name: Option<String>,
+    #[ts(optional, type = "ChangeJsonValue")]
+    pub value: Option<ChangeJsonValue>,
+    pub order: Option<isize>,
+    #[ts(optional, type = "ChangeString")]
+    pub description: Option<ChangeString>,
+    pub options: Option<UrlencodedParamOptions>,
+}
+
+/// @category Type
+#[derive(Clone, Debug, Deserialize, Serialize, Validate, TS)]
+#[ts(export, export_to = "types.ts")]
+#[ts(optional_fields)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateFormDataParamParams {
+    pub id: FormDataParamId,
+    pub name: Option<String>,
+    #[ts(optional, type = "ChangeJsonValue")]
+    pub value: Option<ChangeJsonValue>,
+    pub order: Option<isize>,
+    #[ts(optional, type = "ChangeString")]
+    pub description: Option<ChangeString>,
+    pub options: Option<FormDataParamOptions>,
+}

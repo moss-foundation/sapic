@@ -178,4 +178,23 @@ where
     }
 }
 
+#[async_trait]
+impl<Context> RemoveByPrefix<Context> for CollectionResourceStoreImpl
+where
+    Context: AnyAsyncContext,
+{
+    type Key = SegKeyBuf;
+    type Entity = AnyValue;
+    async fn remove_by_prefix(
+        &self,
+        ctx: &Context,
+        prefix: &str,
+    ) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>> {
+        let mut txn = self.client.begin_write_with_context(ctx).await?;
+        self.table
+            .remove_by_prefix_with_context(ctx, &mut txn, prefix)
+            .await
+    }
+}
+
 impl<Context: AnyAsyncContext> CollectionResourceStore<Context> for CollectionResourceStoreImpl {}

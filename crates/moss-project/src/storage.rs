@@ -8,7 +8,9 @@ use moss_storage::{
     CollectionStorage,
     collection_storage::CollectionStorageImpl,
     primitives::segkey::SegKeyBuf,
-    storage::operations::{GetItem, ListByPrefix, TransactionalPutItem, TransactionalRemoveItem},
+    storage::operations::{
+        GetItem, ListByPrefix, RemoveByPrefix, TransactionalPutItem, TransactionalRemoveItem,
+    },
 };
 use std::{collections::HashMap, path::Path, sync::Arc};
 
@@ -186,6 +188,21 @@ impl<R: AppRuntime> StorageService<R> {
         Ok(())
     }
 
+    pub async fn remove_entry_body_urlencoded_param_order_txn(
+        &self,
+        ctx: &R::AsyncContext,
+        txn: &mut Transaction,
+        entry_id: &EntryId,
+        param_id: &UrlencodedParamId,
+    ) -> Result<()> {
+        let store = self.storage.resource_store();
+
+        let segkey = segments::segkey_entry_body_urlencoded_param_order(entry_id, param_id);
+        TransactionalRemoveItem::remove(store.as_ref(), ctx, txn, segkey).await?;
+
+        Ok(())
+    }
+
     pub async fn put_entry_body_formdata_param_order_txn(
         &self,
         ctx: &R::AsyncContext,
@@ -209,6 +226,33 @@ impl<R: AppRuntime> StorageService<R> {
         Ok(())
     }
 
+    pub async fn remove_entry_body_formdata_param_order_txn(
+        &self,
+        ctx: &R::AsyncContext,
+        txn: &mut Transaction,
+        entry_id: &EntryId,
+        param_id: &FormDataParamId,
+    ) -> Result<()> {
+        let store = self.storage.resource_store();
+
+        let segkey = segments::segkey_entry_body_formdata_param_order(entry_id, param_id);
+        TransactionalRemoveItem::remove(store.as_ref(), ctx, txn, segkey).await?;
+
+        Ok(())
+    }
+
+    pub async fn remove_entry_body_cache(
+        &self,
+        ctx: &R::AsyncContext,
+        entry_id: &EntryId,
+    ) -> Result<()> {
+        let store = self.storage.resource_store();
+
+        let segkey = segments::segkey_entry_body(entry_id);
+        RemoveByPrefix::remove_by_prefix(store.as_ref(), ctx, &segkey.to_string()).await?;
+
+        Ok(())
+    }
     pub async fn get_all_entry_keys(
         &self,
         ctx: &R::AsyncContext,

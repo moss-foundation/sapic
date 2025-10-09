@@ -1,4 +1,4 @@
-use hcl::{HeredocStripMode, Identifier};
+use hcl::{Heredoc, HeredocStripMode, Identifier};
 use serde::{Serialize, Serializer};
 
 const INDENT: &'static str = "  ";
@@ -11,6 +11,11 @@ fn indent(content: &str) -> String {
         .map(|l| format!("{INDENT}{l}"))
         .collect::<Vec<_>>()
         .join("\n")
+}
+
+pub fn convert_string_to_heredoc(expr: &str) -> Heredoc {
+    let indented = indent(expr);
+    Heredoc::new(Identifier::from(DELIMITER), indented).with_strip_mode(HeredocStripMode::Indent)
 }
 
 /// Serialize String as an HCL heredoc String
@@ -26,9 +31,7 @@ pub fn serialize_string_as_heredoc<S>(expr: &str, serializer: S) -> Result<S::Ok
 where
     S: Serializer,
 {
-    let indented = indent(expr);
-    let heredoc = hcl::expr::Heredoc::new(Identifier::from(DELIMITER), indented)
-        .with_strip_mode(HeredocStripMode::Indent);
+    let heredoc = convert_string_to_heredoc(expr);
     heredoc.serialize(serializer)
 }
 
@@ -43,5 +46,20 @@ where
     match option {
         Some(value) => serialize_string_as_heredoc(value, serializer),
         None => serializer.serialize_none(),
+    }
+}
+
+// Properly handling patching of heredoc strings
+// We need to convert them into json value
+
+pub trait ToJsonValue {
+    fn to_json_value(&self) -> Result<serde_json::Value, serde_json::Error>;
+}
+
+impl ToJsonValue for Heredoc {
+    fn to_json_value(&self) -> Result<serde_json::Value, serde_json::Error> {
+        let mut buffer = Vec::new();
+        self.serialize(&mut serde_json::Serializer::new(&mut buffer))?;
+        serde_json::from_slice(buffer.as_slice())
     }
 }

@@ -81,7 +81,35 @@ pub struct UpdateItemEntryParams {
     pub query_params_to_add: Vec<AddQueryParamParams>,
     pub query_params_to_update: Vec<UpdateQueryParamParams>,
     pub query_params_to_remove: Vec<QueryParamId>,
+
+    pub body: Option<UpdateBodyParams>,
 }
+
+/// @category Type
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub enum UpdateBodyParams {
+    Remove,
+    Text(String),
+    Json(JsonValue),
+    Xml(String),
+    Binary(PathBuf),
+    Urlencoded {
+        params_to_add: Vec<AddUrlencodedParamParams>,
+        params_to_update: Vec<UpdateUrlencodedParamParams>,
+        params_to_remove: Vec<UrlencodedParamId>,
+    },
+    FormData {
+        params_to_add: Vec<AddFormDataParamParams>,
+        params_to_update: Vec<UpdateFormDataParamParams>,
+        params_to_remove: Vec<FormDataParamId>,
+    },
+}
+
+// Text => Urlencoded
+// Update(Urlencoded {})
+// Update(Urlencoded {...})
 
 /// @category Type
 #[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]

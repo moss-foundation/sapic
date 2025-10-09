@@ -14,11 +14,15 @@ use moss_common::{continue_if_err, continue_if_none};
 use moss_db::primitives::AnyValue;
 use moss_edit::json::EditOptions;
 use moss_fs::{CreateOptions, FileSystem, RemoveOptions, desanitize_path, utils::SanitizedPath};
-use moss_hcl::{HclResultExt, hcl_to_json, json_to_hcl};
+use moss_hcl::{
+    HclResultExt, hcl_to_json,
+    heredoc::{ToJsonValue, convert_string_to_heredoc},
+    json_to_hcl,
+};
 use moss_logging::session;
 use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_text::sanitized::{desanitize, sanitize};
-use serde_json::Value as JsonValue;
+use serde_json::{Value as JsonValue, json};
 use std::{
     collections::{HashMap, HashSet},
     fmt::Debug,
@@ -37,10 +41,13 @@ use crate::{
     errors::{ErrorAlreadyExists, ErrorInvalidInput, ErrorNotFound},
     models::{
         operations::DescribeEntryOutput,
-        primitives::{EntryId, EntryKind, EntryProtocol, HeaderId, PathParamId, QueryParamId},
+        primitives::{
+            EntryId, EntryKind, EntryProtocol, FormDataParamId, HeaderId, PathParamId,
+            QueryParamId, UrlencodedParamId,
+        },
         types::{
             BodyInfo, FormDataParamInfo, HeaderInfo, PathParamInfo, QueryParamInfo,
-            UrlencodedParamInfo,
+            UpdateBodyParams, UrlencodedParamInfo,
             http::{
                 AddHeaderParams, AddPathParamParams, AddQueryParamParams, UpdateHeaderParams,
                 UpdatePathParamParams, UpdateQueryParamParams,
@@ -59,8 +66,9 @@ use crate::{
         Entry, EntryDescription,
         edit::EntryEditing,
         model::{
-            BodyKind, BodySpec, EntryModel, HeaderParamSpec, HeaderParamSpecOptions, PathParamSpec,
-            PathParamSpecOptions, QueryParamSpec, QueryParamSpecOptions,
+            BodyKind, BodySpec, EntryModel, FormDataParamSpec, FormDataParamSpecOptions,
+            HeaderParamSpec, HeaderParamSpecOptions, PathParamSpec, PathParamSpecOptions,
+            QueryParamSpec, QueryParamSpecOptions, UrlencodedParamSpec, UrlencodedParamSpecOptions,
         },
     },
 };
@@ -99,13 +107,15 @@ pub(crate) struct ModifyParams {
     pub headers_to_update: Vec<UpdateHeaderParams>,
     pub headers_to_remove: Vec<HeaderId>,
 
+    pub path_params_to_add: Vec<AddPathParamParams>,
+    pub path_params_to_update: Vec<UpdatePathParamParams>,
+    pub path_params_to_remove: Vec<PathParamId>,
+
     pub query_params_to_add: Vec<AddQueryParamParams>,
     pub query_params_to_update: Vec<UpdateQueryParamParams>,
     pub query_params_to_remove: Vec<QueryParamId>,
 
-    pub path_params_to_add: Vec<AddPathParamParams>,
-    pub path_params_to_update: Vec<UpdatePathParamParams>,
-    pub path_params_to_remove: Vec<PathParamId>,
+    pub body: Option<UpdateBodyParams>,
 }
 
 #[derive(Default)]
@@ -926,6 +936,8 @@ impl<R: AppRuntime> Worktree<R> {
             });
         }
 
+        // TODO: Extract order storage into one database transaction?
+
         for header_to_add in &params.headers_to_add {
             let id = HeaderId::new();
             let id_str = id.to_string();
@@ -1652,6 +1664,24 @@ impl<R: AppRuntime> Worktree<R> {
             });
         }
 
+        if let Some(body) = &params.body {
+            let model = entry
+                .edit
+                .model(&self.abs_path.join(dirs::RESOURCES_DIR))
+                .await?;
+
+            patch_item_body(
+                self,
+                ctx,
+                app_delegate,
+                model,
+                entry.id.clone(),
+                &mut patches,
+                body,
+            )
+            .await?;
+        }
+
         if patches.is_empty() {
             return Ok(());
         }
@@ -1667,6 +1697,605 @@ impl<R: AppRuntime> Worktree<R> {
 
         Ok(())
     }
+}
+
+async fn patch_item_body<R: AppRuntime>(
+    worktree: &Worktree<R>,
+    ctx: &R::AsyncContext,
+    app_delegate: &AppDelegate<R>,
+    model: EntryModel, // We need to pass by value to avoid reference to Entry
+    entry_id: EntryId,
+    patches: &mut Vec<(PatchOperation, EditOptions)>,
+    params: &UpdateBodyParams,
+) -> joinerror::Result<()> {
+    let body_kind = model.body_kind();
+    match params {
+        UpdateBodyParams::Remove => {
+            clear_item_body(worktree, ctx, entry_id, patches).await?;
+        }
+        UpdateBodyParams::Text(text) => {
+            if body_kind.is_some() && body_kind != Some(BodyKind::Text) {
+                clear_item_body(worktree, ctx, entry_id, patches).await?;
+            }
+            // Convert the text into Heredoc for proper json patching
+            let heredoc = convert_string_to_heredoc(&text);
+            let value = heredoc.to_json_value()?;
+
+            patches.push((
+                PatchOperation::Replace(ReplaceOperation {
+                    path: unsafe { PointerBuf::new_unchecked("/body/text/text") },
+                    value,
+                }),
+                EditOptions {
+                    create_missing_segments: true,
+                    ignore_if_not_exists: false,
+                },
+            ));
+        }
+        UpdateBodyParams::Json(json) => {
+            if body_kind.is_some() && body_kind != Some(BodyKind::Json) {
+                clear_item_body(worktree, ctx, entry_id, patches).await?;
+            }
+            patches.push((
+                PatchOperation::Replace(ReplaceOperation {
+                    path: unsafe { PointerBuf::new_unchecked("/body/json/json") },
+                    value: json.clone(),
+                }),
+                EditOptions {
+                    create_missing_segments: true,
+                    ignore_if_not_exists: false,
+                },
+            ));
+        }
+        UpdateBodyParams::Xml(xml) => {
+            if body_kind.is_some() && body_kind != Some(BodyKind::Xml) {
+                clear_item_body(worktree, ctx, entry_id, patches).await?;
+            }
+            // Convert the text into Heredoc for proper json patching
+            let heredoc = convert_string_to_heredoc(&xml);
+            let value = heredoc.to_json_value()?;
+            patches.push((
+                PatchOperation::Replace(ReplaceOperation {
+                    path: unsafe { PointerBuf::new_unchecked("/body/xml/xml") },
+                    value,
+                }),
+                EditOptions {
+                    create_missing_segments: true,
+                    ignore_if_not_exists: false,
+                },
+            ));
+        }
+        UpdateBodyParams::Binary(path) => {
+            if body_kind.is_some() && body_kind != Some(BodyKind::Binary) {
+                clear_item_body(worktree, ctx, entry_id, patches).await?;
+            }
+            patches.push((
+                PatchOperation::Replace(ReplaceOperation {
+                    path: unsafe { PointerBuf::new_unchecked("/body/binary/binary") },
+                    value: JsonValue::String(path.to_string_lossy().to_string()),
+                }),
+                EditOptions {
+                    create_missing_segments: true,
+                    ignore_if_not_exists: false,
+                },
+            ))
+        }
+        UpdateBodyParams::Urlencoded {
+            params_to_add,
+            params_to_update,
+            params_to_remove,
+        } => {
+            let body_block = "/body/x-www-form-urlencoded";
+            if body_kind.is_some() && body_kind != Some(BodyKind::Urlencoded) {
+                clear_item_body(worktree, ctx, entry_id.clone(), patches).await?;
+                // Create the body block even if no parameter is given
+                patches.push((
+                    PatchOperation::Add(AddOperation {
+                        path: unsafe { PointerBuf::new_unchecked(body_block) },
+                        value: json!({}),
+                    }),
+                    EditOptions {
+                        create_missing_segments: true,
+                        ignore_if_not_exists: false,
+                    },
+                ));
+            }
+
+            let mut param_order_updates = HashMap::new();
+            let mut param_order_removes = Vec::new();
+
+            for urlencoded_param_to_add in params_to_add {
+                let id = urlencoded_param_to_add
+                    .id
+                    .clone()
+                    .unwrap_or(UrlencodedParamId::new());
+                let id_str = id.to_string();
+
+                let value = continue_if_err!(json_to_hcl(&urlencoded_param_to_add.value), |err| {
+                    session::error!(format!("failed to convert value expression: {}", err));
+                    let _ = app_delegate.emit_oneshot(ToLocation::Toast {
+                        activity_id: "expression_conversion_error",
+                        title: "Failed to convert value expression".to_string(),
+                        detail: Some(err),
+                    });
+                });
+
+                let spec = UrlencodedParamSpec {
+                    name: urlencoded_param_to_add.name.clone(),
+                    value,
+                    description: urlencoded_param_to_add.description.clone(),
+                    options: UrlencodedParamSpecOptions {
+                        disabled: urlencoded_param_to_add.options.disabled,
+                        propagate: urlencoded_param_to_add.options.propagate,
+                    },
+                };
+
+                let spec_value = continue_if_err!(
+                    serde_json::to_value(&spec).map_err(|err| err.to_string()),
+                    |err| {
+                        session::error!(format!(
+                            "failed to convert urlencoded param spec to json: {}",
+                            err
+                        ));
+                        let _ = app_delegate.emit_oneshot(ToLocation::Toast {
+                            activity_id: "urlencoded_param_spec_conversion_error",
+                            title: "Failed to convert urlencoded param spec to json".to_string(),
+                            detail: Some(err),
+                        });
+                    }
+                );
+
+                patches.push((
+                    PatchOperation::Add(AddOperation {
+                        path: unsafe {
+                            PointerBuf::new_unchecked(format!("{body_block}/urlencoded/{id_str}"))
+                        },
+                        value: spec_value,
+                    }),
+                    EditOptions {
+                        create_missing_segments: true,
+                        ignore_if_not_exists: false,
+                    },
+                ));
+                param_order_updates.insert(id, urlencoded_param_to_add.order);
+            }
+
+            for urlencoded_param_to_update in params_to_update {
+                let id = urlencoded_param_to_update.id.clone();
+                if let Some(new_name) = &urlencoded_param_to_update.name {
+                    patches.push((
+                        PatchOperation::Replace(ReplaceOperation {
+                            path: unsafe {
+                                PointerBuf::new_unchecked(format!(
+                                    "{body_block}/urlencoded/{id}/name"
+                                ))
+                            },
+                            value: JsonValue::String(new_name.clone()),
+                        }),
+                        EditOptions {
+                            create_missing_segments: false,
+                            ignore_if_not_exists: false,
+                        },
+                    ));
+                }
+
+                match &urlencoded_param_to_update.value {
+                    Some(ChangeJsonValue::Update(value)) => {
+                        patches.push((
+                            PatchOperation::Replace(ReplaceOperation {
+                                path: unsafe {
+                                    PointerBuf::new_unchecked(format!(
+                                        "{body_block}/urlencoded/{id}/value"
+                                    ))
+                                },
+                                value: value.clone(),
+                            }),
+                            EditOptions {
+                                create_missing_segments: false,
+                                ignore_if_not_exists: false,
+                            },
+                        ));
+                    }
+                    Some(ChangeJsonValue::Remove) => patches.push((
+                        PatchOperation::Remove(RemoveOperation {
+                            path: unsafe {
+                                PointerBuf::new_unchecked(format!(
+                                    "{body_block}/urlencoded/{id}/value"
+                                ))
+                            },
+                        }),
+                        EditOptions {
+                            create_missing_segments: false,
+                            ignore_if_not_exists: false,
+                        },
+                    )),
+                    _ => {}
+                }
+
+                match &urlencoded_param_to_update.description {
+                    Some(ChangeString::Update(value)) => {
+                        patches.push((
+                            PatchOperation::Replace(ReplaceOperation {
+                                path: unsafe {
+                                    PointerBuf::new_unchecked(format!(
+                                        "{body_block}/urlencoded/{id}/description"
+                                    ))
+                                },
+                                value: JsonValue::String(value.clone()),
+                            }),
+                            EditOptions {
+                                create_missing_segments: false,
+                                ignore_if_not_exists: false,
+                            },
+                        ));
+                    }
+                    Some(ChangeString::Remove) => {
+                        patches.push((
+                            PatchOperation::Remove(RemoveOperation {
+                                path: unsafe {
+                                    PointerBuf::new_unchecked(format!(
+                                        "{body_block}/urlencoded/{id}/description"
+                                    ))
+                                },
+                            }),
+                            EditOptions {
+                                create_missing_segments: false,
+                                ignore_if_not_exists: false,
+                            },
+                        ));
+                    }
+                    _ => {}
+                }
+
+                if let Some(options) = &urlencoded_param_to_update.options {
+                    let options = UrlencodedParamSpecOptions {
+                        disabled: options.disabled,
+                        propagate: options.propagate,
+                    };
+                    let options_value = continue_if_err!(serde_json::to_value(options), |err| {
+                        session::error!(format!("failed to convert options value: {}", err))
+                    });
+
+                    patches.push((
+                        PatchOperation::Replace(ReplaceOperation {
+                            path: unsafe {
+                                PointerBuf::new_unchecked(format!(
+                                    "{body_block}/urlencoded/{id}/options"
+                                ))
+                            },
+                            value: options_value,
+                        }),
+                        EditOptions {
+                            create_missing_segments: false,
+                            ignore_if_not_exists: false,
+                        },
+                    ));
+                }
+
+                if let Some(order) = urlencoded_param_to_update.order {
+                    param_order_updates.insert(id, order);
+                }
+            }
+
+            for id in params_to_remove {
+                patches.push((
+                    PatchOperation::Remove(RemoveOperation {
+                        path: unsafe {
+                            PointerBuf::new_unchecked(format!("{body_block}/urlencoded/{id}"))
+                        },
+                    }),
+                    EditOptions {
+                        create_missing_segments: false,
+                        ignore_if_not_exists: false,
+                    },
+                ));
+                param_order_removes.push(id);
+            }
+
+            // We don't want database failures to stop the operation
+            let mut txn = if let Ok(txn) = worktree.storage.begin_write(ctx).await {
+                txn
+            } else {
+                return Ok(());
+            };
+
+            for (id, order) in param_order_updates {
+                if let Err(e) = worktree
+                    .storage
+                    .put_entry_body_urlencoded_param_order_txn(ctx, &mut txn, &entry_id, &id, order)
+                    .await
+                {
+                    session::error!(format!("failed to update urlencoded param order: {}", e));
+                    return Ok(());
+                }
+            }
+
+            for id in param_order_removes {
+                if let Err(e) = worktree
+                    .storage
+                    .remove_entry_body_urlencoded_param_order_txn(ctx, &mut txn, &entry_id, &id)
+                    .await
+                {
+                    session::error!(format!("failed to remove urlencoded param order: {}", e));
+                    return Ok(());
+                }
+            }
+
+            if let Err(e) = txn.commit() {
+                session::error!(format!("failed to commit transaction: {}", e));
+                return Ok(());
+            }
+        }
+        UpdateBodyParams::FormData {
+            params_to_add,
+            params_to_update,
+            params_to_remove,
+        } => {
+            let body_block = "/body/form-data";
+            if body_kind.is_some() && body_kind != Some(BodyKind::FormData) {
+                clear_item_body(worktree, ctx, entry_id.clone(), patches).await?;
+                // Create the body block even if no parameter is given
+                patches.push((
+                    PatchOperation::Add(AddOperation {
+                        path: unsafe { PointerBuf::new_unchecked(body_block) },
+                        value: json!({}),
+                    }),
+                    EditOptions {
+                        create_missing_segments: true,
+                        ignore_if_not_exists: false,
+                    },
+                ));
+            }
+
+            let mut param_order_updates = HashMap::new();
+            let mut param_order_removes = Vec::new();
+
+            for formdata_param_to_add in params_to_add {
+                let id = formdata_param_to_add
+                    .id
+                    .clone()
+                    .unwrap_or(FormDataParamId::new());
+                let id_str = id.to_string();
+
+                let value = continue_if_err!(json_to_hcl(&formdata_param_to_add.value), |err| {
+                    session::error!(format!("failed to convert value expression: {}", err));
+                    let _ = app_delegate.emit_oneshot(ToLocation::Toast {
+                        activity_id: "expression_conversion_error",
+                        title: "Failed to convert value expression".to_string(),
+                        detail: Some(err),
+                    });
+                });
+
+                let spec = FormDataParamSpec {
+                    name: formdata_param_to_add.name.clone(),
+                    value,
+                    description: formdata_param_to_add.description.clone(),
+                    options: FormDataParamSpecOptions {
+                        disabled: formdata_param_to_add.options.disabled,
+                        propagate: formdata_param_to_add.options.propagate,
+                    },
+                };
+
+                let spec_value = continue_if_err!(
+                    serde_json::to_value(&spec).map_err(|err| err.to_string()),
+                    |err| {
+                        session::error!(format!(
+                            "failed to convert formdata param spec to json: {}",
+                            err
+                        ));
+                        let _ = app_delegate.emit_oneshot(ToLocation::Toast {
+                            activity_id: "formdata_param_spec_conversion_error",
+                            title: "Failed to convert formdata param spec to json".to_string(),
+                            detail: Some(err),
+                        });
+                    }
+                );
+
+                patches.push((
+                    PatchOperation::Add(AddOperation {
+                        path: unsafe {
+                            PointerBuf::new_unchecked(format!("{body_block}/form_data/{id_str}"))
+                        },
+                        value: spec_value,
+                    }),
+                    EditOptions {
+                        create_missing_segments: true,
+                        ignore_if_not_exists: false,
+                    },
+                ));
+                param_order_updates.insert(id, formdata_param_to_add.order);
+            }
+
+            for formdata_param_to_update in params_to_update {
+                let id = formdata_param_to_update.id.clone();
+                if let Some(new_name) = &formdata_param_to_update.name {
+                    patches.push((
+                        PatchOperation::Replace(ReplaceOperation {
+                            path: unsafe {
+                                PointerBuf::new_unchecked(format!(
+                                    "{body_block}/form_data/{id}/name"
+                                ))
+                            },
+                            value: JsonValue::String(new_name.clone()),
+                        }),
+                        EditOptions {
+                            create_missing_segments: false,
+                            ignore_if_not_exists: false,
+                        },
+                    ));
+                }
+
+                match &formdata_param_to_update.value {
+                    Some(ChangeJsonValue::Update(value)) => {
+                        patches.push((
+                            PatchOperation::Replace(ReplaceOperation {
+                                path: unsafe {
+                                    PointerBuf::new_unchecked(format!(
+                                        "{body_block}/form_data/{id}/value"
+                                    ))
+                                },
+                                value: value.clone(),
+                            }),
+                            EditOptions {
+                                create_missing_segments: false,
+                                ignore_if_not_exists: false,
+                            },
+                        ));
+                    }
+                    Some(ChangeJsonValue::Remove) => patches.push((
+                        PatchOperation::Remove(RemoveOperation {
+                            path: unsafe {
+                                PointerBuf::new_unchecked(format!(
+                                    "{body_block}/form_data/{id}/value"
+                                ))
+                            },
+                        }),
+                        EditOptions {
+                            create_missing_segments: false,
+                            ignore_if_not_exists: false,
+                        },
+                    )),
+                    _ => {}
+                }
+
+                match &formdata_param_to_update.description {
+                    Some(ChangeString::Update(value)) => {
+                        patches.push((
+                            PatchOperation::Replace(ReplaceOperation {
+                                path: unsafe {
+                                    PointerBuf::new_unchecked(format!(
+                                        "{body_block}/form_data/{id}/description"
+                                    ))
+                                },
+                                value: JsonValue::String(value.clone()),
+                            }),
+                            EditOptions {
+                                create_missing_segments: false,
+                                ignore_if_not_exists: false,
+                            },
+                        ));
+                    }
+                    Some(ChangeString::Remove) => {
+                        patches.push((
+                            PatchOperation::Remove(RemoveOperation {
+                                path: unsafe {
+                                    PointerBuf::new_unchecked(format!(
+                                        "{body_block}/form_data/{id}/description"
+                                    ))
+                                },
+                            }),
+                            EditOptions {
+                                create_missing_segments: false,
+                                ignore_if_not_exists: false,
+                            },
+                        ));
+                    }
+                    _ => {}
+                }
+
+                if let Some(options) = &formdata_param_to_update.options {
+                    let options = FormDataParamSpecOptions {
+                        disabled: options.disabled,
+                        propagate: options.propagate,
+                    };
+                    let options_value = continue_if_err!(serde_json::to_value(options), |err| {
+                        session::error!(format!("failed to convert options value: {}", err))
+                    });
+
+                    patches.push((
+                        PatchOperation::Replace(ReplaceOperation {
+                            path: unsafe {
+                                PointerBuf::new_unchecked(format!(
+                                    "{body_block}/form_data/{id}/options"
+                                ))
+                            },
+                            value: options_value,
+                        }),
+                        EditOptions {
+                            create_missing_segments: false,
+                            ignore_if_not_exists: false,
+                        },
+                    ));
+                }
+
+                if let Some(order) = formdata_param_to_update.order {
+                    param_order_updates.insert(id, order);
+                }
+            }
+
+            for id in params_to_remove {
+                patches.push((
+                    PatchOperation::Remove(RemoveOperation {
+                        path: unsafe {
+                            PointerBuf::new_unchecked(format!("{body_block}/form_data/{id}"))
+                        },
+                    }),
+                    EditOptions {
+                        create_missing_segments: false,
+                        ignore_if_not_exists: false,
+                    },
+                ));
+                param_order_removes.push(id);
+            }
+
+            // We don't want database failures to stop the operation
+            let mut txn = if let Ok(txn) = worktree.storage.begin_write(ctx).await {
+                txn
+            } else {
+                return Ok(());
+            };
+
+            for (id, order) in param_order_updates {
+                if let Err(e) = worktree
+                    .storage
+                    .put_entry_body_formdata_param_order_txn(ctx, &mut txn, &entry_id, &id, order)
+                    .await
+                {
+                    session::error!(format!("failed to update formdata param order: {}", e));
+                    return Ok(());
+                }
+            }
+
+            for id in param_order_removes {
+                if let Err(e) = worktree
+                    .storage
+                    .remove_entry_body_formdata_param_order_txn(ctx, &mut txn, &entry_id, &id)
+                    .await
+                {
+                    session::error!(format!("failed to remove formdata param order: {}", e));
+                    return Ok(());
+                }
+            }
+
+            if let Err(e) = txn.commit() {
+                session::error!(format!("failed to commit transaction: {}", e));
+                return Ok(());
+            }
+        }
+    }
+
+    Ok(())
+    // Check if the update params has a different type than current typ
+    // If so, clean up the json before patching
+}
+
+async fn clear_item_body<R: AppRuntime>(
+    worktree: &Worktree<R>,
+    ctx: &R::AsyncContext,
+    id: EntryId,
+    patches: &mut Vec<(PatchOperation, EditOptions)>,
+) -> joinerror::Result<()> {
+    worktree.storage.remove_entry_body_cache(ctx, &id).await?;
+    patches.push((
+        PatchOperation::Remove(RemoveOperation {
+            path: unsafe { PointerBuf::new_unchecked("/body") },
+        }),
+        EditOptions {
+            create_missing_segments: false,
+            ignore_if_not_exists: true,
+        },
+    ));
+    Ok(())
 }
 
 /// Update the filename of a path to the encoded input name

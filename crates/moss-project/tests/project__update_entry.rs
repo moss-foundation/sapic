@@ -466,6 +466,7 @@ async fn update_item_entry_endpoint_headers() {
                 query_params_to_add: vec![],
                 query_params_to_update: vec![],
                 query_params_to_remove: vec![],
+                body: None,
             }),
         )
         .await
@@ -506,6 +507,7 @@ async fn update_item_entry_endpoint_headers() {
                 query_params_to_add: vec![],
                 query_params_to_update: vec![],
                 query_params_to_remove: vec![],
+                body: None,
             }),
         )
         .await
@@ -547,6 +549,7 @@ async fn update_item_entry_endpoint_headers() {
                 query_params_to_add: vec![],
                 query_params_to_update: vec![],
                 query_params_to_remove: vec![],
+                body: None,
             }),
         )
         .await
@@ -633,6 +636,7 @@ async fn update_item_entry_endpoint_path_params() {
                 query_params_to_add: vec![],
                 query_params_to_update: vec![],
                 query_params_to_remove: vec![],
+                body: None,
             }),
         )
         .await
@@ -672,6 +676,7 @@ async fn update_item_entry_endpoint_path_params() {
                 query_params_to_add: vec![],
                 query_params_to_update: vec![],
                 query_params_to_remove: vec![],
+                body: None,
             }),
         )
         .await
@@ -713,6 +718,7 @@ async fn update_item_entry_endpoint_path_params() {
                 query_params_to_add: vec![],
                 query_params_to_update: vec![],
                 query_params_to_remove: vec![],
+                body: None,
             }),
         )
         .await
@@ -799,6 +805,7 @@ async fn update_item_entry_endpoint_query_params() {
                     }),
                 }],
                 query_params_to_remove: vec![],
+                body: None,
             }),
         )
         .await
@@ -838,6 +845,7 @@ async fn update_item_entry_endpoint_query_params() {
                 query_params_to_add: vec![],
                 query_params_to_update: vec![],
                 query_params_to_remove: vec![query_param_id.clone()],
+                body: None,
             }),
         )
         .await
@@ -879,6 +887,7 @@ async fn update_item_entry_endpoint_query_params() {
                 }],
                 query_params_to_update: vec![],
                 query_params_to_remove: vec![],
+                body: None,
             }),
         )
         .await

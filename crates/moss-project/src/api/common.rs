@@ -124,6 +124,8 @@ impl<R: AppRuntime> Project<R> {
                     headers_to_add: input.headers_to_add,
                     headers_to_update: input.headers_to_update,
                     headers_to_remove: input.headers_to_remove,
+
+                    body: input.body,
                 },
             )
             .await?;
@@ -164,6 +166,8 @@ impl<R: AppRuntime> Project<R> {
                     query_params_to_add: vec![],
                     query_params_to_update: vec![],
                     query_params_to_remove: vec![],
+
+                    body: None,
                 },
             )
             .await?;

@@ -1,0 +1,95 @@
+{
+  "metadata": {
+    "id": "2bBdaFnm0D",
+    "_class": "endpoint"
+  },
+  "url": {
+    "protocol": "Get",
+    "raw": "https://example.com"
+  },
+  "header": {
+    "8RWmCNcxoQ": {
+      "name": "Content-Type",
+      "value": "application/json",
+      "description": "The content type of the request",
+      "options": {
+        "disabled": false,
+        "propagate": true
+      }
+    },
+    "nZj98Eiehy": {
+      "name": "Accept",
+      "value": "application/json, application/xml",
+      "description": "The accept type of the request",
+      "options": {
+        "disabled": false,
+        "propagate": true
+      }
+    }
+  },
+  "path_param": {
+    "A3FIHAnxDE": {
+      "name": "path_param1",
+      "value": "bar",
+      "description": null,
+      "options": {
+        "disabled": false,
+        "propagate": true
+      }
+    }
+  },
+  "query_param": {
+    "pgBjFmW798": {
+      "name": "query_param1",
+      "value": "foo",
+      "description": null,
+      "options": {
+        "disabled": false,
+        "propagate": true
+      }
+    }
+  },
+  "body": {
+    "text": {
+      "text": "${<<-EOT\n  foo\nEOT}"
+    },
+    "json": {
+      "json": {
+        "array": [1, 2, 3],
+        "text": "text"
+      }
+    },
+    "xml": {
+      "xml": "${<<-EOT\n  <?xml version=\"1.0\" encoding=\"UTF-8\"?>\nEOT}"
+    },
+    "binary": {
+      "binary": "foo/bar.txt"
+    },
+    "x-www-form-urlencoded": {
+      "urlencoded": {
+        "Za5hic83-3": {
+          "name": "urlencoded_param1",
+          "value": "value1",
+          "description": null,
+          "options": {
+            "disabled": false,
+            "propagate": false
+          }
+        }
+      }
+    },
+    "form-data": {
+      "form_data": {
+        "efcRDserjR": {
+          "name": "form_data_param1",
+          "value": "value1",
+          "description": null,
+          "options": {
+            "disabled": false,
+            "propagate": true
+          }
+        }
+      }
+    }
+  }
+}
