@@ -4,8 +4,3 @@
  * @category Primitive
  */
 export type LanguageDirection = "ltr" | "rtl";
-
-/**
- * @category Primitive
- */
-export type LanguageId = string;

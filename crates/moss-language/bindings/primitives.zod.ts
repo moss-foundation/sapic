@@ -2,5 +2,3 @@
 import { z } from "zod";
 
 export const languageDirectionSchema = z.union([z.literal("ltr"), z.literal("rtl")]);
-
-export const languageIdSchema = z.string();
