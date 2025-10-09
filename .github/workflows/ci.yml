@@ -386,7 +386,7 @@ jobs:
       fail-fast: true
       matrix:
         task:
-          - name: TypeScript Check
+          - name: TypeScript types check
             command: cd view/desktop && tsc --noEmit --project tsconfig.json
 
           - name: Lint
