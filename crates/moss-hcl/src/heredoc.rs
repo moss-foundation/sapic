@@ -48,18 +48,3 @@ where
         None => serializer.serialize_none(),
     }
 }
-
-// Properly handling patching of heredoc strings
-// We need to convert them into json value
-
-pub trait ToJsonValue {
-    fn to_json_value(&self) -> Result<serde_json::Value, serde_json::Error>;
-}
-
-impl ToJsonValue for Heredoc {
-    fn to_json_value(&self) -> Result<serde_json::Value, serde_json::Error> {
-        let mut buffer = Vec::new();
-        self.serialize(&mut serde_json::Serializer::new(&mut buffer))?;
-        serde_json::from_slice(buffer.as_slice())
-    }
-}

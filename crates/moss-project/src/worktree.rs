@@ -14,11 +14,7 @@ use moss_common::{continue_if_err, continue_if_none};
 use moss_db::primitives::AnyValue;
 use moss_edit::json::EditOptions;
 use moss_fs::{CreateOptions, FileSystem, RemoveOptions, desanitize_path, utils::SanitizedPath};
-use moss_hcl::{
-    HclResultExt, hcl_to_json,
-    heredoc::{ToJsonValue, convert_string_to_heredoc},
-    json_to_hcl,
-};
+use moss_hcl::{HclResultExt, hcl_to_json, json_to_hcl};
 use moss_logging::session;
 use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_text::sanitized::{desanitize, sanitize};
@@ -1680,6 +1676,7 @@ impl<R: AppRuntime> Worktree<R> {
                 body,
             )
             .await?;
+            dbg!(&patches);
         }
 
         if patches.is_empty() {
@@ -1717,14 +1714,11 @@ async fn patch_item_body<R: AppRuntime>(
             if body_kind.is_some() && body_kind != Some(BodyKind::Text) {
                 clear_item_body(worktree, ctx, entry_id, patches).await?;
             }
-            // Convert the text into Heredoc for proper json patching
-            let heredoc = convert_string_to_heredoc(&text);
-            let value = heredoc.to_json_value()?;
 
             patches.push((
                 PatchOperation::Replace(ReplaceOperation {
                     path: unsafe { PointerBuf::new_unchecked("/body/text/text") },
-                    value,
+                    value: JsonValue::String(text.to_owned()),
                 }),
                 EditOptions {
                     create_missing_segments: true,
@@ -1751,13 +1745,10 @@ async fn patch_item_body<R: AppRuntime>(
             if body_kind.is_some() && body_kind != Some(BodyKind::Xml) {
                 clear_item_body(worktree, ctx, entry_id, patches).await?;
             }
-            // Convert the text into Heredoc for proper json patching
-            let heredoc = convert_string_to_heredoc(&xml);
-            let value = heredoc.to_json_value()?;
             patches.push((
                 PatchOperation::Replace(ReplaceOperation {
                     path: unsafe { PointerBuf::new_unchecked("/body/xml/xml") },
-                    value,
+                    value: JsonValue::String(xml.to_owned()),
                 }),
                 EditOptions {
                     create_missing_segments: true,
@@ -1791,8 +1782,10 @@ async fn patch_item_body<R: AppRuntime>(
                 // Create the body block even if no parameter is given
                 patches.push((
                     PatchOperation::Add(AddOperation {
-                        path: unsafe { PointerBuf::new_unchecked(body_block) },
-                        value: json!({}),
+                        path: unsafe { PointerBuf::new_unchecked("/body") },
+                        value: json!({
+                            "x-www-form-urlencoded": {}
+                        }),
                     }),
                     EditOptions {
                         create_missing_segments: true,
@@ -2037,8 +2030,10 @@ async fn patch_item_body<R: AppRuntime>(
                 // Create the body block even if no parameter is given
                 patches.push((
                     PatchOperation::Add(AddOperation {
-                        path: unsafe { PointerBuf::new_unchecked(body_block) },
-                        value: json!({}),
+                        path: unsafe { PointerBuf::new_unchecked("/body") },
+                        value: json!({
+                            "form-data": {}
+                        }),
                     }),
                     EditOptions {
                         create_missing_segments: true,
@@ -2438,12 +2433,17 @@ async fn describe_body<R: AppRuntime>(
         .map(|(kind, spec)| (kind, spec.clone()))
         .next()?;
 
+    dbg!(&spec);
+
     let inner = match kind {
         BodyKind::Text => BodyInfo::Text(spec.text?),
         BodyKind::Json => BodyInfo::Json(spec.json?),
         BodyKind::Xml => BodyInfo::Xml(spec.xml?),
         BodyKind::Binary => BodyInfo::Binary(spec.binary?),
         BodyKind::Urlencoded => {
+            if spec.urlencoded.is_none() {
+                return Some(BodyInfo::Urlencoded(vec![]));
+            }
             let mut param_infos = Vec::new();
             for (param_id, param_spec) in spec.urlencoded?.into_inner() {
                 let value = match hcl_to_json(&param_spec.value) {
@@ -2480,6 +2480,10 @@ async fn describe_body<R: AppRuntime>(
             BodyInfo::Urlencoded(param_infos)
         }
         BodyKind::FormData => {
+            if spec.form_data.is_none() {
+                return Some(BodyInfo::FormData(vec![]));
+            }
+
             let mut param_infos = Vec::new();
             for (param_id, param_spec) in spec.form_data?.into_inner() {
                 let value = match hcl_to_json(&param_spec.value) {
