@@ -38,7 +38,6 @@ impl<R: AppRuntime> ExtensionPoint<R> for LanguageExtensionPoint {
         let items = languages
             .into_iter()
             .map(|entry| LanguageRegistryItem {
-                identifier: entry.identifier,
                 display_name: entry.display_name,
                 code: entry.code,
                 direction: entry.direction,

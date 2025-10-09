@@ -5,44 +5,42 @@ use moss_applib::AppRuntime;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;
 
-use crate::models::primitives::{LanguageDirection, LanguageId};
+use crate::models::primitives::{LanguageCode, LanguageDirection};
 
 #[async_trait]
 pub trait LanguageRegistry: Send + Sync {
     async fn register(&self, items: Vec<LanguageRegistryItem>);
-    async fn get(&self, id: &LanguageId) -> Option<LanguageRegistryItem>;
-    async fn list(&self) -> HashMap<LanguageId, LanguageRegistryItem>;
+    async fn get(&self, code: &LanguageCode) -> Option<LanguageRegistryItem>;
+    async fn list(&self) -> HashMap<LanguageCode, LanguageRegistryItem>;
 }
 
 #[derive(Debug, Clone)]
 pub struct LanguageRegistryItem {
-    pub identifier: LanguageId,
     pub display_name: String,
-    pub code: String,
+    pub code: LanguageCode,
     pub direction: Option<LanguageDirection>,
     pub path: PathBuf,
 }
 
 pub struct AppLanguageRegistry {
     // The frontend always uses the language code to fetch localization
-    locales: RwLock<HashMap<LanguageId, LanguageRegistryItem>>,
+    locales: RwLock<HashMap<LanguageCode, LanguageRegistryItem>>,
 }
 
 #[async_trait]
 impl LanguageRegistry for AppLanguageRegistry {
     async fn register(&self, items: Vec<LanguageRegistryItem>) {
-        self.locales.write().await.extend(
-            items
-                .into_iter()
-                .map(|item| (item.identifier.clone(), item)),
-        )
+        self.locales
+            .write()
+            .await
+            .extend(items.into_iter().map(|item| (item.code.clone(), item)))
     }
 
-    async fn get(&self, id: &LanguageId) -> Option<LanguageRegistryItem> {
-        self.locales.read().await.get(id).cloned()
+    async fn get(&self, code: &LanguageCode) -> Option<LanguageRegistryItem> {
+        self.locales.read().await.get(code).cloned()
     }
 
-    async fn list(&self) -> HashMap<LanguageId, LanguageRegistryItem> {
+    async fn list(&self) -> HashMap<LanguageCode, LanguageRegistryItem> {
         self.locales.read().await.clone()
     }
 }

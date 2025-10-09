@@ -17,3 +17,6 @@ async-trait.workspace = true
 tokio.workspace = true
 inventory.workspace = true
 rustc-hash.workspace = true
+
+[features]
+integration-tests = []

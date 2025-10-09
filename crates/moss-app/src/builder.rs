@@ -17,7 +17,7 @@ use crate::{
     dirs,
     extension::ExtensionService,
     internal::events::{OnDidChangeConfiguration, OnDidChangeProfile, OnDidChangeWorkspace},
-    locale::LocaleService,
+    language::LocaleService,
     logging::LogService,
     profile::ProfileService,
     session::SessionService,

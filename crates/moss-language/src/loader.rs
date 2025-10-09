@@ -4,7 +4,6 @@ use std::{path::Path, sync::Arc};
 
 pub struct LocaleLoader {
     fs: Arc<dyn FileSystem>,
-    // TODO: policy?
 }
 
 impl LocaleLoader {
@@ -14,10 +13,9 @@ impl LocaleLoader {
 
     pub async fn load_namespace(&self, path: &Path, ns: &str) -> joinerror::Result<JsonValue> {
         let abs_path = path.join(format!("{}.json", ns));
-
         let rdr = self.fs.open_file(&abs_path).await?;
-
         let parsed: JsonValue = serde_json::from_reader(rdr)?;
+
         Ok(parsed)
     }
 }
