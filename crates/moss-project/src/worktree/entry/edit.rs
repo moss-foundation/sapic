@@ -21,7 +21,6 @@ pub(crate) struct EntryEditing {
     fs: Arc<dyn FileSystem>,
     state: RwLock<EntryEditingState>,
     path_tx: watch::Sender<Arc<Path>>,
-
     // We need to know if it's item or dir config
     config_filename: String,
 }
