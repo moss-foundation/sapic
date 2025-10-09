@@ -942,7 +942,7 @@ impl<R: AppRuntime> Worktree<R> {
             let spec = HeaderParamSpec {
                 name: header_to_add.name.clone(),
                 value,
-                description: header_to_add.desc.clone(),
+                description: header_to_add.description.clone(),
                 options: HeaderParamSpecOptions {
                     disabled: header_to_add.options.disabled,
                     propagate: header_to_add.options.propagate,
@@ -1046,7 +1046,7 @@ impl<R: AppRuntime> Worktree<R> {
                 _ => {}
             }
 
-            match &header_to_update.desc {
+            match &header_to_update.description {
                 Some(ChangeString::Update(value)) => {
                     patches.push((
                         PatchOperation::Replace(ReplaceOperation {
@@ -1178,7 +1178,7 @@ impl<R: AppRuntime> Worktree<R> {
             let spec = PathParamSpec {
                 name: path_param_to_add.name.clone(),
                 value,
-                description: path_param_to_add.desc.clone(),
+                description: path_param_to_add.description.clone(),
                 options: PathParamSpecOptions {
                     disabled: path_param_to_add.options.disabled,
                     propagate: path_param_to_add.options.propagate,
@@ -1291,7 +1291,7 @@ impl<R: AppRuntime> Worktree<R> {
                 _ => {}
             }
 
-            match &path_param_to_update.desc {
+            match &path_param_to_update.description {
                 Some(ChangeString::Update(value)) => {
                     patches.push((
                         PatchOperation::Replace(ReplaceOperation {
@@ -1423,7 +1423,7 @@ impl<R: AppRuntime> Worktree<R> {
             let spec = QueryParamSpec {
                 name: query_param_to_add.name.clone(),
                 value,
-                description: query_param_to_add.desc.clone(),
+                description: query_param_to_add.description.clone(),
                 options: QueryParamSpecOptions {
                     disabled: query_param_to_add.options.disabled,
                     propagate: query_param_to_add.options.propagate,
@@ -1536,7 +1536,7 @@ impl<R: AppRuntime> Worktree<R> {
                 _ => {}
             }
 
-            match &query_param_to_update.desc {
+            match &query_param_to_update.description {
                 Some(ChangeString::Update(value)) => {
                     patches.push((
                         PatchOperation::Replace(ReplaceOperation {

@@ -33,7 +33,7 @@ const TreeNodeRenamingForm = ({
 
   return (
     <div className={cn("w-full min-w-0", className)} {...props}>
-      <div className="flex w-full items-center gap-1 py-1" style={{ paddingLeft: nodePaddingLeft }}>
+      <div className="flex w-full items-center gap-1.5 py-1" style={{ paddingLeft: nodePaddingLeft }}>
         <div className="flex size-5 shrink-0 items-center justify-center">
           <Icon
             icon="ChevronRight"

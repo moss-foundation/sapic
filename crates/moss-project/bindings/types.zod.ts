@@ -88,7 +88,7 @@ export const addHeaderParamsSchema = z.object({
   name: z.string(),
   value: jsonValueSchema,
   order: z.number(),
-  desc: z.string().optional(),
+  description: z.string().optional(),
   options: headerParamOptionsSchema,
 });
 
@@ -96,7 +96,7 @@ export const addPathParamParamsSchema = z.object({
   name: z.string(),
   value: jsonValueSchema,
   order: z.number(),
-  desc: z.string().optional(),
+  description: z.string().optional(),
   options: pathParamOptionsSchema,
 });
 
@@ -104,7 +104,7 @@ export const addQueryParamParamsSchema = z.object({
   name: z.string(),
   value: jsonValueSchema,
   order: z.number(),
-  desc: z.string().optional(),
+  description: z.string().optional(),
   options: queryParamOptionsSchema,
 });
 
@@ -201,7 +201,7 @@ export const updateHeaderParamsSchema = z.object({
   name: z.string().optional(),
   value: changeJsonValueSchema.optional(),
   order: z.number().optional(),
-  desc: changeStringSchema.optional(),
+  description: changeStringSchema.optional(),
   options: headerParamOptionsSchema.optional(),
 });
 
@@ -210,7 +210,7 @@ export const updatePathParamParamsSchema = z.object({
   name: z.string().optional(),
   value: changeJsonValueSchema.optional(),
   order: z.number().optional(),
-  desc: changeStringSchema.optional(),
+  description: changeStringSchema.optional(),
   options: pathParamOptionsSchema.optional(),
 });
 
@@ -219,7 +219,7 @@ export const updateQueryParamParamsSchema = z.object({
   name: z.string().optional(),
   value: changeJsonValueSchema.optional(),
   order: z.number().optional(),
-  desc: changeStringSchema.optional(),
+  description: changeStringSchema.optional(),
   options: queryParamOptionsSchema.optional(),
 });
 

@@ -21,6 +21,7 @@ export interface EndpointPageData {
   url: EndpointPageUrl;
 }
 
+//TODO remove this if it's unused
 export const useEndpointPage = () => {
   const [endpointData, setEndpointData] = useState<EndpointPageData>({
     url: {

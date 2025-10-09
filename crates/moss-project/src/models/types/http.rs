@@ -27,7 +27,7 @@ pub struct AddHeaderParams {
     #[ts(type = "JsonValue")]
     pub value: JsonValue,
     pub order: isize,
-    pub desc: Option<String>,
+    pub description: Option<String>,
     pub options: HeaderParamOptions,
 }
 
@@ -53,7 +53,7 @@ pub struct UpdateHeaderParams {
     pub value: Option<ChangeJsonValue>,
     pub order: Option<isize>,
     #[ts(optional, type = "ChangeString")]
-    pub desc: Option<ChangeString>,
+    pub description: Option<ChangeString>,
     pub options: Option<HeaderParamOptions>,
 }
 
@@ -77,7 +77,7 @@ pub struct AddQueryParamParams {
     #[ts(type = "JsonValue")]
     pub value: JsonValue,
     pub order: isize,
-    pub desc: Option<String>,
+    pub description: Option<String>,
     pub options: QueryParamOptions,
 }
 
@@ -103,7 +103,7 @@ pub struct UpdateQueryParamParams {
     pub value: Option<ChangeJsonValue>,
     pub order: Option<isize>,
     #[ts(optional, type = "ChangeString")]
-    pub desc: Option<ChangeString>,
+    pub description: Option<ChangeString>,
     pub options: Option<QueryParamOptions>,
 }
 
@@ -127,7 +127,7 @@ pub struct AddPathParamParams {
     #[ts(type = "JsonValue")]
     pub value: JsonValue,
     pub order: isize,
-    pub desc: Option<String>,
+    pub description: Option<String>,
     pub options: PathParamOptions,
 }
 
@@ -153,7 +153,7 @@ pub struct UpdatePathParamParams {
     pub value: Option<ChangeJsonValue>,
     pub order: Option<isize>,
     #[ts(optional, type = "ChangeString")]
-    pub desc: Option<ChangeString>,
+    pub description: Option<ChangeString>,
     pub options: Option<PathParamOptions>,
 }
 

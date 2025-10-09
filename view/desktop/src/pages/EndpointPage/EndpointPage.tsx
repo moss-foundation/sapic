@@ -1,11 +1,12 @@
 import { PageView } from "@/components";
 import { PageWrapper } from "@/components/PageView/PageWrapper";
 import { ProjectTreeNode } from "@/components/ProjectTree/types";
-import { useStreamProjectEntries } from "@/hooks";
+import { useDescribeProjectEntry, useStreamProjectEntries } from "@/hooks";
 import { EntryKind } from "@repo/moss-project";
 import { IDockviewPanelProps } from "@repo/moss-tabs";
 
 import { EndpointPageBody, EndpointPageHeader } from "./components";
+import { EndpointPageContext } from "./EndpointPageContext";
 
 export interface EndpointPageProps {
   node: ProjectTreeNode;
@@ -15,9 +16,17 @@ export interface EndpointPageProps {
 
 const EndpointPage = ({ ...props }: IDockviewPanelProps<EndpointPageProps>) => {
   const { data: streamedEntries } = useStreamProjectEntries(props.params?.projectId);
-  const node = streamedEntries?.find((entry) => entry.id === props.params?.node?.id);
+  const entry = streamedEntries?.find((entry) => entry.id === props.params?.node?.id);
 
-  if (!node) {
+  const { data: entryDescription } = useDescribeProjectEntry({
+    projectId: props.params?.projectId ?? "",
+    entryId: entry?.id ?? "",
+    options: {
+      enabled: !!entry?.id,
+    },
+  });
+
+  if (!entry || !entryDescription) {
     return (
       <PageWrapper>
         <div className="flex flex-1 items-center justify-center">
@@ -28,11 +37,14 @@ const EndpointPage = ({ ...props }: IDockviewPanelProps<EndpointPageProps>) => {
       </PageWrapper>
     );
   }
+
   return (
-    <PageView>
-      <EndpointPageHeader node={node} projectId={props.params?.projectId ?? ""} api={props.api} />
-      <EndpointPageBody {...props} />
-    </PageView>
+    <EndpointPageContext.Provider value={{ projectId: props.params.projectId, entryDescription, entry: entry }}>
+      <PageView>
+        <EndpointPageHeader />
+        <EndpointPageBody />
+      </PageView>
+    </EndpointPageContext.Provider>
   );
 };
 

@@ -53,6 +53,16 @@ export const getLocationProjectTreeData = (location: DragLocationHistory): DropN
   };
 };
 
+export const getAllNestedLocationProjectTreeData = (location: DragLocationHistory): DropNode[] => {
+  if (location.current.dropTargets.length === 0) return [];
+  return location.current.dropTargets.map((target) => {
+    return {
+      ...(target.data.data as DragNode),
+      "instruction": extractInstruction(target.data) ?? undefined,
+    };
+  }) as unknown as DropNode[];
+};
+
 export const getLocationProjectTreeRootNodeData = (location: DragLocationHistory): DropRootNode | null => {
   if (location.current.dropTargets.length === 0) return null;
   if (location.current.dropTargets[0].data.type !== ProjectDragType.ROOT_NODE) return null;
@@ -117,10 +127,6 @@ export const canDropNode = (sourceTarget: DragNode, dropTarget: DropNode, operat
 
   if (dropTarget.node.kind === "Dir") {
     if (operation === "combine") {
-      if (hasDescendant(dropTarget.node, sourceTarget.node)) {
-        return false;
-      }
-
       if (hasDirectDescendantWithSimilarName(dropTarget.node, sourceTarget.node)) {
         return false;
       }
@@ -138,6 +144,10 @@ export const canDropNode = (sourceTarget: DragNode, dropTarget: DropNode, operat
 
 export const isReorderAvailable = (sourceTarget: DragNode, dropTarget: DropNode): Availability => {
   if (sourceTarget.node.id === dropTarget.node.id) {
+    return "not-available";
+  }
+
+  if (dropTarget.node.kind === "Dir" && dropTarget.node.expanded) {
     return "not-available";
   }
 

@@ -1,8 +1,9 @@
-import { useKeys } from "rooks";
-import { platform } from "@tauri-apps/plugin-os";
 import { useEffect } from "react";
-import { listen } from "@tauri-apps/api/event";
+import { useKeys } from "rooks";
+
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
+import { platform } from "@tauri-apps/plugin-os";
 
 type ShortcutDecl = {
   name: string;

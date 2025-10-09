@@ -58,7 +58,7 @@ const Trigger = ({ value, children, className, icon, count }: PageContainerTabPr
     <TabsPrimitive.TabsTrigger
       value={value}
       className={cn(
-        "flex items-center py-2 text-base transition-colors",
+        "flex items-center py-2.25 text-base transition-colors",
         "relative border-b-1 border-transparent",
         "text-(--moss-secondary-text) hover:text-(--moss-primary-text)",
         "data-[state=active]:text-(--moss-primary-text)",
@@ -72,7 +72,7 @@ const Trigger = ({ value, children, className, icon, count }: PageContainerTabPr
     >
       {icon && <Icon icon={icon} className="h-4 w-4" />}
       <span className="leading-4">{children}</span>
-      {count && (
+      {count !== undefined && (
         <span className="background-(--moss-primary) flex size-4 items-center justify-center rounded-full text-xs leading-2.5 text-white">
           {count}
         </span>

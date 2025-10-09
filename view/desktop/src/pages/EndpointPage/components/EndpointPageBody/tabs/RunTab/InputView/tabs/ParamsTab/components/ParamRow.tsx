@@ -1,64 +1,150 @@
-import { ChangeEvent, memo, useCallback, useEffect, useRef } from "react";
+import { ChangeEvent, memo, useCallback, useContext, useEffect, useRef, useState } from "react";
 
-import { ActionButton, InputOutlined } from "@/components";
+import { ActionButton, DropIndicator, InputOutlined } from "@/components";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
+import { DragHandleButton } from "@/components/DragHandleButton";
+import { useHoverDelay } from "@/hooks";
 import { Icon } from "@/lib/ui";
+import { EndpointPageContext } from "@/pages/EndpointPage/EndpointPageContext";
+import { cn } from "@/utils";
 import { CheckedState } from "@radix-ui/react-checkbox";
+import { QueryParamInfo } from "@repo/moss-project";
 
-import { ParamProps } from "./types";
+import { useDraggableParamRow } from "../hooks/useDraggableParamRow";
+import { ParamDragType } from "../types";
 
 interface ParamRowProps {
-  param: ParamProps;
-  onChange: (updatedParam: ParamProps) => void;
+  param: QueryParamInfo;
+  onChange: (updatedParam: QueryParamInfo) => void;
+  onDelete: () => void;
   keyToFocusOnMount?: string | null;
+  paramType: ParamDragType;
 }
 
-export const ParamRow = memo(({ param, onChange, keyToFocusOnMount }: ParamRowProps) => {
-  const keyRef = useRef<HTMLInputElement>(null);
-  const valueRef = useRef<HTMLInputElement>(null);
+export const ParamRow = memo(
+  ({ param: initialParam, onChange, keyToFocusOnMount, onDelete, paramType }: ParamRowProps) => {
+    const { entry } = useContext(EndpointPageContext);
 
-  const onCheckedChange = useCallback(
-    (checked: CheckedState) => onChange({ ...param, checked: checked === "indeterminate" ? true : Boolean(checked) }),
-    [onChange, param]
-  );
+    const keyRef = useRef<HTMLInputElement>(null);
+    const valueRef = useRef<HTMLInputElement>(null);
+    const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const onKeyChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => onChange({ ...param, key: e.target.value }),
-    [onChange, param]
-  );
+    const [param, setParam] = useState(initialParam);
 
-  const onValueChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => onChange({ ...param, value: e.target.value }),
-    [onChange, param]
-  );
+    const { isHovered, handleMouseEnter, handleMouseLeave } = useHoverDelay();
 
-  useEffect(() => {
-    if (keyToFocusOnMount === "key") {
-      keyRef.current?.focus();
-    }
-    if (keyToFocusOnMount === "value") {
-      valueRef.current?.focus();
-    }
-  }, [keyToFocusOnMount]);
+    useEffect(() => {
+      setParam(initialParam);
+    }, [initialParam]);
 
-  return (
-    <div key={param.id} className="col-span-full grid grid-cols-subgrid items-center">
-      <CheckboxWithLabel checked={param.checked} onCheckedChange={onCheckedChange} />
+    useEffect(() => {
+      if (keyToFocusOnMount === "key") {
+        keyRef.current?.focus();
+      }
+      if (keyToFocusOnMount === "value") {
+        valueRef.current?.focus();
+      }
+    }, []);
 
-      <InputOutlined ref={keyRef} value={param.key} onChange={onKeyChange} contrast />
-      <InputOutlined ref={valueRef} value={param.value} onChange={onValueChange} contrast />
+    const debouncedOnChange = useCallback(
+      (updatedParam: QueryParamInfo) => {
+        if (debounceTimeoutRef.current) {
+          clearTimeout(debounceTimeoutRef.current);
+        }
 
-      <Icon icon="RequiredAsterisk" />
-      <TypeBadgePlaceholder type={param.type} />
+        debounceTimeoutRef.current = setTimeout(() => {
+          onChange(updatedParam);
+        }, 500);
+      },
+      [onChange]
+    );
 
-      <div className="flex items-center gap-1">
-        <ActionButton icon="ConfigMap" />
-        <ActionButton icon="AddToVcs" />
-        <ActionButton icon="RemoveCircle" />
+    useEffect(() => {
+      return () => {
+        if (debounceTimeoutRef.current) {
+          clearTimeout(debounceTimeoutRef.current);
+        }
+      };
+    }, []);
+
+    const onCheckedChange = useCallback(
+      (checked: CheckedState) => {
+        const updatedParam = { ...param, disabled: checked === "indeterminate" ? false : Boolean(!checked) };
+        setParam(updatedParam);
+        onChange(updatedParam);
+      },
+      [onChange, param]
+    );
+
+    const onKeyChange = useCallback(
+      (e: ChangeEvent<HTMLInputElement>) => {
+        const updatedParam = { ...param, name: e.target.value };
+        setParam(updatedParam);
+        debouncedOnChange(updatedParam);
+      },
+      [debouncedOnChange, param]
+    );
+
+    const onValueChange = useCallback(
+      (e: ChangeEvent<HTMLInputElement>) => {
+        const updatedParam = { ...param, value: e.target.value };
+        setParam(updatedParam);
+        debouncedOnChange(updatedParam);
+      },
+      [debouncedOnChange, param]
+    );
+
+    const { isDragging, dragHandleRef, paramRowRef, closestEdge } = useDraggableParamRow({
+      param,
+      entryId: entry.id,
+      paramType,
+    });
+
+    return (
+      <div
+        key={param.id}
+        className={cn("relative col-span-full grid grid-cols-subgrid items-center", {
+          "opacity-50": isDragging,
+        })}
+        ref={paramRowRef}
+      >
+        {closestEdge && <DropIndicator edge={closestEdge} gap={8} className="-ml-1.5" />}
+
+        <div
+          className="group/paramRow relative flex items-center gap-1"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          <CheckboxWithLabel checked={!param.disabled} onCheckedChange={onCheckedChange} />
+          <DragHandleButton
+            ref={dragHandleRef}
+            className={cn(
+              "absolute top-1/2 left-0 -translate-y-1/2 rounded-xs shadow-none transition-opacity duration-200",
+              {
+                "pointer-events-auto opacity-100": isHovered,
+                "pointer-events-none opacity-0": !isHovered,
+              }
+            )}
+          />
+        </div>
+
+        <InputOutlined ref={keyRef} value={param.name} onChange={onKeyChange} contrast />
+
+        {/* @ts-expect-error  We are not being able to handle anything except string for now */}
+        <InputOutlined ref={valueRef} value={param.value} onChange={onValueChange} contrast />
+
+        <Icon icon="RequiredAsterisk" />
+        <TypeBadgePlaceholder type="string" />
+
+        <div className="flex items-center gap-1">
+          <ActionButton icon="ConfigMap" />
+          <ActionButton icon="AddToVcs" />
+          <ActionButton icon="RemoveCircle" onClick={onDelete} />
+        </div>
       </div>
-    </div>
-  );
-});
+    );
+  }
+);
 
 const TypeBadgePlaceholder = ({ type }: { type: string }) => {
   return (
