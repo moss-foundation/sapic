@@ -1676,7 +1676,6 @@ impl<R: AppRuntime> Worktree<R> {
                 body,
             )
             .await?;
-            dbg!(&patches);
         }
 
         if patches.is_empty() {
@@ -2432,8 +2431,6 @@ async fn describe_body<R: AppRuntime>(
         .iter()
         .map(|(kind, spec)| (kind, spec.clone()))
         .next()?;
-
-    dbg!(&spec);
 
     let inner = match kind {
         BodyKind::Text => BodyInfo::Text(spec.text?),
