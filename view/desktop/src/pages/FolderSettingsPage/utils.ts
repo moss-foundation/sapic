@@ -1,7 +1,7 @@
 import { ProjectTreeNode, ProjectTreeRootNode } from "@/components/ProjectTree/types";
 import { Icons } from "@/lib/ui";
 
-export const getFolderIcon = (node: ProjectTreeNode): Icons => {
+export const getFolderIcon = (): Icons => {
   return "Folder";
 };
 

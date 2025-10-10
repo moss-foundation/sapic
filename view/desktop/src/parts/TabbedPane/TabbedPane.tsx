@@ -2,7 +2,7 @@ import "./assets/styles.css";
 
 import React from "react";
 
-import { Breadcrumbs, PageContent, PageHeader, PageView } from "@/components";
+import { PageContent, PageHeader, PageView } from "@/components";
 import { DropNode, ProjectTreeNode } from "@/components/ProjectTree/types";
 import { useUpdateEditorPartState } from "@/hooks/app/useUpdateEditorPartState";
 import { mapEditorPartStateToSerializedDockview } from "@/hooks/app/utils";
@@ -12,6 +12,7 @@ import {
   FolderSettings,
   KitchenSink,
   Logs,
+  ProfilePage,
   ProjectSettingsPage,
   Settings,
   WelcomePage,
@@ -188,9 +189,9 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
         <PageView>
           <PageHeader icon="Placeholder" {...props} />
           <PageContent className={cn("relative", isDebug && "border-2 border-dashed border-orange-500")}>
-            {props.params?.projectId && props.params?.node?.id && (
+            {/* {props.params?.projectId && props.params?.node?.id && (
               <Breadcrumbs projectId={props.params.projectId} nodeId={props.params.node.id} />
-            )}
+            )} */}
 
             <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col opacity-50">
               <span className="text-[42px] leading-[42px]">Default Page</span>
@@ -234,6 +235,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     WorkspaceSettings: (props: IDockviewPanelProps) => <WorkspaceSettings {...props} />,
     KitchenSink: () => <KitchenSink />,
     Settings: () => <Settings />,
+    Profile: (props: IDockviewPanelProps) => <ProfilePage {...props} />,
     Logs: () => <Logs />,
   };
 

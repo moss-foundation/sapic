@@ -14,6 +14,7 @@ pub trait CollectionResourceStore<Context: AnyAsyncContext>:
     + TransactionalGetItem<Context, Key = SegKeyBuf, Entity = AnyValue>
     + RemoveItem<Context, Key = SegKeyBuf, Entity = AnyValue>
     + TransactionalRemoveItem<Context, Key = SegKeyBuf, Entity = AnyValue>
+    + RemoveByPrefix<Context, Key = SegKeyBuf, Entity = AnyValue>
     + Send
     + Sync
 {

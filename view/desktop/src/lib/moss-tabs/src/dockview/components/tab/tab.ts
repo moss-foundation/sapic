@@ -1,13 +1,13 @@
+import { DragHandler } from "../../../dnd/abstractDragHandler";
+import { getPanelData, LocalSelectionTransfer, PanelTransfer } from "../../../dnd/dataTransfer";
+import { Droptarget, DroptargetEvent, WillShowOverlayEvent } from "../../../dnd/droptarget";
+import { toggleClass } from "../../../dom";
 import { addDisposableListener, Emitter, Event } from "../../../events";
 import { CompositeDisposable, IDisposable } from "../../../lifecycle";
-import { getPanelData, LocalSelectionTransfer, PanelTransfer } from "../../../dnd/dataTransfer";
-import { toggleClass } from "../../../dom";
 import { DockviewComponent } from "../../dockviewComponent";
-import { ITabRenderer } from "../../types";
 import { DockviewGroupPanel } from "../../dockviewGroupPanel";
-import { DroptargetEvent, Droptarget, WillShowOverlayEvent } from "../../../dnd/droptarget";
-import { DragHandler } from "../../../dnd/abstractDragHandler";
 import { IDockviewPanel } from "../../dockviewPanel";
+import { ITabRenderer } from "../../types";
 
 class TabDragHandler extends DragHandler {
   private readonly panelTransfer = LocalSelectionTransfer.getInstance<PanelTransfer>();
@@ -21,7 +21,7 @@ class TabDragHandler extends DragHandler {
     super(element);
   }
 
-  getData(event: DragEvent): IDisposable {
+  getData(): IDisposable {
     this.panelTransfer.setData(
       [new PanelTransfer(this.accessor.id, this.group.id, this.panel.id)],
       PanelTransfer.prototype

@@ -8,10 +8,7 @@ mod window;
 #[macro_use]
 extern crate tracing;
 
-use moss_app::{
-    App, AppBuilder as TauriAppBuilder, app::OnAppReadyOptions, builder::BuildAppParams,
-    command::CommandDecl,
-};
+use moss_app::{App, AppBuilder as TauriAppBuilder, app::OnAppReadyOptions, command::CommandDecl};
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
     TauriAppRuntime,
@@ -20,7 +17,8 @@ use moss_applib::{
 use moss_configuration::registry::{AppConfigurationRegistry, ConfigurationRegistry};
 use moss_extension_points::{
     configurations::ConfigurationExtensionPoint, http_headers::HttpHeadersExtensionPoint,
-    resource_statuses::ResourceStatusesExtensionPoint, themes::ThemeExtensionPoint,
+    languages::LanguageExtensionPoint, resource_statuses::ResourceStatusesExtensionPoint,
+    themes::ThemeExtensionPoint,
 };
 use moss_fs::RealFileSystem;
 use moss_git_hosting_provider::{
@@ -32,6 +30,10 @@ use moss_git_hosting_provider::{
     },
 };
 use moss_keyring::KeyringClientImpl;
+use moss_language::{
+    RegisterTranslationContribution,
+    registry::{AppLanguageRegistry, LanguageRegistry},
+};
 use moss_project::registries::{
     http_headers::{AppHttpHeaderRegistry, HttpHeaderRegistry},
     resource_statuses::{AppResourceStatusRegistry, ResourceStatusRegistry},
@@ -40,7 +42,7 @@ use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_theme::registry::{AppThemeRegistry, ThemeRegistry};
 use reqwest::ClientBuilder as HttpClientBuilder;
 use serde_json::Value;
-use std::{path::PathBuf, sync::Arc, time::Duration};
+use std::{sync::Arc, time::Duration};
 #[cfg(not(debug_assertions))]
 use tauri::path::BaseDirectory;
 use tauri::{
@@ -51,6 +53,10 @@ use tauri_plugin_os;
 use window::{CreateWindowInput, create_window};
 
 use crate::{constants::*, plugins::*};
+
+inventory::submit! {
+    RegisterTranslationContribution(include_str!(concat!(env!("OUT_DIR"), "/main.i18n.json")))
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub async fn run<R: TauriRuntime>() {
@@ -83,18 +89,6 @@ pub async fn run<R: TauriRuntime>() {
                 ));
 
                 let tao_app_handle = tao.app_handle();
-
-                #[cfg(debug_assertions)]
-                let locales_dir = PathBuf::from(
-                    std::env::var("LOCALES_DIR")
-                        .expect("Environment variable LOCALES_DIR is not set"),
-                );
-
-                #[cfg(not(debug_assertions))]
-                let locales_dir = tao
-                    .path()
-                    .resolve("resources/locales", tauri::path::BaseDirectory::Resource)
-                    .expect("cannot resolve locales dir");
 
                 let delegate = AppDelegate::<TauriAppRuntime<R>>::new(tao_app_handle.clone());
                 let fs = Arc::new(RealFileSystem::new(&delegate.tmp_dir()));
@@ -137,6 +131,7 @@ pub async fn run<R: TauriRuntime>() {
                     );
 
                     let theme_registry = AppThemeRegistry::new();
+                    let locale_registry = AppLanguageRegistry::new();
                     let configuration_registry = AppConfigurationRegistry::new()
                         .expect("failed to build configuration registry");
                     let resource_status_registry = AppResourceStatusRegistry::new()
@@ -145,6 +140,7 @@ pub async fn run<R: TauriRuntime>() {
                         AppHttpHeaderRegistry::new().expect("failed to build http header registry");
 
                     <dyn ThemeRegistry>::set_global(&delegate, theme_registry);
+                    <dyn LanguageRegistry>::set_global(&delegate, locale_registry);
                     <dyn ConfigurationRegistry>::set_global(&delegate, configuration_registry);
                     <dyn ResourceStatusRegistry>::set_global(&delegate, resource_status_registry);
                     <dyn HttpHeaderRegistry>::set_global(&delegate, http_header_registry);
@@ -181,6 +177,7 @@ pub async fn run<R: TauriRuntime>() {
                         auth_api_client,
                         vec![
                             ThemeExtensionPoint::new(),
+                            LanguageExtensionPoint::new(),
                             ConfigurationExtensionPoint::new(),
                             ResourceStatusesExtensionPoint::new(),
                             HttpHeadersExtensionPoint::new(),
@@ -188,7 +185,7 @@ pub async fn run<R: TauriRuntime>() {
                     )
                     .with_command(shortcut_println_command)
                     .with_command(shortcut_alert_command)
-                    .build(&app_init_ctx, BuildAppParams { locales_dir })
+                    .build(&app_init_ctx)
                     .await;
                     let session_id = app.session_id().clone();
 

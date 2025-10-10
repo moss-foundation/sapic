@@ -3,7 +3,14 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use ts_rs::TS;
 
-ids!([EntryId, QueryParamId, PathParamId, HeaderId]);
+ids!([
+    EntryId,
+    QueryParamId,
+    PathParamId,
+    HeaderId,
+    FormDataParamId,
+    UrlencodedParamId,
+]);
 
 /// @category Primitive
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -27,6 +34,7 @@ impl FrontendEntryPath {
 
 /// @category Primitive
 #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq, Hash, TS)]
+#[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "primitives.ts")]
 pub enum EntryClass {
     Endpoint,

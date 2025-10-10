@@ -5,11 +5,38 @@ import type { EntryClass, EntryPath, EntryProtocol } from "./primitives";
 /**
  * @category Type
  */
+export type AddBodyParams =
+  | { "text": string }
+  | { "json": JsonValue }
+  | { "xml": string }
+  | { "binary": string }
+  | { "urlencoded": Array<AddUrlencodedParamParams> }
+  | { "formData": Array<AddFormDataParamParams> };
+
+/**
+ * @category Type
+ */
+export type AddFormDataParamParams = {
+  name: string;
+  value: JsonValue;
+  order: number;
+  description?: string;
+  options: FormDataParamOptions;
+  /**
+   * This field should be provided when the frontend switches back to formdata body type
+   * We will reuse the old ids to avoid unnecessary changes
+   */
+  id?: string;
+};
+
+/**
+ * @category Type
+ */
 export type AddHeaderParams = {
   name: string;
   value: JsonValue;
   order: number;
-  desc?: string;
+  description?: string;
   options: HeaderParamOptions;
 };
 
@@ -20,7 +47,7 @@ export type AddPathParamParams = {
   name: string;
   value: JsonValue;
   order: number;
-  desc?: string;
+  description?: string;
   options: PathParamOptions;
 };
 
@@ -31,8 +58,24 @@ export type AddQueryParamParams = {
   name: string;
   value: JsonValue;
   order: number;
-  desc?: string;
+  description?: string;
   options: QueryParamOptions;
+};
+
+/**
+ * @category Type
+ */
+export type AddUrlencodedParamParams = {
+  name: string;
+  value: JsonValue;
+  order: number;
+  description?: string;
+  options: UrlencodedParamOptions;
+  /**
+   * This field should be provided when the frontend switches back to urlencoded body type
+   * We will reuse the old ids to avoid unnecessary changes
+   */
+  id?: string;
 };
 
 /**
@@ -44,6 +87,17 @@ export type AfterUpdateDirEntryDescription = { id: string; path: EntryPath };
  * @category Type
  */
 export type AfterUpdateItemEntryDescription = { id: string; path: EntryPath };
+
+/**
+ * @category Type
+ */
+export type BodyInfo =
+  | { "text": string }
+  | { "json": JsonValue }
+  | { "xml": string }
+  | { "binary": string }
+  | { "urlencoded": Array<UrlencodedParamInfo> }
+  | { "formData": Array<FormDataParamInfo> };
 
 /**
  * @category Type
@@ -62,7 +116,26 @@ export type CreateItemEntryParams = {
   headers: Array<AddHeaderParams>;
   pathParams: Array<AddPathParamParams>;
   queryParams: Array<AddQueryParamParams>;
+  body?: AddBodyParams;
 };
+
+/**
+ * @category Type
+ */
+export type FormDataParamInfo = {
+  id: string;
+  name: string;
+  value: JsonValue;
+  description?: string;
+  disabled: boolean;
+  propagate: boolean;
+  order?: number;
+};
+
+/**
+ * @category Type
+ */
+export type FormDataParamOptions = { disabled: boolean; propagate: boolean };
 
 /**
  * @category Type
@@ -121,6 +194,30 @@ export type QueryParamOptions = { disabled: boolean; propagate: boolean };
 /**
  * @category Type
  */
+export type UpdateBodyParams =
+  | "remove"
+  | { "text": string }
+  | { "json": JsonValue }
+  | { "xml": string }
+  | { "binary": string }
+  | {
+      "urlencoded": {
+        params_to_add: Array<AddUrlencodedParamParams>;
+        params_to_update: Array<UpdateUrlencodedParamParams>;
+        params_to_remove: Array<string>;
+      };
+    }
+  | {
+      "formData": {
+        params_to_add: Array<AddFormDataParamParams>;
+        params_to_update: Array<UpdateFormDataParamParams>;
+        params_to_remove: Array<string>;
+      };
+    };
+
+/**
+ * @category Type
+ */
 export type UpdateDirEntryParams = {
   id: string;
   /**
@@ -137,6 +234,18 @@ export type UpdateDirEntryParams = {
 /**
  * @category Type
  */
+export type UpdateFormDataParamParams = {
+  id: string;
+  name?: string;
+  value?: ChangeJsonValue;
+  order?: number;
+  description?: ChangeString;
+  options?: FormDataParamOptions;
+};
+
+/**
+ * @category Type
+ */
 export type UpdateHeaderParamOptions = { disabled?: boolean; propagate?: boolean };
 
 /**
@@ -147,7 +256,7 @@ export type UpdateHeaderParams = {
   name?: string;
   value?: ChangeJsonValue;
   order?: number;
-  desc?: ChangeString;
+  description?: ChangeString;
   options?: HeaderParamOptions;
 };
 
@@ -175,6 +284,7 @@ export type UpdateItemEntryParams = {
   queryParamsToAdd: Array<AddQueryParamParams>;
   queryParamsToUpdate: Array<UpdateQueryParamParams>;
   queryParamsToRemove: Array<string>;
+  body?: UpdateBodyParams;
 };
 
 /**
@@ -190,7 +300,7 @@ export type UpdatePathParamParams = {
   name?: string;
   value?: ChangeJsonValue;
   order?: number;
-  desc?: ChangeString;
+  description?: ChangeString;
   options?: PathParamOptions;
 };
 
@@ -207,9 +317,39 @@ export type UpdateQueryParamParams = {
   name?: string;
   value?: ChangeJsonValue;
   order?: number;
-  desc?: ChangeString;
+  description?: ChangeString;
   options?: QueryParamOptions;
 };
+
+/**
+ * @category Type
+ */
+export type UpdateUrlencodedParamParams = {
+  id: string;
+  name?: string;
+  value?: ChangeJsonValue;
+  order?: number;
+  description?: ChangeString;
+  options?: UrlencodedParamOptions;
+};
+
+/**
+ * @category Type
+ */
+export type UrlencodedParamInfo = {
+  id: string;
+  name: string;
+  value: JsonValue;
+  description?: string;
+  disabled: boolean;
+  propagate: boolean;
+  order?: number;
+};
+
+/**
+ * @category Type
+ */
+export type UrlencodedParamOptions = { disabled: boolean; propagate: boolean };
 
 /**
  * @category Type

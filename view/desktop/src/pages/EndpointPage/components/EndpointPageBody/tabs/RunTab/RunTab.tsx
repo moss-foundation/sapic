@@ -3,16 +3,17 @@ import { useCallback, useState } from "react";
 import { Resizable, ResizablePanel } from "@/lib/ui";
 import { useEndpointPage } from "@/pages/EndpointPage/hooks/useEndpointPage";
 import { cn } from "@/utils/cn";
-import { IDockviewPanelProps } from "@repo/moss-tabs";
 
-import { EndpointPageProps } from "../../../../EndpointPage";
 import { areUrlsEquivalent, parseUrl } from "../../../../utils/urlParser";
 import { EndpointInputField } from "../../../EndpointInputField";
 import { InputView } from "./InputView/InputView";
+import { useMonitorParamsRowForms } from "./InputView/tabs/ParamsTab/hooks/useMonitorParamRowForms";
+import { useMonitorParamsRows } from "./InputView/tabs/ParamsTab/hooks/useMonitorParamsRows";
 import { OutputView } from "./OutputView/OutputView";
 
-export const RunTab = ({ ...props }: IDockviewPanelProps<EndpointPageProps>) => {
+export const RunTab = () => {
   const { endpointData, httpMethod, setHttpMethod, updateEndpointData } = useEndpointPage();
+
   const [isResizableVertical, setIsResizableVertical] = useState(false);
 
   const handleSendEndpoint = (method: string, url: string) => {
@@ -46,8 +47,11 @@ export const RunTab = ({ ...props }: IDockviewPanelProps<EndpointPageProps>) => 
     [endpointData.url.raw, updateEndpointData]
   );
 
+  useMonitorParamsRows();
+  useMonitorParamsRowForms();
+
   return (
-    <div className="flex grow flex-col gap-3">
+    <div className="flex grow flex-col gap-2.5">
       <EndpointInputField
         initialMethod={httpMethod}
         initialUrl={endpointData.url.raw}
@@ -66,16 +70,18 @@ export const RunTab = ({ ...props }: IDockviewPanelProps<EndpointPageProps>) => 
             "pb-1": isResizableVertical,
             "pr-1": !isResizableVertical,
           })}
+          minSize={isResizableVertical ? 103 : 310}
         >
-          <InputView {...props} />
+          <InputView />
         </ResizablePanel>
         <ResizablePanel
           className={cn("flex flex-col", {
             "pt-1": isResizableVertical,
             "pl-1": !isResizableVertical,
           })}
+          minSize={isResizableVertical ? 103 : 310}
         >
-          <OutputView {...props} />
+          <OutputView />
         </ResizablePanel>
       </Resizable>
     </div>

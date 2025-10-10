@@ -1,0 +1,25 @@
+@import "simplebar-react/dist/simplebar.min.css";
+
+:root {
+  --simplebar-scrollbar-size: 8px;
+  --simplebar-scrollbar-size-hover: 11px;
+}
+
+.simplebar-track.simplebar-vertical {
+  transition: width 0.1s ease-in-out;
+  width: var(--simplebar-scrollbar-size);
+}
+
+.simplebar-track.simplebar-horizontal {
+  transition: height 0.1s ease-in-out;
+  height: var(--simplebar-scrollbar-size);
+}
+
+[data-simplebar].simplebar-dragging .simplebar-track.simplebar-horizontal,
+.simplebar-track.simplebar-horizontal.simplebar-hover {
+  height: var(--simplebar-scrollbar-size-hover);
+}
+[data-simplebar].simplebar-dragging .simplebar-track.simplebar-vertical,
+.simplebar-track.simplebar-vertical.simplebar-hover {
+  width: var(--simplebar-scrollbar-size-hover);
+}

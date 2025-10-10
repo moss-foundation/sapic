@@ -14,6 +14,7 @@ import { ProjectDragType } from "../../constants";
 import { ProjectTreeContext } from "../../ProjectTreeContext";
 import { DragNode, ProjectTreeRootNode } from "../../types";
 import {
+  getAllNestedLocationProjectTreeData,
   getLocationProjectTreeData,
   getLocationProjectTreeRootNodeData,
   getSourceProjectTreeNodeData,
@@ -103,6 +104,7 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
         onDrag: ({ source, location, self }) => {
           const sourceTarget = getTreeRootNodeSourceData(source);
           const dropTarget = getLocationProjectTreeData(location);
+          const nestedDropTargets = getAllNestedLocationProjectTreeData(location);
           const rootDropTarget = getLocationProjectTreeRootNodeData(location);
           const instruction = extractInstruction(self.data);
 
@@ -113,6 +115,17 @@ export const useDraggableRootNode = ({ dirRef, triggerRef, node, isRenamingNode 
           }
 
           if (!rootDropTarget && !dropTarget) {
+            if (
+              instruction?.blocked &&
+              node.childNodes.some((child) => child.id === nestedDropTargets[0].node.id) &&
+              nestedDropTargets[0].instruction?.blocked &&
+              nestedDropTargets[0].instruction?.operation !== "combine"
+            ) {
+              setInstruction(null);
+              setDirInstruction(instruction);
+              return;
+            }
+
             setDirInstruction(null);
             setInstruction(null);
             return;

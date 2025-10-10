@@ -82,6 +82,8 @@ export const TauriAppWindowProvider: React.FC<TauriAppWindowProviderProps> = ({
         listen();
         return () => unlisten && unlisten();
       }
+
+      return () => {};
     });
   }, [appWindow, updateIsWindowMaximized]);
   const minimizeWindow = async () => {

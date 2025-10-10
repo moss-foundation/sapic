@@ -7,7 +7,7 @@ interface DropIndicatorForCombineProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export const DropIndicatorForCombine = ({ instruction, ...props }: DropIndicatorForCombineProps) => {
-  if (!instruction || instruction.operation !== "combine") return null;
+  if (!instruction) return null;
 
   return (
     <div

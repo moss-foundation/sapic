@@ -1,10 +1,8 @@
-import { useMemo, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 
-import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 import { FolderTabs, TabItemProps } from "@/lib/ui";
+import { EndpointPageContext } from "@/pages/EndpointPage/EndpointPageContext";
 
-import { EndpointPageProps } from "../../../../../EndpointPage";
-import { useEndpointPage } from "../../../../../hooks/useEndpointPage";
 import {
   AuthTabContent,
   BodyTabContent,
@@ -14,59 +12,56 @@ import {
   PreRequestTabContent,
 } from "./tabs";
 
-export const InputView = ({ ...props }: IDockviewPanelProps<EndpointPageProps>) => {
+export const InputView = () => {
+  const { entryDescription: entry } = useContext(EndpointPageContext);
+
   const [activeEndpointTabId, setActiveEndpointTabId] = useState("params");
 
-  const { endpointData } = useEndpointPage();
+  const numberOfActiveParams = useMemo(() => {
+    const queryParamsCount = entry?.queryParams.filter((param) => !param.disabled).length ?? 0;
+    const pathParamsCount = entry?.pathParams.filter((param) => !param.disabled).length ?? 0;
 
-  const paramsCount = useMemo(() => {
-    const queryParamsCount = endpointData.url.query_params.filter(
-      (param) => (param.key.trim() !== "" || param.value.trim() !== "") && !param.disabled
-    ).length;
-    const pathParamsCount = endpointData.url.path_params.filter(
-      (param) => param.key.trim() !== "" && !param.disabled
-    ).length;
     return queryParamsCount + pathParamsCount;
-  }, [endpointData.url.query_params, endpointData.url.path_params]);
+  }, [entry?.queryParams, entry?.pathParams]);
 
   const endpointTabs: TabItemProps[] = [
     {
       id: "params",
       label: "Params",
       icon: "SquareBrackets",
-      count: 6,
-      content: <ParamsTabContent {...props} />,
+      count: numberOfActiveParams,
+      content: <ParamsTabContent />,
     },
     {
       id: "auth",
       label: "Auth",
       icon: "Auth",
-      content: <AuthTabContent {...props} />,
+      content: <AuthTabContent />,
     },
     {
       id: "headers",
       label: "Headers",
       icon: "Headers",
       count: 3,
-      content: <HeadersTabContent {...props} />,
+      content: <HeadersTabContent />,
     },
     {
       id: "body",
       label: "Body",
       icon: "Braces",
-      content: <BodyTabContent {...props} />,
+      content: <BodyTabContent />,
     },
     {
       id: "pre-request",
       label: "Pre Request",
       icon: "PreRequest",
-      content: <PreRequestTabContent {...props} />,
+      content: <PreRequestTabContent />,
     },
     {
       id: "post-request",
       label: "Post Request",
       icon: "PostRequest",
-      content: <PostRequestTabContent {...props} />,
+      content: <PostRequestTabContent />,
     },
   ];
 

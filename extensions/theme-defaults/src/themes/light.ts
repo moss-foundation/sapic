@@ -1,5 +1,5 @@
-import { Theme } from "../theme";
 import { rgba } from "../color";
+import { Theme } from "../theme";
 
 export const defaultLightTheme: Theme = {
   identifier: "moss.sapic-theme.lightDefault",
@@ -644,6 +644,7 @@ export const defaultLightTheme: Theme = {
       type: "variable",
       value: "moss.gray.14",
     },
+
     "moss.button.primary.outlined.background.hover": {
       type: "variable",
       value: "moss.blue.12",
@@ -768,6 +769,7 @@ export const defaultLightTheme: Theme = {
       type: "solid",
       value: "transparent",
     },
+
     "moss.controls.plain.border": {
       type: "solid",
       value: "none",
@@ -779,6 +781,10 @@ export const defaultLightTheme: Theme = {
     "moss.controls.outlined.bg": {
       type: "variable",
       value: "moss.gray.14",
+    },
+    "moss.controls.outlined.bg.contrast": {
+      type: "variable",
+      value: "moss.gray.13",
     },
     "moss.controls.outlined.border": {
       type: "variable",

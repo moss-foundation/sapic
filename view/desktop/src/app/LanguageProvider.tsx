@@ -1,7 +1,6 @@
 import { ReactNode, useEffect } from "react";
 
 import { useSetLocale } from "@/hooks";
-import { useGetLocale } from "@/hooks/app/locales/useGetLocale";
 import { useDescribeApp } from "@/hooks/app/useDescribeApp";
 import { LocaleInfo } from "@repo/moss-app";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
@@ -16,17 +15,12 @@ const LanguageProvider = ({ children }: LanguageProviderProps) => {
   const { data: appState } = useDescribeApp();
   const { setLocaleLocally } = useSetLocale();
 
-  const localeId = appState?.configuration.contents.locale as string;
-
-  const { data: locale } = useGetLocale({
-    identifier: localeId,
-    options: { enabled: !!localeId },
-  });
+  const langCode = appState?.configuration.contents.language as string;
 
   useEffect(() => {
-    if (!locale) return;
-    initializeI18n(locale.code);
-  }, [locale]);
+    if (!langCode) return;
+    initializeI18n(langCode);
+  }, [langCode]);
 
   // Listen for language pack changes
   useEffect(() => {
@@ -37,7 +31,6 @@ const LanguageProvider = ({ children }: LanguageProviderProps) => {
 
       setLocaleLocally({
         localeInfo: {
-          identifier: eventLang.identifier,
           displayName: eventLang.displayName,
           code: eventLang.code,
         },

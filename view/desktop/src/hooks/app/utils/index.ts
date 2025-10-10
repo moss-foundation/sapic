@@ -56,9 +56,17 @@ export const mapSerializedDockviewToEditorPartState = (dockview: SerializedDockv
     grid: { root, height, width, orientation },
   } = dockview;
 
-  //FIXME: type error here
+  // Fixed type error: ensure panels values are cast to EditorPanelState and params are always defined
   return {
-    panels,
+    panels: Object.fromEntries(
+      Object.entries(panels).map(([key, panel]) => [
+        key,
+        {
+          ...panel,
+          params: panel.params ?? {},
+        },
+      ])
+    ),
     activeGroup,
     grid: {
       height,

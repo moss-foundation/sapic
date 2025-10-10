@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 
 import { fireEvent } from "@testing-library/dom";
 
@@ -33,28 +33,28 @@ describe("tab", () => {
   });
 
   test("that an external event does not render a drop target and calls through to the group model", () => {
-    const accessorMock = vi.fn<Partial<DockviewComponent>, []>(() => {
+    const accessorMock = vi.fn(() => {
       return {
         id: "testcomponentid",
       };
     });
-    const groupviewMock = vi.fn<Partial<DockviewGroupPanelModel>, []>(() => {
+    const groupviewMock = vi.fn(() => {
       return {
         canDisplayOverlay: vi.fn(),
       };
     });
 
-    const groupView = new groupviewMock() as DockviewGroupPanelModel;
+    const groupView = groupviewMock() as unknown as DockviewGroupPanelModel;
 
-    const groupPanelMock = vi.fn<Partial<DockviewGroupPanel>, []>(() => {
+    const groupPanelMock = vi.fn(() => {
       return {
         id: "testgroupid",
         model: groupView,
       };
     });
 
-    const accessor = new accessorMock() as DockviewComponent;
-    const groupPanel = new groupPanelMock() as DockviewGroupPanel;
+    const accessor = accessorMock() as DockviewComponent;
+    const groupPanel = groupPanelMock() as DockviewGroupPanel;
 
     const cut = new Tab({ id: "panelId" } as IDockviewPanel, accessor, groupPanel);
 
@@ -70,28 +70,28 @@ describe("tab", () => {
   });
 
   test("that if you drag over yourself no drop target is shown", () => {
-    const accessorMock = vi.fn<Partial<DockviewComponent>, []>(() => {
+    const accessorMock = vi.fn(() => {
       return {
         id: "testcomponentid",
       };
     });
-    const groupviewMock = vi.fn<Partial<DockviewGroupPanelModel>, []>(() => {
+    const groupviewMock = vi.fn(() => {
       return {
         canDisplayOverlay: vi.fn(),
       };
     });
 
-    const groupView = new groupviewMock() as DockviewGroupPanelModel;
+    const groupView = groupviewMock() as unknown as DockviewGroupPanelModel;
 
-    const groupPanelMock = vi.fn<Partial<DockviewGroupPanel>, []>(() => {
+    const groupPanelMock = vi.fn(() => {
       return {
         id: "testgroupid",
         model: groupView,
       };
     });
 
-    const accessor = new accessorMock() as DockviewComponent;
-    const groupPanel = new groupPanelMock() as DockviewGroupPanel;
+    const accessor = accessorMock() as DockviewComponent;
+    const groupPanel = groupPanelMock() as DockviewGroupPanel;
 
     const cut = new Tab({ id: "panel1" } as IDockviewPanel, accessor, groupPanel);
 
@@ -112,28 +112,28 @@ describe("tab", () => {
   });
 
   test("that if you drag over another tab a drop target is shown", () => {
-    const accessorMock = vi.fn<Partial<DockviewComponent>, []>(() => {
+    const accessorMock = vi.fn(() => {
       return {
         id: "testcomponentid",
       };
     });
-    const groupviewMock = vi.fn<Partial<DockviewGroupPanelModel>, []>(() => {
+    const groupviewMock = vi.fn(() => {
       return {
         canDisplayOverlay: vi.fn(),
       };
     });
 
-    const groupView = new groupviewMock() as DockviewGroupPanelModel;
+    const groupView = groupviewMock() as unknown as DockviewGroupPanelModel;
 
-    const groupPanelMock = vi.fn<Partial<DockviewGroupPanel>, []>(() => {
+    const groupPanelMock = vi.fn(() => {
       return {
         id: "testgroupid",
         model: groupView,
       };
     });
 
-    const accessor = new accessorMock() as DockviewComponent;
-    const groupPanel = new groupPanelMock() as DockviewGroupPanel;
+    const accessor = accessorMock() as DockviewComponent;
+    const groupPanel = groupPanelMock() as DockviewGroupPanel;
 
     const cut = new Tab({ id: "panel1" } as IDockviewPanel, accessor, groupPanel);
 
@@ -154,28 +154,28 @@ describe("tab", () => {
   });
 
   test("that dropping on a tab with the same id but from a different component should not render a drop over and call through to the group model", () => {
-    const accessorMock = vi.fn<Partial<DockviewComponent>, []>(() => {
+    const accessorMock = vi.fn(() => {
       return {
         id: "testcomponentid",
       };
     });
-    const groupviewMock = vi.fn<Partial<DockviewGroupPanelModel>, []>(() => {
+    const groupviewMock = vi.fn(() => {
       return {
         canDisplayOverlay: vi.fn(),
       };
     });
 
-    const groupView = new groupviewMock() as DockviewGroupPanelModel;
+    const groupView = groupviewMock() as unknown as DockviewGroupPanelModel;
 
-    const groupPanelMock = vi.fn<Partial<DockviewGroupPanel>, []>(() => {
+    const groupPanelMock = vi.fn(() => {
       return {
         id: "testgroupid",
         model: groupView,
       };
     });
 
-    const accessor = new accessorMock() as DockviewComponent;
-    const groupPanel = new groupPanelMock() as DockviewGroupPanel;
+    const accessor = accessorMock() as DockviewComponent;
+    const groupPanel = groupPanelMock() as DockviewGroupPanel;
 
     const cut = new Tab({ id: "panel1" } as IDockviewPanel, accessor, groupPanel);
 
@@ -196,28 +196,28 @@ describe("tab", () => {
   });
 
   test("that dropping on a tab from a different component should not render a drop over and call through to the group model", () => {
-    const accessorMock = vi.fn<Partial<DockviewComponent>, []>(() => {
+    const accessorMock = vi.fn(() => {
       return {
         id: "testcomponentid",
       };
     });
-    const groupviewMock = vi.fn<Partial<DockviewGroupPanelModel>, []>(() => {
+    const groupviewMock = vi.fn(() => {
       return {
         canDisplayOverlay: vi.fn(),
       };
     });
 
-    const groupView = new groupviewMock() as DockviewGroupPanelModel;
+    const groupView = groupviewMock() as unknown as DockviewGroupPanelModel;
 
-    const groupPanelMock = vi.fn<Partial<DockviewGroupPanel>, []>(() => {
+    const groupPanelMock = vi.fn(() => {
       return {
         id: "testgroupid",
         model: groupView,
       };
     });
 
-    const accessor = new accessorMock() as DockviewComponent;
-    const groupPanel = new groupPanelMock() as DockviewGroupPanel;
+    const accessor = accessorMock() as DockviewComponent;
+    const groupPanel = groupPanelMock() as DockviewGroupPanel;
 
     const cut = new Tab({ id: "panel1" } as IDockviewPanel, accessor, groupPanel);
 

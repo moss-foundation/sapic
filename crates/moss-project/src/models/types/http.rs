@@ -1,10 +1,13 @@
 use moss_bindingutils::primitives::{ChangeJsonValue, ChangeString};
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
+use std::path::PathBuf;
 use ts_rs::TS;
 use validator::Validate;
 
-use crate::models::primitives::{HeaderId, PathParamId, QueryParamId};
+use crate::models::primitives::{
+    FormDataParamId, HeaderId, PathParamId, QueryParamId, UrlencodedParamId,
+};
 
 /// @category Type
 #[derive(Clone, Debug, Deserialize, Serialize, Validate, TS)]
@@ -26,7 +29,7 @@ pub struct AddHeaderParams {
     #[ts(type = "JsonValue")]
     pub value: JsonValue,
     pub order: isize,
-    pub desc: Option<String>,
+    pub description: Option<String>,
     pub options: HeaderParamOptions,
 }
 
@@ -52,7 +55,7 @@ pub struct UpdateHeaderParams {
     pub value: Option<ChangeJsonValue>,
     pub order: Option<isize>,
     #[ts(optional, type = "ChangeString")]
-    pub desc: Option<ChangeString>,
+    pub description: Option<ChangeString>,
     pub options: Option<HeaderParamOptions>,
 }
 
@@ -76,7 +79,7 @@ pub struct AddQueryParamParams {
     #[ts(type = "JsonValue")]
     pub value: JsonValue,
     pub order: isize,
-    pub desc: Option<String>,
+    pub description: Option<String>,
     pub options: QueryParamOptions,
 }
 
@@ -102,7 +105,7 @@ pub struct UpdateQueryParamParams {
     pub value: Option<ChangeJsonValue>,
     pub order: Option<isize>,
     #[ts(optional, type = "ChangeString")]
-    pub desc: Option<ChangeString>,
+    pub description: Option<ChangeString>,
     pub options: Option<QueryParamOptions>,
 }
 
@@ -126,7 +129,7 @@ pub struct AddPathParamParams {
     #[ts(type = "JsonValue")]
     pub value: JsonValue,
     pub order: isize,
-    pub desc: Option<String>,
+    pub description: Option<String>,
     pub options: PathParamOptions,
 }
 
@@ -152,6 +155,103 @@ pub struct UpdatePathParamParams {
     pub value: Option<ChangeJsonValue>,
     pub order: Option<isize>,
     #[ts(optional, type = "ChangeString")]
-    pub desc: Option<ChangeString>,
+    pub description: Option<ChangeString>,
     pub options: Option<PathParamOptions>,
+}
+
+/// @category Type
+#[derive(Clone, Debug, Deserialize, Serialize, TS)]
+#[ts(export, export_to = "types.ts")]
+#[serde(rename_all = "camelCase")]
+pub enum AddBodyParams {
+    Text(String),
+    Json(#[ts(type = "JsonValue")] JsonValue),
+    Xml(String),
+    Binary(PathBuf),
+    Urlencoded(Vec<AddUrlencodedParamParams>),
+    FormData(Vec<AddFormDataParamParams>),
+}
+
+/// @category Type
+#[derive(Clone, Debug, Deserialize, Serialize, Validate, TS)]
+#[ts(export, export_to = "types.ts")]
+#[serde(rename_all = "camelCase")]
+pub struct UrlencodedParamOptions {
+    pub disabled: bool,
+    pub propagate: bool,
+}
+
+/// @category Type
+#[derive(Clone, Debug, Deserialize, Serialize, Validate, TS)]
+#[ts(export, export_to = "types.ts")]
+#[ts(optional_fields)]
+#[serde(rename_all = "camelCase")]
+pub struct AddUrlencodedParamParams {
+    pub name: String,
+    #[ts(type = "JsonValue")]
+    pub value: JsonValue,
+    pub order: isize,
+    pub description: Option<String>,
+    pub options: UrlencodedParamOptions,
+    /// This field should be provided when the frontend switches back to urlencoded body type
+    /// We will reuse the old ids to avoid unnecessary changes
+    pub id: Option<UrlencodedParamId>,
+}
+
+/// @category Type
+#[derive(Clone, Debug, Deserialize, Serialize, Validate, TS)]
+#[ts(export, export_to = "types.ts")]
+#[serde(rename_all = "camelCase")]
+pub struct FormDataParamOptions {
+    pub disabled: bool,
+    pub propagate: bool,
+}
+
+/// @category Type
+#[derive(Clone, Debug, Deserialize, Serialize, Validate, TS)]
+#[ts(export, export_to = "types.ts")]
+#[ts(optional_fields)]
+#[serde(rename_all = "camelCase")]
+pub struct AddFormDataParamParams {
+    pub name: String,
+    #[ts(type = "JsonValue")]
+    pub value: JsonValue,
+    pub order: isize,
+    pub description: Option<String>,
+    pub options: FormDataParamOptions,
+    /// This field should be provided when the frontend switches back to formdata body type
+    /// We will reuse the old ids to avoid unnecessary changes
+    pub id: Option<FormDataParamId>,
+}
+
+/// @category Type
+#[derive(Clone, Debug, Deserialize, Serialize, Validate, TS)]
+#[ts(export, export_to = "types.ts")]
+#[ts(optional_fields)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateUrlencodedParamParams {
+    pub id: UrlencodedParamId,
+    pub name: Option<String>,
+    #[ts(optional, type = "ChangeJsonValue")]
+    pub value: Option<ChangeJsonValue>,
+    pub order: Option<isize>,
+    #[ts(optional, type = "ChangeString")]
+    pub description: Option<ChangeString>,
+    pub options: Option<UrlencodedParamOptions>,
+}
+
+/// @category Type
+#[derive(Clone, Debug, Deserialize, Serialize, Validate, TS)]
+#[ts(export, export_to = "types.ts")]
+#[ts(optional_fields)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateFormDataParamParams {
+    pub id: FormDataParamId,
+    pub name: Option<String>,
+    #[ts(optional, type = "ChangeJsonValue")]
+    pub value: Option<ChangeJsonValue>,
+    pub order: Option<isize>,
+    #[ts(optional, type = "ChangeString")]
+    pub description: Option<ChangeString>,
+    pub options: Option<FormDataParamOptions>,
 }

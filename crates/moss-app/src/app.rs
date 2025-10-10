@@ -17,7 +17,7 @@ use crate::{
     command::CommandCallback,
     configuration::ConfigurationService,
     extension::ExtensionService,
-    locale::LocaleService,
+    language::LocaleService,
     logging::LogService,
     models::{
         primitives::SessionId,

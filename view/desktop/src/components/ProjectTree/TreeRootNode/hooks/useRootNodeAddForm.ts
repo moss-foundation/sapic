@@ -19,13 +19,16 @@ export const useRootNodeAddForm = (node: ProjectTreeRootNode) => {
     const newEntry = createEntryKind({
       name: newName,
       path: "",
-      class: "Endpoint",
+      class: "endpoint",
       isAddingFolder: isAddingRootFolderNode,
       order: node.childNodes.length + 1,
       protocol: "Get",
     });
 
     try {
+      setIsAddingRootFileNode(false);
+      setIsAddingRootFolderNode(false);
+
       await createProjectEntry({
         projectId: id,
         input: newEntry,

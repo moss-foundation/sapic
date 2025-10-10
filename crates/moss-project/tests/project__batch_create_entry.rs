@@ -41,6 +41,7 @@ async fn batch_create_entry_success() {
         query_params: vec![],
         path_params: vec![],
         headers: vec![],
+        body: None,
     });
     let input = BatchCreateEntryInput {
         // Make sure that the order is correctly sorted
@@ -86,6 +87,7 @@ async fn batch_create_entry_missing_parent() {
         query_params: vec![],
         path_params: vec![],
         headers: vec![],
+        body: None,
     });
     let input = BatchCreateEntryInput {
         entries: vec![inner_input],

@@ -109,7 +109,7 @@ export const FolderSettings = ({ ...props }: IDockviewPanelProps<FolderSettingsP
   return (
     <PageView>
       <PageHeader
-        icon={getFolderIcon(props?.params?.node)}
+        icon={getFolderIcon()}
         title={node?.name}
         disableTitleChange={isRoot}
         isRenamingTitle={isRenamingEntry}

@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use tracing::Level;
 use ts_rs::TS;
 
-ids!([SessionId, WorkspaceId, LocaleId]);
+ids!([SessionId, WorkspaceId]);
 
 /// @category Primitive
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, TS, PartialEq)]

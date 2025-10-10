@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { ProviderIcon } from "@/components/Modals/Project/NewProjectModal/components/ProviderIcon";
+import { ProviderIcon } from "@/components/ProviderIcon";
 import { FolderTabs, FramedTabs, Icon, PillTabs, UnderlinedTabs } from "@/lib/ui";
 
 import { KitchenSinkSection } from "../KitchenSinkSection";

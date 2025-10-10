@@ -37,6 +37,7 @@
     "@repo/moss-app": "workspace:*",
     "@repo/moss-project": "workspace:*",
     "@repo/moss-tabs": "workspace:*",
+    "@repo/moss-user": "workspace:*",
     "@repo/moss-workspace": "workspace:*",
     "@tanstack/react-pacer": "^0.16.1",
     "@tanstack/react-query": "^5.90.2",
@@ -53,12 +54,12 @@
     "react-dom": "^18.3.1",
     "react-i18next": "^16.0.0",
     "react-scan": "^0.4.3",
+    "rooks": "^9.3.0",
     "simplebar": "^6.3.2",
     "simplebar-react": "^3.3.2",
     "sonner": "^2.0.7",
     "zod": "^3.24.4",
-    "zustand": "^5.0.3",
-    "rooks": "^9.3.0"
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

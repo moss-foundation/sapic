@@ -90,6 +90,12 @@ def extract_palette_from_json(json_path: Path) -> Dict[str, str]:
 
     return palette
 
+def append_svg_props(svg_xml: str) -> str:
+    """
+    Append props to the svg tag
+    """
+    return re.sub(r'<svg([^>]*)>', r'<svg\1 {...props}>', svg_xml, count=1)
+
 
 def compare_svg_structure(a: ET.ElementTree, b: ET.ElementTree) -> bool:
     """
@@ -211,14 +217,16 @@ def merge_svg_to_component(
             de.set("className", combined)
 
     light_xml = ET.tostring(light_el, encoding='unicode')
+    light_svg = append_svg_props(light_xml)
     dark_xml = ET.tostring(dark_el, encoding='unicode')
+    dark_svg = append_svg_props(dark_xml)
     return (
         f"import React from 'react';"
         f"\nimport type {{ SVGProps }} from 'react';"
         f"\nconst Svg{name}: React.FC<SVGProps<SVGSVGElement>> = props => ("
-        f"\n  <div {{...props}}>"
-        f"\n    {light_xml}"  # Light theme
-        f"\n    {dark_xml}"   # Dark theme
+        f"\n  <div>"
+        f"\n    {light_svg}"  # Light theme
+        f"\n    {dark_svg}"   # Dark theme
         f"\n  </div>"
         f"\n);"
         f"\nexport default Svg{name};"
@@ -229,7 +237,7 @@ def svg_to_component(name: str, svg_xml: str) -> str:
     """
     Wrap raw SVG XML into a React functional component.
     """
-    svg_with_props = re.sub(r'<svg([^>]*)>', r'<svg\1 {...props}>', svg_xml, count=1)
+    svg_with_props = append_svg_props(svg_xml)
     return (
         f"import React from 'react';"
         f"\nimport type {{ SVGProps }} from 'react';"
@@ -263,7 +271,7 @@ def generate_components(
 
     for name, props in plan_data.items():
         svg_path = icons_dir / name
-        logging.info("Processing icon '%s'", name)
+        # logging.info("Processing icon '%s'", name)
         light_tree = ET.parse(svg_path / 'light.svg')
         dark_tree = ET.parse(svg_path / 'dark.svg')
 

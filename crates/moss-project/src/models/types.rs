@@ -8,7 +8,8 @@ use ts_rs::TS;
 use validator::{Validate, ValidationError};
 
 use crate::models::primitives::{
-    EntryClass, EntryId, EntryProtocol, FrontendEntryPath, HeaderId, PathParamId, QueryParamId,
+    EntryClass, EntryId, EntryProtocol, FormDataParamId, FrontendEntryPath, HeaderId, PathParamId,
+    QueryParamId, UrlencodedParamId,
 };
 
 /// @category Type
@@ -31,6 +32,7 @@ pub struct CreateItemEntryParams {
     pub headers: Vec<AddHeaderParams>,
     pub path_params: Vec<AddPathParamParams>,
     pub query_params: Vec<AddQueryParamParams>,
+    pub body: Option<AddBodyParams>,
 }
 
 /// @category Type
@@ -79,6 +81,30 @@ pub struct UpdateItemEntryParams {
     pub query_params_to_add: Vec<AddQueryParamParams>,
     pub query_params_to_update: Vec<UpdateQueryParamParams>,
     pub query_params_to_remove: Vec<QueryParamId>,
+
+    pub body: Option<UpdateBodyParams>,
+}
+
+/// @category Type
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub enum UpdateBodyParams {
+    Remove,
+    Text(String),
+    Json(#[ts(type = "JsonValue")] JsonValue),
+    Xml(String),
+    Binary(PathBuf),
+    Urlencoded {
+        params_to_add: Vec<AddUrlencodedParamParams>,
+        params_to_update: Vec<UpdateUrlencodedParamParams>,
+        params_to_remove: Vec<UrlencodedParamId>,
+    },
+    FormData {
+        params_to_add: Vec<AddFormDataParamParams>,
+        params_to_update: Vec<UpdateFormDataParamParams>,
+        params_to_remove: Vec<FormDataParamId>,
+    },
 }
 
 /// @category Type
@@ -184,6 +210,51 @@ pub struct QueryParamInfo {
     pub disabled: bool,
     pub propagate: bool,
     pub order: Option<isize>,
+}
+
+/// @category Type
+#[derive(Clone, Debug, PartialEq, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct UrlencodedParamInfo {
+    pub id: UrlencodedParamId,
+    pub name: String,
+    #[ts(type = "JsonValue")]
+    pub value: JsonValue,
+    pub description: Option<String>,
+    pub disabled: bool,
+    pub propagate: bool,
+    pub order: Option<isize>,
+}
+
+/// @category Type
+#[derive(Clone, Debug, PartialEq, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct FormDataParamInfo {
+    pub id: FormDataParamId,
+    pub name: String,
+    #[ts(type = "JsonValue")]
+    pub value: JsonValue,
+    pub description: Option<String>,
+    pub disabled: bool,
+    pub propagate: bool,
+    pub order: Option<isize>,
+}
+
+/// @category Type
+#[derive(Clone, Debug, PartialEq, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub enum BodyInfo {
+    Text(String),
+    Json(#[ts(type = "JsonValue")] JsonValue),
+    Xml(String),
+    Binary(PathBuf),
+    Urlencoded(Vec<UrlencodedParamInfo>),
+    FormData(Vec<FormDataParamInfo>),
 }
 
 // Check that input path begins with a valid top folder

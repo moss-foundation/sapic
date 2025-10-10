@@ -3,6 +3,7 @@ import type { EntryClass, EntryKind, EntryProtocol } from "./primitives";
 import type {
   AfterUpdateDirEntryDescription,
   AfterUpdateItemEntryDescription,
+  BodyInfo,
   CreateDirEntryParams,
   CreateItemEntryParams,
   HeaderInfo,
@@ -79,6 +80,7 @@ export type DescribeEntryOutput = {
   headers: Array<HeaderInfo>;
   pathParams: Array<PathParamInfo>;
   queryParams: Array<QueryParamInfo>;
+  body?: BodyInfo;
 };
 
 /**

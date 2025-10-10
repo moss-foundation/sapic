@@ -30,7 +30,7 @@ export const useSetLocale = () => {
             ...old.configuration,
             contents: {
               ...old.configuration.contents,
-              locale: input.localeInfo.identifier,
+              locale: input.localeInfo.code,
             },
           },
         };
@@ -48,7 +48,7 @@ export const useSetLocale = () => {
           ...old.configuration,
           contents: {
             ...old.configuration.contents,
-            locale: input.localeInfo.identifier,
+            locale: input.localeInfo.code,
           },
         },
       };

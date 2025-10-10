@@ -26,11 +26,11 @@ const TreeNodeAddForm = ({
 }: TreeNodeAddFormProps) => {
   const { nodeOffset } = useContext(ProjectTreeContext);
 
-  const nodePaddingLeftForAddForm = (depth + 1) * nodeOffset;
+  const nodePaddingLeftForAddForm = (depth + 2) * nodeOffset;
 
   return (
-    <div style={{ paddingLeft: nodePaddingLeftForAddForm }} className="flex w-full min-w-0 items-center gap-1 py-0.5">
-      <Icon icon="ChevronRight" className={cn("opacity-0")} />
+    <div style={{ paddingLeft: nodePaddingLeftForAddForm }} className="flex w-full min-w-0 items-center gap-1.5">
+      <Icon icon="ChevronRight" className={cn("shrink-0 opacity-0")} />
       <EntryIcon
         entry={{
           id: "Placeholder_AddingNodeId",
@@ -39,7 +39,7 @@ const TreeNodeAddForm = ({
           protocol: undefined,
           expanded: true,
           order: Infinity,
-          class: "Endpoint",
+          class: "endpoint",
           childNodes: [],
           path: {
             raw: "",

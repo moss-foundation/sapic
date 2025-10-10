@@ -3,7 +3,7 @@
 /**
  * @category Primitive
  */
-export type EntryClass = "Endpoint" | "Component" | "Schema";
+export type EntryClass = "endpoint" | "component" | "schema";
 
 /**
  * @category Primitive

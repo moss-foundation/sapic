@@ -2,44 +2,42 @@ import { useState } from "react";
 
 import { PageWrapper } from "@/components/PageView/PageWrapper";
 import { FramedTabs } from "@/lib/ui";
-import { IDockviewPanelProps } from "@repo/moss-tabs";
 
-import { EndpointPageProps } from "../../EndpointPage";
 import { AlertsTab, InsightsTab, IssuesTab, MockTab, OverviewTab, RunTab } from "./tabs";
 
-export const EndpointPageBody = ({ ...props }: IDockviewPanelProps<EndpointPageProps>) => {
+export const EndpointPageBody = () => {
   const [activeTab, setActiveTab] = useState("run");
 
   const tabs = [
     {
       id: "overview",
       label: "Overview",
-      content: <OverviewTab {...props} />,
+      content: <OverviewTab />,
     },
     {
       id: "run",
       label: "Run",
-      content: <RunTab {...props} />,
+      content: <RunTab />,
     },
     {
       id: "issues",
       label: "Issues",
-      content: <IssuesTab {...props} />,
+      content: <IssuesTab />,
     },
     {
       id: "alerts",
       label: "Alerts",
-      content: <AlertsTab {...props} />,
+      content: <AlertsTab />,
     },
     {
       id: "insights",
       label: "Insights",
-      content: <InsightsTab {...props} />,
+      content: <InsightsTab />,
     },
     {
       id: "mock",
       label: "Mock",
-      content: <MockTab {...props} />,
+      content: <MockTab />,
     },
   ];
 

@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 
-import { Icon, Icons, TabsPrimitive } from "@/lib/ui";
+import { Icon, Icons, Scrollbar, TabsPrimitive } from "@/lib/ui";
 import { cn } from "@/utils";
 
 interface FolderTabsProps {
@@ -28,10 +28,20 @@ interface FolderTabsListProps {
 
 const List = ({ children, className, toolbar }: FolderTabsListProps) => {
   return (
-    <div className="background-(--moss-secondary-background) flex items-center justify-between shadow-[0px_-1px_0px_0px_var(--moss-border-color)_inset]">
+    <Scrollbar
+      className={cn(
+        "background-(--moss-secondary-background) h-auto w-full min-w-0 items-center shadow-[0px_-1px_0px_0px_var(--moss-border-color)_inset]",
+        { "pr-2": toolbar }
+      )}
+      classNames={{
+        contentWrapper: "mr-2",
+        contentEl: "flex items-center justify-between",
+      }}
+      data-tabs-list-container
+    >
       <TabsPrimitive.TabsList className={cn("flex grow items-center", className)}>{children}</TabsPrimitive.TabsList>
       {toolbar && <div className="flex shrink-0 items-center">{toolbar}</div>}
-    </div>
+    </Scrollbar>
   );
 };
 
@@ -48,7 +58,7 @@ const Trigger = ({ value, children, className, icon, count }: PageContainerTabPr
     <TabsPrimitive.TabsTrigger
       value={value}
       className={cn(
-        "flex items-center py-2 text-base transition-colors",
+        "flex items-center py-2.25 text-base transition-colors",
         "relative border-b-1 border-transparent",
         "text-(--moss-secondary-text) hover:text-(--moss-primary-text)",
         "data-[state=active]:text-(--moss-primary-text)",
@@ -62,7 +72,7 @@ const Trigger = ({ value, children, className, icon, count }: PageContainerTabPr
     >
       {icon && <Icon icon={icon} className="h-4 w-4" />}
       <span className="leading-4">{children}</span>
-      {count && (
+      {count !== undefined && (
         <span className="background-(--moss-primary) flex size-4 items-center justify-center rounded-full text-xs leading-2.5 text-white">
           {count}
         </span>

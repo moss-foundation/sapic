@@ -1,13 +1,11 @@
 import { useState } from "react";
 
 import ActionButton from "@/components/ActionButton";
-import { FolderTabs, TabItemProps } from "@/lib/ui";
-import { IDockviewPanelProps } from "@repo/moss-tabs";
+import { FolderTabs, Scrollbar, TabItemProps } from "@/lib/ui";
 
-import { EndpointPageProps } from "../../../../../EndpointPage";
 import { BodyTab, CookiesTab, HeadersTab } from "./tabs";
 
-export const OutputView = ({ ...props }: IDockviewPanelProps<EndpointPageProps>) => {
+export const OutputView = () => {
   const [activeOutputTabId, setActiveOutputTabId] = useState("body");
 
   const outputTabs: TabItemProps[] = [
@@ -31,6 +29,7 @@ export const OutputView = ({ ...props }: IDockviewPanelProps<EndpointPageProps>)
       content: <CookiesTab />,
     },
   ];
+
   return (
     <div className="flex flex-1 flex-col gap-3">
       <FolderTabs.Root value={activeOutputTabId} onValueChange={setActiveOutputTabId} className="flex grow flex-col">
@@ -44,7 +43,7 @@ export const OutputView = ({ ...props }: IDockviewPanelProps<EndpointPageProps>)
 
         {outputTabs.map((tab) => (
           <FolderTabs.Content key={tab.id} value={tab.id} className="flex grow">
-            {tab.content}
+            <Scrollbar className="h-full w-full">{tab.content}</Scrollbar>
           </FolderTabs.Content>
         ))}
       </FolderTabs.Root>

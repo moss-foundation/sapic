@@ -9,11 +9,14 @@ use moss_project::{
         operations::{CreateEntryInput, UpdateEntryInput},
         primitives::{EntryClass, EntryId, EntryProtocol},
         types::{
-            CreateItemEntryParams, UpdateDirEntryParams, UpdateItemEntryParams,
+            BodyInfo, CreateItemEntryParams, UpdateBodyParams, UpdateDirEntryParams,
+            UpdateItemEntryParams,
             http::{
-                AddHeaderParams, AddPathParamParams, AddQueryParamParams, HeaderParamOptions,
-                PathParamOptions, QueryParamOptions, UpdateHeaderParams, UpdatePathParamParams,
-                UpdateQueryParamParams,
+                AddBodyParams, AddFormDataParamParams, AddHeaderParams, AddPathParamParams,
+                AddQueryParamParams, AddUrlencodedParamParams, FormDataParamOptions,
+                HeaderParamOptions, PathParamOptions, QueryParamOptions, UpdateFormDataParamParams,
+                UpdateHeaderParams, UpdatePathParamParams, UpdateQueryParamParams,
+                UpdateUrlencodedParamParams, UrlencodedParamOptions,
             },
         },
     },
@@ -22,7 +25,7 @@ use moss_project::{
 use moss_storage::storage::operations::GetItem;
 use moss_testutils::fs_specific::FILENAME_SPECIAL_CHARS;
 use moss_text::sanitized::sanitize;
-use serde_json::Value as JsonValue;
+use serde_json::{Value as JsonValue, json};
 use std::path::{Path, PathBuf};
 
 use crate::shared::{
@@ -33,7 +36,7 @@ use crate::shared::{
 
 #[tokio::test]
 async fn rename_dir_entry_success() {
-    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let old_entry_name = random_entry_name();
@@ -44,9 +47,10 @@ async fn rename_dir_entry_success() {
     let _ = project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Dir(UpdateDirEntryParams {
                 id,
-                path: Default::default(),
+                path: None,
                 name: Some(new_entry_name.clone()),
                 order: None,
                 expanded: None,
@@ -67,7 +71,7 @@ async fn rename_dir_entry_success() {
 
 #[tokio::test]
 async fn rename_dir_entry_empty_name() {
-    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
 
     let old_entry_name = random_entry_name();
     let new_entry_name = "".to_string();
@@ -77,9 +81,10 @@ async fn rename_dir_entry_empty_name() {
     let result = project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Dir(UpdateDirEntryParams {
                 id,
-                path: Default::default(),
+                path: None,
                 name: Some(new_entry_name.clone()),
                 order: None,
                 expanded: None,
@@ -95,7 +100,7 @@ async fn rename_dir_entry_empty_name() {
 
 #[tokio::test]
 async fn rename_dir_entry_already_exists() {
-    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
     let first_entry_name = random_entry_name();
     let second_entry_name = random_entry_name();
 
@@ -107,9 +112,10 @@ async fn rename_dir_entry_already_exists() {
     let result = project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Dir(UpdateDirEntryParams {
                 id: first_id,
-                path: Default::default(),
+                path: None,
                 name: Some(second_entry_name.clone()),
                 order: None,
                 expanded: None,
@@ -125,7 +131,7 @@ async fn rename_dir_entry_already_exists() {
 
 #[tokio::test]
 async fn rename_dir_entry_special_chars_in_name() {
-    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let entry_base_path = PathBuf::from(RESOURCES_ROOT_DIR);
@@ -139,9 +145,10 @@ async fn rename_dir_entry_special_chars_in_name() {
         let result = project
             .update_entry(
                 &ctx,
+                &app_delegate,
                 UpdateEntryInput::Dir(UpdateDirEntryParams {
                     id,
-                    path: Default::default(),
+                    path: None,
                     name: Some(new_entry_name.clone()),
                     order: None,
                     expanded: None,
@@ -173,7 +180,7 @@ async fn rename_dir_entry_special_chars_in_name() {
 
 #[tokio::test]
 async fn update_dir_entry_order() {
-    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
 
     let entry_name = random_entry_name();
 
@@ -182,9 +189,10 @@ async fn update_dir_entry_order() {
     let _ = project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Dir(UpdateDirEntryParams {
                 id: id.clone(),
-                path: Default::default(),
+                path: None,
                 name: None,
                 order: Some(42),
                 expanded: None,
@@ -209,7 +217,7 @@ async fn update_dir_entry_order() {
 
 #[tokio::test]
 async fn expand_and_collapse_dir_entry() {
-    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
 
     let entry_name = random_entry_name();
 
@@ -221,9 +229,10 @@ async fn expand_and_collapse_dir_entry() {
     let _ = project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Dir(UpdateDirEntryParams {
                 id: id.clone(),
-                path: Default::default(),
+                path: None,
                 name: None,
                 order: None,
                 expanded: Some(true),
@@ -247,9 +256,10 @@ async fn expand_and_collapse_dir_entry() {
     let _ = project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Dir(UpdateDirEntryParams {
                 id: id.clone(),
-                path: Default::default(),
+                path: None,
                 name: None,
                 order: None,
                 expanded: Some(false),
@@ -275,7 +285,7 @@ async fn expand_and_collapse_dir_entry() {
 
 #[tokio::test]
 async fn move_dir_entry_success() {
-    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let entry_name = random_entry_name();
@@ -292,6 +302,7 @@ async fn move_dir_entry_success() {
     let _output = project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Dir(UpdateDirEntryParams {
                 id,
                 path: Some(new_dest.clone()),
@@ -315,7 +326,7 @@ async fn move_dir_entry_success() {
 
 #[tokio::test]
 async fn move_dir_entry_nonexistent_destination() {
-    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
 
     let entry_name = random_entry_name();
 
@@ -327,6 +338,7 @@ async fn move_dir_entry_nonexistent_destination() {
     let result = project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Dir(UpdateDirEntryParams {
                 id,
                 path: Some(new_dest.clone()),
@@ -345,7 +357,7 @@ async fn move_dir_entry_nonexistent_destination() {
 
 #[tokio::test]
 async fn move_dir_entry_already_exists() {
-    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
 
     // First create a dest/entry entry
     let dest_name = "dest".to_string();
@@ -358,6 +370,7 @@ async fn move_dir_entry_already_exists() {
     let _ = project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Dir(UpdateDirEntryParams {
                 id: existing_id,
                 path: Some(dest.clone()),
@@ -374,6 +387,7 @@ async fn move_dir_entry_already_exists() {
     let result = project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Dir(UpdateDirEntryParams {
                 id: new_id,
                 path: Some(dest.clone()),
@@ -392,7 +406,7 @@ async fn move_dir_entry_already_exists() {
 
 #[tokio::test]
 async fn update_item_entry_endpoint_headers() {
-    let (ctx, _, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, project) = create_test_project().await;
 
     let entry_name = random_entry_name();
     let input = CreateEntryInput::Item(CreateItemEntryParams {
@@ -405,7 +419,7 @@ async fn update_item_entry_endpoint_headers() {
             name: "1".to_string(),
             value: JsonValue::String("1".to_string()),
             order: 1,
-            desc: Some("1".to_string()),
+            description: Some("1".to_string()),
             options: HeaderParamOptions {
                 disabled: false,
                 propagate: false,
@@ -413,17 +427,22 @@ async fn update_item_entry_endpoint_headers() {
         }],
         path_params: vec![],
         query_params: vec![],
+        body: None,
     });
 
     let id = project.create_entry(&ctx, input).await.unwrap().id;
 
-    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
     let header_id = desc.headers.first().unwrap().id.clone();
 
     // Test update header
     project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Item(UpdateItemEntryParams {
                 id: id.clone(),
                 path: None,
@@ -437,7 +456,7 @@ async fn update_item_entry_endpoint_headers() {
                     name: Some("2".to_string()),
                     value: Some(ChangeJsonValue::Update(JsonValue::String("2".to_string()))),
                     order: Some(2),
-                    desc: Some(ChangeString::Update("2".to_string())),
+                    description: Some(ChangeString::Update("2".to_string())),
                     options: Some(HeaderParamOptions {
                         disabled: true,
                         propagate: true,
@@ -450,12 +469,16 @@ async fn update_item_entry_endpoint_headers() {
                 query_params_to_add: vec![],
                 query_params_to_update: vec![],
                 query_params_to_remove: vec![],
+                body: None,
             }),
         )
         .await
         .unwrap();
 
-    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
     let header = desc.headers.first().unwrap();
 
     assert_eq!(header.name, "2");
@@ -470,6 +493,7 @@ async fn update_item_entry_endpoint_headers() {
     project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Item(UpdateItemEntryParams {
                 id: id.clone(),
                 path: None,
@@ -486,18 +510,23 @@ async fn update_item_entry_endpoint_headers() {
                 query_params_to_add: vec![],
                 query_params_to_update: vec![],
                 query_params_to_remove: vec![],
+                body: None,
             }),
         )
         .await
         .unwrap();
 
-    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
     assert!(desc.headers.is_empty());
 
     // Test add header
     project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Item(UpdateItemEntryParams {
                 id: id.clone(),
                 path: None,
@@ -509,7 +538,7 @@ async fn update_item_entry_endpoint_headers() {
                     name: "3".to_string(),
                     value: JsonValue::String("3".to_string()),
                     order: 3,
-                    desc: Some("3".to_string()),
+                    description: Some("3".to_string()),
                     options: HeaderParamOptions {
                         disabled: false,
                         propagate: false,
@@ -523,12 +552,16 @@ async fn update_item_entry_endpoint_headers() {
                 query_params_to_add: vec![],
                 query_params_to_update: vec![],
                 query_params_to_remove: vec![],
+                body: None,
             }),
         )
         .await
         .unwrap();
 
-    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
     assert_eq!(desc.headers.len(), 1);
     let header = desc.headers.first().unwrap();
     assert_eq!(header.name, "3");
@@ -543,7 +576,7 @@ async fn update_item_entry_endpoint_headers() {
 
 #[tokio::test]
 async fn update_item_entry_endpoint_path_params() {
-    let (ctx, _, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, project) = create_test_project().await;
 
     let entry_name = random_entry_name();
     let input = CreateEntryInput::Item(CreateItemEntryParams {
@@ -557,24 +590,29 @@ async fn update_item_entry_endpoint_path_params() {
             name: "1".to_string(),
             value: JsonValue::String("1".to_string()),
             order: 1,
-            desc: Some("1".to_string()),
+            description: Some("1".to_string()),
             options: PathParamOptions {
                 disabled: false,
                 propagate: false,
             },
         }],
         query_params: vec![],
+        body: None,
     });
 
     let id = project.create_entry(&ctx, input).await.unwrap().id;
 
-    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
     let path_param_id = desc.path_params.first().unwrap().id.clone();
 
     // Test update header
     project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Item(UpdateItemEntryParams {
                 id: id.clone(),
                 path: None,
@@ -591,7 +629,7 @@ async fn update_item_entry_endpoint_path_params() {
                     name: Some("2".to_string()),
                     value: Some(ChangeJsonValue::Update(JsonValue::String("2".to_string()))),
                     order: Some(2),
-                    desc: Some(ChangeString::Update("2".to_string())),
+                    description: Some(ChangeString::Update("2".to_string())),
                     options: Some(PathParamOptions {
                         disabled: true,
                         propagate: true,
@@ -601,12 +639,16 @@ async fn update_item_entry_endpoint_path_params() {
                 query_params_to_add: vec![],
                 query_params_to_update: vec![],
                 query_params_to_remove: vec![],
+                body: None,
             }),
         )
         .await
         .unwrap();
 
-    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
     let path_param = desc.path_params.first().unwrap();
 
     assert_eq!(path_param.name, "2");
@@ -620,6 +662,7 @@ async fn update_item_entry_endpoint_path_params() {
     project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Item(UpdateItemEntryParams {
                 id: id.clone(),
                 path: None,
@@ -636,18 +679,23 @@ async fn update_item_entry_endpoint_path_params() {
                 query_params_to_add: vec![],
                 query_params_to_update: vec![],
                 query_params_to_remove: vec![],
+                body: None,
             }),
         )
         .await
         .unwrap();
 
-    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
     assert!(desc.path_params.is_empty());
 
     // Test add header
     project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Item(UpdateItemEntryParams {
                 id: id.clone(),
                 path: None,
@@ -662,7 +710,7 @@ async fn update_item_entry_endpoint_path_params() {
                     name: "3".to_string(),
                     value: JsonValue::String("3".to_string()),
                     order: 3,
-                    desc: Some("3".to_string()),
+                    description: Some("3".to_string()),
                     options: PathParamOptions {
                         disabled: false,
                         propagate: false,
@@ -673,12 +721,16 @@ async fn update_item_entry_endpoint_path_params() {
                 query_params_to_add: vec![],
                 query_params_to_update: vec![],
                 query_params_to_remove: vec![],
+                body: None,
             }),
         )
         .await
         .unwrap();
 
-    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
     assert_eq!(desc.path_params.len(), 1);
     let path_param = desc.path_params.first().unwrap();
     assert_eq!(path_param.name, "3");
@@ -693,7 +745,7 @@ async fn update_item_entry_endpoint_path_params() {
 
 #[tokio::test]
 async fn update_item_entry_endpoint_query_params() {
-    let (ctx, _, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, project) = create_test_project().await;
 
     let entry_name = random_entry_name();
     let input = CreateEntryInput::Item(CreateItemEntryParams {
@@ -708,23 +760,28 @@ async fn update_item_entry_endpoint_query_params() {
             name: "1".to_string(),
             value: JsonValue::String("1".to_string()),
             order: 1,
-            desc: Some("1".to_string()),
+            description: Some("1".to_string()),
             options: QueryParamOptions {
                 disabled: false,
                 propagate: false,
             },
         }],
+        body: None,
     });
 
     let id = project.create_entry(&ctx, input).await.unwrap().id;
 
-    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
     let query_param_id = desc.query_params.first().unwrap().id.clone();
 
     // Test update header
     project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Item(UpdateItemEntryParams {
                 id: id.clone(),
                 path: None,
@@ -744,19 +801,23 @@ async fn update_item_entry_endpoint_query_params() {
                     name: Some("2".to_string()),
                     value: Some(ChangeJsonValue::Update(JsonValue::String("2".to_string()))),
                     order: Some(2),
-                    desc: Some(ChangeString::Update("2".to_string())),
+                    description: Some(ChangeString::Update("2".to_string())),
                     options: Some(QueryParamOptions {
                         disabled: true,
                         propagate: true,
                     }),
                 }],
                 query_params_to_remove: vec![],
+                body: None,
             }),
         )
         .await
         .unwrap();
 
-    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
     let query_param = desc.query_params.first().unwrap();
 
     assert_eq!(query_param.name, "2");
@@ -770,6 +831,7 @@ async fn update_item_entry_endpoint_query_params() {
     project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Item(UpdateItemEntryParams {
                 id: id.clone(),
                 path: None,
@@ -786,18 +848,23 @@ async fn update_item_entry_endpoint_query_params() {
                 query_params_to_add: vec![],
                 query_params_to_update: vec![],
                 query_params_to_remove: vec![query_param_id.clone()],
+                body: None,
             }),
         )
         .await
         .unwrap();
 
-    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
     assert!(desc.query_params.is_empty());
 
     // Test add header
     project
         .update_entry(
             &ctx,
+            &app_delegate,
             UpdateEntryInput::Item(UpdateItemEntryParams {
                 id: id.clone(),
                 path: None,
@@ -815,7 +882,7 @@ async fn update_item_entry_endpoint_query_params() {
                     name: "3".to_string(),
                     value: JsonValue::String("3".to_string()),
                     order: 3,
-                    desc: Some("3".to_string()),
+                    description: Some("3".to_string()),
                     options: QueryParamOptions {
                         disabled: false,
                         propagate: false,
@@ -823,12 +890,16 @@ async fn update_item_entry_endpoint_query_params() {
                 }],
                 query_params_to_update: vec![],
                 query_params_to_remove: vec![],
+                body: None,
             }),
         )
         .await
         .unwrap();
 
-    let desc = project.describe_entry(&ctx, id.clone()).await.unwrap();
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
     assert_eq!(desc.query_params.len(), 1);
     let query_param = desc.query_params.first().unwrap();
     assert_eq!(query_param.name, "3");
@@ -837,6 +908,741 @@ async fn update_item_entry_endpoint_query_params() {
     assert_eq!(query_param.description, Some("3".to_string()));
     assert_eq!(query_param.disabled, false);
     assert_eq!(query_param.propagate, false);
+
+    std::fs::remove_dir_all(project_path).unwrap();
+}
+
+#[tokio::test]
+async fn test_item_entry_endpoint_remove_body() {
+    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+
+    let entry_name = random_entry_name();
+    let input = CreateEntryInput::Item(CreateItemEntryParams {
+        path: Default::default(),
+        class: EntryClass::Endpoint,
+        name: entry_name.clone(),
+        order: 0,
+        protocol: Some(EntryProtocol::Get),
+        headers: vec![],
+        path_params: vec![],
+        query_params: vec![],
+        body: Some(AddBodyParams::FormData(vec![AddFormDataParamParams {
+            name: "1".to_string(),
+            value: JsonValue::String("1".to_string()),
+            order: 1,
+            description: None,
+            options: FormDataParamOptions {
+                disabled: false,
+                propagate: false,
+            },
+            id: None,
+        }])),
+    });
+
+    let id = project.create_entry(&ctx, input).await.unwrap().id;
+
+    // Test remove body
+    project
+        .update_entry(
+            &ctx,
+            &app_delegate,
+            UpdateEntryInput::Item(UpdateItemEntryParams {
+                id: id.clone(),
+                path: None,
+                name: None,
+                order: None,
+                expanded: None,
+                protocol: None,
+                headers_to_add: vec![],
+                headers_to_update: vec![],
+                headers_to_remove: vec![],
+                path_params_to_add: vec![],
+                path_params_to_update: vec![],
+                path_params_to_remove: vec![],
+                query_params_to_add: vec![],
+                query_params_to_update: vec![],
+                query_params_to_remove: vec![],
+                body: Some(UpdateBodyParams::Remove),
+            }),
+        )
+        .await
+        .unwrap();
+
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
+    assert!(desc.body.is_none());
+
+    std::fs::remove_dir_all(project_path).unwrap();
+}
+
+#[tokio::test]
+async fn test_item_entry_endpoint_update_text() {
+    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+
+    let entry_name = random_entry_name();
+    let input = CreateEntryInput::Item(CreateItemEntryParams {
+        path: Default::default(),
+        class: EntryClass::Endpoint,
+        name: entry_name.clone(),
+        order: 0,
+        protocol: Some(EntryProtocol::Get),
+        headers: vec![],
+        path_params: vec![],
+        query_params: vec![],
+        body: Some(AddBodyParams::Text("Before".to_string())),
+    });
+
+    let id = project.create_entry(&ctx, input).await.unwrap().id;
+
+    // Test update body text
+    project
+        .update_entry(
+            &ctx,
+            &app_delegate,
+            UpdateEntryInput::Item(UpdateItemEntryParams {
+                id: id.clone(),
+                path: None,
+                name: None,
+                order: None,
+                expanded: None,
+                protocol: None,
+                headers_to_add: vec![],
+                headers_to_update: vec![],
+                headers_to_remove: vec![],
+                path_params_to_add: vec![],
+                path_params_to_update: vec![],
+                path_params_to_remove: vec![],
+                query_params_to_add: vec![],
+                query_params_to_update: vec![],
+                query_params_to_remove: vec![],
+                body: Some(UpdateBodyParams::Text("After".to_string())),
+            }),
+        )
+        .await
+        .unwrap();
+
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
+    // An extra \n is added during deserialization
+    assert_eq!(desc.body, Some(BodyInfo::Text("After\n".to_string())));
+
+    std::fs::remove_dir_all(project_path).unwrap();
+}
+
+#[tokio::test]
+async fn test_item_entry_endpoint_update_json() {
+    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+
+    let entry_name = random_entry_name();
+    let input = CreateEntryInput::Item(CreateItemEntryParams {
+        path: Default::default(),
+        class: EntryClass::Endpoint,
+        name: entry_name.clone(),
+        order: 0,
+        protocol: Some(EntryProtocol::Get),
+        headers: vec![],
+        path_params: vec![],
+        query_params: vec![],
+        body: Some(AddBodyParams::Json(json!( {"before": "true"} ))),
+    });
+
+    let new_json = json!( {"after": "true"} );
+    let id = project.create_entry(&ctx, input).await.unwrap().id;
+
+    // Test update body json
+    project
+        .update_entry(
+            &ctx,
+            &app_delegate,
+            UpdateEntryInput::Item(UpdateItemEntryParams {
+                id: id.clone(),
+                path: None,
+                name: None,
+                order: None,
+                expanded: None,
+                protocol: None,
+                headers_to_add: vec![],
+                headers_to_update: vec![],
+                headers_to_remove: vec![],
+                path_params_to_add: vec![],
+                path_params_to_update: vec![],
+                path_params_to_remove: vec![],
+                query_params_to_add: vec![],
+                query_params_to_update: vec![],
+                query_params_to_remove: vec![],
+                body: Some(UpdateBodyParams::Json(new_json.clone())),
+            }),
+        )
+        .await
+        .unwrap();
+
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
+    assert_eq!(desc.body, Some(BodyInfo::Json(new_json.clone())));
+
+    std::fs::remove_dir_all(project_path).unwrap();
+}
+
+#[tokio::test]
+async fn test_item_entry_endpoint_update_xml() {
+    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+
+    let entry_name = random_entry_name();
+    let input = CreateEntryInput::Item(CreateItemEntryParams {
+        path: Default::default(),
+        class: EntryClass::Endpoint,
+        name: entry_name.clone(),
+        order: 0,
+        protocol: Some(EntryProtocol::Get),
+        headers: vec![],
+        path_params: vec![],
+        query_params: vec![],
+        body: Some(AddBodyParams::Xml("<before></before>".to_string())),
+    });
+
+    let id = project.create_entry(&ctx, input).await.unwrap().id;
+    // Test update body xml
+    project
+        .update_entry(
+            &ctx,
+            &app_delegate,
+            UpdateEntryInput::Item(UpdateItemEntryParams {
+                id: id.clone(),
+                path: None,
+                name: None,
+                order: None,
+                expanded: None,
+                protocol: None,
+                headers_to_add: vec![],
+                headers_to_update: vec![],
+                headers_to_remove: vec![],
+                path_params_to_add: vec![],
+                path_params_to_update: vec![],
+                path_params_to_remove: vec![],
+                query_params_to_add: vec![],
+                query_params_to_update: vec![],
+                query_params_to_remove: vec![],
+                body: Some(UpdateBodyParams::Xml("<after></after>".to_string())),
+            }),
+        )
+        .await
+        .unwrap();
+
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
+    // An extra \n is added during deserialization
+    assert_eq!(
+        desc.body,
+        Some(BodyInfo::Xml("<after></after>\n".to_string()))
+    );
+
+    std::fs::remove_dir_all(project_path).unwrap();
+}
+
+#[tokio::test]
+async fn test_item_entry_endpoint_update_binary() {
+    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+
+    let entry_name = random_entry_name();
+    let input = CreateEntryInput::Item(CreateItemEntryParams {
+        path: Default::default(),
+        class: EntryClass::Endpoint,
+        name: entry_name.clone(),
+        order: 0,
+        protocol: Some(EntryProtocol::Get),
+        headers: vec![],
+        path_params: vec![],
+        query_params: vec![],
+        body: Some(AddBodyParams::Binary(PathBuf::from("/before"))),
+    });
+
+    let id = project.create_entry(&ctx, input).await.unwrap().id;
+
+    // Test update body binary
+    project
+        .update_entry(
+            &ctx,
+            &app_delegate,
+            UpdateEntryInput::Item(UpdateItemEntryParams {
+                id: id.clone(),
+                path: None,
+                name: None,
+                order: None,
+                expanded: None,
+                protocol: None,
+                headers_to_add: vec![],
+                headers_to_update: vec![],
+                headers_to_remove: vec![],
+                path_params_to_add: vec![],
+                path_params_to_update: vec![],
+                path_params_to_remove: vec![],
+                query_params_to_add: vec![],
+                query_params_to_update: vec![],
+                query_params_to_remove: vec![],
+                body: Some(UpdateBodyParams::Binary(PathBuf::from("/after"))),
+            }),
+        )
+        .await
+        .unwrap();
+
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
+    assert_eq!(desc.body, Some(BodyInfo::Binary(PathBuf::from("/after"))));
+
+    std::fs::remove_dir_all(project_path).unwrap();
+}
+
+#[tokio::test]
+async fn test_item_entry_endpoint_update_urlencoded() {
+    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let entry_name = random_entry_name();
+
+    let input = CreateEntryInput::Item(CreateItemEntryParams {
+        path: Default::default(),
+        class: EntryClass::Endpoint,
+        name: entry_name.clone(),
+        order: 0,
+        protocol: Some(EntryProtocol::Get),
+        headers: vec![],
+        path_params: vec![],
+        query_params: vec![],
+        body: Some(AddBodyParams::Urlencoded(vec![])),
+    });
+
+    let id = project.create_entry(&ctx, input).await.unwrap().id;
+
+    let before = AddUrlencodedParamParams {
+        name: "before".to_string(),
+        value: JsonValue::String("before".to_string()),
+        order: 1,
+        description: Some("before".to_string()),
+        options: UrlencodedParamOptions {
+            disabled: false,
+            propagate: false,
+        },
+        id: None,
+    };
+
+    // Test add urlencoded param
+    project
+        .update_entry(
+            &ctx,
+            &app_delegate,
+            UpdateEntryInput::Item(UpdateItemEntryParams {
+                id: id.clone(),
+                path: None,
+                name: None,
+                order: None,
+                expanded: None,
+                protocol: None,
+                headers_to_add: vec![],
+                headers_to_update: vec![],
+                headers_to_remove: vec![],
+                path_params_to_add: vec![],
+                path_params_to_update: vec![],
+                path_params_to_remove: vec![],
+                query_params_to_add: vec![],
+                query_params_to_update: vec![],
+                query_params_to_remove: vec![],
+                body: Some(UpdateBodyParams::Urlencoded {
+                    params_to_add: vec![before.clone()],
+                    params_to_update: vec![],
+                    params_to_remove: vec![],
+                }),
+            }),
+        )
+        .await
+        .unwrap();
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
+    let urlencoded = if let Some(BodyInfo::Urlencoded(urlencoded)) = desc.body {
+        urlencoded
+    } else {
+        panic!("Incorrect body type");
+    };
+    assert_eq!(urlencoded.len(), 1);
+
+    let param = urlencoded.get(0).unwrap();
+    assert_eq!(param.name, before.name);
+    assert_eq!(param.value, before.value);
+    assert_eq!(param.order, Some(before.order));
+    assert_eq!(param.description, before.description);
+    assert_eq!(param.disabled, before.options.disabled);
+    assert_eq!(param.propagate, before.options.propagate);
+
+    // Test update urlencoded param
+    let param_id = param.id.clone();
+    let after = UpdateUrlencodedParamParams {
+        id: param_id.clone(),
+        name: Some("after".to_string()),
+        value: Some(ChangeJsonValue::Update(JsonValue::String(
+            "after".to_string(),
+        ))),
+        order: Some(1),
+        description: Some(ChangeString::Remove),
+        options: Some(UrlencodedParamOptions {
+            disabled: true,
+            propagate: true,
+        }),
+    };
+
+    project
+        .update_entry(
+            &ctx,
+            &app_delegate,
+            UpdateEntryInput::Item(UpdateItemEntryParams {
+                id: id.clone(),
+                path: None,
+                name: None,
+                order: None,
+                expanded: None,
+                protocol: None,
+                headers_to_add: vec![],
+                headers_to_update: vec![],
+                headers_to_remove: vec![],
+                path_params_to_add: vec![],
+                path_params_to_update: vec![],
+                path_params_to_remove: vec![],
+                query_params_to_add: vec![],
+                query_params_to_update: vec![],
+                query_params_to_remove: vec![],
+                body: Some(UpdateBodyParams::Urlencoded {
+                    params_to_add: vec![],
+                    params_to_update: vec![after.clone()],
+                    params_to_remove: vec![],
+                }),
+            }),
+        )
+        .await
+        .unwrap();
+
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
+    let urlencoded = if let Some(BodyInfo::Urlencoded(urlencoded)) = desc.body {
+        urlencoded
+    } else {
+        panic!("Incorrect body type");
+    };
+    assert_eq!(urlencoded.len(), 1);
+
+    let param = urlencoded.get(0).unwrap();
+    assert_eq!(param.name, after.name.unwrap());
+    assert_eq!(param.value, JsonValue::String("after".to_string()));
+    assert_eq!(param.order, after.order);
+    assert_eq!(param.description, None);
+    assert_eq!(param.disabled, true);
+    assert_eq!(param.propagate, true);
+
+    // Test remove urlencoded param
+    project
+        .update_entry(
+            &ctx,
+            &app_delegate,
+            UpdateEntryInput::Item(UpdateItemEntryParams {
+                id: id.clone(),
+                path: None,
+                name: None,
+                order: None,
+                expanded: None,
+                protocol: None,
+                headers_to_add: vec![],
+                headers_to_update: vec![],
+                headers_to_remove: vec![],
+                path_params_to_add: vec![],
+                path_params_to_update: vec![],
+                path_params_to_remove: vec![],
+                query_params_to_add: vec![],
+                query_params_to_update: vec![],
+                query_params_to_remove: vec![],
+                body: Some(UpdateBodyParams::Urlencoded {
+                    params_to_add: vec![],
+                    params_to_update: vec![],
+                    params_to_remove: vec![param_id.clone()],
+                }),
+            }),
+        )
+        .await
+        .unwrap();
+
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
+    let urlencoded = if let Some(BodyInfo::Urlencoded(urlencoded)) = desc.body {
+        urlencoded
+    } else {
+        panic!("Incorrect body type");
+    };
+    assert_eq!(urlencoded.len(), 0);
+
+    // Cleanup
+    std::fs::remove_dir_all(project_path).unwrap();
+}
+
+#[tokio::test]
+async fn test_item_entry_endpoint_update_formdata() {
+    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let entry_name = random_entry_name();
+
+    let input = CreateEntryInput::Item(CreateItemEntryParams {
+        path: Default::default(),
+        class: EntryClass::Endpoint,
+        name: entry_name.clone(),
+        order: 0,
+        protocol: Some(EntryProtocol::Get),
+        headers: vec![],
+        path_params: vec![],
+        query_params: vec![],
+        body: Some(AddBodyParams::FormData(vec![])),
+    });
+
+    let id = project.create_entry(&ctx, input).await.unwrap().id;
+
+    let before = AddFormDataParamParams {
+        name: "before".to_string(),
+        value: JsonValue::String("before".to_string()),
+        order: 1,
+        description: Some("before".to_string()),
+        options: FormDataParamOptions {
+            disabled: false,
+            propagate: false,
+        },
+        id: None,
+    };
+
+    // Test add formdata param
+    project
+        .update_entry(
+            &ctx,
+            &app_delegate,
+            UpdateEntryInput::Item(UpdateItemEntryParams {
+                id: id.clone(),
+                path: None,
+                name: None,
+                order: None,
+                expanded: None,
+                protocol: None,
+                headers_to_add: vec![],
+                headers_to_update: vec![],
+                headers_to_remove: vec![],
+                path_params_to_add: vec![],
+                path_params_to_update: vec![],
+                path_params_to_remove: vec![],
+                query_params_to_add: vec![],
+                query_params_to_update: vec![],
+                query_params_to_remove: vec![],
+                body: Some(UpdateBodyParams::FormData {
+                    params_to_add: vec![before.clone()],
+                    params_to_update: vec![],
+                    params_to_remove: vec![],
+                }),
+            }),
+        )
+        .await
+        .unwrap();
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
+    let formdata = if let Some(BodyInfo::FormData(formdata)) = desc.body {
+        formdata
+    } else {
+        panic!("Incorrect body type");
+    };
+    assert_eq!(formdata.len(), 1);
+
+    let param = formdata.get(0).unwrap();
+    assert_eq!(param.name, before.name);
+    assert_eq!(param.value, before.value);
+    assert_eq!(param.order, Some(before.order));
+    assert_eq!(param.description, before.description);
+    assert_eq!(param.disabled, before.options.disabled);
+    assert_eq!(param.propagate, before.options.propagate);
+
+    // Test update formdata param
+    let param_id = param.id.clone();
+    let after = UpdateFormDataParamParams {
+        id: param_id.clone(),
+        name: Some("after".to_string()),
+        value: Some(ChangeJsonValue::Update(JsonValue::String(
+            "after".to_string(),
+        ))),
+        order: Some(1),
+        description: Some(ChangeString::Remove),
+        options: Some(FormDataParamOptions {
+            disabled: true,
+            propagate: true,
+        }),
+    };
+
+    project
+        .update_entry(
+            &ctx,
+            &app_delegate,
+            UpdateEntryInput::Item(UpdateItemEntryParams {
+                id: id.clone(),
+                path: None,
+                name: None,
+                order: None,
+                expanded: None,
+                protocol: None,
+                headers_to_add: vec![],
+                headers_to_update: vec![],
+                headers_to_remove: vec![],
+                path_params_to_add: vec![],
+                path_params_to_update: vec![],
+                path_params_to_remove: vec![],
+                query_params_to_add: vec![],
+                query_params_to_update: vec![],
+                query_params_to_remove: vec![],
+                body: Some(UpdateBodyParams::FormData {
+                    params_to_add: vec![],
+                    params_to_update: vec![after.clone()],
+                    params_to_remove: vec![],
+                }),
+            }),
+        )
+        .await
+        .unwrap();
+
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
+    let formdata = if let Some(BodyInfo::FormData(formdata)) = desc.body {
+        formdata
+    } else {
+        panic!("Incorrect body type");
+    };
+    assert_eq!(formdata.len(), 1);
+
+    let param = formdata.get(0).unwrap();
+    assert_eq!(param.name, after.name.unwrap());
+    assert_eq!(param.value, JsonValue::String("after".to_string()));
+    assert_eq!(param.order, after.order);
+    assert_eq!(param.description, None);
+    assert_eq!(param.disabled, true);
+    assert_eq!(param.propagate, true);
+
+    // Test remove formdata param
+    project
+        .update_entry(
+            &ctx,
+            &app_delegate,
+            UpdateEntryInput::Item(UpdateItemEntryParams {
+                id: id.clone(),
+                path: None,
+                name: None,
+                order: None,
+                expanded: None,
+                protocol: None,
+                headers_to_add: vec![],
+                headers_to_update: vec![],
+                headers_to_remove: vec![],
+                path_params_to_add: vec![],
+                path_params_to_update: vec![],
+                path_params_to_remove: vec![],
+                query_params_to_add: vec![],
+                query_params_to_update: vec![],
+                query_params_to_remove: vec![],
+                body: Some(UpdateBodyParams::FormData {
+                    params_to_add: vec![],
+                    params_to_update: vec![],
+                    params_to_remove: vec![param_id.clone()],
+                }),
+            }),
+        )
+        .await
+        .unwrap();
+
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
+    let formdata = if let Some(BodyInfo::FormData(formdata)) = desc.body {
+        formdata
+    } else {
+        panic!("Incorrect body type");
+    };
+    assert_eq!(formdata.len(), 0);
+
+    // Cleanup
+    std::fs::remove_dir_all(project_path).unwrap();
+}
+
+#[tokio::test]
+async fn test_item_entry_endpoint_update_change_body_type() {
+    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let entry_name = random_entry_name();
+
+    let input = CreateEntryInput::Item(CreateItemEntryParams {
+        path: Default::default(),
+        class: EntryClass::Endpoint,
+        name: entry_name.clone(),
+        order: 0,
+        protocol: Some(EntryProtocol::Get),
+        headers: vec![],
+        path_params: vec![],
+        query_params: vec![],
+        body: Some(AddBodyParams::FormData(vec![])),
+    });
+
+    let id = project.create_entry(&ctx, input).await.unwrap().id;
+
+    project
+        .update_entry(
+            &ctx,
+            &app_delegate,
+            UpdateEntryInput::Item(UpdateItemEntryParams {
+                id: id.clone(),
+                path: None,
+                name: None,
+                order: None,
+                expanded: None,
+                protocol: None,
+                headers_to_add: vec![],
+                headers_to_update: vec![],
+                headers_to_remove: vec![],
+                path_params_to_add: vec![],
+                path_params_to_update: vec![],
+                path_params_to_remove: vec![],
+                query_params_to_add: vec![],
+                query_params_to_update: vec![],
+                query_params_to_remove: vec![],
+                body: Some(UpdateBodyParams::Urlencoded {
+                    params_to_add: vec![],
+                    params_to_update: vec![],
+                    params_to_remove: vec![],
+                }),
+            }),
+        )
+        .await
+        .unwrap();
+
+    let desc = project
+        .describe_entry(&ctx, &app_delegate, id.clone())
+        .await
+        .unwrap();
+    let urlencoded = if let Some(BodyInfo::Urlencoded(urlencoded)) = desc.body {
+        urlencoded
+    } else {
+        panic!("Incorrect body type");
+    };
+    assert_eq!(urlencoded.len(), 0);
 
     std::fs::remove_dir_all(project_path).unwrap();
 }

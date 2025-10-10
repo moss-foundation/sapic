@@ -1,4 +1,5 @@
 use moss_configuration::models::primitives::ConfigurationTarget;
+use moss_language::models::primitives::LanguageDirection;
 use moss_logging::models::primitives::LogEntryId;
 use moss_theme::models::primitives::{ThemeId, ThemeMode};
 use moss_user::models::primitives::AccountKind;
@@ -65,12 +66,10 @@ pub struct AddAccountParams {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct LocaleInfo {
-    pub identifier: LocaleId,
     pub display_name: String,
     pub code: String,
-    pub direction: Option<String>,
-    pub order: Option<isize>,
-    pub is_default: Option<bool>,
+    #[ts(optional, type = "LanguageDirection")]
+    pub direction: Option<LanguageDirection>,
 }
 
 /// @category Type
