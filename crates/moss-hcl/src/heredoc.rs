@@ -1,4 +1,4 @@
-use hcl::{HeredocStripMode, Identifier};
+use hcl::{Heredoc, HeredocStripMode, Identifier};
 use serde::{Serialize, Serializer};
 
 const INDENT: &'static str = "  ";
@@ -11,6 +11,11 @@ fn indent(content: &str) -> String {
         .map(|l| format!("{INDENT}{l}"))
         .collect::<Vec<_>>()
         .join("\n")
+}
+
+pub fn convert_string_to_heredoc(expr: &str) -> Heredoc {
+    let indented = indent(expr);
+    Heredoc::new(Identifier::from(DELIMITER), indented).with_strip_mode(HeredocStripMode::Indent)
 }
 
 /// Serialize String as an HCL heredoc String
@@ -26,9 +31,7 @@ pub fn serialize_string_as_heredoc<S>(expr: &str, serializer: S) -> Result<S::Ok
 where
     S: Serializer,
 {
-    let indented = indent(expr);
-    let heredoc = hcl::expr::Heredoc::new(Identifier::from(DELIMITER), indented)
-        .with_strip_mode(HeredocStripMode::Indent);
+    let heredoc = convert_string_to_heredoc(expr);
     heredoc.serialize(serializer)
 }
 

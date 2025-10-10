@@ -22,6 +22,11 @@ export type AddFormDataParamParams = {
   order: number;
   description?: string;
   options: FormDataParamOptions;
+  /**
+   * This field should be provided when the frontend switches back to formdata body type
+   * We will reuse the old ids to avoid unnecessary changes
+   */
+  id?: string;
 };
 
 /**
@@ -66,6 +71,11 @@ export type AddUrlencodedParamParams = {
   order: number;
   description?: string;
   options: UrlencodedParamOptions;
+  /**
+   * This field should be provided when the frontend switches back to urlencoded body type
+   * We will reuse the old ids to avoid unnecessary changes
+   */
+  id?: string;
 };
 
 /**
@@ -184,6 +194,30 @@ export type QueryParamOptions = { disabled: boolean; propagate: boolean };
 /**
  * @category Type
  */
+export type UpdateBodyParams =
+  | "remove"
+  | { "text": string }
+  | { "json": JsonValue }
+  | { "xml": string }
+  | { "binary": string }
+  | {
+      "urlencoded": {
+        params_to_add: Array<AddUrlencodedParamParams>;
+        params_to_update: Array<UpdateUrlencodedParamParams>;
+        params_to_remove: Array<string>;
+      };
+    }
+  | {
+      "formData": {
+        params_to_add: Array<AddFormDataParamParams>;
+        params_to_update: Array<UpdateFormDataParamParams>;
+        params_to_remove: Array<string>;
+      };
+    };
+
+/**
+ * @category Type
+ */
 export type UpdateDirEntryParams = {
   id: string;
   /**
@@ -195,6 +229,18 @@ export type UpdateDirEntryParams = {
   name?: string;
   order?: number;
   expanded?: boolean;
+};
+
+/**
+ * @category Type
+ */
+export type UpdateFormDataParamParams = {
+  id: string;
+  name?: string;
+  value?: ChangeJsonValue;
+  order?: number;
+  description?: ChangeString;
+  options?: FormDataParamOptions;
 };
 
 /**
@@ -238,6 +284,7 @@ export type UpdateItemEntryParams = {
   queryParamsToAdd: Array<AddQueryParamParams>;
   queryParamsToUpdate: Array<UpdateQueryParamParams>;
   queryParamsToRemove: Array<string>;
+  body?: UpdateBodyParams;
 };
 
 /**
@@ -272,6 +319,18 @@ export type UpdateQueryParamParams = {
   order?: number;
   description?: ChangeString;
   options?: QueryParamOptions;
+};
+
+/**
+ * @category Type
+ */
+export type UpdateUrlencodedParamParams = {
+  id: string;
+  name?: string;
+  value?: ChangeJsonValue;
+  order?: number;
+  description?: ChangeString;
+  options?: UrlencodedParamOptions;
 };
 
 /**

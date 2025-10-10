@@ -41,13 +41,15 @@ pub fn segkey_entry_query_param_order(
 // Urlencoded and formdata params share the prefix of "body"
 // This way, when changing the type of body, we can clear all the cached orders easily
 
+pub fn segkey_entry_body(entry_id: &EntryId) -> SegKeyBuf {
+    SEGKEY_RESOURCE_ENTRY.join(entry_id).join("body")
+}
+
 pub fn segkey_entry_body_urlencoded_param_order(
     entry_id: &EntryId,
     urlencoded_param_id: &UrlencodedParamId,
 ) -> SegKeyBuf {
-    SEGKEY_RESOURCE_ENTRY
-        .join(entry_id)
-        .join("body")
+    segkey_entry_body(entry_id)
         .join("urlencoded_param")
         .join(urlencoded_param_id)
         .join("order")
@@ -57,9 +59,7 @@ pub fn segkey_entry_body_formdata_param_order(
     entry_id: &EntryId,
     formdata_param_id: &FormDataParamId,
 ) -> SegKeyBuf {
-    SEGKEY_RESOURCE_ENTRY
-        .join(entry_id)
-        .join("body")
+    segkey_entry_body(entry_id)
         .join("formdata_param")
         .join(formdata_param_id)
         .join("order")

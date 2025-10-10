@@ -16,7 +16,6 @@ export const calculateIsSubmitDisabled = ({
   tab,
   createParams,
   importParams,
-  gitProvider,
 }: CalculateIsSubmitDisabledProps) => {
   if (!name) return true;
 

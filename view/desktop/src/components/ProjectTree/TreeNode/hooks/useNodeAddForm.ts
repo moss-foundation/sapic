@@ -18,14 +18,14 @@ export const useNodeAddForm = (parentNode: ProjectTreeNode | ProjectTreeRootNode
 
   const handleAddFormSubmit = async (name: string) => {
     const path = "path" in parentNode ? parentNode.path.raw || "" : "";
-    const entryClass = "class" in parentNode ? parentNode.class : "Endpoint";
+    const entryClass = "class" in parentNode ? parentNode.class : "endpoint";
 
     const newEntry = createEntryKind({
       name: name.trim(),
       path,
       isAddingFolder: isAddingFolderNode,
       order: parentNode.childNodes.length + 1,
-      protocol: entryClass === "Endpoint" ? "Get" : undefined,
+      protocol: entryClass === "endpoint" ? "Get" : undefined,
       class: entryClass,
     });
 

@@ -124,6 +124,8 @@ impl<R: AppRuntime> Project<R> {
                     headers_to_add: input.headers_to_add,
                     headers_to_update: input.headers_to_update,
                     headers_to_remove: input.headers_to_remove,
+
+                    body: input.body,
                 },
             )
             .await?;
@@ -164,6 +166,8 @@ impl<R: AppRuntime> Project<R> {
                     query_params_to_add: vec![],
                     query_params_to_update: vec![],
                     query_params_to_remove: vec![],
+
+                    body: None,
                 },
             )
             .await?;
@@ -425,7 +429,7 @@ async fn create_body_block(
         AddBodyParams::Urlencoded(urlencoded) => {
             let mut urlencoded_map = IndexMap::with_capacity(urlencoded.len());
             for param in urlencoded {
-                let id = UrlencodedParamId::new();
+                let id = param.id.unwrap_or(UrlencodedParamId::new());
                 let value = continue_if_err!(json_to_hcl(&param.value), |err| {
                     session::error!("failed to convert value expression: {}", err)
                 });
@@ -453,7 +457,7 @@ async fn create_body_block(
         AddBodyParams::FormData(form_data) => {
             let mut formdata_map = IndexMap::with_capacity(form_data.len());
             for param in form_data {
-                let id = FormDataParamId::new();
+                let id = param.id.unwrap_or(FormDataParamId::new());
                 let value = continue_if_err!(json_to_hcl(&param.value), |err| {
                     session::error!("failed to convert value expression: {}", err)
                 });

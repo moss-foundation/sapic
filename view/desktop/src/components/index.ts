@@ -7,7 +7,6 @@ export * from "../parts/SideBar/SidebarHeader";
 export * from "./ActionButton";
 export * as ActionMenu from "./ActionMenu";
 export * from "./ActivityBar/ActivityBar";
-export * from "./Breadcrumbs/Breadcrumbs";
 export * from "./ButtonDanger";
 export * from "./ButtonNeutralOutlined";
 export * from "./ButtonPrimary";
