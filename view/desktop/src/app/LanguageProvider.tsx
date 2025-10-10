@@ -31,7 +31,6 @@ const LanguageProvider = ({ children }: LanguageProviderProps) => {
 
       setLocaleLocally({
         localeInfo: {
-          identifier: eventLang.identifier,
           displayName: eventLang.displayName,
           code: eventLang.code,
         },
