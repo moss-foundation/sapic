@@ -432,6 +432,7 @@ async fn create_item_entry_body_urlencoded() {
                 disabled: false,
                 propagate: false,
             },
+            id: None,
         },
         AddUrlencodedParamParams {
             name: "param2".to_string(),
@@ -442,6 +443,7 @@ async fn create_item_entry_body_urlencoded() {
                 disabled: false,
                 propagate: false,
             },
+            id: None,
         },
     ];
     let input = CreateEntryInput::Item(CreateItemEntryParams {
@@ -507,6 +509,7 @@ async fn create_item_entry_body_formdata() {
                 disabled: false,
                 propagate: false,
             },
+            id: None,
         },
         AddFormDataParamParams {
             name: "param2".to_string(),
@@ -517,6 +520,7 @@ async fn create_item_entry_body_formdata() {
                 disabled: false,
                 propagate: false,
             },
+            id: None,
         },
     ];
     let input = CreateEntryInput::Item(CreateItemEntryParams {

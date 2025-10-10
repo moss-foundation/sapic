@@ -74,6 +74,7 @@ export const addUrlencodedParamParamsSchema = z.object({
   order: z.number(),
   description: z.string().optional(),
   options: urlencodedParamOptionsSchema,
+  id: z.string().optional(),
 });
 
 export const addFormDataParamParamsSchema = z.object({
@@ -82,6 +83,7 @@ export const addFormDataParamParamsSchema = z.object({
   order: z.number(),
   description: z.string().optional(),
   options: formDataParamOptionsSchema,
+  id: z.string().optional(),
 });
 
 export const addHeaderParamsSchema = z.object({
@@ -196,6 +198,24 @@ export const queryParamInfoSchema = z.object({
   order: z.number().optional(),
 });
 
+export const updateUrlencodedParamParamsSchema = z.object({
+  id: z.string(),
+  name: z.string().optional(),
+  value: changeJsonValueSchema.optional(),
+  order: z.number().optional(),
+  description: changeStringSchema.optional(),
+  options: urlencodedParamOptionsSchema.optional(),
+});
+
+export const updateFormDataParamParamsSchema = z.object({
+  id: z.string(),
+  name: z.string().optional(),
+  value: changeJsonValueSchema.optional(),
+  order: z.number().optional(),
+  description: changeStringSchema.optional(),
+  options: formDataParamOptionsSchema.optional(),
+});
+
 export const updateHeaderParamsSchema = z.object({
   id: z.string(),
   name: z.string().optional(),
@@ -222,6 +242,36 @@ export const updateQueryParamParamsSchema = z.object({
   description: changeStringSchema.optional(),
   options: queryParamOptionsSchema.optional(),
 });
+
+export const updateBodyParamsSchema = z.union([
+  z.literal("remove"),
+  z.object({
+    "text": z.string(),
+  }),
+  z.object({
+    "json": jsonValueSchema,
+  }),
+  z.object({
+    "xml": z.string(),
+  }),
+  z.object({
+    "binary": z.string(),
+  }),
+  z.object({
+    "urlencoded": z.object({
+      params_to_add: z.array(addUrlencodedParamParamsSchema),
+      params_to_update: z.array(updateUrlencodedParamParamsSchema),
+      params_to_remove: z.array(z.string()),
+    }),
+  }),
+  z.object({
+    "formData": z.object({
+      params_to_add: z.array(addFormDataParamParamsSchema),
+      params_to_update: z.array(updateFormDataParamParamsSchema),
+      params_to_remove: z.array(z.string()),
+    }),
+  }),
+]);
 
 export const bodyInfoSchema = z.union([
   z.object({
@@ -272,4 +322,5 @@ export const updateItemEntryParamsSchema = z.object({
   queryParamsToAdd: z.array(addQueryParamParamsSchema),
   queryParamsToUpdate: z.array(updateQueryParamParamsSchema),
   queryParamsToRemove: z.array(z.string()),
+  body: updateBodyParamsSchema.optional(),
 });

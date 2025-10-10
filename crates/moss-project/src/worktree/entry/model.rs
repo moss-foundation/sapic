@@ -162,7 +162,7 @@ impl Default for BodySpec {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum BodyKind {
     Text,
     Json,
@@ -256,6 +256,14 @@ impl EntryModel {
 
     pub fn protocol(&self) -> Option<EntryProtocol> {
         self.url.as_ref().map(|url| url.protocol.clone())
+    }
+
+    pub fn body_kind(&self) -> Option<BodyKind> {
+        if let Some(body) = self.body.as_ref() {
+            body.iter().map(|(kind, _)| *kind).next()
+        } else {
+            None
+        }
     }
 }
 
@@ -374,7 +382,7 @@ mod tests {
         let str = hcl::to_string(&model).unwrap();
         println!("{}", str);
 
-        let json = serde_json::to_string(&model).unwrap();
+        let json = serde_json::to_string_pretty(&model).unwrap();
         println!("{}", json);
 
         let model = hcl::from_str::<EntryModel>(&str).unwrap();

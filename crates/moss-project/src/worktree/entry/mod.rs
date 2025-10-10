@@ -7,7 +7,7 @@ use tokio::sync::watch;
 
 use crate::{
     models::primitives::{EntryClass, EntryId, EntryKind, EntryProtocol},
-    worktree::entry::edit::EntryEditing,
+    worktree::entry::{edit::EntryEditing, model::BodyKind},
 };
 
 #[derive(Deref, DerefMut)]
@@ -17,10 +17,14 @@ pub(crate) struct Entry {
     #[allow(unused)]
     pub class: EntryClass,
     pub protocol: Option<EntryProtocol>,
-
+    pub metadata: EntryMetadata,
     #[deref]
     #[deref_mut]
     pub edit: EntryEditing,
+}
+
+pub(crate) struct EntryMetadata {
+    pub body_kind: Option<BodyKind>,
 }
 
 #[derive(Debug)]
