@@ -15,7 +15,7 @@ use crate::shared::{
 
 #[tokio::test]
 async fn delete_entry_success() {
-    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let (ctx, _, project_path, mut project, test_dir_path) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let entry_name = random_entry_name();
@@ -36,12 +36,12 @@ async fn delete_entry_success() {
     assert!(!expected_dir.exists());
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    std::fs::remove_dir_all(test_dir_path).unwrap();
 }
 
 #[tokio::test]
 async fn delete_entry_not_found() {
-    let (ctx, _, project_path, project) = create_test_project().await;
+    let (ctx, _, _, project, test_dir_path) = create_test_project().await;
 
     let delete_input = DeleteEntryInput { id: EntryId::new() };
 
@@ -53,12 +53,12 @@ async fn delete_entry_not_found() {
     }
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    std::fs::remove_dir_all(test_dir_path).unwrap();
 }
 
 #[tokio::test]
 async fn delete_entry_with_subdirectories() {
-    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let (ctx, _, project_path, mut project, test_dir_path) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let entry_name = random_entry_name();
@@ -91,12 +91,12 @@ async fn delete_entry_with_subdirectories() {
     assert!(!sub_sub_dir.exists());
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    std::fs::remove_dir_all(test_dir_path).unwrap();
 }
 
 #[tokio::test]
 async fn delete_multiple_entries() {
-    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let (ctx, _, project_path, mut project, test_dir_path) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let entry1_name = format!("{}_1", random_entry_name());
@@ -135,12 +135,12 @@ async fn delete_multiple_entries() {
     assert!(!expected_dir2.exists());
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    std::fs::remove_dir_all(test_dir_path).unwrap();
 }
 
 #[tokio::test]
 async fn delete_entry_twice() {
-    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let (ctx, _, project_path, mut project, test_dir_path) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let entry_name = random_entry_name();
@@ -169,12 +169,12 @@ async fn delete_entry_twice() {
     }
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    std::fs::remove_dir_all(test_dir_path).unwrap();
 }
 
 #[tokio::test]
 async fn delete_entries_from_different_directories() {
-    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let (ctx, _, project_path, mut project, test_dir_path) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let mut entries = Vec::new();
@@ -216,5 +216,5 @@ async fn delete_entries_from_different_directories() {
     }
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    std::fs::remove_dir_all(test_dir_path).unwrap();
 }

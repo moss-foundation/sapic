@@ -27,7 +27,7 @@ use std::path::PathBuf;
 
 #[tokio::test]
 async fn create_dir_entry_success() {
-    let (ctx, _, project_path, project) = create_test_project().await;
+    let (ctx, _, project_path, project, test_dir_path) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let entry_name = random_entry_name();
@@ -57,12 +57,12 @@ async fn create_dir_entry_success() {
     assert!(config_content.contains(&output.id.to_string()));
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    std::fs::remove_dir_all(test_dir_path).unwrap();
 }
 
 #[tokio::test]
 async fn create_dir_entry_with_order() {
-    let (ctx, _, project_path, project) = create_test_project().await;
+    let (ctx, _, project_path, project, test_dir_path) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let entry_name = random_entry_name();
@@ -94,12 +94,12 @@ async fn create_dir_entry_with_order() {
     assert_eq!(stored_order, 42);
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    std::fs::remove_dir_all(test_dir_path).unwrap();
 }
 
 #[tokio::test]
 async fn create_dir_entry_already_exists() {
-    let (ctx, _, project_path, project) = create_test_project().await;
+    let (ctx, _, _, project, test_dir_path) = create_test_project().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from(RESOURCES_ROOT_DIR);
@@ -124,12 +124,12 @@ async fn create_dir_entry_already_exists() {
     }
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    std::fs::remove_dir_all(test_dir_path).unwrap();
 }
 
 #[tokio::test]
 async fn create_dir_entry_special_chars_in_name() {
-    let (ctx, _, project_path, project) = create_test_project().await;
+    let (ctx, _, project_path, project, test_dir_path) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let base_name = random_entry_name();
@@ -167,12 +167,12 @@ async fn create_dir_entry_special_chars_in_name() {
     }
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    std::fs::remove_dir_all(test_dir_path).unwrap();
 }
 
 #[tokio::test]
 async fn create_item_entry_endpoint() {
-    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, project, test_dir_path) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let entry_name = random_entry_name();
@@ -269,14 +269,14 @@ async fn create_item_entry_endpoint() {
     assert!(!query_param.propagate);
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    std::fs::remove_dir_all(test_dir_path).unwrap();
 }
 
 // Note: deserialization of heredoc strings will append a newline character at the end
 // This will probably need to be handled on the frontend.
 #[tokio::test]
 async fn create_item_entry_body_text() {
-    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, _, project, test_dir_path) = create_test_project().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from("");
@@ -307,12 +307,12 @@ String"#;
     assert_eq!(body_desc, BodyInfo::Text(text.to_string() + "\n"));
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    std::fs::remove_dir_all(test_dir_path).unwrap();
 }
 
 #[tokio::test]
 async fn create_item_entry_body_json() {
-    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, _, project, test_dir_path) = create_test_project().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from("");
@@ -345,12 +345,12 @@ async fn create_item_entry_body_json() {
     assert_eq!(body_desc, BodyInfo::Json(json));
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    std::fs::remove_dir_all(test_dir_path).unwrap();
 }
 
 #[tokio::test]
 async fn create_item_entry_body_xml() {
-    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, _, project, test_dir_path) = create_test_project().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from("");
@@ -379,12 +379,12 @@ async fn create_item_entry_body_xml() {
     assert_eq!(body_desc, BodyInfo::Xml(xml.to_string() + "\n"));
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    std::fs::remove_dir_all(test_dir_path).unwrap();
 }
 
 #[tokio::test]
 async fn create_item_entry_body_binary() {
-    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, _, project, test_dir_path) = create_test_project().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from("");
@@ -413,12 +413,12 @@ async fn create_item_entry_body_binary() {
     assert_eq!(body_desc, BodyInfo::Binary(binary));
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    std::fs::remove_dir_all(test_dir_path).unwrap();
 }
 
 #[tokio::test]
 async fn create_item_entry_body_urlencoded() {
-    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, _, project, test_dir_path) = create_test_project().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from("");
@@ -490,12 +490,12 @@ async fn create_item_entry_body_urlencoded() {
     }
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    std::fs::remove_dir_all(test_dir_path).unwrap();
 }
 
 #[tokio::test]
 async fn create_item_entry_body_formdata() {
-    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, _, project, test_dir_path) = create_test_project().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from("");
@@ -567,5 +567,5 @@ async fn create_item_entry_body_formdata() {
     }
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    std::fs::remove_dir_all(test_dir_path).unwrap();
 }

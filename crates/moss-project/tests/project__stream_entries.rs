@@ -50,19 +50,19 @@ async fn scan_entries_for_test(
 
 #[tokio::test]
 async fn stream_entries_empty_project() {
-    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, _, project, test_dir_path) = create_test_project().await;
 
     let entries = scan_entries_for_test(&ctx, &app_delegate, &project, dirs::RESOURCES_DIR).await;
 
     assert_eq!(entries.len(), 0);
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    std::fs::remove_dir_all(test_dir_path).unwrap();
 }
 
 #[tokio::test]
 async fn stream_entries_single_entry() {
-    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, _, mut project, test_dir_path) = create_test_project().await;
 
     let entry_name = random_entry_name();
     create_test_endpoint_dir_entry(&ctx, &mut project, &entry_name).await;
@@ -90,12 +90,12 @@ async fn stream_entries_single_entry() {
     );
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    std::fs::remove_dir_all(test_dir_path).unwrap();
 }
 
 #[tokio::test]
 async fn stream_entries_multiple_entries_same_directory() {
-    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, _, mut project, test_dir_path) = create_test_project().await;
 
     let entry1_name = format!("{}_1", random_entry_name());
     let entry2_name = format!("{}_2", random_entry_name());
@@ -119,12 +119,12 @@ async fn stream_entries_multiple_entries_same_directory() {
     assert!(entry_names.contains(&entry3_name.as_str()));
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    std::fs::remove_dir_all(test_dir_path).unwrap();
 }
 
 #[tokio::test]
 async fn stream_entries_multiple_directories() {
-    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, _, mut project, test_dir_path) = create_test_project().await;
 
     let mut entries = Vec::new();
     {
@@ -161,5 +161,5 @@ async fn stream_entries_multiple_directories() {
     }
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    std::fs::remove_dir_all(test_dir_path).unwrap();
 }
