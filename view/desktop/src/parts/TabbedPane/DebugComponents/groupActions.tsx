@@ -1,7 +1,7 @@
+import { DockviewApi, DockviewGroupLocation, DockviewGroupPanel } from "moss-tabs";
 import React from "react";
 
 import { Scrollbar } from "@/lib/ui/Scrollbar";
-import { DockviewApi, DockviewGroupLocation, DockviewGroupPanel } from "@repo/moss-tabs";
 
 const GroupAction = (props: { groupId: string; groups: string[]; api: DockviewApi; activeGroup?: string }) => {
   const onClick = () => {

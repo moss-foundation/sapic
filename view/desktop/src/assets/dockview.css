@@ -1,0 +1,130 @@
+@import "./dockviewDefault.css";
+
+.dv-svg {
+  display: inline-block;
+  fill: currentcolor;
+  line-height: 1;
+  stroke: currentcolor;
+  stroke-width: 0;
+}
+
+.dockview-moss-light {
+  --dv-separator-border: var(--moss-border-color);
+
+  --dv-scrollbar-background-color: rgba(0, 0, 0, 0.25);
+
+  --dv-tabs-container-scrollbar-color: var(--moss-primary-background);
+
+  --dv-icon-hover-background-color: rgba(90, 93, 94, 0.31);
+
+  --dv-overlay-z-index: 999;
+
+  --dv-border-radius: 0px;
+
+  --dv-sash-color: transparent;
+
+  --dv-group-view-background-color: var(--moss-primary-background);
+
+  --dv-drag-over-background-color: rgb(from var(--moss-primary) r g b / 0.2);
+
+  --dv-drag-over-border-color: transparent;
+
+  --dv-tabs-and-actions-container-font-size: 13px;
+  --dv-tabs-and-actions-container-height: 35px;
+  --dv-tabs-and-actions-container-background-color: var(--moss-primary-background);
+
+  --dv-active-sash-color: var(--moss-primary);
+  --dv-active-sash-transition-duration: 0.1s;
+  --dv-active-sash-transition-delay: 0.5s;
+
+  --dv-activegroup-visiblepanel-tab-background-color: var(--moss-primary-background);
+  --dv-activegroup-visiblepanel-tab-color: var(--moss-primary-text);
+  --dv-activegroup-hiddenpanel-tab-background-color: var(--moss-primary-background);
+  --dv-activegroup-hiddenpanel-tab-color: var(--moss-secondary-text);
+
+  --dv-inactivegroup-visiblepanel-tab-background-color: var(--moss-primary-background);
+  --dv-inactivegroup-visiblepanel-tab-color: var(--moss-secondary-text);
+  --dv-inactivegroup-hiddenpanel-tab-background-color: var(--moss-primary-background);
+  --dv-inactivegroup-hiddenpanel-tab-color: var(--moss-secondary-text);
+
+  --dv-tab-divider-color: var(--moss-border-color);
+  --dv-tab-margin: 0;
+  --dv-tab-font-size: inherit;
+
+  --dv-paneview-header-border-color: var(--moss-primary-text);
+  --dv-paneview-active-outline-color: var(--moss-primary);
+}
+
+.dv-tabs-and-actions-container {
+  box-shadow: 0px -1px 0px 0px var(--moss-border-color) inset;
+}
+
+.dv-tab {
+  padding: 0;
+  /* border-bottom: 1px solid var(--moss-border-color);
+  &.dv-active-tab {
+    border-bottom: 1px solid var(--moss-primary);
+  } */
+}
+
+/* Dockview Debug Panel Styles */
+.dockview-demo .group-control .action {
+  @apply box-border flex cursor-pointer items-center justify-center bg-[--moss-color] p-1 text-[18px];
+}
+
+.dockview-demo .group-control .action:hover {
+  @apply rounded-sm bg-[--moss-icon-hover-background-color];
+}
+
+.dockview-demo .data-table table {
+  @apply text-[11px];
+}
+
+.dockview-demo .data-table table th {
+  @apply px-2 py-0;
+}
+
+.dockview-demo .action-container {
+  @apply flex overflow-auto p-1;
+}
+
+.dockview-demo .action-container .text-button {
+  @apply mx-1 my-0 overflow-hidden border border-[#4c65d4] bg-[#1c254a] px-2 text-sm text-ellipsis whitespace-nowrap hover:bg-[#222e62];
+}
+
+.dockview-demo .action-container .button-action {
+  @apply mx-[4px] my-0 border border-[rgb(76,101,212)];
+}
+
+.dockview-demo .action-container .button-action .selected {
+  @apply bg-[#4864dc] hover:bg-[#4864dc];
+}
+
+.dockview-demo .action-container .button-group button {
+  @apply mr-1 inline-flex h-full align-middle;
+}
+
+.dockview-demo .action-container .demo-button {
+  @apply flex min-w-[60px] grow items-center overflow-hidden rounded-none bg-[#1c254a] px-2 py-0 text-sm text-ellipsis whitespace-nowrap !outline !outline-[#4c65d4] hover:bg-[#222e62];
+}
+
+.dockview-demo .action-container .demo-icon-button {
+  @apply flex grow cursor-pointer items-center rounded-none border-none bg-[#1c254a] px-1 py-0 outline outline-[#4c65d4] hover:bg-[#222e62];
+}
+
+.dockview-demo .action-container .demo-icon-button:disabled {
+  @apply cursor-help text-gray-500;
+}
+
+.dockview-demo .action-container .demo-icon-button span {
+  @apply text-[16px];
+}
+
+/* Moss custom styles */
+.panel-builder-input {
+  @apply text-center text-black;
+}
+
+.panel-builder-button {
+  @apply mt-2 mr-1 inline-block cursor-pointer list-none rounded-lg border-0 bg-gray-100 px-3 py-1 text-center font-sans text-sm leading-5 font-medium text-gray-800 hover:bg-gray-300;
+}

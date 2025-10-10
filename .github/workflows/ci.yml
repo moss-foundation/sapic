@@ -395,9 +395,6 @@ jobs:
           - name: Test Packages
             command: pnpm run test --project packages
 
-          - name: Test Moss-Tabs
-            command: pnpm run test --project moss-tabs
-
           - name: Test Desktop
             command: pnpm run test --project desktop
 

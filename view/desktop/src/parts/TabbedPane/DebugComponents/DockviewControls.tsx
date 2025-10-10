@@ -1,4 +1,4 @@
-import { DockviewApi } from "@repo/moss-tabs";
+import { DockviewApi } from "moss-tabs";
 
 import { GridActions } from "./gridActions";
 import { GroupActions } from "./groupActions";

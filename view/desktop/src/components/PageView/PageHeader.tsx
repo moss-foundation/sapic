@@ -1,7 +1,7 @@
+import { IDockviewPanelProps } from "moss-tabs";
 import { ReactNode, useEffect, useState } from "react";
 
 import { InputPlain } from "@/components";
-import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 import { Icon, Icons } from "@/lib/ui";
 import { cn } from "@/utils";
 

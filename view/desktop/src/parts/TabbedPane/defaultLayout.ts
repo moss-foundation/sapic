@@ -1,4 +1,4 @@
-import { DockviewApi } from "@repo/moss-tabs";
+import { DockviewApi } from "moss-tabs";
 
 export const nextId = (() => {
   let counter = 0;

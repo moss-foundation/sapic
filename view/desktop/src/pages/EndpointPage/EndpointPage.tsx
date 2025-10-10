@@ -1,9 +1,10 @@
+import { IDockviewPanelProps } from "moss-tabs";
+
 import { PageView } from "@/components";
 import { PageWrapper } from "@/components/PageView/PageWrapper";
 import { ProjectTreeNode } from "@/components/ProjectTree/types";
 import { useDescribeProjectEntry, useStreamProjectEntries } from "@/hooks";
 import { EntryKind } from "@repo/moss-project";
-import { IDockviewPanelProps } from "@repo/moss-tabs";
 
 import { EndpointPageBody, EndpointPageHeader } from "./components";
 import { EndpointPageContext } from "./EndpointPageContext";

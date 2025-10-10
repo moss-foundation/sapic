@@ -1,5 +1,11 @@
-import "./assets/styles.css";
-
+import {
+  DockviewDidDropEvent,
+  DockviewReact,
+  DockviewReadyEvent,
+  IDockviewHeaderActionsProps,
+  IDockviewPanelProps,
+  positionToDirection,
+} from "moss-tabs";
 import React from "react";
 
 import { PageContent, PageHeader, PageView } from "@/components";
@@ -21,14 +27,6 @@ import {
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import { EntryKind } from "@repo/moss-project";
-import {
-  DockviewDidDropEvent,
-  DockviewReact,
-  DockviewReadyEvent,
-  IDockviewHeaderActionsProps,
-  IDockviewPanelProps,
-  positionToDirection,
-} from "@repo/moss-tabs";
 
 import { AddPanelButton } from "./AddPanelButton";
 import CustomTab from "./CustomTab";
@@ -261,7 +259,6 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
             <DebugContext.Provider value={debug}>
               <div className="h-full w-full" ref={dockviewRefWrapper}>
                 <DockviewReact
-                  disableAutoResizing
                   ref={dockviewRef}
                   components={components}
                   defaultTabComponent={CustomTab}
@@ -269,8 +266,13 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
                   leftHeaderActionsComponent={AddPanelButton}
                   watermarkComponent={Watermark}
                   onReady={onReady}
-                  className={theme || "dockview-theme-light"}
                   onDidDrop={onDidDrop}
+                  theme={{
+                    name: "moss-theme-light",
+                    className: "dockview-moss-light",
+                  }}
+                  disableAutoResizing
+                  disableTabsOverflowList
                 />
               </div>
             </DebugContext.Provider>

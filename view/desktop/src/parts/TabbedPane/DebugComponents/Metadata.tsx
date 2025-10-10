@@ -1,4 +1,4 @@
-import { DockviewPanelApi } from "@/lib/moss-tabs/src";
+import { DockviewPanelApi } from "moss-tabs";
 
 import { Table, usePanelApiMetadata } from "./debugPanel";
 

@@ -1,19 +1,19 @@
+import { IDockviewPanelProps } from "moss-tabs";
 import { useState } from "react";
 
-import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 import ButtonDanger from "@/components/ButtonDanger";
 import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
 import ButtonPrimary from "@/components/ButtonPrimary";
+import { EditAccountModal } from "@/components/Modals/Account/EditAccountModal";
+import { NewAccountModal } from "@/components/Modals/Account/NewAccountModal";
+import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
+import { ProviderIcon } from "@/components/ProviderIcon";
 import { useModal } from "@/hooks";
-import { invoke } from "@tauri-apps/api/core";
 import { UpdateProfileInput } from "@repo/moss-app";
 import { AccountInfo, ProfileInfo } from "@repo/moss-user";
+import { invoke } from "@tauri-apps/api/core";
 
-import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
 import { ProfilePageProps } from "../../../ProfilePage";
-import { NewAccountModal } from "@/components/Modals/Account/NewAccountModal";
-import { EditAccountModal } from "@/components/Modals/Account/EditAccountModal";
-import { ProviderIcon } from "@/components/ProviderIcon";
 
 interface OverviewTabProps extends IDockviewPanelProps<ProfilePageProps> {
   profile: ProfileInfo;
