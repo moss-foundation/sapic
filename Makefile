@@ -25,7 +25,6 @@ endif
 export DEV_RESOURCE_DIR = ${CURDIR}
 
 # ---- Asset Directories ----
-export LOCALES_DIR = ${CURDIR}/assets/locales
 export ICONS_DIR = ${CURDIR}/assets/icons
 export ICONS_OUTPUT_DIR = ${CURDIR}/view/desktop/src/assets/icons
 
@@ -55,6 +54,7 @@ GIT_MODELS_DIR := crates/moss-git
 USER_MODELS_DIR := crates/moss-user
 THEME_MODELS_DIR := crates/moss-theme
 CONFIGURATION_MODELS_DIR := crates/moss-configuration
+LANGUAGE_MODELS_DIR := crates/moss-language
 
 # ---- Command Executables ----
 PNPM := pnpm
@@ -141,6 +141,7 @@ $(eval $(call gen_bindings,git,GIT_MODELS_DIR))
 $(eval $(call gen_bindings,user,USER_MODELS_DIR))
 $(eval $(call gen_bindings,theme,THEME_MODELS_DIR))
 $(eval $(call gen_bindings,configuration,CONFIGURATION_MODELS_DIR))
+$(eval $(call gen_bindings,language,LANGUAGE_MODELS_DIR))
 
 gen-app-bindings:
 gen-project-bindings:
@@ -153,6 +154,7 @@ gen-git-bindings:
 gen-user-bindings:
 gen-theme-bindings:
 gen-configuration-bindings:
+gen-language-bindings:
 
 ## Generate all TypeScript bindings
 .PHONY: gen-bindings
@@ -167,7 +169,8 @@ gen-bindings: \
 	gen-git-bindings \
 	gen-user-bindings \
 	gen-theme-bindings \
-	gen-configuration-bindings
+	gen-configuration-bindings \
+	gen-language-bindings
 
 
 # ======================================================
@@ -195,7 +198,7 @@ endif
 ## Count Lines of Code
 .PHONY: loc
 loc:
-	@cloc --exclude-dir=target,node_modules --include-ext=rs,ts,tsx,py .
+	@cloc --vcs git --include-ext=rs,ts,tsx,py .
 
 # ======================================================
 # Cleanup Commands

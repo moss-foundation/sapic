@@ -29,6 +29,7 @@ const KNOWN_PACKAGES = [
   "moss-user",
   "moss-theme",
   "moss-configuration",
+  "moss-language",
 ];
 
 interface Config {

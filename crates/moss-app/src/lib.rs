@@ -5,7 +5,7 @@ pub mod command;
 pub mod configuration;
 mod extension;
 mod internal;
-mod locale;
+mod language;
 mod logging;
 pub mod models;
 mod profile;

@@ -35,6 +35,9 @@
       "path": "crates/moss-theme"
     },
     {
+      "path": "crates/moss-language"
+    },
+    {
       "path": "crates/moss-configuration"
     },
     {

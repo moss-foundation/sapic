@@ -22,7 +22,7 @@ interface LoginData {
 }
 
 export const Logs = () => {
-  const { t } = useTranslation(["ns1", "ns2"]);
+  const { t } = useTranslation(["main", "bootstrap"]);
   const [logs, setLogs] = useState<LogEntryInfo[]>([]);
   const { windowEvents } = useActivityRouter();
 

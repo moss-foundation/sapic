@@ -2,26 +2,26 @@ use async_trait::async_trait;
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_extension::{ExtensionInfo, ExtensionPoint, contribution::ContributionKey};
-use moss_theme::{
-    contribution::ThemeContributionDecl,
-    registry::{GlobalThemeRegistry, ThemeRegistryItem},
+use moss_language::{
+    contribution::LanguageContributionDecl,
+    registry::{GlobalLanguageRegistry, LanguageRegistryItem},
 };
 use serde_json::Value as JsonValue;
 
-const THEMES_KEY: ContributionKey = ContributionKey::new("themes");
+const LANGUAGES_KEY: ContributionKey = ContributionKey::new("languages");
 
-pub struct ThemeExtensionPoint;
+pub struct LanguageExtensionPoint;
 
-impl ThemeExtensionPoint {
+impl LanguageExtensionPoint {
     pub fn new() -> Box<Self> {
         Box::new(Self {})
     }
 }
 
 #[async_trait]
-impl<R: AppRuntime> ExtensionPoint<R> for ThemeExtensionPoint {
+impl<R: AppRuntime> ExtensionPoint<R> for LanguageExtensionPoint {
     fn key(&self) -> ContributionKey {
-        THEMES_KEY
+        LANGUAGES_KEY
     }
 
     async fn handle(
@@ -31,22 +31,22 @@ impl<R: AppRuntime> ExtensionPoint<R> for ThemeExtensionPoint {
         contribution: JsonValue,
     ) -> joinerror::Result<()> {
         if !contribution.is_array() {
-            joinerror::bail!("themes contribution must be an array");
+            joinerror::bail!("languages contribution must be an array");
         }
 
-        let themes: Vec<ThemeContributionDecl> = serde_json::from_value(contribution)?;
-        let items = themes
+        let languages: Vec<LanguageContributionDecl> = serde_json::from_value(contribution)?;
+        let items = languages
             .into_iter()
-            .map(|entry| ThemeRegistryItem {
-                id: entry.id,
-                display_name: entry.label,
-                mode: entry.mode,
+            .map(|entry| LanguageRegistryItem {
+                display_name: entry.display_name,
+                code: entry.code,
+                direction: entry.direction,
                 path: info.source.join(entry.path),
             })
             .collect();
 
         app_delegate
-            .global::<GlobalThemeRegistry>()
+            .global::<GlobalLanguageRegistry>()
             .register(items)
             .await;
 

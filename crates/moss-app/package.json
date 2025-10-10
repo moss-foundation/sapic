@@ -13,7 +13,8 @@
       "@repo/moss-workspace": "workspace:*",
       "@repo/moss-user": "workspace:*",
       "@repo/moss-theme": "workspace:*",
-      "@repo/moss-configuration": "workspace:*"
+      "@repo/moss-configuration": "workspace:*",
+      "@repo/moss-language": "workspace:*"
     },
     "dependencies": {
       "typescript": "^5.9.2",

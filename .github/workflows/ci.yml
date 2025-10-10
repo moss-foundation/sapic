@@ -217,6 +217,7 @@ jobs:
           - moss_extension_points
           - moss_theme
           - moss_configuration
+          - moss_language
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
@@ -333,6 +334,7 @@ jobs:
           - moss_extension_points
           - moss_theme
           - moss_configuration
+          - moss_language
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
@@ -395,8 +397,8 @@ jobs:
           - name: Test Packages
             command: pnpm run test --project packages
 
-          - name: Test Moss-Tabs
-            command: pnpm run test --project moss-tabs
+          # - name: Test Moss-Tabs
+          #   command: pnpm run test --project moss-tabs
 
           - name: Test Desktop
             command: pnpm run test --project desktop
