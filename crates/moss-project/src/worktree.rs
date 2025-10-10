@@ -59,7 +59,7 @@ use crate::{
         },
     },
     worktree::entry::{
-        Entry, EntryDescription,
+        Entry, EntryDescription, EntryMetadata,
         edit::EntryEditing,
         model::{
             BodyKind, BodySpec, EntryModel, FormDataParamSpec, FormDataParamSpecOptions,
@@ -386,6 +386,9 @@ impl<R: AppRuntime> Worktree<R> {
                 edit: EntryEditing::new(self.fs.clone(), path_tx, ITEM_CONFIG_FILENAME),
                 class: model.metadata.class.clone(),
                 protocol: model.protocol(),
+                metadata: EntryMetadata {
+                    body_kind: model.body_kind(),
+                },
             },
         );
 
@@ -450,6 +453,7 @@ impl<R: AppRuntime> Worktree<R> {
                 edit: EntryEditing::new(self.fs.clone(), path_tx, DIR_CONFIG_FILENAME),
                 class: model.metadata.class.clone(),
                 protocol: None,
+                metadata: EntryMetadata { body_kind: None },
             },
         );
 
@@ -913,7 +917,7 @@ impl<R: AppRuntime> Worktree<R> {
         entry: &mut Entry,
         params: &ModifyParams,
     ) -> joinerror::Result<()> {
-        let mut on_edit_success = Vec::new();
+        let mut on_edit_success: Vec<Box<dyn FnOnce(&mut Entry)>> = Vec::new();
         let mut patches = Vec::new();
 
         if let Some(protocol) = &params.protocol {
@@ -927,9 +931,11 @@ impl<R: AppRuntime> Worktree<R> {
                     ignore_if_not_exists: false,
                 },
             ));
-            on_edit_success.push(|| {
-                entry.protocol = Some(protocol.clone());
-            });
+
+            let protocol_clone = protocol.clone();
+            on_edit_success.push(Box::new(move |entry: &mut Entry| {
+                entry.protocol = Some(protocol_clone)
+            }));
         }
 
         // TODO: Extract order storage into one database transaction?
@@ -1661,21 +1667,25 @@ impl<R: AppRuntime> Worktree<R> {
         }
 
         if let Some(body) = &params.body {
-            let model = entry
-                .edit
-                .model(&self.abs_path.join(dirs::RESOURCES_DIR))
-                .await?;
+            let current_body_kind = entry.metadata.body_kind.clone();
 
-            patch_item_body(
+            let new_body_kind = patch_item_body(
                 self,
                 ctx,
                 app_delegate,
-                model,
+                current_body_kind.clone(),
                 entry.id.clone(),
                 &mut patches,
                 body,
             )
             .await?;
+
+            if new_body_kind != current_body_kind {
+                let new_body_kind_clone = new_body_kind.clone();
+                on_edit_success.push(Box::new(move |entry: &mut Entry| {
+                    entry.metadata.body_kind = new_body_kind_clone;
+                }));
+            }
         }
 
         if patches.is_empty() {
@@ -1687,8 +1697,8 @@ impl<R: AppRuntime> Worktree<R> {
             .edit(&self.abs_path.join(dirs::RESOURCES_DIR), &patches)
             .await?;
 
-        for mut callback in on_edit_success {
-            callback();
+        for callback in on_edit_success {
+            callback(entry);
         }
 
         Ok(())
@@ -1699,18 +1709,18 @@ async fn patch_item_body<R: AppRuntime>(
     worktree: &Worktree<R>,
     ctx: &R::AsyncContext,
     app_delegate: &AppDelegate<R>,
-    model: EntryModel, // We need to pass by value to avoid reference to Entry
+    current_body_kind: Option<BodyKind>,
     entry_id: EntryId,
     patches: &mut Vec<(PatchOperation, EditOptions)>,
     params: &UpdateBodyParams,
-) -> joinerror::Result<()> {
-    let body_kind = model.body_kind();
-    match params {
+) -> joinerror::Result<Option<BodyKind>> {
+    let new_body_kind = match params {
         UpdateBodyParams::Remove => {
             clear_item_body(worktree, ctx, entry_id, patches).await?;
+            None
         }
         UpdateBodyParams::Text(text) => {
-            if body_kind.is_some() && body_kind != Some(BodyKind::Text) {
+            if current_body_kind.is_some() && current_body_kind != Some(BodyKind::Text) {
                 clear_item_body(worktree, ctx, entry_id, patches).await?;
             }
 
@@ -1724,9 +1734,10 @@ async fn patch_item_body<R: AppRuntime>(
                     ignore_if_not_exists: false,
                 },
             ));
+            Some(BodyKind::Text)
         }
         UpdateBodyParams::Json(json) => {
-            if body_kind.is_some() && body_kind != Some(BodyKind::Json) {
+            if current_body_kind.is_some() && current_body_kind != Some(BodyKind::Json) {
                 clear_item_body(worktree, ctx, entry_id, patches).await?;
             }
             patches.push((
@@ -1739,9 +1750,10 @@ async fn patch_item_body<R: AppRuntime>(
                     ignore_if_not_exists: false,
                 },
             ));
+            Some(BodyKind::Json)
         }
         UpdateBodyParams::Xml(xml) => {
-            if body_kind.is_some() && body_kind != Some(BodyKind::Xml) {
+            if current_body_kind.is_some() && current_body_kind != Some(BodyKind::Xml) {
                 clear_item_body(worktree, ctx, entry_id, patches).await?;
             }
             patches.push((
@@ -1754,9 +1766,10 @@ async fn patch_item_body<R: AppRuntime>(
                     ignore_if_not_exists: false,
                 },
             ));
+            Some(BodyKind::Xml)
         }
         UpdateBodyParams::Binary(path) => {
-            if body_kind.is_some() && body_kind != Some(BodyKind::Binary) {
+            if current_body_kind.is_some() && current_body_kind != Some(BodyKind::Binary) {
                 clear_item_body(worktree, ctx, entry_id, patches).await?;
             }
             patches.push((
@@ -1768,7 +1781,8 @@ async fn patch_item_body<R: AppRuntime>(
                     create_missing_segments: true,
                     ignore_if_not_exists: false,
                 },
-            ))
+            ));
+            Some(BodyKind::Binary)
         }
         UpdateBodyParams::Urlencoded {
             params_to_add,
@@ -1776,7 +1790,7 @@ async fn patch_item_body<R: AppRuntime>(
             params_to_remove,
         } => {
             let body_block = "/body/x-www-form-urlencoded";
-            if body_kind.is_some() && body_kind != Some(BodyKind::Urlencoded) {
+            if current_body_kind.is_some() && current_body_kind != Some(BodyKind::Urlencoded) {
                 clear_item_body(worktree, ctx, entry_id.clone(), patches).await?;
                 // Create the body block even if no parameter is given
                 patches.push((
@@ -1988,7 +2002,7 @@ async fn patch_item_body<R: AppRuntime>(
             let mut txn = if let Ok(txn) = worktree.storage.begin_write(ctx).await {
                 txn
             } else {
-                return Ok(());
+                return Ok(Some(BodyKind::Urlencoded));
             };
 
             for (id, order) in param_order_updates {
@@ -1998,7 +2012,7 @@ async fn patch_item_body<R: AppRuntime>(
                     .await
                 {
                     session::error!(format!("failed to update urlencoded param order: {}", e));
-                    return Ok(());
+                    return Ok(Some(BodyKind::Urlencoded));
                 }
             }
 
@@ -2009,14 +2023,15 @@ async fn patch_item_body<R: AppRuntime>(
                     .await
                 {
                     session::error!(format!("failed to remove urlencoded param order: {}", e));
-                    return Ok(());
+                    return Ok(Some(BodyKind::Urlencoded));
                 }
             }
 
             if let Err(e) = txn.commit() {
                 session::error!(format!("failed to commit transaction: {}", e));
-                return Ok(());
+                return Ok(Some(BodyKind::Urlencoded));
             }
+            Some(BodyKind::Urlencoded)
         }
         UpdateBodyParams::FormData {
             params_to_add,
@@ -2024,7 +2039,7 @@ async fn patch_item_body<R: AppRuntime>(
             params_to_remove,
         } => {
             let body_block = "/body/form-data";
-            if body_kind.is_some() && body_kind != Some(BodyKind::FormData) {
+            if current_body_kind.is_some() && current_body_kind != Some(BodyKind::FormData) {
                 clear_item_body(worktree, ctx, entry_id.clone(), patches).await?;
                 // Create the body block even if no parameter is given
                 patches.push((
@@ -2236,7 +2251,7 @@ async fn patch_item_body<R: AppRuntime>(
             let mut txn = if let Ok(txn) = worktree.storage.begin_write(ctx).await {
                 txn
             } else {
-                return Ok(());
+                return Ok(Some(BodyKind::FormData));
             };
 
             for (id, order) in param_order_updates {
@@ -2246,7 +2261,7 @@ async fn patch_item_body<R: AppRuntime>(
                     .await
                 {
                     session::error!(format!("failed to update formdata param order: {}", e));
-                    return Ok(());
+                    return Ok(Some(BodyKind::FormData));
                 }
             }
 
@@ -2257,18 +2272,19 @@ async fn patch_item_body<R: AppRuntime>(
                     .await
                 {
                     session::error!(format!("failed to remove formdata param order: {}", e));
-                    return Ok(());
+                    return Ok(Some(BodyKind::FormData));
                 }
             }
 
             if let Err(e) = txn.commit() {
                 session::error!(format!("failed to commit transaction: {}", e));
-                return Ok(());
+                return Ok(Some(BodyKind::FormData));
             }
+            Some(BodyKind::FormData)
         }
-    }
+    };
 
-    Ok(())
+    Ok(new_body_kind)
 }
 
 async fn clear_item_body<R: AppRuntime>(
@@ -2370,6 +2386,7 @@ async fn process_entry(
                 edit: EntryEditing::new(fs.clone(), path_tx, DIR_CONFIG_FILENAME),
                 class: model.class(),
                 protocol: None,
+                metadata: EntryMetadata { body_kind: None },
             },
             desc,
         )));
@@ -2401,6 +2418,9 @@ async fn process_entry(
                 edit: EntryEditing::new(fs.clone(), path_tx, ITEM_CONFIG_FILENAME),
                 class: model.class(),
                 protocol: model.protocol(),
+                metadata: EntryMetadata {
+                    body_kind: model.body_kind(),
+                },
             },
             desc,
         )));
