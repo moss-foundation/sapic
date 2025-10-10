@@ -20,7 +20,7 @@ function setRef<T>(ref: PossibleRef<T>, value: T) {
  */
 function composeRefs<T>(...refs: PossibleRef<T>[]): React.RefCallback<T> {
   //@ts-expect-error react will throw an error if the ref callback returns a value. It says below that react 19 doesnt have such and issue, so
-  // TODO: try to remove this once we upgrade to react 19
+  // TODO: try to remove this ts-expect-error once we upgrade to react 19
   return (node) => {
     let hasCleanup = false;
     const cleanups = refs.map((ref) => {
