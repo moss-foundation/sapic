@@ -917,7 +917,7 @@ impl<R: AppRuntime> Worktree<R> {
         entry: &mut Entry,
         params: &ModifyParams,
     ) -> joinerror::Result<()> {
-        let mut on_edit_success: Vec<Box<dyn FnOnce(&mut Entry)>> = Vec::new();
+        let mut on_edit_success: Vec<Box<dyn FnOnce(&mut Entry) + Send>> = Vec::new();
         let mut patches = Vec::new();
 
         if let Some(protocol) = &params.protocol {
