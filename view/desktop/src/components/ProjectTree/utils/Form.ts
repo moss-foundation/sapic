@@ -30,7 +30,6 @@ export const createEntryKind = ({
         path,
         class: entryClass,
         order,
-        headers: [],
       },
     };
   }
@@ -60,7 +59,6 @@ export const convertEntryInfoToCreateInput = (
         path: newProjectPath,
         class: entry.class,
         order: entry.order ?? 0,
-        headers: [],
       },
     };
   } else {

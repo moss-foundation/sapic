@@ -40,13 +40,11 @@ export const useUpdateProject = () => {
             return currentValue;
           };
 
-          const updatedRepository = handleChangeValue(variables.repository, oldProject.repository);
           const updatedIconPath = handleChangeValue(variables.iconPath, oldProject.iconPath);
 
           return {
             ...oldProject,
             ...variables,
-            repository: updatedRepository,
             iconPath: updatedIconPath,
           };
         });

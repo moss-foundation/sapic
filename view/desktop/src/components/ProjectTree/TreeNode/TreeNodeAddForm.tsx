@@ -39,7 +39,7 @@ const TreeNodeAddForm = ({
           protocol: undefined,
           expanded: true,
           order: Infinity,
-          class: "Endpoint",
+          class: "endpoint",
           childNodes: [],
           path: {
             raw: "",

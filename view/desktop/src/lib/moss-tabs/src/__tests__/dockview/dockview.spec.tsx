@@ -1,7 +1,7 @@
 import React from "react";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, render, waitFor } from "@testing-library/react";
 
 import { setMockRefElement } from "../__test_utils__/utils";
 import { DockviewApi } from "../../api/component.api";

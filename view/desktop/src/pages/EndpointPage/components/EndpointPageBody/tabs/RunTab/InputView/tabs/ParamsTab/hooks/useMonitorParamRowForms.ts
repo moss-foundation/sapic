@@ -66,7 +66,7 @@ export const useMonitorParamsRowForms = () => {
         name: queryParamToRemove.name,
         value: queryParamToRemove.value,
         order: targetIndex + 1,
-        desc: queryParamToRemove.description,
+        description: queryParamToRemove.description,
         options: {
           disabled: queryParamToRemove.disabled,
           propagate: queryParamToRemove.propagate,
@@ -142,7 +142,7 @@ export const useMonitorParamsRowForms = () => {
         name: pathParamToRemove.name,
         value: pathParamToRemove.value,
         order: targetIndex + 1,
-        desc: pathParamToRemove.description,
+        description: pathParamToRemove.description,
         options: {
           disabled: pathParamToRemove.disabled,
           propagate: pathParamToRemove.propagate,

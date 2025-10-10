@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 export const useHoverDelay = (delay = 500) => {
   const [isHovered, setIsHovered] = useState(false);
-  const hoverTimeoutRef = useRef(null);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleMouseEnter = () => {
     hoverTimeoutRef.current = setTimeout(() => {
@@ -11,12 +11,18 @@ export const useHoverDelay = (delay = 500) => {
   };
 
   const handleMouseLeave = () => {
-    clearTimeout(hoverTimeoutRef.current);
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
     setIsHovered(false);
   };
 
   useEffect(() => {
-    return () => clearTimeout(hoverTimeoutRef.current);
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+    };
   }, []);
 
   return { isHovered, handleMouseEnter, handleMouseLeave };

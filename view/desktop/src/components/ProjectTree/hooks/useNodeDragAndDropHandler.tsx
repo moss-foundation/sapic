@@ -194,7 +194,7 @@ export const useNodeDragAndDropHandler = () => {
               isAddingFolder: entry.kind === "Dir",
               order: newDropOrder,
               protocol: entry.protocol,
-              class: "Endpoint",
+              class: "endpoint",
             });
           } else {
             const newEntryPath = await join(
@@ -207,7 +207,7 @@ export const useNodeDragAndDropHandler = () => {
               isAddingFolder: entry.kind === "Dir",
               order: entry.order!,
               protocol: entry.protocol,
-              class: "Endpoint",
+              class: "endpoint",
             });
           }
         })
@@ -265,7 +265,7 @@ export const useNodeDragAndDropHandler = () => {
               isAddingFolder: entry.kind === "Dir",
               order: newOrder,
               protocol: entry.protocol,
-              class: "Endpoint",
+              class: "endpoint",
             });
           } else {
             const newEntryPath = await join(locationTreeNodeData.node.path.raw, entry.path.raw);
@@ -275,7 +275,7 @@ export const useNodeDragAndDropHandler = () => {
               isAddingFolder: entry.kind === "Dir",
               order: entry.order!,
               protocol: entry.protocol,
-              class: "Endpoint",
+              class: "endpoint",
             });
           }
         })
@@ -320,7 +320,7 @@ export const useNodeDragAndDropHandler = () => {
             return createEntryKind({
               name: entry.name,
               path: "",
-              class: "Endpoint",
+              class: "endpoint",
               isAddingFolder: entry.kind === "Dir",
               order: newOrder,
               protocol: entry.protocol,
@@ -329,7 +329,7 @@ export const useNodeDragAndDropHandler = () => {
             return createEntryKind({
               name: entry.name,
               path: newEntryPath,
-              class: "Endpoint",
+              class: "endpoint",
               isAddingFolder: entry.kind === "Dir",
               order: entry.order!,
               protocol: entry.protocol,

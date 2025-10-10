@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
     types:
       - opened
@@ -88,7 +88,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
-          fetch-depth: 0        # full history, needed for diff
+          fetch-depth: 0 # full history, needed for diff
           ref: ${{ github.head_ref }}
 
       - name: Check Modified Models
@@ -141,9 +141,7 @@ jobs:
         run: |
           make gen-${{matrix.crate}}-bindings
           git diff --exit-code -- crates/moss-${{matrix.crate}}/bindings/**
-  
-  
-  
+
   rust-general-workflows:
     name: Rust General Workflows
     needs: check-modified-files
@@ -260,9 +258,7 @@ jobs:
       matrix:
         # If it's a draft, only run test for that library
         # If it's ready, run tests for all libraries
-        package:
-          ${{ (github.event.pull_request.draft == true && fromJSON(needs.check-modified-files.outputs.rust-lib)) || fromJSON('["atomic_fs", "joinerror", "static_json"]') }}
-
+        package: ${{ (github.event.pull_request.draft == true && fromJSON(needs.check-modified-files.outputs.rust-lib)) || fromJSON('["atomic_fs", "joinerror", "static_json"]') }}
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -380,7 +376,7 @@ jobs:
 
       - name: Rust Grit Check - ${{ matrix.package }}
         run: python3 .github/scripts/rust_grit_check.py -p ${{ matrix.package }}
-  
+
   node-workflows:
     name: Node.js Workflows - ${{ matrix.task.name }}
     needs: check-modified-files
@@ -390,9 +386,11 @@ jobs:
       fail-fast: true
       matrix:
         task:
+          - name: TypeScript types check
+            command: cd view/desktop && tsc --noEmit --project tsconfig.json
+
           - name: Lint
-            command: |
-              pnpm run lint -- --quiet
+            command: pnpm run lint -- --quiet
 
           - name: Test Packages
             command: pnpm run test --project packages
