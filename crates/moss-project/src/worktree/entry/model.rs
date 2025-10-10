@@ -145,7 +145,6 @@ pub struct BodySpec {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub urlencoded: Option<LabeledBlock<IndexMap<UrlencodedParamId, UrlencodedParamSpec>>>,
 
-    // TODO: Make this a kebab case?
     #[serde(skip_serializing_if = "Option::is_none")]
     pub form_data: Option<LabeledBlock<IndexMap<FormDataParamId, FormDataParamSpec>>>,
 }

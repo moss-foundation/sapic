@@ -2269,8 +2269,6 @@ async fn patch_item_body<R: AppRuntime>(
     }
 
     Ok(())
-    // Check if the update params has a different type than current typ
-    // If so, clean up the json before patching
 }
 
 async fn clear_item_body<R: AppRuntime>(

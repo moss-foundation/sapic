@@ -107,10 +107,6 @@ pub enum UpdateBodyParams {
     },
 }
 
-// Text => Urlencoded
-// Update(Urlencoded {})
-// Update(Urlencoded {...})
-
 /// @category Type
 #[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
