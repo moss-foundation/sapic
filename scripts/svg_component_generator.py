@@ -223,8 +223,8 @@ def merge_svg_to_component(
     return (
         f"import React from 'react';"
         f"\nimport type {{ SVGProps }} from 'react';"
-        f"\nconst Svg{name}: React.FC<SVGProps<SVGSVGElement>> = props => ("
-        f"\n  <div>"
+        f"\nconst Svg{name}: React.FC<SVGProps<SVGSVGElement>> = ({{ className, ...props }}) => ("
+        f"\n  <div className={{className}}>"
         f"\n    {light_svg}"  # Light theme
         f"\n    {dark_svg}"   # Dark theme
         f"\n  </div>"
@@ -241,7 +241,11 @@ def svg_to_component(name: str, svg_xml: str) -> str:
     return (
         f"import React from 'react';"
         f"\nimport type {{ SVGProps }} from 'react';"
-        f"\nconst Svg{name}: React.FC<SVGProps<SVGSVGElement>> = props => {svg_with_props};"
+        f"\nconst Svg{name}: React.FC<SVGProps<SVGSVGElement>> = ({{ className, ...props }}) => ("
+        f"\n  <div className={{className}}>"
+        f"\n    {svg_with_props}"
+        f"\n  </div>"
+        f"\n);"
         f"\nexport default Svg{name};"
     )
 
