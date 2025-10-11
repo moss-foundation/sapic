@@ -46,6 +46,7 @@ env:
     moss_extension_points
     moss_theme
     moss_configuration
+    moss_language
   RUST_LIBS: |
     atomic_fs
     joinerror
