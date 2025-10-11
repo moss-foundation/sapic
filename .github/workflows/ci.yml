@@ -268,7 +268,7 @@ jobs:
         run: |
           set -euxo pipefail
 
-          IFS=$'\n' read -r -d '' -a crates <<< "$RUST_CRATES"
+          readarray -t crates <<< "$RUST_CRATES"
           
           for crate in "${crates[@]}"; do
             echo
@@ -325,7 +325,7 @@ jobs:
         run: |
           set -euxo pipefail
 
-          IFS=$'\n' read -r -d '' -a libs <<< "$RUST_LIBS"
+          readarray -t libs <<< "$RUST_LIBS"
 
           for lib in "${libs[@]}"; do
             echo
@@ -386,12 +386,12 @@ jobs:
         run: |
           grit init
 
-      - name: Run lint checks for each crate
+      - name: Run lint checks for each crate and library
         shell: bash
         run: |
           set -euxo pipefail
 
-          IFS=$'\n' read -r -d '' -a crates <<< "$RUST_CRATES"
+          readarray -t crates <<< "$RUST_CRATES"
 
           for crate in "${crates[@]}"; do
             echo
@@ -403,6 +403,20 @@ jobs:
             python3 .github/scripts/rust_grit_check.py -p "$crate"
             echo "::endgroup::"
           done
+          
+          readarray -t libs <<< "$RUST_LIBS"
+
+          for lib in "${libs[@]}"; do
+            echo
+            echo "================================================================"
+            echo "::group::Lint Checking lib: lib"
+            echo "================================================================"
+            cargo clean -p "$lib"
+            python3 .github/scripts/rust_warnings_check.py -p "$lib"
+            python3 .github/scripts/rust_grit_check.py -p "$lib"
+            echo "::endgroup::"
+          done
+          
 
   node-workflows:
     name: Node.js Workflows - ${{ matrix.task.name }}
