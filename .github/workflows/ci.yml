@@ -18,14 +18,47 @@ env:
   RUST_BACKTRACE: 1
   CARGO_TERM_COLOR: always
   CARGO_PROFILE_DEV_DEBUG: 0
+  RUST_CRATES: |
+    moss_git
+    moss_git_hosting_provider
+    moss_api
+    moss_text
+    moss_project
+    moss_app
+    moss_applib
+    moss_db
+    moss_fs
+    moss_keyring
+    moss_vault
+    moss_workspace
+    moss_environment
+    moss_testutils
+    moss_common
+    moss_storage
+    moss_activity_broadcaster
+    moss_bindingutils
+    moss_hcl
+    moss_logging
+    moss_user
+    moss_edit
+    moss_server_api
+    moss_extension
+    moss_extension_points
+    moss_theme
+    moss_configuration
+  RUST_LIBS: |
+    atomic_fs
+    joinerror
+    static_json
+
 
 jobs:
   check-modified-files:
     runs-on: ubuntu-latest
     outputs:
-      rust: ${{ steps.rust.outputs.any_changed }}
-      rust-lib: ${{ steps.rust-lib.outputs.changes }}
-      node: ${{ steps.node.outputs.any_changed }}
+      rust: ${{ steps.changed-files.outputs.rust }}
+      node: ${{ steps.changed-files.outputs.node }}
+      rust-lib: ${{ steps.changed-files.outputs.rust-libs }}
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
@@ -35,46 +68,37 @@ jobs:
       - name: Check out code
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
-      - name: Get all changed Rust files
-        id: rust
-        uses: tj-actions/changed-files@24d32ffd492484c1d75e0c0b894501ddb9d30d62 # v47.0.0
-        with:
-          files: |
-            **/*.rs
-            **/Cargo.toml
-          files_ignore: |
-            .github/**
-
-      - name: Get all changed Rust libraries
-        id: rust-lib
+      - name: Get all changed files
+        id: changed-files
         uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
         with:
+          # Check changes in the last commit if draft, in the entire PR if ready
+          base: ${{ (github.event.pull_request.draft == true && github.ref ) || '' }}
           filters: |
-            atomic_fs: 
-              - 'libs/atomic-fs/**/*.rs'
-              - 'libs/atomic-fs/**/Cargo.toml'
-            joinerror: 
-              - 'libs/joinerror/**/*.rs'
-              - 'libs/joinerror/**/Cargo.toml'
-            static_json:
-              - 'libs/static-json/**/*.rs'
-              - 'libs/static-json/**/Cargo.toml'
+            rust:
+              - '**/*.rs'
+              - '**/Cargo.toml'
+            node:
+              - '**/*.ts'
+              - '**/*.tsx'
+              - '**/*.js'
+              - '**/*.jsx'
+              - '**/package.json'
+            rust-libs:
+              - "libs/**/*.rs"
+              - "libs/**/Cargo.toml"
 
-      - name: Get all changed NodeJS files
-        id: node
-        uses: tj-actions/changed-files@24d32ffd492484c1d75e0c0b894501ddb9d30d62 # v47.0.0
-        with:
-          files: |
-            **.ts
-            **.tsx
-            **.js
-            **.jsx
-            package.json
 
   check-modified-models:
     name: Check Modified Models
     needs: check-modified-files
-    if: ${{ needs.check-modified-files.outputs.rust == 'true' && github.ref_name != 'main' }}
+    if: |
+      needs.check-modified-files.outputs.rust == 'true' && 
+      ( 
+        github.event_name == 'push' ||  
+        (github.event_name == 'pull_request' && github.event.pull_request.draft != true) ||
+        github.event_name == 'workflow_dispatch'
+      )
     runs-on: ubuntu-latest
     outputs:
       UPDATED_MODELS: ${{steps.output-models.outputs.UPDATED_MODELS}}
@@ -142,12 +166,21 @@ jobs:
           make gen-${{matrix.crate}}-bindings
           git diff --exit-code -- crates/moss-${{matrix.crate}}/bindings/**
 
+
+  # Run workspace audit and check the app can compile
   rust-general-workflows:
     name: Rust General Workflows
     needs: check-modified-files
-    if: ${{ needs.check-modified-files.outputs.rust == 'true' }}
+
+    if: |
+      needs.check-modified-files.outputs.rust == 'true' && 
+      ( 
+        github.event_name == 'push' ||  
+        (github.event_name == 'pull_request' && github.event.pull_request.draft != true) ||
+        github.event_name == 'workflow_dispatch'
+      )
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 5
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
@@ -180,43 +213,24 @@ jobs:
           cd "${GITHUB_WORKSPACE}/tools/xtask"
           cargo -q run -- --fail-fast audit
 
+      - name: Check the app can compile
+        run: |
+          cd "${GITHUB_WORKSPACE}/view/desktop/bin"
+          cargo check
+
+  # Run rust tests when it's not draft or manually triggered
   rust-tests:
-    name: Rust Tests - ${{ matrix.package }}
+    name: Rust Tests
     needs: check-modified-files
-    if: ${{ needs.check-modified-files.outputs.rust == 'true' }}
+    if: |
+      needs.check-modified-files.outputs.rust == 'true' && 
+      ( 
+        github.event_name == 'push' ||  
+        (github.event_name == 'pull_request' && github.event.pull_request.draft != true) ||
+        github.event_name == 'workflow_dispatch'
+      )
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        package:
-          - moss_git
-          - moss_git_hosting_provider
-          - moss_api
-          - moss_text
-          - moss_project
-          - moss_app
-          - moss_applib
-          - moss_db
-          - moss_fs
-          - moss_keyring
-          - moss_vault
-          - moss_workspace
-          - moss_environment
-          - moss_testutils
-          - moss_common
-          - moss_storage
-          - moss_activity_broadcaster
-          - moss_bindingutils
-          - moss_hcl
-          - moss_logging
-          - moss_user
-          - moss_edit
-          - moss_server_api
-          - moss_extension
-          - moss_extension_points
-          - moss_theme
-          - moss_configuration
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
@@ -243,23 +257,36 @@ jobs:
         uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.8.0
         with:
           cache-all-crates: "true"
+      # Iterate over all packages and run tests serially
+      # This allows for fail fast
+      - name: Run tests for each crate
+        shell: bash
+        run: |
+          set -euo pipefail
 
-      - name: Run Tests - ${{ matrix.package }}
-        run: cargo test -p ${{ matrix.package }} --features integration-tests
+          IFS=$'\n' read -r -d '' -a crates <<< "$RUST_CRATES"
+          
+          for crate in "${crates[@]}"; do
+            echo
+            echo "================================================================"
+            echo "::group::Testing crate: $crate"
+            echo "================================================================"
+            cargo test -p "$crate" --features integration-tests
+            echo "::endgroup::"
+          done
 
   rust-library-tests:
-    name: Rust Library Tests - ${{ matrix.package }}
+    name: Rust Library Tests
     needs: check-modified-files
-    if: ${{ needs.check-modified-files.outputs.rust-lib != '[]'}}
+    if: |
+      needs.check-modified-files.outputs.rust-lib != 'true' &&
+      (
+        github.event_name == 'push' ||
+        (github.event_name == 'pull_request' && github.event.pull_request.draft != true) ||
+        github.event_name == 'workflow_dispatch'
+      )
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        # If it's a draft, only run test for that library
-        # If it's ready, run tests for all libraries
-        package: ${{ (github.event.pull_request.draft == true && fromJSON(needs.check-modified-files.outputs.rust-lib)) || fromJSON('["atomic_fs", "joinerror", "static_json"]') }}
-
+    timeout-minutes: 15
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
@@ -287,52 +314,39 @@ jobs:
         with:
           cache-all-crates: "true"
 
-      - name: Run Tests - ${{ matrix.package }}
-        run: cargo test -p ${{ matrix.package }} --features tests
+      # Iterate over all libraries and run tests serially
+      # This allows for fail fast
+      - name: Run tests for each library
+        shell: bash
+        run: |
+          set -euo pipefail
 
-  # Run Rust Lint Check in each package individually.
+          IFS=$'\n' read -r -d '' -a libs <<< "$RUST_LIBS"
+
+          for lib in "${libs[@]}"; do
+            echo
+            echo "================================================================"
+            echo "::group::Testing library: $lib"
+            echo "================================================================"
+            cargo test -p "$lib" --features integration-tests
+            echo "::endgroup::"
+          done
+
+  # Run Rust Lint check in each package individually,
   # Right now it includes warnings check and grit check
-  # This job is skipped for draft pull requests to allow developers to work
-  # without being blocked by warnings during the development process.
-  # Warnings checks will run when the PR is marked as ready for review.
+  # It's skipped for draft pull requests
   rust-lint-check:
     name: Rust Lint Check
     needs: check-modified-files
-    if: ${{ needs.check-modified-files.outputs.rust == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.draft == false) }}
+    if: |
+      needs.check-modified-files.outputs.rust == 'true' &&
+      (
+        github.event_name == 'push' ||
+        (github.event_name == 'pull_request' && github.event.pull_request.draft != true) ||
+        github.event_name == 'workflow_dispatch'
+      )
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        package:
-          - moss_git
-          - moss_git_hosting_provider
-          - moss_api
-          - moss_text
-          - moss_project
-          - moss_app
-          - moss_applib
-          - moss_db
-          - moss_fs
-          - moss_keyring
-          # - moss_vault
-          - moss_workspace
-          - moss_environment
-          - moss_testutils
-          - moss_common
-          - moss_storage
-          - moss_activity_broadcaster
-          - desktop
-          - moss_bindingutils
-          - moss_hcl
-          - moss_logging
-          - moss_user
-          - moss_edit
-          - moss_server_api
-          - moss_extension
-          - moss_extension_points
-          - moss_theme
-          - moss_configuration
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
@@ -368,22 +382,37 @@ jobs:
         run: |
           grit init
 
-      - name: Clean cargo cache for warnings check
-        run: cargo clean -p ${{ matrix.package }}
+      - name: Run lint checks for each crate
+        shell: bash
+        run: |
+          set -euo pipefail
 
-      - name: Rust Warnings Check - ${{ matrix.package }}
-        run: python3 .github/scripts/rust_warnings_check.py -p ${{ matrix.package }}
+          IFS=$'\n' read -r -d '' -a crates <<< "$RUST_CRATES"
 
-      - name: Rust Grit Check - ${{ matrix.package }}
-        run: python3 .github/scripts/rust_grit_check.py -p ${{ matrix.package }}
+          for crate in "${crates[@]}"; do
+            echo
+            echo "================================================================"
+            echo "::group::Lint Checking crate: $crate"
+            echo "================================================================"
+            cargo clean -p "$crate"
+            python3 .github/scripts/rust_warnings_check.py -p "$crate"
+            python3 .github/scripts/rust_grit_check.py -p "$crate"
+            echo "::endgroup::"
+          done
 
   node-workflows:
     name: Node.js Workflows - ${{ matrix.task.name }}
     needs: check-modified-files
-    if: ${{ needs.check-modified-files.outputs.node == 'true' }}
+    if: |
+      needs.check-modified-files.outputs.node == 'true' &&
+      ( 
+        github.event_name == 'push' ||  
+        (github.event_name == 'pull_request' && github.event.pull_request.draft != true) ||
+        github.event_name == 'workflow_dispatch'
+      )
+
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: true
       matrix:
         task:
           - name: TypeScript types check
