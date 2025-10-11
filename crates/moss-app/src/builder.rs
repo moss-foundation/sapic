@@ -3,6 +3,7 @@ use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_extension::ExtensionPoint;
 use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
+use moss_language::registry::LanguageRegistry;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_theme::registry::ThemeRegistry;
 use std::{path::PathBuf, sync::Arc};
@@ -16,7 +17,7 @@ use crate::{
     dirs,
     extension::ExtensionService,
     internal::events::{OnDidChangeConfiguration, OnDidChangeProfile, OnDidChangeWorkspace},
-    locale::LocaleService,
+    language::LocaleService,
     logging::LogService,
     profile::ProfileService,
     session::SessionService,
@@ -24,10 +25,6 @@ use crate::{
     theme::ThemeService,
     workspace::WorkspaceService,
 };
-
-pub struct BuildAppParams {
-    pub locales_dir: PathBuf,
-}
 
 pub struct AppBuilder<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
@@ -61,7 +58,7 @@ impl<R: AppRuntime> AppBuilder<R> {
         self
     }
 
-    pub async fn build(self, ctx: &R::AsyncContext, params: BuildAppParams) -> App<R> {
+    pub async fn build(self, ctx: &R::AsyncContext) -> App<R> {
         let delegate = self.tao_handle.state::<AppDelegate<R>>().inner().clone();
         let user_dir = delegate.user_dir();
 
@@ -94,9 +91,10 @@ impl<R: AppRuntime> AppBuilder<R> {
         .await
         .expect("Failed to create theme service");
 
-        let locale_service = LocaleService::new(self.fs.clone(), params.locales_dir)
-            .await
-            .expect("Failed to create locale service");
+        let locale_service =
+            LocaleService::new::<R>(self.fs.clone(), <dyn LanguageRegistry>::global(&delegate))
+                .await
+                .expect("Failed to create locale service");
         let session_service = SessionService::new();
         let storage_service: Arc<StorageService<R>> =
             StorageService::<R>::new(&user_dir.join(dirs::GLOBALS_DIR))

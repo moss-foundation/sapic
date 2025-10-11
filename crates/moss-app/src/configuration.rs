@@ -1,5 +1,4 @@
 mod edit;
-pub(crate) mod registry;
 
 use joinerror::{OptionExt, ResultExt};
 use json_patch::{PatchOperation, ReplaceOperation, jsonptr::PointerBuf};
