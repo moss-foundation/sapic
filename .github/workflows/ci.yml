@@ -266,7 +266,7 @@ jobs:
       - name: Run tests for each crate
         shell: bash
         run: |
-          set -euo pipefail
+          set -euxo pipefail
 
           IFS=$'\n' read -r -d '' -a crates <<< "$RUST_CRATES"
           
@@ -323,7 +323,7 @@ jobs:
       - name: Run tests for each library
         shell: bash
         run: |
-          set -euo pipefail
+          set -euxo pipefail
 
           IFS=$'\n' read -r -d '' -a libs <<< "$RUST_LIBS"
 
@@ -389,7 +389,7 @@ jobs:
       - name: Run lint checks for each crate
         shell: bash
         run: |
-          set -euo pipefail
+          set -euxo pipefail
 
           IFS=$'\n' read -r -d '' -a crates <<< "$RUST_CRATES"
 
