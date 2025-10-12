@@ -379,7 +379,7 @@ jobs:
     if: ${{ needs.check-modified-files.outputs.node == 'true' }}
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         task:
           - name: TypeScript types check
