@@ -164,6 +164,11 @@ jobs:
         with:
           cache-all-crates: "true"
 
+      - name: Check the application compiles
+        run: |
+          cd "${GITHUB_WORKSPACE}/view/desktop/bin"
+          cargo check
+
       - name: Workspace Audit
         run: |
           cd "${GITHUB_WORKSPACE}/tools/xtask"
