@@ -245,7 +245,7 @@ jobs:
   rust-library-tests:
     name: Rust Library Tests - ${{ matrix.package }}
     needs: check-modified-files
-    if: ${{ needs.check-modified-files.outputs.rust-lib != '[]'}}
+    if: ${{ needs.check-modified-files.outputs.rust-lib == 'true'}}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
