@@ -16,7 +16,7 @@ pub mod shared;
 
 #[tokio::test]
 async fn batch_create_entry_success() {
-    let (ctx, _, project_path, project, test_dir_path) = create_test_project().await;
+    let (ctx, _, project_path, project, cleanup) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let entry_base_path = PathBuf::from(RESOURCES_ROOT_DIR);
@@ -67,12 +67,12 @@ async fn batch_create_entry_success() {
     assert!(inner_config.is_file());
 
     // Cleanup
-    std::fs::remove_dir_all(test_dir_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn batch_create_entry_missing_parent() {
-    let (ctx, _, _, project, test_dir_path) = create_test_project().await;
+    let (ctx, _, _, project, cleanup) = create_test_project().await;
 
     let entry_base_path = PathBuf::from(RESOURCES_ROOT_DIR);
     let inner_name = random_entry_name();
@@ -97,12 +97,12 @@ async fn batch_create_entry_missing_parent() {
     assert!(result.is_err());
 
     // Cleanup
-    std::fs::remove_dir_all(test_dir_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn batch_create_entry_empty_input() {
-    let (ctx, _, _, project, test_dir_path) = create_test_project().await;
+    let (ctx, _, _, project, cleanup) = create_test_project().await;
 
     let input = BatchCreateEntryInput { entries: vec![] };
     let output = project.batch_create_entry(&ctx, input).await.unwrap();
@@ -110,5 +110,5 @@ async fn batch_create_entry_empty_input() {
     assert_eq!(output.ids.len(), 0);
 
     // Cleanup
-    std::fs::remove_dir_all(test_dir_path).unwrap();
+    cleanup();
 }
