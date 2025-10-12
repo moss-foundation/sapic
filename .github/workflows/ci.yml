@@ -63,7 +63,10 @@ jobs:
   check-modified-models:
     name: Check Modified Models
     needs: check-modified-files
-    if: ${{ needs.check-modified-files.outputs.rust == 'true' && github.ref_name != 'main' }}
+    if:
+      needs.check-modified-files.outputs.rust == 'true' && 
+      github.ref_name != 'main' &&
+      (github.event_name != 'pull_request' || github.event.pull_request.draft == false)
     runs-on: ubuntu-latest
     outputs:
       UPDATED_MODELS: ${{steps.output-models.outputs.UPDATED_MODELS}}
