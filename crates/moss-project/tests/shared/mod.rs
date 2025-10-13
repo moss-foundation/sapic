@@ -47,6 +47,7 @@ pub async fn create_test_project() -> (
     AppDelegate<MockAppRuntime>,
     Arc<Path>,
     Project<MockAppRuntime>,
+    impl FnOnce(),
 ) {
     let mock_app = tauri::test::mock_app();
     let ctx = MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
@@ -78,7 +79,10 @@ pub async fn create_test_project() -> (
         .await
         .unwrap();
 
-    (ctx, app_delegate, project_path.into(), project)
+    let cleanup = || {
+        std::fs::remove_dir_all(test_dir_path).unwrap();
+    };
+    (ctx, app_delegate, project_path.into(), project, cleanup)
 }
 
 #[allow(dead_code)]
