@@ -46,6 +46,12 @@
 
   & .dv-tab {
     padding: 0;
+
+    &::before,
+    &::after {
+      width: 0 !important;
+      height: 0 !important;
+    }
     &:focus-within::after,
     &:focus::after {
       outline: none !important;

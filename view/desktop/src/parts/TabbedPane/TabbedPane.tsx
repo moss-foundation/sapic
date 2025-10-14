@@ -270,6 +270,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
                   theme={{
                     name: "moss-theme-light",
                     className: "dockview-moss-light",
+                    gap: 0,
                   }}
                   disableAutoResizing
                   disableTabsOverflowList
