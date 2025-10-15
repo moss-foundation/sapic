@@ -29,7 +29,6 @@ export const NewAccountModal = ({ showModal, closeModal, onAccountAdded }: NewAc
 
       const accountParams: AddAccountParams = {
         host: getProviderHost(provider),
-        label: "",
         kind: provider,
         pat: method === "PAT" && token ? token : undefined,
       };

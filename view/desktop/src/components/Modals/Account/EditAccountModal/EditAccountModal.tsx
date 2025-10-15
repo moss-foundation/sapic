@@ -33,7 +33,6 @@ export const EditAccountModal = ({ showModal, closeModal, account, onAccountUpda
       // This is necessary because there's no dedicated "update account" endpoint
       const accountParams: AddAccountParams = {
         host: account.host,
-        label: "",
         kind: account.kind,
         pat: token,
       };

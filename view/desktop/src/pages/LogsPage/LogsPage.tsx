@@ -32,7 +32,6 @@ export const Logs = () => {
 
   const [accountForm, setAccountForm] = useState<AddAccountParams>({
     host: "github.com",
-    label: "",
     kind: "GITHUB",
   });
 

@@ -49,7 +49,6 @@ pub struct Configuration {
 #[ts(export, export_to = "types.ts")]
 pub struct AddAccountParams {
     pub host: String,
-    pub label: Option<String>,
     #[ts(type = "AccountKind")]
     pub kind: AccountKind,
     /// If a PAT is not provided, we will use OAuth
