@@ -1,13 +1,5 @@
-import {
-  DescribeAppOutput,
-  GetColorThemeInput,
-  GetColorThemeOutput,
-  GetTranslationNamespaceInput,
-  GetTranslationNamespaceOutput,
-  ListColorThemesOutput,
-  ListLocalesOutput,
-  UpdateConfigurationInput,
-} from "@repo/moss-app";
+import { invokeTauriServiceIpc } from "@/lib/backend/tauri";
+import { DescribeAppOutput, UpdateConfigurationInput } from "@repo/moss-app";
 import {
   ActivitybarPartStateInfo,
   EditorPartStateInfo,
@@ -16,9 +8,7 @@ import {
   UpdateLayoutInput,
 } from "@repo/moss-workspace";
 
-import { invokeTauriServiceIpc } from "../backend/tauri";
-
-const appConfigService = {
+export const appConfigService = {
   describeApp: async () => {
     return await invokeTauriServiceIpc<void, DescribeAppOutput>({ cmd: "describe_app" });
   },
@@ -69,41 +59,4 @@ const appConfigService = {
       },
     });
   },
-};
-
-const languagesService = {
-  listLocales: async () => {
-    return await invokeTauriServiceIpc<void, ListLocalesOutput>({ cmd: "list_locales" });
-  },
-
-  getTranslationNamespace: async (input: GetTranslationNamespaceInput) => {
-    return await invokeTauriServiceIpc<GetTranslationNamespaceInput, GetTranslationNamespaceOutput>({
-      cmd: "get_translation_namespace",
-      args: {
-        input,
-      },
-    });
-  },
-};
-
-const themesService = {
-  describeColorTheme: async (themeId: string) => {
-    return await invokeTauriServiceIpc<GetColorThemeInput, GetColorThemeOutput>({
-      cmd: "describe_color_theme",
-      args: {
-        input: { id: themeId },
-      },
-    });
-  },
-
-  listColorThemes: async () => {
-    return await invokeTauriServiceIpc<void, ListColorThemesOutput>({ cmd: "list_color_themes" });
-  },
-};
-
-//FIXME services should take only a Input types ideally
-export const AppService = {
-  ...appConfigService,
-  ...languagesService,
-  ...themesService,
 };

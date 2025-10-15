@@ -1,4 +1,4 @@
-import { AppService } from "@/lib/services/app";
+import { AppService } from "@/lib/services";
 import { ListLocalesOutput } from "@repo/moss-app";
 import { useQuery } from "@tanstack/react-query";
 

@@ -1,4 +1,4 @@
-import { AppService } from "@/lib/services/app";
+import { AppService } from "@/lib/services";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { ListColorThemesOutput } from "@repo/moss-app";
 import { useQuery } from "@tanstack/react-query";

@@ -1,6 +1,6 @@
 import { BackendModule, ReadCallback } from "i18next";
 
-import { AppService } from "../services/app";
+import { AppService } from "../services";
 
 interface I18nDictionary {
   [key: string]: string;

@@ -1,4 +1,4 @@
-import { AppService } from "@/lib/services/app";
+import { AppService } from "@/lib/services";
 import { GetColorThemeInput, GetColorThemeOutput } from "@repo/moss-app";
 import { UndefinedInitialDataOptions, useQuery } from "@tanstack/react-query";
 

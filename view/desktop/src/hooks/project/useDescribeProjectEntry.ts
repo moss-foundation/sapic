@@ -1,4 +1,4 @@
-import { ProjectService } from "@/lib/services/project";
+import { ProjectService } from "@/lib/services/projectService";
 import { DescribeEntryOutput } from "@repo/moss-project";
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 
