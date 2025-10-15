@@ -83,10 +83,3 @@ updates:
       - dependencies
       - typescript
     open-pull-requests-limit: 10
-
-  - package-ecosystem: "github-releases"
-    directory: "/"
-    schedule:
-      interval: "monthly"
-    repositories:
-      - moss-foundation/moss-tabs
