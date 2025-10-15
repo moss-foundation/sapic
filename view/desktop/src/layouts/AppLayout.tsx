@@ -204,7 +204,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
 
 const SidebarContent = () => <Sidebar />;
 
-const MainContent = () => <TabbedPane theme="dockview-theme-light" />;
+const MainContent = () => <TabbedPane />;
 
 const BottomPaneContent = () => {
   return <BottomPane />;

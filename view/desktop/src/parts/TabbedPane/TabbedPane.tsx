@@ -30,7 +30,7 @@ import { EntryKind } from "@repo/moss-project";
 
 import { AddPanelButton } from "./AddPanelButton";
 import CustomTab from "./CustomTab";
-import DockviewControls from "./DebugComponents/DockviewControls";
+import DockviewDebugContainer from "./DebugComponents/DockviewDebugContainer";
 import LogsPanel from "./DebugComponents/LogsPanel";
 import Metadata from "./DebugComponents/Metadata";
 import { useTabbedPaneDropTarget } from "./hooks/useDockviewDropTarget";
@@ -241,7 +241,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     <div className="h-full">
       <div className="dockview-demo relative flex h-full w-full grow flex-col rounded">
         {showDebugPanels && (
-          <DockviewControls
+          <DockviewDebugContainer
             api={api}
             panels={panels}
             activePanel={activePanel}
@@ -274,6 +274,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
                   }}
                   disableAutoResizing
                   disableTabsOverflowList
+                  disableFloatingGroups
                 />
               </div>
             </DebugContext.Provider>
