@@ -61,6 +61,12 @@ updates:
         update-types:
           - "minor"
           - "patch"
+      moss-tabs:
+        patterns:
+          - "moss-tabs"
+        update-types:
+          - "minor"
+          - "patch"
       other-frontend-dependencies:
         patterns:
           - "*"
