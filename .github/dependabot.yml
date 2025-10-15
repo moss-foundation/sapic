@@ -85,17 +85,8 @@ updates:
     open-pull-requests-limit: 10
 
   - package-ecosystem: "github-releases"
-    directory: "/view/desktop"
+    directory: "/"
     schedule:
       interval: "monthly"
     repositories:
       - moss-foundation/moss-tabs
-    update-types:
-      - "minor"
-      - "patch"
-    ignore:
-      - dependency-name: "*"
-        update-types: ["version-update:semver-patch"]
-    commit-message:
-      prefix: build(moss-tabs)
-      prefix-development: chore(moss-tabs)
