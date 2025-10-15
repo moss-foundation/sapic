@@ -1,4 +1,4 @@
-import { invokeTauriIpc } from "@/lib/backend/tauri";
+import { AppService } from "@/lib/services/app";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { ListColorThemesOutput } from "@repo/moss-app";
 import { useQuery } from "@tanstack/react-query";
@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 export const USE_LIST_COLOR_THEMES_QUERY_KEY = "listColorThemes";
 
 const listColorThemesFn = async (): Promise<ListColorThemesOutput> => {
-  const result = await invokeTauriIpc<ListColorThemesOutput>("list_color_themes");
+  const result = await AppService.listColorThemes();
 
   if (result.status === "error") {
     throw new Error(String(result.error));
