@@ -1,8 +1,9 @@
+import { IDockviewPanelHeaderProps } from "moss-tabs";
 import { HTMLAttributes, MouseEvent, useCallback, useEffect, useState } from "react";
 
 import { EntryIcon } from "@/components/EntryIcon";
 import { Icon } from "@/lib/ui/Icon";
-import { IDockviewPanelHeaderProps } from "@repo/moss-tabs";
+import { cn } from "@/utils";
 
 export type CustomTabProps = IDockviewPanelHeaderProps &
   HTMLAttributes<HTMLDivElement> & {
@@ -17,14 +18,26 @@ export const CustomTab = ({
   hideClose,
   closeActionOverride,
   onClick,
+  tabLocation,
   ...props
 }: CustomTabProps) => {
   const [title, setTitle] = useState(api.title || "");
   const [isCloseHovered, setIsCloseHovered] = useState(false);
+  const [isActive, setIsActive] = useState(api.isActive);
 
   useEffect(() => {
     const disposable = api.onDidTitleChange?.((event) => {
       setTitle(event.title);
+    });
+
+    return () => {
+      disposable?.dispose();
+    };
+  }, [api]);
+
+  useEffect(() => {
+    const disposable = api.onDidActiveChange?.((event) => {
+      setIsActive(event.isActive);
     });
 
     return () => {
@@ -61,16 +74,27 @@ export const CustomTab = ({
   return (
     <div
       onClick={handleClick}
-      data-testid="dockview-custom-tab"
-      className="group/customTab flex h-full items-center justify-center gap-1 px-3 hover:text-(--moss-primary-text)"
+      className={cn(
+        "group/customTab flex h-full items-center justify-center gap-1 px-3 hover:text-(--moss-primary-text)",
+        {
+          "border-b-1 border-(--moss-primary)": isActive,
+          "border-b-1 border-(--moss-border-color)": !isActive,
+        }
+      )}
+      tab-location={tabLocation}
       {...props}
     >
-      <span className="flex max-w-40 grow items-center gap-1 opacity-70 transition-opacity group-hover/customTab:opacity-100">
+      <span
+        className={cn("flex max-w-40 grow items-center gap-1", {
+          "": isActive,
+          "opacity-70 transition-opacity group-hover/customTab:opacity-100": !isActive,
+        })}
+      >
         {params?.iconType ? (
           <Icon icon={params?.iconType} className="size-4" />
         ) : params?.node ? (
           <div className="relative size-4 shrink-0">
-            <EntryIcon entry={params?.node} className="absolute top-0 right-0" />
+            <EntryIcon entry={params?.node} className="absolute top-0 right-0 size-4" />
           </div>
         ) : null}
         <span className="truncate">{title}</span>
@@ -81,13 +105,13 @@ export const CustomTab = ({
           className="flex items-center justify-center p-0"
           onPointerDown={(e) => e.preventDefault()}
           onClick={handleClose}
+          onMouseEnter={() => setIsCloseHovered(true)}
+          onMouseLeave={() => setIsCloseHovered(false)}
         >
-          <div onMouseEnter={() => setIsCloseHovered(true)} onMouseLeave={() => setIsCloseHovered(false)}>
-            <Icon
-              icon={isCloseHovered ? "CloseSmallHovered" : "CloseSmall"}
-              className="text-(--moss-icon-primary-text)"
-            />
-          </div>
+          <Icon
+            icon={isCloseHovered ? "CloseSmallHovered" : "CloseSmall"}
+            className="text-(--moss-icon-primary-text)"
+          />
         </button>
       )}
     </div>

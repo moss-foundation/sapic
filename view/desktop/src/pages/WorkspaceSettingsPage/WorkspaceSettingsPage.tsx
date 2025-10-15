@@ -1,3 +1,4 @@
+import { IDockviewPanelProps } from "moss-tabs";
 import { useState } from "react";
 
 import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
@@ -7,7 +8,6 @@ import { useModal } from "@/hooks";
 import { useRenameWorkspace } from "@/hooks/useRenameWorkspace";
 import { useDeleteWorkspace } from "@/hooks/workbench/useDeleteWorkspace";
 import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
-import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 
 import { WorkspaceDangerZoneSection } from "./WorkspaceDangerZoneSection";
 import { WorkspaceDataSection } from "./WorkspaceDataSection";

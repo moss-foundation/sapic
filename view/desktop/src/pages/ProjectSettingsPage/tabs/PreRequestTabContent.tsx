@@ -1,4 +1,4 @@
-import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
+import { IDockviewPanelProps } from "moss-tabs";
 
 export const PreRequestTabContent = ({}: IDockviewPanelProps<{ projectId: string }>) => {
   return (

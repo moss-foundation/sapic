@@ -61,7 +61,7 @@ export const EmptyWorkspace = ({ inSidebar = false }: EmptyWorkspaceProps) => {
       {showOpenWorkspaceModal && (
         <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
       )}
-      <TabbedPane theme="dockview-theme-light" mode="welcome" />
+      <TabbedPane mode="welcome" />
     </>
   );
 };

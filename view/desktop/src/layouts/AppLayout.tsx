@@ -1,7 +1,3 @@
-import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
-
-import "@repo/moss-tabs/assets/styles.css";
-
 import { AllotmentHandle, LayoutPriority } from "allotment";
 import { ReactNode, useEffect, useRef, useState } from "react";
 
@@ -12,6 +8,7 @@ import { useUpdatePanelPartState } from "@/hooks/app/useUpdatePanelPartState";
 import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { useActivityBarStore } from "@/store/activityBar";
+import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn } from "@/utils";
 
 import { Resizable, ResizablePanel } from "../lib/ui/Resizable";
@@ -207,7 +204,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
 
 const SidebarContent = () => <Sidebar />;
 
-const MainContent = () => <TabbedPane theme="dockview-theme-light" />;
+const MainContent = () => <TabbedPane />;
 
 const BottomPaneContent = () => {
   return <BottomPane />;

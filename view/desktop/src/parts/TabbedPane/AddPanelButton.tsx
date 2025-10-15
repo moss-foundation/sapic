@@ -1,6 +1,7 @@
+import { IDockviewHeaderActionsProps } from "moss-tabs";
+
 import { ActionButton } from "@/components";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
-import { IDockviewHeaderActionsProps } from "@repo/moss-tabs";
 
 import { nextId } from "./defaultLayout";
 

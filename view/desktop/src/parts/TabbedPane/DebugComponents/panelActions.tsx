@@ -1,8 +1,8 @@
+import { DockviewApi, IDockviewPanel } from "moss-tabs";
 import React from "react";
 import ReactDOM from "react-dom";
 
 import { Scrollbar } from "@/lib/ui/Scrollbar";
-import { DockviewApi, IDockviewPanel } from "@repo/moss-tabs";
 
 const PanelAction = (props: { panels: string[]; api: DockviewApi; activePanel?: string; panelId: string }) => {
   const onClick = () => {

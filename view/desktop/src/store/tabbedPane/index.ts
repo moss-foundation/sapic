@@ -1,8 +1,8 @@
+import { AddPanelOptions, DockviewApi, SerializedDockview } from "moss-tabs";
 import { create } from "zustand";
 
 import { ProjectTreeNode } from "@/components/ProjectTree/types";
 import { Icons } from "@/lib/ui";
-import { AddPanelOptions, DockviewApi, SerializedDockview } from "@repo/moss-tabs";
 
 interface AddPanelOptionsWithoutMandatoryComponent
   extends Omit<

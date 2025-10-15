@@ -1,10 +1,10 @@
+import { DockviewApi } from "moss-tabs";
 import React from "react";
 import { createRoot } from "react-dom/client";
 
 import { useUpdateEditorPartState } from "@/hooks/app/useUpdateEditorPartState";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
-import { DockviewApi } from "@repo/moss-tabs";
 
 import { defaultConfig, nextId } from "../defaultLayout";
 import { PanelBuilder } from "./panelBuilder";
@@ -142,7 +142,7 @@ export const GridActions = (props: {
   const [gap, setGap] = React.useState(0);
 
   React.useEffect(() => {
-    props.api?.setGap(gap);
+    // props.api?.setGap(gap);
   }, [gap, props.api]);
 
   return (

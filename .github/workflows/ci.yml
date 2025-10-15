@@ -59,12 +59,10 @@ jobs:
               - "libs/**/*.rs"
               - "libs/**/Cargo.toml"
 
-
   check-modified-models:
     name: Check Modified Models
     needs: check-modified-files
-    if:
-      needs.check-modified-files.outputs.rust == 'true' && 
+    if: needs.check-modified-files.outputs.rust == 'true' &&
       github.ref_name != 'main' &&
       (github.event_name != 'pull_request' || github.event.pull_request.draft == false)
     runs-on: ubuntu-latest
@@ -393,9 +391,6 @@ jobs:
 
           - name: Test Packages
             command: pnpm run test --project packages
-
-          # - name: Test Moss-Tabs
-          #   command: pnpm run test --project moss-tabs
 
           - name: Test Desktop
             command: pnpm run test --project desktop

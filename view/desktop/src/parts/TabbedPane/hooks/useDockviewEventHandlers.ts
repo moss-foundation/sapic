@@ -1,8 +1,8 @@
+import { DockviewApi } from "moss-tabs";
 import React from "react";
 
 import { useDockviewLoggerStore } from "@/store/dockviewLogger";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
-import { DockviewApi } from "@repo/moss-tabs";
 
 export const useTabbedPaneEventHandlers = (
   api: DockviewApi | undefined,

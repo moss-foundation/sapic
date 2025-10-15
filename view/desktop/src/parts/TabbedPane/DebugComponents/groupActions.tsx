@@ -1,7 +1,7 @@
+import { DockviewApi, DockviewGroupLocation, IDockviewGroupPanel } from "moss-tabs";
 import React from "react";
 
 import { Scrollbar } from "@/lib/ui/Scrollbar";
-import { DockviewApi, DockviewGroupLocation, DockviewGroupPanel } from "@repo/moss-tabs";
 
 const GroupAction = (props: { groupId: string; groups: string[]; api: DockviewApi; activeGroup?: string }) => {
   const onClick = () => {
@@ -10,14 +10,16 @@ const GroupAction = (props: { groupId: string; groups: string[]; api: DockviewAp
 
   const isActive = props.activeGroup === props.groupId;
 
-  const [group, setGroup] = React.useState<DockviewGroupPanel | undefined>(undefined);
+  const [group, setGroup] = React.useState<IDockviewGroupPanel | undefined>(undefined);
 
   React.useEffect(() => {
     const disposable = props.api.onDidLayoutFromJSON(() => {
-      setGroup(props.api.getGroup(props.groupId));
+      const group = props.api.getGroup(props.groupId);
+      setGroup(group);
     });
 
-    setGroup(props.api.getGroup(props.groupId));
+    const group = props.api.getGroup(props.groupId);
+    setGroup(group);
 
     return () => {
       disposable.dispose();
@@ -55,7 +57,7 @@ const GroupAction = (props: { groupId: string; groups: string[]; api: DockviewAp
       disposable2.dispose();
       disposable3.dispose();
     };
-  }, [group]);
+  }, [group, props.api]);
 
   return (
     <div className="button-action select-none">
@@ -65,10 +67,13 @@ const GroupAction = (props: { groupId: string; groups: string[]; api: DockviewAp
         </button>
       </div>
       <div className="flex">
-        <button
+        {/* Floating groups are disabled in our Dockview config */}
+        {/* <button
+          title="Add Floating Group"
           className={location?.type === "floating" ? "demo-icon-button selected" : "demo-icon-button"}
           onClick={() => {
             if (group) {
+              // @ts-expect-error The types mismatch are also present in the original Dockview repo. Since we don't use floating groups, we can ignore it.
               props.api.addFloatingGroup(group, {
                 width: 400,
                 height: 300,
@@ -83,18 +88,23 @@ const GroupAction = (props: { groupId: string; groups: string[]; api: DockviewAp
           }}
         >
           <span className="material-symbols-outlined">ad_group</span>
-        </button>
-        <button
+        </button> */}
+
+        {/* Popouts are disabled in our Dockview config */}
+        {/* <button
+          title="Add Popout Group"
           className={location?.type === "popout" ? "demo-icon-button selected" : "demo-icon-button"}
           onClick={() => {
             if (group) {
+              // @ts-expect-error The types mismatch are also present in the original Dockview repo. Since we don't use popouts, we can ignore it.
               props.api.addPopoutGroup(group);
             }
           }}
         >
           <span className="material-symbols-outlined">open_in_new</span>
-        </button>
+        </button> */}
         <button
+          title="Maximize Group"
           className={isMaximized ? "demo-icon-button selected" : "demo-icon-button"}
           onClick={() => {
             if (group) {
@@ -109,9 +119,9 @@ const GroupAction = (props: { groupId: string; groups: string[]; api: DockviewAp
           <span className="material-symbols-outlined">fullscreen</span>
         </button>
         <button
+          title="Toggle Group Visibility"
           className="demo-icon-button"
           onClick={() => {
-            console.log(group);
             if (group) {
               if (group.api.isVisible) {
                 group.api.setVisible(false);
@@ -124,6 +134,7 @@ const GroupAction = (props: { groupId: string; groups: string[]; api: DockviewAp
           <span className="material-symbols-outlined">{isVisible ? "visibility" : "visibility_off"}</span>
         </button>
         <button
+          title="Close Group"
           className="demo-icon-button"
           onClick={() => {
             const panel = props.api?.getGroup(props.groupId);

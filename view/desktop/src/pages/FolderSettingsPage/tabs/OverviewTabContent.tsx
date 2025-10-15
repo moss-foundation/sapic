@@ -1,7 +1,8 @@
+import { IDockviewPanelProps } from "moss-tabs";
+
 import { PageContent } from "@/components";
 import { ProjectTreeNode } from "@/components/ProjectTree/types";
 import { useProjectsTrees } from "@/hooks";
-import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 import { EntryKind } from "@repo/moss-project";
 
 import { findNodeInProject } from "../utils";
