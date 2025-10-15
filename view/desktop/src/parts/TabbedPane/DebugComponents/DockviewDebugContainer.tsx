@@ -1,10 +1,27 @@
 import { DockviewApi } from "moss-tabs";
+import { useEffect } from "react";
 
 import { GridActions } from "./gridActions";
 import { GroupActions } from "./groupActions";
 import { PanelActions } from "./panelActions";
 
-const DockviewControls = ({
+// Load Material Symbols font for debug components
+const loadMaterialSymbols = () => {
+  // Check if font is already loaded to avoid duplicates
+  const existingLink = document.querySelector('link[href*="Material+Symbols+Outlined"]');
+  if (existingLink) {
+    return;
+  }
+
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href =
+    "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200";
+  link.onerror = () => console.warn("Failed to load Material Symbols font");
+  document.head.appendChild(link);
+};
+
+const DockviewDebugContainer = ({
   api,
   panels,
   activePanel,
@@ -27,6 +44,10 @@ const DockviewControls = ({
   toggleLogs: () => void;
   showLogs: boolean;
 }) => {
+  useEffect(() => {
+    loadMaterialSymbols();
+  }, []);
+
   return (
     <div className="border-b border-(--moss-border-color) bg-[#0f162d] text-white">
       <div>
@@ -47,4 +68,4 @@ const DockviewControls = ({
   );
 };
 
-export default DockviewControls;
+export default DockviewDebugContainer;
