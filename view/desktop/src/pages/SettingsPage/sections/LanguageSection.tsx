@@ -13,22 +13,14 @@ export const LanguageSection = () => {
 
   const { data: appState } = useDescribeApp();
   const { data: languages } = useListLocales();
-  const { mutate: mutateUpdateConfiguration } = useUpdateConfiguration();
+  const { mutate: updateConfiguration } = useUpdateConfiguration();
 
   const handleLanguageChange = (newCode: string) => {
-    if (newCode === "default") {
-      mutateUpdateConfiguration({
-        key: "language",
-        value: "en",
-        target: "PROFILE",
-      });
-    } else {
-      mutateUpdateConfiguration({
-        key: "language",
-        value: newCode,
-        target: "PROFILE",
-      });
-    }
+    updateConfiguration({
+      key: "language",
+      value: newCode === "default" ? "en" : newCode,
+      target: "PROFILE",
+    });
 
     i18next.changeLanguage(newCode).catch(console.error);
   };

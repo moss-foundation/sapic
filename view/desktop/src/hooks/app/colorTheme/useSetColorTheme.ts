@@ -16,7 +16,9 @@ const setColorThemeFn = async (input: SetColorThemeInput): Promise<void> => {
 
   document.documentElement.setAttribute("data-theme", input.themeInfo.mode);
 };
-
+/**
+ * @deprecated
+ */
 export const useSetColorTheme = () => {
   const queryClient = useQueryClient();
   return useMutation<void, Error, SetColorThemeInput>({

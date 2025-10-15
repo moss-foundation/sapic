@@ -1,4 +1,4 @@
-import { DescribeAppOutput, UpdateConfigurationInput } from "@repo/moss-app";
+import { DescribeAppOutput, ListLocalesOutput, UpdateConfigurationInput } from "@repo/moss-app";
 import {
   ActivitybarPartStateInfo,
   EditorPartStateInfo,
@@ -60,5 +60,9 @@ export const AppService = {
         },
       },
     });
+  },
+
+  listLocales: async () => {
+    return await invokeTauriServiceIpc<void, ListLocalesOutput>({ cmd: "list_locales" });
   },
 };
