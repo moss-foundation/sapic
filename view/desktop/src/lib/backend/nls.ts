@@ -1,8 +1,6 @@
 import { BackendModule, ReadCallback } from "i18next";
 
-import { GetTranslationNamespaceInput, GetTranslationNamespaceOutput } from "@repo/moss-app";
-
-import { invokeTauriIpc, IpcResult } from "./tauri";
+import { AppService } from "../services/app";
 
 interface I18nDictionary {
   [key: string]: string;
@@ -13,25 +11,6 @@ const translationCache = new Map<string, I18nDictionary>();
 
 const getCacheKey = (language: string, namespace: string): string => {
   return `${language}:${namespace}`;
-};
-
-// Clear cache for a specific language (useful for language changes)
-export const clearTranslationCache = (language?: string) => {
-  if (language) {
-    const keysToDelete = Array.from(translationCache.keys()).filter((key) => key.startsWith(`${language}:`));
-    keysToDelete.forEach((key) => translationCache.delete(key));
-  } else {
-    translationCache.clear();
-  }
-};
-
-//TODO should be in services
-const getTranslationNamespaceFn = async (
-  input: GetTranslationNamespaceInput
-): Promise<IpcResult<GetTranslationNamespaceOutput, string>> => {
-  return await invokeTauriIpc<GetTranslationNamespaceOutput, string>("get_translation_namespace", {
-    input,
-  });
 };
 
 const I18nTauriBackend: BackendModule = {
@@ -45,14 +24,14 @@ const I18nTauriBackend: BackendModule = {
     }
 
     try {
-      const result = await getTranslationNamespaceFn({ language, namespace });
+      const result = await AppService.getTranslationNamespace({ language, namespace });
 
       if (result.status === "ok") {
         const translations = result.data.contents as I18nDictionary;
         translationCache.set(cacheKey, translations);
         callback(null, translations);
       } else {
-        callback(result.error, false);
+        throw new Error(String(result.error));
       }
     } catch (error) {
       callback(String(error), false);

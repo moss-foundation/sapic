@@ -2,6 +2,8 @@ import {
   DescribeAppOutput,
   GetColorThemeInput,
   GetColorThemeOutput,
+  GetTranslationNamespaceInput,
+  GetTranslationNamespaceOutput,
   ListColorThemesOutput,
   ListLocalesOutput,
   UpdateConfigurationInput,
@@ -16,8 +18,7 @@ import {
 
 import { invokeTauriServiceIpc } from "../backend/tauri";
 
-//FIXME services should take only a Input types ideally
-export const AppService = {
+const appConfigService = {
   describeApp: async () => {
     return await invokeTauriServiceIpc<void, DescribeAppOutput>({ cmd: "describe_app" });
   },
@@ -68,11 +69,24 @@ export const AppService = {
       },
     });
   },
+};
 
+const languagesService = {
   listLocales: async () => {
     return await invokeTauriServiceIpc<void, ListLocalesOutput>({ cmd: "list_locales" });
   },
 
+  getTranslationNamespace: async (input: GetTranslationNamespaceInput) => {
+    return await invokeTauriServiceIpc<GetTranslationNamespaceInput, GetTranslationNamespaceOutput>({
+      cmd: "get_translation_namespace",
+      args: {
+        input,
+      },
+    });
+  },
+};
+
+const themesService = {
   describeColorTheme: async (themeId: string) => {
     return await invokeTauriServiceIpc<GetColorThemeInput, GetColorThemeOutput>({
       cmd: "describe_color_theme",
@@ -85,4 +99,11 @@ export const AppService = {
   listColorThemes: async () => {
     return await invokeTauriServiceIpc<void, ListColorThemesOutput>({ cmd: "list_color_themes" });
   },
+};
+
+//FIXME services should take only a Input types ideally
+export const AppService = {
+  ...appConfigService,
+  ...languagesService,
+  ...themesService,
 };
