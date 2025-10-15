@@ -4,7 +4,7 @@ import {
   EditorPartStateInfo,
   PanelPartStateInfo,
   SidebarPartStateInfo,
-  UpdateStateInput,
+  UpdateLayoutInput,
 } from "@repo/moss-workspace";
 
 import { invokeTauriServiceIpc } from "../backend/tauri";
@@ -16,37 +16,37 @@ export const AppService = {
   },
 
   updateActivitybarPartState: async (activitybar: ActivitybarPartStateInfo) => {
-    return await invokeTauriServiceIpc<UpdateStateInput, void>({
-      cmd: "update_workspace_state",
+    return await invokeTauriServiceIpc<UpdateLayoutInput, void>({
+      cmd: "update_layout",
       args: {
-        input: { "updateActivitybarPartState": activitybar },
+        input: { activitybar },
       },
     });
   },
 
   updateEditorPartState: async (editor: EditorPartStateInfo) => {
-    return await invokeTauriServiceIpc<UpdateStateInput, void>({
-      cmd: "update_workspace_state",
+    return await invokeTauriServiceIpc<UpdateLayoutInput, void>({
+      cmd: "update_layout",
       args: {
-        input: { "updateEditorPartState": editor },
+        input: { editor },
       },
     });
   },
 
   updatePanelPartState: async (panel: PanelPartStateInfo) => {
-    return await invokeTauriServiceIpc<UpdateStateInput, void>({
-      cmd: "update_workspace_state",
+    return await invokeTauriServiceIpc<UpdateLayoutInput, void>({
+      cmd: "update_layout",
       args: {
-        input: { "updatePanelPartState": panel },
+        input: { panel },
       },
     });
   },
 
   updateSidebarPartState: async (sidebar: SidebarPartStateInfo) => {
-    return await invokeTauriServiceIpc<UpdateStateInput, void>({
-      cmd: "update_workspace_state",
+    return await invokeTauriServiceIpc<UpdateLayoutInput, void>({
+      cmd: "update_layout",
       args: {
-        input: { "updateSidebarPartState": sidebar },
+        input: { sidebar },
       },
     });
   },

@@ -9,8 +9,6 @@ export type TauriIpcCommand =
   | "describe_app"
   | "update_configuration"
   | "list_configuration_schemas"
-  | "set_color_theme" // DEPRECATED
-  | "set_locale" // DEPRECATED
   | "execute_command"
   | "get_locale"
   | "get_translation_namespace"
@@ -28,7 +26,6 @@ export type TauriIpcCommand =
   //
   // Workspace
   //
-  | "update_workspace_state" // DEPRECATED
   | "update_layout"
   | "describe_workspace"
   | "describe_project"
@@ -100,10 +97,18 @@ export const invokeTauriServiceIpc = async <Input, Output, E = unknown>({
 }: InvokeTauriServiceIpcArgs<Input>): Promise<IpcResult<Output, E>> => {
   try {
     const data = await invokeTauri<Output>(cmd, args);
-    return { status: "ok", data };
+
+    return {
+      status: "ok",
+      data,
+    };
   } catch (err) {
     handleTauriIpcError(cmd, err);
-    return { status: "error", error: err as E };
+
+    return {
+      status: "error",
+      error: err as E,
+    };
   }
 };
 
