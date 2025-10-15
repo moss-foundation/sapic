@@ -57,7 +57,7 @@ const PanelToolbar = (props: IDockviewHeaderActionsProps) => {
   return <ToolBar workspace={isWorkspace} />;
 };
 
-const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | "welcome" | "empty" }) => {
+const TabbedPane = ({ mode = "auto" }: { theme?: string; mode?: "auto" | "welcome" | "empty" }) => {
   const { showDebugPanels } = useTabbedPaneStore();
   const { api, addOrFocusPanel, setApi } = useTabbedPaneStore();
   const { hasActiveWorkspace } = useActiveWorkspace();
