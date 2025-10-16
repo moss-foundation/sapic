@@ -25,6 +25,7 @@ desktop = [
   "tauri-plugin-window-state",
   "tauri-plugin-cli",
   "tauri-plugin-single-instance",
+  "tauri-plugin-opener",
 ]
 
 xtask = ["cargo_metadata", "clap", "futures", "pathdiff", "toml", "smol"]

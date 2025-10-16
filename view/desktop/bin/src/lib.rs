@@ -66,8 +66,8 @@ pub async fn run<R: TauriRuntime>() {
         .plugin(plugin_window_state::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_os::init())
-        .plugin(tauri_plugin_single_instance::init(|_app, _args, _cwd| {}));
-
+        .plugin(tauri_plugin_single_instance::init(|_app, _args, _cwd| {}))
+        .plugin(tauri_plugin_opener::init());
     #[cfg(target_os = "macos")]
     {
         builder = builder.plugin(mac_window::init());
