@@ -1064,8 +1064,8 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
-  '@oclif/core@4.5.5':
-    resolution: {integrity: sha512-iQzlaJQgPeUXrtrX71OzDwxPikQ7c2FhNd8U8rBB7BCtj2XYfmzBT/Hmbc+g9OKDIG/JkbJT0fXaWMMBrhi+1A==}
+  '@oclif/core@4.5.6':
+    resolution: {integrity: sha512-FmmA6a2+GwhRtULNB9G+YZp2Whi/mgCjNC1EaHGMEztnlM4Je3wRmbAraucSsHsycSgihnm2MtcmudI+8xo8Lw==}
     engines: {node: '>=18.0.0'}
 
   '@pivanov/utils@0.0.2':
@@ -4922,7 +4922,7 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.19.1
 
-  '@oclif/core@4.5.5':
+  '@oclif/core@4.5.6':
     dependencies:
       ansi-escapes: 4.3.2
       ansis: 3.17.0
@@ -7732,7 +7732,7 @@ snapshots:
 
   ts-to-zod@3.15.0(@types/node@24.7.2):
     dependencies:
-      '@oclif/core': 4.5.5
+      '@oclif/core': 4.5.6
       '@typescript/vfs': 1.6.1(typescript@5.9.3)
       case: 1.6.3
       chokidar: 3.6.0
