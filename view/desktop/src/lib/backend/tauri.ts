@@ -10,7 +10,6 @@ export type TauriIpcCommand =
   | "update_configuration"
   | "list_configuration_schemas"
   | "execute_command"
-  | "get_locale"
   | "get_translation_namespace"
   | "describe_color_theme"
   | "list_locales"

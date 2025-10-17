@@ -2,7 +2,7 @@ use joinerror::{OptionExt, ResultExt};
 use moss_applib::AppRuntime;
 use moss_fs::FileSystem;
 use moss_language::{
-    defaults::TranslationDefaults, loader::LocaleLoader, models::primitives::LanguageCode,
+    defaults::TranslationDefaults, loader::LanguageLoader, models::primitives::LanguageCode,
     registry::LanguageRegistry,
 };
 use serde_json::Value as JsonValue;
@@ -10,15 +10,15 @@ use std::{collections::HashMap, sync::Arc};
 
 use crate::models::types::LocaleInfo;
 
-const DEFAULT_LANGUAGE: &str = "en";
+const DEFAULT_LANGUAGE_CODE: &str = "en";
 
-pub struct LocaleService {
+pub struct LanguageService {
     defaults: TranslationDefaults,
-    loader: LocaleLoader,
+    loader: LanguageLoader,
     registry: Arc<dyn LanguageRegistry>,
 }
 
-impl LocaleService {
+impl LanguageService {
     pub async fn new<R: AppRuntime>(
         fs: Arc<dyn FileSystem>,
         registry: Arc<dyn LanguageRegistry>,
@@ -26,13 +26,13 @@ impl LocaleService {
         Ok(Self {
             defaults: TranslationDefaults::new()?,
             registry,
-            loader: LocaleLoader::new(fs),
+            loader: LanguageLoader::new(fs),
         })
     }
 
-    pub async fn locales(&self) -> HashMap<String, LocaleInfo> {
-        let locales = self.registry.list().await;
-        locales
+    pub async fn languages(&self) -> HashMap<String, LocaleInfo> {
+        let languages = self.registry.list().await;
+        languages
             .into_iter()
             .map(|(id, item)| {
                 (
@@ -47,14 +47,6 @@ impl LocaleService {
             .collect()
     }
 
-    pub async fn get_locale(&self, id: &LanguageCode) -> Option<LocaleInfo> {
-        self.registry.get(id).await.map(|item| LocaleInfo {
-            display_name: item.display_name,
-            code: item.code,
-            direction: item.direction,
-        })
-    }
-
     // TODO: Should we maintain a separate map based on language code?
     pub async fn get_namespace(
         &self,
@@ -63,7 +55,7 @@ impl LocaleService {
     ) -> joinerror::Result<JsonValue> {
         let default_namespace_value = self.defaults.namespace(ns).unwrap_or_default();
 
-        if code == DEFAULT_LANGUAGE {
+        if code == DEFAULT_LANGUAGE_CODE {
             return Ok((*default_namespace_value).clone());
         }
 

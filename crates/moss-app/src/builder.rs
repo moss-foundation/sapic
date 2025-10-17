@@ -17,7 +17,7 @@ use crate::{
     dirs,
     extension::ExtensionService,
     internal::events::{OnDidChangeConfiguration, OnDidChangeProfile, OnDidChangeWorkspace},
-    language::LocaleService,
+    language::LanguageService,
     logging::LogService,
     profile::ProfileService,
     session::SessionService,
@@ -92,7 +92,7 @@ impl<R: AppRuntime> AppBuilder<R> {
         .expect("Failed to create theme service");
 
         let locale_service =
-            LocaleService::new::<R>(self.fs.clone(), <dyn LanguageRegistry>::global(&delegate))
+            LanguageService::new::<R>(self.fs.clone(), <dyn LanguageRegistry>::global(&delegate))
                 .await
                 .expect("Failed to create locale service");
         let session_service = SessionService::new();

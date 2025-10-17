@@ -17,7 +17,7 @@ use crate::{
     command::CommandCallback,
     configuration::ConfigurationService,
     extension::ExtensionService,
-    language::LocaleService,
+    language::LanguageService,
     logging::LogService,
     models::{
         primitives::SessionId,
@@ -77,7 +77,7 @@ pub struct App<R: AppRuntime> {
     pub(super) log_service: LogService<R>,
     pub(super) storage_service: Arc<StorageService<R>>,
     pub(super) workspace_service: WorkspaceService<R>,
-    pub(super) locale_service: LocaleService,
+    pub(super) locale_service: LanguageService,
     pub(super) theme_service: ThemeService,
     pub(super) profile_service: ProfileService<R>,
     pub(super) configuration_service: ConfigurationService,
