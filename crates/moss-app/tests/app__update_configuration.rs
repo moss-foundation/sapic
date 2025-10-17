@@ -830,22 +830,23 @@ async fn update_configuration_default_values_preserved() {
     let initial_app_description = app.describe_app(&ctx).await.unwrap();
     let initial_configuration = &initial_app_description.configuration;
 
-    // Verify default colorTheme and locale are present
+    // Verify default colorTheme and language are present
     assert!(
         initial_configuration
             .keys
             .contains(&"colorTheme".to_string())
     );
-    assert!(initial_configuration.keys.contains(&"locale".to_string()));
+    assert!(initial_configuration.keys.contains(&"language".to_string()));
     assert_eq!(
         initial_configuration.contents.get("colorTheme"),
         Some(&JsonValue::String(
             "moss.sapic-theme.lightDefault".to_string()
         ))
     );
+
     assert_eq!(
-        initial_configuration.contents.get("locale"),
-        Some(&JsonValue::String("moss.sapic-locale.en".to_string()))
+        initial_configuration.contents.get("language"),
+        Some(&JsonValue::String("en".to_string()))
     );
 
     // Set up event listener
@@ -914,7 +915,7 @@ async fn update_configuration_default_values_preserved() {
 
     // Default values should still be there
     assert!(final_configuration.keys.contains(&"colorTheme".to_string()));
-    assert!(final_configuration.keys.contains(&"locale".to_string()));
+    assert!(final_configuration.keys.contains(&"language".to_string()));
     assert_eq!(
         final_configuration.contents.get("colorTheme"),
         Some(&JsonValue::String(
@@ -922,8 +923,8 @@ async fn update_configuration_default_values_preserved() {
         ))
     );
     assert_eq!(
-        final_configuration.contents.get("locale"),
-        Some(&JsonValue::String("moss.sapic-locale.en".to_string()))
+        final_configuration.contents.get("language"),
+        Some(&JsonValue::String("en".to_string()))
     );
 
     // Custom key should also be present
