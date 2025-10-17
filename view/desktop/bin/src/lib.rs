@@ -213,7 +213,6 @@ pub async fn run<R: TauriRuntime>() {
             commands::execute_command,
             commands::describe_color_theme,
             commands::list_color_themes,
-            commands::set_locale,
             commands::list_locales,
             commands::get_locale,
             commands::get_translation_namespace,

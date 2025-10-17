@@ -158,15 +158,6 @@ pub struct DescribeAppOutput {
     pub configuration: Configuration,
 }
 
-// DEPRECATED
-/// @category Operation
-#[derive(Debug, Deserialize, Serialize, Clone, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct SetLocaleInput {
-    pub locale_info: LocaleInfo,
-}
-
 // ########################################################
 // ###                      Theme                       ###
 // ########################################################

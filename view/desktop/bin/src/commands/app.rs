@@ -86,22 +86,6 @@ pub async fn list_color_themes<'a, R: tauri::Runtime>(
     .await
 }
 
-// DEPRECATED
-#[tauri::command]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn set_locale<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: Window<R>,
-    input: SetLocaleInput,
-    options: Options,
-) -> TauriResult<()> {
-    super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
-        app.set_locale(&ctx, &input).await
-    })
-    .await
-}
-
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn list_locales<'a, R: tauri::Runtime>(
