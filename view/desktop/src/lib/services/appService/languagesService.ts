@@ -3,7 +3,7 @@ import { GetTranslationNamespaceInput, GetTranslationNamespaceOutput, ListLocale
 
 export const languagesService = {
   listLocales: async () => {
-    return await invokeTauriServiceIpc<void, ListLocalesOutput>({ cmd: "list_locales" });
+    return await invokeTauriServiceIpc<void, ListLocalesOutput>({ cmd: "list_languages" });
   },
 
   getTranslationNamespace: async (input: GetTranslationNamespaceInput) => {

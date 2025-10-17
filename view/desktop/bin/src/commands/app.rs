@@ -88,14 +88,14 @@ pub async fn list_color_themes<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn list_locales<'a, R: tauri::Runtime>(
+pub async fn list_languages<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
     options: Options,
-) -> TauriResult<ListLocalesOutput> {
+) -> TauriResult<ListLanguagesOutput> {
     super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
-        app.list_locales(&ctx).await
+        app.list_languages(&ctx).await
     })
     .await
 }

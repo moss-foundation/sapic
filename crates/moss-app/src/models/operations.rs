@@ -1,6 +1,6 @@
 use derive_more::Deref;
 use moss_configuration::models::types::ConfigurationSchema;
-use moss_language::models::primitives::LanguageDirection;
+use moss_language::models::types::LanguageInfo;
 use moss_logging::models::primitives::LogEntryId;
 use moss_theme::models::primitives::ThemeId;
 use moss_user::models::{primitives::AccountId, types::ProfileInfo};
@@ -83,20 +83,8 @@ pub struct CancelRequestInput {
 }
 
 // ########################################################
-// ###                      Locale                      ###
+// ###                    Language                      ###
 // ########################################################
-
-/// @category Operation
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct DescribeLocaleOutput {
-    pub display_name: String,
-    pub code: String,
-    #[ts(optional, type = "LanguageDirection")]
-    pub direction: Option<LanguageDirection>,
-}
 
 /// @category Operation
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -118,7 +106,7 @@ pub struct GetTranslationNamespaceOutput {
 /// @category Operation
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "operations.ts")]
-pub struct ListLocalesOutput(pub Vec<LocaleInfo>);
+pub struct ListLanguagesOutput(#[ts(type = "LanguageInfo[]")] pub Vec<LanguageInfo>);
 
 // Describe App
 

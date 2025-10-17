@@ -24,31 +24,31 @@ pub struct LanguageRegistryItem {
 
 pub struct AppLanguageRegistry {
     // The frontend always uses the language code to fetch localization
-    locales: RwLock<HashMap<LanguageCode, LanguageRegistryItem>>,
+    languages: RwLock<HashMap<LanguageCode, LanguageRegistryItem>>,
 }
 
 #[async_trait]
 impl LanguageRegistry for AppLanguageRegistry {
     async fn register(&self, items: Vec<LanguageRegistryItem>) {
-        self.locales
+        self.languages
             .write()
             .await
             .extend(items.into_iter().map(|item| (item.code.clone(), item)))
     }
 
     async fn get(&self, code: &LanguageCode) -> Option<LanguageRegistryItem> {
-        self.locales.read().await.get(code).cloned()
+        self.languages.read().await.get(code).cloned()
     }
 
     async fn list(&self) -> HashMap<LanguageCode, LanguageRegistryItem> {
-        self.locales.read().await.clone()
+        self.languages.read().await.clone()
     }
 }
 
 impl AppLanguageRegistry {
     pub fn new() -> Arc<Self> {
         Arc::new(Self {
-            locales: RwLock::new(HashMap::new()),
+            languages: RwLock::new(HashMap::new()),
         })
     }
 }
