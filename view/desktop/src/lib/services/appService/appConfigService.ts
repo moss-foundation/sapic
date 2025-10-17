@@ -1,52 +1,50 @@
+import { invokeTauriServiceIpc } from "@/lib/backend/tauri";
 import { DescribeAppOutput, UpdateConfigurationInput } from "@repo/moss-app";
 import {
   ActivitybarPartStateInfo,
   EditorPartStateInfo,
   PanelPartStateInfo,
   SidebarPartStateInfo,
-  UpdateStateInput,
+  UpdateLayoutInput,
 } from "@repo/moss-workspace";
 
-import { invokeTauriServiceIpc } from "../backend/tauri";
-
-//FIXME services should take only a Input types ideally
-export const AppService = {
+export const appConfigService = {
   describeApp: async () => {
     return await invokeTauriServiceIpc<void, DescribeAppOutput>({ cmd: "describe_app" });
   },
 
   updateActivitybarPartState: async (activitybar: ActivitybarPartStateInfo) => {
-    return await invokeTauriServiceIpc<UpdateStateInput, void>({
-      cmd: "update_workspace_state",
+    return await invokeTauriServiceIpc<UpdateLayoutInput, void>({
+      cmd: "update_layout",
       args: {
-        input: { "updateActivitybarPartState": activitybar },
+        input: { activitybar },
       },
     });
   },
 
   updateEditorPartState: async (editor: EditorPartStateInfo) => {
-    return await invokeTauriServiceIpc<UpdateStateInput, void>({
-      cmd: "update_workspace_state",
+    return await invokeTauriServiceIpc<UpdateLayoutInput, void>({
+      cmd: "update_layout",
       args: {
-        input: { "updateEditorPartState": editor },
+        input: { editor },
       },
     });
   },
 
   updatePanelPartState: async (panel: PanelPartStateInfo) => {
-    return await invokeTauriServiceIpc<UpdateStateInput, void>({
-      cmd: "update_workspace_state",
+    return await invokeTauriServiceIpc<UpdateLayoutInput, void>({
+      cmd: "update_layout",
       args: {
-        input: { "updatePanelPartState": panel },
+        input: { panel },
       },
     });
   },
 
   updateSidebarPartState: async (sidebar: SidebarPartStateInfo) => {
-    return await invokeTauriServiceIpc<UpdateStateInput, void>({
-      cmd: "update_workspace_state",
+    return await invokeTauriServiceIpc<UpdateLayoutInput, void>({
+      cmd: "update_layout",
       args: {
-        input: { "updateSidebarPartState": sidebar },
+        input: { sidebar },
       },
     });
   },

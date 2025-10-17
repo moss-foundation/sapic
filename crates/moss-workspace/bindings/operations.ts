@@ -242,13 +242,3 @@ export type UpdateProjectInput = {
  * @category Operation
  */
 export type UpdateProjectOutput = { id: string };
-
-/**
- * DEPRECATED
- * @category Operation
- */
-export type UpdateStateInput =
-  | { "updateEditorPartState": EditorPartStateInfo }
-  | { "updateSidebarPartState": SidebarPartStateInfo }
-  | { "updatePanelPartState": PanelPartStateInfo }
-  | { "updateActivitybarPartState": ActivitybarPartStateInfo };

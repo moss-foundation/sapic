@@ -226,18 +226,6 @@ pub struct UpdateLayoutInput {
     pub activitybar: Option<ActivitybarPartStateInfo>,
 }
 
-/// DEPRECATED
-/// @category Operation
-#[derive(Debug, Deserialize, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub enum UpdateStateInput {
-    UpdateEditorPartState(EditorPartStateInfo),
-    UpdateSidebarPartState(SidebarPartStateInfo),
-    UpdatePanelPartState(PanelPartStateInfo),
-    UpdateActivitybarPartState(ActivitybarPartStateInfo),
-}
-
 /// @category Operation
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[serde(rename_all = "camelCase")]

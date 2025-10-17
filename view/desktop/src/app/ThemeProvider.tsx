@@ -2,9 +2,7 @@ import { useEffect } from "react";
 
 import { useDescribeColorTheme } from "@/hooks";
 import { useDescribeApp } from "@/hooks/app/useDescribeApp";
-import { ColorThemeInfo } from "@repo/moss-app";
 import { useQueryClient } from "@tanstack/react-query";
-import { listen, UnlistenFn } from "@tauri-apps/api/event";
 
 const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const queryClient = useQueryClient();
@@ -12,44 +10,22 @@ const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const { data: appState } = useDescribeApp();
   const { data: colorThemeCss } = useDescribeColorTheme({
     themeId: (appState?.configuration.contents.colorTheme as string) ?? "",
+    enabled: !!appState?.configuration.contents.colorTheme,
   });
 
   useEffect(() => {
-    if (appState && colorThemeCss) {
-      const theme = appState.configuration.contents.colorTheme as string;
-
-      setThemeStyle(theme, colorThemeCss.cssContent);
+    const colorThemeId = appState?.configuration.contents.colorTheme; //TODO this should be able to handle JSON value in the future
+    if (colorThemeId && colorThemeCss) {
+      applyThemeStyles(colorThemeId as string, colorThemeCss.cssContent);
     }
   }, [appState, colorThemeCss, queryClient]);
-
-  useEffect(() => {
-    let unlisten: UnlistenFn | undefined;
-
-    const handleThemeChange = (event: { payload: ColorThemeInfo }) => {
-      setThemeStyle(event.payload.identifier, colorThemeCss?.cssContent ?? "");
-    };
-
-    const setupListener = async () => {
-      try {
-        unlisten = await listen("core://color-theme-changed", handleThemeChange);
-      } catch (error) {
-        console.error("Failed to set up color theme change listener:", error);
-      }
-    };
-
-    setupListener();
-
-    return () => {
-      unlisten?.();
-    };
-  }, [queryClient, colorThemeCss]);
 
   return <>{children}</>;
 };
 
 export default ThemeProvider;
 
-const setThemeStyle = (id: string, css: string): void => {
+const applyThemeStyles = (id: string, css: string): void => {
   let styleTag = document.getElementById("theme-style") as HTMLStyleElement | null;
 
   if (!styleTag) {

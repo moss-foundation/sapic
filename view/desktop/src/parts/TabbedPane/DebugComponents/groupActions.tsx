@@ -26,7 +26,7 @@ const GroupAction = (props: { groupId: string; groups: string[]; api: DockviewAp
     };
   }, [props.api, props.groupId]);
 
-  const [location, setLocation] = React.useState<DockviewGroupLocation | null>(null);
+  const [_, setLocation] = React.useState<DockviewGroupLocation | null>(null);
   const [isMaximized, setIsMaximized] = React.useState<boolean>(false);
   const [isVisible, setIsVisible] = React.useState<boolean>(true);
 

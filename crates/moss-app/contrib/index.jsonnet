@@ -16,11 +16,6 @@ contrib.Register(
           type = contrib.configuration.ParameterType.String,
         ),
         contrib.configuration.Parameter(
-          id = "locale",
-          default = "moss.sapic-locale.en",
-          type = contrib.configuration.ParameterType.String,
-        ),
-        contrib.configuration.Parameter(
           id = "language",
           default = "en",
           type = contrib.configuration.ParameterType.String,

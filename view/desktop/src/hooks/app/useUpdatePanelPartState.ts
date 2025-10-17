@@ -1,5 +1,5 @@
 import { DEBOUNCE_TIME } from "@/constants/tanstackConfig";
-import { AppService } from "@/lib/services/app";
+import { AppService } from "@/lib/services";
 import { PanelPartStateInfo } from "@repo/moss-workspace";
 import { asyncDebounce } from "@tanstack/react-pacer/async-debouncer";
 import { useMutation } from "@tanstack/react-query";

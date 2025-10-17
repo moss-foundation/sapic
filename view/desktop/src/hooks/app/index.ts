@@ -1,5 +1,5 @@
 export * from "./colorTheme";
-export * from "./locales";
+export * from "./languages";
 
 export * from "./useActivityRouter";
 export * from "./useDescribeApp";

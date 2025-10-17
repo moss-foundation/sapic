@@ -57,22 +57,6 @@ pub async fn list_configuration_schemas<'a, R: tauri::Runtime>(
     .await
 }
 
-// DEPRECATED
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn set_color_theme<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: Window<R>,
-    input: SetColorThemeInput,
-    options: Options,
-) -> TauriResult<()> {
-    super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
-        app.set_color_theme(&ctx, &input).await
-    })
-    .await
-}
-
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx,app), fields(window = window.label()))]
 pub async fn describe_color_theme<'a, R: tauri::Runtime>(
@@ -102,47 +86,16 @@ pub async fn list_color_themes<'a, R: tauri::Runtime>(
     .await
 }
 
-// DEPRECATED
-#[tauri::command]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn set_locale<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: Window<R>,
-    input: SetLocaleInput,
-    options: Options,
-) -> TauriResult<()> {
-    super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
-        app.set_locale(&ctx, &input).await
-    })
-    .await
-}
-
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn list_locales<'a, R: tauri::Runtime>(
+pub async fn list_languages<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
     options: Options,
-) -> TauriResult<ListLocalesOutput> {
+) -> TauriResult<ListLanguagesOutput> {
     super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
-        app.list_locales(&ctx).await
-    })
-    .await
-}
-
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn get_locale<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: Window<R>,
-    input: GetLocaleInput,
-    options: Options,
-) -> TauriResult<GetLocaleOutput> {
-    super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
-        app.get_locale(&ctx, &input).await
+        app.list_languages(&ctx).await
     })
     .await
 }

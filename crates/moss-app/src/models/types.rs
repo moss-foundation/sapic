@@ -1,5 +1,4 @@
 use moss_configuration::models::primitives::ConfigurationTarget;
-use moss_language::models::primitives::LanguageDirection;
 use moss_logging::models::primitives::LogEntryId;
 use moss_theme::models::primitives::{ThemeId, ThemeMode};
 use moss_user::models::primitives::AccountKind;
@@ -57,20 +56,8 @@ pub struct AddAccountParams {
 }
 
 // ########################################################
-// ###                      Locale                      ###
+// ###                    Theme                         ###
 // ########################################################
-
-/// @category Type
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct LocaleInfo {
-    pub display_name: String,
-    pub code: String,
-    #[ts(optional, type = "LanguageDirection")]
-    pub direction: Option<LanguageDirection>,
-}
 
 /// @category Type
 #[derive(Debug, Deserialize, Serialize, Clone, TS)]

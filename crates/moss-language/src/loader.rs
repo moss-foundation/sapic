@@ -2,11 +2,11 @@ use moss_fs::FileSystem;
 use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};
 
-pub struct LocaleLoader {
+pub struct LanguageLoader {
     fs: Arc<dyn FileSystem>,
 }
 
-impl LocaleLoader {
+impl LanguageLoader {
     pub fn new(fs: Arc<dyn FileSystem>) -> Self {
         Self { fs }
     }

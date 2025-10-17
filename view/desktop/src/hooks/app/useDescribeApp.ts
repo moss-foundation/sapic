@@ -1,4 +1,4 @@
-import { AppService } from "@/lib/services/app";
+import { AppService } from "@/lib/services";
 import { useQuery } from "@tanstack/react-query";
 
 export const USE_DESCRIBE_APP_QUERY_KEY = "describeApp";

@@ -131,7 +131,7 @@ pub async fn run<R: TauriRuntime>() {
                     );
 
                     let theme_registry = AppThemeRegistry::new();
-                    let locale_registry = AppLanguageRegistry::new();
+                    let languages_registry = AppLanguageRegistry::new();
                     let configuration_registry = AppConfigurationRegistry::new()
                         .expect("failed to build configuration registry");
                     let resource_status_registry = AppResourceStatusRegistry::new()
@@ -140,7 +140,7 @@ pub async fn run<R: TauriRuntime>() {
                         AppHttpHeaderRegistry::new().expect("failed to build http header registry");
 
                     <dyn ThemeRegistry>::set_global(&delegate, theme_registry);
-                    <dyn LanguageRegistry>::set_global(&delegate, locale_registry);
+                    <dyn LanguageRegistry>::set_global(&delegate, languages_registry);
                     <dyn ConfigurationRegistry>::set_global(&delegate, configuration_registry);
                     <dyn ResourceStatusRegistry>::set_global(&delegate, resource_status_registry);
                     <dyn HttpHeaderRegistry>::set_global(&delegate, http_header_registry);
@@ -211,12 +211,9 @@ pub async fn run<R: TauriRuntime>() {
             commands::update_configuration,
             commands::list_configuration_schemas,
             commands::execute_command,
-            commands::set_color_theme,
             commands::describe_color_theme,
             commands::list_color_themes,
-            commands::set_locale,
-            commands::list_locales,
-            commands::get_locale,
+            commands::list_languages,
             commands::get_translation_namespace,
             commands::open_workspace,
             commands::update_workspace,
@@ -230,7 +227,6 @@ pub async fn run<R: TauriRuntime>() {
             // Workspace
             //
             commands::stream_environments,
-            commands::update_workspace_state, // DEPRECATED
             commands::update_layout,
             commands::describe_workspace,
             commands::stream_projects,

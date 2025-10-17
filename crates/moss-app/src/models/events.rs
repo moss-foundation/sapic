@@ -1,4 +1,3 @@
-use moss_theme::models::primitives::ThemeId;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
@@ -23,20 +22,4 @@ pub struct OnDidChangeConfigurationForFrontend {
 pub struct OnDidAppendLogEntryForFrontend {
     #[serde(flatten)]
     pub inner: LogEntryInfo,
-}
-
-/// DEPRECATED
-/// @category Event
-#[derive(Debug, Serialize, Clone, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "events.ts")]
-pub struct ColorThemeChangeEventPayload<'a> {
-    #[ts(type = "ThemeId")]
-    pub id: &'a ThemeId,
-}
-
-impl<'a> ColorThemeChangeEventPayload<'a> {
-    pub fn new(id: &'a ThemeId) -> Self {
-        Self { id }
-    }
 }
