@@ -1,9 +1,9 @@
 import { invokeTauriServiceIpc } from "@/lib/backend/tauri";
-import { GetTranslationNamespaceInput, GetTranslationNamespaceOutput, ListLocalesOutput } from "@repo/moss-app";
+import { GetTranslationNamespaceInput, GetTranslationNamespaceOutput, ListLanguagesOutput } from "@repo/moss-app";
 
 export const languagesService = {
-  listLocales: async () => {
-    return await invokeTauriServiceIpc<void, ListLocalesOutput>({ cmd: "list_languages" });
+  listLanguages: async () => {
+    return await invokeTauriServiceIpc<void, ListLanguagesOutput>({ cmd: "list_languages" });
   },
 
   getTranslationNamespace: async (input: GetTranslationNamespaceInput) => {
