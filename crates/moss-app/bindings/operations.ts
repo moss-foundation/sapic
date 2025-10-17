@@ -119,18 +119,6 @@ export type GetColorThemeInput = { id: ThemeId };
 export type GetColorThemeOutput = { cssContent: string };
 
 /**
- * DEPRECATED
- * @category Operation
- */
-export type GetLocaleInput = { identifier: string };
-
-/**
- * DEPRECATED
- * @category Operation
- */
-export type GetLocaleOutput = { displayName: string; code: string; direction?: LanguageDirection };
-
-/**
  * @category Operation
  */
 export type GetTranslationNamespaceInput = { language: string; namespace: string };
@@ -179,16 +167,6 @@ export type OpenWorkspaceInput = { id: string };
  * @category Operation
  */
 export type OpenWorkspaceOutput = { id: string };
-
-/**
- * @category Operation
- */
-export type SetColorThemeInput = { themeInfo: ColorThemeInfo };
-
-/**
- * @category Operation
- */
-export type SetLocaleInput = { localeInfo: LocaleInfo };
 
 /**
  * @category Operation

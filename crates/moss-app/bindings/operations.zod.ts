@@ -64,10 +64,6 @@ export const getColorThemeOutputSchema = z.object({
   cssContent: z.string(),
 });
 
-export const getLocaleInputSchema = z.object({
-  identifier: z.string(),
-});
-
 export const getTranslationNamespaceInputSchema = z.object({
   language: z.string(),
   namespace: z.string(),
@@ -115,12 +111,6 @@ export const getColorThemeInputSchema = z.object({
   id: themeIdSchema,
 });
 
-export const getLocaleOutputSchema = z.object({
-  displayName: z.string(),
-  code: z.string(),
-  direction: languageDirectionSchema.optional(),
-});
-
 export const getTranslationNamespaceOutputSchema = z.object({
   contents: jsonValueSchema,
 });
@@ -144,14 +134,6 @@ export const listLogsOutputSchema = z.object({
 });
 
 export const listWorkspacesOutputSchema = z.array(workspaceInfoSchema);
-
-export const setColorThemeInputSchema = z.object({
-  themeInfo: colorThemeInfoSchema,
-});
-
-export const setLocaleInputSchema = z.object({
-  localeInfo: localeInfoSchema,
-});
 
 export const updateConfigurationInputSchema = z.object({
   key: z.string(),
