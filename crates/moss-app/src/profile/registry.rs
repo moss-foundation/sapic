@@ -24,4 +24,5 @@ pub(crate) struct ProfileRegistryAccount {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct ProfileRegistryAccountMetadata {
     pub session_kind: SessionKind,
+    // TODO: expires_at
 }

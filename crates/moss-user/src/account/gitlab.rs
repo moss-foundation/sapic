@@ -1,7 +1,10 @@
 use joinerror::Error;
 use moss_applib::AppRuntime;
 use moss_keyring::KeyringClient;
-use moss_server_api::account_auth_gateway::{GitLabTokenRefreshApiReq, GitLabTokenRefreshRequest};
+use moss_server_api::account_auth_gateway::{
+    GitHubRevokeApiReq, GitLabRevokeApiReq, GitLabRevokeRequest, GitLabTokenRefreshApiReq,
+    GitLabTokenRefreshRequest,
+};
 use std::{
     sync::Arc,
     time::{Duration, Instant},
@@ -86,6 +89,20 @@ impl<R: AppRuntime> GitLabSessionHandle<R> {
         match self {
             GitLabSessionHandle::OAuth(_) => SessionKind::OAuth,
             GitLabSessionHandle::PAT(_) => SessionKind::PAT,
+        }
+    }
+
+    pub(crate) async fn revoke(
+        &self,
+        ctx: &R::AsyncContext,
+        keyring: &Arc<dyn KeyringClient>,
+        api_client: Arc<dyn GitLabRevokeApiReq<R>>,
+    ) -> joinerror::Result<()> {
+        match self {
+            GitLabSessionHandle::OAuth(handle) => handle.revoke(ctx, keyring, api_client).await,
+            GitLabSessionHandle::PAT(handle) => {
+                unimplemented!()
+            }
         }
     }
 }
@@ -173,6 +190,38 @@ impl<R: AppRuntime> GitLabOAuthSessionHandle<R> {
             .map_err(|e| Error::new::<()>(e.to_string()))?;
 
         return Ok(resp.access_token);
+    }
+
+    pub(crate) async fn revoke(
+        &self,
+        ctx: &R::AsyncContext,
+        keyring: &Arc<dyn KeyringClient>,
+        api_client: Arc<dyn GitLabRevokeApiReq<R>>,
+    ) -> joinerror::Result<()> {
+        // Revoke refresh token and (if it exists) access token
+        let access_token = self.token.write().await.take().map(|token| token.token);
+        let key = make_secret_key(GITLAB_PREFIX, &self.host, &self.id);
+        let bytes = keyring
+            .get_secret(&key)
+            .await
+            .map_err(|e| Error::new::<()>(e.to_string()))?;
+
+        let refresh_token = String::from_utf8(bytes.to_vec())?;
+
+        keyring
+            .delete_secret(&refresh_token)
+            .await
+            .map_err(|e| Error::new::<()>(e.to_string()))?;
+
+        api_client
+            .gitlab_revoke(
+                ctx,
+                GitLabRevokeRequest {
+                    access_token,
+                    refresh_token,
+                },
+            )
+            .await
     }
 }
 

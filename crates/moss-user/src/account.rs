@@ -5,7 +5,9 @@ pub mod gitlab;
 use chrono::{DateTime, Utc};
 use moss_applib::AppRuntime;
 use moss_keyring::KeyringClient;
-use moss_server_api::account_auth_gateway::GitLabTokenRefreshApiReq;
+use moss_server_api::account_auth_gateway::{
+    GitHubRevokeApiReq, GitLabRevokeApiReq, GitLabTokenRefreshApiReq, RevokeApiReq,
+};
 use std::sync::Arc;
 
 use crate::{
@@ -80,6 +82,14 @@ impl<R: AppRuntime> Account<R> {
             kind: self.kind.clone(),
             method: self.session.session_kind(),
         }
+    }
+
+    pub async fn revoke(
+        &self,
+        ctx: &R::AsyncContext,
+        api_client: Arc<dyn RevokeApiReq<R>>,
+    ) -> joinerror::Result<()> {
+        self.session.revoke(ctx, api_client).await
     }
 }
 
@@ -180,6 +190,17 @@ impl<R: AppRuntime> AccountSession<R> {
         match self.inner.as_ref() {
             Session::GitHub(handle) => handle.session_kind(),
             Session::GitLab(handle) => handle.session_kind(),
+        }
+    }
+
+    pub async fn revoke(
+        &self,
+        ctx: &R::AsyncContext,
+        api_client: Arc<dyn RevokeApiReq<R>>,
+    ) -> joinerror::Result<()> {
+        match self.inner.as_ref() {
+            Session::GitHub(handle) => handle.revoke(ctx, &self.keyring, api_client).await,
+            Session::GitLab(handle) => handle.revoke(ctx, &self.keyring, api_client).await,
         }
     }
 

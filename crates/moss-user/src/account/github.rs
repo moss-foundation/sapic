@@ -4,7 +4,11 @@ use crate::{
 };
 use chrono::{DateTime, Utc};
 use joinerror::Error;
+use moss_applib::AppRuntime;
 use moss_keyring::KeyringClient;
+use moss_server_api::account_auth_gateway::{
+    GitHubRevokeApiReq, GitHubRevokeRequest, GitLabPkceTokenExchangeApiReq,
+};
 use std::sync::Arc;
 
 const GITHUB_PREFIX: &str = "gh";
@@ -67,12 +71,25 @@ impl GitHubSessionHandle {
             GitHubSessionHandle::PAT(_) => SessionKind::PAT,
         }
     }
+
+    pub(crate) async fn revoke<R: AppRuntime>(
+        &self,
+        ctx: &R::AsyncContext,
+        keyring: &Arc<dyn KeyringClient>,
+        api_client: Arc<dyn GitHubRevokeApiReq<R>>,
+    ) -> joinerror::Result<()> {
+        match self {
+            GitHubSessionHandle::OAuth(handle) => handle.revoke(ctx, keyring, api_client).await,
+            GitHubSessionHandle::PAT(handle) => {
+                unimplemented!()
+            }
+        }
+    }
 }
 
 pub(crate) struct GitHubOAuthSessionHandle {
     pub id: AccountId,
     pub host: String,
-    // TODO: Can we store an Arc<dyn KeyringClient> here so it doesn't need to be passed everytime?
 }
 
 impl GitHubOAuthSessionHandle {
@@ -115,6 +132,30 @@ impl GitHubOAuthSessionHandle {
         // instead, it provides a long-lived `access_token`.
         // So we store it in the keyring and return it immediately.
         return Ok(access_token);
+    }
+
+    pub async fn revoke<R: AppRuntime>(
+        &self,
+        ctx: &R::AsyncContext,
+        keyring: &Arc<dyn KeyringClient>,
+        api_client: Arc<dyn GitHubRevokeApiReq<R>>,
+    ) -> joinerror::Result<()> {
+        let key = make_secret_key(GITHUB_PREFIX, &self.host, &self.id);
+        let bytes = keyring
+            .get_secret(&key)
+            .await
+            .map_err(|e| Error::new::<()>(e.to_string()))?;
+
+        let access_token = String::from_utf8(bytes.to_vec())?;
+
+        keyring
+            .delete_secret(&key)
+            .await
+            .map_err(|e| Error::new::<()>(e.to_string()))?;
+
+        api_client
+            .github_revoke(ctx, GitHubRevokeRequest { access_token })
+            .await
     }
 }
 

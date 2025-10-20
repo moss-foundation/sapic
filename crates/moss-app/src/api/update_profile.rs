@@ -32,7 +32,7 @@ impl<R: AppRuntime> App<R> {
         for account_id in input.accounts_to_remove {
             let account_id = self
                 .profile_service
-                .remove_account(app_delegate, account_id)
+                .remove_account(ctx, app_delegate, account_id)
                 .await?;
             removed_account_ids.push(account_id);
         }

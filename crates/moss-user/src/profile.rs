@@ -1,7 +1,3 @@
-use moss_applib::AppRuntime;
-use std::collections::HashMap;
-use tokio::sync::RwLock;
-
 use crate::{
     account::Account,
     models::{
@@ -9,6 +5,10 @@ use crate::{
         types::AccountInfo,
     },
 };
+use moss_applib::AppRuntime;
+use moss_server_api::account_auth_gateway::RevokeApiReq;
+use std::{collections::HashMap, sync::Arc};
+use tokio::sync::RwLock;
 
 pub struct Profile<R: AppRuntime> {
     id: ProfileId,
@@ -66,10 +66,18 @@ impl<R: AppRuntime> Profile<R> {
         self.accounts.write().await.insert(account.id(), account);
     }
 
-    pub async fn remove_account(&self, account_id: &AccountId) -> joinerror::Result<()> {
+    pub async fn remove_account(
+        &self,
+        ctx: &R::AsyncContext,
+        api_client: Arc<dyn RevokeApiReq<R>>,
+        account_id: &AccountId,
+    ) -> joinerror::Result<()> {
         // TODO: Revoke the account session
 
-        self.accounts.write().await.remove(account_id);
+        let account = self.accounts.write().await.remove(account_id);
+        if let Some(account) = account {
+            account.revoke(ctx, api_client).await?;
+        }
 
         Ok(())
     }

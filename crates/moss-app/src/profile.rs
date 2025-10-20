@@ -115,6 +115,7 @@ impl<R: AppRuntime> ProfileService<R> {
                     username: a.username.clone(),
                     host: a.host.clone(),
                     kind: a.kind.clone(),
+                    method: SessionKind::OAuth, // FIXME,
                 })
                 .collect(),
         })
@@ -148,6 +149,7 @@ impl<R: AppRuntime> ProfileService<R> {
 
     pub async fn remove_account(
         &self,
+        ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
         account_id: AccountId,
     ) -> joinerror::Result<AccountId> {
@@ -171,7 +173,10 @@ impl<R: AppRuntime> ProfileService<R> {
 
         // In this case, the error isn't critical. Since we removed the account from
         // the profile file, the next time a session for that account won't be established.
-        if let Err(err) = active_profile.remove_account(&account_id).await {
+        if let Err(err) = active_profile
+            .remove_account(ctx, self.auth_api_client.clone(), &account_id)
+            .await
+        {
             session::warn!(&format!(
                 "failed to remove account `{}`: {}",
                 account_id,
