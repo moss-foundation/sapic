@@ -4,3 +4,5 @@
  * @category Primitive
  */
 export type AccountKind = "GITHUB" | "GITLAB";
+
+export type MethodKind = "OAUTH" | "PAT";

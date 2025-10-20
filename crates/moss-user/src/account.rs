@@ -2,6 +2,7 @@ mod common;
 pub mod github;
 pub mod gitlab;
 
+use chrono::{DateTime, Utc};
 use moss_applib::AppRuntime;
 use moss_keyring::KeyringClient;
 use moss_server_api::account_auth_gateway::GitLabTokenRefreshApiReq;
@@ -13,8 +14,8 @@ use crate::{
         gitlab::{GitLabInitialToken, GitLabPAT, GitLabSessionHandle},
     },
     models::{
-        primitives::{AccountId, AccountKind},
-        types::AccountInfo,
+        primitives::{AccountId, AccountKind, SessionKind},
+        types::{AccountInfo, AccountMetadata},
     },
 };
 
@@ -77,6 +78,7 @@ impl<R: AppRuntime> Account<R> {
             username: self.username.clone(),
             host: self.host.clone(),
             kind: self.kind.clone(),
+            method: self.session.session_kind(),
         }
     }
 }
@@ -173,4 +175,18 @@ impl<R: AppRuntime> AccountSession<R> {
             Session::GitLab(handle) => handle.token(ctx, &self.keyring).await,
         }
     }
+
+    pub fn session_kind(&self) -> SessionKind {
+        match self.inner.as_ref() {
+            Session::GitHub(handle) => handle.session_kind(),
+            Session::GitLab(handle) => handle.session_kind(),
+        }
+    }
+
+    // pub async fn expires_at(&self) -> Option<DateTime<Utc>> {
+    //     match self.inner.as_ref() {
+    //         Session::GitHub(handle) => {handle.expires_at().await}
+    //         Session::GitLab(handle) => {handle.expires_at().await}
+    //     }
+    // }
 }

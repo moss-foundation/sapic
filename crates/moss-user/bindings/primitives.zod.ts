@@ -2,3 +2,5 @@
 import { z } from "zod";
 
 export const accountKindSchema = z.union([z.literal("GITHUB"), z.literal("GITLAB")]);
+
+export const methodKindSchema = z.union([z.literal("OAUTH"), z.literal("PAT")]);

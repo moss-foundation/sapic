@@ -19,8 +19,10 @@ pub enum AccountKind {
     GitLab,
 }
 
-#[derive(Debug, Deserialize, Serialize, PartialEq, Eq, Clone)]
+#[derive(Debug, Deserialize, Serialize, PartialEq, Eq, Clone, TS)]
 #[serde(rename_all = "UPPERCASE")]
+#[ts(rename = "MethodKind")]
+#[ts(export, export_to = "primitives.ts")]
 pub enum SessionKind {
     OAuth,
     PAT,
