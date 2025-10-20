@@ -14,6 +14,7 @@ import type {
   LogDate,
   LogEntryInfo,
   LogItemSourceInfo,
+  UpdateAccountParams,
   WorkspaceInfo,
 } from "./types";
 
@@ -198,12 +199,20 @@ export type UpdateConfigurationInput = { key: string; value: JsonValue; target: 
 /**
  * @category Operation
  */
-export type UpdateProfileInput = { accountsToAdd: Array<AddAccountParams>; accountsToRemove: Array<string> };
+export type UpdateProfileInput = {
+  accountsToAdd: Array<AddAccountParams>;
+  accountsToRemove: Array<string>;
+  accountsToUpdate: Array<UpdateAccountParams>;
+};
 
 /**
  * @category Operation
  */
-export type UpdateProfileOutput = { added_accounts: Array<string>; removed_accounts: Array<string> };
+export type UpdateProfileOutput = {
+  added_accounts: Array<string>;
+  removed_accounts: Array<string>;
+  updated_accounts: Array<string>;
+};
 
 /**
  * @category Operation

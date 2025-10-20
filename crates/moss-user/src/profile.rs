@@ -72,8 +72,6 @@ impl<R: AppRuntime> Profile<R> {
         api_client: Arc<dyn RevokeApiReq<R>>,
         account_id: &AccountId,
     ) -> joinerror::Result<()> {
-        // TODO: Revoke the account session
-
         let account = self.accounts.write().await.remove(account_id);
         if let Some(account) = account {
             account.revoke(ctx, api_client).await?;

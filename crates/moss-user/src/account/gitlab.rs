@@ -2,8 +2,7 @@ use joinerror::Error;
 use moss_applib::AppRuntime;
 use moss_keyring::KeyringClient;
 use moss_server_api::account_auth_gateway::{
-    GitHubRevokeApiReq, GitLabRevokeApiReq, GitLabRevokeRequest, GitLabTokenRefreshApiReq,
-    GitLabTokenRefreshRequest,
+    GitLabRevokeApiReq, GitLabRevokeRequest, GitLabTokenRefreshApiReq, GitLabTokenRefreshRequest,
 };
 use std::{
     sync::Arc,
@@ -100,9 +99,20 @@ impl<R: AppRuntime> GitLabSessionHandle<R> {
     ) -> joinerror::Result<()> {
         match self {
             GitLabSessionHandle::OAuth(handle) => handle.revoke(ctx, keyring, api_client).await,
-            GitLabSessionHandle::PAT(handle) => {
-                unimplemented!()
-            }
+            GitLabSessionHandle::PAT(handle) => handle.revoke(keyring).await,
+        }
+    }
+
+    pub(crate) async fn update_pat(
+        &self,
+        keyring: &Arc<dyn KeyringClient>,
+        pat: &str,
+    ) -> joinerror::Result<()> {
+        match self {
+            GitLabSessionHandle::OAuth(_) => Err(Error::new::<()>(
+                "cannot update PAT when the authentication method is OAuth",
+            )),
+            GitLabSessionHandle::PAT(handle) => handle.update_pat(keyring, pat).await,
         }
     }
 }
@@ -255,5 +265,29 @@ impl GitLabPATSessionHandle {
 
         let token = String::from_utf8(bytes.to_vec())?;
         Ok(token)
+    }
+
+    // We only need to remove the PAT from the keyring
+    pub async fn revoke(&self, keyring: &Arc<dyn KeyringClient>) -> joinerror::Result<()> {
+        let key = make_secret_key(GITLAB_PREFIX, &self.host, &self.id);
+        keyring
+            .delete_secret(&key)
+            .await
+            .map_err(|e| Error::new::<()>(e.to_string()))?;
+        Ok(())
+    }
+
+    pub async fn update_pat(
+        &self,
+        keyring: &Arc<dyn KeyringClient>,
+        pat: &str,
+    ) -> joinerror::Result<()> {
+        let key = make_secret_key(GITLAB_PREFIX, &self.host, &self.id);
+        keyring
+            .set_secret(&key, pat)
+            .await
+            .map_err(|e| Error::new::<()>(e.to_string()))?;
+
+        Ok(())
     }
 }

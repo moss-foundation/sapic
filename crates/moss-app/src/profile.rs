@@ -1,6 +1,6 @@
 mod registry;
 
-use joinerror::OptionExt;
+use joinerror::{Error, OptionExt};
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
     AppRuntime,
@@ -35,6 +35,7 @@ use tokio::sync::RwLock;
 use crate::{
     dirs,
     internal::events::OnDidChangeProfile,
+    models::types::UpdateAccountParams,
     profile::registry::{
         ProfileRegistryAccount, ProfileRegistryAccountMetadata, ProfileRegistryItem,
     },
@@ -316,6 +317,47 @@ impl<R: AppRuntime> ProfileService<R> {
         active_profile.add_account(account).await;
 
         Ok(account_id)
+    }
+
+    // For now, there's only the option to update PAT
+    pub async fn update_account(
+        &self,
+        ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
+        params: &UpdateAccountParams,
+    ) -> joinerror::Result<()> {
+        let active_profile_lock = self.active_profile.write().await;
+        let active_profile = active_profile_lock
+            .as_ref()
+            .ok_or_join_err::<FailedPrecondition>("active profile not found")?;
+        let account = active_profile
+            .account(&params.id)
+            .await
+            .ok_or_join_err::<()>(format!("Account id `{}` not found", params.id))?;
+
+        if let Some(ref pat) = params.pat {
+            let old_pat = account.update_pat(ctx, pat).await?;
+            let user_response = <dyn GitHubApiClient<R>>::global(app_delegate)
+                .get_user(ctx, account.session())
+                .await;
+
+            if user_response.is_err() {
+                account.update_pat(ctx, &old_pat).await?;
+                return Err(Error::new::<()>(format!(
+                    "failed to authenticate the user after updating the PAT: {}",
+                    user_response.unwrap_err()
+                )));
+            }
+
+            if user_response.unwrap().login != account.username() {
+                account.update_pat(ctx, &old_pat).await?;
+                return Err(Error::new::<()>(
+                    "the new PAT does not belong to the same account as the old PAT",
+                ))?;
+            }
+        }
+
+        Ok(())
     }
 
     pub async fn create_profile(

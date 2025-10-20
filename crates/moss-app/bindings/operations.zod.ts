@@ -15,6 +15,7 @@ import {
   logDateSchema,
   logEntryInfoSchema,
   logItemSourceInfoSchema,
+  updateAccountParamsSchema,
   workspaceInfoSchema,
 } from "./types.zod";
 
@@ -84,6 +85,7 @@ export const openWorkspaceOutputSchema = z.object({
 export const updateProfileOutputSchema = z.object({
   added_accounts: z.array(z.string()),
   removed_accounts: z.array(z.string()),
+  updated_accounts: z.array(z.string()),
 });
 
 export const updateWorkspaceInputSchema = z.object({
@@ -162,4 +164,5 @@ export const updateConfigurationInputSchema = z.object({
 export const updateProfileInputSchema = z.object({
   accountsToAdd: z.array(addAccountParamsSchema),
   accountsToRemove: z.array(z.string()),
+  accountsToUpdate: z.array(updateAccountParamsSchema),
 });

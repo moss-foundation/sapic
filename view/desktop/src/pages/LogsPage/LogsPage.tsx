@@ -78,6 +78,7 @@ export const Logs = () => {
       const input: UpdateProfileInput = {
         accountsToAdd: [accountForm],
         accountsToRemove: [],
+        accountsToUpdate: [],
       };
       await invoke("update_profile", { input });
       console.log("Account added:", accountForm);

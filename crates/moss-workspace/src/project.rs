@@ -1050,7 +1050,7 @@ async fn restore_collections<R: AppRuntime>(
                         "The project {} is associated with a nonexistent account `{}`. It's vcs will not be loaded.",
                         id_str, account_id.as_str()
                     ))
-                })
+                });
             });
 
             let client = match vcs.kind {

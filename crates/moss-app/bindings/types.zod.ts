@@ -17,6 +17,11 @@ export const logItemSourceInfoSchema = z.object({
   id: z.string(),
 });
 
+export const updateAccountParamsSchema = z.object({
+  id: z.string(),
+  pat: z.string().optional(),
+});
+
 export const workspaceInfoSchema = z.object({
   id: z.string(),
   name: z.string(),

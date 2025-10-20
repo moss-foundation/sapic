@@ -36,6 +36,7 @@ export const NewAccountModal = ({ showModal, closeModal, onAccountAdded }: NewAc
       const input: UpdateProfileInput = {
         accountsToAdd: [accountParams],
         accountsToRemove: [],
+        accountsToUpdate: [],
       };
 
       await invoke("update_profile", { input });
