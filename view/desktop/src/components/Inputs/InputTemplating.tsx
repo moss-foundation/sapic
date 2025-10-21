@@ -52,8 +52,8 @@ const editorStyles = cva(
 );
 
 const highlightedVariableStyles =
-  "background-(--moss-controls-background) text-(--moss-controls-foreground) border border-(--moss-controls-border) rounded-sm px-0.5 whitespace-nowrap inline-block tracking-tighter" +
-  " [height:18px] [word-break:keep-all]";
+  "background-(--moss-accent-secondary) text-(--moss-accent) rounded-sm px-0.5 whitespace-nowrap inline-block tracking-tighter" +
+  "[height:18px] [word-break:keep-all]";
 
 export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatingProps>(
   (
