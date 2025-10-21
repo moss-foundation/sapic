@@ -4,9 +4,16 @@ import type { AccountKind, MethodKind } from "./primitives";
 /**
  * @category Type
  */
-export type AccountInfo = { id: string; username: string; host: string; kind: AccountKind; method: MethodKind };
+export type AccountInfo = {
+  id: string;
+  username: string;
+  host: string;
+  kind: AccountKind;
+  method: MethodKind;
+  metadata: AccountInfoMetadata;
+};
 
-export type AccountMetadata = { expiresAt: string | null };
+export type AccountInfoMetadata = { expiresAt?: string };
 
 /**
  * @category Type

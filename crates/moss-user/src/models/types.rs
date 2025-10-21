@@ -29,6 +29,7 @@ pub struct AccountInfo {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct AccountInfoMetadata {
     pub expires_at: Option<DateTime<Utc>>,

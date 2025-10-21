@@ -2,8 +2,8 @@
 import { z } from "zod";
 import { accountKindSchema, methodKindSchema } from "./primitives.zod";
 
-export const accountMetadataSchema = z.object({
-  expiresAt: z.string().nullable(),
+export const accountInfoMetadataSchema = z.object({
+  expiresAt: z.string().optional(),
 });
 export const accountInfoSchema = z.object({
   id: z.string(),
@@ -11,6 +11,7 @@ export const accountInfoSchema = z.object({
   host: z.string(),
   kind: accountKindSchema,
   method: methodKindSchema,
+  metadata: accountInfoMetadataSchema,
 });
 
 export const profileInfoSchema = z.object({
