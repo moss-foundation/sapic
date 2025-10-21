@@ -5,7 +5,7 @@ import ButtonPrimary from "@/components/ButtonPrimary";
 import { Modal } from "@/lib/ui";
 import { Link } from "@/lib/ui";
 import { invoke } from "@tauri-apps/api/core";
-import { AddAccountParams, UpdateAccountParams, UpdateProfileInput } from "@repo/moss-app";
+import { UpdateAccountParams, UpdateProfileInput } from "@repo/moss-app";
 import { AccountInfo } from "@repo/moss-user";
 
 import { ModalWrapperProps } from "../../types";

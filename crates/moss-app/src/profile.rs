@@ -27,7 +27,7 @@ use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_user::{
     AccountSession,
     account::{
-        Account, AccountMetadata,
+        Account,
         github::{GitHubInitialToken, GitHubPAT},
         gitlab::{GitLabInitialToken, GitLabPAT},
     },

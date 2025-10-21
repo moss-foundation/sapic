@@ -224,6 +224,7 @@ pub mod test {
         pub get_user_response: GetUserResponse,
         pub get_contributors_response: GetContributorsResponse,
         pub get_repository_response: GetRepositoryResponse,
+        pub get_pat_expires_at_response: Option<DateTime<Utc>>,
     }
 
     #[async_trait]
@@ -256,10 +257,10 @@ pub mod test {
 
         async fn get_pat_expires_at(
             &self,
-            ctx: &R::AsyncContext,
-            pat: &str,
+            _ctx: &R::AsyncContext,
+            _account_handle: &AccountSession<R>,
         ) -> joinerror::Result<Option<DateTime<Utc>>> {
-            unimplemented!()
+            Ok(self.get_pat_expires_at_response.clone())
         }
     }
 }
