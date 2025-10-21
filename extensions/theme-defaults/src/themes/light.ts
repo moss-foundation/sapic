@@ -377,9 +377,6 @@ export const defaultLightTheme: Theme = {
     "moss.secondary.background.active": { type: "variable", value: "moss.gray.11" },
     "moss.secondary.foreground": { type: "variable", value: "moss.gray.6" },
 
-    //TODO distribute these
-    "moss.shortcut.foreground": { type: "variable", value: "moss.gray.7" },
-
     // head bar
     "moss.headBar.background": { type: "variable", value: "moss.gray.12" },
     "moss.headBar.border": { type: "variable", value: "moss.gray.11" },
@@ -399,9 +396,7 @@ export const defaultLightTheme: Theme = {
 
     "moss.activityBarItem.background": { type: "variable", value: "moss.gray.12" },
     "moss.activityBarItem.background.hover": { type: "variable", value: "moss.gray.10" },
-    "moss.activityBarItem.background.active": { type: "variable", value: "moss.blue.11" }, //deprecated
     "moss.activityBarItem.foreground": { type: "variable", value: "moss.gray.6" },
-    "moss.activityBarItem.foreground.active": { type: "variable", value: "moss.blue.4" }, //deprecated
 
     // toolbar
     "moss.toolbarItem.background": { type: "variable", value: "moss.gray.14" },

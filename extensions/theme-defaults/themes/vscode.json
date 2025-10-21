@@ -209,125 +209,321 @@
     }
   },
   "colors": {
+    "moss.primary": {
+      "type": "variable",
+      "value": "moss.blue.6"
+    },
+    "moss.error": {
+      "type": "variable",
+      "value": "moss.red.6"
+    },
     "moss.error.background": {
-      "type": "solid",
-      "value": "#f7d7d7"
+      "type": "variable",
+      "value": "moss.red.9"
+    },
+    "moss.success": {
+      "type": "variable",
+      "value": "moss.green.6"
     },
     "moss.success.background": {
-      "type": "solid",
-      "value": "#f2fcf3"
+      "type": "variable",
+      "value": "moss.green.11"
     },
-    "moss.border.color": {
-      "type": "solid",
-      "value": "#3c3c3c"
+    "moss.background.disabled": {
+      "type": "variable",
+      "value": "moss.gray.3"
+    },
+    "moss.border.disabled": {
+      "type": "variable",
+      "value": "moss.gray.3"
+    },
+    "moss.foreground.disabled": {
+      "type": "variable",
+      "value": "moss.gray.8"
+    },
+    "moss.border": {
+      "type": "variable",
+      "value": "moss.gray.5"
     },
     "moss.primary.background": {
-      "type": "solid",
-      "value": "#1e1e1e"
-    },
-    "moss.primary.background.hover": {
-      "type": "solid",
-      "value": "#d4e2ff"
-    },
-    "moss.primary.text": {
-      "type": "solid",
-      "value": "#d4d4d4"
-    },
-    "moss.secondary.background": {
-      "type": "solid",
-      "value": "#333333"
-    },
-    "moss.secondary.background.hover": {
-      "type": "solid",
-      "value": "#3c3c3c"
-    },
-    "moss.secondary.text": {
-      "type": "solid",
-      "value": "#cccccc"
-    },
-    "moss.info.background": {
-      "type": "solid",
-      "value": "#edf3ff"
-    },
-    "moss.info.background.hover": {
-      "type": "solid",
-      "value": "#d4e2ff"
-    },
-    "moss.info.text": {
-      "type": "variable",
-      "value": "moss.primary.text"
-    },
-    "moss.info.icon": {
-      "type": "variable",
-      "value": "moss.primary"
-    },
-    "moss.info.border": {
-      "type": "variable",
-      "value": "moss.primary"
-    },
-    "moss.divider.color": {
-      "type": "variable",
-      "value": "moss.border.color"
-    },
-    "moss.not.selected.item.color": {
-      "type": "variable",
-      "value": "moss.border.color"
-    },
-    "separator.border": {
-      "type": "variable",
-      "value": "moss.border.color"
-    },
-    "moss.sash.active.highlight": {
-      "type": "solid",
-      "value": "#047cd4"
-    },
-    "moss.icon.primary.background": {
-      "type": "solid",
-      "value": "transparent"
-    },
-    "moss.icon.primary.text": {
-      "type": "variable",
-      "value": "moss.gray.7"
-    },
-    "moss.icon.primary.background.hover": {
-      "type": "solid",
-      "value": "rgba(0, 0, 0, 0.33)"
-    },
-    "moss.icon.primary.background.active": {
-      "type": "solid",
-      "value": "#3574f0"
-    },
-    "moss.headBar.icon.primary.text": {
-      "type": "variable",
-      "value": "moss.gray.4"
-    },
-    "moss.headBar.primary.background": {
-      "type": "variable",
-      "value": "moss.gray.12"
-    },
-    "moss.headBar.primary.background.hover": {
-      "type": "variable",
-      "value": "moss.gray.11"
-    },
-    "moss.headBar.border.color": {
-      "type": "variable",
-      "value": "moss.gray.11"
-    },
-    "moss.statusBar.icon.primary.text": {
       "type": "variable",
       "value": "moss.gray.1"
     },
-    "moss.statusBar.icon.secondary.text": {
+    "moss.primary.background.hover": {
+      "type": "variable",
+      "value": "moss.gray.2"
+    },
+    "moss.primary.foreground": {
+      "type": "variable",
+      "value": "moss.gray.14"
+    },
+    "moss.primary.descriptionForeground": {
+      "type": "variable",
+      "value": "moss.gray.7"
+    },
+    "moss.secondary.background": {
+      "type": "variable",
+      "value": "moss.gray.2"
+    },
+    "moss.secondary.background.hover": {
+      "type": "variable",
+      "value": "moss.gray.3"
+    },
+    "moss.secondary.background.active": {
       "type": "variable",
       "value": "moss.gray.4"
     },
-    "moss.statusBar.icon.background.hover": {
+    "moss.secondary.foreground": {
       "type": "variable",
-      "value": "moss.gray.12"
+      "value": "moss.gray.9"
     },
-    "moss.button.icon.color": {
+    "moss.shortcut.foreground": {
+      "type": "variable",
+      "value": "moss.gray.7"
+    },
+    "moss.headBar.background": {
+      "type": "variable",
+      "value": "moss.gray.2"
+    },
+    "moss.headBar.border": {
+      "type": "variable",
+      "value": "moss.gray.4"
+    },
+    "moss.sidebar.background": {
+      "type": "variable",
+      "value": "moss.gray.2"
+    },
+    "moss.sidebar.foreground": {
+      "type": "variable",
+      "value": "moss.gray.9"
+    },
+    "moss.statusBar.background": {
+      "type": "variable",
+      "value": "moss.gray.2"
+    },
+    "moss.statusBarItem.foreground": {
+      "type": "variable",
+      "value": "moss.gray.9"
+    },
+    "moss.statusBarItem.background.hover": {
+      "type": "variable",
+      "value": "moss.gray.3"
+    },
+    "moss.activityBar.background": {
+      "type": "variable",
+      "value": "moss.gray.2"
+    },
+    "moss.activityBarItem.background": {
+      "type": "variable",
+      "value": "moss.gray.3"
+    },
+    "moss.activityBarItem.background.hover": {
+      "type": "variable",
+      "value": "moss.gray.4"
+    },
+    "moss.activityBarItem.background.active": {
+      "type": "variable",
+      "value": "moss.blue.11"
+    },
+    "moss.activityBarItem.foreground": {
+      "type": "variable",
+      "value": "moss.gray.9"
+    },
+    "moss.activityBarItem.foreground.active": {
+      "type": "variable",
+      "value": "moss.blue.6"
+    },
+    "moss.toolbarItem.background": {
+      "type": "variable",
+      "value": "moss.gray.1"
+    },
+    "moss.toolbarItem.background.hover": {
+      "type": "variable",
+      "value": "moss.gray.3"
+    },
+    "moss.toolbarItem.foreground": {
+      "type": "variable",
+      "value": "moss.gray.9"
+    },
+    "moss.list.background": {
+      "type": "variable",
+      "value": "moss.gray.2"
+    },
+    "moss.list.background.hover": {
+      "type": "variable",
+      "value": "moss.gray.3"
+    },
+    "moss.list.background.active": {
+      "type": "variable",
+      "value": "moss.blue.11"
+    },
+    "moss.list.foreground": {
+      "type": "variable",
+      "value": "moss.gray.14"
+    },
+    "moss.list.descriptionForeground": {
+      "type": "variable",
+      "value": "moss.gray.7"
+    },
+    "moss.list.toolbarItem.background": {
+      "type": "variable",
+      "value": "transparent"
+    },
+    "moss.list.toolbarItem.background.hover": {
+      "type": "variable",
+      "value": "moss.gray.4"
+    },
+    "moss.button.primary.background": {
+      "type": "variable",
+      "value": "moss.blue.6"
+    },
+    "moss.button.primary.background.hover": {
+      "type": "variable",
+      "value": "moss.blue.5"
+    },
+    "moss.button.primary.foreground": {
+      "type": "variable",
+      "value": "moss.gray.14"
+    },
+    "moss.button.outlined.background": {
+      "type": "variable",
+      "value": "moss.gray.1"
+    },
+    "moss.button.outlined.background.hover": {
+      "type": "variable",
+      "value": "moss.gray.3"
+    },
+    "moss.button.outlined.border": {
+      "type": "variable",
+      "value": "moss.gray.6"
+    },
+    "moss.button.outlined.border.hover": {
+      "type": "variable",
+      "value": "moss.gray.7"
+    },
+    "moss.button.outlined.foreground": {
+      "type": "variable",
+      "value": "moss.gray.14"
+    },
+    "moss.button.danger.background": {
+      "type": "variable",
+      "value": "moss.red.6"
+    },
+    "moss.button.danger.background.hover": {
+      "type": "variable",
+      "value": "moss.red.5"
+    },
+    "moss.button.danger.foreground": {
+      "type": "variable",
+      "value": "moss.gray.14"
+    },
+    "moss.controls.background": {
+      "type": "variable",
+      "value": "moss.gray.1"
+    },
+    "moss.controls.background.hover": {
+      "type": "variable",
+      "value": "moss.gray.3"
+    },
+    "moss.controls.background.contrast": {
+      "type": "variable",
+      "value": "moss.gray.2"
+    },
+    "moss.controls.border": {
+      "type": "variable",
+      "value": "moss.gray.5"
+    },
+    "moss.controls.foreground": {
+      "type": "variable",
+      "value": "moss.gray.14"
+    },
+    "moss.controls.placeholder": {
+      "type": "variable",
+      "value": "moss.gray.8"
+    },
+    "moss.workspaceMode.background": {
+      "type": "variable",
+      "value": "moss.gray.3"
+    },
+    "moss.workspaceMode.border": {
+      "type": "variable",
+      "value": "moss.gray.4"
+    },
+    "moss.workspaceMode.foreground": {
+      "type": "variable",
+      "value": "moss.gray.9"
+    },
+    "moss.workspaceMode.foreground.selected": {
+      "type": "variable",
+      "value": "moss.gray.14"
+    },
+    "moss.toggleButton.background": {
+      "type": "variable",
+      "value": "moss.gray.3"
+    },
+    "moss.toggleButton.border": {
+      "type": "variable",
+      "value": "moss.gray.4"
+    },
+    "moss.toggleButton.indicator": {
+      "type": "variable",
+      "value": "moss.gray.8"
+    },
+    "moss.toggleButton.indicator.checked": {
+      "type": "variable",
+      "value": "moss.gray.14"
+    },
+    "moss.toggleButton.thumb": {
+      "type": "variable",
+      "value": "moss.gray.14"
+    },
+    "moss.toggleButton.thumb.border": {
+      "type": "variable",
+      "value": "moss.gray.6"
+    },
+    "moss.notification.background": {
+      "type": "variable",
+      "value": "moss.gray.3"
+    },
+    "moss.notification.foreground": {
+      "type": "variable",
+      "value": "moss.gray.14"
+    },
+    "moss.notification.button.outline": {
+      "type": "variable",
+      "value": "moss.gray.7"
+    },
+    "moss.notification.button.hover": {
+      "type": "variable",
+      "value": "moss.gray.5"
+    },
+    "moss.notification.close": {
+      "type": "variable",
+      "value": "moss.gray.7"
+    },
+    "moss.link.foreground": {
+      "type": "variable",
+      "value": "moss.blue.9"
+    },
+    "moss.link.foreground.hover": {
+      "type": "variable",
+      "value": "moss.blue.11"
+    },
+    "moss.stepCard.background": {
+      "type": "variable",
+      "value": "moss.blue.1"
+    },
+    "moss.stepCard.foreground": {
+      "type": "variable",
+      "value": "moss.blue.6"
+    },
+    "separator.border": {
+      "type": "variable",
+      "value": "moss.border"
+    },
+    "moss.windowsCloseButton.button.icon": {
       "type": "solid",
-      "value": "#d4d4d4"
+      "value": "white"
     },
     "moss.windowsCloseButton.background": {
       "type": "solid",
@@ -335,291 +531,19 @@
     },
     "moss.windowControlsLinux.background": {
       "type": "solid",
-      "value": "#333333"
+      "value": "#2b2b2b"
     },
-    "moss.windowControlsLinux.text": {
+    "moss.windowControlsLinux.foreground": {
       "type": "solid",
-      "value": "#d4d4d4"
+      "value": "rgba(255, 255, 255, 1)"
     },
     "moss.windowControlsLinux.hoverBackground": {
       "type": "solid",
-      "value": "#3c3c3c"
+      "value": "rgba(65, 65, 65, 1)"
     },
     "moss.windowControlsLinux.activeBackground": {
       "type": "solid",
-      "value": "#505050"
-    },
-    "moss.paneview.active.outline.color": {
-      "type": "variable",
-      "value": "moss.primary"
-    },
-    "moss.drag.over.background.color": {
-      "type": "solid",
-      "value": "rgba(0, 122, 204, 0.2)"
-    },
-    "moss.drag.over.border.color": {
-      "type": "variable",
-      "value": "moss.primary.background"
-    },
-    "moss.group.view.background.color": {
-      "type": "variable",
-      "value": "moss.primary.background"
-    },
-    "moss.tabs.and.actions.container.background.color": {
-      "type": "variable",
-      "value": "moss.primary.background"
-    },
-    "moss.activegroup.visiblepanel.tab.background.color": {
-      "type": "variable",
-      "value": "moss.primary.background.hover"
-    },
-    "moss.inactivegroup.visiblepanel.tab.background.color": {
-      "type": "variable",
-      "value": "moss.primary.background"
-    },
-    "moss.activegroup.visiblepanel.tab.color": {
-      "type": "variable",
-      "value": "moss.primary.text"
-    },
-    "moss.inactivegroup.visiblepanel.tab.color": {
-      "type": "variable",
-      "value": "moss.secondary.text"
-    },
-    "moss.activegroup.visiblepanel.tab.border.color": {
-      "type": "variable",
-      "value": "moss.primary"
-    },
-    "moss.activegroup.hiddenpanel.tab.border.color": {
-      "type": "solid",
-      "value": "transparent"
-    },
-    "moss.inactivegroup.visiblepanel.tab.border.color": {
-      "type": "variable",
-      "value": "moss.gray.8"
-    },
-    "moss.activegroup.hiddenpanel.tab.background.color": {
-      "type": "variable",
-      "value": "moss.primary.background"
-    },
-    "moss.inactivegroup.hiddenpanel.tab.background.color": {
-      "type": "variable",
-      "value": "moss.primary.background"
-    },
-    "moss.activegroup.hiddenpanel.tab.color": {
-      "type": "variable",
-      "value": "moss.secondary.text"
-    },
-    "moss.inactivegroup.hiddenpanel.tab.color": {
-      "type": "variable",
-      "value": "moss.secondary.text"
-    },
-    "moss.tab.divider.color": {
-      "type": "variable",
-      "value": "moss.border.color"
-    },
-    "moss.separator.border": {
-      "type": "variable",
-      "value": "moss.border.color"
-    },
-    "moss.button.primary.solid.background": {
-      "type": "solid",
-      "value": "#007acc"
-    },
-    "moss.button.primary.solid.border": {
-      "type": "solid",
-      "value": "#007acc"
-    },
-    "moss.button.primary.solid.text": {
-      "type": "solid",
-      "value": "#ffffff"
-    },
-    "moss.button.primary.outlined.background": {
-      "type": "solid",
-      "value": "transparent"
-    },
-    "moss.button.primary.outlined.border": {
-      "type": "solid",
-      "value": "#007acc"
-    },
-    "moss.button.primary.outlined.text": {
-      "type": "solid",
-      "value": "#007acc"
-    },
-    "moss.button.primary.soft.background": {
-      "type": "solid",
-      "value": "rgba(0, 122, 204, 0.1)"
-    },
-    "moss.button.primary.soft.border": {
-      "type": "solid",
-      "value": "transparent"
-    },
-    "moss.button.primary.soft.text": {
-      "type": "solid",
-      "value": "#007acc"
-    },
-    "moss.button.primary.ghost.background": {
-      "type": "solid",
-      "value": "transparent"
-    },
-    "moss.button.primary.ghost.border": {
-      "type": "solid",
-      "value": "transparent"
-    },
-    "moss.button.primary.ghost.text": {
-      "type": "solid",
-      "value": "#007acc"
-    },
-    "moss.button.danger.solid.background": {
-      "type": "solid",
-      "value": "#f48771"
-    },
-    "moss.button.danger.solid.border": {
-      "type": "solid",
-      "value": "#f48771"
-    },
-    "moss.button.danger.solid.text": {
-      "type": "solid",
-      "value": "#ffffff"
-    },
-    "moss.button.danger.outlined.background": {
-      "type": "solid",
-      "value": "transparent"
-    },
-    "moss.button.danger.outlined.border": {
-      "type": "solid",
-      "value": "#f48771"
-    },
-    "moss.button.danger.outlined.text": {
-      "type": "solid",
-      "value": "#f48771"
-    },
-    "moss.button.danger.soft.background": {
-      "type": "solid",
-      "value": "rgba(244, 135, 113, 0.1)"
-    },
-    "moss.button.danger.soft.border": {
-      "type": "solid",
-      "value": "transparent"
-    },
-    "moss.button.danger.soft.text": {
-      "type": "solid",
-      "value": "#f48771"
-    },
-    "moss.button.danger.ghost.background": {
-      "type": "solid",
-      "value": "transparent"
-    },
-    "moss.button.danger.ghost.border": {
-      "type": "solid",
-      "value": "transparent"
-    },
-    "moss.button.danger.ghost.text": {
-      "type": "solid",
-      "value": "#f48771"
-    },
-    "moss.button.neutral.solid.background": {
-      "type": "solid",
-      "value": "#424242"
-    },
-    "moss.button.neutral.solid.border": {
-      "type": "solid",
-      "value": "#424242"
-    },
-    "moss.button.neutral.solid.text": {
-      "type": "solid",
-      "value": "#ffffff"
-    },
-    "moss.button.neutral.outlined.background": {
-      "type": "solid",
-      "value": "transparent"
-    },
-    "moss.button.neutral.outlined.border": {
-      "type": "solid",
-      "value": "#424242"
-    },
-    "moss.button.neutral.outlined.text": {
-      "type": "solid",
-      "value": "#d4d4d4"
-    },
-    "moss.button.neutral.soft.background": {
-      "type": "solid",
-      "value": "rgba(66, 66, 66, 0.1)"
-    },
-    "moss.button.neutral.soft.border": {
-      "type": "solid",
-      "value": "transparent"
-    },
-    "moss.button.neutral.soft.text": {
-      "type": "solid",
-      "value": "#d4d4d4"
-    },
-    "moss.button.neutral.ghost.background": {
-      "type": "solid",
-      "value": "transparent"
-    },
-    "moss.button.neutral.ghost.border": {
-      "type": "solid",
-      "value": "transparent"
-    },
-    "moss.button.neutral.ghost.text": {
-      "type": "solid",
-      "value": "#d4d4d4"
-    },
-    "moss.controls.plain.bg": {
-      "type": "solid",
-      "value": "#3c3c3c"
-    },
-    "moss.controls.plain.border": {
-      "type": "solid",
-      "value": "#3c3c3c"
-    },
-    "moss.controls.plain.text": {
-      "type": "solid",
-      "value": "#d4d4d4"
-    },
-    "moss.controls.outlined.bg": {
-      "type": "solid",
-      "value": "#3c3c3c"
-    },
-    "moss.controls.outlined.bg.contrast": {
-      "type": "variable",
-      "value": "moss.gray.13"
-    },
-    "moss.controls.outlined.border": {
-      "type": "solid",
-      "value": "#3c3c3c"
-    },
-    "moss.controls.outlined.text": {
-      "type": "solid",
-      "value": "#d4d4d4"
-    },
-    "moss.controls.placeholder": {
-      "type": "solid",
-      "value": "#969696"
-    },
-    "moss.select.bg.outlined": {
-      "type": "solid",
-      "value": "#3c3c3c"
-    },
-    "moss.select.border.outlined": {
-      "type": "solid",
-      "value": "#3c3c3c"
-    },
-    "moss.select.text.outlined": {
-      "type": "solid",
-      "value": "#d4d4d4"
-    },
-    "moss.select.hover.bg": {
-      "type": "solid",
-      "value": "#505050"
-    },
-    "moss.input.bg.plain": {
-      "type": "solid",
-      "value": "#3c3c3c"
-    },
-    "moss.input.bg.outlined": {
-      "type": "solid",
-      "value": "#3c3c3c"
+      "value": "rgba(75, 75, 75, 1)"
     }
   },
   "boxShadows": {

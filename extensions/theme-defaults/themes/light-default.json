@@ -417,10 +417,6 @@
       "type": "variable",
       "value": "moss.gray.6"
     },
-    "moss.shortcut.foreground": {
-      "type": "variable",
-      "value": "moss.gray.7"
-    },
     "moss.headBar.background": {
       "type": "variable",
       "value": "moss.gray.12"
@@ -461,17 +457,9 @@
       "type": "variable",
       "value": "moss.gray.10"
     },
-    "moss.activityBarItem.background.active": {
-      "type": "variable",
-      "value": "moss.blue.11"
-    },
     "moss.activityBarItem.foreground": {
       "type": "variable",
       "value": "moss.gray.6"
-    },
-    "moss.activityBarItem.foreground.active": {
-      "type": "variable",
-      "value": "moss.blue.4"
     },
     "moss.toolbarItem.background": {
       "type": "variable",
