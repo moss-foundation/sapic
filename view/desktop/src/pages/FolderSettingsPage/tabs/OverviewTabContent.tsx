@@ -3,14 +3,14 @@ import { IDockviewPanelProps } from "moss-tabs";
 import { PageContent } from "@/components";
 import { ProjectTreeNode } from "@/components/ProjectTree/types";
 import { useProjectsTrees } from "@/hooks";
-import { EntryKind } from "@repo/moss-project";
+import { ResourceKind } from "@repo/moss-project";
 
 import { findNodeInProject } from "../utils";
 
 export interface FolderSettingsParams {
   projectId: string;
   node: ProjectTreeNode;
-  iconType: EntryKind;
+  iconType: ResourceKind;
 }
 
 export const OverviewTabContent = ({ params }: IDockviewPanelProps<FolderSettingsParams>) => {

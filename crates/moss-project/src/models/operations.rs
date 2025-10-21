@@ -4,151 +4,151 @@ use ts_rs::TS;
 use validator::Validate;
 
 use crate::models::{
-    primitives::{EntryClass, EntryId, EntryKind, EntryProtocol},
+    primitives::{ResourceClass, ResourceId, ResourceKind, ResourceProtocol},
     types::{
-        AfterUpdateDirEntryDescription, AfterUpdateItemEntryDescription, BodyInfo,
-        CreateDirEntryParams, CreateItemEntryParams, HeaderInfo, PathParamInfo, QueryParamInfo,
-        UpdateDirEntryParams, UpdateItemEntryParams, VcsOperation,
+        AfterUpdateDirResourceDescription, AfterUpdateItemResourceDescription, BodyInfo,
+        CreateDirResourceParams, CreateItemResourceParams, HeaderInfo, PathParamInfo,
+        QueryParamInfo, UpdateDirResourceParams, UpdateItemResourceParams, VcsOperation,
     },
 };
 // ########################################################
-// ###                   Create Entry                   ###
+// ###                Create Resource                   ###
 // ########################################################
 
 /// @category Operation
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "operations.ts")]
-pub enum CreateEntryInput {
-    Item(CreateItemEntryParams),
-    Dir(CreateDirEntryParams),
+pub enum CreateResourceInput {
+    Item(CreateItemResourceParams),
+    Dir(CreateDirResourceParams),
 }
 
 /// @category Operation
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct CreateEntryOutput {
-    pub id: EntryId,
+pub struct CreateResourceOutput {
+    pub id: ResourceId,
 }
 
 // ########################################################
-// ###                Batch Create Entry                ###
+// ###             Batch Create Resource                ###
 // ########################################################
 
 /// @category Operation
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "operations.ts")]
-pub enum BatchCreateEntryKind {
-    Item(CreateItemEntryParams),
-    Dir(CreateDirEntryParams),
+pub enum BatchCreateResourceKind {
+    Item(CreateItemResourceParams),
+    Dir(CreateDirResourceParams),
 }
 
 /// @category Operation
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct BatchCreateEntryInput {
-    pub entries: Vec<BatchCreateEntryKind>,
+pub struct BatchCreateResourceInput {
+    pub resources: Vec<BatchCreateResourceKind>,
 }
 
 /// @category Operation
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct BatchCreateEntryOutput {
+pub struct BatchCreateResourceOutput {
     #[ts(as = "Vec<String>")]
-    pub ids: Vec<EntryId>,
+    pub ids: Vec<ResourceId>,
 }
 
 // ########################################################
-// ###                   Delete Entry                   ###
+// ###                Delete Resource                   ###
 // ########################################################
 
 /// @category Operation
 #[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct DeleteEntryInput {
+pub struct DeleteResourceInput {
     #[ts(as = "String")]
-    pub id: EntryId,
+    pub id: ResourceId,
 }
 
 /// @category Operation
 #[derive(Clone, Debug, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
-pub struct DeleteEntryOutput {
+pub struct DeleteResourceOutput {
     #[ts(as = "String")]
-    pub id: EntryId,
+    pub id: ResourceId,
 }
 
 // ########################################################
-// ###                   Update Entry                   ###
+// ###                Update Resource                   ###
 // ########################################################
 
 /// @category Operation
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "operations.ts")]
-pub enum UpdateEntryInput {
-    Item(UpdateItemEntryParams),
-    Dir(UpdateDirEntryParams),
+pub enum UpdateResourceInput {
+    Item(UpdateItemResourceParams),
+    Dir(UpdateDirResourceParams),
 }
 
 /// @category Operation
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "operations.ts")]
-pub enum UpdateEntryOutput {
-    Item(AfterUpdateItemEntryDescription),
-    Dir(AfterUpdateDirEntryDescription),
+pub enum UpdateResourceOutput {
+    Item(AfterUpdateItemResourceDescription),
+    Dir(AfterUpdateDirResourceDescription),
 }
 
 // ########################################################
-// ###                  Batch Update Entry              ###
+// ###                Batch Update Resource             ###
 // ########################################################
 
 /// @category Operation
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "operations.ts")]
-pub enum BatchUpdateEntryKind {
-    Item(UpdateItemEntryParams),
-    Dir(UpdateDirEntryParams),
+pub enum BatchUpdateResourceKind {
+    Item(UpdateItemResourceParams),
+    Dir(UpdateDirResourceParams),
 }
 
 /// @category Operation
 #[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct BatchUpdateEntryInput {
-    pub entries: Vec<BatchUpdateEntryKind>,
+pub struct BatchUpdateResourceInput {
+    pub resources: Vec<BatchUpdateResourceKind>,
 }
 
 /// @category Operation
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "operations.ts")]
-pub enum BatchUpdateEntryOutputKind {
-    Item(AfterUpdateItemEntryDescription),
-    Dir(AfterUpdateDirEntryDescription),
+pub enum BatchUpdateResourceOutputKind {
+    Item(AfterUpdateItemResourceDescription),
+    Dir(AfterUpdateDirResourceDescription),
 }
 
 /// @category Operation
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct BatchUpdateEntryOutput {}
+pub struct BatchUpdateResourceOutput {}
 
 // ########################################################
-// ###                  Stream Entries                  ###
+// ###                Stream Resources                  ###
 // ########################################################
 
 /// @category Operation
 #[derive(Clone, Debug, Deserialize, TS)]
 #[ts(export, export_to = "operations.ts")]
-pub enum StreamEntriesInput {
+pub enum StreamResourcesInput {
     #[serde(rename = "LOAD_ROOT")]
     LoadRoot,
     #[serde(rename = "RELOAD_PATH")]
@@ -158,23 +158,23 @@ pub enum StreamEntriesInput {
 /// @category Operation
 #[derive(Clone, Debug, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
-pub struct StreamEntriesOutput {
+pub struct StreamResourcesOutput {
     // TODO: count total?
 }
 
 // ########################################################
-// ###                  Describe Entry                  ###
+// ###               Describe Resource                  ###
 // ########################################################
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
-pub struct DescribeEntryOutput {
+pub struct DescribeResourceOutput {
     pub name: String,
-    pub class: EntryClass,
-    pub kind: EntryKind,
-    pub protocol: Option<EntryProtocol>,
+    pub class: ResourceClass,
+    pub kind: ResourceKind,
+    pub protocol: Option<ResourceProtocol>,
     pub url: Option<String>,
     pub headers: Vec<HeaderInfo>,
     pub path_params: Vec<PathParamInfo>,

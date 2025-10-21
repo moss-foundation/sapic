@@ -1,12 +1,12 @@
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
-import { BatchUpdateEntryKind, StreamEntriesEvent } from "@repo/moss-project";
+import { BatchUpdateResourceKind, StreamResourcesEvent } from "@repo/moss-project";
 import { join } from "@tauri-apps/api/path";
 
 import { ProjectTreeNode, ProjectTreeRootNode } from "../types";
 
 export const getPathWithoutName = async (
-  node: ProjectTreeNode | StreamEntriesEvent
-): Promise<StreamEntriesEvent["path"]> => {
+  node: ProjectTreeNode | StreamResourcesEvent
+): Promise<StreamResourcesEvent["path"]> => {
   const newSegments = node.path.segments.filter((segment) => segment !== node.name);
   const newRaw = newSegments.length > 0 ? await join(...newSegments) : "";
 
@@ -17,9 +17,9 @@ export const getPathWithoutName = async (
 };
 
 export const getPathWithoutParentPath = async (
-  path: StreamEntriesEvent["path"],
-  parentPath: StreamEntriesEvent["path"]
-): Promise<StreamEntriesEvent["path"]> => {
+  path: StreamResourcesEvent["path"],
+  parentPath: StreamResourcesEvent["path"]
+): Promise<StreamResourcesEvent["path"]> => {
   const newSegments = path.segments.filter((segment) => !parentPath.segments.includes(segment));
   const newRaw = await join(...newSegments);
 
@@ -29,7 +29,7 @@ export const getPathWithoutParentPath = async (
   };
 };
 
-export const removePathBeforeName = async (path: StreamEntriesEvent["path"], name: string) => {
+export const removePathBeforeName = async (path: StreamResourcesEvent["path"], name: string) => {
   const nameIndex = path.segments.findIndex((segment) => segment === name);
 
   if (nameIndex === -1) {
@@ -48,60 +48,64 @@ export const removePathBeforeName = async (path: StreamEntriesEvent["path"], nam
   };
 };
 
-export const prepareNestedDirEntriesForDrop = async (entries: StreamEntriesEvent[]): Promise<StreamEntriesEvent[]> => {
-  const rootEntryName = entries[0].name;
+export const prepareNestedDirResourcesForDrop = async (
+  resources: StreamResourcesEvent[]
+): Promise<StreamResourcesEvent[]> => {
+  const rootResourceName = resources[0].name;
 
-  const entriesPreparedForDrop: StreamEntriesEvent[] = [];
+  const resourcesPreparedForDrop: StreamResourcesEvent[] = [];
 
-  for await (const entry of entries) {
-    const newEntryPath = await removePathBeforeName(entry.path, rootEntryName);
+  for await (const resource of resources) {
+    const newResourcePath = await removePathBeforeName(resource.path, rootResourceName);
 
-    entriesPreparedForDrop.push({
-      ...entry,
-      path: newEntryPath,
+    resourcesPreparedForDrop.push({
+      ...resource,
+      path: newResourcePath,
     });
   }
 
-  const entriesWithoutName = await Promise.all(
-    entriesPreparedForDrop.map(async (entry) => {
-      const pathWithoutName = await getPathWithoutName(entry);
+  const resourcesWithoutName = await Promise.all(
+    resourcesPreparedForDrop.map(async (resource) => {
+      const pathWithoutName = await getPathWithoutName(resource);
 
       return {
-        ...entry,
+        ...resource,
         path: pathWithoutName,
       };
     })
   );
 
-  return entriesWithoutName;
+  return resourcesWithoutName;
 };
 
-export const prepareEntriesForCreation = async (entries: StreamEntriesEvent[]): Promise<StreamEntriesEvent[]> => {
-  const rootEntryName = entries[0].name;
+export const prepareResourcesForCreation = async (
+  resources: StreamResourcesEvent[]
+): Promise<StreamResourcesEvent[]> => {
+  const rootResourceName = resources[0].name;
 
-  const entriesPreparedForDrop: StreamEntriesEvent[] = [];
+  const resourcesPreparedForDrop: StreamResourcesEvent[] = [];
 
-  for await (const entry of entries) {
-    const newEntryPath = await removePathBeforeName(entry.path, rootEntryName);
+  for await (const resource of resources) {
+    const newResourcePath = await removePathBeforeName(resource.path, rootResourceName);
 
-    entriesPreparedForDrop.push({
-      ...entry,
-      path: newEntryPath,
+    resourcesPreparedForDrop.push({
+      ...resource,
+      path: newResourcePath,
     });
   }
 
-  const entriesWithoutName = await Promise.all(
-    entriesPreparedForDrop.map(async (entry) => {
-      const pathWithoutName = await getPathWithoutName(entry);
+  const resourcesWithoutName = await Promise.all(
+    resourcesPreparedForDrop.map(async (resource) => {
+      const pathWithoutName = await getPathWithoutName(resource);
 
       return {
-        ...entry,
+        ...resource,
         path: pathWithoutName,
       };
     })
   );
 
-  return entriesWithoutName;
+  return resourcesWithoutName;
 };
 
 export const makeItemUpdatePayload = ({
@@ -112,7 +116,7 @@ export const makeItemUpdatePayload = ({
   id: string;
   order?: number;
   path?: string;
-}): BatchUpdateEntryKind => ({
+}): BatchUpdateResourceKind => ({
   ITEM: {
     id,
     ...(order !== undefined ? { order } : {}),
@@ -137,7 +141,7 @@ export const makeDirUpdatePayload = ({
   id: string;
   order?: number;
   path?: string;
-}): BatchUpdateEntryKind => ({
+}): BatchUpdateResourceKind => ({
   DIR: {
     id,
     ...(order !== undefined ? { order } : {}),
@@ -155,10 +159,10 @@ export const siblingsAfterRemovalPayload = ({
   const sortedChildren = sortObjectsByOrder(nodes);
   return sortedChildren
     .filter((c) => c.id !== removedNode.id && c.order! > removedNode.order!)
-    .map((entry) =>
-      entry.kind === "Dir"
-        ? makeDirUpdatePayload({ id: entry.id, order: entry.order! - 1 })
-        : makeItemUpdatePayload({ id: entry.id, order: entry.order! - 1 })
+    .map((resource) =>
+      resource.kind === "Dir"
+        ? makeDirUpdatePayload({ id: resource.id, order: resource.order! - 1 })
+        : makeItemUpdatePayload({ id: resource.id, order: resource.order! - 1 })
     );
 };
 
@@ -180,23 +184,23 @@ export const reorderedNodesForSameDirPayload = ({
 
   const sortedParentNodes = sortObjectsByOrder(nodes);
   const updatedSourceNodesPayload = [
-    ...sortedParentNodes.slice(0, moveToIndex).filter((entry) => entry.id !== nodeToMove.id),
+    ...sortedParentNodes.slice(0, moveToIndex).filter((resource) => resource.id !== nodeToMove.id),
     nodeToMove,
-    ...sortedParentNodes.slice(moveToIndex).filter((entry) => entry.id !== nodeToMove.id),
+    ...sortedParentNodes.slice(moveToIndex).filter((resource) => resource.id !== nodeToMove.id),
   ]
-    .map((entry, index) => ({
-      ...entry,
+    .map((resource, index) => ({
+      ...resource,
       order: index + 1,
     }))
-    .filter((entry) => {
-      const nodeInLocation = nodes.find((n) => n.id === entry.id);
-      return nodeInLocation?.order !== entry.order;
+    .filter((resource) => {
+      const nodeInLocation = nodes.find((n) => n.id === resource.id);
+      return nodeInLocation?.order !== resource.order;
     })
-    .map((entry) => {
-      if (entry.kind === "Dir") {
-        return makeDirUpdatePayload({ id: entry.id, order: entry.order });
+    .map((resource) => {
+      if (resource.kind === "Dir") {
+        return makeDirUpdatePayload({ id: resource.id, order: resource.order });
       } else {
-        return makeItemUpdatePayload({ id: entry.id, order: entry.order });
+        return makeItemUpdatePayload({ id: resource.id, order: resource.order });
       }
     });
 
@@ -214,39 +218,39 @@ export const reorderedNodesForDifferentDirPayload = ({
 }) => {
   const sortedTargetNodes = sortObjectsByOrder(node.childNodes);
 
-  const targetEntriesToUpdate = [
+  const targetResourcesToUpdate = [
     ...sortedTargetNodes.slice(0, moveToIndex),
     newNode,
     ...sortedTargetNodes.slice(moveToIndex),
   ]
-    .map((entry, index) => ({
-      ...entry,
+    .map((resource, index) => ({
+      ...resource,
       order: index + 1,
     }))
     .filter((node) => {
       const nodeInLocation = node.childNodes.find((n) => n.id === node.id);
       return nodeInLocation?.order !== node.order;
     })
-    .map((entry) => {
-      const isAlreadyInLocation = node.childNodes.some((n) => n.id === entry.id);
-      const newEntryPath = isAlreadyInLocation ? undefined : "path" in node ? node.path.raw : "";
+    .map((resource) => {
+      const isAlreadyInLocation = node.childNodes.some((n) => n.id === resource.id);
+      const newResourcePath = isAlreadyInLocation ? undefined : "path" in node ? node.path.raw : "";
 
-      if (entry.kind === "Dir") {
+      if (resource.kind === "Dir") {
         return makeDirUpdatePayload({
-          id: entry.id,
-          order: entry.order,
-          path: newEntryPath,
+          id: resource.id,
+          order: resource.order,
+          path: newResourcePath,
         });
       } else {
         return makeItemUpdatePayload({
-          id: entry.id,
-          order: entry.order,
-          path: newEntryPath,
+          id: resource.id,
+          order: resource.order,
+          path: newResourcePath,
         });
       }
     });
 
-  return targetEntriesToUpdate;
+  return targetResourcesToUpdate;
 };
 
 export const resolveParentPath = (parentNode: ProjectTreeNode | ProjectTreeRootNode): string =>

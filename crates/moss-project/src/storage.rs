@@ -15,7 +15,7 @@ use moss_storage::{
 use std::{collections::HashMap, path::Path, sync::Arc};
 
 use crate::models::primitives::{
-    EntryId, FormDataParamId, HeaderId, PathParamId, QueryParamId, UrlencodedParamId,
+    FormDataParamId, HeaderId, PathParamId, QueryParamId, ResourceId, UrlencodedParamId,
 };
 
 pub struct StorageService<R: AppRuntime> {
@@ -36,7 +36,7 @@ impl<R: AppRuntime> StorageService<R> {
         &self,
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
-        id: &EntryId,
+        id: &ResourceId,
         order: isize,
     ) -> Result<()> {
         let store = self.storage.resource_store();
@@ -58,7 +58,7 @@ impl<R: AppRuntime> StorageService<R> {
         &self,
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
-        entry_id: &EntryId,
+        entry_id: &ResourceId,
         header_id: &HeaderId,
         order: isize,
     ) -> Result<()> {
@@ -81,7 +81,7 @@ impl<R: AppRuntime> StorageService<R> {
         &self,
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
-        entry_id: &EntryId,
+        entry_id: &ResourceId,
         header_id: &HeaderId,
     ) -> Result<()> {
         let store = self.storage.resource_store();
@@ -95,7 +95,7 @@ impl<R: AppRuntime> StorageService<R> {
         &self,
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
-        entry_id: &EntryId,
+        entry_id: &ResourceId,
         path_param_id: &PathParamId,
         order: isize,
     ) -> Result<()> {
@@ -118,7 +118,7 @@ impl<R: AppRuntime> StorageService<R> {
         &self,
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
-        entry_id: &EntryId,
+        entry_id: &ResourceId,
         path_param_id: &PathParamId,
     ) -> Result<()> {
         let store = self.storage.resource_store();
@@ -132,7 +132,7 @@ impl<R: AppRuntime> StorageService<R> {
         &self,
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
-        entry_id: &EntryId,
+        entry_id: &ResourceId,
         query_param_id: &QueryParamId,
         order: isize,
     ) -> Result<()> {
@@ -155,7 +155,7 @@ impl<R: AppRuntime> StorageService<R> {
         &self,
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
-        entry_id: &EntryId,
+        entry_id: &ResourceId,
         query_param_id: &QueryParamId,
     ) -> Result<()> {
         let store = self.storage.resource_store();
@@ -169,7 +169,7 @@ impl<R: AppRuntime> StorageService<R> {
         &self,
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
-        entry_id: &EntryId,
+        entry_id: &ResourceId,
         param_id: &UrlencodedParamId,
         order: isize,
     ) -> Result<()> {
@@ -192,7 +192,7 @@ impl<R: AppRuntime> StorageService<R> {
         &self,
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
-        entry_id: &EntryId,
+        entry_id: &ResourceId,
         param_id: &UrlencodedParamId,
     ) -> Result<()> {
         let store = self.storage.resource_store();
@@ -207,7 +207,7 @@ impl<R: AppRuntime> StorageService<R> {
         &self,
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
-        entry_id: &EntryId,
+        entry_id: &ResourceId,
         param_id: &FormDataParamId,
         order: isize,
     ) -> Result<()> {
@@ -230,7 +230,7 @@ impl<R: AppRuntime> StorageService<R> {
         &self,
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
-        entry_id: &EntryId,
+        entry_id: &ResourceId,
         param_id: &FormDataParamId,
     ) -> Result<()> {
         let store = self.storage.resource_store();
@@ -244,7 +244,7 @@ impl<R: AppRuntime> StorageService<R> {
     pub async fn remove_entry_body_cache(
         &self,
         ctx: &R::AsyncContext,
-        entry_id: &EntryId,
+        entry_id: &ResourceId,
     ) -> Result<()> {
         let store = self.storage.resource_store();
 
@@ -271,7 +271,7 @@ impl<R: AppRuntime> StorageService<R> {
     pub async fn get_entry_keys(
         &self,
         ctx: &R::AsyncContext,
-        id: &EntryId,
+        id: &ResourceId,
     ) -> Result<HashMap<SegKeyBuf, AnyValue>> {
         let store = self.storage.resource_store();
         let value = ListByPrefix::list_by_prefix(
@@ -287,7 +287,7 @@ impl<R: AppRuntime> StorageService<R> {
     pub async fn put_expanded_entries(
         &self,
         ctx: &R::AsyncContext,
-        expanded_entries: Vec<EntryId>,
+        expanded_entries: Vec<ResourceId>,
     ) -> Result<()> {
         let mut txn = self.begin_write(ctx).await?;
         self.put_expanded_entries_txn(ctx, &mut txn, expanded_entries)
@@ -301,7 +301,7 @@ impl<R: AppRuntime> StorageService<R> {
         &self,
         ctx: &R::AsyncContext,
         txn: &mut Transaction,
-        expanded_entries: Vec<EntryId>,
+        expanded_entries: Vec<ResourceId>,
     ) -> Result<()> {
         let store = self.storage.resource_store();
         TransactionalPutItem::put_with_context(
@@ -316,11 +316,11 @@ impl<R: AppRuntime> StorageService<R> {
         Ok(())
     }
 
-    pub async fn get_expanded_entries(&self, ctx: &R::AsyncContext) -> Result<Vec<EntryId>> {
+    pub async fn get_expanded_entries(&self, ctx: &R::AsyncContext) -> Result<Vec<ResourceId>> {
         let store = self.storage.resource_store();
         let segkey = segments::SEGKEY_EXPANDED_ENTRIES.to_segkey_buf();
         let value = GetItem::get(store.as_ref(), ctx, segkey).await?;
-        Ok(AnyValue::deserialize::<Vec<EntryId>>(&value)?)
+        Ok(AnyValue::deserialize::<Vec<ResourceId>>(&value)?)
     }
 }
 

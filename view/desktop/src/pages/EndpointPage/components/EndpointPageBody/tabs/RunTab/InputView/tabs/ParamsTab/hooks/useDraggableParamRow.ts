@@ -12,11 +12,11 @@ import { getDraggableParamRowSourceData } from "../utils/dragAndDrop";
 
 interface UseDraggableParamRowProps {
   param: QueryParamInfo;
-  entryId: string;
+  resourceId: string;
   paramType: ParamDragType;
 }
 
-export const useDraggableParamRow = ({ param, entryId, paramType }: UseDraggableParamRowProps) => {
+export const useDraggableParamRow = ({ param, resourceId, paramType }: UseDraggableParamRowProps) => {
   const dragHandleRef = useRef<HTMLDivElement>(null);
   const paramRowRef = useRef<HTMLDivElement>(null);
 
@@ -34,7 +34,7 @@ export const useDraggableParamRow = ({ param, entryId, paramType }: UseDraggable
         dragHandle,
         getInitialData: (): DraggableParamRowData => ({
           type: DRAGGABLE_PARAM_ROW_TYPE,
-          data: { param, paramType, entryId },
+          data: { param, paramType, resourceId },
         }),
         onDragStart: () => setIsDragging(true),
         onDrop: () => setIsDragging(false),
@@ -60,7 +60,7 @@ export const useDraggableParamRow = ({ param, entryId, paramType }: UseDraggable
         getIsSticky: () => true,
         getData({ input }) {
           return attachClosestEdge(
-            { type: DROP_TARGET_PARAM_ROW_TYPE, data: { param, paramType, entryId } },
+            { type: DROP_TARGET_PARAM_ROW_TYPE, data: { param, paramType, resourceId } },
             { element, input, allowedEdges: ["top", "bottom"] }
           );
         },
@@ -76,7 +76,7 @@ export const useDraggableParamRow = ({ param, entryId, paramType }: UseDraggable
         onDragLeave: () => setClosestEdge(null),
       })
     );
-  }, [param, entryId, paramType]);
+  }, [param, resourceId, paramType]);
 
   return { isDragging, dragHandleRef, paramRowRef, closestEdge };
 };

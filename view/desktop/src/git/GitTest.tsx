@@ -5,7 +5,7 @@ import { ExecuteVcsOperationInput, ExecuteVcsOperationOutput } from "@repo/moss-
 import { EntryChange, ListChangesOutput } from "@repo/moss-workspace";
 
 const GitTest = () => {
-  const [entryChanges, setEntryChanges] = useState<EntryChange[]>([]);
+  const [resourceChanges, setResourceChanges] = useState<EntryChange[]>([]);
   const [selectedKeys, setSelectedKeys] = useState<Record<string, boolean>>({});
   const [targetProjectId, setTargetProjectId] = useState<string>("");
   const [push, setPush] = useState(false);
@@ -19,7 +19,7 @@ const GitTest = () => {
       throw new Error(String(result.status));
     }
 
-    setEntryChanges(result.data.changes);
+    setResourceChanges(result.data.changes);
   }
 
   function toggleSelection(key: string) {
@@ -31,7 +31,7 @@ const GitTest = () => {
   }
 
   async function handleCommitButton() {
-    const selected = entryChanges.filter((ch) => selectedKeys[keyFor(ch)]);
+    const selected = resourceChanges.filter((ch) => selectedKeys[keyFor(ch)]);
 
     const grouped: Record<string, EntryChange[]> = {};
     for (const ch of selected) {
@@ -60,7 +60,7 @@ const GitTest = () => {
   }
 
   async function handleDiscardButton() {
-    const selected = entryChanges.filter((ch) => selectedKeys[keyFor(ch)]);
+    const selected = resourceChanges.filter((ch) => selectedKeys[keyFor(ch)]);
 
     const grouped: Record<string, EntryChange[]> = {};
     for (const ch of selected) {
@@ -125,7 +125,7 @@ const GitTest = () => {
     }
   }
 
-  const selectedCount = entryChanges.reduce((acc, ch) => acc + (selectedKeys[keyFor(ch)] ? 1 : 0), 0);
+  const selectedCount = resourceChanges.reduce((acc, ch) => acc + (selectedKeys[keyFor(ch)] ? 1 : 0), 0);
 
   return (
     <>
@@ -183,11 +183,11 @@ const GitTest = () => {
       </div>
 
       <div className="max-h-64 overflow-auto rounded border p-2">
-        {entryChanges.length === 0 ? (
+        {resourceChanges.length === 0 ? (
           <div className="text-sm text-gray-500">No changes loaded. Click "Test File Statuses".</div>
         ) : (
           <ul className="space-y-2">
-            {entryChanges.map((ch) => {
+            {resourceChanges.map((ch) => {
               const k = keyFor(ch);
               return (
                 <li key={k} className="flex items-start gap-3">

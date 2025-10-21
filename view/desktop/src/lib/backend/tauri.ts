@@ -49,13 +49,13 @@ export type TauriIpcCommand =
   //
   // Project
   //
-  | "create_project_entry"
-  | "delete_project_entry"
-  | "update_project_entry"
-  | "stream_project_entries"
-  | "describe_project_entry"
-  | "batch_update_project_entry"
-  | "batch_create_project_entry"
+  | "create_project_resource"
+  | "delete_project_resource"
+  | "update_project_resource"
+  | "stream_project_resources"
+  | "describe_project_resource"
+  | "batch_update_project_resource"
+  | "batch_create_project_resource"
   | "execute_vcs_operation";
 
 export type IpcResult<T, E> = { status: "ok"; data: T } | { status: "error"; error: E };

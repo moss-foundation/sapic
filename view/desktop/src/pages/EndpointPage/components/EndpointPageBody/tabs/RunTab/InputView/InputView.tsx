@@ -13,16 +13,16 @@ import {
 } from "./tabs";
 
 export const InputView = () => {
-  const { entryDescription: entry } = useContext(EndpointPageContext);
+  const { resourceDescription } = useContext(EndpointPageContext);
 
   const [activeEndpointTabId, setActiveEndpointTabId] = useState("params");
 
   const numberOfActiveParams = useMemo(() => {
-    const queryParamsCount = entry?.queryParams.filter((param) => !param.disabled).length ?? 0;
-    const pathParamsCount = entry?.pathParams.filter((param) => !param.disabled).length ?? 0;
+    const queryParamsCount = resourceDescription?.queryParams.filter((param) => !param.disabled).length ?? 0;
+    const pathParamsCount = resourceDescription?.pathParams.filter((param) => !param.disabled).length ?? 0;
 
     return queryParamsCount + pathParamsCount;
-  }, [entry?.queryParams, entry?.pathParams]);
+  }, [resourceDescription?.queryParams, resourceDescription?.pathParams]);
 
   const endpointTabs: TabItemProps[] = [
     {

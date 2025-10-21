@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 
 import { PageWrapper } from "@/components/PageView/PageWrapper";
-import { useRenameEntryForm } from "@/hooks";
+import { useRenameResourceForm } from "@/hooks";
 import { Icon, MossDropdown, MossToggle } from "@/lib/ui";
 import MossSelect from "@/lib/ui/MossSelect";
 import { cn } from "@/utils";
@@ -10,10 +10,10 @@ import { EndpointPageContext } from "../../EndpointPageContext";
 import { EditableHeader } from "./EditableHeader";
 
 export const EndpointPageHeader = () => {
-  const { entryDescription: entry, projectId, entry: node } = useContext(EndpointPageContext);
+  const { resourceDescription, projectId, resource } = useContext(EndpointPageContext);
 
-  const { isRenamingEntry, setIsRenamingEntry, handleRenamingEntrySubmit, handleRenamingEntryCancel } =
-    useRenameEntryForm(node, projectId);
+  const { isRenamingResource, setIsRenamingResource, handleRenamingResourceSubmit, handleRenamingResourceCancel } =
+    useRenameResourceForm(resource, projectId);
 
   const [isEnabled, setIsEnabled] = useState(false);
 
@@ -33,11 +33,11 @@ export const EndpointPageHeader = () => {
         <div className="flex items-center justify-between">
           <EditableHeader
             icon="Http"
-            title={entry.name}
-            isRenamingEntry={isRenamingEntry}
-            setIsRenamingEntry={setIsRenamingEntry}
-            handleRenamingEntrySubmit={handleRenamingEntrySubmit}
-            handleRenamingEntryCancel={handleRenamingEntryCancel}
+            title={resourceDescription.name}
+            isRenamingResource={isRenamingResource}
+            setIsRenamingResource={setIsRenamingResource}
+            handleRenamingResourceSubmit={handleRenamingResourceSubmit}
+            handleRenamingResourceCancel={handleRenamingResourceCancel}
             editable
           />
           <div className="flex items-center gap-2">

@@ -2,25 +2,27 @@ use moss_applib::AppRuntime;
 
 use crate::{
     Project,
-    models::operations::{BatchCreateEntryInput, BatchCreateEntryKind, BatchCreateEntryOutput},
+    models::operations::{
+        BatchCreateResourceInput, BatchCreateResourceKind, BatchCreateResourceOutput,
+    },
 };
 
 impl<R: AppRuntime> Project<R> {
-    pub async fn batch_create_entry(
+    pub async fn batch_create_resource(
         &self,
         ctx: &R::AsyncContext,
-        input: BatchCreateEntryInput,
-    ) -> joinerror::Result<BatchCreateEntryOutput> {
+        input: BatchCreateResourceInput,
+    ) -> joinerror::Result<BatchCreateResourceOutput> {
         // Split directories from items and create directories first
         let mut items = Vec::new();
         let mut dirs = Vec::new();
         let mut ids = Vec::new();
-        for entry in input.entries {
+        for entry in input.resources {
             match entry {
-                BatchCreateEntryKind::Item(item) => {
+                BatchCreateResourceKind::Item(item) => {
                     items.push(item);
                 }
-                BatchCreateEntryKind::Dir(dir) => {
+                BatchCreateResourceKind::Dir(dir) => {
                     dirs.push(dir);
                 }
             }
@@ -37,15 +39,15 @@ impl<R: AppRuntime> Project<R> {
         });
 
         for dir in dirs {
-            let output = self.create_dir_entry(ctx, dir).await?;
+            let output = self.create_dir_resource(ctx, dir).await?;
             ids.push(output.id);
         }
 
         for item in items {
-            let output = self.create_item_entry(ctx, item).await?;
+            let output = self.create_item_resource(ctx, item).await?;
             ids.push(output.id);
         }
 
-        Ok(BatchCreateEntryOutput { ids })
+        Ok(BatchCreateResourceOutput { ids })
     }
 }

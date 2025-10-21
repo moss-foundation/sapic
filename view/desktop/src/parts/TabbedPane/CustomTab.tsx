@@ -1,7 +1,7 @@
 import { IDockviewPanelHeaderProps } from "moss-tabs";
 import { HTMLAttributes, MouseEvent, useCallback, useEffect, useState } from "react";
 
-import { EntryIcon } from "@/components/EntryIcon";
+import { ResourceIcon } from "@/components/ResourceIcon";
 import { Icon } from "@/lib/ui/Icon";
 import { cn } from "@/utils";
 
@@ -94,7 +94,7 @@ export const CustomTab = ({
           <Icon icon={params?.iconType} className="size-4" />
         ) : params?.node ? (
           <div className="relative size-4 shrink-0">
-            <EntryIcon entry={params?.node} className="absolute top-0 right-0 size-4" />
+            <ResourceIcon resource={params?.node} className="absolute top-0 right-0 size-4" />
           </div>
         ) : null}
         <span className="truncate">{title}</span>

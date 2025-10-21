@@ -1,34 +1,34 @@
 import {
-  BatchCreateEntryKind,
-  CreateEntryInput,
-  EntryClass,
-  EntryProtocol,
-  StreamEntriesEvent,
+  BatchCreateResourceKind,
+  CreateResourceInput,
+  ResourceClass,
+  ResourceProtocol,
+  StreamResourcesEvent,
 } from "@repo/moss-project";
 
-interface CreateEntryKindProps {
+interface CreateResourceKindProps {
   name: string;
   path: string;
-  class: EntryClass;
+  class: ResourceClass;
   isAddingFolder: boolean;
   order: number;
-  protocol?: EntryProtocol;
+  protocol?: ResourceProtocol;
 }
 
-export const createEntryKind = ({
+export const createResourceKind = ({
   name,
   path,
   isAddingFolder,
-  class: entryClass,
+  class: resourceClass,
   order,
   protocol,
-}: CreateEntryKindProps): BatchCreateEntryKind => {
+}: CreateResourceKindProps): BatchCreateResourceKind => {
   if (isAddingFolder) {
     return {
       DIR: {
         name,
         path,
-        class: entryClass,
+        class: resourceClass,
         order,
       },
     };
@@ -38,7 +38,7 @@ export const createEntryKind = ({
     ITEM: {
       name,
       path,
-      class: entryClass,
+      class: resourceClass,
       order,
       headers: [],
       queryParams: [],
@@ -48,27 +48,27 @@ export const createEntryKind = ({
   };
 };
 
-export const convertEntryInfoToCreateInput = (
-  entry: StreamEntriesEvent,
+export const convertResourceInfoToCreateInput = (
+  resource: StreamResourcesEvent,
   newProjectPath: string = ""
-): CreateEntryInput => {
-  if (entry.kind === "Dir") {
+): CreateResourceInput => {
+  if (resource.kind === "Dir") {
     return {
       DIR: {
-        name: entry.name,
+        name: resource.name,
         path: newProjectPath,
-        class: entry.class,
-        order: entry.order ?? 0,
+        class: resource.class,
+        order: resource.order ?? 0,
       },
     };
   } else {
     return {
       ITEM: {
-        name: entry.name,
+        name: resource.name,
         path: newProjectPath,
-        class: entry.class,
-        order: entry.order ?? 0,
-        protocol: entry.protocol ?? "Get",
+        class: resource.class,
+        order: resource.order ?? 0,
+        protocol: resource.protocol ?? "Get",
         headers: [],
         queryParams: [],
         pathParams: [],

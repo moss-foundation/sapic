@@ -2,7 +2,7 @@ import { useProjectsTrees } from "@/hooks/project";
 import { Icon } from "@/lib/ui";
 
 import { ActionMenu } from "..";
-import { EntryIcon } from "../EntryIcon";
+import { ResourceIcon } from "../ResourceIcon";
 import BreadcrumbTree from "./BreadcrumbTree";
 import { findNodeByIdInTree, findNodesSequence } from "./utils";
 
@@ -50,7 +50,7 @@ export const Breadcrumbs = ({ projectId, nodeId }: BreadcrumbsProps) => {
           if (lastItem) {
             return (
               <div key={node.id} className="contents">
-                <EntryIcon entry={node} />
+                <ResourceIcon resource={node} />
                 <span className="min-w-max">{node.name}</span>
               </div>
             );
@@ -60,7 +60,7 @@ export const Breadcrumbs = ({ projectId, nodeId }: BreadcrumbsProps) => {
             <div key={node.id} className="contents">
               <ActionMenu.Root>
                 <ActionMenu.Trigger className="flex min-w-max cursor-pointer items-center gap-1 px-1 py-0.5 hover:underline">
-                  <EntryIcon entry={node} />
+                  <ResourceIcon resource={node} />
                   <span>{node.name} </span>
                 </ActionMenu.Trigger>
                 <ActionMenu.Content align="start">
