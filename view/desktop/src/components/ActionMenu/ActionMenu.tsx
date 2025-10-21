@@ -22,7 +22,7 @@ const Item = forwardRef<HTMLDivElement, Menu.ItemProps>(({ children, className, 
     <Menu.Item
       ref={ref}
       className={cn(actionMenuStyles(), className)}
-      shortcutClassName="text-(--moss-shortcut-text)"
+      shortcutClassName="text-(--moss-list-descriptionForeground)"
       {...props}
     >
       {children}
