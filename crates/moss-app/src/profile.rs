@@ -1,13 +1,5 @@
 mod registry;
 
-use crate::{
-    dirs,
-    internal::events::OnDidChangeProfile,
-    models::types::UpdateAccountParams,
-    profile::registry::{
-        ProfileRegistryAccount, ProfileRegistryAccountMetadata, ProfileRegistryItem,
-    },
-};
 use joinerror::{Error, OptionExt};
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
@@ -39,6 +31,15 @@ use moss_user::{
 };
 use std::{cell::LazyCell, collections::HashMap, path::Path, sync::Arc};
 use tokio::sync::RwLock;
+
+use crate::{
+    dirs,
+    internal::events::OnDidChangeProfile,
+    models::types::UpdateAccountParams,
+    profile::registry::{
+        ProfileRegistryAccount, ProfileRegistryAccountMetadata, ProfileRegistryItem,
+    },
+};
 
 pub(crate) const PROFILES_REGISTRY_FILE: &str = "profiles.json";
 pub(crate) const PROFILE_SETTINGS_FILE: &str = "settings.json";

@@ -27,10 +27,6 @@ export const EditAccountModal = ({ showModal, closeModal, account, onAccountUpda
 
     try {
       setIsSubmitting(true);
-
-      // TODO: Replace with dedicated update account endpoint when available
-      // Strategy: Remove old account and add new account with updated PAT
-      // This is necessary because there's no dedicated "update account" endpoint
       const accountParams: UpdateAccountParams = {
         id: account.id,
         pat: token,
