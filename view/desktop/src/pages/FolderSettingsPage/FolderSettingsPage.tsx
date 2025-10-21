@@ -29,7 +29,7 @@ export const FolderSettings = ({ ...props }: IDockviewPanelProps<FolderSettingsP
 
   if (!props?.params?.projectId || !node) {
     return (
-      <div className="flex h-full items-center justify-center text-(--moss-primary-text)">
+      <div className="flex h-full items-center justify-center text-(--moss-primary-foreground)">
         <div className="text-center">
           <h2 className="text-lg font-semibold">No Folder Selected</h2>
           <p className="text-sm">Please select a folder to view its settings.</p>
@@ -59,11 +59,13 @@ export const FolderSettings = ({ ...props }: IDockviewPanelProps<FolderSettingsP
       ),
       content: (
         <div className="p-4">
-          <div className="rounded-lg border border-(--moss-border-color) p-4">
-            <h3 className="mb-3 text-lg font-semibold text-(--moss-primary-text)">Folder Permissions</h3>
-            <p className="text-(--moss-secondary-text)">Folder permissions configuration will be implemented here.</p>
+          <div className="rounded-lg border border-(--moss-border) p-4">
+            <h3 className="mb-3 text-lg font-semibold text-(--moss-primary-foreground)">Folder Permissions</h3>
+            <p className="text-(--moss-secondary-foreground)">
+              Folder permissions configuration will be implemented here.
+            </p>
             <div className="background-(--moss-secondary-background) mt-4 rounded p-3">
-              <p className="text-sm text-(--moss-secondary-text)">
+              <p className="text-sm text-(--moss-secondary-foreground)">
                 This is a placeholder for folder-specific permissions and access control settings.
               </p>
             </div>
@@ -81,19 +83,19 @@ export const FolderSettings = ({ ...props }: IDockviewPanelProps<FolderSettingsP
       ),
       content: (
         <div className="p-4">
-          <div className="rounded-lg border border-(--moss-border-color) p-4">
-            <h3 className="mb-3 text-lg font-semibold text-(--moss-primary-text)">Folder Settings</h3>
-            <p className="text-(--moss-secondary-text)">Advanced folder settings will be implemented here.</p>
+          <div className="rounded-lg border border-(--moss-border) p-4">
+            <h3 className="mb-3 text-lg font-semibold text-(--moss-primary-foreground)">Folder Settings</h3>
+            <p className="text-(--moss-secondary-foreground)">Advanced folder settings will be implemented here.</p>
             <div className="mt-4 space-y-4">
               <div className="background-(--moss-secondary-background) rounded p-3">
-                <h4 className="mb-2 font-medium text-(--moss-primary-text)">Display Options</h4>
-                <p className="text-sm text-(--moss-secondary-text)">
+                <h4 className="mb-2 font-medium text-(--moss-primary-foreground)">Display Options</h4>
+                <p className="text-sm text-(--moss-secondary-foreground)">
                   Settings for how this folder and its contents are displayed in the tree.
                 </p>
               </div>
               <div className="background-(--moss-secondary-background) rounded p-3">
-                <h4 className="mb-2 font-medium text-(--moss-primary-text)">Organization</h4>
-                <p className="text-sm text-(--moss-secondary-text)">
+                <h4 className="mb-2 font-medium text-(--moss-primary-foreground)">Organization</h4>
+                <p className="text-sm text-(--moss-secondary-foreground)">
                   Settings for organizing and sorting items within this folder.
                 </p>
               </div>

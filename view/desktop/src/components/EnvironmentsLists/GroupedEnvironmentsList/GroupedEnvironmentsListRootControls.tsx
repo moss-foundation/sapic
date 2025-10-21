@@ -41,7 +41,7 @@ export const GroupedEnvironmentsListRootControls = ({
       <Tree.RootNodeTriggers className="overflow-hidden" onClick={onHeaderClick}>
         <button
           onClick={onIconClick}
-          className="hover:background-(--moss-icon-primary-background-hover) flex size-4 cursor-pointer items-center justify-center rounded-full"
+          className="hover:background-(--moss-list-background-hover) flex size-4 cursor-pointer items-center justify-center rounded-full"
         >
           <Icon icon="ChevronRight" className={cn(groupedEnvironments.expanded && "rotate-90")} />
         </button>

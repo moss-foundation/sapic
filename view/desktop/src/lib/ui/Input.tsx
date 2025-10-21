@@ -23,7 +23,7 @@ const inputWrapperStyles = cva(`
     rounded-sm px-2 py-0 
 
     has-[input:focus-within]:outline-2 
-    has-[input:focus-within]:outline-(--moss-primary)   
+    has-[input:focus-within]:outline-(--moss-accent)   
     has-[input:focus-within]:-outline-offset-2
 
     has-data-invalid:border-(--moss-error)

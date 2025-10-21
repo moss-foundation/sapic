@@ -118,7 +118,7 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
               value={tab}
               onValueChange={(value) => setTab(value as typeof CREATE_TAB | typeof IMPORT_TAB)}
             >
-              <UnderlinedTabs.List className="border-b border-(--moss-border-color) px-3">
+              <UnderlinedTabs.List className="border-b border-(--moss-border) px-3">
                 <UnderlinedTabs.Trigger value={CREATE_TAB}>Create</UnderlinedTabs.Trigger>
                 <UnderlinedTabs.Trigger value={IMPORT_TAB}>Import</UnderlinedTabs.Trigger>
               </UnderlinedTabs.List>

@@ -105,14 +105,14 @@ export const ProjectCreationZone = () => {
     <div
       ref={ref}
       className={cn(
-        "background-(--moss-info-background) grid h-max min-h-32 w-full place-items-center rounded border-2 border-dashed border-(--moss-info-border) transition-[translate] duration-100",
+        "background-(--moss-accent-secondary) grid h-max min-h-32 w-full place-items-center rounded border-2 border-dashed border-(--moss-accent) transition-[translate] duration-100",
         {
-          "background-(--moss-info-background-hover) -translate-y-1": canDrop === true,
+          "background-(--moss-accent-secondary) -translate-y-1": canDrop === true,
         }
       )}
     >
       <div className="animate-stripes flex flex-col items-center justify-center gap-3 bg-[linear-gradient(-45deg,white_5%,transparent_5%_45%,white_45%_55%,transparent_55%_95%,white_95%)] bg-size-[20px_20px] p-8 text-center">
-        <Icon icon="AddCircleActive" className={cn("size-5 rounded-full text-(--moss-primary)")} />
+        <Icon icon="AddCircleActive" className={cn("size-5 rounded-full text-(--moss-accent)")} />
         <span>Drag & drop selected items here to create a new project</span>
       </div>
     </div>

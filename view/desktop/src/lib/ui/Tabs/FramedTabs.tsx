@@ -30,7 +30,7 @@ interface FramedListProps {
 const List = ({ children, className }: FramedListProps) => {
   return (
     <TabsPrimitive.TabsList
-      className={cn("flex w-full items-center gap-1 border-b border-(--moss-border-color) px-5", className)}
+      className={cn("flex w-full items-center gap-1 border-b border-(--moss-border) px-5", className)}
       data-tabs-list-container
     >
       {children}
@@ -55,10 +55,10 @@ const Trigger = ({ value, children, className }: FramedTabProps) => {
         "text-base leading-5",
         "cursor-pointer truncate",
         "transition-colors",
-        "text-(--moss-secondary-text) hover:text-(--moss-primary-text)",
+        "text-(--moss-secondary-foreground) hover:text-(--moss-primary-foreground)",
         "rounded-tl-md rounded-tr-md border-t-1 border-r-1 border-b-0 border-l-1",
-        "data-[state=active]:text-(--moss-primary-text)",
-        "data-[state=active]:border-t-(--moss-border-color) data-[state=active]:border-r-(--moss-border-color) data-[state=active]:border-l-(--moss-border-color)",
+        "data-[state=active]:text-(--moss-primary-foreground)",
+        "data-[state=active]:border-t-(--moss-border) data-[state=active]:border-r-(--moss-border) data-[state=active]:border-l-(--moss-border)",
         "data-[state=active]:shadow-[0px_1px_0px_0px_var(--moss-primary-background)]",
         className
       )}

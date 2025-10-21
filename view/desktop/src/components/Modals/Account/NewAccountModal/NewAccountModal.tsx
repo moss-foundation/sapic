@@ -2,13 +2,13 @@ import { FormEvent, useState } from "react";
 
 import { VcsProviderSwitcher } from "@/components/VcsProviderSwitcher";
 import { Modal, PillTabs, Scrollbar } from "@/lib/ui";
-import { invoke } from "@tauri-apps/api/core";
 import { AddAccountParams, UpdateProfileInput } from "@repo/moss-app";
 import { AccountKind } from "@repo/moss-user";
+import { invoke } from "@tauri-apps/api/core";
 
 import { ModalWrapperProps } from "../../types";
 import { getProviderHost } from "../accountUtils";
-import { MethodSection, FooterActions } from "./Sections";
+import { FooterActions, MethodSection } from "./Sections";
 
 interface NewAccountModalProps extends ModalWrapperProps {
   onAccountAdded?: () => void;
@@ -71,7 +71,7 @@ export const NewAccountModal = ({ showModal, closeModal, onAccountAdded }: NewAc
   return (
     <Modal onBackdropClick={handleClose} showModal={showModal} className="w-full max-w-136">
       <form onSubmit={handleSubmit} className="flex flex-col overflow-hidden">
-        <h2 className="flex items-center justify-center border-b border-(--moss-border-color) py-2 leading-4 font-medium">
+        <h2 className="flex items-center justify-center border-b border-(--moss-border) py-2 leading-4 font-medium">
           New Account
         </h2>
 

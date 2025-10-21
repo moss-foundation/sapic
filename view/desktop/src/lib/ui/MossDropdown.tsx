@@ -12,7 +12,7 @@ const Trigger = forwardRef<HTMLDivElement, Menu.ActionMenuTriggerProps>(({ child
     <Menu.Trigger
       ref={ref}
       className={cn(
-        "hover:background-(--moss-mossDropdown-hover-bg) background-(--moss-mossDropdown-bg) cursor-pointer rounded-md border border-(--moss-mossDropdown-border) p-1.25",
+        "hover:background-(--moss-controls-background-hover) background-(--moss-controls-background) cursor-pointer rounded-md border border-(--moss-controls-border) p-1.25",
         className
       )}
       {...props}
@@ -24,7 +24,7 @@ const Trigger = forwardRef<HTMLDivElement, Menu.ActionMenuTriggerProps>(({ child
 
 const Item = forwardRef<HTMLDivElement, Menu.ItemProps>(({ children, className, ...props }, ref) => {
   return (
-    <Menu.Item ref={ref} className={cn("hover:background-(--moss-secondary-background-hover)", className)} {...props}>
+    <Menu.Item ref={ref} className={cn("hover:background-(--moss-controls-background-hover)", className)} {...props}>
       {children}
     </Menu.Item>
   );
@@ -35,7 +35,7 @@ const Content = forwardRef<HTMLDivElement, Menu.ContentProps>(({ children, class
     <Menu.Content
       ref={ref}
       className={cn(
-        "background-(--moss-mossDropdown-bg) rounded-md border border-(--moss-mossDropdown-border) p-1.25",
+        "background-(--moss-controls-background) rounded-md border border-(--moss-controls-border) p-1.25",
         className
       )}
       {...props}

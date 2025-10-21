@@ -12,7 +12,7 @@ interface FolderTabsProps {
 
 const Root = ({ value, onValueChange, children, className }: FolderTabsProps) => {
   return (
-    <div className="flex grow flex-col overflow-hidden rounded-md border border-(--moss-border-color)">
+    <div className="flex grow flex-col overflow-hidden rounded-md border border-(--moss-border)">
       <TabsPrimitive.Tabs value={value} onValueChange={onValueChange} className={cn("flex flex-col", className)}>
         <div className="flex flex-1 flex-col">{children}</div>
       </TabsPrimitive.Tabs>
@@ -30,7 +30,7 @@ const List = ({ children, className, toolbar }: FolderTabsListProps) => {
   return (
     <Scrollbar
       className={cn(
-        "background-(--moss-secondary-background) h-auto w-full min-w-0 items-center shadow-[0px_-1px_0px_0px_var(--moss-border-color)_inset]",
+        "background-(--moss-secondary-background) h-auto w-full min-w-0 items-center shadow-[0px_-1px_0px_0px_var(--moss-border)_inset]",
         { "pr-2": toolbar }
       )}
       classNames={{
@@ -60,12 +60,12 @@ const Trigger = ({ value, children, className, icon, count }: PageContainerTabPr
       className={cn(
         "flex items-center py-2.25 text-base transition-colors",
         "relative border-b-1 border-transparent",
-        "text-(--moss-secondary-text) hover:text-(--moss-primary-text)",
-        "data-[state=active]:text-(--moss-primary-text)",
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-(--moss-primary) focus-visible:ring-offset-2",
+        "text-(--moss-secondary-foreground) hover:text-(--moss-primary-foreground)",
+        "data-[state=active]:text-(--moss-primary-foreground)",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-(--moss-accent) focus-visible:ring-offset-2",
         "bg-transparent data-[state=active]:bg-transparent",
         "min-w-0 flex-shrink-0 whitespace-nowrap",
-        "data-[state=active]:border-b-(--moss-tab-active-border-color)",
+        "data-[state=active]:border-b-(--moss-accent)",
         "cursor-pointer",
         className
       )}
@@ -73,7 +73,7 @@ const Trigger = ({ value, children, className, icon, count }: PageContainerTabPr
       {icon && <Icon icon={icon} className="h-4 w-4" />}
       <span className="leading-4">{children}</span>
       {count !== undefined && (
-        <span className="background-(--moss-primary) flex size-4 items-center justify-center rounded-full text-xs leading-2.5 text-white">
+        <span className="background-(--moss-accent) flex size-4 items-center justify-center rounded-full text-xs leading-2.5 text-white">
           {count}
         </span>
       )}

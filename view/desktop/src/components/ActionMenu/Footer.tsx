@@ -5,14 +5,7 @@ import { cn } from "@/utils";
 
 const Footer = forwardRef<HTMLDivElement, Menu.LabelProps>(({ children, className, ...props }, ref) => {
   return (
-    <Menu.Footer
-      ref={ref}
-      className={cn(
-        "background-(--moss-secondary-background) text-left text-(--moss-not-selected-item-color)",
-        className
-      )}
-      {...props}
-    >
+    <Menu.Footer ref={ref} className={cn("background-(--moss-secondary-background) text-left", className)} {...props}>
       {children}
     </Menu.Footer>
   );

@@ -16,6 +16,7 @@ export const ThemeSection = () => {
 
   const handleThemeChange = (newIdentifier: string) => {
     const selectedTheme = themes?.find((theme) => theme.identifier === newIdentifier);
+    console.log("selectedTheme", selectedTheme);
     if (selectedTheme) {
       updateConfiguration({
         key: "colorTheme",

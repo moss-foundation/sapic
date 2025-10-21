@@ -23,7 +23,7 @@ const ProfilePage = ({ ...props }: IDockviewPanelProps<ProfilePageProps>) => {
         <PageWrapper>
           <div className="flex flex-1 items-center justify-center">
             <div className="text-center">
-              <p className="mb-4 text-sm text-(--moss-secondary-text)">Loading profile...</p>
+              <p className="mb-4 text-sm text-(--moss-secondary-foreground)">Loading profile...</p>
             </div>
           </div>
         </PageWrapper>
@@ -37,7 +37,7 @@ const ProfilePage = ({ ...props }: IDockviewPanelProps<ProfilePageProps>) => {
         <PageWrapper>
           <div className="flex flex-1 items-center justify-center">
             <div className="text-center">
-              <p className="mb-4 text-sm text-(--moss-secondary-text)">
+              <p className="mb-4 text-sm text-(--moss-secondary-foreground)">
                 {error ? "Error loading profile" : "No profile found"}
               </p>
             </div>

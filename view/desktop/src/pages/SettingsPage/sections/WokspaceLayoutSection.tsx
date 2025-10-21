@@ -58,7 +58,7 @@ const SidebarTypeSection = () => {
 
   return (
     <div>
-      <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">Sidebar Type</h3>
+      <h3 className="mb-2 font-medium">Sidebar Type</h3>
       <div className="w-[200px]">
         <SelectOutlined.Root
           value={sideBarPosition || SIDEBAR_POSITION.LEFT}
@@ -111,7 +111,7 @@ const SidebarVisibilitySection = () => {
 
   return (
     <div>
-      <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">Sidebar Visibility</h3>
+      <h3 className="mb-2 font-medium">Sidebar Visibility</h3>
       <div className="w-[200px]">
         <SelectOutlined.Root
           value={sideBar.visible ? "visible" : "hidden"}
@@ -164,7 +164,7 @@ const BottomPaneVisibilitySection = () => {
 
   return (
     <div>
-      <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">Bottom Pane Visibility</h3>
+      <h3 className="mb-2 font-medium">Bottom Pane Visibility</h3>
       <div className="w-[200px]">
         <SelectOutlined.Root
           value={bottomPane.visible ? "visible" : "hidden"}
@@ -228,7 +228,7 @@ const ActivityBarPositionSection = () => {
 
   return (
     <div>
-      <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">ActivityBar Position</h3>
+      <h3 className="mb-2 font-medium">ActivityBar Position</h3>
       <div className="w-[200px]">
         <SelectOutlined.Root
           value={position || ACTIVITYBAR_POSITION.DEFAULT}

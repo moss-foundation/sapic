@@ -6,7 +6,7 @@ export const PreRequestTabContent = ({}: IDockviewPanelProps<{ projectId: string
       <div className="text-center opacity-60">
         <div className="mb-4">
           <svg
-            className="mx-auto h-16 w-16 text-(--moss-secondary-text)"
+            className="mx-auto h-16 w-16 text-(--moss-secondary-foreground)"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -19,11 +19,11 @@ export const PreRequestTabContent = ({}: IDockviewPanelProps<{ projectId: string
             />
           </svg>
         </div>
-        <h3 className="mb-2 text-lg font-medium text-(--moss-primary-text)">Pre-Request Scripts</h3>
-        <p className="text-(--moss-secondary-text)">
+        <h3 className="mb-2 text-lg font-medium text-(--moss-primary-foreground)">Pre-Request Scripts</h3>
+        <p className="text-(--moss-secondary-foreground)">
           This section will contain JavaScript code executed before requests
         </p>
-        <p className="mt-1 text-sm text-(--moss-secondary-text)">Coming soon...</p>
+        <p className="mt-1 text-sm text-(--moss-secondary-foreground)">Coming soon...</p>
       </div>
     </div>
   );

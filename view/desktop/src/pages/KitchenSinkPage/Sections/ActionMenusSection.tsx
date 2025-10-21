@@ -27,7 +27,13 @@ export const ActionMenusSection = () => {
               </button>
             </ActionMenu.Trigger>
             <ActionMenu.Portal>
-              <ActionMenu.Content>{generateItems.map((item) => renderActionMenuItem(item))}</ActionMenu.Content>
+              <ActionMenu.Content>
+                {generateItems.map((item) => renderActionMenuItem(item))}
+
+                <ActionMenu.Footer>
+                  <span>Footer</span>
+                </ActionMenu.Footer>
+              </ActionMenu.Content>
             </ActionMenu.Portal>
           </ActionMenu.Root>
 

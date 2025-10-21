@@ -1,10 +1,11 @@
 import { ChangeEvent, memo, useCallback, useContext, useEffect, useRef, useState } from "react";
 
-import { ActionButton, DropIndicator, InputOutlined } from "@/components";
+import { ActionButton, DropIndicator } from "@/components";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { DragHandleButton } from "@/components/DragHandleButton";
 import { useHoverDelay } from "@/hooks";
 import { Icon } from "@/lib/ui";
+import Input from "@/lib/ui/Input";
 import { EndpointPageContext } from "@/pages/EndpointPage/EndpointPageContext";
 import { cn } from "@/utils";
 import { CheckedState } from "@radix-ui/react-checkbox";
@@ -128,10 +129,10 @@ export const ParamRow = memo(
           />
         </div>
 
-        <InputOutlined ref={keyRef} value={param.name} onChange={onKeyChange} contrast />
+        <Input intent="outlined" ref={keyRef} value={param.name} onChange={onKeyChange} contrast />
 
         {/* @ts-expect-error  We are not being able to handle anything except string for now */}
-        <InputOutlined ref={valueRef} value={param.value} onChange={onValueChange} contrast />
+        <Input intent="outlined" ref={valueRef} value={param.value} onChange={onValueChange} contrast />
 
         <Icon icon="RequiredAsterisk" />
         <TypeBadgePlaceholder type="string" />

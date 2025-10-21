@@ -38,18 +38,11 @@ export const TreeNodeActions = ({
   return (
     <Tree.NodeActions className={className}>
       <Tree.ActionsHover forceVisible={showDropdown}>
-        <ActionButton
-          customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
-          icon="Add"
-          onClick={() => setIsAddingFileNode(true)}
-        />
+        <ActionButton hoverVariant="list" icon="Add" onClick={() => setIsAddingFileNode(true)} />
 
         <ActionMenu.Root onOpenChange={setShowDropdown} modal={showDropdown}>
           <ActionMenu.Trigger asChild>
-            <ActionButton
-              customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
-              icon="MoreHorizontal"
-            />
+            <ActionButton hoverVariant="list" icon="MoreHorizontal" />
           </ActionMenu.Trigger>
           <ActionMenu.Portal>
             <ActionMenu.Content className="z-40" align="center">

@@ -65,7 +65,7 @@ export const EnvironmentsListView = () => {
         {isFetched && noEnvironments && (
           <div className="px-2">
             <img src={ErrorNaughtyDog} className="pointer-events-none mx-auto h-auto w-full max-w-[200px]" />
-            <p className="text-center text-(--moss-secondary-text)">You have no environments yet</p>
+            <p className="text-center text-(--moss-secondary-foreground)">You have no environments yet</p>
           </div>
         )}
       </Scrollbar>

@@ -1,4 +1,5 @@
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
+
 import { SectionTitle } from "./SectionTitle";
 
 interface WorkspaceStartupProps {
@@ -15,7 +16,7 @@ export const WorkspaceStartupSection = ({
   setOpenPreviousWindows,
 }: WorkspaceStartupProps) => {
   return (
-    <div className="mt-8 text-(--moss-primary-text)">
+    <div className="mt-8 text-(--moss-primary-foreground)">
       <SectionTitle>Startup</SectionTitle>
       <div className="space-y-3 pl-5">
         <CheckboxWithLabel

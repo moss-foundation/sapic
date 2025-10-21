@@ -1,0 +1,4 @@
+:root {
+  --separator-border: var(--moss-border);
+  --focus-border: var(--moss-accent);
+}

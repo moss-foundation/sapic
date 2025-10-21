@@ -83,7 +83,7 @@ export const HeadBar = () => {
       <header
         data-tauri-drag-region
         className={cn(
-          "header background-(--moss-secondary-background) flex h-full w-screen items-center justify-between border-b border-(--moss-border-color)"
+          "header background-(--moss-secondary-background) flex h-full w-screen items-center justify-between border-b border-(--moss-border)"
         )}
       >
         {os === "macos" && <Controls os={os} />}
@@ -102,7 +102,7 @@ export const HeadBar = () => {
             os={os}
           />
 
-          <HeadBarRightItems openPanel={openPanel} os={os} />
+          <HeadBarRightItems os={os} />
         </div>
       </header>
 

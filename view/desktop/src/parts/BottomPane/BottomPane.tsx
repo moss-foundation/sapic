@@ -11,7 +11,7 @@ export const BottomPane = () => {
           {/* TODO removing this test data don't forget to remove testLogEntries.ts file  */}
           {testLogEntries.map((log, index) => (
             <div key={index} className="mb-1 flex">
-              <span className="mr-2 text-(--moss-secondary-text)">{log.timestamp}</span>
+              <span className="mr-2 text-(--moss-secondary-foreground)">{log.timestamp}</span>
               <span
                 className={`mr-2 min-w-16 font-medium ${
                   log.level === "ERROR"

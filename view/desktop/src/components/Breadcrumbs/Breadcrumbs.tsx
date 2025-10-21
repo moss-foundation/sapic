@@ -43,7 +43,7 @@ export const Breadcrumbs = ({ projectId, nodeId }: BreadcrumbsProps) => {
 
   return (
     <div className="flex items-center justify-between py-1">
-      <div className="flex w-max items-center overflow-hidden text-(--moss-secondary-text) select-none">
+      <div className="flex w-max items-center overflow-hidden text-(--moss-secondary-foreground) select-none">
         {nodesSequence.map((node, index) => {
           const lastItem = index === activeNode?.path.segments.length - 1;
 

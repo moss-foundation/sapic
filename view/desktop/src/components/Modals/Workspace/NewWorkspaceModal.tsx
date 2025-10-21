@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 
-import { InputOutlined, RadioGroup } from "@/components";
-import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
-import ButtonPrimary from "@/components/ButtonPrimary";
+import { RadioGroup } from "@/components";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { ModalForm } from "@/components/ModalForm";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
 import { useCreateWorkspace } from "@/hooks/workbench/useCreateWorkspace";
 import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
+import { Button } from "@/lib/ui";
+import Input from "@/lib/ui/Input";
 import { WorkspaceMode } from "@repo/moss-workspace";
 
 import { ModalWrapperProps } from "../types";
@@ -85,13 +85,14 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
       showModal={showModal}
       onSubmit={handleSubmit}
       className="background-(--moss-primary-background) max-w-136"
-      titleClassName="border-b border-(--moss-border-color)"
-      footerClassName="border-t border-(--moss-border-color)"
+      titleClassName="border-b border-(--moss-border)"
+      footerClassName="border-t border-(--moss-border)"
       content={
         <div className="flex flex-col gap-2">
           <div className="grid grid-cols-[min-content_1fr] grid-rows-[repeat(2,1fr)] items-center gap-x-3.75 py-4">
             <div className="self-start">Name:</div>
-            <InputOutlined
+            <Input
+              intent="outlined"
               ref={inputRef}
               value={name}
               className="max-w-72"
@@ -99,15 +100,15 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
               pattern={VALID_NAME_PATTERN}
               required
             />
-            <p className="col-start-2 max-w-72 text-xs text-(--moss-secondary-text)">{`Invalid filename characters (e.g. / \ : * ? " < > |) will be escaped`}</p>
+            <p className="col-start-2 max-w-72 text-xs text-(--moss-secondary-foreground)">{`Invalid filename characters (e.g. / \ : * ? " < > |) will be escaped`}</p>
           </div>
 
           <div>
             <div className="flex gap-2">
               <span>Mode</span>
-              <div className="background-(--moss-border-color) my-auto h-px w-full" />
+              <div className="background-(--moss-border) my-auto h-px w-full" />
             </div>
-            <p className="text-xs leading-5 text-(--moss-secondary-text)">
+            <p className="text-xs leading-5 text-(--moss-secondary-foreground)">
               You can switch modes in the workspace at any time and as often as needed.
             </p>
             <div className="pl-5">
@@ -144,12 +145,12 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
             }}
           />
           <div className="flex gap-3 px-0.25 py-1.25">
-            <ButtonNeutralOutlined type="button" onClick={handleCancel} disabled={isLoading}>
+            <Button intent="outlined" type="button" onClick={handleCancel} disabled={isLoading}>
               Close
-            </ButtonNeutralOutlined>
-            <ButtonPrimary disabled={name.length === 0 || isLoading} type="submit">
+            </Button>
+            <Button intent="primary" disabled={name.length === 0 || isLoading} type="submit">
               {isLoading ? "Creating..." : "Create"}
-            </ButtonPrimary>
+            </Button>
           </div>
         </div>
       }

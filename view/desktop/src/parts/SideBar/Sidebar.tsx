@@ -25,7 +25,7 @@ export const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
       className={cn(
         "background-(--moss-secondary-background) flex h-full grow flex-col",
         {
-          "border-l border-(--moss-border-color)": sideBarPosition === SIDEBAR_POSITION.LEFT,
+          "border-l border-(--moss-border)": sideBarPosition === SIDEBAR_POSITION.LEFT,
         },
         className
       )}
@@ -101,7 +101,7 @@ export const Sidebar = () => {
         <ActivityBar />
         <div className="min-h-0 flex-1 overflow-hidden">{sidebarContent}</div>
         {hasActiveWorkspace && (
-          <div className="z-20 flex w-full justify-end border-t border-t-(--moss-border-color) px-1 py-2">
+          <div className="z-20 flex w-full justify-end border-t border-t-(--moss-border) px-1 py-2">
             <DesignModeToggle />
           </div>
         )}
@@ -114,7 +114,7 @@ export const Sidebar = () => {
       <BaseSidebar>
         <div className="min-h-0 flex-1 overflow-hidden">{sidebarContent}</div>
         {hasActiveWorkspace && (
-          <div className="z-20 flex w-full justify-end border-t border-t-(--moss-border-color) px-1 py-2">
+          <div className="z-20 flex w-full justify-end border-t border-t-(--moss-border) px-1 py-2">
             <DesignModeToggle />
           </div>
         )}
@@ -127,7 +127,7 @@ export const Sidebar = () => {
     <BaseSidebar>
       <div className="min-h-0 flex-1 overflow-hidden">{sidebarContent}</div>
       {hasActiveWorkspace && (
-        <div className="z-20 flex w-full justify-end border-t border-t-(--moss-border-color) px-1 py-2">
+        <div className="z-20 flex w-full justify-end border-t border-t-(--moss-border) px-1 py-2">
           <DesignModeToggle />
         </div>
       )}

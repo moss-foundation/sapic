@@ -5,9 +5,10 @@ interface MossToggleProps {
   onCheckedChange: (checked: boolean) => void;
   labelLeft?: string;
   labelRight?: string;
+  disabled?: boolean;
 }
 
-export const MossToggle = ({ checked, onCheckedChange, labelLeft, labelRight }: MossToggleProps) => {
+export const MossToggle = ({ checked, onCheckedChange, labelLeft, labelRight, disabled = false }: MossToggleProps) => {
   const handleCheckboxChange = () => {
     onCheckedChange(!checked);
   };
@@ -18,24 +19,43 @@ export const MossToggle = ({ checked, onCheckedChange, labelLeft, labelRight }: 
 
       <div
         className={cn(
-          "relative grid h-6 w-12 grid-cols-2 place-items-center rounded-md border outline-2 outline-offset-2 outline-transparent transition-colors has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-(--moss-primary)",
+          "relative grid h-6 w-12 grid-cols-2 place-items-center rounded-md border outline-2 outline-offset-2 outline-transparent transition-colors has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-(--moss-accent)",
           {
-            "background-(--moss-mossToggle-bg) border-(--moss-mossToggle-border)": !checked,
-            "background-(--moss-primary) border-(--moss-primary)": checked,
+            "background-(--moss-mossToggle-background) border-(--moss-mossToggle-border)": !checked && !disabled,
+            "background-(--moss-accent) border-(--moss-accent)": checked && !disabled,
+            "background-(--moss-background-disabled) cursor-not-allowed border-(--moss-border-disabled)": disabled,
           }
         )}
       >
-        <input type="checkbox" checked={checked} onChange={handleCheckboxChange} className="sr-only" />
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={handleCheckboxChange}
+          className="sr-only"
+          disabled={disabled}
+        />
 
-        <div className="background-(--moss-mossToggle-indicator-checked) h-[10px] w-[2px]" />
-        <div className="size-2.5 rounded-full border border-(--moss-mossToggle-indicator) bg-transparent" />
+        <div
+          className={cn("h-[10px] w-[2px]", {
+            "background-(--moss-foreground-disabled)": disabled,
+            "background-(--moss-mossToggle-indicator-checked)": !disabled,
+          })}
+        />
+        <div
+          className={cn("size-2.5 rounded-full border border-(--moss-mossToggle-indicator) bg-transparent", {
+            "border-(--moss-foreground-disabled)": disabled,
+          })}
+        />
 
         <div
           className={cn(
             "background-(--moss-mossToggle-thumb) absolute top-0 h-full w-1/2 rounded-md border transition-[left]",
             {
-              "left-0 border-(--moss-mossToggle-thumb-border)": !checked,
-              "left-[50%] border-(--moss-primary)": checked,
+              "left-0": !checked,
+              "left-[50%]": checked,
+              "border-(--moss-mossToggle-thumb-border)": !checked && !disabled,
+              "border-(--moss-accent)": checked && !disabled,
+              "border-(--moss-border-disabled)": disabled,
             }
           )}
         />

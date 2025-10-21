@@ -100,7 +100,7 @@ export const StatusBarButton = ({
 
   return (
     <button ref={ref} {...props} className={cn("relative flex h-full items-center justify-center", className)}>
-      <div className="hover:background-(--moss-statusBar-icon-background-hover) flex items-center gap-1 rounded py-[3px] pr-1 pl-1.5 text-(--moss-statusBar-icon-primary-text) transition">
+      <div className="hover:background-(--moss-statusBarItem-background-hover) flex items-center gap-1 rounded py-[3px] pr-1 pl-1.5 text-(--moss-statusBarItem-foreground) transition">
         {icon && <Icon icon={icon} className={cn("size-3.5", iconClassName)} />}
         {label && <span className="">{label}</span>}
       </div>

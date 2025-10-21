@@ -8,7 +8,7 @@ import ControlsContext from "./ControlsContext";
 import { ControlsIcons } from "./icons";
 
 const linuxControlButtonStyles = cva(
-  `background-(--moss-windowControlsLinux-background) hover:background-(--moss-windowControlsLinux-hoverBackground) active:background-(--moss-windowControlsLinux-activeBackground) size-6 cursor-default rounded-full text-(--moss-windowControlsLinux-text)`
+  `background-(--moss-windowControlsLinux-background) hover:background-(--moss-windowControlsLinux-hoverBackground) active:background-(--moss-windowControlsLinux-activeBackground) size-6 cursor-default rounded-full text-(--moss-windowControlsLinux-foreground)`
 );
 
 export function LinuxControls({ className, ...props }: HTMLProps<HTMLDivElement>) {

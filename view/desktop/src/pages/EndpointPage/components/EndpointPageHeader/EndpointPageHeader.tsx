@@ -87,10 +87,10 @@ export const EndpointPageHeader = () => {
 
         <div className="flex items-center gap-5">
           <div className="flex gap-[3px]">
-            <span className="text-(--moss-shortcut-text)">Created</span> <span>March 31, 2025</span>
+            <span className="text-(--moss-primary-descriptionForeground)">Created</span> <span>March 31, 2025</span>
           </div>
           <div className="flex gap-[3px]">
-            <span className="text-(--moss-shortcut-text)">Updated</span> <span>March 31, 2025</span>
+            <span className="text-(--moss-primary-descriptionForeground)">Updated</span> <span>March 31, 2025</span>
           </div>
         </div>
       </header>

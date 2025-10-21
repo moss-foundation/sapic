@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
-import { InputOutlined } from "@/components/Inputs/InputOutlined";
 import { VcsProviderSwitcher } from "@/components/VcsProviderSwitcher";
+import Input from "@/lib/ui/Input";
 import { PillTabs } from "@/lib/ui/Tabs/index";
 import { useGitProviderStore } from "@/store/gitProvider";
 import { ImportProjectSource } from "@repo/moss-workspace";
@@ -72,7 +72,7 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
       <div>
         <Subheader>
           <span>Git</span>
-          <div className="background-(--moss-border-color) my-auto h-px w-full" />
+          <div className="background-(--moss-border) my-auto h-px w-full" />
           {gitProvider === null && (
             <button
               className="cursor-pointer whitespace-nowrap text-(--moss-primary) hover:underline"
@@ -84,7 +84,7 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
           )}
         </Subheader>
 
-        <span className="text-sm text-(--moss-secondary-text)">
+        <span className="text-sm text-(--moss-secondary-foreground)">
           You can switch modes in the workspace at any time and as often as needed.
         </span>
 
@@ -95,12 +95,13 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
 
           <div className="col-span-2 grid grid-cols-subgrid items-center">
             <div>Account:</div>
-            <InputOutlined
+            <Input
               className="max-w-72"
               value={accountId}
               onChange={(e) => setAccountId(e.target.value)}
               placeholder="Account"
               required
+              intent="outlined"
             />
           </div>
         </div>

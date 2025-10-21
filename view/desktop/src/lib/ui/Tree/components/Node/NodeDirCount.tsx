@@ -8,7 +8,7 @@ interface NodeDirCountProps extends HTMLAttributes<HTMLDivElement> {
 
 export const NodeDirCount = ({ count, className, ...props }: NodeDirCountProps) => {
   return (
-    <div className={cn("text-(--moss-tree-entries-counter)", className)} {...props}>
+    <div className={cn("text-(--moss-list-descriptionForeground)", className)} {...props}>
       ({count})
     </div>
   );

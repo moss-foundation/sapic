@@ -12,13 +12,13 @@ export const ActivityBar = () => {
 
   return (
     <div
-      className={cn("background-(--moss-secondary-background) flex items-center justify-between gap-3", {
-        "w-full border-b border-b-(--moss-border-color) px-1.5": position === ACTIVITYBAR_POSITION.TOP,
-        "w-full border-t border-t-(--moss-border-color) px-1.5": position === ACTIVITYBAR_POSITION.BOTTOM,
+      className={cn("background-(--moss-activityBar-background) flex items-center justify-between gap-3", {
+        "w-full border-b border-b-(--moss-border) px-1.5": position === ACTIVITYBAR_POSITION.TOP,
+        "w-full border-t border-t-(--moss-border) px-1.5": position === ACTIVITYBAR_POSITION.BOTTOM,
         "h-full flex-col py-1.5": position === ACTIVITYBAR_POSITION.DEFAULT,
         "hidden": position === ACTIVITYBAR_POSITION.HIDDEN,
 
-        "border-l border-l-(--moss-border-color)":
+        "border-l border-l-(--moss-border)":
           sideBarPosition === SIDEBAR_POSITION.RIGHT && position === ACTIVITYBAR_POSITION.DEFAULT,
       })}
     >

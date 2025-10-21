@@ -11,7 +11,7 @@ const Label = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <MenuPrimitive.Label
     ref={ref}
-    className={cn("px-3 py-2 text-center font-medium text-(--moss-primary-text)", className)}
+    className={cn("px-3 py-2 text-center font-medium text-(--moss-primary-foreground)", className)}
     {...props}
   />
 ));

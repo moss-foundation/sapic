@@ -15,8 +15,7 @@ export const DirDepthIndicator = ({ depth }: { depth: number }) => {
         absolute top-0  
         h-full w-px 
         z-5 
-        background-(--moss-divider-color) 
-
+        background-(--moss-border) 
         transition-[display,opacity] transition-discrete duration-100
         hidden opacity-0
         group-hover/TreeRootNode:flex 

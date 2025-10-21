@@ -4,7 +4,7 @@ import { ActionButton } from "@/components";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { useUpdateProjectEntry } from "@/hooks";
 import { Scrollbar } from "@/lib/ui";
-import { Counter } from "@/lib/ui/RoundedCounter";
+import { RoundedCounter } from "@/lib/ui/RoundedCounter";
 import { EndpointPageContext } from "@/pages/EndpointPage/EndpointPageContext";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { CheckedState } from "@radix-ui/react-checkbox";
@@ -185,7 +185,7 @@ export const QueryParamsView = () => {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex w-full justify-between border-b border-(--moss-border-color) px-3 py-[5px]">
+      <div className="flex w-full justify-between border-b border-(--moss-border) px-3 py-[5px]">
         <div className="flex items-center gap-1 overflow-hidden">
           <CheckboxWithLabel
             checked={headerCheckedState}
@@ -193,7 +193,7 @@ export const QueryParamsView = () => {
             label="Query Params"
             className="gap-3 truncate"
           />
-          <Counter count={howManyParamsChecked} color="gray" />
+          <RoundedCounter count={howManyParamsChecked} color="gray" />
         </div>
 
         <div className="flex items-center gap-1">
