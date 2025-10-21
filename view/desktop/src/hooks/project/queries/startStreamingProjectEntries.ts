@@ -1,10 +1,13 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { StreamEntriesEvent } from "@repo/moss-project";
+import { StreamResourcesEvent } from "@repo/moss-project";
 import { Channel } from "@tauri-apps/api/core";
 
-export const startStreamingProjectEntries = async (projectId: string, path?: string): Promise<StreamEntriesEvent[]> => {
-  const entries: StreamEntriesEvent[] = [];
-  const onProjectEntryEvent = new Channel<StreamEntriesEvent>();
+export const startStreamingProjectEntries = async (
+  projectId: string,
+  path?: string
+): Promise<StreamResourcesEvent[]> => {
+  const entries: StreamResourcesEvent[] = [];
+  const onProjectEntryEvent = new Channel<StreamResourcesEvent>();
 
   onProjectEntryEvent.onmessage = (projectEntry) => {
     entries.push(projectEntry);

@@ -1,18 +1,18 @@
 import {
-  BatchCreateEntryKind,
-  CreateEntryInput,
-  EntryClass,
-  EntryProtocol,
-  StreamEntriesEvent,
+  BatchCreateResourceKind,
+  CreateResourceInput,
+  ResourceClass,
+  ResourceProtocol,
+  StreamResourcesEvent,
 } from "@repo/moss-project";
 
 interface CreateEntryKindProps {
   name: string;
   path: string;
-  class: EntryClass;
+  class: ResourceClass;
   isAddingFolder: boolean;
   order: number;
-  protocol?: EntryProtocol;
+  protocol?: ResourceProtocol;
 }
 
 export const createEntryKind = ({
@@ -22,7 +22,7 @@ export const createEntryKind = ({
   class: entryClass,
   order,
   protocol,
-}: CreateEntryKindProps): BatchCreateEntryKind => {
+}: CreateEntryKindProps): BatchCreateResourceKind => {
   if (isAddingFolder) {
     return {
       DIR: {
@@ -49,9 +49,9 @@ export const createEntryKind = ({
 };
 
 export const convertEntryInfoToCreateInput = (
-  entry: StreamEntriesEvent,
+  entry: StreamResourcesEvent,
   newProjectPath: string = ""
-): CreateEntryInput => {
+): CreateResourceInput => {
   if (entry.kind === "Dir") {
     return {
       DIR: {

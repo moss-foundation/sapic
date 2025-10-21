@@ -1,12 +1,12 @@
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
-import { BatchUpdateEntryKind, StreamEntriesEvent } from "@repo/moss-project";
+import { BatchUpdateResourceKind, StreamResourcesEvent } from "@repo/moss-project";
 import { join } from "@tauri-apps/api/path";
 
 import { ProjectTreeNode, ProjectTreeRootNode } from "../types";
 
 export const getPathWithoutName = async (
-  node: ProjectTreeNode | StreamEntriesEvent
-): Promise<StreamEntriesEvent["path"]> => {
+  node: ProjectTreeNode | StreamResourcesEvent
+): Promise<StreamResourcesEvent["path"]> => {
   const newSegments = node.path.segments.filter((segment) => segment !== node.name);
   const newRaw = newSegments.length > 0 ? await join(...newSegments) : "";
 
@@ -17,9 +17,9 @@ export const getPathWithoutName = async (
 };
 
 export const getPathWithoutParentPath = async (
-  path: StreamEntriesEvent["path"],
-  parentPath: StreamEntriesEvent["path"]
-): Promise<StreamEntriesEvent["path"]> => {
+  path: StreamResourcesEvent["path"],
+  parentPath: StreamResourcesEvent["path"]
+): Promise<StreamResourcesEvent["path"]> => {
   const newSegments = path.segments.filter((segment) => !parentPath.segments.includes(segment));
   const newRaw = await join(...newSegments);
 
@@ -29,7 +29,7 @@ export const getPathWithoutParentPath = async (
   };
 };
 
-export const removePathBeforeName = async (path: StreamEntriesEvent["path"], name: string) => {
+export const removePathBeforeName = async (path: StreamResourcesEvent["path"], name: string) => {
   const nameIndex = path.segments.findIndex((segment) => segment === name);
 
   if (nameIndex === -1) {
@@ -48,10 +48,12 @@ export const removePathBeforeName = async (path: StreamEntriesEvent["path"], nam
   };
 };
 
-export const prepareNestedDirEntriesForDrop = async (entries: StreamEntriesEvent[]): Promise<StreamEntriesEvent[]> => {
+export const prepareNestedDirEntriesForDrop = async (
+  entries: StreamResourcesEvent[]
+): Promise<StreamResourcesEvent[]> => {
   const rootEntryName = entries[0].name;
 
-  const entriesPreparedForDrop: StreamEntriesEvent[] = [];
+  const entriesPreparedForDrop: StreamResourcesEvent[] = [];
 
   for await (const entry of entries) {
     const newEntryPath = await removePathBeforeName(entry.path, rootEntryName);
@@ -76,10 +78,10 @@ export const prepareNestedDirEntriesForDrop = async (entries: StreamEntriesEvent
   return entriesWithoutName;
 };
 
-export const prepareEntriesForCreation = async (entries: StreamEntriesEvent[]): Promise<StreamEntriesEvent[]> => {
+export const prepareEntriesForCreation = async (entries: StreamResourcesEvent[]): Promise<StreamResourcesEvent[]> => {
   const rootEntryName = entries[0].name;
 
-  const entriesPreparedForDrop: StreamEntriesEvent[] = [];
+  const entriesPreparedForDrop: StreamResourcesEvent[] = [];
 
   for await (const entry of entries) {
     const newEntryPath = await removePathBeforeName(entry.path, rootEntryName);
@@ -112,7 +114,7 @@ export const makeItemUpdatePayload = ({
   id: string;
   order?: number;
   path?: string;
-}): BatchUpdateEntryKind => ({
+}): BatchUpdateResourceKind => ({
   ITEM: {
     id,
     ...(order !== undefined ? { order } : {}),
@@ -137,7 +139,7 @@ export const makeDirUpdatePayload = ({
   id: string;
   order?: number;
   path?: string;
-}): BatchUpdateEntryKind => ({
+}): BatchUpdateResourceKind => ({
   DIR: {
     id,
     ...(order !== undefined ? { order } : {}),

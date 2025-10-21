@@ -2,7 +2,7 @@ import { useContext } from "react";
 
 import { USE_STREAM_PROJECT_ENTRIES_QUERY_KEY, useStreamProjectEntries } from "@/hooks";
 import { useBatchUpdateProjectEntry } from "@/hooks/project/useBatchUpdateProjectEntry";
-import { BatchUpdateEntryKind, StreamEntriesEvent } from "@repo/moss-project";
+import { BatchUpdateResourceKind, StreamResourcesEvent } from "@repo/moss-project";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { ProjectTreeContext } from "../ProjectTreeContext";
@@ -21,7 +21,7 @@ export const useToggleAllNodes = (node: ProjectTreeRootNode) => {
 
     const entriesToUpdate = streamedEntries.filter((entry) => !entry.expanded && entry.kind === "Dir");
 
-    const inputEntries = entriesToUpdate.map((entry): BatchUpdateEntryKind => {
+    const inputEntries = entriesToUpdate.map((entry): BatchUpdateResourceKind => {
       if (entry.kind === "Dir") {
         return {
           DIR: {
@@ -51,11 +51,11 @@ export const useToggleAllNodes = (node: ProjectTreeRootNode) => {
     await batchUpdateProjectEntry({
       projectId: node.id,
       entries: {
-        entries: inputEntries,
+        resources: inputEntries,
       },
     });
 
-    queryClient.setQueryData([USE_STREAM_PROJECT_ENTRIES_QUERY_KEY, id], (oldEntries: StreamEntriesEvent[]) => {
+    queryClient.setQueryData([USE_STREAM_PROJECT_ENTRIES_QUERY_KEY, id], (oldEntries: StreamResourcesEvent[]) => {
       return oldEntries.map((entry) => {
         if (entry.kind === "Dir" && !entry.expanded) {
           return { ...entry, expanded: true };
@@ -70,7 +70,7 @@ export const useToggleAllNodes = (node: ProjectTreeRootNode) => {
 
     const entriesToUpdate = streamedEntries.filter((entry) => entry.expanded && entry.kind === "Dir");
 
-    const inputEntries = entriesToUpdate.map((entry): BatchUpdateEntryKind => {
+    const inputEntries = entriesToUpdate.map((entry): BatchUpdateResourceKind => {
       if (entry.kind === "Dir") {
         return {
           DIR: {
@@ -100,11 +100,11 @@ export const useToggleAllNodes = (node: ProjectTreeRootNode) => {
     await batchUpdateProjectEntry({
       projectId: node.id,
       entries: {
-        entries: inputEntries,
+        resources: inputEntries,
       },
     });
 
-    queryClient.setQueryData([USE_STREAM_PROJECT_ENTRIES_QUERY_KEY, id], (oldEntries: StreamEntriesEvent[]) => {
+    queryClient.setQueryData([USE_STREAM_PROJECT_ENTRIES_QUERY_KEY, id], (oldEntries: StreamResourcesEvent[]) => {
       return oldEntries.map((entry) => {
         if (entry.kind === "Dir" && entry.expanded) {
           return { ...entry, expanded: false };

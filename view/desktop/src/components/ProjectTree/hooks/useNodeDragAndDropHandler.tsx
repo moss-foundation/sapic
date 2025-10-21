@@ -69,7 +69,7 @@ export const useNodeDragAndDropHandler = () => {
       await batchUpdateProjectEntry({
         projectId: sourceTreeNodeData.projectId,
         entries: {
-          entries: allUpdates,
+          resources: allUpdates,
         },
       });
 
@@ -100,7 +100,7 @@ export const useNodeDragAndDropHandler = () => {
         await batchUpdateProjectEntry({
           projectId: sourceTreeNodeData.projectId,
           entries: {
-            entries: updatedSourceNodesPayload,
+            resources: updatedSourceNodesPayload,
           },
         });
 
@@ -125,7 +125,7 @@ export const useNodeDragAndDropHandler = () => {
       await batchUpdateProjectEntry({
         projectId: sourceTreeNodeData.projectId,
         entries: {
-          entries: allEntriesToUpdate,
+          resources: allEntriesToUpdate,
         },
       });
 
@@ -165,14 +165,14 @@ export const useNodeDragAndDropHandler = () => {
       await batchUpdateProjectEntry({
         projectId: sourceTreeNodeData.projectId,
         entries: {
-          entries: updatedSourceEntriesPayload,
+          resources: updatedSourceEntriesPayload,
         },
       });
 
       await batchUpdateProjectEntry({
         projectId: locationTreeNodeData.projectId,
         entries: {
-          entries: targetEntriesToUpdate,
+          resources: targetEntriesToUpdate,
         },
       });
 
@@ -216,7 +216,7 @@ export const useNodeDragAndDropHandler = () => {
       await batchCreateProjectEntry({
         projectId: locationTreeNodeData.projectId,
         input: {
-          entries: batchCreateEntryInput,
+          resources: batchCreateEntryInput,
         },
       });
 
@@ -252,7 +252,7 @@ export const useNodeDragAndDropHandler = () => {
       await batchUpdateProjectEntry({
         projectId: sourceTreeNodeData.projectId,
         entries: {
-          entries: updatedSourceEntriesPayload,
+          resources: updatedSourceEntriesPayload,
         },
       });
 
@@ -283,7 +283,7 @@ export const useNodeDragAndDropHandler = () => {
 
       await batchCreateProjectEntry({
         projectId: locationTreeNodeData.projectId,
-        input: { entries: batchCreateEntryInput },
+        input: { resources: batchCreateEntryInput },
       });
 
       await fetchEntriesForPath(locationTreeNodeData.projectId, resolveParentPath(locationTreeNodeData.parentNode));
@@ -341,14 +341,14 @@ export const useNodeDragAndDropHandler = () => {
       await batchUpdateProjectEntry({
         projectId: sourceTreeNodeData.projectId,
         entries: {
-          entries: updatedSourceEntriesPayload,
+          resources: updatedSourceEntriesPayload,
         },
       });
 
       await batchCreateProjectEntry({
         projectId: locationTreeRootNodeData.projectId,
         input: {
-          entries: batchCreateEntryInput,
+          resources: batchCreateEntryInput,
         },
       });
 

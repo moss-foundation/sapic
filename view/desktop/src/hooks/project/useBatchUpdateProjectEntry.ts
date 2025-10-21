@@ -1,21 +1,21 @@
 import { invokeTauriIpc, IpcResult } from "@/lib/backend/tauri";
-import { BatchUpdateEntryInput, BatchUpdateEntryOutput, BatchUpdateEntryOutputKind } from "@repo/moss-project";
+import { BatchUpdateResourceInput, BatchUpdateResourceOutput, BatchUpdateResourceOutputKind } from "@repo/moss-project";
 import { useMutation } from "@tanstack/react-query";
 import { Channel } from "@tauri-apps/api/core";
 
 export interface UseBatchUpdateProjectEntryInput {
   projectId: string;
-  entries: BatchUpdateEntryInput;
+  entries: BatchUpdateResourceInput;
 }
 
 const batchUpdateProjectEntry = async ({ projectId, entries }: UseBatchUpdateProjectEntryInput) => {
-  const onProjectEvent = new Channel<BatchUpdateEntryOutputKind>();
+  const onProjectEvent = new Channel<BatchUpdateResourceOutputKind>();
 
-  const result = await invokeTauriIpc<BatchUpdateEntryOutput>("batch_update_project_entry", {
+  const result = await invokeTauriIpc<BatchUpdateResourceOutput>("batch_update_project_entry", {
     channel: onProjectEvent,
     projectId: projectId,
     input: {
-      entries: entries.entries,
+      entries: entries.resources,
     },
   });
 
@@ -23,7 +23,7 @@ const batchUpdateProjectEntry = async ({ projectId, entries }: UseBatchUpdatePro
 };
 
 export const useBatchUpdateProjectEntry = () => {
-  return useMutation<IpcResult<BatchUpdateEntryOutput, unknown>, Error, UseBatchUpdateProjectEntryInput>({
+  return useMutation<IpcResult<BatchUpdateResourceOutput, unknown>, Error, UseBatchUpdateProjectEntryInput>({
     mutationFn: batchUpdateProjectEntry,
   });
 };

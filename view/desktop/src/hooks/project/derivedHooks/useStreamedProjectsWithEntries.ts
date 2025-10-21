@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import { StreamEntriesEvent } from "@repo/moss-project";
+import { StreamResourcesEvent } from "@repo/moss-project";
 import { StreamProjectsEvent } from "@repo/moss-workspace";
 import { useQueries } from "@tanstack/react-query";
 
@@ -9,7 +9,7 @@ import { USE_STREAM_PROJECT_ENTRIES_QUERY_KEY } from "../useStreamProjectEntries
 import { useStreamProjects } from "../useStreamProjects";
 
 export interface ProjectWithEntries extends StreamProjectsEvent {
-  entries: StreamEntriesEvent[];
+  entries: StreamResourcesEvent[];
   isEntriesLoading: boolean;
   entriesError?: Error | null;
 }

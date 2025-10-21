@@ -1,17 +1,17 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
-import { DeleteEntryInput, DeleteEntryOutput, StreamEntriesEvent } from "@repo/moss-project";
+import { DeleteResourceInput, DeleteResourceOutput, StreamResourcesEvent } from "@repo/moss-project";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_STREAM_PROJECT_ENTRIES_QUERY_KEY } from "./useStreamProjectEntries";
 
 export interface UseDeleteProjectEntryInput {
   projectId: string;
-  input: DeleteEntryInput;
+  input: DeleteResourceInput;
 }
 
 const deleteProjectEntry = async ({ projectId, input }: UseDeleteProjectEntryInput) => {
-  const result = await invokeTauriIpc<DeleteEntryOutput>("delete_project_entry", { projectId: projectId, input });
+  const result = await invokeTauriIpc<DeleteResourceOutput>("delete_project_entry", { projectId: projectId, input });
 
   if (result.status === "error") {
     throw new Error(String(result.error));
@@ -24,12 +24,12 @@ export const useDeleteProjectEntry = () => {
   const queryClient = useQueryClient();
   const { api } = useTabbedPaneStore();
 
-  return useMutation<DeleteEntryOutput, Error, UseDeleteProjectEntryInput>({
+  return useMutation<DeleteResourceOutput, Error, UseDeleteProjectEntryInput>({
     mutationFn: deleteProjectEntry,
     onSuccess: async (data, variables) => {
       queryClient.setQueryData(
         [USE_STREAM_PROJECT_ENTRIES_QUERY_KEY, variables.projectId],
-        (old: StreamEntriesEvent[]) => {
+        (old: StreamResourcesEvent[]) => {
           const deletedEntry = old.find((entry) => entry.id === data.id);
 
           if (!deletedEntry) {

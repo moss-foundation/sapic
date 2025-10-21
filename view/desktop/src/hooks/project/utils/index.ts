@@ -1,8 +1,11 @@
-import { CreateEntryInput, StreamEntriesEvent } from "@repo/moss-project";
+import { CreateResourceInput, StreamResourcesEvent } from "@repo/moss-project";
 import { join, sep } from "@tauri-apps/api/path";
 
 //FIXME: This is a temporary solution until we have a proper configuration model
-export const createProjectEntryForCache = async (id: string, entry: CreateEntryInput): Promise<StreamEntriesEvent> => {
+export const createProjectEntryForCache = async (
+  id: string,
+  entry: CreateResourceInput
+): Promise<StreamResourcesEvent> => {
   if ("DIR" in entry) {
     const rawpath = await join(entry.DIR.path, entry.DIR.name);
 

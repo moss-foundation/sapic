@@ -7,7 +7,7 @@ import { ProjectTreeNode } from "@/components/ProjectTree/types";
 import { useStreamProjectEntries } from "@/hooks/project/useStreamProjectEntries";
 import { useRenameEntryForm } from "@/hooks/useRenameEntryForm";
 import { FolderTabs, Icon, TabItemProps } from "@/lib/ui";
-import { EntryKind } from "@repo/moss-project";
+import { ResourceKind } from "@repo/moss-project";
 
 import { OverviewTabContent } from "./tabs/OverviewTabContent";
 import { getFolderIcon } from "./utils";
@@ -15,7 +15,7 @@ import { getFolderIcon } from "./utils";
 export interface FolderSettingsParams {
   projectId: string;
   node: ProjectTreeNode;
-  iconType: EntryKind;
+  iconType: ResourceKind;
 }
 
 export const FolderSettings = ({ ...props }: IDockviewPanelProps<FolderSettingsParams>) => {

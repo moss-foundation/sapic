@@ -3,10 +3,10 @@ import { useState } from "react";
 import { useFetchEntriesForPath } from "@/hooks/project/derivedHooks/useFetchEntriesForPath";
 import { useUpdateProjectEntry } from "@/hooks/project/useUpdateProjectEntry";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
-import { StreamEntriesEvent } from "@repo/moss-project";
+import { StreamResourcesEvent } from "@repo/moss-project";
 import { join } from "@tauri-apps/api/path";
 
-export const useRenameEntryForm = (entry: StreamEntriesEvent, projectId: string) => {
+export const useRenameEntryForm = (entry: StreamResourcesEvent, projectId: string) => {
   const { fetchEntriesForPath } = useFetchEntriesForPath();
   const { mutateAsync: updateProjectEntry } = useUpdateProjectEntry();
   const { api } = useTabbedPaneStore();

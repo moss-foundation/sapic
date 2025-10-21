@@ -13,7 +13,7 @@ import {
 } from "@/hooks";
 import { useBatchUpdateProject } from "@/hooks/project/useBatchUpdateProject";
 import { useBatchUpdateProjectEntry } from "@/hooks/project/useBatchUpdateProjectEntry";
-import { StreamEntriesEvent } from "@repo/moss-project";
+import { StreamResourcesEvent } from "@repo/moss-project";
 import { useQueryClient } from "@tanstack/react-query";
 
 export const ProjectTreeViewHeader = () => {
@@ -83,12 +83,12 @@ export const ProjectTreeViewHeader = () => {
       const res = await batchUpdateProjectEntry({
         projectId: p.projectId,
         entries: {
-          entries: preparedEntries,
+          resources: preparedEntries,
         },
       });
 
       if (res.status === "ok") {
-        queryClient.setQueryData([USE_STREAM_PROJECT_ENTRIES_QUERY_KEY, p.projectId], (old: StreamEntriesEvent[]) => {
+        queryClient.setQueryData([USE_STREAM_PROJECT_ENTRIES_QUERY_KEY, p.projectId], (old: StreamResourcesEvent[]) => {
           return old.map((entry) => {
             const shouldCollapse = preparedEntries.some((preparedEntry) => preparedEntry.DIR.id === entry.id);
             return shouldCollapse ? { ...entry, expanded: false } : entry;

@@ -26,7 +26,7 @@ import {
 } from "@/pages";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
-import { EntryKind } from "@repo/moss-project";
+import { ResourceKind } from "@repo/moss-project";
 
 import { AddPanelButton } from "./AddPanelButton";
 import CustomTab from "./CustomTab";
@@ -178,7 +178,7 @@ const TabbedPane = ({ mode = "auto" }: { theme?: string; mode?: "auto" | "welcom
       props: IDockviewPanelProps<{
         node?: ProjectTreeNode;
         projectId: string;
-        iconType: EntryKind;
+        iconType: ResourceKind;
       }>
     ) => {
       const isDebug = React.useContext(DebugContext);
@@ -212,21 +212,21 @@ const TabbedPane = ({ mode = "auto" }: { theme?: string; mode?: "auto" | "welcom
       props: IDockviewPanelProps<{
         node: ProjectTreeNode;
         projectId: string;
-        iconType: EntryKind;
+        iconType: ResourceKind;
       }>
     ) => <EndpointPage {...props} />,
     ProjectSettings: (
       props: IDockviewPanelProps<{
         node: ProjectTreeNode;
         projectId: string;
-        iconType: EntryKind;
+        iconType: ResourceKind;
       }>
     ) => <ProjectSettingsPage {...props} />,
     FolderSettings: (
       props: IDockviewPanelProps<{
         node: ProjectTreeNode;
         projectId: string;
-        iconType: EntryKind;
+        iconType: ResourceKind;
       }>
     ) => <FolderSettings {...props} />,
     Welcome: () => <WelcomePage />,

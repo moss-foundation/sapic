@@ -1,5 +1,5 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { CreateEntryInput, CreateEntryOutput, StreamEntriesEvent } from "@repo/moss-project";
+import { CreateResourceInput, CreateResourceOutput, StreamResourcesEvent } from "@repo/moss-project";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_STREAM_PROJECT_ENTRIES_QUERY_KEY } from "./useStreamProjectEntries";
@@ -7,11 +7,11 @@ import { createProjectEntryForCache } from "./utils";
 
 export interface UseCreateProjectEntryInputProps {
   projectId: string;
-  input: CreateEntryInput;
+  input: CreateResourceInput;
 }
 
 const createProjectEntry = async ({ projectId, input }: UseCreateProjectEntryInputProps) => {
-  const result = await invokeTauriIpc<CreateEntryOutput>("create_project_entry", {
+  const result = await invokeTauriIpc<CreateResourceOutput>("create_project_entry", {
     projectId: projectId,
     input,
   });
@@ -26,14 +26,14 @@ const createProjectEntry = async ({ projectId, input }: UseCreateProjectEntryInp
 export const useCreateProjectEntry = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<CreateEntryOutput, Error, UseCreateProjectEntryInputProps>({
+  return useMutation<CreateResourceOutput, Error, UseCreateProjectEntryInputProps>({
     mutationFn: createProjectEntry,
     onSuccess: async (data, variables) => {
       const newEntry = await createProjectEntryForCache(data.id, variables.input);
 
       queryClient.setQueryData(
         [USE_STREAM_PROJECT_ENTRIES_QUERY_KEY, variables.projectId],
-        (old: StreamEntriesEvent[]) => {
+        (old: StreamResourcesEvent[]) => {
           return [...old, newEntry];
         }
       );

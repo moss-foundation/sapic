@@ -1,7 +1,7 @@
 import { USE_STREAM_PROJECT_ENTRIES_QUERY_KEY, useDeleteProjectEntry } from "@/hooks";
 import { useBatchUpdateProjectEntry } from "@/hooks/project/useBatchUpdateProjectEntry";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
-import { StreamEntriesEvent } from "@repo/moss-project";
+import { StreamResourcesEvent } from "@repo/moss-project";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { ProjectTreeNode, ProjectTreeRootNode } from "../types";
@@ -35,7 +35,7 @@ export const useDeleteAndUpdatePeers = (
     const result = await batchUpdateProjectEntry({
       projectId,
       entries: {
-        entries: siblingsAfterRemovalPayload({
+        resources: siblingsAfterRemovalPayload({
           nodes: parentNode.childNodes,
           removedNode: node,
         }),
@@ -43,16 +43,19 @@ export const useDeleteAndUpdatePeers = (
     });
 
     if (result.status === "ok") {
-      queryClient.setQueryData([USE_STREAM_PROJECT_ENTRIES_QUERY_KEY, projectId], (cacheData: StreamEntriesEvent[]) => {
-        return cacheData.map((cacheEntry) => {
-          if (updatedParentNodeChildren.some((e) => e.id === cacheEntry.id)) {
-            const updatedEntry = updatedParentNodeChildren.find((e) => e.id === cacheEntry.id);
-            return { ...cacheEntry, ...updatedEntry };
-          }
+      queryClient.setQueryData(
+        [USE_STREAM_PROJECT_ENTRIES_QUERY_KEY, projectId],
+        (cacheData: StreamResourcesEvent[]) => {
+          return cacheData.map((cacheEntry) => {
+            if (updatedParentNodeChildren.some((e) => e.id === cacheEntry.id)) {
+              const updatedEntry = updatedParentNodeChildren.find((e) => e.id === cacheEntry.id);
+              return { ...cacheEntry, ...updatedEntry };
+            }
 
-          return cacheEntry;
-        });
-      });
+            return cacheEntry;
+          });
+        }
+      );
     }
   };
 

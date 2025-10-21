@@ -4,7 +4,7 @@ import { PageView } from "@/components";
 import { PageWrapper } from "@/components/PageView/PageWrapper";
 import { ProjectTreeNode } from "@/components/ProjectTree/types";
 import { useDescribeProjectEntry, useStreamProjectEntries } from "@/hooks";
-import { EntryKind } from "@repo/moss-project";
+import { ResourceKind } from "@repo/moss-project";
 
 import { EndpointPageBody, EndpointPageHeader } from "./components";
 import { EndpointPageContext } from "./EndpointPageContext";
@@ -12,7 +12,7 @@ import { EndpointPageContext } from "./EndpointPageContext";
 export interface EndpointPageProps {
   node: ProjectTreeNode;
   projectId: string;
-  iconType: EntryKind;
+  iconType: ResourceKind;
 }
 
 const EndpointPage = ({ ...props }: IDockviewPanelProps<EndpointPageProps>) => {

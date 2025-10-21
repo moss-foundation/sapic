@@ -3,22 +3,22 @@
 /**
  * @category Primitive
  */
-export type EntryClass = "endpoint" | "component" | "schema";
+export type ResourceClass = "endpoint" | "component" | "schema";
 
 /**
  * @category Primitive
  */
-export type EntryKind = "Dir" | "Item" | "Case";
+export type ResourceKind = "Dir" | "Item" | "Case";
 
 /**
  * @category Primitive
  */
-export type EntryPath = { raw: string; segments: Array<string> };
+export type ResourcePath = { raw: string; segments: Array<string> };
 
 /**
  * @category Primitive
  */
-export type EntryProtocol = "Get" | "Post" | "Put" | "Delete" | "WebSocket" | "Graphql" | "Grpc";
+export type ResourceProtocol = "Get" | "Post" | "Put" | "Delete" | "WebSocket" | "Graphql" | "Grpc";
 
 /**
  * @category Primitive

@@ -1,4 +1,4 @@
-import { StreamEntriesEvent } from "@repo/moss-project";
+import { StreamResourcesEvent } from "@repo/moss-project";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useActiveWorkspace } from "../workspace/derived/useActiveWorkspace";
@@ -11,7 +11,7 @@ export const useStreamProjectEntries = (projectId: string) => {
 
   const { hasActiveWorkspace } = useActiveWorkspace();
 
-  const query = useQuery<StreamEntriesEvent[], Error>({
+  const query = useQuery<StreamResourcesEvent[], Error>({
     queryKey: [USE_STREAM_PROJECT_ENTRIES_QUERY_KEY, projectId],
     queryFn: async () => {
       const entires = await startStreamingProjectEntries(projectId);
