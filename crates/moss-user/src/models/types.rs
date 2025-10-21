@@ -2,7 +2,9 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-use crate::models::primitives::{AccountId, AccountKind, ProfileId, SessionKind};
+use crate::models::primitives::{
+    AccountAuthMethodKindForFrontend, AccountId, AccountKind, ProfileId,
+};
 
 /// @category Type
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -23,7 +25,8 @@ pub struct AccountInfo {
     pub username: String,
     pub host: String,
     pub kind: AccountKind,
-    pub method: SessionKind,
+    #[ts(type = "AccountAuthMethodKind")]
+    pub method: AccountAuthMethodKindForFrontend,
     pub metadata: AccountMetadata,
 }
 

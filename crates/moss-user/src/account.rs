@@ -20,7 +20,7 @@ use crate::{
 };
 
 #[derive(Clone)]
-struct Metadata {
+pub(crate) struct Metadata {
     pub(crate) expires_at: Option<DateTime<Utc>>,
 }
 
@@ -87,7 +87,7 @@ impl<R: AppRuntime> Account<R> {
             username: self.username.clone(),
             host: self.host.clone(),
             kind: self.kind.clone(),
-            method: self.session.session_kind(),
+            method: self.session.session_kind().into(),
             metadata: AccountMetadata {
                 pat_expires_at: self.metadata.expires_at,
             },

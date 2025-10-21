@@ -116,7 +116,7 @@ impl<R: AppRuntime> ProfileService<R> {
                     username: a.username.clone(),
                     host: a.host.clone(),
                     kind: a.kind.clone(),
-                    method: a.metadata.session_kind.clone(),
+                    method: a.metadata.session_kind.clone().into(),
                     metadata: AccountMetadata {
                         pat_expires_at: a.metadata.expires_at,
                     },
