@@ -1,9 +1,0 @@
----
-description: Writing Frontend commits
-globs: view/desktop/**
-alwaysApply: true
----
-
-## Frontend commits conventions
-
-- when writing commits write them short and eloquent
