@@ -1,5 +1,5 @@
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
-import { StreamEntriesEvent } from "@repo/moss-project";
+import { StreamResourcesEvent } from "@repo/moss-project";
 import { StreamProjectsEvent, WorkspaceMode } from "@repo/moss-workspace";
 
 import { ProjectDragType } from "./constants";
@@ -8,7 +8,7 @@ export interface ProjectTreeRootNode extends StreamProjectsEvent {
   childNodes: ProjectTreeNode[];
 }
 
-export interface ProjectTreeNode extends StreamEntriesEvent {
+export interface ProjectTreeNode extends StreamResourcesEvent {
   childNodes: ProjectTreeNode[];
 }
 

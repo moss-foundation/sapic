@@ -16,6 +16,11 @@ export const logItemSourceInfoSchema = z.object({
   id: z.string(),
 });
 
+export const updateAccountParamsSchema = z.object({
+  id: z.string(),
+  pat: z.string().optional(),
+});
+
 export const workspaceInfoSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -23,7 +28,6 @@ export const workspaceInfoSchema = z.object({
 });
 export const addAccountParamsSchema = z.object({
   host: z.string(),
-  label: z.string().optional(),
   kind: accountKindSchema,
   pat: z.string().optional(),
 });

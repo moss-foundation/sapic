@@ -38,11 +38,11 @@ async fn add_account_github_success() {
             UpdateProfileInput {
                 accounts_to_add: vec![AddAccountParams {
                     host: "github.com".to_string(),
-                    label: Some("Test GitHub Account".to_string()),
                     kind: AccountKind::GitHub,
                     pat: None,
                 }],
                 accounts_to_remove: vec![],
+                accounts_to_update: vec![],
             },
         )
         .await;
@@ -93,11 +93,11 @@ async fn add_account_gitlab_success() {
             UpdateProfileInput {
                 accounts_to_add: vec![AddAccountParams {
                     host: "gitlab.com".to_string(),
-                    label: Some("Test GitLab Account".to_string()),
                     kind: AccountKind::GitLab,
                     pat: None,
                 }],
                 accounts_to_remove: vec![],
+                accounts_to_update: vec![],
             },
         )
         .await;
@@ -149,11 +149,11 @@ async fn add_account_custom_host() {
             UpdateProfileInput {
                 accounts_to_add: vec![AddAccountParams {
                     host: custom_host.to_string(),
-                    label: Some("Custom GitLab Instance".to_string()),
                     kind: AccountKind::GitLab,
                     pat: None,
                 }],
                 accounts_to_remove: vec![],
+                accounts_to_update: vec![],
             },
         )
         .await;
@@ -205,11 +205,11 @@ async fn add_account_pat() {
             UpdateProfileInput {
                 accounts_to_add: vec![AddAccountParams {
                     host: host.to_string(),
-                    label: Some("GitHub with PAT".to_string()),
                     kind: AccountKind::GitHub,
                     pat: Some("Test PAT".to_string()),
                 }],
                 accounts_to_remove: vec![],
+                accounts_to_update: vec![],
             },
         )
         .await;
@@ -261,18 +261,17 @@ async fn add_multiple_accounts() {
                 accounts_to_add: vec![
                     AddAccountParams {
                         host: "github.com".to_string(),
-                        label: Some("GitHub Account".to_string()),
                         kind: AccountKind::GitHub,
                         pat: None,
                     },
                     AddAccountParams {
                         host: "gitlab.com".to_string(),
-                        label: Some("GitLab Account".to_string()),
                         kind: AccountKind::GitLab,
                         pat: None,
                     },
                 ],
                 accounts_to_remove: vec![],
+                accounts_to_update: vec![],
             },
         )
         .await;
@@ -340,11 +339,11 @@ async fn add_duplicate_account_fails() {
             UpdateProfileInput {
                 accounts_to_add: vec![AddAccountParams {
                     host: "github.com".to_string(),
-                    label: Some("First Account".to_string()),
                     kind: AccountKind::GitHub,
                     pat: None,
                 }],
                 accounts_to_remove: vec![],
+                accounts_to_update: vec![],
             },
         )
         .await;
@@ -358,11 +357,11 @@ async fn add_duplicate_account_fails() {
             UpdateProfileInput {
                 accounts_to_add: vec![AddAccountParams {
                     host: "github.com".to_string(),
-                    label: Some("Duplicate Account".to_string()),
                     kind: AccountKind::GitHub,
                     pat: None,
                 }],
                 accounts_to_remove: vec![],
+                accounts_to_update: vec![],
             },
         )
         .await;
@@ -396,11 +395,11 @@ async fn remove_account_success() {
             UpdateProfileInput {
                 accounts_to_add: vec![AddAccountParams {
                     host: "github.com".to_string(),
-                    label: Some("Test Account".to_string()),
                     kind: AccountKind::GitHub,
                     pat: None,
                 }],
                 accounts_to_remove: vec![],
+                accounts_to_update: vec![],
             },
         )
         .await;
@@ -422,6 +421,7 @@ async fn remove_account_success() {
             UpdateProfileInput {
                 accounts_to_add: vec![],
                 accounts_to_remove: vec![account_id.clone()],
+                accounts_to_update: vec![],
             },
         )
         .await;
@@ -467,18 +467,17 @@ async fn remove_multiple_accounts() {
                 accounts_to_add: vec![
                     AddAccountParams {
                         host: "github.com".to_string(),
-                        label: Some("GitHub Account".to_string()),
                         kind: AccountKind::GitHub,
                         pat: None,
                     },
                     AddAccountParams {
                         host: "gitlab.com".to_string(),
-                        label: Some("GitLab Account".to_string()),
                         kind: AccountKind::GitLab,
                         pat: None,
                     },
                 ],
                 accounts_to_remove: vec![],
+                accounts_to_update: vec![],
             },
         )
         .await;
@@ -503,6 +502,7 @@ async fn remove_multiple_accounts() {
             UpdateProfileInput {
                 accounts_to_add: vec![],
                 accounts_to_remove: vec![github_account_id.clone()],
+                accounts_to_update: vec![],
             },
         )
         .await;
@@ -542,6 +542,7 @@ async fn remove_multiple_accounts() {
             UpdateProfileInput {
                 accounts_to_add: vec![],
                 accounts_to_remove: vec![gitlab_account_id.clone()],
+                accounts_to_update: vec![],
             },
         )
         .await;
@@ -595,6 +596,7 @@ async fn remove_nonexistent_account_succeeds() {
             UpdateProfileInput {
                 accounts_to_add: vec![],
                 accounts_to_remove: vec![fake_account_id.clone()],
+                accounts_to_update: vec![],
             },
         )
         .await;
@@ -643,11 +645,11 @@ async fn add_and_remove_accounts_simultaneously() {
             UpdateProfileInput {
                 accounts_to_add: vec![AddAccountParams {
                     host: "github.com".to_string(),
-                    label: Some("Initial GitHub Account".to_string()),
                     kind: AccountKind::GitHub,
                     pat: None,
                 }],
                 accounts_to_remove: vec![],
+                accounts_to_update: vec![],
             },
         )
         .await;
@@ -662,11 +664,11 @@ async fn add_and_remove_accounts_simultaneously() {
             UpdateProfileInput {
                 accounts_to_add: vec![AddAccountParams {
                     host: "gitlab.com".to_string(),
-                    label: Some("New GitLab Account".to_string()),
                     kind: AccountKind::GitLab,
                     pat: None,
                 }],
                 accounts_to_remove: vec![github_account_id.clone()],
+                accounts_to_update: vec![],
             },
         )
         .await;
@@ -723,6 +725,7 @@ async fn empty_update_profile_succeeds() {
             UpdateProfileInput {
                 accounts_to_add: vec![],
                 accounts_to_remove: vec![],
+                accounts_to_update: vec![],
             },
         )
         .await;

@@ -1,7 +1,7 @@
 import { FormEvent, useState } from "react";
 
 import { Button, Link, Modal } from "@/lib/ui";
-import { AddAccountParams, UpdateProfileInput } from "@repo/moss-app";
+import { UpdateAccountParams, UpdateProfileInput } from "@repo/moss-app";
 import { AccountInfo } from "@repo/moss-user";
 import { invoke } from "@tauri-apps/api/core";
 
@@ -24,20 +24,15 @@ export const EditAccountModal = ({ showModal, closeModal, account, onAccountUpda
 
     try {
       setIsSubmitting(true);
-
-      // TODO: Replace with dedicated update account endpoint when available
-      // Strategy: Remove old account and add new account with updated PAT
-      // This is necessary because there's no dedicated "update account" endpoint
-      const accountParams: AddAccountParams = {
-        host: account.host,
-        label: "",
-        kind: account.kind,
+      const accountParams: UpdateAccountParams = {
+        id: account.id,
         pat: token,
       };
 
       const input: UpdateProfileInput = {
-        accountsToAdd: [accountParams],
-        accountsToRemove: [account.id],
+        accountsToAdd: [],
+        accountsToRemove: [],
+        accountsToUpdate: [accountParams],
       };
 
       await invoke("update_profile", { input });

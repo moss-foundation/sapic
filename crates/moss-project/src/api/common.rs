@@ -11,15 +11,15 @@ use validator::Validate;
 use crate::{
     Project,
     models::{
-        operations::CreateEntryOutput,
+        operations::CreateResourceOutput,
         primitives::{
-            EntryClass, EntryId, EntryProtocol, FormDataParamId, FrontendEntryPath, HeaderId,
-            PathParamId, QueryParamId, UrlencodedParamId,
+            FormDataParamId, FrontendResourcePath, HeaderId, PathParamId, QueryParamId,
+            ResourceClass, ResourceId, ResourceProtocol, UrlencodedParamId,
         },
         types::{
-            AfterUpdateDirEntryDescription, AfterUpdateItemEntryDescription, CreateDirEntryParams,
-            CreateItemEntryParams, UpdateDirEntryParams, UpdateItemEntryParams,
-            http::AddBodyParams,
+            AfterUpdateDirResourceDescription, AfterUpdateItemResourceDescription,
+            CreateDirResourceParams, CreateItemResourceParams, UpdateDirResourceParams,
+            UpdateItemResourceParams, http::AddBodyParams,
         },
     },
     worktree::{
@@ -34,14 +34,14 @@ use crate::{
 };
 
 impl<R: AppRuntime> Project<R> {
-    pub(super) async fn create_dir_entry(
+    pub(super) async fn create_dir_resource(
         &self,
         ctx: &R::AsyncContext,
-        input: CreateDirEntryParams,
-    ) -> joinerror::Result<CreateEntryOutput> {
+        input: CreateDirResourceParams,
+    ) -> joinerror::Result<CreateResourceOutput> {
         input.validate().join_err_bare()?;
 
-        let id = EntryId::new();
+        let id = ResourceId::new();
         let model = EntryModel::from((id.clone(), input.class));
 
         self.worktree()
@@ -56,20 +56,20 @@ impl<R: AppRuntime> Project<R> {
             )
             .await?;
 
-        Ok(CreateEntryOutput { id: id })
+        Ok(CreateResourceOutput { id: id })
     }
 
-    pub(super) async fn create_item_entry(
+    pub(super) async fn create_item_resource(
         &self,
         ctx: &R::AsyncContext,
-        input: CreateItemEntryParams,
-    ) -> joinerror::Result<CreateEntryOutput> {
+        input: CreateItemResourceParams,
+    ) -> joinerror::Result<CreateResourceOutput> {
         input.validate().join_err_bare()?;
 
-        let id = EntryId::new();
+        let id = ResourceId::new();
 
         match &input.class {
-            EntryClass::Endpoint => self.create_endpoint_entry(id, ctx, input).await,
+            ResourceClass::Endpoint => self.create_endpoint_resource(id, ctx, input).await,
             _ => {
                 let model = EntryModel {
                     metadata: Block::new(EntryMetadataSpec {
@@ -86,17 +86,17 @@ impl<R: AppRuntime> Project<R> {
                     .await
                     .create_item_entry(ctx, &input.name, &input.path, model, input.order, false)
                     .await?;
-                Ok(CreateEntryOutput { id: id })
+                Ok(CreateResourceOutput { id: id })
             }
         }
     }
 
-    pub(super) async fn update_item_entry(
+    pub(super) async fn update_item_resource(
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
-        input: UpdateItemEntryParams,
-    ) -> joinerror::Result<AfterUpdateItemEntryDescription> {
+        input: UpdateItemResourceParams,
+    ) -> joinerror::Result<AfterUpdateItemResourceDescription> {
         input.validate().join_err_bare()?;
 
         let path = self
@@ -130,16 +130,16 @@ impl<R: AppRuntime> Project<R> {
             )
             .await?;
 
-        let path = FrontendEntryPath::new(path.to_path_buf());
+        let path = FrontendResourcePath::new(path.to_path_buf());
 
-        Ok(AfterUpdateItemEntryDescription { id: input.id, path })
+        Ok(AfterUpdateItemResourceDescription { id: input.id, path })
     }
 
-    pub(super) async fn update_dir_entry(
+    pub(super) async fn update_dir_resource(
         &self,
         ctx: &R::AsyncContext,
-        input: UpdateDirEntryParams,
-    ) -> joinerror::Result<AfterUpdateDirEntryDescription> {
+        input: UpdateDirResourceParams,
+    ) -> joinerror::Result<AfterUpdateDirResourceDescription> {
         input.validate().join_err_bare()?;
 
         let path = self
@@ -172,19 +172,19 @@ impl<R: AppRuntime> Project<R> {
             )
             .await?;
 
-        let path = FrontendEntryPath::new(path.to_path_buf());
+        let path = FrontendResourcePath::new(path.to_path_buf());
 
-        Ok(AfterUpdateDirEntryDescription { id: input.id, path })
+        Ok(AfterUpdateDirResourceDescription { id: input.id, path })
     }
 }
 
 impl<R: AppRuntime> Project<R> {
-    async fn create_endpoint_entry(
+    async fn create_endpoint_resource(
         &self,
-        id: EntryId,
+        id: ResourceId,
         ctx: &R::AsyncContext,
-        input: CreateItemEntryParams,
-    ) -> joinerror::Result<CreateEntryOutput> {
+        input: CreateItemResourceParams,
+    ) -> joinerror::Result<CreateResourceOutput> {
         let mut header_map = IndexMap::new();
         let mut header_orders = HashMap::new();
         let mut path_param_map = IndexMap::new();
@@ -276,7 +276,7 @@ impl<R: AppRuntime> Project<R> {
                 class: input.class.clone(),
             }),
             url: Some(Block::new(UrlDetails {
-                protocol: input.protocol.clone().unwrap_or(EntryProtocol::Get),
+                protocol: input.protocol.clone().unwrap_or(ResourceProtocol::Get),
                 raw: "Hardcoded Value".to_string(),
             })),
             headers: if header_map.is_empty() {
@@ -294,7 +294,7 @@ impl<R: AppRuntime> Project<R> {
             .create_item_entry(ctx, &input.name, &input.path, model, input.order, false)
             .await?;
 
-        let output = CreateEntryOutput { id: id.clone() };
+        let output = CreateResourceOutput { id: id.clone() };
 
         if header_orders.is_empty()
             && path_param_orders.is_empty()

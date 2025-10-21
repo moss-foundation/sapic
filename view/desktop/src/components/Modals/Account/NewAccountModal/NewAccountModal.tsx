@@ -29,7 +29,6 @@ export const NewAccountModal = ({ showModal, closeModal, onAccountAdded }: NewAc
 
       const accountParams: AddAccountParams = {
         host: getProviderHost(provider),
-        label: "",
         kind: provider,
         pat: method === "PAT" && token ? token : undefined,
       };
@@ -37,6 +36,7 @@ export const NewAccountModal = ({ showModal, closeModal, onAccountAdded }: NewAc
       const input: UpdateProfileInput = {
         accountsToAdd: [accountParams],
         accountsToRemove: [],
+        accountsToUpdate: [],
       };
 
       await invoke("update_profile", { input });

@@ -4,7 +4,7 @@ import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
 
-import { EntryIcon } from "../../EntryIcon";
+import { ResourceIcon } from "../../ResourceIcon";
 import { ProjectTreeContext } from "../ProjectTreeContext";
 import { ProjectTreeNode } from "../types";
 
@@ -44,7 +44,7 @@ const TreeNodeRenamingForm = ({
           />
         </div>
 
-        <EntryIcon entry={node} />
+        <ResourceIcon resource={node} />
 
         <Tree.NodeRenamingForm
           onSubmit={handleRenamingFormSubmit}

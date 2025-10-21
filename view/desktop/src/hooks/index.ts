@@ -10,8 +10,8 @@ export * from "./useInputResize";
 export * from "./useModal";
 export * from "./useProjectSession";
 
-export * from "./useRenameEntryForm";
 export * from "./useRenameProjectForm";
+export * from "./useRenameResourceForm";
 export * from "./useRenameWorkspace";
 
 export * from "./useResponsive";

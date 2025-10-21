@@ -4,10 +4,10 @@ import { useState } from "react";
 import { PageHeader, PageView } from "@/components";
 import { PageWrapper } from "@/components/PageView/PageWrapper";
 import { ProjectTreeNode } from "@/components/ProjectTree/types";
-import { useStreamProjectEntries } from "@/hooks/project/useStreamProjectEntries";
-import { useRenameEntryForm } from "@/hooks/useRenameEntryForm";
+import { useStreamProjectResources } from "@/hooks/project/useStreamProjectResources";
+import { useRenameResourceForm } from "@/hooks/useRenameResourceForm";
 import { FolderTabs, Icon, TabItemProps } from "@/lib/ui";
-import { EntryKind } from "@repo/moss-project";
+import { ResourceKind } from "@repo/moss-project";
 
 import { OverviewTabContent } from "./tabs/OverviewTabContent";
 import { getFolderIcon } from "./utils";
@@ -15,15 +15,15 @@ import { getFolderIcon } from "./utils";
 export interface FolderSettingsParams {
   projectId: string;
   node: ProjectTreeNode;
-  iconType: EntryKind;
+  iconType: ResourceKind;
 }
 
 export const FolderSettings = ({ ...props }: IDockviewPanelProps<FolderSettingsParams>) => {
-  const { data: streamedEntries } = useStreamProjectEntries(props.params?.projectId);
-  const node = streamedEntries?.find((entry) => entry.id === props.params?.node?.id);
+  const { data: streamedResources } = useStreamProjectResources(props.params?.projectId);
+  const node = streamedResources?.find((resource) => resource.id === props.params?.node?.id);
 
-  const { isRenamingEntry, setIsRenamingEntry, handleRenamingEntrySubmit, handleRenamingEntryCancel } =
-    useRenameEntryForm(props?.params?.node, props?.params?.projectId);
+  const { isRenamingResource, setIsRenamingResource, handleRenamingResourceSubmit, handleRenamingResourceCancel } =
+    useRenameResourceForm(props?.params?.node, props?.params?.projectId);
 
   const [activeTabId, setActiveTabId] = useState("overview");
 
@@ -114,10 +114,10 @@ export const FolderSettings = ({ ...props }: IDockviewPanelProps<FolderSettingsP
         icon={getFolderIcon()}
         title={node?.name}
         disableTitleChange={isRoot}
-        isRenamingTitle={isRenamingEntry}
-        setIsRenamingTitle={setIsRenamingEntry}
-        handleRenamingFormCancel={handleRenamingEntryCancel}
-        onTitleChange={handleRenamingEntrySubmit}
+        isRenamingTitle={isRenamingResource}
+        setIsRenamingTitle={setIsRenamingResource}
+        handleRenamingFormCancel={handleRenamingResourceCancel}
+        onTitleChange={handleRenamingResourceSubmit}
         {...props}
       />
       <PageWrapper>

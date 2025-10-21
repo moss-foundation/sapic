@@ -2,9 +2,10 @@ mod common;
 pub mod github;
 pub mod gitlab;
 
+use chrono::{DateTime, Utc};
 use moss_applib::AppRuntime;
 use moss_keyring::KeyringClient;
-use moss_server_api::account_auth_gateway::GitLabTokenRefreshApiReq;
+use moss_server_api::account_auth_gateway::{GitLabTokenRefreshApiReq, RevokeApiReq};
 use std::sync::Arc;
 
 use crate::{
@@ -13,10 +14,15 @@ use crate::{
         gitlab::{GitLabInitialToken, GitLabPAT, GitLabSessionHandle},
     },
     models::{
-        primitives::{AccountId, AccountKind},
-        types::AccountInfo,
+        primitives::{AccountId, AccountKind, SessionKind},
+        types::{AccountInfo, AccountMetadata},
     },
 };
+
+#[derive(Clone)]
+pub(crate) struct Metadata {
+    pub(crate) expires_at: Option<DateTime<Utc>>,
+}
 
 pub struct Account<R: AppRuntime> {
     pub(crate) id: AccountId,
@@ -24,6 +30,7 @@ pub struct Account<R: AppRuntime> {
     pub(crate) host: String,
     pub(crate) session: AccountSession<R>,
     pub(crate) kind: AccountKind,
+    pub(crate) metadata: Metadata,
 }
 
 impl<R: AppRuntime> Clone for Account<R> {
@@ -34,6 +41,7 @@ impl<R: AppRuntime> Clone for Account<R> {
             host: self.host.clone(),
             session: self.session.clone(),
             kind: self.kind.clone(),
+            metadata: self.metadata.clone(),
         }
     }
 }
@@ -45,6 +53,7 @@ impl<R: AppRuntime> Account<R> {
         host: String,
         session: AccountSession<R>,
         kind: AccountKind,
+        expires_at: Option<DateTime<Utc>>,
     ) -> Self {
         Self {
             id,
@@ -52,6 +61,7 @@ impl<R: AppRuntime> Account<R> {
             host,
             session,
             kind,
+            metadata: Metadata { expires_at },
         }
     }
 
@@ -77,7 +87,27 @@ impl<R: AppRuntime> Account<R> {
             username: self.username.clone(),
             host: self.host.clone(),
             kind: self.kind.clone(),
+            method: self.session.session_kind().into(),
+            metadata: AccountMetadata {
+                pat_expires_at: self.metadata.expires_at,
+            },
         }
+    }
+
+    pub async fn revoke(
+        &self,
+        ctx: &R::AsyncContext,
+        api_client: Arc<dyn RevokeApiReq<R>>,
+    ) -> joinerror::Result<()> {
+        self.session.revoke(ctx, api_client).await
+    }
+
+    // Update PAT and returns the old PAT
+    // If the new PAT belongs to a different account or does not exist, revert the change
+    pub async fn update_pat(&self, ctx: &R::AsyncContext, pat: &str) -> joinerror::Result<String> {
+        let old_pat = self.session.token(ctx).await?;
+        self.session.update_pat(pat).await?;
+        Ok(old_pat)
     }
 }
 
@@ -171,6 +201,31 @@ impl<R: AppRuntime> AccountSession<R> {
         match self.inner.as_ref() {
             Session::GitHub(handle) => handle.token(&self.keyring).await,
             Session::GitLab(handle) => handle.token(ctx, &self.keyring).await,
+        }
+    }
+
+    pub fn session_kind(&self) -> SessionKind {
+        match self.inner.as_ref() {
+            Session::GitHub(handle) => handle.session_kind(),
+            Session::GitLab(handle) => handle.session_kind(),
+        }
+    }
+
+    pub async fn revoke(
+        &self,
+        ctx: &R::AsyncContext,
+        api_client: Arc<dyn RevokeApiReq<R>>,
+    ) -> joinerror::Result<()> {
+        match self.inner.as_ref() {
+            Session::GitHub(handle) => handle.revoke(ctx, &self.keyring, api_client).await,
+            Session::GitLab(handle) => handle.revoke(ctx, &self.keyring, api_client).await,
+        }
+    }
+
+    pub async fn update_pat(&self, pat: &str) -> joinerror::Result<()> {
+        match self.inner.as_ref() {
+            Session::GitHub(handle) => handle.update_pat(&self.keyring, pat).await,
+            Session::GitLab(handle) => handle.update_pat(&self.keyring, pat).await,
         }
     }
 }

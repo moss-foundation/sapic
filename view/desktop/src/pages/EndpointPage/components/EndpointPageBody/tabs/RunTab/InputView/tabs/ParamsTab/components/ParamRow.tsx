@@ -24,7 +24,7 @@ interface ParamRowProps {
 
 export const ParamRow = memo(
   ({ param: initialParam, onChange, keyToFocusOnMount, onDelete, paramType }: ParamRowProps) => {
-    const { entry } = useContext(EndpointPageContext);
+    const { resource } = useContext(EndpointPageContext);
 
     const keyRef = useRef<HTMLInputElement>(null);
     const valueRef = useRef<HTMLInputElement>(null);
@@ -97,7 +97,7 @@ export const ParamRow = memo(
 
     const { isDragging, dragHandleRef, paramRowRef, closestEdge } = useDraggableParamRow({
       param,
-      entryId: entry.id,
+      resourceId: resource.id,
       paramType,
     });
 

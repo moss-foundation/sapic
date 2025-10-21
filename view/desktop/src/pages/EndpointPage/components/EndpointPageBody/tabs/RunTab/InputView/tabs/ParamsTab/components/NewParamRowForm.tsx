@@ -16,7 +16,7 @@ interface NewParamRowFormProps {
 }
 
 export const NewParamRowForm = ({ onAdd, paramType }: NewParamRowFormProps) => {
-  const { entry } = useContext(EndpointPageContext);
+  const { resource } = useContext(EndpointPageContext);
 
   const newParamRowFormRef = useRef<HTMLDivElement>(null);
 
@@ -65,7 +65,7 @@ export const NewParamRowForm = ({ onAdd, paramType }: NewParamRowFormProps) => {
 
   const { closestEdge } = useDropTargetNewParamRowForm({
     newParamRowFormRef,
-    entryId: entry.id,
+    resourceId: resource.id,
     paramType,
   });
 

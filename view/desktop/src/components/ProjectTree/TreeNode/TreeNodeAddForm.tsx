@@ -4,7 +4,7 @@ import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
 
-import { EntryIcon } from "../../EntryIcon";
+import { ResourceIcon } from "../../ResourceIcon";
 import { ProjectTreeContext } from "../ProjectTreeContext";
 import { ProjectTreeNode } from "../types";
 
@@ -31,8 +31,8 @@ const TreeNodeAddForm = ({
   return (
     <div style={{ paddingLeft: nodePaddingLeftForAddForm }} className="flex w-full min-w-0 items-center gap-1.5">
       <Icon icon="ChevronRight" className={cn("shrink-0 opacity-0")} />
-      <EntryIcon
-        entry={{
+      <ResourceIcon
+        resource={{
           id: "Placeholder_AddingNodeId",
           name: "Placeholder_AddingNodeName",
           kind: isAddingFolderNode ? "Dir" : "Item",

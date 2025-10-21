@@ -1,6 +1,6 @@
 mod registry;
 
-use joinerror::OptionExt;
+use joinerror::{Error, OptionExt};
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
     AppRuntime,
@@ -25,7 +25,7 @@ use moss_user::{
     },
     models::{
         primitives::{AccountId, AccountKind, ProfileId, SessionKind},
-        types::AccountInfo,
+        types::{AccountInfo, AccountMetadata},
     },
     profile::Profile,
 };
@@ -35,6 +35,7 @@ use tokio::sync::RwLock;
 use crate::{
     dirs,
     internal::events::OnDidChangeProfile,
+    models::types::UpdateAccountParams,
     profile::registry::{
         ProfileRegistryAccount, ProfileRegistryAccountMetadata, ProfileRegistryItem,
     },
@@ -115,6 +116,10 @@ impl<R: AppRuntime> ProfileService<R> {
                     username: a.username.clone(),
                     host: a.host.clone(),
                     kind: a.kind.clone(),
+                    method: a.metadata.session_kind.clone().into(),
+                    metadata: AccountMetadata {
+                        pat_expires_at: a.metadata.expires_at,
+                    },
                 })
                 .collect(),
         })
@@ -148,6 +153,7 @@ impl<R: AppRuntime> ProfileService<R> {
 
     pub async fn remove_account(
         &self,
+        ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
         account_id: AccountId,
     ) -> joinerror::Result<AccountId> {
@@ -171,7 +177,10 @@ impl<R: AppRuntime> ProfileService<R> {
 
         // In this case, the error isn't critical. Since we removed the account from
         // the profile file, the next time a session for that account won't be established.
-        if let Err(err) = active_profile.remove_account(&account_id).await {
+        if let Err(err) = active_profile
+            .remove_account(ctx, self.auth_api_client.clone(), &account_id)
+            .await
+        {
             session::warn!(&format!(
                 "failed to remove account `{}`: {}",
                 account_id,
@@ -196,7 +205,7 @@ impl<R: AppRuntime> ProfileService<R> {
             .ok_or_join_err::<FailedPrecondition>("active profile not found")?;
 
         let account_id = AccountId::new();
-        let (session, session_kind, username) = match kind {
+        let (session, session_kind, username, expires_at) = match kind {
             AccountKind::GitHub => {
                 let (session, session_kind) = if let Some(pat) = pat {
                     (
@@ -230,7 +239,13 @@ impl<R: AppRuntime> ProfileService<R> {
                 let api_client = <dyn GitHubApiClient<R>>::global(app_delegate);
                 let user = api_client.get_user(ctx, &session).await?;
 
-                (session, session_kind, user.login)
+                let expires_at = if session_kind == SessionKind::PAT {
+                    api_client.get_pat_expires_at(ctx, &session).await.unwrap()
+                } else {
+                    None
+                };
+
+                (session, session_kind, user.login, expires_at)
             }
             AccountKind::GitLab => {
                 let (session, session_kind) = if let Some(pat) = pat {
@@ -268,7 +283,13 @@ impl<R: AppRuntime> ProfileService<R> {
                 let api_client = <dyn GitLabApiClient<R>>::global(app_delegate);
                 let user = api_client.get_user(ctx, &session).await?;
 
-                (session, session_kind, user.username)
+                let expires_at = if session_kind == SessionKind::PAT {
+                    api_client.get_pat_expires_at(ctx, &session).await.unwrap()
+                } else {
+                    None
+                };
+
+                (session, session_kind, user.username, expires_at)
             }
         };
 
@@ -290,6 +311,7 @@ impl<R: AppRuntime> ProfileService<R> {
             host.clone(),
             session,
             kind.clone(),
+            expires_at,
         );
         let account_info = account.info();
 
@@ -300,7 +322,10 @@ impl<R: AppRuntime> ProfileService<R> {
                 username: account_info.username.clone(),
                 host: account_info.host.clone(),
                 kind: account_info.kind.clone(),
-                metadata: ProfileRegistryAccountMetadata { session_kind },
+                metadata: ProfileRegistryAccountMetadata {
+                    session_kind,
+                    expires_at,
+                },
             })
         });
 
@@ -311,6 +336,46 @@ impl<R: AppRuntime> ProfileService<R> {
         active_profile.add_account(account).await;
 
         Ok(account_id)
+    }
+
+    pub async fn update_account(
+        &self,
+        ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
+        params: &UpdateAccountParams,
+    ) -> joinerror::Result<()> {
+        let active_profile_lock = self.active_profile.write().await;
+        let active_profile = active_profile_lock
+            .as_ref()
+            .ok_or_join_err::<FailedPrecondition>("active profile not found")?;
+        let account = active_profile
+            .account(&params.id)
+            .await
+            .ok_or_join_err::<()>(format!("Account id `{}` not found", params.id))?;
+
+        if let Some(ref pat) = params.pat {
+            let old_pat = account.update_pat(ctx, pat).await?;
+            let user_response = <dyn GitHubApiClient<R>>::global(app_delegate)
+                .get_user(ctx, account.session())
+                .await;
+
+            if user_response.is_err() {
+                account.update_pat(ctx, &old_pat).await?;
+                return Err(Error::new::<()>(format!(
+                    "failed to authenticate the user after updating the PAT: {}",
+                    user_response.unwrap_err()
+                )));
+            }
+
+            if user_response.unwrap().login != account.username() {
+                account.update_pat(ctx, &old_pat).await?;
+                return Err(Error::new::<()>(
+                    "the new PAT does not belong to the same account as the old PAT",
+                ))?;
+            }
+        }
+
+        Ok(())
     }
 
     pub async fn create_profile(
@@ -375,7 +440,6 @@ async fn activate_profile<R: AppRuntime>(
     profile_item: &ProfileRegistryItem,
     keyring: Arc<dyn KeyringClient>,
     auth_api_client: Arc<AccountAuthGatewayApiClient>,
-
     on_did_change_profile_emitter: &EventEmitter<OnDidChangeProfile>,
 ) -> joinerror::Result<Profile<R>> {
     let mut accounts = HashMap::with_capacity(profile_item.accounts.len());
@@ -429,6 +493,7 @@ async fn activate_profile<R: AppRuntime>(
                 account.host.clone(),
                 session,
                 account.kind.clone(),
+                account.metadata.expires_at,
             ),
         );
     }

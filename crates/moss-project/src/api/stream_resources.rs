@@ -16,32 +16,32 @@ use tokio::sync::{mpsc, oneshot};
 use crate::{
     Project,
     models::{
-        events::StreamEntriesEvent,
-        operations::{StreamEntriesInput, StreamEntriesOutput},
-        primitives::{EntryId, FrontendEntryPath},
+        events::StreamResourcesEvent,
+        operations::{StreamResourcesInput, StreamResourcesOutput},
+        primitives::{FrontendResourcePath, ResourceId},
     },
     project::OnDidChangeEvent,
     worktree::entry::EntryDescription,
 };
 
 impl<R: AppRuntime> Project<R> {
-    pub async fn stream_entries(
+    pub async fn stream_resources(
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
-        channel: TauriChannel<StreamEntriesEvent>,
-        input: StreamEntriesInput,
-    ) -> joinerror::Result<StreamEntriesOutput> {
+        channel: TauriChannel<StreamResourcesEvent>,
+        input: StreamResourcesInput,
+    ) -> joinerror::Result<StreamResourcesOutput> {
         let (tx, mut rx) = mpsc::unbounded_channel::<EntryDescription>();
         let (done_tx, mut done_rx) = oneshot::channel::<()>();
 
         let mut handles = Vec::new();
         let expansion_dirs = match input {
-            StreamEntriesInput::LoadRoot => vec![PathBuf::from("")],
-            StreamEntriesInput::ReloadPath(path) => vec![path],
+            StreamResourcesInput::LoadRoot => vec![PathBuf::from("")],
+            StreamResourcesInput::ReloadPath(path) => vec![path],
         };
 
-        let expanded_entries: Arc<HashSet<EntryId>> =
+        let expanded_entries: Arc<HashSet<ResourceId>> =
             match self.storage_service.get_expanded_entries(ctx).await {
                 Ok(entries) => HashSet::from_iter(entries).into(),
                 Err(error) => {
@@ -99,10 +99,10 @@ impl<R: AppRuntime> Project<R> {
                 tokio::select! {
                     entry_result = rx.recv() => {
                         if let Some(entry) = entry_result {
-                            let _ = channel.send(StreamEntriesEvent{
+                            let _ = channel.send(StreamResourcesEvent{
                                 id: entry.id,
                                 name: entry.name,
-                                path: FrontendEntryPath::new(entry.path.to_path_buf()),
+                                path: FrontendResourcePath::new(entry.path.to_path_buf()),
                                 class: entry.class,
                                 kind: entry.kind,
                                 protocol: entry.protocol,
@@ -114,10 +114,10 @@ impl<R: AppRuntime> Project<R> {
 
                     _ = &mut done_rx => {
                         while let Ok(entry) = rx.try_recv() {
-                            let _ = channel.send(StreamEntriesEvent{
+                            let _ = channel.send(StreamResourcesEvent{
                                 id: entry.id,
                                 name: entry.name,
-                                path: FrontendEntryPath {
+                                path: FrontendResourcePath {
                                     raw: entry.path.to_path_buf(),
                                     segments: entry.path.to_path_buf().iter().map(|s| s.to_string_lossy().to_string()).collect(),
                                 },
@@ -160,6 +160,6 @@ impl<R: AppRuntime> Project<R> {
             .fire(OnDidChangeEvent::Toggled(true))
             .await;
 
-        Ok(StreamEntriesOutput {})
+        Ok(StreamResourcesOutput {})
     }
 }

@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 
-import { useFetchEntriesForPath } from "@/hooks/project/derivedHooks/useFetchEntriesForPath";
-import { useUpdateProjectEntry } from "@/hooks/project/useUpdateProjectEntry";
+import { useFetchResourcesForPath } from "@/hooks/project/derivedHooks/useFetchResourceForPath";
+import { useUpdateProjectResource } from "@/hooks/project/useUpdateProjectResource";
 import { join } from "@tauri-apps/api/path";
 
 import { ProjectTreeContext } from "../../ProjectTreeContext";
@@ -10,10 +10,10 @@ import { ProjectTreeNode } from "../../types";
 export const useNodeRenamingForm = (node: ProjectTreeNode) => {
   const { id } = useContext(ProjectTreeContext);
 
-  const { fetchEntriesForPath } = useFetchEntriesForPath();
+  const { fetchResourcesForPath } = useFetchResourcesForPath();
   const [isRenamingNode, setIsRenamingNode] = useState(false);
 
-  const { mutateAsync: updateProjectEntry } = useUpdateProjectEntry();
+  const { mutateAsync: updateProjectResource } = useUpdateProjectResource();
 
   const handleRenamingFormSubmit = async (newName: string) => {
     const trimmedNewName = newName.trim();
@@ -24,9 +24,9 @@ export const useNodeRenamingForm = (node: ProjectTreeNode) => {
       }
 
       if (node.kind === "Dir") {
-        await updateProjectEntry({
+        await updateProjectResource({
           projectId: id,
-          updatedEntry: {
+          updatedResource: {
             DIR: {
               id: node.id,
               name: trimmedNewName,
@@ -35,11 +35,11 @@ export const useNodeRenamingForm = (node: ProjectTreeNode) => {
         });
 
         const newPath = await join(...node.path.segments.slice(0, node.path.segments.length - 1), trimmedNewName);
-        await fetchEntriesForPath(id, newPath);
+        await fetchResourcesForPath(id, newPath);
       } else {
-        await updateProjectEntry({
+        await updateProjectResource({
           projectId: id,
-          updatedEntry: {
+          updatedResource: {
             ITEM: {
               id: node.id,
               name: trimmedNewName,

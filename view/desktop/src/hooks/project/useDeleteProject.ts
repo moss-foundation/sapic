@@ -3,7 +3,7 @@ import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { DeleteProjectInput, DeleteProjectOutput, StreamProjectsEvent } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { useStreamedProjectsWithEntries } from "..";
+import { useStreamedProjectsWithResources } from "..";
 import { USE_STREAM_PROJECTS_QUERY_KEY } from "./useStreamProjects";
 
 export interface UseDeleteProjectInput {
@@ -23,7 +23,7 @@ const deleteStreamedProject = async ({ id }: DeleteProjectInput) => {
 export const useDeleteProject = () => {
   const queryClient = useQueryClient();
   const { api } = useTabbedPaneStore();
-  const { data: projectsWithEntries } = useStreamedProjectsWithEntries();
+  const { data: projectsWithResources } = useStreamedProjectsWithResources();
 
   return useMutation({
     mutationFn: deleteStreamedProject,
@@ -32,7 +32,7 @@ export const useDeleteProject = () => {
         return old.filter((project) => project.id !== data.id);
       });
 
-      projectsWithEntries?.forEach((project) => {
+      projectsWithResources?.forEach((project) => {
         if (project.id === data.id) {
           const projectPanel = api?.getPanel(project.id);
 
@@ -40,8 +40,8 @@ export const useDeleteProject = () => {
             api?.removePanel(projectPanel);
           }
 
-          project.entries.forEach((entry) => {
-            const panel = api?.getPanel(entry.id);
+          project.resources.forEach((resource) => {
+            const panel = api?.getPanel(resource.id);
             if (panel) {
               api?.removePanel(panel);
             }

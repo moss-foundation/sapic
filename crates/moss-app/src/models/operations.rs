@@ -61,6 +61,7 @@ pub struct CreateProfileOutput {
 pub struct UpdateProfileInput {
     pub accounts_to_add: Vec<AddAccountParams>,
     pub accounts_to_remove: Vec<AccountId>,
+    pub accounts_to_update: Vec<UpdateAccountParams>,
 }
 
 /// @category Operation
@@ -69,6 +70,7 @@ pub struct UpdateProfileInput {
 pub struct UpdateProfileOutput {
     pub added_accounts: Vec<AccountId>,
     pub removed_accounts: Vec<AccountId>,
+    pub updated_accounts: Vec<AccountId>,
 }
 
 // ########################################################

@@ -3,24 +3,24 @@
 /**
  * @category Primitive
  */
-export type EntryClass = "endpoint" | "component" | "schema";
-
-/**
- * @category Primitive
- */
-export type EntryKind = "Dir" | "Item" | "Case";
-
-/**
- * @category Primitive
- */
-export type EntryPath = { raw: string; segments: Array<string> };
-
-/**
- * @category Primitive
- */
-export type EntryProtocol = "Get" | "Post" | "Put" | "Delete" | "WebSocket" | "Graphql" | "Grpc";
-
-/**
- * @category Primitive
- */
 export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
+
+/**
+ * @category Primitive
+ */
+export type ResourceClass = "endpoint" | "component" | "schema";
+
+/**
+ * @category Primitive
+ */
+export type ResourceKind = "Dir" | "Item" | "Case";
+
+/**
+ * @category Primitive
+ */
+export type ResourcePath = { raw: string; segments: Array<string> };
+
+/**
+ * @category Primitive
+ */
+export type ResourceProtocol = "Get" | "Post" | "Put" | "Delete" | "WebSocket" | "Graphql" | "Grpc";

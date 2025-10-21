@@ -1,7 +1,9 @@
 use joinerror::Error;
 use moss_applib::AppRuntime;
 use moss_keyring::KeyringClient;
-use moss_server_api::account_auth_gateway::{GitLabTokenRefreshApiReq, GitLabTokenRefreshRequest};
+use moss_server_api::account_auth_gateway::{
+    GitLabRevokeApiReq, GitLabRevokeRequest, GitLabTokenRefreshApiReq, GitLabTokenRefreshRequest,
+};
 use std::{
     sync::Arc,
     time::{Duration, Instant},
@@ -10,7 +12,7 @@ use tokio::sync::RwLock;
 
 use crate::{
     account::common::{calc_expires_at, make_secret_key},
-    models::primitives::AccountId,
+    models::primitives::{AccountId, SessionKind},
 };
 
 const GITLAB_PREFIX: &str = "gl";
@@ -79,6 +81,38 @@ impl<R: AppRuntime> GitLabSessionHandle<R> {
         match self {
             GitLabSessionHandle::OAuth(handle) => handle.host.clone(),
             GitLabSessionHandle::PAT(handle) => handle.host.clone(),
+        }
+    }
+
+    pub(crate) fn session_kind(&self) -> SessionKind {
+        match self {
+            GitLabSessionHandle::OAuth(_) => SessionKind::OAuth,
+            GitLabSessionHandle::PAT(_) => SessionKind::PAT,
+        }
+    }
+
+    pub(crate) async fn revoke(
+        &self,
+        ctx: &R::AsyncContext,
+        keyring: &Arc<dyn KeyringClient>,
+        api_client: Arc<dyn GitLabRevokeApiReq<R>>,
+    ) -> joinerror::Result<()> {
+        match self {
+            GitLabSessionHandle::OAuth(handle) => handle.revoke(ctx, keyring, api_client).await,
+            GitLabSessionHandle::PAT(handle) => handle.revoke(keyring).await,
+        }
+    }
+
+    pub(crate) async fn update_pat(
+        &self,
+        keyring: &Arc<dyn KeyringClient>,
+        pat: &str,
+    ) -> joinerror::Result<()> {
+        match self {
+            GitLabSessionHandle::OAuth(_) => Err(Error::new::<()>(
+                "cannot update PAT when the authentication method is OAuth",
+            )),
+            GitLabSessionHandle::PAT(handle) => handle.update_pat(keyring, pat).await,
         }
     }
 }
@@ -167,6 +201,38 @@ impl<R: AppRuntime> GitLabOAuthSessionHandle<R> {
 
         return Ok(resp.access_token);
     }
+
+    pub(crate) async fn revoke(
+        &self,
+        ctx: &R::AsyncContext,
+        keyring: &Arc<dyn KeyringClient>,
+        api_client: Arc<dyn GitLabRevokeApiReq<R>>,
+    ) -> joinerror::Result<()> {
+        // Revoke refresh token and (if it exists) access token
+        let access_token = self.token.write().await.take().map(|token| token.token);
+        let key = make_secret_key(GITLAB_PREFIX, &self.host, &self.id);
+        let bytes = keyring
+            .get_secret(&key)
+            .await
+            .map_err(|e| Error::new::<()>(e.to_string()))?;
+
+        let refresh_token = String::from_utf8(bytes.to_vec())?;
+
+        keyring
+            .delete_secret(&refresh_token)
+            .await
+            .map_err(|e| Error::new::<()>(e.to_string()))?;
+
+        api_client
+            .gitlab_revoke(
+                ctx,
+                GitLabRevokeRequest {
+                    access_token,
+                    refresh_token,
+                },
+            )
+            .await
+    }
 }
 
 pub(crate) struct GitLabPATSessionHandle {
@@ -199,5 +265,29 @@ impl GitLabPATSessionHandle {
 
         let token = String::from_utf8(bytes.to_vec())?;
         Ok(token)
+    }
+
+    // We only need to remove the PAT from the keyring
+    pub async fn revoke(&self, keyring: &Arc<dyn KeyringClient>) -> joinerror::Result<()> {
+        let key = make_secret_key(GITLAB_PREFIX, &self.host, &self.id);
+        keyring
+            .delete_secret(&key)
+            .await
+            .map_err(|e| Error::new::<()>(e.to_string()))?;
+        Ok(())
+    }
+
+    pub async fn update_pat(
+        &self,
+        keyring: &Arc<dyn KeyringClient>,
+        pat: &str,
+    ) -> joinerror::Result<()> {
+        let key = make_secret_key(GITLAB_PREFIX, &self.host, &self.id);
+        keyring
+            .set_secret(&key, pat)
+            .await
+            .map_err(|e| Error::new::<()>(e.to_string()))?;
+
+        Ok(())
     }
 }

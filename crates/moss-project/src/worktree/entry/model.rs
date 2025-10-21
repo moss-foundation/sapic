@@ -9,20 +9,20 @@ use serde_json::Value as JsonValue;
 use std::path::PathBuf;
 
 use crate::models::primitives::{
-    EntryClass, EntryId, EntryProtocol, FormDataParamId, HeaderId, PathParamId, QueryParamId,
-    UrlencodedParamId,
+    FormDataParamId, HeaderId, PathParamId, QueryParamId, ResourceClass, ResourceId,
+    ResourceProtocol, UrlencodedParamId,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EntryMetadataSpec {
-    pub id: EntryId,
+    pub id: ResourceId,
     #[serde(rename = "_class")]
-    pub class: EntryClass,
+    pub class: ResourceClass,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UrlDetails {
-    pub protocol: EntryProtocol,
+    pub protocol: ResourceProtocol,
     pub raw: String,
 }
 
@@ -232,8 +232,8 @@ pub struct EntryModel {
     pub body: Option<LabeledBlock<IndexMap<BodyKind, BodySpec>>>,
 }
 
-impl From<(EntryId, EntryClass)> for EntryModel {
-    fn from((id, class): (EntryId, EntryClass)) -> Self {
+impl From<(ResourceId, ResourceClass)> for EntryModel {
+    fn from((id, class): (ResourceId, ResourceClass)) -> Self {
         Self {
             metadata: Block::new(EntryMetadataSpec { id, class }),
             url: None,
@@ -246,15 +246,15 @@ impl From<(EntryId, EntryClass)> for EntryModel {
 }
 
 impl EntryModel {
-    pub fn id(&self) -> EntryId {
+    pub fn id(&self) -> ResourceId {
         self.metadata.id.clone()
     }
 
-    pub fn class(&self) -> EntryClass {
+    pub fn class(&self) -> ResourceClass {
         self.metadata.class.clone()
     }
 
-    pub fn protocol(&self) -> Option<EntryProtocol> {
+    pub fn protocol(&self) -> Option<ResourceProtocol> {
         self.url.as_ref().map(|url| url.protocol.clone())
     }
 
@@ -278,11 +278,11 @@ mod tests {
     fn test_item() -> EntryModel {
         let model = EntryModel {
             metadata: Block::new(EntryMetadataSpec {
-                id: EntryId::new(),
-                class: EntryClass::Endpoint,
+                id: ResourceId::new(),
+                class: ResourceClass::Endpoint,
             }),
             url: Some(Block::new(UrlDetails {
-                protocol: EntryProtocol::Get,
+                protocol: ResourceProtocol::Get,
                 raw: "https://example.com".to_string(),
             })),
             headers: Some(LabeledBlock::new(indexmap! {

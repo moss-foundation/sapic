@@ -38,6 +38,17 @@ pub struct GitHubPkceTokenExchangeResponse {
     pub access_token: String,
 }
 
+#[derive(Debug, Serialize)]
+pub struct GitHubRevokeRequest {
+    pub access_token: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct GitLabRevokeRequest {
+    pub access_token: Option<String>,
+    pub refresh_token: String,
+}
+
 #[async_trait]
 pub trait GitLabPkceTokenExchangeApiReq<R: AppRuntime>: Send + Sync {
     async fn gitlab_pkce_token_exchange(
@@ -63,6 +74,30 @@ pub trait GitHubPkceTokenExchangeApiReq<R: AppRuntime>: Send + Sync {
         ctx: &R::AsyncContext,
         request: TokenExchangeRequest,
     ) -> joinerror::Result<GitHubPkceTokenExchangeResponse>;
+}
+
+#[async_trait]
+pub trait GitHubRevokeApiReq<R: AppRuntime>: Send + Sync {
+    async fn github_revoke(
+        &self,
+        ctx: &R::AsyncContext,
+        request: GitHubRevokeRequest,
+    ) -> joinerror::Result<()>;
+}
+
+#[async_trait]
+pub trait GitLabRevokeApiReq<R: AppRuntime>: Send + Sync {
+    async fn gitlab_revoke(
+        &self,
+        ctx: &R::AsyncContext,
+        request: GitLabRevokeRequest,
+    ) -> joinerror::Result<()>;
+}
+
+#[async_trait]
+pub trait RevokeApiReq<R: AppRuntime>:
+    Send + Sync + GitHubRevokeApiReq<R> + GitLabRevokeApiReq<R>
+{
 }
 
 #[derive(Clone)]
@@ -173,3 +208,62 @@ impl<R: AppRuntime> GitHubPkceTokenExchangeApiReq<R> for AccountAuthGatewayApiCl
         .join_err_bare()
     }
 }
+
+#[async_trait]
+impl<R: AppRuntime> GitHubRevokeApiReq<R> for AccountAuthGatewayApiClient {
+    async fn github_revoke(
+        &self,
+        ctx: &R::AsyncContext,
+        request: GitHubRevokeRequest,
+    ) -> joinerror::Result<()> {
+        context::abortable(ctx, async {
+            let resp = self
+                .client
+                .post(format!("{}/auth/github/revoke", self.base_url))
+                .json(&request)
+                .send()
+                .await
+                .join_err::<()>("failed to revoke GitHub token")?;
+
+            if !resp.status().is_success() {
+                let error_text = resp.text().await?;
+                return Err(joinerror::Error::new::<()>(error_text));
+            }
+
+            Ok(())
+        })
+        .await
+        .join_err_bare()
+    }
+}
+
+#[async_trait]
+impl<R: AppRuntime> GitLabRevokeApiReq<R> for AccountAuthGatewayApiClient {
+    async fn gitlab_revoke(
+        &self,
+        ctx: &R::AsyncContext,
+        request: GitLabRevokeRequest,
+    ) -> joinerror::Result<()> {
+        context::abortable(ctx, async {
+            let resp = self
+                .client
+                .post(format!("{}/auth/gitlab/revoke", self.base_url))
+                .json(&request)
+                .send()
+                .await
+                .join_err::<()>("failed to revoke GitHub token")?;
+
+            if !resp.status().is_success() {
+                let error_text = resp.text().await?;
+                return Err(joinerror::Error::new::<()>(error_text));
+            }
+
+            Ok(())
+        })
+        .await
+        .join_err_bare()
+    }
+}
+
+#[async_trait]
+impl<R: AppRuntime> RevokeApiReq<R> for AccountAuthGatewayApiClient {}

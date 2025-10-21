@@ -1,7 +1,7 @@
-// FIXME: remove mock log entries
+// FIXME: remove mock log resources
 const today = new Date().toISOString().split("T")[0];
 
-export const testLogEntries = [
+export const testLogResources = [
   { timestamp: `${today} 08:12:34`, level: "INFO", service: "ApiService", message: "Server started on port 3000" },
   {
     timestamp: `${today} 08:12:35`,

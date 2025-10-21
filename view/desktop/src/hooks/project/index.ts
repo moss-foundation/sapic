@@ -1,24 +1,24 @@
-export * from "./derivedHooks/useClearAllProjectEntries";
-export * from "./derivedHooks/useFetchEntriesForPath";
+export * from "./derivedHooks/useClearAllProjectResources";
+export * from "./derivedHooks/useFetchResourceForPath";
 export * from "./derivedHooks/useProjectsTrees";
-export * from "./derivedHooks/useStreamedProjectsWithEntries";
+export * from "./derivedHooks/useStreamedProjectsWithResources";
 
-export * from "./useBatchCreateProjectEntry";
+export * from "./useBatchCreateProjectResource";
 export * from "./useBatchUpdateProject";
-export * from "./useBatchUpdateProjectEntry";
+export * from "./useBatchUpdateProjectResource";
 
 export * from "./useCreateProject";
-export * from "./useCreateProjectEntry";
+export * from "./useCreateProjectResource";
 
 export * from "./useDeleteProject";
-export * from "./useDeleteProjectEntry";
+export * from "./useDeleteProjectResource";
 
-export * from "./useDescribeProjectEntry";
+export * from "./useDescribeProjectResource";
 
 export * from "./useImportProject";
 
-export * from "./useStreamProjectEntries";
+export * from "./useStreamProjectResources";
 export * from "./useStreamProjects";
 
 export * from "./useUpdateProject";
-export * from "./useUpdateProjectEntry";
+export * from "./useUpdateProjectResource";

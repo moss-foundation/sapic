@@ -2,19 +2,19 @@ use moss_applib::{AppRuntime, errors::ValidationResultExt};
 use validator::Validate;
 
 use crate::{
-    models::operations::{DeleteEntryInput, DeleteEntryOutput},
+    models::operations::{DeleteResourceInput, DeleteResourceOutput},
     project::Project,
 };
 
 impl<R: AppRuntime> Project<R> {
-    pub async fn delete_entry(
+    pub async fn delete_resource(
         &self,
         ctx: &R::AsyncContext,
-        input: DeleteEntryInput,
-    ) -> joinerror::Result<DeleteEntryOutput> {
+        input: DeleteResourceInput,
+    ) -> joinerror::Result<DeleteResourceOutput> {
         input.validate().join_err_bare()?;
         self.worktree().await.remove_entry(ctx, &input.id).await?;
 
-        Ok(DeleteEntryOutput { id: input.id })
+        Ok(DeleteResourceOutput { id: input.id })
     }
 }

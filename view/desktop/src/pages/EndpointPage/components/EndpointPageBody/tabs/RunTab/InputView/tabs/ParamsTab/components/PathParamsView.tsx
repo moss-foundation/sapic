@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 
 import { ActionButton } from "@/components";
-import { useUpdateProjectEntry } from "@/hooks";
+import { useUpdateProjectResource } from "@/hooks";
 import { Scrollbar } from "@/lib/ui";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import { RoundedCounter } from "@/lib/ui/RoundedCounter";
@@ -15,13 +15,13 @@ import { NewParamRowForm } from "./NewParamRowForm";
 import { ParamRow } from "./ParamRow";
 
 export const PathParamsView = () => {
-  const { entryDescription, entry: node, projectId } = useContext(EndpointPageContext);
+  const { resourceDescription, resource, projectId } = useContext(EndpointPageContext);
 
-  const { mutate: updateProjectEntry } = useUpdateProjectEntry();
+  const { mutate: updateProjectResource } = useUpdateProjectResource();
   const [columnToFocusOnMount, setColumnToFocusOnMount] = useState<string | null>(null);
 
   const handleParamRowChange = (updatedParam: QueryParamInfo) => {
-    const initialParam = entryDescription.pathParams.find((param) => param.id === updatedParam.id);
+    const initialParam = resourceDescription.pathParams.find((param) => param.id === updatedParam.id);
 
     if (!initialParam) return;
 
@@ -52,12 +52,12 @@ export const PathParamsView = () => {
       return updateObj;
     };
 
-    if (entryDescription.kind === "Item") {
-      updateProjectEntry({
+    if (resourceDescription.kind === "Item") {
+      updateProjectResource({
         projectId,
-        updatedEntry: {
+        updatedResource: {
           ITEM: {
-            id: node.id,
+            id: resource.id,
             headersToAdd: [],
             headersToUpdate: [],
             headersToRemove: [],
@@ -74,23 +74,23 @@ export const PathParamsView = () => {
   };
 
   const handleParamRowDelete = (paramId: string) => {
-    const deletedParam = entryDescription.pathParams.find((param) => param.id === paramId);
+    const deletedParam = resourceDescription.pathParams.find((param) => param.id === paramId);
 
     if (!deletedParam) return;
 
-    const pathParamsToUpdate = entryDescription.pathParams
+    const pathParamsToUpdate = resourceDescription.pathParams
       .filter((param) => param.order! > deletedParam.order!)
       .map((param) => ({
         id: param.id,
         order: param.order! - 1,
       }));
 
-    if (entryDescription.kind === "Item") {
-      updateProjectEntry({
+    if (resourceDescription.kind === "Item") {
+      updateProjectResource({
         projectId,
-        updatedEntry: {
+        updatedResource: {
           ITEM: {
-            id: node.id,
+            id: resource.id,
             headersToAdd: [],
             headersToUpdate: [],
             headersToRemove: [],
@@ -118,19 +118,19 @@ export const PathParamsView = () => {
     const newPathParam: AddQueryParamParams = {
       name: pathParam.name,
       value: pathParam.value,
-      order: entryDescription.pathParams.length + 1,
+      order: resourceDescription.pathParams.length + 1,
       options: {
         disabled: false,
         propagate: false,
       },
     };
 
-    if (entryDescription.kind === "Item") {
-      updateProjectEntry({
+    if (resourceDescription.kind === "Item") {
+      updateProjectResource({
         projectId,
-        updatedEntry: {
+        updatedResource: {
           ITEM: {
-            id: node.id,
+            id: resource.id,
             headersToAdd: [],
             headersToUpdate: [],
             headersToRemove: [],
@@ -149,17 +149,17 @@ export const PathParamsView = () => {
   const handleAllParamsCheckedChange = (checked: CheckedState) => {
     if (checked === "indeterminate") return;
 
-    updateProjectEntry({
+    updateProjectResource({
       projectId,
-      updatedEntry: {
+      updatedResource: {
         ITEM: {
-          id: node.id,
+          id: resource.id,
           queryParamsToUpdate: [],
           headersToAdd: [],
           headersToUpdate: [],
           headersToRemove: [],
           pathParamsToAdd: [],
-          pathParamsToUpdate: entryDescription.pathParams
+          pathParamsToUpdate: resourceDescription.pathParams
             .filter((param) => param.disabled === checked)
             .map((param) => ({
               id: param.id,
@@ -173,13 +173,13 @@ export const PathParamsView = () => {
     });
   };
 
-  const allParamsChecked = entryDescription.pathParams.every((param) => !param.disabled);
-  const someParamsChecked = entryDescription.pathParams.some((param) => !param.disabled);
-  const howManyParamsChecked = entryDescription.pathParams.filter((param) => !param.disabled).length;
+  const allParamsChecked = resourceDescription.pathParams.every((param) => !param.disabled);
+  const someParamsChecked = resourceDescription.pathParams.some((param) => !param.disabled);
+  const howManyParamsChecked = resourceDescription.pathParams.filter((param) => !param.disabled).length;
 
   const headerCheckedState = allParamsChecked ? true : someParamsChecked ? "indeterminate" : false;
 
-  const sortedPathParams = sortObjectsByOrder(entryDescription.pathParams);
+  const sortedPathParams = sortObjectsByOrder(resourceDescription.pathParams);
 
   return (
     <div className="flex h-full flex-col">
@@ -202,7 +202,7 @@ export const PathParamsView = () => {
       <Scrollbar className="min-h-0 flex-1">
         <div className="grid grid-cols-[min-content_minmax(128px,1fr)_minmax(128px,1fr)_min-content_min-content_min-content] gap-2 p-3">
           {sortedPathParams.map((param, index) => {
-            const isLastRow = index === entryDescription.pathParams.length - 1;
+            const isLastRow = index === resourceDescription.pathParams.length - 1;
             return (
               <ParamRow
                 key={param.id}

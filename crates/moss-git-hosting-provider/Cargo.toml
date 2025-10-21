@@ -25,6 +25,7 @@ keyring.workspace = true
 async-trait.workspace = true
 ts-rs.workspace = true
 urlencoding.workspace = true
+chrono.workspace = true
 
 # Making SSH work on Windows
 [target.'cfg(windows)'.dependencies]

@@ -1,66 +1,66 @@
 use crate::commands::primitives::*;
 use moss_api::TauriResult;
-use moss_project::models::{events::*, operations::*, primitives::EntryId};
+use moss_project::models::{events::*, operations::*, primitives::ResourceId};
 use moss_workspace::models::primitives::ProjectId;
 use tauri::{Window, ipc::Channel as TauriChannel};
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn create_project_entry<'a, R: tauri::Runtime>(
+pub async fn create_project_resource<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
     project_id: ProjectId,
-    input: CreateEntryInput,
+    input: CreateResourceInput,
     options: Options,
-) -> TauriResult<CreateEntryOutput> {
+) -> TauriResult<CreateResourceOutput> {
     super::with_project_timeout(
         ctx.inner(),
         app,
         project_id,
         options,
-        |ctx, _, project| async move { project.create_entry(&ctx, input).await },
+        |ctx, _, project| async move { project.create_resource(&ctx, input).await },
     )
     .await
 }
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn delete_project_entry<'a, R: tauri::Runtime>(
+pub async fn delete_project_resource<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
     project_id: ProjectId,
-    input: DeleteEntryInput,
+    input: DeleteResourceInput,
     options: Options,
-) -> TauriResult<DeleteEntryOutput> {
+) -> TauriResult<DeleteResourceOutput> {
     super::with_project_timeout(
         ctx.inner(),
         app,
         project_id,
         options,
-        |ctx, _, project| async move { project.delete_entry(&ctx, input).await },
+        |ctx, _, project| async move { project.delete_resource(&ctx, input).await },
     )
     .await
 }
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn update_project_entry<'a, R: tauri::Runtime>(
+pub async fn update_project_resource<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
     project_id: ProjectId,
-    input: UpdateEntryInput,
+    input: UpdateResourceInput,
     options: Options,
-) -> TauriResult<UpdateEntryOutput> {
+) -> TauriResult<UpdateResourceOutput> {
     super::with_project_timeout(
         ctx.inner(),
         app,
         project_id,
         options,
         |ctx, app_delegate, project| async move {
-            project.update_entry(&ctx, &app_delegate, input).await
+            project.update_resource(&ctx, &app_delegate, input).await
         },
     )
     .await
@@ -68,35 +68,35 @@ pub async fn update_project_entry<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn batch_create_project_entry<'a, R: tauri::Runtime>(
+pub async fn batch_create_project_resource<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
     project_id: ProjectId,
-    input: BatchCreateEntryInput,
+    input: BatchCreateResourceInput,
     options: Options,
-) -> TauriResult<BatchCreateEntryOutput> {
+) -> TauriResult<BatchCreateResourceOutput> {
     super::with_project_timeout(
         ctx.inner(),
         app,
         project_id,
         options,
-        |ctx, _, project| async move { project.batch_create_entry(&ctx, input).await },
+        |ctx, _, project| async move { project.batch_create_resource(&ctx, input).await },
     )
     .await
 }
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
-pub async fn batch_update_project_entry<'a, R: tauri::Runtime>(
+pub async fn batch_update_project_resource<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
-    channel: TauriChannel<BatchUpdateEntryEvent>,
+    channel: TauriChannel<BatchUpdateResourceEvent>,
     project_id: ProjectId,
-    input: BatchUpdateEntryInput,
+    input: BatchUpdateResourceInput,
     options: Options,
-) -> TauriResult<BatchUpdateEntryOutput> {
+) -> TauriResult<BatchUpdateResourceOutput> {
     super::with_project_timeout(
         ctx.inner(),
         app,
@@ -104,7 +104,7 @@ pub async fn batch_update_project_entry<'a, R: tauri::Runtime>(
         options,
         |ctx, app_delegate, project| async move {
             project
-                .batch_update_entry(&ctx, &app_delegate, input, channel)
+                .batch_update_resource(&ctx, &app_delegate, input, channel)
                 .await
         },
     )
@@ -113,15 +113,15 @@ pub async fn batch_update_project_entry<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
-pub async fn stream_project_entries<'a, R: tauri::Runtime>(
+pub async fn stream_project_resources<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
     project_id: ProjectId,
-    input: StreamEntriesInput,
-    channel: TauriChannel<StreamEntriesEvent>,
+    input: StreamResourcesInput,
+    channel: TauriChannel<StreamResourcesEvent>,
     options: Options,
-) -> TauriResult<StreamEntriesOutput> {
+) -> TauriResult<StreamResourcesOutput> {
     super::with_project_timeout(
         ctx.inner(),
         app,
@@ -129,7 +129,7 @@ pub async fn stream_project_entries<'a, R: tauri::Runtime>(
         options,
         |ctx, app_delegate, project| async move {
             project
-                .stream_entries(&ctx, &app_delegate, channel, input)
+                .stream_resources(&ctx, &app_delegate, channel, input)
                 .await
         },
     )
@@ -138,21 +138,23 @@ pub async fn stream_project_entries<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn describe_project_entry<'a, R: tauri::Runtime>(
+pub async fn describe_project_resource<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
     project_id: ProjectId,
-    entry_id: EntryId,
+    resource_id: ResourceId,
     options: Options,
-) -> TauriResult<DescribeEntryOutput> {
+) -> TauriResult<DescribeResourceOutput> {
     super::with_project_timeout(
         ctx.inner(),
         app,
         project_id,
         options,
         |ctx, app_delegate, project| async move {
-            project.describe_entry(&ctx, &app_delegate, entry_id).await
+            project
+                .describe_resource(&ctx, &app_delegate, resource_id)
+                .await
         },
     )
     .await
