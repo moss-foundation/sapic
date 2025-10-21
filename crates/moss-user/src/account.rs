@@ -15,12 +15,12 @@ use crate::{
     },
     models::{
         primitives::{AccountId, AccountKind, SessionKind},
-        types::{AccountInfo, AccountInfoMetadata},
+        types::{AccountInfo, AccountMetadata},
     },
 };
 
 #[derive(Clone)]
-pub struct AccountMetadata {
+struct Metadata {
     pub(crate) expires_at: Option<DateTime<Utc>>,
 }
 
@@ -30,7 +30,7 @@ pub struct Account<R: AppRuntime> {
     pub(crate) host: String,
     pub(crate) session: AccountSession<R>,
     pub(crate) kind: AccountKind,
-    pub(crate) metadata: AccountMetadata,
+    pub(crate) metadata: Metadata,
 }
 
 impl<R: AppRuntime> Clone for Account<R> {
@@ -61,7 +61,7 @@ impl<R: AppRuntime> Account<R> {
             host,
             session,
             kind,
-            metadata: AccountMetadata { expires_at },
+            metadata: Metadata { expires_at },
         }
     }
 
@@ -88,8 +88,8 @@ impl<R: AppRuntime> Account<R> {
             host: self.host.clone(),
             kind: self.kind.clone(),
             method: self.session.session_kind(),
-            metadata: AccountInfoMetadata {
-                expires_at: self.metadata.expires_at,
+            metadata: AccountMetadata {
+                pat_expires_at: self.metadata.expires_at,
             },
         }
     }

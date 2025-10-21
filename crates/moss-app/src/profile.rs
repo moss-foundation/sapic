@@ -25,7 +25,7 @@ use moss_user::{
     },
     models::{
         primitives::{AccountId, AccountKind, ProfileId, SessionKind},
-        types::{AccountInfo, AccountInfoMetadata},
+        types::{AccountInfo, AccountMetadata},
     },
     profile::Profile,
 };
@@ -117,8 +117,8 @@ impl<R: AppRuntime> ProfileService<R> {
                     host: a.host.clone(),
                     kind: a.kind.clone(),
                     method: a.metadata.session_kind.clone(),
-                    metadata: AccountInfoMetadata {
-                        expires_at: a.metadata.expires_at,
+                    metadata: AccountMetadata {
+                        pat_expires_at: a.metadata.expires_at,
                     },
                 })
                 .collect(),
@@ -338,7 +338,6 @@ impl<R: AppRuntime> ProfileService<R> {
         Ok(account_id)
     }
 
-    // For now, there's only the option to update PAT
     pub async fn update_account(
         &self,
         ctx: &R::AsyncContext,

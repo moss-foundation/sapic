@@ -10,10 +10,10 @@ export type AccountInfo = {
   host: string;
   kind: AccountKind;
   method: MethodKind;
-  metadata: AccountInfoMetadata;
+  metadata: AccountMetadata;
 };
 
-export type AccountInfoMetadata = { expiresAt?: string };
+export type AccountMetadata = { patExpiresAt?: string };
 
 /**
  * @category Type
