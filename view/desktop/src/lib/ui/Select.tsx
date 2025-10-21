@@ -33,10 +33,37 @@ const SelectScrollDownButton = forwardRef<
 
 export interface SelectTriggerProps extends ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger> {
   disabled?: boolean;
+  placeholder?: string;
+  childrenLeftSide?: React.ReactNode;
+  childrenRightSide?: React.ReactNode;
 }
 
-const selectTriggerStyles = cva(
-  "relative flex cursor-pointer items-center justify-center rounded-sm px-2 transition duration-150 ease-in-out",
+//prettier-ignore
+const selectTriggerStyles = cva(`
+    flex justify-between w-30 py-1.25 px-2  
+    relative cursor-pointer items-center rounded-sm 
+    transition duration-150 ease-in-out 
+
+    background-(--moss-controls-background)
+    border border-(--moss-controls-border) 
+    text-(--moss-controls-foreground)
+
+    data-[state=open]:border-(--moss-accent)
+
+    data-[invalid]:border-(--moss-error)
+    focus:data-[invalid]:outline-(--moss-error)
+
+    data-[valid]:border-(--moss-success)
+    focus:data-[valid]:outline-(--moss-success) 
+
+    disabled:background-(--moss-background-disabled)
+    disabled:text-(--moss-foreground-disabled)
+    disabled:cursor-not-allowed
+
+    focus-visible:ring-2 
+    focus-visible:ring-(--moss-accent) 
+    focus-visible:ring-offset-2
+  `,
   {
     variants: {
       disabled: {
@@ -48,15 +75,25 @@ const selectTriggerStyles = cva(
 );
 
 const SelectTrigger = forwardRef<ElementRef<typeof SelectPrimitive.Trigger>, SelectTriggerProps>(
-  ({ disabled = false, className, children, ...props }, forwardedRef) => {
+  ({ disabled = false, className, placeholder, childrenLeftSide, childrenRightSide, ...props }, forwardedRef) => {
     return (
       <SelectPrimitive.Trigger
         {...props}
         ref={forwardedRef}
         disabled={disabled}
-        className={cn(selectTriggerStyles({ disabled }), className)}
+        className={selectTriggerStyles({ disabled, className })}
       >
-        {children}
+        <div className="flex grow items-center gap-2 overflow-hidden">
+          {childrenLeftSide}
+
+          <span className="min-w-0 flex-1 truncate text-left">
+            <SelectPrimitive.Value placeholder={placeholder} />
+          </span>
+
+          {childrenRightSide}
+
+          <Icon icon="ChevronDown" />
+        </div>
       </SelectPrimitive.Trigger>
     );
   }
@@ -76,9 +113,12 @@ const SelectContent = forwardRef<
         position={position}
         sideOffset={sideOffset}
         ref={forwardedRef}
-        className={cn(`z-50 rounded-lg border px-1.5 py-1.5 shadow-lg`, className)}
+        className={cn(
+          `background-(--moss-controls-background) z-50 w-56 rounded-lg border border-(--moss-controls-border) px-1.5 py-1.5 shadow-lg`,
+          className
+        )}
       >
-        {children}
+        <SelectPrimitive.Viewport>{children}</SelectPrimitive.Viewport>
       </SelectPrimitive.Content>
     </SelectContext.Provider>
   );
@@ -98,7 +138,7 @@ const SelectItemIndicator = forwardRef<
 ));
 
 const selectItemStyles = cva(
-  `relative flex min-w-0 items-center gap-1.5 rounded py-0.5 pr-2 pl-[7px] outline-none select-none data-[disabled]:cursor-not-allowed data-[disabled]:grayscale-100 data-[highlighted]:cursor-pointer`
+  `data-[highlighted]:background-(--moss-controls-background-hover) data-[state=checked]:background-(--moss-accent-secondary) relative flex min-w-0 items-center gap-1.5 rounded py-0.5 pr-2 pl-[7px] leading-5 outline-none select-none data-[disabled]:cursor-not-allowed data-[disabled]:grayscale-100 data-[highlighted]:cursor-pointer`
 );
 
 const SelectItem = forwardRef<
@@ -125,7 +165,13 @@ const SelectSeparator = forwardRef<
   ElementRef<typeof SelectPrimitive.Separator>,
   ComponentPropsWithoutRef<typeof SelectPrimitive.Separator>
 >(({ className, ...props }, forwardedRef) => {
-  return <SelectPrimitive.Separator {...props} ref={forwardedRef} className={cn("my-0.5 h-px w-full", className)} />;
+  return (
+    <SelectPrimitive.Separator
+      {...props}
+      ref={forwardedRef}
+      className={cn("background-(--moss-border) my-0.5 h-px w-full", className)}
+    />
+  );
 });
 
 const Select = {

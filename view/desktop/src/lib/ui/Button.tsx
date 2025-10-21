@@ -31,6 +31,10 @@ const buttonRootStyles = cva(`
     border
 
     enabled:active:brightness-90
+
+    focus-visible:outline-(--moss-accent)
+    focus-visible:outline-offset-2
+    focus-visible:outline-2
 `,
   {
     variants: {

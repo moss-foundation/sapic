@@ -17,6 +17,8 @@ const radioGroupItemStyles = `
   data-[state=checked]:background-(--moss-accent) 
 
   focus-visible:outline-(--moss-accent) 
+  focus-visible:outline-offset-2
+  focus-visible:outline-2
 `;
 
 export interface ItemWithLabelProps {

@@ -3,7 +3,7 @@ import { useContext, useState } from "react";
 import { PageWrapper } from "@/components/PageView/PageWrapper";
 import { useRenameEntryForm } from "@/hooks";
 import { Icon, MossDropdown, MossToggle } from "@/lib/ui";
-import MossSelect from "@/lib/ui/MossSelect";
+import Select from "@/lib/ui/Select";
 import { cn } from "@/utils";
 
 import { EndpointPageContext } from "../../EndpointPageContext";
@@ -41,14 +41,10 @@ export const EndpointPageHeader = () => {
             editable
           />
           <div className="flex items-center gap-2">
-            <MossToggle
-              checked={isEnabled}
-              onCheckedChange={setIsEnabled}
-              labelLeft={isEnabled ? "Enabled" : "Disabled"}
-            />
-            <MossSelect.Root value={selectedValue} onValueChange={setSelectedValue}>
-              <MossSelect.Trigger
-                placeholder={"Placeholder"}
+            <MossToggle checked={isEnabled} onCheckedChange={setIsEnabled} />
+            <Select.Root value={selectedValue} onValueChange={setSelectedValue}>
+              <Select.Trigger
+                placeholder="Select an option"
                 childrenLeftSide={
                   <span
                     className={cn("size-1.5 rounded-full", {
@@ -61,14 +57,14 @@ export const EndpointPageHeader = () => {
                 }
               />
 
-              <MossSelect.Content align="end">
+              <Select.Content align="end">
                 {options?.map((option) => (
-                  <MossSelect.Item key={option.value} value={option.value}>
+                  <Select.Item key={option.value} value={option.value}>
                     {option.label}
-                  </MossSelect.Item>
+                  </Select.Item>
                 ))}
-              </MossSelect.Content>
-            </MossSelect.Root>
+              </Select.Content>
+            </Select.Root>
 
             <MossDropdown.Root>
               <MossDropdown.Trigger>
