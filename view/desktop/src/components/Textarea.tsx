@@ -12,7 +12,7 @@ function Textarea({ className, ...props }: TextareaHTMLAttributes<HTMLTextAreaEl
         border border-(--moss-controls-border) 
         px-1.5 py-1 
         placeholder:text-(--moss-controls-placeholder) 
-        focus-visible:border-(--moss-primary) 
+        focus-visible:border-(--moss-accent) 
         focus-visible:outline-none`,
 
         className

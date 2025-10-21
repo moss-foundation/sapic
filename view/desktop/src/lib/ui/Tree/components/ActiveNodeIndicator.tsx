@@ -18,7 +18,7 @@ export const ActiveNodeIndicator = ({ isActive, className, ...props }: ActiveNod
           -z-1
         `,
         {
-          "background-(--moss-secondary-background-hover) border-l border-l-(--moss-primary)": isActive,
+          "background-(--moss-secondary-background-hover) border-l border-l-(--moss-accent)": isActive,
         },
         className 
       )}

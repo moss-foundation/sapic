@@ -112,7 +112,7 @@ export const EndpointInputField = memo(
                   "rounded-md",
                   "cursor-pointer font-bold",
                   "background-(--moss-primary-background) hover:background-(--moss-secondary-background-hover) border border-(--moss-border) text-(--moss-orange-5)",
-                  "data-[state=open]:outline-2 data-[state=open]:outline-offset-0 data-[state=open]:outline-(--moss-primary)"
+                  "data-[state=open]:outline-2 data-[state=open]:outline-offset-0 data-[state=open]:outline-(--moss-accent)"
                 )}
               >
                 <span>{method}</span>

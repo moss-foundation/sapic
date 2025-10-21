@@ -79,7 +79,7 @@ const FirstColumn = () => {
         <div className="flex flex-col items-start gap-2">
           <h2 className="text-lg">Start</h2>
           <button className="flex cursor-pointer gap-1.5" onClick={openNewWorkspaceModal}>
-            <Icon icon="NewWorkspace" className="size-4 text-(--moss-primary)" />
+            <Icon icon="NewWorkspace" className="size-4 text-(--moss-accent)" />
             <span>New workspace</span>
           </button>
 
@@ -91,7 +91,7 @@ const FirstColumn = () => {
             })}
             onClick={workspaces?.length && workspaces?.length > 0 ? openOpenWorkspaceModal : undefined}
           >
-            <Icon icon="Workspace" className="size-4 text-(--moss-primary)" />
+            <Icon icon="Workspace" className="size-4 text-(--moss-accent)" />
             <span>Open workspace</span>
           </button>
         </div>

@@ -48,7 +48,7 @@ export const EndpointPageHeader = () => {
                 childrenLeftSide={
                   <span
                     className={cn("size-1.5 rounded-full", {
-                      "background-(--moss-primary)": selectedValue === "Released",
+                      "background-(--moss-blue-4)": selectedValue === "Released",
                       "background-(--moss-orange-5)": selectedValue === "Draft",
                       "background-(--moss-error)": selectedValue === "Archived",
                       "hidden": selectedValue === "Some very long name",
