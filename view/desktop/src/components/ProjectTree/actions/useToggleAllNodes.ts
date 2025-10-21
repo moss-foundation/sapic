@@ -50,7 +50,7 @@ export const useToggleAllNodes = (node: ProjectTreeRootNode) => {
 
     await batchUpdateProjectEntry({
       projectId: node.id,
-      entries: {
+      resources: {
         resources: inputEntries,
       },
     });
@@ -99,7 +99,7 @@ export const useToggleAllNodes = (node: ProjectTreeRootNode) => {
 
     await batchUpdateProjectEntry({
       projectId: node.id,
-      entries: {
+      resources: {
         resources: inputEntries,
       },
     });

@@ -34,7 +34,7 @@ export const useDeleteAndUpdatePeers = (
 
     const result = await batchUpdateProjectEntry({
       projectId,
-      entries: {
+      resources: {
         resources: siblingsAfterRemovalPayload({
           nodes: parentNode.childNodes,
           removedNode: node,

@@ -5,17 +5,17 @@ import { Channel } from "@tauri-apps/api/core";
 
 export interface UseBatchUpdateProjectEntryInput {
   projectId: string;
-  entries: BatchUpdateResourceInput;
+  resources: BatchUpdateResourceInput;
 }
 
-const batchUpdateProjectEntry = async ({ projectId, entries }: UseBatchUpdateProjectEntryInput) => {
+const batchUpdateProjectEntry = async ({ projectId, resources }: UseBatchUpdateProjectEntryInput) => {
   const onProjectEvent = new Channel<BatchUpdateResourceOutputKind>();
 
   const result = await invokeTauriIpc<BatchUpdateResourceOutput>("batch_update_project_entry", {
     channel: onProjectEvent,
     projectId: projectId,
     input: {
-      entries: entries.resources,
+      resources: resources.resources,
     },
   });
 
