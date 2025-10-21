@@ -125,11 +125,9 @@ export const ActivityBarButton = ({
       {...props}
     >
       <Icon
-        // icon={isActive && isSideBarVisible ? iconActive : icon}
-        icon={icon}
+        icon={isActive && isSideBarVisible ? iconActive : icon}
         className={cn({
           "size-4.5": position === ACTIVITYBAR_POSITION.DEFAULT,
-          "fill-(--moss-accent)!": isActive && isSideBarVisible,
         })}
       />
 
