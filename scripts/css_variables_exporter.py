@@ -21,7 +21,7 @@ from pathlib import Path
 
 
 # The accent variables are defined in the view/desktop/src/assets/accent.css file
-# they are deffered from the --moss-primary, so they are not defined in the theme.json file.
+# they are derived from the --moss-primary, so they are not defined in the theme.json file.
 ACCENT_VARIABLES = [
     "--moss-accent",
     "--moss-accent-secondary",
