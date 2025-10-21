@@ -11,11 +11,11 @@ impl<R: AppRuntime> Project<R> {
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
-        entry_id: ResourceId,
+        resource_id: ResourceId,
     ) -> joinerror::Result<DescribeResourceOutput> {
         self.worktree()
             .await
-            .describe_entry(ctx, app_delegate, &entry_id)
+            .describe_entry(ctx, app_delegate, &resource_id)
             .await
     }
 }

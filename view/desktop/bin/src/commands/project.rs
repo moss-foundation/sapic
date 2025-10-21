@@ -143,7 +143,7 @@ pub async fn describe_project_resource<'a, R: tauri::Runtime>(
     app: App<'a, R>,
     window: Window<R>,
     project_id: ProjectId,
-    entry_id: ResourceId,
+    resource_id: ResourceId,
     options: Options,
 ) -> TauriResult<DescribeResourceOutput> {
     super::with_project_timeout(
@@ -153,7 +153,7 @@ pub async fn describe_project_resource<'a, R: tauri::Runtime>(
         options,
         |ctx, app_delegate, project| async move {
             project
-                .describe_resource(&ctx, &app_delegate, entry_id)
+                .describe_resource(&ctx, &app_delegate, resource_id)
                 .await
         },
     )
