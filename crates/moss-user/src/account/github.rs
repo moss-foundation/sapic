@@ -1,8 +1,13 @@
 use joinerror::Error;
+use moss_applib::AppRuntime;
 use moss_keyring::KeyringClient;
+use moss_server_api::account_auth_gateway::{GitHubRevokeApiReq, GitHubRevokeRequest};
 use std::sync::Arc;
 
-use crate::{account::common::make_secret_key, models::primitives::AccountId};
+use crate::{
+    account::common::make_secret_key,
+    models::primitives::{AccountId, SessionKind},
+};
 
 const GITHUB_PREFIX: &str = "gh";
 
@@ -57,12 +62,43 @@ impl GitHubSessionHandle {
             GitHubSessionHandle::PAT(handle) => handle.host.clone(),
         }
     }
+
+    pub(crate) fn session_kind(&self) -> SessionKind {
+        match self {
+            GitHubSessionHandle::OAuth(_) => SessionKind::OAuth,
+            GitHubSessionHandle::PAT(_) => SessionKind::PAT,
+        }
+    }
+
+    pub(crate) async fn revoke<R: AppRuntime>(
+        &self,
+        ctx: &R::AsyncContext,
+        keyring: &Arc<dyn KeyringClient>,
+        api_client: Arc<dyn GitHubRevokeApiReq<R>>,
+    ) -> joinerror::Result<()> {
+        match self {
+            GitHubSessionHandle::OAuth(handle) => handle.revoke(ctx, keyring, api_client).await,
+            GitHubSessionHandle::PAT(handle) => handle.revoke(keyring).await,
+        }
+    }
+
+    pub(crate) async fn update_pat(
+        &self,
+        keyring: &Arc<dyn KeyringClient>,
+        pat: &str,
+    ) -> joinerror::Result<()> {
+        match self {
+            GitHubSessionHandle::OAuth(_) => Err(Error::new::<()>(
+                "cannot update PAT when the authentication method is OAuth",
+            )),
+            GitHubSessionHandle::PAT(handle) => handle.update_pat(keyring, pat).await,
+        }
+    }
 }
 
 pub(crate) struct GitHubOAuthSessionHandle {
     pub id: AccountId,
     pub host: String,
-    // TODO: Can we store an Arc<dyn KeyringClient> here so it doesn't need to be passed everytime?
 }
 
 impl GitHubOAuthSessionHandle {
@@ -106,9 +142,32 @@ impl GitHubOAuthSessionHandle {
         // So we store it in the keyring and return it immediately.
         return Ok(access_token);
     }
+
+    pub async fn revoke<R: AppRuntime>(
+        &self,
+        ctx: &R::AsyncContext,
+        keyring: &Arc<dyn KeyringClient>,
+        api_client: Arc<dyn GitHubRevokeApiReq<R>>,
+    ) -> joinerror::Result<()> {
+        let key = make_secret_key(GITHUB_PREFIX, &self.host, &self.id);
+        let bytes = keyring
+            .get_secret(&key)
+            .await
+            .map_err(|e| Error::new::<()>(e.to_string()))?;
+
+        let access_token = String::from_utf8(bytes.to_vec())?;
+
+        keyring
+            .delete_secret(&key)
+            .await
+            .map_err(|e| Error::new::<()>(e.to_string()))?;
+
+        api_client
+            .github_revoke(ctx, GitHubRevokeRequest { access_token })
+            .await
+    }
 }
 
-// TODO: A method to update PAT?
 pub(crate) struct GitHubPATSessionHandle {
     pub id: AccountId,
     pub host: String,
@@ -141,5 +200,30 @@ impl GitHubPATSessionHandle {
         let token = String::from_utf8(bytes.to_vec())?;
 
         return Ok(token);
+    }
+
+    // We only need to remove the record from the keyring
+    pub async fn revoke(&self, keyring: &Arc<dyn KeyringClient>) -> joinerror::Result<()> {
+        let key = make_secret_key(GITHUB_PREFIX, &self.host, &self.id);
+        keyring
+            .delete_secret(&key)
+            .await
+            .map_err(|e| Error::new::<()>(e.to_string()))?;
+
+        Ok(())
+    }
+
+    pub async fn update_pat(
+        &self,
+        keyring: &Arc<dyn KeyringClient>,
+        pat: &str,
+    ) -> joinerror::Result<()> {
+        let key = make_secret_key(GITHUB_PREFIX, &self.host, &self.id);
+        keyring
+            .set_secret(&key, pat)
+            .await
+            .map_err(|e| Error::new::<()>(e.to_string()))?;
+
+        Ok(())
     }
 }

@@ -3,7 +3,7 @@ use futures::Stream;
 use joinerror::{Error, OptionExt, ResultExt};
 use moss_app_delegate::{AppDelegate, broadcast::ToLocation};
 use moss_applib::{AppRuntime, subscription::EventEmitter};
-use moss_common::continue_if_err;
+use moss_common::{continue_if_err, continue_if_none};
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
 use moss_git::url::GitUrl;
 use moss_git_hosting_provider::{
@@ -1041,16 +1041,17 @@ async fn restore_collections<R: AppRuntime>(
         };
 
         if let (Some(vcs), Some(account_id)) = (details.vcs, details.account_id) {
-            // FIXME: Skip initializing vcs instead of failing the restore process
-            let account = active_profile
-                .account(&account_id)
-                .await
-                .ok_or_join_err_with::<()>(|| {
-                    format!(
-                        "failed to find account with id `{}`",
-                        account_id.to_string()
-                    )
-                })?;
+            let account = continue_if_none!(active_profile.account(&account_id).await, || {
+                collections.push((id, collection));
+                let _ = app_delegate.emit_oneshot(ToLocation::Toast {
+                    activity_id: "restore_collections_nonexistent_account",
+                    title: "A project is associated with a nonexistent account".to_string(),
+                    detail: Some(format!(
+                        "The project {} is associated with a nonexistent account `{}`. It's vcs will not be loaded.",
+                        id_str, account_id.as_str()
+                    ))
+                });
+            });
 
             let client = match vcs.kind {
                 GitProviderKind::GitHub => GitClient::GitHub {
@@ -1063,7 +1064,17 @@ async fn restore_collections<R: AppRuntime>(
                 },
             };
 
-            collection.load_vcs(client).await?;
+            if let Err(e) = collection.load_vcs(client).await {
+                let _ = app_delegate.emit_oneshot(ToLocation::Toast {
+                    activity_id: "restore_collections_failed_to_load_vcs",
+                    title: "Failed to load project vcs".to_string(),
+                    detail: Some(format!(
+                        "Failed to load vcs for project `{}`: {}",
+                        id_str,
+                        e.to_string()
+                    )),
+                });
+            };
         }
 
         collections.push((id, collection));

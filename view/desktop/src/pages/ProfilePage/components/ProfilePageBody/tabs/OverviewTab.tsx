@@ -47,6 +47,7 @@ export const OverviewTab = ({ profile, refetchProfile }: OverviewTabProps) => {
       const input: UpdateProfileInput = {
         accountsToAdd: [],
         accountsToRemove: [accountToRemove.id],
+        accountsToUpdate: [],
       };
       await invoke("update_profile", { input });
       console.log("Account removed successfully");

@@ -1,7 +1,7 @@
 use moss_configuration::models::primitives::ConfigurationTarget;
 use moss_logging::models::primitives::LogEntryId;
 use moss_theme::models::primitives::{ThemeId, ThemeMode};
-use moss_user::models::primitives::AccountKind;
+use moss_user::models::primitives::{AccountId, AccountKind};
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::{
@@ -48,10 +48,19 @@ pub struct Configuration {
 #[ts(export, export_to = "types.ts")]
 pub struct AddAccountParams {
     pub host: String,
-    pub label: Option<String>,
     #[ts(type = "AccountKind")]
     pub kind: AccountKind,
     /// If a PAT is not provided, we will use OAuth
+    pub pat: Option<String>,
+}
+
+/// @category Type
+#[derive(Debug, Clone, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct UpdateAccountParams {
+    pub id: AccountId,
     pub pat: Option<String>,
 }
 

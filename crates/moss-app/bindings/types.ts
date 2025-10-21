@@ -10,7 +10,6 @@ import type { LogLevel } from "./primitives";
  */
 export type AddAccountParams = {
   host: string;
-  label?: string;
   kind: AccountKind;
   /**
    * If a PAT is not provided, we will use OAuth
@@ -58,6 +57,11 @@ export type LogEntryInfo = {
  * @category Type
  */
 export type LogItemSourceInfo = { id: string };
+
+/**
+ * @category Type
+ */
+export type UpdateAccountParams = { id: string; pat?: string };
 
 /**
  * @category Type
