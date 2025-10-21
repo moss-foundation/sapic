@@ -79,7 +79,7 @@ run-desktop:
 
 ## Install dependencies and setup development environment
 .PHONY: ready
-ready: gen-icons export-css-variables gen-typedoc
+ready: gen-icons gen-theme-tokens gen-typedoc
 	@cd $(CARGO_NEW_TS) && $(CARGO) install --path .
 	$(PNPM) i
 
@@ -96,6 +96,12 @@ gen-icons:
 								 --light-json ../extensions/theme-defaults/themes/light-default.json \
 								 --dark-json ../extensions/theme-defaults/themes/dark-default.json \
 								 --output-dir ${ICONS_OUTPUT_DIR}
+
+## Generate theme tokens
+.PHONY: gen-theme-tokens
+gen-theme-tokens:
+	@cd extensions/theme-defaults && $(PNPM) build
+	$(MAKE) export-css-variables
 
 # ======================================================
 # TypeScript Bindings Generation

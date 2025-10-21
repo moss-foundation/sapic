@@ -761,6 +761,10 @@
       "type": "solid",
       "value": "rgba(39, 39, 42, 0.5)"
     },
+    "moss.controls.outlined.bg.contrast": {
+      "type": "variable",
+      "value": "moss.gray.13"
+    },
     "moss.controls.outlined.border": {
       "type": "solid",
       "value": "rgb(39, 39, 42)"

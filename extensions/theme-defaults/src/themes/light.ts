@@ -352,744 +352,128 @@ export const defaultLightTheme: Theme = {
     },
   },
   colors: {
-    "moss.primary": {
-      type: "variable",
-      value: "moss.blue.4",
-    },
-    "moss.error": {
-      type: "variable",
-      value: "moss.red.3",
-    },
-    "moss.error.background": {
-      type: "variable",
-      value: "moss.red.9",
-    },
-    "moss.success": {
-      type: "variable",
-      value: "moss.green.3",
-    },
-    "moss.success.background": {
-      type: "variable",
-      value: "moss.green.11",
-    },
-    "moss.border.color": {
-      type: "variable",
-      value: "moss.gray.12",
-    },
-    "moss.primary.background": {
-      type: "variable",
-      value: "moss.gray.14",
-    },
-    "moss.primary.background.hover": {
-      type: "variable",
-      value: "moss.blue.13",
-    },
-    "moss.primary.text": {
-      type: "variable",
-      value: "moss.gray.1",
-    },
-    "moss.secondary.background": {
-      type: "variable",
-      value: "moss.gray.13",
-    },
-    "moss.secondary.background.hover": {
-      type: "variable",
-      value: "moss.gray.12",
-    },
-    "moss.secondary.background.active": {
-      type: "variable",
-      value: "moss.gray.11",
-    },
-    "moss.secondary.text": {
-      type: "variable",
-      value: "moss.gray.6",
-    },
-    "moss.info.background": {
-      type: "variable",
-      value: "moss.blue.12",
-    },
-    "moss.info.background.hover": {
-      type: "variable",
-      value: "moss.blue.11",
-    },
-    "moss.info.text": {
-      type: "variable",
-      value: "moss.primary.text",
-    },
-    "moss.info.icon": {
-      type: "variable",
-      value: "moss.primary",
-    },
-    "moss.info.border": {
-      type: "variable",
-      value: "moss.primary",
-    },
-    "moss.divider.color": {
-      type: "variable",
-      value: "moss.gray.11",
-    },
-    "moss.not.selected.item.color": {
-      type: "variable",
-      value: "moss.gray.7",
-    },
-    "moss.shortcut.text": {
-      type: "variable",
-      value: "moss.gray.7",
-    },
-    "moss.tree.entries.counter": {
-      type: "variable",
-      value: "moss.gray.7",
-    },
-    "focus.border": {
-      type: "variable",
-      value: "moss.primary",
-    },
-    "separator.border": {
-      type: "variable",
-      value: "moss.border.color",
-    },
-    "moss.icon.primary.background": {
-      type: "variable",
-      value: "moss.gray.12",
-    },
-    "moss.icon.primary.text": {
-      type: "variable",
-      value: "moss.gray.6",
-    },
-    "moss.icon.primary.background.hover": {
-      type: "variable",
-      value: "moss.gray.10",
-    },
-    "moss.icon.primary.background.active": {
-      type: "variable",
-      value: "moss.blue.11",
-    },
-    "moss.icon.secondary.background": {
-      type: "solid",
-      value: "transparent",
-    },
-    "moss.icon.secondary.text": {
-      type: "variable",
-      value: "moss.gray.6",
-    },
-    "moss.icon.secondary.background.hover": {
-      type: "variable",
-      value: "moss.gray.12",
-    },
-    "moss.icon.secondary.background.active": {
-      type: "variable",
-      value: "moss.gray.11",
-    },
-    "moss.headBar.icon.primary.text": {
-      type: "variable",
-      value: "moss.gray.4",
-    },
-    "moss.headBar.primary.background": {
-      type: "variable",
-      value: "moss.gray.12",
-    },
-    "moss.headBar.primary.background.hover": {
-      type: "variable",
-      value: "moss.gray.11",
-    },
-    "moss.headBar.border.color": {
-      type: "variable",
-      value: "moss.gray.11",
-    },
-    "moss.statusBar.icon.primary.text": {
-      type: "variable",
-      value: "moss.gray.1",
-    },
-    "moss.statusBar.icon.secondary.text": {
-      type: "variable",
-      value: "moss.gray.4",
-    },
-    "moss.statusBar.icon.background.hover": {
-      type: "variable",
-      value: "moss.gray.12",
-    },
-    "moss.statusBar.background": {
-      type: "variable",
-      value: "moss.gray.2",
-    },
-    "moss.button.icon.color": {
-      type: "solid",
-      value: "black",
-    },
-    "moss.windowsCloseButton.background": {
-      type: "solid",
-      value: rgba(196, 43, 28, 1),
-    },
-    "moss.windowControlsLinux.background": {
-      type: "solid",
-      value: "#e7e7e7",
-    },
-    "moss.windowControlsLinux.text": {
-      type: "solid",
-      value: rgba(61, 61, 61, 1),
-    },
-    "moss.windowControlsLinux.hoverBackground": {
-      type: "solid",
-      value: rgba(209, 209, 209, 1),
-    },
-    "moss.windowControlsLinux.activeBackground": {
-      type: "solid",
-      value: rgba(191, 191, 191, 1),
-    },
-    "moss.sash.active.highlight": {
-      type: "solid",
-      value: "#047cd4",
-    },
-    "moss.paneview.active.outline.color": {
-      type: "variable",
-      value: "moss.primary",
-    },
-    "moss.drag.over.background.color": {
-      type: "variable",
-      value: "moss.blue.11",
-    },
-    "moss.drag.over.border.color": {
-      type: "variable",
-      value: "moss.primary.background",
-    },
-    "moss.group.view.background.color": {
-      type: "variable",
-      value: "moss.primary.background",
-    },
-    "moss.tabs.and.actions.container.background.color": {
-      type: "variable",
-      value: "moss.primary.background",
-    },
-    "moss.activegroup.visiblepanel.tab.background.color": {
-      type: "variable",
-      value: "moss.primary.background.hover",
-    },
-    "moss.inactivegroup.visiblepanel.tab.background.color": {
-      type: "variable",
-      value: "moss.primary.background",
-    },
-    "moss.activegroup.visiblepanel.tab.color": {
-      type: "variable",
-      value: "moss.primary.text",
-    },
-    "moss.inactivegroup.visiblepanel.tab.color": {
-      type: "variable",
-      value: "moss.secondary.text",
-    },
-    "moss.activegroup.visiblepanel.tab.border.color": {
-      type: "variable",
-      value: "moss.primary",
-    },
-    "moss.activegroup.hiddenpanel.tab.border.color": {
-      type: "solid",
-      value: "transparent",
-    },
-    "moss.inactivegroup.visiblepanel.tab.border.color": {
-      type: "variable",
-      value: "moss.gray.8",
-    },
-    "moss.activegroup.hiddenpanel.tab.background.color": {
-      type: "variable",
-      value: "moss.primary.background",
-    },
-    "moss.inactivegroup.hiddenpanel.tab.background.color": {
-      type: "variable",
-      value: "moss.primary.background",
-    },
-    "moss.activegroup.hiddenpanel.tab.color": {
-      type: "variable",
-      value: "moss.secondary.text",
-    },
-    "moss.inactivegroup.hiddenpanel.tab.color": {
-      type: "variable",
-      value: "moss.secondary.text",
-    },
-    "moss.tab.divider.color": {
-      type: "variable",
-      value: "moss.border.color",
-    },
-    "moss.separator.border": {
-      type: "variable",
-      value: "moss.border.color",
-    },
-    "moss.button.primary.solid.background": {
-      type: "variable",
-      value: "moss.blue.4",
-    },
-    "moss.button.primary.solid.background.hover": {
-      type: "variable",
-      value: "moss.blue.3",
-    },
-    "moss.button.primary.solid.background.active": {
-      type: "variable",
-      value: "moss.blue.2",
-    },
-    "moss.button.primary.solid.border": {
-      type: "solid",
-      value: "transparent",
-    },
-    "moss.button.primary.solid.border.hover": {
-      type: "solid",
-      value: "transparent",
-    },
-    "moss.button.primary.solid.border.active": {
-      type: "solid",
-      value: "transparent",
-    },
-    "moss.button.primary.solid.text": {
-      type: "variable",
-      value: "moss.gray.14",
-    },
-    "moss.button.primary.outlined.background": {
-      type: "variable",
-      value: "moss.gray.14",
-    },
+    //general
+    "moss.primary": { type: "variable", value: "moss.blue.4" },
 
-    "moss.button.primary.outlined.background.hover": {
-      type: "variable",
-      value: "moss.blue.12",
-    },
-    "moss.button.primary.outlined.background.active": {
-      type: "variable",
-      value: "moss.blue.11",
-    },
-    "moss.button.primary.outlined.border": {
-      type: "variable",
-      value: "moss.blue.4",
-    },
-    "moss.button.primary.outlined.border.hover": {
-      type: "variable",
-      value: "moss.blue.5",
-    },
-    "moss.button.primary.outlined.border.active": {
-      type: "variable",
-      value: "moss.blue.6",
-    },
-    "moss.button.primary.outlined.text": {
-      type: "variable",
-      value: "moss.blue.4",
-    },
-    "moss.button.neutral.solid.background": {
-      type: "variable",
-      value: "moss.gray.4",
-    },
-    "moss.button.neutral.solid.background.hover": {
-      type: "variable",
-      value: "moss.gray.3",
-    },
-    "moss.button.neutral.solid.background.active": {
-      type: "variable",
-      value: "moss.gray.2",
-    },
-    "moss.button.neutral.solid.border": {
-      type: "solid",
-      value: "transparent",
-    },
-    "moss.button.neutral.solid.border.hover": {
-      type: "solid",
-      value: "transparent",
-    },
-    "moss.button.neutral.solid.border.active": {
-      type: "solid",
-      value: "transparent",
-    },
-    "moss.button.neutral.solid.text": {
-      type: "variable",
-      value: "moss.gray.14",
-    },
-    "moss.button.neutral.outlined.background": {
-      type: "variable",
-      value: "moss.gray.14",
-    },
-    "moss.button.neutral.outlined.background.hover": {
-      type: "variable",
-      value: "moss.gray.14",
-    },
-    "moss.button.neutral.outlined.background.active": {
-      type: "variable",
-      value: "moss.gray.13",
-    },
-    "moss.button.neutral.outlined.border": {
-      type: "variable",
-      value: "moss.gray.9",
-    },
-    "moss.button.neutral.outlined.border.hover": {
-      type: "variable",
-      value: "moss.gray.8",
-    },
-    "moss.button.neutral.outlined.border.active": {
-      type: "variable",
-      value: "moss.gray.7",
-    },
-    "moss.button.neutral.outlined.text": {
-      type: "variable",
-      value: "moss.gray.1",
-    },
-    "moss.button.background.disabled": {
-      type: "variable",
-      value: "moss.gray.12",
-    },
-    "moss.button.background.disabled.hover": {
-      type: "variable",
-      value: "moss.gray.12",
-    },
-    "moss.button.background.disabled.active": {
-      type: "variable",
-      value: "moss.gray.12",
-    },
-    "moss.button.border.disabled": {
-      type: "solid",
-      value: "transparent",
-    },
-    "moss.button.border.disabled.hover": {
-      type: "solid",
-      value: "transparent",
-    },
-    "moss.button.border.disabled.active": {
-      type: "solid",
-      value: "transparent",
-    },
-    "moss.button.text.disabled": {
-      type: "variable",
-      value: "moss.gray.8",
-    },
-    "moss.button.background.danger": {
-      type: "variable",
-      value: "moss.red.4",
-    },
-    "moss.button.background.danger.hover": {
-      type: "variable",
-      value: "moss.red.2",
-    },
-    "moss.button.text.danger": {
-      type: "variable",
-      value: "moss.gray.14",
-    },
-    "moss.controls.plain.bg": {
-      type: "solid",
-      value: "transparent",
-    },
+    "moss.error": { type: "variable", value: "moss.red.3" },
+    "moss.error.background": { type: "variable", value: "moss.red.9" },
 
-    "moss.controls.plain.border": {
-      type: "solid",
-      value: "none",
-    },
-    "moss.controls.plain.text": {
-      type: "variable",
-      value: "moss.gray.1",
-    },
-    "moss.controls.outlined.bg": {
-      type: "variable",
-      value: "moss.gray.14",
-    },
-    "moss.controls.outlined.bg.contrast": {
-      type: "variable",
-      value: "moss.gray.13",
-    },
-    "moss.controls.outlined.border": {
-      type: "variable",
-      value: "moss.gray.12",
-    },
-    "moss.controls.outlined.text": {
-      type: "variable",
-      value: "moss.gray.1",
-    },
-    "moss.controls.placeholder": {
-      type: "variable",
-      value: "moss.gray.6",
-    },
-    "moss.select.bg.outlined": {
-      type: "variable",
-      value: "moss.gray.14",
-    },
-    "moss.select.border.outlined": {
-      type: "variable",
-      value: "moss.gray.12",
-    },
-    "moss.select.text.outlined": {
-      type: "variable",
-      value: "moss.gray.1",
-    },
-    "moss.select.hover.bg": {
-      type: "variable",
-      value: "moss.gray.13",
-    },
-    "moss.select.item.bg.outlined.hover": {
-      type: "variable",
-      value: "moss.gray.12",
-    },
-    "moss.select.item.bg.outlined.selected": {
-      type: "variable",
-      value: "moss.blue.11",
-    },
-    "moss.select.disabled.bg": {
-      type: "variable",
-      value: "moss.gray.10",
-    },
-    "moss.input.bg.plain": {
-      type: "variable",
-      value: "moss.gray.14",
-    },
-    "moss.input.bg.outlined": {
-      type: "variable",
-      value: "moss.gray.14",
-    },
-    "moss.input.border": {
-      type: "variable",
-      value: "moss.gray.9",
-    },
-    "moss.stepCard.text": {
-      type: "variable",
-      value: "moss.blue.2",
-    },
-    "moss.stepCard.bg": {
-      type: "variable",
-      value: "moss.blue.11",
-    },
-    "moss.templating.input.text": {
-      type: "variable",
-      value: "moss.blue.3",
-    },
-    "moss.templating.input.border": {
-      type: "variable",
-      value: "moss.blue.10",
-    },
-    "moss.templating.input.bg": {
-      type: "variable",
-      value: "moss.blue.12",
-    },
-    "moss.checkbox.border": {
-      type: "variable",
-      value: "moss.gray.8",
-    },
-    "moss.checkbox.border.disabled": {
-      type: "variable",
-      value: "moss.gray.10",
-    },
-    "moss.checkbox.bg.disabled": {
-      type: "variable",
-      value: "moss.gray.8",
-    },
-    "moss.radio.bg": {
-      type: "variable",
-      value: "moss.gray.14",
-    },
-    "moss.radio.border": {
-      type: "variable",
-      value: "moss.gray.8",
-    },
-    "moss.radio.bg.disabled": {
-      type: "variable",
-      value: "moss.gray.10",
-    },
-    "moss.radio.border.disabled": {
-      type: "variable",
-      value: "moss.gray.10",
-    },
-    "moss.table.header.bg": {
-      type: "variable",
-      value: "moss.gray.13",
-    },
-    "moss.table.cell.bg": {
-      type: "variable",
-      value: "moss.gray.14",
-    },
-    "moss.table.add.form.text": {
-      type: "variable",
-      value: "moss.gray.9",
-    },
-    "moss.table.add.row.form.text": {
-      type: "variable",
-      value: "moss.gray.9",
-    },
-    "moss.drag.handle.bg": {
-      type: "variable",
-      value: "moss.gray.14",
-    },
-    "moss.tab.active.border.color": {
-      type: "variable",
-      value: "moss.blue.4",
-    },
-    "moss.auth.indicator.color": {
-      type: "variable",
-      value: "moss.green.4",
-    },
-    "moss.tab.badge.color": {
-      type: "variable",
-      value: "moss.blue.4",
-    },
-    "moss.tab.badge.text": {
-      type: "variable",
-      value: "moss.gray.14",
-    },
-    "moss.requestpage.border.color": {
-      type: "variable",
-      value: "moss.gray.11",
-    },
-    "moss.requestpage.text": {
-      type: "variable",
-      value: "moss.orange.4",
-    },
-    "moss.requestpage.string.color": {
-      type: "variable",
-      value: "moss.green.3",
-    },
-    "moss.requestpage.number.color": {
-      type: "variable",
-      value: "moss.purple.3",
-    },
-    "moss.requestpage.bool.color": {
-      type: "variable",
-      value: "moss.teal.3",
-    },
-    "moss.requestpage.icon.color": {
-      type: "variable",
-      value: "moss.gray.7",
-    },
-    "moss.requestpage.text.disabled": {
-      type: "variable",
-      value: "moss.gray.8",
-    },
-    "moss.requestpage.placeholder.color": {
-      type: "variable",
-      value: "moss.gray.9",
-    },
-    "moss.requestpage.header.color": {
-      type: "variable",
-      value: "moss.gray.3",
-    },
-    "moss.display.mode.border": {
-      type: "variable",
-      value: "moss.gray.11",
-    },
-    "moss.display.mode.bg": {
-      type: "variable",
-      value: "moss.gray.12",
-    },
-    "moss.display.mode.text": {
-      type: "variable",
-      value: "moss.gray.7",
-    },
-    "moss.display.mode.text.selected": {
-      type: "variable",
-      value: "moss.gray.1",
-    },
-    "moss.textarea.bg": {
-      type: "variable",
-      value: "moss.gray.14",
-    },
-    "moss.textarea.border": {
-      type: "variable",
-      value: "moss.gray.9",
-    },
-    "moss.textarea.text": {
-      type: "variable",
-      value: "moss.gray.1",
-    },
-    "moss.textarea.placeholder": {
-      type: "variable",
-      value: "moss.gray.6",
-    },
-    "moss.mossToggle.bg": {
-      type: "variable",
-      value: "moss.gray.12",
-    },
-    "moss.mossToggle.border": {
-      type: "variable",
-      value: "moss.gray.11",
-    },
-    "moss.mossToggle.indicator": {
-      type: "variable",
-      value: "moss.gray.6",
-    },
-    "moss.mossToggle.indicator.checked": {
-      type: "variable",
-      value: "moss.gray.14",
-    },
-    "moss.mossToggle.thumb": {
-      type: "variable",
-      value: "moss.gray.14",
-    },
-    "moss.mossToggle.thumb.border": {
-      type: "variable",
-      value: "moss.gray.8",
-    },
-    "moss.mossSelect.bg": {
-      type: "variable",
-      value: "moss.gray.13",
-    },
-    "moss.mossSelect.border": {
-      type: "variable",
-      value: "moss.gray.12",
-    },
-    "moss.mossSelect.text": {
-      type: "variable",
-      value: "moss.gray.1",
-    },
-    "moss.mossSelect.hover.bg": {
-      type: "variable",
-      value: "moss.gray.13",
-    },
-    "moss.mossSelect.item.bg.hover": {
-      type: "variable",
-      value: "moss.gray.12",
-    },
-    "moss.mossSelect.item.bg.selected": {
-      type: "variable",
-      value: "moss.blue.11",
-    },
-    "moss.mossSelect.disabled.bg": {
-      type: "variable",
-      value: "moss.gray.10",
-    },
-    "moss.mossDropdown.bg": {
-      type: "variable",
-      value: "moss.gray.13",
-    },
-    "moss.mossDropdown.border": {
-      type: "variable",
-      value: "moss.gray.11",
-    },
-    "moss.mossDropdown.text": {
-      type: "variable",
-      value: "moss.gray.1",
-    },
-    "moss.mossDropdown.hover.bg": {
-      type: "variable",
-      value: "moss.gray.12",
-    },
-    "moss.mossDropdown.item.bg.hover": {
-      type: "variable",
-      value: "moss.gray.12",
-    },
-    "moss.notification.bg": {
-      type: "variable",
-      value: "moss.gray.2",
-    },
-    "moss.notification.text": {
-      type: "variable",
-      value: "moss.gray.14",
-    },
-    "moss.notification.button.outline": {
-      type: "variable",
-      value: "moss.gray.7",
-    },
-    "moss.notification.button.hover": {
-      type: "variable",
-      value: "moss.gray.4",
-    },
-    "moss.notification.close.color": {
-      type: "variable",
-      value: "moss.gray.6",
-    },
-    "moss.link.text": {
-      type: "variable",
-      value: "moss.blue.8",
-    },
-    "moss.link.hover": {
-      type: "variable",
-      value: "moss.blue.10",
-    },
+    "moss.success": { type: "variable", value: "moss.green.3" },
+    "moss.success.background": { type: "variable", value: "moss.green.11" },
+
+    "moss.background.disabled": { type: "variable", value: "moss.gray.12" },
+    "moss.border.disabled": { type: "variable", value: "moss.gray.12" },
+    "moss.foreground.disabled": { type: "variable", value: "moss.gray.8" },
+
+    "moss.border": { type: "variable", value: "moss.gray.12" },
+
+    "moss.primary.background": { type: "variable", value: "moss.gray.14" },
+    "moss.primary.background.hover": { type: "variable", value: "moss.blue.13" },
+    "moss.primary.foreground": { type: "variable", value: "moss.gray.1" },
+    "moss.primary.descriptionForeground": { type: "variable", value: "moss.gray.7" },
+
+    "moss.secondary.background": { type: "variable", value: "moss.gray.13" },
+    "moss.secondary.background.hover": { type: "variable", value: "moss.gray.12" },
+    "moss.secondary.background.active": { type: "variable", value: "moss.gray.11" },
+    "moss.secondary.foreground": { type: "variable", value: "moss.gray.6" },
+
+    //TODO distribute these
+    "moss.shortcut.foreground": { type: "variable", value: "moss.gray.7" },
+
+    // head bar
+    "moss.headBar.background": { type: "variable", value: "moss.gray.12" },
+    "moss.headBar.border": { type: "variable", value: "moss.gray.11" },
+
+    //Sidebar
+    "moss.sidebar.background": { type: "variable", value: "moss.gray.13" },
+    "moss.sidebar.foreground": { type: "variable", value: "moss.gray.6" },
+
+    // status bar
+    "moss.statusBar.background": { type: "variable", value: "moss.gray.13" },
+
+    "moss.statusBarItem.foreground": { type: "variable", value: "moss.gray.4" },
+    "moss.statusBarItem.background.hover": { type: "variable", value: "moss.gray.12" },
+
+    // activity bar
+    "moss.activityBar.background": { type: "variable", value: "moss.gray.13" },
+
+    "moss.activityBarItem.background": { type: "variable", value: "moss.gray.12" },
+    "moss.activityBarItem.background.hover": { type: "variable", value: "moss.gray.10" },
+    "moss.activityBarItem.background.active": { type: "variable", value: "moss.blue.11" }, //deprecated
+    "moss.activityBarItem.foreground": { type: "variable", value: "moss.gray.6" },
+    "moss.activityBarItem.foreground.active": { type: "variable", value: "moss.blue.4" }, //deprecated
+
+    // toolbar
+    "moss.toolbarItem.background": { type: "variable", value: "moss.gray.14" },
+    "moss.toolbarItem.background.hover": { type: "variable", value: "moss.gray.12" },
+    "moss.toolbarItem.foreground": { type: "variable", value: "moss.gray.6" },
+
+    // list
+    "moss.list.background": { type: "variable", value: "moss.gray.13" },
+    "moss.list.background.hover": { type: "variable", value: "moss.gray.12" },
+    "moss.list.background.active": { type: "variable", value: "moss.blue.11" },
+    "moss.list.foreground": { type: "variable", value: "moss.gray.1" },
+    "moss.list.descriptionForeground": { type: "variable", value: "moss.gray.7" },
+
+    "moss.list.toolbarItem.background": { type: "variable", value: "transparent" },
+    "moss.list.toolbarItem.background.hover": { type: "variable", value: "moss.gray.10" },
+
+    //buttons
+    "moss.button.primary.background": { type: "variable", value: "moss.blue.4" },
+    "moss.button.primary.background.hover": { type: "variable", value: "moss.blue.3" },
+    "moss.button.primary.foreground": { type: "variable", value: "moss.gray.14" },
+
+    "moss.button.outlined.background": { type: "variable", value: "moss.gray.14" },
+    "moss.button.outlined.background.hover": { type: "variable", value: "moss.gray.12" },
+    "moss.button.outlined.border": { type: "variable", value: "moss.gray.9" },
+    "moss.button.outlined.border.hover": { type: "variable", value: "moss.gray.8" },
+    "moss.button.outlined.foreground": { type: "variable", value: "moss.gray.1" },
+
+    "moss.button.danger.background": { type: "variable", value: "moss.red.4" },
+    "moss.button.danger.background.hover": { type: "variable", value: "moss.red.2" },
+    "moss.button.danger.foreground": { type: "variable", value: "moss.gray.14" },
+
+    //input, textarea, select, checkbox, radio, toggle, IconLabelButton etc.
+    "moss.controls.background": { type: "variable", value: "moss.gray.14" },
+    "moss.controls.background.hover": { type: "variable", value: "moss.gray.12" },
+    "moss.controls.background.contrast": { type: "variable", value: "moss.gray.13" },
+    "moss.controls.border": { type: "variable", value: "moss.gray.10" },
+    "moss.controls.foreground": { type: "variable", value: "moss.gray.1" },
+    "moss.controls.placeholder": { type: "variable", value: "moss.gray.6" },
+
+    "moss.display.mode.border": { type: "variable", value: "moss.gray.11" },
+    "moss.display.mode.background": { type: "variable", value: "moss.gray.12" },
+    "moss.display.mode.foreground": { type: "variable", value: "moss.gray.7" },
+    "moss.display.mode.foreground.selected": { type: "variable", value: "moss.gray.1" },
+
+    "moss.mossToggle.background": { type: "variable", value: "moss.gray.12" },
+    "moss.mossToggle.border": { type: "variable", value: "moss.gray.11" },
+    "moss.mossToggle.indicator": { type: "variable", value: "moss.gray.6" },
+    "moss.mossToggle.indicator.checked": { type: "variable", value: "moss.gray.14" },
+    "moss.mossToggle.thumb": { type: "variable", value: "moss.gray.14" },
+    "moss.mossToggle.thumb.border": { type: "variable", value: "moss.gray.8" },
+
+    "moss.notification.background": { type: "variable", value: "moss.gray.2" },
+    "moss.notification.foreground": { type: "variable", value: "moss.gray.14" },
+    "moss.notification.button.outline": { type: "variable", value: "moss.gray.7" },
+    "moss.notification.button.hover": { type: "variable", value: "moss.gray.4" },
+    "moss.notification.close": { type: "variable", value: "moss.gray.6" },
+
+    "moss.link.foreground": { type: "variable", value: "moss.blue.8" },
+    "moss.link.foreground.hover": { type: "variable", value: "moss.blue.10" },
+
+    "moss.stepCard.background": { type: "variable", value: "moss.blue.12" },
+    "moss.stepCard.foreground": { type: "variable", value: "moss.blue.4" },
+
+    //resizable handle
+    "separator.border": { type: "variable", value: "moss.border" },
+
+    "moss.windowsCloseButton.button.icon": { type: "solid", value: "black" },
+    "moss.windowsCloseButton.background": { type: "solid", value: rgba(196, 43, 28, 1) },
+    "moss.windowControlsLinux.background": { type: "solid", value: "#e7e7e7" },
+    "moss.windowControlsLinux.foreground": { type: "solid", value: rgba(61, 61, 61, 1) },
+    "moss.windowControlsLinux.hoverBackground": { type: "solid", value: rgba(209, 209, 209, 1) },
+    "moss.windowControlsLinux.activeBackground": { type: "solid", value: rgba(191, 191, 191, 1) },
   },
   boxShadows: {
     "moss.floating.box.shadow": "8px 8px 8px 0px rgba(83, 89, 93, 0.5)",

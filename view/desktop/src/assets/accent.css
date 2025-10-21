@@ -1,0 +1,5 @@
+:root {
+  --moss-accent: var(--moss-primary);
+  --moss-accent-secondary: color-mix(in srgb, var(--moss-accent) 21.2%, white); /* #d4e2fc */
+  --moss-accent-hover: color-mix(in srgb, var(--moss-accent) 80%, black);
+}
