@@ -29,7 +29,7 @@ async fn scan_entries_for_test(
     let entries_clone = entries.clone();
 
     project
-        .stream_entries(
+        .stream_resources(
             &ctx,
             app_delegate,
             TauriChannel::new(move |body: InvokeResponseBody| {

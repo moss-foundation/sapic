@@ -14,7 +14,7 @@ use crate::{
 };
 
 impl<R: AppRuntime> Project<R> {
-    pub async fn batch_update_entry(
+    pub async fn batch_update_resource(
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
@@ -24,7 +24,7 @@ impl<R: AppRuntime> Project<R> {
         for entry in input.resources {
             match entry {
                 BatchUpdateResourceKind::Item(input) => {
-                    let output = self.update_item_entry(ctx, app_delegate, input).await?;
+                    let output = self.update_item_resource(ctx, app_delegate, input).await?;
                     channel
                         .send(BatchUpdateResourceEvent::Item(output))
                         .map_err(|e| {
@@ -35,7 +35,7 @@ impl<R: AppRuntime> Project<R> {
                         })?;
                 }
                 BatchUpdateResourceKind::Dir(input) => {
-                    let output = self.update_dir_entry(ctx, input).await?;
+                    let output = self.update_dir_resource(ctx, input).await?;
                     channel
                         .send(BatchUpdateResourceEvent::Dir(output))
                         .map_err(|e| {

@@ -6,7 +6,7 @@ use tauri::{Window, ipc::Channel as TauriChannel};
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn create_project_entry<'a, R: tauri::Runtime>(
+pub async fn create_project_resource<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
@@ -19,14 +19,14 @@ pub async fn create_project_entry<'a, R: tauri::Runtime>(
         app,
         project_id,
         options,
-        |ctx, _, project| async move { project.create_entry(&ctx, input).await },
+        |ctx, _, project| async move { project.create_resource(&ctx, input).await },
     )
     .await
 }
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn delete_project_entry<'a, R: tauri::Runtime>(
+pub async fn delete_project_resource<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
@@ -39,14 +39,14 @@ pub async fn delete_project_entry<'a, R: tauri::Runtime>(
         app,
         project_id,
         options,
-        |ctx, _, project| async move { project.delete_entry(&ctx, input).await },
+        |ctx, _, project| async move { project.delete_resource(&ctx, input).await },
     )
     .await
 }
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn update_project_entry<'a, R: tauri::Runtime>(
+pub async fn update_project_resource<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
@@ -60,7 +60,7 @@ pub async fn update_project_entry<'a, R: tauri::Runtime>(
         project_id,
         options,
         |ctx, app_delegate, project| async move {
-            project.update_entry(&ctx, &app_delegate, input).await
+            project.update_resource(&ctx, &app_delegate, input).await
         },
     )
     .await
@@ -68,7 +68,7 @@ pub async fn update_project_entry<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn batch_create_project_entry<'a, R: tauri::Runtime>(
+pub async fn batch_create_project_resource<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
@@ -81,14 +81,14 @@ pub async fn batch_create_project_entry<'a, R: tauri::Runtime>(
         app,
         project_id,
         options,
-        |ctx, _, project| async move { project.batch_create_entry(&ctx, input).await },
+        |ctx, _, project| async move { project.batch_create_resource(&ctx, input).await },
     )
     .await
 }
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
-pub async fn batch_update_project_entry<'a, R: tauri::Runtime>(
+pub async fn batch_update_project_resource<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
@@ -104,7 +104,7 @@ pub async fn batch_update_project_entry<'a, R: tauri::Runtime>(
         options,
         |ctx, app_delegate, project| async move {
             project
-                .batch_update_entry(&ctx, &app_delegate, input, channel)
+                .batch_update_resource(&ctx, &app_delegate, input, channel)
                 .await
         },
     )
@@ -113,7 +113,7 @@ pub async fn batch_update_project_entry<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
-pub async fn stream_project_entries<'a, R: tauri::Runtime>(
+pub async fn stream_project_resources<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
@@ -129,7 +129,7 @@ pub async fn stream_project_entries<'a, R: tauri::Runtime>(
         options,
         |ctx, app_delegate, project| async move {
             project
-                .stream_entries(&ctx, &app_delegate, channel, input)
+                .stream_resources(&ctx, &app_delegate, channel, input)
                 .await
         },
     )
@@ -138,7 +138,7 @@ pub async fn stream_project_entries<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn describe_project_entry<'a, R: tauri::Runtime>(
+pub async fn describe_project_resource<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
@@ -152,7 +152,9 @@ pub async fn describe_project_entry<'a, R: tauri::Runtime>(
         project_id,
         options,
         |ctx, app_delegate, project| async move {
-            project.describe_entry(&ctx, &app_delegate, entry_id).await
+            project
+                .describe_resource(&ctx, &app_delegate, entry_id)
+                .await
         },
     )
     .await

@@ -29,7 +29,7 @@ async fn delete_entry_success() {
     // Delete the entry
     let delete_input = DeleteResourceInput { id: entry_id };
 
-    let result = project.delete_entry(&ctx, delete_input).await;
+    let result = project.delete_resource(&ctx, delete_input).await;
     let _ = result.unwrap();
 
     // Verify the directory was removed
@@ -47,7 +47,7 @@ async fn delete_entry_not_found() {
         id: ResourceId::new(),
     };
 
-    let result = project.delete_entry(&ctx, delete_input).await;
+    let result = project.delete_resource(&ctx, delete_input).await;
     assert!(result.is_err());
 
     if let Err(error) = result {
@@ -84,7 +84,7 @@ async fn delete_entry_with_subdirectories() {
     // Delete the entry
     let delete_input = DeleteResourceInput { id: entry_id };
 
-    let result = project.delete_entry(&ctx, delete_input).await;
+    let result = project.delete_resource(&ctx, delete_input).await;
     let _ = result.unwrap();
 
     // Verify the entire directory tree was removed
@@ -119,7 +119,7 @@ async fn delete_multiple_entries() {
     // Delete first entry
     let delete_input1 = DeleteResourceInput { id: entry1_id };
 
-    let result1 = project.delete_entry(&ctx, delete_input1).await;
+    let result1 = project.delete_resource(&ctx, delete_input1).await;
     let _ = result1.unwrap();
 
     // Verify first entry was removed, second still exists
@@ -129,7 +129,7 @@ async fn delete_multiple_entries() {
     // Delete second entry
     let delete_input2 = DeleteResourceInput { id: entry2_id };
 
-    let result2 = project.delete_entry(&ctx, delete_input2).await;
+    let result2 = project.delete_resource(&ctx, delete_input2).await;
     let _ = result2.unwrap();
 
     // Verify both entries are now removed
@@ -156,14 +156,14 @@ async fn delete_entry_twice() {
     // Delete the entry first time - should succeed
     let delete_input = DeleteResourceInput { id: entry_id };
 
-    let result1 = project.delete_entry(&ctx, delete_input.clone()).await;
+    let result1 = project.delete_resource(&ctx, delete_input.clone()).await;
     let _ = result1.unwrap();
 
     // Verify the directory was removed
     assert!(!expected_dir.exists());
 
     // Try to delete the same entry again - should fail
-    let result2 = project.delete_entry(&ctx, delete_input).await;
+    let result2 = project.delete_resource(&ctx, delete_input).await;
     assert!(result2.is_err());
 
     if let Err(error) = result2 {
@@ -202,7 +202,7 @@ async fn delete_entries_from_different_directories() {
     // Create entries in different directories
     for (id, _) in &entries {
         let _ = project
-            .delete_entry(&ctx, DeleteResourceInput { id: id.clone() })
+            .delete_resource(&ctx, DeleteResourceInput { id: id.clone() })
             .await
             .unwrap();
     }

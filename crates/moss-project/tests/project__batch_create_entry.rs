@@ -48,7 +48,7 @@ async fn batch_create_entry_success() {
         resources: vec![inner_input, outer_input],
     };
 
-    let output = project.batch_create_entry(&ctx, input).await.unwrap();
+    let output = project.batch_create_resource(&ctx, input).await.unwrap();
     assert_eq!(output.ids.len(), 2);
 
     // Verify the directories were created
@@ -93,7 +93,7 @@ async fn batch_create_entry_missing_parent() {
         resources: vec![inner_input],
     };
 
-    let result = project.batch_create_entry(&ctx, input).await;
+    let result = project.batch_create_resource(&ctx, input).await;
     assert!(result.is_err());
 
     // Cleanup
@@ -105,7 +105,7 @@ async fn batch_create_entry_empty_input() {
     let (ctx, _, _, project, cleanup) = create_test_project().await;
 
     let input = BatchCreateResourceInput { resources: vec![] };
-    let output = project.batch_create_entry(&ctx, input).await.unwrap();
+    let output = project.batch_create_resource(&ctx, input).await.unwrap();
 
     assert_eq!(output.ids.len(), 0);
 

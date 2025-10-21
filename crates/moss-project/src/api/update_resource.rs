@@ -7,7 +7,7 @@ use crate::{
 };
 
 impl<R: AppRuntime> Project<R> {
-    pub async fn update_entry(
+    pub async fn update_resource(
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
@@ -15,11 +15,11 @@ impl<R: AppRuntime> Project<R> {
     ) -> joinerror::Result<UpdateResourceOutput> {
         match input {
             UpdateResourceInput::Item(input) => {
-                let output = self.update_item_entry(ctx, app_delegate, input).await?;
+                let output = self.update_item_resource(ctx, app_delegate, input).await?;
                 Ok(UpdateResourceOutput::Item(output))
             }
             UpdateResourceInput::Dir(input) => {
-                let output = self.update_dir_entry(ctx, input).await?;
+                let output = self.update_dir_resource(ctx, input).await?;
                 Ok(UpdateResourceOutput::Dir(output))
             }
         }

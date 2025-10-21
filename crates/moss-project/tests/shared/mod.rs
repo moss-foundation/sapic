@@ -92,7 +92,7 @@ pub async fn create_test_endpoint_dir_entry(
     name: &str,
 ) -> ResourceId {
     project
-        .create_entry(
+        .create_resource(
             &ctx,
             CreateResourceInput::Dir(CreateDirResourceParams {
                 class: ResourceClass::Endpoint,
@@ -113,7 +113,7 @@ pub async fn create_test_component_dir_entry(
     name: &str,
 ) -> ResourceId {
     project
-        .create_entry(
+        .create_resource(
             &ctx,
             CreateResourceInput::Dir(CreateDirResourceParams {
                 class: ResourceClass::Component,
@@ -134,7 +134,7 @@ pub async fn create_test_component_item_entry(
     name: &str,
 ) -> ResourceId {
     project
-        .create_entry(
+        .create_resource(
             &ctx,
             CreateResourceInput::Item(CreateItemResourceParams {
                 class: ResourceClass::Component,
@@ -160,7 +160,7 @@ pub async fn create_test_schema_dir_entry(
     name: &str,
 ) -> ResourceId {
     project
-        .create_entry(
+        .create_resource(
             &ctx,
             CreateResourceInput::Dir(CreateDirResourceParams {
                 class: ResourceClass::Schema,

@@ -25,7 +25,7 @@ use crate::{
 };
 
 impl<R: AppRuntime> Project<R> {
-    pub async fn stream_entries(
+    pub async fn stream_resources(
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,

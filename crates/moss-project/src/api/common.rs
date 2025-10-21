@@ -34,7 +34,7 @@ use crate::{
 };
 
 impl<R: AppRuntime> Project<R> {
-    pub(super) async fn create_dir_entry(
+    pub(super) async fn create_dir_resource(
         &self,
         ctx: &R::AsyncContext,
         input: CreateDirResourceParams,
@@ -59,7 +59,7 @@ impl<R: AppRuntime> Project<R> {
         Ok(CreateResourceOutput { id: id })
     }
 
-    pub(super) async fn create_item_entry(
+    pub(super) async fn create_item_resource(
         &self,
         ctx: &R::AsyncContext,
         input: CreateItemResourceParams,
@@ -69,7 +69,7 @@ impl<R: AppRuntime> Project<R> {
         let id = ResourceId::new();
 
         match &input.class {
-            ResourceClass::Endpoint => self.create_endpoint_entry(id, ctx, input).await,
+            ResourceClass::Endpoint => self.create_endpoint_resource(id, ctx, input).await,
             _ => {
                 let model = EntryModel {
                     metadata: Block::new(EntryMetadataSpec {
@@ -91,7 +91,7 @@ impl<R: AppRuntime> Project<R> {
         }
     }
 
-    pub(super) async fn update_item_entry(
+    pub(super) async fn update_item_resource(
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
@@ -135,7 +135,7 @@ impl<R: AppRuntime> Project<R> {
         Ok(AfterUpdateItemResourceDescription { id: input.id, path })
     }
 
-    pub(super) async fn update_dir_entry(
+    pub(super) async fn update_dir_resource(
         &self,
         ctx: &R::AsyncContext,
         input: UpdateDirResourceParams,
@@ -179,7 +179,7 @@ impl<R: AppRuntime> Project<R> {
 }
 
 impl<R: AppRuntime> Project<R> {
-    async fn create_endpoint_entry(
+    async fn create_endpoint_resource(
         &self,
         id: ResourceId,
         ctx: &R::AsyncContext,

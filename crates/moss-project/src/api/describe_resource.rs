@@ -7,7 +7,7 @@ use crate::{
 };
 
 impl<R: AppRuntime> Project<R> {
-    pub async fn describe_entry(
+    pub async fn describe_resource(
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
