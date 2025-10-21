@@ -441,10 +441,10 @@ export const defaultLightTheme: Theme = {
     "moss.controls.foreground": { type: "variable", value: "moss.gray.1" },
     "moss.controls.placeholder": { type: "variable", value: "moss.gray.6" },
 
-    "moss.display.mode.border": { type: "variable", value: "moss.gray.11" },
-    "moss.display.mode.background": { type: "variable", value: "moss.gray.12" },
-    "moss.display.mode.foreground": { type: "variable", value: "moss.gray.7" },
-    "moss.display.mode.foreground.selected": { type: "variable", value: "moss.gray.1" },
+    "moss.workspaceMode.background": { type: "variable", value: "moss.gray.12" },
+    "moss.workspaceMode.border": { type: "variable", value: "moss.gray.11" },
+    "moss.workspaceMode.foreground": { type: "variable", value: "moss.gray.7" },
+    "moss.workspaceMode.foreground.selected": { type: "variable", value: "moss.gray.1" },
 
     "moss.toggleButton.background": { type: "variable", value: "moss.gray.12" },
     "moss.toggleButton.border": { type: "variable", value: "moss.gray.11" },

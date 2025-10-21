@@ -1,9 +1,9 @@
 import { useContext, useState } from "react";
 
 import { ActionButton } from "@/components";
-import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { useUpdateProjectEntry } from "@/hooks";
 import { Scrollbar } from "@/lib/ui";
+import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import { RoundedCounter } from "@/lib/ui/RoundedCounter";
 import { EndpointPageContext } from "@/pages/EndpointPage/EndpointPageContext";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";

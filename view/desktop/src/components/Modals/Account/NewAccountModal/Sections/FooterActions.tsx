@@ -1,5 +1,5 @@
-import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { Button } from "@/lib/ui";
+import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 
 interface FooterActionsProps {
   useAsDefault: boolean;

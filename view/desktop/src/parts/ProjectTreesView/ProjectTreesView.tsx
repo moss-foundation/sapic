@@ -7,7 +7,7 @@ import { isSourceProjectTreeNode } from "@/components/ProjectTree/utils";
 import { useProjectsTrees } from "@/hooks/project/derivedHooks/useProjectsTrees";
 import { Scrollbar } from "@/lib/ui";
 import Input from "@/lib/ui/Input";
-import { useRequestModeStore } from "@/store/requestMode";
+import { useWorkspaceModeStore } from "@/store/workspaceMode";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import { ProjectCreationZone } from "./ProjectCreationZone";
@@ -16,7 +16,7 @@ import { ProjectTreeViewHeader } from "./ProjectTreeViewHeader";
 export const ProjectTreesView = () => {
   const dropTargetToggleRef = useRef<HTMLDivElement>(null);
 
-  const { displayMode } = useRequestModeStore();
+  const { displayMode } = useWorkspaceModeStore();
 
   useProjectDragAndDropHandler();
   useNodeDragAndDropHandler();

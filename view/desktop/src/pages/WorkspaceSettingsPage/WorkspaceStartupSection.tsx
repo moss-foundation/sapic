@@ -1,4 +1,4 @@
-import CheckboxWithLabel from "@/components/CheckboxWithLabel";
+import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 
 import { SectionTitle } from "./SectionTitle";
 

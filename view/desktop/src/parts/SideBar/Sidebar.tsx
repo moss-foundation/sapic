@@ -1,8 +1,8 @@
 import { ReactNode, useEffect, useRef } from "react";
 
 import { ActivityBar } from "@/components";
-import DesignModeToggle from "@/components/DesignModeToggle";
 import { EmptyWorkspace } from "@/components/EmptyWorkspace";
+import WorkspaceModeToggle from "@/components/WorkspaceModeToggle";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
 import { useActiveWorkspace } from "@/hooks";
 import { useGetProjectSessionState } from "@/hooks/useProjectSession";
@@ -102,7 +102,7 @@ export const Sidebar = () => {
         <div className="min-h-0 flex-1 overflow-hidden">{sidebarContent}</div>
         {hasActiveWorkspace && (
           <div className="z-20 flex w-full justify-end border-t border-t-(--moss-border) px-1 py-2">
-            <DesignModeToggle />
+            <WorkspaceModeToggle />
           </div>
         )}
       </BaseSidebar>
@@ -115,7 +115,7 @@ export const Sidebar = () => {
         <div className="min-h-0 flex-1 overflow-hidden">{sidebarContent}</div>
         {hasActiveWorkspace && (
           <div className="z-20 flex w-full justify-end border-t border-t-(--moss-border) px-1 py-2">
-            <DesignModeToggle />
+            <WorkspaceModeToggle />
           </div>
         )}
         <ActivityBar />
@@ -128,7 +128,7 @@ export const Sidebar = () => {
       <div className="min-h-0 flex-1 overflow-hidden">{sidebarContent}</div>
       {hasActiveWorkspace && (
         <div className="z-20 flex w-full justify-end border-t border-t-(--moss-border) px-1 py-2">
-          <DesignModeToggle />
+          <WorkspaceModeToggle />
         </div>
       )}
     </BaseSidebar>

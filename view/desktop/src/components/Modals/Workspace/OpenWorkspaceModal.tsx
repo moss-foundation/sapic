@@ -1,11 +1,11 @@
 import { useState } from "react";
 
 import { RadioGroup } from "@/components";
-import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { ModalForm } from "@/components/ModalForm";
 import SelectOutlined from "@/components/SelectOutlined";
 import { useListWorkspaces, useOpenWorkspace } from "@/hooks/workbench";
 import { Button } from "@/lib/ui";
+import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import { WorkspaceMode } from "@repo/moss-workspace";
 
 import { ModalWrapperProps } from "../types";

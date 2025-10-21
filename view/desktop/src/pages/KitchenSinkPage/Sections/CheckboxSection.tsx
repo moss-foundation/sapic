@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import CheckboxWithLabel from "@/components/CheckboxWithLabel";
+import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import { CheckedState } from "@radix-ui/react-checkbox";
 
 import { KitchenSinkSection } from "../KitchenSinkSection";

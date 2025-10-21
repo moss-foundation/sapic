@@ -1,10 +1,10 @@
 import { ChangeEvent, memo, useCallback, useContext, useEffect, useRef, useState } from "react";
 
 import { ActionButton, DropIndicator } from "@/components";
-import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { DragHandleButton } from "@/components/DragHandleButton";
 import { useHoverDelay } from "@/hooks";
 import { Icon } from "@/lib/ui";
+import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import Input from "@/lib/ui/Input";
 import { EndpointPageContext } from "@/pages/EndpointPage/EndpointPageContext";
 import { cn } from "@/utils";

@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 
 import { RadioGroup } from "@/components";
-import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { ModalForm } from "@/components/ModalForm";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
 import { useCreateWorkspace } from "@/hooks/workbench/useCreateWorkspace";
 import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
 import { Button } from "@/lib/ui";
+import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import Input from "@/lib/ui/Input";
 import { WorkspaceMode } from "@repo/moss-workspace";
 

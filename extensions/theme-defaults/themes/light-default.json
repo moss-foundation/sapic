@@ -581,19 +581,19 @@
       "type": "variable",
       "value": "moss.gray.6"
     },
-    "moss.display.mode.border": {
-      "type": "variable",
-      "value": "moss.gray.11"
-    },
-    "moss.display.mode.background": {
+    "moss.workspaceMode.background": {
       "type": "variable",
       "value": "moss.gray.12"
     },
-    "moss.display.mode.foreground": {
+    "moss.workspaceMode.border": {
+      "type": "variable",
+      "value": "moss.gray.11"
+    },
+    "moss.workspaceMode.foreground": {
       "type": "variable",
       "value": "moss.gray.7"
     },
-    "moss.display.mode.foreground.selected": {
+    "moss.workspaceMode.foreground.selected": {
       "type": "variable",
       "value": "moss.gray.1"
     },

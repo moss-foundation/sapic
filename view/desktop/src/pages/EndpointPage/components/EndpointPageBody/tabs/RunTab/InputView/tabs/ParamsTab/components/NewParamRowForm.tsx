@@ -1,7 +1,7 @@
 import { ChangeEvent, useCallback, useContext, useRef, useState } from "react";
 
 import { DropIndicator } from "@/components";
-import CheckboxWithLabel from "@/components/CheckboxWithLabel";
+import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import Input from "@/lib/ui/Input";
 import { EndpointPageContext } from "@/pages/EndpointPage/EndpointPageContext";
 import { CheckedState } from "@radix-ui/react-checkbox";

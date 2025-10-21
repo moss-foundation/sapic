@@ -1,7 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 
 import { RadioGroup } from "@/components";
-import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { useGroupedEnvironments } from "@/components/EnvironmentsLists/hooks/useGroupedEnvironments";
 import { ModalForm } from "@/components/ModalForm";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
@@ -13,6 +12,7 @@ import {
   useValidateInput,
 } from "@/hooks";
 import { Button } from "@/lib/ui";
+import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import Input from "@/lib/ui/Input";
 
 import { ModalWrapperProps } from "../types";

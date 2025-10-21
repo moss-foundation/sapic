@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 
-import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { VcsProviderSwitcher } from "@/components/VcsProviderSwitcher";
 import { useFocusInputOnMount } from "@/hooks";
+import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import { PillTabs } from "@/lib/ui/Tabs/index";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { CreateProjectGitParams } from "@repo/moss-workspace";
