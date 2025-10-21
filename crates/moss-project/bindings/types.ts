@@ -266,9 +266,9 @@ export type UpdateHeaderParams = {
 export type UpdateItemResourceParams = {
   id: string;
   /**
-   * If provided, the entry will move to the new path
-   * For example, if the new path is "requests/folder/", the name is "entry"
-   * The new relative path of the entry folder will be "requests/folder/entry"
+   * If provided, the resource will move to the new path
+   * For example, if the new path is "requests/folder/", the name is "resource"
+   * The new relative path of the resource folder will be "requests/folder/resource"
    */
   path?: string;
   name?: string;

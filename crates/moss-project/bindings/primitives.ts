@@ -3,6 +3,11 @@
 /**
  * @category Primitive
  */
+export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
+
+/**
+ * @category Primitive
+ */
 export type ResourceClass = "endpoint" | "component" | "schema";
 
 /**
@@ -19,8 +24,3 @@ export type ResourcePath = { raw: string; segments: Array<string> };
  * @category Primitive
  */
 export type ResourceProtocol = "Get" | "Post" | "Put" | "Delete" | "WebSocket" | "Graphql" | "Grpc";
-
-/**
- * @category Primitive
- */
-export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
