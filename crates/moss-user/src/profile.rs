@@ -1,3 +1,8 @@
+use moss_applib::AppRuntime;
+use moss_server_api::account_auth_gateway::RevokeApiReq;
+use std::{collections::HashMap, sync::Arc};
+use tokio::sync::RwLock;
+
 use crate::{
     account::Account,
     models::{
@@ -5,10 +10,6 @@ use crate::{
         types::AccountInfo,
     },
 };
-use moss_applib::AppRuntime;
-use moss_server_api::account_auth_gateway::RevokeApiReq;
-use std::{collections::HashMap, sync::Arc};
-use tokio::sync::RwLock;
 
 pub struct Profile<R: AppRuntime> {
     id: ProfileId,

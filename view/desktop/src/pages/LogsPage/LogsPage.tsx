@@ -159,13 +159,6 @@ export const Logs = () => {
                 onChange={(e) => setAccountForm((prev) => ({ ...prev, host: e.target.value }))}
                 className="w-full rounded-md border border-gray-300 bg-white p-2"
               />
-              <input
-                type="text"
-                placeholder="Label"
-                value={accountForm.label}
-                onChange={(e) => setAccountForm((prev) => ({ ...prev, label: e.target.value }))}
-                className="w-full rounded-md border border-gray-300 bg-white p-2"
-              />
               <select
                 value={accountForm.kind}
                 onChange={(e) => setAccountForm((prev) => ({ ...prev, kind: e.target.value as AccountKind }))}

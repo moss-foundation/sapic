@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use moss_user::models::primitives::{AccountId, AccountKind, ProfileId, SessionKind};
 use serde::{Deserialize, Serialize};
 
@@ -24,5 +25,5 @@ pub(crate) struct ProfileRegistryAccount {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct ProfileRegistryAccountMetadata {
     pub session_kind: SessionKind,
-    // TODO: expires_at
+    pub expires_at: Option<DateTime<Utc>>,
 }

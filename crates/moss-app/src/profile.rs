@@ -1,5 +1,13 @@
 mod registry;
 
+use crate::{
+    dirs,
+    internal::events::OnDidChangeProfile,
+    models::types::UpdateAccountParams,
+    profile::registry::{
+        ProfileRegistryAccount, ProfileRegistryAccountMetadata, ProfileRegistryItem,
+    },
+};
 use joinerror::{Error, OptionExt};
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
@@ -19,27 +27,18 @@ use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_user::{
     AccountSession,
     account::{
-        Account,
+        Account, AccountMetadata,
         github::{GitHubInitialToken, GitHubPAT},
         gitlab::{GitLabInitialToken, GitLabPAT},
     },
     models::{
         primitives::{AccountId, AccountKind, ProfileId, SessionKind},
-        types::AccountInfo,
+        types::{AccountInfo, AccountInfoMetadata},
     },
     profile::Profile,
 };
 use std::{cell::LazyCell, collections::HashMap, path::Path, sync::Arc};
 use tokio::sync::RwLock;
-
-use crate::{
-    dirs,
-    internal::events::OnDidChangeProfile,
-    models::types::UpdateAccountParams,
-    profile::registry::{
-        ProfileRegistryAccount, ProfileRegistryAccountMetadata, ProfileRegistryItem,
-    },
-};
 
 pub(crate) const PROFILES_REGISTRY_FILE: &str = "profiles.json";
 pub(crate) const PROFILE_SETTINGS_FILE: &str = "settings.json";
@@ -116,7 +115,10 @@ impl<R: AppRuntime> ProfileService<R> {
                     username: a.username.clone(),
                     host: a.host.clone(),
                     kind: a.kind.clone(),
-                    method: SessionKind::OAuth, // FIXME,
+                    method: a.metadata.session_kind.clone(),
+                    metadata: AccountInfoMetadata {
+                        expires_at: a.metadata.expires_at,
+                    },
                 })
                 .collect(),
         })
@@ -202,7 +204,7 @@ impl<R: AppRuntime> ProfileService<R> {
             .ok_or_join_err::<FailedPrecondition>("active profile not found")?;
 
         let account_id = AccountId::new();
-        let (session, session_kind, username) = match kind {
+        let (session, session_kind, username, expires_at) = match kind {
             AccountKind::GitHub => {
                 let (session, session_kind) = if let Some(pat) = pat {
                     (
@@ -236,7 +238,13 @@ impl<R: AppRuntime> ProfileService<R> {
                 let api_client = <dyn GitHubApiClient<R>>::global(app_delegate);
                 let user = api_client.get_user(ctx, &session).await?;
 
-                (session, session_kind, user.login)
+                let expires_at = if session_kind == SessionKind::PAT {
+                    api_client.get_pat_expires_at(ctx, &session).await.unwrap()
+                } else {
+                    None
+                };
+
+                (session, session_kind, user.login, expires_at)
             }
             AccountKind::GitLab => {
                 let (session, session_kind) = if let Some(pat) = pat {
@@ -274,7 +282,13 @@ impl<R: AppRuntime> ProfileService<R> {
                 let api_client = <dyn GitLabApiClient<R>>::global(app_delegate);
                 let user = api_client.get_user(ctx, &session).await?;
 
-                (session, session_kind, user.username)
+                let expires_at = if session_kind == SessionKind::PAT {
+                    api_client.get_pat_expires_at(ctx, &session).await.unwrap()
+                } else {
+                    None
+                };
+
+                (session, session_kind, user.username, expires_at)
             }
         };
 
@@ -296,6 +310,7 @@ impl<R: AppRuntime> ProfileService<R> {
             host.clone(),
             session,
             kind.clone(),
+            expires_at,
         );
         let account_info = account.info();
 
@@ -306,7 +321,10 @@ impl<R: AppRuntime> ProfileService<R> {
                 username: account_info.username.clone(),
                 host: account_info.host.clone(),
                 kind: account_info.kind.clone(),
-                metadata: ProfileRegistryAccountMetadata { session_kind },
+                metadata: ProfileRegistryAccountMetadata {
+                    session_kind,
+                    expires_at,
+                },
             })
         });
 
@@ -422,7 +440,6 @@ async fn activate_profile<R: AppRuntime>(
     profile_item: &ProfileRegistryItem,
     keyring: Arc<dyn KeyringClient>,
     auth_api_client: Arc<AccountAuthGatewayApiClient>,
-
     on_did_change_profile_emitter: &EventEmitter<OnDidChangeProfile>,
 ) -> joinerror::Result<Profile<R>> {
     let mut accounts = HashMap::with_capacity(profile_item.accounts.len());
@@ -476,6 +493,7 @@ async fn activate_profile<R: AppRuntime>(
                 account.host.clone(),
                 session,
                 account.kind.clone(),
+                account.metadata.expires_at,
             ),
         );
     }

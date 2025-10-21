@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use chrono::{DateTime, Utc};
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
     AppRuntime,
@@ -11,7 +12,9 @@ use moss_user::AccountSession;
 use oauth2::http::header::{ACCEPT, AUTHORIZATION};
 use reqwest::{Client as HttpClient, RequestBuilder};
 
-use crate::gitlab::response::{GetContributorsResponse, GetRepositoryResponse, GetUserResponse};
+use crate::gitlab::response::{
+    GetContributorsResponse, GetRepositoryResponse, GetUserResponse, PATExpiresAtResponse,
+};
 
 fn api_url(host: &str) -> String {
     format!("https://{host}/api/v4") // TODO: make version configurable?
@@ -40,6 +43,12 @@ pub trait GitLabApiClient<R: AppRuntime>: Send + Sync {
         account_handle: &AccountSession<R>,
         url: &GitUrl,
     ) -> joinerror::Result<GetRepositoryResponse>;
+
+    async fn get_pat_expires_at(
+        &self,
+        ctx: &R::AsyncContext,
+        account_handle: &AccountSession<R>,
+    ) -> joinerror::Result<Option<DateTime<Utc>>>;
 }
 
 struct GlobalGitLabApiClient<R: AppRuntime>(Arc<dyn GitLabApiClient<R>>);
@@ -174,6 +183,37 @@ impl<R: AppRuntime> GitLabApiClient<R> for AppGitLabApiClient {
         .await
         .join_err_bare()
     }
+
+    async fn get_pat_expires_at(
+        &self,
+        ctx: &R::AsyncContext,
+        account_handle: &AccountSession<R>,
+    ) -> joinerror::Result<Option<DateTime<Utc>>> {
+        context::abortable(ctx, async {
+            let token = account_handle.token(ctx).await?;
+            let resp = self
+                .client
+                .get(format!(
+                    "{}/personal_access_tokens/self",
+                    api_url(&account_handle.host())
+                ))
+                .with_default_gitlab_headers(token)
+                .send()
+                .await?;
+
+            let status = resp.status();
+            if status.is_success() {
+                let pat_resp: PATExpiresAtResponse = resp.json().await?;
+                Ok(Some(pat_resp.expires_at))
+            } else {
+                let error_text = resp.text().await?;
+                eprintln!("GitLab API Error: Status {}, Body: {}", status, error_text);
+                Err(joinerror::Error::new::<()>(error_text))
+            }
+        })
+        .await
+        .join_err_bare()
+    }
 }
 
 #[cfg(any(test, feature = "test"))]
@@ -212,6 +252,14 @@ pub mod test {
             _url: &GitUrl,
         ) -> joinerror::Result<GetRepositoryResponse> {
             Ok(self.get_repository_response.clone())
+        }
+
+        async fn get_pat_expires_at(
+            &self,
+            ctx: &R::AsyncContext,
+            pat: &str,
+        ) -> joinerror::Result<Option<DateTime<Utc>>> {
+            unimplemented!()
         }
     }
 }

@@ -2,6 +2,7 @@ mod common;
 pub mod github;
 pub mod gitlab;
 
+use chrono::{DateTime, Utc};
 use moss_applib::AppRuntime;
 use moss_keyring::KeyringClient;
 use moss_server_api::account_auth_gateway::{GitLabTokenRefreshApiReq, RevokeApiReq};
@@ -14,9 +15,14 @@ use crate::{
     },
     models::{
         primitives::{AccountId, AccountKind, SessionKind},
-        types::AccountInfo,
+        types::{AccountInfo, AccountInfoMetadata},
     },
 };
+
+#[derive(Clone)]
+pub struct AccountMetadata {
+    pub(crate) expires_at: Option<DateTime<Utc>>,
+}
 
 pub struct Account<R: AppRuntime> {
     pub(crate) id: AccountId,
@@ -24,6 +30,7 @@ pub struct Account<R: AppRuntime> {
     pub(crate) host: String,
     pub(crate) session: AccountSession<R>,
     pub(crate) kind: AccountKind,
+    pub(crate) metadata: AccountMetadata,
 }
 
 impl<R: AppRuntime> Clone for Account<R> {
@@ -34,6 +41,7 @@ impl<R: AppRuntime> Clone for Account<R> {
             host: self.host.clone(),
             session: self.session.clone(),
             kind: self.kind.clone(),
+            metadata: self.metadata.clone(),
         }
     }
 }
@@ -45,6 +53,7 @@ impl<R: AppRuntime> Account<R> {
         host: String,
         session: AccountSession<R>,
         kind: AccountKind,
+        expires_at: Option<DateTime<Utc>>,
     ) -> Self {
         Self {
             id,
@@ -52,6 +61,7 @@ impl<R: AppRuntime> Account<R> {
             host,
             session,
             kind,
+            metadata: AccountMetadata { expires_at },
         }
     }
 
@@ -78,6 +88,9 @@ impl<R: AppRuntime> Account<R> {
             host: self.host.clone(),
             kind: self.kind.clone(),
             method: self.session.session_kind(),
+            metadata: AccountInfoMetadata {
+                expires_at: self.metadata.expires_at,
+            },
         }
     }
 
@@ -215,11 +228,4 @@ impl<R: AppRuntime> AccountSession<R> {
             Session::GitLab(handle) => handle.update_pat(&self.keyring, pat).await,
         }
     }
-
-    // pub async fn expires_at(&self) -> Option<DateTime<Utc>> {
-    //     match self.inner.as_ref() {
-    //         Session::GitHub(handle) => {handle.expires_at().await}
-    //         Session::GitLab(handle) => {handle.expires_at().await}
-    //     }
-    // }
 }

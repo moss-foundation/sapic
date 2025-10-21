@@ -24,12 +24,12 @@ pub struct AccountInfo {
     pub host: String,
     pub kind: AccountKind,
     pub method: SessionKind,
-    // pub metadata: AccountMetadata,
+    pub metadata: AccountInfoMetadata,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
-pub struct AccountMetadata {
+pub struct AccountInfoMetadata {
     pub expires_at: Option<DateTime<Utc>>,
 }
