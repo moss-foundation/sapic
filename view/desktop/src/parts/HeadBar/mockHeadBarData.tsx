@@ -28,7 +28,7 @@ export const userMenuItems: MenuItemProps[] = [
         id: "status-online",
         type: "action",
         label: "Online",
-        icon: "CheckboxChecked",
+        icon: "Checkmark",
       },
       {
         id: "status-away",
@@ -86,7 +86,7 @@ export const gitBranchMenuItems: MenuItemProps[] = [
     id: "main",
     type: "action",
     label: "main",
-    icon: "CheckboxChecked",
+    icon: "Checkmark",
   },
   {
     id: "separator-1",
