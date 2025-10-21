@@ -1,45 +1,45 @@
 import { useContext, useState } from "react";
 
-import { useCreateProjectEntry } from "@/hooks";
-import { useUpdateProjectEntry } from "@/hooks/project/useUpdateProjectEntry";
+import { useCreateProjectResource } from "@/hooks";
+import { useUpdateProjectResource } from "@/hooks/project/useUpdateProjectResource";
 
 import { ProjectTreeContext } from "../../ProjectTreeContext";
 import { ProjectTreeNode, ProjectTreeRootNode } from "../../types";
-import { createEntryKind } from "../../utils";
+import { createResourceKind } from "../../utils";
 
 export const useNodeAddForm = (parentNode: ProjectTreeNode | ProjectTreeRootNode) => {
   const { id } = useContext(ProjectTreeContext);
 
-  const { mutateAsync: createProjectEntry } = useCreateProjectEntry();
-  const { mutateAsync: updateProjectEntry } = useUpdateProjectEntry();
+  const { mutateAsync: createProjectResource } = useCreateProjectResource();
+  const { mutateAsync: updateProjectResource } = useUpdateProjectResource();
 
   const [isAddingFileNode, setIsAddingFileNode] = useState(false);
   const [isAddingFolderNode, setIsAddingFolderNode] = useState(false);
 
   const handleAddFormSubmit = async (name: string) => {
     const path = "path" in parentNode ? parentNode.path.raw || "" : "";
-    const entryClass = "class" in parentNode ? parentNode.class : "endpoint";
+    const resourceClass = "class" in parentNode ? parentNode.class : "endpoint";
 
-    const newEntry = createEntryKind({
+    const newResource = createResourceKind({
       name: name.trim(),
       path,
       isAddingFolder: isAddingFolderNode,
       order: parentNode.childNodes.length + 1,
-      protocol: entryClass === "endpoint" ? "Get" : undefined,
-      class: entryClass,
+      protocol: resourceClass === "endpoint" ? "Get" : undefined,
+      class: resourceClass,
     });
 
     try {
       setIsAddingFileNode(false);
       setIsAddingFolderNode(false);
 
-      await createProjectEntry({
+      await createProjectResource({
         projectId: id,
-        input: newEntry,
+        input: newResource,
       });
-      await updateProjectEntry({
+      await updateProjectResource({
         projectId: id,
-        updatedEntry: {
+        updatedResource: {
           DIR: {
             id: parentNode.id,
             expanded: true,

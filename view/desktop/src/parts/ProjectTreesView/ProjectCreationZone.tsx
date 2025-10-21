@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 
 import {
-  convertEntryInfoToCreateInput,
-  getAllNestedEntries,
+  convertResourceInfoToCreateInput,
+  getAllNestedResources,
   getSourceProjectTreeNodeData,
   isSourceProjectTreeNode,
 } from "@/components/ProjectTree/utils";
-import { useCreateProject, useCreateProjectEntry, useDeleteProjectEntry, useStreamProjects } from "@/hooks";
+import { useCreateProject, useCreateProjectResource, useDeleteProjectResource, useStreamProjects } from "@/hooks";
 import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
@@ -18,8 +18,8 @@ export const ProjectCreationZone = () => {
   const [canDrop, setCanDrop] = useState<boolean | null>(null);
 
   const { mutateAsync: createProject } = useCreateProject();
-  const { mutateAsync: createProjectEntry } = useCreateProjectEntry();
-  const { mutateAsync: deleteProjectEntry } = useDeleteProjectEntry();
+  const { mutateAsync: createProjectResource } = useCreateProjectResource();
+  const { mutateAsync: deleteProjectResource } = useDeleteProjectResource();
   const { data: projects } = useStreamProjects();
 
   useEffect(() => {
@@ -48,33 +48,33 @@ export const ProjectCreationZone = () => {
 
         if (!sourceTarget) return;
 
-        const entries = getAllNestedEntries(sourceTarget.node);
+        const resources = getAllNestedResources(sourceTarget.node);
 
-        if (entries.length === 0) return;
+        if (resources.length === 0) return;
 
-        const rootEntry = entries[0];
-        const nestedEntries = entries.slice(1);
+        const rootResource = resources[0];
+        const nestedResources = resources.slice(1);
 
         const newProject = await createProject({
-          name: rootEntry.name,
+          name: rootResource.name,
           order: (projects?.length ?? 0) + 1,
         });
 
         try {
-          await deleteProjectEntry({
+          await deleteProjectResource({
             projectId: sourceTarget.projectId,
-            input: { id: rootEntry.id },
+            input: { id: rootResource.id },
           });
         } catch (error) {
           console.error("Error during project creation:", error);
         }
 
         try {
-          for (const [index, entry] of nestedEntries.entries()) {
-            const rootEntryName = rootEntry.name;
-            let adjustedSegments = entry.path.segments;
+          for (const [index, resource] of nestedResources.entries()) {
+            const rootResourceName = rootResource.name;
+            let adjustedSegments = resource.path.segments;
 
-            const rootNameIndex = adjustedSegments.findIndex((segment) => segment === rootEntryName);
+            const rootNameIndex = adjustedSegments.findIndex((segment) => segment === rootResourceName);
             if (rootNameIndex !== -1) {
               adjustedSegments = [
                 ...adjustedSegments.slice(0, rootNameIndex),
@@ -85,11 +85,11 @@ export const ProjectCreationZone = () => {
             const parentSegments = adjustedSegments.slice(0, -1);
             const parentPath = parentSegments.length > 0 ? await join(...parentSegments) : "";
 
-            const createInput = convertEntryInfoToCreateInput(entry, parentPath);
+            const createInput = convertResourceInfoToCreateInput(resource, parentPath);
 
-            createInput[entry.kind === "Dir" ? "DIR" : "ITEM"].order = index + 1;
+            createInput[resource.kind === "Dir" ? "DIR" : "ITEM"].order = index + 1;
 
-            await createProjectEntry({
+            await createProjectResource({
               projectId: newProject.id,
               input: createInput,
             });
@@ -99,7 +99,7 @@ export const ProjectCreationZone = () => {
         }
       },
     });
-  }, [projects?.length, createProject, createProjectEntry, deleteProjectEntry]);
+  }, [projects?.length, createProject, createProjectResource, deleteProjectResource]);
 
   return (
     <div

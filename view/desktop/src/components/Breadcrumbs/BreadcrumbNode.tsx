@@ -3,8 +3,8 @@ import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 
 import Icon from "../../lib/ui/Icon";
-import { EntryIcon } from "../EntryIcon";
 import { ProjectTreeNode } from "../ProjectTree/types";
+import { ResourceIcon } from "../ResourceIcon";
 
 interface BreadcrumbNodeProps {
   node: ProjectTreeNode;
@@ -58,7 +58,7 @@ export const BreadcrumbNode = ({
         className="hover:background-(--moss-secondary-background-hover) relative flex w-full cursor-pointer items-center gap-1 rounded-sm py-0.5 dark:hover:text-black"
       >
         <div className="relative size-4">
-          <EntryIcon entry={node} className="absolute top-0 right-0" />
+          <ResourceIcon resource={node} className="absolute top-0 right-0" />
         </div>
 
         <Tree.NodeLabel label={node.name} />

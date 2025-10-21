@@ -4,15 +4,15 @@ import { ActionButton, ActionMenu, SidebarHeader } from "@/components";
 import { CREATE_TAB, IMPORT_TAB } from "@/components/Modals/Project/NewProjectModal/constansts";
 import { NewProjectModal } from "@/components/Modals/Project/NewProjectModal/NewProjectModal";
 import {
-  USE_STREAM_PROJECT_ENTRIES_QUERY_KEY,
+  USE_STREAM_PROJECT_RESOURCES_QUERY_KEY,
   useActiveWorkspace,
-  useClearAllProjectEntries,
+  useClearAllProjectResources,
   useModal,
-  useStreamedProjectsWithEntries,
+  useStreamedProjectsWithResources,
   useStreamProjects,
 } from "@/hooks";
 import { useBatchUpdateProject } from "@/hooks/project/useBatchUpdateProject";
-import { useBatchUpdateProjectEntry } from "@/hooks/project/useBatchUpdateProjectEntry";
+import { useBatchUpdateProjectResource } from "@/hooks/project/useBatchUpdateProjectResource";
 import { StreamResourcesEvent } from "@repo/moss-project";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -20,10 +20,10 @@ export const ProjectTreeViewHeader = () => {
   const queryClient = useQueryClient();
 
   const { isLoading: areProjectsLoading, clearProjectsCacheAndRefetch } = useStreamProjects();
-  const { clearAllProjectEntriesCache } = useClearAllProjectEntries();
-  const { data: projectsWithEntries } = useStreamedProjectsWithEntries();
+  const { clearAllProjectResourcesCache } = useClearAllProjectResources();
+  const { data: projectsWithResources } = useStreamedProjectsWithResources();
   const { mutateAsync: batchUpdateProject } = useBatchUpdateProject();
-  const { mutateAsync: batchUpdateProjectEntry } = useBatchUpdateProjectEntry();
+  const { mutateAsync: batchUpdateProjectResource } = useBatchUpdateProjectResource();
   const { hasActiveWorkspace } = useActiveWorkspace();
 
   const [initialTab, setInitialTab] = useState<typeof CREATE_TAB | typeof IMPORT_TAB>(CREATE_TAB);
@@ -36,21 +36,21 @@ export const ProjectTreeViewHeader = () => {
 
   const handleRefreshProjects = () => {
     clearProjectsCacheAndRefetch();
-    clearAllProjectEntriesCache();
+    clearAllProjectResourcesCache();
   };
 
-  const areAllProjectsCollapsed = projectsWithEntries.every((p) => !p.expanded);
-  const areAllDirNodesCollapsed = projectsWithEntries.every((p) => {
-    return p.entries.filter((entry) => entry.kind === "Dir").every((entry) => !entry.expanded);
+  const areAllProjectsCollapsed = projectsWithResources.every((p) => !p.expanded);
+  const areAllDirNodesCollapsed = projectsWithResources.every((p) => {
+    return p.resources.filter((resource) => resource.kind === "Dir").every((resource) => !resource.expanded);
   });
 
   const handleCollapseAll = async () => {
     await collapseExpandedProjects();
-    await collapseExpandedDirEntries();
+    await collapseExpandedDirResources();
   };
 
   const collapseExpandedProjects = async () => {
-    const openedProjects = projectsWithEntries.filter((p) => p.expanded);
+    const openedProjects = projectsWithResources.filter((p) => p.expanded);
 
     if (openedProjects.length === 0) return;
 
@@ -62,38 +62,43 @@ export const ProjectTreeViewHeader = () => {
     });
   };
 
-  const collapseExpandedDirEntries = async () => {
-    const projectsWithExpandedDirs = projectsWithEntries
+  const collapseExpandedDirResources = async () => {
+    const projectsWithExpandedDirs = projectsWithResources
       .map((p) => ({
         projectId: p.id,
-        entries: p.entries.filter((entry) => entry.kind === "Dir" && entry.expanded),
+        resources: p.resources.filter((resource) => resource.kind === "Dir" && resource.expanded),
       }))
-      .filter((p) => p.entries.length > 0);
+      .filter((p) => p.resources.length > 0);
 
     if (projectsWithExpandedDirs.length === 0) return;
 
     const promises = projectsWithExpandedDirs.map(async (p) => {
-      const preparedEntries = p.entries.map((entry) => ({
+      const preparedResources = p.resources.map((resource) => ({
         DIR: {
-          id: entry.id,
+          id: resource.id,
           expanded: false,
         },
       }));
 
-      const res = await batchUpdateProjectEntry({
+      const res = await batchUpdateProjectResource({
         projectId: p.projectId,
-        entries: {
-          resources: preparedEntries,
+        resources: {
+          resources: preparedResources,
         },
       });
 
       if (res.status === "ok") {
-        queryClient.setQueryData([USE_STREAM_PROJECT_ENTRIES_QUERY_KEY, p.projectId], (old: StreamResourcesEvent[]) => {
-          return old.map((entry) => {
-            const shouldCollapse = preparedEntries.some((preparedEntry) => preparedEntry.DIR.id === entry.id);
-            return shouldCollapse ? { ...entry, expanded: false } : entry;
-          });
-        });
+        queryClient.setQueryData(
+          [USE_STREAM_PROJECT_RESOURCES_QUERY_KEY, p.projectId],
+          (old: StreamResourcesEvent[]) => {
+            return old.map((resource) => {
+              const shouldCollapse = preparedResources.some(
+                (preparedResource) => preparedResource.DIR.id === resource.id
+              );
+              return shouldCollapse ? { ...resource, expanded: false } : resource;
+            });
+          }
+        );
       }
     });
 

@@ -2,39 +2,39 @@ import { CreateResourceInput, StreamResourcesEvent } from "@repo/moss-project";
 import { join, sep } from "@tauri-apps/api/path";
 
 //FIXME: This is a temporary solution until we have a proper configuration model
-export const createProjectEntryForCache = async (
+export const createProjectResourceForCache = async (
   id: string,
-  entry: CreateResourceInput
+  resource: CreateResourceInput
 ): Promise<StreamResourcesEvent> => {
-  if ("DIR" in entry) {
-    const rawpath = await join(entry.DIR.path, entry.DIR.name);
+  if ("DIR" in resource) {
+    const rawpath = await join(resource.DIR.path, resource.DIR.name);
 
     return {
       id,
-      name: entry.DIR.name,
-      order: entry.DIR.order,
+      name: resource.DIR.name,
+      order: resource.DIR.order,
       path: {
         raw: rawpath,
         segments: rawpath.split(sep()),
       },
-      class: entry.DIR.class,
+      class: resource.DIR.class,
       kind: "Dir",
       expanded: false,
     };
   } else {
-    const rawpath = await join(entry.ITEM.path, entry.ITEM.name);
+    const rawpath = await join(resource.ITEM.path, resource.ITEM.name);
 
     return {
       id,
-      name: entry.ITEM.name,
-      order: entry.ITEM.order,
+      name: resource.ITEM.name,
+      order: resource.ITEM.order,
       path: {
         raw: rawpath,
         segments: rawpath.split(sep()),
       },
-      class: entry.ITEM.class,
+      class: resource.ITEM.class,
       kind: "Item" as const,
-      protocol: entry.ITEM.protocol,
+      protocol: resource.ITEM.protocol,
       expanded: false,
     };
   }

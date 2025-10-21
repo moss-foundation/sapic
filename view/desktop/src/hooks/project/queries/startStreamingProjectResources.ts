@@ -2,20 +2,20 @@ import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { StreamResourcesEvent } from "@repo/moss-project";
 import { Channel } from "@tauri-apps/api/core";
 
-export const startStreamingProjectEntries = async (
+export const startStreamingProjectResources = async (
   projectId: string,
   path?: string
 ): Promise<StreamResourcesEvent[]> => {
-  const entries: StreamResourcesEvent[] = [];
-  const onProjectEntryEvent = new Channel<StreamResourcesEvent>();
+  const resources: StreamResourcesEvent[] = [];
+  const onProjectResourceEvent = new Channel<StreamResourcesEvent>();
 
-  onProjectEntryEvent.onmessage = (projectEntry) => {
-    entries.push(projectEntry);
+  onProjectResourceEvent.onmessage = (projectResource) => {
+    resources.push(projectResource);
   };
 
-  const result = await invokeTauriIpc("stream_project_entries", {
+  const result = await invokeTauriIpc("stream_project_resources", {
     projectId,
-    channel: onProjectEntryEvent,
+    channel: onProjectResourceEvent,
     input: path ? { "RELOAD_PATH": path } : "LOAD_ROOT",
   });
 
@@ -23,5 +23,5 @@ export const startStreamingProjectEntries = async (
     throw new Error(String(result.error));
   }
 
-  return entries;
+  return resources;
 };

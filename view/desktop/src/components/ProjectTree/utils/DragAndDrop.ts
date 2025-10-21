@@ -85,7 +85,7 @@ export const doesLocationHasProjectTreeNode = (location: DragLocationHistory): b
   return location.current.dropTargets[0].data.type === ProjectDragType.NODE;
 };
 
-export const getAllNestedEntries = (node: ProjectTreeNode): StreamResourcesEvent[] => {
+export const getAllNestedResources = (node: ProjectTreeNode): StreamResourcesEvent[] => {
   const result: StreamResourcesEvent[] = [];
 
   result.push({
@@ -100,7 +100,7 @@ export const getAllNestedEntries = (node: ProjectTreeNode): StreamResourcesEvent
   });
 
   for (const child of node.childNodes) {
-    result.push(...getAllNestedEntries(child));
+    result.push(...getAllNestedResources(child));
   }
 
   return result;

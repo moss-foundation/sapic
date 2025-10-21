@@ -2,14 +2,14 @@ import { forwardRef, useContext } from "react";
 import { createPortal } from "react-dom";
 
 import { ActionMenu } from "@/components";
-import { useUpdateProjectEntry } from "@/hooks/project/useUpdateProjectEntry";
+import { useUpdateProjectResource } from "@/hooks/project/useUpdateProjectResource";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
-import { EntryIcon } from "../../EntryIcon";
+import { ResourceIcon } from "../../ResourceIcon";
 import { ProjectTreeContext } from "../ProjectTreeContext";
 import { ProjectTreeNode, ProjectTreeRootNode } from "../types";
 import { countNumberOfAllNestedChildNodes } from "../utils";
@@ -52,7 +52,7 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
 
     const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
-    const { mutateAsync: updateProjectEntry } = useUpdateProjectEntry();
+    const { mutateAsync: updateProjectResource } = useUpdateProjectResource();
 
     const handleControlsClick = () => {
       if (node.kind === "Dir") {
@@ -70,9 +70,9 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
         });
 
         if (!node.expanded) {
-          updateProjectEntry({
+          updateProjectResource({
             projectId: id,
-            updatedEntry: {
+            updatedResource: {
               DIR: {
                 id: node.id,
                 expanded: true,
@@ -97,9 +97,9 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
       e.stopPropagation();
       if (node.kind === "Item") return;
 
-      updateProjectEntry({
+      updateProjectResource({
         projectId: id,
-        updatedEntry: {
+        updatedResource: {
           DIR: {
             id: node.id,
             expanded: !node.expanded,
@@ -129,7 +129,7 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
                 shouldRenderChildNodes={shouldRenderChildNodes}
               />
               {showOrders && <Tree.NodeOrder order={node.order} />}
-              <EntryIcon entry={node} />
+              <ResourceIcon resource={node} />
               <Tree.NodeLabel label={node.name} />
               {node.kind === "Dir" && <Tree.NodeDirCount count={numberOfAllNestedChildNodes} />}
             </Tree.NodeTriggers>

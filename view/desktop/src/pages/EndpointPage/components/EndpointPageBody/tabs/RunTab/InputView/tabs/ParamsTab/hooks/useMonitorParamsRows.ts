@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useMemo } from "react";
 
-import { useUpdateProjectEntry } from "@/hooks";
+import { useUpdateProjectResource } from "@/hooks";
 import { EndpointPageContext } from "@/pages/EndpointPage/EndpointPageContext";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { swapListByIndexWithEdge } from "@/utils/swapListByIndexWithEdge";
@@ -17,16 +17,16 @@ import {
 } from "../utils/dragAndDrop";
 
 export const useMonitorParamsRows = () => {
-  const { entryDescription, projectId, entry } = useContext(EndpointPageContext);
-  const { mutate: updateProjectEntry } = useUpdateProjectEntry();
+  const { resourceDescription, projectId, resource } = useContext(EndpointPageContext);
+  const { mutate: updateProjectResource } = useUpdateProjectResource();
 
   const queryList = useMemo(() => {
-    return sortObjectsByOrder(entryDescription.queryParams);
-  }, [entryDescription.queryParams]);
+    return sortObjectsByOrder(resourceDescription.queryParams);
+  }, [resourceDescription.queryParams]);
 
   const pathList = useMemo(() => {
-    return sortObjectsByOrder(entryDescription.pathParams);
-  }, [entryDescription.pathParams]);
+    return sortObjectsByOrder(resourceDescription.pathParams);
+  }, [resourceDescription.pathParams]);
 
   const handleWithinQueryList = useCallback(
     (sourceData: DraggableParamRowData, dropTargetData: DropTargetParamRowData) => {
@@ -54,11 +54,11 @@ export const useMonitorParamsRows = () => {
 
       if (queryParamsToUpdate.length === 0) return;
 
-      updateProjectEntry({
+      updateProjectResource({
         projectId,
-        updatedEntry: {
+        updatedResource: {
           ITEM: {
-            id: entry.id,
+            id: resource.id,
             headersToAdd: [],
             headersToUpdate: [],
             headersToRemove: [],
@@ -72,7 +72,7 @@ export const useMonitorParamsRows = () => {
         },
       });
     },
-    [queryList, updateProjectEntry, projectId, entry.id]
+    [queryList, updateProjectResource, projectId, resource.id]
   );
 
   const handleWithinPathList = useCallback(
@@ -101,11 +101,11 @@ export const useMonitorParamsRows = () => {
 
       if (pathParamsToUpdate.length === 0) return;
 
-      updateProjectEntry({
+      updateProjectResource({
         projectId,
-        updatedEntry: {
+        updatedResource: {
           ITEM: {
-            id: entry.id,
+            id: resource.id,
             headersToAdd: [],
             headersToUpdate: [],
             headersToRemove: [],
@@ -119,7 +119,7 @@ export const useMonitorParamsRows = () => {
         },
       });
     },
-    [pathList, updateProjectEntry, projectId, entry.id]
+    [pathList, updateProjectResource, projectId, resource.id]
   );
 
   const handleQueryToPath = useCallback(
@@ -188,11 +188,11 @@ export const useMonitorParamsRows = () => {
         return;
       }
 
-      updateProjectEntry({
+      updateProjectResource({
         projectId,
-        updatedEntry: {
+        updatedResource: {
           ITEM: {
-            id: entry.id,
+            id: resource.id,
             headersToAdd: [],
             headersToUpdate: [],
             headersToRemove: [],
@@ -206,7 +206,7 @@ export const useMonitorParamsRows = () => {
         },
       });
     },
-    [queryList, pathList, updateProjectEntry, projectId, entry.id]
+    [queryList, pathList, updateProjectResource, projectId, resource.id]
   );
 
   const handlePathToQuery = useCallback(
@@ -275,11 +275,11 @@ export const useMonitorParamsRows = () => {
         return;
       }
 
-      updateProjectEntry({
+      updateProjectResource({
         projectId,
-        updatedEntry: {
+        updatedResource: {
           ITEM: {
-            id: entry.id,
+            id: resource.id,
             headersToAdd: [],
             headersToUpdate: [],
             headersToRemove: [],
@@ -293,7 +293,7 @@ export const useMonitorParamsRows = () => {
         },
       });
     },
-    [queryList, pathList, updateProjectEntry, projectId, entry.id]
+    [queryList, pathList, updateProjectResource, projectId, resource.id]
   );
 
   useEffect(() => {

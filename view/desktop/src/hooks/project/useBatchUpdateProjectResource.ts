@@ -3,15 +3,15 @@ import { BatchUpdateResourceInput, BatchUpdateResourceOutput, BatchUpdateResourc
 import { useMutation } from "@tanstack/react-query";
 import { Channel } from "@tauri-apps/api/core";
 
-export interface UseBatchUpdateProjectEntryInput {
+export interface UseBatchUpdateProjectResourceInput {
   projectId: string;
   resources: BatchUpdateResourceInput;
 }
 
-const batchUpdateProjectEntry = async ({ projectId, resources }: UseBatchUpdateProjectEntryInput) => {
+const batchUpdateProjectResource = async ({ projectId, resources }: UseBatchUpdateProjectResourceInput) => {
   const onProjectEvent = new Channel<BatchUpdateResourceOutputKind>();
 
-  const result = await invokeTauriIpc<BatchUpdateResourceOutput>("batch_update_project_entry", {
+  const result = await invokeTauriIpc<BatchUpdateResourceOutput>("batch_update_project_resource", {
     channel: onProjectEvent,
     projectId: projectId,
     input: {
@@ -22,8 +22,8 @@ const batchUpdateProjectEntry = async ({ projectId, resources }: UseBatchUpdateP
   return result;
 };
 
-export const useBatchUpdateProjectEntry = () => {
-  return useMutation<IpcResult<BatchUpdateResourceOutput, unknown>, Error, UseBatchUpdateProjectEntryInput>({
-    mutationFn: batchUpdateProjectEntry,
+export const useBatchUpdateProjectResource = () => {
+  return useMutation<IpcResult<BatchUpdateResourceOutput, unknown>, Error, UseBatchUpdateProjectResourceInput>({
+    mutationFn: batchUpdateProjectResource,
   });
 };

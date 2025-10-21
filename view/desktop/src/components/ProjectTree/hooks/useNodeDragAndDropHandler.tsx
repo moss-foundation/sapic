@@ -1,11 +1,11 @@
 import { useCallback, useEffect } from "react";
 
-import { useDeleteProjectEntry } from "@/hooks";
-import { useFetchEntriesForPath } from "@/hooks/project/derivedHooks/useFetchEntriesForPath";
-import { useBatchCreateProjectEntry } from "@/hooks/project/useBatchCreateProjectEntry";
-import { useBatchUpdateProjectEntry } from "@/hooks/project/useBatchUpdateProjectEntry";
-import { useCreateProjectEntry } from "@/hooks/project/useCreateProjectEntry";
-import { useUpdateProjectEntry } from "@/hooks/project/useUpdateProjectEntry";
+import { useDeleteProjectResource } from "@/hooks";
+import { useFetchResourcesForPath } from "@/hooks/project/derivedHooks/useFetchResourceForPath";
+import { useBatchCreateProjectResource } from "@/hooks/project/useBatchCreateProjectResource";
+import { useBatchUpdateProjectResource } from "@/hooks/project/useBatchUpdateProjectResource";
+import { useCreateProjectResource } from "@/hooks/project/useCreateProjectResource";
+import { useUpdateProjectResource } from "@/hooks/project/useUpdateProjectResource";
 import { Operation } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { join } from "@tauri-apps/api/path";
@@ -13,8 +13,8 @@ import { join } from "@tauri-apps/api/path";
 import { DragNode, DropNode, DropRootNode } from "../types";
 import {
   canDropNode,
-  createEntryKind,
-  getAllNestedEntries,
+  createResourceKind,
+  getAllNestedResources,
   getInstructionFromLocation,
   getLocationProjectTreeNodeData,
   getLocationProjectTreeRootNodeData,
@@ -23,8 +23,8 @@ import {
   isSourceProjectTreeNode,
   makeDirUpdatePayload,
   makeItemUpdatePayload,
-  prepareEntriesForCreation,
-  prepareNestedDirEntriesForDrop,
+  prepareNestedDirResourcesForDrop,
+  prepareResourcesForCreation,
   reorderedNodesForDifferentDirPayload,
   reorderedNodesForSameDirPayload,
   resolveParentPath,
@@ -32,14 +32,14 @@ import {
 } from "../utils";
 
 export const useNodeDragAndDropHandler = () => {
-  const { mutateAsync: createProjectEntry } = useCreateProjectEntry();
-  const { mutateAsync: updateProjectEntry } = useUpdateProjectEntry();
-  const { mutateAsync: deleteProjectEntry } = useDeleteProjectEntry();
+  const { mutateAsync: createProjectResource } = useCreateProjectResource();
+  const { mutateAsync: updateProjectResource } = useUpdateProjectResource();
+  const { mutateAsync: deleteProjectResource } = useDeleteProjectResource();
 
-  const { mutateAsync: batchCreateProjectEntry } = useBatchCreateProjectEntry();
-  const { mutateAsync: batchUpdateProjectEntry } = useBatchUpdateProjectEntry();
+  const { mutateAsync: batchCreateProjectResource } = useBatchCreateProjectResource();
+  const { mutateAsync: batchUpdateProjectResource } = useBatchUpdateProjectResource();
 
-  const { fetchEntriesForPath } = useFetchEntriesForPath();
+  const { fetchResourcesForPath } = useFetchResourcesForPath();
 
   //Within Project
   const handleCombineWithinProject = useCallback(
@@ -66,20 +66,20 @@ export const useNodeDragAndDropHandler = () => {
       });
 
       const allUpdates = [sourceNodeUpdate, ...nodesToUpdate];
-      await batchUpdateProjectEntry({
+      await batchUpdateProjectResource({
         projectId: sourceTreeNodeData.projectId,
-        entries: {
+        resources: {
           resources: allUpdates,
         },
       });
 
-      await fetchEntriesForPath(locationTreeNodeData.projectId, resolveParentPath(locationTreeNodeData.parentNode));
+      await fetchResourcesForPath(locationTreeNodeData.projectId, resolveParentPath(locationTreeNodeData.parentNode));
 
-      await fetchEntriesForPath(sourceTreeNodeData.projectId, resolveParentPath(sourceTreeNodeData.parentNode));
+      await fetchResourcesForPath(sourceTreeNodeData.projectId, resolveParentPath(sourceTreeNodeData.parentNode));
 
       return;
     },
-    [batchUpdateProjectEntry, fetchEntriesForPath]
+    [batchUpdateProjectResource, fetchResourcesForPath]
   );
 
   const handleReorderWithinProject = useCallback(
@@ -97,44 +97,44 @@ export const useNodeDragAndDropHandler = () => {
           moveToIndex: dropIndex,
         });
 
-        await batchUpdateProjectEntry({
+        await batchUpdateProjectResource({
           projectId: sourceTreeNodeData.projectId,
-          entries: {
+          resources: {
             resources: updatedSourceNodesPayload,
           },
         });
 
-        await fetchEntriesForPath(sourceTreeNodeData.projectId, resolveParentPath(sourceTreeNodeData.parentNode));
+        await fetchResourcesForPath(sourceTreeNodeData.projectId, resolveParentPath(sourceTreeNodeData.parentNode));
 
         return;
       }
 
-      const targetEntriesToUpdate = reorderedNodesForDifferentDirPayload({
+      const targetResourcesToUpdate = reorderedNodesForDifferentDirPayload({
         node: locationTreeNodeData.parentNode,
         newNode: sourceTreeNodeData.node,
         moveToIndex: dropIndex,
       });
 
-      const sourceEntriesToUpdate = siblingsAfterRemovalPayload({
+      const sourceResourcesToUpdate = siblingsAfterRemovalPayload({
         nodes: sourceTreeNodeData.parentNode.childNodes,
         removedNode: sourceTreeNodeData.node,
       });
 
-      const allEntriesToUpdate = [...targetEntriesToUpdate, ...sourceEntriesToUpdate];
+      const allResourcesToUpdate = [...targetResourcesToUpdate, ...sourceResourcesToUpdate];
 
-      await batchUpdateProjectEntry({
+      await batchUpdateProjectResource({
         projectId: sourceTreeNodeData.projectId,
-        entries: {
-          resources: allEntriesToUpdate,
+        resources: {
+          resources: allResourcesToUpdate,
         },
       });
 
-      await fetchEntriesForPath(locationTreeNodeData.projectId, resolveParentPath(locationTreeNodeData.parentNode));
-      await fetchEntriesForPath(sourceTreeNodeData.projectId, resolveParentPath(sourceTreeNodeData.parentNode));
+      await fetchResourcesForPath(locationTreeNodeData.projectId, resolveParentPath(locationTreeNodeData.parentNode));
+      await fetchResourcesForPath(sourceTreeNodeData.projectId, resolveParentPath(sourceTreeNodeData.parentNode));
 
       return;
     },
-    [batchUpdateProjectEntry, fetchEntriesForPath]
+    [batchUpdateProjectResource, fetchResourcesForPath]
   );
 
   //To Another Project
@@ -145,217 +145,217 @@ export const useNodeDragAndDropHandler = () => {
           ? locationTreeNodeData.node.order! - 0.5
           : locationTreeNodeData.node.order! + 0.5;
 
-      const targetEntriesToUpdate = reorderedNodesForDifferentDirPayload({
+      const targetResourcesToUpdate = reorderedNodesForDifferentDirPayload({
         node: locationTreeNodeData.parentNode,
         newNode: sourceTreeNodeData.node,
         moveToIndex: dropIndex,
-      }).filter((entry) => {
-        if ("ITEM" in entry) {
-          return entry.ITEM.id !== sourceTreeNodeData.node.id;
+      }).filter((resource) => {
+        if ("ITEM" in resource) {
+          return resource.ITEM.id !== sourceTreeNodeData.node.id;
         } else {
-          return entry.DIR.id !== sourceTreeNodeData.node.id;
+          return resource.DIR.id !== sourceTreeNodeData.node.id;
         }
       });
 
-      const updatedSourceEntriesPayload = siblingsAfterRemovalPayload({
+      const updatedSourceResourcesPayload = siblingsAfterRemovalPayload({
         nodes: sourceTreeNodeData.parentNode.childNodes,
         removedNode: sourceTreeNodeData.node,
       });
 
-      await batchUpdateProjectEntry({
+      await batchUpdateProjectResource({
         projectId: sourceTreeNodeData.projectId,
-        entries: {
-          resources: updatedSourceEntriesPayload,
+        resources: {
+          resources: updatedSourceResourcesPayload,
         },
       });
 
-      await batchUpdateProjectEntry({
+      await batchUpdateProjectResource({
         projectId: locationTreeNodeData.projectId,
-        entries: {
-          resources: targetEntriesToUpdate,
+        resources: {
+          resources: targetResourcesToUpdate,
         },
       });
 
-      await deleteProjectEntry({
+      await deleteProjectResource({
         projectId: sourceTreeNodeData.projectId,
         input: { id: sourceTreeNodeData.node.id },
       });
 
       const newDropOrder =
         operation === "reorder-before" ? locationTreeNodeData.node.order! : locationTreeNodeData.node.order! + 1;
-      const allEntries = getAllNestedEntries(sourceTreeNodeData.node);
-      const nestedEntriesWithoutName = await prepareNestedDirEntriesForDrop(allEntries);
-      const batchCreateEntryInput = await Promise.all(
-        nestedEntriesWithoutName.map(async (entry, index) => {
+      const allResources = getAllNestedResources(sourceTreeNodeData.node);
+      const nestedResourcesWithoutName = await prepareNestedDirResourcesForDrop(allResources);
+      const batchCreateResourceInput = await Promise.all(
+        nestedResourcesWithoutName.map(async (resource, index) => {
           if (index === 0) {
-            return createEntryKind({
-              name: entry.name,
+            return createResourceKind({
+              name: resource.name,
               path: "path" in locationTreeNodeData.parentNode ? locationTreeNodeData.parentNode.path.raw : "",
-              isAddingFolder: entry.kind === "Dir",
+              isAddingFolder: resource.kind === "Dir",
               order: newDropOrder,
-              protocol: entry.protocol,
+              protocol: resource.protocol,
               class: "endpoint",
             });
           } else {
-            const newEntryPath = await join(
+            const newResourcePath = await join(
               "path" in locationTreeNodeData.parentNode ? locationTreeNodeData.parentNode.path.raw : "",
-              entry.path.raw
+              resource.path.raw
             );
-            return createEntryKind({
-              name: entry.name,
-              path: newEntryPath,
-              isAddingFolder: entry.kind === "Dir",
-              order: entry.order!,
-              protocol: entry.protocol,
+            return createResourceKind({
+              name: resource.name,
+              path: newResourcePath,
+              isAddingFolder: resource.kind === "Dir",
+              order: resource.order!,
+              protocol: resource.protocol,
               class: "endpoint",
             });
           }
         })
       );
 
-      await batchCreateProjectEntry({
+      await batchCreateProjectResource({
         projectId: locationTreeNodeData.projectId,
         input: {
-          resources: batchCreateEntryInput,
+          resources: batchCreateResourceInput,
         },
       });
 
-      await fetchEntriesForPath(
+      await fetchResourcesForPath(
         locationTreeNodeData.projectId,
         "path" in locationTreeNodeData.parentNode ? locationTreeNodeData.parentNode.path.raw : ""
       );
-      await fetchEntriesForPath(
+      await fetchResourcesForPath(
         sourceTreeNodeData.projectId,
         "path" in sourceTreeNodeData.parentNode ? sourceTreeNodeData.parentNode.path.raw : ""
       );
     },
-    [batchUpdateProjectEntry, deleteProjectEntry, batchCreateProjectEntry, fetchEntriesForPath]
+    [batchUpdateProjectResource, deleteProjectResource, batchCreateProjectResource, fetchResourcesForPath]
   );
 
   const handleCombineToAnotherProject = useCallback(
     async (sourceTreeNodeData: DragNode, locationTreeNodeData: DropNode) => {
-      const allEntries = getAllNestedEntries(sourceTreeNodeData.node);
-      const entriesPreparedForCreation = await prepareEntriesForCreation(allEntries);
+      const allResources = getAllNestedResources(sourceTreeNodeData.node);
+      const resourcesPreparedForCreation = await prepareResourcesForCreation(allResources);
 
       const newOrder = locationTreeNodeData.node.childNodes.length + 1;
 
-      await deleteProjectEntry({
+      await deleteProjectResource({
         projectId: sourceTreeNodeData.projectId,
         input: { id: sourceTreeNodeData.node.id },
       });
 
-      const updatedSourceEntriesPayload = siblingsAfterRemovalPayload({
+      const updatedSourceResourcesPayload = siblingsAfterRemovalPayload({
         nodes: sourceTreeNodeData.parentNode.childNodes,
         removedNode: sourceTreeNodeData.node,
       });
 
-      await batchUpdateProjectEntry({
+      await batchUpdateProjectResource({
         projectId: sourceTreeNodeData.projectId,
-        entries: {
-          resources: updatedSourceEntriesPayload,
+        resources: {
+          resources: updatedSourceResourcesPayload,
         },
       });
 
-      const batchCreateEntryInput = await Promise.all(
-        entriesPreparedForCreation.map(async (entry, index) => {
+      const batchCreateResourceInput = await Promise.all(
+        resourcesPreparedForCreation.map(async (resource, index) => {
           if (index === 0) {
-            return createEntryKind({
-              name: entry.name,
+            return createResourceKind({
+              name: resource.name,
               path: locationTreeNodeData.node.path.raw,
-              isAddingFolder: entry.kind === "Dir",
+              isAddingFolder: resource.kind === "Dir",
               order: newOrder,
-              protocol: entry.protocol,
+              protocol: resource.protocol,
               class: "endpoint",
             });
           } else {
-            const newEntryPath = await join(locationTreeNodeData.node.path.raw, entry.path.raw);
-            return createEntryKind({
-              name: entry.name,
-              path: newEntryPath,
-              isAddingFolder: entry.kind === "Dir",
-              order: entry.order!,
-              protocol: entry.protocol,
+            const newResourcePath = await join(locationTreeNodeData.node.path.raw, resource.path.raw);
+            return createResourceKind({
+              name: resource.name,
+              path: newResourcePath,
+              isAddingFolder: resource.kind === "Dir",
+              order: resource.order!,
+              protocol: resource.protocol,
               class: "endpoint",
             });
           }
         })
       );
 
-      await batchCreateProjectEntry({
+      await batchCreateProjectResource({
         projectId: locationTreeNodeData.projectId,
-        input: { resources: batchCreateEntryInput },
+        input: { resources: batchCreateResourceInput },
       });
 
-      await fetchEntriesForPath(locationTreeNodeData.projectId, resolveParentPath(locationTreeNodeData.parentNode));
-      await fetchEntriesForPath(sourceTreeNodeData.projectId, resolveParentPath(sourceTreeNodeData.parentNode));
+      await fetchResourcesForPath(locationTreeNodeData.projectId, resolveParentPath(locationTreeNodeData.parentNode));
+      await fetchResourcesForPath(sourceTreeNodeData.projectId, resolveParentPath(sourceTreeNodeData.parentNode));
 
       return;
     },
-    [batchCreateProjectEntry, batchUpdateProjectEntry, deleteProjectEntry, fetchEntriesForPath]
+    [batchCreateProjectResource, batchUpdateProjectResource, deleteProjectResource, fetchResourcesForPath]
   );
 
   //To Another Project's Root
   const handleCombineToAnotherProjectRoot = useCallback(
     async (sourceTreeNodeData: DragNode, locationTreeRootNodeData: DropRootNode) => {
-      const allEntries = getAllNestedEntries(sourceTreeNodeData.node);
-      const entriesWithoutName = await prepareNestedDirEntriesForDrop(allEntries);
+      const allResources = getAllNestedResources(sourceTreeNodeData.node);
+      const resourcesWithoutName = await prepareNestedDirResourcesForDrop(allResources);
 
       const newOrder = locationTreeRootNodeData.node.childNodes.length + 1;
 
-      await deleteProjectEntry({
+      await deleteProjectResource({
         projectId: sourceTreeNodeData.projectId,
         input: { id: sourceTreeNodeData.node.id },
       });
 
-      const updatedSourceEntriesPayload = siblingsAfterRemovalPayload({
+      const updatedSourceResourcesPayload = siblingsAfterRemovalPayload({
         nodes: sourceTreeNodeData.parentNode.childNodes,
         removedNode: sourceTreeNodeData.node,
       });
 
-      const batchCreateEntryInput = await Promise.all(
-        entriesWithoutName.map(async (entry, index) => {
-          const newEntryPath = await join(entry.path.raw);
+      const batchCreateResourceInput = await Promise.all(
+        resourcesWithoutName.map(async (resource, index) => {
+          const newResourcePath = await join(resource.path.raw);
 
           if (index === 0) {
-            return createEntryKind({
-              name: entry.name,
+            return createResourceKind({
+              name: resource.name,
               path: "",
               class: "endpoint",
-              isAddingFolder: entry.kind === "Dir",
+              isAddingFolder: resource.kind === "Dir",
               order: newOrder,
-              protocol: entry.protocol,
+              protocol: resource.protocol,
             });
           } else {
-            return createEntryKind({
-              name: entry.name,
-              path: newEntryPath,
+            return createResourceKind({
+              name: resource.name,
+              path: newResourcePath,
               class: "endpoint",
-              isAddingFolder: entry.kind === "Dir",
-              order: entry.order!,
-              protocol: entry.protocol,
+              isAddingFolder: resource.kind === "Dir",
+              order: resource.order!,
+              protocol: resource.protocol,
             });
           }
         })
       );
 
-      await batchUpdateProjectEntry({
+      await batchUpdateProjectResource({
         projectId: sourceTreeNodeData.projectId,
-        entries: {
-          resources: updatedSourceEntriesPayload,
+        resources: {
+          resources: updatedSourceResourcesPayload,
         },
       });
 
-      await batchCreateProjectEntry({
+      await batchCreateProjectResource({
         projectId: locationTreeRootNodeData.projectId,
         input: {
-          resources: batchCreateEntryInput,
+          resources: batchCreateResourceInput,
         },
       });
 
-      await fetchEntriesForPath(locationTreeRootNodeData.projectId, "");
-      await fetchEntriesForPath(sourceTreeNodeData.projectId, resolveParentPath(sourceTreeNodeData.parentNode));
+      await fetchResourcesForPath(locationTreeRootNodeData.projectId, "");
+      await fetchResourcesForPath(sourceTreeNodeData.projectId, resolveParentPath(sourceTreeNodeData.parentNode));
     },
-    [deleteProjectEntry, batchUpdateProjectEntry, batchCreateProjectEntry, fetchEntriesForPath]
+    [deleteProjectResource, batchUpdateProjectResource, batchCreateProjectResource, fetchResourcesForPath]
   );
 
   useEffect(() => {
@@ -418,16 +418,16 @@ export const useNodeDragAndDropHandler = () => {
       },
     });
   }, [
-    batchCreateProjectEntry,
-    batchUpdateProjectEntry,
-    createProjectEntry,
-    deleteProjectEntry,
-    fetchEntriesForPath,
+    batchCreateProjectResource,
+    batchUpdateProjectResource,
+    createProjectResource,
+    deleteProjectResource,
+    fetchResourcesForPath,
     handleCombineWithinProject,
     handleMoveToAnotherProject,
     handleReorderWithinProject,
     handleCombineToAnotherProjectRoot,
-    updateProjectEntry,
+    updateProjectResource,
     handleCombineToAnotherProject,
   ]);
 };

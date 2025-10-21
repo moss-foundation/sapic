@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useMemo } from "react";
 
-import { useUpdateProjectEntry } from "@/hooks";
+import { useUpdateProjectResource } from "@/hooks";
 import { EndpointPageContext } from "@/pages/EndpointPage/EndpointPageContext";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
@@ -16,16 +16,16 @@ import {
 } from "../utils/dragAndDrop";
 
 export const useMonitorParamsRowForms = () => {
-  const { entryDescription, projectId, entry } = useContext(EndpointPageContext);
-  const { mutate: updateProjectEntry } = useUpdateProjectEntry();
+  const { resourceDescription, projectId, resource } = useContext(EndpointPageContext);
+  const { mutate: updateProjectResource } = useUpdateProjectResource();
 
   const queryList = useMemo(() => {
-    return sortObjectsByOrder(entryDescription.queryParams);
-  }, [entryDescription.queryParams]);
+    return sortObjectsByOrder(resourceDescription.queryParams);
+  }, [resourceDescription.queryParams]);
 
   const pathList = useMemo(() => {
-    return sortObjectsByOrder(entryDescription.pathParams);
-  }, [entryDescription.pathParams]);
+    return sortObjectsByOrder(resourceDescription.pathParams);
+  }, [resourceDescription.pathParams]);
 
   const handleQueryToPathNewParamRowForm = useCallback(
     (sourceData: DraggableParamRowData) => {
@@ -82,11 +82,11 @@ export const useMonitorParamsRowForms = () => {
         return;
       }
 
-      updateProjectEntry({
+      updateProjectResource({
         projectId,
-        updatedEntry: {
+        updatedResource: {
           ITEM: {
-            id: entry.id,
+            id: resource.id,
             headersToAdd: [],
             headersToUpdate: [],
             headersToRemove: [],
@@ -100,7 +100,7 @@ export const useMonitorParamsRowForms = () => {
         },
       });
     },
-    [queryList, pathList, updateProjectEntry, projectId, entry.id]
+    [queryList, pathList, updateProjectResource, projectId, resource.id]
   );
 
   const handlePathToQueryNewParamRowForm = useCallback(
@@ -158,11 +158,11 @@ export const useMonitorParamsRowForms = () => {
         return;
       }
 
-      updateProjectEntry({
+      updateProjectResource({
         projectId,
-        updatedEntry: {
+        updatedResource: {
           ITEM: {
-            id: entry.id,
+            id: resource.id,
             headersToAdd: [],
             headersToUpdate: [],
             headersToRemove: [],
@@ -176,7 +176,7 @@ export const useMonitorParamsRowForms = () => {
         },
       });
     },
-    [queryList, pathList, updateProjectEntry, projectId, entry.id]
+    [queryList, pathList, updateProjectResource, projectId, resource.id]
   );
 
   const handleWithinQueryListNewParamRowForm = useCallback(
@@ -198,11 +198,11 @@ export const useMonitorParamsRowForms = () => {
 
       if (queryParamsToUpdate.length === 0) return;
 
-      updateProjectEntry({
+      updateProjectResource({
         projectId,
-        updatedEntry: {
+        updatedResource: {
           ITEM: {
-            id: entry.id,
+            id: resource.id,
             headersToAdd: [],
             headersToUpdate: [],
             headersToRemove: [],
@@ -216,7 +216,7 @@ export const useMonitorParamsRowForms = () => {
         },
       });
     },
-    [queryList, updateProjectEntry, projectId, entry.id]
+    [queryList, updateProjectResource, projectId, resource.id]
   );
 
   const handleWithinPathListNewParamRowForm = useCallback(
@@ -238,11 +238,11 @@ export const useMonitorParamsRowForms = () => {
 
       if (pathParamsToUpdate.length === 0) return;
 
-      updateProjectEntry({
+      updateProjectResource({
         projectId,
-        updatedEntry: {
+        updatedResource: {
           ITEM: {
-            id: entry.id,
+            id: resource.id,
             headersToAdd: [],
             headersToUpdate: [],
             headersToRemove: [],
@@ -256,7 +256,7 @@ export const useMonitorParamsRowForms = () => {
         },
       });
     },
-    [pathList, updateProjectEntry, projectId, entry.id]
+    [pathList, updateProjectResource, projectId, resource.id]
   );
 
   useEffect(() => {

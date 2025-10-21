@@ -4,13 +4,13 @@ import { DescribeResourceOutput, StreamResourcesEvent } from "@repo/moss-project
 
 interface EndpointPageContext {
   projectId: string;
-  entry: StreamResourcesEvent;
-  entryDescription: DescribeResourceOutput;
+  resource: StreamResourcesEvent;
+  resourceDescription: DescribeResourceOutput;
 }
 
 export const EndpointPageContext = createContext<EndpointPageContext>({
   projectId: "",
-  entry: {
+  resource: {
     id: "",
     name: "",
     path: {
@@ -22,7 +22,7 @@ export const EndpointPageContext = createContext<EndpointPageContext>({
     protocol: "Get",
     expanded: false,
   },
-  entryDescription: {
+  resourceDescription: {
     name: "",
     class: "component",
     kind: "Item",

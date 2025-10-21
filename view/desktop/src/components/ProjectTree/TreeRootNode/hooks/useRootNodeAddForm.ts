@@ -1,22 +1,22 @@
 import { useContext, useState } from "react";
 
-import { useCreateProjectEntry } from "@/hooks";
+import { useCreateProjectResource } from "@/hooks";
 
 import { ProjectTreeContext } from "../../ProjectTreeContext";
 import { ProjectTreeRootNode } from "../../types";
-import { createEntryKind } from "../../utils";
+import { createResourceKind } from "../../utils";
 
 export const useRootNodeAddForm = (node: ProjectTreeRootNode) => {
   const { id } = useContext(ProjectTreeContext);
 
-  const { mutateAsync: createProjectEntry } = useCreateProjectEntry();
+  const { mutateAsync: createProjectResource } = useCreateProjectResource();
 
   const [isAddingRootFileNode, setIsAddingRootFileNode] = useState(false);
   const [isAddingRootFolderNode, setIsAddingRootFolderNode] = useState(false);
 
   const handleRootAddFormSubmit = async (name: string) => {
     const newName = name.trim();
-    const newEntry = createEntryKind({
+    const newResource = createResourceKind({
       name: newName,
       path: "",
       class: "endpoint",
@@ -29,9 +29,9 @@ export const useRootNodeAddForm = (node: ProjectTreeRootNode) => {
       setIsAddingRootFileNode(false);
       setIsAddingRootFolderNode(false);
 
-      await createProjectEntry({
+      await createProjectResource({
         projectId: id,
-        input: newEntry,
+        input: newResource,
       });
     } catch (error) {
       console.error(error);
