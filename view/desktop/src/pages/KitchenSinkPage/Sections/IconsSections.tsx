@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-import { InputOutlined } from "@/components";
 import { Icon, Icons } from "@/lib/ui";
+import Input from "@/lib/ui/Input";
 
 import * as iconsNames from "../../../assets/icons";
 import { KitchenSinkSection } from "../KitchenSinkSection";
@@ -12,7 +12,8 @@ export const IconsSection = () => {
   return (
     <KitchenSinkSection header="Icons" description="Various icons available in the application.">
       <div>
-        <InputOutlined
+        <Input
+          intent="outlined"
           value={iconsSearchInput}
           onChange={(e) => setIconsSearchInput(e.target.value)}
           placeholder="Search icons"

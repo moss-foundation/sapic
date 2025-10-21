@@ -21,13 +21,13 @@ const StepCard = ({ isNew = false }: { isNew?: boolean }) => {
         <Icon icon="Info" />
         <span className="font-medium">Learn the Fundamentals</span>
         {isNew && (
-          <div className="background-(--moss-stepCard-bg) rounded-[3px] px-1 text-[11px] font-medium text-(--moss-stepCard-text)">
+          <div className="background-(--moss-stepCard-background) rounded-[3px] px-1 text-[11px] font-medium text-(--moss-stepCard-foreground)">
             New
           </div>
         )}
       </div>
 
-      <div className="text-(--moss-secondary-text)">
+      <div className="text-(--moss-secondary-foreground)">
         Explain behavior that is not clear from the setting or action name.
       </div>
     </div>

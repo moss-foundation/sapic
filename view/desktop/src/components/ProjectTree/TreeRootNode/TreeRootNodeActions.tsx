@@ -46,26 +46,19 @@ export const TreeRootNodeActions = ({
             className={`hidden items-center opacity-0 transition-[display,opacity] transition-discrete duration-100 group-hover/Tree:flex group-hover/Tree:opacity-100`}
           >
             {displayMode === "LIVE" && (
-              <ActionButton
-                customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
-                icon="Add"
-                onClick={() => setIsAddingRootFileNode(true)}
-              />
+              <ActionButton hoverVariant="list" icon="Add" onClick={() => setIsAddingRootFileNode(true)} />
             )}
             <ActionButton
-              customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
               icon="CollapseAll"
               disabled={allFoldersAreCollapsed}
               onClick={collapseAllNodes}
+              hoverVariant="list"
             />
           </div>
         )}
         <ActionMenu.Root>
           <ActionMenu.Trigger asChild>
-            <ActionButton
-              customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
-              icon="MoreHorizontal"
-            />
+            <ActionButton hoverVariant="list" icon="MoreHorizontal" />
           </ActionMenu.Trigger>
           <ActionMenu.Portal>
             <ActionMenu.Content className="z-40" align="center">

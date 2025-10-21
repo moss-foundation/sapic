@@ -61,17 +61,13 @@ export const EnvironmentItemControls = ({
             <ActionButton
               onClick={handleSetActiveEnvironment}
               icon={environment.isActive ? "EnvironmentSelectionActive" : "EnvironmentSelection"}
-              customHoverBackground="hover:background-(--moss-gray-10)"
+              hoverVariant="list"
             />
           </Tree.ActionsHover>
           <Tree.ActionsHover invisible={true} forceVisible={showActionMenu}>
             <ActionMenu.Root onOpenChange={setShowActionMenu} modal={showActionMenu}>
               <ActionMenu.Trigger asChild>
-                <ActionButton
-                  icon="MoreHorizontal"
-                  className="cursor-pointer"
-                  customHoverBackground="hover:background-(--moss-gray-10)"
-                />
+                <ActionButton icon="MoreHorizontal" className="cursor-pointer" hoverVariant="list" />
               </ActionMenu.Trigger>
 
               <ActionMenu.Portal>

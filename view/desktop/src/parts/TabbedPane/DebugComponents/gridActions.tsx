@@ -187,7 +187,7 @@ export const GridActions = (props: {
           </button>
           <span className="grow" />
           <div className="flex items-center">
-            <span className="pr-1 text-[var(--moss-activegroup-visiblepanel-tab-color)]">Grid Gap</span>
+            <span className="pr-1">Grid Gap</span>
             <input
               className="w-10 text-center"
               type="number"

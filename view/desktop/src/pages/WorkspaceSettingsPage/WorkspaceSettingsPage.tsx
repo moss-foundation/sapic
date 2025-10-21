@@ -59,7 +59,7 @@ export const WorkspaceSettings = ({ ...props }: IDockviewPanelProps) => {
 
   if (!hasActiveWorkspace) {
     return (
-      <div className="flex h-full items-center justify-center text-(--moss-primary-text)">
+      <div className="flex h-full items-center justify-center text-(--moss-primary-foreground)">
         <div className="text-center">
           <h2 className="text-lg font-semibold">No Active Workspace</h2>
           <p className="text-sm">Please select a workspace to view its settings.</p>

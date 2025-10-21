@@ -9,7 +9,7 @@ export const ActivityBarButtonIndicator = () => {
 
   return (
     <div
-      className={cn("absolute shadow-[inset_0_-2px_10px_var(--moss-primary)] transition-[height,width] duration-300", {
+      className={cn("absolute shadow-[inset_0_-2px_10px_var(--moss-accent)] transition-[height,width] duration-300", {
         "bottom-0 left-1/2 h-0.5 w-2.5 -translate-x-1/2 rounded-t-[10px] [button:hover_+_&]:w-full":
           position === ACTIVITYBAR_POSITION.TOP,
         "top-0 left-1/2 h-0.5 w-2.5 -translate-x-1/2 rounded-b-[10px] [button:hover_+_&]:w-full":

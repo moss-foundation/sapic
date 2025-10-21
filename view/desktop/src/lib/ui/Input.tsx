@@ -12,15 +12,21 @@ export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElem
   iconClassName?: string;
   inputFieldClassName?: string;
   fieldSizing?: "content" | "auto";
+  contrast?: boolean;
+  intent?: "plain" | "outlined";
 }
 
 //prettier-ignore
-const inputStyles = cva(`
+const inputWrapperStyles = cva(`
     flex items-center w-full gap-2
-    rounded-sm py-0 font-medium transition-shadow 
+    border 
+    rounded-sm px-2 py-0 
+
     has-[input:focus-within]:outline-2 
-    has-[input:focus-within]:outline-(--moss-primary)   
+    has-[input:focus-within]:outline-(--moss-accent)   
     has-[input:focus-within]:-outline-offset-2
+
+    has-data-invalid:border-(--moss-error)
   `,
   {
     variants: {
@@ -28,8 +34,20 @@ const inputStyles = cva(`
         false: null,
         true: "cursor-not-allowed opacity-50 active:pointer-events-none pointer-events-none",
       },
+      intent: {
+        plain: "background-none border-transparent",
+        outlined: "background-(--moss-controls-background) border-(--moss-controls-border)",
+      },
+      contrast: {
+        true: "background-(--moss-controls-background-contrast)",
+        false: "",
+      },
     },
   }
+);
+
+const inputStyles = cva(
+  `py-[7px] font-normal text-(--moss-controls-foreground) placeholder-(--moss-controls-placeholder)`
 );
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -42,6 +60,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       iconClassName,
       inputFieldClassName,
       fieldSizing = "auto",
+      contrast = false,
+      intent = "plain",
       ...props
     },
     forwardedRef
@@ -51,13 +71,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     useInputResize({ ref, enabled: fieldSizing === "content" });
 
     return (
-      <div className={cn(inputStyles({ disabled }), className)}>
+      <div className={cn(inputWrapperStyles({ disabled, contrast, intent }), className)}>
         {iconLeft && <Icon icon={iconLeft} className={iconClassName} />}
 
         <input
           ref={mergeRefs([ref, forwardedRef])}
           disabled={disabled}
-          className={cn("h-auto w-full focus-visible:outline-none", inputFieldClassName)}
+          className={cn(inputStyles(), "h-auto w-full focus-visible:outline-none", inputFieldClassName)}
           {...props}
         />
 

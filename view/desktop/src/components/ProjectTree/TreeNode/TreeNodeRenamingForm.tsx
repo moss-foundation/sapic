@@ -37,7 +37,7 @@ const TreeNodeRenamingForm = ({
         <div className="flex size-5 shrink-0 items-center justify-center">
           <Icon
             icon="ChevronRight"
-            className={cn("text-(--moss-icon-primary-text)", {
+            className={cn({
               "rotate-90": shouldRenderChildNodes,
               "opacity-0": node.kind !== "Dir",
             })}

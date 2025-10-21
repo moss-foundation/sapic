@@ -18,7 +18,7 @@ const DragHandleButton = forwardRef<HTMLDivElement, DragHandleButtonProps>(({ cl
           "px-1 py-0.5": slim,
           "size-4": !slim,
           "": ghost,
-          "background-(--moss-drag-handle-bg) shadow": !ghost,
+          "background-(--moss-primary-background) shadow": !ghost,
         },
         className
       )}

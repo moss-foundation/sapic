@@ -49,7 +49,7 @@ const DockviewDebugContainer = ({
   }, []);
 
   return (
-    <div className="border-b border-(--moss-border-color) bg-[#0f162d] text-white">
+    <div className="border-b border-(--moss-border) bg-[#0f162d] text-white">
       <div>
         <GridActions api={api} toggleCustomWatermark={toggleCustomWatermark} hasCustomWatermark={hasCustomWatermark} />
         {api && <PanelActions api={api} panels={panels} activePanel={activePanel} />}

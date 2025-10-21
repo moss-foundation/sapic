@@ -1,22 +1,24 @@
-import { useId, ReactNode } from "react";
+import { ReactNode, useId } from "react";
 
 import { cn } from "@/utils";
 
-import { Icon, RadioGroup as RadioGroupPrimitive } from "../lib/ui";
+import { RadioGroup as RadioGroupPrimitive } from "../lib/ui";
 import SelectOutlined from "./SelectOutlined";
 
 const radioGroupItemStyles = `
-  background-(--moss-radio-bg)  
-  border-(--moss-radio-border) 
+  background-(--moss-controls-background)  
+  border-(--moss-controls-border) 
   
-  disabled:background-(--moss-radio-bg-disabled)
-  disabled:border-(--moss-radio-border-disabled)
-  disabled:data-[state=checked]:background-(--moss-radio-bg-disabled)
+  disabled:background-(--moss-background-disabled)
+  disabled:border-(--moss-border-disabled)
+  disabled:data-[state=checked]:background-(--moss-accent)
   disabled:cursor-not-allowed
 
-  data-[state=checked]:background-(--moss-primary) 
+  data-[state=checked]:background-(--moss-accent) 
 
-  focus-visible:outline-(--moss-primary) 
+  focus-visible:outline-(--moss-accent) 
+  focus-visible:outline-offset-2
+  focus-visible:outline-2
 `;
 
 export interface ItemWithLabelProps {
@@ -60,7 +62,7 @@ const ItemWithLabel = ({
         disabled={disabled}
       >
         <RadioGroupPrimitive.Indicator>
-          <Icon icon="RadioIndicator" />
+          <RadioIndicatorSVG />
         </RadioGroupPrimitive.Indicator>
       </RadioGroupPrimitive.Item>
 
@@ -75,7 +77,7 @@ const ItemWithLabel = ({
         </label>
       )}
       {description && (
-        <div className="col-start-2 text-left text-sm leading-4 text-(--moss-secondary-text)">{description}</div>
+        <div className="col-start-2 text-left text-sm leading-4 text-(--moss-secondary-foreground)">{description}</div>
       )}
     </div>
   );
@@ -132,7 +134,7 @@ const ItemWithSelect = ({
         required={required}
       >
         <RadioGroupPrimitive.Indicator>
-          <Icon icon="RadioIndicator" />
+          <RadioIndicatorSVG />
         </RadioGroupPrimitive.Indicator>
       </RadioGroupPrimitive.Item>
 
@@ -163,9 +165,29 @@ const ItemWithSelect = ({
       </div>
 
       {description && (
-        <div className="col-start-2 text-left text-sm leading-4 text-(--moss-secondary-text)">{description}</div>
+        <div className="col-start-2 text-left text-sm leading-4 text-(--moss-secondary-foreground)">{description}</div>
       )}
     </div>
+  );
+};
+
+const RadioIndicatorSVG = () => {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="text-white dark:text-black"
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M7.99967 10.6673C9.47247 10.6673 10.6663 9.47345 10.6663 8.00065C10.6663 6.5279 9.47247 5.33398 7.99967 5.33398C6.52692 5.33398 5.33301 6.5279 5.33301 8.00065C5.33301 9.47345 6.52692 10.6673 7.99967 10.6673Z"
+        fill="currentColor"
+      />
+    </svg>
   );
 };
 

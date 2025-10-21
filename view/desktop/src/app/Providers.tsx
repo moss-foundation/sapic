@@ -2,8 +2,8 @@ import { ReactNode } from "react";
 import { Toaster } from "sonner";
 
 import ErrorBoundary from "@/components/ErrorBoundary";
-import { ActivityRouterProvider } from "./ActivityRouterProvider";
 
+import { ActivityRouterProvider } from "./ActivityRouterProvider";
 import LanguageProvider from "./LanguageProvider";
 import ThemeProvider from "./ThemeProvider";
 
@@ -19,8 +19,8 @@ const Providers = ({ children }: { children: ReactNode }) => {
               richColors={false}
               toastOptions={{
                 style: {
-                  background: "var(--moss-notification-bg)",
-                  color: "var(--moss-notification-text)",
+                  background: "var(--moss-notification-background)",
+                  color: "var(--moss-notification-foreground)",
                   borderRadius: "8px",
                   width: "360px",
                 },

@@ -6,6 +6,7 @@ import { PageWrapper } from "@/components/PageView/PageWrapper";
 import { useStreamProjects } from "@/hooks";
 import { useRenameProjectForm } from "@/hooks/useRenameProjectForm";
 import { FolderTabs, Icon, TabItemProps } from "@/lib/ui";
+import { RoundedCounter } from "@/lib/ui/RoundedCounter";
 
 import { AuthTabContent } from "./tabs/AuthTabContent";
 import { HeadersTabContent } from "./tabs/HeadersTabContent";
@@ -14,16 +15,9 @@ import { PostRequestTabContent } from "./tabs/PostRequestTabContent";
 import { PreRequestTabContent } from "./tabs/PreRequestTabContent";
 import { VariablesTabContent } from "./tabs/VariablesTabContent";
 
-// Badge component for tab numbers
-const Badge = ({ count }: { count: number }) => (
-  <span className="background-(--moss-tab-badge-color) inline-flex h-3.5 w-3.5 min-w-[14px] items-center justify-center rounded-full text-xs leading-none font-medium text-white">
-    <span className="relative top-[0.5px]">{count}</span>
-  </span>
-);
-
 // Indicator dot for status
-const StatusDot = ({ active }: { active: boolean }) =>
-  active ? <div className="background-(--moss-auth-indicator-color) h-2 w-2 rounded-full" /> : null;
+const PlaceholderStatusDot = ({ active }: { active: boolean }) =>
+  active ? <div className="background-(--moss-green-4) h-2 w-2 rounded-full" /> : null;
 
 export interface ProjectSettingsParams {
   projectId: string;
@@ -42,7 +36,7 @@ export const ProjectSettingsPage = ({ ...props }: IDockviewPanelProps<ProjectSet
 
   if (!projectId) {
     return (
-      <div className="flex h-full items-center justify-center text-(--moss-primary-text)">
+      <div className="flex h-full items-center justify-center text-(--moss-primary-foreground)">
         <div className="text-center">
           <h2 className="text-lg font-semibold">No Active Project</h2>
           <p className="text-sm">Please select a project to view its settings.</p>
@@ -68,7 +62,7 @@ export const ProjectSettingsPage = ({ ...props }: IDockviewPanelProps<ProjectSet
         <div className="flex items-center gap-1">
           <Icon icon="Auth" className="h-4 w-4" />
           <span>Auth</span>
-          <StatusDot active={true} />
+          <PlaceholderStatusDot active={true} />
         </div>
       ),
       content: <AuthTabContent {...props} />,
@@ -79,7 +73,7 @@ export const ProjectSettingsPage = ({ ...props }: IDockviewPanelProps<ProjectSet
         <div className="flex items-center gap-1">
           <Icon icon="Headers" className="h-4 w-4" />
           <span>Headers</span>
-          <Badge count={3} />
+          <RoundedCounter count={3} color="primary" />
         </div>
       ),
       content: <HeadersTabContent {...props} />,
@@ -90,7 +84,7 @@ export const ProjectSettingsPage = ({ ...props }: IDockviewPanelProps<ProjectSet
         <div className="flex items-center gap-1">
           <Icon icon="Braces" className="h-4 w-4" />
           <span>Variables</span>
-          <Badge count={3} />
+          <RoundedCounter count={3} color="primary" />
         </div>
       ),
       content: <VariablesTabContent {...props} />,
@@ -138,6 +132,11 @@ export const ProjectSettingsPage = ({ ...props }: IDockviewPanelProps<ProjectSet
               </FolderTabs.Trigger>
             ))}
           </FolderTabs.List>
+          {tabs.map((tab) => (
+            <FolderTabs.Content key={tab.id} value={tab.id} className="flex flex-1">
+              <PageWrapper className="flex flex-1 flex-col">{tab.content}</PageWrapper>
+            </FolderTabs.Content>
+          ))}{" "}
         </FolderTabs.Root>
       </PageWrapper>
     </PageView>

@@ -25,7 +25,7 @@ export const WelcomePage = () => {
         <div className="flex flex-col gap-4 leading-6">
           <h1 className="text-[34px]">Simple API Client</h1>
 
-          <p className="text-lg text-pretty text-(--moss-secondary-text)">
+          <p className="text-lg text-pretty text-(--moss-secondary-foreground)">
             Design APIs, Send Requests, Unmatched Git Integration
           </p>
         </div>
@@ -47,7 +47,7 @@ export const WelcomePage = () => {
           <span>Learn more</span>
           <Icon
             icon="ChevronDownHovered"
-            className="group-hover/learn-more:background-(--moss-icon-primary-background-hover) rounded-full transition-colors"
+            className="group-hover/learn-more:background-(--moss-primary-background-hover) rounded-full transition-colors"
           />
         </a>
       </section>
@@ -79,7 +79,7 @@ const FirstColumn = () => {
         <div className="flex flex-col items-start gap-2">
           <h2 className="text-lg">Start</h2>
           <button className="flex cursor-pointer gap-1.5" onClick={openNewWorkspaceModal}>
-            <Icon icon="NewWorkspace" className="size-4 text-(--moss-primary)" />
+            <Icon icon="NewWorkspace" className="size-4 text-(--moss-accent)" />
             <span>New workspace</span>
           </button>
 
@@ -91,7 +91,7 @@ const FirstColumn = () => {
             })}
             onClick={workspaces?.length && workspaces?.length > 0 ? openOpenWorkspaceModal : undefined}
           >
-            <Icon icon="Workspace" className="size-4 text-(--moss-primary)" />
+            <Icon icon="Workspace" className="size-4 text-(--moss-accent)" />
             <span>Open workspace</span>
           </button>
         </div>
@@ -114,11 +114,11 @@ const SecondColumn = () => {
     <div className="flex max-w-[268px] flex-col gap-2 justify-self-end">
       <h2 className="text-xl">Pin board</h2>
       <div>
-        <p className="text-(--moss-secondary-text)">Lorem ipsum dolor sitel, consectetur adipiscing.</p>
+        <p className="text-(--moss-secondary-foreground)">Lorem ipsum dolor sitel, consectetur adipiscing.</p>
 
         <WelcomePageDivider />
 
-        <p className="text-(--moss-secondary-text)">
+        <p className="text-(--moss-secondary-foreground)">
           Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
         </p>
 

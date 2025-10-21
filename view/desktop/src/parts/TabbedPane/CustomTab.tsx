@@ -75,10 +75,10 @@ export const CustomTab = ({
     <div
       onClick={handleClick}
       className={cn(
-        "group/customTab flex h-full items-center justify-center gap-1 px-3 hover:text-(--moss-primary-text)",
+        "group/customTab flex h-full items-center justify-center gap-1 px-3 hover:text-(--moss-primary-foreground)",
         {
-          "border-b-1 border-(--moss-primary)": isActive,
-          "border-b-1 border-(--moss-border-color)": !isActive,
+          "border-b-1 border-(--moss-accent)": isActive,
+          "border-b-1 border-(--moss-border)": !isActive,
         }
       )}
       tab-location={tabLocation}
@@ -108,10 +108,7 @@ export const CustomTab = ({
           onMouseEnter={() => setIsCloseHovered(true)}
           onMouseLeave={() => setIsCloseHovered(false)}
         >
-          <Icon
-            icon={isCloseHovered ? "CloseSmallHovered" : "CloseSmall"}
-            className="text-(--moss-icon-primary-text)"
-          />
+          <Icon icon={isCloseHovered ? "CloseSmallHovered" : "CloseSmall"} />
         </button>
       )}
     </div>

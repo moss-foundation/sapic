@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 
-import { InputPlain, ProjectTree } from "@/components";
+import { ProjectTree } from "@/components";
 import { useNodeDragAndDropHandler } from "@/components/ProjectTree/hooks/useNodeDragAndDropHandler";
 import { useProjectDragAndDropHandler } from "@/components/ProjectTree/hooks/useProjectDragAndDropHandler";
 import { isSourceProjectTreeNode } from "@/components/ProjectTree/utils";
 import { useProjectsTrees } from "@/hooks/project/derivedHooks/useProjectsTrees";
 import { Scrollbar } from "@/lib/ui";
-import { useRequestModeStore } from "@/store/requestMode";
+import Input from "@/lib/ui/Input";
+import { useWorkspaceModeStore } from "@/store/workspaceMode";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import { ProjectCreationZone } from "./ProjectCreationZone";
@@ -15,7 +16,7 @@ import { ProjectTreeViewHeader } from "./ProjectTreeViewHeader";
 export const ProjectTreesView = () => {
   const dropTargetToggleRef = useRef<HTMLDivElement>(null);
 
-  const { displayMode } = useRequestModeStore();
+  const { displayMode } = useWorkspaceModeStore();
 
   useProjectDragAndDropHandler();
   useNodeDragAndDropHandler();
@@ -58,7 +59,7 @@ export const ProjectTreesView = () => {
       <Scrollbar className="min-h-0 flex-1" classNames={{ contentEl: "h-full w-full" }}>
         <div className="flex h-full flex-col">
           <div className="flex shrink items-center gap-[7px] px-2 py-1">
-            <InputPlain placeholder="Search" />
+            <Input placeholder="Search" />
           </div>
 
           <div className="flex h-full flex-col">

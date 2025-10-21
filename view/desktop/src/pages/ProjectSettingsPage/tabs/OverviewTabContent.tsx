@@ -1,10 +1,10 @@
 import { IDockviewPanelProps } from "moss-tabs";
 import { useEffect, useState } from "react";
 
-import { InputOutlined } from "@/components";
 import { DeleteProjectModal } from "@/components/Modals/Project/DeleteProjectModal";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
 import { useModal, useStreamProjects, useUpdateProject } from "@/hooks";
+import Input from "@/lib/ui/Input";
 
 import { ProjectDangerZoneSection } from "../ProjectDangerZoneSection";
 import { ProjectSummarySection } from "../ProjectSummarySection";
@@ -79,7 +79,7 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
 
   if (!project) {
     return (
-      <div className="flex h-full items-center justify-center text-(--moss-primary-text)">
+      <div className="flex h-full items-center justify-center text-(--moss-primary-foreground)">
         <div className="text-center">
           <h2 className="text-lg font-semibold">No Active Project</h2>
           <p className="text-sm">Please select a project to view its settings.</p>
@@ -92,10 +92,11 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
     <div className="relative flex h-full justify-center">
       <div className="w-full max-w-2xl space-y-9 px-6 py-5">
         <div className="space-y-6">
-          <div className="flex items-start gap-3.5 text-(--moss-primary-text)">
+          <div className="flex items-start gap-3.5 text-(--moss-primary-foreground)">
             <label className="mt-1 w-20 font-medium">Name:</label>
             <div>
-              <InputOutlined
+              <Input
+                intent="outlined"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 onBlur={handleNameBlur}
@@ -108,18 +109,19 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
                 }}
                 placeholder="Enter project name..."
                 pattern={VALID_NAME_PATTERN}
-                className="w-72 border-(--moss-input-border)"
+                className="w-72 border-(--moss-border)"
               />
-              <p className="mt-1 w-72 text-sm text-(--moss-secondary-text)">
+              <p className="mt-1 w-72 text-sm text-(--moss-secondary-foreground)">
                 Invalid filename characters (e.g. / \ : * ? " &lt; &gt; |) will be escaped
               </p>
             </div>
           </div>
 
-          <div className="mt-10 flex items-start gap-3.5 text-(--moss-primary-text)">
+          <div className="mt-10 flex items-start gap-3.5 text-(--moss-primary-foreground)">
             <label className="mt-1 w-20 font-medium">Repository:</label>
             <div>
-              <InputOutlined
+              <Input
+                intent="outlined"
                 value={repository}
                 onChange={(e) => setRepository(e.target.value)}
                 onBlur={handleRepositoryBlur}
@@ -131,7 +133,7 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
                   }
                 }}
                 placeholder="Enter repository URL..."
-                className="w-72 border-(--moss-input-border)"
+                className="w-72 border-(--moss-border)"
                 required
               />
             </div>

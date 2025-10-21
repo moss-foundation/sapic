@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
-import { ActionMenu, ButtonPrimary, InputTemplating } from "@/components";
-import { Icon } from "@/lib/ui";
+import { ActionMenu, InputTemplating } from "@/components";
+import { Button, Icon } from "@/lib/ui";
 import { cn } from "@/utils";
 
 import { areUrlsEquivalent } from "../utils/urlParser";
@@ -96,7 +96,7 @@ export const EndpointInputField = memo(
     return (
       <div
         className={cn(
-          "relative flex min-w-0 items-center gap-2 rounded-md border border-(--moss-border-color) p-[5px]",
+          "relative flex min-w-0 items-center gap-2 rounded-md border border-(--moss-border) p-[5px]",
           className
         )}
       >
@@ -111,8 +111,8 @@ export const EndpointInputField = memo(
                   "transition-colors",
                   "rounded-md",
                   "cursor-pointer font-bold",
-                  "background-(--moss-primary-background) hover:background-(--moss-secondary-background-hover) border border-(--moss-gray-11) text-(--moss-requestpage-text)",
-                  "data-[state=open]:outline-2 data-[state=open]:outline-offset-0 data-[state=open]:outline-(--moss-primary)"
+                  "background-(--moss-primary-background) hover:background-(--moss-secondary-background-hover) border border-(--moss-border) text-(--moss-orange-5)",
+                  "data-[state=open]:outline-2 data-[state=open]:outline-offset-0 data-[state=open]:outline-(--moss-accent)"
                 )}
               >
                 <span>{method}</span>
@@ -126,7 +126,7 @@ export const EndpointInputField = memo(
                   onClick={() => handleMethodChange(httpMethod)}
                   className={cn(
                     method === httpMethod &&
-                      "background-(--moss-secondary-background-hover) font-medium text-(--moss-requestpage-text)"
+                      "background-(--moss-secondary-background-hover) font-medium text-(--moss-controls-foreground)"
                   )}
                 >
                   {httpMethod}
@@ -149,7 +149,9 @@ export const EndpointInputField = memo(
         </div>
 
         {/* Right Side - Send Button */}
-        <ButtonPrimary onClick={handleSend}>Send</ButtonPrimary>
+        <Button intent="primary" onClick={handleSend}>
+          Send
+        </Button>
       </div>
     );
   }

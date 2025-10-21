@@ -112,17 +112,15 @@ export const ActivityBarButton = ({
     setActiveItem(id);
     setVisible(true);
   };
+
   return (
     <button
       ref={ref}
-      className={cn(
-        "background-(--moss-icon-primary-background) relative flex size-7 cursor-pointer items-center justify-center rounded-md p-1",
-        {
-          "hover:background-(--moss-icon-primary-background-hover) text-(--moss-icon-primary-text)":
-            !isActive || !isSideBarVisible,
-          "background-(--moss-icon-primary-background-active) text-(--moss-info-icon)": isActive && isSideBarVisible,
-        }
-      )}
+      className={cn("relative flex size-7 cursor-pointer items-center justify-center rounded-md p-1", {
+        "hover:background-(--moss-activityBarItem-background-hover)": !isActive || !isSideBarVisible,
+        "background-(--moss-accent-secondary)": isActive && isSideBarVisible,
+        "background-(--moss-activityBarItem-background)": !isActive || !isSideBarVisible,
+      })}
       onClick={() => handleClick(props.id)}
       {...props}
     >
@@ -132,7 +130,9 @@ export const ActivityBarButton = ({
           "size-4.5": position === ACTIVITYBAR_POSITION.DEFAULT,
         })}
       />
+
       {closestEdge && <DropIndicator edge={closestEdge} gap={12} />}
+
       {preview &&
         createPortal(
           <ActivityBarButton
@@ -140,7 +140,7 @@ export const ActivityBarButton = ({
             icon={icon}
             iconActive={iconActive}
             isActive={false}
-            className="background-(--moss-icon-primary-background-hover) rounded-md p-1"
+            className="background-(--moss-activityBarItem-background-hover) rounded-md p-1"
           />,
           preview
         )}

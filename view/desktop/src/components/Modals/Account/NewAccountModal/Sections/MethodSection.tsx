@@ -25,9 +25,9 @@ export const MethodSection = ({ method, setMethod, token, setToken, provider }: 
     <div>
       <Subheader>
         <span>Method</span>
-        <div className="background-(--moss-border-color) my-auto h-px w-full" />
+        <div className="background-(--moss-border) my-auto h-px w-full" />
       </Subheader>
-      <p className="text-sm leading-5 text-(--moss-secondary-text)">
+      <p className="text-sm leading-5 text-(--moss-secondary-foreground)">
         Pick the authentication method for connecting your account.
       </p>
       <div className="mt-2 pl-5">
@@ -69,7 +69,7 @@ export const MethodSection = ({ method, setMethod, token, setToken, provider }: 
             value={token}
             onChange={(e) => setToken(e.target.value)}
             placeholder={getPatPlaceholder(provider)}
-            className="h-24.5 w-full resize-none rounded-sm border border-(--moss-border-color) px-2 py-1.5 text-sm placeholder-(--moss-secondary-text) focus:outline-2 focus:outline-(--moss-primary)"
+            className="h-24.5 w-full resize-none rounded-sm border border-(--moss-border) px-2 py-1.5 text-sm placeholder-(--moss-secondary-foreground) focus:outline-2 focus:outline-(--moss-primary)"
           />
         </div>
       )}

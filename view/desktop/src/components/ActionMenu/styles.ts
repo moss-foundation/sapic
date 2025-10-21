@@ -5,7 +5,7 @@ export const actionMenuStyles = cva("hover:background-(--moss-secondary-backgrou
 });
 
 export const actionMenuContentStyles = cva(
-  "background-(--moss-primary-background) w-60 border border-(--moss-border-color)",
+  "background-(--moss-primary-background) w-60 border border-(--moss-border)",
   {
     variants: {},
   }

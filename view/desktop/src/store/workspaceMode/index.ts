@@ -2,13 +2,13 @@ import { create } from "zustand";
 
 import { WorkspaceMode } from "@repo/moss-workspace";
 
-interface RequestModeStore {
+interface WorkspaceModeStore {
   displayMode: WorkspaceMode;
   setDisplayMode: (displayMode: WorkspaceMode) => void;
   toggleDisplayMode: () => void;
 }
 
-export const useRequestModeStore = create<RequestModeStore>((set) => ({
+export const useWorkspaceModeStore = create<WorkspaceModeStore>((set) => ({
   displayMode: "LIVE",
   setDisplayMode: (displayMode: WorkspaceMode) => {
     set({ displayMode });

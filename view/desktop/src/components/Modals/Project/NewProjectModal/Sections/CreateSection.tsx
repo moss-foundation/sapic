@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 
-import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { VcsProviderSwitcher } from "@/components/VcsProviderSwitcher";
 import { useFocusInputOnMount } from "@/hooks";
+import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import { PillTabs } from "@/lib/ui/Tabs/index";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { CreateProjectGitParams } from "@repo/moss-workspace";
@@ -66,7 +66,7 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
       <div>
         <div className="flex flex-col gap-2">
           <CheckboxWithLabel checked={vcs} onCheckedChange={handleSetVCS} label="VCS" />
-          <span className="text-sm text-(--moss-secondary-text)">
+          <span className="text-sm text-(--moss-secondary-foreground)">
             You can switch modes in the workspace at any time and as often as needed.
           </span>
         </div>
@@ -94,16 +94,16 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
 
         {/* {gitProvider === null && (
           <div className={cn("flex w-full gap-5 py-3 pl-5", !vcs && "opacity-50")}>
-            <ButtonPrimary className="px-3 py-1.5" disabled={!vcs} onClick={handleAddAccount}>
+            <Button intent="primary"  className="px-3 py-1.5" disabled={!vcs} onClick={handleAddAccount}>
               {provider === "github" ? "Log In via GitHub..." : "Log In via GitLab..."}
-            </ButtonPrimary>
+            </Button>
             <ButtonNeutralOutlined
               className="px-3 py-1.5"
               disabled={!vcs}
               // onClick={handleAddAccount}
             >
               Log In with Token...
-            </ButtonNeutralOutlined>
+            </Button>
           </div>
         )} */}
       </div>

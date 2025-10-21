@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 
-import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
+import { Button } from "@/lib/ui";
 
-import ButtonDanger from "../ButtonDanger";
 import { ModalForm } from "../ModalForm";
 
 interface ConfirmationModalProps {
@@ -68,14 +67,14 @@ export const ConfirmationModal = ({
       showModal={showModal}
       onBackdropClick={handleBackdropClick}
       onSubmit={handleConfirm}
-      className="background-(--moss-primary-background) max-w-[400px] overflow-hidden border border-(--moss-border-color) text-(--moss-primary-text)"
+      className="background-(--moss-primary-background) max-w-[400px] overflow-hidden border border-(--moss-border) text-(--moss-primary-foreground)"
       title={title}
       content={
         <div className="flex h-full flex-col">
           <div className="flex-1 py-4.5">
             <div className="mb-1 text-base font-medium">{message}</div>
             {description && (
-              <div className="text-sm text-(--moss-secondary-text)">
+              <div className="text-sm text-(--moss-secondary-foreground)">
                 {description.split("\n").map((line, index) => (
                   <p key={index} className={index > 0 ? "mt-2" : ""}>
                     {line}
@@ -88,8 +87,12 @@ export const ConfirmationModal = ({
       }
       footer={
         <div className="flex items-center justify-end gap-3 py-0.75">
-          <ButtonNeutralOutlined onClick={handleCancel}>{cancelLabel}</ButtonNeutralOutlined>
-          <ButtonDanger type="submit">{confirmLabel}</ButtonDanger>
+          <Button intent="outlined" onClick={handleCancel}>
+            {cancelLabel}
+          </Button>
+          <Button intent="danger" type="submit">
+            {confirmLabel}
+          </Button>
         </div>
       }
     />

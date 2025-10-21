@@ -9,13 +9,13 @@ export const GroupedEnvironmentsListRootActions = () => {
           onClick={(e) => {
             e.stopPropagation();
           }}
-          customHoverBackground="hover:background-(--moss-gray-10)"
+          hoverVariant="list"
         />
       </div>
 
       <ActionMenu.Root>
         <ActionMenu.Trigger asChild>
-          <ActionButton icon="MoreHorizontal" customHoverBackground="hover:background-(--moss-gray-10)" />
+          <ActionButton icon="MoreHorizontal" hoverVariant="list" />
         </ActionMenu.Trigger>
         <ActionMenu.Portal>
           <ActionMenu.Content>

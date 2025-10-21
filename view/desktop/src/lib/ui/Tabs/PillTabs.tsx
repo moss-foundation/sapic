@@ -57,15 +57,15 @@ const Trigger = ({ value, className, trailingContent, leadingContent, label, dis
 
         has-[:focus-visible]:outline-3 
         has-[:focus-visible]:outline-offset-1 
-        has-[:focus-visible]:outline-(--moss-primary) 
+        has-[:focus-visible]:outline-(--moss-accent) 
 
-        ring ring-(--moss-border-color)
+        ring ring-(--moss-border)
 
         hover:not-data-[state=active]:hover:ring-(--moss-secondary-background-hover) 
 
         data-[state=active]:ring-2 
         data-[state=active]:ring-offset-0
-        data-[state=active]:ring-(--moss-primary)
+        data-[state=active]:ring-(--moss-accent)
 
         disabled:data-[state=active]:ring-(--moss-gray-11)
       `,

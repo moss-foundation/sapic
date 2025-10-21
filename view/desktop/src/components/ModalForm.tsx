@@ -35,7 +35,7 @@ export const ModalForm = ({
         {title && (
           <h2
             className={cn(
-              "flex items-center justify-center border-b border-(--moss-border-color) py-1.5 font-medium",
+              "flex items-center justify-center border-b border-(--moss-border) py-1.5 font-medium",
               titleClassName
             )}
           >
@@ -43,7 +43,7 @@ export const ModalForm = ({
           </h2>
         )}
         <div className="px-6 pt-3 pb-5">{content}</div>
-        <div className={cn("border-t border-(--moss-border-color) px-6 py-2", footerClassName)}>{footer}</div>
+        <div className={cn("border-t border-(--moss-border) px-6 py-2", footerClassName)}>{footer}</div>
       </form>
     </Modal>
   );

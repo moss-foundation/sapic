@@ -32,7 +32,7 @@ const EndpointPage = ({ ...props }: IDockviewPanelProps<EndpointPageProps>) => {
       <PageWrapper>
         <div className="flex flex-1 items-center justify-center">
           <div className="text-center">
-            <p className="mb-4 text-sm text-(--moss-secondary-text)">No endpoint selected</p>
+            <p className="mb-4 text-sm text-(--moss-secondary-foreground)">No endpoint selected</p>
           </div>
         </div>
       </PageWrapper>

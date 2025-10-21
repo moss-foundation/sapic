@@ -1,17 +1,20 @@
 @import "tailwindcss";
 @config "@repo/tailwind-config";
-
 @source "./icons/";
+@source "../lib/ui/";
 
 @import "allotment/dist/style.css";
 @import "./dockview.css";
 @import "./scrollbar.css";
 @import "./fonts.css";
+@import "./accent.css";
+@import "./resizeable.css";
 
 @layer base {
   #root {
     height: 100%;
   }
+
   html,
   body {
     @apply font-sans;
@@ -22,12 +25,15 @@
     overflow: hidden;
     line-height: 16px;
   }
+
   *:focus-visible {
-    @apply outline-2 outline-offset-1 outline-(--moss-primary);
+    @apply outline-2 outline-offset-1 outline-(--moss-accent);
   }
+
   *:focus:not(.focus-visible) {
     outline: none;
   }
+
   .linux {
     -webkit-font-smoothing: antialiased;
   }

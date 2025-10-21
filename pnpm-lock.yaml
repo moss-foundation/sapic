@@ -507,9 +507,6 @@ importers:
       rooks:
         specifier: ^9.3.0
         version: 9.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      simplebar:
-        specifier: ^6.3.2
-        version: 6.3.2
       simplebar-react:
         specifier: ^3.3.2
         version: 3.3.2(react@18.3.1)
@@ -3848,9 +3845,6 @@ packages:
     peerDependencies:
       react: '>=16.8.0'
 
-  simplebar@6.3.2:
-    resolution: {integrity: sha512-l4P1Oma0nply0g+pkrkwfC1SF5WDnIHrgiQDXSDzIdjngUDLkPgZcPGKrOvuFeXoSensfKijjIjDlUJSEp+mLQ==}
-
   sirv@3.0.2:
     resolution: {integrity: sha512-2wcC/oGxHis/BoHkkPwldgiPSYcpZK3JU28WoMVv55yHJgcZ8rlXvuG9iZggz+sU1d4bRgIGASwyWqjxu3FM0g==}
     engines: {node: '>=18'}
@@ -4459,7 +4453,7 @@ snapshots:
       '@babel/types': 7.28.4
       '@jridgewell/remapping': 2.3.5
       convert-source-map: 2.0.0
-      debug: 4.4.3(supports-color@8.1.1)
+      debug: 4.4.3
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       semver: 6.3.1
@@ -4543,7 +4537,7 @@ snapshots:
       '@babel/parser': 7.28.4
       '@babel/template': 7.27.2
       '@babel/types': 7.28.4
-      debug: 4.4.3(supports-color@8.1.1)
+      debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
 
@@ -6309,6 +6303,10 @@ snapshots:
       whatwg-mimetype: 4.0.0
       whatwg-url: 15.1.0
 
+  debug@4.4.3:
+    dependencies:
+      ms: 2.1.3
+
   debug@4.4.3(supports-color@8.1.1):
     dependencies:
       ms: 2.1.3
@@ -7538,10 +7536,6 @@ snapshots:
   simplebar-react@3.3.2(react@18.3.1):
     dependencies:
       react: 18.3.1
-      simplebar-core: 1.3.2
-
-  simplebar@6.3.2:
-    dependencies:
       simplebar-core: 1.3.2
 
   sirv@3.0.2:

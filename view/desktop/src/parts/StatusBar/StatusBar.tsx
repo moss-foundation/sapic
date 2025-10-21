@@ -77,7 +77,7 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
   return (
     <footer
       className={cn(
-        "background-(--moss-secondary-background) flex w-screen justify-between border-t border-t-(--moss-border-color) pr-4 pl-1.5",
+        "background-(--moss-statusBar-background) flex w-screen justify-between border-t border-t-(--moss-border) pr-4 pl-1.5",
         className
       )}
     >
@@ -88,7 +88,7 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
           ))}
         </div>
 
-        <Divider height="medium" />
+        <Divider className="py-1.5" />
 
         <StatusBarIndicators />
         <StatusBarActivity />
@@ -98,7 +98,7 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
         <ZoomButtons />
         <div className="flex gap-1">
           <StatusBarFPSCounter />
-          <Divider height="medium" />
+          <Divider className="py-1.5" />
           <StatusBarButton icon={isOnline ? "Success" : "Error"} label={isOnline ? "Online" : "Offline"} />
         </div>
       </div>

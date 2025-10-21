@@ -13,13 +13,8 @@ const ToolBar: React.FC<ToolBarProps> = ({ workspace = false }) => {
 
       {workspace && (
         <>
-          <Divider height="large" className="mr-2.5" />
-          <IconLabelButton
-            leftIcon="Env"
-            rightIcon="ChevronDown"
-            title="No environment"
-            labelClassName="text-[var(--moss-not-selected-item-color)]"
-          />
+          <Divider className="py-2" />
+          <IconLabelButton leftIcon="Env" rightIcon="ChevronDown" title="No environment" />
           <ActionButton icon="ToolBarVariables" className="ml-0.5" />
         </>
       )}

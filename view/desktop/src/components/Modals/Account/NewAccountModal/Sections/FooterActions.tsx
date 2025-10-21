@@ -1,6 +1,5 @@
-import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
-import ButtonPrimary from "@/components/ButtonPrimary";
-import CheckboxWithLabel from "@/components/CheckboxWithLabel";
+import { Button } from "@/lib/ui";
+import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 
 interface FooterActionsProps {
   useAsDefault: boolean;
@@ -18,7 +17,7 @@ export const FooterActions = ({
   isSubmitting,
 }: FooterActionsProps) => {
   return (
-    <div className="flex items-center justify-between border-t border-(--moss-border-color) px-6 py-4">
+    <div className="flex items-center justify-between border-t border-(--moss-border) px-6 py-4">
       <CheckboxWithLabel
         label="Use as default account"
         checked={useAsDefault}
@@ -27,12 +26,12 @@ export const FooterActions = ({
         }}
       />
       <div className="flex gap-3">
-        <ButtonNeutralOutlined type="button" onClick={handleCancel} disabled={isSubmitting}>
+        <Button intent="outlined" type="button" onClick={handleCancel} disabled={isSubmitting}>
           Close
-        </ButtonNeutralOutlined>
-        <ButtonPrimary disabled={isSubmitDisabled} type="submit">
+        </Button>
+        <Button intent="primary" disabled={isSubmitDisabled} type="submit">
           {isSubmitting ? "Connecting..." : "Log In"}
-        </ButtonPrimary>
+        </Button>
       </div>
     </div>
   );

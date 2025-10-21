@@ -5,11 +5,6 @@ export interface PageViewProps {
   className?: string;
 }
 
-export interface PageTabsProps {
-  children: ReactNode;
-  className?: string;
-}
-
 export interface PageToolbarProps {
   children: ReactNode;
   className?: string;
