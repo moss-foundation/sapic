@@ -7,7 +7,6 @@ export * from "../parts/SideBar/SidebarHeader";
 export * from "./ActionButton";
 export * as ActionMenu from "./ActionMenu";
 export * from "./ActivityBar/ActivityBar";
-export * as Checkbox from "./CheckboxWithLabel";
 export * from "./Divider";
 export * from "./DropIndicator";
 
