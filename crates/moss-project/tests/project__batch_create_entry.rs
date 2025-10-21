@@ -3,9 +3,9 @@
 use moss_project::{
     constants, dirs,
     models::{
-        operations::{BatchCreateEntryInput, BatchCreateEntryKind},
-        primitives::EntryClass,
-        types::{CreateDirEntryParams, CreateItemEntryParams},
+        operations::{BatchCreateResourceInput, BatchCreateResourceKind},
+        primitives::ResourceClass,
+        types::{CreateDirResourceParams, CreateItemResourceParams},
     },
 };
 use std::path::PathBuf;
@@ -26,14 +26,14 @@ async fn batch_create_entry_success() {
 
     let outer_name = random_entry_name();
     let inner_name = random_entry_name();
-    let outer_input = BatchCreateEntryKind::Dir(CreateDirEntryParams {
-        class: EntryClass::Endpoint,
+    let outer_input = BatchCreateResourceKind::Dir(CreateDirResourceParams {
+        class: ResourceClass::Endpoint,
         path: entry_base_path.clone(),
         name: outer_name.clone(),
         order: 0,
     });
-    let inner_input = BatchCreateEntryKind::Item(CreateItemEntryParams {
-        class: EntryClass::Endpoint,
+    let inner_input = BatchCreateResourceKind::Item(CreateItemResourceParams {
+        class: ResourceClass::Endpoint,
         path: entry_base_path.join(&outer_name),
         name: inner_name.clone(),
         order: 0,
@@ -43,9 +43,9 @@ async fn batch_create_entry_success() {
         headers: vec![],
         body: None,
     });
-    let input = BatchCreateEntryInput {
+    let input = BatchCreateResourceInput {
         // Make sure that the order is correctly sorted
-        entries: vec![inner_input, outer_input],
+        resources: vec![inner_input, outer_input],
     };
 
     let output = project.batch_create_entry(&ctx, input).await.unwrap();
@@ -78,8 +78,8 @@ async fn batch_create_entry_missing_parent() {
     let inner_name = random_entry_name();
 
     // Try creating components/parent/{inner_name}
-    let inner_input = BatchCreateEntryKind::Item(CreateItemEntryParams {
-        class: EntryClass::Endpoint,
+    let inner_input = BatchCreateResourceKind::Item(CreateItemResourceParams {
+        class: ResourceClass::Endpoint,
         path: entry_base_path.join("parent"),
         name: inner_name.clone(),
         order: 0,
@@ -89,8 +89,8 @@ async fn batch_create_entry_missing_parent() {
         headers: vec![],
         body: None,
     });
-    let input = BatchCreateEntryInput {
-        entries: vec![inner_input],
+    let input = BatchCreateResourceInput {
+        resources: vec![inner_input],
     };
 
     let result = project.batch_create_entry(&ctx, input).await;
@@ -104,7 +104,7 @@ async fn batch_create_entry_missing_parent() {
 async fn batch_create_entry_empty_input() {
     let (ctx, _, _, project, cleanup) = create_test_project().await;
 
-    let input = BatchCreateEntryInput { entries: vec![] };
+    let input = BatchCreateResourceInput { resources: vec![] };
     let output = project.batch_create_entry(&ctx, input).await.unwrap();
 
     assert_eq!(output.ids.len(), 0);

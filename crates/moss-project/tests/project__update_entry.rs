@@ -6,11 +6,11 @@ use moss_bindingutils::primitives::{ChangeJsonValue, ChangeString};
 use moss_project::{
     dirs,
     models::{
-        operations::{CreateEntryInput, UpdateEntryInput},
-        primitives::{EntryClass, EntryId, EntryProtocol},
+        operations::{CreateResourceInput, UpdateResourceInput},
+        primitives::{ResourceClass, ResourceId, ResourceProtocol},
         types::{
-            BodyInfo, CreateItemEntryParams, UpdateBodyParams, UpdateDirEntryParams,
-            UpdateItemEntryParams,
+            BodyInfo, CreateItemResourceParams, UpdateBodyParams, UpdateDirResourceParams,
+            UpdateItemResourceParams,
             http::{
                 AddBodyParams, AddFormDataParamParams, AddHeaderParams, AddPathParamParams,
                 AddQueryParamParams, AddUrlencodedParamParams, FormDataParamOptions,
@@ -48,7 +48,7 @@ async fn rename_dir_entry_success() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Dir(UpdateDirEntryParams {
+            UpdateResourceInput::Dir(UpdateDirResourceParams {
                 id,
                 path: None,
                 name: Some(new_entry_name.clone()),
@@ -82,7 +82,7 @@ async fn rename_dir_entry_empty_name() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Dir(UpdateDirEntryParams {
+            UpdateResourceInput::Dir(UpdateDirResourceParams {
                 id,
                 path: None,
                 name: Some(new_entry_name.clone()),
@@ -113,7 +113,7 @@ async fn rename_dir_entry_already_exists() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Dir(UpdateDirEntryParams {
+            UpdateResourceInput::Dir(UpdateDirResourceParams {
                 id: first_id,
                 path: None,
                 name: Some(second_entry_name.clone()),
@@ -146,7 +146,7 @@ async fn rename_dir_entry_special_chars_in_name() {
             .update_entry(
                 &ctx,
                 &app_delegate,
-                UpdateEntryInput::Dir(UpdateDirEntryParams {
+                UpdateResourceInput::Dir(UpdateDirResourceParams {
                     id,
                     path: None,
                     name: Some(new_entry_name.clone()),
@@ -190,7 +190,7 @@ async fn update_dir_entry_order() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Dir(UpdateDirEntryParams {
+            UpdateResourceInput::Dir(UpdateDirResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -230,7 +230,7 @@ async fn expand_and_collapse_dir_entry() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Dir(UpdateDirEntryParams {
+            UpdateResourceInput::Dir(UpdateDirResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -249,7 +249,7 @@ async fn expand_and_collapse_dir_entry() {
     )
     .await
     .unwrap();
-    let expanded_items: Vec<EntryId> = expanded_items_value.deserialize().unwrap();
+    let expanded_items: Vec<ResourceId> = expanded_items_value.deserialize().unwrap();
     assert!(expanded_items.contains(&id));
 
     // Collapsing the entry
@@ -257,7 +257,7 @@ async fn expand_and_collapse_dir_entry() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Dir(UpdateDirEntryParams {
+            UpdateResourceInput::Dir(UpdateDirResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -276,7 +276,7 @@ async fn expand_and_collapse_dir_entry() {
     )
     .await
     .unwrap();
-    let expanded_items: Vec<EntryId> = expanded_items_value.deserialize().unwrap();
+    let expanded_items: Vec<ResourceId> = expanded_items_value.deserialize().unwrap();
     assert!(!expanded_items.contains(&id));
 
     // Cleanup
@@ -303,7 +303,7 @@ async fn move_dir_entry_success() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Dir(UpdateDirEntryParams {
+            UpdateResourceInput::Dir(UpdateDirResourceParams {
                 id,
                 path: Some(new_dest.clone()),
                 name: None,
@@ -339,7 +339,7 @@ async fn move_dir_entry_nonexistent_destination() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Dir(UpdateDirEntryParams {
+            UpdateResourceInput::Dir(UpdateDirResourceParams {
                 id,
                 path: Some(new_dest.clone()),
                 name: None,
@@ -371,7 +371,7 @@ async fn move_dir_entry_already_exists() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Dir(UpdateDirEntryParams {
+            UpdateResourceInput::Dir(UpdateDirResourceParams {
                 id: existing_id,
                 path: Some(dest.clone()),
                 name: None,
@@ -388,7 +388,7 @@ async fn move_dir_entry_already_exists() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Dir(UpdateDirEntryParams {
+            UpdateResourceInput::Dir(UpdateDirResourceParams {
                 id: new_id,
                 path: Some(dest.clone()),
                 name: None,
@@ -409,12 +409,12 @@ async fn update_item_entry_endpoint_headers() {
     let (ctx, app_delegate, _, project, cleanup) = create_test_project().await;
 
     let entry_name = random_entry_name();
-    let input = CreateEntryInput::Item(CreateItemEntryParams {
+    let input = CreateResourceInput::Item(CreateItemResourceParams {
         path: Default::default(),
-        class: EntryClass::Endpoint,
+        class: ResourceClass::Endpoint,
         name: entry_name.clone(),
         order: 0,
-        protocol: Some(EntryProtocol::Get),
+        protocol: Some(ResourceProtocol::Get),
         headers: vec![AddHeaderParams {
             name: "1".to_string(),
             value: JsonValue::String("1".to_string()),
@@ -443,7 +443,7 @@ async fn update_item_entry_endpoint_headers() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -494,7 +494,7 @@ async fn update_item_entry_endpoint_headers() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -527,7 +527,7 @@ async fn update_item_entry_endpoint_headers() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -579,12 +579,12 @@ async fn update_item_entry_endpoint_path_params() {
     let (ctx, app_delegate, _, project, cleanup) = create_test_project().await;
 
     let entry_name = random_entry_name();
-    let input = CreateEntryInput::Item(CreateItemEntryParams {
+    let input = CreateResourceInput::Item(CreateItemResourceParams {
         path: Default::default(),
-        class: EntryClass::Endpoint,
+        class: ResourceClass::Endpoint,
         name: entry_name.clone(),
         order: 0,
-        protocol: Some(EntryProtocol::Get),
+        protocol: Some(ResourceProtocol::Get),
         headers: vec![],
         path_params: vec![AddPathParamParams {
             name: "1".to_string(),
@@ -613,7 +613,7 @@ async fn update_item_entry_endpoint_path_params() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -663,7 +663,7 @@ async fn update_item_entry_endpoint_path_params() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -696,7 +696,7 @@ async fn update_item_entry_endpoint_path_params() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -748,12 +748,12 @@ async fn update_item_entry_endpoint_query_params() {
     let (ctx, app_delegate, _, project, cleanup) = create_test_project().await;
 
     let entry_name = random_entry_name();
-    let input = CreateEntryInput::Item(CreateItemEntryParams {
+    let input = CreateResourceInput::Item(CreateItemResourceParams {
         path: Default::default(),
-        class: EntryClass::Endpoint,
+        class: ResourceClass::Endpoint,
         name: entry_name.clone(),
         order: 0,
-        protocol: Some(EntryProtocol::Get),
+        protocol: Some(ResourceProtocol::Get),
         headers: vec![],
         path_params: vec![],
         query_params: vec![AddQueryParamParams {
@@ -782,7 +782,7 @@ async fn update_item_entry_endpoint_query_params() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -832,7 +832,7 @@ async fn update_item_entry_endpoint_query_params() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -865,7 +865,7 @@ async fn update_item_entry_endpoint_query_params() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -917,12 +917,12 @@ async fn test_item_entry_endpoint_remove_body() {
     let (ctx, app_delegate, _, project, cleanup) = create_test_project().await;
 
     let entry_name = random_entry_name();
-    let input = CreateEntryInput::Item(CreateItemEntryParams {
+    let input = CreateResourceInput::Item(CreateItemResourceParams {
         path: Default::default(),
-        class: EntryClass::Endpoint,
+        class: ResourceClass::Endpoint,
         name: entry_name.clone(),
         order: 0,
-        protocol: Some(EntryProtocol::Get),
+        protocol: Some(ResourceProtocol::Get),
         headers: vec![],
         path_params: vec![],
         query_params: vec![],
@@ -946,7 +946,7 @@ async fn test_item_entry_endpoint_remove_body() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -982,12 +982,12 @@ async fn test_item_entry_endpoint_update_text() {
     let (ctx, app_delegate, _, project, cleanup) = create_test_project().await;
 
     let entry_name = random_entry_name();
-    let input = CreateEntryInput::Item(CreateItemEntryParams {
+    let input = CreateResourceInput::Item(CreateItemResourceParams {
         path: Default::default(),
-        class: EntryClass::Endpoint,
+        class: ResourceClass::Endpoint,
         name: entry_name.clone(),
         order: 0,
-        protocol: Some(EntryProtocol::Get),
+        protocol: Some(ResourceProtocol::Get),
         headers: vec![],
         path_params: vec![],
         query_params: vec![],
@@ -1001,7 +1001,7 @@ async fn test_item_entry_endpoint_update_text() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -1038,12 +1038,12 @@ async fn test_item_entry_endpoint_update_json() {
     let (ctx, app_delegate, _, project, cleanup) = create_test_project().await;
 
     let entry_name = random_entry_name();
-    let input = CreateEntryInput::Item(CreateItemEntryParams {
+    let input = CreateResourceInput::Item(CreateItemResourceParams {
         path: Default::default(),
-        class: EntryClass::Endpoint,
+        class: ResourceClass::Endpoint,
         name: entry_name.clone(),
         order: 0,
-        protocol: Some(EntryProtocol::Get),
+        protocol: Some(ResourceProtocol::Get),
         headers: vec![],
         path_params: vec![],
         query_params: vec![],
@@ -1058,7 +1058,7 @@ async fn test_item_entry_endpoint_update_json() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -1094,12 +1094,12 @@ async fn test_item_entry_endpoint_update_xml() {
     let (ctx, app_delegate, _, project, cleanup) = create_test_project().await;
 
     let entry_name = random_entry_name();
-    let input = CreateEntryInput::Item(CreateItemEntryParams {
+    let input = CreateResourceInput::Item(CreateItemResourceParams {
         path: Default::default(),
-        class: EntryClass::Endpoint,
+        class: ResourceClass::Endpoint,
         name: entry_name.clone(),
         order: 0,
-        protocol: Some(EntryProtocol::Get),
+        protocol: Some(ResourceProtocol::Get),
         headers: vec![],
         path_params: vec![],
         query_params: vec![],
@@ -1112,7 +1112,7 @@ async fn test_item_entry_endpoint_update_xml() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -1152,12 +1152,12 @@ async fn test_item_entry_endpoint_update_binary() {
     let (ctx, app_delegate, _, project, cleanup) = create_test_project().await;
 
     let entry_name = random_entry_name();
-    let input = CreateEntryInput::Item(CreateItemEntryParams {
+    let input = CreateResourceInput::Item(CreateItemResourceParams {
         path: Default::default(),
-        class: EntryClass::Endpoint,
+        class: ResourceClass::Endpoint,
         name: entry_name.clone(),
         order: 0,
-        protocol: Some(EntryProtocol::Get),
+        protocol: Some(ResourceProtocol::Get),
         headers: vec![],
         path_params: vec![],
         query_params: vec![],
@@ -1171,7 +1171,7 @@ async fn test_item_entry_endpoint_update_binary() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -1207,12 +1207,12 @@ async fn test_item_entry_endpoint_update_urlencoded() {
     let (ctx, app_delegate, _, project, cleanup) = create_test_project().await;
     let entry_name = random_entry_name();
 
-    let input = CreateEntryInput::Item(CreateItemEntryParams {
+    let input = CreateResourceInput::Item(CreateItemResourceParams {
         path: Default::default(),
-        class: EntryClass::Endpoint,
+        class: ResourceClass::Endpoint,
         name: entry_name.clone(),
         order: 0,
-        protocol: Some(EntryProtocol::Get),
+        protocol: Some(ResourceProtocol::Get),
         headers: vec![],
         path_params: vec![],
         query_params: vec![],
@@ -1238,7 +1238,7 @@ async fn test_item_entry_endpoint_update_urlencoded() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -1302,7 +1302,7 @@ async fn test_item_entry_endpoint_update_urlencoded() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -1352,7 +1352,7 @@ async fn test_item_entry_endpoint_update_urlencoded() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -1398,12 +1398,12 @@ async fn test_item_entry_endpoint_update_formdata() {
     let (ctx, app_delegate, _, project, cleanup) = create_test_project().await;
     let entry_name = random_entry_name();
 
-    let input = CreateEntryInput::Item(CreateItemEntryParams {
+    let input = CreateResourceInput::Item(CreateItemResourceParams {
         path: Default::default(),
-        class: EntryClass::Endpoint,
+        class: ResourceClass::Endpoint,
         name: entry_name.clone(),
         order: 0,
-        protocol: Some(EntryProtocol::Get),
+        protocol: Some(ResourceProtocol::Get),
         headers: vec![],
         path_params: vec![],
         query_params: vec![],
@@ -1429,7 +1429,7 @@ async fn test_item_entry_endpoint_update_formdata() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -1493,7 +1493,7 @@ async fn test_item_entry_endpoint_update_formdata() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -1543,7 +1543,7 @@ async fn test_item_entry_endpoint_update_formdata() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -1589,12 +1589,12 @@ async fn test_item_entry_endpoint_update_change_body_type() {
     let (ctx, app_delegate, _, project, cleanup) = create_test_project().await;
     let entry_name = random_entry_name();
 
-    let input = CreateEntryInput::Item(CreateItemEntryParams {
+    let input = CreateResourceInput::Item(CreateItemResourceParams {
         path: Default::default(),
-        class: EntryClass::Endpoint,
+        class: ResourceClass::Endpoint,
         name: entry_name.clone(),
         order: 0,
-        protocol: Some(EntryProtocol::Get),
+        protocol: Some(ResourceProtocol::Get),
         headers: vec![],
         path_params: vec![],
         query_params: vec![],
@@ -1607,7 +1607,7 @@ async fn test_item_entry_endpoint_update_change_body_type() {
         .update_entry(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,

@@ -10,9 +10,9 @@ use moss_project::{
     ProjectBuilder,
     builder::ProjectCreateParams,
     models::{
-        operations::CreateEntryInput,
-        primitives::{EntryClass, EntryId},
-        types::{CreateDirEntryParams, CreateItemEntryParams},
+        operations::CreateResourceInput,
+        primitives::{ResourceClass, ResourceId},
+        types::{CreateDirResourceParams, CreateItemResourceParams},
     },
     project::Project,
 };
@@ -90,12 +90,12 @@ pub async fn create_test_endpoint_dir_entry(
     ctx: &AsyncContext,
     project: &mut Project<MockAppRuntime>,
     name: &str,
-) -> EntryId {
+) -> ResourceId {
     project
         .create_entry(
             &ctx,
-            CreateEntryInput::Dir(CreateDirEntryParams {
-                class: EntryClass::Endpoint,
+            CreateResourceInput::Dir(CreateDirResourceParams {
+                class: ResourceClass::Endpoint,
                 path: PathBuf::from(""),
                 name: name.to_string(),
                 order: 0,
@@ -111,12 +111,12 @@ pub async fn create_test_component_dir_entry(
     ctx: &AsyncContext,
     project: &mut Project<MockAppRuntime>,
     name: &str,
-) -> EntryId {
+) -> ResourceId {
     project
         .create_entry(
             &ctx,
-            CreateEntryInput::Dir(CreateDirEntryParams {
-                class: EntryClass::Component,
+            CreateResourceInput::Dir(CreateDirResourceParams {
+                class: ResourceClass::Component,
                 path: PathBuf::from(""),
                 name: name.to_string(),
                 order: 0,
@@ -132,12 +132,12 @@ pub async fn create_test_component_item_entry(
     ctx: &AsyncContext,
     project: &mut Project<MockAppRuntime>,
     name: &str,
-) -> EntryId {
+) -> ResourceId {
     project
         .create_entry(
             &ctx,
-            CreateEntryInput::Item(CreateItemEntryParams {
-                class: EntryClass::Component,
+            CreateResourceInput::Item(CreateItemResourceParams {
+                class: ResourceClass::Component,
                 path: PathBuf::from(""),
                 name: name.to_string(),
                 order: 0,
@@ -158,12 +158,12 @@ pub async fn create_test_schema_dir_entry(
     ctx: &AsyncContext,
     project: &mut Project<MockAppRuntime>,
     name: &str,
-) -> EntryId {
+) -> ResourceId {
     project
         .create_entry(
             &ctx,
-            CreateEntryInput::Dir(CreateDirEntryParams {
-                class: EntryClass::Schema,
+            CreateResourceInput::Dir(CreateDirResourceParams {
+                class: ResourceClass::Schema,
                 path: PathBuf::from(""),
                 name: name.to_string(),
                 order: 0,

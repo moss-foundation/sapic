@@ -5,7 +5,7 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::{context::AsyncContext, mock::MockAppRuntime};
 use moss_project::{
     dirs,
-    models::{events::StreamEntriesEvent, operations::StreamEntriesInput},
+    models::{events::StreamResourcesEvent, operations::StreamResourcesInput},
 };
 use std::{
     path::PathBuf,
@@ -24,7 +24,7 @@ async fn scan_entries_for_test(
     app_delegate: &AppDelegate<MockAppRuntime>,
     project: &moss_project::Project<MockAppRuntime>,
     dir_name: &str,
-) -> Vec<StreamEntriesEvent> {
+) -> Vec<StreamResourcesEvent> {
     let entries = Arc::new(Mutex::new(Vec::new()));
     let entries_clone = entries.clone();
 
@@ -34,13 +34,13 @@ async fn scan_entries_for_test(
             app_delegate,
             TauriChannel::new(move |body: InvokeResponseBody| {
                 if let InvokeResponseBody::Json(json_str) = body {
-                    if let Ok(event) = serde_json::from_str::<StreamEntriesEvent>(&json_str) {
+                    if let Ok(event) = serde_json::from_str::<StreamResourcesEvent>(&json_str) {
                         entries_clone.lock().unwrap().push(event);
                     }
                 }
                 Ok(())
             }),
-            StreamEntriesInput::ReloadPath(PathBuf::from(dir_name)),
+            StreamResourcesInput::ReloadPath(PathBuf::from(dir_name)),
         )
         .await
         .unwrap();

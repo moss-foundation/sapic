@@ -5,8 +5,10 @@ use tauri::ipc::Channel as TauriChannel;
 use crate::{
     errors::ErrorInternal,
     models::{
-        events::BatchUpdateEntryEvent,
-        operations::{BatchUpdateEntryInput, BatchUpdateEntryKind, BatchUpdateEntryOutput},
+        events::BatchUpdateResourceEvent,
+        operations::{
+            BatchUpdateResourceInput, BatchUpdateResourceKind, BatchUpdateResourceOutput,
+        },
     },
     project::Project,
 };
@@ -16,15 +18,15 @@ impl<R: AppRuntime> Project<R> {
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
-        input: BatchUpdateEntryInput,
-        channel: TauriChannel<BatchUpdateEntryEvent>,
-    ) -> joinerror::Result<BatchUpdateEntryOutput> {
-        for entry in input.entries {
+        input: BatchUpdateResourceInput,
+        channel: TauriChannel<BatchUpdateResourceEvent>,
+    ) -> joinerror::Result<BatchUpdateResourceOutput> {
+        for entry in input.resources {
             match entry {
-                BatchUpdateEntryKind::Item(input) => {
+                BatchUpdateResourceKind::Item(input) => {
                     let output = self.update_item_entry(ctx, app_delegate, input).await?;
                     channel
-                        .send(BatchUpdateEntryEvent::Item(output))
+                        .send(BatchUpdateResourceEvent::Item(output))
                         .map_err(|e| {
                             joinerror::Error::new::<ErrorInternal>(format!(
                                 "failed to send to the tauri channel: {}",
@@ -32,10 +34,10 @@ impl<R: AppRuntime> Project<R> {
                             ))
                         })?;
                 }
-                BatchUpdateEntryKind::Dir(input) => {
+                BatchUpdateResourceKind::Dir(input) => {
                     let output = self.update_dir_entry(ctx, input).await?;
                     channel
-                        .send(BatchUpdateEntryEvent::Dir(output))
+                        .send(BatchUpdateResourceEvent::Dir(output))
                         .map_err(|e| {
                             joinerror::Error::new::<ErrorInternal>(format!(
                                 "failed to send to the tauri channel: {}",
@@ -46,6 +48,6 @@ impl<R: AppRuntime> Project<R> {
             }
         }
 
-        Ok(BatchUpdateEntryOutput {})
+        Ok(BatchUpdateResourceOutput {})
     }
 }

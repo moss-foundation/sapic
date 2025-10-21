@@ -2,7 +2,7 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 
 use crate::{
-    models::operations::{UpdateEntryInput, UpdateEntryOutput},
+    models::operations::{UpdateResourceInput, UpdateResourceOutput},
     project::Project,
 };
 
@@ -11,16 +11,16 @@ impl<R: AppRuntime> Project<R> {
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
-        input: UpdateEntryInput,
-    ) -> joinerror::Result<UpdateEntryOutput> {
+        input: UpdateResourceInput,
+    ) -> joinerror::Result<UpdateResourceOutput> {
         match input {
-            UpdateEntryInput::Item(input) => {
+            UpdateResourceInput::Item(input) => {
                 let output = self.update_item_entry(ctx, app_delegate, input).await?;
-                Ok(UpdateEntryOutput::Item(output))
+                Ok(UpdateResourceOutput::Item(output))
             }
-            UpdateEntryInput::Dir(input) => {
+            UpdateResourceInput::Dir(input) => {
                 let output = self.update_dir_entry(ctx, input).await?;
-                Ok(UpdateEntryOutput::Dir(output))
+                Ok(UpdateResourceOutput::Dir(output))
             }
         }
     }

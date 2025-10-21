@@ -4,7 +4,7 @@ pub mod shared;
 use moss_project::{
     dirs,
     errors::ErrorNotFound,
-    models::{operations::DeleteEntryInput, primitives::EntryId},
+    models::{operations::DeleteResourceInput, primitives::ResourceId},
 };
 use std::path::PathBuf;
 
@@ -27,7 +27,7 @@ async fn delete_entry_success() {
     assert!(expected_dir.exists());
 
     // Delete the entry
-    let delete_input = DeleteEntryInput { id: entry_id };
+    let delete_input = DeleteResourceInput { id: entry_id };
 
     let result = project.delete_entry(&ctx, delete_input).await;
     let _ = result.unwrap();
@@ -43,7 +43,9 @@ async fn delete_entry_success() {
 async fn delete_entry_not_found() {
     let (ctx, _, _, project, cleanup) = create_test_project().await;
 
-    let delete_input = DeleteEntryInput { id: EntryId::new() };
+    let delete_input = DeleteResourceInput {
+        id: ResourceId::new(),
+    };
 
     let result = project.delete_entry(&ctx, delete_input).await;
     assert!(result.is_err());
@@ -80,7 +82,7 @@ async fn delete_entry_with_subdirectories() {
     assert!(sub_sub_dir.exists());
 
     // Delete the entry
-    let delete_input = DeleteEntryInput { id: entry_id };
+    let delete_input = DeleteResourceInput { id: entry_id };
 
     let result = project.delete_entry(&ctx, delete_input).await;
     let _ = result.unwrap();
@@ -115,7 +117,7 @@ async fn delete_multiple_entries() {
     assert!(expected_dir2.exists());
 
     // Delete first entry
-    let delete_input1 = DeleteEntryInput { id: entry1_id };
+    let delete_input1 = DeleteResourceInput { id: entry1_id };
 
     let result1 = project.delete_entry(&ctx, delete_input1).await;
     let _ = result1.unwrap();
@@ -125,7 +127,7 @@ async fn delete_multiple_entries() {
     assert!(expected_dir2.exists());
 
     // Delete second entry
-    let delete_input2 = DeleteEntryInput { id: entry2_id };
+    let delete_input2 = DeleteResourceInput { id: entry2_id };
 
     let result2 = project.delete_entry(&ctx, delete_input2).await;
     let _ = result2.unwrap();
@@ -152,7 +154,7 @@ async fn delete_entry_twice() {
     assert!(expected_dir.exists());
 
     // Delete the entry first time - should succeed
-    let delete_input = DeleteEntryInput { id: entry_id };
+    let delete_input = DeleteResourceInput { id: entry_id };
 
     let result1 = project.delete_entry(&ctx, delete_input.clone()).await;
     let _ = result1.unwrap();
@@ -200,7 +202,7 @@ async fn delete_entries_from_different_directories() {
     // Create entries in different directories
     for (id, _) in &entries {
         let _ = project
-            .delete_entry(&ctx, DeleteEntryInput { id: id.clone() })
+            .delete_entry(&ctx, DeleteResourceInput { id: id.clone() })
             .await
             .unwrap();
     }
