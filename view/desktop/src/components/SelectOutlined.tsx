@@ -1,7 +1,6 @@
 import { cva } from "class-variance-authority";
 import { ComponentPropsWithoutRef, ElementRef, forwardRef } from "react";
 
-import { Icon } from "@/lib/ui";
 import SelectPrimitive, { SelectTriggerProps } from "@/lib/ui/Select";
 import { cn } from "@/utils";
 
@@ -54,7 +53,6 @@ const Trigger = forwardRef<ElementRef<typeof SelectPrimitive.Trigger>, OutlinedS
         <span className="truncate">
           <SelectPrimitive.Value placeholder={placeholder} />
         </span>
-        <Icon icon="ChevronDown" />
       </SelectPrimitive.Trigger>
     );
   }

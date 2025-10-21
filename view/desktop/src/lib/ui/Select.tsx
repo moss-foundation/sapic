@@ -75,7 +75,10 @@ const selectTriggerStyles = cva(`
 );
 
 const SelectTrigger = forwardRef<ElementRef<typeof SelectPrimitive.Trigger>, SelectTriggerProps>(
-  ({ disabled = false, className, placeholder, childrenLeftSide, childrenRightSide, ...props }, forwardedRef) => {
+  (
+    { disabled = false, className, placeholder, childrenLeftSide, childrenRightSide, children, ...props },
+    forwardedRef
+  ) => {
     return (
       <SelectPrimitive.Trigger
         {...props}
@@ -86,10 +89,11 @@ const SelectTrigger = forwardRef<ElementRef<typeof SelectPrimitive.Trigger>, Sel
         <div className="flex grow items-center gap-2 overflow-hidden">
           {childrenLeftSide}
 
+          {children}
+
           <span className="min-w-0 flex-1 truncate text-left">
             <SelectPrimitive.Value placeholder={placeholder} />
           </span>
-
           {childrenRightSide}
 
           <Icon icon="ChevronDown" />
