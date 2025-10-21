@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { KitchenSinkSection } from "../KitchenSinkSection";
 
 export const AccentSection = () => {
-  const [accent, setAccent] = useState(document.documentElement.style.getPropertyValue("--moss-accent"));
+  const [accent, setAccent] = useState("#3574f0");
 
   const handleAccentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAccent(e.target.value);
