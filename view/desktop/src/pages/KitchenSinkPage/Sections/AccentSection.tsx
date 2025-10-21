@@ -5,8 +5,6 @@ import { KitchenSinkSection } from "../KitchenSinkSection";
 export const AccentSection = () => {
   const [accent, setAccent] = useState(document.documentElement.style.getPropertyValue("--moss-accent"));
 
-  console.log(accent);
-
   const handleAccentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAccent(e.target.value);
     document.documentElement.style.setProperty("--moss-accent", e.target.value);
