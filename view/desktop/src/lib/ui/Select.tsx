@@ -94,6 +94,7 @@ const SelectTrigger = forwardRef<ElementRef<typeof SelectPrimitive.Trigger>, Sel
           <span className="min-w-0 flex-1 truncate text-left">
             <SelectPrimitive.Value placeholder={placeholder} />
           </span>
+
           {childrenRightSide}
 
           <Icon icon="ChevronDown" />
