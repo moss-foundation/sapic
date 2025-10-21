@@ -11,7 +11,7 @@
 
   --dv-group-view-background-color: var(--moss-primary-background);
 
-  --dv-drag-over-background-color: rgb(from var(--moss-primary) r g b / 0.2);
+  --dv-drag-over-background-color: rgb(from var(--moss-accent) r g b / 0.2);
   --dv-drag-over-border-color: transparent;
 
   --dv-tabs-and-actions-container-font-size: 13px;
@@ -39,7 +39,7 @@
   --dv-tab-font-size: inherit;
 
   --dv-paneview-header-border-color: var(--moss-border);
-  --dv-paneview-active-outline-color: var(--moss-primary);
+  --dv-paneview-active-outline-color: var(--moss-accent);
 
   & .dv-tab {
     padding: 0;

@@ -77,7 +77,7 @@ export const CustomTab = ({
       className={cn(
         "group/customTab flex h-full items-center justify-center gap-1 px-3 hover:text-(--moss-primary-foreground)",
         {
-          "border-b-1 border-(--moss-primary)": isActive,
+          "border-b-1 border-(--moss-accent)": isActive,
           "border-b-1 border-(--moss-border)": !isActive,
         }
       )}
