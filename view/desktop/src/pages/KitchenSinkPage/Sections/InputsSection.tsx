@@ -2,7 +2,7 @@ import { FormEvent, useState } from "react";
 
 import { RadioGroup } from "@/components";
 import Input from "@/lib/ui/Input";
-import { MossToggle } from "@/lib/ui/MossToggle";
+import { ToggleButton } from "@/lib/ui/ToggleButton";
 
 import { KitchenSinkSection } from "../KitchenSinkSection";
 
@@ -17,7 +17,7 @@ export const InputsSection = () => {
   return (
     <KitchenSinkSection header="Inputs">
       <div className="controls flex w-fit flex-col gap-2">
-        <MossToggle checked={contrast} onCheckedChange={setContrast} labelRight="Contrast" />
+        <ToggleButton checked={contrast} onCheckedChange={setContrast} labelRight="Contrast" />
         <RadioGroup.Root value={intent} onValueChange={(value) => setIntent(value as "plain" | "outlined")}>
           <RadioGroup.ItemWithLabel
             label="Outlined"

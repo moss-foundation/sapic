@@ -597,27 +597,27 @@
       "type": "variable",
       "value": "moss.gray.1"
     },
-    "moss.mossToggle.background": {
+    "moss.toggleButton.background": {
       "type": "variable",
       "value": "moss.gray.12"
     },
-    "moss.mossToggle.border": {
+    "moss.toggleButton.border": {
       "type": "variable",
       "value": "moss.gray.11"
     },
-    "moss.mossToggle.indicator": {
+    "moss.toggleButton.indicator": {
       "type": "variable",
       "value": "moss.gray.6"
     },
-    "moss.mossToggle.indicator.checked": {
+    "moss.toggleButton.indicator.checked": {
       "type": "variable",
       "value": "moss.gray.14"
     },
-    "moss.mossToggle.thumb": {
+    "moss.toggleButton.thumb": {
       "type": "variable",
       "value": "moss.gray.14"
     },
-    "moss.mossToggle.thumb.border": {
+    "moss.toggleButton.thumb.border": {
       "type": "variable",
       "value": "moss.gray.8"
     },

@@ -2,7 +2,7 @@ import { useContext, useState } from "react";
 
 import { PageWrapper } from "@/components/PageView/PageWrapper";
 import { useRenameEntryForm } from "@/hooks";
-import { Icon, MossDropdown, MossToggle } from "@/lib/ui";
+import { Icon, MossDropdown, ToggleButton } from "@/lib/ui";
 import Select from "@/lib/ui/Select";
 import { cn } from "@/utils";
 
@@ -41,7 +41,7 @@ export const EndpointPageHeader = () => {
             editable
           />
           <div className="flex items-center gap-2">
-            <MossToggle checked={isEnabled} onCheckedChange={setIsEnabled} />
+            <ToggleButton checked={isEnabled} onCheckedChange={setIsEnabled} />
             <Select.Root value={selectedValue} onValueChange={setSelectedValue}>
               <Select.Trigger
                 placeholder="Select an option"

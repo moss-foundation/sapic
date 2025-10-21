@@ -446,12 +446,12 @@ export const defaultLightTheme: Theme = {
     "moss.display.mode.foreground": { type: "variable", value: "moss.gray.7" },
     "moss.display.mode.foreground.selected": { type: "variable", value: "moss.gray.1" },
 
-    "moss.mossToggle.background": { type: "variable", value: "moss.gray.12" },
-    "moss.mossToggle.border": { type: "variable", value: "moss.gray.11" },
-    "moss.mossToggle.indicator": { type: "variable", value: "moss.gray.6" },
-    "moss.mossToggle.indicator.checked": { type: "variable", value: "moss.gray.14" },
-    "moss.mossToggle.thumb": { type: "variable", value: "moss.gray.14" },
-    "moss.mossToggle.thumb.border": { type: "variable", value: "moss.gray.8" },
+    "moss.toggleButton.background": { type: "variable", value: "moss.gray.12" },
+    "moss.toggleButton.border": { type: "variable", value: "moss.gray.11" },
+    "moss.toggleButton.indicator": { type: "variable", value: "moss.gray.6" },
+    "moss.toggleButton.indicator.checked": { type: "variable", value: "moss.gray.14" },
+    "moss.toggleButton.thumb": { type: "variable", value: "moss.gray.14" },
+    "moss.toggleButton.thumb.border": { type: "variable", value: "moss.gray.8" },
 
     "moss.notification.background": { type: "variable", value: "moss.gray.2" },
     "moss.notification.foreground": { type: "variable", value: "moss.gray.14" },
