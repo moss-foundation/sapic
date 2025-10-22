@@ -8,7 +8,7 @@ import { DROP_TARGET_NEW_PARAM_ROW_FORM_TYPE, ParamDragType } from "../constants
 import { isSourceParamRow } from "../utils/dragAndDrop";
 
 interface UseDropTargetNewParamRowFormProps {
-  newParamRowFormRef: RefObject<HTMLDivElement>;
+  newParamRowFormRef: RefObject<HTMLDivElement | null>;
   resourceId: string;
   paramType: ParamDragType;
 }

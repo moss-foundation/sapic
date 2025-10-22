@@ -5,7 +5,7 @@ import { getSourceProjectTreeNodeData, isSourceProjectTreeNode } from "@/compone
 import { dropTargetForElements, ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 export const useTabbedPaneDropTarget = (
-  dockviewRef: React.RefObject<HTMLDivElement>,
+  dockviewRef: React.RefObject<HTMLDivElement | null>,
   setPragmaticDropElement: React.Dispatch<React.SetStateAction<DropNode | null>>
 ) => {
   const [canDrop, setCanDrop] = React.useState(true);
