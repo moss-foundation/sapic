@@ -14,7 +14,6 @@ export default defineConfig(
   importX.flatConfigs.recommended,
   importX.flatConfigs.typescript,
   reactYouMightNotNeedAnEffect.configs.recommended,
-  reactHooksPlugin.configs.flat.recommended,
   {
     ignores: [
       "node_modules/",
