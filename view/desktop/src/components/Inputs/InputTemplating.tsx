@@ -66,13 +66,6 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
     const hiddenInputRef = useRef<HTMLInputElement>(null);
     const isUpdatingContent = useRef(false);
 
-    useEffect(() => {
-      if (props.value !== undefined) {
-        setValue(props.value);
-        updateEditorContent(String(props.value));
-      }
-    }, [props.value]);
-
     const updateEditorContent = useCallback(
       (text: string) => {
         if (editorRef.current && !isUpdatingContent.current) {
@@ -103,6 +96,13 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
       },
       [highlightColonVariables]
     );
+
+    useEffect(() => {
+      if (props.value !== undefined) {
+        setValue(props.value);
+        updateEditorContent(String(props.value));
+      }
+    }, [props.value]);
 
     const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
       if (isUpdatingContent.current) return;
@@ -283,8 +283,8 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
           className={cn(
             editorStyles({ size }),
             "word-break-keep-all overflow-wrap-normal",
-            "empty:before:pointer-events-none empty:before:flex empty:before:h-full empty:before:items-center empty:before:leading-[inherit] empty:before:whitespace-nowrap empty:before:text-(--moss-controls-placeholder) empty:before:content-[attr(data-placeholder)]",
-            "[&_*]:inline [&_*]:break-words [&_*]:whitespace-normal"
+            "empty:before:text-(--moss-controls-placeholder) empty:before:pointer-events-none empty:before:flex empty:before:h-full empty:before:items-center empty:before:whitespace-nowrap empty:before:leading-[inherit] empty:before:content-[attr(data-placeholder)]",
+            "[&_*]:inline [&_*]:whitespace-normal [&_*]:break-words"
           )}
           contentEditable
           onInput={handleInput}

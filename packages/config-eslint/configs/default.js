@@ -59,6 +59,7 @@ export default defineConfig(
     },
   },
   {
+    extends: [reactHooksPlugin.configs.flat.recommended],
     files: ["**/*.{ts,tsx,js,jsx}"],
     plugins: {
       "react-hooks": reactHooksPlugin,
@@ -66,8 +67,12 @@ export default defineConfig(
       mossLint: mossLintPlugin,
     },
     rules: {
-      "react-hooks/rules-of-hooks": "error",
+      //TODO: errors for some react-hooks rules are changed to warns because we have too much code that cannot be optimized + some radix ui code.
       "react-hooks/exhaustive-deps": "warn",
+      "react-hooks/refs": "warn",
+      "react-hooks/use-memo": "warn",
+      "react-hooks/set-state-in-effect": "warn",
+      "react-hooks/purity": "warn",
       "@typescript-eslint/no-unused-vars": [
         "warn",
         {
