@@ -22,6 +22,7 @@ export const ActivityBarButton = ({
   icon,
   iconActive,
   isActive,
+  isVisible: _,
   isDraggable = true,
   ...props
 }: ActivityBarItemProps) => {
