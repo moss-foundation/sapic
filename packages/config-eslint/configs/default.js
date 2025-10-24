@@ -10,11 +10,13 @@ import tseslintParser from "@typescript-eslint/parser";
 import mossLintPlugin from "../moss-lint-plugin/index.js";
 
 export default defineConfig(
-  tseslint.configs.recommended,
-  importX.flatConfigs.recommended,
-  importX.flatConfigs.typescript,
-  reactYouMightNotNeedAnEffect.configs.recommended,
   {
+    extends: [
+      tseslint.configs.recommended,
+      importX.flatConfigs.recommended,
+      importX.flatConfigs.typescript,
+      reactYouMightNotNeedAnEffect.configs.recommended,
+    ],
     ignores: [
       "node_modules/",
       "dist/",
