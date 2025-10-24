@@ -1,6 +1,6 @@
 import { cva } from "class-variance-authority";
 
-export const menuItemStyles = cva("flex items-center gap-1.5 rounded py-1 pl-4 pr-3", {
+export const menuItemStyles = cva("flex items-center gap-1.5 rounded px-2 py-1", {
   variants: {
     disabled: {
       true: "cursor-not-allowed opacity-50",
