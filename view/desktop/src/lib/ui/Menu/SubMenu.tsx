@@ -61,7 +61,7 @@ const SubTrigger = forwardRef<SubTriggerElement, SubTriggerProps>(
         className={cn(menuItemStyles({ disabled: props.disabled }), props.className)}
       >
         {props.icon && <Icon icon={props.icon} className={menuIconStyles({ className: iconClassName })} />}
-        {alignWithIcons && <div className={cn("size-4 shrink-0 opacity-0", iconClassName)} />}
+        {alignWithIcons && <div className={menuIconStyles({ className: cn("opacity-0", iconClassName) })} />}
 
         <span className="truncate">{props.children}</span>
 
