@@ -16,27 +16,23 @@ export const Controls = ({ os, className, ...props }: ControlsProps) => {
 
   const switchValue = os || osFromTauri;
 
-  const ControlsComponent = () => {
-    switch (switchValue) {
-      case "windows":
-        return <WindowsControls className={cn(className)} {...props} />;
-      case "macos":
-        // Return a placeholder element with the appropriate space for native MacOS controls
-        return (
-          <div className={cn("flex h-full", className)} style={{ width: "72px" }} data-tauri-drag-region {...props} />
-        );
-      case "linux":
-        return <LinuxControls className={cn(className, "")} {...props} />;
-      default:
-        return <WindowsControls className={cn(className)} {...props} />;
-    }
-  };
+  let ControlsComponent: React.ReactNode;
 
-  return (
-    <TauriAppWindowProvider>
-      <ControlsComponent />
-    </TauriAppWindowProvider>
-  );
+  switch (switchValue) {
+    case "windows":
+      ControlsComponent = <WindowsControls className={cn(className)} {...props} />;
+      break;
+    case "linux":
+      ControlsComponent = <LinuxControls className={cn(className, "")} {...props} />;
+      break;
+    case "macos":
+      // Return a placeholder element with the appropriate space for native MacOS controls
+      ControlsComponent = (
+        <div className={cn("flex h-full", className)} style={{ width: "72px" }} data-tauri-drag-region {...props} />
+      );
+      break;
+  }
+  return <TauriAppWindowProvider>{ControlsComponent}</TauriAppWindowProvider>;
 };
 
 export default Controls;

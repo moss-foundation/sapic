@@ -5,6 +5,9 @@ import ReactDOM from "react-dom";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
 
 const PanelAction = (props: { panels: string[]; api: DockviewApi; activePanel?: string; panelId: string }) => {
+  const [visible, setVisible] = React.useState<boolean>(true);
+  const [isPopupOpen, setIsPopupOpen] = React.useState(false);
+
   const onClick = () => {
     props.api.getPanel(props.panelId)?.focus();
   };
@@ -48,10 +51,6 @@ const PanelAction = (props: { panels: string[]; api: DockviewApi; activePanel?: 
       list.forEach((l) => l.dispose());
     };
   }, [props.api, props.panelId, panel]);
-
-  const [visible, setVisible] = React.useState<boolean>(true);
-
-  const [isPopupOpen, setIsPopupOpen] = React.useState(false);
 
   const togglePopup = () => {
     setIsPopupOpen(!isPopupOpen);
