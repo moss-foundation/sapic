@@ -51,7 +51,7 @@ const inputStyles = cva(
 );
 
 const shortcutStyles = cva(
-  `background-(--moss-gray-12) text-(--moss-gray-3) shrink-0 rounded-sm px-1 py-0.5 font-semibold`
+  `background-(--moss-controls-shortcut-background) text-(--moss-controls-shortcut-foreground) shrink-0 rounded-sm px-1 py-0.5 font-semibold`
 );
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(

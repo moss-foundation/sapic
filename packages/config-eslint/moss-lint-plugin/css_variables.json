@@ -143,6 +143,8 @@
   "--moss-controls-border",
   "--moss-controls-foreground",
   "--moss-controls-placeholder",
+  "--moss-controls-shortcut-background",
+  "--moss-controls-shortcut-foreground",
   "--moss-workspaceMode-background",
   "--moss-workspaceMode-border",
   "--moss-workspaceMode-foreground",
