@@ -119,14 +119,11 @@ export const ActivityBarButton = ({
       onClick={() => handleClick(props.id)}
       {...props}
     >
-      {/* <Icon
-        icon={isVisible ? iconActive : icon}
-        className={cn({
-          "size-4.5": position === ACTIVITYBAR_POSITION.DEFAULT,
-        })}
-      /> */}
-      {!iconActive && <Icon icon={icon} className="size-4.5" />}
-      {iconActive && <IconInline icon={iconActive} className="size-4.5" />}
+      {isActive && isSideBarVisible ? (
+        <IconInline icon={iconActive} className="size-4.5" />
+      ) : (
+        <Icon icon={icon} className="size-4.5" />
+      )}
 
       {closestEdge && <DropIndicator edge={closestEdge} gap={12} />}
 
