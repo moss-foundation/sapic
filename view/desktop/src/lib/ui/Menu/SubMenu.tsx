@@ -65,7 +65,7 @@ const SubTrigger = forwardRef<SubTriggerElement, SubTriggerProps>(
 
         <span className="truncate">{props.children}</span>
 
-        <Icon icon="ChevronRight" className="ml-auto" />
+        <Icon icon="ChevronRight" className={menuIconStyles({ className: "ml-auto" })} />
       </MenuPrimitive.SubTrigger>
     );
   }

@@ -5,6 +5,7 @@ import * as MenuPrimitive from "@radix-ui/react-menu";
 
 import { Icon } from "../Icon";
 import { ScopedProps } from "./Menu";
+import { menuIconStyles } from "./styles";
 
 /* -------------------------------------------------------------------------------------------------
  * RadioGroup
@@ -48,9 +49,9 @@ const RadioItem = forwardRef<RadioItemElement, RadioItemProps>((props: ScopedPro
       )}
     >
       {props.checked ? (
-        <Icon icon="MenuRadioIndicator" className="size-4" />
+        <Icon icon="MenuRadioIndicator" className={menuIconStyles()} />
       ) : (
-        <Icon icon="MenuRadioIndicator" className="size-4 opacity-0" />
+        <Icon icon="MenuRadioIndicator" className={menuIconStyles({ className: "opacity-0" })} />
       )}
 
       <div className="flex w-full items-center gap-1.5">
