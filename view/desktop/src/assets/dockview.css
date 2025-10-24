@@ -18,6 +18,8 @@
   --dv-tabs-and-actions-container-height: 35px;
   --dv-tabs-and-actions-container-background-color: var(--moss-primary-background);
 
+  --dv-separator-border: var(--moss-border);
+
   --dv-sash-color: transparent;
 
   --dv-active-sash-color: var(--moss-accent);
@@ -89,7 +91,7 @@
 }
 
 .dockview-demo .action-container .text-button {
-  @apply mx-1 my-0 overflow-hidden border border-[#4c65d4] bg-[#1c254a] px-2 text-sm text-ellipsis whitespace-nowrap hover:bg-[#222e62];
+  @apply mx-1 my-0 overflow-hidden text-ellipsis whitespace-nowrap border border-[#4c65d4] bg-[#1c254a] px-2 text-sm hover:bg-[#222e62];
 }
 
 .dockview-demo .action-container .button-action {
@@ -105,7 +107,7 @@
 }
 
 .dockview-demo .action-container .demo-button {
-  @apply flex min-w-[60px] grow items-center overflow-hidden rounded-none bg-[#1c254a] px-2 py-0 text-sm text-ellipsis whitespace-nowrap !outline !outline-[#4c65d4] hover:bg-[#222e62];
+  @apply flex min-w-[60px] grow items-center overflow-hidden text-ellipsis whitespace-nowrap rounded-none bg-[#1c254a] px-2 py-0 text-sm !outline !outline-[#4c65d4] hover:bg-[#222e62];
 }
 
 .dockview-demo .action-container .demo-icon-button {
@@ -126,5 +128,5 @@
 }
 
 .panel-builder-button {
-  @apply mt-2 mr-1 inline-block cursor-pointer list-none rounded-lg border-0 bg-gray-100 px-3 py-1 text-center font-sans text-sm leading-5 font-medium text-gray-800 hover:bg-gray-300;
+  @apply mr-1 mt-2 inline-block cursor-pointer list-none rounded-lg border-0 bg-gray-100 px-3 py-1 text-center font-sans text-sm font-medium leading-5 text-gray-800 hover:bg-gray-300;
 }
