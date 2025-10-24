@@ -13,6 +13,6 @@ export const menuContentStyles = cva("z-50 min-w-36 rounded-lg px-1 py-1.5 shado
   variants: {},
 });
 
-export const menuIconStyles = cva("size-4.5", {
+export const menuIconStyles = cva("size-[16px]", {
   variants: {},
 });
