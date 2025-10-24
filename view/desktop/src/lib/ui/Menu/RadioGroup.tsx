@@ -39,10 +39,10 @@ const RadioItem = forwardRef<RadioItemElement, RadioItemProps>((props: ScopedPro
       {...radioItemProps}
       ref={forwardedRef}
       className={cn(
-        "flex items-center gap-1.5 rounded py-0.5 pr-5 pl-[7px]",
+        "flex items-center gap-1.5 rounded py-0.5 pl-[7px] pr-5",
         {
           "cursor-not-allowed opacity-50": props.disabled,
-          "cursor-pointer hover:outline-hidden": !props.disabled,
+          "hover:outline-hidden cursor-pointer": !props.disabled,
         },
         props.className
       )}
@@ -53,7 +53,7 @@ const RadioItem = forwardRef<RadioItemElement, RadioItemProps>((props: ScopedPro
         <Icon icon="MenuRadioIndicator" className="size-4 opacity-0" />
       )}
 
-      <div className="flex w-full items-center gap-2.5">
+      <div className="flex w-full items-center gap-1.5">
         <span>{props.children}</span>
       </div>
     </MenuPrimitive.RadioItem>
