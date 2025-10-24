@@ -11,6 +11,7 @@ import { useRefreshProject } from "../actions/useRefreshProject";
 import { useToggleAllNodes } from "../actions/useToggleAllNodes";
 import { ProjectTreeContext } from "../ProjectTreeContext";
 import { ProjectTreeRootNode } from "../types";
+import { TreeRootNodeBranchIcon } from "./TreeRootNodeBranchIcon";
 
 interface TreeRootControlsProps {
   node: ProjectTreeRootNode;
@@ -79,13 +80,17 @@ export const TreeRootControls = ({
         <Tree.RootNodeActions>
           {node?.branch && (
             <Tree.ActionLabel className="flex shrink-0 items-center gap-1">
-              {node?.branch && <div>{node?.branch.name}</div>}
-              {!!(node?.branch?.ahead && node?.branch?.ahead > 0) && (
-                <div className="flex shrink-0 gap-0.5 text-green-500">{node?.branch.ahead} ↑</div>
-              )}
-              {!!(node?.branch?.behind && node?.branch?.behind > 0) && (
-                <div className="flex shrink-0 gap-0.5 text-red-500">{node?.branch.behind} ↓</div>
-              )}
+              <div className="flex shrink-0 items-center">
+                <span>{node?.branch.behind || 0}</span>
+                <TreeRootNodeBranchIcon icon="down" />
+              </div>
+              <div className="flex shrink-0 items-center">
+                <span>{node?.branch.ahead || 0}</span>
+                <TreeRootNodeBranchIcon icon="up" />
+              </div>
+              <div className="text-(--moss-accent) background-(--moss-accent-secondary) rounded-sm px-[5px] text-sm">
+                {node?.branch.name}
+              </div>
             </Tree.ActionLabel>
           )}
 

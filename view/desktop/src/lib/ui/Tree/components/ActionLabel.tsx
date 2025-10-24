@@ -8,13 +8,7 @@ interface ActionLabelProps {
 
 export const ActionLabel = ({ children, className, ...props }: ActionLabelProps) => {
   return (
-    <div
-      className={cn(
-        "background-(--moss-secondary-background-active) rounded-[3px] px-1 text-xs leading-4 text-(--moss-primary-foreground)",
-        className
-      )}
-      {...props}
-    >
+    <div className={cn("text-(--moss-primary-foreground) rounded-[3px] px-1 text-xs leading-4", className)} {...props}>
       {children}
     </div>
   );
