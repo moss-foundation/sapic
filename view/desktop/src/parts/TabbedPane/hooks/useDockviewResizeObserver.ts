@@ -3,7 +3,7 @@ import React from "react";
 
 export const useTabbedPaneResizeObserver = (
   api: DockviewApi | undefined,
-  containerRef: React.RefObject<HTMLDivElement>
+  containerRef: React.RefObject<HTMLDivElement | null>
 ) => {
   React.useEffect(() => {
     if (!containerRef.current || !api) return;

@@ -5,6 +5,9 @@ import ReactDOM from "react-dom";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
 
 const PanelAction = (props: { panels: string[]; api: DockviewApi; activePanel?: string; panelId: string }) => {
+  const [visible, setVisible] = React.useState<boolean>(true);
+  const [isPopupOpen, setIsPopupOpen] = React.useState(false);
+
   const onClick = () => {
     props.api.getPanel(props.panelId)?.focus();
   };
@@ -48,10 +51,6 @@ const PanelAction = (props: { panels: string[]; api: DockviewApi; activePanel?: 
       list.forEach((l) => l.dispose());
     };
   }, [props.api, props.panelId, panel]);
-
-  const [visible, setVisible] = React.useState<boolean>(true);
-
-  const [isPopupOpen, setIsPopupOpen] = React.useState(false);
 
   const togglePopup = () => {
     setIsPopupOpen(!isPopupOpen);
@@ -131,7 +130,7 @@ const TitleEditPopup: React.FC<{ panel: IDockviewPanel; onClose: () => void }> =
         <div>
           <span className="!text-white">Edit Panel Title</span>
         </div>
-        <input className="bg-white !text-black select-text" value={title} onChange={onChange} />
+        <input className="select-text bg-white !text-black" value={title} onChange={onChange} />
         <div className="button-group">
           <button className="panel-builder-button" onClick={onClick}>
             Edit
