@@ -1,9 +1,9 @@
-import { ComponentPropsWithoutRef, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { ACTIVITYBAR_POSITION } from "@/constants/layoutPositions";
 import { Icon } from "@/lib/ui/Icon";
-import { ActivityBarItem, useActivityBarStore } from "@/store/activityBar";
+import { ActivityBarItemProps, useActivityBarStore } from "@/store/activityBar";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn } from "@/utils";
 import {
@@ -16,20 +16,15 @@ import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-d
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 
 import DropIndicator from "../DropIndicator";
-
-type ActivityBarButtonProps = ActivityBarItem &
-  ComponentPropsWithoutRef<"button"> & {
-    isDraggable?: boolean;
-  };
+import { IconInline } from "../IconInline";
 
 export const ActivityBarButton = ({
   icon,
   iconActive,
   isActive,
   isDraggable = true,
-  isVisible = true,
   ...props
-}: ActivityBarButtonProps) => {
+}: ActivityBarItemProps) => {
   const ref = useRef<HTMLButtonElement | null>(null);
 
   const { position, setActiveItem } = useActivityBarStore();
@@ -124,12 +119,14 @@ export const ActivityBarButton = ({
       onClick={() => handleClick(props.id)}
       {...props}
     >
-      <Icon
-        icon={isActive && isSideBarVisible ? iconActive : icon}
+      {/* <Icon
+        icon={isVisible ? iconActive : icon}
         className={cn({
           "size-4.5": position === ACTIVITYBAR_POSITION.DEFAULT,
         })}
-      />
+      /> */}
+      {!iconActive && <Icon icon={icon} className="size-4.5" />}
+      {iconActive && <IconInline icon={iconActive} className="size-4.5" />}
 
       {closestEdge && <DropIndicator edge={closestEdge} gap={12} />}
 

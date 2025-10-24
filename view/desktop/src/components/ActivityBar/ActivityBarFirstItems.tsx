@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 
 import { ACTIVITYBAR_POSITION } from "@/constants/layoutPositions";
-import { ActivityBarItem, useActivityBarStore } from "@/store/activityBar";
+import { ActivityBarItemProps, useActivityBarStore } from "@/store/activityBar";
 import { cn } from "@/utils";
 import { swapListById } from "@/utils/swapListById";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
@@ -22,8 +22,8 @@ export const ActivityBarFirstItems = () => {
         const target = location.current.dropTargets[0];
         if (!target) return;
 
-        const sourceData = source.data as { data: ActivityBarItem };
-        const targetData = target.data as { data: ActivityBarItem };
+        const sourceData = source.data as { data: ActivityBarItemProps };
+        const targetData = target.data as { data: ActivityBarItemProps };
         const edge = extractClosestEdge(targetData);
 
         if (!sourceData || !targetData || !sourceData.data || !targetData.data) return;
