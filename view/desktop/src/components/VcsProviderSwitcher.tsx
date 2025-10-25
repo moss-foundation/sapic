@@ -37,7 +37,7 @@ export const VcsProviderSwitcher = ({
         className={cn("contents", className)}
       >
         <div className={cn(disabled && "opacity-50")}>{label}</div>
-        <PillTabs.List className="col-span-2 grid h-min grid-cols-subgrid grid-rows-subgrid">
+        <PillTabs.List className="grid h-min grid-cols-subgrid grid-rows-subgrid">
           <div className="flex gap-2">
             <PillTabs.Trigger
               value="github"

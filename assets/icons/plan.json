@@ -5,9 +5,6 @@
   "AddCircle": {
     "identical": true
   },
-  "AddCircleActive": {
-    "identical": true
-  },
   "AddToVcs": {
     "identical": true
   },
@@ -68,9 +65,6 @@
   "Commit": {
     "identical": true
   },
-  "CommitActive": {
-    "identical": true
-  },
   "Component": {
     "identical": true
   },
@@ -83,13 +77,7 @@
   "Console": {
     "identical": false
   },
-  "ConsoleActive": {
-    "identical": false
-  },
   "Cookie": {
-    "identical": true
-  },
-  "CookieActive": {
     "identical": true
   },
   "Copy": {
@@ -131,9 +119,6 @@
   "ExternalLink": {
     "identical": true
   },
-  "ExternalLinkActive": {
-    "identical": true
-  },
   "Failed": {
     "identical": false
   },
@@ -161,9 +146,6 @@
   "Home": {
     "identical": true
   },
-  "HomeActive": {
-    "identical": true
-  },
   "Http": {
     "identical": false
   },
@@ -175,9 +157,6 @@
   },
   "JsonPath": {
     "identical": true
-  },
-  "JsonPathActive": {
-    "identical": false
   },
   "Key": {
     "identical": true
@@ -198,9 +177,6 @@
     "identical": true
   },
   "NewWorkspace": {
-    "identical": false
-  },
-  "NewWorkspaceActive": {
     "identical": false
   },
   "OpenPanelBottom": {
@@ -225,9 +201,6 @@
     "identical": true
   },
   "Person": {
-    "identical": true
-  },
-  "PersonActive": {
     "identical": true
   },
   "Placeholder": {
@@ -281,9 +254,6 @@
   "Settings": {
     "identical": true
   },
-  "SettingsActive": {
-    "identical": true
-  },
   "SortAlphabeticallyAsc": {
     "identical": true
   },
@@ -317,9 +287,6 @@
   "Trash": {
     "identical": true
   },
-  "TrashActive": {
-    "identical": true
-  },
   "UnloadedModule": {
     "identical": true
   },
@@ -338,22 +305,13 @@
   "WebServer": {
     "identical": true
   },
-  "WebServerActive": {
-    "identical": false
-  },
   "WindowsMenu": {
     "identical": true
   },
   "Workspace": {
     "identical": false
   },
-  "WorkspaceActive": {
-    "identical": false
-  },
   "Wrench": {
-    "identical": false
-  },
-  "WrenchActive": {
     "identical": false
   }
 }

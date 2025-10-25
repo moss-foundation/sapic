@@ -23,7 +23,7 @@ const buttonRootStyles = cva(`
     relative 
     flex items-center justify-center  gap-1
     min-w-18 
-    py-1.5 px-1 rounded-sm truncate
+    py-1.25 px-1 rounded-sm truncate
 
     transition duration-150 ease-in-out  
     cursor-pointer  

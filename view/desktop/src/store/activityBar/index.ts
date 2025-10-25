@@ -1,5 +1,7 @@
+import { ComponentPropsWithoutRef } from "react";
 import { create } from "zustand";
 
+import { IconInlineType } from "@/components/IconInline";
 import { Icons } from "@/lib/ui/Icon";
 import {
   ActivitybarPartStateInfo,
@@ -9,30 +11,31 @@ import {
   TREE_VIEW_GROUP_PROJECTS,
 } from "@repo/moss-workspace";
 
-export interface ActivityBarItem {
+export interface ActivityBarItemProps extends ComponentPropsWithoutRef<"button"> {
   id: string;
   icon: Icons;
-  iconActive: Icons;
+  iconActive?: IconInlineType;
   title: string;
   order: number;
   isActive: boolean;
   isVisible?: boolean;
+  isDraggable?: boolean;
 }
 
 export interface ActivityBarStore {
-  items: ActivityBarItem[];
+  items: ActivityBarItemProps[];
   position: ActivitybarPosition;
   lastActiveContainerId: string | undefined;
   setPosition: (position: ActivitybarPosition) => void;
-  setItems: (items: ActivityBarItem[]) => void;
-  getActiveItem: () => ActivityBarItem | undefined;
+  setItems: (items: ActivityBarItemProps[]) => void;
+  getActiveItem: () => ActivityBarItemProps | undefined;
   updateFromWorkspaceState: (activitybarState: ActivitybarPartStateInfo) => void;
   setActiveItem: (itemId: string) => void;
   toWorkspaceState: () => ActivitybarPartStateInfo;
   resetToDefaults: () => void;
 }
 
-const defaultItems: ActivityBarItem[] = [
+const defaultItems: ActivityBarItemProps[] = [
   {
     "id": TREE_VIEW_GROUP_PROJECTS,
     "title": "Projects",
@@ -87,7 +90,7 @@ export const useActivityBarStore = create<ActivityBarStore>((set, get) => ({
   setPosition: (position: ActivitybarPosition) => {
     set({ position });
   },
-  setItems: (items: ActivityBarItem[]) => set({ items }),
+  setItems: (items: ActivityBarItemProps[]) => set({ items }),
   getActiveItem: () => {
     return get().items.find((item) => item.isActive);
   },

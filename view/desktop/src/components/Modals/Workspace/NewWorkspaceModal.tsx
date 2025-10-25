@@ -89,8 +89,8 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
       footerClassName="border-t border-(--moss-border)"
       content={
         <div className="flex flex-col gap-2">
-          <div className="grid grid-cols-[min-content_1fr] grid-rows-[repeat(2,1fr)] items-center gap-x-3.75 py-4">
-            <div className="self-start">Name:</div>
+          <div className="gap-x-3.75 grid grid-cols-[min-content_1fr] grid-rows-[repeat(2,1fr)] items-center py-4">
+            <div className="self-center">Name:</div>
             <Input
               intent="outlined"
               ref={inputRef}
@@ -100,7 +100,7 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
               pattern={VALID_NAME_PATTERN}
               required
             />
-            <p className="col-start-2 max-w-72 text-xs text-(--moss-secondary-foreground)">{`Invalid filename characters (e.g. / \ : * ? " < > |) will be escaped`}</p>
+            <p className="text-(--moss-secondary-foreground) col-start-2 max-w-72 text-xs">{`Invalid filename characters (e.g. / \ : * ? " < > |) will be escaped`}</p>
           </div>
 
           <div>
@@ -108,7 +108,7 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
               <span>Mode</span>
               <div className="background-(--moss-border) my-auto h-px w-full" />
             </div>
-            <p className="text-xs leading-5 text-(--moss-secondary-foreground)">
+            <p className="text-(--moss-secondary-foreground) text-xs leading-5">
               You can switch modes in the workspace at any time and as often as needed.
             </p>
             <div className="pl-5">
@@ -136,7 +136,7 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
         </div>
       }
       footer={
-        <div className="flex items-center justify-between py-0.75">
+        <div className="py-0.75 flex items-center justify-between">
           <CheckboxWithLabel
             label="Open automatically after creation"
             checked={openAutomatically}
@@ -144,7 +144,7 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
               if (check !== "indeterminate") setOpenAutomatically(check);
             }}
           />
-          <div className="flex gap-3 px-0.25 py-1.25">
+          <div className="px-0.25 py-1.25 flex gap-3">
             <Button intent="outlined" type="button" onClick={handleCancel} disabled={isLoading}>
               Close
             </Button>

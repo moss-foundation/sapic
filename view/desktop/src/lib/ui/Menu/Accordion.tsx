@@ -6,6 +6,7 @@ import { useControllableState } from "@radix-ui/react-use-controllable-state";
 
 import { Icon } from "../Icon";
 import { ScopedProps } from "./Menu";
+import { menuIconStyles, menuItemStyles } from "./styles";
 
 /* -------------------------------------------------------------------------------------------------
  * Accordion
@@ -62,7 +63,7 @@ const AccordionTrigger = forwardRef<AccordionTriggerElement, AccordionTriggerPro
         aria-expanded={context.open}
         {...triggerProps}
         ref={forwardedRef}
-        className={cn("flex cursor-pointer items-center gap-2.5 rounded py-0.5 pr-3 pl-4", className)}
+        className={cn(menuItemStyles(), className)}
         onClick={(e) => {
           e.stopPropagation();
           context.onOpenChange(!context.open);
@@ -75,7 +76,7 @@ const AccordionTrigger = forwardRef<AccordionTriggerElement, AccordionTriggerPro
           }
         }}
       >
-        <Icon icon={context.open ? "ChevronDown" : "ChevronRight"} />
+        <Icon icon={context.open ? "ChevronDown" : "ChevronRight"} className={menuIconStyles()} />
         {children}
         {props.total !== undefined && <span className="text-(--moss-secondary-foreground)">{props.total}</span>}
       </div>
@@ -98,7 +99,7 @@ const AccordionContent = forwardRef<AccordionContentElement, AccordionContentPro
     if (!context.open) return null;
 
     return (
-      <div {...contentProps} ref={forwardedRef} className={cn("pl-4", className)}>
+      <div {...contentProps} ref={forwardedRef} className={className}>
         {children}
       </div>
     );

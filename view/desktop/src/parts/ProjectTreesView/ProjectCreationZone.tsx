@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
+import { IconInline } from "@/components/IconInline";
 import {
   convertResourceInfoToCreateInput,
   getAllNestedResources,
@@ -7,7 +8,6 @@ import {
   isSourceProjectTreeNode,
 } from "@/components/ProjectTree/utils";
 import { useCreateProject, useCreateProjectResource, useDeleteProjectResource, useStreamProjects } from "@/hooks";
-import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { join } from "@tauri-apps/api/path";
@@ -105,14 +105,14 @@ export const ProjectCreationZone = () => {
     <div
       ref={ref}
       className={cn(
-        "background-(--moss-accent-secondary) grid h-max min-h-32 w-full place-items-center rounded border-2 border-dashed border-(--moss-accent) transition-[translate] duration-100",
+        "background-(--moss-accent-secondary) border-(--moss-accent) grid h-max min-h-32 w-full place-items-center rounded border-2 border-dashed transition-[translate] duration-100",
         {
           "background-(--moss-accent-secondary) -translate-y-1": canDrop === true,
         }
       )}
     >
-      <div className="animate-stripes flex flex-col items-center justify-center gap-3 bg-[linear-gradient(-45deg,white_5%,transparent_5%_45%,white_45%_55%,transparent_55%_95%,white_95%)] bg-size-[20px_20px] p-8 text-center">
-        <Icon icon="AddCircleActive" className={cn("size-5 rounded-full text-(--moss-accent)")} />
+      <div className="bg-size-[20px_20px] flex animate-stripes flex-col items-center justify-center gap-3 bg-[linear-gradient(-45deg,white_5%,transparent_5%_45%,white_45%_55%,transparent_55%_95%,white_95%)] p-8 text-center">
+        <IconInline icon="AddCircleActive" className={cn("text-(--moss-accent) size-5 rounded-full")} />
         <span>Drag & drop selected items here to create a new project</span>
       </div>
     </div>

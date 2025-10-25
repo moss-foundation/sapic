@@ -47,7 +47,7 @@ const inputWrapperStyles = cva(`
 );
 
 const inputStyles = cva(
-  `py-[7px] font-normal text-(--moss-controls-foreground) placeholder-(--moss-controls-placeholder)`
+  `text-(--moss-controls-foreground) placeholder-(--moss-controls-placeholder) py-[6px] font-normal`
 );
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
