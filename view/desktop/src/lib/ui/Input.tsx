@@ -2,7 +2,7 @@ import { cva } from "class-variance-authority";
 import React, { forwardRef, useRef } from "react";
 
 import { useInputResize } from "@/hooks/useInputResize";
-import { mergeRefs } from "@/utils";
+import { cn, mergeRefs } from "@/utils";
 
 import Icon, { Icons } from "./Icon";
 
@@ -20,7 +20,7 @@ export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElem
 const inputWrapperStyles = cva(`
     flex items-center w-full gap-2
     border 
-    rounded-md pl-2 pr-[5px] py-0 
+    rounded-md pl-2 pr-[5px] 
 
     has-[input:focus-within]:outline-2 
     has-[input:focus-within]:outline-(--moss-accent)   
@@ -81,7 +81,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         <input
           ref={mergeRefs([ref, forwardedRef])}
           disabled={disabled}
-          className={inputStyles({ className: inputFieldClassName })}
+          className={cn(inputStyles(), inputFieldClassName)}
           {...props}
         />
 
