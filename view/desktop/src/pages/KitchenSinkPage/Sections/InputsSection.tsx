@@ -36,7 +36,7 @@ export const InputsSection = () => {
 
       <div className="flex flex-col gap-2">
         <Input placeholder="Input Sapic" contrast={contrast} intent={intent} />
-        <Input placeholder="Input Sapic" contrast={contrast} intent={intent} iconLeft="Add" iconRight="Calendar" />
+        <Input placeholder="Input Sapic" contrast={contrast} intent={intent} iconLeft="Add" shortcut="⌘+S" />
 
         <form onSubmit={handleFormSubmit}>
           <Input
@@ -46,7 +46,7 @@ export const InputsSection = () => {
             contrast={contrast}
             intent={intent}
             iconLeft="Add"
-            iconRight="Calendar"
+            shortcut="⌘+S"
           />
         </form>
       </div>

@@ -455,6 +455,8 @@ export const defaultDarkTheme: Theme = {
     "moss.controls.border": { type: "variable", value: "moss.gray.5" },
     "moss.controls.foreground": { type: "variable", value: "moss.gray.14" },
     "moss.controls.placeholder": { type: "variable", value: "moss.gray.8" },
+    "moss.controls.shortcut.background": { type: "variable", value: "moss.gray.12" },
+    "moss.controls.shortcut.foreground": { type: "variable", value: "moss.gray.3" },
 
     "moss.workspaceMode.background": { type: "variable", value: "moss.gray.3" },
     "moss.workspaceMode.border": { type: "variable", value: "moss.gray.4" },
