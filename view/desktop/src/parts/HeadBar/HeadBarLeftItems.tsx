@@ -27,7 +27,7 @@ export const HeadBarLeftItems = ({ handleWindowsMenuAction, handleWorkspaceMenuA
     <div className={cn("flex items-center justify-start gap-[6px] overflow-hidden")} data-tauri-drag-region>
       {isWindowsOrLinux && (
         <ActionMenu.Root>
-          <ActionMenu.Trigger className="hover:!background-(--moss-toolbarItem-background-hover) rounded p-1">
+          <ActionMenu.Trigger className="hover:background-(--moss-toolbarItem-background-hover) rounded p-1">
             <Icon icon="WindowsMenu" className="size-4.5 cursor-pointer" />
           </ActionMenu.Trigger>
           <ActionMenu.Content>

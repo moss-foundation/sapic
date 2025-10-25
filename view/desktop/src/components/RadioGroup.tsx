@@ -77,7 +77,7 @@ const ItemWithLabel = ({
         </label>
       )}
       {description && (
-        <div className="col-start-2 text-left text-sm leading-4 text-(--moss-secondary-foreground)">{description}</div>
+        <div className="text-(--moss-secondary-foreground) col-start-2 text-left text-sm leading-4">{description}</div>
       )}
     </div>
   );
@@ -151,7 +151,7 @@ const ItemWithSelect = ({
         {/* This wrapper is needed to align the validation message from default select if required attribute is used */}
         <div className="flex items-end justify-center">
           <SelectOutlined.Root disabled={disabled} value={selectValue} onValueChange={onChange} required={required}>
-            <SelectOutlined.Trigger size="sm" placeholder={placeholder} disabled={disabled} />
+            <SelectOutlined.Trigger placeholder={placeholder} disabled={disabled} />
 
             <SelectOutlined.Content align="end">
               {options?.map((option) => (
@@ -165,7 +165,7 @@ const ItemWithSelect = ({
       </div>
 
       {description && (
-        <div className="col-start-2 text-left text-sm leading-4 text-(--moss-secondary-foreground)">{description}</div>
+        <div className="text-(--moss-secondary-foreground) col-start-2 text-left text-sm leading-4">{description}</div>
       )}
     </div>
   );

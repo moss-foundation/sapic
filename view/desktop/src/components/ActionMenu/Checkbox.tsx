@@ -10,7 +10,7 @@ const CheckboxItem = forwardRef<HTMLDivElement, Menu.CheckboxItemProps>(({ child
     <Menu.CheckboxItem ref={ref} className={cn(actionMenuStyles(), className)} {...props}>
       {props.checked ? <Icon icon="GreenCheckmark" /> : <Icon icon="GreenCheckmark" className="opacity-0" />}
 
-      <div className="flex w-full items-center gap-2.5">
+      <div className="flex w-full items-center gap-1.5">
         <span>{children}</span>
 
         {props.shortcut && <div className="ml-auto opacity-30">{props.shortcut}</div>}

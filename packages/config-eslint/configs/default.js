@@ -2,14 +2,13 @@ import { createTypeScriptImportResolver } from "eslint-import-resolver-typescrip
 import importX, { createNodeResolver } from "eslint-plugin-import-x";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
 import reactYouMightNotNeedAnEffect from "eslint-plugin-react-you-might-not-need-an-effect";
-import { defineConfig } from "eslint/config";
 import tseslint from "typescript-eslint";
 
 import tseslintParser from "@typescript-eslint/parser";
 
 import mossLintPlugin from "../moss-lint-plugin/index.js";
 
-export default defineConfig(
+export default tseslint.config(
   ...tseslint.configs.recommended,
   importX.flatConfigs.recommended,
   importX.flatConfigs.typescript,

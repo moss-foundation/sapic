@@ -130,7 +130,7 @@ const TitleEditPopup: React.FC<{ panel: IDockviewPanel; onClose: () => void }> =
         <div>
           <span className="!text-white">Edit Panel Title</span>
         </div>
-        <input className="bg-white !text-black select-text" value={title} onChange={onChange} />
+        <input className="select-text bg-white !text-black" value={title} onChange={onChange} />
         <div className="button-group">
           <button className="panel-builder-button" onClick={onClick}>
             Edit
