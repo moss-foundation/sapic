@@ -4,7 +4,7 @@ pub mod shared;
 use moss_project::{
     dirs,
     errors::ErrorNotFound,
-    models::{operations::DeleteEntryInput, primitives::EntryId},
+    models::{operations::DeleteResourceInput, primitives::ResourceId},
 };
 use std::path::PathBuf;
 
@@ -15,7 +15,7 @@ use crate::shared::{
 
 #[tokio::test]
 async fn delete_entry_success() {
-    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let (ctx, _, project_path, mut project, cleanup) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let entry_name = random_entry_name();
@@ -27,25 +27,27 @@ async fn delete_entry_success() {
     assert!(expected_dir.exists());
 
     // Delete the entry
-    let delete_input = DeleteEntryInput { id: entry_id };
+    let delete_input = DeleteResourceInput { id: entry_id };
 
-    let result = project.delete_entry(&ctx, delete_input).await;
+    let result = project.delete_resource(&ctx, delete_input).await;
     let _ = result.unwrap();
 
     // Verify the directory was removed
     assert!(!expected_dir.exists());
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn delete_entry_not_found() {
-    let (ctx, _, project_path, project) = create_test_project().await;
+    let (ctx, _, _, project, cleanup) = create_test_project().await;
 
-    let delete_input = DeleteEntryInput { id: EntryId::new() };
+    let delete_input = DeleteResourceInput {
+        id: ResourceId::new(),
+    };
 
-    let result = project.delete_entry(&ctx, delete_input).await;
+    let result = project.delete_resource(&ctx, delete_input).await;
     assert!(result.is_err());
 
     if let Err(error) = result {
@@ -53,12 +55,12 @@ async fn delete_entry_not_found() {
     }
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn delete_entry_with_subdirectories() {
-    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let (ctx, _, project_path, mut project, cleanup) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let entry_name = random_entry_name();
@@ -80,9 +82,9 @@ async fn delete_entry_with_subdirectories() {
     assert!(sub_sub_dir.exists());
 
     // Delete the entry
-    let delete_input = DeleteEntryInput { id: entry_id };
+    let delete_input = DeleteResourceInput { id: entry_id };
 
-    let result = project.delete_entry(&ctx, delete_input).await;
+    let result = project.delete_resource(&ctx, delete_input).await;
     let _ = result.unwrap();
 
     // Verify the entire directory tree was removed
@@ -91,12 +93,12 @@ async fn delete_entry_with_subdirectories() {
     assert!(!sub_sub_dir.exists());
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn delete_multiple_entries() {
-    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let (ctx, _, project_path, mut project, cleanup) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let entry1_name = format!("{}_1", random_entry_name());
@@ -115,9 +117,9 @@ async fn delete_multiple_entries() {
     assert!(expected_dir2.exists());
 
     // Delete first entry
-    let delete_input1 = DeleteEntryInput { id: entry1_id };
+    let delete_input1 = DeleteResourceInput { id: entry1_id };
 
-    let result1 = project.delete_entry(&ctx, delete_input1).await;
+    let result1 = project.delete_resource(&ctx, delete_input1).await;
     let _ = result1.unwrap();
 
     // Verify first entry was removed, second still exists
@@ -125,9 +127,9 @@ async fn delete_multiple_entries() {
     assert!(expected_dir2.exists());
 
     // Delete second entry
-    let delete_input2 = DeleteEntryInput { id: entry2_id };
+    let delete_input2 = DeleteResourceInput { id: entry2_id };
 
-    let result2 = project.delete_entry(&ctx, delete_input2).await;
+    let result2 = project.delete_resource(&ctx, delete_input2).await;
     let _ = result2.unwrap();
 
     // Verify both entries are now removed
@@ -135,12 +137,12 @@ async fn delete_multiple_entries() {
     assert!(!expected_dir2.exists());
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn delete_entry_twice() {
-    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let (ctx, _, project_path, mut project, cleanup) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let entry_name = random_entry_name();
@@ -152,16 +154,16 @@ async fn delete_entry_twice() {
     assert!(expected_dir.exists());
 
     // Delete the entry first time - should succeed
-    let delete_input = DeleteEntryInput { id: entry_id };
+    let delete_input = DeleteResourceInput { id: entry_id };
 
-    let result1 = project.delete_entry(&ctx, delete_input.clone()).await;
+    let result1 = project.delete_resource(&ctx, delete_input.clone()).await;
     let _ = result1.unwrap();
 
     // Verify the directory was removed
     assert!(!expected_dir.exists());
 
     // Try to delete the same entry again - should fail
-    let result2 = project.delete_entry(&ctx, delete_input).await;
+    let result2 = project.delete_resource(&ctx, delete_input).await;
     assert!(result2.is_err());
 
     if let Err(error) = result2 {
@@ -169,12 +171,12 @@ async fn delete_entry_twice() {
     }
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn delete_entries_from_different_directories() {
-    let (ctx, _, project_path, mut project) = create_test_project().await;
+    let (ctx, _, project_path, mut project, cleanup) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let mut entries = Vec::new();
@@ -200,7 +202,7 @@ async fn delete_entries_from_different_directories() {
     // Create entries in different directories
     for (id, _) in &entries {
         let _ = project
-            .delete_entry(&ctx, DeleteEntryInput { id: id.clone() })
+            .delete_resource(&ctx, DeleteResourceInput { id: id.clone() })
             .await
             .unwrap();
     }
@@ -216,5 +218,5 @@ async fn delete_entries_from_different_directories() {
     }
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }

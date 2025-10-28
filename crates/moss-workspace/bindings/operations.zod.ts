@@ -209,18 +209,3 @@ export const updateProjectInputSchema = z.object({
   order: z.number().optional(),
   expanded: z.boolean().optional(),
 });
-
-export const updateStateInputSchema = z.union([
-  z.object({
-    "updateEditorPartState": editorPartStateInfoSchema,
-  }),
-  z.object({
-    "updateSidebarPartState": sidebarPartStateInfoSchema,
-  }),
-  z.object({
-    "updatePanelPartState": panelPartStateInfoSchema,
-  }),
-  z.object({
-    "updateActivitybarPartState": activitybarPartStateInfoSchema,
-  }),
-]);

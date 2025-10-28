@@ -19,6 +19,10 @@ const defaultCheckboxRootStyles = `
   disabled:hover:brightness-100
   disabled:shadow-none
   disabled:cursor-not-allowed
+
+  focus-visible:outline-(--moss-accent)
+  focus-visible:outline-offset-2
+  focus-visible:outline-2
 `;
 
 const CheckboxRoot = forwardRef<

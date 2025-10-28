@@ -9,7 +9,7 @@ import { Primitive } from "@radix-ui/react-primitive";
 import { useControllableState } from "@radix-ui/react-use-controllable-state";
 
 import { Icon, type Icons } from "../Icon";
-import { menuContentStyles, menuItemStyles } from "./styles";
+import { menuContentStyles, menuIconStyles, menuItemStyles } from "./styles";
 import { composeRefs } from "./utils/compose-refs";
 
 type Direction = "ltr" | "rtl";
@@ -243,10 +243,10 @@ const Item = forwardRef<ItemElement, ItemProps>(
         ref={forwardedRef}
         className={cn(menuItemStyles({ disabled: props.disabled }), className)}
       >
-        {icon && <Icon icon={icon} className={cn("shrink-0", iconClassName)} />}
-        {alignWithIcons && !icon && <div className="size-4 shrink-0 opacity-0" />}
+        {icon && <Icon icon={icon} className={menuIconStyles({ className: iconClassName })} />}
+        {alignWithIcons && !icon && <div className={menuIconStyles({ className: "opacity-0" })} />}
 
-        <div className="flex min-w-0 flex-1 items-center justify-between gap-2.5">
+        <div className="flex min-w-0 flex-1 items-center justify-between gap-1.5">
           <span className="min-w-0 truncate">{props.children}</span>
           {shortcut && <span className={cn("shrink-0", shortcutClassName)}>{shortcut}</span>}
         </div>

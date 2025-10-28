@@ -12,9 +12,9 @@ export const ModeRadioGroup = ({ mode, setMode }: ModeRadioGroupProps) => {
     <div>
       <Subheader>
         <span>Mode</span>
-        <div className="background-(--moss-border-color) my-auto h-px w-full" />
+        <div className="background-(--moss-border) my-auto h-px w-full" />
       </Subheader>
-      <p className="text-sm leading-5 text-(--moss-secondary-text)">
+      <p className="text-(--moss-secondary-foreground) text-sm leading-5">
         You can switch modes in the workspace at any time and as often as needed.
       </p>
       <div className="pl-5">

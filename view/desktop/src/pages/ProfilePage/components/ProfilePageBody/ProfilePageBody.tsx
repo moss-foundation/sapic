@@ -1,6 +1,7 @@
+import { IDockviewPanelProps } from "moss-tabs";
+
 import { PageWrapper } from "@/components/PageView/PageWrapper";
 import { FramedTabs } from "@/lib/ui";
-import { IDockviewPanelProps } from "@repo/moss-tabs";
 import { ProfileInfo } from "@repo/moss-user";
 
 import { ProfilePageProps } from "../../ProfilePage";
@@ -21,7 +22,7 @@ export const ProfilePageBody = ({ profile, refetchProfile, ...props }: ProfilePa
       </FramedTabs.List>
 
       <FramedTabs.Content value="overview" className="flex flex-1">
-        <PageWrapper className="flex flex-1 flex-col pl-7.5">
+        <PageWrapper className="pl-7.5 flex flex-1 flex-col">
           <OverviewTab profile={profile} refetchProfile={refetchProfile} {...props} />
         </PageWrapper>
       </FramedTabs.Content>

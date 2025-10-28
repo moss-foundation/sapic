@@ -21,7 +21,7 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({
     <div className={`flex items-center gap-0 ${className}`}>
       <ActionButton
         icon="ArrowLeft"
-        iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
+        iconClassName="size-4.5"
         title="Go back"
         onClick={onBack}
         disabled={!canGoBack}
@@ -29,7 +29,7 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({
       />
       <ActionButton
         icon="ArrowRight"
-        iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
+        iconClassName="size-4.5"
         title="Go forward"
         onClick={onForward}
         disabled={!canGoForward}

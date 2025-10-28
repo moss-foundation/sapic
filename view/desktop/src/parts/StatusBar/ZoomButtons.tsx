@@ -23,16 +23,16 @@ export const ZoomButtons: React.FC<ZoomButtonsProps> = ({
     <div className={`flex items-center gap-0 ${className}`}>
       <ActionButton
         icon="Minus"
-        iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
+        iconClassName="text-(--moss-statusBarItem-foreground) size-4.5"
         title="Zoom out"
         onClick={onZoomOut}
         disabled={!canZoomOut}
         className={!canZoomOut ? "cursor-not-allowed opacity-50" : ""}
       />
-      <span className="px-1 text-sm text-(--moss-primary-text)">{currentZoom}%</span>
+      <span className="text-(--moss-statusBarItem-foreground) px-1 text-sm">{currentZoom}%</span>
       <ActionButton
         icon="Add"
-        iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
+        iconClassName="text-(--moss-statusBarItem-foreground) size-4.5"
         title="Zoom in"
         onClick={onZoomIn}
         disabled={!canZoomIn}

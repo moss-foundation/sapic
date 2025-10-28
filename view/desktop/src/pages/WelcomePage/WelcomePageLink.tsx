@@ -1,4 +1,4 @@
-import { Icon } from "@/lib/ui";
+import { IconInline } from "@/components/IconInline";
 
 export interface WelcomePageLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
   label: string;
@@ -7,9 +7,9 @@ export interface WelcomePageLinkProps extends React.AnchorHTMLAttributes<HTMLAnc
 
 export const WelcomePageLink = ({ label, withIcon, ...props }: WelcomePageLinkProps) => {
   return (
-    <a className="flex w-full min-w-0 cursor-pointer items-center text-(--moss-primary)" {...props}>
+    <a className="text-(--moss-primary) flex w-full min-w-0 cursor-pointer items-center" {...props}>
       <span className="truncate hover:underline">{label}</span>
-      {withIcon && <Icon icon="ExternalLinkActive" />}
+      {withIcon && <IconInline icon="ExternalLinkActive" />}
     </a>
   );
 };

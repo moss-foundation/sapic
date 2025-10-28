@@ -49,7 +49,7 @@ export const DropIndicatorForTrigger = ({
       style={{
         position: "absolute",
         height: "1px",
-        backgroundColor: "var(--moss-primary)",
+        backgroundColor: "var(--moss-accent)",
         [instruction.operation === "reorder-before" ? "top" : "bottom"]: gapOffset,
         width: reorderWidth,
         left: leftOffset,

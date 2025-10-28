@@ -1,7 +1,7 @@
 import { RefObject, useEffect } from "react";
 
 interface UseInputResizeProps {
-  ref: RefObject<HTMLInputElement>;
+  ref: RefObject<HTMLInputElement | null>;
   enabled?: boolean;
 }
 

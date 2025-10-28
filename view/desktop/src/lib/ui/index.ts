@@ -1,15 +1,16 @@
 export * from "./Button";
 export * as Checkbox from "./Checkbox";
+export * as CheckboxWithLabel from "./CheckboxWithLabel";
+
 export * from "./Icon";
 export * from "./Link";
 export * as Menu from "./Menu";
 export * from "./Modal";
-export * from "./Notification";
 export * as MossDropdown from "./MossDropdown";
-export * from "./MossSelect";
-export * from "./MossToggle";
+export * from "./Notification";
 export * as RadioGroup from "./RadioGroup";
 export * from "./Resizable";
 export * from "./Scrollbar";
 export * from "./Select";
 export * from "./Tabs";
+export * from "./ToggleButton";

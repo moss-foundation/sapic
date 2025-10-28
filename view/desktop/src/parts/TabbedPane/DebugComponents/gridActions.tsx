@@ -1,10 +1,10 @@
+import { DockviewApi } from "moss-tabs";
 import React from "react";
 import { createRoot } from "react-dom/client";
 
 import { useUpdateEditorPartState } from "@/hooks/app/useUpdateEditorPartState";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
-import { DockviewApi } from "@repo/moss-tabs";
 
 import { defaultConfig, nextId } from "../defaultLayout";
 import { PanelBuilder } from "./panelBuilder";
@@ -42,10 +42,10 @@ const PopoverComponent = (props: { close: () => void; component: React.FC<{ clos
   }, []);
 
   return (
-    <div className="absolute top-0 left-0 z-[9999] h-full w-full bg-amber-400">
+    <div className="absolute left-0 top-0 z-[9999] h-full w-full bg-amber-400">
       <div
         ref={ref}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform bg-black p-2.5 text-white"
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform bg-black p-2.5 text-white"
       >
         <props.component close={props.close} />
       </div>
@@ -142,7 +142,7 @@ export const GridActions = (props: {
   const [gap, setGap] = React.useState(0);
 
   React.useEffect(() => {
-    props.api?.setGap(gap);
+    // props.api?.setGap(gap);
   }, [gap, props.api]);
 
   return (
@@ -187,7 +187,7 @@ export const GridActions = (props: {
           </button>
           <span className="grow" />
           <div className="flex items-center">
-            <span className="pr-1 text-[var(--moss-activegroup-visiblepanel-tab-color)]">Grid Gap</span>
+            <span className="pr-1">Grid Gap</span>
             <input
               className="w-10 text-center"
               type="number"

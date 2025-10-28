@@ -6,7 +6,7 @@ import { useControllableState } from "@radix-ui/react-use-controllable-state";
 
 import { Icon, type Icons } from "../Icon";
 import { ScopedProps, useMenuScope } from "./Menu";
-import { menuContentStyles, menuItemStyles } from "./styles";
+import { menuContentStyles, menuIconStyles, menuItemStyles } from "./styles";
 
 /* -------------------------------------------------------------------------------------------------
  * Sub
@@ -60,12 +60,12 @@ const SubTrigger = forwardRef<SubTriggerElement, SubTriggerProps>(
         ref={forwardedRef}
         className={cn(menuItemStyles({ disabled: props.disabled }), props.className)}
       >
-        {props.icon && <Icon icon={props.icon} className={cn("shrink-0", iconClassName)} />}
-        {alignWithIcons && <div className={cn("size-4 shrink-0 opacity-0", iconClassName)} />}
+        {props.icon && <Icon icon={props.icon} className={menuIconStyles({ className: iconClassName })} />}
+        {alignWithIcons && <div className={menuIconStyles({ className: cn("opacity-0", iconClassName) })} />}
 
         <span className="truncate">{props.children}</span>
 
-        <Icon icon="ChevronRight" className="ml-auto" />
+        <Icon icon="ChevronRight" className={menuIconStyles({ className: "ml-auto" })} />
       </MenuPrimitive.SubTrigger>
     );
   }

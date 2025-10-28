@@ -25,9 +25,9 @@ export const MethodSection = ({ method, setMethod, token, setToken, provider }: 
     <div>
       <Subheader>
         <span>Method</span>
-        <div className="background-(--moss-border-color) my-auto h-px w-full" />
+        <div className="background-(--moss-border) my-auto h-px w-full" />
       </Subheader>
-      <p className="text-sm leading-5 text-(--moss-secondary-text)">
+      <p className="text-(--moss-secondary-foreground) text-sm leading-5">
         Pick the authentication method for connecting your account.
       </p>
       <div className="mt-2 pl-5">
@@ -62,14 +62,14 @@ export const MethodSection = ({ method, setMethod, token, setToken, provider }: 
 
       {/* PAT Token Input */}
       {method === "PAT" && (
-        <div className="grid grid-cols-[min-content_1fr] items-start gap-x-3 pt-3.5 pl-10.5">
+        <div className="pl-10.5 grid grid-cols-[min-content_1fr] items-start gap-x-3 pt-3.5">
           <label className="pt-1.5 text-base">Token:</label>
           <textarea
             ref={tokenInputRef}
             value={token}
             onChange={(e) => setToken(e.target.value)}
             placeholder={getPatPlaceholder(provider)}
-            className="h-24.5 w-full resize-none rounded-sm border border-(--moss-border-color) px-2 py-1.5 text-sm placeholder-(--moss-secondary-text) focus:outline-2 focus:outline-(--moss-primary)"
+            className="h-24.5 border-(--moss-border) placeholder-(--moss-secondary-foreground) focus:outline-(--moss-primary) w-full resize-none rounded-sm border px-2 py-1.5 text-sm focus:outline-2"
           />
         </div>
       )}

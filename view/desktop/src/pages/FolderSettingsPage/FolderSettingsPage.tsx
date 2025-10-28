@@ -1,13 +1,13 @@
+import { IDockviewPanelProps } from "moss-tabs";
 import { useState } from "react";
 
 import { PageHeader, PageView } from "@/components";
 import { PageWrapper } from "@/components/PageView/PageWrapper";
 import { ProjectTreeNode } from "@/components/ProjectTree/types";
-import { useStreamProjectEntries } from "@/hooks/project/useStreamProjectEntries";
-import { useRenameEntryForm } from "@/hooks/useRenameEntryForm";
-import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
+import { useStreamProjectResources } from "@/hooks/project/useStreamProjectResources";
+import { useRenameResourceForm } from "@/hooks/useRenameResourceForm";
 import { FolderTabs, Icon, TabItemProps } from "@/lib/ui";
-import { EntryKind } from "@repo/moss-project";
+import { ResourceKind } from "@repo/moss-project";
 
 import { OverviewTabContent } from "./tabs/OverviewTabContent";
 import { getFolderIcon } from "./utils";
@@ -15,21 +15,21 @@ import { getFolderIcon } from "./utils";
 export interface FolderSettingsParams {
   projectId: string;
   node: ProjectTreeNode;
-  iconType: EntryKind;
+  iconType: ResourceKind;
 }
 
 export const FolderSettings = ({ ...props }: IDockviewPanelProps<FolderSettingsParams>) => {
-  const { data: streamedEntries } = useStreamProjectEntries(props.params?.projectId);
-  const node = streamedEntries?.find((entry) => entry.id === props.params?.node?.id);
+  const { data: streamedResources } = useStreamProjectResources(props.params?.projectId);
+  const node = streamedResources?.find((resource) => resource.id === props.params?.node?.id);
 
-  const { isRenamingEntry, setIsRenamingEntry, handleRenamingEntrySubmit, handleRenamingEntryCancel } =
-    useRenameEntryForm(props?.params?.node, props?.params?.projectId);
+  const { isRenamingResource, setIsRenamingResource, handleRenamingResourceSubmit, handleRenamingResourceCancel } =
+    useRenameResourceForm(props?.params?.node, props?.params?.projectId);
 
   const [activeTabId, setActiveTabId] = useState("overview");
 
   if (!props?.params?.projectId || !node) {
     return (
-      <div className="flex h-full items-center justify-center text-(--moss-primary-text)">
+      <div className="text-(--moss-primary-foreground) flex h-full items-center justify-center">
         <div className="text-center">
           <h2 className="text-lg font-semibold">No Folder Selected</h2>
           <p className="text-sm">Please select a folder to view its settings.</p>
@@ -59,11 +59,13 @@ export const FolderSettings = ({ ...props }: IDockviewPanelProps<FolderSettingsP
       ),
       content: (
         <div className="p-4">
-          <div className="rounded-lg border border-(--moss-border-color) p-4">
-            <h3 className="mb-3 text-lg font-semibold text-(--moss-primary-text)">Folder Permissions</h3>
-            <p className="text-(--moss-secondary-text)">Folder permissions configuration will be implemented here.</p>
+          <div className="border-(--moss-border) rounded-lg border p-4">
+            <h3 className="text-(--moss-primary-foreground) mb-3 text-lg font-semibold">Folder Permissions</h3>
+            <p className="text-(--moss-secondary-foreground)">
+              Folder permissions configuration will be implemented here.
+            </p>
             <div className="background-(--moss-secondary-background) mt-4 rounded p-3">
-              <p className="text-sm text-(--moss-secondary-text)">
+              <p className="text-(--moss-secondary-foreground) text-sm">
                 This is a placeholder for folder-specific permissions and access control settings.
               </p>
             </div>
@@ -81,19 +83,19 @@ export const FolderSettings = ({ ...props }: IDockviewPanelProps<FolderSettingsP
       ),
       content: (
         <div className="p-4">
-          <div className="rounded-lg border border-(--moss-border-color) p-4">
-            <h3 className="mb-3 text-lg font-semibold text-(--moss-primary-text)">Folder Settings</h3>
-            <p className="text-(--moss-secondary-text)">Advanced folder settings will be implemented here.</p>
+          <div className="border-(--moss-border) rounded-lg border p-4">
+            <h3 className="text-(--moss-primary-foreground) mb-3 text-lg font-semibold">Folder Settings</h3>
+            <p className="text-(--moss-secondary-foreground)">Advanced folder settings will be implemented here.</p>
             <div className="mt-4 space-y-4">
               <div className="background-(--moss-secondary-background) rounded p-3">
-                <h4 className="mb-2 font-medium text-(--moss-primary-text)">Display Options</h4>
-                <p className="text-sm text-(--moss-secondary-text)">
+                <h4 className="text-(--moss-primary-foreground) mb-2 font-medium">Display Options</h4>
+                <p className="text-(--moss-secondary-foreground) text-sm">
                   Settings for how this folder and its contents are displayed in the tree.
                 </p>
               </div>
               <div className="background-(--moss-secondary-background) rounded p-3">
-                <h4 className="mb-2 font-medium text-(--moss-primary-text)">Organization</h4>
-                <p className="text-sm text-(--moss-secondary-text)">
+                <h4 className="text-(--moss-primary-foreground) mb-2 font-medium">Organization</h4>
+                <p className="text-(--moss-secondary-foreground) text-sm">
                   Settings for organizing and sorting items within this folder.
                 </p>
               </div>
@@ -112,10 +114,10 @@ export const FolderSettings = ({ ...props }: IDockviewPanelProps<FolderSettingsP
         icon={getFolderIcon()}
         title={node?.name}
         disableTitleChange={isRoot}
-        isRenamingTitle={isRenamingEntry}
-        setIsRenamingTitle={setIsRenamingEntry}
-        handleRenamingFormCancel={handleRenamingEntryCancel}
-        onTitleChange={handleRenamingEntrySubmit}
+        isRenamingTitle={isRenamingResource}
+        setIsRenamingTitle={setIsRenamingResource}
+        handleRenamingFormCancel={handleRenamingResourceCancel}
+        onTitleChange={handleRenamingResourceSubmit}
         {...props}
       />
       <PageWrapper>

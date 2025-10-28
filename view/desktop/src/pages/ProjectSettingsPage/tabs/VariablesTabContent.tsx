@@ -1,4 +1,4 @@
-import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
+import { IDockviewPanelProps } from "moss-tabs";
 
 export const VariablesTabContent = ({}: IDockviewPanelProps<{ projectId: string }>) => {
   return (
@@ -6,7 +6,7 @@ export const VariablesTabContent = ({}: IDockviewPanelProps<{ projectId: string 
       <div className="text-center opacity-60">
         <div className="mb-4">
           <svg
-            className="mx-auto h-16 w-16 text-(--moss-secondary-text)"
+            className="text-(--moss-secondary-foreground) mx-auto h-16 w-16"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -19,9 +19,11 @@ export const VariablesTabContent = ({}: IDockviewPanelProps<{ projectId: string 
             />
           </svg>
         </div>
-        <h3 className="mb-2 text-lg font-medium text-(--moss-primary-text)">Variables Management</h3>
-        <p className="text-(--moss-secondary-text)">This section will contain environment and project variables</p>
-        <p className="mt-1 text-sm text-(--moss-secondary-text)">Coming soon...</p>
+        <h3 className="text-(--moss-primary-foreground) mb-2 text-lg font-medium">Variables Management</h3>
+        <p className="text-(--moss-secondary-foreground)">
+          This section will contain environment and project variables
+        </p>
+        <p className="text-(--moss-secondary-foreground) mt-1 text-sm">Coming soon...</p>
       </div>
     </div>
   );

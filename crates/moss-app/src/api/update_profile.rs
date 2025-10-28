@@ -32,14 +32,23 @@ impl<R: AppRuntime> App<R> {
         for account_id in input.accounts_to_remove {
             let account_id = self
                 .profile_service
-                .remove_account(app_delegate, account_id)
+                .remove_account(ctx, app_delegate, account_id)
                 .await?;
             removed_account_ids.push(account_id);
+        }
+
+        let mut updated_account_ids = Vec::with_capacity(input.accounts_to_update.len());
+        for account_to_update in input.accounts_to_update {
+            self.profile_service
+                .update_account(ctx, app_delegate, &account_to_update)
+                .await?;
+            updated_account_ids.push(account_to_update.id);
         }
 
         Ok(UpdateProfileOutput {
             added_accounts: added_account_ids,
             removed_accounts: removed_account_ids,
+            updated_accounts: updated_account_ids,
         })
     }
 }

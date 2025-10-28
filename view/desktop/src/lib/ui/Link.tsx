@@ -12,7 +12,7 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>(({ className, child
     <a
       ref={ref}
       className={cn(
-        "cursor-pointer text-[var(--moss-link-text)] underline-offset-4 transition-colors hover:text-[var(--moss-link-hover)]",
+        "text-(--moss-link-foreground) hover:text-(--moss-link-foreground-hover) cursor-pointer underline-offset-4 transition-colors",
         className
       )}
       {...props}
@@ -21,7 +21,5 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>(({ className, child
     </a>
   );
 });
-
-Link.displayName = "Link";
 
 export default Link;

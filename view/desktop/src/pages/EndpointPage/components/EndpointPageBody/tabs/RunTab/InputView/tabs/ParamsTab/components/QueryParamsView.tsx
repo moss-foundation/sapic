@@ -1,10 +1,10 @@
 import { useContext, useState } from "react";
 
 import { ActionButton } from "@/components";
-import CheckboxWithLabel from "@/components/CheckboxWithLabel";
-import { useUpdateProjectEntry } from "@/hooks";
+import { useUpdateProjectResource } from "@/hooks";
 import { Scrollbar } from "@/lib/ui";
-import { Counter } from "@/lib/ui/RoundedCounter";
+import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
+import { RoundedCounter } from "@/lib/ui/RoundedCounter";
 import { EndpointPageContext } from "@/pages/EndpointPage/EndpointPageContext";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { CheckedState } from "@radix-ui/react-checkbox";
@@ -15,9 +15,9 @@ import { NewParamRowForm } from "./NewParamRowForm";
 import { ParamRow } from "./ParamRow";
 
 export const QueryParamsView = () => {
-  const { entryDescription, entry: node, projectId } = useContext(EndpointPageContext);
+  const { resourceDescription: entryDescription, resource, projectId } = useContext(EndpointPageContext);
 
-  const { mutate: updateProjectEntry } = useUpdateProjectEntry();
+  const { mutate: updateProjectResource } = useUpdateProjectResource();
   const [columnToFocusOnMount, setColumnToFocusOnMount] = useState<string | null>(null);
 
   const handleParamRowChange = (updatedParam: QueryParamInfo) => {
@@ -55,11 +55,11 @@ export const QueryParamsView = () => {
     };
 
     if (entryDescription.kind === "Item") {
-      updateProjectEntry({
+      updateProjectResource({
         projectId,
-        updatedEntry: {
+        updatedResource: {
           ITEM: {
-            id: node.id,
+            id: resource.id,
             queryParamsToUpdate: [buildUpdateObject(initialParam, updatedParam)],
             headersToAdd: [],
             headersToUpdate: [],
@@ -88,11 +88,11 @@ export const QueryParamsView = () => {
       }));
 
     if (entryDescription.kind === "Item") {
-      updateProjectEntry({
+      updateProjectResource({
         projectId,
-        updatedEntry: {
+        updatedResource: {
           ITEM: {
-            id: node.id,
+            id: resource.id,
             headersToAdd: [],
             headersToUpdate: [],
             headersToRemove: [],
@@ -128,11 +128,11 @@ export const QueryParamsView = () => {
     };
 
     if (entryDescription.kind === "Item") {
-      updateProjectEntry({
+      updateProjectResource({
         projectId,
-        updatedEntry: {
+        updatedResource: {
           ITEM: {
-            id: node.id,
+            id: resource.id,
             headersToAdd: [],
             headersToUpdate: [],
             headersToRemove: [],
@@ -151,11 +151,11 @@ export const QueryParamsView = () => {
   const handleAllParamsCheckedChange = (checked: CheckedState) => {
     if (checked === "indeterminate") return;
 
-    updateProjectEntry({
+    updateProjectResource({
       projectId,
-      updatedEntry: {
+      updatedResource: {
         ITEM: {
-          id: node.id,
+          id: resource.id,
           queryParamsToUpdate: entryDescription.queryParams
             .filter((param) => param.disabled === checked)
             .map((param) => ({
@@ -185,7 +185,7 @@ export const QueryParamsView = () => {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex w-full justify-between border-b border-(--moss-border-color) px-3 py-[5px]">
+      <div className="border-(--moss-border) flex w-full justify-between border-b px-3 py-[5px]">
         <div className="flex items-center gap-1 overflow-hidden">
           <CheckboxWithLabel
             checked={headerCheckedState}
@@ -193,7 +193,7 @@ export const QueryParamsView = () => {
             label="Query Params"
             className="gap-3 truncate"
           />
-          <Counter count={howManyParamsChecked} color="gray" />
+          <RoundedCounter count={howManyParamsChecked} color="gray" />
         </div>
 
         <div className="flex items-center gap-1">

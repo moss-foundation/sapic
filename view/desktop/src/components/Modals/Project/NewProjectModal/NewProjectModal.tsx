@@ -106,8 +106,8 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
   const isSubmitDisabled = calculateIsSubmitDisabled({ name, tab, createParams, importParams, gitProvider });
 
   return (
-    <Modal onBackdropClick={handleCancel} showModal={showModal} className="w-full max-w-136">
-      <h2 className="flex items-center justify-center py-2 leading-4 font-medium">New Project</h2>
+    <Modal onBackdropClick={handleCancel} showModal={showModal} className="max-w-136 w-full">
+      <h2 className="flex items-center justify-center py-2 font-medium leading-4">New Project</h2>
 
       <Divider />
 
@@ -118,7 +118,7 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
               value={tab}
               onValueChange={(value) => setTab(value as typeof CREATE_TAB | typeof IMPORT_TAB)}
             >
-              <UnderlinedTabs.List className="border-b border-(--moss-border-color) px-3">
+              <UnderlinedTabs.List className="border-(--moss-border) border-b px-3">
                 <UnderlinedTabs.Trigger value={CREATE_TAB}>Create</UnderlinedTabs.Trigger>
                 <UnderlinedTabs.Trigger value={IMPORT_TAB}>Import</UnderlinedTabs.Trigger>
               </UnderlinedTabs.List>

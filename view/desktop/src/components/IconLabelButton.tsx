@@ -1,4 +1,4 @@
-import React, { ButtonHTMLAttributes, forwardRef, useEffect, useRef, useState } from "react";
+import { ButtonHTMLAttributes, forwardRef, KeyboardEvent, useEffect, useRef, useState } from "react";
 
 import { Icon, type Icons } from "@/lib/ui";
 import { cn } from "@/utils";
@@ -36,14 +36,14 @@ const buttonStyles = `
   flex items-center
   h-[22px] min-w-0  
   cursor-pointer rounded p-[3px]
-  text-[var(--moss-icon-primary-text)] 
-  hover:background-(--moss-icon-primary-background-hover) 
+  text-(--moss-controls-foreground) 
+  hover:background-(--moss-controls-background-hover) 
   disabled:cursor-default 
   disabled:opacity-50
   truncate
 `;
 
-const ButtonLabel: React.FC<LabelProps> = ({
+const ButtonLabel = ({
   title,
   placeholder,
   className,
@@ -53,7 +53,7 @@ const ButtonLabel: React.FC<LabelProps> = ({
   isEditing,
   onStartEdit,
   onRename,
-}) => {
+}: LabelProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const spanRef = useRef<HTMLSpanElement>(null);
   const [inputValue, setInputValue] = useState(title);
@@ -65,7 +65,7 @@ const ButtonLabel: React.FC<LabelProps> = ({
     }
   }, [isEditing]);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       onRename(inputValue);
     } else if (e.key === "Escape") {
@@ -87,7 +87,7 @@ const ButtonLabel: React.FC<LabelProps> = ({
         onChange={(e) => setInputValue(e.target.value)}
         onKeyDown={handleKeyDown}
         onBlur={handleBlur}
-        className="text-md background-(--moss-input-bg-outlined) h-[18px] min-w-[80px] px-1 text-[var(--moss-primary-text)] outline-none"
+        className="text-md background-(--moss-controls-background) text-(--moss-controls-foreground) h-[18px] min-w-[80px] px-1 outline-none"
       />
     );
   }
@@ -96,7 +96,7 @@ const ButtonLabel: React.FC<LabelProps> = ({
     return (
       <span
         ref={spanRef}
-        className={cn("text-md truncate text-[var(--moss-not-selected-item-color)]", placeholderClassName)}
+        className={cn("text-md truncate", placeholderClassName)}
         onDoubleClick={editable ? onStartEdit : undefined}
       >
         {placeholder}
@@ -107,7 +107,7 @@ const ButtonLabel: React.FC<LabelProps> = ({
   return (
     <span
       ref={spanRef}
-      className={cn("text-md truncate text-left text-[var(--moss-primary-text)]", className)}
+      className={cn("text-md text-(--moss-controls-foreground) truncate text-left", className)}
       onDoubleClick={editable ? onStartEdit : undefined}
     >
       {title}

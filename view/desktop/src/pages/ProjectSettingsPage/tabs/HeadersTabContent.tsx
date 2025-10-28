@@ -1,4 +1,4 @@
-import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
+import { IDockviewPanelProps } from "moss-tabs";
 
 export const HeadersTabContent = ({}: IDockviewPanelProps<{ projectId: string }>) => {
   return (
@@ -6,7 +6,7 @@ export const HeadersTabContent = ({}: IDockviewPanelProps<{ projectId: string }>
       <div className="text-center opacity-60">
         <div className="mb-4">
           <svg
-            className="mx-auto h-16 w-16 text-(--moss-secondary-text)"
+            className="text-(--moss-secondary-foreground) mx-auto h-16 w-16"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -19,9 +19,11 @@ export const HeadersTabContent = ({}: IDockviewPanelProps<{ projectId: string }>
             />
           </svg>
         </div>
-        <h3 className="mb-2 text-lg font-medium text-(--moss-primary-text)">Headers Configuration</h3>
-        <p className="text-(--moss-secondary-text)">This section will contain default headers for project requests</p>
-        <p className="mt-1 text-sm text-(--moss-secondary-text)">Coming soon...</p>
+        <h3 className="text-(--moss-primary-foreground) mb-2 text-lg font-medium">Headers Configuration</h3>
+        <p className="text-(--moss-secondary-foreground)">
+          This section will contain default headers for project requests
+        </p>
+        <p className="text-(--moss-secondary-foreground) mt-1 text-sm">Coming soon...</p>
       </div>
     </div>
   );

@@ -8,16 +8,15 @@ use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_theme::registry::ThemeRegistry;
 use std::{path::PathBuf, sync::Arc};
 use tauri::{AppHandle as TauriAppHandle, Manager};
-use tokio::sync::RwLock;
 
 use crate::{
-    app::{App, AppCommands, AppPreferences},
+    app::{App, AppCommands},
     command::CommandDecl,
     configuration::ConfigurationService,
     dirs,
     extension::ExtensionService,
     internal::events::{OnDidChangeConfiguration, OnDidChangeProfile, OnDidChangeWorkspace},
-    language::LocaleService,
+    language::LanguageService,
     logging::LogService,
     profile::ProfileService,
     session::SessionService,
@@ -91,10 +90,10 @@ impl<R: AppRuntime> AppBuilder<R> {
         .await
         .expect("Failed to create theme service");
 
-        let locale_service =
-            LocaleService::new::<R>(self.fs.clone(), <dyn LanguageRegistry>::global(&delegate))
+        let language_service =
+            LanguageService::new::<R>(self.fs.clone(), <dyn LanguageRegistry>::global(&delegate))
                 .await
-                .expect("Failed to create locale service");
+                .expect("Failed to create language service");
         let session_service = SessionService::new();
         let storage_service: Arc<StorageService<R>> =
             StorageService::<R>::new(&user_dir.join(dirs::GLOBALS_DIR))
@@ -130,18 +129,11 @@ impl<R: AppRuntime> AppBuilder<R> {
         App {
             app_handle: self.tao_handle.clone(),
             commands: self.commands,
-
-            // FIXME: hardcoded for now
-            preferences: AppPreferences {
-                theme: RwLock::new(None),
-                locale: RwLock::new(None),
-            },
-
             session_service,
             log_service,
             storage_service,
             workspace_service,
-            locale_service,
+            language_service,
             theme_service,
             profile_service,
             configuration_service,

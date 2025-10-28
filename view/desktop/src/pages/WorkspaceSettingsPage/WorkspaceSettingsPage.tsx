@@ -1,3 +1,4 @@
+import { IDockviewPanelProps } from "moss-tabs";
 import { useState } from "react";
 
 import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
@@ -7,7 +8,6 @@ import { useModal } from "@/hooks";
 import { useRenameWorkspace } from "@/hooks/useRenameWorkspace";
 import { useDeleteWorkspace } from "@/hooks/workbench/useDeleteWorkspace";
 import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
-import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 
 import { WorkspaceDangerZoneSection } from "./WorkspaceDangerZoneSection";
 import { WorkspaceDataSection } from "./WorkspaceDataSection";
@@ -59,7 +59,7 @@ export const WorkspaceSettings = ({ ...props }: IDockviewPanelProps) => {
 
   if (!hasActiveWorkspace) {
     return (
-      <div className="flex h-full items-center justify-center text-(--moss-primary-text)">
+      <div className="text-(--moss-primary-foreground) flex h-full items-center justify-center">
         <div className="text-center">
           <h2 className="text-lg font-semibold">No Active Workspace</h2>
           <p className="text-sm">Please select a workspace to view its settings.</p>

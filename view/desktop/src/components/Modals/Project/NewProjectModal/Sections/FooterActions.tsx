@@ -1,5 +1,5 @@
-import { ButtonNeutralOutlined, ButtonPrimary } from "@/components";
-import CheckboxWithLabel from "@/components/CheckboxWithLabel";
+import { Button } from "@/lib/ui";
+import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 
 import { CREATE_TAB, IMPORT_TAB } from "../constansts";
 
@@ -19,7 +19,7 @@ export const FooterActions = ({
   tab,
 }: FooterActionsProps) => {
   return (
-    <div className="flex items-center justify-between border-t border-(--moss-border-color) px-6 py-4">
+    <div className="border-(--moss-border) flex items-center justify-between border-t px-6 py-4">
       <CheckboxWithLabel
         label="Open automatically after creation"
         checked={openAutomatically}
@@ -28,12 +28,12 @@ export const FooterActions = ({
         }}
       />
       <div className="flex gap-3">
-        <ButtonNeutralOutlined type="button" onClick={handleCancel}>
+        <Button intent="outlined" type="button" onClick={handleCancel}>
           Close
-        </ButtonNeutralOutlined>
-        <ButtonPrimary disabled={isSubmitDisabled} type="submit">
-          {tab === CREATE_TAB ? CREATE_TAB : IMPORT_TAB}
-        </ButtonPrimary>
+        </Button>
+        <Button intent="primary" disabled={isSubmitDisabled} type="submit">
+          {tab === CREATE_TAB ? "Create" : "Import"}
+        </Button>
       </div>
     </div>
   );

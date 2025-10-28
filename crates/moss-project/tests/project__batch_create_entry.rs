@@ -3,9 +3,9 @@
 use moss_project::{
     constants, dirs,
     models::{
-        operations::{BatchCreateEntryInput, BatchCreateEntryKind},
-        primitives::EntryClass,
-        types::{CreateDirEntryParams, CreateItemEntryParams},
+        operations::{BatchCreateResourceInput, BatchCreateResourceKind},
+        primitives::ResourceClass,
+        types::{CreateDirResourceParams, CreateItemResourceParams},
     },
 };
 use std::path::PathBuf;
@@ -16,7 +16,7 @@ pub mod shared;
 
 #[tokio::test]
 async fn batch_create_entry_success() {
-    let (ctx, _, project_path, project) = create_test_project().await;
+    let (ctx, _, project_path, project, cleanup) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let entry_base_path = PathBuf::from(RESOURCES_ROOT_DIR);
@@ -26,14 +26,14 @@ async fn batch_create_entry_success() {
 
     let outer_name = random_entry_name();
     let inner_name = random_entry_name();
-    let outer_input = BatchCreateEntryKind::Dir(CreateDirEntryParams {
-        class: EntryClass::Endpoint,
+    let outer_input = BatchCreateResourceKind::Dir(CreateDirResourceParams {
+        class: ResourceClass::Endpoint,
         path: entry_base_path.clone(),
         name: outer_name.clone(),
         order: 0,
     });
-    let inner_input = BatchCreateEntryKind::Item(CreateItemEntryParams {
-        class: EntryClass::Endpoint,
+    let inner_input = BatchCreateResourceKind::Item(CreateItemResourceParams {
+        class: ResourceClass::Endpoint,
         path: entry_base_path.join(&outer_name),
         name: inner_name.clone(),
         order: 0,
@@ -43,12 +43,12 @@ async fn batch_create_entry_success() {
         headers: vec![],
         body: None,
     });
-    let input = BatchCreateEntryInput {
+    let input = BatchCreateResourceInput {
         // Make sure that the order is correctly sorted
-        entries: vec![inner_input, outer_input],
+        resources: vec![inner_input, outer_input],
     };
 
-    let output = project.batch_create_entry(&ctx, input).await.unwrap();
+    let output = project.batch_create_resource(&ctx, input).await.unwrap();
     assert_eq!(output.ids.len(), 2);
 
     // Verify the directories were created
@@ -67,19 +67,19 @@ async fn batch_create_entry_success() {
     assert!(inner_config.is_file());
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn batch_create_entry_missing_parent() {
-    let (ctx, _, project_path, project) = create_test_project().await;
+    let (ctx, _, _, project, cleanup) = create_test_project().await;
 
     let entry_base_path = PathBuf::from(RESOURCES_ROOT_DIR);
     let inner_name = random_entry_name();
 
     // Try creating components/parent/{inner_name}
-    let inner_input = BatchCreateEntryKind::Item(CreateItemEntryParams {
-        class: EntryClass::Endpoint,
+    let inner_input = BatchCreateResourceKind::Item(CreateItemResourceParams {
+        class: ResourceClass::Endpoint,
         path: entry_base_path.join("parent"),
         name: inner_name.clone(),
         order: 0,
@@ -89,26 +89,26 @@ async fn batch_create_entry_missing_parent() {
         headers: vec![],
         body: None,
     });
-    let input = BatchCreateEntryInput {
-        entries: vec![inner_input],
+    let input = BatchCreateResourceInput {
+        resources: vec![inner_input],
     };
 
-    let result = project.batch_create_entry(&ctx, input).await;
+    let result = project.batch_create_resource(&ctx, input).await;
     assert!(result.is_err());
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn batch_create_entry_empty_input() {
-    let (ctx, _, project_path, project) = create_test_project().await;
+    let (ctx, _, _, project, cleanup) = create_test_project().await;
 
-    let input = BatchCreateEntryInput { entries: vec![] };
-    let output = project.batch_create_entry(&ctx, input).await.unwrap();
+    let input = BatchCreateResourceInput { resources: vec![] };
+    let output = project.batch_create_resource(&ctx, input).await.unwrap();
 
     assert_eq!(output.ids.len(), 0);
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }

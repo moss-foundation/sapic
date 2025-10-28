@@ -27,8 +27,8 @@ export const HeadBarLeftItems = ({ handleWindowsMenuAction, handleWorkspaceMenuA
     <div className={cn("flex items-center justify-start gap-[6px] overflow-hidden")} data-tauri-drag-region>
       {isWindowsOrLinux && (
         <ActionMenu.Root>
-          <ActionMenu.Trigger className="hover:!background-(--moss-icon-secondary-background-hover) rounded p-1">
-            <Icon icon="WindowsMenu" className="size-4.5 cursor-pointer text-(--moss-headBar-icon-primary-text)" />
+          <ActionMenu.Trigger className="hover:background-(--moss-toolbarItem-background-hover) rounded p-1">
+            <Icon icon="WindowsMenu" className="size-4.5 cursor-pointer" />
           </ActionMenu.Trigger>
           <ActionMenu.Content>
             {windowsMenuItems.map((item) => renderActionMenuItem(item, handleWindowsMenuAction))}
@@ -46,7 +46,7 @@ export const HeadBarLeftItems = ({ handleWindowsMenuAction, handleWorkspaceMenuA
             placeholder="No workspace selected"
             showPlaceholder={!hasActiveWorkspace}
             labelClassName="text-md"
-            className="hover:!background-(--moss-icon-secondary-background-hover) h-[24px] min-w-[46px]"
+            className="hover:!background-(--moss-toolbarItem-background-hover) h-[24px] min-w-[46px]"
           />
         </ActionMenu.Trigger>
         <ActionMenu.Content>

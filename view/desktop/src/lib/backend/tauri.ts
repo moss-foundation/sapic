@@ -9,13 +9,10 @@ export type TauriIpcCommand =
   | "describe_app"
   | "update_configuration"
   | "list_configuration_schemas"
-  | "set_color_theme" // DEPRECATED
-  | "set_locale" // DEPRECATED
   | "execute_command"
-  | "get_locale"
   | "get_translation_namespace"
   | "describe_color_theme"
-  | "list_locales"
+  | "list_languages"
   | "list_color_themes"
   | "create_workspace"
   | "open_workspace"
@@ -28,7 +25,6 @@ export type TauriIpcCommand =
   //
   // Workspace
   //
-  | "update_workspace_state" // DEPRECATED
   | "update_layout"
   | "describe_workspace"
   | "describe_project"
@@ -53,13 +49,13 @@ export type TauriIpcCommand =
   //
   // Project
   //
-  | "create_project_entry"
-  | "delete_project_entry"
-  | "update_project_entry"
-  | "stream_project_entries"
-  | "describe_project_entry"
-  | "batch_update_project_entry"
-  | "batch_create_project_entry"
+  | "create_project_resource"
+  | "delete_project_resource"
+  | "update_project_resource"
+  | "stream_project_resources"
+  | "describe_project_resource"
+  | "batch_update_project_resource"
+  | "batch_create_project_resource"
   | "execute_vcs_operation";
 
 export type IpcResult<T, E> = { status: "ok"; data: T } | { status: "error"; error: E };
@@ -100,10 +96,18 @@ export const invokeTauriServiceIpc = async <Input, Output, E = unknown>({
 }: InvokeTauriServiceIpcArgs<Input>): Promise<IpcResult<Output, E>> => {
   try {
     const data = await invokeTauri<Output>(cmd, args);
-    return { status: "ok", data };
+
+    return {
+      status: "ok",
+      data,
+    };
   } catch (err) {
     handleTauriIpcError(cmd, err);
-    return { status: "error", error: err as E };
+
+    return {
+      status: "error",
+      error: err as E,
+    };
   }
 };
 

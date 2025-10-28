@@ -21,8 +21,8 @@ const TabsTrigger = forwardRef<
     className={cn(
       "flex shrink-0 items-center gap-1.5 px-3 py-1.5 text-sm transition-colors",
       "border-0 border-transparent",
-      "text-(--moss-secondary-text) hover:text-(--moss-primary-text)",
-      "data-[state=active]:text-(--moss-primary-text)",
+      "text-(--moss-secondary-foreground) hover:text-(--moss-primary-foreground)",
+      "data-[state=active]:text-(--moss-primary-foreground)",
       "disabled:pointer-events-none disabled:opacity-50",
       className
     )}

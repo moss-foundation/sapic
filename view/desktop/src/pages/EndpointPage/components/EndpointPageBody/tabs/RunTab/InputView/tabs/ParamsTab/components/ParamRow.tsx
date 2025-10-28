@@ -1,10 +1,11 @@
 import { ChangeEvent, memo, useCallback, useContext, useEffect, useRef, useState } from "react";
 
-import { ActionButton, DropIndicator, InputOutlined } from "@/components";
-import CheckboxWithLabel from "@/components/CheckboxWithLabel";
+import { ActionButton, DropIndicator } from "@/components";
 import { DragHandleButton } from "@/components/DragHandleButton";
 import { useHoverDelay } from "@/hooks";
 import { Icon } from "@/lib/ui";
+import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
+import Input from "@/lib/ui/Input";
 import { EndpointPageContext } from "@/pages/EndpointPage/EndpointPageContext";
 import { cn } from "@/utils";
 import { CheckedState } from "@radix-ui/react-checkbox";
@@ -23,7 +24,7 @@ interface ParamRowProps {
 
 export const ParamRow = memo(
   ({ param: initialParam, onChange, keyToFocusOnMount, onDelete, paramType }: ParamRowProps) => {
-    const { entry } = useContext(EndpointPageContext);
+    const { resource } = useContext(EndpointPageContext);
 
     const keyRef = useRef<HTMLInputElement>(null);
     const valueRef = useRef<HTMLInputElement>(null);
@@ -96,7 +97,7 @@ export const ParamRow = memo(
 
     const { isDragging, dragHandleRef, paramRowRef, closestEdge } = useDraggableParamRow({
       param,
-      entryId: entry.id,
+      resourceId: resource.id,
       paramType,
     });
 
@@ -119,7 +120,7 @@ export const ParamRow = memo(
           <DragHandleButton
             ref={dragHandleRef}
             className={cn(
-              "absolute top-1/2 left-0 -translate-y-1/2 rounded-xs shadow-none transition-opacity duration-200",
+              "rounded-xs absolute left-0 top-1/2 -translate-y-1/2 shadow-none transition-opacity duration-200",
               {
                 "pointer-events-auto opacity-100": isHovered,
                 "pointer-events-none opacity-0": !isHovered,
@@ -128,10 +129,10 @@ export const ParamRow = memo(
           />
         </div>
 
-        <InputOutlined ref={keyRef} value={param.name} onChange={onKeyChange} contrast />
+        <Input intent="outlined" ref={keyRef} value={param.name} onChange={onKeyChange} contrast />
 
         {/* @ts-expect-error  We are not being able to handle anything except string for now */}
-        <InputOutlined ref={valueRef} value={param.value} onChange={onValueChange} contrast />
+        <Input intent="outlined" ref={valueRef} value={param.value} onChange={onValueChange} contrast />
 
         <Icon icon="RequiredAsterisk" />
         <TypeBadgePlaceholder type="string" />
@@ -148,7 +149,7 @@ export const ParamRow = memo(
 
 const TypeBadgePlaceholder = ({ type }: { type: string }) => {
   return (
-    <div className="background-(--moss-green-9) flex items-center justify-center rounded-full px-1.5 text-[10px] leading-[15px] text-(--moss-green-1)">
+    <div className="background-(--moss-green-9) text-(--moss-green-1) flex items-center justify-center rounded-full px-1.5 text-[10px] leading-[15px]">
       {type}
     </div>
   );

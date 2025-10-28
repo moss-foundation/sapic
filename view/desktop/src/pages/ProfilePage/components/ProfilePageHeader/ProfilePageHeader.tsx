@@ -1,5 +1,6 @@
+import { DockviewPanelApi } from "moss-tabs";
+
 import { PageWrapper } from "@/components/PageView/PageWrapper";
-import { DockviewPanelApi } from "@/lib/moss-tabs/src";
 import { Icon } from "@/lib/ui";
 import { ProfileInfo } from "@repo/moss-user";
 

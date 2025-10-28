@@ -1,7 +1,8 @@
 import { useEffect } from "react";
 
 import { ACTIVITYBAR_POSITION } from "@/constants/layoutPositions";
-import { ActivityBarItem, useActivityBarStore } from "@/store/activityBar";
+import { ActivityBarItemProps, useActivityBarStore } from "@/store/activityBar";
+import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn } from "@/utils";
 import { swapListById } from "@/utils/swapListById";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
@@ -12,7 +13,7 @@ import { ActivityBarButtonIndicator } from "./ActivityBarButtonIndicator";
 
 export const ActivityBarFirstItems = () => {
   const { items, position, setItems } = useActivityBarStore();
-
+  const { visible: isSideBarVisible } = useAppResizableLayoutStore((state) => state.sideBar);
   useEffect(() => {
     return monitorForElements({
       canMonitor({ source }) {
@@ -22,8 +23,8 @@ export const ActivityBarFirstItems = () => {
         const target = location.current.dropTargets[0];
         if (!target) return;
 
-        const sourceData = source.data as { data: ActivityBarItem };
-        const targetData = target.data as { data: ActivityBarItem };
+        const sourceData = source.data as { data: ActivityBarItemProps };
+        const targetData = target.data as { data: ActivityBarItemProps };
         const edge = extractClosestEdge(targetData);
 
         if (!sourceData || !targetData || !sourceData.data || !targetData.data) return;
@@ -56,7 +57,7 @@ export const ActivityBarFirstItems = () => {
           >
             <ActivityBarButton key={item.id} {...item} />
 
-            {item.isActive && <ActivityBarButtonIndicator />}
+            {item.isActive && isSideBarVisible && <ActivityBarButtonIndicator />}
           </div>
         ))}
     </div>

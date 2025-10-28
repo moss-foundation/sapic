@@ -17,7 +17,6 @@ export const ActivityBarLastItems = () => {
     >
       <ActivityBarButton
         icon="Person"
-        iconActive="PersonActive"
         isActive={false}
         id="1"
         title="Profile"
@@ -32,7 +31,6 @@ export const ActivityBarLastItems = () => {
       />
       <ActivityBarButton
         icon="Settings"
-        iconActive="SettingsActive"
         isActive={false}
         id="2"
         title="Settings"

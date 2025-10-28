@@ -13,32 +13,11 @@ use tauri::{AppHandle, Runtime as TauriRuntime};
 use tokio::sync::RwLock;
 
 use crate::{
-    ActiveWorkspace,
-    command::CommandCallback,
-    configuration::ConfigurationService,
-    extension::ExtensionService,
-    language::LocaleService,
-    logging::LogService,
-    models::{
-        primitives::SessionId,
-        types::{ColorThemeInfo, LocaleInfo},
-    },
-    profile::ProfileService,
-    session::SessionService,
-    storage::StorageService,
-    theme::ThemeService,
-    workspace::WorkspaceService,
+    ActiveWorkspace, command::CommandCallback, configuration::ConfigurationService,
+    extension::ExtensionService, language::LanguageService, logging::LogService,
+    models::primitives::SessionId, profile::ProfileService, session::SessionService,
+    storage::StorageService, theme::ThemeService, workspace::WorkspaceService,
 };
-
-pub struct AppPreferences {
-    pub theme: RwLock<Option<ColorThemeInfo>>,
-    pub locale: RwLock<Option<LocaleInfo>>,
-}
-
-pub struct AppDefaults {
-    pub theme: ColorThemeInfo,
-    pub locale: LocaleInfo,
-}
 
 pub struct AppCommands<R: TauriRuntime>(FxHashMap<ReadOnlyStr, CommandCallback<R>>);
 
@@ -71,13 +50,11 @@ pub struct App<R: AppRuntime> {
     #[deref]
     pub(super) app_handle: AppHandle<R::EventLoop>,
     pub(super) commands: AppCommands<R::EventLoop>,
-    pub(super) preferences: AppPreferences,
-
     pub(super) session_service: SessionService,
     pub(super) log_service: LogService<R>,
     pub(super) storage_service: Arc<StorageService<R>>,
     pub(super) workspace_service: WorkspaceService<R>,
-    pub(super) locale_service: LocaleService,
+    pub(super) language_service: LanguageService,
     pub(super) theme_service: ThemeService,
     pub(super) profile_service: ProfileService<R>,
     pub(super) configuration_service: ConfigurationService,
@@ -96,10 +73,6 @@ impl<R: AppRuntime> App<R> {
 
     pub fn handle(&self) -> AppHandle<R::EventLoop> {
         self.app_handle.clone()
-    }
-
-    pub fn preferences(&self) -> &AppPreferences {
-        &self.preferences
     }
 
     pub async fn workspace(&self) -> Option<Arc<ActiveWorkspace<R>>> {

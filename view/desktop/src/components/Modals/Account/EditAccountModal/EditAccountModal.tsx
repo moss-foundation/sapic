@@ -1,12 +1,9 @@
 import { FormEvent, useState } from "react";
 
-import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
-import ButtonPrimary from "@/components/ButtonPrimary";
-import { Modal } from "@/lib/ui";
-import { Link } from "@/lib/ui";
-import { invoke } from "@tauri-apps/api/core";
-import { AddAccountParams, UpdateProfileInput } from "@repo/moss-app";
+import { Button, Link, Modal } from "@/lib/ui";
+import { UpdateAccountParams, UpdateProfileInput } from "@repo/moss-app";
 import { AccountInfo } from "@repo/moss-user";
+import { invoke } from "@tauri-apps/api/core";
 
 import { ModalWrapperProps } from "../../types";
 import { getPatPlaceholder, getProviderName, getProviderSettingsUrl } from "../accountUtils";
@@ -27,20 +24,15 @@ export const EditAccountModal = ({ showModal, closeModal, account, onAccountUpda
 
     try {
       setIsSubmitting(true);
-
-      // TODO: Replace with dedicated update account endpoint when available
-      // Strategy: Remove old account and add new account with updated PAT
-      // This is necessary because there's no dedicated "update account" endpoint
-      const accountParams: AddAccountParams = {
-        host: account.host,
-        label: "",
-        kind: account.kind,
+      const accountParams: UpdateAccountParams = {
+        id: account.id,
         pat: token,
       };
 
       const input: UpdateProfileInput = {
-        accountsToAdd: [accountParams],
-        accountsToRemove: [account.id],
+        accountsToAdd: [],
+        accountsToRemove: [],
+        accountsToUpdate: [accountParams],
       };
 
       await invoke("update_profile", { input });
@@ -74,24 +66,24 @@ export const EditAccountModal = ({ showModal, closeModal, account, onAccountUpda
   const settingsUrl = getProviderSettingsUrl(account.kind);
 
   return (
-    <Modal onBackdropClick={handleClose} showModal={showModal} className="w-full max-w-136">
+    <Modal onBackdropClick={handleClose} showModal={showModal} className="max-w-136 w-full">
       <form onSubmit={handleSubmit} className="flex flex-col overflow-hidden">
-        <h2 className="flex items-center justify-center border-b border-(--moss-border-color) py-2 leading-4 font-medium">
+        <h2 className="border-(--moss-border) flex items-center justify-center border-b py-2 font-medium leading-4">
           Edit details
         </h2>
 
-        <div className="px-6 pt-6 pb-3.5">
+        <div className="px-6 pb-3.5 pt-6">
           <div className="grid grid-cols-[min-content_1fr] items-start gap-x-3 gap-y-1.5">
             <label className="pt-1.5 text-base">Token:</label>
             <textarea
               value={token}
               onChange={(e) => setToken(e.target.value)}
               placeholder={getPatPlaceholder(account.kind)}
-              className="h-24.5 w-full resize-none rounded-sm border border-(--moss-border-color) px-2 py-1.5 text-sm placeholder-(--moss-secondary-text) focus:outline-2 focus:outline-(--moss-primary)"
+              className="h-24.5 border-(--moss-border) placeholder-(--moss-secondary-foreground) focus:outline-(--moss-primary) w-full resize-none rounded-sm border px-2 py-1.5 text-sm focus:outline-2"
               autoFocus
             />
             <div></div>
-            <p className="text-sm leading-4 text-(--moss-secondary-text)">
+            <p className="text-(--moss-secondary-foreground) text-sm leading-4">
               Enter your personal access token (PAT). You can get it in your{" "}
               <Link href={settingsUrl} target="_blank" rel="noopener noreferrer">
                 {providerName}
@@ -101,13 +93,13 @@ export const EditAccountModal = ({ showModal, closeModal, account, onAccountUpda
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3 border-t border-(--moss-border-color) px-6 py-4">
-          <ButtonNeutralOutlined type="button" onClick={handleClose} disabled={isSubmitting}>
+        <div className="border-(--moss-border) flex items-center justify-end gap-3 border-t px-6 py-4">
+          <Button intent="outlined" type="button" onClick={handleClose} disabled={isSubmitting}>
             Close
-          </ButtonNeutralOutlined>
-          <ButtonPrimary disabled={isSubmitDisabled} type="submit">
+          </Button>
+          <Button intent="primary" disabled={isSubmitDisabled} type="submit">
             {isSubmitting ? "Saving..." : "Save"}
-          </ButtonPrimary>
+          </Button>
         </div>
       </form>
     </Modal>

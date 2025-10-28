@@ -36,5 +36,5 @@ export const Workspace = ({ workspaceName }: WorkspaceProps) => {
     );
   }
 
-  return <TabbedPane theme="dockview-theme-light" mode="auto" />;
+  return <TabbedPane mode="auto" />;
 };

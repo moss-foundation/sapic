@@ -1,6 +1,7 @@
+import { IDockviewPanelProps } from "moss-tabs";
+
 import { PageView } from "@/components";
 import { PageWrapper } from "@/components/PageView/PageWrapper";
-import { IDockviewPanelProps } from "@repo/moss-tabs";
 
 import { ProfilePageBody } from "./components/ProfilePageBody";
 import { ProfilePageHeader } from "./components/ProfilePageHeader";
@@ -22,7 +23,7 @@ const ProfilePage = ({ ...props }: IDockviewPanelProps<ProfilePageProps>) => {
         <PageWrapper>
           <div className="flex flex-1 items-center justify-center">
             <div className="text-center">
-              <p className="mb-4 text-sm text-(--moss-secondary-text)">Loading profile...</p>
+              <p className="text-(--moss-secondary-foreground) mb-4 text-sm">Loading profile...</p>
             </div>
           </div>
         </PageWrapper>
@@ -36,7 +37,7 @@ const ProfilePage = ({ ...props }: IDockviewPanelProps<ProfilePageProps>) => {
         <PageWrapper>
           <div className="flex flex-1 items-center justify-center">
             <div className="text-center">
-              <p className="mb-4 text-sm text-(--moss-secondary-text)">
+              <p className="text-(--moss-secondary-foreground) mb-4 text-sm">
                 {error ? "Error loading profile" : "No profile found"}
               </p>
             </div>

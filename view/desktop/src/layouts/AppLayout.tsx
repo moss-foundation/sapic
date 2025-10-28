@@ -1,7 +1,3 @@
-import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
-
-import "@repo/moss-tabs/assets/styles.css";
-
 import { AllotmentHandle, LayoutPriority } from "allotment";
 import { ReactNode, useEffect, useRef, useState } from "react";
 
@@ -12,6 +8,7 @@ import { useUpdatePanelPartState } from "@/hooks/app/useUpdatePanelPartState";
 import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { useActivityBarStore } from "@/store/activityBar";
+import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn } from "@/utils";
 
 import { Resizable, ResizablePanel } from "../lib/ui/Resizable";
@@ -207,7 +204,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
 
 const SidebarContent = () => <Sidebar />;
 
-const MainContent = () => <TabbedPane theme="dockview-theme-light" />;
+const MainContent = () => <TabbedPane />;
 
 const BottomPaneContent = () => {
   return <BottomPane />;
@@ -230,9 +227,9 @@ const SidebarEdgeHandler = ({ alignment, onClick }: SidebarEdgeHandlerProps) => 
     >
       {/* handle bg*/}
       <div
-        className={cn(`background-(--moss-info-background-hover)/70 absolute z-40 hidden cursor-pointer`, {
-          "top-0 left-0 h-full w-3": alignment === "left",
-          "top-0 right-0 h-full w-3": alignment === "right",
+        className={cn(`background-(--moss-accent)/50 absolute z-40 hidden cursor-pointer`, {
+          "left-0 top-0 h-full w-3": alignment === "left",
+          "right-0 top-0 h-full w-3": alignment === "right",
           "bottom-0 left-0 h-3 w-full": alignment === "bottom",
           "block": showBg,
         })}
@@ -244,12 +241,12 @@ const SidebarEdgeHandler = ({ alignment, onClick }: SidebarEdgeHandlerProps) => 
       {/* handle */}
       <div
         className={cn(
-          `background-(--moss-primary)/50 hover:background-(--moss-primary)/80 absolute z-50 cursor-pointer rounded`,
+          `background-(--moss-accent)/50 hover:background-(--moss-accent)/80 absolute z-50 cursor-pointer rounded`,
           {
             "inset-y-[calc(50%-64px)] left-[3px] h-32 w-1.5": alignment === "left",
             "inset-y-[calc(50%-64px)] right-[3px] h-32 w-1.5": alignment === "right",
             "inset-x-[calc(50%-64px)] bottom-[3px] h-1.5 w-32": alignment === "bottom",
-            "background-(--moss-info-icon)/80": showBg,
+            "background-(--moss-accent)/80": showBg,
           }
         )}
         onMouseEnter={() => setShowBg(true)}

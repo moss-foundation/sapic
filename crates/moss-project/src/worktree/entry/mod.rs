@@ -6,17 +6,17 @@ use std::{path::Path, sync::Arc};
 use tokio::sync::watch;
 
 use crate::{
-    models::primitives::{EntryClass, EntryId, EntryKind, EntryProtocol},
+    models::primitives::{ResourceClass, ResourceId, ResourceKind, ResourceProtocol},
     worktree::entry::{edit::EntryEditing, model::BodyKind},
 };
 
 #[derive(Deref, DerefMut)]
 pub(crate) struct Entry {
-    pub id: EntryId,
+    pub id: ResourceId,
     pub path_rx: watch::Receiver<Arc<Path>>,
     #[allow(unused)]
-    pub class: EntryClass,
-    pub protocol: Option<EntryProtocol>,
+    pub class: ResourceClass,
+    pub protocol: Option<ResourceProtocol>,
     pub metadata: EntryMetadata,
     #[deref]
     #[deref_mut]
@@ -29,12 +29,12 @@ pub(crate) struct EntryMetadata {
 
 #[derive(Debug)]
 pub struct EntryDescription {
-    pub id: EntryId,
+    pub id: ResourceId,
     pub name: String,
     pub path: Arc<Path>,
-    pub class: EntryClass,
-    pub kind: EntryKind,
-    pub protocol: Option<EntryProtocol>,
+    pub class: ResourceClass,
+    pub kind: ResourceKind,
+    pub protocol: Option<ResourceProtocol>,
     pub order: Option<isize>,
     pub expanded: bool,
 }

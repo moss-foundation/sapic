@@ -19,7 +19,6 @@ pub mod update_environment;
 pub mod update_environment_group;
 pub mod update_layout;
 pub mod update_project;
-pub mod update_state; // DEPRECATED
 
 use moss_applib::AppRuntime;
 

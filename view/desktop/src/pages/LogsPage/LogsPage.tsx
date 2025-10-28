@@ -32,7 +32,6 @@ export const Logs = () => {
 
   const [accountForm, setAccountForm] = useState<AddAccountParams>({
     host: "github.com",
-    label: "",
     kind: "GITHUB",
   });
 
@@ -79,6 +78,7 @@ export const Logs = () => {
       const input: UpdateProfileInput = {
         accountsToAdd: [accountForm],
         accountsToRemove: [],
+        accountsToUpdate: [],
       };
       await invoke("update_profile", { input });
       console.log("Account added:", accountForm);
@@ -158,13 +158,6 @@ export const Logs = () => {
                 placeholder="Host"
                 value={accountForm.host}
                 onChange={(e) => setAccountForm((prev) => ({ ...prev, host: e.target.value }))}
-                className="w-full rounded-md border border-gray-300 bg-white p-2"
-              />
-              <input
-                type="text"
-                placeholder="Label"
-                value={accountForm.label}
-                onChange={(e) => setAccountForm((prev) => ({ ...prev, label: e.target.value }))}
                 className="w-full rounded-md border border-gray-300 bg-white p-2"
               />
               <select

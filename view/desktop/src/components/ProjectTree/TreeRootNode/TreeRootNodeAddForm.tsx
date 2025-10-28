@@ -4,7 +4,7 @@ import { Icon } from "@/lib/ui/Icon";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
 
-import { EntryIcon } from "../../EntryIcon";
+import { ResourceIcon } from "../../ResourceIcon";
 import { ProjectTreeContext } from "../ProjectTreeContext";
 
 interface TreeRootNodeAddFormProps {
@@ -22,7 +22,7 @@ export const TreeRootNodeAddForm = ({
   return (
     <div className="flex w-full min-w-0 items-center gap-1.5 py-0.5" style={{ paddingLeft: nodeOffset * 2 }}>
       <Icon icon="ChevronRight" className={cn("shrink-0 opacity-0")} />
-      <EntryIcon />
+      <ResourceIcon />
       <Tree.NodeAddForm
         onSubmit={handleAddFormRootSubmit}
         onCancel={handleAddFormRootCancel}

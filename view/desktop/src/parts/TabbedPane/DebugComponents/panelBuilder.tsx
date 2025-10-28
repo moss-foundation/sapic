@@ -1,6 +1,5 @@
+import { DockviewApi } from "moss-tabs";
 import React from "react";
-
-import { DockviewApi } from "@repo/moss-tabs";
 
 import { nextId } from "../defaultLayout";
 

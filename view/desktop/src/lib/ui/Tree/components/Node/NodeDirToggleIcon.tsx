@@ -21,7 +21,7 @@ export const NodeDirToggleIcon = ({
       <button
         onClick={handleClickOnDir}
         className={cn(
-          "hover:background-(--moss-icon-primary-background-hover) flex cursor-pointer items-center justify-center rounded-full text-(--moss-icon-primary-text)",
+          "hover:background-(--moss-list-toolbarItem-background-hover) flex cursor-pointer items-center justify-center rounded-full",
           {
             "opacity-0": !isDir,
           }
@@ -29,7 +29,7 @@ export const NodeDirToggleIcon = ({
       >
         <Icon
           icon="ChevronRight"
-          className={cn("text-(--moss-icon-primary-text)", {
+          className={cn("", {
             "rotate-90": shouldRenderChildNodes,
             "opacity-0": !isDir,
           })}

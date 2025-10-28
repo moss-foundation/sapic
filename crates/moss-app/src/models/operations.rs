@@ -1,6 +1,6 @@
 use derive_more::Deref;
 use moss_configuration::models::types::ConfigurationSchema;
-use moss_language::models::primitives::{LanguageCode, LanguageDirection};
+use moss_language::models::types::LanguageInfo;
 use moss_logging::models::primitives::LogEntryId;
 use moss_theme::models::primitives::ThemeId;
 use moss_user::models::{primitives::AccountId, types::ProfileInfo};
@@ -61,6 +61,7 @@ pub struct CreateProfileOutput {
 pub struct UpdateProfileInput {
     pub accounts_to_add: Vec<AddAccountParams>,
     pub accounts_to_remove: Vec<AccountId>,
+    pub accounts_to_update: Vec<UpdateAccountParams>,
 }
 
 /// @category Operation
@@ -69,6 +70,7 @@ pub struct UpdateProfileInput {
 pub struct UpdateProfileOutput {
     pub added_accounts: Vec<AccountId>,
     pub removed_accounts: Vec<AccountId>,
+    pub updated_accounts: Vec<AccountId>,
 }
 
 // ########################################################
@@ -83,42 +85,8 @@ pub struct CancelRequestInput {
 }
 
 // ########################################################
-// ###                      Locale                      ###
+// ###                    Language                      ###
 // ########################################################
-
-/// DEPRECATED
-/// @category Operation
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct GetLocaleInput {
-    pub identifier: String,
-}
-
-/// DEPRECATED
-/// @category Operation
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct GetLocaleOutput {
-    pub display_name: String,
-    pub code: LanguageCode,
-    #[ts(optional, type = "LanguageDirection")]
-    pub direction: Option<LanguageDirection>,
-}
-
-/// @category Operation
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct DescribeLocaleOutput {
-    pub display_name: String,
-    pub code: String,
-    #[ts(optional, type = "LanguageDirection")]
-    pub direction: Option<LanguageDirection>,
-}
 
 /// @category Operation
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -140,7 +108,7 @@ pub struct GetTranslationNamespaceOutput {
 /// @category Operation
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "operations.ts")]
-pub struct ListLocalesOutput(pub Vec<LocaleInfo>);
+pub struct ListLanguagesOutput(#[ts(type = "LanguageInfo[]")] pub Vec<LanguageInfo>);
 
 // Describe App
 
@@ -156,24 +124,6 @@ pub struct DescribeAppOutput {
     #[ts(optional, type = "ProfileInfo")]
     pub profile: Option<ProfileInfo>,
     pub configuration: Configuration,
-}
-
-// DEPRECATED
-/// @category Operation
-#[derive(Debug, Deserialize, Serialize, Clone, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct SetColorThemeInput {
-    pub theme_info: ColorThemeInfo,
-}
-
-// DEPRECATED
-/// @category Operation
-#[derive(Debug, Deserialize, Serialize, Clone, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct SetLocaleInput {
-    pub locale_info: LocaleInfo,
 }
 
 // ########################################################

@@ -1,19 +1,19 @@
 import { useContext, useState } from "react";
 
 import { PageWrapper } from "@/components/PageView/PageWrapper";
-import { useRenameEntryForm } from "@/hooks";
-import { Icon, MossDropdown, MossToggle } from "@/lib/ui";
-import MossSelect from "@/lib/ui/MossSelect";
+import { useRenameResourceForm } from "@/hooks";
+import { Icon, MossDropdown, ToggleButton } from "@/lib/ui";
+import Select from "@/lib/ui/Select";
 import { cn } from "@/utils";
 
 import { EndpointPageContext } from "../../EndpointPageContext";
 import { EditableHeader } from "./EditableHeader";
 
 export const EndpointPageHeader = () => {
-  const { entryDescription: entry, projectId, entry: node } = useContext(EndpointPageContext);
+  const { resourceDescription, projectId, resource } = useContext(EndpointPageContext);
 
-  const { isRenamingEntry, setIsRenamingEntry, handleRenamingEntrySubmit, handleRenamingEntryCancel } =
-    useRenameEntryForm(node, projectId);
+  const { isRenamingResource, setIsRenamingResource, handleRenamingResourceSubmit, handleRenamingResourceCancel } =
+    useRenameResourceForm(resource, projectId);
 
   const [isEnabled, setIsEnabled] = useState(false);
 
@@ -33,26 +33,22 @@ export const EndpointPageHeader = () => {
         <div className="flex items-center justify-between">
           <EditableHeader
             icon="Http"
-            title={entry.name}
-            isRenamingEntry={isRenamingEntry}
-            setIsRenamingEntry={setIsRenamingEntry}
-            handleRenamingEntrySubmit={handleRenamingEntrySubmit}
-            handleRenamingEntryCancel={handleRenamingEntryCancel}
+            title={resourceDescription.name}
+            isRenamingResource={isRenamingResource}
+            setIsRenamingResource={setIsRenamingResource}
+            handleRenamingResourceSubmit={handleRenamingResourceSubmit}
+            handleRenamingResourceCancel={handleRenamingResourceCancel}
             editable
           />
           <div className="flex items-center gap-2">
-            <MossToggle
-              checked={isEnabled}
-              onCheckedChange={setIsEnabled}
-              labelLeft={isEnabled ? "Enabled" : "Disabled"}
-            />
-            <MossSelect.Root value={selectedValue} onValueChange={setSelectedValue}>
-              <MossSelect.Trigger
-                placeholder={"Placeholder"}
+            <ToggleButton checked={isEnabled} onCheckedChange={setIsEnabled} />
+            <Select.Root value={selectedValue} onValueChange={setSelectedValue}>
+              <Select.Trigger
+                placeholder="Select an option"
                 childrenLeftSide={
                   <span
                     className={cn("size-1.5 rounded-full", {
-                      "background-(--moss-primary)": selectedValue === "Released",
+                      "background-(--moss-blue-4)": selectedValue === "Released",
                       "background-(--moss-orange-5)": selectedValue === "Draft",
                       "background-(--moss-error)": selectedValue === "Archived",
                       "hidden": selectedValue === "Some very long name",
@@ -61,14 +57,14 @@ export const EndpointPageHeader = () => {
                 }
               />
 
-              <MossSelect.Content align="end">
+              <Select.Content align="end">
                 {options?.map((option) => (
-                  <MossSelect.Item key={option.value} value={option.value}>
+                  <Select.Item key={option.value} value={option.value}>
                     {option.label}
-                  </MossSelect.Item>
+                  </Select.Item>
                 ))}
-              </MossSelect.Content>
-            </MossSelect.Root>
+              </Select.Content>
+            </Select.Root>
 
             <MossDropdown.Root>
               <MossDropdown.Trigger>
@@ -87,10 +83,10 @@ export const EndpointPageHeader = () => {
 
         <div className="flex items-center gap-5">
           <div className="flex gap-[3px]">
-            <span className="text-(--moss-shortcut-text)">Created</span> <span>March 31, 2025</span>
+            <span className="text-(--moss-primary-descriptionForeground)">Created</span> <span>March 31, 2025</span>
           </div>
           <div className="flex gap-[3px]">
-            <span className="text-(--moss-shortcut-text)">Updated</span> <span>March 31, 2025</span>
+            <span className="text-(--moss-primary-descriptionForeground)">Updated</span> <span>March 31, 2025</span>
           </div>
         </div>
       </header>

@@ -1,4 +1,5 @@
-import { GroupPanelViewState, Orientation, SerializedDockview, SerializedGridObject } from "@/lib/moss-tabs/src";
+import { GroupPanelViewState, Orientation, SerializedDockview, SerializedGridObject } from "moss-tabs";
+
 import { EditorGridNode, EditorPartStateInfo } from "@repo/moss-workspace";
 
 const mapSerializedRootToEditorRoot = (node: SerializedGridObject<GroupPanelViewState>): EditorGridNode => {

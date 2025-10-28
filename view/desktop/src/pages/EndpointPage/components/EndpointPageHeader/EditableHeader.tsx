@@ -1,74 +1,76 @@
 import { useState } from "react";
 
-import { InputPlain } from "@/components";
 import { Icon, Icons } from "@/lib/ui";
+import Input from "@/lib/ui/Input";
 
 interface EditableHeaderProps {
   icon: Icons;
   title: string;
-  isRenamingEntry: boolean;
-  setIsRenamingEntry: (isRenamingEntry: boolean) => void;
-  handleRenamingEntrySubmit: (newName: string) => void;
-  handleRenamingEntryCancel: () => void;
+  isRenamingResource: boolean;
+  setIsRenamingResource: (isRenamingResource: boolean) => void;
+  handleRenamingResourceSubmit: (newName: string) => void;
+  handleRenamingResourceCancel: () => void;
   editable: boolean;
 }
 
 export const EditableHeader = ({
   icon,
   title: initialTitle,
-  isRenamingEntry,
-  setIsRenamingEntry,
-  handleRenamingEntrySubmit,
-  handleRenamingEntryCancel,
+  isRenamingResource,
+  setIsRenamingResource,
+  handleRenamingResourceSubmit,
+  handleRenamingResourceCancel,
   editable = false,
 }: EditableHeaderProps) => {
   const [newTitle, setNewTitle] = useState(initialTitle);
 
   const handleBlur = () => {
-    handleRenamingEntrySubmit(newTitle);
-    setIsRenamingEntry(false);
+    handleRenamingResourceSubmit(newTitle);
+    setIsRenamingResource(false);
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    handleRenamingEntrySubmit(newTitle);
-    setIsRenamingEntry(false);
+    handleRenamingResourceSubmit(newTitle);
+    setIsRenamingResource(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Escape") {
-      handleRenamingEntryCancel();
+      handleRenamingResourceCancel();
     }
     if (e.key === "Enter") {
-      handleRenamingEntrySubmit(newTitle);
-      setIsRenamingEntry(false);
+      handleRenamingResourceSubmit(newTitle);
+      setIsRenamingResource(false);
     }
   };
 
   return (
     <div className="flex items-center gap-2">
-      <div className="rounded-md border border-(--moss-border-color) p-[3px]">
+      <div className="border-(--moss-border) rounded-md border p-[3px]">
         <Icon icon={icon} className="size-[18px]" />
       </div>
-      {isRenamingEntry ? (
+
+      {isRenamingResource ? (
         <form onSubmit={handleSubmit} className="-mx-1 w-full max-w-[200px] px-1">
-          <InputPlain
+          <Input
+            intent="plain"
             autoFocus
             value={newTitle}
             onChange={(event) => setNewTitle(event.target.value)}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
-            className="w-full rounded-md py-0 text-lg leading-6 font-bold text-(--moss-primary-text) has-[input:focus-within]:outline-offset-1"
-            inputFieldClassName="-mx-2"
+            className="text-(--moss-primary-foreground) w-full rounded-md border-none py-0 has-[input:focus-within]:outline-offset-1"
+            inputFieldClassName="-mx-2 py-0 font-bold text-lg"
           />
         </form>
       ) : (
-        <span
-          onClick={editable ? () => setIsRenamingEntry(true) : undefined}
-          className="hover:background-(--moss-secondary-background-hover) -mx-1 w-full max-w-[200px] cursor-text truncate rounded-md px-1 py-0.5 text-lg leading-6 font-bold text-(--moss-primary-text) transition-colors"
+        <h2
+          onClick={editable ? () => setIsRenamingResource(true) : undefined}
+          className="hover:background-(--moss-secondary-background-hover) text-(--moss-primary-foreground) -mx-1 w-full max-w-[200px] cursor-text truncate rounded-md px-1 py-0.5 text-lg font-bold leading-6 transition-colors"
         >
           {newTitle}
-        </span>
+        </h2>
       )}
     </div>
   );

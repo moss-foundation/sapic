@@ -1,10 +1,9 @@
+import { DockviewApi } from "moss-tabs";
 import React from "react";
-
-import { DockviewApi } from "@repo/moss-tabs";
 
 export const useTabbedPaneResizeObserver = (
   api: DockviewApi | undefined,
-  containerRef: React.RefObject<HTMLDivElement>
+  containerRef: React.RefObject<HTMLDivElement | null>
 ) => {
   React.useEffect(() => {
     if (!containerRef.current || !api) return;

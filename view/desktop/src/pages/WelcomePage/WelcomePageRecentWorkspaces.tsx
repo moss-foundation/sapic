@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
 import { useListWorkspaces, useOpenWorkspace } from "@/hooks/workbench";
+import { Button } from "@/lib/ui";
 
 import WelcomePageLink from "./WelcomePageLink";
 
@@ -21,12 +21,14 @@ export const WelcomePageRecentWorkspaces = () => {
           <WelcomePageLink key={workspace.id} label={workspace.name} onClick={() => openWorkspace(workspace.id)} />
         ))}
 
-        {workspaces?.length === 0 && <span className="text-(--moss-secondary-text)">No recent workspaces</span>}
+        {workspaces?.length === 0 && <span className="text-(--moss-secondary-foreground)">No recent workspaces</span>}
       </div>
 
       {!showAll && workspaces && workspaces.length > 3 && (
         <div>
-          <ButtonNeutralOutlined onClick={() => setShowAll(true)}>More</ButtonNeutralOutlined>
+          <Button intent="outlined" onClick={() => setShowAll(true)}>
+            More
+          </Button>
         </div>
       )}
     </div>

@@ -1,5 +1,11 @@
-import "./assets/styles.css";
-
+import {
+  DockviewDidDropEvent,
+  DockviewReact,
+  DockviewReadyEvent,
+  IDockviewHeaderActionsProps,
+  IDockviewPanelProps,
+  positionToDirection,
+} from "moss-tabs";
 import React from "react";
 
 import { PageContent, PageHeader, PageView } from "@/components";
@@ -20,19 +26,11 @@ import {
 } from "@/pages";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
-import { EntryKind } from "@repo/moss-project";
-import {
-  DockviewDidDropEvent,
-  DockviewReact,
-  DockviewReadyEvent,
-  IDockviewHeaderActionsProps,
-  IDockviewPanelProps,
-  positionToDirection,
-} from "@repo/moss-tabs";
+import { ResourceKind } from "@repo/moss-project";
 
 import { AddPanelButton } from "./AddPanelButton";
 import CustomTab from "./CustomTab";
-import DockviewControls from "./DebugComponents/DockviewControls";
+import DockviewDebugContainer from "./DebugComponents/DockviewDebugContainer";
 import LogsPanel from "./DebugComponents/LogsPanel";
 import Metadata from "./DebugComponents/Metadata";
 import { useTabbedPaneDropTarget } from "./hooks/useDockviewDropTarget";
@@ -59,7 +57,7 @@ const PanelToolbar = (props: IDockviewHeaderActionsProps) => {
   return <ToolBar workspace={isWorkspace} />;
 };
 
-const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | "welcome" | "empty" }) => {
+const TabbedPane = ({ mode = "auto" }: { theme?: string; mode?: "auto" | "welcome" | "empty" }) => {
   const { showDebugPanels } = useTabbedPaneStore();
   const { api, addOrFocusPanel, setApi } = useTabbedPaneStore();
   const { hasActiveWorkspace } = useActiveWorkspace();
@@ -180,7 +178,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
       props: IDockviewPanelProps<{
         node?: ProjectTreeNode;
         projectId: string;
-        iconType: EntryKind;
+        iconType: ResourceKind;
       }>
     ) => {
       const isDebug = React.useContext(DebugContext);
@@ -193,7 +191,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
               <Breadcrumbs projectId={props.params.projectId} nodeId={props.params.node.id} />
             )} */}
 
-            <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col opacity-50">
+            <span className="pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col opacity-50">
               <span className="text-[42px] leading-[42px]">Default Page</span>
               <span className="text-sm leading-3">This is a placeholder default page</span>
             </span>
@@ -214,21 +212,21 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
       props: IDockviewPanelProps<{
         node: ProjectTreeNode;
         projectId: string;
-        iconType: EntryKind;
+        iconType: ResourceKind;
       }>
     ) => <EndpointPage {...props} />,
     ProjectSettings: (
       props: IDockviewPanelProps<{
         node: ProjectTreeNode;
         projectId: string;
-        iconType: EntryKind;
+        iconType: ResourceKind;
       }>
     ) => <ProjectSettingsPage {...props} />,
     FolderSettings: (
       props: IDockviewPanelProps<{
         node: ProjectTreeNode;
         projectId: string;
-        iconType: EntryKind;
+        iconType: ResourceKind;
       }>
     ) => <FolderSettings {...props} />,
     Welcome: () => <WelcomePage />,
@@ -243,7 +241,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     <div className="h-full">
       <div className="dockview-demo relative flex h-full w-full grow flex-col rounded">
         {showDebugPanels && (
-          <DockviewControls
+          <DockviewDebugContainer
             api={api}
             panels={panels}
             activePanel={activePanel}
@@ -261,7 +259,6 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
             <DebugContext.Provider value={debug}>
               <div className="h-full w-full" ref={dockviewRefWrapper}>
                 <DockviewReact
-                  disableAutoResizing
                   ref={dockviewRef}
                   components={components}
                   defaultTabComponent={CustomTab}
@@ -269,8 +266,15 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
                   leftHeaderActionsComponent={AddPanelButton}
                   watermarkComponent={Watermark}
                   onReady={onReady}
-                  className={theme || "dockview-theme-light"}
                   onDidDrop={onDidDrop}
+                  theme={{
+                    name: "moss-theme-light",
+                    className: "dockview-moss-light",
+                    gap: 0,
+                  }}
+                  disableAutoResizing
+                  disableTabsOverflowList
+                  disableFloatingGroups
                 />
               </div>
             </DebugContext.Provider>

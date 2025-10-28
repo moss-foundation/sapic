@@ -10,7 +10,7 @@ export interface DraggableParamRowData {
   data: {
     param: QueryParamInfo;
     paramType: ParamDragType;
-    entryId: string;
+    resourceId: string;
   };
   [key: string]: unknown;
 }
@@ -21,7 +21,7 @@ export interface DropTargetParamRowData {
   data: {
     param: QueryParamInfo;
     paramType: ParamDragType;
-    entryId: string;
+    resourceId: string;
   };
   [key: string]: unknown;
 }
@@ -29,7 +29,7 @@ export interface DropTargetParamRowData {
 export interface DropTargetNewParamRowFormData {
   type: typeof DROP_TARGET_NEW_PARAM_ROW_FORM_TYPE;
   data: {
-    entryId: string;
+    resourceId: string;
     paramType: ParamDragType;
   };
   [key: string]: unknown;

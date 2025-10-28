@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-import { InputOutlined } from "@/components";
 import { Icon, Icons } from "@/lib/ui";
+import Input from "@/lib/ui/Input";
 
 import * as iconsNames from "../../../assets/icons";
 import { KitchenSinkSection } from "../KitchenSinkSection";
@@ -12,7 +12,8 @@ export const IconsSection = () => {
   return (
     <KitchenSinkSection header="Icons" description="Various icons available in the application.">
       <div>
-        <InputOutlined
+        <Input
+          intent="outlined"
           value={iconsSearchInput}
           onChange={(e) => setIconsSearchInput(e.target.value)}
           placeholder="Search icons"
@@ -27,7 +28,7 @@ export const IconsSection = () => {
           .map((value) => (
             <div key={value} className="flex flex-col items-center gap-2">
               <Icon icon={value as Icons} />
-              <span className="cursor-text rounded px-1 select-text hover:bg-gray-100 dark:hover:bg-gray-700">
+              <span className="cursor-text select-text rounded px-1 hover:bg-gray-100 dark:hover:bg-gray-700">
                 {value}
               </span>
             </div>

@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use ts_rs::TS;
 
 ids!([
-    EntryId,
+    ResourceId,
     QueryParamId,
     PathParamId,
     HeaderId,
@@ -14,14 +14,14 @@ ids!([
 
 /// @category Primitive
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename = "EntryPath", rename_all = "camelCase")]
+#[serde(rename = "ResourcePath", rename_all = "camelCase")]
 #[ts(export, export_to = "primitives.ts")]
-pub struct FrontendEntryPath {
+pub struct FrontendResourcePath {
     pub raw: PathBuf,
     pub segments: Vec<String>,
 }
 
-impl FrontendEntryPath {
+impl FrontendResourcePath {
     pub fn new(raw: PathBuf) -> Self {
         let segments = raw
             .iter()
@@ -36,18 +36,18 @@ impl FrontendEntryPath {
 #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq, Hash, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "primitives.ts")]
-pub enum EntryClass {
+pub enum ResourceClass {
     Endpoint,
     Component,
     Schema,
 }
 
-impl ToString for EntryClass {
+impl ToString for ResourceClass {
     fn to_string(&self) -> String {
         match self {
-            EntryClass::Endpoint => "endpoint".to_string(),
-            EntryClass::Component => "component".to_string(),
-            EntryClass::Schema => "schema".to_string(),
+            ResourceClass::Endpoint => "endpoint".to_string(),
+            ResourceClass::Component => "component".to_string(),
+            ResourceClass::Schema => "schema".to_string(),
         }
     }
 }
@@ -55,7 +55,7 @@ impl ToString for EntryClass {
 /// @category Primitive
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "primitives.ts")]
-pub enum EntryKind {
+pub enum ResourceKind {
     Dir,
     Item,
     Case,
@@ -64,7 +64,7 @@ pub enum EntryKind {
 /// @category Primitive
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "primitives.ts")]
-pub enum EntryProtocol {
+pub enum ResourceProtocol {
     Get,
     Post,
     Put,
@@ -74,27 +74,27 @@ pub enum EntryProtocol {
     Grpc,
 }
 
-impl ToString for EntryProtocol {
+impl ToString for ResourceProtocol {
     fn to_string(&self) -> String {
         match self {
-            EntryProtocol::Get => "Get".to_string(),
-            EntryProtocol::Post => "Post".to_string(),
-            EntryProtocol::Put => "Put".to_string(),
-            EntryProtocol::Delete => "Delete".to_string(),
-            EntryProtocol::WebSocket => "WebSocket".to_string(),
-            EntryProtocol::Graphql => "Graphql".to_string(),
-            EntryProtocol::Grpc => "Grpc".to_string(),
+            ResourceProtocol::Get => "Get".to_string(),
+            ResourceProtocol::Post => "Post".to_string(),
+            ResourceProtocol::Put => "Put".to_string(),
+            ResourceProtocol::Delete => "Delete".to_string(),
+            ResourceProtocol::WebSocket => "WebSocket".to_string(),
+            ResourceProtocol::Graphql => "Graphql".to_string(),
+            ResourceProtocol::Grpc => "Grpc".to_string(),
         }
     }
 }
 
-impl From<&HttpMethod> for EntryProtocol {
+impl From<&HttpMethod> for ResourceProtocol {
     fn from(method: &HttpMethod) -> Self {
         match method {
-            HttpMethod::Get => EntryProtocol::Get,
-            HttpMethod::Post => EntryProtocol::Post,
-            HttpMethod::Put => EntryProtocol::Put,
-            HttpMethod::Delete => EntryProtocol::Delete,
+            HttpMethod::Get => ResourceProtocol::Get,
+            HttpMethod::Post => ResourceProtocol::Post,
+            HttpMethod::Put => ResourceProtocol::Put,
+            HttpMethod::Delete => ResourceProtocol::Delete,
         }
     }
 }

@@ -8,14 +8,14 @@ import { DROP_TARGET_NEW_PARAM_ROW_FORM_TYPE, ParamDragType } from "../constants
 import { isSourceParamRow } from "../utils/dragAndDrop";
 
 interface UseDropTargetNewParamRowFormProps {
-  newParamRowFormRef: RefObject<HTMLDivElement>;
-  entryId: string;
+  newParamRowFormRef: RefObject<HTMLDivElement | null>;
+  resourceId: string;
   paramType: ParamDragType;
 }
 
 export const useDropTargetNewParamRowForm = ({
   newParamRowFormRef,
-  entryId,
+  resourceId,
   paramType,
 }: UseDropTargetNewParamRowFormProps) => {
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
@@ -34,7 +34,7 @@ export const useDropTargetNewParamRowForm = ({
           {
             type: DROP_TARGET_NEW_PARAM_ROW_FORM_TYPE,
             data: {
-              entryId,
+              resourceId,
               paramType,
             },
           },
@@ -56,7 +56,7 @@ export const useDropTargetNewParamRowForm = ({
         setClosestEdge(closestEdge);
       },
     });
-  }, [entryId, newParamRowFormRef, paramType]);
+  }, [resourceId, newParamRowFormRef, paramType]);
 
   return { closestEdge };
 };

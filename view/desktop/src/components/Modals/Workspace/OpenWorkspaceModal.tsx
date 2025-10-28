@@ -1,12 +1,11 @@
 import { useState } from "react";
 
 import { RadioGroup } from "@/components";
-import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
-import ButtonPrimary from "@/components/ButtonPrimary";
-import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { ModalForm } from "@/components/ModalForm";
 import SelectOutlined from "@/components/SelectOutlined";
 import { useListWorkspaces, useOpenWorkspace } from "@/hooks/workbench";
+import { Button } from "@/lib/ui";
+import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import { WorkspaceMode } from "@repo/moss-workspace";
 
 import { ModalWrapperProps } from "../types";
@@ -55,8 +54,8 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
       showModal={showModal}
       onSubmit={handleSubmit}
       className="background-(--moss-primary-background) max-w-136"
-      titleClassName="border-b border-(--moss-border-color)"
-      footerClassName="border-t border-(--moss-border-color)"
+      titleClassName="border-b border-(--moss-border)"
+      footerClassName="border-t border-(--moss-border)"
       content={
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-x-2 py-1.5">
@@ -76,9 +75,9 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
           <div>
             <div className="flex gap-2">
               <span>Mode</span>
-              <div className="background-(--moss-border-color) my-auto h-px w-full" />
+              <div className="background-(--moss-border) my-auto h-px w-full" />
             </div>
-            <p className="text-xs leading-5 text-(--moss-secondary-text)">
+            <p className="text-(--moss-secondary-foreground) text-xs leading-5">
               You can switch modes in the workspace at any time and as often as needed.
             </p>
             <div className="pl-5">
@@ -103,7 +102,7 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
         </div>
       }
       footer={
-        <div className="flex items-center justify-between py-0.75">
+        <div className="py-0.75 flex items-center justify-between">
           <CheckboxWithLabel
             label="Reopen this workspace on next session"
             checked={reopenOnSession}
@@ -113,11 +112,13 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
               }
             }}
           />
-          <div className="flex gap-3 px-0.25 py-1.25">
-            <ButtonNeutralOutlined onClick={handleCancel}>Cancel</ButtonNeutralOutlined>
-            <ButtonPrimary disabled={isSubmitDisabled} type="submit">
+          <div className="px-0.25 py-1.25 flex gap-3">
+            <Button intent="outlined" onClick={handleCancel}>
+              Cancel
+            </Button>
+            <Button intent="primary" disabled={isSubmitDisabled} type="submit">
               Open
-            </ButtonPrimary>
+            </Button>
           </div>
         </div>
       }

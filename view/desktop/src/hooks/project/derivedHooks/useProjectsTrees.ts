@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { ProjectTreeNode, ProjectTreeRootNode } from "@/components/ProjectTree/types";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 
-import { useStreamedProjectsWithEntries } from "./useStreamedProjectsWithEntries";
+import { useStreamedProjectsWithResources } from "./useStreamedProjectsWithResources";
 
 export interface UseProjectsTreesProps {
   projectsTrees: ProjectTreeRootNode[];
@@ -13,29 +13,29 @@ export interface UseProjectsTreesProps {
 
 export const useProjectsTrees = (): UseProjectsTreesProps => {
   const {
-    data: projectsWithEntries,
-    isEntriesLoading,
+    data: projectsWithResources,
+    areResourcesLoading,
     isLoading: areProjectsLoading,
-  } = useStreamedProjectsWithEntries();
+  } = useStreamedProjectsWithResources();
 
-  const isLoading = isEntriesLoading || areProjectsLoading;
+  const isLoading = areResourcesLoading || areProjectsLoading;
 
   const projectsTrees: ProjectTreeRootNode[] = useMemo(() => {
-    return projectsWithEntries.map((project): ProjectTreeRootNode => {
-      const { entries, isEntriesLoading: _isEntriesLoading, entriesError: _entriesError, ...projectTree } = project;
+    return projectsWithResources.map((project): ProjectTreeRootNode => {
+      const { resources, ...projectTree } = project;
 
       const childNodes: ProjectTreeNode[] = [];
 
-      entries.forEach((entry) => {
-        if (entry.path.segments.length === 1) {
-          // Root level entry - add directly to childNodes
-          const existingNode = childNodes.find((node) => node.id === entry.id);
+      resources.forEach((resource) => {
+        if (resource.path.segments.length === 1) {
+          // Root level resource - add directly to childNodes
+          const existingNode = childNodes.find((node) => node.id === resource.id);
           if (existingNode) {
             const existingChildNodes = existingNode.childNodes;
-            Object.assign(existingNode, entry, { childNodes: existingChildNodes });
+            Object.assign(existingNode, resource, { childNodes: existingChildNodes });
           } else {
             const newNode: ProjectTreeNode = {
-              ...entry,
+              ...resource,
               childNodes: [],
             };
             childNodes.push(newNode);
@@ -43,9 +43,9 @@ export const useProjectsTrees = (): UseProjectsTreesProps => {
           return;
         }
 
-        // Nested entry - build the tree structure
+        // Nested resource - build the tree structure
         let currentNode: ProjectTreeNode | undefined;
-        const pathSegments = entry.path.segments;
+        const pathSegments = resource.path.segments;
 
         for (let i = 0; i < pathSegments.length - 1; i++) {
           const component = pathSegments[i];
@@ -62,7 +62,7 @@ export const useProjectsTrees = (): UseProjectsTreesProps => {
                 raw: pathSoFar.join("/"),
                 segments: pathSoFar,
               },
-              class: entry.class,
+              class: resource.class,
               kind: "Dir",
               protocol: undefined,
               order: undefined,
@@ -74,17 +74,17 @@ export const useProjectsTrees = (): UseProjectsTreesProps => {
           currentNode = child;
         }
 
-        // Add the final entry
+        // Add the final resource
         const lastComponent = pathSegments[pathSegments.length - 1];
         const targetArray = currentNode?.childNodes || childNodes;
         const existingNode = targetArray.find((node) => node.name === lastComponent);
 
         if (existingNode) {
           const existingChildNodes = existingNode.childNodes;
-          Object.assign(existingNode, entry, { childNodes: existingChildNodes });
+          Object.assign(existingNode, resource, { childNodes: existingChildNodes });
         } else {
           const newNode: ProjectTreeNode = {
-            ...entry,
+            ...resource,
             childNodes: [],
           };
           targetArray.push(newNode);
@@ -96,7 +96,7 @@ export const useProjectsTrees = (): UseProjectsTreesProps => {
         childNodes,
       };
     });
-  }, [projectsWithEntries]);
+  }, [projectsWithResources]);
 
   const projectsTreesSortedByOrder = useMemo(() => {
     return sortObjectsByOrder(projectsTrees);

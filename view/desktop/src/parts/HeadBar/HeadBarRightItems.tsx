@@ -1,22 +1,19 @@
 import { cn } from "@/utils";
 import { OsType } from "@tauri-apps/plugin-os";
 
-import CollapsibleActionMenu from "./CollapsibleActionMenu";
 import { Controls } from "./Controls";
+import PanelToggleButtons from "./PanelToggleButtons";
 
 export interface HeadBarRightItemsProps {
-  openPanel: (panel: string) => void;
   os: OsType;
 }
 
-export const HeadBarRightItems = ({ openPanel, os }: HeadBarRightItemsProps) => {
+export const HeadBarRightItems = ({ os }: HeadBarRightItemsProps) => {
   const isWindowsOrLinux = os === "windows" || os === "linux";
 
   return (
     <div className={cn("flex h-full items-center justify-end gap-5")} data-tauri-drag-region>
-      <div className="flex items-center">
-        <CollapsibleActionMenu openPanel={openPanel} />
-      </div>
+      <PanelToggleButtons />
 
       {isWindowsOrLinux && <Controls os={os} />}
     </div>

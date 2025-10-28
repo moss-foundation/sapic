@@ -1,3 +1,4 @@
+import { cva } from "class-variance-authority";
 import { ButtonHTMLAttributes, forwardRef } from "react";
 
 import { Icon, Icons } from "@/lib/ui";
@@ -7,31 +8,35 @@ interface ActionButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   icon: Icons;
   className?: string;
   iconClassName?: string;
-  customHoverBackground?: string;
   asChild?: boolean;
+  hoverVariant?: "default" | "list";
 }
+//prettier-ignore
+const actionButtonStyles = cva(`
+  grid place-items-center items-center justify-center 
+  rounded-[3px] p-[3px] 
+  cursor-pointer
+
+  text-(--moss-toolbarItem-foreground)
+  `,
+  {
+    variants: {
+      disabled: {
+        true: "hover:background-transparent cursor-not-allowed opacity-50 hover:text-(--moss-foreground-disabled)",
+      },
+      hoverVariant: {
+        default: "hover:background-(--moss-toolbarItem-background-hover)",
+        list: "hover:background-(--moss-list-toolbarItem-background-hover)",
+      },
+    },
+  }
+);
 
 export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(
-  ({ icon, className, iconClassName, customHoverBackground, ...props }, ref) => {
-    const buttonContent = (
-      <div
-        className={cn(
-          `background-(--moss-icon-secondary-background) active:background-(--moss-icon-secondary-background-active) flex cursor-pointer items-center justify-center rounded-[3px] p-[3px] text-(--moss-icon-secondary-text)`,
-          {
-            "hover:background-(--moss-icon-secondary-background-hover)": !customHoverBackground,
-            "hover:background-transparent cursor-default opacity-50 hover:text-(--moss-icon-secondary-text)":
-              props.disabled,
-          },
-          customHoverBackground
-        )}
-      >
-        <Icon icon={icon} className={cn(iconClassName)} />
-      </div>
-    );
-
+  ({ className, disabled, icon, hoverVariant = "default", iconClassName, ...props }, ref) => {
     return (
-      <button ref={ref} className={cn("grid place-items-center", className)} {...props}>
-        {buttonContent}
+      <button ref={ref} className={actionButtonStyles({ disabled, hoverVariant, className })} {...props}>
+        <Icon icon={icon} className={cn(iconClassName)} />
       </button>
     );
   }

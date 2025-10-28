@@ -6,11 +6,11 @@ use moss_bindingutils::primitives::{ChangeJsonValue, ChangeString};
 use moss_project::{
     dirs,
     models::{
-        operations::{CreateEntryInput, UpdateEntryInput},
-        primitives::{EntryClass, EntryId, EntryProtocol},
+        operations::{CreateResourceInput, UpdateResourceInput},
+        primitives::{ResourceClass, ResourceId, ResourceProtocol},
         types::{
-            BodyInfo, CreateItemEntryParams, UpdateBodyParams, UpdateDirEntryParams,
-            UpdateItemEntryParams,
+            BodyInfo, CreateItemResourceParams, UpdateBodyParams, UpdateDirResourceParams,
+            UpdateItemResourceParams,
             http::{
                 AddBodyParams, AddFormDataParamParams, AddHeaderParams, AddPathParamParams,
                 AddQueryParamParams, AddUrlencodedParamParams, FormDataParamOptions,
@@ -36,7 +36,7 @@ use crate::shared::{
 
 #[tokio::test]
 async fn rename_dir_entry_success() {
-    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, mut project, cleanup) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let old_entry_name = random_entry_name();
@@ -45,10 +45,10 @@ async fn rename_dir_entry_success() {
     let id = create_test_endpoint_dir_entry(&ctx, &mut project, &old_entry_name).await;
 
     let _ = project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Dir(UpdateDirEntryParams {
+            UpdateResourceInput::Dir(UpdateDirResourceParams {
                 id,
                 path: None,
                 name: Some(new_entry_name.clone()),
@@ -66,12 +66,12 @@ async fn rename_dir_entry_success() {
     assert!(new_path.exists());
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn rename_dir_entry_empty_name() {
-    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, _, mut project, cleanup) = create_test_project().await;
 
     let old_entry_name = random_entry_name();
     let new_entry_name = "".to_string();
@@ -79,10 +79,10 @@ async fn rename_dir_entry_empty_name() {
     let id = create_test_component_dir_entry(&ctx, &mut project, &old_entry_name).await;
 
     let result = project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Dir(UpdateDirEntryParams {
+            UpdateResourceInput::Dir(UpdateDirResourceParams {
                 id,
                 path: None,
                 name: Some(new_entry_name.clone()),
@@ -95,12 +95,12 @@ async fn rename_dir_entry_empty_name() {
     assert!(result.is_err());
 
     //Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn rename_dir_entry_already_exists() {
-    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, _, mut project, cleanup) = create_test_project().await;
     let first_entry_name = random_entry_name();
     let second_entry_name = random_entry_name();
 
@@ -110,10 +110,10 @@ async fn rename_dir_entry_already_exists() {
 
     // Try to rename first entry to the second name
     let result = project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Dir(UpdateDirEntryParams {
+            UpdateResourceInput::Dir(UpdateDirResourceParams {
                 id: first_id,
                 path: None,
                 name: Some(second_entry_name.clone()),
@@ -126,12 +126,12 @@ async fn rename_dir_entry_already_exists() {
     assert!(result.is_err());
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn rename_dir_entry_special_chars_in_name() {
-    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, mut project, cleanup) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let entry_base_path = PathBuf::from(RESOURCES_ROOT_DIR);
@@ -143,10 +143,10 @@ async fn rename_dir_entry_special_chars_in_name() {
         let id = create_test_component_dir_entry(&ctx, &mut project, &entry_name).await;
 
         let result = project
-            .update_entry(
+            .update_resource(
                 &ctx,
                 &app_delegate,
-                UpdateEntryInput::Dir(UpdateDirEntryParams {
+                UpdateResourceInput::Dir(UpdateDirResourceParams {
                     id,
                     path: None,
                     name: Some(new_entry_name.clone()),
@@ -175,22 +175,22 @@ async fn rename_dir_entry_special_chars_in_name() {
     }
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn update_dir_entry_order() {
-    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, _, mut project, cleanup) = create_test_project().await;
 
     let entry_name = random_entry_name();
 
     let id = create_test_component_dir_entry(&ctx, &mut project, &entry_name).await;
 
     let _ = project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Dir(UpdateDirEntryParams {
+            UpdateResourceInput::Dir(UpdateDirResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -212,12 +212,12 @@ async fn update_dir_entry_order() {
     assert_eq!(stored_order, 42);
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn expand_and_collapse_dir_entry() {
-    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, _, mut project, cleanup) = create_test_project().await;
 
     let entry_name = random_entry_name();
 
@@ -227,10 +227,10 @@ async fn expand_and_collapse_dir_entry() {
 
     // Expanding the entry
     let _ = project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Dir(UpdateDirEntryParams {
+            UpdateResourceInput::Dir(UpdateDirResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -249,15 +249,15 @@ async fn expand_and_collapse_dir_entry() {
     )
     .await
     .unwrap();
-    let expanded_items: Vec<EntryId> = expanded_items_value.deserialize().unwrap();
+    let expanded_items: Vec<ResourceId> = expanded_items_value.deserialize().unwrap();
     assert!(expanded_items.contains(&id));
 
     // Collapsing the entry
     let _ = project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Dir(UpdateDirEntryParams {
+            UpdateResourceInput::Dir(UpdateDirResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -276,16 +276,16 @@ async fn expand_and_collapse_dir_entry() {
     )
     .await
     .unwrap();
-    let expanded_items: Vec<EntryId> = expanded_items_value.deserialize().unwrap();
+    let expanded_items: Vec<ResourceId> = expanded_items_value.deserialize().unwrap();
     assert!(!expanded_items.contains(&id));
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap()
+    cleanup();
 }
 
 #[tokio::test]
 async fn move_dir_entry_success() {
-    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, mut project, cleanup) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let entry_name = random_entry_name();
@@ -300,10 +300,10 @@ async fn move_dir_entry_success() {
 
     // Move entry path from `components/{entry_name}` to `components/dest/{entry_name}`
     let _output = project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Dir(UpdateDirEntryParams {
+            UpdateResourceInput::Dir(UpdateDirResourceParams {
                 id,
                 path: Some(new_dest.clone()),
                 name: None,
@@ -321,12 +321,12 @@ async fn move_dir_entry_success() {
     assert!(new_path.exists());
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn move_dir_entry_nonexistent_destination() {
-    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, _, mut project, cleanup) = create_test_project().await;
 
     let entry_name = random_entry_name();
 
@@ -336,10 +336,10 @@ async fn move_dir_entry_nonexistent_destination() {
 
     // Move entry path from `{entry_name}` to `dest/{entry_name}`
     let result = project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Dir(UpdateDirEntryParams {
+            UpdateResourceInput::Dir(UpdateDirResourceParams {
                 id,
                 path: Some(new_dest.clone()),
                 name: None,
@@ -352,12 +352,12 @@ async fn move_dir_entry_nonexistent_destination() {
     assert!(result.is_err());
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn move_dir_entry_already_exists() {
-    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, _, mut project, cleanup) = create_test_project().await;
 
     // First create a dest/entry entry
     let dest_name = "dest".to_string();
@@ -368,10 +368,10 @@ async fn move_dir_entry_already_exists() {
 
     let dest = Path::new(RESOURCES_ROOT_DIR).join(&dest_name);
     let _ = project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Dir(UpdateDirEntryParams {
+            UpdateResourceInput::Dir(UpdateDirResourceParams {
                 id: existing_id,
                 path: Some(dest.clone()),
                 name: None,
@@ -385,10 +385,10 @@ async fn move_dir_entry_already_exists() {
     // Create a new entry and try to move it into dest
     let new_id = create_test_component_dir_entry(&ctx, &mut project, &entry_name).await;
     let result = project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Dir(UpdateDirEntryParams {
+            UpdateResourceInput::Dir(UpdateDirResourceParams {
                 id: new_id,
                 path: Some(dest.clone()),
                 name: None,
@@ -401,20 +401,20 @@ async fn move_dir_entry_already_exists() {
     assert!(result.is_err());
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn update_item_entry_endpoint_headers() {
-    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, _, project, cleanup) = create_test_project().await;
 
     let entry_name = random_entry_name();
-    let input = CreateEntryInput::Item(CreateItemEntryParams {
+    let input = CreateResourceInput::Item(CreateItemResourceParams {
         path: Default::default(),
-        class: EntryClass::Endpoint,
+        class: ResourceClass::Endpoint,
         name: entry_name.clone(),
         order: 0,
-        protocol: Some(EntryProtocol::Get),
+        protocol: Some(ResourceProtocol::Get),
         headers: vec![AddHeaderParams {
             name: "1".to_string(),
             value: JsonValue::String("1".to_string()),
@@ -430,20 +430,20 @@ async fn update_item_entry_endpoint_headers() {
         body: None,
     });
 
-    let id = project.create_entry(&ctx, input).await.unwrap().id;
+    let id = project.create_resource(&ctx, input).await.unwrap().id;
 
     let desc = project
-        .describe_entry(&ctx, &app_delegate, id.clone())
+        .describe_resource(&ctx, &app_delegate, id.clone())
         .await
         .unwrap();
     let header_id = desc.headers.first().unwrap().id.clone();
 
     // Test update header
     project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -476,7 +476,7 @@ async fn update_item_entry_endpoint_headers() {
         .unwrap();
 
     let desc = project
-        .describe_entry(&ctx, &app_delegate, id.clone())
+        .describe_resource(&ctx, &app_delegate, id.clone())
         .await
         .unwrap();
     let header = desc.headers.first().unwrap();
@@ -491,10 +491,10 @@ async fn update_item_entry_endpoint_headers() {
     // Test delete header
 
     project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -517,17 +517,17 @@ async fn update_item_entry_endpoint_headers() {
         .unwrap();
 
     let desc = project
-        .describe_entry(&ctx, &app_delegate, id.clone())
+        .describe_resource(&ctx, &app_delegate, id.clone())
         .await
         .unwrap();
     assert!(desc.headers.is_empty());
 
     // Test add header
     project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -559,7 +559,7 @@ async fn update_item_entry_endpoint_headers() {
         .unwrap();
 
     let desc = project
-        .describe_entry(&ctx, &app_delegate, id.clone())
+        .describe_resource(&ctx, &app_delegate, id.clone())
         .await
         .unwrap();
     assert_eq!(desc.headers.len(), 1);
@@ -571,20 +571,20 @@ async fn update_item_entry_endpoint_headers() {
     assert_eq!(header.disabled, false);
     assert_eq!(header.propagate, false);
 
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn update_item_entry_endpoint_path_params() {
-    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, _, project, cleanup) = create_test_project().await;
 
     let entry_name = random_entry_name();
-    let input = CreateEntryInput::Item(CreateItemEntryParams {
+    let input = CreateResourceInput::Item(CreateItemResourceParams {
         path: Default::default(),
-        class: EntryClass::Endpoint,
+        class: ResourceClass::Endpoint,
         name: entry_name.clone(),
         order: 0,
-        protocol: Some(EntryProtocol::Get),
+        protocol: Some(ResourceProtocol::Get),
         headers: vec![],
         path_params: vec![AddPathParamParams {
             name: "1".to_string(),
@@ -600,20 +600,20 @@ async fn update_item_entry_endpoint_path_params() {
         body: None,
     });
 
-    let id = project.create_entry(&ctx, input).await.unwrap().id;
+    let id = project.create_resource(&ctx, input).await.unwrap().id;
 
     let desc = project
-        .describe_entry(&ctx, &app_delegate, id.clone())
+        .describe_resource(&ctx, &app_delegate, id.clone())
         .await
         .unwrap();
     let path_param_id = desc.path_params.first().unwrap().id.clone();
 
     // Test update header
     project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -646,7 +646,7 @@ async fn update_item_entry_endpoint_path_params() {
         .unwrap();
 
     let desc = project
-        .describe_entry(&ctx, &app_delegate, id.clone())
+        .describe_resource(&ctx, &app_delegate, id.clone())
         .await
         .unwrap();
     let path_param = desc.path_params.first().unwrap();
@@ -660,10 +660,10 @@ async fn update_item_entry_endpoint_path_params() {
 
     // Test delete header
     project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -686,17 +686,17 @@ async fn update_item_entry_endpoint_path_params() {
         .unwrap();
 
     let desc = project
-        .describe_entry(&ctx, &app_delegate, id.clone())
+        .describe_resource(&ctx, &app_delegate, id.clone())
         .await
         .unwrap();
     assert!(desc.path_params.is_empty());
 
     // Test add header
     project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -728,7 +728,7 @@ async fn update_item_entry_endpoint_path_params() {
         .unwrap();
 
     let desc = project
-        .describe_entry(&ctx, &app_delegate, id.clone())
+        .describe_resource(&ctx, &app_delegate, id.clone())
         .await
         .unwrap();
     assert_eq!(desc.path_params.len(), 1);
@@ -740,20 +740,20 @@ async fn update_item_entry_endpoint_path_params() {
     assert_eq!(path_param.disabled, false);
     assert_eq!(path_param.propagate, false);
 
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn update_item_entry_endpoint_query_params() {
-    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, _, project, cleanup) = create_test_project().await;
 
     let entry_name = random_entry_name();
-    let input = CreateEntryInput::Item(CreateItemEntryParams {
+    let input = CreateResourceInput::Item(CreateItemResourceParams {
         path: Default::default(),
-        class: EntryClass::Endpoint,
+        class: ResourceClass::Endpoint,
         name: entry_name.clone(),
         order: 0,
-        protocol: Some(EntryProtocol::Get),
+        protocol: Some(ResourceProtocol::Get),
         headers: vec![],
         path_params: vec![],
         query_params: vec![AddQueryParamParams {
@@ -769,20 +769,20 @@ async fn update_item_entry_endpoint_query_params() {
         body: None,
     });
 
-    let id = project.create_entry(&ctx, input).await.unwrap().id;
+    let id = project.create_resource(&ctx, input).await.unwrap().id;
 
     let desc = project
-        .describe_entry(&ctx, &app_delegate, id.clone())
+        .describe_resource(&ctx, &app_delegate, id.clone())
         .await
         .unwrap();
     let query_param_id = desc.query_params.first().unwrap().id.clone();
 
     // Test update header
     project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -815,7 +815,7 @@ async fn update_item_entry_endpoint_query_params() {
         .unwrap();
 
     let desc = project
-        .describe_entry(&ctx, &app_delegate, id.clone())
+        .describe_resource(&ctx, &app_delegate, id.clone())
         .await
         .unwrap();
     let query_param = desc.query_params.first().unwrap();
@@ -829,10 +829,10 @@ async fn update_item_entry_endpoint_query_params() {
 
     // Test delete header
     project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -855,17 +855,17 @@ async fn update_item_entry_endpoint_query_params() {
         .unwrap();
 
     let desc = project
-        .describe_entry(&ctx, &app_delegate, id.clone())
+        .describe_resource(&ctx, &app_delegate, id.clone())
         .await
         .unwrap();
     assert!(desc.query_params.is_empty());
 
     // Test add header
     project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -897,7 +897,7 @@ async fn update_item_entry_endpoint_query_params() {
         .unwrap();
 
     let desc = project
-        .describe_entry(&ctx, &app_delegate, id.clone())
+        .describe_resource(&ctx, &app_delegate, id.clone())
         .await
         .unwrap();
     assert_eq!(desc.query_params.len(), 1);
@@ -909,20 +909,20 @@ async fn update_item_entry_endpoint_query_params() {
     assert_eq!(query_param.disabled, false);
     assert_eq!(query_param.propagate, false);
 
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn test_item_entry_endpoint_remove_body() {
-    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, _, project, cleanup) = create_test_project().await;
 
     let entry_name = random_entry_name();
-    let input = CreateEntryInput::Item(CreateItemEntryParams {
+    let input = CreateResourceInput::Item(CreateItemResourceParams {
         path: Default::default(),
-        class: EntryClass::Endpoint,
+        class: ResourceClass::Endpoint,
         name: entry_name.clone(),
         order: 0,
-        protocol: Some(EntryProtocol::Get),
+        protocol: Some(ResourceProtocol::Get),
         headers: vec![],
         path_params: vec![],
         query_params: vec![],
@@ -939,14 +939,14 @@ async fn test_item_entry_endpoint_remove_body() {
         }])),
     });
 
-    let id = project.create_entry(&ctx, input).await.unwrap().id;
+    let id = project.create_resource(&ctx, input).await.unwrap().id;
 
     // Test remove body
     project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -969,39 +969,39 @@ async fn test_item_entry_endpoint_remove_body() {
         .unwrap();
 
     let desc = project
-        .describe_entry(&ctx, &app_delegate, id.clone())
+        .describe_resource(&ctx, &app_delegate, id.clone())
         .await
         .unwrap();
     assert!(desc.body.is_none());
 
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn test_item_entry_endpoint_update_text() {
-    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, _, project, cleanup) = create_test_project().await;
 
     let entry_name = random_entry_name();
-    let input = CreateEntryInput::Item(CreateItemEntryParams {
+    let input = CreateResourceInput::Item(CreateItemResourceParams {
         path: Default::default(),
-        class: EntryClass::Endpoint,
+        class: ResourceClass::Endpoint,
         name: entry_name.clone(),
         order: 0,
-        protocol: Some(EntryProtocol::Get),
+        protocol: Some(ResourceProtocol::Get),
         headers: vec![],
         path_params: vec![],
         query_params: vec![],
         body: Some(AddBodyParams::Text("Before".to_string())),
     });
 
-    let id = project.create_entry(&ctx, input).await.unwrap().id;
+    let id = project.create_resource(&ctx, input).await.unwrap().id;
 
     // Test update body text
     project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -1024,26 +1024,26 @@ async fn test_item_entry_endpoint_update_text() {
         .unwrap();
 
     let desc = project
-        .describe_entry(&ctx, &app_delegate, id.clone())
+        .describe_resource(&ctx, &app_delegate, id.clone())
         .await
         .unwrap();
     // An extra \n is added during deserialization
     assert_eq!(desc.body, Some(BodyInfo::Text("After\n".to_string())));
 
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn test_item_entry_endpoint_update_json() {
-    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, _, project, cleanup) = create_test_project().await;
 
     let entry_name = random_entry_name();
-    let input = CreateEntryInput::Item(CreateItemEntryParams {
+    let input = CreateResourceInput::Item(CreateItemResourceParams {
         path: Default::default(),
-        class: EntryClass::Endpoint,
+        class: ResourceClass::Endpoint,
         name: entry_name.clone(),
         order: 0,
-        protocol: Some(EntryProtocol::Get),
+        protocol: Some(ResourceProtocol::Get),
         headers: vec![],
         path_params: vec![],
         query_params: vec![],
@@ -1051,14 +1051,14 @@ async fn test_item_entry_endpoint_update_json() {
     });
 
     let new_json = json!( {"after": "true"} );
-    let id = project.create_entry(&ctx, input).await.unwrap().id;
+    let id = project.create_resource(&ctx, input).await.unwrap().id;
 
     // Test update body json
     project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -1081,38 +1081,38 @@ async fn test_item_entry_endpoint_update_json() {
         .unwrap();
 
     let desc = project
-        .describe_entry(&ctx, &app_delegate, id.clone())
+        .describe_resource(&ctx, &app_delegate, id.clone())
         .await
         .unwrap();
     assert_eq!(desc.body, Some(BodyInfo::Json(new_json.clone())));
 
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn test_item_entry_endpoint_update_xml() {
-    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, _, project, cleanup) = create_test_project().await;
 
     let entry_name = random_entry_name();
-    let input = CreateEntryInput::Item(CreateItemEntryParams {
+    let input = CreateResourceInput::Item(CreateItemResourceParams {
         path: Default::default(),
-        class: EntryClass::Endpoint,
+        class: ResourceClass::Endpoint,
         name: entry_name.clone(),
         order: 0,
-        protocol: Some(EntryProtocol::Get),
+        protocol: Some(ResourceProtocol::Get),
         headers: vec![],
         path_params: vec![],
         query_params: vec![],
         body: Some(AddBodyParams::Xml("<before></before>".to_string())),
     });
 
-    let id = project.create_entry(&ctx, input).await.unwrap().id;
+    let id = project.create_resource(&ctx, input).await.unwrap().id;
     // Test update body xml
     project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -1135,7 +1135,7 @@ async fn test_item_entry_endpoint_update_xml() {
         .unwrap();
 
     let desc = project
-        .describe_entry(&ctx, &app_delegate, id.clone())
+        .describe_resource(&ctx, &app_delegate, id.clone())
         .await
         .unwrap();
     // An extra \n is added during deserialization
@@ -1144,34 +1144,34 @@ async fn test_item_entry_endpoint_update_xml() {
         Some(BodyInfo::Xml("<after></after>\n".to_string()))
     );
 
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn test_item_entry_endpoint_update_binary() {
-    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, _, project, cleanup) = create_test_project().await;
 
     let entry_name = random_entry_name();
-    let input = CreateEntryInput::Item(CreateItemEntryParams {
+    let input = CreateResourceInput::Item(CreateItemResourceParams {
         path: Default::default(),
-        class: EntryClass::Endpoint,
+        class: ResourceClass::Endpoint,
         name: entry_name.clone(),
         order: 0,
-        protocol: Some(EntryProtocol::Get),
+        protocol: Some(ResourceProtocol::Get),
         headers: vec![],
         path_params: vec![],
         query_params: vec![],
         body: Some(AddBodyParams::Binary(PathBuf::from("/before"))),
     });
 
-    let id = project.create_entry(&ctx, input).await.unwrap().id;
+    let id = project.create_resource(&ctx, input).await.unwrap().id;
 
     // Test update body binary
     project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -1194,32 +1194,32 @@ async fn test_item_entry_endpoint_update_binary() {
         .unwrap();
 
     let desc = project
-        .describe_entry(&ctx, &app_delegate, id.clone())
+        .describe_resource(&ctx, &app_delegate, id.clone())
         .await
         .unwrap();
     assert_eq!(desc.body, Some(BodyInfo::Binary(PathBuf::from("/after"))));
 
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn test_item_entry_endpoint_update_urlencoded() {
-    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, _, project, cleanup) = create_test_project().await;
     let entry_name = random_entry_name();
 
-    let input = CreateEntryInput::Item(CreateItemEntryParams {
+    let input = CreateResourceInput::Item(CreateItemResourceParams {
         path: Default::default(),
-        class: EntryClass::Endpoint,
+        class: ResourceClass::Endpoint,
         name: entry_name.clone(),
         order: 0,
-        protocol: Some(EntryProtocol::Get),
+        protocol: Some(ResourceProtocol::Get),
         headers: vec![],
         path_params: vec![],
         query_params: vec![],
         body: Some(AddBodyParams::Urlencoded(vec![])),
     });
 
-    let id = project.create_entry(&ctx, input).await.unwrap().id;
+    let id = project.create_resource(&ctx, input).await.unwrap().id;
 
     let before = AddUrlencodedParamParams {
         name: "before".to_string(),
@@ -1235,10 +1235,10 @@ async fn test_item_entry_endpoint_update_urlencoded() {
 
     // Test add urlencoded param
     project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -1264,7 +1264,7 @@ async fn test_item_entry_endpoint_update_urlencoded() {
         .await
         .unwrap();
     let desc = project
-        .describe_entry(&ctx, &app_delegate, id.clone())
+        .describe_resource(&ctx, &app_delegate, id.clone())
         .await
         .unwrap();
     let urlencoded = if let Some(BodyInfo::Urlencoded(urlencoded)) = desc.body {
@@ -1299,10 +1299,10 @@ async fn test_item_entry_endpoint_update_urlencoded() {
     };
 
     project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -1329,7 +1329,7 @@ async fn test_item_entry_endpoint_update_urlencoded() {
         .unwrap();
 
     let desc = project
-        .describe_entry(&ctx, &app_delegate, id.clone())
+        .describe_resource(&ctx, &app_delegate, id.clone())
         .await
         .unwrap();
     let urlencoded = if let Some(BodyInfo::Urlencoded(urlencoded)) = desc.body {
@@ -1349,10 +1349,10 @@ async fn test_item_entry_endpoint_update_urlencoded() {
 
     // Test remove urlencoded param
     project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -1379,7 +1379,7 @@ async fn test_item_entry_endpoint_update_urlencoded() {
         .unwrap();
 
     let desc = project
-        .describe_entry(&ctx, &app_delegate, id.clone())
+        .describe_resource(&ctx, &app_delegate, id.clone())
         .await
         .unwrap();
     let urlencoded = if let Some(BodyInfo::Urlencoded(urlencoded)) = desc.body {
@@ -1390,27 +1390,27 @@ async fn test_item_entry_endpoint_update_urlencoded() {
     assert_eq!(urlencoded.len(), 0);
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn test_item_entry_endpoint_update_formdata() {
-    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, _, project, cleanup) = create_test_project().await;
     let entry_name = random_entry_name();
 
-    let input = CreateEntryInput::Item(CreateItemEntryParams {
+    let input = CreateResourceInput::Item(CreateItemResourceParams {
         path: Default::default(),
-        class: EntryClass::Endpoint,
+        class: ResourceClass::Endpoint,
         name: entry_name.clone(),
         order: 0,
-        protocol: Some(EntryProtocol::Get),
+        protocol: Some(ResourceProtocol::Get),
         headers: vec![],
         path_params: vec![],
         query_params: vec![],
         body: Some(AddBodyParams::FormData(vec![])),
     });
 
-    let id = project.create_entry(&ctx, input).await.unwrap().id;
+    let id = project.create_resource(&ctx, input).await.unwrap().id;
 
     let before = AddFormDataParamParams {
         name: "before".to_string(),
@@ -1426,10 +1426,10 @@ async fn test_item_entry_endpoint_update_formdata() {
 
     // Test add formdata param
     project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -1455,7 +1455,7 @@ async fn test_item_entry_endpoint_update_formdata() {
         .await
         .unwrap();
     let desc = project
-        .describe_entry(&ctx, &app_delegate, id.clone())
+        .describe_resource(&ctx, &app_delegate, id.clone())
         .await
         .unwrap();
     let formdata = if let Some(BodyInfo::FormData(formdata)) = desc.body {
@@ -1490,10 +1490,10 @@ async fn test_item_entry_endpoint_update_formdata() {
     };
 
     project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -1520,7 +1520,7 @@ async fn test_item_entry_endpoint_update_formdata() {
         .unwrap();
 
     let desc = project
-        .describe_entry(&ctx, &app_delegate, id.clone())
+        .describe_resource(&ctx, &app_delegate, id.clone())
         .await
         .unwrap();
     let formdata = if let Some(BodyInfo::FormData(formdata)) = desc.body {
@@ -1540,10 +1540,10 @@ async fn test_item_entry_endpoint_update_formdata() {
 
     // Test remove formdata param
     project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -1570,7 +1570,7 @@ async fn test_item_entry_endpoint_update_formdata() {
         .unwrap();
 
     let desc = project
-        .describe_entry(&ctx, &app_delegate, id.clone())
+        .describe_resource(&ctx, &app_delegate, id.clone())
         .await
         .unwrap();
     let formdata = if let Some(BodyInfo::FormData(formdata)) = desc.body {
@@ -1581,33 +1581,33 @@ async fn test_item_entry_endpoint_update_formdata() {
     assert_eq!(formdata.len(), 0);
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn test_item_entry_endpoint_update_change_body_type() {
-    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, _, project, cleanup) = create_test_project().await;
     let entry_name = random_entry_name();
 
-    let input = CreateEntryInput::Item(CreateItemEntryParams {
+    let input = CreateResourceInput::Item(CreateItemResourceParams {
         path: Default::default(),
-        class: EntryClass::Endpoint,
+        class: ResourceClass::Endpoint,
         name: entry_name.clone(),
         order: 0,
-        protocol: Some(EntryProtocol::Get),
+        protocol: Some(ResourceProtocol::Get),
         headers: vec![],
         path_params: vec![],
         query_params: vec![],
         body: Some(AddBodyParams::FormData(vec![])),
     });
 
-    let id = project.create_entry(&ctx, input).await.unwrap().id;
+    let id = project.create_resource(&ctx, input).await.unwrap().id;
 
     project
-        .update_entry(
+        .update_resource(
             &ctx,
             &app_delegate,
-            UpdateEntryInput::Item(UpdateItemEntryParams {
+            UpdateResourceInput::Item(UpdateItemResourceParams {
                 id: id.clone(),
                 path: None,
                 name: None,
@@ -1634,7 +1634,7 @@ async fn test_item_entry_endpoint_update_change_body_type() {
         .unwrap();
 
     let desc = project
-        .describe_entry(&ctx, &app_delegate, id.clone())
+        .describe_resource(&ctx, &app_delegate, id.clone())
         .await
         .unwrap();
     let urlencoded = if let Some(BodyInfo::Urlencoded(urlencoded)) = desc.body {
@@ -1644,5 +1644,5 @@ async fn test_item_entry_endpoint_update_change_body_type() {
     };
     assert_eq!(urlencoded.len(), 0);
 
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }

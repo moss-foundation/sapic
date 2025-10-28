@@ -5,7 +5,7 @@ import { StatusBarButton } from "./StatusBarButton";
 export const StatusBarFPSCounter = ({ updateInterval = 100 }) => {
   const [fps, setFps] = useState(0);
   const frames = useRef(0);
-  const lastTime = useRef(performance.now());
+  const lastTime = useRef<number>(0);
 
   useEffect(() => {
     let animationFrameId: number;

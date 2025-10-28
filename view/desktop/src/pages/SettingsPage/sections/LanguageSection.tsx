@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 
 import i18next from "@/app/i18n";
 import SelectOutlined from "@/components/SelectOutlined";
-import { useListLocales } from "@/hooks";
+import { useListLanguages } from "@/hooks";
 import { useDescribeApp } from "@/hooks/app/useDescribeApp";
 import { useUpdateConfiguration } from "@/hooks/useUpdateConfiguration";
 
@@ -12,23 +12,15 @@ export const LanguageSection = () => {
   const { t } = useTranslation(["main", "bootstrap"]);
 
   const { data: appState } = useDescribeApp();
-  const { data: languages } = useListLocales();
-  const { mutate: mutateUpdateConfiguration } = useUpdateConfiguration();
+  const { data: languages } = useListLanguages();
+  const { mutate: updateConfiguration } = useUpdateConfiguration();
 
   const handleLanguageChange = (newCode: string) => {
-    if (newCode === "default") {
-      mutateUpdateConfiguration({
-        key: "language",
-        value: "en",
-        target: "PROFILE",
-      });
-    } else {
-      mutateUpdateConfiguration({
-        key: "language",
-        value: newCode,
-        target: "PROFILE",
-      });
-    }
+    updateConfiguration({
+      key: "language",
+      value: newCode === "default" ? "en" : newCode,
+      target: "PROFILE",
+    });
 
     i18next.changeLanguage(newCode).catch(console.error);
   };

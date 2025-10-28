@@ -8,8 +8,8 @@ use ts_rs::TS;
 use validator::{Validate, ValidationError};
 
 use crate::models::primitives::{
-    EntryClass, EntryId, EntryProtocol, FormDataParamId, FrontendEntryPath, HeaderId, PathParamId,
-    QueryParamId, UrlencodedParamId,
+    FormDataParamId, FrontendResourcePath, HeaderId, PathParamId, QueryParamId, ResourceClass,
+    ResourceId, ResourceProtocol, UrlencodedParamId,
 };
 
 /// @category Type
@@ -17,17 +17,17 @@ use crate::models::primitives::{
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
-pub struct CreateItemEntryParams {
-    #[validate(custom(function = "validate_create_entry_input_path"))]
+pub struct CreateItemResourceParams {
+    #[validate(custom(function = "validate_create_resource_input_path"))]
     pub path: PathBuf,
-    pub class: EntryClass,
+    pub class: ResourceClass,
 
     #[validate(length(min = 1))]
     pub name: String,
     pub order: isize,
 
     // TODO: url
-    pub protocol: Option<EntryProtocol>,
+    pub protocol: Option<ResourceProtocol>,
 
     pub headers: Vec<AddHeaderParams>,
     pub path_params: Vec<AddPathParamParams>,
@@ -40,10 +40,10 @@ pub struct CreateItemEntryParams {
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
-pub struct CreateDirEntryParams {
-    #[validate(custom(function = "validate_create_entry_input_path"))]
+pub struct CreateDirResourceParams {
+    #[validate(custom(function = "validate_create_resource_input_path"))]
     pub path: PathBuf,
-    pub class: EntryClass,
+    pub class: ResourceClass,
 
     #[validate(length(min = 1))]
     pub name: String,
@@ -55,12 +55,12 @@ pub struct CreateDirEntryParams {
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
-pub struct UpdateItemEntryParams {
-    pub id: EntryId,
+pub struct UpdateItemResourceParams {
+    pub id: ResourceId,
 
-    /// If provided, the entry will move to the new path
-    /// For example, if the new path is "requests/folder/", the name is "entry"
-    /// The new relative path of the entry folder will be "requests/folder/entry"
+    /// If provided, the resource will move to the new path
+    /// For example, if the new path is "requests/folder/", the name is "resource"
+    /// The new relative path of the resource folder will be "requests/folder/resource"
     pub path: Option<PathBuf>,
 
     #[validate(length(min = 1))]
@@ -68,7 +68,7 @@ pub struct UpdateItemEntryParams {
     pub order: Option<isize>,
     pub expanded: Option<bool>,
 
-    pub protocol: Option<EntryProtocol>,
+    pub protocol: Option<ResourceProtocol>,
 
     pub headers_to_add: Vec<AddHeaderParams>,
     pub headers_to_update: Vec<UpdateHeaderParams>,
@@ -112,8 +112,8 @@ pub enum UpdateBodyParams {
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
-pub struct UpdateDirEntryParams {
-    pub id: EntryId,
+pub struct UpdateDirResourceParams {
+    pub id: ResourceId,
 
     /// If provided, the directory will move to the new path
     /// For example, if the new path is "requests/folder/", the name is "group"
@@ -130,20 +130,20 @@ pub struct UpdateDirEntryParams {
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
-pub struct AfterUpdateDirEntryDescription {
-    pub id: EntryId,
+pub struct AfterUpdateDirResourceDescription {
+    pub id: ResourceId,
 
-    pub path: FrontendEntryPath,
+    pub path: FrontendResourcePath,
 }
 
 /// @category Type
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
-pub struct AfterUpdateItemEntryDescription {
-    pub id: EntryId,
+pub struct AfterUpdateItemResourceDescription {
+    pub id: ResourceId,
 
-    pub path: FrontendEntryPath,
+    pub path: FrontendResourcePath,
 }
 
 /// @category Type
@@ -259,7 +259,7 @@ pub enum BodyInfo {
 
 // Check that input path begins with a valid top folder
 // such as requests, endpoints, etc.
-pub(super) fn validate_create_entry_input_path(path: &Path) -> Result<(), ValidationError> {
+pub(super) fn validate_create_resource_input_path(path: &Path) -> Result<(), ValidationError> {
     if path.is_absolute() {
         return Err(ValidationError::new("the input path must be relative"));
     }

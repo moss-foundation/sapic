@@ -1,8 +1,8 @@
+import { IDockviewPanelProps } from "moss-tabs";
 import { ReactNode, useEffect, useState } from "react";
 
-import { InputPlain } from "@/components";
-import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 import { Icon, Icons } from "@/lib/ui";
+import Input from "@/lib/ui/Input";
 import { cn } from "@/utils";
 
 import { Divider } from "../Divider";
@@ -85,7 +85,8 @@ export const PageHeader = ({
               }}
               className="-mx-1 w-full max-w-[200px] px-1"
             >
-              <InputPlain
+              <Input
+                intent="plain"
                 autoFocus
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
@@ -94,14 +95,10 @@ export const PageHeader = ({
                   handleSubmit();
                 }}
                 onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    handleSubmit();
-                  }
-                  if (event.key === "Escape") {
-                    handleCancel();
-                  }
+                  if (event.key === "Enter") handleSubmit();
+                  if (event.key === "Escape") handleCancel();
                 }}
-                className="w-full rounded-xs py-0 text-[16px] leading-6 font-semibold text-(--moss-primary-text) has-[input:focus-within]:outline-offset-1"
+                className="rounded-xs text-(--moss-primary-foreground) w-full py-0 text-[16px] font-semibold leading-6 has-[input:focus-within]:outline-offset-1"
                 inputFieldClassName="-mx-2"
               />
             </form>
@@ -109,7 +106,7 @@ export const PageHeader = ({
             <button
               onClick={handleStartRenaming}
               className={cn(
-                "-mx-1 truncate overflow-hidden rounded px-1 text-left text-[16px] leading-6 font-semibold text-(--moss-primary-text)",
+                "text-(--moss-primary-foreground) -mx-1 overflow-hidden truncate rounded px-1 text-left text-[16px] font-semibold leading-6",
                 {
                   "hover:background-(--moss-secondary-background-hover) w-full max-w-[200px] cursor-text":
                     !disableTitleChange,
@@ -121,7 +118,7 @@ export const PageHeader = ({
           )}
           {tabs && (
             <>
-              <Divider className="" />
+              <Divider />
               <div className="flex items-center">{tabs}</div>
             </>
           )}

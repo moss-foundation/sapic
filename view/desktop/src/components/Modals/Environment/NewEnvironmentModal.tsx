@@ -1,7 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 
-import { ButtonNeutralOutlined, ButtonPrimary, InputOutlined, RadioGroup } from "@/components";
-import CheckboxWithLabel from "@/components/CheckboxWithLabel";
+import { RadioGroup } from "@/components";
 import { useGroupedEnvironments } from "@/components/EnvironmentsLists/hooks/useGroupedEnvironments";
 import { ModalForm } from "@/components/ModalForm";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
@@ -12,6 +11,9 @@ import {
   useStreamProjects,
   useValidateInput,
 } from "@/hooks";
+import { Button } from "@/lib/ui";
+import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
+import Input from "@/lib/ui/Input";
 
 import { ModalWrapperProps } from "../types";
 
@@ -84,31 +86,32 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
       showModal={showModal}
       onSubmit={handleSubmit}
       className="background-(--moss-primary-background) max-w-136"
-      titleClassName="border-b border-(--moss-border-color)"
-      footerClassName="border-t border-(--moss-border-color)"
+      titleClassName="border-b border-(--moss-border)"
+      footerClassName="border-t border-(--moss-border)"
       content={
         <div className="flex flex-col gap-2">
-          <div className="grid grid-cols-[min-content_1fr] items-center gap-x-3.75 gap-y-5 py-5">
+          <div className="gap-x-3.75 grid grid-cols-[min-content_1fr] items-center gap-y-5 py-5">
             <div className="col-span-2 grid grid-cols-subgrid items-center gap-y-3">
               <div>Name:</div>
-              <InputOutlined
+              <Input
                 ref={inputRef}
                 value={name}
                 className="max-w-72"
                 onChange={(e) => setName(e.target.value)}
                 pattern={VALID_NAME_PATTERN}
                 required
+                intent="outlined"
               />
-              <p className="col-start-2 max-w-72 text-xs text-(--moss-secondary-text)">{`Invalid filename characters (e.g. / \ : * ? " < > |) will be escaped`}</p>
+              <p className="text-(--moss-secondary-foreground) col-start-2 max-w-72 text-xs">{`Invalid filename characters (e.g. / \ : * ? " < > |) will be escaped`}</p>
             </div>
           </div>
 
           <div>
             <div className="flex gap-2">
               <span>Scope</span>
-              <div className="background-(--moss-border-color) my-auto h-px w-full" />
+              <div className="background-(--moss-border) my-auto h-px w-full" />
             </div>
-            <p className="text-xs leading-5 text-(--moss-secondary-text)">
+            <p className="text-(--moss-secondary-foreground) text-xs leading-5">
               You can switch modes in the workspace at any time and as often as needed.
             </p>
             <div className="pl-5">
@@ -143,7 +146,7 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
         </div>
       }
       footer={
-        <div className="flex items-center justify-between py-0.75">
+        <div className="py-0.75 flex items-center justify-between">
           <CheckboxWithLabel
             label="Activate after creation"
             checked={openAutomatically}
@@ -151,11 +154,13 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
               if (check !== "indeterminate") setOpenAutomatically(check);
             }}
           />
-          <div className="flex gap-3 px-0.25 py-1.25">
-            <ButtonNeutralOutlined type="button" onClick={handleCancel}>
+          <div className="px-0.25 py-1.25 flex gap-3">
+            <Button intent="outlined" type="button" onClick={handleCancel}>
               Close
-            </ButtonNeutralOutlined>
-            <ButtonPrimary type="submit">Create</ButtonPrimary>
+            </Button>
+            <Button intent="primary" type="submit">
+              Create
+            </Button>
           </div>
         </div>
       }

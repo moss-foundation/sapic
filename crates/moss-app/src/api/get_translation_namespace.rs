@@ -12,7 +12,7 @@ impl<R: AppRuntime> App<R> {
         input: &GetTranslationNamespaceInput,
     ) -> joinerror::Result<GetTranslationNamespaceOutput> {
         let contents = self
-            .locale_service
+            .language_service
             .get_namespace(&input.language, &input.namespace)
             .await?;
 

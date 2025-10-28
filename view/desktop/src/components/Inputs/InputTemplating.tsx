@@ -23,9 +23,9 @@ const containerStyles = cva(`
     flex w-full
     rounded-sm border transition-[outline]
     placeholder-(--moss-controls-placeholder)
-    background-(--moss-controls-outlined-bg) 
-    border-(--moss-controls-outlined-border)
-    text-(--moss-controls-outlined-text)
+    background-(--moss-controls-background) 
+    border-(--moss-controls-border)
+    text-(--moss-controls-foreground)
     has-data-invalid:border-(--moss-error)
     font-normal
     z-10
@@ -52,8 +52,8 @@ const editorStyles = cva(
 );
 
 const highlightedVariableStyles =
-  "background-(--moss-templating-input-bg) text-(--moss-templating-input-text) border border-(--moss-templating-input-border) rounded-sm px-0.5 whitespace-nowrap inline-block tracking-tighter" +
-  " [height:18px] [word-break:keep-all]";
+  "background-(--moss-accent-secondary) text-(--moss-accent) rounded-sm px-0.5 whitespace-nowrap inline-block tracking-tighter" +
+  "[height:18px] [word-break:keep-all]";
 
 export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatingProps>(
   (
@@ -65,13 +65,6 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
     const editorRef = useRef<HTMLDivElement>(null);
     const hiddenInputRef = useRef<HTMLInputElement>(null);
     const isUpdatingContent = useRef(false);
-
-    useEffect(() => {
-      if (props.value !== undefined) {
-        setValue(props.value);
-        updateEditorContent(String(props.value));
-      }
-    }, [props.value]);
 
     const updateEditorContent = useCallback(
       (text: string) => {
@@ -103,6 +96,13 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
       },
       [highlightColonVariables]
     );
+
+    useEffect(() => {
+      if (props.value !== undefined) {
+        setValue(props.value);
+        updateEditorContent(String(props.value));
+      }
+    }, [props.value]);
 
     const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
       if (isUpdatingContent.current) return;
@@ -265,7 +265,7 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
           zIndex: isFocused ? 50 : "auto",
           width: isFocused ? "100%" : "auto",
           height: isFocused ? "max-content" : "auto",
-          backgroundColor: isFocused ? "var(--moss-controls-outlined-bg)" : "transparent",
+          backgroundColor: isFocused ? "var(--moss-controls-background)" : "transparent",
         }}
       >
         {/* Hidden input for form compatibility */}
@@ -283,8 +283,8 @@ export const InputTemplating = React.forwardRef<HTMLInputElement, InputTemplatin
           className={cn(
             editorStyles({ size }),
             "word-break-keep-all overflow-wrap-normal",
-            "empty:before:pointer-events-none empty:before:flex empty:before:h-full empty:before:items-center empty:before:leading-[inherit] empty:before:whitespace-nowrap empty:before:text-(--moss-requestpage-placeholder-color) empty:before:content-[attr(data-placeholder)]",
-            "[&_*]:inline [&_*]:break-words [&_*]:whitespace-normal"
+            "empty:before:text-(--moss-controls-placeholder) empty:before:pointer-events-none empty:before:flex empty:before:h-full empty:before:items-center empty:before:whitespace-nowrap empty:before:leading-[inherit] empty:before:content-[attr(data-placeholder)]",
+            "[&_*]:inline [&_*]:whitespace-normal [&_*]:break-words"
           )}
           contentEditable
           onInput={handleInput}

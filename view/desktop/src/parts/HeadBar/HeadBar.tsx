@@ -83,14 +83,14 @@ export const HeadBar = () => {
       <header
         data-tauri-drag-region
         className={cn(
-          "header background-(--moss-secondary-background) flex h-full w-screen items-center justify-between border-b border-(--moss-border-color)"
+          "header background-(--moss-secondary-background) border-(--moss-border) flex h-full w-screen items-center justify-between border-b"
         )}
       >
         {os === "macos" && <Controls os={os} />}
 
         <div
           className={cn("relative flex h-full w-full items-center justify-between overflow-clip", {
-            "mr-2 pr-[4px] pl-2.5": os === "macos",
+            "mr-2 pl-2.5 pr-[4px]": os === "macos",
             "ml-[7px]": os === "windows" || os === "linux",
           })}
           style={{ overflowClipMargin: 4 }}
@@ -102,7 +102,7 @@ export const HeadBar = () => {
             os={os}
           />
 
-          <HeadBarRightItems openPanel={openPanel} os={os} />
+          <HeadBarRightItems os={os} />
         </div>
       </header>
 

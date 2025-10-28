@@ -19,6 +19,15 @@ import json
 import argparse
 from pathlib import Path
 
+
+# The accent variables are defined in the view/desktop/src/assets/accent.css file
+# they are derived from the --moss-primary, so they are not defined in the theme.json file.
+ACCENT_VARIABLES = [
+    "--moss-accent",
+    "--moss-accent-secondary",
+    "--moss-accent-hover",
+]
+
 def convert_token(token: str):
     """
     Convert a token to css variable name
@@ -26,7 +35,6 @@ def convert_token(token: str):
     moss.gray.1 => --moss-gray-1
     """
     return "--" + "-".join(token.split("."))
-
 
 def extract_css_variables(input_file: str, output_file: str):
     """
@@ -40,6 +48,9 @@ def extract_css_variables(input_file: str, output_file: str):
         variables = []
         theme = json.loads(Path(input_file).read_text())
 
+        for variable in ACCENT_VARIABLES:
+            variables.append(variable)
+
         for key in theme["palette"]:
             variables.append(convert_token(key))
 
@@ -48,6 +59,8 @@ def extract_css_variables(input_file: str, output_file: str):
 
         for key in theme["boxShadows"]:
             variables.append(convert_token(key))
+
+        
 
         # Write the variables to the output file as a json array
         Path(output_file).write_text(json.dumps(variables))

@@ -4,7 +4,7 @@ import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
 
-import { EntryIcon } from "../../EntryIcon";
+import { ResourceIcon } from "../../ResourceIcon";
 import { ProjectTreeContext } from "../ProjectTreeContext";
 import { ProjectTreeNode } from "../types";
 
@@ -37,14 +37,14 @@ const TreeNodeRenamingForm = ({
         <div className="flex size-5 shrink-0 items-center justify-center">
           <Icon
             icon="ChevronRight"
-            className={cn("text-(--moss-icon-primary-text)", {
+            className={cn({
               "rotate-90": shouldRenderChildNodes,
               "opacity-0": node.kind !== "Dir",
             })}
           />
         </div>
 
-        <EntryIcon entry={node} />
+        <ResourceIcon resource={node} />
 
         <Tree.NodeRenamingForm
           onSubmit={handleRenamingFormSubmit}

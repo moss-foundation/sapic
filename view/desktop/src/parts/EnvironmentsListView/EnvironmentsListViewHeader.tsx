@@ -19,8 +19,18 @@ export const EnvironmentsListViewHeader = () => {
         title="Environments"
         actionsContent={
           <>
-            <ActionButton disabled={!hasActiveWorkspace} icon="Add" onClick={openCreateEnvironmentModal} />
-            <ActionButton disabled={!hasActiveWorkspace} icon="Refresh" onClick={clearEnvironmentsCacheAndRefetch} />
+            <ActionButton
+              disabled={!hasActiveWorkspace}
+              icon="Add"
+              onClick={openCreateEnvironmentModal}
+              hoverVariant="list"
+            />
+            <ActionButton
+              disabled={!hasActiveWorkspace}
+              icon="Refresh"
+              onClick={clearEnvironmentsCacheAndRefetch}
+              hoverVariant="list"
+            />
           </>
         }
       />

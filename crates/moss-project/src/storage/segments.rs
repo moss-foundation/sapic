@@ -1,17 +1,17 @@
 use moss_storage::primitives::segkey::{SegKey, SegKeyBuf};
 
 use crate::models::primitives::{
-    EntryId, FormDataParamId, HeaderId, PathParamId, QueryParamId, UrlencodedParamId,
+    FormDataParamId, HeaderId, PathParamId, QueryParamId, ResourceId, UrlencodedParamId,
 };
 
 pub static SEGKEY_RESOURCE_ENTRY: SegKey = SegKey::new("entry");
 pub static SEGKEY_EXPANDED_ENTRIES: SegKey = SegKey::new("expandedEntries");
 
-pub fn segkey_entry_order(id: &EntryId) -> SegKeyBuf {
+pub fn segkey_entry_order(id: &ResourceId) -> SegKeyBuf {
     SEGKEY_RESOURCE_ENTRY.join(id).join("order")
 }
 
-pub fn segkey_entry_header_order(entry_id: &EntryId, header_id: &HeaderId) -> SegKeyBuf {
+pub fn segkey_entry_header_order(entry_id: &ResourceId, header_id: &HeaderId) -> SegKeyBuf {
     SEGKEY_RESOURCE_ENTRY
         .join(entry_id)
         .join("header")
@@ -19,7 +19,10 @@ pub fn segkey_entry_header_order(entry_id: &EntryId, header_id: &HeaderId) -> Se
         .join("order")
 }
 
-pub fn segkey_entry_path_param_order(entry_id: &EntryId, path_param_id: &PathParamId) -> SegKeyBuf {
+pub fn segkey_entry_path_param_order(
+    entry_id: &ResourceId,
+    path_param_id: &PathParamId,
+) -> SegKeyBuf {
     SEGKEY_RESOURCE_ENTRY
         .join(entry_id)
         .join("path_param")
@@ -28,7 +31,7 @@ pub fn segkey_entry_path_param_order(entry_id: &EntryId, path_param_id: &PathPar
 }
 
 pub fn segkey_entry_query_param_order(
-    entry_id: &EntryId,
+    entry_id: &ResourceId,
     query_param_id: &QueryParamId,
 ) -> SegKeyBuf {
     SEGKEY_RESOURCE_ENTRY
@@ -41,12 +44,12 @@ pub fn segkey_entry_query_param_order(
 // Urlencoded and formdata params share the prefix of "body"
 // This way, when changing the type of body, we can clear all the cached orders easily
 
-pub fn segkey_entry_body(entry_id: &EntryId) -> SegKeyBuf {
+pub fn segkey_entry_body(entry_id: &ResourceId) -> SegKeyBuf {
     SEGKEY_RESOURCE_ENTRY.join(entry_id).join("body")
 }
 
 pub fn segkey_entry_body_urlencoded_param_order(
-    entry_id: &EntryId,
+    entry_id: &ResourceId,
     urlencoded_param_id: &UrlencodedParamId,
 ) -> SegKeyBuf {
     segkey_entry_body(entry_id)
@@ -56,7 +59,7 @@ pub fn segkey_entry_body_urlencoded_param_order(
 }
 
 pub fn segkey_entry_body_formdata_param_order(
-    entry_id: &EntryId,
+    entry_id: &ResourceId,
     formdata_param_id: &FormDataParamId,
 ) -> SegKeyBuf {
     segkey_entry_body(entry_id)

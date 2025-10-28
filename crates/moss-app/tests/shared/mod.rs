@@ -68,6 +68,7 @@ fn mock_github_api_client() -> Arc<MockGitHubApiClient> {
                 },
                 updated_at: "test_updated_at".to_string(),
             },
+        get_pat_expires_at_response: None,
     }
     .into()
 }
@@ -98,6 +99,7 @@ fn mock_gitlab_api_client() -> Arc<MockGitLabApiClient> {
                 },
                 updated_at: "test_updated_at".to_string(),
             },
+        get_pat_expires_at_response: None,
     }
     .into()
 }

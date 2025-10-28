@@ -8,18 +8,13 @@ interface ToolBarProps {
 
 const ToolBar: React.FC<ToolBarProps> = ({ workspace = false }) => {
   return (
-    <div className="group-control mr-0.5 flex h-full items-center px-2 select-none">
+    <div className="group-control mr-0.5 flex h-full select-none items-center px-2">
       <ActionButton icon="MoreHorizontal" />
 
       {workspace && (
         <>
-          <Divider height="large" className="mr-2.5" />
-          <IconLabelButton
-            leftIcon="Env"
-            rightIcon="ChevronDown"
-            title="No environment"
-            labelClassName="text-[var(--moss-not-selected-item-color)]"
-          />
+          <Divider className="py-2" />
+          <IconLabelButton leftIcon="Env" rightIcon="ChevronDown" title="No environment" />
           <ActionButton icon="ToolBarVariables" className="ml-0.5" />
         </>
       )}

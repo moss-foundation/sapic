@@ -1,7 +1,8 @@
 import { ChangeEvent, useCallback, useContext, useRef, useState } from "react";
 
-import { DropIndicator, InputOutlined } from "@/components";
-import CheckboxWithLabel from "@/components/CheckboxWithLabel";
+import { DropIndicator } from "@/components";
+import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
+import Input from "@/lib/ui/Input";
 import { EndpointPageContext } from "@/pages/EndpointPage/EndpointPageContext";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { QueryParamInfo } from "@repo/moss-project";
@@ -15,7 +16,7 @@ interface NewParamRowFormProps {
 }
 
 export const NewParamRowForm = ({ onAdd, paramType }: NewParamRowFormProps) => {
-  const { entry } = useContext(EndpointPageContext);
+  const { resource } = useContext(EndpointPageContext);
 
   const newParamRowFormRef = useRef<HTMLDivElement>(null);
 
@@ -64,7 +65,7 @@ export const NewParamRowForm = ({ onAdd, paramType }: NewParamRowFormProps) => {
 
   const { closestEdge } = useDropTargetNewParamRowForm({
     newParamRowFormRef,
-    entryId: entry.id,
+    resourceId: resource.id,
     paramType,
   });
 
@@ -73,16 +74,17 @@ export const NewParamRowForm = ({ onAdd, paramType }: NewParamRowFormProps) => {
       {closestEdge && <DropIndicator edge={closestEdge} gap={8} className="-ml-1.5" />}
 
       <CheckboxWithLabel checked={false} onCheckedChange={onCheckedChange} className="col-span-1" />
-      <InputOutlined
+      <Input
+        intent="outlined"
         value={placeholderParam.name}
         onChange={onKeyChange}
         placeholder="Key"
         contrast
         className="col-span-1"
       />
-
-      <InputOutlined
-        //@ts-expect-error We are not being able to handle anything except string for now
+      <Input
+        intent="outlined"
+        // @ts-expect-error We are not being able to handle anything except string for now
         value={placeholderParam.value}
         onChange={onValueChange}
         placeholder="Value"

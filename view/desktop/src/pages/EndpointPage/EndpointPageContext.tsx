@@ -1,16 +1,16 @@
 import { createContext } from "react";
 
-import { DescribeEntryOutput, StreamEntriesEvent } from "@repo/moss-project";
+import { DescribeResourceOutput, StreamResourcesEvent } from "@repo/moss-project";
 
 interface EndpointPageContext {
   projectId: string;
-  entry: StreamEntriesEvent;
-  entryDescription: DescribeEntryOutput;
+  resource: StreamResourcesEvent;
+  resourceDescription: DescribeResourceOutput;
 }
 
 export const EndpointPageContext = createContext<EndpointPageContext>({
   projectId: "",
-  entry: {
+  resource: {
     id: "",
     name: "",
     path: {
@@ -22,7 +22,7 @@ export const EndpointPageContext = createContext<EndpointPageContext>({
     protocol: "Get",
     expanded: false,
   },
-  entryDescription: {
+  resourceDescription: {
     name: "",
     class: "component",
     kind: "Item",

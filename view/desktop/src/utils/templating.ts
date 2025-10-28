@@ -38,7 +38,7 @@ export const createHighlightedHTML = (
   highlightedVariableStyles?: string
 ): string => {
   const defaultStyles =
-    "background-(--moss-templating-input-bg) text-(--moss-templating-input-text) border border-(--moss-templating-input-border) rounded-sm px-0.5 whitespace-nowrap inline-block tracking-tighter [height:20px] [line-height:18px] [vertical-align:middle]";
+    "background-(--moss-controls-background) text-(--moss-controls-foreground) border border-(--moss-controls-border) rounded-sm px-0.5 whitespace-nowrap inline-block tracking-tighter [height:20px] [line-height:18px] [vertical-align:middle]";
   const styles = highlightedVariableStyles || defaultStyles;
 
   const textWithNbsp = text.replace(/ /g, "&nbsp;");

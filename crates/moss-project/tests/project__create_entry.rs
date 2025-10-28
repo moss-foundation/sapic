@@ -6,10 +6,10 @@ use moss_project::{
     constants, dirs,
     errors::ErrorAlreadyExists,
     models::{
-        operations::CreateEntryInput,
-        primitives::{EntryClass, EntryKind, EntryProtocol},
+        operations::CreateResourceInput,
+        primitives::{ResourceClass, ResourceKind, ResourceProtocol},
         types::{
-            BodyInfo, CreateDirEntryParams, CreateItemEntryParams,
+            BodyInfo, CreateDirResourceParams, CreateItemResourceParams,
             http::{
                 AddBodyParams, AddFormDataParamParams, AddHeaderParams, AddPathParamParams,
                 AddQueryParamParams, AddUrlencodedParamParams, FormDataParamOptions,
@@ -27,19 +27,19 @@ use std::path::PathBuf;
 
 #[tokio::test]
 async fn create_dir_entry_success() {
-    let (ctx, _, project_path, project) = create_test_project().await;
+    let (ctx, _, project_path, project, cleanup) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from("");
-    let input = CreateEntryInput::Dir(CreateDirEntryParams {
-        class: EntryClass::Endpoint,
+    let input = CreateResourceInput::Dir(CreateDirResourceParams {
+        class: ResourceClass::Endpoint,
         path: entry_path.clone(),
         name: entry_name.clone(),
         order: 0,
     });
 
-    let result = project.create_entry(&ctx, input).await;
+    let result = project.create_resource(&ctx, input).await;
 
     let output = result.unwrap();
 
@@ -57,26 +57,26 @@ async fn create_dir_entry_success() {
     assert!(config_content.contains(&output.id.to_string()));
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn create_dir_entry_with_order() {
-    let (ctx, _, project_path, project) = create_test_project().await;
+    let (ctx, _, project_path, project, cleanup) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from(RESOURCES_ROOT_DIR);
     let order_value = 42;
 
-    let input = CreateEntryInput::Dir(CreateDirEntryParams {
-        class: EntryClass::Endpoint,
+    let input = CreateResourceInput::Dir(CreateDirResourceParams {
+        class: ResourceClass::Endpoint,
         path: entry_path.clone(),
         name: entry_name.clone(),
         order: order_value,
     });
 
-    let result = project.create_entry(&ctx, input).await;
+    let result = project.create_resource(&ctx, input).await;
     let id = result.unwrap().id;
 
     // Verify the directory was created
@@ -94,29 +94,29 @@ async fn create_dir_entry_with_order() {
     assert_eq!(stored_order, 42);
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn create_dir_entry_already_exists() {
-    let (ctx, _, project_path, project) = create_test_project().await;
+    let (ctx, _, _, project, cleanup) = create_test_project().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from(RESOURCES_ROOT_DIR);
 
-    let input = CreateEntryInput::Dir(CreateDirEntryParams {
-        class: EntryClass::Endpoint,
+    let input = CreateResourceInput::Dir(CreateDirResourceParams {
+        class: ResourceClass::Endpoint,
         path: entry_path.clone(),
         name: entry_name.clone(),
         order: 0,
     });
 
     // Create the entry first time - should succeed
-    let first_result = project.create_entry(&ctx, input.clone()).await;
+    let first_result = project.create_resource(&ctx, input.clone()).await;
     let _ = first_result.unwrap();
 
     // Try to create the same entry again - should fail
-    let second_result = project.create_entry(&ctx, input).await;
+    let second_result = project.create_resource(&ctx, input).await;
     assert!(second_result.is_err());
 
     if let Err(error) = second_result {
@@ -124,12 +124,12 @@ async fn create_dir_entry_already_exists() {
     }
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn create_dir_entry_special_chars_in_name() {
-    let (ctx, _, project_path, project) = create_test_project().await;
+    let (ctx, _, project_path, project, cleanup) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let base_name = random_entry_name();
@@ -138,14 +138,14 @@ async fn create_dir_entry_special_chars_in_name() {
         let entry_name = format!("{}{}", base_name, special_char);
         let entry_path = PathBuf::from(RESOURCES_ROOT_DIR);
 
-        let input = CreateEntryInput::Dir(CreateDirEntryParams {
-            class: EntryClass::Endpoint,
+        let input = CreateResourceInput::Dir(CreateDirResourceParams {
+            class: ResourceClass::Endpoint,
             path: entry_path.clone(),
             name: entry_name.clone(),
             order: 0,
         });
 
-        let result = project.create_entry(&ctx, input).await;
+        let result = project.create_resource(&ctx, input).await;
 
         // Entry creation should succeed - the filesystem layer handles sanitization
         if result.is_err() {
@@ -167,22 +167,22 @@ async fn create_dir_entry_special_chars_in_name() {
     }
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn create_item_entry_endpoint() {
-    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, project_path, project, cleanup) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from("");
-    let input = CreateEntryInput::Item(CreateItemEntryParams {
+    let input = CreateResourceInput::Item(CreateItemResourceParams {
         path: entry_path.clone(),
-        class: EntryClass::Endpoint,
+        class: ResourceClass::Endpoint,
         name: entry_name.clone(),
         order: 0,
-        protocol: Some(EntryProtocol::Get),
+        protocol: Some(ResourceProtocol::Get),
         headers: vec![AddHeaderParams {
             name: "header1".to_string(),
             value: JsonValue::String("value1".to_string()),
@@ -216,7 +216,7 @@ async fn create_item_entry_endpoint() {
         body: None,
     });
 
-    let result = project.create_entry(&ctx, input).await;
+    let result = project.create_resource(&ctx, input).await;
 
     let id = result.unwrap().id;
 
@@ -232,14 +232,14 @@ async fn create_item_entry_endpoint() {
     // Verify the config is correctly set
 
     let desc = project
-        .describe_entry(&ctx, &app_delegate, id)
+        .describe_resource(&ctx, &app_delegate, id)
         .await
         .unwrap();
 
     assert_eq!(desc.name, entry_name);
-    assert_eq!(desc.class, EntryClass::Endpoint);
-    assert_eq!(desc.kind, EntryKind::Item);
-    assert_eq!(desc.protocol, Some(EntryProtocol::Get));
+    assert_eq!(desc.class, ResourceClass::Endpoint);
+    assert_eq!(desc.kind, ResourceKind::Item);
+    assert_eq!(desc.protocol, Some(ResourceProtocol::Get));
 
     assert_eq!(desc.headers.len(), 1);
     let header = desc.headers.first().unwrap();
@@ -269,37 +269,37 @@ async fn create_item_entry_endpoint() {
     assert!(!query_param.propagate);
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 // Note: deserialization of heredoc strings will append a newline character at the end
 // This will probably need to be handled on the frontend.
 #[tokio::test]
 async fn create_item_entry_body_text() {
-    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, _, project, cleanup) = create_test_project().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from("");
     let text = r#"Test
 Multiline
 String"#;
-    let input = CreateEntryInput::Item(CreateItemEntryParams {
+    let input = CreateResourceInput::Item(CreateItemResourceParams {
         path: entry_path.clone(),
-        class: EntryClass::Endpoint,
+        class: ResourceClass::Endpoint,
         name: entry_name.clone(),
         order: 0,
-        protocol: Some(EntryProtocol::Get),
+        protocol: Some(ResourceProtocol::Get),
         headers: vec![],
         path_params: vec![],
         query_params: vec![],
         body: Some(AddBodyParams::Text(text.to_string())),
     });
 
-    let result = project.create_entry(&ctx, input).await;
+    let result = project.create_resource(&ctx, input).await;
     let id = result.unwrap().id;
 
     let body_desc = project
-        .describe_entry(&ctx, &app_delegate, id)
+        .describe_resource(&ctx, &app_delegate, id)
         .await
         .unwrap()
         .body
@@ -307,12 +307,12 @@ String"#;
     assert_eq!(body_desc, BodyInfo::Text(text.to_string() + "\n"));
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn create_item_entry_body_json() {
-    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, _, project, cleanup) = create_test_project().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from("");
@@ -321,23 +321,23 @@ async fn create_item_entry_body_json() {
         "bar": [2, 3],
         "baz": {"4": "5"}
     });
-    let input = CreateEntryInput::Item(CreateItemEntryParams {
+    let input = CreateResourceInput::Item(CreateItemResourceParams {
         path: entry_path.clone(),
-        class: EntryClass::Endpoint,
+        class: ResourceClass::Endpoint,
         name: entry_name.clone(),
         order: 0,
-        protocol: Some(EntryProtocol::Get),
+        protocol: Some(ResourceProtocol::Get),
         headers: vec![],
         path_params: vec![],
         query_params: vec![],
         body: Some(AddBodyParams::Json(json.clone())),
     });
 
-    let result = project.create_entry(&ctx, input).await;
+    let result = project.create_resource(&ctx, input).await;
     let id = result.unwrap().id;
 
     let body_desc = project
-        .describe_entry(&ctx, &app_delegate, id)
+        .describe_resource(&ctx, &app_delegate, id)
         .await
         .unwrap()
         .body
@@ -345,33 +345,33 @@ async fn create_item_entry_body_json() {
     assert_eq!(body_desc, BodyInfo::Json(json));
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn create_item_entry_body_xml() {
-    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, _, project, cleanup) = create_test_project().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from("");
     let xml = r#""<?xml version="1.0" encoding="UTF-8"?>""#;
-    let input = CreateEntryInput::Item(CreateItemEntryParams {
+    let input = CreateResourceInput::Item(CreateItemResourceParams {
         path: entry_path.clone(),
-        class: EntryClass::Endpoint,
+        class: ResourceClass::Endpoint,
         name: entry_name.clone(),
         order: 0,
-        protocol: Some(EntryProtocol::Get),
+        protocol: Some(ResourceProtocol::Get),
         headers: vec![],
         path_params: vec![],
         query_params: vec![],
         body: Some(AddBodyParams::Xml(xml.to_string())),
     });
 
-    let result = project.create_entry(&ctx, input).await;
+    let result = project.create_resource(&ctx, input).await;
     let id = result.unwrap().id;
 
     let body_desc = project
-        .describe_entry(&ctx, &app_delegate, id)
+        .describe_resource(&ctx, &app_delegate, id)
         .await
         .unwrap()
         .body
@@ -379,33 +379,33 @@ async fn create_item_entry_body_xml() {
     assert_eq!(body_desc, BodyInfo::Xml(xml.to_string() + "\n"));
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn create_item_entry_body_binary() {
-    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, _, project, cleanup) = create_test_project().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from("");
     let binary = PathBuf::from("foo/bar.txt");
-    let input = CreateEntryInput::Item(CreateItemEntryParams {
+    let input = CreateResourceInput::Item(CreateItemResourceParams {
         path: entry_path.clone(),
-        class: EntryClass::Endpoint,
+        class: ResourceClass::Endpoint,
         name: entry_name.clone(),
         order: 0,
-        protocol: Some(EntryProtocol::Get),
+        protocol: Some(ResourceProtocol::Get),
         headers: vec![],
         path_params: vec![],
         query_params: vec![],
         body: Some(AddBodyParams::Binary(binary.clone())),
     });
 
-    let result = project.create_entry(&ctx, input).await;
+    let result = project.create_resource(&ctx, input).await;
     let id = result.unwrap().id;
 
     let body_desc = project
-        .describe_entry(&ctx, &app_delegate, id)
+        .describe_resource(&ctx, &app_delegate, id)
         .await
         .unwrap()
         .body
@@ -413,12 +413,12 @@ async fn create_item_entry_body_binary() {
     assert_eq!(body_desc, BodyInfo::Binary(binary));
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn create_item_entry_body_urlencoded() {
-    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, _, project, cleanup) = create_test_project().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from("");
@@ -446,22 +446,22 @@ async fn create_item_entry_body_urlencoded() {
             id: None,
         },
     ];
-    let input = CreateEntryInput::Item(CreateItemEntryParams {
+    let input = CreateResourceInput::Item(CreateItemResourceParams {
         path: entry_path.clone(),
-        class: EntryClass::Endpoint,
+        class: ResourceClass::Endpoint,
         name: entry_name.clone(),
         order: 0,
-        protocol: Some(EntryProtocol::Get),
+        protocol: Some(ResourceProtocol::Get),
         headers: vec![],
         path_params: vec![],
         query_params: vec![],
         body: Some(AddBodyParams::Urlencoded(params)),
     });
-    let result = project.create_entry(&ctx, input).await;
+    let result = project.create_resource(&ctx, input).await;
     let id = result.unwrap().id;
 
     let body_desc = project
-        .describe_entry(&ctx, &app_delegate, id)
+        .describe_resource(&ctx, &app_delegate, id)
         .await
         .unwrap()
         .body
@@ -490,12 +490,12 @@ async fn create_item_entry_body_urlencoded() {
     }
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn create_item_entry_body_formdata() {
-    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, _, project, cleanup) = create_test_project().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from("");
@@ -523,22 +523,22 @@ async fn create_item_entry_body_formdata() {
             id: None,
         },
     ];
-    let input = CreateEntryInput::Item(CreateItemEntryParams {
+    let input = CreateResourceInput::Item(CreateItemResourceParams {
         path: entry_path.clone(),
-        class: EntryClass::Endpoint,
+        class: ResourceClass::Endpoint,
         name: entry_name.clone(),
         order: 0,
-        protocol: Some(EntryProtocol::Get),
+        protocol: Some(ResourceProtocol::Get),
         headers: vec![],
         path_params: vec![],
         query_params: vec![],
         body: Some(AddBodyParams::FormData(params.clone())),
     });
-    let result = project.create_entry(&ctx, input).await;
+    let result = project.create_resource(&ctx, input).await;
     let id = result.unwrap().id;
 
     let body_desc = project
-        .describe_entry(&ctx, &app_delegate, id)
+        .describe_resource(&ctx, &app_delegate, id)
         .await
         .unwrap()
         .body
@@ -567,5 +567,5 @@ async fn create_item_entry_body_formdata() {
     }
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }

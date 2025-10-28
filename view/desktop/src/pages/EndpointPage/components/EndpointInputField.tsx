@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
-import { ActionMenu, ButtonPrimary, InputTemplating } from "@/components";
-import { Icon } from "@/lib/ui";
+import { ActionMenu, InputTemplating } from "@/components";
+import { Button, Icon } from "@/lib/ui";
 import { cn } from "@/utils";
 
 import { areUrlsEquivalent } from "../utils/urlParser";
@@ -96,7 +96,7 @@ export const EndpointInputField = memo(
     return (
       <div
         className={cn(
-          "relative flex min-w-0 items-center gap-2 rounded-md border border-(--moss-border-color) p-[5px]",
+          "border-(--moss-border) relative flex min-w-0 items-center gap-2 rounded-md border p-[5px]",
           className
         )}
       >
@@ -107,12 +107,12 @@ export const EndpointInputField = memo(
               <button
                 className={cn(
                   "flex items-center justify-between bg-red-700",
-                  "gap-2 py-1.25 pr-1.25 pl-2",
+                  "py-1.25 pr-1.25 gap-2 pl-2",
                   "transition-colors",
                   "rounded-md",
                   "cursor-pointer font-bold",
-                  "background-(--moss-primary-background) hover:background-(--moss-secondary-background-hover) border border-(--moss-gray-11) text-(--moss-requestpage-text)",
-                  "data-[state=open]:outline-2 data-[state=open]:outline-offset-0 data-[state=open]:outline-(--moss-primary)"
+                  "background-(--moss-primary-background) hover:background-(--moss-secondary-background-hover) border-(--moss-border) text-(--moss-orange-5) border",
+                  "data-[state=open]:outline-(--moss-accent) data-[state=open]:outline-2 data-[state=open]:outline-offset-0"
                 )}
               >
                 <span>{method}</span>
@@ -126,7 +126,7 @@ export const EndpointInputField = memo(
                   onClick={() => handleMethodChange(httpMethod)}
                   className={cn(
                     method === httpMethod &&
-                      "background-(--moss-secondary-background-hover) font-medium text-(--moss-requestpage-text)"
+                      "background-(--moss-secondary-background-hover) text-(--moss-controls-foreground) font-medium"
                   )}
                 >
                   {httpMethod}
@@ -141,7 +141,7 @@ export const EndpointInputField = memo(
           <InputTemplating
             value={url}
             onTemplateChange={handleTemplateChange}
-            className="w-full rounded-none border-r-0 border-l-0 border-transparent"
+            className="w-full rounded-none border-l-0 border-r-0 border-transparent"
             size="md"
             placeholder="Enter URL..."
             highlightColonVariables={true}
@@ -149,7 +149,9 @@ export const EndpointInputField = memo(
         </div>
 
         {/* Right Side - Send Button */}
-        <ButtonPrimary onClick={handleSend}>Send</ButtonPrimary>
+        <Button intent="primary" onClick={handleSend}>
+          Send
+        </Button>
       </div>
     );
   }

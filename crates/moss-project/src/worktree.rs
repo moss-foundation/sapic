@@ -36,10 +36,10 @@ use crate::{
     dirs::RESOURCES_DIR,
     errors::{ErrorAlreadyExists, ErrorInvalidInput, ErrorNotFound},
     models::{
-        operations::DescribeEntryOutput,
+        operations::DescribeResourceOutput,
         primitives::{
-            EntryId, EntryKind, EntryProtocol, FormDataParamId, HeaderId, PathParamId,
-            QueryParamId, UrlencodedParamId,
+            FormDataParamId, HeaderId, PathParamId, QueryParamId, ResourceId, ResourceKind,
+            ResourceProtocol, UrlencodedParamId,
         },
         types::{
             BodyInfo, FormDataParamInfo, HeaderInfo, PathParamInfo, QueryParamInfo,
@@ -94,7 +94,7 @@ struct ScanJob {
 
 pub(crate) struct ModifyParams {
     pub name: Option<String>,
-    pub protocol: Option<EntryProtocol>,
+    pub protocol: Option<ResourceProtocol>,
     pub expanded: Option<bool>,
     pub order: Option<isize>,
     pub path: Option<PathBuf>,
@@ -116,8 +116,8 @@ pub(crate) struct ModifyParams {
 
 #[derive(Default)]
 struct WorktreeState {
-    entries: HashMap<EntryId, Entry>,
-    expanded_entries: HashSet<EntryId>,
+    entries: HashMap<ResourceId, Entry>,
+    expanded_entries: HashSet<ResourceId>,
 }
 
 pub(crate) struct Worktree<R: AppRuntime> {
@@ -157,7 +157,11 @@ impl<R: AppRuntime> Worktree<R> {
         }
     }
 
-    pub async fn remove_entry(&self, ctx: &R::AsyncContext, id: &EntryId) -> joinerror::Result<()> {
+    pub async fn remove_entry(
+        &self,
+        ctx: &R::AsyncContext,
+        id: &ResourceId,
+    ) -> joinerror::Result<()> {
         let mut state_lock = self.state.write().await;
         let entry = state_lock
             .entries
@@ -202,7 +206,7 @@ impl<R: AppRuntime> Worktree<R> {
         _ctx: &R::AsyncContext, // TODO: use ctx ctx.done() to cancel the scan if needed
         app_delegate: AppDelegate<R>,
         path: &Path,
-        expanded_entries: Arc<HashSet<EntryId>>,
+        expanded_entries: Arc<HashSet<ResourceId>>,
         all_entry_keys: Arc<HashMap<SegKeyBuf, AnyValue>>,
         sender: mpsc::UnboundedSender<EntryDescription>,
     ) -> joinerror::Result<()> {
@@ -233,6 +237,7 @@ impl<R: AppRuntime> Worktree<R> {
             let sender = sender.clone();
             let fs = self.fs.clone();
             let state = self.state.clone();
+            let app_delegate = app_delegate.clone();
             let expanded_entries = expanded_entries.clone();
             let all_entry_keys = all_entry_keys.clone();
 
@@ -260,16 +265,36 @@ impl<R: AppRuntime> Worktree<R> {
                                     .insert(entry.id.clone());
                             }
 
-                            let _ = sender.send(desc);
+                            if let Err(e) = sender.send(desc) {
+                                session::debug!(format!(
+                                    "failed to send EntryDescription to tokio mpsc channel: {}",
+                                    e
+                                ));
+                            }
+
                             state.write().await.entries.insert(entry.id.clone(), entry);
                         }
                         Ok(None) => {
-                            // TODO: log error
+                            session::info!(format!(
+                                "encountered an empty entry dir: {}",
+                                job.abs_path.display()
+                            ));
                             return;
                         }
-                        Err(_err) => {
-                            eprintln!("Error processing dir {}: {}", job.path.display(), _err);
-                            // TODO: log error
+                        Err(err) => {
+                            session::error!(format!(
+                                "error processing dir: {}",
+                                job.abs_path.display()
+                            ));
+                            let _ = app_delegate.emit_oneshot(ToLocation::Toast {
+                                activity_id: "worktree_scan_process_entry_error",
+                                title: "Error processing dir".to_string(),
+                                detail: Some(format!(
+                                    "Error processing dir {}: {}",
+                                    job.abs_path.display(),
+                                    err
+                                )),
+                            });
                             return;
                         }
                     }
@@ -311,7 +336,10 @@ impl<R: AppRuntime> Worktree<R> {
                     };
 
                     let (entry, desc) = continue_if_none!(maybe_entry, || {
-                        // TODO: Probably should log here since we should not be able to get here
+                        session::warn!(format!(
+                            "non-entry encountered during scan: {}",
+                            child_abs_path.display()
+                        ));
                     });
 
                     // INFO: Something here doesn't feel quite right—maybe we can improve it once we have the UI
@@ -322,20 +350,24 @@ impl<R: AppRuntime> Worktree<R> {
                             scan_queue: job.scan_queue.clone(),
                         });
                     } else {
-                        continue_if_err!(sender.send(desc), |_err| {
-                            eprintln!("Error sending entry: {}", _err);
-                            // TODO: log error
-                        });
+                        if let Err(e) = sender.send(desc) {
+                            session::debug!(format!(
+                                "failed to send EntryDescription to tokio mpsc channel: {}",
+                                e
+                            ));
+                        }
                     }
 
                     state.write().await.entries.insert(entry.id.clone(), entry);
                 }
 
                 for new_job in new_jobs {
-                    continue_if_err!(job.scan_queue.send(new_job), |_err| {
-                        eprintln!("Error sending new job: {}", _err);
-                        // TODO: log error
-                    });
+                    if let Err(e) = job.scan_queue.send(new_job) {
+                        session::debug!(format!(
+                            "failed to send ScanJob to tokio mpsc channel: {}",
+                            e
+                        ));
+                    }
                 }
             });
 
@@ -343,8 +375,8 @@ impl<R: AppRuntime> Worktree<R> {
         }
 
         for handle in handles {
-            if let Err(_err) = handle.await {
-                // TODO: log error
+            if let Err(err) = handle.await {
+                session::error!(format!("error joining job: {}", err));
             }
         }
 
@@ -488,7 +520,7 @@ impl<R: AppRuntime> Worktree<R> {
     pub async fn update_dir_entry(
         &self,
         ctx: &R::AsyncContext,
-        id: &EntryId,
+        id: &ResourceId,
         params: ModifyParams,
     ) -> joinerror::Result<Arc<Path>> {
         let mut state_lock = self.state.write().await;
@@ -584,7 +616,7 @@ impl<R: AppRuntime> Worktree<R> {
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
-        id: &EntryId,
+        id: &ResourceId,
         params: ModifyParams,
     ) -> joinerror::Result<Arc<Path>> {
         let mut state_lock = self.state.write().await;
@@ -681,8 +713,8 @@ impl<R: AppRuntime> Worktree<R> {
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
-        id: &EntryId,
-    ) -> joinerror::Result<DescribeEntryOutput> {
+        id: &ResourceId,
+    ) -> joinerror::Result<DescribeResourceOutput> {
         let state_lock = self.state.read().await;
         let entry = state_lock
             .entries
@@ -705,10 +737,10 @@ impl<R: AppRuntime> Worktree<R> {
             let model: EntryModel =
                 hcl::from_reader(&mut rdr).join_err::<()>("failed to parse dir configuration")?;
 
-            return Ok(DescribeEntryOutput {
+            return Ok(DescribeResourceOutput {
                 name: desanitize(&name),
                 class: model.class(),
-                kind: EntryKind::Dir,
+                kind: ResourceKind::Dir,
                 protocol: None,
                 url: None,
                 headers: vec![],
@@ -841,10 +873,10 @@ impl<R: AppRuntime> Worktree<R> {
                 None
             };
 
-            return Ok(DescribeEntryOutput {
+            return Ok(DescribeResourceOutput {
                 name: desanitize(&name),
                 class,
-                kind: EntryKind::Item,
+                kind: ResourceKind::Item,
                 protocol,
                 url,
                 headers: header_infos,
@@ -1710,7 +1742,7 @@ async fn patch_item_body<R: AppRuntime>(
     ctx: &R::AsyncContext,
     app_delegate: &AppDelegate<R>,
     current_body_kind: Option<BodyKind>,
-    entry_id: EntryId,
+    entry_id: ResourceId,
     patches: &mut Vec<(PatchOperation, EditOptions)>,
     params: &UpdateBodyParams,
 ) -> joinerror::Result<Option<BodyKind>> {
@@ -2290,7 +2322,7 @@ async fn patch_item_body<R: AppRuntime>(
 async fn clear_item_body<R: AppRuntime>(
     worktree: &Worktree<R>,
     ctx: &R::AsyncContext,
-    id: EntryId,
+    id: ResourceId,
     patches: &mut Vec<(PatchOperation, EditOptions)>,
 ) -> joinerror::Result<()> {
     worktree.storage.remove_entry_body_cache(ctx, &id).await?;
@@ -2331,7 +2363,7 @@ fn update_path_parent(path: &Path, new_parent: &Path) -> anyhow::Result<PathBuf>
 async fn process_entry(
     path: Arc<Path>,
     all_entry_keys: &HashMap<SegKeyBuf, AnyValue>,
-    expanded_entries: &HashSet<EntryId>,
+    expanded_entries: &HashSet<ResourceId>,
     fs: &Arc<dyn FileSystem>,
     abs_path: &Path,
 ) -> joinerror::Result<Option<(Entry, EntryDescription)>> {
@@ -2370,7 +2402,7 @@ async fn process_entry(
             name: desanitize(&name),
             path: path.clone(),
             class: model.class(),
-            kind: EntryKind::Dir,
+            kind: ResourceKind::Dir,
             protocol: None,
             order: all_entry_keys
                 .get(&segments::segkey_entry_order(&id))
@@ -2401,7 +2433,7 @@ async fn process_entry(
             name: desanitize(&name),
             path: path.clone(),
             class: model.class(),
-            kind: EntryKind::Item,
+            kind: ResourceKind::Item,
             protocol: model.protocol(),
             order: all_entry_keys
                 .get(&segments::segkey_entry_order(&id))
@@ -2441,7 +2473,7 @@ async fn process_file(
 
 async fn describe_body<R: AppRuntime>(
     app_delegate: &AppDelegate<R>,
-    entry_id: &EntryId,
+    entry_id: &ResourceId,
     body: LabeledBlock<IndexMap<BodyKind, BodySpec>>,
     entry_keys: &HashMap<SegKeyBuf, AnyValue>,
 ) -> Option<BodyInfo> {

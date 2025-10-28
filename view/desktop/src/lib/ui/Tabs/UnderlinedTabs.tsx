@@ -56,9 +56,9 @@ const Trigger = ({ value, children, className }: PaddedTabProps) => {
 
          transition-colors
 
-         text-(--moss-secondary-text) hover:text-(--moss-primary-text)
+         text-(--moss-secondary-foreground) hover:text-(--moss-primary-foreground)
          
-         data-[state=active]:text-(--moss-primary-text)
+         data-[state=active]:text-(--moss-primary-foreground)
       `,
         className
       )}
@@ -77,7 +77,7 @@ const Trigger = ({ value, children, className }: PaddedTabProps) => {
           group-hover:background-(--moss-secondary-background-hover)
           group-hover:opacity-100
           group-data-[state=active]:opacity-100 
-          group-data-[state=active]:background-(--moss-tab-active-border-color) 
+          group-data-[state=active]:background-(--moss-accent) 
         `}
       />
     </TabsPrimitive.TabsTrigger>

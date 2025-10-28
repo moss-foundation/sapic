@@ -5,7 +5,7 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::{context::AsyncContext, mock::MockAppRuntime};
 use moss_project::{
     dirs,
-    models::{events::StreamEntriesEvent, operations::StreamEntriesInput},
+    models::{events::StreamResourcesEvent, operations::StreamResourcesInput},
 };
 use std::{
     path::PathBuf,
@@ -24,23 +24,23 @@ async fn scan_entries_for_test(
     app_delegate: &AppDelegate<MockAppRuntime>,
     project: &moss_project::Project<MockAppRuntime>,
     dir_name: &str,
-) -> Vec<StreamEntriesEvent> {
+) -> Vec<StreamResourcesEvent> {
     let entries = Arc::new(Mutex::new(Vec::new()));
     let entries_clone = entries.clone();
 
     project
-        .stream_entries(
+        .stream_resources(
             &ctx,
             app_delegate,
             TauriChannel::new(move |body: InvokeResponseBody| {
                 if let InvokeResponseBody::Json(json_str) = body {
-                    if let Ok(event) = serde_json::from_str::<StreamEntriesEvent>(&json_str) {
+                    if let Ok(event) = serde_json::from_str::<StreamResourcesEvent>(&json_str) {
                         entries_clone.lock().unwrap().push(event);
                     }
                 }
                 Ok(())
             }),
-            StreamEntriesInput::ReloadPath(PathBuf::from(dir_name)),
+            StreamResourcesInput::ReloadPath(PathBuf::from(dir_name)),
         )
         .await
         .unwrap();
@@ -50,19 +50,19 @@ async fn scan_entries_for_test(
 
 #[tokio::test]
 async fn stream_entries_empty_project() {
-    let (ctx, app_delegate, project_path, project) = create_test_project().await;
+    let (ctx, app_delegate, _, project, cleanup) = create_test_project().await;
 
     let entries = scan_entries_for_test(&ctx, &app_delegate, &project, dirs::RESOURCES_DIR).await;
 
     assert_eq!(entries.len(), 0);
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn stream_entries_single_entry() {
-    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, _, mut project, cleanup) = create_test_project().await;
 
     let entry_name = random_entry_name();
     create_test_endpoint_dir_entry(&ctx, &mut project, &entry_name).await;
@@ -90,12 +90,12 @@ async fn stream_entries_single_entry() {
     );
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn stream_entries_multiple_entries_same_directory() {
-    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, _, mut project, cleanup) = create_test_project().await;
 
     let entry1_name = format!("{}_1", random_entry_name());
     let entry2_name = format!("{}_2", random_entry_name());
@@ -119,12 +119,12 @@ async fn stream_entries_multiple_entries_same_directory() {
     assert!(entry_names.contains(&entry3_name.as_str()));
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
 
 #[tokio::test]
 async fn stream_entries_multiple_directories() {
-    let (ctx, app_delegate, project_path, mut project) = create_test_project().await;
+    let (ctx, app_delegate, _, mut project, cleanup) = create_test_project().await;
 
     let mut entries = Vec::new();
     {
@@ -161,5 +161,5 @@ async fn stream_entries_multiple_directories() {
     }
 
     // Cleanup
-    std::fs::remove_dir_all(project_path).unwrap();
+    cleanup();
 }
