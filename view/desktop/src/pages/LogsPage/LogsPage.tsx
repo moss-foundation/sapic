@@ -10,7 +10,6 @@ import { AddAccountParams, LogEntryInfo, ON_DID_APPEND_LOG_ENTRY_CHANNEL, Update
 import { AccountKind } from "@repo/moss-user";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import ExternalLink from "@/ExternalLink.tsx";
 
 interface CreateProfileData {
   name: string;
@@ -111,13 +110,7 @@ export const Logs = () => {
 
   return (
     <PageContent className="space-y-6">
-      <section className="mb-6">
-        <ExternalLink
-          text={"Google"}
-          href={"https://www.google.com"}
-          className="w-full rounded bg-blue-500 p-2 text-white"
-        />
-      </section>
+      <section className="mb-6"></section>
       <section className="mb-6">
         <h2 className="mb-2 text-xl">File Statuses</h2>
         <div className="rounded bg-gray-50 p-4">
