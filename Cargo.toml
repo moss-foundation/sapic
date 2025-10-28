@@ -41,6 +41,7 @@ members = [
     "crates/moss-theme", 
     "crates/moss-configuration",
     "crates/moss-language",
+    "crates/moss-storage2",
     #
     # Apps
     #
@@ -49,7 +50,7 @@ members = [
     # Tools
     #
     "tools/xtask",
-    "tools/cargo-new-ts",
+
 ]
 
 [workspace.dependencies]
@@ -94,9 +95,11 @@ moss_extension_points = { path = "crates/moss-extension-points" }
 moss_theme = { path = "crates/moss-theme" }
 moss_configuration = { path = "crates/moss-configuration" }
 moss_language = { path = "crates/moss-language" }
+moss_storage2 = { path = "crates/moss-storage2" }
 #
 # External crates
 #
+sqlx = { version = "0.8", features = [ "runtime-tokio" ] }
 async-stream = "0.3.6"
 notify = "8.0"
 redb = "2.6.0"

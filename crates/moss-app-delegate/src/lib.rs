@@ -85,6 +85,18 @@ impl<R: AppRuntime> AppDelegate<R> {
             .expect("Cannot resolve log dir")
     }
 
+    #[cfg(debug_assertions)]
+    #[cfg(not(feature = "integration-tests"))]
+    pub fn globals_dir(&self) -> PathBuf {
+        self.user_dir().join("globals")
+    }
+
+    #[cfg(not(debug_assertions))]
+    #[cfg(not(feature = "integration-tests"))]
+    pub fn globals_dir(&self) -> PathBuf {
+        self.user_dir().join("globals")
+    }
+
     pub fn global<T>(&self) -> &T
     where
         T: Send + Sync + 'static,
@@ -161,5 +173,10 @@ impl<R: AppRuntime> AppDelegate<R> {
     #[cfg(feature = "integration-tests")]
     pub fn logs_dir(&self) -> PathBuf {
         self.user_dir().join("logs")
+    }
+
+    #[cfg(feature = "integration-tests")]
+    pub fn globals_dir(&self) -> PathBuf {
+        self.user_dir().join("globals")
     }
 }

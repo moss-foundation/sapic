@@ -39,6 +39,7 @@ use moss_project::registries::{
     resource_statuses::{AppResourceStatusRegistry, ResourceStatusRegistry},
 };
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
+use moss_storage2::{AppStorage, Storage};
 use moss_theme::registry::{AppThemeRegistry, ThemeRegistry};
 use reqwest::ClientBuilder as HttpClientBuilder;
 use serde_json::Value;
@@ -97,6 +98,11 @@ pub async fn run<R: TauriRuntime>() {
                 // throughout the entire application via the `global` method
                 // of the app's internal handler.
                 {
+                    let storage = AppStorage::new(&delegate.globals_dir())
+                        .await
+                        .expect("failed to create storage");
+                    <dyn Storage>::set_global(&delegate, storage);
+
                     let github_api_client = Arc::new(AppGitHubApiClient::new(http_client.clone()));
                     let github_auth_adapter =
                         Arc::new(AppGitHubAuthAdapter::<TauriAppRuntime<R>>::new(

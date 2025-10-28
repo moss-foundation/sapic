@@ -1,6 +1,17 @@
 use crate::{Error, ErrorMarker, OptionExt, ResultExt};
 
-// FIXME: Remove conversion traits for git errors and implement crate specific traits
+impl<T> OptionExt<T> for Option<T> {
+    fn ok_or_join_err<E: ErrorMarker>(self, details: impl Into<String>) -> crate::Result<T> {
+        self.ok_or(Error::new::<E>(details.into()))
+    }
+
+    fn ok_or_join_err_with<E: ErrorMarker>(
+        self,
+        details: impl FnOnce() -> String,
+    ) -> crate::Result<T> {
+        self.ok_or_else(|| Error::new::<E>(details()))
+    }
+}
 
 impl From<std::string::FromUtf8Error> for Error {
     fn from(err: std::string::FromUtf8Error) -> Self {
@@ -64,6 +75,20 @@ impl From<tokio::task::JoinError> for Error {
 #[cfg(feature = "git2")]
 impl From<git2::Error> for Error {
     fn from(err: git2::Error) -> Self {
+        Error::new::<()>(err.to_string())
+    }
+}
+
+#[cfg(feature = "sqlx")]
+impl From<sqlx::Error> for Error {
+    fn from(err: sqlx::Error) -> Self {
+        Error::new::<()>(err.to_string())
+    }
+}
+
+#[cfg(feature = "sqlx")]
+impl From<sqlx::migrate::MigrateError> for Error {
+    fn from(err: sqlx::migrate::MigrateError) -> Self {
         Error::new::<()>(err.to_string())
     }
 }
@@ -151,15 +176,22 @@ impl<T> ResultExt<T> for reqwest::Result<T> {
     }
 }
 
-impl<T> OptionExt<T> for Option<T> {
-    fn ok_or_join_err<E: ErrorMarker>(self, details: impl Into<String>) -> crate::Result<T> {
-        self.ok_or(Error::new::<E>(details.into()))
+#[cfg(feature = "sqlx")]
+impl<T> ResultExt<T> for Result<T, sqlx::Error> {
+    fn join_err<E: ErrorMarker>(self, details: impl Into<String>) -> Result<T, Error> {
+        self.map_err(|e| Error::new::<()>(e.to_string()).join::<E>(details))
     }
+    fn join_err_with<E: ErrorMarker>(self, details: impl FnOnce() -> String) -> Result<T, Error> {
+        self.map_err(|e| Error::new::<()>(e.to_string()).join::<E>(details()))
+    }
+}
 
-    fn ok_or_join_err_with<E: ErrorMarker>(
-        self,
-        details: impl FnOnce() -> String,
-    ) -> crate::Result<T> {
-        self.ok_or_else(|| Error::new::<E>(details()))
+#[cfg(feature = "sqlx")]
+impl<T> ResultExt<T> for Result<T, sqlx::migrate::MigrateError> {
+    fn join_err<E: ErrorMarker>(self, details: impl Into<String>) -> Result<T, Error> {
+        self.map_err(|e| Error::new::<()>(e.to_string()).join::<E>(details))
+    }
+    fn join_err_with<E: ErrorMarker>(self, details: impl FnOnce() -> String) -> Result<T, Error> {
+        self.map_err(|e| Error::new::<()>(e.to_string()).join::<E>(details()))
     }
 }

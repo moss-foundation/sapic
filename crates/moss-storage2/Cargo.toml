@@ -1,0 +1,17 @@
+[package]
+name = "moss_storage2"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+moss_applib.workspace = true
+moss_logging.workspace = true
+moss_app_delegate.workspace = true
+
+joinerror = { workspace = true, features = ["sqlx"] }
+sqlx = { workspace = true, features = ["sqlite"] }
+rustc-hash = { workspace = true }
+derive_more = { workspace = true, features = ["deref"] }
+tokio.workspace = true
+async-trait.workspace = true
+tracing.workspace = true
