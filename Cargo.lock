@@ -3974,6 +3974,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "joinerror",
+ "moss_app_delegate",
  "moss_applib",
  "reqwest",
  "serde",

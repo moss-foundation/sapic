@@ -38,7 +38,10 @@ use moss_project::registries::{
     http_headers::{AppHttpHeaderRegistry, HttpHeaderRegistry},
     resource_statuses::{AppResourceStatusRegistry, ResourceStatusRegistry},
 };
-use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
+use moss_server_api::{
+    account_auth_gateway::AccountAuthGatewayApiClient,
+    extension_registry::{AppExtensionRegistryApiClient, ExtensionRegistryApiClient},
+};
 use moss_theme::registry::{AppThemeRegistry, ThemeRegistry};
 use reqwest::ClientBuilder as HttpClientBuilder;
 use serde_json::Value;
@@ -112,6 +115,13 @@ pub async fn run<R: TauriRuntime>() {
                             8081,
                         ));
 
+                    let extension_registry_api_client =
+                        Arc::new(AppExtensionRegistryApiClient::new(
+                            http_client.clone(),
+                            dotenv::var("EXTENSION_REGISTRY_BASE_URL")
+                                .expect("EXTENSION_REGISTRY_BASE_URL is not set"),
+                        ));
+
                     <dyn GitHubApiClient<TauriAppRuntime<R>>>::set_global(
                         &delegate,
                         github_api_client,
@@ -128,6 +138,11 @@ pub async fn run<R: TauriRuntime>() {
                     <dyn GitLabAuthAdapter<TauriAppRuntime<R>>>::set_global(
                         &delegate,
                         gitlab_auth_adapter,
+                    );
+
+                    <dyn ExtensionRegistryApiClient<TauriAppRuntime<R>>>::set_global(
+                        &delegate,
+                        extension_registry_api_client,
                     );
 
                     let theme_registry = AppThemeRegistry::new();
