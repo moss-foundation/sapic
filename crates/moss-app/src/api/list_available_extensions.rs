@@ -1,10 +1,11 @@
+use moss_app_delegate::AppDelegate;
+use moss_applib::AppRuntime;
+use moss_server_api::extension_registry::ExtensionRegistryApiClient;
+
 use crate::{
     App,
     models::{operations::ListAvailableExtensionsOutput, types::AvailableExtensionInfo},
 };
-use moss_app_delegate::AppDelegate;
-use moss_applib::AppRuntime;
-use moss_server_api::extension_registry::ExtensionRegistryApiClient;
 
 impl<R: AppRuntime> App<R> {
     pub async fn list_available_extensions(
