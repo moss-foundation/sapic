@@ -97,3 +97,5 @@ impl<R: AppRuntime> ListExtensionsApiReq<R> for AppExtensionRegistryApiClient {
         .join_err_bare()
     }
 }
+
+impl<R: AppRuntime> ExtensionRegistryApiClient<R> for AppExtensionRegistryApiClient {}

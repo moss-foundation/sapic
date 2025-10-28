@@ -14,6 +14,7 @@ export type TauriIpcCommand =
   | "describe_color_theme"
   | "list_languages"
   | "list_color_themes"
+  | "list_available_extensions"
   | "create_workspace"
   | "open_workspace"
   | "list_workspaces"

@@ -58,7 +58,7 @@ pub async fn list_configuration_schemas<'a, R: tauri::Runtime>(
 }
 
 #[tauri::command(async)]
-#[instrument(level = "trace", fields(window = window.label()))]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn list_available_extensions<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
