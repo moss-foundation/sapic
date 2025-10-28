@@ -1,0 +1,37 @@
+use crate::{
+    App,
+    models::{operations::ListAvailableExtensionsOutput, types::AvailableExtensionInfo},
+};
+use moss_app_delegate::AppDelegate;
+use moss_applib::AppRuntime;
+use moss_server_api::extension_registry::ExtensionRegistryApiClient;
+
+impl<R: AppRuntime> App<R> {
+    pub async fn list_available_extensions(
+        &self,
+        ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
+    ) -> joinerror::Result<ListAvailableExtensionsOutput> {
+        let api_client = <dyn ExtensionRegistryApiClient<R>>::global(app_delegate);
+
+        let result = api_client.list_extensions(ctx).await?;
+        Ok(ListAvailableExtensionsOutput(
+            result
+                .extensions
+                .into_iter()
+                .map(|info| AvailableExtensionInfo {
+                    id: info.id,
+                    external_id: info.external_id,
+                    name: info.name,
+                    authors: info.authors,
+                    description: info.description,
+                    repository: info.repository,
+                    downloads: info.downloads,
+                    created_at: info.created_at,
+                    updated_at: info.updated_at,
+                    latest_version: info.latest_version,
+                })
+                .collect(),
+        ))
+    }
+}

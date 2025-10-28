@@ -6,6 +6,19 @@ import { accountKindSchema } from "@repo/moss-user";
 import { z } from "zod";
 import { logLevelSchema } from "./primitives.zod";
 
+export const availableExtensionInfoSchema = z.object({
+  id: z.string(),
+  externalId: z.string(),
+  name: z.string(),
+  authors: z.array(z.string()),
+  description: z.string(),
+  repository: z.string(),
+  downloads: z.bigint(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  latestVersion: z.string(),
+});
+
 export const logDateSchema = z.object({
   year: z.number(),
   month: z.number(),

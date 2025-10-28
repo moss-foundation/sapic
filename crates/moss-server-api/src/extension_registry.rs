@@ -9,22 +9,21 @@ use std::sync::Arc;
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExtensionInfo {
-    id: String,
-    external_id: String,
-    name: String,
-    authors: Vec<String>,
-    description: String,
-    repository: String,
-    downloads: u64,
-    // TODO: If necessary we can parse it with chrono
-    created_at: String,
-    updated_at: String,
-    latest_version: String,
+    pub id: String,
+    pub external_id: String,
+    pub name: String,
+    pub authors: Vec<String>,
+    pub description: String,
+    pub repository: String,
+    pub downloads: u64,
+    pub created_at: String,
+    pub updated_at: String,
+    pub latest_version: String,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct ListExtensionsResponse {
-    extensions: Vec<ExtensionInfo>,
+    pub extensions: Vec<ExtensionInfo>,
 }
 
 #[async_trait]

@@ -58,6 +58,20 @@ pub async fn list_configuration_schemas<'a, R: tauri::Runtime>(
 }
 
 #[tauri::command(async)]
+#[instrument(level = "trace", fields(window = window.label()))]
+pub async fn list_available_extensions<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: Window<R>,
+    options: Options,
+) -> TauriResult<ListAvailableExtensionsOutput> {
+    super::with_app_timeout(ctx.inner(), app, options, |ctx, app_delegate, app| async move {
+        app.list_available_extensions(&ctx, &app_delegate).await
+    })
+        .await
+}
+
+#[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx,app), fields(window = window.label()))]
 pub async fn describe_color_theme<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,

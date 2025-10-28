@@ -333,3 +333,11 @@ pub struct CloseWorkspaceOutput {
     /// The id of the workspace that was closed.
     pub id: WorkspaceId,
 }
+
+// #########################################################
+// ###                    Extensions                     ###
+// #########################################################
+/// @category Operation
+#[derive(Debug, Serialize, TS)]
+#[ts(export, export_to = "operations.ts")]
+pub struct ListAvailableExtensionsOutput(pub Vec<AvailableExtensionInfo>);

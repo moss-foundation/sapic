@@ -9,6 +9,7 @@ import { z } from "zod";
 import { logLevelSchema } from "./primitives.zod";
 import {
   addAccountParamsSchema,
+  availableExtensionInfoSchema,
   colorThemeInfoSchema,
   configurationSchema,
   logDateSchema,
@@ -109,6 +110,8 @@ export const getColorThemeInputSchema = z.object({
 export const getTranslationNamespaceOutputSchema = z.object({
   contents: jsonValueSchema,
 });
+
+export const listAvailableExtensionsOutputSchema = z.array(availableExtensionInfoSchema);
 
 export const listColorThemesOutputSchema = z.array(colorThemeInfoSchema);
 

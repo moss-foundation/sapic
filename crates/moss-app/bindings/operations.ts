@@ -8,6 +8,7 @@ import { WorkspaceMode } from "@repo/moss-workspace";
 import type { LogLevel } from "./primitives";
 import type {
   AddAccountParams,
+  AvailableExtensionInfo,
   ColorThemeInfo,
   Configuration,
   LogDate,
@@ -122,6 +123,11 @@ export type GetTranslationNamespaceInput = { language: string; namespace: string
  * @category Operation
  */
 export type GetTranslationNamespaceOutput = { contents: JsonValue };
+
+/**
+ * @category Operation
+ */
+export type ListAvailableExtensionsOutput = Array<AvailableExtensionInfo>;
 
 /**
  * @category Operation

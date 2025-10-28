@@ -20,6 +20,22 @@ export type AddAccountParams = {
 /**
  * @category Type
  */
+export type AvailableExtensionInfo = {
+  id: string;
+  externalId: string;
+  name: string;
+  authors: Array<string>;
+  description: string;
+  repository: string;
+  downloads: bigint;
+  createdAt: string;
+  updatedAt: string;
+  latestVersion: string;
+};
+
+/**
+ * @category Type
+ */
 export type ColorThemeInfo = {
   identifier: ThemeId;
   displayName: string;
