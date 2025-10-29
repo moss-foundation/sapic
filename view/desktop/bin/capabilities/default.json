@@ -37,6 +37,8 @@
       "identifier": "fs:allow-home-read-recursive",
       "allow": [{ "path": "$HOME/.moss/*" }]
     },
+
+    "opener:default",
     {
       "identifier": "opener:allow-open-url",
       "allow": [
