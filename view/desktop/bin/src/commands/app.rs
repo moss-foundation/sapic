@@ -296,7 +296,7 @@ pub async fn update_profile<'a, R: tauri::Runtime>(
 #[tauri::command(async)]
 #[instrument(level = "trace", fields(window = window.label()))]
 pub async fn get_mistral_api_key<'a, R: tauri::Runtime>(window: Window<R>) -> TauriResult<String> {
-    let api_key = dotenv::var("MISTRAL_API_KEY")
+    let api_key = dotenvy::var("MISTRAL_API_KEY")
         .map_err(|_| TauriError::Other(anyhow::anyhow!("MISTRAL_API_KEY not set")))?;
     Ok(api_key)
 }
