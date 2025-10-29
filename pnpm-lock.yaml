@@ -134,6 +134,9 @@ importers:
       '@repo/moss-configuration':
         specifier: workspace:*
         version: link:../moss-configuration
+      '@repo/moss-extension':
+        specifier: workspace:*
+        version: link:../moss-extension
       '@repo/moss-language':
         specifier: workspace:*
         version: link:../moss-language

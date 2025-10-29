@@ -9,7 +9,6 @@ import { useActivityRouter } from "@/hooks/app";
 import { invokeTauriIpc } from "@/lib/backend/tauri.ts";
 import {
   AddAccountParams,
-  AvailableExtensionInfo,
   ListAvailableExtensionsOutput,
   LogEntryInfo,
   ON_DID_APPEND_LOG_ENTRY_CHANNEL,
@@ -304,7 +303,7 @@ const ExtensionRegistryTest = () => {
   const [availableExtensions, setAvailableExtensions] = useState<AvailableExtensionInfo[]>([]);
 
   async function handleListExtensionsButton() {
-    const result = await invokeTauriIpc<ListAvailableExtensionsOutput>("list_available_extensions", {});
+    const result = await invokeTauriIpc<ListAvailableExtensionsOutput>("list_extensions", {});
     if (result.status === "error") {
       throw new Error(String(result.status));
     }

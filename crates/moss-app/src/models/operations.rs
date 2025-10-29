@@ -341,4 +341,4 @@ pub struct CloseWorkspaceOutput {
 /// @category Operation
 #[derive(Debug, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
-pub struct ListAvailableExtensionsOutput(pub Vec<ExtensionInfo>);
+pub struct ListExtensionsOutput(#[ts(type = "ExtensionInfo[]")] pub Vec<ExtensionInfo>);

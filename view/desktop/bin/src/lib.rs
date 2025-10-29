@@ -232,7 +232,7 @@ pub async fn run<R: TauriRuntime>() {
             commands::describe_color_theme,
             commands::list_color_themes,
             commands::list_languages,
-            commands::list_available_extensions,
+            commands::list_extensions,
             commands::get_translation_namespace,
             commands::open_workspace,
             commands::update_workspace,
