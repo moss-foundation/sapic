@@ -8,7 +8,7 @@ members = [
     "libs/atomic-fs",
     "libs/static-json",
     #
-    # Workspace crates
+    # Internal crates
     #
     "crates/moss-applib",
     "crates/moss-app",
@@ -43,6 +43,10 @@ members = [
     "crates/moss-language",
     "crates/moss-storage2",
     #
+    # Plugins
+    #
+    "plugins/shared_storage",
+    #
     # Apps
     #
     "view/desktop/bin",
@@ -50,6 +54,7 @@ members = [
     # Tools
     #
     "tools/xtask",
+    
 
 ]
 
@@ -61,7 +66,7 @@ joinerror = { path = "libs/joinerror", features = ["anyhow", "tokio", "serde_jso
 atomic_fs = { path = "libs/atomic-fs" }
 static_json = { path = "libs/static-json" }
 #
-# Workspace crates
+# Internal crates
 #
 moss_api = { path = "crates/moss-api" }
 moss_text = { path = "crates/moss-text" }
@@ -96,6 +101,10 @@ moss_theme = { path = "crates/moss-theme" }
 moss_configuration = { path = "crates/moss-configuration" }
 moss_language = { path = "crates/moss-language" }
 moss_storage2 = { path = "crates/moss-storage2" }
+#
+# Plugin crates
+#
+shared_storage = { path = "plugins/shared_storage" }
 #
 # External crates
 #

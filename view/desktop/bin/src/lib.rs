@@ -8,6 +8,7 @@ mod window;
 #[macro_use]
 extern crate tracing;
 
+use joinerror::OptionExt;
 use moss_app::{App, AppBuilder as TauriAppBuilder, app::OnAppReadyOptions, command::CommandDecl};
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
@@ -67,7 +68,19 @@ pub async fn run<R: TauriRuntime>() {
         .plugin(plugin_window_state::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_os::init())
-        .plugin(tauri_plugin_single_instance::init(|_app, _args, _cwd| {}));
+        .plugin(tauri_plugin_single_instance::init(|_app, _args, _cwd| {}))
+        .plugin(shared_storage::init(|app| {
+            let handle = app
+                .downcast::<R>()
+                .ok_or_join_err::<()>("failed to downcast app handle")?;
+
+            let delegate = handle
+                .state::<AppDelegate<TauriAppRuntime<R>>>()
+                .inner()
+                .clone();
+
+            Ok(<dyn Storage>::global(&delegate))
+        }));
 
     #[cfg(target_os = "macos")]
     {

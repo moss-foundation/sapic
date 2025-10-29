@@ -1630,6 +1630,7 @@ dependencies = [
  "rand 0.9.2",
  "reqwest",
  "serde_json",
+ "shared_storage",
  "strum",
  "tauri",
  "tauri-build",
@@ -6421,6 +6422,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f40ca3c46823713e0d4209592e8d6e826aa57e928f09752619fc696c499637f6"
 dependencies = [
  "lazy_static",
+]
+
+[[package]]
+name = "shared_storage"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "joinerror",
+ "moss_api",
+ "moss_storage2",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tracing",
+ "ts-rs",
+ "validator",
 ]
 
 [[package]]

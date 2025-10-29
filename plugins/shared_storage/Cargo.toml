@@ -1,0 +1,17 @@
+[package]
+name = "shared_storage"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+moss_api.workspace = true
+moss_storage2.workspace = true
+
+joinerror.workspace = true
+tauri = { workspace = true, features = ["wry"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+validator = { workspace = true, features = ["derive"] }
+ts-rs = { workspace = true }
+async-trait.workspace = true
+tracing.workspace = true
