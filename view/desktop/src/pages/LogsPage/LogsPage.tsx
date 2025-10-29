@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-
 import AIDemo from "@/ai/AIDemo.tsx";
 import { PageContent } from "@/components";
 import { ActivityEventSimulator } from "@/components/ActivityEventSimulator";
@@ -9,7 +8,7 @@ import { useActivityRouter } from "@/hooks/app";
 import { invokeTauriIpc } from "@/lib/backend/tauri.ts";
 import {
   AddAccountParams,
-  ListAvailableExtensionsOutput,
+  ListExtensionsOutput,
   LogEntryInfo,
   ON_DID_APPEND_LOG_ENTRY_CHANNEL,
   UpdateProfileInput,
@@ -17,6 +16,7 @@ import {
 import { AccountKind } from "@repo/moss-user";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { ExtensionInfo } from "@repo/moss-extension";
 
 interface CreateProfileData {
   name: string;
@@ -300,15 +300,15 @@ export const Logs = () => {
 };
 
 const ExtensionRegistryTest = () => {
-  const [availableExtensions, setAvailableExtensions] = useState<AvailableExtensionInfo[]>([]);
+  const [extensions, setExtensions] = useState<ExtensionInfo[]>([]);
 
   async function handleListExtensionsButton() {
-    const result = await invokeTauriIpc<ListAvailableExtensionsOutput>("list_extensions", {});
+    const result = await invokeTauriIpc<ListExtensionsOutput>("list_extensions", {});
     if (result.status === "error") {
       throw new Error(String(result.status));
     }
 
-    setAvailableExtensions(result.data);
+    setExtensions(result.data);
   }
 
   return (
@@ -329,7 +329,7 @@ const ExtensionRegistryTest = () => {
           </tr>
         </thead>
         <tbody>
-          {availableExtensions.map((info) => {
+          {extensions.map((info) => {
             return (
               <tr>
                 <td className={"p-1"}>{info.id}</td>
