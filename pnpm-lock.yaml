@@ -385,6 +385,22 @@ importers:
         specifier: ^24.6.1
         version: 24.7.2
 
+  plugins/shared_storage:
+    dependencies:
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.3
+      zod:
+        specifier: ^3.24.4
+        version: 3.25.76
+    devDependencies:
+      '@repo/moss-bindingutils':
+        specifier: workspace:*
+        version: link:../../crates/moss-bindingutils
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/config-typescript
+
   tools/gen-bindings:
     dependencies:
       ts-morph:

@@ -14,7 +14,9 @@
     "crates/moss-theme",
     "crates/moss-language",
     "crates/moss-user",
-    "crates/moss-configuration"
+    "crates/moss-configuration",
+
+    "plugins/shared_storage"
   ],
   "entryPointStrategy": "packages",
   "packageOptions": {

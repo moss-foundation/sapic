@@ -1,5 +1,6 @@
 packages:
   - "crates/*"
+  - "plugins/*"
   - "view/*"
   - "packages/*"
   - "tools/*"
