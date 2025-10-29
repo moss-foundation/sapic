@@ -1,5 +1,5 @@
 {
-    "name": "@repo/moss-app",
+    "name": "@repo/moss-extension",
     "exports": {
       ".": "./index.ts"
     },
@@ -9,13 +9,8 @@
     },
     "devDependencies": {
       "@repo/typescript-config": "workspace:*",
-      "@repo/moss-bindingutils": "workspace:*",
-      "@repo/moss-workspace": "workspace:*",
-      "@repo/moss-user": "workspace:*",
-      "@repo/moss-theme": "workspace:*",
-      "@repo/moss-configuration": "workspace:*",
-      "@repo/moss-language": "workspace:*",
-      "@repo/moss-extension": "workspace:*"
+      "@repo/moss-bindingutils": "workspace:*"
+
     },
     "dependencies": {
       "typescript": "^5.9.2",

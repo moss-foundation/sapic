@@ -38,7 +38,10 @@ use moss_project::registries::{
     http_headers::{AppHttpHeaderRegistry, HttpHeaderRegistry},
     resource_statuses::{AppResourceStatusRegistry, ResourceStatusRegistry},
 };
-use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
+use moss_server_api::{
+    account_auth_gateway::AccountAuthGatewayApiClient,
+    extension_registry::{AppExtensionRegistryApiClient, ExtensionRegistryApiClient},
+};
 use moss_theme::registry::{AppThemeRegistry, ThemeRegistry};
 use reqwest::ClientBuilder as HttpClientBuilder;
 use serde_json::Value;
@@ -84,9 +87,13 @@ pub async fn run<R: TauriRuntime>() {
                     .user_agent("SAPIC/1.0")
                     .build()
                     .expect("failed to build http client");
+
+                let server_api_endpoint =
+                    dotenv::var("SERVER_API_ENDPOINT").expect("SERVER_API_ENDPOINT is not set");
+
                 let auth_api_client = Arc::new(AccountAuthGatewayApiClient::new(
                     http_client.clone(),
-                    dotenv::var("ACCOUNT_AUTH_BASE_URL").expect("ACCOUNT_AUTH_BASE_URL is not set"),
+                    format!("{server_api_endpoint}/account-auth-gateway"),
                 ));
 
                 let tao_app_handle = tao.app_handle();
@@ -113,6 +120,12 @@ pub async fn run<R: TauriRuntime>() {
                             8081,
                         ));
 
+                    let extension_registry_api_client =
+                        Arc::new(AppExtensionRegistryApiClient::new(
+                            http_client.clone(),
+                            format!("{server_api_endpoint}/extension-registry"),
+                        ));
+
                     <dyn GitHubApiClient<TauriAppRuntime<R>>>::set_global(
                         &delegate,
                         github_api_client,
@@ -129,6 +142,11 @@ pub async fn run<R: TauriRuntime>() {
                     <dyn GitLabAuthAdapter<TauriAppRuntime<R>>>::set_global(
                         &delegate,
                         gitlab_auth_adapter,
+                    );
+
+                    <dyn ExtensionRegistryApiClient<TauriAppRuntime<R>>>::set_global(
+                        &delegate,
+                        extension_registry_api_client,
                     );
 
                     let theme_registry = AppThemeRegistry::new();
@@ -215,6 +233,7 @@ pub async fn run<R: TauriRuntime>() {
             commands::describe_color_theme,
             commands::list_color_themes,
             commands::list_languages,
+            commands::list_extensions,
             commands::get_translation_namespace,
             commands::open_workspace,
             commands::update_workspace,
