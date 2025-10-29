@@ -86,9 +86,13 @@ pub async fn run<R: TauriRuntime>() {
                     .user_agent("SAPIC/1.0")
                     .build()
                     .expect("failed to build http client");
+
+                let server_api_endpoint =
+                    dotenv::var("SERVER_API_ENDPOINT").expect("SERVER_API_ENDPOINT is not set");
+
                 let auth_api_client = Arc::new(AccountAuthGatewayApiClient::new(
                     http_client.clone(),
-                    dotenv::var("ACCOUNT_AUTH_BASE_URL").expect("ACCOUNT_AUTH_BASE_URL is not set"),
+                    format!("{server_api_endpoint}/account-auth-gateway"),
                 ));
 
                 let tao_app_handle = tao.app_handle();
@@ -118,8 +122,7 @@ pub async fn run<R: TauriRuntime>() {
                     let extension_registry_api_client =
                         Arc::new(AppExtensionRegistryApiClient::new(
                             http_client.clone(),
-                            dotenv::var("EXTENSION_REGISTRY_BASE_URL")
-                                .expect("EXTENSION_REGISTRY_BASE_URL is not set"),
+                            format!("{server_api_endpoint}/extension-registry"),
                         ));
 
                     <dyn GitHubApiClient<TauriAppRuntime<R>>>::set_global(
