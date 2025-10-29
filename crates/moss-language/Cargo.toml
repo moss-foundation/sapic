@@ -2,6 +2,7 @@
 name = "moss_language"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
 
 [dependencies]
 moss_app_delegate.workspace = true

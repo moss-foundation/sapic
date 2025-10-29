@@ -2,6 +2,7 @@
 name = "moss_logging"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
 
 [dependencies]
 moss_id_macro.workspace = true
