@@ -419,7 +419,7 @@ jobs:
 
       - name: Install Dependencies for desktop
 #        run: cd view/desktop && pnpm install --force # TODO: This is a hack to get around eslint issues
-        run: cd view/desktop && pnpm install --frozen-lockfile 
+        run: cd view/desktop && pnpm install --frozen-lockfile
 
       - name: Install Playwright Browsers
         run: pnpm exec playwright install chromium --with-deps
