@@ -55,6 +55,7 @@ USER_MODELS_DIR := crates/moss-user
 THEME_MODELS_DIR := crates/moss-theme
 CONFIGURATION_MODELS_DIR := crates/moss-configuration
 LANGUAGE_MODELS_DIR := crates/moss-language
+EXTENSION_MODELS_DIR := crates/moss-extension
 
 # ---- Command Executables ----
 PNPM := pnpm
@@ -148,6 +149,7 @@ $(eval $(call gen_bindings,user,USER_MODELS_DIR))
 $(eval $(call gen_bindings,theme,THEME_MODELS_DIR))
 $(eval $(call gen_bindings,configuration,CONFIGURATION_MODELS_DIR))
 $(eval $(call gen_bindings,language,LANGUAGE_MODELS_DIR))
+$(eval $(call gen_bindings,extension,EXTENSION_MODELS_DIR))
 
 gen-app-bindings:
 gen-project-bindings:
@@ -161,6 +163,7 @@ gen-user-bindings:
 gen-theme-bindings:
 gen-configuration-bindings:
 gen-language-bindings:
+gen-extension-bindings:
 
 ## Generate all TypeScript bindings
 .PHONY: gen-bindings
@@ -176,7 +179,8 @@ gen-bindings: \
 	gen-user-bindings \
 	gen-theme-bindings \
 	gen-configuration-bindings \
-	gen-language-bindings
+	gen-language-bindings \
+	gen-extension-bindings
 
 
 # ======================================================

@@ -36,6 +36,17 @@
     {
       "identifier": "fs:allow-home-read-recursive",
       "allow": [{ "path": "$HOME/.moss/*" }]
+    },
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [
+        {
+          "url": "https://github.com/settings/tokens"
+        },
+        {
+          "url": "https://gitlab.com/-/user_settings/personal_access_tokens"
+        }
+      ]
     }
   ],
   "platforms": ["macOS", "linux", "windows"]

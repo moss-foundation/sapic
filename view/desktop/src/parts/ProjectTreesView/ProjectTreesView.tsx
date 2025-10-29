@@ -59,7 +59,7 @@ export const ProjectTreesView = () => {
       <Scrollbar className="min-h-0 flex-1" classNames={{ contentEl: "h-full w-full" }}>
         <div className="flex h-full flex-col">
           <div className="flex shrink items-center gap-[7px] px-2 py-1">
-            <Input placeholder="Search" />
+            <Input intent="outlined" contrast={true} placeholder="Search" shortcut="⌘+S" />
           </div>
 
           <div className="flex h-full flex-col">

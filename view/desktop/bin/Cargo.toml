@@ -68,6 +68,7 @@ tauri-plugin-os = "2.2.0"
 tauri-plugin-window-state = "2.4.0"
 tauri-plugin-single-instance = "2.2.2"
 tauri-plugin-log = { version = "2.2.1", features = ["colored"] }
+tauri-plugin-opener = "2.5.2"
 
 [target.'cfg(any(target_os = "linux", target_os = "macos"))'.dependencies]
 mimalloc = { version = "0.1.39", default-features = false }
