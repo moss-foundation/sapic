@@ -65,7 +65,7 @@ def main():
     args = parser.parse_args()
 
     # Build cargo check command
-    cmd = ["cargo", "check", "--message-format=json"]
+    cmd = ["cargo", "--locked", "check", "--message-format=json"]
     
     if args.package:
         cmd.extend(["-p", args.package])
