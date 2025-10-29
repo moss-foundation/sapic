@@ -20,7 +20,7 @@ CRATES_WITH_BINDINGS = {
     "language",
     "configuration",
     "theme",
-
+    "extension"
 }
 
 if __name__ == "__main__":

@@ -1,5 +1,6 @@
 pub mod contribution;
 pub mod manifest;
+pub mod models;
 pub mod scanner;
 
 use async_trait::async_trait;

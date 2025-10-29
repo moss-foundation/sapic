@@ -1,11 +1,9 @@
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
+use moss_extension::models::types::ExtensionInfo;
 use moss_server_api::extension_registry::ExtensionRegistryApiClient;
 
-use crate::{
-    App,
-    models::{operations::ListAvailableExtensionsOutput, types::AvailableExtensionInfo},
-};
+use crate::{App, models::operations::ListAvailableExtensionsOutput};
 
 impl<R: AppRuntime> App<R> {
     pub async fn list_available_extensions(
@@ -20,7 +18,7 @@ impl<R: AppRuntime> App<R> {
             result
                 .extensions
                 .into_iter()
-                .map(|info| AvailableExtensionInfo {
+                .map(|info| ExtensionInfo {
                     id: info.id,
                     external_id: info.external_id,
                     name: info.name,

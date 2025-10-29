@@ -8,7 +8,7 @@ use std::sync::Arc;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ExtensionInfo {
+pub struct ExtensionInfoResponse {
     pub id: String,
     pub external_id: String,
     pub name: String,
@@ -23,7 +23,7 @@ pub struct ExtensionInfo {
 
 #[derive(Debug, Deserialize)]
 pub struct ListExtensionsResponse {
-    pub extensions: Vec<ExtensionInfo>,
+    pub extensions: Vec<ExtensionInfoResponse>,
 }
 
 #[async_trait]

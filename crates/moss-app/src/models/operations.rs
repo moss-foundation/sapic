@@ -1,5 +1,6 @@
 use derive_more::Deref;
 use moss_configuration::models::types::ConfigurationSchema;
+use moss_extension::models::types::ExtensionInfo;
 use moss_language::models::types::LanguageInfo;
 use moss_logging::models::primitives::LogEntryId;
 use moss_theme::models::primitives::ThemeId;
@@ -340,4 +341,4 @@ pub struct CloseWorkspaceOutput {
 /// @category Operation
 #[derive(Debug, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
-pub struct ListAvailableExtensionsOutput(pub Vec<AvailableExtensionInfo>);
+pub struct ListAvailableExtensionsOutput(pub Vec<ExtensionInfo>);
