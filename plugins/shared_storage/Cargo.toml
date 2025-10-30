@@ -1,7 +1,14 @@
 [package]
-name = "shared_storage"
+name = "shared-storage"
 version = "0.1.0"
 edition = "2024"
+links = "shared-storage"
+
+[lib]
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-plugin.workspace = true
 
 [dependencies]
 moss_api.workspace = true

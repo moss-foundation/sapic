@@ -48,6 +48,22 @@ export const Logs = () => {
     provider: "GitHub",
   });
 
+  const [getItemForm, setGetItemForm] = useState({
+    key: "",
+    scope: "",
+  });
+
+  const [putItemForm, setPutItemForm] = useState({
+    key: "",
+    scope: "",
+    value: "",
+  });
+
+  const [removeItemForm, setRemoveItemForm] = useState({
+    key: "",
+    scope: "",
+  });
+
   useEffect(() => {
     const unlistenLogsStream = listen<LogEntryInfo>(ON_DID_APPEND_LOG_ENTRY_CHANNEL, (event) => {
       setLogs((prevLogs) => [...prevLogs, event.payload]);
@@ -115,6 +131,58 @@ export const Logs = () => {
     }
   };
 
+  const handleGetItem = async () => {
+    try {
+      const result = await invokeTauriIpc("plugin:shared-storage|get_item", {
+        input: {
+          key: getItemForm.key,
+          scope: "app",
+        },
+      });
+      console.log("Get item result:", result);
+      if (result.status === "ok") {
+        console.log("Data:", result.data);
+      }
+    } catch (error) {
+      console.error("Error getting item:", error);
+    }
+  };
+
+  const handlePutItem = async () => {
+    try {
+      const result = await invokeTauriIpc("plugin:shared-storage|put_item", {
+        input: {
+          key: putItemForm.key,
+          scope: putItemForm.scope || "App",
+          value: putItemForm.value,
+        },
+      });
+      console.log("Put item result:", result);
+      if (result.status === "ok") {
+        console.log("Data:", result.data);
+      }
+    } catch (error) {
+      console.error("Error putting item:", error);
+    }
+  };
+
+  const handleRemoveItem = async () => {
+    try {
+      const result = await invokeTauriIpc("plugin:shared-storage|remove_item", {
+        input: {
+          key: removeItemForm.key,
+          scope: removeItemForm.scope || "App",
+        },
+      });
+      console.log("Remove item result:", result);
+      if (result.status === "ok") {
+        console.log("Data:", result.data);
+      }
+    } catch (error) {
+      console.error("Error removing item:", error);
+    }
+  };
+
   return (
     <PageContent className="space-y-6">
       <section className="mb-6">
@@ -143,6 +211,81 @@ export const Logs = () => {
           <button onClick={handleDescribeApp} className="w-full rounded bg-blue-500 p-2 text-white">
             Describe App
           </button>
+        </div>
+      </section>
+
+      <section className="mb-6">
+        <h2 className="mb-2 text-xl">Shared Storage</h2>
+        <div className="grid grid-cols-3 gap-4">
+          <div className="flex flex-col gap-2 rounded bg-gray-50 p-4">
+            <h3 className="text-lg font-medium">Get Item</h3>
+            <input
+              type="text"
+              placeholder="Key"
+              value={getItemForm.key}
+              onChange={(e) => setGetItemForm((prev) => ({ ...prev, key: e.target.value }))}
+              className="w-full rounded-md border border-gray-300 bg-white p-2"
+            />
+            <input
+              type="text"
+              placeholder="Scope"
+              value={getItemForm.scope}
+              onChange={(e) => setGetItemForm((prev) => ({ ...prev, scope: e.target.value }))}
+              className="w-full rounded-md border border-gray-300 bg-white p-2"
+            />
+            <button onClick={handleGetItem} className="w-full rounded bg-blue-500 p-2 text-white">
+              Get
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-2 rounded bg-gray-50 p-4">
+            <h3 className="text-lg font-medium">Put Item</h3>
+            <input
+              type="text"
+              placeholder="Key"
+              value={putItemForm.key}
+              onChange={(e) => setPutItemForm((prev) => ({ ...prev, key: e.target.value }))}
+              className="w-full rounded-md border border-gray-300 bg-white p-2"
+            />
+            <input
+              type="text"
+              placeholder="Scope"
+              value={putItemForm.scope}
+              onChange={(e) => setPutItemForm((prev) => ({ ...prev, scope: e.target.value }))}
+              className="w-full rounded-md border border-gray-300 bg-white p-2"
+            />
+            <input
+              type="text"
+              placeholder="Value"
+              value={putItemForm.value}
+              onChange={(e) => setPutItemForm((prev) => ({ ...prev, value: e.target.value }))}
+              className="w-full rounded-md border border-gray-300 bg-white p-2"
+            />
+            <button onClick={handlePutItem} className="w-full rounded bg-blue-500 p-2 text-white">
+              Put
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-2 rounded bg-gray-50 p-4">
+            <h3 className="text-lg font-medium">Remove Item</h3>
+            <input
+              type="text"
+              placeholder="Key"
+              value={removeItemForm.key}
+              onChange={(e) => setRemoveItemForm((prev) => ({ ...prev, key: e.target.value }))}
+              className="w-full rounded-md border border-gray-300 bg-white p-2"
+            />
+            <input
+              type="text"
+              placeholder="Scope"
+              value={removeItemForm.scope}
+              onChange={(e) => setRemoveItemForm((prev) => ({ ...prev, scope: e.target.value }))}
+              className="w-full rounded-md border border-gray-300 bg-white p-2"
+            />
+            <button onClick={handleRemoveItem} className="w-full rounded bg-blue-500 p-2 text-white">
+              Remove
+            </button>
+          </div>
         </div>
       </section>
 

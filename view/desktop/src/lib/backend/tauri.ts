@@ -4,6 +4,12 @@ import { listen as listenTauri } from "@tauri-apps/api/event";
 
 export type TauriIpcCommand =
   //
+  // Plugins
+  //
+  | "plugin:shared-storage|get_item"
+  | "plugin:shared-storage|put_item"
+  | "plugin:shared-storage|remove_item"
+  //
   // App
   //
   | "describe_app"

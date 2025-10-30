@@ -1630,7 +1630,7 @@ dependencies = [
  "rand 0.9.2",
  "reqwest",
  "serde_json",
- "shared_storage",
+ "shared-storage",
  "strum",
  "tauri",
  "tauri-build",
@@ -6459,7 +6459,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "shared_storage"
+name = "shared-storage"
 version = "0.1.0"
 dependencies = [
  "async-trait",
@@ -6469,6 +6469,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
+ "tauri-plugin",
  "tracing",
  "ts-rs",
  "validator",

@@ -49,7 +49,9 @@
           "url": "https://gitlab.com/-/user_settings/personal_access_tokens"
         }
       ]
-    }
+    },
+
+    "shared-storage:default"
   ],
   "platforms": ["macOS", "linux", "windows"]
 }
