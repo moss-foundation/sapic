@@ -25,11 +25,6 @@ pub struct ContributorItem {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub(crate) struct AvatarResponse {
-    pub avatar_url: String,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct GetUserResponse {
     pub username: String,
     pub commit_email: String,
