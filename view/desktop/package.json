@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "1.7.2",
-    "@atlaskit/pragmatic-drag-and-drop-hitbox": "1.0.3",
+    "@atlaskit/pragmatic-drag-and-drop-hitbox": "1.1.0",
     "@langchain/core": "1.0.2",
     "@langchain/langgraph": "1.0.1",
     "@langchain/mistralai": "1.0.0",
