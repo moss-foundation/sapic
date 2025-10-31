@@ -100,14 +100,19 @@ impl SqliteStorage {
 #[async_trait]
 impl KeyedStorage for SqliteStorage {
     async fn put(&self, key: &str, value: JsonValue) -> joinerror::Result<()> {
-        let bytes = serde_json::to_string(&value).join_err::<()>("failed to serialize value")?;
+        let s = serde_json::to_string(&value).join_err::<()>("failed to serialize value")?;
 
-        sqlx::query("INSERT INTO kv (key, value) VALUES (?, ?)")
-            .bind(key)
-            .bind(bytes)
-            .execute(&self.pool)
-            .await
-            .join_err::<()>("failed to insert value")?;
+        sqlx::query(
+            r#"
+        INSERT INTO kv (key, value) VALUES (?, ?)
+        ON CONFLICT(key) DO UPDATE SET value=excluded.value
+    "#,
+        )
+        .bind(key)
+        .bind(s)
+        .execute(&self.pool)
+        .await
+        .join_err::<()>("failed to insert value")?;
 
         self.cache.write().await.insert(key.to_string(), value);
 
@@ -115,26 +120,25 @@ impl KeyedStorage for SqliteStorage {
     }
 
     async fn get(&self, key: &str) -> joinerror::Result<Option<JsonValue>> {
-        if let Some(value) = self.cache.read().await.get(key) {
-            Ok(Some(value.clone()))
-        } else {
-            if let Some(row) = sqlx::query("SELECT value FROM kv WHERE key = ?")
-                .bind(key)
-                .fetch_optional(&self.pool)
-                .await?
-            {
-                let bytes: Vec<u8> = row.get("value");
-                let value: JsonValue =
-                    serde_json::from_slice(&bytes).join_err::<()>("failed to deserialize value")?;
+        if let Some(v) = self.cache.read().await.get(key) {
+            return Ok(Some(v.clone()));
+        }
 
-                self.cache
-                    .write()
-                    .await
-                    .insert(key.to_string(), value.clone());
-                Ok(Some(value))
-            } else {
-                Ok(None)
-            }
+        if let Some(row) = sqlx::query("SELECT value FROM kv WHERE key = ?")
+            .bind(key)
+            .fetch_optional(&self.pool)
+            .await?
+        {
+            let bytes: Vec<u8> = row.get("value");
+            let value: JsonValue =
+                serde_json::from_slice(&bytes).join_err::<()>("failed to deserialize value")?;
+            self.cache
+                .write()
+                .await
+                .insert(key.to_string(), value.clone());
+            Ok(Some(value))
+        } else {
+            Ok(None)
         }
     }
 
@@ -146,6 +150,75 @@ impl KeyedStorage for SqliteStorage {
             .join_err::<()>("failed to delete value")?;
 
         self.cache.write().await.remove(key);
+
+        Ok(())
+    }
+
+    async fn put_batch(&self, keys: &[&str], values: &[JsonValue]) -> joinerror::Result<()> {
+        let mut tx = self
+            .pool
+            .begin()
+            .await
+            .join_err::<()>("failed to begin transaction")?;
+
+        for (key, value) in keys.iter().zip(values) {
+            let s = serde_json::to_string(value).join_err::<()>("failed to serialize value")?;
+
+            sqlx::query(
+                r#"
+                INSERT INTO kv (key, value) VALUES (?, ?)
+                ON CONFLICT(key) DO UPDATE SET value=excluded.value
+            "#,
+            )
+            .bind(key)
+            .bind(s)
+            .execute(&mut *tx)
+            .await
+            .join_err::<()>("failed to insert value")?;
+
+            self.cache
+                .write()
+                .await
+                .insert((*key).to_string(), value.clone());
+        }
+
+        tx.commit()
+            .await
+            .join_err::<()>("failed to commit transaction")?;
+
+        Ok(())
+    }
+
+    async fn get_batch(&self, keys: &[&str]) -> joinerror::Result<Vec<Option<JsonValue>>> {
+        let mut values = Vec::with_capacity(keys.len());
+
+        for key in keys {
+            values.push(self.get(key).await.join_err::<()>("failed to get value")?);
+        }
+
+        Ok(values)
+    }
+
+    async fn remove_batch(&self, keys: &[&str]) -> joinerror::Result<()> {
+        let mut tx = self
+            .pool
+            .begin()
+            .await
+            .join_err::<()>("failed to begin transaction")?;
+
+        for key in keys {
+            sqlx::query("DELETE FROM kv WHERE key = ?")
+                .bind(key)
+                .execute(&mut *tx)
+                .await
+                .join_err::<()>("failed to delete value")?;
+
+            self.cache.write().await.remove(*key);
+        }
+
+        tx.commit()
+            .await
+            .join_err::<()>("failed to commit transaction")?;
 
         Ok(())
     }

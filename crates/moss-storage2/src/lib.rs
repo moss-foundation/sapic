@@ -7,15 +7,17 @@ use async_trait::async_trait;
 use derive_more::Deref;
 use joinerror::OptionExt;
 use moss_app_delegate::AppDelegate;
-use moss_applib::AppRuntime;
+use moss_applib::{AppRuntime, subscription::EventEmitter};
 use rustc_hash::FxHashMap;
 use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};
 use tokio::sync::RwLock;
 
 use crate::{
-    adapters::KeyedStorage, application_storage::ApplicationStorageBackend,
-    models::primitives::StorageScope, workspace_storage::WorkspaceStorageBackend,
+    adapters::KeyedStorage,
+    application_storage::ApplicationStorageBackend,
+    models::{events::OnDidChangeValueEvent, primitives::StorageScope},
+    workspace_storage::WorkspaceStorageBackend,
 };
 
 #[async_trait]
@@ -28,19 +30,32 @@ pub trait Storage: Send + Sync {
 pub struct AppStorage {
     application: ApplicationStorageBackend,
     workspaces: RwLock<FxHashMap<Arc<String>, WorkspaceStorageBackend>>,
+
+    on_did_change_value_emitter: EventEmitter<OnDidChangeValueEvent>,
 }
 
 #[async_trait]
 impl Storage for AppStorage {
     async fn put(&self, scope: StorageScope, key: &str, value: JsonValue) -> joinerror::Result<()> {
-        match scope {
+        match scope.clone() {
             StorageScope::Application => self.application().await?.put(key, value).await,
             StorageScope::Workspace(workspace_id) => {
                 self.workspace(workspace_id).await?.put(key, value).await
             }
             _ => unimplemented!(),
-        }
+        }?;
+
+        self.on_did_change_value_emitter
+            .fire(OnDidChangeValueEvent {
+                key: key.to_string(),
+                scope: scope.clone(),
+                removed: false,
+            })
+            .await;
+
+        Ok(())
     }
+
     async fn get(&self, scope: StorageScope, key: &str) -> joinerror::Result<Option<JsonValue>> {
         match scope {
             StorageScope::Application => self.application().await?.get(key).await,
@@ -50,14 +65,25 @@ impl Storage for AppStorage {
             _ => unimplemented!(),
         }
     }
+
     async fn remove(&self, scope: StorageScope, key: &str) -> joinerror::Result<()> {
-        match scope {
+        match scope.clone() {
             StorageScope::Application => self.application().await?.remove(key).await,
             StorageScope::Workspace(workspace_id) => {
                 self.workspace(workspace_id).await?.remove(key).await
             }
             _ => unimplemented!(),
-        }
+        }?;
+
+        self.on_did_change_value_emitter
+            .fire(OnDidChangeValueEvent {
+                key: key.to_string(),
+                scope: scope.clone(),
+                removed: true,
+            })
+            .await;
+
+        Ok(())
     }
 }
 
@@ -68,6 +94,7 @@ impl AppStorage {
         Ok(Self {
             application,
             workspaces: RwLock::new(FxHashMap::default()),
+            on_did_change_value_emitter: EventEmitter::<OnDidChangeValueEvent>::new(),
         }
         .into())
     }
