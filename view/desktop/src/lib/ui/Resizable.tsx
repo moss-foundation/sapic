@@ -43,7 +43,7 @@ export const Resizable = forwardRef<AllotmentHandle, ResizableProps>(
       }, 100);
     }, []);
 
-    if (!isReady) return null;
+    if (!isReady.current) return null;
 
     return (
       <Allotment

@@ -3,4 +3,4 @@
 /**
  * @category Primitive
  */
-export type Scope = "app" | { "workspace": string };
+export type StorageScope = "application" | { "workspace": string };

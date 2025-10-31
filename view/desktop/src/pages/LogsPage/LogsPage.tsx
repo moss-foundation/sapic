@@ -136,7 +136,7 @@ export const Logs = () => {
       const result = await invokeTauriIpc("plugin:shared-storage|get_item", {
         input: {
           key: getItemForm.key,
-          scope: "app",
+          scope: "application",
         },
       });
       console.log("Get item result:", result);
@@ -153,7 +153,7 @@ export const Logs = () => {
       const result = await invokeTauriIpc("plugin:shared-storage|put_item", {
         input: {
           key: putItemForm.key,
-          scope: putItemForm.scope || "App",
+          scope: "application",
           value: putItemForm.value,
         },
       });
@@ -171,7 +171,7 @@ export const Logs = () => {
       const result = await invokeTauriIpc("plugin:shared-storage|remove_item", {
         input: {
           key: removeItemForm.key,
-          scope: removeItemForm.scope || "App",
+          scope: "application",
         },
       });
       console.log("Remove item result:", result);

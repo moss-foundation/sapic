@@ -3,7 +3,7 @@ use serde_json::Value as JsonValue;
 use ts_rs::TS;
 use validator::Validate;
 
-use crate::models::primitives::Scope;
+use crate::models::primitives::StorageScopeForFrontend;
 
 /// @category Operation
 #[derive(Debug, Clone, Deserialize, TS, Validate)]
@@ -12,7 +12,7 @@ use crate::models::primitives::Scope;
 #[ts(export, export_to = "operations.ts")]
 pub struct GetItemInput {
     pub key: String,
-    pub scope: Scope,
+    pub scope: StorageScopeForFrontend,
 }
 
 /// @category Operation
@@ -24,7 +24,7 @@ pub struct GetItemOutput {
     pub key: String,
     #[ts(type = "JsonValue")]
     pub value: JsonValue,
-    pub scope: Scope,
+    pub scope: StorageScopeForFrontend,
 }
 
 /// @category Operation
@@ -34,7 +34,7 @@ pub struct GetItemOutput {
 #[ts(export, export_to = "operations.ts")]
 pub struct PutItemInput {
     pub key: String,
-    pub scope: Scope,
+    pub scope: StorageScopeForFrontend,
     #[ts(type = "JsonValue")]
     pub value: JsonValue,
 }
@@ -44,9 +44,7 @@ pub struct PutItemInput {
 #[ts(optional_fields)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct PutItemOutput {
-    pub success: bool,
-}
+pub struct PutItemOutput {}
 
 /// @category Operation
 #[derive(Debug, Clone, Deserialize, TS, Validate)]
@@ -55,7 +53,7 @@ pub struct PutItemOutput {
 #[ts(export, export_to = "operations.ts")]
 pub struct RemoveItemInput {
     pub key: String,
-    pub scope: Scope,
+    pub scope: StorageScopeForFrontend,
 }
 
 /// @category Operation
@@ -63,6 +61,4 @@ pub struct RemoveItemInput {
 #[ts(optional_fields)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct RemoveItemOutput {
-    pub success: bool,
-}
+pub struct RemoveItemOutput {}

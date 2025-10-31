@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 use joinerror::{Error, ResultExt};
 use moss_logging::session;
+use serde_json::Value as JsonValue;
 use sqlx::{
     Row, SqlitePool,
     sqlite::{SqliteConnectOptions, SqliteJournalMode},
@@ -8,7 +9,7 @@ use sqlx::{
 use std::{collections::HashMap, path::Path, str::FromStr, sync::Arc, time::Duration};
 use tokio::sync::RwLock;
 
-use crate::adapters::StorageAdapter;
+use crate::adapters::{Flushable, KeyedStorage, Optimizable};
 
 const DEFAULT_BUSY_TIMEOUT: Duration = Duration::from_secs(5);
 
@@ -18,7 +19,7 @@ pub struct SqliteStorageOptions {
 
 pub struct SqliteStorage {
     // INFO: This will be improved in the future to support glob search for keys.
-    cache: RwLock<HashMap<String, String>>,
+    cache: RwLock<HashMap<String, JsonValue>>,
     pool: SqlitePool,
 }
 
@@ -75,9 +76,15 @@ impl SqliteStorage {
                 let key: String = row.get("key");
                 let value: Vec<u8> = row.get("value");
 
-                if let Ok(value_str) = String::from_utf8(value) {
-                    cache.insert(key, value_str);
-                }
+                let value: JsonValue = match serde_json::from_slice(&value) {
+                    Ok(value) => value,
+                    Err(err) => {
+                        session::trace!("failed to deserialize value: {}", err.to_string());
+                        continue;
+                    }
+                };
+
+                cache.insert(key, value);
             }
         } else {
             session::error!("failed to fetch database cache");
@@ -91,28 +98,98 @@ impl SqliteStorage {
 }
 
 #[async_trait]
-impl StorageAdapter for SqliteStorage {
-    async fn put(&self, key: &str, value: &str) -> joinerror::Result<()> {
+impl KeyedStorage for SqliteStorage {
+    async fn put(&self, key: &str, value: JsonValue) -> joinerror::Result<()> {
+        let bytes = serde_json::to_vec(&value).join_err::<()>("failed to serialize value")?;
+
+        sqlx::query("INSERT INTO kv (key, value) VALUES (?, ?)")
+            .bind(key)
+            .bind(bytes)
+            .execute(&self.pool)
+            .await
+            .join_err::<()>("failed to insert value")?;
+
+        self.cache.write().await.insert(key.to_string(), value);
+
         Ok(())
     }
 
-    async fn get(&self, key: &str) -> joinerror::Result<String> {
-        Ok(String::new())
+    async fn get(&self, key: &str) -> joinerror::Result<Option<JsonValue>> {
+        if let Some(value) = self.cache.read().await.get(key) {
+            Ok(Some(value.clone()))
+        } else {
+            if let Some(row) = sqlx::query("SELECT value FROM kv WHERE key = ?")
+                .bind(key)
+                .fetch_optional(&self.pool)
+                .await?
+            {
+                let bytes: Vec<u8> = row.get("value");
+                let value: JsonValue =
+                    serde_json::from_slice(&bytes).join_err::<()>("failed to deserialize value")?;
+
+                self.cache
+                    .write()
+                    .await
+                    .insert(key.to_string(), value.clone());
+                Ok(Some(value))
+            } else {
+                Ok(None)
+            }
+        }
     }
 
     async fn remove(&self, key: &str) -> joinerror::Result<()> {
+        sqlx::query("DELETE FROM kv WHERE key = ?")
+            .bind(key)
+            .execute(&self.pool)
+            .await
+            .join_err::<()>("failed to delete value")?;
+
+        self.cache.write().await.remove(key);
+
         Ok(())
     }
+}
 
-    async fn when_flushed(&self) -> joinerror::Result<()> {
+#[async_trait]
+impl Flushable for SqliteStorage {
+    async fn checkpoint(&self) -> joinerror::Result<()> {
+        sqlx::query("PRAGMA wal_checkpoint(PASSIVE);")
+            .execute(&self.pool)
+            .await
+            .join_err::<()>("wal_checkpoint(PASSIVE) failed")?;
+
         Ok(())
     }
 
     async fn flush(&self) -> joinerror::Result<()> {
+        sqlx::query("PRAGMA wal_checkpoint(TRUNCATE);")
+            .execute(&self.pool)
+            .await
+            .join_err::<()>("wal_checkpoint(TRUNCATE) failed")?;
+
+        sqlx::query("PRAGMA synchronous=NORMAL;")
+            .execute(&self.pool)
+            .await
+            .ok();
+
         Ok(())
     }
+}
 
+#[async_trait]
+impl Optimizable for SqliteStorage {
     async fn optimize(&self) -> joinerror::Result<()> {
+        sqlx::query("PRAGMA optimize;")
+            .execute(&self.pool)
+            .await
+            .join_err::<()>("PRAGMA optimize failed")?;
+
+        sqlx::query("VACUUM;")
+            .execute(&self.pool)
+            .await
+            .join_err::<()>("VACUUM failed")?;
+
         Ok(())
     }
 }

@@ -1,48 +1,93 @@
 pub mod adapters;
 pub mod application_storage;
-pub mod provider;
+pub mod models;
 pub mod workspace_storage;
 
+use async_trait::async_trait;
 use derive_more::Deref;
-use joinerror::Error;
+use joinerror::OptionExt;
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use rustc_hash::FxHashMap;
-use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode};
-use std::{path::Path, str::FromStr, sync::Arc};
-use tokio::sync::OnceCell;
+use serde_json::Value as JsonValue;
+use std::{path::Path, sync::Arc};
+use tokio::sync::RwLock;
 
-use crate::provider::{AppStorageBackendProvider, StorageBackendProvider};
+use crate::{
+    adapters::KeyedStorage, application_storage::ApplicationStorageBackend,
+    models::primitives::StorageScope, workspace_storage::WorkspaceStorageBackend,
+};
 
-const DEFAULT_DB_FILENAME: &str = "state.sqlite3";
-
-pub enum Scope {
-    Global,
-    Workspace(Arc<String>),
-}
-
+#[async_trait]
 pub trait Storage: Send + Sync {
-    // async fn get(&self, key: &str) -> joinerror::Result<String>;
-    // async fn set(&self, key: &str, value: &str) -> joinerror::Result<()>;
-    // async fn delete(&self, key: &str) -> joinerror::Result<()>;
+    async fn put(&self, scope: StorageScope, key: &str, value: JsonValue) -> joinerror::Result<()>;
+    async fn get(&self, scope: StorageScope, key: &str) -> joinerror::Result<Option<JsonValue>>;
+    async fn remove(&self, scope: StorageScope, key: &str) -> joinerror::Result<()>;
 }
 
 pub struct AppStorage {
-    provider: Arc<dyn StorageBackendProvider>,
+    application: ApplicationStorageBackend,
+    workspaces: RwLock<FxHashMap<Arc<String>, WorkspaceStorageBackend>>,
 }
 
-impl Storage for AppStorage {}
+#[async_trait]
+impl Storage for AppStorage {
+    async fn put(&self, scope: StorageScope, key: &str, value: JsonValue) -> joinerror::Result<()> {
+        match scope {
+            StorageScope::Application => self.application().await?.put(key, value).await,
+            StorageScope::Workspace(workspace_id) => {
+                self.workspace(workspace_id).await?.put(key, value).await
+            }
+            _ => unimplemented!(),
+        }
+    }
+    async fn get(&self, scope: StorageScope, key: &str) -> joinerror::Result<Option<JsonValue>> {
+        match scope {
+            StorageScope::Application => self.application().await?.get(key).await,
+            StorageScope::Workspace(workspace_id) => {
+                self.workspace(workspace_id).await?.get(key).await
+            }
+            _ => unimplemented!(),
+        }
+    }
+    async fn remove(&self, scope: StorageScope, key: &str) -> joinerror::Result<()> {
+        match scope {
+            StorageScope::Application => self.application().await?.remove(key).await,
+            StorageScope::Workspace(workspace_id) => {
+                self.workspace(workspace_id).await?.remove(key).await
+            }
+            _ => unimplemented!(),
+        }
+    }
+}
 
 impl AppStorage {
     pub async fn new(globals_dir: &Path) -> joinerror::Result<Arc<Self>> {
-        let provider = AppStorageBackendProvider::new(globals_dir).await?;
-
-        provider.application().await?;
+        let application = ApplicationStorageBackend::new(globals_dir).await?;
 
         Ok(Self {
-            provider: Arc::new(provider),
+            application,
+            workspaces: RwLock::new(FxHashMap::default()),
         }
         .into())
+    }
+
+    async fn workspace(
+        &self,
+        workspace_id: Arc<String>,
+    ) -> joinerror::Result<Arc<dyn KeyedStorage>> {
+        let workspaces = self.workspaces.read().await;
+
+        Ok(workspaces
+            .get(&workspace_id)
+            .cloned()
+            .ok_or_join_err::<()>("workspace not found")?
+            .storage()
+            .await?)
+    }
+
+    async fn application(&self) -> joinerror::Result<Arc<dyn KeyedStorage>> {
+        Ok(self.application.storage().await?)
     }
 }
 

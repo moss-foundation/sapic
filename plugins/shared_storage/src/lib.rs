@@ -1,7 +1,7 @@
 mod models;
 pub mod provider;
 
-use joinerror::OptionExt;
+use joinerror::{OptionExt, ResultExt};
 use moss_api::TauriResult;
 use moss_storage2::Storage;
 use serde_json::Value as JsonValue;
@@ -13,12 +13,8 @@ use tauri::{
 use tracing::instrument;
 
 use crate::{
-    models::{
-        operations::{
-            GetItemInput, GetItemOutput, PutItemInput, PutItemOutput, RemoveItemInput,
-            RemoveItemOutput,
-        },
-        primitives::Scope,
+    models::operations::{
+        GetItemInput, GetItemOutput, PutItemInput, PutItemOutput, RemoveItemInput, RemoveItemOutput,
     },
     provider::{GenericAppHandle, PROVIDER_CALLBACK},
 };
@@ -45,12 +41,15 @@ async fn get_item<'a, R: tauri::Runtime>(
         .get()
         .ok_or_join_err::<()>("storage provider not found")?;
 
-    let storage = provider(&GenericAppHandle::new(app_handle));
+    let storage: Arc<dyn Storage> = provider(&GenericAppHandle::new(app_handle))?;
+    let value = storage
+        .get(input.scope.clone().into(), &input.key)
+        .await?
+        .ok_or_join_err::<()>("item not found")?;
 
-    // TODO: Implement actual storage logic with input.key and input.scope
     Ok(GetItemOutput {
         key: input.key.clone(),
-        value: JsonValue::String(format!("Value for key: {}", input.key)),
+        value,
         scope: input.scope,
     })
 }
@@ -65,16 +64,13 @@ async fn put_item<'a, R: tauri::Runtime>(
         .get()
         .ok_or_join_err::<()>("storage provider not found")?;
 
-    let storage = provider(&GenericAppHandle::new(app_handle));
+    let storage: Arc<dyn Storage> = provider(&GenericAppHandle::new(app_handle))?;
+    let _ = storage
+        .put(input.scope.into(), &input.key, input.value)
+        .await
+        .join_err::<()>("failed to put item")?;
 
-    // TODO: Implement actual storage logic
-    tracing::info!(
-        "Put item - key: {}, scope: {:?}, value: {:?}",
-        input.key,
-        input.scope,
-        input.value
-    );
-    Ok(PutItemOutput { success: true })
+    Ok(PutItemOutput {})
 }
 
 #[tauri::command(async)]
@@ -87,9 +83,11 @@ async fn remove_item<'a, R: tauri::Runtime>(
         .get()
         .ok_or_join_err::<()>("storage provider not found")?;
 
-    let storage = provider(&GenericAppHandle::new(app_handle));
+    let storage: Arc<dyn Storage> = provider(&GenericAppHandle::new(app_handle))?;
+    let _ = storage
+        .remove(input.scope.into(), &input.key)
+        .await
+        .join_err::<()>("failed to remove item")?;
 
-    // TODO: Implement actual storage logic
-    tracing::info!("Remove item - key: {}, scope: {:?}", input.key, input.scope);
-    Ok(RemoveItemOutput { success: true })
+    Ok(RemoveItemOutput {})
 }

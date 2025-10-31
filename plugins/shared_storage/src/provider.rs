@@ -3,7 +3,7 @@ use std::{
     any::Any,
     sync::{Arc, OnceLock},
 };
-use tauri::{AppHandle, Runtime};
+use tauri::AppHandle;
 
 pub struct GenericAppHandle {
     inner: Arc<dyn Any + Send + Sync>,
@@ -20,10 +20,6 @@ impl GenericAppHandle {
         self.inner.clone().downcast_ref::<AppHandle<R>>().cloned()
     }
 }
-
-// pub trait StorageProvider {
-//     fn storage(&self) -> joinerror::Result<Arc<dyn Storage>>;
-// }
 
 pub(crate) type ProviderCallback =
     Arc<dyn Fn(&GenericAppHandle) -> joinerror::Result<Arc<dyn Storage>> + Send + Sync>;
