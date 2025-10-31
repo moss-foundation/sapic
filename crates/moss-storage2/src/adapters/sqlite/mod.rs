@@ -158,7 +158,7 @@ impl KeyedStorage for SqliteStorage {
     }
 
     async fn put_batch(&self, keys: &[&str], values: &[JsonValue]) -> joinerror::Result<()> {
-        let mut tx = self
+        let mut txn = self
             .pool
             .begin()
             .await
@@ -175,7 +175,7 @@ impl KeyedStorage for SqliteStorage {
             )
             .bind(key)
             .bind(s)
-            .execute(&mut *tx)
+            .execute(&mut *txn)
             .await
             .join_err::<()>("failed to insert value")?;
 
@@ -185,7 +185,7 @@ impl KeyedStorage for SqliteStorage {
                 .insert((*key).to_string(), value.clone());
         }
 
-        tx.commit()
+        txn.commit()
             .await
             .join_err::<()>("failed to commit transaction")?;
 
@@ -203,7 +203,7 @@ impl KeyedStorage for SqliteStorage {
     }
 
     async fn remove_batch(&self, keys: &[&str]) -> joinerror::Result<()> {
-        let mut tx = self
+        let mut txn = self
             .pool
             .begin()
             .await
@@ -212,14 +212,14 @@ impl KeyedStorage for SqliteStorage {
         for key in keys {
             sqlx::query("DELETE FROM kv WHERE key = ?")
                 .bind(key)
-                .execute(&mut *tx)
+                .execute(&mut *txn)
                 .await
                 .join_err::<()>("failed to delete value")?;
 
             self.cache.write().await.remove(*key);
         }
 
-        tx.commit()
+        txn.commit()
             .await
             .join_err::<()>("failed to commit transaction")?;
 
