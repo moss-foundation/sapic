@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use joinerror::{Error, ResultExt};
+use joinerror::ResultExt;
 use moss_logging::session;
 use serde_json::Value as JsonValue;
 use sqlx::{
@@ -14,6 +14,7 @@ use crate::adapters::{Flushable, KeyedStorage, Optimizable};
 const DEFAULT_BUSY_TIMEOUT: Duration = Duration::from_secs(5);
 
 pub struct SqliteStorageOptions {
+    in_memory: bool,
     busy_timeout: Duration,
 }
 
@@ -35,12 +36,14 @@ impl SqliteStorage {
 
         let url = format!("sqlite://{}", path.as_ref().display());
         let options = SqliteConnectOptions::from_str(&url)
-            .map_err(|e| Error::new::<()>(e.to_string()))?
+            .join_err::<()>("failed to create connect options")?
+            .in_memory(options.as_ref().map(|o| o.in_memory).unwrap_or(false))
             .create_if_missing(true)
             .journal_mode(SqliteJournalMode::Wal)
             .synchronous(sqlx::sqlite::SqliteSynchronous::Normal)
             .busy_timeout(
                 options
+                    .as_ref()
                     .map(|o| o.busy_timeout)
                     .unwrap_or(DEFAULT_BUSY_TIMEOUT),
             )
