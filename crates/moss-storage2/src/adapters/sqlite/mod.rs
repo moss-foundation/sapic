@@ -100,7 +100,7 @@ impl SqliteStorage {
 #[async_trait]
 impl KeyedStorage for SqliteStorage {
     async fn put(&self, key: &str, value: JsonValue) -> joinerror::Result<()> {
-        let bytes = serde_json::to_vec(&value).join_err::<()>("failed to serialize value")?;
+        let bytes = serde_json::to_string(&value).join_err::<()>("failed to serialize value")?;
 
         sqlx::query("INSERT INTO kv (key, value) VALUES (?, ?)")
             .bind(key)

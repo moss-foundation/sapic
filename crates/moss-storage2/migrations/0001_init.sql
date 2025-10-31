@@ -3,6 +3,6 @@ PRAGMA foreign_keys=ON;
 CREATE TABLE IF NOT EXISTS kv (
   key   TEXT PRIMARY KEY ON CONFLICT REPLACE,
   value BLOB NOT NULL
-) STRICT;
+);
 
 PRAGMA user_version = 1;
