@@ -227,14 +227,66 @@ impl KeyedStorage for SqliteStorage {
         &self,
         keys: &[&str],
     ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>> {
-        let mut values = Vec::with_capacity(keys.len());
-
-        for key in keys {
-            let value = self.get(key).await.join_err::<()>("failed to get value")?;
-            values.push((key.to_string(), value));
+        if keys.is_empty() {
+            return Ok(vec![]);
         }
 
-        Ok(values)
+        let cache = self.cache.read().await;
+        let mut cache_hits: HashMap<String, JsonValue> = HashMap::new();
+        let mut keys_to_fetch = Vec::new();
+
+        for key in keys {
+            if let Some(value) = cache.get(*key) {
+                cache_hits.insert((*key).to_string(), value.clone());
+            } else {
+                keys_to_fetch.push(*key);
+            }
+        }
+        drop(cache);
+
+        if keys_to_fetch.is_empty() {
+            let mut result = Vec::with_capacity(keys.len());
+            for key in keys {
+                result.push((key.to_string(), cache_hits.get(*key).cloned()));
+            }
+            return Ok(result);
+        }
+
+        let json_keys = serde_json::to_string(&keys_to_fetch).unwrap();
+        let rows = sqlx::query(
+            r#"
+            SELECT key, value FROM kv
+            WHERE key IN (SELECT value FROM json_each(?))
+            "#,
+        )
+        .bind(json_keys)
+        .fetch_all(&self.pool)
+        .await
+        .join_err::<()>("failed to fetch values")?;
+
+        let mut db_results: HashMap<String, JsonValue> = HashMap::with_capacity(rows.len());
+        {
+            let mut cache = self.cache.write().await;
+            for row in rows {
+                let key: String = row.get("key");
+                let bytes: Vec<u8> = row.get("value");
+                if let Ok(value) = serde_json::from_slice::<JsonValue>(&bytes) {
+                    db_results.insert(key.clone(), value.clone());
+                    cache.insert(key, value);
+                }
+            }
+        }
+
+        let mut result = Vec::with_capacity(keys.len());
+        for key in keys {
+            let value = cache_hits
+                .get(*key)
+                .or_else(|| db_results.get(*key))
+                .cloned();
+            result.push((key.to_string(), value));
+        }
+
+        Ok(result)
     }
 
     async fn remove_batch(
