@@ -27,3 +27,4 @@ export * from "./Workspace";
 
 export * from "./EnvironmentsLists";
 export * from "./PlannedBadge";
+export * from "./SidebarEdgeHandler";
