@@ -3,11 +3,34 @@ import { jsonValueSchema } from "@repo/moss-bindingutils";
 import { z } from "zod";
 import { storageScopeSchema } from "./primitives.zod";
 
-export const putItemOutputSchema = z.record(z.string(), z.never());
+export const batchPutItemOutputSchema = z.record(z.string(), z.never());
 
-export const removeItemOutputSchema = z.object({
-  success: z.boolean(),
+export const putItemOutputSchema = z.record(z.string(), z.never());
+export const batchGetItemInputSchema = z.object({
+  scope: storageScopeSchema,
+  keys: z.array(z.string()),
 });
+
+export const batchGetItemOutputSchema = z.object({
+  scope: storageScopeSchema,
+  items: z.record(z.string(), jsonValueSchema.nullable()),
+});
+
+export const batchPutItemInputSchema = z.object({
+  scope: storageScopeSchema,
+  items: z.record(z.string(), jsonValueSchema),
+});
+
+export const batchRemoveItemInputSchema = z.object({
+  scope: storageScopeSchema,
+  keys: z.array(z.string()),
+});
+
+export const batchRemoveItemOutputSchema = z.object({
+  scope: storageScopeSchema,
+  items: z.record(z.string(), jsonValueSchema.nullable()),
+});
+
 export const getItemInputSchema = z.object({
   key: z.string(),
   scope: storageScopeSchema,
@@ -28,4 +51,9 @@ export const putItemInputSchema = z.object({
 export const removeItemInputSchema = z.object({
   key: z.string(),
   scope: storageScopeSchema,
+});
+
+export const removeItemOutputSchema = z.object({
+  scope: storageScopeSchema,
+  value: jsonValueSchema,
 });

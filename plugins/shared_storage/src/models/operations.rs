@@ -91,6 +91,7 @@ pub struct RemoveItemOutput {
 #[ts(export, export_to = "operations.ts")]
 pub struct BatchPutItemInput {
     pub scope: StorageScopeForFrontend,
+    #[ts(type = "Record<string, JsonValue>")]
     pub items: HashMap<String, JsonValue>,
 }
 
@@ -122,6 +123,7 @@ pub struct BatchRemoveItemInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct BatchRemoveItemOutput {
     pub scope: StorageScopeForFrontend,
+    #[ts(type = "Record<string, JsonValue | null>")]
     pub items: HashMap<String, Option<JsonValue>>,
 }
 
@@ -146,5 +148,6 @@ pub struct BatchGetItemInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct BatchGetItemOutput {
     pub scope: StorageScopeForFrontend,
+    #[ts(type = "Record<string, JsonValue | null>")]
     pub items: HashMap<String, Option<JsonValue>>,
 }

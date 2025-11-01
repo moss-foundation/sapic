@@ -5,6 +5,36 @@ import type { StorageScope } from "./primitives";
 /**
  * @category Operation
  */
+export type BatchGetItemInput = { scope: StorageScope; keys: Array<string> };
+
+/**
+ * @category Operation
+ */
+export type BatchGetItemOutput = { scope: StorageScope; items: Record<string, JsonValue | null> };
+
+/**
+ * @category Operation
+ */
+export type BatchPutItemInput = { scope: StorageScope; items: Record<string, JsonValue> };
+
+/**
+ * @category Operation
+ */
+export type BatchPutItemOutput = Record<string, never>;
+
+/**
+ * @category Operation
+ */
+export type BatchRemoveItemInput = { scope: StorageScope; keys: Array<string> };
+
+/**
+ * @category Operation
+ */
+export type BatchRemoveItemOutput = { scope: StorageScope; items: Record<string, JsonValue | null> };
+
+/**
+ * @category Operation
+ */
 export type GetItemInput = { key: string; scope: StorageScope };
 
 /**
@@ -30,4 +60,4 @@ export type RemoveItemInput = { key: string; scope: StorageScope };
 /**
  * @category Operation
  */
-export type RemoveItemOutput = { success: boolean };
+export type RemoveItemOutput = { scope: StorageScope; value: JsonValue };
