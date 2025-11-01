@@ -10,12 +10,12 @@ export type BatchGetItemInput = { scope: StorageScope; keys: Array<string> };
 /**
  * @category Operation
  */
-export type BatchGetItemOutput = { scope: StorageScope; items: Record<string, JsonValue | null> };
+export type BatchGetItemOutput = { scope: StorageScope; items: { [key: string]: JsonValue | null } };
 
 /**
  * @category Operation
  */
-export type BatchPutItemInput = { scope: StorageScope; items: Record<string, JsonValue> };
+export type BatchPutItemInput = { scope: StorageScope; items: { [key: string]: JsonValue } };
 
 /**
  * @category Operation
@@ -30,7 +30,7 @@ export type BatchRemoveItemInput = { scope: StorageScope; keys: Array<string> };
 /**
  * @category Operation
  */
-export type BatchRemoveItemOutput = { scope: StorageScope; items: Record<string, JsonValue | null> };
+export type BatchRemoveItemOutput = { scope: StorageScope; items: { [key: string]: JsonValue | null } };
 
 /**
  * @category Operation

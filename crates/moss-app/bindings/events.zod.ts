@@ -12,5 +12,8 @@ export const onDidAppendLogEntrySchema = z.object({
 
 export const onDidChangeConfigurationSchema = z.object({
   affected_keys: z.array(z.string()),
-  changes: z.record(z.string(), jsonValueSchema),
+  changes: z.record(
+    z.string(),
+    z.lazy(() => jsonValueSchema)
+  ),
 });

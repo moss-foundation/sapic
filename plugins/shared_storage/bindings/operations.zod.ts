@@ -13,12 +13,18 @@ export const batchGetItemInputSchema = z.object({
 
 export const batchGetItemOutputSchema = z.object({
   scope: storageScopeSchema,
-  items: z.record(z.string(), jsonValueSchema.nullable()),
+  items: z.record(
+    z.string(),
+    z.lazy(() => jsonValueSchema.nullable())
+  ),
 });
 
 export const batchPutItemInputSchema = z.object({
   scope: storageScopeSchema,
-  items: z.record(z.string(), jsonValueSchema),
+  items: z.record(
+    z.string(),
+    z.lazy(() => jsonValueSchema)
+  ),
 });
 
 export const batchRemoveItemInputSchema = z.object({
@@ -28,7 +34,10 @@ export const batchRemoveItemInputSchema = z.object({
 
 export const batchRemoveItemOutputSchema = z.object({
   scope: storageScopeSchema,
-  items: z.record(z.string(), jsonValueSchema.nullable()),
+  items: z.record(
+    z.string(),
+    z.lazy(() => jsonValueSchema.nullable())
+  ),
 });
 
 export const getItemInputSchema = z.object({

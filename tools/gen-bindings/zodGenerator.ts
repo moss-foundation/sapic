@@ -13,7 +13,7 @@
  */
 
 import { exec } from "node:child_process";
-import { existsSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 import { promisify } from "node:util";
 import { ExportDeclaration, ImportDeclaration, Project, SourceFile } from "ts-morph";
@@ -139,7 +139,7 @@ class ZodSchemaGenerator {
       this.project.addSourceFileAtPath(zodPath);
 
       const tsFile = this.project.getSourceFile(tsPath);
-      const zodFile = this.project.getSourceFile(zodPath);
+      let zodFile = this.project.getSourceFile(zodPath);
 
       if (!tsFile || !zodFile) {
         throw new Error(`Failed to load source files: ${tsPath} or ${zodPath}`);
@@ -152,6 +152,13 @@ class ZodSchemaGenerator {
         await this.processImportDeclaration(importDecl, zodFile);
       }
 
+      // Fix jsonValueSchema usage in z.record() to avoid TypeScript infinite recursion
+      // Returns new file reference if file was reloaded
+      const updatedZodFile = this.fixJsonValueSchemaInRecord(zodFile);
+      if (updatedZodFile) {
+        zodFile = updatedZodFile;
+      }
+
       // Organize imports and save
       zodFile.organizeImports();
       await this.project.save();
@@ -160,6 +167,51 @@ class ZodSchemaGenerator {
     } catch (error) {
       throw new Error(`Failed to post-process Zod file: ${error instanceof Error ? error.message : String(error)}`);
     }
+  }
+
+  /**
+   * Fixes jsonValueSchema usage in z.record() calls to wrap it in z.lazy()
+   * This prevents TypeScript "Type instantiation is excessively deep" errors
+   * @returns Updated SourceFile if changes were made, undefined otherwise
+   */
+  private fixJsonValueSchemaInRecord(zodFile: SourceFile): SourceFile | undefined {
+    const text = zodFile.getFullText();
+    const filePath = zodFile.getFilePath();
+
+    // Pattern: z.record(z.string(), jsonValueSchema) or z.record(z.string(), jsonValueSchema.nullable())
+    // Replace with: z.record(z.string(), z.lazy(() => jsonValueSchema)) or z.record(z.string(), z.lazy(() => jsonValueSchema.nullable()))
+
+    // Match patterns like:
+    // - z.record(z.string(), jsonValueSchema)
+    // - z.record(z.string(), jsonValueSchema.nullable())
+    const patterns = [
+      {
+        // Simple pattern: z.record(z.string(), jsonValueSchema)
+        regex: /z\.record\(z\.string\(\),\s*jsonValueSchema\)/g,
+        replacement: "z.record(z.string(), z.lazy(() => jsonValueSchema))",
+      },
+      {
+        // Pattern with nullable: z.record(z.string(), jsonValueSchema.nullable())
+        regex: /z\.record\(z\.string\(\),\s*jsonValueSchema\.nullable\(\)\)/g,
+        replacement: "z.record(z.string(), z.lazy(() => jsonValueSchema.nullable()))",
+      },
+    ];
+
+    let updatedText = text;
+    for (const pattern of patterns) {
+      updatedText = updatedText.replace(pattern.regex, pattern.replacement);
+    }
+
+    if (updatedText !== text) {
+      // Write the updated text directly to the file
+      writeFileSync(filePath, updatedText, "utf-8");
+      // Reload the file in the project to reflect changes
+      this.project.removeSourceFile(zodFile);
+      const newSourceFile = this.project.addSourceFileAtPath(filePath);
+      return newSourceFile;
+    }
+
+    return undefined;
   }
 
   /**
