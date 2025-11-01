@@ -1,9 +1,14 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
+use std::collections::HashMap;
 use ts_rs::TS;
 use validator::Validate;
 
-use crate::models::primitives::StorageScopeForFrontend;
+use crate::models::primitives::*;
+
+//
+// Get Item
+//
 
 /// @category Operation
 #[derive(Debug, Clone, Deserialize, TS, Validate)]
@@ -27,6 +32,10 @@ pub struct GetItemOutput {
     pub scope: StorageScopeForFrontend,
 }
 
+//
+// Put Item
+//
+
 /// @category Operation
 #[derive(Debug, Clone, Deserialize, TS, Validate)]
 #[ts(optional_fields)]
@@ -46,6 +55,10 @@ pub struct PutItemInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct PutItemOutput {}
 
+//
+// Remove Item
+//
+
 /// @category Operation
 #[derive(Debug, Clone, Deserialize, TS, Validate)]
 #[ts(optional_fields)]
@@ -61,4 +74,77 @@ pub struct RemoveItemInput {
 #[ts(optional_fields)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct RemoveItemOutput {}
+pub struct RemoveItemOutput {
+    pub scope: StorageScopeForFrontend,
+    #[ts(type = "JsonValue")]
+    pub value: Option<JsonValue>,
+}
+
+//
+// Batch Put Item
+//
+
+/// @category Operation
+#[derive(Debug, Clone, Deserialize, TS, Validate)]
+#[ts(optional_fields)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchPutItemInput {
+    pub scope: StorageScopeForFrontend,
+    pub items: HashMap<String, JsonValue>,
+}
+
+/// @category Operation
+#[derive(Debug, Clone, Serialize, TS)]
+#[ts(optional_fields)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchPutItemOutput {}
+
+//
+// Batch Remove Item
+//
+
+/// @category Operation
+#[derive(Debug, Clone, Deserialize, TS, Validate)]
+#[ts(optional_fields)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchRemoveItemInput {
+    pub scope: StorageScopeForFrontend,
+    pub keys: Vec<String>,
+}
+
+/// @category Operation
+#[derive(Debug, Clone, Serialize, TS)]
+#[ts(optional_fields)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchRemoveItemOutput {
+    pub scope: StorageScopeForFrontend,
+    pub items: HashMap<String, Option<JsonValue>>,
+}
+
+//
+// Batch Get Item
+//
+
+/// @category Operation
+#[derive(Debug, Clone, Deserialize, TS, Validate)]
+#[ts(optional_fields)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchGetItemInput {
+    pub scope: StorageScopeForFrontend,
+    pub keys: Vec<String>,
+}
+
+/// @category Operation
+#[derive(Debug, Clone, Serialize, TS)]
+#[ts(optional_fields)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchGetItemOutput {
+    pub scope: StorageScopeForFrontend,
+    pub items: HashMap<String, Option<JsonValue>>,
+}

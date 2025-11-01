@@ -39,16 +39,22 @@ pub trait KeyedStorage: Send + Sync {
     async fn get(&self, key: &str) -> joinerror::Result<Option<JsonValue>>;
 
     /// Removes `key` from the in-memory cache and SQLite.
-    async fn remove(&self, key: &str) -> joinerror::Result<()>;
+    /// Returns the removed value.
+    async fn remove(&self, key: &str) -> joinerror::Result<Option<JsonValue>>;
 
     /// Upserts `values` at `keys`.
     /// Writes to SQLite, then updates the in-memory cache (write-through).
-    async fn put_batch(&self, keys: &[&str], values: &[JsonValue]) -> joinerror::Result<()>;
+    async fn put_batch(&self, items: &[(&str, JsonValue)]) -> joinerror::Result<()>;
 
     /// Gets `keys` from the in-memory cache; on miss, reads from SQLite,
     /// caches the values, and returns them.
-    async fn get_batch(&self, keys: &[&str]) -> joinerror::Result<Vec<Option<JsonValue>>>;
+    async fn get_batch(&self, keys: &[&str])
+    -> joinerror::Result<Vec<(String, Option<JsonValue>)>>;
 
     /// Removes `keys` from the in-memory cache and SQLite.
-    async fn remove_batch(&self, keys: &[&str]) -> joinerror::Result<()>;
+    /// Returns the removed values.
+    async fn remove_batch(
+        &self,
+        keys: &[&str],
+    ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>>;
 }

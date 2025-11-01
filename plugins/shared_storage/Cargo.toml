@@ -13,6 +13,7 @@ tauri-plugin.workspace = true
 [dependencies]
 moss_api.workspace = true
 moss_storage2.workspace = true
+moss_applib.workspace = true
 
 joinerror.workspace = true
 tauri = { workspace = true, features = ["wry"] }
@@ -22,3 +23,4 @@ validator = { workspace = true, features = ["derive"] }
 ts-rs = { workspace = true }
 async-trait.workspace = true
 tracing.workspace = true
+derive_more = { workspace = true, features = ["deref"] }

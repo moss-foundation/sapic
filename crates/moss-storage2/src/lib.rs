@@ -24,7 +24,23 @@ use crate::{
 pub trait Storage: Send + Sync {
     async fn put(&self, scope: StorageScope, key: &str, value: JsonValue) -> joinerror::Result<()>;
     async fn get(&self, scope: StorageScope, key: &str) -> joinerror::Result<Option<JsonValue>>;
-    async fn remove(&self, scope: StorageScope, key: &str) -> joinerror::Result<()>;
+    async fn remove(&self, scope: StorageScope, key: &str) -> joinerror::Result<Option<JsonValue>>;
+
+    async fn put_batch(
+        &self,
+        scope: StorageScope,
+        items: &[(&str, JsonValue)],
+    ) -> joinerror::Result<()>;
+    async fn get_batch(
+        &self,
+        scope: StorageScope,
+        keys: &[&str],
+    ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>>;
+    async fn remove_batch(
+        &self,
+        scope: StorageScope,
+        keys: &[&str],
+    ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>>;
 }
 
 pub struct AppStorage {
@@ -66,14 +82,14 @@ impl Storage for AppStorage {
         }
     }
 
-    async fn remove(&self, scope: StorageScope, key: &str) -> joinerror::Result<()> {
-        match scope.clone() {
-            StorageScope::Application => self.application().await?.remove(key).await,
+    async fn remove(&self, scope: StorageScope, key: &str) -> joinerror::Result<Option<JsonValue>> {
+        let value = match scope.clone() {
+            StorageScope::Application => self.application().await?.remove(key).await?,
             StorageScope::Workspace(workspace_id) => {
-                self.workspace(workspace_id).await?.remove(key).await
+                self.workspace(workspace_id).await?.remove(key).await?
             }
             _ => unimplemented!(),
-        }?;
+        };
 
         self.on_did_change_value_emitter
             .fire(OnDidChangeValueEvent {
@@ -83,7 +99,49 @@ impl Storage for AppStorage {
             })
             .await;
 
-        Ok(())
+        Ok(value)
+    }
+
+    async fn put_batch(
+        &self,
+        scope: StorageScope,
+        items: &[(&str, JsonValue)],
+    ) -> joinerror::Result<()> {
+        match scope.clone() {
+            StorageScope::Application => self.application().await?.put_batch(items).await,
+            StorageScope::Workspace(workspace_id) => {
+                self.workspace(workspace_id).await?.put_batch(items).await
+            }
+            _ => unimplemented!(),
+        }
+    }
+
+    async fn get_batch(
+        &self,
+        scope: StorageScope,
+        keys: &[&str],
+    ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>> {
+        match scope.clone() {
+            StorageScope::Application => self.application().await?.get_batch(keys).await,
+            StorageScope::Workspace(workspace_id) => {
+                self.workspace(workspace_id).await?.get_batch(keys).await
+            }
+            _ => unimplemented!(),
+        }
+    }
+
+    async fn remove_batch(
+        &self,
+        scope: StorageScope,
+        keys: &[&str],
+    ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>> {
+        match scope.clone() {
+            StorageScope::Application => self.application().await?.remove_batch(keys).await,
+            StorageScope::Workspace(workspace_id) => {
+                self.workspace(workspace_id).await?.remove_batch(keys).await
+            }
+            _ => unimplemented!(),
+        }
     }
 }
 

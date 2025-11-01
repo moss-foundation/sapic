@@ -6473,8 +6473,10 @@ name = "shared-storage"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "derive_more 2.0.1",
  "joinerror",
  "moss_api",
+ "moss_applib",
  "moss_storage2",
  "serde",
  "serde_json",

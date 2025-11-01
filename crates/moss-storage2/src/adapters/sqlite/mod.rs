@@ -145,27 +145,44 @@ impl KeyedStorage for SqliteStorage {
         }
     }
 
-    async fn remove(&self, key: &str) -> joinerror::Result<()> {
-        sqlx::query("DELETE FROM kv WHERE key = ?")
-            .bind(key)
-            .execute(&self.pool)
-            .await
-            .join_err::<()>("failed to delete value")?;
+    async fn remove(&self, key: &str) -> joinerror::Result<Option<JsonValue>> {
+        let row = sqlx::query(
+            r#"
+            DELETE FROM kv
+            WHERE key = ?
+            RETURNING value
+            "#,
+        )
+        .bind(key)
+        .fetch_optional(&self.pool)
+        .await
+        .join_err::<()>("failed to delete and return value")?;
 
-        self.cache.write().await.remove(key);
+        let value = row.map(|r| {
+            let raw: String = r.get("value");
+            serde_json::from_str::<JsonValue>(&raw).unwrap_or(JsonValue::Null)
+        });
 
-        Ok(())
+        if value.is_some() {
+            self.cache.write().await.remove(key);
+        }
+
+        Ok(value)
     }
 
-    async fn put_batch(&self, keys: &[&str], values: &[JsonValue]) -> joinerror::Result<()> {
+    async fn put_batch(&self, items: &[(&str, JsonValue)]) -> joinerror::Result<()> {
+        if items.is_empty() {
+            return Ok(());
+        }
+
         let mut txn = self
             .pool
             .begin()
             .await
             .join_err::<()>("failed to begin transaction")?;
 
-        for (key, value) in keys.iter().zip(values) {
-            let s = serde_json::to_string(value).join_err::<()>("failed to serialize value")?;
+        for (key, value) in items {
+            let s = serde_json::to_string(&value).join_err::<()>("failed to serialize value")?;
 
             sqlx::query(
                 r#"
@@ -192,38 +209,74 @@ impl KeyedStorage for SqliteStorage {
         Ok(())
     }
 
-    async fn get_batch(&self, keys: &[&str]) -> joinerror::Result<Vec<Option<JsonValue>>> {
+    async fn get_batch(
+        &self,
+        keys: &[&str],
+    ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>> {
         let mut values = Vec::with_capacity(keys.len());
 
         for key in keys {
-            values.push(self.get(key).await.join_err::<()>("failed to get value")?);
+            let value = self.get(key).await.join_err::<()>("failed to get value")?;
+            values.push((key.to_string(), value));
         }
 
         Ok(values)
     }
 
-    async fn remove_batch(&self, keys: &[&str]) -> joinerror::Result<()> {
+    async fn remove_batch(
+        &self,
+        keys: &[&str],
+    ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>> {
+        if keys.is_empty() {
+            return Ok(vec![]);
+        }
+
         let mut txn = self
             .pool
             .begin()
             .await
             .join_err::<()>("failed to begin transaction")?;
 
-        for key in keys {
-            sqlx::query("DELETE FROM kv WHERE key = ?")
-                .bind(key)
-                .execute(&mut *txn)
-                .await
-                .join_err::<()>("failed to delete value")?;
-
-            self.cache.write().await.remove(*key);
-        }
+        let json_keys = serde_json::to_string(&keys).unwrap();
+        let rows = sqlx::query(
+            r#"
+            DELETE FROM kv
+            WHERE key IN (SELECT value FROM json_each(?))
+            RETURNING key, value
+            "#,
+        )
+        .bind(json_keys)
+        .fetch_all(&mut *txn)
+        .await
+        .join_err::<()>("failed to delete and return values")?;
 
         txn.commit()
             .await
             .join_err::<()>("failed to commit transaction")?;
 
-        Ok(())
+        let mut removed_map: HashMap<String, JsonValue> = HashMap::with_capacity(rows.len());
+        for row in rows {
+            let key: String = row.get("key");
+            let raw_value: String = row.get("value");
+            if let Ok(value) = serde_json::from_str::<JsonValue>(&raw_value) {
+                removed_map.insert(key, value);
+            }
+        }
+
+        {
+            let mut cache = self.cache.write().await;
+            for key in keys {
+                cache.remove(*key);
+            }
+        }
+
+        let mut result = Vec::with_capacity(keys.len());
+        for key in keys {
+            let value = removed_map.remove(*key);
+            result.push((key.to_string(), value));
+        }
+
+        Ok(result)
     }
 }
 
