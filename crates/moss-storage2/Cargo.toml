@@ -9,7 +9,7 @@ moss_logging.workspace = true
 moss_app_delegate.workspace = true
 moss_common.workspace = true
 
-joinerror = { workspace = true, features = ["sqlx"] }
+joinerror = { workspace = true, features = ["sqlx-sqlite", "sqlx-migrate"] }
 sqlx = { workspace = true, features = ["sqlite"] }
 rustc-hash = { workspace = true }
 derive_more = { workspace = true, features = ["deref"] }

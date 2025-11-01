@@ -86,7 +86,7 @@ impl From<sqlx::Error> for Error {
     }
 }
 
-#[cfg(feature = "sqlx")]
+#[cfg(feature = "sqlx-migrate")]
 impl From<sqlx::migrate::MigrateError> for Error {
     fn from(err: sqlx::migrate::MigrateError) -> Self {
         Error::new::<()>(err.to_string())
@@ -186,7 +186,7 @@ impl<T> ResultExt<T> for Result<T, sqlx::Error> {
     }
 }
 
-#[cfg(feature = "sqlx")]
+#[cfg(feature = "sqlx-migrate")]
 impl<T> ResultExt<T> for Result<T, sqlx::migrate::MigrateError> {
     fn join_err<E: ErrorMarker>(self, details: impl Into<String>) -> Result<T, Error> {
         self.map_err(|e| Error::new::<()>(e.to_string()).join::<E>(details))
