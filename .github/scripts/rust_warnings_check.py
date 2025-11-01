@@ -46,6 +46,7 @@ import argparse
 # Paths to check when filtering warnings by package
 PACKAGE_PATHS = [
     "crates/{package_dir}/",
+    "plugins/{package_dir}/",
     "libs/{package_dir}/",
     "tools/{package_dir}/",
     "view/{package_dir}/bin/",
