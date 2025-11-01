@@ -2,6 +2,7 @@
 name = "moss_git_hosting_provider"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
 
 [dependencies]
 moss_app_delegate.workspace = true
@@ -14,7 +15,7 @@ moss_keyring.workspace = true
 joinerror.workspace = true
 git2.workspace = true
 url.workspace = true
-dotenv.workspace = true
+dotenvy.workspace = true
 serde_json.workspace = true
 oauth2 = { workspace = true, features = ["ureq"] }
 reqwest = { workspace = true, features = ["json"] }

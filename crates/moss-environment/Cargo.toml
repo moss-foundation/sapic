@@ -2,6 +2,7 @@
 name = "moss_environment"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
 
 [dependencies]
 moss_edit.workspace = true

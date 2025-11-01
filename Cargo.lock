@@ -1554,7 +1554,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "cocoa",
- "dotenv",
+ "dotenvy",
  "futures",
  "inventory",
  "joinerror",
@@ -1703,10 +1703,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "dotenv"
-version = "0.15.0"
+name = "dotenvy"
+version = "0.15.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "77c90badedccf4105eca100756a0b1289e191f6fcbdadd3cee1d2f614f97da8f"
+checksum = "1aaf95b3e5c8f23aa320147307562d361db0ae0d51242340f558153b4eb2439b"
 
 [[package]]
 name = "dpi"
@@ -2882,9 +2882,9 @@ dependencies = [
 
 [[package]]
 name = "image"
-version = "0.25.7"
+version = "0.25.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1c6a3ce16143778e24df6f95365f12ed105425b22abefd289dd88a64bab59605"
+checksum = "529feb3e6769d234375c4cf1ee2ce713682b8e76538cb13f9fc23e1400a591e7"
 dependencies = [
  "bytemuck",
  "byteorder-lite",
@@ -3852,7 +3852,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "chrono",
- "dotenv",
+ "dotenvy",
  "git2",
  "joinerror",
  "keyring",
@@ -4094,7 +4094,7 @@ dependencies = [
  "async-stream",
  "async-trait",
  "derive_more 2.0.1",
- "dotenv",
+ "dotenvy",
  "futures",
  "image",
  "inventory",
@@ -6795,9 +6795,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-single-instance"
-version = "2.3.3"
+version = "2.3.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "236043404a4d1502ed7cce11a8ec88ea1e85597eec9887b4701bb10b66b13b6e"
+checksum = "dd707f8c86b4e3004e2c141fa24351f1909ba40ce1b8437e30d5ed5277dd3710"
 dependencies = [
  "serde",
  "serde_json",

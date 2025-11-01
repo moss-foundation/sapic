@@ -48,7 +48,7 @@ pub async fn setup_test_workspace() -> (
     Workspace<MockAppRuntime>,
     CleanupFn,
 ) {
-    dotenv::dotenv().ok();
+    dotenvy::dotenv().ok();
     let abs_path: Arc<Path> = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
         .join("data")

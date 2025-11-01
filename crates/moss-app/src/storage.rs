@@ -1,4 +1,3 @@
-mod entities;
 pub mod segments;
 
 use moss_applib::AppRuntime;
