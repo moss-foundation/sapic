@@ -596,12 +596,24 @@ mod tests {
     async fn test_get_reads_from_db_when_cache_miss() {
         let storage = create_in_memory_storage().await;
 
+        // Insert data directly into database, bypassing cache
         let value = JsonValue::String("db_value".to_string());
-        storage.put("db_key", value.clone()).await.unwrap();
+        let serialized = serde_json::to_string(&value).unwrap();
+        sqlx::query("INSERT INTO kv (key, value) VALUES (?, ?)")
+            .bind("db_key")
+            .bind(serialized)
+            .execute(&storage.pool)
+            .await
+            .unwrap();
 
+        // Clear cache to ensure cache miss
+        storage.cache.write().await.clear();
+
+        // First get should be a cache miss (reads from DB)
         let retrieved1 = storage.get("db_key").await.unwrap();
         assert_eq!(retrieved1, Some(value.clone()));
 
+        // Second get should be a cache hit (reads from cache)
         let retrieved2 = storage.get("db_key").await.unwrap();
         assert_eq!(retrieved2, Some(value));
     }
