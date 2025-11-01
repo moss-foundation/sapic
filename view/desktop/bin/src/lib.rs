@@ -103,7 +103,7 @@ pub async fn run<R: TauriRuntime>() {
                     .expect("failed to build http client");
 
                 let server_api_endpoint =
-                    dotenv::var("SERVER_API_ENDPOINT").expect("SERVER_API_ENDPOINT is not set");
+                    dotenvy::var("SERVER_API_ENDPOINT").expect("SERVER_API_ENDPOINT is not set");
 
                 let auth_api_client = Arc::new(AccountAuthGatewayApiClient::new(
                     http_client.clone(),

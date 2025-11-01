@@ -2,6 +2,7 @@
 name = "moss_hcl"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
 
 [dependencies]
 hcl-rs.workspace = true

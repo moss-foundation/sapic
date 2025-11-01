@@ -10,7 +10,7 @@
     "@repo/typescript-config": "workspace:*"
   },
   "dependencies": {
-    "tailwindcss-animate": "^1.0.7",
-    "tailwindcss": "^4.1.0"
+    "tailwindcss-animate": "1.0.7",
+    "tailwindcss": "4.1.0"
   }
 }

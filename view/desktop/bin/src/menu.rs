@@ -1,11 +1,13 @@
-use strum::{AsRefStr as StrumAsRefStr, Display as StrumDisplay, EnumString as StrumEnumString};
+// use crate::create_child_window;
 use tauri::{
     AppHandle, Manager, Runtime as TauriRuntime, Window,
     menu::{Menu, MenuEvent},
 };
 
-// use crate::create_child_window;
+#[cfg(target_os = "macos")]
+use strum::{AsRefStr as StrumAsRefStr, Display as StrumDisplay, EnumString as StrumEnumString};
 
+#[cfg(target_os = "macos")]
 #[derive(Debug, StrumEnumString, StrumDisplay, StrumAsRefStr)]
 pub enum BuiltInMenuEvent {
     #[strum(serialize = "file.newWindow")]

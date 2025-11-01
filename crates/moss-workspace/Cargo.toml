@@ -2,6 +2,7 @@
 name = "moss_workspace"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
 
 [build-dependencies]
 serde_json.workspace = true
@@ -48,7 +49,7 @@ nanoid.workspace = true
 json-patch.workspace = true
 jsonptr.workspace = true
 reqwest = { workspace = true, features = ["json"] }
-dotenv = { workspace = true, optional = true }
+dotenvy = { workspace = true, optional = true }
 oauth2 = { workspace = true, features = ["ureq"], optional = true }
 rustc-hash = { workspace = true }
 tracing.workspace = true
@@ -60,7 +61,7 @@ moss_applib = { workspace = true, features = ["test"] }
 
 [features]
 integration-tests = [
-  "dotenv",
+  "dotenvy",
   "moss_user/integration-tests",
   "moss_project/integration-tests",
   "moss_git_hosting_provider/integration-tests",

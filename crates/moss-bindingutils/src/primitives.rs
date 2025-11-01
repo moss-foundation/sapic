@@ -6,6 +6,7 @@ use ts_rs::TS;
 // This is a workaround to allow the JsonValue type to be exported to TypeScript.
 // Such export should be used as the single place for generating exports for this type.
 #[allow(non_camel_case_types)]
+#[allow(unused)]
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(
     export,

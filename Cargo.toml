@@ -134,7 +134,7 @@ thiserror = "2.0.11"
 dashmap = "6.1.0"
 async-trait = "0.1.86"
 url = "2.5.4"
-dotenv = "0.15.0"
+dotenvy = "0.15.7"
 keyring = "3"
 whoami = "1.5.2"
 chrono = { version = "0.4.40", default-features = false }
@@ -150,7 +150,7 @@ toml_edit = "0.22"
 nanoid = "0.4.0"
 rustc-hash = "2.1.1"
 derive_more = "2.0.1"
-image = { version = "0.25.6", default-features = false }
+image = { version = "0.25.8", default-features = false }
 hcl-rs = "0.18.5"
 indexmap = "2.9.0"
 wasmtime = "34.0.2"
