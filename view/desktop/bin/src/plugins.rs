@@ -27,6 +27,7 @@ pub mod plugin_log {
             .level_for("ureq", log::LevelFilter::Off)
             .level_for("rustls", log::LevelFilter::Off)
             .level_for("webbrowser", log::LevelFilter::Off)
+            .level_for("sqlx", log::LevelFilter::Info)
             .with_colors(ColoredLevelConfig::default())
             .level(if is_dev() {
                 log::LevelFilter::Trace

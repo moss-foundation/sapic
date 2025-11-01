@@ -19,6 +19,7 @@ use moss_git_hosting_provider::{
 use moss_keyring::test::MockKeyringClient;
 use moss_language::registry::{AppLanguageRegistry, LanguageRegistry};
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
+use moss_storage2::{AppStorage, AppStorageOptions, Storage};
 use moss_testutils::random_name::random_string;
 use moss_theme::registry::{AppThemeRegistry, ThemeRegistry};
 use reqwest::ClientBuilder as HttpClientBuilder;
@@ -146,6 +147,20 @@ pub async fn set_up_test_app() -> (
         delegate.set_resource_dir(resource_path.clone());
         delegate.set_user_dir(user_path.clone());
 
+        <dyn Storage>::set_global(
+            &delegate,
+            AppStorage::new(
+                &delegate.globals_dir(),
+                delegate.workspaces_dir(),
+                AppStorageOptions {
+                    in_memory: Some(false),
+                    busy_timeout: Some(Duration::from_secs(5)),
+                }
+                .into(),
+            )
+            .await
+            .unwrap(),
+        );
         <dyn GitHubAuthAdapter<MockAppRuntime>>::set_global(&delegate, mock_github_auth_adapter());
         <dyn GitHubApiClient<MockAppRuntime>>::set_global(&delegate, mock_github_api_client());
         <dyn GitLabAuthAdapter<MockAppRuntime>>::set_global(&delegate, mock_gitlab_auth_adapter());

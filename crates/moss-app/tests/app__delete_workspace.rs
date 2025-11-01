@@ -50,6 +50,7 @@ async fn delete_workspace_success() {
     let delete_result = app
         .delete_workspace(
             &ctx,
+            &app_delegate,
             &DeleteWorkspaceInput {
                 id: create_output.id,
             },
@@ -98,6 +99,7 @@ async fn delete_workspace_filesystem_only() {
     let delete_result = app
         .delete_workspace(
             &ctx,
+            &app_delegate,
             &DeleteWorkspaceInput {
                 id: create_output.id,
             },
@@ -150,6 +152,7 @@ async fn delete_workspace_opened() {
     let delete_result = app
         .delete_workspace(
             &ctx,
+            &app_delegate,
             &DeleteWorkspaceInput {
                 id: create_output.id,
             },
@@ -173,11 +176,15 @@ async fn delete_workspace_opened() {
 
 #[tokio::test]
 async fn delete_workspace_nonexistent() {
-    let (app, _, ctx, cleanup) = set_up_test_app().await;
+    let (app, app_delegate, ctx, cleanup) = set_up_test_app().await;
 
     let nonexistent_id = WorkspaceId::new();
     let delete_result = app
-        .delete_workspace(&ctx, &DeleteWorkspaceInput { id: nonexistent_id })
+        .delete_workspace(
+            &ctx,
+            &app_delegate,
+            &DeleteWorkspaceInput { id: nonexistent_id },
+        )
         .await;
 
     assert!(delete_result.is_err());
@@ -218,6 +225,7 @@ async fn delete_workspace_filesystem_does_not_exist() {
     let delete_result = app
         .delete_workspace(
             &ctx,
+            &app_delegate,
             &DeleteWorkspaceInput {
                 id: create_output.id,
             },

@@ -37,6 +37,8 @@
       "identifier": "fs:allow-home-read-recursive",
       "allow": [{ "path": "$HOME/.moss/*" }]
     },
+
+    "opener:default",
     {
       "identifier": "opener:allow-open-url",
       "allow": [
@@ -47,7 +49,9 @@
           "url": "https://gitlab.com/-/user_settings/personal_access_tokens"
         }
       ]
-    }
+    },
+
+    "shared-storage:default"
   ],
   "platforms": ["macOS", "linux", "windows"]
 }

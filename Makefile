@@ -57,6 +57,8 @@ CONFIGURATION_MODELS_DIR := crates/moss-configuration
 LANGUAGE_MODELS_DIR := crates/moss-language
 EXTENSION_MODELS_DIR := crates/moss-extension
 
+SHARED_STORAGE_MODELS_DIR := plugins/shared_storage
+
 # ---- Command Executables ----
 PNPM := pnpm
 CARGO := cargo
@@ -78,11 +80,14 @@ run-desktop:
 # Setup Commands
 # ======================================================
 
+.PHONY: pnpm-i
+pnpm-i:
+	$(PNPM) i
+
 ## Install dependencies and setup development environment
 .PHONY: ready
-ready: gen-icons gen-theme-tokens gen-typedoc
+ready: pnpm-i gen-icons gen-theme-tokens gen-typedoc
 	@cd $(CARGO_NEW_TS) && $(CARGO) install --path .
-	$(PNPM) i
 
 ## Generate TypeDoc documentation
 .PHONY: gen-typedoc
@@ -151,6 +156,8 @@ $(eval $(call gen_bindings,configuration,CONFIGURATION_MODELS_DIR))
 $(eval $(call gen_bindings,language,LANGUAGE_MODELS_DIR))
 $(eval $(call gen_bindings,extension,EXTENSION_MODELS_DIR))
 
+$(eval $(call gen_bindings,shared-storage,SHARED_STORAGE_MODELS_DIR))
+
 gen-app-bindings:
 gen-project-bindings:
 gen-environment-bindings:
@@ -164,7 +171,7 @@ gen-theme-bindings:
 gen-configuration-bindings:
 gen-language-bindings:
 gen-extension-bindings:
-
+gen-shared-storage-bindings:
 ## Generate all TypeScript bindings
 .PHONY: gen-bindings
 gen-bindings: \
@@ -180,7 +187,8 @@ gen-bindings: \
 	gen-theme-bindings \
 	gen-configuration-bindings \
 	gen-language-bindings \
-	gen-extension-bindings
+	gen-extension-bindings \
+	gen-shared-storage-bindings
 
 
 # ======================================================

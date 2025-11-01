@@ -8,6 +8,7 @@ mod window;
 #[macro_use]
 extern crate tracing;
 
+use joinerror::OptionExt;
 use moss_app::{App, AppBuilder as TauriAppBuilder, app::OnAppReadyOptions, command::CommandDecl};
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
@@ -42,6 +43,7 @@ use moss_server_api::{
     account_auth_gateway::AccountAuthGatewayApiClient,
     extension_registry::{AppExtensionRegistryApiClient, ExtensionRegistryApiClient},
 };
+use moss_storage2::{AppStorage, Storage};
 use moss_theme::registry::{AppThemeRegistry, ThemeRegistry};
 use reqwest::ClientBuilder as HttpClientBuilder;
 use serde_json::Value;
@@ -70,7 +72,19 @@ pub async fn run<R: TauriRuntime>() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_single_instance::init(|_app, _args, _cwd| {}))
-        .plugin(tauri_plugin_opener::init());
+        .plugin(tauri_plugin_opener::init())
+        .plugin(shared_storage::init(|app| {
+            let handle = app
+                .downcast::<R>()
+                .ok_or_join_err::<()>("failed to downcast app handle")?;
+
+            let delegate = handle
+                .state::<AppDelegate<TauriAppRuntime<R>>>()
+                .inner()
+                .clone();
+
+            Ok(<dyn Storage>::global(&delegate))
+        }));
 
     #[cfg(target_os = "macos")]
     {
@@ -105,6 +119,12 @@ pub async fn run<R: TauriRuntime>() {
                 // throughout the entire application via the `global` method
                 // of the app's internal handler.
                 {
+                    let storage =
+                        AppStorage::new(&delegate.globals_dir(), delegate.workspaces_dir(), None)
+                            .await
+                            .expect("failed to create storage");
+                    <dyn Storage>::set_global(&delegate, storage);
+
                     let github_api_client = Arc::new(AppGitHubApiClient::new(http_client.clone()));
                     let github_auth_adapter =
                         Arc::new(AppGitHubAuthAdapter::<TauriAppRuntime<R>>::new(

@@ -43,7 +43,10 @@ export const colorThemeInfoSchema = z.object({
 
 export const configurationSchema = z.object({
   keys: z.array(z.string()),
-  contents: z.record(z.string(), jsonValueSchema),
+  contents: z.record(
+    z.string(),
+    z.lazy(() => jsonValueSchema)
+  ),
 });
 
 export const logEntryInfoSchema = z.object({

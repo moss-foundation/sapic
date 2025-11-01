@@ -8,7 +8,7 @@ members = [
     "libs/atomic-fs",
     "libs/static-json",
     #
-    # Workspace crates
+    # Internal crates
     #
     "crates/moss-applib",
     "crates/moss-app",
@@ -41,6 +41,11 @@ members = [
     "crates/moss-theme", 
     "crates/moss-configuration",
     "crates/moss-language",
+    "crates/moss-storage2",
+    #
+    # Plugins
+    #
+    "plugins/shared_storage",
     #
     # Apps
     #
@@ -60,7 +65,7 @@ joinerror = { path = "libs/joinerror", features = ["anyhow", "tokio", "serde_jso
 atomic_fs = { path = "libs/atomic-fs" }
 static_json = { path = "libs/static-json" }
 #
-# Workspace crates
+# Internal crates
 #
 moss_api = { path = "crates/moss-api" }
 moss_text = { path = "crates/moss-text" }
@@ -94,13 +99,20 @@ moss_extension_points = { path = "crates/moss-extension-points" }
 moss_theme = { path = "crates/moss-theme" }
 moss_configuration = { path = "crates/moss-configuration" }
 moss_language = { path = "crates/moss-language" }
+moss_storage2 = { path = "crates/moss-storage2" }
+#
+# Plugin crates
+#
+shared-storage = { path = "plugins/shared_storage" }
 #
 # External crates
 #
+sqlx = { version = "0.8", features = [ "runtime-tokio" ] }
 async-stream = "0.3.6"
 notify = "8.0"
 redb = "2.6.0"
 tauri = { version = "2.2.5", default-features = false }
+tauri-plugin = { version = "2.2.0", features = ["build"] }
 rand = { version = "0.9.0", default-features = false}
 serde = "1.0.217"
 anyhow = "1.0.95"

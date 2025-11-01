@@ -38,6 +38,7 @@ async fn close_workspace_success() {
     let close_result = app
         .close_workspace(
             &ctx,
+            &app_delegate,
             &CloseWorkspaceInput {
                 id: create_output.id.clone(),
             },
@@ -89,6 +90,7 @@ async fn close_workspace_not_open() {
     let close_result = app
         .close_workspace(
             &ctx,
+            &app_delegate,
             &CloseWorkspaceInput {
                 id: create_output.id,
             },
@@ -157,6 +159,7 @@ async fn close_workspace_after_another_opened() {
     let close_result1 = app
         .close_workspace(
             &ctx,
+            &app_delegate,
             &CloseWorkspaceInput {
                 id: create_output1.id.clone(),
             },
@@ -169,6 +172,7 @@ async fn close_workspace_after_another_opened() {
     let close_result2 = app
         .close_workspace(
             &ctx,
+            &app_delegate,
             &CloseWorkspaceInput {
                 id: create_output2.id.clone(),
             },
@@ -199,12 +203,16 @@ async fn close_workspace_after_another_opened() {
 
 #[tokio::test]
 async fn close_workspace_nonexistent() {
-    let (app, _, ctx, cleanup) = set_up_test_app().await;
+    let (app, app_delegate, ctx, cleanup) = set_up_test_app().await;
 
     let nonexistent_id = WorkspaceId::new();
 
     let close_result = app
-        .close_workspace(&ctx, &CloseWorkspaceInput { id: nonexistent_id })
+        .close_workspace(
+            &ctx,
+            &app_delegate,
+            &CloseWorkspaceInput { id: nonexistent_id },
+        )
         .await;
 
     assert!(close_result.is_err());
@@ -245,7 +253,7 @@ async fn close_workspace_from_different_session() {
     // Try to close a workspace with wrong id
     let wrong_id = WorkspaceId::new();
     let close_result = app
-        .close_workspace(&ctx, &CloseWorkspaceInput { id: wrong_id })
+        .close_workspace(&ctx, &app_delegate, &CloseWorkspaceInput { id: wrong_id })
         .await;
 
     assert!(close_result.is_err());

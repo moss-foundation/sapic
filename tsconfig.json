@@ -45,6 +45,10 @@
     },
     {
       "path": "tools/gen-bindings"
+    },
+
+    {
+      "path": "plugins/shared_storage"
     }
   ]
 }

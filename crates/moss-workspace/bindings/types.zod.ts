@@ -186,7 +186,10 @@ export const editorPanelStateSchema = z.object({
   tabComponent: z.string().optional(),
   title: z.string().optional(),
   renderer: panelRendererSchema.optional(),
-  params: z.record(z.string(), jsonValueSchema),
+  params: z.record(
+    z.string(),
+    z.lazy(() => jsonValueSchema)
+  ),
   minimumWidth: z.number().optional(),
   minimumHeight: z.number().optional(),
   maximumWidth: z.number().optional(),
