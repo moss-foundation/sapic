@@ -80,11 +80,14 @@ run-desktop:
 # Setup Commands
 # ======================================================
 
+.PHONY: pnpm-i
+pnpm-i:
+	$(PNPM) i
+
 ## Install dependencies and setup development environment
 .PHONY: ready
-ready: gen-icons gen-theme-tokens gen-typedoc
+ready: pnpm-i gen-icons gen-theme-tokens gen-typedoc
 	@cd $(CARGO_NEW_TS) && $(CARGO) install --path .
-	$(PNPM) i
 
 ## Generate TypeDoc documentation
 .PHONY: gen-typedoc
