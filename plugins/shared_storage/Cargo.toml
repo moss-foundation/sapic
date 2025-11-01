@@ -24,3 +24,6 @@ ts-rs = { workspace = true }
 async-trait.workspace = true
 tracing.workspace = true
 derive_more = { workspace = true, features = ["deref"] }
+
+[features]
+integration-tests = []

@@ -120,7 +120,7 @@ pub async fn run<R: TauriRuntime>() {
                 // of the app's internal handler.
                 {
                     let storage =
-                        AppStorage::new(&delegate.globals_dir(), delegate.workspaces_dir())
+                        AppStorage::new(&delegate.globals_dir(), delegate.workspaces_dir(), None)
                             .await
                             .expect("failed to create storage");
                     <dyn Storage>::set_global(&delegate, storage);
