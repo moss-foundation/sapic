@@ -1,4 +1,5 @@
 use joinerror::{Error, OptionExt};
+use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 
 use crate::{
@@ -10,6 +11,7 @@ impl<R: AppRuntime> App<R> {
     pub async fn close_workspace(
         &self,
         ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
         input: &CloseWorkspaceInput,
     ) -> joinerror::Result<CloseWorkspaceOutput> {
         let workspace_id = self
@@ -25,7 +27,9 @@ impl<R: AppRuntime> App<R> {
             )));
         }
 
-        self.workspace_service.deactivate_workspace(ctx).await?;
+        self.workspace_service
+            .deactivate_workspace(ctx, app_delegate)
+            .await?;
 
         Ok(CloseWorkspaceOutput { id: workspace_id })
     }

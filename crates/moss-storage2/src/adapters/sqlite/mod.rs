@@ -9,13 +9,32 @@ use sqlx::{
 use std::{collections::HashMap, path::Path, str::FromStr, sync::Arc, time::Duration};
 use tokio::sync::RwLock;
 
-use crate::adapters::{Flushable, KeyedStorage, Optimizable};
+use crate::adapters::{Flushable, KeyedStorage, Optimizable, Options};
 
 const DEFAULT_BUSY_TIMEOUT: Duration = Duration::from_secs(5);
+const DEFAULT_IN_MEMORY: bool = false;
 
 pub struct SqliteStorageOptions {
     pub in_memory: bool,
     pub busy_timeout: Duration,
+}
+
+impl Into<SqliteStorageOptions> for Options {
+    fn into(self) -> SqliteStorageOptions {
+        SqliteStorageOptions {
+            in_memory: self.in_memory.unwrap_or(DEFAULT_IN_MEMORY),
+            busy_timeout: self.busy_timeout.unwrap_or(DEFAULT_BUSY_TIMEOUT),
+        }
+    }
+}
+
+impl Default for SqliteStorageOptions {
+    fn default() -> Self {
+        Self {
+            in_memory: DEFAULT_IN_MEMORY,
+            busy_timeout: DEFAULT_BUSY_TIMEOUT,
+        }
+    }
 }
 
 pub struct SqliteStorage {
@@ -33,19 +52,15 @@ impl SqliteStorage {
             let _ = std::fs::copy(&path.as_ref(), path.as_ref().with_extension("bak"));
         }
 
+        let opts = options.unwrap_or_default();
         let url = format!("sqlite://{}", path.as_ref().display());
         let options = SqliteConnectOptions::from_str(&url)
             .join_err::<()>("failed to create connect options")?
-            .in_memory(options.as_ref().map(|o| o.in_memory).unwrap_or(false))
+            .in_memory(opts.in_memory)
             .create_if_missing(true)
             .journal_mode(SqliteJournalMode::Wal)
             .synchronous(sqlx::sqlite::SqliteSynchronous::Normal)
-            .busy_timeout(
-                options
-                    .as_ref()
-                    .map(|o| o.busy_timeout)
-                    .unwrap_or(DEFAULT_BUSY_TIMEOUT),
-            )
+            .busy_timeout(opts.busy_timeout)
             .foreign_keys(true);
 
         let pool = SqlitePool::connect_with(options)

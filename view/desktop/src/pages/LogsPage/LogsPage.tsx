@@ -50,18 +50,18 @@ export const Logs = () => {
 
   const [getItemForm, setGetItemForm] = useState({
     key: "",
-    scope: "",
+    workspaceId: "",
   });
 
   const [putItemForm, setPutItemForm] = useState({
     key: "",
-    scope: "",
+    workspaceId: "",
     value: "",
   });
 
   const [removeItemForm, setRemoveItemForm] = useState({
     key: "",
-    scope: "",
+    workspaceId: "",
   });
 
   useEffect(() => {
@@ -136,7 +136,7 @@ export const Logs = () => {
       const result = await invokeTauriIpc("plugin:shared-storage|get_item", {
         input: {
           key: getItemForm.key,
-          scope: "application",
+          scope: getItemForm.workspaceId ? { workspace: getItemForm.workspaceId } : "application",
         },
       });
       console.log("Get item result:", result);
@@ -153,7 +153,7 @@ export const Logs = () => {
       const result = await invokeTauriIpc("plugin:shared-storage|put_item", {
         input: {
           key: putItemForm.key,
-          scope: "application",
+          scope: putItemForm.workspaceId ? { workspace: putItemForm.workspaceId } : "application",
           value: putItemForm.value,
         },
       });
@@ -171,7 +171,7 @@ export const Logs = () => {
       const result = await invokeTauriIpc("plugin:shared-storage|remove_item", {
         input: {
           key: removeItemForm.key,
-          scope: "application",
+          scope: removeItemForm.workspaceId ? { workspace: removeItemForm.workspaceId } : "application",
         },
       });
       console.log("Remove item result:", result);
@@ -228,9 +228,9 @@ export const Logs = () => {
             />
             <input
               type="text"
-              placeholder="Scope"
-              value={getItemForm.scope}
-              onChange={(e) => setGetItemForm((prev) => ({ ...prev, scope: e.target.value }))}
+              placeholder="Workspace Id"
+              value={getItemForm.workspaceId}
+              onChange={(e) => setGetItemForm((prev) => ({ ...prev, workspaceId: e.target.value }))}
               className="w-full rounded-md border border-gray-300 bg-white p-2"
             />
             <button onClick={handleGetItem} className="w-full rounded bg-blue-500 p-2 text-white">
@@ -249,9 +249,9 @@ export const Logs = () => {
             />
             <input
               type="text"
-              placeholder="Scope"
-              value={putItemForm.scope}
-              onChange={(e) => setPutItemForm((prev) => ({ ...prev, scope: e.target.value }))}
+              placeholder="Workspace Id"
+              value={putItemForm.workspaceId}
+              onChange={(e) => setPutItemForm((prev) => ({ ...prev, workspaceId: e.target.value }))}
               className="w-full rounded-md border border-gray-300 bg-white p-2"
             />
             <input
@@ -277,9 +277,9 @@ export const Logs = () => {
             />
             <input
               type="text"
-              placeholder="Scope"
-              value={removeItemForm.scope}
-              onChange={(e) => setRemoveItemForm((prev) => ({ ...prev, scope: e.target.value }))}
+              placeholder="Workspace Id"
+              value={removeItemForm.workspaceId}
+              onChange={(e) => setRemoveItemForm((prev) => ({ ...prev, workspaceId: e.target.value }))}
               className="w-full rounded-md border border-gray-300 bg-white p-2"
             />
             <button onClick={handleRemoveItem} className="w-full rounded bg-blue-500 p-2 text-white">

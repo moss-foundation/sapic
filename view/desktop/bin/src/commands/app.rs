@@ -159,8 +159,8 @@ pub async fn close_workspace<'a, R: tauri::Runtime>(
     input: CloseWorkspaceInput,
     options: Options,
 ) -> TauriResult<CloseWorkspaceOutput> {
-    super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
-        app.close_workspace(&ctx, &input).await
+    super::with_app_timeout(ctx.inner(), app, options, |ctx, app_delegate, app| async move {
+        app.close_workspace(&ctx, &app_delegate, &input).await
     })
     .await
 }
@@ -188,8 +188,8 @@ pub async fn delete_workspace<'a, R: tauri::Runtime>(
     input: DeleteWorkspaceInput,
     options: Options,
 ) -> TauriResult<()> {
-    super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
-        app.delete_workspace(&ctx, &input).await
+    super::with_app_timeout(ctx.inner(), app, options, |ctx, app_delegate, app| async move {
+        app.delete_workspace(&ctx, &app_delegate, &input).await
     })
     .await
 }

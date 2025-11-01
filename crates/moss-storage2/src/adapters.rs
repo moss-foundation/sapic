@@ -2,7 +2,13 @@ pub mod sqlite;
 
 use async_trait::async_trait;
 use serde_json::Value as JsonValue;
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
+
+#[derive(Debug, Clone)]
+pub struct Options {
+    pub in_memory: Option<bool>,
+    pub busy_timeout: Option<Duration>,
+}
 
 #[derive(Default, Clone)]
 pub struct Capabilities {

@@ -5,21 +5,23 @@ use std::{
 };
 use tokio::sync::OnceCell;
 
-use crate::adapters::{Capabilities, KeyedStorage, sqlite::SqliteStorage};
+use crate::adapters::{Capabilities, KeyedStorage, Options, sqlite::SqliteStorage};
 
 const DEFAULT_DB_FILENAME: &str = "state.sqlite3";
 
 #[derive(Clone)]
 pub struct WorkspaceStorageBackend {
     db_path: PathBuf,
+    storage_options: Option<Options>,
     storage: OnceCell<Arc<SqliteStorage>>,
     capabilities: OnceCell<Capabilities>,
 }
 
 impl WorkspaceStorageBackend {
-    pub async fn new(path: &Path) -> joinerror::Result<Self> {
+    pub async fn new(path: &Path, options: Option<Options>) -> joinerror::Result<Self> {
         Ok(Self {
             db_path: path.join(DEFAULT_DB_FILENAME),
+            storage_options: options,
             storage: OnceCell::new(),
             capabilities: OnceCell::new(),
         })
@@ -53,7 +55,7 @@ impl WorkspaceStorageBackend {
         let storage = self
             .storage
             .get_or_init(|| async {
-                SqliteStorage::new(&self.db_path, None)
+                SqliteStorage::new(&self.db_path, self.storage_options.clone().map(Into::into))
                     .await
                     .join_err::<()>("failed to open workspace storage")
                     .unwrap()

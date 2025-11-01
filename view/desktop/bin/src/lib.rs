@@ -119,9 +119,10 @@ pub async fn run<R: TauriRuntime>() {
                 // throughout the entire application via the `global` method
                 // of the app's internal handler.
                 {
-                    let storage = AppStorage::new(&delegate.globals_dir())
-                        .await
-                        .expect("failed to create storage");
+                    let storage =
+                        AppStorage::new(&delegate.globals_dir(), delegate.workspaces_dir())
+                            .await
+                            .expect("failed to create storage");
                     <dyn Storage>::set_global(&delegate, storage);
 
                     let github_api_client = Arc::new(AppGitHubApiClient::new(http_client.clone()));

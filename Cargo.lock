@@ -3776,6 +3776,7 @@ dependencies = [
  "moss_logging",
  "moss_server_api",
  "moss_storage",
+ "moss_storage2",
  "moss_testutils",
  "moss_text",
  "moss_theme",

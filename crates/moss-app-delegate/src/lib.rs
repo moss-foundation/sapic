@@ -97,6 +97,18 @@ impl<R: AppRuntime> AppDelegate<R> {
         self.user_dir().join("globals")
     }
 
+    #[cfg(debug_assertions)]
+    #[cfg(not(feature = "integration-tests"))]
+    pub fn workspaces_dir(&self) -> PathBuf {
+        self.user_dir().join("workspaces")
+    }
+
+    #[cfg(not(debug_assertions))]
+    #[cfg(not(feature = "integration-tests"))]
+    pub fn workspaces_dir(&self) -> PathBuf {
+        self.user_dir().join("workspaces")
+    }
+
     pub fn global<T>(&self) -> &T
     where
         T: Send + Sync + 'static,
@@ -178,5 +190,10 @@ impl<R: AppRuntime> AppDelegate<R> {
     #[cfg(feature = "integration-tests")]
     pub fn globals_dir(&self) -> PathBuf {
         self.user_dir().join("globals")
+    }
+
+    #[cfg(feature = "integration-tests")]
+    pub fn workspaces_dir(&self) -> PathBuf {
+        self.user_dir().join("workspaces")
     }
 }

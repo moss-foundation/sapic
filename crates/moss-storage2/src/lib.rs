@@ -5,16 +5,20 @@ pub mod workspace_storage;
 
 use async_trait::async_trait;
 use derive_more::Deref;
-use joinerror::OptionExt;
+use joinerror::{OptionExt, ResultExt};
 use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, subscription::EventEmitter};
 use rustc_hash::FxHashMap;
 use serde_json::Value as JsonValue;
-use std::{path::Path, sync::Arc};
+use std::{
+    path::{Path, PathBuf},
+    sync::Arc,
+    time::Duration,
+};
 use tokio::sync::RwLock;
 
 use crate::{
-    adapters::KeyedStorage,
+    adapters::{KeyedStorage, Options},
     application_storage::ApplicationStorageBackend,
     models::{events::OnDidChangeValueEvent, primitives::StorageScope},
     workspace_storage::WorkspaceStorageBackend,
@@ -22,6 +26,9 @@ use crate::{
 
 #[async_trait]
 pub trait Storage: Send + Sync {
+    async fn add_workspace(&self, workspace_id: Arc<String>) -> joinerror::Result<()>;
+    async fn remove_workspace(&self, workspace_id: Arc<String>) -> joinerror::Result<()>;
+
     async fn put(&self, scope: StorageScope, key: &str, value: JsonValue) -> joinerror::Result<()>;
     async fn get(&self, scope: StorageScope, key: &str) -> joinerror::Result<Option<JsonValue>>;
     async fn remove(&self, scope: StorageScope, key: &str) -> joinerror::Result<Option<JsonValue>>;
@@ -43,15 +50,58 @@ pub trait Storage: Send + Sync {
     ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>>;
 }
 
+#[derive(Debug, Clone)]
+pub struct AppStorageOptions {
+    pub in_memory: Option<bool>,
+    pub busy_timeout: Option<Duration>,
+}
+
+impl Into<Options> for AppStorageOptions {
+    fn into(self) -> Options {
+        Options {
+            in_memory: self.in_memory,
+            busy_timeout: self.busy_timeout,
+        }
+    }
+}
 pub struct AppStorage {
+    workspaces_dir: PathBuf,
     application: ApplicationStorageBackend,
     workspaces: RwLock<FxHashMap<Arc<String>, WorkspaceStorageBackend>>,
+    options: Option<AppStorageOptions>,
 
     on_did_change_value_emitter: EventEmitter<OnDidChangeValueEvent>,
 }
 
 #[async_trait]
 impl Storage for AppStorage {
+    async fn add_workspace(&self, workspace_id: Arc<String>) -> joinerror::Result<()> {
+        let workspace = WorkspaceStorageBackend::new(
+            &self.workspaces_dir.join(workspace_id.as_str()),
+            self.options.clone().map(Into::into),
+        )
+        .await
+        .join_err_with::<()>(|| {
+            format!(
+                "failed to create workspace storage backend for workspace `{}`",
+                workspace_id
+            )
+        })?;
+
+        self.workspaces
+            .write()
+            .await
+            .insert(workspace_id, workspace);
+
+        Ok(())
+    }
+
+    async fn remove_workspace(&self, workspace_id: Arc<String>) -> joinerror::Result<()> {
+        self.workspaces.write().await.remove(&workspace_id);
+
+        Ok(())
+    }
+
     async fn put(&self, scope: StorageScope, key: &str, value: JsonValue) -> joinerror::Result<()> {
         match scope.clone() {
             StorageScope::Application => self.application().await?.put(key, value).await,
@@ -146,12 +196,19 @@ impl Storage for AppStorage {
 }
 
 impl AppStorage {
-    pub async fn new(globals_dir: &Path) -> joinerror::Result<Arc<Self>> {
-        let application = ApplicationStorageBackend::new(globals_dir).await?;
+    pub async fn new(
+        globals_dir: &Path,
+        workspaces_dir: PathBuf,
+        options: Option<AppStorageOptions>,
+    ) -> joinerror::Result<Arc<Self>> {
+        let application =
+            ApplicationStorageBackend::new(globals_dir, options.clone().map(Into::into)).await?;
 
         Ok(Self {
+            workspaces_dir,
             application,
             workspaces: RwLock::new(FxHashMap::default()),
+            options,
             on_did_change_value_emitter: EventEmitter::<OnDidChangeValueEvent>::new(),
         }
         .into())
