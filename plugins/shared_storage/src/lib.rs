@@ -42,7 +42,7 @@ pub fn init<
                     let app_handle_clone = app_handle.clone();
 
                     let _ = Task::with_timeout(Duration::from_secs(60), async move {
-                        on_event_window_focused(app_handle_clone).await
+                        on_event_window_unfocused(app_handle_clone).await
                     })
                     .detach()
                     .log_if_err("background database checkpoint");
@@ -123,7 +123,7 @@ async fn on_event_window_close_requested<R: Runtime>(
 }
 
 /// Attempts to perform a database checkpoint if enough time has passed since the last one
-async fn on_event_window_focused<R: Runtime>(app_handle: AppHandle<R>) -> joinerror::Result<()> {
+async fn on_event_window_unfocused<R: Runtime>(app_handle: AppHandle<R>) -> joinerror::Result<()> {
     let provider = PROVIDER_CALLBACK
         .get()
         .ok_or_join_err::<()>("storage provider not found")?;
