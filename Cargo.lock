@@ -3271,6 +3271,7 @@ dependencies = [
  "reqwest",
  "serde_json",
  "sqlx",
+ "tauri",
  "tokio",
  "url",
  "validator",
@@ -3827,11 +3828,13 @@ dependencies = [
  "derive_more 2.0.1",
  "futures",
  "joinerror",
+ "moss_logging",
  "rustc-hash",
  "serde",
  "tauri",
  "tokio",
  "tokio-util",
+ "tracing",
  "validator",
 ]
 
@@ -4099,6 +4102,7 @@ name = "moss_logging"
 version = "0.1.0"
 dependencies = [
  "derive_more 2.0.1",
+ "joinerror",
  "moss_id_macro",
  "nanoid",
  "serde",
@@ -6534,11 +6538,13 @@ dependencies = [
  "joinerror",
  "moss_api",
  "moss_applib",
+ "moss_logging",
  "moss_storage2",
  "serde",
  "serde_json",
  "tauri",
  "tauri-plugin",
+ "tokio",
  "tracing",
  "ts-rs",
  "validator",

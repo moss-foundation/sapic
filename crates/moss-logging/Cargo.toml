@@ -12,6 +12,7 @@ ts-rs.workspace = true
 serde = { workspace = true, features = ["derive", "rc"] }
 derive_more = { workspace = true, features = ["deref"] }
 nanoid.workspace = true
+joinerror.workspace = true
 
 [features]
 integration-tests = []

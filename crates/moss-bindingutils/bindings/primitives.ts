@@ -25,4 +25,6 @@ export type ChangeString = { "UPDATE": string } | "REMOVE";
  */
 export type ChangeUsize = { "UPDATE": number } | "REMOVE";
 
+export type JsonRecordValue = number | string | boolean | Array<JsonRecordValue> | null;
+
 export type JsonValue = number | string | boolean | Array<JsonValue> | { [key in string]?: JsonValue } | null;

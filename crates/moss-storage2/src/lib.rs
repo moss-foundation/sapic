@@ -8,12 +8,13 @@ use derive_more::Deref;
 use joinerror::{OptionExt, ResultExt};
 use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, subscription::EventEmitter};
+use moss_logging::session;
 use rustc_hash::FxHashMap;
 use serde_json::Value as JsonValue;
 use std::{
     path::{Path, PathBuf},
     sync::Arc,
-    time::Duration,
+    time::{Duration, Instant},
 };
 use tokio::sync::RwLock;
 
@@ -48,6 +49,20 @@ pub trait Storage: Send + Sync {
         scope: StorageScope,
         keys: &[&str],
     ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>>;
+
+    async fn capabilities(self: Arc<Self>) -> Arc<dyn StorageCapabilities>;
+}
+
+pub enum FlushMode {
+    Checkpoint,
+    Force,
+}
+
+#[async_trait]
+pub trait StorageCapabilities: Send + Sync {
+    async fn last_checkpoint(&self) -> Option<Instant>;
+    async fn flush(&self, mode: FlushMode) -> joinerror::Result<()>;
+    async fn optimize(&self) -> joinerror::Result<()>;
 }
 
 #[derive(Debug, Clone)]
@@ -71,6 +86,7 @@ pub struct AppStorage {
     options: Option<AppStorageOptions>,
 
     on_did_change_value_emitter: EventEmitter<OnDidChangeValueEvent>,
+    last_checkpoint: RwLock<Option<Instant>>,
 }
 
 #[async_trait]
@@ -193,6 +209,55 @@ impl Storage for AppStorage {
             _ => unimplemented!(),
         }
     }
+
+    async fn capabilities(self: Arc<Self>) -> Arc<dyn StorageCapabilities> {
+        self.clone()
+    }
+}
+
+#[async_trait]
+impl StorageCapabilities for AppStorage {
+    async fn last_checkpoint(&self) -> Option<Instant> {
+        self.last_checkpoint.read().await.clone()
+    }
+
+    async fn flush(&self, mode: FlushMode) -> joinerror::Result<()> {
+        let mut storages_to_flush = vec![self.application.capabilities().await?.flushable.clone()];
+
+        for workspace in self.workspaces.read().await.values() {
+            storages_to_flush.push(workspace.capabilities().await?.flushable.clone());
+        }
+
+        for storage in storages_to_flush {
+            let storage = if let Some(storage) = storage {
+                storage
+            } else {
+                continue;
+            };
+
+            match mode {
+                FlushMode::Checkpoint => {
+                    if let Err(e) = storage.checkpoint().await {
+                        session::error!(format!("failed to checkpoint storage: {}", e));
+                    }
+                }
+                FlushMode::Force => {
+                    if let Err(e) = storage.flush().await {
+                        session::error!(format!("failed to flush storage: {}", e));
+                    }
+                }
+            }
+        }
+
+        let mut last_checkpoint_lock = self.last_checkpoint.write().await;
+        *last_checkpoint_lock = Some(Instant::now());
+
+        Ok(())
+    }
+
+    async fn optimize(&self) -> joinerror::Result<()> {
+        unimplemented!()
+    }
 }
 
 impl AppStorage {
@@ -210,6 +275,7 @@ impl AppStorage {
             workspaces: RwLock::new(FxHashMap::default()),
             options,
             on_did_change_value_emitter: EventEmitter::<OnDidChangeValueEvent>::new(),
+            last_checkpoint: RwLock::new(None),
         }
         .into())
     }

@@ -40,6 +40,9 @@ errors! {
 
     /// This error means that the operation did not finish within the specified deadline.
     Timeout => "timeout",
+
+    /// The operation was cancelled by the user or system before completion.
+    Cancelled => "cancelled",
 }
 
 pub type ValidationResult<T> = Result<T, ValidationErrors>;
