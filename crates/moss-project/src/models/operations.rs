@@ -58,7 +58,6 @@ pub struct BatchCreateResourceInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct BatchCreateResourceOutput {
-    #[ts(as = "Vec<String>")]
     pub ids: Vec<ResourceId>,
 }
 
@@ -71,7 +70,6 @@ pub struct BatchCreateResourceOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteResourceInput {
-    #[ts(as = "String")]
     pub id: ResourceId,
 }
 
@@ -79,7 +77,6 @@ pub struct DeleteResourceInput {
 #[derive(Clone, Debug, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteResourceOutput {
-    #[ts(as = "String")]
     pub id: ResourceId,
 }
 

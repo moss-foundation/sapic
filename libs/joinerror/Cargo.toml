@@ -2,6 +2,7 @@
 name = "joinerror"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
 
 [dependencies]
 joinerror-macros = { path = "macros" }
@@ -13,6 +14,10 @@ validator = { version = "0.20.0", optional = true, default-features = false }
 reqwest = { version = "0.12.23", optional = true, default-features = false }
 url = { version = "2.5.7", optional = true, default-features = false }
 git2 = { version = "0.20.2", optional = true, default-features = false }
+sqlx = { version = "0.8", optional = true, default-features = false }
+tauri = { version = "2.2.5", optional = true, default-features = false }
 
 [features]
 tests = ["anyhow"]
+sqlx-sqlite = ["sqlx/sqlite"]
+sqlx-migrate = ["sqlx/migrate"]

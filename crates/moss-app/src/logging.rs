@@ -158,7 +158,8 @@ impl<R: AppRuntime> LogService<R> {
         // Prevent `hyper_util` and `mio` from spamming logs
         let filter = filter::Targets::new()
             .with_default(LevelFilter::TRACE)
-            .with_target("hyper_util", LevelFilter::OFF);
+            .with_target("hyper_util", LevelFilter::OFF)
+            .with_target("sqlx", LevelFilter::INFO);
 
         let subscriber = tracing_subscriber::registry()
             .with(filter)

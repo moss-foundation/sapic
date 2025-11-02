@@ -5,11 +5,18 @@
   "entryPoints": [
     "crates/moss-app",
     "crates/moss-activity-broadcaster",
-    "crates/moss-collection",
+    "crates/moss-project",
     "crates/moss-environment",
     "crates/moss-workspace",
     "crates/moss-bindingutils",
-    "crates/moss-api"
+    "crates/moss-api",
+    "crates/moss-git",
+    "crates/moss-theme",
+    "crates/moss-language",
+    "crates/moss-user",
+    "crates/moss-configuration",
+
+    "plugins/shared_storage"
   ],
   "entryPointStrategy": "packages",
   "packageOptions": {

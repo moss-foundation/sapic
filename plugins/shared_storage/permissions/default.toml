@@ -1,0 +1,15 @@
+[default]
+description = "Default permissions for the plugin"
+permissions = ["allow-get-item", "allow-put-item", "allow-remove-item"]
+
+[allow-get-item]
+description = "Enables the get_item command"
+commands.allow = ["get_item"]
+
+[allow-put-item]
+description = "Enables the put_item command"
+commands.allow = ["put_item"]
+
+[allow-remove-item]
+description = "Enables the remove_item command"
+commands.allow = ["remove_item"]

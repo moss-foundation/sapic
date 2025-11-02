@@ -4,6 +4,7 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_fs::{FileSystem, FsResultExt, RemoveOptions};
 use moss_logging::session;
+use moss_storage2::Storage;
 use moss_user::profile::Profile;
 use moss_workspace::{
     builder::{CreateWorkspaceParams, LoadWorkspaceParams, WorkspaceBuilder},
@@ -159,6 +160,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
     pub(crate) async fn delete_workspace(
         &self,
         ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
         id: &WorkspaceId,
     ) -> joinerror::Result<()> {
         let (active_workspace_id, item) = {
@@ -172,7 +174,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
 
         let item = item.ok_or_join_err_with::<()>(|| format!("workspace `{}` not found", id))?;
         if active_workspace_id == Some(item.id.clone()) {
-            self.deactivate_workspace(ctx).await?
+            self.deactivate_workspace(ctx, app_delegate).await?
         }
 
         if item.abs_path.exists() {
@@ -346,6 +348,13 @@ impl<R: AppRuntime> WorkspaceService<R> {
             );
         }
 
+        if let Err(e) = <dyn Storage>::global(app_delegate)
+            .add_workspace(id.inner())
+            .await
+        {
+            return Err(e.join::<()>("failed to add workspace to the storage"));
+        }
+
         // We don't want database error to fail the operation
         match self.storage.begin_write_with_context(ctx).await {
             Ok(mut txn) => {
@@ -394,11 +403,17 @@ impl<R: AppRuntime> WorkspaceService<R> {
     pub(crate) async fn deactivate_workspace(
         &self,
         ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
     ) -> joinerror::Result<()> {
         let mut state_lock = self.state.write().await;
         let current_workspace = state_lock.active_workspace.take();
         if let Some(workspace) = current_workspace {
             workspace.dispose().await;
+
+            <dyn Storage>::global(app_delegate)
+                .remove_workspace(workspace.id.inner())
+                .await
+                .join_err::<()>("failed to remove workspace from the storage")?;
         }
 
         if let Err(e) = self.storage.remove_last_active_workspace(ctx).await {

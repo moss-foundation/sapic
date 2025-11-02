@@ -159,8 +159,8 @@ pub async fn close_workspace<'a, R: tauri::Runtime>(
     input: CloseWorkspaceInput,
     options: Options,
 ) -> TauriResult<CloseWorkspaceOutput> {
-    super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
-        app.close_workspace(&ctx, &input).await
+    super::with_app_timeout(ctx.inner(), app, options, |ctx, app_delegate, app| async move {
+        app.close_workspace(&ctx, &app_delegate, &input).await
     })
     .await
 }
@@ -188,8 +188,8 @@ pub async fn delete_workspace<'a, R: tauri::Runtime>(
     input: DeleteWorkspaceInput,
     options: Options,
 ) -> TauriResult<()> {
-    super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
-        app.delete_workspace(&ctx, &input).await
+    super::with_app_timeout(ctx.inner(), app, options, |ctx, app_delegate, app| async move {
+        app.delete_workspace(&ctx, &app_delegate, &input).await
     })
     .await
 }
@@ -296,7 +296,7 @@ pub async fn update_profile<'a, R: tauri::Runtime>(
 #[tauri::command(async)]
 #[instrument(level = "trace", fields(window = window.label()))]
 pub async fn get_mistral_api_key<'a, R: tauri::Runtime>(window: Window<R>) -> TauriResult<String> {
-    let api_key = dotenv::var("MISTRAL_API_KEY")
+    let api_key = dotenvy::var("MISTRAL_API_KEY")
         .map_err(|_| TauriError::Other(anyhow::anyhow!("MISTRAL_API_KEY not set")))?;
     Ok(api_key)
 }

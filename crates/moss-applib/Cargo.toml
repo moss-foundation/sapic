@@ -2,6 +2,7 @@
 name = "moss_applib"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
 
 [dependencies]
 tauri = { workspace = true, features = ["wry"] }
@@ -15,6 +16,8 @@ serde = { workspace = true, features = ["derive"] }
 tokio-util.workspace = true
 joinerror.workspace = true
 validator.workspace = true
+moss_logging.workspace = true
+tracing.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }

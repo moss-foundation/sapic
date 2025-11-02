@@ -28,7 +28,7 @@ pub mod shared;
 async fn clone_project_success() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
-    dotenv::dotenv().ok();
+    dotenvy::dotenv().ok();
 
     let account_id = ctx
         .value::<AccountId>("account_id")

@@ -1,0 +1,31 @@
+[package]
+name = "shared-storage"
+version = "0.1.0"
+edition = "2024"
+links = "shared-storage"
+
+[lib]
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-plugin.workspace = true
+
+[dependencies]
+moss_api.workspace = true
+moss_storage2.workspace = true
+moss_applib.workspace = true
+moss_logging.workspace = true
+
+joinerror = { workspace = true, features = ["tauri"] }
+tauri = { workspace = true, features = ["wry"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+validator = { workspace = true, features = ["derive"] }
+ts-rs = { workspace = true }
+async-trait.workspace = true
+tracing.workspace = true
+derive_more = { workspace = true, features = ["deref"] }
+tokio.workspace = true
+
+[features]
+integration-tests = []

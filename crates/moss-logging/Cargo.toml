@@ -2,6 +2,7 @@
 name = "moss_logging"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
 
 [dependencies]
 moss_id_macro.workspace = true
@@ -11,6 +12,7 @@ ts-rs.workspace = true
 serde = { workspace = true, features = ["derive", "rc"] }
 derive_more = { workspace = true, features = ["deref"] }
 nanoid.workspace = true
+joinerror.workspace = true
 
 [features]
 integration-tests = []

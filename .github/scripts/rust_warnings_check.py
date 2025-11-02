@@ -46,6 +46,7 @@ import argparse
 # Paths to check when filtering warnings by package
 PACKAGE_PATHS = [
     "crates/{package_dir}/",
+    "plugins/{package_dir}/",
     "libs/{package_dir}/",
     "tools/{package_dir}/",
     "view/{package_dir}/bin/",
@@ -65,7 +66,7 @@ def main():
     args = parser.parse_args()
 
     # Build cargo check command
-    cmd = ["cargo", "check", "--message-format=json"]
+    cmd = ["cargo", "--locked", "check", "--message-format=json"]
     
     if args.package:
         cmd.extend(["-p", args.package])

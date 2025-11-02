@@ -127,6 +127,7 @@ where
         Ok(Zeroizing::new(key_bytes))
     }
 
+    #[allow(deprecated)] // Fine since gonna replace with SQLite database in the future
     fn encrypt(&self, data: &[u8], password: &[u8], aad: &[u8]) -> Result<Vec<u8>, DatabaseError> {
         let mut salt = vec![0u8; self.options.salt_len];
         let mut nonce_bytes = vec![0u8; self.options.nonce_len];
@@ -152,6 +153,7 @@ where
         Ok(result)
     }
 
+    #[allow(deprecated)] // Fine since gonna replace with SQLite database in the future
     fn decrypt(&self, data: &[u8], password: &[u8], aad: &[u8]) -> Result<Vec<u8>, DatabaseError> {
         let min_len = self.options.salt_len + self.options.nonce_len;
         if data.len() < min_len {

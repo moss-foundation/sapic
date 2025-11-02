@@ -139,7 +139,7 @@ class ZodSchemaGenerator {
       this.project.addSourceFileAtPath(zodPath);
 
       const tsFile = this.project.getSourceFile(tsPath);
-      const zodFile = this.project.getSourceFile(zodPath);
+      let zodFile = this.project.getSourceFile(zodPath);
 
       if (!tsFile || !zodFile) {
         throw new Error(`Failed to load source files: ${tsPath} or ${zodPath}`);
@@ -152,6 +152,9 @@ class ZodSchemaGenerator {
         await this.processImportDeclaration(importDecl, zodFile);
       }
 
+      // Add ts-nocheck comment if file uses recursive schemas
+      this.suppressRecursiveSchemaErrors(zodFile);
+
       // Organize imports and save
       zodFile.organizeImports();
       await this.project.save();
@@ -159,6 +162,28 @@ class ZodSchemaGenerator {
       console.log(`   ✅ Successfully post-processed: ${basename(zodPath)}`);
     } catch (error) {
       throw new Error(`Failed to post-process Zod file: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  /**
+   * Adds @ts-nocheck comment if file uses recursive schemas to suppress TypeScript errors
+   * This prevents "Type instantiation is excessively deep" errors for recursive types
+   */
+  private suppressRecursiveSchemaErrors(zodFile: SourceFile): void {
+    const fileText = zodFile.getFullText();
+
+    // Check if file uses recursive schemas (jsonValueSchema or jsonRecordValueSchema)
+    const usesRecursiveSchema = fileText.includes("jsonValueSchema") || fileText.includes("jsonRecordValueSchema");
+
+    if (usesRecursiveSchema && !fileText.includes("@ts-nocheck")) {
+      // Add @ts-nocheck comment at the beginning of the file (after initial comment)
+      const firstNode = zodFile.getFirstChildByKind(1); // Get first statement
+      if (firstNode) {
+        zodFile.insertText(
+          0,
+          '// @ts-nocheck - File uses recursive schemas that may cause "Type instantiation is excessively deep" errors\n'
+        );
+      }
     }
   }
 
