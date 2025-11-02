@@ -93,6 +93,13 @@ impl From<sqlx::migrate::MigrateError> for Error {
     }
 }
 
+#[cfg(feature = "tauri")]
+impl From<tauri::Error> for Error {
+    fn from(err: tauri::Error) -> Self {
+        Error::new::<()>(err.to_string())
+    }
+}
+
 impl<T> ResultExt<T> for Result<T, std::path::StripPrefixError> {
     fn join_err<E: ErrorMarker>(self, details: impl Into<String>) -> Result<T, Error> {
         self.map_err(|e| Error::new::<()>(e.to_string()).join::<E>(details))
@@ -188,6 +195,16 @@ impl<T> ResultExt<T> for Result<T, sqlx::Error> {
 
 #[cfg(feature = "sqlx-migrate")]
 impl<T> ResultExt<T> for Result<T, sqlx::migrate::MigrateError> {
+    fn join_err<E: ErrorMarker>(self, details: impl Into<String>) -> Result<T, Error> {
+        self.map_err(|e| Error::new::<()>(e.to_string()).join::<E>(details))
+    }
+    fn join_err_with<E: ErrorMarker>(self, details: impl FnOnce() -> String) -> Result<T, Error> {
+        self.map_err(|e| Error::new::<()>(e.to_string()).join::<E>(details()))
+    }
+}
+
+#[cfg(feature = "tauri")]
+impl<T> ResultExt<T> for tauri::Result<T> {
     fn join_err<E: ErrorMarker>(self, details: impl Into<String>) -> Result<T, Error> {
         self.map_err(|e| Error::new::<()>(e.to_string()).join::<E>(details))
     }

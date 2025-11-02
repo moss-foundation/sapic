@@ -17,6 +17,85 @@ pub enum LogScope {
     Session,
 }
 
+/// Extension trait for logging errors in Result types.
+pub trait ResultSessionLogExt {
+    /// Log error if Result is Err, using session scope at error level.
+    #[track_caller]
+    fn log_err(self, context: &str) -> Self;
+
+    /// Log error as warning in session scope
+    #[track_caller]
+    fn log_warn(self, context: &str) -> Self;
+
+    /// Log error as info in session scope
+    #[track_caller]
+    fn log_info(self, context: &str) -> Self;
+
+    /// Log error as debug in session scope
+    #[track_caller]
+    fn log_debug(self, context: &str) -> Self;
+}
+
+impl<T> ResultSessionLogExt for joinerror::Result<T> {
+    #[track_caller]
+    fn log_err(self, context: &str) -> Self {
+        if let Err(ref e) = self {
+            let location = std::panic::Location::caller();
+            let location_str = format!("{}:{}", location.file(), location.line());
+            session::error!(format!(
+                "Operation failed at {}: {} - {}",
+                location_str, context, e
+            ));
+        }
+        self
+    }
+
+    #[track_caller]
+    fn log_warn(self, context: &str) -> Self {
+        if let Err(ref e) = self {
+            let location = std::panic::Location::caller();
+            session::warn!(format!(
+                "{} at {}:{} - {}",
+                context,
+                location.file(),
+                location.line(),
+                e
+            ));
+        }
+        self
+    }
+
+    #[track_caller]
+    fn log_info(self, context: &str) -> Self {
+        if let Err(ref e) = self {
+            let location = std::panic::Location::caller();
+            session::info!(format!(
+                "{} at {}:{} - {}",
+                context,
+                location.file(),
+                location.line(),
+                e
+            ));
+        }
+        self
+    }
+
+    #[track_caller]
+    fn log_debug(self, context: &str) -> Self {
+        if let Err(ref e) = self {
+            let location = std::panic::Location::caller();
+            session::debug!(format!(
+                "{} at {}:{} - {}",
+                context,
+                location.file(),
+                location.line(),
+                e
+            ));
+        }
+        self
+    }
+}
+
 pub mod app {
     #[macro_export]
     macro_rules! trace_app {

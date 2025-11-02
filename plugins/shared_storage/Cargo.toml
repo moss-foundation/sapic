@@ -14,8 +14,9 @@ tauri-plugin.workspace = true
 moss_api.workspace = true
 moss_storage2.workspace = true
 moss_applib.workspace = true
+moss_logging.workspace = true
 
-joinerror.workspace = true
+joinerror = { workspace = true, features = ["tauri"] }
 tauri = { workspace = true, features = ["wry"] }
 serde = { workspace = true }
 serde_json = { workspace = true }
@@ -24,6 +25,7 @@ ts-rs = { workspace = true }
 async-trait.workspace = true
 tracing.workspace = true
 derive_more = { workspace = true, features = ["deref"] }
+tokio.workspace = true
 
 [features]
 integration-tests = []

@@ -30,7 +30,6 @@ impl ApplicationStorageBackend {
         Ok(self.storage_internal().await?)
     }
 
-    #[allow(unused)]
     pub(crate) async fn capabilities(&self) -> joinerror::Result<Capabilities> {
         let capabilities = if let Some(capabilities) = self.capabilities.get() {
             capabilities.clone()
