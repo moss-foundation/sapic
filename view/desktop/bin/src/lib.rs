@@ -312,7 +312,6 @@ pub async fn run<R: TauriRuntime>() {
             //         api.prevent_close();
             //     }
             // }
-            // WindowEvent::Focused(focused) => { }
             WindowEvent::CloseRequested { .. } => {}
 
             _ => (),
