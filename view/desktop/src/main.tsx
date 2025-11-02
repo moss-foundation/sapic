@@ -1,10 +1,7 @@
-import { lazy, StrictMode, Suspense } from "react";
+import { lazy, StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
 import "@/app/i18n";
-
-import { PageLoader } from "./components/PageLoader";
-
 import "./assets/index.css";
 
 import { scan } from "react-scan"; // must be imported before React and React DOM
@@ -55,11 +52,9 @@ if (rootElement) {
         <StrictMode>
           <QueryClientProvider client={queryClient}>
             {ENABLE_REACT_QUERY_DEVTOOLS && <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />}
-            <Suspense fallback={<PageLoader />}>
-              <App>
-                <Workbench />
-              </App>
-            </Suspense>
+            <App>
+              <Workbench />
+            </App>
           </QueryClientProvider>
         </StrictMode>
       )

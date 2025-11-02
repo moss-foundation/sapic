@@ -25,6 +25,7 @@ const closeWorkspaceFn = async (workspaceId: string): Promise<CloseWorkspaceOutp
 
 export const useCloseWorkspace = () => {
   const queryClient = useQueryClient();
+
   return useMutation<CloseWorkspaceOutput, Error, string>({
     mutationKey: [USE_CLOSE_WORKSPACE_QUERY_KEY],
     mutationFn: closeWorkspaceFn,

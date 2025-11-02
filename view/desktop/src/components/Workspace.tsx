@@ -1,5 +1,4 @@
 import { useStreamProjects } from "@/hooks";
-import { useWorkspaceSidebarState } from "@/hooks/workspace/derived/useWorkspaceSidebarState";
 
 import TabbedPane from "../parts/TabbedPane/TabbedPane";
 
@@ -9,8 +8,6 @@ interface WorkspaceProps {
 
 export const Workspace = ({ workspaceName }: WorkspaceProps) => {
   const effectiveWorkspaceName = workspaceName ?? null;
-
-  useWorkspaceSidebarState();
 
   const { isLoading: isLoadingProjects, error: projectsError } = useStreamProjects();
 
