@@ -27,7 +27,7 @@ use moss_applib::AppRuntime;
 use moss_configuration::RegisterConfigurationContribution;
 use moss_workspace::Workspace;
 
-use crate::models::primitives::WorkspaceId;
+use sapic_window::types::primitives::WorkspaceId;
 
 inventory::submit! {
     RegisterConfigurationContribution(include_str!(concat!(env!("OUT_DIR"), "/configurations.json")))

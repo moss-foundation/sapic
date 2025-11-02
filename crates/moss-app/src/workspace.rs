@@ -10,17 +10,16 @@ use moss_workspace::{
     builder::{CreateWorkspaceParams, LoadWorkspaceParams, WorkspaceBuilder},
     workspace::{WorkspaceModifyParams, WorkspaceSummary},
 };
+use sapic_window::types::primitives::WorkspaceId;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
     sync::Arc,
 };
-
 use tokio::sync::RwLock;
 
 use crate::{
     ActiveWorkspace, dirs,
-    models::primitives::WorkspaceId,
     storage::{
         StorageService,
         segments::{SEGKEY_WORKSPACE, segkey_last_opened_at, segkey_workspace},

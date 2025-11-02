@@ -1,3 +1,5 @@
+// TODO: move to window crate when SQLite migration is complete
+
 mod rollinglog_writer;
 mod taurilog_writer;
 
@@ -6,6 +8,7 @@ use joinerror::Error;
 use moss_applib::AppRuntime;
 use moss_fs::{CreateOptions, FileSystem};
 use moss_logging::models::primitives::LogEntryId;
+use sapic_window::types::primitives::SessionId;
 use std::{
     collections::{HashSet, VecDeque},
     ffi::OsStr,
@@ -29,10 +32,7 @@ use tracing_subscriber::{
 
 use crate::{
     logging::{constants::*, rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter},
-    models::{
-        primitives::SessionId,
-        types::{LogEntryInfo, LogItemSourceInfo},
-    },
+    models::types::{LogEntryInfo, LogItemSourceInfo},
     storage::StorageService,
 };
 
@@ -98,6 +98,7 @@ pub struct LogService<R: AppRuntime> {
     applog_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
     sessionlog_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
     storage: Arc<StorageService<R>>,
+
     _applog_writerguard: WorkerGuard,
     _sessionlog_writerguard: WorkerGuard,
     _taurilog_writerguard: WorkerGuard,

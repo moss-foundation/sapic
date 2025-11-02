@@ -12,16 +12,14 @@ use moss_storage::{
         TransactionalRemoveItem,
     },
 };
+use sapic_window::types::primitives::WorkspaceId;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
     sync::Arc,
 };
 
-use crate::{
-    models::primitives::WorkspaceId,
-    storage::segments::{SEGKEY_LAST_ACTIVE_WORKSPACE, segkey_last_opened_at},
-};
+use crate::storage::segments::{SEGKEY_LAST_ACTIVE_WORKSPACE, segkey_last_opened_at};
 
 pub struct StorageService<R: AppRuntime> {
     storage: Arc<dyn GlobalStorage<R::AsyncContext>>,

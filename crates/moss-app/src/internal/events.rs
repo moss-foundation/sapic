@@ -3,7 +3,7 @@ use moss_user::models::primitives::ProfileId;
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde_json::Value as JsonValue;
 
-use crate::models::primitives::WorkspaceId;
+use sapic_window::types::primitives::WorkspaceId;
 
 #[derive(Debug, Clone)]
 pub struct OnDidChangeProfile {

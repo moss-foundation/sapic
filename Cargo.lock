@@ -2108,6 +2108,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "foundation"
+version = "0.1.0"
+
+[[package]]
 name = "fs-set-times"
 version = "0.20.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3805,6 +3809,7 @@ dependencies = [
  "tracing-subscriber",
  "ts-rs",
  "validator",
+ "window",
 ]
 
 [[package]]
@@ -5278,6 +5283,10 @@ name = "pkg-config"
 version = "0.3.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c"
+
+[[package]]
+name = "platform"
+version = "0.1.0"
 
 [[package]]
 name = "plist"
@@ -9064,6 +9073,26 @@ dependencies = [
  "wasmtime-cranelift",
  "wasmtime-environ",
  "wasmtime-math",
+]
+
+[[package]]
+name = "window"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "joinerror",
+ "moss_app_delegate",
+ "moss_applib",
+ "moss_fs",
+ "moss_id_macro",
+ "moss_logging",
+ "nanoid",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tokio",
+ "tracing",
+ "ts-rs",
 ]
 
 [[package]]

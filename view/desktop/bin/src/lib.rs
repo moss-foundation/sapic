@@ -1,5 +1,6 @@
 mod commands;
 mod constants;
+mod host;
 mod mem;
 mod menu;
 mod plugins;

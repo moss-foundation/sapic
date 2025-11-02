@@ -6,6 +6,7 @@ use moss_keyring::KeyringClient;
 use moss_language::registry::LanguageRegistry;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_theme::registry::ThemeRegistry;
+use sapic_window::session::SessionService;
 use std::{path::PathBuf, sync::Arc};
 use tauri::{AppHandle as TauriAppHandle, Manager};
 
@@ -19,7 +20,6 @@ use crate::{
     language::LanguageService,
     logging::LogService,
     profile::ProfileService,
-    session::SessionService,
     storage::StorageService,
     theme::ThemeService,
     workspace::WorkspaceService,

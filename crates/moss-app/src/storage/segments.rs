@@ -1,6 +1,5 @@
 use moss_storage::primitives::segkey::{SegKey, SegKeyBuf};
-
-use crate::models::primitives::WorkspaceId;
+use sapic_window::types::primitives::WorkspaceId;
 
 pub static SEGKEY_LAST_ACTIVE_WORKSPACE: SegKey = SegKey::new("lastActiveWorkspace");
 pub static SEGKEY_WORKSPACE: SegKey = SegKey::new("workspace");

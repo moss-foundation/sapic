@@ -1,3 +1,5 @@
+// TODO: ALL OF THESE OPERATIONS WILL BE MOVED TO THE API CRATE
+
 use derive_more::Deref;
 use moss_configuration::models::types::ConfigurationSchema;
 use moss_extension::models::types::ExtensionInfo;
@@ -6,13 +8,14 @@ use moss_logging::models::primitives::LogEntryId;
 use moss_theme::models::primitives::ThemeId;
 use moss_user::models::{primitives::AccountId, types::ProfileInfo};
 use moss_workspace::models::primitives::WorkspaceMode;
+use sapic_window::types::primitives::*;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};
 use ts_rs::TS;
 use validator::Validate;
 
-use crate::models::{primitives::*, types::*};
+use crate::models::types::*;
 
 /// @category Operation
 #[derive(Debug, Clone, Serialize, TS, Validate)]

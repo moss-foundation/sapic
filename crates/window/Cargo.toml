@@ -1,0 +1,24 @@
+[package]
+name = "window"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+path = "src/window.rs"
+
+[dependencies]
+moss_app_delegate = { workspace = true }
+moss_fs = { workspace = true }
+moss_applib = { workspace = true }
+moss_logging = { workspace = true }
+moss_id_macro = { workspace = true }
+
+tauri = { workspace = true }
+tokio = { workspace = true }
+chrono = { workspace = true }
+joinerror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+ts-rs = { workspace = true }
+tracing = { workspace = true }
+nanoid = { workspace = true }

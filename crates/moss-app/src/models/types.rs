@@ -11,7 +11,7 @@ use std::{
 };
 use ts_rs::TS;
 
-use crate::models::primitives::*;
+use sapic_window::types::primitives::*;
 
 /// @category Type
 #[derive(Debug, Clone, Deserialize, TS)]

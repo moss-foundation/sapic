@@ -4,6 +4,7 @@ use moss_applib::{AppRuntime, context::Canceller};
 use moss_logging::session;
 use moss_text::ReadOnlyStr;
 use rustc_hash::FxHashMap;
+use sapic_window::{session::SessionService, types::primitives::SessionId};
 use std::{
     collections::HashMap,
     ops::{Deref, DerefMut},
@@ -15,8 +16,8 @@ use tokio::sync::RwLock;
 use crate::{
     ActiveWorkspace, command::CommandCallback, configuration::ConfigurationService,
     extension::ExtensionService, language::LanguageService, logging::LogService,
-    models::primitives::SessionId, profile::ProfileService, session::SessionService,
-    storage::StorageService, theme::ThemeService, workspace::WorkspaceService,
+    profile::ProfileService, storage::StorageService, theme::ThemeService,
+    workspace::WorkspaceService,
 };
 
 pub struct AppCommands<R: TauriRuntime>(FxHashMap<ReadOnlyStr, CommandCallback<R>>);
@@ -50,8 +51,8 @@ pub struct App<R: AppRuntime> {
     #[deref]
     pub(super) app_handle: AppHandle<R::EventLoop>,
     pub(super) commands: AppCommands<R::EventLoop>,
-    pub(super) session_service: SessionService,
-    pub(super) log_service: LogService<R>,
+    pub(super) session_service: SessionService, // TODO: move to window crate
+    pub(super) log_service: LogService<R>,      // TODO: move to window crate
     pub(super) storage_service: Arc<StorageService<R>>,
     pub(super) workspace_service: WorkspaceService<R>,
     pub(super) language_service: LanguageService,

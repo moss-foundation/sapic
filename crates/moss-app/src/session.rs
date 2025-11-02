@@ -1,17 +1,17 @@
-use crate::models::primitives::SessionId;
+// use crate::models::primitives::SessionId;
 
-pub struct SessionService {
-    session_id: SessionId,
-}
+// pub struct SessionService {
+//     session_id: SessionId,
+// }
 
-impl SessionService {
-    pub fn new() -> Self {
-        Self {
-            session_id: SessionId::new(),
-        }
-    }
+// impl SessionService {
+//     pub fn new() -> Self {
+//         Self {
+//             session_id: SessionId::new(),
+//         }
+//     }
 
-    pub fn session_id(&self) -> &SessionId {
-        &self.session_id
-    }
-}
+//     pub fn session_id(&self) -> &SessionId {
+//         &self.session_id
+//     }
+// }

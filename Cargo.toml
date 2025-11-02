@@ -10,6 +10,10 @@ members = [
     #
     # Internal crates
     #
+    "crates/platform",
+    "crates/foundation", 
+    "crates/window",
+
     "crates/moss-applib",
     "crates/moss-app",
     "crates/moss-app-delegate",
@@ -67,6 +71,10 @@ static_json = { path = "libs/static-json" }
 #
 # Internal crates
 #
+sapic_platform = { path = "crates/platform", package = "platform" }
+sapic_foundation = { path = "crates/foundation", package = "foundation" }
+sapic_window = { path = "crates/window", package = "window" }
+
 moss_api = { path = "crates/moss-api" }
 moss_text = { path = "crates/moss-text" }
 moss_project = { path = "crates/moss-project" }
