@@ -63,4 +63,18 @@ pub trait KeyedStorage: Send + Sync {
         &self,
         keys: &[&str],
     ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>>;
+
+    /// Get `keys` based on the prefix; bypass the cache and read from SQLite to benefit from index
+    /// caches the values, and returns them
+    async fn get_batch_by_prefix(
+        &self,
+        prefix: &str,
+    ) -> joinerror::Result<Vec<(String, JsonValue)>>;
+
+    /// Remove `keys` based on the prefix from the in-memory
+    /// Returns the removed values
+    async fn remove_batch_by_prefix(
+        &self,
+        prefix: &str,
+    ) -> joinerror::Result<Vec<(String, JsonValue)>>;
 }
