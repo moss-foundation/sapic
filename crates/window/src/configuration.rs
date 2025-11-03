@@ -17,7 +17,6 @@ use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_logging::session;
 use moss_text::ReadOnlyStr;
 use rustc_hash::{FxHashMap, FxHashSet};
-use sapic_window::internal::events::OnDidChangeProfile;
 use serde_json::Value as JsonValue;
 use std::{
     collections::{HashMap, HashSet},
@@ -29,7 +28,7 @@ use tokio::sync::RwLock;
 use crate::{
     configuration::edit::ConfigurationEdit,
     dirs,
-    internal::events::{OnDidChangeConfiguration, OnDidChangeWorkspace},
+    internal::events::{OnDidChangeConfiguration, OnDidChangeProfile, OnDidChangeWorkspace},
 };
 
 const PROFILES_REGISTRY_FILE: &str = "profiles.json";

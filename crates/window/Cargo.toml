@@ -12,7 +12,22 @@ moss_fs = { workspace = true }
 moss_applib = { workspace = true }
 moss_logging = { workspace = true }
 moss_id_macro = { workspace = true }
+moss_user = { workspace = true }
+moss_workspace = { workspace = true }
+moss_storage2 = { workspace = true }
+moss_bindingutils = { workspace = true }
+moss_server_api = { workspace = true }
+moss_keyring = { workspace = true }
+moss_common = { workspace = true }
+moss_git_hosting_provider = { workspace = true }
+moss_configuration = { workspace = true }
+moss_text = { workspace = true }
+moss_edit = { workspace = true }
 
+moss_storage = { workspace = true }
+moss_db = { workspace = true }
+
+json-patch = { workspace = true }
 tauri = { workspace = true }
 tokio = { workspace = true }
 chrono = { workspace = true }
@@ -21,4 +36,15 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 ts-rs = { workspace = true }
 tracing = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["fmt", "json", "chrono", "ansi", "env-filter"] }
+tracing-appender = { workspace = true }
 nanoid = { workspace = true }
+derive_more = { workspace = true, features = ["deref", "deref_mut"] }
+validator = { workspace = true }
+rustc-hash = { workspace = true }
+
+[dev-dependencies]
+moss_testutils = { workspace = true }
+
+[features]
+integration-tests = []

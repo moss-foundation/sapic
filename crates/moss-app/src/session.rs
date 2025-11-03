@@ -1,17 +1,19 @@
-// use crate::models::primitives::SessionId;
+// TODO: temporary left here for now, should moved to window crate
 
-// pub struct SessionService {
-//     session_id: SessionId,
-// }
+use sapic_window::types::primitives::SessionId;
 
-// impl SessionService {
-//     pub fn new() -> Self {
-//         Self {
-//             session_id: SessionId::new(),
-//         }
-//     }
+pub struct SessionService {
+    session_id: SessionId,
+}
 
-//     pub fn session_id(&self) -> &SessionId {
-//         &self.session_id
-//     }
-// }
+impl SessionService {
+    pub fn new() -> Self {
+        Self {
+            session_id: SessionId::new(),
+        }
+    }
+
+    pub fn session_id(&self) -> &SessionId {
+        &self.session_id
+    }
+}

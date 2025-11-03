@@ -189,7 +189,8 @@ pub async fn run<R: TauriRuntime>() {
                 }
 
                 let ctx_clone = ctx.clone();
-                let (app, session_id) = {
+                // let (app, session_id) = {
+                let app = {
                     let shortcut_println_command =
                         CommandDecl::<R>::new("shortcut.println".into(), |_ctx| {
                             Box::pin(async move {
@@ -227,14 +228,15 @@ pub async fn run<R: TauriRuntime>() {
                     .with_command(shortcut_alert_command)
                     .build(&app_init_ctx)
                     .await;
-                    let session_id = app.session_id().clone();
+                    // let session_id = app.session_id().clone();
 
-                    (app, session_id)
+                    // (app, session_id)
+                    app
                 };
 
                 tao_app_handle.manage({
                     let mut ctx = ctx.unfreeze().expect("Failed to unfreeze the root context");
-                    ctx.with_value("session_id", session_id.to_string()); // TODO: Use a proper type
+                    // ctx.with_value("session_id", session_id.to_string()); // TODO: Use a proper type
 
                     ctx.freeze()
                 });
@@ -325,6 +327,8 @@ pub async fn run<R: TauriRuntime>() {
                 webview_window
                     .on_menu_event(move |window, event| menu::handle_event(window, &event));
 
+                dbg!(webview_window.label());
+
                 futures::executor::block_on(async {
                     let app = app_handle.state::<Arc<App<TauriAppRuntime<R>>>>();
                     let ctx =
@@ -337,6 +341,7 @@ pub async fn run<R: TauriRuntime>() {
                     app.on_app_ready(
                         &ctx,
                         &app_delegate,
+                        // webview_window,
                         OnAppReadyOptions {
                             restore_last_workspace: true,
                         },

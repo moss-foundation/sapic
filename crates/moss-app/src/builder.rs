@@ -6,9 +6,11 @@ use moss_keyring::KeyringClient;
 use moss_language::registry::LanguageRegistry;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_theme::registry::ThemeRegistry;
-use sapic_window::session::SessionService;
-use std::{path::PathBuf, sync::Arc};
+use rustc_hash::FxHashMap;
+use sapic_window::{builder::WindowBuilder, storage::StorageService};
+use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tauri::{AppHandle as TauriAppHandle, Manager};
+use tokio::sync::RwLock;
 
 use crate::{
     app::{App, AppCommands},
@@ -16,13 +18,11 @@ use crate::{
     configuration::ConfigurationService,
     dirs,
     extension::ExtensionService,
-    internal::events::{OnDidChangeConfiguration, OnDidChangeProfile, OnDidChangeWorkspace},
+    internal::events::{OnDidChangeConfiguration, OnDidChangeWorkspace},
     language::LanguageService,
     logging::LogService,
-    profile::ProfileService,
-    storage::StorageService,
+    session::SessionService,
     theme::ThemeService,
-    workspace::WorkspaceService,
 };
 
 pub struct AppBuilder<R: AppRuntime> {
@@ -63,8 +63,23 @@ impl<R: AppRuntime> AppBuilder<R> {
 
         self.create_user_dirs_if_not_exists(user_dir.clone()).await;
 
-        let on_did_change_profile_emitter = EventEmitter::<OnDidChangeProfile>::new();
-        let on_did_change_profile_event = on_did_change_profile_emitter.event();
+        let storage_service: Arc<StorageService<R>> =
+            StorageService::<R>::new(&user_dir.join(dirs::GLOBALS_DIR))
+                .expect("Failed to create storage service")
+                .into();
+
+        // TODO: temporary hardcoded main window, should be moved to on_app_ready later
+        let main_w = WindowBuilder::new(
+            "main_0".to_string(),
+            self.fs.clone(),
+            self.keyring.clone(),
+            self.auth_api_client.clone(),
+        )
+        .build(ctx, &delegate, storage_service.clone())
+        .await;
+
+        // let on_did_change_profile_emitter = EventEmitter::<OnDidChangeProfile>::new();
+        // let on_did_change_profile_event = on_did_change_profile_emitter.event();
 
         let on_did_change_workspace_emitter = EventEmitter::<OnDidChangeWorkspace>::new();
         let on_did_change_workspace_event = on_did_change_workspace_emitter.event();
@@ -76,7 +91,7 @@ impl<R: AppRuntime> AppBuilder<R> {
             &delegate,
             self.fs.clone(),
             on_did_change_configuration_emitter,
-            &on_did_change_profile_event,
+            &main_w.on_did_change_profile_event(),
             &on_did_change_workspace_event,
         )
         .await
@@ -95,10 +110,7 @@ impl<R: AppRuntime> AppBuilder<R> {
                 .await
                 .expect("Failed to create language service");
         let session_service = SessionService::new();
-        let storage_service: Arc<StorageService<R>> =
-            StorageService::<R>::new(&user_dir.join(dirs::GLOBALS_DIR))
-                .expect("Failed to create storage service")
-                .into();
+
         let log_service = LogService::new(
             self.fs.clone(),
             self.tao_handle.clone(),
@@ -107,19 +119,19 @@ impl<R: AppRuntime> AppBuilder<R> {
             storage_service.clone(),
         )
         .expect("Failed to create log service");
-        let profile_service = ProfileService::new(
-            &user_dir.join(dirs::PROFILES_DIR),
-            self.fs.clone(),
-            self.auth_api_client.clone(),
-            self.keyring.clone(),
-            on_did_change_profile_emitter,
-        )
-        .await
-        .expect("Failed to create profile service");
-        let workspace_service =
-            WorkspaceService::<R>::new(ctx, storage_service.clone(), self.fs.clone(), &user_dir)
-                .await
-                .expect("Failed to create workspace service");
+        // let profile_service = ProfileService::new(
+        //     &user_dir.join(dirs::PROFILES_DIR),
+        //     self.fs.clone(),
+        //     self.auth_api_client.clone(),
+        //     self.keyring.clone(),
+        //     on_did_change_profile_emitter,
+        // )
+        // .await
+        // .expect("Failed to create profile service");
+        // let workspace_service =
+        //     WorkspaceService::<R>::new(ctx, storage_service.clone(), self.fs.clone(), &user_dir)
+        //         .await
+        //         .expect("Failed to create workspace service");
 
         let extension_service =
             ExtensionService::<R>::new(&delegate, self.fs.clone(), self.extension_points)
@@ -129,13 +141,17 @@ impl<R: AppRuntime> AppBuilder<R> {
         App {
             app_handle: self.tao_handle.clone(),
             commands: self.commands,
+            windows: RwLock::new(HashMap::from_iter([(
+                "main_0".to_string(),
+                Arc::new(main_w),
+            )])),
             session_service,
             log_service,
             storage_service,
-            workspace_service,
+            // workspace_service,
             language_service,
             theme_service,
-            profile_service,
+            // profile_service,
             configuration_service,
             extension_service,
             tracked_cancellations: Default::default(),

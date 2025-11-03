@@ -1,14 +1,14 @@
 use moss_applib::EventMarker;
-// use moss_user::models::primitives::ProfileId;
+use moss_user::models::primitives::ProfileId;
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde_json::Value as JsonValue;
 
-use sapic_window::types::primitives::WorkspaceId;
+use crate::types::primitives::WorkspaceId;
 
-// #[derive(Debug, Clone)]
-// pub struct OnDidChangeProfile {
-//     pub id: ProfileId,
-// }
+#[derive(Debug, Clone)]
+pub struct OnDidChangeProfile {
+    pub id: ProfileId,
+}
 
 #[allow(unused)]
 #[derive(Debug, Clone)]
@@ -23,6 +23,6 @@ pub struct OnDidChangeConfiguration {
     pub changes: FxHashMap<String, JsonValue>,
 }
 
-impl EventMarker for OnDidChangeConfiguration {}
-// impl EventMarker for OnDidChangeProfile {}
+impl EventMarker for OnDidChangeProfile {}
 impl EventMarker for OnDidChangeWorkspace {}
+impl EventMarker for OnDidChangeConfiguration {}

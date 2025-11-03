@@ -25,6 +25,10 @@ impl<R: AppRuntime> AppDelegate<R> {
         }
     }
 
+    pub fn app_handle(&self) -> TauriAppHandle<R::EventLoop> {
+        self.app_handle.clone()
+    }
+
     #[cfg(debug_assertions)]
     #[cfg(not(feature = "integration-tests"))]
     pub fn resource_dir(&self) -> PathBuf {

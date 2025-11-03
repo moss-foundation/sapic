@@ -1671,6 +1671,7 @@ dependencies = [
  "tauri-plugin-window-state",
  "tokio",
  "tracing",
+ "window",
 ]
 
 [[package]]
@@ -9080,19 +9081,39 @@ name = "window"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "derive_more 2.0.1",
  "joinerror",
+ "json-patch 4.1.0",
  "moss_app_delegate",
  "moss_applib",
+ "moss_bindingutils",
+ "moss_common",
+ "moss_configuration",
+ "moss_db",
+ "moss_edit",
  "moss_fs",
+ "moss_git_hosting_provider",
  "moss_id_macro",
+ "moss_keyring",
  "moss_logging",
+ "moss_server_api",
+ "moss_storage",
+ "moss_storage2",
+ "moss_testutils",
+ "moss_text",
+ "moss_user",
+ "moss_workspace",
  "nanoid",
+ "rustc-hash",
  "serde",
  "serde_json",
  "tauri",
  "tokio",
  "tracing",
+ "tracing-appender",
+ "tracing-subscriber",
  "ts-rs",
+ "validator",
 ]
 
 [[package]]

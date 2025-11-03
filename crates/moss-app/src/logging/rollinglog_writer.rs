@@ -1,5 +1,6 @@
 use chrono::DateTime;
 use moss_applib::AppRuntime;
+
 use std::{
     collections::VecDeque,
     fs::OpenOptions,
@@ -11,8 +12,9 @@ use std::{
 use crate::{
     logging::constants::{FILE_TIMESTAMP_FORMAT, TIMESTAMP_FORMAT},
     models::types::LogEntryInfo,
-    storage::StorageService,
 };
+
+use sapic_window::storage::StorageService;
 
 // log:{log_id}: log_entry_path
 

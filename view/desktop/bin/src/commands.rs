@@ -4,11 +4,12 @@ mod workspace;
 
 pub use app::*;
 pub use project::*;
+use sapic_window::workspace::ActiveWorkspace;
 pub use workspace::*;
 
 use joinerror::OptionExt;
 use moss_api::{TauriResult, constants::DEFAULT_OPERATION_TIMEOUT};
-use moss_app::{ActiveWorkspace, app::App};
+use moss_app::app::App;
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
     AppRuntime,

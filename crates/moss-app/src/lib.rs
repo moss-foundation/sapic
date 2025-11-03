@@ -33,20 +33,20 @@ inventory::submit! {
     RegisterConfigurationContribution(include_str!(concat!(env!("OUT_DIR"), "/configurations.json")))
 }
 
-#[derive(Deref, DerefMut)]
-pub struct ActiveWorkspace<R: AppRuntime> {
-    id: WorkspaceId,
+// #[derive(Deref, DerefMut)]
+// pub struct ActiveWorkspace<R: AppRuntime> {
+//     id: WorkspaceId,
 
-    #[deref]
-    #[deref_mut]
-    handle: Workspace<R>,
-}
+//     #[deref]
+//     #[deref_mut]
+//     handle: Workspace<R>,
+// }
 
-impl<R: AppRuntime> ActiveWorkspace<R> {
-    pub fn id(&self) -> WorkspaceId {
-        self.id.clone()
-    }
-}
+// impl<R: AppRuntime> ActiveWorkspace<R> {
+//     pub fn id(&self) -> WorkspaceId {
+//         self.id.clone()
+//     }
+// }
 
 #[rustfmt::skip]
 pub mod constants {

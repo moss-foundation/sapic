@@ -13,13 +13,15 @@ impl<R: AppRuntime> App<R> {
         app_delegate: &AppDelegate<R>,
         input: CreateProfileInput,
     ) -> joinerror::Result<CreateProfileOutput> {
-        let id = self
-            .profile_service
-            .create_profile(app_delegate, input.name, input.is_default.unwrap_or(false))
-            .await?;
+        unimplemented!()
 
-        Ok(CreateProfileOutput {
-            profile_id: id.to_string(),
-        })
+        // let id = self
+        //     .profile_service
+        //     .create_profile(app_delegate, input.name, input.is_default.unwrap_or(false))
+        //     .await?;
+
+        // Ok(CreateProfileOutput {
+        //     profile_id: id.to_string(),
+        // })
     }
 }

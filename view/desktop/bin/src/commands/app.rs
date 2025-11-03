@@ -3,6 +3,7 @@ use moss_api::{TauriError, TauriResult};
 use moss_app::{command::CommandContext, models::operations::*};
 use moss_applib::errors::NotFound;
 use moss_text::{ReadOnlyStr, quote};
+use sapic_window::types::operations::*;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use tauri::Window;
@@ -145,7 +146,13 @@ pub async fn create_workspace<'a, R: tauri::Runtime>(
         ctx.inner(),
         app,
         options,
-        |ctx, app_delegate, app| async move { app.create_workspace(&ctx, &app_delegate, &input).await },
+        |ctx, app_delegate, app| async move {
+            app.window("main_0")
+                .await
+                .expect("main_0 window not found") // FIXME: handle error properly
+                .create_workspace(&ctx, &app_delegate, &input)
+                .await
+        },
     )
     .await
 }
@@ -159,9 +166,18 @@ pub async fn close_workspace<'a, R: tauri::Runtime>(
     input: CloseWorkspaceInput,
     options: Options,
 ) -> TauriResult<CloseWorkspaceOutput> {
-    super::with_app_timeout(ctx.inner(), app, options, |ctx, app_delegate, app| async move {
-        app.close_workspace(&ctx, &app_delegate, &input).await
-    })
+    super::with_app_timeout(
+        ctx.inner(),
+        app,
+        options,
+        |ctx, app_delegate, app| async move {
+            app.window("main_0")
+                .await
+                .expect("main_0 window not found") // FIXME: handle error properly
+                .close_workspace(&ctx, &app_delegate, &input)
+                .await
+        },
+    )
     .await
 }
 
@@ -174,7 +190,11 @@ pub async fn list_workspaces<'a, R: tauri::Runtime>(
     options: Options,
 ) -> TauriResult<ListWorkspacesOutput> {
     super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
-        app.list_workspaces(&ctx).await
+        app.window("main_0")
+            .await
+            .expect("main_0 window not found") // FIXME: handle error properly
+            .list_workspaces(&ctx)
+            .await
     })
     .await
 }
@@ -188,9 +208,18 @@ pub async fn delete_workspace<'a, R: tauri::Runtime>(
     input: DeleteWorkspaceInput,
     options: Options,
 ) -> TauriResult<()> {
-    super::with_app_timeout(ctx.inner(), app, options, |ctx, app_delegate, app| async move {
-        app.delete_workspace(&ctx, &app_delegate, &input).await
-    })
+    super::with_app_timeout(
+        ctx.inner(),
+        app,
+        options,
+        |ctx, app_delegate, app| async move {
+            app.window("main_0")
+                .await
+                .expect("main_0 window not found") // FIXME: handle error properly
+                .delete_workspace(&ctx, &app_delegate, &input)
+                .await
+        },
+    )
     .await
 }
 
@@ -207,7 +236,13 @@ pub async fn open_workspace<'a, R: tauri::Runtime>(
         ctx.inner(),
         app,
         options,
-        |ctx, app_delegate, app| async move { app.open_workspace(&ctx, &app_delegate, &input).await },
+        |ctx, app_delegate, app| async move {
+            app.window("main_0")
+                .await
+                .expect("main_0 window not found") // FIXME: handle error properly
+                .open_workspace(&ctx, &app_delegate, &input)
+                .await
+        },
     )
     .await
 }
@@ -222,7 +257,11 @@ pub async fn update_workspace<'a, R: tauri::Runtime>(
     options: Options,
 ) -> TauriResult<()> {
     super::with_app_timeout(ctx.inner(), app, options, |ctx, _, app| async move {
-        app.update_workspace(&ctx, &input).await
+        app.window("main_0")
+            .await
+            .expect("main_0 window not found") // FIXME: handle error properly
+            .update_workspace(&ctx, &input)
+            .await
     })
     .await
 }

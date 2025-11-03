@@ -1,13 +1,11 @@
 use joinerror::OptionExt;
 use moss_applib::{AppRuntime, errors::FailedPrecondition};
 use moss_user::models::types::ProfileInfo;
+use sapic_window::types::WorkspaceInfo;
 
 use crate::{
     app::App,
-    models::{
-        operations::DescribeAppOutput,
-        types::{Configuration, WorkspaceInfo},
-    },
+    models::{operations::DescribeAppOutput, types::Configuration},
 };
 
 impl<R: AppRuntime> App<R> {
@@ -15,25 +13,25 @@ impl<R: AppRuntime> App<R> {
         &self,
         _ctx: &R::AsyncContext,
     ) -> joinerror::Result<DescribeAppOutput> {
-        let maybe_workspace_details =
-            if let Some(workspace) = self.workspace_service.workspace().await {
-                self.workspace_service
-                    .workspace_details(&workspace.id)
-                    .await
-            } else {
-                None
-            };
+        // let maybe_workspace_details =
+        //     if let Some(workspace) = self.workspace_service.workspace().await {
+        //         self.workspace_service
+        //             .workspace_details(&workspace.id)
+        //             .await
+        //     } else {
+        //         None
+        //     };
 
-        let active_profile = self
-            .profile_service
+        let windows = self.windows.read().await;
+        dbg!(windows.keys());
+        let window = windows.get("main_0").expect("main_0 window not found"); // HACK: hardcoded main window label
+        let maybe_workspace_details = window.workspace_details().await;
+
+        let active_profile = window
             .active_profile()
             .await
             .ok_or_join_err::<FailedPrecondition>("no active profile to describe the app")?;
-        let profile_details = self
-            .profile_service
-            .profile_details(&active_profile.id())
-            .await
-            .unwrap();
+        let profile_details = window.profile_details().await.unwrap();
         let configuration = self.configuration_service.configuration().await;
 
         Ok(DescribeAppOutput {

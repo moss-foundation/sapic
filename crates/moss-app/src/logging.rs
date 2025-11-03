@@ -8,7 +8,7 @@ use joinerror::Error;
 use moss_applib::AppRuntime;
 use moss_fs::{CreateOptions, FileSystem};
 use moss_logging::models::primitives::LogEntryId;
-use sapic_window::types::primitives::SessionId;
+use sapic_window::{storage::StorageService, types::primitives::SessionId};
 use std::{
     collections::{HashSet, VecDeque},
     ffi::OsStr,
@@ -33,7 +33,6 @@ use tracing_subscriber::{
 use crate::{
     logging::{constants::*, rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter},
     models::types::{LogEntryInfo, LogItemSourceInfo},
-    storage::StorageService,
 };
 
 pub mod constants {
