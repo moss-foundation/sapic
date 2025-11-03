@@ -37,7 +37,7 @@ impl Default for SqliteStorageOptions {
     }
 }
 
-pub struct SqliteStorage { 
+pub struct SqliteStorage {
     cache: RwLock<HashMap<String, JsonValue>>,
     pool: SqlitePool,
 }
