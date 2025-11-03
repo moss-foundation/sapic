@@ -50,6 +50,18 @@ pub trait Storage: Send + Sync {
         keys: &[&str],
     ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>>;
 
+    async fn get_batch_by_prefix(
+        &self,
+        scope: StorageScope,
+        prefix: &str,
+    ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>>;
+
+    async fn remove_batch_by_prefix(
+        &self,
+        scope: StorageScope,
+        prefix: &str,
+    ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>>;
+
     async fn capabilities(self: Arc<Self>) -> Arc<dyn StorageCapabilities>;
 }
 
@@ -205,6 +217,47 @@ impl Storage for AppStorage {
             StorageScope::Application => self.application().await?.remove_batch(keys).await,
             StorageScope::Workspace(workspace_id) => {
                 self.workspace(workspace_id).await?.remove_batch(keys).await
+            }
+            _ => unimplemented!(),
+        }
+    }
+
+    async fn get_batch_by_prefix(
+        &self,
+        scope: StorageScope,
+        prefix: &str,
+    ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>> {
+        match scope.clone() {
+            StorageScope::Application => {
+                self.application().await?.get_batch_by_prefix(prefix).await
+            }
+            StorageScope::Workspace(workspace_id) => {
+                self.workspace(workspace_id)
+                    .await?
+                    .get_batch_by_prefix(prefix)
+                    .await
+            }
+            _ => unimplemented!(),
+        }
+    }
+
+    async fn remove_batch_by_prefix(
+        &self,
+        scope: StorageScope,
+        prefix: &str,
+    ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>> {
+        match scope.clone() {
+            StorageScope::Application => {
+                self.application()
+                    .await?
+                    .remove_batch_by_prefix(prefix)
+                    .await
+            }
+            StorageScope::Workspace(workspace_id) => {
+                self.workspace(workspace_id)
+                    .await?
+                    .remove_batch_by_prefix(prefix)
+                    .await
             }
             _ => unimplemented!(),
         }
