@@ -14,7 +14,7 @@ export const batchGetItemByPrefixInputSchema = z.object({
 
 export const batchGetItemByPrefixOutputSchema = z.object({
   scope: storageScopeSchema,
-  items: z.record(z.string(), jsonValueSchema.nullable()),
+  items: z.record(z.string(), jsonValueSchema),
 });
 
 export const batchGetItemInputSchema = z.object({
@@ -39,7 +39,7 @@ export const batchRemoveItemByPrefixInputSchema = z.object({
 
 export const batchRemoveItemByPrefixOutputSchema = z.object({
   scope: storageScopeSchema,
-  items: z.record(z.string(), jsonValueSchema.nullable()),
+  items: z.record(z.string(), jsonValueSchema),
 });
 
 export const batchRemoveItemInputSchema = z.object({

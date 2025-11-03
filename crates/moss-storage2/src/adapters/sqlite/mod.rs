@@ -347,7 +347,7 @@ impl KeyedStorage for SqliteStorage {
     async fn get_batch_by_prefix(
         &self,
         prefix: &str,
-    ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>> {
+    ) -> joinerror::Result<Vec<(String, JsonValue)>> {
         let pattern = format!("{prefix}%");
         let rows = sqlx::query(
             r#"
@@ -374,16 +374,13 @@ impl KeyedStorage for SqliteStorage {
             }
         }
 
-        Ok(db_results
-            .into_iter()
-            .map(|(key, value)| (key, Some(value)))
-            .collect())
+        Ok(db_results.into_iter().collect())
     }
 
     async fn remove_batch_by_prefix(
         &self,
         prefix: &str,
-    ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>> {
+    ) -> joinerror::Result<Vec<(String, JsonValue)>> {
         let pattern = format!("{prefix}%");
 
         let mut txn = self
@@ -424,10 +421,7 @@ impl KeyedStorage for SqliteStorage {
             }
         }
 
-        Ok(removed_map
-            .into_iter()
-            .map(|(key, value)| (key, Some(value)))
-            .collect())
+        Ok(removed_map.into_iter().collect())
     }
 }
 

@@ -307,7 +307,7 @@ async fn batch_get_item_by_prefix<'a, R: tauri::Runtime>(
         .await
         .join_err::<()>("failed to batch get item by prefix")?;
 
-    let items_map: HashMap<String, Option<JsonValue>> = items.into_iter().collect();
+    let items_map: HashMap<String, JsonValue> = items.into_iter().collect();
     Ok(BatchGetItemByPrefixOutput {
         scope: input.scope,
         items: items_map,
@@ -330,7 +330,7 @@ async fn batch_remove_item_by_prefix<'a, R: tauri::Runtime>(
         .await
         .join_err::<()>("failed to batch remove item by prefix")?;
 
-    let items_map: HashMap<String, Option<JsonValue>> = items.into_iter().collect();
+    let items_map: HashMap<String, JsonValue> = items.into_iter().collect();
     Ok(BatchRemoveItemByPrefixOutput {
         scope: input.scope,
         items: items_map,

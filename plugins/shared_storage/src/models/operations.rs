@@ -172,8 +172,8 @@ pub struct BatchGetItemByPrefixInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct BatchGetItemByPrefixOutput {
     pub scope: StorageScopeForFrontend,
-    #[ts(type = "{ [key: string]: JsonValue | null }")]
-    pub items: HashMap<String, Option<JsonValue>>,
+    #[ts(type = "{ [key: string]: JsonValue }")]
+    pub items: HashMap<String, JsonValue>,
 }
 
 //
@@ -195,6 +195,6 @@ pub struct BatchRemoveItemByPrefixInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct BatchRemoveItemByPrefixOutput {
     pub scope: StorageScopeForFrontend,
-    #[ts(type = "{ [key: string]: JsonValue | null }")]
-    pub items: HashMap<String, Option<JsonValue>>,
+    #[ts(type = "{ [key: string]: JsonValue }")]
+    pub items: HashMap<String, JsonValue>,
 }

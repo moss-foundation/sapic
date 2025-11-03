@@ -54,13 +54,13 @@ pub trait Storage: Send + Sync {
         &self,
         scope: StorageScope,
         prefix: &str,
-    ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>>;
+    ) -> joinerror::Result<Vec<(String, JsonValue)>>;
 
     async fn remove_batch_by_prefix(
         &self,
         scope: StorageScope,
         prefix: &str,
-    ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>>;
+    ) -> joinerror::Result<Vec<(String, JsonValue)>>;
 
     async fn capabilities(self: Arc<Self>) -> Arc<dyn StorageCapabilities>;
 }
@@ -226,7 +226,7 @@ impl Storage for AppStorage {
         &self,
         scope: StorageScope,
         prefix: &str,
-    ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>> {
+    ) -> joinerror::Result<Vec<(String, JsonValue)>> {
         match scope.clone() {
             StorageScope::Application => {
                 self.application().await?.get_batch_by_prefix(prefix).await
@@ -245,7 +245,7 @@ impl Storage for AppStorage {
         &self,
         scope: StorageScope,
         prefix: &str,
-    ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>> {
+    ) -> joinerror::Result<Vec<(String, JsonValue)>> {
         match scope.clone() {
             StorageScope::Application => {
                 self.application()

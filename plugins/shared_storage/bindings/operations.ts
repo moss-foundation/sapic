@@ -7,7 +7,7 @@ import type { StorageScope } from "./primitives";
  */
 export type BatchGetItemByPrefixInput = { scope: StorageScope; prefix: string };
 
-export type BatchGetItemByPrefixOutput = { scope: StorageScope; items: { [key: string]: JsonValue | null } };
+export type BatchGetItemByPrefixOutput = { scope: StorageScope; items: { [key: string]: JsonValue } };
 
 /**
  * @category Operation
@@ -34,7 +34,7 @@ export type BatchPutItemOutput = Record<string, never>;
  */
 export type BatchRemoveItemByPrefixInput = { scope: StorageScope; prefix: string };
 
-export type BatchRemoveItemByPrefixOutput = { scope: StorageScope; items: { [key: string]: JsonValue | null } };
+export type BatchRemoveItemByPrefixOutput = { scope: StorageScope; items: { [key: string]: JsonValue } };
 
 /**
  * @category Operation
