@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 
+import { cn } from "@/utils";
+
 // TODO: fetch tips from backend when they are available
 const tips = [
   "The statusbar color can be changed in the appearance settings",
@@ -7,7 +9,11 @@ const tips = [
   "Lorem ipsum dolor sit amat. Met the statusbar color can be changed in the appearance settings",
 ];
 
-export const PageLoader = () => {
+interface PageLoaderProps {
+  className?: string;
+}
+
+export const PageLoader = ({ className }: PageLoaderProps) => {
   const [tip, setTip] = useState(tips[0]);
 
   useEffect(() => {
@@ -20,7 +26,7 @@ export const PageLoader = () => {
   }, []);
 
   return (
-    <div className="relative flex h-full w-full flex-col items-center justify-between bg-white pt-4">
+    <div className={cn("relative flex h-full w-full flex-col items-center justify-between bg-white pt-4", className)}>
       <div className="fixed top-0 h-36 w-full" data-tauri-drag-region />
 
       <div className="flex h-full flex-col items-center justify-center gap-5">

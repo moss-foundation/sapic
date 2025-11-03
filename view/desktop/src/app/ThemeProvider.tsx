@@ -1,24 +1,20 @@
-import { useEffect } from "react";
-
 import { useDescribeColorTheme } from "@/hooks";
 import { useDescribeApp } from "@/hooks/app/useDescribeApp";
-import { useQueryClient } from "@tanstack/react-query";
 
 const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const queryClient = useQueryClient();
-
   const { data: appState } = useDescribeApp();
-  const { data: colorThemeCss } = useDescribeColorTheme({
+  const { data: colorThemeCss, isSuccess } = useDescribeColorTheme({
     themeId: (appState?.configuration.contents.colorTheme as string) ?? "",
     enabled: !!appState?.configuration.contents.colorTheme,
   });
 
-  useEffect(() => {
+  if (isSuccess) {
     const colorThemeId = appState?.configuration.contents.colorTheme; //TODO this should be able to handle JSON value in the future
+
     if (colorThemeId && colorThemeCss) {
       applyThemeStyles(colorThemeId as string, colorThemeCss.cssContent);
     }
-  }, [appState, colorThemeCss, queryClient]);
+  }
 
   return <>{children}</>;
 };

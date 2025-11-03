@@ -2,9 +2,6 @@ import { lazy, StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 
 import "@/app/i18n";
-
-import { PageLoader } from "./components/PageLoader";
-
 import "./assets/index.css";
 
 import { scan } from "react-scan"; // must be imported before React and React DOM
@@ -13,6 +10,9 @@ import { QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-qu
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { type } from "@tauri-apps/plugin-os";
+
+import App from "./app";
+import { PageLoader } from "./components";
 
 const ENABLE_REACT_QUERY_DEVTOOLS = import.meta.env.MODE === "development";
 const queryClient = new QueryClient({
@@ -42,7 +42,6 @@ scan({
   enabled: import.meta.env.MODE === "development",
 });
 
-const App = lazy(() => import("@/app"));
 const Workbench = lazy(() => import("@/components/Workbench").then((module) => ({ default: module.Workbench })));
 const rootElement = document.getElementById("root") as HTMLElement;
 
@@ -55,11 +54,11 @@ if (rootElement) {
         <StrictMode>
           <QueryClientProvider client={queryClient}>
             {ENABLE_REACT_QUERY_DEVTOOLS && <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />}
-            <Suspense fallback={<PageLoader />}>
-              <App>
+            <App>
+              <Suspense fallback={<PageLoader className="bg-red-300" />}>
                 <Workbench />
-              </App>
-            </Suspense>
+              </Suspense>
+            </App>
           </QueryClientProvider>
         </StrictMode>
       )
