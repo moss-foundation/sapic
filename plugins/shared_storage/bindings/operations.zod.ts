@@ -7,6 +7,16 @@ import { storageScopeSchema } from "./primitives.zod";
 export const batchPutItemOutputSchema = z.record(z.string(), z.never());
 
 export const putItemOutputSchema = z.record(z.string(), z.never());
+export const batchGetItemByPrefixInputSchema = z.object({
+  scope: storageScopeSchema,
+  prefix: z.string(),
+});
+
+export const batchGetItemByPrefixOutputSchema = z.object({
+  scope: storageScopeSchema,
+  items: z.record(z.string(), jsonValueSchema.nullable()),
+});
+
 export const batchGetItemInputSchema = z.object({
   scope: storageScopeSchema,
   keys: z.array(z.string()),
@@ -20,6 +30,16 @@ export const batchGetItemOutputSchema = z.object({
 export const batchPutItemInputSchema = z.object({
   scope: storageScopeSchema,
   items: z.record(z.string(), jsonValueSchema),
+});
+
+export const batchRemoveItemByPrefixInputSchema = z.object({
+  scope: storageScopeSchema,
+  prefix: z.string(),
+});
+
+export const batchRemoveItemByPrefixOutputSchema = z.object({
+  scope: storageScopeSchema,
+  items: z.record(z.string(), jsonValueSchema.nullable()),
 });
 
 export const batchRemoveItemInputSchema = z.object({
