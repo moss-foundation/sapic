@@ -2,12 +2,12 @@ use chrono::NaiveDate;
 use moss_applib::AppRuntime;
 
 use crate::{
-    app::App,
+    app::Window,
     logging::LogFilter,
     models::operations::{ListLogsInput, ListLogsOutput},
 };
 
-impl<R: AppRuntime> App<R> {
+impl<R: AppRuntime> Window<R> {
     pub async fn list_logs(
         &self,
         _ctx: &R::AsyncContext,

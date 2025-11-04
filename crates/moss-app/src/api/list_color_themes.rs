@@ -1,8 +1,8 @@
 use moss_applib::AppRuntime;
 
-use crate::{app::App, models::operations::ListColorThemesOutput};
+use crate::{app::Window, models::operations::ListColorThemesOutput};
 
-impl<R: AppRuntime> App<R> {
+impl<R: AppRuntime> Window<R> {
     pub async fn list_color_themes(
         &self,
         _ctx: &R::AsyncContext,

@@ -3,14 +3,14 @@ use moss_applib::{AppRuntime, errors::FailedPrecondition};
 use moss_user::models::types::ProfileInfo;
 
 use crate::{
-    app::App,
+    app::Window,
     models::{
         operations::DescribeAppOutput,
         types::{Configuration, WorkspaceInfo},
     },
 };
 
-impl<R: AppRuntime> App<R> {
+impl<R: AppRuntime> Window<R> {
     pub async fn describe_app(
         &self,
         _ctx: &R::AsyncContext,

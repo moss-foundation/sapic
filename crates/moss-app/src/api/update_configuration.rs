@@ -7,12 +7,12 @@ use tauri::Emitter;
 use validator::Validate;
 
 use crate::{
-    app::App,
+    app::Window,
     constants::ON_DID_CHANGE_CONFIGURATION_CHANNEL,
     models::{events::OnDidChangeConfigurationForFrontend, operations::UpdateConfigurationInput},
 };
 
-impl<R: AppRuntime> App<R> {
+impl<R: AppRuntime> Window<R> {
     pub async fn update_configuration(
         &self,
         _ctx: &R::AsyncContext,

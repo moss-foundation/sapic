@@ -1,9 +1,9 @@
 use joinerror::Error;
 use moss_applib::AppRuntime;
 
-use crate::{App, models::operations::CancelRequestInput};
+use crate::{Window, models::operations::CancelRequestInput};
 
-impl<R: AppRuntime> App<R> {
+impl<R: AppRuntime> Window<R> {
     pub async fn cancel_request(&self, input: CancelRequestInput) -> joinerror::Result<()> {
         let request_id = input.request_id;
         let cancellation_map = self.tracked_cancellations.read().await;

@@ -3,11 +3,11 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 
 use crate::{
-    app::App,
+    app::Window,
     models::operations::{CloseWorkspaceInput, CloseWorkspaceOutput},
 };
 
-impl<R: AppRuntime> App<R> {
+impl<R: AppRuntime> Window<R> {
     pub async fn close_workspace(
         &self,
         ctx: &R::AsyncContext,

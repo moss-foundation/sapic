@@ -2,10 +2,10 @@ use moss_applib::{AppRuntime, errors::ValidationResultExt};
 use validator::Validate;
 
 use crate::{
-    app::App, models::operations::UpdateWorkspaceInput, workspace::WorkspaceItemUpdateParams,
+    app::Window, models::operations::UpdateWorkspaceInput, workspace::WorkspaceItemUpdateParams,
 };
 
-impl<R: AppRuntime> App<R> {
+impl<R: AppRuntime> Window<R> {
     // TODO: Support renaming non-active workspace?
     pub async fn update_workspace(
         &self,

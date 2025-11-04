@@ -1,4 +1,4 @@
-use moss_app::{App, AppBuilder, app::OnAppReadyOptions};
+use moss_app::{AppBuilder, Window, app::OnAppReadyOptions};
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
     context::{AsyncContext, MutableContext},
@@ -119,7 +119,7 @@ fn mock_gitlab_auth_adapter() -> Arc<MockGitLabAuthAdapter> {
 }
 
 pub async fn set_up_test_app() -> (
-    App<MockAppRuntime>,
+    Window<MockAppRuntime>,
     AppDelegate<MockAppRuntime>,
     AsyncContext,
     CleanupFn,

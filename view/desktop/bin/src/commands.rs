@@ -8,7 +8,7 @@ pub use workspace::*;
 
 use joinerror::OptionExt;
 use moss_api::{TauriResult, constants::DEFAULT_OPERATION_TIMEOUT};
-use moss_app::{ActiveWorkspace, app::App};
+use moss_app::{ActiveWorkspace, app::Window};
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
     AppRuntime,
@@ -28,18 +28,18 @@ pub mod primitives {
 
     pub(super) type Options = Option<moss_api::models::types::Options>;
     pub(super) type AsyncContext<'a> = State<'a, moss_applib::context::AsyncContext>;
-    pub(super) type App<'a, R> = State<'a, Arc<moss_app::App<moss_applib::TauriAppRuntime<R>>>>;
+    pub(super) type App<'a, R> = State<'a, Arc<moss_app::Window<moss_applib::TauriAppRuntime<R>>>>;
 }
 
 pub(super) async fn with_app_timeout<'a, R, T, F, Fut>(
     ctx: &R::AsyncContext,
-    app: State<'_, Arc<App<R>>>,
+    app: State<'_, Arc<Window<R>>>,
     options: Options,
     f: F,
 ) -> TauriResult<T>
 where
     R: AppRuntime,
-    F: FnOnce(R::AsyncContext, AppDelegate<R>, Arc<App<R>>) -> Fut + Send + 'static,
+    F: FnOnce(R::AsyncContext, AppDelegate<R>, Arc<Window<R>>) -> Fut + Send + 'static,
     Fut: std::future::Future<Output = joinerror::Result<T>> + Send + 'static,
 {
     let timeout = options
@@ -71,7 +71,7 @@ where
 
 pub(super) async fn with_project_timeout<R, T, F, Fut>(
     ctx: &R::AsyncContext,
-    app: State<'_, Arc<App<R>>>,
+    app: State<'_, Arc<Window<R>>>,
     id: ProjectId,
     options: Options,
     f: F,
@@ -121,7 +121,7 @@ where
 
 pub(super) async fn with_workspace_timeout<R, T, F, Fut>(
     ctx: &R::AsyncContext,
-    app: State<'_, Arc<App<R>>>,
+    app: State<'_, Arc<Window<R>>>,
     options: Options,
     f: F,
 ) -> TauriResult<T>

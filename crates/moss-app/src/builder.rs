@@ -10,7 +10,7 @@ use std::{path::PathBuf, sync::Arc};
 use tauri::{AppHandle as TauriAppHandle, Manager};
 
 use crate::{
-    app::{App, AppCommands},
+    app::{AppCommands, Window},
     command::CommandDecl,
     configuration::ConfigurationService,
     dirs,
@@ -57,7 +57,7 @@ impl<R: AppRuntime> AppBuilder<R> {
         self
     }
 
-    pub async fn build(self, ctx: &R::AsyncContext) -> App<R> {
+    pub async fn build(self, ctx: &R::AsyncContext) -> Window<R> {
         let delegate = self.tao_handle.state::<AppDelegate<R>>().inner().clone();
         let user_dir = delegate.user_dir();
 
@@ -126,7 +126,7 @@ impl<R: AppRuntime> AppBuilder<R> {
                 .await
                 .expect("Failed to create extension service");
 
-        App {
+        Window {
             app_handle: self.tao_handle.clone(),
             commands: self.commands,
             session_service,

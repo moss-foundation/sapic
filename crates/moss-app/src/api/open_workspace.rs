@@ -3,11 +3,11 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, errors::FailedPrecondition};
 
 use crate::{
-    app::App,
+    app::Window,
     models::operations::{OpenWorkspaceInput, OpenWorkspaceOutput},
 };
 
-impl<R: AppRuntime> App<R> {
+impl<R: AppRuntime> Window<R> {
     pub async fn open_workspace(
         &self,
         ctx: &R::AsyncContext,

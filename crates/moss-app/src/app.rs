@@ -46,7 +46,7 @@ pub struct OnAppReadyOptions {
 }
 
 #[derive(Deref)]
-pub struct App<R: AppRuntime> {
+pub struct Window<R: AppRuntime> {
     #[deref]
     pub(super) app_handle: AppHandle<R::EventLoop>,
     pub(super) commands: AppCommands<R::EventLoop>,
@@ -66,7 +66,7 @@ pub struct App<R: AppRuntime> {
     pub(super) tracked_cancellations: Arc<RwLock<HashMap<String, Canceller>>>,
 }
 
-impl<R: AppRuntime> App<R> {
+impl<R: AppRuntime> Window<R> {
     pub fn session_id(&self) -> &SessionId {
         self.session_service.session_id()
     }
@@ -131,7 +131,7 @@ impl<R: AppRuntime> App<R> {
 }
 
 #[cfg(feature = "integration-tests")]
-impl<R: AppRuntime> App<R> {
+impl<R: AppRuntime> Window<R> {
     pub fn db(&self) -> Arc<dyn moss_storage::GlobalStorage<R::AsyncContext>> {
         self.storage_service.storage()
     }

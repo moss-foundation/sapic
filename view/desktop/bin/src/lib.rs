@@ -9,7 +9,9 @@ mod window;
 extern crate tracing;
 
 use joinerror::OptionExt;
-use moss_app::{App, AppBuilder as TauriAppBuilder, app::OnAppReadyOptions, command::CommandDecl};
+use moss_app::{
+    AppBuilder as TauriAppBuilder, Window, app::OnAppReadyOptions, command::CommandDecl,
+};
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
     TauriAppRuntime,
@@ -325,7 +327,7 @@ pub async fn run<R: TauriRuntime>() {
                     .on_menu_event(move |window, event| menu::handle_event(window, &event));
 
                 futures::executor::block_on(async {
-                    let app = app_handle.state::<Arc<App<TauriAppRuntime<R>>>>();
+                    let app = app_handle.state::<Arc<Window<TauriAppRuntime<R>>>>();
                     let ctx =
                         MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
                     let app_delegate = app_handle

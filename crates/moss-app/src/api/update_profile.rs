@@ -2,11 +2,11 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 
 use crate::{
-    App,
+    Window,
     models::operations::{UpdateProfileInput, UpdateProfileOutput},
 };
 
-impl<R: AppRuntime> App<R> {
+impl<R: AppRuntime> Window<R> {
     pub async fn update_profile(
         &self,
         ctx: &R::AsyncContext,

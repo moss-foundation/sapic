@@ -1,8 +1,8 @@
 use moss_applib::AppRuntime;
 
-use crate::{app::App, models::operations::ListConfigurationSchemasOutput};
+use crate::{app::Window, models::operations::ListConfigurationSchemasOutput};
 
-impl<R: AppRuntime> App<R> {
+impl<R: AppRuntime> Window<R> {
     pub async fn list_configuration_schemas(
         &self,
         _ctx: &R::AsyncContext,

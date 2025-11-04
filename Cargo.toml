@@ -54,7 +54,7 @@ members = [
     # Tools
     #
     "tools/xtask",
-    "tools/cargo-new-ts",
+    "tools/cargo-new-ts", "crates/app",
 ]
 
 [workspace.dependencies]

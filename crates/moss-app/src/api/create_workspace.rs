@@ -7,7 +7,7 @@ use moss_applib::{
 use validator::Validate;
 
 use crate::{
-    app::App,
+    app::Window,
     models::{
         operations::{CreateWorkspaceInput, CreateWorkspaceOutput},
         primitives::WorkspaceId,
@@ -15,7 +15,7 @@ use crate::{
     workspace::WorkspaceItemCreateParams,
 };
 
-impl<R: AppRuntime> App<R> {
+impl<R: AppRuntime> Window<R> {
     pub async fn create_workspace(
         &self,
         ctx: &R::AsyncContext,

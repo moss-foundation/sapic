@@ -1,11 +1,11 @@
 use moss_applib::AppRuntime;
 
 use crate::{
-    app::App,
+    app::Window,
     models::{operations::ListWorkspacesOutput, types::WorkspaceInfo},
 };
 
-impl<R: AppRuntime> App<R> {
+impl<R: AppRuntime> Window<R> {
     pub async fn list_workspaces(
         &self,
         _ctx: &R::AsyncContext,

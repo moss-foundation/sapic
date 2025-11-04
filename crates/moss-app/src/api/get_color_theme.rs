@@ -1,11 +1,11 @@
 use moss_applib::AppRuntime;
 
 use crate::{
-    app::App,
+    app::Window,
     models::operations::{GetColorThemeInput, GetColorThemeOutput},
 };
 
-impl<R: AppRuntime> App<R> {
+impl<R: AppRuntime> Window<R> {
     pub async fn get_color_theme(
         &self,
         _ctx: &R::AsyncContext,

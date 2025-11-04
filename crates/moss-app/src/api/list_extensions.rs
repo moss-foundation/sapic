@@ -3,9 +3,9 @@ use moss_applib::AppRuntime;
 use moss_extension::models::types::ExtensionInfo;
 use moss_server_api::extension_registry::ExtensionRegistryApiClient;
 
-use crate::{App, models::operations::ListExtensionsOutput};
+use crate::{Window, models::operations::ListExtensionsOutput};
 
-impl<R: AppRuntime> App<R> {
+impl<R: AppRuntime> Window<R> {
     pub async fn list_extensions(
         &self,
         ctx: &R::AsyncContext,
