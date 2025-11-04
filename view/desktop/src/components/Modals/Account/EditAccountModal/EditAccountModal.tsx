@@ -1,7 +1,7 @@
 import { FormEvent, useState } from "react";
 
 import { Button, Link, Modal } from "@/lib/ui";
-import { UpdateAccountParams, UpdateProfileInput } from "@repo/moss-window";
+import { UpdateAccountParams, UpdateProfileInput } from "@repo/window";
 import { AccountInfo } from "@repo/moss-user";
 import { invoke } from "@tauri-apps/api/core";
 

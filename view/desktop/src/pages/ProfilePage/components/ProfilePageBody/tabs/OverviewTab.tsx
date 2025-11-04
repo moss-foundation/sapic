@@ -7,7 +7,7 @@ import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
 import { ProviderIcon } from "@/components/ProviderIcon";
 import { useModal } from "@/hooks";
 import { Button } from "@/lib/ui";
-import { UpdateProfileInput } from "@repo/moss-window";
+import { UpdateProfileInput } from "@repo/window";
 import { AccountInfo, ProfileInfo } from "@repo/moss-user";
 import { invoke } from "@tauri-apps/api/core";
 

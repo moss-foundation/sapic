@@ -1,5 +1,4 @@
 import { invokeTauriServiceIpc } from "@/lib/backend/tauri";
-import { DescribeAppOutput, UpdateConfigurationInput } from "@repo/moss-window";
 import {
   ActivitybarPartStateInfo,
   EditorPartStateInfo,
@@ -7,6 +6,7 @@ import {
   SidebarPartStateInfo,
   UpdateLayoutInput,
 } from "@repo/moss-workspace";
+import { DescribeAppOutput, UpdateConfigurationInput } from "@repo/window";
 
 export const appConfigService = {
   describeApp: async () => {

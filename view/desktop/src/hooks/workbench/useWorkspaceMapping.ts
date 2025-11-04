@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import { WorkspaceInfo } from "@repo/moss-window";
+import { WorkspaceInfo } from "@repo/window";
 
 import { useListWorkspaces } from "./useListWorkspaces";
 
