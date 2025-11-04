@@ -1,8 +1,10 @@
 import { useEffect } from "react";
+
 import { Scrollbar } from "@/lib/ui";
+import { useLogsStore } from "@/store/logs";
+import { cn } from "@/utils";
 import { LogEntryInfo, ON_DID_APPEND_LOG_ENTRY_CHANNEL } from "@repo/moss-app";
 import { listen } from "@tauri-apps/api/event";
-import { useLogsStore } from "@/store/logs";
 
 export const BottomPane = () => {
   const { logs, appendLog } = useLogsStore();
@@ -12,6 +14,7 @@ export const BottomPane = () => {
       const log: LogEntryInfo = event.payload as LogEntryInfo;
       appendLog(log);
     });
+
     return () => {
       unlisten.then((unlistenFn) => unlistenFn());
     };
@@ -26,15 +29,12 @@ export const BottomPane = () => {
             <div key={index} className="mb-1 flex">
               <span className="text-(--moss-secondary-foreground) mr-2">{log.timestamp}</span>
               <span
-                className={`mr-2 min-w-16 font-medium ${
-                  log.level === "ERROR"
-                    ? "text-red-500"
-                    : log.level === "WARN"
-                      ? "text-amber-500"
-                      : log.level === "DEBUG"
-                        ? "text-blue-500"
-                        : "text-green-500"
-                }`}
+                className={cn("mr-2 min-w-16 font-medium", {
+                  "text-red-500": log.level === "ERROR",
+                  "text-amber-500": log.level === "WARN",
+                  "text-blue-500": log.level === "DEBUG",
+                  "text-green-500": log.level === "INFO",
+                })}
               >
                 {log.level}
               </span>
