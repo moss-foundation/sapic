@@ -37,7 +37,6 @@ export const BottomPane = () => {
               >
                 {log.level}
               </span>
-              <span className="mr-2 min-w-32 font-semibold">{log.resource || "No Resource"}:</span>
               <span>{log.message}</span>
             </div>
           ))}
