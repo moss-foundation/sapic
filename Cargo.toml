@@ -10,6 +10,8 @@ members = [
     #
     # Internal crates
     #
+    "crates/app",
+
     "crates/moss-applib",
     "crates/moss-app",
     "crates/moss-app-delegate",
@@ -54,7 +56,7 @@ members = [
     # Tools
     #
     "tools/xtask",
-    "tools/cargo-new-ts", "crates/app",
+    "tools/cargo-new-ts",
 ]
 
 [workspace.dependencies]
@@ -67,6 +69,8 @@ static_json = { path = "libs/static-json" }
 #
 # Internal crates
 #
+sapic-app = { path = "crates/app", package = "app" }
+
 moss_api = { path = "crates/moss-api" }
 moss_text = { path = "crates/moss-text" }
 moss_project = { path = "crates/moss-project" }

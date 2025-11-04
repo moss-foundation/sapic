@@ -9,13 +9,11 @@ mod window;
 extern crate tracing;
 
 use joinerror::OptionExt;
-use moss_app::{
-    AppBuilder as TauriAppBuilder, Window, app::OnAppReadyOptions, command::CommandDecl,
-};
+use moss_app::app::OnWindowReadyOptions;
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
     TauriAppRuntime,
-    context::{AnyAsyncContext, AnyContext, MutableContext},
+    context::{AnyAsyncContext, MutableContext},
 };
 use moss_configuration::registry::{AppConfigurationRegistry, ConfigurationRegistry};
 use moss_extension_points::{
@@ -48,6 +46,7 @@ use moss_server_api::{
 use moss_storage2::{AppStorage, Storage};
 use moss_theme::registry::{AppThemeRegistry, ThemeRegistry};
 use reqwest::ClientBuilder as HttpClientBuilder;
+use sapic_app::{builder::AppBuilder, command::CommandDecl};
 use serde_json::Value;
 use std::{sync::Arc, time::Duration};
 #[cfg(not(debug_assertions))]
@@ -186,11 +185,11 @@ pub async fn run<R: TauriRuntime>() {
                     <dyn ResourceStatusRegistry>::set_global(&delegate, resource_status_registry);
                     <dyn HttpHeaderRegistry>::set_global(&delegate, http_header_registry);
 
-                    tao_app_handle.manage(delegate);
+                    tao_app_handle.manage(delegate.clone());
                 }
 
                 let ctx_clone = ctx.clone();
-                let (app, session_id) = {
+                let app = {
                     let shortcut_println_command =
                         CommandDecl::<R>::new("shortcut.println".into(), |_ctx| {
                             Box::pin(async move {
@@ -211,8 +210,7 @@ pub async fn run<R: TauriRuntime>() {
                         MutableContext::new_with_timeout(ctx_clone, Duration::from_secs(30))
                             .freeze();
 
-                    let app = TauriAppBuilder::<TauriAppRuntime<R>>::new(
-                        tao_app_handle.clone(),
+                    let app = AppBuilder::<TauriAppRuntime<R>>::new(
                         fs,
                         keyring,
                         auth_api_client,
@@ -226,17 +224,14 @@ pub async fn run<R: TauriRuntime>() {
                     )
                     .with_command(shortcut_println_command)
                     .with_command(shortcut_alert_command)
-                    .build(&app_init_ctx)
+                    .build(&app_init_ctx, &delegate)
                     .await;
-                    let session_id = app.session_id().clone();
 
-                    (app, session_id)
+                    app
                 };
 
                 tao_app_handle.manage({
-                    let mut ctx = ctx.unfreeze().expect("Failed to unfreeze the root context");
-                    ctx.with_value("session_id", session_id.to_string()); // TODO: Use a proper type
-
+                    let ctx = ctx.unfreeze().expect("Failed to unfreeze the root context");
                     ctx.freeze()
                 });
                 tao_app_handle.manage(Arc::new(app));
@@ -327,7 +322,12 @@ pub async fn run<R: TauriRuntime>() {
                     .on_menu_event(move |window, event| menu::handle_event(window, &event));
 
                 futures::executor::block_on(async {
-                    let app = app_handle.state::<Arc<Window<TauriAppRuntime<R>>>>();
+                    let window = app_handle
+                        .state::<Arc<sapic_app::App<TauriAppRuntime<R>>>>()
+                        .window("main_0")
+                        .await
+                        .expect("Failed to get the main window");
+
                     let ctx =
                         MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
                     let app_delegate = app_handle
@@ -335,15 +335,16 @@ pub async fn run<R: TauriRuntime>() {
                         .inner()
                         .clone();
 
-                    app.on_app_ready(
-                        &ctx,
-                        &app_delegate,
-                        OnAppReadyOptions {
-                            restore_last_workspace: true,
-                        },
-                    )
-                    .await
-                    .expect("Failed to prepare the app");
+                    window
+                        .on_window_ready(
+                            &ctx,
+                            &app_delegate,
+                            OnWindowReadyOptions {
+                                restore_last_workspace: true,
+                            },
+                        )
+                        .await
+                        .expect("Failed to prepare the app");
                 });
             }
 

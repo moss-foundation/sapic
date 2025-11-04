@@ -7,11 +7,10 @@ use moss_language::registry::LanguageRegistry;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_theme::registry::ThemeRegistry;
 use std::{path::PathBuf, sync::Arc};
-use tauri::{AppHandle as TauriAppHandle, Manager};
+use tauri::Manager;
 
 use crate::{
-    app::{AppCommands, Window},
-    command::CommandDecl,
+    app::Window,
     configuration::ConfigurationService,
     dirs,
     extension::ExtensionService,
@@ -25,18 +24,15 @@ use crate::{
     workspace::WorkspaceService,
 };
 
-pub struct AppBuilder<R: AppRuntime> {
+pub struct WindowBuilder<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     keyring: Arc<dyn KeyringClient>,
-    tao_handle: TauriAppHandle<R::EventLoop>,
     extension_points: Vec<Box<dyn ExtensionPoint<R>>>,
-    commands: AppCommands<R::EventLoop>,
     auth_api_client: Arc<AccountAuthGatewayApiClient>,
 }
 
-impl<R: AppRuntime> AppBuilder<R> {
+impl<R: AppRuntime> WindowBuilder<R> {
     pub fn new(
-        tao_handle: TauriAppHandle<R::EventLoop>,
         fs: Arc<dyn FileSystem>,
         keyring: Arc<dyn KeyringClient>,
         auth_api_client: Arc<AccountAuthGatewayApiClient>,
@@ -45,20 +41,13 @@ impl<R: AppRuntime> AppBuilder<R> {
         Self {
             fs,
             keyring,
-            tao_handle,
             extension_points,
-            commands: Default::default(),
             auth_api_client,
         }
     }
 
-    pub fn with_command(mut self, command: CommandDecl<R::EventLoop>) -> Self {
-        self.commands.insert(command.name, command.callback);
-        self
-    }
-
-    pub async fn build(self, ctx: &R::AsyncContext) -> Window<R> {
-        let delegate = self.tao_handle.state::<AppDelegate<R>>().inner().clone();
+    pub async fn build(self, ctx: &R::AsyncContext, delegate: &AppDelegate<R>) -> Window<R> {
+        let tao_handle = delegate.app_handle();
         let user_dir = delegate.user_dir();
 
         self.create_user_dirs_if_not_exists(user_dir.clone()).await;
@@ -101,7 +90,7 @@ impl<R: AppRuntime> AppBuilder<R> {
                 .into();
         let log_service = LogService::new(
             self.fs.clone(),
-            self.tao_handle.clone(),
+            tao_handle.clone(),
             &delegate.logs_dir(),
             session_service.session_id(),
             storage_service.clone(),
@@ -127,8 +116,7 @@ impl<R: AppRuntime> AppBuilder<R> {
                 .expect("Failed to create extension service");
 
         Window {
-            app_handle: self.tao_handle.clone(),
-            commands: self.commands,
+            app_handle: tao_handle.clone(),
             session_service,
             log_service,
             storage_service,

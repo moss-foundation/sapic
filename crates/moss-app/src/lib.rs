@@ -22,7 +22,7 @@ mod storage;
 extern crate derive_more;
 
 pub use app::Window;
-pub use builder::AppBuilder;
+pub use builder::WindowBuilder;
 use moss_applib::AppRuntime;
 use moss_configuration::RegisterConfigurationContribution;
 use moss_workspace::Workspace;

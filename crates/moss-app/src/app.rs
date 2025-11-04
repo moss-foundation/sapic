@@ -2,46 +2,18 @@ use derive_more::Deref;
 use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, context::Canceller};
 use moss_logging::session;
-use moss_text::ReadOnlyStr;
-use rustc_hash::FxHashMap;
-use std::{
-    collections::HashMap,
-    ops::{Deref, DerefMut},
-    sync::Arc,
-};
-use tauri::{AppHandle, Runtime as TauriRuntime};
+use std::{collections::HashMap, sync::Arc};
+use tauri::AppHandle;
 use tokio::sync::RwLock;
 
 use crate::{
-    ActiveWorkspace, command::CommandCallback, configuration::ConfigurationService,
-    extension::ExtensionService, language::LanguageService, logging::LogService,
-    models::primitives::SessionId, profile::ProfileService, session::SessionService,
-    storage::StorageService, theme::ThemeService, workspace::WorkspaceService,
+    ActiveWorkspace, configuration::ConfigurationService, extension::ExtensionService,
+    language::LanguageService, logging::LogService, models::primitives::SessionId,
+    profile::ProfileService, session::SessionService, storage::StorageService, theme::ThemeService,
+    workspace::WorkspaceService,
 };
 
-pub struct AppCommands<R: TauriRuntime>(FxHashMap<ReadOnlyStr, CommandCallback<R>>);
-
-impl<R: TauriRuntime> Default for AppCommands<R> {
-    fn default() -> Self {
-        Self(FxHashMap::default())
-    }
-}
-
-impl<R: TauriRuntime> Deref for AppCommands<R> {
-    type Target = FxHashMap<ReadOnlyStr, CommandCallback<R>>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl<R: TauriRuntime> DerefMut for AppCommands<R> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-pub struct OnAppReadyOptions {
+pub struct OnWindowReadyOptions {
     pub restore_last_workspace: bool,
 }
 
@@ -49,7 +21,6 @@ pub struct OnAppReadyOptions {
 pub struct Window<R: AppRuntime> {
     #[deref]
     pub(super) app_handle: AppHandle<R::EventLoop>,
-    pub(super) commands: AppCommands<R::EventLoop>,
     pub(super) session_service: SessionService,
     pub(super) log_service: LogService<R>,
     pub(super) storage_service: Arc<StorageService<R>>,
@@ -79,10 +50,6 @@ impl<R: AppRuntime> Window<R> {
         self.workspace_service.workspace().await
     }
 
-    pub fn command(&self, id: &ReadOnlyStr) -> Option<CommandCallback<R::EventLoop>> {
-        self.commands.get(id).map(|cmd| Arc::clone(cmd))
-    }
-
     pub async fn track_cancellation(&self, request_id: &str, canceller: Canceller) -> () {
         let mut write = self.tracked_cancellations.write().await;
 
@@ -95,11 +62,11 @@ impl<R: AppRuntime> Window<R> {
         write.remove(request_id);
     }
 
-    pub async fn on_app_ready(
+    pub async fn on_window_ready(
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
-        options: OnAppReadyOptions,
+        options: OnWindowReadyOptions,
     ) -> joinerror::Result<()> {
         let profile = self.profile_service.activate_profile().await?;
 

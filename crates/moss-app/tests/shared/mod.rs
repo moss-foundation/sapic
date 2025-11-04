@@ -1,4 +1,4 @@
-use moss_app::{AppBuilder, Window, app::OnAppReadyOptions};
+use moss_app::{Window, WindowBuilder, app::OnWindowReadyOptions};
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
     context::{AsyncContext, MutableContext},
@@ -212,20 +212,14 @@ pub async fn set_up_test_app() -> (
         }
     });
 
-    let app = AppBuilder::<MockAppRuntime>::new(
-        tao_app_handle.clone(),
-        fs.clone(),
-        keyring,
-        auth_api_client,
-        vec![],
-    )
-    .build(&ctx)
-    .await;
+    let app = WindowBuilder::<MockAppRuntime>::new(fs.clone(), keyring, auth_api_client, vec![])
+        .build(&ctx, &app_delegate)
+        .await;
 
-    app.on_app_ready(
+    app.on_window_ready(
         &ctx,
         &app_delegate,
-        OnAppReadyOptions {
+        OnWindowReadyOptions {
             restore_last_workspace: false,
         },
     )

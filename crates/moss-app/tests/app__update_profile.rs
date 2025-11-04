@@ -3,7 +3,7 @@
 pub mod shared;
 
 use moss_app::{
-    app::OnAppReadyOptions,
+    app::OnWindowReadyOptions,
     models::{
         operations::{CreateProfileInput, UpdateProfileInput},
         types::AddAccountParams,
@@ -562,10 +562,10 @@ async fn remove_multiple_accounts() {
 #[tokio::test]
 async fn remove_nonexistent_account_succeeds() {
     let (app, app_delegate, ctx, cleanup) = set_up_test_app().await;
-    app.on_app_ready(
+    app.on_window_ready(
         &ctx,
         &app_delegate,
-        OnAppReadyOptions {
+        OnWindowReadyOptions {
             restore_last_workspace: false,
         },
     )
@@ -614,10 +614,10 @@ async fn remove_nonexistent_account_succeeds() {
 #[tokio::test]
 async fn add_and_remove_accounts_simultaneously() {
     let (app, app_delegate, ctx, cleanup) = set_up_test_app().await;
-    app.on_app_ready(
+    app.on_window_ready(
         &ctx,
         &app_delegate,
-        OnAppReadyOptions {
+        OnWindowReadyOptions {
             restore_last_workspace: false,
         },
     )
