@@ -2,14 +2,15 @@ import { useEffect, useState } from "react";
 import { Scrollbar } from "@/lib/ui";
 import { LogEntryInfo, ON_DID_APPEND_LOG_ENTRY_CHANNEL } from "@repo/moss-app";
 import { listen } from "@tauri-apps/api/event";
+import { useLogsStore } from "@/store/logs";
 
 export const BottomPane = () => {
-  const [logs, setLogs] = useState<LogEntryInfo[]>([]);
+  const { logs, appendLog } = useLogsStore();
 
   useEffect(() => {
     const unlisten = listen(ON_DID_APPEND_LOG_ENTRY_CHANNEL, (event) => {
       const log: LogEntryInfo = event.payload as LogEntryInfo;
-      setLogs([...logs, log]);
+      appendLog(log);
     });
     return () => {
       unlisten.then((unlistenFn) => unlistenFn());
