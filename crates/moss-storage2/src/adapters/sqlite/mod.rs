@@ -1845,14 +1845,11 @@ mod tests {
 
         let results = storage.get_batch_by_prefix(prefix).await.unwrap();
 
-        let result_map: HashMap<String, Option<JsonValue>> = results.into_iter().collect();
+        let result_map: HashMap<String, JsonValue> = results.into_iter().collect();
         assert_eq!(result_map.len(), 3);
-        assert_eq!(
-            result_map["key1"],
-            Some(JsonValue::String("value1".to_string()))
-        );
-        assert_eq!(result_map["key2"], Some(JsonValue::Number(2.into())));
-        assert_eq!(result_map["key3"], Some(JsonValue::Bool(true)));
+        assert_eq!(result_map["key1"], JsonValue::String("value1".to_string()));
+        assert_eq!(result_map["key2"], JsonValue::Number(2.into()));
+        assert_eq!(result_map["key3"], JsonValue::Bool(true));
     }
 
     // This will return all records
@@ -1871,10 +1868,10 @@ mod tests {
 
         let results = storage.get_batch_by_prefix("").await.unwrap();
 
-        let result_map: HashMap<String, Option<JsonValue>> = results.into_iter().collect();
+        let result_map: HashMap<String, JsonValue> = results.into_iter().collect();
         assert_eq!(result_map.len(), 2);
-        assert_eq!(result_map["A"], Some(JsonValue::String("A".to_string())));
-        assert_eq!(result_map["B"], Some(JsonValue::String("B".to_string())));
+        assert_eq!(result_map["A"], JsonValue::String("A".to_string()));
+        assert_eq!(result_map["B"], JsonValue::String("B".to_string()));
     }
 
     #[tokio::test]
@@ -1909,12 +1906,12 @@ mod tests {
         }
 
         let results = storage.get_batch_by_prefix(prefix).await.unwrap();
-        let result_map: HashMap<String, Option<JsonValue>> = results.into_iter().collect();
+        let result_map: HashMap<String, JsonValue> = results.into_iter().collect();
         assert_eq!(result_map.len(), 1000);
         for i in 0..1000 {
             assert_eq!(
                 result_map[&format!("{prefix}{i}")],
-                Some(JsonValue::Number(i.into()))
+                JsonValue::Number(i.into())
             );
         }
     }
@@ -1935,15 +1932,12 @@ mod tests {
         storage.put("key3", JsonValue::Bool(true)).await.unwrap();
 
         let results = storage.remove_batch_by_prefix(prefix).await.unwrap();
-        let result_map: HashMap<String, Option<JsonValue>> = results.into_iter().collect();
+        let result_map: HashMap<String, JsonValue> = results.into_iter().collect();
 
         assert_eq!(result_map.len(), 3);
-        assert_eq!(
-            result_map["key1"],
-            Some(JsonValue::String("value1".to_string()))
-        );
-        assert_eq!(result_map["key2"], Some(JsonValue::Number(2.into())));
-        assert_eq!(result_map["key3"], Some(JsonValue::Bool(true)));
+        assert_eq!(result_map["key1"], JsonValue::String("value1".to_string()));
+        assert_eq!(result_map["key2"], JsonValue::Number(2.into()));
+        assert_eq!(result_map["key3"], JsonValue::Bool(true));
 
         assert_eq!(storage.get_batch_by_prefix(prefix).await.unwrap().len(), 0);
     }
@@ -1963,10 +1957,10 @@ mod tests {
             .await
             .unwrap();
         let results = storage.remove_batch_by_prefix(prefix).await.unwrap();
-        let result_map: HashMap<String, Option<JsonValue>> = results.into_iter().collect();
+        let result_map: HashMap<String, JsonValue> = results.into_iter().collect();
         assert_eq!(result_map.len(), 2);
-        assert_eq!(result_map["A"], Some(JsonValue::String("A".to_string())));
-        assert_eq!(result_map["B"], Some(JsonValue::String("B".to_string())));
+        assert_eq!(result_map["A"], JsonValue::String("A".to_string()));
+        assert_eq!(result_map["B"], JsonValue::String("B".to_string()));
 
         assert!(
             storage
@@ -1999,11 +1993,11 @@ mod tests {
         }
 
         let results = storage.remove_batch_by_prefix(prefix).await.unwrap();
-        let result_map: HashMap<String, Option<JsonValue>> = results.into_iter().collect();
+        let result_map: HashMap<String, JsonValue> = results.into_iter().collect();
         for i in 0..1000 {
             assert_eq!(
                 result_map[&format!("{prefix}{i}")],
-                Some(JsonValue::Number(i.into()))
+                JsonValue::Number(i.into())
             );
         }
 
@@ -2037,10 +2031,10 @@ mod tests {
         storage.put("complex2", complex2.clone()).await.unwrap();
 
         let results = storage.remove_batch_by_prefix(prefix).await.unwrap();
-        let result_map: HashMap<String, Option<JsonValue>> = results.into_iter().collect();
+        let result_map: HashMap<String, JsonValue> = results.into_iter().collect();
         assert_eq!(result_map.len(), 2);
-        assert_eq!(result_map["complex1"], Some(complex1));
-        assert_eq!(result_map["complex2"], Some(complex2));
+        assert_eq!(result_map["complex1"], complex1);
+        assert_eq!(result_map["complex2"], complex2);
     }
 
     #[tokio::test]
@@ -2061,11 +2055,11 @@ mod tests {
         }
         let prefix = "key";
         let results = storage.remove_batch_by_prefix(prefix).await.unwrap();
-        let result_map: HashMap<String, Option<JsonValue>> = results.into_iter().collect();
+        let result_map: HashMap<String, JsonValue> = results.into_iter().collect();
 
         assert_eq!(result_map.len(), 3);
         for (key, value) in special_keys {
-            assert_eq!(result_map[key], Some(value));
+            assert_eq!(result_map[key], value);
         }
         assert!(
             storage
