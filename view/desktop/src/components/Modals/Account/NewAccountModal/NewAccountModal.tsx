@@ -2,7 +2,7 @@ import { FormEvent, useState } from "react";
 
 import { VcsProviderSwitcher } from "@/components/VcsProviderSwitcher";
 import { Modal, PillTabs, Scrollbar } from "@/lib/ui";
-import { AddAccountParams, UpdateProfileInput } from "@repo/moss-app";
+import { AddAccountParams, UpdateProfileInput } from "@repo/moss-window";
 import { AccountKind } from "@repo/moss-user";
 import { invoke } from "@tauri-apps/api/core";
 
@@ -69,14 +69,14 @@ export const NewAccountModal = ({ showModal, closeModal, onAccountAdded }: NewAc
   const isSubmitDisabled = isSubmitting || (method === "PAT" && !token);
 
   return (
-    <Modal onBackdropClick={handleClose} showModal={showModal} className="w-full max-w-136">
+    <Modal onBackdropClick={handleClose} showModal={showModal} className="max-w-136 w-full">
       <form onSubmit={handleSubmit} className="flex flex-col overflow-hidden">
-        <h2 className="flex items-center justify-center border-b border-(--moss-border) py-2 leading-4 font-medium">
+        <h2 className="border-(--moss-border) flex items-center justify-center border-b py-2 font-medium leading-4">
           New Account
         </h2>
 
         <Scrollbar className="min-h-0 flex-1">
-          <div className="flex flex-col px-6 pt-2 pb-5">
+          <div className="flex flex-col px-6 pb-5 pt-2">
             <VcsProviderSwitcher
               value={provider}
               onValueChange={(value) => setProvider(value.toUpperCase() as AccountKind)}

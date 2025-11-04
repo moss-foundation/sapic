@@ -2,7 +2,11 @@
 
 pub mod shared;
 
-use moss_app::{
+use moss_storage::storage::operations::GetItem;
+use moss_testutils::random_name::random_workspace_name;
+use moss_workspace::models::primitives::WorkspaceMode;
+use std::{path::Path, sync::Arc};
+use window::{
     dirs,
     models::{
         operations::{CreateWorkspaceInput, OpenWorkspaceInput},
@@ -10,10 +14,6 @@ use moss_app::{
     },
     storage::segments::{SEGKEY_LAST_ACTIVE_WORKSPACE, segkey_last_opened_at},
 };
-use moss_storage::storage::operations::GetItem;
-use moss_testutils::random_name::random_workspace_name;
-use moss_workspace::models::primitives::WorkspaceMode;
-use std::{path::Path, sync::Arc};
 
 use crate::shared::set_up_test_app;
 

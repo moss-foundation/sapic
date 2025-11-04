@@ -1,5 +1,5 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { CloseWorkspaceInput, CloseWorkspaceOutput, DescribeAppOutput } from "@repo/moss-app";
+import { CloseWorkspaceInput, CloseWorkspaceOutput, DescribeAppOutput } from "@repo/moss-window";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_STREAM_PROJECT_RESOURCES_QUERY_KEY, USE_STREAM_PROJECTS_QUERY_KEY } from "..";

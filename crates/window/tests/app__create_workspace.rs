@@ -2,7 +2,7 @@
 
 pub mod shared;
 
-use moss_app::{
+use window::{
     dirs,
     models::{operations::CreateWorkspaceInput, primitives::WorkspaceId},
     storage::segments::{SEGKEY_LAST_ACTIVE_WORKSPACE, segkey_last_opened_at},

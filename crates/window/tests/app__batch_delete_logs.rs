@@ -1,7 +1,7 @@
 pub mod shared;
 
-use moss_app::models::operations::{BatchDeleteLogInput, ListLogsInput};
 use moss_logging::app;
+use window::models::operations::{BatchDeleteLogInput, ListLogsInput};
 
 use crate::shared::set_up_test_app;
 

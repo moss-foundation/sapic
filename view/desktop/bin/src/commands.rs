@@ -10,7 +10,6 @@ pub use workspace::*;
 
 use joinerror::OptionExt;
 use moss_api::{TauriResult, constants::DEFAULT_OPERATION_TIMEOUT};
-use moss_app::{ActiveWorkspace, app::Window};
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
     AppRuntime,
@@ -20,6 +19,7 @@ use moss_applib::{
 use moss_project::Project;
 use moss_workspace::models::primitives::ProjectId;
 use primitives::Options;
+use sapic_window::{ActiveWorkspace, app::Window};
 use std::{sync::Arc, time::Duration};
 use tauri::{Manager, State, Window as TauriWindow};
 

@@ -2,16 +2,16 @@
 
 pub mod shared;
 
-use moss_app::{
+use moss_testutils::random_name::random_workspace_name;
+use moss_workspace::models::primitives::WorkspaceMode;
+use std::{path::Path, sync::Arc};
+use window::{
     dirs,
     models::{
         operations::{CreateWorkspaceInput, DeleteWorkspaceInput},
         primitives::WorkspaceId,
     },
 };
-use moss_testutils::random_name::random_workspace_name;
-use moss_workspace::models::primitives::WorkspaceMode;
-use std::{path::Path, sync::Arc};
 
 use crate::shared::set_up_test_app;
 

@@ -1,5 +1,5 @@
 import { AppService } from "@/lib/services";
-import { DescribeAppOutput, UpdateConfigurationInput } from "@repo/moss-app";
+import { DescribeAppOutput, UpdateConfigurationInput } from "@repo/moss-window";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_DESCRIBE_APP_QUERY_KEY } from "./app/useDescribeApp";

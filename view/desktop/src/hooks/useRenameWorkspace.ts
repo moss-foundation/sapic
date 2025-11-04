@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { useTabbedPaneStore } from "@/store/tabbedPane";
-import { WorkspaceInfo } from "@repo/moss-app";
+import { WorkspaceInfo } from "@repo/moss-window";
 
 import { useUpdateWorkspace } from "./workbench/useUpdateWorkspace";
 

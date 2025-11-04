@@ -7,7 +7,7 @@ import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
 import { ProviderIcon } from "@/components/ProviderIcon";
 import { useModal } from "@/hooks";
 import { Button } from "@/lib/ui";
-import { UpdateProfileInput } from "@repo/moss-app";
+import { UpdateProfileInput } from "@repo/moss-window";
 import { AccountInfo, ProfileInfo } from "@repo/moss-user";
 import { invoke } from "@tauri-apps/api/core";
 
@@ -122,22 +122,22 @@ export const OverviewTab = ({ profile, refetchProfile }: OverviewTabProps) => {
           {/* Divider and Description */}
           <div className="-mt-2 flex flex-col gap-2.5">
             <div className="background-(--moss-border) h-px w-full" />
-            <p className="text-sm text-(--moss-secondary-foreground)">Manage your connected accounts</p>
+            <p className="text-(--moss-secondary-foreground) text-sm">Manage your connected accounts</p>
           </div>
 
           {/* Accounts List */}
           <div className="mt-2.5">
             {profile.accounts.length === 0 ? (
-              <div className="rounded-sm border border-(--moss-border) p-6 text-center text-sm text-(--moss-secondary-foreground)">
+              <div className="border-(--moss-border) text-(--moss-secondary-foreground) rounded-sm border p-6 text-center text-sm">
                 <p>No accounts connected yet</p>
               </div>
             ) : (
-              <div className="overflow-hidden rounded-md border border-(--moss-border)">
+              <div className="border-(--moss-border) overflow-hidden rounded-md border">
                 {profile.accounts.map((account: AccountInfo, index: number) => (
                   <div
                     key={account.id}
                     className={`flex items-center justify-between px-3 py-2.5 ${
-                      index !== profile.accounts.length - 1 ? "border-b border-(--moss-border)" : ""
+                      index !== profile.accounts.length - 1 ? "border-(--moss-border) border-b" : ""
                     }`}
                   >
                     <div className="flex items-center gap-2">

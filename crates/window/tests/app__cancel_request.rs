@@ -1,10 +1,10 @@
 #![cfg(feature = "integration-tests")]
 
 use futures::future;
-use moss_app::models::operations::CancelRequestInput;
 use moss_applib::context::{AnyAsyncContext, AnyContext, MutableContext, Reason};
 use std::time::Duration;
 use tokio::time::timeout;
+use window::models::operations::CancelRequestInput;
 
 use crate::shared::set_up_test_app;
 mod shared;

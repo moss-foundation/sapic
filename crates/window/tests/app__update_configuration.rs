@@ -2,16 +2,16 @@
 
 pub mod shared;
 
-use moss_app::{
+use moss_configuration::models::primitives::ConfigurationTarget;
+use serde_json::{Value as JsonValue, json};
+use tauri::Listener;
+use window::{
     constants::ON_DID_CHANGE_CONFIGURATION_CHANNEL,
     models::{
         events::OnDidChangeConfigurationForFrontend, operations::UpdateConfigurationInput,
         types::UpdateConfigurationParams,
     },
 };
-use moss_configuration::models::primitives::ConfigurationTarget;
-use serde_json::{Value as JsonValue, json};
-use tauri::Listener;
 
 use crate::shared::set_up_test_app;
 use std::{

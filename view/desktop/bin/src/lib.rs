@@ -9,7 +9,6 @@ mod window;
 extern crate tracing;
 
 use joinerror::OptionExt;
-use moss_app::app::OnWindowReadyOptions;
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
     TauriAppRuntime,
@@ -47,6 +46,7 @@ use moss_storage2::{AppStorage, Storage};
 use moss_theme::registry::{AppThemeRegistry, ThemeRegistry};
 use reqwest::ClientBuilder as HttpClientBuilder;
 use sapic_app::{builder::AppBuilder, command::CommandDecl};
+use sapic_window::app::OnWindowReadyOptions;
 use serde_json::Value;
 use std::{sync::Arc, time::Duration};
 #[cfg(not(debug_assertions))]

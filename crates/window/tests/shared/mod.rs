@@ -1,4 +1,3 @@
-use moss_app::{Window, WindowBuilder, app::OnWindowReadyOptions};
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
     context::{AsyncContext, MutableContext},
@@ -25,6 +24,7 @@ use moss_theme::registry::{AppThemeRegistry, ThemeRegistry};
 use reqwest::ClientBuilder as HttpClientBuilder;
 use std::{future::Future, path::PathBuf, pin::Pin, sync::Arc, time::Duration};
 use tauri::Manager;
+use window::{Window, WindowBuilder, app::OnWindowReadyOptions};
 
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
 

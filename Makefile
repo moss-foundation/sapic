@@ -44,7 +44,7 @@ SCRIPTS_DIR := scripts
 
 # ---- Crate Directories ----
 BINDINGUTILS_DIR := crates/moss-bindingutils
-APP_MODELS_DIR := crates/moss-app
+WINDOW_MODELS_DIR := crates/window
 PROJECT_MODELS_DIR := crates/moss-project
 ENVIRONMENT_MODELS_DIR := crates/moss-environment
 WORKSPACE_MODELS_DIR := crates/moss-workspace
@@ -142,7 +142,7 @@ gen-$(1)-bindings:
 endef
 
 # Apply the gen_bindings function to each crate
-$(eval $(call gen_bindings,app,APP_MODELS_DIR))
+$(eval $(call gen_bindings,window,WINDOW_MODELS_DIR))
 $(eval $(call gen_bindings,project,PROJECT_MODELS_DIR))
 $(eval $(call gen_bindings,environment,ENVIRONMENT_MODELS_DIR))
 $(eval $(call gen_bindings,workspace,WORKSPACE_MODELS_DIR))
@@ -158,7 +158,7 @@ $(eval $(call gen_bindings,extension,EXTENSION_MODELS_DIR))
 
 $(eval $(call gen_bindings,shared-storage,SHARED_STORAGE_MODELS_DIR))
 
-gen-app-bindings:
+gen-window-bindings:
 gen-project-bindings:
 gen-environment-bindings:
 gen-workspace-bindings:
@@ -175,7 +175,7 @@ gen-shared-storage-bindings:
 ## Generate all TypeScript bindings
 .PHONY: gen-bindings
 gen-bindings: \
-	gen-app-bindings \
+	gen-window-bindings \
 	gen-project-bindings \
 	gen-environment-bindings \
 	gen-workspace-bindings \

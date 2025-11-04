@@ -1,5 +1,5 @@
 use moss_api::{TauriError, TauriResult};
-use moss_app::models::operations::*;
+use sapic_window::models::operations::*;
 use tauri::Window as TauriWindow;
 
 use crate::commands::primitives::*;

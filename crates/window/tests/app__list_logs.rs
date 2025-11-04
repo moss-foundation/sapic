@@ -3,7 +3,7 @@
 pub mod shared;
 
 use chrono::{DateTime, FixedOffset};
-use moss_app::models::{operations::ListLogsInput, primitives::LogLevel};
+use window::models::{operations::ListLogsInput, primitives::LogLevel};
 
 use crate::shared::set_up_test_app;
 use moss_logging::{app, session};

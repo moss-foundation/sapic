@@ -1,9 +1,9 @@
 use joinerror::Error;
 use moss_api::TauriResult;
-use moss_app::models::operations::CancelRequestInput;
 use moss_applib::errors::NotFound;
 use moss_text::{ReadOnlyStr, quote};
 use sapic_app::command::CommandContext;
+use sapic_window::models::operations::CancelRequestInput;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use tauri::Window as TauriWindow;

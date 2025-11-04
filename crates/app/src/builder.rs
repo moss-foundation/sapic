@@ -1,4 +1,3 @@
-use moss_app::WindowBuilder;
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_extension::ExtensionPoint;
@@ -6,6 +5,7 @@ use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use rustc_hash::FxHashMap;
+use sapic_window::WindowBuilder;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 

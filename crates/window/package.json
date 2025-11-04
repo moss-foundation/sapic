@@ -1,5 +1,5 @@
 {
-    "name": "@repo/moss-app",
+    "name": "@repo/window",
     "exports": {
       ".": "./index.ts"
     },

@@ -7,10 +7,10 @@ pub mod command;
 pub mod types;
 
 use derive_more::Deref;
-use moss_app::Window;
 use moss_applib::AppRuntime;
 use moss_text::ReadOnlyStr;
 use rustc_hash::FxHashMap;
+use sapic_window::Window;
 use std::{
     ops::{Deref, DerefMut},
     sync::Arc,

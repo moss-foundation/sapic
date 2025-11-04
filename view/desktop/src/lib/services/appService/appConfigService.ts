@@ -1,5 +1,5 @@
 import { invokeTauriServiceIpc } from "@/lib/backend/tauri";
-import { DescribeAppOutput, UpdateConfigurationInput } from "@repo/moss-app";
+import { DescribeAppOutput, UpdateConfigurationInput } from "@repo/moss-window";
 import {
   ActivitybarPartStateInfo,
   EditorPartStateInfo,
