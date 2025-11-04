@@ -80,4 +80,7 @@
     "worktree",
     "Русский"
   ],
+  "prettier.requireConfig": true,
+  "prettier.ignorePath": ".prettierignore",
+  "prettier.configPath": ".prettierrc"
 }

@@ -6,6 +6,8 @@ node_modules/
 view/desktop/node_modules/
 view/desktop/public
 view/desktop/bin/lib/macos/.build
+plugins/**/permissions/**
+extensions/theme-defaults/themes/**
 
 *.rs
 
