@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Scrollbar } from "@/lib/ui";
 import { LogEntryInfo, ON_DID_APPEND_LOG_ENTRY_CHANNEL } from "@repo/moss-app";
 import { listen } from "@tauri-apps/api/event";
@@ -15,7 +15,7 @@ export const BottomPane = () => {
     return () => {
       unlisten.then((unlistenFn) => unlistenFn());
     };
-  });
+  }, [appendLog]);
 
   return (
     <div className="background-(--moss-primary-background) h-full w-full">
