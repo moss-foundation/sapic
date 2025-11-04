@@ -17,6 +17,7 @@ pub async fn create_project_resource<'a, R: tauri::Runtime>(
     super::with_project_timeout(
         ctx.inner(),
         app,
+        window,
         project_id,
         options,
         |ctx, _, project| async move { project.create_resource(&ctx, input).await },
@@ -37,6 +38,7 @@ pub async fn delete_project_resource<'a, R: tauri::Runtime>(
     super::with_project_timeout(
         ctx.inner(),
         app,
+        window,
         project_id,
         options,
         |ctx, _, project| async move { project.delete_resource(&ctx, input).await },
@@ -57,6 +59,7 @@ pub async fn update_project_resource<'a, R: tauri::Runtime>(
     super::with_project_timeout(
         ctx.inner(),
         app,
+        window,
         project_id,
         options,
         |ctx, app_delegate, project| async move {
@@ -79,6 +82,7 @@ pub async fn batch_create_project_resource<'a, R: tauri::Runtime>(
     super::with_project_timeout(
         ctx.inner(),
         app,
+        window,
         project_id,
         options,
         |ctx, _, project| async move { project.batch_create_resource(&ctx, input).await },
@@ -100,6 +104,7 @@ pub async fn batch_update_project_resource<'a, R: tauri::Runtime>(
     super::with_project_timeout(
         ctx.inner(),
         app,
+        window,
         project_id,
         options,
         |ctx, app_delegate, project| async move {
@@ -125,6 +130,7 @@ pub async fn stream_project_resources<'a, R: tauri::Runtime>(
     super::with_project_timeout(
         ctx.inner(),
         app,
+        window,
         project_id,
         options,
         |ctx, app_delegate, project| async move {
@@ -149,6 +155,7 @@ pub async fn describe_project_resource<'a, R: tauri::Runtime>(
     super::with_project_timeout(
         ctx.inner(),
         app,
+        window,
         project_id,
         options,
         |ctx, app_delegate, project| async move {
@@ -173,6 +180,7 @@ pub async fn execute_vcs_operation<'a, R: tauri::Runtime>(
     super::with_project_timeout(
         ctx.inner(),
         app,
+        window,
         project_id,
         options,
         |ctx, app_delegate, collection| async move {

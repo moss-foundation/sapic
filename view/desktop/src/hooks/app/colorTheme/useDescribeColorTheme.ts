@@ -1,5 +1,5 @@
 import { AppService } from "@/lib/services";
-import { GetColorThemeInput, GetColorThemeOutput } from "@repo/moss-app";
+import { GetColorThemeInput, GetColorThemeOutput } from "@repo/window";
 import { UndefinedInitialDataOptions, useQuery } from "@tanstack/react-query";
 
 export const USE_DESCRIBE_COLOR_THEME_QUERY_KEY = "describeColorTheme";

@@ -3,24 +3,24 @@ import re
 import subprocess
 import os
 
-pattern = r"crates/moss-(\w+)/src/models*"
+pattern = r"crates/(?:moss-)?(\w+)/src/models*"
 
 # Whitelist of crates that have binding generation rules in Makefile
 # Only these crates will be checked for model changes
 CRATES_WITH_BINDINGS = {
     "app",
-    "project", 
-    "environment",
-    "workspace",
-    "activity-broadcaster",
-    "bindingutils",
-    "api",
-    "git",
-    "user"
-    "language",
-    "configuration",
-    "theme",
-    "extension"
+    "moss-project", 
+    "moss-environment",
+    "moss-workspace",
+    "moss-activity-broadcaster",
+    "moss-bindingutils",
+    "moss-api",
+    "moss-git",
+    "moss-user",
+    "moss-language",
+    "moss-configuration",
+    "moss-theme",
+    "moss-extension"
 }
 
 if __name__ == "__main__":
