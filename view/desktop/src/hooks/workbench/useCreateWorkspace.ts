@@ -5,7 +5,7 @@ import {
   DescribeAppOutput,
   ListWorkspacesOutput,
   WorkspaceInfo,
-} from "@repo/moss-app";
+} from "@repo/window";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_DESCRIBE_APP_QUERY_KEY } from "../app/useDescribeApp";

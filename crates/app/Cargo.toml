@@ -1,0 +1,35 @@
+[package]
+name = "app"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+path = "src/app.rs"
+
+[dependencies]
+sapic-window = { workspace = true }
+
+moss_applib = { workspace = true }
+moss_theme = { workspace = true }
+moss_language = { workspace = true }
+moss_user = { workspace = true }
+moss_app_delegate = { workspace = true }
+moss_fs = { workspace = true }
+moss_extension = { workspace = true }
+moss_keyring = { workspace = true }
+moss_server_api = { workspace = true }
+moss_text = { workspace = true }
+
+tauri = { workspace = true }
+tokio = { workspace = true }
+rustc-hash = { workspace = true }
+joinerror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+ts-rs = { workspace = true }
+derive_more = { workspace = true, features = ["deref", "deref_mut"] }
+
+[dev-dependencies]
+
+[features]
+integration-tests = []

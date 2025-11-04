@@ -1,5 +1,5 @@
-import { AddAccountParams } from "@repo/moss-app";
 import { CreateProjectGitParams, ImportProjectSource } from "@repo/moss-workspace";
+import { AddAccountParams } from "@repo/window";
 
 import { CREATE_TAB, IMPORT_TAB } from "./constansts";
 

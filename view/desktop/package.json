@@ -34,7 +34,7 @@
     "@radix-ui/react-use-callback-ref": "1.1.0",
     "@radix-ui/react-use-controllable-state": "1.2.2",
     "@repo/moss-activity-broadcaster": "workspace:*",
-    "@repo/moss-app": "workspace:*",
+    "@repo/window": "workspace:*",
     "@repo/moss-project": "workspace:*",
     "@repo/moss-user": "workspace:*",
     "@repo/moss-workspace": "workspace:*",

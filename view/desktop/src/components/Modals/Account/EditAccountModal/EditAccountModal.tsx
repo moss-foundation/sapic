@@ -1,7 +1,7 @@
 import { FormEvent, useState } from "react";
 
 import { Button, Link, Modal } from "@/lib/ui";
-import { UpdateAccountParams, UpdateProfileInput } from "@repo/moss-app";
+import { UpdateAccountParams, UpdateProfileInput } from "@repo/window";
 import { AccountInfo } from "@repo/moss-user";
 import { invoke } from "@tauri-apps/api/core";
 
@@ -66,24 +66,24 @@ export const EditAccountModal = ({ showModal, closeModal, account, onAccountUpda
   const settingsUrl = getProviderSettingsUrl(account.kind);
 
   return (
-    <Modal onBackdropClick={handleClose} showModal={showModal} className="w-full max-w-136">
+    <Modal onBackdropClick={handleClose} showModal={showModal} className="max-w-136 w-full">
       <form onSubmit={handleSubmit} className="flex flex-col overflow-hidden">
-        <h2 className="flex items-center justify-center border-b border-(--moss-border) py-2 leading-4 font-medium">
+        <h2 className="border-(--moss-border) flex items-center justify-center border-b py-2 font-medium leading-4">
           Edit details
         </h2>
 
-        <div className="px-6 pt-6 pb-3.5">
+        <div className="px-6 pb-3.5 pt-6">
           <div className="grid grid-cols-[min-content_1fr] items-start gap-x-3 gap-y-1.5">
             <label className="pt-1.5 text-base">Token:</label>
             <textarea
               value={token}
               onChange={(e) => setToken(e.target.value)}
               placeholder={getPatPlaceholder(account.kind)}
-              className="h-24.5 w-full resize-none rounded-sm border border-(--moss-border) px-2 py-1.5 text-sm placeholder-(--moss-secondary-foreground) focus:outline-2 focus:outline-(--moss-primary)"
+              className="h-24.5 border-(--moss-border) placeholder-(--moss-secondary-foreground) focus:outline-(--moss-primary) w-full resize-none rounded-sm border px-2 py-1.5 text-sm focus:outline-2"
               autoFocus
             />
             <div></div>
-            <p className="text-sm leading-4 text-(--moss-secondary-foreground)">
+            <p className="text-(--moss-secondary-foreground) text-sm leading-4">
               Enter your personal access token (PAT). You can get it in your{" "}
               <Link href={settingsUrl} target="_blank" rel="noopener noreferrer">
                 {providerName}
@@ -93,7 +93,7 @@ export const EditAccountModal = ({ showModal, closeModal, account, onAccountUpda
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3 border-t border-(--moss-border) px-6 py-4">
+        <div className="border-(--moss-border) flex items-center justify-end gap-3 border-t px-6 py-4">
           <Button intent="outlined" type="button" onClick={handleClose} disabled={isSubmitting}>
             Close
           </Button>

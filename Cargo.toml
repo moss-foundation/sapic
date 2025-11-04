@@ -10,8 +10,10 @@ members = [
     #
     # Internal crates
     #
+    "crates/app",
+    "crates/window",
+
     "crates/moss-applib",
-    "crates/moss-app",
     "crates/moss-app-delegate",
     "crates/moss-git",
     "crates/moss-git-hosting-provider",
@@ -67,11 +69,14 @@ static_json = { path = "libs/static-json" }
 #
 # Internal crates
 #
+sapic-app = { path = "crates/app", package = "app" }
+sapic-window = { path = "crates/window", package = "window" }
+
+
 moss_api = { path = "crates/moss-api" }
 moss_text = { path = "crates/moss-text" }
 moss_project = { path = "crates/moss-project" }
 moss_db = { path = "crates/moss-db" }
-moss_app = { path = "crates/moss-app" }
 moss_applib = { path = "crates/moss-applib" }
 moss_app_delegate = { path = "crates/moss-app-delegate" }
 moss_git = { path = "crates/moss-git" }
