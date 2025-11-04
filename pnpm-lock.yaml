@@ -99,8 +99,8 @@ importers:
         specifier: 5.9.2
         version: 5.9.2
       zod:
-        specifier: 3.25.32
-        version: 3.25.32
+        specifier: 4.1.11
+        version: 4.1.11
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -112,8 +112,8 @@ importers:
         specifier: 5.9.2
         version: 5.9.2
       zod:
-        specifier: 3.25.32
-        version: 3.25.32
+        specifier: 4.1.11
+        version: 4.1.11
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -125,8 +125,8 @@ importers:
         specifier: 5.9.2
         version: 5.9.2
       zod:
-        specifier: 3.25.32
-        version: 3.25.32
+        specifier: 4.1.11
+        version: 4.1.11
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -138,8 +138,8 @@ importers:
         specifier: 5.9.2
         version: 5.9.2
       zod:
-        specifier: 3.25.32
-        version: 3.25.32
+        specifier: 4.1.11
+        version: 4.1.11
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -151,8 +151,8 @@ importers:
         specifier: 5.9.2
         version: 5.9.2
       zod:
-        specifier: 3.25.32
-        version: 3.25.32
+        specifier: 4.1.11
+        version: 4.1.11
     devDependencies:
       '@repo/moss-bindingutils':
         specifier: workspace:*
@@ -167,8 +167,8 @@ importers:
         specifier: 5.9.2
         version: 5.9.2
       zod:
-        specifier: 3.25.32
-        version: 3.25.32
+        specifier: 4.1.11
+        version: 4.1.11
     devDependencies:
       '@repo/moss-bindingutils':
         specifier: workspace:*
@@ -183,8 +183,8 @@ importers:
         specifier: 5.9.2
         version: 5.9.2
       zod:
-        specifier: 3.25.32
-        version: 3.25.32
+        specifier: 4.1.11
+        version: 4.1.11
     devDependencies:
       '@repo/moss-bindingutils':
         specifier: workspace:*
@@ -199,8 +199,8 @@ importers:
         specifier: 5.9.2
         version: 5.9.2
       zod:
-        specifier: 3.25.32
-        version: 3.25.32
+        specifier: 4.1.11
+        version: 4.1.11
     devDependencies:
       '@repo/moss-bindingutils':
         specifier: workspace:*
@@ -215,8 +215,8 @@ importers:
         specifier: 5.9.2
         version: 5.9.2
       zod:
-        specifier: 3.25.32
-        version: 3.25.32
+        specifier: 4.1.11
+        version: 4.1.11
     devDependencies:
       '@repo/moss-bindingutils':
         specifier: workspace:*
@@ -231,8 +231,8 @@ importers:
         specifier: 5.9.2
         version: 5.9.2
       zod:
-        specifier: 3.25.32
-        version: 3.25.32
+        specifier: 4.1.11
+        version: 4.1.11
     devDependencies:
       '@repo/moss-bindingutils':
         specifier: workspace:*
@@ -247,8 +247,8 @@ importers:
         specifier: 5.9.2
         version: 5.9.2
       zod:
-        specifier: 3.25.32
-        version: 3.25.32
+        specifier: 4.1.11
+        version: 4.1.11
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -260,8 +260,8 @@ importers:
         specifier: 5.9.2
         version: 5.9.2
       zod:
-        specifier: 3.25.32
-        version: 3.25.32
+        specifier: 4.1.11
+        version: 4.1.11
     devDependencies:
       '@repo/moss-bindingutils':
         specifier: workspace:*
@@ -276,8 +276,8 @@ importers:
         specifier: 5.9.2
         version: 5.9.2
       zod:
-        specifier: 3.25.32
-        version: 3.25.32
+        specifier: 4.1.11
+        version: 4.1.11
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -289,8 +289,8 @@ importers:
         specifier: 5.9.2
         version: 5.9.2
       zod:
-        specifier: 3.25.32
-        version: 3.25.32
+        specifier: 4.1.11
+        version: 4.1.11
     devDependencies:
       '@repo/moss-bindingutils':
         specifier: workspace:*
@@ -311,8 +311,8 @@ importers:
         specifier: 5.9.2
         version: 5.9.2
       zod:
-        specifier: 3.25.32
-        version: 3.25.32
+        specifier: 4.1.11
+        version: 4.1.11
     devDependencies:
       '@repo/moss-bindingutils':
         specifier: workspace:*
@@ -391,8 +391,8 @@ importers:
         specifier: 5.9.2
         version: 5.9.2
       zod:
-        specifier: 3.24.4
-        version: 3.24.4
+        specifier: 4.1.11
+        version: 4.1.11
     devDependencies:
       '@repo/moss-bindingutils':
         specifier: workspace:*
@@ -410,8 +410,8 @@ importers:
         specifier: 3.15.0
         version: 3.15.0(@types/node@24.6.1)
       zod:
-        specifier: 3.25.32
-        version: 3.25.32
+        specifier: 4.1.11
+        version: 4.1.11
     devDependencies:
       '@types/node':
         specifier: 24.6.1
@@ -430,7 +430,7 @@ importers:
         version: 1.0.2
       '@langchain/langgraph':
         specifier: 1.0.1
-        version: 1.0.1(@langchain/core@1.0.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(zod-to-json-schema@3.24.6(zod@3.25.32))(zod@3.25.32)
+        version: 1.0.1(@langchain/core@1.0.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(zod-to-json-schema@3.24.6(zod@4.1.11))(zod@4.1.11)
       '@langchain/mistralai':
         specifier: 1.0.0
         version: 1.0.0(@langchain/core@1.0.2)
@@ -549,8 +549,8 @@ importers:
         specifier: 2.0.7
         version: 2.0.7(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       zod:
-        specifier: 3.25.32
-        version: 3.25.32
+        specifier: 4.1.11
+        version: 4.1.11
       zustand:
         specifier: 5.0.3
         version: 5.0.3(@types/react@19.2.2)(react@19.2.0)(use-sync-external-store@1.6.0(react@19.2.0))
@@ -4754,14 +4754,11 @@ packages:
     peerDependencies:
       zod: ^3.25.0 || ^4.0.0
 
-  zod@3.24.4:
-    resolution: {integrity: sha512-OdqJE9UDRPwWsrHjLN2F8bPxvwJBK22EHLWtanu0LSYr5YqzsaaW3RMgmjwr8Rypg5k+meEJdSPXJZXE/yqOMg==}
-
   zod@3.25.32:
     resolution: {integrity: sha512-OSm2xTIRfW8CV5/QKgngwmQW/8aPfGdaQFlrGoErlgg/Epm7cjb6K6VEyExfe65a3VybUOnu381edLb0dfJl0g==}
 
-  zod@4.1.12:
-    resolution: {integrity: sha512-JInaHOamG8pt5+Ey8kGmdcAcg3OL9reK8ltczgHTAwNhMys/6ThXHityHxVV2p3fkw/c+MAvBHFVYHFZDmjMCQ==}
+  zod@4.1.11:
+    resolution: {integrity: sha512-WPsqwxITS2tzx1bzhIKsEs19ABD5vmCVa4xBo2tq/SrV4RNZtfws1EnCWQXM6yh8bD08a1idvkB5MZSBiZsjwg==}
 
   zustand@5.0.3:
     resolution: {integrity: sha512-14fwWQtU3pH4dE0dOpdMiWjddcH+QzKIgk1cl8epwSE7yag43k/AD/m4L6+K7DytAOr9gGBe3/EXj9g7cdostg==}
@@ -5225,7 +5222,7 @@ snapshots:
       p-queue: 6.6.2
       p-retry: 4.6.2
       uuid: 10.0.0
-      zod: 4.1.12
+      zod: 4.1.11
     transitivePeerDependencies:
       - '@opentelemetry/api'
       - '@opentelemetry/exporter-trace-otlp-proto'
@@ -5247,15 +5244,15 @@ snapshots:
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
 
-  '@langchain/langgraph@1.0.1(@langchain/core@1.0.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(zod-to-json-schema@3.24.6(zod@3.25.32))(zod@3.25.32)':
+  '@langchain/langgraph@1.0.1(@langchain/core@1.0.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(zod-to-json-schema@3.24.6(zod@4.1.11))(zod@4.1.11)':
     dependencies:
       '@langchain/core': 1.0.2
       '@langchain/langgraph-checkpoint': 1.0.0(@langchain/core@1.0.2)
       '@langchain/langgraph-sdk': 1.0.0(@langchain/core@1.0.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       uuid: 10.0.0
-      zod: 3.25.32
+      zod: 4.1.11
     optionalDependencies:
-      zod-to-json-schema: 3.24.6(zod@3.25.32)
+      zod-to-json-schema: 3.24.6(zod@4.1.11)
     transitivePeerDependencies:
       - react
       - react-dom
@@ -7128,8 +7125,8 @@ snapshots:
       '@babel/parser': 7.28.5
       eslint: 9.36.0(jiti@2.6.1)
       hermes-parser: 0.25.1
-      zod: 3.25.32
-      zod-validation-error: 4.0.2(zod@3.25.32)
+      zod: 4.1.11
+      zod-validation-error: 4.0.2(zod@4.1.11)
     transitivePeerDependencies:
       - supports-color
 
@@ -8742,15 +8739,18 @@ snapshots:
     dependencies:
       zod: 3.25.32
 
-  zod-validation-error@4.0.2(zod@3.25.32):
+  zod-to-json-schema@3.24.6(zod@4.1.11):
     dependencies:
-      zod: 3.25.32
+      zod: 4.1.11
+    optional: true
 
-  zod@3.24.4: {}
+  zod-validation-error@4.0.2(zod@4.1.11):
+    dependencies:
+      zod: 4.1.11
 
   zod@3.25.32: {}
 
-  zod@4.1.12: {}
+  zod@4.1.11: {}
 
   zustand@5.0.3(@types/react@19.2.2)(react@19.2.0)(use-sync-external-store@1.6.0(react@19.2.0)):
     optionalDependencies:
