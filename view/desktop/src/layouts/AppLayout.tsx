@@ -1,15 +1,12 @@
 import { AllotmentHandle, LayoutPriority } from "allotment";
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useRef } from "react";
 
-import { ActivityBar, BottomPane, Sidebar } from "@/components";
+import { ActivityBar, BottomPane, Sidebar, SidebarEdgeHandler } from "@/components";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
-import { useUpdateActivitybarPartState } from "@/hooks/app/useUpdateActivitybarPartState";
-import { useUpdatePanelPartState } from "@/hooks/app/useUpdatePanelPartState";
-import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
+import { useActiveWorkspace } from "@/hooks";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { useActivityBarStore } from "@/store/activityBar";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
-import { cn } from "@/utils";
 
 import { Resizable, ResizablePanel } from "../lib/ui/Resizable";
 import TabbedPane from "../parts/TabbedPane/TabbedPane";
@@ -19,56 +16,13 @@ interface AppLayoutProps {
 }
 
 export const AppLayout = ({ children }: AppLayoutProps) => {
-  const { activeWorkspaceId, hasActiveWorkspace } = useActiveWorkspace();
-  const canUpdatePartState = useRef(false);
-  const lastProcessedWorkspaceId = useRef<string | null>(null);
-  const isTransitioning = useRef(false);
+  const resizableRef = useRef<AllotmentHandle>(null);
 
-  const { position, toWorkspaceState } = useActivityBarStore();
-  const { bottomPane, sideBar, sideBarPosition } = useAppResizableLayoutStore();
+  const { data: workspaceState } = useDescribeWorkspaceState();
+  const { activeWorkspaceId } = useActiveWorkspace();
 
-  // Fetch workspace state to know when initialization is complete
-  const { data: workspaceState, isFetched, isSuccess } = useDescribeWorkspaceState();
-
-  // Reset update permission when workspace changes
-  useEffect(() => {
-    if (lastProcessedWorkspaceId.current !== activeWorkspaceId) {
-      canUpdatePartState.current = false;
-      isTransitioning.current = true;
-      lastProcessedWorkspaceId.current = activeWorkspaceId;
-    }
-  }, [activeWorkspaceId]);
-
-  // Initialize bottom pane state from workspace data (panels are still managed here)
-  useEffect(() => {
-    if (hasActiveWorkspace && (!isFetched || !isSuccess)) {
-      // Still waiting for workspace state
-      canUpdatePartState.current = false;
-      isTransitioning.current = true;
-      return;
-    }
-
-    // Initialize bottom pane from workspace state if available
-    if (workspaceState?.layouts.panel) {
-      const { initialize } = useAppResizableLayoutStore.getState();
-      initialize({
-        sideBar: {
-          // Don't modify sidebar - handled by workspace hooks
-        },
-        bottomPane: {
-          height: workspaceState.layouts.panel.size,
-          visible: workspaceState.layouts.panel.visible,
-        },
-      });
-    }
-
-    // Enable updates after workspace state is loaded (or when no workspace)
-    // Use a delay to ensure all initialization effects have run
-    setTimeout(() => {
-      canUpdatePartState.current = true;
-      isTransitioning.current = false;
-    }, 200);
-  }, [hasActiveWorkspace, workspaceState, isFetched, isSuccess]);
+  const { position } = useActivityBarStore();
+  const { bottomPane, sideBar, sideBarPosition, initialize } = useAppResizableLayoutStore();
 
   const handleSidebarEdgeHandlerClick = () => {
     if (!sideBar.visible) sideBar.setVisible(true);
@@ -78,39 +32,24 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
     if (!bottomPane.visible) bottomPane.setVisible(true);
   };
 
-  const resizableRef = useRef<AllotmentHandle>(null);
-
   useEffect(() => {
     if (!resizableRef.current) return;
 
-    resizableRef.current.reset();
-  }, [bottomPane, sideBar, sideBarPosition]);
-
-  const { mutate: updatePanelPartState } = useUpdatePanelPartState();
-  useEffect(() => {
-    if (!canUpdatePartState.current || !activeWorkspaceId || isTransitioning.current) return;
-
-    updatePanelPartState({
-      size: bottomPane.height,
-      visible: bottomPane.visible,
+    initialize({
+      sideBar: {
+        width: workspaceState?.layouts.sidebar?.size ?? 255,
+        visible: workspaceState?.layouts.sidebar?.visible ?? true,
+      },
+      bottomPane: {
+        height: workspaceState?.layouts.panel?.size ?? 255,
+        visible: workspaceState?.layouts.panel?.visible ?? true,
+      },
     });
-  }, [activeWorkspaceId, bottomPane, updatePanelPartState]);
 
-  // ActivityBar state persistence - only save when workspace is stable and initialization is complete
-  const { mutate: updateActivitybarPartState } = useUpdateActivitybarPartState();
-  const activityBarState = useActivityBarStore();
-  useEffect(() => {
-    if (!canUpdatePartState.current || !activeWorkspaceId || isTransitioning.current) return;
-
-    updateActivitybarPartState(toWorkspaceState());
-  }, [
-    activeWorkspaceId,
-    activityBarState.position,
-    activityBarState.items,
-    activityBarState.lastActiveContainerId,
-    updateActivitybarPartState,
-    toWorkspaceState,
-  ]);
+    resizableRef.current.reset();
+    // We only want to run this effect when the active workspace changes, to reset the layout, because different workspaces have different layouts.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeWorkspaceId]);
 
   return (
     <div className="flex h-full w-full">
@@ -206,52 +145,4 @@ const SidebarContent = () => <Sidebar />;
 
 const MainContent = () => <TabbedPane />;
 
-const BottomPaneContent = () => {
-  return <BottomPane />;
-};
-
-interface SidebarEdgeHandlerProps {
-  alignment?: "left" | "right" | "bottom";
-  onClick?: () => void;
-}
-
-const SidebarEdgeHandler = ({ alignment, onClick }: SidebarEdgeHandlerProps) => {
-  const [showBg, setShowBg] = useState(false);
-  return (
-    <div
-      className={cn("absolute z-40", {
-        "left-0 h-full w-2": alignment === "left",
-        "right-0 h-full w-2": alignment === "right",
-        "bottom-0 h-2 w-full": alignment === "bottom",
-      })}
-    >
-      {/* handle bg*/}
-      <div
-        className={cn(`background-(--moss-accent)/50 absolute z-40 hidden cursor-pointer`, {
-          "top-0 left-0 h-full w-3": alignment === "left",
-          "top-0 right-0 h-full w-3": alignment === "right",
-          "bottom-0 left-0 h-3 w-full": alignment === "bottom",
-          "block": showBg,
-        })}
-        onMouseEnter={() => setShowBg(true)}
-        onMouseLeave={() => setShowBg(false)}
-        onClick={onClick}
-      />
-
-      {/* handle */}
-      <div
-        className={cn(
-          `background-(--moss-accent)/50 hover:background-(--moss-accent)/80 absolute z-50 cursor-pointer rounded`,
-          {
-            "inset-y-[calc(50%-64px)] left-[3px] h-32 w-1.5": alignment === "left",
-            "inset-y-[calc(50%-64px)] right-[3px] h-32 w-1.5": alignment === "right",
-            "inset-x-[calc(50%-64px)] bottom-[3px] h-1.5 w-32": alignment === "bottom",
-            "background-(--moss-accent)/80": showBg,
-          }
-        )}
-        onMouseEnter={() => setShowBg(true)}
-        onClick={onClick}
-      />
-    </div>
-  );
-};
+const BottomPaneContent = () => <BottomPane />;

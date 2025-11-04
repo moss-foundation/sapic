@@ -151,3 +151,50 @@ pub struct BatchGetItemOutput {
     #[ts(type = "{ [key: string]: JsonValue | null }")]
     pub items: HashMap<String, Option<JsonValue>>,
 }
+
+//
+// Batch Get Item By Prefix
+//
+
+/// @category Operation
+#[derive(Debug, Clone, Deserialize, TS, Validate)]
+#[ts(optional_fields)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchGetItemByPrefixInput {
+    pub scope: StorageScopeForFrontend,
+    pub prefix: String,
+}
+
+#[derive(Debug, Clone, Serialize, TS)]
+#[ts(optional_fields)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchGetItemByPrefixOutput {
+    pub scope: StorageScopeForFrontend,
+    #[ts(type = "{ [key: string]: JsonValue }")]
+    pub items: HashMap<String, JsonValue>,
+}
+
+//
+// Batch Remove Item By Prefix
+//
+/// @category Operation
+#[derive(Debug, Clone, Deserialize, TS, Validate)]
+#[ts(optional_fields)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchRemoveItemByPrefixInput {
+    pub scope: StorageScopeForFrontend,
+    pub prefix: String,
+}
+
+#[derive(Debug, Clone, Serialize, TS)]
+#[ts(optional_fields)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchRemoveItemByPrefixOutput {
+    pub scope: StorageScopeForFrontend,
+    #[ts(type = "{ [key: string]: JsonValue }")]
+    pub items: HashMap<String, JsonValue>,
+}

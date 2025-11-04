@@ -38,7 +38,6 @@ impl Default for SqliteStorageOptions {
 }
 
 pub struct SqliteStorage {
-    // INFO: This will be improved in the future to support glob search for keys.
     cache: RwLock<HashMap<String, JsonValue>>,
     pool: SqlitePool,
 }
@@ -343,6 +342,86 @@ impl KeyedStorage for SqliteStorage {
         }
 
         Ok(result)
+    }
+
+    async fn get_batch_by_prefix(
+        &self,
+        prefix: &str,
+    ) -> joinerror::Result<Vec<(String, JsonValue)>> {
+        let pattern = format!("{prefix}%");
+        let rows = sqlx::query(
+            r#"
+            SELECT key, value FROM kv
+            WHERE key LIKE ?
+            "#,
+        )
+        .bind(pattern)
+        .fetch_all(&self.pool)
+        .await
+        .join_err::<()>("failed to fetch values")?;
+
+        let mut db_results: HashMap<String, JsonValue> = HashMap::with_capacity(rows.len());
+
+        {
+            let mut cache = self.cache.write().await;
+            for row in rows {
+                let key: String = row.get("key");
+                let bytes: Vec<u8> = row.get("value");
+                if let Ok(value) = serde_json::from_slice::<JsonValue>(&bytes) {
+                    db_results.insert(key.clone(), value.clone());
+                    cache.insert(key, value);
+                }
+            }
+        }
+
+        Ok(db_results.into_iter().collect())
+    }
+
+    async fn remove_batch_by_prefix(
+        &self,
+        prefix: &str,
+    ) -> joinerror::Result<Vec<(String, JsonValue)>> {
+        let pattern = format!("{prefix}%");
+
+        let mut txn = self
+            .pool
+            .begin()
+            .await
+            .join_err::<()>("failed to begin transaction")?;
+
+        let rows = sqlx::query(
+            r#"
+            DELETE FROM kv
+            WHERE key LIKE ?
+            RETURNING key, value
+            "#,
+        )
+        .bind(pattern)
+        .fetch_all(&mut *txn)
+        .await
+        .join_err::<()>("failed to delete and return values")?;
+
+        txn.commit()
+            .await
+            .join_err::<()>("failed to commit transaction")?;
+
+        let mut removed_map: HashMap<String, JsonValue> = HashMap::with_capacity(rows.len());
+        for row in rows {
+            let key: String = row.get("key");
+            let raw_value: String = row.get("value");
+            if let Ok(value) = serde_json::from_str::<JsonValue>(&raw_value) {
+                removed_map.insert(key, value);
+            }
+        }
+
+        {
+            let mut cache = self.cache.write().await;
+            for key in removed_map.keys() {
+                cache.remove(key);
+            }
+        }
+
+        Ok(removed_map.into_iter().collect())
     }
 }
 
@@ -1745,6 +1824,255 @@ mod tests {
         assert_eq!(
             results[2],
             ("key3".to_string(), Some(JsonValue::Bool(true)))
+        );
+    }
+
+    #[tokio::test]
+    async fn test_get_batch_by_prefix_happy_path() {
+        let storage = create_in_memory_storage().await;
+
+        storage
+            .put("key1", JsonValue::String("value1".to_string()))
+            .await
+            .unwrap();
+        storage
+            .put("key2", JsonValue::Number(2.into()))
+            .await
+            .unwrap();
+        storage.put("key3", JsonValue::Bool(true)).await.unwrap();
+
+        let prefix = "key";
+
+        let results = storage.get_batch_by_prefix(prefix).await.unwrap();
+
+        let result_map: HashMap<String, Option<JsonValue>> = results.into_iter().collect();
+        assert_eq!(result_map.len(), 3);
+        assert_eq!(
+            result_map["key1"],
+            Some(JsonValue::String("value1".to_string()))
+        );
+        assert_eq!(result_map["key2"], Some(JsonValue::Number(2.into())));
+        assert_eq!(result_map["key3"], Some(JsonValue::Bool(true)));
+    }
+
+    // This will return all records
+    #[tokio::test]
+    async fn test_get_batch_by_prefix_empty_prefix() {
+        let storage = create_in_memory_storage().await;
+
+        storage
+            .put("A", JsonValue::String("A".to_string()))
+            .await
+            .unwrap();
+        storage
+            .put("B", JsonValue::String("B".to_string()))
+            .await
+            .unwrap();
+
+        let results = storage.get_batch_by_prefix("").await.unwrap();
+
+        let result_map: HashMap<String, Option<JsonValue>> = results.into_iter().collect();
+        assert_eq!(result_map.len(), 2);
+        assert_eq!(result_map["A"], Some(JsonValue::String("A".to_string())));
+        assert_eq!(result_map["B"], Some(JsonValue::String("B".to_string())));
+    }
+
+    #[tokio::test]
+    async fn test_get_batch_by_prefix_no_match() {
+        let storage = create_in_memory_storage().await;
+
+        storage
+            .put("A", JsonValue::String("A".to_string()))
+            .await
+            .unwrap();
+        storage
+            .put("B", JsonValue::String("B".to_string()))
+            .await
+            .unwrap();
+
+        let prefix = "prefix";
+
+        let results = storage.get_batch_by_prefix(prefix).await.unwrap();
+        assert!(results.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_get_batch_by_prefix_large_batch() {
+        let storage = create_in_memory_storage().await;
+
+        let prefix = "key_";
+        for i in 0..1000 {
+            storage
+                .put(&format!("{prefix}{i}"), JsonValue::Number(i.into()))
+                .await
+                .unwrap();
+        }
+
+        let results = storage.get_batch_by_prefix(prefix).await.unwrap();
+        let result_map: HashMap<String, Option<JsonValue>> = results.into_iter().collect();
+        assert_eq!(result_map.len(), 1000);
+        for i in 0..1000 {
+            assert_eq!(
+                result_map[&format!("{prefix}{i}")],
+                Some(JsonValue::Number(i.into()))
+            );
+        }
+    }
+
+    #[tokio::test]
+    async fn test_remove_batch_by_prefix_happy_path() {
+        let storage = create_in_memory_storage().await;
+
+        let prefix = "key";
+        storage
+            .put("key1", JsonValue::String("value1".to_string()))
+            .await
+            .unwrap();
+        storage
+            .put("key2", JsonValue::Number(2.into()))
+            .await
+            .unwrap();
+        storage.put("key3", JsonValue::Bool(true)).await.unwrap();
+
+        let results = storage.remove_batch_by_prefix(prefix).await.unwrap();
+        let result_map: HashMap<String, Option<JsonValue>> = results.into_iter().collect();
+
+        assert_eq!(result_map.len(), 3);
+        assert_eq!(
+            result_map["key1"],
+            Some(JsonValue::String("value1".to_string()))
+        );
+        assert_eq!(result_map["key2"], Some(JsonValue::Number(2.into())));
+        assert_eq!(result_map["key3"], Some(JsonValue::Bool(true)));
+
+        assert_eq!(storage.get_batch_by_prefix(prefix).await.unwrap().len(), 0);
+    }
+    // This will remove all records
+    #[tokio::test]
+    async fn test_remove_batch_by_empty_prefix() {
+        let storage = create_in_memory_storage().await;
+
+        let prefix = "";
+
+        storage
+            .put("A", JsonValue::String("A".to_string()))
+            .await
+            .unwrap();
+        storage
+            .put("B", JsonValue::String("B".to_string()))
+            .await
+            .unwrap();
+        let results = storage.remove_batch_by_prefix(prefix).await.unwrap();
+        let result_map: HashMap<String, Option<JsonValue>> = results.into_iter().collect();
+        assert_eq!(result_map.len(), 2);
+        assert_eq!(result_map["A"], Some(JsonValue::String("A".to_string())));
+        assert_eq!(result_map["B"], Some(JsonValue::String("B".to_string())));
+
+        assert!(
+            storage
+                .get_batch_by_prefix(prefix)
+                .await
+                .unwrap()
+                .is_empty()
+        );
+    }
+
+    #[tokio::test]
+    async fn test_remove_batch_by_prefix_no_match() {
+        let storage = create_in_memory_storage().await;
+        let prefix = "nonexistent";
+
+        let results = storage.remove_batch_by_prefix(prefix).await.unwrap();
+        assert!(results.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_remove_batch_by_prefix_large_batch() {
+        let storage = create_in_memory_storage().await;
+
+        let prefix = "key_";
+        for i in 0..1000 {
+            storage
+                .put(&format!("{prefix}{i}"), JsonValue::Number(i.into()))
+                .await
+                .unwrap();
+        }
+
+        let results = storage.remove_batch_by_prefix(prefix).await.unwrap();
+        let result_map: HashMap<String, Option<JsonValue>> = results.into_iter().collect();
+        for i in 0..1000 {
+            assert_eq!(
+                result_map[&format!("{prefix}{i}")],
+                Some(JsonValue::Number(i.into()))
+            );
+        }
+
+        assert!(
+            storage
+                .get_batch_by_prefix(prefix)
+                .await
+                .unwrap()
+                .is_empty()
+        );
+    }
+
+    #[tokio::test]
+    async fn test_remove_batch_by_prefix_complex_values() {
+        let storage = create_in_memory_storage().await;
+
+        let prefix = "complex";
+
+        let complex1 = serde_json::json!({
+            "nested": {
+                "array": [1, 2, 3],
+                "object": {"key": "value"}
+            }
+        });
+        let complex2 = JsonValue::Array(vec![
+            JsonValue::String("a".to_string()),
+            JsonValue::Number(1.into()),
+        ]);
+
+        storage.put("complex1", complex1.clone()).await.unwrap();
+        storage.put("complex2", complex2.clone()).await.unwrap();
+
+        let results = storage.remove_batch_by_prefix(prefix).await.unwrap();
+        let result_map: HashMap<String, Option<JsonValue>> = results.into_iter().collect();
+        assert_eq!(result_map.len(), 2);
+        assert_eq!(result_map["complex1"], Some(complex1));
+        assert_eq!(result_map["complex2"], Some(complex2));
+    }
+
+    #[tokio::test]
+    async fn test_remove_batch_by_prefix_special_characters_in_keys() {
+        let storage = create_in_memory_storage().await;
+
+        let special_keys = vec![
+            ("key.with.dots", JsonValue::String("dots".to_string())),
+            ("key-with-dashes", JsonValue::String("dashes".to_string())),
+            (
+                "key_with_underscores",
+                JsonValue::String("underscores".to_string()),
+            ),
+        ];
+
+        for (key, value) in special_keys.iter() {
+            storage.put(*key, value.clone()).await.unwrap();
+        }
+        let prefix = "key";
+        let results = storage.remove_batch_by_prefix(prefix).await.unwrap();
+        let result_map: HashMap<String, Option<JsonValue>> = results.into_iter().collect();
+
+        assert_eq!(result_map.len(), 3);
+        for (key, value) in special_keys {
+            assert_eq!(result_map[key], Some(value));
+        }
+        assert!(
+            storage
+                .get_batch_by_prefix(prefix)
+                .await
+                .unwrap()
+                .is_empty()
         );
     }
 }

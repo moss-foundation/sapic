@@ -99,7 +99,9 @@ pub fn init<
             remove_item,
             batch_get_item,
             batch_put_item,
-            batch_remove_item
+            batch_remove_item,
+            batch_get_item_by_prefix,
+            batch_remove_item_by_prefix
         ])
         .build()
 }
@@ -284,6 +286,52 @@ async fn batch_get_item<'a, R: tauri::Runtime>(
     let items_map: HashMap<String, Option<JsonValue>> = items.into_iter().collect();
 
     Ok(BatchGetItemOutput {
+        scope: input.scope,
+        items: items_map,
+    })
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(app_handle))]
+async fn batch_get_item_by_prefix<'a, R: tauri::Runtime>(
+    app_handle: AppHandle<R>,
+    input: BatchGetItemByPrefixInput,
+) -> TauriResult<BatchGetItemByPrefixOutput> {
+    let provider = PROVIDER_CALLBACK
+        .get()
+        .ok_or_join_err::<()>("storage provider not found")?;
+
+    let storage: Arc<dyn Storage> = provider(&GenericAppHandle::new(app_handle))?;
+    let items = storage
+        .get_batch_by_prefix(input.scope.clone().into(), &input.prefix)
+        .await
+        .join_err::<()>("failed to batch get item by prefix")?;
+
+    let items_map: HashMap<String, JsonValue> = items.into_iter().collect();
+    Ok(BatchGetItemByPrefixOutput {
+        scope: input.scope,
+        items: items_map,
+    })
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(app_handle))]
+async fn batch_remove_item_by_prefix<'a, R: tauri::Runtime>(
+    app_handle: AppHandle<R>,
+    input: BatchRemoveItemByPrefixInput,
+) -> TauriResult<BatchRemoveItemByPrefixOutput> {
+    let provider = PROVIDER_CALLBACK
+        .get()
+        .ok_or_join_err::<()>("storage provider not found")?;
+
+    let storage: Arc<dyn Storage> = provider(&GenericAppHandle::new(app_handle))?;
+    let items = storage
+        .remove_batch_by_prefix(input.scope.clone().into(), &input.prefix)
+        .await
+        .join_err::<()>("failed to batch remove item by prefix")?;
+
+    let items_map: HashMap<String, JsonValue> = items.into_iter().collect();
+    Ok(BatchRemoveItemByPrefixOutput {
         scope: input.scope,
         items: items_map,
     })
