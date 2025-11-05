@@ -1,66 +1,75 @@
 import { create } from "zustand";
 
 import { SIDEBAR_POSITION } from "@/constants/layoutPositions";
+import { sharedStorageService } from "@/lib/services";
 import { SidebarPosition } from "@repo/moss-workspace";
 
 //TODO this type should be imported from backend in the future
 export interface AppResizableLayoutStore {
-  isInitialized: boolean;
+  initialize: (workspaceId: string) => Promise<void>;
+
   sideBarPosition: SidebarPosition;
-  setSideBarPosition: (position: SidebarPosition) => void;
-  setIsInitialized: (isInitialized: boolean) => void;
-  initialize: (newState: {
-    sideBar: {
-      width?: number;
-      visible?: boolean;
-    };
-    bottomPane: {
-      height?: number;
-      visible?: boolean;
-    };
-  }) => void;
+  setSideBarPosition: (position: SidebarPosition, workspaceId: string) => void;
 
   sideBar: {
     minWidth: number;
     maxWidth: number;
     width: number;
     visible: boolean;
-    setWidth: (newWidth: number) => void;
-    setVisible: (visible: boolean) => void;
+    setWidth: (newWidth: number, workspaceId: string) => void;
+    setVisible: (visible: boolean, workspaceId: string) => void;
   };
   bottomPane: {
     minHeight: number;
     maxHeight: number;
     height: number;
     visible: boolean;
-    setHeight: (newHeight: number) => void;
-    setVisible: (visible: boolean) => void;
+    setHeight: (newHeight: number, workspaceId: string) => void;
+    setVisible: (visible: boolean, workspaceId: string) => void;
   };
 }
 
+const defaultSidebarPosition = SIDEBAR_POSITION.LEFT as SidebarPosition;
+
+const defaultSidebarSize = {
+  width: 255,
+  visible: true,
+} as const;
+
+const defaultBottomPaneSize = {
+  height: 333,
+  visible: false,
+} as const;
+
 export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set, get) => ({
-  isInitialized: false,
-  setIsInitialized: (isInitialized: boolean) => set({ isInitialized }),
   sideBarPosition: SIDEBAR_POSITION.LEFT,
-  setSideBarPosition: (position: SidebarPosition) =>
+  setSideBarPosition: (position: SidebarPosition, workspaceId: string) => {
+    sharedStorageService.putItem("sidebarPosition", position, workspaceId);
     set(() => {
       return {
         sideBarPosition: position,
       };
-    }),
-  initialize: (newState) => {
+    });
+  },
+  initialize: async (workspaceId) => {
+    const sidebarPosition = (await sharedStorageService.getItem("sidebarPosition", workspaceId))?.value;
+    const sidebarWidth = (await sharedStorageService.getItem("sidebarWidth", workspaceId))?.value;
+    const sidebarVisible = (await sharedStorageService.getItem("sidebarVisible", workspaceId))?.value;
+    const bottomPaneHeight = (await sharedStorageService.getItem("bottomPaneHeight", workspaceId))?.value;
+    const bottomPaneVisible = (await sharedStorageService.getItem("bottomPaneVisible", workspaceId))?.value;
+
     set((state) => {
       return {
-        isInitialized: true,
+        sideBarPosition: sidebarPosition ?? defaultSidebarPosition,
         sideBar: {
           ...state.sideBar,
-          width: newState.sideBar.width ?? state.sideBar.width,
-          visible: newState.sideBar.visible ?? state.sideBar.visible,
+          width: sidebarWidth ?? defaultSidebarSize.width,
+          visible: sidebarVisible ?? defaultSidebarSize.visible,
         },
         bottomPane: {
           ...state.bottomPane,
-          height: newState.bottomPane.height ?? state.bottomPane.height,
-          visible: newState.bottomPane.visible ?? state.bottomPane.visible,
+          height: bottomPaneHeight ?? defaultBottomPaneSize.height,
+          visible: bottomPaneVisible ?? defaultBottomPaneSize.visible,
         },
       };
     });
@@ -70,7 +79,8 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
     maxWidth: 400,
     width: 255,
     visible: true,
-    setWidth: (newWidth) => {
+    setWidth: (newWidth, workspaceId) => {
+      sharedStorageService.putItem("sidebarWidth", newWidth, workspaceId);
       set((state) => {
         return {
           sideBar: {
@@ -81,7 +91,8 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
         };
       });
     },
-    setVisible: (visible) => {
+    setVisible: (visible, workspaceId) => {
+      sharedStorageService.putItem("sidebarVisible", visible, workspaceId);
       set((state) => {
         return {
           sideBar: {
@@ -97,7 +108,8 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
     maxHeight: Infinity,
     height: 333,
     visible: false,
-    setHeight: (newHeight) => {
+    setHeight: (newHeight, workspaceId) => {
+      sharedStorageService.putItem("bottomPaneHeight", newHeight, workspaceId);
       set((state) => ({
         bottomPane: {
           ...state.bottomPane,
@@ -106,7 +118,8 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
         },
       }));
     },
-    setVisible: (visible) => {
+    setVisible: (visible, workspaceId) => {
+      sharedStorageService.putItem("bottomPaneVisible", visible, workspaceId);
       set((state) => ({
         bottomPane: {
           ...state.bottomPane,

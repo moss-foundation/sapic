@@ -485,6 +485,9 @@ importers:
       '@repo/moss-app':
         specifier: workspace:*
         version: link:../../crates/moss-app
+      '@repo/moss-bindingutils':
+        specifier: workspace:*
+        version: link:../../crates/moss-bindingutils
       '@repo/moss-extension':
         specifier: workspace:*
         version: link:../../crates/moss-extension
@@ -497,6 +500,9 @@ importers:
       '@repo/moss-workspace':
         specifier: workspace:*
         version: link:../../crates/moss-workspace
+      '@repo/shared-storage':
+        specifier: workspace:*
+        version: link:../../plugins/shared_storage
       '@tanstack/react-pacer':
         specifier: 0.16.1
         version: 0.16.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0)

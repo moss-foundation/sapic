@@ -4,7 +4,6 @@ import { ReactNode, useEffect, useRef } from "react";
 import { ActivityBar, BottomPane, Sidebar, SidebarEdgeHandler } from "@/components";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
 import { useActiveWorkspace } from "@/hooks";
-import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { useActivityBarStore } from "@/store/activityBar";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 
@@ -16,43 +15,38 @@ interface AppLayoutProps {
 }
 
 export const AppLayout = ({ children }: AppLayoutProps) => {
-  const resizableRef = useRef<AllotmentHandle>(null);
+  const mainResizableRef = useRef<AllotmentHandle>(null);
+  const verticalResizableRef = useRef<AllotmentHandle>(null);
 
-  const { data: workspaceState } = useDescribeWorkspaceState();
   const { activeWorkspaceId } = useActiveWorkspace();
 
   const { position } = useActivityBarStore();
   const { bottomPane, sideBar, sideBarPosition, initialize } = useAppResizableLayoutStore();
 
   const handleSidebarEdgeHandlerClick = () => {
-    if (!sideBar.visible) sideBar.setVisible(true);
+    if (!sideBar.visible && activeWorkspaceId) sideBar.setVisible(true, activeWorkspaceId);
   };
 
   const handleBottomPaneEdgeHandlerClick = () => {
-    if (!bottomPane.visible) bottomPane.setVisible(true);
+    if (!bottomPane.visible && activeWorkspaceId) bottomPane.setVisible(true, activeWorkspaceId);
   };
 
   useEffect(() => {
-    if (!resizableRef.current) return;
+    const resetLayout = async () => {
+      if (!mainResizableRef.current || !verticalResizableRef.current) return;
 
-    initialize({
-      sideBar: {
-        width: workspaceState?.layouts.sidebar?.size ?? 255,
-        visible: workspaceState?.layouts.sidebar?.visible ?? true,
-      },
-      bottomPane: {
-        height: workspaceState?.layouts.panel?.size ?? 255,
-        visible: workspaceState?.layouts.panel?.visible ?? true,
-      },
-    });
+      if (activeWorkspaceId) await initialize(activeWorkspaceId);
 
-    resizableRef.current.reset();
+      verticalResizableRef.current.reset();
+      mainResizableRef.current.reset();
+    };
+    resetLayout();
     // We only want to run this effect when the active workspace changes, to reset the layout, because different workspaces have different layouts.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeWorkspaceId]);
 
   return (
-    <div className="flex h-full w-full">
+    <div className="AppLayout flex h-full w-full">
       {position === ACTIVITYBAR_POSITION.DEFAULT && sideBarPosition === SIDEBAR_POSITION.LEFT && <ActivityBar />}
       <div className="relative flex h-full w-full">
         {!sideBar.visible && sideBarPosition === SIDEBAR_POSITION.LEFT && (
@@ -60,21 +54,23 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
         )}
 
         <Resizable
+          ref={mainResizableRef}
           proportionalLayout={false}
-          ref={resizableRef}
           onDragEnd={(sizes) => {
             if (sideBarPosition === SIDEBAR_POSITION.LEFT) {
               const [leftPanelSize, _mainPanelSize] = sizes;
-              sideBar.setWidth(leftPanelSize);
+              if (activeWorkspaceId) sideBar.setWidth(leftPanelSize, activeWorkspaceId);
             }
             if (sideBarPosition === SIDEBAR_POSITION.RIGHT) {
               const [_mainPanelSize, rightPanelSize] = sizes;
-              sideBar.setWidth(rightPanelSize);
+              if (activeWorkspaceId) sideBar.setWidth(rightPanelSize, activeWorkspaceId);
             }
           }}
           onVisibleChange={(index, visible) => {
-            if (sideBarPosition === SIDEBAR_POSITION.LEFT && index === 0) sideBar.setVisible(visible);
-            if (sideBarPosition === SIDEBAR_POSITION.RIGHT && index === 1) sideBar.setVisible(visible);
+            if (sideBarPosition === SIDEBAR_POSITION.LEFT && index === 0)
+              if (activeWorkspaceId) sideBar.setVisible(visible, activeWorkspaceId);
+            if (sideBarPosition === SIDEBAR_POSITION.RIGHT && index === 1)
+              if (activeWorkspaceId) sideBar.setVisible(visible, activeWorkspaceId);
           }}
         >
           {sideBarPosition === SIDEBAR_POSITION.LEFT && (
@@ -91,15 +87,15 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
           )}
           <ResizablePanel priority={LayoutPriority.High}>
             <Resizable
+              ref={verticalResizableRef}
               className="relative"
-              ref={resizableRef}
               vertical
               onDragEnd={(sizes) => {
                 const [_mainPanelSize, bottomPaneSize] = sizes;
-                bottomPane.setHeight(bottomPaneSize);
+                if (activeWorkspaceId) bottomPane.setHeight(bottomPaneSize, activeWorkspaceId);
               }}
               onVisibleChange={(index, visible) => {
-                if (index === 0) bottomPane.setVisible(visible);
+                if (activeWorkspaceId) bottomPane.setVisible(visible, activeWorkspaceId);
               }}
             >
               <ResizablePanel>{children ?? <MainContent />}</ResizablePanel>
