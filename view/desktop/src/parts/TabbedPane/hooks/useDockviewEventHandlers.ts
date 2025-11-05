@@ -22,6 +22,7 @@ export const useTabbedPaneEventHandlers = ({ api, setGridState, canDrop }: UseTa
       api.onDidActivePanelChange((event) => {
         setActivePanelId(event?.id);
       }),
+
       api.onUnhandledDragOverEvent((event) => {
         event.accept();
       }),

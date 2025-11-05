@@ -25,7 +25,7 @@ const DockviewDebugContainer = () => {
         <GroupActions />
       </div>
       <div className="action-container flex select-none items-center justify-end p-1">
-        <button className="mr-2 rounded" onClick={toggleDebugPanels} title="Toggle Debug Panels">
+        <button className="mr-2 cursor-pointer rounded" onClick={toggleDebugPanels} title="Toggle Debug Panels">
           <span className="material-symbols-outlined">engineering</span>
         </button>
       </div>
