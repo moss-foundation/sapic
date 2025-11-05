@@ -1,7 +1,8 @@
-import { AddPanelOptions, DockviewApi, Orientation, SerializedDockview } from "moss-tabs";
+import { AddPanelOptions, DockviewApi, SerializedDockview } from "moss-tabs";
 import { create } from "zustand";
 
 import { ProjectTreeNode } from "@/components/ProjectTree/types";
+import { emptyGridState } from "@/constants/layoutPositions";
 import { Icons } from "@/lib/ui";
 import { TabbedPaneComponents } from "@/parts/TabbedPane/TabbedPaneComponents";
 
@@ -38,22 +39,6 @@ interface TabbedPaneState {
   watermark: boolean;
   setWatermark: (watermark: boolean) => void;
 }
-
-export const emptyGridState: SerializedDockview = {
-  grid: {
-    root: {
-      type: "branch",
-      data: [],
-    },
-    height: 0,
-    width: 0,
-    orientation: Orientation.HORIZONTAL,
-  },
-  panels: {},
-  activeGroup: undefined,
-  floatingGroups: [],
-  popoutGroups: [],
-};
 
 export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
   gridState: emptyGridState,

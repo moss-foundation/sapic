@@ -8,9 +8,10 @@ import {
 import { useEffect, useRef, useState } from "react";
 
 import { DropNode } from "@/components/ProjectTree/types";
+import { emptyGridState } from "@/constants/layoutPositions";
 import { useActiveWorkspace } from "@/hooks";
 import { sharedStorageService } from "@/lib/services";
-import { emptyGridState, useTabbedPaneStore } from "@/store/tabbedPane";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 import { TabbedPaneToolBar, Watermark } from "./components";
 import { AddPanelButton } from "./components/AddPanelButton";
@@ -28,7 +29,7 @@ const TabbedPane = () => {
   const [pragmaticDropElement, setPragmaticDropElement] = useState<DropNode | null>(null);
 
   const { activeWorkspaceId } = useActiveWorkspace();
-  const { api, showDebugPanels, addOrFocusPanel, setApi, setGridState } = useTabbedPaneStore();
+  const { api, showDebugPanels, addOrFocusPanel, setApi } = useTabbedPaneStore();
 
   const { canDrop } = useTabbedPaneDropTarget(dockviewRef, setPragmaticDropElement);
 
@@ -45,7 +46,7 @@ const TabbedPane = () => {
         api?.fromJSON(emptyGridState);
       }
     });
-  }, [activeWorkspaceId, api, setApi, setGridState]);
+  }, [activeWorkspaceId, api]);
 
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);

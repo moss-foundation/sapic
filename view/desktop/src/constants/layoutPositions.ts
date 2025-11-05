@@ -1,3 +1,5 @@
+import { Orientation, SerializedDockview } from "moss-tabs";
+
 export enum ACTIVITYBAR_POSITION {
   DEFAULT = "DEFAULT",
   TOP = "TOP",
@@ -24,3 +26,19 @@ export const defaultBottomPanePanel = {
   maxHeight: Infinity,
   visible: false,
 } as const;
+
+export const emptyGridState: SerializedDockview = {
+  grid: {
+    root: {
+      type: "branch",
+      data: [],
+    },
+    height: 0,
+    width: 0,
+    orientation: Orientation.HORIZONTAL,
+  },
+  panels: {},
+  activeGroup: undefined,
+  floatingGroups: [],
+  popoutGroups: [],
+};
