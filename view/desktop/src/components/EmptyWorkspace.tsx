@@ -1,5 +1,4 @@
 import { useModal } from "@/hooks/useModal";
-import { useGlobalSidebarState } from "@/hooks/workspace/derived/useGlobalSidebarState";
 import { Button } from "@/lib/ui";
 
 import ErrorNaughtyDog from "../assets/images/ErrorNaughtyDog.svg";
@@ -12,8 +11,6 @@ interface EmptyWorkspaceProps {
 }
 
 export const EmptyWorkspace = ({ inSidebar = false }: EmptyWorkspaceProps) => {
-  useGlobalSidebarState();
-
   const {
     showModal: showNewWorkspaceModal,
     closeModal: closeNewWorkspaceModal,

@@ -1,15 +1,26 @@
-import { ActivitybarPosition, SidebarPosition } from "@repo/moss-workspace";
+export enum ACTIVITYBAR_POSITION {
+  DEFAULT = "DEFAULT",
+  TOP = "TOP",
+  BOTTOM = "BOTTOM",
+  HIDDEN = "HIDDEN",
+}
 
-// ActivityBar Position Constants
-export const ACTIVITYBAR_POSITION: Record<ActivitybarPosition, ActivitybarPosition> = {
-  DEFAULT: "DEFAULT",
-  TOP: "TOP",
-  BOTTOM: "BOTTOM",
-  HIDDEN: "HIDDEN",
+export enum SIDEBAR_POSITION {
+  LEFT = "LEFT",
+  RIGHT = "RIGHT",
+}
+
+export const defaultSidebarPanel = {
+  position: SIDEBAR_POSITION.LEFT,
+  size: 255,
+  visible: true,
+  minWidth: 100,
+  maxWidth: 400,
 } as const;
 
-// Sidebar Position Constants
-export const SIDEBAR_POSITION: Record<SidebarPosition, SidebarPosition> = {
-  LEFT: "LEFT",
-  RIGHT: "RIGHT",
+export const defaultBottomPanePanel = {
+  height: 333,
+  minHeight: 100,
+  maxHeight: Infinity,
+  visible: false,
 } as const;

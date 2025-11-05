@@ -1,5 +1,8 @@
 import { ActionButton } from "@/components/ActionButton";
 import { SIDEBAR_POSITION } from "@/constants/layoutPositions";
+import { useActiveWorkspace } from "@/hooks";
+import { useGetSidebarPanel } from "@/hooks/sharedStorage/layout/useGetSidebarPanel";
+import { useUpdateSidebarPanel } from "@/hooks/sharedStorage/layout/useUpdateSidebarPanel";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn } from "@/utils";
 
@@ -8,22 +11,26 @@ export interface PanelToggleButtonsProps {
 }
 
 export const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
-  const { sideBarPosition, bottomPane, sideBar } = useAppResizableLayoutStore();
+  const { bottomPane } = useAppResizableLayoutStore();
+  const { activeWorkspaceId } = useActiveWorkspace();
+  const { data: sideBar } = useGetSidebarPanel();
+  const { mutate: updateSidebarPanel } = useUpdateSidebarPanel();
 
   const toggleSidebar = () => {
-    sideBar.setVisible(!sideBar.visible);
+    updateSidebarPanel({ visible: !sideBar?.visible });
   };
 
   const toggleBottomPane = () => {
-    bottomPane.setVisible(!bottomPane.visible);
+    if (!activeWorkspaceId) return;
+    bottomPane.setVisible(!bottomPane.visible, activeWorkspaceId);
   };
 
   return (
     <div className={cn("flex -space-x-0.5", className)}>
-      {sideBarPosition === SIDEBAR_POSITION.LEFT && (
+      {sideBar?.position === SIDEBAR_POSITION.LEFT && (
         <ActionButton
           iconClassName="!size-4.5"
-          icon={sideBar.visible ? "OpenPanelLeftFilled" : "OpenPanelLeft"}
+          icon={sideBar?.visible ? "OpenPanelLeftFilled" : "OpenPanelLeft"}
           onClick={toggleSidebar}
           title="Toggle Left Sidebar"
         />
@@ -36,10 +43,10 @@ export const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
         title="Toggle Bottom Panel"
       />
 
-      {sideBarPosition === SIDEBAR_POSITION.RIGHT && (
+      {sideBar?.position === SIDEBAR_POSITION.RIGHT && (
         <ActionButton
           iconClassName="!size-4.5"
-          icon={sideBar.visible ? "OpenPanelRightFilled" : "OpenPanelRight"}
+          icon={sideBar?.visible ? "OpenPanelRightFilled" : "OpenPanelRight"}
           onClick={toggleSidebar}
           title="Toggle Right Sidebar"
         />

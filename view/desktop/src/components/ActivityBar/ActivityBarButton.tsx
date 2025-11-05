@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { ACTIVITYBAR_POSITION } from "@/constants/layoutPositions";
+import { useGetSidebarPanel } from "@/hooks/sharedStorage/layout/useGetSidebarPanel";
+import { useUpdateSidebarPanel } from "@/hooks/sharedStorage/layout/useUpdateSidebarPanel";
 import { Icon } from "@/lib/ui/Icon";
 import { ActivityBarItemProps, useActivityBarStore } from "@/store/activityBar";
-import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn } from "@/utils";
 import {
   attachClosestEdge,
@@ -29,8 +30,8 @@ export const ActivityBarButton = ({
   const ref = useRef<HTMLButtonElement | null>(null);
 
   const { position, setActiveItem } = useActivityBarStore();
-  const { setVisible, visible: isSideBarVisible } = useAppResizableLayoutStore((state) => state.sideBar);
-
+  const { data: sideBar } = useGetSidebarPanel();
+  const { mutate: updateSidebarPanel } = useUpdateSidebarPanel();
   const [preview, setPreview] = useState<HTMLElement | null>(null);
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
 
@@ -100,27 +101,26 @@ export const ActivityBarButton = ({
   }, [position, icon, props, isDraggable]);
 
   const handleClick = (id: string) => {
-    if (isActive && position === ACTIVITYBAR_POSITION.DEFAULT && isSideBarVisible) {
-      setVisible(false);
-      return;
+    if (isActive && position === ACTIVITYBAR_POSITION.DEFAULT && sideBar?.visible) {
+      updateSidebarPanel({ visible: false });
+    } else {
+      setActiveItem(id);
+      updateSidebarPanel({ visible: true });
     }
-
-    setActiveItem(id);
-    setVisible(true);
   };
 
   return (
     <button
       ref={ref}
       className={cn("relative flex size-7 cursor-pointer items-center justify-center rounded-md p-1", {
-        "hover:background-(--moss-activityBarItem-background-hover)": !isActive || !isSideBarVisible,
-        "background-(--moss-accent-secondary)": isActive && isSideBarVisible,
-        "background-(--moss-activityBarItem-background)": !isActive || !isSideBarVisible,
+        "hover:background-(--moss-activityBarItem-background-hover)": !isActive || !sideBar?.visible,
+        "background-(--moss-accent-secondary)": isActive && sideBar?.visible,
+        "background-(--moss-activityBarItem-background)": !isActive || !sideBar?.visible,
       })}
       onClick={() => handleClick(props.id)}
       {...props}
     >
-      {isActive && isSideBarVisible ? (
+      {isActive && sideBar?.visible ? (
         <IconInline icon={iconActive} className="size-4.5" />
       ) : (
         <Icon icon={icon} className="size-4.5" />

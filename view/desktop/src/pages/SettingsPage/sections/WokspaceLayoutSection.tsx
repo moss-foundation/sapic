@@ -1,10 +1,12 @@
 import SelectOutlined from "@/components/SelectOutlined";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
 import { useActiveWorkspace } from "@/hooks";
+import { useGetSidebarPanel } from "@/hooks/sharedStorage/layout/useGetSidebarPanel";
+import { useUpdateSidebarPanel } from "@/hooks/sharedStorage/layout/useUpdateSidebarPanel";
 import { useActivityBarStore } from "@/store/activityBar";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { MenuItemProps } from "@/utils/renderActionMenuItem";
-import { ActivitybarPosition, SidebarPosition } from "@repo/moss-workspace";
+import { ActivitybarPosition } from "@repo/moss-workspace";
 
 import { Section } from "../Section";
 
@@ -34,7 +36,8 @@ export const WorkspaceLayoutSection = () => {
 
 const SidebarTypeSection = () => {
   const { hasActiveWorkspace } = useActiveWorkspace();
-  const { setSideBarPosition, sideBarPosition } = useAppResizableLayoutStore();
+  const { data: sideBar } = useGetSidebarPanel();
+  const { mutate: updateSidebarPanel } = useUpdateSidebarPanel();
 
   const sidebarTypeItems: MenuItemProps[] = [
     {
@@ -51,9 +54,8 @@ const SidebarTypeSection = () => {
     },
   ];
 
-  const handleSidebarTypeChange = (value: string) => {
-    const sidebarType = value as SidebarPosition;
-    setSideBarPosition(sidebarType);
+  const handleSidebarTypeChange = (value: SIDEBAR_POSITION) => {
+    updateSidebarPanel({ position: value });
   };
 
   return (
@@ -61,23 +63,17 @@ const SidebarTypeSection = () => {
       <h3 className="mb-2 font-medium">Sidebar Type</h3>
       <div className="w-[200px]">
         <SelectOutlined.Root
-          value={sideBarPosition || SIDEBAR_POSITION.LEFT}
+          value={sideBar?.position || SIDEBAR_POSITION.LEFT}
           onValueChange={handleSidebarTypeChange}
           disabled={!hasActiveWorkspace}
         >
           <SelectOutlined.Trigger />
           <SelectOutlined.Content>
-            {sidebarTypeItems.map((item) => {
-              if (item.type === "separator") {
-                return <SelectOutlined.Separator key={item.id} />;
-              }
-
-              return (
-                <SelectOutlined.Item key={item.id} value={item.value!}>
-                  {item.label}
-                </SelectOutlined.Item>
-              );
-            })}
+            {sidebarTypeItems.map((item) => (
+              <SelectOutlined.Item key={item.id} value={item.value!}>
+                {item.label}
+              </SelectOutlined.Item>
+            ))}
           </SelectOutlined.Content>
         </SelectOutlined.Root>
       </div>
@@ -87,7 +83,8 @@ const SidebarTypeSection = () => {
 
 const SidebarVisibilitySection = () => {
   const { hasActiveWorkspace } = useActiveWorkspace();
-  const sideBar = useAppResizableLayoutStore((state) => state.sideBar);
+  const { data: sideBar } = useGetSidebarPanel();
+  const { mutate: updateSidebarPanel } = useUpdateSidebarPanel();
 
   const visibilityItems: MenuItemProps[] = [
     {
@@ -105,8 +102,7 @@ const SidebarVisibilitySection = () => {
   ];
 
   const handleSidebarVisibilityChange = (value: string) => {
-    const isVisible = value === "visible";
-    sideBar.setVisible(isVisible);
+    updateSidebarPanel({ visible: value === "visible" });
   };
 
   return (
@@ -114,23 +110,17 @@ const SidebarVisibilitySection = () => {
       <h3 className="mb-2 font-medium">Sidebar Visibility</h3>
       <div className="w-[200px]">
         <SelectOutlined.Root
-          value={sideBar.visible ? "visible" : "hidden"}
+          value={sideBar?.visible ? "visible" : "hidden"}
           onValueChange={handleSidebarVisibilityChange}
           disabled={!hasActiveWorkspace}
         >
           <SelectOutlined.Trigger />
           <SelectOutlined.Content>
-            {visibilityItems.map((item) => {
-              if (item.type === "separator") {
-                return <SelectOutlined.Separator key={item.id} />;
-              }
-
-              return (
-                <SelectOutlined.Item key={item.id} value={item.value!}>
-                  {item.label}
-                </SelectOutlined.Item>
-              );
-            })}
+            {visibilityItems.map((item) => (
+              <SelectOutlined.Item key={item.id} value={item.value!}>
+                {item.label}
+              </SelectOutlined.Item>
+            ))}
           </SelectOutlined.Content>
         </SelectOutlined.Root>
       </div>
@@ -139,12 +129,14 @@ const SidebarVisibilitySection = () => {
 };
 
 const BottomPaneVisibilitySection = () => {
-  const { hasActiveWorkspace } = useActiveWorkspace();
+  const { activeWorkspaceId, hasActiveWorkspace } = useActiveWorkspace();
   const bottomPane = useAppResizableLayoutStore((state) => state.bottomPane);
 
   const handleBottomPaneVisibilityChange = (value: string) => {
     const visibility = value === "visible";
-    bottomPane.setVisible(visibility);
+    if (activeWorkspaceId && bottomPane) {
+      bottomPane.setVisible(visibility, activeWorkspaceId);
+    }
   };
 
   const visibilityItems: MenuItemProps[] = [

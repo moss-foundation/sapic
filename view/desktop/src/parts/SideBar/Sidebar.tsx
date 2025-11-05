@@ -5,11 +5,11 @@ import { EmptyWorkspace } from "@/components/EmptyWorkspace";
 import WorkspaceModeToggle from "@/components/WorkspaceModeToggle";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
 import { useActiveWorkspace } from "@/hooks";
+import { useGetSidebarPanel } from "@/hooks/sharedStorage/layout/useGetSidebarPanel";
 import { useGetProjectSessionState } from "@/hooks/useProjectSession";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { SidebarWorkspaceContent } from "@/parts/SideBar/SidebarWorkspaceContent";
 import { useActivityBarStore } from "@/store/activityBar";
-import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn } from "@/utils";
 
 export interface BaseSidebarProps {
@@ -18,14 +18,14 @@ export interface BaseSidebarProps {
 }
 
 export const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
-  const sideBarPosition = useAppResizableLayoutStore((state) => state.sideBarPosition);
+  const { data: sideBar } = useGetSidebarPanel();
 
   return (
     <div
       className={cn(
         "background-(--moss-secondary-background) flex h-full grow flex-col",
         {
-          "border-(--moss-border) border-l": sideBarPosition === SIDEBAR_POSITION.LEFT,
+          "border-(--moss-border) border-l": sideBar?.position === SIDEBAR_POSITION.LEFT,
         },
         className
       )}
