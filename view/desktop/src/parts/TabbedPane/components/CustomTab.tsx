@@ -75,7 +75,7 @@ export const CustomTab = ({
     <div
       onClick={handleClick}
       className={cn(
-        "group/customTab flex h-full items-center justify-center gap-1 px-3 hover:text-(--moss-primary-foreground)",
+        "group/customTab hover:text-(--moss-primary-foreground) flex h-full items-center justify-center gap-1 px-3",
         {
           "border-b-1 border-(--moss-accent)": isActive,
           "border-b-1 border-(--moss-border)": !isActive,
@@ -94,7 +94,7 @@ export const CustomTab = ({
           <Icon icon={params?.iconType} className="size-4" />
         ) : params?.node ? (
           <div className="relative size-4 shrink-0">
-            <ResourceIcon resource={params?.node} className="absolute top-0 right-0 size-4" />
+            <ResourceIcon resource={params?.node} className="absolute right-0 top-0 size-4" />
           </div>
         ) : null}
         <span className="truncate">{title}</span>

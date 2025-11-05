@@ -1,30 +1,35 @@
-import { DockviewApi, DockviewGroupLocation, IDockviewGroupPanel } from "moss-tabs";
+import { DockviewGroupLocation, IDockviewGroupPanel } from "moss-tabs";
 import React from "react";
 
 import { Scrollbar } from "@/lib/ui/Scrollbar";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 
-const GroupAction = (props: { groupId: string; groups: string[]; api: DockviewApi; activeGroup?: string }) => {
+const GroupAction = ({ groupId }: { groupId: string }) => {
+  const { api, gridState } = useTabbedPaneStore();
+
+  const activeGroup = gridState.activeGroup;
+
   const onClick = () => {
-    props.api?.getGroup(props.groupId)?.focus();
+    api?.getGroup(groupId)?.focus();
   };
 
-  const isActive = props.activeGroup === props.groupId;
+  const isActive = activeGroup === groupId;
 
   const [group, setGroup] = React.useState<IDockviewGroupPanel | undefined>(undefined);
 
   React.useEffect(() => {
-    const disposable = props.api.onDidLayoutFromJSON(() => {
-      const group = props.api.getGroup(props.groupId);
+    const disposable = api?.onDidLayoutFromJSON(() => {
+      const group = api.getGroup(groupId);
       setGroup(group);
     });
 
-    const group = props.api.getGroup(props.groupId);
+    const group = api?.getGroup(groupId);
     setGroup(group);
 
     return () => {
-      disposable.dispose();
+      disposable?.dispose();
     };
-  }, [props.api, props.groupId]);
+  }, [api, groupId]);
 
   const [_, setLocation] = React.useState<DockviewGroupLocation | null>(null);
   const [isMaximized, setIsMaximized] = React.useState<boolean>(false);
@@ -40,7 +45,7 @@ const GroupAction = (props: { groupId: string; groups: string[]; api: DockviewAp
       setLocation(event.location);
     });
 
-    const disposable2 = props.api.onDidMaximizedGroupChange(() => {
+    const disposable2 = api?.onDidMaximizedGroupChange(() => {
       setIsMaximized(group.api.isMaximized());
     });
 
@@ -54,16 +59,16 @@ const GroupAction = (props: { groupId: string; groups: string[]; api: DockviewAp
 
     return () => {
       disposable.dispose();
-      disposable2.dispose();
+      disposable2?.dispose();
       disposable3.dispose();
     };
-  }, [group, props.api]);
+  }, [group, api]);
 
   return (
     <div className="button-action select-none">
       <div className="flex">
         <button onClick={onClick} className={isActive ? "demo-button selected" : "demo-button"}>
-          {props.groupId}
+          {groupId}
         </button>
       </div>
       <div className="flex">
@@ -74,7 +79,7 @@ const GroupAction = (props: { groupId: string; groups: string[]; api: DockviewAp
           onClick={() => {
             if (group) {
               // @ts-expect-error The types mismatch are also present in the original Dockview repo. Since we don't use floating groups, we can ignore it.
-              props.api.addFloatingGroup(group, {
+              api.addFloatingGroup(group, {
                 width: 400,
                 height: 300,
                 x: 50,
@@ -97,7 +102,7 @@ const GroupAction = (props: { groupId: string; groups: string[]; api: DockviewAp
           onClick={() => {
             if (group) {
               // @ts-expect-error The types mismatch are also present in the original Dockview repo. Since we don't use popouts, we can ignore it.
-              props.api.addPopoutGroup(group);
+              api.addPopoutGroup(group);
             }
           }}
         >
@@ -137,7 +142,7 @@ const GroupAction = (props: { groupId: string; groups: string[]; api: DockviewAp
           title="Close Group"
           className="demo-icon-button"
           onClick={() => {
-            const panel = props.api?.getGroup(props.groupId);
+            const panel = api?.getGroup(groupId);
             panel?.api.close();
           }}
         >
@@ -148,13 +153,19 @@ const GroupAction = (props: { groupId: string; groups: string[]; api: DockviewAp
   );
 };
 
-export const GroupActions = (props: { groups: string[]; api: DockviewApi; activeGroup?: string }) => {
+export const GroupActions = () => {
+  const { api } = useTabbedPaneStore();
+
+  if (!api) return null;
+
+  const groups = Object.values(api.groups);
+
   return (
     <div className="action-container select-none">
       <Scrollbar>
         <div className="flex items-center gap-2">
-          {props.groups.map((groupId, index) => {
-            return <GroupAction key={`group-${groupId}-${index}`} {...props} groupId={groupId} />;
+          {groups.map((panelGroup, index) => {
+            return <GroupAction key={`group-${panelGroup.id}-${index}`} groupId={panelGroup.id} />;
           })}
         </div>
       </Scrollbar>

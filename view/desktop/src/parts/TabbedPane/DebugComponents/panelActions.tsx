@@ -1,19 +1,22 @@
-import { DockviewApi, IDockviewPanel } from "moss-tabs";
+import { IDockviewPanel } from "moss-tabs";
 import React from "react";
 import ReactDOM from "react-dom";
 
 import { Scrollbar } from "@/lib/ui/Scrollbar";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 
-const PanelAction = (props: { panels: string[]; api: DockviewApi; activePanel?: string; panelId: string }) => {
+const PanelAction = ({ panelId }: { panelId: string }) => {
+  const { api, activePanelId } = useTabbedPaneStore();
+
   const [visible, setVisible] = React.useState<boolean>(true);
   const [isPopupOpen, setIsPopupOpen] = React.useState(false);
 
   const onClick = () => {
-    props.api.getPanel(props.panelId)?.focus();
+    api?.getPanel(panelId)?.focus();
   };
 
   React.useEffect(() => {
-    const panel = props.api.getPanel(props.panelId);
+    const panel = api?.getPanel(panelId);
     if (panel) {
       const disposable = panel.api.onDidVisibilityChange((event) => {
         setVisible(event.isVisible);
@@ -25,14 +28,14 @@ const PanelAction = (props: { panels: string[]; api: DockviewApi; activePanel?: 
       };
     }
     return undefined;
-  }, [props.api, props.panelId]);
+  }, [api, panelId]);
 
   const [panel, setPanel] = React.useState<IDockviewPanel | undefined>(undefined);
 
   React.useEffect(() => {
     const list = [
-      props.api.onDidLayoutFromJSON(() => {
-        setPanel(props.api.getPanel(props.panelId));
+      api?.onDidLayoutFromJSON(() => {
+        setPanel(api?.getPanel(panelId));
       }),
     ];
 
@@ -45,12 +48,12 @@ const PanelAction = (props: { panels: string[]; api: DockviewApi; activePanel?: 
       list.push(disposable);
     }
 
-    setPanel(props.api.getPanel(props.panelId));
+    setPanel(api?.getPanel(panelId));
 
     return () => {
-      list.forEach((l) => l.dispose());
+      list.forEach((l) => l?.dispose());
     };
-  }, [props.api, props.panelId, panel]);
+  }, [api, panelId, panel]);
 
   const togglePopup = () => {
     setIsPopupOpen(!isPopupOpen);
@@ -59,20 +62,17 @@ const PanelAction = (props: { panels: string[]; api: DockviewApi; activePanel?: 
   return (
     <div className="button-action select-none">
       <div className="flex">
-        <button
-          className={props.activePanel === props.panelId ? "demo-button selected" : "demo-button"}
-          onClick={onClick}
-        >
-          {props.panelId}
+        <button className={activePanelId === panelId ? "demo-button selected" : "demo-button"} onClick={onClick}>
+          {panelId}
         </button>
       </div>
       <div className="flex">
         <button
           className="demo-icon-button"
           onClick={() => {
-            const panel = props.api.getPanel(props.panelId);
+            const panel = api?.getPanel(panelId);
             if (panel) {
-              props.api.addFloatingGroup(panel);
+              api?.addFloatingGroup(panel);
             }
           }}
         >
@@ -81,9 +81,9 @@ const PanelAction = (props: { panels: string[]; api: DockviewApi; activePanel?: 
         <button
           className="demo-icon-button"
           onClick={() => {
-            const panel = props.api.getPanel(props.panelId);
+            const panel = api?.getPanel(panelId);
             if (panel) {
-              props.api.addPopoutGroup(panel);
+              api?.addPopoutGroup(panel);
             }
           }}
         >
@@ -92,7 +92,7 @@ const PanelAction = (props: { panels: string[]; api: DockviewApi; activePanel?: 
         <button
           className="demo-icon-button"
           onClick={() => {
-            const panel = props.api.getPanel(props.panelId);
+            const panel = api?.getPanel(panelId);
             panel?.api.close();
           }}
         >
@@ -145,13 +145,19 @@ const TitleEditPopup: React.FC<{ panel: IDockviewPanel; onClose: () => void }> =
   );
 };
 
-export const PanelActions = (props: { panels: string[]; api: DockviewApi; activePanel?: string }) => {
+export const PanelActions = () => {
+  const { gridState, api } = useTabbedPaneStore();
+
+  const panels = Object.values(gridState.panels);
+
+  if (!api) return null;
+
   return (
     <div className="action-container select-none">
       <Scrollbar>
         <div className="flex items-center gap-2">
-          {props.panels.map((id, index) => {
-            return <PanelAction key={`panel-${id}-${index}`} {...props} panelId={id} />;
+          {panels.map((panel, index) => {
+            return <PanelAction key={`panel-${panel.id}-${index}`} panelId={panel.id} />;
           })}
         </div>
       </Scrollbar>

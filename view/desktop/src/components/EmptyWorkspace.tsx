@@ -28,7 +28,7 @@ export const EmptyWorkspace = ({ inSidebar = false }: EmptyWorkspaceProps) => {
 
   if (inSidebar) {
     return (
-      <div className="flex h-full flex-col gap-4.25 px-2">
+      <div className="gap-4.25 flex h-full flex-col px-2">
         {showNewWorkspaceModal && (
           <NewWorkspaceModal showModal={showNewWorkspaceModal} closeModal={closeNewWorkspaceModal} />
         )}
@@ -65,7 +65,7 @@ export const EmptyWorkspace = ({ inSidebar = false }: EmptyWorkspaceProps) => {
       {showOpenWorkspaceModal && (
         <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
       )}
-      <TabbedPane mode="welcome" />
+      <TabbedPane />
     </>
   );
 };

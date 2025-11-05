@@ -1,14 +1,14 @@
-import React from "react";
+import { IDockviewHeaderActionsProps } from "moss-tabs";
 
 import { ActionButton, Divider, IconLabelButton } from "@/components";
 
-interface ToolBarProps {
+interface TabbedPaneToolBarProps extends IDockviewHeaderActionsProps {
   workspace?: boolean;
 }
 
-const ToolBar: React.FC<ToolBarProps> = ({ workspace = false }) => {
+export const TabbedPaneToolBar = ({ workspace = false }: TabbedPaneToolBarProps) => {
   return (
-    <div className="group-control mr-0.5 flex h-full items-center px-2 select-none">
+    <div className="group-control mr-0.5 flex h-full select-none items-center px-2">
       <ActionButton icon="MoreHorizontal" />
 
       {workspace && (
@@ -21,5 +21,3 @@ const ToolBar: React.FC<ToolBarProps> = ({ workspace = false }) => {
     </div>
   );
 };
-
-export default ToolBar;

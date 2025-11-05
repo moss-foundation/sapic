@@ -1,4 +1,3 @@
-import { DockviewApi } from "moss-tabs";
 import React from "react";
 import { createRoot } from "react-dom/client";
 
@@ -42,10 +41,10 @@ const PopoverComponent = (props: { close: () => void; component: React.FC<{ clos
   }, []);
 
   return (
-    <div className="absolute top-0 left-0 z-[9999] h-full w-full bg-amber-400">
+    <div className="absolute left-0 top-0 z-[9999] h-full w-full bg-amber-400">
       <div
         ref={ref}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform bg-black p-2.5 text-white"
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform bg-black p-2.5 text-white"
       >
         <props.component close={props.close} />
       </div>
@@ -73,22 +72,24 @@ function usePopover() {
   };
 }
 
-export const GridActions = (props: {
-  api?: DockviewApi;
-  hasCustomWatermark: boolean;
-  toggleCustomWatermark: () => void;
-}) => {
+export const GridActions = () => {
+  const { api, watermark, setWatermark } = useTabbedPaneStore();
   const { mutate: updateEditorPartState } = useUpdateEditorPartState();
 
+  const hasCustomWatermark = watermark;
+  const toggleCustomWatermark = () => {
+    setWatermark(!watermark);
+  };
+
   const onClear = () => {
-    props.api?.clear();
+    api?.clear();
   };
 
   const gridState = useTabbedPaneStore((state) => state.gridState);
   const onLoad = () => {
     if (gridState) {
       try {
-        props.api?.fromJSON(gridState);
+        api?.fromJSON(gridState);
       } catch (err) {
         console.error("failed to load saved state", err);
       }
@@ -96,16 +97,16 @@ export const GridActions = (props: {
   };
 
   const onSave = () => {
-    if (props.api) {
-      updateEditorPartState(props.api.toJSON());
+    if (api) {
+      updateEditorPartState(api.toJSON());
     }
   };
 
   const onReset = () => {
-    if (props.api) {
+    if (api) {
       try {
-        props.api.clear();
-        defaultConfig(props.api);
+        api.clear();
+        defaultConfig(api);
       } catch (err) {
         console.error("failed to reset state to default", err);
       }
@@ -116,17 +117,17 @@ export const GridActions = (props: {
 
   const onAddPanel = (options?: { advanced?: boolean; type?: string }) => {
     const panelType = options?.type;
-    if (panelType && props.api?.getPanel(panelType) !== undefined) {
-      props.api.getPanel(panelType)?.focus();
+    if (panelType && api?.getPanel(panelType) !== undefined) {
+      api.getPanel(panelType)?.focus();
       return;
     }
 
     if (options?.advanced) {
       popover.open(({ close }) => {
-        return <PanelBuilder api={props.api!} done={close} />;
+        return <PanelBuilder api={api!} done={close} />;
       });
     } else {
-      props.api?.addPanel({
+      api?.addPanel({
         id: panelType && panelType !== "nested" ? panelType : `id_${Date.now().toString()}`,
         component: options?.type ?? "Default",
         title: options?.type ?? `Tab ${nextId()}`,
@@ -136,14 +137,10 @@ export const GridActions = (props: {
   };
 
   const onAddGroup = () => {
-    props.api?.addGroup();
+    api?.addGroup();
   };
 
   const [gap, setGap] = React.useState(0);
-
-  React.useEffect(() => {
-    // props.api?.setGap(gap);
-  }, [gap, props.api]);
 
   return (
     <div className="action-container select-none">
@@ -166,8 +163,8 @@ export const GridActions = (props: {
           </button>
           <span className="button-action">
             <button
-              className={props.hasCustomWatermark ? "demo-button selected !rounded" : "demo-button !rounded"}
-              onClick={props.toggleCustomWatermark}
+              className={hasCustomWatermark ? "demo-button selected !rounded" : "demo-button !rounded"}
+              onClick={toggleCustomWatermark}
             >
               Use Custom Watermark
             </button>
