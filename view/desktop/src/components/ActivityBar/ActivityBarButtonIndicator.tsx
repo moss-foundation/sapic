@@ -1,5 +1,5 @@
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
-import { useGetSidebarPanel } from "@/hooks/sharedStorage/layout/useGetSidebarPanel";
+import { useGetSidebarPanel } from "@/hooks/sharedStorage/layout/sidebar/useGetSidebarPanel";
 import { useActivityBarStore } from "@/store/activityBar";
 import { cn } from "@/utils";
 

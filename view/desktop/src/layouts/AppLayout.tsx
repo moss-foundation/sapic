@@ -4,8 +4,10 @@ import { ReactNode, useEffect, useRef } from "react";
 import { ActivityBar, BottomPane, Sidebar, SidebarEdgeHandler } from "@/components";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
 import { useActiveWorkspace } from "@/hooks";
-import { useGetSidebarPanel } from "@/hooks/sharedStorage/layout/useGetSidebarPanel";
-import { useUpdateSidebarPanel } from "@/hooks/sharedStorage/layout/useUpdateSidebarPanel";
+import { useGetBottomPanel } from "@/hooks/sharedStorage/layout/bottomPanel/useGetBottomPanel";
+import { useUpdateBottomPanel } from "@/hooks/sharedStorage/layout/bottomPanel/useUpdateBottomPanel";
+import { useGetSidebarPanel } from "@/hooks/sharedStorage/layout/sidebar/useGetSidebarPanel";
+import { useUpdateSidebarPanel } from "@/hooks/sharedStorage/layout/sidebar/useUpdateSidebarPanel";
 import { useActivityBarStore } from "@/store/activityBar";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 
@@ -23,17 +25,21 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
   const { activeWorkspaceId } = useActiveWorkspace();
 
   const { position } = useActivityBarStore();
-  const { bottomPane, initialize } = useAppResizableLayoutStore();
+
+  const { initialize } = useAppResizableLayoutStore();
 
   const { data: sideBar } = useGetSidebarPanel();
   const { mutate: updateSidebarPanel } = useUpdateSidebarPanel();
+
+  const { data: bottomPane } = useGetBottomPanel();
+  const { mutate: updateBottomPanel } = useUpdateBottomPanel();
 
   const handleSidebarEdgeHandlerClick = () => {
     if (!sideBar?.visible && activeWorkspaceId) updateSidebarPanel({ visible: true });
   };
 
   const handleBottomPaneEdgeHandlerClick = () => {
-    if (!bottomPane.visible && activeWorkspaceId) bottomPane.setVisible(true, activeWorkspaceId);
+    if (!bottomPane?.visible && activeWorkspaceId) updateBottomPanel({ visible: true });
   };
 
   useEffect(() => {
@@ -46,7 +52,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
       mainResizableRef.current.reset();
     };
     resetLayout();
-    // We only want to run this effect when the active workspace changes, to reset the layout, because different workspaces have different layouts.
+    // We only want to run this effect(resetting the layout) when the active workspace changes, because different workspaces have different layouts.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeWorkspaceId]);
 
@@ -97,23 +103,23 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
               vertical
               onDragEnd={(sizes) => {
                 const [_mainPanelSize, bottomPaneSize] = sizes;
-                if (activeWorkspaceId) bottomPane.setHeight(bottomPaneSize, activeWorkspaceId);
+                if (activeWorkspaceId) updateBottomPanel({ height: bottomPaneSize });
               }}
-              onVisibleChange={(index, visible) => {
-                if (activeWorkspaceId) bottomPane.setVisible(visible, activeWorkspaceId);
+              onVisibleChange={(_, visible) => {
+                if (activeWorkspaceId) updateBottomPanel({ visible });
               }}
             >
               <ResizablePanel>{children ?? <MainContent />}</ResizablePanel>
               <ResizablePanel
-                preferredSize={bottomPane.height}
-                visible={bottomPane.visible}
-                minSize={bottomPane.minHeight}
+                preferredSize={bottomPane?.height}
+                visible={bottomPane?.visible}
+                minSize={bottomPane?.minHeight}
                 snap
               >
                 <BottomPaneContent />
               </ResizablePanel>
             </Resizable>
-            {!bottomPane.visible && (
+            {!bottomPane?.visible && (
               <SidebarEdgeHandler alignment="bottom" onClick={handleBottomPaneEdgeHandlerClick} />
             )}
           </ResizablePanel>

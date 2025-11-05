@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { ACTIVITYBAR_POSITION } from "@/constants/layoutPositions";
-import { useGetSidebarPanel } from "@/hooks/sharedStorage/layout/useGetSidebarPanel";
-import { useUpdateSidebarPanel } from "@/hooks/sharedStorage/layout/useUpdateSidebarPanel";
+import { useGetSidebarPanel } from "@/hooks/sharedStorage/layout/sidebar/useGetSidebarPanel";
+import { useUpdateSidebarPanel } from "@/hooks/sharedStorage/layout/sidebar/useUpdateSidebarPanel";
 import { Icon } from "@/lib/ui/Icon";
 import { ActivityBarItemProps, useActivityBarStore } from "@/store/activityBar";
 import { cn } from "@/utils";
@@ -29,11 +29,12 @@ export const ActivityBarButton = ({
 }: ActivityBarItemProps) => {
   const ref = useRef<HTMLButtonElement | null>(null);
 
+  const [preview, setPreview] = useState<HTMLElement | null>(null);
+  const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
+
   const { position, setActiveItem } = useActivityBarStore();
   const { data: sideBar } = useGetSidebarPanel();
   const { mutate: updateSidebarPanel } = useUpdateSidebarPanel();
-  const [preview, setPreview] = useState<HTMLElement | null>(null);
-  const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
 
   useEffect(() => {
     const element = ref.current;

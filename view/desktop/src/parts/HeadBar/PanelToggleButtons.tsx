@@ -1,9 +1,10 @@
 import { ActionButton } from "@/components/ActionButton";
 import { SIDEBAR_POSITION } from "@/constants/layoutPositions";
 import { useActiveWorkspace } from "@/hooks";
-import { useGetSidebarPanel } from "@/hooks/sharedStorage/layout/useGetSidebarPanel";
-import { useUpdateSidebarPanel } from "@/hooks/sharedStorage/layout/useUpdateSidebarPanel";
-import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
+import { useGetBottomPanel } from "@/hooks/sharedStorage/layout/bottomPanel/useGetBottomPanel";
+import { useUpdateBottomPanel } from "@/hooks/sharedStorage/layout/bottomPanel/useUpdateBottomPanel";
+import { useGetSidebarPanel } from "@/hooks/sharedStorage/layout/sidebar/useGetSidebarPanel";
+import { useUpdateSidebarPanel } from "@/hooks/sharedStorage/layout/sidebar/useUpdateSidebarPanel";
 import { cn } from "@/utils";
 
 export interface PanelToggleButtonsProps {
@@ -11,7 +12,9 @@ export interface PanelToggleButtonsProps {
 }
 
 export const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
-  const { bottomPane } = useAppResizableLayoutStore();
+  const { data: bottomPane } = useGetBottomPanel();
+  const { mutate: updateBottomPanel } = useUpdateBottomPanel();
+
   const { activeWorkspaceId } = useActiveWorkspace();
   const { data: sideBar } = useGetSidebarPanel();
   const { mutate: updateSidebarPanel } = useUpdateSidebarPanel();
@@ -22,7 +25,7 @@ export const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
 
   const toggleBottomPane = () => {
     if (!activeWorkspaceId) return;
-    bottomPane.setVisible(!bottomPane.visible, activeWorkspaceId);
+    updateBottomPanel({ visible: !bottomPane?.visible });
   };
 
   return (
@@ -38,7 +41,7 @@ export const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
 
       <ActionButton
         iconClassName="!size-4.5"
-        icon={bottomPane.visible ? "OpenPanelBottomFilled" : "OpenPanelBottom"}
+        icon={bottomPane?.visible ? "OpenPanelBottomFilled" : "OpenPanelBottom"}
         onClick={toggleBottomPane}
         title="Toggle Bottom Panel"
       />

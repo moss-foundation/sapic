@@ -36,14 +36,6 @@ export const useUpdateSidebarPanel = () => {
     },
     onSuccess: async (_, variables) => {
       queryClient.setQueryData<SidebarPanel>([USE_GET_SIDEBAR_PANEL_QUERY_KEY, activeWorkspaceId], (old) => {
-        console.log({
-          position: variables.position ?? old?.position ?? defaultSidebarPanel.position,
-          size: variables.size ?? old?.size ?? defaultSidebarPanel.size,
-          visible: variables.visible ?? old?.visible ?? defaultSidebarPanel.visible,
-          minWidth: old?.minWidth ?? defaultSidebarPanel.minWidth,
-          maxWidth: old?.maxWidth ?? defaultSidebarPanel.maxWidth,
-        });
-
         return {
           ...old,
           position: variables.position ?? old?.position ?? defaultSidebarPanel.position,

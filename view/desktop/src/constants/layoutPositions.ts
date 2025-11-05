@@ -41,4 +41,4 @@ export const emptyGridState: SerializedDockview = {
   activeGroup: undefined,
   floatingGroups: [],
   popoutGroups: [],
-};
+} as const;

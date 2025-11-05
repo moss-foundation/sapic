@@ -1,10 +1,11 @@
 import SelectOutlined from "@/components/SelectOutlined";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
 import { useActiveWorkspace } from "@/hooks";
-import { useGetSidebarPanel } from "@/hooks/sharedStorage/layout/useGetSidebarPanel";
-import { useUpdateSidebarPanel } from "@/hooks/sharedStorage/layout/useUpdateSidebarPanel";
+import { useGetBottomPanel } from "@/hooks/sharedStorage/layout/bottomPanel/useGetBottomPanel";
+import { useUpdateBottomPanel } from "@/hooks/sharedStorage/layout/bottomPanel/useUpdateBottomPanel";
+import { useGetSidebarPanel } from "@/hooks/sharedStorage/layout/sidebar/useGetSidebarPanel";
+import { useUpdateSidebarPanel } from "@/hooks/sharedStorage/layout/sidebar/useUpdateSidebarPanel";
 import { useActivityBarStore } from "@/store/activityBar";
-import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { MenuItemProps } from "@/utils/renderActionMenuItem";
 import { ActivitybarPosition } from "@repo/moss-workspace";
 
@@ -130,12 +131,13 @@ const SidebarVisibilitySection = () => {
 
 const BottomPaneVisibilitySection = () => {
   const { activeWorkspaceId, hasActiveWorkspace } = useActiveWorkspace();
-  const bottomPane = useAppResizableLayoutStore((state) => state.bottomPane);
+  const { data: bottomPane } = useGetBottomPanel();
+  const { mutate: updateBottomPanel } = useUpdateBottomPanel();
 
   const handleBottomPaneVisibilityChange = (value: string) => {
     const visibility = value === "visible";
     if (activeWorkspaceId && bottomPane) {
-      bottomPane.setVisible(visibility, activeWorkspaceId);
+      updateBottomPanel({ visible: visibility });
     }
   };
 
@@ -159,7 +161,7 @@ const BottomPaneVisibilitySection = () => {
       <h3 className="mb-2 font-medium">Bottom Pane Visibility</h3>
       <div className="w-[200px]">
         <SelectOutlined.Root
-          value={bottomPane.visible ? "visible" : "hidden"}
+          value={bottomPane?.visible ? "visible" : "hidden"}
           onValueChange={handleBottomPaneVisibilityChange}
           disabled={!hasActiveWorkspace}
         >

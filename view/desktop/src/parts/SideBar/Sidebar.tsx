@@ -5,7 +5,7 @@ import { EmptyWorkspace } from "@/components/EmptyWorkspace";
 import WorkspaceModeToggle from "@/components/WorkspaceModeToggle";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
 import { useActiveWorkspace } from "@/hooks";
-import { useGetSidebarPanel } from "@/hooks/sharedStorage/layout/useGetSidebarPanel";
+import { useGetSidebarPanel } from "@/hooks/sharedStorage/layout/sidebar/useGetSidebarPanel";
 import { useGetProjectSessionState } from "@/hooks/useProjectSession";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { SidebarWorkspaceContent } from "@/parts/SideBar/SidebarWorkspaceContent";

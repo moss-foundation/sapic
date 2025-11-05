@@ -5,7 +5,7 @@ import { useUpdateEditorPartState } from "@/hooks/app/useUpdateEditorPartState";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
-import { defaultConfig, nextId } from "../defaultLayout";
+import { defaultConfig, nextId } from "./defaultLayout";
 import { PanelBuilder } from "./panelBuilder";
 
 let mount = document.querySelector(".popover-anchor") as HTMLElement | null;

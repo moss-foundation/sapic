@@ -3,7 +3,7 @@ import { IDockviewHeaderActionsProps } from "moss-tabs";
 import { ActionButton } from "@/components";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
-import { nextId } from "../defaultLayout";
+import { nextId } from "../DebugComponents/defaultLayout";
 
 export const AddPanelButton = (props: IDockviewHeaderActionsProps) => {
   const { addOrFocusPanel } = useTabbedPaneStore();
