@@ -39,22 +39,24 @@ interface TabbedPaneState {
   setWatermark: (watermark: boolean) => void;
 }
 
-export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
-  gridState: {
-    grid: {
-      root: {
-        type: "branch",
-        data: [],
-      },
-      height: 0,
-      width: 0,
-      orientation: Orientation.HORIZONTAL,
+export const emptyGridState: SerializedDockview = {
+  grid: {
+    root: {
+      type: "branch",
+      data: [],
     },
-    panels: {},
-    activeGroup: undefined,
-    floatingGroups: [],
-    popoutGroups: [],
+    height: 0,
+    width: 0,
+    orientation: Orientation.HORIZONTAL,
   },
+  panels: {},
+  activeGroup: undefined,
+  floatingGroups: [],
+  popoutGroups: [],
+};
+
+export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
+  gridState: emptyGridState,
   setGridState: (state: SerializedDockview) => {
     set({ gridState: state });
   },

@@ -29,6 +29,7 @@ export const useCloseWorkspace = () => {
   return useMutation<CloseWorkspaceOutput, Error, string>({
     mutationKey: [USE_CLOSE_WORKSPACE_QUERY_KEY],
     mutationFn: closeWorkspaceFn,
+
     onSuccess: () => {
       queryClient.setQueryData([USE_DESCRIBE_APP_QUERY_KEY], (old: DescribeAppOutput) => {
         return { ...old, workspace: null };

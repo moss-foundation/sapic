@@ -1,11 +1,10 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { DescribeAppOutput, OpenWorkspaceInput, OpenWorkspaceOutput } from "@repo/moss-app";
 import { DescribeWorkspaceOutput } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_DESCRIBE_APP_QUERY_KEY } from "../app/useDescribeApp";
-import { USE_STREAM_PROJECT_RESOURCES_QUERY_KEY, useStreamedProjectsWithResources } from "../project";
+import { USE_STREAM_PROJECT_RESOURCES_QUERY_KEY } from "../project";
 import { USE_STREAM_PROJECTS_QUERY_KEY } from "../project/useStreamProjects";
 import { USE_STREAMED_ENVIRONMENTS_QUERY_KEY } from "../workspace/environment";
 import { USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY } from "../workspace/useDescribeWorkspaceState";
@@ -31,8 +30,6 @@ export const useOpenWorkspace = () => {
   const queryClient = useQueryClient();
 
   const { data: workspaces } = useListWorkspaces();
-  const { data: projectsWithResources } = useStreamedProjectsWithResources();
-  const { api } = useTabbedPaneStore();
 
   return useMutation<OpenWorkspaceOutput, Error, string>({
     mutationKey: [USE_OPEN_WORKSPACE_QUERY_KEY],
@@ -72,20 +69,6 @@ export const useOpenWorkspace = () => {
       queryClient.removeQueries({ queryKey: [USE_STREAM_PROJECTS_QUERY_KEY] });
       queryClient.removeQueries({ queryKey: [USE_STREAM_PROJECT_RESOURCES_QUERY_KEY] });
       queryClient.removeQueries({ queryKey: [USE_STREAMED_ENVIRONMENTS_QUERY_KEY] });
-
-      // Remove panels that contain projects or resources that didn't come in streamed projects or resources for the new workspace
-      projectsWithResources?.forEach((project) => {
-        const projectPanelToRemove = api?.getPanel(project.id);
-
-        if (projectPanelToRemove) {
-          api?.removePanel(projectPanelToRemove);
-        }
-
-        project.resources.forEach((resource) => {
-          const resourcePanelToRemove = api?.getPanel(resource.id);
-          if (resourcePanelToRemove) api?.removePanel(resourcePanelToRemove);
-        });
-      });
     },
   });
 };

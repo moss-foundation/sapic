@@ -1,8 +1,16 @@
-import { DockviewDidDropEvent, DockviewReact, DockviewReadyEvent, positionToDirection } from "moss-tabs";
-import { useRef, useState } from "react";
+import {
+  DockviewDidDropEvent,
+  DockviewReact,
+  DockviewReadyEvent,
+  positionToDirection,
+  SerializedDockview,
+} from "moss-tabs";
+import { useEffect, useRef, useState } from "react";
 
 import { DropNode } from "@/components/ProjectTree/types";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { useActiveWorkspace } from "@/hooks";
+import { sharedStorageService } from "@/lib/services";
+import { emptyGridState, useTabbedPaneStore } from "@/store/tabbedPane";
 
 import { TabbedPaneToolBar, Watermark } from "./components";
 import { AddPanelButton } from "./components/AddPanelButton";
@@ -19,12 +27,25 @@ const TabbedPane = () => {
 
   const [pragmaticDropElement, setPragmaticDropElement] = useState<DropNode | null>(null);
 
+  const { activeWorkspaceId } = useActiveWorkspace();
   const { api, showDebugPanels, addOrFocusPanel, setApi, setGridState } = useTabbedPaneStore();
 
   const { canDrop } = useTabbedPaneDropTarget(dockviewRef, setPragmaticDropElement);
 
-  useTabbedPaneEventHandlers({ api, setGridState, canDrop });
-  useTabbedPaneResizeObserver(api, dockviewRefWrapper);
+  useTabbedPaneEventHandlers({ canDrop });
+  useTabbedPaneResizeObserver({ containerRef: dockviewRefWrapper });
+
+  useEffect(() => {
+    if (!activeWorkspaceId || !api) return;
+
+    sharedStorageService.getItem("gridState", activeWorkspaceId).then((gridState) => {
+      if (gridState.value) {
+        api?.fromJSON(gridState.value as unknown as SerializedDockview);
+      } else {
+        api?.fromJSON(emptyGridState);
+      }
+    });
+  }, [activeWorkspaceId, api, setApi, setGridState]);
 
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);

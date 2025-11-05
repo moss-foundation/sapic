@@ -1,23 +1,29 @@
-import { DockviewApi, SerializedDockview } from "moss-tabs";
 import React from "react";
 
+import { useActiveWorkspace } from "@/hooks";
+import { sharedStorageService } from "@/lib/services/sharedStorageService";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { JsonValue } from "@repo/moss-bindingutils";
 
 interface UseTabbedPaneEventHandlersProps {
-  api: DockviewApi | undefined;
-  setGridState: (state: SerializedDockview) => void;
   canDrop: boolean;
 }
 
-export const useTabbedPaneEventHandlers = ({ api, setGridState, canDrop }: UseTabbedPaneEventHandlersProps) => {
-  const { setActivePanelId } = useTabbedPaneStore();
+export const useTabbedPaneEventHandlers = ({ canDrop }: UseTabbedPaneEventHandlersProps) => {
+  const { setActivePanelId, api, setGridState } = useTabbedPaneStore();
+
+  const { activeWorkspaceId } = useActiveWorkspace();
 
   React.useEffect(() => {
     if (!api) return;
 
     const disposables = [
       api.onDidLayoutChange(() => {
-        setGridState(api?.toJSON() as SerializedDockview);
+        if (!activeWorkspaceId) return;
+
+        const newGridState = api.toJSON();
+
+        sharedStorageService.putItem("gridState", newGridState as unknown as JsonValue, activeWorkspaceId);
       }),
       api.onDidActivePanelChange((event) => {
         setActivePanelId(event?.id);
@@ -35,5 +41,5 @@ export const useTabbedPaneEventHandlers = ({ api, setGridState, canDrop }: UseTa
     return () => {
       disposables.forEach((disposable) => disposable.dispose());
     };
-  }, [api, setActivePanelId, canDrop, setGridState]);
+  }, [api, setActivePanelId, canDrop, setGridState, activeWorkspaceId]);
 };
