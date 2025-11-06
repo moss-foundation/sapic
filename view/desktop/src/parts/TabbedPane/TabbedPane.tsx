@@ -1,16 +1,7 @@
-import {
-  DockviewDidDropEvent,
-  DockviewReact,
-  DockviewReadyEvent,
-  positionToDirection,
-  SerializedDockview,
-} from "moss-tabs";
-import { useEffect, useRef, useState } from "react";
+import { DockviewDidDropEvent, DockviewReact, DockviewReadyEvent, positionToDirection } from "moss-tabs";
+import { useRef, useState } from "react";
 
 import { DropNode } from "@/components/ProjectTree/types";
-import { emptyGridState } from "@/constants/layoutPositions";
-import { useActiveWorkspace } from "@/hooks";
-import { sharedStorageService } from "@/lib/services";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 import { TabbedPaneToolBar, Watermark } from "./components";
@@ -20,6 +11,7 @@ import DockviewDebugContainer from "./DebugComponents/DockviewDebugContainer";
 import { useTabbedPaneDropTarget } from "./hooks/useDockviewDropTarget";
 import { useTabbedPaneEventHandlers } from "./hooks/useDockviewEventHandlers";
 import { useTabbedPaneResizeObserver } from "./hooks/useDockviewResizeObserver";
+import { useResetGridStateOnWorkspaceChange } from "./hooks/useResetGridStateOnWorkspaceChange";
 import { TabbedPaneComponents } from "./TabbedPaneComponents";
 
 const TabbedPane = () => {
@@ -28,25 +20,15 @@ const TabbedPane = () => {
 
   const [pragmaticDropElement, setPragmaticDropElement] = useState<DropNode | null>(null);
 
-  const { activeWorkspaceId } = useActiveWorkspace();
   const { api, showDebugPanels, addOrFocusPanel, setApi } = useTabbedPaneStore();
 
   const { canDrop } = useTabbedPaneDropTarget(dockviewRef, setPragmaticDropElement);
 
   useTabbedPaneEventHandlers({ canDrop });
+  //TODO check if this is needed
   useTabbedPaneResizeObserver({ containerRef: dockviewRefWrapper });
 
-  useEffect(() => {
-    if (!activeWorkspaceId || !api) return;
-
-    sharedStorageService.getItem("gridState", activeWorkspaceId).then((gridState) => {
-      if (gridState.value) {
-        api?.fromJSON(gridState.value as unknown as SerializedDockview);
-      } else {
-        api?.fromJSON(emptyGridState);
-      }
-    });
-  }, [activeWorkspaceId, api]);
+  useResetGridStateOnWorkspaceChange();
 
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);
