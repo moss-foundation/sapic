@@ -2,7 +2,7 @@
 
 pub mod shared;
 
-use moss_storage::storage::operations::GetItem;
+use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_testutils::random_name::random_workspace_name;
 use moss_workspace::models::primitives::WorkspaceMode;
 use std::{path::Path, sync::Arc};
@@ -12,7 +12,7 @@ use window::{
         operations::{CreateWorkspaceInput, OpenWorkspaceInput},
         primitives::WorkspaceId,
     },
-    storage::segments::{SEGKEY_LAST_ACTIVE_WORKSPACE, segkey_last_opened_at},
+    storage::{KEY_LAST_ACTIVE_WORKSPACE, key_workspace_last_opened_at},
 };
 
 use crate::shared::set_up_test_app;
@@ -69,26 +69,32 @@ async fn open_workspace_success() {
     let active_workspace_id = app.workspace().await.unwrap().id();
     assert_eq!(active_workspace_id, create_output.id);
 
+    let storage = <dyn Storage>::global(&app_delegate);
     // Check entry in the database - verify last opened at timestamp is saved
-    let item_store = app.db().item_store();
-    let _ = GetItem::get(
-        item_store.as_ref(),
-        &ctx,
-        segkey_last_opened_at(&active_workspace_id.clone().into()),
-    )
-    .await
-    .unwrap();
+    assert!(
+        storage
+            .get(
+                StorageScope::Application,
+                &key_workspace_last_opened_at(&active_workspace_id)
+            )
+            .await
+            .unwrap()
+            .is_some()
+    );
 
     // Check that last active workspace is set in database
-    let last_active_workspace = GetItem::get(
-        item_store.as_ref(),
-        &ctx,
-        SEGKEY_LAST_ACTIVE_WORKSPACE.to_segkey_buf(),
-    )
-    .await
-    .unwrap();
-    let last_active_workspace_id: String = last_active_workspace.deserialize().unwrap();
-    assert_eq!(last_active_workspace_id, create_output.id.to_string());
+    let last_active_workspace = storage
+        .get(StorageScope::Application, KEY_LAST_ACTIVE_WORKSPACE)
+        .await
+        .unwrap()
+        .unwrap();
+
+    let last_active_workspace_id = last_active_workspace.as_str().unwrap();
+
+    assert_eq!(
+        last_active_workspace_id,
+        create_output.id.to_string().as_str()
+    );
 
     cleanup().await;
 }
@@ -223,16 +229,17 @@ async fn open_workspace_switch_between_workspaces() {
     assert_eq!(active_workspace_id, create_output1.id);
 
     // Check that last active workspace is set correctly in database (first workspace)
-    let item_store = app.db().item_store();
-    let last_active_workspace = GetItem::get(
-        item_store.as_ref(),
-        &ctx,
-        SEGKEY_LAST_ACTIVE_WORKSPACE.to_segkey_buf(),
-    )
-    .await
-    .unwrap();
-    let last_active_workspace_id: String = last_active_workspace.deserialize().unwrap();
-    assert_eq!(last_active_workspace_id, create_output1.id.to_string());
+    let storage = <dyn Storage>::global(&app_delegate);
+    let last_active_workspace = storage
+        .get(StorageScope::Application, KEY_LAST_ACTIVE_WORKSPACE)
+        .await
+        .unwrap()
+        .unwrap();
+    let last_active_workspace_id = last_active_workspace.as_str().unwrap();
+    assert_eq!(
+        last_active_workspace_id,
+        create_output1.id.to_string().as_str()
+    );
 
     cleanup().await;
 }

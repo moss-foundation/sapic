@@ -17,7 +17,6 @@ moss_applib.workspace = true
 moss_api.workspace = true
 moss_text.workspace = true
 moss_workspace.workspace = true
-moss_storage.workspace = true
 moss_db.workspace = true
 moss_activity_broadcaster.workspace = true
 moss_environment.workspace = true

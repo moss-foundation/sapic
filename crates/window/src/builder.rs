@@ -5,6 +5,7 @@ use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
 use moss_language::registry::LanguageRegistry;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
+use moss_storage2::Storage;
 use moss_theme::registry::ThemeRegistry;
 use std::{path::PathBuf, sync::Arc};
 use tauri::Manager;
@@ -19,7 +20,6 @@ use crate::{
     logging::LogService,
     profile::ProfileService,
     session::SessionService,
-    storage::StorageService,
     theme::ThemeService,
     workspace::WorkspaceService,
 };
@@ -84,16 +84,13 @@ impl<R: AppRuntime> WindowBuilder<R> {
                 .await
                 .expect("Failed to create language service");
         let session_service = SessionService::new();
-        let storage_service: Arc<StorageService<R>> =
-            StorageService::<R>::new(&user_dir.join(dirs::GLOBALS_DIR))
-                .expect("Failed to create storage service")
-                .into();
-        let log_service = LogService::new(
+
+        let storage = <dyn Storage>::global(&delegate);
+        let log_service = LogService::new::<R>(
             self.fs.clone(),
             tao_handle.clone(),
             &delegate.logs_dir(),
             session_service.session_id(),
-            storage_service.clone(),
         )
         .expect("Failed to create log service");
         let profile_service = ProfileService::new(
@@ -106,7 +103,7 @@ impl<R: AppRuntime> WindowBuilder<R> {
         .await
         .expect("Failed to create profile service");
         let workspace_service =
-            WorkspaceService::<R>::new(ctx, storage_service.clone(), self.fs.clone(), &user_dir)
+            WorkspaceService::<R>::new(ctx, storage.clone(), self.fs.clone(), &user_dir)
                 .await
                 .expect("Failed to create workspace service");
 
@@ -119,7 +116,6 @@ impl<R: AppRuntime> WindowBuilder<R> {
             app_handle: tao_handle.clone(),
             session_service,
             log_service,
-            storage_service,
             workspace_service,
             language_service,
             theme_service,
