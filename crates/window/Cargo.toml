@@ -17,7 +17,6 @@ moss_applib.workspace = true
 moss_api.workspace = true
 moss_text.workspace = true
 moss_workspace.workspace = true
-moss_storage.workspace = true
 moss_db.workspace = true
 moss_activity_broadcaster.workspace = true
 moss_environment.workspace = true
@@ -55,9 +54,9 @@ async-trait.workspace = true
 nanoid.workspace = true
 regorus = { workspace = true, features = ["regex"] }
 indexmap.workspace = true
+futures.workspace = true
 
 [dev-dependencies]
-futures.workspace = true
 reqwest = { workspace = true, features = ["json"] }
 tauri = { workspace = true, features = ["test"] }
 moss_testutils.workspace = true

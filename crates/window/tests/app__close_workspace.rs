@@ -10,7 +10,7 @@ use window::{
         operations::{CloseWorkspaceInput, CreateWorkspaceInput, OpenWorkspaceInput},
         primitives::WorkspaceId,
     },
-    storage::segments::SEGKEY_LAST_ACTIVE_WORKSPACE,
+    storage_old::segments::SEGKEY_LAST_ACTIVE_WORKSPACE,
 };
 
 use crate::shared::set_up_test_app;

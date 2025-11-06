@@ -10,20 +10,22 @@ use moss_workspace::{
     builder::{CreateWorkspaceParams, LoadWorkspaceParams, WorkspaceBuilder},
     workspace::{WorkspaceModifyParams, WorkspaceSummary},
 };
+use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
     sync::Arc,
 };
 
+use moss_storage2::models::primitives::StorageScope;
 use tokio::sync::RwLock;
 
 use crate::{
     ActiveWorkspace, dirs,
     models::primitives::WorkspaceId,
     storage::{
-        StorageService,
-        segments::{SEGKEY_WORKSPACE, segkey_last_opened_at, segkey_workspace},
+        KEY_LAST_ACTIVE_WORKSPACE, KEY_WORKSPACE_PREFIX, key_workspace,
+        key_workspace_last_opened_at,
     },
 };
 
@@ -63,14 +65,13 @@ pub struct WorkspaceService<R: AppRuntime> {
     /// The absolute path to the workspaces directory
     abs_path: Arc<Path>,
     fs: Arc<dyn FileSystem>,
-    storage: Arc<StorageService<R>>,
     state: Arc<RwLock<ServiceState<R>>>,
 }
 
 impl<R: AppRuntime> WorkspaceService<R> {
     pub async fn new(
         ctx: &R::AsyncContext,
-        storage_service: Arc<StorageService<R>>,
+        storage: Arc<dyn Storage>,
         fs: Arc<dyn FileSystem>,
         abs_path: &Path,
     ) -> joinerror::Result<Self> {
@@ -78,12 +79,10 @@ impl<R: AppRuntime> WorkspaceService<R> {
         let abs_path: Arc<Path> = abs_path.join(dirs::WORKSPACES_DIR).into();
         debug_assert!(abs_path.exists());
 
-        let known_workspaces =
-            restore_known_workspaces::<R>(ctx, &abs_path, &fs, &storage_service).await?;
+        let known_workspaces = restore_known_workspaces::<R>(ctx, &abs_path, &fs, &storage).await?;
 
         Ok(Self {
             fs,
-            storage: storage_service,
             abs_path,
             state: Arc::new(RwLock::new(ServiceState {
                 known_workspaces,
@@ -201,10 +200,11 @@ impl<R: AppRuntime> WorkspaceService<R> {
         }
 
         {
+            let storage = <dyn Storage>::global(app_delegate);
+
             // Try to remove database entries for the workspace (log error if db operation fails)
-            if let Err(e) = self
-                .storage
-                .remove_all_by_prefix(ctx, &segkey_workspace(&id).to_string())
+            if let Err(e) = storage
+                .remove_batch_by_prefix(StorageScope::Application, &key_workspace(id))
                 .await
             {
                 session::warn!(format!(
@@ -355,41 +355,27 @@ impl<R: AppRuntime> WorkspaceService<R> {
             return Err(e.join::<()>("failed to add workspace to the storage"));
         }
 
+        let storage = <dyn Storage>::global(app_delegate);
+
+        // FIXME: Should we use batch?
         // We don't want database error to fail the operation
-        match self.storage.begin_write_with_context(ctx).await {
-            Ok(mut txn) => {
-                if let Err(e) = self
-                    .storage
-                    .put_last_active_workspace_txn(ctx, &mut txn, &id)
-                    .await
-                {
-                    session::error!(format!(
-                        "failed to put last active workspace to the database: {}",
-                        e.to_string()
-                    ));
-                }
-
-                if let Err(e) = self
-                    .storage
-                    .put_last_opened_at_txn(ctx, &mut txn, &id, last_opened_at)
-                    .await
-                {
-                    session::error!(format!(
-                        "failed to put workspace last opened at to the database: {}",
-                        e.to_string()
-                    ))
-                }
-
-                if let Err(e) = txn.commit() {
-                    session::error!(format!("failed to commit transaction: {}", e.to_string()))
-                }
-            }
-            Err(e) => {
-                session::error!(format!(
-                    "failed to start write transaction: {}",
-                    e.to_string()
-                ))
-            }
+        if let Err(e) = storage
+            .put_batch(
+                StorageScope::Application,
+                &[
+                    (KEY_LAST_ACTIVE_WORKSPACE, JsonValue::String(id.to_string())),
+                    (
+                        &key_workspace_last_opened_at(id),
+                        JsonValue::Number(last_opened_at.into()),
+                    ),
+                ],
+            )
+            .await
+        {
+            session::error!(format!(
+                "failed to update database after activating workspace: {}",
+                e
+            ))
         }
 
         Ok(WorkspaceDetails {
@@ -402,7 +388,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
 
     pub(crate) async fn deactivate_workspace(
         &self,
-        ctx: &R::AsyncContext,
+        _ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
     ) -> joinerror::Result<()> {
         let mut state_lock = self.state.write().await;
@@ -416,7 +402,11 @@ impl<R: AppRuntime> WorkspaceService<R> {
                 .join_err::<()>("failed to remove workspace from the storage")?;
         }
 
-        if let Err(e) = self.storage.remove_last_active_workspace(ctx).await {
+        let storage = <dyn Storage>::global(app_delegate);
+        if let Err(e) = storage
+            .remove(StorageScope::Application, KEY_LAST_ACTIVE_WORKSPACE)
+            .await
+        {
             session::error!(format!(
                 "failed to remove last active workspace from database: {}",
                 e.to_string()
@@ -428,17 +418,17 @@ impl<R: AppRuntime> WorkspaceService<R> {
 }
 
 async fn restore_known_workspaces<R: AppRuntime>(
-    ctx: &R::AsyncContext,
+    _ctx: &R::AsyncContext,
     abs_path: &Path,
     fs: &Arc<dyn FileSystem>,
-    storage_service: &Arc<StorageService<R>>,
+    storage: &Arc<dyn Storage>,
 ) -> joinerror::Result<WorkspaceMap> {
     let mut workspaces = HashMap::new();
 
-    // Log the error when we failed to restore workspace cache
-    let restored_items = storage_service
-        .list_all_by_prefix(ctx, SEGKEY_WORKSPACE.as_str().expect("invalid utf-8"))
+    let restored_items = storage
+        .get_batch_by_prefix(StorageScope::Application, KEY_WORKSPACE_PREFIX)
         .await
+        .map(|vec| vec.into_iter().collect())
         .unwrap_or_else(|e| {
             session::error!(format!(
                 "failed to restore workspace cache: {}",
@@ -472,23 +462,12 @@ async fn restore_known_workspaces<R: AppRuntime>(
 
         let filtered_items = restored_items
             .iter()
-            .filter(|(key, _)| key.starts_with(&segkey_workspace(&id)))
+            .filter(|(key, _)| key.starts_with(&key_workspace(&id)))
             .collect::<HashMap<_, _>>();
 
-        // Leave `last_opened_at` empty if we failed to fetch it from the database
-
         let last_opened_at = filtered_items
-            .get(&segkey_last_opened_at(&id))
-            .map(|v| v.deserialize::<i64>())
-            .transpose()
-            .unwrap_or_else(|e| {
-                session::error!(format!(
-                    "failed to get last_opened_at time from the database for workspace `{}`: {}",
-                    id.as_str(),
-                    e.to_string()
-                ));
-                None
-            });
+            .get(&key_workspace_last_opened_at(&id))
+            .and_then(|value| value.as_i64());
 
         workspaces.insert(
             id.clone(),

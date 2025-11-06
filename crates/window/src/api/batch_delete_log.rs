@@ -11,7 +11,10 @@ impl<R: AppRuntime> Window<R> {
         ctx: &R::AsyncContext,
         input: &BatchDeleteLogInput,
     ) -> joinerror::Result<BatchDeleteLogOutput> {
-        let output = self.log_service.delete_logs(ctx, input.ids.iter()).await?;
+        let output = self
+            .log_service
+            .delete_logs::<R>(ctx, input.ids.iter())
+            .await?;
 
         Ok(BatchDeleteLogOutput {
             deleted_entries: output,

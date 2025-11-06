@@ -2,14 +2,22 @@ use derive_more::Deref;
 use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, context::Canceller};
 use moss_logging::session;
+use moss_storage2::{Storage, models::primitives::StorageScope};
 use std::{collections::HashMap, sync::Arc};
 use tauri::AppHandle;
 use tokio::sync::RwLock;
 
 use crate::{
-    ActiveWorkspace, configuration::ConfigurationService, extension::ExtensionService,
-    language::LanguageService, logging::LogService, models::primitives::SessionId,
-    profile::ProfileService, session::SessionService, storage::StorageService, theme::ThemeService,
+    ActiveWorkspace,
+    configuration::ConfigurationService,
+    extension::ExtensionService,
+    language::LanguageService,
+    logging::LogService,
+    models::primitives::{SessionId, WorkspaceId},
+    profile::ProfileService,
+    session::SessionService,
+    storage::KEY_LAST_ACTIVE_WORKSPACE,
+    theme::ThemeService,
     workspace::WorkspaceService,
 };
 
@@ -22,8 +30,7 @@ pub struct Window<R: AppRuntime> {
     #[deref]
     pub(super) app_handle: AppHandle<R::EventLoop>,
     pub(super) session_service: SessionService,
-    pub(super) log_service: LogService<R>,
-    pub(super) storage_service: Arc<StorageService<R>>,
+    pub(super) log_service: LogService,
     pub(super) workspace_service: WorkspaceService<R>,
     pub(super) language_service: LanguageService,
     pub(super) theme_service: ThemeService,
@@ -70,27 +77,38 @@ impl<R: AppRuntime> Window<R> {
     ) -> joinerror::Result<()> {
         let profile = self.profile_service.activate_profile().await?;
 
+        let storage = <dyn Storage>::global(app_delegate);
         if options.restore_last_workspace {
-            match self.storage_service.get_last_active_workspace(ctx).await {
-                Ok(id) => {
-                    if let Err(err) = self
-                        .workspace_service
-                        .activate_workspace(ctx, app_delegate, &id, profile)
-                        .await
-                    {
-                        session::warn!(format!(
-                            "failed to activate last active workspace: {}",
-                            err.to_string()
-                        ));
-                    }
-                }
-                Err(err) => {
+            let last_active_workspace_result = storage
+                .get(StorageScope::Application, KEY_LAST_ACTIVE_WORKSPACE)
+                .await;
+            if last_active_workspace_result.is_err() {
+                session::warn!(format!(
+                    "failed to restore last active workspace: {}",
+                    last_active_workspace_result.unwrap_err().to_string()
+                ));
+                return Ok(());
+            }
+            if let Some(value) = last_active_workspace_result? {
+                let id_str = value.as_str();
+                if id_str.is_none() {
                     session::warn!(format!(
-                        "failed to restore last active workspace: {}",
+                        "failed to parse last active workspace from database"
+                    ));
+                    return Ok(());
+                }
+                let id = WorkspaceId::from(id_str.unwrap().to_string());
+                if let Err(err) = self
+                    .workspace_service
+                    .activate_workspace(ctx, app_delegate, &id, profile)
+                    .await
+                {
+                    session::warn!(format!(
+                        "failed to activate last active workspace: {}",
                         err.to_string()
                     ));
                 }
-            };
+            }
         }
 
         Ok(())

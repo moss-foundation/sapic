@@ -1,5 +1,6 @@
 use chrono::DateTime;
-use moss_applib::AppRuntime;
+use moss_storage2::{Storage, models::primitives::StorageScope};
+use serde_json::Value as JsonValue;
 use std::{
     collections::VecDeque,
     fs::OpenOptions,
@@ -11,24 +12,23 @@ use std::{
 use crate::{
     logging::constants::{FILE_TIMESTAMP_FORMAT, TIMESTAMP_FORMAT},
     models::types::LogEntryInfo,
-    storage::StorageService,
 };
 
 // log:{log_id}: log_entry_path
 
-pub struct RollingLogWriter<R: AppRuntime> {
+pub struct RollingLogWriter {
     pub log_path: PathBuf,
     pub dump_threshold: usize,
     pub log_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
-    pub storage: Arc<StorageService<R>>,
+    pub storage: Arc<dyn Storage>,
 }
 
-impl<R: AppRuntime> RollingLogWriter<R> {
+impl RollingLogWriter {
     pub fn new(
         log_path: PathBuf,
         dump_threshold: usize,
         log_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
-        storage: Arc<StorageService<R>>,
+        storage: Arc<dyn Storage>,
     ) -> Self {
         Self {
             log_path,
@@ -39,7 +39,7 @@ impl<R: AppRuntime> RollingLogWriter<R> {
     }
 }
 
-impl<'a, R: AppRuntime> std::io::Write for RollingLogWriter<R> {
+impl<'a> std::io::Write for RollingLogWriter {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         let log_entry: LogEntryInfo = serde_json::from_str(String::from_utf8_lossy(buf).as_ref())?;
 
@@ -61,18 +61,31 @@ impl<'a, R: AppRuntime> std::io::Write for RollingLogWriter<R> {
                     .open(&file_path)?;
                 let mut writer = BufWriter::new(file);
 
-                let mut txn = self.storage.begin_write()?;
+                let mut log_paths = Vec::new();
 
                 while let Some(entry) = queue_lock.pop_front() {
                     serde_json::to_writer(&mut writer, &entry)?;
                     writer.write(b"\n")?;
                     writer.flush()?;
                     // Record the file to which the log entry is written
-                    self.storage
-                        .put_log_path_txn(&mut txn, &entry.id, file_path.clone())?;
+                    log_paths.push((
+                        entry.id.to_string(),
+                        JsonValue::String(file_path.to_string_lossy().to_string()),
+                    ));
                 }
 
-                txn.commit()?;
+                let storage = self.storage.clone();
+
+                let _ = futures::executor::block_on(async move {
+                    let storage = storage.clone();
+                    let batch_input = log_paths
+                        .iter()
+                        .map(|(id, path)| (id.as_ref(), path.clone()))
+                        .collect::<Vec<_>>();
+                    storage
+                        .put_batch(StorageScope::Application, &batch_input)
+                        .await
+                });
             } else {
                 // Skip the first entry since its timestamp is invalid
                 queue_lock.pop_front();

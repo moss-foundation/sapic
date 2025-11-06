@@ -6,6 +6,7 @@ use joinerror::Error;
 use moss_applib::AppRuntime;
 use moss_fs::{CreateOptions, FileSystem};
 use moss_logging::models::primitives::LogEntryId;
+use moss_storage2::{Storage, models::primitives::StorageScope};
 use std::{
     collections::{HashSet, VecDeque},
     ffi::OsStr,
@@ -33,7 +34,7 @@ use crate::{
         primitives::SessionId,
         types::{LogEntryInfo, LogItemSourceInfo},
     },
-    storage::StorageService,
+    storage::key_log,
 };
 
 pub mod constants {
@@ -91,26 +92,26 @@ impl LogFilter {
 /// Logs structure
 /// App Log Path: logs\
 /// Session Log Path: {App Log Path}\sessions\{session_id}\
-pub struct LogService<R: AppRuntime> {
+pub struct LogService {
     fs: Arc<dyn FileSystem>,
     applog_path: PathBuf,
     sessionlog_path: PathBuf,
     applog_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
     sessionlog_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
-    storage: Arc<StorageService<R>>,
+    storage: Arc<dyn Storage>,
     _applog_writerguard: WorkerGuard,
     _sessionlog_writerguard: WorkerGuard,
     _taurilog_writerguard: WorkerGuard,
 }
 
-impl<R: AppRuntime> LogService<R> {
-    pub fn new(
+impl LogService {
+    pub fn new<R: AppRuntime>(
         fs: Arc<dyn FileSystem>,
         app_handle: AppHandle<R::EventLoop>,
         applog_path: &Path,
         session_id: &SessionId,
-        storage: Arc<StorageService<R>>,
-    ) -> joinerror::Result<LogService<R>> {
+        storage: Arc<dyn Storage>,
+    ) -> joinerror::Result<LogService> {
         // Rolling log file format
         let standard_log_format = tracing_subscriber::fmt::format()
             .with_file(false)
@@ -229,7 +230,7 @@ impl<R: AppRuntime> LogService<R> {
         let session_logs = self
             .combine_logs(&self.sessionlog_path, filter, self.sessionlog_queue.clone())
             .await?;
-        let merged_logs = LogService::<R>::merge_logs_chronologically(app_logs, session_logs)
+        let merged_logs = LogService::merge_logs_chronologically(app_logs, session_logs)
             .into_iter()
             .map(|item| item.1)
             .collect();
@@ -237,7 +238,7 @@ impl<R: AppRuntime> LogService<R> {
         Ok(merged_logs)
     }
 
-    pub(crate) async fn delete_logs(
+    pub(crate) async fn delete_logs<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         input: impl Iterator<Item = &LogEntryId>,
@@ -279,29 +280,36 @@ impl<R: AppRuntime> LogService<R> {
         }
 
         // Deleting the remaining entries from the files
-        result.extend(self.delete_logs_from_files(ctx, &file_entries).await?);
+        result.extend(self.delete_logs_from_files::<R>(ctx, &file_entries).await?);
         // TODO: Reporting entries that were not found during deletion?
         Ok(result)
     }
 }
 
 /// Helper methods for delete_logs
-impl<R: AppRuntime> LogService<R> {
-    async fn find_files_to_update(
+impl LogService {
+    async fn find_files_to_update<R: AppRuntime>(
         &self,
-        ctx: &R::AsyncContext,
+        _ctx: &R::AsyncContext,
         entries: &[&LogEntryId],
     ) -> joinerror::Result<HashSet<PathBuf>> {
-        let mut files = HashSet::new();
-        for entry_id in entries {
-            let path = self.storage.get_log_path(ctx, *entry_id).await?;
-            files.insert(path);
-        }
+        let log_keys = entries.iter().map(|id| key_log(id)).collect::<Vec<_>>();
+
+        let files = self
+            .storage
+            .get_batch(
+                StorageScope::Application,
+                &log_keys.iter().map(|s| s.as_str()).collect::<Vec<&str>>(),
+            )
+            .await?
+            .into_iter()
+            .filter_map(|(_, path)| path.map(|p| PathBuf::from(p.to_string())))
+            .collect::<HashSet<_>>();
 
         Ok(files)
     }
 
-    async fn delete_logs_from_files(
+    async fn delete_logs_from_files<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         entries: &[&LogEntryId],
@@ -309,27 +317,29 @@ impl<R: AppRuntime> LogService<R> {
         let mut deleted_entries = Vec::new();
         let mut ids_to_delete = entries.iter().cloned().cloned().collect::<HashSet<_>>();
 
-        let log_files = self.find_files_to_update(ctx, entries).await?;
+        let log_files = self.find_files_to_update::<R>(ctx, entries).await?;
         for file in log_files {
-            deleted_entries.extend(self.update_log_file(ctx, &file, &mut ids_to_delete).await?);
+            deleted_entries.extend(
+                self.update_log_file::<R>(ctx, &file, &mut ids_to_delete)
+                    .await?,
+            );
         }
 
         Ok(deleted_entries)
     }
 
-    async fn update_log_file(
+    async fn update_log_file<R: AppRuntime>(
         &self,
-        ctx: &R::AsyncContext,
+        _ctx: &R::AsyncContext,
         path: &Path,
         ids: &mut HashSet<LogEntryId>,
     ) -> joinerror::Result<Vec<LogItemSourceInfo>> {
         let mut new_content = String::new();
         let mut removed_entries = Vec::new();
+        let mut removed_ids = Vec::new();
 
         let f = self.fs.open_file(path).await?;
         let reader = BufReader::new(f);
-
-        let mut txn = self.storage.begin_write_with_context(ctx).await?;
 
         for line in reader.lines() {
             let line = line?;
@@ -340,15 +350,24 @@ impl<R: AppRuntime> LogService<R> {
                     id: log_entry.id.clone(),
                     file_path: Some(path.to_path_buf()),
                 });
-                // Remove the entry from the database
-                self.storage
-                    .remove_log_path_txn(ctx, &mut txn, &log_entry.id)
-                    .await?;
+                removed_ids.push(log_entry.id.to_string());
             } else {
                 new_content.push_str(&line);
                 new_content.push('\n');
             }
         }
+
+        // Remove the entries from the database
+        self.storage
+            .remove_batch(
+                StorageScope::Application,
+                &removed_ids
+                    .iter()
+                    .map(|s| s.as_ref())
+                    .collect::<Vec<&str>>(),
+            )
+            .await?;
+
         // We don't need to update the file if no deletion is made
         if !removed_entries.is_empty() {
             self.fs
@@ -362,7 +381,6 @@ impl<R: AppRuntime> LogService<R> {
                 )
                 .await?;
         }
-        txn.commit()?;
 
         // TODO: Should we delete a file if all entries in it are deleted?
         Ok(removed_entries)
@@ -370,7 +388,7 @@ impl<R: AppRuntime> LogService<R> {
 }
 
 /// Helper methods for list_logs
-impl<R: AppRuntime> LogService<R> {
+impl LogService {
     async fn find_files_by_dates(
         &self,
         path: &Path,
@@ -520,36 +538,46 @@ impl<R: AppRuntime> LogService<R> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::constants::ON_DID_APPEND_LOG_ENTRY_CHANNEL;
     use moss_applib::mock::MockAppRuntime;
     use moss_fs::RealFileSystem;
     use moss_logging::app;
+    use moss_storage2::{AppStorage, AppStorageOptions};
     use moss_testutils::random_name::random_string;
     use std::{fs::create_dir_all, sync::atomic::AtomicUsize, time::Duration};
     use tauri::{Listener, Manager};
     use tokio::fs::remove_dir_all;
 
-    use super::*;
-
-    fn random_app_log_path() -> PathBuf {
+    fn random_test_path() -> PathBuf {
         Path::new("tests").join("data").join(random_string(10))
     }
 
     #[tokio::test]
     async fn test_taurilog_writer() {
-        let test_app_log_path = random_app_log_path();
-        let test_temp_path = Path::new("tests").join("data").join("tmp");
-        create_dir_all(&test_app_log_path).unwrap();
+        let test_path = random_test_path();
+        let test_temp_path = test_path.join("tmp");
+        create_dir_all(&test_path).unwrap();
         create_dir_all(&test_temp_path).unwrap();
 
         let fs = Arc::new(RealFileSystem::new(&test_temp_path));
         let mock_app = tauri::test::mock_app();
         let session_id = SessionId::new();
-        let storage = Arc::new(StorageService::<MockAppRuntime>::new(&test_app_log_path).unwrap());
+        let storage = AppStorage::new(
+            &test_path.join("globals"),
+            test_path.join("workspaces"),
+            Some(AppStorageOptions {
+                in_memory: None,
+                busy_timeout: None,
+            }),
+        )
+        .await
+        .unwrap();
+
         let _logging_service = LogService::new(
             fs,
             mock_app.app_handle().clone(),
-            &test_app_log_path,
+            &test_path,
             &session_id,
             storage.clone(),
         )
@@ -569,6 +597,6 @@ mod tests {
         tokio::time::sleep(Duration::from_millis(100)).await;
         assert_eq!(counter.load(std::sync::atomic::Ordering::SeqCst), 1);
 
-        remove_dir_all(&test_app_log_path).await.unwrap()
+        remove_dir_all(&test_path).await.unwrap()
     }
 }
