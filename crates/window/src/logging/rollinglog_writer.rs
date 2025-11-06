@@ -76,7 +76,7 @@ impl<'a> std::io::Write for RollingLogWriter {
 
                 let storage = self.storage.clone();
 
-                let _ = futures::executor::block_on(async move {
+                let _ = tokio::spawn(async move {
                     let storage = storage.clone();
                     let batch_input = log_paths
                         .iter()

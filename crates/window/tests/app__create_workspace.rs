@@ -2,17 +2,19 @@
 
 pub mod shared;
 
-use moss_storage::storage::operations::{GetItem, ListByPrefix};
+use crate::shared::set_up_test_app;
+use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_workspace_name};
 use moss_workspace::models::primitives::WorkspaceMode;
 use std::{path::Path, sync::Arc};
 use window::{
     dirs,
     models::{operations::CreateWorkspaceInput, primitives::WorkspaceId},
-    storage_old::segments::{SEGKEY_LAST_ACTIVE_WORKSPACE, segkey_last_opened_at},
+    storage::{
+        KEY_LAST_ACTIVE_WORKSPACE, KEY_WORKSPACE_PREFIX, key_workspace,
+        key_workspace_last_opened_at,
+    },
 };
-
-use crate::shared::set_up_test_app;
 
 #[tokio::test]
 async fn create_workspace_success() {
@@ -54,26 +56,29 @@ async fn create_workspace_success() {
     assert_eq!(list_workspaces[0].id, id);
     assert_eq!(list_workspaces[0].name, workspace_name);
 
-    // Check database - verify last opened at timestamp is saved
-    let item_store = app.db().item_store();
-    let _ = GetItem::get(
-        item_store.as_ref(),
-        &ctx,
-        segkey_last_opened_at(&id.clone().into()),
-    )
-    .await
-    .unwrap();
+    let storage = <dyn Storage>::global(&app_delegate);
+    // Check entry in the database - verify last opened at timestamp is saved
+    assert!(
+        storage
+            .get(
+                StorageScope::Application,
+                &key_workspace_last_opened_at(&active_workspace_id)
+            )
+            .await
+            .unwrap()
+            .is_some()
+    );
 
     // Check that last active workspace is set in database
-    let last_active_workspace = GetItem::get(
-        item_store.as_ref(),
-        &ctx,
-        SEGKEY_LAST_ACTIVE_WORKSPACE.to_segkey_buf(),
-    )
-    .await
-    .unwrap();
-    let last_active_workspace_id: String = last_active_workspace.deserialize().unwrap();
-    assert_eq!(last_active_workspace_id, id.to_string());
+    let last_active_workspace = storage
+        .get(StorageScope::Application, KEY_LAST_ACTIVE_WORKSPACE)
+        .await
+        .unwrap()
+        .unwrap();
+
+    let last_active_workspace_id = last_active_workspace.as_str().unwrap();
+
+    assert_eq!(last_active_workspace_id, id.to_string().as_str());
 
     cleanup().await;
 }
@@ -102,8 +107,9 @@ async fn create_workspace_empty_name() {
     assert!(app.workspace().await.is_none());
 
     // Check database
-    let item_store = app.db().item_store();
-    let list_result = ListByPrefix::list_by_prefix(item_store.as_ref(), &ctx, "workspace")
+    let storage = <dyn Storage>::global(&app_delegate);
+    let list_result = storage
+        .get_batch_by_prefix(StorageScope::Application, KEY_WORKSPACE_PREFIX)
         .await
         .unwrap();
     assert_eq!(list_result.len(), 0);
@@ -189,38 +195,42 @@ async fn create_workspace_same_name() {
     assert_eq!(listed_second.name, workspace_name);
 
     // Check only second workspace has entry in the database since it's been opened
-
-    let item_store = app.db().item_store();
+    let storage = <dyn Storage>::global(&app_delegate);
     let first_id: WorkspaceId = first_output.id;
     let second_id: WorkspaceId = second_output.id;
-    let _ = GetItem::get(
-        item_store.as_ref(),
-        &ctx,
-        segkey_last_opened_at(&second_id.clone().into()),
-    )
-    .await
-    .unwrap();
 
     assert!(
-        GetItem::get(
-            item_store.as_ref(),
-            &ctx,
-            segkey_last_opened_at(&first_id.clone().into())
-        )
-        .await
-        .is_err()
+        storage
+            .get(
+                StorageScope::Application,
+                &key_workspace_last_opened_at(&first_id)
+            )
+            .await
+            .unwrap()
+            .is_none()
+    );
+
+    assert!(
+        storage
+            .get(
+                StorageScope::Application,
+                &key_workspace_last_opened_at(&second_id)
+            )
+            .await
+            .unwrap()
+            .is_some()
     );
 
     // Check that last active workspace is set in database (second workspace)
-    let last_active_workspace = GetItem::get(
-        item_store.as_ref(),
-        &ctx,
-        SEGKEY_LAST_ACTIVE_WORKSPACE.to_segkey_buf(),
-    )
-    .await
-    .unwrap();
-    let last_active_workspace_id: WorkspaceId = last_active_workspace.deserialize().unwrap();
-    assert_eq!(last_active_workspace_id, second_id);
+    let last_active_workspace = storage
+        .get(StorageScope::Application, KEY_LAST_ACTIVE_WORKSPACE)
+        .await
+        .unwrap()
+        .unwrap();
+
+    let last_active_workspace_id = last_active_workspace.as_str().unwrap();
+
+    assert_eq!(last_active_workspace_id, second_id.as_str());
 
     cleanup().await;
 }
@@ -273,26 +283,30 @@ async fn create_workspace_special_chars() {
         assert_eq!(matching_workspace.name, name);
 
         let id: WorkspaceId = create_output.id;
-        // Check database - verify last opened at timestamp is saved
-        let item_store = app.db().item_store();
-        let _ = GetItem::get(
-            item_store.as_ref(),
-            &ctx,
-            segkey_last_opened_at(&id.clone().into()),
-        )
-        .await
-        .unwrap();
+
+        let storage = <dyn Storage>::global(&app_delegate);
+        // Check entry in the database - verify last opened at timestamp is saved
+        assert!(
+            storage
+                .get(
+                    StorageScope::Application,
+                    &key_workspace_last_opened_at(&active_workspace_id)
+                )
+                .await
+                .unwrap()
+                .is_some()
+        );
 
         // Check that last active workspace is set in database
-        let last_active_workspace = GetItem::get(
-            item_store.as_ref(),
-            &ctx,
-            SEGKEY_LAST_ACTIVE_WORKSPACE.to_segkey_buf(),
-        )
-        .await
-        .unwrap();
-        let last_active_workspace_id: WorkspaceId = last_active_workspace.deserialize().unwrap();
-        assert_eq!(last_active_workspace_id, id);
+        let last_active_workspace = storage
+            .get(StorageScope::Application, KEY_LAST_ACTIVE_WORKSPACE)
+            .await
+            .unwrap()
+            .unwrap();
+
+        let last_active_workspace_id = last_active_workspace.as_str().unwrap();
+
+        assert_eq!(last_active_workspace_id, id.as_str());
     }
 
     cleanup().await;
@@ -333,27 +347,25 @@ async fn create_workspace_not_open_on_creation() {
     assert_eq!(list_workspaces[0].name, workspace_name);
 
     // Check that a database entry is not created for unopened workspace
-    let item_store = app.db().item_store();
-    let id: WorkspaceId = create_output.id;
+    let storage = <dyn Storage>::global(&app_delegate);
     assert!(
-        GetItem::get(
-            item_store.as_ref(),
-            &ctx,
-            segkey_last_opened_at(&id.clone().into())
-        )
-        .await
-        .is_err()
+        storage
+            .get(
+                StorageScope::Application,
+                &key_workspace_last_opened_at(&create_output.id)
+            )
+            .await
+            .unwrap()
+            .is_none()
     );
 
     // Check that last active workspace is not set in database
     assert!(
-        GetItem::get(
-            item_store.as_ref(),
-            &ctx,
-            SEGKEY_LAST_ACTIVE_WORKSPACE.to_segkey_buf(),
-        )
-        .await
-        .is_err()
+        storage
+            .get(StorageScope::Application, KEY_LAST_ACTIVE_WORKSPACE)
+            .await
+            .unwrap()
+            .is_none()
     );
     cleanup().await;
 }

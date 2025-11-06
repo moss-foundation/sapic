@@ -2,7 +2,9 @@
 
 pub mod shared;
 
-use moss_storage::storage::operations::GetItem;
+use crate::shared::set_up_test_app;
+use moss_fs::fs_watcher::global;
+use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_testutils::random_name::random_workspace_name;
 use moss_workspace::models::primitives::WorkspaceMode;
 use window::{
@@ -10,10 +12,8 @@ use window::{
         operations::{CloseWorkspaceInput, CreateWorkspaceInput, OpenWorkspaceInput},
         primitives::WorkspaceId,
     },
-    storage_old::segments::SEGKEY_LAST_ACTIVE_WORKSPACE,
+    storage::KEY_LAST_ACTIVE_WORKSPACE,
 };
-
-use crate::shared::set_up_test_app;
 
 #[tokio::test]
 async fn close_workspace_success() {
@@ -53,15 +53,13 @@ async fn close_workspace_success() {
     assert!(app.workspace().await.is_none());
 
     // Check that last active workspace is removed from database
-    let item_store = app.db().item_store();
+    let storage = <dyn Storage>::global(&app_delegate);
     assert!(
-        GetItem::get(
-            item_store.as_ref(),
-            &ctx,
-            SEGKEY_LAST_ACTIVE_WORKSPACE.to_segkey_buf()
-        )
-        .await
-        .is_err()
+        storage
+            .get(StorageScope::Application, KEY_LAST_ACTIVE_WORKSPACE)
+            .await
+            .unwrap()
+            .is_none()
     );
 
     cleanup().await;
@@ -187,15 +185,13 @@ async fn close_workspace_after_another_opened() {
     assert!(app.workspace().await.is_none());
 
     // Check that last active workspace is removed from database
-    let item_store = app.db().item_store();
+    let storage = <dyn Storage>::global(&app_delegate);
     assert!(
-        GetItem::get(
-            item_store.as_ref(),
-            &ctx,
-            SEGKEY_LAST_ACTIVE_WORKSPACE.to_segkey_buf()
-        )
-        .await
-        .is_err()
+        storage
+            .get(StorageScope::Application, KEY_LAST_ACTIVE_WORKSPACE)
+            .await
+            .unwrap()
+            .is_none()
     );
 
     cleanup().await;

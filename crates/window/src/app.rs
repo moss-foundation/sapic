@@ -117,10 +117,6 @@ impl<R: AppRuntime> Window<R> {
 
 #[cfg(feature = "integration-tests")]
 impl<R: AppRuntime> Window<R> {
-    pub fn db(&self) -> Arc<dyn moss_storage::GlobalStorage<R::AsyncContext>> {
-        self.storage_service.storage()
-    }
-
     pub fn cancellation_map(&self) -> Arc<RwLock<HashMap<String, Canceller>>> {
         self.tracked_cancellations.clone()
     }

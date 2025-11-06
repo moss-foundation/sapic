@@ -574,7 +574,7 @@ mod tests {
         .await
         .unwrap();
 
-        let _logging_service = LogService::new(
+        let _logging_service = LogService::new::<MockAppRuntime>(
             fs,
             mock_app.app_handle().clone(),
             &test_path,
