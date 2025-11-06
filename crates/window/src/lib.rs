@@ -13,10 +13,10 @@ mod session;
 pub mod theme;
 mod workspace;
 
-#[cfg(not(feature = "integration-tests"))]
-mod storage;
 #[cfg(feature = "integration-tests")]
 pub mod storage;
+#[cfg(not(feature = "integration-tests"))]
+mod storage;
 
 #[macro_use]
 extern crate derive_more;

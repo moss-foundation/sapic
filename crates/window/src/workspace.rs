@@ -357,7 +357,6 @@ impl<R: AppRuntime> WorkspaceService<R> {
 
         let storage = <dyn Storage>::global(app_delegate);
 
-        // FIXME: Should we use batch?
         // We don't want database error to fail the operation
         if let Err(e) = storage
             .put_batch(

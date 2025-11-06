@@ -54,9 +54,9 @@ async-trait.workspace = true
 nanoid.workspace = true
 regorus = { workspace = true, features = ["regex"] }
 indexmap.workspace = true
-futures.workspace = true
 
 [dev-dependencies]
+futures.workspace = true
 reqwest = { workspace = true, features = ["json"] }
 tauri = { workspace = true, features = ["test"] }
 moss_testutils.workspace = true
