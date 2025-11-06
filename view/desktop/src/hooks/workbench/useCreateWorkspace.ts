@@ -1,3 +1,4 @@
+import { defaultBottomPanePanel, defaultSidebarPanel, emptyGridState } from "@/constants/layoutPositions";
 import { invokeTauriIpc } from "@/lib/backend/tauri";
 import {
   CreateWorkspaceInput,
@@ -8,10 +9,10 @@ import {
 } from "@repo/moss-app";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { USE_DESCRIBE_APP_QUERY_KEY } from "../app/useDescribeApp";
-import { USE_STREAM_PROJECT_RESOURCES_QUERY_KEY } from "../project";
-import { USE_STREAM_PROJECTS_QUERY_KEY } from "../project/useStreamProjects";
-import { USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY } from "../workspace/useDescribeWorkspaceState";
+import { USE_DESCRIBE_APP_QUERY_KEY } from "../app";
+import { useUpdateBottomPanel } from "../sharedStorage/layout/bottomPanel/useUpdateBottomPanel";
+import { useUpdateSidebarPanel } from "../sharedStorage/layout/sidebar/useUpdateSidebarPanel";
+import { useUpdateTabbedPane } from "../sharedStorage/layout/tabbedPane/useUpdateTabbedPane";
 import { USE_LIST_WORKSPACES_QUERY_KEY } from "./useListWorkspaces";
 
 export const USE_CREATE_WORKSPACE_MUTATION_KEY = "createWorkspace";
@@ -30,46 +31,38 @@ const createWorkspaceFn = async (input: CreateWorkspaceInput): Promise<CreateWor
 
 export const useCreateWorkspace = () => {
   const queryClient = useQueryClient();
+
+  const { mutateAsync: updateTabbedPane } = useUpdateTabbedPane();
+  const { mutateAsync: updateBottomPanel } = useUpdateBottomPanel();
+  const { mutateAsync: updateSidebarPanel } = useUpdateSidebarPanel();
+
   return useMutation<CreateWorkspaceOutput, Error, CreateWorkspaceInput>({
     mutationKey: [USE_CREATE_WORKSPACE_MUTATION_KEY],
     mutationFn: createWorkspaceFn,
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: [USE_LIST_WORKSPACES_QUERY_KEY] });
+    onSuccess: async (data, variables) => {
+      const newWorkspace: WorkspaceInfo = {
+        id: data.id,
+        name: variables.name,
+        lastOpenedAt: undefined,
+      };
 
-      // If workspace was opened automatically by backend, update caches accordingly
-      if (variables.openOnCreation && data.active) {
-        // Clear workspace state queries since we're switching workspaces
-        queryClient.removeQueries({
-          queryKey: [USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY],
-          exact: false,
+      await updateTabbedPane({ gridState: emptyGridState, workspaceId: newWorkspace.id });
+      await updateBottomPanel({ ...defaultBottomPanePanel, workspaceId: newWorkspace.id });
+      await updateSidebarPanel({ ...defaultSidebarPanel, workspaceId: newWorkspace.id });
+
+      queryClient.setQueryData<ListWorkspacesOutput>([USE_LIST_WORKSPACES_QUERY_KEY], (oldData) => {
+        if (!oldData) return [newWorkspace];
+        return [...oldData, newWorkspace];
+      });
+
+      if (data.active) {
+        queryClient.setQueryData<DescribeAppOutput>([USE_DESCRIBE_APP_QUERY_KEY], (oldData) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            workspace: newWorkspace,
+          };
         });
-
-        queryClient.setQueryData([USE_DESCRIBE_APP_QUERY_KEY], (oldData: DescribeAppOutput | undefined) => {
-          if (oldData) {
-            return {
-              ...oldData,
-              workspace: {
-                id: data.id,
-                name: variables.name,
-                lastOpenedAt: undefined,
-              },
-            };
-          }
-          return oldData;
-        });
-
-        queryClient.setQueryData([USE_LIST_WORKSPACES_QUERY_KEY], (oldData: ListWorkspacesOutput | undefined) => {
-          if (Array.isArray(oldData)) {
-            return oldData.map((workspace: WorkspaceInfo) => ({
-              ...workspace,
-              active: workspace.id === data.id,
-            }));
-          }
-          return oldData;
-        });
-
-        queryClient.invalidateQueries({ queryKey: [USE_STREAM_PROJECTS_QUERY_KEY], exact: true });
-        queryClient.invalidateQueries({ queryKey: [USE_STREAM_PROJECT_RESOURCES_QUERY_KEY], exact: true });
       }
     },
   });

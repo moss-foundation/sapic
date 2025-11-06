@@ -20,12 +20,12 @@ export const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
   const { mutate: updateSidebarPanel } = useUpdateSidebarPanel();
 
   const toggleSidebar = () => {
-    updateSidebarPanel({ visible: !sideBar?.visible });
+    updateSidebarPanel({ visible: !sideBar?.visible, workspaceId: activeWorkspaceId });
   };
 
   const toggleBottomPane = () => {
     if (!activeWorkspaceId) return;
-    updateBottomPanel({ visible: !bottomPane?.visible });
+    updateBottomPanel({ visible: !bottomPane?.visible, workspaceId: activeWorkspaceId });
   };
 
   return (

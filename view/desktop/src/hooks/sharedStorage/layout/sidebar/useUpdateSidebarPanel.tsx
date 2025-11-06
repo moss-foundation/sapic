@@ -1,5 +1,4 @@
 import { defaultSidebarPanel } from "@/constants/layoutPositions";
-import { useActiveWorkspace } from "@/hooks/workspace";
 import { sharedStorageService } from "@/lib/services/sharedStorageService";
 import { SidebarPosition } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -12,30 +11,24 @@ interface UpdateSidebarPanelParams {
   position?: SidebarPosition;
   size?: number;
   visible?: boolean;
+  workspaceId?: string;
 }
+
+const mutationFn = async ({ position, size, visible, workspaceId }: UpdateSidebarPanelParams): Promise<void> => {
+  if ((!position && !size && !visible) || (!position && !size && !visible && !workspaceId)) return;
+  if (position) await sharedStorageService.putItem("sidebarPosition", position, workspaceId);
+  if (size) await sharedStorageService.putItem("sidebarSize", size, workspaceId);
+  if (visible) await sharedStorageService.putItem("sidebarVisible", visible, workspaceId);
+};
 
 export const useUpdateSidebarPanel = () => {
   const queryClient = useQueryClient();
-  const { activeWorkspaceId } = useActiveWorkspace();
 
   return useMutation<void, Error, UpdateSidebarPanelParams>({
     mutationKey: [USE_UPDATE_SIDEBAR_PANEL_MUTATION_KEY],
-
-    mutationFn: async ({ position, size, visible }): Promise<void> => {
-      if (!activeWorkspaceId) return;
-
-      if (position) {
-        await sharedStorageService.putItem("sidebarPosition", position, activeWorkspaceId);
-      }
-      if (size) {
-        await sharedStorageService.putItem("sidebarSize", size, activeWorkspaceId);
-      }
-      if (visible) {
-        await sharedStorageService.putItem("sidebarVisible", visible, activeWorkspaceId);
-      }
-    },
+    mutationFn,
     onSuccess: async (_, variables) => {
-      queryClient.setQueryData<SidebarPanel>([USE_GET_SIDEBAR_PANEL_QUERY_KEY, activeWorkspaceId], (old) => {
+      queryClient.setQueryData<SidebarPanel>([USE_GET_SIDEBAR_PANEL_QUERY_KEY, variables.workspaceId], (old) => {
         return {
           ...old,
           position: variables.position ?? old?.position ?? defaultSidebarPanel.position,

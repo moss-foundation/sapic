@@ -12,7 +12,7 @@ export interface BottomPanel {
   maxHeight: number;
 }
 
-const queryFn = async (activeWorkspaceId: string | null): Promise<BottomPanel> => {
+const queryFn = async (activeWorkspaceId?: string): Promise<BottomPanel> => {
   if (!activeWorkspaceId) {
     return {
       height: defaultBottomPanePanel.height,

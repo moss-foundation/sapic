@@ -11,7 +11,7 @@ interface TabbedPane {
   gridState: SerializedDockview;
 }
 
-const queryFn = async (activeWorkspaceId: string | null): Promise<TabbedPane> => {
+const queryFn = async (activeWorkspaceId?: string): Promise<TabbedPane> => {
   if (!activeWorkspaceId) {
     return {
       gridState: emptyGridState,

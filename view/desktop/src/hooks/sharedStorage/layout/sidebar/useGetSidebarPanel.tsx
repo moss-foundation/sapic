@@ -14,7 +14,7 @@ export interface SidebarPanel {
   maxWidth: number;
 }
 
-const queryFn = async (activeWorkspaceId: string | null): Promise<SidebarPanel> => {
+const queryFn = async (activeWorkspaceId?: string): Promise<SidebarPanel> => {
   if (!activeWorkspaceId) {
     return {
       position: defaultSidebarPanel.position,

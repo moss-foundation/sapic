@@ -1,7 +1,10 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { DeleteWorkspaceInput, DeleteWorkspaceOutput } from "@repo/moss-app";
+import { DeleteWorkspaceInput, DeleteWorkspaceOutput, ListWorkspacesOutput } from "@repo/moss-app";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { useRemoveBottomPanel } from "../sharedStorage/layout/bottomPanel/useRemoveBottomPanel";
+import { useRemoveSidebarPanel } from "../sharedStorage/layout/sidebar/useRemoveSidebarPanel";
+import { useRemoveTabbedPane } from "../sharedStorage/layout/tabbedPane/useRemoveTabbedPane";
 import { useActiveWorkspace } from "../workspace/derived/useActiveWorkspace";
 import { useCloseWorkspace } from "./useCloseWorkspace";
 import { USE_LIST_WORKSPACES_QUERY_KEY } from "./useListWorkspaces";
@@ -22,8 +25,13 @@ const deleteWorkspaceFn = async (input: DeleteWorkspaceInput): Promise<DeleteWor
 
 export const useDeleteWorkspace = () => {
   const queryClient = useQueryClient();
+
   const { activeWorkspaceId, hasActiveWorkspace } = useActiveWorkspace();
   const { mutateAsync: closeWorkspace } = useCloseWorkspace();
+
+  const { mutateAsync: removeSidebarPanel } = useRemoveSidebarPanel();
+  const { mutateAsync: removeTabbedPane } = useRemoveTabbedPane();
+  const { mutateAsync: removeBottomPanel } = useRemoveBottomPanel();
 
   return useMutation<DeleteWorkspaceOutput, Error, DeleteWorkspaceInput>({
     mutationKey: [USE_DELETE_WORKSPACE_MUTATION_KEY],
@@ -38,8 +46,14 @@ export const useDeleteWorkspace = () => {
 
       return deleteWorkspaceFn(input);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [USE_LIST_WORKSPACES_QUERY_KEY] });
+    onSuccess: async (_, variables) => {
+      queryClient.setQueryData([USE_LIST_WORKSPACES_QUERY_KEY], (oldData: ListWorkspacesOutput) => {
+        return oldData.filter((workspace) => workspace.id !== variables.id);
+      });
+
+      await removeSidebarPanel(variables.id);
+      await removeTabbedPane(variables.id);
+      await removeBottomPanel(variables.id);
     },
   });
 };

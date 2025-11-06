@@ -35,11 +35,11 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
   const { mutate: updateBottomPanel } = useUpdateBottomPanel();
 
   const handleSidebarEdgeHandlerClick = () => {
-    if (!sideBar?.visible && activeWorkspaceId) updateSidebarPanel({ visible: true });
+    if (!sideBar?.visible && activeWorkspaceId) updateSidebarPanel({ visible: true, workspaceId: activeWorkspaceId });
   };
 
   const handleBottomPaneEdgeHandlerClick = () => {
-    if (!bottomPane?.visible && activeWorkspaceId) updateBottomPanel({ visible: true });
+    if (!bottomPane?.visible && activeWorkspaceId) updateBottomPanel({ visible: true, workspaceId: activeWorkspaceId });
   };
 
   useEffect(() => {
@@ -70,11 +70,11 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
           onDragEnd={(sizes) => {
             if (sideBar?.position === SIDEBAR_POSITION.LEFT) {
               const [leftPanelSize, _mainPanelSize] = sizes;
-              updateSidebarPanel({ size: leftPanelSize, visible: leftPanelSize > 0 });
+              updateSidebarPanel({ size: leftPanelSize, visible: leftPanelSize > 0, workspaceId: activeWorkspaceId });
             }
             if (sideBar?.position === SIDEBAR_POSITION.RIGHT) {
               const [_mainPanelSize, rightPanelSize] = sizes;
-              updateSidebarPanel({ size: rightPanelSize, visible: rightPanelSize > 0 });
+              updateSidebarPanel({ size: rightPanelSize, visible: rightPanelSize > 0, workspaceId: activeWorkspaceId });
             }
           }}
           onVisibleChange={(index, visible) => {

@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 import { RadioGroup } from "@/components";
 import { ModalForm } from "@/components/ModalForm";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
+import { useFocusInputOnMount } from "@/hooks";
 import { useCreateWorkspace } from "@/hooks/workbench/useCreateWorkspace";
 import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
 import { Button } from "@/lib/ui";
@@ -15,62 +16,40 @@ import { ModalWrapperProps } from "../types";
 export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { mutate: createWorkspace, isPending: isCreating } = useCreateWorkspace();
-  const { mutate: openWorkspace, isPending: isOpening } = useOpenWorkspace();
+  const { mutateAsync: createWorkspace, isPending: isCreatingWorkspace } = useCreateWorkspace();
+  const { mutateAsync: openWorkspace, isPending: isOpeningWorkspace } = useOpenWorkspace();
+
+  useFocusInputOnMount({ inputRef });
 
   const [name, setName] = useState("New Workspace");
   const [mode, setMode] = useState<WorkspaceMode>("LIVE");
   const [openAutomatically, setOpenAutomatically] = useState(true);
 
-  useEffect(() => {
-    if (!inputRef.current) return;
-    inputRef.current.focus();
-    inputRef.current.select();
-  }, []);
-
-  const isLoading = isCreating || isOpening;
+  const isLoadingWorkspaces = isCreatingWorkspace || isOpeningWorkspace;
 
   const handleSubmit = async () => {
-    if (name) {
-      createWorkspace(
-        {
-          name: name.trim(),
-          mode,
-          openOnCreation: openAutomatically,
-        },
-        {
-          onSuccess: (data) => {
-            // If user wanted auto-open but backend didn't open it, open manually
-            if (openAutomatically && !data.active) {
-              openWorkspace(data.id, {
-                onSuccess: () => {
-                  closeModal();
-                  reset();
-                },
-                onError: () => {
-                  closeModal();
-                  reset();
-                },
-              });
-            } else {
-              closeModal();
-              reset();
-            }
-          },
-          onError: () => {
-            // Keep modal open on error so user can retry
-          },
-        }
-      );
+    if (!name) return;
+
+    const createWorkspaceOutput = await createWorkspace({
+      name: name.trim(),
+      mode,
+      openOnCreation: openAutomatically,
+    });
+
+    if (openAutomatically && !createWorkspaceOutput.active) {
+      await openWorkspace(createWorkspaceOutput.id);
     }
+
+    closeModal();
+    resetForm();
   };
 
   const handleCancel = () => {
     closeModal();
-    reset();
+    resetForm();
   };
 
-  const reset = () => {
+  const resetForm = () => {
     setTimeout(() => {
       setName("");
       setMode("LIVE");
@@ -145,11 +124,11 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
             }}
           />
           <div className="px-0.25 py-1.25 flex gap-3">
-            <Button intent="outlined" type="button" onClick={handleCancel} disabled={isLoading}>
+            <Button intent="outlined" type="button" onClick={handleCancel} disabled={isLoadingWorkspaces}>
               Close
             </Button>
-            <Button intent="primary" disabled={name.length === 0 || isLoading} type="submit">
-              {isLoading ? "Creating..." : "Create"}
+            <Button intent="primary" disabled={name.length === 0 || isLoadingWorkspaces} type="submit">
+              {isLoadingWorkspaces ? "Creating..." : "Create"}
             </Button>
           </div>
         </div>

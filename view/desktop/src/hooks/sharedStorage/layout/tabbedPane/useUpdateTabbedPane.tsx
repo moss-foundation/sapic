@@ -1,6 +1,5 @@
 import { SerializedDockview } from "moss-tabs";
 
-import { useActiveWorkspace } from "@/hooks/workspace";
 import { sharedStorageService } from "@/lib/services/sharedStorageService";
 import { JsonValue } from "@repo/moss-bindingutils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -11,28 +10,26 @@ export const USE_UPDATE_TABBED_PANE_MUTATION_KEY = "updateTabbedPane";
 
 interface UseUpdateTabbedPaneProps {
   gridState: SerializedDockview;
+  workspaceId?: string;
 }
 
-const mutateFn = async (tabbedPane: SerializedDockview, activeWorkspaceId: string | null) => {
-  if (!activeWorkspaceId) return;
-  await sharedStorageService.putItem("gridState", tabbedPane as unknown as JsonValue, activeWorkspaceId);
+const mutationFn = async ({ gridState, workspaceId }: UseUpdateTabbedPaneProps) => {
+  if (!gridState) return;
+
+  return await sharedStorageService.putItem("gridState", gridState as unknown as JsonValue, workspaceId);
 };
 
 export const useUpdateTabbedPane = () => {
   const queryClient = useQueryClient();
 
-  const { activeWorkspaceId } = useActiveWorkspace();
-
-  return useMutation<void, Error, SerializedDockview>({
+  return useMutation<void, Error, { gridState: SerializedDockview; workspaceId?: string }>({
     mutationKey: [USE_UPDATE_TABBED_PANE_MUTATION_KEY],
-    mutationFn: async (tabbedPane: SerializedDockview): Promise<void> => {
-      await mutateFn(tabbedPane, activeWorkspaceId);
-    },
-    onSuccess: async (_, tabbedPane) => {
-      queryClient.setQueryData<UseUpdateTabbedPaneProps>([USE_GET_TABBED_PANE_QUERY_KEY, activeWorkspaceId], (old) => {
+    mutationFn,
+    onSuccess: async (_, { gridState, workspaceId }) => {
+      queryClient.setQueryData<UseUpdateTabbedPaneProps>([USE_GET_TABBED_PANE_QUERY_KEY, workspaceId], (old) => {
         return {
           ...old,
-          gridState: tabbedPane,
+          gridState: gridState,
         };
       });
     },

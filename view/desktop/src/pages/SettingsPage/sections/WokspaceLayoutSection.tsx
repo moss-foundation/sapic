@@ -36,7 +36,7 @@ export const WorkspaceLayoutSection = () => {
 };
 
 const SidebarTypeSection = () => {
-  const { hasActiveWorkspace } = useActiveWorkspace();
+  const { activeWorkspaceId, hasActiveWorkspace } = useActiveWorkspace();
   const { data: sideBar } = useGetSidebarPanel();
   const { mutate: updateSidebarPanel } = useUpdateSidebarPanel();
 
@@ -56,7 +56,7 @@ const SidebarTypeSection = () => {
   ];
 
   const handleSidebarTypeChange = (value: SIDEBAR_POSITION) => {
-    updateSidebarPanel({ position: value });
+    updateSidebarPanel({ position: value, workspaceId: activeWorkspaceId });
   };
 
   return (
@@ -83,7 +83,7 @@ const SidebarTypeSection = () => {
 };
 
 const SidebarVisibilitySection = () => {
-  const { hasActiveWorkspace } = useActiveWorkspace();
+  const { activeWorkspaceId, hasActiveWorkspace } = useActiveWorkspace();
   const { data: sideBar } = useGetSidebarPanel();
   const { mutate: updateSidebarPanel } = useUpdateSidebarPanel();
 
@@ -103,7 +103,7 @@ const SidebarVisibilitySection = () => {
   ];
 
   const handleSidebarVisibilityChange = (value: string) => {
-    updateSidebarPanel({ visible: value === "visible" });
+    updateSidebarPanel({ visible: value === "visible", workspaceId: activeWorkspaceId });
   };
 
   return (
@@ -137,7 +137,7 @@ const BottomPaneVisibilitySection = () => {
   const handleBottomPaneVisibilityChange = (value: string) => {
     const visibility = value === "visible";
     if (activeWorkspaceId && bottomPane) {
-      updateBottomPanel({ visible: visibility });
+      updateBottomPanel({ visible: visibility, workspaceId: activeWorkspaceId });
     }
   };
 
