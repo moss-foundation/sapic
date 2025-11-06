@@ -2,7 +2,6 @@
 
 pub mod shared;
 
-use crate::shared::set_up_test_app;
 use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_workspace_name};
 use moss_workspace::models::primitives::WorkspaceMode;
@@ -10,11 +9,10 @@ use std::{path::Path, sync::Arc};
 use window::{
     dirs,
     models::{operations::CreateWorkspaceInput, primitives::WorkspaceId},
-    storage::{
-        KEY_LAST_ACTIVE_WORKSPACE, KEY_WORKSPACE_PREFIX, key_workspace,
-        key_workspace_last_opened_at,
-    },
+    storage::{KEY_LAST_ACTIVE_WORKSPACE, KEY_WORKSPACE_PREFIX, key_workspace_last_opened_at},
 };
+
+use crate::shared::set_up_test_app;
 
 #[tokio::test]
 async fn create_workspace_success() {

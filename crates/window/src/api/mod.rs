@@ -1,4 +1,3 @@
-pub mod batch_delete_log;
 pub mod cancel_request;
 pub mod close_workspace;
 pub mod create_profile;

@@ -2,8 +2,6 @@
 
 pub mod shared;
 
-use crate::shared::set_up_test_app;
-use moss_fs::fs_watcher::global;
 use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_testutils::random_name::random_workspace_name;
 use moss_workspace::models::primitives::WorkspaceMode;
@@ -14,6 +12,8 @@ use window::{
     },
     storage::KEY_LAST_ACTIVE_WORKSPACE,
 };
+
+use crate::shared::set_up_test_app;
 
 #[tokio::test]
 async fn close_workspace_success() {

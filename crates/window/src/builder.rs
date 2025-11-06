@@ -91,7 +91,6 @@ impl<R: AppRuntime> WindowBuilder<R> {
             tao_handle.clone(),
             &delegate.logs_dir(),
             session_service.session_id(),
-            storage.clone(),
         )
         .expect("Failed to create log service");
         let profile_service = ProfileService::new(

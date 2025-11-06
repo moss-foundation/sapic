@@ -1,6 +1,4 @@
 use chrono::DateTime;
-use moss_storage2::{Storage, models::primitives::StorageScope};
-use serde_json::Value as JsonValue;
 use std::{
     collections::VecDeque,
     fs::OpenOptions,
@@ -14,33 +12,30 @@ use crate::{
     models::types::LogEntryInfo,
 };
 
-// log:{log_id}: log_entry_path
-
 pub struct RollingLogWriter {
     pub log_path: PathBuf,
     pub dump_threshold: usize,
     pub log_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
-    pub storage: Arc<dyn Storage>,
 }
 
+// TODO: Dump in-memory logs when the app is shut down
 impl RollingLogWriter {
     pub fn new(
         log_path: PathBuf,
         dump_threshold: usize,
         log_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
-        storage: Arc<dyn Storage>,
     ) -> Self {
         Self {
             log_path,
             dump_threshold,
             log_queue,
-            storage,
         }
     }
 }
 
 impl<'a> std::io::Write for RollingLogWriter {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        // TODO: Redo the file logic when we split log service into app vs workspace
         let log_entry: LogEntryInfo = serde_json::from_str(String::from_utf8_lossy(buf).as_ref())?;
 
         let mut queue_lock = self
@@ -61,31 +56,11 @@ impl<'a> std::io::Write for RollingLogWriter {
                     .open(&file_path)?;
                 let mut writer = BufWriter::new(file);
 
-                let mut log_paths = Vec::new();
-
                 while let Some(entry) = queue_lock.pop_front() {
                     serde_json::to_writer(&mut writer, &entry)?;
                     writer.write(b"\n")?;
                     writer.flush()?;
-                    // Record the file to which the log entry is written
-                    log_paths.push((
-                        entry.id.to_string(),
-                        JsonValue::String(file_path.to_string_lossy().to_string()),
-                    ));
                 }
-
-                let storage = self.storage.clone();
-
-                let _ = tokio::spawn(async move {
-                    let storage = storage.clone();
-                    let batch_input = log_paths
-                        .iter()
-                        .map(|(id, path)| (id.as_ref(), path.clone()))
-                        .collect::<Vec<_>>();
-                    storage
-                        .put_batch(StorageScope::Application, &batch_input)
-                        .await
-                });
             } else {
                 // Skip the first entry since its timestamp is invalid
                 queue_lock.pop_front();
