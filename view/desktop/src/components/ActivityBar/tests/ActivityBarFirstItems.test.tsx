@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { ActivityBarItem, useActivityBarStore } from "@/store/activityBar";
+import { ActivityBarItemProps, useActivityBarStore } from "@/store/activityBar";
 import { AppResizableLayoutStore, useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/types";
@@ -25,11 +25,11 @@ const useAppResizableLayoutStoreMock = vi.mocked(useAppResizableLayoutStore);
 const monitorForElementsMock = vi.mocked(monitorForElements);
 const extractClosestEdgeMock = vi.mocked(extractClosestEdge);
 
-const MOCK_ITEMS: ActivityBarItem[] = [
-  { id: "1", order: 1, icon: "Home", iconActive: "Home", title: "Home", isActive: true, isVisible: true },
-  { id: "2", order: 2, icon: "Home", iconActive: "Home", title: "Home", isActive: false, isVisible: true },
-  { id: "3", order: 3, icon: "Home", iconActive: "Home", title: "Home", isActive: false, isVisible: true },
-  { id: "4", order: 4, icon: "Home", iconActive: "Home", title: "Home", isActive: false, isVisible: true },
+const MOCK_ITEMS: ActivityBarItemProps[] = [
+  { id: "1", order: 1, icon: "Home", iconActive: "HomeActive", title: "Home", isActive: true, isVisible: true },
+  { id: "2", order: 2, icon: "Home", iconActive: "HomeActive", title: "Home", isActive: false, isVisible: true },
+  { id: "3", order: 3, icon: "Home", iconActive: "HomeActive", title: "Home", isActive: false, isVisible: true },
+  { id: "4", order: 4, icon: "Home", iconActive: "HomeActive", title: "Home", isActive: false, isVisible: true },
 ];
 
 describe("ActivityBarFirstItems", () => {
@@ -104,7 +104,7 @@ describe("ActivityBarFirstItems", () => {
     };
   };
 
-  const createActivityBarButtonData = (item: ActivityBarItem, edge?: Edge) => {
+  const createActivityBarButtonData = (item: ActivityBarItemProps, edge?: Edge) => {
     return {
       type: "ActivityBarButton",
       data: item,
@@ -128,7 +128,7 @@ describe("ActivityBarFirstItems", () => {
 
     expect(setItemsMock).toHaveBeenCalledTimes(1);
     const updatedItems = setItemsMock.mock.calls[0][0];
-    expect(updatedItems.map((item: ActivityBarItem) => item.id)).toEqual(["3", "2", "1", "4"]);
+    expect(updatedItems.map((item: ActivityBarItemProps) => item.id)).toEqual(["3", "2", "1", "4"]);
   });
 
   it("valid: should reorder item when dropped successfully with top edge", () => {
@@ -144,7 +144,7 @@ describe("ActivityBarFirstItems", () => {
 
     expect(setItemsMock).toHaveBeenCalledTimes(1);
     const updatedItems = setItemsMock.mock.calls[0][0];
-    expect(updatedItems.map((item: ActivityBarItem) => item.id)).toEqual(["1", "4", "2", "3"]);
+    expect(updatedItems.map((item: ActivityBarItemProps) => item.id)).toEqual(["1", "4", "2", "3"]);
   });
 
   it("valid: should reorder item when dropped successfully with bottom edge", () => {
@@ -160,7 +160,7 @@ describe("ActivityBarFirstItems", () => {
 
     expect(setItemsMock).toHaveBeenCalledTimes(1);
     const updatedItems = setItemsMock.mock.calls[0][0];
-    expect(updatedItems.map((item: ActivityBarItem) => item.id)).toEqual(["1", "2", "4", "3"]);
+    expect(updatedItems.map((item: ActivityBarItemProps) => item.id)).toEqual(["1", "2", "4", "3"]);
   });
 
   it("invalid: should not reorder when no drop target is provided", () => {
