@@ -1,13 +1,23 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { renderWithQueryClient } from "@/components/ActivityBar/tests/test-utils";
 import { ACTIVITYBAR_POSITION } from "@/constants/layoutPositions";
-import { useActivityBarStore } from "@/store/activityBar";
+import { ActivityBarItemProps, useActivityBarStore } from "@/store/activityBar";
 import { useAppResizableLayoutStore, type AppResizableLayoutStore } from "@/store/appResizableLayout";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { render } from "@testing-library/react";
 
 import { ActivityBarButton } from "../ActivityBarButton";
 
+vi.mock("@/hooks/sharedStorage/layout/sidebar/useGetSidebarPanel", () => ({
+  useGetSidebarPanel: vi.fn(() => ({
+    data: { position: "LEFT", size: 255, visible: true, minWidth: 130, maxWidth: 400 },
+  })),
+}));
+vi.mock("@/hooks/sharedStorage/layout/sidebar/useUpdateSidebarPanel", () => ({
+  useUpdateSidebarPanel: vi.fn(() => ({
+    mutate: vi.fn(),
+  })),
+}));
 vi.mock("@atlaskit/pragmatic-drag-and-drop/element/adapter", async (importOriginal) => {
   const originalModule = await (importOriginal() as Promise<
     typeof import("@atlaskit/pragmatic-drag-and-drop/element/adapter")
@@ -27,10 +37,10 @@ const mockedUseActivityBarStore = vi.mocked(useActivityBarStore);
 const mockedUseAppResizableLayoutStore = vi.mocked(useAppResizableLayoutStore);
 
 describe("ActivityBarButton › dropTargetForElements", () => {
-  const defaultProps = {
+  const defaultProps: ActivityBarItemProps = {
     id: "test",
-    icon: "Add" as const,
-    iconActive: "Add" as const,
+    icon: "Add",
+    iconActive: "AddCircleActive",
     title: "Test Button",
     order: 1,
     isActive: false,
@@ -72,7 +82,7 @@ describe("ActivityBarButton › dropTargetForElements", () => {
     setupMocks();
   });
 
-  const renderComponent = () => render(<ActivityBarButton {...defaultProps} />);
+  const renderComponent = () => renderWithQueryClient(<ActivityBarButton {...defaultProps} />);
 
   const getCanDropFunction = () => {
     renderComponent();

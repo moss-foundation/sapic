@@ -1,16 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { renderWithQueryClient } from "@/components/ActivityBar/tests/test-utils";
+import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
 import { ActivityBarItemProps, useActivityBarStore } from "@/store/activityBar";
 import { AppResizableLayoutStore, useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/types";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { render } from "@testing-library/react";
 
 import { ActivityBarFirstItems } from "../ActivityBarFirstItems";
 
 vi.mock("@/store/activityBar");
 vi.mock("@/store/appResizableLayout");
+vi.mock("@/hooks/sharedStorage/layout/sidebar/useGetSidebarPanel", () => ({
+  useGetSidebarPanel: vi.fn(() => ({
+    data: { position: "LEFT", size: 255, visible: true, minWidth: 130, maxWidth: 400 },
+  })),
+}));
 vi.mock("@atlaskit/pragmatic-drag-and-drop/element/adapter", () => ({
   monitorForElements: vi.fn(),
   draggable: vi.fn(() => () => {}),
@@ -37,7 +43,7 @@ describe("ActivityBarFirstItems", () => {
   let onDropHandler: ((payload: any) => void) | undefined;
 
   const createMockAppResizableLayoutStore = (): AppResizableLayoutStore => ({
-    sideBarPosition: "LEFT",
+    sideBarPosition: SIDEBAR_POSITION.LEFT,
     setSideBarPosition: vi.fn(),
     initialize: vi.fn(),
     sideBar: {
@@ -63,7 +69,7 @@ describe("ActivityBarFirstItems", () => {
 
     useActivityBarStoreMock.mockReturnValue({
       items: MOCK_ITEMS,
-      position: "DEFAULT",
+      position: ACTIVITYBAR_POSITION.DEFAULT,
       lastActiveContainerId: null,
       setPosition: vi.fn(),
       setItems: setItemsMock,
@@ -118,7 +124,7 @@ describe("ActivityBarFirstItems", () => {
   });
 
   it("valid: should reorder items when dropped successfully", () => {
-    render(<ActivityBarFirstItems />);
+    renderWithQueryClient(<ActivityBarFirstItems />);
 
     const sourceData = createActivityBarButtonData(MOCK_ITEMS[0]);
     const targetData = createActivityBarButtonData(MOCK_ITEMS[2]);
@@ -132,7 +138,7 @@ describe("ActivityBarFirstItems", () => {
   });
 
   it("valid: should reorder item when dropped successfully with top edge", () => {
-    render(<ActivityBarFirstItems />);
+    renderWithQueryClient(<ActivityBarFirstItems />);
 
     extractClosestEdgeMock.mockReturnValue("top");
 
@@ -148,7 +154,7 @@ describe("ActivityBarFirstItems", () => {
   });
 
   it("valid: should reorder item when dropped successfully with bottom edge", () => {
-    render(<ActivityBarFirstItems />);
+    renderWithQueryClient(<ActivityBarFirstItems />);
 
     extractClosestEdgeMock.mockReturnValue("bottom");
 
@@ -164,7 +170,7 @@ describe("ActivityBarFirstItems", () => {
   });
 
   it("invalid: should not reorder when no drop target is provided", () => {
-    render(<ActivityBarFirstItems />);
+    renderWithQueryClient(<ActivityBarFirstItems />);
 
     const sourceData = createActivityBarButtonData(MOCK_ITEMS[0]);
     const dropPayload = createDropPayload(sourceData);
@@ -175,7 +181,7 @@ describe("ActivityBarFirstItems", () => {
   });
 
   it("invalid: should not reorder when no source data is provided", () => {
-    render(<ActivityBarFirstItems />);
+    renderWithQueryClient(<ActivityBarFirstItems />);
 
     const targetData = createActivityBarButtonData(MOCK_ITEMS[2]);
     const dropPayload = createDropPayload(undefined, targetData);
@@ -186,7 +192,7 @@ describe("ActivityBarFirstItems", () => {
   });
 
   it("invalid: should not reorder when drop targets array is empty", () => {
-    render(<ActivityBarFirstItems />);
+    renderWithQueryClient(<ActivityBarFirstItems />);
 
     const sourceData = createActivityBarButtonData(MOCK_ITEMS[0]);
     const dropPayload = createDropPayload(sourceData);
