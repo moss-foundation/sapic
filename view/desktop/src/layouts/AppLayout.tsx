@@ -49,6 +49,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
     <div className="AppLayout flex h-full w-full">
       {position === ACTIVITYBAR_POSITION.DEFAULT && sideBar?.position === SIDEBAR_POSITION.LEFT && <ActivityBar />}
       <div className="relative flex h-full w-full">
+        {/* FIXME: we can hide the sidebar when out of workspace, but cannot shot it back */}
         {!sideBar?.visible && sideBar?.position === SIDEBAR_POSITION.LEFT && (
           <SidebarEdgeHandler alignment="left" onClick={handleSidebarEdgeHandlerClick} />
         )}
