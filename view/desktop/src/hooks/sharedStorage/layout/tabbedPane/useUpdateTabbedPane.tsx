@@ -1,6 +1,6 @@
 import { SerializedDockview } from "moss-tabs";
 
-import { sharedStorageService } from "@/lib/services/sharedStorageService";
+import { sharedStorageService } from "@/lib/services/sharedStorage";
 import { JsonValue } from "@repo/moss-bindingutils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 

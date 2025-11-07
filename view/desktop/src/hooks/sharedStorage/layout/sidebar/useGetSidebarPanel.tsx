@@ -1,6 +1,6 @@
 import { defaultSidebarPanel } from "@/constants/layoutPositions";
 import { useActiveWorkspace } from "@/hooks/workspace";
-import { sharedStorageService } from "@/lib/services/sharedStorageService";
+import { sharedStorageService } from "@/lib/services/sharedStorage";
 import { SidebarPosition } from "@repo/moss-workspace";
 import { useQuery } from "@tanstack/react-query";
 

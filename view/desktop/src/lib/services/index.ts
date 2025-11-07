@@ -1,3 +1,3 @@
-export * from "./appService";
+export * from "./app";
 export * from "./projectService";
-export * from "./sharedStorageService";
+export * from "./sharedStorage";

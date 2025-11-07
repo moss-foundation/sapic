@@ -1,4 +1,4 @@
-import { sharedStorageService } from "@/lib/services/sharedStorageService";
+import { sharedStorageService } from "@/lib/services/sharedStorage";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_GET_TABBED_PANE_QUERY_KEY } from "./useGetTabbedPane";

@@ -1,6 +1,6 @@
 import { defaultBottomPanePanel } from "@/constants/layoutPositions";
 import { useActiveWorkspace } from "@/hooks/workspace";
-import { sharedStorageService } from "@/lib/services/sharedStorageService";
+import { sharedStorageService } from "@/lib/services/sharedStorage";
 import { useQuery } from "@tanstack/react-query";
 
 export const USE_GET_BOTTOM_PANEL_QUERY_KEY = "getBottomPanel";

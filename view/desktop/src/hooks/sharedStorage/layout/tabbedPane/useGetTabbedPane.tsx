@@ -2,7 +2,7 @@ import { SerializedDockview } from "moss-tabs";
 
 import { emptyGridState } from "@/constants/layoutPositions";
 import { useActiveWorkspace } from "@/hooks/workspace";
-import { sharedStorageService } from "@/lib/services/sharedStorageService";
+import { sharedStorageService } from "@/lib/services/sharedStorage";
 import { useQuery } from "@tanstack/react-query";
 
 export const USE_GET_TABBED_PANE_QUERY_KEY = "getTabbedPane";

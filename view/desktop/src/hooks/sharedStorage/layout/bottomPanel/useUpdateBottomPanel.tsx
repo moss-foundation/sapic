@@ -1,5 +1,5 @@
 import { defaultBottomPanePanel } from "@/constants/layoutPositions";
-import { sharedStorageService } from "@/lib/services/sharedStorageService";
+import { sharedStorageService } from "@/lib/services/sharedStorage";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { BottomPanel, USE_GET_BOTTOM_PANEL_QUERY_KEY } from "./useGetBottomPanel";
