@@ -43,6 +43,5 @@ export const useGetBottomPanel = () => {
   return useQuery<BottomPanel, Error>({
     queryKey: [USE_GET_BOTTOM_PANEL_QUERY_KEY, activeWorkspaceId],
     queryFn: () => queryFn(activeWorkspaceId),
-    enabled: !!activeWorkspaceId,
   });
 };

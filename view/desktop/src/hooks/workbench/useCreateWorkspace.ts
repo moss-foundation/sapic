@@ -1,5 +1,5 @@
 import { defaultBottomPanePanel, defaultSidebarPanel, emptyGridState } from "@/constants/layoutPositions";
-import { invokeTauriIpc } from "@/lib/backend/tauri";
+import { workspaceService } from "@/lib/services/workbench/workspaceService";
 import {
   CreateWorkspaceInput,
   CreateWorkspaceOutput,
@@ -18,9 +18,7 @@ import { USE_LIST_WORKSPACES_QUERY_KEY } from "./useListWorkspaces";
 export const USE_CREATE_WORKSPACE_MUTATION_KEY = "createWorkspace";
 
 const createWorkspaceFn = async (input: CreateWorkspaceInput): Promise<CreateWorkspaceOutput> => {
-  const result = await invokeTauriIpc<CreateWorkspaceOutput>("create_workspace", {
-    input: input,
-  });
+  const result = await workspaceService.createWorkspace(input);
 
   if (result.status === "error") {
     throw new Error(String(result.error));

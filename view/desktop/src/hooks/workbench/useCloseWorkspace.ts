@@ -1,5 +1,5 @@
-import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { CloseWorkspaceInput, CloseWorkspaceOutput, DescribeAppOutput } from "@repo/moss-app";
+import { workspaceService } from "@/lib/services/workbench/workspaceService";
+import { CloseWorkspaceOutput, DescribeAppOutput } from "@repo/moss-app";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_STREAM_PROJECT_RESOURCES_QUERY_KEY, USE_STREAM_PROJECTS_QUERY_KEY } from "..";
@@ -9,10 +9,8 @@ import { USE_STREAMED_ENVIRONMENTS_QUERY_KEY } from "../workspace/environment";
 export const USE_CLOSE_WORKSPACE_QUERY_KEY = "closeWorkspace";
 
 const closeWorkspaceFn = async (workspaceId: string): Promise<CloseWorkspaceOutput> => {
-  const result = await invokeTauriIpc<CloseWorkspaceOutput>("close_workspace", {
-    input: {
-      id: workspaceId,
-    } as CloseWorkspaceInput,
+  const result = await workspaceService.closeWorkspace({
+    id: workspaceId,
   });
 
   if (result.status === "error") {

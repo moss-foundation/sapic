@@ -32,6 +32,5 @@ export const useGetTabbedPane = () => {
   return useQuery<TabbedPane, Error>({
     queryKey: [USE_GET_TABBED_PANE_QUERY_KEY, activeWorkspaceId],
     queryFn: () => queryFn(activeWorkspaceId),
-    enabled: !!activeWorkspaceId,
   });
 };

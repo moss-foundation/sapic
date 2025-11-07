@@ -1,4 +1,4 @@
-import { invokeTauriIpc } from "@/lib/backend/tauri";
+import { workspaceService } from "@/lib/services/workbench/workspaceService";
 import { DescribeAppOutput, OpenWorkspaceOutput } from "@repo/moss-app";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -8,10 +8,8 @@ import { useListWorkspaces } from "./useListWorkspaces";
 export const USE_OPEN_WORKSPACE_QUERY_KEY = "openWorkspace";
 
 const openWorkspaceFn = async (workspaceId: string): Promise<OpenWorkspaceOutput> => {
-  const result = await invokeTauriIpc<OpenWorkspaceOutput>("open_workspace", {
-    input: {
-      id: workspaceId,
-    },
+  const result = await workspaceService.openWorkspace({
+    id: workspaceId,
   });
 
   if (result.status === "error") {

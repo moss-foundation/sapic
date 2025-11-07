@@ -50,6 +50,5 @@ export const useGetSidebarPanel = () => {
   return useQuery<SidebarPanel, Error>({
     queryKey: [USE_GET_SIDEBAR_PANEL_QUERY_KEY, activeWorkspaceId],
     queryFn: () => queryFn(activeWorkspaceId),
-    enabled: !!activeWorkspaceId,
   });
 };

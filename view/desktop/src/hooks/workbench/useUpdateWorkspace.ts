@@ -1,4 +1,4 @@
-import { invokeTauriIpc } from "@/lib/backend/tauri";
+import { workspaceService } from "@/lib/services/workbench/workspaceService";
 import { UpdateWorkspaceInput } from "@repo/moss-app";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -7,9 +7,7 @@ import { USE_LIST_WORKSPACES_QUERY_KEY } from "./useListWorkspaces";
 export const USE_UPDATE_WORKSPACE_MUTATION_KEY = "updateWorkspace";
 
 const updateWorkspaceFn = async (input: UpdateWorkspaceInput): Promise<void> => {
-  const result = await invokeTauriIpc<void>("update_workspace", {
-    input: input,
-  });
+  const result = await workspaceService.updateWorkspace(input);
 
   if (result.status === "error") {
     throw new Error(String(result.error));
