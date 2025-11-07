@@ -5,7 +5,7 @@ import { WorkspaceInfo } from "@repo/window";
 
 import { useUpdateWorkspace } from "./workbench/useUpdateWorkspace";
 
-export const useRenameWorkspace = (workspace: WorkspaceInfo | null) => {
+export const useRenameWorkspace = (workspace: WorkspaceInfo | undefined) => {
   const { mutateAsync: updateWorkspace } = useUpdateWorkspace();
 
   const { api } = useTabbedPaneStore();

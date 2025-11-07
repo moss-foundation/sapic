@@ -19,6 +19,7 @@ function setRef<T>(ref: PossibleRef<T>, value: T) {
  * Accepts callback refs and RefObject(s)
  */
 function composeRefs<T>(...refs: PossibleRef<T>[]): React.RefCallback<T> {
+  //@ts-expect-error this code should conditionally return or not return a value
   return (node) => {
     let hasCleanup = false;
     const cleanups = refs.map((ref) => {

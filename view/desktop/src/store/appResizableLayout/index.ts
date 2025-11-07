@@ -52,11 +52,19 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
     });
   },
   initialize: async (workspaceId) => {
-    const sidebarPosition = (await sharedStorageService.getItem("sidebarPosition", workspaceId))?.value;
-    const sidebarWidth = (await sharedStorageService.getItem("sidebarWidth", workspaceId))?.value;
-    const sidebarVisible = (await sharedStorageService.getItem("sidebarVisible", workspaceId))?.value;
-    const bottomPaneHeight = (await sharedStorageService.getItem("bottomPaneHeight", workspaceId))?.value;
-    const bottomPaneVisible = (await sharedStorageService.getItem("bottomPaneVisible", workspaceId))?.value;
+    const sidebarPosition = (await sharedStorageService.getItem("sidebarPosition", workspaceId))?.value as
+      | SidebarPosition
+      | undefined;
+    const sidebarWidth = (await sharedStorageService.getItem("sidebarWidth", workspaceId))?.value as number | undefined;
+    const sidebarVisible = (await sharedStorageService.getItem("sidebarVisible", workspaceId))?.value as
+      | boolean
+      | undefined;
+    const bottomPaneHeight = (await sharedStorageService.getItem("bottomPaneHeight", workspaceId))?.value as
+      | number
+      | undefined;
+    const bottomPaneVisible = (await sharedStorageService.getItem("bottomPaneVisible", workspaceId))?.value as
+      | boolean
+      | undefined;
 
     set((state) => {
       return {

@@ -41,9 +41,9 @@ export const Sidebar = () => {
 
   const { data: workspaceState, isFetched, isSuccess } = useDescribeWorkspaceState();
   const { updateFromWorkspaceState, resetToDefaults } = useActivityBarStore();
-  const lastRestoredWorkspaceId = useRef<string | null>(null);
+  const lastRestoredWorkspaceId = useRef<string | undefined>(undefined);
 
-  const lastActiveGroupRef = useRef<string | null>(null);
+  const lastActiveGroupRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     if (projectSessionState?.lastActiveGroup) {
@@ -58,7 +58,7 @@ export const Sidebar = () => {
       if (activeWorkspaceId) {
         // Will be restored from workspace state
         resetToDefaults();
-        lastRestoredWorkspaceId.current = null;
+        lastRestoredWorkspaceId.current = undefined;
       } else {
         // Reset to default when no workspace
         resetToDefaults();
