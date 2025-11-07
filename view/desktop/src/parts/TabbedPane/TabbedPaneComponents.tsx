@@ -19,7 +19,7 @@ import { ResourceKind } from "@repo/moss-project";
 
 import Metadata from "./DebugComponents/Metadata";
 
-export const TabbedPaneComponents = {
+export const tabbedPaneComponents = {
   Default: (
     props: IDockviewPanelProps<{
       node?: ProjectTreeNode;

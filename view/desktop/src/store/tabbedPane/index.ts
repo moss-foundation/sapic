@@ -4,7 +4,7 @@ import { create } from "zustand";
 import { ProjectTreeNode } from "@/components/ProjectTree/types";
 import { emptyGridState } from "@/constants/layoutPositions";
 import { Icons } from "@/lib/ui";
-import { TabbedPaneComponents } from "@/parts/TabbedPane/TabbedPaneComponents";
+import { tabbedPaneComponents } from "@/parts/TabbedPane/TabbedPaneComponents";
 
 interface AddPanelOptionsWithoutMandatoryComponent
   extends Omit<
@@ -16,7 +16,7 @@ interface AddPanelOptionsWithoutMandatoryComponent
     }>,
     "component" | "floating"
   > {
-  component?: keyof typeof TabbedPaneComponents;
+  component?: keyof typeof tabbedPaneComponents;
 }
 
 interface TabbedPaneState {

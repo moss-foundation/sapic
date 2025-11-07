@@ -12,7 +12,7 @@ import { useTabbedPaneDropTarget } from "./hooks/useDockviewDropTarget";
 import { useTabbedPaneEventHandlers } from "./hooks/useDockviewEventHandlers";
 import { useTabbedPaneResizeObserver } from "./hooks/useDockviewResizeObserver";
 import { useResetGridStateOnWorkspaceChange } from "./hooks/useResetGridStateOnWorkspaceChange";
-import { TabbedPaneComponents } from "./TabbedPaneComponents";
+import { tabbedPaneComponents } from "./TabbedPaneComponents";
 
 const TabbedPane = () => {
   const dockviewRef = useRef<HTMLDivElement>(null);
@@ -64,7 +64,7 @@ const TabbedPane = () => {
             <div className="h-full w-full" ref={dockviewRefWrapper}>
               <DockviewReact
                 ref={dockviewRef}
-                components={TabbedPaneComponents}
+                components={tabbedPaneComponents}
                 defaultTabComponent={CustomTab}
                 rightHeaderActionsComponent={TabbedPaneToolBar}
                 leftHeaderActionsComponent={AddPanelButton}
