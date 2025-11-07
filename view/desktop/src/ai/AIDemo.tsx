@@ -61,6 +61,7 @@ async function setupToolAgent() {
     }
   );
 
+  // @ts-expect-error We will fix the demo when we revisit AI
   return createReactAgent({ llm: model, tools: [alertTool, createWorkspaceTool] });
 }
 
