@@ -10,7 +10,7 @@ import {
   OpenWorkspaceInput,
   OpenWorkspaceOutput,
   UpdateWorkspaceInput,
-} from "@repo/moss-app";
+} from "@repo/window";
 
 export const workspaceService = {
   createWorkspace: async (input: CreateWorkspaceInput) => {
