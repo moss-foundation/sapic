@@ -24,7 +24,7 @@ const TabbedPane = () => {
 
   const { canDrop } = useTabbedPaneDropTarget(dockviewRef, setPragmaticDropElement);
 
-  useTabbedPaneEventHandlers({ canDrop });
+  useTabbedPaneEventHandlers({ canPragmaticDrop: canDrop });
   //TODO check if this is needed
   useTabbedPaneResizeObserver({ containerRef: dockviewRefWrapper });
 

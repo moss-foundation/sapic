@@ -6,12 +6,12 @@ import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 interface UseTabbedPaneEventHandlersProps {
-  canDrop: boolean;
+  canPragmaticDrop: boolean;
 }
 
-export const useTabbedPaneEventHandlers = ({ canDrop }: UseTabbedPaneEventHandlersProps) => {
+export const useTabbedPaneEventHandlers = ({ canPragmaticDrop }: UseTabbedPaneEventHandlersProps) => {
   const { setActivePanelId, api } = useTabbedPaneStore();
-  const { activeWorkspaceId } = useActiveWorkspace();
+  const { activeWorkspaceId, hasActiveWorkspace } = useActiveWorkspace();
 
   const { mutate: updateTabbedPane } = useUpdateTabbedPane();
 
@@ -20,6 +20,8 @@ export const useTabbedPaneEventHandlers = ({ canDrop }: UseTabbedPaneEventHandle
 
     const disposables = [
       api.onDidLayoutChange(() => {
+        if (!hasActiveWorkspace) return;
+
         const newGridState = api.toJSON();
         updateTabbedPane({ gridState: newGridState as unknown as SerializedDockview, workspaceId: activeWorkspaceId });
       }),
@@ -31,7 +33,7 @@ export const useTabbedPaneEventHandlers = ({ canDrop }: UseTabbedPaneEventHandle
         event.accept();
       }),
       api.onWillShowOverlay((event) => {
-        if (canDrop) return;
+        if (canPragmaticDrop) return;
         event.preventDefault();
       }),
     ];
@@ -39,5 +41,5 @@ export const useTabbedPaneEventHandlers = ({ canDrop }: UseTabbedPaneEventHandle
     return () => {
       disposables.forEach((disposable) => disposable.dispose());
     };
-  }, [api, setActivePanelId, canDrop, updateTabbedPane, activeWorkspaceId]);
+  }, [api, setActivePanelId, canPragmaticDrop, updateTabbedPane, activeWorkspaceId, hasActiveWorkspace]);
 };

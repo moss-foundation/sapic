@@ -6,11 +6,25 @@ import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 export const useResetGridStateOnWorkspaceChange = () => {
   const { activeWorkspaceId } = useActiveWorkspace();
-  const { api } = useTabbedPaneStore();
+  const { api, addOrFocusPanel } = useTabbedPaneStore();
   const { data: tabbedPane } = useGetTabbedPane();
 
   useEffect(() => {
-    if (!activeWorkspaceId || !api || !tabbedPane) return;
-    api.fromJSON(tabbedPane.gridState);
-  }, [activeWorkspaceId, api, tabbedPane]);
+    if (!api || !tabbedPane?.gridState) return;
+
+    try {
+      // api.clear();
+      api.fromJSON(tabbedPane.gridState);
+
+      if (!activeWorkspaceId) {
+        addOrFocusPanel({
+          id: "Welcome",
+          component: "Welcome",
+          title: "Welcome",
+        });
+      }
+    } catch (error) {
+      console.error("Error resetting grid state on workspace change:", error);
+    }
+  }, [activeWorkspaceId, addOrFocusPanel, api, tabbedPane]);
 };
