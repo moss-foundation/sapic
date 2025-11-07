@@ -9,7 +9,6 @@ import { useUpdateBottomPanel } from "@/hooks/sharedStorage/layout/bottomPanel/u
 import { useGetSidebarPanel } from "@/hooks/sharedStorage/layout/sidebar/useGetSidebarPanel";
 import { useUpdateSidebarPanel } from "@/hooks/sharedStorage/layout/sidebar/useUpdateSidebarPanel";
 import { useActivityBarStore } from "@/store/activityBar";
-import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 
 import { Resizable, ResizablePanel } from "../lib/ui/Resizable";
 import TabbedPane from "../parts/TabbedPane/TabbedPane";
@@ -26,8 +25,6 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
 
   const { position } = useActivityBarStore();
 
-  const { initialize } = useAppResizableLayoutStore();
-
   const { data: sideBar } = useGetSidebarPanel();
   const { mutate: updateSidebarPanel } = useUpdateSidebarPanel();
 
@@ -43,17 +40,9 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
   };
 
   useEffect(() => {
-    const resetLayout = async () => {
-      if (!mainResizableRef.current || !verticalResizableRef.current) return;
-
-      if (activeWorkspaceId) await initialize(activeWorkspaceId);
-
-      verticalResizableRef.current.reset();
-      mainResizableRef.current.reset();
-    };
-    resetLayout();
-    // We only want to run this effect(resetting the layout) when the active workspace changes, because different workspaces have different layouts.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    verticalResizableRef?.current?.reset();
+    mainResizableRef?.current?.reset();
+    // We want to run this effect(resetting the layout) when the workspace changes, because different workspaces have different layouts.
   }, [activeWorkspaceId]);
 
   return (
