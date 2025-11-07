@@ -14,7 +14,7 @@ interface AddPanelOptionsWithoutMandatoryComponent
       node?: ProjectTreeNode;
       workspace?: boolean;
     }>,
-    "component"
+    "component" | "floating"
   > {
   component?: keyof typeof TabbedPaneComponents;
 }
@@ -55,18 +55,17 @@ export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
   addOrFocusPanel: async (options) => {
     const activePanel = get().api?.getPanel(options.id);
 
-    if (activePanel) {
+    if (activePanel && !activePanel.api.isFocused) {
       activePanel.focus();
-      return;
+    } else {
+      get().api?.addPanel({
+        ...options,
+        component: options.component || "Default",
+        params: {
+          ...options.params,
+        },
+      });
     }
-
-    get().api?.addPanel({
-      ...options,
-      component: options.component || "Default",
-      params: {
-        ...options.params,
-      },
-    } as AddPanelOptions);
   },
   openPanel: (panelType: string) => {
     try {
