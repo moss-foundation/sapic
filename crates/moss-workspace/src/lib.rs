@@ -6,7 +6,11 @@ mod layout;
 mod manifest;
 pub mod models;
 mod project;
+
 pub mod storage;
+
+// FIXME: Remove it once we switch environment to new db
+mod storage_old;
 pub mod workspace;
 
 use moss_applib::AppRuntime;

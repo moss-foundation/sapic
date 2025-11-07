@@ -3,6 +3,7 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, EventMarker, subscription::EventEmitter};
 use moss_environment::builder::{CreateEnvironmentParams, EnvironmentBuilder};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
+use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_user::profile::Profile;
 use rustc_hash::FxHashMap;
 use std::{cell::LazyCell, path::Path, sync::Arc};
@@ -15,7 +16,7 @@ use crate::{
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
     models::primitives::ProjectId,
     project::ProjectService,
-    storage::StorageService,
+    storage_old::StorageService,
 };
 
 struct PredefinedEnvironment {
@@ -43,6 +44,7 @@ pub struct CreateWorkspaceParams {
 pub struct WorkspaceBuilder<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     active_profile: Arc<Profile<R>>,
+    storage_scope: StorageScope,
 }
 
 #[derive(Clone)]
@@ -59,8 +61,16 @@ impl EventMarker for OnDidDeleteProject {}
 impl EventMarker for OnDidAddProject {}
 
 impl<R: AppRuntime> WorkspaceBuilder<R> {
-    pub fn new(fs: Arc<dyn FileSystem>, active_profile: Arc<Profile<R>>) -> Self {
-        Self { fs, active_profile }
+    pub fn new(
+        fs: Arc<dyn FileSystem>,
+        active_profile: Arc<Profile<R>>,
+        storage_scope: StorageScope,
+    ) -> Self {
+        Self {
+            fs,
+            active_profile,
+            storage_scope,
+        }
     }
 
     pub async fn initialize(
@@ -117,17 +127,18 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
         let on_did_delete_collection_event = on_did_delete_collection_emitter.event();
         let on_did_add_collection_event = on_did_add_collection_emitter.event();
 
-        let storage_service: Arc<StorageService<R>> = StorageService::new(&params.abs_path)
+        // FIXME: Remove old storage service once layout functionalities and variable stores are removed
+        let storage_service_old: Arc<StorageService<R>> = StorageService::new(&params.abs_path)
             .join_err::<()>("failed to create storage service")?
             .into();
-        let layout_service = LayoutService::new(storage_service.clone());
+        let layout_service = LayoutService::new(storage_service_old.clone());
 
         let collection_service: Arc<ProjectService<R>> = ProjectService::new(
             ctx,
             app_delegate,
             &params.abs_path,
             self.fs.clone(),
-            storage_service.clone(),
+            self.storage_scope.clone(),
             &mut environment_sources,
             &self.active_profile,
             on_did_delete_collection_emitter,
@@ -140,7 +151,9 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
         let environment_service: Arc<EnvironmentService<R>> = EnvironmentService::new(
             &params.abs_path,
             self.fs.clone(),
-            storage_service.clone(),
+            storage_service_old.clone(),
+            <dyn Storage>::global(app_delegate),
+            self.storage_scope.clone(),
             environment_sources,
         )
         .await
@@ -168,7 +181,7 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
             layout_service,
             project_service: collection_service,
             environment_service,
-            storage_service,
+            storage_service_old,
             active_profile: self.active_profile,
             _on_did_add_project: on_did_add_collection,
             _on_did_delete_project: on_did_delete_collection,
@@ -198,14 +211,16 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
         let on_did_delete_collection_event = on_did_delete_collection_emitter.event();
         let on_did_add_collection_event = on_did_add_collection_emitter.event();
 
-        let storage_service: Arc<StorageService<R>> = StorageService::new(&params.abs_path)?.into();
-        let layout_service = LayoutService::new(storage_service.clone());
+        // FIXME: Remove old storage service once layout functionalities and variable stores are removed
+        let storage_service_old: Arc<StorageService<R>> =
+            StorageService::new(&params.abs_path)?.into();
+        let layout_service = LayoutService::new(storage_service_old.clone());
         let collection_service: Arc<ProjectService<R>> = ProjectService::new(
             ctx,
             app_delegate,
             &params.abs_path,
             self.fs.clone(),
-            storage_service.clone(),
+            self.storage_scope.clone(),
             &mut environment_sources,
             &self.active_profile,
             on_did_delete_collection_emitter,
@@ -217,7 +232,9 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
         let environment_service: Arc<EnvironmentService<R>> = EnvironmentService::new(
             &params.abs_path,
             self.fs.clone(),
-            storage_service.clone(),
+            storage_service_old.clone(),
+            <dyn Storage>::global(app_delegate),
+            self.storage_scope.clone(),
             environment_sources,
         )
         .await?
@@ -244,7 +261,7 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
             layout_service,
             project_service: collection_service,
             environment_service,
-            storage_service,
+            storage_service_old,
             active_profile: self.active_profile,
             _on_did_add_project: on_did_add_collection,
             _on_did_delete_project: on_did_delete_collection,

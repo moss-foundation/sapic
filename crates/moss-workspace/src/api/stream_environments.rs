@@ -24,7 +24,7 @@ impl<R: AppRuntime> Workspace<R> {
         while let Some(item) = stream.next().await {
             if let Err(e) = channel.send(StreamEnvironmentsEvent {
                 id: item.id,
-                project_id: item.collection_id.map(|id| ProjectId::from(id)),
+                project_id: item.project_id.map(|id| ProjectId::from(id)),
                 is_active: item.is_active,
                 name: item.display_name,
                 order: item.order,

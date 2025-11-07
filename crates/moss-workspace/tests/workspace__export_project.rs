@@ -11,7 +11,7 @@ use moss_workspace::{
             ImportProjectSource,
         },
     },
-    storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
+    storage_old::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
 use tauri::ipc::Channel;
 

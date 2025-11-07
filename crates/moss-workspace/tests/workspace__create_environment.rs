@@ -11,7 +11,7 @@ use moss_workspace::{
         operations::{CreateEnvironmentInput, CreateProjectInput},
         types::CreateProjectParams,
     },
-    storage::segments::SEGKEY_ENVIRONMENT,
+    storage_old::segments::SEGKEY_ENVIRONMENT,
 };
 use serde_json::Value as JsonValue;
 use tauri::ipc::Channel;

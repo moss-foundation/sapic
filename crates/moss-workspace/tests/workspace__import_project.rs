@@ -14,7 +14,7 @@ use moss_workspace::{
         primitives::ProjectId,
         types::{ImportDiskParams, ImportGitHubParams, ImportProjectParams, ImportProjectSource},
     },
-    storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
+    storage_old::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
 use std::{env, ops::Deref};
 use tauri::ipc::Channel;

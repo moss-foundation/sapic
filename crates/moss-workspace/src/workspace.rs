@@ -22,7 +22,7 @@ use crate::{
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
     models::primitives::ProjectId,
     project::ProjectService,
-    storage::StorageService,
+    storage_old::StorageService,
 };
 
 pub struct WorkspaceSummary {
@@ -66,8 +66,8 @@ pub struct Workspace<R: AppRuntime> {
     pub(super) layout_service: LayoutService<R>,
     pub(super) project_service: Arc<ProjectService<R>>,
     pub(super) environment_service: Arc<EnvironmentService<R>>,
-    pub(super) storage_service: Arc<StorageService<R>>,
-
+    // FIXME: Remove after removing the layout functionalities from the backend
+    pub(super) storage_service_old: Arc<StorageService<R>>,
     pub(super) _on_did_delete_project: Subscription<OnDidDeleteProject>,
     pub(super) _on_did_add_project: Subscription<OnDidAddProject>,
 }
@@ -169,6 +169,6 @@ impl<R: AppRuntime> Workspace<R> {
 #[cfg(any(test, feature = "integration-tests"))]
 impl<R: AppRuntime> Workspace<R> {
     pub fn db(&self) -> &Arc<dyn moss_storage::WorkspaceStorage<R::AsyncContext>> {
-        self.storage_service.storage()
+        self.storage_service_old.storage()
     }
 }
